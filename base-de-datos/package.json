@@ -1,0 +1,16 @@
+{
+  "name": "@estook/base-de-datos",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Migraciones numeradas y reversibles, politicas, vistas y semillas",
+  "scripts": {
+    "migrar": "node herramientas/migrar.mjs",
+    "revertir": "node herramientas/migrar.mjs --revertir",
+    "sembrar": "node herramientas/sembrar.mjs",
+    "tipos": "echo sin tipos que comprobar"
+  },
+  "dependencies": {
+    "postgres": "^3.4.5"
+  }
+}

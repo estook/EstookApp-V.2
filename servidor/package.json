@@ -1,0 +1,19 @@
+{
+  "name": "@estook/servidor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "API, aplicacion, dominio, infraestructura, eventos, trabajos, conectores e IA",
+  "scripts": {
+    "tipos": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@estook/dominio": "workspace:*",
+    "@estook/permisos": "workspace:*",
+    "@estook/utiles": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.2"
+  }
+}

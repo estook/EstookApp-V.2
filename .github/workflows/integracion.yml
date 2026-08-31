@@ -1,0 +1,141 @@
+name: Integracion continua
+
+# Esta es la puerta. Un pull request con un fallo de tipos no se puede fusionar,
+# que es literalmente el criterio de aceptacion de M0.
+#
+# Para que sirva de verdad hay que marcar estas comprobaciones como obligatorias:
+#   Settings -> Branches -> Branch protection rules -> main
+#   Require status checks to pass -> "Calidad" y "Construccion y presupuestos"
+
+# Corre en cualquier rama, no solo en main: una rama que no se ha comprobado no
+# sirve para revisar. Con `push` sobre todas las ramas basta, y asi un pull request
+# no dispara dos veces lo mismo.
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ENTORNO: pruebas
+  VITE_ENTORNO: pruebas
+
+jobs:
+  calidad:
+    name: Calidad
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar
+        run: pnpm install --frozen-lockfile
+
+      - name: Tipos
+        run: pnpm tipos
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Formato
+        run: pnpm formato
+
+      - name: Reglas de dependencia
+        run: pnpm dependencias
+
+      - name: Pruebas
+        run: pnpm prueba
+
+  construccion:
+    name: Construccion y presupuestos
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar
+        run: pnpm install --frozen-lockfile
+
+      - name: Construir las cuatro aplicaciones
+        run: pnpm build
+
+      - name: Presupuesto de tamano
+        run: pnpm tamano
+
+      - name: Instalar navegadores
+        run: pnpm exec playwright install --with-deps chromium webkit
+
+      - name: Pruebas de extremo a extremo y presupuesto de velocidad
+        run: pnpm prueba:e2e
+
+      - name: Guardar el informe si algo falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-playwright
+          path: playwright-report/
+          retention-days: 7
+
+  migraciones:
+    name: Migraciones reversibles
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: pruebas
+          POSTGRES_DB: estook
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgresql://postgres:pruebas@localhost:5432/estook
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar
+        run: pnpm install --frozen-lockfile
+
+      - name: Migrar
+        run: pnpm bd:migrar
+
+      - name: Sembrar
+        run: pnpm bd:sembrar
+
+      - name: Sembrar otra vez, que tiene que ser idempotente
+        run: pnpm bd:sembrar
+
+      - name: Revertir hasta dejarlo vacio y volver a migrar
+        run: |
+          pnpm bd:revertir
+          pnpm bd:migrar
+          pnpm bd:sembrar

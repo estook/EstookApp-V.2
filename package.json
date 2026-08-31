@@ -1,0 +1,44 @@
+{
+  "name": "estook",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Estook · la gestion de tu restaurante en una sola aplicacion",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "type": "module",
+  "scripts": {
+    "arranca": "node herramientas/arranca.mjs",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "tipos": "turbo run tipos",
+    "lint": "eslint .",
+    "formato": "prettier --check .",
+    "formato:arreglar": "prettier --write .",
+    "dependencias": "depcruise apps packages servidor --config .dependency-cruiser.cjs",
+    "prueba": "vitest run",
+    "prueba:e2e": "playwright test",
+    "tamano": "node herramientas/presupuesto-tamano.mjs",
+    "bd:migrar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs",
+    "bd:revertir": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs --revertir",
+    "bd:sembrar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/sembrar.mjs",
+    "verifica": "pnpm tipos && pnpm lint && pnpm formato && pnpm dependencias && pnpm prueba"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.2",
+    "dependency-cruiser": "^16.9.0",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^2.1.8"
+  }
+}

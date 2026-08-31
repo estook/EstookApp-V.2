@@ -1,0 +1,26 @@
+{
+  "name": "@estook/carta",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "La carta digital publica del restaurante",
+  "scripts": {
+    "dev": "vite --port 5175 --strictPort",
+    "build": "vite build",
+    "previsualiza": "vite preview --port 5175 --strictPort",
+    "tipos": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@estook/utiles": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/node": "^22.10.2",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  }
+}

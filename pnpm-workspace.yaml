@@ -1,0 +1,6 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - 'servidor'
+  - 'base-de-datos'
+  - 'pruebas'

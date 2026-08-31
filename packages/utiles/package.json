@@ -1,0 +1,21 @@
+{
+  "name": "@estook/utiles",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Fechas, dinero, unidades, formatos, banderas y registro",
+  "exports": {
+    ".": "./src/index.ts",
+    "./observabilidad": "./src/observabilidad.ts"
+  },
+  "scripts": {
+    "tipos": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sentry/browser": "^8.47.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.2"
+  }
+}

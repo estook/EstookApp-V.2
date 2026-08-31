@@ -1,0 +1,19 @@
+{
+  "name": "@estook/permisos",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Matriz de permisos compartida entre cliente y servidor",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "tipos": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@estook/dominio": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

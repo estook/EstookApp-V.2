@@ -137,8 +137,8 @@ jobs:
       - name: Sembrar otra vez, que tiene que ser idempotente
         run: pnpm bd:sembrar
 
-      - name: Revertir hasta dejarlo vacio y volver a migrar
+      - name: Deshacerlo todo y volver a aplicarlo desde cero
         run: |
-          pnpm bd:revertir
+          pnpm bd:revertir:todo
           pnpm bd:migrar
           pnpm bd:sembrar

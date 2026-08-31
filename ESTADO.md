@@ -1,163 +1,194 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 31 de agosto de 2026
+Última actualización: 1 de septiembre de 2026
 
 > Este fichero es la memoria del proyecto. Se lee lo primero de cada sesión y se
 > escribe lo último. Si una conversación se corta, el contexto se recupera aquí.
 
 ## Dónde estamos
 
-**M0 · Cimientos y disciplina — terminado, probado y publicado.**
+**M1 · Modelo maestro: alcances, roles y permisos — escrito y probado.**
+Pendiente de fusionar en `main`.
 
-Siguiente: **M1 · Modelo maestro: alcances, roles y permisos.**
+Módulos terminados: **M0 ✓** · **M1 ✓** (con una salvedad, más abajo)
 
-Módulos terminados: **M0 ✓**
+Siguiente: **M2 · Núcleo técnico y motores transversales.**
 
 ## La dirección web
 
-**https://estook.github.io/EstookApp-V.2/** — decidido por Richi el 31 de agosto de
-2026, hasta que compre `estook.com`.
+**https://estook.github.io/EstookApp-V.2/** — hasta que se compre `estook.com`.
+Las cuatro aplicaciones cuelgan de ahí: la web en la raíz, y `/app/`, `/carta/` y
+`/admin/` debajo. Cuando haya dominio propio se declara la variable `VITE_BASE`
+con el valor `/` en GitHub. No hay que tocar código.
 
-Las cuatro aplicaciones cuelgan de ahí:
+## Qué hizo M1
 
-| Aplicación    | Dirección               |
-| ------------- | ----------------------- |
-| Web pública   | `/EstookApp-V.2/`       |
-| La aplicación | `/EstookApp-V.2/app/`   |
-| Carta digital | `/EstookApp-V.2/carta/` |
-| Panel interno | `/EstookApp-V.2/admin/` |
+Todo lo que pedía el Plan, punto por punto de su lista de «Entra»:
 
-Cuando haya dominio propio, se declara la variable `VITE_BASE` con el valor `/` en
-GitHub y ya está. No hay que tocar código.
+| Lo que pedía M1                                   | Dónde está                                                  |
+| ------------------------------------------------- | ----------------------------------------------------------- |
+| Usuarios (el cuarto alcance: persona)             | `0002_personas_y_membresias.sql`                            |
+| Membresías con alcance y vigencia                 | idem                                                        |
+| Los doce roles                                    | idem, sembrados en la propia migración                      |
+| Herencia de permisos y recorte por local          | `0003_catalogo_de_permisos.sql`, `0004_matriz_de_roles.sql` |
+| La función `locales_visibles`                     | `0005_quien_ve_que.sql`                                     |
+| RLS en todas las tablas contra `locales_visibles` | `0008_politicas_de_seguridad.sql`                           |
+| Auditoría append-only                             | `0006_auditoria.sql`                                        |
+| Catálogo maestro con sus tres políticas           | `0007_traducciones_dispositivos_catalogo.sql`               |
+| Traducciones                                      | idem                                                        |
+| Dispositivos con revocación                       | idem                                                        |
+| La matriz compartida cliente/servidor             | `packages/permisos/`, `packages/dominio/`                   |
 
-## Qué hizo M0
+**Los doce roles**, tal como los fija el Manifiesto: dirección, administrador de
+cuenta, chef corporativo, compras central, RRHH y gestoría (organización);
+area manager (área); gerente, jefe de cocina, jefe de sala, cocinero y camarero
+(local).
 
-| Lo que pedía el Plan                           | Dónde está                                    |
-| ---------------------------------------------- | --------------------------------------------- |
-| Monorepo con las cuatro apps arrancando vacías | `apps/`, `pnpm-workspace.yaml`, `turbo.json`  |
-| TypeScript estricto                            | `tsconfig.base.json`                          |
-| Lint, formato y reglas de dependencia          | `eslint.config.js`, `.dependency-cruiser.cjs` |
-| Migraciones numeradas y reversibles            | `base-de-datos/`                              |
-| Tres entornos más el de demostración           | `packages/utiles/src/entorno.ts`              |
-| Integración continua que bloquea               | `.github/workflows/integracion.yml`           |
-| `ESTADO.md` y las plantillas de A2             | este fichero, `docs/`                         |
-| Sentry y registro con `correlacion_id`         | `packages/utiles/src/`                        |
-| Banderas de función                            | `packages/utiles/src/banderas.ts`             |
-| Dos semillas                                   | `base-de-datos/semillas/`                     |
+**Los tres niveles**: sin acceso · ver · ver y editar. Un permiso que no aparece
+en la matriz vale «sin acceso», y solo se guarda lo concedido, para que la tabla
+se pueda leer de un vistazo.
+
+**32 permisos** en tres familias: las ocho apps más Panel, Fogón, Ajustes y la
+vista de gestoría (`app.*`); los datos sensibles (`dato.*`); y lo que se puede
+ejecutar (`accion.*`).
 
 ## Qué se ha comprobado, ejecutándolo de verdad
 
-| Comprobación                 | Resultado                                        |
-| ---------------------------- | ------------------------------------------------ |
-| `pnpm tipos`                 | 14 de 14 paquetes                                |
-| `pnpm lint` · `pnpm formato` | limpios                                          |
-| `pnpm dependencias`          | sin violaciones                                  |
-| `pnpm prueba`                | 12 de 12                                         |
-| `pnpm prueba:e2e`            | 16 de 16, escritorio y móvil pequeño             |
-| `pnpm tamano`                | 71,7 KB de 250 permitidos                        |
-| `pnpm publicacion`           | las rutas apuntan a donde se publica             |
-| SQL contra Postgres real     | migración, reversión, reaplicación e invariantes |
+| Comprobación                       | Resultado                               |
+| ---------------------------------- | --------------------------------------- |
+| `pnpm tipos`                       | 14 de 14 paquetes                       |
+| `pnpm lint` · `pnpm formato`       | limpios                                 |
+| `pnpm dependencias`                | sin violaciones · 46 módulos            |
+| `pnpm prueba`                      | **76 de 76**                            |
+| `pnpm prueba:e2e`                  | 16 de 16, escritorio y móvil pequeño    |
+| `pnpm tamano` · `pnpm publicacion` | dentro del presupuesto y apuntando bien |
 
-Las reglas se probaron **incumpliéndolas a propósito** para ver que bloquean: un
-import prohibido entre capas, un `Math.round()` sobre dinero (regla 9) y un
-`new Date()` en el navegador (regla 10). Las tres saltaron con su mensaje.
+Las pruebas del modelo corren contra **Postgres de verdad**, con `set role
+estook_api`, que es como se conecta la API. Nada se prueba desde una pantalla: la
+regla 4 dice justamente eso.
 
-## El fallo de la página en blanco, y cómo no se repite
+Lo que queda demostrado:
 
-La primera publicación salió en blanco. El HTML pedía los ficheros en `/assets/…`
-cuando estaban en `/EstookApp-V.2/assets/…`: no los encontraba y no pintaba nada.
-No fallaba ninguna construcción, simplemente no se veía.
+- Un area manager ve **exactamente** sus tres locales, ni uno más.
+- La gerente del bar independiente no ve ni un local, ni una organización, ni una
+  persona de la cadena. Pedir un local ajeno por su identificador devuelve vacío.
+- **Sin decir quién pregunta no se ve absolutamente nada.** Es el fallo seguro.
+- Una membresía caducada, o que aún no empieza, no da acceso. Un local archivado
+  desaparece de la vista de todos.
+- El cocinero no ve ningún importe. El camarero no ve costes, ni ventas, ni el
+  cuadrante completo, ni datos de otros.
+- El jefe de sala puede proponer cambios en la carta pero **no publicarlos**.
+- Compras central **no puede cerrar recuentos** (decisión 5 de la Auditoría de
+  flujos: quien compra no valora su propio inventario).
+- **Nadie**, ni la dirección, ve los directos ajenos del chat.
+- El recorte quita un permiso que el rol traía, y también da uno que no traía.
+- Con dos roles sobre el mismo local, gana el más amplio, permiso a permiso.
+- La auditoría no se puede modificar ni borrar: ni por permisos (`estook_api` no
+  los tiene) ni por el guardián (que alcanza incluso al dueño de la tabla).
+- Las ocho migraciones se aplican, se deshacen enteras y se vuelven a aplicar.
+- Sembrar dos veces no duplica nada.
+- El vocabulario de la base de datos y el de TypeScript cuadran exactamente.
 
-Arreglado de dos maneras: el flujo de publicación deduce la raíz del nombre del
-repositorio, y `pnpm publicacion` compara lo construido con donde se va a publicar
-y **bloquea** si no cuadran. Está en `herramientas/comprueba-publicacion.mjs` y
-corre en los dos flujos de trabajo.
+## La salvedad honesta
+
+El criterio de terminado de M1 dice: «toda consulta cruzada entre organizaciones
+devuelve vacío **y 403**».
+
+La primera mitad está hecha y probada. **La segunda no puede estarlo todavía**:
+un 403 lo devuelve una API, y la API se construye en M2. Hoy la base de datos
+devuelve vacío, que es lo correcto a su nivel. Cuando exista la API, M2 tiene que
+traducir ese vacío a un 403 con su mensaje del catálogo de errores, y hay que
+escribir la prueba que lo compruebe llamando a la API a pelo.
+
+**Queda anotado como deuda explícita de M2, no como algo olvidado.**
 
 ## Decisiones tomadas
 
-Escritas enteras en `docs/decisiones/`:
+En `docs/decisiones/`:
 
-1. **0001 · GitHub Pages en vez de Netlify.** El Plan (A3) decía Netlify y el
-   inventario de claves decía Pages. Preguntado: manda Pages. Incluye la dirección
-   de arriba.
-2. **0002 · La API en Hono sobre Supabase Edge Functions.** El Plan no decía dónde
-   corre. Elección delegada. Se implementa en M2, no antes.
-3. **0003 · M0 crea el esqueleto mínimo de organización, área y local.** Sin esas
-   tres tablas las semillas de M0 no podían existir. Con RLS encendida y sin
-   ninguna política, que es el fallo seguro. M1 lo amplía.
+1. **0001 · GitHub Pages en vez de Netlify**, con la dirección de arriba.
+2. **0002 · La API en Hono sobre Supabase Edge Functions.** Se implementa en M2.
+3. **0003 · M0 crea el esqueleto mínimo de organización, área y local.**
+4. **0004 · El presupuesto de velocidad, reconstruido.** La tabla de B7 estaba
+   descolocada en el PDF. Richi confirmó que salió de una investigación con IA,
+   que no hay que ser estricto y que se use como guía. Se reconstruyó conservando
+   las cifras originales.
 
-Menores: las pruebas se llaman `*.prueba.ts`; la cadena de ejemplo es Grupo Costa
-(Zona Norte y Zona Sur); Node 24 LTS; la integración continua corre en todas las
-ramas; Safari móvil solo se prueba en integración continua, porque WebKit en
-Windows pide librerías que no están.
+De M1, sin fichero propio pero anotadas aquí:
+
+- **Quién pregunta se declara en la conexión**, con `set local estook.persona_id`,
+  y no con `auth.uid()`. Así el modelo se puede probar en cualquier Postgres sin
+  depender del esquema de autenticación de Supabase, y encaja con la decisión 0002
+  (la API es nuestra). M4 conectará Supabase Auth con esto.
+- **La matriz de roles vive solo en la base de datos.** `packages/permisos` tiene
+  el vocabulario y las funciones de lectura, no los niveles. Es la regla 6: un
+  cálculo, un único dueño. Una prueba comprueba que los dos catálogos cuadran.
+- **Las funciones de visibilidad son `security definer`.** Sin eso, la política de
+  `membresia` llamaría a una función que consulta `membresia`, que volvería a
+  aplicar la política: recursión infinita. Pasó de verdad al escribir M1.
+- **No se usa `force row level security`.** Se aplicaría también al dueño de las
+  tablas, que es quien ejecuta migraciones y semillas. No hace falta: la API se
+  conecta como `estook_api`, que no es el dueño.
+- **La matriz se derivó frase a frase del documento de Roles**, y cada bloque de
+  la migración cita la frase que lo justifica. Conviene que Richi la repase.
+- **Dependencia nueva: `@electric-sql/pglite`**, solo de desarrollo. El Plan pide
+  «Postgres efímero» en la capa de pruebas. Con Docker no valía: no todas las
+  máquinas lo tienen, y una prueba que solo corre en una máquina acaba sin correr
+  en ninguna. PGlite es Postgres compilado a WebAssembly. Además, en integración
+  continua las migraciones se aplican también contra un Postgres 17 de verdad, así
+  que no hay una sola vía de comprobación.
 
 ## Lo que falta, y es cosa de Richi
 
-1. **El candado ya está activado** (Settings → Rules), con tres comprobaciones
-   obligatorias. Los nombres tienen que escribirse **exactamente** como los
-   reporta el sistema, y van **sin tilde**:
+1. **Fusionar la rama `m1-alcances-y-permisos`.**
+2. **Repasar la matriz de permisos** de `0004_matriz_de_roles.sql`. Está derivada
+   del documento de Roles y cada bloque cita su frase, pero es la pieza que más
+   conviene que valide una persona.
+3. **Los ficheros de marca** en `packages/ui/marca/`. Se usan en M3.
+4. **`DATABASE_URL` en `.env.local`** si se quiere migrar contra Supabase desde
+   esta máquina.
+5. **Las claves de Google han pasado por un chat** (Maps y Gemini). Hay que
+   regenerarlas antes del lanzamiento. Anotado para M27.
 
-   ```
-   Calidad
-   Construccion y presupuestos
-   Migraciones reversibles
-   ```
-
-   Cualquier otro nombre queda esperando para siempre y bloquea la fusión. Pasó
-   con «Construcción y presupuestos» escrito con tilde.
-
-   **No añadir nunca `Construir`, `Publicar` ni `Publicar en GitHub Pages`**: ese
-   flujo solo corre _después_ de fusionar en `main`, así que exigirlo antes deja
-   el botón bloqueado sin salida.
-
-2. **Los ficheros de marca** en `packages/ui/marca/` (logo, símbolo, Fogón y
-   favicons). La carpeta ya existe con la lista. Se usan en M3.
-3. **`DATABASE_URL` en `.env.local`** si se quiere migrar contra Supabase desde
-   esta máquina. El SQL ya está probado, pero contra un Postgres de usar y tirar.
-
-## Preguntas pendientes
-
-1. **La tabla del presupuesto de velocidad (apartado B7) está rota en el PDF.** Al
-   maquetarla se descolocaron las columnas: hay ocho conceptos y siete cifras, y no
-   se sabe cuál va con cuál. Solo se ha aplicado la única inequívoca, el peso de la
-   app. **Hace falta bien antes de M3.**
-2. **La web pública y el posicionamiento.** La Parte C pide `apps/web` renderizada
-   en servidor y Pages solo sirve ficheros. Se decide en M26.
-3. **Las claves de Google han pasado por un chat** (Maps y Gemini). El propio
-   inventario dice que hay que regenerarlas antes del lanzamiento. Anotado para M27.
+Nota sobre el candado de `main`: los nombres de las comprobaciones obligatorias
+van **sin tilde** y tienen que coincidir exactamente con los que reporta el
+sistema: `Calidad`, `Construccion y presupuestos`, `Migraciones reversibles`. No
+añadir nunca `Construir` ni `Publicar`: ese flujo solo corre después de fusionar,
+así que exigirlo antes deja el botón bloqueado sin salida.
 
 ## Lo que NO hay que tocar
 
-Cerrados y probados en M0. Ampliarlos es normal; reescribirlos, no, sin una
-decisión escrita en `docs/decisiones/`:
+Cerrados y probados. Ampliarlos es normal; reescribirlos, no, sin una decisión
+escrita en `docs/decisiones/`:
 
-- `packages/utiles/src/` — entorno, banderas, correlación y registro.
-- `base-de-datos/herramientas/` — el ejecutor de migraciones y el sembrador.
-- `.dependency-cruiser.cjs` y las reglas 9 y 10 de `eslint.config.js`.
-- `herramientas/comprueba-publicacion.mjs`.
+- `packages/utiles/src/` — entorno, banderas, correlación y registro (M0).
+- `base-de-datos/herramientas/` — el ejecutor de migraciones y el sembrador (M0).
+- `.dependency-cruiser.cjs` y las reglas 9 y 10 de `eslint.config.js` (M0).
+- `herramientas/comprueba-publicacion.mjs` (M0).
+- Las migraciones `0001` a `0008`. **Ya están aplicadas en las pruebas y en
+  integración continua: se amplían con una `0009`, nunca se editan** (regla 2).
 
-## El siguiente paso · M1
+## El siguiente paso · M2
 
-**Modelo maestro: alcances, roles y permisos.** Qué entra, según el Plan:
+**Núcleo técnico y motores transversales.** Qué entra, según el Plan:
 
-- Organizaciones, áreas, locales y **usuarios** (el cuarto alcance: persona).
-- Membresías con alcance y vigencia.
-- La función `locales_visibles`.
-- Los doce roles, herencia de permisos y recorte por local en tres estados:
-  sin acceso · ver · ver y editar.
-- RLS en todas las tablas, escrita contra `locales_visibles`.
-- Auditoría append-only, que rechaza `UPDATE` por permisos de base de datos.
-- Catálogo maestro con sus tres políticas, traducciones y dispositivos con
-  revocación.
+- API versionada con compatibilidad N−2 · comandos y consultas · validación con
+  esquemas · catálogo de errores en cristiano · idempotencia por cabecera.
+- Bandeja de salida transaccional y publicador de eventos · workers con reintento
+  · control optimista por versión · cliente tipado.
+- Los siete motores: **fiscal** (tipos con vigencia, IVA/IGIC/IPSI, prorrateo en
+  fórmulas), **dinero** (céntimos y reparto determinista), **unidades y coste**
+  (`precio ÷ (factor × rendimiento)` y precio medio ponderado), **tiempo** (fecha
+  operativa, hora de corte, cambio de hora), **textos**, **permisos** y
+  **recálculo**.
 
-**Reglas críticas.** Aunque el primer cliente tenga un local, el modelo nace con
-los cuatro alcances. La auditoría rechaza `UPDATE` por permisos de base de datos.
+**Terminado cuando.** El mismo comando tres veces con la misma clave produce un
+solo efecto; y el motor fiscal desglosa una fórmula con tipos mixtos cuadrando al
+céntimo.
 
-**Errores típicos a evitar.** Montarlo todo sobre «un usuario pertenece a un
-local». Fiarse del `local_id` que manda el cliente. Dejar las traducciones para
-luego y acabar con columnas `nombre_en`.
+**Deuda que M2 hereda de M1:** traducir a `403` la consulta cruzada entre
+organizaciones, con su prueba llamando a la API a pelo.
 
-**Terminado cuando.** Toda consulta cruzada entre organizaciones devuelve vacío y
-`403`, y un area manager ve exactamente sus tres locales.
-
-M1 empieza ampliando `base-de-datos/migraciones/` con `0002_…`, sin tocar la 0001.
+Recordatorio de la decisión 0002: la API se escribe en Hono y se despliega como
+Supabase Edge Functions. Sin proceso largo, así que los workers van por cola en
+tabla más `pg_cron`.

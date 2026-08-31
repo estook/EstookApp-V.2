@@ -24,6 +24,7 @@
     "publicacion": "node herramientas/comprueba-publicacion.mjs",
     "bd:migrar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs",
     "bd:revertir": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs --revertir",
+    "bd:revertir:todo": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs --revertir --todo",
     "bd:sembrar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/sembrar.mjs",
     "verifica": "pnpm tipos && pnpm lint && pnpm formato && pnpm dependencias && pnpm prueba"
   },

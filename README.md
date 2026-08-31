@@ -31,17 +31,18 @@ el arranque salta ese paso y avisa.
 
 ## Comandos
 
-| Comando            | Que hace                                              |
-| ------------------ | ----------------------------------------------------- |
-| `pnpm arranca`     | Todo lo de arriba, de una vez                         |
-| `pnpm dev`         | Las cuatro aplicaciones en modo desarrollo            |
-| `pnpm verifica`    | Tipos, lint, formato, reglas de dependencia y pruebas |
-| `pnpm build`       | Construye las cuatro                                  |
-| `pnpm tamano`      | Comprueba el presupuesto de B7 sobre lo construido    |
-| `pnpm prueba:e2e`  | Playwright, en escritorio y en movil pequeno          |
-| `pnpm bd:migrar`   | Aplica las migraciones pendientes                     |
-| `pnpm bd:revertir` | Deshace la ultima                                     |
-| `pnpm bd:sembrar`  | Carga las dos semillas                                |
+| Comando                 | Que hace                                              |
+| ----------------------- | ----------------------------------------------------- |
+| `pnpm arranca`          | Todo lo de arriba, de una vez                         |
+| `pnpm dev`              | Las cuatro aplicaciones en modo desarrollo            |
+| `pnpm verifica`         | Tipos, lint, formato, reglas de dependencia y pruebas |
+| `pnpm build`            | Construye las cuatro                                  |
+| `pnpm tamano`           | Comprueba el presupuesto de B7 sobre lo construido    |
+| `pnpm prueba:e2e`       | Playwright, en escritorio y en movil pequeno          |
+| `pnpm bd:migrar`        | Aplica las migraciones pendientes                     |
+| `pnpm bd:revertir`      | Deshace la ultima                                     |
+| `pnpm bd:revertir:todo` | Las deshace todas, de la ultima a la primera          |
+| `pnpm bd:sembrar`       | Carga las tres semillas                               |
 
 ## Como esta organizado
 

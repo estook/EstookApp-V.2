@@ -6,8 +6,13 @@ import { defineConfig } from 'vitest/config';
  */
 export default defineConfig({
   test: {
-    include: ['packages/**/*.prueba.ts', 'servidor/**/*.prueba.ts', 'apps/**/*.prueba.ts'],
-    exclude: ['**/node_modules/**', '**/dist/**', 'pruebas/**'],
+    include: [
+      'packages/**/*.prueba.ts',
+      'servidor/**/*.prueba.ts',
+      'apps/**/*.prueba.ts',
+      'base-de-datos/**/*.prueba.ts',
+    ],
+    exclude: ['**/node_modules/**', '**/dist/**', 'pruebas/e2e/**'],
     environment: 'node',
     reporters: process.env['CI'] ? ['default', 'github-actions'] : ['default'],
     coverage: {

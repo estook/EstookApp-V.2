@@ -99,14 +99,22 @@ async function aplicar(sql) {
   );
 }
 
+/** Deshace de la ultima a la primera, hasta que no queda ninguna. */
+async function revertirTodo(sql) {
+  let quedan = true;
+  while (quedan) {
+    quedan = await revertirUltima(sql);
+  }
+}
+
 async function revertirUltima(sql) {
   const [ultima] = await sql`
     select numero, nombre from estook.migracion order by numero desc limit 1
   `;
 
   if (!ultima) {
-    console.log('  no hay ninguna migracion aplicada');
-    return;
+    console.log('  no queda ninguna migracion aplicada');
+    return false;
   }
 
   const fichero = `${String(ultima.numero).padStart(4, '0')}_${ultima.nombre}.revertir.sql`;
@@ -125,13 +133,16 @@ async function revertirUltima(sql) {
     await tx`delete from estook.migracion where numero = ${ultima.numero}`;
   });
   process.stdout.write('hecho\n');
+  return true;
 }
 
 const sql = abrirConexion();
 try {
   await prepararControl(sql);
-  if (process.argv.includes('--revertir')) await revertirUltima(sql);
-  else await aplicar(sql);
+  if (process.argv.includes('--revertir')) {
+    if (process.argv.includes('--todo')) await revertirTodo(sql);
+    else await revertirUltima(sql);
+  } else await aplicar(sql);
 } catch (fallo) {
   console.error(`  fallo: ${fallo instanceof Error ? fallo.message : String(fallo)}`);
   process.exitCode = 1;

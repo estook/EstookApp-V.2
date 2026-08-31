@@ -28,8 +28,12 @@ jobs:
     env:
       ENTORNO: produccion
       VITE_ENTORNO: ${{ vars.VITE_ENTORNO || 'produccion' }}
-      VITE_BASE: ${{ vars.VITE_BASE || '/' }}
-      VITE_APP_URL: ${{ vars.VITE_APP_URL }}
+      # Si no hay variable declarada se deduce del nombre del repositorio:
+      #   estook/EstookApp-V.2  ->  /EstookApp-V.2/
+      # que es la direccion de hoy. El dia que haya dominio propio (estook.com),
+      # se declara la variable VITE_BASE con el valor "/" y esto deja de aplicar.
+      VITE_BASE: ${{ vars.VITE_BASE || format('/{0}/', github.event.repository.name) }}
+      VITE_APP_URL: ${{ vars.VITE_APP_URL || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
@@ -51,6 +55,9 @@ jobs:
 
       - name: Comprobar el presupuesto de tamano
         run: pnpm tamano
+
+      - name: Las rutas apuntan a donde se publica
+        run: pnpm publicacion
 
       - name: Componer el sitio
         run: |

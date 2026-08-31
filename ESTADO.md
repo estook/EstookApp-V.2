@@ -93,12 +93,23 @@ Windows pide librerías que no están.
 
 ## Lo que falta, y es cosa de Richi
 
-1. **Activar el candado.** En Settings → Rules → New branch ruleset: nombre
-   «Proteger main», estado **Active**, objetivo «Include default branch», marcar
-   «Require status checks to pass» y añadir `Calidad`, `Construcción y
-presupuestos`, `Migraciones reversibles` y `Publicar en GitHub Pages`.
-   **Sin esto, código roto sí podría entrar en `main`**, que es justo lo que M0
-   promete que no pasa. Es el último punto de M0 sin marcar.
+1. **El candado ya está activado** (Settings → Rules), con tres comprobaciones
+   obligatorias. Los nombres tienen que escribirse **exactamente** como los
+   reporta el sistema, y van **sin tilde**:
+
+   ```
+   Calidad
+   Construccion y presupuestos
+   Migraciones reversibles
+   ```
+
+   Cualquier otro nombre queda esperando para siempre y bloquea la fusión. Pasó
+   con «Construcción y presupuestos» escrito con tilde.
+
+   **No añadir nunca `Construir`, `Publicar` ni `Publicar en GitHub Pages`**: ese
+   flujo solo corre _después_ de fusionar en `main`, así que exigirlo antes deja
+   el botón bloqueado sin salida.
+
 2. **Los ficheros de marca** en `packages/ui/marca/` (logo, símbolo, Fogón y
    favicons). La carpeta ya existe con la lista. Se usan en M3.
 3. **`DATABASE_URL` en `.env.local`** si se quiere migrar contra Supabase desde

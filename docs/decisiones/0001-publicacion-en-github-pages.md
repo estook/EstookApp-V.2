@@ -30,9 +30,16 @@ VITE_BASE + admin/   ->  apps/admin
 
 - El enrutado de cliente necesita un `404.html` que copie al `index.html` de cada
   aplicacion. Lo hace el flujo de publicacion, no se mantiene a mano.
-- `VITE_BASE` se declara una sola vez en las variables del repositorio. Vale `/`
-  para un sitio de organizacion (`estook.github.io`) y `/EstookApp-V.2/` para uno
-  de proyecto.
+- **La direccion es `https://estook.github.io/EstookApp-V.2/`**, confirmada por
+  Richi el 31 de agosto de 2026, hasta que compre `estook.com`. Es un sitio de
+  proyecto, asi que `VITE_BASE` vale `/EstookApp-V.2/`.
+- Para no depender de que nadie se acuerde de declararla, el flujo de publicacion
+  la deduce del nombre del repositorio. Se puede pisar declarando la variable
+  `VITE_BASE` en el repositorio; el dia del dominio propio, se pone a `/`.
+- **Sintoma de tener esto mal:** la pagina carga en blanco. El HTML pide los
+  ficheros en `/assets/...` en vez de en `/EstookApp-V.2/assets/...`, no los
+  encuentra, y no llega a pintar nada. Paso exactamente eso en la primera
+  publicacion, antes de saber cual era la direccion.
 - **Queda abierto:** la Parte C del Plan pide que la web publica se renderice en
   servidor para posicionar, y GitHub Pages solo sirve ficheros. O se prerenderiza
   en el momento de construir, o `apps/web` acaba en otro sitio. Se decide en M26,

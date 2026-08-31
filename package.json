@@ -21,6 +21,7 @@
     "prueba": "vitest run",
     "prueba:e2e": "playwright test",
     "tamano": "node herramientas/presupuesto-tamano.mjs",
+    "publicacion": "node herramientas/comprueba-publicacion.mjs",
     "bd:migrar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs",
     "bd:revertir": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs --revertir",
     "bd:sembrar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/sembrar.mjs",

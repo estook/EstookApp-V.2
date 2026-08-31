@@ -79,6 +79,9 @@ jobs:
       - name: Presupuesto de tamano
         run: pnpm tamano
 
+      - name: Las rutas apuntan a donde se publica
+        run: pnpm publicacion
+
       - name: Instalar navegadores
         run: pnpm exec playwright install --with-deps chromium webkit
 

@@ -1,0 +1,91 @@
+name: Publicar en GitHub Pages
+
+# Decision 0001. Las cuatro aplicaciones comparten dominio y se reparten por
+# subcarpeta: web en la raiz, y app, carta y admin debajo.
+#
+# Antes de que esto funcione hay que activar Pages con origen "GitHub Actions":
+#   Settings -> Pages -> Source: GitHub Actions
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    name: Construir
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ENTORNO: produccion
+      VITE_ENTORNO: ${{ vars.VITE_ENTORNO || 'produccion' }}
+      VITE_BASE: ${{ vars.VITE_BASE || '/' }}
+      VITE_APP_URL: ${{ vars.VITE_APP_URL }}
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar
+        run: pnpm install --frozen-lockfile
+
+      - name: Construir
+        run: pnpm build
+
+      - name: Comprobar el presupuesto de tamano
+        run: pnpm tamano
+
+      - name: Componer el sitio
+        run: |
+          set -euo pipefail
+          rm -rf _publicacion
+          mkdir -p _publicacion
+
+          cp -r apps/web/dist/. _publicacion/
+          for aplicacion in app carta admin; do
+            mkdir -p "_publicacion/$aplicacion"
+            cp -r "apps/$aplicacion/dist/." "_publicacion/$aplicacion/"
+          done
+
+          # Pages no sabe de enrutado de cliente: cada aplicacion necesita su 404.
+          cp _publicacion/index.html _publicacion/404.html
+          for aplicacion in app carta admin; do
+            cp "_publicacion/$aplicacion/index.html" "_publicacion/$aplicacion/404.html"
+          done
+
+          # Sin esto, Pages se come las carpetas que empiezan por guion bajo.
+          touch _publicacion/.nojekyll
+
+          find _publicacion -maxdepth 2 -name index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _publicacion
+
+  publicar:
+    name: Publicar
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v4

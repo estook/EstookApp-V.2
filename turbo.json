@@ -1,0 +1,21 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "globalEnv": ["ENTORNO", "CI"],
+  "globalPassThroughEnv": ["VITE_*", "SENTRY_*"],
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "env": ["VITE_*"]
+    },
+    "tipos": {
+      "dependsOn": ["^tipos"],
+      "outputs": []
+    }
+  }
+}

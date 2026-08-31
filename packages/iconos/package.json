@@ -1,0 +1,16 @@
+{
+  "name": "@estook/iconos",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Los SVG de Lucide, descargados y optimizados",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "tipos": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

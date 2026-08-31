@@ -1,0 +1,19 @@
+{
+  "name": "@estook/dominio",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tipos, reglas puras y calculos. Sin red.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "tipos": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@estook/utiles": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

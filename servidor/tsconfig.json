@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": [
+    "api/**/*",
+    "aplicacion/**/*",
+    "dominio/**/*",
+    "infraestructura/**/*",
+    "eventos/**/*",
+    "trabajos/**/*",
+    "conectores/**/*",
+    "ia/**/*"
+  ]
+}

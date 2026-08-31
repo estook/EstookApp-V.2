@@ -1,0 +1,26 @@
+# dependencias
+node_modules/
+.pnpm-store/
+
+# construccion
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+
+# entorno · nunca se sube ninguna clave
+.env
+.env.*
+!.env.example
+
+# herramientas
+coverage/
+playwright-report/
+test-results/
+.eslintcache
+dependencias.svg
+
+# sistema
+.DS_Store
+Thumbs.db
+*.log

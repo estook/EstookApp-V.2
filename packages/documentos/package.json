@@ -1,0 +1,19 @@
+{
+  "name": "@estook/documentos",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Plantillas HTML/CSS de los documentos. Nunca se genera un PDF en el cliente.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "tipos": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@estook/dominio": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

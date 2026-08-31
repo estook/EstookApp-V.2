@@ -1,0 +1,58 @@
+import * as Sentry from '@sentry/browser';
+import type { Entorno } from './entorno.ts';
+import { nuevaCorrelacionId } from './correlacion.ts';
+
+/**
+ * Sentry (M0), detras de nuestra propia puerta.
+ *
+ * Se importa por `@estook/utiles/observabilidad`, nunca desde el indice: asi el
+ * servidor y las pruebas no arrastran una libreria de navegador que no necesitan.
+ *
+ * Sin DSN no se enciende. Es lo normal en desarrollo y en pruebas: no queremos
+ * ruido de nuestra propia maquina en el panel de errores.
+ */
+export interface OpcionesDeObservabilidad {
+  readonly dsn: string | undefined;
+  readonly entorno: Entorno;
+  readonly aplicacion: 'web' | 'app' | 'carta' | 'admin';
+  readonly version: string;
+  /** El identificador que compartiran todos los sucesos de esta sesion. */
+  readonly correlacion_id?: string;
+}
+
+export function arrancarObservabilidad(opciones: OpcionesDeObservabilidad): string {
+  const correlacion_id = opciones.correlacion_id ?? nuevaCorrelacionId();
+
+  if (!opciones.dsn) return correlacion_id;
+
+  Sentry.init({
+    dsn: opciones.dsn,
+    environment: opciones.entorno,
+    release: `${opciones.aplicacion}@${opciones.version}`,
+    // En produccion se muestrea; en el resto se recoge todo, que hay poco trafico.
+    tracesSampleRate: opciones.entorno === 'produccion' ? 0.1 : 1,
+    // Nada de grabar sesiones ni capturar el contenido de la pantalla: hay datos
+    // de personas y de facturacion en cada vista.
+    sendDefaultPii: false,
+  });
+
+  Sentry.setTags({
+    aplicacion: opciones.aplicacion,
+    correlacion_id,
+  });
+
+  return correlacion_id;
+}
+
+/** Marca quien esta dentro, sin datos personales: solo los identificadores. */
+export function identificarSesion(datos: {
+  usuario_id: string;
+  organizacion_id?: string;
+  local_id?: string;
+}): void {
+  Sentry.setUser({ id: datos.usuario_id });
+  Sentry.setTags({
+    organizacion_id: datos.organizacion_id ?? 'sin-organizacion',
+    local_id: datos.local_id ?? 'sin-local',
+  });
+}

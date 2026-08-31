@@ -1,0 +1,20 @@
+{
+  "name": "@estook/cliente-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cliente tipado contra la API. Unica via de salida a red del navegador.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "tipos": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@estook/dominio": "workspace:*",
+    "@estook/utiles": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

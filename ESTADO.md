@@ -14,7 +14,7 @@
 | **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances · **M2 ✓** núcleo técnico · **M3 ✓** diseño y esqueleto |
 | **Siguiente**  | **M4** · identidad y acceso                                                                    |
 | **Pruebas**    | 407 unitarias y de base de datos · 76 de extremo a extremo                                     |
-| **Rama**       | `m3-sistema-de-diseno`, lista para fusionar                                                    |
+| **Rama**       | `main`. M3 fusionado y aplicado a Supabase                                                     |
 | **Publicado**  | web viva, con Sentry escuchando                                                                |
 
 ---
@@ -23,8 +23,20 @@
 
 ### Ahora
 
-**Fusionar `m3-sistema-de-diseno`** y, después, aplicar la migración `0017` a
-Supabase con `pnpm bd:migrar` (regla 1: primero fusionar, después aplicar).
+**Nada pendiente de M3.** Se fusionó el pull request 12, se aplicó la `0017` a
+Supabase y se comprobó contra ella de verdad: 17 de 17 migraciones, `pg_trgm`
+instalada, los seis índices de trigramas puestos y `estook.buscar` sin
+`security definer`. Todo en `pnpm bd:comprobar-api`, que ahora también cubre el
+buscador y los permisos.
+
+**Empieza M4.**
+
+### Lo único de M3 que no puedo firmar yo
+
+**Verlo en un móvil de verdad** (regla 11). Las pruebas de extremo a extremo
+corren a 375 px y cazan los desbordes, pero no sustituyen a tenerlo en la mano.
+Está publicado y listo para mirarlo:
+https://estook.github.io/EstookApp-V.2/app/
 
 ### Resuelto en la sesión de M3
 
@@ -88,16 +100,16 @@ gratuito. Proyecto nuevo; el de la versión 1 sigue apagado y sin tocar.
 
 Comprobado con `pnpm bd:comprobar` contra la base de datos de verdad:
 
-| Qué                            | Cuánto                                         |
-| ------------------------------ | ---------------------------------------------- |
-| Migraciones aplicadas          | **16 de 17** · la `0017` se aplica al fusionar |
-| Tablas en el esquema `estook`  | 18, **todas con seguridad por filas**          |
-| Roles · permisos · concesiones | 12 · 33 · 166                                  |
-| Reglas fiscales                | 17, todas con su referencia legal              |
-| Datos de ejemplo               | 2 organizaciones, 7 locales, 7 personas        |
-| Tablas sueltas en `public`     | **0**                                          |
-| El area manager ve             | **exactamente 3 locales**                      |
-| La auditoría                   | añadir sí · modificar **no** · borrar **no**   |
+| Qué                            | Cuánto                                       |
+| ------------------------------ | -------------------------------------------- |
+| Migraciones aplicadas          | **17 de 17**                                 |
+| Tablas en el esquema `estook`  | 18, **todas con seguridad por filas**        |
+| Roles · permisos · concesiones | 12 · 33 · 166                                |
+| Reglas fiscales                | 17, todas con su referencia legal            |
+| Datos de ejemplo               | 2 organizaciones, 7 locales, 7 personas      |
+| Tablas sueltas en `public`     | **0**                                        |
+| El area manager ve             | **exactamente 3 locales**                    |
+| La auditoría                   | añadir sí · modificar **no** · borrar **no** |
 
 La conexión va por el agrupador de sesión de Supabase, porque la conexión directa
 de los proyectos nuevos solo funciona por IPv6.
@@ -105,8 +117,16 @@ de los proyectos nuevos solo funciona por IPv6.
 **La API se ha probado contra Supabase de verdad**, no solo contra Postgres
 efímero: `pnpm bd:comprobar-api` arranca la API entera, se conecta y hace
 peticiones reales. Hay que ejecutarla cada vez que se toque la capa de
-infraestructura. **Todavía no está desplegada**, y es correcto: no hay a quien
-servir hasta que M4 traiga el login.
+infraestructura, y **cada vez que una migración instale algo** —una extensión, un
+índice—, que es donde un Postgres compilado a WebAssembly puede comportarse de
+otra manera.
+
+Desde M3 comprueba también el buscador y los permisos: que encuentra sin acentos
+y con erratas, que **el bar independiente solo encuentra su local**, que sin decir
+quién pregunta no encuentra nada, y que la `0017` dejó puesto lo que decía.
+
+**Todavía no está desplegada**, y es correcto: no hay a quien servir hasta que M4
+traiga el login.
 
 **Errores:** proyecto `estook-app` en Sentry, con solo «Error monitoring»
 encendido y el repositorio enlazado. Cada aplicación se identifica con el commit
@@ -410,3 +430,7 @@ devuelve `403`.
   contra la matriz de roles también.
 - **La API está montada y probada contra Supabase, pero sin desplegar.** M4 es
   quien la despliega, porque es quien trae a alguien a quien servir.
+
+**Cómo se comprueba que M4 no ha roto M3:** `pnpm bd:comprobar-api` contra
+Supabase y `pnpm prueba:e2e`. Las dos pasan hoy, así que cualquier fallo que
+salga en M4 lo habrá traído M4.

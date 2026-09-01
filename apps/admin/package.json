@@ -15,7 +15,8 @@
     "@estook/iconos": "workspace:*",
     "@estook/utiles": "workspace:*",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "@estook/dominio": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4",

@@ -44,6 +44,7 @@ el arranque salta ese paso y avisa.
 | `pnpm bd:revertir:todo` | Las deshace todas, de la ultima a la primera          |
 | `pnpm bd:sembrar`       | Carga las tres semillas                               |
 | `pnpm bd:comprobar`     | Dice que hay de verdad en la base de datos            |
+| `pnpm bd:comprobar-api` | Arranca la API y la prueba contra Supabase de verdad  |
 
 ## Como esta organizado
 

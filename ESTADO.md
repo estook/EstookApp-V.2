@@ -14,22 +14,20 @@
 | **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances y permisos · **M2 ✓** núcleo técnico |
 | **Siguiente**  | **M3** · sistema de diseño y esqueleto                                      |
 | **Pruebas**    | 263 unitarias y de base de datos · 16 de extremo a extremo                  |
-| **Rama**       | `m2-nucleo-tecnico`, lista para fusionar                                    |
+| **Rama**       | `m2-cierre`, lista para fusionar                                            |
 | **Publicado**  | web viva, con Sentry escuchando                                             |
 
 ---
 
 ## 2 · Qué hay que hacer
 
-### Ahora · dos pasos, en este orden
+### Ahora
 
-1. **Fusionar `m2-nucleo-tecnico`**:
-   https://github.com/estook/EstookApp-V.2/compare/main...m2-nucleo-tecnico
-2. **Aplicar las cinco migraciones nuevas a Supabase** (`0011` a `0015`), que hoy
-   solo están probadas contra Postgres efímero. Se hace con `pnpm bd:migrar`.
+**Fusionar `m2-cierre`**, que es lo último de M2:
+https://github.com/estook/EstookApp-V.2/compare/main...m2-cierre
 
-El orden importa: primero fusionar, después aplicar. La base de datos nunca va
-por delante del código.
+Después de eso no queda nada pendiente. Las 16 migraciones ya están aplicadas en
+Supabase y la API se ha probado contra ella de verdad.
 
 ### Pendiente de dato, no de código
 
@@ -64,9 +62,10 @@ Comprobado con `pnpm bd:comprobar` contra la base de datos de verdad:
 
 | Qué                            | Cuánto                                       |
 | ------------------------------ | -------------------------------------------- |
-| Migraciones aplicadas          | 10 de 10                                     |
-| Tablas en el esquema `estook`  | 14, **todas con seguridad por filas**        |
+| Migraciones aplicadas          | **16 de 16**                                 |
+| Tablas en el esquema `estook`  | 18, **todas con seguridad por filas**        |
 | Roles · permisos · concesiones | 12 · 33 · 166                                |
+| Reglas fiscales                | 17, todas con su referencia legal            |
 | Datos de ejemplo               | 2 organizaciones, 7 locales, 7 personas      |
 | Tablas sueltas en `public`     | **0**                                        |
 | El area manager ve             | **exactamente 3 locales**                    |
@@ -74,6 +73,13 @@ Comprobado con `pnpm bd:comprobar` contra la base de datos de verdad:
 
 La conexión va por el agrupador de sesión de Supabase, porque la conexión directa
 de los proyectos nuevos solo funciona por IPv6.
+
+**La API se ha probado contra Supabase de verdad**, no solo contra Postgres
+efímero: `pnpm bd:comprobar-api` arranca la API entera, se conecta y hace
+peticiones reales. Comprueba que cada persona ve exactamente sus locales, que un
+local ajeno devuelve 403, y que la identidad **no se queda pegada a la conexión**
+entre peticiones. Es la única prueba que puede validar la decisión 0005, y hay
+que ejecutarla cada vez que se toque la capa de infraestructura.
 
 **Errores:** proyecto `estook-app` en Sentry, con solo «Error monitoring»
 encendido y el repositorio enlazado. Comprobado en lo publicado: Sentry está
@@ -192,6 +198,13 @@ movió a un despachador que habla con **puertos**, y las capas se juntan en un
 único punto de composición (`servidor/index.ts`). Es mejor arquitectura, y salió
 de que la regla no dejara pasar lo anterior.
 
+**Un fallo que solo aparecio contra Supabase de verdad.** La API no podia
+ponerse el disfraz de `estook_api`: en Supabase el rol que conecta no es
+superusuario y no era miembro de ese rol. Contra Postgres efimero funcionaba,
+porque alli se conecta un superusuario y puede convertirse en quien quiera. Sin
+la migracion `0016` que lo arregla, la API no arranca contra Supabase, **y no se
+habria visto hasta M4**. Es la razon de que exista `pnpm bd:comprobar-api`.
+
 **Dependencias nuevas, justificadas:** `hono` (el transporte que fija A3) y `zod`
 (los esquemas de validación que pide M2; escribir los nuestros sería peor y no
 daría tipos).
@@ -245,8 +258,8 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - `packages/utiles/src/` · `base-de-datos/herramientas/`
 - `.dependency-cruiser.cjs` y las reglas 9 y 10 de `eslint.config.js`
 - `herramientas/comprueba-publicacion.mjs`
-- **Las migraciones `0001` a `0015`. Las diez primeras están aplicadas en Supabase: se amplían con
-  una `0016`, nunca se editan** (regla 2).
+- **Las migraciones `0001` a `0016`. Todas están aplicadas en Supabase: se amplían con
+  una `0017`, nunca se editan** (regla 2).
 
 Sobre el candado de `main`: los nombres de las comprobaciones obligatorias van
 **sin tilde** — `Calidad`, `Construccion y presupuestos`, `Migraciones

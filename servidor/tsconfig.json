@@ -4,6 +4,7 @@
     "types": ["node"]
   },
   "include": [
+    "index.ts",
     "api/**/*",
     "aplicacion/**/*",
     "dominio/**/*",

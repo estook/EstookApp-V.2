@@ -37,12 +37,12 @@ export default tseslint.config(
         {
           selector: "CallExpression[callee.object.name='Math'][callee.property.name='round']",
           message:
-            'Regla 9: el dinero va en centimos enteros. Usa packages/utiles/dinero en vez de Math.round.',
+            'Regla 9: el dinero va en centimos enteros. Usa los motores de @estook/dominio (dinero, coste) en vez de redondear por tu cuenta.',
         },
         {
           selector: "NewExpression[callee.name='Date'][arguments.length=0]",
           message:
-            'Regla 10: la fecha operativa la decide el servidor. Usa packages/utiles/tiempo.',
+            'Regla 10: la fecha operativa la decide el servidor. Usa jornadaDe() de @estook/dominio, que recibe el instante desde fuera.',
         },
       ],
       '@typescript-eslint/consistent-type-imports': 'error',
@@ -50,6 +50,15 @@ export default tseslint.config(
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       'no-console': ['error', { allow: ['warn', 'error'] }],
     },
+  },
+
+  // Los motores de dinero y de coste son los DUENOS del redondeo (regla 6: un
+  // calculo, un unico dueno). Son el unico sitio del proyecto donde `Math.round`
+  // esta permitido, y por eso la regla 9 apunta a ellos: para que nadie mas
+  // redondee dinero por su cuenta. Si esta lista crece, algo se esta haciendo mal.
+  {
+    files: ['packages/dominio/src/dinero.ts', 'packages/dominio/src/coste.ts'],
+    rules: { 'no-restricted-syntax': 'off' },
   },
 
   // Las cuatro aplicaciones: React en el navegador.

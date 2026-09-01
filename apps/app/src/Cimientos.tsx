@@ -17,6 +17,10 @@ export interface CimientosProps {
 export function Cimientos({ aplicacion, entorno, correlacionId }: CimientosProps) {
   const banderas = estadoDeLasBanderas(entorno, import.meta.env);
 
+  // Solo si esta declarada, nunca su valor: sirve para comprobar de un vistazo
+  // que las variables del repositorio han llegado a lo publicado.
+  const baseDeDatos = import.meta.env['VITE_SUPABASE_URL'] ? 'configurada' : 'sin configurar';
+
   return (
     <main className="cimientos">
       <p className="marca">ESTOOK</p>
@@ -28,6 +32,8 @@ export function Cimientos({ aplicacion, entorno, correlacionId }: CimientosProps
         <dd>{entorno}</dd>
         <dt>Correlacion</dt>
         <dd>{correlacionId}</dd>
+        <dt>Base de datos</dt>
+        <dd>{baseDeDatos}</dd>
         <dt>Banderas</dt>
         <dd>
           {Object.entries(banderas)

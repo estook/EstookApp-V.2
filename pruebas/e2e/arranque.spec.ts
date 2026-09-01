@@ -30,6 +30,7 @@ for (const aplicacion of APLICACIONES) {
       await expect(page).toHaveTitle(aplicacion.titulo);
       await expect(page.getByText('Entorno')).toBeVisible();
       await expect(page.getByText('Correlacion')).toBeVisible();
+      await expect(page.getByText('Base de datos')).toBeVisible();
 
       expect(errores, `La consola no puede tener errores: ${errores.join(' · ')}`).toEqual([]);
       expect(tardanza, `Presupuesto de B7: ${PRESUPUESTO_MS} ms`).toBeLessThan(PRESUPUESTO_MS);

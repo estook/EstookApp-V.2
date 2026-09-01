@@ -11,10 +11,10 @@ import type { Entorno } from '@estook/utiles';
 export interface CimientosProps {
   readonly aplicacion: string;
   readonly entorno: Entorno;
-  readonly correlacionId: string;
+  readonly sesionId: string;
 }
 
-export function Cimientos({ aplicacion, entorno, correlacionId }: CimientosProps) {
+export function Cimientos({ aplicacion, entorno, sesionId }: CimientosProps) {
   const banderas = estadoDeLasBanderas(entorno, import.meta.env);
 
   // Solo si esta declarada, nunca su valor: sirve para comprobar de un vistazo
@@ -30,8 +30,8 @@ export function Cimientos({ aplicacion, entorno, correlacionId }: CimientosProps
       <dl>
         <dt>Entorno</dt>
         <dd>{entorno}</dd>
-        <dt>Correlacion</dt>
-        <dd>{correlacionId}</dd>
+        <dt>Sesion</dt>
+        <dd>{sesionId}</dd>
         <dt>Base de datos</dt>
         <dd>{baseDeDatos}</dd>
         <dt>Banderas</dt>

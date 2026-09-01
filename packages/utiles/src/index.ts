@@ -13,9 +13,13 @@ export type { NombreDeBandera } from './banderas.ts';
 
 export {
   CABECERA_CORRELACION,
+  CABECERA_SESION,
   esCorrelacionId,
+  esSesionId,
   nuevaCorrelacionId,
+  nuevaSesionId,
   correlacionIdDeEntrada,
+  sesionIdDeEntrada,
 } from './correlacion.ts';
 
 export { crearRegistro } from './registro.ts';

@@ -13,8 +13,8 @@
 | -------------- | --------------------------------------------------------- |
 | **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances, roles y permisos  |
 | **Siguiente**  | **M2** · núcleo técnico y motores transversales           |
-| **Pruebas**    | 95 unitarias y de base de datos · 16 de extremo a extremo |
-| **`main`**     | todo fusionado, árbol limpio, sin ramas pendientes        |
+| **Pruebas**    | 98 unitarias y de base de datos · 16 de extremo a extremo |
+| **`main`**     | limpio · falta fusionar `m1-sesion-y-correlacion`         |
 | **Publicado**  | web republicada, con las tres variables llegando          |
 
 M2 no se ha empezado a propósito: Richi pidió cerrar y pulir M1 antes.
@@ -25,8 +25,11 @@ M2 no se ha empezado a propósito: Richi pidió cerrar y pulir M1 antes.
 
 ### Ahora
 
-**Nada.** No hay ramas sin fusionar, ni preguntas abiertas, ni decisiones
-inventadas esperando validación. Se puede empezar M2.
+**Fusionar `m1-sesion-y-correlacion`**, que es lo último de M1:
+https://github.com/estook/EstookApp-V.2/compare/main...m1-sesion-y-correlacion
+
+Después de eso no queda nada: ni ramas sueltas, ni preguntas abiertas, ni
+decisiones inventadas esperando validación. Se puede empezar M2.
 
 ### Sin prisa
 
@@ -88,7 +91,7 @@ secretos de Supabase. Todo en [`config/claves.md`](config/claves.md).
 Monorepo pnpm + Turborepo con las cuatro aplicaciones arrancando · TypeScript
 estricto · ESLint, Prettier y dependency-cruiser con las reglas de A4 ·
 migraciones numeradas y reversibles con ejecutor propio · tres entornos más el de
-demostración · banderas de función · Sentry y registro con `correlacion_id` ·
+demostración · banderas de función · Sentry y registro con su hilo de sesión ·
 integración continua que bloquea por tipos, lint, formato, dependencias, pruebas,
 tamaño y publicación · publicación en GitHub Pages de las cuatro aplicaciones bajo
 un dominio.
@@ -133,7 +136,7 @@ propósito. Queda anotado quién les da vida, para que no se queden atrás:
 **33 permisos** en tres familias: `app.*` (las ocho apps más Panel, Fogón, Ajustes
 y la vista de gestoría), `dato.*` (lo sensible) y `accion.*` (lo que se ejecuta).
 
-**95 pruebas**, contra Postgres de verdad y haciendo `set role estook_api`, que es
+**98 pruebas**, contra Postgres de verdad y haciendo `set role estook_api`, que es
 lo que hará la API en cada transacción (decisión 0005). Lo que queda demostrado:
 
 - Un area manager ve **exactamente** sus tres locales.
@@ -172,7 +175,56 @@ Todas resueltas.
 
 ---
 
-## 5 · Decisiones tomadas
+## 4 bis · Sesión y correlación · un fallo de concepto que cazó una pregunta
+
+Richi vio que el número de la pantalla cambiaba en cada recarga y preguntó si era
+normal. **Lo es.** Pero al comprobarlo apareció que la pantalla lo llamaba
+«correlación» cuando en realidad era otra cosa, y que el código mezclaba dos
+ideas distintas:
+
+|                 | Qué es              | Cuándo nace                 |
+| --------------- | ------------------- | --------------------------- |
+| **Sesión**      | Una visita entera   | Al abrir la aplicación      |
+| **Correlación** | Una acción concreta | Al pulsar algo que se envía |
+
+Una sesión contiene muchas correlaciones. Si hubiera **una sola** para toda la
+visita —que es lo que había—, en un turno de ocho horas ese número no
+distinguiría nada: todas las líneas del registro compartirían el mismo, y
+rastrear una operación concreta sería imposible. Justo lo contrario de para lo
+que existe.
+
+Corregido: la pantalla dice **SESIÓN**, `packages/utiles` distingue los dos
+conceptos con sus cabeceras (`x-sesion-id` y `x-correlacion-id`), y hay tres
+pruebas que fijan la diferencia. **Las correlaciones por acción las pone en
+marcha M2**, que es donde nace la API y donde empieza a haber acciones que
+enviar.
+
+---
+
+## 5 · Cómo trabajamos
+
+Tres reglas de proceso que salieron de repasar los pasos dados, no solo el
+código. Las tres son correcciones a errores propios.
+
+1. **Primero fusionar, después aplicar a Supabase.** La migración `0010` estuvo
+   horas viva en la base de datos mientras su fichero seguía en una rama sin
+   fusionar. Eso es la base de datos contando una historia y el código contando
+   otra. El orden correcto: verificar contra el Postgres de usar y tirar →
+   fusionar → y **solo entonces** aplicar a Supabase.
+
+2. **«Terminado» solo cuando además no queden preguntas abiertas.** M1 se declaró
+   terminado y se reabrió dos veces. No rompió nada porque no se avanzó de
+   módulo, pero la palabra pierde valor. Terminado = pasa su lista de aceptación
+   **y** no hay nada esperando respuesta de Richi.
+
+3. **Una rama por módulo.** M1 acabó en cuatro ramas, y eso son cuatro rondas de
+   botones para Richi. El Plan dice `mNN-lo-que-hace`. **Desde M2: una sola rama
+   por módulo, y un solo pull request al final.** La integración continua corre
+   en todas las ramas, así que no se pierde ninguna red de seguridad.
+
+---
+
+## 6 · Decisiones tomadas
 
 En [`docs/decisiones/`](docs/decisiones/):
 
@@ -203,7 +255,7 @@ estook.persona_id`, no con `auth.uid()`. Así el modelo se prueba en cualquier
 
 ---
 
-## 6 · Lo que NO hay que tocar
+## 7 · Lo que NO hay que tocar
 
 Cerrado y probado. Ampliar es normal; reescribir, no, sin una decisión escrita:
 
@@ -222,7 +274,7 @@ botón bloqueado sin salida.
 
 ---
 
-## 7 · El siguiente paso · M2
+## 8 · El siguiente paso · M2
 
 **Núcleo técnico y motores transversales.** Lo que entra, según el Plan:
 

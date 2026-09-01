@@ -50,6 +50,9 @@ importers:
 
   apps/admin:
     dependencies:
+      '@estook/dominio':
+        specifier: workspace:*
+        version: link:../../packages/dominio
       '@estook/iconos':
         specifier: workspace:*
         version: link:../../packages/iconos

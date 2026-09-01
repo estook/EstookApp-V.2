@@ -19,12 +19,12 @@ pnpm arranca
 Ese unico comando comprueba Node, prepara `.env.local`, instala, migra, siembra las
 dos semillas y levanta las cuatro aplicaciones:
 
-| Aplicacion | Que es                   | En local              |
-| ---------- | ------------------------ | --------------------- |
-| `web`      | La web publica           | http://localhost:5173 |
-| `app`      | El Panel y sus ocho apps | http://localhost:5174 |
-| `carta`    | La carta digital publica | http://localhost:5175 |
-| `admin`    | El panel interno         | http://localhost:5176 |
+| Aplicacion | Que es                                                   | En local              |
+| ---------- | -------------------------------------------------------- | --------------------- |
+| `web`      | La web publica                                           | http://localhost:5173 |
+| `app`      | El Panel y sus ocho apps                                 | http://localhost:5174 |
+| `carta`    | La carta digital publica                                 | http://localhost:5175 |
+| `admin`    | El panel interno · **el catálogo del sistema de diseño** | http://localhost:5176 |
 
 Para la base de datos hace falta rellenar `DATABASE_URL` en `.env.local`. Sin ella
 el arranque salta ese paso y avisa.
@@ -78,6 +78,8 @@ continua bloquea la fusion si se incumple.
 - [Los entornos y las banderas](docs/entornos.md)
 - [Las decisiones tomadas](docs/decisiones/)
 - [El sistema de diseño](packages/ui/estilos/fichas.css) · fichas, tipografía y movimiento
+- **El catálogo**, en `admin`: los veinte componentes pintados en sus estados. Es
+  donde se mira qué usar antes de escribir uno nuevo
 - [Las auditorías de flujos, por módulo](docs/auditorias/)
 - [Donde vive cada clave](config/claves.md)
 

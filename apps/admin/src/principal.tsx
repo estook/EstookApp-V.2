@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { crearRegistro, resolverEntorno } from '@estook/utiles';
 import { arrancarObservabilidad } from '@estook/utiles/observabilidad';
-import { Cimientos } from './Cimientos.tsx';
+import { Aplicacion } from './Aplicacion.tsx';
 import './estilos.css';
 
 const entorno = resolverEntorno(import.meta.env);
@@ -22,6 +22,6 @@ if (!raiz) throw new Error('Falta el elemento #raiz en index.html');
 
 createRoot(raiz).render(
   <StrictMode>
-    <Cimientos aplicacion="admin" entorno={entorno} sesionId={sesion_id} />
+    <Aplicacion entorno={entorno} sesionId={sesion_id} />
   </StrictMode>,
 );

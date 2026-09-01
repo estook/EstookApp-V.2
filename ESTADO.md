@@ -13,7 +13,7 @@
 | -------------- | ---------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances · **M2 ✓** núcleo técnico · **M3 ✓** diseño y esqueleto |
 | **Siguiente**  | **M4** · identidad y acceso                                                                    |
-| **Pruebas**    | 407 unitarias y de base de datos · 76 de extremo a extremo                                     |
+| **Pruebas**    | 407 unitarias y de base de datos · 88 de extremo a extremo · 26 contra Supabase                |
 | **Rama**       | `main`. M3 fusionado y aplicado a Supabase                                                     |
 | **Publicado**  | web viva, con Sentry escuchando                                                                |
 
@@ -30,6 +30,17 @@ instalada, los seis índices de trigramas puestos y `estook.buscar` sin
 buscador y los permisos.
 
 **Empieza M4.**
+
+Lo último que se cerró: al repasar M3 aparecieron **once de los veinte
+componentes de B4 sin pintar ni una sola vez**. Estaban escritos y tipados, pero
+sus pantallas llegan de M6 en adelante, así que nadie los había renderizado. Un
+componente que no se ha pintado nunca no está terminado.
+
+Ahora hay un **catálogo del sistema de diseño** en el panel interno
+(`apps/admin`), que pinta los veinte en sus estados, y una prueba de extremo a
+extremo que exige cero errores de consola, cero desbordes a 375 px, que la tabla
+se convierta en tarjetas por debajo de 768, que la hoja y el panel atrapen el
+foco, y que el campo de moneda siga leyendo «10.000,50» como 1.000.050 céntimos.
 
 ### Lo único de M3 que no puedo firmar yo
 
@@ -93,6 +104,8 @@ tipo. Está en [`docs/decisiones/0006`](docs/decisiones/0006-el-motor-fiscal.md)
 ## 3 · Lo que está vivo
 
 **Web:** https://estook.github.io/EstookApp-V.2/ · `/app/` · `/carta/` · `/admin/`
+El **catálogo del sistema de diseño** está en `/admin/`: es la referencia de qué
+componente usar y cómo se ve cada uno.
 Hasta que haya `estook.com`; entonces basta con declarar `VITE_BASE` a `/`.
 
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan

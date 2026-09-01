@@ -58,6 +58,13 @@ recorte fino por rol vive un piso mas arriba, y tambien en el servidor.
 
 A proposito **no** esta puesto. Forzarla la aplicaria tambien al dueno de las
 tablas, que es quien ejecuta migraciones y semillas, y se quedaria sin poder
-sembrar. No hace falta: la API se conecta como `estook_api`, que no es el dueno y
-a quien las politicas si le aplican. Las pruebas hacen `set role estook_api` por
-esa misma razon.
+sembrar. No hace falta: la API pasa a ser `estook_api` con `set local role` al
+abrir cada transaccion, y `estook_api` no es el dueno, asi que las politicas si le
+aplican. Las pruebas hacen lo mismo por esa razon.
+
+`estook_api` es **NOLOGIN** a proposito: no es un usuario con el que nadie se
+conecte, es un disfraz que se pone la conexion durante una transaccion. Asi no
+hay una contrasena mas que guardar y rotar. El como esta entero en
+`docs/decisiones/0005-como-se-conecta-la-api.md`, y **hay que leerlo antes de
+escribir la primera linea de M2**: el fallo que evita no da error, da datos de
+mas.

@@ -4,25 +4,28 @@
   "private": true,
   "type": "module",
   "description": "Sistema de diseno y componentes base",
+  "sideEffects": [
+    "*.css"
+  ],
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./estilos": "./estilos/estook.css",
+    "./marca/*": "./marca/*"
   },
   "scripts": {
     "tipos": "tsc --noEmit"
   },
   "dependencies": {
+    "@estook/dominio": "workspace:*",
     "@estook/iconos": "workspace:*",
-    "@estook/utiles": "workspace:*"
-  },
-  "peerDependencies": {
+    "@estook/permisos": "workspace:*",
+    "recharts": "^2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "typescript": "^5.7.2",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "typescript": "^5.7.2"
   }
 }

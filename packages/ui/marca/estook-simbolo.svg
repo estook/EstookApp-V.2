@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 855 1075" role="img" aria-label="Estook">
+  <!--
+    La E de tres barras, vectorizada en M3 a partir de Faviconestook.png.
+
+    Se construye por union de rectangulos redondeados, que es como esta hecha:
+    la barra de arriba y el montante izquierdo forman la C, y debajo van la barra
+    naranja y la barra con la punta. Superponerlos evita tener que calcular el
+    contorno concavo a mano, y las esquinas salen redondeadas solas.
+
+    Los dos unicos colores de la marca: charcoal #111C1F y naranja #FF7A00.
+  -->
+  <g fill="#111C1F">
+    <rect x="0" y="0" width="855" height="150" rx="22" />
+    <rect x="0" y="0" width="160" height="460" rx="22" />
+    <rect x="0" y="310" width="855" height="150" rx="22" />
+    <rect x="0" y="815" width="855" height="155" rx="22" />
+    <path d="M322 940 H533 L427.5 1075 Z" />
+  </g>
+  <rect x="0" y="570" width="855" height="155" rx="22" fill="#FF7A00" />
+</svg>

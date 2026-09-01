@@ -11,8 +11,17 @@ import { fileURLToPath } from 'node:url';
  * "Paquete inicial de la app: menos de 250 KB comprimido."
  *
  * Se mide lo que el navegador tiene que descargar de verdad antes de pintar: el
- * script de entrada, todo lo que lleva `modulepreload` y las hojas de estilo. Lo
- * que se carga despues, bajo demanda, no cuenta.
+ * script de entrada, todo lo que lleva `modulepreload`, las hojas de estilo y
+ * **las fuentes que esas hojas piden**. Lo que se carga despues, bajo demanda, no
+ * cuenta: en M3 eso es Recharts, que vive detras de un `lazy` y solo baja la
+ * primera vez que aparece una grafica.
+ *
+ * ── Sobre las fuentes ────────────────────────────────────────────────────────
+ *
+ * Desde M3 se cuentan, porque Montserrat va autoalojada (B2) y es peso real. Se
+ * cuentan **todas** las caras declaradas, que es pesimista: cada una lleva su
+ * `unicode-range`, asi que una pantalla en castellano solo baja `latin` y nunca
+ * `latin-ext`. Si cabe contandolas todas, cabe seguro.
  *
  * Un modulo que no cumple su presupuesto no esta terminado, asi que esto corre en
  * integracion continua y bloquea la fusion.
@@ -49,21 +58,39 @@ for (const aplicacion of APLICACIONES) {
 
   const html = await readFile(indice, 'utf8');
   let total = gzipSync(Buffer.from(html)).length;
+  let deFuentes = 0;
 
   for (const referencia of referenciasDe(html)) {
     const relativa = referencia.replace(/^.*\/assets\//, 'assets/');
     const fichero = join(dist, relativa);
     if (!existsSync(fichero)) continue;
-    total += gzipSync(await readFile(fichero)).length;
+
+    const contenido = await readFile(fichero);
+    total += gzipSync(contenido).length;
+
+    // Las fuentes que pide la hoja de estilos. WOFF2 ya viene comprimido, asi
+    // que se cuenta tal cual: volver a comprimirlo no lo encoge y mentiria a
+    // favor.
+    if (!fichero.endsWith('.css')) continue;
+    for (const [, ruta] of contenido.toString('utf8').matchAll(/url\(([^)]+\.woff2)\)/g)) {
+      const fuente = join(dist, ruta.replace(/^.*\/assets\//, 'assets/').replace(/["']/g, ''));
+      if (!existsSync(fuente)) continue;
+      const peso = (await readFile(fuente)).length;
+      total += peso;
+      deFuentes += peso;
+    }
   }
 
   const kb = total / 1024;
   const cumple = kb <= LIMITE_KB;
   if (!cumple) hayFallo = true;
 
+  const detalle =
+    deFuentes > 0 ? `  · de los cuales ${(deFuentes / 1024).toFixed(1)} KB de tipografia` : '';
+
   console.log(
     `  ${cumple ? 'OK  ' : 'MAL '} ${aplicacion.padEnd(6)} ${kb.toFixed(1).padStart(7)} KB` +
-      (cumple ? '' : `  · se pasa ${(kb - LIMITE_KB).toFixed(1)} KB del presupuesto`),
+      (cumple ? detalle : `  · se pasa ${(kb - LIMITE_KB).toFixed(1)} KB del presupuesto`),
   );
 }
 

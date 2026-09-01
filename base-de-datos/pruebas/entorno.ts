@@ -2,6 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PGlite } from '@electric-sql/pglite';
+import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
 
 /**
  * Un Postgres de verdad, efimero y sin instalar nada.
@@ -59,7 +60,19 @@ export interface BaseDePrueba {
 
 /** Levanta una base con todas las migraciones y las tres semillas puestas. */
 export async function levantarBase(): Promise<BaseDePrueba> {
-  const bd = new PGlite();
+  //  hay que enchufarlo: PGlite no trae las extensiones puestas, y sin
+  // ella la migracion 0017 del buscador no se puede aplicar.
+  //
+  //  no esta disponible en PGlite, y por eso  se
+  // escribio con  (decision 0009): asi el buscador se prueba de
+  // verdad en las tres capas y no solo a mano contra Supabase.
+  // `pg_trgm` hay que enchufarlo: PGlite no trae las extensiones puestas, y sin
+  // ella la migracion 0017 del buscador no se puede aplicar.
+  //
+  // `unaccent` no existe en PGlite, y por eso `estook.sin_acentos` se escribio
+  // con `translate` (decision 0009): asi el buscador se prueba de verdad en las
+  // tres capas, y no solo a mano contra Supabase.
+  const bd = new PGlite({ extensions: { pg_trgm } });
 
   await bd.exec(CONTROL);
   for (const { sql } of await migraciones()) await bd.exec(sql);

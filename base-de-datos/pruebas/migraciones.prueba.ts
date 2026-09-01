@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PGlite } from '@electric-sql/pglite';
+import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
 import { migraciones, reversiones, semillas, levantarBase } from './entorno.ts';
 
 /**
@@ -34,7 +35,8 @@ describe('las migraciones', () => {
   });
 
   it('se aplican, se deshacen enteras y se vuelven a aplicar', async () => {
-    const bd = new PGlite();
+    // Con pg_trgm enchufada, que es lo que necesita la migracion 0017.
+    const bd = new PGlite({ extensions: { pg_trgm } });
     try {
       await bd.exec(CONTROL);
 

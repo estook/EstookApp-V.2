@@ -1,0 +1,194 @@
+/*
+ * Las fichas de diseno · Parte B1 del Plan.
+ *
+ * «Esta parte existe para que la interfaz no se invente pantalla a pantalla.
+ * Todo lo visual sale de aqui.»
+ *
+ * Van dentro de `@theme` y no de `:root` porque asi Tailwind genera las
+ * utilidades a partir de ellas (`bg-superficie`, `p-e4`, `rounded-medio`) *y* las
+ * deja publicadas como variables CSS. Un solo sitio, dos usos, y ningun valor
+ * suelto: si un color no esta aqui, no existe.
+ */
+
+@theme {
+  /* ── Color · marca ──────────────────────────────────────────────────────── */
+  --color-charcoal: #111c1f; /* texto principal y fondos oscuros */
+  --color-naranja: #ff7a00; /* accion, foco, marca */
+  --color-naranja-suave: #fff1e5; /* fondos de aviso y seleccion */
+
+  /* ── Color · superficie ─────────────────────────────────────────────────── */
+  --color-fondo: #fafaf8;
+  --color-superficie: #ffffff;
+  --color-borde: #e6e3de;
+  --color-borde-fuerte: #cfcac2;
+
+  /* ── Color · texto ──────────────────────────────────────────────────────── */
+  --color-texto: #111c1f;
+  --color-texto-suave: #5a6568;
+  --color-texto-tenue: #8a9497;
+
+  /* ── Color · estado ─────────────────────────────────────────────────────── */
+  --color-bien: #1e8e5a;
+  --color-atencion: #c77700;
+  --color-mal: #c4372b;
+  --color-info: #2c6e9b;
+
+  /*
+   * Los mismos cuatro, en version fondo. No estan en B1, y se explica por que:
+   * B1 dice que `--naranja-suave` es «fondos de aviso y seleccion», y un aviso
+   * tiene cuatro tonos, no uno. Se derivan del color de estado sobre `--fondo`,
+   * con la luminosidad justa para que el texto del estado encima cumpla 4,5:1.
+   * Hay una prueba que lo comprueba: `contraste.prueba.ts`.
+   */
+  --color-bien-suave: #e7f4ee;
+  --color-atencion-suave: #fdf1de;
+  --color-mal-suave: #fbeae8;
+  --color-info-suave: #e8f0f6;
+
+  /* ── El acento de cada app (tabla de B3) ────────────────────────────────── */
+  --color-app-panel: #111c1f;
+  --color-app-inventario: #c77700;
+  --color-app-escandallos: #1e8e5a;
+  --color-app-carta: #b23a6e;
+  --color-app-calendario: #2c6e9b;
+  --color-app-equipo: #6b4fbb;
+  --color-app-servicio: #0f8b8d;
+  --color-app-negocio: #c4372b;
+  --color-app-cuaderno: #7a6a56;
+  --color-app-fogon: #ff7a00;
+
+  /* ── Espaciado · escala de 4 ────────────────────────────────────────────── */
+  --spacing-e1: 4px;
+  --spacing-e2: 8px;
+  --spacing-e3: 12px;
+  --spacing-e4: 16px;
+  --spacing-e5: 24px;
+  --spacing-e6: 32px;
+  --spacing-e7: 48px;
+  --spacing-e8: 64px;
+
+  /* El toque minimo de B4: 44 px, y 52 en listas de cocina. */
+  --spacing-toque: 44px;
+  --spacing-toque-cocina: 52px;
+
+  /*
+   * ── Radio ─────────────────────────────────────────────────────────────────
+   *
+   * B1 los llama `--r-s`, `--r-m`, `--r-l`, `--r-xl` y `--r-full`. Aqui llevan
+   * nombre largo, y **no es por gusto**: Tailwind genera una utilidad por cada
+   * ficha, y `rounded-r-*` ya significa «esquinas de la derecha». Con los nombres
+   * de B1, `rounded-redondo` acababa siendo «redondea el lado derecho» y el boton
+   * central de la rueda salia con forma de media pastilla. Paso de verdad.
+   *
+   * Lo mismo con `xl`, que es un tamano que Tailwind ya trae. Asi que los nombres
+   * de las utilidades no pueden empezar por `t-`, `r-`, `b-`, `l-`, `s-` ni `e-`,
+   * ni coincidir con un tamano suyo. Lo comprueba `fichas.prueba.ts`.
+   *
+   * Los nombres de B1 siguen existiendo, como alias, mas abajo.
+   */
+  --radius-chico: 8px;
+  --radius-medio: 12px;
+  --radius-grande: 16px;
+  --radius-mayor: 24px;
+  --radius-redondo: 999px;
+
+  /* ── Sombra · discreta, siempre ─────────────────────────────────────────── */
+  --shadow-s1: 0 1px 2px rgba(17, 28, 31, 0.06);
+  --shadow-s2: 0 2px 8px rgba(17, 28, 31, 0.08);
+  --shadow-s3: 0 8px 24px rgba(17, 28, 31, 0.12);
+
+  /* ── Movimiento ─────────────────────────────────────────────────────────── */
+  --curva: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-curva: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --rapido: 120ms;
+  --normal: 200ms;
+  --lento: 320ms;
+
+  /* ── Tipografia (B2) ────────────────────────────────────────────────────── */
+  --font-marca: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /*
+   * Y la misma como tipografia por defecto de todo.
+   *
+   * Tailwind pone su propia pila en `html`, y todo lo que no diga otra cosa la
+   * hereda. Declarandola aqui, Montserrat entra desde la raiz y ninguna pantalla
+   * tiene que acordarse de pedirla.
+   */
+  --default-font-family: var(--font-marca);
+
+  /*
+   * Los seis usos de la tabla de B2, cada uno con su interlineado.
+   *
+   * Van multiplicados por `--escala`, que es lo que hace de verdad los «tres
+   * tamanos de letra ajustables en Ajustes, que multiplican por 0,9 · 1 · 1,15»:
+   * se cambia una variable y la pantalla entera crece a la vez, sin que ninguna
+   * pantalla tenga que enterarse.
+   */
+  --text-cifra: calc(34px * var(--escala));
+  --text-cifra--line-height: 1.1;
+  --text-cifra--font-weight: 700;
+
+  --text-pantalla: calc(22px * var(--escala));
+  --text-pantalla--line-height: 1.2;
+  --text-pantalla--font-weight: 600;
+
+  --text-seccion: calc(17px * var(--escala));
+  --text-seccion--line-height: 1.3;
+  --text-seccion--font-weight: 600;
+
+  --text-cuerpo: calc(15px * var(--escala));
+  --text-cuerpo--line-height: 1.5;
+  --text-cuerpo--font-weight: 400;
+
+  --text-secundario: calc(13px * var(--escala));
+  --text-secundario--line-height: 1.4;
+  --text-secundario--font-weight: 400;
+
+  --text-etiqueta: calc(11px * var(--escala));
+  --text-etiqueta--line-height: 1.3;
+  --text-etiqueta--font-weight: 500;
+}
+
+/*
+ * Los nombres de B1, tal cual estan escritos en el Plan.
+ *
+ * Las utilidades de Tailwind salen de `@theme`, y ahi los radios llevan nombre
+ * largo para no chocar con `rounded-r-*`. Pero las fichas de B1 dicen `--r-m`, y
+ * quien venga del Plan buscara eso. Aqui estan, apuntando a lo mismo: un solo
+ * valor, dos nombres, y ninguna posibilidad de que se separen.
+ */
+:root {
+  --r-s: var(--radius-chico);
+  --r-m: var(--radius-medio);
+  --r-l: var(--radius-grande);
+  --r-xl: var(--radius-mayor);
+  --r-full: var(--radius-redondo);
+
+  --e1: var(--spacing-e1);
+  --e2: var(--spacing-e2);
+  --e3: var(--spacing-e3);
+  --e4: var(--spacing-e4);
+  --e5: var(--spacing-e5);
+  --e6: var(--spacing-e6);
+  --e7: var(--spacing-e7);
+  --e8: var(--spacing-e8);
+
+  --charcoal: var(--color-charcoal);
+  --naranja: var(--color-naranja);
+  --naranja-suave: var(--color-naranja-suave);
+  --fondo: var(--color-fondo);
+  --superficie: var(--color-superficie);
+  --borde: var(--color-borde);
+  --borde-fuerte: var(--color-borde-fuerte);
+  --texto: var(--color-texto);
+  --texto-suave: var(--color-texto-suave);
+  --texto-tenue: var(--color-texto-tenue);
+  --bien: var(--color-bien);
+  --atencion: var(--color-atencion);
+  --mal: var(--color-mal);
+  --info: var(--color-info);
+
+  --s1: var(--shadow-s1);
+  --s2: var(--shadow-s2);
+  --s3: var(--shadow-s3);
+}

@@ -4,13 +4,19 @@
   "private": true,
   "type": "module",
   "description": "Los SVG de Lucide, descargados y optimizados",
+  "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./svg/*": "./svg/*"
   },
   "scripts": {
     "tipos": "tsc --noEmit"
   },
   "devDependencies": {
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "@types/react": "^18.3.18"
+  },
+  "dependencies": {
+    "react": "^18.3.1"
   }
 }

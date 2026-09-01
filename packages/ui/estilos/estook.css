@@ -1,0 +1,23 @@
+/*
+ * El sistema de diseno de Estook, en un solo fichero para importar.
+ *
+ *   import '@estook/ui/estilos';
+ *
+ * Y ya esta: fichas, tipografia, base y movimiento. Una aplicacion no importa
+ * nada mas de estilos, y no escribe CSS propio.
+ */
+
+@import 'tailwindcss';
+
+/*
+ * Tailwind necesita saber donde mirar para saber que utilidades generar. Los
+ * componentes de B4 viven en este paquete, asi que hay que decirselo: si no, una
+ * clase que solo aparece dentro de `packages/ui` no se genera y el componente
+ * sale sin estilo en la aplicacion que lo usa.
+ */
+@source "../src";
+
+@import './fichas.css';
+@import './tipografia.css';
+@import './base.css';
+@import './movimiento.css';

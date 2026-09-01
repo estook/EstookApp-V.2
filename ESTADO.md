@@ -9,26 +9,27 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                            |
-| -------------- | ---------------------------------------------------------- |
-| **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances, roles y permisos   |
-| **En curso**   | **M2** · los siete motores hechos, falta la API            |
-| **Pruebas**    | 226 unitarias y de base de datos · 16 de extremo a extremo |
-| **Rama**       | `m2-nucleo-tecnico`, se fusiona con M2 entero              |
-| **Publicado**  | web viva, con Sentry escuchando                            |
+|                |                                                                             |
+| -------------- | --------------------------------------------------------------------------- |
+| **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances y permisos · **M2 ✓** núcleo técnico |
+| **Siguiente**  | **M3** · sistema de diseño y esqueleto                                      |
+| **Pruebas**    | 263 unitarias y de base de datos · 16 de extremo a extremo                  |
+| **Rama**       | `m2-nucleo-tecnico`, lista para fusionar                                    |
+| **Publicado**  | web viva, con Sentry escuchando                                             |
 
 ---
 
 ## 2 · Qué hay que hacer
 
-### Ahora
+### Ahora · dos pasos, en este orden
 
-**Nada.** No hay preguntas abiertas ni decisiones inventadas esperando
-validación. M2 sigue en su rama.
+1. **Fusionar `m2-nucleo-tecnico`**:
+   https://github.com/estook/EstookApp-V.2/compare/main...m2-nucleo-tecnico
+2. **Aplicar las cinco migraciones nuevas a Supabase** (`0011` a `0015`), que hoy
+   solo están probadas contra Postgres efímero. Se hace con `pnpm bd:migrar`.
 
-Al fusionar M2 se aplicarán a Supabase **las cuatro migraciones fiscales**
-(`0011` a `0014`), que hoy solo están probadas contra Postgres efímero. Primero
-fusionar, después aplicar.
+El orden importa: primero fusionar, después aplicar. La base de datos nunca va
+por delante del código.
 
 ### Pendiente de dato, no de código
 
@@ -144,6 +145,57 @@ creadas y protegidas pero todavía sin usar, a propósito. Quién les da vida:
 | `traduccion`           | **M9** · fichas técnicas traducibles       |
 | `politica_de_catalogo` | **M24** · propagación del catálogo maestro |
 
+### M2 · Núcleo técnico y motores transversales
+
+**Los siete motores**, en `packages/dominio` salvo el de permisos. Cálculo puro:
+las mismas cuentas dan lo mismo en el servidor y en la pantalla, con un solo
+dueño (regla 6).
+
+| Motor         | Qué resuelve                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| **Dinero**    | Céntimos enteros. Reparte sin perder ni ganar: el que sobra, a la primera línea            |
+| **Tiempo**    | La fecha operativa, con zona y hora de corte. Probado en las dos noches del cambio de hora |
+| **Coste**     | `precio ÷ (factor × rendimiento)` y precio medio ponderado                                 |
+| **Fiscal**    | IVA, IGIC e IPSI. Reglas versionadas; nunca recalcula el pasado                            |
+| **Textos**    | Español de España, sin jerga y sin emojis. Con su catálogo de errores                      |
+| **Permisos**  | El servidor no envía lo que el rol no puede ver: los campos se quitan, no se vacían        |
+| **Recálculo** | Precio, elaboración, plato, margen, aviso. Una cola por producto                           |
+
+**La API.** Dos rutas y ninguna más: `GET /vN/consultas/:nombre` y
+`POST /vN/comandos/:nombre`. No hay un endpoint por tabla ni un CRUD, porque **el
+cliente llama comandos y lee vistas** (regla 3). Versionada con compatibilidad
+N−2, para que un móvil sin actualizar no se quede fuera de golpe.
+
+**Las cuatro piezas que la hacen de fiar**, todas probadas contra Postgres:
+
+- **Idempotencia por cabecera.** El criterio de terminado del módulo, y se prueba
+  literalmente: el mismo comando tres veces con la misma clave se ejecuta **una
+  sola vez**. La misma clave para otra cosa distinta se rechaza, no se confunde.
+  Y si el comando falla, la clave no se anota: el reintento vuelve a intentarlo.
+- **Bandeja de salida.** El evento se escribe en la misma transacción que el
+  cambio. Si la transacción se cae, el evento se cae con ella.
+- **Cola de trabajos** con reintento de espera creciente, porque en Edge
+  Functions no hay proceso largo.
+- **Versión optimista.** Gana quien guarda primero; al segundo se le dice que
+  alguien se adelantó, en vez de pisarle el trabajo.
+
+**La deuda de M1, saldada.** Su criterio decía «devuelve vacío **y 403**». El
+vacío lo ponían las políticas; el 403 no existía porque no había API. Ahora la
+consulta `un_local` lo devuelve — y no comprobando de quién es el local, sino
+preguntando: si las políticas no lo devuelven, no se puede ver. Así la respuesta
+es la misma para «no existe» y para «no es tuyo», y nadie puede ir probando
+identificadores para averiguar qué locales tiene la competencia.
+
+**La regla A4 volvió a saltar sobre mi propio código.** La API estaba abriendo
+transacciones, que es cosa de infraestructura. Tenía razón: la orquestación se
+movió a un despachador que habla con **puertos**, y las capas se juntan en un
+único punto de composición (`servidor/index.ts`). Es mejor arquitectura, y salió
+de que la regla no dejara pasar lo anterior.
+
+**Dependencias nuevas, justificadas:** `hono` (el transporte que fija A3) y `zod`
+(los esquemas de validación que pide M2; escribir los nuestros sería peor y no
+daría tipos).
+
 ---
 
 ## 5 · Cómo trabajamos
@@ -193,8 +245,8 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - `packages/utiles/src/` · `base-de-datos/herramientas/`
 - `.dependency-cruiser.cjs` y las reglas 9 y 10 de `eslint.config.js`
 - `herramientas/comprueba-publicacion.mjs`
-- **Las migraciones `0001` a `0010`. Están aplicadas en Supabase: se amplían con
-  una `0011`, nunca se editan** (regla 2).
+- **Las migraciones `0001` a `0015`. Las diez primeras están aplicadas en Supabase: se amplían con
+  una `0016`, nunca se editan** (regla 2).
 
 Sobre el candado de `main`: los nombres de las comprobaciones obligatorias van
 **sin tilde** — `Calidad`, `Construccion y presupuestos`, `Migraciones
@@ -203,43 +255,27 @@ después de fusionar, y exigirlo antes deja el botón bloqueado sin salida.
 
 ---
 
-## 8 · M2 · dónde va
+## 8 · El siguiente paso · M3
 
-### Hecho · los siete motores
+**Sistema de diseño y esqueleto.** Todo lo de la Parte B del Plan: fichas de
+color, Montserrat autoalojada, iconos de Lucide descargados y optimizados,
+componentes base, barra de móvil, **la rueda de apps**, barra de escritorio con
+desplegables, barra propia por app, buscador universal con `pg_trgm` y
+`unaccent`, deshacer universal, estados vacíos, tres tamaños de letra,
+accesibilidad y presupuesto de velocidad medido.
 
-Todos en `packages/dominio`, salvo el de permisos que amplía `packages/permisos`.
-Son cálculo puro: las mismas cuentas dan lo mismo en el servidor y en la pantalla,
-con un solo dueño (regla 6).
+**Terminado cuando:** se navega por las ocho apps sin un salto raro en móvil
+pequeño real; la rueda funciona con arrastre y con teclado; deshacer funciona en
+tres flujos; y todos los widgets tienen su versión «todavía no tengo datos».
 
-| Motor         | Qué resuelve                                                                               |
-| ------------- | ------------------------------------------------------------------------------------------ |
-| **Dinero**    | Céntimos enteros. Reparte sin perder ni ganar: el que sobra, a la primera línea            |
-| **Tiempo**    | La fecha operativa, con zona y hora de corte. Probado en las dos noches del cambio de hora |
-| **Coste**     | `precio ÷ (factor × rendimiento)` y precio medio ponderado                                 |
-| **Fiscal**    | IVA, IGIC e IPSI. Reglas versionadas, nunca recalcula el pasado                            |
-| **Textos**    | Español de España, sin jerga y sin emojis. Y el catálogo de errores en cristiano           |
-| **Permisos**  | El servidor no envía lo que el rol no puede ver: los campos se quitan, no se vacían        |
-| **Recálculo** | El orden: precio, elaboración, plato, margen, aviso. Una cola por producto                 |
+**Lo que hace falta antes de empezar:**
 
-**La trampa que resolvió el motor de coste:** 0,0039 €/g no cabe en céntimos
-enteros. Hay dos tipos y el compilador no deja mezclarlos: `Centimos` para
-dinero, `Milesimas` para un precio por unidad. Se redondea una sola vez, al
-final.
+- **Los SVG de la marca.** Los PNG están en `packages/ui/marca/` pero pesan
+  veinte veces el presupuesto y no escalan. Si existen los originales, traerlos;
+  si no, se vectorizan a partir de esos.
+- **La tabla de velocidad de B7**, si aparece bien maquetada. Mientras tanto vale
+  la reconstruida en [`docs/decisiones/0004`](docs/decisiones/0004-presupuesto-de-velocidad.md).
 
-### Falta · la API
-
-Versionada con compatibilidad N−2 · comandos y consultas · validación con
-esquemas · **idempotencia por cabecera** · bandeja de salida transaccional y
-publicador de eventos · workers con reintento · control optimista por versión ·
-cliente tipado.
-
-**Terminado cuando:** el mismo comando tres veces con la misma clave produce un
-solo efecto; y el motor fiscal desglosa una fórmula con tipos mixtos cuadrando al
-céntimo (esto último, hecho y probado).
-
-**Deuda que hereda de M1:** el criterio de M1 dice «devuelve vacío **y 403**». El
-vacío está hecho y probado; el 403 lo devuelve la API.
-
-**Antes de escribir la primera línea de la API:** leer
-[`docs/decisiones/0005`](docs/decisiones/0005-como-se-conecta-la-api.md). El fallo
-que evita no da error, da datos de más.
+**Lo que ya está listo para que M3 lo use:** los siete motores, el catálogo de
+errores en cristiano (con su botón), el motor de textos que caza la jerga, y el
+cliente tipado que habla con la API.

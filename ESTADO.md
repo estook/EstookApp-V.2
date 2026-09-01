@@ -14,7 +14,7 @@
 | **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances, roles y permisos  |
 | **Siguiente**  | **M2** · núcleo técnico y motores transversales           |
 | **Pruebas**    | 98 unitarias y de base de datos · 16 de extremo a extremo |
-| **`main`**     | todo fusionado, árbol limpio, sin ramas pendientes        |
+| **`main`**     | limpio · falta fusionar `m1-sesion-y-correlacion`         |
 | **Publicado**  | web republicada, con las tres variables llegando          |
 
 M2 no se ha empezado a propósito: Richi pidió cerrar y pulir M1 antes.

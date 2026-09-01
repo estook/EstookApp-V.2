@@ -113,3 +113,30 @@ export type {
   GrupoFiscal,
   Desglose,
 } from './fiscal.ts';
+
+// ── M2 · textos · espanol de Espana, sin jerga y sin emojis ───────────────────
+export {
+  JERGA_PROHIBIDA,
+  revisarTexto,
+  plural,
+  enumerar,
+  fechaEnLetra,
+  fechaCorta,
+  conUnidad,
+  comoPorcentaje,
+  haceCuanto,
+} from './textos.ts';
+
+// ── M2 · errores · que ha pasado, que se puede hacer y con que boton ──────────
+export { ERRORES, errorDeEstook, comoFrase } from './errores.ts';
+export type { ErrorDeEstook, CodigoDeError } from './errores.ts';
+
+// ── M2 · recalculo · precio, elaboracion, plato, margen, aviso ────────────────
+export {
+  ORDEN_DEL_RECALCULO,
+  DISPARADORES,
+  pasosPara,
+  colaPara,
+  claveDeCola,
+} from './recalculo.ts';
+export type { PasoDelRecalculo, Disparador } from './recalculo.ts';

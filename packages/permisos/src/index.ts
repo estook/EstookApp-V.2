@@ -109,3 +109,81 @@ export function appsVisibles(permisos: PermisosResueltos): PermisoDeApp[] {
 export function esPermiso(valor: unknown): valor is Permiso {
   return typeof valor === 'string' && (PERMISOS as readonly string[]).includes(valor);
 }
+
+// ── M2 · el motor: el servidor no envia lo que el rol no puede ver ────────────
+
+/**
+ * «Viven en el servidor: **un rol sin costes no recibe los campos de precio**»
+ * (Manifiesto). Y el documento de Roles lo remata: «el servidor no envia lo que
+ * el rol no puede ver. Un cocinero no recibe un campo de coste, asi que no hay
+ * nada que esconder en la interfaz».
+ *
+ * Esto es lo que lo hace verdad. Se declara que permiso protege cada campo, y la
+ * respuesta sale ya sin ellos. Esconder un campo en la pantalla no es protegerlo
+ * (regla 4): si viaja, alguien lo puede leer.
+ */
+export type CamposProtegidos<T> = Readonly<Partial<Record<keyof T, Permiso>>>;
+
+/**
+ * Quita de un objeto los campos cuyo permiso no llega a `ver`.
+ *
+ * No los pone a vacio ni a cero: **los quita**. Un campo con `null` sigue
+ * diciendo que existe, y a veces eso ya es informacion de mas.
+ */
+export function recortar<T extends object>(
+  dato: T,
+  proteccion: CamposProtegidos<T>,
+  permisos: PermisosResueltos,
+): Partial<T> {
+  const salida: Partial<T> = {};
+
+  for (const clave of Object.keys(dato) as (keyof T)[]) {
+    const exigido = proteccion[clave];
+    if (exigido !== undefined && !puedeVer(permisos, exigido)) continue;
+    salida[clave] = dato[clave];
+  }
+
+  return salida;
+}
+
+/** Lo mismo sobre una lista. Es el caso comun: una tabla de platos, un listado. */
+export function recortarLista<T extends object>(
+  datos: readonly T[],
+  proteccion: CamposProtegidos<T>,
+  permisos: PermisosResueltos,
+): Partial<T>[] {
+  return datos.map((dato) => recortar(dato, proteccion, permisos));
+}
+
+/**
+ * Junta varios conjuntos de permisos quedandose con el mas amplio de cada uno.
+ *
+ * «Si alguien tiene dos roles sobre el mismo local, gana el mas amplio»
+ * (Manifiesto). La base de datos ya lo resuelve al consultar; esto es para
+ * cuando hay que hacerlo en memoria, y da exactamente lo mismo.
+ */
+export function elMasAmplio(...conjuntos: readonly PermisosResueltos[]): PermisosResueltos {
+  const salida: Partial<Record<Permiso, Nivel>> = {};
+
+  for (const conjunto of conjuntos) {
+    for (const [permiso, nivel] of Object.entries(conjunto) as [Permiso, Nivel][]) {
+      const actual = salida[permiso];
+      if (actual === undefined || NIVELES.indexOf(nivel) > NIVELES.indexOf(actual)) {
+        salida[permiso] = nivel;
+      }
+    }
+  }
+
+  return salida;
+}
+
+/**
+ * Comprueba un permiso antes de ejecutar algo, y si no, dice cual falta.
+ * Devuelve el codigo de error del catalogo, para que la API responda en cristiano.
+ */
+export function comprobarAccion(
+  permisos: PermisosResueltos,
+  permiso: Permiso,
+): { readonly puede: true } | { readonly puede: false; readonly falta: Permiso } {
+  return puedeEditar(permisos, permiso) ? { puede: true } : { puede: false, falta: permiso };
+}

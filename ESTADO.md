@@ -9,13 +9,13 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                           |
-| -------------- | --------------------------------------------------------- |
-| **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances, roles y permisos  |
-| **Siguiente**  | **M2** · núcleo técnico y motores transversales           |
-| **Pruebas**    | 98 unitarias y de base de datos · 16 de extremo a extremo |
-| **`main`**     | todo fusionado, árbol limpio                              |
-| **Publicado**  | web viva, con las tres variables del repositorio llegando |
+|                |                                                            |
+| -------------- | ---------------------------------------------------------- |
+| **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances, roles y permisos   |
+| **En curso**   | **M2** · los siete motores hechos, falta la API            |
+| **Pruebas**    | 226 unitarias y de base de datos · 16 de extremo a extremo |
+| **Rama**       | `m2-nucleo-tecnico`, se fusiona con M2 entero              |
+| **Publicado**  | web viva, con Sentry escuchando                            |
 
 ---
 
@@ -23,8 +23,22 @@
 
 ### Ahora
 
-**Nada.** No hay ramas sueltas, ni preguntas abiertas, ni decisiones inventadas
-esperando validación. Se puede empezar M2.
+**Nada.** No hay preguntas abiertas ni decisiones inventadas esperando
+validación. M2 sigue en su rama.
+
+Al fusionar M2 se aplicarán a Supabase **las cuatro migraciones fiscales**
+(`0011` a `0014`), que hoy solo están probadas contra Postgres efímero. Primero
+fusionar, después aplicar.
+
+### Pendiente de dato, no de código
+
+**Los tipos de IGIC e IPSI para entregas de bienes.** No es que falte el dato: es
+que **no existe un dato único**, porque dependen del bien y de la operación.
+Hacen falta tantas reglas como categorías distinga cada tarifa. **Cuando
+aparezcan se añaden como filas, sin tocar código.**
+
+Mientras tanto el motor devuelve «sin regla» y para, en vez de inventarse un
+tipo. Está en [`docs/decisiones/0006`](docs/decisiones/0006-el-motor-fiscal.md).
 
 ### Sin prisa
 
@@ -189,25 +203,43 @@ después de fusionar, y exigirlo antes deja el botón bloqueado sin salida.
 
 ---
 
-## 8 · El siguiente paso · M2
+## 8 · M2 · dónde va
 
-**Núcleo técnico y motores transversales.**
+### Hecho · los siete motores
 
-- **La API:** versionada con compatibilidad N−2 · comandos y consultas ·
-  validación con esquemas · catálogo de errores en cristiano · idempotencia por
-  cabecera.
-- **Los eventos:** bandeja de salida transaccional y publicador · workers con
-  reintento · control optimista por versión · cliente tipado.
-- **Los siete motores:** fiscal · dinero · unidades y coste · tiempo · textos ·
-  permisos · recálculo.
+Todos en `packages/dominio`, salvo el de permisos que amplía `packages/permisos`.
+Son cálculo puro: las mismas cuentas dan lo mismo en el servidor y en la pantalla,
+con un solo dueño (regla 6).
+
+| Motor         | Qué resuelve                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| **Dinero**    | Céntimos enteros. Reparte sin perder ni ganar: el que sobra, a la primera línea            |
+| **Tiempo**    | La fecha operativa, con zona y hora de corte. Probado en las dos noches del cambio de hora |
+| **Coste**     | `precio ÷ (factor × rendimiento)` y precio medio ponderado                                 |
+| **Fiscal**    | IVA, IGIC e IPSI. Reglas versionadas, nunca recalcula el pasado                            |
+| **Textos**    | Español de España, sin jerga y sin emojis. Y el catálogo de errores en cristiano           |
+| **Permisos**  | El servidor no envía lo que el rol no puede ver: los campos se quitan, no se vacían        |
+| **Recálculo** | El orden: precio, elaboración, plato, margen, aviso. Una cola por producto                 |
+
+**La trampa que resolvió el motor de coste:** 0,0039 €/g no cabe en céntimos
+enteros. Hay dos tipos y el compilador no deja mezclarlos: `Centimos` para
+dinero, `Milesimas` para un precio por unidad. Se redondea una sola vez, al
+final.
+
+### Falta · la API
+
+Versionada con compatibilidad N−2 · comandos y consultas · validación con
+esquemas · **idempotencia por cabecera** · bandeja de salida transaccional y
+publicador de eventos · workers con reintento · control optimista por versión ·
+cliente tipado.
 
 **Terminado cuando:** el mismo comando tres veces con la misma clave produce un
 solo efecto; y el motor fiscal desglosa una fórmula con tipos mixtos cuadrando al
-céntimo.
+céntimo (esto último, hecho y probado).
 
 **Deuda que hereda de M1:** el criterio de M1 dice «devuelve vacío **y 403**». El
-vacío está hecho y probado; el 403 lo devuelve una API, que no existía.
+vacío está hecho y probado; el 403 lo devuelve la API.
 
-**Antes de escribir la primera línea:** leer
-[`docs/decisiones/0005`](docs/decisiones/0005-como-se-conecta-la-api.md). El
-fallo que evita no da error, da datos de más.
+**Antes de escribir la primera línea de la API:** leer
+[`docs/decisiones/0005`](docs/decisiones/0005-como-se-conecta-la-api.md). El fallo
+que evita no da error, da datos de más.

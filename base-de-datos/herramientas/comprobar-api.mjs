@@ -129,6 +129,78 @@ try {
   const futura = await (await pedir('/v9/consultas/mis_locales')).json();
   comprobar('una version que no existe se rechaza', futura.error?.codigo === 'faltan_datos');
 
+  // ── M3 · el buscador y los permisos, contra Supabase ──────────────────────
+  //
+  // Van aqui por la leccion de M2: la migracion 0016 existe porque algo que
+  // funcionaba contra Postgres efimero no funcionaba contra Supabase. La 0017
+  // instala una extension y crea indices GIN, que es exactamente el tipo de cosa
+  // que un Postgres compilado a WebAssembly puede hacer de otra manera.
+
+  titulo('M3 · mis_permisos');
+  const permisosDeSara = await (
+    await pedir(`/v1/consultas/mis_permisos?local_id=${locales['bar-centro']}`, {
+      'x-persona-id': personas['sara@ejemplo.estook.com'],
+    })
+  ).json();
+
+  const appsDeSara = Object.keys(permisosDeSara.datos ?? {}).filter((p) => p.startsWith('app.'));
+  comprobar(
+    'la camarera recibe seis permisos de app',
+    appsDeSara.length === 6,
+    `ha recibido ${appsDeSara.length}`,
+  );
+  comprobar(
+    'y ni uno de importe',
+    !Object.keys(permisosDeSara.datos ?? {}).some((p) => p.startsWith('dato.')),
+  );
+
+  const permisosAjenos = await pedir(`/v1/consultas/mis_permisos?local_id=${locales['bar-faro']}`, {
+    'x-persona-id': personas['rosa@ejemplo.estook.com'],
+  });
+  comprobar(
+    'sobre un local ajeno devuelve 403',
+    permisosAjenos.status === 403,
+    `ha devuelto ${permisosAjenos.status}`,
+  );
+
+  titulo('M3 · el buscador universal');
+  const buscar = async (correo, texto) => {
+    const respuesta = await (
+      await pedir(`/v1/consultas/buscar?texto=${encodeURIComponent(texto)}`, {
+        'x-persona-id': personas[correo],
+      })
+    ).json();
+    return respuesta.datos ?? [];
+  };
+
+  const conTilde = await buscar('elena@ejemplo.estook.com', 'Amunárriz');
+  const sinTilde = await buscar('elena@ejemplo.estook.com', 'amunarriz');
+  comprobar(
+    'encuentra sin escribir los acentos',
+    sinTilde.length > 0 && sinTilde.length === conTilde.length,
+  );
+
+  const conErrata = await buscar('elena@ejemplo.estook.com', 'Ignaico');
+  comprobar(
+    'aguanta una errata',
+    conErrata.some((r) => r.tipo === 'persona' && /Ignacio/.test(r.titulo)),
+  );
+
+  // La importante: que NO encuentre lo ajeno. Es donde se escaparian los datos.
+  const desdeElBarCentro = await buscar('rosa@ejemplo.estook.com', 'bar');
+  const localesQueVe = desdeElBarCentro.filter((r) => r.tipo === 'local');
+  comprobar(
+    'el bar independiente solo encuentra su local',
+    localesQueVe.length === 1 && /centro/i.test(localesQueVe[0]?.titulo ?? ''),
+    `ha encontrado ${localesQueVe.length}`,
+  );
+
+  const sinDecirQuien = await (await pedir('/v1/consultas/buscar?texto=bar')).json();
+  comprobar(
+    'sin decir quien pregunta no encuentra nada',
+    sinDecirQuien.error?.codigo === 'sin_sesion',
+  );
+
   titulo('Las reglas fiscales estan');
   const conexion = postgres(url, {
     max: 1,
@@ -157,6 +229,28 @@ try {
        )
   `;
   comprobar('todas las tablas de dominio llevan version', versiones.sin_version === 0);
+
+  titulo('M3 · lo que la 0017 dejo puesto en Supabase');
+  const [trgm] = await conexion`
+    select count(*)::int as puesta from pg_extension where extname = 'pg_trgm'
+  `;
+  comprobar('la extension pg_trgm esta instalada', trgm.puesta === 1);
+
+  const [indices] = await conexion`
+    select count(*)::int as cuantos
+      from pg_indexes
+     where schemaname = 'estook' and indexname like '%buscable'
+  `;
+  comprobar('los seis indices de trigramas estan', indices.cuantos === 6, `hay ${indices.cuantos}`);
+
+  const [buscadora] = await conexion`
+    select p.prosecdef as definer
+      from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'estook' and p.proname = 'buscar'
+  `;
+  comprobar('estook.buscar NO es security definer', buscadora?.definer === false);
+
   await conexion.end();
 } catch (fallo) {
   console.error(`\n  Se ha roto: ${fallo instanceof Error ? fallo.message : String(fallo)}`);

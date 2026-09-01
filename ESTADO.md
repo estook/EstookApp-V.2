@@ -26,45 +26,36 @@
 **Fusionar `m3-sistema-de-diseno`** y, después, aplicar la migración `0017` a
 Supabase con `pnpm bd:migrar` (regla 1: primero fusionar, después aplicar).
 
-### Preguntas abiertas para Richi
+### Resuelto en la sesión de M3
 
-**1. La paleta de B1 no cumple el contraste de B8, y son las dos cosas escritas.**
+**1. La paleta de B1 no cumplía el contraste de B8.** Richi: «lo que tú creas
+mejor, quiero que todo se vea correctamente». Se han **oscurecido tres colores**,
+con el mismo tono y la luz justa para llegar a 4,5:1:
 
-Medido, no opinado:
+| Ficha           | B1        | Ahora     | Sobre el fondo  |
+| --------------- | --------- | --------- | --------------- |
+| `--texto-tenue` | `#8A9497` | `#6D7577` | 2,97 → **4,50** |
+| `--bien`        | `#1E8E5A` | `#1A7D4F` | 3,96 → **4,91** |
+| `--atencion`    | `#C77700` | `#9F5F00` | 3,31 → **4,89** |
 
-| Combinación                     | Da       | B8 pide            |
-| ------------------------------- | -------- | ------------------ |
-| Blanco sobre `--naranja`        | 2,61 : 1 | 3 (icono)          |
-| `--naranja` sobre `--fondo`     | 2,50 : 1 | 3 (anillo de foco) |
-| `--texto-tenue` sobre `--fondo` | 2,97 : 1 | 4,5 (texto)        |
-| `--bien` sobre `--fondo`        | 3,96 : 1 | 4,5 (texto)        |
-| `--atencion` sobre `--fondo`    | 3,31 : 1 | 4,5 (texto)        |
+`--mal` e `--info` ya cumplían. **El naranja de marca no se toca**: da 2,61:1 con
+blanco encima y 2,50 contra el fondo, y se resuelve por uso —texto e iconos en
+charcoal sobre naranja (6,64:1) y un filo charcoal alrededor del anillo de foco—.
+Todo medido en [`contraste.prueba.ts`](packages/ui/src/contraste.prueba.ts), que
+ya no admite ninguna excepción.
 
-**No se ha tocado ni un color**: son la marca. Se ha cambiado _cómo se usan_, que
-sí es cosa nuestra, y con eso B8 se cumple: el anillo de foco lleva un filo
-charcoal, los botones naranjas llevan el texto en charcoal, el color de estado se
-queda en el icono y el fondo mientras el texto va en `--texto`, y `--texto-tenue`
-**ya no se usa para texto** (hay una prueba que lo impide).
+**2. La marca usa los PNG que hay.** Richi: «utiliza los png que puse en la
+carpeta, ya los cambiaré al final». El logotipo está en la barra de escritorio y
+la mascota de Fogón en su botón.
 
-Funciona y se ve bien. **La pregunta es si aun así quieres oscurecer un punto
-`--texto-tenue`, `--bien` y `--atencion`**, para poder usarlos como texto sin
-rodeos. Es una decisión de marca, no de código. Está todo en
-[`contraste.prueba.ts`](packages/ui/src/contraste.prueba.ts).
+Los originales pesan 1,7 MB entre los dos y se pintan a 30 y 22 px, así que
+[`herramientas/reducir-marca.mjs`](herramientas/reducir-marca.mjs) los deja al
+doble del tamaño en que se ven: **el logo pasa de 468 KB a 23, y Fogón de 1,2 MB
+a 13**. Es el mismo dibujo con menos píxeles, no otra versión. Los originales se
+quedan en `packages/ui/marca/` porque son la fuente, pero no se publican.
 
-**2. Faltan dos piezas de marca, y no las puede resolver el código.**
-
-- **El logo horizontal.** La palabra ESTOOK va en una tipografía propia (las O
-  cuadradas, la K con su ángulo) que no es Montserrat. Redibujarla a ojo daría un
-  logo _parecido_, que es lo peor que le puede pasar a una marca. Hace falta el
-  **archivo original** (`.ai`, `.svg`, `.eps` o el Figma). Bloquea la cabecera de
-  la web pública; **la aplicación no lo necesita**.
-- **El icono de Fogón.** Es una ilustración, no una figura geométrica.
-  Vectorizarla a ojo daría otra mascota. **No bloquea nada**: dentro de la
-  aplicación, B3 ya dice que Fogón es el icono `flame` de Lucide, y eso es lo que
-  usa la barra.
-
-El símbolo (la E de tres barras) **sí se vectorizó**, y salió exacto: es
-geometría pura. Detalle en [`packages/ui/marca/LEEME.md`](packages/ui/marca/LEEME.md).
+Sigue faltando el **archivo vectorial** del logotipo y de Fogón. No bloquea nada:
+cuando aparezcan se sustituyen en un sitio.
 
 ### Pendiente de dato, no de código
 
@@ -137,6 +128,11 @@ nada**, y es correcto: lo verdaderamente secreto vive solo en Supabase. Todo en
 De 250 permitidos. La tipografía se cuenta **entera y a propósito**: una pantalla
 en castellano solo descarga el subconjunto `latin`, 38 KB, así que la cifra de
 verdad es unos 70 KB menor. Si cabe contando de más, cabe seguro.
+
+**El presupuesto no manda sobre la calidad.** Richi lo dejó dicho en M3: «siempre
+ponemos rendimiento y superioridad a tamaño». Cabe holgado, así que no ha habido
+que elegir; el día que haya que hacerlo, se sube el límite de B7 con su decisión
+escrita, no se recorta el producto.
 
 ---
 

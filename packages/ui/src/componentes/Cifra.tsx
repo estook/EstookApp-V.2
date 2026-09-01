@@ -99,17 +99,13 @@ function Comparacion({
   const sube = diferencia > 0;
   const bueno = sentido === 'neutro' ? null : sentido === 'sube_es_bueno' ? sube : !sube;
 
-  // El color va en la flecha y las palabras en --texto: `bien` da 3,96:1 sobre
-  // el fondo, que vale para un icono (3:1) pero no para texto (4,5:1). Y el
-  // color nunca va solo de todas formas (B1): la flecha apunta y el texto lo
-  // dice con palabras.
+  // El color nunca va solo (B1): delante va la flecha, y el texto lo dice con
+  // palabras. Quien no distingue verde de rojo lee «Sube» o «Baja» igual.
   const color = bueno === null ? 'text-texto-suave' : bueno ? 'text-bien' : 'text-mal';
 
   return (
-    <p className="text-secundario text-texto">
-      <span aria-hidden className={clases('font-bold', color)}>
-        {sube ? '▲' : '▼'}{' '}
-      </span>
+    <p className={clases('text-secundario', color)}>
+      <span aria-hidden>{sube ? '▲' : '▼'} </span>
       {sube ? 'Sube' : 'Baja'} {formato(Math.abs(diferencia))}
     </p>
   );

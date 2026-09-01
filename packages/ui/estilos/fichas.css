@@ -25,11 +25,23 @@
   /* ── Color · texto ──────────────────────────────────────────────────────── */
   --color-texto: #111c1f;
   --color-texto-suave: #5a6568;
-  --color-texto-tenue: #8a9497;
+  /*
+   * Oscurecido en M3 desde el #8A9497 de B1, que daba 2,97:1 sobre el fondo
+   * cuando B8 pide 4,5 para el texto. Mismo tono, la luz justa para que se lea:
+   * ahora da 4,50. Se midio, no se eligio a ojo.
+   */
+  --color-texto-tenue: #6d7577;
 
   /* ── Color · estado ─────────────────────────────────────────────────────── */
-  --color-bien: #1e8e5a;
-  --color-atencion: #c77700;
+  /*
+   * `bien` y `atencion` tambien vienen oscurecidos desde B1 (#1E8E5A y #C77700),
+   * que daban 3,96 y 3,31 sobre el fondo. Ahora dan 4,91 y 4,89, y se pueden usar
+   * como texto sin rodeos, que es lo que pide B8.
+   *
+   * `mal` e `info` se quedan como estan: ya cumplian.
+   */
+  --color-bien: #1a7d4f;
+  --color-atencion: #9f5f00;
   --color-mal: #c4372b;
   --color-info: #2c6e9b;
 

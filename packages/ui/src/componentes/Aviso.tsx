@@ -70,12 +70,11 @@ export function Aviso({
 
       <div className="flex min-w-0 flex-1 flex-col gap-e2">
         {/*
-          El titulo en --texto y no en el color del estado: `bien` da 3,7:1 sobre
-          su fondo suave y `atencion` 3,1, y B8 pide 4,5:1 para el texto. El
-          color sigue estando en el icono y en el fondo, que es donde puede estar
-          sin dejar de leerse.
+          El titulo lleva el color del estado. Puede, porque los cuatro colores
+          llegan a 4,5:1 sobre su fondo suave desde que se oscurecieron en M3. Y
+          no va solo: delante esta el icono, como manda B1.
         */}
-        <p className="text-cuerpo font-semibold text-texto">{titulo}</p>
+        <p className={clases('text-cuerpo font-semibold', texto)}>{titulo}</p>
         {children !== undefined && <div className="text-secundario text-texto">{children}</div>}
         {accion !== undefined && <div className="flex flex-wrap gap-e2">{accion}</div>}
       </div>

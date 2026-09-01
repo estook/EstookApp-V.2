@@ -42,6 +42,9 @@ export type {
 
 export { Hoja, PanelLateral } from './componentes/Hoja.tsx';
 
+export { Logo, IconoDeFogon, IMAGENES_DE_MARCA } from './componentes/Marca.tsx';
+export type { LogoProps, IconoDeFogonProps } from './componentes/Marca.tsx';
+
 export { Tabla, Lista } from './componentes/Tabla.tsx';
 export type { TablaProps, Columna, ListaProps, ElementoDeLista } from './componentes/Tabla.tsx';
 

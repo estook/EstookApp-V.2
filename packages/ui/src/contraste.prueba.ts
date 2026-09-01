@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -70,32 +70,30 @@ const ACENTOS = [
 ] as const;
 
 /*
- * ── LO QUE ESTA PRUEBA DESCUBRIO, Y QUE HAY QUE DECIDIR ──────────────────────
+ * ── El conflicto que esta prueba encontro, y como se resolvio ────────────────
  *
- * B1 fija la paleta y B8 pide 4,5:1 para el texto. **Las dos cosas juntas no se
- * pueden cumplir** con algunos colores de B1, y no es opinable:
+ * B1 fija la paleta y B8 pide 4,5:1 para el texto. Al medirlo, **tres colores no
+ * llegaban**, y no era opinable:
  *
- *   blanco sobre --naranja ............. 2,61:1   (B8 pide 3 para un icono)
- *   --naranja sobre --fondo ............ 2,50:1   (el anillo de foco)
- *   --texto-tenue sobre --fondo ........ 2,97:1   (B8 pide 4,5 para texto)
+ *   --texto-tenue sobre --fondo ........ 2,97:1
  *   --bien sobre --fondo ............... 3,96:1
  *   --atencion sobre --fondo ........... 3,31:1
- *   blanco sobre el acento de Inventario 3,46:1
  *
- * Lo que se ha hecho en M3, y por que: **no se ha tocado ni un color de B1**, que
- * es la marca. Se ha cambiado **como se usan**, que si es cosa nuestra:
+ * Se resolvio **oscureciendo los tres**, con el mismo tono y la luz justa para
+ * llegar a 4,5. Es un cambio de las fichas, decidido con Richi, y esta anotado en
+ * `fichas.css` con el valor de B1 del que sale cada uno.
  *
- *   · El anillo de foco lleva un filo charcoal por fuera (base.css).
- *   · Los botones y los iconos sobre naranja van en charcoal, no en blanco.
- *   · El texto de un aviso o de una etiqueta va en --texto; el color del estado
- *     se queda en el icono, el borde y el fondo.
- *   · El sector senalado de la rueda se tinta y se rodea del acento, en vez de
- *     rellenarse de el, para no tener que poner texto blanco encima.
- *   · --texto-tenue **no se usa para texto**. Solo para lo que no se lee.
+ * ── Y los dos que NO se han tocado ───────────────────────────────────────────
  *
- * Con eso B8 se cumple sin inventarse marca. Pero queda una pregunta de producto
- * que no es nuestra: **si --texto-tenue, --bien y --atencion deben oscurecerse un
- * punto** para poder usarse como texto sin rodeos. Esta apuntada en ESTADO.md.
+ * El **naranja de marca** se queda exactamente como esta, porque es la marca:
+ *
+ *   blanco sobre --naranja ............. 2,61:1
+ *   --naranja sobre --fondo ............ 2,50:1
+ *
+ * B8 se cumple igual, cambiando **como se usa**: el texto y los iconos sobre
+ * naranja van en charcoal (6,64:1), y el anillo de foco lleva un filo charcoal
+ * por fuera que lo hace visible sobre cualquier fondo. Las dos cosas estan
+ * comprobadas mas abajo.
  */
 
 describe('B8 · el texto llega a 4,5:1', () => {
@@ -106,12 +104,23 @@ describe('B8 · el texto llega a 4,5:1', () => {
     });
   }
 
-  it('--texto-tenue NO llega, y por eso no se usa para texto', () => {
-    // Esta prueba esta escrita al reves a proposito. Si alguien oscurece el
-    // color, falla y avisa de que ya se puede usar (y de que hay que revisar
-    // este comentario). Si alguien lo usa para texto sin oscurecerlo, lo caza la
-    // prueba de mas abajo.
-    expect(contraste(color('texto-tenue'), FONDO())).toBeLessThan(TEXTO);
+  it('--texto-tenue tambien llega, desde que se oscurecio', () => {
+    // Era el que no llegaba: 2,97:1. Ahora da 4,50 y se puede usar para las
+    // etiquetas y los origenes del dato, que es para lo que existe.
+    expect(contraste(color('texto-tenue'), FONDO())).toBeGreaterThanOrEqual(TEXTO);
+    expect(contraste(color('texto-tenue'), SUPERFICIE())).toBeGreaterThanOrEqual(TEXTO);
+  });
+
+  it('los cuatro colores de estado se leen sobre los dos fondos', () => {
+    // Es lo que permite que un aviso y una etiqueta lleven el color del estado en
+    // el texto, en vez de tenerlo que esconder en el icono.
+    for (const estado of ['bien', 'atencion', 'mal', 'info']) {
+      expect(contraste(color(estado), FONDO()), estado).toBeGreaterThanOrEqual(TEXTO);
+      expect(contraste(color(estado), SUPERFICIE()), estado).toBeGreaterThanOrEqual(TEXTO);
+      expect(contraste(color(estado), color(`${estado}-suave`)), estado).toBeGreaterThanOrEqual(
+        TEXTO,
+      );
+    }
   });
 
   it('el texto de un aviso o una etiqueta se lee sobre los cinco fondos suaves', () => {
@@ -208,72 +217,16 @@ describe('los colores de M3 no se han inventado: son los de B1', () => {
     expect(color('borde-fuerte')).toBe('#cfcac2');
   });
 
-  it('los de texto y los de estado tambien', () => {
+  it('los de texto y los de estado, salvo los tres que se oscurecieron', () => {
     expect(color('texto')).toBe('#111c1f');
     expect(color('texto-suave')).toBe('#5a6568');
-    expect(color('texto-tenue')).toBe('#8a9497');
-    expect(color('bien')).toBe('#1e8e5a');
-    expect(color('atencion')).toBe('#c77700');
     expect(color('mal')).toBe('#c4372b');
     expect(color('info')).toBe('#2c6e9b');
+
+    // Estos tres salen de B1 pero llevan la luz bajada para llegar a 4,5:1. Se
+    // fijan aqui para que nadie los mueva sin darse cuenta de por que son asi.
+    expect(color('texto-tenue'), 'sale del #8A9497 de B1').toBe('#6d7577');
+    expect(color('bien'), 'sale del #1E8E5A de B1').toBe('#1a7d4f');
+    expect(color('atencion'), 'sale del #C77700 de B1').toBe('#9f5f00');
   });
 });
-
-describe('nadie usa --texto-tenue para texto', () => {
-  /*
-   * Esto es una prueba sobre el codigo fuente, y es a proposito.
-   *
-   * `--texto-tenue` da 2,97:1 y no llega al 4,5 que pide B8. Se deja en la paleta
-   * porque esta en B1, pero **solo puede usarse donde no hay que leer**: el icono
-   * decorativo de un estado vacio, un texto de ejemplo dentro de un campo (que
-   * nunca es la unica etiqueta, B8), y lo deshabilitado.
-   *
-   * Sin esta prueba, la regla duraria hasta la primera pantalla con prisa.
-   */
-  const PERMITIDO = [
-    // Un texto de ejemplo dentro del campo. Nunca es la unica etiqueta.
-    'placeholder:text-texto-tenue',
-    // Lo deshabilitado, que ademas se marca con el cursor y con `disabled`.
-    'disabled:text-texto-tenue',
-  ];
-
-  it('solo aparece donde no hay que leer', () => {
-    const fuentes = leerComponentes();
-    const malos: string[] = [];
-
-    for (const [fichero, codigo] of fuentes) {
-      for (const linea of codigo.split('\n')) {
-        if (!linea.includes('text-texto-tenue')) continue;
-        if (PERMITIDO.some((p) => linea.includes(p))) continue;
-        // El icono de un estado vacio va con `aria-hidden`: es decoracion.
-        if (
-          linea.includes('aria-hidden') ||
-          codigo.includes('aria-hidden className="text-texto-tenue"')
-        ) {
-          continue;
-        }
-        malos.push(`${fichero}: ${linea.trim()}`);
-      }
-    }
-
-    expect(malos).toEqual([]);
-  });
-});
-
-function leerComponentes(): [string, string][] {
-  const raiz = fileURLToPath(new URL('.', import.meta.url));
-  const salida: [string, string][] = [];
-
-  const recorrer = (carpeta: string) => {
-    for (const entrada of readdirSync(carpeta, { withFileTypes: true })) {
-      const camino = `${carpeta}/${entrada.name}`;
-      if (entrada.isDirectory()) recorrer(camino);
-      else if (/\.tsx?$/.test(entrada.name) && !entrada.name.includes('.prueba.')) {
-        salida.push([entrada.name, readFileSync(camino, 'utf8')]);
-      }
-    }
-  };
-
-  recorrer(raiz);
-  return salida;
-}

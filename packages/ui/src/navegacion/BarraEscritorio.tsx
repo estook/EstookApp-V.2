@@ -5,11 +5,11 @@ import {
   IconoBuscar,
   IconoChat,
   IconoFlechaAbajo,
-  IconoFogon,
   IconoLocal,
 } from '@estook/iconos';
 import type { App } from '../apps.ts';
 import { clases } from '../clases.ts';
+import { IconoDeFogon, Logo } from '../componentes/Marca.tsx';
 import { Avatar } from '../componentes/Tarjeta.tsx';
 
 /**
@@ -60,16 +60,25 @@ export function BarraEscritorio({
       <button
         type="button"
         onClick={alIrAlPanel}
-        className="shrink-0 text-etiqueta font-bold uppercase tracking-[0.18em] text-texto"
+        aria-label="Ir al Panel"
+        className="shrink-0 rounded-chico"
       >
-        Estook
+        <Logo alto={30} />
       </button>
 
       <SelectorDeLocal local={local} locales={locales} alCambiar={alCambiarDeLocal} />
 
       <nav
         aria-label="Las apps"
-        className="flex min-w-0 flex-1 items-center gap-e1 overflow-x-auto"
+        // Con ocho apps, el selector de local y seis botones, a 1024 px —el ancho
+        // minimo de escritorio— no caben todas. Se deja desplazar a lo ancho, que
+        // es mejor que apretarlas hasta que no se lean, y se esconde la barra de
+        // desplazamiento: dentro de una barra de navegacion es ruido, y el gesto
+        // sigue funcionando con la rueda del raton y con el dedo.
+        className={clases(
+          'flex min-w-0 flex-1 items-center gap-e1 overflow-x-auto',
+          '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+        )}
       >
         {apps.map((app) => (
           <AppConDesplegable key={app.id} app={app} activa={app.id === appActiva} alIr={alIrAApp} />
@@ -100,10 +109,10 @@ export function BarraEscritorio({
           <IconoChat size={20} />
         </Redondo>
 
+        {/* Fogon lleva su mascota, no el icono de Lucide: es lo que lo hace
+            reconocible de un vistazo entre cinco botones grises. */}
         <Redondo etiqueta="Fogon (Ctrl+J)" alPulsar={alAbrirFogon ?? (() => undefined)}>
-          <span className="text-naranja">
-            <IconoFogon size={20} />
-          </span>
+          <IconoDeFogon size={22} />
         </Redondo>
 
         <Redondo etiqueta="Ajustes" alPulsar={alIrAAjustes}>

@@ -13,8 +13,10 @@ Los dos colores, para que no se inventen: **charcoal `#111C1F`** y **naranja
 | `favicon.svg`                 | El símbolo con margen, en cuadrado | La pestaña del navegador           |
 | `apple-touch-icon.png`        | 180 px, sin transparencia          | La pantalla de inicio de un iPhone |
 | `pwa-192.png` · `pwa-512.png` | Iconos de aplicación instalable    | Android y escritorio               |
-| `Logohorizontal.png`          | El logo con el claim · **468 KB**  | **Nada todavía.** Ver abajo        |
-| `Fogonicono.png`              | La mascota de IA · **1,2 MB**      | **Nada todavía.** Ver abajo        |
+| `estook-logo.png`             | El logo, 462 × 96 · 23 KB          | La barra de escritorio             |
+| `fogon.png`                   | La mascota, 128 × 128 · 13 KB      | El botón de Fogón                  |
+| `Logohorizontal.png`          | El original · **468 KB**           | Fuente de `estook-logo.png`        |
+| `Fogonicono.png`              | El original · **1,2 MB**           | Fuente de `fogon.png`              |
 | `Faviconestook.png`           | El símbolo original · 231 KB       | Referencia. De aquí salió el SVG   |
 
 ## Cómo se hicieron
@@ -31,6 +33,12 @@ vez.
 
 Solo existen en PNG porque iOS y las aplicaciones instalables lo exigen. Todo lo
 demás va en SVG: 800 bytes contra 231 KB, y escala sin pixelarse.
+
+**El logo y Fogón sí son PNG**, porque es lo que hay: los reduce
+[`herramientas/reducir-marca.mjs`](../../../herramientas/reducir-marca.mjs) al
+doble del tamaño en que se pintan. Es el mismo dibujo con menos píxeles, no una
+versión distinta: 468 KB → 23 y 1,2 MB → 13. Los originales se quedan aquí porque
+son la fuente, y **no se publican**.
 
 ## Lo que sigue faltando, y no lo puede resolver el código
 

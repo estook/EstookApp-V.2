@@ -77,19 +77,22 @@ export function Tarjeta({
 export type TonoDeEtiqueta = 'neutro' | 'bien' | 'atencion' | 'mal' | 'info' | 'marca';
 
 /**
- * El color va en el fondo, el borde y el icono; **el texto va en --texto**.
+ * El color va en el texto, el borde, el icono y el fondo.
  *
- * No es un capricho: en 11 px, `--bien` sobre su fondo suave da 3,7:1 y
- * `--atencion` 3,1, y B8 pide 4,5:1 para el texto. El charcoal da 16:1 sobre los
- * cinco fondos. El estado se sigue reconociendo por el color y por el icono, que
- * es lo que pide B1 («nunca van solos»), y ademas se lee.
+ * En 11 px eso solo se puede si el color llega a 4,5:1 sobre su propio fondo
+ * suave, y los cuatro llegan desde que se oscurecieron en M3. Lo comprueba
+ * `contraste.prueba.ts`: si alguien aclara uno, la prueba falla antes de que se
+ * publique una etiqueta ilegible.
+ *
+ * El naranja de marca es la excepcion y va en `--texto`: es el color de la
+ * accion, no de un estado, y no se toca (2,5:1 sobre su fondo suave).
  */
 const TONOS: Record<TonoDeEtiqueta, string> = {
-  neutro: 'bg-fondo text-texto border-borde [&>svg]:text-texto-suave',
-  bien: 'bg-bien-suave text-texto border-bien/40 [&>svg]:text-bien',
-  atencion: 'bg-atencion-suave text-texto border-atencion/40 [&>svg]:text-atencion',
-  mal: 'bg-mal-suave text-texto border-mal/40 [&>svg]:text-mal',
-  info: 'bg-info-suave text-texto border-info/40 [&>svg]:text-info',
+  neutro: 'bg-fondo text-texto-suave border-borde [&>svg]:text-texto-suave',
+  bien: 'bg-bien-suave text-bien border-bien/40 [&>svg]:text-bien',
+  atencion: 'bg-atencion-suave text-atencion border-atencion/40 [&>svg]:text-atencion',
+  mal: 'bg-mal-suave text-mal border-mal/40 [&>svg]:text-mal',
+  info: 'bg-info-suave text-info border-info/40 [&>svg]:text-info',
   marca: 'bg-naranja-suave text-texto border-naranja/40 [&>svg]:text-naranja',
 };
 

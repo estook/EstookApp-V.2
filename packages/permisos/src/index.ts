@@ -37,7 +37,8 @@ export const PERMISOS_DE_APP = [
 
 /** Los datos que no todo el mundo puede ver. */
 export const PERMISOS_DE_DATO = [
-  'dato.coste_de_genero',
+  'dato.precio_de_compra',
+  'dato.coste_de_plato',
   'dato.coste_de_personal',
   'dato.ventas',
   'dato.facturacion',

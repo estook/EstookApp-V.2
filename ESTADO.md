@@ -21,13 +21,15 @@
 
 ## 2 · Qué hay que hacer
 
-### Pendiente de decidir
+### Ahora
 
-**¿Encendemos Sentry?** Es el panel que avisa cuando a alguien le falla algo en
-la aplicación. Está montado y probado desde M0, pero **no está encendido**: falta
-darse de alta y declarar una variable. Mientras tanto, si algo se rompe en la web
-publicada, nadie se entera. No corre prisa mientras no haya clientes, pero
-conviene tenerlo antes de que los haya.
+**Declarar el DSN de Sentry.** Richi creó la cuenta y el proyecto `estook-app` el
+1 de septiembre de 2026, con solo «Error monitoring» encendido y el repositorio
+enlazado. Falta el último paso: copiar el DSN del proyecto y declararlo en GitHub
+→ Settings → Secrets and variables → Actions → **Variables**, con el nombre
+`VITE_SENTRY_DSN`.
+
+Hasta que esté, si algo se rompe en la web publicada nadie se entera.
 
 ### Sin prisa
 
@@ -65,7 +67,8 @@ de los proyectos nuevos solo funciona por IPv6.
 
 **Variables del repositorio** (GitHub → Settings → Secrets and variables →
 Actions → Variables): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` y
-`VITE_APP_URL`, las tres declaradas. `VITE_BASE` no hace falta: se deduce del
+`VITE_APP_URL`, las tres declaradas. Falta `VITE_SENTRY_DSN` (apartado 2).
+`VITE_BASE` no hace falta: se deduce del
 nombre del repositorio. La clave `sb_secret_` **nunca** va en GitHub: vive solo en
 los secretos de Supabase. Todo en [`config/claves.md`](config/claves.md).
 

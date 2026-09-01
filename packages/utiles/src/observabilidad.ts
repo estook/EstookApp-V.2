@@ -28,11 +28,14 @@ export function arrancarObservabilidad(opciones: OpcionesDeObservabilidad): stri
   Sentry.init({
     dsn: opciones.dsn,
     environment: opciones.entorno,
+    // La version es el commit exacto que se publico, para que Sentry pueda
+    // senalar que cambio provoco el fallo.
     release: `${opciones.aplicacion}@${opciones.version}`,
-    // En produccion se muestrea; en el resto se recoge todo, que hay poco trafico.
-    tracesSampleRate: opciones.entorno === 'produccion' ? 0.1 : 1,
     // Nada de grabar sesiones ni capturar el contenido de la pantalla: hay datos
-    // de personas y de facturacion en cada vista.
+    // de personas y de facturacion en cada vista. En el proyecto de Sentry estan
+    // apagados «Session replay» y «Tracing» a proposito, y aqui no se enciende
+    // nada que ellos no tengan encendido: si algun dia hace falta medir tiempos,
+    // se enciende alli y se anade aqui `tracesSampleRate`.
     sendDefaultPii: false,
   });
 

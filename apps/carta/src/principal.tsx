@@ -11,7 +11,7 @@ const sesion_id = arrancarObservabilidad({
   dsn: import.meta.env['VITE_SENTRY_DSN'] as string | undefined,
   entorno,
   aplicacion: 'carta',
-  version: '0.0.0',
+  version: (import.meta.env['VITE_VERSION'] as string | undefined) ?? 'desarrollo',
 });
 
 const registro = crearRegistro({ base: { aplicacion: 'carta', entorno, sesion_id } });

@@ -16,12 +16,19 @@ navegador. Van en **Variables**, no en Secrets.
 | `VITE_APP_URL`           | La direccion publica de la aplicacion      |
 | `VITE_BASE`              | La raiz bajo la que se publica             |
 | `VITE_ENTORNO`           | `produccion`, `demostracion` o `pruebas`   |
+| `VITE_SENTRY_DSN`        | El DSN del proyecto `estook-app` en Sentry |
+
+El DSN de Sentry **tambien es publico**: viaja dentro del JavaScript, igual que la
+clave publicable de Supabase. Por eso va aqui y no en Secrets. Lo unico que
+permite es enviar errores a ese proyecto; no da acceso a leer nada.
+
+`VITE_VERSION` no se declara: el flujo de publicacion la rellena solo con el
+commit exacto que se esta publicando.
 
 ## Secretos del repositorio · misma pantalla, pestana Secrets
 
-| Nombre            | Que es                                              |
-| ----------------- | --------------------------------------------------- |
-| `VITE_SENTRY_DSN` | El DSN de Sentry, si se quiere en las publicaciones |
+De momento **ninguno**. Todo lo que necesita el navegador es publico por
+naturaleza, y lo que es de verdad secreto vive en Supabase, abajo.
 
 ## Secretos de Supabase · Project Settings → Edge Functions → Secrets
 

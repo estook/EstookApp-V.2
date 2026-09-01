@@ -7,188 +7,182 @@
 
 ## Dónde estamos
 
-**M1 · Modelo maestro: alcances, roles y permisos — escrito y probado.**
-Pendiente de fusionar en `main`.
+**M1 · Modelo maestro: alcances, roles y permisos — terminado, probado y aplicado
+en Supabase.** Falta fusionar la rama `m1-afinar-permisos`.
 
 Módulos terminados: **M0 ✓** · **M1 ✓** (con una salvedad, más abajo)
 
-Siguiente: **M2 · Núcleo técnico y motores transversales.**
+Siguiente: **M2 · Núcleo técnico y motores transversales.** No empezado a
+propósito: Richi pidió cerrar y pulir M1 antes.
 
-## La dirección web
+## Lo que está vivo
 
-**https://estook.github.io/EstookApp-V.2/** — hasta que se compre `estook.com`.
-Las cuatro aplicaciones cuelgan de ahí: la web en la raíz, y `/app/`, `/carta/` y
-`/admin/` debajo. Cuando haya dominio propio se declara la variable `VITE_BASE`
-con el valor `/` en GitHub. No hay que tocar código.
+**Web:** https://estook.github.io/EstookApp-V.2/ — las cuatro aplicaciones
+respondiendo. Hasta que haya `estook.com`.
+
+**Base de datos:** proyecto de Supabase `efgtzujwjztihyiwgpwg`, región Europa
+(eu-west-1), plan gratuito. Es un proyecto **nuevo**; el anterior, con las
+funciones `correo`, `fogon` y `lugares` de la versión 1, sigue apagado y sin
+tocar.
+
+Lo que hay creado ahí, comprobado con `pnpm bd:comprobar`:
+
+| Qué                            | Cuánto                                                  |
+| ------------------------------ | ------------------------------------------------------- |
+| Migraciones aplicadas          | 9 de 9                                                  |
+| Tablas en el esquema `estook`  | 14, **todas con seguridad por filas**                   |
+| Roles · permisos · concesiones | 12 · 33 · 162                                           |
+| Organizaciones de ejemplo      | Bar Centro (1 local) y Grupo Costa (6 locales, 2 áreas) |
+| Personas de ejemplo            | 7                                                       |
+| Tablas en el esquema `public`  | **0**                                                   |
+
+Y las dos comprobaciones que importan, contra la base de datos de verdad:
+
+- El area manager ve **exactamente 3 locales**. La dirección, 6. El jefe de
+  cocina, 1. La camarera, 1.
+- La auditoría: añadir **sí**, modificar **no**, borrar **no**.
+
+La conexión se hace por el **agrupador de sesión** de Supabase
+(`aws-1-eu-west-1.pooler.supabase.com:5432`), porque la conexión directa de los
+proyectos nuevos solo va por IPv6. `conexion.mjs` lo detecta y apaga las consultas
+preparadas, que el agrupador no lleva bien.
 
 ## Qué hizo M1
 
-Todo lo que pedía el Plan, punto por punto de su lista de «Entra»:
+| Lo que pedía el Plan                              | Dónde está                                    |
+| ------------------------------------------------- | --------------------------------------------- |
+| Usuarios (el cuarto alcance: persona)             | `0002_personas_y_membresias.sql`              |
+| Membresías con alcance y vigencia                 | idem                                          |
+| Los doce roles                                    | idem                                          |
+| Herencia de permisos y recorte por local          | `0003`, `0004`, `0009`                        |
+| La función `locales_visibles`                     | `0005_quien_ve_que.sql`                       |
+| RLS en todas las tablas contra `locales_visibles` | `0008_politicas_de_seguridad.sql`             |
+| Auditoría append-only                             | `0006_auditoria.sql`                          |
+| Catálogo maestro con sus tres políticas           | `0007_traducciones_dispositivos_catalogo.sql` |
+| Traducciones y dispositivos con revocación        | idem                                          |
+| La matriz compartida cliente/servidor             | `packages/permisos/`, `packages/dominio/`     |
 
-| Lo que pedía M1                                   | Dónde está                                                  |
-| ------------------------------------------------- | ----------------------------------------------------------- |
-| Usuarios (el cuarto alcance: persona)             | `0002_personas_y_membresias.sql`                            |
-| Membresías con alcance y vigencia                 | idem                                                        |
-| Los doce roles                                    | idem, sembrados en la propia migración                      |
-| Herencia de permisos y recorte por local          | `0003_catalogo_de_permisos.sql`, `0004_matriz_de_roles.sql` |
-| La función `locales_visibles`                     | `0005_quien_ve_que.sql`                                     |
-| RLS en todas las tablas contra `locales_visibles` | `0008_politicas_de_seguridad.sql`                           |
-| Auditoría append-only                             | `0006_auditoria.sql`                                        |
-| Catálogo maestro con sus tres políticas           | `0007_traducciones_dispositivos_catalogo.sql`               |
-| Traducciones                                      | idem                                                        |
-| Dispositivos con revocación                       | idem                                                        |
-| La matriz compartida cliente/servidor             | `packages/permisos/`, `packages/dominio/`                   |
+**84 pruebas, todas pasando**, contra Postgres de verdad y con `set role
+estook_api`, que es como se conectará la API. Nada se prueba desde una pantalla.
 
-**Los doce roles**, tal como los fija el Manifiesto: dirección, administrador de
-cuenta, chef corporativo, compras central, RRHH y gestoría (organización);
-area manager (área); gerente, jefe de cocina, jefe de sala, cocinero y camarero
-(local).
+## El repaso de la matriz · qué salió
 
-**Los tres niveles**: sin acceso · ver · ver y editar. Un permiso que no aparece
-en la matriz vale «sin acceso», y solo se guarda lo concedido, para que la tabla
-se pueda leer de un vistazo.
+Richi pidió repasarla «por si algo se me escapa». Salieron cinco cosas. Dos
+arregladas en la migración `0009`, tres pendientes de decidir.
 
-**32 permisos** en tres familias: las ocho apps más Panel, Fogón, Ajustes y la
-vista de gestoría (`app.*`); los datos sensibles (`dato.*`); y lo que se puede
-ejecutar (`accion.*`).
+### Arregladas
 
-## Qué se ha comprobado, ejecutándolo de verdad
+1. **Una acción no puede estar en «ver».** Publicar la carta o se puede o no se
+   puede; decir que alguien tiene «ver» sobre publicar no significa nada. No se
+   cambió el vocabulario del Manifiesto (los tres estados forman una escalera, y
+   es lo que hace que «gana el más amplio» se resuelva comparando): se cerró la
+   puerta a la combinación absurda, con su prueba.
 
-| Comprobación                       | Resultado                               |
-| ---------------------------------- | --------------------------------------- |
-| `pnpm tipos`                       | 14 de 14 paquetes                       |
-| `pnpm lint` · `pnpm formato`       | limpios                                 |
-| `pnpm dependencias`                | sin violaciones · 46 módulos            |
-| `pnpm prueba`                      | **76 de 76**                            |
-| `pnpm prueba:e2e`                  | 16 de 16, escritorio y móvil pequeño    |
-| `pnpm tamano` · `pnpm publicacion` | dentro del presupuesto y apuntando bien |
+2. **`dato.coste_de_genero` metía dos cosas en el mismo saco.** Se separó en
+   `dato.precio_de_compra` y `dato.coste_de_plato`, porque hay roles que
+   necesitan lo uno y no lo otro:
+   - La gestoría exporta «compras», así que ve precios; pero el documento dice
+     que «no ve fichas técnicas, ni recetas», o sea, ni costes de plato ni
+     márgenes. Con un solo permiso eso no se podía expresar.
+   - Compras central lleva «la comparativa de precios» pero «nada de recetas».
 
-Las pruebas del modelo corren contra **Postgres de verdad**, con `set role
-estook_api`, que es como se conecta la API. Nada se prueba desde una pantalla: la
-regla 4 dice justamente eso.
+### Pendientes de decidir · preguntas para Richi
 
-Lo que queda demostrado:
+3. **¿Quién tiene Fogón?** El Manifiesto dice que «Fogón ve exactamente lo que ve
+   quien pregunta», lo que sugiere que puede usarlo mucha gente sin riesgo. Pero
+   ningún documento dice qué roles lo llevan. Ahora mismo lo tienen jefe de
+   cocina, gerente, area manager, dirección, chef corporativo y compras central.
+   **No lo tienen camarero, cocinero, jefe de sala ni RRHH.** No lo he inventado:
+   hace falta decidirlo.
 
-- Un area manager ve **exactamente** sus tres locales, ni uno más.
-- La gerente del bar independiente no ve ni un local, ni una organización, ni una
-  persona de la cadena. Pedir un local ajeno por su identificador devuelve vacío.
-- **Sin decir quién pregunta no se ve absolutamente nada.** Es el fallo seguro.
-- Una membresía caducada, o que aún no empieza, no da acceso. Un local archivado
-  desaparece de la vista de todos.
-- El cocinero no ve ningún importe. El camarero no ve costes, ni ventas, ni el
-  cuadrante completo, ni datos de otros.
-- El jefe de sala puede proponer cambios en la carta pero **no publicarlos**.
-- Compras central **no puede cerrar recuentos** (decisión 5 de la Auditoría de
-  flujos: quien compra no valora su propio inventario).
-- **Nadie**, ni la dirección, ve los directos ajenos del chat.
-- El recorte quita un permiso que el rol traía, y también da uno que no traía.
-- Con dos roles sobre el mismo local, gana el más amplio, permiso a permiso.
-- La auditoría no se puede modificar ni borrar: ni por permisos (`estook_api` no
-  los tiene) ni por el guardián (que alcanza incluso al dueño de la tabla).
-- Las ocho migraciones se aplican, se deshacen enteras y se vuelven a aplicar.
-- Sembrar dos veces no duplica nada.
-- El vocabulario de la base de datos y el de TypeScript cuadran exactamente.
+4. **¿El cocinero marca platos agotados?** El documento lo dice del camarero,
+   pero no del cocinero. Se lo he dado, porque quien se queda sin género en la
+   cocina es quien primero lo sabe. Es una decisión mía y conviene confirmarla.
 
-## La salvedad honesta
+5. **«Cuadrante de sala» y «cuadrante de cocina» todavía no existen como
+   concepto.** El documento dice que el jefe de sala lleva el cuadrante de sala y
+   el jefe de cocina el de cocina, y que cada uno ve «las fichas de su equipo».
+   Pero no hay noción de sección ni de equipo hasta M13 y M14. De momento los dos
+   tienen `dato.cuadrante_completo`, que es **más de lo que dice el documento**.
+   Inventar ahora un modelo de secciones sería peor. **Se afina en M13/M14**, y
+   queda escrito aquí para que no se olvide.
 
-El criterio de terminado de M1 dice: «toda consulta cruzada entre organizaciones
-devuelve vacío **y 403**».
+## La salvedad de M1
 
-La primera mitad está hecha y probada. **La segunda no puede estarlo todavía**:
-un 403 lo devuelve una API, y la API se construye en M2. Hoy la base de datos
-devuelve vacío, que es lo correcto a su nivel. Cuando exista la API, M2 tiene que
-traducir ese vacío a un 403 con su mensaje del catálogo de errores, y hay que
-escribir la prueba que lo compruebe llamando a la API a pelo.
-
-**Queda anotado como deuda explícita de M2, no como algo olvidado.**
+El criterio dice «devuelve vacío **y 403**». El vacío está hecho y probado. El
+403 lo devuelve una API, y la API se construye en M2. **Deuda explícita de M2**,
+con su prueba pendiente.
 
 ## Decisiones tomadas
 
-En `docs/decisiones/`:
+En `docs/decisiones/`: **0001** Pages en vez de Netlify · **0002** la API en Hono
+sobre Supabase Edge Functions · **0003** el esqueleto mínimo de alcances en M0 ·
+**0004** el presupuesto de velocidad reconstruido.
 
-1. **0001 · GitHub Pages en vez de Netlify**, con la dirección de arriba.
-2. **0002 · La API en Hono sobre Supabase Edge Functions.** Se implementa en M2.
-3. **0003 · M0 crea el esqueleto mínimo de organización, área y local.**
-4. **0004 · El presupuesto de velocidad, reconstruido.** La tabla de B7 estaba
-   descolocada en el PDF. Richi confirmó que salió de una investigación con IA,
-   que no hay que ser estricto y que se use como guía. Se reconstruyó conservando
-   las cifras originales.
-
-De M1, sin fichero propio pero anotadas aquí:
+De M1, anotadas aquí:
 
 - **Quién pregunta se declara en la conexión**, con `set local estook.persona_id`,
-  y no con `auth.uid()`. Así el modelo se puede probar en cualquier Postgres sin
-  depender del esquema de autenticación de Supabase, y encaja con la decisión 0002
-  (la API es nuestra). M4 conectará Supabase Auth con esto.
-- **La matriz de roles vive solo en la base de datos.** `packages/permisos` tiene
-  el vocabulario y las funciones de lectura, no los niveles. Es la regla 6: un
-  cálculo, un único dueño. Una prueba comprueba que los dos catálogos cuadran.
-- **Las funciones de visibilidad son `security definer`.** Sin eso, la política de
-  `membresia` llamaría a una función que consulta `membresia`, que volvería a
-  aplicar la política: recursión infinita. Pasó de verdad al escribir M1.
-- **No se usa `force row level security`.** Se aplicaría también al dueño de las
-  tablas, que es quien ejecuta migraciones y semillas. No hace falta: la API se
-  conecta como `estook_api`, que no es el dueño.
-- **La matriz se derivó frase a frase del documento de Roles**, y cada bloque de
-  la migración cita la frase que lo justifica. Conviene que Richi la repase.
-- **Dependencia nueva: `@electric-sql/pglite`**, solo de desarrollo. El Plan pide
-  «Postgres efímero» en la capa de pruebas. Con Docker no valía: no todas las
-  máquinas lo tienen, y una prueba que solo corre en una máquina acaba sin correr
-  en ninguna. PGlite es Postgres compilado a WebAssembly. Además, en integración
-  continua las migraciones se aplican también contra un Postgres 17 de verdad, así
-  que no hay una sola vía de comprobación.
+  y no con `auth.uid()`. Así el modelo se prueba en cualquier Postgres. M4
+  conectará Supabase Auth con esto.
+- **La matriz vive solo en la base de datos.** `packages/permisos` tiene el
+  vocabulario, no los niveles (regla 6). Una prueba comprueba que cuadran.
+- **Las funciones de visibilidad son `security definer`**, o la política de
+  `membresia` entra en recursión infinita consigo misma. Pasó de verdad.
+- **No se usa `force row level security`**: rompería las semillas, y no hace falta
+  porque la API se conecta como `estook_api`, que no es el dueño.
+- **Dependencia nueva justificada:** `@electric-sql/pglite`, solo de desarrollo,
+  para tener el «Postgres efímero» que pide el Plan sin depender de Docker.
 
 ## Lo que falta, y es cosa de Richi
 
-1. **Fusionar la rama `m1-alcances-y-permisos`.**
-2. **Repasar la matriz de permisos** de `0004_matriz_de_roles.sql`. Está derivada
-   del documento de Roles y cada bloque cita su frase, pero es la pieza que más
-   conviene que valide una persona.
-3. **Los ficheros de marca** en `packages/ui/marca/`. Se usan en M3.
-4. **`DATABASE_URL` en `.env.local`** si se quiere migrar contra Supabase desde
-   esta máquina.
-5. **Las claves de Google han pasado por un chat** (Maps y Gemini). Hay que
-   regenerarlas antes del lanzamiento. Anotado para M27.
+| #   | Qué                                                       | Cuándo      |
+| --- | --------------------------------------------------------- | ----------- |
+| 1   | Fusionar la rama `m1-afinar-permisos`                     | ahora       |
+| 2   | Contestar las tres preguntas del repaso de la matriz      | antes de M3 |
+| 3   | Declarar las variables públicas del repositorio en GitHub | antes de M4 |
+| 4   | Apagar «Automatically expose new tables» en Supabase      | sin prisa   |
+| 5   | Conseguir los SVG de marca (los PNG ya están, pero pesan) | **M3**      |
+| 6   | Regenerar las claves de Google, que pasaron por un chat   | M27         |
 
-Nota sobre el candado de `main`: los nombres de las comprobaciones obligatorias
-van **sin tilde** y tienen que coincidir exactamente con los que reporta el
-sistema: `Calidad`, `Construccion y presupuestos`, `Migraciones reversibles`. No
-añadir nunca `Construir` ni `Publicar`: ese flujo solo corre después de fusionar,
-así que exigirlo antes deja el botón bloqueado sin salida.
+Las variables del repositorio (Settings → Secrets and variables → Actions →
+Variables) son estas, y son públicas por naturaleza:
+
+```
+VITE_SUPABASE_URL       https://efgtzujwjztihyiwgpwg.supabase.co
+VITE_SUPABASE_ANON_KEY  la clave publicable del panel de Supabase
+VITE_APP_URL            https://estook.github.io/EstookApp-V.2/
+```
+
+`VITE_BASE` no hace falta declararla: el flujo de publicación la deduce del
+nombre del repositorio.
+
+Nota sobre el candado de `main`: los nombres van **sin tilde** y tienen que
+coincidir exactamente: `Calidad`, `Construccion y presupuestos`, `Migraciones
+reversibles`. Nunca añadir `Construir` ni `Publicar`.
 
 ## Lo que NO hay que tocar
 
-Cerrados y probados. Ampliarlos es normal; reescribirlos, no, sin una decisión
-escrita en `docs/decisiones/`:
-
-- `packages/utiles/src/` — entorno, banderas, correlación y registro (M0).
-- `base-de-datos/herramientas/` — el ejecutor de migraciones y el sembrador (M0).
-- `.dependency-cruiser.cjs` y las reglas 9 y 10 de `eslint.config.js` (M0).
-- `herramientas/comprueba-publicacion.mjs` (M0).
-- Las migraciones `0001` a `0008`. **Ya están aplicadas en las pruebas y en
-  integración continua: se amplían con una `0009`, nunca se editan** (regla 2).
+- `packages/utiles/src/` (M0) · `base-de-datos/herramientas/` (M0)
+- `.dependency-cruiser.cjs` y las reglas 9 y 10 de `eslint.config.js` (M0)
+- `herramientas/comprueba-publicacion.mjs` (M0)
+- **Las migraciones `0001` a `0009`. Ya están aplicadas en Supabase: se amplían
+  con una `0010`, nunca se editan** (regla 2).
 
 ## El siguiente paso · M2
 
-**Núcleo técnico y motores transversales.** Qué entra, según el Plan:
-
-- API versionada con compatibilidad N−2 · comandos y consultas · validación con
-  esquemas · catálogo de errores en cristiano · idempotencia por cabecera.
-- Bandeja de salida transaccional y publicador de eventos · workers con reintento
-  · control optimista por versión · cliente tipado.
-- Los siete motores: **fiscal** (tipos con vigencia, IVA/IGIC/IPSI, prorrateo en
-  fórmulas), **dinero** (céntimos y reparto determinista), **unidades y coste**
-  (`precio ÷ (factor × rendimiento)` y precio medio ponderado), **tiempo** (fecha
-  operativa, hora de corte, cambio de hora), **textos**, **permisos** y
-  **recálculo**.
+**Núcleo técnico y motores transversales.** API versionada con compatibilidad
+N−2 · comandos y consultas · validación con esquemas · catálogo de errores en
+cristiano · idempotencia por cabecera · bandeja de salida transaccional y
+publicador de eventos · workers con reintento · control optimista por versión ·
+cliente tipado · y los siete motores: fiscal, dinero, unidades y coste, tiempo,
+textos, permisos y recálculo.
 
 **Terminado cuando.** El mismo comando tres veces con la misma clave produce un
 solo efecto; y el motor fiscal desglosa una fórmula con tipos mixtos cuadrando al
 céntimo.
 
-**Deuda que M2 hereda de M1:** traducir a `403` la consulta cruzada entre
+**Deuda que hereda de M1:** traducir a `403` la consulta cruzada entre
 organizaciones, con su prueba llamando a la API a pelo.
 
-Recordatorio de la decisión 0002: la API se escribe en Hono y se despliega como
-Supabase Edge Functions. Sin proceso largo, así que los workers van por cola en
-tabla más `pg_cron`.
+La API se escribe en Hono y se despliega como Supabase Edge Functions (decisión
+0002). Sin proceso largo, así que los workers van por cola en tabla más `pg_cron`.

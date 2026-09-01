@@ -26,6 +26,7 @@
     "bd:revertir": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs --revertir",
     "bd:revertir:todo": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs --revertir --todo",
     "bd:sembrar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/sembrar.mjs",
+    "bd:comprobar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/comprobar.mjs",
     "verifica": "pnpm tipos && pnpm lint && pnpm formato && pnpm dependencias && pnpm prueba"
   },
   "devDependencies": {

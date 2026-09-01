@@ -18,7 +18,7 @@ describe('lectura de permisos resueltos', () => {
   };
 
   it('lo que no viene, no se tiene', () => {
-    expect(nivelDe(camarera, 'dato.coste_de_genero')).toBe('sin_acceso');
+    expect(nivelDe(camarera, 'dato.coste_de_plato')).toBe('sin_acceso');
     expect(puedeVer(camarera, 'dato.ventas')).toBe(false);
   });
 

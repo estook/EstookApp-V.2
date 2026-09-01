@@ -39,7 +39,7 @@ describe('lo que trae puesto cada rol', () => {
   it('el cocinero no ve ningun importe', async () => {
     // «Que no ve: ningun importe. Ni coste de linea, ni coste total, ni margen,
     //  ni precio recomendado. Esa columna no existe para el.»
-    expect(await nivel('marcos@ejemplo.estook.com', 'bar-centro', 'dato.coste_de_genero')).toBe(
+    expect(await nivel('marcos@ejemplo.estook.com', 'bar-centro', 'dato.coste_de_plato')).toBe(
       'sin_acceso',
     );
     expect(await nivelDelRol('cocinero', 'dato.coste_de_personal')).toBe('sin_acceso');
@@ -50,7 +50,7 @@ describe('lo que trae puesto cada rol', () => {
     // «Que no ve, en ningun sitio: costes, margenes, precios de compra, ventas
     //  del local, datos de otras personas ni el cuadrante completo.»
     for (const permiso of [
-      'dato.coste_de_genero',
+      'dato.coste_de_plato',
       'dato.coste_de_personal',
       'dato.ventas',
       'dato.datos_del_equipo',
@@ -73,7 +73,7 @@ describe('lo que trae puesto cada rol', () => {
   it('el jefe de sala ve las ventas de su turno pero no los costes de genero', async () => {
     // «Las ventas del turno con su ticket medio.» / «No ve costes de materia prima.»
     expect(await nivelDelRol('jefe_de_sala', 'dato.ventas')).toBe('ver');
-    expect(await nivelDelRol('jefe_de_sala', 'dato.coste_de_genero')).toBe('sin_acceso');
+    expect(await nivelDelRol('jefe_de_sala', 'dato.coste_de_plato')).toBe('sin_acceso');
   });
 
   it('el jefe de sala puede proponer cambios en la carta pero no publicarlos', async () => {
@@ -87,7 +87,7 @@ describe('lo que trae puesto cada rol', () => {
     //  facturacion ni la parte de plan y facturacion de Ajustes.»
     expect(await nivelDelRol('jefe_de_cocina', 'app.inventario')).toBe('ver_y_editar');
     expect(await nivelDelRol('jefe_de_cocina', 'app.escandallos')).toBe('ver_y_editar');
-    expect(await nivelDelRol('jefe_de_cocina', 'dato.coste_de_genero')).toBe('ver_y_editar');
+    expect(await nivelDelRol('jefe_de_cocina', 'dato.coste_de_plato')).toBe('ver_y_editar');
     expect(await nivelDelRol('jefe_de_cocina', 'app.negocio')).toBe('sin_acceso');
     expect(await nivelDelRol('jefe_de_cocina', 'dato.facturacion')).toBe('sin_acceso');
     expect(await nivelDelRol('jefe_de_cocina', 'dato.coste_de_personal')).toBe('sin_acceso');
@@ -100,7 +100,7 @@ describe('lo que trae puesto cada rol', () => {
       'app.inventario',
       'app.escandallos',
       'app.negocio',
-      'dato.coste_de_genero',
+      'dato.coste_de_plato',
       'dato.coste_de_personal',
       'dato.ventas',
       'accion.conectar_tpv',
@@ -139,7 +139,7 @@ describe('lo que trae puesto cada rol', () => {
   it('RRHH ve costes de personal pero no materia prima ni margenes', async () => {
     // «Con costes de personal. Sin acceso a materia prima ni a margenes.»
     expect(await nivelDelRol('rrhh', 'dato.coste_de_personal')).toBe('ver_y_editar');
-    expect(await nivelDelRol('rrhh', 'dato.coste_de_genero')).toBe('sin_acceso');
+    expect(await nivelDelRol('rrhh', 'dato.coste_de_plato')).toBe('sin_acceso');
     expect(await nivelDelRol('rrhh', 'app.negocio')).toBe('sin_acceso');
   });
 
@@ -237,7 +237,7 @@ describe('dos roles sobre el mismo local', () => {
     expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'app.inventario')).toBe(
       'ver_y_editar',
     );
-    expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'dato.coste_de_genero')).toBe(
+    expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'dato.coste_de_plato')).toBe(
       'ver_y_editar',
     );
     expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'app.cuaderno')).toBe(
@@ -247,5 +247,76 @@ describe('dos roles sobre el mismo local', () => {
     await base.bd.exec(
       `delete from estook.membresia where persona_id = '${sara}' and rol = 'jefe_de_cocina'`,
     );
+  });
+});
+
+describe('precio de compra y coste de plato son cosas distintas', () => {
+  it('la gestoria ve lo que compra el local, pero no lo que margina cada plato', async () => {
+    // «Exportar: IVA · ventas · compras · horas» pero «no ve fichas tecnicas,
+    //  ni recetas».
+    expect(await nivelDelRol('gestoria', 'dato.precio_de_compra')).toBe('ver');
+    expect(await nivelDelRol('gestoria', 'dato.coste_de_plato')).toBe('sin_acceso');
+  });
+
+  it('compras central lleva precios, no recetas', async () => {
+    // «Contratos marco y la comparativa de precios. Nada de recetas.»
+    expect(await nivelDelRol('compras_central', 'dato.precio_de_compra')).toBe('ver_y_editar');
+    expect(await nivelDelRol('compras_central', 'dato.coste_de_plato')).toBe('sin_acceso');
+  });
+
+  it('quien escandalla necesita las dos', async () => {
+    for (const rol of ['jefe_de_cocina', 'chef_corporativo', 'gerente', 'direccion']) {
+      expect(await nivelDelRol(rol, 'dato.precio_de_compra'), rol).toBe('ver_y_editar');
+      expect(await nivelDelRol(rol, 'dato.coste_de_plato'), rol).toBe('ver_y_editar');
+    }
+  });
+
+  it('el cocinero no ve ninguna de las dos', async () => {
+    expect(await nivelDelRol('cocinero', 'dato.precio_de_compra')).toBe('sin_acceso');
+    expect(await nivelDelRol('cocinero', 'dato.coste_de_plato')).toBe('sin_acceso');
+  });
+});
+
+describe('una accion no puede estar en «ver»', () => {
+  it('no se admite en la matriz de un rol', async () => {
+    await expect(
+      base.bd.exec(
+        `insert into estook.permiso_de_rol (rol, permiso, nivel)
+         values ('camarero', 'accion.conectar_tpv', 'ver')`,
+      ),
+    ).rejects.toThrow(/o se puede o no se puede/i);
+  });
+
+  it('tampoco en un recorte', async () => {
+    const sara = await base.personaPorCorreo('sara@ejemplo.estook.com');
+    const local = await base.localPorCodigo('bar-centro');
+    await expect(
+      base.bd.exec(`
+        insert into estook.recorte_de_permiso (membresia_id, local_id, permiso, nivel)
+        select m.id, '${local}', 'accion.cerrar_recuento', 'ver'
+        from estook.membresia m where m.persona_id = '${sara}'
+      `),
+    ).rejects.toThrow(/o se puede o no se puede/i);
+  });
+
+  it('pero si «sin acceso» y «ver y editar»', async () => {
+    const sara = await base.personaPorCorreo('sara@ejemplo.estook.com');
+    const local = await base.localPorCodigo('bar-centro');
+    await base.bd.exec(`
+      insert into estook.recorte_de_permiso (membresia_id, local_id, permiso, nivel)
+      select m.id, '${local}', 'accion.cerrar_recuento', 'ver_y_editar'
+      from estook.membresia m where m.persona_id = '${sara}'
+    `);
+    expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'accion.cerrar_recuento')).toBe(
+      'ver_y_editar',
+    );
+    await base.bd.exec(
+      `delete from estook.recorte_de_permiso where permiso = 'accion.cerrar_recuento' and local_id = '${local}'`,
+    );
+  });
+
+  it('y en una app o en un dato «ver» sigue teniendo sentido', async () => {
+    expect(await nivelDelRol('camarero', 'app.carta')).toBe('ver');
+    expect(await nivelDelRol('jefe_de_sala', 'dato.ventas')).toBe('ver');
   });
 });

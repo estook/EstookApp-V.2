@@ -43,6 +43,7 @@ el arranque salta ese paso y avisa.
 | `pnpm bd:revertir`      | Deshace la ultima                                     |
 | `pnpm bd:revertir:todo` | Las deshace todas, de la ultima a la primera          |
 | `pnpm bd:sembrar`       | Carga las tres semillas                               |
+| `pnpm bd:comprobar`     | Dice que hay de verdad en la base de datos            |
 
 ## Como esta organizado
 

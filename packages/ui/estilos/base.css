@@ -1,0 +1,175 @@
+/*
+ * La base: lo que vale para toda la aplicacion, sin que ninguna pantalla lo pida.
+ *
+ * Es corto a proposito. Todo lo demas lo ponen los componentes de B4, y las
+ * pantallas no escriben CSS: por eso «sin CSS suelto por ahi» (A3) se cumple de
+ * verdad y no como consejo.
+ */
+
+@layer base {
+  :root {
+    /*
+     * Los tres tamanos de letra de B2 (0,9 · 1 · 1,15). El de en medio por
+     * defecto. Lo cambia Ajustes poniendo `data-letra` en el <html>.
+     */
+    --escala: 1;
+
+    /* «Esquema claro fijo. El modo oscuro del sistema no repinta la app.» (B1) */
+    color-scheme: light;
+
+    /* Lo que ocupan las barras, para que el contenido no quede debajo. */
+    --alto-barra-movil: 60px;
+    --alto-barra-escritorio: 56px;
+  }
+
+  :root[data-letra='pequena'] {
+    --escala: 0.9;
+  }
+  :root[data-letra='grande'] {
+    --escala: 1.15;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Un ancla no se pone justo debajo de la barra fija. */
+    scroll-padding-top: calc(var(--alto-barra-escritorio) + var(--spacing-e4));
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-fondo);
+    color: var(--color-texto);
+    font-family: var(--font-marca);
+    font-size: var(--text-cuerpo);
+    line-height: 1.5;
+    /* Sin esto, en iOS un doble toque hace zoom sobre un boton. */
+    touch-action: manipulation;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /*
+   * «Las cifras siempre con font-variant-numeric: tabular-nums, para que no
+   * bailen al actualizarse.» (B2) · «Las cifras no se parten» (Manifiesto).
+   *
+   * Se pone en toda la aplicacion y no solo en el componente `Cifra`, porque una
+   * cifra tambien aparece dentro de una tabla, de una etiqueta y de una frase.
+   */
+  body,
+  input,
+  button,
+  select,
+  textarea {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * Los campos y los botones no heredan la tipografia por su cuenta: el
+   * navegador les pone la suya. Aqui **no puede ir `body`**: si va, body hereda
+   * de `html`, que trae la tipografia por defecto de Tailwind, y Montserrat se
+   * queda sin aplicar en toda la aplicacion.
+   *
+   * Paso de verdad, y lo caza la prueba de extremo a extremo que comprueba que
+   * `body` esta en Montserrat.
+   */
+  input,
+  button,
+  select,
+  textarea {
+    font-family: inherit;
+  }
+
+  /*
+   * «Foco visible siempre, con anillo naranja de 2 px.» (B8)
+   *
+   * Con `:focus-visible` y no con `:focus`: el anillo aparece al llegar con
+   * teclado, no al pulsar con el dedo.
+   *
+   * ── El filo oscuro de fuera, y por que hace falta ─────────────────────────
+   *
+   * El naranja de marca contra el fondo de la app da **2,5:1**, y B8 pide 3:1
+   * para lo que significa algo. Un anillo de foco que no se ve deja la
+   * aplicacion sin recorrer con teclado aunque tecnicamente se pueda.
+   *
+   * No se toca el naranja, que es la marca. Se le pone un filo charcoal justo
+   * por fuera: la sombra cubre de 0 a 5 px y el anillo se pinta encima de 2 a 4,
+   * asi que queda charcoal · naranja · charcoal. El conjunto contrasta 15:1 con
+   * cualquiera de los dos fondos, y el anillo sigue siendo naranja y de 2 px.
+   *
+   * Lo comprueba `contraste.prueba.ts`.
+   */
+  :focus-visible {
+    outline: 2px solid var(--color-naranja);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px rgba(17, 28, 31, 0.55);
+    border-radius: var(--radius-chico);
+  }
+
+  /* Un `:focus` sin `:focus-visible` no pinta nada, pero tampoco lo quita. */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  figure,
+  blockquote,
+  dl,
+  dd {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  img,
+  svg,
+  video {
+    display: block;
+    max-width: 100%;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  /* La seleccion, con el naranja suave de B1. */
+  ::selection {
+    background: var(--color-naranja-suave);
+    color: var(--color-texto);
+  }
+
+  /*
+   * «prefers-reduced-motion se respeta siempre: todo pasa a aparecer y
+   * desaparecer sin desplazamiento.» (B6)
+   *
+   * No se apaga la transicion del todo: se deja en 1 ms para que los `transitionend`
+   * de los que dependa algun componente sigan disparandose. Lo que se quita es el
+   * movimiento, que es lo que marea.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

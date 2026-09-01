@@ -1,0 +1,121 @@
+/*
+ * El movimiento · Parte B6 del Plan.
+ *
+ * «La animacion explica de donde viene lo que aparece. Si no explica nada,
+ * sobra.» · «Nada rebota mas de una vez, nada gira, nada parpadea.»
+ *
+ * La tabla de B6, entera, y ni un movimiento mas:
+ *
+ *   Hoja que sube en movil        desde abajo, con curva          260 ms
+ *   Panel lateral en escritorio   desde la derecha                200 ms
+ *   Rueda de apps                 desenfoque 120 ms, sectores
+ *                                 escalonados cada 30 ms          260 ms
+ *   Entrar en una app             desde el sector que se pulso    240 ms
+ *   Widget que se arrastra        levanta 4 px con sombra s3      120 ms
+ *   Cifra que cambia              cuenta desde el valor anterior  400 ms
+ *   Aviso que se cierra           se desliza y colapsa su hueco   200 ms
+ *   Deshacer                      aparece abajo, se va a los 10 s 200 ms
+ *   Cargando                      esqueleto con brillo lento      ciclo 1,4 s
+ *
+ * Las que cuentan (la cifra) van en JavaScript, porque hay que interpolar un
+ * numero. Las demas son CSS, y por eso M3 no ha necesitado traer una libreria de
+ * animacion: esta escrito en `docs/decisiones/0007`.
+ *
+ * `prefers-reduced-motion` lo apaga todo desde `base.css`, sin que ninguna de
+ * estas reglas tenga que acordarse.
+ */
+
+@keyframes estook-sube {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes estook-entra-derecha {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes estook-aparece {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* La rueda: cada sector entra con un pelin de escala, no rebotando. */
+@keyframes estook-sector {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Deshacer: sube desde abajo del todo. */
+@keyframes estook-deshacer {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * «Cargando: esqueleto con brillo lento, ciclo de 1,4 s.»
+ * «Esqueletos, nunca ruedas girando» (B4). Nada gira en Estook.
+ */
+@keyframes estook-esqueleto {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@utility anima-sube {
+  animation: estook-sube 260ms var(--curva);
+}
+
+@utility anima-derecha {
+  animation: estook-entra-derecha var(--normal) var(--curva);
+}
+
+@utility anima-aparece {
+  animation: estook-aparece var(--rapido) var(--curva);
+}
+
+@utility anima-sector {
+  animation: estook-sector 260ms var(--curva) backwards;
+}
+
+@utility anima-deshacer {
+  animation: estook-deshacer var(--normal) var(--curva);
+}
+
+@utility esqueleto {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-borde) 25%,
+    var(--color-fondo) 50%,
+    var(--color-borde) 75%
+  );
+  background-size: 200% 100%;
+  animation: estook-esqueleto 1.4s linear infinite;
+}

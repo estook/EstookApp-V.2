@@ -1,12 +1,15 @@
 import { estadoDeLasBanderas } from '@estook/utiles';
 import type { Entorno } from '@estook/utiles';
+import { Tarjeta, TodaviaNo } from '@estook/ui';
 
 /**
- * Pantalla de cimientos (M0).
+ * La web publica · todavia sin producto.
  *
- * No es producto: es la prueba de que la aplicacion arranca, sabe en que entorno
- * esta, tiene su identificador de correlacion y lee las banderas de funcion.
- * En M3 la sustituye el esqueleto de verdad (barra, rueda de apps y Panel).
+ * Desde M3 usa el sistema de diseno en vez de su propio CSS: era una copia
+ * identica del de las otras tres aplicaciones, que es justo lo que la Parte B
+ * existe para que no pase.
+ *
+ * Lo que va aqui lo construye la Parte C del Plan.
  */
 export interface CimientosProps {
   readonly aplicacion: string;
@@ -17,34 +20,40 @@ export interface CimientosProps {
 export function Cimientos({ aplicacion, entorno, sesionId }: CimientosProps) {
   const banderas = estadoDeLasBanderas(entorno, import.meta.env);
 
-  // Solo si esta declarada, nunca su valor: sirve para comprobar de un vistazo
-  // que las variables del repositorio han llegado a lo publicado.
-  const baseDeDatos = import.meta.env['VITE_SUPABASE_URL'] ? 'configurada' : 'sin configurar';
-
   return (
-    <main className="cimientos">
-      <p className="marca">ESTOOK</p>
-      <h1>{aplicacion}</h1>
-      <p className="claim">Tu cocina, bajo control.</p>
+    <main className="mx-auto flex w-full max-w-[42rem] flex-col gap-e4 px-e4 py-e7">
+      <header>
+        <p className="text-etiqueta uppercase tracking-[0.18em] text-texto-suave">Estook</p>
+        <h1 className="text-pantalla font-semibold">La web publica</h1>
+        <p className="text-secundario text-naranja">Tu cocina, bajo control.</p>
+      </header>
 
-      <dl>
-        <dt>Entorno</dt>
-        <dd>{entorno}</dd>
-        <dt>Sesion</dt>
-        <dd>{sesionId}</dd>
-        <dt>Base de datos</dt>
-        <dd>{baseDeDatos}</dd>
-        <dt>Banderas</dt>
-        <dd>
-          {Object.entries(banderas)
-            .map(([nombre, encendida]) => `${nombre}: ${encendida ? 'si' : 'no'}`)
-            .join(' · ')}
-        </dd>
-      </dl>
+      <Tarjeta>
+        <TodaviaNo
+          que="La web publica"
+          queHabra="El encabezado, el problema con numeros, las ocho apps, como se conecta con tu TPV y los documentos de muestra."
+          modulo="la Parte C del Plan"
+        />
+      </Tarjeta>
 
-      <p className="nota">
-        M0 · cimientos y disciplina. Aqui todavia no hay producto, y es a proposito.
-      </p>
+      <Tarjeta titulo="Como ha arrancado" origen="Comprobacion de M0, que sigue en pie">
+        <dl className="grid grid-cols-[7rem_1fr] gap-x-e4 gap-y-e2 text-secundario">
+          <dt className="text-texto-suave">Aplicacion</dt>
+          <dd>{aplicacion}</dd>
+          <dt className="text-texto-suave">Entorno</dt>
+          <dd>{entorno}</dd>
+          <dt className="text-texto-suave">Sesion</dt>
+          <dd className="break-all">{sesionId}</dd>
+          <dt className="text-texto-suave">Base de datos</dt>
+          <dd>{import.meta.env['VITE_SUPABASE_URL'] ? 'configurada' : 'sin configurar'}</dd>
+          <dt className="text-texto-suave">Banderas</dt>
+          <dd>
+            {Object.entries(banderas)
+              .map(([nombre, encendida]) => `${nombre}: ${encendida ? 'si' : 'no'}`)
+              .join(' · ')}
+          </dd>
+        </dl>
+      </Tarjeta>
     </main>
   );
 }

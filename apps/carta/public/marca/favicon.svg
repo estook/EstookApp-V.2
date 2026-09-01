@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Estook">
+  <!--
+    El favicon. Es el simbolo, centrado sobre un lienzo cuadrado con margen, que
+    es lo que pide una pestana: sin margen, la marca toca el borde y se ve sucia.
+
+    Sin fondo a proposito: asi se ve bien en la pestana clara y en la oscura.
+  -->
+  <g transform="translate(184.5 156) scale(0.66)" fill="#111C1F">
+    <rect x="0" y="0" width="855" height="150" rx="22" />
+    <rect x="0" y="0" width="160" height="460" rx="22" />
+    <rect x="0" y="310" width="855" height="150" rx="22" />
+    <rect x="0" y="815" width="855" height="155" rx="22" />
+    <path d="M322 940 H533 L427.5 1075 Z" />
+  </g>
+  <rect x="184.5" y="532.2" width="564.3" height="102.3" rx="14.5" fill="#FF7A00" />
+</svg>

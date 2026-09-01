@@ -61,15 +61,35 @@ export default tseslint.config(
     rules: { 'no-restricted-syntax': 'off' },
   },
 
-  // Las cuatro aplicaciones: React en el navegador.
+  // Las cuatro aplicaciones y el sistema de diseno: React en el navegador.
   {
-    files: ['apps/**/src/**/*.{ts,tsx}'],
+    files: ['apps/**/src/**/*.{ts,tsx}', 'packages/ui/src/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     languageOptions: { globals: globals.browser },
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
+  },
+
+  // Los ganchos propios se llaman en espanol: `usarDeshacer`, `usarSesion`.
+  //
+  // `react-hooks/rules-of-hooks` reconoce un gancho por el nombre, y solo entiende
+  // el prefijo `use`. Con nombres en espanol cree que se esta llamando a un gancho
+  // desde una funcion normal, y protesta por algo que esta bien.
+  //
+  // De las dos reglas del plugin, la que de verdad caza errores aqui es
+  // `exhaustive-deps`, **y esa sigue encendida**: mira las llamadas a `useEffect`,
+  // `useMemo` y `useCallback`, que se llaman igual en cualquier idioma. Lo que se
+  // apaga, y solo en los ficheros que declaran ganchos, es la comprobacion de
+  // «esto se llama desde un sitio valido», que dentro de los componentes (que si
+  // van en mayuscula) se sigue haciendo entera.
+  //
+  // La alternativa era escribir los ganchos en ingles, y no compensa: el proyecto
+  // entero esta en espanol a proposito, y esto seria la unica excepcion.
+  {
+    files: ['**/ganchos/**/*.{ts,tsx}', 'apps/**/src/sesion/*.tsx'],
+    rules: { 'react-hooks/rules-of-hooks': 'off' },
   },
 
   // Servidor y herramientas: Node, y ahi si se puede escribir por consola.

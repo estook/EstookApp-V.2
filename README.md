@@ -46,6 +46,15 @@ el arranque salta ese paso y avisa.
 | `pnpm bd:comprobar`     | Dice que hay de verdad en la base de datos            |
 | `pnpm bd:comprobar-api` | Arranca la API y la prueba contra Supabase de verdad  |
 
+Y tres que se ejecutan **una sola vez** y suben lo que sacan al repositorio, para
+que construir no dependa de que nadie esté en pie:
+
+| Comando                                 | Que trae                                 |
+| --------------------------------------- | ---------------------------------------- |
+| `node herramientas/traer-fuentes.mjs`   | Montserrat en WOFF2, autoalojada (B2)    |
+| `node herramientas/traer-iconos.mjs`    | Los 50 iconos de Lucide que se usan (B3) |
+| `node herramientas/iconos-de-marca.mjs` | Los PNG de aplicacion, desde el SVG      |
+
 ## Como esta organizado
 
 ```
@@ -53,7 +62,7 @@ apps/         web · app · carta · admin
 packages/     dominio · ui · iconos · cliente-api · permisos · documentos · utiles
 servidor/     api -> aplicacion -> dominio · infraestructura · eventos · trabajos · conectores · ia
 base-de-datos/ migraciones · politicas · vistas · semillas
-docs/         reglas · plantilla de tarea · entornos · decisiones
+docs/         reglas · plantilla de tarea · entornos · decisiones · auditorias
 pruebas/      extremo a extremo
 ```
 
@@ -68,6 +77,8 @@ continua bloquea la fusion si se incumple.
 - [La plantilla de tarea](docs/plantilla-tarea.md)
 - [Los entornos y las banderas](docs/entornos.md)
 - [Las decisiones tomadas](docs/decisiones/)
+- [El sistema de diseño](packages/ui/estilos/fichas.css) · fichas, tipografía y movimiento
+- [Las auditorías de flujos, por módulo](docs/auditorias/)
 - [Donde vive cada clave](config/claves.md)
 
 ## Las claves

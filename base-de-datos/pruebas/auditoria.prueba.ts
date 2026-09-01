@@ -125,11 +125,23 @@ describe('que se guarda en cada linea', () => {
     expect(rows[0]?.motivo).toBe('Subida de proveedor');
   });
 
-  it('una linea sin organizacion no se admite', async () => {
+  it('una linea sin organizacion es de la plataforma, no de un cliente', async () => {
+    // Desde M2 la organizacion puede ir vacia, y significa «esto no es de nadie
+    // en concreto»: un cambio en las reglas fiscales, por ejemplo. Las politicas
+    // de seguridad no ensenan esas lineas a ningun cliente.
+    await base.bd.exec(
+      `insert into estook.auditoria (organizacion_id, accion, entidad, entidad_id)
+       values (null, 'crear', 'regla_fiscal', 'de-plataforma')`,
+    );
+    const { rows } = await base.bd.query<{ cuantas: number }>(
+      `select count(*)::int as cuantas from estook.auditoria where entidad_id = 'de-plataforma'`,
+    );
+    expect(rows[0]?.cuantas).toBe(1);
+  });
+
+  it('pero la accion y la entidad siguen sin poder ir vacias', async () => {
     await expect(
-      base.bd.exec(
-        `insert into estook.auditoria (organizacion_id, accion, entidad) values (null, 'crear', 'producto')`,
-      ),
+      base.bd.exec(`insert into estook.auditoria (accion, entidad) values ('   ', 'producto')`),
     ).rejects.toThrow();
   });
 });

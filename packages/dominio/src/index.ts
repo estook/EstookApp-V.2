@@ -45,6 +45,7 @@ export {
   repartirEnPartesIguales,
   enEuros,
   conSimbolo,
+  entreFactor,
 } from './dinero.ts';
 
 export type { Centimos } from './dinero.ts';
@@ -80,3 +81,35 @@ export {
 } from './coste.ts';
 
 export type { Milesimas, Cantidad, Conversion, Existencias } from './coste.ts';
+
+// ── M2 · fiscal · un producto no tiene tipo; lo tiene la operacion ────────────
+export {
+  TERRITORIOS,
+  REGIMENES,
+  REGIMEN_DEL_TERRITORIO,
+  NATURALEZAS,
+  MODOS_DE_CONSUMO,
+  CATEGORIAS_FISCALES,
+  ACTIVIDADES,
+  MODOS_DE_PRECIO,
+  resolver,
+  copiaFiscalDe,
+  desglosar,
+} from './fiscal.ts';
+
+export type {
+  Territorio,
+  Regimen,
+  Naturaleza,
+  ModoDeConsumo,
+  CategoriaFiscal,
+  Actividad,
+  ReglaFiscal,
+  ContextoFiscal,
+  Resolucion,
+  CopiaFiscal,
+  ModoDePrecio,
+  LineaAFacturar,
+  GrupoFiscal,
+  Desglose,
+} from './fiscal.ts';

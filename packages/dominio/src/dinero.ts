@@ -142,3 +142,17 @@ export function enEuros(cantidad: Centimos): string {
 export function conSimbolo(cantidad: Centimos): string {
   return `${enEuros(cantidad)} €`;
 }
+
+/**
+ * Divide entre un factor y redondea al céntimo.
+ *
+ * Es la operación que saca la base imponible de un precio con impuesto incluido:
+ * 14,50 € al 10 % tienen una base de 14,50 ÷ 1,10. Vive aquí, y no en el motor
+ * fiscal, porque el redondeo del dinero tiene un solo dueño (regla 6).
+ */
+export function entreFactor(cantidad: Centimos, factor: number): Centimos {
+  if (!Number.isFinite(factor) || factor === 0) {
+    throw new Error(`No se puede dividir entre «${factor}».`);
+  }
+  return centimos(Math.round(Number((cantidad / factor).toFixed(6))));
+}

@@ -95,7 +95,7 @@ export {
   resolver,
   copiaFiscalDe,
   desglosar,
-} from './fiscal.ts';
+} from './fiscal/index.ts';
 
 export type {
   Territorio,
@@ -112,7 +112,7 @@ export type {
   LineaAFacturar,
   GrupoFiscal,
   Desglose,
-} from './fiscal.ts';
+} from './fiscal/index.ts';
 
 // ── M2 · textos · espanol de Espana, sin jerga y sin emojis ───────────────────
 export {

@@ -1,13 +1,19 @@
+/**
+ * Pasa de 300 lineas a proposito, y la regla lo permite justificandolo: es la
+ * historia completa de un motor contada de arriba abajo. Partirla en tres
+ * ficheros obligaria a saltar entre ellos para entender un solo caso, que es
+ * justo lo que la regla quiere evitar.
+ */
 import { describe, expect, it } from 'vitest';
-import { desdeEuros } from './dinero.ts';
-import { fechaOperativa } from './tiempo.ts';
+import { desdeEuros } from '../dinero.ts';
+import { fechaOperativa } from '../tiempo.ts';
 import {
   copiaFiscalDe,
   desglosar,
   resolver,
   type ContextoFiscal,
   type ReglaFiscal,
-} from './fiscal.ts';
+} from './index.ts';
 
 /** Una regla mínima a la que se le cambia solo lo que interesa en cada prueba. */
 function regla(cambios: Partial<ReglaFiscal> & Pick<ReglaFiscal, 'id' | 'tipo'>): ReglaFiscal {

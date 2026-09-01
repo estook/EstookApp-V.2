@@ -24,14 +24,22 @@ export interface Contexto {
   readonly ahora: Date;
 }
 
-/** Lo que puede salir mal, dicho con el catalogo de errores en cristiano. */
+/**
+ * Lo que puede salir mal, dicho con el catalogo de errores en cristiano.
+ *
+ * Escrito sin propiedades de constructor a proposito: asi el fichero se puede
+ * ejecutar tal cual en cualquier sitio que solo sepa quitar los tipos, sin
+ * compilar. Es lo que permite arrancar la API contra Supabase sin construir nada.
+ */
 export class FalloDeAplicacion extends Error {
-  constructor(
-    readonly codigo: CodigoDeError,
-    readonly detalle?: Record<string, unknown>,
-  ) {
+  readonly codigo: CodigoDeError;
+  readonly detalle: Record<string, unknown> | undefined;
+
+  constructor(codigo: CodigoDeError, detalle?: Record<string, unknown>) {
     super(codigo);
     this.name = 'FalloDeAplicacion';
+    this.codigo = codigo;
+    this.detalle = detalle;
   }
 }
 

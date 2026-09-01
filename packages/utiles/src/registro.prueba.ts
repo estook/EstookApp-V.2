@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { crearRegistro } from './registro.ts';
 import type { Linea } from './registro.ts';
-import { esCorrelacionId } from './correlacion.ts';
+import { esCorrelacionId, nuevaCorrelacionId, nuevaSesionId } from './correlacion.ts';
 
 function registroDePrueba() {
   const lineas: Linea[] = [];
@@ -57,5 +57,44 @@ describe('registro', () => {
     const { registro, lineas } = registroDePrueba();
     registro.depuracion('detalle caro');
     expect(lineas).toHaveLength(0);
+  });
+});
+
+describe('sesion y correlacion son cosas distintas', () => {
+  /**
+   * Lo pregunto Richi al ver que el numero cambiaba en cada recarga: «es
+   * normal?». Si lo es, y al comprobarlo aparecio que la pantalla llamaba
+   * «correlacion» a lo que en realidad era la sesion.
+   *
+   *   Una sesion  = una visita. Cambia al recargar, y tiene que cambiar.
+   *   Una correlacion = una accion dentro de esa visita.
+   *
+   * Una sesion contiene muchas correlaciones. Si hubiera una sola para toda la
+   * visita, en un turno de ocho horas ese numero no distinguiria nada.
+   */
+  it('cada visita tiene su sesion, y son distintas', () => {
+    expect(nuevaSesionId()).not.toBe(nuevaSesionId());
+  });
+
+  it('cada accion tiene su correlacion, y son distintas', () => {
+    expect(nuevaCorrelacionId()).not.toBe(nuevaCorrelacionId());
+  });
+
+  it('una sesion agrupa muchas acciones sin perder de vista cual es cual', () => {
+    const sesion = nuevaSesionId();
+    const lineas: Linea[] = [];
+    const registroDeLaVisita = crearRegistro({
+      base: { sesion_id: sesion },
+      escribir: (l) => lineas.push(l),
+    });
+
+    // Dos acciones distintas dentro de la misma visita.
+    registroDeLaVisita.con({ correlacion_de_accion: nuevaCorrelacionId() }).informacion('merma');
+    registroDeLaVisita.con({ correlacion_de_accion: nuevaCorrelacionId() }).informacion('agotado');
+
+    expect(lineas).toHaveLength(2);
+    expect(lineas[0]?.sesion_id).toBe(sesion);
+    expect(lineas[1]?.sesion_id).toBe(sesion);
+    expect(lineas[0]?.correlacion_de_accion).not.toBe(lineas[1]?.correlacion_de_accion);
   });
 });

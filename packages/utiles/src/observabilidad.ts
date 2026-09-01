@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/browser';
 import type { Entorno } from './entorno.ts';
-import { nuevaCorrelacionId } from './correlacion.ts';
+import { nuevaSesionId } from './correlacion.ts';
 
 /**
  * Sentry (M0), detras de nuestra propia puerta.
@@ -16,14 +16,14 @@ export interface OpcionesDeObservabilidad {
   readonly entorno: Entorno;
   readonly aplicacion: 'web' | 'app' | 'carta' | 'admin';
   readonly version: string;
-  /** El identificador que compartiran todos los sucesos de esta sesion. */
-  readonly correlacion_id?: string;
+  /** El hilo de esta visita. Si no se pasa, se crea uno. */
+  readonly sesion_id?: string;
 }
 
 export function arrancarObservabilidad(opciones: OpcionesDeObservabilidad): string {
-  const correlacion_id = opciones.correlacion_id ?? nuevaCorrelacionId();
+  const sesion_id = opciones.sesion_id ?? nuevaSesionId();
 
-  if (!opciones.dsn) return correlacion_id;
+  if (!opciones.dsn) return sesion_id;
 
   Sentry.init({
     dsn: opciones.dsn,
@@ -38,10 +38,10 @@ export function arrancarObservabilidad(opciones: OpcionesDeObservabilidad): stri
 
   Sentry.setTags({
     aplicacion: opciones.aplicacion,
-    correlacion_id,
+    sesion_id,
   });
 
-  return correlacion_id;
+  return sesion_id;
 }
 
 /** Marca quien esta dentro, sin datos personales: solo los identificadores. */

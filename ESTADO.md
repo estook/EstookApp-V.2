@@ -8,7 +8,7 @@
 ## Dónde estamos
 
 **M1 · Modelo maestro: alcances, roles y permisos — terminado, probado y aplicado
-en Supabase.** Falta fusionar la rama `m1-afinar-permisos`.
+en Supabase.** Falta fusionar la rama `m1-fogon-y-cuadrantes`.
 
 Módulos terminados: **M0 ✓** · **M1 ✓** (con una salvedad, más abajo)
 
@@ -29,9 +29,9 @@ Lo que hay creado ahí, comprobado con `pnpm bd:comprobar`:
 
 | Qué                            | Cuánto                                                  |
 | ------------------------------ | ------------------------------------------------------- |
-| Migraciones aplicadas          | 9 de 9                                                  |
+| Migraciones aplicadas          | 10 de 10                                                |
 | Tablas en el esquema `estook`  | 14, **todas con seguridad por filas**                   |
-| Roles · permisos · concesiones | 12 · 33 · 162                                           |
+| Roles · permisos · concesiones | 12 · 33 · 166                                           |
 | Organizaciones de ejemplo      | Bar Centro (1 local) y Grupo Costa (6 locales, 2 áreas) |
 | Personas de ejemplo            | 7                                                       |
 | Tablas en el esquema `public`  | **0**                                                   |
@@ -62,13 +62,13 @@ preparadas, que el agrupador no lleva bien.
 | Traducciones y dispositivos con revocación        | idem                                          |
 | La matriz compartida cliente/servidor             | `packages/permisos/`, `packages/dominio/`     |
 
-**84 pruebas, todas pasando**, contra Postgres de verdad y con `set role
+**93 pruebas, todas pasando**, contra Postgres de verdad y con `set role
 estook_api`, que es como se conectará la API. Nada se prueba desde una pantalla.
 
 ## El repaso de la matriz · qué salió
 
-Richi pidió repasarla «por si algo se me escapa». Salieron cinco cosas. Dos
-arregladas en la migración `0009`, tres pendientes de decidir.
+Richi pidió repasarla «por si algo se me escapa». Salieron cinco cosas. Las cinco
+están resueltas: dos en la migración `0009` y tres en la `0010`.
 
 ### Arregladas
 
@@ -86,26 +86,45 @@ arregladas en la migración `0009`, tres pendientes de decidir.
      márgenes. Con un solo permiso eso no se podía expresar.
    - Compras central lleva «la comparativa de precios» pero «nada de recetas».
 
-### Pendientes de decidir · preguntas para Richi
+### Resueltas por Richi el 1 de septiembre · migración `0010`
 
-3. **¿Quién tiene Fogón?** El Manifiesto dice que «Fogón ve exactamente lo que ve
-   quien pregunta», lo que sugiere que puede usarlo mucha gente sin riesgo. Pero
-   ningún documento dice qué roles lo llevan. Ahora mismo lo tienen jefe de
-   cocina, gerente, area manager, dirección, chef corporativo y compras central.
-   **No lo tienen camarero, cocinero, jefe de sala ni RRHH.** No lo he inventado:
-   hace falta decidirlo.
+3. **Fogón lo usa todo el mundo, pero no todos igual.** Encaja en la escalera que
+   ya existía, sin inventar vocabulario:
+   - **`ver` · Fogón acotado.** Pregunta y explica lo que esa persona ya ve en
+     pantalla («explícame esto», «explica lo que ves»). No propone cambios ni
+     rellena. Lo tienen **camarero y cocinero**.
+   - **`ver_y_editar` · Fogón completo.** Además propone y rellena, y una persona
+     aprueba (principio 10). Lo tienen **jefe de sala** (igual que el jefe de
+     cocina, tal como pidió Richi), jefe de cocina, gerente, area manager,
+     dirección, chef corporativo, compras central y RRHH.
+   - **Sin Fogón:** gestoría (su vista son cuatro cosas y ninguna rueda) y
+     administrador de cuenta (sin operación diaria). Es lectura mía, fácil de
+     cambiar si hace falta.
 
-4. **¿El cocinero marca platos agotados?** El documento lo dice del camarero,
-   pero no del cocinero. Se lo he dado, porque quien se queda sin género en la
-   cocina es quien primero lo sabe. Es una decisión mía y conviene confirmarla.
+   Sigue valiendo el principio 11: Fogón ve exactamente lo que ve quien pregunta.
+   El acotado no ve menos datos, **hace menos cosas**; los datos los siguen
+   filtrando los permisos de siempre, y hay una prueba que lo comprueba.
 
-5. **«Cuadrante de sala» y «cuadrante de cocina» todavía no existen como
-   concepto.** El documento dice que el jefe de sala lleva el cuadrante de sala y
-   el jefe de cocina el de cocina, y que cada uno ve «las fichas de su equipo».
-   Pero no hay noción de sección ni de equipo hasta M13 y M14. De momento los dos
-   tienen `dato.cuadrante_completo`, que es **más de lo que dice el documento**.
-   Inventar ahora un modelo de secciones sería peor. **Se afina en M13/M14**, y
-   queda escrito aquí para que no se olvide.
+4. **Marcar un plato agotado lo hace cualquiera del local.** Camarero, cocinero,
+   jefe de sala, jefe de cocina y gerente. Palabras de Richi: «entre ellos
+   también se ayudan». En un local pequeño no hay fronteras rígidas entre sala y
+   cocina, y quien ve que se ha acabado el pulpo lo apunta, sea quien sea. Lo
+   mismo vale para apuntar una merma.
+
+5. **Los dos jefes llevan los dos cuadrantes.** «Hay ocasiones en que uno hace
+   los dos», así que jefe de sala y jefe de cocina pueden con el de sala y el de
+   cocina, por separado o juntos. Deja de ser una simplificación pendiente: es la
+   decisión.
+
+   **Lo que queda para M14 es cómo se ENSEÑA**, no quién puede: junto, separado
+   por sección o individual, con su resumen en el Panel, y todo personalizable.
+   Eso es presentación y no toca estos permisos.
+
+   Cuidado con no confundir dos cosas que siguen siendo distintas: ver **tu**
+   turno y con quién lo haces lo tiene todo el mundo (sale en el Panel del
+   camarero tal como lo dibuja el documento de Roles); ver el **cuadrante
+   completo** del local es otra cosa, y el documento dice expresamente que un
+   camarero no lo tiene.
 
 ## La salvedad de M1
 
@@ -135,14 +154,14 @@ De M1, anotadas aquí:
 
 ## Lo que falta, y es cosa de Richi
 
-| #   | Qué                                                       | Cuándo      |
-| --- | --------------------------------------------------------- | ----------- |
-| 1   | Fusionar la rama `m1-afinar-permisos`                     | ahora       |
-| 2   | Contestar las tres preguntas del repaso de la matriz      | antes de M3 |
-| 3   | Declarar las variables públicas del repositorio en GitHub | antes de M4 |
-| 4   | Apagar «Automatically expose new tables» en Supabase      | sin prisa   |
-| 5   | Conseguir los SVG de marca (los PNG ya están, pero pesan) | **M3**      |
-| 6   | Regenerar las claves de Google, que pasaron por un chat   | M27         |
+| #   | Qué                                                               | Cuándo      |
+| --- | ----------------------------------------------------------------- | ----------- |
+| 1   | Fusionar la rama `m1-fogon-y-cuadrantes`                          | ahora       |
+| 2   | ~~Contestar las preguntas del repaso~~ · hecho el 1 de septiembre | ✓           |
+| 3   | Declarar las variables públicas del repositorio en GitHub         | antes de M4 |
+| 4   | Apagar «Automatically expose new tables» en Supabase              | sin prisa   |
+| 5   | Conseguir los SVG de marca (los PNG ya están, pero pesan)         | **M3**      |
+| 6   | Regenerar las claves de Google, que pasaron por un chat           | M27         |
 
 Las variables del repositorio (Settings → Secrets and variables → Actions →
 Variables) son estas, y son públicas por naturaleza:

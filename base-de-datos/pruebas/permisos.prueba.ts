@@ -320,3 +320,72 @@ describe('una accion no puede estar en «ver»', () => {
     expect(await nivelDelRol('jefe_de_sala', 'dato.ventas')).toBe('ver');
   });
 });
+
+describe('quien usa Fogon', () => {
+  it('el camarero y el cocinero lo tienen acotado', async () => {
+    // «Solo en ciertas funciones: tipo boton "explicame esto" o "explica lo que
+    //  ves". Mas acotado y limitado.»
+    expect(await nivelDelRol('camarero', 'app.fogon')).toBe('ver');
+    expect(await nivelDelRol('cocinero', 'app.fogon')).toBe('ver');
+  });
+
+  it('el jefe de sala lo tiene igual que el jefe de cocina', async () => {
+    // «El jefe de sala si, es como el jefe de cocina.»
+    const sala = await nivelDelRol('jefe_de_sala', 'app.fogon');
+    const cocina = await nivelDelRol('jefe_de_cocina', 'app.fogon');
+    expect(sala).toBe(cocina);
+    expect(sala).toBe('ver_y_editar');
+  });
+
+  it('la gestoria no lo tiene: su vista son cuatro cosas y ninguna rueda', async () => {
+    expect(await nivelDelRol('gestoria', 'app.fogon')).toBe('sin_acceso');
+  });
+
+  it('nadie que lo tenga acotado puede llegar a lo que no ve', async () => {
+    // Principio 11: Fogon ve exactamente lo que ve quien pregunta. El acotado no
+    // ve menos datos: hace menos cosas. Los datos los siguen filtrando estos.
+    expect(await nivel('marcos@ejemplo.estook.com', 'bar-centro', 'dato.coste_de_plato')).toBe(
+      'sin_acceso',
+    );
+    expect(await nivel('marcos@ejemplo.estook.com', 'bar-centro', 'dato.ventas')).toBe(
+      'sin_acceso',
+    );
+  });
+});
+
+describe('entre ellos se ayudan', () => {
+  it('cualquiera del local puede marcar un plato agotado', async () => {
+    // «Incluso un camarero tambien, y un jefe de sala. Entre ellos se ayudan.»
+    for (const rol of ['camarero', 'cocinero', 'jefe_de_sala', 'jefe_de_cocina', 'gerente']) {
+      expect(await nivelDelRol(rol, 'accion.marcar_agotado'), rol).toBe('ver_y_editar');
+    }
+  });
+
+  it('y cualquiera del local puede apuntar una merma', async () => {
+    for (const rol of ['camarero', 'cocinero', 'jefe_de_sala', 'jefe_de_cocina', 'gerente']) {
+      expect(await nivelDelRol(rol, 'accion.registrar_merma'), rol).toBe('ver_y_editar');
+    }
+  });
+});
+
+describe('los cuadrantes', () => {
+  it('los dos jefes llevan los dos cuadrantes, sala y cocina', async () => {
+    // «Hay ocasiones en que uno hace los dos.»
+    for (const rol of ['jefe_de_sala', 'jefe_de_cocina']) {
+      expect(await nivelDelRol(rol, 'dato.cuadrante_completo'), rol).not.toBe('sin_acceso');
+      expect(await nivelDelRol(rol, 'accion.publicar_cuadrante'), rol).toBe('ver_y_editar');
+    }
+  });
+
+  it('pero un camarero no ve el cuadrante completo', async () => {
+    // El documento de Roles lo dice expreso. Ver tu turno y con quien lo haces
+    // es otra cosa, y eso si lo tiene todo el mundo.
+    expect(await nivelDelRol('camarero', 'dato.cuadrante_completo')).toBe('sin_acceso');
+    expect(await nivelDelRol('cocinero', 'dato.cuadrante_completo')).toBe('sin_acceso');
+  });
+
+  it('ni puede publicarlo', async () => {
+    expect(await nivelDelRol('camarero', 'accion.publicar_cuadrante')).toBe('sin_acceso');
+    expect(await nivelDelRol('cocinero', 'accion.publicar_cuadrante')).toBe('sin_acceso');
+  });
+});

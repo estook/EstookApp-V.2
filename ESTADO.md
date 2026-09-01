@@ -95,7 +95,6 @@ tipo. Está en [`docs/decisiones/0006`](docs/decisiones/0006-el-motor-fiscal.md)
 | Qué                                                                   | Cuándo                                                                         |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | Quitar «Automatically expose new tables» en Supabase → Settings → API | antes de clientes                                                              |
-| Borrar las ramas ya fusionadas en GitHub                              | cuando quieras                                                                 |
 | Regenerar las claves de Google, que pasaron por un chat               | M27                                                                            |
 | Volver a `BrowserRouter` cuando haya `estook.com`                     | cuando haya dominio ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md)) |
 

@@ -23,13 +23,8 @@
 
 ### Ahora
 
-**Declarar el DSN de Sentry.** Richi creó la cuenta y el proyecto `estook-app` el
-1 de septiembre de 2026, con solo «Error monitoring» encendido y el repositorio
-enlazado. Falta el último paso: copiar el DSN del proyecto y declararlo en GitHub
-→ Settings → Secrets and variables → Actions → **Variables**, con el nombre
-`VITE_SENTRY_DSN`.
-
-Hasta que esté, si algo se rompe en la web publicada nadie se entera.
+**Nada.** No hay ramas sueltas, ni preguntas abiertas, ni decisiones inventadas
+esperando validación. Se puede empezar M2.
 
 ### Sin prisa
 
@@ -65,12 +60,20 @@ Comprobado con `pnpm bd:comprobar` contra la base de datos de verdad:
 La conexión va por el agrupador de sesión de Supabase, porque la conexión directa
 de los proyectos nuevos solo funciona por IPv6.
 
+**Errores:** proyecto `estook-app` en Sentry, con solo «Error monitoring»
+encendido y el repositorio enlazado. Comprobado en lo publicado: Sentry está
+dentro, con su DSN, y cada aplicación se identifica con el commit exacto que se
+publicó, para que Sentry pueda señalar qué cambio provocó un fallo.
+
 **Variables del repositorio** (GitHub → Settings → Secrets and variables →
-Actions → Variables): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` y
-`VITE_APP_URL`, las tres declaradas. Falta `VITE_SENTRY_DSN` (apartado 2).
-`VITE_BASE` no hace falta: se deduce del
-nombre del repositorio. La clave `sb_secret_` **nunca** va en GitHub: vive solo en
-los secretos de Supabase. Todo en [`config/claves.md`](config/claves.md).
+Actions → Variables): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
+`VITE_APP_URL` y `VITE_SENTRY_DSN`, las cuatro declaradas. `VITE_BASE` y
+`VITE_VERSION` no hacen falta: las rellena solo el flujo de publicación. **En
+Secrets no hay nada**, y es correcto: lo verdaderamente secreto vive solo en
+Supabase. Todo en [`config/claves.md`](config/claves.md).
+
+**El peso real de lo publicado:** 72 KB comprimidos por aplicación, de 250
+permitidos. Medido descargándolo, no calculado.
 
 ---
 

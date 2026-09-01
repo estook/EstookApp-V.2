@@ -216,3 +216,42 @@ describe('coherencia del modelo', () => {
     ).rejects.toThrow();
   });
 });
+
+describe('la identidad no se pega a la conexion', () => {
+  /**
+   * Decision 0005. Las Edge Functions van contra el agrupador en modo
+   * transaccion, donde una misma conexion se reparte entre peticiones de
+   * personas distintas. Si la identidad se declarase con un `set` normal, se
+   * quedaria pegada y la heredaria quien viniera despues: el camarero de un bar
+   * leyendo los datos de otro.
+   *
+   * Estas dos pruebas son la red que impide que eso se cuele algun dia.
+   */
+  it('con `set local`, muere al terminar la transaccion', async () => {
+    const rosa = await base.personaPorCorreo('rosa@ejemplo.estook.com');
+
+    await base.bd.exec('begin');
+    await base.bd.exec(`set local estook.persona_id = '${rosa}'`);
+    const dentro = await base.bd.query<{ quien: string | null }>(
+      'select estook.persona_actual() as quien',
+    );
+    await base.bd.exec('commit');
+
+    const fuera = await base.bd.query<{ quien: string | null }>(
+      'select estook.persona_actual() as quien',
+    );
+
+    expect(dentro.rows[0]?.quien, 'dentro de la transaccion si se sabe quien es').toBe(rosa);
+    expect(fuera.rows[0]?.quien, 'fuera ya no, o se filtraria a la siguiente peticion').toBeNull();
+  });
+
+  it('y sin identidad no se ve nada, que es el fallo seguro', async () => {
+    const cuantos = await base.comoPersona(null, async () => {
+      const { rows } = await base.bd.query<{ cuantos: number }>(
+        'select count(*)::int as cuantos from estook.local',
+      );
+      return rows[0]?.cuantos;
+    });
+    expect(cuantos).toBe(0);
+  });
+});

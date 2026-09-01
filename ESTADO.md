@@ -9,12 +9,13 @@
 
 ## 1 · Dónde estamos
 
-|                       |                                                           |
-| --------------------- | --------------------------------------------------------- |
-| **Terminados**        | **M0 ✓** cimientos · **M1 ✓** alcances, roles y permisos  |
-| **Siguiente**         | **M2** · núcleo técnico y motores transversales           |
-| **Pruebas**           | 93 unitarias y de base de datos · 16 de extremo a extremo |
-| **Rama sin fusionar** | `m1-fogon-y-cuadrantes`                                   |
+|                |                                                           |
+| -------------- | --------------------------------------------------------- |
+| **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances, roles y permisos  |
+| **Siguiente**  | **M2** · núcleo técnico y motores transversales           |
+| **Pruebas**    | 95 unitarias y de base de datos · 16 de extremo a extremo |
+| **`main`**     | todo fusionado, árbol limpio, sin ramas pendientes        |
+| **Publicado**  | web republicada, con las tres variables llegando          |
 
 M2 no se ha empezado a propósito: Richi pidió cerrar y pulir M1 antes.
 
@@ -24,13 +25,8 @@ M2 no se ha empezado a propósito: Richi pidió cerrar y pulir M1 antes.
 
 ### Ahora
 
-1. **Fusionar `m1-fogon-y-cuadrantes`.** Es lo único que separa lo escrito de
-   `main`: https://github.com/estook/EstookApp-V.2/compare/main...m1-fogon-y-cuadrantes
-
-2. **Comprobar que las variables llegaron.** Tras fusionar, la web se republica
-   sola. Abre https://estook.github.io/EstookApp-V.2/ y mira la línea **«Base de
-   datos»**: tiene que poner **configurada**. Si pone «sin configurar», es que
-   falta alguna de las tres variables del repositorio.
+**Nada.** No hay ramas sin fusionar, ni preguntas abiertas, ni decisiones
+inventadas esperando validación. Se puede empezar M2.
 
 ### Sin prisa
 
@@ -40,10 +36,6 @@ M2 no se ha empezado a propósito: Richi pidió cerrar y pulir M1 antes.
 | Conseguir los SVG de marca (los PNG están, pero pesan 20 veces el presupuesto) | **M3**                  |
 | Borrar las cuatro ramas ya fusionadas en GitHub, para no acumular              | cuando quieras          |
 | Regenerar las claves de Google, que pasaron por un chat                        | M27                     |
-
-### Nada más
-
-No hay preguntas abiertas ni decisiones inventadas pendientes de validar.
 
 ---
 
@@ -127,11 +119,22 @@ publica y **bloquea** si no cuadran.
 es lo que hace que «si alguien tiene dos roles sobre el mismo local, gana el más
 amplio» se resuelva comparando, permiso a permiso.
 
+**M1 es el módulo del modelo, no del comportamiento.** Cuatro de sus tablas están
+creadas, protegidas y probadas, pero todavía no las usa ningún código, y es a
+propósito. Queda anotado quién les da vida, para que no se queden atrás:
+
+| Tabla                  | Quién la usa, y cuándo                                      |
+| ---------------------- | ----------------------------------------------------------- |
+| `auditoria`            | **M2** la escribe desde cada comando                        |
+| `dispositivo`          | **M4** · sesiones, PIN y revocación                         |
+| `traduccion`           | **M9** · fichas técnicas traducibles, con Fogón proponiendo |
+| `politica_de_catalogo` | **M24** · propagación y adopción del catálogo maestro       |
+
 **33 permisos** en tres familias: `app.*` (las ocho apps más Panel, Fogón, Ajustes
 y la vista de gestoría), `dato.*` (lo sensible) y `accion.*` (lo que se ejecuta).
 
-Lo que queda demostrado con pruebas, contra Postgres de verdad y con `set role
-estook_api`, que es como se conectará la API:
+**95 pruebas**, contra Postgres de verdad y haciendo `set role estook_api`, que es
+lo que hará la API en cada transacción (decisión 0005). Lo que queda demostrado:
 
 - Un area manager ve **exactamente** sus tres locales.
 - El bar independiente no ve ni un local, ni una organización, ni una persona de
@@ -179,12 +182,15 @@ En [`docs/decisiones/`](docs/decisiones/):
 | **0002** | La API en Hono sobre Supabase Edge Functions. Se implementa en M2      |
 | **0003** | M0 crea el esqueleto mínimo de alcances, para que las semillas existan |
 | **0004** | El presupuesto de velocidad de B7, reconstruido                        |
+| **0005** | Cómo se conecta la API: `set local role` y `set local` en transacción  |
 
 De M1, sin fichero propio:
 
-- **Quién pregunta se declara en la conexión**, con `set local
+- **Quién pregunta se declara en cada transacción**, con `set local
 estook.persona_id`, no con `auth.uid()`. Así el modelo se prueba en cualquier
-  Postgres. M4 conectará Supabase Auth con esto.
+  Postgres. M4 conectará Supabase Auth con esto. **El detalle completo, y por qué
+  `set local` y no `set`, está en la decisión 0005: es una decisión de seguridad,
+  no de comodidad.**
 - **La matriz vive solo en la base de datos.** `packages/permisos` tiene el
   vocabulario, no los niveles (regla 6: un cálculo, un único dueño). Una prueba
   comprueba que los dos catálogos cuadran.

@@ -5,3 +5,10 @@
 *.woff2 binary
 *.ico binary
 *.pdf binary
+
+# Un .cmd no lo lee un editor, lo lee cmd.exe, y cmd.exe **necesita** finales de
+# linea de Windows. Con los de Unix parte las lineas por donde no debe y falla
+# con errores que no se parecen en nada a la causa: «"m" no se reconoce como un
+# comando». Sin esta excepcion, la regla de arriba lo rompe en cada descarga.
+*.cmd text eol=crlf
+*.bat text eol=crlf

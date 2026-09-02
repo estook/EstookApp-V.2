@@ -8,6 +8,8 @@
 export { ENTORNOS, esEntorno, resolverEntorno, esProduccion, esDemostracion } from './entorno.ts';
 export type { Entorno } from './entorno.ts';
 
+export { variable, variablesDelEntorno } from './variables.ts';
+
 export { BANDERAS, banderaEncendida, estadoDeLasBanderas } from './banderas.ts';
 export type { NombreDeBandera } from './banderas.ts';
 

@@ -43,6 +43,42 @@ Los PIN de las personas de ejemplo **no están escritos en ningún sitio**, aqu�
 tampoco: lo que se guarda es su huella. Si se pierden, se vuelve a ejecutar
 `pnpm bd:sembrar` y salen otros.
 
+### Lo que 538 pruebas en verde no podían ver
+
+El primer despliegue de verdad se cayó con todo en verde:
+
+```
+Error: failed to create the graph
+  Relative import path "@estook/utiles" not prefixed with / or ./ or ../
+```
+
+No es que las pruebas fueran malas. Es que **corren en Node**, donde
+`@estook/utiles` lo resuelve pnpm con los enlaces del espacio de trabajo, y la
+API desplegada **corre en Deno**, que no hace eso: para él, cualquier cosa que no
+empiece por `/`, `./` o `../` hay que declararla en un mapa de importaciones.
+
+Había un camino entero —el que de verdad llega al cliente— que no comprobaba
+nadie hasta el momento de desplegar. Ahora:
+
+- El mapa está en [`supabase/functions/api/deno.json`](supabase/functions/api/deno.json),
+  con los nuestros apuntando al fuente y los de fuera con versión exacta.
+- `pnpm grafo` lo recorre entero desde la misma entrada que usa Supabase, y está
+  en `verifica` y en la integración continua.
+- Y de paso mira que nadie lea `process.env` en ese camino: en Deno el sitio es
+  `Deno.env`, y eso no falla al desplegar sino al atender la primera petición.
+  Se lee con `variable()` de `@estook/utiles`, que mira en los dos sitios.
+
+**Lo comprueba una herramienta nuestra y no un Deno de verdad, a propósito.** Se
+intentó con `deno info` y pasaba igual de verde con el fallo puesto, porque Deno
+lee el `package.json` del espacio de trabajo y resuelve por su cuenta; ni
+desactivando `node_modules` ni el `package.json` se le quita. El empaquetador de
+Supabase no hace eso. Una comprobación que no puede fallar es peor que no
+tenerla, porque da confianza.
+
+El otro fallo del mismo día fue más tonto: `supabase/setup-cli` con
+`version: latest` le pregunta a la API de GitHub sin identificarse y se topa con
+el límite de peticiones. Va con versión fija.
+
 ### Los nombres de los dos secretos, y por qué no son los obvios
 
 Se llamaban `SUPABASE_ACCESS_TOKEN` y `SUPABASE_PROJECT_REF`, y con esos nombres

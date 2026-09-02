@@ -7,7 +7,9 @@
  *   demostracion  · el restaurante ficticio con el que se hacen las capturas
  *   produccion    · los locales de verdad
  *
- * Nadie lee `process.env` ni `import.meta.env` fuera de aqui.
+ * Nadie lee `process.env` ni `import.meta.env` fuera de aqui. Quien tiene que
+ * ir a buscarlas usa `variable()` de `variables.ts`, que sabe mirar tanto en
+ * Node como en Deno: el servidor corre en los dos.
  */
 export const ENTORNOS = ['desarrollo', 'pruebas', 'demostracion', 'produccion'] as const;
 

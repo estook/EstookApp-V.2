@@ -1,4 +1,5 @@
 import postgres from 'postgres';
+import { variable } from '@estook/utiles';
 import { huellaDeToken } from '../dominio/secretos.ts';
 
 /**
@@ -72,7 +73,7 @@ let conexion: postgres.Sql | null = null;
 function abrir(): postgres.Sql {
   if (conexion) return conexion;
 
-  const url = process.env['DATABASE_URL'];
+  const url = variable('DATABASE_URL');
   if (!url) {
     throw new Error(
       'Falta DATABASE_URL. La API no sabe a que Postgres conectarse. Se declara en los secretos del entorno, nunca en el repositorio.',

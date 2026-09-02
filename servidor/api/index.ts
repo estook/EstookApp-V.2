@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { CABECERA_CORRELACION, correlacionIdDeEntrada } from '@estook/utiles';
+import { CABECERA_CORRELACION, correlacionIdDeEntrada, variable } from '@estook/utiles';
 import type { Despachador, Resultado } from '../aplicacion/index.ts';
 import {
   CABECERA_AUTORIZACION,
@@ -53,7 +53,7 @@ interface Variables {
  * dominio y no con el codigo.
  */
 function origenesPermitidos(): string[] {
-  const declarados = process.env['ORIGENES_PERMITIDOS'] ?? '';
+  const declarados = variable('ORIGENES_PERMITIDOS') ?? '';
   const delEntorno = declarados
     .split(',')
     .map((o) => o.trim())
@@ -61,7 +61,7 @@ function origenesPermitidos(): string[] {
 
   // En desarrollo, las cuatro aplicaciones en su puerto. No se anaden en
   // produccion: ahi solo vale lo que diga `ORIGENES_PERMITIDOS`.
-  const enDesarrollo = process.env['ENTORNO'] !== 'produccion';
+  const enDesarrollo = variable('ENTORNO') !== 'produccion';
   const locales = enDesarrollo
     ? [5173, 5174, 5175, 5176].map((puerto) => `http://localhost:${puerto}`)
     : [];

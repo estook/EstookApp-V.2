@@ -1,4 +1,5 @@
 import type { CodigoDeError } from '@estook/dominio';
+import type { Permiso } from '@estook/permisos';
 import type { SesionViva } from '../infraestructura/postgres.ts';
 import { FalloDeAplicacion, type Contexto, type Puertas } from './contrato.ts';
 import { catalogo } from './catalogo.ts';
@@ -140,6 +141,10 @@ export function crearDespachador(puertos: Puertos): Despachador {
           );
           if (cerrada) return { estado: 'fallo', codigo: cerrada };
 
+          if (!(await tienePermiso(contexto, laConsulta.exige))) {
+            return { estado: 'fallo', codigo: 'sin_permiso' };
+          }
+
           return { estado: 'ok', datos: await laConsulta.ejecutar(contexto, validada.data) };
         }),
       );
@@ -173,6 +178,17 @@ export function crearDespachador(puertos: Puertos): Despachador {
         puertos.enTransaccion(quien, async (contexto): Promise<Resultado> => {
           const cerrada = porQueNoPasa(elComando, contexto.sesion);
           if (cerrada) return { estado: 'fallo', codigo: cerrada };
+
+          if (!(await tienePermiso(contexto, elComando.exige))) {
+            return { estado: 'fallo', codigo: 'sin_permiso' };
+          }
+
+          // Un comando que devuelve un secreto no se recuerda: guardar la
+          // respuesta seria guardar el token, o el PIN, en una tabla. Está
+          // razonado en `conSecreto`, en el contrato.
+          if (elComando.conSecreto) {
+            return { estado: 'ok', datos: await elComando.ejecutar(contexto, validada.data) };
+          }
 
           const recuerdo = await puertos.recordar(
             contexto,
@@ -211,6 +227,52 @@ export function crearDespachador(puertos: Puertos): Despachador {
 }
 
 /**
+ * El permiso que la operación declara, comprobado **antes de ejecutar nada**.
+ *
+ * ── Por qué esto no estaba y hacía falta ─────────────────────────────────────
+ *
+ * `exige` existía en el contrato desde M2 y **no lo miraba nadie**. Las
+ * operaciones quedaban protegidas igualmente, porque las políticas de M1 no
+ * dejan escribir sin permiso, pero la protección llegaba **en forma de error de
+ * Postgres**: un cocinero que intentaba invitar a alguien recibía un `500` y un
+ * «se nos ha roto algo por dentro», que además de feo es mentira. No se había
+ * roto nada: es que no puede.
+ *
+ * Ahora se comprueba aquí, una vez, para todas. Y las políticas siguen debajo,
+ * que es lo que de verdad protege: esto sirve para **decirlo bien**, no para
+ * proteger (principio 7).
+ *
+ * El permiso se resuelve sobre el local de la sesión. Los de ámbito de
+ * organización —plan, facturación, catálogo maestro— se resuelven sobre ella.
+ */
+async function tienePermiso(contexto: Contexto, exige: Permiso | undefined): Promise<boolean> {
+  if (exige === undefined) return true;
+  if (contexto.sesion === null) return false;
+
+  const { localId, organizacionId } = contexto.sesion;
+
+  if (localId !== null) {
+    const filas = await contexto.sql<{ nivel: string }[]>`
+      select estook.nivel_de_permiso(
+        ${contexto.personaId}::uuid, ${localId}::uuid, ${exige}
+      )::text as nivel
+    `;
+    if (filas[0]?.nivel === 'ver_y_editar') return true;
+  }
+
+  if (organizacionId !== null) {
+    const filas = await contexto.sql<{ nivel: string }[]>`
+      select estook.nivel_de_permiso_en_organizacion(
+        ${contexto.personaId}::uuid, ${organizacionId}::uuid, ${exige}
+      )::text as nivel
+    `;
+    if (filas[0]?.nivel === 'ver_y_editar') return true;
+  }
+
+  return false;
+}
+
+/**
  * Un fallo previsto es un resultado, no una excepción. Lo que no está previsto
  * se convierte en «se nos ha roto algo por dentro» y se registra por dentro,
  * pero nunca sale una traza ni un nombre de tabla.
@@ -226,6 +288,22 @@ async function conFallosTraducidos(hacer: () => Promise<Resultado>): Promise<Res
         ...(fallo.detalle ? { detalle: fallo.detalle } : {}),
       };
     }
+
+    // Una política de M1 que dice que no **no es un fallo nuestro**: es la
+    // seguridad haciendo su trabajo. Postgres lo cuenta con el código `42501`, y
+    // sin traducirlo salía «se nos ha roto algo por dentro», que es mentira y
+    // además manda a la persona a reintentar algo que nunca va a poder hacer.
+    if (esFaltaDePermiso(fallo)) return { estado: 'fallo', codigo: 'sin_permiso' };
+
     throw fallo;
   }
+}
+
+function esFaltaDePermiso(fallo: unknown): boolean {
+  return (
+    typeof fallo === 'object' &&
+    fallo !== null &&
+    'code' in fallo &&
+    (fallo as { code?: unknown }).code === '42501'
+  );
 }

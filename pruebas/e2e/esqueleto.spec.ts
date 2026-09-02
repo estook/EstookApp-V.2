@@ -366,7 +366,7 @@ test.describe('deshacer universal', () => {
   });
 });
 
-// ── 4 · Todo tiene su «todavia no tengo datos» ───────────────────────────────
+// ── 4 · Todo tiene su «todavía no tengo datos» ───────────────────────────────
 
 test.describe('estados vacios', () => {
   test('las ocho apps dicen que ira ahi, en vez de quedarse en blanco', async ({ page }) => {
@@ -374,7 +374,7 @@ test.describe('estados vacios', () => {
 
     for (const app of LAS_OCHO) {
       await abrir(page, `/${app.id}`);
-      await expect(page.getByText('todavia no tengo datos')).toBeVisible();
+      await expect(page.getByText('todavía no tengo datos')).toBeVisible();
       // Y dice en que modulo se construye: nunca una pantalla muda.
       await expect(page.getByText(/Esta pantalla se construye en M\d+/)).toBeVisible();
     }
@@ -384,7 +384,7 @@ test.describe('estados vacios', () => {
     await comoGerente(page);
 
     await expect(page.getByText('Nada pendiente')).toBeVisible();
-    await expect(page.getByText('Todavia no hay nada que medir')).toBeVisible();
+    await expect(page.getByText('Todavía no hay nada que medir')).toBeVisible();
     await expect(page.getByText('Sin datos que dibujar')).toBeVisible();
   });
 

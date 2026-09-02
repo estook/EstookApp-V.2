@@ -58,10 +58,10 @@ export function Panel() {
             etiqueta="Facturado"
             valor={0}
             formato={(v) => conSimbolo(centimos(Math.trunc(v)))}
-            origen="Todavia sin conectar"
+            origen="Todavía sin conectar"
           />
           <p className="mt-e2 text-secundario text-texto-suave">
-            En cuanto se conecte el TPV, aqui va lo facturado del dia, comparado con el mismo dia de
+            En cuanto se conecte el TPV, aquí va lo facturado del día, comparado con el mismo día de
             la semana pasada.
           </p>
         </Tarjeta>
@@ -70,7 +70,7 @@ export function Panel() {
           <EstadoVacio
             compacto
             titulo="Nada pendiente"
-            frase="Aqui apareceran los recuentos sin cerrar, los APPCC fuera de rango y los pedidos sin recibir."
+            frase="Aquí aparecerán los recuentos sin cerrar, los APPCC fuera de rango y los pedidos sin recibir."
             sinAccionPorque="Los pendientes los traen Inventario (M6) y Servicio (M12)."
           />
         </Tarjeta>
@@ -79,13 +79,13 @@ export function Panel() {
           <EstadoVacio
             compacto
             icono={<IconoVacio size={24} />}
-            titulo="Todavia no hay nada que medir"
-            frase="Cuantos platos tienen ficha, cuantos productos tienen precio y cuantas fichas estan al dia."
+            titulo="Todavía no hay nada que medir"
+            frase="Cuántos platos tienen ficha, cuántos productos tienen precio y cuántas fichas están al día."
             sinAccionPorque="Hace falta que haya productos y fichas: eso es Inventario y Escandallos."
           />
         </Tarjeta>
 
-        <Tarjeta titulo="Como va el mes" origen="Se llenara con Negocio · M17">
+        <Tarjeta titulo="Cómo va el mes" origen="Se llenará con Negocio · M17">
           <Grafica
             titulo="Margen por semana"
             datos={[]}
@@ -95,8 +95,8 @@ export function Panel() {
               <EstadoVacio
                 compacto
                 titulo="Sin datos que dibujar"
-                frase="Con un mes de ventas y costes, aqui va el margen semana a semana."
-                sinAccionPorque="Las graficas se cargan solas cuando hay algo que ensenar."
+                frase="Con un mes de ventas y costes, aquí va el margen semana a semana."
+                sinAccionPorque="Las gráficas se cargan solas cuando hay algo que enseñar."
               />
             }
           />

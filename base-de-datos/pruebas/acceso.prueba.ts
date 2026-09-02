@@ -788,3 +788,142 @@ describe('los criterios de M4, contra las semillas', () => {
     expect(enPlaya).toMatch(/^[0-9]{6}$/);
   });
 });
+
+// ── Dar de alta a una persona · el fallo que encontró el repaso ──────────────
+
+describe('dar de alta a una persona', () => {
+  /**
+   * **Invitar a alguien nuevo no funcionaba, y las quinientas pruebas pasaban.**
+   *
+   * `estook.persona` tenía seguridad por filas y ninguna política de alta, así
+   * que el `insert` no podía pasar. No se vio porque el comando crea la persona
+   * **solo si el correo no existe**, y contra estas semillas —donde las siete
+   * personas ya están— ese camino no se recorría nunca.
+   *
+   * Lo arregla la migración `0019`, y estas pruebas son para que no vuelva.
+   */
+  it('quien puede invitar, puede dar de alta', async () => {
+    const rosa = await base.personaPorCorreo(ROSA);
+
+    const creada = await base.comoPersona(rosa, async () => {
+      const { rows } = await base.bd.query<{ id: string }>(
+        "select estook.dar_de_alta_persona($1, 'Alta', 'De Prueba') as id",
+        [`alta-${Date.now()}@ejemplo.estook.com`],
+      );
+      return rows[0]?.id;
+    });
+
+    expect(creada).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it('**y quien no puede invitar, no**, aunque llame a la función a pelo', async () => {
+    // La regla 4: la protección se prueba llamando por debajo de la pantalla.
+    const marcos = await base.personaPorCorreo('marcos@ejemplo.estook.com');
+
+    await expect(
+      base.comoPersona(marcos, async () => {
+        await base.bd.query("select estook.dar_de_alta_persona($1, 'Nadie')", [
+          `nadie-${Date.now()}@ejemplo.estook.com`,
+        ]);
+      }),
+    ).rejects.toThrow(/no se puede dar de alta/i);
+  });
+
+  it('la cadena entera: persona, membresía y PIN', async () => {
+    // El fallo estaba en la costura entre el comando y la política, así que se
+    // recorre entera y no por partes.
+    const rosa = await base.personaPorCorreo(ROSA);
+    const local = await base.localPorCodigo('bar-centro');
+    const organizaciones = await comoDuena<{ id: string }>(
+      `select id from estook.organizacion where codigo = 'bar-centro'`,
+    );
+    const correo = `cadena-${Date.now()}@ejemplo.estook.com`;
+
+    await base.comoPersona(rosa, async () => {
+      const { rows: nueva } = await base.bd.query<{ id: string }>(
+        "select estook.dar_de_alta_persona($1, 'Cadena') as id",
+        [correo],
+      );
+      const persona = nueva[0]?.id;
+
+      const { rows: membresia } = await base.bd.query(
+        `insert into estook.membresia (persona_id, organizacion_id, local_id, alcance, rol)
+         values ($1, $2, $3, 'local', 'camarero') returning id`,
+        [persona, organizaciones[0]?.id, local],
+      );
+      expect(membresia, 'la membresía se crea').toHaveLength(1);
+
+      const { rows: pin } = await base.bd.query(
+        `insert into estook.pin (persona_id, local_id, huella)
+         values ($1, $2, 'pbkdf2-sha256$1$aaaa$bbbb') returning id`,
+        [persona, local],
+      );
+      expect(pin, 'y el PIN también').toHaveLength(1);
+
+      // Y ahora ya se la puede leer: tiene membresía, así que comparte
+      // organización. Antes de tenerla no, y eso es lo que rompía el `returning`.
+      const { rows: leida } = await base.bd.query(
+        'select nombre from estook.persona where id = $1',
+        [persona],
+      );
+      expect(leida, 'y se la puede leer').toHaveLength(1);
+    });
+  });
+
+  it('un `insert ... returning` sobre una persona sin membresía **no pasa**', async () => {
+    // Esta es la razón de que `dar_de_alta_persona` exista, y costó entenderla:
+    // con `returning`, Postgres aplica también la política de **lectura** a la
+    // fila devuelta. Una persona recién creada no tiene membresía, así que no
+    // comparte organización con nadie y no se puede leer. El `insert` entra y el
+    // `returning` lo tumba, con el mismo mensaje que si no hubiera política.
+    const rosa = await base.personaPorCorreo(ROSA);
+
+    await expect(
+      base.comoPersona(rosa, async () => {
+        await base.bd.query(
+          'insert into estook.persona (correo, nombre) values ($1, $2) returning id',
+          [`directo-${Date.now()}@ejemplo.estook.com`, 'Directo'],
+        );
+      }),
+    ).rejects.toThrow(/row-level security/i);
+  });
+
+  it('y reactivar a quien se fue sí toca su ficha', async () => {
+    const rosa = await base.personaPorCorreo(ROSA);
+    const sara = await base.personaPorCorreo(SARA);
+
+    await comoDuena('update estook.persona set activa = false where id = $1', [sara]);
+
+    await base.comoPersona(rosa, async () => {
+      await base.bd.query('update estook.persona set activa = true where id = $1', [sara]);
+    });
+
+    const [tras] = await comoDuena<{ activa: boolean }>(
+      'select activa from estook.persona where id = $1',
+      [sara],
+    );
+    expect(tras?.activa).toBe(true);
+  });
+
+  it('pero no la de alguien de otra organización', async () => {
+    // Rosa lleva el Bar Centro; Luis trabaja en el Grupo Costa.
+    const rosa = await base.personaPorCorreo(ROSA);
+    const luis = await base.personaPorCorreo(LUIS);
+
+    await base.comoPersona(rosa, async () => {
+      const { rows } = await base.bd.query(
+        'update estook.persona set nombre = $1 where id = $2 returning id',
+        ['Cambiado', luis],
+      );
+      // No falla: sencillamente no toca ninguna fila, que es como se comporta
+      // una política de M1 cuando dice que no.
+      expect(rows).toEqual([]);
+    });
+
+    const [luisSigue] = await comoDuena<{ nombre: string }>(
+      'select nombre from estook.persona where id = $1',
+      [luis],
+    );
+    expect(luisSigue?.nombre).toBe('Luis');
+  });
+});

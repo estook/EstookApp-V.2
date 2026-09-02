@@ -25,14 +25,14 @@ const FORMATO_HORA = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 export function fechaOperativa(valor: string): FechaOperativa {
   if (!FORMATO_FECHA.test(valor)) {
-    throw new Error(`«${valor}» no es una fecha. Se escriben asi: 2026-09-01.`);
+    throw new Error(`«${valor}» no es una fecha. Se escriben así: 2026-09-01.`);
   }
   return valor as FechaOperativa;
 }
 
 export function horaDeCorte(valor: string): HoraDeCorte {
   if (!FORMATO_HORA.test(valor)) {
-    throw new Error(`«${valor}» no es una hora de corte. Se escriben asi: 05:00.`);
+    throw new Error(`«${valor}» no es una hora de corte. Se escriben así: 05:00.`);
   }
   return valor as HoraDeCorte;
 }
@@ -146,7 +146,7 @@ export function diasEntre(desde: FechaOperativa, hasta: FechaOperativa): number 
   };
   const diferencia = aUtc(hasta) - aUtc(desde);
   if (diferencia % MILISEGUNDOS_POR_DIA !== 0) {
-    throw new Error(`La diferencia entre ${desde} y ${hasta} no da dias enteros. Eso es un fallo.`);
+    throw new Error(`La diferencia entre ${desde} y ${hasta} no da días enteros. Eso es un fallo.`);
   }
   return diferencia / MILISEGUNDOS_POR_DIA;
 }

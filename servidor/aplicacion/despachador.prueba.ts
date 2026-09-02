@@ -304,3 +304,127 @@ describe('las puertas se cierran solas', () => {
     );
   });
 });
+
+// ── M4 · lo que se encontró repasando, y no puede volver ─────────────────────
+
+describe('los secretos no se guardan para repetirlos', () => {
+  /**
+   * El fallo, tal cual: la idempotencia guarda la respuesta de la primera vez en
+   * `estook.clave_de_idempotencia` para devolverla en los reintentos. Y `entrar`
+   * devuelve el **token de sesión**.
+   *
+   * Es decir: la sesión guardaba solo la huella del token, a propósito, para que
+   * quien se llevara la base de datos no se llevara ninguna sesión... y la tabla
+   * de al lado guardaba el token entero, en claro, veinticuatro horas.
+   *
+   * Se vio repasando, no probando. Estas dos pruebas son para que no vuelva.
+   */
+  it('los seis comandos que devuelven un secreto están marcados', () => {
+    const conSecreto = Object.values(catalogo.comandos)
+      .filter((comando) => comando.conSecreto === true)
+      .map((comando) => comando.nombre)
+      .sort();
+
+    expect(conSecreto).toEqual(
+      [
+        // El token de sesión.
+        'entrar',
+        // El PIN, en claro y una sola vez.
+        'invitar_persona',
+        'reactivar_persona',
+        'regenerar_pin',
+        // El secreto del segundo factor y sus códigos de respaldo.
+        'activar_doble_factor',
+        'confirmar_doble_factor',
+      ].sort(),
+    );
+  });
+
+  it('y de esos no se guarda ni se consulta la respuesta', async () => {
+    const guardadas: string[] = [];
+    const preguntadas: string[] = [];
+
+    const puertos: Puertos = {
+      enTransaccion: (quien, hacer) =>
+        hacer({
+          sql: SQL_VACIO,
+          personaId: SESION_NORMAL.personaId,
+          sesion: SESION_NORMAL,
+          correlacionId: quien.correlacionId,
+          ahora: new Date(Date.UTC(2026, 8, 1)),
+        }),
+      recordar: (_contexto, _clave, nombre) => {
+        preguntadas.push(nombre);
+        return Promise.resolve({ estado: 'nueva' as const });
+      },
+      anotar: (_contexto, _clave, nombre) => {
+        guardadas.push(nombre);
+        return Promise.resolve();
+      },
+    };
+
+    const despachador = crearDespachador(puertos);
+
+    // Con puertos de mentira `entrar` falla al llegar al SQL, pero lo que se
+    // comprueba es que **ni siquiera pregunta** por la clave.
+    await despachador.ejecutar(
+      { tokenDeSesion: null, correlacionId: 'un-hilo' },
+      'entrar',
+      { correo: 'rosa@ejemplo.estook.com', contrasena: 'lo que sea' },
+      'una-clave',
+    );
+
+    expect(preguntadas, 'no se pregunta por la clave').toEqual([]);
+    expect(guardadas, 'y no se guarda la respuesta').toEqual([]);
+  });
+});
+
+describe('quien no puede, se le dice bien', () => {
+  /**
+   * El otro fallo del repaso: `exige` estaba en el contrato desde M2 y **no lo
+   * miraba nadie**. La operación quedaba protegida igual —las políticas de M1 no
+   * dejan escribir sin permiso— pero la protección llegaba como un error de
+   * Postgres, así que un cocinero que intentaba invitar a alguien recibía un
+   * `500` y un «se nos ha roto algo por dentro».
+   *
+   * Que además de feo es mentira: no se había roto nada.
+   */
+  it('un comando con `exige` se para antes de ejecutarse', async () => {
+    const { despachador, veces } = bancoDePruebas();
+
+    catalogo.comandos['solo_para_gerentes'] = comando<Record<string, never>, never>({
+      nombre: 'solo_para_gerentes',
+      entrada: z.object({}).strict(),
+      exige: 'accion.invitar_personas',
+      ejecutar() {
+        throw new Error('esto no se tenia que haber ejecutado');
+      },
+    }) as never;
+
+    const salida = await despachador.ejecutar(quien, 'solo_para_gerentes', {}, 'clave-de-permiso');
+
+    // El `sql` de mentira devuelve vacío, así que el nivel no llega a
+    // `ver_y_editar` y la puerta se cierra. Con un mensaje de verdad.
+    expect(salida.estado === 'fallo' && salida.codigo).toBe('sin_permiso');
+    expect(veces()).toBe(0);
+  });
+
+  it('y una política de Postgres que dice que no, tampoco es un fallo nuestro', async () => {
+    const { despachador } = bancoDePruebas();
+
+    catalogo.comandos['choca_con_la_politica'] = comando<Record<string, never>, never>({
+      nombre: 'choca_con_la_politica',
+      entrada: z.object({}).strict(),
+      ejecutar() {
+        // Lo que lanza Postgres cuando una política de M1 rechaza una escritura.
+        throw Object.assign(new Error('new row violates row-level security policy'), {
+          code: '42501',
+        });
+      },
+    }) as never;
+
+    const salida = await despachador.ejecutar(quien, 'choca_con_la_politica', {}, 'clave-politica');
+
+    expect(salida.estado === 'fallo' && salida.codigo).toBe('sin_permiso');
+  });
+});

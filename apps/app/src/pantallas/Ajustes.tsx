@@ -51,15 +51,15 @@ export function Ajustes() {
     <div className="flex max-w-[44rem] flex-col gap-e4">
       <h1 className="text-pantalla font-semibold">Ajustes</h1>
 
-      <Tarjeta titulo="Tamano de letra">
+      <Tarjeta titulo="Tamaño de letra">
         {/* El ancla del buscador: «cambiar el tamano de letra» lleva aqui. */}
         <span id="tamano-de-letra" />
         <p className="text-secundario text-texto-suave">
-          El pase de cocina se lee de lejos. Esto crece toda la aplicacion a la vez, no solo esta
+          El pase de cocina se lee de lejos. Esto crece toda la aplicación a la vez, no solo esta
           pantalla, y se queda guardado en este aparato.
         </p>
 
-        <div role="radiogroup" aria-label="Tamano de letra" className="mt-e3 flex flex-wrap gap-e2">
+        <div role="radiogroup" aria-label="Tamaño de letra" className="mt-e3 flex flex-wrap gap-e2">
           {TAMANOS.map((cual) => (
             <button
               key={cual}
@@ -94,15 +94,15 @@ export function Ajustes() {
           <li className="flex items-start gap-e2">
             <IconoAccesibilidad size={18} className="mt-[2px] shrink-0" />
             <span>
-              Estook respeta «reducir movimiento» del sistema: con esa opcion puesta, nada se
+              Estook respeta «reducir movimiento» del sistema: con esa opción puesta, nada se
               desplaza y <strong>la rueda de apps se convierte en una rejilla</strong> con la misma
-              informacion. No hay que activar nada aqui.
+              información. No hay que activar nada aquí.
             </span>
           </li>
           <li className="flex items-start gap-e2">
             <IconoAccesibilidad size={18} className="mt-[2px] shrink-0" />
             <span>
-              Toda la aplicacion se maneja con teclado, y el foco se ve siempre con un anillo
+              Toda la aplicación se maneja con teclado, y el foco se ve siempre con un anillo
               naranja.
             </span>
           </li>

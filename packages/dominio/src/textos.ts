@@ -37,6 +37,129 @@ export const JERGA_PROHIBIDA: Readonly<Record<string, string>> = {
 const EMOJI = /\p{Extended_Pictographic}/u;
 
 /**
+ * Palabras que en castellano llevan tilde o eñe **siempre**, escritas sin ella.
+ *
+ * ── Por qué esta lista existe ────────────────────────────────────────────────
+ *
+ * Al mirar M4 en un móvil de verdad se vio una pantalla que decía «todavia no
+ * tengo datos» al lado de otra que decía «¿Dónde estás hoy?». Las dos son
+ * nuestras, y las dos están en la misma aplicación.
+ *
+ * No es una falta de ortografía suelta: es que **una aplicación que escribe mal
+ * la mitad del tiempo parece hecha con prisa**, y este producto se lo vende a
+ * gente que desconfía. El Manifiesto pide «español de España» y este motor es
+ * quien lo hace cumplir.
+ *
+ * ── Lo que NO está aquí, y por qué ───────────────────────────────────────────
+ *
+ * Solo palabras que **no existen sin tilde**. Nada de `esta`/`está`, `mas`/`más`
+ * o `si`/`sí`, que son dos palabras distintas y las dos correctas: marcarlas
+ * llenaría la comprobación de avisos falsos, y una comprobación que grita se
+ * acaba apagando.
+ *
+ * Y ninguna llana acabada en `-s`: «acciones», «opciones» y «organizaciones» se
+ * escriben tal cual. Estaban en la primera versión de esta lista, apuntando a sí
+ * mismas, y la comprobación las marcaba como falta. Que una lista de faltas
+ * tuviera faltas habría sido el colmo.
+ *
+ * Tampoco `cuanto`, y esto lo aprendí escribiéndolo: «en cuanto se conecte el
+ * TPV» **no lleva tilde**, y «¿cuántos platos tienen ficha?» sí. Sin distinguir
+ * la pregunta de la locución, la comprobación marcaba como falta media
+ * aplicación bien escrita.
+ */
+export const SIEMPRE_CON_TILDE: Readonly<Record<string, string>> = {
+  accion: 'acción',
+  ademas: 'además',
+  alergeno: 'alérgeno',
+  alergenos: 'alérgenos',
+  anadir: 'añadir',
+  ano: 'año',
+  anos: 'años',
+  apareceran: 'aparecerán',
+  aplicacion: 'aplicación',
+  aqui: 'aquí',
+  articulo: 'artículo',
+  articulos: 'artículos',
+  asi: 'así',
+  atencion: 'atención',
+  auditoria: 'auditoría',
+  auditorias: 'auditorías',
+  automatico: 'automático',
+  camara: 'cámara',
+  camaras: 'cámaras',
+  categoria: 'categoría',
+  categorias: 'categorías',
+  codigo: 'código',
+  codigos: 'códigos',
+  companeros: 'compañeros',
+  comprobacion: 'comprobación',
+  configuracion: 'configuración',
+  contrasena: 'contraseña',
+  contrasenas: 'contraseñas',
+  correccion: 'corrección',
+  deberia: 'debería',
+  deberian: 'deberían',
+  descripcion: 'descripción',
+  despues: 'después',
+  desviacion: 'desviación',
+  dia: 'día',
+  dias: 'días',
+  direccion: 'dirección',
+  edicion: 'edición',
+  elaboracion: 'elaboración',
+  ensena: 'enseña',
+  ensenan: 'enseñan',
+  ensenar: 'enseñar',
+  estan: 'están',
+  explicacion: 'explicación',
+  exportacion: 'exportación',
+  facturacion: 'facturación',
+  gestion: 'gestión',
+  gestoria: 'gestoría',
+  grafica: 'gráfica',
+  graficas: 'gráficas',
+  importacion: 'importación',
+  informacion: 'información',
+  limite: 'límite',
+  linea: 'línea',
+  lineas: 'líneas',
+  manana: 'mañana',
+  navegacion: 'navegación',
+  ningun: 'ningún',
+  numero: 'número',
+  numeros: 'números',
+  opcion: 'opción',
+  organizacion: 'organización',
+  pagina: 'página',
+  paginas: 'páginas',
+  pequena: 'pequeña',
+  pequeno: 'pequeño',
+  pideselo: 'pídeselo',
+  produccion: 'producción',
+  proposito: 'propósito',
+  publicacion: 'publicación',
+  rapido: 'rápido',
+  relacion: 'relación',
+  resena: 'reseña',
+  resenas: 'reseñas',
+  revision: 'revisión',
+  seccion: 'sección',
+  segun: 'según',
+  sesion: 'sesión',
+  tamano: 'tamaño',
+  tambien: 'también',
+  telefono: 'teléfono',
+  titulo: 'título',
+  todavia: 'todavía',
+  ubicacion: 'ubicación',
+  ultima: 'última',
+  ultimo: 'último',
+  unica: 'única',
+  unico: 'único',
+  version: 'versión',
+};
+
+/**
  * Comprueba que un texto cumple las reglas. Se usa en las pruebas: un texto que
  * no las cumple no llega a producción.
  */
@@ -45,6 +168,13 @@ export function revisarTexto(texto: string): readonly string[] {
 
   if (EMOJI.test(texto)) {
     problemas.push('lleva emoji, y en Estook no se usan');
+  }
+
+  for (const palabra of texto.toLowerCase().match(/[a-záéíóúñü]+/g) ?? []) {
+    const bien = SIEMPRE_CON_TILDE[palabra];
+    if (bien !== undefined) {
+      problemas.push(`escribe «${palabra}»; se escribe «${bien}»`);
+    }
   }
 
   const enMinusculas = texto.toLowerCase();

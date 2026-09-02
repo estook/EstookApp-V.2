@@ -31,12 +31,12 @@ export function Cimientos({ aplicacion, entorno, sesionId }: CimientosProps) {
       <Tarjeta>
         <TodaviaNo
           que="La web publica"
-          queHabra="El encabezado, el problema con numeros, las ocho apps, como se conecta con tu TPV y los documentos de muestra."
+          queHabra="El encabezado, el problema con números, las ocho apps, cómo se conecta con tu TPV y los documentos de muestra."
           modulo="la Parte C del Plan"
         />
       </Tarjeta>
 
-      <Tarjeta titulo="Como ha arrancado" origen="Comprobacion de M0, que sigue en pie">
+      <Tarjeta titulo="Como ha arrancado" origen="Comprobación de M0, que sigue en pie">
         <dl className="grid grid-cols-[7rem_1fr] gap-x-e4 gap-y-e2 text-secundario">
           <dt className="text-texto-suave">Aplicacion</dt>
           <dd>{aplicacion}</dd>

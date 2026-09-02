@@ -51,7 +51,7 @@ export function Selector({
   error,
   obligatorio,
   sinElegir,
-  cuandoNoHay = 'Todavia no hay ninguna',
+  cuandoNoHay = 'Todavía no hay ninguna',
   id,
   disabled,
   ...resto

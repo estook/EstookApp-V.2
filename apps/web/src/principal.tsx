@@ -15,7 +15,7 @@ const sesion_id = arrancarObservabilidad({
 });
 
 const registro = crearRegistro({ base: { aplicacion: 'web', entorno, sesion_id } });
-registro.informacion('aplicacion arrancada');
+registro.informacion('aplicación arrancada');
 
 const raiz = document.getElementById('raiz');
 if (!raiz) throw new Error('Falta el elemento #raiz en index.html');

@@ -146,8 +146,8 @@ function Puerta() {
 function NoEstaAqui() {
   return (
     <EstadoVacio
-      titulo="Esta direccion no lleva a ningun sitio"
-      frase="Puede que el enlace este mal copiado, o que sea de una pantalla que todavia no existe."
+      titulo="Esta dirección no lleva a ningún sitio"
+      frase="Puede que el enlace esté mal copiado, o que sea de una pantalla que todavía no existe."
       accion={
         <Link
           to="/"

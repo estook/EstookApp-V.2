@@ -195,6 +195,8 @@ export const regenerarPin = comando<
 >({
   nombre: 'regenerar_pin',
   entrada: entradaRegenerarPin,
+  // Devuelve el PIN en claro: no se recuerda. Ver `conSecreto` en el contrato.
+  conSecreto: true,
 
   async ejecutar({ sql, sesion }, entrada) {
     if (sesion === null) throw new FalloDeAplicacion('sin_sesion');

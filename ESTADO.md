@@ -115,6 +115,26 @@ cuando se abrió**. Se cierra la ventana y se abre otra. Y si aun así no, en la
 raíz hay [`estook.cmd`](estook.cmd), que lo busca donde de verdad está:
 `.\estook.cmd bd:migrar`.
 
+### El repaso de después de desplegar
+
+Con M4 sirviendo de verdad se hizo el primer repaso **mirando algo que
+funciona**, y salieron cosas que ninguna prueba veía. Está entero en
+[`docs/repaso-despues-de-m4.md`](docs/repaso-despues-de-m4.md). Lo que hay que
+tener presente al empezar M5:
+
+- **Hay tres mecanismos de fondo y ninguno se ejecuta**: la bandeja de salida, la
+  cola de trabajos y la limpieza de claves de idempotencia. Están construidos y
+  probados, pero la API es una función que atiende y se apaga: no hay reloj. Hay
+  que decidir quién los ejecuta **antes de M8**, y merece su decisión escrita.
+- **`estook.dispositivo` está vacía**: 0 filas, 0 sesiones con dispositivo. Nadie
+  escribe en ella, así que «Mis dispositivos» enseña sesiones y no aparatos. Es
+  lo que hacía que salieran veintitrés filas iguales. Se paga solo si se arregla
+  con M5, que ya toca el alta de personas.
+- **Ninguna consulta de lista tiene tope.** Con siete personas da igual; M8 es la
+  primera pantalla que lista gente de verdad y conviene que nazca paginada.
+- **El presupuesto de tamaño de la app va al 82 %**, con las pantallas grandes
+  todavía por construir. No manda sobre el producto: se vigila con `pnpm tamano`.
+
 ### Lo único de M4 que no puedo firmar yo
 
 **Verlo en un móvil de verdad** (regla 11) **con la API desplegada**. Las fotos

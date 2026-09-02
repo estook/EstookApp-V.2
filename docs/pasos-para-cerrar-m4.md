@@ -4,19 +4,43 @@ M4 está terminado en código y probado. Lo que queda son **cuatro cosas que hay
 que pulsar**, y las tienes que hacer tú porque tocan Supabase y GitHub, que son
 tuyos.
 
-El **paso 1 ya está hecho**: el pull request está fusionado.
+El **paso 1 ya está hecho**: el pull request está fusionado. Y el **paso 2
+también**, ejecutado el 2 de septiembre de 2026 contra tu Supabase; queda escrito
+aquí abajo por si hay que repetirlo.
 
-Los otros tres, en orden. **No te saltes ninguno**: el 3 no funciona sin el 2, y
-el 4 no sirve de nada sin el 3.
+Los otros dos, en orden. **El 4 no sirve de nada sin el 3.**
 
 ---
 
-## Paso 2 · Poner al día la base de datos
+## Si la terminal dice que no conoce `pnpm`
 
-### Qué es esto, en cristiano
+Pasó, y no era culpa tuya. Al instalar `pnpm` se añade su carpeta al PATH, pero
+**una ventana de terminal que ya estaba abierta se queda con el PATH que había
+cuando se abrió**, para siempre. Así que sigue diciendo que no lo conoce aunque
+esté perfectamente instalado, y el error no da ninguna pista de eso.
 
-La base de datos de Supabase tiene ahora mismo **17 migraciones aplicadas**. M4
-escribió dos más:
+Dos salidas:
+
+1. **Cierra la ventana entera y abre otra.** Suele bastar.
+2. Si aun así no, usa el lanzador que hay en la raíz del proyecto, que busca
+   `pnpm` donde de verdad está sin depender del PATH:
+
+```bash
+.\estook.cmd bd:comprobar
+```
+
+Vale para cualquier orden: `.\estook.cmd bd:migrar`, `.\estook.cmd verifica`.
+
+---
+
+## Paso 2 · Poner al día la base de datos · HECHO
+
+Queda documentado porque hay que repetirlo en cada máquina nueva, y porque los
+PIN se pierden.
+
+### Qué era
+
+La base tenía 17 migraciones. M4 escribió dos más:
 
 - La **`0018`** crea las cinco tablas nuevas del login: contraseñas, PIN,
   segundo factor, sesiones y suscripción.
@@ -25,53 +49,48 @@ escribió dos más:
 
 Sin este paso, la API no tiene dónde guardar una sesión y **nadie puede entrar**.
 
-### Por qué lo haces tú y no yo
-
-Porque hace falta la contraseña de tu base de datos, que vive solo en tu
-ordenador (`.env.local`) y no está en el repositorio. Es la regla de siempre:
-ninguna clave se escribe aquí dentro.
-
-### Qué escribir
-
-Abre una terminal en la carpeta del proyecto y escribe, una detrás de otra:
-
-```bash
-git checkout main && git pull
-```
+### Lo que se ejecutó
 
 ```bash
 pnpm bd:migrar
 ```
 
-Tiene que decir que ha aplicado la `0018` y la `0019`. Si dice «no hay nada que
-aplicar», es que ya estaban.
+Dijo `aplicando 0018 ... hecho`, `aplicando 0019 ... hecho`, **19 en total**.
 
 ```bash
 pnpm bd:sembrar
 ```
 
-Esta última hace algo nuevo: además de los locales y las personas, **pone las
-contraseñas y los PIN** de las siete personas de ejemplo, y añade a Nuria, que es
-la camarera con dos locales.
+Además de los locales y las personas, **puso las contraseñas y los PIN** de las
+siete personas de ejemplo, y añadió a Nuria, la camarera con dos locales. Dejó 2
+organizaciones, 2 áreas y 7 locales.
 
-Al terminar te escribe en pantalla la contraseña y **el PIN de cada persona en
-cada local**. Cópialos a algún sitio: los PIN no se pueden volver a consultar, y
-si los pierdes hay que generar otros. Es lo mismo que le pasa a un gerente de
-verdad, y es a propósito.
+Al terminar escribió en pantalla la contraseña y **el PIN de cada persona en cada
+local**. Esos PIN **no se pueden volver a consultar**: lo que se guarda es su
+huella. Si se pierden, se vuelve a ejecutar `pnpm bd:sembrar` y salen otros. Es
+lo mismo que le pasa a un gerente de verdad, y es a propósito.
 
 > **Ojo, y esto importa.** La semilla se niega a correr si el entorno es
 > `produccion`, porque pondría siete cuentas con una contraseña que está escrita
 > en GitHub. Hoy tu Supabase solo tiene datos de ejemplo, así que no pasa nada.
 > El día que haya un cliente de verdad, esa semilla **no se vuelve a ejecutar**.
 
-### Cómo saber que ha ido bien
+### Cómo se comprobó
 
 ```bash
 pnpm bd:comprobar
 ```
 
-Tiene que decir **19 de 19 migraciones** y **23 tablas**, todas con seguridad por
-filas.
+**19 migraciones**, **23 tablas** todas con seguridad por filas, la auditoría sin
+poder modificarse ni borrarse, y 0 tablas fuera del esquema `estook`.
+
+```bash
+pnpm bd:comprobar-api
+```
+
+La API entera contra esa misma base: entrar, el token, el cambio de local sin
+abrir sesión nueva, quién ve cuántos locales, el 403 del local ajeno, y que no
+hay ninguna contraseña guardada en claro. **Todo correcto.**
 
 ---
 

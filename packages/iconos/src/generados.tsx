@@ -5,12 +5,6 @@
  */
 import { crearIcono } from './crearIcono.tsx';
 
-/** Lucide `accessibility` */
-export const IconoAccesibilidad = crearIcono(
-  'accessibility',
-  '<circle cx="16" cy="4" r="1" /><path d="m18 19 1-7-6 1" /><path d="m5 8 3-3 5.5 3-2.36 3.5" /><path d="M4.24 14.5a5 5 0 0 0 6.88 6" /><path d="M13.76 17.5a5 5 0 0 0-6.88-6" />',
-);
-
 /** Lucide `arrow-left` */
 export const IconoAtras = crearIcono(
   'arrow-left',
@@ -144,6 +138,12 @@ export const IconoVacio = crearIcono(
 export const IconoInfo = crearIcono(
   'info',
   '<circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />',
+);
+
+/** Lucide `keyboard` */
+export const IconoTeclado = crearIcono(
+  'keyboard',
+  '<path d="M10 8h.01" /><path d="M12 12h.01" /><path d="M14 8h.01" /><path d="M16 12h.01" /><path d="M18 8h.01" /><path d="M6 8h.01" /><path d="M7 16h10" /><path d="M8 12h.01" /><rect width="20" height="16" x="2" y="4" rx="2" />',
 );
 
 /** Lucide `languages` */

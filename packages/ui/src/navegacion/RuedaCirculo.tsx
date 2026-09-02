@@ -160,18 +160,29 @@ function SectorDeApp({
   );
 
   /*
-   * Donde van el icono, el nombre y el contador, medidos desde el centro.
+   * Donde van el contador, el icono y el nombre.
    *
-   * El nombre se escribe en horizontal, asi que en los sectores de las tres y de
-   * las nueve **crece hacia fuera**: «Escandallos» son unos 72 px, 36 a cada
-   * lado. Puesto en el medio de la corona se salia del circulo. Va mas adentro
-   * para que quepa entero en los ocho sectores, no solo en los de arriba y
-   * abajo.
+   * ── El fallo que esto arregla ──────────────────────────────────────────────
+   *
+   * Antes cada uno se colocaba a un radio distinto sobre el angulo del sector:
+   * el icono mas adentro, el nombre mas afuera. Eso los separa **en la direccion
+   * del radio**, que arriba y abajo es la vertical —y se ve bien— pero a las
+   * tres y a las nueve es la horizontal: el icono quedaba al lado del nombre, y
+   * con un nombre largo se le montaba encima. «Negocio» y su flecha, en un
+   * movil, uno sobre otro.
+   *
+   * Ahora los tres cuelgan de un solo punto —el medio de la corona— y se apilan
+   * **en vertical de pantalla**, que es como se leen. Asi los ocho sectores se
+   * ven igual, y no solo los cuatro afortunados.
+   *
+   * Los tres caben: un sector de los ocho mide unos 82 px de alto a este radio,
+   * y de -30 a +14 hay 44.
    */
   const medio = (RADIO_INTERIOR + RADIO_EXTERIOR) / 2;
-  const dondeElIcono = puntoEn(sector.medio, medio - 26, CENTRO);
-  const dondeElTexto = puntoEn(sector.medio, medio + 4, CENTRO);
-  const dondeElContador = puntoEn(sector.medio, RADIO_EXTERIOR - 15, CENTRO);
+  const anclaje = puntoEn(sector.medio, medio, CENTRO);
+  const dondeElContador = { x: anclaje.x, y: anclaje.y - 30 };
+  const dondeElIcono = { x: anclaje.x, y: anclaje.y - 13 };
+  const dondeElTexto = { x: anclaje.x, y: anclaje.y + 14 };
   const Icono = app.icono;
 
   return (

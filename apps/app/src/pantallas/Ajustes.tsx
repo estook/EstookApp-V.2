@@ -1,4 +1,4 @@
-import { IconoAccesibilidad, IconoSalir, IconoTamanoDeLetra } from '@estook/iconos';
+import { IconoRejilla, IconoSalir, IconoTamanoDeLetra, IconoTeclado } from '@estook/iconos';
 import {
   Boton,
   COMO_SE_LLAMA,
@@ -89,10 +89,19 @@ export function Ajustes() {
       <MiAcceso />
       <AjustesDeOrganizacion />
 
+      {/*
+        Cada linea lleva el icono de lo que cuenta, y **ninguna lleva el simbolo
+        de accesibilidad**. Antes lo llevaban las dos, y decia lo que no es: ese
+        simbolo significa «esto es para personas con discapacidad», y esto no lo
+        es. Reducir el movimiento lo agradece quien se marea, quien tiene
+        migrana y quien simplemente lo prefiere; el teclado lo usa cualquiera que
+        trabaje rapido. Y ademas no son opciones que se activen aqui: es como
+        esta hecha la aplicacion.
+      */}
       <Tarjeta titulo="Accesibilidad">
         <ul className="flex flex-col gap-e2 text-secundario text-texto-suave">
           <li className="flex items-start gap-e2">
-            <IconoAccesibilidad size={18} className="mt-[2px] shrink-0" />
+            <IconoRejilla size={18} className="mt-[2px] shrink-0" aria-hidden />
             <span>
               Estook respeta «reducir movimiento» del sistema: con esa opción puesta, nada se
               desplaza y <strong>la rueda de apps se convierte en una rejilla</strong> con la misma
@@ -100,7 +109,7 @@ export function Ajustes() {
             </span>
           </li>
           <li className="flex items-start gap-e2">
-            <IconoAccesibilidad size={18} className="mt-[2px] shrink-0" />
+            <IconoTeclado size={18} className="mt-[2px] shrink-0" aria-hidden />
             <span>
               Toda la aplicación se maneja con teclado, y el foco se ve siempre con un anillo
               naranja.

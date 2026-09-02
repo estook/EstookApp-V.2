@@ -19,6 +19,7 @@ insert into estook.persona (correo, nombre, apellidos, idioma, es_ejemplo) value
   ('elena@ejemplo.estook.com',   'Elena',   'Prat',     'ca', true),
   ('ignacio@ejemplo.estook.com', 'Ignacio', 'Bordas',   'es', true),
   ('luis@ejemplo.estook.com',    'Luis',    'Amunarriz','eu', true),
+  ('nuria@ejemplo.estook.com',   'Nuria',   'Sanmartin','ca', true),
   ('asesoria@ejemplo.estook.com','Asesoria','Cuenta Clara', 'es', true)
 on conflict (correo) do update
   set nombre = excluded.nombre,
@@ -65,6 +66,19 @@ select p.id, o.id, l.id, 'local', 'jefe_de_cocina'
 from estook.persona p, estook.organizacion o
 join estook.local l on l.organizacion_id = o.id and l.codigo = 'bar-puerto'
 where p.correo = 'luis@ejemplo.estook.com' and o.codigo = 'grupo-costa'
+on conflict do nothing;
+
+-- Nuria hace sala en dos locales de la zona, que es lo normal en una cadena
+-- cuando falta gente un fin de semana. Es el caso que M4 usa como criterio de
+-- terminado: **una camarera con dos locales elige donde esta**.
+--
+-- Sin ella, «¿donde estas hoy?» no se podria comprobar con nadie: los demas
+-- perfiles, o llegan a un local, o llegan a tantos que entran al consolidado.
+insert into estook.membresia (persona_id, organizacion_id, local_id, alcance, rol)
+select p.id, o.id, l.id, 'local', 'camarero'
+from estook.persona p, estook.organizacion o
+join estook.local l on l.organizacion_id = o.id and l.codigo in ('bar-puerto', 'bar-playa')
+where p.correo = 'nuria@ejemplo.estook.com' and o.codigo = 'grupo-costa'
 on conflict do nothing;
 
 -- La gestoria entra a toda la organizacion, en solo lectura y sin rueda de apps.

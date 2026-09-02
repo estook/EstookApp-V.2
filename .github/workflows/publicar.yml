@@ -36,6 +36,10 @@ jobs:
       VITE_APP_URL: ${{ vars.VITE_APP_URL || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      # M4. Donde vive la API. Mientras no este declarada, la aplicacion publicada
+      # **lo dice** en la pantalla de entrar en vez de quedarse cargando: no hay
+      # servidor al que preguntar, y eso es la verdad hasta que se despliegue.
+      VITE_API_URL: ${{ vars.VITE_API_URL }}
       # El DSN de Sentry es publico por naturaleza: viaja dentro del JavaScript
       # que descarga cualquiera. Va en Variables, como las de Supabase. Se acepta
       # tambien desde Secrets por si alguien lo declaro ahi.

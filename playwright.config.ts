@@ -3,9 +3,23 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * Pruebas de extremo a extremo.
  *
- * Levantan las cuatro aplicaciones ya construidas y comprueban lo unico que M0
- * promete: que arrancan, que no escupen errores en consola y que lo hacen dentro
- * del presupuesto de velocidad de B7.
+ * Levantan las cuatro aplicaciones ya construidas **y la API** (M4), y comprueban
+ * que arrancan, que no escupen errores en consola y que lo hacen dentro del
+ * presupuesto de velocidad de B7.
+ *
+ * ── Por que ahora hace falta la API ──────────────────────────────────────────
+ *
+ * Hasta M3 no hacia falta: la aplicacion se pintaba con un perfil de muestra
+ * elegido a mano en Ajustes. M4 tira ese andamio, asi que sin API no hay forma de
+ * entrar, y sin entrar no se puede comprobar nada.
+ *
+ * La API que se levanta es **la de verdad**, contra un Postgres efimero: mismos
+ * comandos, mismas politicas de seguridad, mismas puertas. Esta razonado en
+ * `base-de-datos/herramientas/api-de-pruebas.mjs`.
+ *
+ * Ojo con una cosa: la aplicacion tiene que estar **construida apuntando a esa
+ * API**, porque `VITE_API_URL` se hornea al construir. Se hace con
+ * `pnpm prueba:e2e:completa`, que construye y prueba en el orden correcto.
  *
  * Se prueba tambien a lo ancho de un movil pequeno, porque la regla 11 dice que
  * nada se da por terminado sin verlo en movil. Eso no sustituye a mirarlo en un
@@ -44,10 +58,22 @@ export default defineConfig({
     ...(conWebkit ? [{ name: 'movil-safari', use: { ...devices['iPhone SE'] } }] : []),
   ],
 
-  webServer: APLICACIONES.map(({ nombre, puerto }) => ({
-    command: `pnpm --filter @estook/${nombre} previsualiza`,
-    url: `http://localhost:${puerto}`,
-    reuseExistingServer: !enCI,
-    timeout: 120_000,
-  })),
+  webServer: [
+    // La API primero: tarda en levantar el Postgres efimero y aplicar las
+    // dieciocho migraciones, y las aplicaciones no sirven de nada sin ella.
+    {
+      command: 'pnpm api:pruebas',
+      url: 'http://localhost:5177/salud',
+      reuseExistingServer: !enCI,
+      // Migraciones y semillas contra un Postgres compilado a WebAssembly. En una
+      // maquina lenta pasa del minuto.
+      timeout: 180_000,
+    },
+    ...APLICACIONES.map(({ nombre, puerto }) => ({
+      command: `pnpm --filter @estook/${nombre} previsualiza`,
+      url: `http://localhost:${puerto}`,
+      reuseExistingServer: !enCI,
+      timeout: 120_000,
+    })),
+  ],
 });

@@ -41,18 +41,48 @@ async function abrir(page: Page, camino: string) {
   await page.getByRole('heading', { level: 1 }).waitFor({ state: 'visible' });
 }
 
-/** Entra como quien ve las ocho apps: hasta M4 se elige el perfil en Ajustes. */
-async function comoGerente(page: Page) {
-  await abrir(page, '/ajustes');
-  await page.getByLabel('Quien mira').selectOption('rosa');
-  await abrir(page, '/');
+/**
+ * Entra de verdad (M4).
+ *
+ * Hasta M3 esto era elegir un perfil en un desplegable de Ajustes. Ahora se
+ * escribe un correo y una contrasena, y el servidor decide quien eres y que ves.
+ *
+ * La contrasena esta escrita en el repositorio a proposito: son las siete
+ * personas de ejemplo, y la semilla que se la pone **se niega a correr en
+ * produccion**. Esta razonado en `base-de-datos/semillas/acceso.ts`.
+ */
+const CLAVE = 'estook en desarrollo';
+
+async function entrar(page: Page, correo: string) {
+  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+
+  // Si venia una sesion de otra prueba, se tira: cada prueba entra limpia.
+  await page.evaluate(() => {
+    try {
+      window.localStorage.removeItem('estook.sesion');
+    } catch {
+      /* en navegacion privada no se puede, y no pasa nada */
+    }
+  });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+
+  await page.getByLabel('Tu correo').fill(correo);
+  await page.getByLabel('Tu contraseña').fill(CLAVE);
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+
+  // Al titulo, y no a que el boton desaparezca: React sustituye el nodo del boton
+  // al pintarlo como «Entrando…», asi que esperar a que se desenganche no espera.
+  await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Entra en Estook');
 }
 
-/** Entra como la camarera, que solo tiene cuatro apps. */
+/** Entra como quien ve las ocho apps: la gerente del Bar Centro. */
+async function comoGerente(page: Page) {
+  await entrar(page, 'rosa@ejemplo.estook.com');
+}
+
+/** Entra como la camarera, que solo tiene cuatro apps de la rueda. */
 async function comoCamarera(page: Page) {
-  await abrir(page, '/ajustes');
-  await page.getByLabel('Quien mira').selectOption('sara');
-  await abrir(page, '/');
+  await entrar(page, 'sara@ejemplo.estook.com');
 }
 
 async function desborda(page: Page): Promise<boolean> {
@@ -128,8 +158,7 @@ test.describe('las ocho apps', () => {
   test('una app que el rol no tiene no se abre ni escribiendo la direccion', async ({ page }) => {
     // «Esconder un boton no protege nada» (principio 7). Se entra como camarera,
     // que no tiene Inventario, y se pide Inventario a mano.
-    await abrir(page, '/ajustes');
-    await page.getByLabel('Quien mira').selectOption('sara');
+    await comoCamarera(page);
 
     await abrir(page, '/inventario');
 
@@ -287,15 +316,33 @@ test.describe('deshacer universal', () => {
       .toBe(antes);
   });
 
-  test('flujo 3 · cambiar de perfil, y volver', async ({ page }) => {
-    await abrir(page, '/ajustes');
-    await page.getByLabel('Quien mira').selectOption('sara');
+  test('flujo 3 · cambiar de local, y volver', async ({ page }) => {
+    // El tercer flujo de M3 era cambiar de perfil de muestra, y M4 se llevo ese
+    // andamio por delante. Su sitio lo ocupa el equivalente de verdad, que ademas
+    // es mejor caso: **cambiar de local es justo lo que se hace sin querer**, y
+    // «que nadie apunte una merma en el local equivocado» (Manifiesto 28) es la
+    // razon por la que el selector existe.
+    await entrar(page, 'nuria@ejemplo.estook.com');
 
-    await page.getByLabel('Quien mira').selectOption('rosa');
-    await expect(page.getByText('Ahora miras como Rosa Iglesias')).toBeVisible();
+    // Nuria llega a dos locales, asi que se le pregunta donde esta.
+    await page.getByRole('button', { name: /Bar Playa/ }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+
+    // El selector esta en dos sitios segun el ancho, y a proposito: la barra de
+    // escritorio es `hidden lg:flex`, asi que en movil hay uno propio arriba del
+    // contenido. Sin el, quien trabaja en dos locales no podria cambiar con el
+    // telefono, que es el aparato con el que lo va a hacer.
+    const enLaBarra = page.locator('header').getByLabel('Local');
+    const enLaPantalla = page.getByLabel('Donde estas');
+    const selector = (await enLaBarra.isVisible()) ? enLaBarra : enLaPantalla;
+
+    await selector.selectOption({ label: 'Bar Puerto' });
+
+    await expect(page.getByRole('button', { name: /Deshacer/ })).toBeVisible();
+    await expect(page.locator('main p').filter({ hasText: 'Bar Puerto' }).first()).toBeVisible();
 
     await page.getByRole('button', { name: /Deshacer/ }).click();
-    await expect(page.getByLabel('Quien mira')).toHaveValue('sara');
+    await expect(page.locator('main p').filter({ hasText: 'Bar Playa' }).first()).toBeVisible();
   });
 
   test('la barra se va sola, y no deshace nada por su cuenta', async ({ page }) => {

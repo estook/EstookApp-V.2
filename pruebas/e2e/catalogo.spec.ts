@@ -137,13 +137,17 @@ test.describe('el catálogo', () => {
     await expect(page.getByText('null · no es lo mismo que cero')).toBeVisible();
   });
 
-  test('los doce errores del catálogo se pintan, y ninguno enseña su código', async ({ page }) => {
+  test('los dieciocho errores del catálogo se pintan, y ninguno enseña su código', async ({
+    page,
+  }) => {
     // «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría
-    // de flujos). Se comprueba sobre los doce a la vez.
+    // de flujos). Se comprueba sobre los dieciocho a la vez.
     //
-    // Doce es el catálogo cerrado de M2. Si alguien añade un error, esta prueba
-    // falla, y eso es lo que se quiere: que anadir un error sea una decision, no
-    // un descuido.
+    // Doce eran el catálogo cerrado de M2. M4 añadió seis, y **esta prueba falló
+    // al añadirlos**, que es justo para lo que está: que añadir un error sea una
+    // decisión y no un descuido. Los seis de M4 son las puertas del login:
+    // no_cuadra, demasiados_intentos, falta_doble_factor, clave_por_cambiar,
+    // pin_ocupado y se_queda_sin_administrador.
     await abrir(page);
     await irA(page, 'Avisos y vacíos');
 
@@ -151,10 +155,17 @@ test.describe('el catálogo', () => {
       has: page.getByRole('heading', { name: 'ErrorEnCristiano' }),
     });
     const avisos = seccion.getByRole('alert');
-    await expect(avisos).toHaveCount(12);
+    await expect(avisos).toHaveCount(18);
 
     const texto = (await seccion.innerText()).toLowerCase();
-    for (const codigo of ['sin_sesion', 'local_ajeno', 'fallo_nuestro', 'faltan_datos']) {
+    for (const codigo of [
+      'sin_sesion',
+      'local_ajeno',
+      'fallo_nuestro',
+      'faltan_datos',
+      'no_cuadra',
+      'falta_doble_factor',
+    ]) {
       expect(texto, `se ha colado el código ${codigo}`).not.toContain(codigo);
     }
   });

@@ -21,10 +21,13 @@ import { enTransaccion } from './infraestructura/postgres.ts';
 
 const puertos: Puertos = {
   enTransaccion: (quien, hacer) =>
-    enTransaccion(quien, (sql) =>
+    enTransaccion(quien, (sql, sesion) =>
       hacer({
         sql,
-        personaId: quien.personaId,
+        // Desde M4 no lo dice el cliente: sale de resolver el token de sesion
+        // dentro de la transaccion, con el disfraz de `estook_api` ya puesto.
+        personaId: sesion?.personaId ?? null,
+        sesion,
         correlacionId: quien.correlacionId,
         // El instante lo pone el servidor, nunca el navegador (regla 10).
         ahora: new Date(Date.now()),

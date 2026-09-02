@@ -32,6 +32,25 @@ export function LosCampos() {
           <Campo etiqueta="Unidades" tipo="numero" defaultValue={12} detras="uds" />
           <Campo etiqueta="Fecha de caducidad" tipo="fecha" ayuda="La que viene en el envase" />
           <Campo etiqueta="Hora de corte" tipo="hora" defaultValue="06:00" />
+
+          {/*
+            M4. Los dos que trajo el login. El de PIN no es un `number`: un
+            `<input type="number">` trae flechitas, admite notacion cientifica y en
+            algunos moviles se come los ceros de la izquierda. Un PIN que empieza
+            por cero no es un numero, es una clave.
+          */}
+          <Campo
+            etiqueta="Tu contrasena"
+            tipo="contrasena"
+            defaultValue="no se ve"
+            ayuda="Se pinta con puntos, y el gestor de contrasenas la reconoce"
+          />
+          <Campo
+            etiqueta="Tu PIN"
+            tipo="pin"
+            defaultValue="048213"
+            ayuda="Teclado numerico en movil, y sin las pegas de un campo de numero"
+          />
           <Campo etiqueta="Sin tocar" placeholder="Deshabilitado" disabled />
         </div>
       </Pieza>

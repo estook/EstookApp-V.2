@@ -25,10 +25,12 @@
     "bd:migrar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs",
     "bd:revertir": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs --revertir",
     "bd:revertir:todo": "node --env-file-if-exists=.env.local base-de-datos/herramientas/migrar.mjs --revertir --todo",
-    "bd:sembrar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/sembrar.mjs",
+    "bd:sembrar": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/sembrar.mjs",
     "bd:comprobar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/comprobar.mjs",
     "bd:comprobar-api": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/comprobar-api.mjs",
-    "verifica": "pnpm tipos && pnpm lint && pnpm formato && pnpm dependencias && pnpm prueba"
+    "verifica": "pnpm tipos && pnpm lint && pnpm formato && pnpm dependencias && pnpm prueba",
+    "api:pruebas": "node --experimental-strip-types base-de-datos/herramientas/api-de-pruebas.mjs",
+    "prueba:e2e:completa": "node herramientas/construye-para-e2e.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

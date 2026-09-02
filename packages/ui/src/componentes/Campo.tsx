@@ -18,7 +18,27 @@ import { clases } from '../clases.ts';
  *     que un lector de pantalla lo lea al entrar, no despues.
  *   · **44 px de alto.** El mismo toque minimo que los botones.
  */
-export type TipoDeCampo = 'texto' | 'numero' | 'fecha' | 'hora' | 'correo' | 'telefono';
+export type TipoDeCampo =
+  | 'texto'
+  | 'numero'
+  | 'fecha'
+  | 'hora'
+  | 'correo'
+  | 'telefono'
+  /**
+   * M4. Entra aquí y no en la pantalla de entrar porque «nadie escribe un
+   * componente nuevo sin justificarlo» (B4) vale también al revés: un campo de
+   * contraseña suelto en una pantalla acabaría siendo otro campo de contraseña
+   * suelto en otra, y dos formas distintas de pintar lo mismo.
+   */
+  | 'contrasena'
+  /**
+   * M4. Es un campo de texto con teclado numérico, no un `number`: un
+   * `<input type="number">` trae flechitas de subir y bajar, se puede poner en
+   * notación científica y en algunos móviles se come los ceros de la izquierda.
+   * Un PIN que empieza por cero no es un número, es una clave.
+   */
+  | 'pin';
 
 const TIPOS_HTML: Record<TipoDeCampo, string> = {
   texto: 'text',
@@ -27,6 +47,8 @@ const TIPOS_HTML: Record<TipoDeCampo, string> = {
   hora: 'time',
   correo: 'email',
   telefono: 'tel',
+  contrasena: 'password',
+  pin: 'text',
 };
 
 interface Comunes {
@@ -119,6 +141,12 @@ export function Campo({
         <input
           id={suyo}
           type={TIPOS_HTML[tipo]}
+          // El teclado numérico del móvil, sin las pegas de `type="number"`. Y
+          // `one-time-code` para que el gestor de contraseñas no se empeñe en
+          // guardar el PIN como si fuera la contraseña de la cuenta.
+          {...(tipo === 'pin'
+            ? { inputMode: 'numeric' as const, autoComplete: 'one-time-code' }
+            : {})}
           required={obligatorio === true}
           aria-invalid={error !== undefined || undefined}
           aria-describedby={nota}

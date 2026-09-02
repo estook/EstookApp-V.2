@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 1 de septiembre de 2026
+Última actualización: 2 de septiembre de 2026
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. Nunca puede afirmar algo que no sea cierto en ese momento.
@@ -9,86 +9,49 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                |
-| -------------- | ---------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances · **M2 ✓** núcleo técnico · **M3 ✓** diseño y esqueleto |
-| **Siguiente**  | **M4** · identidad y acceso                                                                    |
-| **Pruebas**    | 407 unitarias y de base de datos · 88 de extremo a extremo · 26 contra Supabase                |
-| **Rama**       | `main`. M3 fusionado y aplicado a Supabase                                                     |
-| **Publicado**  | web viva, con Sentry escuchando                                                                |
+|                |                                                                                                                      |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0 ✓** cimientos · **M1 ✓** alcances · **M2 ✓** núcleo · **M3 ✓** diseño y esqueleto · **M4 ✓** identidad y acceso |
+| **Siguiente**  | **M5** · onboarding y arranque asistido                                                                              |
+| **Pruebas**    | 522 unitarias y de base de datos · 130 de extremo a extremo                                                          |
+| **Rama**       | `m4-identidad-y-acceso`, **sin fusionar**. La `0018` no está aplicada todavía                                        |
+| **Publicado**  | web viva, con Sentry escuchando. **La API sigue sin desplegar**                                                      |
 
 ---
 
 ## 2 · Qué hay que hacer
 
-### Ahora
+### Ahora, y por este orden
 
-**Nada pendiente de M3.** Se fusionó el pull request 12, se aplicó la `0017` a
-Supabase y se comprobó contra ella de verdad: 17 de 17 migraciones, `pg_trgm`
-instalada, los seis índices de trigramas puestos y `estook.buscar` sin
-`security definer`. Todo en `pnpm bd:comprobar-api`, que ahora también cubre el
-buscador y los permisos.
+M4 está escrito y probado entero, pero **quedan tres botones que no puedo pulsar
+yo**, y hasta que se pulsen la aplicación publicada sigue sin login:
 
-**Empieza M4.**
+1. **Fusionar el pull request de M4.** Primero fusionar, después aplicar a
+   Supabase (regla 1).
+2. **Aplicar la `0018`** con `pnpm bd:migrar`, y **sembrar** con `pnpm bd:sembrar`.
+   La semilla nueva es la que pone la contraseña de las personas de ejemplo; se
+   niega a correr si `ENTORNO=produccion`.
+3. **Desplegar la API.** Actions → `Desplegar la API` → escribir «desplegar».
+   Antes hacen falta los secretos, que están en
+   [`config/claves.md`](config/claves.md): dos en GitHub y tres en Supabase.
 
-Lo último que se cerró: al repasar M3 aparecieron **once de los veinte
-componentes de B4 sin pintar ni una sola vez**. Estaban escritos y tipados, pero
-sus pantallas llegan de M6 en adelante, así que nadie los había renderizado. Un
-componente que no se ha pintado nunca no está terminado.
+Y después, declarar `VITE_API_URL` en las variables del repositorio, que es lo
+que hace que la aplicación publicada sepa a dónde llamar. Mientras no esté, la
+pantalla de entrar **lo dice** en vez de quedarse cargando.
 
-Ahora hay un **catálogo del sistema de diseño** en el panel interno
-(`apps/admin`), que pinta los veinte en sus estados, y una prueba de extremo a
-extremo que exige cero errores de consola, cero desbordes a 375 px, que la tabla
-se convierta en tarjetas por debajo de 768, que la hoja y el panel atrapen el
-foco, y que el campo de moneda siga leyendo «10.000,50» como 1.000.050 céntimos.
+### Lo único de M4 que no puedo firmar yo
 
-### Lo único de M3 que no puedo firmar yo
-
-**Verlo en un móvil de verdad** (regla 11). Las pruebas de extremo a extremo
-corren a 375 px y cazan los desbordes, pero no sustituyen a tenerlo en la mano.
-Está publicado y listo para mirarlo:
-https://estook.github.io/EstookApp-V.2/app/
-
-### Resuelto en la sesión de M3
-
-**1. La paleta de B1 no cumplía el contraste de B8.** Richi: «lo que tú creas
-mejor, quiero que todo se vea correctamente». Se han **oscurecido tres colores**,
-con el mismo tono y la luz justa para llegar a 4,5:1:
-
-| Ficha           | B1        | Ahora     | Sobre el fondo  |
-| --------------- | --------- | --------- | --------------- |
-| `--texto-tenue` | `#8A9497` | `#6D7577` | 2,97 → **4,50** |
-| `--bien`        | `#1E8E5A` | `#1A7D4F` | 3,96 → **4,91** |
-| `--atencion`    | `#C77700` | `#9F5F00` | 3,31 → **4,89** |
-
-`--mal` e `--info` ya cumplían. **El naranja de marca no se toca**: da 2,61:1 con
-blanco encima y 2,50 contra el fondo, y se resuelve por uso —texto e iconos en
-charcoal sobre naranja (6,64:1) y un filo charcoal alrededor del anillo de foco—.
-Todo medido en [`contraste.prueba.ts`](packages/ui/src/contraste.prueba.ts), que
-ya no admite ninguna excepción.
-
-**2. La marca usa los PNG que hay.** Richi: «utiliza los png que puse en la
-carpeta, ya los cambiaré al final». El logotipo está en la barra de escritorio y
-la mascota de Fogón en su botón.
-
-Los originales pesan 1,7 MB entre los dos y se pintan a 30 y 22 px, así que
-[`herramientas/reducir-marca.mjs`](herramientas/reducir-marca.mjs) los deja al
-doble del tamaño en que se ven: **el logo pasa de 468 KB a 23, y Fogón de 1,2 MB
-a 13**. Es el mismo dibujo con menos píxeles, no otra versión. Los originales se
-quedan en `packages/ui/marca/` porque son la fuente, pero no se publican.
-
-Sigue faltando el **archivo vectorial** del logotipo y de Fogón. No bloquea nada:
-cuando aparezcan se sustituyen en un sitio.
+**Verlo en un móvil de verdad** (regla 11). Las pruebas corren a 375 px y una de
+ellas encontró que en móvil no había forma de cambiar de local, pero eso no
+sustituye a tener el teléfono en la mano y escribir un PIN con una sola mano.
 
 ### Pendiente de dato, no de código
 
 **Los tipos de IGIC e IPSI para entregas de bienes.** No es que falte el dato: es
 que **no existe un dato único**, porque dependen del bien y de la operación.
-Hacen falta tantas reglas como categorías distinga cada tarifa. **Cuando
-aparezcan se añaden como filas, sin tocar código.**
-
-Mientras tanto el motor devuelve «sin regla» y para, en vez de inventarse un
-tipo. Está en [`docs/decisiones/0006`](docs/decisiones/0006-el-motor-fiscal.md).
+**Cuando aparezcan se añaden como filas, sin tocar código.** Mientras tanto el
+motor devuelve «sin regla» y para, en vez de inventarse un tipo. Está en
+[`docs/decisiones/0006`](docs/decisiones/0006-el-motor-fiscal.md).
 
 ### Sin prisa
 
@@ -97,6 +60,8 @@ tipo. Está en [`docs/decisiones/0006`](docs/decisiones/0006-el-motor-fiscal.md)
 | Quitar «Automatically expose new tables» en Supabase → Settings → API | antes de clientes                                                              |
 | Regenerar las claves de Google, que pasaron por un chat               | M27                                                                            |
 | Volver a `BrowserRouter` cuando haya `estook.com`                     | cuando haya dominio ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md)) |
+| El archivo vectorial del logotipo y de Fogón                          | cuando aparezca; se sustituye en un sitio                                      |
+| Un código QR para el segundo factor                                   | hoy se enseña la clave y el enlace, que basta. Con M11 llega la librería       |
 
 ---
 
@@ -105,66 +70,72 @@ tipo. Está en [`docs/decisiones/0006`](docs/decisiones/0006-el-motor-fiscal.md)
 **Web:** https://estook.github.io/EstookApp-V.2/ · `/app/` · `/carta/` · `/admin/`
 El **catálogo del sistema de diseño** está en `/admin/`: es la referencia de qué
 componente usar y cómo se ve cada uno.
-Hasta que haya `estook.com`; entonces basta con declarar `VITE_BASE` a `/`.
 
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan
 gratuito. Proyecto nuevo; el de la versión 1 sigue apagado y sin tocar.
 
-Comprobado con `pnpm bd:comprobar` contra la base de datos de verdad:
+Comprobado con `pnpm bd:comprobar` contra la base de datos de verdad, **antes de
+la `0018`**:
 
-| Qué                            | Cuánto                                       |
-| ------------------------------ | -------------------------------------------- |
-| Migraciones aplicadas          | **17 de 17**                                 |
-| Tablas en el esquema `estook`  | 18, **todas con seguridad por filas**        |
-| Roles · permisos · concesiones | 12 · 33 · 166                                |
-| Reglas fiscales                | 17, todas con su referencia legal            |
-| Datos de ejemplo               | 2 organizaciones, 7 locales, 7 personas      |
-| Tablas sueltas en `public`     | **0**                                        |
-| El area manager ve             | **exactamente 3 locales**                    |
-| La auditoría                   | añadir sí · modificar **no** · borrar **no** |
+| Qué                            | Cuánto                                         |
+| ------------------------------ | ---------------------------------------------- |
+| Migraciones aplicadas          | **17 de 18** · la `0018` se aplica al fusionar |
+| Tablas en el esquema `estook`  | 18, **todas con seguridad por filas**          |
+| Roles · permisos · concesiones | 12 · 33 · 166                                  |
+| Reglas fiscales                | 17, todas con su referencia legal              |
+| Datos de ejemplo               | 2 organizaciones, 7 locales, 7 personas        |
+| Tablas sueltas en `public`     | **0**                                          |
+
+Cuando se aplique la `0018` serán **18 migraciones y 23 tablas**, y las personas
+de ejemplo pasarán a ocho: entra **Nuria**, camarera en dos locales de la Zona
+Norte. No es un capricho: es el caso que M4 usa como criterio de terminado, y sin
+ella «¿dónde estás hoy?» no se podría comprobar con nadie.
 
 La conexión va por el agrupador de sesión de Supabase, porque la conexión directa
 de los proyectos nuevos solo funciona por IPv6.
 
-**La API se ha probado contra Supabase de verdad**, no solo contra Postgres
-efímero: `pnpm bd:comprobar-api` arranca la API entera, se conecta y hace
-peticiones reales. Hay que ejecutarla cada vez que se toque la capa de
-infraestructura, y **cada vez que una migración instale algo** —una extensión, un
-índice—, que es donde un Postgres compilado a WebAssembly puede comportarse de
-otra manera.
+**La API se prueba en tres capas distintas**, y las tres hacen falta:
 
-Desde M3 comprueba también el buscador y los permisos: que encuentra sin acentos
-y con erratas, que **el bar independiente solo encuentra su local**, que sin decir
-quién pregunta no encuentra nada, y que la `0017` dejó puesto lo que decía.
+| Dónde                   | Qué caza                                                                    |
+| ----------------------- | --------------------------------------------------------------------------- |
+| `pnpm prueba`           | cálculo puro y SQL contra un Postgres efímero                               |
+| `pnpm prueba:e2e`       | la API **de verdad** contra Postgres efímero, con navegador                 |
+| `pnpm bd:comprobar-api` | la API contra **Supabase**, que es donde aparece lo que WebAssembly esconde |
 
-**Todavía no está desplegada**, y es correcto: no hay a quien servir hasta que M4
-traiga el login.
+La tercera hay que ejecutarla cada vez que se toque la infraestructura y **cada
+vez que una migración instale algo**. La `0018` crea un índice único y once
+funciones con privilegio, que es exactamente ese caso.
 
 **Errores:** proyecto `estook-app` en Sentry, con solo «Error monitoring»
-encendido y el repositorio enlazado. Cada aplicación se identifica con el commit
-exacto que se publicó, para que Sentry pueda señalar qué cambio provocó un fallo.
+encendido y el repositorio enlazado.
 
 **Variables del repositorio** (GitHub → Settings → Secrets and variables →
-Actions → Variables): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
-`VITE_APP_URL` y `VITE_SENTRY_DSN`, las cuatro declaradas. **En Secrets no hay
-nada**, y es correcto: lo verdaderamente secreto vive solo en Supabase. Todo en
+Actions): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APP_URL` y
+`VITE_SENTRY_DSN`. **Falta declarar `VITE_API_URL`**, que es de M4. Y en Secrets
+harán falta dos, `SUPABASE_ACCESS_TOKEN` y `SUPABASE_PROJECT_REF`, que son los
+primeros del repositorio: son para desplegar, no del producto. Todo en
 [`config/claves.md`](config/claves.md).
 
 **El peso real de lo publicado**, medido con `pnpm tamano` sobre lo construido:
 
-| Aplicación                | Peso inicial | De los cuales tipografía |
-| ------------------------- | ------------ | ------------------------ |
-| `app`                     | 196,9 KB     | 106,1 KB                 |
-| `web` · `carta` · `admin` | 164,1 KB     | 106,1 KB                 |
+| Aplicación      | Peso inicial | De los cuales tipografía |
+| --------------- | ------------ | ------------------------ |
+| `app`           | 205,5 KB     | 106,1 KB                 |
+| `admin`         | 181,9 KB     | 106,1 KB                 |
+| `web` · `carta` | 164,2 KB     | 106,1 KB                 |
 
-De 250 permitidos. La tipografía se cuenta **entera y a propósito**: una pantalla
-en castellano solo descarga el subconjunto `latin`, 38 KB, así que la cifra de
-verdad es unos 70 KB menor. Si cabe contando de más, cabe seguro.
+De 250 permitidos. **La cifra de `admin` de la versión anterior de este fichero
+estaba mal**: decía 164,1 agrupándola con `web` y `carta`, y el catálogo del
+sistema de diseño ya la había subido a 181. Medido de nuevo antes y después de
+M4, para no repetir el error.
 
-**El presupuesto no manda sobre la calidad.** Richi lo dejó dicho en M3: «siempre
-ponemos rendimiento y superioridad a tamaño». Cabe holgado, así que no ha habido
-que elegir; el día que haya que hacerlo, se sube el límite de B7 con su decisión
-escrita, no se recorta el producto.
+M4 entero le costó a `app` **8,4 KB**, que es lo que se ahorró por no meter
+`@supabase/supabase-js` (unos 40). Está razonado en la
+[decisión 0010](docs/decisiones/0010-el-login-es-nuestro.md).
+
+La tipografía se cuenta **entera y a propósito**: una pantalla en castellano solo
+descarga el subconjunto `latin`, 38 KB, así que la cifra de verdad es unos 70 KB
+menor. Si cabe contando de más, cabe seguro.
 
 ---
 
@@ -184,47 +155,26 @@ capas, un `Math.round()` sobre dinero (regla 9) y un `new Date()` en el navegado
 
 ### M1 · Modelo maestro: alcances, roles y permisos
 
-Cuatro niveles de alcance (organización, área, local, persona) · membresías con
-vigencia · los doce roles · 33 permisos en tres familias · herencia y recorte
-local a local · `locales_visibles` · seguridad por filas escrita contra ella ·
-auditoría que solo sabe añadir · catálogo maestro con sus tres políticas ·
-traducciones · dispositivos con revocación.
+Cuatro niveles de alcance · membresías con vigencia · los doce roles · 33 permisos
+en tres familias · herencia y recorte local a local · `locales_visibles` ·
+seguridad por filas escrita contra ella · auditoría que solo sabe añadir ·
+catálogo maestro con sus tres políticas · traducciones · dispositivos.
 
-**Los tres niveles** (sin acceso · ver · ver y editar) forman una escalera, y eso
-es lo que hace que «si alguien tiene dos roles sobre el mismo local, gana el más
-amplio» se resuelva comparando, permiso a permiso.
+Lo que queda demostrado con pruebas, contra Postgres de verdad: un area manager ve
+**exactamente** sus tres locales · el bar independiente no ve nada de la cadena ·
+**sin decir quién pregunta no se ve absolutamente nada** · una membresía caducada
+no da acceso · el cocinero no ve ningún importe · el jefe de sala propone la carta
+pero **no la publica** · compras central **no puede cerrar recuentos** · **nadie**
+ve los directos ajenos del chat · la auditoría no se deja modificar ni borrar.
 
-Lo que queda demostrado con pruebas, contra Postgres de verdad:
-
-- Un area manager ve **exactamente** sus tres locales.
-- El bar independiente no ve ni un local, ni una organización, ni una persona de
-  la cadena. Pedir un local ajeno por su identificador devuelve vacío.
-- **Sin decir quién pregunta no se ve absolutamente nada.**
-- Una membresía caducada, o que aún no empieza, no da acceso.
-- El cocinero no ve ningún importe. El camarero no ve costes, ni ventas, ni el
-  cuadrante completo, ni datos de otros.
-- El jefe de sala propone cambios en la carta pero **no los publica**.
-- Compras central **no puede cerrar recuentos** (conflicto de interés conocido).
-- **Nadie**, ni la dirección, ve los directos ajenos del chat.
-- La auditoría no se deja modificar ni borrar, ni por permisos ni por su guardián.
-- La identidad **no sobrevive** a la transacción, así que no se filtra a la
-  siguiente petición.
-
-**M1 es el módulo del modelo, no del comportamiento.** Cuatro tablas están
-creadas y protegidas pero todavía sin usar, a propósito. Quién les da vida:
-
-| Tabla                  | Módulo                                     |
-| ---------------------- | ------------------------------------------ |
-| `auditoria`            | **M2** · la escribe cada comando           |
-| `dispositivo`          | **M4** · sesiones, PIN y revocación        |
-| `traduccion`           | **M9** · fichas técnicas traducibles       |
-| `politica_de_catalogo` | **M24** · propagación del catálogo maestro |
+**M1 es el módulo del modelo, no del comportamiento.** De las cuatro tablas que
+dejó creadas y sin usar, **M4 ha estrenado `dispositivo`**; quedan `traduccion`
+(M9) y `politica_de_catalogo` (M24). `auditoria` la estrenó M2.
 
 ### M2 · Núcleo técnico y motores transversales
 
 **Los siete motores**, en `packages/dominio` salvo el de permisos. Cálculo puro:
-las mismas cuentas dan lo mismo en el servidor y en la pantalla, con un solo
-dueño (regla 6).
+las mismas cuentas dan lo mismo en el servidor y en la pantalla (regla 6).
 
 | Motor         | Qué resuelve                                                                               |
 | ------------- | ------------------------------------------------------------------------------------------ |
@@ -237,13 +187,9 @@ dueño (regla 6).
 | **Recálculo** | Precio, elaboración, plato, margen, aviso. Una cola por producto                           |
 
 **La API.** Dos rutas y ninguna más: `GET /vN/consultas/:nombre` y
-`POST /vN/comandos/:nombre`. Versionada con compatibilidad N−2. Con idempotencia
+`POST /vN/comandos/:nombre`. Versionada con compatibilidad N−2, con idempotencia
 por cabecera, bandeja de salida transaccional, cola de trabajos con reintento y
-versión optimista, las cuatro probadas contra Postgres.
-
-**La deuda de M1, saldada.** La consulta `un_local` devuelve 403 sin comprobar de
-quién es el local: si las políticas no lo devuelven, no se puede ver. Así la
-respuesta es la misma para «no existe» y para «no es tuyo».
+versión optimista.
 
 **Un fallo que solo apareció contra Supabase de verdad.** La API no podía ponerse
 el disfraz de `estook_api`, porque allí el rol que conecta no es superusuario. Es
@@ -251,96 +197,127 @@ la razón de que exista `pnpm bd:comprobar-api`.
 
 ### M3 · Sistema de diseño y esqueleto
 
-**La Parte B entera, y el esqueleto de las ocho apps.**
+**La Parte B entera, y el esqueleto de las ocho apps**: las fichas de B1 en
+`@theme` · Montserrat autoalojada, dos ficheros y no ocho · los cincuenta iconos
+de Lucide reducidos a su figura, 7 KB · veinte componentes base cuyos tipos hacen
+cumplir las reglas de B4 · la rueda de apps con arrastre, teclado y rejilla para
+«reducir movimiento» · las dos barras de móvil y la de escritorio · el buscador
+universal con `pg_trgm` · deshacer universal · la marca vectorizada.
 
-**Lo que hay:**
+**En la base de datos:** la `0017`, con `pg_trgm`, `sin_acentos` y `estook.buscar`
+**sin `security definer`**, para que las políticas de M1 le apliquen.
 
-- **Las fichas de B1** en `@theme`, así que generan las utilidades _y_ quedan
-  publicadas como variables. Los nombres de B1 (`--r-m`, `--e4`, `--naranja`)
-  existen como alias: un valor, dos nombres, y ninguna forma de que se separen.
-- **Montserrat autoalojada.** Dos ficheros, no ocho: es fuente variable y Google
-  devuelve el mismo para los cuatro pesos (se comprobó, mismo md5). Con su
-  `unicode-range`, así que una pantalla en castellano baja 38 KB y nunca los 106.
-- **Los cincuenta iconos de Lucide**, descargados y reducidos a su figura: 7 KB
-  los cincuenta juntos, contra los cientos de la librería entera.
-- **Veinte componentes base**, y los tipos hacen cumplir las reglas de B4: un
-  campo sin etiqueta no compila, un estado vacío sin frase tampoco, y las migas
-  no aceptan un cuarto nivel.
-- **La rueda de apps**, con arrastre, con teclado y con su rejilla para «reducir
-  movimiento». La geometría está aparte y probada como lo que es: una cuenta.
-- **Las dos barras de móvil** —la general y la de cada app— y la de escritorio
-  con sus desplegables.
-- **El buscador universal** con `pg_trgm`: sin acentos y aguantando erratas.
-  Busca **también acciones**, y esas salen al instante y sin conexión.
-- **Deshacer universal**, diez segundos, con `Ctrl+Z`, en tres flujos.
-- **El símbolo de la marca, vectorizado**, y los tres PNG que exigen iOS y las
-  aplicaciones instalables, generados desde ese mismo SVG.
+Al repasar M3 aparecieron **once de los veinte componentes sin pintar ni una vez**.
+Ahora hay un **catálogo del sistema de diseño** en `/admin/` que los pinta todos
+en sus estados, con su prueba de extremo a extremo.
 
-**Lo que M3 puso en la base de datos:** la migración `0017`, con `pg_trgm`, la
-función `sin_acentos` y `estook.buscar`. **Sin `security definer`**, para que las
-políticas de M1 le apliquen: un buscador con puerta de atrás sería la forma más
-fácil de leer los locales de la competencia escribiendo tres letras. Probado: el
-bar independiente busca «bar» y encuentra exactamente uno, el suyo.
+Y **cinco fallos que encontraron las pruebas, no la vista**: la paleta no cumplía
+el contraste de B8 (se oscurecieron tres colores) · Montserrat no se aplicaba ·
+las fichas chocaban con Tailwind · el campo de moneda no sabía leerse a sí mismo ·
+los nombres se salían de la rueda.
 
-**Y dos consultas nuevas:** `mis_permisos`, que es lo que hace posible que la
-rueda reparta los sectores; y `buscar`.
+### M4 · Identidad y acceso
 
-#### Cinco fallos que encontraron las pruebas, no la vista
+**Lo que M4 trae, punto por punto del Plan:**
 
-Vale la pena dejarlos escritos, porque los cinco eran invisibles mirando la
-pantalla y los cinco habrían llegado a producción:
+- **Login único** con correo y contraseña **o PIN**, en un solo formulario. El PIN
+  está al mismo nivel y no escondido, porque para media plantilla es la forma
+  normal de entrar.
+- **Las seis comprobaciones** al entrar, en su orden: suscripción → en qué empresa
+  → vista de cadena → «¿dónde estás hoy?» → onboarding a medias → el Panel.
+- **Cambio de contexto sin nueva sesión.** El local vive en `estook.sesion`, no en
+  el navegador, y **se puede deshacer**.
+- **Invitación con el PIN en pantalla**, para darlo en mano. Invitar a un correo
+  que ya existe **añade membresía, nunca duplica persona**.
+- **Retirar el acceso** mata el PIN al instante y cierra las sesiones. **Reactivar**
+  a quien se fue, con su historial.
+- **PIN único por local**, garantizado por un índice.
+- **Doble factor** con TOTP, exigible desde la organización, con códigos de
+  respaldo.
+- **Segundo administrador o correo de recuperación obligatorio**, comprobado antes
+  de quitar un acceso, no después.
+- **Sesiones y dispositivos** en Ajustes → Mi acceso.
 
-1. **La paleta contra B8.** Está arriba, en las preguntas abiertas.
-2. **Montserrat no se aplicaba.** Mi propia regla `font-family: inherit` para los
-   campos incluía `body`, así que body heredaba de `html` la tipografía por
-   defecto de Tailwind. La aplicación se veía perfecta... en la fuente del
-   sistema.
-3. **Las fichas chocaban con Tailwind.** `--radius-r-full` genera
-   `rounded-r-full`, que Tailwind ya entiende como «redondea la derecha». El
-   botón central de la rueda salía con forma de media pastilla. Se renombraron
-   los cinco radios y hay una prueba que impide que vuelva a pasar.
-4. **El campo de moneda no sabía leerse a sí mismo.** Enseñaba `10.000,00` y al
-   volver a leerlo el punto de los miles lo dejaba en nada: editar un precio de
-   más de mil euros vaciaba el campo. Y se reformateaba a cada tecla, así que
-   escribir «12,35» era imposible.
-5. **Los nombres se salían de la rueda.** Se escriben en horizontal, así que en
-   los sectores de las tres y de las nueve crecen _hacia fuera_. Ahora hay una
-   prueba que mide las cuatro esquinas de cada palabra.
+**Y lo que M4 arregla de lo que había:** la API dejó de creerse `x-persona-id`.
+Mientras existió esa cabecera, cualquiera podía escribir el identificador de otra
+persona y ver sus datos llamando a la API a pelo. Era correcto no tener login
+antes; dejarla puesta con login no lo sería (regla 4).
 
-#### Cómo se comprueba que M3 está terminado
+#### Las tres decisiones que sostienen M4
+
+**1. El login es nuestro, no de Supabase Auth**
+([0010](docs/decisiones/0010-el-login-es-nuestro.md)). Lo decidió a medias la
+decisión 0005, que ya había descartado `auth.uid()` para poder probar el modelo en
+cualquier Postgres. Con Supabase Auth, dos de las tres capas de pruebas se
+quedarían sin poder entrar. Y la mitad de M4 —el PIN por local, matar sesiones—
+habría que escribirla igual.
+
+**2. Las contraseñas se derivan en el servidor, no en SQL.** No hay `pgcrypto` en
+el Postgres de las pruebas, igual que no había `unaccent` en M3. Se usa PBKDF2 a
+210.000 vueltas sobre `crypto.subtle`, que existe igual en Node, Deno y el
+navegador, y los parámetros viajan dentro de lo guardado para poder subir el coste
+sin invalidar nada.
+
+**3. Las pruebas de extremo a extremo levantan la API de verdad**
+([0011](docs/decisiones/0011-la-api-en-las-pruebas.md)). Sin login no se puede
+entrar, y sin entrar no se comprueba nada de M3. Se levanta la API entera contra
+un Postgres efímero: mismos comandos, mismas políticas, mismas puertas.
+
+#### La pieza de la que se puede estar orgulloso
+
+**«PIN único por local» lo garantiza un índice, no una comprobación.** La sal del
+PIN es **del local, no de la persona**, así que el mismo PIN da siempre la misma
+huella dentro de un local y `pin_unico_en_su_local` lo rechaza. Comprobarlo a mano
+se habría olvidado el día que hubiera un segundo sitio que crea PIN; un índice, no.
+
+Y no cuesta seguridad: contra quien tenga la base de datos entera, la sal por
+persona no protege más, porque un PIN de seis dígitos tiene un millón de
+combinaciones y la sal está en la fila de al lado. Por eso la derivación es lenta
+a propósito.
+
+#### Seis fallos que encontraron las pruebas, no la vista
+
+1. **El area manager volvía al consolidado en cada clic.** La resolución de
+   destino se rehace en cada petición, así que sin cuidado quien entra en un local
+   sale rebotado. No se veía roto: se veía mal.
+2. **A quien entraba y salía el mismo día no se le podía retirar el acceso.** Se
+   cerraba la membresía con `hasta = ayer`, y contra las semillas —donde todo el
+   mundo entró hoy— eso deja una membresía que acaba antes de empezar. La base de
+   datos lo rechazaba con un error en la cara. Se arregló separando el histórico
+   (`hasta`) del corte (`revocada_en`), que además hace verdad lo de «al instante».
+3. **CORS.** La API ponía las cabeceras de permiso antes de que respondiera la
+   ruta, y las rutas devuelven una `Response` propia que las sustituye. Contra la
+   API a pelo funcionaba todo; desde un navegador no se podía entrar.
+4. **En móvil no había forma de cambiar de local.** El selector vive en la barra
+   de escritorio, que es `hidden lg:flex`. Lo cazó una prueba corriendo a 375 px.
+5. **El catálogo de errores creció de doce a dieciocho**, y la prueba del catálogo
+   falló. Es justo para lo que está: que añadir un error sea una decisión.
+6. **Un `waitFor` que no esperaba.** React sustituye el nodo del botón al pintarlo
+   como «Entrando…», así que esperar a que se desenganche se cumple al instante.
+   No es del producto, pero costó un rato y por eso está escrito.
+
+#### El andamio de M3, borrado entero
+
+`perfiles.ts`, `AvisoDelAndamio.tsx`, el bloque «Perfil de muestra» de Ajustes y
+su prueba contra la matriz de roles. No queda ni un fichero. Los tres flujos de
+deshacer siguen siendo tres: el del Panel, el tamaño de letra y —en el sitio del
+perfil— **cambiar de local**, que es mejor caso porque es lo que se hace sin
+querer.
+
+#### Cómo se comprueba que M4 está terminado
 
 Su criterio, punto por punto, es un `describe` de
-[`pruebas/e2e/esqueleto.spec.ts`](pruebas/e2e/esqueleto.spec.ts):
+[`pruebas/e2e/acceso.spec.ts`](pruebas/e2e/acceso.spec.ts):
 
-| Criterio del Plan                                    | Cómo se comprueba                                         |
-| ---------------------------------------------------- | --------------------------------------------------------- |
-| Se navega por las ocho apps sin un salto raro        | Las ocho, con sus pestañas, midiendo desborde a 375 px    |
-| La rueda funciona con arrastre y con teclado         | Arrastre con el ratón desde el centro · flechas y `Enter` |
-| Deshacer funciona en tres flujos                     | Panel · tamaño de letra · perfil. Más `Ctrl+Z` y el plazo |
-| Todos los widgets tienen su «todavía no tengo datos» | Las ocho apps y los widgets del Panel                     |
+| Criterio del Plan                                    | Cómo se comprueba                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------------ |
+| Una camarera con dos locales elige dónde está        | Nuria entra y se le pregunta; elige, y no se le vuelve a preguntar |
+| Un area manager entra en su consolidado              | Ignacio ve su conjunto, entra en un local y vuelve con la flecha   |
+| Una llamada a la API pidiendo un local ajeno → `403` | Llamando a la API **a pelo**, sin pasar por la pantalla            |
 
 Corre en escritorio y en móvil pequeño. **Lo automático caza los desbordes; no
-sustituye a mirarlo en un teléfono de verdad**, que es lo que pide la regla 11 y
-lo único de la lista que no puedo firmar yo.
-
-#### El andamio que M4 se lleva por delante
-
-Sin login no hay a quien preguntar los permisos, y sin permisos la rueda se
-quedaría vacía. En vez de inventarse que se tienen las ocho apps —que sería
-mentir y además taparía el fallo el día que la consulta falle de verdad— hay
-**seis perfiles de muestra** copiados de las semillas, la aplicación **lo dice
-arriba con todas las letras**, y se cambia de perfil en Ajustes.
-
-No es una función del producto: es lo que permite comprobar **hoy** que la rueda
-de una camarera tiene cuatro sectores y la de una gerente ocho. Y **no puede
-mentir**: hay una prueba contra Postgres que compara los seis perfiles, permiso a
-permiso, con la matriz de roles de M1, y falla si dejan de cuadrar.
-
-**Dependencias nuevas, justificadas:** `tailwindcss` y `@tailwindcss/vite` (los
-estilos que fija A3), `react-router-dom` y `@tanstack/react-query` (también de
-A3) y `recharts` (las gráficas de A3, cargado aparte para que no entre en el
-paquete inicial). **`Motion` no se ha instalado**, y está razonado en
-[`0007`](docs/decisiones/0007-el-movimiento-sin-libreria.md).
+sustituye a mirarlo en un teléfono de verdad**, que es lo único de la lista que no
+puedo firmar yo.
 
 ---
 
@@ -371,22 +348,24 @@ En [`docs/decisiones/`](docs/decisiones/):
 | **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta |
 | **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages |
 | **0009** | El buscador quita los acentos con `translate`, no con `unaccent`  |
+| **0010** | **El login es nuestro, no de Supabase Auth**                      |
+| **0011** | **Las pruebas de extremo a extremo levantan la API de verdad**    |
 
 Otras, sin fichero propio:
 
 - **La matriz de permisos vive solo en la base de datos.** `packages/permisos`
-  tiene el vocabulario, no los niveles (regla 6). Una prueba comprueba que los
-  dos catálogos cuadran.
+  tiene el vocabulario, no los niveles (regla 6).
 - **Las funciones de visibilidad son `security definer`**, o la política de
   `membresia` entra en recursión infinita consigo misma. Pasó de verdad.
 - **No se usa `force row level security`**: rompería las semillas y no hace falta.
 - **Sesión y correlación son cosas distintas.** Una sesión es una visita; una
   correlación, una acción dentro de ella.
 - **Los ganchos de React se llaman en español** (`usarDeshacer`), y por eso
-  `rules-of-hooks` está apagada en los ficheros que los declaran: la regla
-  reconoce los ganchos por el prefijo `use` y no entiende otro idioma.
-  `exhaustive-deps`, que es la que caza errores de verdad, sigue encendida. Está
-  escrito en `eslint.config.js`.
+  `rules-of-hooks` está apagada en los ficheros que los declaran.
+- **El token de sesión viaja en `Authorization: Bearer`, no en una cookie** (M4).
+  La aplicación y la API viven en dominios distintos, y una cookie entre dominios
+  la bloquean los navegadores. Razonado en `apps/app/src/datos/cliente.ts`.
+- **Dependencias de M4: ninguna.** Todo con `crypto.subtle`, que ya estaba.
 - **Dependencia nueva justificada:** `@electric-sql/pglite`, solo de desarrollo,
   para tener «Postgres efímero» sin depender de Docker.
 
@@ -396,53 +375,65 @@ Otras, sin fichero propio:
 
 Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 
-- `packages/utiles/src/` · `base-de-datos/herramientas/`
+- `packages/utiles/src/` · `base-de-datos/herramientas/migrar.mjs`
 - `.dependency-cruiser.cjs` y las reglas 9 y 10 de `eslint.config.js`
 - `herramientas/comprueba-publicacion.mjs`
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`). Son B1, y los
-  nombres de sus claves están elegidos para no chocar con Tailwind: hay una
-  prueba que lo comprueba y explica por qué.
+  nombres de sus claves están elegidos para no chocar con Tailwind.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`,
-  `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`. Se rehacen con su
-  herramienta, no a mano.
-- **Las migraciones `0001` a `0017`.** Las 16 primeras están aplicadas en
-  Supabase; la `0017` se aplica al fusionar. Se amplían con una `0018`, nunca se
+  `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`.
+- **Las migraciones `0001` a `0018`.** Las 17 primeras están aplicadas en
+  Supabase; la `0018` se aplica al fusionar. Se amplían con una `0019`, nunca se
   editan (regla 2).
+- **`servidor/dominio/secretos.ts` y `doble-factor.ts`** (M4). Es criptografía, y
+  está probada contra los vectores del RFC 6238. Un cambio «que parece igual» aquí
+  deja a todo el mundo fuera o deja entrar a cualquiera.
+- **Las once funciones `security definer` de la `0018`.** Son la única puerta de
+  atrás del sistema, están tasadas y hay una prueba que las cuenta. Si un día son
+  doce, que sea a propósito y por escrito.
 
 Sobre el candado de `main`: los nombres de las comprobaciones obligatorias van
 **sin tilde** — `Calidad`, `Construccion y presupuestos`, `Migraciones
-reversibles`. **Nunca añadir `Construir` ni `Publicar`**: ese flujo solo corre
-después de fusionar, y exigirlo antes deja el botón bloqueado sin salida.
+reversibles`. **Nunca añadir `Construir`, `Publicar` ni `Desplegar la API`**: esos
+flujos solo corren después de fusionar, y exigirlos antes deja el botón bloqueado
+sin salida.
 
 ---
 
-## 8 · El siguiente paso · M4
+## 8 · El siguiente paso · M5
 
-**Identidad y acceso.** Login único con correo y contraseña o PIN · selector de
-organización y luego de local, con cambio de contexto sin nueva sesión ·
-resolución de destino tras entrar (las seis comprobaciones) · invitación con PIN
-mostrado en pantalla · invitar a un correo existente añade membresía, nunca
-duplica persona · reactivar a quien se fue · PIN único por local · doble factor
-exigible desde la organización · segundo administrador o correo de recuperación
-obligatorio · sesiones y dispositivos.
+**Onboarding y arranque asistido.** Los ocho pasos del alta · Google Places con
+volcado de ficha, reseñas y competidores · régimen fiscal y objetivos · logo y
+color con previsualización · camino de grupo con duplicado de local · datos de
+ejemplo mínimos etiquetados como ejemplo y borrables de un botón · catálogo de
+referencia de unos 250 productos que **nunca se precarga** · importadores con
+mapeo propuesto por Fogón · modo demostración con salida limpia · guía de
+instalación distinta para iPhone y Android · la tarjeta fija del Panel «Conecta
+tus ventas».
 
-**Terminado cuando:** una camarera con dos locales elige dónde está; un area
-manager entra en su consolidado; y una llamada a la API pidiendo un local ajeno
-devuelve `403`.
+**Terminado cuando:** un local termina el alta en menos de cuatro minutos con su
+nombre real, su valoración, sus competidores y su marca aplicada; crear un
+producto desde el catálogo de referencia lleva menos de quince segundos; el botón
+de quitar ejemplos los borra todos sin tocar nada real; y el gasto de Google queda
+por debajo de 0,50 €.
 
-**Lo que M3 le deja hecho, y le ahorra:**
+**Dependencia que hay que respetar.** El asistente de conexión con el TPV **no se
+construye en M5**: vive en M18 y M20. En M5 solo existe la tarjeta del Panel.
 
-- **El esqueleto entero.** M4 no pinta ni una barra: pone quién entra y el
-  esqueleto se acomoda solo.
-- **`mis_permisos` ya existe y está probada.** M4 solo tiene que decir quién es;
-  la rueda se reparte sola.
-- **La tabla `dispositivo`** lleva creada y protegida desde M1, esperándole.
-- **El andamio de los perfiles de muestra se borra entero**: `perfiles.ts`,
-  `AvisoDelAndamio.tsx` y el bloque «Perfil de muestra» de Ajustes. Su prueba
-  contra la matriz de roles también.
-- **La API está montada y probada contra Supabase, pero sin desplegar.** M4 es
-  quien la despliega, porque es quien trae a alguien a quien servir.
+**Lo que M4 le deja hecho, y le ahorra:**
 
-**Cómo se comprueba que M4 no ha roto M3:** `pnpm bd:comprobar-api` contra
-Supabase y `pnpm prueba:e2e`. Las dos pasan hoy, así que cualquier fallo que
-salga en M4 lo habrá traído M4.
+- **El registro es lo único que falta de la puerta.** «Tres formas de entrar por
+  primera vez: registro, invitación y nada más» (Manifiesto 28). La invitación
+  está entera; **el registro es de M5**, porque registrarse es crear el negocio.
+- **La quinta comprobación ya le espera.** `local.onboarding_paso` y
+  `onboarding_terminado` están creados, y la resolución de destino ya manda al
+  alta a quien la tiene a medias. M5 solo tiene que mover el número.
+- **La suscripción existe**, con su máquina de estado de la Auditoría de flujos, y
+  toda organización nueva nace en prueba de catorce días sin que nadie se acuerde.
+  Quien la cobra es M26.
+- **`invitar_persona` funciona**, así que el paso «invita a tu equipo» del alta es
+  llamar a un comando que ya está probado.
+
+**Cómo se comprueba que M5 no ha roto M4:** `pnpm verifica`, `pnpm prueba:e2e` y
+`pnpm bd:comprobar-api` contra Supabase. Las tres pasan hoy —la tercera, en cuanto
+se aplique la `0018`— así que cualquier fallo que salga en M5 lo habrá traído M5.

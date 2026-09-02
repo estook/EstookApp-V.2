@@ -36,11 +36,27 @@ export type Respuesta<T> =
 
 export interface OpcionesDelCliente {
   readonly base: string;
-  /** Quien pregunta. En M4 lo pondra el login; hasta entonces se pasa a mano. */
-  readonly personaId?: string | null;
+  /**
+   * El token de sesion, o una funcion que lo devuelva (M4).
+   *
+   * Se admite una funcion a proposito. El cliente se crea una vez y vive toda la
+   * sesion; si el token fuera un valor fijo, al entrar habria que crear otro
+   * cliente, y toda consulta que se hubiera quedado con el viejo seguiria yendo
+   * sin token. Con una funcion, el cliente pregunta en cada llamada.
+   */
+  readonly token?: string | null | (() => string | null);
   readonly registro?: Registro;
   /** Para poder probar sin red. */
   readonly pedir?: typeof fetch;
+  /**
+   * Que hacer cuando el servidor dice que la sesion ha caducado.
+   *
+   * Vive aqui y no en cada pantalla porque puede pasar en cualquiera: la sesion
+   * se puede haber cerrado desde otro aparato, o le pueden haber retirado el
+   * acceso a alguien mientras tenia la aplicacion abierta. Con esto, la
+   * aplicacion entera se entera de una vez.
+   */
+  readonly alCaducarLaSesion?: () => void;
 }
 
 export interface ClienteApi {
@@ -76,7 +92,12 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
       [CABECERA_CORRELACION]: correlacionId,
       ...cabecerasExtra,
     };
-    if (opciones.personaId) cabeceras['x-persona-id'] = opciones.personaId;
+
+    // Desde M4 la identidad no se declara, se demuestra: va el token de sesion en
+    // la cabecera estandar, y el servidor lo resuelve contra `estook.sesion`.
+    const token = typeof opciones.token === 'function' ? opciones.token() : opciones.token;
+    if (token) cabeceras['authorization'] = `Bearer ${token}`;
+
     if (cuerpo !== undefined) cabeceras['content-type'] = 'application/json';
 
     let respuesta: Response;
@@ -105,6 +126,12 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
         boton: { texto: 'Reintentar', accion: 'reintentar' },
       };
       opciones.registro?.aviso('la API ha dicho que no', { codigo: error.codigo, camino });
+
+      // La sesion ha caducado, o se ha cerrado desde otro aparato, o le han
+      // retirado el acceso a quien la tenia abierta. Se avisa una vez, arriba, en
+      // vez de que cada pantalla tenga que acordarse.
+      if (error.codigo === 'sin_sesion') opciones.alCaducarLaSesion?.();
+
       return { ok: false, error, correlacionId };
     }
 

@@ -140,3 +140,7 @@ export {
   claveDeCola,
 } from './recalculo.ts';
 export type { PasoDelRecalculo, Disparador } from './recalculo.ts';
+
+// ── M4 · a donde se entra · las seis comprobaciones ──────────────────────────
+export { DESTINOS, aDondeEntra } from './destino.ts';
+export type { Destino, QuienAcabaDeEntrar, ResolucionDeDestino } from './destino.ts';

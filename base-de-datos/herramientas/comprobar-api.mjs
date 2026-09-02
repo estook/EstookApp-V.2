@@ -54,6 +54,40 @@ await directo.end();
 
 const pedir = (camino, cabeceras = {}) => api.request(camino, { headers: cabeceras });
 
+const mandar = (camino, cuerpo, cabeceras = {}) =>
+  api.request(camino, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...cabeceras },
+    body: JSON.stringify(cuerpo),
+  });
+
+/**
+ * Entrar de verdad, y quedarse con el token (M4).
+ *
+ * Antes esta herramienta se identificaba con `x-persona-id`. Esa cabecera ya no
+ * existe, y quitarla es media M4: la identidad **se demuestra**, no se declara.
+ *
+ * La contrasena es la de las personas de ejemplo, que la semilla pone solo fuera
+ * de produccion. Si esto falla contra Supabase, lo primero que hay que mirar es
+ * si se ha sembrado `acceso.ts` alli.
+ */
+const CLAVE_DE_EJEMPLO = 'estook en desarrollo';
+
+async function entrarComo(correo) {
+  const respuesta = await mandar(
+    '/v1/comandos/entrar',
+    { correo, contrasena: CLAVE_DE_EJEMPLO },
+    { 'x-idempotencia': `comprobar-${correo}-${process.pid}-${contador++}` },
+  );
+  const cuerpo = await respuesta.json();
+  return cuerpo.datos?.token ?? null;
+}
+
+let contador = 0;
+
+/** Las cabeceras de quien ya ha entrado. */
+const como = (token) => ({ authorization: `Bearer ${token}` });
+
 console.log('Comprobacion de la API contra Supabase\n');
 
 try {
@@ -69,6 +103,109 @@ try {
   const anonima = await (await pedir('/v1/consultas/mis_locales')).json();
   comprobar('devuelve «la sesion ha caducado»', anonima.error?.codigo === 'sin_sesion');
 
+  // ── M4 · la identidad se demuestra, no se declara ─────────────────────────
+
+  titulo('M4 · la cabecera vieja ya no vale');
+  const conLaVieja = await pedir('/v1/consultas/mis_locales', {
+    'x-persona-id': personas['elena@ejemplo.estook.com'],
+  });
+  comprobar(
+    'x-persona-id no abre nada',
+    conLaVieja.status === 401,
+    `ha devuelto ${conLaVieja.status}`,
+  );
+
+  titulo('M4 · entrar');
+  const entrada = await (
+    await mandar(
+      '/v1/comandos/entrar',
+      { correo: 'rosa@ejemplo.estook.com', contrasena: CLAVE_DE_EJEMPLO },
+      { 'x-idempotencia': `comprobar-entrar-${process.pid}` },
+    )
+  ).json();
+  comprobar('con correo y contrasena se entra', typeof entrada.datos?.token === 'string');
+  comprobar(
+    'y la resolucion de destino le lleva a su Panel',
+    entrada.datos?.destino === 'panel',
+    `ha dicho ${entrada.datos?.destino}`,
+  );
+
+  const conLaMala = await (
+    await mandar(
+      '/v1/comandos/entrar',
+      { correo: 'rosa@ejemplo.estook.com', contrasena: 'esta no es' },
+      { 'x-idempotencia': `comprobar-mala-${process.pid}` },
+    )
+  ).json();
+  const conCorreoQueNoExiste = await (
+    await mandar(
+      '/v1/comandos/entrar',
+      { correo: 'nadie@ejemplo.estook.com', contrasena: 'lo que sea' },
+      { 'x-idempotencia': `comprobar-nadie-${process.pid}` },
+    )
+  ).json();
+  comprobar('con la contrasena mal, no entra', conLaMala.error?.codigo === 'no_cuadra');
+  comprobar(
+    'y un correo que no existe da EXACTAMENTE el mismo error',
+    conCorreoQueNoExiste.error?.codigo === conLaMala.error?.codigo,
+  );
+
+  titulo('M4 · un token inventado no vale');
+  const inventado = await pedir('/v1/consultas/mis_locales', {
+    authorization: 'Bearer me-lo-acabo-de-inventar',
+  });
+  comprobar('devuelve 401', inventado.status === 401, `ha devuelto ${inventado.status}`);
+
+  titulo('M4 · el area manager entra en su consolidado');
+  const deIgnacio = await (
+    await mandar(
+      '/v1/comandos/entrar',
+      { correo: 'ignacio@ejemplo.estook.com', contrasena: CLAVE_DE_EJEMPLO },
+      { 'x-idempotencia': `comprobar-ignacio-${process.pid}` },
+    )
+  ).json();
+  comprobar(
+    'no entra en un local, entra en el conjunto',
+    deIgnacio.datos?.destino === 'vista_de_cadena',
+    `ha dicho ${deIgnacio.datos?.destino}`,
+  );
+
+  titulo('M4 · la camarera con dos locales elige donde esta');
+  const deNuria = await (
+    await mandar(
+      '/v1/comandos/entrar',
+      { correo: 'nuria@ejemplo.estook.com', contrasena: CLAVE_DE_EJEMPLO },
+      { 'x-idempotencia': `comprobar-nuria-${process.pid}` },
+    )
+  ).json();
+  comprobar(
+    'se le pregunta donde esta',
+    deNuria.datos?.destino === 'elegir_local',
+    `ha dicho ${deNuria.datos?.destino}`,
+  );
+
+  titulo('M4 · cambiar de local NO abre sesion nueva');
+  const elSuyo = deNuria.datos?.locales?.[0]?.id;
+  const cambiado = await (
+    await mandar(
+      '/v1/comandos/cambiar_de_contexto',
+      { local_id: elSuyo },
+      {
+        ...como(deNuria.datos?.token),
+        'x-idempotencia': `comprobar-contexto-${process.pid}`,
+      },
+    )
+  ).json();
+  comprobar('el contexto cambia', cambiado.datos?.localId === elSuyo);
+
+  const conElMismoToken = await (
+    await pedir('/v1/consultas/quien_soy', como(deNuria.datos?.token))
+  ).json();
+  comprobar(
+    'y el MISMO token sigue valiendo, ya con local',
+    conElMismoToken.datos?.local?.id === elSuyo,
+  );
+
   titulo('Cada persona ve exactamente los suyos');
   const esperado = {
     'elena@ejemplo.estook.com': 6,
@@ -76,11 +213,13 @@ try {
     'luis@ejemplo.estook.com': 1,
     'rosa@ejemplo.estook.com': 1,
     'sara@ejemplo.estook.com': 1,
+    // M4 · la camarera con dos locales, que es el caso del criterio.
+    'nuria@ejemplo.estook.com': 2,
   };
 
   for (const [correo, cuantos] of Object.entries(esperado)) {
     const respuesta = await (
-      await pedir('/v1/consultas/mis_locales', { 'x-persona-id': personas[correo] })
+      await pedir('/v1/consultas/mis_locales', como(await entrarComo(correo)))
     ).json();
     const vistos = respuesta.datos?.length ?? -1;
     comprobar(`${correo.split('@')[0]} ve ${cuantos}`, vistos === cuantos, `ha visto ${vistos}`);
@@ -88,7 +227,7 @@ try {
 
   titulo('La deuda de M1 · un local ajeno devuelve 403');
   const ajeno = await pedir(`/v1/consultas/un_local?id=${locales['bar-puerto']}`, {
-    'x-persona-id': personas['rosa@ejemplo.estook.com'],
+    ...como(await entrarComo('rosa@ejemplo.estook.com')),
   });
   const cuerpoAjeno = await ajeno.json();
   comprobar('estado 403', ajeno.status === 403, `ha devuelto ${ajeno.status}`);
@@ -100,7 +239,7 @@ try {
 
   titulo('El propio si');
   const propio = await pedir(`/v1/consultas/un_local?id=${locales['bar-centro']}`, {
-    'x-persona-id': personas['rosa@ejemplo.estook.com'],
+    ...como(await entrarComo('rosa@ejemplo.estook.com')),
   });
   const cuerpoPropio = await propio.json();
   comprobar('estado 200', propio.status === 200);
@@ -108,7 +247,7 @@ try {
 
   titulo('La correlacion viaja de vuelta');
   const conHilo = await pedir('/v1/consultas/mis_locales', {
-    'x-persona-id': personas['rosa@ejemplo.estook.com'],
+    ...como(await entrarComo('rosa@ejemplo.estook.com')),
     'x-correlacion-id': '3f0c2e6a-1b4d-4a71-9c2e-8a6f5b0d1e77',
   });
   comprobar(
@@ -120,7 +259,7 @@ try {
   // Se pregunta como Elena (ve 6) y justo despues sin identidad. Si la identidad
   // se hubiera quedado pegada, la segunda veria 6 en vez de ninguno.
   await pedir('/v1/consultas/mis_locales', {
-    'x-persona-id': personas['elena@ejemplo.estook.com'],
+    ...como(await entrarComo('elena@ejemplo.estook.com')),
   });
   const despues = await (await pedir('/v1/consultas/mis_locales')).json();
   comprobar('la siguiente peticion no hereda nada', despues.error?.codigo === 'sin_sesion');
@@ -139,7 +278,7 @@ try {
   titulo('M3 · mis_permisos');
   const permisosDeSara = await (
     await pedir(`/v1/consultas/mis_permisos?local_id=${locales['bar-centro']}`, {
-      'x-persona-id': personas['sara@ejemplo.estook.com'],
+      ...como(await entrarComo('sara@ejemplo.estook.com')),
     })
   ).json();
 
@@ -155,7 +294,7 @@ try {
   );
 
   const permisosAjenos = await pedir(`/v1/consultas/mis_permisos?local_id=${locales['bar-faro']}`, {
-    'x-persona-id': personas['rosa@ejemplo.estook.com'],
+    ...como(await entrarComo('rosa@ejemplo.estook.com')),
   });
   comprobar(
     'sobre un local ajeno devuelve 403',
@@ -167,7 +306,7 @@ try {
   const buscar = async (correo, texto) => {
     const respuesta = await (
       await pedir(`/v1/consultas/buscar?texto=${encodeURIComponent(texto)}`, {
-        'x-persona-id': personas[correo],
+        ...como(await entrarComo(correo)),
       })
     ).json();
     return respuesta.datos ?? [];
@@ -250,6 +389,75 @@ try {
      where n.nspname = 'estook' and p.proname = 'buscar'
   `;
   comprobar('estook.buscar NO es security definer', buscadora?.definer === false);
+
+  // ── M4 · lo que la 0018 dejo puesto ───────────────────────────────────────
+  //
+  // Va aqui por la misma leccion de siempre: la 0016 existe porque algo que
+  // funcionaba contra Postgres efimero no funcionaba contra Supabase. La 0018
+  // crea un indice unico y once funciones con privilegio, que es exactamente el
+  // tipo de cosa que hay que mirar contra la base de datos de verdad.
+
+  titulo('M4 · lo que la 0018 dejo puesto en Supabase');
+
+  const [tablas] = await conexion`
+    select count(*)::int as cuantas
+      from pg_class c
+     where c.relnamespace = 'estook'::regnamespace
+       and c.relname in ('suscripcion','credencial','pin','doble_factor','sesion')
+       and c.relrowsecurity
+  `;
+  comprobar(
+    'las cinco tablas nuevas, con seguridad por filas',
+    tablas.cuantas === 5,
+    `hay ${tablas.cuantas}`,
+  );
+
+  const [sinRls] = await conexion`
+    select count(*)::int as cuantas from pg_class c
+     where c.relnamespace = 'estook'::regnamespace
+       and c.relkind = 'r' and not c.relrowsecurity
+  `;
+  comprobar('y ninguna tabla del esquema se ha quedado sin ella', sinRls.cuantas === 0);
+
+  const [indice] = await conexion`
+    select count(*)::int as cuantos from pg_indexes
+     where schemaname = 'estook' and indexname = 'pin_unico_en_su_local'
+  `;
+  comprobar('«PIN unico por local» lo garantiza un indice', indice.cuantos === 1);
+
+  const [puertas] = await conexion`
+    select count(*)::int as cuantas,
+           count(*) filter (
+             where has_function_privilege('public', p.oid, 'execute')
+           )::int as publicas
+      from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'estook' and p.prosecdef
+       and p.proname in (
+         'credencial_para_entrar','pines_para_entrar','pin_del_quiosco',
+         'anotar_intento_de_contrasena','anotar_intento_de_pin','abrir_sesion',
+         'sesion_activa','persona_por_correo','poner_credencial',
+         'cerrar_sesiones_de','tiene_como_volver_a_entrar'
+       )
+  `;
+  comprobar('las once puertas de atras estan', puertas.cuantas === 11, `hay ${puertas.cuantas}`);
+  comprobar('y ninguna la puede ejecutar cualquiera', puertas.publicas === 0);
+
+  const [revocacion] = await conexion`
+    select count(*)::int as cuantas from information_schema.columns
+     where table_schema = 'estook' and table_name = 'membresia' and column_name = 'revocada_en'
+  `;
+  comprobar('la revocacion tiene hora, no solo fecha', revocacion.cuantas === 1);
+
+  // Lo mas barato de comprobar y lo mas caro de que se escape: que no haya ni una
+  // contrasena guardada tal cual. La restriccion de la tabla ya lo impide, pero
+  // esto lo mira en los datos de verdad, que es donde importa.
+  const [secretos] = await conexion`
+    select count(*)::int as en_claro
+      from estook.credencial
+     where derivada not like 'pbkdf2-sha256$%'
+  `;
+  comprobar('ninguna contrasena guardada en claro', secretos.en_claro === 0);
 
   await conexion.end();
 } catch (fallo) {

@@ -1,0 +1,20 @@
+# Configuracion de las funciones de Supabase (M4).
+#
+# Solo lo que hace falta para desplegar la API. La base de datos no se gestiona
+# desde aqui: las migraciones son nuestras, numeradas y reversibles, con su propio
+# ejecutor (regla 2 del Plan y decision de M0).
+
+project_id = "efgtzujwjztihyiwgpwg"
+
+[functions.api]
+# Sin la comprobacion de token de Supabase, y **no es un descuido**.
+#
+# Nuestras sesiones son nuestras y no de Supabase Auth (decision 0010), asi que
+# Supabase no sabe leer el token que viaja. Y sobre todo: `entrar` tiene que poder
+# llamarse **sin token**, porque es la definicion de entrar. Con esto puesto en
+# `true`, nadie podria entrar nunca.
+#
+# Lo que protege la puerta sigue siendo el despachador —que exige sesion en todo
+# salvo donde se declara lo contrario— y las politicas de M1 por debajo.
+verify_jwt = false
+entrypoint = "./functions/api/index.ts"

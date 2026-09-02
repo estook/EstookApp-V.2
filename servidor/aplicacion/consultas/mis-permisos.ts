@@ -29,12 +29,23 @@ import { consulta, FalloDeAplicacion } from '../contrato.ts';
  * pregunta `nivel_de_permiso` permiso a permiso, contra el catalogo, en vez de
  * repetir la matriz aqui. Un calculo, un unico dueno (regla 6).
  */
-export const misPermisos = consulta<{ local_id: string }, PermisosResueltos>({
+export const misPermisos = consulta<{ local_id?: string | undefined }, PermisosResueltos>({
   nombre: 'mis_permisos',
-  entrada: z.object({ local_id: z.string().uuid() }).strict(),
+  // Desde M4 el local es opcional: si no se dice, es el de la sesion, que es el
+  // caso normal. Se puede seguir pidiendo uno concreto —la vista de cadena
+  // compara varios— y las politicas de M1 filtran igual.
+  entrada: z.object({ local_id: z.string().uuid().optional() }).strict(),
 
-  async ejecutar({ sql, personaId }, { local_id }) {
+  async ejecutar({ sql, personaId, sesion }, entrada) {
     if (!personaId) throw new FalloDeAplicacion('sin_sesion');
+
+    const local_id = entrada.local_id ?? sesion?.localId;
+    if (!local_id) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['local_id'],
+        porque: 'Todavía no estás dentro de ningún local, así que no hay sobre qué resolverlos.',
+      });
+    }
 
     // Primero, que el local sea suyo. Se pregunta a las politicas y no se
     // comprueba a quien pertenece: si no lo devuelven, no se puede ver, y la

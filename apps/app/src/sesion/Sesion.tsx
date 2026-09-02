@@ -1,121 +1,175 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import type { PermisosResueltos } from '@estook/permisos';
 import {
-  LOCAL_DE_DESARROLLO,
-  PERSONA_DE_DESARROLLO,
-  crearClienteDeLaApp,
-  hayApi,
-} from '../datos/cliente.ts';
-import { PERFILES_DE_MUESTRA, type PerfilDeMuestra } from './perfiles.ts';
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Destino, Idioma } from '@estook/dominio';
+import type { PermisosResueltos } from '@estook/permisos';
+import type { ClienteApi } from '@estook/cliente-api';
+import { crearClienteDeLaApp, guardarToken, hayApi, leerToken } from '../datos/cliente.ts';
 
 /**
- * Quien pregunta y desde donde (M3).
+ * Quien ha entrado, donde esta y que puede (M4).
  *
- * **Esto lo sustituye M4 entero.** M4 trae «login unico con correo y contrasena o
- * PIN · selector de organizacion y luego de local, con cambio de contexto sin
- * nueva sesion». Hasta entonces hay que resolver dos cosas para que el esqueleto
- * se pueda construir y, sobre todo, **comprobar**:
+ * **Esto sustituye entero al andamio de M3.** Donde antes habia seis perfiles de
+ * muestra elegidos a mano, ahora hay una sesion de verdad: un token, y un
+ * servidor que dice quien eres.
  *
- *   · **Quien es.** La API lo lee de la cabecera `x-persona-id` (asi lo dejo M2,
- *     a la espera de M4). Aqui se pasa tal cual.
- *   · **Que puede.** Lo dice el servidor con la consulta `mis_permisos`, que es
- *     lo que hace que la rueda reparta los sectores entre las apps que el rol
- *     tiene y ninguna mas.
+ * ── Una sola consulta, y por que ─────────────────────────────────────────────
  *
- * ── Y cuando no hay API ──────────────────────────────────────────────────────
+ * Todo sale de `quien_soy`: quien eres, en que organizacion y en que local estas,
+ * a donde te lleva la resolucion de destino, y tus permisos sobre ese local.
  *
- * Sin API no hay a quien preguntar, y la rueda se quedaria vacia. En vez de
- * inventarse que se tienen las ocho apps —que seria mentir y ademas taparia el
- * fallo el dia que la consulta falle de verdad— se usa un **perfil de muestra**
- * elegido a mano, la aplicacion lo dice arriba con todas las letras, y se puede
- * cambiar en Ajustes.
+ * Podrian ser cuatro consultas, y seria peor. En cuatro, la aplicacion pintaria
+ * la rueda vacia, luego con cuatro sectores, luego con ocho; y en un movil con
+ * mala cobertura eso no son milisegundos. B7 pide que la primera pantalla util
+ * llegue rapido, y encadenar cuatro viajes es la forma mas segura de que no.
  *
- * Eso no es una funcion del producto: es el andamio que permite ver hoy que la
- * rueda de un cocinero tiene tres sectores y la de un director ocho, que es un
- * criterio de terminado de M3 y no se puede dejar sin comprobar hasta M4.
+ * ── Y se vuelve a preguntar, no se guarda ────────────────────────────────────
+ *
+ * El destino y los permisos se rehacen en cada peticion del servidor, no se
+ * cachean para siempre. Es lo que hace verdad «cambiar el rol de alguien surte
+ * efecto en la peticion siguiente» (Auditoria, Parte 8): si a la camarera le
+ * quitan el acceso a costes mientras tiene la aplicacion abierta, en el proximo
+ * refresco los campos dejan de llegar y la pantalla deja de ensenarlos.
  */
-export interface Sesion {
-  readonly perfil: PerfilDeMuestra;
-  readonly cambiarDePerfil: (id: string) => void;
+
+export interface QuienSoy {
+  readonly personaId: string;
+  readonly nombre: string;
+  readonly apellidos: string | null;
+  readonly correo: string;
+  readonly idioma: Idioma;
+  readonly version: number;
+  readonly destino: Destino;
+  readonly porque: string;
+  readonly organizacion: {
+    readonly id: string;
+    readonly nombre: string;
+    readonly usaAreas: boolean;
+    readonly estado: string;
+    readonly exigeDobleFactor: boolean;
+    readonly correoDeRecuperacion: string | null;
+    readonly alcance: 'organizacion' | 'area' | 'local';
+    readonly version: number;
+  } | null;
+  readonly local: {
+    readonly id: string;
+    readonly nombre: string;
+    readonly codigo: string;
+    readonly area: string | null;
+  } | null;
+  readonly organizaciones: readonly { readonly id: string; readonly nombre: string }[];
+  readonly locales: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly organizacionId: string;
+  }[];
   readonly permisos: PermisosResueltos;
-  /** `true` mientras el servidor todavia no ha contestado. */
+  readonly debeCambiarClave: boolean;
+  readonly faltaDobleFactor: boolean;
+  readonly debeActivarDobleFactor: boolean;
+}
+
+export interface Sesion {
+  /** Nulo mientras no se ha entrado. */
+  readonly yo: QuienSoy | null;
+  readonly permisos: PermisosResueltos;
   readonly cargando: boolean;
-  /** De donde salen los permisos: del servidor, o del andamio de M3. */
-  readonly deDonde: 'servidor' | 'muestra';
-  readonly localId: string | null;
+  /** `false` cuando no hay `VITE_API_URL`: no hay a quien preguntar. */
+  readonly hayApi: boolean;
+  readonly cliente: ClienteApi;
+  /** Guarda el token y vuelve a preguntar quien es. */
+  readonly entrar: (token: string) => Promise<void>;
+  /** Cierra la sesion en el servidor y borra el token. */
+  readonly salir: () => Promise<void>;
+  /** Vuelve a preguntar. Se llama despues de cambiar algo que afecta al acceso. */
+  readonly refrescar: () => Promise<void>;
 }
 
 const Contexto = createContext<Sesion | null>(null);
 
-/**
- * El perfil elegido se recuerda en este aparato.
- *
- * Sin esto, cada recarga volvia al primer perfil, y quien estaba mirando Estook
- * como gerente se encontraba de camarera al refrescar. Se guarda igual que el
- * tamano de letra: en el navegador, porque es del aparato y no de la persona, y
- * dentro de un `try` porque en navegacion privada no se puede escribir.
- */
-const DONDE_SE_GUARDA = 'estook.perfil-de-muestra';
-
-function leerGuardado(): string {
-  const primero = PERFILES_DE_MUESTRA[0].id;
-  if (typeof window === 'undefined') return primero;
-
-  try {
-    const guardado = window.localStorage.getItem(DONDE_SE_GUARDA);
-    return PERFILES_DE_MUESTRA.some((p) => p.id === guardado) ? (guardado ?? primero) : primero;
-  } catch {
-    return primero;
-  }
-}
-
 export function ProveedorDeSesion({ children }: { readonly children: ReactNode }) {
-  const [perfilId, setPerfilId] = useState<string>(leerGuardado);
+  const cache = useQueryClient();
+  const [hayToken, setHayToken] = useState(() => leerToken() !== null);
 
-  const cambiarDePerfil = useCallback((id: string) => {
-    setPerfilId(id);
-    try {
-      window.localStorage.setItem(DONDE_SE_GUARDA, id);
-    } catch {
-      // Se cambia igual, solo que no se recordara la proxima vez.
-    }
-  }, []);
-
-  const perfil = useMemo(
-    () => PERFILES_DE_MUESTRA.find((p) => p.id === perfilId) ?? PERFILES_DE_MUESTRA[0],
-    [perfilId],
+  // El cliente se crea **una vez** y lee el token en cada llamada. Recrearlo al
+  // entrar dejaria a medias cualquier consulta que ya tuviera el viejo.
+  const olvidarToken = useRef<() => void>(() => undefined);
+  const cliente = useMemo(
+    () =>
+      crearClienteDeLaApp({
+        alCaducarLaSesion: () => {
+          olvidarToken.current();
+        },
+      }),
+    [],
   );
 
-  // Solo se pregunta si hay API y si el perfil sabe a que local mira. Sin las
-  // dos cosas la consulta no tendria sentido y se quedaria fallando en bucle.
-  const puedePreguntar = hayApi && PERSONA_DE_DESARROLLO !== null && LOCAL_DE_DESARROLLO !== null;
+  olvidarToken.current = useCallback(() => {
+    guardarToken(null);
+    setHayToken(false);
+    // Se tira la cache entera, no solo `quien_soy`: dentro puede haber datos del
+    // local de quien acaba de salir, y no tienen por que estar cuando entre otra
+    // persona en la misma tablet.
+    cache.clear();
+  }, [cache]);
 
   const consulta = useQuery({
-    queryKey: ['mis_permisos', PERSONA_DE_DESARROLLO, LOCAL_DE_DESARROLLO],
-    enabled: puedePreguntar,
-    queryFn: async (): Promise<PermisosResueltos> => {
-      const cliente = crearClienteDeLaApp({ personaId: PERSONA_DE_DESARROLLO });
-      const respuesta = await cliente.consultar<PermisosResueltos>('mis_permisos', {
-        local_id: LOCAL_DE_DESARROLLO ?? '',
-      });
+    queryKey: ['quien_soy'],
+    enabled: hayApi && hayToken,
+    // Si el token no vale, no se reintenta: el servidor ya ha dicho que no.
+    retry: false,
+    queryFn: async (): Promise<QuienSoy> => {
+      const respuesta = await cliente.consultar<QuienSoy>('quien_soy');
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
       return respuesta.datos;
     },
   });
 
-  const valor = useMemo<Sesion>(() => {
-    const delServidor = puedePreguntar && consulta.data !== undefined;
+  const entrar = useCallback(
+    async (token: string) => {
+      guardarToken(token);
+      setHayToken(true);
+      await cache.invalidateQueries({ queryKey: ['quien_soy'] });
+    },
+    [cache],
+  );
 
-    return {
-      perfil,
-      cambiarDePerfil,
-      permisos: delServidor ? consulta.data : perfil.permisos,
-      cargando: puedePreguntar && consulta.isLoading,
-      deDonde: delServidor ? 'servidor' : 'muestra',
-      localId: LOCAL_DE_DESARROLLO,
-    };
-  }, [perfil, cambiarDePerfil, puedePreguntar, consulta.data, consulta.isLoading]);
+  const salir = useCallback(async () => {
+    // Se avisa al servidor para que cierre la fila, y **luego** se borra el
+    // token pase lo que pase. Si el aviso fallara y no se borrara, quien pulsa
+    // «salir» se quedaria dentro, que es lo peor que puede hacer un boton de
+    // salir. La sesion del servidor caduca sola de todas formas.
+    try {
+      await cliente.ejecutar('salir', {});
+    } finally {
+      olvidarToken.current();
+    }
+  }, [cliente]);
+
+  const refrescar = useCallback(async () => {
+    await cache.invalidateQueries({ queryKey: ['quien_soy'] });
+  }, [cache]);
+
+  const valor = useMemo<Sesion>(
+    () => ({
+      yo: consulta.data ?? null,
+      permisos: consulta.data?.permisos ?? {},
+      cargando: hayApi && hayToken && consulta.isLoading,
+      hayApi,
+      cliente,
+      entrar,
+      salir,
+      refrescar,
+    }),
+    [consulta.data, consulta.isLoading, hayToken, cliente, entrar, salir, refrescar],
+  );
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
 }

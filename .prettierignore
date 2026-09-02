@@ -5,3 +5,7 @@ coverage/
 pnpm-lock.yaml
 base-de-datos/migraciones/
 packages/iconos/svg/
+
+# Lo que genera `pnpm maestros`. La fuente es el Markdown de docs/maestros/;
+# esto es la salida, y una salida no se revisa de formato.
+docs/maestros/pdf/

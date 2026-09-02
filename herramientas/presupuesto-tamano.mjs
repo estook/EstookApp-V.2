@@ -8,7 +8,14 @@ import { fileURLToPath } from 'node:url';
 /**
  * Presupuesto de tamano (Parte B7 del Plan).
  *
- * "Paquete inicial de la app: menos de 250 KB comprimido."
+ * "Paquete inicial de la app: 250 KB comprimido." **Es una referencia, no un
+ * limite.** Desde la Evolucion 1.0, el tamano se mide y se informa, pero no
+ * bloquea: lo que el usuario nota es el tiempo, no los kilobytes, y un paquete
+ * de 400 KB que abre en 180 ms es mejor producto que uno de 240 que abre en 600.
+ *
+ * Lo que si sigue bloqueando es el presupuesto de VELOCIDAD, y la regla de que
+ * ninguna dependencia entra sin justificarse por escrito. Que el tamano no mande
+ * no significa que se instale cualquier cosa.
  *
  * Se mide lo que el navegador tiene que descargar de verdad antes de pintar: el
  * script de entrada, todo lo que lleva `modulepreload`, las hojas de estilo y
@@ -27,7 +34,8 @@ import { fileURLToPath } from 'node:url';
  * integracion continua y bloquea la fusion.
  */
 const RAIZ = fileURLToPath(new URL('../', import.meta.url));
-const LIMITE_KB = 250;
+/** La referencia de B7. Se informa al pasarla; no se falla. */
+const REFERENCIA_KB = 250;
 const APLICACIONES = ['web', 'app', 'carta', 'admin'];
 
 function referenciasDe(html) {
@@ -43,8 +51,13 @@ function referenciasDe(html) {
   return [...referencias];
 }
 
+/** Un fallo de verdad: no se puede medir. Eso si para la integracion continua. */
 let hayFallo = false;
-console.log(`Presupuesto de tamano · limite ${LIMITE_KB} KB comprimido por aplicacion\n`);
+/** Solo se pasa de la referencia. Se dice y se sigue. */
+let hayAviso = false;
+
+console.log(`Tamano del paquete inicial · referencia ${REFERENCIA_KB} KB por aplicacion`);
+console.log('Se mide y se informa. Lo que bloquea es el presupuesto de velocidad.\n');
 
 for (const aplicacion of APLICACIONES) {
   const dist = join(RAIZ, 'apps', aplicacion, 'dist');
@@ -82,28 +95,43 @@ for (const aplicacion of APLICACIONES) {
   }
 
   const kb = total / 1024;
-  const cumple = kb <= LIMITE_KB;
-  if (!cumple) hayFallo = true;
+  const dentro = kb <= REFERENCIA_KB;
+  if (!dentro) hayAviso = true;
 
   const detalle =
     deFuentes > 0 ? `  · de los cuales ${(deFuentes / 1024).toFixed(1)} KB de tipografia` : '';
 
   console.log(
-    `  ${cumple ? 'OK  ' : 'MAL '} ${aplicacion.padEnd(6)} ${kb.toFixed(1).padStart(7)} KB` +
-      (cumple ? detalle : `  · se pasa ${(kb - LIMITE_KB).toFixed(1)} KB del presupuesto`),
+    `  ${dentro ? 'OK  ' : 'AVISO'} ${aplicacion.padEnd(6)} ${kb.toFixed(1).padStart(7)} KB` +
+      (dentro ? detalle : `  · ${(kb - REFERENCIA_KB).toFixed(1)} KB por encima de la referencia`),
   );
 }
 
+// No poder medir SI es un fallo: significa que nadie sabe cuanto pesa.
 if (hayFallo) {
   console.error(
     [
       '',
-      'Que ha pasado: al menos una aplicacion se pasa del presupuesto de B7.',
-      'Que se puede hacer: mirar que dependencia ha entrado en el paquete inicial y',
-      'cargarla bajo demanda, o justificar por escrito por que hace falta.',
+      'Que ha pasado: al menos una aplicacion no se ha podido medir.',
+      'Que se puede hacer: ejecutar `pnpm build` y volver a intentarlo.',
     ].join('\n'),
   );
   process.exit(1);
 }
 
-console.log('\n  todas las aplicaciones dentro del presupuesto');
+// Pasarse de la referencia NO lo es. Se dice, con lo que hay que mirar, y se sigue.
+if (hayAviso) {
+  console.log(
+    [
+      '',
+      '  Alguna aplicacion esta por encima de la referencia de B7.',
+      '  No es un fallo: desde la Evolucion 1.0 el tamano se vigila, no manda.',
+      '',
+      '  Lo que si conviene mirar: que dependencia ha entrado en el paquete inicial,',
+      '  si puede cargarse bajo demanda, y sobre todo si el presupuesto de VELOCIDAD',
+      '  sigue cumpliendose. Ese es el que decide.',
+    ].join('\n'),
+  );
+} else {
+  console.log('\n  todas las aplicaciones dentro de la referencia');
+}

@@ -99,12 +99,12 @@ export function Paginador({ pagina, deCuantas, alIr, que }: PaginadorProps) {
   if (deCuantas <= 1) return null;
 
   return (
-    <nav aria-label={`Paginas de ${que}`} className="flex items-center justify-between gap-e3">
+    <nav aria-label={`Páginas de ${que}`} className="flex items-center justify-between gap-e3">
       <Salto
         hacia={pagina - 1}
         puede={pagina > 1}
         alIr={alIr}
-        etiqueta="Pagina anterior"
+        etiqueta="Página anterior"
         icono={<IconoFlechaIzquierda size={18} />}
       >
         Anterior
@@ -118,7 +118,7 @@ export function Paginador({ pagina, deCuantas, alIr, que }: PaginadorProps) {
         hacia={pagina + 1}
         puede={pagina < deCuantas}
         alIr={alIr}
-        etiqueta="Pagina siguiente"
+        etiqueta="Página siguiente"
         icono={<IconoFlechaDerecha size={18} />}
         alReves
       >

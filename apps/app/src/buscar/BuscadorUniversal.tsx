@@ -116,7 +116,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
       },
       {
         id: 'tamano-de-letra',
-        nombre: 'Cambiar el tamano de letra',
+        nombre: 'Cambiar el tamaño de letra',
         donde: 'Ajustes',
         icono: <IconoTamanoDeLetra size={18} />,
         hacer: () => {

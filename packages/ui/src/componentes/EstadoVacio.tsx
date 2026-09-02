@@ -7,7 +7,7 @@ import { clases } from '../clases.ts';
  *
  * «`EstadoVacio` (**siempre con accion**)» · «Todo estado vacio lleva una frase
  * y un boton. **Nunca una pantalla en blanco**» · «Todos los widgets tienen su
- * version "todavia no tengo datos"» (criterio de terminado de M3).
+ * version "todavía no tengo datos"» (criterio de terminado de M3).
  *
  * Por eso `frase` y `children` **no son opcionales en los tipos**: un estado
  * vacio sin frase no compila, y uno sin accion tampoco, salvo que se diga a
@@ -83,9 +83,9 @@ export interface TodaviaNoProps {
 export function TodaviaNo({ que, queHabra, modulo }: TodaviaNoProps) {
   return (
     <EstadoVacio
-      titulo={`${que}: todavia no tengo datos`}
+      titulo={`${que}: todavía no tengo datos`}
       frase={queHabra}
-      sinAccionPorque={`Esta pantalla se construye en ${modulo}. El esqueleto, la navegacion y los permisos ya funcionan.`}
+      sinAccionPorque={`Esta pantalla se construye en ${modulo}. El esqueleto, la navegación y los permisos ya funcionan.`}
     />
   );
 }

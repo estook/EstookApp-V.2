@@ -65,6 +65,8 @@ export const invitarPersona = comando<EntradaInvitar, SalidaInvitar>({
   nombre: 'invitar_persona',
   entrada: entradaInvitar,
   exige: 'accion.invitar_personas',
+  // Devuelve el PIN en claro: no se recuerda.
+  conSecreto: true,
 
   async ejecutar(contexto, entrada) {
     const { sql, sesion, correlacionId } = contexto;
@@ -94,9 +96,9 @@ export const invitarPersona = comando<EntradaInvitar, SalidaInvitar>({
 
     if (personaId === undefined) {
       const creadas = await sql<{ id: string }[]>`
-        insert into estook.persona (correo, nombre, apellidos)
-        values (${entrada.correo}, ${entrada.nombre}, ${entrada.apellidos ?? null})
-        returning id
+        select estook.dar_de_alta_persona(
+          ${entrada.correo}, ${entrada.nombre}, ${entrada.apellidos ?? null}
+        ) as id
       `;
       personaId = creadas[0]?.id;
       if (personaId === undefined) throw new FalloDeAplicacion('fallo_nuestro');

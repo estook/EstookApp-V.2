@@ -48,6 +48,8 @@ export const reactivarPersona = comando<EntradaReactivar, SalidaReactivar>({
   nombre: 'reactivar_persona',
   entrada: entradaReactivar,
   exige: 'accion.invitar_personas',
+  // Devuelve el PIN en claro: no se recuerda.
+  conSecreto: true,
 
   async ejecutar({ sql, sesion, correlacionId }, entrada) {
     if (sesion === null) throw new FalloDeAplicacion('sin_sesion');

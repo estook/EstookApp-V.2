@@ -64,7 +64,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     icono: IconoInventario,
     acento: 'var(--color-app-inventario)',
     pestanas: pestanas('Hoy', 'Productos', 'Pedidos', 'Mas'),
-    queHace: 'Que hay, que falta y que se ha ido sin explicacion',
+    queHace: 'Qué hay, qué falta y qué se ha ido sin explicación',
   },
   'app.escandallos': {
     id: 'escandallos',
@@ -91,7 +91,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     icono: IconoCalendario,
     acento: 'var(--color-app-calendario)',
     pestanas: pestanas('Mes', 'Semana', 'Dia', 'Mas'),
-    queHace: 'Que pasa cada dia en el local: turnos, limpiezas, entregas',
+    queHace: 'Qué pasa cada día en el local: turnos, limpiezas, entregas',
   },
   'app.equipo': {
     id: 'equipo',
@@ -100,7 +100,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     icono: IconoEquipo,
     acento: 'var(--color-app-equipo)',
     pestanas: pestanas('Hoy', 'Personas', 'Fichajes', 'Mas'),
-    queHace: 'Quien trabaja, cuando y cuanto cuesta',
+    queHace: 'Quién trabaja, cuándo y cuánto cuesta',
   },
   'app.servicio': {
     id: 'servicio',
@@ -109,7 +109,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     icono: IconoServicio,
     acento: 'var(--color-app-servicio)',
     pestanas: pestanas('Jornada', 'Ventas', 'APPCC', 'Mas'),
-    queHace: 'El dia a dia: jornada, ventas del TPV, APPCC y cierre',
+    queHace: 'El día a día: jornada, ventas del TPV, APPCC y cierre',
   },
   'app.negocio': {
     id: 'negocio',
@@ -118,7 +118,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     icono: IconoNegocio,
     acento: 'var(--color-app-negocio)',
     pestanas: pestanas('Resumen', 'Costes', 'Resenas', 'Mas'),
-    queHace: 'Como va, donde se va el margen, resenas y competencia',
+    queHace: 'Cómo va, dónde se va el margen, reseñas y competencia',
   },
   'app.cuaderno': {
     id: 'cuaderno',

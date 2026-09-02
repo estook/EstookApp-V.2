@@ -127,7 +127,7 @@ export function resolver(reglas: readonly ReglaFiscal[], contexto: ContextoFisca
   const ganadoras = puntuadas.filter((p) => p.especificidad === maxima);
 
   const primera = ganadoras[0];
-  if (!primera) throw new Error('Un empate sin candidatas no deberia llegar hasta aqui.');
+  if (!primera) throw new Error('Un empate sin candidatas no debería llegar hasta aquí.');
 
   if (ganadoras.length > 1) {
     return { estado: 'ambiguo', candidatas: ganadoras.map((g) => g.regla) };

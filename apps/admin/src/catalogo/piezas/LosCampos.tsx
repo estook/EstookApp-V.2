@@ -40,16 +40,16 @@ export function LosCampos() {
             por cero no es un numero, es una clave.
           */}
           <Campo
-            etiqueta="Tu contrasena"
+            etiqueta="Tu contraseña"
             tipo="contrasena"
             defaultValue="no se ve"
-            ayuda="Se pinta con puntos, y el gestor de contrasenas la reconoce"
+            ayuda="Se pinta con puntos, y el gestor de contraseñas la reconoce"
           />
           <Campo
             etiqueta="Tu PIN"
             tipo="pin"
             defaultValue="048213"
-            ayuda="Teclado numerico en movil, y sin las pegas de un campo de numero"
+            ayuda="Teclado numérico en móvil, y sin las pegas de un campo de número"
           />
           <Campo etiqueta="Sin tocar" placeholder="Deshabilitado" disabled />
         </div>

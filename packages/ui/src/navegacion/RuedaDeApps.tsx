@@ -124,7 +124,7 @@ export function RuedaDeApps({
       <div className="flex h-full w-full flex-col items-center justify-center gap-e5 p-e4">
         {apps.length === 0 ? (
           <p className="max-w-[32ch] text-center text-cuerpo text-white">
-            Tu acceso todavia no incluye ninguna app. Pideselo a quien lleva el local.
+            Tu acceso todavía no incluye ninguna app. Pídeselo a quien lleva el local.
           </p>
         ) : enRejilla ? (
           <RuedaRejilla apps={apps} pendientes={pendientes} alElegir={elegir} />

@@ -120,7 +120,7 @@ function devolverElResto(total: Centimos, partes: readonly Centimos[]): Centimos
   if (resto === 0) return [...partes];
 
   const primera = partes[0];
-  if (primera === undefined) throw new Error('Un reparto sin partes no deberia llegar hasta aqui.');
+  if (primera === undefined) throw new Error('Un reparto sin partes no debería llegar hasta aquí.');
 
   return [centimos(primera + resto), ...partes.slice(1)];
 }

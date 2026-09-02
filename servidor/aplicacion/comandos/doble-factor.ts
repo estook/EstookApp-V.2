@@ -42,6 +42,8 @@ export interface SalidaActivar {
 export const activarDobleFactor = comando<Record<string, never>, SalidaActivar>({
   nombre: 'activar_doble_factor',
   entrada: z.object({}).strict(),
+  // Devuelve el secreto del segundo factor: no se recuerda.
+  conSecreto: true,
   // Quien tiene que activarlo porque lo exige su organizacion entra sin el: si
   // no, no podria activarlo nunca.
   aunSinDobleFactor: true,
@@ -80,6 +82,8 @@ export const confirmarDobleFactor = comando<
 >({
   nombre: 'confirmar_doble_factor',
   entrada: z.object({ codigo: z.string().trim().min(6).max(10) }).strict(),
+  // Devuelve los codigos de respaldo: no se recuerdan.
+  conSecreto: true,
   aunSinDobleFactor: true,
 
   async ejecutar({ sql, sesion, ahora }, entrada) {

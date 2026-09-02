@@ -170,7 +170,7 @@ export function Buscador({
               // cosas con el mismo nombre son tres cosas que un lector de
               // pantalla no sabe distinguir.
               aria-label="Que quieres buscar"
-              placeholder="Busca un local, una persona o una accion"
+              placeholder="Busca un local, una persona o una acción"
               className="min-h-toque w-full bg-transparent text-cuerpo outline-none placeholder:text-texto-tenue"
             />
           </div>
@@ -181,7 +181,7 @@ export function Buscador({
                 compacto
                 titulo="Escribe para buscar"
                 frase={`Con ${minimoDeLetras} letras basta. No hacen falta acentos, y aguanta alguna errata.`}
-                sinAccionPorque="Tambien encuentra acciones: «ajustes», «tamano de letra», el nombre de una app."
+                sinAccionPorque="También encuentra acciones: «ajustes», «tamaño de letra», el nombre de una app."
               />
             ) : (
               <>
@@ -237,7 +237,7 @@ export function Buscador({
                   <EstadoVacio
                     compacto
                     titulo={`No hay nada que se parezca a «${escrito.trim()}»`}
-                    frase="Prueba con menos letras, o con el codigo del local en vez del nombre."
+                    frase="Prueba con menos letras, o con el código del local en vez del nombre."
                     sinAccionPorque="Solo se busca en lo que tu acceso alcanza."
                   />
                 )}

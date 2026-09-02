@@ -348,3 +348,124 @@ async function pinDe(page: Page, correo: string): Promise<string> {
 
   return nuevo.datos.pin;
 }
+
+// ── El ciclo entero de una persona ───────────────────────────────────────────
+
+/**
+ * Invitar, entrar con el PIN, retirar y reactivar.
+ *
+ * **Esta es la prueba que faltaba.** Las de arriba comprueban entrar, el
+ * contexto y los permisos, y todas pasaban mientras «invitar a alguien nuevo» no
+ * funcionaba en absoluto: `estook.persona` tenía seguridad por filas y ninguna
+ * política de alta, así que el `insert` no podía pasar.
+ *
+ * No se veía porque el comando solo crea la persona **si el correo no existe**, y
+ * contra las semillas —donde las siete personas ya están— ese camino no se
+ * recorría nunca. Lo arregla la migración `0019`.
+ *
+ * Se hace de punta a punta y no por partes a propósito: el fallo estaba
+ * justamente en la costura entre el comando y la política.
+ */
+test.describe('el ciclo de una persona', () => {
+  test('se invita a alguien nuevo, y su PIN sale en pantalla una vez', async ({ request }) => {
+    const rosa = await unToken(request, 'rosa@ejemplo.estook.com');
+    const cabeceras = { authorization: `Bearer ${rosa}` };
+
+    const yo = (await (
+      await request.get(`${API}/v1/consultas/quien_soy`, { headers: cabeceras })
+    ).json()) as { datos: { organizacion: { id: string }; local: { id: string } } };
+
+    // Un correo distinto en cada pasada: la base de pruebas es una y las pruebas
+    // corren en paralelo.
+    const correo = `nueva-${Date.now()}@ejemplo.estook.com`;
+
+    const respuesta = await request.post(`${API}/v1/comandos/invitar_persona`, {
+      headers: { ...cabeceras, 'x-idempotencia': `invitar-${correo}` },
+      data: {
+        correo,
+        nombre: 'Persona',
+        apellidos: 'De Prueba',
+        rol: 'camarero',
+        organizacion_id: yo.datos.organizacion.id,
+        local_id: yo.datos.local.id,
+      },
+    });
+
+    expect(respuesta.status(), await respuesta.text()).toBe(200);
+
+    const invitada = (await respuesta.json()) as {
+      datos: { personaId: string; yaExistia: boolean; pin: string };
+    };
+
+    expect(invitada.datos.yaExistia).toBe(false);
+    // El PIN, en pantalla y de seis dígitos, para darlo en mano.
+    expect(invitada.datos.pin).toMatch(/^[0-9]{6}$/);
+
+    // Y entra con él, que es de lo que se trata.
+    const entrada = await request.post(`${API}/v1/comandos/entrar`, {
+      headers: { 'x-idempotencia': `entrar-${correo}` },
+      data: { correo, pin: invitada.datos.pin },
+    });
+
+    expect(entrada.status(), await entrada.text()).toBe(200);
+  });
+
+  test('invitar a un correo que ya existe **añade membresía y no duplica persona**', async ({
+    request,
+  }) => {
+    const elena = await unToken(request, 'elena@ejemplo.estook.com');
+    const cabeceras = { authorization: `Bearer ${elena}` };
+
+    const yo = (await (
+      await request.get(`${API}/v1/consultas/quien_soy`, { headers: cabeceras })
+    ).json()) as { datos: { organizacion: { id: string }; locales: { id: string }[] } };
+
+    const respuesta = await request.post(`${API}/v1/comandos/invitar_persona`, {
+      headers: { ...cabeceras, 'x-idempotencia': `invitar-luis-${Date.now()}` },
+      data: {
+        // Luis ya trabaja en el Grupo Costa, de jefe de cocina.
+        correo: 'luis@ejemplo.estook.com',
+        nombre: 'Luis',
+        rol: 'camarero',
+        organizacion_id: yo.datos.organizacion.id,
+        local_id: yo.datos.locales[0]?.id ?? '',
+      },
+    });
+
+    expect(respuesta.status(), await respuesta.text()).toBe(200);
+    const salida = (await respuesta.json()) as { datos: { yaExistia: boolean } };
+    expect(salida.datos.yaExistia, 'no se ha duplicado la persona').toBe(true);
+  });
+
+  test('quien no puede invitar recibe un **mensaje**, no un fallo del servidor', async ({
+    request,
+  }) => {
+    // Marcos es cocinero. Antes de arreglarlo esto devolvía un `500` y un «se nos
+    // ha roto algo por dentro», que además de feo es mentira: no se había roto
+    // nada, es que no puede.
+    const marcos = await unToken(request, 'marcos@ejemplo.estook.com');
+    const cabeceras = { authorization: `Bearer ${marcos}` };
+
+    const yo = (await (
+      await request.get(`${API}/v1/consultas/quien_soy`, { headers: cabeceras })
+    ).json()) as { datos: { organizacion: { id: string }; local: { id: string } } };
+
+    const respuesta = await request.post(`${API}/v1/comandos/invitar_persona`, {
+      headers: { ...cabeceras, 'x-idempotencia': `invitar-marcos-${Date.now()}` },
+      data: {
+        correo: `otra-${Date.now()}@ejemplo.estook.com`,
+        nombre: 'Otra',
+        rol: 'camarero',
+        organizacion_id: yo.datos.organizacion.id,
+        local_id: yo.datos.local.id,
+      },
+    });
+
+    expect(respuesta.status()).toBe(403);
+    const cuerpo = (await respuesta.json()) as CuerpoDeError;
+    expect(cuerpo.error.codigo).toBe('sin_permiso');
+    // En cristiano, y sin una palabra de base de datos.
+    expect(JSON.stringify(cuerpo)).not.toContain('row-level security');
+    expect(JSON.stringify(cuerpo)).not.toContain('Internal Server Error');
+  });
+});

@@ -151,7 +151,7 @@ export function usarDeshacer(): Contexto {
   const contexto = useContext(DeshacerContexto);
   if (!contexto) {
     throw new Error(
-      'usarDeshacer() necesita estar dentro de <ProveedorDeDeshacer>. Se pone una sola vez, en la raiz de la aplicacion.',
+      'usarDeshacer() necesita estar dentro de <ProveedorDeDeshacer>. Se pone una sola vez, en la raíz de la aplicación.',
     );
   }
   return contexto;

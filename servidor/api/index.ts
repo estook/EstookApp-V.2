@@ -134,6 +134,35 @@ export function crearApi(despachador: Despachador) {
     return undefined;
   });
 
+  /**
+   * La red de debajo del todo (M4).
+   *
+   * «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría de
+   * flujos, Parte 5). El despachador ya traduce lo previsto; esto atrapa **lo
+   * que no lo estaba**, que es justo lo que puede llevar dentro el nombre de una
+   * tabla o media consulta.
+   *
+   * Sin esto, un fallo inesperado salía como el `500` de serie de Hono: un
+   * «Internal Server Error» en inglés, sin cuerpo y sin el hilo de la petición.
+   * Se vio de verdad con un cocinero intentando invitar a alguien.
+   *
+   * Lo que sale ahora es el error del catálogo, en cristiano, con su hilo. Y por
+   * dentro se registra el fallo entero, que es donde tiene que estar: quien
+   * atiende un aviso de Sentry necesita la traza, y quien está en la cocina no.
+   */
+  api.onError((fallo, c) => {
+    const correlacionId = c.get('correlacionId');
+    console.error(
+      JSON.stringify({
+        nivel: 'error',
+        mensaje: 'fallo no previsto en la API',
+        correlacion_id: correlacionId,
+        detalle: fallo instanceof Error ? fallo.message : String(fallo),
+      }),
+    );
+    return respuestaDeError('fallo_nuestro', correlacionId);
+  });
+
   api.get('/salud', (c) => c.json({ datos: { estado: 'en pie', version: VERSION_ACTUAL } }));
 
   api.get('/v:version{[0-9]+}/consultas/:nombre', async (c) => {

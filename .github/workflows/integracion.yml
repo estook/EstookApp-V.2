@@ -53,6 +53,12 @@ jobs:
       - name: Reglas de dependencia
         run: pnpm dependencias
 
+      # Lo que lee una persona, en espanol de Espana. Se anadio en M4, despues de
+      # ver en un movil de verdad una pantalla que decia «todavia no tengo datos»
+      # al lado de otra que decia «¿Donde estas hoy?».
+      - name: Textos de pantalla
+        run: pnpm textos
+
       - name: Pruebas
         run: pnpm prueba
 

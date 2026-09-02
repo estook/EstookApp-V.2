@@ -89,6 +89,8 @@ export const entrar = comando<EntradaEntrar, SalidaEntrar>({
   // La unica operacion de todo el catalogo que se puede llamar sin haber
   // entrado. Es, literalmente, la definicion de entrar.
   sinSesion: true,
+  // Devuelve el token: no se recuerda. Ver `conSecreto` en el contrato.
+  conSecreto: true,
 
   async ejecutar(contexto, entrada) {
     const quien =

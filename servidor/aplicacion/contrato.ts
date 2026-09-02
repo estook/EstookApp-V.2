@@ -70,6 +70,25 @@ export interface Puertas {
    */
   readonly sinSesion?: true;
   /**
+   * **Lo que devuelve lleva un secreto**, asi que no se guarda para repetirlo.
+   *
+   * La idempotencia de M2 guarda la respuesta de la primera vez en
+   * `estook.clave_de_idempotencia` y la devuelve tal cual en los reintentos. Eso
+   * esta bien para «se ha apuntado la merma»; para un token de sesion, un PIN o
+   * el secreto del segundo factor **es guardar la credencial en una tabla**,
+   * durante veinticuatro horas, y en claro.
+   *
+   * Y seria absurdo: la sesion guarda solo la huella del token justamente para
+   * que quien se lleve la base de datos no se lleve ninguna sesion. Guardar el
+   * token al lado tiraria esa decision a la basura.
+   *
+   * Asi que estos comandos **no se recuerdan**. Un reintento vuelve a
+   * ejecutarlos y genera otro secreto: otra sesion, otro PIN. Es lo correcto:
+   * los dos son baratos, el viejo deja de valer, y nadie se queda con una
+   * credencial en un sitio donde no tiene que estar.
+   */
+  readonly conSecreto?: true;
+  /**
    * Se puede llamar con la sesion a medias, esperando el segundo factor. Solo lo
    * que hace falta para terminarlo o para irse.
    */

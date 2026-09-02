@@ -23,20 +23,41 @@
 
 ### Ahora · lo que M4 deja pendiente de un botón
 
-M4 está terminado en código y probado, pero **tres cosas las tiene que pulsar
-Richi**, porque tocan Supabase y GitHub y ahí no llego yo. Están explicadas paso
-a paso en [`docs/pasos-para-cerrar-m4.md`](docs/pasos-para-cerrar-m4.md).
+De los cuatro pasos que M4 dejó pendientes, **los dos primeros ya están hechos**.
+Quedan dos, y los tiene que pulsar Richi porque tocan Supabase y GitHub. Están
+explicados paso a paso en
+[`docs/pasos-para-cerrar-m4.md`](docs/pasos-para-cerrar-m4.md).
 
-En resumen:
-
-1. **Aplicar las migraciones `0018` y `0019` a Supabase** · `pnpm bd:migrar`
-2. **Sembrar el acceso** · `pnpm bd:sembrar`, que ahora también pone contraseñas
-3. **Declarar los secretos y desplegar la API** · desde Actions
+1. ~~Fusionar el pull request~~ · hecho
+2. ~~`pnpm bd:migrar` y `pnpm bd:sembrar` contra Supabase~~ · hecho el 2 de
+   septiembre de 2026. 19 migraciones, 23 tablas todas con seguridad por filas, y
+   `bd:comprobar-api` en verde contra esa misma base.
+3. **Declarar los dos secretos y desplegar la API** · desde Actions
 4. **Declarar `VITE_API_URL`** para que la aplicación publicada sepa a dónde
    llamar
 
 Hasta el paso 4, la pantalla de entrar dice «todavía no hay servidor al que
 preguntar», que es la verdad.
+
+Los PIN de las personas de ejemplo **no están escritos en ningún sitio**, aquí
+tampoco: lo que se guarda es su huella. Si se pierden, se vuelve a ejecutar
+`pnpm bd:sembrar` y salen otros.
+
+### Los nombres de los dos secretos, y por qué no son los obvios
+
+Se llamaban `SUPABASE_ACCESS_TOKEN` y `SUPABASE_PROJECT_REF`, y con esos nombres
+acabaron donde no iban: en la consola de Supabase, que **reserva el prefijo
+`SUPABASE_`** y los rechaza con un error que no explica por qué. Ahora son
+`TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`, van en GitHub, y al leerlos se nota
+de quién son. Un nombre que se parece al de otro sitio es un nombre que acabará
+en otro sitio.
+
+### Si la terminal dice que no conoce `pnpm`
+
+No es que falte: es que **una ventana ya abierta se queda con el PATH que había
+cuando se abrió**. Se cierra la ventana y se abre otra. Y si aun así no, en la
+raíz hay [`estook.cmd`](estook.cmd), que lo busca donde de verdad está:
+`.\estook.cmd bd:migrar`.
 
 ### Lo único de M4 que no puedo firmar yo
 

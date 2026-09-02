@@ -79,6 +79,26 @@ El otro fallo del mismo día fue más tonto: `supabase/setup-cli` con
 `version: latest` le pregunta a la API de GitHub sin identificarse y se topa con
 el límite de peticiones. Va con versión fija.
 
+### Y el 404 de después: la raíz que impone Supabase
+
+Con el grafo ya resuelto, la función **se desplegó bien y contestó `404` a todo**.
+Es de los errores más desconcertantes que hay, porque parece que no está
+desplegada cuando lo está y está funcionando: ese «404 Not Found» lo escribía
+Hono, no la puerta de Supabase.
+
+Supabase sirve las funciones en `/functions/v1/<nombre>/...` y **le pasa a la
+función la ruta con su propio nombre delante**. La nuestra se llama `api`, así
+que llegaba `/api/salud` a una API que sólo conocía `/salud`.
+
+Ahora la API entera cuelga de `RAIZ_DE_LA_API`. Va **en la aplicación, no
+quitando el prefijo en el fichero de Supabase**, que era la otra opción:
+quitarlo allí haría que lo desplegado atendiera rutas distintas de lo probado, y
+ese es justo el agujero por el que se coló todo esto. Las pruebas, la
+herramienta de comprobación y el e2e piden ahora por la misma raíz que pedirá un
+móvil.
+
+Queda fijado en dos pruebas: que `/api/salud` responde, y que `/salud` a secas no.
+
 ### Los nombres de los dos secretos, y por qué no son los obvios
 
 Se llamaban `SUPABASE_ACCESS_TOKEN` y `SUPABASE_PROJECT_REF`, y con esos nombres

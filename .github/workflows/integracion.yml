@@ -95,7 +95,7 @@ jobs:
       # declara en el trabajo entero para que quede claro que lo que se construye
       # aqui es para probar, no para publicar: lo que se publica lo construye
       # `publicar.yml`, con la direccion de verdad.
-      VITE_API_URL: http://localhost:5177
+      VITE_API_URL: http://localhost:5177/api
     steps:
       - uses: actions/checkout@v4
 

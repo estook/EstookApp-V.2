@@ -15,7 +15,10 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
  * efimero. Mismos comandos, mismas politicas de seguridad, mismas puertas.
  */
 const APP = 'http://localhost:5174/';
-const API = 'http://localhost:5177';
+// Con `/api`, como en el despliegue de verdad: Supabase sirve las funciones en
+// `/functions/v1/<nombre>/...` y **le pasa a la funcion la ruta con su propio
+// nombre delante**, asi que la API entera cuelga de ahi.
+const API = 'http://localhost:5177/api';
 
 const CLAVE = 'estook en desarrollo';
 

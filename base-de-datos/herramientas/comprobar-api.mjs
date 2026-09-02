@@ -12,7 +12,23 @@
  * seguridad le apliquen de verdad, y que la identidad no se quede pegada a la
  * conexion entre peticiones.
  *
- * Solo lee. No cambia nada.
+ * ── Lo que escribe, desde M4 ─────────────────────────────────────────────────
+ *
+ * Hasta M4 esto **solo leia**, y aqui ponia que no cambiaba nada. Ya no es
+ * verdad, y decirlo importa: para comprobar el login **hay que entrar de verdad**,
+ * y entrar abre una sesion. Concretamente escribe:
+ *
+ *   · una fila en `estook.sesion` por cada persona con la que entra
+ *   · `persona.ultimo_acceso_en`, que lo pone `abrir_sesion`
+ *   · el contexto de una de esas sesiones, al comprobar el cambio de local
+ *   · una linea de auditoria por cada entrada
+ *
+ * Nada de eso toca datos de negocio, y las sesiones caducan solas a los treinta
+ * dias. Pero **no se ejecuta contra una base de datos con clientes** sin saber
+ * esto, y por eso esta escrito aqui arriba y no enterrado.
+ *
+ * Ademas necesita que las personas de ejemplo tengan contrasena, que la pone
+ * `base-de-datos/semillas/acceso.ts` y **solo fuera de produccion**.
  */
 import { api } from '../../servidor/index.ts';
 import { cerrarConexion } from '../../servidor/infraestructura/postgres.ts';

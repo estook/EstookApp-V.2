@@ -23,15 +23,22 @@
 
 ### Ahora, y por este orden
 
-M4 está escrito y probado entero, pero **quedan tres botones que no puedo pulsar
-yo**, y hasta que se pulsen la aplicación publicada sigue sin login:
+M4 está escrito y probado entero, y el pull request
+[#16](https://github.com/estook/EstookApp-V.2/pull/16) está abierto con los tres
+trabajos de integración en verde. Pero **quedan cuatro pasos que no puedo dar
+yo**, y hasta que se den la aplicación publicada sigue sin login:
 
 1. **Fusionar el pull request de M4.** Primero fusionar, después aplicar a
    Supabase (regla 1).
 2. **Aplicar la `0018`** con `pnpm bd:migrar`, y **sembrar** con `pnpm bd:sembrar`.
    La semilla nueva es la que pone la contraseña de las personas de ejemplo; se
    niega a correr si `ENTORNO=produccion`.
-3. **Desplegar la API.** Actions → `Desplegar la API` → escribir «desplegar».
+3. **Comprobar la API contra Supabase** con `pnpm bd:comprobar-api`. Es la que
+   caza lo que un Postgres compilado a WebAssembly esconde, y la `0018` crea un
+   índice único y once funciones con privilegio: justo ese caso. **Ojo, desde M4
+   escribe**: para comprobar el login hay que entrar de verdad, y entrar abre
+   sesiones. Está escrito en la cabecera del fichero.
+4. **Desplegar la API.** Actions → `Desplegar la API` → escribir «desplegar».
    Antes hacen falta los secretos, que están en
    [`config/claves.md`](config/claves.md): dos en GitHub y tres en Supabase.
 

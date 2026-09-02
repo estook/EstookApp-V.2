@@ -83,6 +83,7 @@ export function MiAcceso() {
     },
   });
 
+  const [verTodasLasSesiones, setVerTodasLasSesiones] = useState(false);
   const [cambiandoClave, setCambiandoClave] = useState(false);
   const [activandoDoble, setActivandoDoble] = useState(false);
   /** El PIN recien generado. Se ensena hasta que se cierra, y no vuelve. */
@@ -251,27 +252,52 @@ export function MiAcceso() {
           </Bloque>
 
           {/* ── Mis dispositivos ──────────────────────────────────────────── */}
+          {/*
+            La lista va **acortada a proposito**. Una sesion dura treinta dias y
+            cada entrada abre una nueva, asi que quien entra a diario acumula
+            decenas: veintitres filas identicas que dicen «Bar Centro» no
+            informan de nada y ademas empujan fuera de la pantalla lo unico que
+            de verdad sirve, que es el boton de cerrarlas.
+
+            Se ensenan las cinco mas recientes, que es donde estaria una sesion
+            que no reconoces, y se dice cuantas hay. El resto se puede ver, pero
+            hay que pedirlo.
+          */}
           <Bloque titulo="Dónde tienes la sesión abierta">
             <Lista
               titulo="Mis sesiones"
-              elementos={datos.sesiones.map((sesion) => ({
-                clave: sesion.id,
-                titulo: (
-                  <>
-                    {sesion.local ?? 'Sin local elegido'}
-                    {sesion.esLaDeAhora && (
-                      <span className="ml-e2">
-                        <Etiqueta tono="info">Esta</Etiqueta>
-                      </span>
-                    )}
-                  </>
-                ),
-                detalle: `Entró con ${
-                  sesion.entroCon === 'pin' ? 'PIN' : 'contraseña'
-                } · última vez el ${elDia(sesion.ultimaActividadEn)}`,
-              }))}
+              elementos={(verTodasLasSesiones ? datos.sesiones : datos.sesiones.slice(0, 5)).map(
+                (sesion) => ({
+                  clave: sesion.id,
+                  titulo: (
+                    <>
+                      {sesion.local ?? 'Sin local elegido'}
+                      {sesion.esLaDeAhora && (
+                        <span className="ml-e2">
+                          <Etiqueta tono="info">Esta</Etiqueta>
+                        </span>
+                      )}
+                    </>
+                  ),
+                  detalle: `Entró con ${
+                    sesion.entroCon === 'pin' ? 'PIN' : 'contraseña'
+                  } · última vez el ${elDia(sesion.ultimaActividadEn)}`,
+                }),
+              )}
               cuandoNoHay={<p className="text-secundario text-texto-suave">Solo esta.</p>}
             />
+
+            {!verTodasLasSesiones && datos.sesiones.length > 5 && (
+              <button
+                type="button"
+                className="mt-e2 min-h-toque text-secundario text-texto-suave underline"
+                onClick={() => {
+                  setVerTodasLasSesiones(true);
+                }}
+              >
+                Ver las {datos.sesiones.length} sesiones
+              </button>
+            )}
 
             {datos.sesiones.length > 1 && (
               <div className="mt-e3">

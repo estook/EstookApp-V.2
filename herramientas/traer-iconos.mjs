@@ -102,7 +102,12 @@ const ICONOS = {
   // ── Ajustes ────────────────────────────────────────────────────────────────
   type: 'TamanoDeLetra',
   languages: 'Idioma',
-  accessibility: 'Accesibilidad',
+  // Un teclado, y **no el simbolo de accesibilidad**. Ese simbolo dice «esto es
+  // para personas con discapacidad», y lo que hay debajo no lo es: reducir el
+  // movimiento y manejarse con el teclado los usa cualquiera, y ademas no son
+  // opciones que se activen aqui, es como esta hecha la aplicacion. Cada linea
+  // lleva ahora el icono de lo que cuenta.
+  keyboard: 'Teclado',
 };
 
 async function traer(nombre) {

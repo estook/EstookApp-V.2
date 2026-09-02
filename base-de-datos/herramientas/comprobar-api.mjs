@@ -106,7 +106,44 @@ async function entrarComo(correo) {
     { 'x-idempotencia': `comprobar-${correo}-${process.pid}-${contador++}` },
   );
   const cuerpo = await respuesta.json();
-  return cuerpo.datos?.token ?? null;
+  const token = cuerpo.datos?.token ?? null;
+  if (token) tokensAbiertos.push(token);
+  return token;
+}
+
+/**
+ * Todo lo que esta herramienta abre, lo cierra.
+ *
+ * Sin esto dejaba **una sesion viva por cada vez que entraba**, y entra una
+ * veintena de veces por pasada. Corriendola unas cuantas veces contra Supabase,
+ * «Donde tienes la sesion abierta» de Rosa acabo con veintitres filas identicas.
+ *
+ * Una herramienta de diagnostico que ensucia lo que mira es una herramienta que
+ * miente sobre el estado del sistema.
+ */
+const tokensAbiertos = [];
+
+/** Apunta el token de una respuesta de `entrar` que no pasa por `entrarComo`. */
+function apuntar(cuerpo) {
+  if (typeof cuerpo?.datos?.token === 'string') tokensAbiertos.push(cuerpo.datos.token);
+  return cuerpo;
+}
+
+async function cerrarLoQueSeAbrio() {
+  let cerradas = 0;
+  for (const token of tokensAbiertos) {
+    try {
+      const respuesta = await mandar(
+        '/v1/comandos/salir',
+        {},
+        { ...como(token), 'x-idempotencia': `limpiar-${process.pid}-${contador++}` },
+      );
+      if (respuesta.ok) cerradas += 1;
+    } catch {
+      // Si una no se puede cerrar, se sigue con las demas: caducan en 30 dias.
+    }
+  }
+  return cerradas;
 }
 
 let contador = 0;
@@ -142,13 +179,15 @@ try {
   );
 
   titulo('M4 · entrar');
-  const entrada = await (
-    await mandar(
-      '/v1/comandos/entrar',
-      { correo: 'rosa@ejemplo.estook.com', contrasena: CLAVE_DE_EJEMPLO },
-      { 'x-idempotencia': `comprobar-entrar-${process.pid}` },
-    )
-  ).json();
+  const entrada = apuntar(
+    await (
+      await mandar(
+        '/v1/comandos/entrar',
+        { correo: 'rosa@ejemplo.estook.com', contrasena: CLAVE_DE_EJEMPLO },
+        { 'x-idempotencia': `comprobar-entrar-${process.pid}` },
+      )
+    ).json(),
+  );
   comprobar('con correo y contrasena se entra', typeof entrada.datos?.token === 'string');
   comprobar(
     'y la resolucion de destino le lleva a su Panel',
@@ -197,13 +236,15 @@ try {
   );
 
   titulo('M4 · la camarera con dos locales elige donde esta');
-  const deNuria = await (
-    await mandar(
-      '/v1/comandos/entrar',
-      { correo: 'nuria@ejemplo.estook.com', contrasena: CLAVE_DE_EJEMPLO },
-      { 'x-idempotencia': `comprobar-nuria-${process.pid}` },
-    )
-  ).json();
+  const deNuria = apuntar(
+    await (
+      await mandar(
+        '/v1/comandos/entrar',
+        { correo: 'nuria@ejemplo.estook.com', contrasena: CLAVE_DE_EJEMPLO },
+        { 'x-idempotencia': `comprobar-nuria-${process.pid}` },
+      )
+    ).json(),
+  );
   comprobar(
     'se le pregunta donde esta',
     deNuria.datos?.destino === 'elegir_local',
@@ -490,6 +531,10 @@ try {
   console.error(`\n  Se ha roto: ${fallo instanceof Error ? fallo.message : String(fallo)}`);
   fallos += 1;
 } finally {
+  // Antes de soltar nada: recoger. Va en el `finally` para que tambien recoja
+  // cuando algo se ha roto, que es justo cuando mas rastro queda.
+  const cerradas = await cerrarLoQueSeAbrio();
+  if (cerradas > 0) console.log(`\n  ${cerradas} sesion(es) de prueba cerradas al terminar`);
   await cerrarConexion();
 }
 

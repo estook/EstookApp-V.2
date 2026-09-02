@@ -113,6 +113,13 @@ function porQueNoPasa(puertas: Puertas, sesion: SesionViva | null): CodigoDeErro
     return 'clave_por_cambiar';
   }
 
+  // Y la cuarta, de M5: una visita de demostración mira todo y no escribe nada.
+  // Es lo que hace verdad «se entra y se sale sin dejar rastro» sin necesitar un
+  // proceso que limpie después: no hay nada que limpiar.
+  if (sesion.esDemostracion && !puertas.enDemostracion) {
+    return 'solo_lectura';
+  }
+
   return null;
 }
 
@@ -133,10 +140,17 @@ export function crearDespachador(puertos: Puertos): Despachador {
 
       return conFallosTraducidos(async () =>
         puertos.enTransaccion(quien, async (contexto): Promise<Resultado> => {
-          // Leer con la contraseña por cambiar sí se puede: lo que no se puede
-          // es cambiar nada. Por eso la puerta de la clave no aplica a consultas.
+          // Dos puertas no aplican a las consultas, y por la misma razón: lo que
+          // cierran es **escribir**.
+          //
+          //   · Con la contraseña por cambiar se puede mirar; bloquear también la
+          //     lectura dejaría a quien acaba de ser invitado ante una pantalla
+          //     vacía sin entender qué ha hecho mal.
+          //   · Y una visita de demostración **ha venido justamente a mirar**: si
+          //     esta puerta le cerrara las consultas, el modo demostración no
+          //     enseñaría nada. Lo cazó esta prueba, no la pantalla.
           const cerrada = porQueNoPasa(
-            { ...laConsulta, aunConClavePorCambiar: true },
+            { ...laConsulta, aunConClavePorCambiar: true, enDemostracion: true },
             contexto.sesion,
           );
           if (cerrada) return { estado: 'fallo', codigo: cerrada };

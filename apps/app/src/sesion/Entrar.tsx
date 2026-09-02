@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Aviso, Boton, Campo, ErrorEnCristiano, Logo, clases } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
-import { hayApi } from '../datos/cliente.ts';
+import { elAparato, hayApi } from '../datos/cliente.ts';
 import { usarSesion } from './Sesion.tsx';
 
 /**
@@ -45,9 +45,16 @@ export function Entrar() {
     setEnviando(true);
     setError(null);
 
+    // El aparato viaja con la entrada (M5). Sin esto, cada login abre una fila
+    // nueva de sesion y «Mis dispositivos» acaba ensenando veintitres visitas
+    // identicas en vez de un movil. Es opcional: en navegacion privada no se
+    // puede guardar la marca, y entonces se entra igual sin ella.
+    const aparato = elAparato();
+
     const respuesta = await cliente.ejecutar<{ token: string }>('entrar', {
       correo,
       ...(conPin ? { pin } : { contrasena }),
+      ...(aparato === null ? {} : { aparato }),
     });
 
     if (!respuesta.ok) {
@@ -168,7 +175,79 @@ export function Entrar() {
           ¿No te acuerdas? Quien lleva tu local puede darte una contraseña nueva o un PIN nuevo en
           un momento, desde Equipo.
         </p>
+
+        {hayApi && <LaDemostracion />}
       </div>
     </main>
+  );
+}
+
+/**
+ * «Mirarlo sin cuenta» · el modo demostracion (M5).
+ *
+ * «**Modo demostracion aparte**, con un restaurante ficticio entero. Se entra y
+ *  se sale sin dejar rastro» (Manifiesto 8).
+ *
+ * ── Por que esta aqui abajo y no arriba ──────────────────────────────────────
+ *
+ * Porque quien llega a esta pantalla casi siempre viene a trabajar, no a mirar.
+ * Poner «pruébalo» al mismo nivel que «entra» le pondria delante una decision que
+ * no tiene: ya tiene cuenta. Va al final, donde lo encuentra quien de verdad lo
+ * busca.
+ *
+ * ── Y que hace exactamente ───────────────────────────────────────────────────
+ *
+ * Abre una sesion de **solo lectura** en el restaurante de ejemplo, con su
+ * equipo, su Panel y sus locales. No se puede escribir nada: lo impide el
+ * despachador, en el mismo sitio que las tres puertas de M4. Por eso no hay nada
+ * que limpiar despues, que es lo que hace verdad «sin dejar rastro».
+ */
+function LaDemostracion() {
+  const { entrar, cliente } = usarSesion();
+  const [entrando, setEntrando] = useState(false);
+  const [noSePuede, setNoSePuede] = useState(false);
+
+  async function mirar() {
+    setEntrando(true);
+    setNoSePuede(false);
+
+    const respuesta = await cliente.ejecutar<{ token: string }>('entrar_en_demostracion', {});
+
+    if (!respuesta.ok) {
+      // Sin restaurante de ejemplo montado no hay demostracion. Se dice, y no se
+      // ensena un error rojo: no es un fallo de nadie.
+      setNoSePuede(true);
+      setEntrando(false);
+      return;
+    }
+
+    await entrar(respuesta.datos.token);
+    setEntrando(false);
+  }
+
+  if (noSePuede) {
+    return (
+      <p className="mt-e4 text-center text-secundario text-texto-suave">
+        Ahora mismo no hay ninguna demostración montada.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-e5 flex flex-col items-center gap-e1 border-t border-borde pt-e5">
+      <Boton
+        tono="texto"
+        cargando={entrando}
+        textoCargando="Abriendo"
+        onClick={() => {
+          void mirar();
+        }}
+      >
+        Verlo por dentro sin cuenta
+      </Boton>
+      <p className="text-center text-secundario text-texto-suave">
+        Un restaurante de ejemplo, entero. Puedes mirarlo todo y no se guarda nada.
+      </p>
+    </div>
   );
 }

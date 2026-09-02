@@ -74,7 +74,7 @@ describe('las semillas', () => {
     }
   }, 120_000);
 
-  it('dejan el local independiente y la cadena de seis en dos areas', async () => {
+  it('dejan los dos locales independientes y la cadena de seis en dos areas', async () => {
     const base = await levantarBase();
     try {
       const { rows } = await base.bd.query<{ codigo: string; areas: number; locales: number }>(`
@@ -89,6 +89,9 @@ describe('las semillas', () => {
       `);
       expect(rows).toEqual([
         { codigo: 'bar-centro', areas: 0, locales: 1 },
+        // Casa Lola la añade M5: es el local con el alta a medias, y sin él la
+        // quinta comprobación al entrar no se puede recorrer con lo sembrado.
+        { codigo: 'casa-lola', areas: 0, locales: 1 },
         { codigo: 'grupo-costa', areas: 2, locales: 6 },
       ]);
     } finally {

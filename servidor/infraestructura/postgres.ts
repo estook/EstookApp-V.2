@@ -52,6 +52,8 @@ export interface SesionViva {
   readonly localId: string | null;
   readonly dobleFactorSuperado: boolean;
   readonly debeCambiarClave: boolean;
+  /** Una visita al restaurante de ejemplo (M5). Mira todo y no escribe nada. */
+  readonly esDemostracion: boolean;
 }
 
 export interface QuienPregunta {
@@ -129,6 +131,7 @@ async function resolver(sql: Sql, huella: string): Promise<SesionViva | null> {
       local_id: string | null;
       doble_factor_superado: boolean;
       debe_cambiar_clave: boolean;
+      es_demostracion: boolean;
     }[]
   >`select * from estook.sesion_activa(${huella})`;
 
@@ -142,6 +145,7 @@ async function resolver(sql: Sql, huella: string): Promise<SesionViva | null> {
     localId: fila.local_id,
     dobleFactorSuperado: fila.doble_factor_superado,
     debeCambiarClave: fila.debe_cambiar_clave,
+    esDemostracion: fila.es_demostracion,
   };
 }
 

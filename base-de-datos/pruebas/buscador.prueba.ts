@@ -166,6 +166,12 @@ describe('buscar · como esta hecha', () => {
       'organizacion_buscable',
       'persona_buscable',
       'persona_correo_buscable',
+      // M5. El catalogo de referencia son trescientas filas, y «toda lista larga
+      // tiene buscador tolerante a erratas y sin acentos» (Auditoria, parte 8).
+      // No entran en `estook.buscar`: el buscador universal busca **cosas
+      // tuyas**, y una referencia no es de nadie.
+      'producto_de_referencia_buscable',
+      'receta_de_referencia_buscable',
     ]);
   });
 

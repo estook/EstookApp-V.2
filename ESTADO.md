@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 2 de septiembre de 2026
+Última actualización: 3 de septiembre de 2026
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. Nunca puede afirmar algo que no sea cierto en ese momento.
@@ -11,11 +11,11 @@
 
 |                |                                                                                       |
 | -------------- | ------------------------------------------------------------------------------------- |
-| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** identidad y acceso               |
-| **Siguiente**  | **M5** · onboarding y arranque asistido                                               |
-| **Pruebas**    | 540 unitarias y de base de datos · 136 de extremo a extremo · 45 contra Supabase      |
-| **Rama**       | `main`. M4 fusionado y desplegado                                                     |
-| **Publicado**  | Web, app y **API vivas**. Se entra desde el móvil contra Supabase                     |
+| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** onboarding y arranque |
+| **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                   |
+| **Pruebas**    | 609 unitarias y de base de datos · 152 de extremo a extremo                           |
+| **Rama**       | `m5-onboarding`, sin fusionar                                                         |
+| **Publicado**  | Web y app vivas. **La API sigue sin desplegar**, y hay que limpiar antes de hacerlo   |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
 
 ---
@@ -53,34 +53,62 @@ específico. Si de verdad se contradicen, se para y se pregunta (regla 13).
 - **Dos módulos nuevos:** M29 canales de reparto e integraciones, y M30 API
   pública. Van al final a propósito: una integración sobre un dominio a medio
   cerrar se rehace entera.
-- **M5 no se mueve.** La evolución no reordena los cimientos: lo que cambia es
-  que a partir de M6 cada módulo nace ya con su capa inteligente dentro.
+- **M5 no se movió**, y ya está hecho. La evolución no reordena los cimientos:
+  lo que cambia es que **a partir de M6** cada módulo nace ya con su capa
+  inteligente dentro, en vez de construirse plano y volver después.
 
 ---
 
 ## 2 · Qué hay que hacer
 
-### Ahora · lo que M4 deja pendiente de un botón
+### Antes que nada · ocho cuentas con la contraseña publicada
 
-De los cuatro pasos que M4 dejó pendientes, **los dos primeros ya están hechos**.
-Quedan dos, y los tiene que pulsar Richi porque tocan Supabase y GitHub. Están
-explicados paso a paso en
-[`docs/pasos-para-cerrar-m4.md`](docs/pasos-para-cerrar-m4.md).
+**La base de datos de Supabase tiene ocho cuentas cuya contraseña está escrita en
+este repositorio.** Es `estook en desarrollo`, en
+[`base-de-datos/semillas/acceso.ts`](base-de-datos/semillas/acceso.ts). Una de
+ellas, la de Elena, tiene rol `direccion` y lo ve todo.
 
-1. ~~Fusionar el pull request~~ · hecho
-2. ~~`pnpm bd:migrar` y `pnpm bd:sembrar` contra Supabase~~ · hecho el 2 de
-   septiembre de 2026. 19 migraciones, 23 tablas todas con seguridad por filas, y
-   `bd:comprobar-api` en verde contra esa misma base.
-3. **Declarar los dos secretos y desplegar la API** · desde Actions
-4. **Declarar `VITE_API_URL`** para que la aplicación publicada sepa a dónde
-   llamar
+Hoy no se puede entrar con ellas porque la API no está desplegada. **Los pasos 3 y
+4 de abajo son justamente desplegarla**, así que hay que limpiar antes.
 
-Hasta el paso 4, la pantalla de entrar dice «todavía no hay servidor al que
+```
+personas de ejemplo   8      con contrasena   8
+personas de verdad    0      con PIN         21
+```
+
+La semilla se negaba a correr «en producción» mirando `ENTORNO`, **y esa negativa
+no podía saltar nunca**: `ENTORNO` dice `desarrollo` en el `.env.local` de esta
+máquina, mientras `DATABASE_URL`, dos líneas más abajo del mismo fichero, apunta
+al Supabase de verdad.
+
+Es, palabra por palabra, lo que el Plan había escrito en E4: **«una comprobación
+que no puede fallar es peor que no tenerla»** y **«el nombre de una cosa decide
+dónde acaba»**.
+
+M5 arregla la causa —ahora se mira **a dónde se conecta**, no una etiqueta— y trae
+la herramienta para limpiar lo que ya está puesto:
+
+```
+pnpm bd:sin-cuentas-de-ejemplo
+pnpm bd:cuenta-de-verdad tu@correo.com "Ricardo"
+```
+
+La segunda crea una cuenta de verdad con una contraseña de un solo uso, que se
+enseña una vez y hay que cambiar al entrar. Todo está en
+[`docs/pasos-para-cerrar-m5.md`](docs/pasos-para-cerrar-m5.md).
+
+### Y después · lo que quedaba de M4, más lo que trae M5
+
+1. ~~Fusionar el pull request de M4~~ · hecho
+2. ~~`pnpm bd:migrar` y `pnpm bd:sembrar`~~ · hecho el 2 de septiembre
+3. **Aplicar la `0020` y la `0021`** y volver a sembrar
+4. **Montar el almacén de ficheros** con `pnpm almacen:preparar`, que crea el cubo
+   y comprueba el camino entero: sube, firma, lee y borra
+5. **Declarar los dos secretos y desplegar la API** · desde Actions
+6. **Declarar `VITE_API_URL`** para que la aplicación publicada sepa a dónde llamar
+
+Hasta el 6, la pantalla de entrar dice «todavía no hay servidor al que
 preguntar», que es la verdad.
-
-Los PIN de las personas de ejemplo **no están escritos en ningún sitio**, aquí
-tampoco: lo que se guarda es su huella. Si se pierden, se vuelve a ejecutar
-`pnpm bd:sembrar` y salen otros.
 
 ### Lo que 538 pruebas en verde no podían ver
 
@@ -165,20 +193,29 @@ tener presente al empezar M5:
   cola de trabajos y la limpieza de claves de idempotencia. Están construidos y
   probados, pero la API es una función que atiende y se apaga: no hay reloj. Hay
   que decidir quién los ejecuta **antes de M8**, y merece su decisión escrita.
-- **`estook.dispositivo` está vacía**: 0 filas, 0 sesiones con dispositivo. Nadie
-  escribe en ella, así que «Mis dispositivos» enseña sesiones y no aparatos. Es
-  lo que hacía que salieran veintitrés filas iguales. Se paga solo si se arregla
-  con M5, que ya toca el alta de personas.
+- ~~**`estook.dispositivo` está vacía**~~ · **arreglado en M5**. Ahora `entrar`
+  manda una marca opaca del navegador, `estook.reconocer_dispositivo` la
+  encuentra o la da de alta, y la sesión cuelga de ella. Entrar dos veces desde el
+  mismo móvil ya no son dos filas, y hay tres pruebas que lo fijan.
 - **Ninguna consulta de lista tiene tope.** Con siete personas da igual; M8 es la
   primera pantalla que lista gente de verdad y conviene que nazca paginada.
-- **El presupuesto de tamaño de la app va al 82 %**, con las pantallas grandes
+  **El catálogo de referencia de M5 sí nace acotado**: 20 por defecto, 50 como
+  mucho.
+- **El presupuesto de tamaño de la app va al 87 %**, con las pantallas grandes
   todavía por construir. No manda sobre el producto: se vigila con `pnpm tamano`.
 
-### Lo único de M4 que no puedo firmar yo
+### Lo que no puedo firmar yo
 
-**Verlo en un móvil de verdad** (regla 11) **con la API desplegada**. Las fotos
-de M4 en el teléfono ya sirvieron para encontrar dos cosas —están abajo— pero lo
-que se vio fue la puerta, no lo de dentro: sin API no hay dónde entrar.
+**Verlo en un móvil de verdad** (regla 11) **con la API desplegada**. Sigue
+pendiente de M4 y ahora también de M5: el alta son ocho pantallas que se hacen con
+el pulgar, y lo que mide la prueba automática es que ningún paso se atasque, no lo
+que tarda una persona.
+
+**Y el almacén de ficheros contra Supabase de verdad.** El logo se sube, se firma
+y se lee en la API de pruebas, con un almacén en memoria; contra Supabase Storage
+no lo ha ejecutado nadie todavía. Para eso está `pnpm almacen:preparar`, que hace
+el camino entero —crear, subir, firmar, leer, comprobar que sin firma no se sirve
+y borrar— en vez de decir «listo» sin haber probado nada.
 
 ### Pendiente de dato, no de código
 
@@ -190,12 +227,13 @@ devuelve «sin regla» y para, en vez de inventarse un tipo
 
 ### Sin prisa
 
-| Qué                                                                   | Cuándo                                                                         |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Quitar «Automatically expose new tables» en Supabase → Settings → API | antes de clientes                                                              |
-| Regenerar las claves de Google, que pasaron por un chat               | M27                                                                            |
-| Volver a `BrowserRouter` cuando haya `estook.com`                     | cuando haya dominio ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md)) |
-| El vectorial del logotipo y de Fogón                                  | cuando aparezcan; se sustituyen en un sitio                                    |
+| Qué                                                                                      | Cuándo                                                                         |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Quitar «Automatically expose new tables» en Supabase → Settings → API                    | antes de clientes                                                              |
+| Regenerar las claves de Google, que pasaron por un chat                                  | M27                                                                            |
+| Google Places en el alta ([0013](docs/decisiones/0013-google-places-se-aplaza-a-m23.md)) | M23                                                                            |
+| Volver a `BrowserRouter` cuando haya `estook.com`                                        | cuando haya dominio ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md)) |
+| El vectorial del logotipo y de Fogón                                                     | cuando aparezcan; se sustituyen en un sitio                                    |
 
 ---
 
@@ -208,26 +246,29 @@ El **catálogo del sistema de diseño** está en `/admin/`.
 gratuito. La conexión va por el agrupador de sesión, porque la directa de los
 proyectos nuevos solo funciona por IPv6.
 
-Comprobado con `pnpm bd:comprobar` contra la base de datos de verdad, **antes de
-aplicar la `0018`**:
+Leído de la base de datos de verdad el 3 de septiembre de 2026, **antes de
+aplicar lo de M5**:
 
 | Qué                            | Cuánto                                       |
 | ------------------------------ | -------------------------------------------- |
-| Migraciones aplicadas          | **17 de 19** · faltan la `0018` y la `0019`  |
-| Tablas en el esquema `estook`  | 18, todas con seguridad por filas            |
+| Migraciones aplicadas          | **19 de 21** · faltan la `0020` y la `0021`  |
+| Tablas en el esquema `estook`  | 23, **todas** con seguridad por filas        |
 | Roles · permisos · concesiones | 12 · 33 · 166                                |
 | Reglas fiscales                | 17, todas con su referencia legal            |
-| Datos de ejemplo               | 2 organizaciones, 7 locales, 7 personas      |
-| El area manager ve             | **exactamente 3 locales**                    |
+| Datos de ejemplo               | 2 organizaciones, 7 locales, 8 personas      |
+| Personas de verdad             | **0**                                        |
 | La auditoría                   | añadir sí · modificar **no** · borrar **no** |
 
-Al aplicar la `0018` y la `0019` pasan a ser **23 tablas** y **8 personas**: M4
-añade `credencial`, `pin`, `doble_factor`, `sesion` y `suscripcion`, y las
-semillas añaden a Nuria, que es la camarera con dos locales del criterio de M4.
+Al aplicar la `0020` y la `0021` pasan a ser **31 tablas**, y las semillas añaden
+Casa Lola: la tercera organización, con un local y un gerente, **sembrada con el
+alta a medias a propósito** para poder recorrer la quinta comprobación sin crear
+un local a mano cada vez.
 
-**La API sigue sin desplegar**, y ya no es correcto: es lo único que le falta a
-M4 para estar en pie. Lo que hay montado, probado y listo está en
-`supabase/functions/api/`, y lo despliega el flujo `Desplegar la API`.
+**Y las ocho personas de ejemplo tienen una contraseña publicada en este
+repositorio.** Está arriba del todo, en «qué hay que hacer», porque es lo primero.
+
+**La API sigue sin desplegar.** Hasta M5 eso era lo único que le faltaba a M4;
+ahora, además, es lo que impide que esas ocho cuentas sean ocho puertas abiertas.
 
 **Errores:** proyecto `estook-app` en Sentry, con solo «Error monitoring»
 encendido y el repositorio enlazado.
@@ -241,17 +282,17 @@ En Secrets **faltan los dos de M4**: `TOKEN_DE_SUPABASE` y
 
 | Aplicación      | Peso inicial | De los cuales tipografía |
 | --------------- | ------------ | ------------------------ |
-| `app`           | 205,5 KB     | 106,1 KB                 |
-| `admin`         | 181,9 KB     | 106,1 KB                 |
+| `app`           | 216,6 KB     | 106,1 KB                 |
+| `admin`         | 182,5 KB     | 106,1 KB                 |
 | `web` · `carta` | 164,2 KB     | 106,1 KB                 |
 
-De 250 permitidos. **M4 entero le costó a `app` 8,6 KB**: el login, las cuatro
-pantallas de la puerta, «Mi acceso» y los accesos del equipo.
+De 250 de referencia, que desde la Evolución 1.0 **se mide y se informa, no
+bloquea**. **M5 entero le costó a `app` 11,1 KB**: las ocho pantallas del alta, la
+guía de instalación, las tres tarjetas del Panel y el reductor de imágenes.
 
-> Corrección: hasta ahora este documento decía que `admin` pesaba 164,1 KB, junto
-> con `web` y `carta`. **Era falso desde M3**: el catálogo del sistema de diseño
-> ya lo dejaba en 181. Se midió construyendo con y sin M4 para saber qué había
-> añadido cada módulo, y salió que M4 le suma 0,6 KB.
+Quedan 33 KB de margen antes de la referencia, con Inventario, Escandallos, Carta,
+Calendario, Equipo, Servicio, Negocio, Cuaderno y Fogón por construir. **Las
+pantallas grandes van a tener que cargarse aparte**, como ya hace la gráfica.
 
 La tipografía se cuenta **entera y a propósito**: una pantalla en castellano solo
 descarga el subconjunto `latin`, 38 KB. Si cabe contando de más, cabe seguro.
@@ -432,6 +473,109 @@ llegó a fusionarse.
 
 ---
 
+### M5 · Onboarding y arranque asistido
+
+**El alta entera, y el primer fichero que Estook guarda.**
+
+**Lo que hay:**
+
+- **Los ocho pasos del alta**, una pregunta por pantalla y todos saltables. Lo
+  que se salta queda apuntado y vuelve a ofrecerse desde el Panel.
+- **La barra de progreso cuenta valor, no tareas.** No dice «3 de 8»: dice «ya sé
+  qué impuesto lleva cada cosa». Es cálculo puro, con su prueba al lado.
+- **Régimen fiscal y objetivos.** El régimen no se elige: lo decide el
+  territorio, y lo comprueba una restricción. Los objetivos **tienen vigencia**,
+  como los tipos impositivos: cambiar el de marzo no repinta enero.
+- **Marca con previsualización de verdad**: la cabecera pintada con el color
+  elegido, encima del formulario. El logo se reduce en el navegador y va a
+  Supabase Storage, que es el primer fichero que este proyecto guarda.
+- **Camino de grupo**, con duplicado de local. Se copia la configuración —tipo,
+  fiscal, objetivos, hora de cierre— y **nunca la operación**: ni stock, ni
+  albaranes, ni gente, ni la sal del PIN.
+- **Catálogo de referencia**: 302 productos y 10 recetas, con formato, factor,
+  unidad de uso, rendimiento y alérgenos puestos, buscable con erratas y sin
+  acentos. Y con **la cuenta explicada**: «Garrafa de 5 l = 5.000 ml para usar».
+- **Importador del equipo** desde CSV, con el mapeo propuesto **por código y no
+  por un modelo**, su pantalla de repaso con cinco filas y su huella para que
+  importar dos veces no cambie nada.
+- **Modo demostración**: se entra sin cuenta al restaurante de ejemplo, en solo
+  lectura, y se sale sin dejar rastro.
+- **Guía de instalación**, distinta para iPhone y Android, porque los pasos no se
+  parecen en nada.
+- **Las tres tarjetas del Panel**: «Conecta tus ventas», «termina de configurar»
+  y «quita los ejemplos». Las tres desaparecen solas cuando dejan de tener
+  sentido.
+
+**Lo que M5 puso en la base de datos:** la `0020` con ocho tablas nuevas, la
+ficha del local, el modo demostración y el arreglo del aparato; y la `0021`, que
+es el catálogo de referencia entero.
+
+#### La cuarta puerta
+
+M4 dejó tres —sin sesión, sin segundo factor, con contraseña ajena— y M5 añade la
+cuarta: **una visita de demostración mira todo y no escribe nada**. Va en el
+despachador, con las otras tres, y por eso una operación nueva nace cerrada a la
+demostración sin que nadie se acuerde.
+
+Es lo que hace verdad «se entra y se sale sin dejar rastro» **sin limpiar nada
+después**: no hay nada que limpiar. La otra forma —dejar escribir en una copia y
+borrarla luego— necesitaría un proceso de fondo que todavía no existe, y un fallo
+a mitad dejaría datos de mentira dentro del restaurante de ejemplo.
+
+#### Tres fallos que M5 encontró, y quién los cazó
+
+1. **El gerente no podía configurar su propio local.** La política de M1 exigía
+   `accion.gestionar_locales` para cualquier escritura sobre `estook.local`, y ese
+   permiso el gerente no lo tiene, con razón: «altas de local son de
+   organización». Resultado: el gerente de un bar recién dado de alta entraba en
+   su propia alta y no podía responder ni la primera pregunta. La `0020` parte la
+   política en dos —crear un local sigue siendo de organización; **tocar la ficha
+   del que llevas es `app.ajustes`**— y lo cazó una prueba de base de datos.
+2. **La visita de demostración podía escribir.** La API de pruebas construye la
+   sesión a mano, fila a fila, y se quedó sin el campo nuevo: la cuarta puerta no
+   saltaba. Contra la API de verdad funcionaba perfectamente. Es la lección de E4
+   mirada del otro lado: aquí el camino que se comportaba distinto era **el de
+   las pruebas**.
+3. **Y la puerta de la demostración cerraba también las consultas.** Una visita
+   que no puede leer no enseña nada, que es justo lo contrario de lo que es una
+   demostración. Lo cazó su propia prueba, en el primer intento.
+
+#### Y el que no es de M5, pero lo encontró M5
+
+**La base de datos de producción tiene ocho cuentas con una contraseña publicada
+en este repositorio.** Está arriba del todo, en «qué hay que hacer». La causa
+—una comprobación que miraba una etiqueta en vez de una dirección— está
+arreglada; limpiar lo que quedó puesto es un botón que hay que pulsar.
+
+#### Cómo se comprueba que M5 está terminado
+
+Su criterio, punto por punto, es
+[`pruebas/e2e/alta.spec.ts`](pruebas/e2e/alta.spec.ts):
+
+| Criterio del Plan                           | Cómo se comprueba                                                                                   |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| El alta en menos de cuatro minutos          | El recorrido entero, cronometrado, en escritorio y en móvil pequeño                                 |
+| Un producto del catálogo en quince segundos | **A medias**, y se dice: el catálogo devuelve la ficha rellena; crear                               |
+|                                             | el producto es M6 ([0012](docs/decisiones/0012-el-producto-nace-en-m6.md))                          |
+| El botón de quitar ejemplos los borra todos | Contra la base de datos, con el registro y sus políticas                                            |
+| El gasto de Google por debajo de 0,50 €     | **Es cero**: Google se aplaza a M23 ([0013](docs/decisiones/0013-google-places-se-aplaza-a-m23.md)) |
+
+Y la lista de la Auditoría de flujos, pasada punto por punto, en
+[`docs/auditorias/m5.md`](docs/auditorias/m5.md).
+
+#### Lo que M5 deja pendiente, dicho sin redondear
+
+- **Los datos de ejemplo son maquinaria sin filas.** El registro, el botón y la
+  regla de que no cuentan están hechos y probados; los seis productos, las tres
+  fichas y la carta de cuatro platos los siembra M6, M9 y M10, porque sus tablas
+  no existen todavía.
+- **Los albaranes por foto** necesitan proveedores y productos: M7.
+- **Google Places**, con las reseñas y los competidores: M23.
+- **El almacén contra Supabase de verdad** no lo ha ejecutado nadie. Para eso
+  está `pnpm almacen:preparar`.
+
+---
+
 ## 5 · Cómo trabajamos
 
 1. **Primero fusionar, después aplicar a Supabase.** La base de datos nunca va
@@ -464,6 +608,8 @@ En [`docs/decisiones/`](docs/decisiones/):
 | **0009** | El buscador quita los acentos con `translate`, no con `unaccent`  |
 | **0010** | **El login es nuestro, no de Supabase Auth**                      |
 | **0011** | **Las pruebas de extremo a extremo levantan la API de verdad**    |
+| **0012** | **El producto nace en M6, y M5 le deja el diccionario**           |
+| **0013** | **Google Places se aplaza a M23**                                 |
 
 Otras, sin fichero propio:
 
@@ -497,8 +643,11 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   nombres están elegidos para no chocar con Tailwind.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`,
   `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0019`.** Se amplían con una `0020`, nunca se editan
+- **Las migraciones `0001` a `0021`.** Se amplían con una `0022`, nunca se editan
   (regla 2).
+- **El catálogo de referencia** (`0021`). Son datos de producto, como los roles o
+  las reglas fiscales: se corrigen con una migración, no desde la aplicación. No
+  tiene política de escritura, así que **no hay camino** ni para el gerente.
 - **Las once funciones `security definer` de la `0018` y la de la `0019`.** Son
   la única puerta de atrás del sistema, existen porque al entrar todavía no hay
   identidad que consultar, y están tasadas. Hay una prueba que las cuenta: si un
@@ -511,34 +660,53 @@ después de fusionar.
 
 ---
 
-## 8 · El siguiente paso · M5
+## 8 · El siguiente paso · M6
 
-**Onboarding y arranque asistido.** Los ocho pasos del alta · Google Places con
-volcado de ficha, reseñas y competidores · régimen fiscal y objetivos · logo y
-color con previsualización · camino de grupo con duplicado de local · datos de
-ejemplo mínimos etiquetados como ejemplo · catálogo de referencia de unos 250
-productos · importadores con mapeo propuesto por Fogón · modo demostración ·
-guía de instalación · la tarjeta fija del Panel «Conecta tus ventas».
+**Inventario**, y desde aquí **cada módulo nace ya con su capa inteligente
+dentro**: eso es lo que cambia con la Evolución 1.0 a partir de M6.
 
-**Terminado cuando:** un local termina el alta en menos de cuatro minutos con sus
-datos reales; crear un producto desde el catálogo de referencia lleva menos de
-quince segundos; el botón de quitar ejemplos los borra todos; y el gasto de
-Google queda por debajo de 0,50 €.
+**Entra.** Productos con formato, unidad de uso, factor, rendimiento, peso
+variable, código de barras, tipo impositivo, alérgenos y mínimo · libro de
+movimientos con lote · ajuste manual como movimiento · precios con vigencia y
+precio medio ponderado · entrada por todas las vías · lotes y caducidades · ficha
+completa.
 
-**Lo que M4 le deja hecho:**
+**Y su capa inteligente.** Consumo medio y velocidad de consumo por producto,
+**días de cobertura y previsión de agotamiento con fecha y hora**, e histórico de
+precio por proveedor.
 
-- **El login y la sesión.** M5 no tiene que preguntarse quién entra.
-- **El hueco del onboarding ya existe**: `local.onboarding_paso` y
-  `onboarding_terminado`, y la quinta comprobación ya lleva ahí a quien tenga el
-  alta a medias. M5 solo tiene que llenar los ocho pasos.
-- **`suscripcion` está creada** con su máquina de estado. M26 la cobra; M5 la
-  encuentra puesta.
-- **Invitar funciona de verdad**, con su PIN en pantalla.
-- **La API de pruebas** levanta el servidor entero contra un Postgres efímero.
-  M5 puede escribir pruebas de extremo a extremo sin montar nada.
+**Terminado cuando.** Se da de alta un producto en 30 segundos; al cambiar el
+precio, el coste por unidad de uso y el medio ponderado cambian bien en un
+producto con factor y rendimiento distintos de 1; el stock se reconstruye entero
+desde los movimientos; y la previsión de agotamiento acierta el día en un producto
+con consumo estable.
 
-**Dependencia que hay que respetar:** el asistente de conexión con el TPV **no se
-construye en M5**: vive en M18 y M20. En M5 solo existe la tarjeta del Panel.
+**Lo que M5 le deja hecho:**
 
-**Cómo se comprueba que M5 no ha roto M4:** `pnpm verifica`, `pnpm prueba:e2e:completa`
-y `pnpm bd:comprobar-api` contra Supabase. Los tres pasan hoy.
+- **El catálogo de referencia entero**, que es de donde se copia un producto.
+  Formato, factor, unidad de uso, rendimiento, categoría fiscal y alérgenos ya
+  puestos, con la cuenta explicada. **La mitad cara de «un producto en quince
+  segundos» ya está**: falta copiar la fila.
+- **El vocabulario**: `estook.unidad_de_uso`, los catorce alérgenos oficiales y
+  `comoSaleElCoste` en el dominio. M6 los hereda, no los inventa.
+- **Los objetivos**, que son los que ponen en verde o en rojo los semáforos de
+  todo lo que M6 empiece a medir.
+- **La maquinaria de datos de ejemplo.** M6 apunta sus productos en
+  `estook.dato_de_ejemplo` y el botón del Panel se entera solo: no hay que tocar
+  ni el comando ni la pantalla.
+- **La ficha fiscal del local rellena**, que es lo que el motor fiscal necesita
+  para ponerle un tipo a lo que se venda.
+
+**Dos cosas que hay que decidir antes de M8, y M5 no las fuerza:**
+
+1. **Quién ejecuta los procesos de fondo.** La bandeja de salida, la cola de
+   trabajos y la limpieza de claves siguen sin ejecutarse. M5 no lo necesitaba
+   —el modo demostración limpia al entrar, y los eventos se publican sin que nadie
+   los lea, igual que antes— pero **M5 publica cinco eventos nuevos**, así que la
+   bandeja crece. Merece su decisión escrita.
+2. **La paginación de las listas.** M5 acotó el catálogo de referencia; el resto
+   sigue sin tope.
+
+**Cómo se comprueba que M6 no ha roto lo de antes:** `pnpm verifica`,
+`pnpm prueba:e2e:completa` y `pnpm bd:comprobar-api` contra Supabase. Los dos
+primeros pasan hoy; el tercero, cuando se apliquen la `0020` y la `0021`.

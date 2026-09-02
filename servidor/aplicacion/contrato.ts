@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 import type { CodigoDeError } from '@estook/dominio';
 import type { Permiso } from '@estook/permisos';
+import type { AlmacenDeFicheros } from '../infraestructura/almacen.ts';
 import type { SesionViva, Sql } from '../infraestructura/postgres.ts';
 
 /**
@@ -34,6 +35,14 @@ export interface Contexto {
    * avisa de no cometer. Cambiar de local cambia esta fila, no abre sesion nueva.
    */
   readonly sesion: SesionViva | null;
+  /**
+   * Donde acaban los ficheros (M5). Nulo cuando no hay ninguno enchufado, y
+   * entonces subir un logo **dice que no se puede** en vez de romperse.
+   *
+   * Es un puerto, como `sql`: la capa de aplicacion no sabe si detras hay
+   * Supabase Storage o un mapa en memoria.
+   */
+  readonly almacen: AlmacenDeFicheros | null;
 }
 
 /**
@@ -98,6 +107,23 @@ export interface Puertas {
    * cambiarla y salir.
    */
   readonly aunConClavePorCambiar?: true;
+  /**
+   * Se puede llamar desde una visita de demostracion (M5).
+   *
+   * «Modo demostracion aparte, con un restaurante ficticio entero. Se entra y se
+   *  sale **sin dejar rastro**» (Manifiesto 8).
+   *
+   * Y la forma de que no quede rastro no es limpiar despues —eso necesitaria un
+   * proceso de fondo que todavia no existe, y un fallo a mitad dejaria datos de
+   * mentira dentro del restaurante de ejemplo—, sino **no dejar escribir**.
+   *
+   * Asi que una visita de demostracion puede consultar todo lo que quiera y no
+   * puede ejecutar ningun comando, salvo los que declaren esto: salir, y poco
+   * mas. Se comprueba en el despachador, en el mismo sitio que las tres puertas
+   * de M4, porque lo que se comprueba a mano se olvida en la operacion numero
+   * cuarenta.
+   */
+  readonly enDemostracion?: true;
 }
 
 export interface Consulta<Entrada, Salida> extends Puertas {

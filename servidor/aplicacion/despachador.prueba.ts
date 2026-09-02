@@ -25,6 +25,7 @@ const SESION_NORMAL: Contexto['sesion'] = {
   localId: 'un-local',
   dobleFactorSuperado: true,
   debeCambiarClave: false,
+  esDemostracion: false,
 };
 
 /**
@@ -68,6 +69,9 @@ function bancoDePruebas(sesion: Contexto['sesion'] = SESION_NORMAL) {
         // Desde M4 la persona sale de la sesion resuelta, no de quien llama.
         personaId: sesion?.personaId ?? null,
         sesion,
+        // M5. El despachador no toca ficheros: lo que se prueba aqui son las
+        // puertas, y el almacen se enchufa en `servidor/index.ts`.
+        almacen: null,
         correlacionId: quien.correlacionId,
         ahora: new Date(Date.UTC(2026, 8, 1)),
       }),
@@ -276,9 +280,10 @@ describe('las puertas se cierran solas', () => {
     // lista de excepciones está aquí escrita, y crecer obliga a tocarla.
     const abiertas = [...Object.values(catalogo.consultas), ...Object.values(catalogo.comandos)]
       .filter((operacion) => operacion.sinSesion === true)
-      .map((operacion) => operacion.nombre);
+      .map((operacion) => operacion.nombre)
+      .sort();
 
-    expect(abiertas).toEqual(['entrar']);
+    expect(abiertas).toEqual(['entrar', 'entrar_en_demostracion'].sort());
   });
 
   it('y la lista de las que pasan con la sesión a medias está tasada', () => {
@@ -300,8 +305,49 @@ describe('las puertas se cierran solas', () => {
         'activar_doble_factor',
         'confirmar_doble_factor',
         'superar_doble_factor',
+        // M5 · una visita de demostracion no tiene segundo factor que superar,
+        // asi que sin esto no podria ni irse.
+        'salir_de_la_demostracion',
       ].sort(),
     );
+  });
+});
+
+// ── M5 · la cuarta puerta: la visita que mira y no escribe ───────────────────
+
+describe('una visita de demostración', () => {
+  const DEMOSTRACION = { ...SESION_NORMAL, esDemostracion: true };
+
+  it('no puede ejecutar ningún comando', async () => {
+    const { despachador, veces } = bancoDePruebas(DEMOSTRACION);
+    const salida = await despachador.ejecutar(quien, 'sumar', { cuanto: 1 }, 'una-clave');
+
+    expect(salida.estado === 'fallo' && salida.codigo).toBe('solo_lectura');
+    // Y no es que se ejecute y no se guarde: **no se ejecuta**. Es lo que hace
+    // verdad «se entra y se sale sin dejar rastro» sin limpiar nada después.
+    expect(veces()).toBe(0);
+  });
+
+  it('pero puede mirarlo todo, que es a lo que ha venido', async () => {
+    const { despachador } = bancoDePruebas(DEMOSTRACION);
+    const salida = await despachador.consultar(quien, 'mis_locales', {});
+    expect(salida.estado === 'fallo' && salida.codigo).not.toBe('solo_lectura');
+  });
+
+  it('y puede irse sin esperar a que caduque', async () => {
+    const { despachador } = bancoDePruebas(DEMOSTRACION);
+    const salida = await despachador.ejecutar(quien, 'salir_de_la_demostracion', {}, 'k-salir');
+    expect(salida.estado === 'fallo' && salida.codigo).not.toBe('solo_lectura');
+  });
+
+  it('la lista de lo que puede ejecutar está tasada', () => {
+    // Igual que las otras tres puertas: una operación nueva nace cerrada a la
+    // demostración, y abrirla obliga a tocar esta lista.
+    const enDemostracion = Object.values(catalogo.comandos)
+      .filter((comando) => comando.enDemostracion === true)
+      .map((comando) => comando.nombre);
+
+    expect(enDemostracion).toEqual(['salir_de_la_demostracion']);
   });
 });
 
@@ -319,7 +365,7 @@ describe('los secretos no se guardan para repetirlos', () => {
    *
    * Se vio repasando, no probando. Estas dos pruebas son para que no vuelva.
    */
-  it('los seis comandos que devuelven un secreto están marcados', () => {
+  it('los ocho comandos que devuelven un secreto están marcados', () => {
     const conSecreto = Object.values(catalogo.comandos)
       .filter((comando) => comando.conSecreto === true)
       .map((comando) => comando.nombre)
@@ -336,6 +382,10 @@ describe('los secretos no se guardan para repetirlos', () => {
         // El secreto del segundo factor y sus códigos de respaldo.
         'activar_doble_factor',
         'confirmar_doble_factor',
+        // M5 · el token de la visita de demostración, y los PIN de todo el
+        // equipo que entra de una vez desde un fichero.
+        'entrar_en_demostracion',
+        'confirmar_importacion',
       ].sort(),
     );
   });
@@ -350,6 +400,7 @@ describe('los secretos no se guardan para repetirlos', () => {
           sql: SQL_VACIO,
           personaId: SESION_NORMAL.personaId,
           sesion: SESION_NORMAL,
+          almacen: null,
           correlacionId: quien.correlacionId,
           ahora: new Date(Date.UTC(2026, 8, 1)),
         }),

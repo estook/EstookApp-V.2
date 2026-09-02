@@ -5,6 +5,22 @@ import {
 import { cambiarDeContexto } from './comandos/cambiar-de-contexto.ts';
 import { cambiarMiIdioma } from './comandos/cambiar-mi-idioma.ts';
 import { cerrarSesion } from './comandos/cerrar-sesion.ts';
+import { entrarEnDemostracion, salirDeLaDemostracion } from './comandos/demostracion.ts';
+import { quitarLosEjemplos } from './comandos/ejemplos.ts';
+import { retomarElAlta, saltarPaso, terminarElAlta } from './comandos/el-alta.ts';
+import {
+  guardarDondeEsta,
+  guardarRegimenFiscal,
+  guardarTipoDeLocal,
+} from './comandos/ficha-del-local.ts';
+import {
+  confirmarImportacion,
+  descartarImportacion,
+  proponerImportacion,
+} from './comandos/importar.ts';
+import { crearLocal, responderCuantosLocales } from './comandos/locales.ts';
+import { guardarColorDeMarca, ponerLogo, quitarLogo } from './comandos/marca.ts';
+import { ponerObjetivos } from './comandos/objetivos.ts';
 import {
   activarDobleFactor,
   confirmarDobleFactor,
@@ -18,6 +34,8 @@ import { reactivarPersona } from './comandos/reactivar-persona.ts';
 import { retirarAcceso } from './comandos/retirar-acceso.ts';
 import { salir } from './comandos/salir.ts';
 import { buscar } from './consultas/buscar.ts';
+import { catalogoDeReferencia, recetasDeReferencia } from './consultas/catalogo-de-referencia.ts';
+import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
@@ -49,6 +67,10 @@ export const catalogo = {
     [quienSoy.nombre]: quienSoy,
     [miAcceso.nombre]: miAcceso,
     [quienTieneAcceso.nombre]: quienTieneAcceso,
+    // M5 · el alta y el catalogo de referencia.
+    [elAlta.nombre]: elAlta,
+    [catalogoDeReferencia.nombre]: catalogoDeReferencia,
+    [recetasDeReferencia.nombre]: recetasDeReferencia,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -73,5 +95,33 @@ export const catalogo = {
     // M4 · lo que decide la organizacion.
     [exigirDobleFactor.nombre]: exigirDobleFactor,
     [ponerCorreoDeRecuperacion.nombre]: ponerCorreoDeRecuperacion,
+
+    // ── M5 · el alta de un local ───────────────────────────────────────────
+    //
+    // Los ocho pasos no son ocho comandos: son los comandos que ya existirian de
+    // todas formas en Ajustes, llamados en orden. Cambiar la direccion del local
+    // es lo mismo el primer dia que el ano que viene, y tener dos formas de
+    // hacerlo seria tener dos duenos del mismo dato.
+    [guardarTipoDeLocal.nombre]: guardarTipoDeLocal,
+    [responderCuantosLocales.nombre]: responderCuantosLocales,
+    [guardarDondeEsta.nombre]: guardarDondeEsta,
+    [guardarColorDeMarca.nombre]: guardarColorDeMarca,
+    [ponerLogo.nombre]: ponerLogo,
+    [quitarLogo.nombre]: quitarLogo,
+    [guardarRegimenFiscal.nombre]: guardarRegimenFiscal,
+    [ponerObjetivos.nombre]: ponerObjetivos,
+    [crearLocal.nombre]: crearLocal,
+    // Moverse por el alta: saltar, terminar y volver a abrirla desde el Panel.
+    [saltarPaso.nombre]: saltarPaso,
+    [terminarElAlta.nombre]: terminarElAlta,
+    [retomarElAlta.nombre]: retomarElAlta,
+    // M5 · importar el equipo desde un fichero.
+    [proponerImportacion.nombre]: proponerImportacion,
+    [confirmarImportacion.nombre]: confirmarImportacion,
+    [descartarImportacion.nombre]: descartarImportacion,
+    // M5 · los datos de ejemplo y la demostracion.
+    [quitarLosEjemplos.nombre]: quitarLosEjemplos,
+    [entrarEnDemostracion.nombre]: entrarEnDemostracion,
+    [salirDeLaDemostracion.nombre]: salirDeLaDemostracion,
   } as Record<string, Comando<never, unknown>>,
 };

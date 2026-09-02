@@ -144,3 +144,48 @@ export type { PasoDelRecalculo, Disparador } from './recalculo.ts';
 // ── M4 · a donde se entra · las seis comprobaciones ──────────────────────────
 export { DESTINOS, aDondeEntra } from './destino.ts';
 export type { Destino, QuienAcabaDeEntrar, ResolucionDeDestino } from './destino.ts';
+
+// ── M5 · el alta de un local · los ocho pasos ────────────────────────────────
+export {
+  PASOS_DEL_ALTA,
+  CODIGOS_DE_PASO,
+  CUANTOS_PASOS,
+  esPasoDelAlta,
+  pasoNumero,
+  numeroDelPaso,
+  TIPOS_DE_LOCAL,
+  NOMBRE_DEL_TIPO,
+  esTipoDeLocal,
+  CLAVES_DE_OBJETIVO,
+  NOMBRE_DEL_OBJETIVO,
+  QUE_ES_EL_OBJETIVO,
+  esClaveDeObjetivo,
+  comoVa,
+} from './onboarding.ts';
+
+export type {
+  PasoDelAlta,
+  TipoDeLocal,
+  ClaveDeObjetivo,
+  ComoVaElAlta,
+  Progreso,
+} from './onboarding.ts';
+
+// ── M5 · parecido por trigramas · el mismo metodo que pg_trgm ────────────────
+//
+// Vivia en `@estook/ui` desde M3. Se muda aqui porque el servidor lo necesita
+// para proponer el mapeo de columnas de una importacion, y copiarlo habria roto
+// la regla 6. `@estook/ui` lo reexporta.
+export { sinAcentos, trigramas, parecido, comoCodigo } from './parecido.ts';
+
+// ── M5 · el catalogo de referencia ───────────────────────────────────────────
+export {
+  UNIDADES_DE_USO,
+  esUnidadDeUso,
+  ALERGENOS,
+  NOMBRE_DEL_ALERGENO,
+  esAlergeno,
+  comoSaleElCoste,
+} from './referencia.ts';
+
+export type { UnidadDeUso, Alergeno } from './referencia.ts';

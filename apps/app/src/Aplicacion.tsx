@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HashRouter, Link, Route, Routes } from 'react-router-dom';
 import { Cargando, EstadoVacio, ProveedorDeDeshacer } from '@estook/ui';
+import { ElAlta } from './alta/ElAlta.tsx';
 import { Esqueleto } from './Esqueleto.tsx';
 import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Panel } from './pantallas/Panel.tsx';
@@ -109,10 +110,15 @@ function Puerta() {
   // 2 · La contrasena que puso otra persona.
   if (yo.debeCambiarClave) return <PonerMiContrasena />;
 
-  // 3 · Y las tres paradas de la resolucion de destino.
+  // 3 · Y las cuatro paradas de la resolucion de destino.
   if (yo.destino === 'cuenta_parada') return <CuentaParada porque={yo.porque} />;
   if (yo.destino === 'elegir_organizacion') return <ElegirOrganizacion />;
   if (yo.destino === 'elegir_local') return <ElegirLocal />;
+
+  // La quinta comprobacion, que M4 dejo apuntada y M5 llena: «si no ha terminado
+  // el onboarding, sigue por donde ibas». Hasta hoy este destino existia en el
+  // dominio y **caia al Panel**, porque no habia alta a la que llevar.
+  if (yo.destino === 'onboarding') return <ElAlta />;
 
   return (
     <HashRouter>

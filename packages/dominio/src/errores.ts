@@ -110,6 +110,22 @@ export const ERRORES = {
     { texto: 'Ir a Ajustes', accion: 'abrir_ajustes_de_organizacion' },
   ),
 
+  /**
+   * La visita de demostración, que mira todo y no escribe nada (M5).
+   *
+   * No es un fallo ni una falta de permiso: es lo que se prometió. «Se entra y
+   * se sale sin dejar rastro», y la forma de que eso sea verdad es que no haya
+   * nada que borrar. Por eso el texto lo cuenta como una característica y el
+   * botón lleva a crear una cuenta, que es lo que quiere quien se topa con esto.
+   */
+  solo_lectura: error(
+    'solo_lectura',
+    'Esto es una demostración, así que no se guarda nada.',
+    'Puedes mirarlo todo y trastear sin miedo. Para trabajar de verdad con tus datos, date de alta.',
+    403,
+    { texto: 'Quiero mi cuenta', accion: 'salir_de_la_demostracion' },
+  ),
+
   // ── Cosas que ya han pasado ────────────────────────────────────────────────
   ya_hecho: error(
     'ya_hecho',

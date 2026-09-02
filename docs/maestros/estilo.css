@@ -1,0 +1,312 @@
+/*
+ * El estilo de los documentos maestros.
+ *
+ * Sale de la marca de verdad (B1 del Plan): charcoal, naranja, Montserrat. Un
+ * documento maestro que no se parece a la aplicacion es un documento que nadie
+ * asocia con el producto.
+ *
+ * Pensado para papel: A4, columna estrecha, tablas que no se parten por la
+ * mitad y diagramas en monoespaciada que caben a lo ancho.
+ */
+
+@page {
+  size: A4;
+}
+
+:root {
+  --charcoal: #111c1f;
+  --naranja: #ff7a00;
+  --naranja-suave: #fff1e5;
+  --fondo: #fafaf8;
+  --superficie: #ffffff;
+  --borde: #e6e3de;
+  --borde-fuerte: #cfcac2;
+  --texto: #111c1f;
+  --texto-suave: #5a6568;
+  --texto-tenue: #8a9497;
+  --bien: #1a7d4f;
+  --atencion: #9f5f00;
+  --mal: #c4372b;
+  --info: #2c6e9b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Montserrat, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 9.4pt;
+  line-height: 1.55;
+  color: var(--texto);
+  background: var(--superficie);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── La portada ───────────────────────────────────────────────────────────── */
+
+/*
+ * La portada ocupa su pagina entera y nada mas.
+ *
+ * Sin bordes que se salen del margen: con margenes negativos, el pie que dibuja
+ * Chromium se le monta encima, y ademas el salto de pagina deja de respetarse.
+ * Ocupa la caja de contenido, y se acabo.
+ */
+.portada {
+  height: 244mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  break-after: page;
+  page-break-after: always;
+  background: var(--charcoal);
+  color: #fff;
+  padding: 0 14mm;
+}
+
+.marca {
+  font-size: 15pt;
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  color: #fff;
+  margin-bottom: 26mm;
+}
+
+.marca::after {
+  content: '';
+  display: block;
+  width: 34mm;
+  height: 3px;
+  background: var(--naranja);
+  margin-top: 5mm;
+}
+
+.portada-titulo {
+  font-size: 30pt;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0 0 7mm;
+  max-width: 130mm;
+}
+
+.portada-tipo {
+  font-size: 11pt;
+  font-weight: 600;
+  color: var(--naranja);
+  margin: 0 0 1.5mm;
+}
+
+.portada-fecha {
+  font-size: 10pt;
+  color: #b9c1c3;
+  margin: 0 0 16mm;
+}
+
+.portada-nota {
+  font-size: 9.6pt;
+  line-height: 1.6;
+  color: #d6dbdc;
+  max-width: 118mm;
+  margin: 0;
+  padding-top: 6mm;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* ── Jerarquia ────────────────────────────────────────────────────────────── */
+
+main {
+  padding-top: 2mm;
+}
+
+/*
+ * Los capitulos NO fuerzan pagina nueva.
+ *
+ * Con 35 capitulos, forzarla convierte un documento de 23 paginas en uno de 54,
+ * la mayoria medio vacias. Un documento maestro se consulta, no se hojea: lo que
+ * hace falta es que el capitulo se vea venir, no que empiece en papel limpio.
+ *
+ * Lo que si se respeta: un titulo nunca se queda solo al final de una pagina.
+ */
+main h1 {
+  font-size: 16pt;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin: 11mm 0 5mm;
+  padding-bottom: 2.5mm;
+  border-bottom: 2.5px solid var(--naranja);
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+main > h1:first-child {
+  margin-top: 0;
+}
+
+main h2 {
+  font-size: 12pt;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 8mm 0 3mm;
+  page-break-after: avoid;
+}
+
+main h3 {
+  font-size: 10.2pt;
+  font-weight: 700;
+  color: var(--texto);
+  margin: 6mm 0 2mm;
+  page-break-after: avoid;
+}
+
+main h4 {
+  font-size: 9.4pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--texto-suave);
+  margin: 5mm 0 1.5mm;
+  page-break-after: avoid;
+}
+
+main p {
+  margin: 0 0 3mm;
+  orphans: 3;
+  widows: 3;
+}
+
+main strong {
+  font-weight: 700;
+}
+
+main em {
+  font-style: normal;
+  color: var(--texto-suave);
+}
+
+main a {
+  color: var(--texto);
+  text-decoration: none;
+}
+
+/* ── Listas ───────────────────────────────────────────────────────────────── */
+
+main ul,
+main ol {
+  margin: 0 0 3mm;
+  padding-left: 5.5mm;
+}
+
+main li {
+  margin-bottom: 1.2mm;
+  padding-left: 1mm;
+}
+
+main li::marker {
+  color: var(--naranja);
+  font-weight: 700;
+}
+
+main li > ul,
+main li > ol {
+  margin-top: 1.2mm;
+}
+
+/* ── Tablas ───────────────────────────────────────────────────────────────── */
+
+main table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 4mm;
+  font-size: 8.6pt;
+  page-break-inside: avoid;
+}
+
+main thead {
+  display: table-header-group;
+}
+
+main th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 7.6pt;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--texto-suave);
+  border-bottom: 1.5px solid var(--charcoal);
+  padding: 1.8mm 2.4mm 1.4mm 0;
+  vertical-align: bottom;
+}
+
+main td {
+  border-bottom: 0.75px solid var(--borde);
+  padding: 1.6mm 2.4mm 1.6mm 0;
+  vertical-align: top;
+  line-height: 1.45;
+}
+
+main td:last-child,
+main th:last-child {
+  padding-right: 0;
+}
+
+main tbody tr:nth-child(even) td {
+  background: var(--fondo);
+}
+
+/* ── Diagramas y codigo ───────────────────────────────────────────────────── */
+
+main pre {
+  font-family: 'Cascadia Mono', Consolas, 'Courier New', monospace;
+  font-size: 7.4pt;
+  line-height: 1.42;
+  background: var(--fondo);
+  border: 0.75px solid var(--borde);
+  border-left: 2.5px solid var(--borde-fuerte);
+  border-radius: 2px;
+  padding: 3mm 3.5mm;
+  margin: 0 0 4mm;
+  overflow: hidden;
+  white-space: pre;
+  page-break-inside: avoid;
+}
+
+main code {
+  font-family: 'Cascadia Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.92em;
+  background: var(--naranja-suave);
+  padding: 0.3mm 1mm;
+  border-radius: 2px;
+}
+
+main pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ── Citas · lo que no se negocia ─────────────────────────────────────────── */
+
+main blockquote {
+  margin: 0 0 4mm;
+  padding: 3mm 4mm;
+  background: var(--naranja-suave);
+  border-left: 2.5px solid var(--naranja);
+  border-radius: 2px;
+  page-break-inside: avoid;
+}
+
+main blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Separador de bloque ──────────────────────────────────────────────────── */
+
+main hr {
+  border: none;
+  border-top: 0.75px solid var(--borde);
+  margin: 6mm 0;
+}

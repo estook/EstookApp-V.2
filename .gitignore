@@ -24,3 +24,7 @@ dependencias.svg
 .DS_Store
 Thumbs.db
 *.log
+
+# El HTML de repaso de los documentos maestros (`pnpm maestros --html`). Los PDF
+# si se versionan: son el documento que se lee y se comparte.
+docs/maestros/pdf/*.html

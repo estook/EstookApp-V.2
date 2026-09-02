@@ -9,13 +9,52 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                    |
-| -------------- | ---------------------------------------------------------------------------------- |
-| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** identidad y acceso            |
-| **Siguiente**  | **M5** · onboarding y arranque asistido                                            |
-| **Pruebas**    | 532 unitarias y de base de datos · 136 de extremo a extremo · 40 contra Supabase   |
-| **Rama**       | `main`. M4 fusionado. Falta aplicar la `0018` y la `0019` a Supabase               |
-| **Publicado**  | web viva. **La API todavía no está desplegada**, y la aplicación lo dice al entrar |
+|                |                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------- |
+| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** identidad y acceso               |
+| **Siguiente**  | **M5** · onboarding y arranque asistido                                               |
+| **Pruebas**    | 540 unitarias y de base de datos · 136 de extremo a extremo · 45 contra Supabase      |
+| **Rama**       | `main`. M4 fusionado y desplegado                                                     |
+| **Publicado**  | Web, app y **API vivas**. Se entra desde el móvil contra Supabase                     |
+| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
+
+---
+
+## 0 · Los cinco documentos maestros
+
+Viven en [`docs/maestros/`](docs/maestros/) **en Markdown**, y el PDF es lo que
+sale: `pnpm maestros`. Antes existían solo como PDF en un escritorio, sin fuente
+ni historial, así que corregir una línea obligaba a rehacer el documento entero.
+
+Se leen en este orden:
+
+| Documento                                                                | Qué responde                       | Cuándo se lee            |
+| ------------------------------------------------------------------------ | ---------------------------------- | ------------------------ |
+| [Evolución 1.0](docs/maestros/Estook-Evolucion-1.0.md)                   | Hacia dónde va y en qué orden      | **Primero, siempre**     |
+| [Manifiesto](docs/maestros/Estook-Manifiesto.md)                         | Qué es el producto y cuánto cuesta | Antes de diseñar         |
+| [Plan de desarrollo](docs/maestros/Estook-Plan-de-Desarrollo.md)         | Cómo se construye y con qué reglas | Antes de escribir código |
+| [Roles y administración](docs/maestros/Estook-Roles-y-Administracion.md) | Qué ve exactamente cada persona    | Antes de tocar permisos  |
+| [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)       | Qué desencadena cada cambio        | Antes de cerrar módulo   |
+
+**Precedencia cuando dos parezcan decir cosas distintas:** manda el más
+específico. Si de verdad se contradicen, se para y se pregunta (regla 13).
+
+### Lo que cambia con la Evolución 1.0
+
+- **El presupuesto de 250 KB deja de ser una norma.** `pnpm tamano` mide, avisa
+  y **no bloquea**. Lo que sigue bloqueando es el presupuesto de **velocidad**, y
+  la regla de que ninguna dependencia entra sin justificarse.
+- **Estook pasa a ser el sistema operativo del restaurante**: las ocho apps se
+  mantienen, y encima van el Panel como centro de control, **Estook Pulse**,
+  **Fogón transversal**, el **centro de alertas** y las **integraciones**.
+- **Regla 14 nueva en el Plan:** nada entra aislado. Antes de construir algo se
+  responde qué datos usa, quién se entera cuando cambien, qué automatiza Fogón y
+  qué aprueba una persona.
+- **Dos módulos nuevos:** M29 canales de reparto e integraciones, y M30 API
+  pública. Van al final a propósito: una integración sobre un dominio a medio
+  cerrar se rehace entera.
+- **M5 no se mueve.** La evolución no reordena los cimientos: lo que cambia es
+  que a partir de M6 cada módulo nace ya con su capa inteligente dentro.
 
 ---
 

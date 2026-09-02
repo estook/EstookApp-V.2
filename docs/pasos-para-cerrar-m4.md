@@ -106,15 +106,20 @@ Ahora, en GitHub:
 **Tu repositorio → Settings → Secrets and variables → Actions → pestaña
 Secrets → New repository secret.** Dos veces:
 
-| Name                    | Secret                        |
-| ----------------------- | ----------------------------- |
-| `SUPABASE_ACCESS_TOKEN` | el token que acabas de copiar |
-| `SUPABASE_PROJECT_REF`  | `efgtzujwjztihyiwgpwg`        |
+| Name                   | Secret                        |
+| ---------------------- | ----------------------------- |
+| `TOKEN_DE_SUPABASE`    | el token que acabas de copiar |
+| `PROYECTO_DE_SUPABASE` | `efgtzujwjztihyiwgpwg`        |
 
 > Estos son **los dos primeros secretos** del repositorio. Hasta ahora no había
 > ninguno, y era correcto: lo del navegador es público por naturaleza y lo
 > verdaderamente secreto vivía solo en Supabase. Estos dos son distintos porque
 > son «nosotros desplegando», no del producto.
+
+> **Van en castellano, y es por algo.** Antes se llamaban `SUPABASE_ACCESS_TOKEN`
+> y `SUPABASE_PROJECT_REF`, y con esos nombres acabaron donde no iban: en la
+> consola de Supabase, que **reserva el prefijo `SUPABASE_`** y los rechaza. Un
+> nombre que se parece al de otro sitio es un nombre que acabará en otro sitio.
 
 ### Segundo, tres datos dentro de Supabase
 

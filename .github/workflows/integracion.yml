@@ -59,6 +59,29 @@ jobs:
       - name: Textos de pantalla
         run: pnpm textos
 
+      # ── El camino que nadie comprobaba ──────────────────────────────────────
+      #
+      # El primer despliegue de verdad de M4 se cayo con las 532 pruebas en
+      # verde, porque **las pruebas corren en Node y la API desplegada corre en
+      # Deno**, que resuelve las importaciones de otra manera:
+      #
+      #     Relative import path "@estook/utiles" not prefixed with / or ./ or ../
+      #
+      # Habia un camino entero —el que de verdad llega al cliente— que no miraba
+      # nadie hasta el momento de desplegar. Ahora se mira en cada cambio.
+      #
+      # Y lo comprueba una herramienta nuestra de veinte lineas, no un Deno de
+      # verdad, **a proposito**. Se intento con `deno info` y no vale: Deno lee
+      # el `package.json` del espacio de trabajo y resuelve `@estook/utiles` el
+      # solo, asi que pasaba **igual de verde con el fallo puesto**. El
+      # empaquetador de Supabase no hace eso, y por eso se cayo.
+      #
+      # Una comprobacion que no puede fallar es peor que no tenerla, porque da
+      # confianza. La nuestra resuelve como resuelve Supabase —mapa y rutas
+      # relativas, y nada mas— y esta probada contra el fallo real.
+      - name: El grafo de Deno resuelve
+        run: pnpm grafo
+
       - name: Pruebas
         run: pnpm prueba
 

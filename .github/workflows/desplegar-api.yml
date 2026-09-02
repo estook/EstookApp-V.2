@@ -72,9 +72,40 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      # La version va fija, y no es manía. Con `latest`, la accion le pregunta a
+      # la API de GitHub cual es la ultima **sin identificarse**, y eso tiene un
+      # limite de peticiones por hora que se agota solo:
+      #
+      #     Failed to resolve latest Supabase CLI release: rate limit exceeded
+      #
+      # Eso tumbo el primer intento de desplegar, y no tenia nada que ver con
+      # nuestro codigo. Fijandola, el despliegue no depende de cuanta gente haya
+      # desplegado hoy. Subirla es cambiar este numero, a proposito y mirando.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.116.0
+
+      # ── Antes de empaquetar nada, que el grafo resuelva ─────────────────────
+      #
+      # El segundo intento se cayo aqui, y con un error que no se entiende si no
+      # sabes de Deno: «failed to create the graph». Lo que pasaba es que el
+      # codigo del servidor importa `@estook/utiles`, que en Node resuelve pnpm
+      # con los enlaces del espacio de trabajo y **en Deno no resuelve nadie**
+      # salvo que este declarado en un mapa de importaciones.
+      #
+      # Comprobarlo antes cuesta un segundo y falla diciendo que pasa, en vez de
+      # dejar que se caiga dentro del empaquetador con «failed to create the
+      # graph».
+      #
+      # Lo comprueba una herramienta nuestra y no un Deno de verdad, **a
+      # proposito**: se intento con `deno info` y pasaba igual de verde con el
+      # fallo puesto, porque Deno lee el `package.json` del espacio de trabajo y
+      # resuelve `@estook/utiles` el solo. El empaquetador de Supabase no hace
+      # eso. Una comprobacion que no puede fallar da confianza y no sirve.
+      #
+      # No necesita instalar nada: es Node pelado, y los ejecutores lo traen.
+      - name: Comprobar que el grafo resuelve
+        run: node herramientas/revisa-el-grafo-de-deno.mjs
 
       - name: Desplegar la funcion
         env:

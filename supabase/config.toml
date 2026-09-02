@@ -18,3 +18,20 @@ project_id = "efgtzujwjztihyiwgpwg"
 # salvo donde se declara lo contrario— y las politicas de M1 por debajo.
 verify_jwt = false
 entrypoint = "./functions/api/index.ts"
+
+# El mapa de importaciones, y por que hace falta.
+#
+# El codigo del servidor se escribe para Node, donde `@estook/utiles` lo resuelve
+# pnpm mirando los enlaces del espacio de trabajo. **Deno no hace eso.** Para el,
+# cualquier cosa que no empiece por `/`, `./` o `../` es un paquete que hay que
+# declarar, y sin declararlo se para antes de empezar:
+#
+#     Relative import path "@estook/utiles" not prefixed with / or ./ or ../
+#
+# Eso es exactamente lo que tumbo el primer despliegue de verdad. Las 532 pruebas
+# estaban en verde y no podian verlo: corren en Node, y esto solo pasa en Deno.
+#
+# El mapa dice donde esta cada uno. Los nuestros, apuntando al fuente; los de
+# fuera, con version exacta, porque un despliegue que se trae otra version es un
+# despliegue distinto del probado.
+import_map = "./functions/api/deno.json"

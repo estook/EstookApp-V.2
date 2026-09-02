@@ -3,9 +3,12 @@ import { expect, test } from '@playwright/test';
 /**
  * M0 · aceptacion. Las cuatro aplicaciones arrancan, sin errores y a tiempo.
  *
- * Desde M3, `app` ya no es la pantalla de cimientos sino el Panel, asi que lo
- * que se comprueba en ella es distinto. Las otras tres siguen siendo el
- * marcador de sitio de M0, ahora pintado con el sistema de diseno.
+ * Desde M3, `app` ya no es la pantalla de cimientos. Y desde M4 lo primero que
+ * ensena **no es el Panel sino la puerta**: sin haber entrado no se pinta ni una
+ * barra ni un dato, que es exactamente lo que tiene que pasar.
+ *
+ * Las otras tres siguen siendo el marcador de sitio de M0, pintado con el sistema
+ * de diseno.
  */
 const APLICACIONES = [
   { nombre: 'web', url: 'http://localhost:5173/', titulo: /Estook/, esElEsqueleto: false },
@@ -34,8 +37,9 @@ for (const aplicacion of APLICACIONES) {
       await expect(page).toHaveTitle(aplicacion.titulo);
 
       if (aplicacion.esElEsqueleto) {
-        // El Panel de M3: saluda y ensena cuantas apps alcanza quien mira.
-        await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+        // La puerta de M4. Que lo primero sea esto y no el Panel es la mitad del
+        // modulo: antes de saber quien eres no hay nada que ensenar.
+        await expect(page.getByRole('heading', { level: 1 })).toContainText('Entra en Estook');
       } else {
         // El marcador de sitio de M0, que sigue diciendo como ha arrancado.
         await expect(page.getByText('Entorno', { exact: true })).toBeVisible();

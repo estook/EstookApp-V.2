@@ -23,3 +23,20 @@ Decision de M0, anotada en `docs/decisiones/0002-runtime-de-la-api.md`: la API s
 escribe en Hono y se despliega como Supabase Edge Functions (Deno). Los trabajos
 programados van por cola en tabla mas `pg_cron`, porque en Edge Functions no hay
 proceso largo. El adaptador HTTP concreto se escribe en M2, no antes.
+
+**M4 la despliega**, porque es quien trae a alguien a quien servir. El punto de
+entrada esta en `supabase/functions/api/index.ts` y no hace nada: enchufa esta
+misma API a `Deno.serve`. Se lanza desde Actions, con el flujo `Desplegar la API`.
+
+## Quien pregunta (M4)
+
+Desde M4, la API **no se cree lo que le digan**. Hasta entonces la identidad
+llegaba en `x-persona-id`, que estaba bien mientras no hubiera login y era
+exactamente lo que prohibe la regla 4. Ahora llega un token en
+`Authorization: Bearer`, y la infraestructura lo resuelve contra `estook.sesion`
+dentro de la transaccion, con el disfraz de `estook_api` ya puesto.
+
+Las tres puertas —sin sesion, con el segundo factor pendiente, con una contrasena
+que puso otra persona— las mira el **despachador**, una vez, por todas las
+operaciones. Una operacion nueva nace protegida sin hacer nada; abrir una puerta
+se declara en la propia operacion y se ve en el catalogo.

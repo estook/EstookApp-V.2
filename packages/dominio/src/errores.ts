@@ -58,6 +58,58 @@ export const ERRORES = {
     { texto: 'Cambiar de local', accion: 'abrir_selector_de_local' },
   ),
 
+  // ── M4 · las puertas del login ─────────────────────────────────────────────
+
+  // A propósito NO dice si el correo existe: si dijera «ese correo no está
+  // dado de alta», cualquiera podría averiguar quién trabaja dónde probando
+  // direcciones. La misma frase para el correo que no existe y para la
+  // contraseña equivocada.
+  no_cuadra: error(
+    'no_cuadra',
+    'Ese correo y esa contraseña no cuadran.',
+    'Vuelve a intentarlo. Si no te acuerdas, quien lleva el local puede darte una nueva en un momento.',
+    401,
+  ),
+
+  demasiados_intentos: error(
+    'demasiados_intentos',
+    'Se han fallado cinco veces seguidas, así que la entrada está parada un rato.',
+    'Espera quince minutos y vuelve a intentarlo. Si tienes prisa, quien lleva el local puede darte un PIN nuevo ahora mismo.',
+    429,
+  ),
+
+  falta_doble_factor: error(
+    'falta_doble_factor',
+    'Falta el código de tu aplicación de autenticación.',
+    'Ábrela y escribe los seis dígitos que enseña ahora.',
+    401,
+    { texto: 'Escribir el código', accion: 'pedir_doble_factor' },
+  ),
+
+  clave_por_cambiar: error(
+    'clave_por_cambiar',
+    'Antes de nada, pon una contraseña tuya.',
+    'La que estás usando te la dio otra persona, así que la sabe alguien más.',
+    403,
+    { texto: 'Poner mi contraseña', accion: 'ir_a_cambiar_clave' },
+  ),
+
+  pin_ocupado: error(
+    'pin_ocupado',
+    'Ese PIN ya lo tiene otra persona de este local.',
+    'Dos personas del mismo local no pueden compartir PIN. Se ha generado otro.',
+    409,
+    { texto: 'Usar el nuevo', accion: 'aceptar_pin_nuevo' },
+  ),
+
+  se_queda_sin_administrador: error(
+    'se_queda_sin_administrador',
+    'Si le quitas el acceso, el negocio se queda sin nadie que pueda administrarlo.',
+    'Nombra antes a otra persona como dirección o administrador de cuenta, o declara un correo de recuperación en Ajustes.',
+    409,
+    { texto: 'Ir a Ajustes', accion: 'abrir_ajustes_de_organizacion' },
+  ),
+
   // ── Cosas que ya han pasado ────────────────────────────────────────────────
   ya_hecho: error(
     'ya_hecho',

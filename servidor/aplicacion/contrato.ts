@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 import type { CodigoDeError } from '@estook/dominio';
 import type { Permiso } from '@estook/permisos';
-import type { Sql } from '../infraestructura/postgres.ts';
+import type { SesionViva, Sql } from '../infraestructura/postgres.ts';
 
 /**
  * El contrato de la capa de aplicacion (M2).
@@ -18,10 +18,22 @@ import type { Sql } from '../infraestructura/postgres.ts';
 
 export interface Contexto {
   readonly sql: Sql;
+  /**
+   * Quien pregunta. Desde M4 **no lo dice el cliente**: sale de resolver el
+   * token de sesion contra la base de datos.
+   */
   readonly personaId: string | null;
   readonly correlacionId: string;
   /** El instante que decide el servidor. Nunca se lee un reloj aqui (regla 10). */
   readonly ahora: Date;
+  /**
+   * La sesion viva, con su contexto (M4).
+   *
+   * De aqui sale el local que se esta mirando, y no de lo que mande el cliente:
+   * fiarse del identificador que llega en la peticion es el error tipico que M1
+   * avisa de no cometer. Cambiar de local cambia esta fila, no abre sesion nueva.
+   */
+  readonly sesion: SesionViva | null;
 }
 
 /**
@@ -43,7 +55,33 @@ export class FalloDeAplicacion extends Error {
   }
 }
 
-export interface Consulta<Entrada, Salida> {
+/**
+ * Las tres puertas que M4 pone delante de cada operacion.
+ *
+ * Ninguna es opcional por comodidad: cada una existe porque hay un estado en el
+ * que dejar pasar seria un fallo de seguridad, y **la excepcion se declara en la
+ * operacion**, no se comprueba a mano dentro de ella. Lo que se comprueba a mano
+ * se olvida en la operacion numero cuarenta.
+ */
+export interface Puertas {
+  /**
+   * Se puede llamar sin haber entrado. Solo `entrar`, y las publicas del dia que
+   * exista la carta digital (M11).
+   */
+  readonly sinSesion?: true;
+  /**
+   * Se puede llamar con la sesion a medias, esperando el segundo factor. Solo lo
+   * que hace falta para terminarlo o para irse.
+   */
+  readonly aunSinDobleFactor?: true;
+  /**
+   * Se puede llamar cuando hay que cambiar la contrasena antes de nada. Solo
+   * cambiarla y salir.
+   */
+  readonly aunConClavePorCambiar?: true;
+}
+
+export interface Consulta<Entrada, Salida> extends Puertas {
   readonly nombre: string;
   readonly entrada: z.ZodType<Entrada>;
   /** Que hace falta para poder preguntarlo. Vacio = con estar dentro basta. */
@@ -51,7 +89,7 @@ export interface Consulta<Entrada, Salida> {
   ejecutar(contexto: Contexto, entrada: Entrada): Promise<Salida>;
 }
 
-export interface Comando<Entrada, Salida> {
+export interface Comando<Entrada, Salida> extends Puertas {
   readonly nombre: string;
   readonly entrada: z.ZodType<Entrada>;
   readonly exige?: Permiso;

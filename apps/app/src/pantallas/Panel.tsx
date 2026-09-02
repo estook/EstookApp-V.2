@@ -31,7 +31,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  */
 export function Panel() {
   const navegar = useNavigate();
-  const { permisos, perfil } = usarSesion();
+  const { permisos, yo } = usarSesion();
   const { sePuedeDeshacer } = usarDeshacer();
 
   const misApps = appsVisibles(permisos)
@@ -42,8 +42,10 @@ export function Panel() {
     <div className="flex flex-col gap-e4">
       <header className="flex flex-wrap items-end justify-between gap-e3">
         <div>
-          <p className="text-etiqueta uppercase tracking-wide text-texto-suave">{perfil.donde}</p>
-          <h1 className="text-pantalla font-semibold">Hola, {perfil.nombre.split(' ')[0]}</h1>
+          <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+            {yo?.local?.nombre ?? yo?.organizacion?.nombre ?? ''}
+          </p>
+          <h1 className="text-pantalla font-semibold">Hola, {yo?.nombre.split(' ')[0] ?? ''}</h1>
         </div>
         <p className="text-secundario text-texto-suave">
           {misApps.length === 1 ? '1 app en tu acceso' : `${misApps.length} apps en tu acceso`}
@@ -131,7 +133,7 @@ export function Panel() {
           Uno de los tres flujos con deshacer de M3. Es de mentira a proposito y
           lo dice: sirve para comprobar que la barra aparece, cuenta diez
           segundos y revierte, sin esperar a que haya un comando de verdad que
-          tocar. Los otros dos —el tamano de letra y el perfil— estan en Ajustes.
+          tocar. Los otros dos —el tamano de letra y la contrasena— estan en Ajustes.
         */}
         <Tarjeta titulo="Deshacer" origen="Prueba del deshacer universal">
           <p className="text-secundario text-texto-suave">

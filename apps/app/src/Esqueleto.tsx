@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
+import { IconoAtras, IconoLocal } from '@estook/iconos';
 import {
   BarraDeApp,
   BarraEscritorio,
@@ -9,11 +10,11 @@ import {
   RuedaDeApps,
   appPorPermiso,
   usarAtajos,
+  usarDeshacer,
   type App,
 } from '@estook/ui';
 import { BuscadorUniversal } from './buscar/BuscadorUniversal.tsx';
 import { usarSesion } from './sesion/Sesion.tsx';
-import { AvisoDelAndamio } from './sesion/AvisoDelAndamio.tsx';
 
 /**
  * El esqueleto · Parte B5 del Plan.
@@ -34,7 +35,8 @@ import { AvisoDelAndamio } from './sesion/AvisoDelAndamio.tsx';
 export function Esqueleto() {
   const navegar = useNavigate();
   const { pathname } = useLocation();
-  const { permisos, perfil, deDonde } = usarSesion();
+  const { permisos, yo, cliente, refrescar } = usarSesion();
+  const { sePuedeDeshacer } = usarDeshacer();
 
   const [ruedaAbierta, setRuedaAbierta] = useState(false);
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
@@ -75,6 +77,123 @@ export function Esqueleto() {
     },
   });
 
+  // ── El contexto: en que local se esta, y como se cambia (M4) ───────────────
+
+  const suOrganizacion = yo?.organizacion?.id;
+  const susLocales = useMemo(
+    () =>
+      (yo?.locales ?? [])
+        .filter((local) => local.organizacionId === suOrganizacion)
+        .map((local) => ({ id: local.id, nombre: local.nombre })),
+    [yo?.locales, suOrganizacion],
+  );
+
+  const localDeAhora = yo?.local?.id ?? null;
+
+  const cambiarDeLocal = useCallback(
+    async (id: string) => {
+      const desdeDonde = localDeAhora;
+
+      // El servidor decide: se le pide el cambio y se vuelve a preguntar quien
+      // eres. Si ese local no fuera suyo, la resolucion no lo elegiria y volveria
+      // a preguntar donde esta, en vez de dejarle en un sitio que no es el suyo.
+      await cliente.ejecutar('cambiar_de_contexto', { local_id: id });
+      await refrescar();
+      navegar('/');
+
+      // **Y se puede deshacer.** Cambiar de local es exactamente lo que se hace
+      // sin querer con el movil en la mano, y la consecuencia es la que el
+      // Manifiesto (28) da como razon de que el selector exista: apuntar una
+      // merma en el local equivocado. Diez segundos para volver.
+      if (desdeDonde !== null && desdeDonde !== id) {
+        const nombre = susLocales.find((local) => local.id === id)?.nombre ?? 'otro local';
+        sePuedeDeshacer({
+          que: `Ahora estas en ${nombre}`,
+          deshacer: () => {
+            void (async () => {
+              await cliente.ejecutar('cambiar_de_contexto', { local_id: desdeDonde });
+              await refrescar();
+            })();
+          },
+        });
+      }
+    },
+    [cliente, refrescar, navegar, localDeAhora, susLocales, sePuedeDeshacer],
+  );
+
+  /**
+   * «Una flecha permanente "← Zona Norte" que devuelve al consolidado desde
+   *  cualquier pantalla, en un toque» (Roles, 2.2).
+   *
+   * Solo sale a quien tiene un conjunto al que volver: quien lleva un solo local
+   * no tiene consolidado, y una flecha que lleva a una pantalla de un elemento es
+   * una promesa vacia.
+   */
+  // La condición es **la misma** que la tercera comprobación de `aDondeEntra`, y
+  // por eso el alcance viene del servidor en vez de deducirse aquí: si se
+  // dedujera, la flecha podría salir donde la resolución no manda al consolidado.
+  const tieneConjunto = (yo?.organizacion?.alcance ?? 'local') !== 'local' && susLocales.length > 1;
+  const enElConjunto = primero === 'cadena';
+
+  const volverAlConjunto =
+    tieneConjunto && !enElConjunto ? (
+      <button
+        type="button"
+        onClick={() => {
+          navegar('/cadena');
+        }}
+        className="inline-flex min-h-toque items-center gap-e1 rounded-medio text-secundario text-texto-suave hover:text-texto"
+      >
+        <IconoAtras size={16} />← {yo?.organizacion?.nombre}
+      </button>
+    ) : null;
+
+  /**
+   * Donde estas, y como cambiarlo · **en movil** (M4).
+   *
+   * La barra de escritorio lleva el selector de local, pero esa barra es
+   * `hidden lg:flex`: en un movil no existe. Y sin esto, quien trabaja en dos
+   * locales **no tiene forma de cambiar de uno a otro con el telefono**, que es
+   * justo el aparato con el que lo va a hacer.
+   *
+   * Lo encontro una prueba de extremo a extremo corriendo a 375 px, no la vista:
+   * en escritorio funcionaba perfectamente.
+   *
+   * Se pinta arriba del contenido y no en una barra propia, porque «maximo tres
+   * niveles» (B5) y una cuarta barra seria una de mas. Y lleva el nombre del
+   * local siempre, aunque solo haya uno: «para que nadie apunte una merma en el
+   * local equivocado» (Manifiesto 28) empieza por saber donde estas.
+   */
+  const dondeEstas =
+    yo?.local === null || yo?.local === undefined ? null : (
+      <div className="mb-e3 flex flex-wrap items-center gap-e2 lg:hidden">
+        <span className="inline-flex items-center gap-e1 text-secundario text-texto-suave">
+          <IconoLocal size={16} />
+          {susLocales.length <= 1 && yo.local.nombre}
+        </span>
+
+        {susLocales.length > 1 && (
+          <label className="flex items-center gap-e1 text-secundario text-texto-suave">
+            <span className="sr-only">Donde estas</span>
+            <select
+              aria-label="Donde estas"
+              value={yo.local.id}
+              onChange={(evento) => {
+                void cambiarDeLocal(evento.target.value);
+              }}
+              className="min-h-toque cursor-pointer rounded-medio border border-borde-fuerte bg-superficie px-e2 text-cuerpo text-texto"
+            >
+              {susLocales.map((local) => (
+                <option key={local.id} value={local.id}>
+                  {local.nombre}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
+    );
+
   return (
     <div className="min-h-dvh bg-fondo">
       <BarraEscritorio
@@ -90,10 +209,19 @@ export function Esqueleto() {
         alBuscar={() => {
           setBuscadorAbierto(true);
         }}
-        local={{ nombre: perfil.donde, organizacion: perfil.donde }}
-        locales={[]}
-        alCambiarDeLocal={() => undefined}
-        persona={perfil.nombre}
+        local={
+          yo?.local
+            ? {
+                nombre: yo.local.nombre,
+                organizacion: yo.organizacion?.nombre ?? '',
+              }
+            : null
+        }
+        locales={susLocales}
+        alCambiarDeLocal={(id) => {
+          void cambiarDeLocal(id);
+        }}
+        persona={yo?.nombre ?? ''}
       />
 
       {/*
@@ -102,7 +230,12 @@ export function Esqueleto() {
         barra abajo, asi que no hace falta.
       */}
       <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e5))] pt-e4 lg:px-e5 lg:pb-e7">
-        {deDonde === 'muestra' && <AvisoDelAndamio />}
+        {(volverAlConjunto !== null || dondeEstas !== null) && (
+          <div className="mb-e3 flex flex-col gap-e2">
+            {volverAlConjunto}
+            {dondeEstas}
+          </div>
+        )}
         <Outlet />
       </main>
 

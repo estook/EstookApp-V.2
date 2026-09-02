@@ -59,7 +59,14 @@ jobs:
   construccion:
     name: Construccion y presupuestos
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+    env:
+      # M4: desde que hay login, las pruebas de extremo a extremo necesitan una
+      # API a la que entrar, y Vite hornea esta direccion **al construir**. Se
+      # declara en el trabajo entero para que quede claro que lo que se construye
+      # aqui es para probar, no para publicar: lo que se publica lo construye
+      # `publicar.yml`, con la direccion de verdad.
+      VITE_API_URL: http://localhost:5177
     steps:
       - uses: actions/checkout@v4
 
@@ -85,6 +92,9 @@ jobs:
       - name: Instalar navegadores
         run: pnpm exec playwright install --with-deps chromium webkit
 
+      # Playwright levanta la API de pruebas (Postgres efimero, migraciones y
+      # semillas) antes de las cuatro aplicaciones. Esta escrito en
+      # `playwright.config.ts`.
       - name: Pruebas de extremo a extremo y presupuesto de velocidad
         run: pnpm prueba:e2e
 

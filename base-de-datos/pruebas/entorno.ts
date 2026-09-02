@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PGlite } from '@electric-sql/pglite';
 import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
+import { sembrarAcceso, type LoQueSeSembro } from '../semillas/acceso.ts';
 
 /**
  * Un Postgres de verdad, efimero y sin instalar nada.
@@ -55,17 +56,15 @@ export interface BaseDePrueba {
   /** El identificador de una persona por su correo. Se lee como duena, sin politicas. */
   personaPorCorreo(correo: string): Promise<string>;
   localPorCodigo(codigo: string): Promise<string>;
+  /** Con que entra cada persona de ejemplo (M4). Los PIN, por local. */
+  readonly acceso: LoQueSeSembro;
+  /** El PIN de alguien en un local, por sus codigos. */
+  pinDe(correo: string, codigoDelLocal: string): string;
   cerrar(): Promise<void>;
 }
 
-/** Levanta una base con todas las migraciones y las tres semillas puestas. */
+/** Levanta una base con todas las migraciones y las cuatro semillas puestas. */
 export async function levantarBase(): Promise<BaseDePrueba> {
-  //  hay que enchufarlo: PGlite no trae las extensiones puestas, y sin
-  // ella la migracion 0017 del buscador no se puede aplicar.
-  //
-  //  no esta disponible en PGlite, y por eso  se
-  // escribio con  (decision 0009): asi el buscador se prueba de
-  // verdad en las tres capas y no solo a mano contra Supabase.
   // `pg_trgm` hay que enchufarlo: PGlite no trae las extensiones puestas, y sin
   // ella la migracion 0017 del buscador no se puede aplicar.
   //
@@ -77,6 +76,18 @@ export async function levantarBase(): Promise<BaseDePrueba> {
   await bd.exec(CONTROL);
   for (const { sql } of await migraciones()) await bd.exec(sql);
   for (const { sql } of await semillas()) await bd.exec(sql);
+
+  // La cuarta semilla es la de M4, y no es un `.sql`: derivar una contrasena se
+  // hace en el servidor, no en la base de datos (decision 0010). Se llama a la
+  // misma funcion que usa `bd:sembrar`, para que lo que se prueba sea lo que se
+  // siembra de verdad y no una imitacion.
+  const acceso = await sembrarAcceso(
+    async (consulta, parametros) => {
+      const { rows } = await bd.query(consulta, parametros);
+      return { rows };
+    },
+    { entorno: 'pruebas' },
+  );
 
   async function unId(consulta: string, parametro: string): Promise<string> {
     const { rows } = await bd.query<{ id: string }>(consulta, [parametro]);
@@ -106,6 +117,14 @@ export async function levantarBase(): Promise<BaseDePrueba> {
     personaPorCorreo: (correo) => unId('select id from estook.persona where correo = $1', correo),
 
     localPorCodigo: (codigo) => unId('select id from estook.local where codigo = $1', codigo),
+
+    acceso,
+
+    pinDe(correo, codigoDelLocal) {
+      const suyo = acceso.pines.find((p) => p.correo === correo && p.local === codigoDelLocal);
+      if (!suyo) throw new Error(`No hay PIN de ${correo} en ${codigoDelLocal}`);
+      return suyo.pin;
+    },
 
     cerrar: () => bd.close(),
   };

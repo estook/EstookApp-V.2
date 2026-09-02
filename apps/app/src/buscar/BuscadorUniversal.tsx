@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { IconoAjustes, IconoPanel, IconoTamanoDeLetra } from '@estook/iconos';
 import { Buscador, type Accion, type App, type ResultadoDeBusqueda } from '@estook/ui';
-import { PERSONA_DE_DESARROLLO, crearClienteDeLaApp, hayApi } from '../datos/cliente.ts';
+import { hayApi } from '../datos/cliente.ts';
+import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
  * El buscador universal, enchufado (M3, Parte B5).
@@ -33,6 +34,10 @@ export interface BuscadorUniversalProps {
 
 export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversalProps) {
   const navegar = useNavigate();
+  // M4: el cliente es el de la sesion. Antes se creaba uno con el identificador
+  // de desarrollo puesto a mano; ahora lleva el token de quien ha entrado, asi
+  // que el buscador encuentra exactamente lo que esa persona puede ver.
+  const { cliente, yo } = usarSesion();
   const [escrito, setEscrito] = useState('');
   const [reposado, setReposado] = useState('');
 
@@ -46,13 +51,12 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
   }, [escrito]);
 
   const texto = reposado.trim();
-  const sePregunta = hayApi && PERSONA_DE_DESARROLLO !== null && texto.length >= 2;
+  const sePregunta = hayApi && yo !== null && texto.length >= 2;
 
   const consulta = useQuery({
-    queryKey: ['buscar', texto, PERSONA_DE_DESARROLLO],
+    queryKey: ['buscar', texto, yo?.personaId ?? null],
     enabled: sePregunta,
     queryFn: async () => {
-      const cliente = crearClienteDeLaApp({ personaId: PERSONA_DE_DESARROLLO });
       const respuesta = await cliente.consultar<
         readonly {
           tipo: string;

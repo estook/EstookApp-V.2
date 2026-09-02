@@ -1,6 +1,7 @@
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
 import { Migas, Tarjeta, TodaviaNo, appPorId, type App } from '@estook/ui';
+import { QuienTieneAcceso } from './QuienTieneAcceso.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -109,13 +110,22 @@ function Dentro({
         </nav>
       </header>
 
-      <Tarjeta acento={app.acento} titulo={pestana.nombre}>
-        <TodaviaNo
-          que={`${app.nombre} · ${pestana.nombre}`}
-          queHabra={app.queHace}
-          modulo={EN_QUE_MODULO[app.id] ?? 'su modulo'}
-        />
-      </Tarjeta>
+      {/*
+        La única pestaña con contenido de verdad hoy, y es de M4: dar acceso,
+        quitarlo y devolverlo. El resto de Equipo —contratos, horas, ausencias y
+        documentos— llega en M10, y esta pantalla se queda donde está.
+      */}
+      {app.id === 'equipo' && pestana.id === 'personas' ? (
+        <QuienTieneAcceso />
+      ) : (
+        <Tarjeta acento={app.acento} titulo={pestana.nombre}>
+          <TodaviaNo
+            que={`${app.nombre} · ${pestana.nombre}`}
+            queHabra={app.queHace}
+            modulo={EN_QUE_MODULO[app.id] ?? 'su modulo'}
+          />
+        </Tarjeta>
+      )}
     </div>
   );
 }

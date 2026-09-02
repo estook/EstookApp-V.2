@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { crearApi } from './index.ts';
 import { crearDespachador, type Contexto, type Puertos } from '../aplicacion/index.ts';
-import { CABECERA_IDEMPOTENCIA, CABECERA_PERSONA } from './cabeceras.ts';
+import { CABECERA_IDEMPOTENCIA, tokenDeLaCabecera } from './cabeceras.ts';
 import { porQueNoSeAtiende, versionSoportada, VERSION_ACTUAL } from './version.ts';
 
 /**
@@ -16,6 +16,16 @@ import { porQueNoSeAtiende, versionSoportada, VERSION_ACTUAL } from './version.t
  */
 
 /** Puertos falsos que recuerdan lo que pasó, para poder mirarlo después. */
+/**
+ * Un `sql` que no toca nada y devuelve vacio.
+ *
+ * Aqui no hay base de datos a proposito: lo que se prueba es el despachador. Con
+ * `null` las operaciones que pasan la puerta reventaban con un TypeError y no se
+ * podia distinguir «la puerta la dejo pasar» de «la puerta la paro». Con esto,
+ * pasar la puerta y no encontrar datos es lo normal.
+ */
+const SQL_VACIO = (() => Promise.resolve([])) as unknown as Contexto['sql'];
+
 function puertosDeMentira() {
   const claves = new Map<string, { huella: string; respuesta: unknown }>();
   const ejecutados: string[] = [];
@@ -23,8 +33,22 @@ function puertosDeMentira() {
   const puertos: Puertos = {
     enTransaccion: (quien, hacer) =>
       hacer({
-        sql: null as unknown as Contexto['sql'],
-        personaId: quien.personaId,
+        sql: SQL_VACIO,
+        // Con puertos de mentira no hay a quien resolver el token, asi que se
+        // devuelve una sesion si trae token y ninguna si no. Es exactamente lo
+        // que hace la de verdad, sin base de datos.
+        personaId: quien.tokenDeSesion === null ? null : 'una-persona',
+        sesion:
+          quien.tokenDeSesion === null
+            ? null
+            : {
+                id: 'una-sesion',
+                personaId: 'una-persona',
+                organizacionId: 'una-organizacion',
+                localId: 'un-local',
+                dobleFactorSuperado: true,
+                debeCambiarClave: false,
+              },
         correlacionId: quien.correlacionId,
         ahora: new Date(Date.UTC(2026, 8, 1, 12, 0, 0)),
       }),
@@ -124,7 +148,7 @@ describe('la validacion de lo que llega', () => {
     const { app } = api();
     const respuesta = await app.request('/v1/comandos/cambiar_mi_idioma', {
       method: 'POST',
-      headers: { [CABECERA_IDEMPOTENCIA]: 'clave-1', [CABECERA_PERSONA]: 'alguien' },
+      headers: { [CABECERA_IDEMPOTENCIA]: 'clave-1', authorization: 'Bearer un-token' },
       body: JSON.stringify({ idioma: 'klingon', version: 1 }),
     });
     const cuerpo = await cuerpoDe(respuesta);
@@ -135,7 +159,7 @@ describe('la validacion de lo que llega', () => {
     const { app } = api();
     const respuesta = await app.request('/v1/comandos/cambiar_mi_idioma', {
       method: 'POST',
-      headers: { [CABECERA_IDEMPOTENCIA]: 'clave-2', [CABECERA_PERSONA]: 'alguien' },
+      headers: { [CABECERA_IDEMPOTENCIA]: 'clave-2', authorization: 'Bearer un-token' },
       body: JSON.stringify({ idioma: 'ca' }),
     });
     const cuerpo = (await respuesta.json()) as {
@@ -187,5 +211,60 @@ describe('cada respuesta lleva su hilo', () => {
       headers: { 'x-correlacion-id': 'esto-no-es-un-uuid' },
     });
     expect(respuesta.headers.get('x-correlacion-id')).not.toBe('esto-no-es-un-uuid');
+  });
+});
+
+// ── M4 · la identidad se demuestra, no se declara ────────────────────────────
+
+describe('el token de sesion', () => {
+  it('se saca de `Authorization: Bearer`', () => {
+    expect(tokenDeLaCabecera('Bearer abc123')).toBe('abc123');
+    // Los navegadores y los agrupadores no respetan las mayusculas.
+    expect(tokenDeLaCabecera('bearer abc123')).toBe('abc123');
+    expect(tokenDeLaCabecera('BEARER abc123')).toBe('abc123');
+  });
+
+  it('y cualquier otra cosa es «no hay token», no un token a medias', () => {
+    for (const raro of [
+      undefined,
+      '',
+      'abc123',
+      'Basic abc123',
+      'Bearer',
+      'Bearer ',
+      'Bearer a b',
+    ]) {
+      expect(tokenDeLaCabecera(raro)).toBeNull();
+    }
+  });
+
+  it('sin token, no se ve nada', async () => {
+    const { app } = api();
+    const respuesta = await app.request('/v1/consultas/mis_locales');
+    expect(respuesta.status).toBe(401);
+    expect((await cuerpoDe(respuesta)).error?.codigo).toBe('sin_sesion');
+  });
+
+  it('con token, se pasa', async () => {
+    const { app } = api();
+    const respuesta = await app.request('/v1/consultas/mis_locales', {
+      headers: { authorization: 'Bearer un-token' },
+    });
+    // Con puertos de mentira la consulta se rompe al llegar al SQL, pero la
+    // puerta la pasa, que es lo que se comprueba.
+    expect(respuesta.status).not.toBe(401);
+  });
+
+  it('**la cabecera `x-persona-id` ya no vale para nada**', async () => {
+    // Es media M4: mientras estuvo puesta, cualquiera podia escribir aqui el
+    // identificador de otra persona y ver sus datos llamando a la API a pelo
+    // (regla 4). Si esta prueba deja de pasar, se ha vuelto a abrir esa puerta.
+    const { app } = api();
+    const respuesta = await app.request('/v1/consultas/mis_locales', {
+      headers: { 'x-persona-id': '11111111-1111-1111-1111-111111111111' },
+    });
+
+    expect(respuesta.status).toBe(401);
+    expect((await cuerpoDe(respuesta)).error?.codigo).toBe('sin_sesion');
   });
 });

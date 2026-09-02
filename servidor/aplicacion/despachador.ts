@@ -1,9 +1,10 @@
 import type { CodigoDeError } from '@estook/dominio';
-import { FalloDeAplicacion, type Contexto } from './contrato.ts';
+import type { SesionViva } from '../infraestructura/postgres.ts';
+import { FalloDeAplicacion, type Contexto, type Puertas } from './contrato.ts';
 import { catalogo } from './catalogo.ts';
 
 /**
- * El despachador (M2).
+ * El despachador (M2, con las puertas de M4).
  *
  * Aquí vive la orquestación: abrir la transacción, mirar la idempotencia,
  * ejecutar el caso de uso y anotar el resultado. Es el corazón de M2.
@@ -15,16 +16,35 @@ import { catalogo } from './catalogo.ts';
  *
  * Y **no conoce HTTP**: devuelve un resultado, no una respuesta. Traducirlo a
  * códigos y cabeceras es cosa de `servidor/api`.
+ *
+ * ── Lo que M4 añade, y por qué está aquí y no en cada operación ──────────────
+ *
+ * Tres estados en los que dejar pasar sería un fallo: sin sesión, con la sesión
+ * a medias esperando el segundo factor, y con una contraseña que puso otra
+ * persona. Se comprueban **en un solo sitio, antes de ejecutar nada**, y la
+ * excepción se declara en la operación.
+ *
+ * Es la misma idea que las políticas de M1: la regla no se cumple porque quien
+ * escribe se acuerde de comprobarla, se cumple porque no hay camino que la
+ * rodee. Si mañana alguien añade la operación número cuarenta y se olvida de
+ * mirar la sesión, el despachador la mira por él.
  */
 
 export interface QuienLlama {
-  readonly personaId: string | null;
+  /**
+   * El token de sesión que trajo la petición, o nulo. **Ya no es la persona**:
+   * desde M4 quien llama no dice quién es, lo demuestra (regla 4).
+   *
+   * Viaja como texto y no se registra en ningún sitio. Convertirlo en la huella
+   * que guarda la base de datos es cosa de la infraestructura.
+   */
+  readonly tokenDeSesion: string | null;
   readonly correlacionId: string;
 }
 
 /** Los puertos. La implementación de verdad se inyecta. */
 export interface Puertos {
-  /** Abre una transacción como `estook_api`, en nombre de quien llama. */
+  /** Abre una transacción como `estook_api`, resolviendo antes la sesión. */
   enTransaccion<T>(quien: QuienLlama, hacer: (contexto: Contexto) => Promise<T>): Promise<T>;
 
   /** Mira si esa clave ya se usó. */
@@ -69,6 +89,32 @@ export interface Despachador {
   ): Promise<Resultado>;
 }
 
+/**
+ * Las tres puertas, en orden.
+ *
+ * Devuelve el código de error si no se pasa, y nulo si se pasa. Se llama **dentro
+ * de la transacción**, porque hasta entonces no se sabe si el token valía.
+ */
+function porQueNoPasa(puertas: Puertas, sesion: SesionViva | null): CodigoDeError | null {
+  if (sesion === null) {
+    return puertas.sinSesion ? null : 'sin_sesion';
+  }
+
+  // Una sesión abierta pero sin superar el segundo factor no vale para nada más
+  // que superarlo o irse. Si valiera, exigir doble factor sería decorativo.
+  if (!sesion.dobleFactorSuperado && !puertas.aunSinDobleFactor) {
+    return 'falta_doble_factor';
+  }
+
+  // La contraseña que te dio otra persona la sabe otra persona. Se puede mirar,
+  // pero no cambiar nada hasta ponerse una propia.
+  if (sesion.debeCambiarClave && !puertas.aunConClavePorCambiar) {
+    return 'clave_por_cambiar';
+  }
+
+  return null;
+}
+
 export function crearDespachador(puertos: Puertos): Despachador {
   return {
     async consultar(quien, nombre, entrada) {
@@ -85,10 +131,17 @@ export function crearDespachador(puertos: Puertos): Despachador {
       }
 
       return conFallosTraducidos(async () =>
-        puertos.enTransaccion(quien, async (contexto) => ({
-          estado: 'ok' as const,
-          datos: await laConsulta.ejecutar(contexto, validada.data),
-        })),
+        puertos.enTransaccion(quien, async (contexto): Promise<Resultado> => {
+          // Leer con la contraseña por cambiar sí se puede: lo que no se puede
+          // es cambiar nada. Por eso la puerta de la clave no aplica a consultas.
+          const cerrada = porQueNoPasa(
+            { ...laConsulta, aunConClavePorCambiar: true },
+            contexto.sesion,
+          );
+          if (cerrada) return { estado: 'fallo', codigo: cerrada };
+
+          return { estado: 'ok', datos: await laConsulta.ejecutar(contexto, validada.data) };
+        }),
       );
     },
 
@@ -118,6 +171,9 @@ export function crearDespachador(puertos: Puertos): Despachador {
 
       return conFallosTraducidos(async () =>
         puertos.enTransaccion(quien, async (contexto): Promise<Resultado> => {
+          const cerrada = porQueNoPasa(elComando, contexto.sesion);
+          if (cerrada) return { estado: 'fallo', codigo: cerrada };
+
           const recuerdo = await puertos.recordar(
             contexto,
             claveDeIdempotencia,

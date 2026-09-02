@@ -13,6 +13,11 @@ export default tseslint.config(
       '**/coverage/**',
       '**/playwright-report/**',
       '_publicacion/**',
+      // El punto de entrada de la Edge Function corre en **Deno**, no en Node:
+      // usa `Deno.serve` y no esta en ningun tsconfig de aqui, asi que este
+      // linter no sabe analizarlo. Son cuatro lineas que solo enchufan la API ya
+      // probada a su servidor; lo que hay que revisar de ellas se revisa leyendo.
+      'supabase/functions/**',
     ],
   },
 

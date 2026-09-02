@@ -68,10 +68,20 @@ const locales = Object.fromEntries(
 );
 await directo.end();
 
-const pedir = (camino, cabeceras = {}) => api.request(camino, { headers: cabeceras });
+/**
+ * El prefijo que Supabase pone delante de todo.
+ *
+ * Las funciones se sirven en `/functions/v1/<nombre>/...` y la funcion recibe la
+ * ruta **con su propio nombre delante**. Se pone aqui, y no dentro de cada
+ * llamada, para que esta herramienta pida exactamente igual que pide el
+ * navegador contra el despliegue de verdad.
+ */
+const RAIZ = '/api';
+
+const pedir = (camino, cabeceras = {}) => api.request(RAIZ + camino, { headers: cabeceras });
 
 const mandar = (camino, cuerpo, cabeceras = {}) =>
-  api.request(camino, {
+  api.request(RAIZ + camino, {
     method: 'POST',
     headers: { 'content-type': 'application/json', ...cabeceras },
     body: JSON.stringify(cuerpo),

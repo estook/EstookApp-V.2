@@ -63,7 +63,9 @@ export default defineConfig({
     // dieciocho migraciones, y las aplicaciones no sirven de nada sin ella.
     {
       command: 'pnpm api:pruebas',
-      url: 'http://localhost:5177/salud',
+      // Con `/api` delante, como en el despliegue: Supabase le pasa a la funcion
+      // la ruta con su propio nombre, asi que la API entera cuelga de ahi.
+      url: 'http://localhost:5177/api/salud',
       reuseExistingServer: !enCI,
       // Migraciones y semillas contra un Postgres compilado a WebAssembly. En una
       // maquina lenta pasa del minuto.

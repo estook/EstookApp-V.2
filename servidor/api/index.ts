@@ -89,8 +89,27 @@ function cabecerasDeCors(origen: string): Record<string, string> {
   };
 }
 
+/**
+ * La raiz bajo la que cuelga todo, y por que no es `/`.
+ *
+ * Supabase sirve las funciones en `/functions/v1/<nombre>/...` y **le pasa a la
+ * funcion la ruta con su propio nombre delante**. La nuestra se llama `api`, asi
+ * que una peticion a `/functions/v1/api/salud` llega aqui como `/api/salud`.
+ *
+ * Sin esto, la funcion se desplegaba bien y contestaba `404 Not Found` a todo,
+ * que es de los errores mas desconcertantes que hay: parece que no esta
+ * desplegada cuando lo esta y esta funcionando.
+ *
+ * Va aqui, en la aplicacion, y **no quitando el prefijo en el fichero de
+ * Supabase**, que era la otra opcion. Quitarlo alli haria que la API desplegada
+ * atendiera rutas distintas de las que se prueban aqui, y eso es exactamente el
+ * agujero por el que se colo este fallo: un camino que solo existe en
+ * produccion. Asi lo que se prueba y lo que se despliega son la misma cosa.
+ */
+export const RAIZ_DE_LA_API = '/api';
+
 export function crearApi(despachador: Despachador) {
-  const api = new Hono<{ Variables: Variables }>();
+  const api = new Hono<{ Variables: Variables }>().basePath(RAIZ_DE_LA_API);
 
   // Toda peticion lleva su hilo, venga de fuera o se cree aqui.
   api.use('*', async (c, siguiente) => {

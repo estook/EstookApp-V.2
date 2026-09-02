@@ -21,7 +21,11 @@
  */
 import { spawnSync } from 'node:child_process';
 
-const DIRECCION = process.env['VITE_API_URL'] ?? 'http://localhost:5177';
+// Con `/api` al final, y no es un adorno: Supabase le pasa a la funcion la
+// ruta con su propio nombre delante, asi que la API cuelga de `/api`. Si aqui
+// se pusiera la raiz pelada, el e2e probaria unas rutas y el despliegue serviria
+// otras, que es justo como se colo el 404 del primer despliegue.
+const DIRECCION = process.env['VITE_API_URL'] ?? 'http://localhost:5177/api';
 
 function corre(comando, ...argumentos) {
   const salida = spawnSync(comando, argumentos, {

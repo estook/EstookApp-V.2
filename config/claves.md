@@ -36,10 +36,16 @@ cargando para siempre.
 **Dos, desde M4**, y son los primeros. Los dos son para desplegar la API, no del
 producto: no acaban en el navegador de nadie.
 
-| Nombre                  | Que es                                           |
-| ----------------------- | ------------------------------------------------ |
-| `SUPABASE_ACCESS_TOKEN` | Se saca en supabase.com/dashboard/account/tokens |
-| `SUPABASE_PROJECT_REF`  | El identificador del proyecto                    |
+| Nombre                 | Que es                                           |
+| ---------------------- | ------------------------------------------------ |
+| `TOKEN_DE_SUPABASE`    | Se saca en supabase.com/dashboard/account/tokens |
+| `PROYECTO_DE_SUPABASE` | El identificador del proyecto                    |
+
+**Van en castellano a proposito.** La primera version se llamaban
+`SUPABASE_ACCESS_TOKEN` y `SUPABASE_PROJECT_REF`, y con esos nombres acabaron
+donde no iban: en la consola de Supabase, que **reserva el prefijo `SUPABASE_`**
+y los rechaza con un error que no explica por que. Un nombre que se parece al de
+otro sitio es un nombre que acabara en otro sitio.
 
 Sin ellos, el flujo `Desplegar la API` se para y dice que faltan. Se lanza a mano
 desde la pestana Actions, escribiendo «desplegar»: poner los datos de verdad al

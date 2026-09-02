@@ -98,8 +98,8 @@ encendido y el repositorio enlazado.
 
 **Variables del repositorio:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
 `VITE_APP_URL` y `VITE_SENTRY_DSN`. **Falta `VITE_API_URL`**, que es el paso 4.
-En Secrets **faltan los dos de M4**: `SUPABASE_ACCESS_TOKEN` y
-`SUPABASE_PROJECT_REF`. Todo en [`config/claves.md`](config/claves.md).
+En Secrets **faltan los dos de M4**: `TOKEN_DE_SUPABASE` y
+`PROYECTO_DE_SUPABASE`. Todo en [`config/claves.md`](config/claves.md).
 
 **El peso real de lo publicado**, medido con `pnpm tamano`:
 

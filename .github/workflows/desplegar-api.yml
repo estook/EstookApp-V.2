@@ -7,8 +7,16 @@ name: Desplegar la API
 #
 # GitHub → Settings → Secrets and variables → Actions → **Secrets**:
 #
-#   SUPABASE_ACCESS_TOKEN   se saca en supabase.com/dashboard/account/tokens
-#   SUPABASE_PROJECT_REF    el identificador del proyecto (efgtzujwjztihyiwgpwg)
+#   TOKEN_DE_SUPABASE      se saca en supabase.com/dashboard/account/tokens
+#   PROYECTO_DE_SUPABASE   el identificador del proyecto (efgtzujwjztihyiwgpwg)
+#
+# **Los nombres van en castellano, y no es por gusto.** La primera version se
+# llamaban `SUPABASE_ACCESS_TOKEN` y `SUPABASE_PROJECT_REF`, y eso llevo a
+# ponerlos en el sitio equivocado: en la consola de Supabase, que **reserva el
+# prefijo `SUPABASE_`** y los rechaza con un error que no explica por que.
+#
+# Un nombre que se parece al de otro sitio es un nombre que acabara en otro sitio.
+# Estos dos solo pueden ir en GitHub, y ahora se nota al leerlos.
 #
 # Son los dos primeros secretos del repositorio. Hasta ahora no habia ninguno, y
 # era correcto: lo publico iba en Variables y lo secreto vivia solo en Supabase.
@@ -52,10 +60,13 @@ jobs:
 
       - name: Comprobar que estan los secretos
         run: |
-          if [ -z "${{ secrets.SUPABASE_ACCESS_TOKEN }}" ] || [ -z "${{ secrets.SUPABASE_PROJECT_REF }}" ]; then
-            echo "Faltan SUPABASE_ACCESS_TOKEN o SUPABASE_PROJECT_REF."
-            echo "Se declaran en Settings -> Secrets and variables -> Actions -> Secrets."
-            echo "Esta escrito en config/claves.md."
+          if [ -z "${{ secrets.TOKEN_DE_SUPABASE }}" ] || [ -z "${{ secrets.PROYECTO_DE_SUPABASE }}" ]; then
+            echo "Faltan TOKEN_DE_SUPABASE o PROYECTO_DE_SUPABASE."
+            echo ""
+            echo "Van en GITHUB, no en Supabase:"
+            echo "  Settings -> Secrets and variables -> Actions -> pestana Secrets"
+            echo ""
+            echo "Esta escrito en docs/pasos-para-cerrar-m4.md."
             exit 1
           fi
 
@@ -67,16 +78,19 @@ jobs:
 
       - name: Desplegar la funcion
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          # Este nombre **si** es el de Supabase, y no se puede cambiar: es la
+          # variable que lee su propio programa de linea de comandos. Lo que
+          # cambia es de donde sale, que es nuestro secreto en castellano.
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.TOKEN_DE_SUPABASE }}
         run: |
           supabase functions deploy api \
-            --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}" \
+            --project-ref "${{ secrets.PROYECTO_DE_SUPABASE }}" \
             --no-verify-jwt
 
       - name: Comprobar que responde
         run: |
           set -euo pipefail
-          DIRECCION="https://${{ secrets.SUPABASE_PROJECT_REF }}.supabase.co/functions/v1/api/salud"
+          DIRECCION="https://${{ secrets.PROYECTO_DE_SUPABASE }}.supabase.co/functions/v1/api/salud"
 
           # Un despliegue que no responde es un despliegue que no ha pasado.
           for intento in 1 2 3 4 5; do

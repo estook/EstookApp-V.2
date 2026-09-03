@@ -2,6 +2,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
 import { Migas, Tarjeta, TodaviaNo, appPorId, type App } from '@estook/ui';
 import { QuienTieneAcceso } from './QuienTieneAcceso.tsx';
+import { Inventario } from '../inventario/Inventario.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -22,15 +23,24 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * mano. Esconder el boton no protege nada (principio 7): la comprobacion esta
  * aqui ademas de en la rueda, y las politicas de M1 la respaldan por debajo.
  */
+/**
+ * En qué módulo se construye cada una.
+ *
+ * Los números salen de la parte D del Plan de desarrollo y **no de la memoria**:
+ * estaban mal en cinco de las ocho —Escandallos ponía M8 y es M9, Negocio ponía
+ * M17 y es M21— y eso es exactamente lo que Richi encontró mirando la aplicación
+ * en su móvil en M5: «un texto que no encajaba con el aparato que tenías
+ * delante». Hay una prueba al lado que los cuadra con el Plan.
+ */
 const EN_QUE_MODULO: Readonly<Record<string, string>> = {
   inventario: 'M6 · Inventario',
-  escandallos: 'M8 · Escandallos',
-  carta: 'M9 · Carta',
-  calendario: 'M11 · Calendario',
-  equipo: 'M10 · Equipo',
-  servicio: 'M12 · Servicio',
-  negocio: 'M17 · Negocio',
-  cuaderno: 'M15 · Cuaderno',
+  escandallos: 'M9 · Escandallos',
+  carta: 'M10 · Carta, menús y análisis',
+  calendario: 'M14 · Calendario',
+  equipo: 'M13 · Equipo',
+  servicio: 'M16 · Servicio, APPCC y trazabilidad',
+  negocio: 'M21 · Negocio, analítica y Estook Pulse',
+  cuaderno: 'M17 · Cuaderno',
 };
 
 export function PantallaDeApp() {
@@ -111,11 +121,17 @@ function Dentro({
       </header>
 
       {/*
-        La única pestaña con contenido de verdad hoy, y es de M4: dar acceso,
-        quitarlo y devolverlo. El resto de Equipo —contratos, horas, ausencias y
-        documentos— llega en M10, y esta pantalla se queda donde está.
+        Lo que ya funciona de verdad, y de qué módulo es cada cosa:
+
+          Inventario entera        M6 · el género, sus precios y su libro
+          Equipo → Personas        M4 · dar acceso, quitarlo y devolverlo
+
+        El resto de Equipo —contratos, horas, ausencias y documentos— llega en
+        M13, y esta pantalla se queda donde está.
       */}
-      {app.id === 'equipo' && pestana.id === 'personas' ? (
+      {app.id === 'inventario' ? (
+        <Inventario pestana={pestana.id} />
+      ) : app.id === 'equipo' && pestana.id === 'personas' ? (
         <QuienTieneAcceso />
       ) : (
         <Tarjeta acento={app.acento} titulo={pestana.nombre}>

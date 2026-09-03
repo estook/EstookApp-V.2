@@ -850,6 +850,107 @@ try {
   // primer paso. La restriccion ya lo impide; esto lo mira en los datos.
   comprobar('y ni un recado pegado en un alta ya terminada', recado.pegados === 0);
 
+  titulo('M6 · lo que la 0023 dejo puesto');
+
+  // ── Por que esta seccion se salta en vez de gritar ─────────────────────────
+  //
+  // Porque la regla 1 de «como trabajamos» es «primero fusionar, despues aplicar
+  // a Supabase»: hay un rato normal y correcto en el que el codigo de M6 esta en
+  // `main` y la 0023 todavia no esta puesta. Marcar eso como MAL seria gritar
+  // cuando todo esta bien, que es justo lo que costo una tarde en M5.
+  //
+  // Asi que si la migracion no esta, se dice y se cuentan aparte.
+  const [cuantasMigraciones] = await conexion`
+    select coalesce(max(numero), 0)::int as ultima from estook.migracion
+  `;
+
+  if (cuantasMigraciones.ultima < 23) {
+    noSePuede(`la 0023 todavia no esta aplicada · la base va por la ${cuantasMigraciones.ultima}`);
+  } else {
+    const [inventario] = await conexion`
+      select (
+        select count(*)::int from pg_class c
+         where c.relnamespace = 'estook'::regnamespace and c.relkind = 'r'
+           and c.relname in (
+             'proveedor','categoria_de_producto','categoria_de_partida','producto',
+             'precio_de_producto','lote','movimiento_de_stock'
+           )
+           and c.relrowsecurity
+      ) as tablas_con_rls,
+      (
+        select count(*)::int from pg_class c
+         where c.relnamespace = 'estook'::regnamespace and c.relkind = 'v'
+           and c.relname = 'existencias'
+           and 'security_invoker=true' = any(c.reloptions)
+      ) as vista_con_invoker,
+      (
+        select has_table_privilege('estook_api', 'estook.movimiento_de_stock', 'UPDATE')
+      ) as puede_modificar_el_libro,
+      (
+        select count(*)::int from pg_proc
+         where pronamespace = 'estook'::regnamespace
+           and proname = 'sembrar_categorias' and prosecdef
+      ) as siembra_con_privilegio,
+      (
+        select has_function_privilege(
+          'public',
+          (select oid from pg_proc
+            where pronamespace = 'estook'::regnamespace and proname = 'sembrar_categorias'),
+          'execute'
+        )
+      ) as la_siembra_es_publica,
+      (
+        select count(*)::int from estook.local l
+         where l.tipo is not null
+           and not exists (
+             select 1 from estook.categoria_de_producto c where c.local_id = l.id
+           )
+      ) as locales_sin_categorias,
+      (
+        select count(*)::int from estook.categoria_de_partida
+      ) as categorias_de_serie,
+      (
+        select count(*)::int from estook.movimiento_de_stock m
+         where m.cantidad = 0
+      ) as movimientos_vacios
+    `;
+
+    comprobar(
+      'las siete tablas de inventario, con seguridad por filas',
+      inventario.tablas_con_rls === 7,
+      `hay ${inventario.tablas_con_rls}`,
+    );
+    // Sin esto, la vista se ejecutaria con los permisos de su dueno y se
+    // saltaria la seguridad por filas entera: un local veria el stock de otro.
+    comprobar(
+      'la vista de existencias se ejecuta con los permisos de quien pregunta',
+      inventario.vista_con_invoker === 1,
+    );
+    // Regla 8 del Plan: el stock no se sobreescribe, se anade un movimiento.
+    comprobar(
+      'el libro de movimientos NO se puede modificar',
+      inventario.puede_modificar_el_libro === false,
+    );
+    comprobar('y ni un movimiento de cero se ha colado', inventario.movimientos_vacios === 0);
+    comprobar(
+      'sembrar_categorias es la unica puerta de atras de M6',
+      inventario.siembra_con_privilegio === 1,
+    );
+    comprobar('y no la puede ejecutar cualquiera', inventario.la_siembra_es_publica === false);
+    comprobar(
+      'las categorias de serie estan, por tipo de local',
+      inventario.categorias_de_serie > 0,
+      `hay ${inventario.categorias_de_serie}`,
+    );
+    // «Nunca vacio: vienen de serie» (Auditoria, parte 3). Si un local con tipo
+    // se queda sin categorias, su desplegable sale vacio.
+    comprobar(
+      'y ni un local con tipo se ha quedado sin las suyas',
+      inventario.locales_sin_categorias === 0,
+      `${inventario.locales_sin_categorias} sin categorias`,
+    );
+  }
+
   await conexion.end();
 } catch (fallo) {
   console.error(`\n  Se ha roto: ${fallo instanceof Error ? fallo.message : String(fallo)}`);

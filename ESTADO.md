@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 3 de septiembre de 2026
+Última actualización: 3 de septiembre de 2026 · M6 construido, probado y sin fusionar
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. Nunca puede afirmar algo que no sea cierto en ese momento.
@@ -9,15 +9,15 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------- |
-| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** onboarding y arranque |
-| **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                   |
-| **Pruebas**    | 617 unitarias y de base de datos · 170 de extremo a extremo                           |
-| **Rama**       | Todo en `main`. M5 entró en cuatro pull requests: #24, #25, #26 y #27                 |
-| **Publicado**  | Web, app y API vivas y al día. Base en la `0022`. **Probado en un móvil de verdad**   |
-| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
-| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
+|                |                                                                                              |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario        |
+| **Siguiente**  | **M7** · Proveedores y compras                                                               |
+| **Pruebas**    | 692 unitarias y de base de datos · 190 de extremo a extremo                                  |
+| **Rama**       | M6 está en la rama `m6-inventario`, **sin fusionar todavía**                                 |
+| **Publicado**  | Web, app y API vivas. La base de Supabase sigue en la `0022`: **la `0023` está sin aplicar** |
+| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                 |
+| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local        |
 
 ---
 
@@ -64,7 +64,13 @@ específico. Si de verdad se contradicen, se para y se pregunta (regla 13).
 
 **M5 está cerrado.** Se probó en un móvil de verdad el 3 de septiembre de 2026 y
 funciona: el alta entera, la tarjeta del Panel, invitar a mano, y la guía de
-instalación donde toca. Lo que queda es de M6 en adelante.
+instalación donde toca.
+
+**M6 está construido y probado, y NO está fusionado ni aplicado.** Eso es lo
+primero que hay que hacer, y son tres pasos en este orden, que es la regla 1 de
+«cómo trabajamos»: fusionar el pull request → aplicar la `0023` a Supabase →
+mirarlo en el móvil. Los pasos, uno a uno, están en
+[`docs/pasos-para-cerrar-m6.md`](docs/pasos-para-cerrar-m6.md).
 
 ### Lo único que sigue abierto de M5
 
@@ -80,21 +86,33 @@ instalación donde toca. Lo que queda es de M6 en adelante.
 probado y **no lo llama nadie**: no hay reloj. Eso significa que la bandeja de
 eventos se llena y no se vacía, y que las claves de idempotencia no se limpian.
 
-Nada de eso se pierde ni rompe nada hoy, porque tampoco hay quien escuche los
-eventos. Pero M8 sí los va a necesitar, así que hay que elegir entre `pg_cron`
-dentro de Supabase, una acción programada de GitHub, o un servicio aparte. **Es
-una decisión de Richi**, y no se inventa.
+Nada de eso se pierde ni rompe nada hoy. Hay que elegir entre `pg_cron` dentro de
+Supabase, una acción programada de GitHub, o un servicio aparte. **Es una
+decisión de Richi**, y no se inventa.
+
+**M6 se preguntó esto y siguió sin decidirlo, a propósito.** Su ficha decía que
+tenía que escuchar `local.creado` para sembrar las categorías de un local nuevo,
+y eso parecía necesitar el reloj. No lo necesita, y la razón importa: **un local
+que se queda cinco minutos sin categorías es un local roto**, así que sembrar no
+puede ser un proceso de fondo aunque lo hubiera. Se hace en el mismo instante y
+en la misma transacción, con una **reacción**
+([decisión 0014](docs/decisiones/0014-las-reacciones-entre-modulos.md)).
+
+Lo que sigue esperando al reloj es lo que **sí puede esperar**: vaciar la bandeja
+de eventos y limpiar las claves de idempotencia. M6 publica cinco eventos nuevos,
+así que la bandeja crece más deprisa que antes. Sigue sin romper nada, y sigue
+habiendo que decidirlo antes de M8.
 
 ### Cómo quedó el estado de la base y del despliegue
 
-| Qué                | Cómo está                                                     |
-| ------------------ | ------------------------------------------------------------- |
-| Migraciones        | Hasta la `0022`, aplicadas en Supabase                        |
-| Semillas           | Puestas, **sin credenciales de ejemplo**: la semilla se niega |
-| Cuentas de ejemplo | Cerradas. Ninguna puede entrar                                |
-| Cuenta de verdad   | La de Ricardo, con su organización y su local                 |
-| API                | Desplegada y al día                                           |
-| Web y app          | Publicadas y al día                                           |
+| Qué                | Cómo está                                                           |
+| ------------------ | ------------------------------------------------------------------- |
+| Migraciones        | En el repositorio hasta la `0023`; **en Supabase, hasta la `0022`** |
+| Semillas           | Puestas, **sin credenciales de ejemplo**: la semilla se niega       |
+| Cuentas de ejemplo | Cerradas. Ninguna puede entrar                                      |
+| Cuenta de verdad   | La de Ricardo, con su organización y su local                       |
+| API                | Desplegada y al día                                                 |
+| Web y app          | Publicadas y al día                                                 |
 
 `pnpm bd:comprobar-api` pasa sin un solo fallo, con once comprobaciones que allí
 no se pueden hacer porque necesitan cuentas de ejemplo, que en una base remota no
@@ -236,31 +254,32 @@ El **catálogo del sistema de diseño** está en `/admin/`.
 gratuito. La conexión va por el agrupador de sesión, porque la directa de los
 proyectos nuevos solo funciona por IPv6.
 
-Leído de la base de datos de verdad el 3 de septiembre de 2026, **antes de
-aplicar lo de M5**:
+Leído de la base de datos de verdad con `pnpm bd:comprobar` **al terminar de
+construir M6, y antes de aplicarla**:
 
-| Qué                            | Cuánto                                       |
-| ------------------------------ | -------------------------------------------- |
-| Migraciones aplicadas          | **19 de 21** · faltan la `0020` y la `0021`  |
-| Tablas en el esquema `estook`  | 23, **todas** con seguridad por filas        |
-| Roles · permisos · concesiones | 12 · 33 · 166                                |
-| Reglas fiscales                | 17, todas con su referencia legal            |
-| Datos de ejemplo               | 2 organizaciones, 7 locales, 8 personas      |
-| Personas de verdad             | **0**                                        |
-| La auditoría                   | añadir sí · modificar **no** · borrar **no** |
+| Qué                            | Cuánto                                                     |
+| ------------------------------ | ---------------------------------------------------------- |
+| Migraciones aplicadas          | **22 de 23** · falta la `0023`, que es la de M6            |
+| Tablas en el esquema `estook`  | 31, **todas** con seguridad por filas                      |
+| Roles · permisos · concesiones | 12 · 33 · 166                                              |
+| Reglas fiscales                | 17, todas con su referencia legal                          |
+| Organizaciones                 | 4 · `bar-centro`, `casa-lola`, `grupo-costa` e **`ikatz`** |
+| Personas de verdad             | **3** · Ricardo, y dos más en `ikatz`                      |
+| La auditoría                   | añadir sí · modificar **no** · borrar **no**               |
 
-Al aplicar la `0020` y la `0021` pasan a ser **31 tablas**, y las semillas añaden
-Casa Lola: la tercera organización, con un local y un gerente, **sembrada con el
-alta a medias a propósito** para poder recorrer la quinta comprobación sin crear
-un local a mano cada vez.
+**`ikatz` es el negocio de verdad**, con su gerente, su jefe de cocina y su
+dirección. Lo demás son las semillas de ejemplo, con sus cuentas cerradas desde
+el 3 de septiembre.
+
+**Al aplicar la `0023` pasan a ser 38 tablas**, y aparece la vista
+`estook.existencias`, que es la única del proyecto.
 
 **Las ocho personas de ejemplo tenían una contraseña publicada en este
 repositorio, y la API ya estaba desplegada cuando se vio.** Están cerradas desde
-el 3 de septiembre. Sigue arriba del todo, en «qué hay que hacer», porque dejó la
-base **sin ninguna cuenta con la que entrar**.
+el 3 de septiembre.
 
-**La API está desplegada y viva**, y se entra desde el móvil. La base está al día
-en la `0021`.
+**La API está desplegada y viva**, y se entra desde el móvil. La base está en la
+`0022`; la `0023` de M6 está construida y **sin aplicar**.
 
 **Errores:** proyecto `estook-app` en Sentry, con solo «Error monitoring»
 encendido y el repositorio enlazado.
@@ -274,17 +293,20 @@ encendido y el repositorio enlazado.
 
 | Aplicación      | Peso inicial | De los cuales tipografía |
 | --------------- | ------------ | ------------------------ |
-| `app`           | 216,6 KB     | 106,1 KB                 |
-| `admin`         | 182,5 KB     | 106,1 KB                 |
+| `app`           | 229,5 KB     | 106,1 KB                 |
+| `admin`         | 182,6 KB     | 106,1 KB                 |
 | `web` · `carta` | 164,2 KB     | 106,1 KB                 |
 
 De 250 de referencia, que desde la Evolución 1.0 **se mide y se informa, no
-bloquea**. **M5 entero le costó a `app` 11,1 KB**: las ocho pantallas del alta, la
-guía de instalación, las tres tarjetas del Panel y el reductor de imágenes.
+bloquea**. **M6 entero le costó a `app` 12,9 KB**: la pantalla «Hoy», la lista de
+productos con su buscador, el alta desde el catálogo, la ficha entera con sus
+tres hojas y la de proveedores.
 
-Quedan 33 KB de margen antes de la referencia, con Inventario, Escandallos, Carta,
-Calendario, Equipo, Servicio, Negocio, Cuaderno y Fogón por construir. **Las
-pantallas grandes van a tener que cargarse aparte**, como ya hace la gráfica.
+**Quedan 20,5 KB de margen, y aquí empieza a apretar de verdad.** Con
+Escandallos, Carta, Calendario, Equipo, Servicio, Negocio, Cuaderno y Fogón por
+construir, el siguiente módulo que traiga pantallas grandes **tendrá que cargarse
+aparte**, como ya hace la gráfica. No bloquea —la referencia se mide y se
+informa— pero conviene hacerlo por gusto y no por susto.
 
 La tipografía se cuenta **entera y a propósito**: una pantalla en castellano solo
 descarga el subconjunto `latin`, 38 KB. Si cabe contando de más, cabe seguro.
@@ -751,6 +773,197 @@ ninguno rompía nada por dentro.
 
 ---
 
+### M6 · Inventario
+
+**El género, lo que cuesta, y la primera capa inteligente del producto.**
+
+**Lo que hay:**
+
+- **El producto entero**: formato, unidad de uso, factor, rendimiento, peso
+  variable, código de barras, tipo impositivo, alérgenos, mínimo y proveedor
+  principal. **Solo el nombre es obligatorio**; todo lo demás tiene un valor por
+  defecto que se corrige después, porque un formulario de catorce casillas en la
+  puerta es la forma más segura de que nadie dé de alta su segundo producto.
+- **El alta en el buscador del catálogo de referencia.** Escribes «aceite» y sale
+  la ficha rellena con la cuenta hecha: «Garrafa de 5 l = 5000 ml para usar». Eso
+  lo construyó M5 y **no lo llamaba ninguna pantalla**; M6 es la primera.
+- **El stock es un libro de movimientos, y no hay ninguna tabla con una cantidad
+  editable.** Lo que hay en cámara es, literalmente, la última línea del libro:
+  `estook.existencias` es **una vista**, no una tabla. Dos sitios donde vive la
+  misma cifra son dos sitios que un día se separan.
+- **Tres preguntas, no tres tablas**: «ha llegado género», «ha salido género» y
+  **«ajustar lo que hay en cámara»**. Si el jefe de cocina dice que hay 4 kg, hay
+  4 kg: se apunta la diferencia con su motivo, y nadie se queda bloqueado por
+  cuadrar.
+- **Precios con vigencia y precio medio ponderado.** Cambiar el precio de hoy no
+  reescribe lo que costó en enero: se cierra la vigencia anterior y se abre la
+  nueva. Y **hay un precio vigente por proveedor**, que es lo que permite
+  compararlos.
+- **Lotes y caducidades**, con lo que caduca esta semana en la pantalla «Hoy».
+  Consumir primero lo que antes caduca es M8.
+- **El stock negativo se permite y se marca.** «Si el sistema dice que no queda
+  género, deja de creerse el sistema.»
+
+**Y su capa inteligente, que es lo que cambia con la Evolución 1.0:**
+
+- **Consumo medio diario**, con cuántos días se han mirado al lado. Siempre.
+- **Días de cobertura y previsión de agotamiento con fecha y hora**: «se agota
+  mañana a las 18:24».
+- **Sugerencia de pedido con su motivo escrito**: «mantener unos 5 días de
+  cobertura al ritmo al que se está gastando».
+- **Histórico de precio, y por proveedor.**
+- Y lo que **no** hace: con menos de siete días de historia **no predice nada**, y
+  dice por qué. Una previsión hecha con dos días es una corazonada con la
+  autoridad de estar escrita en la pantalla.
+
+**Nada de esto llama a un modelo, y es a propósito**: «las reglas van en código»
+(Evolución 1.0, capítulo 8). Bajo mínimo, días de cobertura y previsión son
+aritmética, y no gastan un solo crédito.
+
+**Lo que M6 puso en la base de datos:** la `0023`, con siete tablas —proveedor,
+categoría, categoría de partida, producto, precio, lote y el libro—, una vista,
+una función con privilegio y el buscador universal aprendiendo a encontrar
+género.
+
+#### Dónde vive cada cuenta, y por qué importa
+
+**Aquí no se calcula nada en SQL.** No hay ni un disparador que sume stock ni uno
+que pondere precios: toda la aritmética está en `packages/dominio/src/inventario.ts`,
+al lado del `precioMedioPonderado` que M2 escribió en `coste.ts`.
+
+Es la regla 6 aplicada donde más caro se paga. El día que un disparador de
+Postgres y el motor del dominio redondearan distinto, el valor de la cámara y el
+coste de los platos dejarían de cuadrar, y nadie sabría por qué.
+
+Lo que sí guarda cada línea del libro es **el saldo de después**. No es un segundo
+dueño del cálculo: es el resultado congelado del único dueño, como el saldo de
+una libreta. Y es lo que hace comprobable «el stock se reconstruye entero desde
+los movimientos»: se replica el libro con el motor y tiene que dar exactamente lo
+mismo, hasta la última milésima.
+
+#### Los proveedores mínimos, y por qué están en M6
+
+M7 es «Proveedores y compras» y es quien los desarrolla. Aquí nace **la ficha más
+corta que sostiene tres promesas escritas**: el «histórico de precio por
+proveedor» de la ficha de M6, el «pones tu precio y tu proveedor» del alta de un
+producto, y el desplegable de proveedores de la Auditoría. Un precio que no sabe
+de quién viene no se puede comparar con el de al lado.
+
+#### La reacción, que es la regla 14 dejando de ser una promesa
+
+M5 publicó `local.creado` y dejó escrito al lado: «M6 le siembra sus categorías».
+M6 lo cumple con una **reacción**: una lista en `servidor/aplicacion/reacciones.ts`
+donde un módulo declara qué hace cuando otro cambia algo, y que se ejecuta **en
+la misma transacción** del comando que la provoca.
+
+Va en la misma transacción y no en un proceso de fondo porque **un local que se
+queda cinco minutos sin categorías es un local roto**. Está razonado entero en la
+[decisión 0014](docs/decisiones/0014-las-reacciones-entre-modulos.md).
+
+#### Seis fallos que M6 encontró, y tres eran de antes
+
+**1 · El camino de grupo de M5 no funcionaba.** `crear_local` devolvía «esto no
+está en tu acceso» **a la propietaria de una cadena de seis locales**, que tiene
+todos los permisos que existen. Es decir: «con dos o más se ofrece duplicar el
+local» era mentira desde que se escribió.
+
+La causa es la que M4 dejó escrita para `estook.persona` en la `0019`, en otra
+tabla: **con `returning`, Postgres aplica además la política de lectura a la fila
+devuelta**, y la de `local` se escribe contra `locales_visibles()`, que es
+`stable`. Una función `stable` mira el instantáneo del principio de la sentencia,
+y **la fila que esa misma sentencia está insertando todavía no está ahí**. Falla
+con cualquier permiso.
+
+No lo vio nadie porque las semillas crean los locales con `insert` directo, sin
+pasar por el comando. Se arregla partiéndolo en dos sentencias, y hay dos pruebas
+nuevas: una comprueba el arreglo y **la otra comprueba que no abre la puerta**.
+
+**2 · Cinco operaciones registradas a las que no llegaba nadie**, y la peor era
+`catalogo_de_referencia`: el corazón de «un producto en quince segundos», hecho y
+probado desde M5, **sin ninguna pantalla que lo llamara**. También
+`cambiar_mi_idioma`, que existe desde M2 y no tenía sitio en Ajustes.
+
+Las encontró una prueba nueva, y esa prueba es lo más importante que deja M6
+(abajo).
+
+**3 · El buscador universal, reescrito de memoria.** Al añadirle el género se
+reescribió la función entera desde una lectura parcial, y se perdieron **dos
+bloques —organizaciones y áreas— y el umbral pasó de 0,18 a 0,3**. El umbral lo
+cazó una prueba en el acto: «Ignaico» dejó de encontrar a «Ignacio». Los dos
+bloques que faltaban **no los cazó ninguna**, porque ninguna preguntaba por
+ellos. Ahora hay una que lo hace.
+
+**4 · «Quitar los ejemplos» fallaba en cuanto hubiera un lote.** El libro
+apuntaba a su lote con `on delete set null`, y borrar un lote hace que Postgres
+lance un **`update`** sobre el libro, que es justo lo que su guardián rechaza. El
+botón de M5 se quedaba a medias **sin decir nada**. Va con `cascade`, y no abre
+ninguna puerta porque un lote no se borra solo.
+
+**5 · Los ejemplos nacían con la cámara en números rojos.** Tres bandejas de
+treinta huevos no aguantan tres semanas gastando veintidós al día: acababan en
+−372 unidades. Ahora la entrada sale del consumo.
+
+**6 · Y uno de las pruebas, hermano del que dejó M5.** `pnpm prueba:e2e` levanta
+la API con `reuseExistingServer`: si hay una API de pruebas viva de antes, **la
+reutiliza con el código viejo**. Costó tres intentos creer que un arreglo
+correcto no funcionaba. Antes de dar por bueno un rojo del servidor, se mata lo
+que esté escuchando en el 5177.
+
+#### Lo más importante que deja M6: la lección de M5, hecha prueba
+
+De los catorce fallos de M5, **seis los encontró mirar la aplicación en un
+móvil**, y la mayoría eran de la misma familia: algo construido, registrado y
+probado por dentro **a lo que la pantalla no llamaba**.
+
+`servidor/aplicacion/se-usan.prueba.ts` recorre el catálogo de operaciones y
+falla si alguna no aparece en el código de ninguna aplicación. Las excepciones se
+declaran **con su motivo escrito**, porque una excepción sin motivo es una
+excepción que se copia.
+
+No sabe si el botón se ve ni si la pantalla se alcanza —eso lo miran el e2e y un
+móvil de verdad—, pero caza exactamente el fallo que se coló tres veces:
+construir algo y no enchufarlo a nada. En cuanto se escribió encontró cinco.
+
+#### Cómo se comprueba que M6 está terminado
+
+Su criterio, punto por punto, es
+[`pruebas/e2e/inventario.spec.ts`](pruebas/e2e/inventario.spec.ts):
+
+| Criterio del Plan                                      | Cómo se comprueba                                                                           |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Un producto de alta en 30 segundos                     | Cronometrado **desde la pantalla**, con el catálogo de referencia, en escritorio y en móvil |
+| El coste y el medio ponderado con factor y rendimiento | Pulpo: caja de 5 kg al 55 %. Sube un 20 % el precio y el coste por gramo sube ese 20 %      |
+| El stock se reconstruye desde los movimientos          | Se replica el libro con el motor y se compara línea a línea con lo guardado                 |
+| La previsión acierta el día con consumo estable        | Un local nuevo con tres semanas de consumo sembrado, y la fecha cuadra con la cuenta        |
+
+Y la lista de la Auditoría de flujos, pasada punto por punto, en
+[`docs/auditorias/m6.md`](docs/auditorias/m6.md).
+
+#### Lo que M6 deja pendiente, dicho sin redondear
+
+- **No se ha mirado en un móvil de verdad** (regla 11), ni fusionado, ni aplicado
+  a Supabase. Es lo siguiente, y son tres pasos: `docs/pasos-para-cerrar-m6.md`.
+- **El mínimo se escribe a mano.** Calcularlo necesita saber qué días reparte
+  cada proveedor, y eso es M7 y M8.
+- **Los lotes se guardan y se avisa de lo que caduca, pero no se consume por
+  ellos.** Gastar primero lo que antes caduca es M8.
+- **La merma tiene su propio comando y su lista cerrada de motivos, y es M8.** La
+  comida del personal no es merma, y esa partida aparte no existe hasta que
+  exista el food cost.
+- **La entrada por foto de albarán y por dictado a Fogón** son M7 y M22. En M6 se
+  entra a mano, desde el catálogo, y buscando por código de barras.
+- **El código de barras se busca, no se escanea con la cámara.** Un lector de los
+  de verdad escribe como un teclado y ya funciona; la cámara llega cuando haya un
+  aparato con el que probarlo.
+- **`reactivar_producto` no tiene pantalla**: la lista de desactivados llega con
+  M8. Está apuntado en la prueba con su motivo.
+- **`mis_locales`, `mis_permisos` y `un_local` siguen registradas y sin
+  pantalla.** `quien_soy` las dejó sin trabajo en M4. Quitarlas de la API es una
+  decisión de producto, no de un módulo de inventario, y hay que tomarla a
+  propósito.
+
+---
+
 ## 5 · Cómo trabajamos
 
 1. **Primero fusionar, después aplicar a Supabase.** La base de datos nunca va
@@ -769,6 +982,17 @@ ninguno rompía nada por dentro.
    secas sirve lo ya construido, así que prueba el empaquetado anterior y pasa en
    verde sin haber visto el cambio. En integración continua no pasa, porque allí
    se construye antes; en local hay que acordarse.
+8. **Y si el rojo es del servidor, mira que no haya una API de pruebas viva de
+   antes.** Playwright la levanta con `reuseExistingServer`: si el puerto 5177 ya
+   está ocupado, **reutiliza la de antes con el código viejo**, y un arreglo
+   correcto sale en rojo. Es hermano del punto 7. Se mata lo que escuche ahí y se
+   repite.
+9. **Cuando aparezca una lección, se convierte en una prueba.** Escribirla en un
+   documento no la impide: M5 repitió el fallo del prefijo `SUPABASE_` con la
+   lección delante. De M6 salieron tres pruebas así: la que comprueba que cada
+   operación la usa alguien desde la pantalla, la que comprueba que al buscador
+   universal no se le ha caído un bloque, y la que comprueba que los ejemplos no
+   nacen en negativo.
 
 ---
 
@@ -791,6 +1015,7 @@ En [`docs/decisiones/`](docs/decisiones/):
 | **0011** | **Las pruebas de extremo a extremo levantan la API de verdad**    |
 | **0012** | **El producto nace en M6, y M5 le deja el diccionario**           |
 | **0013** | **Google Places se aplaza a M23**                                 |
+| **0014** | **Un módulo reacciona a otro en la misma transacción**            |
 
 Otras, sin fichero propio:
 
@@ -824,8 +1049,16 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   nombres están elegidos para no chocar con Tailwind.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`,
   `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0021`.** Se amplían con una `0022`, nunca se editan
+- **Las migraciones `0001` a `0023`.** Se amplían con una `0024`, nunca se editan
   (regla 2).
+- **El libro de movimientos** (`estook.movimiento_de_stock`). Solo se añade: no
+  tiene `update` concedido a nadie, un disparador lo rechaza y no hay política
+  que lo permita. Un movimiento equivocado **se enmienda con otro**, con su
+  motivo. Y `estook.existencias` es **una vista**: si algún día alguien la
+  convierte en tabla, habrá dos sitios donde vive la misma cifra.
+- **La aritmética del inventario vive en `packages/dominio/src/inventario.ts`.**
+  Ni un disparador de Postgres suma stock ni pondera precios, a propósito
+  (regla 6).
 - **El catálogo de referencia** (`0021`). Son datos de producto, como los roles o
   las reglas fiscales: se corrigen con una migración, no desde la aplicación. No
   tiene política de escritura, así que **no hay camino** ni para el gerente.
@@ -841,53 +1074,49 @@ después de fusionar.
 
 ---
 
-## 8 · El siguiente paso · M6
+## 8 · El siguiente paso · M7
 
-**Inventario**, y desde aquí **cada módulo nace ya con su capa inteligente
-dentro**: eso es lo que cambia con la Evolución 1.0 a partir de M6.
+**Proveedores y compras.** M6 le deja la ficha corta del proveedor ya montada, y
+M7 la completa: no la rehace.
 
-**Entra.** Productos con formato, unidad de uso, factor, rendimiento, peso
-variable, código de barras, tipo impositivo, alérgenos y mínimo · libro de
-movimientos con lote · ajuste manual como movimiento · precios con vigencia y
-precio medio ponderado · entrada por todas las vías · lotes y caducidades · ficha
-completa.
+**Entra.** Ficha con días de reparto y pedido mínimo · contratos marco · el ciclo
+`borrador → enviado → recibido` · sugerencia que respeta el calendario de reparto
+y el mínimo del proveedor · envío por WhatsApp, correo y PDF · recepción con
+«¿entero o con cambios?» · factura de compra conciliada con sus albaranes ·
+abonos y devoluciones.
 
-**Y su capa inteligente.** Consumo medio y velocidad de consumo por producto,
-**días de cobertura y previsión de agotamiento con fecha y hora**, e histórico de
-precio por proveedor.
+**Y su capa inteligente.** La sugerencia de pedido **con su motivo escrito** —que
+M6 ya calcula— respetando los días de reparto, y la comparación entre proveedores
+para el mismo producto.
 
-**Terminado cuando.** Se da de alta un producto en 30 segundos; al cambiar el
-precio, el coste por unidad de uso y el medio ponderado cambian bien en un
-producto con factor y rendimiento distintos de 1; el stock se reconstruye entero
-desde los movimientos; y la previsión de agotamiento acierta el día en un producto
-con consumo estable.
+**Terminado cuando.** Un pedido recorre el ciclo, el inventario cuadra, el precio
+nuevo ya está repercutido, y una factura con tres albaranes y una diferencia sale
+conciliada con esa diferencia señalada.
 
-**Lo que M5 le deja hecho:**
+**Lo que M6 le deja hecho:**
 
-- **El catálogo de referencia entero**, que es de donde se copia un producto.
-  Formato, factor, unidad de uso, rendimiento, categoría fiscal y alérgenos ya
-  puestos, con la cuenta explicada. **La mitad cara de «un producto en quince
-  segundos» ya está**: falta copiar la fila.
-- **El vocabulario**: `estook.unidad_de_uso`, los catorce alérgenos oficiales y
-  `comoSaleElCoste` en el dominio. M6 los hereda, no los inventa.
-- **Los objetivos**, que son los que ponen en verde o en rojo los semáforos de
-  todo lo que M6 empiece a medir.
-- **La maquinaria de datos de ejemplo.** M6 apunta sus productos en
-  `estook.dato_de_ejemplo` y el botón del Panel se entera solo: no hay que tocar
-  ni el comando ni la pantalla.
-- **La ficha fiscal del local rellena**, que es lo que el motor fiscal necesita
-  para ponerle un tipo a lo que se venda.
+- **El libro de movimientos y `apuntar`**, que es el único sitio del sistema que
+  escribe stock. Recibir un albarán es apuntar entradas: M7 no toca la cámara,
+  llama a lo que ya está.
+- **Los precios con vigencia y por proveedor.** «El albarán mueve stock; **la
+  factura confirma el precio**» (Auditoría, hallazgo 8) ya tiene dónde vivir: el
+  origen del precio es un catálogo cerrado con `albaran` y `factura` dentro,
+  esperando a M7.
+- **La ficha del proveedor**, con su pantalla, su alta y su desactivación.
+- **La sugerencia de pedido**, calculada y con su motivo. Lo que le falta es
+  mirar el calendario de reparto, que es de M7.
+- **El evento `precio.cambiado`**, con la variación dentro, publicándose desde
+  hoy.
 
-**Dos cosas que hay que decidir antes de M8, y M5 no las fuerza:**
+**Y dos cosas que hay que decidir, las mismas que dejó M5:**
 
-1. **Quién ejecuta los procesos de fondo.** La bandeja de salida, la cola de
-   trabajos y la limpieza de claves siguen sin ejecutarse. M5 no lo necesitaba
-   —el modo demostración limpia al entrar, y los eventos se publican sin que nadie
-   los lea, igual que antes— pero **M5 publica cinco eventos nuevos**, así que la
-   bandeja crece. Merece su decisión escrita.
-2. **La paginación de las listas.** M5 acotó el catálogo de referencia; el resto
-   sigue sin tope.
+1. **Quién ejecuta los procesos de fondo.** Sigue sin reloj, y ahora la bandeja
+   crece más deprisa: M6 publica cinco eventos nuevos. Nada se rompe, y hay que
+   decidirlo **antes de M8**.
+2. **Si se quitan de la API `mis_locales`, `mis_permisos` y `un_local`**, que
+   `quien_soy` dejó sin trabajo en M4.
 
-**Cómo se comprueba que M6 no ha roto lo de antes:** `pnpm verifica`,
+**Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa` y `pnpm bd:comprobar-api` contra Supabase. Los dos
-primeros pasan hoy; el tercero, cuando se apliquen la `0020` y la `0021`.
+primeros pasan hoy; el tercero, cuando se apliquen la `0020`, la `0021`, la `0022`
+y la `0023`.

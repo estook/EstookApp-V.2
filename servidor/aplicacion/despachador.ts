@@ -3,6 +3,7 @@ import type { Permiso } from '@estook/permisos';
 import type { SesionViva } from '../infraestructura/postgres.ts';
 import { FalloDeAplicacion, type Contexto, type Puertas } from './contrato.ts';
 import { catalogo } from './catalogo.ts';
+import { reaccionar } from './reacciones.ts';
 
 /**
  * El despachador (M2, con las puertas de M4).
@@ -201,7 +202,12 @@ export function crearDespachador(puertos: Puertos): Despachador {
           // respuesta seria guardar el token, o el PIN, en una tabla. Está
           // razonado en `conSecreto`, en el contrato.
           if (elComando.conSecreto) {
-            return { estado: 'ok', datos: await elComando.ejecutar(contexto, validada.data) };
+            const datos = await elComando.ejecutar(contexto, validada.data);
+            // También aquí, y no solo en el camino de abajo: un comando que
+            // devuelve un secreto no se recuerda, pero eso no lo exime de que
+            // otros módulos tengan que enterarse de lo que ha hecho.
+            await reaccionar(contexto);
+            return { estado: 'ok', datos };
           }
 
           const recuerdo = await puertos.recordar(
@@ -228,6 +234,12 @@ export function crearDespachador(puertos: Puertos): Despachador {
           }
 
           const datos = await elComando.ejecutar(contexto, validada.data);
+
+          // Y lo que otros módulos tengan que hacer por haber pasado esto (M6).
+          // Va aquí, en la misma transacción, y no dentro del comando: quien
+          // publica un evento no tiene por qué saber quién lo escucha. Está
+          // razonado entero en `reacciones.ts`.
+          await reaccionar(contexto);
 
           // En la MISMA transacción que el comando: si el comando se cae, la
           // clave queda libre para el reintento.

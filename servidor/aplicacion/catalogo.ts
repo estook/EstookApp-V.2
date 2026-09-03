@@ -33,7 +33,18 @@ import { cambiarMiClave, ponerClaveA, regenerarPin } from './comandos/mi-acceso.
 import { reactivarPersona } from './comandos/reactivar-persona.ts';
 import { retirarAcceso } from './comandos/retirar-acceso.ts';
 import { salir } from './comandos/salir.ts';
+import { crearCategoria, ponerLosEjemplos } from './comandos/categorias.ts';
+import { apuntarEntrada, apuntarSalida, ajustarStock } from './comandos/movimientos.ts';
+import { ponerPrecio } from './comandos/precios.ts';
+import {
+  cambiarProducto,
+  crearProducto,
+  desactivarProducto,
+  reactivarProducto,
+} from './comandos/productos.ts';
+import { cambiarProveedor, crearProveedor } from './comandos/proveedores.ts';
 import { buscar } from './consultas/buscar.ts';
+import { inventarioHoy, misProductos, misProveedores, unProducto } from './consultas/inventario.ts';
 import { catalogoDeReferencia, recetasDeReferencia } from './consultas/catalogo-de-referencia.ts';
 import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
@@ -71,6 +82,11 @@ export const catalogo = {
     [elAlta.nombre]: elAlta,
     [catalogoDeReferencia.nombre]: catalogoDeReferencia,
     [recetasDeReferencia.nombre]: recetasDeReferencia,
+    // M6 · el genero.
+    [inventarioHoy.nombre]: inventarioHoy,
+    [misProductos.nombre]: misProductos,
+    [unProducto.nombre]: unProducto,
+    [misProveedores.nombre]: misProveedores,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -123,5 +139,26 @@ export const catalogo = {
     [quitarLosEjemplos.nombre]: quitarLosEjemplos,
     [entrarEnDemostracion.nombre]: entrarEnDemostracion,
     [salirDeLaDemostracion.nombre]: salirDeLaDemostracion,
+
+    // ── M6 · inventario ───────────────────────────────────────────────────
+    //
+    // Ninguno se llama «crear movimiento» ni «editar existencias»: «la
+    // aplicacion no pregunta *que tabla quieres modificar*, pregunta *que
+    // quieres hacer*» (Evolucion 1.0, capitulo 14). Y ninguno escribe stock
+    // directo: los tres de abajo apuntan en el libro (regla 8).
+    [crearProducto.nombre]: crearProducto,
+    [cambiarProducto.nombre]: cambiarProducto,
+    [desactivarProducto.nombre]: desactivarProducto,
+    [reactivarProducto.nombre]: reactivarProducto,
+    // El precio exige `dato.precio_de_compra`, no `app.inventario`: un cocinero
+    // lleva Inventario entera y no ve lo que cuesta el genero.
+    [ponerPrecio.nombre]: ponerPrecio,
+    [apuntarEntrada.nombre]: apuntarEntrada,
+    [apuntarSalida.nombre]: apuntarSalida,
+    [ajustarStock.nombre]: ajustarStock,
+    [crearProveedor.nombre]: crearProveedor,
+    [cambiarProveedor.nombre]: cambiarProveedor,
+    [crearCategoria.nombre]: crearCategoria,
+    [ponerLosEjemplos.nombre]: ponerLosEjemplos,
   } as Record<string, Comando<never, unknown>>,
 };

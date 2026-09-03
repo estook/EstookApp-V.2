@@ -30,6 +30,34 @@ export async function publicar(sql: Sql, evento: EventoAPublicar): Promise<void>
   `;
 }
 
+/**
+ * Los eventos que ha publicado **esta misma peticion**, dentro de su transaccion.
+ *
+ * Es lo que permite que un modulo reaccione a lo que hace otro sin que el que lo
+ * provoca sepa quien escucha. La correlacion es unica por accion (M0), asi que
+ * esto devuelve exactamente los eventos de este comando y ninguno mas.
+ *
+ * Ojo con lo que **no** es: esto no vacia la bandeja ni marca nada como
+ * publicado. Los eventos se quedan ahi para quien los tenga que leer despues,
+ * cuando haya un reloj que ejecute los procesos de fondo. Quien los consume aqui
+ * es `servidor/aplicacion/reacciones.ts`, y lo hace **en la misma transaccion**.
+ */
+export async function deEstaPeticion(sql: Sql, correlacionId: string) {
+  return sql<
+    {
+      tipo: string;
+      datos: Record<string, unknown>;
+      organizacion_id: string;
+      local_id: string | null;
+    }[]
+  >`
+    select tipo, datos, organizacion_id, local_id
+      from estook.bandeja_de_salida
+     where correlacion_id = ${correlacionId}::uuid
+     order by id
+  `;
+}
+
 /** Lo que queda por publicar, para que lo recoja el worker. */
 export async function pendientes(sql: Sql, cuantos = 100) {
   return sql`

@@ -196,3 +196,42 @@ export {
 } from './referencia.ts';
 
 export type { UnidadDeUso, Alergeno } from './referencia.ts';
+
+// ── M6 · inventario · el libro de movimientos y la capa que predice ──────────
+//
+// Toda la aritmetica del stock vive aqui y no en la base de datos: el precio
+// medio ponderado ya tenia dueno en `coste.ts` desde M2, y escribirlo otra vez
+// en un disparador de Postgres serian dos duenos del mismo calculo (regla 6).
+export {
+  TIPOS_DE_MOVIMIENTO,
+  MOVIMIENTOS_DE_M6,
+  CAMARA_VACIA,
+  VENTANA_DE_CONSUMO,
+  DIAS_MINIMOS_PARA_PREDECIR,
+  DIAS_DE_COBERTURA_OBJETIVO,
+  ESTADOS_DEL_STOCK,
+  NOMBRE_DEL_ESTADO,
+  esTipoDeMovimiento,
+  siguienteEstado,
+  reconstruir,
+  ajusteHasta,
+  consumoMedioDiario,
+  diasDeCobertura,
+  previsionDeAgotamiento,
+  diaDeAgotamiento,
+  comoEsta,
+  urgenciaDe,
+  pedidoRecomendado,
+  comoHaCambiado,
+} from './inventario.ts';
+
+export type {
+  TipoDeMovimiento,
+  EstadoDelStock,
+  Movimiento,
+  Salida,
+  Consumo,
+  EstadoDeExistencias,
+  Sugerencia,
+  CambioDePrecio,
+} from './inventario.ts';

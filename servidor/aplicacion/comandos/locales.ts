@@ -137,7 +137,31 @@ export const crearLocal = comando<EntradaCrearLocal, SalidaCrearLocal>({
       });
     }
 
-    const creados = await contexto.sql<{ id: string }[]>`
+    // ── Y aquí va sin `returning`, que es lo que costó encontrar ─────────────
+    //
+    // **`insert ... returning` sobre `estook.local` falla siempre**, con
+    // cualquier permiso, y M6 lo encontró intentando crear un local para una
+    // prueba: «new row violates row-level security policy for table "local"».
+    //
+    // Es el mismo fallo que M4 dejó escrito para `estook.persona` en la 0019, con
+    // otra tabla: **con `returning`, Postgres aplica además la política de
+    // lectura a la fila devuelta**. Y la de `local` se escribe contra
+    // `locales_visibles()`, que es `stable`: una función `stable` mira el
+    // instantáneo del principio de la sentencia, y la fila que esa misma
+    // sentencia está insertando **todavía no está ahí**. Sea quien sea quien
+    // llame, y tenga los permisos que tenga.
+    //
+    // La consecuencia era que **el camino de grupo de M5 no funcionaba**: crear
+    // el segundo local de una cadena devolvía «esto no está en tu acceso» a la
+    // propietaria. No lo vio nadie porque las semillas crean los locales con
+    // `insert` directo, sin pasar por este comando.
+    //
+    // Se arregla partiéndolo en dos sentencias. La segunda es un `select` normal
+    // en la misma transacción, y **ese sí ve la fila**: cada sentencia toma su
+    // propio instantáneo. Sin funciones con privilegio y sin tocar la política.
+    // El código es único por organización (0001), así que el `select` no puede
+    // devolver otra cosa.
+    await contexto.sql`
       insert into estook.local (
         organizacion_id, area_id, codigo, nombre, zona_horaria, hora_de_corte,
         tipo, territorio, regimen, actividad, epigrafe_iae, modo_de_precio,
@@ -159,7 +183,11 @@ export const crearLocal = comando<EntradaCrearLocal, SalidaCrearLocal>({
         ${modelo?.color_de_marca ?? null},
         ${modelo?.provincia ?? null}
       )
-      returning id
+    `;
+
+    const creados = await contexto.sql<{ id: string }[]>`
+      select id from estook.local
+       where organizacion_id = ${organizacionId} and codigo = ${codigo}
     `;
 
     const localId = creados[0]?.id;

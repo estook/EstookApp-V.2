@@ -14,7 +14,7 @@
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓**                                   |
 | **M5**         | Construido, probado y fusionado. **Le falta la regla 11**: verlo en un móvil de verdad |
 | **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                    |
-| **Pruebas**    | 614 unitarias y de base de datos · 156 de extremo a extremo                            |
+| **Pruebas**    | 614 unitarias y de base de datos · 160 de extremo a extremo                            |
 | **Rama**       | M5 fusionado (PR #24). El repaso de cierre, en el PR #25, sin fusionar                 |
 | **Publicado**  | Web, app y API vivas, pero **la API sirve código de antes de M5**. Base en la `0021`   |
 | **Entrar**     | Nadie puede: no queda ninguna cuenta. Se arregla con `pnpm bd:cuenta-de-verdad`        |
@@ -627,6 +627,33 @@ error, no rompen ninguna prueba y no se ven hasta que alguien intenta usarlos.
    registrado y probado; la pantalla ofrecía «Elegir una imagen» y «Cambiar la
    imagen», nunca quitarla. Quien subía el logo de la cadena en vez del de su
    local podía sustituirlo, jamás volver a no tener ninguno.
+
+#### Y el peor de todos, que salió al intentar entrar de verdad
+
+**La pantalla «Pon una contraseña tuya» dejaba fuera a todo el mundo.**
+
+`cambiar_mi_clave` exige la contraseña actual cuando ya hay una puesta, y ahí
+siempre la hay: se acaba de entrar con ella. Esa regla del servidor es correcta
+—si no, a quien se dejara la sesión abierta en la tablet del pase le cambiarían
+la contraseña de un clic y se quedarían la cuenta—. Lo que faltaba era **pedirla**:
+la pantalla mandaba solo la nueva.
+
+Así que el servidor contestaba siempre «ese correo y esa contraseña no cuadran», y
+**no había forma de pasar de esa pantalla**. Afectaba a las cuentas creadas con
+`bd:cuenta-de-verdad` y a las invitadas con contraseña temporal: **las dos únicas
+maneras de entrar por primera vez en Estook**.
+
+La pantalla de Ajustes lo hacía bien desde el primer día. Solo estaba rota la
+obligatoria, que es la que pasa todo el mundo y por la que no había pasado nadie.
+No había ni una prueba que la recorriera; ahora hay una, y se comprobó rompiendo
+el arreglo a propósito antes de darla por buena.
+
+**De paso, un mensaje que mentía.** Una contraseña demasiado corta contestaba
+«Falta algo por rellenar. Los campos que faltan están marcados debajo», sin marcar
+ninguno, porque no faltaba ninguno. El servidor sí mandaba la frase concreta
+—«necesita al menos diez caracteres»— en `detalle.porque`, y `ErrorEnCristiano`
+la tiraba a la basura. Ahora la enseña, y el mínimo vive en `@estook/dominio`
+para que la ayuda de la pantalla y la regla que la rechaza no puedan discrepar.
 
 **Y una trampa de las pruebas, que casi las hace inútiles para la interfaz:**
 `pnpm prueba:e2e` levanta lo ya construido con `vite preview`, así que **prueba

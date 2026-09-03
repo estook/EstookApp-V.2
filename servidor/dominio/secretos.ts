@@ -28,6 +28,7 @@
  * no sirve para entrar. Quien se lleve la base de datos entera no se lleva una
  * sola sesion.
  */
+import { LARGO_MINIMO_DE_CLAVE } from '@estook/dominio';
 
 const ALGORITMO = 'pbkdf2-sha256';
 
@@ -42,8 +43,17 @@ export const VUELTAS = 210_000;
 /** Un PIN de seis digitos: un millon de combinaciones. */
 export const DIGITOS_DEL_PIN = 6;
 
-/** Lo minimo que se le pide a una contrasena. */
-export const LARGO_MINIMO_DE_CLAVE = 10;
+/**
+ * Lo minimo que se le pide a una contrasena.
+ *
+ * El numero vive en `@estook/dominio` porque **la pantalla tambien lo necesita**
+ * —para decirlo en la ayuda y para no mandar un viaje que ya sabe fallido— y las
+ * aplicaciones no pueden importar de `servidor/`. Se reexporta aqui para que
+ * quien lea estas reglas lo siga encontrando donde lo buscaria.
+ *
+ * Quien decide sigue siendo este fichero: la pantalla avisa, el servidor manda.
+ */
+export { LARGO_MINIMO_DE_CLAVE };
 
 // ── Azar ─────────────────────────────────────────────────────────────────────
 

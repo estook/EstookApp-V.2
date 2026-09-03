@@ -171,6 +171,13 @@ export type {
   Progreso,
 } from './onboarding.ts';
 
+// ── M4 · las reglas de acceso que la pantalla tambien necesita ───────────────
+//
+// El minimo de la contraseña lo comprueba el servidor, y ahi se queda la
+// decision. Aqui vive el numero, para que el texto de ayuda de la pantalla y la
+// regla que la rechaza no puedan discrepar (regla 6).
+export { LARGO_MINIMO_DE_CLAVE } from './acceso.ts';
+
 // ── M5 · parecido por trigramas · el mismo metodo que pg_trgm ────────────────
 //
 // Vivia en `@estook/ui` desde M3. Se muda aqui porque el servidor lo necesita

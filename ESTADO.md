@@ -109,7 +109,7 @@ credenciales, lo dice por pantalla y sigue con lo demás. Todo está en
 
 1. ~~Fusionar el pull request de M4~~ · hecho
 2. ~~`pnpm bd:migrar` y `pnpm bd:sembrar`~~ · hecho el 2 de septiembre
-3. ~~Desplegar la API y declarar `VITE_API_URL`~~ · hecho, y se entra desde el móvil
+3. ~~Desplegar la API y declarar `VITE_API_URL`~~ · hecho el 2 de septiembre
 4. ~~Cerrar las ocho cuentas de ejemplo~~ · hecho el 3 de septiembre
 5. ~~Aplicar la `0020` y la `0021` y volver a sembrar~~ · hecho el 3 de septiembre
 6. ~~Fusionar M5~~ · hecho, PR #24, el 3 de septiembre

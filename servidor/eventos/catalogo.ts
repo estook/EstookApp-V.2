@@ -31,6 +31,28 @@ export const EVENTOS = [
   'objetivo.cambiado',
   'local.ficha_cambiada',
   'ejemplos.quitados',
+  // ── M6 · el genero ───────────────────────────────────────────────────────
+  //
+  // Los cinco salen de la misma pregunta de la regla 14, y el de en medio es el
+  // que mas cuelga de el:
+  //
+  //   producto.creado       M9 lo puede meter en una ficha, el buscador lo indexa
+  //   producto.cambiado     si cambia el factor o el rendimiento, **multiplica**:
+  //                         el coste de todos los platos que lo llevan se mueve
+  //   producto.desactivado  las fichas que lo llevan quedan marcadas (M9)
+  //   precio.cambiado       la cascada entera de la Auditoria 2.1: elaboraciones,
+  //                         platos, margen, food cost, alerta y Pulse
+  //   stock.ajustado        la desviacion del periodo (M8), con su causa
+  //
+  // **Apuntar una entrada o una salida NO publica evento**, y es a proposito: en
+  // un servicio normal son decenas al dia y nadie los escucha. Lo que dispara
+  // cascadas es el precio, no el movimiento (Auditoria 2.1). Cuando M8 necesite
+  // los movimientos, los lee del libro, que es donde estan enteros.
+  'producto.creado',
+  'producto.cambiado',
+  'producto.desactivado',
+  'precio.cambiado',
+  'stock.ajustado',
 ] as const;
 
 export type TipoDeEvento = (typeof EVENTOS)[number];

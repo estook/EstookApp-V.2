@@ -166,11 +166,14 @@ describe('buscar · como esta hecha', () => {
       'organizacion_buscable',
       'persona_buscable',
       'persona_correo_buscable',
+      // M6. El genero y los proveedores, que **si** entran en `estook.buscar`.
+      'producto_buscable',
       // M5. El catalogo de referencia son trescientas filas, y «toda lista larga
       // tiene buscador tolerante a erratas y sin acentos» (Auditoria, parte 8).
       // No entran en `estook.buscar`: el buscador universal busca **cosas
       // tuyas**, y una referencia no es de nadie.
       'producto_de_referencia_buscable',
+      'proveedor_buscable',
       'receta_de_referencia_buscable',
     ]);
   });
@@ -182,5 +185,50 @@ describe('buscar · como esta hecha', () => {
       return rows.length;
     });
     expect(cuantos).toBeLessThanOrEqual(2);
+  });
+
+  it('no se le ha caido ningun bloque por el camino', async () => {
+    // ── Por que existe esta prueba ────────────────────────────────────────────
+    //
+    // Porque al escribir M6 se reescribio esta funcion **de memoria** para
+    // anadirle el genero, y en el camino se perdieron dos bloques enteros —las
+    // organizaciones y las areas— y el umbral paso de 0,18 a 0,3. Las pruebas de
+    // entonces cazaron el umbral, porque «Ignaico» dejo de encontrar a
+    // «Ignacio»; **los dos bloques que faltaban no los cazo ninguna**, porque
+    // ninguna preguntaba por ellos.
+    //
+    // Esta es esa prueba. Cada modulo que anada su bloque tiene que anadir aqui
+    // su linea, y el dia que alguien reescriba la funcion, esto le dice a las
+    // claras que se ha dejado algo.
+    //
+    // Se lee el cuerpo de la funcion y no se buscan resultados a proposito: un
+    // bloque puede existir y no devolver nada porque las semillas no tengan esa
+    // fila, y entonces la prueba pasaria en verde con el bloque borrado.
+    const { rows } = await base.bd.query<{ cuerpo: string }>(
+      `select prosrc as cuerpo from pg_proc
+        where pronamespace = 'estook'::regnamespace and proname = 'buscar'`,
+    );
+    const cuerpo = rows[0]?.cuerpo ?? '';
+
+    for (const bloque of [
+      'locales',
+      'personas',
+      'organizaciones',
+      'areas',
+      // M6 · el genero y a quien se le compra.
+      'productos',
+      'proveedores',
+    ]) {
+      // Que el bloque este escrito...
+      expect(cuerpo, `falta el bloque «${bloque}» en estook.buscar`).toContain(`${bloque} as (`);
+      // ...y que ademas entre en la union final. Un bloque escrito y no unido no
+      // devuelve nada, y es justo el fallo que no se ve.
+      expect(cuerpo, `el bloque «${bloque}» no entra en la union de estook.buscar`).toContain(
+        `from ${bloque}\n`,
+      );
+    }
+
+    // Y el umbral, que es el numero que decide si «Migel» encuentra a «Miguel».
+    expect(cuerpo, 'el umbral del buscador ha cambiado sin querer').toContain('>= 0.18');
   });
 });

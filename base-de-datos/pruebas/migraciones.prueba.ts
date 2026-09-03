@@ -24,9 +24,9 @@ const CONTROL = `
  * el que cuenta las funciones con privilegio: si un día no cuadra, que sea
  * porque alguien lo ha decidido.
  *
- * M5 trae tres: la 0020, la 0021 y la 0022.
+ * M6 trae una: la 0023.
  */
-const LAS_DE_ESTE_MODULO = 3;
+const LAS_DE_ESTE_MODULO = 1;
 
 describe('las migraciones', () => {
   it('todas siguen el formato NNNN_nombre.sql', async () => {
@@ -123,6 +123,23 @@ describe('las migraciones', () => {
       }
 
       expect(await cuantasFilas(base.bd, 'local')).toBe(locales);
+
+      // Y lo que la 0023 tiene que haber hecho con los que ya estaban: **todos
+      // los locales con tipo se quedan con sus categorías de serie**. Sin esto,
+      // el primero que entrara en Inventario encontraría el desplegable vacío,
+      // con la Auditoría prometiendo «nunca vacío: vienen de serie».
+      const conTipo = await cuantasFilas(base.bd, 'local', 'tipo is not null');
+      expect(conTipo).toBeGreaterThan(0);
+
+      const { rows: sinCategorias } = await base.bd.query<{ cuantos: number }>(`
+        select count(*)::int as cuantos
+          from estook.local l
+         where l.tipo is not null
+           and not exists (
+             select 1 from estook.categoria_de_producto c where c.local_id = l.id
+           )
+      `);
+      expect(sinCategorias[0]?.cuantos).toBe(0);
     } finally {
       await base.cerrar();
     }
@@ -192,8 +209,10 @@ async function cuantosLocalesMontados(bd: PGlite): Promise<number> {
   return rows[0]?.n ?? 0;
 }
 
-async function cuantasFilas(bd: PGlite, tabla: string): Promise<number> {
-  const { rows } = await bd.query<{ n: number }>(`select count(*)::int as n from estook.${tabla}`);
+async function cuantasFilas(bd: PGlite, tabla: string, donde = 'true'): Promise<number> {
+  const { rows } = await bd.query<{ n: number }>(
+    `select count(*)::int as n from estook.${tabla} where ${donde}`,
+  );
   return rows[0]?.n ?? 0;
 }
 

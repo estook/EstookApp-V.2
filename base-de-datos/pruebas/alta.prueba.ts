@@ -789,3 +789,81 @@ describe('volver al alta a por una cosa', () => {
     );
   });
 });
+
+// ── El camino de grupo, que nadie había recorrido ────────────────────────────
+
+describe('crear el segundo local de una cadena', () => {
+  /**
+   * **Esta prueba existe porque M6 se encontró el camino de grupo de M5 roto.**
+   *
+   * «Con dos o más se crea la organización primero y **se ofrece duplicar el
+   *  local**» (Manifiesto 8). Ese camino no funcionaba: `crear_local` devolvía
+   * «esto no está en tu acceso» a la propietaria de una cadena de seis locales,
+   * que tiene todos los permisos que existen.
+   *
+   * La causa es exactamente la misma que M4 dejó escrita para `estook.persona` en
+   * la 0019, en otra tabla: **con `returning`, Postgres aplica además la política
+   * de lectura a la fila devuelta**, y la de `local` se escribe contra
+   * `locales_visibles()`, que es `stable`. Una función `stable` mira el
+   * instantáneo del principio de la sentencia, y la fila que esa misma sentencia
+   * está insertando todavía no está ahí. **Falla con cualquier permiso.**
+   *
+   * No lo vio nadie porque las semillas crean los locales con `insert` directo,
+   * sin pasar por el comando. Aquí se comprueba lo que de verdad hace la API.
+   */
+  it('la propietaria puede insertar un local, y `returning` es lo que lo rompía', async () => {
+    const elena = await base.personaPorCorreo('elena@ejemplo.estook.com');
+    const [org] = await comoDuena<{ id: string }>(
+      `select id from estook.organizacion where codigo = 'grupo-costa'`,
+    );
+
+    // Con `returning`: se cae, y **no por permisos**.
+    await expect(
+      base.comoPersona(elena, () =>
+        base.bd.query(
+          `insert into estook.local (organizacion_id, codigo, nombre, zona_horaria)
+           values ($1, 'prueba-con-returning', 'Con returning', 'Europe/Madrid')
+           returning id`,
+          [org?.id],
+        ),
+      ),
+    ).rejects.toThrow(/row-level security/i);
+
+    // Partido en dos sentencias: entra, y se puede leer. Es lo que hace ahora
+    // `crear_local`, y por eso el camino de grupo vuelve a existir.
+    const creado = await base.comoPersona(elena, async () => {
+      await base.bd.query(
+        `insert into estook.local (organizacion_id, codigo, nombre, zona_horaria)
+         values ($1, 'prueba-en-dos', 'En dos pasos', 'Europe/Madrid')`,
+        [org?.id],
+      );
+      const { rows } = await base.bd.query<{ id: string }>(
+        `select id from estook.local where organizacion_id = $1 and codigo = 'prueba-en-dos'`,
+        [org?.id],
+      );
+      return rows;
+    });
+
+    expect(creado).toHaveLength(1);
+  });
+
+  it('y quien no lleva la organización sigue sin poder crear ninguno', async () => {
+    // El arreglo no abre la puerta: partir la sentencia en dos no quita la
+    // política de alta, que sigue exigiendo `accion.gestionar_locales`. Rosa es
+    // gerente de su bar y no lo tiene, con razón.
+    const rosa = await base.personaPorCorreo(ROSA);
+    const [org] = await comoDuena<{ id: string }>(
+      `select id from estook.organizacion where codigo = 'bar-centro'`,
+    );
+
+    await expect(
+      base.comoPersona(rosa, () =>
+        base.bd.query(
+          `insert into estook.local (organizacion_id, codigo, nombre, zona_horaria)
+           values ($1, 'prueba-de-rosa', 'El de Rosa', 'Europe/Madrid')`,
+          [org?.id],
+        ),
+      ),
+    ).rejects.toThrow();
+  });
+});

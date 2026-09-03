@@ -30,6 +30,16 @@ const LAS_OCHO = [
 ];
 
 /**
+ * Las que ya no son un esqueleto.
+ *
+ * Esta lista **tiene que crecer con cada módulo**, y ese es su trabajo: el día
+ * que M9 construya Escandallos, esta prueba se pondrá en rojo hasta que alguien
+ * añada su línea, que es exactamente cuando hay que mirar si lo que enseña la
+ * pantalla vacía sigue siendo verdad.
+ */
+const APPS_CON_CONTENIDO = ['inventario'];
+
+/**
  * Abre una pantalla y **espera a que la aplicacion este viva**.
  *
  * `domcontentloaded` llega antes de que React monte, y con el los atajos de
@@ -104,7 +114,15 @@ test.describe('las ocho apps', () => {
       await abrir(page, `/${app.id}`);
 
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(app.nombre);
-      await expect(page.getByRole('heading', { level: 2, name: app.primera })).toBeVisible();
+
+      // El título de la tarjeta es un `h2` **mientras la app sea un esqueleto**.
+      // Inventario dejó de serlo en M6: su pantalla «Hoy» tiene varias tarjetas
+      // de verdad, así que no hay una sola con el nombre de la pestaña. Lo que
+      // se sigue comprobando en las ocho es lo que esta prueba mira de verdad:
+      // que se abren, que ponen su nombre y que **no desbordan a lo ancho**.
+      if (!APPS_CON_CONTENIDO.includes(app.id)) {
+        await expect(page.getByRole('heading', { level: 2, name: app.primera })).toBeVisible();
+      }
 
       expect(await desborda(page), `${app.nombre} desborda a lo ancho`).toBe(false);
     }
@@ -374,6 +392,19 @@ test.describe('estados vacios', () => {
 
     for (const app of LAS_OCHO) {
       await abrir(page, `/${app.id}`);
+
+      if (APPS_CON_CONTENIDO.includes(app.id)) {
+        // Esta prueba comprueba que **una app sin construir** dice qué irá ahí
+        // en vez de quedarse muda. Inventario está construida desde M6, así que
+        // ya no le toca: sus estados vacíos —la cámara vacía, nada que atender,
+        // ningún proveedor— los comprueba `inventario.spec.ts`, que además sabe
+        // qué datos hay delante.
+        //
+        // Lo que sí se sigue mirando aquí es que la pantalla no está en blanco.
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(app.nombre);
+        continue;
+      }
+
       await expect(page.getByText('todavía no tengo datos')).toBeVisible();
       // Y dice en que modulo se construye: nunca una pantalla muda.
       await expect(page.getByText(/Esta pantalla se construye en M\d+/)).toBeVisible();

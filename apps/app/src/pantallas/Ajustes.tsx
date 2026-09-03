@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { IconoRejilla, IconoSalir, IconoTamanoDeLetra, IconoTeclado } from '@estook/iconos';
+import { IDIOMAS, NOMBRE_DEL_IDIOMA } from '@estook/dominio';
 import {
   Boton,
   COMO_SE_LLAMA,
   CUANTO_MULTIPLICA,
+  Selector,
   TAMANOS,
   Tarjeta,
   clases,
@@ -31,8 +34,9 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  */
 export function Ajustes() {
   const { tamano, poner } = usarTamanoDeLetra();
-  const { yo, salir } = usarSesion();
+  const { yo, salir, cliente, refrescar } = usarSesion();
   const { sePuedeDeshacer } = usarDeshacer();
+  const [cambiandoIdioma, setCambiandoIdioma] = useState(false);
 
   const cambiarTamano = (nuevo: TamanoDeLetra) => {
     const antes = tamano;
@@ -88,6 +92,46 @@ export function Ajustes() {
       {/* ── M4 · Mi acceso, y lo que decide la organizacion ─────────────────── */}
       <MiAcceso />
       <AjustesDeOrganizacion />
+
+      {/*
+        El idioma de la persona, no el del local.
+
+        ── Por que esta tarjeta aparece ahora, en M6 ────────────────────────────
+
+        Porque `cambiar_mi_idioma` esta escrito, registrado y probado **desde
+        M2**, y hasta hoy no lo llamaba ninguna pantalla: exactamente la misma
+        forma de fallo que M5 se encontro tres veces al cerrar. Lo destapo la
+        prueba `se-usan.prueba.ts`, que es la que convierte esa leccion en algo
+        que salta solo en vez de en un parrafo de un documento.
+
+        Cada persona elige el suyo, y por eso vive aqui y no en la ficha del
+        local: «la cocina puede leer las fichas en su idioma» (Manifiesto 10).
+      */}
+      <Tarjeta titulo="Tu idioma">
+        <p className="text-secundario text-texto-suave">
+          Es tuyo, no del local: cada persona del equipo puede tener el suyo, y las fichas se leen
+          en el idioma de quien cocina.
+        </p>
+        <div className="mt-e3">
+          <Selector
+            etiqueta="En qué idioma quieres Estook"
+            opciones={IDIOMAS.map((idioma) => ({
+              valor: idioma,
+              texto: NOMBRE_DEL_IDIOMA[idioma],
+            }))}
+            value={yo?.idioma ?? 'es'}
+            disabled={cambiandoIdioma}
+            onChange={(e) => {
+              const nuevo = e.currentTarget.value;
+              setCambiandoIdioma(true);
+              void cliente.ejecutar('cambiar_mi_idioma', { idioma: nuevo }).then(async () => {
+                setCambiandoIdioma(false);
+                await refrescar();
+              });
+            }}
+          />
+        </div>
+      </Tarjeta>
 
       {/*
         Cada linea lleva el icono de lo que cuenta, y **ninguna lleva el simbolo

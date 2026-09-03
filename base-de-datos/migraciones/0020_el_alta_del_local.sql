@@ -208,16 +208,28 @@ alter table estook.local
 comment on column estook.local.onboarding_saltados is
   'Los pasos que se saltaron, por su codigo. Sirven para la barra de progreso y para poder volver a ofrecerlos, nunca para bloquear.';
 
+-- ── Primero se rellena, y DESPUES se pone la restriccion ─────────────────────
+--
+-- **El orden es el fallo que esta migracion cometio y que hay que no repetir.**
+--
+-- Estaba al reves: primero la restriccion, luego el relleno. Contra el Postgres
+-- efimero de las pruebas pasaba, porque alli las semillas corren **despues** de
+-- las migraciones y `estook.local` esta vacia: la restriccion no tenia ni una
+-- fila que comprobar. Contra una base con siete locales ya montados, salto en la
+-- cara.
+--
+-- Es «una prueba que corre en un sitio no prueba el otro» (E4) otra vez, con una
+-- forma nueva: **una migracion probada solo contra una tabla vacia no esta
+-- probada**. Lo que la vigila ahora es `migraciones.prueba.ts`, que aplica las
+-- ultimas con los datos ya sembrados, igual que pasa de verdad.
+update estook.local
+   set onboarding_terminado_en = creado_en
+ where onboarding_terminado and onboarding_terminado_en is null;
+
 alter table estook.local
   add constraint local_onboarding_terminado_coherente check (
     onboarding_terminado = (onboarding_terminado_en is not null)
   );
-
--- Los que ya estan montados terminaron cuando se sembraron. Sin esto, la
--- restriccion de arriba no dejaria aplicar la migracion.
-update estook.local
-   set onboarding_terminado_en = creado_en
- where onboarding_terminado and onboarding_terminado_en is null;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- D · Los catorce alergenos

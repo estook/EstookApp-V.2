@@ -522,7 +522,7 @@ después**: no hay nada que limpiar. La otra forma —dejar escribir en una copi
 borrarla luego— necesitaría un proceso de fondo que todavía no existe, y un fallo
 a mitad dejaría datos de mentira dentro del restaurante de ejemplo.
 
-#### Tres fallos que M5 encontró, y quién los cazó
+#### Cuatro fallos que M5 encontró, y quién los cazó
 
 1. **El gerente no podía configurar su propio local.** La política de M1 exigía
    `accion.gestionar_locales` para cualquier escritura sobre `estook.local`, y ese
@@ -539,6 +539,18 @@ a mitad dejaría datos de mentira dentro del restaurante de ejemplo.
 3. **Y la puerta de la demostración cerraba también las consultas.** Una visita
    que no puede leer no enseña nada, que es justo lo contrario de lo que es una
    demostración. Lo cazó su propia prueba, en el primer intento.
+4. **La `0020` no se podía aplicar sobre una base con datos.** Ponía la
+   restricción de coherencia del alta **antes** de rellenar la columna. Contra el
+   Postgres de las pruebas pasaba, porque allí las semillas corren después de las
+   migraciones y `estook.local` está vacía cuando pasa la 0020: la restricción no
+   tenía ni una fila que comprobar. Contra la base de verdad, con siete locales ya
+   montados, saltó al aplicarla.
+
+   Es «una prueba que corre en un sitio no prueba el otro» (E4) con una forma
+   nueva: **una migración probada solo contra una tabla vacía no está probada.**
+   Ahora hay una prueba que aplica las migraciones del módulo **con las cinco
+   semillas ya puestas**, y se comprobó rompiéndola a propósito antes de darla por
+   buena.
 
 #### Y el que no es de M5, pero lo encontró M5
 

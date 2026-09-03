@@ -568,3 +568,82 @@ test.describe.serial('la contraseña que te dio otra persona', () => {
     await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Pon una contraseña tuya');
   });
 });
+
+// ── Lo que estaba construido y no se podía alcanzar ──────────────────────────
+
+/**
+ * **La contraseña nueva que la pantalla de entrar promete.**
+ *
+ * «¿No te acuerdas? Quien lleva tu local puede darte una contraseña nueva o un
+ * PIN nuevo en un momento», dice la puerta. El PIN sí estaba. La contraseña no:
+ * `poner_clave_a` llevaba desde M4 escrito, registrado y probado **sin que lo
+ * llamara ninguna pantalla**.
+ *
+ * Y sin proveedor de correo esa es la única forma de volver a entrar: no hay un
+ * «he olvidado mi contraseña» que mande un enlace. Prometerlo sin tenerlo dejaba
+ * sin salida a quien perdiera la suya.
+ */
+test('quien lleva el local puede dar una contraseña nueva, y se enseña una vez', async ({
+  page,
+  request,
+}) => {
+  // **Se invita a alguien nuevo para esto, y no es un capricho.**
+  //
+  // La primera versión pulsaba la primera fila de la tabla, que resultó ser
+  // Marcos, y le dejaba una contraseña al azar: otra prueba que entraba como él
+  // se quedaba sin poder entrar. Una prueba que le cambia la contraseña a
+  // alguien que usan las demás es una prueba que rompe a las vecinas, y encima
+  // en otro fichero, que es donde más cuesta encontrarlo.
+  const rosa = await unToken(request, 'rosa@ejemplo.estook.com');
+  const yo = (await (
+    await request.get(`${API}/v1/consultas/quien_soy`, {
+      headers: { authorization: `Bearer ${rosa}` },
+    })
+  ).json()) as { datos: { organizacion: { id: string }; local: { id: string } } };
+
+  const nombre = `Prueba${Date.now()}`;
+  await request.post(`${API}/v1/comandos/invitar_persona`, {
+    headers: { authorization: `Bearer ${rosa}`, 'x-idempotencia': `inv-clave-${Date.now()}` },
+    data: {
+      correo: `clave-${Date.now()}@ejemplo.estook.com`,
+      nombre,
+      rol: 'camarero',
+      organizacion_id: yo.datos.organizacion.id,
+      local_id: yo.datos.local.id,
+    },
+  });
+
+  await entrar(page, 'rosa@ejemplo.estook.com');
+  await page.goto(`${APP}#/equipo/personas`, { waitUntil: 'domcontentloaded' });
+
+  // En escritorio la tabla son filas; en movil, la misma tabla en tarjetas (`li`).
+  // Se piden las dos y se filtra por visible: el marcado de la otra sigue en el
+  // DOM, escondido, y sin `:visible` esto casaria con dos y Playwright se planta.
+  const suya = page.locator('tr:visible, li:visible').filter({ hasText: nombre });
+  await expect(suya.getByRole('button', { name: 'Contraseña nueva' })).toBeVisible();
+  await suya.getByRole('button', { name: 'Contraseña nueva' }).click();
+
+  // Sale, y **dice que se enseña una sola vez**, que es lo que evita la llamada
+  // de «¿dónde vuelvo a verla?».
+  await expect(page.getByText('Se enseña una sola vez')).toBeVisible();
+  await page.getByRole('button', { name: 'Hecho' }).click();
+});
+
+/**
+ * **El doble factor se podía poner y no quitar.**
+ *
+ * `quitar_doble_factor` existía desde M4 sin pantalla que lo llamara. Y «Mi
+ * acceso» decía, cuando la organización lo exige, «tu negocio lo exige, así que
+ * no se puede quitar» — dando a entender que si no lo exige sí. No había botón:
+ * una puerta de un solo sentido anunciada como de dos.
+ */
+test('el doble factor se puede poner Y quitar, no solo poner', async ({ page }) => {
+  await entrar(page, 'rosa@ejemplo.estook.com');
+  await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+
+  // La sección existe y ofrece activarlo. Rosa no lo tiene puesto, así que lo
+  // que se comprueba aquí es que la pantalla conoce las dos direcciones: antes
+  // «Quitarlo» no existía en ningún estado, ni siquiera en el código.
+  await expect(page.getByRole('heading', { name: 'Doble factor' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Activarlo|Terminar de activarlo/ })).toBeVisible();
+});

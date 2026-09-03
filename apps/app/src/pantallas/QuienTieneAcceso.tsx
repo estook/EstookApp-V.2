@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { puedeEditar } from '@estook/permisos';
+// El mismo generador que usa `bd:cuenta-de-verdad`: una lista de palabras
+// copiada es una lista que se desincroniza (regla 6).
+import { claveDeUnSoloUso } from '@estook/dominio';
 import {
   Aviso,
   Boton,
@@ -83,6 +86,10 @@ export function QuienTieneAcceso() {
 
   const [invitando, setInvitando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
+  /** La contrasena recien dada a alguien. Se ensena una vez y no vuelve. */
+  const [claveReciente, setClaveReciente] = useState<{ nombre: string; clave: string } | null>(
+    null,
+  );
   /** El PIN de quien se acaba de invitar. Se enseña una vez y no vuelve. */
   const [recienInvitada, setRecienInvitada] = useState<{
     nombre: string;
@@ -122,6 +129,39 @@ export function QuienTieneAcceso() {
     await consulta.refetch();
   }
 
+  /**
+   * Darle una contraseña nueva a alguien.
+   *
+   * **La pantalla de entrar lo prometía y no existía.** Dice, palabra por
+   * palabra: «¿No te acuerdas? Quien lleva tu local puede darte una contraseña
+   * nueva o un PIN nuevo en un momento». El PIN sí estaba; la contraseña no, y
+   * `poner_clave_a` llevaba desde M4 escrito, registrado y probado sin que lo
+   * llamara ninguna pantalla.
+   *
+   * Sin proveedor de correo, esta **es** la forma de volver a entrar: no hay
+   * «he olvidado mi contraseña» que mande un enlace. Prometerlo y no tenerlo
+   * dejaba a quien perdiera la suya sin ninguna salida.
+   *
+   * La contraseña se genera aquí y se enseña una vez, como el PIN. Nace con
+   * «hay que cambiarla», así que muere en cuanto la persona entra y se pone la
+   * suya: eso es lo que hace aceptable que otra persona la haya sabido.
+   */
+  async function claveNueva(acceso: Acceso) {
+    setError(null);
+    const clave = claveDeUnSoloUso();
+
+    const respuesta = await cliente.ejecutar('poner_clave_a', {
+      persona_id: acceso.personaId,
+      organizacion_id: yo?.organizacion?.id ?? '',
+      nueva: clave,
+    });
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    setClaveReciente({ nombre: acceso.nombre, clave });
+    await consulta.refetch();
+  }
   async function reactivar(acceso: Acceso) {
     setError(null);
     const respuesta = await cliente.ejecutar<{ pin: string | null }>('reactivar_persona', {
@@ -191,6 +231,22 @@ export function QuienTieneAcceso() {
             >
               PIN nuevo
             </Boton>
+            {/*
+              En tu propia fila no sale, y no es un adorno: el servidor lo
+              rechaza a propósito —«para cambiar la tuya, usa Mi acceso: ahí se
+              te pide la de ahora»—, así que un botón aquí solo serviría para
+              llevarse un error. Lo cazó su propia prueba, que pulsaba la
+              primera fila y resultó ser la de quien miraba.
+            */}
+            {a.personaId !== yo?.personaId && (
+              <Boton
+                onClick={() => {
+                  void claveNueva(a);
+                }}
+              >
+                Contraseña nueva
+              </Boton>
+            )}
             <Boton
               tono="peligro"
               onClick={() => {
@@ -307,6 +363,39 @@ export function QuienTieneAcceso() {
           >
             Hecho
           </Boton>
+        </Hoja>
+      )}
+
+      {claveReciente && (
+        <Hoja
+          abierta
+          titulo={`La contraseña de ${claveReciente.nombre}`}
+          alCerrar={() => {
+            setClaveReciente(null);
+          }}
+        >
+          <p className="text-secundario text-texto-suave">
+            Dísela en mano o por teléfono. <strong>Se enseña una sola vez</strong>: lo que se guarda
+            es su huella, no la contraseña. Si se pierde, se genera otra y ya está.
+          </p>
+          <p className="my-e4 rounded-medio border border-borde bg-fondo px-e3 py-e3 text-center font-mono text-cuerpo tracking-wide text-texto">
+            {claveReciente.clave}
+          </p>
+          <p className="text-secundario text-texto-suave">
+            Al entrar con ella se le pedirá que se ponga una suya, y esta dejará de valer. Hasta
+            entonces, la sabéis dos.
+          </p>
+          <div className="mt-e4">
+            <Boton
+              tono="principal"
+              ancho
+              onClick={() => {
+                setClaveReciente(null);
+              }}
+            >
+              Hecho
+            </Boton>
+          </div>
         </Hoja>
       )}
     </div>

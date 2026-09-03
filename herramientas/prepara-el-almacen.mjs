@@ -29,7 +29,7 @@ import { variable } from '@estook/utiles';
 import { CUBO_DE_LA_MARCA } from '../servidor/infraestructura/almacen.ts';
 
 const url = variable('SUPABASE_URL') ?? variable('VITE_SUPABASE_URL');
-const clave = variable('SUPABASE_SERVICE_KEY');
+const clave = variable('CLAVE_DE_SERVICIO');
 
 if (!url || !clave) {
   console.error(
@@ -41,7 +41,7 @@ if (!url || !clave) {
       '',
       'Que se puede hacer: en `.env.local`, pon',
       '  VITE_SUPABASE_URL=https://TU-PROYECTO.supabase.co',
-      '  SUPABASE_SERVICE_KEY=  (Supabase → Project Settings → API → service_role)',
+      '  CLAVE_DE_SERVICIO=  (Supabase → Project Settings → API → service_role)',
       '',
       '**Esa clave no va nunca al navegador.** Es la unica de todo el proyecto que',
       'se salta la seguridad por filas, asi que solo vive en tu maquina y en los',

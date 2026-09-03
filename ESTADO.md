@@ -13,7 +13,7 @@
 | -------------- | ------------------------------------------------------------------------------------- |
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** onboarding y arranque |
 | **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                   |
-| **Pruebas**    | 616 unitarias y de base de datos · 170 de extremo a extremo                           |
+| **Pruebas**    | 617 unitarias y de base de datos · 170 de extremo a extremo                           |
 | **Rama**       | Todo en `main`. M5 entró en cuatro pull requests: #24, #25, #26 y #27                 |
 | **Publicado**  | Web, app y API vivas y al día. Base en la `0022`. **Probado en un móvil de verdad**   |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
@@ -514,7 +514,7 @@ después**: no hay nada que limpiar. La otra forma —dejar escribir en una copi
 borrarla luego— necesitaría un proceso de fondo que todavía no existe, y un fallo
 a mitad dejaría datos de mentira dentro del restaurante de ejemplo.
 
-#### Trece fallos que M5 encontró, y quién los cazó
+#### Catorce fallos que M5 encontró, y quién los cazó
 
 1. **El gerente no podía configurar su propio local.** La política de M1 exigía
    `accion.gestionar_locales` para cualquier escritura sobre `estook.local`, y ese
@@ -698,6 +698,26 @@ Su criterio, punto por punto, es
 
 Y la lista de la Auditoría de flujos, pasada punto por punto, en
 [`docs/auditorias/m5.md`](docs/auditorias/m5.md).
+
+#### Y el catorce, que es el mismo que el de M4
+
+**`SUPABASE_SERVICE_KEY` no se puede llamar así.** Supabase reserva el prefijo
+`SUPABASE_` en los secretos de Edge Functions y lo rechaza con «Name must not
+start with the SUPABASE_ prefix».
+
+Este proyecto ya se había comido esto en M4 con `SUPABASE_ACCESS_TOKEN` y
+`SUPABASE_PROJECT_REF`, y la lección quedó escrita aquí mismo: «un nombre que se
+parece al de otro sitio es un nombre que acabará donde no va». **M5 lo repitió
+con la lección delante**, y Richi se topó con el mismo error rojo en la misma
+pantalla.
+
+Ahora se llama `CLAVE_DE_SERVICIO`, como `ORIGENES_PERMITIDOS` o `ENTORNO`. Y lo
+importante: **escribirlo en un documento no lo impidió**, así que ahora hay una
+prueba que recorre `servidor/` y `herramientas/` y falla si alguna variable que
+elegimos nosotros empieza por `SUPABASE_`. Las que pone Supabase —`SUPABASE_URL`
+y compañía— se leen igual: la regla es sobre los nombres que inventamos.
+
+Una lección que no se puede comprobar es una lección que se vuelve a aprender.
 
 #### Cómo se cerró M5
 

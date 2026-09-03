@@ -86,7 +86,7 @@ export function almacenDeSupabase(opciones?: {
   readonly pedir?: typeof fetch;
 }): AlmacenDeFicheros | null {
   const url = opciones?.url ?? variable('SUPABASE_URL') ?? variable('VITE_SUPABASE_URL');
-  const clave = opciones?.clave ?? variable('SUPABASE_SERVICE_KEY');
+  const clave = opciones?.clave ?? variable('CLAVE_DE_SERVICIO');
   const pedir = opciones?.pedir ?? fetch;
 
   // Sin credenciales no hay almacen, y se dice devolviendo nulo en vez de

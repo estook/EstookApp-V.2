@@ -13,7 +13,7 @@ import {
   TodaviaNo,
 } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
-import { ActivarDobleFactor, CambiarMiClave } from './HojasDeMiAcceso.tsx';
+import { ActivarDobleFactor, CambiarMiClave, QuitarDobleFactor } from './HojasDeMiAcceso.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -86,6 +86,7 @@ export function MiAcceso() {
   const [verTodasLasSesiones, setVerTodasLasSesiones] = useState(false);
   const [cambiandoClave, setCambiandoClave] = useState(false);
   const [activandoDoble, setActivandoDoble] = useState(false);
+  const [quitandoDoble, setQuitandoDoble] = useState(false);
   /** El PIN recien generado. Se ensena hasta que se cierra, y no vuelve. */
   const [pinReciente, setPinReciente] = useState<{ local: string; pin: string } | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
@@ -217,10 +218,23 @@ export function MiAcceso() {
                   <Etiqueta tono="bien">Activado</Etiqueta>
                   Te quedan {datos.dobleFactor.codigosDeRespaldoQueQuedan} códigos de respaldo.
                 </p>
-                {datos.dobleFactor.loExigeLaOrganizacion && (
+                {datos.dobleFactor.loExigeLaOrganizacion ? (
                   <p className="mt-e2 text-secundario text-texto-suave">
                     Tu negocio lo exige, así que no se puede quitar.
                   </p>
+                ) : (
+                  // Y si no lo exige, se puede quitar **de verdad**. Antes esta
+                  // frase de arriba daba a entender que sí, y no había botón.
+                  <div className="mt-e2">
+                    <Boton
+                      tono="texto"
+                      onClick={() => {
+                        setQuitandoDoble(true);
+                      }}
+                    >
+                      Quitarlo
+                    </Boton>
+                  </div>
                 )}
               </>
             ) : (
@@ -326,6 +340,18 @@ export function MiAcceso() {
           }}
           alHecho={() => {
             setCambiandoClave(false);
+            void volverAPreguntar();
+          }}
+        />
+      )}
+
+      {quitandoDoble && (
+        <QuitarDobleFactor
+          alCerrar={() => {
+            setQuitandoDoble(false);
+          }}
+          alHecho={() => {
+            setQuitandoDoble(false);
             void volverAPreguntar();
           }}
         />

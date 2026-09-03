@@ -18,6 +18,13 @@ export interface ElAltaDelLocal {
   readonly paso: number;
   readonly saltados: readonly PasoDelAlta[];
   readonly terminado: boolean;
+  /**
+   * A qué paso se volvió desde el Panel, si se volvió a por uno solo.
+   *
+   * Al guardarlo, el alta se cierra y se vuelve al Panel en vez de seguir con
+   * los pasos siguientes.
+   */
+  readonly retomadoPara: PasoDelAlta | null;
   readonly progreso: Progreso;
 
   readonly ficha: {

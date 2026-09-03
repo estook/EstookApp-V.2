@@ -248,6 +248,100 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     await expect(page.getByRole('button', { name: 'Quitarlo' })).toBeHidden();
     await expect(page.getByRole('button', { name: 'Elegir una imagen' })).toBeVisible();
   });
+
+  /**
+   * **Volver a por una cosa y volver al Panel.**
+   *
+   * La tarjeta del Panel ofrece «Invita a tu equipo» y, debajo, «y 1 cosa más,
+   * cuando quieras». Pulsarla reabría el alta y al guardar seguía con los pasos
+   * siguientes: aparecía otra vez el paseo con la guía de instalación, ya visto.
+   *
+   * Quien acepta hacer una cosa no ha aceptado hacer las cinco siguientes.
+   *
+   * Va por la pantalla porque el fallo era de la pantalla: el servidor guardaba
+   * bien todo lo que se le mandaba.
+   */
+  test('se vuelve al alta a por una cosa, y al guardarla se vuelve al Panel', async ({
+    page,
+    request,
+  }) => {
+    // Se deja el alta terminada pero con el equipo sin responder, que es el
+    // estado en el que el Panel enseña la tarjeta.
+    const token = await tokenDe(request, PABLO);
+    await request.post(`${API}/v1/comandos/retomar_el_alta`, {
+      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado-a-${Date.now()}` },
+      data: { paso: 'equipo' },
+    });
+    await request.post(`${API}/v1/comandos/saltar_paso_del_alta`, {
+      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado-b-${Date.now()}` },
+      data: { paso: 'equipo' },
+    });
+    await request.post(`${API}/v1/comandos/terminar_el_alta`, {
+      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado-c-${Date.now()}` },
+      data: {},
+    });
+
+    await entrar(page, PABLO);
+
+    // El Panel, con la tarjeta que ofrece el recado.
+    await expect(
+      page.getByRole('heading', { name: 'Termina de configurar tu local' }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Invita a tu equipo' }).click();
+
+    // Lleva al paso, y **solo a ese paso**.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Invita a tu equipo');
+
+    // Y aquí se puede invitar a mano, que era la otra queja: antes el único
+    // botón era «Subir un fichero» y sin un Excel no se podía hacer nada.
+    await expect(page.getByRole('button', { name: 'Añadir a una persona' })).toBeVisible();
+
+    // **Y también dejándolo para luego**, que era el segundo agujero del mismo
+    // fallo: esa salida no miraba el recado y seguía metiendo en el paseo.
+    await page.getByRole('button', { name: 'Esto lo dejo para luego' }).click();
+
+    // **Y se vuelve al Panel**, no al paseo. Esto era el fallo.
+    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Invita a tu equipo');
+    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText(
+      'Cinco pantallas y a trabajar',
+    );
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  });
+
+  /**
+   * Y la otra salida del mismo paso: **«Continuar»**.
+   *
+   * Va aparte porque cada una cierra el alta y no se pueden probar las dos en el
+   * mismo recorrido. Y van las dos porque el fallo se arregló primero solo en
+   * «Continuar»: «Esto lo dejo para luego» seguía metiendo en el paseo, que es
+   * exactamente el camino que más se usa.
+   */
+  test('y también al continuar, no solo al dejarlo para luego', async ({ page, request }) => {
+    const token = await tokenDe(request, PABLO);
+    await request.post(`${API}/v1/comandos/retomar_el_alta`, {
+      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado2-a-${Date.now()}` },
+      data: { paso: 'equipo' },
+    });
+    await request.post(`${API}/v1/comandos/saltar_paso_del_alta`, {
+      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado2-b-${Date.now()}` },
+      data: { paso: 'equipo' },
+    });
+    await request.post(`${API}/v1/comandos/terminar_el_alta`, {
+      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado2-c-${Date.now()}` },
+      data: {},
+    });
+
+    await entrar(page, PABLO);
+    await page.getByRole('button', { name: 'Invita a tu equipo' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Invita a tu equipo');
+
+    await page.getByRole('button', { name: 'Continuar' }).click();
+
+    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText(
+      'Cinco pantallas y a trabajar',
+    );
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  });
 });
 
 // ── 2 · El catalogo de referencia ────────────────────────────────────────────
@@ -533,4 +627,48 @@ test('el gasto de Google es cero, porque no se llama a Google', async ({ request
     headers: { authorization: `Bearer ${token}` },
   });
   expect(catalogo.status()).toBe(404);
+});
+
+// ── La guía de instalación · dónde se ofrece y dónde no ──────────────────────
+
+/**
+ * **Estaba al revés de las dos maneras.**
+ *
+ *   · En el ordenador el paseo acababa en «Ponerlo en mi móvil», y detrás una
+ *     pantalla que dice «toca el botón de compartir». Delante de alguien con un
+ *     ratón.
+ *   · Y en el teléfono, que es donde sirve, había que pasar las cinco pantallas
+ *     del paseo para llegar. Quien pulsaba «Saltar el paseo» —lo normal— no la
+ *     veía nunca.
+ *
+ * Playwright corre esto en los dos proyectos, así que cada uno comprueba lo
+ * suyo: el de escritorio que **no** se ofrece, el de móvil pequeño que sí. Es la
+ * única forma de que esta clase de fallo no vuelva: mirándolo desde los dos.
+ */
+test('el paseo ofrece ponerlo en la pantalla de inicio solo en el móvil', async ({
+  page,
+  request,
+  isMobile,
+}) => {
+  const token = await tokenDe(request, PABLO);
+  await request.post(`${API}/v1/comandos/retomar_el_alta`, {
+    headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `paseo-${Date.now()}` },
+    data: { paso: 'paseo' },
+  });
+
+  await entrar(page, PABLO);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Cinco pantallas y a trabajar');
+
+  const elAtajo = page.getByRole('button', { name: 'Ponerlo en mi pantalla de inicio' });
+
+  if (isMobile) {
+    // A un toque desde la primera pantalla, sin pasar las cinco.
+    await expect(elAtajo).toBeVisible();
+    await elAtajo.click();
+    await expect(page.getByText('Añadir a pantalla de inicio')).toBeVisible();
+  } else {
+    // En el ordenador no se ofrece: no es algo que se pueda hacer ahí.
+    await expect(elAtajo).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Ponerlo en mi móvil' })).toBeHidden();
+  }
 });

@@ -24,9 +24,9 @@ const CONTROL = `
  * el que cuenta las funciones con privilegio: si un día no cuadra, que sea
  * porque alguien lo ha decidido.
  *
- * M5 trae dos: la 0020 y la 0021.
+ * M5 trae tres: la 0020, la 0021 y la 0022.
  */
-const LAS_DE_ESTE_MODULO = 2;
+const LAS_DE_ESTE_MODULO = 3;
 
 describe('las migraciones', () => {
   it('todas siguen el formato NNNN_nombre.sql', async () => {

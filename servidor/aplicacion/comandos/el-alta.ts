@@ -60,7 +60,11 @@ export const terminarElAlta = comando<Record<string, never>, { terminado: boolea
       update estook.local
          set onboarding_paso = ${CUANTOS_PASOS},
              onboarding_terminado = true,
-             onboarding_terminado_en = coalesce(onboarding_terminado_en, now())
+             onboarding_terminado_en = coalesce(onboarding_terminado_en, now()),
+             -- El recado se cierra con el alta. La restricción de la 0022 no
+             -- deja que quede uno abierto sobre un alta terminada, así que
+             -- olvidarlo aquí no sería un despiste silencioso: sería un error.
+             onboarding_retomado_para = null
        where id = ${localId}
       returning onboarding_saltados
     `;
@@ -92,29 +96,63 @@ export const terminarElAlta = comando<Record<string, never>, { terminado: boolea
 });
 
 /**
- * Volver a abrir el alta.
+ * Volver a abrir el alta, de dos maneras que no son la misma.
  *
- * Existe para la tarjeta del Panel: quien se saltó la mitad y un día quiere
- * completarla vuelve por donde estaba. **No borra nada**: lo respondido sigue
- * respondido, y el alta se abre en el primer paso que falte.
+ *   · **Un recado** (`solo_este_paso`): la tarjeta del Panel ofrece «Invita a tu
+ *     equipo» y, debajo, «y 1 cosa más, **cuando quieras**». Se abre ese paso, y
+ *     al guardarlo el alta se cierra y se vuelve al Panel.
+ *   · **El asistente entero**: se abre por ese paso y se sigue hacia delante
+ *     hasta el final, como la primera vez.
+ *
+ * **No borra nada** en ninguno de los dos casos: lo respondido sigue respondido.
+ *
+ * ── Por qué se dice y no se adivina ─────────────────────────────────────────
+ *
+ * El primer intento daba por hecho que reabrir siempre era un recado, y eso
+ * rompió el alta entera: la prueba que la reabre por el principio para poder
+ * recorrerla guardaba el primer paso y **se plantaba en el Panel**, porque el
+ * servidor había decidido por su cuenta que era un recado de un solo paso.
+ *
+ * Se intentó deducirlo —«si el alta ya estaba terminada, es un recado»— y era
+ * peor: el mismo recorrido se comportaba distinto la segunda vez que se corría,
+ * según cómo lo hubiera dejado la primera. Una regla que depende de lo que pasó
+ * antes es una regla que falla un martes.
+ *
+ * Así que lo dice quien llama. La tarjeta del Panel pide un recado porque eso es
+ * lo que ofrece; quien quiera reabrir el alta entera no pasa la bandera.
  */
-export const retomarElAlta = comando<{ paso: string }, { paso: string }>({
+export const entradaRetomar = z
+  .object({
+    paso: z.enum(CODIGOS_DE_PASO as unknown as [string, ...string[]]),
+    solo_este_paso: z.boolean().optional(),
+  })
+  .strict();
+
+export type EntradaRetomar = z.infer<typeof entradaRetomar>;
+
+export const retomarElAlta = comando<EntradaRetomar, { paso: string; soloEstePaso: boolean }>({
   nombre: 'retomar_el_alta',
-  entrada: z.object({ paso: z.enum(CODIGOS_DE_PASO as unknown as [string, ...string[]]) }).strict(),
+  entrada: entradaRetomar,
   exige: 'app.ajustes',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);
     const numero = numeroDelPaso(entrada.paso as (typeof CODIGOS_DE_PASO)[number]);
+    const soloEstePaso = entrada.solo_este_paso === true;
 
+    // `onboarding_retomado_para` deja escrito **a qué se vino**, y eso es lo que
+    // hace que al guardar se vuelva al Panel en vez de seguir con lo siguiente.
+    // Si no es un recado se pone a nulo, y no por limpieza: dejarlo puesto de una
+    // vez anterior cerraría el alta a mitad del recorrido siguiente.
     await contexto.sql`
       update estook.local
          set onboarding_paso = ${numero},
              onboarding_terminado = false,
-             onboarding_terminado_en = null
+             onboarding_terminado_en = null,
+             onboarding_retomado_para = ${soloEstePaso ? entrada.paso : null}
        where id = ${localId}
     `;
 
-    return { paso: entrada.paso };
+    return { paso: entrada.paso, soloEstePaso };
   },
 });

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { clases } from '@estook/ui';
+import { elQueParece, type Sistema } from './queAparato.ts';
 
 /**
  * Cómo poner Estook en la pantalla de inicio (M5).
@@ -26,23 +27,6 @@ import { clases } from '@estook/ui';
  * peor que preguntar.
  */
 
-type Sistema = 'iphone' | 'android';
-
-/**
- * Qué sistema parece. Solo decide **cuál se enseña primero**, así que fallar no
- * rompe nada: el otro está en la pestaña de al lado.
- */
-function elQueParece(): Sistema {
-  if (typeof navigator === 'undefined') return 'android';
-
-  const agente = navigator.userAgent;
-  // El iPad moderno dice ser un Mac. Se le reconoce porque un Mac de verdad no
-  // tiene pantalla táctil con varios puntos.
-  const esIpadDisfrazado = /Macintosh/.test(agente) && navigator.maxTouchPoints > 1;
-
-  return /iPhone|iPad|iPod/.test(agente) || esIpadDisfrazado ? 'iphone' : 'android';
-}
-
 const PASOS: Readonly<Record<Sistema, readonly string[]>> = {
   iphone: [
     'Abre Estook en Safari. Desde otro navegador no se puede: lo decide Apple, no nosotros.',
@@ -56,6 +40,17 @@ const PASOS: Readonly<Record<Sistema, readonly string[]>> = {
     'Si no sale, abre el menú de los tres puntos, arriba a la derecha.',
     'Toca «Instalar aplicación» o «Añadir a pantalla de inicio».',
   ],
+  ordenador: [
+    'Aquí ya está todo: Estook funciona igual en el ordenador, sin instalar nada.',
+    'Si lo quieres a mano, mira el icono de instalar al final de la barra de direcciones. Chrome y Edge lo ponen ahí.',
+    'Y para tenerlo en el móvil, abre esta misma dirección en el teléfono y elige tu sistema arriba.',
+  ],
+};
+
+const COMO_SE_LLAMA: Readonly<Record<Sistema, string>> = {
+  iphone: 'iPhone',
+  android: 'Android',
+  ordenador: 'Ordenador',
 };
 
 export function GuiaDeInstalacion() {
@@ -64,15 +59,20 @@ export function GuiaDeInstalacion() {
   return (
     <div className="flex flex-col gap-e4 rounded-medio border border-borde bg-superficie p-e4">
       <div>
-        <h2 className="text-cuerpo font-semibold">Ponlo en tu pantalla de inicio</h2>
+        <h2 className="text-cuerpo font-semibold">
+          {sistema === 'ordenador'
+            ? 'Estook en el ordenador y en el móvil'
+            : 'Ponlo en tu pantalla de inicio'}
+        </h2>
         <p className="text-secundario text-texto-suave">
-          Se abre como una aplicación, a pantalla completa y sin la barra del navegador. Y sigue
-          funcionando cuando el wifi de la cocina se cae.
+          {sistema === 'ordenador'
+            ? 'En el móvil se abre como una aplicación, a pantalla completa y sin la barra del navegador. Y sigue funcionando cuando el wifi de la cocina se cae.'
+            : 'Se abre como una aplicación, a pantalla completa y sin la barra del navegador. Y sigue funcionando cuando el wifi de la cocina se cae.'}
         </p>
       </div>
 
-      <div className="flex gap-e2" role="tablist" aria-label="Elige tu móvil">
-        {(['iphone', 'android'] as const).map((cual) => (
+      <div className="flex gap-e2" role="tablist" aria-label="Elige tu aparato">
+        {(['ordenador', 'iphone', 'android'] as const).map((cual) => (
           <button
             key={cual}
             type="button"
@@ -88,7 +88,7 @@ export function GuiaDeInstalacion() {
                 : 'border-borde-fuerte bg-superficie hover:bg-fondo',
             )}
           >
-            {cual === 'iphone' ? 'iPhone' : 'Android'}
+            {COMO_SE_LLAMA[cual]}
           </button>
         ))}
       </div>

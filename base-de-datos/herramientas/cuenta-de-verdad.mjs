@@ -1,5 +1,8 @@
 import { abrirConexion } from './conexion.mjs';
 import { derivar } from '../../servidor/dominio/secretos.ts';
+// La misma que usa «Quien tiene acceso» para dar una contraseña nueva: una lista
+// copiada es una lista que se desincroniza (regla 6).
+import { claveDeUnSoloUso } from '@estook/dominio';
 
 /**
  * Crear una cuenta de verdad en una base de datos, con una clave de un solo uso.
@@ -41,60 +44,6 @@ if (!correo || !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(correo)) {
     ].join('\n'),
   );
   process.exit(1);
-}
-
-/**
- * Una contrasena que se puede leer en voz alta y no se puede adivinar.
- *
- * Cinco palabras de una lista corta. Son unos 60 bits de azar, que para una
- * clave de un solo uso que ademas caduca al primer login sobra de largo; y se
- * puede dictar por telefono sin equivocarse, que es lo que de verdad hace falta.
- */
-const PALABRAS = [
-  'aceite',
-  'brasa',
-  'caldo',
-  'cuchara',
-  'fogon',
-  'harina',
-  'hielo',
-  'horno',
-  'laurel',
-  'levadura',
-  'mantel',
-  'mortero',
-  'nevera',
-  'perejil',
-  'pimienta',
-  'plancha',
-  'romero',
-  'salsa',
-  'sarten',
-  'tomillo',
-  'vinagre',
-  'yema',
-  'almendra',
-  'bandeja',
-  'cazuela',
-  'colador',
-  'espuma',
-  'gambas',
-  'jarra',
-  'lomo',
-  'masa',
-  'nata',
-  'olla',
-  'pan',
-  'queso',
-  'sal',
-];
-
-function claveDeUnSoloUso() {
-  const elegidas = [];
-  const azar = new Uint32Array(5);
-  crypto.getRandomValues(azar);
-  for (const numero of azar) elegidas.push(PALABRAS[numero % PALABRAS.length]);
-  return elegidas.join(' ');
 }
 
 const sql = abrirConexion();

@@ -244,3 +244,81 @@ export function ActivarDobleFactor({
     </Hoja>
   );
 }
+
+// ── Quitar el doble factor ───────────────────────────────────────────────────
+
+/**
+ * **Se podía poner y no quitar.**
+ *
+ * `quitar_doble_factor` estaba escrito, registrado y probado desde M4, y no lo
+ * llamaba ninguna pantalla. Peor: «Mi acceso» decía, cuando la organización lo
+ * exige, «Tu negocio lo exige, así que **no se puede quitar**» — dando a entender
+ * que cuando no lo exige sí se puede. No había botón.
+ *
+ * Una puerta de un solo sentido que además se anuncia como de dos.
+ *
+ * Pide la contraseña, igual que el servidor: sin eso, a quien se dejara la sesión
+ * abierta en la tablet del pase le quitarían el segundo factor de un clic, que es
+ * justo de lo que el segundo factor protege.
+ */
+export function QuitarDobleFactor({
+  alCerrar,
+  alHecho,
+}: {
+  alCerrar: () => void;
+  alHecho: () => void;
+}) {
+  const { cliente } = usarSesion();
+  const [contrasena, setContrasena] = useState('');
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+  const [enviando, setEnviando] = useState(false);
+
+  async function alEnviar(evento: FormEvent) {
+    evento.preventDefault();
+    setEnviando(true);
+    setError(null);
+
+    const respuesta = await cliente.ejecutar('quitar_doble_factor', { contrasena });
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      setEnviando(false);
+      return;
+    }
+    alHecho();
+  }
+
+  return (
+    <Hoja abierta titulo="Quitar el doble factor" alCerrar={alCerrar}>
+      <form
+        onSubmit={(evento) => {
+          void alEnviar(evento);
+        }}
+        className="flex flex-col gap-e4"
+      >
+        <p className="text-secundario text-texto-suave">
+          Dejarás de necesitar el código de seis dígitos para entrar. Tus códigos de respaldo
+          dejarán de valer.
+        </p>
+
+        <Campo
+          etiqueta="Tu contraseña"
+          tipo="contrasena"
+          name="contrasena"
+          autoComplete="current-password"
+          ayuda="Se pide para que nadie pueda quitarlo desde una sesión que te dejaste abierta."
+          value={contrasena}
+          onChange={(evento) => {
+            setContrasena(evento.target.value);
+          }}
+          obligatorio
+        />
+
+        {error && <ErrorEnCristiano error={error} />}
+
+        <Boton type="submit" tono="peligro" cargando={enviando} textoCargando="Quitando" ancho>
+          Quitarlo
+        </Boton>
+      </form>
+    </Hoja>
+  );
+}

@@ -61,7 +61,7 @@ personas de ejemplo. **No borra a las personas ni sus locales**, y es a propósi
 el restaurante de ejemplo es lo que hace posible el modo demostración, que no usa
 credenciales.
 
-### Y después, una cuenta con la que puedas entrar tú · **esto falta**
+### Y después, una cuenta con la que puedas entrar tú · **hecho el 3 de septiembre**
 
 Sin credenciales de ejemplo no hay forma de entrar en la aplicación publicada, y
 la regla 11 pide probarla en un móvil de verdad.
@@ -74,11 +74,17 @@ Genera una contraseña de un solo uso, la enseña **una vez** y la marca como «
 que cambiarla»: al entrar, M4 te obliga a poner una tuya y la de pantalla deja de
 valer. No se escribe en ningún sitio.
 
-> Esa cuenta nace sin negocio, así que al entrar dirá «tu cuenta no está asociada
-> a ningún negocio». Para trabajar hace falta una organización, un local y una
-> membresía, y el registro que los crea es M26. Mientras tanto, lo más cómodo para
-> probar M5 es **el modo demostración**, que entra en el restaurante de ejemplo
-> sin cuenta.
+> **Esa cuenta nace sin negocio**, así que al entrar diría «tu cuenta no está
+> asociada a ningún negocio». Hacen falta una organización, un local y una
+> membresía, y el registro que los crea es M26. Hasta entonces:
+>
+> ```bash
+> pnpm bd:mi-negocio tu@correo.com "Nombre de tu bar"
+> ```
+>
+> Crea las tres cosas, con el local **sin empezar el alta**, que es justo lo que
+> hay que mirar en el móvil. Antes esto ponía «se crean a mano en la base de
+> datos», que no era un paso: era un pendiente disfrazado de aviso.
 
 ---
 
@@ -162,6 +168,18 @@ Sin ella, la API desplegada no puede firmar el enlace del logo, y la cabecera
 enseña el logotipo de Estook en vez del del local. No se rompe nada: se dice.
 
 ---
+
+## 4.5 · Aplicar la `0022`
+
+Después de fusionar el PR #26, porque la base nunca va por delante del código:
+
+```bash
+pnpm bd:migrar
+```
+
+Añade una columna a `estook.local` que guarda **a qué paso se volvió** cuando se
+reabre el alta desde el Panel. Sin ella, volver a por una cosa metía en el
+asistente completo y salía otra vez la guía de instalación.
 
 ## 5 · Volver a desplegar la API, y mirarlo en el móvil
 

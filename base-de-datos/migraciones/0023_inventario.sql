@@ -622,12 +622,33 @@ create table estook.movimiento_de_stock (
   cantidad_despues     numeric(14, 4)  not null,
   coste_medio_despues  bigint          not null,
 
-  lote_id  uuid  references estook.lote (id) on delete set null,
+  -- ── `cascade` y no `set null`, y costo encontrarlo ──────────────────────
+  --
+  -- Con `on delete set null`, borrar un lote hace que Postgres lance un
+  -- **`update`** sobre esta tabla para vaciar la columna. Y este libro no admite
+  -- `update`: el guardian lo rechaza, con razon.
+  --
+  -- La consecuencia era que **«Quitar los ejemplos» fallaba** en cuanto un
+  -- producto de mentira tuviera un lote, que es siempre que se apunte una
+  -- caducidad. El boton se quedaba a medias sin decir nada. Lo encontro una
+  -- prueba, no la pantalla.
+  --
+  -- Con `cascade` no hay `update` que valga: si desaparece el lote, desaparecen
+  -- sus lineas. Y eso no abre ninguna puerta, porque **un lote no se borra
+  -- solo**: no hay politica de borrado para los reales, igual que para los
+  -- movimientos. Un lote solo desaparece cuando desaparece su producto, y
+  -- entonces sus lineas se iban a ir de todas formas.
+  lote_id  uuid  references estook.lote (id) on delete cascade,
   -- Obligatorio en los ajustes: un descuadre sin motivo no se puede investigar.
   motivo   text,
   -- La decide el servidor con la zona y la hora de corte del local (regla 10).
   fecha_operativa  date         not null,
   ocurrido_en      timestamptz  not null default now(),
+  -- Aqui `set null` si, y con la misma consecuencia mirada del derecho: como el
+  -- libro no admite `update`, esto hace que **una persona con movimientos
+  -- apuntados no se pueda borrar**. Es exactamente lo que se quiere: «la persona
+  -- no se borra: sigue en lo que firmo, en sus fichajes y en su historial»
+  -- (Auditoria 2.11). Quien se va se retira, no se borra.
   persona_id       uuid  references estook.persona (id) on delete set null,
   correlacion_id   uuid,
   -- Como entro: 'a_mano', 'catalogo', 'ejemplo'. M7 anadira 'albaran'.
@@ -989,8 +1010,14 @@ create policy precio_escritura on estook.precio_de_producto
 create policy lote_lectura on estook.lote
   for select using (local_id in (select local_id from estook.locales_visibles()));
 
-create policy lote_escritura on estook.lote
-  for all using (estook.puede_editar('app.inventario', local_id))
+-- Se apunta y se corrige, **pero no se borra**: no hay politica de `delete`, y
+-- eso es lo que hace verdad el `on delete cascade` de la linea del libro. Un
+-- lote solo desaparece cuando desaparece su producto.
+create policy lote_alta on estook.lote
+  for insert with check (estook.puede_editar('app.inventario', local_id));
+
+create policy lote_edicion on estook.lote
+  for update using (estook.puede_editar('app.inventario', local_id))
   with check (estook.puede_editar('app.inventario', local_id));
 
 -- ── El libro ─────────────────────────────────────────────────────────────────

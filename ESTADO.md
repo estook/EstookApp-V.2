@@ -13,7 +13,7 @@
 | -------------- | -------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario        |
 | **Siguiente**  | **M7** · Proveedores y compras                                                               |
-| **Pruebas**    | 690 unitarias y de base de datos · 190 de extremo a extremo                                  |
+| **Pruebas**    | 692 unitarias y de base de datos · 190 de extremo a extremo                                  |
 | **Rama**       | M6 está en la rama `m6-inventario`, **sin fusionar todavía**                                 |
 | **Publicado**  | Web, app y API vivas. La base de Supabase sigue en la `0022`: **la `0023` está sin aplicar** |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                 |
@@ -860,7 +860,7 @@ Va en la misma transacción y no en un proceso de fondo porque **un local que se
 queda cinco minutos sin categorías es un local roto**. Está razonado entero en la
 [decisión 0014](docs/decisiones/0014-las-reacciones-entre-modulos.md).
 
-#### Cinco fallos que M6 encontró, y tres eran de antes
+#### Seis fallos que M6 encontró, y tres eran de antes
 
 **1 · El camino de grupo de M5 no funcionaba.** `crear_local` devolvía «esto no
 está en tu acceso» **a la propietaria de una cadena de seis locales**, que tiene
@@ -893,11 +893,17 @@ cazó una prueba en el acto: «Ignaico» dejó de encontrar a «Ignacio». Los d
 bloques que faltaban **no los cazó ninguna**, porque ninguna preguntaba por
 ellos. Ahora hay una que lo hace.
 
-**4 · Los ejemplos nacían con la cámara en números rojos.** Tres bandejas de
+**4 · «Quitar los ejemplos» fallaba en cuanto hubiera un lote.** El libro
+apuntaba a su lote con `on delete set null`, y borrar un lote hace que Postgres
+lance un **`update`** sobre el libro, que es justo lo que su guardián rechaza. El
+botón de M5 se quedaba a medias **sin decir nada**. Va con `cascade`, y no abre
+ninguna puerta porque un lote no se borra solo.
+
+**5 · Los ejemplos nacían con la cámara en números rojos.** Tres bandejas de
 treinta huevos no aguantan tres semanas gastando veintidós al día: acababan en
 −372 unidades. Ahora la entrada sale del consumo.
 
-**5 · Y uno de las pruebas, hermano del que dejó M5.** `pnpm prueba:e2e` levanta
+**6 · Y uno de las pruebas, hermano del que dejó M5.** `pnpm prueba:e2e` levanta
 la API con `reuseExistingServer`: si hay una API de pruebas viva de antes, **la
 reutiliza con el código viejo**. Costó tres intentos creer que un arreglo
 correcto no funcionaba. Antes de dar por bueno un rojo del servidor, se mata lo

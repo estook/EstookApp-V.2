@@ -671,6 +671,7 @@ async function apunteDirecto(
   cuanto: number,
   coste: number | null,
   motivo: string | null = null,
+  esEjemplo = false,
 ): Promise<void> {
   const [anterior] = await comoDuena<{ cantidad: string; coste: string }>(
     `select cantidad_despues::text as cantidad, coste_medio_despues::text as coste
@@ -695,10 +696,10 @@ async function apunteDirecto(
   await comoDuena(
     `insert into estook.movimiento_de_stock
        (local_id, producto_id, tipo, cantidad, coste_milesimas,
-        cantidad_despues, coste_medio_despues, motivo, fecha_operativa)
-     select p.local_id, p.id, $2::estook.tipo_de_movimiento, $3, $4, $5, $6, $7, current_date
+        cantidad_despues, coste_medio_despues, motivo, fecha_operativa, es_ejemplo)
+     select p.local_id, p.id, $2::estook.tipo_de_movimiento, $3, $4, $5, $6, $7, current_date, $8
        from estook.producto p where p.id = $1`,
-    [productoId, tipo, cuanto, coste, nuevo.cantidad, nuevo.coste, motivo],
+    [productoId, tipo, cuanto, coste, nuevo.cantidad, nuevo.coste, motivo, esEjemplo],
   );
 }
 
@@ -716,4 +717,110 @@ async function ponPrecio(
        from estook.producto p where p.id = $1`,
     [productoId, proveedorId, precio],
   );
+}
+
+// ── El botón de M5, con las tablas de M6 debajo ──────────────────────────────
+
+describe('quitar los ejemplos se lleva el inventario de mentira', () => {
+  /**
+   * **Esta es la promesa de M5 que M6 tiene que cumplir sin tocar su código.**
+   *
+   * «Un solo botón, **Quitar los ejemplos**, los borra todos de golpe»
+   * (Manifiesto 8). M5 construyó el registro, el botón y la regla de que no
+   * cuentan, y dejó escrito que las filas las siembran M6, M9 y M10.
+   *
+   * Lo que aquí se comprueba es que el botón **se lleva también lo que cuelga**:
+   * el precio, el lote y las líneas del libro. Y hay dos cosas que podrían
+   * romperlo y por eso se mira:
+   *
+   *   · El libro de movimientos **no tiene política de borrado** para las líneas
+   *     de verdad, a propósito. Si la de ejemplo tampoco funcionara, el botón se
+   *     quedaría a medias sin decir nada.
+   *   · `quitar_ejemplos` **no lleva privilegio**, así que borra con los permisos
+   *     de quien pulsa. Si el gerente no pudiera, quedarían huérfanos.
+   */
+  it('se lleva el producto, su precio, su lote y sus movimientos', async () => {
+    const rosa = await base.personaPorCorreo(ROSA);
+    const { productoId, localId } = await unProductoDePrueba('Ejemplo que hay que borrar');
+
+    const [org] = await comoDuena<{ organizacion_id: string }>(
+      `select organizacion_id from estook.local where id = $1`,
+      [localId],
+    );
+
+    // Se marca como ejemplo y se apunta en el registro de M5, que es exactamente
+    // lo que hace `sembrarElInventario` en el servidor.
+    await comoDuena(`update estook.producto set es_ejemplo = true where id = $1`, [productoId]);
+    await comoDuena(
+      `insert into estook.dato_de_ejemplo (organizacion_id, local_id, tabla, fila_id)
+       values ($1, $2, 'producto', $3)`,
+      [org?.organizacion_id, localId, productoId],
+    );
+
+    await ponPrecio(productoId, 4250, null);
+    await comoDuena(
+      `insert into estook.lote (local_id, producto_id, codigo, caduca_el, recibido_el, es_ejemplo)
+       values ($1, $2, 'L-1', current_date + 5, current_date, true)`,
+      [localId, productoId],
+    );
+    // La marca se pone **al apuntar**, no después: el libro no admite `update`,
+    // y eso también vale para el dueño de la tabla.
+    await apunteDirecto(productoId, 'entrada', 5000, 392, null, true);
+    await apunteDirecto(productoId, 'salida', -1200, null, null, true);
+
+    // Antes: está todo.
+    expect(await cuantasHay('producto', productoId)).toBe(1);
+    expect(await cuantasHay('precio_de_producto', productoId)).toBe(1);
+    expect(await cuantasHay('lote', productoId)).toBe(1);
+    expect(await cuantasHay('movimiento_de_stock', productoId)).toBe(2);
+
+    // Y se pulsa el botón, **con los permisos de quien lo pulsa**.
+    const borradas = await base.comoPersona(rosa, async () => {
+      const { rows } = await base.bd.query<{ quitar_ejemplos: number }>(
+        `select estook.quitar_ejemplos($1) as quitar_ejemplos`,
+        [localId],
+      );
+      return rows[0]?.quitar_ejemplos ?? 0;
+    });
+
+    expect(borradas).toBeGreaterThan(0);
+
+    // Después: no queda nada, **ni colgando**.
+    expect(await cuantasHay('producto', productoId)).toBe(0);
+    expect(await cuantasHay('precio_de_producto', productoId)).toBe(0);
+    expect(await cuantasHay('lote', productoId)).toBe(0);
+    expect(await cuantasHay('movimiento_de_stock', productoId)).toBe(0);
+
+    // Y el apunte del registro se va con él: si se quedara, la tarjeta del Panel
+    // seguiría ofreciendo borrar algo que ya no existe.
+    const [apuntes] = await comoDuena<{ cuantos: number }>(
+      `select count(*)::int as cuantos from estook.dato_de_ejemplo where fila_id = $1`,
+      [productoId],
+    );
+    expect(apuntes?.cuantos).toBe(0);
+  });
+
+  it('y no se lleva por delante el género de verdad', async () => {
+    // Lo contrario también importa: el botón borra lo apuntado, y **nada más**.
+    const rosa = await base.personaPorCorreo(ROSA);
+    const { productoId, localId } = await unProductoDePrueba('Genero de verdad que se queda');
+    await apunteDirecto(productoId, 'entrada', 1000, 300);
+
+    await base.comoPersona(rosa, () =>
+      base.bd.query(`select estook.quitar_ejemplos($1)`, [localId]),
+    );
+
+    expect(await cuantasHay('producto', productoId)).toBe(1);
+    expect(await cuantasHay('movimiento_de_stock', productoId)).toBe(1);
+  });
+});
+
+/** Cuántas filas de una tabla apuntan a ese producto. Se lee como dueña. */
+async function cuantasHay(tabla: string, productoId: string): Promise<number> {
+  const columna = tabla === 'producto' ? 'id' : 'producto_id';
+  const [fila] = await comoDuena<{ cuantas: number }>(
+    `select count(*)::int as cuantas from estook.${tabla} where ${columna} = $1`,
+    [productoId],
+  );
+  return fila?.cuantas ?? 0;
 }

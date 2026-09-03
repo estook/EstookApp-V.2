@@ -15,7 +15,7 @@
 | **M5**         | Construido, probado y fusionado. **Le falta la regla 11**: verlo en un móvil de verdad |
 | **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                    |
 | **Pruebas**    | 614 unitarias y de base de datos · 164 de extremo a extremo                            |
-| **Rama**       | M5 fusionado (PR #24). El repaso de cierre, en el PR #25, sin fusionar                 |
+| **Rama**       | M5 fusionado (PR #24) y su repaso (PR #25). Lo de entrar por primera vez, en el PR #26 |
 | **Publicado**  | Web, app y API vivas, pero **la API sirve código de antes de M5**. Base en la `0021`   |
 | **Entrar**     | Nadie puede: no queda ninguna cuenta. Se arregla con `pnpm bd:cuenta-de-verdad`        |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local  |

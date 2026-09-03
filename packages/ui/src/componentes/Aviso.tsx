@@ -111,6 +111,27 @@ export interface ErrorDeLaApi {
   readonly quePasa: string;
   readonly queSePuedeHacer: string;
   readonly boton: { readonly texto: string; readonly accion: string } | null;
+  /**
+   * Lo que el servidor anade **sobre este caso concreto**, cuando lo sabe.
+   *
+   * El catalogo de errores da una frase general por codigo, y esta bien: sirve
+   * para los cien sitios donde puede saltar. Pero cuando el servidor sabe algo
+   * mas —«necesita al menos diez caracteres»— esa frase concreta viaja en
+   * `detalle.porque` y **se estaba tirando a la basura**.
+   *
+   * El resultado era una pantalla que mentia: una contrasena demasiado corta
+   * decia «Falta algo por rellenar. Los campos que faltan estan marcados
+   * debajo», sin marcar ninguno, porque no faltaba ninguno. Quien lo leia
+   * revisaba los campos llenos una y otra vez.
+   */
+  readonly detalle?: Record<string, unknown>;
+}
+
+/** La frase concreta del servidor, si la trae y es texto. */
+function loConcreto(error: ErrorDeEstook | ErrorDeLaApi): string | null {
+  const detalle = (error as ErrorDeLaApi).detalle;
+  const porque = detalle?.['porque'];
+  return typeof porque === 'string' && porque.trim() !== '' ? porque : null;
 }
 
 export function ErrorEnCristiano({ error, alActuar }: ErrorEnCristianoProps) {
@@ -132,7 +153,12 @@ export function ErrorEnCristiano({ error, alActuar }: ErrorEnCristianoProps) {
         ) : undefined
       }
     >
-      {error.queSePuedeHacer}
+      {/*
+        Lo concreto primero, cuando lo hay: «necesita al menos diez caracteres»
+        le dice a alguien que hacer; «los campos que faltan estan marcados
+        debajo» no, sobre todo cuando no falta ninguno.
+      */}
+      {loConcreto(error) ?? error.queSePuedeHacer}
     </Aviso>
   );
 }

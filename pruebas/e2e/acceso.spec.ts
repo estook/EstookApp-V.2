@@ -472,3 +472,99 @@ test.describe('el ciclo de una persona', () => {
     expect(JSON.stringify(cuerpo)).not.toContain('Internal Server Error');
   });
 });
+
+// ── La contraseña que te dio otra persona ────────────────────────────────────
+
+/**
+ * **Esta pantalla dejaba fuera a todo el mundo, y no había ni una prueba.**
+ *
+ * `cambiar_mi_clave` exige la contraseña actual cuando ya hay una puesta, y aquí
+ * siempre la hay: se acaba de entrar con ella. Esa regla del servidor es
+ * correcta —si no, a quien se dejara la sesión abierta en la tablet del pase le
+ * cambiarían la contraseña de un clic—. Lo que faltaba era **pedirla**.
+ *
+ * La pantalla mandaba solo la nueva, así que el servidor contestaba siempre «ese
+ * correo y esa contraseña no cuadran» y no había forma de pasar. Afectaba a todas
+ * las cuentas creadas con `bd:cuenta-de-verdad` y a todas las invitadas con una
+ * contraseña temporal: **las dos únicas maneras de entrar por primera vez**.
+ *
+ * La pantalla de Ajustes lo hacía bien desde el primer día. Solo estaba rota la
+ * obligatoria, que es la que pasa todo el mundo y por la que no había pasado
+ * nadie.
+ *
+ * Va por la pantalla, no por la API, porque el servidor nunca estuvo mal.
+ */
+test.describe.serial('la contraseña que te dio otra persona', () => {
+  // La gestoría no la usa ninguna otra prueba, así que se le puede cambiar la
+  // contraseña sin dejar a nadie fuera.
+  const GESTORIA = 'asesoria@ejemplo.estook.com';
+  const TEMPORAL = 'la que me dieron 123';
+  const MIA = 'una frase mia que recuerdo';
+
+  test('se puede cambiar, y se entra', async ({ page, request }) => {
+    // Elena lleva la dirección: puede ponerle una contraseña a alguien de su
+    // organización, y nace con «hay que cambiarla».
+    const token = await unToken(request, 'elena@ejemplo.estook.com');
+    const yo = (await (
+      await request.get(`${API}/v1/consultas/quien_soy`, {
+        headers: { authorization: `Bearer ${token}` },
+      })
+    ).json()) as {
+      datos: {
+        organizacion: { id: string } | null;
+        organizaciones: { id: string }[];
+        locales: { id: string }[];
+      };
+    };
+
+    // Elena lleva seis locales, así que entra en el consolidado y **no está en
+    // ninguno**: `quien_soy` devuelve `local` a nulo. Preguntar por el equipo sin
+    // decir de qué local es lo que hacía fallar esta prueba al escribirla.
+    const unLocal = yo.datos.locales[0]?.id;
+    const laOrganizacion = yo.datos.organizacion?.id ?? yo.datos.organizaciones[0]?.id;
+
+    const suyas = (await (
+      await request.get(`${API}/v1/consultas/quien_tiene_acceso?local_id=${unLocal}`, {
+        headers: { authorization: `Bearer ${token}` },
+      })
+    ).json()) as { datos: { personaId: string; correo: string }[] };
+
+    const gestoria = suyas.datos.find((p) => p.correo === GESTORIA);
+    expect(gestoria, 'la gestoría tiene que estar sembrada').toBeDefined();
+
+    const puesta = await request.post(`${API}/v1/comandos/poner_clave_a`, {
+      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `clave-${Date.now()}` },
+      data: {
+        persona_id: gestoria?.personaId,
+        organizacion_id: laOrganizacion,
+        nueva: TEMPORAL,
+      },
+    });
+    expect(puesta.status()).toBe(200);
+
+    // Y ahora, por la pantalla: se entra con la que le dieron.
+    await entrar(page, GESTORIA, TEMPORAL);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Pon una contraseña tuya');
+
+    // Una demasiado corta se rechaza **diciendo por qué**. Antes contestaba
+    // «Falta algo por rellenar. Los campos que faltan están marcados debajo», sin
+    // marcar ninguno, porque no faltaba ninguno.
+    await page.getByLabel('La contraseña que te dieron').fill(TEMPORAL);
+    await page.getByLabel('Tu contraseña nueva').fill('corta');
+    await page.getByLabel('Otra vez, para comprobar').fill('corta');
+    await expect(page.getByText(/caracteres/i).first()).toBeVisible();
+    await expect(page.getByText('Los campos que faltan están marcados debajo')).toBeHidden();
+
+    // Y con las tres bien puestas, se pasa.
+    await page.getByLabel('Tu contraseña nueva').fill(MIA);
+    await page.getByLabel('Otra vez, para comprobar').fill(MIA);
+    await page.getByRole('button', { name: 'Guardar y entrar' }).click();
+
+    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Pon una contraseña tuya');
+  });
+
+  test('y la nueva es la que vale', async ({ page }) => {
+    await entrar(page, GESTORIA, MIA);
+    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Pon una contraseña tuya');
+  });
+});

@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { Aviso, Boton, Campo, ErrorEnCristiano, EstadoVacio, Logo, clases } from '@estook/ui';
 import { IconoLocal, IconoOrganizacion } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
+import { LARGO_MINIMO_DE_CLAVE } from '@estook/dominio';
 import { usarSesion } from './Sesion.tsx';
 
 /**
@@ -257,21 +258,40 @@ export function PedirDobleFactor() {
 
 export function PonerMiContrasena() {
   const { cliente, refrescar, salir } = usarSesion();
+  const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
   const [repetida, setRepetida] = useState('');
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [enviando, setEnviando] = useState(false);
 
   const noCuadran = repetida !== '' && nueva !== repetida;
+  const corta = nueva !== '' && nueva.length < LARGO_MINIMO_DE_CLAVE;
 
+  /**
+   * **Esta pantalla dejaba fuera a todo el mundo, y hay que contarlo entero.**
+   *
+   * Mandaba `{ nueva }` y nada más. El servidor, cuando ya hay una contraseña
+   * puesta —y aquí siempre la hay, porque se acaba de entrar con ella—, exige
+   * también la actual: sin eso, a quien se dejara la sesión abierta en la tablet
+   * del pase le podrían cambiar la contraseña de un clic y quedarse la cuenta.
+   * Esa regla del servidor es correcta. Lo que faltaba era pedirla.
+   *
+   * Así que la respuesta era siempre «ese correo y esa contraseña no cuadran», y
+   * **no había forma de pasar de esta pantalla**. Afectaba a todas las cuentas
+   * creadas con `bd:cuenta-de-verdad` y a todas las invitadas con una contraseña
+   * temporal, que son exactamente las dos maneras de entrar por primera vez.
+   *
+   * La pantalla de Ajustes hacía lo correcto desde el primer día. Solo estaba mal
+   * la obligatoria, que es la que pasa todo el mundo y nadie había pasado.
+   */
   async function alEnviar(evento: FormEvent) {
     evento.preventDefault();
-    if (noCuadran) return;
+    if (noCuadran || corta) return;
 
     setEnviando(true);
     setError(null);
 
-    const respuesta = await cliente.ejecutar('cambiar_mi_clave', { nueva });
+    const respuesta = await cliente.ejecutar('cambiar_mi_clave', { actual, nueva });
     if (!respuesta.ok) {
       setError(respuesta.error);
       setEnviando(false);
@@ -295,12 +315,32 @@ export function PonerMiContrasena() {
         }}
         className="flex flex-col gap-e4"
       >
+        {/*
+          La que te dieron. Va primero porque es la que acabas de teclear para
+          entrar, y porque el servidor la va a pedir de todas formas.
+        */}
+        <Campo
+          etiqueta="La contraseña que te dieron"
+          tipo="contrasena"
+          name="actual"
+          autoComplete="current-password"
+          ayuda="La misma con la que acabas de entrar."
+          value={actual}
+          onChange={(evento) => {
+            setActual(evento.target.value);
+          }}
+          obligatorio
+        />
+
         <Campo
           etiqueta="Tu contraseña nueva"
           tipo="contrasena"
           name="nueva"
           autoComplete="new-password"
-          ayuda="Al menos diez caracteres. Una frase que recuerdes vale más que un símbolo raro."
+          ayuda={`Al menos ${LARGO_MINIMO_DE_CLAVE} caracteres. Una frase que recuerdes vale más que un símbolo raro.`}
+          {...(corta
+            ? { error: `Te faltan caracteres: tiene que tener ${LARGO_MINIMO_DE_CLAVE}.` }
+            : {})}
           value={nueva}
           onChange={(evento) => {
             setNueva(evento.target.value);

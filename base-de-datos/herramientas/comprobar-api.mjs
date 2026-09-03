@@ -821,6 +821,35 @@ try {
   `;
   comprobar('ni una linea de receta apunta al vacio', huerfanas.sueltas === 0);
 
+  titulo('M5 · lo que la 0022 dejo puesto');
+
+  // La 0022 guarda a que paso se volvio desde el Panel. Se mira aqui por lo
+  // mismo que las otras: lo que una migracion promete hay que verlo en la base
+  // de verdad, no darlo por hecho porque el fichero lo diga.
+  const [recado] = await conexion`
+    select (
+      select count(*)::int from information_schema.columns
+       where table_schema = 'estook' and table_name = 'local'
+         and column_name = 'onboarding_retomado_para'
+    ) as columna,
+    (
+      select count(*)::int from pg_constraint
+       where conname in (
+         'local_retomado_para_es_un_paso',
+         'local_retomado_solo_con_el_alta_abierta'
+       )
+    ) as restricciones,
+    (
+      select count(*)::int from estook.local
+       where onboarding_retomado_para is not null and onboarding_terminado
+    ) as pegados
+  `;
+  comprobar('la columna del recado esta', recado.columna === 1);
+  comprobar('con sus dos restricciones', recado.restricciones === 2, `hay ${recado.restricciones}`);
+  // Un recado abierto sobre un alta terminada cerraria el alta siguiente en el
+  // primer paso. La restriccion ya lo impide; esto lo mira en los datos.
+  comprobar('y ni un recado pegado en un alta ya terminada', recado.pegados === 0);
+
   await conexion.end();
 } catch (fallo) {
   console.error(`\n  Se ha roto: ${fallo instanceof Error ? fallo.message : String(fallo)}`);

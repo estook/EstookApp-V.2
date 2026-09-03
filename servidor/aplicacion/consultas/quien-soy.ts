@@ -3,7 +3,7 @@ import type { Destino as ADonde, Idioma } from '@estook/dominio';
 import { esPermiso, type Nivel, type PermisosResueltos } from '@estook/permisos';
 import type { Sql } from '../../infraestructura/postgres.ts';
 import { decidirDestino } from '../acceso.ts';
-import { consulta, FalloDeAplicacion } from '../contrato.ts';
+import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 
 /**
  * Quien soy, donde estoy y que puedo (M4).
@@ -70,6 +70,24 @@ export interface QuienSoy {
     readonly nombre: string;
     readonly codigo: string;
     readonly area: string | null;
+    /**
+     * La marca del local (M5). «Se aplican a la app y a todos los documentos»
+     * (Manifiesto 8), y la cabecera cambia de color al cambiar de local, «para
+     * que nadie apunte una merma en el local equivocado» (Manifiesto 31).
+     *
+     * Van aquí y no en una consulta aparte porque la cabecera se pinta en
+     * **todas** las pantallas: una consulta más sería un viaje más antes de la
+     * primera pantalla útil, que es justo lo que B7 no perdona.
+     */
+    readonly colorDeMarca: string | null;
+    /**
+     * El enlace al logo, **firmado y caduco**. Nunca se guarda: lo que guarda la
+     * base de datos es la clave del objeto, y esto se pide cada vez.
+     *
+     * Nulo si no hay logo, o si no hay almacén montado. La cabecera enseña
+     * entonces el logotipo de Estook, que es lo correcto y no un hueco roto.
+     */
+    readonly logo: string | null;
   } | null;
 
   /** Para el selector: todo lo que alcanza. */
@@ -95,7 +113,8 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
   // para saber que tiene que pedir el codigo, y a quien.
   aunSinDobleFactor: true,
 
-  async ejecutar({ sql, sesion }) {
+  async ejecutar(contexto) {
+    const { sql, sesion } = contexto;
     if (sesion === null) throw new FalloDeAplicacion('sin_sesion');
 
     const personas = await sql<
@@ -126,7 +145,8 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
       destino.organizacionId === null
         ? null
         : await leerOrganizacion(sql, destino.organizacionId, laSuya?.alcance ?? 'local');
-    const local = destino.localId === null ? null : await leerLocal(sql, destino.localId);
+    const local =
+      destino.localId === null ? null : await leerLocal(sql, destino.localId, contexto.almacen);
 
     const permisos =
       destino.localId === null ? {} : await leerPermisos(sql, sesion.personaId, destino.localId);
@@ -205,16 +225,55 @@ async function leerOrganizacion(
   };
 }
 
-async function leerLocal(sql: Sql, id: string): Promise<QuienSoy['local']> {
-  const filas = await sql<{ id: string; nombre: string; codigo: string; area: string | null }[]>`
-    select l.id, l.nombre, l.codigo, a.nombre as area
+/**
+ * Cuánto vale un enlace al logo antes de caducar.
+ *
+ * Una hora. La cabecera se pinta en cada pantalla, así que un enlace corto se
+ * rompería a media mañana; y uno eterno no sería un enlace firmado, sería una
+ * dirección pública con pasos de más.
+ */
+const LO_QUE_DURA_EL_ENLACE = 3600;
+
+async function leerLocal(
+  sql: Sql,
+  id: string,
+  almacen: Contexto['almacen'],
+): Promise<QuienSoy['local']> {
+  const filas = await sql<
+    {
+      id: string;
+      nombre: string;
+      codigo: string;
+      area: string | null;
+      color_de_marca: string | null;
+      logo_clave: string | null;
+    }[]
+  >`
+    select l.id, l.nombre, l.codigo, a.nombre as area, l.color_de_marca, l.logo_clave
       from estook.local l
       left join estook.area a on a.id = l.area_id
      where l.id = ${id}
   `;
 
   const fila = filas[0];
-  return fila ? { id: fila.id, nombre: fila.nombre, codigo: fila.codigo, area: fila.area } : null;
+  if (!fila) return null;
+
+  // Si el almacén no contesta, se enseña la marca sin logo en vez de romper la
+  // pantalla entera. «Nunca un error rojo por algo que no lo es» (Auditoría,
+  // parte 5): que un enlace no se pueda firmar no es un fallo del restaurante.
+  const logo =
+    fila.logo_clave === null || almacen === null
+      ? null
+      : await almacen.enlace(fila.logo_clave, LO_QUE_DURA_EL_ENLACE).catch(() => null);
+
+  return {
+    id: fila.id,
+    nombre: fila.nombre,
+    codigo: fila.codigo,
+    area: fila.area,
+    colorDeMarca: fila.color_de_marca,
+    logo,
+  };
 }
 
 /**

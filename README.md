@@ -37,14 +37,26 @@ el arranque salta ese paso y avisa.
 | `pnpm dev`              | Las cuatro aplicaciones en modo desarrollo            |
 | `pnpm verifica`         | Tipos, lint, formato, reglas de dependencia y pruebas |
 | `pnpm build`            | Construye las cuatro                                  |
-| `pnpm tamano`           | Comprueba el presupuesto de B7 sobre lo construido    |
+| `pnpm tamano`           | Mide el peso de lo construido. Informa, no bloquea    |
 | `pnpm prueba:e2e`       | Playwright, en escritorio y en movil pequeno          |
 | `pnpm bd:migrar`        | Aplica las migraciones pendientes                     |
 | `pnpm bd:revertir`      | Deshace la ultima                                     |
 | `pnpm bd:revertir:todo` | Las deshace todas, de la ultima a la primera          |
-| `pnpm bd:sembrar`       | Carga las tres semillas                               |
+| `pnpm bd:sembrar`       | Carga las cinco semillas                              |
 | `pnpm bd:comprobar`     | Dice que hay de verdad en la base de datos            |
 | `pnpm bd:comprobar-api` | Arranca la API y la prueba contra Supabase de verdad  |
+| `pnpm almacen:preparar` | Crea el cubo de ficheros y comprueba el camino entero |
+
+Y dos que solo se usan contra una base de datos que no es la tuya:
+
+| Comando                          | Que hace                                                   |
+| -------------------------------- | ---------------------------------------------------------- |
+| `pnpm bd:sin-cuentas-de-ejemplo` | Cierra las cuentas de ejemplo: contrasenas, PIN y sesiones |
+| `pnpm bd:cuenta-de-verdad`       | Crea una cuenta con una clave de un solo uso               |
+
+**A una base remota no se le siembran credenciales de ejemplo**, y `bd:sembrar` lo
+salta solo. La razon esta en `base-de-datos/semillas/acceso.ts`, y costo ocho
+cuentas con clave publicada en produccion.
 
 Y tres que se ejecutan **una sola vez** y suben lo que sacan al repositorio, para
 que construir no dependa de que nadie esté en pie:

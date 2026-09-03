@@ -1,4 +1,4 @@
--- Semilla 3 de 3 · las personas y sus membresias
+-- Semilla 4 de 5 · las personas y sus membresias
 --
 -- Se carga despues de las dos anteriores, porque cuelga de ellas.
 --
@@ -20,7 +20,9 @@ insert into estook.persona (correo, nombre, apellidos, idioma, es_ejemplo) value
   ('ignacio@ejemplo.estook.com', 'Ignacio', 'Bordas',   'es', true),
   ('luis@ejemplo.estook.com',    'Luis',    'Amunarriz','eu', true),
   ('nuria@ejemplo.estook.com',   'Nuria',   'Sanmartin','ca', true),
-  ('asesoria@ejemplo.estook.com','Asesoria','Cuenta Clara', 'es', true)
+  ('asesoria@ejemplo.estook.com','Asesoria','Cuenta Clara', 'es', true),
+  -- Casa Lola · la que acaba de darse de alta y tiene el alta a medias (M5)
+  ('pablo@ejemplo.estook.com',   'Pablo',   'Ferrer',   'es', true)
 on conflict (correo) do update
   set nombre = excluded.nombre,
       apellidos = excluded.apellidos,
@@ -40,6 +42,20 @@ from (values
 join estook.persona p on p.correo = v.correo
 join estook.organizacion o on o.codigo = 'bar-centro'
 join estook.local l on l.organizacion_id = o.id and l.codigo = 'bar-centro'
+on conflict do nothing;
+
+-- ── Casa Lola · una persona, y el alta sin terminar ───────────────────────────
+--
+-- Pablo acaba de dar de alta su bar y todavia no ha respondido las ocho
+-- preguntas. Entrar como el lleva al alta, que es la quinta comprobacion del
+-- Manifiesto (31) y la unica rama de `aDondeEntra` que hasta M5 no se podia
+-- recorrer con datos sembrados.
+
+insert into estook.membresia (persona_id, organizacion_id, local_id, alcance, rol)
+select p.id, o.id, l.id, 'local', 'gerente'
+from estook.persona p, estook.organizacion o
+join estook.local l on l.organizacion_id = o.id and l.codigo = 'casa-lola'
+where p.correo = 'pablo@ejemplo.estook.com' and o.codigo = 'casa-lola'
 on conflict do nothing;
 
 -- ── Grupo Costa · seis locales en dos areas ───────────────────────────────────

@@ -86,7 +86,9 @@ export async function levantarBase(): Promise<BaseDePrueba> {
       const { rows } = await bd.query(consulta, parametros);
       return { rows };
     },
-    { entorno: 'pruebas' },
+    // PGlite: vive y muere con esta orden, así que aquí una contraseña de
+    // ejemplo no sale a ningún sitio.
+    { donde: 'efimera' },
   );
 
   async function unId(consulta: string, parametro: string): Promise<string> {

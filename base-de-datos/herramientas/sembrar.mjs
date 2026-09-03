@@ -2,7 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { abrirConexion } from './conexion.mjs';
-import { CLAVE_DE_EJEMPLO, sembrarAcceso } from '../semillas/acceso.ts';
+import { CLAVE_DE_EJEMPLO, ErrorDeSiembraRemota, sembrarAcceso } from '../semillas/acceso.ts';
 
 /**
  * Carga las semillas: el local independiente, la cadena de seis locales en dos
@@ -12,8 +12,19 @@ import { CLAVE_DE_EJEMPLO, sembrarAcceso } from '../semillas/acceso.ts';
  *   pnpm bd:sembrar
  *
  * La ultima no es un `.sql` y no puede serlo: derivar una contrasena se hace en el
- * servidor, no en la base de datos (decision 0010). Y **se niega a correr en
- * produccion**, porque pone una clave que esta escrita en el repositorio.
+ * servidor, no en la base de datos (decision 0010).
+ *
+ * ── Contra una base remota se siembra a medias, y es lo correcto (M5) ────────
+ *
+ * Los `.sql` se aplican en cualquier sitio: crean organizaciones, locales y
+ * personas de ejemplo, y ninguno pone una clave. La cuarta semilla **no**: pone
+ * una contrasena que esta escrita en el repositorio, y eso solo puede pasar en
+ * una base que no salga de tu maquina.
+ *
+ * Antes esto se decidia con la variable `ENTORNO`, y por eso acabaron ocho
+ * cuentas con clave publica en la base de produccion: la variable decia
+ * `desarrollo` y `DATABASE_URL` apuntaba a Supabase. Ahora lo decide la direccion
+ * a la que se conecta, que es lo unico que no puede mentir.
  */
 const CARPETA = fileURLToPath(new URL('../semillas/', import.meta.url));
 
@@ -30,10 +41,18 @@ try {
   }
 
   process.stdout.write('  sembrando acceso.ts ... ');
-  const acceso = await sembrarAcceso(async (consulta, parametros) => ({
-    rows: await sql.unsafe(consulta, parametros),
-  }));
-  process.stdout.write('hecho\n');
+  let acceso = null;
+  try {
+    acceso = await sembrarAcceso(
+      async (consulta, parametros) => ({ rows: await sql.unsafe(consulta, parametros) }),
+      { donde: sql.donde },
+    );
+    process.stdout.write('hecho\n');
+  } catch (fallo) {
+    if (!(fallo instanceof ErrorDeSiembraRemota)) throw fallo;
+    process.stdout.write('saltada\n\n');
+    console.log(`  ${fallo.message.split('\n').join('\n  ')}\n`);
+  }
 
   const [resumen] = await sql`
     select
@@ -50,11 +69,13 @@ try {
   // que si no se apuntan ahora, se regeneran. Es lo mismo que pasa al invitar a
   // alguien de verdad, y a proposito: la herramienta no puede hacer nada que la
   // aplicacion no pueda.
-  console.log(`\n  Con que entran las personas de ejemplo (entorno de desarrollo):`);
-  console.log(`  contrasena, las siete: «${CLAVE_DE_EJEMPLO}»`);
-  console.log(`  y su PIN, por local:`);
-  for (const { correo, local, pin } of acceso.pines) {
-    console.log(`    ${pin}  ${correo.split('@')[0]?.padEnd(10)} en ${local}`);
+  if (acceso !== null) {
+    console.log(`\n  Con que entran las personas de ejemplo (base de tu maquina):`);
+    console.log(`  contrasena, las ocho: «${CLAVE_DE_EJEMPLO}»`);
+    console.log(`  y su PIN, por local:`);
+    for (const { correo, local, pin } of acceso.pines) {
+      console.log(`    ${pin}  ${correo.split('@')[0]?.padEnd(10)} en ${local}`);
+    }
   }
 } catch (fallo) {
   console.error(`  fallo: ${fallo instanceof Error ? fallo.message : String(fallo)}`);

@@ -1,10 +1,19 @@
+import { parecido, sinAcentos } from '@estook/dominio';
+
 /**
- * Parecido por trigramas, para las acciones del buscador.
+ * El buscador de acciones de la barra (M3).
  *
- * ── Por que hay dos buscadores y no es duplicar un calculo ───────────────────
+ * ── Donde vive cada mitad, y por que ─────────────────────────────────────────
  *
- * La regla 6 dice que un calculo tiene un unico dueno, asi que conviene dejar
- * claro que aqui no se rompe:
+ * El calculo de parecido —`sinAcentos`, `trigramas` y `parecido`— **se mudo a
+ * `@estook/dominio` en M5**, porque el servidor lo necesita para proponer el
+ * mapeo de columnas de una importacion y no puede importar React. Se reexporta
+ * aqui para que quien lo usaba no note el cambio.
+ *
+ * Lo que se queda es lo de arriba: como se ordenan y se recortan **las acciones
+ * de la barra**, que es una decision de esta pantalla y de ninguna otra.
+ *
+ * ── Y por que hay dos buscadores, que no es duplicar un calculo ──────────────
  *
  *   · **Los datos** (locales, personas, y desde M6 productos y platos) los busca
  *     Postgres con `pg_trgm`, en la migracion 0017. Es el dueno, y lo tiene que
@@ -16,82 +25,8 @@
  * Son dos corpus distintos, no el mismo calculo dos veces. Y hacerlo aqui es lo
  * que permite que escribir «ajustes» y darle a `Enter` funcione **al instante y
  * sin conexion**, que es lo que se espera de un buscador de acciones.
- *
- * Se copia el metodo de `pg_trgm` a proposito, para que las dos mitades de la
- * misma lista se comporten igual: la misma errata perdona lo mismo en un local
- * que en una accion. Si no, el buscador se sentiria de dos maneras.
  */
-
-/**
- * Las letras que **no** se deshacen en «letra + tilde».
- *
- * `normalize('NFD')` parte la «á» en «a» y su acento, y asi se quita solo. Pero
- * la «ø» danesa, la «ł» polaca y la «đ» croata no son eso: son letras enteras y
- * distintas, y NFD las deja tal cual. Sin esta lista, buscar «Soren» no
- * encontraria a «Søren», y la mitad de castellana del buscador perdonaria cosas
- * que la mitad de Postgres no.
- */
-const LETRAS_APARTE: Readonly<Record<string, string>> = {
-  ø: 'o',
-  Ø: 'o',
-  ł: 'l',
-  Ł: 'l',
-  đ: 'd',
-  Đ: 'd',
-  ß: 'ss',
-};
-
-/** Minusculas y sin acentos, igual que `estook.sin_acentos` en la migracion 0017. */
-export function sinAcentos(texto: string): string {
-  return texto
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/[øØłŁđĐß]/g, (letra) => LETRAS_APARTE[letra] ?? letra)
-    .toLowerCase();
-}
-
-/**
- * Los trigramas de un texto, como los hace `pg_trgm`.
- *
- * Cada palabra se rellena con dos espacios delante y uno detras, para que el
- * principio y el final de palabra cuenten. Es lo que hace que «inv» se parezca a
- * «inventario» mucho mas que «ari».
- */
-export function trigramas(texto: string): ReadonlySet<string> {
-  const palabras = sinAcentos(texto)
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .trim()
-    .split(' ')
-    .filter(Boolean);
-
-  const salida = new Set<string>();
-
-  for (const palabra of palabras) {
-    const relleno = `  ${palabra} `;
-    for (let i = 0; i + 3 <= relleno.length; i++) {
-      salida.add(relleno.slice(i, i + 3));
-    }
-  }
-
-  return salida;
-}
-
-/**
- * Cuanto se parecen dos textos, de 0 a 1.
- *
- * Es el indice de Jaccard sobre sus trigramas: lo que comparten entre todo lo
- * que tienen. La misma cuenta que `similarity()` de Postgres.
- */
-export function parecido(uno: string, otro: string): number {
-  const a = trigramas(uno);
-  const b = trigramas(otro);
-  if (a.size === 0 || b.size === 0) return 0;
-
-  let comunes = 0;
-  for (const trozo of a) if (b.has(trozo)) comunes += 1;
-
-  return comunes / (a.size + b.size - comunes);
-}
+export { parecido, sinAcentos, trigramas } from '@estook/dominio';
 
 /**
  * El umbral del buscador de acciones.

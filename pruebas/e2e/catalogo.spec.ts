@@ -137,17 +137,21 @@ test.describe('el catálogo', () => {
     await expect(page.getByText('null · no es lo mismo que cero')).toBeVisible();
   });
 
-  test('los dieciocho errores del catálogo se pintan, y ninguno enseña su código', async ({
+  test('los diecinueve errores del catálogo se pintan, y ninguno enseña su código', async ({
     page,
   }) => {
     // «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría
-    // de flujos). Se comprueba sobre los dieciocho a la vez.
+    // de flujos). Se comprueba sobre los diecinueve a la vez.
     //
     // Doce eran el catálogo cerrado de M2. M4 añadió seis, y **esta prueba falló
     // al añadirlos**, que es justo para lo que está: que añadir un error sea una
     // decisión y no un descuido. Los seis de M4 son las puertas del login:
     // no_cuadra, demasiados_intentos, falta_doble_factor, clave_por_cambiar,
     // pin_ocupado y se_queda_sin_administrador.
+    //
+    // Y M5 añade el diecinueve, `solo_lectura`: la visita de demostración, que
+    // no es un fallo ni una falta de permiso sino lo que se prometió. Volvió a
+    // fallar al añadirlo, que es exactamente lo que tenía que pasar.
     await abrir(page);
     await irA(page, 'Avisos y vacíos');
 
@@ -155,7 +159,7 @@ test.describe('el catálogo', () => {
       has: page.getByRole('heading', { name: 'ErrorEnCristiano' }),
     });
     const avisos = seccion.getByRole('alert');
-    await expect(avisos).toHaveCount(18);
+    await expect(avisos).toHaveCount(19);
 
     const texto = (await seccion.innerText()).toLowerCase();
     for (const codigo of [
@@ -165,6 +169,7 @@ test.describe('el catálogo', () => {
       'faltan_datos',
       'no_cuadra',
       'falta_doble_factor',
+      'solo_lectura',
     ]) {
       expect(texto, `se ha colado el código ${codigo}`).not.toContain(codigo);
     }

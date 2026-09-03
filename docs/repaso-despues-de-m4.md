@@ -51,7 +51,7 @@ merece su documento en `docs/decisiones/`.
 
 ---
 
-## 2 · «Mis dispositivos» no enseña dispositivos
+## 2 · «Mis dispositivos» no enseña dispositivos · **arreglado en M5**
 
 La tabla `estook.dispositivo` existe, con su clave ajena en `sesion`. Hoy:
 
@@ -79,6 +79,13 @@ son dos filas: es un dispositivo con la fecha actualizada.
 
 **Cuándo duele:** ya duele un poco. No es urgente, pero es barato ahora y caro
 cuando haya sesiones de verdad.
+
+> **Hecho en M5.** `entrar` manda ahora una marca opaca del navegador —un número
+> al azar guardado en `localStorage`, nunca nada del aparato físico—, y
+> `estook.reconocer_dispositivo` la encuentra o la da de alta. La sesión cuelga de
+> ella, así que entrar dos veces desde el mismo móvil ya no son dos filas. Hay
+> tres pruebas que lo fijan, incluida la de que sin marca no se inventa un
+> aparato: en navegación privada se entra igual, con la sesión sin dispositivo.
 
 ---
 
@@ -156,10 +163,23 @@ Vale la pena decirlo, porque en un repaso sólo se leen los problemas:
 
 ## En qué orden
 
-1. **Antes de M5, nada.** M5 puede empezar tal cual.
-2. **Con M5**, el punto 2 (dispositivos), porque M5 toca el alta de personas y es
-   donde se paga solo.
+1. ~~**Antes de M5, nada.**~~ M5 empezó tal cual.
+2. ~~**Con M5**, el punto 2 (dispositivos)~~ · **hecho**.
 3. **Antes de M8**, el punto 1 (quién ejecuta lo de fondo) y el 3 (paginación).
-   M8 es la primera que necesita las dos.
+   M8 es la primera que necesita las dos. **M5 no lo forzó** —el modo
+   demostración limpia al entrar, y los eventos se siguen publicando sin que
+   nadie los lea— pero M5 publica cinco eventos nuevos, así que la bandeja crece
+   más deprisa que antes.
 4. **El punto 5 se vigila**, no se arregla: `pnpm tamano` ya lo mide en cada
-   cambio.
+   cambio. Con M5 la app va por 216,6 KB de los 250 de referencia.
+
+---
+
+## Y lo que este repaso no vio
+
+Escribiendo M5 apareció algo que este documento no miró y que era lo más grave de
+todo: **la base de datos de producción tiene ocho cuentas con una contraseña
+publicada en este repositorio**. Está en `ESTADO.md`, arriba del todo.
+
+La lección para el próximo repaso: este miró **el código y los datos**, y esa es
+la mitad. La otra es mirar **qué se ha ejecutado ya contra qué base**.

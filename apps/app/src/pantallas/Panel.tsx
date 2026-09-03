@@ -13,6 +13,7 @@ import {
 import { IconoAnadir, IconoVacio } from '@estook/iconos';
 import { useNavigate } from 'react-router-dom';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { TarjetasDelPanel } from './TarjetasDelPanel.tsx';
 
 /**
  * El Panel (M3).
@@ -53,6 +54,15 @@ export function Panel() {
       </header>
 
       <div className="grid gap-e3 md:grid-cols-2 xl:grid-cols-3">
+        {/*
+          Las tarjetas fijas de M5, primero. «Por encima de los widgets hay una
+          zona de atencion que no se puede quitar y que se ordena sola por
+          prioridad» (Evolucion 1.0, capitulo 5): terminar de configurar el local
+          va antes que cualquier cifra, porque sin eso las cifras no significan
+          nada.
+        */}
+        <TarjetasDelPanel />
+
         <Tarjeta titulo="Ventas de hoy" origen="Se llenara con el TPV · M13">
           <Cifra
             etiqueta="Facturado"

@@ -1,9 +1,9 @@
 import { derivar, derivarConSalDelLocal, pinNuevo } from '../../servidor/dominio/secretos.ts';
 
 /**
- * Semilla 4 de 4 · con qué entran las personas de ejemplo (M4).
+ * Semilla 5 de 5 · con qué entran las personas de ejemplo (M4).
  *
- * Las tres primeras semillas son SQL puro. Esta no puede serlo, y no es un
+ * Las cuatro primeras semillas son SQL puro. Esta no puede serlo, y no es un
  * capricho: **la derivación de la contraseña vive en el servidor, no en la base
  * de datos** (decisión 0010, y antes de ella la 0009). No hay `pgcrypto` en el
  * Postgres efímero de las pruebas, así que un `crypt()` en un `.sql` dejaría el
@@ -15,18 +15,72 @@ import { derivar, derivarConSalDelLocal, pinNuevo } from '../../servidor/dominio
  *
  * ── La contraseña está escrita en el repositorio, y hay que entender por qué ──
  *
- * Porque estas siete personas son de mentira (`es_ejemplo`), y porque poder
+ * Porque estas ocho personas son de mentira (`es_ejemplo`), y porque poder
  * entrar como Sara para ver que su rueda tiene cuatro sectores es lo que hace que
  * M4 se pueda comprobar sin inventarse nada.
  *
- * Y por eso mismo **esta semilla se niega a correr en producción**. Aplicarla
- * contra una base de datos de verdad dejaría siete cuentas abiertas con una
- * contraseña que cualquiera puede leer en GitHub. La comprobación está abajo, es
- * lo primero que hace, y no se puede saltar con una bandera.
+ * ── La comprobación que no podía saltar nunca (M5) ───────────────────────────
+ *
+ * Esta semilla se negaba a correr «en producción», y miraba `ENTORNO` para
+ * saberlo. **Y esa negativa no podía saltar jamás**, porque `ENTORNO` vive en el
+ * `.env.local` de la máquina de quien desarrolla, donde pone `desarrollo`, y
+ * `DATABASE_URL`, en el mismo fichero, apunta al Supabase de verdad.
+ *
+ * Resultado: la base de datos de producción acabó con ocho cuentas cuya
+ * contraseña está publicada en GitHub, y una de ellas con rol `direccion`. No se
+ * notó porque la API todavía no estaba desplegada; el día que se despliegue, esas
+ * ocho cuentas son ocho puertas abiertas.
+ *
+ * Es, palabra por palabra, lo que el propio Plan había escrito en E4: **«una
+ * comprobación que no puede fallar es peor que no tenerla, porque da
+ * confianza»**, y **«el nombre de una cosa decide dónde acaba»**.
+ *
+ * Así que ahora **no se mira una etiqueta: se mira a dónde se está conectando**.
+ * Lo dice quien abre la conexión, que es el único que lo sabe de verdad, y a una
+ * base remota no se le siembran credenciales aunque el entorno diga misa.
+ *
+ * Para entrar de verdad en una base remota está `pnpm bd:cuenta-de-verdad`, que
+ * crea una cuenta con una contraseña de un solo uso que no se escribe en ningún
+ * sitio. Y para limpiar lo que ya esté puesto, `pnpm bd:sin-cuentas-de-ejemplo`.
  */
 
-/** La contraseña de las siete personas de ejemplo. No es secreta y no lo pretende. */
+/** La contraseña de las ocho personas de ejemplo. No es secreta y no lo pretende. */
 export const CLAVE_DE_EJEMPLO = 'estook en desarrollo';
+
+/**
+ * A qué Postgres se está sembrando. **Lo dice quien abre la conexión**, no una
+ * variable de entorno: la variable fue exactamente lo que falló.
+ *
+ *   efimera   PGlite, el de las pruebas. Vive y muere en la misma orden.
+ *   local     un Postgres en `localhost`. Lo que hay en él no sale de la máquina.
+ *   remota    cualquier otra cosa. Aquí **no entra una credencial de ejemplo**.
+ */
+export type DondeSeSiembra = 'efimera' | 'local' | 'remota';
+
+/**
+ * Lo que se dice cuando alguien intenta sembrar credenciales de ejemplo fuera de
+ * su máquina. Es una clase y no un `throw` suelto para que quien la llama pueda
+ * distinguirla de un fallo de verdad y seguir con el resto de la siembra: los
+ * `.sql` sí se pueden aplicar en cualquier sitio, porque no ponen ninguna clave.
+ */
+export class ErrorDeSiembraRemota extends Error {
+  constructor() {
+    super(
+      [
+        'A una base de datos remota no se le siembran credenciales de ejemplo.',
+        '',
+        'Que ha pasado: esta semilla le pone a ocho personas de ejemplo una contrasena',
+        'que esta escrita en el repositorio, y un PIN por local. Contra una base que no',
+        'es la de tu maquina, eso son ocho cuentas abiertas con una clave publica.',
+        '',
+        'Que se puede hacer:',
+        '  · para entrar de verdad ahi:   pnpm bd:cuenta-de-verdad tu@correo.com',
+        '  · para limpiar lo que ya este: pnpm bd:sin-cuentas-de-ejemplo',
+      ].join('\n'),
+    );
+    this.name = 'ErrorDeSiembraRemota';
+  }
+}
 
 /**
  * Ejecutar una consulta, sea cual sea el Postgres de debajo.
@@ -49,39 +103,33 @@ export interface LoQueSeSembro {
 
 export async function sembrarAcceso(
   ejecutar: Ejecutar,
-  opciones: { readonly entorno?: string | undefined } = {},
+  opciones: { readonly donde: DondeSeSiembra },
 ): Promise<LoQueSeSembro> {
-  const entorno = opciones.entorno ?? process.env['ENTORNO'] ?? 'desarrollo';
-
-  if (entorno === 'produccion') {
-    throw new Error(
-      [
-        'La semilla de acceso no se aplica en produccion.',
-        '',
-        'Que ha pasado: esta semilla pone una contrasena que esta escrita en el',
-        'repositorio a siete personas de ejemplo. En produccion eso serian siete',
-        'cuentas abiertas con una clave publica.',
-        '',
-        'Que se puede hacer: si de verdad quieres datos de ejemplo en ese entorno,',
-        'siembra solo los `.sql` y crea las cuentas de verdad con `invitar_persona`.',
-      ].join('\n'),
-    );
+  if (opciones.donde === 'remota') {
+    throw new ErrorDeSiembraRemota();
   }
 
-  // ── Los locales de ejemplo estan montados ──────────────────────────────────
+  // ── Los locales de ejemplo estan montados, menos uno ───────────────────────
   //
   // La quinta comprobacion al entrar es «si no ha terminado el onboarding, sigue
   // por donde iba», y un local nuevo nace en el paso cero, que es lo correcto.
   // Pero los sembrados **no son nuevos**: tienen su carta, su equipo y su
   // organizacion puestos. Si nacieran a medias, entrar como Rosa llevaria al alta
-  // de M5, que todavia no existe, y no al Panel.
+  // y no al Panel.
+  //
+  // La excepcion es Casa Lola, que se siembra **a medias a proposito** (M5): es
+  // el local con el que se prueba el alta sin tener que crear uno cada vez.
   //
   // Va aqui y no en la migracion porque las semillas corren **despues** de las
-  // migraciones: lo que la 0018 marcara son los locales que ya hubiera, no estos.
+  // migraciones: lo que la 0018 marco son los locales que ya hubiera, no estos.
   await ejecutar(
     `update estook.local
-        set onboarding_paso = 8, onboarding_terminado = true
-      where es_ejemplo and not onboarding_terminado`,
+        set onboarding_paso = 8,
+            onboarding_terminado = true,
+            onboarding_terminado_en = coalesce(onboarding_terminado_en, creado_en)
+      where es_ejemplo
+        and not onboarding_terminado
+        and codigo <> 'casa-lola'`,
     [],
   );
 

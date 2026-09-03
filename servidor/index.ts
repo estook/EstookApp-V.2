@@ -1,5 +1,6 @@
 import { crearApi } from './api/index.ts';
 import { crearDespachador, type Puertos } from './aplicacion/index.ts';
+import { almacenDeSupabase } from './infraestructura/almacen.ts';
 import { anotar, recordar } from './infraestructura/idempotencia.ts';
 import { enTransaccion } from './infraestructura/postgres.ts';
 
@@ -19,6 +20,18 @@ import { enTransaccion } from './infraestructura/postgres.ts';
  * arrancar el dia que haga falta.
  */
 
+/**
+ * Donde acaban los ficheros (M5).
+ *
+ * Se resuelve **una vez**, al arrancar la funcion, y no en cada peticion: firmar
+ * un enlace no necesita estado y crear el cliente en cada llamada seria trabajo
+ * para nada.
+ *
+ * Nulo si no hay credenciales de Supabase. Entonces subir un logo contesta «no
+ * hay donde guardarlo», que es la verdad, en vez de romperse a mitad.
+ */
+const almacen = almacenDeSupabase();
+
 const puertos: Puertos = {
   enTransaccion: (quien, hacer) =>
     enTransaccion(quien, (sql, sesion) =>
@@ -28,6 +41,7 @@ const puertos: Puertos = {
         // dentro de la transaccion, con el disfraz de `estook_api` ya puesto.
         personaId: sesion?.personaId ?? null,
         sesion,
+        almacen,
         correlacionId: quien.correlacionId,
         // El instante lo pone el servidor, nunca el navegador (regla 10).
         ahora: new Date(Date.now()),

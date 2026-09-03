@@ -53,12 +53,50 @@ const DIAS_DE_SESION = 30;
 const CREDENCIAL_DE_MENTIRA =
   'pbkdf2-sha256$210000$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
+/**
+ * Lo que la aplicacion cuenta del aparato desde el que se entra (M5).
+ *
+ * ── Por que esto hacia falta ─────────────────────────────────────────────────
+ *
+ * Hasta M5, `estook.dispositivo` existia desde M1 y **no la escribia nadie**: 0
+ * filas, 0 sesiones con dispositivo. Por eso «Mis dispositivos» acababa
+ * enseñando el local de cada sesion en vez del aparato, y salian veintitres
+ * filas identicas diciendo «Bar Centro».
+ *
+ * Y tiene consecuencia de seguridad, que es lo que lo hace urgente: **el caso
+ * para el que existe esa pantalla es reconocer una sesion que no es tuya**, y
+ * con todas las filas iguales no se puede.
+ *
+ * Lo dice la regla critica de M4 en el Plan: «la sesion se ata al **aparato**, no
+ * al login: entrar dos veces desde el mismo movil no son dos filas».
+ *
+ * ── Que se guarda, y que no ──────────────────────────────────────────────────
+ *
+ * La huella es un identificador **opaco** que se guarda en el navegador, y el
+ * nombre es lo que la persona reconoce: «Chrome en Android». Nunca el modelo, ni
+ * el numero de serie, ni nada que identifique el aparato fisico: lo dice el
+ * comentario de la columna desde M1 y sigue en pie.
+ *
+ * Y es **opcional**. Quien llame a la API a pelo sin mandarlo entra igual, con
+ * su sesion sin dispositivo. Exigirlo seria convertir un dato de comodidad en un
+ * requisito de acceso.
+ */
+export const elAparato = z
+  .object({
+    /** Opaco, y lo pone el navegador. Ni se interpreta ni se cruza con nada. */
+    huella: z.string().trim().min(8).max(128),
+    nombre: z.string().trim().min(1).max(80),
+    tipo: z.enum(['movil', 'tablet', 'quiosco', 'escritorio']),
+  })
+  .strict();
+
 export const entradaEntrar = z
   .object({
     correo: z.string().trim().toLowerCase().email().max(320),
     /** Una de las dos, no las dos. */
     contrasena: z.string().min(1).max(512).optional(),
     pin: z.string().trim().optional(),
+    aparato: elAparato.optional(),
   })
   .strict()
   .refine((e) => (e.contrasena === undefined) !== (e.pin === undefined), {
@@ -131,6 +169,31 @@ export const entrar = comando<EntradaEntrar, SalidaEntrar>({
     const faltaElCodigo = tieneDoble;
     const debeActivarlo = exigeDoble && !tieneDoble;
 
+    // ── El aparato, antes de abrir la sesión ─────────────────────────────────
+    //
+    // Se resuelve primero porque la sesión cuelga de él. Y se resuelve con la
+    // identidad ya declarada un poco más arriba, así que la política de
+    // `dispositivo` —«los tuyos siempre»— aplica y no hace falta comprobar de
+    // quién es.
+    //
+    // Si no viene aparato, la sesión nace sin dispositivo, como todas las de M4.
+    // No se inventa uno: un dispositivo sin huella no se podría reconocer la
+    // próxima vez y sería una fila nueva en cada entrada, que es exactamente el
+    // problema que esto viene a arreglar.
+    let dispositivoId: string | null = null;
+    if (entrada.aparato !== undefined) {
+      const aparatos = await contexto.sql<{ reconocer_dispositivo: string | null }[]>`
+        select estook.reconocer_dispositivo(
+          ${quien.personaId}::uuid,
+          ${entrada.aparato.huella},
+          ${entrada.aparato.nombre},
+          ${entrada.aparato.tipo}::estook.tipo_de_dispositivo,
+          ${quien.localDelPin}::uuid
+        ) as reconocer_dispositivo
+      `;
+      dispositivoId = aparatos[0]?.reconocer_dispositivo ?? null;
+    }
+
     const filas = await contexto.sql<{ abrir_sesion: string }[]>`
       select estook.abrir_sesion(
         ${quien.personaId}::uuid,
@@ -139,7 +202,8 @@ export const entrar = comando<EntradaEntrar, SalidaEntrar>({
         ${destino.organizacionId}::uuid,
         ${destino.localId}::uuid,
         ${!faltaElCodigo},
-        ${DIAS_DE_SESION}
+        ${DIAS_DE_SESION},
+        ${dispositivoId}::uuid
       ) as abrir_sesion
     `;
     const sesionId = filas[0]?.abrir_sesion;

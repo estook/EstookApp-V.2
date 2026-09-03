@@ -9,6 +9,7 @@ import {
   Deshacer,
   RuedaDeApps,
   appPorPermiso,
+  clases,
   usarAtajos,
   usarDeshacer,
   type App,
@@ -167,9 +168,43 @@ export function Esqueleto() {
   const dondeEstas =
     yo?.local === null || yo?.local === undefined ? null : (
       <div className="mb-e3 flex flex-wrap items-center gap-e2 lg:hidden">
-        <span className="inline-flex items-center gap-e1 text-secundario text-texto-suave">
-          <IconoLocal size={16} />
-          {susLocales.length <= 1 && yo.local.nombre}
+        {/*
+          La marca del local (M5). «Cambiar de local cambia el contexto, **y el
+          color y el logo de la cabecera**, para que nadie apunte una merma en el
+          local equivocado» (Manifiesto 31).
+        */}
+        <span
+          className="inline-flex items-center gap-e1 rounded-redondo py-e1 pl-e1 pr-e3"
+          style={
+            yo.local.colorDeMarca === null ? undefined : { backgroundColor: yo.local.colorDeMarca }
+          }
+        >
+          {yo.local.logo === null ? (
+            <span
+              className={clases(
+                'inline-flex h-6 w-6 items-center justify-center rounded-redondo',
+                yo.local.colorDeMarca === null ? 'text-texto-suave' : 'text-superficie',
+              )}
+            >
+              <IconoLocal size={16} />
+            </span>
+          ) : (
+            <img
+              src={yo.local.logo}
+              alt=""
+              className="h-6 w-6 rounded-redondo bg-superficie object-contain"
+            />
+          )}
+          {susLocales.length <= 1 && (
+            <span
+              className={clases(
+                'text-secundario font-medium',
+                yo.local.colorDeMarca === null ? 'text-texto-suave' : 'text-superficie',
+              )}
+            >
+              {yo.local.nombre}
+            </span>
+          )}
         </span>
 
         {susLocales.length > 1 && (

@@ -63,6 +63,9 @@ export interface QuienSoy {
     readonly nombre: string;
     readonly codigo: string;
     readonly area: string | null;
+    /** La marca del local (M5): el color y el enlace firmado a su logo. */
+    readonly colorDeMarca: string | null;
+    readonly logo: string | null;
   } | null;
   readonly organizaciones: readonly { readonly id: string; readonly nombre: string }[];
   readonly locales: readonly {

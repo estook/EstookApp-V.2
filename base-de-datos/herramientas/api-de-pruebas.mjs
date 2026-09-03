@@ -42,6 +42,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { crearApi } from '../../servidor/api/index.ts';
 import { crearDespachador } from '../../servidor/aplicacion/index.ts';
+import { almacenEnMemoria } from '../../servidor/infraestructura/almacen.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { sembrarAcceso } from '../semillas/acceso.ts';
@@ -76,7 +77,8 @@ for (const sql of await ficheros('semillas', (f) => f.endsWith('.sql'))) await b
 
 const acceso = await sembrarAcceso(
   async (consulta, parametros) => ({ rows: (await bd.query(consulta, parametros)).rows }),
-  { entorno: 'pruebas' },
+  // PGlite otra vez: la base entera muere al parar el servidor.
+  { donde: 'efimera' },
 );
 
 /**
@@ -161,6 +163,9 @@ const puertos = {
   },
 };
 
+/** Los ficheros de M5, en memoria: mueren con el servidor, como la base. */
+const almacen = almacenEnMemoria();
+
 /**
  * Una transaccion, con el orden de la decision 0005 y el de `postgres.ts`:
  * disfraz, sesion, identidad. Cambiarlo aqui haria que las pruebas comprobaran
@@ -185,6 +190,16 @@ async function unaTransaccion(quien, hacer) {
           localId: fila.local_id,
           dobleFactorSuperado: fila.doble_factor_superado,
           debeCambiarClave: fila.debe_cambiar_clave,
+          // M5. **Olvidarlo aqui costo una prueba en rojo, y menos mal.** Sin
+          // este campo, la sesion de demostracion llegaba al despachador con
+          // `esDemostracion` sin definir, la cuarta puerta no saltaba, y una
+          // visita de solo lectura podia escribir. Contra la API de verdad
+          // funcionaba, porque `postgres.js` devuelve la columna sola.
+          //
+          // Es la misma leccion de E4 mirada del otro lado: aqui el camino que
+          // se comportaba distinto era el de **las pruebas**, no el de
+          // produccion. Cualquier copia a mano de una fila acaba discrepando.
+          esDemostracion: fila.es_demostracion,
         };
       }
     }
@@ -196,6 +211,9 @@ async function unaTransaccion(quien, hacer) {
       sql: adaptador(bd),
       personaId: sesion?.personaId ?? null,
       sesion,
+      // El almacen de M5, en memoria: la API de pruebas no tiene credenciales de
+      // Supabase, y sin puerto no se podria probar el alta con su logo.
+      almacen,
       correlacionId: quien.correlacionId,
       ahora: new Date(Date.now()),
     });

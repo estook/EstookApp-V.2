@@ -684,11 +684,28 @@ describe('bloqueo a los cinco intentos', () => {
 // ── El onboarding ────────────────────────────────────────────────────────────
 
 describe('el onboarding, que decide la quinta comprobacion', () => {
-  it('los locales sembrados estan montados', async () => {
+  it('los locales sembrados estan montados, menos el que lo esta a proposito', async () => {
     const aMedias = await comoDuena<{ codigo: string }>(
       'select codigo from estook.local where not onboarding_terminado',
     );
-    expect(aMedias).toEqual([]);
+    // Casa Lola la siembra M5 sin terminar, y es la unica: es con lo que se
+    // recorre la quinta comprobacion sin tener que crear un local a mano.
+    expect(aMedias).toEqual([{ codigo: 'casa-lola' }]);
+  });
+
+  it('y un local terminado dice cuando lo termino', async () => {
+    const sinFecha = await comoDuena<{ codigo: string }>(
+      'select codigo from estook.local where onboarding_terminado and onboarding_terminado_en is null',
+    );
+    expect(sinFecha).toEqual([]);
+
+    // Y al reves: la restriccion no deja que las dos digan cosas distintas.
+    await expect(
+      comoDuena(
+        `update estook.local set onboarding_terminado = true, onboarding_terminado_en = null
+          where codigo = 'casa-lola'`,
+      ),
+    ).rejects.toThrow();
   });
 
   it('y el paso no se sale de los ocho', async () => {

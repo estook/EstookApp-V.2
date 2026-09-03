@@ -55,17 +55,25 @@ alcance de cualquiera con un navegador se hace mirando, no de paso.
 
 Los que no pueden pisar el navegador jamas.
 
-| Nombre                 | Que es                                     |
-| ---------------------- | ------------------------------------------ |
-| `SUPABASE_SERVICE_KEY` | La clave secreta del proyecto              |
-| `GOOGLE_MAPS_KEY`      | Google Maps Platform · Places, para M5     |
-| `AI_API_KEY`           | El proveedor de IA de Fogon · M22          |
-| `AI_MODELO_RAPIDO`     | El modelo barato para lo cotidiano         |
-| `AI_MODELO_ANALISIS`   | El modelo bueno para el analisis nocturno  |
-| `APP_URL`              | La direccion publica, para los enlaces     |
-| `DATABASE_URL`         | La cadena del **agrupador de sesion** (M4) |
-| `ORIGENES_PERMITIDOS`  | Desde que dominios se puede llamar (M4)    |
-| `ENTORNO`              | `produccion` (M4)                          |
+| Nombre                 | Que es                                      |
+| ---------------------- | ------------------------------------------- |
+| `SUPABASE_SERVICE_KEY` | La clave secreta del proyecto               |
+| `GOOGLE_MAPS_KEY`      | Google Maps Platform · Places, **para M23** |
+| `AI_API_KEY`           | El proveedor de IA de Fogon · M22           |
+| `AI_MODELO_RAPIDO`     | El modelo barato para lo cotidiano          |
+| `AI_MODELO_ANALISIS`   | El modelo bueno para el analisis nocturno   |
+| `APP_URL`              | La direccion publica, para los enlaces      |
+| `DATABASE_URL`         | La cadena del **agrupador de sesion** (M4)  |
+| `ORIGENES_PERMITIDOS`  | Desde que dominios se puede llamar (M4)     |
+| `ENTORNO`              | `produccion` (M4)                           |
+
+`GOOGLE_MAPS_KEY` **ya no hace falta para M5**: Google Places se aplaza a M23,
+que es donde viven las resenas y la competencia y donde hay que enlazar la ficha
+de Google de todas formas (decision 0013). El paso 4 del alta se escribe a mano.
+
+`SUPABASE_SERVICE_KEY` la estrena M5, y es la mas delicada de todas: **es la
+unica que se salta la seguridad por filas**. La usa la API para firmar los enlaces
+del logo, y `pnpm almacen:preparar` para crear el cubo. No va al navegador jamas.
 
 Los tres ultimos los necesita la API desplegada. `DATABASE_URL` tiene que ir por
 el **agrupador de sesion** (`pooler`), no por la conexion directa: la directa de
@@ -78,6 +86,27 @@ paginas que pueden llamar a la API desde un navegador. Hoy,
 ## En tu maquina
 
 `.env.local`, partiendo de `.env.example`. Esta en `.gitignore` y ahi se queda.
+
+Ademas de las publicas, dos que solo viven aqui:
+
+| Nombre                 | Para que                                                   |
+| ---------------------- | ---------------------------------------------------------- |
+| `DATABASE_URL`         | Las herramientas de base de datos                          |
+| `SUPABASE_SERVICE_KEY` | `pnpm almacen:preparar`, que crea y comprueba el cubo (M5) |
+
+## Una cosa que aprendio M5, y que vale para cualquier clave
+
+**Una etiqueta miente; una direccion no.**
+
+La semilla de credenciales de M4 se negaba a correr «en produccion» mirando la
+variable `ENTORNO`. Y esa negativa no podia saltar nunca: `ENTORNO` dice
+`desarrollo` en el `.env.local` de quien desarrolla, mientras `DATABASE_URL`, dos
+lineas mas abajo del mismo fichero, apunta al Supabase de verdad. Acabaron ocho
+cuentas con una contrasena publicada en la base de produccion.
+
+Ahora esa decision la toma quien abre la conexion, mirando **a donde apunta**. Si
+alguna vez hay que decidir algo por el entorno, se mira la direccion, no el
+nombre que alguien le haya puesto.
 La unica que no aparece en ningun panel es `DATABASE_URL`, que solo la usan las
 herramientas de migracion de tu ordenador.
 

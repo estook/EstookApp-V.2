@@ -15,6 +15,19 @@ const CONTROL = `
   );
 `;
 
+/**
+ * Cuántas migraciones trae el módulo que se está construyendo.
+ *
+ * Se deshacen y se vuelven a aplicar **con los datos ya sembrados**, para
+ * comprobar que se pueden aplicar sobre una base que no está vacía. Es un
+ * número que hay que cambiar a propósito al empezar un módulo nuevo, igual que
+ * el que cuenta las funciones con privilegio: si un día no cuadra, que sea
+ * porque alguien lo ha decidido.
+ *
+ * M5 trae dos: la 0020 y la 0021.
+ */
+const LAS_DE_ESTE_MODULO = 2;
+
 describe('las migraciones', () => {
   it('todas siguen el formato NNNN_nombre.sql', async () => {
     for (const { nombre } of await migraciones()) {
@@ -60,6 +73,60 @@ describe('las migraciones', () => {
       await bd.close();
     }
   }, 120_000);
+
+  /**
+   * **La prueba que faltaba, y que costó un despliegue fallido.**
+   *
+   * Hasta aquí, las migraciones solo se aplicaban contra una base **vacía**: en
+   * el entorno de pruebas las semillas corren después, así que `estook.local`
+   * no tiene ni una fila cuando pasa la migración 0020.
+   *
+   * Contra una base de verdad no es así. La 0020 añadía la restricción de
+   * coherencia del alta **antes** de rellenar la columna, y con siete locales ya
+   * montados saltó en la cara al aplicarla. Aquí pasaba en verde.
+   *
+   * Es «una prueba que corre en un sitio no prueba el otro» (E4) con una forma
+   * nueva: **una migración probada solo contra una tabla vacía no está probada.**
+   *
+   * Esto lo arregla reproduciendo la situación de verdad: se aplica todo, se
+   * siembra, y después se deshacen y se vuelven a aplicar las migraciones de
+   * este módulo, que entonces sí encuentran datos delante.
+   */
+  it('se pueden aplicar sobre una base que YA tiene datos', async () => {
+    // `levantarBase` aplica las migraciones **y siembra las cinco semillas**,
+    // incluida la cuarta, que es la que marca los locales como montados. Sembrar
+    // solo los `.sql` no bastaba: los deja con el alta sin terminar, que es
+    // justo el caso en el que la restricción no se queja. Costó una pasada en
+    // verde con el fallo puesto.
+    const base = await levantarBase();
+    try {
+      const locales = await cuantasFilas(base.bd, 'local');
+      const montados = await cuantosLocalesMontados(base.bd);
+
+      // Las dos condiciones que hacen que esta prueba valga algo. Sin ellas
+      // pasaría en verde sin comprobar nada, que es peor que no tenerla (E4).
+      expect(locales).toBeGreaterThan(0);
+      expect(montados).toBeGreaterThan(0);
+
+      // Las de este módulo, deshechas y vueltas a poner con los datos delante.
+      const reversionesEnOrden = (await reversiones()).slice(-LAS_DE_ESTE_MODULO).reverse();
+      for (const { sql } of reversionesEnOrden) await base.bd.exec(sql);
+
+      // Los locales siguen ahí: revertir quita columnas, no filas.
+      expect(await cuantasFilas(base.bd, 'local')).toBe(locales);
+      expect(await cuantosLocalesMontados(base.bd)).toBe(montados);
+
+      // Y aquí es donde saltaba: la 0020 se aplica sobre siete locales que ya
+      // dicen que tienen el alta terminada.
+      for (const { sql } of (await migraciones()).slice(-LAS_DE_ESTE_MODULO)) {
+        await base.bd.exec(sql);
+      }
+
+      expect(await cuantasFilas(base.bd, 'local')).toBe(locales);
+    } finally {
+      await base.cerrar();
+    }
+  }, 120_000);
 });
 
 describe('las semillas', () => {
@@ -74,7 +141,7 @@ describe('las semillas', () => {
     }
   }, 120_000);
 
-  it('dejan el local independiente y la cadena de seis en dos areas', async () => {
+  it('dejan los dos locales independientes y la cadena de seis en dos areas', async () => {
     const base = await levantarBase();
     try {
       const { rows } = await base.bd.query<{ codigo: string; areas: number; locales: number }>(`
@@ -89,6 +156,9 @@ describe('las semillas', () => {
       `);
       expect(rows).toEqual([
         { codigo: 'bar-centro', areas: 0, locales: 1 },
+        // Casa Lola la añade M5: es el local con el alta a medias, y sin él la
+        // quinta comprobación al entrar no se puede recorrer con lo sembrado.
+        { codigo: 'casa-lola', areas: 0, locales: 1 },
         { codigo: 'grupo-costa', areas: 2, locales: 6 },
       ]);
     } finally {
@@ -113,6 +183,19 @@ describe('las semillas', () => {
     }
   }, 120_000);
 });
+
+/** Los que dicen tener el alta terminada. Son los que rompían la 0020. */
+async function cuantosLocalesMontados(bd: PGlite): Promise<number> {
+  const { rows } = await bd.query<{ n: number }>(
+    `select count(*)::int as n from estook.local where onboarding_terminado`,
+  );
+  return rows[0]?.n ?? 0;
+}
+
+async function cuantasFilas(bd: PGlite, tabla: string): Promise<number> {
+  const { rows } = await bd.query<{ n: number }>(`select count(*)::int as n from estook.${tabla}`);
+  return rows[0]?.n ?? 0;
+}
 
 async function contarTablas(bd: PGlite): Promise<number> {
   const { rows } = await bd.query<{ cuantas: number }>(`

@@ -61,130 +61,196 @@ async function tokenDe(peticion: APIRequestContext, correo: string): Promise<str
 
 // ── 1 · El alta entera, cronometrada ─────────────────────────────────────────
 
-test('un local termina el alta en menos de cuatro minutos', async ({ page, request }) => {
-  // **El alta se reabre antes de empezar.** Playwright corre los dos proyectos
-  // —escritorio y móvil pequeño— contra la misma API y la misma base efímera, así
-  // que el primero que pase deja el alta de Casa Lola terminada y el segundo se
-  // la encuentra hecha.
-  //
-  // Se resuelve dejándola como estaba en vez de esperar a que nadie la haya
-  // tocado: una prueba que depende del orden en que corren las demás es una
-  // prueba que falla un martes sin que nadie haya cambiado nada.
-  const antes = await tokenDe(request, PABLO);
-  await request.post(`${API}/v1/comandos/retomar_el_alta`, {
-    headers: { authorization: `Bearer ${antes}`, 'x-idempotencia': `abrir-${Date.now()}` },
-    data: { paso: 'quien_eres' },
-  });
+/**
+ * **Las dos van en serie, y no es un capricho.**
+ *
+ * Casa Lola es un solo local, y las dos necesitan su alta en un paso concreto:
+ * una la reabre por el principio y la otra la deja en la marca. Con Playwright
+ * en paralelo —`fullyParallel`, y con dos proyectos contra la misma base— se
+ * pisaban: la cronometrada se encontraba la pantalla del logo en vez de la
+ * primera pregunta.
+ *
+ * No se arregla dando por hecho un orden, que es lo que falla un martes sin que
+ * nadie haya tocado nada. Se dice que van en serie, que es la verdad: comparten
+ * un local y no se puede compartir a la vez.
+ */
+test.describe.serial('el alta de Casa Lola, que es una sola', () => {
+  test('un local termina el alta en menos de cuatro minutos', async ({ page, request }) => {
+    // **El alta se reabre antes de empezar.** Playwright corre los dos proyectos
+    // —escritorio y móvil pequeño— contra la misma API y la misma base efímera, así
+    // que el primero que pase deja el alta de Casa Lola terminada y el segundo se
+    // la encuentra hecha.
+    //
+    // Se resuelve dejándola como estaba en vez de esperar a que nadie la haya
+    // tocado: una prueba que depende del orden en que corren las demás es una
+    // prueba que falla un martes sin que nadie haya cambiado nada.
+    const antes = await tokenDe(request, PABLO);
+    await request.post(`${API}/v1/comandos/retomar_el_alta`, {
+      headers: { authorization: `Bearer ${antes}`, 'x-idempotencia': `abrir-${Date.now()}` },
+      data: { paso: 'quien_eres' },
+    });
 
-  await entrar(page, PABLO);
+    await entrar(page, PABLO);
 
-  // La quinta comprobación al entrar lleva aquí: «si no ha terminado el
-  // onboarding, sigue por donde ibas». Hasta M5 este destino existía en el
-  // dominio y caía al Panel, porque no había alta a la que llevar.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('¿Cómo te llamas?');
+    // La quinta comprobación al entrar lleva aquí: «si no ha terminado el
+    // onboarding, sigue por donde ibas». Hasta M5 este destino existía en el
+    // dominio y caía al Panel, porque no había alta a la que llevar.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('¿Cómo te llamas?');
 
-  const empezo = Date.now();
+    const empezo = Date.now();
 
-  // Paso 1 · quién eres
-  await page.getByLabel('Tu nombre').fill('Pablo');
-  await page.getByRole('button', { name: 'Continuar' }).click();
+    // Paso 1 · quién eres
+    await page.getByLabel('Tu nombre').fill('Pablo');
+    await page.getByRole('button', { name: 'Continuar' }).click();
 
-  // Paso 2 · qué tipo de local. Elegir **es** responder: no hay botón de más.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('¿Qué tipo de local tienes?');
-  await page.getByRole('button', { name: /Bar de tapas/ }).click();
+    // Paso 2 · qué tipo de local. Elegir **es** responder: no hay botón de más.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('¿Qué tipo de local tienes?');
+    await page.getByRole('button', { name: /Bar de tapas/ }).click();
 
-  // Paso 3 · cuántos locales
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('¿Cuántos locales llevas?');
-  await page.getByRole('button', { name: '1', exact: true }).click();
-  await page.getByRole('button', { name: 'Continuar' }).click();
+    // Paso 3 · cuántos locales
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('¿Cuántos locales llevas?');
+    await page.getByRole('button', { name: '1', exact: true }).click();
+    await page.getByRole('button', { name: 'Continuar' }).click();
 
-  // Paso 4 · dónde está. A mano, porque Google Places se aplaza a M23.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('¿Dónde está tu restaurante?');
-  await page.getByLabel('Dirección').fill('Calle del Pez, 8');
-  await page.getByLabel('Código postal').fill('28004');
-  await page.getByLabel('Población').fill('Madrid');
-  // La hora de cierre, que es la que decide a qué jornada pertenece una venta de
-  // madrugada. No es un adorno: sin ella, el cierre acaba en el día equivocado.
-  await page.getByLabel('¿A qué hora cierras?').fill('03:30');
-  await page.getByRole('button', { name: 'Continuar' }).click();
+    // Paso 4 · dónde está. A mano, porque Google Places se aplaza a M23.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('¿Dónde está tu restaurante?');
+    await page.getByLabel('Dirección').fill('Calle del Pez, 8');
+    await page.getByLabel('Código postal').fill('28004');
+    await page.getByLabel('Población').fill('Madrid');
+    // La hora de cierre, que es la que decide a qué jornada pertenece una venta de
+    // madrugada. No es un adorno: sin ella, el cierre acaba en el día equivocado.
+    await page.getByLabel('¿A qué hora cierras?').fill('03:30');
+    await page.getByRole('button', { name: 'Continuar' }).click();
 
-  // Paso 5 · la marca. El logo se salta: subir un fichero no es lo que se está
-  // cronometrando, y el color ya prueba el camino de guardar.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Sube tu logo y elige tu color');
-  await page.getByRole('button', { name: 'Verde mar' }).click();
-  await page.getByRole('button', { name: 'Continuar' }).click();
+    // Paso 5 · la marca. El logo se salta: subir un fichero no es lo que se está
+    // cronometrando, y el color ya prueba el camino de guardar.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Sube tu logo y elige tu color',
+    );
+    await page.getByRole('button', { name: 'Verde mar' }).click();
+    await page.getByRole('button', { name: 'Continuar' }).click();
 
-  // Paso 6 · impuestos y objetivos.
-  //
-  // Lo que se comprueba es que **vienen propuestos**, no que valgan exactamente
-  // 30: el valor de partida depende del tipo de local, y esta prueba corre dos
-  // veces contra la misma base, así que la segunda se encuentra el que dejó la
-  // primera. Que los de partida sean los del tipo lo comprueba `alta.prueba.ts`
-  // contra la base de datos, que es donde vive esa regla.
-  //
-  // Y lo que importa aquí es esto: la casilla **no está vacía**. Un objetivo que
-  // hay que teclear desde cero es un objetivo que se queda sin poner, y sin
-  // objetivos no hay semáforos.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Impuestos y objetivos');
-  await expect(page.getByLabel('Materia prima')).toHaveValue(/^\d+([.,]\d+)?$/);
-  await page.getByLabel('Materia prima').fill('28');
-  await page.getByRole('button', { name: 'Continuar' }).click();
+    // Paso 6 · impuestos y objetivos.
+    //
+    // Lo que se comprueba es que **vienen propuestos**, no que valgan exactamente
+    // 30: el valor de partida depende del tipo de local, y esta prueba corre dos
+    // veces contra la misma base, así que la segunda se encuentra el que dejó la
+    // primera. Que los de partida sean los del tipo lo comprueba `alta.prueba.ts`
+    // contra la base de datos, que es donde vive esa regla.
+    //
+    // Y lo que importa aquí es esto: la casilla **no está vacía**. Un objetivo que
+    // hay que teclear desde cero es un objetivo que se queda sin poner, y sin
+    // objetivos no hay semáforos.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Impuestos y objetivos');
+    await expect(page.getByLabel('Materia prima')).toHaveValue(/^\d+([.,]\d+)?$/);
+    await page.getByLabel('Materia prima').fill('28');
+    await page.getByRole('button', { name: 'Continuar' }).click();
 
-  // Paso 7 · el equipo. Se puede dejar para luego, y es lo normal el primer día.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Invita a tu equipo');
-  await page.getByRole('button', { name: 'Continuar' }).click();
+    // Paso 7 · el equipo. Se puede dejar para luego, y es lo normal el primer día.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Invita a tu equipo');
+    await page.getByRole('button', { name: 'Continuar' }).click();
 
-  // Paso 8 · el paseo
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Cinco pantallas y a trabajar');
-  await page.getByRole('button', { name: 'Saltar el paseo' }).click();
+    // Paso 8 · el paseo
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Cinco pantallas y a trabajar',
+    );
+    await page.getByRole('button', { name: 'Saltar el paseo' }).click();
 
-  // Y el final
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ya está');
-  await page.getByRole('button', { name: /Entrar en/ }).click();
+    // Y el final
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ya está');
+    await page.getByRole('button', { name: /Entrar en/ }).click();
 
-  // El Panel de su local. La quinta comprobación deja de mandar al alta.
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Pablo');
+    // El Panel de su local. La quinta comprobación deja de mandar al alta.
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Pablo');
 
-  const tardo = (Date.now() - empezo) / 1000;
-  // Cuatro minutos. Una máquina tarda segundos, así que esto no mide a una
-  // persona: mide que **no haya un paso que se atasque**. Un alta con una
-  // pantalla que espera cinco segundos por paso ya no cabe en cuatro minutos.
-  expect(tardo).toBeLessThan(240);
+    const tardo = (Date.now() - empezo) / 1000;
+    // Cuatro minutos. Una máquina tarda segundos, así que esto no mide a una
+    // persona: mide que **no haya un paso que se atasque**. Un alta con una
+    // pantalla que espera cinco segundos por paso ya no cabe en cuatro minutos.
+    expect(tardo).toBeLessThan(240);
 
-  // ── Y lo respondido queda guardado, no solo enseñado ──────────────────────
-  //
-  // Va dentro de esta prueba y no en una aparte a propósito: Playwright corre
-  // con varios trabajadores contra la misma base efímera, así que una prueba
-  // que diera por hecho que otra ya pasó sería una prueba que falla según el
-  // orden. Es el mismo recorrido, así que es la misma prueba.
-  const token = await tokenDe(request, PABLO);
-  const respuesta = await request.get(`${API}/v1/consultas/el_alta`, {
-    headers: { authorization: `Bearer ${token}` },
-  });
+    // ── Y lo respondido queda guardado, no solo enseñado ──────────────────────
+    //
+    // Va dentro de esta prueba y no en una aparte a propósito: Playwright corre
+    // con varios trabajadores contra la misma base efímera, así que una prueba
+    // que diera por hecho que otra ya pasó sería una prueba que falla según el
+    // orden. Es el mismo recorrido, así que es la misma prueba.
+    const token = await tokenDe(request, PABLO);
+    const respuesta = await request.get(`${API}/v1/consultas/el_alta`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
 
-  expect(respuesta.status()).toBe(200);
-  const guardado = (await respuesta.json()) as {
-    datos: {
-      ficha: { tipo: string | null; horaDeCorte: string; colorDeMarca: string | null };
-      objetivos: { clave: string; valor: number; dePartida: boolean }[];
-      progreso: { loQueYaTienes: string | null };
+    expect(respuesta.status()).toBe(200);
+    const guardado = (await respuesta.json()) as {
+      datos: {
+        ficha: { tipo: string | null; horaDeCorte: string; colorDeMarca: string | null };
+        objetivos: { clave: string; valor: number; dePartida: boolean }[];
+        progreso: { loQueYaTienes: string | null };
+      };
     };
-  };
 
-  expect(guardado.datos.ficha.tipo).toBe('bar_de_tapas');
-  expect(guardado.datos.ficha.horaDeCorte).toBe('03:30');
-  expect(guardado.datos.ficha.colorDeMarca).toBe('#0d5c63');
+    expect(guardado.datos.ficha.tipo).toBe('bar_de_tapas');
+    expect(guardado.datos.ficha.horaDeCorte).toBe('03:30');
+    expect(guardado.datos.ficha.colorDeMarca).toBe('#0d5c63');
 
-  // El objetivo que se cambió a mano deja de ser «de partida»: es suyo.
-  const materiaPrima = guardado.datos.objetivos.find((o) => o.clave === 'materia_prima');
-  expect(materiaPrima?.valor).toBeCloseTo(0.28, 4);
-  expect(materiaPrima?.dePartida).toBe(false);
+    // El objetivo que se cambió a mano deja de ser «de partida»: es suyo.
+    const materiaPrima = guardado.datos.objetivos.find((o) => o.clave === 'materia_prima');
+    expect(materiaPrima?.valor).toBeCloseTo(0.28, 4);
+    expect(materiaPrima?.dePartida).toBe(false);
 
-  // Y la barra de progreso cuenta valor, no tareas.
-  expect(guardado.datos.progreso.loQueYaTienes).toContain('rojo');
+    // Y la barra de progreso cuenta valor, no tareas.
+    expect(guardado.datos.progreso.loQueYaTienes).toContain('rojo');
+  });
+
+  /**
+   * El logo se pone **y se quita**.
+   *
+   * `quitar_logo` existía desde el primer día de M5, estaba registrado y probado
+   * por dentro, y **no lo llamaba nadie**: la pantalla ofrecía «Elegir una imagen»
+   * y «Cambiar la imagen», nunca quitarla. Quien subía el logo de la cadena en vez
+   * del de su local podía sustituirlo, jamás volver a no tener ninguno.
+   *
+   * Es la forma callada de que falte algo: no da error, no rompe ninguna prueba, y
+   * solo aparece cuando alguien quiere deshacer. Por eso esta prueba va por la
+   * pantalla y no por la API: lo que fallaba era justamente que no había botón.
+   */
+  test('el logo se sube y se puede quitar', async ({ page, request }) => {
+    const antes = await tokenDe(request, PABLO);
+    await request.post(`${API}/v1/comandos/retomar_el_alta`, {
+      headers: { authorization: `Bearer ${antes}`, 'x-idempotencia': `logo-${Date.now()}` },
+      data: { paso: 'marca' },
+    });
+
+    await entrar(page, PABLO);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Sube tu logo y elige tu color',
+    );
+
+    // Sin logo todavía, así que no hay nada que quitar y el botón no está.
+    await expect(page.getByRole('button', { name: 'Quitarlo' })).toBeHidden();
+
+    // Un PNG de un píxel. Lo que se prueba es el camino, no la imagen.
+    await page.setInputFiles('input[type="file"]', {
+      name: 'logo.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        'base64',
+      ),
+    });
+
+    // Ya hay logo: aparece la forma de quitarlo.
+    await expect(page.getByRole('button', { name: 'Quitarlo' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Quitarlo' }).click();
+
+    // Y vuelve a no haberlo, que es lo que no se podía hacer.
+    await expect(page.getByRole('button', { name: 'Quitarlo' })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Elegir una imagen' })).toBeVisible();
+  });
 });
 
-// ── 2 · El catálogo de referencia ────────────────────────────────────────────
+// ── 2 · El catalogo de referencia ────────────────────────────────────────────
 
 test('el catálogo de referencia devuelve la ficha ya rellena', async ({ request }) => {
   const token = await tokenDe(request, ROSA);
@@ -275,6 +341,53 @@ test('la demostración se mira entera y no escribe nada', async ({ request }) =>
 
   const fallo = (await escribiendo.json()) as { error: { codigo: string } };
   expect(fallo.error.codigo).toBe('solo_lectura');
+});
+
+/**
+ * «Modo demostración **con salida limpia**» · la ficha de M5, palabra por palabra.
+ *
+ * Esta prueba faltaba, y su ausencia costó un fallo que llegó a `main`: el botón
+ * «Salir» de la pantalla llama a `salir`, que no admitía demostraciones. Devolvía
+ * 403, la aplicación borraba el token igualmente —por un `finally` que tapaba el
+ * agujero— y **la sesión seguía viva en el servidor**. El token recién «cerrado»
+ * seguía abriendo `quien_soy`.
+ *
+ * Se comprueba con el mismo comando que pulsa la pantalla, no con el que hay que
+ * acordarse de llamar. Lo que no se prueba por el camino de verdad, no se prueba.
+ */
+test('la demostración se cierra con el botón de siempre, y no deja la sesión viva', async ({
+  request,
+}) => {
+  const abierta = await request.post(`${API}/v1/comandos/entrar_en_demostracion`, {
+    headers: { 'x-idempotencia': `demo-salida-${Date.now()}` },
+    data: {},
+  });
+  const { datos } = (await abierta.json()) as { datos: { token: string } };
+  const token = datos.token;
+
+  // Antes de salir, la visita mira: el token vale.
+  const antes = await request.get(`${API}/v1/consultas/quien_soy`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  expect(antes.status()).toBe(200);
+
+  // Y `quien_soy` **lo dice**, que es lo que permite a la pantalla avisar en vez
+  // de dejar que alguien descubra la demostración estrellándose contra un error.
+  const quienEs = (await antes.json()) as { datos: { esDemostracion: boolean } };
+  expect(quienEs.datos.esDemostracion).toBe(true);
+
+  // El botón de la pantalla. No es `salir_de_la_demostracion`: es `salir`.
+  const saliendo = await request.post(`${API}/v1/comandos/salir`, {
+    headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `demo-out-${Date.now()}` },
+    data: {},
+  });
+  expect(saliendo.status()).toBe(200);
+
+  // Y el rastro: ninguno. La fila se borra, así que el token deja de valer.
+  const despues = await request.get(`${API}/v1/consultas/quien_soy`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  expect(despues.status()).toBe(401);
 });
 
 // ── Los permisos, llamando a la API a pelo ───────────────────────────────────

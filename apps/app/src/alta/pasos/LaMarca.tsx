@@ -79,6 +79,33 @@ export function LaMarca({ alta, cliente, alGuardar, alFallar }: PropsDeUnPaso) {
     setSubiendo(false);
   }
 
+  /**
+   * Quitar el logo.
+   *
+   * **El comando existía desde el primer día y no lo llamaba nadie.** Había
+   * «Elegir una imagen» y «Cambiar la imagen», así que quien subía el logo
+   * equivocado —el de la cadena en vez del de su local, una foto de la carta—
+   * podía sustituirlo pero nunca volver a no tener ninguno.
+   *
+   * Es la forma silenciosa de que falte algo: no da error, no rompe ninguna
+   * prueba, y solo se nota cuando alguien quiere deshacer y no puede.
+   */
+  async function quitarElLogo() {
+    setSubiendo(true);
+    setAviso(null);
+
+    const respuesta = await cliente.ejecutar('quitar_logo', {});
+    if (!respuesta.ok) {
+      alFallar(respuesta.error);
+      setSubiendo(false);
+      return;
+    }
+
+    setVistaPrevia(null);
+    await refrescar();
+    setSubiendo(false);
+  }
+
   async function continuar() {
     setEnviando(true);
     const respuesta = await cliente.ejecutar('guardar_color_de_marca', { color });
@@ -172,14 +199,28 @@ export function LaMarca({ alta, cliente, alGuardar, alFallar }: PropsDeUnPaso) {
             if (fichero) void elegirLogo(fichero);
           }}
         />
-        <Boton
-          tono="secundario"
-          cargando={subiendo}
-          textoCargando="Subiendo"
-          onClick={() => elFichero.current?.click()}
-        >
-          {vistaPrevia === null ? 'Elegir una imagen' : 'Cambiar la imagen'}
-        </Boton>
+        <div className="flex flex-wrap gap-e2">
+          <Boton
+            tono="secundario"
+            cargando={subiendo}
+            textoCargando="Subiendo"
+            onClick={() => elFichero.current?.click()}
+          >
+            {vistaPrevia === null ? 'Elegir una imagen' : 'Cambiar la imagen'}
+          </Boton>
+
+          {/* Solo cuando hay algo que quitar: un botón que no hace nada sobra. */}
+          {vistaPrevia !== null && (
+            <Boton
+              tono="texto"
+              onClick={() => {
+                void quitarElLogo();
+              }}
+            >
+              Quitarlo
+            </Boton>
+          )}
+        </div>
         <p className="mt-e2 text-secundario text-texto-suave">
           PNG, JPG o WebP. La reducimos nosotros, así que da igual lo que pese.
         </p>

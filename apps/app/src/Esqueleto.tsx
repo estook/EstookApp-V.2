@@ -36,7 +36,7 @@ import { usarSesion } from './sesion/Sesion.tsx';
 export function Esqueleto() {
   const navegar = useNavigate();
   const { pathname } = useLocation();
-  const { permisos, yo, cliente, refrescar } = usarSesion();
+  const { permisos, yo, cliente, refrescar, salir } = usarSesion();
   const { sePuedeDeshacer } = usarDeshacer();
 
   const [ruedaAbierta, setRuedaAbierta] = useState(false);
@@ -229,8 +229,45 @@ export function Esqueleto() {
       </div>
     );
 
+  /**
+   * La barra de la demostración (M5).
+   *
+   * «Modo demostración aparte, con un restaurante ficticio entero. **Se entra y
+   *  se sale sin dejar rastro**» (Manifiesto 8).
+   *
+   * ── Por qué esto tiene que verse ─────────────────────────────────────────
+   *
+   * Durante un tiempo la aplicación **no sabía** que estaba en una demostración:
+   * el servidor paraba las escrituras, que es lo que protege de verdad, pero la
+   * pantalla enseñaba los mismos botones de guardar que a cualquiera. Quien
+   * pulsaba uno se llevaba un error en la cara sin que nadie le hubiera avisado
+   * de nada, y eso convierte una demostración en una aplicación rota.
+   *
+   * Va arriba del todo y en toda la pantalla a propósito: es una condición de la
+   * sesión entera, no de la pantalla que se esté mirando. Y lleva su propia
+   * salida, porque quien está mirando un escaparate no busca «cerrar sesión».
+   */
+  const laDemostracion =
+    yo?.esDemostracion !== true ? null : (
+      <div className="flex flex-wrap items-center justify-center gap-e2 bg-texto px-e3 py-e2 text-center">
+        <span className="text-secundario font-medium text-superficie">
+          Estás viendo una demostración. Puedes trastear: no se guarda nada.
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            void salir();
+          }}
+          className="min-h-toque rounded-medio bg-superficie px-e3 text-secundario font-semibold text-texto"
+        >
+          Salir de la demostración
+        </button>
+      </div>
+    );
+
   return (
     <div className="min-h-dvh bg-fondo">
+      {laDemostracion}
       <BarraEscritorio
         apps={misApps}
         appActiva={appActiva?.id ?? null}

@@ -9,14 +9,16 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------- |
-| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** onboarding y arranque |
-| **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                   |
-| **Pruebas**    | 609 unitarias y de base de datos · 152 de extremo a extremo                           |
-| **Rama**       | `m5-onboarding`, sin fusionar                                                         |
-| **Publicado**  | Web y app vivas. **La API sigue sin desplegar**, y hay que limpiar antes de hacerlo   |
-| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
+|                |                                                                                        |
+| -------------- | -------------------------------------------------------------------------------------- |
+| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓**                                   |
+| **M5**         | Construido, probado y fusionado. **Le falta la regla 11**: verlo en un móvil de verdad |
+| **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                    |
+| **Pruebas**    | 614 unitarias y de base de datos · 156 de extremo a extremo                            |
+| **Rama**       | M5 fusionado (PR #24). El repaso de cierre, en el PR #25, sin fusionar                 |
+| **Publicado**  | Web, app y API vivas, pero **la API sirve código de antes de M5**. Base en la `0021`   |
+| **Entrar**     | Nadie puede: no queda ninguna cuenta. Se arregla con `pnpm bd:cuenta-de-verdad`        |
+| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local  |
 
 ---
 
@@ -61,19 +63,32 @@ específico. Si de verdad se contradicen, se para y se pregunta (regla 13).
 
 ## 2 · Qué hay que hacer
 
-### Antes que nada · ocho cuentas con la contraseña publicada
+### Lo primero de todo · crear una cuenta de verdad
 
-**La base de datos de Supabase tiene ocho cuentas cuya contraseña está escrita en
-este repositorio.** Es `estook en desarrollo`, en
-[`base-de-datos/semillas/acceso.ts`](base-de-datos/semillas/acceso.ts). Una de
-ellas, la de Elena, tiene rol `direccion` y lo ve todo.
-
-Hoy no se puede entrar con ellas porque la API no está desplegada. **Los pasos 3 y
-4 de abajo son justamente desplegarla**, así que hay que limpiar antes.
+**Ahora mismo no puede entrar nadie en Estook.** Ni tú. Es a propósito y es lo
+correcto, pero no puede quedarse así:
 
 ```
-personas de ejemplo   8      con contrasena   8
-personas de verdad    0      con PIN         21
+pnpm bd:cuenta-de-verdad tu@correo.com "Ricardo"
+```
+
+Enseña una contraseña de un solo uso, que hay que cambiar al entrar.
+
+### Lo que pasó con las ocho cuentas, y por qué ya no están
+
+**La base de datos de Supabase llegó a tener ocho cuentas cuya contraseña está
+escrita en este repositorio** —`estook en desarrollo`, en
+[`base-de-datos/semillas/acceso.ts`](base-de-datos/semillas/acceso.ts)— y una de
+ellas, la de Elena, tiene rol `direccion` y lo ve todo.
+
+No eran un riesgo futuro: **la API ya estaba desplegada y se entraba desde el
+móvil**, así que fueron ocho puertas abiertas de verdad. Se cerraron el 3 de
+septiembre de 2026 con `pnpm bd:sin-cuentas-de-ejemplo`:
+
+```
+personas de ejemplo   8      sesiones abiertas   8
+con contrasena        8      con PIN            21
+personas de verdad    0      (no se toco ninguna)
 ```
 
 La semilla se negaba a correr «en producción» mirando `ENTORNO`, **y esa negativa
@@ -85,30 +100,30 @@ Es, palabra por palabra, lo que el Plan había escrito en E4: **«una comprobaci
 que no puede fallar es peor que no tenerla»** y **«el nombre de una cosa decide
 dónde acaba»**.
 
-M5 arregla la causa —ahora se mira **a dónde se conecta**, no una etiqueta— y trae
-la herramienta para limpiar lo que ya está puesto:
-
-```
-pnpm bd:sin-cuentas-de-ejemplo
-pnpm bd:cuenta-de-verdad tu@correo.com "Ricardo"
-```
-
-La segunda crea una cuenta de verdad con una contraseña de un solo uso, que se
-enseña una vez y hay que cambiar al entrar. Todo está en
+M5 arregla la causa: la semilla **mira a dónde se conecta**, no una etiqueta.
+Contra cualquier base que no sea la de esta máquina se niega a sembrar
+credenciales, lo dice por pantalla y sigue con lo demás. Todo está en
 [`docs/pasos-para-cerrar-m5.md`](docs/pasos-para-cerrar-m5.md).
 
 ### Y después · lo que quedaba de M4, más lo que trae M5
 
 1. ~~Fusionar el pull request de M4~~ · hecho
 2. ~~`pnpm bd:migrar` y `pnpm bd:sembrar`~~ · hecho el 2 de septiembre
-3. **Aplicar la `0020` y la `0021`** y volver a sembrar
-4. **Montar el almacén de ficheros** con `pnpm almacen:preparar`, que crea el cubo
+3. ~~Desplegar la API y declarar `VITE_API_URL`~~ · hecho el 2 de septiembre
+4. ~~Cerrar las ocho cuentas de ejemplo~~ · hecho el 3 de septiembre
+5. ~~Aplicar la `0020` y la `0021` y volver a sembrar~~ · hecho el 3 de septiembre
+6. ~~Fusionar M5~~ · hecho, PR #24, el 3 de septiembre
+7. **Fusionar el repaso de cierre**, que va en su propio pull request
+8. **Crear una cuenta de verdad**, que es lo de arriba del todo
+9. **Montar el almacén de ficheros** con `pnpm almacen:preparar`, que crea el cubo
    y comprueba el camino entero: sube, firma, lee y borra
-5. **Declarar los dos secretos y desplegar la API** · desde Actions
-6. **Declarar `VITE_API_URL`** para que la aplicación publicada sepa a dónde llamar
+10. **Volver a desplegar la API**, que sigue sirviendo el código de antes de M5 y
+    por tanto no conoce ninguno de sus comandos
+11. **Ver M5 en un móvil de verdad** con datos de verdad (regla 11)
 
-Hasta el 6, la pantalla de entrar dice «todavía no hay servidor al que
-preguntar», que es la verdad.
+`pnpm bd:comprobar-api` pasa hoy sin un solo fallo, con once comprobaciones que
+allí no se pueden hacer porque necesitan una sesión abierta. Están explicadas en
+su propia salida.
 
 ### Lo que 538 pruebas en verde no podían ver
 
@@ -264,19 +279,21 @@ Casa Lola: la tercera organización, con un local y un gerente, **sembrada con e
 alta a medias a propósito** para poder recorrer la quinta comprobación sin crear
 un local a mano cada vez.
 
-**Y las ocho personas de ejemplo tienen una contraseña publicada en este
-repositorio.** Está arriba del todo, en «qué hay que hacer», porque es lo primero.
+**Las ocho personas de ejemplo tenían una contraseña publicada en este
+repositorio, y la API ya estaba desplegada cuando se vio.** Están cerradas desde
+el 3 de septiembre. Sigue arriba del todo, en «qué hay que hacer», porque dejó la
+base **sin ninguna cuenta con la que entrar**.
 
-**La API sigue sin desplegar.** Hasta M5 eso era lo único que le faltaba a M4;
-ahora, además, es lo que impide que esas ocho cuentas sean ocho puertas abiertas.
+**La API está desplegada y viva**, y se entra desde el móvil. La base está al día
+en la `0021`.
 
 **Errores:** proyecto `estook-app` en Sentry, con solo «Error monitoring»
 encendido y el repositorio enlazado.
 
 **Variables del repositorio:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
-`VITE_APP_URL` y `VITE_SENTRY_DSN`. **Falta `VITE_API_URL`**, que es el paso 4.
-En Secrets **faltan los dos de M4**: `TOKEN_DE_SUPABASE` y
-`PROYECTO_DE_SUPABASE`. Todo en [`config/claves.md`](config/claves.md).
+`VITE_APP_URL`, `VITE_SENTRY_DSN` y `VITE_API_URL`. En Secrets, los dos de M4:
+`TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`. Todo en
+[`config/claves.md`](config/claves.md).
 
 **El peso real de lo publicado**, medido con `pnpm tamano`:
 
@@ -522,7 +539,7 @@ después**: no hay nada que limpiar. La otra forma —dejar escribir en una copi
 borrarla luego— necesitaría un proceso de fondo que todavía no existe, y un fallo
 a mitad dejaría datos de mentira dentro del restaurante de ejemplo.
 
-#### Cuatro fallos que M5 encontró, y quién los cazó
+#### Nueve fallos que M5 encontró, y quién los cazó
 
 1. **El gerente no podía configurar su propio local.** La política de M1 exigía
    `accion.gestionar_locales` para cualquier escritura sobre `estook.local`, y ese
@@ -552,12 +569,79 @@ a mitad dejaría datos de mentira dentro del restaurante de ejemplo.
    semillas ya puestas**, y se comprobó rompiéndola a propósito antes de darla por
    buena.
 
-#### Y el que no es de M5, pero lo encontró M5
+5. **`bd:comprobar-api` daba dos «OK» sin comprobar nada.** Al mirar el local de
+   Nuria hacía `cambiado.datos?.localId === elSuyo`. Sin cuentas con las que
+   entrar, `elSuyo` salía `undefined`, la petición devolvía 401, `localId` salía
+   `undefined` también, y `undefined === undefined` es verdad. **Dos líneas verdes
+   en una pasada en la que no se había comprobado absolutamente nada.**
 
-**La base de datos de producción tiene ocho cuentas con una contraseña publicada
-en este repositorio.** Está arriba del todo, en «qué hay que hacer». La causa
-—una comprobación que miraba una etiqueta en vez de una dirección— está
-arreglada; limpiar lo que quedó puesto es un botón que hay que pulsar.
+   Es otra vez E4 —«una comprobación que no puede fallar es peor que no
+   tenerla»—, y da miedo porque el verde de al lado sí era de verdad. Ahora se
+   exige que el valor exista antes de compararlo.
+
+6. **Y la misma herramienta gritaba diecinueve veces cuando todo estaba bien.**
+   Contra una base sin cuentas de ejemplo —que es lo correcto en producción— todo
+   lo que necesita entrar salía como `MAL`. No eran fallos: era que no había
+   contraseña con la que entrar. Un diagnóstico que grita cuando todo está bien
+   deja de leerse, y ese es el camino por el que un fallo de verdad pasa
+   desapercibido.
+
+   Ahora se pregunta una vez si hay con quién entrar. Lo que no se puede mirar se
+   marca con `--`, se lista y se cuenta aparte, y **el resumen dice siempre las
+   dos cifras**. De paso se le añadió lo que le faltaba: la sección de la `0020` y
+   la `0021`, que comprueba contra Supabase la restricción que reventó el
+   despliegue, que `abrir_sesion` existe una sola vez y ya con ocho argumentos, y
+   que `quitar_ejemplos` **no** es `security definer`. Y los índices de trigramas
+   se comparan por nombre, no contando: contar seguía cuadrando aunque cayera uno
+   y apareciera otro.
+
+#### Y tres más, del repaso de cierre · lo que estaba construido y no se usaba
+
+Los tres son la misma forma de fallo, que es la más callada de todas: **código
+escrito, registrado y probado por dentro, al que no llegaba nadie.** No dan
+error, no rompen ninguna prueba y no se ven hasta que alguien intenta usarlos.
+
+7. **La demostración no tenía salida limpia**, que es palabra por palabra lo que
+   pide su ficha. El botón «Salir» de la pantalla llama a `salir`, y `salir` no
+   admitía demostraciones: devolvía 403. La aplicación borraba el token de todas
+   formas —por un `finally` puesto para otra cosa— así que **nadie notó que la
+   sesión seguía viva en el servidor**. El token recién «cerrado» seguía abriendo
+   `quien_soy` hasta caducar, y la promesa era «se entra y se sale sin dejar
+   rastro».
+
+   Existía `salir_de_la_demostracion`, que lo hacía bien, y no lo llamaba nadie:
+   la forma más cara de tener razón. Ahora las dos llaman a `cerrarLaSesion`, que
+   es el único sitio donde se decide que una visita **se borra** en vez de
+   cerrarse (regla 6), y hay una prueba de extremo a extremo que sale **por el
+   botón de la pantalla**, no por el que hay que acordarse de llamar.
+
+8. **La aplicación no sabía que estaba en una demostración.** El servidor paraba
+   las escrituras, que es lo que protege de verdad, pero `quien_soy` no lo
+   contaba, así que la pantalla enseñaba los mismos botones de guardar que a
+   cualquiera y quien pulsaba uno se llevaba un error en la cara sin haber sido
+   avisado. Una promesa que el visitante no ve no la ha recibido. Ahora
+   `quien_soy` trae `esDemostracion`, y arriba hay una barra que lo dice y ofrece
+   irse.
+
+9. **El logo se podía poner y no quitar.** `quitar_logo` estaba escrito,
+   registrado y probado; la pantalla ofrecía «Elegir una imagen» y «Cambiar la
+   imagen», nunca quitarla. Quien subía el logo de la cadena en vez del de su
+   local podía sustituirlo, jamás volver a no tener ninguno.
+
+**Y una trampa de las pruebas, que casi las hace inútiles para la interfaz:**
+`pnpm prueba:e2e` levanta lo ya construido con `vite preview`, así que **prueba
+el empaquetado anterior**. Un cambio de pantalla pasa en verde sin haberse
+probado. En integración continua no ocurre, porque allí se construye antes; en
+local hay que usar `pnpm prueba:e2e:completa`. Está en «Cómo trabajamos».
+
+#### Y el que no era de M5, pero lo encontró M5
+
+**Ocho cuentas con una contraseña publicada, en una base con la API ya
+desplegada.** Estaban abiertas de verdad, no en el futuro. La causa —una
+comprobación que miraba una etiqueta en vez de una dirección— está arreglada, y
+las cuentas se cerraron el 3 de septiembre. Sigue arriba, en «qué hay que hacer»,
+porque dejó una consecuencia viva: **hoy no puede entrar nadie** hasta que haya
+una cuenta de verdad.
 
 #### Cómo se comprueba que M5 está terminado
 
@@ -585,6 +669,12 @@ Y la lista de la Auditoría de flujos, pasada punto por punto, en
 - **Google Places**, con las reseñas y los competidores: M23.
 - **El almacén contra Supabase de verdad** no lo ha ejecutado nadie. Para eso
   está `pnpm almacen:preparar`.
+- **`recetas_de_referencia` no la consume nadie todavía**, y se deja a
+  propósito: la ficha de M5 pide «recetas de referencia **opcionales**», y quien
+  las copia a una ficha técnica es M9. La consulta está hecha y probada; lo que
+  falta es la pantalla que las use, y esa no es de este módulo. Es el mismo caso
+  que `catalogo_de_referencia`, que sí tiene su prueba de aceptación porque su
+  criterio —los quince segundos— es de M5.
 
 ---
 
@@ -598,8 +688,14 @@ Y la lista de la Auditoría de flujos, pasada punto por punto, en
 5. **Revisar lo propio antes de entregarlo.** Y `ESTADO.md` no puede afirmar
    nada que no sea cierto en ese momento.
 6. **Un repaso después de fusionar vale la pena.** M4 pasó sus 532 pruebas con
-   tres fallos dentro, y uno era de seguridad. Las pruebas dicen que lo que se
-   probó funciona, no que se haya probado lo que importa.
+   tres fallos dentro, y uno era de seguridad. M5 pasó sus 613 y el repaso sacó
+   otros tres, los tres de la misma forma: **algo construido, registrado y
+   probado por dentro al que no llegaba nadie desde la pantalla**. Las pruebas
+   dicen que lo que se probó funciona, no que se haya probado lo que importa.
+7. **Si se toca una pantalla, `pnpm prueba:e2e:completa`.** El `prueba:e2e` a
+   secas sirve lo ya construido, así que prueba el empaquetado anterior y pasa en
+   verde sin haber visto el cambio. En integración continua no pasa, porque allí
+   se construye antes; en local hay que acordarse.
 
 ---
 

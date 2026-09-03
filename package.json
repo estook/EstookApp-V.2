@@ -36,7 +36,8 @@
     "prueba:e2e:completa": "node herramientas/construye-para-e2e.mjs",
     "textos": "node --experimental-strip-types herramientas/revisa-textos.mjs",
     "grafo": "node herramientas/revisa-el-grafo-de-deno.mjs",
-    "maestros": "node herramientas/documentos-maestros.mjs"
+    "maestros": "node herramientas/documentos-maestros.mjs",
+    "bd:mi-negocio": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/mi-negocio.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

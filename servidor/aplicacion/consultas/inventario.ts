@@ -160,6 +160,15 @@ async function leerProductos(
   filtros: {
     texto: string;
     categoriaId: string | null;
+    /**
+     * Uno solo, por su identificador.
+     *
+     * Existe para que la ficha de un producto **lea una fila y no trescientas**.
+     * La primera versión traía la lista entera y buscaba dentro, y con un local
+     * de verdad eso son trescientas filas y sus subconsultas para devolver una:
+     * el presupuesto de velocidad de B7 no perdona eso.
+     */
+    productoId: string | null;
     soloConProblema: boolean;
     incluirEjemplos: boolean;
     incluirDesactivados: boolean;
@@ -210,6 +219,7 @@ async function leerProductos(
       left join estook.existencias e on e.producto_id = p.id
       left join estook.precio_vigente(p.id) pr on true
      where p.local_id = ${localId}
+       and (${filtros.productoId}::uuid is null or p.id = ${filtros.productoId}::uuid)
        and (${filtros.incluirDesactivados} or p.activo)
        and (${filtros.incluirEjemplos} or not p.es_ejemplo)
        and (${filtros.categoriaId}::uuid is null or p.categoria_id = ${filtros.categoriaId}::uuid)
@@ -344,6 +354,7 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
     const { filas, hoy, desde } = await leerProductos(contexto, localId, {
       texto: entrada.texto ?? '',
       categoriaId: entrada.categoria_id ?? null,
+      productoId: null,
       soloConProblema: entrada.con_problema === true,
       incluirEjemplos: entrada.incluir_ejemplos !== false,
       incluirDesactivados: entrada.incluir_desactivados === true,
@@ -478,14 +489,15 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
     const { filas, hoy, desde } = await leerProductos(contexto, localId, {
       texto: '',
       categoriaId: null,
+      productoId: entrada.producto_id,
       soloConProblema: false,
       incluirEjemplos: true,
       incluirDesactivados: true,
-      limite: 500,
+      limite: 1,
       salto: 0,
     });
 
-    const fila = filas.find((f) => f.id === entrada.producto_id);
+    const fila = filas[0];
     if (!fila) {
       throw new FalloDeAplicacion('no_existe', {
         porque: 'Ese producto no está, o no es de un local que puedas ver.',
@@ -664,6 +676,7 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
     const { filas, hoy, desde } = await leerProductos(contexto, localId, {
       texto: '',
       categoriaId: null,
+      productoId: null,
       soloConProblema: true,
       incluirEjemplos: false,
       incluirDesactivados: false,

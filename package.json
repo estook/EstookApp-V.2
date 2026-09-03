@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@estook/utiles": "workspace:*",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
     "dependency-cruiser": "^16.9.0",

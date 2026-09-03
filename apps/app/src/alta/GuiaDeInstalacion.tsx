@@ -26,21 +26,38 @@ import { clases } from '@estook/ui';
  * peor que preguntar.
  */
 
-type Sistema = 'iphone' | 'android';
+type Sistema = 'iphone' | 'android' | 'ordenador';
 
 /**
- * Qué sistema parece. Solo decide **cuál se enseña primero**, así que fallar no
- * rompe nada: el otro está en la pestaña de al lado.
+ * Qué aparato parece.
+ *
+ * ── El fallo que esto arregla ────────────────────────────────────────────────
+ *
+ * Antes solo distinguía iPhone de Android, y **todo lo que no fuera un iPhone
+ * caía en Android**. En un ordenador, que es donde se hace media configuración,
+ * la pantalla decía «toca el botón de compartir» y «añádelo a tu pantalla de
+ * inicio»: instrucciones para un teléfono, delante de alguien con un ratón.
+ *
+ * Un texto que no encaja con lo que la persona tiene delante no es un detalle
+ * de estilo: es la aplicación diciendo que no sabe dónde está.
+ *
+ * Se mira si hay pantalla táctil, no el nombre del navegador. Los nombres
+ * cambian cada año; que un ordenador de sobremesa no tenga dedos, no.
  */
 function elQueParece(): Sistema {
-  if (typeof navigator === 'undefined') return 'android';
+  if (typeof navigator === 'undefined') return 'ordenador';
 
   const agente = navigator.userAgent;
+
   // El iPad moderno dice ser un Mac. Se le reconoce porque un Mac de verdad no
   // tiene pantalla táctil con varios puntos.
   const esIpadDisfrazado = /Macintosh/.test(agente) && navigator.maxTouchPoints > 1;
+  if (/iPhone|iPad|iPod/.test(agente) || esIpadDisfrazado) return 'iphone';
 
-  return /iPhone|iPad|iPod/.test(agente) || esIpadDisfrazado ? 'iphone' : 'android';
+  if (/Android/.test(agente)) return 'android';
+
+  // Y si no es ninguno de los dos, es un ordenador. Antes esta rama no existía.
+  return 'ordenador';
 }
 
 const PASOS: Readonly<Record<Sistema, readonly string[]>> = {
@@ -56,6 +73,17 @@ const PASOS: Readonly<Record<Sistema, readonly string[]>> = {
     'Si no sale, abre el menú de los tres puntos, arriba a la derecha.',
     'Toca «Instalar aplicación» o «Añadir a pantalla de inicio».',
   ],
+  ordenador: [
+    'Aquí ya está todo: Estook funciona igual en el ordenador, sin instalar nada.',
+    'Si lo quieres a mano, mira el icono de instalar al final de la barra de direcciones. Chrome y Edge lo ponen ahí.',
+    'Y para tenerlo en el móvil, abre esta misma dirección en el teléfono y elige tu sistema arriba.',
+  ],
+};
+
+const COMO_SE_LLAMA: Readonly<Record<Sistema, string>> = {
+  iphone: 'iPhone',
+  android: 'Android',
+  ordenador: 'Ordenador',
 };
 
 export function GuiaDeInstalacion() {
@@ -64,15 +92,20 @@ export function GuiaDeInstalacion() {
   return (
     <div className="flex flex-col gap-e4 rounded-medio border border-borde bg-superficie p-e4">
       <div>
-        <h2 className="text-cuerpo font-semibold">Ponlo en tu pantalla de inicio</h2>
+        <h2 className="text-cuerpo font-semibold">
+          {sistema === 'ordenador'
+            ? 'Estook en el ordenador y en el móvil'
+            : 'Ponlo en tu pantalla de inicio'}
+        </h2>
         <p className="text-secundario text-texto-suave">
-          Se abre como una aplicación, a pantalla completa y sin la barra del navegador. Y sigue
-          funcionando cuando el wifi de la cocina se cae.
+          {sistema === 'ordenador'
+            ? 'En el móvil se abre como una aplicación, a pantalla completa y sin la barra del navegador. Y sigue funcionando cuando el wifi de la cocina se cae.'
+            : 'Se abre como una aplicación, a pantalla completa y sin la barra del navegador. Y sigue funcionando cuando el wifi de la cocina se cae.'}
         </p>
       </div>
 
-      <div className="flex gap-e2" role="tablist" aria-label="Elige tu móvil">
-        {(['iphone', 'android'] as const).map((cual) => (
+      <div className="flex gap-e2" role="tablist" aria-label="Elige tu aparato">
+        {(['ordenador', 'iphone', 'android'] as const).map((cual) => (
           <button
             key={cual}
             type="button"
@@ -88,7 +121,7 @@ export function GuiaDeInstalacion() {
                 : 'border-borde-fuerte bg-superficie hover:bg-fondo',
             )}
           >
-            {cual === 'iphone' ? 'iPhone' : 'Android'}
+            {COMO_SE_LLAMA[cual]}
           </button>
         ))}
       </div>

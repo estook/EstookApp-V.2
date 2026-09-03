@@ -39,6 +39,14 @@ export interface ElAlta {
   readonly paso: number;
   readonly saltados: readonly PasoDelAlta[];
   readonly terminado: boolean;
+  /**
+   * A qué paso se volvió desde el Panel, si es que se volvió a por uno solo.
+   *
+   * Cuando trae un código, la pantalla **cierra el alta al guardar ese paso** y
+   * devuelve al Panel, en vez de seguir con los siguientes. Sin esto, quien
+   * volvía a invitar a su equipo se encontraba otra vez el paseo entero.
+   */
+  readonly retomadoPara: PasoDelAlta | null;
   readonly progreso: Progreso;
 
   /** Lo respondido hasta ahora, para poder volver atrás y corregir. */
@@ -97,6 +105,7 @@ export const elAlta = consulta<Record<string, never>, ElAlta>({
         onboarding_paso: number;
         onboarding_saltados: string[];
         onboarding_terminado: boolean;
+        onboarding_retomado_para: string | null;
         tipo: string | null;
         direccion: string | null;
         codigo_postal: string | null;
@@ -115,6 +124,7 @@ export const elAlta = consulta<Record<string, never>, ElAlta>({
     >`
       select id, nombre, es_ejemplo, organizacion_id,
              onboarding_paso, onboarding_saltados, onboarding_terminado,
+             onboarding_retomado_para,
              tipo::text as tipo, direccion, codigo_postal, poblacion, provincia, telefono,
              zona_horaria, to_char(hora_de_corte, 'HH24:MI') as hora_de_corte,
              territorio::text as territorio, regimen::text as regimen,
@@ -170,6 +180,7 @@ export const elAlta = consulta<Record<string, never>, ElAlta>({
       paso: local.onboarding_paso,
       saltados,
       terminado: local.onboarding_terminado,
+      retomadoPara: (local.onboarding_retomado_para as PasoDelAlta | null) ?? null,
       progreso: comoVa({
         paso: local.onboarding_paso,
         saltados,

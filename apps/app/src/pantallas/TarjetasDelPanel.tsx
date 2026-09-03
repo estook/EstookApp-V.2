@@ -139,7 +139,14 @@ function TerminaDeConfigurar({ alta }: { readonly alta: ElAltaDelLocal }) {
 
   const retomar = useMutation({
     mutationFn: async (paso: string) => {
-      const respuesta = await cliente.ejecutar('retomar_el_alta', { paso });
+      // `solo_este_paso` es lo que hace que esto sea un recado y no el asistente
+      // entero: se abre ese paso, y al guardarlo se vuelve aquí. Esta tarjeta
+      // ofrece «y 1 cosa más, **cuando quieras**», así que meter a alguien en el
+      // recorrido completo es no cumplir lo que se le ofreció.
+      const respuesta = await cliente.ejecutar('retomar_el_alta', {
+        paso,
+        solo_este_paso: true,
+      });
       if (!respuesta.ok) throw new FalloDeLaApi(respuesta.error);
     },
     // Al reabrir el alta, la quinta comprobación vuelve a mandar allí en la

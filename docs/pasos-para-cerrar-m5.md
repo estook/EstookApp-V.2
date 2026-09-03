@@ -163,6 +163,18 @@ enseña el logotipo de Estook en vez del del local. No se rompe nada: se dice.
 
 ---
 
+## 4.5 · Aplicar la `0022`
+
+Después de fusionar el PR #26, porque la base nunca va por delante del código:
+
+```bash
+pnpm bd:migrar
+```
+
+Añade una columna a `estook.local` que guarda **a qué paso se volvió** cuando se
+reabre el alta desde el Panel. Sin ella, volver a por una cosa metía en el
+asistente completo y salía otra vez la guía de instalación.
+
 ## 5 · Volver a desplegar la API, y mirarlo en el móvil
 
 La API **ya está desplegada**, pero con el código de antes de M5. Hay que volver a

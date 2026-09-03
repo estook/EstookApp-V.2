@@ -248,6 +248,63 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     await expect(page.getByRole('button', { name: 'Quitarlo' })).toBeHidden();
     await expect(page.getByRole('button', { name: 'Elegir una imagen' })).toBeVisible();
   });
+
+  /**
+   * **Volver a por una cosa y volver al Panel.**
+   *
+   * La tarjeta del Panel ofrece «Invita a tu equipo» y, debajo, «y 1 cosa más,
+   * cuando quieras». Pulsarla reabría el alta y al guardar seguía con los pasos
+   * siguientes: aparecía otra vez el paseo con la guía de instalación, ya visto.
+   *
+   * Quien acepta hacer una cosa no ha aceptado hacer las cinco siguientes.
+   *
+   * Va por la pantalla porque el fallo era de la pantalla: el servidor guardaba
+   * bien todo lo que se le mandaba.
+   */
+  test('se vuelve al alta a por una cosa, y al guardarla se vuelve al Panel', async ({
+    page,
+    request,
+  }) => {
+    // Se deja el alta terminada pero con el equipo sin responder, que es el
+    // estado en el que el Panel enseña la tarjeta.
+    const token = await tokenDe(request, PABLO);
+    await request.post(`${API}/v1/comandos/retomar_el_alta`, {
+      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado-a-${Date.now()}` },
+      data: { paso: 'equipo' },
+    });
+    await request.post(`${API}/v1/comandos/saltar_paso_del_alta`, {
+      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado-b-${Date.now()}` },
+      data: { paso: 'equipo' },
+    });
+    await request.post(`${API}/v1/comandos/terminar_el_alta`, {
+      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado-c-${Date.now()}` },
+      data: {},
+    });
+
+    await entrar(page, PABLO);
+
+    // El Panel, con la tarjeta que ofrece el recado.
+    await expect(
+      page.getByRole('heading', { name: 'Termina de configurar tu local' }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Invita a tu equipo' }).click();
+
+    // Lleva al paso, y **solo a ese paso**.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Invita a tu equipo');
+
+    // Y aquí se puede invitar a mano, que era la otra queja: antes el único
+    // botón era «Subir un fichero» y sin un Excel no se podía hacer nada.
+    await expect(page.getByRole('button', { name: 'Añadir a una persona' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Continuar' }).click();
+
+    // **Y se vuelve al Panel**, no al paseo. Esto era el fallo.
+    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Invita a tu equipo');
+    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText(
+      'Cinco pantallas y a trabajar',
+    );
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  });
 });
 
 // ── 2 · El catalogo de referencia ────────────────────────────────────────────

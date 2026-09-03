@@ -9,16 +9,16 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                        |
-| -------------- | -------------------------------------------------------------------------------------- |
-| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓**                                   |
-| **M5**         | Construido, probado y fusionado. **Le falta la regla 11**: verlo en un móvil de verdad |
-| **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                    |
-| **Pruebas**    | 614 unitarias y de base de datos · 164 de extremo a extremo                            |
-| **Rama**       | M5 fusionado (PR #24) y su repaso (PR #25). Lo de entrar por primera vez, en el PR #26 |
-| **Publicado**  | Web, app y API vivas, pero **la API sirve código de antes de M5**. Base en la `0021`   |
-| **Entrar**     | Nadie puede: no queda ninguna cuenta. Se arregla con `pnpm bd:cuenta-de-verdad`        |
-| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local  |
+|                |                                                                                                       |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓**                                                  |
+| **M5**         | Construido, probado y fusionado. **Le falta la regla 11**: verlo en un móvil de verdad                |
+| **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                                   |
+| **Pruebas**    | 616 unitarias y de base de datos · 166 de extremo a extremo                                           |
+| **Rama**       | M5 fusionado (PR #24) y su repaso (PR #25). Lo de entrar por primera vez, en el PR #26                |
+| **Publicado**  | Web, app y API vivas, pero **la API sirve código de antes de M5**. Base en la `0021`, falta la `0022` |
+| **Entrar**     | Nadie puede: no queda ninguna cuenta. Se arregla con `pnpm bd:cuenta-de-verdad`                       |
+| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local                 |
 
 ---
 
@@ -113,13 +113,16 @@ credenciales, lo dice por pantalla y sigue con lo demás. Todo está en
 4. ~~Cerrar las ocho cuentas de ejemplo~~ · hecho el 3 de septiembre
 5. ~~Aplicar la `0020` y la `0021` y volver a sembrar~~ · hecho el 3 de septiembre
 6. ~~Fusionar M5~~ · hecho, PR #24, el 3 de septiembre
-7. **Fusionar el repaso de cierre**, que va en su propio pull request
-8. **Crear una cuenta de verdad**, que es lo de arriba del todo
-9. **Montar el almacén de ficheros** con `pnpm almacen:preparar`, que crea el cubo
-   y comprueba el camino entero: sube, firma, lee y borra
-10. **Volver a desplegar la API**, que sigue sirviendo el código de antes de M5 y
+7. ~~Fusionar el repaso de cierre~~ · hecho, PR #25
+8. ~~Crear una cuenta de verdad~~ · hecho el 3 de septiembre
+9. **Fusionar el PR #26**, que trae lo de entrar por primera vez y las tres cosas
+   del repaso en el móvil
+10. **Aplicar la `0022`** con `pnpm bd:migrar`, después de fusionar
+11. **Volver a desplegar la API**, que sigue sirviendo el código de antes de M5 y
     por tanto no conoce ninguno de sus comandos
-11. **Ver M5 en un móvil de verdad** con datos de verdad (regla 11)
+12. **Montar el almacén de ficheros** con `pnpm almacen:preparar`, que crea el cubo
+    y comprueba el camino entero: sube, firma, lee y borra
+13. **Ver M5 en un móvil de verdad** con datos de verdad (regla 11)
 
 `pnpm bd:comprobar-api` pasa hoy sin un solo fallo, con once comprobaciones que
 allí no se pueden hacer porque necesitan una sesión abierta. Están explicadas en
@@ -539,7 +542,7 @@ después**: no hay nada que limpiar. La otra forma —dejar escribir en una copi
 borrarla luego— necesitaría un proceso de fondo que todavía no existe, y un fallo
 a mitad dejaría datos de mentira dentro del restaurante de ejemplo.
 
-#### Nueve fallos que M5 encontró, y quién los cazó
+#### Doce fallos que M5 encontró, y quién los cazó
 
 1. **El gerente no podía configurar su propio local.** La política de M1 exigía
    `accion.gestionar_locales` para cualquier escritura sobre `estook.local`, y ese
@@ -660,6 +663,36 @@ para que la ayuda de la pantalla y la regla que la rechaza no puedan discrepar.
 el empaquetado anterior**. Un cambio de pantalla pasa en verde sin haberse
 probado. En integración continua no ocurre, porque allí se construye antes; en
 local hay que usar `pnpm prueba:e2e:completa`. Está en «Cómo trabajamos».
+
+#### Y tres del primer paseo por el móvil, que las vio Richi
+
+Las tres del mismo sitio: **el alta funcionaba, pero no se comportaba como se
+había prometido en la propia pantalla.**
+
+10. **En «Invita a tu equipo» solo se podía subir un CSV.** El único botón era
+    «Subir un fichero», así que quien no tuviera la plantilla en un Excel —que es
+    casi todo el mundo el primer día— no podía invitar a nadie y tenía que
+    saltarse el paso. Y el comentario del propio fichero decía que había dos
+    caminos, «de uno en uno» el primero. Ahora está, y usa **la misma hoja** que
+    «Quién tiene acceso», no una copia.
+
+11. **Volver a por una cosa metía en el asistente entero.** La tarjeta del Panel
+    ofrece «Invita a tu equipo» y debajo «y 1 cosa más, **cuando quieras**».
+    Pulsarla reabría el alta y, al guardar, seguía con los pasos siguientes:
+    aparecía otra vez el paseo con la guía de instalación, ya visto. Quien acepta
+    hacer una cosa no ha aceptado hacer las cinco siguientes.
+
+    Lo arregla la migración **`0022`**, que guarda a qué paso se volvió. Se
+    intentó primero sin columna, deduciéndolo, y salió mal de la peor manera: el
+    recorrido completo se cerraba solo en el primer paso. Está contado en la
+    migración.
+
+12. **La guía de instalación hablaba del móvil en el ordenador.** Solo distinguía
+    iPhone de Android, y **todo lo que no fuera un iPhone caía en Android**: en un
+    PC decía «toca el botón de compartir» y «añádelo a tu pantalla de inicio».
+    Ahora hay una tercera pestaña, y en el ordenador dice lo que toca — que aquí
+    ya funciona, dónde está el icono de instalar, y que para el móvil se abre la
+    misma dirección en el teléfono.
 
 #### Y el que no era de M5, pero lo encontró M5
 

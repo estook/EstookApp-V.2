@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Aviso, Boton, Selector, Tabla, clases } from '@estook/ui';
+import { Invitar } from '../../pantallas/Invitar.tsx';
 import type { PropsDeUnPaso } from '../contrato.ts';
 
 /**
@@ -65,6 +66,9 @@ export function ElEquipo({ cliente, alGuardar, alFallar }: PropsDeUnPaso) {
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [trabajando, setTrabajando] = useState(false);
   const elFichero = useRef<HTMLInputElement>(null);
+  const [invitando, setInvitando] = useState(false);
+  /** Quien se acaba de invitar a mano, con su PIN. Se ensena una vez. */
+  const [reciente, setReciente] = useState<{ nombre: string; pin: string | null } | null>(null);
 
   async function subir(fichero: File) {
     setTrabajando(true);
@@ -278,6 +282,15 @@ export function ElEquipo({ cliente, alGuardar, alFallar }: PropsDeUnPaso) {
   }
 
   // ── El principio: los dos caminos ──────────────────────────────────────────
+  //
+  // **De uno en uno estaba escrito aquí arriba y no estaba en la pantalla.** El
+  // único botón era «Subir un fichero», así que quien no tuviera un Excel —que
+  // es casi todo el mundo el primer día— no podía invitar a nadie y tenía que
+  // saltarse el paso. Prometer dos caminos y ofrecer uno es peor que ofrecer
+  // uno: quien lee el texto se queda buscando el botón que falta.
+  //
+  // La hoja de invitar es **la misma** que la de «Quién tiene acceso», no una
+  // copia: un formulario duplicado acaba pidiendo cosas distintas en cada sitio.
   return (
     <div className="flex flex-col gap-e4">
       <p className="text-cuerpo text-texto-suave">
@@ -285,13 +298,51 @@ export function ElEquipo({ cliente, alGuardar, alFallar }: PropsDeUnPaso) {
         cuando llegue su primer turno.
       </p>
 
+      {/* El PIN de quien se acaba de invitar. Se enseña una vez y no vuelve. */}
+      {reciente !== null && (
+        <Aviso tono="bien" titulo={`${reciente.nombre} ya puede entrar`}>
+          {reciente.pin === null ? (
+            'Su puesto es de toda la organización, así que entra con su correo y su contraseña.'
+          ) : (
+            <>
+              Su PIN es <strong className="font-mono tracking-widest">{reciente.pin}</strong>.
+              Dáselo en mano: <strong>se enseña una sola vez</strong>.
+            </>
+          )}
+        </Aviso>
+      )}
+
+      {/* Camino 1 · de uno en uno, que es el normal el primer día. */}
+      <div
+        className={clases(
+          'flex flex-col gap-e3 rounded-medio border border-borde-fuerte',
+          'bg-superficie p-e4 text-center',
+        )}
+      >
+        <p className="text-cuerpo font-medium">Añádelos de uno en uno</p>
+        <p className="text-secundario text-texto-suave">
+          Con su nombre, su correo y su puesto. Te doy su PIN para que se lo des en mano.
+        </p>
+        <div className="flex justify-center">
+          <Boton
+            tono="principal"
+            onClick={() => {
+              setInvitando(true);
+            }}
+          >
+            Añadir a una persona
+          </Boton>
+        </div>
+      </div>
+
+      {/* Camino 2 · el fichero, para quien ya tiene la plantilla en un Excel. */}
       <div
         className={clases(
           'flex flex-col gap-e3 rounded-medio border border-dashed border-borde-fuerte',
           'bg-superficie p-e4 text-center',
         )}
       >
-        <p className="text-cuerpo font-medium">¿La tienes en un Excel?</p>
+        <p className="text-cuerpo font-medium">¿O la tienes en un Excel?</p>
         <p className="text-secundario text-texto-suave">
           Súbelo y te digo qué he entendido antes de dar de alta a nadie.
         </p>
@@ -330,6 +381,18 @@ export function ElEquipo({ cliente, alGuardar, alFallar }: PropsDeUnPaso) {
       >
         Continuar
       </Boton>
+
+      {invitando && (
+        <Invitar
+          alCerrar={() => {
+            setInvitando(false);
+          }}
+          alHecho={(quien) => {
+            setInvitando(false);
+            setReciente({ nombre: quien.nombre, pin: quien.pin });
+          }}
+        />
+      )}
     </div>
   );
 }

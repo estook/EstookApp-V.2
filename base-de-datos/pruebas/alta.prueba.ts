@@ -722,3 +722,70 @@ describe('lo que está en dos sitios, dice lo mismo', () => {
     for (const fila of dePartida) expect(fila.cuantos, fila.tipo).toBe(3);
   });
 });
+
+// ── Volver a por una cosa · la 0022 ──────────────────────────────────────────
+
+/**
+ * **La tarjeta del Panel ofrece un recado, no el asistente entero.**
+ *
+ * «Invita a tu equipo», y debajo «y 1 cosa más, **cuando quieras**». Pulsarla
+ * reabría el alta y, al guardar el paso, seguía con los siguientes: aparecían
+ * otra vez el paseo y la guía de instalación, ya vistos.
+ *
+ * Lo que faltaba era guardar **a qué se volvió**. Aquí se comprueban las dos
+ * reglas que lo sostienen, que son de la base de datos y no de la pantalla.
+ */
+describe('volver al alta a por una cosa', () => {
+  it('solo admite los ocho pasos, y ninguno inventado', async () => {
+    await expect(
+      comoDuena(
+        `update estook.local set onboarding_retomado_para = 'inventado'
+          where codigo = 'casa-lola'`,
+      ),
+    ).rejects.toThrow();
+
+    // Y uno de los buenos sí entra.
+    await comoDuena(
+      `update estook.local set onboarding_retomado_para = 'equipo'
+        where codigo = 'casa-lola'`,
+    );
+    const [lola] = await comoDuena<{ para: string | null }>(
+      `select onboarding_retomado_para as para from estook.local where codigo = 'casa-lola'`,
+    );
+    expect(lola?.para).toBe('equipo');
+  });
+
+  it('no puede quedar un recado abierto sobre un alta terminada', async () => {
+    // Es un estado imposible: si el alta está cerrada, no hay nada a lo que
+    // volver. Sin esta restricción se quedaría puesto y la próxima vez que
+    // alguien reabriera el alta se cerraría sola en el primer paso.
+    await comoDuena(
+      `update estook.local set onboarding_retomado_para = 'equipo'
+        where codigo = 'casa-lola'`,
+    );
+
+    await expect(
+      comoDuena(
+        `update estook.local
+            set onboarding_terminado = true, onboarding_terminado_en = now()
+          where codigo = 'casa-lola'`,
+      ),
+    ).rejects.toThrow();
+
+    // Cerrando el recado a la vez, sí. Que es justo lo que hace `terminar_el_alta`.
+    await comoDuena(
+      `update estook.local
+          set onboarding_terminado = true,
+              onboarding_terminado_en = now(),
+              onboarding_retomado_para = null
+        where codigo = 'casa-lola'`,
+    );
+
+    // Y se deja como estaba, que otras pruebas cuentan con Casa Lola a medias.
+    await comoDuena(
+      `update estook.local
+          set onboarding_terminado = false, onboarding_terminado_en = null
+        where codigo = 'casa-lola'`,
+    );
+  });
+});

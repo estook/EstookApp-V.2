@@ -156,10 +156,28 @@ export function ElAlta() {
     );
   }
 
+  /**
+   * **Si se vino a por una cosa, se guarda esa cosa y se vuelve.**
+   *
+   * La tarjeta del Panel ofrece un recado —«Invita a tu equipo», y debajo «y 1
+   * cosa más, cuando quieras»— y antes metía en el asistente completo: al
+   * guardar el paso se avanzaba al siguiente, así que aparecían otra vez el
+   * paseo y la guía de instalación, ya vistos.
+   *
+   * Quien acepta hacer una cosa no ha aceptado hacer las cinco siguientes.
+   *
+   * El paso al que se volvió lo dice el servidor en `retomadoPara`, y cerrar el
+   * alta lo borra, así que no puede quedarse pegado.
+   */
+  const esElRecado = alta.retomadoPara !== null && alta.retomadoPara === laPantalla.codigo;
+
   const propiedades: PropsDeUnPaso = {
     alta,
     cliente,
-    alGuardar: siguiente,
+    // `mutateAsync` y no `mutate`: el paso espera a que `alGuardar` termine para
+    // apagar su «Guardando», y con la versión que no espera el botón se apagaba
+    // antes de que el alta se hubiera cerrado.
+    alGuardar: esElRecado ? () => terminar.mutateAsync() : siguiente,
     alFallar: setError,
   };
 

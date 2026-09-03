@@ -134,7 +134,7 @@ Storage, en un cubo privado llamado `marca`.
 Primero, la clave de servicio en `.env.local`:
 
 ```
-SUPABASE_SERVICE_KEY=   # Supabase → Project Settings → API → service_role
+CLAVE_DE_SERVICIO=   # Supabase → Project Settings → API → service_role
 ```
 
 > **Esa clave no va nunca al navegador.** Es la única de todo el proyecto que se
@@ -160,9 +160,9 @@ el logo. **El color de la marca sí funciona.**
 
 Supabase → Project Settings → Edge Functions → Secrets:
 
-| Nombre                 | Qué es                                        |
-| ---------------------- | --------------------------------------------- |
-| `SUPABASE_SERVICE_KEY` | La misma de arriba. La necesita la API, no tú |
+| Nombre              | Qué es                                        |
+| ------------------- | --------------------------------------------- |
+| `CLAVE_DE_SERVICIO` | La misma de arriba. La necesita la API, no tú |
 
 Sin ella, la API desplegada no puede firmar el enlace del logo, y la cabecera
 enseña el logotipo de Estook en vez del del local. No se rompe nada: se dice.

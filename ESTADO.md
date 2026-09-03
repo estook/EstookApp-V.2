@@ -9,16 +9,15 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                       |
-| -------------- | ----------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓**                                                  |
-| **M5**         | Construido, probado y fusionado. **Le falta la regla 11**: verlo en un móvil de verdad                |
-| **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                                   |
-| **Pruebas**    | 616 unitarias y de base de datos · 170 de extremo a extremo                                           |
-| **Rama**       | M5 fusionado (PR #24) y su repaso (PR #25). Lo de entrar por primera vez, en el PR #26                |
-| **Publicado**  | Web, app y API vivas, pero **la API sirve código de antes de M5**. Base en la `0021`, falta la `0022` |
-| **Entrar**     | Nadie puede: no queda ninguna cuenta. Se arregla con `pnpm bd:cuenta-de-verdad`                       |
-| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local                 |
+|                |                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------- |
+| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** onboarding y arranque |
+| **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                   |
+| **Pruebas**    | 616 unitarias y de base de datos · 170 de extremo a extremo                           |
+| **Rama**       | Todo en `main`. M5 entró en cuatro pull requests: #24, #25, #26 y #27                 |
+| **Publicado**  | Web, app y API vivas y al día. Base en la `0022`. **Probado en un móvil de verdad**   |
+| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
+| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
 
 ---
 
@@ -63,70 +62,43 @@ específico. Si de verdad se contradicen, se para y se pregunta (regla 13).
 
 ## 2 · Qué hay que hacer
 
-### Lo primero de todo · crear una cuenta de verdad
+**M5 está cerrado.** Se probó en un móvil de verdad el 3 de septiembre de 2026 y
+funciona: el alta entera, la tarjeta del Panel, invitar a mano, y la guía de
+instalación donde toca. Lo que queda es de M6 en adelante.
 
-**Ahora mismo no puede entrar nadie en Estook.** Ni tú. Es a propósito y es lo
-correcto, pero no puede quedarse así:
+### Lo único que sigue abierto de M5
 
-```
-pnpm bd:cuenta-de-verdad tu@correo.com "Ricardo"
-```
+- **El almacén del logo.** Falta la clave `service_role` de Supabase en
+  `.env.local` y ejecutar `pnpm almacen:preparar`, que crea el cubo y comprueba
+  el camino entero: sube, firma, lee y borra. **No bloquea nada**: el color de la
+  marca funciona, y el paso del logo dice que todavía no hay dónde guardarlo.
+  Está en [`docs/pasos-para-cerrar-m5.md`](docs/pasos-para-cerrar-m5.md).
 
-Enseña una contraseña de un solo uso, que hay que cambiar al entrar.
+### Lo que hay que decidir antes de M8, y no lo decide M5
 
-### Lo que pasó con las ocho cuentas, y por qué ya no están
+**Quién ejecuta los procesos de fondo.** Hoy `servidor/trabajos/` existe, está
+probado y **no lo llama nadie**: no hay reloj. Eso significa que la bandeja de
+eventos se llena y no se vacía, y que las claves de idempotencia no se limpian.
 
-**La base de datos de Supabase llegó a tener ocho cuentas cuya contraseña está
-escrita en este repositorio** —`estook en desarrollo`, en
-[`base-de-datos/semillas/acceso.ts`](base-de-datos/semillas/acceso.ts)— y una de
-ellas, la de Elena, tiene rol `direccion` y lo ve todo.
+Nada de eso se pierde ni rompe nada hoy, porque tampoco hay quien escuche los
+eventos. Pero M8 sí los va a necesitar, así que hay que elegir entre `pg_cron`
+dentro de Supabase, una acción programada de GitHub, o un servicio aparte. **Es
+una decisión de Richi**, y no se inventa.
 
-No eran un riesgo futuro: **la API ya estaba desplegada y se entraba desde el
-móvil**, así que fueron ocho puertas abiertas de verdad. Se cerraron el 3 de
-septiembre de 2026 con `pnpm bd:sin-cuentas-de-ejemplo`:
+### Cómo quedó el estado de la base y del despliegue
 
-```
-personas de ejemplo   8      sesiones abiertas   8
-con contrasena        8      con PIN            21
-personas de verdad    0      (no se toco ninguna)
-```
+| Qué                | Cómo está                                                     |
+| ------------------ | ------------------------------------------------------------- |
+| Migraciones        | Hasta la `0022`, aplicadas en Supabase                        |
+| Semillas           | Puestas, **sin credenciales de ejemplo**: la semilla se niega |
+| Cuentas de ejemplo | Cerradas. Ninguna puede entrar                                |
+| Cuenta de verdad   | La de Ricardo, con su organización y su local                 |
+| API                | Desplegada y al día                                           |
+| Web y app          | Publicadas y al día                                           |
 
-La semilla se negaba a correr «en producción» mirando `ENTORNO`, **y esa negativa
-no podía saltar nunca**: `ENTORNO` dice `desarrollo` en el `.env.local` de esta
-máquina, mientras `DATABASE_URL`, dos líneas más abajo del mismo fichero, apunta
-al Supabase de verdad.
-
-Es, palabra por palabra, lo que el Plan había escrito en E4: **«una comprobación
-que no puede fallar es peor que no tenerla»** y **«el nombre de una cosa decide
-dónde acaba»**.
-
-M5 arregla la causa: la semilla **mira a dónde se conecta**, no una etiqueta.
-Contra cualquier base que no sea la de esta máquina se niega a sembrar
-credenciales, lo dice por pantalla y sigue con lo demás. Todo está en
-[`docs/pasos-para-cerrar-m5.md`](docs/pasos-para-cerrar-m5.md).
-
-### Y después · lo que quedaba de M4, más lo que trae M5
-
-1. ~~Fusionar el pull request de M4~~ · hecho
-2. ~~`pnpm bd:migrar` y `pnpm bd:sembrar`~~ · hecho el 2 de septiembre
-3. ~~Desplegar la API y declarar `VITE_API_URL`~~ · hecho el 2 de septiembre
-4. ~~Cerrar las ocho cuentas de ejemplo~~ · hecho el 3 de septiembre
-5. ~~Aplicar la `0020` y la `0021` y volver a sembrar~~ · hecho el 3 de septiembre
-6. ~~Fusionar M5~~ · hecho, PR #24, el 3 de septiembre
-7. ~~Fusionar el repaso de cierre~~ · hecho, PR #25
-8. ~~Crear una cuenta de verdad~~ · hecho el 3 de septiembre
-9. **Fusionar el PR #26**, que trae lo de entrar por primera vez y las tres cosas
-   del repaso en el móvil
-10. **Aplicar la `0022`** con `pnpm bd:migrar`, después de fusionar
-11. **Volver a desplegar la API**, que sigue sirviendo el código de antes de M5 y
-    por tanto no conoce ninguno de sus comandos
-12. **Montar el almacén de ficheros** con `pnpm almacen:preparar`, que crea el cubo
-    y comprueba el camino entero: sube, firma, lee y borra
-13. **Ver M5 en un móvil de verdad** con datos de verdad (regla 11)
-
-`pnpm bd:comprobar-api` pasa hoy sin un solo fallo, con once comprobaciones que
-allí no se pueden hacer porque necesitan una sesión abierta. Están explicadas en
-su propia salida.
+`pnpm bd:comprobar-api` pasa sin un solo fallo, con once comprobaciones que allí
+no se pueden hacer porque necesitan cuentas de ejemplo, que en una base remota no
+existen a propósito. La propia salida lo explica.
 
 ### Lo que 538 pruebas en verde no podían ver
 
@@ -726,6 +698,19 @@ Su criterio, punto por punto, es
 
 Y la lista de la Auditoría de flujos, pasada punto por punto, en
 [`docs/auditorias/m5.md`](docs/auditorias/m5.md).
+
+#### Cómo se cerró M5
+
+El 3 de septiembre de 2026, en un móvil de verdad, con la cuenta de Ricardo y su
+negocio. Se recorrió el alta entera, se volvió desde el Panel a por una cosa
+suelta, se invitó a alguien a mano y se miró la guía de instalación.
+
+**Trece fallos en total**, y de ellos **seis los encontró mirar la aplicación en
+un teléfono, no las pruebas.** Eso es lo que hay que llevarse a M6: 616 pruebas
+en verde dicen que lo probado funciona, no que se haya probado lo que importa.
+Los seis eran de la misma familia —algo construido a lo que la pantalla no
+llegaba, o un texto que no encajaba con el aparato que se tenía delante— y
+ninguno rompía nada por dentro.
 
 #### Lo que M5 deja pendiente, dicho sin redondear
 

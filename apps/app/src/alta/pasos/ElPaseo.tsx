@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { IconoChat, IconoDocumento, IconoPanel, IconoRejilla } from '@estook/iconos';
 import { Boton, IconoDeFogon, clases } from '@estook/ui';
 import { GuiaDeInstalacion } from '../GuiaDeInstalacion.tsx';
+import { esUnMovil } from '../queAparato.ts';
 import type { PropsDeUnPaso } from '../contrato.ts';
 
 /**
@@ -65,6 +66,23 @@ export function ElPaseo({ alGuardar }: PropsDeUnPaso) {
   const [donde, setDonde] = useState(0);
   const [instalando, setInstalando] = useState(false);
 
+  /**
+   * **Ponerlo en la pantalla de inicio solo se ofrece en el móvil.**
+   *
+   * Estaba al revés de las dos maneras, y las dos molestan:
+   *
+   *   · En el ordenador salía «Ponerlo en mi móvil» y detrás una pantalla que
+   *     dice «toca el botón de compartir». Delante de alguien con un ratón.
+   *   · Y en el móvil, que es donde sirve, había que pasar las cinco pantallas
+   *     del paseo para llegar. Quien pulsaba «Saltar el paseo» —lo normal— no la
+   *     veía nunca.
+   *
+   * Ahora en el teléfono el último botón lleva a la guía, y en el ordenador
+   * termina el alta y punto. Lo que no encaja con el aparato que se tiene
+   * delante no es un detalle: es la aplicación diciendo que no sabe dónde está.
+   */
+  const enUnMovil = esUnMovil();
+
   if (instalando) {
     return (
       <div className="flex flex-col gap-e4">
@@ -121,14 +139,31 @@ export function ElPaseo({ alGuardar }: PropsDeUnPaso) {
         tono="principal"
         ancho
         onClick={() => {
-          if (ultima) setInstalando(true);
-          else setDonde(donde + 1);
+          if (!ultima) setDonde(donde + 1);
+          else if (enUnMovil) setInstalando(true);
+          else void alGuardar();
         }}
       >
-        {ultima ? 'Ponerlo en mi móvil' : 'Siguiente'}
+        {!ultima ? 'Siguiente' : enUnMovil ? 'Ponerlo en mi móvil' : 'Ya está, vamos allá'}
       </Boton>
 
-      <div className="flex justify-center">
+      <div className="flex flex-col items-center gap-e1">
+        {/*
+          En el móvil, a un toque desde cualquier pantalla del paseo. Antes solo
+          se llegaba pasando las cinco, y quien pulsaba «Saltar el paseo» —lo
+          normal— no la veía nunca. Es justo el aparato donde sirve.
+        */}
+        {enUnMovil && (
+          <Boton
+            tono="texto"
+            onClick={() => {
+              setInstalando(true);
+            }}
+          >
+            Ponerlo en mi pantalla de inicio
+          </Boton>
+        )}
+
         <Boton
           tono="texto"
           onClick={() => {

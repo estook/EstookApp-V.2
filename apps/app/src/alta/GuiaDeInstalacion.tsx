@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { clases } from '@estook/ui';
+import { elQueParece, type Sistema } from './queAparato.ts';
 
 /**
  * Cómo poner Estook en la pantalla de inicio (M5).
@@ -25,40 +26,6 @@ import { clases } from '@estook/ui';
  * Mac desde hace años— y quedarse enseñando la guía equivocada sin salida es
  * peor que preguntar.
  */
-
-type Sistema = 'iphone' | 'android' | 'ordenador';
-
-/**
- * Qué aparato parece.
- *
- * ── El fallo que esto arregla ────────────────────────────────────────────────
- *
- * Antes solo distinguía iPhone de Android, y **todo lo que no fuera un iPhone
- * caía en Android**. En un ordenador, que es donde se hace media configuración,
- * la pantalla decía «toca el botón de compartir» y «añádelo a tu pantalla de
- * inicio»: instrucciones para un teléfono, delante de alguien con un ratón.
- *
- * Un texto que no encaja con lo que la persona tiene delante no es un detalle
- * de estilo: es la aplicación diciendo que no sabe dónde está.
- *
- * Se mira si hay pantalla táctil, no el nombre del navegador. Los nombres
- * cambian cada año; que un ordenador de sobremesa no tenga dedos, no.
- */
-function elQueParece(): Sistema {
-  if (typeof navigator === 'undefined') return 'ordenador';
-
-  const agente = navigator.userAgent;
-
-  // El iPad moderno dice ser un Mac. Se le reconoce porque un Mac de verdad no
-  // tiene pantalla táctil con varios puntos.
-  const esIpadDisfrazado = /Macintosh/.test(agente) && navigator.maxTouchPoints > 1;
-  if (/iPhone|iPad|iPod/.test(agente) || esIpadDisfrazado) return 'iphone';
-
-  if (/Android/.test(agente)) return 'android';
-
-  // Y si no es ninguno de los dos, es un ordenador. Antes esta rama no existía.
-  return 'ordenador';
-}
 
 const PASOS: Readonly<Record<Sistema, readonly string[]>> = {
   iphone: [

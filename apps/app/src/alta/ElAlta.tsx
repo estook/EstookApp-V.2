@@ -89,13 +89,30 @@ export function ElAlta() {
     setMirando(Math.min(paso + 1, CUANTOS_PASOS));
   }, [paso, volverAPreguntar]);
 
+  /**
+   * ¿Se vino a por una cosa sola?
+   *
+   * Lo dice el servidor en `retomadoPara`, que lo pone la tarjeta del Panel al
+   * pedir el recado y lo borra `terminar_el_alta`. Se calcula aquí arriba —y no
+   * junto a la pantalla— porque lo miran **las dos salidas del paso**: guardar y
+   * dejarlo para luego.
+   *
+   * Que solo lo mirara «guardar» fue el segundo agujero del mismo fallo: quien
+   * pulsaba «Esto lo dejo para luego» seguía cayendo en el paseo entero.
+   */
+  const elRecado = alta?.retomadoPara ?? null;
+  const esElRecado = elRecado !== null && elRecado === PASOS_DEL_ALTA[paso]?.codigo;
+
   const saltar = useMutation({
     mutationFn: async (codigo: PasoDelAlta) => {
       const respuesta = await cliente.ejecutar('saltar_paso_del_alta', { paso: codigo });
       if (!respuesta.ok) throw new FalloDeLaApi(respuesta.error);
     },
     onSuccess: () => {
-      void siguiente();
+      // Dejar el recado para luego también termina: se vino a una cosa, y la
+      // respuesta «ahora no» es una respuesta.
+      if (esElRecado) terminar.mutate();
+      else void siguiente();
     },
     onError: (fallo: FalloDeLaApi) => {
       setError(fallo.error);
@@ -169,8 +186,6 @@ export function ElAlta() {
    * El paso al que se volvió lo dice el servidor en `retomadoPara`, y cerrar el
    * alta lo borra, así que no puede quedarse pegado.
    */
-  const esElRecado = alta.retomadoPara !== null && alta.retomadoPara === laPantalla.codigo;
-
   const propiedades: PropsDeUnPaso = {
     alta,
     cliente,

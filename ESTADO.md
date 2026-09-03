@@ -14,7 +14,7 @@
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓**                                                  |
 | **M5**         | Construido, probado y fusionado. **Le falta la regla 11**: verlo en un móvil de verdad                |
 | **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                                   |
-| **Pruebas**    | 616 unitarias y de base de datos · 166 de extremo a extremo                                           |
+| **Pruebas**    | 616 unitarias y de base de datos · 170 de extremo a extremo                                           |
 | **Rama**       | M5 fusionado (PR #24) y su repaso (PR #25). Lo de entrar por primera vez, en el PR #26                |
 | **Publicado**  | Web, app y API vivas, pero **la API sirve código de antes de M5**. Base en la `0021`, falta la `0022` |
 | **Entrar**     | Nadie puede: no queda ninguna cuenta. Se arregla con `pnpm bd:cuenta-de-verdad`                       |
@@ -542,7 +542,7 @@ después**: no hay nada que limpiar. La otra forma —dejar escribir en una copi
 borrarla luego— necesitaría un proceso de fondo que todavía no existe, y un fallo
 a mitad dejaría datos de mentira dentro del restaurante de ejemplo.
 
-#### Doce fallos que M5 encontró, y quién los cazó
+#### Trece fallos que M5 encontró, y quién los cazó
 
 1. **El gerente no podía configurar su propio local.** La política de M1 exigía
    `accion.gestionar_locales` para cualquier escritura sobre `estook.local`, y ese
@@ -687,12 +687,20 @@ había prometido en la propia pantalla.**
     recorrido completo se cerraba solo en el primer paso. Está contado en la
     migración.
 
-12. **La guía de instalación hablaba del móvil en el ordenador.** Solo distinguía
-    iPhone de Android, y **todo lo que no fuera un iPhone caía en Android**: en un
-    PC decía «toca el botón de compartir» y «añádelo a tu pantalla de inicio».
-    Ahora hay una tercera pestaña, y en el ordenador dice lo que toca — que aquí
-    ya funciona, dónde está el icono de instalar, y que para el móvil se abre la
-    misma dirección en el teléfono.
+12. **La guía de instalación estaba al revés de las dos maneras.** En el
+    ordenador el paseo acababa en «Ponerlo en mi móvil» y detrás una pantalla que
+    dice «toca el botón de compartir», delante de alguien con un ratón. Y en el
+    teléfono, que es donde sirve, había que pasar las cinco pantallas del paseo
+    para llegar: quien pulsaba «Saltar el paseo» —lo normal— no la veía nunca.
+
+    Ahora en el móvil está **a un toque desde cualquier pantalla del paseo**, y en
+    el ordenador no se ofrece. La prueba corre en los dos proyectos y cada uno
+    comprueba lo suyo, que es la única forma de que esto no vuelva.
+
+13. **Y el recado tenía una segunda salida sin arreglar.** Se arregló primero
+    solo «Continuar»; «Esto lo dejo para luego» seguía metiendo en el paseo
+    entero, que es el camino que más se usa. Las dos salidas del paso miran ahora
+    el recado, y hay una prueba para cada una.
 
 #### Y el que no era de M5, pero lo encontró M5
 

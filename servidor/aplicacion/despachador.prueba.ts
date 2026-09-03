@@ -340,14 +340,34 @@ describe('una visita de demostración', () => {
     expect(salida.estado === 'fallo' && salida.codigo).not.toBe('solo_lectura');
   });
 
+  /**
+   * **Y con el botón normal de salir, que es el que va a pulsar.**
+   *
+   * Esto faltaba, y el fallo estuvo puesto hasta el repaso de cierre de M5: la
+   * pantalla tiene un botón «Salir» que llama a `salir`, y `salir` no admitía
+   * demostraciones. Devolvía 403, la aplicación se olvidaba del token de todas
+   * formas, y **la sesión seguía viva en el servidor** hasta caducar.
+   *
+   * La ficha de M5 pide «modo demostración con salida limpia». Existía
+   * `salir_de_la_demostracion`, que la hacía bien, y no lo llamaba nadie.
+   */
+  it('y también con el botón de salir de siempre, que es el que hay en pantalla', async () => {
+    const { despachador } = bancoDePruebas(DEMOSTRACION);
+    const salida = await despachador.ejecutar(quien, 'salir', {}, 'k-salir-normal');
+    expect(salida.estado === 'fallo' && salida.codigo).not.toBe('solo_lectura');
+  });
+
   it('la lista de lo que puede ejecutar está tasada', () => {
     // Igual que las otras tres puertas: una operación nueva nace cerrada a la
     // demostración, y abrirla obliga a tocar esta lista.
     const enDemostracion = Object.values(catalogo.comandos)
       .filter((comando) => comando.enDemostracion === true)
-      .map((comando) => comando.nombre);
+      .map((comando) => comando.nombre)
+      .sort();
 
-    expect(enDemostracion).toEqual(['salir_de_la_demostracion']);
+    // Las dos son la misma salida por dentro: las dos llaman a `cerrarLaSesion`,
+    // que es quien decide que una visita **se borra** en vez de cerrarse.
+    expect(enDemostracion).toEqual(['salir', 'salir_de_la_demostracion']);
   });
 });
 

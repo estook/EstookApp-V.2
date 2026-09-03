@@ -13,8 +13,8 @@
 | -------------- | --------------------------------------------------------------------------------------- |
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** onboarding y arranque   |
 | **Siguiente**  | **M6** · Inventario, con su capa inteligente dentro                                     |
-| **Pruebas**    | 613 unitarias y de base de datos · 152 de extremo a extremo                             |
-| **Rama**       | `m5-onboarding`, sin fusionar                                                           |
+| **Pruebas**    | 614 unitarias y de base de datos · 156 de extremo a extremo                             |
+| **Rama**       | M5 fusionado (PR #24). `m5-onboarding` lleva el repaso de cierre, sin fusionar          |
 | **Publicado**  | Web, app y **API vivas**. Base al día en la `0021`. Sin ninguna cuenta que pueda entrar |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local   |
 
@@ -110,11 +110,14 @@ credenciales, lo dice por pantalla y sigue con lo demás. Todo está en
 3. ~~Desplegar la API y declarar `VITE_API_URL`~~ · hecho, y se entra desde el móvil
 4. ~~Cerrar las ocho cuentas de ejemplo~~ · hecho el 3 de septiembre
 5. ~~Aplicar la `0020` y la `0021` y volver a sembrar~~ · hecho el 3 de septiembre
-6. **Crear una cuenta de verdad**, que es lo de arriba del todo
-7. **Montar el almacén de ficheros** con `pnpm almacen:preparar`, que crea el cubo
+6. ~~Fusionar M5~~ · hecho, PR #24, el 3 de septiembre
+7. **Fusionar el repaso de cierre**, que va en su propio pull request
+8. **Crear una cuenta de verdad**, que es lo de arriba del todo
+9. **Montar el almacén de ficheros** con `pnpm almacen:preparar`, que crea el cubo
    y comprueba el camino entero: sube, firma, lee y borra
-8. **Ver M5 en un móvil de verdad** con datos de verdad (regla 11)
-9. **Fusionar la rama** con un solo pull request
+10. **Volver a desplegar la API**, que sigue sirviendo el código de antes de M5 y
+    por tanto no conoce ninguno de sus comandos
+11. **Ver M5 en un móvil de verdad** con datos de verdad (regla 11)
 
 `pnpm bd:comprobar-api` pasa hoy sin un solo fallo, con once comprobaciones que
 allí no se pueden hacer porque necesitan una sesión abierta. Están explicadas en
@@ -534,7 +537,7 @@ después**: no hay nada que limpiar. La otra forma —dejar escribir en una copi
 borrarla luego— necesitaría un proceso de fondo que todavía no existe, y un fallo
 a mitad dejaría datos de mentira dentro del restaurante de ejemplo.
 
-#### Seis fallos que M5 encontró, y quién los cazó
+#### Nueve fallos que M5 encontró, y quién los cazó
 
 1. **El gerente no podía configurar su propio local.** La política de M1 exigía
    `accion.gestionar_locales` para cualquier escritura sobre `estook.local`, y ese
@@ -590,6 +593,45 @@ a mitad dejaría datos de mentira dentro del restaurante de ejemplo.
    se comparan por nombre, no contando: contar seguía cuadrando aunque cayera uno
    y apareciera otro.
 
+#### Y tres más, del repaso de cierre · lo que estaba construido y no se usaba
+
+Los tres son la misma forma de fallo, que es la más callada de todas: **código
+escrito, registrado y probado por dentro, al que no llegaba nadie.** No dan
+error, no rompen ninguna prueba y no se ven hasta que alguien intenta usarlos.
+
+7. **La demostración no tenía salida limpia**, que es palabra por palabra lo que
+   pide su ficha. El botón «Salir» de la pantalla llama a `salir`, y `salir` no
+   admitía demostraciones: devolvía 403. La aplicación borraba el token de todas
+   formas —por un `finally` puesto para otra cosa— así que **nadie notó que la
+   sesión seguía viva en el servidor**. El token recién «cerrado» seguía abriendo
+   `quien_soy` hasta caducar, y la promesa era «se entra y se sale sin dejar
+   rastro».
+
+   Existía `salir_de_la_demostracion`, que lo hacía bien, y no lo llamaba nadie:
+   la forma más cara de tener razón. Ahora las dos llaman a `cerrarLaSesion`, que
+   es el único sitio donde se decide que una visita **se borra** en vez de
+   cerrarse (regla 6), y hay una prueba de extremo a extremo que sale **por el
+   botón de la pantalla**, no por el que hay que acordarse de llamar.
+
+8. **La aplicación no sabía que estaba en una demostración.** El servidor paraba
+   las escrituras, que es lo que protege de verdad, pero `quien_soy` no lo
+   contaba, así que la pantalla enseñaba los mismos botones de guardar que a
+   cualquiera y quien pulsaba uno se llevaba un error en la cara sin haber sido
+   avisado. Una promesa que el visitante no ve no la ha recibido. Ahora
+   `quien_soy` trae `esDemostracion`, y arriba hay una barra que lo dice y ofrece
+   irse.
+
+9. **El logo se podía poner y no quitar.** `quitar_logo` estaba escrito,
+   registrado y probado; la pantalla ofrecía «Elegir una imagen» y «Cambiar la
+   imagen», nunca quitarla. Quien subía el logo de la cadena en vez del de su
+   local podía sustituirlo, jamás volver a no tener ninguno.
+
+**Y una trampa de las pruebas, que casi las hace inútiles para la interfaz:**
+`pnpm prueba:e2e` levanta lo ya construido con `vite preview`, así que **prueba
+el empaquetado anterior**. Un cambio de pantalla pasa en verde sin haberse
+probado. En integración continua no ocurre, porque allí se construye antes; en
+local hay que usar `pnpm prueba:e2e:completa`. Está en «Cómo trabajamos».
+
 #### Y el que no era de M5, pero lo encontró M5
 
 **Ocho cuentas con una contraseña publicada, en una base con la API ya
@@ -625,6 +667,12 @@ Y la lista de la Auditoría de flujos, pasada punto por punto, en
 - **Google Places**, con las reseñas y los competidores: M23.
 - **El almacén contra Supabase de verdad** no lo ha ejecutado nadie. Para eso
   está `pnpm almacen:preparar`.
+- **`recetas_de_referencia` no la consume nadie todavía**, y se deja a
+  propósito: la ficha de M5 pide «recetas de referencia **opcionales**», y quien
+  las copia a una ficha técnica es M9. La consulta está hecha y probada; lo que
+  falta es la pantalla que las use, y esa no es de este módulo. Es el mismo caso
+  que `catalogo_de_referencia`, que sí tiene su prueba de aceptación porque su
+  criterio —los quince segundos— es de M5.
 
 ---
 
@@ -638,8 +686,14 @@ Y la lista de la Auditoría de flujos, pasada punto por punto, en
 5. **Revisar lo propio antes de entregarlo.** Y `ESTADO.md` no puede afirmar
    nada que no sea cierto en ese momento.
 6. **Un repaso después de fusionar vale la pena.** M4 pasó sus 532 pruebas con
-   tres fallos dentro, y uno era de seguridad. Las pruebas dicen que lo que se
-   probó funciona, no que se haya probado lo que importa.
+   tres fallos dentro, y uno era de seguridad. M5 pasó sus 613 y el repaso sacó
+   otros tres, los tres de la misma forma: **algo construido, registrado y
+   probado por dentro al que no llegaba nadie desde la pantalla**. Las pruebas
+   dicen que lo que se probó funciona, no que se haya probado lo que importa.
+7. **Si se toca una pantalla, `pnpm prueba:e2e:completa`.** El `prueba:e2e` a
+   secas sirve lo ya construido, así que prueba el empaquetado anterior y pasa en
+   verde sin haber visto el cambio. En integración continua no pasa, porque allí
+   se construye antes; en local hay que acordarse.
 
 ---
 

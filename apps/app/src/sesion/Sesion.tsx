@@ -77,6 +77,8 @@ export interface QuienSoy {
   readonly debeCambiarClave: boolean;
   readonly faltaDobleFactor: boolean;
   readonly debeActivarDobleFactor: boolean;
+  /** Si es una visita de demostración: se mira todo y no se guarda nada (M5). */
+  readonly esDemostracion: boolean;
 }
 
 export interface Sesion {
@@ -149,6 +151,12 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
     // token pase lo que pase. Si el aviso fallara y no se borrara, quien pulsa
     // «salir» se quedaria dentro, que es lo peor que puede hacer un boton de
     // salir. La sesion del servidor caduca sola de todas formas.
+    //
+    // Este `finally` tapo un fallo durante un tiempo: `salir` no admitia
+    // demostraciones y devolvia 403, la pantalla se olvidaba del token igual, y
+    // por eso nadie noto que **la sesion seguia viva en el servidor**. Un
+    // remiendo que funciona esconde el agujero que hay debajo. Ya no: `salir`
+    // borra la visita, y ademas hay un boton propio en la barra de demostracion.
     try {
       await cliente.ejecutar('salir', {});
     } finally {

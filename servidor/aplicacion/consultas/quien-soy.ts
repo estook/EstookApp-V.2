@@ -104,6 +104,20 @@ export interface QuienSoy {
   readonly debeCambiarClave: boolean;
   readonly faltaDobleFactor: boolean;
   readonly debeActivarDobleFactor: boolean;
+
+  /**
+   * Si esto es una visita de demostración (M5).
+   *
+   * **Sin esto, la aplicación no tenía forma de saberlo.** El despachador paraba
+   * las escrituras —eso funcionaba— pero la pantalla enseñaba los mismos botones
+   * de guardar que a un usuario de verdad, y quien pulsaba uno recibía un error
+   * en la cara sin haber sido avisado de nada.
+   *
+   * «Se entra y se sale sin dejar rastro» es la promesa, y una promesa que el
+   * visitante no ve no la ha recibido. Aquí se dice, la cabecera lo cuenta, y
+   * hay un botón para irse.
+   */
+  readonly esDemostracion: boolean;
 }
 
 export const quienSoy = consulta<Record<string, never>, QuienSoy>({
@@ -183,6 +197,11 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
       debeCambiarClave: sesion.debeCambiarClave,
       faltaDobleFactor: !sesion.dobleFactorSuperado,
       debeActivarDobleFactor: (organizacion?.exigeDobleFactor ?? false) && !loTiene,
+
+      // Sale de la sesión, igual que la miran las puertas del despachador. No se
+      // deduce de los datos: una organización de ejemplo mirada por su dueño de
+      // verdad no es una demostración.
+      esDemostracion: sesion.esDemostracion,
     };
   },
 });

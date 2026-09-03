@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { huellaDeToken, tokenNuevo } from '../../dominio/secretos.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
+import { cerrarLaSesion } from './salir.ts';
 
 /**
  * El modo demostración (M5).
@@ -87,10 +88,20 @@ export const entrarEnDemostracion = comando<Record<string, never>, SalidaDemostr
 });
 
 /**
- * Salir de la demostración.
+ * Salir de la demostración, con su propio nombre.
  *
- * Se declara `enDemostracion` porque es el único comando que una visita puede
- * ejecutar: si no pudiera, no habría forma de irse sin esperar dos horas.
+ * **Hace exactamente lo mismo que `salir`**, y existe por dos razones:
+ *
+ *   · El error `solo_lectura` ofrece un botón que apunta aquí por su nombre
+ *     («Quiero mi cuenta»). Quien se topa con la demostración al intentar
+ *     guardar tiene una salida con nombre propio, no un «cerrar sesión».
+ *   · Y se lee mejor en el registro: en la auditoría no es igual una visita que
+ *     se marcha que un usuario que cierra su sesión.
+ *
+ * Lo que **no** hace es decidir por su cuenta cómo se cierra una sesión. Eso lo
+ * decide `cerrarLaSesion`, y los dos comandos la llaman. Cuando esto tenía su
+ * propia copia del `delete`, `salir` se quedó sin ella y la visita se iba
+ * dejando la sesión viva (regla 6: un cálculo, un dueño).
  */
 export const salirDeLaDemostracion = comando<Record<string, never>, { salido: boolean }>({
   nombre: 'salir_de_la_demostracion',
@@ -101,10 +112,7 @@ export const salirDeLaDemostracion = comando<Record<string, never>, { salido: bo
   aunConClavePorCambiar: true,
 
   async ejecutar(contexto) {
-    if (contexto.sesion === null) throw new FalloDeAplicacion('sin_sesion');
-
-    await contexto.sql`select estook.cerrar_demostracion(${contexto.sesion.id}::uuid)`;
-
+    await cerrarLaSesion(contexto);
     return { salido: true };
   },
 });

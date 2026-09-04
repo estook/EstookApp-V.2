@@ -738,7 +738,12 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
          and not p.es_ejemplo
          and p.activo
          and l.caduca_el is not null
-         and l.caduca_el <= ${hoy}::date + ${CADUCAN_EN}
+         -- El ::int no es adorno: sin el, el parametro viaja sin tipo y
+         -- Postgres no sabe si sumar a una fecha es sumar dias o sumar un
+         -- intervalo. Contesta "operator is not unique: date + unknown" y tumba
+         -- la consulta ENTERA, no solo este bloque. La pantalla Hoy de M6
+         -- llevaba rota desde que se escribio: un 500 a todo el mundo, siempre.
+         and l.caduca_el <= ${hoy}::date + ${CADUCAN_EN}::int
        order by l.caduca_el
        limit 50
     `;

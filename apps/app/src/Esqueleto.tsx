@@ -1,20 +1,21 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
-import { IconoAtras, IconoLocal } from '@estook/iconos';
+import { IconoAtras } from '@estook/iconos';
 import {
+  BarraArribaMovil,
   BarraDeApp,
   BarraEscritorio,
   BarraMovil,
   Deshacer,
   RuedaDeApps,
   appPorPermiso,
-  clases,
   usarAtajos,
   usarDeshacer,
   type App,
 } from '@estook/ui';
 import { BuscadorUniversal } from './buscar/BuscadorUniversal.tsx';
+import { LoQueLlegaDespues, type LoQueFalta } from './pantallas/LoQueLlegaDespues.tsx';
 import { usarSesion } from './sesion/Sesion.tsx';
 
 /**
@@ -41,6 +42,7 @@ export function Esqueleto() {
 
   const [ruedaAbierta, setRuedaAbierta] = useState(false);
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
+  const [loQueFalta, setLoQueFalta] = useState<LoQueFalta | null>(null);
 
   const misApps = useMemo(
     () =>
@@ -69,6 +71,9 @@ export function Esqueleto() {
   usarAtajos({
     alBuscar: () => {
       setBuscadorAbierto(true);
+    },
+    alAbrirFogon: () => {
+      setLoQueFalta('fogon');
     },
     alIrAApp: (numero) => {
       // «⌘1–⌘8 apps», en el orden de la rueda **de quien mira**: si solo tiene
@@ -150,86 +155,6 @@ export function Esqueleto() {
     ) : null;
 
   /**
-   * Donde estas, y como cambiarlo · **en movil** (M4).
-   *
-   * La barra de escritorio lleva el selector de local, pero esa barra es
-   * `hidden lg:flex`: en un movil no existe. Y sin esto, quien trabaja en dos
-   * locales **no tiene forma de cambiar de uno a otro con el telefono**, que es
-   * justo el aparato con el que lo va a hacer.
-   *
-   * Lo encontro una prueba de extremo a extremo corriendo a 375 px, no la vista:
-   * en escritorio funcionaba perfectamente.
-   *
-   * Se pinta arriba del contenido y no en una barra propia, porque «maximo tres
-   * niveles» (B5) y una cuarta barra seria una de mas. Y lleva el nombre del
-   * local siempre, aunque solo haya uno: «para que nadie apunte una merma en el
-   * local equivocado» (Manifiesto 28) empieza por saber donde estas.
-   */
-  const dondeEstas =
-    yo?.local === null || yo?.local === undefined ? null : (
-      <div className="mb-e3 flex flex-wrap items-center gap-e2 lg:hidden">
-        {/*
-          La marca del local (M5). «Cambiar de local cambia el contexto, **y el
-          color y el logo de la cabecera**, para que nadie apunte una merma en el
-          local equivocado» (Manifiesto 31).
-        */}
-        <span
-          className="inline-flex items-center gap-e1 rounded-redondo py-e1 pl-e1 pr-e3"
-          style={
-            yo.local.colorDeMarca === null ? undefined : { backgroundColor: yo.local.colorDeMarca }
-          }
-        >
-          {yo.local.logo === null ? (
-            <span
-              className={clases(
-                'inline-flex h-6 w-6 items-center justify-center rounded-redondo',
-                yo.local.colorDeMarca === null ? 'text-texto-suave' : 'text-superficie',
-              )}
-            >
-              <IconoLocal size={16} />
-            </span>
-          ) : (
-            <img
-              src={yo.local.logo}
-              alt=""
-              className="h-6 w-6 rounded-redondo bg-superficie object-contain"
-            />
-          )}
-          {susLocales.length <= 1 && (
-            <span
-              className={clases(
-                'text-secundario font-medium',
-                yo.local.colorDeMarca === null ? 'text-texto-suave' : 'text-superficie',
-              )}
-            >
-              {yo.local.nombre}
-            </span>
-          )}
-        </span>
-
-        {susLocales.length > 1 && (
-          <label className="flex items-center gap-e1 text-secundario text-texto-suave">
-            <span className="sr-only">Donde estas</span>
-            <select
-              aria-label="Donde estas"
-              value={yo.local.id}
-              onChange={(evento) => {
-                void cambiarDeLocal(evento.target.value);
-              }}
-              className="min-h-toque cursor-pointer rounded-medio border border-borde-fuerte bg-superficie px-e2 text-cuerpo text-texto"
-            >
-              {susLocales.map((local) => (
-                <option key={local.id} value={local.id}>
-                  {local.nombre}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-      </div>
-    );
-
-  /**
    * La barra de la demostración (M5).
    *
    * «Modo demostración aparte, con un restaurante ficticio entero. **Se entra y
@@ -294,6 +219,53 @@ export function Esqueleto() {
           void cambiarDeLocal(id);
         }}
         persona={yo?.nombre ?? ''}
+        alAbrirAvisos={() => {
+          setLoQueFalta('avisos');
+        }}
+        alAbrirChat={() => {
+          setLoQueFalta('chat');
+        }}
+        alAbrirFogon={() => {
+          setLoQueFalta('fogon');
+        }}
+      />
+
+      {/*
+        La misma barra, en movil: buscador, avisos, chat, Fogon, ajustes y el
+        local donde estas. Antes ninguna de las seis existia en un telefono, que
+        es donde de verdad se usa Estook.
+      */}
+      <BarraArribaMovil
+        local={
+          yo?.local
+            ? {
+                id: yo.local.id,
+                nombre: yo.local.nombre,
+                logo: yo.local.logo,
+                colorDeMarca: yo.local.colorDeMarca,
+              }
+            : null
+        }
+        locales={susLocales}
+        alCambiarDeLocal={(id) => {
+          void cambiarDeLocal(id);
+        }}
+        persona={yo?.nombre ?? ''}
+        alBuscar={() => {
+          setBuscadorAbierto(true);
+        }}
+        alAbrirAvisos={() => {
+          setLoQueFalta('avisos');
+        }}
+        alAbrirChat={() => {
+          setLoQueFalta('chat');
+        }}
+        alAbrirFogon={() => {
+          setLoQueFalta('fogon');
+        }}
+        alIrAAjustes={() => {
+          navegar('/ajustes');
+        }}
       />
 
       {/*
@@ -302,12 +274,7 @@ export function Esqueleto() {
         barra abajo, asi que no hace falta.
       */}
       <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e5))] pt-e4 lg:px-e5 lg:pb-e7">
-        {(volverAlConjunto !== null || dondeEstas !== null) && (
-          <div className="mb-e3 flex flex-col gap-e2">
-            {volverAlConjunto}
-            {dondeEstas}
-          </div>
-        )}
+        {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
         <Outlet />
       </main>
 
@@ -344,6 +311,7 @@ export function Esqueleto() {
           setRuedaAbierta(false);
         }}
         apps={misApps}
+        appActiva={appActiva?.id ?? null}
         alElegir={(app) => {
           irAApp(app);
         }}
@@ -355,6 +323,13 @@ export function Esqueleto() {
           setBuscadorAbierto(false);
         }}
         apps={misApps}
+      />
+
+      <LoQueLlegaDespues
+        que={loQueFalta}
+        alCerrar={() => {
+          setLoQueFalta(null);
+        }}
       />
 
       <Deshacer />

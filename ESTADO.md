@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 3 de septiembre de 2026 · M6 construido, probado y sin fusionar
+Última actualización: 4 de septiembre de 2026 · M6 fusionado · el segundo paseo por el móvil
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. Nunca puede afirmar algo que no sea cierto en ese momento.
@@ -13,9 +13,9 @@
 | -------------- | ------------------------------------------------------------------------------------- |
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario |
 | **Siguiente**  | **M7** · Proveedores y compras                                                        |
-| **Pruebas**    | 692 unitarias y de base de datos · 194 de extremo a extremo                           |
-| **Rama**       | Todo en `main`. M6 entró en el pull request #30                                       |
-| **Publicado**  | Base en la `0023` · web y app al día · **la API sin desplegar con M6**                |
+| **Pruebas**    | 695 unitarias y de base de datos · 224 de extremo a extremo                           |
+| **Rama**       | M6 en `main` (PR #30, #33). El repaso del móvil, en un pull request abierto           |
+| **Publicado**  | Base en la `0023` · **falta aplicar la `0024`** · **la API sin desplegar con M6**     |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
 
@@ -66,8 +66,13 @@ específico. Si de verdad se contradicen, se para y se pregunta (regla 13).
 funciona: el alta entera, la tarjeta del Panel, invitar a mano, y la guía de
 instalación donde toca.
 
-**M6 está fusionado y la `0023` aplicada. Falta desplegar la API y mirarlo en un
-móvil.**
+**M6 está fusionado y la `0023` aplicada. Falta aplicar la `0024`, desplegar la
+API y mirarlo en un móvil.**
+
+El primer paseo por el móvil ya se dio, y **salieron seis fallos de pantalla**:
+ninguno rompía ninguna de las 692 pruebas que había. Arreglándolos salieron dos
+más, y uno de los dos es el más grave de todo M6: **la pantalla «Hoy» devolvía un
+`500` a todo el mundo, siempre**. Están todos abajo, en la ficha de M6.
 
 Y el orden importa, porque **hay un paso que se olvida y rompe todo**: las cuatro
 aplicaciones se publican solas al fusionar, pero **la API se despliega a mano**.
@@ -115,11 +120,11 @@ habiendo que decidirlo antes de M8.
 
 | Qué                | Cómo está                                                           |
 | ------------------ | ------------------------------------------------------------------- |
-| Migraciones        | En el repositorio hasta la `0023`; **en Supabase, hasta la `0022`** |
+| Migraciones        | En el repositorio hasta la `0024`; **en Supabase, hasta la `0023`** |
 | Semillas           | Puestas, **sin credenciales de ejemplo**: la semilla se niega       |
 | Cuentas de ejemplo | Cerradas. Ninguna puede entrar                                      |
 | Cuenta de verdad   | La de Ricardo, con su organización y su local                       |
-| API                | Desplegada y al día                                                 |
+| API                | Desplegada, **y por detrás del código**: no conoce nada de M6       |
 | Web y app          | Publicadas y al día                                                 |
 
 `pnpm bd:comprobar-api` pasa sin un solo fallo, con once comprobaciones que allí
@@ -984,10 +989,130 @@ por dentro», que además de feo es mentira: es que ya hay otro que se llama as�
 Actualicé la prueba del buscador y no la herramienta, y la herramienta lo dijo
 sola en la primera pasada contra Supabase.
 
+#### Y ocho más del segundo paseo por el móvil · seis los vio Richi
+
+Una tarde mirando Estook en el teléfono y en el ordenador. **Seis fallos, y
+ninguno ponía en rojo ninguna de las 692 pruebas que había**, otra vez. Son de la
+misma familia que los seis de M5: algo construido, registrado y probado que la
+pantalla no llegaba a enseñar, o que enseñaba algo que no era verdad.
+
+**11 · El envase lo ponía el catálogo, no quien compra.** Elegir «Aceite de oliva
+virgen extra» del catálogo **fijaba «Garrafa de 5 l»**, sin casilla que tocar. A
+quien compra garrafas de 8 l le quedaban dos salidas y las dos malas: hacer la
+cuenta de cabeza, o guardar un producto con un envase que no es el suyo y
+arrastrar el error a todos los escandallos que lo lleven. «¿Ya tienen que hacer
+cálculos? No tiene sentido.»
+
+**El servidor aceptaba el envase junto a la referencia desde el primer día.** Era
+la pantalla la que no lo preguntaba. Ahora la referencia **propone**, las dos
+casillas están rellenas y editables, y la cuenta —«= 8000 ml para usar»— se rehace
+mientras se escribe, con el mismo `comoSaleElCoste` que usa el servidor.
+
+De paso salió otro escondido detrás: la pantalla mandaba **siempre** el
+rendimiento, con su 100 por defecto, así que la etiqueta **«sin verificar»** —que
+existe, está probada y protege del error más caro del sistema— no aparecía nunca
+en un producto creado a mano. Ahora solo se manda si alguien lo toca.
+
+**12 · La rueda del móvil decía «estás en Inventario» estando en el Panel.** El
+cursor del teclado arrancaba en cero, y el primer sector salía pintado de naranja.
+En un teléfono eso no se lee como «por aquí empiezan las flechas»: se lee como
+**estás aquí**. Ahora el cursor arranca donde de verdad estás, y **en ninguna
+parte** desde el Panel: si no estás en ninguna app, no se resalta ninguna. Se dice
+además con `aria-current`, que es lo que anuncia un lector de pantalla.
+
+**13 · En el móvil no había buscador, ni avisos, ni chat, ni Fogón, ni Ajustes.**
+B5 describe con detalle la barra de escritorio y, para el móvil, la de abajo con
+sus tres posiciones. De ahí salió, **sin que nadie lo decidiera**, que en un
+teléfono no existiera ninguna de las cinco: el buscador universal solo se abría
+con `Ctrl+K`, que en un móvil no existe; avisos, chat y Fogón no estaban en
+ninguna parte; y a Ajustes no se llegaba **desde dentro de una app**, porque ahí
+la barra de abajo es la de esa app.
+
+Estook se usa de pie y con el teléfono en la mano. Tener las herramientas
+transversales solo en el ordenador era tenerlas para quien menos las necesita.
+Ahora hay barra de arriba en móvil, con las cinco y con el local en el que estás
+—que antes se pintaba dentro del contenido—.
+
+**14 · Los desplegables de la barra de escritorio no se abrían.** Pulsar
+«Inventario» en el ordenador **no hacía nada**. Y sí hacía: el estado cambiaba, el
+menú se creaba y las pruebas lo encontraban. Lo que pasaba es que se pintaba
+`absolute` dentro de un `<nav>` con `overflow-x-auto`, y **en CSS recortar a lo
+ancho recorta también a lo alto**: no hay forma de pedir una cosa sin la otra. El
+menú entero quedaba por debajo del borde de la barra, recortado.
+
+Ahora se pinta con un portal, `fixed` sobre las coordenadas del botón. Y la
+prueba que lo caza no usa `toBeVisible()`, que **no ve el recorte**: pregunta al
+navegador qué hay en ese punto de la pantalla, que es lo que preguntaría un dedo.
+
+**15 · Avisos, chat, Fogón y el avatar eran botones mudos.** Los cuatro estaban
+puestos como `() => undefined` desde M3. Se pulsaban y no pasaba absolutamente
+nada, que es el fallo que más veces ha salido en este proyecto. Hay dos salidas
+honestas —quitar el botón, o que diga la verdad— y se eligió la segunda: los tres
+primeros abren una hoja que cuenta qué serán y en qué módulo llegan, y el avatar
+lleva a Ajustes. **Ya no hay ningún botón mudo en la barra.**
+
+Esa hoja es además la respuesta, dentro del producto, a la pregunta de «¿y la IA,
+dónde está?»: **Fogón es M22**, y hasta entonces lo que Estook calcula lo calcula
+la base de datos, sin gastar un crédito.
+
+**16 · «Termina de configurar tu local» no se podía quitar.** Iba la primera de
+todas, y quien lleva el local solo y no va a invitar a nadie la tenía ahí para
+siempre. En el propio fichero estaba escrito que «una tarjeta que no se puede
+quitar y que no dice nada es lo peor que se le puede poner encima al Panel a
+alguien», y aun así esa no se podía quitar.
+
+Ahora se apaga, **y se apaga en el servidor** (migración `0024`), no en este
+navegador: «para siempre» tiene que serlo también en el teléfono. No da nada por
+hecho: lo que falta sigue faltando y sigue estando en Ajustes.
+
+Y cuando hay alguien más con acceso, aparece **«Tu equipo»**: quién es, con qué
+rol, y quién todavía no ha entrado —que es el dato que se olvida y el que hace
+falta para saber a quién hay que volver a darle el PIN—. Con su botón a
+Equipo · Personas. **Quién está fichado ahora y las horas de cada uno no están**,
+y se dice: eso son los fichajes, M15. Poner un cero en gris sería inventarse una
+cifra.
+
+**17 · El «Recuérdamelo» del TPV escondía la tarjeta para siempre.** Guardaba una
+fecha siete días en el futuro. Sobre el papel volvía sola; en la práctica, siete
+días después nadie se acuerda de nada, así que era un «no me lo enseñes nunca
+más» con otro nombre. Ahora el aplazamiento **dura la sesión**: vuelve en cuanto
+alguien entra otra vez con su contraseña, que es el momento en el que uno se
+sienta a configurar cosas.
+
+**18 · Y el peor, que no lo pidió nadie: «Hoy» devolvía un `500` a todo el
+mundo, siempre.** La pantalla principal de M6.
+
+`inventario_hoy` acaba en un bloque que busca los lotes que caducan pronto, y ahí
+un parámetro viajaba **sin tipo**:
+
+```sql
+and l.caduca_el <= $1::date + $2
+```
+
+Postgres no sabe si sumarle algo a una fecha es sumar días o sumar un intervalo,
+así que contesta `operator is not unique: date + unknown` y **tumba la consulta
+entera**, no solo ese bloque. Un `::int` lo arregla.
+
+Lo que importa no es el arreglo: es **por qué llevaba ahí desde que se escribió**.
+Porque **ninguna prueba llamaba a `inventario_hoy`**. Ni las de Postgres, que
+prueban la aritmética por debajo, ni las de pantalla, que probaban Productos y la
+ficha. La consulta estaba escrita, registrada en el catálogo y llamada desde la
+pantalla —y rota—. `se-usan.prueba.ts` comprueba que alguien la llama, que era la
+lección de M5; no comprueba que conteste.
+
+Salió leyendo los errores que la API escupía mientras corrían **otras** pruebas.
+Ahora tiene dos suyas: una le pregunta a la API si contesta, y otra mira si la
+pantalla se pinta o sale el aviso de que se ha roto.
+
 #### Lo que M6 deja pendiente, dicho sin redondear
 
-- **No se ha mirado en un móvil de verdad** (regla 11), ni fusionado, ni aplicado
-  a Supabase. Es lo siguiente, y son tres pasos: `docs/pasos-para-cerrar-m6.md`.
+- **Sigue sin poder darse por terminado** (regla 11): falta aplicar la `0024`,
+  desplegar la API y volver a mirarlo en el teléfono con todo puesto. Los pasos
+  están en `docs/pasos-para-cerrar-m6.md`.
+- **El widget «Tu equipo» no dice quién está fichado ni cuántas horas lleva.**
+  Eso son los fichajes, M15, y hasta entonces no hay de dónde sacarlo.
+- **El atajo al TPV cuando esté conectado** es M18: hoy la tarjeta solo se puede
+  aplazar, porque el asistente de conexión no existe.
 - **El mínimo se escribe a mano.** Calcularlo necesita saber qué días reparte
   cada proveedor, y eso es M7 y M8.
 - **Los lotes se guardan y se avisa de lo que caduca, pero no se consume por
@@ -1043,6 +1168,19 @@ sola en la primera pasada contra Supabase.
    operación la usa alguien desde la pantalla, la que comprueba que al buscador
    universal no se le ha caído un bloque, y la que comprueba que los ejemplos no
    nacen en negativo.
+10. **Una consulta que ninguna prueba llama es una consulta rota que todavía no
+    sabes que lo está.** `se-usan.prueba.ts` comprueba que la pantalla la llama;
+    eso no comprueba que **conteste**. La pantalla «Hoy» de M6 estaba escrita,
+    registrada en el catálogo, llamada desde la pantalla y devolviendo un `500` a
+    todo el mundo desde el primer día. Salió leyendo los errores que la API
+    escupía mientras corrían **otras** pruebas. Cada consulta del catálogo
+    necesita al menos una prueba que la llame de verdad.
+11. **`toBeVisible()` no ve el recorte.** Un elemento tapado, o recortado por el
+    `overflow` de un padre, sigue teniendo caja: sigue siendo «visible» para
+    Playwright y no para una persona. Los desplegables de la barra de escritorio
+    llevaban así desde M3. Cuando lo que se comprueba es que algo **se ve**, hay
+    que preguntarle al navegador qué hay en ese punto de la pantalla. Está escrito
+    en `pruebas/e2e/pantalla.spec.ts` como `seVeDeVerdad`.
 
 ---
 

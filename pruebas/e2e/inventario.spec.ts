@@ -89,6 +89,19 @@ async function pulsarLoQueSeVe(page: Page, texto: string) {
   throw new Error(`Ninguno de los ${cuantos} «${texto}» que hay en la página se ve.`);
 }
 
+/**
+ * El texto que se ve, de todos los que coinciden.
+ *
+ * La versión para comprobar de `pulsarLoQueSeVe`, y por la misma razón: hay
+ * pantallas que pintan lo mismo dos veces —una tabla para escritorio y una lista
+ * de tarjetas para móvil— y esconden una de las dos con CSS. `.first()` acierta
+ * en escritorio y en móvil apunta a la escondida, así que la comprobación falla
+ * enseñando el texto correcto y diciendo «hidden».
+ */
+function loQueSeVe(page: Page, texto: string) {
+  return page.locator(`text=${texto} >> visible=true`).first();
+}
+
 async function tokenDe(peticion: APIRequestContext, correo: string): Promise<string> {
   const respuesta = await peticion.post(`${API}/v1/comandos/entrar`, {
     headers: { 'x-idempotencia': `inv-${correo}-${Date.now()}-${Math.random()}` },
@@ -742,4 +755,128 @@ test('renombrar a un nombre ya usado no da «se nos ha roto algo»', async ({ re
 
   // 409 y no 500: es «ya hecho», del catálogo de errores en cristiano.
   expect(choque.estado, 'un nombre repetido no es un fallo nuestro').not.toBe(500);
+});
+
+// ── 6 · El envase lo pone quien compra, no el catálogo ───────────────────────
+
+/**
+ * «¿Y si ellos compran garrafas de 8 l? ¿Ya tienen que hacer cálculos?»
+ *
+ * Elegir del catálogo **fijaba el envase**: la referencia decía «Garrafa de 5 l»
+ * y eso era lo que se guardaba, sin casilla que tocar. A quien compra otra
+ * medida le quedaban dos salidas y las dos malas: hacer la cuenta de cabeza, o
+ * guardar un producto con un envase que no es el suyo y arrastrar el error a
+ * todos los escandallos.
+ *
+ * El servidor **ya aceptaba** el envase junto a la referencia desde el primer
+ * día. Era la pantalla la que no lo preguntaba: otra vez algo construido y
+ * probado que la pantalla no llamaba. Lo vio Richi en el móvil.
+ */
+test('del catálogo se puede cambiar el envase, y la cuenta se rehace al escribir', async ({
+  page,
+}) => {
+  await entrar(page, ROSA);
+  await irAInventario(page, 'productos');
+
+  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
+
+  await hoja.getByLabel('¿Qué producto es?').fill('aceite de oliva');
+  const propuesta = hoja.getByRole('button', { name: /Aceite de oliva virgen extra/ }).first();
+  await expect(propuesta).toBeVisible();
+  await propuesta.click();
+
+  // Lo que antes no existía: las casillas del envase, rellenas con lo que
+  // propone el catálogo.
+  await expect(hoja.getByLabel('Cómo lo compras')).toHaveValue('Garrafa de 5 l');
+  await expect(hoja.getByLabel('Cuánto trae')).toHaveValue('5000');
+  await expect(hoja.getByText('= 5000 ml para usar.')).toBeVisible();
+
+  // Y se cambian. La cuenta se rehace mientras se escribe, **antes** de guardar,
+  // que es lo que hace que alguien note que se ha equivocado.
+  await hoja.getByLabel('Cómo lo compras').fill('Garrafa de 8 l');
+  await hoja.getByLabel('Cuánto trae').fill('8000');
+  await expect(hoja.getByText('= 8000 ml para usar.')).toBeVisible();
+
+  const nombre = `Aceite de 8 litros ${Date.now()}`;
+  await hoja.getByLabel('Cómo se llama').fill(nombre);
+  await hoja.getByLabel('Lo que te cuesta').fill('60,00');
+  await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
+
+  // Y lo guardado es lo suyo, no lo del catálogo.
+  await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
+  await expect(loQueSeVe(page, 'Garrafa de 8 l')).toBeVisible();
+});
+
+/**
+ * Y el envase del catálogo llega hasta el servidor cuando no se toca.
+ *
+ * Al mandar ahora la pantalla el formato **siempre**, había que asegurarse de
+ * que mandarlo no pisa lo que trae la referencia con un valor peor: si esta
+ * pantalla mandara el formato en blanco, el producto se guardaría sin envase y
+ * el catálogo dejaría de servir para nada.
+ */
+test('si no se toca el envase, se guarda el del catálogo', async ({ page }) => {
+  await entrar(page, ROSA);
+  await irAInventario(page, 'productos');
+
+  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
+
+  await hoja.getByLabel('¿Qué producto es?').fill('aceite de oliva');
+  const propuesta = hoja.getByRole('button', { name: /Aceite de oliva virgen extra/ }).first();
+  await expect(propuesta).toBeVisible();
+  await propuesta.click();
+
+  await hoja.getByLabel('Cómo se llama').fill(`Aceite tal cual ${Date.now()}`);
+  await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
+
+  await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
+  await expect(loQueSeVe(page, 'Garrafa de 5 l')).toBeVisible();
+});
+
+// ── 7 · «Hoy», que es la pantalla que más se abre y no la probaba nadie ──────
+
+/**
+ * **La pantalla principal de M6 devolvía un 500 a todo el mundo, siempre.**
+ *
+ * `inventario_hoy` acaba en un bloque que busca los lotes que caducan pronto:
+ *
+ *     and l.caduca_el <= ${hoy}::date + ${CADUCAN_EN}
+ *
+ * Ese segundo parámetro viaja **sin tipo**, y Postgres no sabe si `date + ?` es
+ * sumar días o sumar un intervalo: contesta `operator is not unique: date +
+ * unknown` y tumba la consulta entera, no solo ese bloque.
+ *
+ * No lo cazó nada porque **ninguna prueba llamaba a `inventario_hoy`**: ni las de
+ * Postgres, que prueban la aritmética, ni las de pantalla, que probaban
+ * Productos y la ficha. La consulta estaba escrita, registrada en el catálogo,
+ * llamada desde la pantalla —y rota. Salió a la luz leyendo los errores que
+ * escupía la API mientras corrían las otras pruebas.
+ *
+ * De ahí las dos de aquí: una pregunta a la API si contesta, y la otra mira si
+ * la pantalla enseña algo o el aviso de que se ha roto.
+ */
+test('«Hoy» contesta, en vez de caerse con un 500', async ({ request }) => {
+  const token = await tokenDe(request, ROSA);
+
+  const hoy = await consultar<{ atencion: unknown[]; caducan: unknown[] }>(
+    request,
+    token,
+    'inventario_hoy',
+    {},
+  );
+
+  expect(hoy.estado, 'inventario_hoy no contesta 200').toBe(200);
+  expect(Array.isArray(hoy.datos?.atencion)).toBe(true);
+  expect(Array.isArray(hoy.datos?.caducan)).toBe(true);
+});
+
+test('«Hoy» se pinta, y no con el aviso de que se ha roto', async ({ page }) => {
+  await entrar(page, ROSA);
+  await irAInventario(page, 'hoy');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inventario');
+  // El aviso que salía antes con el 500.
+  await expect(page.getByText('No he podido leer')).toHaveCount(0);
 });

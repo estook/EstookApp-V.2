@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { UNIDADES_DE_USO } from '@estook/dominio';
+import { UNIDADES_DE_USO, comoSaleElCoste, esUnidadDeUso } from '@estook/dominio';
 import {
   Aviso,
   Boton,
@@ -51,6 +51,21 @@ import type {
  * Viene compuesta del servidor a propósito —un cálculo, un único dueño— y es la
  * razón de que el catálogo exista: es lo que hace que alguien se dé cuenta de
  * que se ha equivocado **antes** de guardarlo.
+ *
+ * ── Y el formato lo pone quien compra, no el catálogo ────────────────────────
+ *
+ * Durante un tiempo, elegir del catálogo **fijaba el envase**: si la referencia
+ * decía «Garrafa de 5 l», eso era lo que se guardaba, sin forma de tocarlo. A
+ * quien compra garrafas de 8 l le quedaban dos salidas, y las dos malas: hacer
+ * la cuenta de cabeza, o guardar un producto con un envase que no es el suyo y
+ * arrastrar el error a todos los escandallos. Lo vio Richi en el móvil: «¿ya
+ * tienen que hacer cálculos? No tiene sentido».
+ *
+ * Ahora la referencia **propone** el envase y su cuenta, y las dos casillas
+ * están ahí, rellenas y editables, en los dos caminos. La frase de debajo se
+ * recalcula mientras se escribe, con el mismo `comoSaleElCoste` que usa el
+ * servidor —un cálculo, un dueño (regla 6)—, así que el «= 8.000 ml para usar»
+ * se ve **antes** de guardar.
  */
 export function NuevoProducto({
   abierta,
@@ -84,6 +99,16 @@ export function NuevoProducto({
   const [factor, setFactor] = useState('1');
   const [unidad, setUnidad] = useState('ud');
   const [rendimiento, setRendimiento] = useState('100');
+  /**
+   * Si alguien ha tocado el rendimiento de verdad.
+   *
+   * El servidor marca «sin verificar» cuando el rendimiento **no viene**, porque
+   * «un rendimiento mal puesto es el error más caro del sistema» (Auditoría
+   * 1.2). Esta pantalla lo mandaba siempre, con su 100 por defecto, así que
+   * ningún producto creado a mano salía marcado nunca: la etiqueta existía, la
+   * probaba el servidor, y en pantalla no aparecía jamás.
+   */
+  const [rendimientoTocado, setRendimientoTocado] = useState(false);
 
   const catalogo = useQuery({
     queryKey: ['catalogo_de_referencia', texto],
@@ -110,6 +135,7 @@ export function NuevoProducto({
     setFactor('1');
     setUnidad('ud');
     setRendimiento('100');
+    setRendimientoTocado(false);
     setError(null);
   }
 
@@ -121,6 +147,15 @@ export function NuevoProducto({
   function elegir(referencia: ReferenciaDelCatalogo) {
     setElegida(referencia);
     setNombre(referencia.nombre);
+    // El envase de la referencia es una **propuesta**: se rellena y se puede
+    // cambiar. Quien compra garrafas de 8 l escribe 8000 y sigue.
+    setFormato(referencia.formato);
+    setFactor(String(referencia.factor));
+    setUnidad(referencia.unidadDeUso);
+    // `toFixed` y no `Math.round`: la regla 9 prohibe redondear a mano fuera de
+    // los motores de dominio, y aqui lo que se quiere es texto para una casilla.
+    setRendimiento((referencia.rendimiento * 100).toFixed(0));
+    setRendimientoTocado(false);
     // La categoría del local que se llama igual que la del catálogo. Si no está,
     // se deja sin elegir: el producto puede vivir sin categoría, y proponerle una
     // que no es sería peor que no proponer ninguna.
@@ -134,25 +169,21 @@ export function NuevoProducto({
     setError(null);
     setGuardando(true);
 
-    const cuerpo =
-      elegida !== null
-        ? {
-            nombre: nombre.trim(),
-            de_referencia: elegida.id,
-            categoria_id: categoriaId === '' ? null : categoriaId,
-            proveedor_id: proveedorId === '' ? null : proveedorId,
-            precio_centimos: precio,
-          }
-        : {
-            nombre: nombre.trim(),
-            categoria_id: categoriaId === '' ? null : categoriaId,
-            proveedor_id: proveedorId === '' ? null : proveedorId,
-            precio_centimos: precio,
-            formato: formato.trim() === '' ? null : formato.trim(),
-            factor: Number(factor.replace(',', '.')) || 1,
-            unidad_de_uso: unidad,
-            rendimiento: Math.min(1, Math.max(0.0001, Number(rendimiento.replace(',', '.')) / 100)),
-          };
+    const cuerpo = {
+      nombre: nombre.trim(),
+      ...(elegida === null ? {} : { de_referencia: elegida.id }),
+      categoria_id: categoriaId === '' ? null : categoriaId,
+      proveedor_id: proveedorId === '' ? null : proveedorId,
+      precio_centimos: precio,
+      // El envase va **en los dos caminos**. Con referencia, los valores que ella
+      // propuso o los que se hayan corregido encima; sin ella, los escritos.
+      formato: formato.trim() === '' ? null : formato.trim(),
+      factor: elFactor,
+      unidad_de_uso: unidad,
+      // Solo si alguien lo ha tocado: si no va, el servidor marca el producto
+      // «sin verificar», que es justo lo que tiene que pasar.
+      ...(rendimientoTocado ? { rendimiento: elRendimiento } : {}),
+    };
 
     const respuesta = await cliente.ejecutar<{
       productoId: string;
@@ -170,6 +201,28 @@ export function NuevoProducto({
     limpiar();
     alCrear(productoId, ejemplosQueQuedan);
   }
+
+  const elFactor = Number(factor.replace(',', '.')) || 1;
+  const elRendimiento = Math.min(
+    1,
+    Math.max(0.0001, (Number(rendimiento.replace(',', '.')) || 100) / 100),
+  );
+
+  /**
+   * La cuenta, hecha mientras se escribe.
+   *
+   * Es el mismo `comoSaleElCoste` que compone la frase del catálogo en el
+   * servidor. No hay dos versiones de esta cuenta (regla 6): hay una, y esta
+   * pantalla la llama con lo que hay en las casillas ahora mismo.
+   */
+  const comoSale = comoSaleElCoste({
+    // Sin envase escrito, la frase habla de «una unidad»: sigue siendo verdad y
+    // sigue enseñando la cuenta.
+    formato: formato.trim() === '' ? 'Una unidad' : formato.trim(),
+    factor: elFactor,
+    unidadDeUso: esUnidadDeUso(unidad) ? unidad : 'ud',
+    rendimiento: elRendimiento,
+  });
 
   const listoParaGuardar = nombre.trim() !== '' && !guardando;
 
@@ -267,9 +320,9 @@ export function NuevoProducto({
         {(elegida !== null || aMano) && (
           <>
             {elegida !== null && (
-              <Aviso tono="bien" titulo={elegida.nombre} esNoticia>
-                {elegida.comoSale} Puedes cambiarlo después en su ficha si en tu cocina sale otra
-                cosa.
+              <Aviso tono="bien" titulo={`Del catálogo: ${elegida.nombre}`} esNoticia>
+                Llega con su categoría, su tipo de impuesto y sus alérgenos ya puestos. El envase de
+                aquí abajo es una propuesta: si tú lo compras de otra medida, cámbialo.
               </Aviso>
             )}
 
@@ -283,46 +336,57 @@ export function NuevoProducto({
               }}
             />
 
+            {/*
+              El envase, **siempre**. Es la casilla que evita «el error clásico de
+              confundir la unidad de compra con la de uso» (Manifiesto 8), y
+              esconderla cuando la referencia trae una propuesta obliga a hacer
+              cuentas a quien compra otra medida.
+            */}
+            <Campo
+              etiqueta="Cómo lo compras"
+              ayuda="Tal cual lo pone el albarán: «Caja de 5 kg», «Garrafa de 8 l»."
+              value={formato}
+              onChange={(e) => {
+                setFormato(e.currentTarget.value);
+              }}
+            />
+            <div className="grid gap-e3 sm:grid-cols-2">
+              <Campo
+                etiqueta="Cuánto trae"
+                tipo="numero"
+                ayuda="En la unidad con la que cocinas. Una garrafa de 8 l son 8000 ml."
+                value={factor}
+                onChange={(e) => {
+                  setFactor(e.currentTarget.value);
+                }}
+              />
+              <Selector
+                etiqueta="Unidad con la que cocinas"
+                opciones={UNIDADES_DE_USO.map((u) => ({ valor: u, texto: u }))}
+                value={unidad}
+                onChange={(e) => {
+                  setUnidad(e.currentTarget.value);
+                }}
+              />
+            </div>
+
+            {/* La cuenta hecha, recalculada mientras se escribe. */}
+            <p aria-live="polite" className="text-cuerpo font-medium">
+              {comoSale}
+            </p>
+
             {aMano && (
-              <>
-                <Campo
-                  etiqueta="Cómo lo compras"
-                  ayuda="Tal cual lo pone el albarán: «Caja de 5 kg», «Garrafa de 5 l»."
-                  value={formato}
-                  onChange={(e) => {
-                    setFormato(e.currentTarget.value);
-                  }}
-                />
-                <div className="grid gap-e3 sm:grid-cols-2">
-                  <Campo
-                    etiqueta="Cuánto trae"
-                    tipo="numero"
-                    ayuda="En la unidad con la que cocinas. Una caja de 5 kg son 5000 g."
-                    value={factor}
-                    onChange={(e) => {
-                      setFactor(e.currentTarget.value);
-                    }}
-                  />
-                  <Selector
-                    etiqueta="Unidad con la que cocinas"
-                    opciones={UNIDADES_DE_USO.map((u) => ({ valor: u, texto: u }))}
-                    value={unidad}
-                    onChange={(e) => {
-                      setUnidad(e.currentTarget.value);
-                    }}
-                  />
-                </div>
-                <Campo
-                  etiqueta="Qué porcentaje se aprovecha"
-                  tipo="numero"
-                  ayuda="Lo que queda después de limpiar o pelar. 100 si no se pierde nada."
-                  value={rendimiento}
-                  detras="%"
-                  onChange={(e) => {
-                    setRendimiento(e.currentTarget.value);
-                  }}
-                />
-              </>
+              <Campo
+                etiqueta="Qué porcentaje se aprovecha"
+                tipo="numero"
+                ayuda="Lo que queda después de limpiar o pelar. 100 si no se pierde nada."
+                value={rendimiento}
+                detras="%"
+                onChange={(e) => {
+                  setRendimiento(e.currentTarget.value);
+                  setRendimientoTocado(true);
+                }}
+              />
             )}
 
             <SelectorDeCategoria
@@ -342,9 +406,9 @@ export function NuevoProducto({
                 <CampoMoneda
                   etiqueta="Lo que te cuesta"
                   ayuda={
-                    elegida === null
-                      ? 'El precio del formato entero, no el del kilo. Se puede dejar en blanco y ponerlo con el primer albarán.'
-                      : `El precio de una ${elegida.formato.toLowerCase()}, entera. Se puede dejar en blanco.`
+                    formato.trim() === ''
+                      ? 'El precio del envase entero, no el del kilo. Se puede dejar en blanco y ponerlo con el primer albarán.'
+                      : `El precio de «${formato.trim()}», entero. No el del kilo. Se puede dejar en blanco.`
                   }
                   valor={precio}
                   alCambiar={setPrecio}

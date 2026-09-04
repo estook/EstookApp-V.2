@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { PASOS_DEL_ALTA } from '@estook/dominio';
-import { puedeEditar } from '@estook/permisos';
-import { Aviso, Boton, Tarjeta, clases } from '@estook/ui';
+import { puedeEditar, puedeVer } from '@estook/permisos';
+import { Aviso, Boton, Cargando, Etiqueta, Lista, Tarjeta, clases } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { FalloDeLaApi } from '../datos/FalloDeLaApi.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import type { ElAltaDelLocal } from '../alta/contrato.ts';
+import { aplazar, estaAplazado } from './recordatorios.ts';
 
 /**
  * Las tarjetas fijas del Panel (M5).
@@ -17,7 +19,22 @@ import type { ElAltaDelLocal } from '../alta/contrato.ts';
  *
  *   Conecta tus ventas       hasta que el TPV esté conectado (M18)
  *   Termina de configurar    mientras queden pasos del alta sin responder
+ *   Tu equipo                en cuanto haya alguien más con acceso
  *   Quita los ejemplos       mientras el local tenga datos de mentira
+ *
+ * ── Las dos que no se iban ───────────────────────────────────────────────────
+ *
+ * Dos de estas tarjetas mentían, y las dos las vio Richi en el móvil:
+ *
+ *   · «Conecta tus ventas» tenía un «Recuérdamelo» que la escondía siete días.
+ *     Siete días después nadie se acuerda de nada, así que en la práctica era un
+ *     «no me lo enseñes nunca más» disfrazado. Ahora el aplazamiento **dura la
+ *     sesión**: al volver a entrar con la contraseña, vuelve.
+ *
+ *   · «Termina de configurar tu local» **no se podía quitar**. Iba la primera de
+ *     todas, y quien lleva el local solo y no va a invitar a nadie la tenía ahí
+ *     para siempre. Ahora se puede apagar, y se apaga en el servidor para que se
+ *     apague en todos sus aparatos (migración 0024).
  */
 
 export function TarjetasDelPanel() {
@@ -45,7 +62,10 @@ export function TarjetasDelPanel() {
   return (
     <>
       <ConectaTusVentas />
-      {alta !== null && puedeGestionar && <TerminaDeConfigurar alta={alta} />}
+      {alta !== null && puedeGestionar && !alta.recordatorioOculto && (
+        <TerminaDeConfigurar alta={alta} />
+      )}
+      <TuEquipo />
       {alta !== null && alta.ejemplos > 0 && puedeGestionar && <QuitaLosEjemplos alta={alta} />}
     </>
   );
@@ -71,21 +91,16 @@ export function TarjetasDelPanel() {
  * ── El «recuérdamelo» ────────────────────────────────────────────────────────
  *
  * Se guarda en este navegador, no en el servidor. No es un dato del negocio: es
- * «hoy no me apetece», y siete días después vuelve. Es la misma regla que la
- * Auditoría (hallazgo 10) le pone a cualquier aviso: «con "ahora no" vuelve en
- * siete días».
+ * «hoy no me apetece». Lo que dura es **la sesión**: vuelve en cuanto alguien
+ * entra otra vez con su contraseña, que es el momento en el que uno se sienta a
+ * configurar cosas. La lista de aplazamientos y el olvido viven en
+ * `recordatorios.ts`, que es su único dueño.
+ *
+ * Y sigue habiendo un tope de siete días por si alguien deja la sesión abierta
+ * un mes, que es lo que la Auditoría (hallazgo 10) le pide a cualquier aviso.
  */
-const CUANDO_VUELVE = 'estook.recordar-el-tpv';
-
 function ConectaTusVentas() {
-  const [escondida, setEscondida] = useState(() => {
-    try {
-      const hasta = window.localStorage.getItem(CUANDO_VUELVE);
-      return hasta !== null && Number(hasta) > Date.now();
-    } catch {
-      return false;
-    }
-  });
+  const [escondida, setEscondida] = useState(() => estaAplazado('tpv'));
 
   if (escondida) return null;
 
@@ -101,15 +116,7 @@ function ConectaTusVentas() {
         <Boton
           tono="texto"
           onClick={() => {
-            try {
-              window.localStorage.setItem(
-                CUANDO_VUELVE,
-                String(Date.now() + 7 * 24 * 60 * 60 * 1000),
-              );
-            } catch {
-              // Si no se puede guardar, se esconde solo hasta recargar. Mejor
-              // eso que no poder quitarla de la pantalla.
-            }
+            aplazar('tpv');
             setEscondida(true);
           }}
         >
@@ -118,7 +125,7 @@ function ConectaTusVentas() {
       </div>
       <p className="mt-e2 text-secundario text-texto-suave">
         El asistente de conexión llega con el módulo de conectores. Hasta entonces, las ventas se
-        pueden meter a mano.
+        pueden meter a mano. Si lo aplazas, vuelve la próxima vez que entres.
       </p>
     </Tarjeta>
   );
@@ -135,6 +142,7 @@ function ConectaTusVentas() {
  */
 function TerminaDeConfigurar({ alta }: { readonly alta: ElAltaDelLocal }) {
   const { cliente, refrescar } = usarSesion();
+  const cache = useQueryClient();
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
   const retomar = useMutation({
@@ -152,6 +160,29 @@ function TerminaDeConfigurar({ alta }: { readonly alta: ElAltaDelLocal }) {
     // Al reabrir el alta, la quinta comprobación vuelve a mandar allí en la
     // petición siguiente. No se navega desde aquí: lo decide `Puerta`.
     onSuccess: () => refrescar(),
+    onError: (fallo: FalloDeLaApi) => {
+      setError(fallo.error);
+    },
+  });
+
+  /**
+   * «No me lo recuerdes más».
+   *
+   * No marca nada como hecho ni como saltado: lo que falta sigue faltando y el
+   * progreso sigue siendo el que es. Solo apaga el recordatorio, y lo apaga en el
+   * servidor —columna `panel_recordatorio_oculto`, migración 0024— para que
+   * apagarlo en el ordenador lo apague también en el teléfono. Guardarlo en este
+   * navegador habría sido la clase de mentira pequeña que hace que uno deje de
+   * fiarse de los botones.
+   *
+   * Lo que se apaga se puede volver a encender: los pasos siguen en Ajustes.
+   */
+  const apagar = useMutation({
+    mutationFn: async () => {
+      const respuesta = await cliente.ejecutar('ocultar_el_recordatorio_del_alta', {});
+      if (!respuesta.ok) throw new FalloDeLaApi(respuesta.error);
+    },
+    onSuccess: () => cache.invalidateQueries({ queryKey: ['el_alta'] }),
     onError: (fallo: FalloDeLaApi) => {
       setError(fallo.error);
     },
@@ -186,7 +217,7 @@ function TerminaDeConfigurar({ alta }: { readonly alta: ElAltaDelLocal }) {
         </Aviso>
       )}
 
-      <div className="mt-e3">
+      <div className="mt-e3 flex flex-wrap items-center gap-e2">
         <Boton
           tono="principal"
           cargando={retomar.isPending}
@@ -197,6 +228,17 @@ function TerminaDeConfigurar({ alta }: { readonly alta: ElAltaDelLocal }) {
         >
           {elSiguiente.titulo}
         </Boton>
+
+        <Boton
+          tono="texto"
+          cargando={apagar.isPending}
+          textoCargando="Quitando"
+          onClick={() => {
+            apagar.mutate();
+          }}
+        >
+          No me lo recuerdes más
+        </Boton>
       </div>
 
       {pendientes.length > 1 && (
@@ -205,6 +247,11 @@ function TerminaDeConfigurar({ alta }: { readonly alta: ElAltaDelLocal }) {
           quieras.
         </p>
       )}
+
+      <p className="mt-e2 text-secundario text-texto-suave">
+        Si lo quitas, no se da nada por hecho: lo que falte sigue estando en Ajustes cuando lo
+        quieras.
+      </p>
     </Tarjeta>
   );
 }
@@ -277,6 +324,131 @@ function QuitaLosEjemplos({ alta }: { readonly alta: ElAltaDelLocal }) {
           Quitar los ejemplos
         </Boton>
       </div>
+    </Tarjeta>
+  );
+}
+
+// ── «Tu equipo» ──────────────────────────────────────────────────────────────
+
+/** Lo que devuelve `quien_tiene_acceso`, de lo que aquí se usa. */
+interface QuienTieneAcceso {
+  readonly personaId: string;
+  readonly nombre: string;
+  readonly apellidos: string | null;
+  readonly rolNombre: string;
+  readonly estado: 'dentro' | 'sin_estrenar' | 'fuera';
+  readonly ultimoAccesoEn: string | null;
+}
+
+/**
+ * Quién más trabaja aquí.
+ *
+ * ── Por qué aparece cuando aparece ───────────────────────────────────────────
+ *
+ * Sale **en cuanto hay alguien más**. Hasta entonces no hay nada que enseñar:
+ * una lista con una sola persona, que además eres tú, es ruido. Y esa es
+ * exactamente la recompensa de haber invitado a alguien desde la tarjeta de
+ * arriba: la tarjeta que pedía se convierte en la tarjeta que informa.
+ *
+ * ── Lo que enseña, y lo que todavía no ───────────────────────────────────────
+ *
+ * Enseña lo que Estook **sabe de verdad hoy**: quién tiene acceso, con qué rol,
+ * y si ha entrado alguna vez o su PIN sigue sin estrenar. Eso es M4.
+ *
+ * Lo que no enseña es si alguien está **fichado ahora mismo** y sus horas del
+ * mes. Eso no es un dato que se pueda deducir de nada de lo que hay: son los
+ * fichajes, y llegan en M15. Ponerlo aquí en gris con un cero sería inventarse
+ * una cifra, que es la única cosa que un panel no puede hacer. Se dice qué irá
+ * ahí y de dónde saldrá, como el resto del Panel.
+ */
+function TuEquipo() {
+  const { cliente, permisos, yo } = usarSesion();
+  const navegar = useNavigate();
+
+  const localId = yo?.local?.id ?? null;
+  // La misma puerta que la app: quien no tiene Equipo en su rueda tampoco tiene
+  // por qué tener la plantilla en su Panel.
+  const puedeMirar = puedeVer(permisos, 'app.equipo');
+
+  const consulta = useQuery({
+    queryKey: ['quien_tiene_acceso', localId],
+    enabled: localId !== null && puedeMirar,
+    retry: 1,
+    queryFn: async (): Promise<readonly QuienTieneAcceso[]> => {
+      const respuesta = await cliente.consultar<readonly QuienTieneAcceso[]>('quien_tiene_acceso', {
+        local_id: localId ?? '',
+      });
+      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
+      return respuesta.datos;
+    },
+  });
+
+  if (!puedeMirar || localId === null) return null;
+  if (consulta.isPending && consulta.fetchStatus === 'fetching') {
+    return (
+      <Tarjeta titulo="Tu equipo">
+        <Cargando que="tu equipo" />
+      </Tarjeta>
+    );
+  }
+
+  const gente = (consulta.data ?? []).filter((quien) => quien.estado !== 'fuera');
+
+  // Solo tú todavía: no hay equipo que enseñar, y la tarjeta de arriba ya pide
+  // que invites a alguien. Dos tarjetas pidiendo lo mismo son una de más.
+  if (gente.length < 2) return null;
+
+  return (
+    <Tarjeta
+      titulo={gente.length === 1 ? '1 persona' : `${gente.length} personas`}
+      origen="Quién tiene acceso a este local"
+      accion={
+        <Boton
+          tono="secundario"
+          onClick={() => {
+            navegar('/equipo/personas');
+          }}
+        >
+          Ver el equipo
+        </Boton>
+      }
+    >
+      <Lista
+        titulo="Tu equipo"
+        elementos={gente.slice(0, 6).map((quien) => ({
+          clave: quien.personaId,
+          titulo: (
+            <span className="flex flex-wrap items-center gap-e2">
+              <span>
+                {quien.nombre}
+                {quien.apellidos === null ? '' : ` ${quien.apellidos}`}
+              </span>
+              {quien.estado === 'sin_estrenar' && (
+                <Etiqueta tono="atencion">todavía no ha entrado</Etiqueta>
+              )}
+            </span>
+          ),
+          // «Hace tres días» necesitaría preguntarle la hora al navegador, y la
+          // fecha la decide el servidor (regla 10). Lo que sí es un hecho, y es lo
+          // que hace falta saber, es si esa persona ha llegado a entrar: sin eso,
+          // quien invita a cinco el lunes no sabe el viernes a quién hay que
+          // volver a darle el PIN.
+          detalle:
+            quien.estado === 'sin_estrenar'
+              ? `${quien.rolNombre} · su PIN sigue valiendo`
+              : quien.rolNombre,
+        }))}
+        cuandoNoHay={<span className="text-texto-suave">Todavía no hay nadie más.</span>}
+      />
+
+      {gente.length > 6 && (
+        <p className="mt-e2 text-secundario text-texto-suave">Y {gente.length - 6} más.</p>
+      )}
+
+      <p className="mt-e3 text-secundario text-texto-suave">
+        Quién está fichado ahora mismo y las horas de cada uno llegan con los fichajes, en el módulo
+        15. Poner aquí un cero mientras tanto sería inventarse una cifra.
+      </p>
     </Tarjeta>
   );
 }

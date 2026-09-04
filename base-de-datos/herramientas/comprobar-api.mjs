@@ -960,6 +960,30 @@ try {
     );
   }
 
+  // ── La 0024, que es una sola columna pero se olvida igual ─────────────────
+  //
+  // «No me lo recuerdes mas» de la tarjeta del Panel se guarda ahi. Sin la
+  // columna, ese boton devuelve un error y la tarjeta no se va: exactamente la
+  // clase de boton mudo que este proyecto lleva persiguiendo desde M4.
+  //
+  // Se salta, y no grita, por la misma razon que la 0023: hay un rato normal en
+  // el que el codigo esta fusionado y la migracion todavia no esta puesta.
+  if (cuantasMigraciones.ultima < 24) {
+    noSePuede(`la 0024 todavia no esta aplicada · la base va por la ${cuantasMigraciones.ultima}`);
+  } else {
+    const [recordatorio] = await conexion`
+      select count(*)::int as columna
+        from pg_attribute
+       where attrelid = 'estook.local'::regclass
+         and attname = 'panel_recordatorio_oculto'
+         and not attisdropped
+    `;
+    comprobar(
+      'se puede apagar el recordatorio del alta, y se apaga en el servidor',
+      recordatorio.columna === 1,
+    );
+  }
+
   titulo('La API DESPLEGADA, que es otra cosa');
 
   // ══════════════════════════════════════════════════════════════════════════

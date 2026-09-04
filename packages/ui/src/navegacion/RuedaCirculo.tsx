@@ -27,7 +27,10 @@ const SEPARACION = 1.4;
 export interface RuedaCirculoProps {
   readonly apps: readonly App[];
   readonly pendientes: Readonly<Record<string, number>>;
+  /** El cursor. `-1` es «ninguna», y entonces no se resalta ningun sector. */
   readonly señalada: number;
+  /** En que app se esta, para decirlo con `aria-current` y no solo con color. */
+  readonly appActiva?: string | null;
   readonly alSenalar: (indice: number) => void;
   readonly alElegir: (indice: number) => void;
   readonly alPulsarTecla: (evento: KeyboardEvent) => void;
@@ -37,6 +40,7 @@ export function RuedaCirculo({
   apps,
   pendientes,
   señalada,
+  appActiva = null,
   alSenalar,
   alElegir,
   alPulsarTecla,
@@ -72,7 +76,7 @@ export function RuedaCirculo({
       onPointerUp={(evento) => {
         if (!arrastrando) return;
         setArrastrando(false);
-        if (bajoElDedo(evento) !== null) alElegir(señalada);
+        if (bajoElDedo(evento) !== null && señalada >= 0) alElegir(señalada);
       }}
       onPointerCancel={() => {
         setArrastrando(false);
@@ -98,6 +102,7 @@ export function RuedaCirculo({
               app={app}
               sector={sector}
               activo={i === señalada}
+              aqui={app.id === appActiva}
               retraso={i * 30}
               pendientes={pendientes[app.id] ?? 0}
               alSenalar={() => {
@@ -129,7 +134,7 @@ export function RuedaCirculo({
           arrastrando ? 'text-cuerpo font-semibold text-texto' : 'text-secundario text-texto-suave',
         )}
       >
-        {arrastrando ? apps[señalada]?.nombre : 'Arrastra o pulsa'}
+        {arrastrando ? (apps[señalada]?.nombre ?? 'Arrastra o pulsa') : 'Arrastra o pulsa'}
       </button>
     </div>
   );
@@ -139,6 +144,7 @@ function SectorDeApp({
   app,
   sector,
   activo,
+  aqui,
   retraso,
   pendientes,
   alSenalar,
@@ -147,6 +153,7 @@ function SectorDeApp({
   readonly app: App;
   readonly sector: Sector;
   readonly activo: boolean;
+  readonly aqui: boolean;
   readonly retraso: number;
   readonly pendientes: number;
   readonly alSenalar: () => void;
@@ -189,7 +196,10 @@ function SectorDeApp({
     <g
       id={`sector-${app.id}`}
       role="menuitem"
-      aria-label={`${app.nombre}. ${app.queHace}${pendientes > 0 ? `. ${pendientes} pendientes` : ''}`}
+      // «Estas aqui» se dice con `aria-current`, que es lo que un lector de
+      // pantalla anuncia, y no solo con el color del sector.
+      aria-current={aqui ? 'page' : undefined}
+      aria-label={`${app.nombre}. ${app.queHace}${aqui ? '. Estás aquí' : ''}${pendientes > 0 ? `. ${pendientes} pendientes` : ''}`}
       className="cursor-pointer anima-sector"
       // «Sectores escalonados cada 30 ms» (B6).
       style={{ animationDelay: `${retraso}ms` }}

@@ -301,6 +301,10 @@ Dentro de una app, la barra de abajo pasa a ser la de esa app, con un máximo de
 
 **Escritorio ·** barra superior y menú lateral propio. Arriba, el selector de local, las ocho apps con su desplegable y, a la derecha, notificaciones, chat, Fogón y avatar. Dentro de una app, menú lateral con sus vistas y la ficha abriéndose en panel derecho sin tapar la lista.
 
+**Y en móvil, esa misma fila de la derecha va arriba.** Buscador, avisos, chat, Fogón y avatar, con el local en el que estás a la izquierda. Sin ella, en un teléfono **no hay buscador** —`⌘K` no existe— y a Ajustes no se llega desde dentro de una app, porque ahí la barra de abajo es la de esa app. Arriba lo que es de la sesión entera; abajo, lo de navegar.
+
+> **Fogón no es una pestaña de cada app: es una burbuja que va contigo** (decisión 0015). En móvil, flotando abajo a la derecha por encima de la barra; en escritorio, el icono de arriba abriendo un panel lateral que no tapa lo que estabas mirando; y `⌘J` desde cualquier sitio. **Se abre sabiendo en qué pantalla estás**, y se le puede preguntar cualquier cosa desde cualquier sitio. Una pestaña «Fogón» por app gastaría una de las cuatro posiciones que hay y obligaría a salir de lo que estás haciendo para preguntar por lo que estás haciendo.
+
 **Reglas de profundidad y de vuelta:** máximo tres niveles (app → vista → ficha). Siempre hay una forma de volver que no es el botón del navegador. **Nunca se pierde el trabajo al navegar.**
 
 **Atajos:** `⌘K` buscador universal · `⌘1`–`⌘8` apps · `⌘G` genera el PDF de la pantalla · `⌘J` Fogón · `Esc` cierra hoja o panel.
@@ -604,6 +608,10 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 **Entra.** Resumen vivo del local y perfil del negocio con sus límites · catálogo de herramientas con permisos · presupuesto por local y día · avisos automáticos, **la mayoría por consulta sin llamar al modelo** · asistente contextual · voz para merma, temperatura, gramaje e incidencia · cadencias y cupos por plan con aviso al 80 % · caché · registro de consumo y de acciones · reglas de degradación · borradores de pedido, menú, precio, cuadrante, respuesta a reseña y traducción de fichas.
 
 **Y su capa inteligente · Fogón transversal.** Presente en **todas** las apps, trabajando con el contexto de la pantalla. Y el **centro de alertas**: cada alerta con qué ocurre, por qué, qué impacto tiene, qué se recomienda y un botón, priorizadas por Fogón.
+
+**Dónde vive, decidido en M6** (decisión 0015). Burbuja flotante en móvil, icono de arriba a la derecha con panel lateral en escritorio, y `⌘J`. **Nunca una pestaña dentro de una app.** Se abre sabiendo en qué pantalla estás, y además es un chat de verdad: se le pregunta cualquier cosa desde cualquier sitio, y se le pide que rellene o prepare cosas. El sitio ya está construido y probado desde M6; M22 lo llena.
+
+**Y las pestañas de cada app llevan los análisis que Fogón deja hechos**, no la conversación. Se calculan **fuera de hora y se guardan**, con la hora a la que se miraron a la vista: **cada 8 horas** lo que se mueve con cada servicio —género, mermas, agotados—, **cada 12** lo que se mueve con el día —ventas, margen, personal— y **cada 24** lo que se mueve con la semana —carta, proveedores, reseñas—. La cadencia la decide **el dato, no la app**. Recalcular un análisis cada vez que alguien abre una pantalla es la forma más rápida de gastarse el presupuesto del mes en una tarde, y contradice «lo pesado, en lote nocturno».
 
 **Reglas críticas de optimización, que son también de coste.** Los números los calcula la base de datos, **nunca el modelo**. Las reglas de aviso van en código. El contexto va cacheado y se parchea. Cada tarea a su modelo. Lo pesado, en lote nocturno. Respuestas frecuentes cacheadas. Imágenes reducidas. **Fogón pide el dato concreto, jamás una tabla entera.** Nada se guarda sin aprobación. **El texto que viene de fuera se trata como dato, jamás como instrucción.**
 

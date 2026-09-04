@@ -15,6 +15,7 @@ import {
   type App,
 } from '@estook/ui';
 import { BuscadorUniversal } from './buscar/BuscadorUniversal.tsx';
+import { BurbujaDeFogon, VentanaDeFogon } from './fogon/Fogon.tsx';
 import { LoQueLlegaDespues, type LoQueFalta } from './pantallas/LoQueLlegaDespues.tsx';
 import { usarSesion } from './sesion/Sesion.tsx';
 
@@ -43,6 +44,14 @@ export function Esqueleto() {
   const [ruedaAbierta, setRuedaAbierta] = useState(false);
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
   const [loQueFalta, setLoQueFalta] = useState<LoQueFalta | null>(null);
+  /**
+   * Fogón, abierto o cerrado.
+   *
+   * Lo lleva el esqueleto y no cada barra a propósito: la burbuja del móvil, el
+   * icono de arriba en escritorio y el atajo `Ctrl+J` abren **lo mismo**. Tres
+   * ventanas distintas para lo mismo acabarían diciendo cosas distintas.
+   */
+  const [fogonAbierto, setFogonAbierto] = useState(false);
 
   const misApps = useMemo(
     () =>
@@ -73,7 +82,7 @@ export function Esqueleto() {
       setBuscadorAbierto(true);
     },
     alAbrirFogon: () => {
-      setLoQueFalta('fogon');
+      setFogonAbierto(true);
     },
     alIrAApp: (numero) => {
       // «⌘1–⌘8 apps», en el orden de la rueda **de quien mira**: si solo tiene
@@ -226,7 +235,7 @@ export function Esqueleto() {
           setLoQueFalta('chat');
         }}
         alAbrirFogon={() => {
-          setLoQueFalta('fogon');
+          setFogonAbierto(true);
         }}
       />
 
@@ -261,7 +270,7 @@ export function Esqueleto() {
           setLoQueFalta('chat');
         }}
         alAbrirFogon={() => {
-          setLoQueFalta('fogon');
+          setFogonAbierto(true);
         }}
         alIrAAjustes={() => {
           navegar('/ajustes');
@@ -323,6 +332,25 @@ export function Esqueleto() {
           setBuscadorAbierto(false);
         }}
         apps={misApps}
+      />
+
+      {/*
+        Fogón · su sitio, decidido y construido antes que él (decisión 0015). En
+        el móvil, una burbuja que va contigo por toda la aplicación; en
+        escritorio, el icono de arriba que ya mandaba B5. Los dos abren la misma
+        ventana, y la ventana sabe en qué pantalla estás.
+      */}
+      <BurbujaDeFogon
+        alPulsar={() => {
+          setFogonAbierto(true);
+        }}
+      />
+
+      <VentanaDeFogon
+        abierta={fogonAbierto}
+        alCerrar={() => {
+          setFogonAbierto(false);
+        }}
       />
 
       <LoQueLlegaDespues

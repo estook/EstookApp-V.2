@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 4 de septiembre de 2026 · M6 fusionado · el segundo paseo por el móvil
+Última actualización: 4 de septiembre de 2026 · M6 desplegado · falta mirarlo en el móvil
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. Nunca puede afirmar algo que no sea cierto en ese momento.
@@ -13,9 +13,9 @@
 | -------------- | ------------------------------------------------------------------------------------- |
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario |
 | **Siguiente**  | **M7** · Proveedores y compras                                                        |
-| **Pruebas**    | 695 unitarias y de base de datos · 224 de extremo a extremo                           |
-| **Rama**       | M6 en `main` (PR #30, #33). El repaso del móvil, en un pull request abierto           |
-| **Publicado**  | Base en la `0023` · **falta aplicar la `0024`** · **la API sin desplegar con M6**     |
+| **Pruebas**    | 695 unitarias y de base de datos · 236 de extremo a extremo                           |
+| **Rama**       | M6 en `main` (PR #30 a #34). Fogón, en un pull request abierto                        |
+| **Publicado**  | Base en la `0024` · web y app al día · **API desplegada y al día**                    |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
 
@@ -66,8 +66,14 @@ específico. Si de verdad se contradicen, se para y se pregunta (regla 13).
 funciona: el alta entera, la tarjeta del Panel, invitar a mano, y la guía de
 instalación donde toca.
 
-**M6 está fusionado y la `0023` aplicada. Falta aplicar la `0024`, desplegar la
-API y mirarlo en un móvil.**
+**M6 está fusionado, migrado y desplegado. Falta una sola cosa: mirarlo en un
+móvil de verdad** (regla 11).
+
+Comprobado contra Supabase y contra GitHub, no de memoria: los pull requests #30
+a #34 fusionados, la base en la `24` de 24, la API desplegada conociendo las
+catorce consultas del código, y **el almacén del logo listo** —la clave de
+servicio ya estaba en `.env.local`, así que el último pendiente de M5 queda
+cerrado—.
 
 El primer paseo por el móvil ya se dio, y **salieron seis fallos de pantalla**:
 ninguno rompía ninguna de las 692 pruebas que había. Arreglándolos salieron dos
@@ -85,13 +91,16 @@ API **desplegada** si conoce todas las consultas del código, y si va por detrá
 dice con esas palabras. Los pasos están en
 [`docs/pasos-para-cerrar-m6.md`](docs/pasos-para-cerrar-m6.md).
 
-### Lo único que sigue abierto de M5
+### De M5 ya no queda nada abierto
 
-- **El almacén del logo.** Falta la clave `service_role` de Supabase en
-  `.env.local` y ejecutar `pnpm almacen:preparar`, que crea el cubo y comprueba
-  el camino entero: sube, firma, lee y borra. **No bloquea nada**: el color de la
-  marca funciona, y el paso del logo dice que todavía no hay dónde guardarlo.
-  Está en [`docs/pasos-para-cerrar-m5.md`](docs/pasos-para-cerrar-m5.md).
+**El almacén del logo está listo**, y llevaba tiempo estándolo: la clave
+`service_role` estaba puesta al final de `.env.local` y yo lo seguía dando por
+pendiente. `.\estook.cmd almacen:preparar` pasa el camino entero —sube, firma,
+lee y borra— y el cubo ya estaba creado.
+
+La lección, que es de las que se repiten: **un pendiente que no se vuelve a
+comprobar se queda escrito para siempre**, y acaba mandando a alguien a hacer
+algo que ya hizo.
 
 ### Lo que hay que decidir antes de M8, y no lo decide M5
 
@@ -118,14 +127,15 @@ habiendo que decidirlo antes de M8.
 
 ### Cómo quedó el estado de la base y del despliegue
 
-| Qué                | Cómo está                                                           |
-| ------------------ | ------------------------------------------------------------------- |
-| Migraciones        | En el repositorio hasta la `0024`; **en Supabase, hasta la `0023`** |
-| Semillas           | Puestas, **sin credenciales de ejemplo**: la semilla se niega       |
-| Cuentas de ejemplo | Cerradas. Ninguna puede entrar                                      |
-| Cuenta de verdad   | La de Ricardo, con su organización y su local                       |
-| API                | Desplegada, **y por detrás del código**: no conoce nada de M6       |
-| Web y app          | Publicadas y al día                                                 |
+| Qué                | Cómo está                                                     |
+| ------------------ | ------------------------------------------------------------- |
+| Migraciones        | `0024` en el repositorio y **aplicadas las 24 en Supabase**   |
+| Semillas           | Puestas, **sin credenciales de ejemplo**: la semilla se niega |
+| Cuentas de ejemplo | Cerradas. Ninguna puede entrar                                |
+| Cuenta de verdad   | La de Ricardo, con su organización y su local                 |
+| API                | Desplegada y al día: conoce las catorce consultas del código  |
+| Web y app          | Publicadas y al día                                           |
+| Almacén del logo   | Listo: sube, firma, lee y borra                               |
 
 `pnpm bd:comprobar-api` pasa sin un solo fallo, con once comprobaciones que allí
 no se pueden hacer porque necesitan cuentas de ejemplo, que en una base remota no
@@ -232,11 +242,11 @@ pendiente de M4 y ahora también de M5: el alta son ocho pantallas que se hacen 
 el pulgar, y lo que mide la prueba automática es que ningún paso se atasque, no lo
 que tarda una persona.
 
-**Y el almacén de ficheros contra Supabase de verdad.** El logo se sube, se firma
-y se lee en la API de pruebas, con un almacén en memoria; contra Supabase Storage
-no lo ha ejecutado nadie todavía. Para eso está `pnpm almacen:preparar`, que hace
-el camino entero —crear, subir, firmar, leer, comprobar que sin firma no se sirve
-y borrar— en vez de decir «listo» sin haber probado nada.
+**El almacén de ficheros contra Supabase de verdad ya está hecho**, comprobado el
+4 de septiembre de 2026: `.\estook.cmd almacen:preparar` hace el camino entero
+—crear, subir, firmar, leer, comprobar que sin firma no se sirve y borrar— y pasa
+los seis pasos. El cubo ya existía y la clave de servicio llevaba tiempo en
+`.env.local`.
 
 ### Pendiente de dato, no de código
 
@@ -775,8 +785,8 @@ ninguno rompía nada por dentro.
   no existen todavía.
 - **Los albaranes por foto** necesitan proveedores y productos: M7.
 - **Google Places**, con las reseñas y los competidores: M23.
-- **El almacén contra Supabase de verdad** no lo ha ejecutado nadie. Para eso
-  está `pnpm almacen:preparar`.
+- ~~**El almacén contra Supabase de verdad**~~ · **hecho**. `almacen:preparar`
+  pasa los seis pasos contra el proyecto de verdad.
 - **`recetas_de_referencia` no la consume nadie todavía**, y se deja a
   propósito: la ficha de M5 pide «recetas de referencia **opcionales**», y quien
   las copia a una ficha técnica es M9. La consulta está hecha y probada; lo que
@@ -1104,6 +1114,41 @@ Salió leyendo los errores que la API escupía mientras corrían **otras** prueb
 Ahora tiene dos suyas: una le pregunta a la API si contesta, y otra mira si la
 pantalla se pinta o sale el aviso de que se ha roto.
 
+#### Y dónde vive Fogón, decidido y construido antes que Fogón
+
+La pregunta salió mirando el móvil —«¿y la IA? No hay burbuja, no hay nada, ni la
+entiendo»— y la respuesta corta es que **Fogón es M22**. Pero debajo había una
+decisión de producto sin tomar, y tomarla ahora se llevó por delante la salida
+mala.
+
+**La salida mala era una pestaña «Fogón» en cada app.** Es lo que se deduce
+leyendo el Plan al pie de la letra —«presente en **todas** las apps»— y tiene tres
+problemas: son ocho pestañas en barras que B5 limita a cuatro; te obligan a salir
+de lo que estás haciendo para preguntar por lo que estás haciendo; y dicen que
+Fogón es un sitio al que se va, cuando es algo que está.
+
+**Lo decidido** ([decisión 0015](docs/decisiones/0015-fogon-es-una-burbuja-no-una-pestana.md)):
+
+- **Burbuja flotante en móvil**, por encima de la barra de abajo, en todas las
+  pantallas.
+- **Icono de arriba a la derecha en escritorio** —el que B5 ya mandaba— abriendo
+  un **panel lateral que no tapa** lo que estabas mirando. Y `Ctrl+J`.
+- **Sabe en qué pantalla estás** y lo dice lo primero.
+- **Es también un chat de verdad**: se le pregunta cualquier cosa desde cualquier
+  sitio, no solo sobre la pantalla de delante.
+- **Nunca una pestaña.** Las pestañas de cada app se quedan para los **análisis
+  que Fogón deja hechos**, calculados fuera de hora y guardados: cada 8 horas lo
+  que se mueve con cada servicio, cada 12 lo del día, cada 24 lo de la semana. La
+  cadencia la decide el dato, no la app.
+
+**Se construye el sitio, no la conversación.** Dónde vive un botón es navegación,
+y dejarla para M22 obligaría a rehacer la barra, la rueda y el esqueleto cuando
+llegue. La ventana dice con esas palabras que todavía no se puede hablar con él, y
+**no lleva casilla de escribir apagada**: un control muerto es el fallo que más
+veces ha aparecido en este proyecto.
+
+Está escrito además donde se lee: **B5 y la ficha de M22 del Plan**.
+
 #### Lo que M6 deja pendiente, dicho sin redondear
 
 - **Sigue sin poder darse por terminado** (regla 11): falta aplicar la `0024`,
@@ -1113,6 +1158,10 @@ pantalla se pinta o sale el aviso de que se ha roto.
   Eso son los fichajes, M15, y hasta entonces no hay de dónde sacarlo.
 - **El atajo al TPV cuando esté conectado** es M18: hoy la tarjeta solo se puede
   aplazar, porque el asistente de conexión no existe.
+- **Fogón tiene su sitio, no su voz.** La burbuja, el panel y el contexto están;
+  la conversación, el presupuesto por local y día, la caché y la voz son M22.
+- **Los análisis periódicos de las pestañas necesitan el reloj**, que sigue sin
+  decidirse. Sin reloj no hay «cada 8 horas».
 - **El mínimo se escribe a mano.** Calcularlo necesita saber qué días reparte
   cada proveedor, y eso es M7 y M8.
 - **Los lotes se guardan y se avisa de lo que caduca, pero no se consume por
@@ -1175,7 +1224,12 @@ pantalla se pinta o sale el aviso de que se ha roto.
     todo el mundo desde el primer día. Salió leyendo los errores que la API
     escupía mientras corrían **otras** pruebas. Cada consulta del catálogo
     necesita al menos una prueba que la llame de verdad.
-11. **`toBeVisible()` no ve el recorte.** Un elemento tapado, o recortado por el
+11. **Un pendiente que no se vuelve a comprobar se queda escrito para siempre.**
+    El almacén del logo estuvo dado por pendiente desde M5 y llevaba tiempo
+    hecho: la clave estaba en `.env.local` y el cubo creado. Escribirlo en tres
+    sitios no lo comprueba; ejecutarlo, sí. **Antes de mandar a alguien a hacer
+    algo, comprobar que no está hecho ya.**
+12. **`toBeVisible()` no ve el recorte.** Un elemento tapado, o recortado por el
     `overflow` de un padre, sigue teniendo caja: sigue siendo «visible» para
     Playwright y no para una persona. Los desplegables de la barra de escritorio
     llevaban así desde M3. Cuando lo que se comprueba es que algo **se ve**, hay
@@ -1204,6 +1258,7 @@ En [`docs/decisiones/`](docs/decisiones/):
 | **0012** | **El producto nace en M6, y M5 le deja el diccionario**           |
 | **0013** | **Google Places se aplaza a M23**                                 |
 | **0014** | **Un módulo reacciona a otro en la misma transacción**            |
+| **0015** | **Fogón es una burbuja que va contigo, no una pestaña por app**   |
 
 Otras, sin fichero propio:
 
@@ -1300,7 +1355,9 @@ conciliada con esa diferencia señalada.
 
 1. **Quién ejecuta los procesos de fondo.** Sigue sin reloj, y ahora la bandeja
    crece más deprisa: M6 publica cinco eventos nuevos. Nada se rompe, y hay que
-   decidirlo **antes de M8**.
+   decidirlo **antes de M8**. Desde la decisión 0015 tiene un motivo más: los
+   análisis periódicos de las pestañas se calculan cada 8, 12 o 24 horas, y sin
+   reloj no hay «cada 8 horas».
 2. **Si se quitan de la API `mis_locales`, `mis_permisos` y `un_local`**, que
    `quien_soy` dejó sin trabajo en M4.
 

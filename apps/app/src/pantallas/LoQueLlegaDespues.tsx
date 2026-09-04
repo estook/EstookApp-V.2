@@ -18,8 +18,13 @@ import { Boton, Hoja } from '@estook/ui';
  *
  * El día que el módulo llegue, se borra su entrada de aquí y el botón hace lo
  * suyo. Mientras tanto **no hay ningún botón mudo**.
+ *
+ * **Fogón salió de aquí y tiene lo suyo** ([`fogon/Fogon.tsx`](../fogon/Fogon.tsx)):
+ * su sitio no es una hoja que se explica, es la burbuja del móvil y el icono de
+ * arriba en el ordenador, sabiendo en qué pantalla estás. Eso es navegación, y
+ * la navegación se decide ahora aunque la inteligencia llegue en M22.
  */
-export type LoQueFalta = 'avisos' | 'chat' | 'fogon';
+export type LoQueFalta = 'avisos' | 'chat';
 
 interface Ficha {
   readonly titulo: string;
@@ -52,18 +57,6 @@ const FICHAS: Readonly<Record<LoQueFalta, Ficha>> = {
     ],
     cuando: 'Llega con el módulo 23.',
     mientrasTanto: 'Las notas y las incidencias del día se apuntan en el Cuaderno.',
-  },
-  fogon: {
-    titulo: 'Fogón',
-    queEs: 'La inteligencia de Estook. No es un chat aparte: trabaja dentro de cada pantalla.',
-    queHara: [
-      'Te dice lo que pasa antes de que se note: qué producto se va a agotar, qué plato ha dejado de dar margen, qué precio te ha subido y cuánto te cuesta.',
-      'Dictarle en voz alta una merma, una temperatura o una incidencia con las manos ocupadas.',
-      'Prepararte borradores —un pedido, un cuadrante, una respuesta a una reseña— que tú apruebas o tiras.',
-    ],
-    cuando: 'Llega con el módulo 22, y desde entonces está en todas las apps.',
-    mientrasTanto:
-      'Las cuentas que ya sabe hacer Estook las hace la base de datos, no un modelo: la previsión de cuándo se agota cada producto, con sus días mirados, ya está en Inventario.',
   },
 };
 

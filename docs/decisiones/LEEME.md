@@ -24,3 +24,5 @@ alguien se preguntara «por que esta hecho asi».
 | **0011** | Las pruebas de extremo a extremo levantan la API de verdad        |
 | **0012** | El producto nace en M6, y M5 le deja el diccionario               |
 | **0013** | Google Places se aplaza a M23                                     |
+| **0014** | Un modulo reacciona a otro en la misma transaccion                |
+| **0015** | Fogon es una burbuja que va contigo, no una pestana por app       |

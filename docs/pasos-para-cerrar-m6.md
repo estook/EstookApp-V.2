@@ -41,6 +41,26 @@ fusionado.
 **Dónde:** en tu ordenador, en una ventana de terminal, dentro de la carpeta del
 proyecto.
 
+> ### Antes de nada: si dice que no conoce `pnpm`
+>
+> Sale así:
+>
+> ```
+> pnpm : El término 'pnpm' no se reconoce como nombre de un cmdlet...
+> ```
+>
+> **No es que falte: está instalado.** Es que una ventana de terminal ya abierta
+> se queda con el PATH que había cuando se abrió, para siempre. Si abriste esa
+> ventana antes de instalar `pnpm`, no lo va a encontrar nunca.
+>
+> Dos salidas, y las dos valen:
+>
+> - **La definitiva:** cierra esa ventana y abre otra. La nueva ya coge el PATH
+>   bueno, y todos los comandos de aquí abajo funcionan tal cual.
+> - **La de emergencia:** escribe `.\estook.cmd` en vez de `pnpm`, sin salir de la
+>   ventana que tienes. Por ejemplo, `.\estook.cmd bd:comprobar`. Busca `pnpm`
+>   donde de verdad está, sin depender del PATH.
+
 ### 2.1 · Traerte lo fusionado
 
 Son dos comandos, **uno detrás de otro**:
@@ -98,11 +118,6 @@ Y en la lista de tablas tienen que aparecer las siete nuevas: `proveedor`,
 `categoria_de_producto`, `categoria_de_partida`, `producto`,
 `precio_de_producto`, `lote` y `movimiento_de_stock`. **Todas con `RLS`
 delante**: si alguna sale sin él, para y dímelo.
-
-> **Si dice que no conoce `pnpm`**, no es que falte: una ventana de terminal ya
-> abierta se queda con el PATH que había cuando se abrió. Cierra la ventana y
-> abre otra. Y si aun así no, escribe `.\estook.cmd bd:migrar` en vez de
-> `pnpm bd:migrar`.
 
 ### 2.4 · Comprobar que ha quedado bien
 

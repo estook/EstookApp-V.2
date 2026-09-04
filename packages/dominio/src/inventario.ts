@@ -68,9 +68,6 @@ export function esTipoDeMovimiento(valor: unknown): valor is TipoDeMovimiento {
   return typeof valor === 'string' && (TIPOS_DE_MOVIMIENTO as readonly string[]).includes(valor);
 }
 
-/** Los tres que M6 sabe crear hoy. Los demás llegan con su módulo. */
-export const MOVIMIENTOS_DE_M6 = ['entrada', 'salida', 'ajuste'] as const;
-
 /** Lo que hay en cámara y a cuánto está valorado, después de un movimiento. */
 export interface EstadoDelStock {
   readonly cantidad: Cantidad;

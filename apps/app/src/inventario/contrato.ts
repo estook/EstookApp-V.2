@@ -27,6 +27,9 @@ export interface ProductoEnLista {
   readonly id: string;
   readonly nombre: string;
   readonly categoria: string | null;
+  /** Los identificadores, para poder volver a guardar sin borrar lo que hay. */
+  readonly categoriaId: string | null;
+  readonly proveedorId: string | null;
   readonly formato: string | null;
   readonly unidadDeUso: string;
   readonly factor: number;
@@ -37,6 +40,9 @@ export interface ProductoEnLista {
   readonly activo: boolean;
   readonly proveedor: string | null;
   readonly codigoDeBarras: string | null;
+  /** Decide el impuesto de lo que se venda. Nunca se supone. */
+  readonly categoriaFiscal: string;
+  readonly notas: string | null;
 
   readonly cantidad: number;
   readonly minimo: number | null;
@@ -178,6 +184,21 @@ export interface CatalogoDeReferencia {
  * los ceros que sobran y pone la coma decimal española. Aquí solo se le da forma
  * a la cantidad, que llega del servidor con cuatro decimales.
  */
+/**
+ * Como se llama cada categoria fiscal en pantalla.
+ *
+ * **Decide el impuesto que lleva lo que se venda**, asi que se enseña con su
+ * nombre y se elige a mano: suponerla es cambiarle el IVA a un producto sin
+ * decirlo. La lista cerrada vive en el motor fiscal de M2.
+ */
+export const NOMBRE_DE_LA_CATEGORIA_FISCAL: Readonly<Record<string, string>> = {
+  alimento: 'Alimento',
+  bebida_alcoholica: 'Bebida con alcohol',
+  bebida_refrescante: 'Bebida sin alcohol',
+  bebida_refrescante_azucarada: 'Bebida azucarada',
+  otros: 'Otros',
+};
+
 export function conUnidadDeUso(cuanto: number, unidad: string): string {
   return conUnidad(cantidad(cuanto), unidad);
 }

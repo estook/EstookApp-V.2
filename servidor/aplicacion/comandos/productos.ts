@@ -374,6 +374,31 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       });
     }
 
+    // ── Renombrar a uno que ya existe se dice en cristiano ────────────────────
+    //
+    // Hay un índice único sobre el nombre de los productos activos de un local,
+    // y sin esta comprobación la violación salía como un error de Postgres sin
+    // traducir: un **`500` con «se nos ha roto algo por dentro»**, que además de
+    // feo es mentira. No se ha roto nada: es que ya hay otro que se llama así.
+    //
+    // `crear_producto` ya lo decía bien; cambiar no. Lo encontró la prueba de
+    // que corregir una errata no borra el resto de la ficha, chocando consigo
+    // misma.
+    const homonimos = await contexto.sql<{ id: string }[]>`
+      select id from estook.producto
+       where local_id = ${previo.local_id}
+         and activo
+         and id <> ${entrada.producto_id}
+         and estook.sin_acentos(nombre) = estook.sin_acentos(${entrada.nombre})
+       limit 1
+    `;
+
+    if (homonimos.length > 0) {
+      throw new FalloDeAplicacion('ya_hecho', {
+        porque: `Ya tienes otro producto que se llama «${entrada.nombre}». Ponle algo que los distinga.`,
+      });
+    }
+
     const cambiaElCoste =
       Number(previo.factor) !== entrada.factor ||
       Number(previo.rendimiento) !== entrada.rendimiento;

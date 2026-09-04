@@ -1,6 +1,6 @@
 # Pasos para cerrar M6
 
-Son **tres**, y van en este orden. El orden es la regla 1 de «cómo trabajamos»:
+Son **cuatro**, y van en este orden. El orden es la regla 1 de «cómo trabajamos»:
 **primero fusionar, después aplicar a Supabase**. La base de datos nunca va por
 delante del código, porque si se aplica la migración antes de fusionar, la API
 que está publicada se encuentra con tablas que no sabe que existen.
@@ -147,7 +147,53 @@ ha roto nada de lo anterior**, que es de lo que se trata.
 
 ---
 
-## Paso 3 · Mirarlo en tu móvil
+## Paso 3 · Desplegar la API
+
+> **Este paso me lo dejé fuera la primera vez, y es el que rompe todo.**
+>
+> Las cuatro aplicaciones **se publican solas** al fusionar. La API **no**: se
+> despliega a mano, a propósito, porque «desplegar la API es lo que pone los
+> datos de verdad al alcance de cualquiera con un navegador, y eso se hace
+> mirando» (está escrito en su propio flujo).
+>
+> Así que después de fusionar hay un rato en el que la pantalla de Inventario
+> está publicada y **el servidor no conoce ninguna de sus operaciones**. Entrar
+> en Inventario devuelve «Eso ya no está» en cada pantalla, y por fuera parece
+> que el módulo está roto.
+
+**Dónde:** en la web de GitHub, en la pestaña **Actions**.
+
+1. Entra en **Actions**.
+2. En la lista de la izquierda, elige **«Desplegar la API»**.
+3. A la derecha sale un botón **Run workflow**. Púlsalo.
+4. Te pide escribir una palabra para confirmar. Escribe **desplegar**, tal cual,
+   en minúsculas.
+5. Dale a **Run workflow**.
+
+**Qué tiene que salir si va bien:** aparece una ejecución nueva, tarda un par de
+minutos y acaba con un tick verde. El último paso se llama «Comprobar que
+responde».
+
+Y para asegurarte desde tu ordenador:
+
+```bash
+pnpm bd:comprobar-api
+```
+
+Al final, en la sección **«La API DESPLEGADA, que es otra cosa»**, tiene que
+decir:
+
+```
+OK   la API desplegada responde
+OK   y conoce todas las consultas que tiene el codigo
+```
+
+Si en vez de eso dice **«FALTA DESPLEGARLA»** con una lista de nombres, es que el
+despliegue no ha ido: repite el paso o dímelo.
+
+---
+
+## Paso 4 · Mirarlo en tu móvil
 
 Esto es la regla 11 del Plan, y es la que de verdad cierra el módulo: **nada se
 da por terminado sin verlo en un móvil de verdad**. De los catorce fallos de M5,
@@ -158,14 +204,14 @@ seis los encontraste tú aquí, no las pruebas.
 Haz este recorrido y ve fijándote en si algo **no encaja con lo que la pantalla
 promete**, que es lo que se escapa siempre:
 
-### 3.1 · Abrir Inventario
+### 4.1 · Abrir Inventario
 
 Abre la rueda de apps y entra en **Inventario**.
 
 **Qué tiene que salir:** la pestaña **Hoy**, y como todavía no tienes género, una
 tarjeta que dice **«La cámara está vacía»** y te manda a Productos.
 
-### 3.2 · Ponerte unos ejemplos, para ver cómo funciona
+### 4.2 · Ponerte unos ejemplos, para ver cómo funciona
 
 Ve a la pestaña **Productos** y pulsa **«Ponme unos ejemplos para verlo»**.
 
@@ -177,7 +223,7 @@ del mínimo, con una frase del tipo **«se agota el jueves a las 19:40»**.
 que venir siempre con **cuántos días se han mirado**, y la previsión con **su
 día y su hora**.
 
-### 3.3 · Dar de alta un producto de verdad, cronometrándolo
+### 4.3 · Dar de alta un producto de verdad, cronometrándolo
 
 Pulsa **«Añadir producto»**. Escribe algo que compres, por ejemplo `aceite`.
 
@@ -192,7 +238,7 @@ paso se te va el tiempo: eso es un fallo del módulo, no tuyo.
 Al guardar, si todavía tienes ejemplos, la pantalla te ofrece quitarlos. **No los
 quita sola.**
 
-### 3.4 · Mover género
+### 4.4 · Mover género
 
 Entra en el producto que acabas de crear y prueba los tres botones:
 
@@ -207,7 +253,7 @@ la fecha.
 **Y lo importante:** al ajustar, si le dices que hay 4, tiene que quedarse en 4.
 No te puede bloquear por cuadrar.
 
-### 3.5 · Los precios
+### 4.5 · Los precios
 
 En la ficha, pulsa **«Cambiar el precio»** y sube el precio.
 
@@ -215,7 +261,7 @@ En la ficha, pulsa **«Cambiar el precio»** y sube el precio.
 histórico, **el precio viejo sigue estando**, con su fecha de hasta cuándo valió.
 Eso es lo que hace que dentro de seis meses puedas ver qué te ha subido.
 
-### 3.6 · Y lo que hay que mirar con lupa
+### 4.6 · Y lo que hay que mirar con lupa
 
 Estas tres son las que más se escapan, y son las que encontraste tú en M5:
 

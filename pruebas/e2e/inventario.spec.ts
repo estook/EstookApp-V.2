@@ -596,3 +596,150 @@ test('el buscador de la cabecera encuentra un producto', async ({ request }) => 
   expect(encontrado.estado).toBe(200);
   expect((encontrado.datos ?? []).some((r) => r.tipo === 'producto')).toBe(true);
 });
+
+// ── 10 · Guardar la ficha sin tocar nada no cambia nada ─────────────────────
+
+test('corregir el nombre no le borra al producto lo demás', async ({ request }) => {
+  // ══════════════════════════════════════════════════════════════════════════
+  // Esta prueba existe porque el repaso de cierre encontró cuatro pérdidas de
+  // datos silenciosas en el mismo formulario
+  // ══════════════════════════════════════════════════════════════════════════
+  //
+  // `cambiar_producto` recibe **la ficha entera**, que es lo correcto y está
+  // razonado. Pero la pantalla no la rellenaba entera: la categoría y el
+  // proveedor empezaban vacíos, la categoría fiscal iba fija a «alimento» y las
+  // notas a nulo.
+  //
+  // Resultado: corregir una errata en el nombre le quitaba al producto **su
+  // categoría, su proveedor y sus notas, y le cambiaba el impuesto**. Sin decir
+  // nada, y sin romper ninguna prueba: el comando hacía justo lo que se le
+  // pedía. El fallo estaba en lo que se le pedía.
+  //
+  // Se comprueba por la API a pelo y no por la pantalla a propósito: lo que hay
+  // que fijar es **el contrato**, que es lo que se rompió. Que el formulario lo
+  // mande bien se ve mirándolo, y con la ficha ya rellena delante.
+  const token = await tokenDe(request, ROSA);
+
+  const proveedor = await ejecutar<{ proveedorId: string }>(request, token, 'crear_proveedor', {
+    nombre: `Bodega de prueba ${Date.now()}`,
+  });
+  const categoria = await ejecutar<{ categoriaId: string }>(request, token, 'crear_categoria', {
+    nombre: `Vinos de prueba ${Date.now()}`,
+  });
+
+  const creado = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre: `Vino de prueba ${Date.now()}`,
+    formato: 'Caja de 6 botellas',
+    factor: 6,
+    unidad_de_uso: 'ud',
+    rendimiento: 1,
+    categoria_fiscal: 'bebida_alcoholica',
+    categoria_id: categoria.datos?.categoriaId,
+    proveedor_id: proveedor.datos?.proveedorId,
+    notas: 'Lo trae los martes',
+    precio_centimos: 4200,
+  });
+
+  const productoId = creado.datos?.productoId ?? '';
+
+  const antes = await consultar<{
+    producto: {
+      nombre: string;
+      categoriaId: string | null;
+      proveedorId: string | null;
+      categoriaFiscal: string;
+      notas: string | null;
+    };
+  }>(request, token, 'un_producto', { producto_id: productoId });
+
+  // El servidor tiene que devolver **los identificadores**, no solo los nombres.
+  // Sin ellos la pantalla no puede preseleccionar, y ahí empezaba todo.
+  expect(antes.datos?.producto.categoriaId, 'falta el id de la categoría').not.toBeNull();
+  expect(antes.datos?.producto.proveedorId, 'falta el id del proveedor').not.toBeNull();
+  expect(antes.datos?.producto.categoriaFiscal).toBe('bebida_alcoholica');
+  expect(antes.datos?.producto.notas).toBe('Lo trae los martes');
+
+  // Y ahora se guarda la ficha **tal cual llegó**, cambiando solo el nombre, que
+  // es lo que hace quien corrige una errata.
+  const corregido = `Vino con el nombre corregido ${Date.now()}`;
+
+  const cambio = await ejecutar(request, token, 'cambiar_producto', {
+    producto_id: productoId,
+    nombre: corregido,
+    categoria_id: antes.datos?.producto.categoriaId,
+    formato: 'Caja de 6 botellas',
+    factor: 6,
+    unidad_de_uso: 'ud',
+    rendimiento: 1,
+    categoria_fiscal: antes.datos?.producto.categoriaFiscal,
+    alergenos: [],
+    peso_variable: false,
+    codigo_de_barras: null,
+    minimo: null,
+    proveedor_id: antes.datos?.producto.proveedorId,
+    notas: antes.datos?.producto.notas,
+  });
+
+  expect(cambio.estado).toBe(200);
+
+  const despues = await consultar<{
+    producto: {
+      nombre: string;
+      categoriaId: string | null;
+      proveedorId: string | null;
+      categoriaFiscal: string;
+      notas: string | null;
+    };
+  }>(request, token, 'un_producto', { producto_id: productoId });
+
+  expect(despues.datos?.producto.nombre).toBe(corregido);
+
+  // **Y lo demás sigue exactamente igual.** Sobre todo el impuesto: un vino
+  // guardado como «alimento» tributa mal, y eso no se nota hasta la declaración.
+  expect(despues.datos?.producto.categoriaId, 'se ha perdido la categoría').toBe(
+    antes.datos?.producto.categoriaId,
+  );
+  expect(despues.datos?.producto.proveedorId, 'se ha perdido el proveedor').toBe(
+    antes.datos?.producto.proveedorId,
+  );
+  expect(despues.datos?.producto.categoriaFiscal, 'le ha cambiado el impuesto').toBe(
+    'bebida_alcoholica',
+  );
+  expect(despues.datos?.producto.notas, 'se han borrado las notas').toBe('Lo trae los martes');
+});
+
+// ── 11 · Y renombrar a uno que ya existe se dice en cristiano ───────────────
+
+test('renombrar a un nombre ya usado no da «se nos ha roto algo»', async ({ request }) => {
+  // «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría,
+  // parte 5). Sin la comprobación, el índice único saltaba sin traducir y salía
+  // un 500 diciendo que se había roto algo, que es mentira: es que ya hay otro
+  // que se llama así.
+  const token = await tokenDe(request, ROSA);
+  const yaExiste = `Tomillo de prueba ${Date.now()}`;
+
+  await ejecutar(request, token, 'crear_producto', { nombre: yaExiste });
+  const otro = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre: `Romero de prueba ${Date.now()}`,
+  });
+
+  const choque = await ejecutar(request, token, 'cambiar_producto', {
+    producto_id: otro.datos?.productoId,
+    nombre: yaExiste,
+    categoria_id: null,
+    formato: null,
+    factor: 1,
+    unidad_de_uso: 'ud',
+    rendimiento: 1,
+    categoria_fiscal: 'alimento',
+    alergenos: [],
+    peso_variable: false,
+    codigo_de_barras: null,
+    minimo: null,
+    proveedor_id: null,
+    notas: null,
+  });
+
+  // 409 y no 500: es «ya hecho», del catálogo de errores en cristiano.
+  expect(choque.estado, 'un nombre repetido no es un fallo nuestro').not.toBe(500);
+});

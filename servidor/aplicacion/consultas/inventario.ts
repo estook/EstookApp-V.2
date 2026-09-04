@@ -50,6 +50,16 @@ export interface ProductoEnLista {
   readonly id: string;
   readonly nombre: string;
   readonly categoria: string | null;
+  /**
+   * Los identificadores, y no solo los nombres.
+   *
+   * Sin ellos la ficha **no podía preseleccionar nada**, y al guardar mandaba
+   * nulo: editar el nombre de un producto le borraba la categoría y el
+   * proveedor sin decir nada. Un nombre sirve para enseñar; para volver a
+   * guardar hace falta el identificador.
+   */
+  readonly categoriaId: string | null;
+  readonly proveedorId: string | null;
   readonly formato: string | null;
   readonly unidadDeUso: string;
   readonly factor: number;
@@ -60,6 +70,9 @@ export interface ProductoEnLista {
   readonly activo: boolean;
   readonly proveedor: string | null;
   readonly codigoDeBarras: string | null;
+  /** Decide el impuesto que lleva lo que se venda. Nunca se supone. */
+  readonly categoriaFiscal: string;
+  readonly notas: string | null;
 
   readonly cantidad: number;
   readonly minimo: number | null;
@@ -135,6 +148,8 @@ interface FilaDeProducto {
   id: string;
   nombre: string;
   categoria: string | null;
+  categoria_id: string | null;
+  proveedor_id: string | null;
   formato: string | null;
   unidad_de_uso: string;
   factor: string;
@@ -145,6 +160,8 @@ interface FilaDeProducto {
   activo: boolean;
   proveedor: string | null;
   codigo_de_barras: string | null;
+  categoria_fiscal: string;
+  notas: string | null;
   minimo: string | null;
   cantidad: string | null;
   coste_medio: string | null;
@@ -184,7 +201,8 @@ async function leerProductos(
   const desde = masDias(hoy, -VENTANA_DE_CONSUMO);
 
   const filas = await contexto.sql<FilaDeProducto[]>`
-    select p.id, p.nombre, c.nombre as categoria, p.formato,
+    select p.id, p.nombre, c.nombre as categoria, p.categoria_id, p.proveedor_id,
+           p.categoria_fiscal::text as categoria_fiscal, p.notas, p.formato,
            p.unidad_de_uso::text as unidad_de_uso,
            p.factor::text as factor, p.rendimiento::text as rendimiento,
            p.sin_verificar, p.peso_variable, p.es_ejemplo, p.activo,
@@ -262,6 +280,10 @@ function componer(fila: FilaDeProducto, hoy: FechaOperativa, desde: FechaOperati
     id: fila.id,
     nombre: fila.nombre,
     categoria: fila.categoria,
+    categoriaId: fila.categoria_id,
+    proveedorId: fila.proveedor_id,
+    categoriaFiscal: fila.categoria_fiscal,
+    notas: fila.notas,
     formato: fila.formato,
     unidadDeUso,
     factor: Number(fila.factor),

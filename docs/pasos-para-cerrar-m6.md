@@ -43,13 +43,24 @@ proyecto.
 
 ### 2.1 · Traerte lo fusionado
 
+Son dos comandos, **uno detrás de otro**:
+
 ```bash
-git checkout main && git pull
+git checkout main
 ```
 
-**Qué tiene que salir:** unas líneas que acaban diciendo algo parecido a
-`Fast-forward` y una lista de ficheros. Si dice `Already up to date.`, es que ya
-lo tenías: sigue igual.
+```bash
+git pull
+```
+
+**Qué tiene que salir:** el primero, `Switched to branch 'main'`. El segundo, una
+lista de ficheros que acaba en algo parecido a `Fast-forward`. Si dice
+`Already up to date.`, es que ya lo tenías: sigue igual.
+
+> **Por qué van separados y no en una línea con `&&`.** Porque la terminal de
+> Windows es PowerShell, y **PowerShell no entiende `&&`**: contesta «El token
+> '&&' no es un separador de instrucciones válido en esta versión». Si algún día
+> ves ese error, es siempre eso: parte el comando en dos.
 
 ### 2.2 · Ver qué falta por aplicar, antes de tocar nada
 

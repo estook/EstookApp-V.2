@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Aviso, Boton, Campo, ErrorEnCristiano, Logo, clases } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { elAparato, hayApi } from '../datos/cliente.ts';
+import { olvidarLosAplazamientos } from '../pantallas/recordatorios.ts';
 import { usarSesion } from './Sesion.tsx';
 
 /**
@@ -72,6 +73,11 @@ export function Entrar() {
     // lo decide `Puerta` mirando `quien_soy`, que es un solo dueno (regla 6). Si
     // esta pantalla tambien navegara, habria dos sitios decidiendo lo mismo y un
     // dia dirian cosas distintas.
+    // Entrar con contrasena o con PIN es sentarse a hacer cosas. Los avisos que
+    // alguien aplazo con un «recuerdamelo» vuelven aqui: sin esto, «recuerdamelo»
+    // acababa siendo «no me lo ensenes nunca mas».
+    olvidarLosAplazamientos();
+
     await entrar(respuesta.datos.token);
     setEnviando(false);
   }

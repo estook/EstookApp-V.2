@@ -7,7 +7,12 @@ import { cambiarMiIdioma } from './comandos/cambiar-mi-idioma.ts';
 import { cerrarSesion } from './comandos/cerrar-sesion.ts';
 import { entrarEnDemostracion, salirDeLaDemostracion } from './comandos/demostracion.ts';
 import { quitarLosEjemplos } from './comandos/ejemplos.ts';
-import { retomarElAlta, saltarPaso, terminarElAlta } from './comandos/el-alta.ts';
+import {
+  ocultarElRecordatorio,
+  retomarElAlta,
+  saltarPaso,
+  terminarElAlta,
+} from './comandos/el-alta.ts';
 import {
   guardarDondeEsta,
   guardarRegimenFiscal,
@@ -131,6 +136,7 @@ export const catalogo = {
     [saltarPaso.nombre]: saltarPaso,
     [terminarElAlta.nombre]: terminarElAlta,
     [retomarElAlta.nombre]: retomarElAlta,
+    [ocultarElRecordatorio.nombre]: ocultarElRecordatorio,
     // M5 · importar el equipo desde un fichero.
     [proponerImportacion.nombre]: proponerImportacion,
     [confirmarImportacion.nombre]: confirmarImportacion,

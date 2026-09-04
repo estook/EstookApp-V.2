@@ -217,16 +217,40 @@ test.describe('la rueda de apps', () => {
   test('funciona con teclado: flechas y Enter', async ({ page }) => {
     // B8: «toda la app manejable con teclado». Sin esto, la rueda seria la unica
     // parte de Estook por la que no se puede pasar sin raton.
+    //
+    // Esta prueba esperaba Escandallos, porque el cursor arrancaba en el primer
+    // sector y una flecha lo movia al segundo. Eso era justo el fallo: arrancar
+    // resaltando Inventario se lee como «estas aqui», y desde el Panel era
+    // mentira. Ahora el cursor arranca **en ninguna**, asi que la primera flecha
+    // a la derecha lleva al primer sector y la primera a la izquierda al ultimo.
     await comoGerente(page);
     await abrirLaRueda(page);
 
     const menu = page.getByRole('menu', { name: 'Elige una app' });
     await menu.focus();
     await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');
 
-    // El segundo sector es Escandallos.
+    // Primera flecha, el primer sector; segunda, el segundo: Escandallos.
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Escandallos');
+  });
+
+  test('la primera flecha a la izquierda lleva a la ultima, no a la penultima', async ({
+    page,
+  }) => {
+    // Desde «ninguna», hacia atras es la ultima. Sin este caso, el cursor en -1
+    // caeria en la penultima al restar y nadie se enteraria.
+    await comoGerente(page);
+    await abrirLaRueda(page);
+
+    const menu = page.getByRole('menu', { name: 'Elige una app' });
+    await menu.focus();
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('Enter');
+
+    // La ultima de la rueda es Cuaderno.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Cuaderno');
   });
 
   test('funciona con arrastre desde el centro', async ({ page }) => {

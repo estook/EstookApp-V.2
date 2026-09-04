@@ -41,6 +41,36 @@ export const saltarPaso = comando<{ paso: string }, { paso: string; siguiente: n
 });
 
 /**
+ * «No me lo recuerdes más» · la tarjeta del Panel (0024).
+ *
+ * La tarjeta «Termina de configurar tu local» iba arriba del todo y **no se
+ * podía quitar**: quien lleva el local solo y no va a invitar a nadie la tenía
+ * ahí para siempre, ocupando el primer sitio del Panel.
+ *
+ * Esto **no marca nada como hecho ni como saltado**: lo que falta sigue
+ * faltando, el progreso sigue siendo el mismo y Ajustes sigue pudiendo retomar
+ * cualquier paso. Solo apaga el recordatorio, y se apaga en el servidor para que
+ * apagarlo en el ordenador lo apague también en el teléfono.
+ */
+export const ocultarElRecordatorio = comando<Record<string, never>, { oculto: boolean }>({
+  nombre: 'ocultar_el_recordatorio_del_alta',
+  entrada: z.object({}).strict(),
+  exige: 'app.ajustes',
+
+  async ejecutar(contexto) {
+    const localId = elLocalDeLaSesion(contexto);
+
+    await contexto.sql`
+      update estook.local
+         set panel_recordatorio_oculto = true
+       where id = ${localId}
+    `;
+
+    return { oculto: true };
+  },
+});
+
+/**
  * Terminar el alta.
  *
  * A partir de aquí, la quinta comprobación al entrar deja de mandar al alta y

@@ -25,6 +25,8 @@ export interface ElAltaDelLocal {
    * los pasos siguientes.
    */
   readonly retomadoPara: PasoDelAlta | null;
+  /** Si alguien pidio que el Panel deje de recordarle lo que falta (0024). */
+  readonly recordatorioOculto: boolean;
   readonly progreso: Progreso;
 
   readonly ficha: {

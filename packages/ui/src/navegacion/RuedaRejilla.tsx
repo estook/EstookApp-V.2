@@ -14,9 +14,11 @@ export interface RuedaRejillaProps {
   readonly apps: readonly App[];
   readonly pendientes: Readonly<Record<string, number>>;
   readonly alElegir: (indice: number) => void;
+  /** En que app se esta. La rejilla dice lo mismo que la rueda: aqui estas. */
+  readonly appActiva?: string | null;
 }
 
-export function RuedaRejilla({ apps, pendientes, alElegir }: RuedaRejillaProps) {
+export function RuedaRejilla({ apps, pendientes, alElegir, appActiva = null }: RuedaRejillaProps) {
   return (
     <ul aria-label="Elige una app" className="grid w-full max-w-[28rem] grid-cols-2 gap-e3">
       {apps.map((app, i) => {
@@ -27,10 +29,11 @@ export function RuedaRejilla({ apps, pendientes, alElegir }: RuedaRejillaProps) 
           <li key={app.id}>
             <button
               type="button"
+              aria-current={app.id === appActiva ? 'page' : undefined}
               onClick={() => {
                 alElegir(i);
               }}
-              className="flex h-full w-full min-h-toque-cocina flex-col gap-e1 rounded-grande border border-borde bg-superficie p-e3 text-left"
+              className="flex h-full w-full min-h-toque-cocina flex-col gap-e1 rounded-grande border border-borde bg-superficie p-e3 text-left aria-[current]:border-naranja aria-[current]:bg-naranja-suave"
             >
               <span className="flex items-center gap-e2">
                 <span style={{ color: app.acento }}>
@@ -38,6 +41,11 @@ export function RuedaRejilla({ apps, pendientes, alElegir }: RuedaRejillaProps) 
                 </span>
                 <span className="min-w-0 flex-1 truncate text-cuerpo font-semibold">
                   {app.nombre}
+                  {app.id === appActiva && (
+                    <span className="ml-e1 text-etiqueta font-normal text-texto-suave">
+                      · estás aquí
+                    </span>
+                  )}
                 </span>
                 {cuantos > 0 && (
                   <span

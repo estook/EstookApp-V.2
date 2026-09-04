@@ -47,6 +47,13 @@ export interface ElAlta {
    * volvía a invitar a su equipo se encontraba otra vez el paseo entero.
    */
   readonly retomadoPara: PasoDelAlta | null;
+  /**
+   * Si alguien pidió que el Panel deje de recordarle lo que falta (0024).
+   *
+   * No cambia nada de lo de arriba: los pasos pendientes siguen pendientes y el
+   * progreso sigue siendo el que es. Solo dice si la tarjeta se pinta.
+   */
+  readonly recordatorioOculto: boolean;
   readonly progreso: Progreso;
 
   /** Lo respondido hasta ahora, para poder volver atrás y corregir. */
@@ -106,6 +113,7 @@ export const elAlta = consulta<Record<string, never>, ElAlta>({
         onboarding_saltados: string[];
         onboarding_terminado: boolean;
         onboarding_retomado_para: string | null;
+        panel_recordatorio_oculto: boolean;
         tipo: string | null;
         direccion: string | null;
         codigo_postal: string | null;
@@ -124,7 +132,7 @@ export const elAlta = consulta<Record<string, never>, ElAlta>({
     >`
       select id, nombre, es_ejemplo, organizacion_id,
              onboarding_paso, onboarding_saltados, onboarding_terminado,
-             onboarding_retomado_para,
+             onboarding_retomado_para, panel_recordatorio_oculto,
              tipo::text as tipo, direccion, codigo_postal, poblacion, provincia, telefono,
              zona_horaria, to_char(hora_de_corte, 'HH24:MI') as hora_de_corte,
              territorio::text as territorio, regimen::text as regimen,
@@ -181,6 +189,7 @@ export const elAlta = consulta<Record<string, never>, ElAlta>({
       saltados,
       terminado: local.onboarding_terminado,
       retomadoPara: (local.onboarding_retomado_para as PasoDelAlta | null) ?? null,
+      recordatorioOculto: local.panel_recordatorio_oculto,
       progreso: comoVa({
         paso: local.onboarding_paso,
         saltados,

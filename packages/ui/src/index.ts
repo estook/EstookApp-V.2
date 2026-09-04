@@ -71,6 +71,9 @@ export { Deshacer } from './componentes/Deshacer.tsx';
 export { BarraMovil, BarraDeApp } from './navegacion/BarraMovil.tsx';
 export type { BarraMovilProps, BarraDeAppProps } from './navegacion/BarraMovil.tsx';
 
+export { BarraArribaMovil } from './navegacion/BarraArribaMovil.tsx';
+export type { BarraArribaMovilProps } from './navegacion/BarraArribaMovil.tsx';
+
 export { BarraEscritorio } from './navegacion/BarraEscritorio.tsx';
 export type { BarraEscritorioProps } from './navegacion/BarraEscritorio.tsx';
 

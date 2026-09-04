@@ -38,6 +38,22 @@ export interface RuedaDeAppsProps {
   readonly alElegir: (app: App) => void;
   /** Los pendientes de cada app, por identificador. */
   readonly pendientes?: Readonly<Record<string, number>>;
+  /**
+   * En que app se esta, si se esta en alguna.
+   *
+   * ── El fallo que esto arregla ──────────────────────────────────────────────
+   *
+   * La rueda abria siempre con el primer sector resaltado en naranja, porque el
+   * cursor del teclado empezaba en cero. En un movil eso no se lee como «por
+   * aqui empiezan las flechas»: se lee como **«estas aqui»**. Abriendola desde
+   * el Panel, la rueda decia que estabas en Inventario. Lo vio Richi en el
+   * telefono.
+   *
+   * Ahora el cursor empieza donde de verdad estas, y **en ninguna parte** si
+   * estas en el Panel o en Ajustes: entonces no se resalta nada, que es la
+   * verdad.
+   */
+  readonly appActiva?: string | null;
 }
 
 export function RuedaDeApps({
@@ -46,9 +62,11 @@ export function RuedaDeApps({
   apps,
   alElegir,
   pendientes = {},
+  appActiva = null,
 }: RuedaDeAppsProps) {
   const enRejilla = usarMovimientoReducido();
-  const [señalada, setSeñalada] = useState(0);
+  /** El cursor. `-1` es «en ninguna», y entonces no se resalta ningun sector. */
+  const [señalada, setSeñalada] = useState(-1);
   const dialogo = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -56,12 +74,16 @@ export function RuedaDeApps({
     if (!el) return;
 
     if (abierta && !el.open) {
-      setSeñalada(0);
+      setSeñalada(apps.findIndex((app) => app.id === appActiva));
       el.showModal();
       // El foco al menu, para que las flechas funcionen desde el primer momento.
       el.querySelector<SVGSVGElement>('svg[role="menu"]')?.focus();
     }
     if (!abierta && el.open) el.close();
+    // `apps` y `appActiva` no entran en las dependencias a proposito: esto solo
+    // tiene que correr cuando la rueda se abre o se cierra. Si entraran, un
+    // cambio de permisos con la rueda abierta le movería el cursor al dedo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [abierta]);
 
   useEffect(() => {
@@ -97,7 +119,14 @@ export function RuedaDeApps({
 
       if (salto !== undefined) {
         evento.preventDefault();
-        setSeñalada((antes) => (antes + salto + apps.length) % apps.length);
+        setSeñalada((antes) =>
+          // Desde «ninguna», hacia delante es la primera y hacia atras la ultima.
+          antes < 0
+            ? salto > 0
+              ? 0
+              : apps.length - 1
+            : (antes + salto + apps.length) % apps.length,
+        );
         return;
       }
 
@@ -127,12 +156,18 @@ export function RuedaDeApps({
             Tu acceso todavía no incluye ninguna app. Pídeselo a quien lleva el local.
           </p>
         ) : enRejilla ? (
-          <RuedaRejilla apps={apps} pendientes={pendientes} alElegir={elegir} />
+          <RuedaRejilla
+            apps={apps}
+            pendientes={pendientes}
+            alElegir={elegir}
+            appActiva={appActiva}
+          />
         ) : (
           <RuedaCirculo
             apps={apps}
             pendientes={pendientes}
             señalada={señalada}
+            appActiva={appActiva}
             alSenalar={setSeñalada}
             alElegir={elegir}
             alPulsarTecla={alPulsarTecla}

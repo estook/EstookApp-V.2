@@ -867,3 +867,75 @@ describe('crear el segundo local de una cadena', () => {
     ).rejects.toThrow();
   });
 });
+
+// ── «No me lo recuerdes más» · la 0024 ───────────────────────────────────────
+
+/**
+ * La tarjeta del Panel que no se podía quitar.
+ *
+ * «Termina de configurar tu local» iba la primera de todas y no había forma de
+ * apagarla mientras quedara un paso sin responder. Hay pasos que alguien puede
+ * no querer responder nunca: quien lleva el local solo no va a invitar a nadie.
+ * Lo vio Richi en el móvil.
+ *
+ * Lo que se comprueba aquí es lo que sostiene el arreglo, y es de la base:
+ * apagar el recordatorio **no da nada por hecho**. Si lo hiciera, la barra de
+ * progreso mentiría y Ajustes dejaría de ofrecer lo que falta.
+ */
+describe('apagar el recordatorio del alta', () => {
+  it('nace apagado, o sea sin apagar: la tarjeta sale por defecto', async () => {
+    const [lola] = await comoDuena<{ oculto: boolean }>(
+      `select panel_recordatorio_oculto as oculto from estook.local where codigo = 'casa-lola'`,
+    );
+    expect(lola?.oculto).toBe(false);
+  });
+
+  it('la gerente puede apagarlo en su local, y no toca ningún paso', async () => {
+    const rosa = await base.personaPorCorreo(ROSA);
+
+    const [antes] = await comoDuena<{ paso: number; saltados: string[] }>(
+      `select onboarding_paso as paso, onboarding_saltados as saltados
+         from estook.local where codigo = 'bar-centro'`,
+    );
+
+    await base.comoPersona(rosa, () =>
+      base.bd.query(
+        `update estook.local set panel_recordatorio_oculto = true where codigo = 'bar-centro'`,
+      ),
+    );
+
+    const [despues] = await comoDuena<{ oculto: boolean; paso: number; saltados: string[] }>(
+      `select panel_recordatorio_oculto as oculto,
+              onboarding_paso as paso, onboarding_saltados as saltados
+         from estook.local where codigo = 'bar-centro'`,
+    );
+
+    expect(despues?.oculto).toBe(true);
+    // Y lo importante: lo que falta sigue faltando exactamente igual.
+    expect(despues?.paso).toBe(antes?.paso);
+    expect(despues?.saltados).toEqual(antes?.saltados);
+
+    // Se deja como estaba, que otras pruebas leen este local.
+    await comoDuena(
+      `update estook.local set panel_recordatorio_oculto = false where codigo = 'bar-centro'`,
+    );
+  });
+
+  it('y no se puede apagar el de un local ajeno', async () => {
+    // Rosa lleva Bar Centro. Bar Puerto es de otra organización, y las políticas
+    // de `local` se escriben contra `locales_visibles()`: el `update` no toca
+    // ninguna fila en vez de tocar la de otro.
+    const rosa = await base.personaPorCorreo(ROSA);
+
+    await base.comoPersona(rosa, () =>
+      base.bd.query(
+        `update estook.local set panel_recordatorio_oculto = true where codigo = 'bar-puerto'`,
+      ),
+    );
+
+    const [puerto] = await comoDuena<{ oculto: boolean }>(
+      `select panel_recordatorio_oculto as oculto from estook.local where codigo = 'bar-puerto'`,
+    );
+    expect(puerto?.oculto).toBe(false);
+  });
+});

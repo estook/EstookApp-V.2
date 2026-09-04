@@ -155,12 +155,8 @@ test.describe('la barra de escritorio', () => {
     // cosas que más rápido rompen la confianza en una aplicación.
     await entrar(page);
 
-    await page
-      .getByRole('banner')
-      .getByRole('button', { name: /^Fogón/ })
-      .click();
-    await expect(page.getByRole('heading', { name: 'Fogón' })).toBeVisible();
-    await expect(page.getByText(/módulo 22/)).toBeVisible();
+    await page.getByRole('banner').getByRole('button', { name: 'Avisos' }).click();
+    await expect(page.getByRole('heading', { name: 'Los avisos' })).toBeVisible();
     await page.getByRole('button', { name: 'Entendido' }).click();
 
     await page.getByRole('banner').getByRole('button', { name: 'Chat del equipo' }).click();
@@ -207,14 +203,11 @@ test.describe('la barra de arriba en móvil', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
   });
 
-  test('Fogón contesta qué es y cuándo llega', async ({ page }) => {
-    // La pregunta de Richi —«¿y la IA? En móvil no hay burbuja, no hay nada»—
-    // ahora tiene respuesta dentro del producto, y no solo en un documento.
+  test('los avisos dicen qué serán, en vez de no hacer nada', async ({ page }) => {
     await entrar(page);
 
-    await page.getByRole('banner').getByRole('button', { name: 'Fogón' }).click();
-    await expect(page.getByRole('heading', { name: 'Fogón' })).toBeVisible();
-    await expect(page.getByText(/módulo 22/)).toBeVisible();
+    await page.getByRole('banner').getByRole('button', { name: 'Avisos' }).click();
+    await expect(page.getByRole('heading', { name: 'Los avisos' })).toBeVisible();
   });
 });
 
@@ -285,5 +278,113 @@ test.describe('las tarjetas del Panel', () => {
     // Volver a entrar, sí. Y sin vaciar el navegador, que sería hacer trampa.
     await volverAEntrar(page);
     await expect(tarjeta).toBeVisible();
+  });
+});
+
+// ── Fogón · su sitio, decidido y construido antes que él ─────────────────────
+
+/**
+ * «Mejor una burbuja flotante que detecte la página en la que estés, y en el
+ *  escritorio arriba a la derecha en el símbolo se abre el chat.»
+ *
+ * Está escrito en `docs/decisiones/0015`. Lo que estas pruebas fijan es lo que
+ * de verdad se puede romper sin que nadie se entere:
+ *
+ *   · que la burbuja **esté en el móvil y no en el escritorio**, donde ya está
+ *     el icono de arriba: dos puertas a lo mismo en la misma pantalla es una de
+ *     más;
+ *   · que las dos abran **la misma ventana**;
+ *   · y que la ventana **sepa en qué pantalla estás**, que es la mitad de la
+ *     promesa de M22.
+ *
+ * Lo que no se prueba aquí es la conversación, porque no existe: es M22 entera.
+ */
+test.describe('Fogón', () => {
+  test.describe('en el móvil', () => {
+    test.use({ viewport: { width: 375, height: 667 } });
+
+    test('la burbuja está, y se ve de verdad por encima de la barra de abajo', async ({ page }) => {
+      await entrar(page);
+
+      const burbuja = page.getByRole('button', { name: 'Abrir Fogón' });
+      await expect(burbuja).toBeVisible();
+
+      // Y no basta con que exista: tiene que estar delante. Una burbuja tapada
+      // por la barra de abajo es una burbuja que no se puede pulsar.
+      expect(await seVeDeVerdad(page, '[aria-label="Abrir Fogón"]')).toBe(true);
+    });
+
+    test('va contigo: sigue estando dentro de una app', async ({ page }) => {
+      await entrar(page);
+      await page.goto(`${APP}#/inventario/productos`, { waitUntil: 'domcontentloaded' });
+
+      // Esperar al título antes de medir. `domcontentloaded` llega mientras la
+      // pantalla todavía dice «Cargando tu sesión», y preguntar ahí qué hay en un
+      // punto de la pantalla contesta que no hay nada. Costó un rojo que parecía
+      // un fallo de la burbuja y era de la prueba.
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inventario');
+
+      expect(await seVeDeVerdad(page, '[aria-label="Abrir Fogón"]')).toBe(true);
+    });
+
+    test('sabe en qué pantalla estás', async ({ page }) => {
+      await entrar(page);
+
+      // Desde el Panel.
+      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
+      await expect(page.getByText('Estás en')).toContainText('el Panel');
+      await page.keyboard.press('Escape');
+
+      // Y desde Inventario, sin que nadie se lo diga.
+      await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inventario');
+      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
+      await expect(page.getByText('Estás en')).toContainText('Inventario');
+      await expect(page.getByText(/Dictarle una merma/)).toBeVisible();
+    });
+
+    test('y dice la verdad: todavía no se puede hablar con él', async ({ page }) => {
+      // Sin casilla de escribir. Una casilla que no contesta es un control
+      // muerto, y de eso este proyecto ya lleva bastantes.
+      await entrar(page);
+      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
+
+      await expect(page.getByText('Todavía no se puede hablar con él.')).toBeVisible();
+      await expect(page.getByText(/módulo 22/)).toBeVisible();
+      await expect(page.getByRole('dialog').getByRole('textbox')).toHaveCount(0);
+    });
+  });
+
+  test.describe('en el escritorio', () => {
+    test.use({ viewport: { width: 1280, height: 800 } });
+
+    test('la burbuja NO está: ya está el icono de arriba', async ({ page }) => {
+      await entrar(page);
+
+      // Existe en el documento —es la misma aplicación— pero escondida con CSS,
+      // así que no está en el árbol de accesibilidad ni delante de nadie.
+      await expect(page.getByRole('button', { name: 'Abrir Fogón' })).toHaveCount(0);
+    });
+
+    test('el icono de arriba abre la misma ventana, y sabe dónde estás', async ({ page }) => {
+      await entrar(page);
+      await page.goto(`${APP}#/escandallos`, { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Escandallos');
+
+      await page
+        .getByRole('banner')
+        .getByRole('button', { name: /^Fogón/ })
+        .click();
+      await expect(page.getByText('Estás en')).toContainText('Escandallos');
+      await expect(page.getByText('Todavía no se puede hablar con él.')).toBeVisible();
+    });
+
+    test('Ctrl+J abre lo mismo', async ({ page }) => {
+      // B5: «⌘J Fogón». Estaba escrito, escuchado y **no abría nada**.
+      await entrar(page);
+
+      await page.keyboard.press('Control+j');
+      await expect(page.getByText('Todavía no se puede hablar con él.')).toBeVisible();
+    });
   });
 });

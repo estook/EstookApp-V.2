@@ -9,15 +9,15 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                              |
-| -------------- | -------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario        |
-| **Siguiente**  | **M7** · Proveedores y compras                                                               |
-| **Pruebas**    | 692 unitarias y de base de datos · 190 de extremo a extremo                                  |
-| **Rama**       | M6 está en la rama `m6-inventario`, **sin fusionar todavía**                                 |
-| **Publicado**  | Web, app y API vivas. La base de Supabase sigue en la `0022`: **la `0023` está sin aplicar** |
-| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                 |
-| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local        |
+|                |                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------- |
+| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario |
+| **Siguiente**  | **M7** · Proveedores y compras                                                        |
+| **Pruebas**    | 692 unitarias y de base de datos · 194 de extremo a extremo                           |
+| **Rama**       | Todo en `main`. M6 entró en el pull request #30                                       |
+| **Publicado**  | Base en la `0023` · web y app al día · **la API sin desplegar con M6**                |
+| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
+| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
 
 ---
 
@@ -66,10 +66,18 @@ específico. Si de verdad se contradicen, se para y se pregunta (regla 13).
 funciona: el alta entera, la tarjeta del Panel, invitar a mano, y la guía de
 instalación donde toca.
 
-**M6 está construido y probado, y NO está fusionado ni aplicado.** Eso es lo
-primero que hay que hacer, y son tres pasos en este orden, que es la regla 1 de
-«cómo trabajamos»: fusionar el pull request → aplicar la `0023` a Supabase →
-mirarlo en el móvil. Los pasos, uno a uno, están en
+**M6 está fusionado y la `0023` aplicada. Falta desplegar la API y mirarlo en un
+móvil.**
+
+Y el orden importa, porque **hay un paso que se olvida y rompe todo**: las cuatro
+aplicaciones se publican solas al fusionar, pero **la API se despliega a mano**.
+Entre una cosa y otra, la pantalla de Inventario está publicada y el servidor no
+conoce ninguna de sus operaciones: entrar en Inventario devuelve «Eso ya no está»
+en cada pantalla y parece que el módulo está roto.
+
+Eso ya no se puede olvidar en silencio: `pnpm bd:comprobar-api` le pregunta a la
+API **desplegada** si conoce todas las consultas del código, y si va por detrás lo
+dice con esas palabras. Los pasos están en
 [`docs/pasos-para-cerrar-m6.md`](docs/pasos-para-cerrar-m6.md).
 
 ### Lo único que sigue abierto de M5
@@ -860,7 +868,7 @@ Va en la misma transacción y no en un proceso de fondo porque **un local que se
 queda cinco minutos sin categorías es un local roto**. Está razonado entero en la
 [decisión 0014](docs/decisiones/0014-las-reacciones-entre-modulos.md).
 
-#### Seis fallos que M6 encontró, y tres eran de antes
+#### Diez fallos que M6 encontró, y cuatro eran de antes
 
 **1 · El camino de grupo de M5 no funcionaba.** `crear_local` devolvía «esto no
 está en tu acceso» **a la propietaria de una cadena de seis locales**, que tiene
@@ -939,6 +947,43 @@ Su criterio, punto por punto, es
 Y la lista de la Auditoría de flujos, pasada punto por punto, en
 [`docs/auditorias/m6.md`](docs/auditorias/m6.md).
 
+#### Y cuatro más del repaso de después de fusionar
+
+Los encontró pasar la lista de la Auditoría con el módulo ya en `main` y la base
+migrada, que es lo que pide la regla 6 de «cómo trabajamos».
+
+**7 · La API no se despliega sola, y me lo dejé fuera de los pasos.** Las cuatro
+aplicaciones se publican al fusionar; la API se despliega a mano, a propósito. Así
+que quedó la pantalla de Inventario publicada y **el servidor sin conocer ninguna
+de sus operaciones**: entrar devolvía «Eso ya no está» en cada una, y por fuera
+parecía el módulo roto.
+
+Ahora `bd:comprobar-api` le pregunta a la **API desplegada** si conoce todas las
+consultas del código, y si va por detrás lo dice con esas palabras y con la lista
+de las que le faltan. Es la comprobación que lo habría cazado antes de que nadie
+abriera la aplicación.
+
+**8 · Cuatro pérdidas de datos silenciosas en el mismo formulario.** Corregir una
+errata en el nombre de un producto **le borraba la categoría, el proveedor y las
+notas, y le cambiaba el impuesto** a «alimento». Un vino guardado así tributa como
+comida, y eso no se nota hasta la declaración.
+
+El comando hacía exactamente lo que se le pedía: recibe la ficha entera, que es lo
+correcto. El fallo estaba en lo que se le pedía, y su causa una capa más abajo:
+**el servidor mandaba los nombres y no los identificadores**, así que el
+desplegable no tenía con qué preseleccionar y salía en blanco.
+
+Se arregla en los dos sitios, y hay una prueba que guarda la ficha tal cual llegó
+y comprueba que no se ha movido nada.
+
+**9 · Y renombrar a un nombre que ya existe daba un `500`.** «Se nos ha roto algo
+por dentro», que además de feo es mentira: es que ya hay otro que se llama así.
+`crear_producto` lo decía bien desde el principio; `cambiar_producto` no.
+
+**10 · La lista de índices de trigramas de `bd:comprobar-api` se quedó en ocho.**
+Actualicé la prueba del buscador y no la herramienta, y la herramienta lo dijo
+sola en la primera pasada contra Supabase.
+
 #### Lo que M6 deja pendiente, dicho sin redondear
 
 - **No se ha mirado en un móvil de verdad** (regla 11), ni fusionado, ni aplicado
@@ -957,6 +1002,11 @@ Y la lista de la Auditoría de flujos, pasada punto por punto, en
   aparato con el que probarlo.
 - **`reactivar_producto` no tiene pantalla**: la lista de desactivados llega con
   M8. Está apuntado en la prueba con su motivo.
+- **Tres datos se guardan y todavía no los lee nadie**, y se dejan a propósito
+  porque no se pueden recuperar más tarde: `producto.producto_de_referencia_id`
+  —de qué fila del catálogo salió, que M9 necesita para copiar recetas—,
+  `movimiento_de_stock.origen` y `precio_de_producto.referencia`, que son de
+  dónde vino cada cosa y los llena M7 con los albaranes.
 - **`mis_locales`, `mis_permisos` y `un_local` siguen registradas y sin
   pantalla.** `quien_soy` las dejó sin trabajo en M4. Quitarlas de la API es una
   decisión de producto, no de un módulo de inventario, y hay que tomarla a

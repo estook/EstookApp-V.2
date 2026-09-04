@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  CATEGORIAS_FISCALES,
   NOMBRE_DEL_ALERGENO,
   NOMBRE_DEL_ESTADO,
   UNIDADES_DE_USO,
@@ -29,6 +30,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { SelectorDeCategoria } from './SelectorDeCategoria.tsx';
 import {
   COMO_SE_LLAMA_EL_MOVIMIENTO,
+  NOMBRE_DE_LA_CATEGORIA_FISCAL,
   TONO_DEL_ESTADO,
   comoDinero,
   conUnidadDeUso,
@@ -944,8 +946,24 @@ function CorregirLaFicha({
     comoPorcentaje(ficha.rendimiento).replace(' %', ''),
   );
   const [minimo, setMinimo] = useState(ficha.minimo === null ? '' : String(ficha.minimo));
-  const [categoriaId, setCategoriaId] = useState('');
-  const [proveedorId, setProveedorId] = useState('');
+  // ── Estos cuatro salían en blanco, y se llevaban el dato por delante ────────
+  //
+  // El formulario manda **la ficha entera**, así que lo que no se rellena se
+  // guarda vacío. La categoría y el proveedor empezaban en `''` —que el comando
+  // traduce a nulo—, la categoría fiscal iba fija a `alimento` y las notas a
+  // nulo. Resultado: **corregir una errata en el nombre le borraba a un producto
+  // su categoría, su proveedor y sus notas, y le cambiaba el impuesto.**
+  //
+  // Sin decir nada, y sin que ninguna prueba lo viera: el comando hacía
+  // exactamente lo que se le pedía.
+  //
+  // El fallo de fondo era que el servidor mandaba los **nombres** y no los
+  // identificadores, así que el desplegable no tenía con qué preseleccionar. Se
+  // arregla en los dos sitios: la consulta los envía y aquí se usan.
+  const [categoriaId, setCategoriaId] = useState(ficha.categoriaId ?? '');
+  const [proveedorId, setProveedorId] = useState(ficha.proveedorId ?? '');
+  const [categoriaFiscal, setCategoriaFiscal] = useState(ficha.categoriaFiscal);
+  const [notas, setNotas] = useState(ficha.notas ?? '');
   const [codigo, setCodigo] = useState(ficha.codigoDeBarras ?? '');
   const [pesoVariable, setPesoVariable] = useState(ficha.pesoVariable);
   const [guardando, setGuardando] = useState(false);
@@ -971,13 +989,13 @@ function CorregirLaFicha({
       factor: nuevoFactor,
       unidad_de_uso: unidad,
       rendimiento: nuevoRendimiento,
-      categoria_fiscal: 'alimento',
+      categoria_fiscal: categoriaFiscal,
       alergenos: producto.alergenos,
       peso_variable: pesoVariable,
       codigo_de_barras: codigo.trim() === '' ? null : codigo.trim(),
       minimo: minimo.trim() === '' ? null : Number(minimo.replace(',', '.')),
       proveedor_id: proveedorId === '' ? null : proveedorId,
-      notas: null,
+      notas: notas.trim() === '' ? null : notas.trim(),
       verificado: cambiaElCoste,
     });
 
@@ -1044,11 +1062,16 @@ function CorregirLaFicha({
           }}
         />
 
+        {/*
+          «Sin categoría» y no «Dejar «Aceites»»: ahora el desplegable **viene
+          con la suya puesta**, así que la opción vacía significa de verdad
+          quitarla. Antes decía «dejar» y hacía lo contrario.
+        */}
         <SelectorDeCategoria
           categorias={categorias}
           valor={categoriaId}
           alElegir={setCategoriaId}
-          sinElegir={ficha.categoria === null ? 'Sin categoría' : `Dejar «${ficha.categoria}»`}
+          sinElegir="Sin categoría"
         />
 
         <Campo
@@ -1102,11 +1125,39 @@ function CorregirLaFicha({
         <Selector
           etiqueta="A quién se lo compras"
           opciones={proveedores.map((p) => ({ valor: p.id, texto: p.nombre }))}
-          sinElegir={ficha.proveedor === null ? 'Sin proveedor' : `Dejar «${ficha.proveedor}»`}
+          sinElegir="Sin proveedor"
           cuandoNoHay="Todavía no tienes proveedores"
           value={proveedorId}
           onChange={(e) => {
             setProveedorId(e.currentTarget.value);
+          }}
+        />
+
+        {/*
+          El tipo impositivo, que **antes no se preguntaba y se ponía a
+          «alimento» sin avisar**. Un vino guardado así pasaba a tributar como
+          comida. Es el dato del que cuelga el impuesto de todo lo que se venda,
+          así que se elige y se ve.
+        */}
+        <Selector
+          etiqueta="Qué impuesto le corresponde"
+          ayuda="De aquí sale el IVA de lo que se venda con este producto. Un vino no tributa como una lechuga."
+          opciones={CATEGORIAS_FISCALES.map((c) => ({
+            valor: c,
+            texto: NOMBRE_DE_LA_CATEGORIA_FISCAL[c] ?? c,
+          }))}
+          value={categoriaFiscal}
+          onChange={(e) => {
+            setCategoriaFiscal(e.currentTarget.value);
+          }}
+        />
+
+        <Campo
+          etiqueta="Notas"
+          ayuda="Lo que quieras recordar de este producto. Antes se borraban al guardar."
+          value={notas}
+          onChange={(e) => {
+            setNotas(e.currentTarget.value);
           }}
         />
 

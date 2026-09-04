@@ -41,6 +41,11 @@
  * Ahi tampoco escribe nada de lo de arriba: sin entrar no se abren sesiones.
  */
 import { api } from '../../servidor/index.ts';
+// Se importa con nombre largo a proposito: mas abajo hay un `catalogo` local
+// —la fila del catalogo de referencia de M5— que tapaba a este. Lo hizo, y el
+// fallo salio como «Cannot convert undefined or null to object», que no dice
+// nada de lo que pasaba.
+import { catalogo as catalogoDeOperaciones } from '../../servidor/aplicacion/index.ts';
 import { cerrarConexion } from '../../servidor/infraestructura/postgres.ts';
 import postgres from 'postgres';
 
@@ -578,6 +583,10 @@ try {
     // M5 · la 0020, para buscar en el catalogo de referencia.
     'producto_de_referencia_buscable',
     'receta_de_referencia_buscable',
+    // M6 · la 0023. Estos dos **si** entran en `estook.buscar`: el genero y a
+    // quien se le compra son cosas tuyas, y el catalogo de referencia no.
+    'producto_buscable',
+    'proveedor_buscable',
   ];
 
   const indices = await conexion`
@@ -949,6 +958,87 @@ try {
       inventario.locales_sin_categorias === 0,
       `${inventario.locales_sin_categorias} sin categorias`,
     );
+  }
+
+  titulo('La API DESPLEGADA, que es otra cosa');
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Esta seccion existe porque M6 se publico a medias y no lo vio nadie
+  // ══════════════════════════════════════════════════════════════════════════
+  //
+  // Todo lo de arriba arranca la API **en esta maquina** contra Supabase. Eso
+  // comprueba que el codigo y la base cuadran, y es lo que tiene que comprobar.
+  //
+  // Lo que **no** comprueba es la API que hay ahi fuera, que es la que llama el
+  // movil. Y esas dos cosas se separan con una facilidad pasmosa, porque las
+  // aplicaciones se publican solas al fusionar y **la API se despliega a mano**
+  // (esta razonado en su flujo: «desplegar la API es lo que pone los datos de
+  // verdad al alcance de cualquiera con un navegador, y eso se hace mirando»).
+  //
+  // Al cerrar M6 pasó exactamente eso: la app publicada con Inventario dentro, y
+  // la API sin desplegar. Entrar en Inventario devolvia «Eso ya no está» en cada
+  // pantalla, y por fuera parecia que el modulo estaba roto.
+  //
+  // Asi que se pregunta a la de verdad. **Una operacion que el codigo tiene y la
+  // desplegada no conoce significa que falta desplegar**, y se dice con esas
+  // palabras en vez de con un numero.
+
+  // Sin la barra del final, venga como venga: `https://x.supabase.co/` y
+  // `https://x.supabase.co` tienen que dar la misma direccion.
+  let laDesplegada = process.env['VITE_SUPABASE_URL'] ?? '';
+  while (laDesplegada.endsWith('/')) laDesplegada = laDesplegada.slice(0, -1);
+
+  if (laDesplegada === '') {
+    noSePuede('no se donde vive la API desplegada · falta VITE_SUPABASE_URL en .env.local');
+  } else {
+    const raiz = `${laDesplegada}/functions/v1/api`;
+
+    // Se preguntan **sin sesion**, a proposito. La respuesta distingue las dos
+    // cosas que hacen falta y ninguna mas:
+    //
+    //   sin_sesion  la conoce, y pide identificarse. Es lo que tiene que salir.
+    //   no_existe   no la conoce: el despliegue va por detras del codigo.
+    const preguntar = async (nombre) => {
+      try {
+        const respuesta = await fetch(`${raiz}/v1/consultas/${nombre}`);
+        const cuerpo = await respuesta.json();
+        return cuerpo?.error?.codigo ?? 'la_conoce';
+      } catch {
+        return 'no_contesta';
+      }
+    };
+
+    const salud = await fetch(`${raiz}/salud`)
+      .then((r) => r.ok)
+      .catch(() => false);
+
+    comprobar('la API desplegada responde', salud);
+
+    if (salud) {
+      // Todas las consultas del catalogo, que es la lista de verdad y no una
+      // copia: si manana se anade una y no se despliega, esto lo dice solo.
+      const suyas = Object.keys(catalogoDeOperaciones.consultas);
+      const desconocidas = [];
+
+      for (const nombre of suyas) {
+        if ((await preguntar(nombre)) === 'no_existe') desconocidas.push(nombre);
+      }
+
+      comprobar(
+        'y conoce todas las consultas que tiene el codigo',
+        desconocidas.length === 0,
+        desconocidas.length === 0
+          ? `las ${suyas.length}`
+          : `FALTA DESPLEGARLA · no conoce ${desconocidas.length}: ${desconocidas.join(', ')}`,
+      );
+
+      if (desconocidas.length > 0) {
+        console.log('');
+        console.log('       La API desplegada va por detras del codigo.');
+        console.log('       Se despliega a mano: GitHub -> Actions -> «Desplegar la API»,');
+        console.log('       escribiendo «desplegar» para confirmar.');
+      }
+    }
   }
 
   await conexion.end();

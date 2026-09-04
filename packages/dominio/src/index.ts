@@ -204,7 +204,6 @@ export type { UnidadDeUso, Alergeno } from './referencia.ts';
 // en un disparador de Postgres serian dos duenos del mismo calculo (regla 6).
 export {
   TIPOS_DE_MOVIMIENTO,
-  MOVIMIENTOS_DE_M6,
   CAMARA_VACIA,
   VENTANA_DE_CONSUMO,
   DIAS_MINIMOS_PARA_PREDECIR,

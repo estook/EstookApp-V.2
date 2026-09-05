@@ -93,6 +93,8 @@ export interface PrecioEnFicha {
   readonly hasta: string | null;
   readonly vigente: boolean;
   readonly origen: string;
+  /** Quién lo puso. Nulo si esa persona ya no está. */
+  readonly quien: string | null;
 }
 
 export interface MovimientoEnFicha {

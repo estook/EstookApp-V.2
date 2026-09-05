@@ -22,7 +22,6 @@ import {
   Interruptor,
   PanelLateral,
   Selector,
-  usarDeshacer,
 } from '@estook/ui';
 import type { Centimos } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -72,7 +71,6 @@ export function FichaDeProducto({
 }) {
   const { cliente, permisos } = usarSesion();
   const cache = useQueryClient();
-  const { sePuedeDeshacer } = usarDeshacer();
 
   const [haciendo, setHaciendo] = useState<'entrada' | 'salida' | 'ajuste' | 'precio' | null>(null);
   const [editando, setEditando] = useState(false);
@@ -113,6 +111,24 @@ export function FichaDeProducto({
       {datos !== undefined && (
         <div className="flex flex-col gap-e4">
           {error !== null && <ErrorEnCristiano error={error} />}
+          {/*
+            ── Por qué esto NO lleva «Deshacer» ─────────────────────────────
+
+            Lo llevaba, y era mentira. Apuntar género abría la barra de deshacer
+            con un botón cuyo `deshacer` era `() => undefined`: se pulsaba, la
+            barra desaparecía y **el movimiento seguía apuntado**. Un botón mudo
+            ya es malo; uno que da a entender que ha revertido una entrada de
+            género es peor, porque quien lo pulsa se va creyendo que la cámara
+            dice otra cosa.
+
+            Y no se arregla poniéndole un deshacer de verdad, porque «el stock es
+            un libro de movimientos» (regla 8): el libro **solo se añade**, nunca
+            se borra ni se edita, y eso es lo que hace que se pueda auditar. Un
+            movimiento se corrige con otro movimiento, y el ajuste ya está ahí,
+            con su motivo. El contrario automático es M8.
+
+            Así que se dice, en la misma frase que confirma lo hecho.
+          */}
           {noticia !== null && (
             <Aviso
               tono="bien"
@@ -121,7 +137,11 @@ export function FichaDeProducto({
               alCerrar={() => {
                 setNoticia(null);
               }}
-            />
+            >
+              Queda apuntado en el libro con tu nombre y la hora. Si no era esto,{' '}
+              <strong>se corrige con otro movimiento</strong>: «Ajustar lo que hay», poniendo la
+              cantidad de verdad. El libro no se borra, y por eso se puede auditar.
+            </Aviso>
           )}
 
           {datos.producto.esEjemplo && (
@@ -291,6 +311,15 @@ export function FichaDeProducto({
                           {comoDinero(precio.precioCentimos)} · {precio.costePorUnidad} · desde{' '}
                           {precio.desde}
                           {precio.hasta === null ? '' : ` hasta ${precio.hasta}`}
+                          {/*
+                            Quién lo puso. Se guardaba desde el primer día de M6 y
+                            no salía de la base de datos: era la única columna de
+                            todo el esquema que se escribía sin que nadie la
+                            leyera. «Lo que hace cada uno queda con su nombre»
+                            (Manifiesto 8), y un precio mal metido se arrastra a
+                            todos los escandallos.
+                          */}
+                          {precio.quien !== null && ` · lo puso ${precio.quien}`}
                         </span>
                       </li>
                     ))}
@@ -402,19 +431,29 @@ export function FichaDeProducto({
             </dl>
           </section>
 
-          {/* ── 7 · Quitarlo de en medio ──────────────────────────────── */}
+          {/* ── 7 · Quitarlo de en medio, y traerlo de vuelta ─────────── */}
 
-          {puedeTocar && datos.producto.activo && (
-            <Desactivar
-              producto={datos}
-              alHecho={(frase) => {
-                setNoticia(frase);
-                void refrescar();
-                alCerrar();
-              }}
-              alFallar={setError}
-            />
-          )}
+          {puedeTocar &&
+            (datos.producto.activo ? (
+              <Desactivar
+                producto={datos}
+                alHecho={(frase) => {
+                  setNoticia(frase);
+                  void refrescar();
+                  alCerrar();
+                }}
+                alFallar={setError}
+              />
+            ) : (
+              <Reactivar
+                producto={datos}
+                alHecho={(frase) => {
+                  setNoticia(frase);
+                  void refrescar();
+                }}
+                alFallar={setError}
+              />
+            ))}
         </div>
       )}
 
@@ -429,13 +468,6 @@ export function FichaDeProducto({
             alHecho={(frase) => {
               setHaciendo(null);
               setNoticia(frase);
-              sePuedeDeshacer({
-                que: frase,
-                // Deshacer un movimiento no es borrarlo: el libro solo se añade.
-                // Lo que hará M8 es apuntar el contrario. Hasta entonces se dice
-                // la verdad en vez de ofrecer un botón que no revierte nada.
-                deshacer: () => undefined,
-              });
               void refrescar();
             }}
             alFallar={setError}
@@ -474,6 +506,74 @@ export function FichaDeProducto({
         </>
       )}
     </PanelLateral>
+  );
+}
+
+/**
+ * Traer de vuelta un producto desactivado.
+ *
+ * ── El agujero que esto tapa ─────────────────────────────────────────────────
+ *
+ * «Si algo se puede poner, tiene que poderse quitar» es la comprobación que más
+ * fallos ha destapado en este proyecto. Aquí estaba **al revés**: se podía
+ * quitar y **no se podía traer de vuelta**.
+ *
+ * El comando `reactivar_producto` existía desde el primer día de M6, estaba
+ * registrado en el catálogo y probado en el servidor. Lo que no había era una
+ * pantalla que lo llamara: tanto que estaba apuntado como excepción en
+ * `se-usan.prueba.ts` con la razón «no lo llama nadie todavía». Un producto
+ * desactivado desaparecía de la lista y **no había forma de volver a verlo**,
+ * salvo llamando a la API a mano.
+ *
+ * Lo destapó medir la cobertura del catálogo: de 62 operaciones, 19 no las
+ * ejecutaba ninguna prueba, y esta era una.
+ */
+function Reactivar({
+  producto,
+  alHecho,
+  alFallar,
+}: {
+  readonly producto: UnProducto;
+  readonly alHecho: (frase: string) => void;
+  readonly alFallar: (error: ErrorDeLaApi) => void;
+}) {
+  const { cliente } = usarSesion();
+  const [volviendo, setVolviendo] = useState(false);
+
+  async function reactivar() {
+    setVolviendo(true);
+    const respuesta = await cliente.ejecutar('reactivar_producto', {
+      producto_id: producto.producto.id,
+    });
+    setVolviendo(false);
+
+    if (!respuesta.ok) {
+      alFallar(respuesta.error);
+      return;
+    }
+
+    alHecho(`«${producto.producto.nombre}» vuelve a estar en tus listas.`);
+  }
+
+  return (
+    <div className="border-t border-borde pt-e3">
+      <Aviso tono="atencion" titulo="Este producto está desactivado">
+        No sale en las listas ni cuenta para nada, pero <strong>no se ha perdido</strong>: su
+        histórico de movimientos y de precios sigue entero.
+      </Aviso>
+      <div className="mt-e3">
+        <Boton
+          tono="secundario"
+          cargando={volviendo}
+          textoCargando="Activando"
+          onClick={() => {
+            void reactivar();
+          }}
+        >
+          Volver a activarlo
+        </Boton>
+      </div>
+    </div>
   );
 }
 

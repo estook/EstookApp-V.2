@@ -388,3 +388,36 @@ test.describe('Fogón', () => {
     });
   });
 });
+
+// ── El Panel, enchufado a Inventario ────────────────────────────────────────
+
+/**
+ * «Los pendientes los traen Inventario (M6) y Servicio (M12)», decía el Panel.
+ *
+ * M6 terminó y **no los trajo**: las dos tarjetas seguían con su estado vacío
+ * mientras `inventario_hoy` devolvía exactamente lo que les hacía falta. No
+ * faltaba código; faltaba que dos partes construidas se hablaran, que es el
+ * fallo más caro y el que ninguna prueba de unidad ve.
+ *
+ * Esta prueba mira **la primera pantalla del día**, que es donde se nota.
+ */
+test.describe('el Panel enseña lo de Inventario', () => {
+  test('la salud de los datos sale con números de verdad', async ({ page }) => {
+    await entrar(page);
+
+    // Rosa tiene género en su bar, así que la tarjeta deja de decir «todavía no
+    // hay nada que medir» y cuenta cuántos productos tienen precio.
+    await expect(page.getByText('Productos con precio')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Salud de los datos' })).toBeVisible();
+  });
+
+  test('quien no tiene Inventario no ve sus tarjetas', async ({ page }) => {
+    // «Las apps que el rol no tiene no aparecen **en ningún sitio**». Sara es
+    // camarera: pedirle `inventario_hoy` sería llevarle un «esto no está en tu
+    // acceso» a la primera pantalla del día.
+    await entrar(page, 'sara@ejemplo.estook.com');
+
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByText('Productos con precio')).toHaveCount(0);
+  });
+});

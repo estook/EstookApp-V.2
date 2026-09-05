@@ -36,6 +36,20 @@ export function Proveedores() {
   const { cliente, permisos } = usarSesion();
   const cache = useQueryClient();
 
+  /**
+   * Ver también los desactivados.
+   *
+   * ── El agujero que esto tapa ───────────────────────────────────────────────
+   *
+   * La ficha de proveedor lleva un interruptor para desactivarlo, y la lista
+   * pinta una etiqueta gris «desactivado» al lado del nombre. Esa etiqueta **no
+   * se veía nunca**, porque la consulta no los traía: se desactivaba uno y
+   * desaparecía para siempre, sin forma de volver a activarlo.
+   *
+   * `mis_proveedores` acepta `incluir_desactivados` desde el primer día de M6 y
+   * está probada. Lo que no había era una pantalla que lo pidiera.
+   */
+  const [verDesactivados, setVerDesactivados] = useState(false);
   const [creando, setCreando] = useState(false);
   const [editando, setEditando] = useState<ProveedorEnLista | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
@@ -43,9 +57,11 @@ export function Proveedores() {
   const puedeTocar = puedeEditar(permisos, 'app.inventario');
 
   const consulta = useQuery({
-    queryKey: ['mis_proveedores'],
+    queryKey: ['mis_proveedores', verDesactivados],
     queryFn: async (): Promise<MisProveedores> => {
-      const respuesta = await cliente.consultar<MisProveedores>('mis_proveedores', {});
+      const respuesta = await cliente.consultar<MisProveedores>('mis_proveedores', {
+        ...(verDesactivados ? { incluir_desactivados: 'true' } : {}),
+      });
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
       return respuesta.datos;
     },
@@ -133,6 +149,14 @@ export function Proveedores() {
           }
         />
       </Tarjeta>
+
+      {/* «Lo que se quita no se pierde» (Manifiesto 28). */}
+      <Interruptor
+        etiqueta="Ver también los desactivados"
+        ayuda="Los que ya no te sirven. Sus precios históricos siguen enteros."
+        puesto={verDesactivados}
+        alCambiar={setVerDesactivados}
+      />
 
       <Aviso tono="info" titulo="Esto es la ficha corta">
         Los días de reparto, el pedido mínimo, los contratos marco y los pedidos llegan con el

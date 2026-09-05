@@ -6,6 +6,7 @@ import { puedeEditar, puedeVer } from '@estook/permisos';
 import { Aviso, Boton, Cargando, Etiqueta, Lista, Tarjeta, clases } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { FalloDeLaApi } from '../datos/FalloDeLaApi.ts';
+import { LoQueLlegaDespues } from './LoQueLlegaDespues.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import type { ElAltaDelLocal } from '../alta/contrato.ts';
 import { aplazar, estaAplazado } from './recordatorios.ts';
@@ -88,6 +89,13 @@ export function TarjetasDelPanel() {
  * de asustar a un gerente», así que mientras el asistente no exista, lo honesto
  * es decir cuándo llega.
  *
+ * ── Y por qué el botón ya no está apagado ───────────────────────────────────
+ *
+ * Estaba `disabled`, con la explicación debajo en letra pequeña. Sonaba honesto y
+ * no lo era del todo: un botón apagado no se lee, se ignora, y quien tenía la
+ * pregunta —«¿esto qué me va a traer?»— se quedaba sin respuesta. Ahora se pulsa
+ * y contesta, igual que avisos, chat y Fogón.
+ *
  * ── El «recuérdamelo» ────────────────────────────────────────────────────────
  *
  * Se guarda en este navegador, no en el servidor. No es un dato del negocio: es
@@ -101,6 +109,7 @@ export function TarjetasDelPanel() {
  */
 function ConectaTusVentas() {
   const [escondida, setEscondida] = useState(() => estaAplazado('tpv'));
+  const [contando, setContando] = useState(false);
 
   if (escondida) return null;
 
@@ -110,7 +119,12 @@ function ConectaTusVentas() {
         Trae tu carta y tus ventas automáticamente. Se hace una vez y son cinco minutos.
       </p>
       <div className="mt-e3 flex flex-wrap gap-e2">
-        <Boton tono="principal" disabled>
+        <Boton
+          tono="principal"
+          onClick={() => {
+            setContando(true);
+          }}
+        >
           Conectar ahora
         </Boton>
         <Boton
@@ -123,6 +137,13 @@ function ConectaTusVentas() {
           Recuérdamelo
         </Boton>
       </div>
+      <LoQueLlegaDespues
+        que={contando ? 'tpv' : null}
+        alCerrar={() => {
+          setContando(false);
+        }}
+      />
+
       <p className="mt-e2 text-secundario text-texto-suave">
         El asistente de conexión llega con el módulo de conectores. Hasta entonces, las ventas se
         pueden meter a mano. Si lo aplazas, vuelve la próxima vez que entres.

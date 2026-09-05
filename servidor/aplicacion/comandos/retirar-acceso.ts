@@ -61,17 +61,42 @@ export const retirarAcceso = comando<EntradaRetirarAcceso, SalidaRetirarAcceso>(
     // existe o no es de quien se dice: la misma respuesta para las dos cosas.
     if (!membresia) throw new FalloDeAplicacion('no_existe');
 
-    // ── 1 · Que quede quien pueda administrar ────────────────────────────────
+    // ── 1 · Que no se vaya el último que puede administrar ───────────────────
     //
     // «Segundo administrador o correo de recuperacion obligatorio» (Plan, M4).
     // Se comprueba **antes** de quitar nada: quitar y avisar despues deja el
     // negocio bloqueado y a nosotros con un dia de soporte.
-    const puede = await sql<{ tiene: boolean }[]>`
-      select estook.tiene_como_volver_a_entrar(
-        ${membresia.organizacion_id}::uuid, ${entrada.persona_id}::uuid
-      ) as tiene
+    //
+    // ── El fallo que esto arregla ────────────────────────────────────────────
+    //
+    // Antes se preguntaba una sola cosa: «sin contar a esta persona, ¿queda
+    // alguien que pueda administrar?». Y si la organizacion **no tenia ninguno
+    // desde el principio** —ni direccion, ni administrador de cuenta, ni correo
+    // de recuperacion— la respuesta era «no» **para todo el mundo**, asi que
+    // no se le podia retirar el acceso a nadie. Ni al cocinero que se fue el mes
+    // pasado.
+    //
+    // Y encima el mensaje decia algo que no era verdad: «si le quitas el acceso,
+    // el negocio se queda sin nadie que pueda administrarlo». Quitar a un
+    // cocinero no deja a nadie sin administrar nada.
+    //
+    // Es un fallo de seguridad, no solo de texto: quien se va sigue entrando con
+    // su PIN porque la aplicacion no deja quitarselo.
+    //
+    // Lo que hay que comparar son **las dos fotos**: como esta la organizacion
+    // contando a esta persona, y como quedaria sin ella. Solo se bloquea cuando
+    // la persona es justo lo que sostiene el acceso, que es lo que la regla
+    // queria decir.
+    const [foto] = await sql<{ con: boolean; sin: boolean }[]>`
+      select estook.tiene_como_volver_a_entrar(${membresia.organizacion_id}::uuid, null) as con,
+             estook.tiene_como_volver_a_entrar(
+               ${membresia.organizacion_id}::uuid, ${entrada.persona_id}::uuid
+             ) as sin
     `;
-    if (puede[0]?.tiene !== true) throw new FalloDeAplicacion('se_queda_sin_administrador');
+
+    if (foto?.con === true && !foto.sin) {
+      throw new FalloDeAplicacion('se_queda_sin_administrador');
+    }
 
     // ── 2 · La membresia se cierra, no se borra ──────────────────────────────
     //

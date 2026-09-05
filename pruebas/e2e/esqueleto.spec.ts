@@ -436,11 +436,35 @@ test.describe('estados vacios', () => {
   });
 
   test('los widgets del Panel tambien', async ({ page }) => {
+    // ── Esta prueba tenia que cambiar, y por eso estaba ────────────────────
+    //
+    // Comprobaba que las tres tarjetas del Panel dijeran «todavia no tengo
+    // datos». Dos de ellas —«lo que hay que atender» y «salud de los datos»—
+    // llevaban su letrero puesto desde M3: «los pendientes los traen Inventario
+    // (M6) y Servicio (M12)». M6 termino y no los trajo, y esta prueba seguia en
+    // verde **porque comprobaba que siguieran vacias**.
+    //
+    // Ahora Inventario las llena, asi que lo que se comprueba es lo de siempre
+    // con la verdad de hoy: quien tiene genero ve numeros, y quien no, ve el
+    // hueco explicado. Ninguna pantalla muda en ninguno de los dos casos.
     await comoGerente(page);
 
-    await expect(page.getByText('Nada pendiente')).toBeVisible();
-    await expect(page.getByText('Todavía no hay nada que medir')).toBeVisible();
+    // La grafica del mes sigue siendo de M17, y lo dice.
     await expect(page.getByText('Sin datos que dibujar')).toBeVisible();
+
+    // Y las dos de Inventario ya traen dato: Rosa tiene genero en su bar.
+    await expect(page.getByText('Productos con precio')).toBeVisible();
+  });
+
+  test('y quien no tiene genero sigue viendo el hueco explicado', async ({ page }) => {
+    // La camarera no tiene Inventario, asi que sus dos tarjetas no existen: «las
+    // apps que el rol no tiene no aparecen en ningun sitio». Lo que si tiene es
+    // el resto del Panel, con su version «todavia no tengo datos».
+    await comoCamarera(page);
+
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByText('Sin datos que dibujar')).toBeVisible();
+    await expect(page.getByText('Productos con precio')).toHaveCount(0);
   });
 
   test('el buscador dice que hacer cuando no hay nada escrito', async ({ page }) => {

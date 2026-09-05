@@ -10,9 +10,10 @@ import {
   usarDeshacer,
   type App,
 } from '@estook/ui';
-import { IconoAnadir, IconoVacio } from '@estook/iconos';
+import { IconoAnadir } from '@estook/iconos';
 import { useNavigate } from 'react-router-dom';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { LoDeInventario } from './LoDeInventario.tsx';
 import { TarjetasDelPanel } from './TarjetasDelPanel.tsx';
 
 /**
@@ -76,24 +77,12 @@ export function Panel() {
           </p>
         </Tarjeta>
 
-        <Tarjeta titulo="Lo que hay que atender">
-          <EstadoVacio
-            compacto
-            titulo="Nada pendiente"
-            frase="Aquí aparecerán los recuentos sin cerrar, los APPCC fuera de rango y los pedidos sin recibir."
-            sinAccionPorque="Los pendientes los traen Inventario (M6) y Servicio (M12)."
-          />
-        </Tarjeta>
-
-        <Tarjeta titulo="Salud de los datos" origen="Se llenara con M6 y M8">
-          <EstadoVacio
-            compacto
-            icono={<IconoVacio size={24} />}
-            titulo="Todavía no hay nada que medir"
-            frase="Cuántos platos tienen ficha, cuántos productos tienen precio y cuántas fichas están al día."
-            sinAccionPorque="Hace falta que haya productos y fichas: eso es Inventario y Escandallos."
-          />
-        </Tarjeta>
+        {/*
+          Las dos que Inventario tenía que llenar, y llenaba desde M6 sin que
+          nadie las hubiera enchufado. Están en su propio fichero porque las dos
+          leen la misma consulta y pedirla dos veces sería pedirla dos veces.
+        */}
+        <LoDeInventario />
 
         <Tarjeta titulo="Cómo va el mes" origen="Se llenará con Negocio · M17">
           <Grafica

@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 4 de septiembre de 2026 · M6 desplegado · falta mirarlo en el móvil
+Última actualización: 5 de septiembre de 2026 · auditoría a fondo antes de M7
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. Nunca puede afirmar algo que no sea cierto en ese momento.
@@ -13,8 +13,8 @@
 | -------------- | ------------------------------------------------------------------------------------- |
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario |
 | **Siguiente**  | **M7** · Proveedores y compras                                                        |
-| **Pruebas**    | 695 unitarias y de base de datos · 236 de extremo a extremo                           |
-| **Rama**       | M6 en `main` (PR #30 a #34). Fogón, en un pull request abierto                        |
+| **Pruebas**    | 695 unitarias y de base de datos · 262 de extremo a extremo · 90 % del catálogo       |
+| **Rama**       | M6 en `main` (PR #30 a #34). Fogón y la auditoría, en un pull request                 |
 | **Publicado**  | Base en la `0024` · web y app al día · **API desplegada y al día**                    |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
@@ -1114,6 +1114,99 @@ Salió leyendo los errores que la API escupía mientras corrían **otras** prueb
 Ahora tiene dos suyas: una le pregunta a la API si contesta, y otra mira si la
 pantalla se pinta o sale el aviso de que se ha roto.
 
+#### La auditoría a fondo, antes de pasar a M7
+
+Se repasó todo lo construido buscando lo de siempre: cosas que existen y nadie
+llama, datos que se guardan y no llegan, y botones que prometen algo que no hacen.
+Salieron **seis fallos**, y uno de ellos era de seguridad.
+
+**1 · Medir la cobertura del catálogo, que era lo que faltaba.** La lección
+estaba escrita desde M6 —«una consulta que ninguna prueba llama es una consulta
+rota que todavía no sabes que lo está»— y era **solo prosa**. Ahora la API de
+pruebas apunta qué operación ejecuta cada prueba mientras corren, y
+[`pnpm cobertura`](herramientas/cobertura-del-catalogo.mjs) lo compara con el
+catálogo al terminar. **La primera medición: 43 de 62.**
+
+No se puede medir leyendo el código, y por eso no se había medido antes: las
+pruebas de extremo a extremo **pulsan botones**, así que el nombre del comando no
+aparece en ninguna parte del fichero de la prueba. Contar nombres con `grep` da un
+número que no significa nada.
+
+Lo que la medida destapó, en orden de gravedad:
+
+**2 · El segundo factor entero, sin una sola prueba que lo viera funcionar.**
+Activar, confirmar, superar y quitar: cuatro comandos, cero pruebas que los
+ejecutaran. Ahora hay una que hace el camino completo, con **un TOTP calculado en
+la propia prueba** —una segunda opinión sobre el RFC 6238, no una llamada a la
+función del servidor, que no comprobaría nada— y que además comprueba que un
+código de respaldo **se gasta al usarlo**.
+
+**3 · A nadie se le podía retirar el acceso.** El guardián de «segundo
+administrador o correo de recuperación obligatorio» preguntaba una sola cosa: «sin
+contar a esta persona, ¿queda alguien que administre?». En una organización que
+**nunca tuvo** dirección ni correo de recuperación —la de Ricardo, sin ir más
+lejos— la respuesta era «no» **para todo el mundo**. Retirarle el acceso al
+cocinero que se fue devolvía «el negocio se queda sin nadie que pueda
+administrarlo», que además era mentira.
+
+**Es un fallo de seguridad, no de texto:** quien se iba seguía entrando con su
+PIN, porque la aplicación no dejaba quitárselo. Ahora se comparan las dos fotos
+—cómo está la organización contándola y cómo quedaría sin ella— y solo se bloquea
+cuando esa persona es justo lo que sostiene el acceso. Con **su prueba al lado**,
+porque un guardián que se toca sin prueba es un guardián que un día deja de
+guardar.
+
+**4 · Se podía quitar y no se podía traer de vuelta.** Un producto desactivado
+desaparecía de la lista **para siempre**, y un proveedor desactivado igual. Las dos
+consultas aceptaban `incluir_desactivados` desde el primer día de M6 y estaban
+probadas; lo que no había era una pantalla que lo pidiera. Y `reactivar_producto`
+llevaba desde M6 en el catálogo **sin nadie que lo llamara**, apuntado como
+excepción con la razón «su pantalla llega con M8».
+
+La lección, que es nueva y va en «cómo trabajamos»: **una excepción apuntada con
+una razón bonita sigue siendo un agujero.**
+
+**5 · Un «Deshacer» que no deshacía un movimiento de stock.** Apuntar género abría
+la barra de deshacer con un botón cuyo `deshacer` era `() => undefined`: se
+pulsaba, la barra desaparecía y **el movimiento seguía apuntado**. Peor que un
+botón mudo, porque quien lo pulsaba se iba creyendo que la cámara decía otra cosa.
+
+Y no se arregla poniéndole un deshacer de verdad: «el stock es un libro de
+movimientos» (regla 8), el libro solo se añade, y **eso es lo que hace que se pueda
+auditar**. Ahora el aviso dice que se corrige con otro movimiento, que es la
+verdad.
+
+**6 · Quién puso cada precio se guardaba y no se enseñaba.** `creado_por` era la
+**única columna de las 363 del esquema** que se escribía sin que ninguna consulta
+la leyera. «Lo que hace cada uno queda con su nombre» (Manifiesto 8) lo cumplía el
+libro de movimientos y no el de precios, que es donde más falta hace: un precio
+mal metido se arrastra a todos los escandallos.
+
+**7 · El Panel llevaba desde M3 esperando a Inventario, y M6 no lo enchufó.**
+Dos tarjetas con su letrero puesto —«los pendientes los traen Inventario (M6) y
+Servicio (M12)», «se llenará con M6 y M8»— seguían diciendo «todavía no hay nada
+que medir» mientras `inventario_hoy` devolvía **exactamente eso**: lo que está por
+debajo del mínimo, lo que caduca y lo que no tiene precio.
+
+No faltaba código: faltaba que dos partes construidas se hablaran. Y es la
+primera pantalla que se ve cada mañana. Ahora el Panel enseña lo que hay que
+atender —caducidades primero, que tienen fecha— y cuántos productos tienen precio,
+con su botón a Inventario. A quien no tiene la app no le sale nada, que es la otra
+mitad de la regla.
+
+**Y la prueba que lo tapaba era una prueba en verde.** `los widgets del Panel
+tambien` comprobaba que las tarjetas siguieran vacías, así que M6 pudo terminar
+sin llenarlas y nadie se enteró. Ahora comprueba la verdad de hoy: con género,
+números; sin la app, nada.
+
+**8 · «Conectar ahora» estaba apagado.** Con la explicación debajo en letra
+pequeña, que suena honesto y no lo es: un botón apagado no se lee, se ignora.
+Ahora contesta, como avisos, chat y Fogón.
+
+**Después de la auditoría: 56 de 62 operaciones, el 90 %.** Las siete que quedan
+están apuntadas **una por una con su razón y con el módulo donde se pagan**, en el
+propio fichero de la herramienta. Esa lista es una deuda, no una excepción.
+
 #### Y dónde vive Fogón, decidido y construido antes que Fogón
 
 La pregunta salió mirando el móvil —«¿y la IA? No hay burbuja, no hay nada, ni la
@@ -1224,12 +1317,25 @@ Está escrito además donde se lee: **B5 y la ficha de M22 del Plan**.
     todo el mundo desde el primer día. Salió leyendo los errores que la API
     escupía mientras corrían **otras** pruebas. Cada consulta del catálogo
     necesita al menos una prueba que la llame de verdad.
-11. **Un pendiente que no se vuelve a comprobar se queda escrito para siempre.**
+11. **Una excepción apuntada con una razón bonita sigue siendo un agujero.**
+    `reactivar_producto` estuvo desde M6 en la lista de «no lo llama nadie», con
+    la razón «su pantalla llega con M8». Sonaba razonable y ocultaba esto: se
+    podía desactivar un producto y **no había forma de traerlo de vuelta** hasta
+    dos módulos después. «Si algo se puede poner, tiene que poderse quitar» —y al
+    revés— no se puede aplazar a un módulo siguiente. Las listas de excepciones
+    sirven para **no olvidar** los agujeros, no para justificarlos.
+12. **Lo que no se mide, no está probado.** Contar con `grep` qué operaciones se
+    llaman da un número que no significa nada: las pruebas de extremo a extremo
+    pulsan botones, y el nombre del comando no aparece por ningún lado. La
+    cobertura del catálogo se mide **corriendo**, con la API apuntando lo que se
+    ejecuta. La primera medición dijo 43 de 62, y entre lo que faltaba estaba el
+    segundo factor entero.
+13. **Un pendiente que no se vuelve a comprobar se queda escrito para siempre.**
     El almacén del logo estuvo dado por pendiente desde M5 y llevaba tiempo
     hecho: la clave estaba en `.env.local` y el cubo creado. Escribirlo en tres
     sitios no lo comprueba; ejecutarlo, sí. **Antes de mandar a alguien a hacer
     algo, comprobar que no está hecho ya.**
-12. **`toBeVisible()` no ve el recorte.** Un elemento tapado, o recortado por el
+14. **`toBeVisible()` no ve el recorte.** Un elemento tapado, o recortado por el
     `overflow` de un padre, sigue teniendo caja: sigue siendo «visible» para
     Playwright y no para una persona. Los desplegables de la barra de escritorio
     llevaban así desde M3. Cuando lo que se comprueba es que algo **se ve**, hay

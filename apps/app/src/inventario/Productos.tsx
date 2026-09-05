@@ -9,6 +9,7 @@ import {
   Cargando,
   EstadoVacio,
   Etiqueta,
+  Interruptor,
   Selector,
   Tabla,
   Tarjeta,
@@ -52,6 +53,23 @@ export function Productos({ alAbrirProducto }: { readonly alAbrirProducto: (id: 
 
   const [texto, setTexto] = useState('');
   const [categoriaId, setCategoriaId] = useState('');
+  /**
+   * Ver también lo desactivado.
+   *
+   * ── El agujero que esto tapa ───────────────────────────────────────────────
+   *
+   * Se podía desactivar un producto y **no había forma de volver a verlo**. La
+   * consulta `mis_productos` acepta `incluir_desactivados` desde el primer día de
+   * M6 y estaba probada; lo que no había era una pantalla que lo pidiera. Es el
+   * mismo fallo de siempre: algo construido, registrado y probado que la pantalla
+   * nunca llama.
+   *
+   * Nace apagado a propósito: lo normal es querer ver lo que se usa. Y no se
+   * queda encendido entre visitas, porque «lo que hay en cámara» es la pregunta
+   * de esta pantalla, y encontrársela con lo desactivado dentro sin haberlo
+   * pedido sería peor.
+   */
+  const [verDesactivados, setVerDesactivados] = useState(false);
   const [creando, setCreando] = useState(false);
   const [ofrecerQuitarEjemplos, setOfrecerQuitarEjemplos] = useState(false);
   const [quitando, setQuitando] = useState(false);
@@ -60,11 +78,12 @@ export function Productos({ alAbrirProducto }: { readonly alAbrirProducto: (id: 
   const puedeTocar = puedeEditar(permisos, 'app.inventario');
 
   const consulta = useQuery({
-    queryKey: ['mis_productos', texto, categoriaId],
+    queryKey: ['mis_productos', texto, categoriaId, verDesactivados],
     queryFn: async (): Promise<MisProductos> => {
       const respuesta = await cliente.consultar<MisProductos>('mis_productos', {
         ...(texto.trim() === '' ? {} : { texto: texto.trim() }),
         ...(categoriaId === '' ? {} : { categoria_id: categoriaId }),
+        ...(verDesactivados ? { incluir_desactivados: 'true' } : {}),
       });
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
       return respuesta.datos;
@@ -119,6 +138,7 @@ export function Productos({ alAbrirProducto }: { readonly alAbrirProducto: (id: 
         <span className="flex flex-wrap items-center gap-e2">
           <span className={p.esEjemplo ? 'text-texto-suave' : ''}>{p.nombre}</span>
           {p.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
+          {!p.activo && <Etiqueta>desactivado</Etiqueta>}
           {p.sinVerificar && <Etiqueta tono="atencion">sin verificar</Etiqueta>}
         </span>
       ),
@@ -249,6 +269,17 @@ export function Productos({ alAbrirProducto }: { readonly alAbrirProducto: (id: 
           </Boton>
         )}
       </div>
+
+      {/*
+        «Lo que se quita no se pierde» (Manifiesto 28). Sin esto, quitarlo era
+        perderlo de vista para siempre.
+      */}
+      <Interruptor
+        etiqueta="Ver también los desactivados"
+        ayuda="Los que quitaste de en medio. Siguen con todo su histórico."
+        puesto={verDesactivados}
+        alCambiar={setVerDesactivados}
+      />
 
       <Tarjeta
         titulo={datos.cuantosHay === 1 ? '1 producto' : `${datos.cuantosHay} productos`}

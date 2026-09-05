@@ -35,6 +35,7 @@
  * declara `servidor`, y se resuelven dentro de sus propios ficheros.
  */
 import { createServer } from 'node:http';
+import { writeFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
 import { readdir, readFile } from 'node:fs/promises';
@@ -228,6 +229,45 @@ async function unaTransaccion(quien, hacer) {
 
 const api = crearApi(crearDespachador(puertos));
 
+// ── El cuaderno de a bordo: qué operación llama alguien, y con qué resultado ──
+//
+// «Una consulta que ninguna prueba llama es una consulta rota que todavía no
+//  sabes que lo está» (ESTADO, cómo trabajamos). La pantalla «Hoy» de M6 estaba
+// escrita, registrada en el catálogo, llamada desde la pantalla y devolviendo un
+// 500 a todo el mundo desde el primer día. Eso salió de casualidad, leyendo los
+// errores que la API escupía mientras corrían OTRAS pruebas.
+//
+// Contar los nombres a mano no vale: las pruebas de extremo a extremo pulsan
+// botones, y el nombre del comando no aparece por ningún lado. La única forma de
+// saber qué se ha llamado de verdad es apuntarlo aquí, mientras corre.
+//
+// Se escribe el fichero en cada petición, y no al terminar, porque a este
+// servidor lo mata Playwright con una señal: un `beforeExit` no llegaría nunca.
+const CUADERNO = new URL('../../pruebas/.cobertura-del-catalogo.json', import.meta.url);
+const llamadas = new Map();
+
+function apuntar(camino, estado) {
+  const trozos = (camino.split('?')[0] ?? '').split('/').filter(Boolean);
+  const i = trozos.findIndex((t) => t === 'consultas' || t === 'comandos');
+  if (i < 0) return;
+
+  const que = trozos[i] === 'consultas' ? 'consulta' : 'comando';
+  const clave = que + ':' + (trozos[i + 1] ?? '');
+
+  const antes = llamadas.get(clave) ?? { veces: 0, bien: 0, mal: 0 };
+  antes.veces += 1;
+  if (estado < 400) antes.bien += 1;
+  else antes.mal += 1;
+  llamadas.set(clave, antes);
+
+  try {
+    writeFileSync(CUADERNO, JSON.stringify(Object.fromEntries(llamadas), null, 2));
+  } catch {
+    // Si no se puede escribir, las pruebas siguen. La cobertura es información,
+    // no una condición para que el servidor funcione.
+  }
+}
+
 const servidor = createServer((peticion, respuesta) => {
   const cuerpo = [];
   peticion.on('data', (trozo) => cuerpo.push(trozo));
@@ -244,10 +284,12 @@ const servidor = createServer((peticion, respuesta) => {
     api
       .fetch(entrada)
       .then(async (salida) => {
+        apuntar(peticion.url ?? '/', salida.status);
         respuesta.writeHead(salida.status, Object.fromEntries(salida.headers));
         respuesta.end(Buffer.from(await salida.arrayBuffer()));
       })
       .catch((fallo) => {
+        apuntar(peticion.url ?? '/', 500);
         respuesta.writeHead(500, { 'content-type': 'application/json' });
         respuesta.end(
           JSON.stringify({ error: { codigo: 'fallo_nuestro', quePasa: String(fallo) } }),

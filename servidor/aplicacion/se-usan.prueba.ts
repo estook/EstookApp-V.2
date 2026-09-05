@@ -87,10 +87,20 @@ const NO_LAS_LLAMA_NADIE: Readonly<Record<string, string>> = {
   // mantiene sus operaciones dos versiones, no porque falte una pantalla.
   salir_de_la_demostracion: 'M5 unificó las dos salidas en `salir`; esta se queda por el contrato',
 
-  // Reactivar un producto es la vuelta de desactivarlo, y la pantalla que lista
-  // los desactivados es la de «Más» de Inventario, que llega con M8 junto al
-  // recuento y las mermas. Se deja escrito para no olvidarlo.
-  reactivar_producto: 'Su pantalla es la lista de desactivados, que llega con M8',
+  // `reactivar_producto` **ya no está aquí**, y la razón por la que estuvo es de
+  // las que hay que recordar. Decía «su pantalla es la lista de desactivados, que
+  // llega con M8», y sonaba razonable. Lo que ocultaba era esto: se podía
+  // desactivar un producto y **no había forma de volver a verlo**, ni de traerlo
+  // de vuelta, hasta dos módulos después.
+  //
+  // «Si algo se puede poner, tiene que poderse quitar» —y al revés— no es una
+  // regla que se pueda aplazar a un módulo siguiente: mientras tanto, la
+  // aplicación tiene una puerta de salida sin puerta de entrada. Ahora la lista
+  // de Productos trae su «ver también los desactivados» y la ficha su «volver a
+  // activarlo», que era todo lo que hacía falta.
+  //
+  // La lección: **una excepción apuntada con una razón bonita sigue siendo un
+  // agujero.** Esta lista sirve para no olvidarlos, no para justificarlos.
 };
 
 /** Todos los ficheros de código de las cuatro aplicaciones, leídos una vez. */

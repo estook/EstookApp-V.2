@@ -34,6 +34,7 @@
     "verifica": "pnpm tipos && pnpm lint && pnpm formato && pnpm dependencias && pnpm textos && pnpm grafo && pnpm prueba",
     "api:pruebas": "node --experimental-strip-types base-de-datos/herramientas/api-de-pruebas.mjs",
     "prueba:e2e:completa": "node herramientas/construye-para-e2e.mjs",
+    "cobertura": "node --experimental-strip-types herramientas/cobertura-del-catalogo.mjs",
     "textos": "node --experimental-strip-types herramientas/revisa-textos.mjs",
     "grafo": "node herramientas/revisa-el-grafo-de-deno.mjs",
     "maestros": "node herramientas/documentos-maestros.mjs",

@@ -41,3 +41,9 @@ corre('pnpm', 'build');
 
 console.log('\nPruebas de extremo a extremo\n');
 corre('pnpm', 'prueba:e2e');
+
+// Y con las pruebas hechas, que operacion del catalogo ha ejecutado alguna de
+// verdad. Va aqui y no en `verifica` porque solo tiene sentido despues de correr
+// las de extremo a extremo: lee lo que ellas apuntan al pasar.
+console.log('\nCobertura del catalogo\n');
+corre('pnpm', 'cobertura');

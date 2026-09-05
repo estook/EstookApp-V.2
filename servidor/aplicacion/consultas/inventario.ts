@@ -461,6 +461,21 @@ export interface PrecioEnFicha {
   readonly hasta: string | null;
   readonly vigente: boolean;
   readonly origen: string;
+  /**
+   * Quién lo puso.
+   *
+   * Se guardaba desde el primer día de M6 en `precio_de_producto.creado_por` y
+   * **no salía de la base de datos**: la ficha enseñaba el precio y la fecha, y
+   * la única columna de todo el esquema que se escribía sin que nadie la leyera.
+   *
+   * «Cada persona entra con su PIN, y **lo que hace queda con su nombre**»
+   * (Manifiesto 8). El libro de movimientos ya lo cumplía; el de precios, no. Y
+   * es donde más falta hace: un precio mal metido se arrastra a todos los
+   * escandallos, y lo primero que se pregunta es quién lo puso.
+   *
+   * Nulo si esa persona ya no está: la fila del precio no se borra por eso.
+   */
+  readonly quien: string | null;
 }
 
 export interface MovimientoEnFicha {
@@ -544,6 +559,7 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
             desde: string;
             hasta: string | null;
             origen: string;
+            quien: string | null;
           }[]
         >`
           select pr.id, pv.nombre as proveedor, pr.proveedor_id,
@@ -552,9 +568,15 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
                  pr.formato,
                  to_char(pr.desde, 'YYYY-MM-DD') as desde,
                  to_char(pr.hasta, 'YYYY-MM-DD') as hasta,
-                 pr.origen::text as origen
+                 pr.origen::text as origen,
+                 -- Union por la izquierda, no interna: si quien lo puso ya no esta,
+                 -- el precio sigue estando. Con una union interna el historico
+                 -- perderia filas cada vez que alguien deja el local, que es justo
+                 -- lo contrario de para lo que existe un historico.
+                 pe.nombre as quien
             from estook.precio_de_producto pr
             left join estook.proveedor pv on pv.id = pr.proveedor_id
+            left join estook.persona pe on pe.id = pr.creado_por
            where pr.producto_id = ${entrada.producto_id}
            order by pr.hasta nulls first, pr.desde desc
            limit 50
@@ -629,6 +651,7 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
         hasta: p.hasta,
         vigente: p.hasta === null,
         origen: p.origen,
+        quien: p.quien,
       })),
       movimientos: movimientos.map((m) => {
         const linea: MovimientoEnFicha = {

@@ -14,7 +14,7 @@
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario |
 | **Siguiente**  | **M7** · Proveedores y compras                                                        |
 | **Pruebas**    | 695 unitarias y de base de datos · 268 de extremo a extremo · 90 % del catálogo       |
-| **Rama**       | M6 en `main` (PR #30 a #35). La auditoría, en un pull request abierto           |
+| **Rama**       | M6 en `main` (PR #30 a #35). La auditoría, en un pull request abierto                 |
 | **Publicado**  | Base en la `0024` · web y app al día · **API desplegada y al día**                    |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |

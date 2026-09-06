@@ -654,3 +654,58 @@ test.describe('el último administrador', () => {
     expect(organizacion.id.length).toBeGreaterThan(0);
   });
 });
+
+// ── 9 · Las categorías, cuando el tipo llega después que el local ───────────
+
+/**
+ * «Nunca vacío: vienen de serie» (Auditoría, parte 3).
+ *
+ * ── El fallo que esto persigue ──────────────────────────────────────────────
+ *
+ * En la base de verdad apareció **un local con tipo y sin una sola categoría**.
+ * Lo cazó `bd:comprobar-api`, que lo comprueba local a local, y es lo que pasa
+ * cuando el desplegable de «Categoría» sale vacío justo donde la Auditoría
+ * promete que nunca lo estará.
+ *
+ * Hay dos momentos en los que un local puede saber de qué tipo es, y la reacción
+ * de M6 escucha los dos: **al crearlo** —cuando se duplica de otro, el tipo viene
+ * copiado— y **al responder el paso 2 del alta**, que es el caso normal de
+ * cualquiera que empieza de cero.
+ *
+ * El primero estaba probado desde M6. El segundo, **no**, y es el que se usa
+ * siempre: todo el mundo que abre su primer local pasa por ahí.
+ */
+test.describe('las categorías de serie', () => {
+  test('llegan también cuando el tipo se responde después, en el alta', async ({ request }) => {
+    const token = await unToken(request, 'elena@ejemplo.estook.com');
+
+    // Un local desde cero: nace sin tipo, así que nace sin categorías. Correcto.
+    const creado = await ejecutar(request, token, 'crear_local', {
+      nombre: `Bar sin tipo ${Date.now()}`,
+      duplicar_de: null,
+    });
+    expect(creado.estado, JSON.stringify(creado.cuerpo)).toBe(200);
+    const { localId } = creado.cuerpo['datos'] as { localId: string };
+
+    const alli = await ejecutar(request, token, 'cambiar_de_contexto', { local_id: localId });
+    expect(alli.estado).toBe(200);
+
+    const alNacer = await consultar(request, token, 'mis_productos');
+    expect(
+      (alNacer.cuerpo['datos'] as { categorias: unknown[] }).categorias.length,
+      'un local sin tipo no puede tener categorías: no se sabe cuáles',
+    ).toBe(0);
+
+    // Y ahora se responde el paso 2 del alta, que es lo que hace todo el mundo.
+    const respondido = await ejecutar(request, token, 'guardar_tipo_de_local', {
+      tipo: 'bar_de_tapas',
+    });
+    expect(respondido.estado, JSON.stringify(respondido.cuerpo)).toBe(200);
+
+    const despues = await consultar(request, token, 'mis_productos');
+    expect(
+      (despues.cuerpo['datos'] as { categorias: unknown[] }).categorias.length,
+      'el local sabe de qué tipo es y sigue sin categorías: el desplegable sale vacío',
+    ).toBeGreaterThan(0);
+  });
+});

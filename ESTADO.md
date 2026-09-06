@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 5 de septiembre de 2026 · auditoría a fondo antes de M7
+Última actualización: 5 de septiembre de 2026 · auditoría, el bucle del segundo local y dos decisiones
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. Nunca puede afirmar algo que no sea cierto en ese momento.
@@ -13,8 +13,8 @@
 | -------------- | ------------------------------------------------------------------------------------- |
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario |
 | **Siguiente**  | **M7** · Proveedores y compras                                                        |
-| **Pruebas**    | 695 unitarias y de base de datos · 262 de extremo a extremo · 90 % del catálogo       |
-| **Rama**       | M6 en `main` (PR #30 a #34). Fogón y la auditoría, en un pull request                 |
+| **Pruebas**    | 695 unitarias y de base de datos · 268 de extremo a extremo · 90 % del catálogo       |
+| **Rama**       | M6 en `main` (PR #30 a #35). La auditoría, en un pull request abierto           |
 | **Publicado**  | Base en la `0024` · web y app al día · **API desplegada y al día**                    |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
@@ -1114,6 +1114,52 @@ Salió leyendo los errores que la API escupía mientras corrían **otras** prueb
 Ahora tiene dos suyas: una le pregunta a la API si contesta, y otra mira si la
 pantalla se pinta o sale el aviso de que se ha roto.
 
+#### El bucle del segundo local, y lo que salió con él
+
+**Un local nuevo volvía a preguntar «¿cuántos locales llevas?», y contestar
+generaba otro local.** Es la trampa que encontró Richi dando de alta su segundo
+negocio: se sale dejando la respuesta en blanco, o no se sale.
+
+La causa es de fondo y merece quedar escrita: **el alta trata sus ocho pasos como
+si fueran todos del local, y dos no lo son.** «¿Cómo te llamas?» es de la persona
+—tu nombre no cambia porque abras otro bar— y «¿cuántos locales llevas?» es de la
+organización, que se contesta una vez y no una por cada local. Preguntarlos otra
+vez no es solo pesado: **ese en concreto genera locales al contestarlo**, y por eso
+es un bucle y no una molestia.
+
+Ahora un local creado desde el alta nace en el paso «¿dónde está?», que es el
+primero que de verdad es suyo. Y si se creó **desde cero** —sin duplicar de otro—
+su tipo queda apuntado como pendiente, para que la tarjeta del Panel lo ofrezca
+sin meter a nadie otra vez en el asistente entero.
+
+#### Un local de verdad se quedó sin sus categorías
+
+`bd:comprobar-api` lo cazó en la base de producción: un local con tipo y **sin
+una sola categoría**, que es el desplegable vacío justo donde la Auditoría promete
+«nunca vacío: vienen de serie».
+
+La reacción de M6 escucha los dos momentos en que un local puede saber de qué
+tipo es —al crearlo y al responder el paso 2— y **ahora los dos están probados
+contra la API de verdad**; el segundo no lo estaba, y es el que usa todo el mundo.
+Contra la API de pruebas los dos funcionan, así que la causa exacta en producción
+sigue sin conocerse.
+
+Lo que no puede pasar mientras tanto es que la única salida sea escribir SQL a
+mano en producción: para eso está `bd:reparar-categorias`, que dice cuáles están
+mal y solo toca nada si se le pide con `--arreglar`. **El local de producción ya
+está reparado.**
+
+#### La aplicación ya se puede instalar en el móvil
+
+Los iconos de 192 y 512 píxeles llevaban generados desde M3 y **no había
+manifiesto que los usara**: en Android no salía «Instalar aplicación» y en iPhone
+se abría dentro de Safari, con la barra de direcciones comiéndose una franja de
+una pantalla que ya es pequeña.
+
+Es otro «construido y nunca enchufado», y además era el **requisito escondido de
+las notificaciones push**: iPhone solo se las da a lo que está en la pantalla de
+inicio. Sin esto no habrían podido llegar nunca.
+
 #### La auditoría a fondo, antes de pasar a M7
 
 Se repasó todo lo construido buscando lo de siempre: cosas que existen y nadie
@@ -1365,6 +1411,8 @@ En [`docs/decisiones/`](docs/decisiones/):
 | **0013** | **Google Places se aplaza a M23**                                 |
 | **0014** | **Un módulo reacciona a otro en la misma transacción**            |
 | **0015** | **Fogón es una burbuja que va contigo, no una pestaña por app**   |
+| **0016** | **El reloj es `pg_cron` llamando a nuestra API**                  |
+| **0017** | **Cómo avisa Estook: pantalla, correo con Resend y push**         |
 
 Otras, sin fichero propio:
 
@@ -1423,6 +1471,21 @@ después de fusionar.
 
 ---
 
+## 8 bis · Cómo avisa Estook, decidido
+
+Tres canales y un orden ([decisión 0017](docs/decisiones/0017-como-avisa-estook.md)):
+**la pantalla siempre**, el **correo con Resend** para lo que no puede esperar a
+que alguien abra la aplicación, y el **push** para lo mismo pero en el momento.
+
+Y cuatro reglas, que son lo que evita que se silencie entero: un aviso **nace en
+la pantalla y solo sale de ahí si se gana el salir**; sale lo que cuesta dinero si
+se ve mañana, no lo urgente en abstracto; cada persona decide qué le llega y
+**fuera de turno no suena nada**; y **ningún aviso llega sin decir qué hacer**.
+
+El correo va primero porque resuelve hoy algo que deja a alguien fuera de su
+propio negocio: **sin proveedor de correo, «he olvidado mi contraseña» no puede
+mandar nada**. Se monta en M25, con el dominio verificado en Resend.
+
 ## 8 · El siguiente paso · M7
 
 **Proveedores y compras.** M6 le deja la ficha corta del proveedor ya montada, y
@@ -1459,11 +1522,13 @@ conciliada con esa diferencia señalada.
 
 **Y dos cosas que hay que decidir, las mismas que dejó M5:**
 
-1. **Quién ejecuta los procesos de fondo.** Sigue sin reloj, y ahora la bandeja
-   crece más deprisa: M6 publica cinco eventos nuevos. Nada se rompe, y hay que
-   decidirlo **antes de M8**. Desde la decisión 0015 tiene un motivo más: los
-   análisis periódicos de las pestañas se calculan cada 8, 12 o 24 horas, y sin
-   reloj no hay «cada 8 horas».
+1. ~~**Quién ejecuta los procesos de fondo.**~~ **Decidido**: `pg_cron` dentro
+   de Supabase llama cada cinco minutos a un endpoint nuestro, y ese endpoint es
+   código de aplicación normal ([decisión 0016](docs/decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)).
+   Se descartó la acción programada de GitHub porque **su `cron` no es puntual**
+   —retrasos de diez a treinta minutos son normales, y en repositorios quietos se
+   desactiva sola—, y un reloj que a veces no suena no es un reloj. **Se monta en
+   M8**, que es cuando hay algo que hacer con la bandeja; la bandeja no cambia.
 2. **Si se quitan de la API `mis_locales`, `mis_permisos` y `un_local`**, que
    `quien_soy` dejó sin trabajo en M4.
 

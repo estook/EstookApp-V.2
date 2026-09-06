@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { comoCodigo } from '@estook/dominio';
+import { comoCodigo, numeroDelPaso } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion, respondido } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -161,11 +161,50 @@ export const crearLocal = comando<EntradaCrearLocal, SalidaCrearLocal>({
     // propio instantáneo. Sin funciones con privilegio y sin tocar la política.
     // El código es único por organización (0001), así que el `select` no puede
     // devolver otra cosa.
+    // ── Por dónde empieza el alta del local nuevo ────────────────────────────
+    //
+    // ── El bucle que esto arregla ────────────────────────────────────────────
+    //
+    // El local nuevo nacía en el paso cero, así que su alta le preguntaba los
+    // ocho pasos otra vez. Y el tercero es **«¿cuántos locales llevas?»**: quien
+    // contestaba «dos» se encontraba con que le ofrecían crear otro local, y al
+    // entrar en ese, otra vez lo mismo. Un bucle del que solo se sale dejando la
+    // respuesta en blanco. Lo encontró Richi dando de alta su segundo local.
+    //
+    // ── Por qué pasaba, que es lo que hay que entender ───────────────────────
+    //
+    // Porque el alta trata los ocho pasos como si fueran **del local**, y dos de
+    // ellos no lo son:
+    //
+    //   quien_eres        es de la PERSONA. Tu nombre y tu correo no cambian
+    //                     porque abras otro bar.
+    //   cuantos_locales   es de la ORGANIZACIÓN. «Llevo tres» se contesta una
+    //                     vez, no una vez por cada uno de los tres.
+    //   paseo             es de la PERSONA. Las cinco pantallas ya las viste.
+    //
+    // Preguntarlos otra vez no es solo pesado: en el caso de «cuántos locales»
+    // **la respuesta genera más locales**, y por eso se convierte en un bucle en
+    // vez de en una molestia.
+    //
+    // ── Cómo se arregla sin inventar nada ────────────────────────────────────
+    //
+    // El alta ya sabe guardar por dónde va (`onboarding_paso`) y qué se saltó
+    // (`onboarding_saltados`). Así que el local nuevo nace **en el cuarto paso**,
+    // «¿dónde está?», que es el primero que de verdad es suyo. Los tres de antes
+    // quedan contestados, porque lo están.
+    //
+    // Y si no se duplicó de nadie, su tipo sigue sin saberse: eso se apunta como
+    // saltado, y entonces la tarjeta del Panel lo ofrece —«¿qué tipo de local
+    // tienes?»— sin volver a meter a nadie en el asistente entero. Que es
+    // exactamente para lo que se hizo esa tarjeta en M5.
+    const EMPIEZA_EN = numeroDelPaso('donde_esta');
+    const seSalta = modelo === null ? ['tipo_de_local'] : [];
+
     await contexto.sql`
       insert into estook.local (
         organizacion_id, area_id, codigo, nombre, zona_horaria, hora_de_corte,
         tipo, territorio, regimen, actividad, epigrafe_iae, modo_de_precio,
-        color_de_marca, provincia
+        color_de_marca, provincia, onboarding_paso, onboarding_saltados
       )
       values (
         ${organizacionId},
@@ -181,7 +220,9 @@ export const crearLocal = comando<EntradaCrearLocal, SalidaCrearLocal>({
         ${modelo?.epigrafe_iae ?? null},
         ${modelo?.modo_de_precio ?? 'impuesto_incluido'}::estook.modo_de_precio,
         ${modelo?.color_de_marca ?? null},
-        ${modelo?.provincia ?? null}
+        ${modelo?.provincia ?? null},
+        ${EMPIEZA_EN},
+        ${seSalta}::text[]
       )
     `;
 

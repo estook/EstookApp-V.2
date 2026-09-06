@@ -26,3 +26,5 @@ alguien se preguntara «por que esta hecho asi».
 | **0013** | Google Places se aplaza a M23                                     |
 | **0014** | Un modulo reacciona a otro en la misma transaccion                |
 | **0015** | Fogon es una burbuja que va contigo, no una pestana por app       |
+| **0016** | El reloj es pg_cron llamando a nuestra API, no GitHub Actions     |
+| **0017** | Como avisa Estook: pantalla, correo con Resend y push             |

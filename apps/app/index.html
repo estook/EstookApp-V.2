@@ -13,6 +13,30 @@
     -->
     <link rel="icon" type="image/svg+xml" href="./marca/favicon.svg" />
     <link rel="apple-touch-icon" href="./marca/apple-touch-icon.png" />
+
+    <!--
+      Añadir a la pantalla de inicio, que en una cocina es como se usa esto.
+
+      Los dos iconos de 192 y 512 llevaban generados desde M3 y **no habia
+      manifiesto que los usara**: en Android no salia «Instalar aplicacion» y en
+      iOS se abria dentro de Safari, con su barra de direcciones comiendose una
+      franja de una pantalla que ya es pequena.
+
+      "display": "standalone" del manifiesto es lo que la abre sin barra del
+      navegador, y "scope" y "start_url" van relativos porque esto se publica en
+      GitHub Pages colgando de una subcarpeta.
+
+      Lo que esto **no** trae todavia son las notificaciones push: hacen falta un
+      trabajador de servicio y el permiso de cada persona, y eso llega con el
+      modulo de notificaciones. Pero sin manifiesto no habrian podido llegar
+      nunca —iOS solo las da a lo que esta en la pantalla de inicio—, asi que
+      este es el primer paso y no un adorno.
+    -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Estook" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="description" content="La aplicacion: el Panel y sus ocho apps" />
     <title>Estook</title>
   </head>

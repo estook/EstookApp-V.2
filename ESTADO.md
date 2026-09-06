@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 4 de septiembre de 2026 · M6 desplegado · falta mirarlo en el móvil
+Última actualización: 5 de septiembre de 2026 · auditoría, el bucle del segundo local y dos decisiones
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. Nunca puede afirmar algo que no sea cierto en ese momento.
@@ -13,8 +13,8 @@
 | -------------- | ------------------------------------------------------------------------------------- |
 | **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario |
 | **Siguiente**  | **M7** · Proveedores y compras                                                        |
-| **Pruebas**    | 695 unitarias y de base de datos · 236 de extremo a extremo                           |
-| **Rama**       | M6 en `main` (PR #30 a #34). Fogón, en un pull request abierto                        |
+| **Pruebas**    | 695 unitarias y de base de datos · 268 de extremo a extremo · 90 % del catálogo       |
+| **Rama**       | M6 en `main` (PR #30 a #35). La auditoría, en un pull request abierto                 |
 | **Publicado**  | Base en la `0024` · web y app al día · **API desplegada y al día**                    |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
@@ -1114,6 +1114,145 @@ Salió leyendo los errores que la API escupía mientras corrían **otras** prueb
 Ahora tiene dos suyas: una le pregunta a la API si contesta, y otra mira si la
 pantalla se pinta o sale el aviso de que se ha roto.
 
+#### El bucle del segundo local, y lo que salió con él
+
+**Un local nuevo volvía a preguntar «¿cuántos locales llevas?», y contestar
+generaba otro local.** Es la trampa que encontró Richi dando de alta su segundo
+negocio: se sale dejando la respuesta en blanco, o no se sale.
+
+La causa es de fondo y merece quedar escrita: **el alta trata sus ocho pasos como
+si fueran todos del local, y dos no lo son.** «¿Cómo te llamas?» es de la persona
+—tu nombre no cambia porque abras otro bar— y «¿cuántos locales llevas?» es de la
+organización, que se contesta una vez y no una por cada local. Preguntarlos otra
+vez no es solo pesado: **ese en concreto genera locales al contestarlo**, y por eso
+es un bucle y no una molestia.
+
+Ahora un local creado desde el alta nace en el paso «¿dónde está?», que es el
+primero que de verdad es suyo. Y si se creó **desde cero** —sin duplicar de otro—
+su tipo queda apuntado como pendiente, para que la tarjeta del Panel lo ofrezca
+sin meter a nadie otra vez en el asistente entero.
+
+#### Un local de verdad se quedó sin sus categorías
+
+`bd:comprobar-api` lo cazó en la base de producción: un local con tipo y **sin
+una sola categoría**, que es el desplegable vacío justo donde la Auditoría promete
+«nunca vacío: vienen de serie».
+
+La reacción de M6 escucha los dos momentos en que un local puede saber de qué
+tipo es —al crearlo y al responder el paso 2— y **ahora los dos están probados
+contra la API de verdad**; el segundo no lo estaba, y es el que usa todo el mundo.
+Contra la API de pruebas los dos funcionan, así que la causa exacta en producción
+sigue sin conocerse.
+
+Lo que no puede pasar mientras tanto es que la única salida sea escribir SQL a
+mano en producción: para eso está `bd:reparar-categorias`, que dice cuáles están
+mal y solo toca nada si se le pide con `--arreglar`. **El local de producción ya
+está reparado.**
+
+#### La aplicación ya se puede instalar en el móvil
+
+Los iconos de 192 y 512 píxeles llevaban generados desde M3 y **no había
+manifiesto que los usara**: en Android no salía «Instalar aplicación» y en iPhone
+se abría dentro de Safari, con la barra de direcciones comiéndose una franja de
+una pantalla que ya es pequeña.
+
+Es otro «construido y nunca enchufado», y además era el **requisito escondido de
+las notificaciones push**: iPhone solo se las da a lo que está en la pantalla de
+inicio. Sin esto no habrían podido llegar nunca.
+
+#### La auditoría a fondo, antes de pasar a M7
+
+Se repasó todo lo construido buscando lo de siempre: cosas que existen y nadie
+llama, datos que se guardan y no llegan, y botones que prometen algo que no hacen.
+Salieron **seis fallos**, y uno de ellos era de seguridad.
+
+**1 · Medir la cobertura del catálogo, que era lo que faltaba.** La lección
+estaba escrita desde M6 —«una consulta que ninguna prueba llama es una consulta
+rota que todavía no sabes que lo está»— y era **solo prosa**. Ahora la API de
+pruebas apunta qué operación ejecuta cada prueba mientras corren, y
+[`pnpm cobertura`](herramientas/cobertura-del-catalogo.mjs) lo compara con el
+catálogo al terminar. **La primera medición: 43 de 62.**
+
+No se puede medir leyendo el código, y por eso no se había medido antes: las
+pruebas de extremo a extremo **pulsan botones**, así que el nombre del comando no
+aparece en ninguna parte del fichero de la prueba. Contar nombres con `grep` da un
+número que no significa nada.
+
+Lo que la medida destapó, en orden de gravedad:
+
+**2 · El segundo factor entero, sin una sola prueba que lo viera funcionar.**
+Activar, confirmar, superar y quitar: cuatro comandos, cero pruebas que los
+ejecutaran. Ahora hay una que hace el camino completo, con **un TOTP calculado en
+la propia prueba** —una segunda opinión sobre el RFC 6238, no una llamada a la
+función del servidor, que no comprobaría nada— y que además comprueba que un
+código de respaldo **se gasta al usarlo**.
+
+**3 · A nadie se le podía retirar el acceso.** El guardián de «segundo
+administrador o correo de recuperación obligatorio» preguntaba una sola cosa: «sin
+contar a esta persona, ¿queda alguien que administre?». En una organización que
+**nunca tuvo** dirección ni correo de recuperación —la de Ricardo, sin ir más
+lejos— la respuesta era «no» **para todo el mundo**. Retirarle el acceso al
+cocinero que se fue devolvía «el negocio se queda sin nadie que pueda
+administrarlo», que además era mentira.
+
+**Es un fallo de seguridad, no de texto:** quien se iba seguía entrando con su
+PIN, porque la aplicación no dejaba quitárselo. Ahora se comparan las dos fotos
+—cómo está la organización contándola y cómo quedaría sin ella— y solo se bloquea
+cuando esa persona es justo lo que sostiene el acceso. Con **su prueba al lado**,
+porque un guardián que se toca sin prueba es un guardián que un día deja de
+guardar.
+
+**4 · Se podía quitar y no se podía traer de vuelta.** Un producto desactivado
+desaparecía de la lista **para siempre**, y un proveedor desactivado igual. Las dos
+consultas aceptaban `incluir_desactivados` desde el primer día de M6 y estaban
+probadas; lo que no había era una pantalla que lo pidiera. Y `reactivar_producto`
+llevaba desde M6 en el catálogo **sin nadie que lo llamara**, apuntado como
+excepción con la razón «su pantalla llega con M8».
+
+La lección, que es nueva y va en «cómo trabajamos»: **una excepción apuntada con
+una razón bonita sigue siendo un agujero.**
+
+**5 · Un «Deshacer» que no deshacía un movimiento de stock.** Apuntar género abría
+la barra de deshacer con un botón cuyo `deshacer` era `() => undefined`: se
+pulsaba, la barra desaparecía y **el movimiento seguía apuntado**. Peor que un
+botón mudo, porque quien lo pulsaba se iba creyendo que la cámara decía otra cosa.
+
+Y no se arregla poniéndole un deshacer de verdad: «el stock es un libro de
+movimientos» (regla 8), el libro solo se añade, y **eso es lo que hace que se pueda
+auditar**. Ahora el aviso dice que se corrige con otro movimiento, que es la
+verdad.
+
+**6 · Quién puso cada precio se guardaba y no se enseñaba.** `creado_por` era la
+**única columna de las 363 del esquema** que se escribía sin que ninguna consulta
+la leyera. «Lo que hace cada uno queda con su nombre» (Manifiesto 8) lo cumplía el
+libro de movimientos y no el de precios, que es donde más falta hace: un precio
+mal metido se arrastra a todos los escandallos.
+
+**7 · El Panel llevaba desde M3 esperando a Inventario, y M6 no lo enchufó.**
+Dos tarjetas con su letrero puesto —«los pendientes los traen Inventario (M6) y
+Servicio (M12)», «se llenará con M6 y M8»— seguían diciendo «todavía no hay nada
+que medir» mientras `inventario_hoy` devolvía **exactamente eso**: lo que está por
+debajo del mínimo, lo que caduca y lo que no tiene precio.
+
+No faltaba código: faltaba que dos partes construidas se hablaran. Y es la
+primera pantalla que se ve cada mañana. Ahora el Panel enseña lo que hay que
+atender —caducidades primero, que tienen fecha— y cuántos productos tienen precio,
+con su botón a Inventario. A quien no tiene la app no le sale nada, que es la otra
+mitad de la regla.
+
+**Y la prueba que lo tapaba era una prueba en verde.** `los widgets del Panel
+tambien` comprobaba que las tarjetas siguieran vacías, así que M6 pudo terminar
+sin llenarlas y nadie se enteró. Ahora comprueba la verdad de hoy: con género,
+números; sin la app, nada.
+
+**8 · «Conectar ahora» estaba apagado.** Con la explicación debajo en letra
+pequeña, que suena honesto y no lo es: un botón apagado no se lee, se ignora.
+Ahora contesta, como avisos, chat y Fogón.
+
+**Después de la auditoría: 56 de 62 operaciones, el 90 %.** Las siete que quedan
+están apuntadas **una por una con su razón y con el módulo donde se pagan**, en el
+propio fichero de la herramienta. Esa lista es una deuda, no una excepción.
+
 #### Y dónde vive Fogón, decidido y construido antes que Fogón
 
 La pregunta salió mirando el móvil —«¿y la IA? No hay burbuja, no hay nada, ni la
@@ -1224,12 +1363,25 @@ Está escrito además donde se lee: **B5 y la ficha de M22 del Plan**.
     todo el mundo desde el primer día. Salió leyendo los errores que la API
     escupía mientras corrían **otras** pruebas. Cada consulta del catálogo
     necesita al menos una prueba que la llame de verdad.
-11. **Un pendiente que no se vuelve a comprobar se queda escrito para siempre.**
+11. **Una excepción apuntada con una razón bonita sigue siendo un agujero.**
+    `reactivar_producto` estuvo desde M6 en la lista de «no lo llama nadie», con
+    la razón «su pantalla llega con M8». Sonaba razonable y ocultaba esto: se
+    podía desactivar un producto y **no había forma de traerlo de vuelta** hasta
+    dos módulos después. «Si algo se puede poner, tiene que poderse quitar» —y al
+    revés— no se puede aplazar a un módulo siguiente. Las listas de excepciones
+    sirven para **no olvidar** los agujeros, no para justificarlos.
+12. **Lo que no se mide, no está probado.** Contar con `grep` qué operaciones se
+    llaman da un número que no significa nada: las pruebas de extremo a extremo
+    pulsan botones, y el nombre del comando no aparece por ningún lado. La
+    cobertura del catálogo se mide **corriendo**, con la API apuntando lo que se
+    ejecuta. La primera medición dijo 43 de 62, y entre lo que faltaba estaba el
+    segundo factor entero.
+13. **Un pendiente que no se vuelve a comprobar se queda escrito para siempre.**
     El almacén del logo estuvo dado por pendiente desde M5 y llevaba tiempo
     hecho: la clave estaba en `.env.local` y el cubo creado. Escribirlo en tres
     sitios no lo comprueba; ejecutarlo, sí. **Antes de mandar a alguien a hacer
     algo, comprobar que no está hecho ya.**
-12. **`toBeVisible()` no ve el recorte.** Un elemento tapado, o recortado por el
+14. **`toBeVisible()` no ve el recorte.** Un elemento tapado, o recortado por el
     `overflow` de un padre, sigue teniendo caja: sigue siendo «visible» para
     Playwright y no para una persona. Los desplegables de la barra de escritorio
     llevaban así desde M3. Cuando lo que se comprueba es que algo **se ve**, hay
@@ -1259,6 +1411,8 @@ En [`docs/decisiones/`](docs/decisiones/):
 | **0013** | **Google Places se aplaza a M23**                                 |
 | **0014** | **Un módulo reacciona a otro en la misma transacción**            |
 | **0015** | **Fogón es una burbuja que va contigo, no una pestaña por app**   |
+| **0016** | **El reloj es `pg_cron` llamando a nuestra API**                  |
+| **0017** | **Cómo avisa Estook: pantalla, correo con Resend y push**         |
 
 Otras, sin fichero propio:
 
@@ -1317,6 +1471,21 @@ después de fusionar.
 
 ---
 
+## 8 bis · Cómo avisa Estook, decidido
+
+Tres canales y un orden ([decisión 0017](docs/decisiones/0017-como-avisa-estook.md)):
+**la pantalla siempre**, el **correo con Resend** para lo que no puede esperar a
+que alguien abra la aplicación, y el **push** para lo mismo pero en el momento.
+
+Y cuatro reglas, que son lo que evita que se silencie entero: un aviso **nace en
+la pantalla y solo sale de ahí si se gana el salir**; sale lo que cuesta dinero si
+se ve mañana, no lo urgente en abstracto; cada persona decide qué le llega y
+**fuera de turno no suena nada**; y **ningún aviso llega sin decir qué hacer**.
+
+El correo va primero porque resuelve hoy algo que deja a alguien fuera de su
+propio negocio: **sin proveedor de correo, «he olvidado mi contraseña» no puede
+mandar nada**. Se monta en M25, con el dominio verificado en Resend.
+
 ## 8 · El siguiente paso · M7
 
 **Proveedores y compras.** M6 le deja la ficha corta del proveedor ya montada, y
@@ -1353,11 +1522,13 @@ conciliada con esa diferencia señalada.
 
 **Y dos cosas que hay que decidir, las mismas que dejó M5:**
 
-1. **Quién ejecuta los procesos de fondo.** Sigue sin reloj, y ahora la bandeja
-   crece más deprisa: M6 publica cinco eventos nuevos. Nada se rompe, y hay que
-   decidirlo **antes de M8**. Desde la decisión 0015 tiene un motivo más: los
-   análisis periódicos de las pestañas se calculan cada 8, 12 o 24 horas, y sin
-   reloj no hay «cada 8 horas».
+1. ~~**Quién ejecuta los procesos de fondo.**~~ **Decidido**: `pg_cron` dentro
+   de Supabase llama cada cinco minutos a un endpoint nuestro, y ese endpoint es
+   código de aplicación normal ([decisión 0016](docs/decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)).
+   Se descartó la acción programada de GitHub porque **su `cron` no es puntual**
+   —retrasos de diez a treinta minutos son normales, y en repositorios quietos se
+   desactiva sola—, y un reloj que a veces no suena no es un reloj. **Se monta en
+   M8**, que es cuando hay algo que hacer con la bandeja; la bandeja no cambia.
 2. **Si se quitan de la API `mis_locales`, `mis_permisos` y `un_local`**, que
    `quien_soy` dejó sin trabajo en M4.
 

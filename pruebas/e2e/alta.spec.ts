@@ -25,6 +25,9 @@ const APP = 'http://localhost:5174/';
 const API = 'http://localhost:5177/api';
 
 const CLAVE = 'estook en desarrollo';
+
+/** Elena es direccion del Grupo Costa: es la unica que puede crear locales. */
+const ELENA = 'elena@ejemplo.estook.com';
 /** Pablo lleva Casa Lola, que se siembra con el alta a medias a propósito. */
 const PABLO = 'pablo@ejemplo.estook.com';
 const ROSA = 'rosa@ejemplo.estook.com';
@@ -671,4 +674,116 @@ test('el paseo ofrece ponerlo en la pantalla de inicio solo en el móvil', async
     await expect(elAtajo).toBeHidden();
     await expect(page.getByRole('button', { name: 'Ponerlo en mi móvil' })).toBeHidden();
   }
+});
+
+// ── El bucle del segundo local ───────────────────────────────────────────────
+
+/**
+ * «Pones el primero, pero al poner los datos del segundo vuelve a preguntar
+ *  cuántos restaurantes tienes, y es un bucle del que o sales sin poner nada
+ *  ahí, o sigue.»
+ *
+ * Lo encontró Richi dando de alta su segundo local, y es de los peores que
+ * pueden pasar: no es una molestia, **es una trampa**. Contestar «dos» en el
+ * segundo local ofrece crear un tercero; entrar en el tercero vuelve a
+ * preguntar; y así.
+ *
+ * ── Por qué pasaba ──────────────────────────────────────────────────────────
+ *
+ * Porque el alta trata sus ocho pasos como si fueran del local, y dos no lo son:
+ * «¿cómo te llamas?» es de la persona y «¿cuántos locales llevas?» es de la
+ * organización. El local nuevo nacía en el paso cero, así que los preguntaba
+ * todos otra vez — y ese en concreto **genera locales al contestarlo**.
+ *
+ * Ahora nace en «¿dónde está?», que es el primer paso que de verdad es suyo.
+ */
+test.describe('el segundo local no vuelve a preguntar lo de la organización', () => {
+  test('nace en «dónde está», y nadie le pregunta cuántos locales lleva', async ({ request }) => {
+    const token = await tokenDe(request, ELENA);
+
+    const suyos = (await (
+      await request.get(`${API}/v1/consultas/mis_locales`, {
+        headers: { authorization: `Bearer ${token}` },
+      })
+    ).json()) as { datos: { id: string }[] };
+
+    const modelo = suyos.datos[0];
+    if (!modelo) throw new Error('Elena tendría que llegar a algún local');
+
+    const creado = (await (
+      await request.post(`${API}/v1/comandos/crear_local`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          'x-idempotencia': `bucle-${Date.now()}-${Math.random()}`,
+        },
+        data: { nombre: `Bar del bucle ${Date.now()}`, duplicar_de: modelo.id },
+      })
+    ).json()) as { datos: { localId: string } };
+
+    await request.post(`${API}/v1/comandos/cambiar_de_contexto`, {
+      headers: {
+        authorization: `Bearer ${token}`,
+        'x-idempotencia': `ctx-${Date.now()}-${Math.random()}`,
+      },
+      data: { local_id: creado.datos.localId },
+    });
+
+    const alta = (await (
+      await request.get(`${API}/v1/consultas/el_alta`, {
+        headers: { authorization: `Bearer ${token}` },
+      })
+    ).json()) as {
+      datos: { paso: number; progreso: { pendientes: string[] } };
+    };
+
+    // Empieza en «¿dónde está?», que es el cuarto.
+    expect(alta.datos.paso, 'el local nuevo empieza el alta por el principio').toBe(3);
+
+    // Y estos dos **no se vuelven a preguntar**, porque ya están contestados.
+    expect(
+      alta.datos.progreso.pendientes,
+      'al segundo local le vuelven a preguntar cuántos locales lleva: eso es el bucle',
+    ).not.toContain('cuantos_locales');
+    expect(alta.datos.progreso.pendientes).not.toContain('quien_eres');
+
+    // Lo que sí sigue pendiente es lo suyo: su dirección y su equipo.
+    expect(alta.datos.progreso.pendientes).toContain('donde_esta');
+    expect(alta.datos.progreso.pendientes).toContain('equipo');
+  });
+
+  test('y si no se duplica de nadie, su tipo queda pendiente en vez de perderse', async ({
+    request,
+  }) => {
+    // «Empezar de cero» no copia el tipo, así que ese paso **sí** hay que
+    // hacerlo. Se apunta como saltado, que es lo que hace que la tarjeta del
+    // Panel lo ofrezca sin meter a nadie en el asistente entero.
+    const token = await tokenDe(request, ELENA);
+
+    const creado = (await (
+      await request.post(`${API}/v1/comandos/crear_local`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          'x-idempotencia': `cero-${Date.now()}-${Math.random()}`,
+        },
+        data: { nombre: `Bar desde cero ${Date.now()}`, duplicar_de: null },
+      })
+    ).json()) as { datos: { localId: string } };
+
+    await request.post(`${API}/v1/comandos/cambiar_de_contexto`, {
+      headers: {
+        authorization: `Bearer ${token}`,
+        'x-idempotencia': `ctx2-${Date.now()}-${Math.random()}`,
+      },
+      data: { local_id: creado.datos.localId },
+    });
+
+    const alta = (await (
+      await request.get(`${API}/v1/consultas/el_alta`, {
+        headers: { authorization: `Bearer ${token}` },
+      })
+    ).json()) as { datos: { progreso: { pendientes: string[] } } };
+
+    expect(alta.datos.progreso.pendientes).toContain('tipo_de_local');
+    expect(alta.datos.progreso.pendientes).not.toContain('cuantos_locales');
+  });
 });

@@ -18,6 +18,11 @@ coverage/
 playwright-report/
 test-results/
 .eslintcache
+
+# El cuaderno que la API de pruebas escribe mientras corren las de extremo a
+# extremo. Lo lee `pnpm cobertura` justo despues, y no significa nada fuera de
+# esa ejecucion.
+pruebas/.cobertura-del-catalogo.json
 dependencias.svg
 
 # sistema

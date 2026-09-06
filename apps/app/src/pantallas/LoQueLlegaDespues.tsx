@@ -24,7 +24,7 @@ import { Boton, Hoja } from '@estook/ui';
  * arriba en el ordenador, sabiendo en qué pantalla estás. Eso es navegación, y
  * la navegación se decide ahora aunque la inteligencia llegue en M22.
  */
-export type LoQueFalta = 'avisos' | 'chat';
+export type LoQueFalta = 'avisos' | 'chat' | 'tpv';
 
 interface Ficha {
   readonly titulo: string;
@@ -46,6 +46,18 @@ const FICHAS: Readonly<Record<LoQueFalta, Ficha>> = {
     cuando: 'Llegan con Fogón, el módulo 22.',
     mientrasTanto:
       'Lo que hay que atender hoy está en el Panel, y lo del género en Inventario · Hoy.',
+  },
+  tpv: {
+    titulo: 'Conectar tu TPV',
+    queEs: 'Que tus ventas y tu carta entren solas, sin escribir nada a mano.',
+    queHara: [
+      'Trae tu carta del TPV y la empareja con tus fichas técnicas, para saber lo que cuesta de verdad cada plato que vendes.',
+      'Descuenta el género según se vende, y así el stock deja de depender de que alguien apunte.',
+      'Y compara lo que debería haber con lo que hay: eso es la desviación, que es donde aparece lo que se va sin explicación.',
+    ],
+    cuando: 'El asistente de conexión llega con el módulo 18, y el emparejamiento con el 20.',
+    mientrasTanto:
+      'Las ventas se pueden meter a mano, y el inventario funciona igual: cada entrada y cada salida se apuntan en su libro.',
   },
   chat: {
     titulo: 'El chat del equipo',

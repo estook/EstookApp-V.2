@@ -28,3 +28,6 @@ alguien se preguntara «por que esta hecho asi».
 | **0015** | Fogon es una burbuja que va contigo, no una pestana por app       |
 | **0016** | El reloj es pg_cron llamando a nuestra API, no GitHub Actions     |
 | **0017** | Como avisa Estook: pantalla, correo con Resend y push             |
+| **0018** | Cada app tiene destinos, y cada destino sus vistas                |
+| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato   |
+| **0020** | Un catalogo de acciones, y una accion es una direccion            |

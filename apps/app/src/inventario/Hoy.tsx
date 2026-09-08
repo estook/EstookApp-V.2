@@ -74,7 +74,7 @@ export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string
             icono={<IconoVacio size={24} />}
             titulo="La cámara está vacía"
             frase="En cuanto des de alta tu primer producto, aquí verás lo que se está acabando, lo que caduca y lo que te está costando."
-            sinAccionPorque="Se empieza por «Productos», que es la pestaña de al lado."
+            sinAccionPorque="Se empieza por «Productos», que es el sitio de al lado en la barra."
           />
         </Tarjeta>
       ) : (

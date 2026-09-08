@@ -16,9 +16,21 @@
  * anos haya cuatro botones distintos.
  */
 
-// ── Las ocho apps: icono, acento, pestanas ───────────────────────────────────
-export { APPS, PANEL, appPorId, appPorPermiso } from './apps.ts';
-export type { App } from './apps.ts';
+// ── Las ocho apps: icono, acento, forma, destinos y vistas ───────────────────
+export {
+  APPS,
+  MODULOS,
+  PANEL,
+  appPorId,
+  appPorPermiso,
+  comoSeLlamaElModulo,
+  destinoPorId,
+  destinosConstruidos,
+  destinosQueLlegan,
+  dondeEntra,
+  rutaDe,
+} from './apps.ts';
+export type { App, Destino, Vista, FormaDeApp } from './apps.ts';
 
 export { clases } from './clases.ts';
 
@@ -79,6 +91,28 @@ export type { BarraEscritorioProps } from './navegacion/BarraEscritorio.tsx';
 
 export { RuedaDeApps } from './navegacion/RuedaDeApps.tsx';
 export type { RuedaDeAppsProps } from './navegacion/RuedaDeApps.tsx';
+
+// ── El Panel de cada uno (Manifiesto 6) ──────────────────────────────────────
+export {
+  CUANTO_OCUPA,
+  PANEL_DE_FABRICA,
+  WIDGETS,
+  cuandoLlega,
+  loQueSePuedeAnadir,
+  loQueSePuedePintar,
+  losQueLlegan,
+  widgetPorId,
+} from './panel/catalogo.ts';
+export type { TamanoDeWidget, Widget, WidgetPuesto } from './panel/catalogo.ts';
+
+export { Rejilla } from './panel/Rejilla.tsx';
+export type { RejillaProps } from './panel/Rejilla.tsx';
+
+export { MenuLateral } from './navegacion/MenuLateral.tsx';
+export type { MenuLateralProps } from './navegacion/MenuLateral.tsx';
+
+export { Vistas } from './navegacion/Vistas.tsx';
+export type { VistasProps } from './navegacion/Vistas.tsx';
 
 export { sectores, sectorEn, anguloDe, puntoEn, caminoDeSector } from './navegacion/geometria.ts';
 export type { Sector } from './navegacion/geometria.ts';

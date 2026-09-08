@@ -4,7 +4,7 @@ import { Cargando, EstadoVacio, ProveedorDeDeshacer } from '@estook/ui';
 import { ElAlta } from './alta/ElAlta.tsx';
 import { Esqueleto } from './Esqueleto.tsx';
 import { Ajustes } from './pantallas/Ajustes.tsx';
-import { Panel } from './pantallas/Panel.tsx';
+import { Panel } from './panel/Panel.tsx';
 import { PantallaDeApp } from './pantallas/PantallaDeApp.tsx';
 import { VistaDeCadena } from './pantallas/VistaDeCadena.tsx';
 import { Entrar } from './sesion/Entrar.tsx';
@@ -133,9 +133,19 @@ function Puerta() {
           />
           <Route path="cadena" element={<VistaDeCadena />} />
           <Route path="ajustes" element={<Ajustes />} />
-          {/* App -> vista. Tres niveles como mucho (B5). */}
+          {/*
+            App -> destino -> vista.
+
+            Siguen siendo **tres niveles** de los de B5 (app -> pantalla ->
+            ficha): la vista no es un piso, es la misma pantalla mirada de otra
+            forma —«Mes / Semana / Día», «Todo / Bajo mínimo»— y va en la
+            direccion para que el enlace se pueda copiar y para que volver atras
+            devuelva a la vista de antes. La ficha sigue abriendose encima, en
+            panel lateral, sin cambiar de direccion.
+          */}
           <Route path=":app" element={<PantallaDeApp />} />
-          <Route path=":app/:pestana" element={<PantallaDeApp />} />
+          <Route path=":app/:destino" element={<PantallaDeApp />} />
+          <Route path=":app/:destino/:vista" element={<PantallaDeApp />} />
           <Route path="*" element={<NoEstaAqui />} />
         </Route>
       </Routes>

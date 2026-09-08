@@ -263,3 +263,62 @@ export const COMO_SE_LLAMA_EL_MOVIMIENTO: Readonly<Record<string, string>> = {
   consumo: 'Consumido al vender',
   recuento: 'Recuento',
 };
+
+// ── El libro de movimientos, entero ──────────────────────────────────────────
+
+/**
+ * Una linea del libro, como llega de `mis_movimientos`.
+ *
+ * Es hermana de `MovimientoEnFicha`, y no la misma: la de la ficha ya sabe de
+ * que producto es —lo dice la pantalla de alrededor— y esta no, porque el libro
+ * mezcla los de todos. Traer el nombre del producto en cada linea es lo que hace
+ * que la pantalla sirva para cuadrar sin abrir nada.
+ */
+export interface MovimientoDelLibro {
+  readonly id: string;
+  readonly tipo: string;
+  readonly producto: string;
+  readonly productoId: string;
+  readonly unidadDeUso: string;
+  readonly cantidad: number;
+  readonly cantidadDespues: number;
+  readonly motivo: string | null;
+  readonly fechaOperativa: string;
+  readonly ocurrioEn: string;
+  readonly quien: string | null;
+  readonly lote: string | null;
+  readonly esEjemplo: boolean;
+  readonly costeMilesimas?: number | null;
+}
+
+export interface MisMovimientos {
+  readonly movimientos: readonly MovimientoDelLibro[];
+  readonly hayMas: boolean;
+  readonly puedeVerPrecios: boolean;
+  /** La fecha de hoy **en el local**, para poder escribir «hoy» sin mirar el reloj. */
+  readonly hoy: string;
+}
+
+/**
+ * Como se escribe una fecha operativa en pantalla: «hoy», «ayer» o el dia.
+ *
+ * Recibe la fecha del servidor y **la de hoy tambien del servidor**, por la misma
+ * razon que `cuandoSeAgota`: aqui no se mira el reloj del navegador (regla 10).
+ */
+export function comoSeLeeElDia(fecha: string, hoy: string): string {
+  if (fecha === hoy) return 'Hoy';
+
+  const dia = new Date(`${fecha}T12:00:00Z`);
+  const elDeHoy = new Date(`${hoy}T12:00:00Z`);
+  // `trunc` y no `round`: la regla 9 prohibe redondear fuera de los motores de
+  // dominio, y aqui no hace falta redondear nada. Las dos fechas se fijan al
+  // mediodia a proposito —asi ningun cambio de hora mueve la cuenta— y la
+  // diferencia sale exacta en dias.
+  const diferencia = Math.trunc((elDeHoy.getTime() - dia.getTime()) / 86_400_000);
+
+  if (diferencia === 1) return 'Ayer';
+  if (diferencia > 1 && diferencia < 7) {
+    return dia.toLocaleDateString('es-ES', { weekday: 'long' });
+  }
+  return dia.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+}

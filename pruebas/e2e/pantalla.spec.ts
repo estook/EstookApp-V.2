@@ -129,7 +129,7 @@ test.describe('la barra de escritorio', () => {
 
     // Y que lleve a algún sitio, que es para lo que está.
     await menu.getByRole('menuitem', { name: 'Productos' }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inventario');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Productos');
     await expect(page).toHaveURL(/inventario\/productos/);
   });
 
@@ -162,6 +162,26 @@ test.describe('la barra de escritorio', () => {
     await page.getByRole('banner').getByRole('button', { name: 'Chat del equipo' }).click();
     await expect(page.getByRole('heading', { name: 'El chat del equipo' })).toBeVisible();
   });
+
+  test('el avatar abre tu cuenta, y no hay dos puertas a Ajustes pegadas', async ({ page }) => {
+    /*
+      B5 pide aqui «notificaciones, chat, Fogon y avatar»: cuatro cosas. Habia
+      cinco, porque se anadio un icono de Ajustes que abria **exactamente la misma
+      pantalla** que el avatar de al lado. Dos puertas a lo mismo, pegadas, en la
+      esquina donde mas se mira.
+    */
+    await entrar(page);
+    const barra = page.getByRole('banner');
+
+    await expect(barra.getByRole('button', { name: 'Ajustes' })).toHaveCount(0);
+
+    await barra.getByRole('button', { name: /^Tu cuenta ·/ }).click();
+    const hoja = page.getByRole('dialog', { name: 'Tu cuenta' });
+    await expect(hoja).toBeVisible();
+    await expect(hoja.getByRole('button', { name: /^Ajustes/ })).toBeVisible();
+    await expect(hoja.getByRole('button', { name: /^Mi acceso/ })).toBeVisible();
+    await expect(hoja.getByRole('button', { name: /^Salir/ })).toBeVisible();
+  });
 });
 
 // ── 2 y 3 · El móvil ─────────────────────────────────────────────────────────
@@ -169,31 +189,46 @@ test.describe('la barra de escritorio', () => {
 test.describe('la barra de arriba en móvil', () => {
   test.use({ viewport: { width: 375, height: 667 } });
 
-  test('lleva las cinco cosas que solo estaban en el ordenador', async ({ page }) => {
-    // El agujero: el buscador universal solo se abría con `Ctrl+K`, que en un
-    // teléfono no existe; avisos, chat y Fogón no estaban en ninguna parte; y a
-    // Ajustes no se llegaba desde dentro de una app.
+  test('lleva cuatro cosas, y ninguna repetida', async ({ page }) => {
+    /*
+      ── El agujero, y el que se abrio al taparlo ──────────────────────────────
+
+      El agujero de M6: el buscador solo se abria con `Ctrl+K`, que en un telefono
+      no existe; avisos, chat y Fogon no estaban en ninguna parte; y a Ajustes no
+      se llegaba desde dentro de una app.
+
+      Y el que se abrio al taparlo: se trajeron las cinco de escritorio tal cual,
+      asi que en 375 px habia **seis botones y el nombre del local**, con el
+      nombre sin sitio para leerse y Ajustes dos veces —aqui arriba y abajo en la
+      barra de movil—. Ahora son cuatro: donde estas, buscar, la bandeja —los
+      avisos y el chat juntos— y el avatar.
+    */
     await entrar(page);
 
     // Por su papel y no por la etiqueta `header`: las dos barras son `<header>`,
-    // la de escritorio va antes en el documento y en un móvil está escondida.
-    // Buscarla por `banner` es buscar la que de verdad está en la pantalla.
+    // la de escritorio va antes en el documento y en un movil esta escondida.
     const barra = page.getByRole('banner');
-    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo', 'Fogón']) {
-      await expect(barra.getByRole('button', { name: new RegExp(que) })).toBeVisible();
-    }
-    await expect(barra.getByRole('button', { name: /Tu cuenta y los ajustes/ })).toBeVisible();
+
+    await expect(barra.getByRole('button', { name: 'Buscar en todo' })).toBeVisible();
+    await expect(barra.getByRole('button', { name: /Avisos y chat/ })).toBeVisible();
+    await expect(barra.getByRole('button', { name: /^Tu cuenta ·/ })).toBeVisible();
+
+    // Y lo que ya no esta, porque estaba dos veces.
+    await expect(barra.getByRole('button', { name: 'Ajustes' })).toHaveCount(0);
+    // Fogon en movil es la burbuja (decision 0015), no un icono mas aqui arriba.
+    await expect(barra.getByRole('button', { name: /^Fogón/ })).toHaveCount(0);
   });
 
-  test('siguen estando dentro de una app, que es donde no había forma de llegar', async ({
-    page,
-  }) => {
+  test('la bandeja lleva los avisos y el chat dentro', async ({ page }) => {
+    // En un telefono no hay sitio para dos puertas a «algo que alguien te manda».
     await entrar(page);
-    await page.goto(`${APP}#/inventario/productos`, { waitUntil: 'domcontentloaded' });
 
-    const barra = page.getByRole('banner');
-    await barra.getByRole('button', { name: /Tu cuenta y los ajustes/ }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ajustes');
+    await page
+      .getByRole('banner')
+      .getByRole('button', { name: /Avisos y chat/ })
+      .click();
+    await expect(page.getByRole('heading', { name: 'Tu bandeja' })).toBeVisible();
+    await expect(page.getByText(/Los avisos llegan con Fogón/)).toBeVisible();
   });
 
   test('el buscador se abre con el dedo, sin teclado', async ({ page }) => {
@@ -203,11 +238,14 @@ test.describe('la barra de arriba en móvil', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
   });
 
-  test('los avisos dicen qué serán, en vez de no hacer nada', async ({ page }) => {
+  test('la bandeja dice qué será, en vez de no hacer nada', async ({ page }) => {
     await entrar(page);
 
-    await page.getByRole('banner').getByRole('button', { name: 'Avisos' }).click();
-    await expect(page.getByRole('heading', { name: 'Los avisos' })).toBeVisible();
+    await page
+      .getByRole('banner')
+      .getByRole('button', { name: /Avisos y chat/ })
+      .click();
+    await expect(page.getByRole('heading', { name: 'Tu bandeja' })).toBeVisible();
   });
 });
 
@@ -322,7 +360,7 @@ test.describe('Fogón', () => {
       // pantalla todavía dice «Cargando tu sesión», y preguntar ahí qué hay en un
       // punto de la pantalla contesta que no hay nada. Costó un rojo que parecía
       // un fallo de la burbuja y era de la prueba.
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inventario');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Productos');
 
       expect(await seVeDeVerdad(page, '[aria-label="Abrir Fogón"]')).toBe(true);
     });
@@ -337,10 +375,46 @@ test.describe('Fogón', () => {
 
       // Y desde Inventario, sin que nadie se lo diga.
       await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inventario');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
       await expect(page.getByText('Estás en')).toContainText('Inventario');
       await expect(page.getByText(/Dictarle una merma/)).toBeVisible();
+    });
+
+    test('trae las cifras que hay delante, no solo el nombre de la pantalla', async ({ page }) => {
+      /*
+        «Presente en todas las apps, **trabajando con el contexto de la
+        pantalla**» (Plan, M22). Hasta M6½ el contexto era una frase —«estás en
+        Inventario»— y ahí se acababa. Ahora trae las cifras ya calculadas por la
+        base de datos, que es exactamente lo que M22 le mandará al modelo: un
+        resumen compacto en vez del local entero, que es lo que hace que Fogón
+        pueda tener un presupuesto.
+      */
+      await entrar(page);
+      await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
+
+      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
+      const ventana = page.getByRole('dialog', { name: 'Fogón' });
+      await expect(ventana.getByText('Productos de alta')).toBeVisible({ timeout: 15_000 });
+    });
+
+    test('y sus botones hacen algo de verdad, no esperan a M22', async ({ page }) => {
+      /*
+        La mitad que faltaba. La ventana contaba lo que Fogón **hará** y no había
+        nada que pulsar; ahora ofrece las acciones del catálogo de esta pantalla,
+        que abren el alta, llevan a lo que está bajo mínimo o abren el libro. Y
+        siguen sin haber botones de mentira: lo que Fogón hará cuando hable se
+        cuenta, no se pinta como botón.
+      */
+      await entrar(page);
+      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
+
+      const ventana = page.getByRole('dialog', { name: 'Fogón' });
+      await expect(ventana.getByText('Lo que puedes hacer aquí ahora')).toBeVisible();
+
+      await ventana.getByRole('button', { name: 'Ver qué hay que atender' }).click();
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
     });
 
     test('y dice la verdad: todavía no se puede hablar con él', async ({ page }) => {
@@ -369,7 +443,7 @@ test.describe('Fogón', () => {
     test('el icono de arriba abre la misma ventana, y sabe dónde estás', async ({ page }) => {
       await entrar(page);
       await page.goto(`${APP}#/escandallos`, { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Escandallos');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
 
       await page
         .getByRole('banner')
@@ -399,25 +473,54 @@ test.describe('Fogón', () => {
  * faltaba código; faltaba que dos partes construidas se hablaran, que es el
  * fallo más caro y el que ninguna prueba de unidad ve.
  *
- * Esta prueba mira **la primera pantalla del día**, que es donde se nota.
+ * ── Y lo que cambia en M6½ ───────────────────────────────────────────────────
+ *
+ * Las dos tarjetas ya no son fijas. «Lo que hay que atender» son ahora dos
+ * widgets —caducidades y bajo mínimo— que cada uno puede poner o quitar, y «salud
+ * de los datos» **ha dejado de ser un widget**: ocupaba una tarjeta entera para
+ * decir una cifra que casi siempre está en verde, y ahora es una línea en la zona
+ * de atención que solo aparece cuando falta algo.
+ *
+ * Lo que esta prueba mira sigue siendo lo mismo, que es lo que importa: que **la
+ * primera pantalla del día** enseña lo del género de verdad, y que a quien no
+ * tiene la app no le enseña nada de eso.
  */
 test.describe('el Panel enseña lo de Inventario', () => {
-  test('la salud de los datos sale con números de verdad', async ({ page }) => {
+  test('los widgets de género salen con datos de verdad', async ({ page }) => {
     await entrar(page);
 
-    // Rosa tiene género en su bar, así que la tarjeta deja de decir «todavía no
-    // hay nada que medir» y cuenta cuántos productos tienen precio.
-    await expect(page.getByText('Productos con precio')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Salud de los datos' })).toBeVisible();
+    // Rosa tiene género en su bar, así que sus widgets de fábrica traen dato.
+    await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Caduca esta semana' })).toBeVisible();
+
+    // Y con su origen debajo: «cada número lleva de dónde sale y de qué periodo
+    // es» (Evolución 1.0), sin excepción.
+    await expect(page.getByText('De tu inventario, ahora mismo')).toBeVisible();
   });
 
-  test('quien no tiene Inventario no ve sus tarjetas', async ({ page }) => {
+  test('quien no tiene Inventario no ve ninguno de sus widgets', async ({ page }) => {
     // «Las apps que el rol no tiene no aparecen **en ningún sitio**». Sara es
     // camarera: pedirle `inventario_hoy` sería llevarle un «esto no está en tu
     // acceso» a la primera pantalla del día.
     await entrar(page, 'sara@ejemplo.estook.com');
 
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
-    await expect(page.getByText('Productos con precio')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 2, name: 'Valor de la cámara' })).toHaveCount(
+      0,
+    );
+  });
+
+  test('la zona de atención va arriba, y no se puede quitar', async ({ page }) => {
+    // «Por encima de los widgets hay una zona fija de atención, que no se puede
+    // quitar y que se ordena sola por prioridad» (Evolución 1.0, capítulo 5).
+    await entrar(page);
+
+    const zona = page.getByRole('region', { name: 'Lo que necesita tu atención' });
+    await expect(zona).toBeVisible();
+
+    // Y en modo de edición sigue ahí: lo que se monta es la rejilla de debajo.
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await expect(zona).toBeVisible();
   });
 });

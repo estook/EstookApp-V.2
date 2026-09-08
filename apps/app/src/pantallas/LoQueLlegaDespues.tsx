@@ -24,7 +24,7 @@ import { Boton, Hoja } from '@estook/ui';
  * arriba en el ordenador, sabiendo en qué pantalla estás. Eso es navegación, y
  * la navegación se decide ahora aunque la inteligencia llegue en M22.
  */
-export type LoQueFalta = 'avisos' | 'chat' | 'tpv';
+export type LoQueFalta = 'avisos' | 'chat' | 'tpv' | 'bandeja';
 
 interface Ficha {
   readonly titulo: string;
@@ -35,6 +35,26 @@ interface Ficha {
 }
 
 const FICHAS: Readonly<Record<LoQueFalta, Ficha>> = {
+  /**
+   * La bandeja · avisos y chat juntos, y solo en movil.
+   *
+   * En escritorio son dos botones, que es lo que manda B5 y ahi sobra sitio. En
+   * un telefono de 375 px no caben seis botones redondos y el nombre del local a
+   * la vez, y de las seis estas dos son la misma cosa: **algo que alguien te
+   * manda**. Una sola puerta, con las dos dentro.
+   */
+  bandeja: {
+    titulo: 'Tu bandeja',
+    queEs: 'Aquí llegará lo que necesita que hagas algo, y lo que te escriba tu equipo.',
+    queHara: [
+      'Los avisos con qué pasa, por qué, qué impacto tiene y un botón que lo resuelve.',
+      'Ordenados por lo que más cuesta si se deja, no por hora de llegada.',
+      'Y los mensajes del equipo, con silencio fuera de turno: a nadie le suena el teléfono en su día libre.',
+    ],
+    cuando: 'Los avisos llegan con Fogón, el módulo 22, y el chat con el 23.',
+    mientrasTanto:
+      'Lo que hay que atender hoy está en el Panel, y lo del género en Inventario · Hoy. Las notas del turno, en el Cuaderno.',
+  },
   avisos: {
     titulo: 'Los avisos',
     queEs: 'El sitio donde llega solo lo que necesita que hagas algo.',

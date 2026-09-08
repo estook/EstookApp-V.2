@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Tarjeta, TodaviaNo } from '@estook/ui';
+import { Cargando } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { FichaDeProducto } from './FichaDeProducto.tsx';
 import { Hoy } from './Hoy.tsx';
 import { Productos } from './Productos.tsx';
 import { Proveedores } from './Proveedores.tsx';
@@ -14,32 +13,71 @@ import type { MisProductos } from './contrato.ts';
  * «El corazón. Lo que la app sabe que hay y lo que no. **Todas las demás leen de
  *  aquí**» (Manifiesto 12).
  *
- * ── Las cuatro pestañas, y por qué son estas ─────────────────────────────────
+ * ── Los cuatro destinos, y por qué son estos ─────────────────────────────────
  *
- * La tabla de B5 le da a Inventario `Hoy · Productos · Pedidos · Más`, con un
- * máximo de cuatro posiciones. M6 llena las dos primeras enteras; **Pedidos es
- * M7** y lo dice, en vez de dejar una pestaña que no hace nada.
+ * Hasta M6½ las pestañas eran `Hoy · Productos · Pedidos · Más`, y **dos de las
+ * cuatro no llevaban a ningún sitio**: «Pedidos» es M7 y enseñaba un cartel, y
+ * «Más» era el cajón donde vivía Proveedores. La barra de navegación principal de
+ * la app, en el aparato donde de verdad se usa Estook, con la mitad de los
+ * botones vacíos.
  *
- * Y «Más» no es un cajón de sastre: es donde viven Proveedores, que M6 sí trae,
- * y donde entrarán Inventario y Mermas con M8. Que la ficha corta de proveedor
- * nazca aquí y no en Ajustes es a propósito: cuando M7 la complete, nadie tendrá
- * que aprenderse un sitio nuevo.
+ * Ahora los cuatro contestan una pregunta y los cuatro funcionan:
+ *
+ * | Destino         | Su pregunta                                       |
+ * | --------------- | ------------------------------------------------- |
+ * | **Hoy**         | ¿Qué tengo que atender ahora mismo?               |
+ * | **Productos**   | ¿Qué hay en cámara, cuánto cuesta y cuánto dura?  |
+ * | **Movimientos** | ¿Qué ha entrado, qué ha salido y quién lo apuntó? |
+ * | **Compras**     | ¿A quién se lo compro y a qué precio?             |
+ *
+ * Y sobreviven a M7 y M8 sin volver a inventar un «Más»: los pedidos y las
+ * facturas son **vistas de Compras**, y los recuentos y las mermas serán vistas
+ * de Movimientos. Un destino nuevo por módulo es lo que llena una barra de cuatro
+ * posiciones en dos módulos.
  *
  * ── La ficha se abre sin salir de la lista ───────────────────────────────────
  *
  * «La ficha se abre en panel lateral derecho **sin tapar la lista**» (B5), y en
  * móvil como una hoja. Por eso el producto abierto vive aquí y no dentro de cada
- * pestaña: se puede abrir desde «Hoy» y desde «Productos», y se cierra volviendo
- * al mismo sitio.
+ * destino: se puede abrir desde los cuatro, y se cierra volviendo al mismo sitio.
+ *
+ * ── Y dos cosas se cargan aparte ─────────────────────────────────────────────
+ *
+ * `FichaDeProducto` son **1.300 líneas** con sus tres hojas —apuntar entrada,
+ * apuntar salida, ajustar la cámara—, y no hace falta hasta que alguien abre un
+ * producto. `Movimientos` es un destino de cuatro, así que tres de cada cuatro
+ * veces no se pinta. Las dos van detrás de un `lazy`, igual que la gráfica desde
+ * M3 y por la misma razón: lo que el usuario nota es el tiempo, y bajar código que
+ * no se va a pintar es tiempo.
+ *
+ * No es un apaño para cuadrar el presupuesto de tamaño —que «se mide y se
+ * informa», no bloquea— sino lo que dice B7: **un módulo que no cumple su
+ * presupuesto de velocidad no está terminado**, y abrir una app tiene 200 ms.
  */
-export function Inventario({ pestana }: { readonly pestana: string }) {
+const FichaDeProducto = lazy(async () => {
+  const modulo = await import('./FichaDeProducto.tsx');
+  return { default: modulo.FichaDeProducto };
+});
+
+const Movimientos = lazy(async () => {
+  const modulo = await import('./Movimientos.tsx');
+  return { default: modulo.Movimientos };
+});
+
+export function Inventario({
+  destino,
+  vista,
+}: {
+  readonly destino: string;
+  readonly vista: string;
+}) {
   const { cliente } = usarSesion();
   const [productoAbierto, setProductoAbierto] = useState<string | null>(null);
 
   // Las categorías y los proveedores los necesitan la ficha y el alta, y salen
   // de la misma consulta que la lista para no pedirlos dos veces.
   const contexto = useQuery({
-    queryKey: ['mis_productos', '', ''],
+    queryKey: ['mis_productos', '', '', false],
     queryFn: async (): Promise<MisProductos> => {
       const respuesta = await cliente.consultar<MisProductos>('mis_productos', {});
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
@@ -49,38 +87,32 @@ export function Inventario({ pestana }: { readonly pestana: string }) {
 
   return (
     <>
-      {pestana === 'hoy' && <Hoy alAbrirProducto={setProductoAbierto} />}
-      {pestana === 'productos' && <Productos alAbrirProducto={setProductoAbierto} />}
-      {pestana === 'pedidos' && <Pedidos />}
-      {pestana === 'mas' && <Proveedores />}
+      {destino === 'hoy' && <Hoy alAbrirProducto={setProductoAbierto} />}
+      {destino === 'productos' && <Productos vista={vista} alAbrirProducto={setProductoAbierto} />}
+      {destino === 'movimientos' && (
+        <Suspense fallback={<Cargando que="el libro de movimientos" />}>
+          <Movimientos vista={vista} alAbrirProducto={setProductoAbierto} />
+        </Suspense>
+      )}
+      {destino === 'compras' && <Proveedores />}
 
-      <FichaDeProducto
-        productoId={productoAbierto}
-        alCerrar={() => {
-          setProductoAbierto(null);
-        }}
-        categorias={contexto.data?.categorias ?? []}
-        proveedores={contexto.data?.proveedores ?? []}
-      />
+      {/*
+        La ficha solo se monta cuando hay un producto abierto: asi el `lazy` no se
+        descarga al entrar en Inventario, sino al abrir el primero. Y no se pierde
+        nada por esperar, porque abrir una ficha ya trae su propia consulta.
+      */}
+      {productoAbierto !== null && (
+        <Suspense fallback={<Cargando que="la ficha" />}>
+          <FichaDeProducto
+            productoId={productoAbierto}
+            alCerrar={() => {
+              setProductoAbierto(null);
+            }}
+            categorias={contexto.data?.categorias ?? []}
+            proveedores={contexto.data?.proveedores ?? []}
+          />
+        </Suspense>
+      )}
     </>
-  );
-}
-
-/**
- * Pedidos, que es M7.
- *
- * Se dice con su nombre y con lo que hará, en vez de dejar la pestaña muda.
- * «Todo estado vacío tiene una frase y un botón» (Auditoría, parte 3); aquí no
- * hay botón porque no hay nada que pulsar todavía, y eso también se dice.
- */
-function Pedidos() {
-  return (
-    <Tarjeta titulo="Pedidos">
-      <TodaviaNo
-        que="Inventario · Pedidos"
-        queHabra="El ciclo de un pedido: borrador, enviado y recibido, con la sugerencia de qué pedir según lo que se está gastando, los días de reparto de cada proveedor y su pedido mínimo"
-        modulo="M7 · Proveedores y compras"
-      />
-    </Tarjeta>
   );
 }

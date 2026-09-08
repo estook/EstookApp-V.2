@@ -1,0 +1,156 @@
+# Pasos para cerrar M6½ · la capa de producto
+
+> ## Lo que hay hecho, y lo que falta
+>
+> **Todo el código está escrito y en verde**, en la rama
+> `m6-medio-la-capa-de-producto`. Lo que falta son los cuatro pasos de abajo, y
+> **el tercero es el que se olvida y hace que parezca que todo está roto**.
+>
+> | Qué                 | Cómo está                                                    |
+> | ------------------- | ------------------------------------------------------------ |
+> | El código           | **Escrito.** 706 pruebas de unidad y 288 de pantalla, verdes |
+> | El pull request     | **Por abrir y fusionar** · paso 1                            |
+> | La migración `0025` | **Escrita y sin aplicar** · paso 2                           |
+> | La API desplegada   | **Por detrás**: le faltan tres operaciones nuevas · paso 3   |
+> | Mirarlo en tu móvil | **Sin hacer** · paso 4, y es el que no puedo hacer yo        |
+
+---
+
+## Cómo se escriben los comandos aquí
+
+**El lanzador es `.\estook.cmd`.** En tu ordenador `pnpm` a veces no se encuentra,
+porque la ventana de terminal se abrió antes de instalarlo y se quedó con el PATH
+viejo. `.\estook.cmd` busca `pnpm` donde de verdad está, así que funciona siempre.
+
+Y una cosa de PowerShell: **no entiende `&&`**. Por eso cada comando va en su
+propio recuadro, de uno en uno.
+
+---
+
+## Paso 1 · Fusionar el pull request
+
+**Dónde:** GitHub → pestaña **Pull requests** → entrar en el que hay abierto →
+bajar al recuadro del final.
+
+Las tres comprobaciones tienen que estar en verde: `Calidad`, `Construccion y
+presupuestos` y `Migraciones reversibles`. Entonces, **Merge pull request** y
+**Confirm merge**.
+
+**Qué sale si va bien:** el pull request en morado, con la palabra **Merged**. Y
+al fusionar, GitHub publica solo las cuatro aplicaciones: eso tarda un par de
+minutos y no hay que hacer nada.
+
+> **Si alguna comprobación sale en rojo, para y dímelo.** No fusiones: el candado
+> de `main` está para eso.
+
+---
+
+## Paso 2 · Aplicar la migración `0025`
+
+Es la del Panel de cada uno: crea una tabla nueva, `estook.panel_de_persona`, y no
+toca nada de lo que ya había.
+
+**Dónde:** una ventana de terminal, en la carpeta del proyecto.
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué sale si va bien:** una línea por cada migración que aplica. Solo debería
+aplicar una, la `0025`, y acabar diciendo que la base está al día.
+
+Y para comprobarlo sin creerte lo que diga yo:
+
+```bash
+.\estook.cmd bd:comprobar
+```
+
+**Qué tiene que decir:** **25 de 25** migraciones aplicadas, y **39 tablas** en el
+esquema `estook` —eran 38—, todas con seguridad por filas.
+
+---
+
+## Paso 3 · Desplegar la API · **el que se olvida**
+
+**Esto es lo importante de esta lista.** Las cuatro aplicaciones se publican solas
+al fusionar; **la API se despliega a mano**, a propósito.
+
+M6½ trae **tres operaciones nuevas** que la API desplegada no conoce:
+
+| Operación          | Para qué                          |
+| ------------------ | --------------------------------- |
+| `mis_movimientos`  | El libro de movimientos, entero   |
+| `mi_panel`         | Leer cómo tienes montado el Panel |
+| `guardar_mi_panel` | Guardarlo                         |
+
+Si se salta este paso, lo que pasa es exactamente lo que pasó al cerrar M6: la
+pantalla está publicada y el servidor no conoce sus operaciones, así que **el Panel
+sale vacío y Movimientos dice «Eso ya no está»**, y por fuera parece que se ha roto
+todo. No se ha roto nada: falta este paso.
+
+**Dónde:** GitHub → pestaña **Actions** → en la lista de la izquierda, el flujo de
+desplegar la API → botón **Run workflow** → **Run workflow**.
+
+**Qué sale si va bien:** el flujo en verde en dos o tres minutos.
+
+Y después, la comprobación que existe justo para esto:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** que la API desplegada conoce **todas** las consultas del
+código. Si va por detrás, lo dice con esas palabras y con la lista de las que le
+faltan.
+
+---
+
+## Paso 4 · Mirarlo en tu móvil · esto no puedo firmarlo yo
+
+Es la regla 11, y es la que ha encontrado la mitad de los fallos de este proyecto.
+Lo que hay que mirar, en este orden:
+
+### En el Panel
+
+1. **La rejilla son dos columnas**, no una. Se ve más de una tarjeta a la vez sin
+   hacer scroll.
+2. **Pulsa «Editar».** Aparecen el asa de mover, la ✕ y los tamaños en cada
+   widget.
+3. **Arrastra uno por el asa.** Tiene que levantarse un poco y cambiar de sitio al
+   pasar por encima de otro. Suéltalo y pulsa «Listo».
+4. **Sal de Estook y vuelve a entrar.** El widget tiene que estar donde lo dejaste.
+   Esto es lo que comprueba que se guarda en el servidor y no en el navegador.
+5. **Quita uno con la ✕.** Sale la barra de deshacer abajo: púlsala y tiene que
+   volver.
+6. **Añade uno** con el hueco de rayas. En la lista, abajo, salen en gris los que
+   llegan con su módulo: esos **no se pueden pulsar**, y eso es lo correcto.
+
+### Arriba, en la barra
+
+7. **Cuenta los botones: tienen que ser tres y el avatar.** Buscar, la campana y tu
+   retrato. **No tiene que haber icono de ajustes** —ese estaba dos veces— ni el de
+   Fogón, que en el móvil es la burbuja de abajo.
+8. **Pulsa el avatar.** Se abre «Tu cuenta»: ahí están Ajustes, Mi acceso, cambiar
+   de local y Salir. **Y funciona también dentro de una app**, que es donde antes
+   no había forma de llegar a Ajustes.
+
+### Dentro de Inventario
+
+9. **La barra de abajo tiene cuatro sitios y los cuatro llevan a algo**: Hoy,
+   Productos, Movimientos y Compras. Ya no hay «Pedidos» vacía ni «Más».
+10. **En Productos, arriba, hay cuatro pastillas**: Todo, Bajo mínimo, Sin precio y
+    Desactivados. Púlsalas: la lista cambia y el título de arriba dice qué estás
+    mirando.
+11. **Abre Movimientos.** Es el libro entero, por días, con quién apuntó cada línea
+    y cuánto quedó después. Esta pantalla no existía.
+12. **Pulsa «Añadir producto».** Lo primero que ves es la casilla y, **al lado**,
+    «Crearlo a mano». Sin escribir nada **no** sale ninguna lista: antes salían doce
+    referencias que nadie había pedido.
+
+### Fogón
+
+13. **Pulsa la burbuja.** Tiene que decir dónde estás **y las cifras que hay
+    delante**, y ofrecer botones que hacen algo de verdad. Pruébalos.
+
+> **Lo que salga, apúntalo tal cual.** Los seis fallos del segundo paseo por el
+> móvil salieron así, y ninguno ponía en rojo ninguna prueba.

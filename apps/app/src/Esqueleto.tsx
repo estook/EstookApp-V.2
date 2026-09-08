@@ -10,6 +10,9 @@ import {
   Deshacer,
   RuedaDeApps,
   appPorPermiso,
+  destinoPorId,
+  dondeEntra,
+  rutaDe,
   usarAtajos,
   usarDeshacer,
   type App,
@@ -17,6 +20,8 @@ import {
 import { BuscadorUniversal } from './buscar/BuscadorUniversal.tsx';
 import { BurbujaDeFogon, VentanaDeFogon } from './fogon/Fogon.tsx';
 import { LoQueLlegaDespues, type LoQueFalta } from './pantallas/LoQueLlegaDespues.tsx';
+import { ProveedorDelEsqueleto, type LoQueAbreElEsqueleto } from './ganchos/usarElEsqueleto.tsx';
+import { MiCuenta } from './pantallas/MiCuenta.tsx';
 import { usarSesion } from './sesion/Sesion.tsx';
 
 /**
@@ -45,6 +50,14 @@ export function Esqueleto() {
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
   const [loQueFalta, setLoQueFalta] = useState<LoQueFalta | null>(null);
   /**
+   * Tu cuenta, la hoja de detras del avatar.
+   *
+   * La lleva el esqueleto y no cada barra porque el avatar de arriba en
+   * escritorio y el de arriba en movil abren **lo mismo**. Y porque desde ella se
+   * cambia de local, que es una operacion de la sesion entera.
+   */
+  const [miCuentaAbierta, setMiCuentaAbierta] = useState(false);
+  /**
    * Fogón, abierto o cerrado.
    *
    * Lo lleva el esqueleto y no cada barra a propósito: la burbuja del móvil, el
@@ -61,18 +74,21 @@ export function Esqueleto() {
     [permisos],
   );
 
-  // De la direccion a donde se esta. Tres niveles como mucho (B5), asi que
-  // basta con mirar los dos primeros trozos.
+  // De la direccion a donde se esta: `/{app}/{destino}/{vista}`. La vista **no
+  // es un nivel de profundidad** —es la misma pantalla mirada de otra forma— asi
+  // que el esqueleto solo necesita los dos primeros trozos.
   const [, primero = '', segundo = ''] = pathname.split('/');
   const appActiva = misApps.find((app) => app.id === primero) ?? null;
   const enPanel = primero === '';
   const enAjustes = primero === 'ajustes';
 
   const irAApp = useCallback(
-    (app: App, pestana?: string) => {
-      const primeraPestana = app.pestanas[0]?.id;
-      const destino = pestana ?? primeraPestana;
-      navegar(destino === undefined ? `/${app.id}` : `/${app.id}/${destino}`);
+    (app: App, destinoId?: string) => {
+      // `rutaDe` sabe donde entra cada app —su primer destino **construido**— y
+      // le pone su primera vista si tiene vistas. Antes esto se calculaba aqui, y
+      // por eso entrar en una app podia caer en una pestana vacia.
+      const destino = destinoId === undefined ? undefined : destinoPorId(app, destinoId);
+      navegar(rutaDe(app, destino));
     },
     [navegar],
   );
@@ -199,168 +215,208 @@ export function Esqueleto() {
       </div>
     );
 
+  const loQueAbre = useMemo<LoQueAbreElEsqueleto>(
+    () => ({
+      abrirElBuscador: () => {
+        setBuscadorAbierto(true);
+      },
+      abrirFogon: () => {
+        setFogonAbierto(true);
+      },
+      abrirLaBandeja: () => {
+        setLoQueFalta('bandeja');
+      },
+      abrirMiCuenta: () => {
+        setMiCuentaAbierta(true);
+      },
+    }),
+    [],
+  );
+
   return (
-    <div className="min-h-dvh bg-fondo">
-      {laDemostracion}
-      <BarraEscritorio
-        apps={misApps}
-        appActiva={appActiva?.id ?? null}
-        alIrAApp={irAApp}
-        alIrAlPanel={() => {
-          navegar('/');
-        }}
-        alIrAAjustes={() => {
-          navegar('/ajustes');
-        }}
-        alBuscar={() => {
-          setBuscadorAbierto(true);
-        }}
-        local={
-          yo?.local
-            ? {
-                nombre: yo.local.nombre,
-                organizacion: yo.organizacion?.nombre ?? '',
-              }
-            : null
-        }
-        locales={susLocales}
-        alCambiarDeLocal={(id) => {
-          void cambiarDeLocal(id);
-        }}
-        persona={yo?.nombre ?? ''}
-        alAbrirAvisos={() => {
-          setLoQueFalta('avisos');
-        }}
-        alAbrirChat={() => {
-          setLoQueFalta('chat');
-        }}
-        alAbrirFogon={() => {
-          setFogonAbierto(true);
-        }}
-      />
+    <ProveedorDelEsqueleto loQueAbre={loQueAbre}>
+      <div className="min-h-dvh bg-fondo">
+        {laDemostracion}
+        <BarraEscritorio
+          apps={misApps}
+          appActiva={appActiva?.id ?? null}
+          alIrAApp={irAApp}
+          alIrAlPanel={() => {
+            navegar('/');
+          }}
+          alAbrirMiCuenta={() => {
+            setMiCuentaAbierta(true);
+          }}
+          alBuscar={() => {
+            setBuscadorAbierto(true);
+          }}
+          local={
+            yo?.local
+              ? {
+                  nombre: yo.local.nombre,
+                  organizacion: yo.organizacion?.nombre ?? '',
+                }
+              : null
+          }
+          locales={susLocales}
+          alCambiarDeLocal={(id) => {
+            void cambiarDeLocal(id);
+          }}
+          persona={yo?.nombre ?? ''}
+          alAbrirAvisos={() => {
+            setLoQueFalta('avisos');
+          }}
+          alAbrirChat={() => {
+            setLoQueFalta('chat');
+          }}
+          alAbrirFogon={() => {
+            setFogonAbierto(true);
+          }}
+        />
 
-      {/*
-        La misma barra, en movil: buscador, avisos, chat, Fogon, ajustes y el
-        local donde estas. Antes ninguna de las seis existia en un telefono, que
-        es donde de verdad se usa Estook.
+        {/*
+        La barra de arriba en movil: donde estas, buscar, la bandeja y tu cuenta.
+        **Cuatro cosas y no seis.** Antes ninguna de las transversales existia en
+        un telefono, que es donde de verdad se usa Estook; al traerlas se trajeron
+        las cinco de escritorio tal cual, y en 375 px eso es una fila donde se
+        pulsa lo de al lado. Fogon no esta porque en movil es la burbuja
+        (decision 0015), y Ajustes no esta porque ya sale abajo y ahora se llega
+        por tu cuenta desde cualquier pantalla.
       */}
-      <BarraArribaMovil
-        local={
-          yo?.local
-            ? {
-                id: yo.local.id,
-                nombre: yo.local.nombre,
-                logo: yo.local.logo,
-                colorDeMarca: yo.local.colorDeMarca,
-              }
-            : null
-        }
-        locales={susLocales}
-        alCambiarDeLocal={(id) => {
-          void cambiarDeLocal(id);
-        }}
-        persona={yo?.nombre ?? ''}
-        alBuscar={() => {
-          setBuscadorAbierto(true);
-        }}
-        alAbrirAvisos={() => {
-          setLoQueFalta('avisos');
-        }}
-        alAbrirChat={() => {
-          setLoQueFalta('chat');
-        }}
-        alAbrirFogon={() => {
-          setFogonAbierto(true);
-        }}
-        alIrAAjustes={() => {
-          navegar('/ajustes');
-        }}
-      />
+        <BarraArribaMovil
+          local={
+            yo?.local
+              ? {
+                  id: yo.local.id,
+                  nombre: yo.local.nombre,
+                  logo: yo.local.logo,
+                  colorDeMarca: yo.local.colorDeMarca,
+                }
+              : null
+          }
+          locales={susLocales}
+          alCambiarDeLocal={(id) => {
+            void cambiarDeLocal(id);
+          }}
+          persona={yo?.nombre ?? ''}
+          alBuscar={() => {
+            setBuscadorAbierto(true);
+          }}
+          alAbrirLaBandeja={() => {
+            setLoQueFalta('bandeja');
+          }}
+          alAbrirMiCuenta={() => {
+            setMiCuentaAbierta(true);
+          }}
+        />
 
-      {/*
+        {/*
         El hueco de abajo es el alto de la barra de movil, para que la ultima
         linea de cualquier pantalla no quede debajo de ella. En escritorio no hay
         barra abajo, asi que no hace falta.
       */}
-      <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e5))] pt-e4 lg:px-e5 lg:pb-e7">
-        {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
-        <Outlet />
-      </main>
+        <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e5))] pt-e4 lg:px-e5 lg:pb-e7">
+          {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
+          <Outlet />
+        </main>
 
-      {appActiva === null ? (
-        <BarraMovil
-          enPanel={enPanel}
-          enAjustes={enAjustes}
-          alIrAlPanel={() => {
-            navegar('/');
+        {appActiva === null ? (
+          <BarraMovil
+            enPanel={enPanel}
+            enAjustes={enAjustes}
+            alIrAlPanel={() => {
+              navegar('/');
+            }}
+            alIrAAjustes={() => {
+              navegar('/ajustes');
+            }}
+            alAbrirLaRueda={() => {
+              setRuedaAbierta(true);
+            }}
+          />
+        ) : (
+          <BarraDeApp
+            app={appActiva}
+            destinoActivo={segundo === '' ? (dondeEntra(appActiva)?.id ?? '') : segundo}
+            alIrADestino={(id) => {
+              irAApp(appActiva, id);
+            }}
+            alAbrirLaRueda={() => {
+              setRuedaAbierta(true);
+            }}
+          />
+        )}
+
+        <RuedaDeApps
+          abierta={ruedaAbierta}
+          alCerrar={() => {
+            setRuedaAbierta(false);
           }}
-          alIrAAjustes={() => {
-            navegar('/ajustes');
-          }}
-          alAbrirLaRueda={() => {
-            setRuedaAbierta(true);
+          apps={misApps}
+          appActiva={appActiva?.id ?? null}
+          alElegir={(app) => {
+            irAApp(app);
           }}
         />
-      ) : (
-        <BarraDeApp
-          app={appActiva}
-          pestanaActiva={segundo === '' ? (appActiva.pestanas[0]?.id ?? '') : segundo}
-          alIrAPestana={(id) => {
-            navegar(`/${appActiva.id}/${id}`);
+
+        <BuscadorUniversal
+          abierto={buscadorAbierto}
+          alCerrar={() => {
+            setBuscadorAbierto(false);
           }}
-          alAbrirLaRueda={() => {
-            setRuedaAbierta(true);
-          }}
+          apps={misApps}
         />
-      )}
 
-      <RuedaDeApps
-        abierta={ruedaAbierta}
-        alCerrar={() => {
-          setRuedaAbierta(false);
-        }}
-        apps={misApps}
-        appActiva={appActiva?.id ?? null}
-        alElegir={(app) => {
-          irAApp(app);
-        }}
-      />
-
-      <BuscadorUniversal
-        abierto={buscadorAbierto}
-        alCerrar={() => {
-          setBuscadorAbierto(false);
-        }}
-        apps={misApps}
-      />
-
-      {/*
+        {/*
         Fogón · su sitio, decidido y construido antes que él (decisión 0015). En
         el móvil, una burbuja que va contigo por toda la aplicación; en
         escritorio, el icono de arriba que ya mandaba B5. Los dos abren la misma
         ventana, y la ventana sabe en qué pantalla estás.
       */}
-      <BurbujaDeFogon
-        alPulsar={() => {
-          setFogonAbierto(true);
-        }}
-      />
+        <BurbujaDeFogon
+          alPulsar={() => {
+            setFogonAbierto(true);
+          }}
+        />
 
-      <VentanaDeFogon
-        abierta={fogonAbierto}
-        alCerrar={() => {
-          setFogonAbierto(false);
-        }}
-      />
+        <VentanaDeFogon
+          abierta={fogonAbierto}
+          alCerrar={() => {
+            setFogonAbierto(false);
+          }}
+        />
 
-      <LoQueLlegaDespues
-        que={loQueFalta}
-        alCerrar={() => {
-          setLoQueFalta(null);
-        }}
-      />
+        <LoQueLlegaDespues
+          que={loQueFalta}
+          alCerrar={() => {
+            setLoQueFalta(null);
+          }}
+        />
 
-      <Deshacer />
-    </div>
+        {/*
+        Tu cuenta · lo que hay detras del avatar, en los dos aparatos. Sustituye
+        al icono de Ajustes que estaba dos veces —arriba y abajo en movil, y dos
+        veces pegado en escritorio— y ademas resuelve lo que el desplegable de la
+        barra no podia: cambiar de local con seis locales de nombre largo.
+      */}
+        <MiCuenta
+          abierta={miCuentaAbierta}
+          alCerrar={() => {
+            setMiCuentaAbierta(false);
+          }}
+          alIrAAjustes={() => {
+            navegar('/ajustes');
+          }}
+          alIrAMiAcceso={() => {
+            navegar('/ajustes#mi-acceso');
+          }}
+          alCambiarDeLocal={(id) => {
+            void cambiarDeLocal(id);
+          }}
+        />
+
+        <Deshacer />
+      </div>
+    </ProveedorDelEsqueleto>
   );
 }

@@ -110,9 +110,27 @@ export function NuevoProducto({
    */
   const [rendimientoTocado, setRendimientoTocado] = useState(false);
 
+  /**
+   * Cuántas letras hacen falta antes de preguntar al catálogo.
+   *
+   * ── El ruido que esto quita ────────────────────────────────────────────────
+   *
+   * La consulta se hacía **también con la casilla vacía**, así que abrir la hoja
+   * enseñaba de entrada doce referencias del catálogo elegidas por nada: las doce
+   * primeras que devolviera el servidor. Lo primero que veía alguien que va a dar
+   * de alta su segundo producto era una lista de doce cosas que no ha pedido, y
+   * debajo de esas doce, el botón de crearlo a mano.
+   *
+   * Con dos letras ya hay algo que buscar y la lista significa algo. Antes de eso
+   * no se pregunta —un viaje al servidor para devolver una lista arbitraria— y en
+   * su sitio se dice qué va a pasar cuando se escriba.
+   */
+  const DESDE_CUANTAS_LETRAS = 2;
+  const buscando = texto.trim().length >= DESDE_CUANTAS_LETRAS;
+
   const catalogo = useQuery({
     queryKey: ['catalogo_de_referencia', texto],
-    enabled: abierta && !aMano,
+    enabled: abierta && !aMano && buscando,
     queryFn: async (): Promise<CatalogoDeReferencia> => {
       const respuesta = await cliente.consultar<CatalogoDeReferencia>('catalogo_de_referencia', {
         ...(texto.trim() === '' ? {} : { texto: texto.trim() }),
@@ -266,44 +284,17 @@ export function NuevoProducto({
               }}
             />
 
-            {catalogo.isPending && <Cargando que="el catálogo" />}
+            {/*
+              Las dos salidas, **a la misma altura y siempre**.
 
-            {catalogo.data !== undefined && (
-              <ul className="flex flex-col gap-e2">
-                {catalogo.data.productos.map((referencia) => (
-                  <li key={referencia.id}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        elegir(referencia);
-                      }}
-                      className="flex w-full flex-col gap-e1 rounded-medio border border-borde p-e3 text-left hover:bg-fondo"
-                    >
-                      <span className="flex flex-wrap items-center gap-e2">
-                        <span className="text-cuerpo font-medium">{referencia.nombre}</span>
-                        <Etiqueta>{referencia.categoria}</Etiqueta>
-                      </span>
-                      <span className="text-secundario text-texto-suave">
-                        {referencia.comoSale}
-                      </span>
-                      {referencia.alergenos.length > 0 && (
-                        <span className="text-secundario text-texto-suave">
-                          Alérgenos: {referencia.alergenos.join(', ')}
-                        </span>
-                      )}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {catalogo.data !== undefined && catalogo.data.productos.length === 0 && (
-              <Aviso tono="info" titulo="Eso no está en el catálogo">
-                No pasa nada: se crea a mano en un momento, y funciona exactamente igual.
-              </Aviso>
-            )}
-
-            <div>
+              Antes «Crearlo a mano» iba al final del todo, debajo de doce
+              resultados del catálogo. Es el botón que usa cualquiera que compre
+              algo que el catálogo no tenga —y el catálogo es una ayuda, no un
+              censo del género de España—, así que estaba escondido justo el que
+              más se pulsa. Ahora está aquí arriba, al lado de la casilla, desde
+              el primer instante.
+            */}
+            <div className="flex flex-wrap items-center gap-e2">
               <Boton
                 tono="secundario"
                 onClick={() => {
@@ -313,7 +304,62 @@ export function NuevoProducto({
               >
                 Crearlo a mano
               </Boton>
+              <p className="text-secundario text-texto-suave">
+                Si no está en el catálogo, o si lo prefieres a tu manera.
+              </p>
             </div>
+
+            {!buscando ? (
+              <p className="text-secundario text-texto-suave">
+                Con dos letras empiezo a buscar en el catálogo de referencia. Vale con erratas y sin
+                acentos.
+              </p>
+            ) : (
+              <>
+                {catalogo.isPending && <Cargando que="el catálogo" />}
+
+                {catalogo.data !== undefined && catalogo.data.productos.length > 0 && (
+                  <div className="flex flex-col gap-e2">
+                    <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+                      Del catálogo · vienen rellenos
+                    </p>
+                    <ul className="flex flex-col gap-e2">
+                      {catalogo.data.productos.map((referencia) => (
+                        <li key={referencia.id}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              elegir(referencia);
+                            }}
+                            className="flex w-full flex-col gap-e1 rounded-medio border border-borde p-e3 text-left hover:bg-fondo"
+                          >
+                            <span className="flex flex-wrap items-center gap-e2">
+                              <span className="text-cuerpo font-medium">{referencia.nombre}</span>
+                              <Etiqueta>{referencia.categoria}</Etiqueta>
+                            </span>
+                            <span className="text-secundario text-texto-suave">
+                              {referencia.comoSale}
+                            </span>
+                            {referencia.alergenos.length > 0 && (
+                              <span className="text-secundario text-texto-suave">
+                                Alérgenos: {referencia.alergenos.join(', ')}
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {catalogo.data !== undefined && catalogo.data.productos.length === 0 && (
+                  <Aviso tono="info" titulo="Eso no está en el catálogo">
+                    No pasa nada: con «Crearlo a mano» se hace en un momento, y funciona exactamente
+                    igual.
+                  </Aviso>
+                )}
+              </>
+            )}
           </>
         )}
 
@@ -335,6 +381,15 @@ export function NuevoProducto({
                 setNombre(e.currentTarget.value);
               }}
             />
+
+            {/*
+              Y aquí empieza la parte que más se equivoca, así que va con su
+              título: doce casillas seguidas sin agrupar son doce preguntas
+              sueltas, y quien las contesta no sabe cuáles van juntas.
+            */}
+            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+              Cómo lo compras
+            </p>
 
             {/*
               El envase, **siempre**. Es la casilla que evita «el error clásico de
@@ -370,24 +425,50 @@ export function NuevoProducto({
               />
             </div>
 
-            {/* La cuenta hecha, recalculada mientras se escribe. */}
-            <p aria-live="polite" className="text-cuerpo font-medium">
+            {/*
+              La cuenta hecha, recalculada mientras se escribe.
+
+              En su caja y no como un párrafo suelto: es **el resultado** de las
+              dos casillas de arriba, y es lo que hace que alguien se dé cuenta de
+              que se ha equivocado antes de guardar. Como párrafo se leía igual que
+              la ayuda de la casilla de al lado.
+            */}
+            <p
+              aria-live="polite"
+              className="rounded-medio bg-naranja-suave px-e3 py-e2 text-cuerpo font-medium"
+            >
               {comoSale}
             </p>
 
-            {aMano && (
-              <Campo
-                etiqueta="Qué porcentaje se aprovecha"
-                tipo="numero"
-                ayuda="Lo que queda después de limpiar o pelar. 100 si no se pierde nada."
-                value={rendimiento}
-                detras="%"
-                onChange={(e) => {
-                  setRendimiento(e.currentTarget.value);
-                  setRendimientoTocado(true);
-                }}
-              />
-            )}
+            {/*
+              El aprovechamiento, **en los dos caminos**.
+
+              Antes solo salía creando a mano, así que un producto del catálogo se
+              quedaba con el rendimiento de la referencia sin forma de corregirlo:
+              el pulpo del catálogo viene al 55 %, y quien lo compra ya limpio no
+              tenía dónde decirlo. Se rellena con lo que proponga la referencia y
+              **solo se manda si alguien lo toca**, que es lo que hace que la
+              etiqueta «sin verificar» siga significando algo.
+            */}
+            <Campo
+              etiqueta="Qué porcentaje se aprovecha"
+              tipo="numero"
+              ayuda={
+                elegida === null
+                  ? 'Lo que queda después de limpiar o pelar. 100 si no se pierde nada.'
+                  : `El catálogo propone ${rendimiento} %. Si tú lo compras ya limpio, cámbialo.`
+              }
+              value={rendimiento}
+              detras="%"
+              onChange={(e) => {
+                setRendimiento(e.currentTarget.value);
+                setRendimientoTocado(true);
+              }}
+            />
+
+            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+              Dónde va y qué cuesta
+            </p>
 
             <SelectorDeCategoria
               categorias={categorias}
@@ -418,7 +499,7 @@ export function NuevoProducto({
                   etiqueta="A quién se lo compras"
                   opciones={proveedores.map((p) => ({ valor: p.id, texto: p.nombre }))}
                   sinElegir="Todavía no lo sé"
-                  cuandoNoHay="Todavía no tienes proveedores. Se crean en «Más»"
+                  cuandoNoHay="Todavía no tienes proveedores. Se crean en «Compras»"
                   value={proveedorId}
                   onChange={(e) => {
                     setProveedorId(e.currentTarget.value);

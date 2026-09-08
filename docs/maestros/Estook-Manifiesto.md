@@ -275,19 +275,28 @@ En móvil, tres posiciones abajo y la rueda de apps en el centro:
 
 La rueda se abre sobre fondo desenfocado, con un sector por app, su icono, su color y su contador de pendientes. Las apps que el rol no tiene **no aparecen** y los sectores se reparten. Se puede pulsar, o mantener el dedo y arrastrar. Pulsación larga sobre el botón central: acciones rápidas del rol.
 
-Dentro de una app, en móvil, la barra de abajo pasa a ser la de esa app:
+Dentro de una app, en móvil, la barra de abajo pasa a ser la de esa app, con sus **destinos** —los sitios que contestan una pregunta— y nada más:
 
 ```
-INVENTARIO   │ Hoy │ Productos │ Pedidos       │ Mas │
-ESCANDALLOS  │ Hoy │ Fichas    │ Elaboraciones │ Mas │
-CALENDARIO   │ Mes │ Semana    │ Dia           │ Mas │
+INVENTARIO   │ Hoy │ Productos │ Movimientos │ Compras │
+ESCANDALLOS  │ Hoy │ Fichas    │ Elaboraciones │ Analisis │
+CALENDARIO   │ Calendario │ Tareas │ Turnos │
 ```
 
-En escritorio, barra superior fija con todas las apps y sus desplegables, y dentro de cada app un menú lateral propio. La ficha se abre en panel lateral derecho sin tapar la lista. Atajos: `⌘K` buscador universal · `⌘1`–`⌘8` apps · `⌘G` genera el PDF de la pantalla · `⌘J` Fogón.
+Y arriba, dentro del destino, sus **vistas**: la misma pantalla mirada de otra forma.
+
+```
+PRODUCTOS    ( Todo )  Bajo minimo   Sin precio   Desactivados
+CALENDARIO   ( Mes )   Semana        Dia
+```
+
+> **Ninguna app tiene un «Más».** Un cajón de sastre no responde a ninguna pregunta, así que nadie sabe qué hay dentro hasta que lo abre. Y **un destino que todavía no se ha construido no ocupa posición**: se cuenta aparte, diciendo en qué módulo llega. La tabla entera está en B5 del Plan.
+
+En escritorio, barra superior fija con todas las apps y sus desplegables, y dentro de cada app un menú lateral propio con sus destinos y la pregunta que contesta cada uno. La ficha se abre en panel lateral derecho sin tapar la lista. Atajos: `⌘K` buscador universal · `⌘1`–`⌘8` apps · `⌘G` genera el PDF de la pantalla · `⌘J` Fogón.
 
 En tableta, por debajo de 1.024 px se comporta como el móvil, y por encima como el ordenador.
 
-**Regla de profundidad:** máximo tres niveles. App → vista → ficha.
+**Regla de profundidad:** máximo tres niveles. App → destino → ficha. **La vista no es un nivel**: es un filtro de la pantalla del medio, el título no cambia y el botón de volver sigue llevando al mismo sitio.
 
 ---
 

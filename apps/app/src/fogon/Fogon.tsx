@@ -1,5 +1,9 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Boton, Hoja, IconoDeFogon, PanelLateral, clases, usarEsEscritorio } from '@estook/ui';
+import { accionesDeAqui } from '../acciones/catalogo.tsx';
+import { usarContextoDeFogon } from '../ganchos/usarContextoDeFogon.ts';
+import { usarElEsqueleto } from '../ganchos/usarElEsqueleto.tsx';
+import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
  * Fogón · dónde vive y cómo se abre.
@@ -191,12 +195,36 @@ export function VentanaDeFogon({
   readonly alCerrar: () => void;
 }) {
   const { pathname } = useLocation();
+  const navegar = useNavigate();
+  const { permisos } = usarSesion();
+  const esqueleto = usarElEsqueleto();
   // El unico corte de la aplicacion vive en `@estook/ui`, no aqui: si esta
   // pantalla se inventara el suyo, un dia dirian cosas distintas.
   const enEscritorio = usarEsEscritorio();
 
   const [, primero = ''] = pathname.split('/');
   const lo = POR_APP[primero] ?? POR_DEFECTO;
+
+  /**
+   * El contexto, de verdad y no de adorno.
+   *
+   * Hasta ahora la ventana decia «estas en Inventario» y ahi se acababa lo de
+   * «trabajando con el contexto de la pantalla». Ahora ademas trae **las cifras
+   * que hay delante**, ya calculadas por la base de datos, que es exactamente lo
+   * que M22 le mandara al modelo: un resumen compacto en vez del local entero.
+   */
+  const contexto = usarContextoDeFogon(abierta);
+
+  /**
+   * Y lo que si puede hacer ya, que es la mitad que faltaba.
+   *
+   * Salen del catalogo de acciones, que solo tiene **acciones que hacen algo
+   * hoy**, filtradas por permiso y con las de esta pantalla primero. No son
+   * botones de mentira esperando a M22: abren el alta, llevan a lo que esta bajo
+   * minimo, abren el libro. Lo que hara Fogon cuando hable esta mas abajo, contado
+   * y sin botones.
+   */
+  const acciones = accionesDeAqui(permisos, primero).slice(0, 4);
 
   const Ventana = enEscritorio ? PanelLateral : Hoja;
 
@@ -213,17 +241,72 @@ export function VentanaDeFogon({
     >
       <div className="flex flex-col gap-e4">
         {/*
-          Lo primero, dónde está. Es la mitad de la promesa: «trabajando con el
-          contexto de la pantalla» empieza por que se note que sabe dónde estás.
+          Lo primero, dónde está y con qué. Es la mitad de la promesa:
+          «trabajando con el contexto de la pantalla» empieza por que se note que
+          sabe dónde estás, y sigue por que sepa lo que hay delante.
         */}
-        <p className="text-secundario text-texto-suave">
-          Estás en <span className="font-semibold text-texto">{lo.donde}</span>. Fogón lo sabe sin
-          que se lo digas: por eso está aquí y no en una pantalla aparte.
-        </p>
+        <div className="rounded-medio border border-borde bg-fondo p-e3">
+          <p className="text-secundario text-texto-suave">
+            Estás en <span className="font-semibold text-texto">{contexto.donde}</span>
+            {contexto.local === '' ? '' : `, en ${contexto.local}`}. Fogón lo sabe sin que se lo
+            digas.
+          </p>
+
+          {contexto.cifras.length > 0 && (
+            <dl className="mt-e2 grid grid-cols-2 gap-e2">
+              {contexto.cifras.map((cifra) => (
+                <div key={cifra.que}>
+                  <dt className="text-etiqueta uppercase tracking-wide text-texto-suave">
+                    {cifra.que}
+                  </dt>
+                  <dd className="text-cuerpo font-semibold">{cifra.cuanto}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+
+        {/*
+          Y lo que se puede hacer aquí **ahora mismo**. Son acciones del catálogo,
+          las de esta pantalla primero: abren el alta, llevan a lo que está bajo
+          mínimo, abren el libro. Ninguna espera a M22.
+        */}
+        {acciones.length > 0 && (
+          <div>
+            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+              Lo que puedes hacer aquí ahora
+            </p>
+            <div className="mt-e2 grid gap-e2 sm:grid-cols-2">
+              {acciones.map((accion) => (
+                <button
+                  key={accion.id}
+                  type="button"
+                  onClick={() => {
+                    alCerrar();
+                    if (accion.abre === 'buscador') {
+                      esqueleto.abrirElBuscador();
+                      return;
+                    }
+                    navegar(accion.ir);
+                  }}
+                  className={clases(
+                    'flex min-h-toque items-center gap-e2 rounded-medio border border-borde',
+                    'bg-superficie px-e3 py-e2 text-left hover:bg-fondo',
+                  )}
+                >
+                  <span className="shrink-0 text-texto-suave">
+                    <accion.icono size={18} />
+                  </span>
+                  <span className="text-secundario font-medium">{accion.nombre}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div>
           <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
-            Lo que le vas a poder pedir aquí
+            Y lo que le vas a poder pedir cuando hable
           </p>
           <ul className="mt-e2 flex flex-col gap-e2">
             {lo.podras.map((linea) => (

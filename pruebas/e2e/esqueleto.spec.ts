@@ -17,16 +17,24 @@ import { expect, test, type Page } from '@playwright/test';
  */
 const APP = 'http://localhost:5174/';
 
-/** Las ocho de la rueda, con su primera pestana. */
+/**
+ * Las ocho de la rueda, con **el destino en el que entra cada una**.
+ *
+ * Ojo con la diferencia, que es la de M6½: el titulo de la pantalla ya no es el
+ * nombre de la app, es **el destino**, porque es donde estas de verdad. El nombre
+ * de la app va encima, pequeno. Y «donde entra» no es siempre el primero de la
+ * lista: Equipo entra en Personas, porque su «Hoy» es M13 y entrar ahi seria
+ * entrar en un cartel.
+ */
 const LAS_OCHO = [
-  { id: 'inventario', nombre: 'Inventario', primera: 'Hoy' },
-  { id: 'escandallos', nombre: 'Escandallos', primera: 'Hoy' },
-  { id: 'carta', nombre: 'Carta', primera: 'Carta' },
-  { id: 'calendario', nombre: 'Calendario', primera: 'Mes' },
-  { id: 'equipo', nombre: 'Equipo', primera: 'Hoy' },
-  { id: 'servicio', nombre: 'Servicio', primera: 'Jornada' },
-  { id: 'negocio', nombre: 'Negocio', primera: 'Resumen' },
-  { id: 'cuaderno', nombre: 'Cuaderno', primera: 'Incidencias' },
+  { id: 'inventario', nombre: 'Inventario', entra: 'Hoy' },
+  { id: 'escandallos', nombre: 'Escandallos', entra: 'Hoy' },
+  { id: 'carta', nombre: 'Carta', entra: 'Carta' },
+  { id: 'calendario', nombre: 'Calendario', entra: 'Calendario' },
+  { id: 'equipo', nombre: 'Equipo', entra: 'Personas' },
+  { id: 'servicio', nombre: 'Servicio', entra: 'Jornada' },
+  { id: 'negocio', nombre: 'Negocio', entra: 'Resumen' },
+  { id: 'cuaderno', nombre: 'Cuaderno', entra: 'Incidencias' },
 ];
 
 /**
@@ -37,7 +45,7 @@ const LAS_OCHO = [
  * añada su línea, que es exactamente cuando hay que mirar si lo que enseña la
  * pantalla vacía sigue siendo verdad.
  */
-const APPS_CON_CONTENIDO = ['inventario'];
+const APPS_CON_CONTENIDO = ['inventario', 'equipo'];
 
 /**
  * Abre una pantalla y **espera a que la aplicacion este viva**.
@@ -113,15 +121,23 @@ test.describe('las ocho apps', () => {
     for (const app of LAS_OCHO) {
       await abrir(page, `/${app.id}`);
 
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText(app.nombre);
+      // El titulo es el destino, y el nombre de la app va encima. Se comprueban
+      // los dos: sin el primero no se sabria donde estas, y sin el segundo la
+      // pantalla de Movimientos y la de Productos parecerian la misma app.
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(app.entra);
+      // El rotulo pequeno de encima del titulo, y no cualquier sitio donde ponga
+      // el nombre: la barra de escritorio existe tambien en movil —escondida con
+      // CSS— y las migas recortan su ultimo paso en pantalla estrecha, asi que
+      // buscar el texto suelto encuentra uno escondido y la prueba se cae por
+      // donde no es.
+      await expect(
+        page.locator('main header p').filter({ hasText: app.nombre }).first(),
+      ).toBeVisible();
 
       // El título de la tarjeta es un `h2` **mientras la app sea un esqueleto**.
-      // Inventario dejó de serlo en M6: su pantalla «Hoy» tiene varias tarjetas
-      // de verdad, así que no hay una sola con el nombre de la pestaña. Lo que
-      // se sigue comprobando en las ocho es lo que esta prueba mira de verdad:
-      // que se abren, que ponen su nombre y que **no desbordan a lo ancho**.
+      // Inventario dejó de serlo en M6 y Equipo · Personas en M4.
       if (!APPS_CON_CONTENIDO.includes(app.id)) {
-        await expect(page.getByRole('heading', { level: 2, name: app.primera })).toBeVisible();
+        await expect(page.getByRole('heading', { level: 2, name: app.entra })).toBeVisible();
       }
 
       expect(await desborda(page), `${app.nombre} desborda a lo ancho`).toBe(false);
@@ -130,32 +146,82 @@ test.describe('las ocho apps', () => {
     expect(errores).toEqual([]);
   });
 
-  test('cada pestana de cada app se abre, y son treinta y una', async ({ page }) => {
+  test('cada destino construido se abre, y ninguno lleva a un hueco', async ({ page }) => {
+    /*
+      ── Lo que esta prueba caza, y antes no ────────────────────────────────────
+
+      Antes recorria «las pestanas» de cada app, y las pestanas incluian las que
+      no llevaban a ningun sitio: «Pedidos», que es M7 y ensenaba un cartel, y el
+      «Mas» que era el cajon de Proveedores. Es decir: **la prueba pasaba en verde
+      recorriendo dos posiciones vacias**, porque abrir un cartel es abrir algo.
+
+      Ahora recorre lo que la aplicacion ofrece de verdad —los destinos que
+      aparecen en su barra— y comprueba que cada uno tiene su titulo y su
+      pregunta. Un destino sin construir no aparece en la barra, asi que si un dia
+      alguien pusiera uno, esta prueba lo abriria y se caeria.
+    */
     await comoGerente(page);
 
-    let abiertas = 0;
+    let abiertos = 0;
     for (const app of LAS_OCHO) {
       await abrir(page, `/${app.id}`);
 
-      // Las pestanas de esta app, tal como las declara el catalogo.
-      const pestanas = await page
-        .locator('nav[aria-label^="Vistas de"], nav[aria-label="' + app.nombre + '"]')
+      // Los destinos de esta app, tal como los ofrece su propia navegacion: el
+      // menu lateral en escritorio, la barra de abajo en movil. Con `:visible`,
+      // porque las dos existen en el documento y una esta escondida con CSS.
+      //
+      // Y se lee el nombre **en minusculas**: la barra de movil escribe sus
+      // posiciones con `text-transform: uppercase`, asi que lo que devuelve el
+      // navegador es «HOY» y no «Hoy». Comparar eso con el titulo de la pantalla
+      // daba un rojo que no era de la aplicacion.
+      const suyos = await page
+        .locator(
+          `nav[aria-label="Dentro de ${app.nombre}"]:visible, nav[aria-label="${app.nombre}"]:visible`,
+        )
         .first()
-        .getByRole('link')
+        .getByRole('button')
+        // El boton de la rueda no es un destino, y se reconoce por lo que dice a
+        // un lector de pantalla, no por su rotulo.
+        .and(page.locator(':not([aria-label="Ver todas las apps"])'))
         .allInnerTexts()
         .catch(() => [] as string[]);
 
-      const cuales = pestanas.length > 0 ? pestanas : [app.primera];
-      for (const pestana of cuales) {
-        const id = pestana.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      const nombres = suyos
+        .map((texto) => (texto.split('\n')[0] ?? '').trim().toLowerCase())
+        .filter((nombre) => nombre !== '');
+
+      const cuales = nombres.length > 0 ? nombres : [app.entra.toLowerCase()];
+      for (const nombre of cuales) {
+        const id = nombre
+          .normalize('NFD')
+          .replace(/[̀-ͯ]/g, '')
+          .replace(/[^a-z0-9]+/g, '-');
         await abrir(page, `/${app.id}/${id}`);
-        await expect(page.getByRole('heading', { level: 1 })).toHaveText(app.nombre);
-        expect(await desborda(page), `${app.nombre} · ${pestana} desborda`).toBe(false);
-        abiertas += 1;
+        // Sin distinguir mayusculas: el titulo va como se escribe y la barra lo
+        // pinta en versales.
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+          new RegExp(`^${nombre}$`, 'i'),
+        );
+        expect(await desborda(page), `${app.nombre} · ${nombre} desborda`).toBe(false);
+        abiertos += 1;
       }
     }
 
-    expect(abiertas).toBeGreaterThanOrEqual(8);
+    // Inventario tiene cuatro construidos y Equipo uno; las otras seis entran en
+    // su primer destino aunque no este construido, que es lo que hay hasta que su
+    // modulo llegue.
+    expect(abiertos).toBeGreaterThanOrEqual(11);
+  });
+
+  test('un destino sin construir dice en que modulo llega, y no finge', async ({ page }) => {
+    // Es la otra mitad de la regla: lo que no esta construido **no ocupa
+    // posicion**, pero cuando se llega a el escribiendo la direccion tiene que
+    // decir la verdad y con su modulo, no quedarse en blanco.
+    await comoGerente(page);
+    await abrir(page, '/carta/menus');
+
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Menús');
+    await expect(page.getByText('M10 · Carta, menús y análisis')).toBeVisible();
   });
 
   test('siempre hay forma de volver que no es el boton del navegador', async ({ page }) => {
@@ -233,7 +299,11 @@ test.describe('la rueda de apps', () => {
     await page.keyboard.press('Enter');
 
     // Primera flecha, el primer sector; segunda, el segundo: Escandallos.
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Escandallos');
+    //
+    // Se mira **la direccion y no el titulo**: desde M6½ el titulo de la pantalla
+    // es el destino —«Hoy»— y no el nombre de la app, y lo que esta prueba
+    // comprueba es a que app te lleva la rueda.
+    await expect(page).toHaveURL(new RegExp('#/escandallos(/|$)'));
   });
 
   test('la primera flecha a la izquierda lleva a la ultima, no a la penultima', async ({
@@ -249,8 +319,9 @@ test.describe('la rueda de apps', () => {
     await page.keyboard.press('ArrowLeft');
     await page.keyboard.press('Enter');
 
-    // La ultima de la rueda es Cuaderno.
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Cuaderno');
+    // La ultima de la rueda es Cuaderno. Se mira la direccion: el titulo de la
+    // pantalla es el destino —«Incidencias»— y no el nombre de la app.
+    await expect(page).toHaveURL(new RegExp('#/cuaderno(/|$)'));
   });
 
   test('funciona con arrastre desde el centro', async ({ page }) => {
@@ -270,7 +341,7 @@ test.describe('la rueda de apps', () => {
     await page.mouse.move(cx, cy - caja.height * 0.35, { steps: 8 });
     await page.mouse.up();
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inventario');
+    await expect(page).toHaveURL(new RegExp('#/inventario(/|$)'));
   });
 
   test('los ocho nombres caben dentro del circulo', async ({ page }) => {
@@ -329,16 +400,70 @@ async function abrirLaRueda(page: Page) {
 
 // ── 3 · Deshacer, en tres flujos ─────────────────────────────────────────────
 
+/**
+ * Deja el Panel como de fabrica.
+ *
+ * ── Por que hace falta, y por que es una senal ─────────────────────────────────
+ *
+ * Desde M6½ el Panel **es estado del servidor**, por persona y por aparato. Eso es
+ * lo correcto —«para siempre tiene que serlo tambien en el telefono»— y tiene una
+ * consecuencia en las pruebas que conviene decir en voz alta: **una prueba que
+ * quita un widget deja el Panel cambiado para la siguiente**. La de «la barra se
+ * va sola» quita uno y deja que la barra caduque a proposito, asi que el widget se
+ * queda fuera y guardado; la siguiente prueba se lo encontraba sin estar.
+ *
+ * Se arregla desde la propia aplicacion y no tocando la base a mano: es un camino
+ * de persona —«volver al panel de siempre»— y comprobarlo de paso no sobra.
+ */
+async function panelDeFabrica(page: Page) {
+  await page.getByRole('button', { name: 'Editar' }).click();
+  await page.getByRole('button', { name: 'Volver al panel de siempre' }).click();
+  await page.getByRole('button', { name: 'Listo' }).click();
+  // «Listo» guarda ya, sin esperar al reloj de los ochocientos milisegundos.
+  await expect(page.getByRole('button', { name: 'Editar' })).toBeVisible();
+}
+
+/**
+ * Quita el primer widget del Panel, que es lo que abre la barra de deshacer.
+ *
+ * Antes esto lo hacia un boton de mentira —«apuntar una nota de prueba»— puesto
+ * en el Panel desde M3 con un `deshacer` que no deshacia nada. Ahora es una
+ * accion de verdad, y por eso vale para las tres pruebas de la barra.
+ */
+async function quitarUnWidget(page: Page) {
+  await page.getByRole('button', { name: 'Editar' }).click();
+  await page
+    .getByRole('button', { name: /^Quitar .* del panel$/ })
+    .first()
+    .click();
+}
+
 test.describe('deshacer universal', () => {
-  test('flujo 1 · una accion del Panel', async ({ page }) => {
+  test('flujo 1 · quitar un widget del Panel, y devolverlo', async ({ page }) => {
+    /*
+      ── El flujo que esto sustituye ────────────────────────────────────────────
+
+      Era un andamio de M3: un boton «Apuntar una nota de prueba» cuyo `deshacer`
+      era `() => undefined`, puesto en el Panel para poder comprobar que la barra
+      aparecia y contaba diez segundos sin esperar a que hubiera un comando de
+      verdad que tocar. Y **se quedo publicado en el Panel de un negocio de
+      verdad**.
+
+      El de verdad es este: quitar un widget se hace sin querer —la ✕ esta a un
+      centimetro del asa de arrastrar— y lo que se pierde es donde lo tenias
+      puesto. Ademas se guarda en el servidor, asi que deshacer tiene que volver a
+      guardar, que es un caso mas exigente que el de la nota falsa.
+    */
     await comoGerente(page);
+    await panelDeFabrica(page);
 
-    await page.getByRole('button', { name: 'Apuntar una nota de prueba' }).click();
-    await expect(page.getByText('Nota apuntada en el Cuaderno')).toBeVisible();
+    await quitarUnWidget(page);
+
     await expect(page.getByRole('button', { name: /Deshacer/ })).toBeVisible();
-
     await page.getByRole('button', { name: /Deshacer/ }).click();
-    await expect(page.getByText('Nota apuntada en el Cuaderno')).toBeHidden();
+
+    // Y vuelve: la barra de deshacer del Panel no es un adorno.
+    await expect(page.getByRole('button', { name: /^Quitar .* del panel$/ }).first()).toBeVisible();
   });
 
   test('flujo 2 · el tamano de letra vuelve al de antes', async ({ page }) => {
@@ -371,16 +496,19 @@ test.describe('deshacer universal', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
 
     // El selector esta en dos sitios segun el ancho, y a proposito: la barra de
-    // escritorio es `hidden lg:flex`, asi que en movil hay uno propio arriba del
-    // contenido. Sin el, quien trabaja en dos locales no podria cambiar con el
-    // telefono, que es el aparato con el que lo va a hacer.
-    const enLaBarra = page.locator('header').getByLabel('Local');
-    const enLaPantalla = page.getByLabel('Donde estas');
-    const selector = (await enLaBarra.isVisible()) ? enLaBarra : enLaPantalla;
+    // escritorio es `hidden lg:flex`, asi que en movil el suyo va en la barra de
+    // arriba de movil. Sin el, quien trabaja en dos locales no podria cambiar con
+    // el telefono, que es el aparato con el que lo va a hacer.
+    const enEscritorio = page.locator('header').getByLabel('Local');
+    const enMovil = page.locator('header').getByLabel('Dónde estás');
+    const selector = (await enEscritorio.isVisible()) ? enEscritorio : enMovil;
 
     await selector.selectOption({ label: 'Bar Puerto' });
 
     await expect(page.getByRole('button', { name: /Deshacer/ })).toBeVisible();
+    // El nombre del local se comprueba en la cabecera del Panel, y **no suelto**:
+    // el selector es un `<select>`, y sus `<option>` llevan el mismo texto sin
+    // estar visibles. Un `getByText` suelto encuentra la opcion, no el rotulo.
     await expect(page.locator('main p').filter({ hasText: 'Bar Puerto' }).first()).toBeVisible();
 
     await page.getByRole('button', { name: /Deshacer/ }).click();
@@ -389,7 +517,8 @@ test.describe('deshacer universal', () => {
 
   test('la barra se va sola, y no deshace nada por su cuenta', async ({ page }) => {
     await comoGerente(page);
-    await page.getByRole('button', { name: 'Apuntar una nota de prueba' }).click();
+    await panelDeFabrica(page);
+    await quitarUnWidget(page);
 
     const barra = page.getByRole('button', { name: /Deshacer/ });
     await expect(barra).toBeVisible();
@@ -400,11 +529,15 @@ test.describe('deshacer universal', () => {
 
   test('Ctrl+Z tambien deshace', async ({ page }) => {
     await comoGerente(page);
-    await page.getByRole('button', { name: 'Apuntar una nota de prueba' }).click();
-    await expect(page.getByText('Nota apuntada en el Cuaderno')).toBeVisible();
+    await panelDeFabrica(page);
+    await quitarUnWidget(page);
+    await expect(page.getByRole('button', { name: /Deshacer/ })).toBeVisible();
 
     await page.keyboard.press('Control+z');
-    await expect(page.getByText('Nota apuntada en el Cuaderno')).toBeHidden();
+
+    // La barra desaparece al deshacer, y el widget vuelve.
+    await expect(page.getByRole('button', { name: /Deshacer/ })).toBeHidden();
+    await expect(page.getByRole('button', { name: /^Quitar .* del panel$/ }).first()).toBeVisible();
   });
 });
 
@@ -425,7 +558,7 @@ test.describe('estados vacios', () => {
         // qué datos hay delante.
         //
         // Lo que sí se sigue mirando aquí es que la pantalla no está en blanco.
-        await expect(page.getByRole('heading', { level: 1 })).toHaveText(app.nombre);
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(app.entra);
         continue;
       }
 
@@ -435,36 +568,68 @@ test.describe('estados vacios', () => {
     }
   });
 
-  test('los widgets del Panel tambien', async ({ page }) => {
-    // ── Esta prueba tenia que cambiar, y por eso estaba ────────────────────
-    //
-    // Comprobaba que las tres tarjetas del Panel dijeran «todavia no tengo
-    // datos». Dos de ellas —«lo que hay que atender» y «salud de los datos»—
-    // llevaban su letrero puesto desde M3: «los pendientes los traen Inventario
-    // (M6) y Servicio (M12)». M6 termino y no los trajo, y esta prueba seguia en
-    // verde **porque comprobaba que siguieran vacias**.
-    //
-    // Ahora Inventario las llena, asi que lo que se comprueba es lo de siempre
-    // con la verdad de hoy: quien tiene genero ve numeros, y quien no, ve el
-    // hueco explicado. Ninguna pantalla muda en ninguno de los dos casos.
+  test('el Panel de cada uno se puede montar, y lo montado se guarda', async ({ page }) => {
+    /*
+      ── Las dos pruebas que esto sustituye, y por que ──────────────────────────
+
+      La primera comprobaba que las tarjetas del Panel dijeran «todavia no tengo
+      datos», y estuvo en verde mientras M6 terminaba sin llenarlas: comprobaba
+      que **siguieran vacias**. La segunda comprobaba «Productos con precio», que
+      era el widget «Salud de los datos», y ese widget ya no existe: ocupaba una
+      tarjeta entera para decir una cifra, y ahora es una linea en la zona de
+      atencion que solo sale cuando falta algo.
+
+      Lo que se comprueba ahora es lo que el Manifiesto promete y no existia: que
+      el Panel **se monta**, y que lo montado se guarda en el servidor y sigue ahi
+      al recargar. Eso ultimo es la mitad que importa: guardarlo en el navegador
+      habria pasado esta prueba y habria fallado en el telefono.
+    */
     await comoGerente(page);
+    await panelDeFabrica(page);
 
-    // La grafica del mes sigue siendo de M17, y lo dice.
-    await expect(page.getByText('Sin datos que dibujar')).toBeVisible();
+    // Los widgets de fabrica, con su titulo y su origen debajo.
+    await expect(page.getByRole('heading', { level: 2, name: 'Acciones rápidas' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toBeVisible();
 
-    // Y las dos de Inventario ya traen dato: Rosa tiene genero en su bar.
-    await expect(page.getByText('Productos con precio')).toBeVisible();
+    // Se anade uno que no estaba. `panelDeFabrica` deja el Panel sin el, asi que
+    // el catalogo lo ofrece siempre, corra esta prueba antes o despues que otras.
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
+    await page.getByRole('button', { name: /Lo último apuntado/ }).click();
+    await expect(page.getByRole('heading', { level: 2, name: 'Lo último apuntado' })).toBeVisible();
+
+    // Y sigue ahi al recargar, porque se ha guardado en el servidor.
+    await page.getByRole('button', { name: 'Listo' }).click();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 2, name: 'Lo último apuntado' })).toBeVisible();
   });
 
-  test('y quien no tiene genero sigue viendo el hueco explicado', async ({ page }) => {
-    // La camarera no tiene Inventario, asi que sus dos tarjetas no existen: «las
-    // apps que el rol no tiene no aparecen en ningun sitio». Lo que si tiene es
-    // el resto del Panel, con su version «todavia no tengo datos».
+  test('la linea de lo que falta dice cual falta, y lleva ahi', async ({ page }) => {
+    // «Si hay objetos sin poner que avise en panel pero con otro indicativo mas
+    // pequeño y que indique cual es.» Y **no sale cuando no falta nada**: un aviso
+    // que tambien aparece cuando no hay aviso se deja de leer.
+    await comoGerente(page);
+
+    const laLinea = page.getByRole('button', { name: /productos? sin precio/ });
+    if ((await laLinea.count()) > 0) {
+      await laLinea.first().click();
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Productos');
+      await expect(page.getByRole('tab', { name: 'Sin precio' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    }
+  });
+
+  test('y quien no tiene genero no ve ningun widget de genero', async ({ page }) => {
+    // La camarera no tiene Inventario, asi que sus widgets no existen: «las apps
+    // que el rol no tiene no aparecen en ningun sitio». Lo que si tiene es el
+    // resto del Panel, y ni una pantalla en blanco.
     await comoCamarera(page);
 
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
-    await expect(page.getByText('Sin datos que dibujar')).toBeVisible();
-    await expect(page.getByText('Productos con precio')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 2, name: 'Acciones rápidas' })).toBeVisible();
   });
 
   test('el buscador dice que hacer cuando no hay nada escrito', async ({ page }) => {
@@ -512,7 +677,7 @@ test.describe('el buscador universal', () => {
     await page.getByLabel('Que quieres buscar').fill('escandallos');
     await page.keyboard.press('Enter');
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Escandallos');
+    await expect(page).toHaveURL(new RegExp('#/escandallos(/|$)'));
   });
 
   test('solo ofrece acciones de las apps que el rol tiene', async ({ page }) => {

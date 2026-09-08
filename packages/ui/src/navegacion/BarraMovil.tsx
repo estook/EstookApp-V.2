@@ -1,5 +1,6 @@
 import { IconoAjustes, IconoPanel } from '@estook/iconos';
 import type { App } from '../apps.ts';
+import { destinosConstruidos } from '../apps.ts';
 import { clases } from '../clases.ts';
 
 /**
@@ -65,21 +66,32 @@ export function BarraMovil({
 /**
  * La barra de dentro de una app · Parte B5.
  *
- * «Con un maximo de cuatro posiciones y un "Mas" si hacen falta cinco.» El
- * maximo lo impone el catalogo de `apps.ts`, que ya trae las pestanas contadas.
+ * ── Lo que cambia, y el fallo que arregla ────────────────────────────────────
+ *
+ * Antes esta barra pintaba **todas** las pestanas del catalogo, existieran o no.
+ * En Inventario eso significaba cuatro posiciones de las cuales **dos no
+ * llevaban a ningun sitio**: «Pedidos», que es M7 y ensenaba un cartel, y «Mas»,
+ * que era el cajon donde vivia Proveedores. La barra de navegacion principal de
+ * la app, en el aparato donde de verdad se usa Estook, con la mitad de los
+ * botones vacios.
+ *
+ * Ahora pinta **solo los destinos construidos** (`destinosConstruidos`). Lo que
+ * llega despues se cuenta en el menu lateral de escritorio y en la pantalla del
+ * destino, con su modulo, donde se lee en vez de ocupar un hueco.
  *
  * A la izquierda del todo, la marca de la app con su acento: es lo que recuerda
- * en que app se esta sin tener que leer.
+ * en que app se esta sin tener que leer, y es el camino de vuelta a la rueda.
  */
 export interface BarraDeAppProps {
   readonly app: App;
-  readonly pestanaActiva: string;
-  readonly alIrAPestana: (id: string) => void;
+  readonly destinoActivo: string;
+  readonly alIrADestino: (id: string) => void;
   readonly alAbrirLaRueda: () => void;
 }
 
-export function BarraDeApp({ app, pestanaActiva, alIrAPestana, alAbrirLaRueda }: BarraDeAppProps) {
+export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }: BarraDeAppProps) {
   const Icono = app.icono;
+  const destinos = destinosConstruidos(app);
 
   return (
     <nav aria-label={app.nombre} className={CAJA}>
@@ -95,14 +107,15 @@ export function BarraDeApp({ app, pestanaActiva, alIrAPestana, alAbrirLaRueda }:
         <span className="text-[10px] font-semibold uppercase tracking-wide">Apps</span>
       </button>
 
-      {app.pestanas.map((pestana) => (
+      {destinos.map((destino) => (
         <Posicion
-          key={pestana.id}
-          nombre={pestana.nombre}
-          activa={pestana.id === pestanaActiva}
+          key={destino.id}
+          nombre={destino.nombre}
+          activa={destino.id === destinoActivo}
           acento={app.acento}
+          icono={<destino.icono size={22} />}
           alPulsar={() => {
-            alIrAPestana(pestana.id);
+            alIrADestino(destino.id);
           }}
         />
       ))}

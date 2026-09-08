@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 5 de septiembre de 2026 · auditoría, el bucle del segundo local y dos decisiones
+Última actualización: 8 de septiembre de 2026 · M6½, la capa de producto
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. Nunca puede afirmar algo que no sea cierto en ese momento.
@@ -9,15 +9,21 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------- |
-| **Terminados** | **M0 ✓** · **M1 ✓** · **M2 ✓** · **M3 ✓** · **M4 ✓** · **M5 ✓** · **M6 ✓** inventario |
-| **Siguiente**  | **M7** · Proveedores y compras                                                        |
-| **Pruebas**    | 695 unitarias y de base de datos · 268 de extremo a extremo · 90 % del catálogo       |
-| **Rama**       | M6 en `main` (PR #30 a #35). La auditoría, en un pull request abierto                 |
-| **Publicado**  | Base en la `0024` · web y app al día · **API desplegada y al día**                    |
-| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar          |
-| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local |
+|                |                                                                                             |
+| -------------- | ------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6** ✓ · **M6½** construido y **sin cerrar** (falta el móvil)                    |
+| **Siguiente**  | **M7** · Proveedores y compras                                                              |
+| **Pruebas**    | 706 unitarias y de base de datos · 288 de extremo a extremo · **91 % del catálogo** (59/65) |
+| **Rama**       | M6½ en `m6-medio-la-capa-de-producto`, **sin fusionar**                                     |
+| **Publicado**  | Base en la `0024`; **la `0025` está escrita y sin aplicar**. API **por detrás**             |
+| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                |
+| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local       |
+
+> **Lo que hay que hacer, en orden, está en**
+> [`docs/pasos-para-cerrar-m6-medio.md`](docs/pasos-para-cerrar-m6-medio.md). El
+> paso 3 es el que se olvida: **la API se despliega a mano**, y M6½ trae tres
+> operaciones nuevas. Sin ese paso, el Panel sale vacío y Movimientos dice «Eso ya
+> no está», y por fuera parece que se ha roto todo.
 
 ---
 
@@ -62,34 +68,45 @@ específico. Si de verdad se contradicen, se para y se pregunta (regla 13).
 
 ## 2 · Qué hay que hacer
 
-**M5 está cerrado.** Se probó en un móvil de verdad el 3 de septiembre de 2026 y
-funciona: el alta entera, la tarjeta del Panel, invitar a mano, y la guía de
-instalación donde toca.
+**M6 está cerrado**: fusionado, migrado, desplegado y mirado en un móvil de verdad
+—de ahí salieron ocho fallos más, que están en su ficha—.
 
-**M6 está fusionado, migrado y desplegado. Falta una sola cosa: mirarlo en un
-móvil de verdad** (regla 11).
+**Y encima hay M6½, que no es un módulo del Plan: es la pausa que pidió Richi
+antes de M7.** «La idea está genial pero le falta orden, utilidad y profundidad»,
+así que en vez de meter Proveedores encima de una navegación que no se sostenía, se
+arregló la navegación. Lo que hay dentro está en su ficha, abajo, y las tres
+decisiones que lo sostienen son la [0018](docs/decisiones/0018-destinos-y-vistas.md),
+la [0019](docs/decisiones/0019-el-panel-de-cada-uno-vive-en-el-servidor.md) y la
+[0020](docs/decisiones/0020-un-catalogo-de-acciones.md).
 
-Comprobado contra Supabase y contra GitHub, no de memoria: los pull requests #30
-a #34 fusionados, la base en la `24` de 24, la API desplegada conociendo las
-catorce consultas del código, y **el almacén del logo listo** —la clave de
-servicio ya estaba en `.env.local`, así que el último pendiente de M5 queda
-cerrado—.
+### Lo que falta para cerrarlo, en orden
 
-El primer paseo por el móvil ya se dio, y **salieron seis fallos de pantalla**:
-ninguno rompía ninguna de las 692 pruebas que había. Arreglándolos salieron dos
-más, y uno de los dos es el más grave de todo M6: **la pantalla «Hoy» devolvía un
-`500` a todo el mundo, siempre**. Están todos abajo, en la ficha de M6.
+Está entero y con lo que tiene que salir en cada paso en
+[`docs/pasos-para-cerrar-m6-medio.md`](docs/pasos-para-cerrar-m6-medio.md):
 
-Y el orden importa, porque **hay un paso que se olvida y rompe todo**: las cuatro
-aplicaciones se publican solas al fusionar, pero **la API se despliega a mano**.
-Entre una cosa y otra, la pantalla de Inventario está publicada y el servidor no
-conoce ninguna de sus operaciones: entrar en Inventario devuelve «Eso ya no está»
-en cada pantalla y parece que el módulo está roto.
+1. **Fusionar el pull request.** Las cuatro aplicaciones se publican solas.
+2. **Aplicar la `0025`** (`.\estook.cmd bd:migrar`). Crea una tabla nueva y no
+   toca nada de lo de antes. La base pasa de 38 tablas a 39.
+3. **Desplegar la API a mano**, y **este es el que se olvida**. M6½ trae tres
+   operaciones nuevas —`mis_movimientos`, `mi_panel` y `guardar_mi_panel`— que la
+   API desplegada no conoce. Sin este paso, el Panel sale vacío y Movimientos dice
+   «Eso ya no está», y por fuera parece que se ha roto todo. `bd:comprobar-api` lo
+   dice con esas palabras.
+4. **Mirarlo en un móvil de verdad** (regla 11). Es el único que no puedo firmar
+   yo, y el que ha encontrado la mitad de los fallos de este proyecto. La lista de
+   trece cosas que hay que mirar está en el documento de los pasos.
 
-Eso ya no se puede olvidar en silencio: `pnpm bd:comprobar-api` le pregunta a la
-API **desplegada** si conoce todas las consultas del código, y si va por detrás lo
-dice con esas palabras. Los pasos están en
-[`docs/pasos-para-cerrar-m6.md`](docs/pasos-para-cerrar-m6.md).
+### Y lo que sigue sin decidirse
+
+**Si Fogón habla antes de M22.** M6½ le ha dado su contexto —dónde estás y las
+cifras que hay delante, ya calculadas— y sus botones de acción, que hacen algo de
+verdad. Lo que no tiene es voz: no hay casilla para escribirle, y eso es a
+propósito. Hablar con él necesita elegir modelo, presupuesto diario por local y
+caché, y **es una decisión de Richi**.
+
+Lo que sí queda dicho es que el contexto está construido con la forma que M22
+necesita: un resumen compacto —«47 productos, 3 bajo mínimo, caducan 2»— en vez del
+local entero, que es lo que hace que el presupuesto pueda existir.
 
 ### De M5 ya no queda nada abierto
 
@@ -277,32 +294,37 @@ El **catálogo del sistema de diseño** está en `/admin/`.
 gratuito. La conexión va por el agrupador de sesión, porque la directa de los
 proyectos nuevos solo funciona por IPv6.
 
-Leído de la base de datos de verdad con `pnpm bd:comprobar` **al terminar de
-construir M6, y antes de aplicarla**:
+Lo último que se leyó de la base de verdad con `pnpm bd:comprobar` fue el 5 de
+septiembre de 2026, al cerrar M6. **Desde entonces no se ha vuelto a mirar**, y
+esto es lo que había:
 
 | Qué                            | Cuánto                                                     |
 | ------------------------------ | ---------------------------------------------------------- |
-| Migraciones aplicadas          | **22 de 23** · falta la `0023`, que es la de M6            |
-| Tablas en el esquema `estook`  | 31, **todas** con seguridad por filas                      |
+| Migraciones aplicadas          | **24 de 24**                                               |
+| Tablas en el esquema `estook`  | 38, **todas** con seguridad por filas                      |
+| Vistas                         | 1 · `estook.existencias`, la única del proyecto            |
 | Roles · permisos · concesiones | 12 · 33 · 166                                              |
 | Reglas fiscales                | 17, todas con su referencia legal                          |
 | Organizaciones                 | 4 · `bar-centro`, `casa-lola`, `grupo-costa` e **`ikatz`** |
 | Personas de verdad             | **3** · Ricardo, y dos más en `ikatz`                      |
 | La auditoría                   | añadir sí · modificar **no** · borrar **no**               |
 
+**Y ahora el repositorio va por delante:** la `0025` de M6½ está escrita y **sin
+aplicar**. Al aplicarla pasan a ser **25 de 25** y **39 tablas**, con
+`estook.panel_de_persona` dentro. Se comprueba con `.\estook.cmd bd:comprobar`, que
+lo lee de la base y no de aquí.
+
+**Y la API desplegada va por detrás del código**, que es la otra mitad de lo mismo:
+le faltan `mis_movimientos`, `mi_panel` y `guardar_mi_panel`. `bd:comprobar-api` lo
+dice con esas palabras y con la lista de las que le faltan.
+
 **`ikatz` es el negocio de verdad**, con su gerente, su jefe de cocina y su
 dirección. Lo demás son las semillas de ejemplo, con sus cuentas cerradas desde
 el 3 de septiembre.
 
-**Al aplicar la `0023` pasan a ser 38 tablas**, y aparece la vista
-`estook.existencias`, que es la única del proyecto.
-
 **Las ocho personas de ejemplo tenían una contraseña publicada en este
 repositorio, y la API ya estaba desplegada cuando se vio.** Están cerradas desde
 el 3 de septiembre.
-
-**La API está desplegada y viva**, y se entra desde el móvil. La base está en la
-`0022`; la `0023` de M6 está construida y **sin aplicar**.
 
 **Errores:** proyecto `estook-app` en Sentry, con solo «Error monitoring»
 encendido y el repositorio enlazado.
@@ -316,20 +338,23 @@ encendido y el repositorio enlazado.
 
 | Aplicación      | Peso inicial | De los cuales tipografía |
 | --------------- | ------------ | ------------------------ |
-| `app`           | 229,5 KB     | 106,1 KB                 |
-| `admin`         | 182,6 KB     | 106,1 KB                 |
-| `web` · `carta` | 164,2 KB     | 106,1 KB                 |
+| `app`           | **241,7 KB** | 106,1 KB                 |
+| `admin`         | 184,3 KB     | 106,1 KB                 |
+| `web` · `carta` | 164,6 KB     | 106,1 KB                 |
 
 De 250 de referencia, que desde la Evolución 1.0 **se mide y se informa, no
-bloquea**. **M6 entero le costó a `app` 12,9 KB**: la pantalla «Hoy», la lista de
-productos con su buscador, el alta desde el catálogo, la ficha entera con sus
-tres hojas y la de proveedores.
+bloquea**.
 
-**Quedan 20,5 KB de margen, y aquí empieza a apretar de verdad.** Con
-Escandallos, Carta, Calendario, Equipo, Servicio, Negocio, Cuaderno y Fogón por
-construir, el siguiente módulo que traiga pantallas grandes **tendrá que cargarse
-aparte**, como ya hace la gráfica. No bloquea —la referencia se mide y se
-informa— pero conviene hacerlo por gusto y no por susto.
+**M6 entero le costó a `app` 12,9 KB** y **M6½ otros 12,2 KB**, y los de M6½
+habrían sido 17 si no se hubieran apartado del paquete inicial —como la gráfica
+desde M3— la ficha de producto, que son 1.300 líneas que no hacen falta hasta que
+alguien abre un producto, y el libro de movimientos, que es uno de cuatro destinos.
+
+**Quedan 8,3 KB de margen.** Con Escandallos, Carta, Calendario, Equipo, Servicio,
+Negocio, Cuaderno y Fogón por construir, **el siguiente módulo tiene que cargarse
+aparte desde el principio**, no al terminar. No bloquea —la referencia se mide y se
+informa, y «rendimiento antes que tamaño»— pero a partir de aquí ya no hay sitio
+para hacerlo tarde.
 
 La tipografía se cuenta **entera y a propósito**: una pantalla en castellano solo
 descarga el subconjunto `latin`, 38 KB. Si cabe contando de más, cabe seguro.
@@ -1327,6 +1352,194 @@ Está escrito además donde se lee: **B5 y la ficha de M22 del Plan**.
 
 ---
 
+### M6½ · La capa de producto
+
+**No es un módulo del Plan: es la pausa que pidió Richi antes de M7.** «El diseño y
+cómo mostramos todo es superlioso, las páginas, las apps y las cosas dentro»; «la
+info se muestra supersuelta, nada ordenada, mucho texto y mal explicado»; «hay
+opciones como "crearlo a mano" que salen abajo del todo cuando es un botón que se
+utiliza mucho».
+
+No reordena nada del Plan: adelanta **las dos primeras prioridades de la Evolución
+1.0** —el rediseño del Panel y el sitio de Fogón— que el capítulo 16 pone antes que
+todo lo demás, y que estaban esperando a módulos que llegan mucho después.
+
+**Lo que hay:**
+
+- **Destinos y vistas** ([decisión 0018](docs/decisiones/0018-destinos-y-vistas.md)).
+  Cada app tiene como mucho cuatro **destinos** —un sitio que contesta una
+  pregunta, abajo en móvil y en menú lateral en escritorio— y cada destino sus
+  **vistas**, que son la misma pantalla mirada de otra forma, en un control
+  segmentado arriba. **Un destino sin construir no ocupa posición**, y ninguna app
+  vuelve a tener un «Más».
+- **Cada app declara su forma**: panel, lista, calendario o cuaderno. Decide el
+  ancho y la rejilla, y es lo que hace que un calendario no sea una lista con otro
+  acento.
+- **El menú lateral de cada app en escritorio**, que B5 mandaba desde M3 y no se
+  había construido. Con la pregunta que contesta cada destino debajo de su nombre:
+  en una pastilla solo cabe una palabra.
+- **El Panel de cada uno** ([decisión 0019](docs/decisiones/0019-el-panel-de-cada-uno-vive-en-el-servidor.md)).
+  Zona de atención fija arriba, y debajo una rejilla de widgets **de dos columnas
+  en móvil** y cuatro en escritorio, con tres tamaños, que se arrastra, se añade y
+  se quita, y **se guarda en el servidor por persona y por aparato** (migración
+  `0025`). Con su catálogo de dieciséis widgets: los nueve que existen hoy y los
+  siete que llegan con su módulo, en gris y sin poder pulsarse.
+- **Un catálogo de acciones** ([decisión 0020](docs/decisiones/0020-un-catalogo-de-acciones.md)),
+  único dueño de «qué se puede hacer». De ahí salen los accesos rápidos del Panel
+  —que el Manifiesto pedía y no existían—, la paleta del buscador universal y los
+  botones de Fogón. Y **una acción es una dirección**, así que el enlace a «añadir
+  un producto» se puede copiar y pegar en el chat del equipo.
+- **El libro de movimientos, entero y legible.** Es la pantalla nueva más
+  importante, y está contada abajo.
+- **Fogón con contexto y con botones que hacen algo.** Sabe dónde estás **y qué
+  cifras hay delante**, y ofrece las acciones de esa pantalla que funcionan hoy.
+  Sigue sin casilla para escribirle: eso es M22.
+
+#### El libro de movimientos: el registro que no se podía leer
+
+«El stock es un libro de movimientos, y no hay ninguna tabla con una cantidad
+editable» es la regla 8, y es lo que hace que la cámara se pueda auditar: el libro
+solo se añade, nadie tiene concedido el `update`, un disparador lo rechaza y un
+movimiento equivocado se enmienda con otro.
+
+**Y el libro no se podía leer.** Sus líneas solo salían dentro de la ficha de un
+producto, de un producto a la vez y las cincuenta últimas. Es decir: el proyecto
+tenía el registro inmutable montado, probado y protegido, y **la pregunta para la
+que sirve un registro inmutable** —«esta mañana faltaban cuatro kilos de pulpo,
+¿quién apuntó qué y cuándo?»— **no se podía contestar** sin abrir fichas de una en
+una.
+
+Es la familia de fallo de siempre en su versión más cara: no faltaba código de
+servidor ni había nada mal hecho. Faltaba la pantalla.
+
+#### Ocho fallos de lo de antes, y cuatro estaban en la primera pantalla del día
+
+**1 · El Panel inventaba una cifra.** Pintaba **«Facturado · 0,00 €»** en la
+tipografía más grande de la pantalla con el TPV sin conectar. Es exactamente lo que
+este proyecto tiene escrito que no se hace —«poner un cero en gris sería inventarse
+una cifra»— y lo tenía escrito **dos tarjetas más abajo, en el mismo fichero**.
+
+**2 · Y dos números de módulo mal, ahí también.** Decía que las ventas del TPV las
+traía «M13», que es Equipo, y que Negocio era «M17», que es Cuaderno. El número
+estaba escrito a mano en el texto de cada tarjeta, y en otro fichero había una tabla
+con los ocho bien: un dato con dos dueños acaba con dos valores (regla 6). Ahora se
+escribe una vez, en el catálogo de navegación.
+
+**3 · Un andamio de pruebas publicado.** «Deshacer · apuntar una nota de prueba»
+era un botón de M3 con un `deshacer` que no deshacía nada, puesto en el Panel para
+comprobar que la barra aparecía y contaba diez segundos. **Se quedó publicado en el
+Panel de un negocio de verdad.**
+
+Y quitarlo dejaba a M3 con dos flujos de deshacer de los tres que pide su criterio,
+así que el tercero es ahora uno de verdad y mejor: **quitar un widget del Panel**,
+que se hace sin querer —la ✕ está a un centímetro del asa de arrastrar— y que
+destruye lo que acabas de colocar a mano. «Volver al panel de siempre» también se
+deshace, que se lleva el Panel entero.
+
+**4 · Una prueba en verde que contradecía al maestro.** `apps.prueba.ts` fijaba las
+pestañas de cada app **con los valores copiados dentro**, y por eso estuvo en verde
+diciendo que Negocio tenía «Reseñas» donde la tabla de B5 dice «Pulse». Tres sitios,
+dos valores, y la comprobación del lado equivocado. Ahora **lee el Plan**, no una
+copia del Plan.
+
+**5 · Y este documento decía que había una prueba cuadrando los números de módulo
+con el Plan. No la había.** Es justo lo que `ESTADO.md` no puede hacer. Ahora
+existe: lee los títulos de la parte D y los compara con el catálogo.
+
+**6 · Ajustes estaba dos veces en el móvil**, arriba y abajo, a diez centímetros una
+puerta de la otra. Y en escritorio también: un icono de ajustes y, pegado, un avatar
+que abría la misma pantalla —cinco cosas en una fila donde B5 pide cuatro—.
+
+Quitar sin más el de arriba habría reabierto el agujero que M6 tapó: **dentro de una
+app la barra de abajo es la de esa app**, así que ahí no hay posición «Ajustes».
+Ahora el avatar abre **tu cuenta** —ajustes, mi acceso, cambiar de local y salir—,
+que es lo que hay detrás de un retrato en cualquier aplicación, y funciona desde
+cualquier pantalla.
+
+**7 · La barra de arriba en móvil tenía seis botones y el nombre del local en 375
+píxeles.** Fue el precio de tapar el agujero de M6 trayéndose las cinco de
+escritorio tal cual: lo que en un ordenador es una fila cómoda, en un teléfono es
+una fila donde se pulsa lo de al lado, y el nombre del local se quedaba sin sitio
+para leerse. Ahora son cuatro: dónde estás, buscar, **la bandeja** —los avisos y el
+chat comparten puerta, porque las dos son cosas que alguien te manda— y el avatar.
+Fogón no está porque en móvil Fogón es la burbuja (decisión 0015).
+
+**8 · El alta de un producto enseñaba ruido antes de escribir nada.** Abrir la hoja
+consultaba el catálogo con la casilla vacía, así que lo primero que se veía eran
+**doce referencias elegidas por nada**, y debajo de las doce el botón «Crearlo a
+mano» —que es el que usa cualquiera que compre algo que el catálogo no tenga, y el
+catálogo es una ayuda, no un censo del género de España—.
+
+Ahora la búsqueda empieza a las dos letras, «Crearlo a mano» está arriba desde el
+primer instante, el formulario va agrupado por lo que pregunta, la cuenta del envase
+sale en su caja y **el aprovechamiento se puede corregir también viniendo del
+catálogo**: el pulpo llega al 55 % y quien lo compra ya limpio no tenía dónde
+decirlo.
+
+#### Y uno más, que salió al arreglar los otros
+
+**«Con acceso» enseñaba solo a quien ya había entrado.** Así que invitar a alguien y
+verlo desaparecer de la lista que tienes delante era el camino normal, justo cuando
+acabas de darle el PIN y quieres comprobar que está. Quien fue invitado **tiene
+acceso**: su PIN vale y puede entrar cuando quiera. «Sin entrar todavía» sigue
+siendo su vista, para poder repasarlos de un golpe.
+
+Lo cazó una prueba de M4 que llevaba meses en verde, y se cayó en cuanto la lista
+dejó de enseñarlo todo mezclado.
+
+#### Cómo se comprueba que M6½ está terminado
+
+No tiene ficha en el Plan, así que su criterio es este:
+
+| Qué                                                | Cómo se comprueba                                                                              |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Ninguna posición de ninguna barra lleva a un hueco | El e2e recorre **los destinos que cada app ofrece de verdad**, no los del catálogo             |
+| Los destinos y las vistas son los de B5            | Una prueba **lee la tabla del Plan** y la compara con el catálogo del código                   |
+| El Panel se monta y lo montado se guarda           | Se añade un widget, se pulsa «Listo», se **recarga la página** y sigue ahí                     |
+| Un destino sin construir dice en qué módulo llega  | Se abre `/carta/menus` a mano y tiene que poner «M10 · Carta, menús y análisis»                |
+| El libro contesta, y el filtro por tipo filtra     | Se le pregunta a la API a pelo, y se comprueba que todas las líneas de «Entradas» son entradas |
+| Fogón trae las cifras que hay delante              | Se abre la burbuja en Inventario y tiene que salir «Productos de alta» con su número           |
+| Y **mirarlo en un móvil de verdad**                | **Pendiente** (regla 11). Las trece cosas que hay que mirar, en el documento de los pasos      |
+
+#### Lo que M6½ deja pendiente, dicho sin redondear
+
+- **Sigue sin poder darse por terminado** (regla 11): falta fusionar, aplicar la
+  `0025`, desplegar la API y mirarlo en el teléfono.
+- **Fogón tiene contexto y botones, pero no voz.** La conversación, el presupuesto
+  por local y día, la caché y la voz son M22, y hablar con él necesita una decisión
+  de Richi: qué modelo y cuánto al día.
+- **Los widgets que llegan con su módulo son siete**, y salen en el catálogo en
+  gris: Pulse, dónde se va el margen, ventas de hoy, calendario, mi turno, platos
+  bajo objetivo y avisos de Fogón. Están ahí porque saber que van a existir cambia
+  cómo se monta el Panel hoy.
+- **«Fijar cualquier cosa al Panel desde cualquier app»** (Manifiesto 6) no está: no
+  hay widget de «fijados». Necesita que cada app sepa qué es fijable, y hoy solo hay
+  una app construida.
+- **El calendario sigue siendo M14, y hay algo que decidir antes.** Las caducidades
+  de M6 y los días de reparto de M7 **son eventos de calendario**. Si M14 nace sin
+  saberlo, hay que reescribirlo. Está apuntado abajo, en lo que hay que decidir.
+- **El escaneo con la cámara** sigue esperando a que haya un aparato con el que
+  probarlo, y el lector de los de verdad —que escribe como un teclado— ya funciona.
+- **`mis_locales`, `mis_permisos` y `un_local`** siguen registradas y sin pantalla,
+  igual que al cerrar M6.
+
+#### Lo que le costó al paquete inicial
+
+`app` pasa de **229,5 KB a 241,7 KB**, de los 250 de referencia. Son 12,2 KB por
+todo lo de arriba, y hubieran sido 17 si no se hubieran apartado dos cosas del
+paquete inicial, como la gráfica desde M3: **la ficha de producto** —1.300 líneas
+con sus tres hojas, que no hace falta hasta que alguien abre un producto— y **el
+libro de movimientos**, que es uno de cuatro destinos.
+
+No se hizo para cuadrar el presupuesto de tamaño, que «se mide y se informa»: se
+hizo por lo que dice B7, que **un módulo que no cumple su presupuesto de velocidad
+no está terminado**, y abrir una app tiene 200 ms.
+
+Quedan **8,3 KB de margen**, y M7 trae pantallas grandes. El siguiente módulo
+tendrá que cargarse aparte desde el principio, no al final.
+
+---
+
 ## 5 · Cómo trabajamos
 
 1. **Primero fusionar, después aplicar a Supabase.** La base de datos nunca va
@@ -1387,6 +1600,31 @@ Está escrito además donde se lee: **B5 y la ficha de M22 del Plan**.
     llevaban así desde M3. Cuando lo que se comprueba es que algo **se ve**, hay
     que preguntarle al navegador qué hay en ese punto de la pantalla. Está escrito
     en `pruebas/e2e/pantalla.spec.ts` como `seVeDeVerdad`.
+15. **Una prueba que compara el código con una copia del documento no compara
+    nada.** `apps.prueba.ts` existía justo para cuadrar el catálogo de apps con la
+    tabla de B5, y llevaba los valores **copiados dentro**: tres sitios, dos
+    valores, y la comprobación del lado equivocado. Estuvo en verde diciendo que
+    Negocio tenía «Reseñas» donde B5 dice «Pulse». Ahora lee el fichero del Plan.
+    Y su hermana: **este documento decía que había una prueba cuadrando los números
+    de módulo con el Plan, y no la había.** Antes de escribir aquí que algo está
+    comprobado, hay que abrir la prueba.
+16. **Un dato con dos dueños acaba con dos valores, aunque no parezca un dato.**
+    En qué módulo llega cada cosa se escribía a mano en el texto de cada tarjeta
+    del Panel, y en otro fichero había una tabla con los ocho bien. Los dos textos
+    estaban en la primera pantalla que se ve cada mañana, y dos estaban mal: el TPV
+    como «M13», que es Equipo, y Negocio como «M17», que es Cuaderno. La regla 6
+    también vale para las frases.
+17. **Un andamio de pruebas en una pantalla de verdad se queda ahí.** «Apuntar una
+    nota de prueba» era un botón de M3 con un `deshacer` que no deshacía nada,
+    puesto en el Panel para poder comprobar la barra sin esperar a que hubiera un
+    comando de verdad. Sobrevivió tres módulos y llegó al Panel de un negocio. Un
+    andamio se pone **en una prueba**, no en la aplicación; y si de verdad hace
+    falta en pantalla, se apunta con fecha de caducidad.
+18. **El estado del servidor se lleva puesto entre pruebas.** El Panel se guarda
+    por persona y por aparato, así que una prueba que quita un widget deja el Panel
+    cambiado para la siguiente. La de «la barra se va sola» lo quita y deja caducar
+    la barra a propósito. Se arregla dejando el Panel de fábrica **desde la
+    aplicación** al empezar, no tocando la base a mano.
 
 ---
 
@@ -1394,25 +1632,28 @@ Está escrito además donde se lee: **B5 y la ficha de M22 del Plan**.
 
 En [`docs/decisiones/`](docs/decisiones/):
 
-| Núm      | Qué                                                               |
-| -------- | ----------------------------------------------------------------- |
-| **0001** | GitHub Pages en vez de Netlify, con la dirección de hoy           |
-| **0002** | La API en Hono sobre Supabase Edge Functions                      |
-| **0003** | M0 crea el esqueleto mínimo de alcances                           |
-| **0004** | El presupuesto de velocidad de B7, reconstruido                   |
-| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción |
-| **0006** | El motor fiscal: sin regla, no se inventa un tipo                 |
-| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta |
-| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages |
-| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`  |
-| **0010** | **El login es nuestro, no de Supabase Auth**                      |
-| **0011** | **Las pruebas de extremo a extremo levantan la API de verdad**    |
-| **0012** | **El producto nace en M6, y M5 le deja el diccionario**           |
-| **0013** | **Google Places se aplaza a M23**                                 |
-| **0014** | **Un módulo reacciona a otro en la misma transacción**            |
-| **0015** | **Fogón es una burbuja que va contigo, no una pestaña por app**   |
-| **0016** | **El reloj es `pg_cron` llamando a nuestra API**                  |
-| **0017** | **Cómo avisa Estook: pantalla, correo con Resend y push**         |
+| Núm      | Qué                                                                 |
+| -------- | ------------------------------------------------------------------- |
+| **0001** | GitHub Pages en vez de Netlify, con la dirección de hoy             |
+| **0002** | La API en Hono sobre Supabase Edge Functions                        |
+| **0003** | M0 crea el esqueleto mínimo de alcances                             |
+| **0004** | El presupuesto de velocidad de B7, reconstruido                     |
+| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción   |
+| **0006** | El motor fiscal: sin regla, no se inventa un tipo                   |
+| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta   |
+| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages   |
+| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`    |
+| **0010** | **El login es nuestro, no de Supabase Auth**                        |
+| **0011** | **Las pruebas de extremo a extremo levantan la API de verdad**      |
+| **0012** | **El producto nace en M6, y M5 le deja el diccionario**             |
+| **0013** | **Google Places se aplaza a M23**                                   |
+| **0014** | **Un módulo reacciona a otro en la misma transacción**              |
+| **0015** | **Fogón es una burbuja que va contigo, no una pestaña por app**     |
+| **0016** | **El reloj es `pg_cron` llamando a nuestra API**                    |
+| **0017** | **Cómo avisa Estook: pantalla, correo con Resend y push**           |
+| **0018** | **Cada app tiene destinos, y cada destino sus vistas**              |
+| **0019** | **El Panel de cada uno vive en el servidor, por persona y aparato** |
+| **0020** | **Un catálogo de acciones, y una acción es una dirección**          |
 
 Otras, sin fichero propio:
 
@@ -1446,7 +1687,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   nombres están elegidos para no chocar con Tailwind.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`,
   `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0023`.** Se amplían con una `0024`, nunca se editan
+- **Las migraciones `0001` a `0025`.** Se amplían con una `0026`, nunca se editan
   (regla 2).
 - **El libro de movimientos** (`estook.movimiento_de_stock`). Solo se añade: no
   tiene `update` concedido a nadie, un disparador lo rechaza y no hay política
@@ -1456,6 +1697,13 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **La aritmética del inventario vive en `packages/dominio/src/inventario.ts`.**
   Ni un disparador de Postgres suma stock ni pondera precios, a propósito
   (regla 6).
+- **El catálogo de navegación** (`packages/ui/src/apps.ts`). Es el único dueño de
+  «qué apps hay y por dónde se navegan»: los destinos, las vistas, la forma de cada
+  app y el nombre de cada módulo. Ampliar es normal —una app que se construye gana
+  destinos— pero **sus tablas se cambian en B5 del Plan primero**, porque hay una
+  prueba que las lee de ahí. Lo mismo con el catálogo de widgets
+  (`packages/ui/src/panel/catalogo.ts`) y el de acciones
+  (`apps/app/src/acciones/catalogo.tsx`).
 - **El catálogo de referencia** (`0021`). Son datos de producto, como los roles o
   las reglas fiscales: se corrigen con una migración, no desde la aplicación. No
   tiene política de escritura, así que **no hay camino** ni para el gerente.
@@ -1490,6 +1738,12 @@ mandar nada**. Se monta en M25, con el dominio verificado en Resend.
 
 **Proveedores y compras.** M6 le deja la ficha corta del proveedor ya montada, y
 M7 la completa: no la rehace.
+
+**Y M6½ le deja el sitio.** Los pedidos y las facturas son **vistas del destino
+«Compras»** de Inventario, que ya existe con Proveedores dentro: están declaradas en
+el catálogo con su `M7` puesto, salen apagadas y con su módulo, y el día que se
+construyan solo hay que quitarles esa marca. **M7 no toca la navegación**, que es
+exactamente lo que esta pausa venía a arreglar.
 
 **Entra.** Ficha con días de reparto y pedido mínimo · contratos marco · el ciclo
 `borrador → enviado → recibido` · sugerencia que respeta el calendario de reparto
@@ -1531,8 +1785,19 @@ conciliada con esa diferencia señalada.
    M8**, que es cuando hay algo que hacer con la bandeja; la bandeja no cambia.
 2. **Si se quitan de la API `mis_locales`, `mis_permisos` y `un_local`**, que
    `quien_soy` dejó sin trabajo en M4.
+3. **Si Fogón habla antes de M22.** Tiene su sitio (M6), su contexto y sus botones
+   de acción (M6½), y le falta la voz. Necesita elegir modelo, presupuesto diario
+   por local y caché, y **eso no lo decide un módulo**.
+4. **Y una que M7 destapa, y conviene decidir antes de escribir su primera línea:
+   ¿los días de reparto son eventos de calendario?** Porque las caducidades de M6 lo
+   son, y los días de reparto de M7 también, y el Calendario es M14. Si M14 nace sin
+   saber que M6 y M7 quieren escribir en él, hay que rehacerlo entero —y la decisión
+   0014 ya dejó montado cómo un módulo escribe en otro sin acoplarse—. Cuesta poco
+   ahora: es fijar el concepto de evento con sus capas —turnos, entregas, limpiezas,
+   revisiones— y dejar que M6 y M7 publiquen los suyos con una reacción. Construir
+   el calendario sigue siendo M14.
 
 **Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
-`pnpm prueba:e2e:completa` y `pnpm bd:comprobar-api` contra Supabase. Los dos
-primeros pasan hoy; el tercero, cuando se apliquen la `0020`, la `0021`, la `0022`
-y la `0023`.
+`pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
+Supabase. Los tres primeros pasan hoy —706, 288 y 59 de 65—; el cuarto, cuando se
+aplique la `0025` y se despliegue la API.

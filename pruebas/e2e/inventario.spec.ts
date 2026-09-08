@@ -56,8 +56,17 @@ async function entrar(page: Page, correo: string) {
   await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Entra en Estook');
 }
 
-async function irAInventario(page: Page, pestana: string) {
-  await page.goto(`${APP}#/inventario/${pestana}`, { waitUntil: 'domcontentloaded' });
+/**
+ * Va a un destino de Inventario, con su vista si la tiene.
+ *
+ * `irAInventario(page, 'productos')` cae en `/inventario/productos/todo`, que es
+ * lo que hace la aplicacion al entrar: un destino con vistas siempre lleva una en
+ * la direccion, para que el enlace se pueda copiar y para que volver atras
+ * devuelva a la vista de antes.
+ */
+async function irAInventario(page: Page, destino: string, vista?: string) {
+  const camino = vista === undefined ? destino : `${destino}/${vista}`;
+  await page.goto(`${APP}#/inventario/${camino}`, { waitUntil: 'domcontentloaded' });
 }
 
 /**
@@ -876,7 +885,116 @@ test('«Hoy» se pinta, y no con el aviso de que se ha roto', async ({ page }) =
   await entrar(page, ROSA);
   await irAInventario(page, 'hoy');
 
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inventario');
+  // El titulo es **el destino**, no la app: es donde estas de verdad.
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
   // El aviso que salía antes con el 500.
   await expect(page.getByText('No he podido leer')).toHaveCount(0);
+});
+
+// ── 5 · El libro de movimientos, que se guardaba y no se podia leer ──────────
+
+/**
+ * ── Por qué esta prueba es de las que importan ───────────────────────────────
+ *
+ * `mis_movimientos` es una consulta nueva, y la regla 10 de «cómo trabajamos» dice
+ * con estas palabras que **una consulta que ninguna prueba llama es una consulta
+ * rota que todavía no sabes que lo está**. La pantalla «Hoy» de M6 estuvo escrita,
+ * registrada, llamada desde la pantalla y devolviendo un `500` a todo el mundo
+ * desde el primer día, y nadie se enteró porque nada la llamaba de verdad.
+ *
+ * Así que son dos: una le pregunta a la API si contesta —y comprueba que el filtro
+ * por tipo funciona, que es lo que usan las cuatro vistas—, y la otra mira si la
+ * pantalla lo pinta o sale el aviso de que se ha roto.
+ */
+test('el libro de movimientos contesta, y el filtro por tipo filtra', async ({ request }) => {
+  const token = await tokenDe(request, ROSA);
+
+  const todo = await consultar<{
+    movimientos: { tipo: string }[];
+    hayMas: boolean;
+    hoy: string;
+  }>(request, token, 'mis_movimientos', { limite: '100' });
+
+  expect(todo.estado, 'mis_movimientos no contesta 200').toBe(200);
+  expect(Array.isArray(todo.datos?.movimientos)).toBe(true);
+  // La fecha de hoy la decide el servidor, y la pantalla la necesita para poder
+  // escribir «hoy» y «ayer» sin mirar el reloj del navegador (regla 10).
+  expect(todo.datos?.hoy).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+  // Rosa tiene género sembrado con su consumo, así que hay entradas y salidas.
+  expect((todo.datos?.movimientos ?? []).length).toBeGreaterThan(0);
+
+  const soloEntradas = await consultar<{ movimientos: { tipo: string }[] }>(
+    request,
+    token,
+    'mis_movimientos',
+    { tipo: 'entrada', limite: '50' },
+  );
+
+  expect(soloEntradas.estado).toBe(200);
+  for (const linea of soloEntradas.datos?.movimientos ?? []) {
+    expect(linea.tipo).toBe('entrada');
+  }
+});
+
+test('el libro se pinta por días, con quién apuntó cada línea', async ({ page }) => {
+  await entrar(page, ROSA);
+  await irAInventario(page, 'movimientos', 'todo');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Movimientos');
+  await expect(page.getByText('No he podido leer')).toHaveCount(0);
+
+  // Lo que hace que el libro sirva: que dice que no se edita, y que cada línea
+  // lleva el saldo de después.
+  await expect(page.getByText('Esto no se edita, se enmienda')).toBeVisible();
+  await expect(page.getByText(/quedaron /).first()).toBeVisible({ timeout: 15_000 });
+});
+
+// ── 6 · Las vistas de Productos filtran de verdad ───────────────────────────
+
+/**
+ * Antes esto era un interruptor suelto en mitad de la pantalla y dos casillas.
+ * Ahora son cuatro vistas, y **cada una es un filtro del servidor**: filtrar las
+ * cincuenta filas ya traídas daría «no hay ninguno» en un local con trescientos
+ * productos y los sin precio en la cola del alfabeto.
+ */
+test('la vista «Sin precio» pregunta al servidor, y no recorta la lista al llegar', async ({
+  request,
+}) => {
+  const token = await tokenDe(request, ROSA);
+
+  const todos = await consultar<{ productos: { precioCentimos: number | null }[] }>(
+    request,
+    token,
+    'mis_productos',
+    { limite: '200', incluir_ejemplos: 'true' },
+  );
+  const sinPrecio = await consultar<{ productos: { precioCentimos: number | null }[] }>(
+    request,
+    token,
+    'mis_productos',
+    { sin_precio: 'true', limite: '200', incluir_ejemplos: 'true' },
+  );
+
+  expect(sinPrecio.estado).toBe(200);
+  // Ninguno de los que devuelve tiene precio, y son menos que todos.
+  for (const producto of sinPrecio.datos?.productos ?? []) {
+    expect(producto.precioCentimos ?? null).toBeNull();
+  }
+  expect((sinPrecio.datos?.productos ?? []).length).toBeLessThanOrEqual(
+    (todos.datos?.productos ?? []).length,
+  );
+});
+
+test('las cuatro vistas de Productos se abren, y ninguna se queda muda', async ({ page }) => {
+  await entrar(page, ROSA);
+
+  for (const vista of ['todo', 'bajo-minimo', 'sin-precio', 'desactivados']) {
+    await irAInventario(page, 'productos', vista);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Productos');
+    await expect(page.getByText('No he podido leer')).toHaveCount(0);
+    // Con dato o sin dato, siempre hay algo escrito: «nunca una pantalla en
+    // blanco» (B4).
+    await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
+  }
 });

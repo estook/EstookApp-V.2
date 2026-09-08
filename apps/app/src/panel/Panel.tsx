@@ -106,7 +106,12 @@ export function Panel() {
           puestos={mio.puestos}
           editando={editando}
           guardando={mio.guardando}
-          alEditar={setEditando}
+          alEditar={(sigue) => {
+            setEditando(sigue);
+            // «Listo» quiere decir guarda: no se deja esperando al reloj de los
+            // ochocientos milisegundos.
+            if (!sigue) mio.guardarYa();
+          }}
           alReordenar={mio.reordenar}
           alQuitar={mio.quitar}
           alCambiarTamano={mio.cambiarTamano}

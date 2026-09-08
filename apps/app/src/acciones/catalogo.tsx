@@ -68,6 +68,11 @@ export interface Accion {
    */
   readonly permiso: { readonly cual: Permiso; readonly como: 'ver' | 'editar' } | null;
   /**
+   * De que app es, para que Fogon pueda ofrecer **las de la pantalla de delante**
+   * primero. Nulo si es de toda la aplicacion, como buscar o cambiar la clave.
+   */
+  readonly app: string | null;
+  /**
    * A dónde lleva.
    *
    * Una dirección de la aplicación, con su `?hacer=` cuando además abre algo. Es
@@ -82,6 +87,7 @@ export interface Accion {
 export const ACCIONES: readonly Accion[] = [
   {
     id: 'nuevo-producto',
+    app: 'inventario',
     nombre: 'Añadir un producto',
     queHace: 'Abre el alta, con el catálogo de referencia para que sean quince segundos',
     icono: IconoAnadir,
@@ -90,6 +96,7 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     id: 'que-atender',
+    app: 'inventario',
     nombre: 'Ver qué hay que atender',
     queHace: 'Lo que se acaba, lo que caduca y lo que no tiene precio, con su botón',
     icono: IconoAtencion,
@@ -98,6 +105,7 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     id: 'bajo-minimo',
+    app: 'inventario',
     nombre: 'Ver lo que está bajo mínimo',
     queHace: 'Los productos por debajo de su mínimo, con su previsión de agotamiento',
     icono: IconoInventario,
@@ -106,6 +114,7 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     id: 'sin-precio',
+    app: 'inventario',
     nombre: 'Ponerles precio a los que no tienen',
     queHace: 'Los productos que cuentan cero en el valor de la cámara',
     icono: IconoInventario,
@@ -114,6 +123,7 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     id: 'el-libro',
+    app: 'inventario',
     nombre: 'Ver el libro de movimientos',
     queHace: 'Todo lo que ha entrado y salido, por día y con quién lo apuntó',
     icono: IconoDocumento,
@@ -122,6 +132,7 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     id: 'nuevo-proveedor',
+    app: 'inventario',
     nombre: 'Añadir un proveedor',
     queHace: 'La ficha corta, que es lo que hace falta para comparar precios',
     icono: IconoOrganizacion,
@@ -130,6 +141,7 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     id: 'invitar',
+    app: 'equipo',
     nombre: 'Dar acceso a alguien',
     queHace: 'Le crea el acceso y te enseña su PIN para dárselo en mano',
     icono: IconoPersona,
@@ -138,6 +150,7 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     id: 'quien-no-ha-entrado',
+    app: 'equipo',
     nombre: 'Ver quién no ha entrado todavía',
     queHace: 'A quién hay que volver a darle el PIN',
     icono: IconoEquipo,
@@ -146,6 +159,7 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     id: 'mi-acceso',
+    app: null,
     nombre: 'Cambiar mi contraseña',
     queHace: 'Tu contraseña, tu PIN, el doble factor y tus aparatos',
     icono: IconoReloj,
@@ -154,6 +168,7 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     id: 'buscar',
+    app: null,
     nombre: 'Buscar en todo',
     queHace: 'Género, personas, locales y acciones, con erratas y sin acentos',
     icono: IconoBuscar,
@@ -195,3 +210,25 @@ export const ACCIONES_DE_FABRICA: readonly string[] = [
   'bajo-minimo',
   'el-libro',
 ];
+
+/**
+ * Las de una pantalla, y luego las de toda la aplicacion.
+ *
+ * Es el orden que necesita Fogon: quien abre la burbuja en Inventario quiere ver
+ * primero lo de Inventario. Y las generales van detras y no se quitan, porque
+ * «buscar en todo» sirve igual en las ocho.
+ */
+export function accionesDeAqui(permisos: PermisosResueltos, idDeLaApp: string): readonly Accion[] {
+  const puedo = accionesQuePuedo(permisos);
+
+  // En el Panel no hay app delante, y ahí lo útil es **todo lo que se puede
+  // hacer**: es la pantalla desde la que se sale a hacer cosas. Ofrecer solo las
+  // generales dejaría a Fogón en el Panel con dos botones —buscar y cambiar la
+  // contraseña— cuando es justo donde más falta hacen los atajos.
+  if (idDeLaApp === '') return puedo;
+
+  return [
+    ...puedo.filter((accion) => accion.app === idDeLaApp),
+    ...puedo.filter((accion) => accion.app === null),
+  ];
+}

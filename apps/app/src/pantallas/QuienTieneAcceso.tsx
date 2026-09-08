@@ -71,18 +71,28 @@ const COMO_SE_LLAMA_EL_ESTADO: Record<
 };
 
 /**
- * Que estado ensena cada vista.
+ * Que estados ensena cada vista.
  *
  * Los tres estados estaban calculados y con su etiqueta de color **desde M4**, y
  * la pantalla los ensenaba todos mezclados en una sola tabla. El del medio —quien
  * fue invitado y no ha entrado— es el util y el que se olvida, y estaba escondido
  * entre los demas: la unica forma de encontrarlo era leer la columna «Estado» de
  * arriba abajo. Ahora es una vista, y el aviso de arriba lleva a ella.
+ *
+ * ── Y «con acceso» lleva a los dos primeros, no solo al primero ──────────────
+ *
+ * Porque **quien fue invitado y no ha entrado tiene acceso**: su PIN vale, puede
+ * entrar cuando quiera, y esta dentro del equipo a todos los efectos. Dejarlo
+ * fuera de esta vista tenia una consecuencia concreta y mala: invitar a alguien y
+ * verlo desaparecer de la lista que tienes delante, justo cuando acabas de darle
+ * el PIN y quieres comprobar que esta.
+ *
+ * «Sin entrar todavia» sigue siendo su vista, para poder repasarlos de un golpe.
  */
-const ESTADO_DE_LA_VISTA: Readonly<Record<string, Acceso['estado']>> = {
-  'con-acceso': 'dentro',
-  'sin-entrar-todavia': 'sin_estrenar',
-  retirados: 'fuera',
+const ESTADOS_DE_LA_VISTA: Readonly<Record<string, readonly Acceso['estado'][]>> = {
+  'con-acceso': ['dentro', 'sin_estrenar'],
+  'sin-entrar-todavia': ['sin_estrenar'],
+  retirados: ['fuera'],
 };
 
 export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
@@ -287,9 +297,9 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
   // La vista filtra al llegar, y aqui si vale: `quien_tiene_acceso` devuelve el
   // equipo de un local, que son las personas que caben en un local. No es una
   // lista que crezca sin techo como el libro de movimientos.
-  const deLaVista = ESTADO_DE_LA_VISTA[vista];
+  const deLaVista = ESTADOS_DE_LA_VISTA[vista];
   const alaVista =
-    deLaVista === undefined ? accesos : accesos.filter((a) => a.estado === deLaVista);
+    deLaVista === undefined ? accesos : accesos.filter((a) => deLaVista.includes(a.estado));
 
   return (
     <div className="flex flex-col gap-e4">

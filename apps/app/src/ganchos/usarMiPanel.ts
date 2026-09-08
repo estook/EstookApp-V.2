@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   PANEL_DE_FABRICA,
   loQueSePuedePintar,
+  usarDeshacer,
   usarEsEscritorio,
   widgetPorId,
   type TamanoDeWidget,
@@ -46,6 +47,16 @@ export interface MiPanel {
   readonly cambiarTamano: (id: string, tamano: TamanoDeWidget) => void;
   /** Vuelve al Panel de fábrica del rol. */
   readonly volverAlDeFabrica: () => void;
+  /**
+   * Guarda ya lo que estuviera esperando.
+   *
+   * Se llama al salir del modo de edicion, que es lo que «Listo» quiere decir. Sin
+   * esto, montar el Panel y cerrar la aplicacion en el mismo segundo perdia el
+   * ultimo gesto —y ademas hacia que la prueba que lo comprueba fuera una carrera
+   * contra un reloj de ochocientos milisegundos, que es una prueba que un dia pasa
+   * y otro no—.
+   */
+  readonly guardarYa: () => void;
   readonly recargar: () => void;
 }
 
@@ -53,6 +64,7 @@ const ESPERA_ANTES_DE_GUARDAR = 800;
 
 export function usarMiPanel(): MiPanel {
   const { cliente, permisos } = usarSesion();
+  const { sePuedeDeshacer } = usarDeshacer();
   const esEscritorio = usarEsEscritorio();
   const aparato = esEscritorio ? 'escritorio' : 'movil';
 
@@ -87,6 +99,8 @@ export function usarMiPanel(): MiPanel {
   const [loCambioOtroAparato, setLoCambioOtroAparato] = useState(false);
   const version = useRef(0);
   const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Lo ultimo que hay que guardar, para poder mandarlo antes de tiempo. */
+  const pendiente = useRef<readonly WidgetPuesto[] | null>(null);
 
   // Lo que dice el servidor manda **la primera vez, y en cada recarga**. Después
   // manda lo que se está tocando: si no, cada refresco de la caché devolvería los
@@ -101,33 +115,46 @@ export function usarMiPanel(): MiPanel {
     setPuestos(loQueSePuedePintar(deFabrica, tienePermiso));
   }, [consulta.data, tienePermiso]);
 
+  const mandar = useCallback(async () => {
+    const nuevos = pendiente.current;
+    if (nuevos === null) return;
+    pendiente.current = null;
+
+    setGuardando(true);
+    const respuesta = await cliente.ejecutar<{ version: number }>('guardar_mi_panel', {
+      aparato,
+      widgets: nuevos.map((p) => ({ id: p.id, tamano: p.tamano })),
+      version: version.current,
+    });
+    setGuardando(false);
+
+    if (respuesta.ok) {
+      version.current = respuesta.datos.version;
+      setLoCambioOtroAparato(false);
+      return;
+    }
+    // «Lo cambió otra persona» aquí quiere decir «lo cambiaste tú en el otro
+    // aparato». Se dice, y no se pisa nada: lo que hay en el servidor se queda
+    // como está hasta que se recargue a propósito.
+    if (respuesta.error.codigo === 'lo_cambio_otra_persona') setLoCambioOtroAparato(true);
+  }, [cliente, aparato]);
+
   const guardar = useCallback(
     (nuevos: readonly WidgetPuesto[]) => {
+      pendiente.current = nuevos;
       if (reloj.current !== null) clearTimeout(reloj.current);
       reloj.current = setTimeout(() => {
-        void (async () => {
-          setGuardando(true);
-          const respuesta = await cliente.ejecutar<{ version: number }>('guardar_mi_panel', {
-            aparato,
-            widgets: nuevos.map((p) => ({ id: p.id, tamano: p.tamano })),
-            version: version.current,
-          });
-          setGuardando(false);
-
-          if (respuesta.ok) {
-            version.current = respuesta.datos.version;
-            setLoCambioOtroAparato(false);
-            return;
-          }
-          // «Lo cambió otra persona» aquí quiere decir «lo cambiaste tú en el
-          // otro aparato». Se dice, y no se pisa nada: lo que hay en el servidor
-          // se queda como está hasta que se recargue a propósito.
-          if (respuesta.error.codigo === 'lo_cambio_otra_persona') setLoCambioOtroAparato(true);
-        })();
+        void mandar();
       }, ESPERA_ANTES_DE_GUARDAR);
     },
-    [cliente, aparato],
+    [mandar],
   );
+
+  const guardarYa = useCallback(() => {
+    if (reloj.current !== null) clearTimeout(reloj.current);
+    reloj.current = null;
+    void mandar();
+  }, [mandar]);
 
   // Al desmontar, lo que estuviera esperando no se pierde en silencio: se cancela
   // el reloj para no escribir después de irse, que es lo que provoca el aviso de
@@ -157,11 +184,30 @@ export function usarMiPanel(): MiPanel {
     [puestos, cambiar],
   );
 
+  /**
+   * Quitar un widget · **con deshacer**, porque destruye trabajo.
+   *
+   * «Deshacer siempre, diez segundos, en todo lo que no tenga consecuencia
+   * legal» (B4). Quitar un widget no rompe ningun dato, pero se hace sin querer
+   * —la ✕ esta a un centimetro del asa de arrastrar— y lo que se pierde es donde
+   * lo tenias puesto, que es justo lo que acabas de colocar a mano.
+   *
+   * Ademas es el tercer flujo de deshacer que M3 pedia y que hasta hoy cubria un
+   * andamio de pruebas publicado en el Panel: «apuntar una nota de prueba».
+   */
   const quitar = useCallback(
     (id: string) => {
-      cambiar((puestos ?? []).filter((p) => p.id !== id));
+      const antes = puestos ?? [];
+      const nombre = widgetPorId(id)?.nombre ?? 'Ese widget';
+      cambiar(antes.filter((p) => p.id !== id));
+      sePuedeDeshacer({
+        que: `${nombre} fuera del panel`,
+        deshacer: () => {
+          cambiar(antes);
+        },
+      });
     },
-    [puestos, cambiar],
+    [puestos, cambiar, sePuedeDeshacer],
   );
 
   const cambiarTamano = useCallback(
@@ -171,9 +217,23 @@ export function usarMiPanel(): MiPanel {
     [puestos, cambiar],
   );
 
+  /**
+   * Volver al de fabrica · tambien con deshacer, y con mas razon.
+   *
+   * Esto se lleva por delante **el Panel entero** que alguien haya montado. Un
+   * boton que borra media hora de colocar tarjetas y no se puede deshacer no
+   * deberia existir.
+   */
   const volverAlDeFabrica = useCallback(() => {
+    const antes = puestos ?? [];
     cambiar(loQueSePuedePintar(PANEL_DE_FABRICA, tienePermiso));
-  }, [cambiar, tienePermiso]);
+    sePuedeDeshacer({
+      que: 'Panel de siempre puesto',
+      deshacer: () => {
+        cambiar(antes);
+      },
+    });
+  }, [puestos, cambiar, tienePermiso, sePuedeDeshacer]);
 
   const recargar = useCallback(() => {
     setLoCambioOtroAparato(false);
@@ -190,6 +250,7 @@ export function usarMiPanel(): MiPanel {
     quitar,
     cambiarTamano,
     volverAlDeFabrica,
+    guardarYa,
     recargar,
   };
 }

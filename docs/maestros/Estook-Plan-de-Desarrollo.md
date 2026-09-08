@@ -286,22 +286,57 @@ La rueda se abre sobre fondo desenfocado con un sector por app, con su icono, su
 
 > **Dentro de un sector, el icono y el nombre se apilan en vertical de pantalla, no a lo largo del radio.** Colocarlos a radios distintos los separa en la dirección del radio, que arriba y abajo es la vertical pero a las tres y a las nueve es la horizontal: el icono acaba al lado del nombre y con un nombre largo se le monta encima.
 
-Dentro de una app, la barra de abajo pasa a ser la de esa app, con un máximo de cuatro posiciones y un «Más»:
+### Destinos y vistas, que no son lo mismo
 
-| App         | Sus pestañas                       |
-| ----------- | ---------------------------------- |
-| Inventario  | Hoy · Productos · Pedidos · Más    |
-| Escandallos | Hoy · Fichas · Elaboraciones · Más |
-| Carta       | Carta · Menús · Análisis · Más     |
-| Calendario  | Mes · Semana · Día · Más           |
-| Equipo      | Hoy · Personas · Fichajes · Más    |
-| Servicio    | Jornada · Ventas · APPCC · Más     |
-| Negocio     | Resumen · Pulse · Costes · Más     |
-| Cuaderno    | Incidencias · Notas · Equipos      |
+Hasta M6 cada app tenía una lista plana de «pestañas», y salió mal de tres maneras a la vez:
 
-**Escritorio ·** barra superior y menú lateral propio. Arriba, el selector de local, las ocho apps con su desplegable y, a la derecha, notificaciones, chat, Fogón y avatar. Dentro de una app, menú lateral con sus vistas y la ficha abriéndose en panel derecho sin tapar la lista.
+- **Pestañas muertas.** Inventario gastaba una de sus cuatro posiciones en «Pedidos», que es M7 y no hacía nada, y otra en un «Más» que era el cajón donde vivía Proveedores. **Dos de cuatro no llevaban a ningún sitio**, en la barra de navegación principal de la app y en el aparato donde de verdad se usa Estook.
+- **Pestañas que eran la misma pantalla.** Calendario gastaba tres posiciones en «Mes», «Semana» y «Día», que no son tres sitios: son el mismo sitio con otro aumento.
+- **Y un cajón de sastre por app.** Un «Más» no responde a ninguna pregunta, así que nadie sabe qué hay dentro hasta que lo abre.
 
-**Y en móvil, esa misma fila de la derecha va arriba.** Buscador, avisos, chat, Fogón y avatar, con el local en el que estás a la izquierda. Sin ella, en un teléfono **no hay buscador** —`⌘K` no existe— y a Ajustes no se llega desde dentro de una app, porque ahí la barra de abajo es la de esa app. Arriba lo que es de la sesión entera; abajo, lo de navegar.
+Ahora hay dos niveles, y cada uno tiene un trabajo:
+
+> **Destino** · un sitio de la app que responde a **una pregunta**. Va en la barra de abajo en móvil y en el menú lateral en escritorio. Como mucho cuatro, y **solo entran los que existen de verdad**: un destino que todavía no se ha construido no ocupa posición, y se cuenta aparte diciendo en qué módulo llega.
+>
+> **Vista** · la misma pantalla mirada de otra forma. Va en un control segmentado arriba, dentro del destino. Cambiar de vista **no es entrar en ningún sitio**: no gasta un nivel de profundidad, el título no cambia y el botón de volver sigue llevando al mismo sitio que antes de tocarla.
+
+Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres niveles. La vista es un filtro de la pantalla del medio, no un piso más. Y **ninguna app vuelve a tener un «Más»**: lo que antes se metía ahí es una vista de un destino que sí contesta algo.
+
+| App         | Sus destinos                            |
+| ----------- | --------------------------------------- |
+| Inventario  | Hoy · Productos · Movimientos · Compras |
+| Escandallos | Hoy · Fichas · Elaboraciones · Análisis |
+| Carta       | Carta · Menús · Análisis                |
+| Calendario  | Calendario · Tareas · Turnos            |
+| Equipo      | Hoy · Personas · Horarios · Fichajes    |
+| Servicio    | Jornada · Ventas · APPCC · Cierre       |
+| Negocio     | Resumen · Pulse · Costes · Reseñas      |
+| Cuaderno    | Incidencias · Notas · Equipos           |
+
+Y sus vistas, donde las hay:
+
+| Destino                  | Sus vistas                                     |
+| ------------------------ | ---------------------------------------------- |
+| Inventario · Productos   | Todo · Bajo mínimo · Sin precio · Desactivados |
+| Inventario · Movimientos | Todo · Entradas · Salidas · Ajustes            |
+| Inventario · Compras     | Proveedores · Pedidos · Facturas               |
+| Escandallos · Fichas     | Todas · Bajo objetivo · Sin coste              |
+| Carta · Carta            | Por secciones · Todos los platos · Agotados    |
+| Carta · Análisis         | Matriz · Por canal · Histórico                 |
+| Calendario · Calendario  | Mes · Semana · Día                             |
+| Calendario · Tareas      | Pendientes · Periódicas · Hechas               |
+| Equipo · Personas        | Con acceso · Sin entrar todavía · Retirados    |
+| Servicio · Ventas        | Del turno · Del día · Por producto             |
+| Negocio · Resumen        | Mes · Trimestre · Año                          |
+| Cuaderno · Incidencias   | Abiertas · Cerradas                            |
+
+**El catálogo de `packages/ui/src/apps.ts` es el único dueño de estas dos tablas**, y hay una prueba que las lee **de este documento** y las compara. Antes la prueba llevaba los valores copiados dentro, y por eso pudo estar en verde mientras el código decía que Negocio tenía «Reseñas» donde esta tabla decía «Pulse».
+
+**Escritorio ·** barra superior y menú lateral propio. Arriba, el selector de local, las ocho apps con su desplegable —cada uno con sus destinos y **la pregunta que contesta cada uno**— y, a la derecha, notificaciones, chat, Fogón y avatar; **cuatro cosas, no cinco**: el avatar abre tu cuenta —ajustes, mi acceso, cambiar de local y salir— y no hace falta un icono de ajustes al lado abriendo lo mismo. Dentro de una app, menú lateral con sus destinos y la ficha abriéndose en panel derecho sin tapar la lista.
+
+**Y en móvil, arriba van cuatro cosas y no cinco.** Dónde estás, buscar, **la bandeja** —los avisos y el chat juntos, porque en un teléfono no hay sitio para dos puertas a «algo que alguien te manda»— y el avatar, que abre tu cuenta. Sin esa fila, en un teléfono **no hay buscador** —`⌘K` no existe— y a Ajustes no se llega desde dentro de una app, porque ahí la barra de abajo es la de esa app. Arriba lo que es de la sesión entera; abajo, lo de navegar.
+
+> **Fogón no va en esa fila en móvil**, porque en móvil Fogón es la burbuja que va contigo (decisión 0015). Tenerlo además arriba era la misma cosa dos veces, y la burbuja es la que está pensada para el pulgar.
 
 > **Fogón no es una pestaña de cada app: es una burbuja que va contigo** (decisión 0015). En móvil, flotando abajo a la derecha por encima de la barra; en escritorio, el icono de arriba abriendo un panel lateral que no tapa lo que estabas mirando; y `⌘J` desde cualquier sitio. **Se abre sabiendo en qué pantalla estás**, y se le puede preguntar cualquier cosa desde cualquier sitio. Una pestaña «Fogón» por app gastaría una de las cuatro posiciones que hay y obligaría a salir de lo que estás haciendo para preguntar por lo que estás haciendo.
 

@@ -187,8 +187,28 @@ async function leerProductos(
      */
     productoId: string | null;
     soloConProblema: boolean;
+    /**
+     * Solo los que no tienen precio vigente.
+     *
+     * Es la vista «Sin precio» de la pantalla de Productos, y va en el servidor y
+     * no filtrando la lista al llegar porque **la lista viene acotada a
+     * cincuenta**: filtrar cincuenta filas ya traidas daria «no hay ninguno» en
+     * un local con trescientos productos y los sin precio en la cola del
+     * alfabeto. Un filtro que solo funciona cuando la lista cabe entera es un
+     * filtro que miente.
+     */
+    soloSinPrecio: boolean;
     incluirEjemplos: boolean;
     incluirDesactivados: boolean;
+    /**
+     * Solo los desactivados, que es la vista «Desactivados».
+     *
+     * No es lo mismo que `incluirDesactivados`, y la diferencia importa: ese
+     * ensena los activos **y** los desactivados juntos, que era el interruptor de
+     * antes; este ensena solo los que se quitaron de en medio, que es lo que se
+     * quiere cuando se va a buscar uno para traerlo de vuelta.
+     */
+    soloDesactivados: boolean;
     limite: number;
     salto: number;
   },
@@ -239,8 +259,10 @@ async function leerProductos(
      where p.local_id = ${localId}
        and (${filtros.productoId}::uuid is null or p.id = ${filtros.productoId}::uuid)
        and (${filtros.incluirDesactivados} or p.activo)
+       and (not ${filtros.soloDesactivados} or not p.activo)
        and (${filtros.incluirEjemplos} or not p.es_ejemplo)
        and (${filtros.categoriaId}::uuid is null or p.categoria_id = ${filtros.categoriaId}::uuid)
+       and (not ${filtros.soloSinPrecio} or pr.precio_centimos is null)
        and (
          ${filtros.texto} = ''
          or estook.sin_acentos(p.nombre) like '%' || estook.sin_acentos(${filtros.texto}) || '%'
@@ -332,6 +354,10 @@ export const entradaMisProductos = z
     categoria_id: z.string().uuid().nullable().optional(),
     /** Solo lo que necesita atención: negativo, agotado o bajo mínimo. */
     con_problema: z.coerce.boolean().optional(),
+    /** Solo los que no tienen precio vigente. Es la vista «Sin precio». */
+    sin_precio: z.coerce.boolean().optional(),
+    /** Solo los que se quitaron de en medio. Es la vista «Desactivados». */
+    solo_desactivados: z.coerce.boolean().optional(),
     incluir_ejemplos: z.coerce.boolean().optional(),
     incluir_desactivados: z.coerce.boolean().optional(),
     limite: z.coerce.number().int().min(1).max(200).optional(),
@@ -378,6 +404,8 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
       categoriaId: entrada.categoria_id ?? null,
       productoId: null,
       soloConProblema: entrada.con_problema === true,
+      soloSinPrecio: entrada.sin_precio === true,
+      soloDesactivados: entrada.solo_desactivados === true,
       incluirEjemplos: entrada.incluir_ejemplos !== false,
       incluirDesactivados: entrada.incluir_desactivados === true,
       limite: limite + 1,
@@ -528,6 +556,8 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
       categoriaId: null,
       productoId: entrada.producto_id,
       soloConProblema: false,
+      soloSinPrecio: false,
+      soloDesactivados: false,
       incluirEjemplos: true,
       incluirDesactivados: true,
       limite: 1,
@@ -723,6 +753,8 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
       categoriaId: null,
       productoId: null,
       soloConProblema: true,
+      soloSinPrecio: false,
+      soloDesactivados: false,
       incluirEjemplos: false,
       incluirDesactivados: false,
       limite: 200,
@@ -876,6 +908,189 @@ export const misProveedores = consulta<
         cuantosProductos: f.cuantos,
       })),
       puedeVerPrecios: conPrecios,
+    };
+  },
+});
+
+// ── El libro de movimientos, entero ──────────────────────────────────────────
+
+/**
+ * Una linea del libro, como la ve la pantalla de Movimientos.
+ *
+ * ── Por que esta consulta existe ─────────────────────────────────────────────
+ *
+ * «El stock es un libro de movimientos, y no hay ninguna tabla con una cantidad
+ * editable» (regla 8). Eso es lo que hace que la camara se pueda auditar: el
+ * libro solo se anade, no tiene `update` concedido a nadie y un disparador lo
+ * rechaza.
+ *
+ * Y hasta hoy **el libro no se podia leer**. Sus lineas solo salian dentro de la
+ * ficha de un producto, de un producto a la vez y las cincuenta ultimas. Un libro
+ * que solo se lee por paginas sueltas no sirve para lo que sirve un libro, que es
+ * cuadrar: «esta manana faltaban cuatro kilos de pulpo, ¿quien apunto que?» no se
+ * puede contestar abriendo fichas de una en una.
+ *
+ * No lleva ni una cuenta nueva: cada linea guarda **el saldo de despues**, que es
+ * «el resultado congelado del unico dueno, como el saldo de una libreta». Aqui
+ * solo se lee y se ordena.
+ */
+export interface MovimientoDelLibro {
+  readonly id: string;
+  readonly tipo: string;
+  readonly producto: string;
+  readonly productoId: string;
+  readonly unidadDeUso: string;
+  readonly cantidad: number;
+  readonly cantidadDespues: number;
+  readonly motivo: string | null;
+  readonly fechaOperativa: string;
+  readonly ocurrioEn: string;
+  /**
+   * Quien lo apunto.
+   *
+   * «Lo que hace cada uno queda con su nombre» (Manifiesto 8). Es la mitad de la
+   * razon de que esta pantalla exista.
+   */
+  readonly quien: string | null;
+  readonly lote: string | null;
+  readonly esEjemplo: boolean;
+  /** Lo que costo, si quien mira puede ver dinero. Si no, no viaja. */
+  readonly costeMilesimas?: number | null;
+}
+
+export const entradaMovimientos = z
+  .object({
+    /**
+     * De que tipo. Es la vista de la pantalla: todo, entradas, salidas o ajustes.
+     *
+     * Se valida contra la lista cerrada y no se cuela en el `where` a pelo: es
+     * texto que llega de fuera.
+     */
+    tipo: z.enum(['entrada', 'salida', 'ajuste']).optional(),
+    producto_id: z.string().uuid().optional(),
+    desde: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    limite: z.coerce.number().int().min(1).max(200).optional(),
+    salto: z.coerce.number().int().min(0).optional(),
+  })
+  .strict();
+
+export type EntradaMovimientos = z.infer<typeof entradaMovimientos>;
+
+export interface SalidaMovimientos {
+  readonly movimientos: readonly MovimientoDelLibro[];
+  readonly hayMas: boolean;
+  readonly puedeVerPrecios: boolean;
+  /**
+   * La fecha operativa de hoy **en el local**.
+   *
+   * Va aqui para que la pantalla pueda escribir «hoy» y «ayer» sin mirar el reloj
+   * del navegador, que es lo que prohibe la regla 10 y con razon: la tablet de la
+   * cocina puede estar en otra zona horaria, y a las dos de la manana «hoy» no
+   * significa lo mismo para el reloj que para la jornada de un bar que cierra a
+   * las cinco.
+   */
+  readonly hoy: string;
+}
+
+export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
+  nombre: 'mis_movimientos',
+  entrada: entradaMovimientos,
+  exige: 'app.inventario',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocal(contexto);
+    const conPrecios = await puedeVerPrecios(contexto, localId);
+
+    const zonas = await contexto.sql<{ zona_horaria: string }[]>`
+      select zona_horaria from estook.local where id = ${localId}
+    `;
+    const hoy = fechaEnElLocal(contexto.ahora, zonas[0]?.zona_horaria ?? 'Europe/Madrid');
+
+    // «**Toda lista larga esta acotada**» (Auditoria, parte 8). Cincuenta por
+    // defecto, doscientos como mucho, y se dice si hay mas. El libro de un local
+    // en marcha crece todos los dias: es justo la lista que no puede nacer sin
+    // tope.
+    const limite = entrada.limite ?? 50;
+    const salto = entrada.salto ?? 0;
+
+    const filas = await contexto.sql<
+      {
+        id: string;
+        tipo: string;
+        producto: string;
+        producto_id: string;
+        unidad_de_uso: string;
+        cantidad: string;
+        cantidad_despues: string;
+        coste_milesimas: string | null;
+        motivo: string | null;
+        fecha_operativa: string;
+        ocurrido_en: string;
+        quien: string | null;
+        lote: string | null;
+        es_ejemplo: boolean;
+      }[]
+    >`
+      select m.id::text as id, m.tipo::text as tipo,
+             p.nombre as producto, p.id::text as producto_id,
+             p.unidad_de_uso::text as unidad_de_uso,
+             m.cantidad::text as cantidad,
+             m.cantidad_despues::text as cantidad_despues,
+             m.coste_milesimas::text as coste_milesimas,
+             m.motivo,
+             to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha_operativa,
+             to_char(m.ocurrido_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ocurrido_en,
+             pe.nombre as quien,
+             l.codigo as lote,
+             p.es_ejemplo as es_ejemplo
+        from estook.movimiento_de_stock m
+        join estook.producto p on p.id = m.producto_id
+        left join estook.persona pe on pe.id = m.persona_id
+        left join estook.lote l on l.id = m.lote_id
+       where p.local_id = ${localId}
+         and (${entrada.tipo ?? null}::text is null or m.tipo::text = ${entrada.tipo ?? null})
+         and (${entrada.producto_id ?? null}::uuid is null
+              or m.producto_id = ${entrada.producto_id ?? null}::uuid)
+         and (${entrada.desde ?? null}::date is null
+              or m.fecha_operativa >= ${entrada.desde ?? null}::date)
+       order by m.ocurrido_en desc, m.id desc
+       limit ${limite + 1} offset ${salto}
+    `;
+
+    const hayMas = filas.length > limite;
+
+    return {
+      movimientos: filas.slice(0, limite).map((f) => {
+        const linea: MovimientoDelLibro = {
+          id: f.id,
+          tipo: f.tipo,
+          producto: f.producto,
+          productoId: f.producto_id,
+          unidadDeUso: f.unidad_de_uso,
+          cantidad: Number(f.cantidad),
+          cantidadDespues: Number(f.cantidad_despues),
+          motivo: f.motivo,
+          fechaOperativa: f.fecha_operativa,
+          ocurrioEn: f.ocurrido_en,
+          quien: f.quien,
+          lote: f.lote,
+          esEjemplo: f.es_ejemplo,
+        };
+        // El coste **no se esconde: no se manda**. Es la regla que ordena este
+        // fichero entero, y un cocinero tiene esta pantalla igual que las demas.
+        return conPrecios
+          ? {
+              ...linea,
+              costeMilesimas: f.coste_milesimas === null ? null : Number(f.coste_milesimas),
+            }
+          : linea;
+      }),
+      hayMas,
+      puedeVerPrecios: conPrecios,
+      hoy,
     };
   },
 });

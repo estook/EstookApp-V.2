@@ -17,6 +17,7 @@ import {
 } from '@estook/ui';
 import { IconoAnadir } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
+import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import type { MisProveedores, ProveedorEnLista } from './contrato.ts';
 
@@ -55,6 +56,11 @@ export function Proveedores() {
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
   const puedeTocar = puedeEditar(permisos, 'app.inventario');
+
+  // «Añadir un proveedor», desde el Panel o desde el buscador.
+  usarQueHacer('nuevo', () => {
+    if (puedeTocar) setCreando(true);
+  });
 
   const consulta = useQuery({
     queryKey: ['mis_proveedores', verDesactivados],

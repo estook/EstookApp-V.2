@@ -9,6 +9,7 @@ import {
   Boton,
   Botones,
   Cargando,
+  EstadoVacio,
   Etiqueta,
   ErrorEnCristiano,
   Hoja,
@@ -19,6 +20,7 @@ import {
 } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { Invitar } from './Invitar.tsx';
+import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -68,7 +70,22 @@ const COMO_SE_LLAMA_EL_ESTADO: Record<
   fuera: { texto: 'Fuera', tono: 'neutro' },
 };
 
-export function QuienTieneAcceso() {
+/**
+ * Que estado ensena cada vista.
+ *
+ * Los tres estados estaban calculados y con su etiqueta de color **desde M4**, y
+ * la pantalla los ensenaba todos mezclados en una sola tabla. El del medio —quien
+ * fue invitado y no ha entrado— es el util y el que se olvida, y estaba escondido
+ * entre los demas: la unica forma de encontrarlo era leer la columna «Estado» de
+ * arriba abajo. Ahora es una vista, y el aviso de arriba lleva a ella.
+ */
+const ESTADO_DE_LA_VISTA: Readonly<Record<string, Acceso['estado']>> = {
+  'con-acceso': 'dentro',
+  'sin-entrar-todavia': 'sin_estrenar',
+  retirados: 'fuera',
+};
+
+export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
   const { cliente, yo, permisos } = usarSesion();
   const localId = yo?.local?.id ?? '';
 
@@ -101,6 +118,11 @@ export function QuienTieneAcceso() {
   // que la ponen las politicas de M1. Es para que a quien no puede invitar no se
   // le enseñe un boton que le va a decir que no.
   const puedeInvitar = puedeEditar(permisos, 'accion.invitar_personas');
+
+  // «Dar acceso a alguien», desde el Panel o desde el buscador.
+  usarQueHacer('invitar', () => {
+    if (puedeInvitar) setInvitando(true);
+  });
 
   async function retirar(acceso: Acceso) {
     setError(null);
@@ -262,21 +284,31 @@ export function QuienTieneAcceso() {
 
   const sinEstrenar = accesos.filter((a) => a.estado === 'sin_estrenar').length;
 
+  // La vista filtra al llegar, y aqui si vale: `quien_tiene_acceso` devuelve el
+  // equipo de un local, que son las personas que caben en un local. No es una
+  // lista que crezca sin techo como el libro de movimientos.
+  const deLaVista = ESTADO_DE_LA_VISTA[vista];
+  const alaVista =
+    deLaVista === undefined ? accesos : accesos.filter((a) => a.estado === deLaVista);
+
   return (
     <div className="flex flex-col gap-e4">
       {error && <ErrorEnCristiano error={error} />}
 
-      {sinEstrenar > 0 && (
+      {/* El aviso solo sale fuera de su propia vista: dentro de «Sin entrar
+          todavía» seria contar lo que ya se esta mirando. */}
+      {sinEstrenar > 0 && vista !== 'sin-entrar-todavia' && (
         <Aviso
           tono="atencion"
           titulo={`${sinEstrenar} ${sinEstrenar === 1 ? 'persona no ha entrado' : 'personas no han entrado'} todavía`}
         >
-          Su PIN sigue valiendo. Si se les ha perdido, genera otro y dáselo en mano.
+          Su PIN sigue valiendo. Si se les ha perdido, genera otro y dáselo en mano. Están en «Sin
+          entrar todavía», ahí arriba.
         </Aviso>
       )}
 
       <Tarjeta
-        titulo="Quién tiene acceso"
+        titulo={comoSeCuentaElEquipo(alaVista.length, vista)}
         origen="Retirar el acceso mata el PIN al instante y cierra sus sesiones"
         accion={
           puedeInvitar ? (
@@ -295,14 +327,30 @@ export function QuienTieneAcceso() {
         <Tabla
           titulo="Quién tiene acceso"
           columnas={columnas}
-          filas={accesos}
+          filas={alaVista}
           claveDe={(a) => a.membresiaId}
           cuandoNoHay={
-            <TodaviaNo
-              que="El equipo"
-              queHabra="Las personas que pueden entrar en este local, con su rol y su estado."
-              modulo="M4. Invita a la primera con el botón de arriba"
-            />
+            vista === 'sin-entrar-todavia' ? (
+              <EstadoVacio
+                compacto
+                titulo="Han entrado todos"
+                frase="Nadie se ha quedado con un PIN sin estrenar."
+                sinAccionPorque="Quien se invite ahora aparecerá aquí hasta que entre la primera vez."
+              />
+            ) : vista === 'retirados' ? (
+              <EstadoVacio
+                compacto
+                titulo="No has retirado el acceso a nadie"
+                frase="Aquí aparece quien se fue, con su historial entero, para poder devolvérselo."
+                sinAccionPorque="Se retira desde la lista de «Con acceso»."
+              />
+            ) : (
+              <TodaviaNo
+                que="El equipo"
+                queHabra="Las personas que pueden entrar en este local, con su rol y su estado."
+                modulo="M4. Invita a la primera con el botón de arriba"
+              />
+            )
           }
         />
       </Tarjeta>
@@ -400,4 +448,12 @@ export function QuienTieneAcceso() {
       )}
     </div>
   );
+}
+
+/** Como se cuenta el equipo segun lo que se este mirando. */
+function comoSeCuentaElEquipo(cuantos: number, vista: string): string {
+  const cosa = cuantos === 1 ? 'persona' : 'personas';
+  if (vista === 'sin-entrar-todavia') return `${cuantos} ${cosa} sin entrar todavía`;
+  if (vista === 'retirados') return `${cuantos} ${cosa} con el acceso retirado`;
+  return `${cuantos} ${cosa} con acceso`;
 }

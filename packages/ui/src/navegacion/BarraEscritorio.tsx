@@ -1,14 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  IconoAjustes,
-  IconoAvisos,
-  IconoBuscar,
-  IconoChat,
-  IconoFlechaAbajo,
-  IconoLocal,
-} from '@estook/iconos';
+import { IconoAvisos, IconoBuscar, IconoChat, IconoFlechaAbajo, IconoLocal } from '@estook/iconos';
 import type { App } from '../apps.ts';
+import { destinosConstruidos, destinosQueLlegan } from '../apps.ts';
 import { clases } from '../clases.ts';
 import { IconoDeFogon, Logo } from '../componentes/Marca.tsx';
 import { Avatar } from '../componentes/Tarjeta.tsx';
@@ -30,9 +24,10 @@ import { Avatar } from '../componentes/Tarjeta.tsx';
 export interface BarraEscritorioProps {
   readonly apps: readonly App[];
   readonly appActiva: string | null;
-  readonly alIrAApp: (app: App, pestana?: string) => void;
+  readonly alIrAApp: (app: App, destino?: string) => void;
   readonly alIrAlPanel: () => void;
-  readonly alIrAAjustes: () => void;
+  /** Tu cuenta: ajustes, mi acceso, cambiar de local y salir. */
+  readonly alAbrirMiCuenta: () => void;
   readonly alBuscar: () => void;
   readonly local: { readonly nombre: string; readonly organizacion: string } | null;
   readonly locales: readonly { readonly id: string; readonly nombre: string }[];
@@ -57,7 +52,7 @@ export function BarraEscritorio({
   appActiva,
   alIrAApp,
   alIrAlPanel,
-  alIrAAjustes,
+  alAbrirMiCuenta,
   alBuscar,
   local,
   locales,
@@ -128,16 +123,19 @@ export function BarraEscritorio({
           <IconoDeFogon size={22} />
         </Redondo>
 
-        <Redondo etiqueta="Ajustes" alPulsar={alIrAAjustes}>
-          <IconoAjustes size={20} />
-        </Redondo>
-
-        {/* El avatar tampoco hacia nada. Lleva a Ajustes, que es lo que hay
-            detras de un retrato en cualquier aplicacion. */}
+        {/*
+          El avatar, y **ningun icono de Ajustes al lado**.
+          B5 pide aqui «notificaciones, chat, Fogon y avatar», cuatro cosas; lo
+          que habia eran cinco, porque se anadio un icono de Ajustes que abria
+          exactamente la misma pantalla que el avatar de al lado. Dos puertas a lo
+          mismo, pegadas. Ahora el avatar abre tu cuenta —ajustes, mi acceso,
+          cambiar de local y salir—, que es lo que hay detras de un retrato en
+          cualquier aplicacion, y la fila vuelve a ser la de B5.
+        */}
         <button
           type="button"
-          onClick={alIrAAjustes}
-          aria-label={`Tu cuenta y los ajustes · ${persona}`}
+          onClick={alAbrirMiCuenta}
+          aria-label={`Tu cuenta · ${persona}`}
           className="ml-e1 grid size-toque place-items-center rounded-medio"
         >
           <Avatar nombre={persona} tamano={30} />
@@ -174,7 +172,7 @@ function AppConDesplegable({
 }: {
   readonly app: App;
   readonly activa: boolean;
-  readonly alIr: (app: App, pestana?: string) => void;
+  readonly alIr: (app: App, destino?: string) => void;
 }) {
   const [abierto, setAbierto] = useState(false);
   const caja = useRef<HTMLDivElement>(null);
@@ -261,36 +259,55 @@ function AppConDesplegable({
             style={{ position: 'fixed', left: donde.x, top: donde.y }}
             className="z-50 min-w-[13rem] rounded-medio border border-borde bg-superficie py-e1 shadow-s3 anima-aparece"
           >
-            {/* Las sub-apps arriba... */}
-            {app.pestanas.map((pestana) => (
+            {/*
+              Los destinos construidos arriba, con la pregunta que contesta cada
+              uno. Un menu que solo pone «Hoy · Productos · Mas» obliga a entrar
+              para saber que hay dentro; con la pregunta debajo se elige sin
+              entrar, que es para lo que sirve un menu.
+            */}
+            {destinosConstruidos(app).map((destino) => (
               <button
-                key={pestana.id}
+                key={destino.id}
                 type="button"
                 role="menuitem"
                 onClick={() => {
                   setAbierto(false);
-                  alIr(app, pestana.id);
+                  alIr(app, destino.id);
                 }}
-                className="flex w-full min-h-toque items-center px-e3 text-left text-cuerpo hover:bg-fondo"
+                className="flex w-full items-start gap-e2 px-e3 py-e2 text-left hover:bg-fondo"
               >
-                {pestana.nombre}
+                <span className="mt-[2px] shrink-0 text-texto-suave">
+                  <destino.icono size={16} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-cuerpo">{destino.nombre}</span>
+                  <span className="block text-secundario text-texto-tenue">
+                    {destino.queContesta}
+                  </span>
+                </span>
               </button>
             ))}
 
-            {/* ...y las acciones directas debajo de una linea (B5). Las de verdad
-                las traen los modulos de cada app; de momento, la de entrar. */}
-            <hr className="my-e1 border-borde" />
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setAbierto(false);
-                alIr(app);
-              }}
-              className="flex w-full min-h-toque items-center px-e3 text-left text-cuerpo text-texto-suave hover:bg-fondo"
-            >
-              Abrir {app.nombre}
-            </button>
+            {/* Y lo que llega despues, debajo de una linea: se lee, no se pulsa.
+                Un destino que todavia no existe es informacion util; un boton que
+                no hace nada, no. */}
+            {destinosQueLlegan(app).length > 0 && (
+              <>
+                <hr className="my-e1 border-borde" />
+                {destinosQueLlegan(app).map((destino) => (
+                  <p
+                    key={destino.id}
+                    className="flex items-center gap-e2 px-e3 py-e1 text-secundario text-texto-tenue"
+                  >
+                    <span className="shrink-0">
+                      <destino.icono size={16} />
+                    </span>
+                    {destino.nombre}
+                    <span className="text-etiqueta uppercase tracking-wide">{destino.modulo}</span>
+                  </p>
+                ))}
+              </>
+            )}
           </div>,
           document.body,
         )}

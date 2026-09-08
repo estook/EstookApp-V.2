@@ -1,6 +1,20 @@
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
-import { Migas, Tarjeta, TodaviaNo, appPorId, type App } from '@estook/ui';
+import {
+  MenuLateral,
+  Migas,
+  Tarjeta,
+  TodaviaNo,
+  Vistas,
+  appPorId,
+  clases,
+  comoSeLlamaElModulo,
+  destinoPorId,
+  rutaDe,
+  type App,
+  type Destino,
+  type Vista,
+} from '@estook/ui';
 import { QuienTieneAcceso } from './QuienTieneAcceso.tsx';
 import { Inventario } from '../inventario/Inventario.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -8,43 +22,34 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 /**
  * La pantalla de una app · Parte B5 del Plan.
  *
- * Una sola pantalla para las ocho, y no ocho carpetas vacias: en M3 lo que hay
- * que demostrar es que **se navega por las ocho sin un salto raro**, con su
- * barra propia, su acento y sus migas. El contenido de cada una llega con su
- * modulo, de M6 en adelante.
+ * ── Lo que esta pantalla era, y por que estaba mal ───────────────────────────
  *
- * Cada pestana lleva su estado «todavia no tengo datos» diciendo que ira ahi y
- * en que modulo se construye. Es lo honesto y ademas lo util: quien la abre sabe
- * que no esta rota.
+ * Era **una sola pantalla para las ocho**: cabecera, migas y una fila de
+ * pastillas, y lo unico que cambiaba de una app a otra era el color del icono.
+ * El Manifiesto promete lo contrario —«cada app se siente una app, con su icono,
+ * su acento, su navegacion, su buscador, su historial y sus pendientes»— y con un
+ * unico molde eso no puede pasar: un calendario no es una lista con otro acento.
  *
- * ── Lo que si es de verdad aqui ──────────────────────────────────────────────
+ * Ahora hay tres cosas que cambian de verdad entre apps:
+ *
+ *   · **La forma** (`app.forma`), que decide el ancho y la rejilla. Un calendario
+ *     va a todo lo ancho porque su rejilla **es** el contenido; una lista va
+ *     acotada porque una fila de 1.400 px no se sigue con la vista; un cuaderno
+ *     va en una columna estrecha porque se lee y se escribe.
+ *   · **Los destinos**, que son sitios que contestan una pregunta, con su menu
+ *     lateral propio en escritorio —lo que B5 mandaba desde M3 y no se habia
+ *     construido— y la barra de abajo en movil.
+ *   · **Las vistas**, que son la misma pantalla mirada de otra forma y van en un
+ *     control segmentado arriba.
+ *
+ * ── Y lo que sigue siendo de verdad aqui ─────────────────────────────────────
  *
  * Que una app que el rol **no tiene** no se abre ni escribiendo su direccion a
  * mano. Esconder el boton no protege nada (principio 7): la comprobacion esta
  * aqui ademas de en la rueda, y las politicas de M1 la respaldan por debajo.
  */
-/**
- * En qué módulo se construye cada una.
- *
- * Los números salen de la parte D del Plan de desarrollo y **no de la memoria**:
- * estaban mal en cinco de las ocho —Escandallos ponía M8 y es M9, Negocio ponía
- * M17 y es M21— y eso es exactamente lo que Richi encontró mirando la aplicación
- * en su móvil en M5: «un texto que no encajaba con el aparato que tenías
- * delante». Hay una prueba al lado que los cuadra con el Plan.
- */
-const EN_QUE_MODULO: Readonly<Record<string, string>> = {
-  inventario: 'M6 · Inventario',
-  escandallos: 'M9 · Escandallos',
-  carta: 'M10 · Carta, menús y análisis',
-  calendario: 'M14 · Calendario',
-  equipo: 'M13 · Equipo',
-  servicio: 'M16 · Servicio, APPCC y trazabilidad',
-  negocio: 'M21 · Negocio, analítica y Estook Pulse',
-  cuaderno: 'M17 · Cuaderno',
-};
-
 export function PantallaDeApp() {
-  const { app: idDeLaApp, pestana } = useParams();
+  const { app: idDeLaApp, destino: idDelDestino, vista: idDeLaVista } = useParams();
   const navegar = useNavigate();
   const { permisos } = usarSesion();
 
@@ -56,92 +61,183 @@ export function PantallaDeApp() {
   const laTiene = app !== undefined && appsVisibles(permisos).includes(app.permiso);
   if (!laTiene) return <Navigate to="/" replace />;
 
-  const laPestana = app.pestanas.find((p) => p.id === pestana) ??
-    app.pestanas[0] ?? { id: '', nombre: app.nombre };
+  const destino = idDelDestino === undefined ? undefined : destinoPorId(app, idDelDestino);
+
+  /*
+    Sin destino en la direccion, o con uno que no existe, se manda a donde entra
+    la app: su **primer destino construido**. Antes esto caia en la primera
+    pestana del catalogo, que en Inventario era «Hoy» por suerte y en cualquier
+    app futura podia ser una pestana vacia.
+  */
+  if (destino === undefined) return <Navigate to={rutaDe(app)} replace />;
+
+  const vista =
+    destino.vistas.length === 0
+      ? undefined
+      : (destino.vistas.find((v) => v.id === idDeLaVista) ?? destino.vistas[0]);
+
+  // Un destino con vistas siempre tiene una en la direccion: asi el enlace se
+  // puede copiar y compartir, y volver atras devuelve a la vista de antes.
+  if (vista !== undefined && vista.id !== idDeLaVista) {
+    return <Navigate to={rutaDe(app, destino, vista)} replace />;
+  }
 
   return (
     <Dentro
       app={app}
-      pestana={laPestana}
+      destino={destino}
+      vista={vista}
       alVolver={() => {
         navegar('/');
+      }}
+      alIrADestino={(otro) => {
+        navegar(rutaDe(app, otro));
+      }}
+      alIrAVista={(id) => {
+        navegar(
+          rutaDe(
+            app,
+            destino,
+            destino.vistas.find((v) => v.id === id),
+          ),
+        );
       }}
     />
   );
 }
 
+/**
+ * El ancho de la pantalla segun la forma de la app.
+ *
+ * No es decoracion: es lo que hace que la misma aplicacion se sienta ocho.
+ * «Nada de scroll infinito» y «la ficha se abre sin tapar la lista» (B5) dependen
+ * de que la lista no se coma los 1.400 px de un monitor.
+ */
+const ANCHO: Readonly<Record<App['forma'], string>> = {
+  panel: 'max-w-[76rem]',
+  lista: 'max-w-[76rem]',
+  // El calendario **no lleva tope**: su rejilla es el contenido, y una semana
+  // apretada en 76 rem con siete columnas deja las celdas sin sitio para nada.
+  calendario: 'max-w-none',
+  // Se lee y se escribe: una columna de medida legible, como cualquier documento.
+  cuaderno: 'max-w-[48rem]',
+};
+
 function Dentro({
   app,
-  pestana,
+  destino,
+  vista,
   alVolver,
+  alIrADestino,
+  alIrAVista,
 }: {
   readonly app: App;
-  readonly pestana: { readonly id: string; readonly nombre: string };
+  readonly destino: Destino;
+  readonly vista: Vista | undefined;
   readonly alVolver: () => void;
+  readonly alIrADestino: (destino: Destino) => void;
+  readonly alIrAVista: (id: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-e4">
+    <div className={clases('flex w-full flex-col gap-e4', ANCHO[app.forma])}>
       <header className="flex flex-col gap-e2">
-        <Migas
-          camino={[
-            { nombre: 'Panel', ir: alVolver },
-            { nombre: app.nombre },
-            { nombre: pestana.nombre },
-          ]}
-        />
+        {/*
+          Las migas llevan **dos pasos y no tres**: Panel y la app. La vista no
+          entra porque no es un sitio, y el destino ya se ve resaltado en el menu
+          lateral y en la barra de abajo. Antes ponia «Panel · Inventario ·
+          Productos», que dice tres veces donde estas y ninguna vez como salir.
+        */}
+        <Migas camino={[{ nombre: 'Panel', ir: alVolver }, { nombre: app.nombre }]} />
 
-        <div className="flex items-center gap-e3">
-          <span style={{ color: app.acento }}>
+        <div className="flex items-start gap-e3">
+          <span className="mt-[2px] shrink-0" style={{ color: app.acento }}>
             <app.icono size={28} />
           </span>
-          <div>
-            <h1 className="text-pantalla font-semibold">{app.nombre}</h1>
-            <p className="text-secundario text-texto-suave">{app.queHace}</p>
+          <div className="min-w-0">
+            {/*
+              El titulo es **el destino**, no la app. Es donde estas de verdad, y
+              es lo que hace que la pantalla de Movimientos no se llame igual que
+              la de Productos. El nombre de la app va encima, pequeno, que es
+              donde se lee sin robarle sitio.
+            */}
+            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">{app.nombre}</p>
+            <h1 className="text-pantalla font-semibold">{destino.nombre}</h1>
+            <p className="text-secundario text-texto-suave">{destino.queContesta}</p>
           </div>
         </div>
 
-        {/* En escritorio no hay barra abajo, asi que las pestanas van aqui. */}
-        <nav aria-label={`Vistas de ${app.nombre}`} className="hidden gap-e1 lg:flex">
-          {app.pestanas.map((otra) => (
-            <Link
-              key={otra.id}
-              to={`/${app.id}/${otra.id}`}
-              aria-current={otra.id === pestana.id ? 'page' : undefined}
-              className={[
-                'inline-flex min-h-toque items-center rounded-medio px-e3 text-cuerpo',
-                otra.id === pestana.id
-                  ? 'bg-superficie text-texto shadow-s1'
-                  : 'text-texto-suave hover:bg-superficie',
-              ].join(' ')}
-            >
-              {otra.nombre}
-            </Link>
-          ))}
-        </nav>
+        {vista !== undefined && (
+          <div className="max-w-full lg:max-w-[36rem]">
+            <Vistas
+              vistas={destino.vistas}
+              activa={vista.id}
+              acento={app.acento}
+              de={destino.nombre}
+              alElegir={alIrAVista}
+            />
+          </div>
+        )}
       </header>
 
-      {/*
-        Lo que ya funciona de verdad, y de qué módulo es cada cosa:
+      <div className="flex gap-e5">
+        {/* El menu lateral de B5, que solo existe en escritorio: en movil su
+            trabajo lo hace la barra de abajo. */}
+        <MenuLateral app={app} destinoActivo={destino.id} alIrADestino={alIrADestino} />
 
-          Inventario entera        M6 · el género, sus precios y su libro
-          Equipo → Personas        M4 · dar acceso, quitarlo y devolverlo
-
-        El resto de Equipo —contratos, horas, ausencias y documentos— llega en
-        M13, y esta pantalla se queda donde está.
-      */}
-      {app.id === 'inventario' ? (
-        <Inventario pestana={pestana.id} />
-      ) : app.id === 'equipo' && pestana.id === 'personas' ? (
-        <QuienTieneAcceso />
-      ) : (
-        <Tarjeta acento={app.acento} titulo={pestana.nombre}>
-          <TodaviaNo
-            que={`${app.nombre} · ${pestana.nombre}`}
-            queHabra={app.queHace}
-            modulo={EN_QUE_MODULO[app.id] ?? 'su modulo'}
-          />
-        </Tarjeta>
-      )}
+        <div className="min-w-0 flex-1">
+          <Contenido app={app} destino={destino} vista={vista} />
+        </div>
+      </div>
     </div>
+  );
+}
+
+/**
+ * Lo que hay dentro de cada destino.
+ *
+ * Lo que ya funciona de verdad, y de que modulo es cada cosa:
+ *
+ *   Inventario · Hoy, Productos, Movimientos, Compras     M6
+ *   Equipo · Personas                                     M4 · dar acceso y quitarlo
+ *
+ * El resto lleva su `TodaviaNo` con **el modulo del destino**, que sale del
+ * catalogo de navegacion y no de una lista escrita aparte. Antes habia una tabla
+ * suelta en este fichero, y en el Panel otra, y las dos con numeros distintos: el
+ * Panel decia que Negocio era M17 —que es Cuaderno— y que el TPV era M13 —que es
+ * Equipo—. Un dato con dos duenos acaba con dos valores (regla 6).
+ */
+function Contenido({
+  app,
+  destino,
+  vista,
+}: {
+  readonly app: App;
+  readonly destino: Destino;
+  readonly vista: Vista | undefined;
+}) {
+  if (app.id === 'inventario' && destino.modulo === undefined) {
+    return <Inventario destino={destino.id} vista={vista?.id ?? ''} />;
+  }
+
+  if (app.id === 'equipo' && destino.id === 'personas') {
+    return <QuienTieneAcceso vista={vista?.id ?? ''} />;
+  }
+
+  // Una vista que falta dentro de un destino construido: se dice **de esa
+  // vista**, no de la app entera. Antes todo lo que faltaba se contaba igual, y
+  // «Carta · Análisis: todavía no tengo datos» no distingue entre una app sin
+  // construir y una vista suelta que llega después.
+  const faltaLaVista = vista !== undefined && vista.modulo !== undefined;
+  const nombre = faltaLaVista ? `${destino.nombre} · ${vista.nombre}` : destino.nombre;
+  const modulo = (faltaLaVista ? vista.modulo : destino.modulo) ?? '';
+
+  return (
+    <Tarjeta acento={app.acento} titulo={nombre}>
+      <TodaviaNo
+        que={`${app.nombre} · ${nombre}`}
+        queHabra={destino.queContesta}
+        modulo={modulo === '' ? 'su módulo' : comoSeLlamaElModulo(modulo)}
+      />
+    </Tarjeta>
   );
 }

@@ -90,6 +90,8 @@ export function Ajustes() {
       </Tarjeta>
 
       {/* ── M4 · Mi acceso, y lo que decide la organizacion ─────────────────── */}
+      {/* El ancla de «tu cuenta»: «Mi acceso» de la hoja del avatar lleva aqui. */}
+      <span id="mi-acceso" />
       <MiAcceso />
       <AjustesDeOrganizacion />
 

@@ -4,6 +4,7 @@ import {
 } from './comandos/ajustes-de-organizacion.ts';
 import { cambiarDeContexto } from './comandos/cambiar-de-contexto.ts';
 import { cambiarMiIdioma } from './comandos/cambiar-mi-idioma.ts';
+import { guardarMiPanel } from './comandos/guardar-mi-panel.ts';
 import { cerrarSesion } from './comandos/cerrar-sesion.ts';
 import { entrarEnDemostracion, salirDeLaDemostracion } from './comandos/demostracion.ts';
 import { quitarLosEjemplos } from './comandos/ejemplos.ts';
@@ -49,10 +50,17 @@ import {
 } from './comandos/productos.ts';
 import { cambiarProveedor, crearProveedor } from './comandos/proveedores.ts';
 import { buscar } from './consultas/buscar.ts';
-import { inventarioHoy, misProductos, misProveedores, unProducto } from './consultas/inventario.ts';
+import {
+  inventarioHoy,
+  misMovimientos,
+  misProductos,
+  misProveedores,
+  unProducto,
+} from './consultas/inventario.ts';
 import { catalogoDeReferencia, recetasDeReferencia } from './consultas/catalogo-de-referencia.ts';
 import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
+import { miPanel } from './consultas/mi-panel.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
 import { quienSoy } from './consultas/quien-soy.ts';
@@ -92,10 +100,16 @@ export const catalogo = {
     [misProductos.nombre]: misProductos,
     [unProducto.nombre]: unProducto,
     [misProveedores.nombre]: misProveedores,
+    // M6½ · el libro de movimientos, que se guardaba y no se podia leer entero,
+    //        y el Panel que cada uno se monta.
+    [misMovimientos.nombre]: misMovimientos,
+    [miPanel.nombre]: miPanel,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
     [cambiarMiIdioma.nombre]: cambiarMiIdioma,
+    // M6½ · como tiene cada uno montado su Panel, por aparato.
+    [guardarMiPanel.nombre]: guardarMiPanel,
     // M4 · la sesion.
     [entrar.nombre]: entrar,
     [salir.nombre]: salir,

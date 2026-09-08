@@ -2,7 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { IconoAjustes, IconoPanel, IconoTamanoDeLetra } from '@estook/iconos';
-import { Buscador, type Accion, type App, type ResultadoDeBusqueda } from '@estook/ui';
+import {
+  Buscador,
+  destinosConstruidos,
+  rutaDe,
+  type Accion,
+  type App,
+  type ResultadoDeBusqueda,
+} from '@estook/ui';
 import { hayApi } from '../datos/cliente.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
@@ -88,20 +95,27 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
         donde: app.queHace,
         icono: <app.icono size={18} />,
         hacer: () => {
-          const pestana = app.pestanas[0]?.id;
-          navegar(pestana === undefined ? `/${app.id}` : `/${app.id}/${pestana}`);
+          navegar(rutaDe(app));
         },
       })),
-      // Y las pestanas de cada app: son sitios, y buscar «fichas» tiene que
-      // llevar a Escandallos · Fichas sin pasar por Escandallos.
+      /*
+        Y los destinos de cada app: son sitios, y buscar «movimientos» tiene que
+        llevar a Inventario · Movimientos sin pasar por Inventario.
+
+        **Solo los construidos.** Antes salian todos, asi que el buscador ofrecia
+        «Inventario: Pedidos» y «Carta: Menus», que no llevaban a ningun sitio: se
+        elegia un resultado y aparecia un cartel de «esto llega en M7». Un
+        resultado de busqueda que no lleva a nada es peor que no salir, porque
+        ademas ha tapado a otro que si.
+      */
       ...apps.flatMap((app) =>
-        app.pestanas.map((pestana) => ({
-          id: `pestana-${app.id}-${pestana.id}`,
-          nombre: `${app.nombre}: ${pestana.nombre}`,
-          donde: app.nombre,
+        destinosConstruidos(app).map((destino) => ({
+          id: `destino-${app.id}-${destino.id}`,
+          nombre: `${app.nombre}: ${destino.nombre}`,
+          donde: destino.queContesta,
           icono: <app.icono size={18} />,
           hacer: () => {
-            navegar(`/${app.id}/${pestana.id}`);
+            navegar(rutaDe(app, destino));
           },
         })),
       ),

@@ -182,11 +182,24 @@ export const ERRORES = {
   ),
 
   // ── Cuando algo se rompe de verdad ─────────────────────────────────────────
+  //
+  // **Este texto decía otra cosa, y era mentira.** Decía «lo que has apuntado se
+  // guarda en el móvil y sube solo cuando vuelva la señal», y no hay nada que lo
+  // guarde: no existe cola de salida en el navegador, así que un comando que se
+  // cae sin conexión **se pierde entero**.
+  //
+  // Es exactamente el fallo que este proyecto persigue desde M4 —prometer algo
+  // que no se hace— y en el peor sitio posible: quien está en una cámara sin
+  // cobertura lee que ya está guardado, cierra la aplicación y se va.
+  //
+  // La cola de verdad es trabajo aparte y está apuntada en ESTADO.md. Hasta que
+  // exista, esto dice lo que pasa y qué hacer.
   sin_conexion: error(
     'sin_conexion',
     'No hay conexión.',
-    'Lo que has apuntado se guarda en el móvil y sube solo cuando vuelva la señal.',
+    'Lo que has escrito sigue en la pantalla: vuelve a darle cuando tengas señal.',
     503,
+    { texto: 'Reintentar', accion: 'reintentar' },
   ),
 
   fallo_nuestro: error(

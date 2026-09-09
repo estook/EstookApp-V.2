@@ -47,14 +47,36 @@ interface Pendiente extends AccionQueSePuedeDeshacer {
   readonly id: number;
 }
 
+/**
+ * Un fallo que hay que decir, con su titulo.
+ *
+ * Nacio para «no se ha podido deshacer» y sirve para cualquier cosa que falle
+ * **despues** de que la persona haya dejado de mirar el boton que la provoco:
+ * la barra ya esta puesta en la raiz, ya se anuncia sola y ya se cierra sola.
+ * Sin esto, cada sitio que quisiera decir algo se inventaria su propio cartel.
+ */
+export interface FalloQueHayQueDecir {
+  readonly titulo: string;
+  readonly texto: string;
+}
+
 interface Contexto {
   /** Apunta una accion como deshacible. Sustituye a la anterior, si la habia. */
   readonly sePuedeDeshacer: (accion: AccionQueSePuedeDeshacer) => void;
   readonly pendiente: Pendiente | null;
   readonly deshacer: () => void;
   readonly olvidar: () => void;
-  /** Si algo fallo al deshacer, para poder decirlo. */
-  readonly fallo: string | null;
+  /** Si algo fallo, para poder decirlo. */
+  readonly fallo: FalloQueHayQueDecir | null;
+  /**
+   * Dice un fallo en la barra de abajo.
+   *
+   * Es para lo que falla **sin que haya una pantalla mirando**: cambiar de
+   * local, deshacer, cualquier cosa que se dispara desde la barra o desde un
+   * menu y termina cuando la persona ya esta en otro sitio. Callarselo la
+   * dejaria creyendo que se hizo, que es el fallo mas caro que hay.
+   */
+  readonly avisarDeUnFallo: (fallo: FalloQueHayQueDecir) => void;
 }
 
 /** Los diez segundos del Plan. Se exporta para que la prueba no los adivine. */
@@ -64,7 +86,7 @@ const DeshacerContexto = createContext<Contexto | null>(null);
 
 export function ProveedorDeDeshacer({ children }: { readonly children: ReactNode }) {
   const [pendiente, setPendiente] = useState<Pendiente | null>(null);
-  const [fallo, setFallo] = useState<string | null>(null);
+  const [fallo, setFallo] = useState<FalloQueHayQueDecir | null>(null);
   const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
   const siguienteId = useRef(0);
 
@@ -107,7 +129,10 @@ export function ProveedorDeDeshacer({ children }: { readonly children: ReactNode
       try {
         await laAccion.deshacer();
       } catch {
-        setFallo(`No se ha podido deshacer «${laAccion.que}». Compruebalo antes de seguir.`);
+        setFallo({
+          titulo: 'No se ha podido deshacer',
+          texto: `No se ha podido deshacer «${laAccion.que}». Compruebalo antes de seguir.`,
+        });
       }
     })();
   }, [pendiente, parar]);
@@ -140,7 +165,7 @@ export function ProveedorDeDeshacer({ children }: { readonly children: ReactNode
   }, [pendiente, deshacer]);
 
   const valor = useMemo<Contexto>(
-    () => ({ sePuedeDeshacer, pendiente, deshacer, olvidar, fallo }),
+    () => ({ sePuedeDeshacer, pendiente, deshacer, olvidar, fallo, avisarDeUnFallo: setFallo }),
     [sePuedeDeshacer, pendiente, deshacer, olvidar, fallo],
   );
 

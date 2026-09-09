@@ -40,11 +40,25 @@ import { usarElEsqueleto } from '../ganchos/usarElEsqueleto.tsx';
  * libro». Si algún día se demuestra que no, se sube con la lista de widgets, que ya
  * tiene su tabla.
  */
-const DONDE_SE_GUARDA = 'estook.accesos-rapidos';
+/**
+ * Una clave **por persona**, no una para el aparato.
+ *
+ * Es un aparato de cocina: lo usan cuatro. Con una sola clave, el segundo que
+ * entraba se encontraba las acciones que eligió el primero, y al tocar una se las
+ * quitaba. No es un agujero de seguridad —solo salen las acciones que el permiso
+ * de quien mira deja salir— pero es la personalización de otra persona en tu
+ * pantalla, y encima sin forma de recuperarla al volver.
+ *
+ * Con la persona en la clave, cada uno se encuentra las suyas en ese aparato, que
+ * es lo que dice la cabecera de este fichero que se quería.
+ */
+function dondeSeGuarda(personaId: string): string {
+  return `estook.accesos-rapidos.${personaId}`;
+}
 
-function leerLoGuardado(): readonly string[] | null {
+function leerLoGuardado(personaId: string): readonly string[] | null {
   try {
-    const guardado = window.localStorage.getItem(DONDE_SE_GUARDA);
+    const guardado = window.localStorage.getItem(dondeSeGuarda(personaId));
     if (guardado === null) return null;
     const lista: unknown = JSON.parse(guardado);
     if (!Array.isArray(lista)) return null;
@@ -64,12 +78,13 @@ export function AccesosRapidos({
   readonly editando: boolean;
 }) {
   const navegar = useNavigate();
-  const { permisos } = usarSesion();
+  const { permisos, yo } = usarSesion();
   const esqueleto = usarElEsqueleto();
+  const quien = yo?.personaId ?? '';
 
   const puedo = accionesQuePuedo(permisos);
   const [elegidas, setElegidas] = useState<readonly string[]>(() => {
-    const guardado = leerLoGuardado();
+    const guardado = leerLoGuardado(quien);
     return guardado ?? ACCIONES_DE_FABRICA;
   });
   const [eligiendo, setEligiendo] = useState(false);
@@ -80,15 +95,18 @@ export function AccesosRapidos({
     .map((id) => accionPorId(id))
     .filter((accion): accion is Accion => accion !== undefined && puedo.includes(accion));
 
-  const guardar = useCallback((nuevas: readonly string[]) => {
-    setElegidas(nuevas);
-    try {
-      window.localStorage.setItem(DONDE_SE_GUARDA, JSON.stringify(nuevas));
-    } catch {
-      // Sin almacenamiento se queda para esta sesión, y no se avisa: no es un
-      // fallo que le importe a nadie.
-    }
-  }, []);
+  const guardar = useCallback(
+    (nuevas: readonly string[]) => {
+      setElegidas(nuevas);
+      try {
+        window.localStorage.setItem(dondeSeGuarda(quien), JSON.stringify(nuevas));
+      } catch {
+        // Sin almacenamiento se queda para esta sesión, y no se avisa: no es un
+        // fallo que le importe a nadie.
+      }
+    },
+    [quien],
+  );
 
   const hacer = useCallback(
     (accion: Accion) => {

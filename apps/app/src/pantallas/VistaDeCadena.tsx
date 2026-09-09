@@ -26,7 +26,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * cuando lo que ponga sea verdad.
  */
 export function VistaDeCadena() {
-  const { yo, cliente, refrescar } = usarSesion();
+  const { yo, cambiarDeSitio } = usarSesion();
   const navegar = useNavigate();
 
   if (!yo) return null;
@@ -34,8 +34,8 @@ export function VistaDeCadena() {
   const suyos = yo.locales.filter((local) => local.organizacionId === yo.organizacion?.id);
 
   async function entrarEn(id: string) {
-    await cliente.ejecutar('cambiar_de_contexto', { local_id: id });
-    await refrescar();
+    // Si el cambio no sale, no se navega: quedarse aqui es lo unico honesto.
+    if (!(await cambiarDeSitio({ local: id }))) return;
     navegar('/');
   }
 

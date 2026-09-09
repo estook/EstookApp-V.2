@@ -128,7 +128,7 @@ export {
   usarDeshacer,
   SEGUNDOS_PARA_DESHACER,
 } from './ganchos/usarDeshacer.tsx';
-export type { AccionQueSePuedeDeshacer } from './ganchos/usarDeshacer.tsx';
+export type { AccionQueSePuedeDeshacer, FalloQueHayQueDecir } from './ganchos/usarDeshacer.tsx';
 
 export {
   usarTamanoDeLetra,

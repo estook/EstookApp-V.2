@@ -17,5 +17,6 @@
       "dependsOn": ["^tipos"],
       "outputs": []
     }
-  }
+  },
+  "globalDependencies": ["tsconfig.base.json", "herramientas/**/*.ts"]
 }

@@ -35,6 +35,50 @@ const MARCOS = 'marcos@ejemplo.estook.com';
 const LUIS = 'luis@ejemplo.estook.com';
 /** Elena es dirección del Grupo Costa: puede crear locales. */
 const ELENA = 'elena@ejemplo.estook.com';
+/** Ignacio lleva Zona Norte: llega a tres locales y elige entre ellos. */
+const IGNACIO = 'ignacio@ejemplo.estook.com';
+
+/**
+ * Va a una pantalla **sin recargar**, que es como se anda por la aplicación.
+ *
+ * Con `page.goto` no vale, aunque la dirección sea la misma con otra almohadilla:
+ * recarga el documento y se lleva por delante la caché de TanStack Query, que es
+ * justo lo que esta prueba tiene que mirar. Con el arreglo quitado la prueba
+ * pasaba igual, y una prueba que pasa con el fallo puesto no prueba nada.
+ */
+async function irA(page: Page, camino: string) {
+  await page.evaluate((donde) => {
+    window.location.hash = donde;
+  }, camino);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+}
+
+/**
+ * Cambia de local por donde lo hace una persona.
+ *
+ * Dos caminos, y los dos valen: el selector de la barra cuando ya se está en un
+ * local, y el botón «Entrar» de la vista de la cadena cuando se viene del
+ * consolidado. Se prueba el que haya, porque cuál sale depende de dónde estés.
+ */
+async function irAlLocal(page: Page, nombre: string) {
+  const enEscritorio = page.locator('header').getByLabel('Local');
+  const enMovil = page.locator('header').getByLabel('Dónde estás');
+  const selector = (await enEscritorio.isVisible()) ? enEscritorio : enMovil;
+
+  if (await selector.isVisible()) {
+    await selector.selectOption({ label: nombre });
+  } else {
+    await page
+      .getByRole('listitem')
+      .filter({ hasText: nombre })
+      .getByRole('button', { name: 'Entrar' })
+      .click();
+  }
+
+  // Se espera al nombre en la cabecera del Panel: hasta que no está, la sesión
+  // todavía puede ser la de antes.
+  await expect(page.locator('main p').filter({ hasText: nombre }).first()).toBeVisible();
+}
 
 async function abrirLimpio(page: Page) {
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
@@ -530,6 +574,57 @@ test('pedir el producto de otro local devuelve que no existe', async ({ request 
   // no es tuyo» dejaría probar identificadores para averiguar qué tiene la
   // competencia.
   expect(intento.estado).toBe(404);
+});
+
+/**
+ * Y la otra mitad de lo mismo, que no estaba: **la pantalla**.
+ *
+ * La de arriba comprueba que el servidor no da el género de otro local. Esta
+ * comprueba que la pantalla no lo **enseña**, que no es lo mismo y que era
+ * mentira: al cambiar de local se llamaba a `cambiar_de_contexto` y se volvía a
+ * pedir `quien_soy`, y **nada más**. Todo lo demás —los productos, lo que hay en
+ * cámara, el libro, lo que caduca— seguía en la caché de TanStack Query con la
+ * clave de siempre, sin el local dentro. Y la caché aguanta un minuto sin
+ * caducar, así que durante ese minuto salía el género de un local con el nombre
+ * de otro arriba.
+ *
+ * El servidor nunca estuvo en peligro. Pero una merma se apunta mirando la
+ * pantalla, y «que nadie apunte una merma en el local equivocado» (Manifiesto
+ * 28) es la razón por la que el selector de local existe.
+ *
+ * Y hay un segundo consumidor que lo hace peor: **el contexto de Fogón** se arma
+ * con `inventario_hoy`, o sea con esa caché. En M22 eso es lo que se le manda al
+ * modelo.
+ */
+test('al cambiar de local, la pantalla no se queda con el género del anterior', async ({
+  page,
+  request,
+}) => {
+  // Un producto que solo existe en Bar Puerto. Se crea desde la API, con la
+  // sesión puesta ahí: el servidor lo mete en el local de la sesión, y esta
+  // sesión no es la del navegador, así que no le toca el sitio a la de abajo.
+  const token = await tokenDe(request, IGNACIO);
+  const puerto = await unLocalDe(request, token, 'Bar Puerto');
+  expect(puerto, 'Ignacio tiene que llegar al Bar Puerto').not.toBeNull();
+  await ejecutar(request, token, 'cambiar_de_contexto', { local_id: puerto });
+
+  const nombre = `Bacalao del Puerto ${Date.now()}`;
+  await ejecutar(request, token, 'crear_producto', { nombre });
+
+  // Ignacio lleva Zona Norte: entra al consolidado y elige local desde ahí.
+  await entrar(page, IGNACIO);
+  await irAlLocal(page, 'Bar Puerto');
+
+  await irA(page, '#/inventario/productos');
+  // Se cuenta, no se mira si se ve: la lista se pinta en tabla o en tarjetas
+  // segun el ancho, y la mitad que no toca esta en el arbol pero oculta. Lo que
+  // importa aqui es **de que local es el genero**, no como se dibuja.
+  await expect(page.getByText(nombre)).not.toHaveCount(0);
+
+  // Y ahora al otro. Sin el arreglo, esta lista seguía siendo la de antes.
+  await irAlLocal(page, 'Bar Playa');
+  await irA(page, '#/inventario/productos');
+  await expect(page.getByText(nombre)).toHaveCount(0);
 });
 
 // ── 7 · Ajustar lo que hay en cámara, desde la pantalla ─────────────────────

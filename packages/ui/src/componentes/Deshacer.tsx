@@ -24,8 +24,8 @@ export function Deshacer() {
   if (fallo !== null) {
     return (
       <div className="fixed inset-x-e3 bottom-e3 z-50 mx-auto max-w-[34rem] sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
-        <Aviso tono="mal" titulo="No se ha podido deshacer" esNoticia alCerrar={olvidar}>
-          {fallo}
+        <Aviso tono="mal" titulo={fallo.titulo} esNoticia alCerrar={olvidar}>
+          {fallo.texto}
         </Aviso>
       </div>
     );

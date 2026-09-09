@@ -111,13 +111,12 @@ export function CuentaParada({ porque }: { readonly porque: string }) {
 // ── ¿En qué empresa? ─────────────────────────────────────────────────────────
 
 export function ElegirOrganizacion() {
-  const { yo, cliente, refrescar } = usarSesion();
+  const { yo, cambiarDeSitio } = usarSesion();
 
   if (!yo) return null;
 
   async function elegir(id: string) {
-    await cliente.ejecutar('cambiar_de_contexto', { organizacion_id: id });
-    await refrescar();
+    await cambiarDeSitio({ organizacion: id });
   }
 
   return (
@@ -144,15 +143,14 @@ export function ElegirOrganizacion() {
 // ── ¿Dónde estás hoy? ────────────────────────────────────────────────────────
 
 export function ElegirLocal() {
-  const { yo, cliente, refrescar } = usarSesion();
+  const { yo, cambiarDeSitio } = usarSesion();
 
   if (!yo) return null;
 
   const suyos = yo.locales.filter((local) => local.organizacionId === yo.organizacion?.id);
 
   async function elegir(id: string) {
-    await cliente.ejecutar('cambiar_de_contexto', { local_id: id });
-    await refrescar();
+    await cambiarDeSitio({ local: id });
   }
 
   return (

@@ -548,3 +548,212 @@ test.describe('el Panel enseña lo de Inventario', () => {
     await expect(zona).toBeVisible();
   });
 });
+
+// ── El aspecto · el tema y el color del local ────────────────────────────────
+
+/**
+ * La razón de contraste entre dos colores tal como los devuelve el navegador.
+ *
+ * Llegan como `rgb(31, 58, 95)`, así que se leen los tres números y se aplica la
+ * fórmula de WCAG, la misma que `packages/ui/src/color.ts`. Aquí se repite —y es
+ * una copia, que normalmente no se hace— porque lo que se está comprobando es
+ * justamente **que el cálculo de allí llega hasta el píxel**: usar la función de
+ * allí para comprobarla sería preguntarle al acusado.
+ */
+/** Los pesos de WCAG para rojo, verde y azul. */
+const PESOS = [0.2126, 0.7152, 0.0722] as const;
+
+function contrasteEntre(uno: string, otro: string): number {
+  const luz = (css: string) =>
+    (css.match(/\d+(\.\d+)?/g) ?? ['0', '0', '0'])
+      .slice(0, 3)
+      .map(Number)
+      .map((bruto) => {
+        const x = bruto / 255;
+        return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+      })
+      .reduce((suma, canal, i) => suma + (PESOS[i] ?? 0) * canal, 0);
+
+  const [claro, oscuro] = [luz(uno), luz(otro)].sort((a, b) => b - a) as [number, number];
+  return (claro + 0.05) / (oscuro + 0.05);
+}
+
+/**
+ * Deja el interruptor «usar mi color» como se quiera, esté como esté.
+ *
+ * No se pulsa a ciegas: **el color de marca es del local y se queda guardado**,
+ * así que una prueba que suponga que empieza apagado se cae en cuanto otra —o
+ * alguien mirando la aplicación— lo haya dejado encendido. Se mira y se decide.
+ */
+async function elInterruptor(page: Page, quiero: boolean) {
+  const suyo = page.getByRole('switch', { name: /Usar mi color/ });
+  await expect(suyo).toBeVisible();
+  if ((await suyo.isChecked()) === quiero) return;
+
+  // Se pulsa el rótulo: la casilla de verdad está escondida a propósito, que es
+  // como se hace un interruptor accesible.
+  await page.getByText('Usar mi color en toda la aplicación').click();
+  await expect(suyo).toBeChecked({ checked: quiero });
+}
+
+/** Pone un color de marca desde Ajustes y espera a que la pantalla lo coja. */
+async function ponerElColor(page: Page, color: string) {
+  await page.evaluate((cual) => {
+    const campo = document.querySelector<HTMLInputElement>('input[type="color"]');
+    if (!campo) throw new Error('no está el campo de color en Ajustes');
+    /*
+      Se escribe el valor **por el descriptor nativo**, no con `campo.value`.
+
+      React lleva su propia cuenta de lo que vale cada campo, y si se escribe
+      encima a pelo se piensa que no ha cambiado nada y no dispara su `onChange`.
+      Con el descriptor de `HTMLInputElement` esa cuenta se entera, que es lo
+      mismo que pasa cuando lo cambia el selector de color del sistema —que es lo
+      que hace una persona, y lo que Playwright no puede abrir—.
+    */
+    const escribir = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      'value',
+    )?.set;
+    escribir?.call(campo, cual);
+    campo.dispatchEvent(new Event('input', { bubbles: true }));
+  }, color);
+
+  // Y se guarda a propósito, con su botón. El campo de color no guarda solo:
+  // arrastrar un tono no es un gesto terminado, así que hay que decir «este».
+  await page.getByRole('button', { name: 'Guardar este color' }).click();
+
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(() =>
+          document.documentElement.style.getPropertyValue('--color-naranja').trim(),
+        ),
+      { message: `el acento no se ha aplicado con ${color}` },
+    )
+    .not.toBe('');
+}
+
+test.describe('cómo se ve · el tema y el color del local', () => {
+  // De una en una: las tres tocan los ajustes del mismo local y del mismo
+  // navegador, y en paralelo se pisarían. Es la lección de `esqueleto.spec.ts`.
+  test.describe.configure({ mode: 'default' });
+
+  test('el tema oscuro se elige en Ajustes y aguanta una recarga', async ({ page }) => {
+    await entrar(page);
+    await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    await page.getByRole('radio', { name: /Oscuro/ }).click();
+
+    // No se mira una clase: se mira **el color que se está pintando**.
+    await expect
+      .poll(async () =>
+        page.evaluate(() =>
+          window
+            .getComputedStyle(document.documentElement)
+            .getPropertyValue('--color-fondo')
+            .trim(),
+        ),
+      )
+      .toBe('#0f1517');
+
+    // Es del aparato, como el tamaño de letra: tiene que sobrevivir a recargar.
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-tema', 'oscuro');
+  });
+
+  test('y el logotipo cambia con él, que si no se queda negro sobre negro', async ({ page }) => {
+    // El primer fallo que apareció al mirar el modo oscuro de verdad: el
+    // logotipo es tipografía charcoal sobre transparente, y en la barra de
+    // arriba desaparecía. Se genera una versión clara del mismo dibujo.
+    await entrar(page);
+    await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    const elLogo = page.getByRole('img', { name: /Estook · tu cocina/ }).first();
+    await expect(elLogo).toHaveAttribute('src', /estook-logo\.png/);
+
+    await page.getByRole('radio', { name: /Oscuro/ }).click();
+    await expect(elLogo).toHaveAttribute('src', /estook-logo-oscuro\.png/);
+
+    // Y se vuelve a dejar claro, que es el de fábrica y el que esperan las demás.
+    await page.getByRole('radio', { name: /Claro/ }).click();
+    await expect(elLogo).toHaveAttribute('src', /estook-logo\.png/);
+  });
+
+  test('con el color del local, el texto del botón principal se sigue leyendo', async ({
+    page,
+  }) => {
+    /*
+      La prueba que justifica todo `color.ts`, y la que caza el fallo de verdad.
+
+      No mide un cuadrado inventado: mide **el botón principal que hay en el
+      Panel**, con las clases que lleva puestas. Ese botón decía `text-charcoal`
+      escrito a mano —porque el naranja de Estook es claro— y con un azul noche de
+      marca el texto se quedaba negro sobre azul oscuro: 1,8:1.
+
+      Se prueban cinco colores elegidos para hacer daño, incluido el gris del 50 %,
+      que es el que no contrasta con nada.
+    */
+    await entrar(page);
+    await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    await elInterruptor(page, true);
+
+    // Se parte del naranja de fábrica, pulsando su pastilla. Las pastillas sí
+    // guardan al tocarlas, y sin esto la primera vuelta se encontraría el color
+    // que dejó la vuelta anterior —o alguien mirando la aplicación— y no habría
+    // nada que guardar.
+    await page.getByRole('radio', { name: 'Naranja Estook' }).click();
+
+    for (const color of ['#1f3a5f', '#ffff00', '#000000', '#7f7f7f', '#ffd9ec']) {
+      await ponerElColor(page, color);
+
+      // Al Panel, que es donde vive el botón principal de verdad.
+      await page.goto(`${APP}#/`, { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+
+      const medido = await page.evaluate(() => {
+        const acento = window
+          .getComputedStyle(document.documentElement)
+          .getPropertyValue('--color-naranja')
+          .trim();
+        const caja = document.createElement('span');
+        caja.style.color = acento;
+        document.body.append(caja);
+        const acentoEnRgb = window.getComputedStyle(caja).color;
+        caja.remove();
+
+        const principal = Array.from(document.querySelectorAll('button')).find(
+          (b) => window.getComputedStyle(b).backgroundColor === acentoEnRgb,
+        );
+        if (!principal) return null;
+        const estilo = window.getComputedStyle(principal);
+        return { fondo: estilo.backgroundColor, texto: estilo.color, que: principal.textContent };
+      });
+
+      expect(medido, `con ${color} no se ha encontrado el botón principal`).not.toBeNull();
+      expect(
+        contrasteEntre(medido?.fondo ?? '', medido?.texto ?? ''),
+        `con ${color}, «${medido?.que ?? ''}»`,
+      ).toBeGreaterThanOrEqual(4.5);
+
+      await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    }
+
+    // Y se deja como estaba: apagado y con el naranja de fábrica. Lo que se toca
+    // aquí queda guardado en el local, así que hay que devolverlo.
+    await ponerElColor(page, '#ff7a00');
+    await elInterruptor(page, false);
+    await expect
+      .poll(async () =>
+        page.evaluate(() =>
+          document.documentElement.style.getPropertyValue('--color-naranja').trim(),
+        ),
+      )
+      .toBe('');
+  });
+});

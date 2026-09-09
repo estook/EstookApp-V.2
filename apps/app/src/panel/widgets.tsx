@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { NOMBRE_DEL_ESTADO } from '@estook/dominio';
 import { appsVisibles, puedeVer } from '@estook/permisos';
@@ -6,6 +7,7 @@ import {
   EstadoVacio,
   Etiqueta,
   Tarjeta,
+  acentoDelWidget,
   appPorPermiso,
   clases,
   rutaDe,
@@ -57,7 +59,39 @@ import {
  * un Panel guardado hace meses puede nombrar un widget que ya no existe, y lo
  * correcto es que ese hueco no aparezca en vez de que la pantalla se caiga.
  */
+/**
+ * Quién se está pintando ahora mismo.
+ *
+ * ── Por qué un contexto y no un parámetro ────────────────────────────────────
+ *
+ * Porque lo que `Caja` necesita saber —de qué app es este widget, para pintar su
+ * acento— **ya lo sabe `Widget`**, y pasarlo a mano obligaría a tocar las nueve
+ * llamadas y a acordarse de la décima el día que se añada un widget nuevo. Un
+ * widget que se olvidara de pasarlo saldría en blanco y nadie lo notaría hasta
+ * verlo.
+ *
+ * Con el contexto, el acento sale solo del catálogo: un widget nuevo lo trae
+ * puesto por declarar de qué app es, que es lo que ya declara.
+ */
+const QuienSePinta = createContext<string | null>(null);
+
 export function Widget({
+  id,
+  tamano,
+  editando,
+}: {
+  readonly id: string;
+  readonly tamano: TamanoDeWidget;
+  readonly editando: boolean;
+}) {
+  return (
+    <QuienSePinta.Provider value={id}>
+      <Cual id={id} tamano={tamano} editando={editando} />
+    </QuienSePinta.Provider>
+  );
+}
+
+function Cual({
   id,
   tamano,
   editando,
@@ -91,11 +125,14 @@ function Caja({
   readonly children: React.ReactNode;
 }) {
   const navegar = useNavigate();
+  const quien = useContext(QuienSePinta);
+  const acento = quien === null ? undefined : acentoDelWidget(quien);
 
   return (
     <div className="h-full [&>section]:h-full [&>section]:flex [&>section]:flex-col">
       <Tarjeta
         titulo={titulo}
+        {...(acento === undefined ? {} : { acento })}
         {...(origen === undefined ? {} : { origen })}
         {...(ir === undefined
           ? {}

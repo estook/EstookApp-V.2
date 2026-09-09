@@ -14,7 +14,12 @@
      */
     --escala: 1;
 
-    /* «Esquema claro fijo. El modo oscuro del sistema no repinta la app.» (B1) */
+    /*
+     * El claro es el de fabrica, y lo sigue siendo: quien no toque Ajustes ve lo
+     * de siempre. El oscuro y «el del sistema» los pone `temas.css` cuando el
+     * <html> lleva `data-tema`. B1 decia «esquema claro fijo»; esta cambiado, y
+     * por que esta en la decision 0024.
+     */
     color-scheme: light;
 
     /* Lo que ocupan las barras, para que el contenido no quede debajo. */

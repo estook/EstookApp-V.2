@@ -193,7 +193,7 @@ function BotonDeLaRueda({
         aria-hidden
         // Charcoal y no blanco: el blanco sobre el naranja da 2,6:1, y este icono
         // significa algo, asi que B8 le pide 3:1. El charcoal da 6,6:1.
-        className="grid size-[46px] -translate-y-e2 place-items-center rounded-redondo bg-naranja text-charcoal shadow-s2"
+        className="grid size-[46px] -translate-y-e2 place-items-center rounded-redondo bg-naranja text-sobre-naranja shadow-s2"
       >
         {/* La estrella de cuatro puntas del Plan. Es la marca del boton, no un
             icono de Lucide: no hay ninguno que sea esto. */}

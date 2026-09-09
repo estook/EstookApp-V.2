@@ -101,6 +101,7 @@ export {
   loQueSePuedeAnadir,
   loQueSePuedePintar,
   losQueLlegan,
+  acentoDelWidget,
   widgetPorId,
 } from './panel/catalogo.ts';
 export type { TamanoDeWidget, Widget, WidgetPuesto } from './panel/catalogo.ts';
@@ -129,6 +130,29 @@ export {
   SEGUNDOS_PARA_DESHACER,
 } from './ganchos/usarDeshacer.tsx';
 export type { AccionQueSePuedeDeshacer, FalloQueHayQueDecir } from './ganchos/usarDeshacer.tsx';
+
+/* ── El aspecto: el tema y el color del local (M6½) ────────────────────────── */
+export {
+  COMO_SE_LLAMA_EL_TEMA,
+  QUE_HACE_CADA_TEMA,
+  TEMAS,
+  esTema,
+  usarSeVeOscuro,
+  usarTema,
+} from './ganchos/usarTema.ts';
+export type { Tema } from './ganchos/usarTema.ts';
+export { usarElColorDeLaApp } from './ganchos/usarElColorDeLaApp.ts';
+export {
+  CONTRASTE_DE_ICONO,
+  CONTRASTE_DE_TEXTO,
+  contraste,
+  derivarAcento,
+  esColorHex,
+  loQueSeLeeEncima,
+  luminancia,
+  mezclar,
+} from './color.ts';
+export type { AcentoPintable, ColorHex, DondeSePinta } from './color.ts';
 
 export {
   usarTamanoDeLetra,

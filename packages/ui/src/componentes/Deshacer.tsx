@@ -54,7 +54,10 @@ export function Deshacer() {
       <button
         type="button"
         onClick={deshacer}
-        className="inline-flex min-h-toque shrink-0 items-center gap-e2 rounded-medio px-e3 font-semibold text-naranja hover:bg-white/10"
+        // Dentro de la barra oscura el acento es otro: el fondo aquí no es la
+        // tarjeta, es el charcoal, y un color de marca oscuro sobre charcoal no
+        // se ve. `color.ts` lo calcula aparte, contra este fondo.
+        className="inline-flex min-h-toque shrink-0 items-center gap-e2 rounded-medio px-e3 font-semibold text-naranja-en-oscuro hover:bg-white/10"
       >
         <IconoDeshacer size={18} />
         Deshacer

@@ -194,6 +194,9 @@ export const IconoChat = crearIcono(
   '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />',
 );
 
+/** Lucide `moon` */
+export const IconoLuna = crearIcono('moon', '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />');
+
 /** Lucide `notebook-pen` */
 export const IconoCuaderno = crearIcono(
   'notebook-pen',
@@ -204,6 +207,12 @@ export const IconoCuaderno = crearIcono(
 export const IconoInventario = crearIcono(
   'package',
   '<path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /><path d="M12 22V12" /><path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7" /><path d="m7.5 4.27 9 5.15" />',
+);
+
+/** Lucide `palette` */
+export const IconoColor = crearIcono(
+  'palette',
+  '<circle cx="13.5" cy="6.5" r=".5" /><circle cx="17.5" cy="10.5" r=".5" /><circle cx="8.5" cy="7.5" r=".5" /><circle cx="6.5" cy="12.5" r=".5" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />',
 );
 
 /** Lucide `pencil` */
@@ -237,6 +246,12 @@ export const IconoAjustes = crearIcono(
 export const IconoFiltros = crearIcono(
   'sliders-horizontal',
   '<line x1="21" x2="14" y1="4" y2="4" /><line x1="10" x2="3" y1="4" y2="4" /><line x1="21" x2="12" y1="12" y2="12" /><line x1="8" x2="3" y1="12" y2="12" /><line x1="21" x2="16" y1="20" y2="20" /><line x1="12" x2="3" y1="20" y2="20" /><line x1="14" x2="14" y1="2" y2="6" /><line x1="8" x2="8" y1="10" y2="14" /><line x1="16" x2="16" y1="18" y2="22" />',
+);
+
+/** Lucide `sun` */
+export const IconoSol = crearIcono(
+  'sun',
+  '<circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />',
 );
 
 /** Lucide `trash-2` */

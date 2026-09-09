@@ -67,6 +67,8 @@ export interface QuienSoy {
     readonly area: string | null;
     /** La marca del local (M5): el color y el enlace firmado a su logo. */
     readonly colorDeMarca: string | null;
+    /** Si ese color pinta la aplicación entera, y no solo la cabecera (0026). */
+    readonly colorEnLaApp: boolean;
     readonly logo: string | null;
   } | null;
   readonly organizaciones: readonly { readonly id: string; readonly nombre: string }[];

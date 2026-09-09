@@ -81,6 +81,14 @@ export interface QuienSoy {
      */
     readonly colorDeMarca: string | null;
     /**
+     * Si ese color pinta la aplicación entera, y no solo la cabecera (0026).
+     *
+     * Viaja con `quien_soy` y no en una consulta aparte porque la aplicación lo
+     * necesita **antes de pintar el primer píxel**: pedirlo después sería ver la
+     * pantalla en naranja y verla cambiar de color medio segundo más tarde.
+     */
+    readonly colorEnLaApp: boolean;
+    /**
      * El enlace al logo, **firmado y caduco**. Nunca se guarda: lo que guarda la
      * base de datos es la clave del objeto, y esto se pide cada vez.
      *
@@ -265,10 +273,12 @@ async function leerLocal(
       codigo: string;
       area: string | null;
       color_de_marca: string | null;
+      color_en_la_app: boolean;
       logo_clave: string | null;
     }[]
   >`
-    select l.id, l.nombre, l.codigo, a.nombre as area, l.color_de_marca, l.logo_clave
+    select l.id, l.nombre, l.codigo, a.nombre as area,
+           l.color_de_marca, l.color_en_la_app, l.logo_clave
       from estook.local l
       left join estook.area a on a.id = l.area_id
      where l.id = ${id}
@@ -291,6 +301,7 @@ async function leerLocal(
     codigo: fila.codigo,
     area: fila.area,
     colorDeMarca: fila.color_de_marca,
+    colorEnLaApp: fila.color_en_la_app,
     logo,
   };
 }

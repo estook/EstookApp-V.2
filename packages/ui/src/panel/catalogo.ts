@@ -309,3 +309,26 @@ export function losQueLlegan(tienePermiso: (permiso: PermisoDeApp) => boolean): 
       widget.modulo !== undefined && (widget.permiso === null || tienePermiso(widget.permiso)),
   );
 }
+
+/**
+ * El acento del widget · el de la app de la que cuenta algo.
+ *
+ * ── Por que se deduce y no se escribe ────────────────────────────────────────
+ *
+ * Porque ya estaba escrito dos veces, sin juntarse. Cada widget declara **de que
+ * app es** (su `permiso`), y B3 le da a cada app **su acento**. Escribir aqui un
+ * tercer color por widget seria una tercera lista que el dia de manana no
+ * coincide con las otras dos.
+ *
+ * Y ademas es lo que hace que signifique algo: el Panel deja de ser una pared de
+ * tarjetas blancas y pasa a leerse de un vistazo —lo naranja es de Inventario, lo
+ * morado es de Equipo— sin tener que leer ningun titulo.
+ *
+ * Los que no son de ninguna app —las acciones rapidas, la rueda— no llevan
+ * acento, y tampoco es un olvido: no cuentan nada de un sitio concreto.
+ */
+export function acentoDelWidget(id: string): string | undefined {
+  const widget = widgetPorId(id);
+  if (widget?.permiso == null) return undefined;
+  return `var(--color-app-${widget.permiso.replace('app.', '')})`;
+}

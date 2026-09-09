@@ -108,6 +108,14 @@ const ICONOS = {
   // opciones que se activen aqui, es como esta hecha la aplicacion. Cada linea
   // lleva ahora el icono de lo que cuenta.
   keyboard: 'Teclado',
+  // El tema, en Ajustes. Tres opciones y dos iconos: el sol vale para «claro» y
+  // para «el del sistema», porque lo que dibuja es «la aplicacion se ve como se
+  // ve tu aparato» y no un tercer estado. Un icono inventado para «sistema»
+  // seria un simbolo que nadie reconoce.
+  sun: 'Sol',
+  moon: 'Luna',
+  // Y el color de marca, en la tarjeta de la marca.
+  palette: 'Color',
 
   // ── Reparto · los canales de delivery (M29) ────────────────────────────────
   //

@@ -1,18 +1,31 @@
 import { useState } from 'react';
-import { IconoRejilla, IconoSalir, IconoTamanoDeLetra, IconoTeclado } from '@estook/iconos';
+import {
+  IconoLuna,
+  IconoRejilla,
+  IconoSalir,
+  IconoSol,
+  IconoTamanoDeLetra,
+  IconoTeclado,
+} from '@estook/iconos';
 import { IDIOMAS, NOMBRE_DEL_IDIOMA } from '@estook/dominio';
 import {
   Boton,
   COMO_SE_LLAMA,
+  COMO_SE_LLAMA_EL_TEMA,
   CUANTO_MULTIPLICA,
+  QUE_HACE_CADA_TEMA,
   Selector,
   TAMANOS,
+  TEMAS,
   Tarjeta,
   clases,
   usarDeshacer,
   usarTamanoDeLetra,
+  usarTema,
   type TamanoDeLetra,
+  type Tema,
 } from '@estook/ui';
+import { TuMarca } from '../marca/TuMarca.tsx';
 import { AjustesDeOrganizacion } from './AjustesDeOrganizacion.tsx';
 import { MiAcceso } from './MiAcceso.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -34,6 +47,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  */
 export function Ajustes() {
   const { tamano, poner } = usarTamanoDeLetra();
+  const { tema, poner: ponerTema } = usarTema();
   const { yo, salir, cliente, refrescar } = usarSesion();
   const { sePuedeDeshacer } = usarDeshacer();
   const [cambiandoIdioma, setCambiandoIdioma] = useState(false);
@@ -88,6 +102,62 @@ export function Ajustes() {
           ))}
         </div>
       </Tarjeta>
+
+      {/*
+        El tema · claro, oscuro o el del sistema.
+
+        Va junto al tamaño de letra a propósito: las dos son de **este aparato**,
+        no de la persona ni del local. La tableta del pase quiere el claro a las
+        dos de la tarde y el portátil de la oficina quiere el oscuro a las once de
+        la noche, y puede ser la misma persona.
+      */}
+      <Tarjeta titulo="Cómo se ve">
+        {/* El ancla del buscador: «modo oscuro» lleva aquí. */}
+        <span id="tema" />
+        <p className="text-secundario text-texto-suave">
+          Se queda guardado en este aparato, igual que el tamaño de letra. En una cocina el claro se
+          lee mejor de lejos; el oscuro es para la oficina de noche.
+        </p>
+
+        <div
+          role="radiogroup"
+          aria-label="Cómo se ve Estook"
+          className="mt-e3 flex flex-col gap-e2"
+        >
+          {TEMAS.map((cual: Tema) => (
+            <button
+              key={cual}
+              type="button"
+              role="radio"
+              aria-checked={cual === tema}
+              onClick={() => {
+                ponerTema(cual);
+              }}
+              className={clases(
+                'flex min-h-toque items-center gap-e3 rounded-medio border px-e3 py-e2 text-left',
+                cual === tema
+                  ? 'border-naranja bg-naranja-suave text-texto'
+                  : 'border-borde-fuerte bg-superficie hover:bg-fondo',
+              )}
+            >
+              <span
+                className={clases('shrink-0', cual === tema ? 'text-naranja' : 'text-texto-suave')}
+              >
+                {cual === 'oscuro' ? <IconoLuna size={20} /> : <IconoSol size={20} />}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-cuerpo font-medium">{COMO_SE_LLAMA_EL_TEMA[cual]}</span>
+                <span className="block text-secundario text-texto-suave">
+                  {QUE_HACE_CADA_TEMA[cual]}
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </Tarjeta>
+
+      {/* La marca del local: el logo, el color, y si el color pinta la app. */}
+      <TuMarca />
 
       {/* ── M4 · Mi acceso, y lo que decide la organizacion ─────────────────── */}
       {/* El ancla de «tu cuenta»: «Mi acceso» de la hoja del avatar lleva aqui. */}

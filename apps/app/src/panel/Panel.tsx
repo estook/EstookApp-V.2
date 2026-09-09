@@ -14,6 +14,7 @@ import {
 import { puedeVer, type PermisoDeApp } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { TarjetasDelPanel } from '../pantallas/TarjetasDelPanel.tsx';
+import { CabeceraDelPanel } from './Cabecera.tsx';
 import { LoQueFalta } from './LoQueFalta.tsx';
 import { Widget } from './widgets.tsx';
 import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
@@ -50,7 +51,7 @@ import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
  * verde es sitio gastado en la pantalla que más se mira.
  */
 export function Panel() {
-  const { permisos, yo } = usarSesion();
+  const { permisos } = usarSesion();
   const mio = usarMiPanel();
   const [editando, setEditando] = useState(false);
   const [anadiendo, setAnadiendo] = useState(false);
@@ -59,14 +60,7 @@ export function Panel() {
 
   return (
     <div className="flex flex-col gap-e4">
-      <header className="flex flex-wrap items-end justify-between gap-e3">
-        <div>
-          <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
-            {yo?.local?.nombre ?? yo?.organizacion?.nombre ?? ''}
-          </p>
-          <h1 className="text-pantalla font-semibold">Hola, {yo?.nombre.split(' ')[0] ?? ''}</h1>
-        </div>
-      </header>
+      <CabeceraDelPanel />
 
       {/*
         La zona de atención, arriba y sin poder quitarse.

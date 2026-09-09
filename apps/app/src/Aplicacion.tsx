@@ -1,7 +1,13 @@
 import { Suspense, lazy } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HashRouter, Link, Route, Routes } from 'react-router-dom';
-import { Cargando, EstadoVacio, ProveedorDeDeshacer } from '@estook/ui';
+import {
+  Cargando,
+  EstadoVacio,
+  ProveedorDeDeshacer,
+  usarElColorDeLaApp,
+  usarTema,
+} from '@estook/ui';
 import { Esqueleto } from './Esqueleto.tsx';
 import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Panel } from './panel/Panel.tsx';
@@ -74,6 +80,11 @@ const cache = new QueryClient({
 });
 
 export function Aplicacion() {
+  // El tema, lo primero de todo y **fuera de la sesión**: la pantalla de entrar
+  // también se ve, y verla en claro y que se vuelva oscura al entrar sería
+  // exactamente el parpadeo que este gancho existe para evitar.
+  usarTema();
+
   return (
     <QueryClientProvider client={cache}>
       {/*
@@ -114,6 +125,19 @@ export function Aplicacion() {
  */
 function Puerta() {
   const { yo, cargando, hayApi } = usarSesion();
+
+  /*
+    El color del local, si lo tiene encendido (migración 0026).
+
+    Va aquí y no más arriba porque hasta que no se sabe quién ha entrado no se
+    sabe en qué local está, y el color es del local. Antes de eso —en la pantalla
+    de entrar— la aplicación es naranja, que es lo correcto: ahí todavía no eres
+    de ningún sitio.
+
+    Y va **antes de los `if`**, que en React no es un detalle: un gancho no puede
+    quedarse sin llamar según por dónde salga la función.
+  */
+  usarElColorDeLaApp(yo?.local?.colorEnLaApp === true ? yo.local.colorDeMarca : null);
 
   // Sin API no hay a quien preguntar. Se dice, en la propia pantalla de entrar.
   if (!hayApi) return <Entrar />;

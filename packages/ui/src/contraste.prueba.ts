@@ -206,27 +206,130 @@ describe('B3 · los ocho acentos', () => {
   });
 });
 
-describe('los colores de M3 no se han inventado: son los de B1', () => {
-  it('la paleta de marca esta tal cual', () => {
+describe('los colores no se han inventado: salen de B1 y de una medida', () => {
+  it('la marca es la de B1, sin tocar', () => {
     expect(color('charcoal')).toBe('#111c1f');
     expect(color('naranja')).toBe('#ff7a00');
     expect(color('naranja-suave')).toBe('#fff1e5');
-    expect(color('fondo')).toBe('#fafaf8');
     expect(color('superficie')).toBe('#ffffff');
-    expect(color('borde')).toBe('#e6e3de');
-    expect(color('borde-fuerte')).toBe('#cfcac2');
   });
 
-  it('los de texto y los de estado, salvo los tres que se oscurecieron', () => {
+  it('y el texto y los estados que ya cumplian', () => {
     expect(color('texto')).toBe('#111c1f');
     expect(color('texto-suave')).toBe('#5a6568');
     expect(color('mal')).toBe('#c4372b');
     expect(color('info')).toBe('#2c6e9b');
+  });
 
-    // Estos tres salen de B1 pero llevan la luz bajada para llegar a 4,5:1. Se
-    // fijan aqui para que nadie los mueva sin darse cuenta de por que son asi.
-    expect(color('texto-tenue'), 'sale del #8A9497 de B1').toBe('#6d7577');
-    expect(color('bien'), 'sale del #1E8E5A de B1').toBe('#1a7d4f');
-    expect(color('atencion'), 'sale del #C77700 de B1').toBe('#9f5f00');
+  /*
+   * ── Los que se movieron, y por que ─────────────────────────────────────────
+   *
+   * Se fijan aqui, uno a uno y con su razon, para que nadie los mueva sin
+   * enterarse de por que son asi. Hay dos motivos distintos:
+   *
+   *   · **Llegar a 4,5:1.** `texto-tenue`, `bien` y `atencion` salen de B1 con la
+   *     luz bajada, porque los de B1 daban 2,97, 3,96 y 3,31.
+   *   · **Que una tarjeta se vea como una tarjeta.** El fondo de B1 era `#fafaf8`
+   *     y contra el blanco de la superficie daba **1,02:1**: sobre el papel es una
+   *     paleta limpia, y en un TPV de cocina se lee como una hoja blanca con texto
+   *     flotando. Bajarlo a `#f1efea` da 1,15 y arregla la pantalla entera; y
+   *     obliga a bajar con el los dos bordes y a oscurecer `bien`, que sobre el
+   *     fondo nuevo se quedaba en 4,47.
+   */
+  it('los que llevan la luz bajada para llegar a 4,5:1', () => {
+    expect(color('texto-tenue'), 'sale del #8A9497 de B1').toBe('#666e70');
+    expect(color('bien'), 'sale del #1E8E5A de B1').toBe('#187648');
+    expect(color('atencion'), 'sale del #C77700 de B1').toBe('#9a5c00');
+  });
+
+  it('y los que se movieron para que la tarjeta se separe del fondo', () => {
+    expect(color('fondo'), 'era el #fafaf8 de B1, que daba 1,02 con la tarjeta').toBe('#f1efea');
+    expect(color('borde')).toBe('#e0dcd4');
+    expect(color('borde-fuerte')).toBe('#a49b8c');
+
+    // Y la separacion, medida: es la razon de todo lo de arriba.
+    expect(contraste(SUPERFICIE(), FONDO())).toBeGreaterThanOrEqual(1.12);
+  });
+});
+
+/*
+ * ── Y la paleta oscura, con los mismos mínimos ────────────────────────────────
+ *
+ * El modo oscuro llegó en M6½ y B1 decía «esquema claro fijo». Lo que **no**
+ * cambia es esta prueba: un tema oscuro con grises elegidos a ojo es la forma más
+ * rápida que hay de acabar con texto que no se lee, y B8 no tiene una excepción
+ * para el modo oscuro.
+ *
+ * Se lee `temas.css` igual que arriba se lee `fichas.css`: los colores viven en
+ * un solo sitio, y la prueba mide lo que de verdad se va a pintar.
+ */
+const TEMAS = readFileSync(fileURLToPath(new URL('../estilos/temas.css', import.meta.url)), 'utf8');
+
+/** Un color del bloque oscuro. Se corta el fichero para no leer el claro. */
+function oscuro(nombre: string): string {
+  const bloque = TEMAS.slice(
+    TEMAS.indexOf("data-tema='oscuro'"),
+    TEMAS.indexOf('@media (prefers-color-scheme: light)'),
+  );
+  const encontrado = new RegExp(`--color-${nombre}:\\s*(#[0-9a-fA-F]{6})`).exec(bloque);
+  if (!encontrado?.[1]) throw new Error(`No esta declarado --color-${nombre} en el tema oscuro`);
+  return encontrado[1];
+}
+
+describe('B8 en el tema oscuro', () => {
+  const FONDO_O = () => oscuro('fondo');
+  const SUPERFICIE_O = () => oscuro('superficie');
+
+  it('los tres tonos de texto se leen sobre los dos fondos', () => {
+    for (const tono of ['texto', 'texto-suave', 'texto-tenue']) {
+      expect(contraste(oscuro(tono), FONDO_O()), `${tono} sobre el fondo`).toBeGreaterThanOrEqual(
+        TEXTO,
+      );
+      expect(
+        contraste(oscuro(tono), SUPERFICIE_O()),
+        `${tono} sobre la superficie`,
+      ).toBeGreaterThanOrEqual(TEXTO);
+    }
+  });
+
+  it('los cuatro estados se leen, y también sobre su propio fondo', () => {
+    for (const estado of ['bien', 'atencion', 'mal', 'info']) {
+      expect(
+        contraste(oscuro(estado), SUPERFICIE_O()),
+        `${estado} sobre la superficie`,
+      ).toBeGreaterThanOrEqual(TEXTO);
+      expect(
+        contraste(oscuro(estado), oscuro(`${estado}-suave`)),
+        `${estado} sobre su fondo`,
+      ).toBeGreaterThanOrEqual(TEXTO);
+    }
+  });
+
+  it('el naranja de fábrica sigue valiendo de icono sin tocarlo', () => {
+    // No se aclara en oscuro a propósito: sobre la superficie oscura ya pasa de
+    // 3:1, y cambiarlo sería tener dos naranjas de marca.
+    expect(contraste(color('naranja'), SUPERFICIE_O())).toBeGreaterThanOrEqual(ICONO);
+    expect(contraste(color('texto'), oscuro('naranja-suave'))).toBeLessThan(TEXTO);
+    expect(contraste(oscuro('texto'), oscuro('naranja-suave'))).toBeGreaterThanOrEqual(TEXTO);
+  });
+
+  it('la pieza oscura sigue siendo más clara que el fondo, con blanco encima', () => {
+    // Si `charcoal` se quedara en #111c1f, la barra de deshacer desaparecería
+    // contra la página. Tiene que separarse de ella **y** llevar blanco legible.
+    expect(contraste(BLANCO, oscuro('charcoal'))).toBeGreaterThanOrEqual(TEXTO);
+    expect(contraste(oscuro('charcoal'), FONDO_O())).toBeGreaterThan(1.2);
+  });
+
+  it('los ocho acentos de las apps se ven sobre la superficie oscura', () => {
+    // Y el del Panel con ellos: en claro es el charcoal, que sobre una superficie
+    // oscura desaparecería. Aquí es el único que cambia de bando.
+    for (const app of [...ACENTOS, 'panel']) {
+      expect(contraste(oscuro(`app-${app}`), SUPERFICIE_O()), app).toBeGreaterThanOrEqual(ICONO);
+    }
+  });
+
+  it('y la superficie se separa del fondo, o no habría tarjetas', () => {
+    expect(contraste(SUPERFICIE_O(), FONDO_O())).toBeGreaterThan(1.08);
+    expect(contraste(oscuro('borde-fuerte'), SUPERFICIE_O())).toBeGreaterThanOrEqual(2.5);
   });
 });

@@ -16,11 +16,47 @@
   --color-naranja: #ff7a00; /* accion, foco, marca */
   --color-naranja-suave: #fff1e5; /* fondos de aviso y seleccion */
 
-  /* ── Color · superficie ─────────────────────────────────────────────────── */
-  --color-fondo: #fafaf8;
+  /*
+   * Y los dos que faltaban para poder cambiar el acento sin romper nada.
+   *
+   * Desde M6½ el naranja puede dejar de ser naranja: si el local activa «usar mi
+   * color en la aplicacion», estas cuatro fichas se sobrescriben en marcha con el
+   * color de su marca, ya ajustado para que cumpla B8 (packages/ui/src/color.ts).
+   *
+   * Sin estas dos, ese cambio rompia dos sitios:
+   *
+   *   · **Lo que se escribe encima del acento.** Era charcoal siempre, porque el
+   *     naranja de Estook es claro. Con un azul noche de marca, el texto del boton
+   *     principal se quedaba negro sobre azul oscuro.
+   *   · **El acento dentro de una pieza oscura.** «Deshacer» va en naranja sobre
+   *     la barra charcoal, y un color de marca oscuro ahi no se ve. Se calcula
+   *     aparte, contra ese fondo y no contra la tarjeta.
+   */
+  --color-sobre-naranja: #111c1f; /* lo que se lee encima del acento */
+  --color-naranja-en-oscuro: #ff7a00; /* el acento dentro de la barra charcoal */
+
+  /*
+   * ── Color · superficie ────────────────────────────────────────────────────
+   *
+   * B1 daba `#fafaf8` de fondo y blanco de superficie. Sobre el papel es una
+   * paleta limpia; en un TPV de cocina, mirado de verdad, **una tarjeta blanca
+   * sobre ese fondo contrasta 1,02:1**, o sea: no se ve. La pantalla se leia como
+   * una hoja blanca con texto suelto flotando, sin bordes ni bloques, y por eso
+   * no parecia una aplicacion profesional aunque la informacion fuera correcta.
+   *
+   * El fondo baja a `#f1efea` y la tarjeta se separa 1,15:1. Sigue siendo un
+   * blanco roto calido —no es gris— y ahora **cada tarjeta se lee como tarjeta**.
+   *
+   * Los dos bordes bajan con el, por lo mismo: un borde de `#e6e3de` sobre un
+   * fondo mas oscuro se pierde. Y `texto-tenue` se oscurece un punto porque sobre
+   * el fondo nuevo daba 4,42 y B8 pide 4,5. Todo esto lo mide
+   * `contraste.prueba.ts`, que es lo que hace que este parrafo sea verdad y no
+   * una intencion.
+   */
+  --color-fondo: #f1efea;
   --color-superficie: #ffffff;
-  --color-borde: #e6e3de;
-  --color-borde-fuerte: #cfcac2;
+  --color-borde: #e0dcd4;
+  --color-borde-fuerte: #a49b8c;
 
   /* ── Color · texto ──────────────────────────────────────────────────────── */
   --color-texto: #111c1f;
@@ -30,7 +66,7 @@
    * cuando B8 pide 4,5 para el texto. Mismo tono, la luz justa para que se lea:
    * ahora da 4,50. Se midio, no se eligio a ojo.
    */
-  --color-texto-tenue: #6d7577;
+  --color-texto-tenue: #666e70;
 
   /* ── Color · estado ─────────────────────────────────────────────────────── */
   /*
@@ -40,8 +76,8 @@
    *
    * `mal` e `info` se quedan como estan: ya cumplian.
    */
-  --color-bien: #1a7d4f;
-  --color-atencion: #9f5f00;
+  --color-bien: #187648;
+  --color-atencion: #9a5c00;
   --color-mal: #c4372b;
   --color-info: #2c6e9b;
 
@@ -188,6 +224,8 @@
   --charcoal: var(--color-charcoal);
   --naranja: var(--color-naranja);
   --naranja-suave: var(--color-naranja-suave);
+  --sobre-naranja: var(--color-sobre-naranja);
+  --naranja-en-oscuro: var(--color-naranja-en-oscuro);
   --fondo: var(--color-fondo);
   --superficie: var(--color-superficie);
   --borde: var(--color-borde);

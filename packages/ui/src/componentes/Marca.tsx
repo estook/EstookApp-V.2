@@ -1,4 +1,5 @@
 import { clases } from '../clases.ts';
+import { usarSeVeOscuro } from '../ganchos/usarTema.ts';
 
 /**
  * La marca · el logo y Fogón.
@@ -26,6 +27,14 @@ const BASE = (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '
 
 export const IMAGENES_DE_MARCA = {
   logo: `${BASE}marca/estook-logo.png`,
+  /**
+   * El mismo logotipo, con la tipografia en claro y el naranja intacto.
+   *
+   * El logotipo es charcoal sobre transparente: en el tema oscuro se quedaba
+   * **negro sobre negro** en la barra de arriba. Lo genera
+   * `herramientas/reducir-marca.mjs` del mismo original, tocando solo lo gris.
+   */
+  logoOscuro: `${BASE}marca/estook-logo-oscuro.png`,
   fogon: `${BASE}marca/fogon.png`,
   simbolo: `${BASE}marca/favicon.svg`,
 } as const;
@@ -37,9 +46,13 @@ export interface LogoProps {
 }
 
 export function Logo({ alto = 26, className }: LogoProps) {
+  // El logotipo es charcoal: sobre el tema oscuro hay que darle la vuelta, o no
+  // se ve. Es lo primero que aparecio al mirar el modo oscuro de verdad.
+  const enOscuro = usarSeVeOscuro();
+
   return (
     <img
-      src={IMAGENES_DE_MARCA.logo}
+      src={enOscuro ? IMAGENES_DE_MARCA.logoOscuro : IMAGENES_DE_MARCA.logo}
       // El nombre y el claim ya están en la imagen; para quien no la ve, aquí.
       alt="Estook · tu cocina, bajo control"
       height={alto}

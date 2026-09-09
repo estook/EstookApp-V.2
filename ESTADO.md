@@ -11,10 +11,10 @@
 
 |                |                                                                                                             |
 | -------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas, la segunda **sin fusionar**                                      |
+| **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas más la auditoría de infraestructura, **sin fusionar**             |
 | **Siguiente**  | **M7** · Proveedores y compras                                                                              |
-| **Pruebas**    | 706 unitarias y de base de datos · 294 de extremo a extremo, 436 con Safari · **91 % del catálogo** (59/65) |
-| **Rama**       | La segunda tanda en `m6-medio-segunda-tanda`. La primera, fusionada (PR #37)                                |
+| **Pruebas**    | 706 unitarias y de base de datos · 297 de extremo a extremo, 439 con Safari · **91 % del catálogo** (59/65) |
+| **Rama**       | La segunda tanda y la auditoría en `m6-medio-segunda-tanda`. La primera, fusionada (PR #37)                 |
 | **Publicado**  | Base en la `0025`, **aplicada**. API desplegada con la primera tanda                                        |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                                |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local                       |
@@ -1695,6 +1695,149 @@ tendrá que cargarse aparte desde el principio, no al final.
 
 ---
 
+### La auditoría de infraestructura, antes de M7
+
+Antes de seguir con Proveedores y compras se paró a mirar el cimiento entero, con
+una pregunta por delante: **que la IA no se pierda ni mezcle datos de personas
+distintas**, y que nada se pierda por el camino.
+
+#### Lo que está bien, y conviene tener escrito
+
+Que un repaso diga «esto aguanta» vale tanto como que encuentre fallos, siempre
+que diga **por qué** aguanta:
+
+- **El servidor no puede enseñar el local de otro.** Cada consulta filtra por
+  `sesion.localId` —que sale del token, nunca de lo que mande el cliente— y por
+  debajo están las políticas de M1, escritas todas contra `locales_visibles()`. La
+  API se conecta como `estook_api`, que no es dueño de las tablas, así que las
+  políticas le aplican. Y hay prueba: pedir el producto de otro local devuelve
+  404, no «existe pero no es tuyo».
+- **La identidad muere con la transacción.** `set local`, nunca `set`. En Edge
+  Functions las conexiones se comparten entre peticiones, y con un `set` normal la
+  segunda petición heredaría la identidad de la primera (decisión 0005).
+- **Todas las tablas tienen RLS encendida**, las treinta y tantas, sin una sola
+  excepción.
+- **Las cuentas del inventario tienen un dueño**, y el stock es un libro: se
+  reconstruye desde los movimientos y hay prueba de que cuadra.
+- **Los índices están puestos** donde se busca de verdad: por local y actividad,
+  por producto y caducidad, y la sesión se resuelve por una huella única.
+
+#### Y los siete agujeros, en orden de gravedad
+
+**1 · Cambiar de local no vaciaba la caché de la pantalla.** El grave, y el que
+contesta la pregunta que se hizo. `cambiar_de_contexto` cambiaba el local en el
+servidor y después se volvía a pedir `quien_soy` **y nada más**. Todo lo demás
+—los productos, lo que hay en cámara, el libro, lo que caduca— seguía en la caché
+con su clave de siempre, sin el local dentro. Y la caché aguanta un minuto sin
+caducar: **durante ese minuto salía el género de un local con el nombre de otro
+arriba**.
+
+El servidor nunca estuvo en peligro. Pero una merma se apunta mirando la pantalla,
+y «que nadie apunte una merma en el local equivocado» (Manifiesto 28) es la razón
+por la que el selector de local existe.
+
+Y hay un segundo consumidor que lo hacía peor: **el contexto de Fogón se arma con
+esa caché**. Hoy solo se enseña en la ventana; en M22 es lo que iba a recibir el
+modelo, y una frase en prosa no lleva encima de dónde salió el número. De ahí sale
+la [decisión 0023](docs/decisiones/0023-fogon-nunca-arma-su-contexto-en-el-navegador.md):
+**el contexto de Fogón lo arma el servidor**, con su sello de persona, local y
+hora, y se comprueba antes de mandar nada.
+
+El arreglo va en un sitio —al cambiar la persona, la organización o el local se
+tira todo menos `quien_soy`— y no en la clave de cada consulta, por lo mismo que
+las puertas de sesión viven en el despachador: la regla no se cumple porque quien
+escribe se acuerde, se cumple porque **no hay camino que la rodee**.
+
+**2 · Los cinco sitios que cambian de local no miraban si había salido bien.** Si
+fallaba, la pantalla se iba al Panel con el local de antes y con cara de haber
+cambiado. Ahora hay un `cambiarDeSitio` en la sesión, uno para los cinco, que
+espera al servidor, lo dice en la barra de abajo si falla y devuelve si se puede
+seguir. La acción más delicada de Estook era la única sin comprobar.
+
+**3 · Dos mensajes del catálogo de errores prometían cosas que no pasan.** Y el
+catálogo es cerrado justamente para que no ocurra:
+
+- «No hay conexión. **Lo que has apuntado se guarda en el móvil y sube solo cuando
+  vuelva la señal.**» No hay ninguna cola de salida en el navegador: un comando que
+  se cae sin conexión **se pierde entero**. Quien está en una cámara sin cobertura
+  lee que ya está guardado y se va.
+- «La sesión ha caducado. **Lo que estabas escribiendo se ha guardado.**» Tampoco:
+  al caducar se borra el token y se tira la caché, y la pantalla se desmonta con lo
+  que hubiera dentro.
+
+Los dos dicen ahora lo que pasa y qué hacer. Las dos funciones que harían verdad
+los mensajes viejos —**cola de salida** y **borradores**— están apuntadas abajo
+como lo que son: trabajo, no una frase.
+
+Y el primero estaba además **copiado a mano** en `cliente-api`, con las dos copias
+ya diciendo cosas distintas. Se coge del catálogo.
+
+**4 · La idempotencia está construida, probada… y no la usa nadie.** El servidor
+hace bien su parte: la misma clave dos veces devuelve la respuesta de la primera
+sin ejecutar nada. Pero el cliente **genera una clave nueva en cada llamada**, así
+que no hay dos llamadas que compartan clave y no protege de nada. El caso que la
+justifica —«un móvil en una cámara que pierde la cobertura justo después de
+enviar; la persona vuelve a pulsar»— sigue abierto. Está apuntado abajo.
+
+**5 · Las acciones rápidas se guardaban con una sola clave por aparato.** En una
+tablet de cocina que usan cuatro, el segundo se encontraba las del primero y al
+tocar una se las quitaba. No es un agujero de seguridad —solo salen las acciones
+que el permiso de quien mira deja salir— pero es la personalización de otra
+persona en tu pantalla. Van por persona.
+
+**6 · No había política de seguridad de contenido.** El token vive en
+`localStorage` a propósito y está razonado, y lo único que lo protegía era la
+promesa de que nadie escribiría un `innerHTML` con datos de nadie. Eso es una
+promesa sobre el código de mañana. Ahora hay `script-src 'self'`, que lo cumple el
+navegador, y se calcula al construir porque `connect-src` depende de dónde esté la
+API ([`herramientas/politica-de-seguridad.ts`](herramientas/politica-de-seguridad.ts)).
+
+**7 · El alta iba en el paquete inicial.** Dos mil doscientas líneas que se usan
+una vez por local, descargadas cada mañana por todo el mundo para no verlas. Ahora
+se pide cuando hace falta: **244,0 KB → 235,6 KB**, y el margen pasa de 6 a 14,4.
+
+#### Y dos del banco de trabajo, que escondían cambios
+
+- **`turbo` no sabía que `herramientas/` entra en la construcción**, así que al
+  cambiar la política de seguridad daba el `dist` de antes por bueno y servía el
+  viejo. Media hora persiguiendo un cambio que sí estaba escrito. Ahora está en
+  `globalDependencies`.
+- **La política bloqueaba `blob:`**, que es como se carga un logo para medirlo
+  antes de subirlo. El navegador lo bloquea **en silencio**: no hay error, la
+  imagen no aparece y el botón de quitarla tampoco. Lo cazó la prueba del alta, que
+  existe porque ese botón ya faltó una vez.
+
+#### Lo que la auditoría deja pendiente · por orden de importancia
+
+Nada de esto se ha hecho, y ninguna de las cinco es una frase: son trabajo.
+
+1. **La cola de salida.** Un comando que se cae sin conexión se pierde. Lo que hace
+   falta: guardar el comando en el navegador con su clave de idempotencia, subirlo
+   cuando vuelva la señal, y enseñar cuántos hay esperando. La idempotencia del
+   servidor ya está hecha y es justo lo que hace que esto sea seguro. Es lo que
+   convierte «Estook se usa de pie y con el teléfono en la mano» en verdad dentro
+   de una cámara frigorífica.
+2. **Las claves de idempotencia, usadas.** Hoy el cliente inventa una por llamada.
+   Lo que hace falta: que un gesto —pulsar «Apuntar la salida» una vez— tenga
+   **una** clave, y que reintentar reutilice la misma. Es media tarde y cierra el
+   agujero de la merma apuntada dos veces.
+3. **El reloj.** `publicarPendientes`, `siguienteTrabajo` y `limpiarCaducadas`
+   están escritos y probados, y **no los llama nadie**: no hay `pg_cron` ni función
+   programada. Hoy no se nota porque las reacciones que no pueden esperar van
+   síncronas a propósito, pero la bandeja de salida se llena y no se vacía, y las
+   claves de idempotencia y las sesiones caducadas no se limpian nunca. Estaba
+   apuntado desde M6 como «decidir antes de M8», y sigue ahí.
+4. **La auditoría no ve dos cosas de seguridad.** Diecinueve de los veinticinco
+   ficheros de comandos escriben su línea; entre los que no están **activar y
+   quitar el doble factor** y **cerrar la sesión de otro aparato**. Son
+   exactamente las que hay que poder mirar cuando alguien pregunta qué pasó con una
+   cuenta.
+5. **Los borradores.** Que lo escrito sobreviva a que caduque la sesión o a
+   recargar sin querer. Es hermano de la cola: lo mismo, para lo que todavía no se
+   ha mandado.
+
+---
+
 ## 5 · Cómo trabajamos
 
 1. **Primero fusionar, después aplicar a Supabase.** La base de datos nunca va
@@ -1824,36 +1967,53 @@ tendrá que cargarse aparte desde el principio, no al final.
     segunda y salieron quince rojos nuevos en sitios que no se habían tocado. Si una
     comprobación depende de algo que no dice, se escribe aparte.
 
+26. **El servidor puede estar bien y la pantalla mentir igual.** Las políticas de
+    M1 no dejaban ver el local de otro, y aun así se veía: la caché del navegador
+    guardaba la respuesta anterior sin el local en la clave. Una prueba contra la
+    API a pelo no habría encontrado nunca ese fallo, y la había. Lo que protege el
+    dato y lo que lo enseña son dos capas, y **las dos hay que probarlas**.
+27. **Una prueba nueva hay que verla fallar.** La de cambiar de local pasaba con el
+    arreglo quitado, porque navegaba con `page.goto` y eso recarga el documento y
+    se lleva la caché por delante: probaba algo que no era. Antes de dar una prueba
+    por buena, se quita el arreglo y **tiene que ponerse roja**.
+28. **Un mensaje bonito escrito antes de tiempo se queda como mentira.** «Se guarda
+    en el móvil y sube solo cuando vuelva la señal» y «lo que estabas escribiendo se
+    ha guardado» son los dos mensajes que uno querría poder dar, escritos antes de
+    que existiera lo que hace falta para darlos. Un catálogo de errores cerrado no
+    sirve de nada si lo que hay dentro no es verdad: **el texto se escribe cuando el
+    comportamiento existe**, y mientras tanto se dice lo que pasa.
+
 ---
 
 ## 6 · Decisiones tomadas
 
 En [`docs/decisiones/`](docs/decisiones/):
 
-| Núm      | Qué                                                                 |
-| -------- | ------------------------------------------------------------------- |
-| **0001** | GitHub Pages en vez de Netlify, con la dirección de hoy             |
-| **0002** | La API en Hono sobre Supabase Edge Functions                        |
-| **0003** | M0 crea el esqueleto mínimo de alcances                             |
-| **0004** | El presupuesto de velocidad de B7, reconstruido                     |
-| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción   |
-| **0006** | El motor fiscal: sin regla, no se inventa un tipo                   |
-| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta   |
-| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages   |
-| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`    |
-| **0010** | **El login es nuestro, no de Supabase Auth**                        |
-| **0011** | **Las pruebas de extremo a extremo levantan la API de verdad**      |
-| **0012** | **El producto nace en M6, y M5 le deja el diccionario**             |
-| **0013** | **Google Places se aplaza a M23**                                   |
-| **0014** | **Un módulo reacciona a otro en la misma transacción**              |
-| **0015** | **Fogón es una burbuja que va contigo, no una pestaña por app**     |
-| **0016** | **El reloj es `pg_cron` llamando a nuestra API**                    |
-| **0017** | **Cómo avisa Estook: pantalla, correo con Resend y push**           |
-| **0018** | **Cada app tiene destinos, y cada destino sus vistas**              |
-| **0019** | **El Panel de cada uno vive en el servidor, por persona y aparato** |
-| **0020** | **Un catálogo de acciones, y una acción es una dirección**          |
-| **0021** | **El producto se mide en una unidad; los gramajes son de la ficha** |
-| **0022** | **El reparto tiene sitio antes que conexión; Uber Eats el primero** |
+| Núm      | Qué                                                                   |
+| -------- | --------------------------------------------------------------------- |
+| **0001** | GitHub Pages en vez de Netlify, con la dirección de hoy               |
+| **0002** | La API en Hono sobre Supabase Edge Functions                          |
+| **0003** | M0 crea el esqueleto mínimo de alcances                               |
+| **0004** | El presupuesto de velocidad de B7, reconstruido                       |
+| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción     |
+| **0006** | El motor fiscal: sin regla, no se inventa un tipo                     |
+| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta     |
+| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages     |
+| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`      |
+| **0010** | **El login es nuestro, no de Supabase Auth**                          |
+| **0011** | **Las pruebas de extremo a extremo levantan la API de verdad**        |
+| **0012** | **El producto nace en M6, y M5 le deja el diccionario**               |
+| **0013** | **Google Places se aplaza a M23**                                     |
+| **0014** | **Un módulo reacciona a otro en la misma transacción**                |
+| **0015** | **Fogón es una burbuja que va contigo, no una pestaña por app**       |
+| **0016** | **El reloj es `pg_cron` llamando a nuestra API**                      |
+| **0017** | **Cómo avisa Estook: pantalla, correo con Resend y push**             |
+| **0018** | **Cada app tiene destinos, y cada destino sus vistas**                |
+| **0019** | **El Panel de cada uno vive en el servidor, por persona y aparato**   |
+| **0020** | **Un catálogo de acciones, y una acción es una dirección**            |
+| **0021** | **El producto se mide en una unidad; los gramajes son de la ficha**   |
+| **0022** | **El reparto tiene sitio antes que conexión; Uber Eats el primero**   |
+| **0023** | **Fogón nunca arma su contexto en el navegador: lo arma el servidor** |
 
 Otras, sin fichero propio:
 

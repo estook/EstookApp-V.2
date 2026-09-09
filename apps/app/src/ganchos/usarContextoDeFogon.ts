@@ -33,6 +33,25 @@ import type { InventarioHoy } from '../inventario/contrato.ts';
  * calculadas —«47 productos, 3 bajo mínimo, se agota el pollo el viernes»— que
  * caben en unas pocas líneas.
  *
+ * ── Y esto NO es lo que se le mandará al modelo ──────────────────────────────
+ *
+ * Ojo aquí, que es lo importante de este fichero. Lo de arriba dice «en M22, el
+ * modelo, que recibirá esto». **Ya no.** Este resumen se arma leyendo la caché
+ * del navegador, y la caché tuvo un agujero: al cambiar de local no se vaciaba,
+ * así que durante un minuto tenía las cifras del local anterior. Con Fogón mudo
+ * eso era una pantalla mal pintada; con Fogón hablando habría sido una respuesta
+ * segura y con datos de otro sitio, y una frase en prosa no lleva encima de dónde
+ * salió el número.
+ *
+ * El agujero está tapado (la caché se vacía al cambiar de sitio, en
+ * `sesion/Sesion.tsx`), pero la conclusión se queda: **el contexto que ve el
+ * modelo lo arma el servidor**, en la misma transacción que responde y con las
+ * políticas aplicadas
+ * ([decisión 0023](../../../../docs/decisiones/0023-fogon-nunca-arma-su-contexto-en-el-navegador.md)).
+ *
+ * Esto sigue existiendo para lo que se ve en la ventana: cifras que la persona ya
+ * tiene delante, en la pantalla de al lado.
+ *
  * ── Y no se pide nada hasta que se abre ──────────────────────────────────────
  *
  * `abierta` gobierna la consulta. La burbuja de Fogón está en **todas** las

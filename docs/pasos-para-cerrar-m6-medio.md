@@ -9,7 +9,8 @@
 > | Qué                 | Cómo está                                                   |
 > | ------------------- | ----------------------------------------------------------- |
 > | Primera tanda       | **Fusionada, migrada y desplegada** · pasos 1, 2 y 3 hechos |
-> | Segunda tanda       | **Escrita y en verde**: 706 de unidad y 304 de pantalla     |
+> | Segunda tanda       | **Escrita y en verde**: 706 de unidad y 439 de pantalla     |
+> | La auditoría        | **Escrita y en verde**, en la misma rama · nada que migrar  |
 > | Su pull request     | **Por fusionar** · paso 1                                   |
 > | Migraciones         | **Ninguna nueva**: el paso 2 no toca esta vez               |
 > | La API              | **Ninguna operación nueva**: el paso 3 tampoco              |
@@ -171,6 +172,27 @@ alrededor: el círculo, limpio.
 
 14. **Pulsa la burbuja.** Tiene que decir dónde estás **y las cifras que hay
     delante**, y ofrecer botones que hacen algo de verdad. Pruébalos.
+
+### Y lo que arregla la auditoría · **esto es lo más importante de mirar**
+
+15. **Cambia de local y mira el inventario.** Si llegas a más de un local: cambia
+    arriba, entra en **Inventario · Productos** y mira la lista. Tienen que ser los
+    productos **del local en el que acabas de entrar**, no los de antes. Esto es lo
+    que estaba mal: durante un minuto salía el género de un local con el nombre de
+    otro arriba.
+16. **Y hazlo con el móvil en avión.** Pon el modo avión, cambia de local, y tiene
+    que decir que no ha cambiado, que sigues donde estabas y que lo que apuntes va
+    al local de antes. Antes se iba al Panel como si hubiera cambiado.
+17. **Con el modo avión puesto, intenta apuntar una salida.** Ahora dice «lo que
+    has escrito sigue en la pantalla: vuelve a darle cuando tengas señal», y es
+    verdad. Antes decía que se guardaba solo y **se perdía**. La cola que haría
+    verdad el mensaje viejo está apuntada como lo siguiente que hay que construir.
+18. **Sube un logo desde el alta, si tienes un local a medio dar de alta.** Tiene
+    que salir la vista previa y el botón «Quitarlo». Es la comprobación de que la
+    política de seguridad nueva no ha roto nada: bloquea lo que hay que bloquear y
+    no la carga de una imagen tuya.
+19. **Y entra desde el móvil de otra persona, si compartís tablet.** Tus acciones
+    rápidas tienen que ser las tuyas, no las del último que entró.
 
 > **Lo que salga, apúntalo tal cual.** Los seis fallos del segundo paseo por el
 > móvil salieron así, y ninguno ponía en rojo ninguna prueba.

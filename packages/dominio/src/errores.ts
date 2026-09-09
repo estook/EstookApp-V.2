@@ -35,10 +35,16 @@ function error(
 
 export const ERRORES = {
   // ── Acceso ─────────────────────────────────────────────────────────────────
+  // Decía «lo que estabas escribiendo se ha guardado», y **no se guarda nada**:
+  // al caducar la sesión se borra el token y se tira la caché entera, así que la
+  // pantalla se desmonta con lo que hubiera escrito dentro. Es el mismo fallo que
+  // tenía `sin_conexion`, en el mismo catálogo y por el mismo motivo: se escribió
+  // el mensaje que uno querría poder dar antes de que existiera lo que hace falta
+  // para darlo. Guardar borradores es trabajo aparte, y está apuntado en ESTADO.
   sin_sesion: error(
     'sin_sesion',
     'La sesión ha caducado.',
-    'Vuelve a entrar con tu correo o con tu PIN. Lo que estabas escribiendo se ha guardado.',
+    'Vuelve a entrar con tu correo o con tu PIN. Si estabas escribiendo algo, cópialo antes: al entrar se empieza de nuevo.',
     401,
     { texto: 'Entrar', accion: 'ir_a_entrar' },
   ),

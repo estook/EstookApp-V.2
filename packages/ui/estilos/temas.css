@@ -1,0 +1,147 @@
+/*
+ * Los dos temas · claro y oscuro.
+ *
+ * ── Por que existe esto, y por que B1 decia lo contrario ─────────────────────
+ *
+ * B1 decia «esquema claro fijo; el modo oscuro del sistema no repinta la app», y
+ * era una decision razonable mientras Estook fuera una pantalla de cocina: un
+ * pase se lee de lejos y con la luz encendida, y ahi el claro gana.
+ *
+ * Pero Estook no es solo el pase. La misma aplicacion la abre quien lleva el
+ * local a las once de la noche, en la oficina, para mirar el margen del dia. Ahi
+ * una pantalla blanca a pantalla completa es lo que hace que se cierre el
+ * portatil. Asi que el tema se elige en Ajustes, y **el de fabrica sigue siendo
+ * el claro**: quien no toque nada ve exactamente lo de antes.
+ *
+ * ── Como funciona, y por que no hay una clase `dark:` en ningun sitio ────────
+ *
+ * Igual que el tamano de letra: se cambian **las fichas**, no las pantallas. Las
+ * utilidades de Tailwind salen de `@theme`, o sea que `bg-superficie` compila a
+ * `background-color: var(--color-superficie)`. Redefiniendo esa variable aqui,
+ * las cuarenta pantallas cambian a la vez y **ninguna tiene que enterarse**.
+ *
+ * Eso es lo que hace que esto no sea una deuda: una pantalla nueva sale bien en
+ * los dos temas sin que quien la escriba se acuerde de nada. Si hubiera que poner
+ * `dark:` en cada clase, el modo oscuro estaria roto en la tercera pantalla.
+ *
+ * ── Y por que los colores no se eligieron a ojo ──────────────────────────────
+ *
+ * Los mide `contraste.prueba.ts`, los mismos minimos de B8 que la paleta clara:
+ * 4,5:1 para texto y 3:1 para un icono que significa algo. Un modo oscuro con
+ * grises a ojo es como se acaba con «texto negro sobre fondo negro», que es
+ * justo lo que no puede pasar.
+ */
+
+@layer base {
+  /*
+   * El oscuro, o el del sistema cuando se ha elegido «el del sistema».
+   *
+   * Las dos reglas escriben lo mismo y estan escritas dos veces a proposito: un
+   * selector no puede combinarse con una media query en CSS, y meterlo en una
+   * variable de otro sitio seria tener la paleta oscura en dos ficheros.
+   */
+  :root[data-tema='oscuro'],
+  :root[data-tema='sistema'] {
+    --color-fondo: #0f1517;
+    --color-superficie: #182124;
+    --color-borde: #2a3438;
+    --color-borde-fuerte: #55666b;
+
+    --color-texto: #eef2f3;
+    --color-texto-suave: #b9c3c6;
+    --color-texto-tenue: #9aa6a9;
+
+    /*
+     * `charcoal` no es «el color charcoal»: es **la pieza oscura de la
+     * aplicacion**, la barra de deshacer y el pie de Fogon, que llevan texto
+     * blanco encima. En oscuro tiene que seguir siendo mas oscura que el texto y
+     * mas clara que el fondo, o desaparece contra la pagina.
+     */
+    --color-charcoal: #26333a;
+
+    /* Los cuatro estados, aclarados: los de la paleta clara no llegan aqui. */
+    --color-bien: #4ec98a;
+    --color-atencion: #f0ae4e;
+    --color-mal: #f0796c;
+    --color-info: #6fb3e0;
+
+    /* Y sus fondos, que dejan de ser tintes claros y pasan a ser tintes oscuros. */
+    --color-bien-suave: #122a20;
+    --color-atencion-suave: #2c2312;
+    --color-mal-suave: #2d1a17;
+    --color-info-suave: #13232e;
+
+    /*
+     * El naranja se queda: sobre la superficie oscura da 6,3:1, muy por encima
+     * del 3:1 que pide un icono. Lo que si cambia es su tinte, que en claro es
+     * casi blanco.
+     */
+    --color-naranja-suave: #33220f;
+
+    /*
+     * Los acentos de las ocho apps (B3), aclarados. Los de la tabla estan
+     * elegidos para verse sobre blanco; sobre la superficie oscura, el verde y
+     * el azul de carta se van al negro.
+     */
+    --color-app-panel: #dfe6e8;
+    --color-app-inventario: #f0ae4e;
+    --color-app-escandallos: #4ec98a;
+    --color-app-carta: #e485ac;
+    --color-app-calendario: #6fb3e0;
+    --color-app-equipo: #a894e8;
+    --color-app-servicio: #4ec9cb;
+    --color-app-negocio: #f0796c;
+    --color-app-cuaderno: #c4b49a;
+
+    /*
+     * Y el navegador se entera: sin esto, las barras de desplazamiento, los
+     * desplegables nativos y el calendario de un `<input type="date">` salen
+     * blancos en mitad de una pantalla oscura.
+     */
+    color-scheme: dark;
+  }
+
+  /*
+   * «El del sistema» solo es oscuro **cuando el sistema lo es**. Sin esto, elegir
+   * «el del sistema» dejaria la aplicacion siempre oscura, que es lo contrario de
+   * lo que dice la opcion.
+   */
+  @media (prefers-color-scheme: light) {
+    :root[data-tema='sistema'] {
+      --color-fondo: #fafaf8;
+      --color-superficie: #ffffff;
+      --color-borde: #e6e3de;
+      --color-borde-fuerte: #cfcac2;
+
+      --color-texto: #111c1f;
+      --color-texto-suave: #5a6568;
+      --color-texto-tenue: #6d7577;
+
+      --color-charcoal: #111c1f;
+
+      --color-bien: #1a7d4f;
+      --color-atencion: #9f5f00;
+      --color-mal: #c4372b;
+      --color-info: #2c6e9b;
+
+      --color-bien-suave: #e7f4ee;
+      --color-atencion-suave: #fdf1de;
+      --color-mal-suave: #fbeae8;
+      --color-info-suave: #e8f0f6;
+
+      --color-naranja-suave: #fff1e5;
+
+      --color-app-panel: #111c1f;
+      --color-app-inventario: #c77700;
+      --color-app-escandallos: #1e8e5a;
+      --color-app-carta: #b23a6e;
+      --color-app-calendario: #2c6e9b;
+      --color-app-equipo: #6b4fbb;
+      --color-app-servicio: #0f8b8d;
+      --color-app-negocio: #c4372b;
+      --color-app-cuaderno: #7a6a56;
+
+      color-scheme: light;
+    }
+  }
+}

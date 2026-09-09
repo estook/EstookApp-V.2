@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Aviso, Boton, Logo, clases } from '@estook/ui';
 import { usarSesion } from '../../sesion/Sesion.tsx';
-import { reducirImagen, TOPE_DEL_LOGO } from '../reducirImagen.ts';
+import { reducirImagen, TOPE_DEL_LOGO } from '../../marca/reducirImagen.ts';
 import type { PropsDeUnPaso } from '../contrato.ts';
 
 /**

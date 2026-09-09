@@ -1191,14 +1191,15 @@ Apps (encender y apagar partes, con el aviso concreto de qué pasa; se ocultan, 
 2. Tablas anchas → tarjetas en móvil.
 3. Las cifras no se parten: tipografía tabular.
 4. **Toque de 44 px mínimo.** Se usa con prisa y con las manos mojadas.
-5. Esquema claro fijo: el modo oscuro del móvil no repinta la app.
+5. **Claro de fábrica, y oscuro si lo eliges.** El tema se elige en Ajustes —claro, oscuro o el del sistema— y se guarda en ese aparato, como el tamaño de letra: la tableta del pase quiere el claro a las dos de la tarde y el portátil de la oficina quiere el oscuro a las once de la noche, y puede ser la misma persona. Los dos temas cumplen los mismos mínimos de contraste, medidos. (Antes ponía «esquema claro fijo»; está cambiado en la [decisión 0024](../decisiones/0024-el-color-del-local-pinta-la-app.md).)
 6. Estados vacíos con acción y errores en cristiano con botón.
 7. **Deshacer siempre, diez segundos**, en todo lo que no tenga consecuencia legal.
 8. Cero jerga y cero emojis, salvo los símbolos oficiales de alérgenos.
 9. Una acción principal por pantalla. Formularios progresivos.
 10. Nada de scroll infinito en el Panel.
-11. Cada app con su icono y su acento de color, sobre el mismo fondo.
-12. Tamaño de letra en tres pasos: el pase de cocina se lee de lejos.
+11. Cada app con su icono y su acento de color, sobre el mismo fondo. **Y cada widget del Panel lleva el acento de la app de la que cuenta algo**, para que se lea de un vistazo de dónde sale cada cifra sin tener que leer el título.
+12. **El color del local puede pintar la aplicación entera**, con su interruptor en Ajustes. El color que se guarda es el que eligió el local; el que se pinta se ajusta hasta cumplir el contraste, y se dice cuando ha hecho falta. Un color de marca no puede dejar un texto ilegible.
+13. Tamaño de letra en tres pasos: el pase de cocina se lee de lejos.
 
 ## El principio que ordena todo lo demás
 

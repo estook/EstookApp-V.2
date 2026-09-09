@@ -69,6 +69,65 @@ for (const { origen, destino, alto, recortar: seRecorta } of QUE_REDUCIR) {
   );
 }
 
+/**
+ * Y el logotipo para fondo oscuro.
+ *
+ * ── Por que hace falta, y por que se genera en vez de dibujarse ─────────────
+ *
+ * El logotipo es tipografia **charcoal** sobre transparente. Sobre el fondo claro
+ * se lee perfectamente; con el modo oscuro de M6½ se quedaba negro sobre negro en
+ * la barra de arriba, que es el fallo que mas miedo daba de todo el tema oscuro y
+ * el primero que aparecio al mirarlo.
+ *
+ * Se genera y no se pide un PNG nuevo porque **es el mismo dibujo**: lo unico que
+ * cambia es que lo oscuro pasa a claro. Pedir un fichero aparte seria tener dos
+ * logotipos que pueden separarse el dia que la marca cambie.
+ *
+ * ── Y por que no vale un filtro de CSS ──────────────────────────────────────
+ *
+ * `invert(1)` invierte tambien el naranja, y el naranja **es la marca**: saldria
+ * azul. Aqui se toca solo lo que es gris o negro y el naranja se queda como esta,
+ * pixel a pixel.
+ */
+function paraFondoOscuro(imagen) {
+  const salida = {
+    ancho: imagen.ancho,
+    alto: imagen.alto,
+    pixeles: new Uint8Array(imagen.pixeles),
+  };
+
+  for (let i = 0; i < salida.pixeles.length; i += 4) {
+    const r = salida.pixeles[i];
+    const v = salida.pixeles[i + 1];
+    const a = salida.pixeles[i + 2];
+
+    // Lo que tiene color se queda: el naranja de la marca no se toca.
+    const maximo = Math.max(r, v, a);
+    const minimo = Math.min(r, v, a);
+    if (maximo - minimo > 24) continue;
+
+    // Y lo gris se da la vuelta: el charcoal se vuelve casi blanco, y lo que ya
+    // era claro se queda claro.
+    salida.pixeles[i] = 255 - r;
+    salida.pixeles[i + 1] = 255 - v;
+    salida.pixeles[i + 2] = 255 - a;
+  }
+
+  return salida;
+}
+
+{
+  const original = leerPng(await readFile(join(MARCA, 'Logohorizontal.png')));
+  const util = recortar(original);
+  const alto = 96;
+  const ancho = Math.max(1, Math.trunc((util.ancho / util.alto) * alto + 0.5));
+  const png = escribirPng(paraFondoOscuro(reducir(util, ancho, alto)));
+
+  await writeFile(join(MARCA, 'estook-logo-oscuro.png'), png);
+  salidas.push('estook-logo-oscuro.png');
+  console.log(`  ${'estook-logo-oscuro.png'.padEnd(18)} ${ancho}x${alto}  ·  para el tema oscuro`);
+}
+
 for (const aplicacion of APLICACIONES) {
   const carpeta = join(RAIZ, 'apps', aplicacion, 'public/marca');
   await mkdir(carpeta, { recursive: true });

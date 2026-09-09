@@ -18,6 +18,7 @@
 @source "../src";
 
 @import './fichas.css';
+@import './temas.css';
 @import './tipografia.css';
 @import './base.css';
 @import './movimiento.css';

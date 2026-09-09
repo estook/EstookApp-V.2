@@ -14,6 +14,7 @@ import {
 import { puedeVer, type PermisoDeApp } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { TarjetasDelPanel } from '../pantallas/TarjetasDelPanel.tsx';
+import { CabeceraDelPanel } from './Cabecera.tsx';
 import { LoQueFalta } from './LoQueFalta.tsx';
 import { Widget } from './widgets.tsx';
 import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
@@ -50,7 +51,7 @@ import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
  * verde es sitio gastado en la pantalla que más se mira.
  */
 export function Panel() {
-  const { permisos, yo } = usarSesion();
+  const { permisos } = usarSesion();
   const mio = usarMiPanel();
   const [editando, setEditando] = useState(false);
   const [anadiendo, setAnadiendo] = useState(false);
@@ -59,14 +60,7 @@ export function Panel() {
 
   return (
     <div className="flex flex-col gap-e4">
-      <header className="flex flex-wrap items-end justify-between gap-e3">
-        <div>
-          <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
-            {yo?.local?.nombre ?? yo?.organizacion?.nombre ?? ''}
-          </p>
-          <h1 className="text-pantalla font-semibold">Hola, {yo?.nombre.split(' ')[0] ?? ''}</h1>
-        </div>
-      </header>
+      <CabeceraDelPanel />
 
       {/*
         La zona de atención, arriba y sin poder quitarse.
@@ -77,9 +71,27 @@ export function Panel() {
         quitar los ejemplos— y la línea de lo que le falta a Estook para funcionar
         bien, que antes era un widget entero.
       */}
-      <section aria-label="Lo que necesita tu atención" className="flex flex-col gap-e3">
+      {/*
+        En dos columnas desde 1024 px de ancho, que es el TPV de una cocina.
+
+        En una sola columna, la zona de atención —conectar el TPV, el equipo,
+        quitar los ejemplos— se comía **la pantalla entera** de un TPV de 768 px
+        de alto, y el Panel, que es lo que se viene a mirar, empezaba por debajo
+        del pliegue. Con dos columnas cabe todo y sobra sitio para dos filas de
+        widgets.
+
+        `items-start` para que una tarjeta corta no se estire hasta el alto de la
+        de al lado: son avisos sueltos, no una tabla.
+      */}
+      <section
+        aria-label="Lo que necesita tu atención"
+        className="grid items-start gap-e3 lg:grid-cols-2"
+      >
         <TarjetasDelPanel />
-        <LoQueFalta />
+        {/* Lo que falta es una línea, y va de lado a lado. */}
+        <div className="lg:col-span-2">
+          <LoQueFalta />
+        </div>
       </section>
 
       {mio.loCambioOtroAparato && (

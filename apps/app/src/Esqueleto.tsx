@@ -43,7 +43,7 @@ import { usarSesion } from './sesion/Sesion.tsx';
 export function Esqueleto() {
   const navegar = useNavigate();
   const { pathname } = useLocation();
-  const { permisos, yo, cliente, refrescar, salir } = usarSesion();
+  const { permisos, yo, salir, cambiarDeSitio } = usarSesion();
   const { sePuedeDeshacer } = usarDeshacer();
 
   const [ruedaAbierta, setRuedaAbierta] = useState(false);
@@ -128,8 +128,12 @@ export function Esqueleto() {
       // El servidor decide: se le pide el cambio y se vuelve a preguntar quien
       // eres. Si ese local no fuera suyo, la resolucion no lo elegiria y volveria
       // a preguntar donde esta, en vez de dejarle en un sitio que no es el suyo.
-      await cliente.ejecutar('cambiar_de_contexto', { local_id: id });
-      await refrescar();
+      //
+      // Y **si no ha salido bien no se navega**. Irse al Panel despues de un
+      // cambio que no ocurrio es lo mismo que decir que ocurrio: la barra de
+      // arriba seguiria poniendo el local de antes, pero nadie mira la barra
+      // despues de haber elegido en ella.
+      if (!(await cambiarDeSitio({ local: id }))) return;
       navegar('/');
 
       // **Y se puede deshacer.** Cambiar de local es exactamente lo que se hace
@@ -140,16 +144,18 @@ export function Esqueleto() {
         const nombre = susLocales.find((local) => local.id === id)?.nombre ?? 'otro local';
         sePuedeDeshacer({
           que: `Ahora estas en ${nombre}`,
-          deshacer: () => {
-            void (async () => {
-              await cliente.ejecutar('cambiar_de_contexto', { local_id: desdeDonde });
-              await refrescar();
-            })();
+          deshacer: async () => {
+            // Se espera y se deja que falle hacia arriba: la barra de deshacer
+            // sabe decir «no se ha podido deshacer», y lo peor aqui seria que
+            // volver al local de antes fallara en silencio.
+            if (!(await cambiarDeSitio({ local: desdeDonde }))) {
+              throw new Error('no se ha podido volver al local anterior');
+            }
           },
         });
       }
     },
-    [cliente, refrescar, navegar, localDeAhora, susLocales, sePuedeDeshacer],
+    [cambiarDeSitio, navegar, localDeAhora, susLocales, sePuedeDeshacer],
   );
 
   /**

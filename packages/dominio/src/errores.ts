@@ -35,10 +35,16 @@ function error(
 
 export const ERRORES = {
   // ── Acceso ─────────────────────────────────────────────────────────────────
+  // Decía «lo que estabas escribiendo se ha guardado», y **no se guarda nada**:
+  // al caducar la sesión se borra el token y se tira la caché entera, así que la
+  // pantalla se desmonta con lo que hubiera escrito dentro. Es el mismo fallo que
+  // tenía `sin_conexion`, en el mismo catálogo y por el mismo motivo: se escribió
+  // el mensaje que uno querría poder dar antes de que existiera lo que hace falta
+  // para darlo. Guardar borradores es trabajo aparte, y está apuntado en ESTADO.
   sin_sesion: error(
     'sin_sesion',
     'La sesión ha caducado.',
-    'Vuelve a entrar con tu correo o con tu PIN. Lo que estabas escribiendo se ha guardado.',
+    'Vuelve a entrar con tu correo o con tu PIN. Si estabas escribiendo algo, cópialo antes: al entrar se empieza de nuevo.',
     401,
     { texto: 'Entrar', accion: 'ir_a_entrar' },
   ),
@@ -182,11 +188,24 @@ export const ERRORES = {
   ),
 
   // ── Cuando algo se rompe de verdad ─────────────────────────────────────────
+  //
+  // **Este texto decía otra cosa, y era mentira.** Decía «lo que has apuntado se
+  // guarda en el móvil y sube solo cuando vuelva la señal», y no hay nada que lo
+  // guarde: no existe cola de salida en el navegador, así que un comando que se
+  // cae sin conexión **se pierde entero**.
+  //
+  // Es exactamente el fallo que este proyecto persigue desde M4 —prometer algo
+  // que no se hace— y en el peor sitio posible: quien está en una cámara sin
+  // cobertura lee que ya está guardado, cierra la aplicación y se va.
+  //
+  // La cola de verdad es trabajo aparte y está apuntada en ESTADO.md. Hasta que
+  // exista, esto dice lo que pasa y qué hacer.
   sin_conexion: error(
     'sin_conexion',
     'No hay conexión.',
-    'Lo que has apuntado se guarda en el móvil y sube solo cuando vuelva la señal.',
+    'Lo que has escrito sigue en la pantalla: vuelve a darle cuando tengas señal.',
     503,
+    { texto: 'Reintentar', accion: 'reintentar' },
   ),
 
   fallo_nuestro: error(

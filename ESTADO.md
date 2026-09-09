@@ -11,11 +11,11 @@
 
 |                |                                                                                                             |
 | -------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas, la segunda **sin fusionar**                                      |
+| **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas, la auditoría y la limpieza de imagen, **sin fusionar**           |
 | **Siguiente**  | **M7** · Proveedores y compras                                                                              |
-| **Pruebas**    | 706 unitarias y de base de datos · 294 de extremo a extremo, 436 con Safari · **91 % del catálogo** (59/65) |
-| **Rama**       | La segunda tanda en `m6-medio-segunda-tanda`. La primera, fusionada (PR #37)                                |
-| **Publicado**  | Base en la `0025`, **aplicada**. API desplegada con la primera tanda                                        |
+| **Pruebas**    | 726 unitarias y de base de datos · 308 de extremo a extremo, 457 con Safari · **91 % del catálogo** (59/65) |
+| **Rama**       | `m6-medio-imagen-y-marca`. La #38 se fusionó **sin la auditoría**, que va aquí                              |
+| **Publicado**  | Base en la `0025`. La **`0026` está sin aplicar** y la API sin desplegar: las dos hacen falta               |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                                |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local                       |
 
@@ -1695,6 +1695,246 @@ tendrá que cargarse aparte desde el principio, no al final.
 
 ---
 
+### La auditoría de infraestructura, antes de M7
+
+Antes de seguir con Proveedores y compras se paró a mirar el cimiento entero, con
+una pregunta por delante: **que la IA no se pierda ni mezcle datos de personas
+distintas**, y que nada se pierda por el camino.
+
+#### Lo que está bien, y conviene tener escrito
+
+Que un repaso diga «esto aguanta» vale tanto como que encuentre fallos, siempre
+que diga **por qué** aguanta:
+
+- **El servidor no puede enseñar el local de otro.** Cada consulta filtra por
+  `sesion.localId` —que sale del token, nunca de lo que mande el cliente— y por
+  debajo están las políticas de M1, escritas todas contra `locales_visibles()`. La
+  API se conecta como `estook_api`, que no es dueño de las tablas, así que las
+  políticas le aplican. Y hay prueba: pedir el producto de otro local devuelve
+  404, no «existe pero no es tuyo».
+- **La identidad muere con la transacción.** `set local`, nunca `set`. En Edge
+  Functions las conexiones se comparten entre peticiones, y con un `set` normal la
+  segunda petición heredaría la identidad de la primera (decisión 0005).
+- **Todas las tablas tienen RLS encendida**, las treinta y tantas, sin una sola
+  excepción.
+- **Las cuentas del inventario tienen un dueño**, y el stock es un libro: se
+  reconstruye desde los movimientos y hay prueba de que cuadra.
+- **Los índices están puestos** donde se busca de verdad: por local y actividad,
+  por producto y caducidad, y la sesión se resuelve por una huella única.
+
+#### Y los siete agujeros, en orden de gravedad
+
+**1 · Cambiar de local no vaciaba la caché de la pantalla.** El grave, y el que
+contesta la pregunta que se hizo. `cambiar_de_contexto` cambiaba el local en el
+servidor y después se volvía a pedir `quien_soy` **y nada más**. Todo lo demás
+—los productos, lo que hay en cámara, el libro, lo que caduca— seguía en la caché
+con su clave de siempre, sin el local dentro. Y la caché aguanta un minuto sin
+caducar: **durante ese minuto salía el género de un local con el nombre de otro
+arriba**.
+
+El servidor nunca estuvo en peligro. Pero una merma se apunta mirando la pantalla,
+y «que nadie apunte una merma en el local equivocado» (Manifiesto 28) es la razón
+por la que el selector de local existe.
+
+Y hay un segundo consumidor que lo hacía peor: **el contexto de Fogón se arma con
+esa caché**. Hoy solo se enseña en la ventana; en M22 es lo que iba a recibir el
+modelo, y una frase en prosa no lleva encima de dónde salió el número. De ahí sale
+la [decisión 0023](docs/decisiones/0023-fogon-nunca-arma-su-contexto-en-el-navegador.md):
+**el contexto de Fogón lo arma el servidor**, con su sello de persona, local y
+hora, y se comprueba antes de mandar nada.
+
+El arreglo va en un sitio —al cambiar la persona, la organización o el local se
+tira todo menos `quien_soy`— y no en la clave de cada consulta, por lo mismo que
+las puertas de sesión viven en el despachador: la regla no se cumple porque quien
+escribe se acuerde, se cumple porque **no hay camino que la rodee**.
+
+**2 · Los cinco sitios que cambian de local no miraban si había salido bien.** Si
+fallaba, la pantalla se iba al Panel con el local de antes y con cara de haber
+cambiado. Ahora hay un `cambiarDeSitio` en la sesión, uno para los cinco, que
+espera al servidor, lo dice en la barra de abajo si falla y devuelve si se puede
+seguir. La acción más delicada de Estook era la única sin comprobar.
+
+**3 · Dos mensajes del catálogo de errores prometían cosas que no pasan.** Y el
+catálogo es cerrado justamente para que no ocurra:
+
+- «No hay conexión. **Lo que has apuntado se guarda en el móvil y sube solo cuando
+  vuelva la señal.**» No hay ninguna cola de salida en el navegador: un comando que
+  se cae sin conexión **se pierde entero**. Quien está en una cámara sin cobertura
+  lee que ya está guardado y se va.
+- «La sesión ha caducado. **Lo que estabas escribiendo se ha guardado.**» Tampoco:
+  al caducar se borra el token y se tira la caché, y la pantalla se desmonta con lo
+  que hubiera dentro.
+
+Los dos dicen ahora lo que pasa y qué hacer. Las dos funciones que harían verdad
+los mensajes viejos —**cola de salida** y **borradores**— están apuntadas abajo
+como lo que son: trabajo, no una frase.
+
+Y el primero estaba además **copiado a mano** en `cliente-api`, con las dos copias
+ya diciendo cosas distintas. Se coge del catálogo.
+
+**4 · La idempotencia está construida, probada… y no la usa nadie.** El servidor
+hace bien su parte: la misma clave dos veces devuelve la respuesta de la primera
+sin ejecutar nada. Pero el cliente **genera una clave nueva en cada llamada**, así
+que no hay dos llamadas que compartan clave y no protege de nada. El caso que la
+justifica —«un móvil en una cámara que pierde la cobertura justo después de
+enviar; la persona vuelve a pulsar»— sigue abierto. Está apuntado abajo.
+
+**5 · Las acciones rápidas se guardaban con una sola clave por aparato.** En una
+tablet de cocina que usan cuatro, el segundo se encontraba las del primero y al
+tocar una se las quitaba. No es un agujero de seguridad —solo salen las acciones
+que el permiso de quien mira deja salir— pero es la personalización de otra
+persona en tu pantalla. Van por persona.
+
+**6 · No había política de seguridad de contenido.** El token vive en
+`localStorage` a propósito y está razonado, y lo único que lo protegía era la
+promesa de que nadie escribiría un `innerHTML` con datos de nadie. Eso es una
+promesa sobre el código de mañana. Ahora hay `script-src 'self'`, que lo cumple el
+navegador, y se calcula al construir porque `connect-src` depende de dónde esté la
+API ([`herramientas/politica-de-seguridad.ts`](herramientas/politica-de-seguridad.ts)).
+
+**7 · El alta iba en el paquete inicial.** Dos mil doscientas líneas que se usan
+una vez por local, descargadas cada mañana por todo el mundo para no verlas. Ahora
+se pide cuando hace falta: **244,0 KB → 235,6 KB**, y el margen pasa de 6 a 14,4.
+
+#### Y dos del banco de trabajo, que escondían cambios
+
+- **`turbo` no sabía que `herramientas/` entra en la construcción**, así que al
+  cambiar la política de seguridad daba el `dist` de antes por bueno y servía el
+  viejo. Media hora persiguiendo un cambio que sí estaba escrito. Ahora está en
+  `globalDependencies`.
+- **La política bloqueaba `blob:`**, que es como se carga un logo para medirlo
+  antes de subirlo. El navegador lo bloquea **en silencio**: no hay error, la
+  imagen no aparece y el botón de quitarla tampoco. Lo cazó la prueba del alta, que
+  existe porque ese botón ya faltó una vez.
+
+#### Lo que la auditoría deja pendiente · por orden de importancia
+
+Nada de esto se ha hecho, y ninguna de las cinco es una frase: son trabajo.
+
+1. **La cola de salida.** Un comando que se cae sin conexión se pierde. Lo que hace
+   falta: guardar el comando en el navegador con su clave de idempotencia, subirlo
+   cuando vuelva la señal, y enseñar cuántos hay esperando. La idempotencia del
+   servidor ya está hecha y es justo lo que hace que esto sea seguro. Es lo que
+   convierte «Estook se usa de pie y con el teléfono en la mano» en verdad dentro
+   de una cámara frigorífica.
+2. **Las claves de idempotencia, usadas.** Hoy el cliente inventa una por llamada.
+   Lo que hace falta: que un gesto —pulsar «Apuntar la salida» una vez— tenga
+   **una** clave, y que reintentar reutilice la misma. Es media tarde y cierra el
+   agujero de la merma apuntada dos veces.
+3. **El reloj.** `publicarPendientes`, `siguienteTrabajo` y `limpiarCaducadas`
+   están escritos y probados, y **no los llama nadie**: no hay `pg_cron` ni función
+   programada. Hoy no se nota porque las reacciones que no pueden esperar van
+   síncronas a propósito, pero la bandeja de salida se llena y no se vacía, y las
+   claves de idempotencia y las sesiones caducadas no se limpian nunca. Estaba
+   apuntado desde M6 como «decidir antes de M8», y sigue ahí.
+4. **La auditoría no ve dos cosas de seguridad.** Diecinueve de los veinticinco
+   ficheros de comandos escriben su línea; entre los que no están **activar y
+   quitar el doble factor** y **cerrar la sesión de otro aparato**. Son
+   exactamente las que hay que poder mirar cuando alguien pregunta qué pasó con una
+   cuenta.
+5. **Los borradores.** Que lo escrito sobreviva a que caduque la sesión o a
+   recargar sin querer. Es hermano de la cola: lo mismo, para lo que todavía no se
+   ha mandado.
+
+---
+
+### La limpieza de imagen · lo que salió de verla en el TPV
+
+Richi abrió Estook en el TPV de la cocina y mandó la foto. La información era
+correcta y la pantalla no parecía una aplicación profesional: «todo blanco, texto
+suelto». Con el aviso por delante: «cuidado con el texto, que no acabe siendo
+negro sobre negro».
+
+#### Uno · Por qué parecía una hoja de papel, y no era una opinión
+
+Era **una medida**. B1 daba `#fafaf8` de fondo y blanco de tarjeta, y esos dos
+contrastan **1,02:1**. En un TPV no se ven tarjetas: se ve texto flotando sobre
+blanco.
+
+El fondo baja a `#f1efea` —1,15— y con él bajan los dos bordes y se oscurecen
+`bien`, `atención` y `texto-tenue`, que sobre el fondo nuevo se quedaban por
+debajo de 4,5:1.
+
+Tres líneas, y arregla la pantalla entera. Y es exactamente el tipo de cosa que
+**ninguna prueba podía ver**: todas pasaban, porque la paleta cumplía B8. Lo que
+no cumplía era «una tarjeta tiene que parecer una tarjeta», que no estaba escrito
+en ninguna parte. Ahora sí, y se mide.
+
+#### Dos · Los dos temas, y la ficha que lo hace barato
+
+Claro, oscuro o el del sistema, en Ajustes, guardado en el aparato como el tamaño
+de letra. **El de fábrica sigue siendo el claro**: una cocina se mira de lejos y
+con la luz encendida.
+
+Lo que hace que esto no sea deuda es **cómo** está hecho: `temas.css` redefine las
+fichas, y las utilidades de Tailwind salen de las fichas. `bg-superficie` compila
+a `var(--color-superficie)`, así que **ninguna pantalla lleva una clase de modo
+oscuro** y una pantalla nueva sale bien en los dos sin que nadie se acuerde. Con
+`dark:` en cada clase, el modo oscuro estaría roto en la tercera pantalla.
+
+Y el primer fallo apareció al minuto de mirarlo: **el logotipo es tipografía
+charcoal** y se quedaba negro sobre negro en la barra. Se genera del mismo
+original una versión clara, tocando solo lo gris —un `invert()` de CSS habría
+vuelto azul el naranja de la marca—.
+
+#### Tres · El color del local, y el que de verdad se pinta
+
+El logo y el color se pedían en el paso 5 del alta y **no se podían cambiar
+nunca más**. Ahora están en Ajustes, con un interruptor para que ese color pinte
+el acento de toda la aplicación (migración `0026`, apagado de fábrica).
+
+Y aquí está lo que hace que esto sea un sistema y no un ajuste: **el color que se
+guarda no es el que se pinta**. El botón principal decía `text-charcoal` escrito a
+mano —porque el naranja de Estook es claro— y con un azul noche de marca el texto
+del botón se quedaba en 1,8:1. Es el aviso de Richi, palabra por palabra.
+
+De un color de marca salen **cuatro**, cada uno medido contra el fondo donde va a
+aparecer: el que pinta, el que se escribe encima, el tinte de una pastilla y el
+acento **dentro de la barra oscura** —que existe por «Deshacer», donde el fondo es
+otro—. Y hay colores que no admiten texto legible de ninguna clase: un gris del
+50 % da 3,95 con el blanco y 4,34 con el charcoal. Para esos, el acento se empuja
+hasta que sí, y **se dice en Ajustes** que se ha tocado.
+
+Está entero en la [decisión 0024](docs/decisiones/0024-el-color-del-local-pinta-la-app.md).
+
+#### Cuatro · El Panel, que ya tenía el color escrito y no lo usaba
+
+Tres cosas, y las tres son juntar lo que ya existía:
+
+- **Cada widget lleva el acento de su app.** Estaba escrito dos veces sin
+  juntarse: cada widget declara de qué app es, y B3 le da a cada app su color.
+  Ahora el Panel se lee de un vistazo —lo naranja es de Inventario— sin leer un
+  solo título. Se deduce del catálogo, así que un widget nuevo lo trae puesto.
+- **Una cabecera con la cara del local**: la banda de su color y su logo. Ese logo
+  se le pedía a la gente en el alta y no se enseñaba en ninguna parte.
+- **Y dos barras de proporción**, que son el único gráfico honesto que hay hoy:
+  cuántos de tus productos llevan precio —un producto sin precio cuenta cero en el
+  valor de la cámara, así que las dos cifras solo cuadran cuando la barra está
+  entera— y, en cada línea de «bajo mínimo», cuánto queda respecto de su mínimo,
+  que es lo que dice **por cuál empezar**. Una gráfica de verdad necesita una
+  serie, y las series llegan con M8 y M12: dibujar una línea ahora sería
+  inventarse los datos. Cuando lleguen, `Grafica.tsx` ya está.
+- **El equipo en pastillas con avatar**, en vez de una lista de una columna que en
+  un TPV se comía media pantalla. Y la zona de atención en dos columnas desde
+  1024 px, que es donde el Panel empezaba por debajo del pliegue.
+
+#### Y las tres redes que dejan esto blindado
+
+Son tres porque son tres cosas distintas, y ninguna sustituye a otra:
+
+| Qué mide                            | Dónde                 | Qué caza                                                       |
+| ----------------------------------- | --------------------- | -------------------------------------------------------------- |
+| La paleta de fábrica, los dos temas | `contraste.prueba.ts` | Que alguien aclare un gris «para que se vea mejor»             |
+| La aritmética del color de marca    | `color.prueba.ts`     | Doce colores elegidos para hacer daño, cuatro mínimos cada uno |
+| **El píxel**                        | `pantalla.spec.ts`    | Que un componente se haya quedado un color escrito a mano      |
+
+La tercera es la que faltaba en todo esto: pone cinco colores de marca desde
+Ajustes y **lee el contraste del botón principal ya pintado**. Se comprobó
+devolviendo el `text-charcoal` al botón, y se pone roja con «con #1f3a5f,
+"Conectar ahora"».
+
+---
+
 ## 5 · Cómo trabajamos
 
 1. **Primero fusionar, después aplicar a Supabase.** La base de datos nunca va
@@ -1824,36 +2064,76 @@ tendrá que cargarse aparte desde el principio, no al final.
     segunda y salieron quince rojos nuevos en sitios que no se habían tocado. Si una
     comprobación depende de algo que no dice, se escribe aparte.
 
+26. **El servidor puede estar bien y la pantalla mentir igual.** Las políticas de
+    M1 no dejaban ver el local de otro, y aun así se veía: la caché del navegador
+    guardaba la respuesta anterior sin el local en la clave. Una prueba contra la
+    API a pelo no habría encontrado nunca ese fallo, y la había. Lo que protege el
+    dato y lo que lo enseña son dos capas, y **las dos hay que probarlas**.
+27. **Una prueba nueva hay que verla fallar.** La de cambiar de local pasaba con el
+    arreglo quitado, porque navegaba con `page.goto` y eso recarga el documento y
+    se lleva la caché por delante: probaba algo que no era. Antes de dar una prueba
+    por buena, se quita el arreglo y **tiene que ponerse roja**.
+28. **Un mensaje bonito escrito antes de tiempo se queda como mentira.** «Se guarda
+    en el móvil y sube solo cuando vuelva la señal» y «lo que estabas escribiendo se
+    ha guardado» son los dos mensajes que uno querría poder dar, escritos antes de
+    que existiera lo que hace falta para darlos. Un catálogo de errores cerrado no
+    sirve de nada si lo que hay dentro no es verdad: **el texto se escribe cuando el
+    comportamiento existe**, y mientras tanto se dice lo que pasa.
+
+29. **Una paleta que cumple B8 puede seguir siendo una mala pantalla.** El fondo y
+    la tarjeta de B1 contrastaban 1,02:1, y ninguna prueba se quejaba: B8 habla de
+    texto sobre fondo, no de que una tarjeta parezca una tarjeta. Lo vio Richi en
+    el TPV de su cocina en dos segundos. Lo que se mide protege de lo que se mide,
+    y **hay que seguir mirándolo en el aparato en el que se usa** (regla 11).
+30. **Un color que alguien elige no se pinta: se ajusta y se pinta.** Dejar
+    personalizar el color y escribir el texto de encima a mano es cómo se acaba
+    con un botón ilegible. El color que se guarda es el de la persona; el que se
+    pinta sale de medirlo contra el fondo donde va a aparecer, y cuando ha habido
+    que tocarlo **se le dice**.
+31. **Lo que una aplicación no elige, no se elige por ella.** El gancho que decide
+    si se está pintando oscuro respondía «lo que diga el sistema» cuando nadie
+    había elegido nada. De las cuatro aplicaciones solo `app` tiene tema, así que
+    con el móvil en oscuro la web pública y la carta habrían pintado **el logotipo
+    claro sobre una página clara**. El mismo fallo del logotipo, al revés y en las
+    aplicaciones que ni siquiera tienen modo oscuro. Un valor por defecto que
+    adivina es un valor por defecto que se equivoca en algún sitio.
+32. **Un tema se hace en las fichas, nunca en las pantallas.** Con `dark:` en cada
+    clase, el modo oscuro está roto en la tercera pantalla que alguien escriba.
+    Redefiniendo las fichas, una pantalla nueva sale bien en los dos temas sin que
+    su autor se entere de que existen.
+
 ---
 
 ## 6 · Decisiones tomadas
 
 En [`docs/decisiones/`](docs/decisiones/):
 
-| Núm      | Qué                                                                 |
-| -------- | ------------------------------------------------------------------- |
-| **0001** | GitHub Pages en vez de Netlify, con la dirección de hoy             |
-| **0002** | La API en Hono sobre Supabase Edge Functions                        |
-| **0003** | M0 crea el esqueleto mínimo de alcances                             |
-| **0004** | El presupuesto de velocidad de B7, reconstruido                     |
-| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción   |
-| **0006** | El motor fiscal: sin regla, no se inventa un tipo                   |
-| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta   |
-| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages   |
-| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`    |
-| **0010** | **El login es nuestro, no de Supabase Auth**                        |
-| **0011** | **Las pruebas de extremo a extremo levantan la API de verdad**      |
-| **0012** | **El producto nace en M6, y M5 le deja el diccionario**             |
-| **0013** | **Google Places se aplaza a M23**                                   |
-| **0014** | **Un módulo reacciona a otro en la misma transacción**              |
-| **0015** | **Fogón es una burbuja que va contigo, no una pestaña por app**     |
-| **0016** | **El reloj es `pg_cron` llamando a nuestra API**                    |
-| **0017** | **Cómo avisa Estook: pantalla, correo con Resend y push**           |
-| **0018** | **Cada app tiene destinos, y cada destino sus vistas**              |
-| **0019** | **El Panel de cada uno vive en el servidor, por persona y aparato** |
-| **0020** | **Un catálogo de acciones, y una acción es una dirección**          |
-| **0021** | **El producto se mide en una unidad; los gramajes son de la ficha** |
-| **0022** | **El reparto tiene sitio antes que conexión; Uber Eats el primero** |
+| Núm      | Qué                                                                   |
+| -------- | --------------------------------------------------------------------- |
+| **0001** | GitHub Pages en vez de Netlify, con la dirección de hoy               |
+| **0002** | La API en Hono sobre Supabase Edge Functions                          |
+| **0003** | M0 crea el esqueleto mínimo de alcances                               |
+| **0004** | El presupuesto de velocidad de B7, reconstruido                       |
+| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción     |
+| **0006** | El motor fiscal: sin regla, no se inventa un tipo                     |
+| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta     |
+| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages     |
+| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`      |
+| **0010** | **El login es nuestro, no de Supabase Auth**                          |
+| **0011** | **Las pruebas de extremo a extremo levantan la API de verdad**        |
+| **0012** | **El producto nace en M6, y M5 le deja el diccionario**               |
+| **0013** | **Google Places se aplaza a M23**                                     |
+| **0014** | **Un módulo reacciona a otro en la misma transacción**                |
+| **0015** | **Fogón es una burbuja que va contigo, no una pestaña por app**       |
+| **0016** | **El reloj es `pg_cron` llamando a nuestra API**                      |
+| **0017** | **Cómo avisa Estook: pantalla, correo con Resend y push**             |
+| **0018** | **Cada app tiene destinos, y cada destino sus vistas**                |
+| **0019** | **El Panel de cada uno vive en el servidor, por persona y aparato**   |
+| **0020** | **Un catálogo de acciones, y una acción es una dirección**            |
+| **0021** | **El producto se mide en una unidad; los gramajes son de la ficha**   |
+| **0022** | **El reparto tiene sitio antes que conexión; Uber Eats el primero**   |
+| **0023** | **Fogón nunca arma su contexto en el navegador: lo arma el servidor** |
+| **0024** | **El color del local pinta la app, y hay dos temas**                  |
 
 Otras, sin fichero propio:
 
@@ -1999,5 +2279,5 @@ conciliada con esa diferencia señalada.
 
 **Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase. Los tres primeros pasan hoy —706, 436 con los tres navegadores y 59 de 65—; el
+Supabase. Los tres primeros pasan hoy —726, 457 con los tres navegadores y 59 de 65—; el
 cuarto, cuando se aplique la `0025` y se despliegue la API.

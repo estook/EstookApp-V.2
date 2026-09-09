@@ -38,7 +38,11 @@ export interface BotonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>
 
 const TONOS: Record<TonoDeBoton, string> = {
   principal:
-    'bg-naranja text-charcoal border border-naranja hover:brightness-95 active:brightness-90 shadow-s1',
+    // `text-sobre-naranja` y no `text-charcoal`. Con el naranja de fábrica son el
+    // mismo color; con el color de un local que haya encendido «usar mi color»,
+    // no: sobre un azul noche el charcoal no se lee, y ahí es donde se pierde el
+    // texto del botón principal. La ficha la calcula `color.ts`, midiendo.
+    'bg-naranja text-sobre-naranja border border-naranja hover:brightness-95 active:brightness-90 shadow-s1',
   secundario:
     'bg-superficie text-texto border border-borde-fuerte hover:bg-fondo active:bg-borde/40',
   texto:

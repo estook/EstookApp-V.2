@@ -42,12 +42,22 @@ export const entradaColor = z
       .toLowerCase()
       .regex(/^#[0-9a-f]{6}$/, 'Un color se escribe así: #ff7a00.')
       .nullable(),
+    /**
+     * Si ese color pinta la aplicación entera, y no solo la cabecera (0026).
+     *
+     * Opcional: el alta manda el color sin decir nada del interruptor, y no
+     * puede encenderlo sin querer. Quien no lo manda, lo deja como estaba.
+     */
+    en_la_app: z.boolean().optional(),
   })
   .strict();
 
 export type EntradaColor = z.infer<typeof entradaColor>;
 
-export const guardarColorDeMarca = comando<EntradaColor, { color: string | null }>({
+export const guardarColorDeMarca = comando<
+  EntradaColor,
+  { color: string | null; enLaApp: boolean }
+>({
   nombre: 'guardar_color_de_marca',
   entrada: entradaColor,
   exige: 'app.ajustes',
@@ -56,20 +66,28 @@ export const guardarColorDeMarca = comando<EntradaColor, { color: string | null 
     const localId = elLocalDeLaSesion(contexto);
     const organizacionId = laOrganizacionDeLaSesion(contexto);
 
-    await contexto.sql`
-      update estook.local set color_de_marca = ${entrada.color} where id = ${localId}
+    // Si no viene el interruptor, se queda como estaba: `coalesce` con lo que
+    // hay en la fila. El alta manda solo el color y no puede encenderlo sola.
+    const filas = await contexto.sql<{ color_en_la_app: boolean }[]>`
+      update estook.local
+         set color_de_marca = ${entrada.color},
+             color_en_la_app = coalesce(${entrada.en_la_app ?? null}, color_en_la_app)
+       where id = ${localId}
+      returning color_en_la_app
     `;
+    const enLaApp = filas[0]?.color_en_la_app ?? false;
 
     await contexto.sql`
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'local', ${localId},
-        ${localId}::uuid, null, ${JSON.stringify({ color: entrada.color })}::jsonb, null
+        ${localId}::uuid, null,
+        ${JSON.stringify({ color: entrada.color, enLaApp })}::jsonb, null
       )
     `;
 
     await respondido(contexto, localId, 'marca');
 
-    return { color: entrada.color };
+    return { color: entrada.color, enLaApp };
   },
 });
 

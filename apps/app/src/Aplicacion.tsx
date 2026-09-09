@@ -1,7 +1,13 @@
+import { Suspense, lazy } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HashRouter, Link, Route, Routes } from 'react-router-dom';
-import { Cargando, EstadoVacio, ProveedorDeDeshacer } from '@estook/ui';
-import { ElAlta } from './alta/ElAlta.tsx';
+import {
+  Cargando,
+  EstadoVacio,
+  ProveedorDeDeshacer,
+  usarElColorDeLaApp,
+  usarTema,
+} from '@estook/ui';
 import { Esqueleto } from './Esqueleto.tsx';
 import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Panel } from './panel/Panel.tsx';
@@ -16,6 +22,23 @@ import {
   PonerMiContrasena,
 } from './sesion/Puerta.tsx';
 import { ProveedorDeSesion, usarSesion } from './sesion/Sesion.tsx';
+
+/**
+ * El alta, **aparte del paquete inicial**.
+ *
+ * Son dos mil doscientas lineas —seis pasos, la importacion del equipo, el
+ * recorte del logo— que se usan **una vez por local, y nunca mas**. Iban dentro
+ * del paquete que se descarga al abrir la aplicacion, asi que todo el mundo se
+ * bajaba el alta cada manana para no verla.
+ *
+ * Y el momento en que se necesita es el unico en el que da igual esperar medio
+ * segundo: quien acaba de crear su negocio esta empezando algo, no mirando si
+ * hay algo bajo minimo antes del servicio.
+ */
+const ElAlta = lazy(async () => {
+  const modulo = await import('./alta/ElAlta.tsx');
+  return { default: modulo.ElAlta };
+});
 
 /**
  * La aplicacion entera (M3, con la puerta de M4).
@@ -57,13 +80,26 @@ const cache = new QueryClient({
 });
 
 export function Aplicacion() {
+  // El tema, lo primero de todo y **fuera de la sesión**: la pantalla de entrar
+  // también se ve, y verla en claro y que se vuelva oscura al entrar sería
+  // exactamente el parpadeo que este gancho existe para evitar.
+  usarTema();
+
   return (
     <QueryClientProvider client={cache}>
-      <ProveedorDeSesion>
-        <ProveedorDeDeshacer>
+      {/*
+        Deshacer **por fuera** de la sesion, y no al reves.
+
+        La barra de abajo es de la aplicacion entera y no sabe quien ha entrado,
+        asi que puede vivir mas arriba. Y tiene que vivir mas arriba desde que la
+        sesion la usa: cambiar de local se avisa por esa barra cuando falla, y un
+        proveedor no puede leer a uno que tiene dentro.
+      */}
+      <ProveedorDeDeshacer>
+        <ProveedorDeSesion>
           <Puerta />
-        </ProveedorDeDeshacer>
-      </ProveedorDeSesion>
+        </ProveedorDeSesion>
+      </ProveedorDeDeshacer>
     </QueryClientProvider>
   );
 }
@@ -89,6 +125,19 @@ export function Aplicacion() {
  */
 function Puerta() {
   const { yo, cargando, hayApi } = usarSesion();
+
+  /*
+    El color del local, si lo tiene encendido (migración 0026).
+
+    Va aquí y no más arriba porque hasta que no se sabe quién ha entrado no se
+    sabe en qué local está, y el color es del local. Antes de eso —en la pantalla
+    de entrar— la aplicación es naranja, que es lo correcto: ahí todavía no eres
+    de ningún sitio.
+
+    Y va **antes de los `if`**, que en React no es un detalle: un gancho no puede
+    quedarse sin llamar según por dónde salga la función.
+  */
+  usarElColorDeLaApp(yo?.local?.colorEnLaApp === true ? yo.local.colorDeMarca : null);
 
   // Sin API no hay a quien preguntar. Se dice, en la propia pantalla de entrar.
   if (!hayApi) return <Entrar />;
@@ -118,7 +167,19 @@ function Puerta() {
   // La quinta comprobacion, que M4 dejo apuntada y M5 llena: «si no ha terminado
   // el onboarding, sigue por donde ibas». Hasta hoy este destino existia en el
   // dominio y **caia al Panel**, porque no habia alta a la que llevar.
-  if (yo.destino === 'onboarding') return <ElAlta />;
+  if (yo.destino === 'onboarding') {
+    return (
+      <Suspense
+        fallback={
+          <main className="flex min-h-dvh items-center justify-center bg-fondo">
+            <Cargando que="el alta de tu local" />
+          </main>
+        }
+      >
+        <ElAlta />
+      </Suspense>
+    );
+  }
 
   return (
     <HashRouter>

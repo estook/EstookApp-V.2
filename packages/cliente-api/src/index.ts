@@ -1,3 +1,4 @@
+import { ERRORES } from '@estook/dominio';
 import { CABECERA_CORRELACION, nuevaCorrelacionId, type Registro } from '@estook/utiles';
 
 /**
@@ -68,12 +69,16 @@ export interface ClienteApi {
   ): Promise<Respuesta<T>>;
 }
 
-const ERROR_SIN_RED: ErrorDeLaApi = {
-  codigo: 'sin_conexion',
-  quePasa: 'No hay conexión.',
-  queSePuedeHacer: 'Lo que has apuntado se guarda en el móvil y sube solo cuando vuelva la señal.',
-  boton: null,
-};
+/**
+ * Cuando la peticion no llega ni a salir.
+ *
+ * **Se coge del catalogo, no se escribe aqui.** Estaba copiado a mano, con su
+ * propio texto, y las dos copias se separaron: la del catalogo decia una cosa y
+ * esta otra, y la que veia la gente era esta. Un texto con dos duenos acaba
+ * diciendo dos cosas (regla 6), y el catalogo de errores es cerrado a proposito:
+ * «un error que no este aqui no existe».
+ */
+const ERROR_SIN_RED: ErrorDeLaApi = ERRORES.sin_conexion;
 
 export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
   const pedir = opciones.pedir ?? fetch;

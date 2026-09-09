@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwind from '@tailwindcss/vite';
+import { laPoliticaDeSeguridad } from '../../herramientas/politica-de-seguridad.ts';
 
 /**
  * Estook · carta
@@ -24,7 +25,17 @@ export default defineConfig(({ mode }) => {
   return {
     base,
     envDir: RAIZ,
-    plugins: [react(), tailwind()],
+    plugins: [
+      react(),
+      tailwind(),
+      // La politica de seguridad de contenido. Se calcula al construir porque
+      // depende de donde este la API, que se decide al construir. Vive entera en
+      // herramientas/politica-de-seguridad.mjs, que es su unico dueno.
+      laPoliticaDeSeguridad({
+        direccionDeLaApi: variables['VITE_API_URL'] ?? '',
+        enDesarrollo: mode !== 'production',
+      }),
+    ],
     build: {
       outDir: 'dist',
       sourcemap: true,

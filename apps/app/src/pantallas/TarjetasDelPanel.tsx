@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { PASOS_DEL_ALTA } from '@estook/dominio';
 import { puedeEditar, puedeVer } from '@estook/permisos';
-import { Aviso, Boton, Cargando, Etiqueta, Lista, Tarjeta, clases } from '@estook/ui';
+import { Avatar, Aviso, Boton, Cargando, Etiqueta, Tarjeta, clases } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { FalloDeLaApi } from '../datos/FalloDeLaApi.ts';
 import { LoQueLlegaDespues } from './LoQueLlegaDespues.tsx';
@@ -422,7 +422,7 @@ function TuEquipo() {
   return (
     <Tarjeta
       titulo={gente.length === 1 ? '1 persona' : `${gente.length} personas`}
-      origen="Quién tiene acceso a este local"
+      origen="Quién tiene acceso · los fichajes y las horas llegan en M15"
       accion={
         <Boton
           tono="secundario"
@@ -434,42 +434,44 @@ function TuEquipo() {
         </Boton>
       }
     >
-      <Lista
-        titulo="Tu equipo"
-        elementos={gente.slice(0, 6).map((quien) => ({
-          clave: quien.personaId,
-          titulo: (
-            <span className="flex flex-wrap items-center gap-e2">
-              <span>
-                {quien.nombre}
-                {quien.apellidos === null ? '' : ` ${quien.apellidos}`}
+      {/*
+        En pastillas y no en una lista de una columna.
+
+        Con una lista, cuatro personas ocupaban media pantalla de un TPV y el
+        Panel —que es lo que se viene a mirar— empezaba por debajo del pliegue.
+        Aquí lo que hace falta saber de un vistazo es **quién trabaja aquí y a
+        quién le falta entrar por primera vez**, y eso cabe en una fila por
+        persona con su cara y su rol debajo.
+      */}
+      <ul className="flex flex-wrap gap-e2">
+        {gente.slice(0, 8).map((quien) => {
+          const comoSeLlama = `${quien.nombre}${quien.apellidos === null ? '' : ` ${quien.apellidos}`}`;
+          return (
+            <li
+              key={quien.personaId}
+              className="flex min-w-0 items-center gap-e2 rounded-redondo border border-borde bg-fondo py-e1 pl-e1 pr-e3"
+            >
+              <Avatar nombre={comoSeLlama} tamano={28} />
+              <span className="min-w-0">
+                <span className="block truncate text-secundario font-medium">{comoSeLlama}</span>
+                <span className="block truncate text-etiqueta text-texto-suave">
+                  {quien.rolNombre}
+                </span>
               </span>
-              {quien.estado === 'sin_estrenar' && (
-                <Etiqueta tono="atencion">todavía no ha entrado</Etiqueta>
-              )}
-            </span>
-          ),
-          // «Hace tres días» necesitaría preguntarle la hora al navegador, y la
-          // fecha la decide el servidor (regla 10). Lo que sí es un hecho, y es lo
-          // que hace falta saber, es si esa persona ha llegado a entrar: sin eso,
-          // quien invita a cinco el lunes no sabe el viernes a quién hay que
-          // volver a darle el PIN.
-          detalle:
-            quien.estado === 'sin_estrenar'
-              ? `${quien.rolNombre} · su PIN sigue valiendo`
-              : quien.rolNombre,
-        }))}
-        cuandoNoHay={<span className="text-texto-suave">Todavía no hay nadie más.</span>}
-      />
+              {/*
+                Y quien no ha entrado todavía, con su punto: sin esto, quien
+                invita a cinco el lunes no sabe el viernes a quién hay que volver
+                a darle el PIN. Va con texto y no solo con color (B1).
+              */}
+              {quien.estado === 'sin_estrenar' && <Etiqueta tono="atencion">sin estrenar</Etiqueta>}
+            </li>
+          );
+        })}
+      </ul>
 
-      {gente.length > 6 && (
-        <p className="mt-e2 text-secundario text-texto-suave">Y {gente.length - 6} más.</p>
+      {gente.length > 8 && (
+        <p className="mt-e2 text-secundario text-texto-suave">Y {gente.length - 8} más.</p>
       )}
-
-      <p className="mt-e3 text-secundario text-texto-suave">
-        Quién está fichado ahora mismo y las horas de cada uno llegan con los fichajes, en el módulo
-        15. Poner aquí un cero mientras tanto sería inventarse una cifra.
-      </p>
     </Tarjeta>
   );
 }

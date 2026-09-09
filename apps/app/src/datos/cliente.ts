@@ -32,8 +32,17 @@ export const hayApi = DIRECCION_DE_LA_API !== '';
  *     golpe toda una familia de ataques que con cookies hay que ir tapando.
  *
  * Lo que se paga a cambio: si alguien consiguiera ejecutar JavaScript dentro de
- * la aplicacion, podria leerlo. Es real, y es la razon de que no haya ni un
- * `dangerouslySetInnerHTML` en todo el proyecto.
+ * la aplicacion, podria leerlo. Contra eso hay dos cosas, y hasta hace poco solo
+ * habia una:
+ *
+ *   · **No se pinta HTML de nadie.** El unico `dangerouslySetInnerHTML` del
+ *     proyecto esta en `packages/iconos`, y lo que pinta son los SVG de Lucide
+ *     que estan en el repositorio: no pasa por ahi ni un dato de una persona.
+ *   · **Y una politica de seguridad de contenido con `script-src 'self'`**, que
+ *     la pone el navegador y no depende de que el codigo de manana siga siendo
+ *     igual de cuidadoso. Vive en `herramientas/politica-de-seguridad.ts`.
+ *
+ * Lo primero es una promesa; lo segundo es una regla. Hacia falta lo segundo.
  *
  * Se guarda por aparato, como el tamano de letra, y dentro de un `try` porque en
  * navegacion privada escribir puede fallar.

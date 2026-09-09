@@ -1,7 +1,7 @@
+import { Suspense, lazy } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HashRouter, Link, Route, Routes } from 'react-router-dom';
 import { Cargando, EstadoVacio, ProveedorDeDeshacer } from '@estook/ui';
-import { ElAlta } from './alta/ElAlta.tsx';
 import { Esqueleto } from './Esqueleto.tsx';
 import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Panel } from './panel/Panel.tsx';
@@ -16,6 +16,23 @@ import {
   PonerMiContrasena,
 } from './sesion/Puerta.tsx';
 import { ProveedorDeSesion, usarSesion } from './sesion/Sesion.tsx';
+
+/**
+ * El alta, **aparte del paquete inicial**.
+ *
+ * Son dos mil doscientas lineas —seis pasos, la importacion del equipo, el
+ * recorte del logo— que se usan **una vez por local, y nunca mas**. Iban dentro
+ * del paquete que se descarga al abrir la aplicacion, asi que todo el mundo se
+ * bajaba el alta cada manana para no verla.
+ *
+ * Y el momento en que se necesita es el unico en el que da igual esperar medio
+ * segundo: quien acaba de crear su negocio esta empezando algo, no mirando si
+ * hay algo bajo minimo antes del servicio.
+ */
+const ElAlta = lazy(async () => {
+  const modulo = await import('./alta/ElAlta.tsx');
+  return { default: modulo.ElAlta };
+});
 
 /**
  * La aplicacion entera (M3, con la puerta de M4).
@@ -59,11 +76,19 @@ const cache = new QueryClient({
 export function Aplicacion() {
   return (
     <QueryClientProvider client={cache}>
-      <ProveedorDeSesion>
-        <ProveedorDeDeshacer>
+      {/*
+        Deshacer **por fuera** de la sesion, y no al reves.
+
+        La barra de abajo es de la aplicacion entera y no sabe quien ha entrado,
+        asi que puede vivir mas arriba. Y tiene que vivir mas arriba desde que la
+        sesion la usa: cambiar de local se avisa por esa barra cuando falla, y un
+        proveedor no puede leer a uno que tiene dentro.
+      */}
+      <ProveedorDeDeshacer>
+        <ProveedorDeSesion>
           <Puerta />
-        </ProveedorDeDeshacer>
-      </ProveedorDeSesion>
+        </ProveedorDeSesion>
+      </ProveedorDeDeshacer>
     </QueryClientProvider>
   );
 }
@@ -118,7 +143,19 @@ function Puerta() {
   // La quinta comprobacion, que M4 dejo apuntada y M5 llena: «si no ha terminado
   // el onboarding, sigue por donde ibas». Hasta hoy este destino existia en el
   // dominio y **caia al Panel**, porque no habia alta a la que llevar.
-  if (yo.destino === 'onboarding') return <ElAlta />;
+  if (yo.destino === 'onboarding') {
+    return (
+      <Suspense
+        fallback={
+          <main className="flex min-h-dvh items-center justify-center bg-fondo">
+            <Cargando que="el alta de tu local" />
+          </main>
+        }
+      >
+        <ElAlta />
+      </Suspense>
+    );
+  }
 
   return (
     <HashRouter>

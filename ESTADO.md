@@ -1461,9 +1461,13 @@ cualquier pantalla.
 píxeles.** Fue el precio de tapar el agujero de M6 trayéndose las cinco de
 escritorio tal cual: lo que en un ordenador es una fila cómoda, en un teléfono es
 una fila donde se pulsa lo de al lado, y el nombre del local se quedaba sin sitio
-para leerse. Ahora son cuatro: dónde estás, buscar, **la bandeja** —los avisos y el
-chat comparten puerta, porque las dos son cosas que alguien te manda— y el avatar.
-Fogón no está porque en móvil Fogón es la burbuja (decisión 0015).
+para leerse. Se dejaron en cuatro: dónde estás, buscar, **la bandeja** —los avisos y
+el chat comparten puerta, porque las dos son cosas que alguien te manda— y el
+avatar.
+
+> **Esto cambió en M6½ · segunda tanda.** El chat y Fogón volvieron arriba, y lo
+> que se fue fue Ajustes, que estaba dos veces. La de hoy está más abajo, en «En el
+> móvil se habían ido tres botones cuando sobraba uno».
 
 **8 · El alta de un producto enseñaba ruido antes de escribir nada.** Abrir la hoja
 consultaba el catálogo con la casilla vacía, así que lo primero que se veía eran

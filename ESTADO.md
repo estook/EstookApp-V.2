@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 8 de septiembre de 2026 · M6½, la capa de producto
+Última actualización: 9 de septiembre de 2026 · M6½, segunda tanda
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. Nunca puede afirmar algo que no sea cierto en ese momento.
@@ -9,21 +9,22 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                             |
-| -------------- | ------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6** ✓ · **M6½** construido y **sin cerrar** (falta el móvil)                    |
-| **Siguiente**  | **M7** · Proveedores y compras                                                              |
-| **Pruebas**    | 706 unitarias y de base de datos · 288 de extremo a extremo · **91 % del catálogo** (59/65) |
-| **Rama**       | M6½ en `m6-medio-la-capa-de-producto`, **sin fusionar**                                     |
-| **Publicado**  | Base en la `0024`; **la `0025` está escrita y sin aplicar**. API **por detrás**             |
-| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                |
-| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local       |
+|                |                                                                                                             |
+| -------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas, la segunda **sin fusionar**                                      |
+| **Siguiente**  | **M7** · Proveedores y compras                                                                              |
+| **Pruebas**    | 706 unitarias y de base de datos · 294 de extremo a extremo, 436 con Safari · **91 % del catálogo** (59/65) |
+| **Rama**       | La segunda tanda en `m6-medio-segunda-tanda`. La primera, fusionada (PR #37)                                |
+| **Publicado**  | Base en la `0025`, **aplicada**. API desplegada con la primera tanda                                        |
+| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                                |
+| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local                       |
 
 > **Lo que hay que hacer, en orden, está en**
-> [`docs/pasos-para-cerrar-m6-medio.md`](docs/pasos-para-cerrar-m6-medio.md). El
-> paso 3 es el que se olvida: **la API se despliega a mano**, y M6½ trae tres
-> operaciones nuevas. Sin ese paso, el Panel sale vacío y Movimientos dice «Eso ya
-> no está», y por fuera parece que se ha roto todo.
+> [`docs/pasos-para-cerrar-m6-medio.md`](docs/pasos-para-cerrar-m6-medio.md).
+> De la primera tanda ya están hechos los tres pasos de máquina: fusionada, la
+> `0025` aplicada —25 de 25 migraciones, 39 tablas— y la API desplegada. **La
+> segunda tanda no trae ninguna operación nueva**, así que solo hay que fusionarla:
+> ni migración ni despliegue de API.
 
 ---
 
@@ -338,7 +339,7 @@ encendido y el repositorio enlazado.
 
 | Aplicación      | Peso inicial | De los cuales tipografía |
 | --------------- | ------------ | ------------------------ |
-| `app`           | **241,7 KB** | 106,1 KB                 |
+| `app`           | **243,4 KB** | 106,1 KB                 |
 | `admin`         | 184,3 KB     | 106,1 KB                 |
 | `web` · `carta` | 164,6 KB     | 106,1 KB                 |
 
@@ -350,7 +351,7 @@ habrían sido 17 si no se hubieran apartado del paquete inicial —como la gráf
 desde M3— la ficha de producto, que son 1.300 líneas que no hacen falta hasta que
 alguien abre un producto, y el libro de movimientos, que es uno de cuatro destinos.
 
-**Quedan 8,3 KB de margen.** Con Escandallos, Carta, Calendario, Equipo, Servicio,
+**Quedan 6,6 KB de margen.** Con Escandallos, Carta, Calendario, Equipo, Servicio,
 Negocio, Cuaderno y Fogón por construir, **el siguiente módulo tiene que cargarse
 aparte desde el principio**, no al terminar. No bloquea —la referencia se mide y se
 informa, y «rendimiento antes que tamaño»— pero a partir de aquí ya no hay sitio
@@ -1460,9 +1461,13 @@ cualquier pantalla.
 píxeles.** Fue el precio de tapar el agujero de M6 trayéndose las cinco de
 escritorio tal cual: lo que en un ordenador es una fila cómoda, en un teléfono es
 una fila donde se pulsa lo de al lado, y el nombre del local se quedaba sin sitio
-para leerse. Ahora son cuatro: dónde estás, buscar, **la bandeja** —los avisos y el
-chat comparten puerta, porque las dos son cosas que alguien te manda— y el avatar.
-Fogón no está porque en móvil Fogón es la burbuja (decisión 0015).
+para leerse. Se dejaron en cuatro: dónde estás, buscar, **la bandeja** —los avisos y
+el chat comparten puerta, porque las dos son cosas que alguien te manda— y el
+avatar.
+
+> **Esto cambió en M6½ · segunda tanda.** El chat y Fogón volvieron arriba, y lo
+> que se fue fue Ajustes, que estaba dos veces. La de hoy está más abajo, en «En el
+> móvil se habían ido tres botones cuando sobraba uno».
 
 **8 · El alta de un producto enseñaba ruido antes de escribir nada.** Abrir la hoja
 consultaba el catálogo con la casilla vacía, así que lo primero que se veía eran
@@ -1487,6 +1492,142 @@ siendo su vista, para poder repasarlos de un golpe.
 Lo cazó una prueba de M4 que llevaba meses en verde, y se cayó en cuanto la lista
 dejó de enseñarlo todo mezclado.
 
+#### La segunda tanda · lo que salió de mirarlo desplegado
+
+La primera tanda se fusionó, se aplicó la `0025` y se desplegó la API. Y entonces
+Richi lo miró funcionando, que es la regla 11, y salieron **seis cosas**. Cuatro
+eran fallos y dos eran que me había pasado de frenada.
+
+**1 · La personalización del Panel se perdía. Siempre.** «Todo lo que personalices,
+si refrescas o te mueves de página y vas atrás, se quita y vuelve a como estaba por
+defecto.»
+
+Eran **tres agujeros en el mismo sitio**, y conviene tenerlos escritos porque los
+tres son de la misma familia —guardar tarde y no mirar quién es el dueño del dato—:
+
+- **El guardado con retraso se aplicaba a todo.** Los 800 ms existen porque
+  arrastrar un widget produce veinte reordenaciones; pero **quitar, añadir o
+  cambiar el tamaño producen una**. Esperar abría una ventana en la que recargar o
+  salir del Panel perdía el cambio — y salir del Panel justo después de colocar
+  algo es lo normal: se coloca y uno se va a mirar lo que ha colocado.
+- **Al guardar no se tocaba la caché**, así que seguía con lo viejo **y con la
+  versión vieja**. Volver al Panel leía esa caché y pisaba lo tuyo; y el siguiente
+  guardado mandaba una versión que ya no era la de la fila, así que el servidor
+  contestaba «lo cambió otra persona» —contra ti mismo— y **dejaba de guardar del
+  todo**.
+- **Y al desmontar la pantalla se cancelaba el reloj y se tiraba lo pendiente.**
+
+Ahora la caché es el único dueño de lo que se pinta (regla 6), los gestos sueltos
+se guardan al momento, el retraso se queda solo para el arrastre —y se manda al
+soltar el dedo—, **solo hay un guardado en vuelo** con los demás en cola, y lo
+pendiente se manda al desmontar y al cerrar la pestaña. Y «guardando…» dura hasta
+que la cola está vacía, no hasta que vuelve la primera petición.
+
+**Ninguna prueba lo vio**, y la razón es la de siempre: la que había pulsaba
+«Listo» antes de recargar, y «Listo» guarda al momento. **Probaba el camino
+cómodo.** Ahora hay tres que hacen lo que hace una persona: tocar algo y **irse**.
+
+**2 · En el móvil se habían ido tres botones cuando sobraba uno.** «Solo quería
+eliminar ajustes de arriba en móvil para que no se vea doble.» Se quitaron Ajustes,
+el chat y Fogón. Y en el ordenador se quitó Ajustes, que ahí sí hacía falta.
+
+La lección es pequeña y cara: **se arregla lo que se ha visto, no lo que uno deduce
+de lo que ha visto**. El argumento para quitar Ajustes del ordenador —«abre la misma
+pantalla que el avatar»— era medio bueno y la conclusión mala: en un ordenador hay
+sitio de sobra, y quien lleva un local entra en Ajustes muchas veces al día.
+
+Ahora, y está en B5: **móvil** dónde estás · buscar · avisos · chat · Fogón ·
+avatar. **Escritorio** lo mismo **más Ajustes**. Los botones se quedan en el toque
+mínimo de 44 px y lo que cede es el nombre del local, que se recorta.
+
+**3 · El alta de un producto preguntaba tres cosas que no son del producto.**
+«Preguntas cosas como "cómo lo compras", "cuánto trae", "unidad con la que
+cocinas"… no tienen sentido.»
+
+Ahora pregunta **cómo se llama, en qué se mide y lo que cuesta esa medida**, y si
+eliges kilos la casilla dice «lo que te cuesta el kg». Lo del envase está plegado
+debajo y se abre solo cuando el catálogo propone uno. Por debajo es lo mismo: en el
+modo sencillo el factor es 1, así que el precio del kilo **es** el coste por unidad
+de uso, y no hay un segundo camino de datos ([decisión 0021](docs/decisiones/0021-el-producto-se-mide-en-una-unidad.md)).
+
+Y la razón de fondo, que es la que importa para lo que viene: **cuántos gramos
+lleva una ración es de la ficha técnica**, no del producto. Eso es M9, y ahora no
+hay que preguntarle a nadie dos veces en qué unidad cocina.
+
+**4 · Y el formulario tenía «Cómo lo compras» dos veces**, una como título de
+sección y otra como etiqueta de la casilla de al lado. Lo puse yo en la primera
+tanda agrupando el formulario, y se ve en la captura sin tener que buscarlo.
+
+**5 · Delivery no estaba en ninguna parte.** Ahora Servicio tiene su destino
+`Delivery`, con Uber Eats por su nombre y su icono, y el Panel su widget en el
+catálogo. **Sin ningún botón de conectar**: la integración es M29
+([decisión 0022](docs/decisiones/0022-el-reparto-tiene-sitio-antes-que-conexion.md)).
+
+Para que cupiera sin pasar de cuatro destinos, **el cierre pasa a ser una vista de
+la jornada**, que es lo que es: cerrar la jornada es el final de la jornada, no otro
+sitio.
+
+**6 · Y la rueda salía con un cuadrado naranja alrededor.** Es el anillo de foco de
+B8: la rueda se abre y la aplicación le da el foco al lienzo, porque es quien
+escucha las flechas, y en iOS eso hace que `:focus-visible` se cumpla aunque se haya
+abierto con el dedo. Un rectángulo de 2 px alrededor de una rueda redonda.
+
+No se arregla apagándolo —«foco visible siempre» es B8— sino mirando **con qué se
+está manejando la aplicación**, que es lo que el navegador deja de saber cuando el
+foco lo pone el código. Con el dedo no se pinta; con el teclado sí, y redondo.
+
+#### Y el rojo de la primera fusión
+
+`alta.spec.ts` se cayó al fusionar, con «Hola, Pablo» donde esperaba «Cinco
+pantallas y a trabajar». **La prueba estaba escrita fuera del bloque en serie** que
+existe justo para eso: el alta de Casa Lola es una sola, tres pruebas de ese bloque
+la **terminan**, y esta entraba mientras otra la daba por acabada. La cabecera del
+bloque lo decía con todas las letras —«comparten un local y no se puede compartir a
+la vez»— y la prueba se escribió al lado, no dentro.
+
+Y las del Panel tenían el mismo problema repartido en tres bloques distintos: entre
+bloques se corre en paralelo igual. Ahora están todas en uno, de una en una, y
+ningún otro fichero toca el Panel de la gerente.
+
+#### Y tres rojos más, ninguno del producto
+
+Con la segunda tanda ya escrita, la tanda entera —**tres navegadores**, que es lo
+que corre en integración continua— tardó cuatro intentos en salir verde. Ninguno de
+los tres fallos era de la aplicación, y los tres merecen quedar escritos porque son
+tres formas distintas de que **el banco de pruebas mienta**.
+
+**Uno · pruebas sin pantalla corriendo tres veces.** `catalogo-vivo.spec.ts` son
+diez pruebas que hablan con la API a pelo, sin abrir ninguna pantalla. Se corrían en
+los tres proyectos: al servidor le da igual quién le hable, así que no comprobaban
+nada nuevo y **triplicaban** las escrituras contra la única base de datos de
+pruebas. De ahí salían «el segundo factor» y «las sesiones abiertas» en rojo un día
+sí y otro no: tres copias de la misma prueba activando y quitando el segundo factor
+de la misma persona a la vez. Ahora se corren una vez, en `escritorio`, dicho en
+`playwright.config.ts`. **Una prueba que no toca pantalla se corre una vez.**
+
+**Dos · la API de pruebas cerraba las conexiones por debajo.** Node cierra las
+conexiones reutilizables **a los cinco segundos** de estar quietas, y aquí están
+quietas mucho: las peticiones van de una en una porque PGlite es una sola conexión.
+Con las pruebas en paralelo había clientes esperando turno con el socket abierto;
+cuando les tocaba, mandaban por un socket recién cerrado y se llevaban un
+`ECONNRESET`, que en la prueba sale como «no se ha podido entrar» o como un tiempo
+agotado, **sin ninguna relación con lo que se estaba probando**. Dos minutos de
+espera, y un `clientError` que contesta al socket roto en vez de tumbar el proceso.
+
+**Tres · una comprobación que hacía dos cosas sin decirlo.** Doce sitios esperaban
+a entrar así: «el título de nivel 1 **no** pone "Entra en Estook"». Y
+`not.toHaveText` exige que haya **exactamente un** título: en el hueco en que uno se
+va y el siguiente no ha llegado —«Cargando tu sesión», que no lleva ninguno— no es
+que no se cumpla, es que **se cae**. En una máquina rápida ese hueco no se pilla
+nunca; en Safari y con las tres tandas a la vez, sí.
+
+Lo caro fue lo siguiente: al cambiarla por «cuenta cero», la tanda salió **peor**,
+con quince rojos en el buscador y en los atajos. Porque la comprobación vieja hacía
+**dos** cosas —que el título de entrar no esté **y que haya un título nuevo**— y al
+arreglar la primera se perdió la segunda: las pruebas seguían desde «Cargando tu
+sesión» y Ctrl+K no abría nada, porque los atajos todavía no escuchaban. Ahora van
+las dos escritas, que es lo que había que haber hecho desde el principio.
+
 #### Cómo se comprueba que M6½ está terminado
 
 No tiene ficha en el Plan, así que su criterio es este:
@@ -1499,12 +1640,18 @@ No tiene ficha en el Plan, así que su criterio es este:
 | Un destino sin construir dice en qué módulo llega  | Se abre `/carta/menus` a mano y tiene que poner «M10 · Carta, menús y análisis»                |
 | El libro contesta, y el filtro por tipo filtra     | Se le pregunta a la API a pelo, y se comprueba que todas las líneas de «Entradas» son entradas |
 | Fogón trae las cifras que hay delante              | Se abre la burbuja en Inventario y tiene que salir «Productos de alta» con su número           |
-| Y **mirarlo en un móvil de verdad**                | **Pendiente** (regla 11). Las trece cosas que hay que mirar, en el documento de los pasos      |
+| Lo que se personaliza **no se pierde**             | Se quita un widget y se recarga, y se sale de la pantalla y se vuelve, **sin pulsar «Listo»**  |
+| Un producto se da de alta sin hacer cuentas        | Nombre, unidad y precio de esa unidad; sin abrir el pliegue no existe ni «cuánto trae»         |
+| El reparto tiene sitio y ningún botón de mentira   | Se abre `/servicio/delivery`: sale Uber Eats con su módulo, y no hay ningún «Conectar»         |
+| La rueda no pinta el anillo al tocarla             | Se abre con el dedo y se mira el `outline` del lienzo. Con teclado, encendido y redondo        |
+| Y **mirarlo en un móvil de verdad**                | La primera tanda, mirada: de ahí salió la segunda. La segunda, **pendiente** (regla 11)        |
 
 #### Lo que M6½ deja pendiente, dicho sin redondear
 
-- **Sigue sin poder darse por terminado** (regla 11): falta fusionar, aplicar la
-  `0025`, desplegar la API y mirarlo en el teléfono.
+- **Sigue sin poder darse por terminado** (regla 11): la primera tanda está
+  fusionada, migrada y desplegada, y **la segunda está sin fusionar y sin mirar en
+  el teléfono**. La segunda no trae operaciones nuevas, así que no hay que
+  desplegar la API ni aplicar ninguna migración.
 - **Fogón tiene contexto y botones, pero no voz.** La conversación, el presupuesto
   por local y día, la caché y la voz son M22, y hablar con él necesita una decisión
   de Richi: qué modelo y cuánto al día.
@@ -1520,12 +1667,20 @@ No tiene ficha en el Plan, así que su criterio es este:
   saberlo, hay que reescribirlo. Está apuntado abajo, en lo que hay que decidir.
 - **El escaneo con la cámara** sigue esperando a que haya un aparato con el que
   probarlo, y el lector de los de verdad —que escribe como un teclado— ya funciona.
+- **El reparto tiene sitio y no tiene conexión.** Uber Eats es el primero y llega
+  con M29; hasta entonces la pantalla dice qué va a entrar y no ofrece conectar
+  nada ([decisión 0022](docs/decisiones/0022-el-reparto-tiene-sitio-antes-que-conexion.md)).
+- **Los filtros de una lista no se llevan en la dirección**, solo la vista. Buscar
+  «pulpo» en Productos y volver atrás pierde el texto. No es personalización —no se
+  guarda por persona— pero el enlace a una búsqueda concreta tampoco se puede
+  compartir, y eso sí es una carencia que se paga cuando haya que mandar «mira
+  esto» por el chat del equipo.
 - **`mis_locales`, `mis_permisos` y `un_local`** siguen registradas y sin pantalla,
   igual que al cerrar M6.
 
 #### Lo que le costó al paquete inicial
 
-`app` pasa de **229,5 KB a 241,7 KB**, de los 250 de referencia. Son 12,2 KB por
+`app` pasa de **229,5 KB a 243,4 KB**, de los 250 de referencia. Son 13,9 KB por
 todo lo de arriba, y hubieran sido 17 si no se hubieran apartado dos cosas del
 paquete inicial, como la gráfica desde M3: **la ficha de producto** —1.300 líneas
 con sus tres hojas, que no hace falta hasta que alguien abre un producto— y **el
@@ -1535,7 +1690,7 @@ No se hizo para cuadrar el presupuesto de tamaño, que «se mide y se informa»:
 hizo por lo que dice B7, que **un módulo que no cumple su presupuesto de velocidad
 no está terminado**, y abrir una app tiene 200 ms.
 
-Quedan **8,3 KB de margen**, y M7 trae pantallas grandes. El siguiente módulo
+Quedan **6,6 KB de margen**, y M7 trae pantallas grandes. El siguiente módulo
 tendrá que cargarse aparte desde el principio, no al final.
 
 ---
@@ -1620,11 +1775,54 @@ tendrá que cargarse aparte desde el principio, no al final.
     comando de verdad. Sobrevivió tres módulos y llegó al Panel de un negocio. Un
     andamio se pone **en una prueba**, no en la aplicación; y si de verdad hace
     falta en pantalla, se apunta con fecha de caducidad.
-18. **El estado del servidor se lleva puesto entre pruebas.** El Panel se guarda
-    por persona y por aparato, así que una prueba que quita un widget deja el Panel
-    cambiado para la siguiente. La de «la barra se va sola» lo quita y deja caducar
-    la barra a propósito. Se arregla dejando el Panel de fábrica **desde la
-    aplicación** al empezar, no tocando la base a mano.
+18. **El estado del servidor se lleva puesto entre pruebas, y un bloque en serie
+    no basta si están en tres bloques.** El Panel se guarda por persona y por
+    aparato, así que una prueba que quita un widget deja el Panel cambiado para la
+    siguiente. Se repartieron entre tres bloques y **entre bloques se corre en
+    paralelo igual**; y `alta.spec.ts` tenía escrito «comparten un local y no se
+    puede compartir a la vez» y la prueba del paseo estaba **fuera** de ese bloque.
+    Lo que funciona es lo que ya estaba escrito, puesto donde vale: **todo lo que
+    toca un estado compartido, en un bloque, de una en una, y ningún otro fichero
+    tocándolo**.
+19. **Guardar tarde es perder.** El Panel guardaba 800 ms después del último gesto,
+    y ese retraso solo hace falta para el arrastre —que produce veinte cambios por
+    gesto—. Aplicado a quitar o añadir un widget, abría una ventana en la que
+    recargar o cambiar de pantalla perdía el cambio. Y **salir justo después de
+    colocar algo es lo normal**: se coloca y uno se va a mirar lo que ha colocado.
+    Si algo se guarda con retraso, el retraso se pone **solo donde hay ráfaga**, y
+    lo pendiente se manda al desmontar y al cerrar la pestaña.
+20. **Un dato con dos dueños se pisa, aunque el segundo sea una caché.** Al guardar
+    el Panel no se actualizaba la caché de TanStack Query, así que se quedaba con
+    los widgets viejos **y con la versión vieja**: volver a la pantalla pisaba lo
+    tuyo, y el siguiente guardado se estrellaba contra su propia versión con un «lo
+    cambió otra persona» —contra uno mismo—. La regla 6 también vale para las
+    cachés: **una sola cosa pinta la pantalla**, y lo que se guarda se escribe ahí.
+21. **Se arregla lo que se ha visto, no lo que uno deduce de lo que ha visto.**
+    «Solo quería eliminar ajustes de arriba en móvil»: se quitaron Ajustes, el chat
+    y Fogón, y de paso Ajustes del ordenador. Uno sobraba; los otros tres no. Antes
+    de quitar de más, se pregunta.
+22. **El navegador del iPhone se prueba con `CON_WEBKIT=1`, y hay que acordarse.**
+    La integración continua corre **tres** proyectos —escritorio, móvil pequeño y
+    `movil-safari`, que es WebKit— y en local solo corren dos. El cuadrado naranja
+    de la rueda apareció en un iPhone y la comprobación que lo fijaba **pasaba en
+    local y fallaba en WebKit**, porque lo que apaga una sombra en Tailwind no es
+    `none`, es un color transparente. Antes de dar por buena una corrección de algo
+    que salió en un teléfono: `$env:CON_WEBKIT = "1"` y `pnpm prueba:e2e:completa`.
+23. **Una prueba que solo recorre el camino cómodo no prueba nada.** La del Panel
+    pulsaba «Listo» antes de recargar, y «Listo» guarda al momento: por eso pasó en
+    verde con la personalización perdiéndose de tres maneras distintas. Las pruebas
+    tienen que hacer **lo que hace una persona**, que es tocar algo y **irse**.
+24. **Un rojo que no habla de lo que se estaba probando casi nunca es del
+    producto.** `ECONNRESET` al entrar, un tiempo agotado en cuatro pruebas
+    seguidas, «Entra en Estook» donde tenía que haber un Panel: eso no es la
+    aplicación, es el banco de pruebas —conexiones que se cierran solas, una base de
+    datos compartida, pruebas sin pantalla corriendo tres veces—. Antes de tocar
+    código de producto por un rojo así, hay que mirar **quién sirve las pruebas**.
+25. **Una comprobación que hace dos cosas sin decirlo se lleva la segunda por
+    delante.** «El título no pone "Entra en Estook"» comprobaba también, sin
+    escribirlo, que **hubiera** un título. Al arreglar la primera mitad se perdió la
+    segunda y salieron quince rojos nuevos en sitios que no se habían tocado. Si una
+    comprobación depende de algo que no dice, se escribe aparte.
 
 ---
 
@@ -1654,6 +1852,8 @@ En [`docs/decisiones/`](docs/decisiones/):
 | **0018** | **Cada app tiene destinos, y cada destino sus vistas**              |
 | **0019** | **El Panel de cada uno vive en el servidor, por persona y aparato** |
 | **0020** | **Un catálogo de acciones, y una acción es una dirección**          |
+| **0021** | **El producto se mide en una unidad; los gramajes son de la ficha** |
+| **0022** | **El reparto tiene sitio antes que conexión; Uber Eats el primero** |
 
 Otras, sin fichero propio:
 
@@ -1799,5 +1999,5 @@ conciliada con esa diferencia señalada.
 
 **Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase. Los tres primeros pasan hoy —706, 288 y 59 de 65—; el cuarto, cuando se
-aplique la `0025` y se despliegue la API.
+Supabase. Los tres primeros pasan hoy —706, 436 con los tres navegadores y 59 de 65—; el
+cuarto, cuando se aplique la `0025` y se despliegue la API.

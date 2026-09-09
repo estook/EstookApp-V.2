@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { IconoAvisos, IconoBuscar, IconoLocal } from '@estook/iconos';
+import { IconoAvisos, IconoBuscar, IconoChat, IconoLocal } from '@estook/iconos';
+import { IconoDeFogon } from '../componentes/Marca.tsx';
 import { clases } from '../clases.ts';
 import { Avatar } from '../componentes/Tarjeta.tsx';
 
@@ -24,30 +25,38 @@ import { Avatar } from '../componentes/Tarjeta.tsx';
  * es una fila comoda, en un movil es una fila apretada donde se pulsa lo de al
  * lado.
  *
- * Ahora son **cuatro cosas**, y cada una esta aqui por una razon:
+ * Ahora son **cinco botones y el avatar**, que es la misma fila de escritorio
+ * **menos Ajustes**:
  *
  *   · **Donde estas**, con el logo del local. Es lo primero, porque «para que
  *     nadie apunte una merma en el local equivocado» (Manifiesto 28) empieza por
  *     saber donde estas, a la vista y sin pulsar nada.
  *   · **Buscar.** En un movil no hay `Ctrl+K`.
- *   · **La bandeja**, con los avisos y el chat dentro. Se juntan a proposito:
- *     las dos son cosas que alguien te manda, y en un telefono no hay sitio para
- *     dos puertas a lo mismo. En escritorio siguen separadas, que es lo que
- *     manda B5 y ahi si cabe.
+ *   · **Avisos** y **chat**, cada uno el suyo.
+ *   · **Fogon**, que ademas tiene su burbuja abajo. Son dos puertas a lo mismo y
+ *     se quedan las dos: la burbuja es para el pulgar mientras trabajas, y el
+ *     icono de arriba es donde lo busca quien viene del ordenador.
  *   · **El avatar**, que abre tu cuenta: ajustes, mi acceso, cambiar de local y
  *     salir.
  *
- * ── Lo que se ha ido, y por que ──────────────────────────────────────────────
+ * ── Lo que se fue, y lo que se llevo por delante sin querer ──────────────────
  *
- * **El icono de Ajustes.** Estaba aqui arriba *y* abajo en la barra de movil, dos
- * puertas a la misma pantalla a diez centimetros una de otra. Se queda la de
- * abajo, que es donde B5 la pone, y aqui la sustituye el avatar: dentro de una
- * app —donde la barra de abajo es la de la app— sigue habiendo camino a Ajustes,
- * que era el agujero de M6 y no se vuelve a abrir.
+ * **El icono de Ajustes** estaba aqui arriba *y* abajo en la barra de movil, dos
+ * puertas a la misma pantalla a diez centimetros una de otra. Esa se queda abajo,
+ * que es donde B5 la pone, y aqui la sustituye el avatar: dentro de una app
+ * —donde la barra de abajo es la de la app— sigue habiendo camino a Ajustes, que
+ * era el agujero de M6 y no se vuelve a abrir.
  *
- * **El icono de Fogon.** En movil Fogon es una burbuja flotante que va contigo
- * por toda la aplicacion (decision 0015). Tenerlo ademas aqui arriba era la misma
- * cosa dos veces, y la burbuja es la que esta pensada para el pulgar.
+ * **Y al quitarla se quitaron tambien el chat y Fogon**, que no sobraban. Es la
+ * leccion de siempre en su version pequena: se arregla lo que se ha visto, no lo
+ * que uno deduce de lo que ha visto. Los dos han vuelto.
+ *
+ * ── Como caben seis cosas en 375 px ──────────────────────────────────────────
+ *
+ * Los botones se quedan en el toque minimo de 44 px que manda B4 —eso no se
+ * negocia— y lo que cede es **el nombre del local**, que se recorta. Es lo
+ * correcto: el logo ya identifica el local de un vistazo, y el nombre entero esta
+ * a un toque, en tu cuenta.
  */
 export interface BarraArribaMovilProps {
   readonly local: {
@@ -61,8 +70,9 @@ export interface BarraArribaMovilProps {
   readonly persona: string;
   readonly avisos?: number;
   readonly alBuscar: () => void;
-  /** Los avisos y el chat, que en movil comparten puerta. */
-  readonly alAbrirLaBandeja: () => void;
+  readonly alAbrirAvisos: () => void;
+  readonly alAbrirChat: () => void;
+  readonly alAbrirFogon: () => void;
   /** Tu cuenta: ajustes, mi acceso, cambiar de local y salir. */
   readonly alAbrirMiCuenta: () => void;
 }
@@ -74,13 +84,15 @@ export function BarraArribaMovil({
   persona,
   avisos = 0,
   alBuscar,
-  alAbrirLaBandeja,
+  alAbrirAvisos,
+  alAbrirChat,
+  alAbrirFogon,
   alAbrirMiCuenta,
 }: BarraArribaMovilProps) {
   return (
     <header
       className={clases(
-        'sticky top-0 z-30 flex items-center gap-e2 border-b border-borde bg-superficie px-e3',
+        'sticky top-0 z-30 flex items-center gap-e1 border-b border-borde bg-superficie px-e2',
         'h-[--alto-barra-movil] lg:hidden',
       )}
     >
@@ -92,8 +104,8 @@ export function BarraArribaMovil({
         </Redondo>
 
         <Redondo
-          etiqueta={avisos > 0 ? `Avisos y chat: ${avisos} sin leer` : 'Avisos y chat'}
-          alPulsar={alAbrirLaBandeja}
+          etiqueta={avisos > 0 ? `Avisos: ${avisos} sin leer` : 'Avisos'}
+          alPulsar={alAbrirAvisos}
         >
           <span className="relative">
             <IconoAvisos size={20} />
@@ -106,11 +118,21 @@ export function BarraArribaMovil({
           </span>
         </Redondo>
 
+        <Redondo etiqueta="Chat del equipo" alPulsar={alAbrirChat}>
+          <IconoChat size={20} />
+        </Redondo>
+
+        {/* Fogon lleva su mascota, igual que en escritorio: es lo que lo hace
+            reconocible de un vistazo entre cuatro botones grises. */}
+        <Redondo etiqueta="Fogón" alPulsar={alAbrirFogon}>
+          <IconoDeFogon size={22} />
+        </Redondo>
+
         <button
           type="button"
           onClick={alAbrirMiCuenta}
           aria-label={`Tu cuenta · ${persona}`}
-          className="ml-e1 grid size-toque place-items-center rounded-medio"
+          className="grid size-toque place-items-center rounded-medio"
         >
           <Avatar nombre={persona} tamano={28} />
         </button>

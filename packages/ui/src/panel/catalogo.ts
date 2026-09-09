@@ -197,6 +197,14 @@ export const WIDGETS: readonly Widget[] = [
     modulo: 'M9',
   },
   {
+    id: 'pedidos-delivery',
+    nombre: 'Pedidos de delivery',
+    queEnsena: 'Los pedidos que están entrando de Uber Eats, con su hora y su estado',
+    permiso: 'app.servicio',
+    tamanos: ['ancho', 'grande'],
+    modulo: 'M29',
+  },
+  {
     id: 'avisos-de-fogon',
     nombre: 'Avisos de Fogón',
     queEnsena: 'Lo que Fogón ha visto mientras no mirabas, con su botón',

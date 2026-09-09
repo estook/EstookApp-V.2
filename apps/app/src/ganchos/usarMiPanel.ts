@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   PANEL_DE_FABRICA,
   loQueSePuedePintar,
@@ -16,24 +16,42 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 /**
  * El Panel de esta persona en este aparato: cargarlo, tocarlo y guardarlo.
  *
- * ── Por qué se guarda con retraso y no en cada gesto ─────────────────────────
+ * ── Los dos agujeros por los que se perdía todo, y cómo se tapan ─────────────
  *
- * Arrastrar un widget de una esquina a otra son **veinte reordenaciones**, porque
- * el orden cambia cada vez que el dedo pasa por encima de otro. Guardar cada una
- * serían veinte comandos, veinte filas de idempotencia y veinte subidas de
- * versión, para acabar en el mismo sitio.
+ * La primera versión guardaba lo que se estaba tocando en un `useState` propio y
+ * lo sincronizaba con el servidor en un efecto. **Perdía la personalización de
+ * dos maneras distintas**, y las dos se notaban en cuanto alguien usaba el Panel
+ * de verdad:
  *
- * Así que la pantalla se mueve al momento y el servidor se entera **ochocientos
- * milisegundos después de la última vez que se toca algo**. Es la única parte de
- * Estook que escribe así, y se puede porque lo que se guarda no es un dato del
- * negocio: si se pierde el último gesto por cerrar la aplicación en ese instante,
- * lo que pasa es que un widget se queda donde estaba.
+ *   1. **Al navegar y volver.** El guardado espera 800 ms desde el último gesto
+ *      —arrastrar un widget son veinte reordenaciones, y no se mandan veinte
+ *      comandos—. Si dentro de esos 800 ms se salía del Panel, el componente se
+ *      desmontaba, **se cancelaba el reloj y lo pendiente se tiraba**. Colocabas
+ *      un widget, entrabas en Inventario, volvías, y estaba donde estaba antes.
+ *   2. **Al recargar.** Al guardar no se tocaba la caché de TanStack Query, así
+ *      que seguía teniendo lo viejo **y la versión vieja**. Volver al Panel leía
+ *      esa caché y pisaba lo tuyo; y el siguiente guardado mandaba una versión
+ *      que ya no era la de la fila, así que el servidor contestaba «lo cambió
+ *      otra persona» —contra ti mismo— y dejaba de guardar del todo.
  *
- * ── Y por qué la versión se lleva en una referencia ──────────────────────────
+ * Ahora:
  *
- * Porque cada guardado devuelve una versión nueva, y el siguiente la necesita. Si
- * viviera en el estado de React, dos guardados seguidos mandarían la misma y el
- * segundo se llevaría un «lo cambió otra persona» contra sí mismo.
+ *   · **Los gestos sueltos se guardan al momento.** Quitar un widget, añadir uno o
+ *     cambiarle el tamaño no esperan a nada. El retraso se queda **solo para el
+ *     arrastre**, que es lo único que produce veinte cambios por segundo, y en
+ *     cuanto se suelta el dedo se manda.
+ *   · **La caché es el único dueño de lo que se pinta.** No hay un segundo estado
+ *     con la misma información al lado (regla 6). Cada cambio se escribe en la
+ *     caché al momento, así que navegar y volver encuentra lo tuyo aunque el
+ *     servidor todavía no se haya enterado.
+ *   · **Al guardar se escribe la versión nueva en la caché**, que es lo que hace
+ *     que el segundo guardado funcione. Y **solo hay un guardado en vuelo**: el
+ *     siguiente espera a que vuelva el anterior con su versión.
+ *   · **Al desmontar y al cerrar la pestaña se manda lo pendiente**, en vez de
+ *     tirarlo.
+ *   · Y la consulta **no caduca sola** (`staleTime: Infinity`): estos datos solo
+ *     cambian cuando los cambias tú, y un refresco automático en mitad de un
+ *     guardado devolvería los widgets a donde estaban.
  */
 export interface MiPanel {
   readonly puestos: readonly WidgetPuesto[];
@@ -50,11 +68,8 @@ export interface MiPanel {
   /**
    * Guarda ya lo que estuviera esperando.
    *
-   * Se llama al salir del modo de edicion, que es lo que «Listo» quiere decir. Sin
-   * esto, montar el Panel y cerrar la aplicacion en el mismo segundo perdia el
-   * ultimo gesto —y ademas hacia que la prueba que lo comprueba fuera una carrera
-   * contra un reloj de ochocientos milisegundos, que es una prueba que un dia pasa
-   * y otro no—.
+   * Se llama al salir del modo de edición —que es lo que «Listo» quiere decir— y
+   * al desmontar la pantalla.
    */
   readonly guardarYa: () => void;
   readonly recargar: () => void;
@@ -62,11 +77,19 @@ export interface MiPanel {
 
 const ESPERA_ANTES_DE_GUARDAR = 800;
 
+/** Lo que la caché guarda de esta consulta: los widgets y su versión. */
+interface ElPanelGuardado {
+  readonly widgets: readonly WidgetPuesto[] | null;
+  readonly version: number;
+}
+
 export function usarMiPanel(): MiPanel {
   const { cliente, permisos } = usarSesion();
   const { sePuedeDeshacer } = usarDeshacer();
+  const cache = useQueryClient();
   const esEscritorio = usarEsEscritorio();
   const aparato = esEscritorio ? 'escritorio' : 'movil';
+  const clave = useMemo(() => ['mi_panel', aparato] as const, [aparato]);
 
   const tienePermiso = useCallback(
     (permiso: PermisoDeApp) => puedeVer(permisos, permiso),
@@ -74,8 +97,12 @@ export function usarMiPanel(): MiPanel {
   );
 
   const consulta = useQuery({
-    queryKey: ['mi_panel', aparato],
-    queryFn: async (): Promise<{ widgets: WidgetPuesto[] | null; version: number }> => {
+    queryKey: clave,
+    // No caduca sola. Lo que hay aquí solo cambia cuando lo cambia esta persona,
+    // y un refresco en mitad de un guardado devolvería los widgets a su sitio de
+    // antes delante de sus narices.
+    staleTime: Infinity,
+    queryFn: async (): Promise<ElPanelGuardado> => {
       const respuesta = await cliente.consultar<{
         widgets: readonly { id: string; tamano: string }[] | null;
         version: number;
@@ -94,84 +121,194 @@ export function usarMiPanel(): MiPanel {
     },
   });
 
-  const [puestos, setPuestos] = useState<readonly WidgetPuesto[] | null>(null);
+  /**
+   * Si queda algo por guardar · **de todo el camino, no solo del viaje**.
+   *
+   * Se enciende en cuanto se toca algo y se apaga cuando la cola esta vacia, no
+   * cuando vuelve una peticion. Es lo honesto —«guardando…» tiene que durar hasta
+   * que este guardado de verdad, no hasta que salga el primero de dos— y ademas es
+   * lo unico que deja comprobarlo desde fuera: sin esto, una prueba que recarga
+   * justo despues corta el segundo guardado por la mitad, que es lo que le pasaria
+   * a una persona rapida.
+   */
   const [guardando, setGuardando] = useState(false);
   const [loCambioOtroAparato, setLoCambioOtroAparato] = useState(false);
-  const version = useRef(0);
   const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
-  /** Lo ultimo que hay que guardar, para poder mandarlo antes de tiempo. */
+  /** Lo último que hay que guardar, para poder mandarlo antes de tiempo. */
   const pendiente = useRef<readonly WidgetPuesto[] | null>(null);
+  /**
+   * Si ya hay un guardado en vuelo.
+   *
+   * Sin esto, dos gestos seguidos —quitar dos widgets, que es lo normal— mandan
+   * dos comandos **con la misma versión**, porque el segundo sale antes de que
+   * vuelva el primero con la nueva. El segundo se lleva un «lo cambió otra
+   * persona» contra sí mismo y no se guarda. Con esto, el segundo espera y sale
+   * en cuanto vuelve el primero.
+   */
+  const enVuelo = useRef(false);
 
-  // Lo que dice el servidor manda **la primera vez, y en cada recarga**. Después
-  // manda lo que se está tocando: si no, cada refresco de la caché devolvería los
-  // widgets a donde estaban antes del último arrastre.
-  useEffect(() => {
+  /**
+   * Lo que se pinta, **derivado de la caché**.
+   *
+   * Nulo en `widgets` quiere decir «nunca lo ha tocado», que es distinto de «lo ha
+   * vaciado a propósito»: lo primero se rellena con el de fábrica, lo segundo se
+   * respeta vacío.
+   */
+  const puestos = useMemo(() => {
     const datos = consulta.data;
-    if (datos === undefined) return;
-    version.current = datos.version;
-    // Nulo quiere decir «nunca lo ha tocado», que es distinto de «lo ha vaciado»:
-    // lo primero se rellena con el de fábrica, lo segundo se respeta vacío.
-    const deFabrica = datos.widgets ?? PANEL_DE_FABRICA;
-    setPuestos(loQueSePuedePintar(deFabrica, tienePermiso));
+    if (datos === undefined) return null;
+    return loQueSePuedePintar(datos.widgets ?? PANEL_DE_FABRICA, tienePermiso);
   }, [consulta.data, tienePermiso]);
 
   const mandar = useCallback(async () => {
+    if (enVuelo.current) return;
     const nuevos = pendiente.current;
     if (nuevos === null) return;
-    pendiente.current = null;
+    enVuelo.current = true;
 
-    setGuardando(true);
+    // La versión sale de la caché, que es donde vive la de verdad: la del último
+    // guardado que salió bien.
+    const antes = cache.getQueryData<ElPanelGuardado>(clave);
+
     const respuesta = await cliente.ejecutar<{ version: number }>('guardar_mi_panel', {
       aparato,
       widgets: nuevos.map((p) => ({ id: p.id, tamano: p.tamano })),
-      version: version.current,
+      version: antes?.version ?? 0,
     });
-    setGuardando(false);
+    enVuelo.current = false;
+
+    // **Se marca como mandado solo si nadie ha tocado nada mientras tanto.** Si
+    // `pendiente` ya no es lo que se mandó, es que ha entrado otro cambio y ese
+    // sigue esperando: ponerlo a nulo aquí sería tirarlo.
+    if (pendiente.current === nuevos) pendiente.current = null;
+    if (pendiente.current === null) setGuardando(false);
 
     if (respuesta.ok) {
-      version.current = respuesta.datos.version;
+      // **Solo la versión.** Los widgets se dejan como estén en la caché, que es
+      // lo último que ha tocado la persona: entre que este guardado salió y
+      // volvió puede haber movido otro widget, y escribir aquí lo que se mandó
+      // haría que ese último gesto se viera saltar hacia atrás y volver.
+      cache.setQueryData<ElPanelGuardado>(clave, (antes) => ({
+        widgets: antes?.widgets ?? nuevos,
+        version: respuesta.datos.version,
+      }));
       setLoCambioOtroAparato(false);
+
+      // Y lo que haya llegado mientras este iba y venía sale ahora. **Después de
+      // escribir la versión**, no antes: si saliera antes se llevaría la versión
+      // vieja y se estrellaría contra sí mismo, que es justo lo que esta cola
+      // viene a evitar.
+      if (pendiente.current !== null) void mandarAhora.current();
       return;
     }
     // «Lo cambió otra persona» aquí quiere decir «lo cambiaste tú en el otro
     // aparato». Se dice, y no se pisa nada: lo que hay en el servidor se queda
     // como está hasta que se recargue a propósito.
     if (respuesta.error.codigo === 'lo_cambio_otra_persona') setLoCambioOtroAparato(true);
-  }, [cliente, aparato]);
+  }, [cliente, aparato, cache, clave]);
 
-  const guardar = useCallback(
-    (nuevos: readonly WidgetPuesto[]) => {
-      pendiente.current = nuevos;
-      if (reloj.current !== null) clearTimeout(reloj.current);
-      reloj.current = setTimeout(() => {
-        void mandar();
-      }, ESPERA_ANTES_DE_GUARDAR);
-    },
-    [mandar],
-  );
+  /**
+   * `mandar` en una referencia, para poder llamarlo al desmontar.
+   *
+   * El efecto de limpieza no puede depender de `mandar` —se volvería a montar y a
+   * desmontar en cada cambio, mandando de más—, así que se guarda la última
+   * versión aquí y el efecto de limpieza no depende de nada.
+   */
+  const mandarAhora = useRef(mandar);
+  mandarAhora.current = mandar;
+
+  const guardar = useCallback((nuevos: readonly WidgetPuesto[]) => {
+    pendiente.current = nuevos;
+    if (reloj.current !== null) clearTimeout(reloj.current);
+    reloj.current = setTimeout(() => {
+      void mandarAhora.current();
+    }, ESPERA_ANTES_DE_GUARDAR);
+  }, []);
 
   const guardarYa = useCallback(() => {
     if (reloj.current !== null) clearTimeout(reloj.current);
     reloj.current = null;
-    void mandar();
-  }, [mandar]);
+    void mandarAhora.current();
+  }, []);
 
-  // Al desmontar, lo que estuviera esperando no se pierde en silencio: se cancela
-  // el reloj para no escribir después de irse, que es lo que provoca el aviso de
-  // React sobre estado en un componente desmontado.
+  /**
+   * Al irse de la pantalla, **se manda lo que estuviera esperando**.
+   *
+   * Antes se cancelaba el reloj y ya, así que colocar un widget y salir del Panel
+   * antes de que pasaran los ochocientos milisegundos perdía el cambio. Y salir
+   * del Panel justo después de colocar algo es lo normal: se coloca y se va uno a
+   * mirar lo que ha colocado.
+   */
   useEffect(
     () => () => {
       if (reloj.current !== null) clearTimeout(reloj.current);
+      void mandarAhora.current();
     },
     [],
   );
 
+  /**
+   * Y al cerrar la pestaña o irse de la aplicación, lo mismo.
+   *
+   * `pagehide` es el que avisa de verdad —`beforeunload` no llega en móvil, y en
+   * iOS la pestaña se congela sin desmontar nada—. Solo queda algo pendiente
+   * mientras se arrastra, que es lo único que va con retraso; aun así, cerrar
+   * justo ahí no debería perder el último gesto.
+   */
+  useEffect(() => {
+    const alIrse = () => {
+      if (pendiente.current === null) return;
+      if (reloj.current !== null) clearTimeout(reloj.current);
+      void mandarAhora.current();
+    };
+    window.addEventListener('pagehide', alIrse);
+    document.addEventListener('visibilitychange', alIrse);
+    return () => {
+      window.removeEventListener('pagehide', alIrse);
+      document.removeEventListener('visibilitychange', alIrse);
+    };
+  }, []);
+
+  /**
+   * Escribe en la caché al momento y guarda.
+   *
+   * ── Con retraso solo mientras se arrastra ──────────────────────────────────
+   *
+   * Arrastrar un widget de una esquina a otra son **veinte reordenaciones**,
+   * porque el orden cambia cada vez que el dedo pasa por encima de otro: esas van
+   * con retraso, o serían veinte comandos para acabar en el mismo sitio.
+   *
+   * **Todo lo demás se guarda ya.** Quitar un widget, añadir uno o cambiarle el
+   * tamaño son gestos sueltos, y esperar ochocientos milisegundos a guardarlos era
+   * abrir una ventana en la que recargar o cerrar la aplicación perdía el cambio.
+   * Que es exactamente lo que pasaba: «todo lo que personalices, si refrescas, se
+   * quita».
+   */
   const cambiar = useCallback(
-    (nuevos: readonly WidgetPuesto[]) => {
-      setPuestos(nuevos);
-      guardar(nuevos);
+    (nuevos: readonly WidgetPuesto[], conRetraso = false) => {
+      cache.setQueryData<ElPanelGuardado>(clave, (antes) => ({
+        widgets: nuevos,
+        version: antes?.version ?? 0,
+      }));
+      pendiente.current = nuevos;
+      setGuardando(true);
+      if (conRetraso) {
+        guardar(nuevos);
+        return;
+      }
+      if (reloj.current !== null) clearTimeout(reloj.current);
+      reloj.current = null;
+      void mandarAhora.current();
     },
-    [guardar],
+    [cache, clave, guardar],
+  );
+
+  /** El arrastre, que es el único que va con retraso. */
+  const reordenar = useCallback(
+    (nuevos: readonly WidgetPuesto[]) => {
+      cambiar(nuevos, true);
+    },
+    [cambiar],
   );
 
   const anadir = useCallback(
@@ -187,13 +324,10 @@ export function usarMiPanel(): MiPanel {
   /**
    * Quitar un widget · **con deshacer**, porque destruye trabajo.
    *
-   * «Deshacer siempre, diez segundos, en todo lo que no tenga consecuencia
-   * legal» (B4). Quitar un widget no rompe ningun dato, pero se hace sin querer
-   * —la ✕ esta a un centimetro del asa de arrastrar— y lo que se pierde es donde
-   * lo tenias puesto, que es justo lo que acabas de colocar a mano.
-   *
-   * Ademas es el tercer flujo de deshacer que M3 pedia y que hasta hoy cubria un
-   * andamio de pruebas publicado en el Panel: «apuntar una nota de prueba».
+   * «Deshacer siempre, diez segundos, en todo lo que no tenga consecuencia legal»
+   * (B4). Quitar un widget no rompe ningún dato, pero se hace sin querer —la ✕
+   * está a un centímetro del asa de arrastrar— y lo que se pierde es dónde lo
+   * tenías puesto, que es justo lo que acabas de colocar a mano.
    */
   const quitar = useCallback(
     (id: string) => {
@@ -218,11 +352,11 @@ export function usarMiPanel(): MiPanel {
   );
 
   /**
-   * Volver al de fabrica · tambien con deshacer, y con mas razon.
+   * Volver al de fábrica · también con deshacer, y con más razón.
    *
    * Esto se lleva por delante **el Panel entero** que alguien haya montado. Un
-   * boton que borra media hora de colocar tarjetas y no se puede deshacer no
-   * deberia existir.
+   * botón que borra media hora de colocar tarjetas y no se puede deshacer no
+   * debería existir.
    */
   const volverAlDeFabrica = useCallback(() => {
     const antes = puestos ?? [];
@@ -242,10 +376,10 @@ export function usarMiPanel(): MiPanel {
 
   return {
     puestos: puestos ?? [],
-    cargando: consulta.isPending && puestos === null,
+    cargando: consulta.isPending,
     guardando,
     loCambioOtroAparato,
-    reordenar: cambiar,
+    reordenar,
     anadir,
     quitar,
     cambiarTamano,

@@ -15,6 +15,7 @@ import {
   IconoPersona,
   IconoRejilla,
   IconoReloj,
+  IconoReparto,
   IconoServicio,
   type Icono,
 } from '@estook/iconos';
@@ -181,6 +182,7 @@ export const MODULOS: Readonly<Record<string, string>> = {
   M21: 'M21 · Negocio, analítica y Estook Pulse',
   M22: 'M22 · Fogón',
   M23: 'M23 · Reseñas, competencia y chat',
+  M29: 'M29 · Canales de reparto e integraciones',
 };
 
 /** El nombre entero de un modulo, para decirlo en pantalla. */
@@ -443,7 +445,11 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         nombre: 'Jornada',
         icono: IconoServicio,
         queContesta: '¿Qué está pasando ahora mismo en el local?',
-        vistas: [],
+        // **El cierre es una vista de la jornada, no un destino.** Cerrar la
+        // jornada es el final de la jornada, no otro sitio; y separarlo gastaba
+        // una de las cuatro posiciones de la app en algo que se hace una vez al
+        // día, dejando fuera el reparto.
+        vistas: vistas(['En marcha', 'M16'], ['Cierre', 'M16']),
         modulo: 'M16',
       },
       {
@@ -455,18 +461,34 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         modulo: 'M20',
       },
       {
+        /*
+          Delivery · el reparto, que entra por aquí.
+
+          Es el sitio, no la integración: «ninguna integración se da por disponible
+          hasta verificar sus requisitos y capacidades reales» (Evolución 1.0,
+          capítulo 16), y el módulo que la construye es M29.
+
+          Va en Servicio y no en Carta porque lo que se mira aquí son **los pedidos
+          que están entrando ahora**, que es la pregunta de Servicio: «¿qué está
+          pasando hoy?». Lo que se publica en cada canal y a qué precio es de
+          Carta, y ahí vive con su módulo.
+
+          Es lo mismo que se hizo con Fogón en M6 (decisión 0015): el sitio se
+          decide ahora, porque dónde vive algo es navegación, y dejarlo para el
+          módulo obliga a rehacer la barra cuando llegue.
+        */
+        id: 'delivery',
+        nombre: 'Delivery',
+        icono: IconoReparto,
+        queContesta: '¿Qué pedidos están entrando, y de qué canal?',
+        vistas: [],
+        modulo: 'M29',
+      },
+      {
         id: 'appcc',
         nombre: 'APPCC',
         icono: IconoHecho,
         queContesta: '¿Qué controles toca hoy y cuáles se han salido de rango?',
-        vistas: [],
-        modulo: 'M16',
-      },
-      {
-        id: 'cierre',
-        nombre: 'Cierre',
-        icono: IconoReloj,
-        queContesta: '¿Qué falta por registrar antes de cerrar?',
         vistas: [],
         modulo: 'M16',
       },

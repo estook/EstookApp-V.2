@@ -298,6 +298,37 @@ const servidor = createServer((peticion, respuesta) => {
   });
 });
 
+/**
+ * Que no se cierre la conexion por debajo de quien la esta usando.
+ *
+ * Node cierra las conexiones **reutilizables** a los cinco segundos de estar
+ * quietas. Y aqui estan quietas mucho: las peticiones van de una en una porque
+ * PGlite es una sola conexion, asi que con las pruebas en paralelo hay clientes
+ * esperando su turno con el socket abierto y sin mandar nada.
+ *
+ * Cuando les toca, mandan por un socket que el servidor acaba de cerrar y se
+ * llevan un `ECONNRESET` — que en la prueba sale como «no se ha podido entrar» o
+ * como un tiempo agotado, sin nada que ver con lo que se estaba probando. Es un
+ * rojo del banco de pruebas disfrazado de rojo del producto, que es la peor clase.
+ *
+ * Dos minutos, muy por encima de lo que cualquier cliente aguanta, y las
+ * cabeceras un poco mas para que el cierre lo decida siempre el cliente.
+ */
+servidor.keepAliveTimeout = 120_000;
+servidor.headersTimeout = 125_000;
+
+/**
+ * Y si un cliente se va a mitad, se le contesta y se sigue.
+ *
+ * Recargar una pagina corta las peticiones que estuvieran en vuelo. Sin esto,
+ * Node responde a esos sockets rotos por su cuenta y ademas puede tumbar el
+ * proceso con un error sin capturar, que se lleva por delante **toda** la tanda.
+ */
+servidor.on('clientError', (_fallo, socket) => {
+  if (socket.writable) socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+  else socket.destroy();
+});
+
 servidor.listen(PUERTO, () => {
   console.log(`API de pruebas en http://localhost:${PUERTO}`);
   console.log(`  contrasena de las personas de ejemplo: «estook en desarrollo»`);

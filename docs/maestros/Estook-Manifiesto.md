@@ -585,6 +585,10 @@ La pantalla de inicio de la app: lo que hay que atender ahora. Bajo mínimo **co
 
 Cada producto guarda nombre, categoría, foto, unidad de compra («caja 3 kg»), unidad de uso (g/ml/ud), factor, rendimiento, peso variable, código de barras, tipo impositivo, alérgenos, mínimo en cámara y proveedor principal.
 
+> **Y no se pregunta todo eso al darlo de alta.** El alta pregunta tres cosas —**cómo se llama, en qué se mide y lo que cuesta esa medida**— y con eso el factor es 1 y el precio del kilo **es** el coste por unidad de uso. Lo del envase —«caja de 5 kg», cuánto trae, cuánto se aprovecha— vive plegado debajo, y se despliega solo cuando el catálogo propone uno o cuando alguien lo pide.
+>
+> La razón es que preguntarlo todo obliga a hacer una multiplicación para dar de alta un saco de harina, y **cuántos gramos lleva una ración no es del producto: es de la ficha técnica**. Está razonado en la [decisión 0021](../decisiones/0021-el-producto-se-mide-en-una-unidad.md).
+
 > **Coste real por unidad de uso = precio ÷ (factor × rendimiento)**
 > Es lo que usan los escandallos. El precio del formato no costea nunca.
 
@@ -879,7 +883,7 @@ Vacaciones, bajas, permisos y asuntos propios, con solicitud, aprobación y sald
 
 El día a día: abrir, controlar y cerrar.
 
-_Su navegación: Jornada · Ventas · APPCC · Cierres_
+_Su navegación: Jornada · Ventas · Delivery · APPCC_ — y **el cierre es una vista de la jornada**, que es lo que es: el final de la jornada, no otro sitio ([decisión 0022](../decisiones/0022-el-reparto-tiene-sitio-antes-que-conexion.md)).
 
 ## Jornada
 
@@ -896,6 +900,14 @@ Se abre sola con el primer fichaje o la primera venta importada. Fija la **fecha
 | Total del día              | Baja       | Caja y gasto al día, consumo repartido por mix histórico |
 
 > **Regla que no se rompe:** una jornada estimada no entra en la desviación de género sin avisar. Sale sombreada y etiquetada.
+
+## Delivery
+
+Los pedidos que entran por los canales de reparto: qué está entrando ahora, de qué canal, y con qué comisión. **Uber Eats el primero**, y detrás Glovo y Just Eat.
+
+Vive aquí y no en Carta porque lo que se mira en esta pantalla son los pedidos de hoy, que es la pregunta de Servicio. Lo que se publica en cada canal y a qué precio es de Carta, y ahí está: «Carta · Análisis · Por canal». Un plato puede valer distinto en la carta de sala y en la de reparto, con la comisión por medio, así que **el margen de delivery se mira aparte**; pero una venta de reparto descuenta género del libro de movimientos igual que la del TPV, así que **el inventario no se entera de por dónde entró**.
+
+**La pantalla existe desde M6½ y no tiene botón de conectar.** Nombra los canales y dice qué va a entrar por ahí; la integración de verdad es **M29**, con lo que exige Uber Eats —cuenta de desarrollador, aprobación y el plazo de once minutos y medio para aceptar— escrito en Evolución 1.0, capítulo 11.1. Un botón que abriera un cartel sería el fallo que este proyecto persigue desde M4 en el sitio donde más caro sale: el que hace pensar que el dinero ya está entrando solo.
 
 ## APPCC
 

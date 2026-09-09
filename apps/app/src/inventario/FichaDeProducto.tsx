@@ -1174,32 +1174,49 @@ function CorregirLaFicha({
           sinElegir="Sin categoría"
         />
 
-        <Campo
-          etiqueta="Cómo lo compras"
-          value={formato}
-          onChange={(e) => {
-            setFormato(e.currentTarget.value);
-          }}
-        />
+        {/*
+          En qué se mide, y el envase si lo hay.
 
+          El alta pregunta esto **plegado**, porque quien da de alta harina no
+          compra por envases y no tiene por qué contestar tres preguntas para
+          decir «a tanto el kilo». Aquí, editando, va abierto: si alguien abre la
+          ficha de un producto es justo para corregir cosas como estas, y
+          esconderlas obligaría a buscarlas.
+
+          Lo que sí cambia es el nombre. «Unidad con la que cocinas» preguntaba por
+          la cocina, y lo que decide esto es **cómo lo compras y cómo lo cuentas en
+          cámara**; los gramos de una ración son de la ficha técnica, que es M9.
+        */}
         <div className="grid gap-e3 sm:grid-cols-2">
-          <Campo
-            etiqueta="Cuánto trae"
-            tipo="numero"
-            value={factor}
-            onChange={(e) => {
-              setFactor(e.currentTarget.value);
-            }}
-          />
           <Selector
-            etiqueta="Unidad con la que cocinas"
+            etiqueta="En qué se mide"
+            ayuda="Cómo lo cuentas en cámara y cómo te lo cobran"
             opciones={UNIDADES_DE_USO.map((u) => ({ valor: u, texto: u }))}
             value={unidad}
             onChange={(e) => {
               setUnidad(e.currentTarget.value);
             }}
           />
+          <Campo
+            etiqueta="Cuánto trae"
+            tipo="numero"
+            ayuda={`En ${unidad}. Déjalo en 1 si no lo compras por envases`}
+            detras={unidad}
+            value={factor}
+            onChange={(e) => {
+              setFactor(e.currentTarget.value);
+            }}
+          />
         </div>
+
+        <Campo
+          etiqueta="Cómo lo compras"
+          ayuda="El envase, si lo hay: «Caja de 5 kg», «Garrafa de 8 l». En blanco si lo compras suelto."
+          value={formato}
+          onChange={(e) => {
+            setFormato(e.currentTarget.value);
+          }}
+        />
 
         <Campo
           etiqueta="Qué porcentaje se aprovecha"

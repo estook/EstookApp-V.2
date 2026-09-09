@@ -223,8 +223,8 @@ export function Esqueleto() {
       abrirFogon: () => {
         setFogonAbierto(true);
       },
-      abrirLaBandeja: () => {
-        setLoQueFalta('bandeja');
+      abrirLosAvisos: () => {
+        setLoQueFalta('avisos');
       },
       abrirMiCuenta: () => {
         setMiCuentaAbierta(true);
@@ -243,6 +243,9 @@ export function Esqueleto() {
           alIrAApp={irAApp}
           alIrAlPanel={() => {
             navegar('/');
+          }}
+          alIrAAjustes={() => {
+            navegar('/ajustes');
           }}
           alAbrirMiCuenta={() => {
             setMiCuentaAbierta(true);
@@ -275,13 +278,11 @@ export function Esqueleto() {
         />
 
         {/*
-        La barra de arriba en movil: donde estas, buscar, la bandeja y tu cuenta.
-        **Cuatro cosas y no seis.** Antes ninguna de las transversales existia en
-        un telefono, que es donde de verdad se usa Estook; al traerlas se trajeron
-        las cinco de escritorio tal cual, y en 375 px eso es una fila donde se
-        pulsa lo de al lado. Fogon no esta porque en movil es la burbuja
-        (decision 0015), y Ajustes no esta porque ya sale abajo y ahora se llega
-        por tu cuenta desde cualquier pantalla.
+        La barra de arriba en movil: la misma de escritorio **menos Ajustes**.
+        Ajustes no esta porque sale abajo en la barra de movil, y dentro de una app
+        —donde la barra de abajo es la de esa app— se llega por el avatar. Lo demas
+        —buscar, avisos, chat y Fogon— si esta: son las herramientas transversales,
+        y tenerlas solo en el ordenador era tenerlas para quien menos las necesita.
       */}
         <BarraArribaMovil
           local={
@@ -302,8 +303,14 @@ export function Esqueleto() {
           alBuscar={() => {
             setBuscadorAbierto(true);
           }}
-          alAbrirLaBandeja={() => {
-            setLoQueFalta('bandeja');
+          alAbrirAvisos={() => {
+            setLoQueFalta('avisos');
+          }}
+          alAbrirChat={() => {
+            setLoQueFalta('chat');
+          }}
+          alAbrirFogon={() => {
+            setFogonAbierto(true);
           }}
           alAbrirMiCuenta={() => {
             setMiCuentaAbierta(true);

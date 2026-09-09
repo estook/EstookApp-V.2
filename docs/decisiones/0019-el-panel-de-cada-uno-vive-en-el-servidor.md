@@ -94,20 +94,44 @@ Va con eventos de puntero —los mismos para dedo, ratón y lápiz— y con
 edición, porque un arrastre solo con el dedo deja el Panel sin configurar a quien
 no puede arrastrar (B8).
 
-## Lo que se guarda con retraso, y por qué eso está bien aquí
+## Lo que se guarda con retraso, y lo que no · **corregido**
 
 Arrastrar un widget de una esquina a otra son veinte reordenaciones, porque el
 orden cambia cada vez que el dedo pasa por encima de otro. Guardar cada una serían
-veinte comandos, veinte filas de idempotencia y veinte subidas de versión para
-acabar en el mismo sitio.
+veinte comandos para acabar en el mismo sitio, así que **el arrastre va con
+retraso**: la pantalla se mueve al momento y el servidor se entera cuando se suelta
+el dedo, o a los ochocientos milisegundos.
 
-Así que la pantalla se mueve al momento y el servidor se entera **ochocientos
-milisegundos después del último gesto**, y **al salir del modo de edición se
-guarda ya**: «Listo» quiere decir guarda.
+**La primera versión aplicaba ese retraso a todo, y perdía la personalización de
+tres maneras.** Lo vio Richi con la aplicación ya desplegada: «todo lo que
+personalices, si refrescas o te mueves de página y vas atrás, se quita y vuelve a
+como estaba por defecto».
 
-Es la única parte de Estook que escribe así, y se puede porque lo que se guarda no
-es un dato del negocio: si se perdiera el último gesto, lo que pasa es que un
-widget se queda donde estaba.
+1. **Los gestos sueltos también esperaban 800 ms.** Quitar un widget, añadir uno o
+   cambiarle el tamaño no producen veinte cambios: producen uno. Esperar abría una
+   ventana en la que recargar o salir del Panel perdía el cambio, y salir del Panel
+   justo después de colocar algo **es lo normal**: se coloca y uno se va a mirar lo
+   que ha colocado.
+2. **Al guardar no se tocaba la caché de TanStack Query**, así que seguía con lo
+   viejo y con la versión vieja. Volver al Panel leía esa caché y pisaba lo tuyo, y
+   el siguiente guardado mandaba una versión que ya no era la de la fila: el
+   servidor contestaba «lo cambió otra persona» —contra ti mismo— y dejaba de
+   guardar del todo.
+3. **Y al desmontar la pantalla se cancelaba el reloj y se tiraba lo pendiente.**
+
+Ahora: los gestos sueltos se guardan al momento, el retraso queda solo para el
+arrastre, la caché es el único dueño de lo que se pinta y se actualiza con la
+versión nueva en cada guardado, **solo hay un guardado en vuelo** —el siguiente
+espera a que vuelva el anterior con su versión— y lo pendiente se manda al
+desmontar y al cerrar la pestaña.
+
+Y **«guardando…» dura hasta que la cola está vacía**, no hasta que vuelve la primera
+petición. Es lo honesto de cara a quien lo usa, y además es lo único que deja
+comprobarlo desde fuera.
+
+Se puede escribir así porque lo que se guarda no es un dato del negocio: si se
+perdiera el último gesto de un arrastre, lo que pasa es que un widget se queda donde
+estaba.
 
 ## Y no publica evento
 

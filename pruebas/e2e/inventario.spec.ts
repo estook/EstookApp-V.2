@@ -53,7 +53,8 @@ async function entrar(page: Page, correo: string) {
   await page.getByLabel('Tu correo').fill(correo);
   await page.getByLabel('Tu contraseña').fill(CLAVE);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Entra en Estook');
+  await expect(page.getByRole('heading', { level: 1, name: 'Entra en Estook' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 }
 
 /**
@@ -997,4 +998,111 @@ test('las cuatro vistas de Productos se abren, y ninguna se queda muda', async (
     // blanco» (B4).
     await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
   }
+});
+
+// ── 7 · El alta sencilla: nombre, en qué se mide y lo que cuesta ─────────────
+
+/**
+ * ── Lo que preguntaba, y por qué estaba mal ──────────────────────────────────
+ *
+ * «Preguntas cosas como "cómo lo compras", "cuánto trae", "unidad con la que
+ * cocinas"… no tienen sentido.» Un saco de harina obligaba a escribir «Saco de
+ * 25 kg», luego «25000», luego elegir «g», y entender por qué: tres preguntas y
+ * una multiplicación para decir «compro harina, a tanto el kilo».
+ *
+ * Y preguntaba en el sitio equivocado: **cuántos gramos lleva una ración es de la
+ * ficha técnica**, que es M9. El producto solo tiene que saber en qué se mide y a
+ * cuánto sale.
+ *
+ * Estas dos comprueban los dos caminos: el sencillo, que es el que usa cualquiera,
+ * y el de envases, que sigue estando para quien compra garrafas de 8 l.
+ */
+test('un producto se da de alta con nombre, unidad y precio, sin hacer cuentas', async ({
+  page,
+}) => {
+  await entrar(page, ROSA);
+  await irAInventario(page, 'productos', 'todo');
+
+  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
+
+  // Sin escribir nada **no sale ninguna lista**: antes salían doce referencias
+  // del catálogo elegidas por nada, y debajo de las doce el botón de crearlo a
+  // mano, que es el que más se pulsa.
+  await expect(hoja.getByRole('button', { name: 'Crearlo a mano' })).toBeVisible();
+
+  const nombre = `Harina de fuerza ${Date.now()}`;
+  await hoja.getByRole('button', { name: 'Crearlo a mano' }).click();
+  await hoja.getByLabel('Cómo se llama').fill(nombre);
+
+  // En qué se mide: cinco pastillas, no un desplegable que esconde cuatro.
+  await hoja.getByRole('radio', { name: 'kg', exact: true }).click();
+  await expect(hoja.getByRole('radio', { name: 'kg', exact: true })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+
+  // Y el precio **es el del kg**: no hay nada que multiplicar.
+  await hoja.getByLabel('Lo que te cuesta el kg').fill('1,20');
+
+  // Lo de los envases está, pero plegado: quien compra harina suelta no contesta
+  // tres preguntas para decir «a tanto el kilo».
+  await expect(hoja.getByLabel('Cuánto trae')).toHaveCount(0);
+
+  await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
+
+  await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
+  await expect(loQueSeVe(page, nombre)).toBeVisible();
+});
+
+test('y quien compra por envases lo despliega, y la cuenta sigue saliendo', async ({ page }) => {
+  await entrar(page, ROSA);
+  await irAInventario(page, 'productos', 'todo');
+
+  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
+
+  const nombre = `Aceite en garrafa ${Date.now()}`;
+  await hoja.getByRole('button', { name: 'Crearlo a mano' }).click();
+  await hoja.getByLabel('Cómo se llama').fill(nombre);
+  await hoja.getByRole('radio', { name: 'ml', exact: true }).click();
+
+  await hoja.getByRole('button', { name: /Lo compro por envases/ }).click();
+  await hoja.getByLabel('Cómo lo compras').fill('Garrafa de 8 l');
+  await hoja.getByLabel('Cuánto trae').fill('8000');
+
+  // La cuenta hecha, **antes** de guardar: es lo que hace que alguien se dé
+  // cuenta de que se ha equivocado.
+  await expect(hoja.getByText('= 8000 ml para usar.')).toBeVisible();
+
+  await hoja.getByLabel('Lo que te cuesta').fill('60,00');
+  await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
+
+  await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
+  await expect(loQueSeVe(page, 'Garrafa de 8 l')).toBeVisible();
+});
+
+// ── 8 · Delivery · el sitio, no la integración ──────────────────────────────
+
+test('el reparto tiene su sitio, con Uber Eats por su nombre y sin botón de mentira', async ({
+  page,
+}) => {
+  /*
+    «Añádelo, es importante, y conectaremos únicamente Uber Eats.» El sitio se
+    decide ahora y la integración es M29, que es lo mismo que se hizo con Fogón en
+    M6: dónde vive algo es navegación, y dejarlo para el módulo obliga a rehacer la
+    barra cuando llegue.
+
+    Lo que **no** puede haber es un botón de conectar: «ninguna integración se da
+    por disponible hasta verificar sus requisitos y capacidades reales».
+  */
+  await entrar(page, ROSA);
+  await page.goto(`${APP}#/servicio/delivery`, { waitUntil: 'domcontentloaded' });
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Delivery');
+  await expect(page.getByText('Uber Eats').first()).toBeVisible();
+  await expect(page.getByText(/módulo 29/)).toBeVisible();
+
+  // Ni un botón que prometa una conexión que no existe.
+  await expect(page.getByRole('button', { name: /Conectar/ })).toHaveCount(0);
 });

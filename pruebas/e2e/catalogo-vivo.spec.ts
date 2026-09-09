@@ -28,6 +28,20 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
  * las demás pruebas plantadas en la puerta del segundo factor, y «cerrar todas
  * las demás sesiones» les tiraría el token en mitad de una petición. Así que lo
  * que se toca, se crea aquí.
+ *
+ * ── Y por qué este fichero corre en un solo navegador ────────────────────────
+ *
+ * Aquí no se abre ninguna pantalla: las diez piden `request` y hablan con la API
+ * a pelo. Correrlas también en `movil-pequeno` y en `movil-safari` no comprueba
+ * **nada** distinto —al servidor le da igual quién le hable— y en cambio
+ * **triplica** las escrituras simultáneas contra la única base de datos de
+ * pruebas. Eso es lo que ponía en rojo, un día sí y otro no, «el segundo factor»
+ * y «las sesiones abiertas»: tres copias de la misma prueba activando y quitando
+ * el segundo factor de la misma persona a la vez.
+ *
+ * Se queda fuera de los dos proyectos de móvil en `playwright.config.ts`, que es
+ * donde se dice qué corre cada uno. La regla, para lo que venga: **una prueba que
+ * no toca pantalla se corre una vez**; en tres navegadores se prueba lo que se ve.
  */
 const API = 'http://localhost:5177/api';
 const CLAVE = 'estook en desarrollo';

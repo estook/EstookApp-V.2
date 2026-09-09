@@ -47,6 +47,14 @@ export interface RejillaProps {
   readonly editando: boolean;
   readonly alEditar: (editando: boolean) => void;
   readonly alReordenar: (puestos: readonly WidgetPuesto[]) => void;
+  /**
+   * Al soltar el widget que se estaba arrastrando.
+   *
+   * El arrastre es lo unico del Panel que se guarda con retraso —son veinte
+   * reordenaciones por gesto— y esto es lo que dice cuando el gesto ha acabado,
+   * para no tener que esperar los ochocientos milisegundos con el dedo ya fuera.
+   */
+  readonly alSoltar?: () => void;
   readonly alQuitar: (id: string) => void;
   readonly alCambiarTamano: (id: string, tamano: TamanoDeWidget) => void;
   /** Que tamanos admite cada widget, para no ofrecer uno que no cabe. */
@@ -78,6 +86,7 @@ export function Rejilla({
   editando,
   alEditar,
   alReordenar,
+  alSoltar,
   alQuitar,
   alCambiarTamano,
   tamanosDe,
@@ -129,18 +138,19 @@ export function Rejilla({
         if (desde !== -1 && hasta !== -1) mover(desde, hasta);
       };
 
-      const alSoltar = () => {
+      const alTerminar = () => {
         setArrastrando(null);
+        alSoltar?.();
         boton.removeEventListener('pointermove', alMover);
-        boton.removeEventListener('pointerup', alSoltar);
-        boton.removeEventListener('pointercancel', alSoltar);
+        boton.removeEventListener('pointerup', alTerminar);
+        boton.removeEventListener('pointercancel', alTerminar);
       };
 
       boton.addEventListener('pointermove', alMover);
-      boton.addEventListener('pointerup', alSoltar);
-      boton.addEventListener('pointercancel', alSoltar);
+      boton.addEventListener('pointerup', alTerminar);
+      boton.addEventListener('pointercancel', alTerminar);
     },
-    [editando, puestos, mover],
+    [editando, puestos, mover, alSoltar],
   );
 
   // Salir del modo de edicion con `Esc`, que es lo que hace todo lo demas en

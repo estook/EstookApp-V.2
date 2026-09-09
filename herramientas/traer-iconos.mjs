@@ -108,6 +108,15 @@ const ICONOS = {
   // opciones que se activen aqui, es como esta hecha la aplicacion. Cada linea
   // lleva ahora el icono de lo que cuenta.
   keyboard: 'Teclado',
+
+  // ── Reparto · los canales de delivery (M29) ────────────────────────────────
+  //
+  // El icono es de la **categoria**, no de la marca: la bici del repartidor vale
+  // para Uber Eats, para Glovo y para el chaval que reparte por su cuenta. Los
+  // logotipos de las marcas no se meten en el paquete de iconos —son de otros, y
+  // llevan sus reglas de uso—: cada canal lleva el suyo cuando se conecte de
+  // verdad, en M29.
+  bike: 'Reparto',
 };
 
 async function traer(nombre) {

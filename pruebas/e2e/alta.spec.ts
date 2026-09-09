@@ -49,7 +49,8 @@ async function entrar(page: Page, correo: string) {
   await page.getByLabel('Tu correo').fill(correo);
   await page.getByLabel('Tu contraseña').fill(CLAVE);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Entra en Estook');
+  await expect(page.getByRole('heading', { level: 1, name: 'Entra en Estook' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 }
 
 /** Un token de sesión, para llamar a la API a pelo (regla 4). */
@@ -304,10 +305,12 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     await page.getByRole('button', { name: 'Esto lo dejo para luego' }).click();
 
     // **Y se vuelve al Panel**, no al paseo. Esto era el fallo.
-    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Invita a tu equipo');
-    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText(
-      'Cinco pantallas y a trabajar',
+    await expect(page.getByRole('heading', { level: 1, name: 'Invita a tu equipo' })).toHaveCount(
+      0,
     );
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Cinco pantallas y a trabajar' }),
+    ).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
   });
 
@@ -340,10 +343,88 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
 
     await page.getByRole('button', { name: 'Continuar' }).click();
 
-    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText(
-      'Cinco pantallas y a trabajar',
-    );
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Cinco pantallas y a trabajar' }),
+    ).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  });
+
+  // ── La guía de instalación · dónde se ofrece y dónde no ──────────────────────
+
+  /**
+   * **Estaba al revés de las dos maneras.**
+   *
+   *   · En el ordenador el paseo acababa en «Ponerlo en mi móvil», y detrás una
+   *     pantalla que dice «toca el botón de compartir». Delante de alguien con un
+   *     ratón.
+   *   · Y en el teléfono, que es donde sirve, había que pasar las cinco pantallas
+   *     del paseo para llegar. Quien pulsaba «Saltar el paseo» —lo normal— no la
+   *     veía nunca.
+   *
+   * Playwright corre esto en los dos proyectos, así que cada uno comprueba lo
+   * suyo: el de escritorio que **no** se ofrece, el de móvil pequeño que sí. Es la
+   * única forma de que esta clase de fallo no vuelva: mirándolo desde los dos.
+   *
+   * ── Y por qué vive dentro del bloque en serie ────────────────────────────────
+   *
+   * **Estaba fuera, y por eso se cayó en la primera fusión.** El alta de Casa Lola
+   * es una sola, y tres de las pruebas de este bloque la **terminan**: mientras
+   * esta entraba, otra la había dado por acabada, así que el título no era «Cinco
+   * pantallas y a trabajar» sino «Hola, Pablo». Es exactamente lo que la cabecera
+   * del bloque dice con todas las letras —«comparten un local y no se puede
+   * compartir a la vez»— y esta prueba se escribió fuera de él.
+   *
+   * Dentro del bloque quedan en serie **dentro de un proyecto**. Entre los dos
+   * proyectos siguen corriendo a la vez contra la misma base, así que además se
+   * vuelve a abrir el alta y se recarga hasta que esté abierta, en vez de dar por
+   * hecho que sigue como se dejó hace un instante.
+   */
+  test('el paseo ofrece ponerlo en la pantalla de inicio solo en el móvil', async ({
+    page,
+    request,
+    isMobile,
+  }) => {
+    const token = await tokenDe(request, PABLO);
+
+    const abrirElPaseo = async () => {
+      await request.post(`${API}/v1/comandos/retomar_el_alta`, {
+        headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `paseo-${Date.now()}` },
+        data: { paso: 'paseo' },
+      });
+    };
+
+    await abrirElPaseo();
+    await entrar(page, PABLO);
+
+    // La ventana entre proyectos: si el otro terminó el alta mientras esta
+    // entraba, se vuelve a abrir y se recarga. No es tapar un rojo: es que el
+    // estado que hace falta lo puede mover otro proceso, y ponerlo una vez no
+    // garantiza encontrárselo puesto.
+    await expect
+      .poll(
+        async () => {
+          const titulo = await page.getByRole('heading', { level: 1 }).innerText();
+          if (titulo === 'Cinco pantallas y a trabajar') return titulo;
+          await abrirElPaseo();
+          await page.reload({ waitUntil: 'domcontentloaded' });
+          return page.getByRole('heading', { level: 1 }).innerText();
+        },
+        { timeout: 20_000 },
+      )
+      .toBe('Cinco pantallas y a trabajar');
+
+    const elAtajo = page.getByRole('button', { name: 'Ponerlo en mi pantalla de inicio' });
+
+    if (isMobile) {
+      // A un toque desde la primera pantalla, sin pasar las cinco.
+      await expect(elAtajo).toBeVisible();
+      await elAtajo.click();
+      await expect(page.getByText('Añadir a pantalla de inicio')).toBeVisible();
+    } else {
+      // En el ordenador no se ofrece: no es algo que se pueda hacer ahí.
+      await expect(elAtajo).toBeHidden();
+      await expect(page.getByRole('button', { name: 'Ponerlo en mi móvil' })).toBeHidden();
+    }
   });
 });
 
@@ -630,50 +711,6 @@ test('el gasto de Google es cero, porque no se llama a Google', async ({ request
     headers: { authorization: `Bearer ${token}` },
   });
   expect(catalogo.status()).toBe(404);
-});
-
-// ── La guía de instalación · dónde se ofrece y dónde no ──────────────────────
-
-/**
- * **Estaba al revés de las dos maneras.**
- *
- *   · En el ordenador el paseo acababa en «Ponerlo en mi móvil», y detrás una
- *     pantalla que dice «toca el botón de compartir». Delante de alguien con un
- *     ratón.
- *   · Y en el teléfono, que es donde sirve, había que pasar las cinco pantallas
- *     del paseo para llegar. Quien pulsaba «Saltar el paseo» —lo normal— no la
- *     veía nunca.
- *
- * Playwright corre esto en los dos proyectos, así que cada uno comprueba lo
- * suyo: el de escritorio que **no** se ofrece, el de móvil pequeño que sí. Es la
- * única forma de que esta clase de fallo no vuelva: mirándolo desde los dos.
- */
-test('el paseo ofrece ponerlo en la pantalla de inicio solo en el móvil', async ({
-  page,
-  request,
-  isMobile,
-}) => {
-  const token = await tokenDe(request, PABLO);
-  await request.post(`${API}/v1/comandos/retomar_el_alta`, {
-    headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `paseo-${Date.now()}` },
-    data: { paso: 'paseo' },
-  });
-
-  await entrar(page, PABLO);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Cinco pantallas y a trabajar');
-
-  const elAtajo = page.getByRole('button', { name: 'Ponerlo en mi pantalla de inicio' });
-
-  if (isMobile) {
-    // A un toque desde la primera pantalla, sin pasar las cinco.
-    await expect(elAtajo).toBeVisible();
-    await elAtajo.click();
-    await expect(page.getByText('Añadir a pantalla de inicio')).toBeVisible();
-  } else {
-    // En el ordenador no se ofrece: no es algo que se pueda hacer ahí.
-    await expect(elAtajo).toBeHidden();
-    await expect(page.getByRole('button', { name: 'Ponerlo en mi móvil' })).toBeHidden();
-  }
 });
 
 // ── El bucle del segundo local ───────────────────────────────────────────────

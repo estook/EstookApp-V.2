@@ -45,6 +45,8 @@ export { Selector, Interruptor } from './componentes/Selector.tsx';
 export type { SelectorProps, InterruptorProps, Opcion } from './componentes/Selector.tsx';
 
 export { Tarjeta, Etiqueta, Avatar, inicialesDe, colorDe } from './componentes/Tarjeta.tsx';
+export { Proporcion } from './componentes/Proporcion.tsx';
+export type { ProporcionProps, Trozo } from './componentes/Proporcion.tsx';
 export type {
   TarjetaProps,
   EtiquetaProps,

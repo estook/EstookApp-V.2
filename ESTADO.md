@@ -1907,6 +1907,13 @@ Tres cosas, y las tres son juntar lo que ya existía:
   solo título. Se deduce del catálogo, así que un widget nuevo lo trae puesto.
 - **Una cabecera con la cara del local**: la banda de su color y su logo. Ese logo
   se le pedía a la gente en el alta y no se enseñaba en ninguna parte.
+- **Y dos barras de proporción**, que son el único gráfico honesto que hay hoy:
+  cuántos de tus productos llevan precio —un producto sin precio cuenta cero en el
+  valor de la cámara, así que las dos cifras solo cuadran cuando la barra está
+  entera— y, en cada línea de «bajo mínimo», cuánto queda respecto de su mínimo,
+  que es lo que dice **por cuál empezar**. Una gráfica de verdad necesita una
+  serie, y las series llegan con M8 y M12: dibujar una línea ahora sería
+  inventarse los datos. Cuando lleguen, `Grafica.tsx` ya está.
 - **El equipo en pastillas con avatar**, en vez de una lista de una columna que en
   un TPV se comía media pantalla. Y la zona de atención en dos columnas desde
   1024 px, que es donde el Panel empezaba por debajo del pliegue.

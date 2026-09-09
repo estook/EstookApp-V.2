@@ -6,6 +6,7 @@ import {
   Cifra,
   EstadoVacio,
   Etiqueta,
+  Proporcion,
   Tarjeta,
   acentoDelWidget,
   appPorPermiso,
@@ -240,8 +241,44 @@ function BajoMinimo({ tamano }: { readonly tamano: TamanoDeWidget }) {
                   </span>
                   <span className="block text-secundario text-texto-suave">
                     Quedan {conUnidadDeUso(producto.cantidad, producto.unidadDeUso)}
+                    {producto.minimo === null
+                      ? ''
+                      : ` de ${conUnidadDeUso(producto.minimo, producto.unidadDeUso)} de mínimo`}
                     {agota === null ? '' : ` · se agota ${agota}`}
                   </span>
+
+                  {/*
+                    Cuánto queda respecto del mínimo, de un vistazo.
+
+                    «Bajo mínimo» es una lista de nombres, y todos los nombres
+                    pesan lo mismo: al que le queda la mitad y al que no le queda
+                    nada salen iguales, y lo que hay que saber es **por cuál
+                    empezar**. La barra lo dice sin leer.
+
+                    Se pinta solo si hay mínimo puesto: sin él, «bajo mínimo» no
+                    es una proporción de nada y una barra sería un adorno.
+                  */}
+                  {producto.minimo !== null && producto.minimo > 0 && (
+                    <span className="mt-e1 block">
+                      <Proporcion
+                        soloLaBarra
+                        // eslint-disable-next-line no-restricted-syntax -- un porcentaje para leerlo, no dinero
+                        titulo={`${producto.nombre}: queda el ${Math.round((producto.cantidad / producto.minimo) * 100)} % de su mínimo`}
+                        trozos={[
+                          {
+                            que: 'lo que queda',
+                            cuantos: Math.max(0, Math.min(producto.cantidad, producto.minimo)),
+                            tono: TONO_DEL_ESTADO[producto.estado] === 'mal' ? 'mal' : 'atencion',
+                          },
+                          {
+                            que: 'lo que falta',
+                            cuantos: Math.max(0, producto.minimo - producto.cantidad),
+                            tono: 'neutro',
+                          },
+                        ]}
+                      />
+                    </span>
+                  )}
                 </button>
               </li>
             );
@@ -343,6 +380,34 @@ function CuantoGenero() {
               : 'Todos de verdad'
         }
       />
+
+      {/*
+        Y cuántos de esos llevan precio, en una barra.
+
+        No es adorno: **un producto sin precio cuenta cero en el valor de la
+        cámara**, así que la cifra de arriba y la de «Valor de la cámara» solo
+        cuadran cuando esta barra está entera. Verlo de lejos y sin leer es lo que
+        hace que alguien lo arregle.
+
+        Los dos trozos no se solapan —o tiene precio o no lo tiene—, que es lo que
+        hace que una barra sea honesta. Un producto puede estar a la vez bajo
+        mínimo y sin precio, así que **esas dos no se pueden apilar**.
+      */}
+      {hoy !== undefined && hoy.cuantosProductos > 0 && (
+        <div className="mt-e3">
+          <Proporcion
+            titulo="Cuántos de tus productos llevan precio"
+            trozos={[
+              {
+                que: 'con precio',
+                cuantos: hoy.cuantosProductos - hoy.sinPrecio.length,
+                tono: 'bien',
+              },
+              { que: 'sin precio', cuantos: hoy.sinPrecio.length, tono: 'atencion' },
+            ]}
+          />
+        </div>
+      )}
     </Caja>
   );
 }

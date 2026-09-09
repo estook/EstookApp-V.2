@@ -29,6 +29,12 @@ import { defineConfig, devices } from '@playwright/test';
  * estan (`libsharpyuv.dll`, `libxml2.dll`), asi que su proyecto solo corre en
  * integracion continua, que es Linux y las instala con `--with-deps`. En local se
  * puede forzar con `CON_WEBKIT=1 pnpm prueba:e2e`.
+ *
+ * Y lo que **no** se prueba tres veces: las pruebas que hablan con la API a pelo,
+ * sin abrir pantalla. Al servidor le da igual quien le hable, asi que correrlas en
+ * los tres proyectos no comprueba nada nuevo y triplica las escrituras contra la
+ * unica base de datos de pruebas — que es de donde salian los rojos intermitentes
+ * de `catalogo-vivo`. Se corren una vez, en `escritorio`.
  */
 const APLICACIONES = [
   { nombre: 'web', puerto: 5173 },
@@ -36,6 +42,12 @@ const APLICACIONES = [
   { nombre: 'carta', puerto: 5175 },
   { nombre: 'admin', puerto: 5176 },
 ];
+
+/**
+ * Lo que no toca pantalla y por tanto corre en un solo proyecto. Cada fichero que
+ * entre aqui tiene que decir en su cabecera por que no necesita navegador.
+ */
+const SIN_PANTALLA = ['**/catalogo-vivo.spec.ts'];
 
 const enCI = Boolean(process.env['CI']);
 const conWebkit = enCI || Boolean(process.env['CON_WEBKIT']);
@@ -53,9 +65,12 @@ export default defineConfig({
     {
       // Las medidas de un iPhone SE, que es el movil pequeno que hay que aguantar.
       name: 'movil-pequeno',
+      testIgnore: SIN_PANTALLA,
       use: { ...devices['Pixel 5'], viewport: { width: 375, height: 667 } },
     },
-    ...(conWebkit ? [{ name: 'movil-safari', use: { ...devices['iPhone SE'] } }] : []),
+    ...(conWebkit
+      ? [{ name: 'movil-safari', testIgnore: SIN_PANTALLA, use: { ...devices['iPhone SE'] } }]
+      : []),
   ],
 
   webServer: [

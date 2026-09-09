@@ -53,7 +53,22 @@ async function entrar(page: Page, correo: string, secreto = CLAVE, conPin = fals
   // Se espera al **titulo**, no a que el boton desaparezca: React sustituye el
   // nodo del boton al pintarlo como «Entrando…», asi que esperar a que se
   // desenganche se cumple al instante y no espera nada. Costo un rato entenderlo.
-  await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Entra en Estook');
+  //
+  // Y son **dos** comprobaciones, no una, porque esto son dos cosas:
+  //
+  //   1. Que ya no esta el titulo de entrar. Se cuentan cero y no se usa
+  //      `not.toHaveText`, que exige que haya **exactamente un** elemento: entre
+  //      un titulo y el siguiente la aplicacion pinta «Cargando tu sesion», que no
+  //      lleva ninguno, y ahi `not.toHaveText` no es que se cumpla, es que **se
+  //      cae**. En una maquina rapida ese hueco no se pilla nunca; en Safari y con
+  //      las tres tandas a la vez, si.
+  //   2. Que **ya hay un titulo nuevo**. Esta la hacia la otra sin querer, y al
+  //      cambiarla se perdio: las pruebas siguieron desde «Cargando tu sesion» y
+  //      Ctrl+K no abria nada, porque los atajos todavia no escuchaban. Una
+  //      comprobacion que hace dos cosas sin decirlo se lleva la segunda por
+  //      delante en cuanto alguien toca la primera; asi que van escritas las dos.
+  await expect(page.getByRole('heading', { level: 1, name: 'Entra en Estook' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 }
 
 /** Lo mismo, pero sin esperar: para las pruebas en las que el login falla. */
@@ -180,7 +195,8 @@ test.describe('criterio · un area manager entra en su consolidado', () => {
     // comprobaciones importe: a quien lleva tres locales no se le pregunta en
     // cual esta, porque la respuesta es «en ninguno y en todos».
     await entrar(page, 'ignacio@ejemplo.estook.com');
-    await expect(page.getByRole('heading', { level: 1 })).not.toContainText('¿Dónde estás hoy?');
+    await expect(page.getByRole('heading', { level: 1, name: '¿Dónde estás hoy?' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
 
   test('entra en uno, y tiene la flecha para volver al conjunto', async ({ page }) => {
@@ -560,12 +576,18 @@ test.describe.serial('la contraseña que te dio otra persona', () => {
     await page.getByLabel('Otra vez, para comprobar').fill(MIA);
     await page.getByRole('button', { name: 'Guardar y entrar' }).click();
 
-    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Pon una contraseña tuya');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Pon una contraseña tuya' }),
+    ).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
 
   test('y la nueva es la que vale', async ({ page }) => {
     await entrar(page, GESTORIA, MIA);
-    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Pon una contraseña tuya');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Pon una contraseña tuya' }),
+    ).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
 });
 

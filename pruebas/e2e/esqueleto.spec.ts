@@ -90,7 +90,8 @@ async function entrar(page: Page, correo: string) {
 
   // Al titulo, y no a que el boton desaparezca: React sustituye el nodo del boton
   // al pintarlo como «Entrando…», asi que esperar a que se desenganche no espera.
-  await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Entra en Estook');
+  await expect(page.getByRole('heading', { level: 1, name: 'Entra en Estook' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 }
 
 /** Entra como quien ve las ocho apps: la gerente del Bar Centro. */
@@ -339,6 +340,22 @@ test.describe('la rueda de apps', () => {
     await page.mouse.move(cx, cy);
     await page.mouse.down();
     await page.mouse.move(cx, cy - caja.height * 0.35, { steps: 8 });
+
+    /*
+      Y **se espera a que la rueda diga que está señalando Inventario** antes de
+      soltar.
+
+      Sin esto, la prueba suelta en el mismo instante que manda el último
+      movimiento, y en un navegador cargado —seis trabajadores a la vez en
+      WebKit— el `pointerup` llega antes de que la aplicación haya procesado el
+      `pointermove`: no hay sector señalado, así que soltar no elige nada y la
+      rueda no lleva a ninguna parte. Pasaba una de cada tantas, que es la peor
+      clase de rojo.
+
+      `aria-activedescendant` es lo que la rueda usa para decir dónde está el
+      dedo, así que esperar a eso es esperar exactamente a lo que hace falta.
+    */
+    await expect(lienzo).toHaveAttribute('aria-activedescendant', 'sector-inventario');
     await page.mouse.up();
 
     await expect(page).toHaveURL(new RegExp('#/inventario(/|$)'));
@@ -701,6 +718,12 @@ test.describe('accesibilidad', () => {
  * Ninguna prueba lo vio porque la que había pulsaba «Listo» antes de recargar, y
  * «Listo» guarda al momento. Estas hacen lo que hace una persona: tocar algo y
  * **irse**.
+ *
+ * Con una raya que conviene tener clara: **irse de la pantalla no es recargar**.
+ * Cambiar de pantalla no corta ninguna petición, así que ahí no se espera a nada
+ * y el desmontaje tiene que apañárselas. Recargar sí la corta —a cualquier
+ * aplicación—, así que ahí se espera a que «guardando…» se apague, que es
+ * justamente para lo que está puesto.
  */
 test.describe('el Panel de cada uno, que es uno solo', () => {
   test.describe.configure({ mode: 'default' });
@@ -823,7 +846,13 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
       0,
     );
 
-    // Sin pulsar «Listo»: se recarga y ya.
+    // Sin pulsar «Listo»: se espera a que deje de poner «guardando…» y se recarga.
+    //
+    // Esperar no es hacerle la prueba fácil, es lo único honesto: recargar **en
+    // mitad** de la petición la corta, y eso le pasaría a cualquier aplicación del
+    // mundo. Lo que se comprueba es que **no hace falta pulsar nada** para que se
+    // guarde —que era el fallo— y que el indicador dice la verdad.
+    await yaEstaGuardado(page);
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
     await expect(page.getByRole('heading', { level: 2, name: 'Caduca esta semana' })).toHaveCount(
@@ -843,7 +872,9 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
       .first()
       .click();
 
-    await yaEstaGuardado(page);
+    // Aquí **no se espera a nada**: se toca y se sale, que es el gesto que perdía
+    // el cambio. Cambiar de pantalla no tira la petición —es la misma página—,
+    // pero sí desmontaba el Panel, y al desmontar se tiraba lo pendiente.
     await abrir(page, '/inventario/hoy');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
 
@@ -869,6 +900,11 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
       .click();
     await page.getByRole('button', { name: 'Listo' }).click();
 
+    // Dos gestos seguidos son **dos guardados en cola**: el segundo no sale hasta
+    // que vuelve el primero con la versión nueva, que es lo que evita que se
+    // estrellen entre ellos. Así que hay que dejar que la cola se vacíe —eso es
+    // exactamente lo que dice «guardando…»— antes de recargar.
+    await yaEstaGuardado(page);
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
 
@@ -906,8 +942,27 @@ test.describe('la rueda se ve limpia al tocarla', () => {
     });
 
     expect(anillo, 'no se ha pintado la rueda').not.toBeNull();
-    expect(anillo?.estilo === 'none' || anillo?.ancho === '0px').toBe(true);
-    expect(anillo?.sombra === 'none' || anillo?.sombra === '').toBe(true);
+
+    // El contorno, apagado.
+    expect(
+      anillo?.estilo === 'none' || anillo?.ancho === '0px',
+      `el contorno sigue puesto: ${anillo?.estilo} ${anillo?.ancho}`,
+    ).toBe(true);
+
+    // Y el filo oscuro de B8, que va en `box-shadow`, **sin pintar nada**.
+    //
+    // No basta con comparar con 'none': lo que apaga una sombra en Tailwind es
+    // `shadow-none`, y eso deja `rgba(0, 0, 0, 0) 0px 0px 0px 0px` en el estilo
+    // calculado. Es transparente, así que no se ve — pero un `=== 'none'` lo daba
+    // por encendido. Lo cazó **WebKit en integración continua**, que es el
+    // navegador del iPhone donde apareció el cuadrado naranja.
+    const sombra = anillo?.sombra ?? '';
+    const sinPintar =
+      sombra === 'none' ||
+      sombra === '' ||
+      // Todos los colores que lleve son transparentes: `rgba(…, 0)`.
+      (sombra.match(/rgba?\([^)]*\)/g) ?? []).every((color) => /,\s*0\s*\)$/.test(color));
+    expect(sinPintar, `la sombra sigue pintando: ${anillo?.sombra}`).toBe(true);
   });
 
   test('y con el teclado sí, que es lo que manda B8', async ({ page }) => {

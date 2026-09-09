@@ -49,7 +49,8 @@ async function entrar(page: Page, correo: string) {
   await page.getByLabel('Tu correo').fill(correo);
   await page.getByLabel('Tu contraseña').fill(CLAVE);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Entra en Estook');
+  await expect(page.getByRole('heading', { level: 1, name: 'Entra en Estook' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 }
 
 /** Un token de sesión, para llamar a la API a pelo (regla 4). */
@@ -304,10 +305,12 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     await page.getByRole('button', { name: 'Esto lo dejo para luego' }).click();
 
     // **Y se vuelve al Panel**, no al paseo. Esto era el fallo.
-    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText('Invita a tu equipo');
-    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText(
-      'Cinco pantallas y a trabajar',
+    await expect(page.getByRole('heading', { level: 1, name: 'Invita a tu equipo' })).toHaveCount(
+      0,
     );
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Cinco pantallas y a trabajar' }),
+    ).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
   });
 
@@ -340,9 +343,9 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
 
     await page.getByRole('button', { name: 'Continuar' }).click();
 
-    await expect(page.getByRole('heading', { level: 1 })).not.toHaveText(
-      'Cinco pantallas y a trabajar',
-    );
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Cinco pantallas y a trabajar' }),
+    ).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
   });
 

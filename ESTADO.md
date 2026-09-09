@@ -9,15 +9,15 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                             |
-| -------------- | ------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas, la segunda **sin fusionar**                      |
-| **Siguiente**  | **M7** · Proveedores y compras                                                              |
-| **Pruebas**    | 706 unitarias y de base de datos · 304 de extremo a extremo · **91 % del catálogo** (59/65) |
-| **Rama**       | La segunda tanda en `m6-medio-segunda-tanda`. La primera, fusionada (PR #37)                |
-| **Publicado**  | Base en la `0025`, **aplicada**. API desplegada con la primera tanda                        |
-| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                |
-| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local       |
+|                |                                                                                                             |
+| -------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas, la segunda **sin fusionar**                                      |
+| **Siguiente**  | **M7** · Proveedores y compras                                                                              |
+| **Pruebas**    | 706 unitarias y de base de datos · 294 de extremo a extremo, 436 con Safari · **91 % del catálogo** (59/65) |
+| **Rama**       | La segunda tanda en `m6-medio-segunda-tanda`. La primera, fusionada (PR #37)                                |
+| **Publicado**  | Base en la `0025`, **aplicada**. API desplegada con la primera tanda                                        |
+| **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                                |
+| **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local                       |
 
 > **Lo que hay que hacer, en orden, está en**
 > [`docs/pasos-para-cerrar-m6-medio.md`](docs/pasos-para-cerrar-m6-medio.md).
@@ -1585,6 +1585,45 @@ Y las del Panel tenían el mismo problema repartido en tres bloques distintos: e
 bloques se corre en paralelo igual. Ahora están todas en uno, de una en una, y
 ningún otro fichero toca el Panel de la gerente.
 
+#### Y tres rojos más, ninguno del producto
+
+Con la segunda tanda ya escrita, la tanda entera —**tres navegadores**, que es lo
+que corre en integración continua— tardó cuatro intentos en salir verde. Ninguno de
+los tres fallos era de la aplicación, y los tres merecen quedar escritos porque son
+tres formas distintas de que **el banco de pruebas mienta**.
+
+**Uno · pruebas sin pantalla corriendo tres veces.** `catalogo-vivo.spec.ts` son
+diez pruebas que hablan con la API a pelo, sin abrir ninguna pantalla. Se corrían en
+los tres proyectos: al servidor le da igual quién le hable, así que no comprobaban
+nada nuevo y **triplicaban** las escrituras contra la única base de datos de
+pruebas. De ahí salían «el segundo factor» y «las sesiones abiertas» en rojo un día
+sí y otro no: tres copias de la misma prueba activando y quitando el segundo factor
+de la misma persona a la vez. Ahora se corren una vez, en `escritorio`, dicho en
+`playwright.config.ts`. **Una prueba que no toca pantalla se corre una vez.**
+
+**Dos · la API de pruebas cerraba las conexiones por debajo.** Node cierra las
+conexiones reutilizables **a los cinco segundos** de estar quietas, y aquí están
+quietas mucho: las peticiones van de una en una porque PGlite es una sola conexión.
+Con las pruebas en paralelo había clientes esperando turno con el socket abierto;
+cuando les tocaba, mandaban por un socket recién cerrado y se llevaban un
+`ECONNRESET`, que en la prueba sale como «no se ha podido entrar» o como un tiempo
+agotado, **sin ninguna relación con lo que se estaba probando**. Dos minutos de
+espera, y un `clientError` que contesta al socket roto en vez de tumbar el proceso.
+
+**Tres · una comprobación que hacía dos cosas sin decirlo.** Doce sitios esperaban
+a entrar así: «el título de nivel 1 **no** pone "Entra en Estook"». Y
+`not.toHaveText` exige que haya **exactamente un** título: en el hueco en que uno se
+va y el siguiente no ha llegado —«Cargando tu sesión», que no lleva ninguno— no es
+que no se cumpla, es que **se cae**. En una máquina rápida ese hueco no se pilla
+nunca; en Safari y con las tres tandas a la vez, sí.
+
+Lo caro fue lo siguiente: al cambiarla por «cuenta cero», la tanda salió **peor**,
+con quince rojos en el buscador y en los atajos. Porque la comprobación vieja hacía
+**dos** cosas —que el título de entrar no esté **y que haya un título nuevo**— y al
+arreglar la primera se perdió la segunda: las pruebas seguían desde «Cargando tu
+sesión» y Ctrl+K no abría nada, porque los atajos todavía no escuchaban. Ahora van
+las dos escritas, que es lo que había que haber hecho desde el principio.
+
 #### Cómo se comprueba que M6½ está terminado
 
 No tiene ficha en el Plan, así que su criterio es este:
@@ -1758,10 +1797,28 @@ tendrá que cargarse aparte desde el principio, no al final.
     «Solo quería eliminar ajustes de arriba en móvil»: se quitaron Ajustes, el chat
     y Fogón, y de paso Ajustes del ordenador. Uno sobraba; los otros tres no. Antes
     de quitar de más, se pregunta.
-22. **Una prueba que solo recorre el camino cómodo no prueba nada.** La del Panel
+22. **El navegador del iPhone se prueba con `CON_WEBKIT=1`, y hay que acordarse.**
+    La integración continua corre **tres** proyectos —escritorio, móvil pequeño y
+    `movil-safari`, que es WebKit— y en local solo corren dos. El cuadrado naranja
+    de la rueda apareció en un iPhone y la comprobación que lo fijaba **pasaba en
+    local y fallaba en WebKit**, porque lo que apaga una sombra en Tailwind no es
+    `none`, es un color transparente. Antes de dar por buena una corrección de algo
+    que salió en un teléfono: `$env:CON_WEBKIT = "1"` y `pnpm prueba:e2e:completa`.
+23. **Una prueba que solo recorre el camino cómodo no prueba nada.** La del Panel
     pulsaba «Listo» antes de recargar, y «Listo» guarda al momento: por eso pasó en
     verde con la personalización perdiéndose de tres maneras distintas. Las pruebas
     tienen que hacer **lo que hace una persona**, que es tocar algo y **irse**.
+24. **Un rojo que no habla de lo que se estaba probando casi nunca es del
+    producto.** `ECONNRESET` al entrar, un tiempo agotado en cuatro pruebas
+    seguidas, «Entra en Estook» donde tenía que haber un Panel: eso no es la
+    aplicación, es el banco de pruebas —conexiones que se cierran solas, una base de
+    datos compartida, pruebas sin pantalla corriendo tres veces—. Antes de tocar
+    código de producto por un rojo así, hay que mirar **quién sirve las pruebas**.
+25. **Una comprobación que hace dos cosas sin decirlo se lleva la segunda por
+    delante.** «El título no pone "Entra en Estook"» comprobaba también, sin
+    escribirlo, que **hubiera** un título. Al arreglar la primera mitad se perdió la
+    segunda y salieron quince rojos nuevos en sitios que no se habían tocado. Si una
+    comprobación depende de algo que no dice, se escribe aparte.
 
 ---
 
@@ -1938,5 +1995,5 @@ conciliada con esa diferencia señalada.
 
 **Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase. Los tres primeros pasan hoy —706, 288 y 59 de 65—; el cuarto, cuando se
-aplique la `0025` y se despliegue la API.
+Supabase. Los tres primeros pasan hoy —706, 436 con los tres navegadores y 59 de 65—; el
+cuarto, cuando se aplique la `0025` y se despliegue la API.

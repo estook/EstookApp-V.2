@@ -119,10 +119,26 @@ export function usarSeVeOscuro(): boolean {
   return oscuro;
 }
 
+/**
+ * Si lo pintado ahora mismo es oscuro, mirando **solo lo que dice la aplicacion**.
+ *
+ * ── El fallo que este `sistema` explicito evita ──────────────────────────────
+ *
+ * De las cuatro aplicaciones, solo `app` elige tema: la web publica y la carta no
+ * llaman a `usarTema`, asi que su <html> no lleva `data-tema` y **se quedan
+ * claras siempre**, que es lo que les toca.
+ *
+ * Si la respuesta por defecto fuera «lo que diga el sistema», con el movil en
+ * modo oscuro esas dos pintarian el logotipo claro sobre una pagina clara:
+ * invisible. El mismo fallo que el modo oscuro traia en la barra de arriba, pero
+ * al reves y en las aplicaciones que ni siquiera tienen modo oscuro.
+ *
+ * Asi que el sistema solo manda cuando alguien ha elegido que mande.
+ */
 function seVeOscuroAhora(): boolean {
   if (typeof window === 'undefined') return false;
   const puesto = document.documentElement.dataset['tema'];
   if (puesto === 'oscuro') return true;
-  if (puesto === 'claro') return false;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (puesto === 'sistema') return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return false;
 }

@@ -69,3 +69,35 @@ for (const aplicacion of APLICACIONES) {
     });
   });
 }
+
+/**
+ * Las que no eligen tema se quedan claras, **aunque el sistema sea oscuro**.
+ *
+ * De las cuatro aplicaciones, solo `app` tiene modo oscuro: la web pública y la
+ * carta no llaman a `usarTema`, así que su `<html>` no lleva `data-tema`. Si el
+ * gancho que decide el logotipo respondiera «lo que diga el sistema» por defecto,
+ * con el móvil en oscuro esas dos pintarían **el logotipo claro sobre una página
+ * clara**: invisible. Es el mismo fallo del logotipo, al revés.
+ */
+test.describe('con el sistema en oscuro', () => {
+  test.use({ colorScheme: 'dark' });
+
+  for (const { nombre, url } of APLICACIONES.filter((a) => a.nombre !== 'app')) {
+    test(`${nombre} sigue clara, y su logotipo se lee`, async ({ page }) => {
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+
+      // Sin `data-tema`: esta aplicación no elige, así que no hay nada que elegir.
+      await expect(page.locator('html')).not.toHaveAttribute('data-tema', /.+/);
+
+      const fondo = await page.evaluate(() =>
+        window.getComputedStyle(document.documentElement).getPropertyValue('--color-fondo').trim(),
+      );
+      expect(fondo, 'la web pública no tiene modo oscuro').toBe('#f1efea');
+
+      const logos = page.getByRole('img', { name: /Estook · tu cocina/ });
+      if ((await logos.count()) > 0) {
+        await expect(logos.first()).toHaveAttribute('src', /estook-logo.png/);
+      }
+    });
+  }
+});

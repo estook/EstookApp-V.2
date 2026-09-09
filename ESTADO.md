@@ -13,7 +13,7 @@
 | -------------- | ----------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas, la auditoría y la limpieza de imagen, **sin fusionar**           |
 | **Siguiente**  | **M7** · Proveedores y compras                                                                              |
-| **Pruebas**    | 726 unitarias y de base de datos · 302 de extremo a extremo, 448 con Safari · **91 % del catálogo** (59/65) |
+| **Pruebas**    | 726 unitarias y de base de datos · 308 de extremo a extremo, 457 con Safari · **91 % del catálogo** (59/65) |
 | **Rama**       | `m6-medio-imagen-y-marca`. La #38 se fusionó **sin la auditoría**, que va aquí                              |
 | **Publicado**  | Base en la `0025`. La **`0026` está sin aplicar** y la API sin desplegar: las dos hacen falta               |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                                |
@@ -2090,7 +2090,14 @@ devolviendo el `text-charcoal` al botón, y se pone roja con «con #1f3a5f,
     con un botón ilegible. El color que se guarda es el de la persona; el que se
     pinta sale de medirlo contra el fondo donde va a aparecer, y cuando ha habido
     que tocarlo **se le dice**.
-31. **Un tema se hace en las fichas, nunca en las pantallas.** Con `dark:` en cada
+31. **Lo que una aplicación no elige, no se elige por ella.** El gancho que decide
+    si se está pintando oscuro respondía «lo que diga el sistema» cuando nadie
+    había elegido nada. De las cuatro aplicaciones solo `app` tiene tema, así que
+    con el móvil en oscuro la web pública y la carta habrían pintado **el logotipo
+    claro sobre una página clara**. El mismo fallo del logotipo, al revés y en las
+    aplicaciones que ni siquiera tienen modo oscuro. Un valor por defecto que
+    adivina es un valor por defecto que se equivoca en algún sitio.
+32. **Un tema se hace en las fichas, nunca en las pantallas.** Con `dark:` en cada
     clase, el modo oscuro está roto en la tercera pantalla que alguien escriba.
     Redefiniendo las fichas, una pantalla nueva sale bien en los dos temas sin que
     su autor se entere de que existen.
@@ -2272,5 +2279,5 @@ conciliada con esa diferencia señalada.
 
 **Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase. Los tres primeros pasan hoy —726, 448 con los tres navegadores y 59 de 65—; el
+Supabase. Los tres primeros pasan hoy —726, 457 con los tres navegadores y 59 de 65—; el
 cuarto, cuando se aplique la `0025` y se despliegue la API.

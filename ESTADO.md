@@ -13,7 +13,7 @@
 | -------------- | ----------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas más la auditoría de infraestructura, **sin fusionar**             |
 | **Siguiente**  | **M7** · Proveedores y compras                                                                              |
-| **Pruebas**    | 706 unitarias y de base de datos · 297 de extremo a extremo, 439 con Safari · **91 % del catálogo** (59/65) |
+| **Pruebas**    | 706 unitarias y de base de datos · 296 de extremo a extremo, 439 con Safari · **91 % del catálogo** (59/65) |
 | **Rama**       | La segunda tanda y la auditoría en `m6-medio-segunda-tanda`. La primera, fusionada (PR #37)                 |
 | **Publicado**  | Base en la `0025`, **aplicada**. API desplegada con la primera tanda                                        |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                                |
@@ -2159,5 +2159,5 @@ conciliada con esa diferencia señalada.
 
 **Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase. Los tres primeros pasan hoy —706, 436 con los tres navegadores y 59 de 65—; el
+Supabase. Los tres primeros pasan hoy —706, 439 con los tres navegadores y 59 de 65—; el
 cuarto, cuando se aplique la `0025` y se despliegue la API.

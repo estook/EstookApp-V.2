@@ -610,11 +610,11 @@ async function ponerElColor(page: Page, color: string) {
       mismo que pasa cuando lo cambia el selector de color del sistema —que es lo
       que hace una persona, y lo que Playwright no puede abrir—.
     */
-    const escribir = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype,
-      'value',
-    )?.set;
-    escribir?.call(campo, cual);
+    const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+    // Se llama con `campo` de `this`, que es a lo que pertenece el descriptor.
+    // La flecha lo deja escrito, en vez de dejar un método suelto por ahí.
+    const escribir = (valor: string) => descriptor?.set?.call(campo, valor);
+    escribir(cual);
     campo.dispatchEvent(new Event('input', { bubbles: true }));
   }, color);
 
@@ -664,22 +664,31 @@ test.describe('cómo se ve · el tema y el color del local', () => {
   });
 
   test('y el logotipo cambia con él, que si no se queda negro sobre negro', async ({ page }) => {
-    // El primer fallo que apareció al mirar el modo oscuro de verdad: el
-    // logotipo es tipografía charcoal sobre transparente, y en la barra de
-    // arriba desaparecía. Se genera una versión clara del mismo dibujo.
-    await entrar(page);
-    await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    /*
+      El primer fallo que apareció al mirar el modo oscuro de verdad: el logotipo
+      es tipografía charcoal sobre transparente, y en la barra de arriba se
+      quedaba negro sobre negro. Se genera del mismo original una versión clara,
+      tocando solo lo gris para que el naranja de la marca no se vuelva azul.
+
+      Se mira en **la pantalla de entrar**, y no dentro de la aplicación, por dos
+      razones: ahí el logotipo está siempre y en grande —dentro depende de si el
+      local ha subido el suyo, y en el móvil la barra de arriba lleva el nombre
+      del local en su sitio—, y además comprueba de paso que el tema se aplica
+      **antes de entrar**, que es donde se ve la primera pantalla.
+    */
+    await abrirLimpio(page);
 
     const elLogo = page.getByRole('img', { name: /Estook · tu cocina/ }).first();
-    await expect(elLogo).toHaveAttribute('src', /estook-logo\.png/);
+    await expect(elLogo).toHaveAttribute('src', /estook-logo.png/);
 
-    await page.getByRole('radio', { name: /Oscuro/ }).click();
-    await expect(elLogo).toHaveAttribute('src', /estook-logo-oscuro\.png/);
+    // El tema vive en este aparato, así que se pone donde vive y se recarga.
+    await page.evaluate(() => {
+      window.localStorage.setItem('estook.tema', 'oscuro');
+    });
+    await page.reload({ waitUntil: 'domcontentloaded' });
 
-    // Y se vuelve a dejar claro, que es el de fábrica y el que esperan las demás.
-    await page.getByRole('radio', { name: /Claro/ }).click();
-    await expect(elLogo).toHaveAttribute('src', /estook-logo\.png/);
+    await expect(page.locator('html')).toHaveAttribute('data-tema', 'oscuro');
+    await expect(elLogo).toHaveAttribute('src', /estook-logo-oscuro.png/);
   });
 
   test('con el color del local, el texto del botón principal se sigue leyendo', async ({

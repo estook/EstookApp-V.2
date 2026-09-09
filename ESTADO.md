@@ -11,11 +11,11 @@
 
 |                |                                                                                                             |
 | -------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas más la auditoría de infraestructura, **sin fusionar**             |
+| **Terminados** | **M0** a **M6** ✓ · **M6½** en dos tandas, la auditoría y la limpieza de imagen, **sin fusionar**           |
 | **Siguiente**  | **M7** · Proveedores y compras                                                                              |
-| **Pruebas**    | 706 unitarias y de base de datos · 296 de extremo a extremo, 439 con Safari · **91 % del catálogo** (59/65) |
-| **Rama**       | La segunda tanda y la auditoría en `m6-medio-segunda-tanda`. La primera, fusionada (PR #37)                 |
-| **Publicado**  | Base en la `0025`, **aplicada**. API desplegada con la primera tanda                                        |
+| **Pruebas**    | 726 unitarias y de base de datos · 302 de extremo a extremo, 448 con Safari · **91 % del catálogo** (59/65) |
+| **Rama**       | `m6-medio-imagen-y-marca`. La #38 se fusionó **sin la auditoría**, que va aquí                              |
+| **Publicado**  | Base en la `0025`. La **`0026` está sin aplicar** y la API sin desplegar: las dos hacen falta               |
 | **Entrar**     | La cuenta de Ricardo, con su negocio. Ninguna cuenta de ejemplo puede entrar                                |
 | **Dirección**  | **Evolución de producto 1.0**, de aplicación de gestión a sistema operativo del local                       |
 
@@ -1838,6 +1838,96 @@ Nada de esto se ha hecho, y ninguna de las cinco es una frase: son trabajo.
 
 ---
 
+### La limpieza de imagen · lo que salió de verla en el TPV
+
+Richi abrió Estook en el TPV de la cocina y mandó la foto. La información era
+correcta y la pantalla no parecía una aplicación profesional: «todo blanco, texto
+suelto». Con el aviso por delante: «cuidado con el texto, que no acabe siendo
+negro sobre negro».
+
+#### Uno · Por qué parecía una hoja de papel, y no era una opinión
+
+Era **una medida**. B1 daba `#fafaf8` de fondo y blanco de tarjeta, y esos dos
+contrastan **1,02:1**. En un TPV no se ven tarjetas: se ve texto flotando sobre
+blanco.
+
+El fondo baja a `#f1efea` —1,15— y con él bajan los dos bordes y se oscurecen
+`bien`, `atención` y `texto-tenue`, que sobre el fondo nuevo se quedaban por
+debajo de 4,5:1.
+
+Tres líneas, y arregla la pantalla entera. Y es exactamente el tipo de cosa que
+**ninguna prueba podía ver**: todas pasaban, porque la paleta cumplía B8. Lo que
+no cumplía era «una tarjeta tiene que parecer una tarjeta», que no estaba escrito
+en ninguna parte. Ahora sí, y se mide.
+
+#### Dos · Los dos temas, y la ficha que lo hace barato
+
+Claro, oscuro o el del sistema, en Ajustes, guardado en el aparato como el tamaño
+de letra. **El de fábrica sigue siendo el claro**: una cocina se mira de lejos y
+con la luz encendida.
+
+Lo que hace que esto no sea deuda es **cómo** está hecho: `temas.css` redefine las
+fichas, y las utilidades de Tailwind salen de las fichas. `bg-superficie` compila
+a `var(--color-superficie)`, así que **ninguna pantalla lleva una clase de modo
+oscuro** y una pantalla nueva sale bien en los dos sin que nadie se acuerde. Con
+`dark:` en cada clase, el modo oscuro estaría roto en la tercera pantalla.
+
+Y el primer fallo apareció al minuto de mirarlo: **el logotipo es tipografía
+charcoal** y se quedaba negro sobre negro en la barra. Se genera del mismo
+original una versión clara, tocando solo lo gris —un `invert()` de CSS habría
+vuelto azul el naranja de la marca—.
+
+#### Tres · El color del local, y el que de verdad se pinta
+
+El logo y el color se pedían en el paso 5 del alta y **no se podían cambiar
+nunca más**. Ahora están en Ajustes, con un interruptor para que ese color pinte
+el acento de toda la aplicación (migración `0026`, apagado de fábrica).
+
+Y aquí está lo que hace que esto sea un sistema y no un ajuste: **el color que se
+guarda no es el que se pinta**. El botón principal decía `text-charcoal` escrito a
+mano —porque el naranja de Estook es claro— y con un azul noche de marca el texto
+del botón se quedaba en 1,8:1. Es el aviso de Richi, palabra por palabra.
+
+De un color de marca salen **cuatro**, cada uno medido contra el fondo donde va a
+aparecer: el que pinta, el que se escribe encima, el tinte de una pastilla y el
+acento **dentro de la barra oscura** —que existe por «Deshacer», donde el fondo es
+otro—. Y hay colores que no admiten texto legible de ninguna clase: un gris del
+50 % da 3,95 con el blanco y 4,34 con el charcoal. Para esos, el acento se empuja
+hasta que sí, y **se dice en Ajustes** que se ha tocado.
+
+Está entero en la [decisión 0024](docs/decisiones/0024-el-color-del-local-pinta-la-app.md).
+
+#### Cuatro · El Panel, que ya tenía el color escrito y no lo usaba
+
+Tres cosas, y las tres son juntar lo que ya existía:
+
+- **Cada widget lleva el acento de su app.** Estaba escrito dos veces sin
+  juntarse: cada widget declara de qué app es, y B3 le da a cada app su color.
+  Ahora el Panel se lee de un vistazo —lo naranja es de Inventario— sin leer un
+  solo título. Se deduce del catálogo, así que un widget nuevo lo trae puesto.
+- **Una cabecera con la cara del local**: la banda de su color y su logo. Ese logo
+  se le pedía a la gente en el alta y no se enseñaba en ninguna parte.
+- **El equipo en pastillas con avatar**, en vez de una lista de una columna que en
+  un TPV se comía media pantalla. Y la zona de atención en dos columnas desde
+  1024 px, que es donde el Panel empezaba por debajo del pliegue.
+
+#### Y las tres redes que dejan esto blindado
+
+Son tres porque son tres cosas distintas, y ninguna sustituye a otra:
+
+| Qué mide                            | Dónde                 | Qué caza                                                       |
+| ----------------------------------- | --------------------- | -------------------------------------------------------------- |
+| La paleta de fábrica, los dos temas | `contraste.prueba.ts` | Que alguien aclare un gris «para que se vea mejor»             |
+| La aritmética del color de marca    | `color.prueba.ts`     | Doce colores elegidos para hacer daño, cuatro mínimos cada uno |
+| **El píxel**                        | `pantalla.spec.ts`    | Que un componente se haya quedado un color escrito a mano      |
+
+La tercera es la que faltaba en todo esto: pone cinco colores de marca desde
+Ajustes y **lee el contraste del botón principal ya pintado**. Se comprobó
+devolviendo el `text-charcoal` al botón, y se pone roja con «con #1f3a5f,
+"Conectar ahora"».
+
+---
+
 ## 5 · Cómo trabajamos
 
 1. **Primero fusionar, después aplicar a Supabase.** La base de datos nunca va
@@ -1983,6 +2073,21 @@ Nada de esto se ha hecho, y ninguna de las cinco es una frase: son trabajo.
     sirve de nada si lo que hay dentro no es verdad: **el texto se escribe cuando el
     comportamiento existe**, y mientras tanto se dice lo que pasa.
 
+29. **Una paleta que cumple B8 puede seguir siendo una mala pantalla.** El fondo y
+    la tarjeta de B1 contrastaban 1,02:1, y ninguna prueba se quejaba: B8 habla de
+    texto sobre fondo, no de que una tarjeta parezca una tarjeta. Lo vio Richi en
+    el TPV de su cocina en dos segundos. Lo que se mide protege de lo que se mide,
+    y **hay que seguir mirándolo en el aparato en el que se usa** (regla 11).
+30. **Un color que alguien elige no se pinta: se ajusta y se pinta.** Dejar
+    personalizar el color y escribir el texto de encima a mano es cómo se acaba
+    con un botón ilegible. El color que se guarda es el de la persona; el que se
+    pinta sale de medirlo contra el fondo donde va a aparecer, y cuando ha habido
+    que tocarlo **se le dice**.
+31. **Un tema se hace en las fichas, nunca en las pantallas.** Con `dark:` en cada
+    clase, el modo oscuro está roto en la tercera pantalla que alguien escriba.
+    Redefiniendo las fichas, una pantalla nueva sale bien en los dos temas sin que
+    su autor se entere de que existen.
+
 ---
 
 ## 6 · Decisiones tomadas
@@ -2014,6 +2119,7 @@ En [`docs/decisiones/`](docs/decisiones/):
 | **0021** | **El producto se mide en una unidad; los gramajes son de la ficha**   |
 | **0022** | **El reparto tiene sitio antes que conexión; Uber Eats el primero**   |
 | **0023** | **Fogón nunca arma su contexto en el navegador: lo arma el servidor** |
+| **0024** | **El color del local pinta la app, y hay dos temas**                  |
 
 Otras, sin fichero propio:
 
@@ -2159,5 +2265,5 @@ conciliada con esa diferencia señalada.
 
 **Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase. Los tres primeros pasan hoy —706, 439 con los tres navegadores y 59 de 65—; el
+Supabase. Los tres primeros pasan hoy —726, 448 con los tres navegadores y 59 de 65—; el
 cuarto, cuando se aplique la `0025` y se despliegue la API.

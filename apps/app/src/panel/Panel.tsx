@@ -71,9 +71,27 @@ export function Panel() {
         quitar los ejemplos— y la línea de lo que le falta a Estook para funcionar
         bien, que antes era un widget entero.
       */}
-      <section aria-label="Lo que necesita tu atención" className="flex flex-col gap-e3">
+      {/*
+        En dos columnas desde 1024 px de ancho, que es el TPV de una cocina.
+
+        En una sola columna, la zona de atención —conectar el TPV, el equipo,
+        quitar los ejemplos— se comía **la pantalla entera** de un TPV de 768 px
+        de alto, y el Panel, que es lo que se viene a mirar, empezaba por debajo
+        del pliegue. Con dos columnas cabe todo y sobra sitio para dos filas de
+        widgets.
+
+        `items-start` para que una tarjeta corta no se estire hasta el alto de la
+        de al lado: son avisos sueltos, no una tabla.
+      */}
+      <section
+        aria-label="Lo que necesita tu atención"
+        className="grid items-start gap-e3 lg:grid-cols-2"
+      >
         <TarjetasDelPanel />
-        <LoQueFalta />
+        {/* Lo que falta es una línea, y va de lado a lado. */}
+        <div className="lg:col-span-2">
+          <LoQueFalta />
+        </div>
       </section>
 
       {mio.loCambioOtroAparato && (

@@ -218,7 +218,9 @@ Esta parte existe para que la interfaz no se invente pantalla a pantalla. **Todo
 
 - El naranja es solo para **la acción principal, el foco y la marca**. Si una pantalla tiene tres naranjas, dos están mal.
 - Los colores de estado **nunca van solos**: siempre con icono o con texto, porque hay gente que no distingue rojo de verde.
-- **Esquema claro fijo.** El modo oscuro del sistema no repinta la app.
+- **Dos temas, claro de fábrica.** Se elige en Ajustes: claro, oscuro o el del sistema, y se guarda en ese aparato. Los pone `packages/ui/estilos/temas.css` **redefiniendo las fichas**, no con una clase por pantalla: `bg-superficie` compila a `var(--color-superficie)`, así que cambiar la ficha cambia las cuarenta pantallas a la vez y una pantalla nueva sale bien en los dos sin que nadie se acuerde. Los dos se miden con los mismos mínimos de B8.
+- **El acento puede ser el del local.** `--color-naranja` es el acento, no un naranja: si el local enciende «usar mi color» (0026), se sobrescribe en marcha con el suyo, ya ajustado por `packages/ui/src/color.ts` para cumplir B8. De ahí salen dos fichas más, y no son un capricho: `--color-sobre-naranja` es **lo que se escribe encima** del acento —charcoal sobre el naranja de Estook, blanco sobre un azul noche— y `--color-naranja-en-oscuro` es el acento **dentro de una pieza oscura**, como «Deshacer» sobre la barra charcoal. Un componente que escriba `text-charcoal` sobre `bg-naranja` está roto para todo el que no use el naranja de fábrica.
+- **El fondo se separa de la tarjeta.** El `#fafaf8` original daba 1,02:1 contra el blanco: en un TPV de cocina la pantalla se leía como una hoja con texto flotando. Es `#f1efea`, y da 1,15.
 
 ## B2 · Tipografía
 

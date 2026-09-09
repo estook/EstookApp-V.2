@@ -3,24 +3,23 @@
 > ## Lo que hay hecho, y lo que falta
 >
 > **La primera tanda está cerrada del todo**: fusionada (PR #37), la `0025`
-> aplicada —25 de 25 migraciones y 39 tablas— y la API desplegada. Y mirada en el
-> móvil, que es de donde salió la segunda tanda.
+> aplicada y la API desplegada. **La segunda se fusionó (PR #38), y se fusionó
+> antes de que llegaran los tres commits de la auditoría**, así que esos van en
+> la rama de ahora junto con la limpieza de imagen.
 >
-> | Qué                 | Cómo está                                                   |
-> | ------------------- | ----------------------------------------------------------- |
-> | Primera tanda       | **Fusionada, migrada y desplegada** · pasos 1, 2 y 3 hechos |
-> | Segunda tanda       | **Escrita y en verde**: 706 de unidad y 439 de pantalla     |
-> | La auditoría        | **Escrita y en verde**, en la misma rama · nada que migrar  |
-> | Su pull request     | **Por fusionar** · paso 1                                   |
-> | Migraciones         | **Ninguna nueva**: el paso 2 no toca esta vez               |
-> | La API              | **Ninguna operación nueva**: el paso 3 tampoco              |
-> | Mirarlo en tu móvil | **Sin hacer** · paso 4, y es el que no puedo hacer yo       |
+> | Qué                     | Cómo está                                                       |
+> | ----------------------- | --------------------------------------------------------------- |
+> | Primera y segunda tanda | **Fusionadas** (PR #37 y #38)                                   |
+> | La auditoría            | **Escrita y en verde**, sin fusionar · iba en la #38 y no llegó |
+> | La imagen y la marca    | **Escrita y en verde**, sin fusionar                            |
+> | Su pull request         | **Por fusionar** · paso 1                                       |
+> | Migraciones             | **La `0026`, sin aplicar** · paso 2, y esta vez sí toca         |
+> | La API                  | **Sin desplegar** · paso 3, y esta vez también toca             |
+> | Mirarlo en tu móvil     | **Sin hacer** · paso 4, y es el que no puedo hacer yo           |
 >
-> Así que de esta tanda **solo hay que fusionar y mirar**. Los pasos 2 y 3 se dejan
-> escritos porque valen para la próxima vez que sí toquen — y el 3 es el que se
-> olvida.
-
----
+> Esta vez **hay que hacer los cuatro pasos**. La `0026` añade una columna al
+> local y el comando del color aprende a guardarla, así que sin el paso 2 y sin el
+> paso 3 el interruptor de «usar mi color» no guarda nada.
 
 ## Cómo se escriben los comandos aquí
 
@@ -51,10 +50,11 @@ minutos y no hay que hacer nada.
 
 ---
 
-## Paso 2 · Aplicar la migración `0025`
+## Paso 2 · Aplicar la migración `0026`
 
-Es la del Panel de cada uno: crea una tabla nueva, `estook.panel_de_persona`, y no
-toca nada de lo que ya había.
+Es la del color de marca: añade **una columna** al local, `color_en_la_app`, que
+dice si el color de ese local pinta la aplicación entera. No toca nada de lo que
+ya había, y nace apagada, así que aplicarla no cambia el aspecto de nada.
 
 **Dónde:** una ventana de terminal, en la carpeta del proyecto.
 
@@ -63,7 +63,7 @@ toca nada de lo que ya había.
 ```
 
 **Qué sale si va bien:** una línea por cada migración que aplica. Solo debería
-aplicar una, la `0025`, y acabar diciendo que la base está al día.
+aplicar una, la `0026`, y acabar diciendo que la base está al día.
 
 Y para comprobarlo sin creerte lo que diga yo:
 
@@ -71,8 +71,9 @@ Y para comprobarlo sin creerte lo que diga yo:
 .\estook.cmd bd:comprobar
 ```
 
-**Qué tiene que decir:** **25 de 25** migraciones aplicadas, y **39 tablas** en el
-esquema `estook` —eran 38—, todas con seguridad por filas.
+**Qué tiene que decir:** **26 de 26** migraciones aplicadas, y **39 tablas** en el
+esquema `estook` —las mismas: esta añade una columna, no una tabla—, todas con
+seguridad por filas.
 
 ---
 
@@ -81,18 +82,20 @@ esquema `estook` —eran 38—, todas con seguridad por filas.
 **Esto es lo importante de esta lista.** Las cuatro aplicaciones se publican solas
 al fusionar; **la API se despliega a mano**, a propósito.
 
-M6½ trae **tres operaciones nuevas** que la API desplegada no conoce:
+Esta vez no hay ninguna operación nueva, pero **dos de las que ya había han
+cambiado por dentro**:
 
-| Operación          | Para qué                          |
-| ------------------ | --------------------------------- |
-| `mis_movimientos`  | El libro de movimientos, entero   |
-| `mi_panel`         | Leer cómo tienes montado el Panel |
-| `guardar_mi_panel` | Guardarlo                         |
+| Operación                | Qué ha cambiado                                     |
+| ------------------------ | --------------------------------------------------- |
+| `guardar_color_de_marca` | Aprende a guardar el interruptor de «usar mi color» |
+| `quien_soy`              | Devuelve si ese interruptor está encendido          |
 
-Si se salta este paso, lo que pasa es exactamente lo que pasó al cerrar M6: la
-pantalla está publicada y el servidor no conoce sus operaciones, así que **el Panel
-sale vacío y Movimientos dice «Eso ya no está»**, y por fuera parece que se ha roto
-todo. No se ha roto nada: falta este paso.
+Si se salta este paso, lo que pasa es que **el interruptor de Ajustes no guarda
+nada**: se enciende, se ve el color, y al recargar vuelve al naranja. La API
+desplegada no conoce ese campo y lo tira.
+
+Y si se hace el paso 3 sin el paso 2, la API intenta escribir en una columna que
+no existe. **Van en este orden y no en el otro.**
 
 **Dónde:** GitHub → pestaña **Actions** → en la lista de la izquierda, el flujo de
 desplegar la API → botón **Run workflow** → **Run workflow**.
@@ -193,6 +196,33 @@ alrededor: el círculo, limpio.
     no la carga de una imagen tuya.
 19. **Y entra desde el móvil de otra persona, si compartís tablet.** Tus acciones
     rápidas tienen que ser las tuyas, no las del último que entró.
+
+### Y la limpieza de imagen · **esto es lo que hay que mirar esta vez**
+
+20. **Abre el Panel y mira si parece una aplicación.** Las tarjetas tienen que
+    verse **como tarjetas**, separadas del fondo, no como texto flotando sobre
+    blanco. Ese era el fallo de la foto del TPV, y era una medida: el fondo y la
+    tarjeta contrastaban 1,02:1.
+21. **Arriba del Panel hay una cabecera con la cara de tu local**: una banda de tu
+    color y tu logo. Ese logo se te pidió en el alta y hasta hoy no salía en
+    ninguna parte.
+22. **Los widgets llevan el color de su app.** Los de Inventario, naranja; los de
+    Equipo, morado. Se lee de un vistazo de dónde sale cada cifra.
+23. **Ajustes → Cómo se ve → Oscuro.** Toda la aplicación cambia al momento.
+    Recarga: tiene que seguir oscura, porque se guarda en ese aparato.
+24. **Y con el oscuro puesto, mira el logotipo de arriba.** Tiene que leerse. Era
+    tipografía negra sobre transparente y se quedaba negro sobre negro; ahora hay
+    una versión clara del mismo dibujo, con el naranja intacto.
+25. **Ajustes → Tu marca.** Cambia el logo y quítalo. Antes solo se podía hacer
+    dentro del alta, o sea: una vez en la vida del local.
+26. **Elige un color y enciende «usar mi color en toda la aplicación».** Los
+    botones, las pastillas y el resaltado pasan a ser de tu color.
+27. **Y ahora el que importa: pon un color raro.** Un amarillo chillón, un negro,
+    un gris. **El texto de los botones se tiene que seguir leyendo siempre.** Si
+    el color que elegiste no llegaba, la propia tarjeta te lo dice: «para que se
+    lea sobre el fondo, ese color se pinta un poco más oscuro».
+28. **Prueba las dos cosas juntas**: tu color con el tema oscuro. El acento se
+    recalcula contra el fondo nuevo, así que tiene que verse igual de bien.
 
 > **Lo que salga, apúntalo tal cual.** Los seis fallos del segundo paseo por el
 > móvil salieron así, y ninguno ponía en rojo ninguna prueba.

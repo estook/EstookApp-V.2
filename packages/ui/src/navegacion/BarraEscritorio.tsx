@@ -1,6 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { IconoAvisos, IconoBuscar, IconoChat, IconoFlechaAbajo, IconoLocal } from '@estook/iconos';
+import {
+  IconoAjustes,
+  IconoAvisos,
+  IconoBuscar,
+  IconoChat,
+  IconoFlechaAbajo,
+  IconoLocal,
+} from '@estook/iconos';
 import type { App } from '../apps.ts';
 import { destinosConstruidos, destinosQueLlegan } from '../apps.ts';
 import { clases } from '../clases.ts';
@@ -26,7 +33,8 @@ export interface BarraEscritorioProps {
   readonly appActiva: string | null;
   readonly alIrAApp: (app: App, destino?: string) => void;
   readonly alIrAlPanel: () => void;
-  /** Tu cuenta: ajustes, mi acceso, cambiar de local y salir. */
+  readonly alIrAAjustes: () => void;
+  /** Tu cuenta: mi acceso, cambiar de local y salir. */
   readonly alAbrirMiCuenta: () => void;
   readonly alBuscar: () => void;
   readonly local: { readonly nombre: string; readonly organizacion: string } | null;
@@ -52,6 +60,7 @@ export function BarraEscritorio({
   appActiva,
   alIrAApp,
   alIrAlPanel,
+  alIrAAjustes,
   alAbrirMiCuenta,
   alBuscar,
   local,
@@ -124,14 +133,19 @@ export function BarraEscritorio({
         </Redondo>
 
         {/*
-          El avatar, y **ningun icono de Ajustes al lado**.
-          B5 pide aqui «notificaciones, chat, Fogon y avatar», cuatro cosas; lo
-          que habia eran cinco, porque se anadio un icono de Ajustes que abria
-          exactamente la misma pantalla que el avatar de al lado. Dos puertas a lo
-          mismo, pegadas. Ahora el avatar abre tu cuenta —ajustes, mi acceso,
-          cambiar de local y salir—, que es lo que hay detras de un retrato en
-          cualquier aplicacion, y la fila vuelve a ser la de B5.
+          Ajustes **si** esta aqui, y el avatar al lado.
+
+          Se quito un rato, con el argumento de que abria la misma pantalla que el
+          avatar. El argumento era medio bueno y la conclusion mala: en un
+          ordenador hay sitio de sobra, y quien lleva un local entra en Ajustes
+          muchas veces al dia. Que este a un clic y no a dos no es duplicar: es que
+          en escritorio la fila puede permitirse un atajo directo a lo que mas se
+          abre. En movil no cabe, y ahi si se queda solo el avatar.
         */}
+        <Redondo etiqueta="Ajustes" alPulsar={alIrAAjustes}>
+          <IconoAjustes size={20} />
+        </Redondo>
+
         <button
           type="button"
           onClick={alAbrirMiCuenta}

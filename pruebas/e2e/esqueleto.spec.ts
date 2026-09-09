@@ -419,8 +419,22 @@ async function panelDeFabrica(page: Page) {
   await page.getByRole('button', { name: 'Editar' }).click();
   await page.getByRole('button', { name: 'Volver al panel de siempre' }).click();
   await page.getByRole('button', { name: 'Listo' }).click();
-  // «Listo» guarda ya, sin esperar al reloj de los ochocientos milisegundos.
   await expect(page.getByRole('button', { name: 'Editar' })).toBeVisible();
+  // Y se espera a que este guardado de verdad: si no, la prueba de al lado se
+  // encuentra el Panel a medio dejar.
+  await expect(page.getByText('guardando…')).toHaveCount(0, { timeout: 10_000 });
+}
+
+/**
+ * Espera a que el Panel no tenga nada pendiente de guardar.
+ *
+ * «guardando…» dura desde que se toca algo hasta que la cola se vacia, no hasta
+ * que vuelve la primera peticion. Recargar antes de eso corta el guardado por la
+ * mitad —le pasaria igual a una persona rapida— asi que la prueba espera a lo
+ * mismo que espera la persona: a que deje de decir que esta guardando.
+ */
+async function yaEstaGuardado(page: Page) {
+  await expect(page.getByText('guardando…')).toHaveCount(0, { timeout: 10_000 });
 }
 
 /**
@@ -439,33 +453,6 @@ async function quitarUnWidget(page: Page) {
 }
 
 test.describe('deshacer universal', () => {
-  test('flujo 1 · quitar un widget del Panel, y devolverlo', async ({ page }) => {
-    /*
-      ── El flujo que esto sustituye ────────────────────────────────────────────
-
-      Era un andamio de M3: un boton «Apuntar una nota de prueba» cuyo `deshacer`
-      era `() => undefined`, puesto en el Panel para poder comprobar que la barra
-      aparecia y contaba diez segundos sin esperar a que hubiera un comando de
-      verdad que tocar. Y **se quedo publicado en el Panel de un negocio de
-      verdad**.
-
-      El de verdad es este: quitar un widget se hace sin querer —la ✕ esta a un
-      centimetro del asa de arrastrar— y lo que se pierde es donde lo tenias
-      puesto. Ademas se guarda en el servidor, asi que deshacer tiene que volver a
-      guardar, que es un caso mas exigente que el de la nota falsa.
-    */
-    await comoGerente(page);
-    await panelDeFabrica(page);
-
-    await quitarUnWidget(page);
-
-    await expect(page.getByRole('button', { name: /Deshacer/ })).toBeVisible();
-    await page.getByRole('button', { name: /Deshacer/ }).click();
-
-    // Y vuelve: la barra de deshacer del Panel no es un adorno.
-    await expect(page.getByRole('button', { name: /^Quitar .* del panel$/ }).first()).toBeVisible();
-  });
-
   test('flujo 2 · el tamano de letra vuelve al de antes', async ({ page }) => {
     await comoGerente(page);
     await abrir(page, '/ajustes');
@@ -514,31 +501,6 @@ test.describe('deshacer universal', () => {
     await page.getByRole('button', { name: /Deshacer/ }).click();
     await expect(page.locator('main p').filter({ hasText: 'Bar Playa' }).first()).toBeVisible();
   });
-
-  test('la barra se va sola, y no deshace nada por su cuenta', async ({ page }) => {
-    await comoGerente(page);
-    await panelDeFabrica(page);
-    await quitarUnWidget(page);
-
-    const barra = page.getByRole('button', { name: /Deshacer/ });
-    await expect(barra).toBeVisible();
-
-    // Diez segundos, mas un poco de margen.
-    await expect(barra).toBeHidden({ timeout: 13_000 });
-  });
-
-  test('Ctrl+Z tambien deshace', async ({ page }) => {
-    await comoGerente(page);
-    await panelDeFabrica(page);
-    await quitarUnWidget(page);
-    await expect(page.getByRole('button', { name: /Deshacer/ })).toBeVisible();
-
-    await page.keyboard.press('Control+z');
-
-    // La barra desaparece al deshacer, y el widget vuelve.
-    await expect(page.getByRole('button', { name: /Deshacer/ })).toBeHidden();
-    await expect(page.getByRole('button', { name: /^Quitar .* del panel$/ }).first()).toBeVisible();
-  });
 });
 
 // ── 4 · Todo tiene su «todavía no tengo datos» ───────────────────────────────
@@ -566,42 +528,6 @@ test.describe('estados vacios', () => {
       // Y dice en que modulo se construye: nunca una pantalla muda.
       await expect(page.getByText(/Esta pantalla se construye en M\d+/)).toBeVisible();
     }
-  });
-
-  test('el Panel de cada uno se puede montar, y lo montado se guarda', async ({ page }) => {
-    /*
-      ── Las dos pruebas que esto sustituye, y por que ──────────────────────────
-
-      La primera comprobaba que las tarjetas del Panel dijeran «todavia no tengo
-      datos», y estuvo en verde mientras M6 terminaba sin llenarlas: comprobaba
-      que **siguieran vacias**. La segunda comprobaba «Productos con precio», que
-      era el widget «Salud de los datos», y ese widget ya no existe: ocupaba una
-      tarjeta entera para decir una cifra, y ahora es una linea en la zona de
-      atencion que solo sale cuando falta algo.
-
-      Lo que se comprueba ahora es lo que el Manifiesto promete y no existia: que
-      el Panel **se monta**, y que lo montado se guarda en el servidor y sigue ahi
-      al recargar. Eso ultimo es la mitad que importa: guardarlo en el navegador
-      habria pasado esta prueba y habria fallado en el telefono.
-    */
-    await comoGerente(page);
-    await panelDeFabrica(page);
-
-    // Los widgets de fabrica, con su titulo y su origen debajo.
-    await expect(page.getByRole('heading', { level: 2, name: 'Acciones rápidas' })).toBeVisible();
-    await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toBeVisible();
-
-    // Se anade uno que no estaba. `panelDeFabrica` deja el Panel sin el, asi que
-    // el catalogo lo ofrece siempre, corra esta prueba antes o despues que otras.
-    await page.getByRole('button', { name: 'Editar' }).click();
-    await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
-    await page.getByRole('button', { name: /Lo último apuntado/ }).click();
-    await expect(page.getByRole('heading', { level: 2, name: 'Lo último apuntado' })).toBeVisible();
-
-    // Y sigue ahi al recargar, porque se ha guardado en el servidor.
-    await page.getByRole('button', { name: 'Listo' }).click();
-    await page.reload({ waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('heading', { level: 2, name: 'Lo último apuntado' })).toBeVisible();
   });
 
   test('la linea de lo que falta dice cual falta, y lleva ahi', async ({ page }) => {
@@ -735,5 +661,277 @@ test.describe('accesibilidad', () => {
     // Misma informacion, otra forma: botones en rejilla en vez de sectores.
     await expect(page.getByRole('menu', { name: 'Elige una app' })).toHaveCount(0);
     await expect(page.getByRole('list', { name: 'Elige una app' })).toBeVisible();
+  });
+});
+
+// ── El Panel de cada uno, que es uno solo ────────────────────────────────────
+
+/**
+ * Todo lo que monta, mueve o quita widgets, **en un solo bloque y de una en una**.
+ *
+ * ── Por qué, y por qué es la misma lección por tercera vez ───────────────────
+ *
+ * El Panel de cada uno se guarda por persona y por aparato (migración 0025), así
+ * que **una prueba que quita un widget deja el Panel cambiado para la siguiente**.
+ * En paralelo eso son dos pruebas escribiendo la misma fila a la vez, y el
+ * resultado es un rojo que aparece un martes sin que nadie haya tocado nada.
+ *
+ * Es lo mismo que ya estaba escrito para el alta de Casa Lola —«comparten un local
+ * y no se puede compartir a la vez»—, y aquí estaba a medias: las pruebas se
+ * habían repartido entre tres bloques distintos, y entre bloques se corre en
+ * paralelo igual. Ningún otro fichero toca el Panel de la gerente, por lo mismo.
+ *
+ * `default` y no `serial`: las dos corren de una en una, pero `serial` **salta las
+ * siguientes** cuando una falla, y eso esconde información justo cuando más falta
+ * hace.
+ *
+ * ── Y lo que fijan las tres últimas ──────────────────────────────────────────
+ *
+ * «Todo lo que personalices, si refrescas o te mueves de página y vas atrás, se
+ * quita y vuelve a como estaba por defecto.» Lo vio Richi con la aplicación ya
+ * desplegada, y eran **tres agujeros** en el mismo sitio:
+ *
+ *   1. El guardado esperaba 800 ms **también para los gestos sueltos** —quitar,
+ *      añadir, cambiar el tamaño—, y ese retraso solo hace falta para el arrastre.
+ *   2. Al guardar no se tocaba la caché, así que el segundo cambio salía con la
+ *      versión vieja y se llevaba un «lo cambió otra persona» contra sí mismo.
+ *   3. Y al desmontar la pantalla se cancelaba el reloj **y se tiraba lo
+ *      pendiente**.
+ *
+ * Ninguna prueba lo vio porque la que había pulsaba «Listo» antes de recargar, y
+ * «Listo» guarda al momento. Estas hacen lo que hace una persona: tocar algo y
+ * **irse**.
+ */
+test.describe('el Panel de cada uno, que es uno solo', () => {
+  test.describe.configure({ mode: 'default' });
+
+  test('flujo 1 · quitar un widget del Panel, y devolverlo', async ({ page }) => {
+    /*
+      ── El flujo que esto sustituye ────────────────────────────────────────────
+
+      Era un andamio de M3: un boton «Apuntar una nota de prueba» cuyo `deshacer`
+      era `() => undefined`, puesto en el Panel para poder comprobar que la barra
+      aparecia y contaba diez segundos sin esperar a que hubiera un comando de
+      verdad que tocar. Y **se quedo publicado en el Panel de un negocio de
+      verdad**.
+
+      El de verdad es este: quitar un widget se hace sin querer —la ✕ esta a un
+      centimetro del asa de arrastrar— y lo que se pierde es donde lo tenias
+      puesto. Ademas se guarda en el servidor, asi que deshacer tiene que volver a
+      guardar, que es un caso mas exigente que el de la nota falsa.
+    */
+    await comoGerente(page);
+    await panelDeFabrica(page);
+
+    await quitarUnWidget(page);
+
+    await expect(page.getByRole('button', { name: /Deshacer/ })).toBeVisible();
+    await page.getByRole('button', { name: /Deshacer/ }).click();
+
+    // Y vuelve: la barra de deshacer del Panel no es un adorno.
+    await expect(page.getByRole('button', { name: /^Quitar .* del panel$/ }).first()).toBeVisible();
+  });
+
+  test('la barra se va sola, y no deshace nada por su cuenta', async ({ page }) => {
+    await comoGerente(page);
+    await panelDeFabrica(page);
+    await quitarUnWidget(page);
+
+    const barra = page.getByRole('button', { name: /Deshacer/ });
+    await expect(barra).toBeVisible();
+
+    // Diez segundos, mas un poco de margen.
+    await expect(barra).toBeHidden({ timeout: 13_000 });
+  });
+
+  test('Ctrl+Z tambien deshace', async ({ page }) => {
+    await comoGerente(page);
+    await panelDeFabrica(page);
+    await quitarUnWidget(page);
+    await expect(page.getByRole('button', { name: /Deshacer/ })).toBeVisible();
+
+    await page.keyboard.press('Control+z');
+
+    // La barra desaparece al deshacer, y el widget vuelve.
+    await expect(page.getByRole('button', { name: /Deshacer/ })).toBeHidden();
+    await expect(page.getByRole('button', { name: /^Quitar .* del panel$/ }).first()).toBeVisible();
+  });
+
+  test('el Panel de cada uno se puede montar, y lo montado se guarda', async ({ page }) => {
+    /*
+      ── Las dos pruebas que esto sustituye, y por que ──────────────────────────
+
+      La primera comprobaba que las tarjetas del Panel dijeran «todavia no tengo
+      datos», y estuvo en verde mientras M6 terminaba sin llenarlas: comprobaba
+      que **siguieran vacias**. La segunda comprobaba «Productos con precio», que
+      era el widget «Salud de los datos», y ese widget ya no existe: ocupaba una
+      tarjeta entera para decir una cifra, y ahora es una linea en la zona de
+      atencion que solo sale cuando falta algo.
+
+      Lo que se comprueba ahora es lo que el Manifiesto promete y no existia: que
+      el Panel **se monta**, y que lo montado se guarda en el servidor y sigue ahi
+      al recargar. Eso ultimo es la mitad que importa: guardarlo en el navegador
+      habria pasado esta prueba y habria fallado en el telefono.
+    */
+    await comoGerente(page);
+    await panelDeFabrica(page);
+
+    // Los widgets de fabrica, con su titulo y su origen debajo.
+    await expect(page.getByRole('heading', { level: 2, name: 'Acciones rápidas' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toBeVisible();
+
+    // Se anade uno que no estaba. `panelDeFabrica` deja el Panel sin el, asi que
+    // el catalogo lo ofrece siempre, corra esta prueba antes o despues que otras.
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
+    await page.getByRole('button', { name: /Lo último apuntado/ }).click();
+    await expect(page.getByRole('heading', { level: 2, name: 'Lo último apuntado' })).toBeVisible();
+
+    // Y sigue ahi al recargar, porque se ha guardado en el servidor.
+    await page.getByRole('button', { name: 'Listo' }).click();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 2, name: 'Lo último apuntado' })).toBeVisible();
+  });
+
+  test('los widgets de género salen con datos de verdad, y con su origen debajo', async ({
+    page,
+  }) => {
+    // Vive aquí y no en `pantalla.spec.ts` porque para comprobarlo hay que dejar
+    // el Panel de fábrica, y eso es tocarlo: si lo hiciera otro fichero, lo haría
+    // en mitad de estas.
+    await comoGerente(page);
+    await panelDeFabrica(page);
+
+    await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Caduca esta semana' })).toBeVisible();
+
+    // «Cada número lleva de dónde sale y de qué periodo es» (Evolución 1.0), sin
+    // excepción.
+    await expect(page.getByText('De tu inventario, ahora mismo')).toBeVisible();
+  });
+
+  test('sigue ahí al recargar, aunque no se pulse «Listo»', async ({ page }) => {
+    await comoGerente(page);
+    await panelDeFabrica(page);
+
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await page
+      .getByRole('button', { name: /^Quitar Caducidades del panel$/ })
+      .first()
+      .click();
+    await expect(page.getByRole('heading', { level: 2, name: 'Caduca esta semana' })).toHaveCount(
+      0,
+    );
+
+    // Sin pulsar «Listo»: se recarga y ya.
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 2, name: 'Caduca esta semana' })).toHaveCount(
+      0,
+    );
+  });
+
+  test('y sigue ahí al irse a otra pantalla y volver', async ({ page }) => {
+    // El caso que se perdía siempre: colocar algo y **salir en el acto**, que es
+    // lo normal —se coloca y uno se va a mirar lo que ha colocado—.
+    await comoGerente(page);
+    await panelDeFabrica(page);
+
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await page
+      .getByRole('button', { name: /^Quitar Bajo mínimo del panel$/ })
+      .first()
+      .click();
+
+    await yaEstaGuardado(page);
+    await abrir(page, '/inventario/hoy');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
+
+    await abrir(page, '/');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toHaveCount(0);
+  });
+
+  test('y el segundo cambio se guarda igual que el primero', async ({ page }) => {
+    // La versión vieja en la caché hacía que **el primero se guardara y el segundo
+    // no**, con un «lo cambió otra persona» contra uno mismo.
+    await comoGerente(page);
+    await panelDeFabrica(page);
+
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await page
+      .getByRole('button', { name: /^Quitar Caducidades del panel$/ })
+      .first()
+      .click();
+    await page
+      .getByRole('button', { name: /^Quitar Bajo mínimo del panel$/ })
+      .first()
+      .click();
+    await page.getByRole('button', { name: 'Listo' }).click();
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+
+    await expect(page.getByRole('heading', { level: 2, name: 'Caduca esta semana' })).toHaveCount(
+      0,
+    );
+    await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toHaveCount(0);
+    await expect(page.getByText('Lo cambiaste en otro aparato')).toHaveCount(0);
+  });
+});
+
+// ── La rueda, sin el cuadrado naranja ────────────────────────────────────────
+
+test.describe('la rueda se ve limpia al tocarla', () => {
+  test.use({ viewport: { width: 375, height: 667 } });
+
+  test('con el dedo no pinta el anillo de foco', async ({ page }) => {
+    /*
+      La rueda se abre y la aplicación le da el foco al lienzo, porque es quien
+      escucha las flechas. En iOS eso hace que `:focus-visible` se cumpla aunque se
+      haya abierto con el dedo, así que salía **un rectángulo naranja de 2 px
+      alrededor de una rueda redonda**. Lo vio Richi en su teléfono.
+    */
+    await comoGerente(page);
+    await page
+      .getByRole('button', { name: /Abrir las apps|Ver todas las apps/ })
+      .first()
+      .click();
+
+    const anillo = await page.evaluate(() => {
+      const svg = document.querySelector('svg[role="menu"]');
+      if (!svg) return null;
+      const estilo = window.getComputedStyle(svg);
+      return { ancho: estilo.outlineWidth, estilo: estilo.outlineStyle, sombra: estilo.boxShadow };
+    });
+
+    expect(anillo, 'no se ha pintado la rueda').not.toBeNull();
+    expect(anillo?.estilo === 'none' || anillo?.ancho === '0px').toBe(true);
+    expect(anillo?.sombra === 'none' || anillo?.sombra === '').toBe(true);
+  });
+
+  test('y con el teclado sí, que es lo que manda B8', async ({ page }) => {
+    // «Foco visible siempre» no se negocia: lo que cambia es que el anillo aparece
+    // al llegar con el teclado, que es lo que `:focus-visible` haría si el foco no
+    // lo pusiera el código.
+    await comoGerente(page);
+    await page
+      .getByRole('button', { name: /Abrir las apps|Ver todas las apps/ })
+      .first()
+      .click();
+
+    await page.keyboard.press('ArrowRight');
+
+    const anillo = await page.evaluate(() => {
+      const svg = document.querySelector('svg[role="menu"]');
+      if (!svg) return null;
+      const estilo = window.getComputedStyle(svg);
+      return { ancho: estilo.outlineWidth, radio: estilo.borderRadius };
+    });
+
+    expect(anillo?.ancho).toBe('2px');
+    // Y redondo, siguiendo la forma de la rueda: un anillo cuadrado alrededor de
+    // un círculo es lo que se veía en la captura.
+    expect(anillo?.radio).not.toBe('0px');
   });
 });

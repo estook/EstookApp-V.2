@@ -1,4 +1,5 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { seEstaUsandoElTeclado } from './modalidad.ts';
 import type { App } from '../apps.ts';
 import { clases } from '../clases.ts';
 import { anguloDe, caminoDeSector, puntoEn, sectorEn, sectores, type Sector } from './geometria.ts';
@@ -49,6 +50,23 @@ export function RuedaCirculo({
   const [arrastrando, setArrastrando] = useState(false);
   const lienzo = useRef<SVGSVGElement>(null);
 
+  /**
+   * Si hay que pintar el anillo de foco del lienzo.
+   *
+   * ── El cuadrado naranja alrededor del circulo ──────────────────────────────
+   *
+   * La rueda se abre y la aplicacion le da el foco al lienzo, porque es quien
+   * escucha las flechas. En iOS eso hace que `:focus-visible` se cumpla aunque se
+   * haya abierto con el dedo, asi que salia **un rectangulo naranja de 2 px
+   * alrededor de una rueda redonda**. Lo vio Richi en su telefono.
+   *
+   * No se arregla apagando el anillo: «foco visible siempre» es B8. Se arregla
+   * mirando con que se esta manejando la aplicacion, que es lo que el navegador
+   * deja de saber cuando el foco lo pone el codigo. Con el dedo no se pinta; con
+   * el teclado si, **y redondo**, siguiendo la forma de la rueda.
+   */
+  const [conTeclado, setConTeclado] = useState(seEstaUsandoElTeclado);
+
   /** El angulo bajo el dedo. `null` si sigue dentro del boton central. */
   const bajoElDedo = (evento: PointerEvent): number | null => {
     const caja = lienzo.current?.getBoundingClientRect();
@@ -85,12 +103,25 @@ export function RuedaCirculo({
       <svg
         ref={lienzo}
         viewBox={`0 0 ${LIENZO} ${LIENZO}`}
-        className="h-[min(78vw,340px)] w-[min(78vw,340px)]"
+        className={clases(
+          'h-[min(78vw,340px)] w-[min(78vw,340px)] rounded-redondo',
+          // El anillo de B8 se pinta aqui a mano, y no con `:focus-visible`, por
+          // la razon de arriba. Redondo, para que siga la forma de la rueda.
+          'focus-visible:outline-none focus-visible:shadow-none',
+          conTeclado &&
+            'outline outline-2 outline-offset-2 outline-naranja shadow-[0_0_0_5px_rgba(17,28,31,0.55)]',
+        )}
         role="menu"
         aria-label="Elige una app"
         aria-activedescendant={apps[señalada] ? `sector-${apps[señalada].id}` : undefined}
         tabIndex={0}
-        onKeyDown={alPulsarTecla}
+        onKeyDown={(evento) => {
+          // En cuanto alguien toca una tecla, el anillo aparece: es la senal de
+          // que el foco esta aqui, y sin ella la rueda se recorre a ciegas hasta
+          // que la primera flecha resalta un sector.
+          setConTeclado(true);
+          alPulsarTecla(evento);
+        }}
       >
         {trozos.map((sector, i) => {
           const app = apps[i];

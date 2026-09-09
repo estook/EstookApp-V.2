@@ -31,3 +31,5 @@ alguien se preguntara «por que esta hecho asi».
 | **0018** | Cada app tiene destinos, y cada destino sus vistas                |
 | **0019** | El Panel de cada uno vive en el servidor, por persona y aparato   |
 | **0020** | Un catalogo de acciones, y una accion es una direccion            |
+| **0021** | El producto se mide en una unidad; los gramajes son de la ficha   |
+| **0022** | El reparto tiene sitio antes que conexion; Uber Eats el primero   |

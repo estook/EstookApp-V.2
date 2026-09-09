@@ -16,6 +16,7 @@ import {
   type Vista,
 } from '@estook/ui';
 import { QuienTieneAcceso } from './QuienTieneAcceso.tsx';
+import { Delivery } from '../servicio/Delivery.tsx';
 import { Inventario } from '../inventario/Inventario.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
@@ -222,6 +223,16 @@ function Contenido({
   if (app.id === 'equipo' && destino.id === 'personas') {
     return <QuienTieneAcceso vista={vista?.id ?? ''} />;
   }
+
+  /*
+    Delivery tiene pantalla **aunque su destino lleve módulo**, y no es una
+    excepción a la regla: la regla dice que un destino sin construir **no ocupa
+    posición en la barra de abajo**, y este no la ocupa. Lo que sí tiene es un
+    sitio al que llegar desde el menú lateral, con los canales dichos por su
+    nombre, porque «¿y los pedidos de Uber Eats?» es una pregunta que hoy no tenía
+    respuesta en ninguna parte de la aplicación.
+  */
+  if (app.id === 'servicio' && destino.id === 'delivery') return <Delivery />;
 
   // Una vista que falta dentro de un destino construido: se dice **de esa
   // vista**, no de la app entera. Antes todo lo que faltaba se contaba igual, y

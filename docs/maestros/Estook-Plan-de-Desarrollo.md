@@ -309,7 +309,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | Carta       | Carta · Menús · Análisis                |
 | Calendario  | Calendario · Tareas · Turnos            |
 | Equipo      | Hoy · Personas · Horarios · Fichajes    |
-| Servicio    | Jornada · Ventas · APPCC · Cierre       |
+| Servicio    | Jornada · Ventas · Delivery · APPCC     |
 | Negocio     | Resumen · Pulse · Costes · Reseñas      |
 | Cuaderno    | Incidencias · Notas · Equipos           |
 
@@ -326,17 +326,22 @@ Y sus vistas, donde las hay:
 | Calendario · Calendario  | Mes · Semana · Día                             |
 | Calendario · Tareas      | Pendientes · Periódicas · Hechas               |
 | Equipo · Personas        | Con acceso · Sin entrar todavía · Retirados    |
+| Servicio · Jornada       | En marcha · Cierre                             |
 | Servicio · Ventas        | Del turno · Del día · Por producto             |
 | Negocio · Resumen        | Mes · Trimestre · Año                          |
 | Cuaderno · Incidencias   | Abiertas · Cerradas                            |
 
 **El catálogo de `packages/ui/src/apps.ts` es el único dueño de estas dos tablas**, y hay una prueba que las lee **de este documento** y las compara. Antes la prueba llevaba los valores copiados dentro, y por eso pudo estar en verde mientras el código decía que Negocio tenía «Reseñas» donde esta tabla decía «Pulse».
 
-**Escritorio ·** barra superior y menú lateral propio. Arriba, el selector de local, las ocho apps con su desplegable —cada uno con sus destinos y **la pregunta que contesta cada uno**— y, a la derecha, notificaciones, chat, Fogón y avatar; **cuatro cosas, no cinco**: el avatar abre tu cuenta —ajustes, mi acceso, cambiar de local y salir— y no hace falta un icono de ajustes al lado abriendo lo mismo. Dentro de una app, menú lateral con sus destinos y la ficha abriéndose en panel derecho sin tapar la lista.
+**Escritorio ·** barra superior y menú lateral propio. Arriba, el selector de local, las ocho apps con su desplegable —cada uno con sus destinos y **la pregunta que contesta cada uno**— y, a la derecha: **buscar, avisos, chat, Fogón, Ajustes y el avatar**. El avatar abre tu cuenta —mi acceso, cambiar de local y salir—, y Ajustes sigue teniendo su icono propio: en un ordenador hay sitio, y quien lleva un local entra ahí muchas veces al día. Dentro de una app, menú lateral con sus destinos y la ficha abriéndose en panel derecho sin tapar la lista.
 
-**Y en móvil, arriba van cuatro cosas y no cinco.** Dónde estás, buscar, **la bandeja** —los avisos y el chat juntos, porque en un teléfono no hay sitio para dos puertas a «algo que alguien te manda»— y el avatar, que abre tu cuenta. Sin esa fila, en un teléfono **no hay buscador** —`⌘K` no existe— y a Ajustes no se llega desde dentro de una app, porque ahí la barra de abajo es la de esa app. Arriba lo que es de la sesión entera; abajo, lo de navegar.
+**Y en móvil, arriba va la misma fila menos Ajustes.** Dónde estás, buscar, avisos, chat, Fogón y el avatar. Sin esa fila, en un teléfono **no hay buscador** —`⌘K` no existe— y a Ajustes no se llega desde dentro de una app, porque ahí la barra de abajo es la de esa app. Arriba lo que es de la sesión entera; abajo, lo de navegar.
 
-> **Fogón no va en esa fila en móvil**, porque en móvil Fogón es la burbuja que va contigo (decisión 0015). Tenerlo además arriba era la misma cosa dos veces, y la burbuja es la que está pensada para el pulgar.
+> **Ajustes es lo único que no se repite arriba en móvil**, porque ya está abajo en la barra de móvil: dos puertas a la misma pantalla a diez centímetros una de otra. Dentro de una app —donde la barra de abajo es la de esa app— se llega por el avatar, que es lo que tapa el agujero sin repetir el botón.
+
+> **Fogón sí va arriba en móvil, además de su burbuja.** Son dos puertas a lo mismo y se quedan las dos a propósito: la burbuja es para el pulgar mientras trabajas, y el icono de arriba es donde lo busca quien viene del ordenador.
+
+Y en 375 px eso son cinco botones y el avatar. Los botones se quedan en el toque mínimo de 44 px que manda B4 —eso no se negocia— y **lo que cede es el nombre del local**, que se recorta: el logo ya lo identifica de un vistazo, y el nombre entero está a un toque en tu cuenta.
 
 > **Fogón no es una pestaña de cada app: es una burbuja que va contigo** (decisión 0015). En móvil, flotando abajo a la derecha por encima de la barra; en escritorio, el icono de arriba abriendo un panel lateral que no tapa lo que estabas mirando; y `⌘J` desde cualquier sitio. **Se abre sabiendo en qué pantalla estás**, y se le puede preguntar cualquier cosa desde cualquier sitio. Una pestaña «Fogón» por app gastaría una de las cuatro posiciones que hay y obligaría a salir de lo que estás haciendo para preguntar por lo que estás haciendo.
 

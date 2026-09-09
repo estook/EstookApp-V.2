@@ -2,17 +2,22 @@
 
 > ## Lo que hay hecho, y lo que falta
 >
-> **Todo el código está escrito y en verde**, en la rama
-> `m6-medio-la-capa-de-producto`. Lo que falta son los cuatro pasos de abajo, y
-> **el tercero es el que se olvida y hace que parezca que todo está roto**.
+> **La primera tanda está cerrada del todo**: fusionada (PR #37), la `0025`
+> aplicada —25 de 25 migraciones y 39 tablas— y la API desplegada. Y mirada en el
+> móvil, que es de donde salió la segunda tanda.
 >
-> | Qué                 | Cómo está                                                    |
-> | ------------------- | ------------------------------------------------------------ |
-> | El código           | **Escrito.** 706 pruebas de unidad y 288 de pantalla, verdes |
-> | El pull request     | **Por abrir y fusionar** · paso 1                            |
-> | La migración `0025` | **Escrita y sin aplicar** · paso 2                           |
-> | La API desplegada   | **Por detrás**: le faltan tres operaciones nuevas · paso 3   |
-> | Mirarlo en tu móvil | **Sin hacer** · paso 4, y es el que no puedo hacer yo        |
+> | Qué                 | Cómo está                                                   |
+> | ------------------- | ----------------------------------------------------------- |
+> | Primera tanda       | **Fusionada, migrada y desplegada** · pasos 1, 2 y 3 hechos |
+> | Segunda tanda       | **Escrita y en verde**: 706 de unidad y 304 de pantalla     |
+> | Su pull request     | **Por fusionar** · paso 1                                   |
+> | Migraciones         | **Ninguna nueva**: el paso 2 no toca esta vez               |
+> | La API              | **Ninguna operación nueva**: el paso 3 tampoco              |
+> | Mirarlo en tu móvil | **Sin hacer** · paso 4, y es el que no puedo hacer yo       |
+>
+> Así que de esta tanda **solo hay que fusionar y mirar**. Los pasos 2 y 3 se dejan
+> escritos porque valen para la próxima vez que sí toquen — y el 3 es el que se
+> olvida.
 
 ---
 
@@ -125,11 +130,20 @@ Lo que hay que mirar, en este orden:
 6. **Añade uno** con el hueco de rayas. En la lista, abajo, salen en gris los que
    llegan con su módulo: esos **no se pueden pulsar**, y eso es lo correcto.
 
+### Y lo que la segunda tanda arregla · **mira esto primero**
+
+1b. **Quita un widget y recarga la página sin pulsar «Listo».** Tiene que seguir
+quitado. Y lo mismo saliendo a Inventario y volviendo. Esto es lo que se perdía
+siempre.
+
+1c. **Abre la rueda con el dedo.** No tiene que salir ningún cuadrado naranja
+alrededor: el círculo, limpio.
+
 ### Arriba, en la barra
 
-7. **Cuenta los botones: tienen que ser tres y el avatar.** Buscar, la campana y tu
-   retrato. **No tiene que haber icono de ajustes** —ese estaba dos veces— ni el de
-   Fogón, que en el móvil es la burbuja de abajo.
+7. **Cuenta los botones: son cinco y el avatar.** Buscar, avisos, chat, Fogón y tu
+   retrato, con el nombre del local a la izquierda. **Lo único que no está es
+   Ajustes**, porque sale abajo. En el ordenador sí está, con su icono.
 8. **Pulsa el avatar.** Se abre «Tu cuenta»: ahí están Ajustes, Mi acceso, cambiar
    de local y Salir. **Y funciona también dentro de una app**, que es donde antes
    no había forma de llegar a Ajustes.
@@ -143,13 +157,19 @@ Lo que hay que mirar, en este orden:
     mirando.
 11. **Abre Movimientos.** Es el libro entero, por días, con quién apuntó cada línea
     y cuánto quedó después. Esta pantalla no existía.
-12. **Pulsa «Añadir producto».** Lo primero que ves es la casilla y, **al lado**,
-    «Crearlo a mano». Sin escribir nada **no** sale ninguna lista: antes salían doce
-    referencias que nadie había pedido.
+12. **Pulsa «Añadir producto» y luego «Crearlo a mano».** Pregunta tres cosas: cómo
+    se llama, **en qué se mide** —cinco pastillas: g, ml, ud, kg, l— y **lo que te
+    cuesta el kg** (o el litro, según lo que elijas). Ya no hay «cuánto trae» ni
+    «unidad con la que cocinas»: eso está plegado en «lo compro por envases», y se
+    abre solo si lo pides o si eliges algo del catálogo.
+
+13. **Y en Servicio, abre Delivery.** Está Uber Eats con su icono y lo que va a
+    entrar por ahí. **No hay ningún botón de conectar**, y eso es lo correcto: la
+    conexión es M29.
 
 ### Fogón
 
-13. **Pulsa la burbuja.** Tiene que decir dónde estás **y las cifras que hay
+14. **Pulsa la burbuja.** Tiene que decir dónde estás **y las cifras que hay
     delante**, y ofrecer botones que hacen algo de verdad. Pruébalos.
 
 > **Lo que salga, apúntalo tal cual.** Los seis fallos del segundo paseo por el

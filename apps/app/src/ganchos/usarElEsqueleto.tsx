@@ -5,7 +5,7 @@ import { createContext, useContext, type ReactNode } from 'react';
  *
  * ── Por qué hace falta un contexto y no basta con navegar ────────────────────
  *
- * Porque el buscador universal, Fogón y la bandeja **no son direcciones**: son
+ * Porque el buscador universal, Fogón y los avisos **no son direcciones**: son
  * capas que se abren encima de donde estás, y su estado vive en el esqueleto a
  * propósito —tres ventanas distintas para lo mismo acabarían diciendo cosas
  * distintas—.
@@ -25,7 +25,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 export interface LoQueAbreElEsqueleto {
   readonly abrirElBuscador: () => void;
   readonly abrirFogon: () => void;
-  readonly abrirLaBandeja: () => void;
+  readonly abrirLosAvisos: () => void;
   readonly abrirMiCuenta: () => void;
 }
 
@@ -52,7 +52,7 @@ export function usarElEsqueleto(): LoQueAbreElEsqueleto {
     useContext(ElEsqueleto) ?? {
       abrirElBuscador: () => undefined,
       abrirFogon: () => undefined,
-      abrirLaBandeja: () => undefined,
+      abrirLosAvisos: () => undefined,
       abrirMiCuenta: () => undefined,
     }
   );

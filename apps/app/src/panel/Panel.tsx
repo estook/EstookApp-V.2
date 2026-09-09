@@ -113,6 +113,7 @@ export function Panel() {
             if (!sigue) mio.guardarYa();
           }}
           alReordenar={mio.reordenar}
+          alSoltar={mio.guardarYa}
           alQuitar={mio.quitar}
           alCambiarTamano={mio.cambiarTamano}
           tamanosDe={(id) => widgetPorId(id)?.tamanos ?? ['ancho']}

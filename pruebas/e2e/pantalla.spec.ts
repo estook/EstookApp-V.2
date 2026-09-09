@@ -163,22 +163,27 @@ test.describe('la barra de escritorio', () => {
     await expect(page.getByRole('heading', { name: 'El chat del equipo' })).toBeVisible();
   });
 
-  test('el avatar abre tu cuenta, y no hay dos puertas a Ajustes pegadas', async ({ page }) => {
+  test('la fila de la derecha son seis, y el avatar abre tu cuenta', async ({ page }) => {
     /*
-      B5 pide aqui «notificaciones, chat, Fogon y avatar»: cuatro cosas. Habia
-      cinco, porque se anadio un icono de Ajustes que abria **exactamente la misma
-      pantalla** que el avatar de al lado. Dos puertas a lo mismo, pegadas, en la
-      esquina donde mas se mira.
+      B5 pide aqui «notificaciones, chat, Fogon y avatar». Se probo a quitar el
+      icono de Ajustes con el argumento de que abria la misma pantalla que el
+      avatar, y **el argumento era medio bueno y la conclusion mala**: en un
+      ordenador hay sitio de sobra, y quien lleva un local entra en Ajustes muchas
+      veces al dia. Que este a un clic y no a dos no es duplicar.
+
+      En movil no cabe, y alli si se queda solo el avatar: eso lo comprueba la
+      prueba de la barra de movil.
     */
     await entrar(page);
     const barra = page.getByRole('banner');
 
-    await expect(barra.getByRole('button', { name: 'Ajustes' })).toHaveCount(0);
+    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo', 'Fogón', 'Ajustes']) {
+      await expect(barra.getByRole('button', { name: new RegExp(que) }).first()).toBeVisible();
+    }
 
     await barra.getByRole('button', { name: /^Tu cuenta ·/ }).click();
     const hoja = page.getByRole('dialog', { name: 'Tu cuenta' });
     await expect(hoja).toBeVisible();
-    await expect(hoja.getByRole('button', { name: /^Ajustes/ })).toBeVisible();
     await expect(hoja.getByRole('button', { name: /^Mi acceso/ })).toBeVisible();
     await expect(hoja.getByRole('button', { name: /^Salir/ })).toBeVisible();
   });
@@ -189,19 +194,22 @@ test.describe('la barra de escritorio', () => {
 test.describe('la barra de arriba en móvil', () => {
   test.use({ viewport: { width: 375, height: 667 } });
 
-  test('lleva cuatro cosas, y ninguna repetida', async ({ page }) => {
+  test('lleva lo mismo que el ordenador menos Ajustes, y nada repetido', async ({ page }) => {
     /*
-      ── El agujero, y el que se abrio al taparlo ──────────────────────────────
+      ── El agujero, el que se abrio al taparlo, y el que se abrio al arreglarlo ─
 
       El agujero de M6: el buscador solo se abria con `Ctrl+K`, que en un telefono
       no existe; avisos, chat y Fogon no estaban en ninguna parte; y a Ajustes no
       se llegaba desde dentro de una app.
 
-      Y el que se abrio al taparlo: se trajeron las cinco de escritorio tal cual,
-      asi que en 375 px habia **seis botones y el nombre del local**, con el
-      nombre sin sitio para leerse y Ajustes dos veces —aqui arriba y abajo en la
-      barra de movil—. Ahora son cuatro: donde estas, buscar, la bandeja —los
-      avisos y el chat juntos— y el avatar.
+      El que se abrio al taparlo: se trajeron las cinco de escritorio **mas** el
+      icono de Ajustes, asi que en 375 px habia seis botones y el nombre del local
+      sin sitio para leerse, con Ajustes dos veces —aqui arriba y abajo—.
+
+      Y el que se abrio al arreglar eso: se quitaron **tres de golpe** —Ajustes, el
+      chat y Fogon— cuando el que sobraba era uno. «Solo queria eliminar ajustes de
+      arriba en movil para que no se vea doble.» Arreglar lo que se ha visto, no lo
+      que uno deduce de lo que ha visto.
     */
     await entrar(page);
 
@@ -209,26 +217,45 @@ test.describe('la barra de arriba en móvil', () => {
     // la de escritorio va antes en el documento y en un movil esta escondida.
     const barra = page.getByRole('banner');
 
-    await expect(barra.getByRole('button', { name: 'Buscar en todo' })).toBeVisible();
-    await expect(barra.getByRole('button', { name: /Avisos y chat/ })).toBeVisible();
+    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo', 'Fogón']) {
+      await expect(barra.getByRole('button', { name: new RegExp(que) }).first()).toBeVisible();
+    }
     await expect(barra.getByRole('button', { name: /^Tu cuenta ·/ })).toBeVisible();
 
-    // Y lo que ya no esta, porque estaba dos veces.
+    // Y lo unico que no esta: sale abajo, en la barra de movil.
     await expect(barra.getByRole('button', { name: 'Ajustes' })).toHaveCount(0);
-    // Fogon en movil es la burbuja (decision 0015), no un icono mas aqui arriba.
-    await expect(barra.getByRole('button', { name: /^Fogón/ })).toHaveCount(0);
   });
 
-  test('la bandeja lleva los avisos y el chat dentro', async ({ page }) => {
-    // En un telefono no hay sitio para dos puertas a «algo que alguien te manda».
+  test('y cabe: ninguno de los seis se sale ni se monta encima de otro', async ({ page }) => {
+    /*
+      Seis cosas en 375 px es justo lo que hizo que se quitaran tres, asi que
+      conviene medirlo en vez de opinar. Se comprueba que la barra **no desborda a
+      lo ancho** y que cada boton mantiene el toque minimo de 44 px que manda B4:
+      es lo que cede es el nombre del local, que se recorta, y no los botones.
+    */
     await entrar(page);
 
-    await page
-      .getByRole('banner')
-      .getByRole('button', { name: /Avisos y chat/ })
-      .click();
-    await expect(page.getByRole('heading', { name: 'Tu bandeja' })).toBeVisible();
-    await expect(page.getByText(/Los avisos llegan con Fogón/)).toBeVisible();
+    const desborda = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    );
+    expect(desborda, 'la barra de arriba desborda a lo ancho').toBe(false);
+
+    const barra = page.getByRole('banner');
+    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo', 'Fogón']) {
+      const caja = await barra
+        .getByRole('button', { name: new RegExp(que) })
+        .first()
+        .boundingBox();
+      expect(caja, `no se ve ${que}`).not.toBeNull();
+      expect(
+        caja?.width ?? 0,
+        `${que} se ha quedado por debajo del toque minimo`,
+      ).toBeGreaterThanOrEqual(40);
+      expect(
+        caja?.height ?? 0,
+        `${que} se ha quedado por debajo del toque minimo`,
+      ).toBeGreaterThanOrEqual(40);
+    }
   });
 
   test('el buscador se abre con el dedo, sin teclado', async ({ page }) => {
@@ -238,14 +265,16 @@ test.describe('la barra de arriba en móvil', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
   });
 
-  test('la bandeja dice qué será, en vez de no hacer nada', async ({ page }) => {
+  test('los avisos y el chat dicen qué serán, en vez de no hacer nada', async ({ page }) => {
     await entrar(page);
+    const barra = page.getByRole('banner');
 
-    await page
-      .getByRole('banner')
-      .getByRole('button', { name: /Avisos y chat/ })
-      .click();
-    await expect(page.getByRole('heading', { name: 'Tu bandeja' })).toBeVisible();
+    await barra.getByRole('button', { name: /^Avisos/ }).click();
+    await expect(page.getByRole('heading', { name: 'Los avisos' })).toBeVisible();
+    await page.getByRole('button', { name: 'Entendido' }).click();
+
+    await barra.getByRole('button', { name: 'Chat del equipo' }).click();
+    await expect(page.getByRole('heading', { name: 'El chat del equipo' })).toBeVisible();
   });
 });
 
@@ -486,17 +515,10 @@ test.describe('Fogón', () => {
  * tiene la app no le enseña nada de eso.
  */
 test.describe('el Panel enseña lo de Inventario', () => {
-  test('los widgets de género salen con datos de verdad', async ({ page }) => {
-    await entrar(page);
-
-    // Rosa tiene género en su bar, así que sus widgets de fábrica traen dato.
-    await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toBeVisible();
-    await expect(page.getByRole('heading', { level: 2, name: 'Caduca esta semana' })).toBeVisible();
-
-    // Y con su origen debajo: «cada número lleva de dónde sale y de qué periodo
-    // es» (Evolución 1.0), sin excepción.
-    await expect(page.getByText('De tu inventario, ahora mismo')).toBeVisible();
-  });
+  // La prueba de los widgets de fábrica **se ha mudado a `esqueleto.spec.ts`**:
+  // para comprobarlos hay que dejar el Panel de fábrica, y eso es tocarlo. El
+  // Panel se guarda en el servidor por persona, así que dos ficheros que lo
+  // toquen a la vez se pisan — y estos dos corren en paralelo.
 
   test('quien no tiene Inventario no ve ninguno de sus widgets', async ({ page }) => {
     // «Las apps que el rol no tiene no aparecen **en ningún sitio**». Sara es

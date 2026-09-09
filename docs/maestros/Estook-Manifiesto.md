@@ -585,6 +585,10 @@ La pantalla de inicio de la app: lo que hay que atender ahora. Bajo mínimo **co
 
 Cada producto guarda nombre, categoría, foto, unidad de compra («caja 3 kg»), unidad de uso (g/ml/ud), factor, rendimiento, peso variable, código de barras, tipo impositivo, alérgenos, mínimo en cámara y proveedor principal.
 
+> **Y no se pregunta todo eso al darlo de alta.** El alta pregunta tres cosas —**cómo se llama, en qué se mide y lo que cuesta esa medida**— y con eso el factor es 1 y el precio del kilo **es** el coste por unidad de uso. Lo del envase —«caja de 5 kg», cuánto trae, cuánto se aprovecha— vive plegado debajo, y se despliega solo cuando el catálogo propone uno o cuando alguien lo pide.
+>
+> La razón es que preguntarlo todo obliga a hacer una multiplicación para dar de alta un saco de harina, y **cuántos gramos lleva una ración no es del producto: es de la ficha técnica**. Está razonado en la [decisión 0021](../decisiones/0021-el-producto-se-mide-en-una-unidad.md).
+
 > **Coste real por unidad de uso = precio ÷ (factor × rendimiento)**
 > Es lo que usan los escandallos. El precio del formato no costea nunca.
 

@@ -64,6 +64,14 @@ const DIALOGO =
  *
  * El 8 % que queda no es margen: es lo que deja ver que hay algo detras, y lo
  * que hace que tocar ahi arriba se entienda como «cerrar».
+ *
+ * ── Y en un ordenador, una ventana en el centro ──────────────────────────────
+ *
+ * En una pantalla ancha la hoja ocupaba **todo el ancho**: un campo de nombre de
+ * dos metros, los botones en la otra punta, y la cabeza girando para leer una
+ * frase. En el ordenador y en el TPV se abre en el centro, con un ancho de
+ * formulario —40rem, lo que se lee sin mover los ojos— y la altura que pida lo
+ * de dentro. Fuera de ella, todo cierra, igual que el 8 % de arriba en el movil.
  */
 export function Hoja({ abierta, alCerrar, titulo, children, pie }: Comunes) {
   const dialogo = useDialogo(abierta, alCerrar);
@@ -74,18 +82,20 @@ export function Hoja({ abierta, alCerrar, titulo, children, pie }: Comunes) {
       aria-label={titulo}
       className={clases(DIALOGO, 'fixed inset-0 w-full h-full')}
     >
-      <div className="flex h-full w-full flex-col justify-end">
-        {/* Tocar arriba cierra. Es un boton de verdad para que tambien se pueda
-            con teclado, aunque `Esc` ya haga lo mismo. */}
+      <div className="relative flex h-full w-full flex-col justify-end md:items-center md:justify-center md:p-e6">
+        {/* Tocar fuera cierra. Es un boton de verdad para que tambien se pueda
+            con teclado, aunque `Esc` ya haga lo mismo. En el movil es la franja
+            de arriba; en el ordenador, todo lo que rodea a la ventana. */}
         <button
           type="button"
           aria-label="Cerrar"
-          className="h-[8%] w-full cursor-default"
+          className="h-[8%] w-full cursor-default md:absolute md:inset-0 md:h-full"
           onClick={alCerrar}
         />
         <div
           className={clases(
-            'flex h-[92%] flex-col bg-superficie rounded-t-mayor shadow-s3',
+            'relative flex h-[92%] flex-col bg-superficie rounded-t-mayor shadow-s3',
+            'md:h-auto md:max-h-[85vh] md:w-full md:max-w-[40rem] md:rounded-mayor',
             'anima-sube',
           )}
         >

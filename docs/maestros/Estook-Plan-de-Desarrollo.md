@@ -560,6 +560,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y su capa inteligente.** La **matriz de popularidad contra rentabilidad** con su clasificación y su precio recomendado, y la lista de candidatos a retirar. **Nunca retira ni modifica nada por su cuenta.**
 
+**Y le da el precio al cierre de caja.** Desde M6½, al apuntar un plato en el cierre el importe se propone con el de la última vez que se apuntó. Con la carta, sale del precio de su canal —sala, por defecto—, y lo de la última vez queda para lo que no esté en la carta. Los platos del cierre ya se guardan con el nombre normalizado para emparejarlos.
+
 **Terminado cuando.** El mismo plato tiene tres precios en tres canales y el análisis lo clasifica distinto en cada uno; y el informe de equilibrio detecta una carta descompensada sembrada a propósito.
 
 ### M11 · Documentos y diseños
@@ -684,6 +686,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M23 · Reseñas, competencia y chat
 
+**La mitad de Google que se propone adelantar** ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)). Richi quiere Google «en próximos módulos», porque de la ficha del local sale su posición y de ella el radio de fichaje. La propuesta es un módulo corto, **«El local en Google»**, justo después de M7: autocompletar con Places en el alta y en Ajustes, guardar el identificador, la dirección, el horario y la posición, todo por nuestra API y con el tope de 0,50 € por alta. **El cuándo lo confirma Richi**, y necesita su clave de Google con facturación. Aquí quedan las reseñas, la competencia y la respuesta.
+
 **Entra.** Enlace de la ficha del local autorizando con la cuenta de Google que la gestiona · reseñas por Google Business Profile, refrescadas cada 9 horas · conteo, clasificación por tema, media, evolución y detección de caídas **resueltos con consultas, sin llamar al modelo** · una sola llamada al modelo al día · cruce con el cuadrante y respuesta propuesta · competencia con recálculo cada 6 h sobre lo guardado y caché compartida por zona · chat con canales, directos, menciones, tarjetas de contexto, confirmación de lectura, buscador y silencio fuera de turno.
 
 **Y su capa inteligente · chat conectado.** Lo que se escribe puede **ofrecerse** para convertirse en incidencia, agotado, aviso o tarea. **Con acción explícita, siempre: nada de efectos secundarios ocultos.**
@@ -800,3 +804,5 @@ Lo que costó caro, escrito para no repetirlo.
 **Guardar sin decir que ha fallado es peor que no guardar.** El Panel se «deshacía» al recargar porque un guardado fallaba en silencio y se quedaba atascado. Todo lo que se guarda solo dice cuándo no ha podido, y deja reintentar.
 
 **Se prueba con el rol más pequeño que puede hacerlo.** La merma pasaba todas las pruebas de base de datos y a la camarera le decía «ese producto no está»: el candado del producto exigía permiso de editarlo. Solo lo encontró una prueba de pantalla entrando como ella.
+
+**El conductor de la base también es un «sitio».** Las pruebas hablan con PGlite; producción, con `postgres.js`, que convierte a JSON lo que va a una columna JSON. El código ya se lo daba convertido, así que se guardaba envuelto en un texto, y **el Panel no se guardó nunca en producción** con todo en verde ([decisión 0029](../decisiones/0029-lo-que-va-a-jsonb-viaja-como-texto.md)). Lo que depende del conductor se escribe de forma que dé igual cuál sea —`::text::jsonb`— y se comprueba contra la base de verdad después de desplegar.

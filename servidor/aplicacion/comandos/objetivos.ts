@@ -109,8 +109,8 @@ export const ponerObjetivos = comando<EntradaObjetivos, SalidaObjetivos>({
         select estook.anotar(
           ${organizacionId}::uuid, 'cambiar', 'objetivo', ${objetivo.clave},
           ${localId}::uuid,
-          ${JSON.stringify({ valor: vigente ? Number(vigente.valor) : null })}::jsonb,
-          ${JSON.stringify({ valor: objetivo.valor })}::jsonb,
+          ${JSON.stringify({ valor: vigente ? Number(vigente.valor) : null })}::text::jsonb,
+          ${JSON.stringify({ valor: objetivo.valor })}::text::jsonb,
           null
         )
       `;

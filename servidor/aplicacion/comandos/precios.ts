@@ -140,8 +140,8 @@ export const ponerPrecio = comando<EntradaPonerPrecio, SalidaPonerPrecio>({
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'precio_de_producto', ${precioId},
         ${producto.local_id}::uuid,
-        ${anterior === undefined ? null : JSON.stringify({ precio_centimos: Number(anterior.precio_centimos) })}::jsonb,
-        ${JSON.stringify({ precio_centimos: entrada.precio_centimos, coste_milesimas: coste })}::jsonb,
+        ${anterior === undefined ? null : JSON.stringify({ precio_centimos: Number(anterior.precio_centimos) })}::text::jsonb,
+        ${JSON.stringify({ precio_centimos: entrada.precio_centimos, coste_milesimas: coste })}::text::jsonb,
         null
       )
     `;

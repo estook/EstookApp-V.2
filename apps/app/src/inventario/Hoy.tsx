@@ -153,7 +153,7 @@ export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string
           {hoy.puedeVerPrecios && (
             <Tarjeta
               titulo="Lo que hay en cámara"
-              origen="A precio medio ponderado · sin contar los ejemplos"
+              origen="A precio medio; lo que entró sin coste, a su precio de hoy · sin los ejemplos"
             >
               <Cifra
                 etiqueta="Valor del género"

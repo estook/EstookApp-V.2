@@ -378,7 +378,11 @@ function ValorDeLaCamara() {
   }
 
   return (
-    <Caja titulo="Valor de la cámara" origen="A precio medio ponderado" ir="/inventario/hoy">
+    <Caja
+      titulo="Valor de la cámara"
+      origen="A precio medio; lo que entró sin coste, a su precio de hoy"
+      ir="/inventario/hoy"
+    >
       <Cifra
         etiqueta="El género que hay"
         valor={hoy?.valorTotalCentimos ?? 0}

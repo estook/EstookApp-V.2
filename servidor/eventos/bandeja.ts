@@ -24,7 +24,7 @@ export async function publicar(sql: Sql, evento: EventoAPublicar): Promise<void>
       ${evento.organizacionId},
       ${evento.localId ?? null},
       ${evento.tipo},
-      ${JSON.stringify(evento.datos)}::jsonb,
+      ${JSON.stringify(evento.datos)}::text::jsonb,
       ${evento.correlacionId}
     )
   `;

@@ -54,7 +54,7 @@ export const quitarLosEjemplos = comando<
       select estook.anotar(
         ${organizacionId}::uuid, 'borrar', 'ejemplos', ${localId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ borrados, quedan })}::jsonb, null
+        ${JSON.stringify({ borrados, quedan })}::text::jsonb, null
       )
     `;
 

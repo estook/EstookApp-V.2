@@ -59,7 +59,7 @@ export const crearCategoria = comando<{ nombre: string }, { categoriaId: string;
       select estook.anotar(
         ${organizacionId}::uuid, 'crear', 'categoria_de_producto', ${categoriaId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ nombre: entrada.nombre })}::jsonb, null
+        ${JSON.stringify({ nombre: entrada.nombre })}::text::jsonb, null
       )
     `;
 
@@ -107,7 +107,7 @@ export const ponerLosEjemplos = comando<
       select estook.anotar(
         ${organizacionId}::uuid, 'crear', 'ejemplos', ${localId},
         ${localId}::uuid, null,
-        ${JSON.stringify(puesto)}::jsonb, null
+        ${JSON.stringify(puesto)}::text::jsonb, null
       )
     `;
 

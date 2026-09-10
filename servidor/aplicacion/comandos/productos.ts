@@ -298,7 +298,7 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
       select estook.anotar(
         ${organizacionId}::uuid, 'crear', 'producto', ${productoId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ nombre: entrada.nombre, de_referencia: plantilla.referenciaId, sin_verificar: sinVerificar })}::jsonb,
+        ${JSON.stringify({ nombre: entrada.nombre, de_referencia: plantilla.referenciaId, sin_verificar: sinVerificar })}::text::jsonb,
         null
       )
     `;
@@ -504,8 +504,8 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'producto', ${entrada.producto_id},
         ${previo.local_id}::uuid,
-        ${JSON.stringify({ nombre: previo.nombre, factor: Number(previo.factor), rendimiento: Number(previo.rendimiento) })}::jsonb,
-        ${JSON.stringify({ nombre: entrada.nombre, factor: entrada.factor, rendimiento: entrada.rendimiento })}::jsonb,
+        ${JSON.stringify({ nombre: previo.nombre, factor: Number(previo.factor), rendimiento: Number(previo.rendimiento) })}::text::jsonb,
+        ${JSON.stringify({ nombre: entrada.nombre, factor: entrada.factor, rendimiento: entrada.rendimiento })}::text::jsonb,
         null
       )
     `;
@@ -570,8 +570,8 @@ export const desactivarProducto = comando<
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'producto', ${entrada.producto_id},
         ${fila.local_id}::uuid,
-        ${JSON.stringify({ activo: true })}::jsonb,
-        ${JSON.stringify({ activo: false })}::jsonb,
+        ${JSON.stringify({ activo: true })}::text::jsonb,
+        ${JSON.stringify({ activo: false })}::text::jsonb,
         null
       )
     `;
@@ -617,8 +617,8 @@ export const reactivarProducto = comando<
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'producto', ${entrada.producto_id},
         ${fila.local_id}::uuid,
-        ${JSON.stringify({ activo: false })}::jsonb,
-        ${JSON.stringify({ activo: true })}::jsonb,
+        ${JSON.stringify({ activo: false })}::text::jsonb,
+        ${JSON.stringify({ activo: true })}::text::jsonb,
         null
       )
     `;

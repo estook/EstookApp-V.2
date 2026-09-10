@@ -329,6 +329,7 @@ Quien lleva el equipo cambia una hora
 Total, como se cobro, tickets, comensales y, si se quiere, los platos
 ├─ uno por local y dia: cerrar otra vez CORRIGE, no duplica
 ├─ se guarda el origen: a mano, CSV o, mañana, foto o TPV
+├─ el importe de cada plato se PROPONE: el de la carta (M10) o el de la ultima vez
 ├─ los platos se guardan con el nombre normalizado, listos para la carta
 ├─ evento caja.cerrada
 └─ Negocio › Ventas lo lee: facturado, ticket medio y food cost aproximado

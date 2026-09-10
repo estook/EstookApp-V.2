@@ -16,19 +16,19 @@
 
 |                |                                                                                                                         |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6** ✓ · **M6½** ✓ en cuatro entregas (#37, #38, #39 y #40), fusionado, migrado y desplegado                 |
+| **Terminados** | **M0** a **M6** ✓ · **M6½** ✓ en cinco entregas (#37 a #41) · la sexta, lo que vio Richi en el TPV, **sin fusionar**    |
 | **Siguiente**  | **M7** · Proveedores y compras                                                                                          |
-| **Pruebas**    | 757 unitarias y de base de datos · 327 de pantalla en escritorio y móvil, todas en verde · catálogo **77 de 83** (93 %) |
-| **Rama**       | `m6-medio-la-prueba-del-panel`: solo el arreglo de una prueba que salió «flaky» al fusionar la #40                      |
-| **Base**       | **29 de 29** aplicadas en Supabase, **44 tablas**, todas con seguridad por filas · leído el 10 de septiembre            |
-| **API**        | **Desplegada y al día**: conoce las 25 consultas y los 58 comandos · comprobado el 10 de septiembre                     |
+| **Pruebas**    | 765 unitarias y de base de datos · 327 de pantalla en escritorio y móvil, todas en verde · catálogo **77 de 83** (93 %) |
+| **Rama**       | `m6-medio-lo-que-vio-richi`, con su pull request                                                                        |
+| **Base**       | **29 de 29** aplicadas en Supabase, **44 tablas** · la **`0030`**, sin aplicar · leído el 10 de septiembre              |
+| **API**        | Desplegada **sin el arreglo del Panel**: hay que desplegarla otra vez con esta entrega                                  |
 | **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                  |
 | **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                   |
 
-> **M6½ está cerrado.** Richi hizo los cuatro pasos de
-> [`docs/pasos-para-cerrar-m6-medio.md`](docs/pasos-para-cerrar-m6-medio.md) el 10
-> de septiembre, y los dos de máquina están comprobados contra Supabase. **Lo que
-> salga de mirarlo en el móvil se apunta aquí**, tal cual.
+> **Lo que salió al mirarlo en el TPV está arreglado en esta entrega.** Lo más
+> importante: **el Panel no se había guardado nunca en producción**, y el arreglo
+> está en el servidor. Los pasos, con lo que tiene que salir en cada uno, en
+> [`docs/pasos-para-cerrar-m6-medio.md`](docs/pasos-para-cerrar-m6-medio.md).
 
 ---
 
@@ -61,11 +61,13 @@ qué aprueba una persona).
 
 ### Ahora mismo
 
-1. **Fusionar el arreglo de la prueba del Panel** (`m6-medio-la-prueba-del-panel`).
-   Al fusionar la #40, una prueba nueva del Panel falló la primera vez en Safari y
-   pasó al repetirse: el Panel del móvil de Rosa lo tocaban a la vez dos
-   navegadores. No toca la aplicación: ni migración ni despliegue.
-2. **Decidir si los días de reparto son eventos de calendario**, antes de la
+1. **Fusionar `m6-medio-lo-que-vio-richi`, aplicar la `0030` y desplegar la API.**
+   Sin el despliegue el Panel sigue sin guardarse. Después, `bd:comprobar-api` tiene
+   que decir que los JSON se guardan como objetos.
+2. **Decidir cuándo se conecta Google** para situar el local, que es de donde tiene
+   que salir el centro del radio de fichaje. Propuesto: un módulo corto justo
+   después de M7 ([0030](docs/decisiones/0030-el-local-se-situa-con-google.md)).
+3. **Decidir si los días de reparto son eventos de calendario**, antes de la
    primera línea de M7 (abajo).
 
 ### Lo que M6½ deja preparado, y dónde se termina
@@ -177,7 +179,7 @@ Plan.
    por unidad ([0021](docs/decisiones/0021-el-producto-se-mide-en-una-unidad.md)).
 3. **Tercera (#39)** · la auditoría de infraestructura, el color del local y el modo
    oscuro ([0024](docs/decisiones/0024-el-color-del-local-pinta-la-app.md)).
-4. **Cuarta, la de hoy, sin fusionar** · la lista de trece cosas de Richi:
+4. **Cuarta (#40)** · la lista de trece cosas de Richi:
    - **El Panel que se deshacía al recargar**: un guardado fallaba en silencio y se
      quedaba atascado. Ahora avisa en rojo y deja reintentar; «Acciones rápidas»
      se puede volver a poner.
@@ -193,6 +195,18 @@ Plan.
    - **La rueda** con el Panel en el centro, abajo y sin botón de cerrar; **Equipo ›
      Personas** con «Acceso» en un desplegable y «última vez»; **Fogón, Ajustes e
      Inventario** sin los párrafos que explicaban lo evidente.
+5. **Quinta (#41)** · las pruebas del Panel, todas en un solo bloque y en un solo
+   navegador de móvil, porque dos a la vez se pisaban.
+6. **Sexta, la de hoy, sin fusionar** · lo que vio Richi en el TPV:
+   - **El Panel no se guardaba nunca en producción**: los JSON se guardaban
+     envueltos en un texto ([0029](docs/decisiones/0029-lo-que-va-a-jsonb-viaja-como-texto.md)).
+   - **El primer fichaje salió «sin señal»**: el rato de pulsar «Permitir» contaba
+     como espera. Ya no, y sin GPS se usa la posición de la wifi.
+   - **Las ventanas del ordenador**, en el centro y con ancho de formulario.
+   - **La ficha de producto**, en bloques, y el valor de lo que entró sin coste, a
+     su precio de hoy.
+   - **El importe de cada plato del cierre**, propuesto con el de la última vez.
+   - **Google para situar el local**, escrito y propuesto ([0030](docs/decisiones/0030-el-local-se-situa-con-google.md)).
 
 **Lo que encontraron las pruebas nuevas, y no ninguna de las viejas:**
 
@@ -204,6 +218,12 @@ Plan.
   corrige no tiene.
 - En el móvil, **cada fila de una tabla era un botón con otro botón dentro** —el
   «Acceso» de cada persona, el + y el − de cada producto—.
+
+**Y lo que no encontró ninguna prueba, y sí mirar la base de verdad:** en
+producción no había **ni un Panel guardado**. El conductor de Postgres de
+producción convierte a JSON lo que va a una columna JSON, el código ya se lo daba
+convertido, y se guardaba envuelto en un texto; en las pruebas, con PGlite, no
+pasa. Se reprodujo contra la base de verdad dentro de una transacción deshecha.
 
 ---
 
@@ -270,6 +290,10 @@ Plan.
 36. **Una restricción de la base se prueba con el caso normal, no solo con el
     malo.** «Toda salida dice dónde» era correcta y dejaba sin cerrar el turno que
     alguien olvidó, que es lo más normal de corregir.
+37. **Después de desplegar, se mira la base de verdad.** Cero paneles guardados en
+    producción con todo en verde: el conductor de las pruebas no es el de
+    producción. Lo que dependa del conductor se escribe para que dé igual
+    (`::text::jsonb`), y `bd:comprobar-api` lo mira en Supabase.
 
 ---
 
@@ -307,6 +331,8 @@ En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 | **0026** | **La merma tiene motivo y partida, y la apunta quien la rompe**     |
 | **0027** | **La caja se cierra sin TPV, y los dos caminos acaban en el mismo** |
 | **0028** | **El alta de producto pregunta cuánto hay, no cuánto se aprovecha** |
+| **0029** | **Lo que va a una columna JSON viaja como texto**                   |
+| **0030** | **El local se sitúa con Google** · el cuándo, pendiente de Richi    |
 
 Otras, sin fichero propio:
 
@@ -332,8 +358,10 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`,
   `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0029`.** Se amplían con una `0030`, nunca se editan
+- **Las migraciones `0001` a `0030`.** Se amplían con una `0031`, nunca se editan
   (regla 2). Y al ampliar una función SQL, **se copia la original entera**.
+- **Lo que va a una columna JSON se escribe `${…}::text::jsonb`**, nunca `::jsonb` a
+  secas: en producción se guardaría envuelto. Una prueba lo vigila ([0029](docs/decisiones/0029-lo-que-va-a-jsonb-viaja-como-texto.md)).
 - **El libro de movimientos.** Solo se añade; un movimiento equivocado se enmienda
   con otro. `estook.existencias` es **una vista**. Todo lo que mueve género pasa
   por `apuntar`, y **el candado de apuntar es `pg_advisory_xact_lock`**: volver a

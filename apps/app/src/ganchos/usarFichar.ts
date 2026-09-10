@@ -45,20 +45,43 @@ export type DondeEstoy =
   | { readonly donde: { latitud: number; longitud: number; precision?: number } }
   | { readonly sin_donde: 'la_nego' | 'sin_senal' | 'no_la_da_el_aparato' };
 
-/** Cuánto se espera al GPS antes de fichar sin él. */
+/** Cuánto se espera a la posición exacta, una vez dado el permiso. */
 const ESPERA_AL_GPS = 8_000;
 
-/**
- * Preguntar al navegador dónde está.
- *
- * **No lanza nunca.** Cualquier fallo es un motivo, porque el resultado de esta
- * función se usa para fichar y fichar no puede fallar por esto.
- */
-export async function preguntarDondeEstoy(): Promise<DondeEstoy> {
-  if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
-    return { sin_donde: 'no_la_da_el_aparato' };
-  }
+/** Y a la aproximada —la de la wifi—, si la exacta no llega. */
+const ESPERA_A_LA_APROXIMADA = 5_000;
 
+/**
+ * Lo que puede tardar una persona en contestar «¿Permitir la ubicación?».
+ *
+ * ── El fallo que esto arregla ────────────────────────────────────────────────
+ *
+ * El primer fichaje de verdad se guardó «sin señal». No faltaba señal: el reloj
+ * de ocho segundos **empezaba a contar con la pregunta del permiso delante**, y
+ * leerla y pulsar «Permitir» se come esos ocho segundos. El `timeout` del propio
+ * navegador no cuenta ese rato —empieza cuando hay permiso—; el nuestro sí.
+ *
+ * Así que, mientras la pregunta está delante, se espera lo que haga falta, con un
+ * tope por si nadie contesta nunca.
+ */
+const ESPERA_CON_LA_PREGUNTA_DELANTE = 60_000;
+
+/** Si el navegador ya sabe que puede, que no, o si va a preguntar. */
+async function comoEstaElPermiso(): Promise<'dado' | 'negado' | 'lo_preguntara'> {
+  try {
+    const estado = await navigator.permissions.query({ name: 'geolocation' });
+    if (estado.state === 'granted') return 'dado';
+    if (estado.state === 'denied') return 'negado';
+    return 'lo_preguntara';
+  } catch {
+    // Safari antiguo no tiene `permissions`: se trata como si fuera a preguntar,
+    // que es lo que da más margen.
+    return 'lo_preguntara';
+  }
+}
+
+/** Una petición de posición, con su tope. Nunca lanza. */
+function unaPosicion(opciones: PositionOptions, tope: number): Promise<DondeEstoy> {
   return new Promise<DondeEstoy>((resolver) => {
     let contestado = false;
     const contestar = (respuesta: DondeEstoy) => {
@@ -71,7 +94,7 @@ export async function preguntarDondeEstoy(): Promise<DondeEstoy> {
     // suyo no salta si el permiso se queda esperando una respuesta que nadie da.
     const reloj = setTimeout(() => {
       contestar({ sin_donde: 'sin_senal' });
-    }, ESPERA_AL_GPS + 500);
+    }, tope);
 
     navigator.geolocation.getCurrentPosition(
       (posicion) => {
@@ -95,9 +118,41 @@ export async function preguntarDondeEstoy(): Promise<DondeEstoy> {
         // señal.
         contestar({ sin_donde: fallo.code === 1 ? 'la_nego' : 'sin_senal' });
       },
-      { enableHighAccuracy: true, timeout: ESPERA_AL_GPS, maximumAge: 30_000 },
+      opciones,
     );
   });
+}
+
+/**
+ * Preguntar al navegador dónde está.
+ *
+ * **No lanza nunca.** Cualquier fallo es un motivo, porque el resultado de esta
+ * función se usa para fichar y fichar no puede fallar por esto.
+ *
+ * Dos intentos: primero la posición **exacta** —el GPS del móvil—, y si no llega,
+ * la **aproximada** —la que da la wifi, en uno o dos segundos—. Un ordenador o un
+ * TPV no tienen GPS, y dentro de una cocina el del móvil puede no llegar nunca;
+ * la aproximada sí, y con su precisión apuntada vale para saber si se fichó en
+ * el local o en casa.
+ */
+export async function preguntarDondeEstoy(): Promise<DondeEstoy> {
+  if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
+    return { sin_donde: 'no_la_da_el_aparato' };
+  }
+
+  const permiso = await comoEstaElPermiso();
+  if (permiso === 'negado') return { sin_donde: 'la_nego' };
+
+  const exacta = await unaPosicion(
+    { enableHighAccuracy: true, timeout: ESPERA_AL_GPS, maximumAge: 30_000 },
+    permiso === 'lo_preguntara' ? ESPERA_CON_LA_PREGUNTA_DELANTE : ESPERA_AL_GPS + 500,
+  );
+  if (!('sin_donde' in exacta) || exacta.sin_donde !== 'sin_senal') return exacta;
+
+  return unaPosicion(
+    { enableHighAccuracy: false, timeout: ESPERA_A_LA_APROXIMADA, maximumAge: 300_000 },
+    ESPERA_A_LA_APROXIMADA + 500,
+  );
 }
 
 export interface Fichar {

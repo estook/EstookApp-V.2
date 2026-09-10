@@ -141,7 +141,7 @@ export const invitarPersona = comando<EntradaInvitar, SalidaInvitar>({
       select estook.anotar(
         ${entrada.organizacion_id}::uuid, 'invitar', 'persona', ${personaId},
         ${entrada.local_id ?? null}::uuid, null,
-        ${JSON.stringify({ rol: entrada.rol, alcance, ya_existia: yaExistia })}::jsonb,
+        ${JSON.stringify({ rol: entrada.rol, alcance, ya_existia: yaExistia })}::text::jsonb,
         null
       )
     `;

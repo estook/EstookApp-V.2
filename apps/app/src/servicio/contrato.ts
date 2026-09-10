@@ -67,4 +67,13 @@ export interface ElCierreDeUnDia {
   readonly fecha: string;
   readonly comoSeCierra: string;
   readonly puedeCerrar: boolean;
+  /**
+   * Lo que costó cada plato la última vez que se apuntó, para proponer el
+   * importe. Cuando exista la carta (M10) el precio saldrá de ella.
+   */
+  readonly platosConocidos: readonly {
+    readonly clave: string;
+    readonly concepto: string;
+    readonly precioUnidadCentimos: number;
+  }[];
 }

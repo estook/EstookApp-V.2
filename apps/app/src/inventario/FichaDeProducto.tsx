@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CATEGORIAS_FISCALES,
@@ -34,9 +34,11 @@ import {
   NOMBRE_DE_LA_CATEGORIA_FISCAL,
   TONO_DEL_ESTADO,
   comoDinero,
+  comoSeLeeLaFecha,
   conUnidadDeUso,
   cuandoSeAgota,
   type CategoriaDelLocal,
+  type ProductoEnLista,
   type ProveedorDelLocal,
   type UnProducto,
 } from './contrato.ts';
@@ -79,6 +81,7 @@ export function FichaDeProducto({
   const [editando, setEditando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [noticia, setNoticia] = useState<string | null>(null);
+  const [todosLosMovimientos, setTodosLosMovimientos] = useState(false);
 
   const puedeTocar = puedeEditar(permisos, 'app.inventario');
   const puedeTocarPrecios = puedeEditar(permisos, 'dato.precio_de_compra');
@@ -102,6 +105,12 @@ export function FichaDeProducto({
   }
 
   const datos = consulta.data;
+  const seAgota =
+    datos === undefined
+      ? null
+      : cuandoSeAgota(datos.producto.seAgotaEn, datos.producto.diasDeCobertura);
+  const vigente = datos?.precios.find((precio) => precio.vigente);
+  const anteriores = datos?.precios.filter((precio) => !precio.vigente) ?? [];
 
   return (
     <PanelLateral
@@ -141,15 +150,13 @@ export function FichaDeProducto({
                 setNoticia(null);
               }}
             >
-              Queda apuntado con tu nombre y la hora. Si no era esto, se corrige con «¿No cuadra lo
-              que hay?», arriba.
+              Con tu nombre y la hora.
             </Aviso>
           )}
 
           {datos.producto.esEjemplo && (
             <Aviso tono="info" titulo="Esto es un ejemplo">
-              Es de mentira y no cuenta para nada: ni avisos, ni valor de la cámara, ni informes.
-              Está para ver cómo funciona, y se quita con un botón desde el Panel.
+              No cuenta para nada, y se quita desde el Panel.
             </Aviso>
           )}
 
@@ -166,53 +173,62 @@ export function FichaDeProducto({
 
           {/* ── 1 · Lo que hay ─────────────────────────────────────────── */}
 
-          <section className="flex flex-col gap-e2 rounded-medio border border-borde p-e3">
-            <div className="flex flex-wrap items-center justify-between gap-e2">
+          {/*
+            ── Una etiqueta y su dato, y solo lo que hay ─────────────────────
+            Eran cinco frases sueltas —«llevo 1 día de historia y necesito 7
+            para no inventarme una cifra», «mínimo puesto a mano», «última línea
+            del libro de movimientos»— y había que leerlas todas para saber cómo
+            estaba el producto. Ahora es una rejilla: qué, y cuánto.
+          */}
+          <section className="flex flex-col gap-e3 rounded-medio border border-borde p-e3">
+            <div className="flex flex-wrap items-start justify-between gap-e2">
               <Cifra
                 etiqueta="Lo que hay en cámara"
                 valor={datos.producto.cantidad}
                 formato={(v) => conUnidadDeUso(v, datos.producto.unidadDeUso)}
-                origen="Última línea del libro de movimientos"
+                origen="Según el libro de movimientos"
               />
               <Etiqueta tono={TONO_DEL_ESTADO[datos.producto.estado]}>
                 {NOMBRE_DEL_ESTADO[datos.producto.estado]}
               </Etiqueta>
             </div>
 
-            <p className="text-secundario text-texto-suave">
-              {datos.producto.consumo.porDia === null
-                ? (datos.producto.consumo.porque ?? 'Todavía no sé a qué ritmo se gasta.')
-                : `Se gastan ${conUnidadDeUso(datos.producto.consumo.porDia, datos.producto.unidadDeUso)} al día, mirando los últimos ${datos.producto.consumo.diasMirados} días.`}
-            </p>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-e4 gap-y-e1 text-secundario">
+              {datos.puedeVerPrecios &&
+                datos.producto.valorCentimos !== null &&
+                datos.producto.valorCentimos !== undefined && (
+                  <Par que="Vale">
+                    {comoDinero(datos.producto.valorCentimos)}
+                    {datos.producto.valorEsEstimado === true && (
+                      <span className="font-normal text-texto-suave"> · a su precio de hoy</span>
+                    )}
+                  </Par>
+                )}
+              {datos.producto.minimo !== null && (
+                <Par que="Mínimo">
+                  {conUnidadDeUso(datos.producto.minimo, datos.producto.unidadDeUso)}
+                </Par>
+              )}
+              {datos.producto.consumo.porDia !== null && (
+                <Par que="Se gasta">
+                  {conUnidadDeUso(datos.producto.consumo.porDia, datos.producto.unidadDeUso)} al día
+                </Par>
+              )}
+              {seAgota !== null && <Par que="Se acaba">{seAgota}</Par>}
+              {datos.producto.sugerencia !== null && (
+                <Par que="Pide">
+                  {conUnidadDeUso(datos.producto.sugerencia.cuanto, datos.producto.unidadDeUso)}
+                  <span className="font-normal text-texto-suave">
+                    {' '}
+                    · {datos.producto.sugerencia.motivo}
+                  </span>
+                </Par>
+              )}
+            </dl>
 
-            {cuandoSeAgota(datos.producto.seAgotaEn, datos.producto.diasDeCobertura) !== null && (
-              <p className="text-cuerpo">
-                <strong>
-                  Se agota {cuandoSeAgota(datos.producto.seAgotaEn, datos.producto.diasDeCobertura)}
-                  .
-                </strong>{' '}
-                <span className="text-texto-suave">
-                  {datos.producto.diasDeCobertura === null
-                    ? ''
-                    : `Quedan ${datos.producto.diasDeCobertura.toLocaleString('es-ES')} días de cobertura.`}
-                </span>
-              </p>
-            )}
-
-            {datos.producto.sugerencia !== null && (
-              <p className="text-cuerpo">
-                <strong>
-                  Pide{' '}
-                  {conUnidadDeUso(datos.producto.sugerencia.cuanto, datos.producto.unidadDeUso)}.
-                </strong>{' '}
-                <span className="text-texto-suave">{datos.producto.sugerencia.motivo}</span>
-              </p>
-            )}
-
-            {datos.producto.minimo !== null && (
-              <p className="text-secundario text-texto-suave">
-                Mínimo puesto a mano:{' '}
-                {conUnidadDeUso(datos.producto.minimo, datos.producto.unidadDeUso)}
+            {datos.producto.consumo.porDia === null && (
+              <p className="text-etiqueta text-texto-tenue">
+                Con unos días de movimientos, aquí sale cuánto se gasta y cuándo se acaba.
               </p>
             )}
 
@@ -265,9 +281,9 @@ export function FichaDeProducto({
           {/* ── 3 · Lo que cuesta ─────────────────────────────────────── */}
 
           {datos.puedeVerPrecios && (
-            <section className="flex flex-col gap-e2">
-              <div className="flex flex-wrap items-center justify-between gap-e2">
-                <h3 className="text-seccion font-semibold">Lo que cuesta</h3>
+            <section className="flex flex-col gap-e2 rounded-medio border border-borde p-e3">
+              <div className="flex items-center justify-between gap-e2">
+                <h3 className="text-seccion font-semibold">Precio</h3>
                 {puedeTocarPrecios && (
                   <Boton
                     tono="texto"
@@ -280,70 +296,59 @@ export function FichaDeProducto({
                 )}
               </div>
 
-              {datos.producto.costePorUnidad !== null &&
-              datos.producto.costePorUnidad !== undefined ? (
-                <p className="text-cuerpo">
-                  <strong>{datos.producto.costePorUnidad}</strong>{' '}
-                  <span className="text-texto-suave">
-                    · sale de {comoDinero(datos.producto.precioCentimos)}
-                    {datos.producto.formato === null
-                      ? ''
-                      : ` la ${datos.producto.formato.toLowerCase()}`}
-                    , entre {datos.producto.factor.toLocaleString('es-ES')}{' '}
-                    {datos.producto.unidadDeUso}
-                    {datos.producto.rendimiento < 1
-                      ? ` y un ${comoPorcentaje(datos.producto.rendimiento)} que se aprovecha`
-                      : ''}
-                  </span>
+              {datos.producto.precioCentimos === null ||
+              datos.producto.precioCentimos === undefined ? (
+                <p className="text-secundario text-texto-suave">
+                  Sin precio. Se usa igual, y cuenta cero hasta que lo tenga.
                 </p>
               ) : (
-                <Aviso tono="atencion" titulo="Todavía no tiene precio">
-                  Se usa igual: cuenta cero y sale marcado en las fichas que lo lleven. Nunca
-                  bloquea nada.
-                </Aviso>
+                <>
+                  <p className="text-cuerpo">
+                    <strong>{comoDinero(datos.producto.precioCentimos)}</strong>{' '}
+                    <span className="text-texto-suave">{loQueEsElPrecio(datos.producto)}</span>
+                  </p>
+                  {/*
+                    Quién lo puso y desde cuándo. «Lo que hace cada uno queda con
+                    su nombre» (Manifiesto 8), y un precio mal metido se arrastra a
+                    todos los escandallos.
+                  */}
+                  {vigente !== undefined && (
+                    <p className="text-etiqueta text-texto-tenue">
+                      Desde el {comoSeLeeLaFecha(vigente.desde)}
+                      {vigente.proveedor === null ? '' : ` · ${vigente.proveedor}`}
+                      {vigente.quien === null ? '' : ` · lo puso ${vigente.quien}`}
+                    </p>
+                  )}
+                </>
               )}
 
-              {datos.producto.valorCentimos !== null &&
-                datos.producto.valorCentimos !== undefined && (
-                  <p className="text-secundario text-texto-suave">
-                    Lo que hay vale {comoDinero(datos.producto.valorCentimos)}, a precio medio
-                    ponderado.
-                  </p>
-                )}
-
-              {datos.precios.length > 0 && (
-                <>
-                  <h4 className="mt-e2 text-etiqueta uppercase tracking-wide text-texto-suave">
-                    Histórico, y por proveedor
-                  </h4>
-                  <ul className="flex flex-col gap-e1">
-                    {datos.precios.map((precio) => (
+              {/* El histórico, plegado: se abre cuando se busca, no se lee siempre. */}
+              {anteriores.length > 0 && (
+                <details className="text-secundario">
+                  <summary className="cursor-pointer text-texto-suave">
+                    {anteriores.length === 1
+                      ? 'Un precio anterior'
+                      : `${anteriores.length} precios anteriores`}
+                  </summary>
+                  <ul className="mt-e2 flex flex-col">
+                    {anteriores.map((precio) => (
                       <li
                         key={precio.id}
-                        className="flex flex-wrap items-baseline justify-between gap-e2 border-b border-borde py-e2 last:border-0"
+                        className="flex flex-wrap items-baseline justify-between gap-e2 border-b border-borde py-e1 last:border-0"
                       >
-                        <span className="flex items-center gap-e2">
-                          <span>{precio.proveedor ?? 'Sin proveedor'}</span>
-                          {precio.vigente && <Etiqueta tono="bien">vigente</Etiqueta>}
+                        <span>
+                          {comoDinero(precio.precioCentimos)}
+                          {precio.proveedor === null ? '' : ` · ${precio.proveedor}`}
                         </span>
-                        <span className="text-secundario text-texto-suave">
-                          {comoDinero(precio.precioCentimos)} · {precio.costePorUnidad} · desde{' '}
-                          {precio.desde}
-                          {precio.hasta === null ? '' : ` hasta ${precio.hasta}`}
-                          {/*
-                            Quién lo puso. Se guardaba desde el primer día de M6 y
-                            no salía de la base de datos: era la única columna de
-                            todo el esquema que se escribía sin que nadie la
-                            leyera. «Lo que hace cada uno queda con su nombre»
-                            (Manifiesto 8), y un precio mal metido se arrastra a
-                            todos los escandallos.
-                          */}
-                          {precio.quien !== null && ` · lo puso ${precio.quien}`}
+                        <span className="text-etiqueta text-texto-suave">
+                          {comoSeLeeLaFecha(precio.desde)}
+                          {precio.hasta === null ? '' : ` – ${comoSeLeeLaFecha(precio.hasta)}`}
+                          {precio.quien === null ? '' : ` · ${precio.quien}`}
                         </span>
                       </li>
                     ))}
                   </ul>
-                </>
+                </details>
               )}
             </section>
           )}
@@ -351,35 +356,53 @@ export function FichaDeProducto({
           {/* ── 4 · El libro ──────────────────────────────────────────── */}
 
           <section className="flex flex-col gap-e2">
-            <h3 className="text-seccion font-semibold">Qué ha pasado con este producto</h3>
+            <h3 className="text-seccion font-semibold">Últimos movimientos</h3>
             {datos.movimientos.length === 0 ? (
-              <p className="text-secundario text-texto-suave">
-                Todavía no se ha movido nada. En cuanto entre o salga género, aquí queda apuntado
-                con quién y cuándo.
-              </p>
+              <p className="text-secundario text-texto-suave">Todavía no se ha movido nada.</p>
             ) : (
-              <ul className="flex flex-col gap-e1">
-                {datos.movimientos.map((movimiento) => (
-                  <li
-                    key={movimiento.id}
-                    className="flex flex-wrap items-baseline justify-between gap-e2 border-b border-borde py-e2 last:border-0"
-                  >
-                    <span>
-                      {COMO_SE_LLAMA_EL_MOVIMIENTO[movimiento.tipo] ?? movimiento.tipo}{' '}
-                      <strong>
-                        {movimiento.cantidad > 0 ? '+' : ''}
-                        {conUnidadDeUso(movimiento.cantidad, datos.producto.unidadDeUso)}
-                      </strong>
-                      {movimiento.motivo === null ? '' : ` · ${movimiento.motivo}`}
-                    </span>
-                    <span className="text-secundario text-texto-suave">
-                      {movimiento.fechaOperativa}
-                      {movimiento.quien === null ? '' : ` · ${movimiento.quien}`} · quedaron{' '}
-                      {conUnidadDeUso(movimiento.cantidadDespues, datos.producto.unidadDeUso)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="flex flex-col">
+                  {(todosLosMovimientos ? datos.movimientos : datos.movimientos.slice(0, 5)).map(
+                    (movimiento) => (
+                      <li
+                        key={movimiento.id}
+                        className="flex items-baseline justify-between gap-e3 border-b border-borde py-e2 last:border-0"
+                      >
+                        <span className="min-w-0">
+                          <span className="block">
+                            {COMO_SE_LLAMA_EL_MOVIMIENTO[movimiento.tipo] ?? movimiento.tipo}{' '}
+                            <strong>
+                              {movimiento.cantidad > 0 ? '+' : ''}
+                              {conUnidadDeUso(movimiento.cantidad, datos.producto.unidadDeUso)}
+                            </strong>
+                          </span>
+                          {movimiento.motivo !== null && (
+                            <span className="block truncate text-etiqueta text-texto-suave">
+                              {movimiento.motivo}
+                            </span>
+                          )}
+                        </span>
+                        <span className="shrink-0 text-right text-etiqueta text-texto-suave">
+                          {comoSeLeeLaFecha(movimiento.fechaOperativa)}
+                          {movimiento.quien === null ? '' : ` · ${movimiento.quien}`}
+                        </span>
+                      </li>
+                    ),
+                  )}
+                </ul>
+                {datos.movimientos.length > 5 && !todosLosMovimientos && (
+                  <div>
+                    <Boton
+                      tono="texto"
+                      onClick={() => {
+                        setTodosLosMovimientos(true);
+                      }}
+                    >
+                      Ver los {datos.movimientos.length}
+                    </Boton>
+                  </div>
+                )}
+              </>
             )}
           </section>
 
@@ -387,25 +410,26 @@ export function FichaDeProducto({
 
           {datos.lotes.length > 0 && (
             <section className="flex flex-col gap-e2">
-              <h3 className="text-seccion font-semibold">Lotes y caducidades</h3>
-              <ul className="flex flex-col gap-e1">
+              <h3 className="text-seccion font-semibold">Caducidades</h3>
+              <ul className="flex flex-col">
                 {datos.lotes.map((lote) => (
                   <li
                     key={lote.id}
                     className="flex flex-wrap items-baseline justify-between gap-e2 border-b border-borde py-e2 last:border-0"
                   >
-                    <span>{lote.codigo ?? 'Sin código de lote'}</span>
-                    <span className="text-secundario text-texto-suave">
+                    <span>
                       {lote.caducaEl === null
-                        ? `Recibido el ${lote.recibidoEl}`
-                        : `Caduca el ${lote.caducaEl}`}
+                        ? 'Sin fecha de caducidad'
+                        : `Caduca el ${comoSeLeeLaFecha(lote.caducaEl)}`}
+                    </span>
+                    <span className="text-etiqueta text-texto-suave">
+                      {lote.codigo === null
+                        ? `Llegó el ${comoSeLeeLaFecha(lote.recibidoEl)}`
+                        : `Lote ${lote.codigo}`}
                     </span>
                   </li>
                 ))}
               </ul>
-              <p className="text-secundario text-texto-suave">
-                Al consumir se gastará primero lo que antes caduque. Eso llega con los recuentos.
-              </p>
             </section>
           )}
 
@@ -425,31 +449,31 @@ export function FichaDeProducto({
                 </Boton>
               )}
             </div>
-            <dl className="grid grid-cols-2 gap-e2 text-secundario">
-              <Dato que="Categoría" es={datos.producto.categoria ?? 'Sin categoría'} />
-              <Dato que="Envase" es={datos.producto.formato ?? 'Suelto'} />
-              <Dato
-                que="Cuánto trae"
-                es={`${datos.producto.factor.toLocaleString('es-ES')} ${datos.producto.unidadDeUso}`}
-              />
-              <Dato
-                que="Se aprovecha"
-                es={`${comoPorcentaje(datos.producto.rendimiento)}${datos.producto.sinVerificar ? ' · sin medir' : ''}`}
-              />
-              <Dato que="Proveedor" es={datos.producto.proveedor ?? 'Sin proveedor'} />
-              <Dato que="Código de barras" es={datos.producto.codigoDeBarras ?? 'No tiene'} />
-              <Dato
-                que="Peso variable"
-                es={datos.producto.pesoVariable ? 'Sí, entra por peso real' : 'No'}
-              />
-              <Dato
-                que="Alérgenos"
-                es={
-                  datos.alergenos.length === 0
-                    ? 'Ninguno declarado'
-                    : datos.alergenos.map((a) => NOMBRE_DEL_ALERGENO[a]).join(', ')
-                }
-              />
+            {/* Solo lo que dice algo: «código de barras: no tiene» no dice nada. */}
+            <dl className="grid grid-cols-[auto_1fr] gap-x-e4 gap-y-e1 text-secundario">
+              <Par que="Categoría">{datos.producto.categoria ?? 'Sin categoría'}</Par>
+              <Par que="Proveedor">{datos.producto.proveedor ?? 'Sin proveedor'}</Par>
+              <Par que="Envase">{datos.producto.formato ?? 'Suelto'}</Par>
+              {datos.producto.factor !== 1 && (
+                <Par que="Cuánto trae">
+                  {datos.producto.factor.toLocaleString('es-ES')} {datos.producto.unidadDeUso}
+                </Par>
+              )}
+              <Par que="Se aprovecha">
+                {comoPorcentaje(datos.producto.rendimiento)}
+                {datos.producto.sinVerificar && (
+                  <span className="font-normal text-texto-suave"> · sin medir</span>
+                )}
+              </Par>
+              <Par que="Alérgenos">
+                {datos.alergenos.length === 0
+                  ? 'Ninguno declarado'
+                  : datos.alergenos.map((a) => NOMBRE_DEL_ALERGENO[a]).join(', ')}
+              </Par>
+              {datos.producto.codigoDeBarras !== null && (
+                <Par que="Código de barras">{datos.producto.codigoDeBarras}</Par>
+              )}
+              {datos.producto.pesoVariable && <Par que="Peso variable">Sí, entra por peso</Par>}
             </dl>
           </section>
 
@@ -690,13 +714,40 @@ function Desactivar({
   );
 }
 
-function Dato({ que, es }: { readonly que: string; readonly es: string }) {
+/** Una etiqueta y su dato, en la rejilla de dos columnas de la ficha. */
+function Par({ que, children }: { readonly que: string; readonly children: ReactNode }) {
   return (
-    <div>
-      <dt className="text-etiqueta uppercase tracking-wide text-texto-suave">{que}</dt>
-      <dd className="text-cuerpo">{es}</dd>
-    </div>
+    <>
+      <dt className="text-texto-suave">{que}</dt>
+      <dd className="font-medium text-texto">{children}</dd>
+    </>
   );
+}
+
+/** Cómo se dice «el kilo», «la unidad»… después de un precio. */
+const LA_UNIDAD: Readonly<Record<string, string>> = {
+  ud: 'la unidad',
+  kg: 'el kilo',
+  g: 'el gramo',
+  l: 'el litro',
+  ml: 'el mililitro',
+};
+
+/**
+ * Qué es el precio que se enseña, en una frase.
+ *
+ * Si se compra de uno en uno —el kilo, la unidad— el precio **es** lo que cuesta,
+ * y decir «2,0000 €/ud · sale de 2,00 € entre 1 ud» es obligar a leer una cuenta
+ * que no hay. Solo con envase se dice a cuánto sale lo que se usa.
+ */
+function loQueEsElPrecio(producto: ProductoEnLista): string {
+  if (producto.factor === 1 && producto.rendimiento >= 1) {
+    return LA_UNIDAD[producto.unidadDeUso] ?? `el ${producto.unidadDeUso}`;
+  }
+  const envase = producto.formato === null ? 'el envase' : producto.formato.toLowerCase();
+  const aprovecha =
+    producto.rendimiento < 1 ? `, aprovechando un ${comoPorcentaje(producto.rendimiento)}` : '';
+  return `${envase} · sale a ${producto.costePorUnidad ?? '—'}${aprovecha}`;
 }
 
 // ── Cambiar el precio ────────────────────────────────────────────────────────

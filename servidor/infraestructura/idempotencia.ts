@@ -83,7 +83,7 @@ export async function anotar(
       (clave, huella, organizacion_id, persona_id, comando, respuesta, estado_http)
     values (
       ${clave}, ${huellaDe(comando, entrada)}, ${organizacionId}, ${personaId},
-      ${comando}, ${JSON.stringify(respuesta ?? null)}::jsonb, ${estadoHttp}
+      ${comando}, ${JSON.stringify(respuesta ?? null)}::text::jsonb, ${estadoHttp}
     )
     on conflict (clave) do nothing
   `;

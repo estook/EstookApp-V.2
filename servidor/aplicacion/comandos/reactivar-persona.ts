@@ -108,7 +108,7 @@ export const reactivarPersona = comando<EntradaReactivar, SalidaReactivar>({
       select estook.anotar(
         ${entrada.organizacion_id}::uuid, 'reactivar', 'persona', ${entrada.persona_id},
         ${entrada.local_id ?? null}::uuid, null,
-        ${JSON.stringify({ rol: entrada.rol })}::jsonb, null
+        ${JSON.stringify({ rol: entrada.rol })}::text::jsonb, null
       )
     `;
 

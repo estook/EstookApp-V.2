@@ -181,7 +181,7 @@ export const apuntarEntrada = comando<EntradaApuntarEntrada, SalidaDeMovimiento>
       select estook.anotar(
         ${laOrganizacionDeLaSesion(contexto)}::uuid, 'crear', 'movimiento_de_stock',
         ${apuntado.movimientoId}, ${producto.localId}::uuid, null,
-        ${JSON.stringify({ tipo: 'entrada', cantidad: cuanto, producto: producto.nombre })}::jsonb,
+        ${JSON.stringify({ tipo: 'entrada', cantidad: cuanto, producto: producto.nombre })}::text::jsonb,
         null
       )
     `;
@@ -239,7 +239,7 @@ export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
       select estook.anotar(
         ${laOrganizacionDeLaSesion(contexto)}::uuid, 'crear', 'movimiento_de_stock',
         ${apuntado.movimientoId}, ${producto.localId}::uuid, null,
-        ${JSON.stringify({ tipo: 'salida', cantidad: -cuanto, producto: producto.nombre })}::jsonb,
+        ${JSON.stringify({ tipo: 'salida', cantidad: -cuanto, producto: producto.nombre })}::text::jsonb,
         ${entrada.motivo ?? null}
       )
     `;
@@ -322,8 +322,8 @@ export const ajustarStock = comando<EntradaAjustarStock, SalidaAjustarStock>({
       select estook.anotar(
         ${laOrganizacionDeLaSesion(contexto)}::uuid, 'cambiar', 'movimiento_de_stock',
         ${apuntado.movimientoId}, ${producto.localId}::uuid,
-        ${JSON.stringify({ cantidad: antes.cantidad })}::jsonb,
-        ${JSON.stringify({ cantidad: entrada.hay, producto: producto.nombre })}::jsonb,
+        ${JSON.stringify({ cantidad: antes.cantidad })}::text::jsonb,
+        ${JSON.stringify({ cantidad: entrada.hay, producto: producto.nombre })}::text::jsonb,
         ${entrada.motivo}
       )
     `;

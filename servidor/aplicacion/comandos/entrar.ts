@@ -214,7 +214,7 @@ export const entrar = comando<EntradaEntrar, SalidaEntrar>({
         select estook.anotar(
           ${destino.organizacionId}::uuid, 'entrar', 'sesion', ${sesionId},
           ${destino.localId}::uuid, null,
-          ${JSON.stringify({ con: entrada.pin === undefined ? 'contrasena' : 'pin' })}::jsonb,
+          ${JSON.stringify({ con: entrada.pin === undefined ? 'contrasena' : 'pin' })}::text::jsonb,
           null
         )
       `;

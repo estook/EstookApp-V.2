@@ -128,8 +128,8 @@ export const proponerImportacion = comando<EntradaProponer, SalidaProponer>({
         ${entrada.destino}::estook.destino_de_importacion,
         ${entrada.nombre_del_fichero}, ${huella},
         ${leido.columnas as string[]}::text[],
-        ${JSON.stringify(mapeo)}::jsonb,
-        ${JSON.stringify(leido.filas)}::jsonb,
+        ${JSON.stringify(mapeo)}::text::jsonb,
+        ${JSON.stringify(leido.filas)}::text::jsonb,
         ${contexto.personaId}
       )
       returning id
@@ -258,13 +258,13 @@ export const confirmarImportacion = comando<EntradaConfirmar, SalidaConfirmar>({
     await contexto.sql`
       update estook.importacion
          set estado = 'confirmada',
-             mapeo = ${JSON.stringify(entrada.mapeo)}::jsonb,
+             mapeo = ${JSON.stringify(entrada.mapeo)}::text::jsonb,
              resultado = ${JSON.stringify({
                entraron: resultado.entraron,
                yaEstaban: resultado.yaEstaban,
                seSaltaron: resultado.seSaltaron,
                filas: paraGuardar,
-             })}::jsonb
+             })}::text::jsonb
        where id = ${importacion.id}
     `;
 
@@ -276,7 +276,7 @@ export const confirmarImportacion = comando<EntradaConfirmar, SalidaConfirmar>({
           entraron: resultado.entraron,
           ya_estaban: resultado.yaEstaban,
           se_saltaron: resultado.seSaltaron,
-        })}::jsonb,
+        })}::text::jsonb,
         null
       )
     `;
@@ -443,7 +443,7 @@ async function aplicarAlEquipo(
       select estook.anotar(
         ${organizacionId}::uuid, 'invitar', 'persona', ${personaId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ rol, desde: 'importacion', ya_existia: yaExistia })}::jsonb,
+        ${JSON.stringify({ rol, desde: 'importacion', ya_existia: yaExistia })}::text::jsonb,
         null
       )
     `;

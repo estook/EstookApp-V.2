@@ -111,7 +111,7 @@ export const apuntarMerma = comando<EntradaApuntarMerma, SalidaApuntarMerma>({
           motivo: entrada.motivo,
           cantidad: -entrada.cuanto,
           producto: producto.nombre,
-        })}::jsonb,
+        })}::text::jsonb,
         ${entrada.detalle ?? null}
       )
     `;

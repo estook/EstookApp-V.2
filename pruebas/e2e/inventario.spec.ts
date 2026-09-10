@@ -272,8 +272,8 @@ test('se da de alta un producto en menos de treinta segundos', async ({ page }) 
   // Un nombre propio, que es lo que hace de verdad quien da de alta su aceite. Y
   // de paso deja que los dos proyectos de Playwright —escritorio y móvil— corran
   // contra la misma base sin chocar con «ya tienes un producto que se llama así».
-  await hoja.getByLabel('Cómo se llama').fill(`Aceite de oliva ${Date.now()}`);
-  await hoja.getByLabel('Lo que te cuesta').fill('42,50');
+  await hoja.getByLabel(/^Producto/).fill(`Aceite de oliva ${Date.now()}`);
+  await hoja.getByLabel('Precio', { exact: true }).fill('42,50');
   await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
 
   // La ficha se abre sola con el producto creado.
@@ -654,10 +654,13 @@ test('si el jefe de cocina dice que hay 4, hay 4', async ({ page, request }) => 
 
   await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Ajustar lo que hay' }).click();
-  await page.getByLabel(/Cuánto hay/).fill('4000');
+  // Ya no es un tercer botón al lado de «ha llegado» y «ha salido»: se abre desde
+  // la propia cifra, que es donde alguien nota que no cuadra.
+  await expect(page.getByRole('button', { name: 'Ajustar lo que hay' })).toHaveCount(0);
+  await page.getByRole('button', { name: '¿No cuadra lo que hay? Corrígelo' }).click();
+  await page.getByLabel('Cuánto hay de verdad').fill('4000');
   await page.getByLabel('Por qué no cuadraba').fill('Se rompió un saco');
-  await page.getByRole('button', { name: 'Guardar el ajuste' }).click();
+  await page.getByRole('button', { name: 'Corregir', exact: true }).click();
 
   // Lo que dice la persona es lo que hay, y queda apuntado con su motivo: nadie
   // se queda bloqueado por cuadrar.
@@ -891,26 +894,22 @@ test('del catálogo se puede cambiar el envase, y la cuenta se rehace al escribi
   await expect(propuesta).toBeVisible();
   await propuesta.click();
 
-  // Lo que antes no existía: las casillas del envase, rellenas con lo que
-  // propone el catálogo.
-  await expect(hoja.getByLabel('Cómo lo compras')).toHaveValue('Garrafa de 5 l');
+  // Lo que propone el catálogo, a la vista: cuánto trae el envase.
   await expect(hoja.getByLabel('Cuánto trae')).toHaveValue('5000');
-  await expect(hoja.getByText('= 5000 ml para usar.')).toBeVisible();
 
-  // Y se cambian. La cuenta se rehace mientras se escribe, **antes** de guardar,
-  // que es lo que hace que alguien note que se ha equivocado.
-  await hoja.getByLabel('Cómo lo compras').fill('Garrafa de 8 l');
+  // Y se cambia. **Ya no hay «cómo lo compras»**: el envase se compone con lo
+  // que trae, y el precio es el de todo eso. La cuenta sale hecha al escribirlo.
   await hoja.getByLabel('Cuánto trae').fill('8000');
-  await expect(hoja.getByText('= 8000 ml para usar.')).toBeVisible();
+  await hoja.getByLabel('Precio', { exact: true }).fill('60,00');
+  await expect(hoja.getByText('Sale a 0,0075 €/ml')).toBeVisible();
 
   const nombre = `Aceite de 8 litros ${Date.now()}`;
-  await hoja.getByLabel('Cómo se llama').fill(nombre);
-  await hoja.getByLabel('Lo que te cuesta').fill('60,00');
+  await hoja.getByLabel(/^Producto/).fill(nombre);
   await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
 
   // Y lo guardado es lo suyo, no lo del catálogo.
   await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
-  await expect(loQueSeVe(page, 'Garrafa de 8 l')).toBeVisible();
+  await expect(loQueSeVe(page, 'Envase de 8000 ml')).toBeVisible();
 });
 
 /**
@@ -933,7 +932,7 @@ test('si no se toca el envase, se guarda el del catálogo', async ({ page }) => 
   await expect(propuesta).toBeVisible();
   await propuesta.click();
 
-  await hoja.getByLabel('Cómo se llama').fill(`Aceite tal cual ${Date.now()}`);
+  await hoja.getByLabel(/^Producto/).fill(`Aceite tal cual ${Date.now()}`);
   await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
 
   await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
@@ -1040,9 +1039,9 @@ test('el libro se pinta por días, con quién apuntó cada línea', async ({ pag
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Movimientos');
   await expect(page.getByText('No he podido leer')).toHaveCount(0);
 
-  // Lo que hace que el libro sirva: que dice que no se edita, y que cada línea
-  // lleva el saldo de después.
-  await expect(page.getByText('Esto no se edita, se enmienda')).toBeVisible();
+  // Lo que hace que el libro sirva: que cada línea lleva el saldo de después. Y
+  // **sin** el aviso de cuatro líneas que se leía cada vez que se abría.
+  await expect(page.getByText('Esto no se edita, se enmienda')).toHaveCount(0);
   await expect(page.getByText(/quedaron /).first()).toBeVisible({ timeout: 15_000 });
 });
 
@@ -1128,7 +1127,7 @@ test('un producto se da de alta con nombre, unidad y precio, sin hacer cuentas',
 
   const nombre = `Harina de fuerza ${Date.now()}`;
   await hoja.getByRole('button', { name: 'Crearlo a mano' }).click();
-  await hoja.getByLabel('Cómo se llama').fill(nombre);
+  await hoja.getByLabel(/^Producto/).fill(nombre);
 
   // En qué se mide: cinco pastillas, no un desplegable que esconde cuatro.
   await hoja.getByRole('radio', { name: 'kg', exact: true }).click();
@@ -1137,16 +1136,23 @@ test('un producto se da de alta con nombre, unidad y precio, sin hacer cuentas',
     'true',
   );
 
-  // Y el precio **es el del kg**: no hay nada que multiplicar.
-  await hoja.getByLabel('Lo que te cuesta el kg').fill('1,20');
+  // A granel: trae 1, y el precio **es el del kg**. No hay nada que multiplicar.
+  await expect(hoja.getByLabel('Cuánto trae')).toHaveValue('1');
+  await hoja.getByLabel('Precio', { exact: true }).fill('1,20');
 
-  // Lo de los envases está, pero plegado: quien compra harina suelta no contesta
-  // tres preguntas para decir «a tanto el kilo».
-  await expect(hoja.getByLabel('Cuánto trae')).toHaveCount(0);
+  // **Cuánto hay**, que es lo que faltaba entero: antes el producto nacía a cero
+  // y había que entrar en su ficha a apuntar una entrada.
+  await hoja.getByLabel('Cuánto hay ahora').fill('12');
+
+  // Y el aprovechamiento **no se pregunta**: nadie lo sabe al dar de alta.
+  await expect(hoja.getByLabel(/se aprovecha/)).toHaveCount(0);
 
   await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
 
+  // La ficha se abre con lo que hay puesto: la cámara ya lo cuenta.
   await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
+  // El que se ve: la lista de detrás pinta cada fila dos veces, una por ancho.
+  await expect(loQueSeVe(page, '12 kg')).toBeVisible();
   await expect(loQueSeVe(page, nombre)).toBeVisible();
 });
 
@@ -1159,22 +1165,21 @@ test('y quien compra por envases lo despliega, y la cuenta sigue saliendo', asyn
 
   const nombre = `Aceite en garrafa ${Date.now()}`;
   await hoja.getByRole('button', { name: 'Crearlo a mano' }).click();
-  await hoja.getByLabel('Cómo se llama').fill(nombre);
+  await hoja.getByLabel(/^Producto/).fill(nombre);
   await hoja.getByRole('radio', { name: 'ml', exact: true }).click();
 
-  await hoja.getByRole('button', { name: /Lo compro por envases/ }).click();
-  await hoja.getByLabel('Cómo lo compras').fill('Garrafa de 8 l');
+  // Sin pliegue y sin «cómo lo compras»: cuánto trae y lo que cuesta todo eso.
   await hoja.getByLabel('Cuánto trae').fill('8000');
+  await hoja.getByLabel('Precio', { exact: true }).fill('60,00');
 
   // La cuenta hecha, **antes** de guardar: es lo que hace que alguien se dé
   // cuenta de que se ha equivocado.
-  await expect(hoja.getByText('= 8000 ml para usar.')).toBeVisible();
+  await expect(hoja.getByText('Sale a 0,0075 €/ml')).toBeVisible();
 
-  await hoja.getByLabel('Lo que te cuesta').fill('60,00');
   await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
 
   await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
-  await expect(loQueSeVe(page, 'Garrafa de 8 l')).toBeVisible();
+  await expect(loQueSeVe(page, 'Envase de 8000 ml')).toBeVisible();
 });
 
 // ── 8 · Delivery · el sitio, no la integración ──────────────────────────────

@@ -27,6 +27,8 @@ import type { Centimos } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { SelectorDeCategoria } from './SelectorDeCategoria.tsx';
+import { MoverGenero, type QueSeMueve } from './MoverGenero.tsx';
+import { IconoAnadir, IconoQuitar } from '@estook/iconos';
 import {
   COMO_SE_LLAMA_EL_MOVIMIENTO,
   NOMBRE_DE_LA_CATEGORIA_FISCAL,
@@ -49,7 +51,8 @@ import {
  * ── Lo que hay dentro, en el orden en que hace falta ─────────────────────────
  *
  *   1. Lo que hay en cámara, y hasta cuándo dura
- *   2. Los tres botones: ha entrado, ha salido, ajustar
+ *   2. Los dos botones: ha llegado y ha salido. Cuadrar la cámara se abre desde
+ *      la propia cifra —«¿no cuadra?»—, que es donde se nota
  *   3. Lo que cuesta, con su histórico por proveedor
  *   4. El libro de movimientos
  *   5. Lotes y caducidades
@@ -72,7 +75,7 @@ export function FichaDeProducto({
   const { cliente, permisos } = usarSesion();
   const cache = useQueryClient();
 
-  const [haciendo, setHaciendo] = useState<'entrada' | 'salida' | 'ajuste' | 'precio' | null>(null);
+  const [haciendo, setHaciendo] = useState<QueSeMueve | 'precio' | null>(null);
   const [editando, setEditando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [noticia, setNoticia] = useState<string | null>(null);
@@ -138,9 +141,8 @@ export function FichaDeProducto({
                 setNoticia(null);
               }}
             >
-              Queda apuntado en el libro con tu nombre y la hora. Si no era esto,{' '}
-              <strong>se corrige con otro movimiento</strong>: «Ajustar lo que hay», poniendo la
-              cantidad de verdad. El libro no se borra, y por eso se puede auditar.
+              Queda apuntado con tu nombre y la hora. Si no era esto, se corrige con «¿No cuadra lo
+              que hay?», arriba.
             </Aviso>
           )}
 
@@ -151,13 +153,16 @@ export function FichaDeProducto({
             </Aviso>
           )}
 
-          {datos.producto.sinVerificar && (
-            <Aviso tono="atencion" titulo="El aprovechamiento está sin comprobar">
-              Viene propuesto, no medido en tu cocina. Un rendimiento mal puesto es el error más
-              caro del sistema, porque multiplica el coste de todos los platos que lo lleven.
-              Corrígelo en la ficha de abajo cuando lo sepas.
-            </Aviso>
-          )}
+          {/*
+            ── Aquí había un aviso sobre el aprovechamiento, y se va ──────────
+            Decía «el aprovechamiento está sin comprobar, corrígelo en la ficha de
+            abajo», en amarillo y en todos los productos creados a mano, que son
+            casi todos. «Nadie sabe cuánto se aprovecha al llegar, sino cuando está
+            trabajando»: no es algo que se conteste en una casilla, es algo que se
+            **mide** —con las mermas que se apuntan y, en M9, con la ficha técnica
+            de cada plato—. Así que ni se pregunta ni se reclama: la etiqueta «sin
+            verificar» sigue en la lista, que es lo que es.
+          */}
 
           {/* ── 1 · Lo que hay ─────────────────────────────────────────── */}
 
@@ -210,14 +215,35 @@ export function FichaDeProducto({
                 {conUnidadDeUso(datos.producto.minimo, datos.producto.unidadDeUso)}
               </p>
             )}
+
+            {puedeTocar && (
+              <div>
+                <Boton
+                  tono="texto"
+                  onClick={() => {
+                    setHaciendo('ajuste');
+                  }}
+                >
+                  ¿No cuadra lo que hay? Corrígelo
+                </Boton>
+              </div>
+            )}
           </section>
 
-          {/* ── 2 · Las tres cosas que se hacen delante de una cámara ──── */}
+          {/*
+            ── 2 · Las dos cosas que se hacen delante de una cámara ────────
 
+            Eran tres botones del mismo tamaño —ha llegado, ha salido, ajustar— y
+            decían que las tres cosas eran igual de normales. No lo son: entrar y
+            salir es el día a día; cuadrar es la excepción. «Ajustar lo que hay»
+            no debería estar ahí, y no está: se abre desde la cifra de arriba,
+            «¿no cuadra?», que es exactamente donde alguien nota que no cuadra.
+          */}
           {puedeTocar && (
             <Botones>
               <Boton
                 tono="principal"
+                icono={<IconoAnadir size={18} />}
                 onClick={() => {
                   setHaciendo('entrada');
                 }}
@@ -226,19 +252,12 @@ export function FichaDeProducto({
               </Boton>
               <Boton
                 tono="secundario"
+                icono={<IconoQuitar size={18} />}
                 onClick={() => {
                   setHaciendo('salida');
                 }}
               >
                 Ha salido género
-              </Boton>
-              <Boton
-                tono="secundario"
-                onClick={() => {
-                  setHaciendo('ajuste');
-                }}
-              >
-                Ajustar lo que hay
               </Boton>
             </Botones>
           )}
@@ -408,12 +427,15 @@ export function FichaDeProducto({
             </div>
             <dl className="grid grid-cols-2 gap-e2 text-secundario">
               <Dato que="Categoría" es={datos.producto.categoria ?? 'Sin categoría'} />
-              <Dato que="Cómo se compra" es={datos.producto.formato ?? 'Sin formato'} />
+              <Dato que="Envase" es={datos.producto.formato ?? 'Suelto'} />
               <Dato
                 que="Cuánto trae"
                 es={`${datos.producto.factor.toLocaleString('es-ES')} ${datos.producto.unidadDeUso}`}
               />
-              <Dato que="Se aprovecha" es={comoPorcentaje(datos.producto.rendimiento)} />
+              <Dato
+                que="Se aprovecha"
+                es={`${comoPorcentaje(datos.producto.rendimiento)}${datos.producto.sinVerificar ? ' · sin medir' : ''}`}
+              />
               <Dato que="Proveedor" es={datos.producto.proveedor ?? 'Sin proveedor'} />
               <Dato que="Código de barras" es={datos.producto.codigoDeBarras ?? 'No tiene'} />
               <Dato
@@ -461,7 +483,8 @@ export function FichaDeProducto({
         <>
           <MoverGenero
             que={haciendo === 'precio' ? null : haciendo}
-            producto={datos}
+            producto={datos.producto}
+            puedeVerPrecios={datos.puedeVerPrecios}
             alCerrar={() => {
               setHaciendo(null);
             }}
@@ -676,243 +699,6 @@ function Dato({ que, es }: { readonly que: string; readonly es: string }) {
   );
 }
 
-// ── Mover género ─────────────────────────────────────────────────────────────
-
-const COMO_SE_PREGUNTA = {
-  entrada: {
-    titulo: 'Ha llegado género',
-    boton: 'Apuntar la entrada',
-    comando: 'apuntar_entrada',
-  },
-  salida: {
-    titulo: 'Ha salido género',
-    boton: 'Apuntar la salida',
-    comando: 'apuntar_salida',
-  },
-  ajuste: {
-    titulo: 'Ajustar lo que hay en cámara',
-    boton: 'Guardar el ajuste',
-    comando: 'ajustar_stock',
-  },
-} as const;
-
-function MoverGenero({
-  que,
-  producto,
-  alCerrar,
-  alHecho,
-  alFallar,
-}: {
-  readonly que: 'entrada' | 'salida' | 'ajuste' | null;
-  readonly producto: UnProducto;
-  readonly alCerrar: () => void;
-  readonly alHecho: (frase: string) => void;
-  readonly alFallar: (error: ErrorDeLaApi) => void;
-}) {
-  const { cliente } = usarSesion();
-  const [cuanto, setCuanto] = useState('');
-  const [como, setComo] = useState<'formatos' | 'unidades_de_uso'>('unidades_de_uso');
-  const [motivo, setMotivo] = useState('');
-  const [precio, setPrecio] = useState<Centimos | null>(null);
-  const [lote, setLote] = useState('');
-  const [caduca, setCaduca] = useState('');
-  const [guardando, setGuardando] = useState(false);
-
-  if (que === null) return null;
-
-  const cual = COMO_SE_PREGUNTA[que];
-  const numero = Number(cuanto.replace(',', '.'));
-  const valido = cuanto.trim() !== '' && Number.isFinite(numero) && (que !== 'ajuste' || true);
-  const conMotivo = que !== 'ajuste' || motivo.trim() !== '';
-
-  async function guardar() {
-    setGuardando(true);
-
-    const cuerpo =
-      que === 'ajuste'
-        ? { producto_id: producto.producto.id, hay: numero, motivo: motivo.trim() }
-        : que === 'entrada'
-          ? {
-              producto_id: producto.producto.id,
-              cuanto: Math.abs(numero),
-              como,
-              precio_centimos: precio,
-              ...(lote.trim() === '' ? {} : { lote: lote.trim() }),
-              ...(caduca === '' ? {} : { caduca_el: caduca }),
-              ...(motivo.trim() === '' ? {} : { motivo: motivo.trim() }),
-            }
-          : {
-              producto_id: producto.producto.id,
-              cuanto: Math.abs(numero),
-              como,
-              ...(motivo.trim() === '' ? {} : { motivo: motivo.trim() }),
-            };
-
-    const respuesta = await cliente.ejecutar<{
-      cantidad: number;
-      unidadDeUso: string;
-      yaCuadraba?: boolean;
-    }>(cual.comando, cuerpo);
-
-    setGuardando(false);
-
-    if (!respuesta.ok) {
-      alFallar(respuesta.error);
-      return;
-    }
-
-    setCuanto('');
-    setMotivo('');
-    setPrecio(null);
-    setLote('');
-    setCaduca('');
-
-    if (respuesta.datos.yaCuadraba === true) {
-      alHecho('Ya cuadraba, así que no he apuntado nada.');
-      return;
-    }
-
-    alHecho(
-      `Apuntado. Quedan ${conUnidadDeUso(respuesta.datos.cantidad, respuesta.datos.unidadDeUso)}.`,
-    );
-  }
-
-  return (
-    <Hoja
-      abierta
-      alCerrar={alCerrar}
-      titulo={cual.titulo}
-      pie={
-        <Botones>
-          <Boton tono="texto" onClick={alCerrar}>
-            Dejarlo
-          </Boton>
-          <Boton
-            tono="principal"
-            disabled={!valido || !conMotivo || guardando}
-            cargando={guardando}
-            textoCargando="Apuntando"
-            onClick={() => {
-              void guardar();
-            }}
-          >
-            {cual.boton}
-          </Boton>
-        </Botones>
-      }
-    >
-      <div className="flex flex-col gap-e3">
-        {que === 'ajuste' ? (
-          <>
-            <p className="text-cuerpo text-texto-suave">
-              Dime cuánto hay de verdad. Si dices que hay 4 kg, hay 4 kg: se apunta la diferencia
-              con tu nombre y la hora, y nadie se queda bloqueado por cuadrar.
-            </p>
-            <Campo
-              etiqueta={`Cuánto hay, en ${producto.producto.unidadDeUso}`}
-              tipo="numero"
-              obligatorio
-              autoFocus
-              ayuda={`Ahora mismo el libro dice ${conUnidadDeUso(producto.producto.cantidad, producto.producto.unidadDeUso)}.`}
-              value={cuanto}
-              onChange={(e) => {
-                setCuanto(e.currentTarget.value);
-              }}
-            />
-            <Campo
-              etiqueta="Por qué no cuadraba"
-              obligatorio
-              ayuda="Hace falta para poder investigarlo después. «Se rompió una caja», «faltaba del albarán»."
-              value={motivo}
-              onChange={(e) => {
-                setMotivo(e.currentTarget.value);
-              }}
-            />
-          </>
-        ) : (
-          <>
-            {!producto.producto.pesoVariable && producto.producto.formato !== null && (
-              <Selector
-                etiqueta="Cómo lo cuentas"
-                opciones={[
-                  {
-                    valor: 'formatos',
-                    texto: `Por ${producto.producto.formato.toLowerCase()}`,
-                  },
-                  { valor: 'unidades_de_uso', texto: `En ${producto.producto.unidadDeUso}` },
-                ]}
-                value={como}
-                onChange={(e) => {
-                  setComo(e.currentTarget.value as 'formatos' | 'unidades_de_uso');
-                }}
-              />
-            )}
-
-            {producto.producto.pesoVariable && (
-              <Aviso tono="info" titulo="Este va a peso variable">
-                Dime cuánto ha venido de verdad, no cuántas cajas: una caja no pesa lo mismo que
-                otra, y multiplicar daría un peso inventado.
-              </Aviso>
-            )}
-
-            <Campo
-              etiqueta="Cuánto"
-              tipo="numero"
-              obligatorio
-              autoFocus
-              value={cuanto}
-              detras={
-                como === 'formatos' && !producto.producto.pesoVariable
-                  ? undefined
-                  : producto.producto.unidadDeUso
-              }
-              onChange={(e) => {
-                setCuanto(e.currentTarget.value);
-              }}
-            />
-
-            {que === 'entrada' && producto.puedeVerPrecios && (
-              <>
-                <CampoMoneda
-                  etiqueta="Lo que ha costado esta vez"
-                  ayuda="El precio del formato entero. Si se deja en blanco, se usa el que ya tenía."
-                  valor={precio}
-                  alCambiar={setPrecio}
-                />
-                <Campo
-                  etiqueta="Lote"
-                  ayuda="El del albarán o el del envase. Se puede dejar en blanco."
-                  value={lote}
-                  onChange={(e) => {
-                    setLote(e.currentTarget.value);
-                  }}
-                />
-                <Campo
-                  etiqueta="Caduca el"
-                  tipo="fecha"
-                  ayuda="Con esto aparece en «Hoy» la semana antes de caducar."
-                  value={caduca}
-                  onChange={(e) => {
-                    setCaduca(e.currentTarget.value);
-                  }}
-                />
-              </>
-            )}
-
-            <Campo
-              etiqueta="Una nota, si hace falta"
-              value={motivo}
-              onChange={(e) => {
-                setMotivo(e.currentTarget.value);
-              }}
-            />
-          </>
-        )}
-      </div>
-    </Hoja>
-  );
-}
-
 // ── Cambiar el precio ────────────────────────────────────────────────────────
 
 function CambiarPrecio({
@@ -1042,9 +828,6 @@ function CorregirLaFicha({
   const [formato, setFormato] = useState(ficha.formato ?? '');
   const [factor, setFactor] = useState(String(ficha.factor));
   const [unidad, setUnidad] = useState(ficha.unidadDeUso);
-  const [rendimiento, setRendimiento] = useState(
-    comoPorcentaje(ficha.rendimiento).replace(' %', ''),
-  );
   const [minimo, setMinimo] = useState(ficha.minimo === null ? '' : String(ficha.minimo));
   // ── Estos cuatro salían en blanco, y se llevaban el dato por delante ────────
   //
@@ -1071,12 +854,12 @@ function CorregirLaFicha({
 
   if (!abierta) return null;
 
-  const nuevoRendimiento = Math.min(
-    1,
-    Math.max(0.0001, Number(rendimiento.replace(',', '.')) / 100),
-  );
+  // El aprovechamiento **no se pregunta aquí**, y viaja tal cual estaba: el
+  // comando guarda la ficha entera, y mandar otro valor sería cambiarlo sin que
+  // nadie lo haya pedido. Se mide, no se teclea (ver la cabecera del alta).
+  const nuevoRendimiento = ficha.rendimiento;
   const nuevoFactor = Number(factor.replace(',', '.')) || 1;
-  const cambiaElCoste = nuevoFactor !== ficha.factor || nuevoRendimiento !== ficha.rendimiento;
+  const cambiaElCoste = nuevoFactor !== ficha.factor;
 
   async function guardar() {
     setGuardando(true);
@@ -1154,7 +937,7 @@ function CorregirLaFicha({
         )}
 
         <Campo
-          etiqueta="Cómo se llama"
+          etiqueta="Producto"
           obligatorio
           value={nombre}
           onChange={(e) => {
@@ -1210,8 +993,8 @@ function CorregirLaFicha({
         </div>
 
         <Campo
-          etiqueta="Cómo lo compras"
-          ayuda="El envase, si lo hay: «Caja de 5 kg», «Garrafa de 8 l». En blanco si lo compras suelto."
+          etiqueta="Nombre del envase"
+          ayuda="Opcional. Si lo dejas en blanco se llama por lo que trae."
           value={formato}
           onChange={(e) => {
             setFormato(e.currentTarget.value);
@@ -1219,20 +1002,10 @@ function CorregirLaFicha({
         />
 
         <Campo
-          etiqueta="Qué porcentaje se aprovecha"
+          etiqueta="Mínimo"
           tipo="numero"
-          detras="%"
-          ayuda="Lo que queda después de limpiar o pelar. Mídelo en tu cocina: es el dato que más caro sale si está mal."
-          value={rendimiento}
-          onChange={(e) => {
-            setRendimiento(e.currentTarget.value);
-          }}
-        />
-
-        <Campo
-          etiqueta={`Mínimo que quieres tener, en ${unidad}`}
-          tipo="numero"
-          ayuda="Por debajo de esto sale en «Hoy». Déjalo en blanco si prefieres no ponerlo."
+          detras={unidad}
+          ayuda="Por debajo de esto sale en «Hoy». Opcional."
           value={minimo}
           onChange={(e) => {
             setMinimo(e.currentTarget.value);
@@ -1240,7 +1013,7 @@ function CorregirLaFicha({
         />
 
         <Selector
-          etiqueta="A quién se lo compras"
+          etiqueta="Proveedor"
           opciones={proveedores.map((p) => ({ valor: p.id, texto: p.nombre }))}
           sinElegir="Sin proveedor"
           cuandoNoHay="Todavía no tienes proveedores"
@@ -1271,7 +1044,7 @@ function CorregirLaFicha({
 
         <Campo
           etiqueta="Notas"
-          ayuda="Lo que quieras recordar de este producto. Antes se borraban al guardar."
+          ayuda="Opcional."
           value={notas}
           onChange={(e) => {
             setNotas(e.currentTarget.value);

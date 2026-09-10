@@ -177,4 +177,27 @@
       scroll-behavior: auto !important;
     }
   }
+
+  /*
+   * Al imprimir —o al «guardar como PDF» del navegador— sale **lo que se mira**, no
+   * la aplicacion alrededor: ni las barras, ni el menu, ni Fogon, ni los botones
+   * que llevan `no-imprimir`. Y en blanco, que es como se lee un papel.
+   *
+   * No es el documento de M11, que lo compone el servidor con la marca del local y
+   * paginacion de verdad (regla 7). Es que imprimir una pantalla no saque encima
+   * la barra de abajo tapando la ultima fila.
+   */
+  @media print {
+    .no-imprimir {
+      display: none !important;
+    }
+
+    :root {
+      color-scheme: light;
+    }
+
+    body {
+      background: #fff;
+    }
+  }
 }

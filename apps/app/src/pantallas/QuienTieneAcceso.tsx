@@ -6,6 +6,7 @@ import { puedeEditar } from '@estook/permisos';
 import { claveDeUnSoloUso } from '@estook/dominio';
 import {
   Aviso,
+  Avatar,
   Boton,
   Botones,
   Cargando,
@@ -18,32 +19,40 @@ import {
   TodaviaNo,
   type Columna,
 } from '@estook/ui';
+import { IconoFlechaAbajo } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { Invitar } from './Invitar.tsx';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { FichaDePersona } from '../equipo/FichaDePersona.tsx';
+import { usarPersonaAbierta } from '../ganchos/usarPersonaAbierta.ts';
+import { ultimaVez } from '../equipo/contrato.ts';
 
 /**
- * Quien tiene acceso a este local · Equipo → Personas (M4).
+ * Equipo · Personas (M4, rehecha en M6½).
  *
- * **Esto no es la app Equipo.** Equipo entera es M10, con contratos, horas,
- * ausencias y documentos. Lo que hay aqui es lo que M4 tiene que dejar
- * funcionando: dar acceso, quitarlo y devolverlo.
+ * ── Lo que cambia ───────────────────────────────────────────────────────────
  *
- * Se pone en su sitio definitivo —dentro de Equipo, en la pestana Personas— y no
- * en Ajustes, aunque hoy sea lo unico que hay en esa app. Ponerlo en Ajustes
- * «de momento» obligaria a M10 a mudarlo, y la gente ya se habria acostumbrado a
- * buscarlo donde no va.
+ *   · **«Dentro» ya no existe.** Decía «dentro» a quien entró una vez hace tres
+ *     meses, y se leía como «está trabajando». Ahora dice **en línea** si tiene la
+ *     aplicación abierta, y si no, **cuándo se le vio por última vez**. Quien fue
+ *     invitado y no ha entrado sigue marcado: «nunca ha entrado».
+ *   · **Los botones de acceso van en un desplegable.** «PIN nuevo», «Contraseña
+ *     nueva» y «Retirar» ocupaban tres botones por fila, que en un móvil son tres
+ *     líneas por persona. Son cosas que se hacen una vez al año: un botón,
+ *     «Acceso», y dentro las tres.
+ *   · **Retirar pregunta antes.** Deja a alguien sin poder entrar al momento, así
+ *     que no puede estar a un toque sin confirmar.
+ *   · **Pulsar a una persona abre su ficha**: sus horas, su horario, sus fichajes
+ *     y —a quien pueda verlo— lo que cobra.
  *
- * ── Los tres estados, y por que el de en medio importa ───────────────────────
+ * ── Los tres estados, que siguen siendo los de siempre ──────────────────────
  *
  *   dentro         tiene acceso y ha entrado alguna vez
- *   sin estrenar   se le invito y no ha entrado. **Su PIN sigue valiendo**
- *   fuera          se le retiro el acceso. Sigue en el historico, y se reactiva
+ *   sin_estrenar   se le invitó y no ha entrado. **Su PIN sigue valiendo**
+ *   fuera          se le retiró el acceso. Sigue en el histórico, y se reactiva
  *
- * El de en medio es el que se olvida siempre, y es el util: quien da de alta a
- * cinco personas el lunes necesita saber el viernes a cuales hay que volver a
- * darles el PIN en mano.
+ * Lo que cambia es **cómo se dice**, no qué son.
  */
 interface Acceso {
   readonly personaId: string;
@@ -59,35 +68,23 @@ interface Acceso {
   readonly hasta: string | null;
   readonly tienePin: boolean;
   readonly ultimoAccesoEn: string | null;
+  readonly enLinea: boolean;
 }
 
-const COMO_SE_LLAMA_EL_ESTADO: Record<
-  Acceso['estado'],
-  { texto: string; tono: 'bien' | 'atencion' | 'neutro' }
-> = {
-  dentro: { texto: 'Dentro', tono: 'bien' },
-  sin_estrenar: { texto: 'Sin estrenar', tono: 'atencion' },
-  fuera: { texto: 'Fuera', tono: 'neutro' },
-};
+/** Cómo está alguien, en palabras y con su color. Nunca solo color (B8). */
+function comoEsta(acceso: Acceso): { texto: string; tono: 'bien' | 'atencion' | 'neutro' } {
+  if (acceso.estado === 'fuera') return { texto: 'Acceso retirado', tono: 'neutro' };
+  if (acceso.estado === 'sin_estrenar') return { texto: 'Nunca ha entrado', tono: 'atencion' };
+  if (acceso.enLinea) return { texto: 'En línea', tono: 'bien' };
+  return { texto: ultimaVez(acceso.ultimoAccesoEn), tono: 'neutro' };
+}
 
 /**
- * Que estados ensena cada vista.
+ * Qué estados enseña cada vista.
  *
- * Los tres estados estaban calculados y con su etiqueta de color **desde M4**, y
- * la pantalla los ensenaba todos mezclados en una sola tabla. El del medio —quien
- * fue invitado y no ha entrado— es el util y el que se olvida, y estaba escondido
- * entre los demas: la unica forma de encontrarlo era leer la columna «Estado» de
- * arriba abajo. Ahora es una vista, y el aviso de arriba lleva a ella.
- *
- * ── Y «con acceso» lleva a los dos primeros, no solo al primero ──────────────
- *
- * Porque **quien fue invitado y no ha entrado tiene acceso**: su PIN vale, puede
- * entrar cuando quiera, y esta dentro del equipo a todos los efectos. Dejarlo
- * fuera de esta vista tenia una consecuencia concreta y mala: invitar a alguien y
- * verlo desaparecer de la lista que tienes delante, justo cuando acabas de darle
- * el PIN y quieres comprobar que esta.
- *
- * «Sin entrar todavia» sigue siendo su vista, para poder repasarlos de un golpe.
+ * «Con acceso» lleva los dos primeros y no solo el primero: **quien fue invitado y
+ * no ha entrado tiene acceso** —su PIN vale—, y dejarlo fuera hacía que alguien
+ * desapareciera de la lista justo después de invitarlo.
  */
 const ESTADOS_DE_LA_VISTA: Readonly<Record<string, readonly Acceso['estado'][]>> = {
   'con-acceso': ['dentro', 'sin_estrenar'],
@@ -98,6 +95,7 @@ const ESTADOS_DE_LA_VISTA: Readonly<Record<string, readonly Acceso['estado'][]>>
 export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
   const { cliente, yo, permisos } = usarSesion();
   const localId = yo?.local?.id ?? '';
+  const persona = usarPersonaAbierta();
 
   const consulta = useQuery({
     queryKey: ['quien_tiene_acceso', localId],
@@ -113,23 +111,22 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
 
   const [invitando, setInvitando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
-  /** La contrasena recien dada a alguien. Se ensena una vez y no vuelve. */
+  /** De quién se está tocando el acceso: la hoja del desplegable. */
+  const [gestionando, setGestionando] = useState<Acceso | null>(null);
   const [claveReciente, setClaveReciente] = useState<{ nombre: string; clave: string } | null>(
     null,
   );
-  /** El PIN de quien se acaba de invitar. Se enseña una vez y no vuelve. */
   const [recienInvitada, setRecienInvitada] = useState<{
     nombre: string;
     pin: string | null;
     yaExistia: boolean;
   } | null>(null);
 
-  // «Esconder un boton no protege nada» (principio 7): esto no es la proteccion,
-  // que la ponen las politicas de M1. Es para que a quien no puede invitar no se
-  // le enseñe un boton que le va a decir que no.
+  // «Esconder un boton no protege nada» (principio 7): esto no es la protección,
+  // que la ponen las políticas de M1. Es para no enseñar un botón que va a decir
+  // que no.
   const puedeInvitar = puedeEditar(permisos, 'accion.invitar_personas');
 
-  // «Dar acceso a alguien», desde el Panel o desde el buscador.
   usarQueHacer('invitar', () => {
     if (puedeInvitar) setInvitando(true);
   });
@@ -140,6 +137,7 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
       persona_id: acceso.personaId,
       membresia_id: acceso.membresiaId,
     });
+    setGestionando(null);
     if (!respuesta.ok) {
       setError(respuesta.error);
       return;
@@ -153,40 +151,31 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
       persona_id: acceso.personaId,
       local_id: localId,
     });
+    setGestionando(null);
     if (!respuesta.ok) {
       setError(respuesta.error);
       return;
     }
-    setRecienInvitada({ nombre: acceso.nombre, pin: respuesta.datos.pin, yaExistia: true });
+    setRecienInvitada({ nombre: acceso.nombre, pin: respuesta.datos.pin, yaExistia: false });
     await consulta.refetch();
   }
 
   /**
    * Darle una contraseña nueva a alguien.
    *
-   * **La pantalla de entrar lo prometía y no existía.** Dice, palabra por
-   * palabra: «¿No te acuerdas? Quien lleva tu local puede darte una contraseña
-   * nueva o un PIN nuevo en un momento». El PIN sí estaba; la contraseña no, y
-   * `poner_clave_a` llevaba desde M4 escrito, registrado y probado sin que lo
-   * llamara ninguna pantalla.
-   *
-   * Sin proveedor de correo, esta **es** la forma de volver a entrar: no hay
-   * «he olvidado mi contraseña» que mande un enlace. Prometerlo y no tenerlo
-   * dejaba a quien perdiera la suya sin ninguna salida.
-   *
-   * La contraseña se genera aquí y se enseña una vez, como el PIN. Nace con
-   * «hay que cambiarla», así que muere en cuanto la persona entra y se pone la
-   * suya: eso es lo que hace aceptable que otra persona la haya sabido.
+   * Sin proveedor de correo, **esta es la forma de volver a entrar**: no hay «he
+   * olvidado mi contraseña» que mande un enlace. Se genera aquí, se enseña una vez
+   * y nace con «hay que cambiarla», así que muere en cuanto la persona entra.
    */
   async function claveNueva(acceso: Acceso) {
     setError(null);
     const clave = claveDeUnSoloUso();
-
     const respuesta = await cliente.ejecutar('poner_clave_a', {
       persona_id: acceso.personaId,
       organizacion_id: yo?.organizacion?.id ?? '',
       nueva: clave,
     });
+    setGestionando(null);
     if (!respuesta.ok) {
       setError(respuesta.error);
       return;
@@ -194,6 +183,7 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
     setClaveReciente({ nombre: acceso.nombre, clave });
     await consulta.refetch();
   }
+
   async function reactivar(acceso: Acceso) {
     setError(null);
     const respuesta = await cliente.ejecutar<{ pin: string | null }>('reactivar_persona', {
@@ -228,19 +218,29 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
     {
       clave: 'nombre',
       titulo: 'Persona',
-      // En móvil, esta es la que hace de título de la tarjeta (B4).
       principal: true,
-      celda: (a: Acceso) => `${a.nombre} ${a.apellidos ?? ''}`.trim(),
+      celda: (a: Acceso) => {
+        const nombre = `${a.nombre} ${a.apellidos ?? ''}`.trim();
+        return (
+          <span className="flex min-w-0 items-center gap-e2">
+            <Avatar nombre={nombre} tamano={28} />
+            <span className="truncate">{nombre}</span>
+          </span>
+        );
+      },
     },
     { clave: 'rolNombre', titulo: 'Rol', celda: (a: Acceso) => a.rolNombre },
     {
       clave: 'estado',
-      titulo: 'Estado',
-      celda: (a: Acceso) => (
-        <Etiqueta tono={COMO_SE_LLAMA_EL_ESTADO[a.estado].tono}>
-          {COMO_SE_LLAMA_EL_ESTADO[a.estado].texto}
-        </Etiqueta>
-      ),
+      titulo: 'Última vez',
+      celda: (a: Acceso) => {
+        const como = comoEsta(a);
+        return como.tono === 'neutro' && a.estado !== 'fuera' ? (
+          <span className="text-secundario text-texto-suave">{como.texto}</span>
+        ) : (
+          <Etiqueta tono={como.tono}>{como.texto}</Etiqueta>
+        );
+      },
     },
     {
       clave: 'acciones',
@@ -248,55 +248,32 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
       celda: (a: Acceso) =>
         !puedeInvitar ? null : a.estado === 'fuera' ? (
           <Boton
-            onClick={() => {
+            onClick={(evento) => {
+              evento.stopPropagation();
               void reactivar(a);
             }}
           >
             Reactivar
           </Boton>
         ) : (
-          <Botones>
-            <Boton
-              onClick={() => {
-                void pinNuevo(a);
-              }}
-            >
-              PIN nuevo
-            </Boton>
-            {/*
-              En tu propia fila no sale, y no es un adorno: el servidor lo
-              rechaza a propósito —«para cambiar la tuya, usa Mi acceso: ahí se
-              te pide la de ahora»—, así que un botón aquí solo serviría para
-              llevarse un error. Lo cazó su propia prueba, que pulsaba la
-              primera fila y resultó ser la de quien miraba.
-            */}
-            {a.personaId !== yo?.personaId && (
-              <Boton
-                onClick={() => {
-                  void claveNueva(a);
-                }}
-              >
-                Contraseña nueva
-              </Boton>
-            )}
-            <Boton
-              tono="peligro"
-              onClick={() => {
-                void retirar(a);
-              }}
-            >
-              Retirar
-            </Boton>
-          </Botones>
+          // Un botón, y dentro las tres cosas. El `stopPropagation` es lo que
+          // evita que abrirlo abra también la ficha de la persona: la fila entera
+          // se pulsa, y este va dentro.
+          <Boton
+            tono="secundario"
+            icono={<IconoFlechaAbajo size={16} />}
+            onClick={(evento) => {
+              evento.stopPropagation();
+              setGestionando(a);
+            }}
+          >
+            Acceso
+          </Boton>
         ),
     },
   ];
 
   const sinEstrenar = accesos.filter((a) => a.estado === 'sin_estrenar').length;
-
-  // La vista filtra al llegar, y aqui si vale: `quien_tiene_acceso` devuelve el
-  // equipo de un local, que son las personas que caben en un local. No es una
-  // lista que crezca sin techo como el libro de movimientos.
   const deLaVista = ESTADOS_DE_LA_VISTA[vista];
   const alaVista =
     deLaVista === undefined ? accesos : accesos.filter((a) => deLaVista.includes(a.estado));
@@ -305,21 +282,17 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
     <div className="flex flex-col gap-e4">
       {error && <ErrorEnCristiano error={error} />}
 
-      {/* El aviso solo sale fuera de su propia vista: dentro de «Sin entrar
-          todavía» seria contar lo que ya se esta mirando. */}
       {sinEstrenar > 0 && vista !== 'sin-entrar-todavia' && (
         <Aviso
           tono="atencion"
-          titulo={`${sinEstrenar} ${sinEstrenar === 1 ? 'persona no ha entrado' : 'personas no han entrado'} todavía`}
+          titulo={`${sinEstrenar} ${sinEstrenar === 1 ? 'persona no ha entrado' : 'personas no han entrado'} nunca`}
         >
-          Su PIN sigue valiendo. Si se les ha perdido, genera otro y dáselo en mano. Están en «Sin
-          entrar todavía», ahí arriba.
+          Su PIN sigue valiendo. Si lo han perdido, dales uno nuevo desde «Acceso».
         </Aviso>
       )}
 
       <Tarjeta
         titulo={comoSeCuentaElEquipo(alaVista.length, vista)}
-        origen="Retirar el acceso mata el PIN al instante y cierra sus sesiones"
         accion={
           puedeInvitar ? (
             <Boton
@@ -339,20 +312,23 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
           columnas={columnas}
           filas={alaVista}
           claveDe={(a) => a.membresiaId}
+          alPulsar={(a) => {
+            persona.abrir(a.personaId);
+          }}
           cuandoNoHay={
             vista === 'sin-entrar-todavia' ? (
               <EstadoVacio
                 compacto
                 titulo="Han entrado todos"
                 frase="Nadie se ha quedado con un PIN sin estrenar."
-                sinAccionPorque="Quien se invite ahora aparecerá aquí hasta que entre la primera vez."
+                sinAccionPorque="Quien se invite aparecerá aquí hasta que entre la primera vez."
               />
             ) : vista === 'retirados' ? (
               <EstadoVacio
                 compacto
                 titulo="No has retirado el acceso a nadie"
                 frase="Aquí aparece quien se fue, con su historial entero, para poder devolvérselo."
-                sinAccionPorque="Se retira desde la lista de «Con acceso»."
+                sinAccionPorque="Se retira desde «Acceso», en cada persona."
               />
             ) : (
               <TodaviaNo
@@ -364,6 +340,26 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
           }
         />
       </Tarjeta>
+
+      {/* ── El desplegable de «Acceso», como hoja ─────────────────────────── */}
+      {gestionando !== null && (
+        <GestionarAcceso
+          acceso={gestionando}
+          esYo={gestionando.personaId === yo?.personaId}
+          alCerrar={() => {
+            setGestionando(null);
+          }}
+          alPin={() => {
+            void pinNuevo(gestionando);
+          }}
+          alClave={() => {
+            void claveNueva(gestionando);
+          }}
+          alRetirar={() => {
+            void retirar(gestionando);
+          }}
+        />
+      )}
 
       {invitando && (
         <Invitar
@@ -388,23 +384,20 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
         >
           {recienInvitada.yaExistia && (
             <div className="mb-e3">
-              <Aviso tono="info" titulo="Ese correo ya estaba en Estook">
-                Se le ha añadido el acceso a este local.{' '}
-                <strong>No se ha duplicado la persona</strong>: conserva su historial y sus fichas.
+              <Aviso tono="info" titulo="Ya estaba en Estook">
+                Se le ha devuelto el acceso con su historial de siempre.
               </Aviso>
             </div>
           )}
 
           {recienInvitada.pin === null ? (
             <p className="text-secundario text-texto-suave">
-              Este rol es de toda la organización, así que no lleva PIN de local. Entrará con su
-              correo y su contraseña.
+              Este rol es de toda la organización: entra con su correo y su contraseña.
             </p>
           ) : (
             <>
               <p className="text-secundario text-texto-suave">
-                Dáselo en mano. <strong>Se enseña una sola vez</strong>: lo que se guarda no permite
-                volver a leerlo. Si se pierde, se genera otro y ya está.
+                Dáselo en mano. <strong>Solo se enseña esta vez.</strong>
               </p>
               <p className="my-e4 text-center font-mono text-[2.5rem] tracking-[0.2em] text-texto">
                 {recienInvitada.pin}
@@ -433,34 +426,110 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
           }}
         >
           <p className="text-secundario text-texto-suave">
-            Dísela en mano o por teléfono. <strong>Se enseña una sola vez</strong>: lo que se guarda
-            es su huella, no la contraseña. Si se pierde, se genera otra y ya está.
+            Dísela en mano o por teléfono. <strong>Solo se enseña esta vez.</strong> Al entrar se le
+            pedirá que ponga una suya.
           </p>
           <p className="my-e4 rounded-medio border border-borde bg-fondo px-e3 py-e3 text-center font-mono text-cuerpo tracking-wide text-texto">
             {claveReciente.clave}
           </p>
-          <p className="text-secundario text-texto-suave">
-            Al entrar con ella se le pedirá que se ponga una suya, y esta dejará de valer. Hasta
-            entonces, la sabéis dos.
-          </p>
-          <div className="mt-e4">
-            <Boton
-              tono="principal"
-              ancho
-              onClick={() => {
-                setClaveReciente(null);
-              }}
-            >
-              Hecho
-            </Boton>
-          </div>
+          <Boton
+            tono="principal"
+            ancho
+            onClick={() => {
+              setClaveReciente(null);
+            }}
+          >
+            Hecho
+          </Boton>
         </Hoja>
       )}
+
+      <FichaDePersona personaId={persona.abierta} alCerrar={persona.cerrar} />
     </div>
   );
 }
 
-/** Como se cuenta el equipo segun lo que se este mirando. */
+/**
+ * El acceso de una persona · lo que antes eran tres botones en cada fila.
+ *
+ * Y retirar **pregunta antes**. Es lo único de los tres que no se deshace con otro
+ * toque: deja a alguien sin poder entrar al momento y le cierra las sesiones.
+ */
+function GestionarAcceso({
+  acceso,
+  esYo,
+  alCerrar,
+  alPin,
+  alClave,
+  alRetirar,
+}: {
+  readonly acceso: Acceso;
+  readonly esYo: boolean;
+  readonly alCerrar: () => void;
+  readonly alPin: () => void;
+  readonly alClave: () => void;
+  readonly alRetirar: () => void;
+}) {
+  const [seguro, setSeguro] = useState(false);
+
+  return (
+    <Hoja abierta alCerrar={alCerrar} titulo={`El acceso de ${acceso.nombre}`}>
+      <div className="flex flex-col gap-e2">
+        {!seguro ? (
+          <>
+            <Boton ancho tono="secundario" onClick={alPin}>
+              Darle un PIN nuevo
+            </Boton>
+            {/*
+              En tu propia fila no sale: el servidor lo rechaza a propósito —«para
+              cambiar la tuya, usa Mi acceso»—, así que aquí solo serviría para
+              llevarse un error.
+            */}
+            {!esYo && (
+              <Boton ancho tono="secundario" onClick={alClave}>
+                Darle una contraseña nueva
+              </Boton>
+            )}
+            <Boton
+              ancho
+              tono="peligro"
+              onClick={() => {
+                setSeguro(true);
+              }}
+            >
+              Retirar el acceso
+            </Boton>
+          </>
+        ) : (
+          <Aviso
+            tono="atencion"
+            titulo={`¿Seguro que quieres retirarle el acceso a ${acceso.nombre}?`}
+            accion={
+              <Botones>
+                <Boton
+                  tono="texto"
+                  onClick={() => {
+                    setSeguro(false);
+                  }}
+                >
+                  Mejor no
+                </Boton>
+                <Boton tono="peligro" onClick={alRetirar}>
+                  Sí, retirarlo
+                </Boton>
+              </Botones>
+            }
+          >
+            Deja de poder entrar ahora mismo y se le cierran las sesiones. Su historial se queda, y
+            se le puede devolver cuando quieras.
+          </Aviso>
+        )}
+      </div>
+    </Hoja>
+  );
+}
+
+/** Cómo se cuenta el equipo según lo que se esté mirando. */
 function comoSeCuentaElEquipo(cuantos: number, vista: string): string {
   const cosa = cuantos === 1 ? 'persona' : 'personas';
   if (vista === 'sin-entrar-todavia') return `${cuantos} ${cosa} sin entrar todavía`;

@@ -77,9 +77,9 @@ Buenos dias, Sara
 └──────────────┴──────────────┘
 ```
 
-**Qué puede hacer:** fichar, consultar la carta y los alérgenos, marcar un plato agotado, apuntar una merma, escribir en el chat, dejar una incidencia y descargarse su horario.
+**Qué puede hacer:** fichar, consultar la carta y los alérgenos, marcar un plato agotado, apuntar una merma, escribir en el chat, dejar una incidencia y descargarse su horario. Ficha **con la ubicación**, que se pide y no bloquea; apunta la merma **sin ver lo que vale**; y en su ficha ve sus horas y sus fichajes.
 
-**Qué no ve, en ningún sitio:** costes, márgenes, precios de compra, ventas del local, datos de otras personas ni el cuadrante completo.
+**Qué no ve, en ningún sitio:** costes, márgenes, precios de compra, ventas del local, datos de otras personas, el cuadrante completo ni lo que cobran los demás. Lo suyo, sí: es suyo.
 
 ## 1.4 Cocinero
 
@@ -91,9 +91,11 @@ Buenos dias, Sara
 
 **Qué no ve:** **ningún importe.** Ni coste de línea, ni coste total, ni margen, ni precio recomendado. **Esa columna no existe para él**, tampoco en la respuesta del servidor.
 
+**Y como el camarero:** ficha, apunta mermas sin ver lo que valen y ve **sus** horas. Las de sus compañeros, no.
+
 ## 1.5 Jefe de sala
 
-Todo lo del camarero, y además: el cuadrante de sala en borrador y publicado, los fichajes de su equipo, las ventas del turno con su ticket medio, los agotados, y proponer cambios en la carta **sin publicarlos**.
+Todo lo del camarero, y además: el cuadrante de sala en borrador y publicado, los fichajes y las horas **de la sala** —camareros y jefes de sala—, sin lo que cobra nadie, las ventas del turno con su ticket medio, los agotados, y proponer cambios en la carta **sin publicarlos**.
 
 No ve costes de materia prima ni escandallos con importes.
 
@@ -101,13 +103,13 @@ No ve costes de materia prima ni escandallos con importes.
 
 **Su Panel:** gasto de cocina contra objetivo, platos bajo objetivo, valor en cámara, caducidades de la semana, pedidos por recibir y APPCC pendiente. Y **la parte de cocina de Pulse**: food cost, mermas y desviación, sin la parte de personal de sala ni la de facturación.
 
-**Manda en:** Inventario entera, Escandallos entera, la parte de cocina de la Carta, el APPCC, el cuadrante de cocina y las fichas de su equipo.
+**Manda en:** Inventario entera, Escandallos entera, la parte de cocina de la Carta, el APPCC, el cuadrante de cocina y las fichas de su equipo. Ve los fichajes y las horas **de la cocina** —cocineros y jefes de cocina—, sin lo que cobra nadie.
 
 **No ve:** el margen global del negocio, el coste de personal de sala, la facturación ni la parte de plan y facturación de Ajustes.
 
 ## 1.7 Gerente
 
-Todo lo de su local. Es quien tiene el Panel completo, quien pone los objetivos, quien invita y quita accesos, quien conecta el TPV y **las integraciones**, y quien recibe los avisos de negocio.
+Todo lo de su local. Es quien tiene el Panel completo, quien pone los objetivos, quien invita y quita accesos, quien conecta el TPV y **las integraciones**, y quien recibe los avisos de negocio. Ve las horas de todo el local y **pone lo que cobra cada uno**, salvo a quien está por encima de él y a sí mismo. Marca dónde está el local para los fichajes y elige cómo entran las ventas.
 
 **No ve:** los directos entre dos empleados en el chat, ni otros locales de la organización si no se le han dado.
 
@@ -136,6 +138,20 @@ GESTORIA · Bar Centro
 - **RRHH:** Equipo y Calendario de todos los locales, con costes de personal. Sin acceso a materia prima ni a márgenes.
 - **Administrador de cuenta:** plan, facturación, licencias, altas de local y de personas. Sin acceso a la operación diaria, salvo que se le dé expresamente.
 - **Dirección o propietario:** todo, en todos los locales.
+
+## 1.10 Las horas y lo que cobra cada uno
+
+Dos cosas distintas, con dos reglas distintas ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)). **Las decide la base de datos**, no la pantalla.
+
+| Quien mira                    | Horas y fichajes de                | Lo que cobra                                                                 |
+| ----------------------------- | ---------------------------------- | ---------------------------------------------------------------------------- |
+| Camarero, cocinero            | sí mismo                           | lo suyo                                                                      |
+| Jefe de sala                  | la sala: camareros y jefes de sala | lo suyo                                                                      |
+| Jefe de cocina                | la cocina: cocineros y jefes       | lo suyo                                                                      |
+| Gerente                       | todo el local                      | el de todo el local; **lo pone, menos a quien está por encima y a sí mismo** |
+| Area manager, dirección, RRHH | sus locales                        | el de sus locales, con la misma regla: nunca hacia arriba                    |
+
+**Cada uno ve lo que cobra él.** El de los demás se ve y se pone con el permiso de coste de personal, que se puede dar o quitar a mano; a quien no lo tiene **ese dato no le llega**. Y corregir un fichaje es de quien tiene Equipo, con nombre y motivo, siempre.
 
 ---
 

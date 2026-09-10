@@ -46,6 +46,8 @@ export type { SelectorProps, InterruptorProps, Opcion } from './componentes/Sele
 
 export { Tarjeta, Etiqueta, Avatar, inicialesDe, colorDe } from './componentes/Tarjeta.tsx';
 export { Proporcion } from './componentes/Proporcion.tsx';
+export { Tira } from './componentes/Tira.tsx';
+export type { TiraProps, PuntoDeLaTira } from './componentes/Tira.tsx';
 export type { ProporcionProps, Trozo } from './componentes/Proporcion.tsx';
 export type {
   TarjetaProps,

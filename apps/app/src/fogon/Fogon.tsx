@@ -169,7 +169,7 @@ export function BurbujaDeFogon({ alPulsar }: { readonly alPulsar: () => void }) 
       onClick={alPulsar}
       aria-label="Abrir Fogón"
       className={clases(
-        'fixed right-e3 z-30 grid size-[56px] place-items-center lg:hidden',
+        'fixed right-e3 z-30 grid size-[56px] place-items-center lg:hidden no-imprimir',
         'rounded-redondo bg-superficie text-naranja shadow-s3 border border-borde',
         'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e3))]',
       )}
@@ -213,7 +213,7 @@ export function VentanaDeFogon({
    * que hay delante**, ya calculadas por la base de datos, que es exactamente lo
    * que M22 le mandara al modelo: un resumen compacto en vez del local entero.
    */
-  const contexto = usarContextoDeFogon(abierta);
+  const contexto = usarContextoDeFogon();
 
   /**
    * Y lo que si puede hacer ya, que es la mitad que faltaba.
@@ -241,30 +241,16 @@ export function VentanaDeFogon({
     >
       <div className="flex flex-col gap-e4">
         {/*
-          Lo primero, dónde está y con qué. Es la mitad de la promesa:
-          «trabajando con el contexto de la pantalla» empieza por que se note que
-          sabe dónde estás, y sigue por que sepa lo que hay delante.
+          ── Una línea, y no un recuadro ─────────────────────────────────────
+          Antes: «Estás en el Panel, en IKATZ. Fogón lo sabe sin que se lo digas»,
+          y debajo «PRODUCTOS DE ALTA · 2» en todas las pantallas, también donde
+          no pintaba nada. Se explicaba a sí mismo en vez de ayudar. Ahora dice lo
+          que hace falta, como lo diría una persona.
         */}
-        <div className="rounded-medio border border-borde bg-fondo p-e3">
-          <p className="text-secundario text-texto-suave">
-            Estás en <span className="font-semibold text-texto">{contexto.donde}</span>
-            {contexto.local === '' ? '' : `, en ${contexto.local}`}. Fogón lo sabe sin que se lo
-            digas.
-          </p>
-
-          {contexto.cifras.length > 0 && (
-            <dl className="mt-e2 grid grid-cols-2 gap-e2">
-              {contexto.cifras.map((cifra) => (
-                <div key={cifra.que}>
-                  <dt className="text-etiqueta uppercase tracking-wide text-texto-suave">
-                    {cifra.que}
-                  </dt>
-                  <dd className="text-cuerpo font-semibold">{cifra.cuanto}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-        </div>
+        <p className="text-cuerpo">
+          Fogón sabe que estás en <strong>{contexto.donde}</strong>. Pronto podrás preguntarle lo
+          que no sepas.
+        </p>
 
         {/*
           Y lo que se puede hacer aquí **ahora mismo**. Son acciones del catálogo,
@@ -306,10 +292,10 @@ export function VentanaDeFogon({
 
         <div>
           <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
-            Y lo que le vas a poder pedir cuando hable
+            Cuando hable, podrás pedirle
           </p>
           <ul className="mt-e2 flex flex-col gap-e2">
-            {lo.podras.map((linea) => (
+            {lo.podras.slice(0, 3).map((linea) => (
               <li key={linea} className="flex gap-e2 text-cuerpo">
                 <span aria-hidden className="text-texto-suave">
                   ·
@@ -321,30 +307,11 @@ export function VentanaDeFogon({
         </div>
 
         {/*
-          Y la verdad, sin adornos. No hay casilla para escribirle: una casilla
-          que no contesta es un control muerto, y de eso este proyecto ya lleva
-          bastantes.
+          Y no hay casilla para escribirle, a propósito: una casilla que no
+          contesta es un control muerto. Lo de «pronto» de arriba es la verdad
+          entera, dicha en una línea en vez de en dos recuadros.
         */}
-        <div className="rounded-medio bg-fondo p-e3">
-          <p className="text-cuerpo font-medium">Todavía no se puede hablar con él.</p>
-          <p className="mt-e1 text-cuerpo text-texto-suave">
-            Fogón llega con el módulo 22. Este sitio ya es el suyo —la burbuja en el móvil, el icono
-            de arriba en el ordenador— y desde ahí hablarás con él y le pedirás cosas, sin salir de
-            lo que estés haciendo.
-          </p>
-        </div>
-
-        <div className="rounded-medio border border-borde p-e3">
-          <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
-            Y lo que ya hace Estook sin él
-          </p>
-          <p className="mt-e1 text-cuerpo text-texto-suave">
-            Los números los calcula la base de datos, <strong>nunca el modelo</strong>. Cuándo se
-            agota cada producto, cuánto se gasta al día y cuánto ha subido un precio ya están
-            calculados, con sus días mirados al lado. Eso no es que le falte Fogón: es que ahí Fogón
-            no pinta nada.
-          </p>
-        </div>
+        <p className="text-secundario text-texto-tenue">Hablar con Fogón llega con el módulo 22.</p>
       </div>
     </Ventana>
   );

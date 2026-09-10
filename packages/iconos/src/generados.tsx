@@ -53,6 +53,12 @@ export const IconoCalendario = crearIcono(
   '<path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" /><path d="M8 14h.01" /><path d="M12 14h.01" /><path d="M16 14h.01" /><path d="M8 18h.01" /><path d="M12 18h.01" /><path d="M16 18h.01" />',
 );
 
+/** Lucide `camera` */
+export const IconoCamara = crearIcono(
+  'camera',
+  '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" />',
+);
+
 /** Lucide `check` */
 export const IconoHecho = crearIcono('check', '<path d="M20 6 9 17l-5-5" />');
 
@@ -92,6 +98,12 @@ export const IconoReloj = crearIcono(
   '<circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />',
 );
 
+/** Lucide `crosshair` */
+export const IconoUbicacion = crearIcono(
+  'crosshair',
+  '<circle cx="12" cy="12" r="10" /><line x1="22" x2="18" y1="12" y2="12" /><line x1="6" x2="2" y1="12" y2="12" /><line x1="12" x2="12" y1="6" y2="2" /><line x1="12" x2="12" y1="22" y2="18" />',
+);
+
 /** Lucide `download` */
 export const IconoDescargar = crearIcono(
   'download',
@@ -102,6 +114,12 @@ export const IconoDescargar = crearIcono(
 export const IconoMas = crearIcono(
   'ellipsis',
   '<circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" />',
+);
+
+/** Lucide `euro` */
+export const IconoDinero = crearIcono(
+  'euro',
+  '<path d="M4 10h12" /><path d="M4 14h9" /><path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2" />',
 );
 
 /** Lucide `external-link` */
@@ -170,6 +188,12 @@ export const IconoRejilla = crearIcono(
   '<rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" />',
 );
 
+/** Lucide `log-in` */
+export const IconoEntrar = crearIcono(
+  'log-in',
+  '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" x2="3" y1="12" y2="12" />',
+);
+
 /** Lucide `log-out` */
 export const IconoSalir = crearIcono(
   'log-out',
@@ -193,6 +217,9 @@ export const IconoChat = crearIcono(
   'message-square',
   '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />',
 );
+
+/** Lucide `minus` */
+export const IconoQuitar = crearIcono('minus', '<path d="M5 12h14" />');
 
 /** Lucide `moon` */
 export const IconoLuna = crearIcono('moon', '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />');

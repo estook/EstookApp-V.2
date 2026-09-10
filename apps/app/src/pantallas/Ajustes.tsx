@@ -1,19 +1,20 @@
 import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   IconoLuna,
-  IconoRejilla,
   IconoSalir,
   IconoSol,
   IconoTamanoDeLetra,
-  IconoTeclado,
+  IconoUbicacion,
 } from '@estook/iconos';
 import { IDIOMAS, NOMBRE_DEL_IDIOMA } from '@estook/dominio';
+import { puedeEditar } from '@estook/permisos';
 import {
+  Aviso,
   Boton,
   COMO_SE_LLAMA,
   COMO_SE_LLAMA_EL_TEMA,
   CUANTO_MULTIPLICA,
-  QUE_HACE_CADA_TEMA,
   Selector,
   TAMANOS,
   TEMAS,
@@ -25,30 +26,39 @@ import {
   type TamanoDeLetra,
   type Tema,
 } from '@estook/ui';
+import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { TuMarca } from '../marca/TuMarca.tsx';
 import { AjustesDeOrganizacion } from './AjustesDeOrganizacion.tsx';
 import { MiAcceso } from './MiAcceso.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
+import { preguntarDondeEstoy } from '../ganchos/usarFichar.ts';
+import type { MiFichaje } from '../equipo/contrato.ts';
 
 /**
- * Ajustes (M3, con «Mi acceso» de M4).
+ * Ajustes.
  *
- * Aqui viven las cosas que se ajustan de verdad hoy:
+ * ── Menos texto, y es a propósito ───────────────────────────────────────────
  *
- *   · **El tamano de letra** (B2). Cambia la pantalla entera al momento, y se
- *     puede deshacer: es uno de los tres flujos del criterio de M3.
- *   · **Mi acceso** (M4): contrasena, PIN, doble factor y mis dispositivos.
- *   · **El acceso del negocio** (M4), a quien pueda tocarlo: exigir el segundo
- *     factor y el correo de recuperacion.
+ * «En Ajustes pones: "Cómo se ve. Se queda guardado en este aparato, igual que el
+ * tamaño de letra. En una cocina el claro se lee mejor de lejos; el oscuro es para
+ * la oficina de noche." Solo pon "Elige tu tema" y las opciones.»
  *
- * Lo que ha desaparecido: el bloque «Perfil de muestra». Era el andamio de M3
- * para poder comprobar la rueda sin login, y M4 lo tira entero porque ya hay
- * login. No queda ni el fichero.
+ * Tenía razón, y no solo ahí: cada tarjeta de esta pantalla llevaba un párrafo que
+ * explicaba por qué existía. Eso es para el código, no para quien lo usa. Ahora
+ * cada tarjeta dice qué es y enseña las opciones, y la tarjeta de «Accesibilidad»
+ * —que no tenía ni un control, solo explicaba cómo está hecha la aplicación— se ha
+ * ido entera.
+ *
+ * ── Y dos tarjetas nuevas ───────────────────────────────────────────────────
+ *
+ *   · **Tus ventas**: a mano o con el TPV. Se elige en el Panel y se cambia aquí.
+ *   · **Dónde está el local**: para que cada fichaje diga si se hizo en el local.
  */
 export function Ajustes() {
   const { tamano, poner } = usarTamanoDeLetra();
   const { tema, poner: ponerTema } = usarTema();
-  const { yo, salir, cliente, refrescar } = usarSesion();
+  const { yo, salir, cliente, refrescar, permisos } = usarSesion();
   const { sePuedeDeshacer } = usarDeshacer();
   const [cambiandoIdioma, setCambiandoIdioma] = useState(false);
 
@@ -65,6 +75,8 @@ export function Ajustes() {
     });
   };
 
+  const llevaElLocal = puedeEditar(permisos, 'app.ajustes') && yo?.local !== null;
+
   return (
     <div className="flex max-w-[44rem] flex-col gap-e4">
       <h1 className="text-pantalla font-semibold">Ajustes</h1>
@@ -72,12 +84,7 @@ export function Ajustes() {
       <Tarjeta titulo="Tamaño de letra">
         {/* El ancla del buscador: «cambiar el tamano de letra» lleva aqui. */}
         <span id="tamano-de-letra" />
-        <p className="text-secundario text-texto-suave">
-          El pase de cocina se lee de lejos. Esto crece toda la aplicación a la vez, no solo esta
-          pantalla, y se queda guardado en este aparato.
-        </p>
-
-        <div role="radiogroup" aria-label="Tamaño de letra" className="mt-e3 flex flex-wrap gap-e2">
+        <div role="radiogroup" aria-label="Tamaño de letra" className="flex flex-wrap gap-e2">
           {TAMANOS.map((cual) => (
             <button
               key={cual}
@@ -103,27 +110,10 @@ export function Ajustes() {
         </div>
       </Tarjeta>
 
-      {/*
-        El tema · claro, oscuro o el del sistema.
-
-        Va junto al tamaño de letra a propósito: las dos son de **este aparato**,
-        no de la persona ni del local. La tableta del pase quiere el claro a las
-        dos de la tarde y el portátil de la oficina quiere el oscuro a las once de
-        la noche, y puede ser la misma persona.
-      */}
-      <Tarjeta titulo="Cómo se ve">
+      <Tarjeta titulo="Elige tu tema">
         {/* El ancla del buscador: «modo oscuro» lleva aquí. */}
         <span id="tema" />
-        <p className="text-secundario text-texto-suave">
-          Se queda guardado en este aparato, igual que el tamaño de letra. En una cocina el claro se
-          lee mejor de lejos; el oscuro es para la oficina de noche.
-        </p>
-
-        <div
-          role="radiogroup"
-          aria-label="Cómo se ve Estook"
-          className="mt-e3 flex flex-col gap-e2"
-        >
+        <div role="radiogroup" aria-label="Elige tu tema" className="flex flex-wrap gap-e2">
           {TEMAS.map((cual: Tema) => (
             <button
               key={cual}
@@ -134,122 +124,181 @@ export function Ajustes() {
                 ponerTema(cual);
               }}
               className={clases(
-                'flex min-h-toque items-center gap-e3 rounded-medio border px-e3 py-e2 text-left',
+                'inline-flex min-h-toque items-center gap-e2 rounded-medio border px-e4',
                 cual === tema
                   ? 'border-naranja bg-naranja-suave text-texto'
-                  : 'border-borde-fuerte bg-superficie hover:bg-fondo',
+                  : 'border-borde-fuerte bg-superficie text-texto-suave hover:bg-fondo',
               )}
             >
-              <span
-                className={clases('shrink-0', cual === tema ? 'text-naranja' : 'text-texto-suave')}
-              >
-                {cual === 'oscuro' ? <IconoLuna size={20} /> : <IconoSol size={20} />}
-              </span>
-              <span className="min-w-0">
-                <span className="block text-cuerpo font-medium">{COMO_SE_LLAMA_EL_TEMA[cual]}</span>
-                <span className="block text-secundario text-texto-suave">
-                  {QUE_HACE_CADA_TEMA[cual]}
-                </span>
-              </span>
+              {cual === 'oscuro' ? <IconoLuna size={18} /> : <IconoSol size={18} />}
+              {COMO_SE_LLAMA_EL_TEMA[cual]}
             </button>
           ))}
         </div>
       </Tarjeta>
 
-      {/* La marca del local: el logo, el color, y si el color pinta la app. */}
       <TuMarca />
 
-      {/* ── M4 · Mi acceso, y lo que decide la organizacion ─────────────────── */}
+      {llevaElLocal && <ComoEntranTusVentas modo="ajustes" />}
+      {llevaElLocal && <DondeEstaElLocal />}
+
       {/* El ancla de «tu cuenta»: «Mi acceso» de la hoja del avatar lleva aqui. */}
       <span id="mi-acceso" />
       <MiAcceso />
       <AjustesDeOrganizacion />
 
-      {/*
-        El idioma de la persona, no el del local.
-
-        ── Por que esta tarjeta aparece ahora, en M6 ────────────────────────────
-
-        Porque `cambiar_mi_idioma` esta escrito, registrado y probado **desde
-        M2**, y hasta hoy no lo llamaba ninguna pantalla: exactamente la misma
-        forma de fallo que M5 se encontro tres veces al cerrar. Lo destapo la
-        prueba `se-usan.prueba.ts`, que es la que convierte esa leccion en algo
-        que salta solo en vez de en un parrafo de un documento.
-
-        Cada persona elige el suyo, y por eso vive aqui y no en la ficha del
-        local: «la cocina puede leer las fichas en su idioma» (Manifiesto 10).
-      */}
-      <Tarjeta titulo="Tu idioma">
-        <p className="text-secundario text-texto-suave">
-          Es tuyo, no del local: cada persona del equipo puede tener el suyo, y las fichas se leen
-          en el idioma de quien cocina.
-        </p>
-        <div className="mt-e3">
-          <Selector
-            etiqueta="En qué idioma quieres Estook"
-            opciones={IDIOMAS.map((idioma) => ({
-              valor: idioma,
-              texto: NOMBRE_DEL_IDIOMA[idioma],
-            }))}
-            value={yo?.idioma ?? 'es'}
-            disabled={cambiandoIdioma}
-            onChange={(e) => {
-              const nuevo = e.currentTarget.value;
-              setCambiandoIdioma(true);
-              void cliente.ejecutar('cambiar_mi_idioma', { idioma: nuevo }).then(async () => {
-                setCambiandoIdioma(false);
-                await refrescar();
-              });
-            }}
-          />
-        </div>
+      <Tarjeta titulo="Idioma">
+        <Selector
+          etiqueta="Idioma"
+          opciones={IDIOMAS.map((idioma) => ({
+            valor: idioma,
+            texto: NOMBRE_DEL_IDIOMA[idioma],
+          }))}
+          value={yo?.idioma ?? 'es'}
+          disabled={cambiandoIdioma}
+          onChange={(e) => {
+            const nuevo = e.currentTarget.value;
+            setCambiandoIdioma(true);
+            void cliente.ejecutar('cambiar_mi_idioma', { idioma: nuevo }).then(async () => {
+              setCambiandoIdioma(false);
+              await refrescar();
+            });
+          }}
+        />
       </Tarjeta>
 
-      {/*
-        Cada linea lleva el icono de lo que cuenta, y **ninguna lleva el simbolo
-        de accesibilidad**. Antes lo llevaban las dos, y decia lo que no es: ese
-        simbolo significa «esto es para personas con discapacidad», y esto no lo
-        es. Reducir el movimiento lo agradece quien se marea, quien tiene
-        migrana y quien simplemente lo prefiere; el teclado lo usa cualquiera que
-        trabaje rapido. Y ademas no son opciones que se activen aqui: es como
-        esta hecha la aplicacion.
-      */}
-      <Tarjeta titulo="Accesibilidad">
-        <ul className="flex flex-col gap-e2 text-secundario text-texto-suave">
-          <li className="flex items-start gap-e2">
-            <IconoRejilla size={18} className="mt-[2px] shrink-0" aria-hidden />
-            <span>
-              Estook respeta «reducir movimiento» del sistema: con esa opción puesta, nada se
-              desplaza y <strong>la rueda de apps se convierte en una rejilla</strong> con la misma
-              información. No hay que activar nada aquí.
-            </span>
-          </li>
-          <li className="flex items-start gap-e2">
-            <IconoTeclado size={18} className="mt-[2px] shrink-0" aria-hidden />
-            <span>
-              Toda la aplicación se maneja con teclado, y el foco se ve siempre con un anillo
-              naranja.
-            </span>
-          </li>
-        </ul>
-      </Tarjeta>
+      <div>
+        <Boton
+          icono={<IconoSalir size={18} />}
+          onClick={() => {
+            void salir();
+          }}
+        >
+          Salir de este aparato{yo ? `, ${yo.nombre}` : ''}
+        </Boton>
+      </div>
+    </div>
+  );
+}
 
-      <Tarjeta titulo="Salir">
-        <p className="text-secundario text-texto-suave">
-          Cierra la sesión en <strong>este aparato</strong>. Las que tengas abiertas en otros sitios
-          siguen como están; para cerrarlas, están arriba, en «Mi acceso».
+/**
+ * Dónde está el local · para que un fichaje diga si se hizo en el local.
+ *
+ * ── Por qué con un botón y no con la dirección ──────────────────────────────
+ *
+ * Porque pasar una dirección escrita a coordenadas es un servicio de fuera que hoy
+ * no está contratado (Google Places se aplazó a M23, decisión 0013). Y porque sale
+ * mejor: quien lo pone está **en el local**, y el móvil sabe dónde está con más
+ * precisión que cualquier dirección.
+ *
+ * Sin esto, los fichajes guardan su posición igual y no se comparan con nada. Se
+ * puede poner cualquier día sin perder lo de antes.
+ */
+function DondeEstaElLocal() {
+  const { cliente } = usarSesion();
+  const cache = useQueryClient();
+  const [buscando, setBuscando] = useState(false);
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+  const [noLaDio, setNoLaDio] = useState(false);
+
+  const consulta = useQuery({
+    queryKey: ['mi_fichaje'],
+    retry: 1,
+    queryFn: async (): Promise<MiFichaje> => {
+      const respuesta = await cliente.consultar<MiFichaje>('mi_fichaje');
+      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
+      return respuesta.datos;
+    },
+  });
+
+  const puesto = consulta.data?.elLocalSabeDondeEsta === true;
+  const radio = consulta.data?.radioMetros ?? 100;
+
+  async function guardar(cuerpo: Record<string, unknown>) {
+    setError(null);
+    const respuesta = await cliente.ejecutar('poner_donde_esta_el_local', cuerpo);
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    await cache.invalidateQueries({ queryKey: ['mi_fichaje'] });
+    await cache.invalidateQueries({ queryKey: ['fichajes_de_hoy'] });
+  }
+
+  async function aqui() {
+    setNoLaDio(false);
+    setBuscando(true);
+    const donde = await preguntarDondeEstoy();
+    setBuscando(false);
+    if (!('donde' in donde)) {
+      setNoLaDio(true);
+      return;
+    }
+    await guardar({
+      latitud: donde.donde.latitud,
+      longitud: donde.donde.longitud,
+      radio_metros: radio,
+    });
+  }
+
+  if (consulta.isError) return null;
+
+  return (
+    <Tarjeta titulo="Dónde está el local">
+      {/* El ancla del aviso de Equipo · Hoy: «marca dónde está el local». */}
+      <span id="donde-esta-el-local" />
+      <div className="flex flex-col gap-e3">
+        {error !== null && (
+          <Aviso tono="mal" titulo={error.quePasa}>
+            {error.queSePuedeHacer}
+          </Aviso>
+        )}
+        {noLaDio && (
+          <Aviso tono="atencion" titulo="El móvil no ha dado la ubicación">
+            Activa la ubicación y dale permiso a Estook, y vuelve a probar.
+          </Aviso>
+        )}
+
+        <p className="text-cuerpo">
+          {puesto
+            ? 'Puesto. Cada fichaje dice a cuántos metros del local se hizo.'
+            : 'Sin poner. Hazlo desde el propio local.'}
         </p>
-        <div className="mt-e3">
+
+        <div className="flex flex-wrap items-end gap-e3">
           <Boton
-            icono={<IconoSalir size={18} />}
+            tono={puesto ? 'secundario' : 'principal'}
+            icono={<IconoUbicacion size={18} />}
+            cargando={buscando}
+            textoCargando="Buscando dónde estás"
             onClick={() => {
-              void salir();
+              void aqui();
             }}
           >
-            Salir{yo ? `, ${yo.nombre}` : ''}
+            {puesto ? 'Volver a marcarlo desde aquí' : 'Estoy en el local: márcalo'}
           </Boton>
+
+          {puesto && (
+            <div className="min-w-[10rem]">
+              <Selector
+                etiqueta="Cuenta como en el local hasta"
+                opciones={[
+                  { valor: '50', texto: '50 m' },
+                  { valor: '100', texto: '100 m' },
+                  { valor: '200', texto: '200 m' },
+                  { valor: '500', texto: '500 m' },
+                ]}
+                value={String(radio)}
+                onChange={(e) => {
+                  // Solo el radio: sin coordenadas en el cuerpo, el comando deja
+                  // las que hay. Mandarlas a nulo las borraría.
+                  void guardar({ radio_metros: Number(e.currentTarget.value) });
+                }}
+              />
+            </div>
+          )}
         </div>
-      </Tarjeta>
-    </div>
+      </div>
+    </Tarjeta>
   );
 }

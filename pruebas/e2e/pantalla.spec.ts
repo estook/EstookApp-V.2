@@ -327,13 +327,16 @@ test.describe('las tarjetas del Panel', () => {
    * `se-usan.prueba.ts`, que es la prueba que existe justo para eso.
    */
 
-  test('«recuérdamelo» del TPV vuelve al entrar otra vez', async ({ page }) => {
+  test('«recuérdamelo» de las ventas vuelve al entrar otra vez', async ({ page }) => {
     // El fallo: guardaba una fecha siete días en el futuro. Siete días después
     // nadie se acuerda de nada, así que en la práctica era «no me lo enseñes
     // nunca más» con otro nombre.
+    //
+    // Desde M6½ la tarjeta ya no pide «conecta tu TPV»: pregunta cómo entran las
+    // ventas, a mano o con el TPV, y desaparece al contestarla.
     await entrar(page);
 
-    const tarjeta = page.getByRole('heading', { name: 'Conecta tus ventas' });
+    const tarjeta = page.getByRole('heading', { name: '¿Cómo entran tus ventas?' });
     await expect(tarjeta).toBeVisible();
 
     await page.getByRole('button', { name: 'Recuérdamelo' }).click();
@@ -408,18 +411,16 @@ test.describe('Fogón', () => {
       await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
-      await expect(page.getByText('Estás en')).toContainText('Inventario');
+      await expect(page.getByText('Fogón sabe que estás en')).toContainText('Inventario');
       await expect(page.getByText(/Dictarle una merma/)).toBeVisible();
     });
 
-    test('trae las cifras que hay delante, no solo el nombre de la pantalla', async ({ page }) => {
+    test('dice dónde estás en una línea, sin cifras que nadie pidió', async ({ page }) => {
       /*
-        «Presente en todas las apps, **trabajando con el contexto de la
-        pantalla**» (Plan, M22). Hasta M6½ el contexto era una frase —«estás en
-        Inventario»— y ahí se acababa. Ahora trae las cifras ya calculadas por la
-        base de datos, que es exactamente lo que M22 le mandará al modelo: un
-        resumen compacto en vez del local entero, que es lo que hace que Fogón
-        pueda tener un presupuesto.
+        Antes, debajo de «Estás en el Panel, en IKATZ. Fogón lo sabe sin que se lo
+        digas», salía «PRODUCTOS DE ALTA · 2» **en todas las pantallas**, también
+        donde no pintaba nada. Se explicaba a sí mismo en vez de ayudar. Ahora es
+        una frase, como la diría una persona.
       */
       await entrar(page);
       await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
@@ -427,7 +428,8 @@ test.describe('Fogón', () => {
 
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
       const ventana = page.getByRole('dialog', { name: 'Fogón' });
-      await expect(ventana.getByText('Productos de alta')).toBeVisible({ timeout: 15_000 });
+      await expect(ventana.getByText('Fogón sabe que estás en')).toBeVisible();
+      await expect(ventana.getByText('Productos de alta')).toHaveCount(0);
     });
 
     test('y sus botones hacen algo de verdad, no esperan a M22', async ({ page }) => {
@@ -454,8 +456,7 @@ test.describe('Fogón', () => {
       await entrar(page);
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
 
-      await expect(page.getByText('Todavía no se puede hablar con él.')).toBeVisible();
-      await expect(page.getByText(/módulo 22/)).toBeVisible();
+      await expect(page.getByText('Hablar con Fogón llega con el módulo 22.')).toBeVisible();
       await expect(page.getByRole('dialog').getByRole('textbox')).toHaveCount(0);
     });
   });
@@ -480,8 +481,8 @@ test.describe('Fogón', () => {
         .getByRole('banner')
         .getByRole('button', { name: /^Fogón/ })
         .click();
-      await expect(page.getByText('Estás en')).toContainText('Escandallos');
-      await expect(page.getByText('Todavía no se puede hablar con él.')).toBeVisible();
+      await expect(page.getByText('Fogón sabe que estás en')).toContainText('Escandallos');
+      await expect(page.getByText('Hablar con Fogón llega con el módulo 22.')).toBeVisible();
     });
 
     test('Ctrl+J abre lo mismo', async ({ page }) => {
@@ -489,7 +490,7 @@ test.describe('Fogón', () => {
       await entrar(page);
 
       await page.keyboard.press('Control+j');
-      await expect(page.getByText('Todavía no se puede hablar con él.')).toBeVisible();
+      await expect(page.getByText('Hablar con Fogón llega con el módulo 22.')).toBeVisible();
     });
   });
 });

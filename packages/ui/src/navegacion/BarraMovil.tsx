@@ -128,7 +128,7 @@ const CAJA = [
   'border-t border-borde bg-superficie px-e2',
   'h-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom))]',
   'pb-[env(safe-area-inset-bottom)]',
-  'lg:hidden',
+  'lg:hidden no-imprimir',
 ].join(' ');
 
 function Posicion({

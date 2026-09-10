@@ -39,7 +39,7 @@ export function MenuLateral({ app, destinoActivo, alIrADestino }: MenuLateralPro
   return (
     <nav
       aria-label={`Dentro de ${app.nombre}`}
-      className="hidden w-[15rem] shrink-0 flex-col gap-e1 lg:flex"
+      className="hidden w-[15rem] shrink-0 flex-col gap-e1 lg:flex no-imprimir"
     >
       {construidos.map((destino) => (
         <Posicion

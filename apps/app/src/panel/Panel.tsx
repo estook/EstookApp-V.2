@@ -11,13 +11,15 @@ import {
   losQueLlegan,
   widgetPorId,
 } from '@estook/ui';
-import { puedeVer, type PermisoDeApp } from '@estook/permisos';
+import { puedeVer, type Permiso } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { TarjetasDelPanel } from '../pantallas/TarjetasDelPanel.tsx';
 import { CabeceraDelPanel } from './Cabecera.tsx';
 import { LoQueFalta } from './LoQueFalta.tsx';
 import { Widget } from './widgets.tsx';
 import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
+import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
+import { ApuntarMerma } from '../inventario/ApuntarMerma.tsx';
 
 /**
  * El Panel · el centro de control (Manifiesto 6, Evolución 1.0 capítulo 5).
@@ -55,8 +57,16 @@ export function Panel() {
   const mio = usarMiPanel();
   const [editando, setEditando] = useState(false);
   const [anadiendo, setAnadiendo] = useState(false);
+  const [apuntandoMerma, setApuntandoMerma] = useState(false);
 
-  const tienePermiso = (permiso: PermisoDeApp) => puedeVer(permisos, permiso);
+  const tienePermiso = (permiso: Permiso) => puedeVer(permisos, permiso);
+
+  // «Apuntar una merma», desde las acciones rápidas, el buscador o Fogón. Se abre
+  // en el Panel porque el Panel lo tiene todo el mundo, y quien más mermas apunta
+  // —el camarero que rompe una copa— no tiene la app de Inventario.
+  usarQueHacer('merma', () => {
+    setApuntandoMerma(true);
+  });
 
   return (
     <div className="flex flex-col gap-e4">
@@ -93,6 +103,29 @@ export function Panel() {
           <LoQueFalta />
         </div>
       </section>
+
+      {/*
+        Que un guardado que falla se vea, que es lo que no pasaba.
+
+        La rejilla pinta el cambio al momento, así que un no del servidor se veía
+        igual que un sí hasta que alguien recargaba y se encontraba el Panel de
+        antes. Aquí sale la frase del servidor, con su botón, en la misma pantalla
+        y en el mismo momento.
+      */}
+      {mio.noSeHaGuardado !== null && (
+        <Aviso
+          tono="mal"
+          titulo={mio.noSeHaGuardado.quePasa}
+          accion={
+            <Boton tono="secundario" onClick={mio.reintentar}>
+              Reintentar
+            </Boton>
+          }
+        >
+          {mio.noSeHaGuardado.queSePuedeHacer} Lo que has colocado se ve, pero{' '}
+          <strong>todavía no está guardado</strong>: si recargas ahora, vuelve el de antes.
+        </Aviso>
+      )}
 
       {mio.loCambioOtroAparato && (
         <Aviso
@@ -148,6 +181,13 @@ export function Panel() {
         </div>
       )}
 
+      <ApuntarMerma
+        abierta={apuntandoMerma}
+        alCerrar={() => {
+          setApuntandoMerma(false);
+        }}
+      />
+
       <AnadirWidget
         abierta={anadiendo}
         alCerrar={() => {
@@ -184,7 +224,7 @@ function AnadirWidget({
   readonly abierta: boolean;
   readonly alCerrar: () => void;
   readonly puestos: readonly { readonly id: string }[];
-  readonly tienePermiso: (permiso: PermisoDeApp) => boolean;
+  readonly tienePermiso: (permiso: Permiso) => boolean;
   readonly alAnadir: (id: string) => void;
 }) {
   const sePuede = loQueSePuedeAnadir(

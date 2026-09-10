@@ -160,8 +160,13 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     );
     await page.getByRole('button', { name: 'Saltar el paseo' }).click();
 
-    // Y el final
+    // Y el final, con la única pregunta que no hace falta para empezar: cómo
+    // entran las ventas. «Al registrarse y en Ajustes», se pidió, y aquí está la
+    // primera mitad. Elegir **es** contestar, y se ve marcado al instante.
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ya está');
+    const aMano = page.getByRole('radio', { name: /^Lo apunto yo/ });
+    await aMano.click();
+    await expect(aMano).toHaveAttribute('aria-checked', 'true');
     await page.getByRole('button', { name: /Entrar en/ }).click();
 
     // El Panel de su local. La quinta comprobación deja de mandar al alta.

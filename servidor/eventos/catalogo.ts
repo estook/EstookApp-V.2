@@ -53,6 +53,28 @@ export const EVENTOS = [
   'producto.desactivado',
   'precio.cambiado',
   'stock.ajustado',
+  // ── M6½ · la merma, los fichajes y el cierre de caja ─────────────────────
+  //
+  // Otra vez la regla 14, y otra vez con la misma disciplina: **solo se publica
+  // lo que le importa a alguien más**.
+  //
+  //   merma.apuntada       sube el food cost del periodo (M8, M21) y, si es de
+  //                        un producto caro y se repite, es un aviso de Fogón
+  //   fichaje.abierto      quién está dentro ahora mismo: el Panel y el cierre
+  //   fichaje.cerrado      las horas del periodo, y el coste de personal
+  //   fichaje.corregido    **este sí es delicado**: alguien ha tocado el
+  //                        registro horario de otra persona, y eso tiene que
+  //                        quedar dicho fuera de la propia tabla
+  //   caja.cerrada         la cascada de verdad: ventas del día, ticket medio,
+  //                        food cost sobre ventas, Pulse y el consumo de M20
+  //   local.como_cierra    el Panel deja de pedir que se elija, y M20 sabe si
+  //                        tiene que ir a buscar nada al TPV
+  'merma.apuntada',
+  'fichaje.abierto',
+  'fichaje.cerrado',
+  'fichaje.corregido',
+  'caja.cerrada',
+  'local.como_cierra',
 ] as const;
 
 export type TipoDeEvento = (typeof EVENTOS)[number];

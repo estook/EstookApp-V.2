@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { UNIDADES_DE_USO, comoSaleElCoste, esUnidadDeUso } from '@estook/dominio';
+import {
+  UNIDADES_DE_USO,
+  comoPrecioPorUnidad,
+  costePorUnidadDeUso,
+  centimos,
+} from '@estook/dominio';
 import {
   Aviso,
   Boton,
@@ -14,7 +19,7 @@ import {
   Selector,
   clases,
 } from '@estook/ui';
-import { IconoBuscar, IconoFlechaAbajo } from '@estook/iconos';
+import { IconoBuscar } from '@estook/iconos';
 import type { Centimos } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -27,47 +32,51 @@ import type {
 } from './contrato.ts';
 
 /**
- * Dar de alta un producto (M6) · los treinta segundos.
+ * Dar de alta un producto (M6, rehecho en M6½).
  *
- * ── Lo que preguntaba, y por qué estaba mal ──────────────────────────────────
+ * ── Lo que preguntaba, y por qué seguía estando mal ─────────────────────────
  *
- * «Preguntas cosas como "cómo lo compras", "cuánto trae", "unidad con la que
- * cocinas"… no tienen sentido.» Y tenía razón, por dos motivos distintos:
+ * En M6 preguntaba «cómo lo compras», «cuánto trae», «unidad con la que
+ * cocinas»… y se arregló a medias: se escondió el envase detrás de un pliegue y
+ * se dejó fuera «el precio del kg». El resultado era peor de lo que parecía,
+ * porque **las preguntas seguían siendo las mismas y ahora estaban a dos alturas
+ * distintas**. Y quedaban tres que no deberían estar:
  *
- *   · **Le hacía hacer cuentas a quien da de alta un producto.** Un saco de
- *     harina de 25 kg obligaba a escribir «Saco de 25 kg», luego «25000», luego
- *     elegir «g», y entender por qué. Tres preguntas y una multiplicación para
- *     decir «compro harina, a tanto el kilo».
- *   · **Y preguntaba en el sitio equivocado.** Cuántos gramos lleva una ración no
- *     es del producto: es de **la ficha técnica**, que es donde se dice qué lleva
- *     un plato y cuánto cuesta la ración. Eso es M9, y el producto solo tiene que
- *     saber en qué se mide y a cuánto sale.
+ *   · **«Cómo lo compras»**, con el ejemplo «Garrafa de 8 l». Es un campo de
+ *     texto libre para escribir a mano un dato que Estook **ya sabe**: si dices
+ *     que trae 8 y que se mide en litros, el envase es «8 l». Preguntarlo era
+ *     pedir que alguien teclee la respuesta de otra pregunta.
+ *   · **«Qué porcentaje se aprovecha.»** «Nadie lo sabe al llegar, sino cuando
+ *     está trabajando», y tenía razón: es un dato de cocina que se aprende
+ *     pelando, no algo que se conteste con el albarán en la mano. Ahora no se
+ *     pregunta aquí: se corrige en la ficha del producto, que es donde se está
+ *     cuando se descubre. El servidor lo deja en 1 y marca el producto **sin
+ *     verificar**, que es exactamente lo que significa.
+ *   · **«A quién se lo compras.»** Es el proveedor, y se llama proveedor.
  *
- * ── Lo que pregunta ahora ────────────────────────────────────────────────────
+ * ── Lo que pregunta ahora, en este orden ────────────────────────────────────
  *
- * Tres cosas: **cómo se llama, en qué se mide y lo que cuesta esa medida**. Si
- * eliges kilos, la casilla de precio dice «lo que te cuesta el kg». No hay nada
- * que multiplicar.
+ *   1. **Producto** · cómo lo llamas tú
+ *   2. **En qué se mide** · kg, l, ud, g, ml
+ *   3. **Cuánto trae y lo que cuesta todo eso** · y la cuenta sale hecha
+ *   4. **Cuánto hay ahora** · y esto es lo que faltaba entero
+ *   5. **Caduca** · opcional
+ *   6. **Categoría** y **proveedor** · el segundo, opcional
  *
- * Debajo, plegado, está **«lo compro por envases»**, que es lo que había antes y
- * sigue haciendo falta para quien compra garrafas de 8 l o cajas de 5 kg: ahí se
- * escribe el envase, cuánto trae y el precio del envase entero, y la cuenta se
- * enseña hecha. Se despliega solo cuando se elige del catálogo, porque el catálogo
- * **propone un envase** y esconderlo obligaría a hacer la cuenta de cabeza — que
- * es justo el fallo 11 de M6.
+ * Ni un pliegue y ni un campo de texto para un dato calculable. El envase se
+ * **compone**: «Envase de 8 l», y si trae 1 no hay envase que nombrar.
  *
- * Lo importante es que **es lo mismo por debajo**: `formato`, `factor` y
- * `unidad_de_uso` siguen siendo lo que el servidor recibe. En el modo sencillo el
- * factor es 1 y el formato va vacío, así que «el precio del kg» **es** el precio
- * de una unidad de uso. Un solo camino de datos, dos formas de preguntarlo.
+ * ── Y la cuarta pregunta es la que arregla el inventario ────────────────────
  *
- * ── Por qué se busca antes de escribir nada ──────────────────────────────────
+ * «Añades un producto nuevo y debería actualizarse lo que hay.» No se
+ * actualizaba: el stock es el libro de movimientos, y crear la ficha no apuntaba
+ * ninguna línea. Había que dar de alta el producto y **acordarse de entrar en su
+ * ficha a apuntar una entrada**. El resultado real de eso es un inventario con
+ * treinta productos a cero, que no sirve para nada.
  *
- * «Escribes "aceite de oliva" y salen las variantes con su unidad de compra, su
- *  factor, su rendimiento aproximado, su categoría y sus alérgenos ya puestos»
- *  (Manifiesto 8). Y **«Crearlo a mano» va arriba**, al lado de la casilla: es el
- *  botón que usa cualquiera que compre algo que el catálogo no tenga, y estaba
- *  debajo de doce resultados.
+ * Ahora se pregunta aquí y el comando apunta la entrada, con su precio. Y por eso
+ * la cámara empieza a valer dinero desde el primer día: el coste medio nace
+ * puesto en vez de en cero.
  */
 export function NuevoProducto({
   abierta,
@@ -92,50 +101,27 @@ export function NuevoProducto({
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
-  // Lo que se pone encima de la referencia, o del formulario a mano.
   const [nombre, setNombre] = useState('');
-  const [precio, setPrecio] = useState<Centimos | null>(null);
-  const [proveedorId, setProveedorId] = useState('');
-  const [categoriaId, setCategoriaId] = useState('');
-  const [formato, setFormato] = useState('');
-  const [factor, setFactor] = useState('1');
   const [unidad, setUnidad] = useState('kg');
-  const [rendimiento, setRendimiento] = useState('100');
-  /**
-   * Si se está comprando por envases.
-   *
-   * Cerrado, el producto se mide en su unidad y el precio es el de esa unidad.
-   * Abierto, vuelve lo de antes: envase, cuánto trae y precio del envase entero.
-   * Se abre solo al elegir del catálogo, porque el catálogo propone un envase.
-   */
-  const [porEnvases, setPorEnvases] = useState(false);
-  /**
-   * Si alguien ha tocado el rendimiento de verdad.
-   *
-   * El servidor marca «sin verificar» cuando el rendimiento **no viene**, porque
-   * «un rendimiento mal puesto es el error más caro del sistema» (Auditoría
-   * 1.2). Esta pantalla lo mandaba siempre, con su 100 por defecto, así que
-   * ningún producto creado a mano salía marcado nunca: la etiqueta existía, la
-   * probaba el servidor, y en pantalla no aparecía jamás.
-   */
-  const [rendimientoTocado, setRendimientoTocado] = useState(false);
+  /** Cuánto trae un envase, en la unidad de arriba. 1 = se compra a granel. */
+  const [cuantoTrae, setCuantoTrae] = useState('1');
+  /** Lo que cuesta **todo eso**, no la unidad. Es lo que dice el albarán. */
+  const [precio, setPrecio] = useState<Centimos | null>(null);
+  /** Cuánto hay ya en cámara, en unidades de uso. */
+  const [cuantoHay, setCuantoHay] = useState('');
+  const [caducaEl, setCaducaEl] = useState('');
+  const [categoriaId, setCategoriaId] = useState('');
+  const [proveedorId, setProveedorId] = useState('');
 
-  /**
-   * Cuántas letras hacen falta antes de preguntar al catálogo.
-   *
-   * La consulta se hacía **también con la casilla vacía**, así que abrir la hoja
-   * enseñaba de entrada doce referencias elegidas por nada. Con dos letras ya hay
-   * algo que buscar y la lista significa algo.
-   */
   const DESDE_CUANTAS_LETRAS = 2;
   const buscando = texto.trim().length >= DESDE_CUANTAS_LETRAS;
 
   const catalogo = useQuery({
     queryKey: ['catalogo_de_referencia', texto],
-    enabled: abierta && !aMano && buscando,
+    enabled: abierta && !aMano && elegida === null && buscando,
     queryFn: async (): Promise<CatalogoDeReferencia> => {
       const respuesta = await cliente.consultar<CatalogoDeReferencia>('catalogo_de_referencia', {
-        ...(texto.trim() === '' ? {} : { texto: texto.trim() }),
+        texto: texto.trim(),
         limite: '12',
       });
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
@@ -148,15 +134,13 @@ export function NuevoProducto({
     setElegida(null);
     setAMano(false);
     setNombre('');
-    setPrecio(null);
-    setProveedorId('');
-    setCategoriaId('');
-    setFormato('');
-    setFactor('1');
     setUnidad('kg');
-    setRendimiento('100');
-    setRendimientoTocado(false);
-    setPorEnvases(false);
+    setCuantoTrae('1');
+    setPrecio(null);
+    setCuantoHay('');
+    setCaducaEl('');
+    setCategoriaId('');
+    setProveedorId('');
     setError(null);
   }
 
@@ -168,58 +152,69 @@ export function NuevoProducto({
   function elegir(referencia: ReferenciaDelCatalogo) {
     setElegida(referencia);
     setNombre(referencia.nombre);
-    // El envase de la referencia es una **propuesta**: se rellena y se puede
-    // cambiar. Quien compra garrafas de 8 l escribe 8000 y sigue.
-    setFormato(referencia.formato);
-    setFactor(String(referencia.factor));
     setUnidad(referencia.unidadDeUso);
-    // Y se abre el pliegue, porque si no la propuesta quedaría escondida y habría
-    // que hacer la cuenta de cabeza: es el fallo 11 de M6, y no vuelve.
-    setPorEnvases(true);
-    // `toFixed` y no `Math.round`: la regla 9 prohibe redondear a mano fuera de
-    // los motores de dominio, y aqui lo que se quiere es texto para una casilla.
-    setRendimiento((referencia.rendimiento * 100).toFixed(0));
-    setRendimientoTocado(false);
-    // La categoría del local que se llama igual que la del catálogo. Si no está,
-    // se deja sin elegir: el producto puede vivir sin categoría, y proponerle una
-    // que no es sería peor que no proponer ninguna.
+    // El envase del catálogo es una **propuesta**, y se rellena a la vista: quien
+    // compra garrafas de 8 l escribe 8000 y sigue. Esconderla obligaría a hacer la
+    // cuenta de cabeza, que es el fallo 11 de M6 y no vuelve.
+    setCuantoTrae(String(referencia.factor));
     const suya = categorias.find(
       (c) => sinAcentosSimple(c.nombre) === sinAcentosSimple(referencia.categoria),
     );
     setCategoriaId(suya?.id ?? '');
   }
 
-  const elFactor = porEnvases ? Number(factor.replace(',', '.')) || 1 : 1;
-  const elRendimiento = Math.min(
-    1,
-    Math.max(0.0001, (Number(rendimiento.replace(',', '.')) || 100) / 100),
-  );
+  const elFactor = Math.max(0.0001, Number(cuantoTrae.replace(',', '.')) || 1);
+  const porEnvases = elFactor !== 1;
+
+  /**
+   * Lo que sale la unidad, calculado mientras se escribe.
+   *
+   * Lo hace `costePorUnidadDeUso`, del motor de coste de M2, que es su único dueño
+   * (regla 6): es la misma cuenta que hará el servidor al guardar. Con el
+   * rendimiento en 1, porque aquí ya no se pregunta.
+   */
+  const laUnidad =
+    precio === null || precio === 0
+      ? null
+      : comoPrecioPorUnidad(
+          costePorUnidadDeUso(centimos(precio), { factor: elFactor, rendimiento: 1 }),
+          unidad,
+        );
+
+  const hayNumero = cuantoHay.trim() === '' ? null : Number(cuantoHay.replace(',', '.'));
+  const hayVale = hayNumero === null || (Number.isFinite(hayNumero) && hayNumero >= 0);
+  const listo = nombre.trim() !== '' && hayVale && !guardando;
 
   async function guardar() {
     setError(null);
     setGuardando(true);
 
-    const cuerpo = {
+    const respuesta = await cliente.ejecutar<{
+      productoId: string;
+      ejemplosQueQuedan: number;
+    }>('crear_producto', {
       nombre: nombre.trim(),
       ...(elegida === null ? {} : { de_referencia: elegida.id }),
       categoria_id: categoriaId === '' ? null : categoriaId,
       proveedor_id: proveedorId === '' ? null : proveedorId,
       precio_centimos: precio,
-      // Sin envases, el formato va vacío y el factor es 1: el precio que se ha
-      // escrito **es** el de una unidad de uso, y la aritmética del servidor sale
-      // igual sin enterarse de que hay dos formas de preguntarlo.
-      formato: porEnvases && formato.trim() !== '' ? formato.trim() : null,
+      // El envase **se compone**, no se escribe. Con factor 1 no hay envase que
+      // nombrar: el precio que se ha puesto es el de una unidad de uso. Y si viene
+      // del catálogo y no se ha tocado lo que trae, se queda el nombre del
+      // catálogo —«Garrafa de 5 l»—, que es mejor que el compuesto.
+      formato: !porEnvases
+        ? null
+        : elegida !== null && elFactor === elegida.factor
+          ? elegida.formato
+          : `Envase de ${cuantoTrae.replace('.', ',')} ${unidad}`,
       factor: elFactor,
       unidad_de_uso: unidad,
-      // Solo si alguien lo ha tocado: si no va, el servidor marca el producto
-      // «sin verificar», que es justo lo que tiene que pasar.
-      ...(rendimientoTocado ? { rendimiento: elRendimiento } : {}),
-    };
-
-    const respuesta = await cliente.ejecutar<{
-      productoId: string;
-      ejemplosQueQuedan: number;
-    }>('crear_producto', cuerpo);
+      // El rendimiento **no se manda**, y por eso el servidor deja el producto
+      // «sin verificar»: es la verdad —nadie ha medido cuánto se aprovecha— y es
+      // lo que hace que la etiqueta signifique algo. Se corrige en la ficha.
+      ...(hayNumero !== null && hayNumero > 0 ? { cantidad_inicial: hayNumero } : {}),
+      ...(caducaEl === '' ? {} : { caduca_el: caducaEl }),
+    });
 
     setGuardando(false);
 
@@ -233,26 +228,7 @@ export function NuevoProducto({
     alCrear(productoId, ejemplosQueQuedan);
   }
 
-  /**
-   * La cuenta, hecha mientras se escribe.
-   *
-   * Es el mismo `comoSaleElCoste` que compone la frase del catálogo en el
-   * servidor. No hay dos versiones de esta cuenta (regla 6): hay una, y esta
-   * pantalla la llama con lo que hay en las casillas ahora mismo.
-   *
-   * **Solo se enseña comprando por envases**, que es donde hay una cuenta que
-   * hacer. Sin envases decía «Una unidad = 1 kg para usar», que no explica nada:
-   * es la definición de lo que acabas de escribir, devuelta como si fuera un
-   * resultado.
-   */
-  const comoSale = comoSaleElCoste({
-    formato: formato.trim() === '' ? 'El envase' : formato.trim(),
-    factor: elFactor,
-    unidadDeUso: esUnidadDeUso(unidad) ? unidad : 'ud',
-    rendimiento: elRendimiento,
-  });
-
-  const listoParaGuardar = nombre.trim() !== '' && !guardando;
+  const enElFormulario = elegida !== null || aMano;
 
   return (
     <Hoja
@@ -266,7 +242,7 @@ export function NuevoProducto({
           </Boton>
           <Boton
             tono="principal"
-            disabled={!listoParaGuardar}
+            disabled={!listo}
             cargando={guardando}
             textoCargando="Guardando"
             onClick={() => {
@@ -281,11 +257,11 @@ export function NuevoProducto({
       <div className="flex flex-col gap-e4">
         {error !== null && <ErrorEnCristiano error={error} />}
 
-        {elegida === null && !aMano && (
+        {!enElFormulario && (
           <>
             <Campo
               etiqueta="¿Qué producto es?"
-              ayuda="Escribe cómo lo llamas tú. Si está en el catálogo, viene con su formato, su factor y sus alérgenos ya puestos."
+              ayuda="Escribe cómo lo llamas tú. Si está en el catálogo, viene con su formato y sus alérgenos puestos."
               value={texto}
               delante={<IconoBuscar size={16} />}
               autoFocus
@@ -294,12 +270,6 @@ export function NuevoProducto({
               }}
             />
 
-            {/*
-              Las dos salidas, **a la misma altura y siempre**. «Crearlo a mano»
-              iba al final del todo, debajo de doce resultados del catálogo, y es
-              el botón que más se pulsa: el catálogo es una ayuda, no un censo del
-              género de España.
-            */}
             <div className="flex flex-wrap items-center gap-e2">
               <Boton
                 tono="secundario"
@@ -311,14 +281,13 @@ export function NuevoProducto({
                 Crearlo a mano
               </Boton>
               <p className="text-secundario text-texto-suave">
-                Si no está en el catálogo, o si lo prefieres a tu manera.
+                Si no está en el catálogo, o lo prefieres a tu manera.
               </p>
             </div>
 
             {!buscando ? (
               <p className="text-secundario text-texto-suave">
-                Con dos letras empiezo a buscar en el catálogo de referencia. Vale con erratas y sin
-                acentos.
+                Con dos letras empiezo a buscar. Vale con erratas y sin acentos.
               </p>
             ) : (
               <>
@@ -346,11 +315,6 @@ export function NuevoProducto({
                             <span className="text-secundario text-texto-suave">
                               {referencia.comoSale}
                             </span>
-                            {referencia.alergenos.length > 0 && (
-                              <span className="text-secundario text-texto-suave">
-                                Alérgenos: {referencia.alergenos.join(', ')}
-                              </span>
-                            )}
                           </button>
                         </li>
                       ))}
@@ -360,8 +324,7 @@ export function NuevoProducto({
 
                 {catalogo.data !== undefined && catalogo.data.productos.length === 0 && (
                   <Aviso tono="info" titulo="Eso no está en el catálogo">
-                    No pasa nada: con «Crearlo a mano» se hace en un momento, y funciona exactamente
-                    igual.
+                    Con «Crearlo a mano» se hace en un momento y funciona igual.
                   </Aviso>
                 )}
               </>
@@ -369,17 +332,18 @@ export function NuevoProducto({
           </>
         )}
 
-        {(elegida !== null || aMano) && (
+        {enElFormulario && (
           <>
             {elegida !== null && (
               <Aviso tono="bien" titulo={`Del catálogo: ${elegida.nombre}`} esNoticia>
-                Llega con su categoría, su tipo de impuesto y sus alérgenos ya puestos. El envase de
-                aquí abajo es una propuesta: si tú lo compras de otra medida, cámbialo.
+                Llega con su categoría, su tipo de impuesto y sus alérgenos puestos. Lo de abajo es
+                una propuesta: cámbialo si tú lo compras de otra medida.
               </Aviso>
             )}
 
+            {/* 1 · Producto */}
             <Campo
-              etiqueta="Cómo se llama"
+              etiqueta="Producto"
               obligatorio
               value={nombre}
               autoFocus
@@ -388,129 +352,82 @@ export function NuevoProducto({
               }}
             />
 
-            {/*
-              En qué se mide · lo que antes era «unidad con la que cocinas» dentro
-              de un desplegable de cinco opciones.
-
-              Va como cinco pastillas y no como un `<select>` a propósito: son
-              cinco, caben, y verlas todas a la vez es lo que hace que se entienda
-              la pregunta sin leer la ayuda. Un desplegable de cinco esconde cuatro.
-            */}
+            {/* 2 · En qué se mide */}
             <EnQueSeMide valor={unidad} alElegir={setUnidad} />
 
-            {/*
-              El precio, **en la unidad que se acaba de elegir**. Es la casilla que
-              cierra el modo sencillo: eliges kg y te pregunta lo que te cuesta el
-              kg. No hay nada que multiplicar.
-            */}
-            {puedeVerPrecios && !porEnvases && (
-              <CampoMoneda
-                etiqueta={`Lo que te cuesta el ${unidad}`}
-                ayuda="Se puede dejar en blanco y ponerlo con el primer albarán."
-                valor={precio}
-                alCambiar={setPrecio}
-              />
-            )}
-
-            {/* ── Lo compro por envases · plegado ─────────────────────────── */}
-
-            <div className="rounded-medio border border-borde">
-              <button
-                type="button"
-                aria-expanded={porEnvases}
-                onClick={() => {
-                  setPorEnvases(!porEnvases);
+            {/* 3 · Cuánto trae, y lo que cuesta todo eso */}
+            <div className="grid gap-e3 sm:grid-cols-2">
+              <Campo
+                etiqueta="Cuánto trae"
+                tipo="numero"
+                value={cuantoTrae}
+                detras={unidad}
+                ayuda={
+                  unidad === 'ud'
+                    ? 'Cuántas unidades vienen. Una caja de 12 huevos son 12.'
+                    : `Lo que trae el envase, en ${unidad}. Si lo compras a granel, deja 1.`
+                }
+                onChange={(e) => {
+                  setCuantoTrae(e.currentTarget.value);
                 }}
-                className="flex w-full min-h-toque items-center justify-between gap-e2 px-e3 text-left"
-              >
-                <span className="min-w-0">
-                  <span className="block text-cuerpo font-medium">Lo compro por envases</span>
-                  <span className="block text-secundario text-texto-suave">
-                    Cajas, garrafas, sacos o bandejas, con su precio entero
-                  </span>
-                </span>
-                <span
-                  aria-hidden
-                  className={clases(
-                    'shrink-0 text-texto-suave transition-transform duration-[--rapido]',
-                    porEnvases && 'rotate-180',
-                  )}
-                >
-                  <IconoFlechaAbajo size={18} />
-                </span>
-              </button>
+              />
 
-              {porEnvases && (
-                <div className="flex flex-col gap-e3 border-t border-borde p-e3">
-                  <Campo
-                    etiqueta="Cómo lo compras"
-                    ayuda="Tal cual lo pone el albarán: «Caja de 5 kg», «Garrafa de 8 l»."
-                    value={formato}
-                    onChange={(e) => {
-                      setFormato(e.currentTarget.value);
-                    }}
-                  />
-
-                  <Campo
-                    etiqueta="Cuánto trae"
-                    tipo="numero"
-                    ayuda={`En ${unidad}. Una garrafa de 8 l son 8000 si mides en ml.`}
-                    value={factor}
-                    detras={unidad}
-                    onChange={(e) => {
-                      setFactor(e.currentTarget.value);
-                    }}
-                  />
-
-                  {/* La cuenta hecha, recalculada mientras se escribe. Es lo que
-                      hace que alguien note que se ha equivocado **antes** de
-                      guardar, y por eso va en su caja y no como un párrafo más. */}
-                  <p
-                    aria-live="polite"
-                    className="rounded-medio bg-naranja-suave px-e3 py-e2 text-cuerpo font-medium"
-                  >
-                    {comoSale}
-                  </p>
-
-                  {puedeVerPrecios && (
-                    <CampoMoneda
-                      etiqueta="Lo que te cuesta"
-                      ayuda={
-                        formato.trim() === ''
-                          ? 'El precio del envase entero, no el de la unidad. Se puede dejar en blanco.'
-                          : `El precio de «${formato.trim()}», entero. Se puede dejar en blanco.`
-                      }
-                      valor={precio}
-                      alCambiar={setPrecio}
-                    />
-                  )}
-
-                  {/*
-                    El aprovechamiento vive aquí dentro, y no fuera, porque es la
-                    pregunta que solo tiene sentido para lo que se limpia o se
-                    pela. Preguntársela a un saco de harina es ruido, y el ruido
-                    en un formulario es lo que hace que nadie dé de alta su
-                    segundo producto.
-                  */}
-                  <Campo
-                    etiqueta="Qué porcentaje se aprovecha"
-                    tipo="numero"
-                    ayuda={
-                      elegida === null
-                        ? 'Lo que queda después de limpiar o pelar. 100 si no se pierde nada.'
-                        : `El catálogo propone ${rendimiento} %. Si tú lo compras ya limpio, cámbialo.`
-                    }
-                    value={rendimiento}
-                    detras="%"
-                    onChange={(e) => {
-                      setRendimiento(e.currentTarget.value);
-                      setRendimientoTocado(true);
-                    }}
-                  />
-                </div>
+              {puedeVerPrecios && (
+                <CampoMoneda
+                  etiqueta="Precio"
+                  ayuda={
+                    porEnvases
+                      ? `Lo que cuesta todo eso, no la unidad.`
+                      : `Lo que cuesta un ${unidad}.`
+                  }
+                  valor={precio}
+                  alCambiar={setPrecio}
+                />
               )}
             </div>
 
+            {/*
+              La cuenta hecha, recalculada mientras se escribe. Es lo que hace que
+              alguien note que se ha equivocado **antes** de guardar, y por eso va
+              en su caja y no como un párrafo más.
+
+              Solo cuando hay algo que calcular: con factor 1, «un kg sale a lo que
+              cuesta un kg» es la definición de lo que se acaba de escribir devuelta
+              como si fuera un resultado.
+            */}
+            {puedeVerPrecios && porEnvases && laUnidad !== null && (
+              <p
+                aria-live="polite"
+                className="rounded-medio bg-naranja-suave px-e3 py-e2 text-cuerpo font-medium"
+              >
+                Sale a {laUnidad}
+              </p>
+            )}
+
+            {/* 4 · Cuánto hay · lo que faltaba entero */}
+            <Campo
+              etiqueta="Cuánto hay ahora"
+              tipo="numero"
+              value={cuantoHay}
+              detras={unidad}
+              ayuda={`Lo que tienes en cámara ahora mismo, en ${unidad}. Se apunta como una entrada, con su precio, para que la cámara valga desde hoy.`}
+              onChange={(e) => {
+                setCuantoHay(e.currentTarget.value);
+              }}
+            />
+
+            {/* 5 · Caduca */}
+            <Campo
+              etiqueta="Caduca el"
+              tipo="fecha"
+              value={caducaEl}
+              ayuda="Opcional. Si hay varias unidades con fechas distintas, pon la más próxima: es la que hay que gastar antes."
+              onChange={(e) => {
+                setCaducaEl(e.currentTarget.value);
+              }}
+            />
+
+            {/* 6 · Categoría y proveedor */}
             <SelectorDeCategoria
               categorias={categorias}
               valor={categoriaId}
@@ -519,15 +436,15 @@ export function NuevoProducto({
             />
 
             {/*
-              El proveedor solo se pide a quien puede ver precios. Un cocinero da
-              de alta productos y no ve lo que cuestan: enseñarle la casilla sería
+              El proveedor solo se pide a quien puede ver precios. Un cocinero da de
+              alta productos y no ve lo que cuestan: enseñarle la casilla sería
               pedirle un dato que el servidor le va a rechazar.
             */}
             {puedeVerPrecios && (
               <Selector
-                etiqueta="A quién se lo compras"
+                etiqueta="Proveedor"
                 opciones={proveedores.map((p) => ({ valor: p.id, texto: p.nombre }))}
-                sinElegir="Todavía no lo sé"
+                sinElegir="Sin proveedor"
                 cuandoNoHay="Todavía no tienes proveedores. Se crean en «Compras»"
                 value={proveedorId}
                 onChange={(e) => {
@@ -536,13 +453,23 @@ export function NuevoProducto({
               />
             )}
 
+            {/*
+              Y lo que **no** se pregunta aquí, dicho. «Nadie sabe cuánto se
+              aprovecha al llegar, sino cuando está trabajando»: el producto nace
+              marcado sin verificar y se corrige en su ficha el día que se sabe.
+            */}
+            <p className="text-secundario text-texto-tenue">
+              El aprovechamiento —cuánto queda después de limpiar o pelar— no se pregunta aquí: se
+              corrige en la ficha del producto cuando lo sepas. Hasta entonces sale marcado como
+              «sin verificar».
+            </p>
+
             <div>
               <Boton
                 tono="texto"
                 onClick={() => {
                   setElegida(null);
                   setAMano(false);
-                  setPorEnvases(false);
                 }}
               >
                 Buscar otro
@@ -558,11 +485,9 @@ export function NuevoProducto({
 /**
  * En qué se mide el producto · cinco pastillas.
  *
- * Antes era un desplegable con la etiqueta «unidad con la que cocinas», y las dos
- * cosas estaban mal: el desplegable esconde cuatro de las cinco opciones, y el
- * nombre preguntaba por la cocina cuando lo que decide esto es **cómo lo compras
- * y cómo lo cuentas en cámara**. Los gramos de una ración son de la ficha
- * técnica, que es M9.
+ * Como cinco pastillas y no como un `<select>` a propósito: son cinco, caben, y
+ * verlas todas a la vez es lo que hace que se entienda la pregunta sin leer la
+ * ayuda. Un desplegable de cinco esconde cuatro.
  */
 function EnQueSeMide({
   valor,
@@ -606,8 +531,7 @@ function EnQueSeMide({
         })}
       </div>
       <p className="mt-e2 text-secundario text-texto-suave">
-        Cómo lo cuentas en cámara y cómo te lo cobran. Lo que lleva una ración se pone en la ficha
-        técnica de cada plato.
+        Cómo lo cuentas en cámara. Lo que lleva una ración se pone en la ficha de cada plato.
       </p>
     </div>
   );
@@ -616,10 +540,9 @@ function EnQueSeMide({
 /**
  * Comparar dos nombres de categoría sin acentos ni mayúsculas.
  *
- * Es el mismo criterio que usa `estook.sin_acentos` en la base de datos, y la
- * comparación que hace el servidor al copiar del catálogo. Aquí solo sirve para
- * preseleccionar el desplegable: si acertara distinto que el servidor, lo peor
- * que pasa es que el desplegable salga sin elegir.
+ * Es el mismo criterio que usa `estook.sin_acentos` en la base de datos. Aquí solo
+ * sirve para preseleccionar el desplegable: si acertara distinto que el servidor,
+ * lo peor que pasa es que salga sin elegir.
  */
 function sinAcentosSimple(texto: string): string {
   return texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');

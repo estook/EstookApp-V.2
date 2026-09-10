@@ -173,9 +173,7 @@ export const MODULOS: Readonly<Record<string, string>> = {
   M7: 'M7 · Proveedores y compras',
   M9: 'M9 · Escandallos',
   M10: 'M10 · Carta, menús y análisis',
-  M13: 'M13 · Equipo',
   M14: 'M14 · Calendario',
-  M15: 'M15 · Fichajes',
   M16: 'M16 · Servicio, APPCC y trazabilidad',
   M17: 'M17 · Cuaderno',
   M20: 'M20 · Ventas, emparejamiento y consumo',
@@ -251,7 +249,10 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // producto, de una en una. Un libro que solo se lee por paginas sueltas
         // no sirve para lo que sirve un libro, que es cuadrar.
         queContesta: '¿Qué ha entrado, qué ha salido y quién lo apuntó?',
-        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Ajustes'),
+        // «Los recuentos y las mermas seran vistas de Movimientos», y esto es la
+        // primera de las dos cumpliendose: la merma es una salida de genero con
+        // motivo, no una app aparte.
+        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Mermas', 'Ajustes'),
       },
       {
         id: 'compras',
@@ -395,15 +396,17 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     queHace: 'Quién trabaja, cuándo, cuántas horas y cuánto cuesta',
     destinos: [
       {
+        // **Construido en M6½.** Llevaba desde M3 con su cartel de «llega en
+        // M13», y lo que hacia falta para contestar su pregunta no era el modulo
+        // entero de Equipo: eran los fichajes, que es lo que dice quien esta.
         id: 'hoy',
         nombre: 'Hoy',
         icono: IconoAtencion,
         queContesta: '¿Quién está hoy, quién falta y qué hay que resolver?',
         vistas: [],
-        modulo: 'M13',
       },
       {
-        // El unico destino construido de Equipo, y lo trajo M4: dar acceso,
+        // El primer destino construido de Equipo, y lo trajo M4: dar acceso,
         // quitarlo y devolverlo.
         id: 'personas',
         nombre: 'Personas',
@@ -420,12 +423,20 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         modulo: 'M14',
       },
       {
-        id: 'fichajes',
-        nombre: 'Fichajes',
+        // **Construido en M6½, y es el que pedia la lista con esta palabra:**
+        // «en Equipo anadir pestana Resumen». Las horas de cada uno frente a su
+        // contrato, lo que hay que revisar y lo que cuestan a quien pueda verlo.
+        //
+        // Sustituye al destino «Fichajes» de M15, que era un cartel: fichar se
+        // hace desde el Panel —un cocinero no tiene la app Equipo— y los fichajes
+        // de cada persona estan en su ficha. Lo que sigue siendo M15 es la parte
+        // laboral de encima —contratos, ausencias, convenio, el informe para la
+        // inspeccion— y entrara como vistas de este mismo destino.
+        id: 'resumen',
+        nombre: 'Resumen',
         icono: IconoReloj,
-        queContesta: '¿Cuántas horas lleva cada uno de verdad?',
+        queContesta: '¿Cuántas horas lleva cada uno, quién se pasa y cuánto cuesta?',
         vistas: [],
-        modulo: 'M15',
       },
     ],
   },
@@ -449,8 +460,11 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // jornada es el final de la jornada, no otro sitio; y separarlo gastaba
         // una de las cuatro posiciones de la app en algo que se hace una vez al
         // día, dejando fuera el reparto.
-        vistas: vistas(['En marcha', 'M16'], ['Cierre', 'M16']),
-        modulo: 'M16',
+        //
+        // Y el cierre **ya no espera a M16**: es el cierre de caja de M6½, que es
+        // por donde entran las ventas de quien no conecta un TPV. Lo que sigue
+        // siendo M16 es «En marcha», que necesita el APPCC y la jornada abierta.
+        vistas: vistas('Cierre', ['En marcha', 'M16']),
       },
       {
         id: 'ventas',
@@ -506,12 +520,19 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     queHace: 'Cómo va, dónde se va el margen y qué debería cambiar',
     destinos: [
       {
-        id: 'resumen',
-        nombre: 'Resumen',
-        icono: IconoPanel,
-        queContesta: '¿Cómo va el restaurante?',
-        vistas: vistas(['Mes', 'M21'], ['Trimestre', 'M21'], ['Año', 'M21']),
-        modulo: 'M21',
+        // **Construido en M6½, y solo la parte que tiene datos.** Con el cierre
+        // de caja, Estook sabe por fin lo que entra, asi que puede decir lo que
+        // se factura, lo que se gasta de genero y que porcentaje es uno del otro.
+        //
+        // Sustituye al «Resumen» de M21, que era un cartel: el resumen del
+        // restaurante **empieza** por lo que entra, y eso ya se puede decir. Lo
+        // que M21 anadira —el margen entero, la comparativa con el ano pasado—
+        // entra como vistas de este mismo destino, y Pulse sigue en el suyo.
+        id: 'ventas',
+        nombre: 'Ventas',
+        icono: IconoNegocio,
+        queContesta: '¿Cuánto ha entrado, y cuánto de eso se ha ido en género?',
+        vistas: [],
       },
       {
         // Estaba en la tabla de B5 desde el principio y **no estaba en el

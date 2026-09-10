@@ -134,11 +134,43 @@ function ElementoDeTabla<T>({
   readonly principal: Columna<T> | undefined;
   readonly alPulsar?: (fila: T) => void;
 }) {
+  const pinta =
+    'block w-full min-h-toque text-left bg-superficie border border-borde rounded-medio p-e3';
+
+  const titulo = principal === undefined ? null : principal.celda(fila);
+
+  /*
+    **Un botón no puede llevar otro botón dentro.** La tarjeta entera era un
+    `<button>`, y en cuanto una celda trajo el suyo —el «Acceso» de cada persona,
+    el + y el − de cada producto— el móvil tenía un botón dentro de otro: HTML
+    inválido, un lector de pantalla que lee la fila entera como nombre del botón,
+    y una pulsación que no se sabe a cuál de los dos va.
+
+    Ahora el botón es **el título**, y un `::after` lo estira sobre la tarjeta
+    entera: se pulsa en cualquier sitio y abre la fila, igual que antes. Los
+    botones y enlaces de las celdas se ponen **por encima** de ese velo, y son
+    los únicos que no abren la fila.
+  */
   const contenido = (
     <>
-      {principal !== undefined && (
-        <p className="text-seccion font-semibold">{principal.celda(fila)}</p>
-      )}
+      {titulo !== null &&
+        (alPulsar === undefined ? (
+          <p className="text-seccion font-semibold">{titulo}</p>
+        ) : (
+          <button
+            type="button"
+            className={clases(
+              'block w-full text-left text-seccion font-semibold',
+              "after:absolute after:inset-0 after:rounded-medio after:content-['']",
+              'focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-naranja',
+            )}
+            onClick={() => {
+              alPulsar(fila);
+            }}
+          >
+            {titulo}
+          </button>
+        ))}
       <dl className="mt-e2 grid grid-cols-[auto_1fr] gap-x-e3 gap-y-e1">
         {columnas
           .filter((columna) => columna.clave !== principal?.clave)
@@ -154,21 +186,16 @@ function ElementoDeTabla<T>({
     </>
   );
 
-  const pinta =
-    'block w-full min-h-toque text-left bg-superficie border border-borde rounded-medio p-e3';
-
-  return alPulsar === undefined ? (
-    <div className={pinta}>{contenido}</div>
-  ) : (
-    <button
-      type="button"
-      className={clases(pinta, 'hover:bg-fondo')}
-      onClick={() => {
-        alPulsar(fila);
-      }}
+  return (
+    <div
+      className={clases(
+        pinta,
+        alPulsar !== undefined &&
+          'relative hover:bg-fondo [&_dd_a]:relative [&_dd_a]:z-[1] [&_dd_button]:relative [&_dd_button]:z-[1]',
+      )}
     >
       {contenido}
-    </button>
+    </div>
   );
 }
 

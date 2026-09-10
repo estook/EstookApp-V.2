@@ -49,10 +49,23 @@ export interface FichaBasica {
  * sobre ese punto de partida y la segunda pisaría a la primera: el libro
  * quedaría con dos líneas y un saldo que no cuadra con ninguna de las dos.
  *
- * Bloquear la fila del producto —no la del movimiento— es lo que serializa las
- * dos peticiones. La segunda espera a que la primera termine y entonces lee el
- * saldo de verdad. Es una espera de milisegundos y solo entre movimientos **del
- * mismo producto**: dos cocinas apuntando cosas distintas no se estorban.
+ * Un candado **por producto** es lo que serializa las dos peticiones. La segunda
+ * espera a que la primera termine y entonces lee el saldo de verdad. Es una
+ * espera de milisegundos y solo entre movimientos **del mismo producto**: dos
+ * cocinas apuntando cosas distintas no se estorban.
+ *
+ * ── Por qué es un candado de transacción y no `for update` ───────────────────
+ *
+ * Hasta M6½ era `select … for no key update` sobre la fila del producto. Eso en
+ * Postgres **pasa también por la política de editar**: para bloquear una fila hay
+ * que poder cambiarla. Mientras solo apuntaba quien lleva Inventario, daba igual.
+ * Con la merma dejó de dar igual: la camarera veía el producto en la lista, lo
+ * elegía, y al apuntar le salía «ese producto no está». Tiene permiso de merma y
+ * no de editar productos, que es exactamente lo que tiene que tener.
+ *
+ * `pg_advisory_xact_lock` no mira permisos: es un candado con nombre —el del
+ * producto— que se suelta solo al acabar la transacción. Todos los que apuntan
+ * pasan por aquí, así que todos esperan en el mismo candado.
  *
  * Y se lee **con las políticas puestas**: de un producto que no se ve, no vuelve
  * nada, y entonces no hay que comprobar de quién es.
@@ -61,6 +74,8 @@ export async function elProductoBloqueado(
   contexto: Contexto,
   productoId: string,
 ): Promise<FichaBasica> {
+  await contexto.sql`select pg_advisory_xact_lock(hashtextextended(${productoId}::text, 0))`;
+
   const filas = await contexto.sql<
     {
       id: string;
@@ -85,7 +100,6 @@ export async function elProductoBloqueado(
       from estook.producto p
       join estook.local l on l.id = p.local_id
      where p.id = ${productoId}
-       for no key update of p
   `;
 
   const fila = filas[0];
@@ -138,6 +152,15 @@ export interface Apunte {
   readonly costeMilesimas?: number | null;
   readonly loteId?: string | null;
   readonly motivo?: string | null;
+  /**
+   * Por qué se perdió, de la lista cerrada de la 0028. **Solo en las mermas.**
+   *
+   * Va aparte de `motivo` y no dentro, y esa es la decisión: `motivo` es texto
+   * libre y sirve para explicar; esto es un código de una lista de ocho y sirve
+   * para **sumar**. La restricción de la base exige que las mermas lo lleven y que
+   * nada más lo lleve, así que no hay forma de que un día se cuelen mezclados.
+   */
+  readonly motivoDeMerma?: string | null;
   readonly origen?: string;
   readonly referencia?: Record<string, unknown> | null;
   readonly esEjemplo?: boolean;
@@ -206,7 +229,7 @@ export async function apuntar(
   const insertados = await contexto.sql<{ id: string }[]>`
     insert into estook.movimiento_de_stock (
       local_id, producto_id, tipo, cantidad, coste_milesimas,
-      cantidad_despues, coste_medio_despues, lote_id, motivo,
+      cantidad_despues, coste_medio_despues, lote_id, motivo, motivo_de_merma,
       fecha_operativa, ocurrido_en, persona_id, correlacion_id,
       origen, referencia, es_ejemplo
     )
@@ -220,6 +243,7 @@ export async function apuntar(
       ${despues.coste},
       ${apunte.loteId ?? null},
       ${apunte.motivo ?? null},
+      ${apunte.motivoDeMerma ?? null}::estook.motivo_de_merma,
       ${fecha}::date,
       ${cuando.toISOString()}::timestamptz,
       ${contexto.personaId},

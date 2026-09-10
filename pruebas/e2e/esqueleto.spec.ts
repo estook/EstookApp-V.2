@@ -31,9 +31,9 @@ const LAS_OCHO = [
   { id: 'escandallos', nombre: 'Escandallos', entra: 'Hoy' },
   { id: 'carta', nombre: 'Carta', entra: 'Carta' },
   { id: 'calendario', nombre: 'Calendario', entra: 'Calendario' },
-  { id: 'equipo', nombre: 'Equipo', entra: 'Personas' },
+  { id: 'equipo', nombre: 'Equipo', entra: 'Hoy' },
   { id: 'servicio', nombre: 'Servicio', entra: 'Jornada' },
-  { id: 'negocio', nombre: 'Negocio', entra: 'Resumen' },
+  { id: 'negocio', nombre: 'Negocio', entra: 'Ventas' },
   { id: 'cuaderno', nombre: 'Cuaderno', entra: 'Incidencias' },
 ];
 
@@ -45,7 +45,7 @@ const LAS_OCHO = [
  * añada su línea, que es exactamente cuando hay que mirar si lo que enseña la
  * pantalla vacía sigue siendo verdad.
  */
-const APPS_CON_CONTENIDO = ['inventario', 'equipo'];
+const APPS_CON_CONTENIDO = ['inventario', 'equipo', 'servicio', 'negocio'];
 
 /**
  * Abre una pantalla y **espera a que la aplicacion este viva**.
@@ -403,6 +403,38 @@ test.describe('la rueda de apps', () => {
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('menu', { name: 'Elige una app' })).toBeHidden();
+  });
+
+  test('el centro lleva al Panel', async ({ page }) => {
+    // «Que en el centro solo salga el logo del Panel, y al pulsarlo te lleve al
+    // Panel.» Antes decía «arrastra o pulsa», que es una instrucción y no un
+    // sitio, y para volver al Panel desde una app había que buscarlo.
+    await comoGerente(page);
+    await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    await abrirLaRueda(page);
+    await page.getByRole('button', { name: 'Ir al Panel' }).click();
+
+    await expect(page.getByRole('menu', { name: 'Elige una app' })).toBeHidden();
+    await expect(page).toHaveURL(new RegExp('#/$'));
+  });
+
+  test('no tiene botón de cerrar: se cierra pulsando fuera', async ({ page }) => {
+    // «Quitar el botón de cerrar de abajo, que se cierre pulsando fuera.» El
+    // botón quitaba sitio justo donde va el pulgar, y la rueda está ahora ahí.
+    await comoGerente(page);
+    await abrirLaRueda(page);
+
+    const rueda = page.getByRole('menu', { name: 'Elige una app' });
+    await expect(rueda).toBeVisible();
+    await expect(
+      page.locator('[aria-label="Las apps"]').getByRole('button', { name: 'Cerrar' }),
+    ).toHaveCount(0);
+
+    // Arriba, lejos del círculo, que ahora está abajo, a mano del pulgar.
+    await page.mouse.click(20, 200);
+    await expect(rueda).toBeHidden();
   });
 });
 

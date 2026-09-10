@@ -103,12 +103,20 @@ export function Movimientos({
 
   return (
     <div className="flex flex-col gap-e4">
-      <Aviso tono="info" titulo="Esto no se edita, se enmienda">
-        El libro solo se añade: ninguna línea se puede cambiar ni borrar, y eso es lo que hace que
-        la cámara se pueda cuadrar. Si algo está mal apuntado, se corrige con otro movimiento y su
-        motivo.
-      </Aviso>
-
+      {/*
+        ── Aquí había un aviso de cuatro líneas, y sobraba ────────────────────
+        Decía, cada vez que alguien abría el libro: «Esto no se edita, se enmienda.
+        El libro solo se añade: ninguna línea se puede cambiar ni borrar, y eso es
+        lo que hace que la cámara se pueda cuadrar…».
+        Es verdad, es importante, y **no es información que alguien necesite al
+        abrir una lista**. Nadie viene aquí a editar una línea: viene a ver qué
+        pasó. Lo que hay que decir se dice en el momento en el que hace falta —al
+        intentar corregir algo— y no antes, ocupando la primera pantalla del
+        móvil. Y lo que había debajo, en la tarjeta vacía, ya lo explicaba: «se
+        apunta desde la ficha de cada producto».
+        Es la clase de párrafo que llena esta aplicación y que hay que ir
+        quitando: sobreexplica una decisión buena en el sitio donde estorba.
+      */}
       <div className="max-w-[24rem]">
         <Campo
           etiqueta="Buscar en el libro"

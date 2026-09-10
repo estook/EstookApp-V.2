@@ -1,14 +1,20 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { NOMBRE_DEL_ESTADO } from '@estook/dominio';
-import { Aviso, Boton, Cargando, Cifra, EstadoVacio, Etiqueta, Tarjeta } from '@estook/ui';
-import { IconoAtencion, IconoReloj, IconoVacio } from '@estook/iconos';
+import { puedeVer } from '@estook/permisos';
+import { Aviso, Boton, Cargando, Cifra, EstadoVacio, Etiqueta, Tarjeta, Tira } from '@estook/ui';
+import { IconoAnadir, IconoAtencion, IconoCamara, IconoReloj, IconoVacio } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { ApuntarMerma } from './ApuntarMerma.tsx';
 import {
   TONO_DEL_ESTADO,
   comoDinero,
+  comoSeLeeLaFecha,
   conUnidadDeUso,
   cuandoSeAgota,
   type InventarioHoy,
+  type MermaDeHoy,
   type ProductoEnLista,
 } from './contrato.ts';
 
@@ -34,7 +40,7 @@ import {
  * servidor, no esta pantalla.
  */
 export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string) => void }) {
-  const { cliente } = usarSesion();
+  const { cliente, permisos } = usarSesion();
 
   const consulta = useQuery({
     queryKey: ['inventario_hoy'],
@@ -155,21 +161,33 @@ export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string
                 formato={(v) => comoDinero(v)}
                 origen="Suma de lo que costó lo que hay"
               />
-              <p className="mt-e2 text-secundario text-texto-suave">
-                Se valora a precio medio ponderado, que es lo que de verdad costó llenar la cámara,
-                y no al último precio de la lista.
-              </p>
+
+              {/*
+                ── Por qué esta cifra parecía no moverse ────────────────────────
+                Se valora `cantidad × coste medio`, y el coste medio de un producto
+                **solo se mueve cuando entra género con un precio**. Un producto
+                dado de alta con su precio en la lista y sin ninguna entrada tenía
+                coste medio cero, así que valía cero y la cámara «no se
+                actualizaba» por muchos productos que se metieran.
+                Lo que lo arregla de raíz está en el alta: dar de alta un producto
+                **apunta la entrada de lo que hay**, con su precio, así que el
+                coste medio nace puesto. Y aquí se dice cuánto queda sin valorar,
+                que es lo que faltaba: sin esa línea, la cifra parecía mal en vez
+                de parecer incompleta.
+              */}
+              {hoy.sinPrecio.length > 0 && (
+                <p className="mt-e2 text-secundario text-atencion">
+                  {hoy.sinPrecio.length === 1
+                    ? 'Hay 1 producto sin precio: cuenta cero en esta cifra.'
+                    : `Hay ${hoy.sinPrecio.length} productos sin precio: cuentan cero en esta cifra.`}
+                </p>
+              )}
             </Tarjeta>
           )}
 
           {hoy.sinPrecio.length > 0 && (
-            <Tarjeta titulo="Sin precio todavía" origen="Cuentan cero hasta que se les ponga uno">
-              <p className="text-cuerpo text-texto-suave">
-                Estos {hoy.sinPrecio.length === 1 ? 'no tiene precio' : 'no tienen precio'}, así que
-                cuentan cero en el valor de la cámara y saldrán marcados en las fichas que los
-                lleven. No bloquean nada.
-              </p>
-              <ul className="mt-e3 flex flex-col gap-e1">
+            <Tarjeta titulo="Sin precio todavía" origen="Cuentan cero en el valor de la cámara">
+              <ul className="flex flex-col gap-e1">
                 {hoy.sinPrecio.slice(0, 10).map((producto) => (
                   <li key={producto.id}>
                     <button
@@ -190,11 +208,23 @@ export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string
       )}
 
       {/*
-        Lo que esta pantalla todavía no puede dar, dicho por su nombre. Es más
-        honesto y más útil que dejar el hueco: quien la abre sabe que no está
-        rota, sabe qué falta y sabe cuándo llega.
+        La merma del día · lo que pedía la lista, y en su sitio.
+
+        «Añade un cuadrado merma y ahí saldrá la merma de ese día, y abajo una
+        gráfica pequeñita de los días anteriores, y a la derecha de la tarjeta ver
+        a detalle.» Eso es esto.
+
+        La tira de catorce días está porque **una cifra sola no dice nada**: doce
+        euros de merma es mucho o poco según lo de siempre, y eso es exactamente
+        lo que una tira de barras contesta sin leer un número.
       */}
-      <Tarjeta titulo="Y lo que falta por venir" origen="Pedidos, recuento y mermas">
+      {puedeVer(permisos, 'accion.registrar_merma') && <MermaDeLaJornada />}
+
+      {/*
+        Y lo que esta pantalla todavía no puede dar, dicho por su nombre. La merma
+        ya no está en esta lista: está arriba, funcionando.
+      */}
+      <Tarjeta titulo="Y lo que falta por venir" origen="Pedidos y recuento">
         <ul className="flex flex-col gap-e2 text-secundario text-texto-suave">
           <li>
             <strong className="text-texto">Pedidos por recibir</strong> · con la sugerencia que
@@ -202,7 +232,7 @@ export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string
           </li>
           <li>
             <strong className="text-texto">Recuento y desviación</strong> · lo que dice el papel
-            contra lo que dice Estook, con su causa probable. Llega con Recuentos y mermas.
+            contra lo que dice Estook, con su causa probable. Llega con Recuentos.
           </li>
         </ul>
       </Tarjeta>
@@ -273,5 +303,139 @@ function LineaDeAtencion({
         </Boton>
       </div>
     </div>
+  );
+}
+
+/**
+ * La merma de la jornada · el cuadrado que pedía la lista.
+ *
+ * ── Por qué esto es una tarjeta y no una fila más ───────────────────────────
+ *
+ * Porque la merma es lo único de esta pantalla que **se escribe**, no que se lee.
+ * Lo demás son avisos que Estook calcula y que llevan a una ficha; esto es un
+ * botón que hay que poder pulsar en mitad de un servicio, y una fila de lista no
+ * es un botón.
+ *
+ * La tira de catorce días va debajo de la cifra porque una cifra sola no dice
+ * nada: doce euros de merma es mucho o poco según lo de siempre.
+ */
+function MermaDeLaJornada() {
+  const { cliente } = usarSesion();
+  const navegar = useNavigate();
+  const [apuntando, setApuntando] = useState(false);
+
+  const consulta = useQuery({
+    queryKey: ['merma_de_hoy'],
+    queryFn: async (): Promise<MermaDeHoy> => {
+      const respuesta = await cliente.consultar<MermaDeHoy>('merma_de_hoy');
+      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
+      return respuesta.datos;
+    },
+  });
+
+  const datos = consulta.data;
+  const conPrecios = datos?.puedeVerPrecios === true;
+
+  return (
+    <Tarjeta
+      titulo="Merma de hoy"
+      origen={
+        conPrecios && datos.mediaCentimos !== null && datos.mediaCentimos !== undefined
+          ? `La media de estos catorce días es ${comoDinero(datos.mediaCentimos)}`
+          : 'Lo que ha salido de cámara sin venderse'
+      }
+      accion={
+        <Boton
+          tono="texto"
+          onClick={() => {
+            navegar('/inventario/movimientos/mermas');
+          }}
+        >
+          Ver a detalle
+        </Boton>
+      }
+    >
+      {datos === undefined ? (
+        <Cargando que="la merma" lineas={2} />
+      ) : (
+        <>
+          {conPrecios ? (
+            <Cifra
+              etiqueta="Hoy"
+              valor={datos.deHoy.valorCentimos ?? 0}
+              formato={(v) => comoDinero(v)}
+              origen={
+                datos.deHoy.cuantas === 0
+                  ? 'Nada apuntado hoy'
+                  : `${datos.deHoy.cuantas} ${datos.deHoy.cuantas === 1 ? 'apunte' : 'apuntes'}`
+              }
+            />
+          ) : (
+            <Cifra
+              etiqueta="Apuntes de hoy"
+              valor={datos.deHoy.cuantas}
+              formato={(v) => String(v)}
+              origen="Lo que vale no está en tu acceso"
+            />
+          )}
+
+          {datos.deHoy.loPeor !== null && (
+            <p className="mt-e1 text-secundario text-texto-suave">
+              Lo más caro: {datos.deHoy.loPeor.producto}
+              {conPrecios ? ` · ${comoDinero(datos.deHoy.loPeor.valorCentimos)}` : ''}
+            </p>
+          )}
+
+          <div className="mt-e3">
+            <Tira
+              titulo="Merma de los últimos catorce días"
+              puntos={datos.dias.map((dia) => ({
+                valor: conPrecios ? (dia.valorCentimos ?? 0) : dia.cuantas,
+                cuando: comoSeLeeLaFecha(dia.fecha),
+              }))}
+              formato={(v) => (conPrecios ? comoDinero(v) : String(v))}
+              color="var(--color-app-inventario)"
+              alto={44}
+            />
+          </div>
+
+          {datos.puedeApuntar && (
+            <div className="mt-e3 flex flex-wrap gap-e2">
+              <Boton
+                tono="principal"
+                icono={<IconoAnadir size={18} />}
+                onClick={() => {
+                  setApuntando(true);
+                }}
+              >
+                Apuntar merma
+              </Boton>
+              {/*
+                Y la cámara, apagada y con su motivo. Leer una foto y sacar de ahí
+                el producto y el peso lo hace Fogón, que es M22. Se deja el sitio
+                hecho —saber que va a poder hacerse cambia cómo se usa esto hoy— y
+                **no se puede pulsar**: un botón que promete algo y no lo hace es
+                el fallo que este proyecto persigue desde M4.
+              */}
+              <Boton
+                tono="secundario"
+                disabled
+                icono={<IconoCamara size={18} />}
+                onClick={() => undefined}
+              >
+                Con una foto · M22
+              </Boton>
+            </div>
+          )}
+
+          <ApuntarMerma
+            abierta={apuntando}
+            alCerrar={() => {
+              setApuntando(false);
+            }}
+          />
+        </>
+      )}
+    </Tarjeta>
   );
 }

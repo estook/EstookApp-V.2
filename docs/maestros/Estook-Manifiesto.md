@@ -112,7 +112,7 @@ Y un aviso claro: leer directamente la base de datos de otro fabricante puede ir
 ## La solución: un botón, tres vías por debajo
 
 ```
-Ajustes → Mi TPV → [ Conectar mi TPV ]
+Ajustes → Tus ventas → Lo trae mi TPV → [ Conectar ]
                   │
           ¿cual usas? (lista con logos)
                   │
@@ -275,6 +275,8 @@ En móvil, tres posiciones abajo y la rueda de apps en el centro:
 
 La rueda se abre sobre fondo desenfocado, con un sector por app, su icono, su color y su contador de pendientes. Las apps que el rol no tiene **no aparecen** y los sectores se reparten. Se puede pulsar, o mantener el dedo y arrastrar. Pulsación larga sobre el botón central: acciones rápidas del rol.
 
+**En el centro de la rueda, el logotipo del Panel**, y pulsarlo lleva al Panel: desde cualquier app, el camino de vuelta está siempre en el mismo sitio. La rueda sale **abajo, a mano del pulgar**, y **no tiene botón de cerrar**: se cierra pulsando fuera o con Esc. Un botón de cerrar ocupaba justo el sitio donde va el dedo.
+
 Dentro de una app, en móvil, la barra de abajo pasa a ser la de esa app, con sus **destinos** —los sitios que contestan una pregunta— y nada más:
 
 ```
@@ -340,24 +342,31 @@ La zona de atención **también es distinta por rol**. Un cocinero no ve «marge
 
 Una rejilla de widgets que cada uno coloca a su gusto, arrastrando. La configuración se guarda **por persona y por dispositivo**: el gerente puede tener un Panel en el ordenador y otro distinto en el móvil.
 
-| Widget                | Qué enseña                                                          |
-| --------------------- | ------------------------------------------------------------------- |
-| Cifras del día        | Ventas, materia prima, personal, margen, con objetivo y comparación |
-| Estook Pulse          | La salud del negocio con su explicación                             |
-| Calendario            | Lo de hoy y lo de mañana: turnos, entregas, limpiezas, tareas       |
-| Mi turno              | A qué hora entro, con quién, y qué me toca                          |
-| Avisos de Fogón       | Tarjetas con acción y con ✕                                         |
-| Hoy hay que hacer     | Lo pendiente, de todas las apps                                     |
-| Gráfica de ventas     | Semana, mes o año                                                   |
-| Dónde se va el margen | Las cuatro fugas principales                                        |
-| Bajo mínimo           | Lo que hay que pedir, con su previsión de agotamiento               |
-| Caducidades           | Lo que hay que sacar antes del jueves                               |
-| Fichas nuevas         | Lo que hay que aprenderse (cocina)                                  |
-| Platos bajo objetivo  | Los que están dejando poco                                          |
-| Competencia y reseñas | Una línea cada uno                                                  |
-| Salud de los datos    | Lo que le falta a Estook para funcionar bien                        |
-| Accesos rápidos       | Los botones que cada uno quiera                                     |
-| Fijados               | Lo que cada uno haya clavado desde cualquier app                    |
+| Widget                | Qué enseña                                                            |
+| --------------------- | --------------------------------------------------------------------- |
+| Cifras del día        | Ventas, materia prima, personal, margen, con objetivo y comparación   |
+| Estook Pulse          | La salud del negocio con su explicación                               |
+| Calendario            | Lo de hoy y lo de mañana: turnos, entregas, limpiezas, tareas         |
+| Mi turno              | A qué hora entro, con quién, y qué me toca                            |
+| Avisos de Fogón       | Tarjetas con acción y con ✕                                           |
+| Hoy hay que hacer     | Lo pendiente, de todas las apps                                       |
+| Gráfica de ventas     | Semana, mes o año                                                     |
+| Dónde se va el margen | Las cuatro fugas principales                                          |
+| Bajo mínimo           | Lo que hay que pedir, con su previsión de agotamiento                 |
+| Caducidades           | Lo que hay que sacar antes del jueves                                 |
+| Fichas nuevas         | Lo que hay que aprenderse (cocina)                                    |
+| Platos bajo objetivo  | Los que están dejando poco                                            |
+| Competencia y reseñas | Una línea cada uno                                                    |
+| Salud de los datos    | Lo que le falta a Estook para funcionar bien                          |
+| Acciones rápidas      | Los botones que cada uno quiera                                       |
+| Fijados               | Lo que cada uno haya clavado desde cualquier app                      |
+| Fichar                | Entrar y salir del turno, con lo que llevas hoy y esta semana         |
+| Quién está trabajando | Quién ha fichado y desde qué hora, y quién falta por llegar           |
+| Personas              | El equipo, con quién está en línea y cuándo entró cada uno            |
+| Merma de hoy          | Lo tirado hoy, los catorce días de antes y apuntar una en tres toques |
+| Ventas de hoy         | Lo que dice el cierre de caja: facturado, ticket medio y food cost    |
+
+**Lo que se quita se vuelve a poner** desde «Añadir», que enseña todos los widgets que el rol puede tener, puestos o no. Y **el Panel se guarda en el servidor**: si un cambio no se ha podido guardar, lo dice en rojo y deja reintentar. Un Panel que se deshace al recargar sin decir nada es peor que uno que no se puede mover.
 
 ## Fijar cualquier cosa al Panel
 
@@ -376,6 +385,8 @@ Nadie empieza con el Panel vacío:
 - **Camarero:** mi turno, menú del día, agotados, alérgenos, mis horas.
 - **Area manager:** comparativa de sus locales, lo que se sale de la media, calendario de sus locales.
 - **Gestoría:** periodos cerrados, exportaciones, avisos de cuadre.
+
+Y a todo el que ficha, **Fichar arriba del todo**: es lo primero que se hace al llegar, y si el horario dice que entras en cinco minutos, el widget lo dice. Quien puede apuntar mermas —camareros incluidos— lo tiene a un toque, desde el widget o desde las acciones rápidas.
 
 > **Regla sin excepción:** cada número lleva debajo, en letra pequeña, de dónde sale y de qué periodo es.
 
@@ -437,6 +448,8 @@ Una conversación corta, una pregunta por pantalla, con botones grandes y la opc
 7. **Invita a tu equipo**, si quieres ahora.
 8. **El paseo:** cinco pantallas cortas sobre el Panel, la rueda, Generar PDF, el chat y Fogón.
 
+Y en la última pantalla, una pregunta más, la única que no hace falta para empezar: **«¿Cómo entran tus ventas?»** —«Lo apunto yo» o «Lo trae mi TPV»—. No es un paso: si se deja sin contestar se entra igual, y la pregunta la vuelve a hacer el Panel. Se cambia cuando se quiera en Ajustes ([decisión 0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)).
+
 > El onboarding pregunta por el local y enseña a usar la app. **No pide catálogo, ni proveedores, ni recetas.** Eso viene después, cuando ya se entiende para qué sirve.
 
 ## Los datos de ejemplo: pocos y con un botón para quitarlos
@@ -449,19 +462,25 @@ Una app vacía el primer día es la peor primera impresión posible. Y una app l
 - Un solo botón, **«Quitar los ejemplos»**, los borra todos de golpe.
 - Al crear el primer producto de verdad, Estook lo pregunta.
 
-## Conectar tu TPV · el segundo día, no el primero
+## Cómo entran tus ventas · y la conexión, el segundo día
 
-Pedirle credenciales de otro programa en el minuto dos es la forma más rápida de asustar a un gerente. Por eso, al terminar el paseo aparece una tarjeta fija en el Panel que no se va hasta que se resuelve:
+Pedirle credenciales de otro programa en el minuto dos es la forma más rápida de asustar a un gerente. Y hay locales que **no van a conectar nada nunca**: un bar con una caja de veinte años. Por eso lo que se pregunta no es «conecta tu TPV», sino **cómo entran las ventas**, y hay dos respuestas buenas:
 
 ```
 ┌──────────────────────────────────────────────┐
-│ CONECTA TUS VENTAS                           │
-│ Trae tu carta y tus ventas automaticamente.  │
-│ Se hace una vez y son cinco minutos.         │
+│ ¿COMO ENTRAN TUS VENTAS?                     │
 │                                              │
-│ [ Conectar ahora ]    [ Recordarmelo ]       │
+│ ( Lo apunto yo )     ( Lo trae mi TPV )      │
+│  Al cerrar la caja    Dime cual. Mientras    │
+│  escribo el total,    no este conectado,     │
+│  o subo el fichero    se cierra a mano igual │
+│  de ventas del TPV                           │
+│                                              │
+│ [ Recuerdamelo ]  Se puede cambiar en Ajustes│
 └──────────────────────────────────────────────┘
 ```
+
+Se hace al final del alta y, si se dejó, en esta tarjeta del Panel, **que se va en cuanto se contesta**. Las dos respuestas acaban en el mismo sitio —el cierre de caja de cada día—, así que cambiar de camino no pierde nada. La lista de TPV no promete conexión: dice cuál tienes, y la conexión de cada uno llega cuando esté verificada ([decisión 0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)).
 
 ## El asistente, en cuatro pantallas
 
@@ -585,9 +604,11 @@ La pantalla de inicio de la app: lo que hay que atender ahora. Bajo mínimo **co
 
 Cada producto guarda nombre, categoría, foto, unidad de compra («caja 3 kg»), unidad de uso (g/ml/ud), factor, rendimiento, peso variable, código de barras, tipo impositivo, alérgenos, mínimo en cámara y proveedor principal.
 
-> **Y no se pregunta todo eso al darlo de alta.** El alta pregunta tres cosas —**cómo se llama, en qué se mide y lo que cuesta esa medida**— y con eso el factor es 1 y el precio del kilo **es** el coste por unidad de uso. Lo del envase —«caja de 5 kg», cuánto trae, cuánto se aprovecha— vive plegado debajo, y se despliega solo cuando el catálogo propone uno o cuando alguien lo pide.
+> **Y no se pregunta todo eso al darlo de alta.** El alta pregunta, con estas palabras: **producto**, **en qué se mide** (kg, L, unidades…), **cuánto trae** —en unidades, «cuántas unidades vienen»— y **el precio de todo eso**. Debajo, la cuenta hecha: «sale a 1,20 €/kg». Y dos cosas que antes faltaban: **cuánto hay ahora**, que entra en el libro como su primera línea, y **cuándo caduca lo más próximo**. Proveedor y categoría, opcionales.
 >
-> La razón es que preguntarlo todo obliga a hacer una multiplicación para dar de alta un saco de harina, y **cuántos gramos lleva una ración no es del producto: es de la ficha técnica**. Está razonado en la [decisión 0021](../decisiones/0021-el-producto-se-mide-en-una-unidad.md).
+> **Cuánto se aprovecha no se pregunta**: nadie lo sabe al dar de alta, y un número inventado ahí encarece o abarata todas las fichas que lo lleven. Nace en el 100 % y lo corrige la calibración, con recuentos de verdad ([decisión 0028](../decisiones/0028-el-alta-pregunta-cuanto-hay.md)). Y **cuántos gramos lleva una ración no es del producto: es de la ficha técnica** ([decisión 0021](../decisiones/0021-el-producto-se-mide-en-una-unidad.md)).
+
+**En la lista, dos botones por producto:** un **+ verde** —ha llegado género, con el precio de siempre ya escrito; si ha cambiado, se guarda como precio nuevo desde hoy y el de antes queda en el histórico— y un **− rojo** —ha salido, y se dice por qué: gastado o vendido, una merma con su motivo, a otro local u otra cosa—. Todo acaba en el libro de movimientos, con quién y cuándo. Y en la ficha, un enlace pequeño: **«¿No cuadra lo que hay? Corrígelo»**.
 
 > **Coste real por unidad de uso = precio ÷ (factor × rendimiento)**
 > Es lo que usan los escandallos. El precio del formato no costea nunca.
@@ -846,6 +867,8 @@ HORARIO PROPUESTO
 
 > **Nunca se publica automáticamente.** El cuadrante propuesto nace en borrador, y publicar es un acto de una persona.
 
+**Lo que ya tiene para empezar, desde M6½:** el **horario de siempre** de cada persona —qué días entra y a qué hora— y **sus horas de verdad**, fichadas, frente a las de su contrato, con las extra de cada uno. Es lo primero que un cuadrante necesita saber, y lo que Fogón leerá para proponerlo. Del mismo horario salen los avisos: **«mañana entras a las 9»** la víspera y **«entras en 5 minutos: ficha ya»** al llegar. Hoy el widget de Fichar ya lo dice al abrir el Panel; mandarlo al móvil sin abrir la app es M25.
+
 ---
 
 # 16 · APP · EQUIPO
@@ -860,18 +883,25 @@ Ficha con rol, alcance, contacto, contrato y sus documentos. Alta por invitació
 
 El **coste por hora** vive aquí, con vigencia y con permiso propio. Y para quien no quiera meter sueldos, la alternativa por defecto: **coste medio por puesto**, que da un porcentaje de personal correcto sin datos individuales.
 
+**La ficha de cada persona** se abre desde donde aparezca su nombre —la lista del equipo, el widget de Personas, Equipo › Hoy— y enseña: su puesto, si está **en línea** o **cuándo entró por última vez**, sus horas de hoy, de la semana y del mes, sus últimos fichajes y su horario de siempre.
+
+**Lo que cobra, aparte y privado.** Por hora, o al mes con sus horas de contrato —y entonces Estook lo reparte: `sueldo ÷ (horas semanales × 52 ÷ 12)`—. **Cada uno ve lo suyo.** El de los demás lo ve y lo pone solo quien tiene el permiso de coste de personal, **nunca hacia arriba** —un gerente no ve ni pone lo que cobra quien está por encima de él— y **nadie se pone el suyo**. A quien no tiene ese permiso el dato no le llega: no se esconde, no se envía.
+
+El acceso de cada uno —PIN nuevo, contraseña nueva, retirar— va dentro de un solo botón, **«Acceso»**, y retirar pregunta antes. En la lista, en vez de «dentro», se lee **«en línea»** o **la última vez que entró**.
+
 ## Fichajes
 
-Se ficha en el local, y en dos toques:
+Se ficha **en un toque**, desde el Panel o desde Equipo › Hoy: «Fichar la entrada», «Fichar la salida».
 
-- **En un dispositivo del local en modo quiosco:** una tablet o un PC viejo con Estook en pantalla de PIN, sin acceso a nada más.
-- **Desde el móvil, solo si el local lo activa:** con una foto del puesto de trabajo como comprobante.
+- **Se pide la ubicación al entrar y al salir**, y se guarda a cuántos metros del local se hizo. El local se marca una vez en Ajustes —«estoy en el local: márcalo»— con el radio que acepta.
+- **Nunca bloquea.** Si la persona no da permiso, si no hay señal o si el aparato no la da, se ficha igual y **queda escrito por qué**. Un fichaje hecho lejos no se rechaza: se señala, y lo mira quien lleva el equipo.
+- **Nada de huella ni de biometría.** Y en un aparato del local en modo quiosco, con PIN, cuando llegue.
 
-> Sobre la foto, con claridad: **es del puesto de trabajo, nunca de la persona.** No es biometría, no se compara con nada y no identifica a nadie: solo demuestra que quien fichó estaba allí. Se conserva 90 días y se borra sola. Nada de geolocalización ni de huella.
+**Cada uno ve lo suyo. Quien lleva a otros, lo de los suyos**: el jefe de cocina, la cocina; el jefe de sala, la sala; el gerente y quien está por encima, todos. Lo decide la base de datos, no la pantalla ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)).
 
-**No se ficha desde casa.** El registro de jornada es inalterable, se conserva cuatro años, y las correcciones son registros nuevos con autor y motivo.
+**El registro no se borra.** Se corrige —la salida que alguien olvidó, una entrada mal puesta— **con nombre y motivo**, y el antes y el después quedan en la auditoría. Se conserva cuatro años.
 
-Y el número que casi nadie enseña: **lo planificado contra lo fichado**. «Planificaste 32 horas y se ficharon 38», con su desglose y el coste de la diferencia.
+**Resumen**, para quien lleva gente: las horas de cada uno en la semana, el mes o los últimos treinta días, **frente a su contrato**, con las extra y los turnos de más de doce horas señalados; y el coste, si se tiene permiso para verlo. Y el número que casi nadie enseña, cuando haya cuadrante (M14): **lo planificado contra lo fichado**. «Planificaste 32 horas y se ficharon 38», con su desglose y el coste de la diferencia.
 
 ## Ausencias
 
@@ -901,6 +931,8 @@ Se abre sola con el primer fichaje o la primera venta importada. Fija la **fecha
 
 > **Regla que no se rompe:** una jornada estimada no entra en la desviación de género sin avisar. Sale sombreada y etiquetada.
 
+**Sin TPV conectado, la caja se cierra a mano, y en un minuto.** El total del día, cómo se cobró —efectivo, tarjeta, otros—, tickets y comensales, y si se quiere **qué platos salieron y cuántos**. O se sube el CSV que saca el TPV y se rellena solo. Con eso ya hay ticket medio y, al cruzarlo con el libro de movimientos, **food cost del día**. La foto del Z llega con Fogón (M22). Negocio › Ventas lo lee de ahí, sin volver a escribirlo.
+
 ## Delivery
 
 Los pedidos que entran por los canales de reparto: qué está entrando ahora, de qué canal, y con qué comisión. **Uber Eats el primero**, y detrás Glovo y Just Eat.
@@ -923,6 +955,8 @@ Y la **trazabilidad de lote**: de un lote concreto, en qué elaboraciones entró
 4. Repaso y firma con PIN.
 
 Al cerrar se calcula el consumo teórico, se descuenta del inventario, se guarda la jornada con su origen y fiabilidad, y se dispara el análisis nocturno de Fogón. **Reabrir exige motivo escrito y queda en auditoría.**
+
+**Lo que ya existe es el primer paso**: la caja de cada día, a mano o con CSV, con su origen guardado. Los platos que se apuntan quedan listos para cruzarse con la carta y sus fichas —y de ahí con el inventario— cuando existan (M9 y M10); descontar el consumo teórico es M20.
 
 ---
 
@@ -1038,6 +1072,8 @@ Español de España, directo, máximo cuatro frases. Al gerente le habla de todo
 - «Llevas tres mañanas con la cámara de pescado por encima de 4 °C.» → _Ver registros_
 
 **Y por voz.** En cocina, con las manos ocupadas, la voz es la interfaz natural: apuntar una merma, registrar una temperatura, preguntar un gramaje, dejar una incidencia.
+
+**Y la aplicación habla igual que Fogón.** Un título dice qué es y un botón dice qué hace. **Nada de párrafos que expliquen lo que ya se ve**: «Elige tu tema» y las opciones, no tres líneas sobre qué es un tema. Si algo necesita explicación, se explica una vez, corta y en su sitio; lo demás es ruido que enseña a no leer.
 
 ---
 
@@ -1179,7 +1215,7 @@ Y hay una razón de mercado, no solo técnica: **el TPV líder de España se int
 
 # 26 · Ajustes
 
-Apps (encender y apagar partes, con el aviso concreto de qué pasa; se ocultan, no se borran) · Local y marca · **Objetivos** (materia prima, personal y margen por familia: son los que ponen en verde o rojo los semáforos de toda la app) · Mi TPV · **Integraciones** · Organización (locales, áreas, area managers y catálogo maestro, solo con más de un local) · Mi acceso (contraseña, PIN, doble factor, mis dispositivos) · Avisos y contacto · Plan y facturación.
+Apps (encender y apagar partes, con el aviso concreto de qué pasa; se ocultan, no se borran) · Local y marca · Tema y tamaño de letra · **Objetivos** (materia prima, personal y margen por familia: son los que ponen en verde o rojo los semáforos de toda la app) · **Tus ventas** (a mano o con el TPV, y cuál) · **Dónde está el local** (para los fichajes, con su radio) · **Integraciones** · Organización (locales, áreas, area managers y catálogo maestro, solo con más de un local) · Mi acceso (contraseña, PIN, doble factor, mis dispositivos) · Avisos y contacto · Plan y facturación.
 
 ---
 

@@ -18,6 +18,10 @@ import {
 import { QuienTieneAcceso } from './QuienTieneAcceso.tsx';
 import { Delivery } from '../servicio/Delivery.tsx';
 import { Inventario } from '../inventario/Inventario.tsx';
+import { EquipoHoy } from '../equipo/EquipoHoy.tsx';
+import { ResumenDelEquipo } from '../equipo/ResumenDelEquipo.tsx';
+import { CierreDeCaja } from '../servicio/CierreDeCaja.tsx';
+import { Ventas } from '../servicio/Ventas.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -198,8 +202,11 @@ function Dentro({
  *
  * Lo que ya funciona de verdad, y de que modulo es cada cosa:
  *
- *   Inventario · Hoy, Productos, Movimientos, Compras     M6
+ *   Inventario · Hoy, Productos, Movimientos, Compras     M6 · con Mermas en M6½
  *   Equipo · Personas                                     M4 · dar acceso y quitarlo
+ *   Equipo · Hoy y Resumen                                M6½ · fichajes y horas
+ *   Servicio · Jornada · Cierre                           M6½ · el cierre de caja
+ *   Negocio · Ventas                                      M6½ · lo que entra
  *
  * El resto lleva su `TodaviaNo` con **el modulo del destino**, que sale del
  * catalogo de navegacion y no de una lista escrita aparte. Antes habia una tabla
@@ -223,6 +230,15 @@ function Contenido({
   if (app.id === 'equipo' && destino.id === 'personas') {
     return <QuienTieneAcceso vista={vista?.id ?? ''} />;
   }
+  if (app.id === 'equipo' && destino.id === 'hoy') return <EquipoHoy />;
+  if (app.id === 'equipo' && destino.id === 'resumen') return <ResumenDelEquipo />;
+
+  // El cierre es una **vista** de la jornada: el resto de la jornada —«En
+  // marcha»— sigue siendo M16 y cae abajo, a su cartel.
+  if (app.id === 'servicio' && destino.id === 'jornada' && vista?.id === 'cierre') {
+    return <CierreDeCaja />;
+  }
+  if (app.id === 'negocio' && destino.id === 'ventas') return <Ventas />;
 
   /*
     Delivery tiene pantalla **aunque su destino lleve módulo**, y no es una

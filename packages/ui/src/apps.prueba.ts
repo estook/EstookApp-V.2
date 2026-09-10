@@ -304,15 +304,22 @@ describe('lo construido y lo que llega', () => {
     expect(destinosConstruidos(laApp('carta'))).toHaveLength(0);
   });
 
-  it('Equipo tiene solo Personas construida, que la trajo M4', () => {
-    expect(destinosConstruidos(laApp('equipo')).map((d) => d.id)).toEqual(['personas']);
+  it('Equipo tiene Hoy, Personas y Resumen construidos', () => {
+    // Personas la trajo M4. Hoy y Resumen, M6½: con los fichajes ya se puede
+    // contestar quién está y cuántas horas lleva cada uno. Horarios sigue en M14.
+    expect(destinosConstruidos(laApp('equipo')).map((d) => d.id)).toEqual([
+      'hoy',
+      'personas',
+      'resumen',
+    ]);
   });
 
   it('donde entra una app es su primer destino construido', () => {
     expect(dondeEntra(laApp('inventario'))?.id).toBe('hoy');
-    // Equipo entra en Personas, que es la segunda de la lista: la primera —«Hoy»—
-    // es M13 y entrar ahi seria entrar en un cartel.
-    expect(dondeEntra(laApp('equipo'))?.id).toBe('personas');
+    // Equipo entra en Hoy, que ya no es un cartel: quién ha fichado y quién no.
+    expect(dondeEntra(laApp('equipo'))?.id).toBe('hoy');
+    // Y Servicio entra en la jornada por el cierre, que es lo que funciona.
+    expect(rutaDe(laApp('servicio'))).toBe('/servicio/jornada/cierre');
   });
 
   it('la ruta lleva la primera vista cuando el destino tiene vistas', () => {

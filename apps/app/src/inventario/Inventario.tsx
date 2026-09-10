@@ -28,6 +28,7 @@ import type { MisProductos } from './contrato.ts';
  * | **Hoy**         | ¿Qué tengo que atender ahora mismo?               |
  * | **Productos**   | ¿Qué hay en cámara, cuánto cuesta y cuánto dura?  |
  * | **Movimientos** | ¿Qué ha entrado, qué ha salido y quién lo apuntó? |
+ * | **Mermas**      | ¿Cuánto se me va sin venderse, y en qué?          |
  * | **Compras**     | ¿A quién se lo compro y a qué precio?             |
  *
  * Y sobreviven a M7 y M8 sin volver a inventar un «Más»: los pedidos y las
@@ -64,6 +65,19 @@ const Movimientos = lazy(async () => {
   return { default: modulo.Movimientos };
 });
 
+/**
+ * Las mermas, aparte del resto de Movimientos.
+ *
+ * Es una **vista** de Movimientos —la merma es una salida de género con motivo, no
+ * otra app— pero la pantalla no se parece: lleva sus totales por partida, sus
+ * filtros y su exportación. Cargarla con el libro sería bajar todo eso para
+ * quien solo quiere ver lo que entró ayer.
+ */
+const Mermas = lazy(async () => {
+  const modulo = await import('./Mermas.tsx');
+  return { default: modulo.Mermas };
+});
+
 export function Inventario({
   destino,
   vista,
@@ -89,9 +103,14 @@ export function Inventario({
     <>
       {destino === 'hoy' && <Hoy alAbrirProducto={setProductoAbierto} />}
       {destino === 'productos' && <Productos vista={vista} alAbrirProducto={setProductoAbierto} />}
-      {destino === 'movimientos' && (
+      {destino === 'movimientos' && vista !== 'mermas' && (
         <Suspense fallback={<Cargando que="el libro de movimientos" />}>
           <Movimientos vista={vista} alAbrirProducto={setProductoAbierto} />
+        </Suspense>
+      )}
+      {destino === 'movimientos' && vista === 'mermas' && (
+        <Suspense fallback={<Cargando que="las mermas" />}>
+          <Mermas alAbrirProducto={setProductoAbierto} />
         </Suspense>
       )}
       {destino === 'compras' && <Proveedores />}

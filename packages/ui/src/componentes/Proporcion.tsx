@@ -32,6 +32,19 @@ export interface Trozo {
   readonly cuantos: number;
   /** El tono, de los de B1. `marca` usa el acento de la aplicación. */
   readonly tono: 'bien' | 'atencion' | 'mal' | 'info' | 'marca' | 'neutro';
+  /**
+   * Cómo se escribe la cifra debajo, si no es el número tal cual.
+   *
+   * ── Por qué esto hace falta ───────────────────────────────────────────────
+   *
+   * Porque la barra reparte **céntimos** en cuanto se usa para dinero, y «14350
+   * Pérdida» no es una cifra: es la que se guarda. La proporción necesita el
+   * número crudo para calcular el ancho, y la lista de debajo necesita el número
+   * escrito como se lee. Son dos cosas distintas del mismo dato, y por eso van en
+   * dos campos en vez de convertir aquí —que obligaría a que este componente
+   * supiera de dinero, y no sabe—.
+   */
+  readonly comoSeLee?: string;
 }
 
 const FONDO: Record<Trozo['tono'], string> = {
@@ -85,7 +98,8 @@ export function Proporcion({ titulo, trozos, soloLaBarra = false }: ProporcionPr
                 className={clases('size-[10px] shrink-0 rounded-redondo', FONDO[trozo.tono])}
               />
               <span className="text-texto-suave">
-                <strong className="text-texto">{trozo.cuantos}</strong> {trozo.que}
+                <strong className="text-texto">{trozo.comoSeLee ?? trozo.cuantos}</strong>{' '}
+                {trozo.que}
               </span>
             </li>
           ))}

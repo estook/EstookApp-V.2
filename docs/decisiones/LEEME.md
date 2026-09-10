@@ -33,3 +33,9 @@ alguien se preguntara «por que esta hecho asi».
 | **0020** | Un catalogo de acciones, y una accion es una direccion            |
 | **0021** | El producto se mide en una unidad; los gramajes son de la ficha   |
 | **0022** | El reparto tiene sitio antes que conexion; Uber Eats el primero   |
+| **0023** | Fogon nunca arma su contexto en el navegador                      |
+| **0024** | El color del local pinta la app, y hay dos temas                  |
+| **0025** | Fichar pide donde, y no bloquea nunca                             |
+| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe       |
+| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo   |
+| **0028** | El alta de producto pregunta cuanto hay, no cuanto se aprovecha   |

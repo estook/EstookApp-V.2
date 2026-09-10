@@ -1,4 +1,4 @@
-import type { PermisoDeApp } from '@estook/permisos';
+import type { Permiso, PermisoDeApp } from '@estook/permisos';
 import { MODULOS } from '../apps.ts';
 
 /**
@@ -65,8 +65,17 @@ export interface Widget {
    * piden uno **no se ofrecen** a quien no lo tiene: un cocinero no ve en el
    * catalogo un widget de margen, ni apagado, porque no es que le falte un modulo,
    * es que no es para el.
+   *
+   * ── Y por que es `Permiso` y no `PermisoDeApp` ─────────────────────────────
+   *
+   * Porque hay widgets cuyo publico **no coincide con ninguna app**. Fichar lo
+   * hace un cocinero, que no tiene la app Equipo: su permiso es `accion.fichar`.
+   * Y las ventas del dia las ve un jefe de sala, que no tiene la app Negocio: su
+   * permiso es `dato.ventas`. Limitar esto a las ocho apps obligaba a colgar cada
+   * widget de la app mas parecida, y entonces la mitad de la plantilla no veia el
+   * boton que existe para ella.
    */
-  readonly permiso: PermisoDeApp | null;
+  readonly permiso: Permiso | null;
   /** Los tamanos que admite. El primero es el que se pone al anadirlo. */
   readonly tamanos: readonly TamanoDeWidget[];
   /** Si todavia no esta construido, el modulo que lo trae. */
@@ -132,11 +141,63 @@ export const WIDGETS: readonly Widget[] = [
     permiso: null,
     tamanos: ['ancho', 'grande'],
   },
+  /**
+   * ── «Tu equipo» partido en dos, y el original fuera ───────────────────────
+   *
+   * Había un solo widget que enseñaba la plantilla entera en pastillas, y ocupaba
+   * media pantalla de un TPV para contestar algo que no se pregunta a diario:
+   * quién tiene acceso. Para eso se entra en Equipo.
+   *
+   * Lo que sí se pregunta cada mañana son **dos cosas distintas**, y por eso son
+   * dos widgets y cada uno se pone o no se pone:
+   *
+   *   `fichajes`  ¿quién está trabajando ahora, desde cuándo, y quién falta?
+   *   `personas`  ¿quién hay, quién está en línea, y cuándo se le vio?
+   *
+   * El de fichajes es el de un jefe de cocina a las siete de la tarde. El de
+   * personas es el de quien lleva el local y quiere saber a quién le falta
+   * estrenar el PIN. Juntos eran una tarjeta que no contestaba ninguna de las dos.
+   */
   {
-    id: 'mi-equipo',
-    nombre: 'Tu equipo',
-    queEnsena: 'Quién tiene acceso y quién no ha entrado todavía',
+    id: 'fichajes',
+    nombre: 'Quién está trabajando',
+    queEnsena: 'Quién ha fichado, desde cuándo, y quién todavía no',
     permiso: 'app.equipo',
+    tamanos: ['ancho', 'grande'],
+  },
+  {
+    id: 'personas',
+    nombre: 'Personas',
+    queEnsena: 'Tu equipo, quién está en línea y cuándo se le vio por última vez',
+    permiso: 'app.equipo',
+    tamanos: ['ancho', 'grande'],
+  },
+  /**
+   * Fichar, desde el Panel.
+   *
+   * ── Por qué esto es un widget y no una pantalla ───────────────────────────
+   *
+   * Porque un cocinero **no tiene la app Equipo**: la matriz de M1 no se la da, y
+   * con razón. Si fichar viviera solo dentro de Equipo, la mitad de la plantilla
+   * no podría fichar, que es justo la mitad que ficha.
+   *
+   * Así que vive donde vive todo el mundo cada mañana: el Panel. Su permiso es
+   * `accion.fichar`, que es exactamente quién lo necesita.
+   */
+  {
+    id: 'fichar',
+    nombre: 'Fichar',
+    queEnsena: 'Entrar y salir de tu turno, y las horas que llevas',
+    permiso: 'accion.fichar',
+    tamanos: ['chico', 'ancho'],
+  },
+  {
+    id: 'merma',
+    nombre: 'Merma',
+    queEnsena: 'Lo que se ha ido hoy sin venderse, y el botón para apuntarlo',
+    // Con el permiso de apuntar merma, y no con Inventario: el camarero no tiene
+    // la app y es quien rompe una copa.
+    permiso: 'accion.registrar_merma',
     tamanos: ['ancho', 'grande'],
   },
   {
@@ -146,16 +207,26 @@ export const WIDGETS: readonly Widget[] = [
     permiso: 'app.inventario',
     tamanos: ['ancho', 'grande'],
   },
-
-  // ── Y los que llegan con su modulo ─────────────────────────────────────────
+  /**
+   * Las ventas del día · **ya no espera a M20**.
+   *
+   * Estaba apagada con «llega con M20» porque la cifra iba a venir del TPV. Y el
+   * TPV es una conexión que media hostelería no va a hacer nunca, así que el
+   * widget habría seguido apagado para ellos para siempre.
+   *
+   * Desde M6½ la cifra sale del **cierre de caja**, que se apunta a mano, se sube
+   * de un CSV o se saca de una foto del Z. Cuando llegue el conector de M20, lo
+   * que traiga se guarda en la misma tabla y este widget no se entera.
+   */
   {
     id: 'ventas-de-hoy',
     nombre: 'Ventas de hoy',
-    queEnsena: 'Lo facturado del día, comparado con el mismo día de la semana pasada',
-    permiso: 'app.negocio',
+    queEnsena: 'Lo que ha entrado hoy, con lo que se ha gastado de género al lado',
+    permiso: 'dato.ventas',
     tamanos: ['chico', 'ancho'],
-    modulo: 'M20',
   },
+
+  // ── Y los que llegan con su modulo ─────────────────────────────────────────
   {
     id: 'pulse',
     nombre: 'Estook Pulse',
@@ -183,7 +254,7 @@ export const WIDGETS: readonly Widget[] = [
   {
     id: 'mi-turno',
     nombre: 'Mi turno',
-    queEnsena: 'A qué hora entro, con quién, y qué me toca',
+    queEnsena: 'Con quién trabajo hoy y qué me toca hacer',
     permiso: null,
     tamanos: ['chico', 'ancho'],
     modulo: 'M14',
@@ -250,11 +321,14 @@ export interface WidgetPuesto {
  * exista.
  */
 export const PANEL_DE_FABRICA: readonly WidgetPuesto[] = [
+  // Fichar va **primero**, y no es un detalle de orden: para media plantilla es
+  // lo primero que hace al abrir la aplicacion, y con el Panel de dos columnas en
+  // movil eso significa que tiene que estar arriba a la izquierda.
+  { id: 'fichar', tamano: 'chico' },
+  { id: 'valor-de-la-camara', tamano: 'chico' },
   { id: 'acciones-rapidas', tamano: 'ancho' },
   { id: 'caducidades', tamano: 'ancho' },
   { id: 'bajo-minimo', tamano: 'ancho' },
-  { id: 'valor-de-la-camara', tamano: 'chico' },
-  { id: 'cuanto-genero', tamano: 'chico' },
   { id: 'mis-apps', tamano: 'ancho' },
 ];
 
@@ -269,7 +343,7 @@ export const PANEL_DE_FABRICA: readonly WidgetPuesto[] = [
  */
 export function loQueSePuedePintar(
   puestos: readonly WidgetPuesto[],
-  tienePermiso: (permiso: PermisoDeApp) => boolean,
+  tienePermiso: (permiso: Permiso) => boolean,
 ): readonly WidgetPuesto[] {
   const vistos = new Set<string>();
 
@@ -291,7 +365,7 @@ export function loQueSePuedePintar(
 /** Los que se pueden anadir hoy: construidos y con permiso, y no puestos ya. */
 export function loQueSePuedeAnadir(
   puestos: readonly WidgetPuesto[],
-  tienePermiso: (permiso: PermisoDeApp) => boolean,
+  tienePermiso: (permiso: Permiso) => boolean,
 ): readonly Widget[] {
   const yaEsta = new Set(puestos.map((p) => p.id));
   return WIDGETS.filter(
@@ -303,7 +377,7 @@ export function loQueSePuedeAnadir(
 }
 
 /** Los que todavia no estan, para poder decir en que modulo llegan. */
-export function losQueLlegan(tienePermiso: (permiso: PermisoDeApp) => boolean): readonly Widget[] {
+export function losQueLlegan(tienePermiso: (permiso: Permiso) => boolean): readonly Widget[] {
   return WIDGETS.filter(
     (widget) =>
       widget.modulo !== undefined && (widget.permiso === null || tienePermiso(widget.permiso)),
@@ -327,8 +401,26 @@ export function losQueLlegan(tienePermiso: (permiso: PermisoDeApp) => boolean): 
  * Los que no son de ninguna app —las acciones rapidas, la rueda— no llevan
  * acento, y tampoco es un olvido: no cuentan nada de un sitio concreto.
  */
+/**
+ * De que app tira el acento de un widget cuyo permiso no es de una app.
+ *
+ * Fichar es de Equipo aunque su permiso sea `accion.fichar`, y la merma y las
+ * ventas cuentan cosas de Inventario y de Negocio. Sin esto saldrian en blanco, y
+ * el acento es lo que hace que el Panel se lea de un vistazo sin leer titulos.
+ */
+const DE_QUE_APP: Readonly<Record<string, PermisoDeApp>> = {
+  'accion.fichar': 'app.equipo',
+  'accion.registrar_merma': 'app.inventario',
+  'dato.ventas': 'app.negocio',
+  'dato.precio_de_compra': 'app.inventario',
+  'dato.coste_de_personal': 'app.equipo',
+};
+
 export function acentoDelWidget(id: string): string | undefined {
   const widget = widgetPorId(id);
-  if (widget?.permiso == null) return undefined;
-  return `var(--color-app-${widget.permiso.replace('app.', '')})`;
+  const permiso = widget?.permiso;
+  if (permiso == null) return undefined;
+  const deLaApp = permiso.startsWith('app.') ? (permiso as PermisoDeApp) : DE_QUE_APP[permiso];
+  if (deLaApp === undefined) return undefined;
+  return `var(--color-app-${deLaApp.replace('app.', '')})`;
 }

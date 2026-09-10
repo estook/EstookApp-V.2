@@ -93,7 +93,7 @@ export function BarraArribaMovil({
     <header
       className={clases(
         'sticky top-0 z-30 flex items-center gap-e1 border-b border-borde bg-superficie px-e2',
-        'h-[--alto-barra-movil] lg:hidden',
+        'h-[--alto-barra-movil] lg:hidden no-imprimir',
       )}
     >
       <DondeEstas local={local} locales={locales} alCambiar={alCambiarDeLocal} />

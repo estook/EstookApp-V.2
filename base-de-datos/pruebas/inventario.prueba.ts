@@ -556,6 +556,13 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     //
     // Con M4 (once), la 0019 (una), M5 (tres) y M6 (una) son dieciséis. Esta
     // prueba las lista enteras: una que aparezca sin estar aquí la pone en rojo.
+    //
+    // **M6½ añade una, y es a propósito: `a_quien_lleva`.** Decide de quién ve las
+    // horas cada uno —un jefe de cocina, a la cocina—, y para decidirlo tiene que
+    // leer las membresías de toda la organización, igual que `locales_visibles`.
+    // Sin privilegio, la política de `membresia` la llamaría a ella y volvería a
+    // consultar `membresia`: la misma recursión que obligó a M1 a hacer lo mismo.
+    // Son diecisiete.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -565,6 +572,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     ).map((f) => f.proname);
 
     expect(nombres).toEqual([
+      'a_quien_lleva',
       'abrir_demostracion',
       'abrir_sesion',
       'anotar_intento_de_contrasena',

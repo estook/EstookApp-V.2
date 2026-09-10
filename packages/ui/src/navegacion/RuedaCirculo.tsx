@@ -1,4 +1,5 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { IconoPanel } from '@estook/iconos';
 import { seEstaUsandoElTeclado } from './modalidad.ts';
 import type { App } from '../apps.ts';
 import { clases } from '../clases.ts';
@@ -35,6 +36,14 @@ export interface RuedaCirculoProps {
   readonly alSenalar: (indice: number) => void;
   readonly alElegir: (indice: number) => void;
   readonly alPulsarTecla: (evento: KeyboardEvent) => void;
+  /**
+   * Ir al Panel · lo que hace el centro de la rueda al tocarlo.
+   *
+   * Antes el centro decía «Arrastra o pulsa»: explicaba el gesto cada vez que se
+   * abría la rueda, y ocupaba el hueco que el pulgar busca primero. Ahora ese
+   * hueco lleva al Panel, que es la pantalla a la que más se vuelve.
+   */
+  readonly alIrAlPanel?: () => void;
 }
 
 export function RuedaCirculo({
@@ -45,9 +54,19 @@ export function RuedaCirculo({
   alSenalar,
   alElegir,
   alPulsarTecla,
+  alIrAlPanel,
 }: RuedaCirculoProps) {
   const trozos = sectores(apps.length);
   const [arrastrando, setArrastrando] = useState(false);
+  /**
+   * Si el dedo ha salido del centro durante el gesto.
+   *
+   * Es lo que separa **tocar el centro** —ir al Panel— de **arrastrar desde el
+   * centro** —abrir una app—. Los dos empiezan igual, con el dedo en el centro;
+   * solo el segundo lo saca. Y si se saca y se vuelve a meter, es que alguien se
+   * ha arrepentido a mitad de gesto: no se va a ningún sitio.
+   */
+  const [seHaMovido, setSeHaMovido] = useState(false);
   const lienzo = useRef<SVGSVGElement>(null);
 
   /**
@@ -88,6 +107,7 @@ export function RuedaCirculo({
         if (!arrastrando) return;
         const grados = bajoElDedo(evento);
         if (grados === null) return;
+        setSeHaMovido(true);
         const indice = sectorEn(grados, apps.length);
         if (indice !== null) alSenalar(indice);
       }}
@@ -149,23 +169,40 @@ export function RuedaCirculo({
 
       <button
         type="button"
-        // No entra en el recorrido de teclado: el `<svg>` de arriba ya es el
-        // menu, y tenerlo dos veces obligaria a tabular por lo mismo dos veces.
-        aria-hidden
-        tabIndex={-1}
+        // Ahora **sí** entra en el teclado: tiene algo que hacer —ir al Panel— y
+        // un botón que hace algo tiene que poder alcanzarse sin dedo (B8).
+        aria-label="Ir al Panel"
         onPointerDown={(evento) => {
           // Sin esto el dedo no «sale» nunca de este boton y arrastrar no va.
           evento.currentTarget.releasePointerCapture(evento.pointerId);
+          setSeHaMovido(false);
           setArrastrando(true);
+        }}
+        onClick={() => {
+          // Si el dedo salió del centro, esto era un arrastre y ya se ha resuelto
+          // al soltar: no se va al Panel encima.
+          if (seHaMovido) {
+            setSeHaMovido(false);
+            return;
+          }
+          alIrAlPanel?.();
         }}
         className={clases(
           'absolute left-1/2 top-1/2 grid -translate-x-1/2 -translate-y-1/2 place-items-center',
           'rounded-redondo bg-superficie shadow-s2 px-e3 text-center leading-tight',
           'h-[min(30vw,132px)] w-[min(30vw,132px)]',
-          arrastrando ? 'text-cuerpo font-semibold text-texto' : 'text-secundario text-texto-suave',
+          arrastrando && seHaMovido && señalada >= 0
+            ? 'text-cuerpo font-semibold text-texto'
+            : 'text-naranja',
         )}
       >
-        {arrastrando ? (apps[señalada]?.nombre ?? 'Arrastra o pulsa') : 'Arrastra o pulsa'}
+        {/* Mientras se arrastra, el nombre de la app que hay bajo el dedo; si no,
+            el icono del Panel, sin texto. */}
+        {arrastrando && seHaMovido && señalada >= 0 ? (
+          apps[señalada]?.nombre
+        ) : (
+          <IconoPanel size={36} />
+        )}
       </button>
     </div>
   );

@@ -309,7 +309,9 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
            and m.desde <= current_date
            and (m.hasta is null or m.hasta >= current_date)
            and (m.revocada_en is null or m.revocada_en > now())
-           and p.id in (select persona_id from estook.personas_visibles())
+           -- A quién lleva quien pregunta: un jefe de cocina, a la cocina. Lo
+           -- decide la base (estook.a_quien_lleva), no esta consulta.
+           and p.id in (select q.persona_id from estook.a_quien_lleva(${localId}::uuid) q)
          order by p.id, r.amplitud desc
       )
       select e.id::text as persona_id, e.nombre, e.apellidos, e.rol_nombre,
@@ -432,6 +434,12 @@ export const entradaResumenDelEquipo = z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)
       .optional(),
+    /**
+     * El periodo por su nombre. «Esta semana» empieza el lunes **del local** y
+     * «este mes» el día uno **del local**: por eso lo decide el servidor y no la
+     * pantalla, que puede estar en otro huso (regla 10).
+     */
+    periodo: z.enum(['semana', 'mes', '30']).optional(),
   })
   .strict();
 
@@ -461,7 +469,13 @@ export const resumenDelEquipo = consulta<EntradaResumenDelEquipo, SalidaResumenD
     // Por defecto, los últimos treinta días acabando en la jornada de hoy. Es lo
     // que se mira cuando alguien abre esta pantalla sin pedir nada.
     const hasta = entrada.hasta ?? reloj.jornada;
-    const desde = entrada.desde ?? masDias(fechaOperativa(hasta), -29);
+    const desde =
+      entrada.desde ??
+      (entrada.periodo === 'semana'
+        ? masDias(fechaOperativa(reloj.jornada), -(reloj.diaDeLaSemana - 1))
+        : entrada.periodo === 'mes'
+          ? `${reloj.jornada.slice(0, 7)}-01`
+          : masDias(fechaOperativa(hasta), -29));
 
     const conCostes = await contexto.sql<{ puede: boolean }[]>`
       select estook.puede_ver('dato.coste_de_personal', ${localId}::uuid) as puede
@@ -500,7 +514,7 @@ export const resumenDelEquipo = consulta<EntradaResumenDelEquipo, SalidaResumenD
            )
            and p.activa
            and (m.revocada_en is null or m.revocada_en > now())
-           and p.id in (select persona_id from estook.personas_visibles())
+           and p.id in (select q.persona_id from estook.a_quien_lleva(${localId}::uuid) q)
          order by p.id, r.amplitud desc
       )
       select e.id::text as persona_id, e.nombre, e.apellidos, e.rol_nombre,
@@ -659,9 +673,7 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
     const reloj = await elReloj(contexto, localId);
     const esMia = entrada.persona_id === contexto.personaId;
 
-    const permisos = await contexto.sql<
-      { costes: boolean; equipo: boolean; datos: boolean }[]
-    >`
+    const permisos = await contexto.sql<{ costes: boolean; equipo: boolean; datos: boolean }[]>`
       select estook.puede_ver('dato.coste_de_personal', ${localId}::uuid) as costes,
              estook.puede_editar('app.equipo', ${localId}::uuid) as equipo,
              estook.puede_ver('dato.datos_del_equipo', ${localId}::uuid) as datos
@@ -705,7 +717,7 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
         join estook.local l on l.id = ${localId}::uuid
        where p.id = ${entrada.persona_id}
          and m.organizacion_id = l.organizacion_id
-         and p.id in (select persona_id from estook.personas_visibles())
+         and p.id in (select q.persona_id from estook.a_quien_lleva(${localId}::uuid) q)
        order by p.id, r.amplitud desc
     `;
 
@@ -815,9 +827,7 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
          and m.revocada_en is null
     `;
     const puedePonerRetribucion =
-      permisos[0]?.costes === true &&
-      !esMia &&
-      (mio[0]?.amplitud ?? 0) > quien.amplitud;
+      permisos[0]?.costes === true && !esMia && (mio[0]?.amplitud ?? 0) > quien.amplitud;
 
     const retribucion = retribuciones[0];
     const laRetribucion =
@@ -841,7 +851,11 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
       ...(veLosDatos ? { correo: quien.correo } : {}),
       rol: quien.rol,
       rolNombre: quien.rol_nombre,
-      estado: !quien.vigente ? 'fuera' : quien.ultimo_acceso_en === null ? 'sin_estrenar' : 'dentro',
+      estado: !quien.vigente
+        ? 'fuera'
+        : quien.ultimo_acceso_en === null
+          ? 'sin_estrenar'
+          : 'dentro',
       enLinea: quien.en_linea,
       ultimoAccesoEn: quien.ultimo_acceso_en?.toISOString() ?? null,
       desde: quien.desde.toISOString().slice(0, 10),
@@ -868,8 +882,7 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
       ...(puedeVerCostes
         ? {
             retribucion: laRetribucion,
-            costeDelMesCentimos:
-              laRetribucion === null ? null : loQueCuesta(delMes, laRetribucion),
+            costeDelMesCentimos: laRetribucion === null ? null : loQueCuesta(delMes, laRetribucion),
           }
         : {}),
       puedeVerCostes,

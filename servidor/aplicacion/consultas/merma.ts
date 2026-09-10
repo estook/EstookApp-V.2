@@ -5,6 +5,7 @@ import {
   horaDeCorte,
   jornadaDe,
   masDias,
+  mediaPorDia,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 
@@ -85,7 +86,10 @@ const DIAS_DE_LA_TIRA = 14;
 export const mermaDeHoy = consulta<Record<string, never>, SalidaMermaDeHoy>({
   nombre: 'merma_de_hoy',
   entrada: z.object({}).strict(),
-  exige: 'app.inventario',
+  // Con el permiso de **apuntar** merma, no con Inventario: el widget lo pone en
+  // el Panel un camarero, que no tiene la app y es quien rompe una copa. El
+  // dinero sigue sin viajar a quien no ve precios.
+  exige: 'accion.registrar_merma',
 
   async ejecutar(contexto) {
     const localId = elLocal(contexto);
@@ -164,7 +168,7 @@ export const mermaDeHoy = consulta<Record<string, never>, SalidaMermaDeHoy>({
       },
       dias,
       ...(conPrecios && total !== null
-        ? { mediaCentimos: Math.round(total / DIAS_DE_LA_TIRA) }
+        ? { mediaCentimos: mediaPorDia(total, DIAS_DE_LA_TIRA) }
         : {}),
       puedeVerPrecios: conPrecios,
       puedeApuntar: puede[0]?.puede === true,
@@ -237,6 +241,11 @@ export const entradaMisMermas = z
     texto: z.string().trim().max(120).optional(),
     limite: z.coerce.number().int().min(1).max(500).optional(),
     salto: z.coerce.number().int().min(0).max(100_000).optional(),
+    /**
+     * Cuántos días hacia atrás, en vez de una fecha. La fecha la pone el servidor
+     * con el reloj del local (regla 10): la pantalla solo dice «el último mes».
+     */
+    dias: z.coerce.number().int().min(1).max(730).optional(),
   })
   .strict();
 
@@ -256,7 +265,8 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
     const conPrecios = await puedeVerPrecios(contexto, localId);
 
     const hasta = entrada.hasta ?? jornada;
-    const desde = entrada.desde ?? masDias(fechaOperativa(hasta), -(POR_DEFECTO_DIAS - 1));
+    const desde =
+      entrada.desde ?? masDias(fechaOperativa(hasta), -((entrada.dias ?? POR_DEFECTO_DIAS) - 1));
     const limite = entrada.limite ?? 100;
     const salto = entrada.salto ?? 0;
 
@@ -429,6 +439,78 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
       ...(conPrecios ? { valorTotalCentimos: valorTotal } : {}),
       puedeVerPrecios: conPrecios,
       puedeApuntar: puede[0]?.puede === true,
+    };
+  },
+});
+
+// ── Buscar qué se ha ido ─────────────────────────────────────────────────────
+
+export interface ProductoParaMerma {
+  readonly id: string;
+  readonly nombre: string;
+  readonly unidadDeUso: string;
+  readonly cantidad: number;
+  readonly esEjemplo: boolean;
+}
+
+/**
+ * Los productos entre los que elegir al apuntar una merma.
+ *
+ * ── Por qué no es `mis_productos` ──────────────────────────────────────────
+ *
+ * Porque `mis_productos` pide la app de Inventario, y **quien más mermas apunta no
+ * la tiene**: el camarero. La matriz de M1 le da `accion.registrar_merma` y no le
+ * da Inventario, y con razón —no lleva la cámara—. Así que buscaba el producto
+ * con una consulta que le decía que no.
+ *
+ * Esta pide el permiso de apuntar merma y devuelve **lo justo para elegir**: el
+ * nombre, la unidad y cuánto queda. Ni un precio, ni un proveedor, ni un coste.
+ */
+export const productosParaMerma = consulta<
+  { texto?: string | undefined },
+  { readonly productos: readonly ProductoParaMerma[] }
+>({
+  nombre: 'productos_para_merma',
+  entrada: z.object({ texto: z.string().trim().max(120).optional() }).strict(),
+  exige: 'accion.registrar_merma',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocal(contexto);
+    const texto = entrada.texto ?? '';
+
+    const filas = await contexto.sql<
+      {
+        id: string;
+        nombre: string;
+        unidad_de_uso: string;
+        cantidad: string | null;
+        es_ejemplo: boolean;
+      }[]
+    >`
+      select p.id::text as id, p.nombre, p.unidad_de_uso::text as unidad_de_uso,
+             e.cantidad::text as cantidad, p.es_ejemplo
+        from estook.producto p
+        left join estook.existencias e on e.producto_id = p.id
+       where p.local_id = ${localId}
+         and p.activo
+         and (
+           ${texto} = ''
+           or estook.sin_acentos(p.nombre) like '%' || estook.sin_acentos(${texto}) || '%'
+           or similarity(estook.sin_acentos(p.nombre), estook.sin_acentos(${texto})) > 0.3
+           or p.codigo_de_barras = ${texto}
+         )
+       order by p.es_ejemplo, p.nombre
+       limit 10
+    `;
+
+    return {
+      productos: filas.map((f) => ({
+        id: f.id,
+        nombre: f.nombre,
+        unidadDeUso: f.unidad_de_uso,
+        cantidad: f.cantidad === null ? 0 : Number(f.cantidad),
+        esEjemplo: f.es_ejemplo,
+      })),
     };
   },
 });

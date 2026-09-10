@@ -310,9 +310,9 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | Escandallos | Hoy · Fichas · Elaboraciones · Análisis |
 | Carta       | Carta · Menús · Análisis                |
 | Calendario  | Calendario · Tareas · Turnos            |
-| Equipo      | Hoy · Personas · Horarios · Fichajes    |
+| Equipo      | Hoy · Personas · Horarios · Resumen     |
 | Servicio    | Jornada · Ventas · Delivery · APPCC     |
-| Negocio     | Resumen · Pulse · Costes · Reseñas      |
+| Negocio     | Ventas · Pulse · Costes · Reseñas       |
 | Cuaderno    | Incidencias · Notas · Equipos           |
 
 Y sus vistas, donde las hay:
@@ -320,7 +320,7 @@ Y sus vistas, donde las hay:
 | Destino                  | Sus vistas                                     |
 | ------------------------ | ---------------------------------------------- |
 | Inventario · Productos   | Todo · Bajo mínimo · Sin precio · Desactivados |
-| Inventario · Movimientos | Todo · Entradas · Salidas · Ajustes            |
+| Inventario · Movimientos | Todo · Entradas · Salidas · Mermas · Ajustes   |
 | Inventario · Compras     | Proveedores · Pedidos · Facturas               |
 | Escandallos · Fichas     | Todas · Bajo objetivo · Sin coste              |
 | Carta · Carta            | Por secciones · Todos los platos · Agotados    |
@@ -328,9 +328,8 @@ Y sus vistas, donde las hay:
 | Calendario · Calendario  | Mes · Semana · Día                             |
 | Calendario · Tareas      | Pendientes · Periódicas · Hechas               |
 | Equipo · Personas        | Con acceso · Sin entrar todavía · Retirados    |
-| Servicio · Jornada       | En marcha · Cierre                             |
+| Servicio · Jornada       | Cierre · En marcha                             |
 | Servicio · Ventas        | Del turno · Del día · Por producto             |
-| Negocio · Resumen        | Mes · Trimestre · Año                          |
 | Cuaderno · Incidencias   | Abiertas · Cerradas                            |
 
 **El catálogo de `packages/ui/src/apps.ts` es el único dueño de estas dos tablas**, y hay una prueba que las lee **de este documento** y las compara. Antes la prueba llevaba los valores copiados dentro, y por eso pudo estar en verde mientras el código decía que Negocio tenía «Reseñas» donde esta tabla decía «Pulse».
@@ -499,7 +498,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M5 · Onboarding y arranque asistido
 
-**Entra.** Los ocho pasos del alta · Google Places con volcado de ficha, reseñas y competidores · régimen fiscal y objetivos · logo y color con previsualización · camino de grupo con duplicado de local · datos de ejemplo mínimos etiquetados como ejemplo, que no cuentan para nada y se borran con un botón · catálogo de referencia consultable de unos 250 productos · recetas de referencia opcionales · importadores con mapeo propuesto por Fogón · importación por acumulación de albaranes · modo demostración con salida limpia · barra de progreso con valor · guía de instalación distinta para iPhone y Android · la tarjeta fija del Panel «Conecta tus ventas».
+**Entra.** Los ocho pasos del alta · Google Places con volcado de ficha, reseñas y competidores · régimen fiscal y objetivos · logo y color con previsualización · camino de grupo con duplicado de local · datos de ejemplo mínimos etiquetados como ejemplo, que no cuentan para nada y se borran con un botón · catálogo de referencia consultable de unos 250 productos · recetas de referencia opcionales · importadores con mapeo propuesto por Fogón · importación por acumulación de albaranes · modo demostración con salida limpia · barra de progreso con valor · guía de instalación distinta para iPhone y Android · la tarjeta del Panel que pregunta cómo entran las ventas (desde M6½ ya no pide «Conecta tus ventas»: [decisión 0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)).
 
 **Dependencia que hay que respetar.** El asistente de conexión con el TPV **no se construye aquí**: vive en M18 y M20. En M5 solo existe la tarjeta del Panel.
 
@@ -517,6 +516,16 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Terminado cuando.** Se da de alta un producto en 30 segundos; al cambiar el precio, el coste por unidad de uso y el medio ponderado cambian bien en un producto con factor y rendimiento distintos de 1; el stock se reconstruye entero desde los movimientos; y la previsión de agotamiento acierta el día en un producto con consumo estable.
 
+### M6½ · La capa de producto
+
+**No estaba en el plan, y se hizo entre M6 y M7**, porque M6 dejó Inventario construido dentro de una aplicación que todavía no se podía usar de verdad: sin destinos, sin un Panel que se guardara, sin forma de apuntar una merma ni de fichar, con permisos que existían desde M1 y ninguna pantalla que los usara.
+
+**Entra.** Destinos y vistas en cada app ([0018](../decisiones/0018-destinos-y-vistas.md)) · el Panel de cada uno en el servidor ([0019](../decisiones/0019-el-panel-de-cada-uno-vive-en-el-servidor.md)), que avisa si no ha podido guardar · el catálogo de acciones ([0020](../decisiones/0020-un-catalogo-de-acciones.md)) · marca, dos temas y tamaño de letra ([0024](../decisiones/0024-el-color-del-local-pinta-la-app.md)) · **la merma con motivo y partida**, también desde la sala ([0026](../decisiones/0026-la-merma-tiene-motivo-y-partida.md)) · **fichar con la ubicación, sin bloquear nunca**, la ficha de cada persona con sus horas, lo que cobra en privado y su horario de siempre, y el Resumen de horas para quien lleva gente ([0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)) · **el cierre de caja a mano o con CSV**, la pregunta de cómo entran las ventas y Negocio › Ventas ([0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)) · **el alta de producto con lo que hay**, y el + y el − de cada producto ([0028](../decisiones/0028-el-alta-pregunta-cuanto-hay.md)) · la rueda con el Panel en el centro · los textos de toda la app, recortados.
+
+**Reglas críticas.** Todo lo que mueve género sigue pasando por el libro. **Quién ve las horas de quién lo decide la base**, no la pantalla. Lo que cobra una persona no viaja a quien no tiene el permiso, y nadie lo pone hacia arriba. Una pregunta de configuración se hace una vez y se cambia en Ajustes.
+
+**Terminado cuando.** Una camarera apunta una merma desde el Panel sin ver un precio; un cocinero ficha con la ubicación y ve sus horas, no las de nadie más; quien lleva el local cierra la caja a mano y la ve en Negocio; y lo que se mueve en el Panel sigue ahí al recargar. Lo comprueban pruebas de pantalla, en móvil y en escritorio.
+
 ### M7 · Proveedores y compras
 
 **Entra.** Ficha con días de reparto y pedido mínimo · contratos marco · ciclo `borrador → enviado → recibido` · sugerencia que respeta el calendario de reparto y el mínimo del proveedor · envío por WhatsApp, correo y PDF · recepción con «¿entero o con cambios?» · factura de compra conciliada con sus albaranes · abonos y devoluciones.
@@ -530,6 +539,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 ### M8 · Inventario, mermas y desviación
 
 **Entra.** Recuento cíclico con lector · inventario valorado a precio medio ponderado · mermas en tres toques con motivo obligatorio, por voz y con foto · partida aparte para consumo de personal e invitaciones · desviación · calibración con estado «aprendiendo» hasta el tercer recuento · **FEFO** · stock mínimo calculado · **food cost real global** junto al teórico y su brecha · causa probable de la desviación · permiso separado para cerrar recuento.
+
+**Adelantado en M6½** ([decisión 0026](../decisiones/0026-la-merma-tiene-motivo-y-partida.md)): la merma en tres toques, con motivo de una lista cerrada y su partida aparte —pérdida, comida del personal, invitación—, desde el Panel, desde la lista de productos y por quien la rompe, camareros incluidos; y su listado con totales, CSV e impresión. **Queda para M8**: por voz y con foto (con M22), y todo lo demás de esta lista.
 
 **Terminado cuando.** Con dos recuentos, la desviación sale explicada producto a producto; y un producto que se sirve de más deja de saltar tras el tercer recuento.
 
@@ -573,6 +584,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Reglas críticas.** El coste por hora **solo lo ve quien tiene ese permiso**. No aparece en documentos ni en Fogón.
 
+**Adelantado en M6½** ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): la ficha de cada persona con sus horas, sus fichajes y su última conexión, y **lo que cobra**, por hora o al mes, con permiso propio y nunca hacia arriba. **Queda**: contratos con vigencia y documentos, coste medio por puesto, festivos, ausencias y bolsa de horas.
+
 **Terminado cuando.** Con costes por puesto y sin un solo sueldo individual, el porcentaje de personal del Panel sale correcto.
 
 ### M14 · Calendario
@@ -583,15 +596,19 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Regla crítica.** **Nunca se publica automáticamente.** La propuesta nace en borrador.
 
+**La base ya está desde M6½**: el horario de siempre de cada persona y sus horas fichadas frente a su contrato, en Equipo › Resumen. Es lo primero que tiene que leer el generador de horarios.
+
 **Terminado cuando.** Una semana con partidos se publica, cada persona recibe lo suyo, un cambio avisa solo al afectado, el cuadrante impreso sale legible, **y una propuesta de Fogón se puede editar antes de publicar**.
 
 ### M15 · Fichajes
 
-**Entra.** Modo quiosco en cualquier dispositivo registrado del local · fichaje desde el móvil con foto del puesto, solo si el local lo activa, conservada 90 días · **hora del servidor** · prohibido fichar desde un dispositivo no registrado · turnos sin cerrar con corrección con rastro · comparativa de lo planificado contra lo fichado con su coste.
+**Adelantado en M6½** ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): fichar en un toque desde el Panel y desde Equipo › Hoy, con **hora del servidor** y **la ubicación pedida al entrar y al salir, que nunca bloquea** —se guardan los metros, o por qué no los hay— · un turno abierto por persona · correcciones con nombre y motivo, y el turno olvidado lo cierra quien corrige · quién ve los fichajes de quién, decidido en la base.
 
-**Errores típicos.** Poner el botón de fichar en el móvil sin comprobación, que equivale a permitir fichar desde casa. **Añadir huella o GPS.**
+**Entra.** Modo quiosco en cualquier dispositivo registrado del local, con PIN · para el local que lo quiera, fichar **solo** desde sus aparatos · comparativa de lo planificado contra lo fichado con su coste (con M14).
 
-**Terminado cuando.** Se ficha en menos de tres segundos con dos toques; fichar desde un dispositivo no registrado devuelve `403`; y la comparativa sale cuadrada.
+**Errores típicos.** **Bloquear el fichaje por la ubicación**: sin señal no se ficha, y el registro se queda con huecos que nadie puede explicar. Se pide, se guarda y se señala; no se impide. **Y huella o biometría, nunca.**
+
+**Terminado cuando.** Se ficha en menos de tres segundos con un toque; un fichaje hecho lejos del local sale señalado con sus metros; fichar desde un aparato no registrado, en un local que lo exige, devuelve `403`; y la comparativa sale cuadrada.
 
 ### M16 · Servicio, APPCC y trazabilidad
 
@@ -631,6 +648,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Reglas críticas.** Una jornada estimada **no entra en la desviación sin avisar**. El menú importado se explota a sus platos.
 
+**Adelantado en M6½** ([decisión 0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)): el cierre de caja a mano o con el CSV del TPV, con su origen, en la misma tabla donde escribirá el conector; los platos apuntados con el nombre ya normalizado para emparejarlos; y la pregunta de cómo entran las ventas. **Queda** todo lo de esta lista, empezando por el emparejamiento y el consumo teórico.
+
 **Terminado cuando.** El stock se mueve solo con las ventas del día y el cierre cuadra con el Z; **reimportar el mismo fichero no cambia nada**.
 
 ## Fase 5 · Inteligencia
@@ -638,6 +657,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 ### M21 · Negocio, analítica y Estook Pulse
 
 **Entra.** Agregados por worker: diarios, por franja, por producto, por plato, por canal y por empleado · resúmenes con objetivo y comparación · productividad · **dónde se va el margen con enlace a donde se arregla** · previsión de ventas a siete días con su margen de error y contraste posterior · presupuesto por mes con seguimiento · salud de los datos · exportaciones en PDF, CSV y formatos de A3, Sage, Contasol y Holded · auditoría consultable · reconstrucción completa de agregados con un comando.
+
+**Adelantado en M6½**: Negocio › Ventas, con lo facturado, el ticket medio y un food cost **aproximado** —el género que ha salido del libro frente a lo facturado—, dicho como aproximado hasta que haya consumo teórico.
 
 **Y su capa inteligente · Estook Pulse.** La salud del negocio en un número, **con sus componentes, sus pesos y su explicación**, exactamente con la disciplina del indicador de salud de datos: se puede desmontar y dice qué la está bajando. Con sus problemas y sus oportunidades, cada uno accionable.
 
@@ -654,6 +675,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 **Dónde vive, decidido en M6** (decisión 0015). Burbuja flotante en móvil, icono de arriba a la derecha con panel lateral en escritorio, y `⌘J`. **Nunca una pestaña dentro de una app.** Se abre sabiendo en qué pantalla estás, y además es un chat de verdad: se le pregunta cualquier cosa desde cualquier sitio, y se le pide que rellene o prepare cosas. El sitio ya está construido y probado desde M6; M22 lo llena.
 
 **Y las pestañas de cada app llevan los análisis que Fogón deja hechos**, no la conversación. Se calculan **fuera de hora y se guardan**, con la hora a la que se miraron a la vista: **cada 8 horas** lo que se mueve con cada servicio —género, mermas, agotados—, **cada 12** lo que se mueve con el día —ventas, margen, personal— y **cada 24** lo que se mueve con la semana —carta, proveedores, reseñas—. La cadencia la decide **el dato, no la app**. Recalcular un análisis cada vez que alguien abre una pantalla es la forma más rápida de gastarse el presupuesto del mes en una tarde, y contradice «lo pesado, en lote nocturno».
+
+**Y las fotos que ya esperan.** La merma y el cierre de caja tienen su botón de cámara puesto y apagado desde M6½, diciendo que llega aquí. Fogón lee de la foto el producto y el peso, o las cifras del Z, y **propone**; una persona confirma.
 
 **Reglas críticas de optimización, que son también de coste.** Los números los calcula la base de datos, **nunca el modelo**. Las reglas de aviso van en código. El contexto va cacheado y se parchea. Cada tarea a su modelo. Lo pesado, en lote nocturno. Respuestas frecuentes cacheadas. Imágenes reducidas. **Fogón pide el dato concreto, jamás una tabla entera.** Nada se guarda sin aprobación. **El texto que viene de fuera se trata como dato, jamás como instrucción.**
 
@@ -677,7 +700,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M25 · Ajustes, apps activables y notificaciones
 
-**Entra.** Ajustes completos, incluido Organización, Mi TPV e **Integraciones** · apps con interruptores y el aviso de qué pasa al apagar cada una · motor de notificaciones con tres niveles, agrupación, acción y archivo de 90 días · push con tokens por dispositivo y escalado por otro canal si no se entrega · correo con el logo del local · WhatsApp para lo que sale fuera · **regla de no duplicar canal**.
+**Entra.** Ajustes completos, incluido Organización, la conexión del TPV e **Integraciones** · apps con interruptores y el aviso de qué pasa al apagar cada una · motor de notificaciones con tres niveles, agrupación, acción y archivo de 90 días · push con tokens por dispositivo y escalado por otro canal si no se entrega · correo con el logo del local · WhatsApp para lo que sale fuera · **regla de no duplicar canal**.
+
+**Los avisos del horario, que M6½ deja preparados.** «Mañana entras a las 9» la víspera y «entras en 5 minutos: ficha ya» al llegar, por push. Salen del horario de siempre de cada persona (M6½) y, cuando exista, del cuadrante publicado (M14). Hoy el widget de Fichar ya lo dice al abrir el Panel; lo que falta es mandarlo sin que nadie abra la app.
 
 ## Fase 6 · Negocio y producción
 
@@ -762,10 +787,16 @@ Código en su rama con commits legibles · migraciones numeradas y reversibles �
 
 ## E4 · Lo que la construcción ya ha enseñado
 
-Tres cosas que costaron caro y que quedan escritas para no repetirlas.
+Lo que costó caro, escrito para no repetirlo.
 
 **Una prueba que corre en un sitio no prueba el otro.** Las pruebas corren en Node; la API desplegada corre en Deno. Un camino que solo existe en producción es un camino que nadie comprueba. Cada entorno de ejecución distinto necesita su comprobación propia.
 
 **Una comprobación que no puede fallar es peor que no tenerla**, porque da confianza. Antes de dar por buena una comprobación nueva, se rompe a propósito lo que debería detectar y se verifica que falla.
 
 **El nombre de una cosa decide dónde acaba.** Dos listas parecidas con nombres parecidos terminan mezcladas. Si dos sitios distintos necesitan datos distintos, los nombres tienen que hacer obvio cuál va dónde.
+
+**Un permiso sin pantalla es una promesa rota.** Registrar mermas y fichar estaban en la matriz de roles desde M1, y durante doce migraciones no había dónde hacerlo. Cada permiso nace con la pantalla que lo usa, o no nace.
+
+**Guardar sin decir que ha fallado es peor que no guardar.** El Panel se «deshacía» al recargar porque un guardado fallaba en silencio y se quedaba atascado. Todo lo que se guarda solo dice cuándo no ha podido, y deja reintentar.
+
+**Se prueba con el rol más pequeño que puede hacerlo.** La merma pasaba todas las pruebas de base de datos y a la camarera le decía «ese producto no está»: el candado del producto exigía permiso de editarlo. Solo lo encontró una prueba de pantalla entrando como ella.

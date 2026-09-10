@@ -228,14 +228,22 @@ export const ponerHorarioHabitual = comando<EntradaPonerHorarioHabitual, { tramo
 
 export const entradaPonerDondeEstaElLocal = z
   .object({
-    latitud: z.number().min(-90).max(90).nullable(),
-    longitud: z.number().min(-180).max(180).nullable(),
+    /**
+     * Las dos coordenadas, o ninguna. **Sin ellas en el cuerpo, se quedan las que
+     * hay**: es lo que permite cambiar solo el radio sin tener que volver a mandar
+     * la posición. Con las dos a nulo, se quitan.
+     */
+    latitud: z.number().min(-90).max(90).nullable().optional(),
+    longitud: z.number().min(-180).max(180).nullable().optional(),
     radio_metros: z.number().int().min(10).max(5000).optional(),
   })
   .strict()
-  .refine((e) => (e.latitud === null) === (e.longitud === null), {
-    message: 'O van las dos coordenadas o no va ninguna.',
-  });
+  .refine(
+    (e) =>
+      (e.latitud === undefined) === (e.longitud === undefined) &&
+      (e.latitud === null) === (e.longitud === null),
+    { message: 'O van las dos coordenadas o no va ninguna.' },
+  );
 
 export type EntradaPonerDondeEstaElLocal = z.infer<typeof entradaPonerDondeEstaElLocal>;
 
@@ -262,12 +270,19 @@ export const ponerDondeEstaElLocal = comando<
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);
 
+    // Si no vienen coordenadas, no se tocan. Se decide aquí y se manda como un
+    // booleano, en vez de componer el `update` a trozos: la API de pruebas no
+    // admite fragmentos condicionales, a propósito (ver `cambiar_producto`).
+    const cambiaLaPosicion = entrada.latitud !== undefined;
+
     const filas = await contexto.sql<
       { latitud: string | null; longitud: string | null; radio: number }[]
     >`
       update estook.local
-         set latitud = ${entrada.latitud},
-             longitud = ${entrada.longitud},
+         set latitud = case when ${cambiaLaPosicion} then ${entrada.latitud ?? null}::numeric
+                            else latitud end,
+             longitud = case when ${cambiaLaPosicion} then ${entrada.longitud ?? null}::numeric
+                             else longitud end,
              radio_de_fichaje_metros = coalesce(
                ${entrada.radio_metros ?? null}::int, radio_de_fichaje_metros
              )

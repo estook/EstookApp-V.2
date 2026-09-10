@@ -49,10 +49,23 @@ export interface FichaBasica {
  * sobre ese punto de partida y la segunda pisaría a la primera: el libro
  * quedaría con dos líneas y un saldo que no cuadra con ninguna de las dos.
  *
- * Bloquear la fila del producto —no la del movimiento— es lo que serializa las
- * dos peticiones. La segunda espera a que la primera termine y entonces lee el
- * saldo de verdad. Es una espera de milisegundos y solo entre movimientos **del
- * mismo producto**: dos cocinas apuntando cosas distintas no se estorban.
+ * Un candado **por producto** es lo que serializa las dos peticiones. La segunda
+ * espera a que la primera termine y entonces lee el saldo de verdad. Es una
+ * espera de milisegundos y solo entre movimientos **del mismo producto**: dos
+ * cocinas apuntando cosas distintas no se estorban.
+ *
+ * ── Por qué es un candado de transacción y no `for update` ───────────────────
+ *
+ * Hasta M6½ era `select … for no key update` sobre la fila del producto. Eso en
+ * Postgres **pasa también por la política de editar**: para bloquear una fila hay
+ * que poder cambiarla. Mientras solo apuntaba quien lleva Inventario, daba igual.
+ * Con la merma dejó de dar igual: la camarera veía el producto en la lista, lo
+ * elegía, y al apuntar le salía «ese producto no está». Tiene permiso de merma y
+ * no de editar productos, que es exactamente lo que tiene que tener.
+ *
+ * `pg_advisory_xact_lock` no mira permisos: es un candado con nombre —el del
+ * producto— que se suelta solo al acabar la transacción. Todos los que apuntan
+ * pasan por aquí, así que todos esperan en el mismo candado.
  *
  * Y se lee **con las políticas puestas**: de un producto que no se ve, no vuelve
  * nada, y entonces no hay que comprobar de quién es.
@@ -61,6 +74,8 @@ export async function elProductoBloqueado(
   contexto: Contexto,
   productoId: string,
 ): Promise<FichaBasica> {
+  await contexto.sql`select pg_advisory_xact_lock(hashtextextended(${productoId}::text, 0))`;
+
   const filas = await contexto.sql<
     {
       id: string;
@@ -85,7 +100,6 @@ export async function elProductoBloqueado(
       from estook.producto p
       join estook.local l on l.id = p.local_id
      where p.id = ${productoId}
-       for no key update of p
   `;
 
   const fila = filas[0];

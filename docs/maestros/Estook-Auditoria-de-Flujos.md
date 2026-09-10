@@ -270,34 +270,114 @@ Se sube un albaran, una factura o un contrato
 
 **NO se toca:** nada, hasta que una persona confirma. **Fogón no escribe.**
 
+## 2.19 Se da de alta un producto con lo que hay
+
+```
+Producto, en que se mide, cuanto trae, precio de todo, cuanto hay, caduca el
+├─ se crea el producto con su precio vigente desde hoy
+├─ si hay caducidad, se crea su lote
+├─ lo que hay entra en el libro: una ENTRADA de origen «alta», a su coste
+├─ la camara lo cuenta al instante, y el valor de la camara sube
+└─ el aprovechamiento nace en el 100 %, marcado «sin medir»
+```
+
+**NO se toca:** ninguna ficha, porque todavía no lleva ninguna. Y **el stock no se escribe**: se apunta, como todo.
+
+## 2.20 Se apunta una merma
+
+```
+Que, cuanto, por que
+├─ se bloquea el producto con un candado de transaccion, sin mirar permisos
+├─ se valora a precio medio ponderado, el de antes de sacarla
+├─ entra en el libro una MERMA con su motivo; la base le pone la partida
+├─ auditoria y evento merma.apuntada: food cost, desviacion y, mañana, Fogon
+└─ el valor vuelve SOLO a quien puede ver precios
+```
+
+**NO se toca:** el precio medio, que una salida no mueve. **La comida del personal y las invitaciones no suben el food cost**: van a su partida.
+
+## 2.21 Alguien ficha
+
+```
+Fichar la entrada
+├─ el navegador pide la ubicacion, y espera como mucho ocho segundos
+├─ si no la da, se ficha igual y se guarda POR QUE
+├─ la hora y la jornada las pone el servidor
+├─ si ya habia una abierta, no se abre otra: «ya estabas dentro»
+├─ con el local marcado, se guardan los metros y si cae dentro del radio
+└─ evento fichaje.abierto
+```
+
+**NO se toca:** nada si la ubicación falla. **Fichar no se bloquea nunca.**
+
+## 2.22 Se corrige un fichaje
+
+```
+Quien lleva el equipo cambia una hora
+├─ solo si lleva a esa persona: lo decide a_quien_lleva, en la base
+├─ exige motivo; sin el, la base lo rechaza
+├─ lo que no se manda no se toca: corregir la entrada no borra la salida
+├─ una salida puesta al corregir no necesita ubicacion: el motivo es el porque
+└─ auditoria con el antes y el despues, y evento fichaje.corregido
+```
+
+**NO se toca:** nada se borra. Un fichaje equivocado **se enmienda**.
+
+## 2.23 Se cierra la caja a mano
+
+```
+Total, como se cobro, tickets, comensales y, si se quiere, los platos
+├─ uno por local y dia: cerrar otra vez CORRIGE, no duplica
+├─ se guarda el origen: a mano, CSV o, mañana, foto o TPV
+├─ los platos se guardan con el nombre normalizado, listos para la carta
+├─ evento caja.cerrada
+└─ Negocio › Ventas lo lee: facturado, ticket medio y food cost aproximado
+```
+
+**NO se toca:** el inventario. **Descontar lo vendido es M20**, cuando haya fichas con que explotar cada plato.
+
+## 2.24 Se le pone sueldo a alguien
+
+```
+Por hora, o al mes con sus horas de contrato
+├─ solo con permiso de coste de personal
+├─ nunca a quien tiene un rol mas amplio, ni a uno mismo
+├─ el anterior se cierra el dia de antes: queda el historico
+└─ el coste de sus horas se calcula en el dominio, y viaja solo a quien puede verlo
+```
+
+**NO se toca:** ningún documento ni Fogón, que no reciben sueldos.
+
 ---
 
 # 3 · De dónde salen las opciones
 
 Cada desplegable de la aplicación, con su fuente, su orden y su estado vacío. **Sin esta tabla, quien construya se inventará una fuente distinta en cada pantalla.**
 
-| Selector                      | De dónde salen                                    | Orden                                                     | Si está vacío                                                        |
-| ----------------------------- | ------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------- |
-| Producto (en una ficha)       | Productos activos del local                       | Los más usados en fichas primero                          | «No tienes productos. Búscalo en el catálogo de referencia o créalo» |
-| Producto (en un pedido)       | Productos del proveedor elegido, luego el resto   | Los que compras a ese proveedor primero                   | «Este proveedor no tiene productos asignados aún»                    |
-| Proveedor                     | Proveedores activos del local                     | Por uso reciente                                          | «Crea tu primer proveedor», con el botón                             |
-| Categoría de producto         | Categorías del local, sembradas por tipo de local | Alfabético, con las usadas arriba                         | Nunca vacío: vienen de serie                                         |
-| Unidad de uso                 | Lista cerrada: g · ml · ud · kg · l               | Fijo                                                      | Nunca vacío                                                          |
-| Alérgeno                      | Los 14 oficiales de la normativa                  | Fijo, con icono                                           | Nunca vacío                                                          |
-| Motivo de merma               | Lista cerrada                                     | Por uso                                                   | Nunca vacío                                                          |
-| Plato (en la carta)           | Platos activos de Escandallos                     | Los no colocados aún primero                              | «Crea tu primer plato o conecta tu TPV»                              |
-| Sección de carta              | Secciones de esa carta                            | El orden que tienen                                       | «Crea la primera sección»                                            |
-| Canal                         | Canales activos del local                         | Fijo                                                      | Nunca vacío: sala viene de serie                                     |
-| Persona (en un turno)         | Personas activas con acceso a ese local           | Disponibles primero, luego las que tienen conflicto       | «Invita a tu equipo»                                                 |
-| Puesto                        | Puestos del local                                 | Por uso                                                   | Sembrados por tipo de local                                          |
-| Tipo de ausencia              | Lista cerrada                                     | Fijo                                                      | Nunca vacío                                                          |
-| Punto de APPCC                | Puntos del plan vigente                           | El orden del plan                                         | «Monta tu plan de APPCC», con plantilla                              |
-| Plantilla de documento        | Las del tipo de documento                         | Recomendada primero                                       | Nunca vacío                                                          |
-| Plantilla de auditoría        | Las de la organización, más las de serie          | Por uso                                                   | Las de serie                                                         |
-| Local (en el selector)        | Locales visibles de esa persona                   | El último usado primero                                   | No aparece si solo tiene uno                                         |
-| TPV (al conectar)             | Lista de conectores soportados                    | Los más usados primero, con buscador y «el mío no está»   | Nunca vacío                                                          |
-| **Integración (al conectar)** | **Catálogo de integraciones, con su estado real** | **Disponibles primero, luego próximamente, luego manual** | **Nunca vacío**                                                      |
-| Equipo (en mantenimiento)     | Equipos del local                                 | Por próxima revisión                                      | «Da de alta tu primera cámara»                                       |
+| Selector                      | De dónde salen                                                   | Orden                                                       | Si está vacío                                                        |
+| ----------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------- |
+| Producto (en una ficha)       | Productos activos del local                                      | Los más usados en fichas primero                            | «No tienes productos. Búscalo en el catálogo de referencia o créalo» |
+| Producto (en un pedido)       | Productos del proveedor elegido, luego el resto                  | Los que compras a ese proveedor primero                     | «Este proveedor no tiene productos asignados aún»                    |
+| Proveedor                     | Proveedores activos del local                                    | Por uso reciente                                            | «Crea tu primer proveedor», con el botón                             |
+| Categoría de producto         | Categorías del local, sembradas por tipo de local                | Alfabético, con las usadas arriba                           | Nunca vacío: vienen de serie                                         |
+| Unidad de uso                 | Lista cerrada: g · ml · ud · kg · l                              | Fijo                                                        | Nunca vacío                                                          |
+| Alérgeno                      | Los 14 oficiales de la normativa                                 | Fijo, con icono                                             | Nunca vacío                                                          |
+| Motivo de merma               | Lista cerrada de ocho, cada uno con su partida                   | Fijo: de lo más normal a «otra cosa», que obliga a escribir | Nunca vacío                                                          |
+| Por qué sale (el −)           | Gastado o vendido, los motivos de merma, a otro local, otra cosa | Fijo, lo más normal primero                                 | Nunca vacío                                                          |
+| TPV (en «Tus ventas»)         | Lista fija de los más comunes, y «Otro»                          | Fijo                                                        | Nunca vacío. **No promete conexión**                                 |
+| Plato (en la carta)           | Platos activos de Escandallos                                    | Los no colocados aún primero                                | «Crea tu primer plato o conecta tu TPV»                              |
+| Sección de carta              | Secciones de esa carta                                           | El orden que tienen                                         | «Crea la primera sección»                                            |
+| Canal                         | Canales activos del local                                        | Fijo                                                        | Nunca vacío: sala viene de serie                                     |
+| Persona (en un turno)         | Personas activas con acceso a ese local                          | Disponibles primero, luego las que tienen conflicto         | «Invita a tu equipo»                                                 |
+| Puesto                        | Puestos del local                                                | Por uso                                                     | Sembrados por tipo de local                                          |
+| Tipo de ausencia              | Lista cerrada                                                    | Fijo                                                        | Nunca vacío                                                          |
+| Punto de APPCC                | Puntos del plan vigente                                          | El orden del plan                                           | «Monta tu plan de APPCC», con plantilla                              |
+| Plantilla de documento        | Las del tipo de documento                                        | Recomendada primero                                         | Nunca vacío                                                          |
+| Plantilla de auditoría        | Las de la organización, más las de serie                         | Por uso                                                     | Las de serie                                                         |
+| Local (en el selector)        | Locales visibles de esa persona                                  | El último usado primero                                     | No aparece si solo tiene uno                                         |
+| TPV (al conectar)             | Lista de conectores soportados                                   | Los más usados primero, con buscador y «el mío no está»     | Nunca vacío                                                          |
+| **Integración (al conectar)** | **Catálogo de integraciones, con su estado real**                | **Disponibles primero, luego próximamente, luego manual**   | **Nunca vacío**                                                      |
+| Equipo (en mantenimiento)     | Equipos del local                                                | Por próxima revisión                                        | «Da de alta tu primera cámara»                                       |
 
 **Tres reglas para todos:**
 
@@ -313,7 +393,7 @@ Y una cuarta que la Evolución añade:
 
 # 4 · Estados y transiciones
 
-Una entidad sin máquina de estado escrita **acaba con estados imposibles**. Estas son las once que importan.
+Una entidad sin máquina de estado escrita **acaba con estados imposibles**. Estas son las trece que importan.
 
 | Entidad                        | Estados                                                                                                                                                                                                   |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -323,6 +403,8 @@ Una entidad sin máquina de estado escrita **acaba con estados imposibles**. Est
 | **Recuento**                   | `abierto → cerrado`. Cerrado no se edita. Corregir es un ajuste posterior con motivo                                                                                                                      |
 | **Turno**                      | `borrador → publicado → modificado → cumplido \| no cubierto`. **Publicado es el punto sin retorno**: a partir de ahí, todo cambio avisa                                                                  |
 | **Jornada**                    | `abierta → cerrada → reabierta → cerrada`. Reabrir exige motivo y queda en auditoría                                                                                                                      |
+| **Fichaje**                    | `abierto → cerrado → corregido`. **Uno abierto por persona**. No se borra: se corrige con nombre y motivo, y la auditoría guarda el antes y el después                                                    |
+| **Cierre de caja**             | `sin cerrar → cerrado → corregido`. Uno por local y día: cerrarlo otra vez lo corrige. Guarda su origen: a mano, CSV, foto o TPV                                                                          |
 | **Registro de APPCC**          | `pendiente → registrado \| fuera de rango → con acción correctiva`. **Fuera de rango sin acción correctiva no es un estado final válido**: bloquea el cierre                                              |
 | **Visita de auditoría**        | `programada → en curso → cerrada → con acciones pendientes → resuelta`                                                                                                                                    |
 | **Suscripción**                | `prueba → activa → impago → solo lectura → archivada`, y desde cualquiera de vuelta a activa pagando                                                                                                      |
@@ -358,6 +440,10 @@ Los fallos parciales son los que hunden la confianza, **porque el usuario no sab
 | **No se acepta un pedido a tiempo**       | **La plataforma lo cancela. Se registra con su motivo** | **«Este pedido se canceló por tiempo», con la hora exacta**                        |
 | **La API del canal de reparto cae**       | **Se encola y se reintenta con espera creciente**       | **Estado de la integración en amarillo, con la última sincronización**             |
 | **Fogón propone un horario imposible**    | **Se entrega igual, con los huecos señalados**          | **«Falta 1 camarero el miércoles de 20:00 a 22:00», antes de publicar**            |
+| No hay ubicación al fichar                | Se ficha igual y se guarda por qué no la hay            | «Entrada apuntada». En su ficha: «sin ubicación», con el motivo                    |
+| El Panel no se ha podido guardar          | Lo pendiente se queda en la pantalla                    | «No se ha guardado el Panel», en rojo, con «Reintentar»                            |
+| Un CSV de cierre trae filas raras         | Se lee lo que se entiende y se cuenta lo que no         | «Hay filas que no he entendido», con cuáles. Lo demás, ya rellenado                |
+| El desglose de la caja no suma el total   | Se guarda lo que se escribió                            | Una nota con la diferencia, sin bloquear el cierre                                 |
 
 **Tres reglas de error, para todos:**
 

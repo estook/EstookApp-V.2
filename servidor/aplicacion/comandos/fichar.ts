@@ -362,14 +362,18 @@ export const corregirFichaje = comando<
       });
     }
 
-    const cambiados = await contexto.sql<
-      { fecha_operativa: string; minutos: number | null }[]
-    >`
+    // **Lo que no se manda, no se toca.** Antes, corregir solo la hora de entrada
+    // dejaba la salida en blanco: el turno de ayer volvía a estar «abierto», y si
+    // esa persona ya había fichado hoy, chocaba con el suyo de hoy. `null` sí se
+    // manda a propósito —«esta salida estaba mal, no salió a esa hora»— y por eso
+    // se distingue de no mandarlo.
+    const tocaLaSalida = entrada.salio_en !== undefined;
+    const salidaNueva = entrada.salio_en ?? null;
+
+    const cambiados = await contexto.sql<{ fecha_operativa: string; minutos: number | null }[]>`
       update estook.fichaje
          set entro_en = coalesce(${entrada.entro_en ?? null}::timestamptz, entro_en),
-             salio_en = ${
-               entrada.salio_en === undefined ? null : entrada.salio_en
-             }::timestamptz,
+             salio_en = case when ${tocaLaSalida} then ${salidaNueva}::timestamptz else salio_en end,
              corregido_por = ${contexto.personaId},
              corregido_en = ${contexto.ahora.toISOString()},
              motivo_de_la_correccion = ${entrada.motivo},
@@ -391,7 +395,7 @@ export const corregirFichaje = comando<
         ${laOrganizacionDeLaSesion(contexto)}::uuid, 'cambiar', 'fichaje',
         ${entrada.fichaje_id}, ${elDeAntes.local_id}::uuid,
         ${JSON.stringify({ entro_en: elDeAntes.entro_en, salio_en: elDeAntes.salio_en })}::jsonb,
-        ${JSON.stringify({ entro_en: entrada.entro_en ?? elDeAntes.entro_en, salio_en: entrada.salio_en ?? null })}::jsonb,
+        ${JSON.stringify({ entro_en: entrada.entro_en ?? elDeAntes.entro_en, salio_en: tocaLaSalida ? salidaNueva : elDeAntes.salio_en })}::jsonb,
         ${entrada.motivo}
       )
     `;

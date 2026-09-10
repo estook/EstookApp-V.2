@@ -273,6 +273,7 @@ export {
   esMotivoDeMerma,
   partidaDe,
   valorDeLaMerma,
+  mediaPorDia,
 } from './merma.ts';
 
 export type { MotivoDeMerma, PartidaDeMerma } from './merma.ts';
@@ -280,12 +281,14 @@ export type { MotivoDeMerma, PartidaDeMerma } from './merma.ts';
 // ── M6½ · el cierre de caja · con TPV o sin el, la misma tabla ───────────────
 export {
   COMO_SE_CIERRA,
+  TPVS,
   NOMBRE_DE_COMO_SE_CIERRA,
   QUE_ES_CADA_FORMA_DE_CERRAR,
   ORIGENES_DEL_CIERRE,
   NOMBRE_DEL_ORIGEN_DEL_CIERRE,
   ticketMedio,
   loQueNoCuadra,
+  porcentajeDe,
   leerUnCsvDeCierre,
 } from './cierre.ts';
 

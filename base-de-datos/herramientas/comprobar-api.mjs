@@ -984,6 +984,51 @@ try {
     );
   }
 
+  // ── La 0027, la 0028 y la 0029 · lo de M6½ que vive en la base ────────────
+  //
+  // Fichar, la merma con motivo y el cierre de caja. Sin ellas, los botones
+  // están en la pantalla y cada uno contesta un error: fichar dice que no hay
+  // dónde apuntarlo, la merma que falta un campo, y la caja que no existe.
+  //
+  // Se salta, y no grita, igual que las de arriba: entre fusionar y aplicar hay un
+  // rato normal en el que el código va por delante de la base.
+  if (cuantasMigraciones.ultima < 29) {
+    noSePuede(
+      `la 0027, la 0028 y la 0029 todavia no estan aplicadas · la base va por la ${cuantasMigraciones.ultima}`,
+    );
+  } else {
+    const [m6medio] = await conexion`
+      select
+        (select count(*)::int from pg_class c join pg_namespace n on n.oid = c.relnamespace
+          where n.nspname = 'estook' and c.relkind = 'r' and c.relrowsecurity
+            and c.relname in ('fichaje', 'retribucion', 'horario_habitual',
+                              'cierre_de_caja', 'linea_de_cierre')) as tablas,
+        (select count(*)::int from pg_attribute
+          where attrelid = 'estook.movimiento_de_stock'::regclass
+            and attname = 'motivo_de_merma' and not attisdropped) as motivo,
+        (select count(*)::int from pg_attribute
+          where attrelid = 'estook.local'::regclass and not attisdropped
+            and attname in ('latitud', 'longitud', 'radio_de_fichaje_metros', 'como_se_cierra')) as local,
+        (select count(*)::int from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+          where n.nspname = 'estook' and p.proname = 'a_quien_lleva') as quien_lleva
+    `;
+    comprobar(
+      'las cinco tablas nuevas, todas con seguridad por filas',
+      m6medio.tablas === 5,
+      `${m6medio.tablas} de 5`,
+    );
+    comprobar('la merma lleva su motivo', m6medio.motivo === 1);
+    comprobar(
+      'el local sabe donde esta y como cierra la caja',
+      m6medio.local === 4,
+      `${m6medio.local} de 4 columnas`,
+    );
+    comprobar(
+      'y la base sabe a quien lleva cada jefe, que es lo que decide que horas ve',
+      m6medio.quien_lleva === 1,
+    );
+  }
+
   titulo('La API DESPLEGADA, que es otra cosa');
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -1055,6 +1100,42 @@ try {
           ? `las ${suyas.length}`
           : `FALTA DESPLEGARLA · no conoce ${desconocidas.length}: ${desconocidas.join(', ')}`,
       );
+
+      // Y los comandos, que es lo que faltaba. Hasta M6½ solo se preguntaban las
+      // consultas, y un despliegue viejo **lee** bien y falla al guardar: el
+      // Panel se pintaba, y al mover un widget no se guardaba nada.
+      //
+      // Se preguntan **sin cuerpo**, a propósito: el despachador mira primero si
+      // el comando existe, y sin cuerpo la validación lo para antes de que se
+      // ejecute nada. Así esta pregunta no puede crear nada ni entrar en nada,
+      // tampoco con los comandos que no piden sesión.
+      const preguntarComando = async (nombre) => {
+        try {
+          const respuesta = await fetch(`${raiz}/v1/comandos/${nombre}`, {
+            method: 'POST',
+            headers: { 'x-idempotencia': `comprobar-api-${nombre}` },
+          });
+          const cuerpo = await respuesta.json();
+          return cuerpo?.error?.codigo ?? 'la_conoce';
+        } catch {
+          return 'no_contesta';
+        }
+      };
+
+      const suyos = Object.keys(catalogoDeOperaciones.comandos);
+      const comandosDesconocidos = [];
+      for (const nombre of suyos) {
+        if ((await preguntarComando(nombre)) === 'no_existe') comandosDesconocidos.push(nombre);
+      }
+
+      comprobar(
+        'y conoce todos los comandos',
+        comandosDesconocidos.length === 0,
+        comandosDesconocidos.length === 0
+          ? `los ${suyos.length}`
+          : `FALTA DESPLEGARLA · no conoce ${comandosDesconocidos.length}: ${comandosDesconocidos.join(', ')}`,
+      );
+      desconocidas.push(...comandosDesconocidos);
 
       if (desconocidas.length > 0) {
         console.log('');

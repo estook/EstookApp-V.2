@@ -117,6 +117,24 @@ const ICONOS = {
   // Y el color de marca, en la tarjeta de la marca.
   palette: 'Color',
 
+  // ── M6½ · fichar, la merma y el cierre de caja ─────────────────────────────
+  //
+  // La camara es para la merma y para el Z del cierre, y **hoy sale apagada**:
+  // leer una foto es Fogon (M22). Se trae ahora porque el sitio del boton ya
+  // existe y un hueco sin icono se lee como un fallo, no como algo que llega.
+  camera: 'Camara',
+  // Fichar entrar y salir. Dos iconos distintos y no una flecha girada: en un
+  // movil, a las siete de la manana, la diferencia entre entrar y salir tiene que
+  // verse sin leer.
+  'log-in': 'Entrar',
+  // Donde se ficho. `map-pin` ya esta cogido para el local, asi que la ubicacion
+  // de un fichaje lleva la diana, que es lo que dibuja «aqui mismo».
+  crosshair: 'Ubicacion',
+  // Quitar genero de un golpe desde la lista, al lado del mas.
+  minus: 'Quitar',
+  // El dinero del cierre de caja.
+  euro: 'Dinero',
+
   // ── Reparto · los canales de delivery (M29) ────────────────────────────────
   //
   // El icono es de la **categoria**, no de la marca: la bici del repartidor vale

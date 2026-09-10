@@ -9,7 +9,7 @@ import {
   type TamanoDeWidget,
   type WidgetPuesto,
 } from '@estook/ui';
-import type { PermisoDeApp } from '@estook/permisos';
+import type { Permiso } from '@estook/permisos';
 import { puedeVer } from '@estook/permisos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -111,10 +111,7 @@ export function usarMiPanel(): MiPanel {
   const aparato = esEscritorio ? 'escritorio' : 'movil';
   const clave = useMemo(() => ['mi_panel', aparato] as const, [aparato]);
 
-  const tienePermiso = useCallback(
-    (permiso: PermisoDeApp) => puedeVer(permisos, permiso),
-    [permisos],
-  );
+  const tienePermiso = useCallback((permiso: Permiso) => puedeVer(permisos, permiso), [permisos]);
 
   const consulta = useQuery({
     queryKey: clave,

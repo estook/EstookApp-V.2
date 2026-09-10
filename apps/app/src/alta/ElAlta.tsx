@@ -20,6 +20,7 @@ import { QuienEres } from './pasos/QuienEres.tsx';
 import { QueTipoDeLocal } from './pasos/QueTipoDeLocal.tsx';
 import { CuantosLocales } from './pasos/CuantosLocales.tsx';
 import type { ElAltaDelLocal, PropsDeUnPaso } from './contrato.ts';
+import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
 
 /**
  * El alta de un local · los ocho pasos (M5).
@@ -321,6 +322,15 @@ function Terminar({
         {alta.nombre} ya puede trabajar. Lo que falte se puede completar cuando quieras desde el
         Panel.
       </p>
+
+      {/*
+        «Al registrarse y en Ajustes, elegir entre conectar el TPV o el cierre de
+        caja a mano.» Va aquí, al final, y no como un noveno paso: es la única
+        pregunta del alta que no hace falta para empezar a trabajar —se puede
+        cerrar la caja sin haberla contestado— y un paso más es un paso más que
+        se abandona. Si se deja sin contestar, la hace la tarjeta del Panel.
+      */}
+      <ComoEntranTusVentas modo="alta" />
 
       {pendientes.length > 0 && (
         <div className="rounded-medio border border-borde bg-superficie p-e4">

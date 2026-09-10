@@ -33,6 +33,35 @@ export const QUE_ES_CADA_FORMA_DE_CERRAR: Readonly<Record<ComoSeCierra, string>>
   tpv: 'Estook se conecta a tu programa de caja y las ventas entran solas cada noche.',
 };
 
+/**
+ * Los programas de caja que más se ven en hostelería en España.
+ *
+ * ── Y lo que esta lista NO dice ─────────────────────────────────────────────
+ *
+ * **No dice que se puedan conectar.** «Ninguna integración se da por disponible
+ * hasta verificar sus requisitos y capacidades reales» (Evolución 1.0, capítulo
+ * 16): cuál tiene API, cuál solo exporta un fichero y cuál no deja sacar nada es
+ * lo primero que hará M18 con cada uno, y hasta entonces decir «este se conecta»
+ * sería una promesa sin comprobar.
+ *
+ * Sirve para lo que sirve hoy: saber **qué TPV tiene cada local**, que es lo que
+ * decide por cuál empezar a conectar. Y mientras tanto, casi todos exportan un
+ * fichero de ventas, y ese fichero ya se puede subir en el cierre.
+ */
+export const TPVS = [
+  'Ágora',
+  'Revo',
+  'Last.app',
+  'Glop',
+  'Hosteltáctil',
+  'Camarero10',
+  'ICG',
+  'Lightspeed',
+  'Square',
+  'SumUp',
+  'Otro',
+] as const;
+
 export const ORIGENES_DEL_CIERRE = ['a_mano', 'csv', 'foto', 'tpv'] as const;
 
 export type OrigenDelCierre = (typeof ORIGENES_DEL_CIERRE)[number];
@@ -87,6 +116,18 @@ export function loQueNoCuadra(
   if (partes.every((parte) => parte === null)) return null;
   const suma = partes.reduce((total: number, parte) => total + (parte ?? 0), 0);
   return centimos(suma - totalCentimos);
+}
+
+/**
+ * Qué parte de un total es algo, en porcentaje y con un decimal: el food cost.
+ *
+ * Nulo sin total, y **no cero**: un food cost sin ventas no es un 0 %, es que no
+ * se sabe, y un cero ahí sería inventarse la cifra más importante de la pantalla.
+ * Vive aquí para que el servidor, el Panel y Negocio den el mismo número (regla 6).
+ */
+export function porcentajeDe(parte: number, total: number): number | null {
+  if (total <= 0) return null;
+  return Math.round((parte / total) * 1000) / 10;
 }
 
 // ── El CSV que escupe un TPV ─────────────────────────────────────────────────

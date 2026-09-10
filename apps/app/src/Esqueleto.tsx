@@ -370,6 +370,9 @@ export function Esqueleto() {
           alElegir={(app) => {
             irAApp(app);
           }}
+          alIrAlPanel={() => {
+            navegar('/');
+          }}
         />
 
         <BuscadorUniversal

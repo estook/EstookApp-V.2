@@ -2,11 +2,13 @@ import {
   IconoAnadir,
   IconoAtencion,
   IconoBuscar,
+  IconoDinero,
   IconoDocumento,
   IconoEquipo,
   IconoInventario,
   IconoOrganizacion,
   IconoPersona,
+  IconoQuitar,
   IconoReloj,
   type Icono,
 } from '@estook/iconos';
@@ -157,6 +159,64 @@ export const ACCIONES: readonly Accion[] = [
     permiso: { cual: 'app.equipo', como: 'ver' },
     ir: '/equipo/personas/sin-entrar-todavia',
   },
+  // ── M6½ · la merma, las horas y lo que entra ─────────────────────────────
+  {
+    // Va al Panel y no a Inventario, y es a propósito: **un camarero no tiene
+    // Inventario** y es quien rompe una copa. El Panel lo tiene todo el mundo, y
+    // la hoja de apuntar se abre ahí encima.
+    id: 'apuntar-merma',
+    app: 'inventario',
+    nombre: 'Apuntar una merma',
+    queHace: 'Qué se ha ido, cuánto y por qué, en tres toques',
+    icono: IconoQuitar,
+    permiso: { cual: 'accion.registrar_merma', como: 'editar' },
+    ir: '/?hacer=merma',
+  },
+  {
+    id: 'mermas',
+    app: 'inventario',
+    nombre: 'Ver las mermas',
+    queHace: 'Cuánto se va sin venderse y en qué, con la exportación',
+    icono: IconoDocumento,
+    permiso: { cual: 'app.inventario', como: 'ver' },
+    ir: '/inventario/movimientos/mermas',
+  },
+  {
+    id: 'quien-esta',
+    app: 'equipo',
+    nombre: 'Ver quién está trabajando',
+    queHace: 'Quién ha fichado, desde cuándo y quién no',
+    icono: IconoEquipo,
+    permiso: { cual: 'app.equipo', como: 'ver' },
+    ir: '/equipo/hoy',
+  },
+  {
+    id: 'horas',
+    app: 'equipo',
+    nombre: 'Ver las horas del equipo',
+    queHace: 'Las horas de cada uno frente a su contrato, y lo que cuestan',
+    icono: IconoReloj,
+    permiso: { cual: 'app.equipo', como: 'ver' },
+    ir: '/equipo/resumen',
+  },
+  {
+    id: 'cerrar-caja',
+    app: 'servicio',
+    nombre: 'Cerrar la caja',
+    queHace: 'El total del día y, si quieres, lo que ha salido',
+    icono: IconoDinero,
+    permiso: { cual: 'dato.ventas', como: 'editar' },
+    ir: '/servicio/jornada/cierre',
+  },
+  {
+    id: 'ventas',
+    app: 'negocio',
+    nombre: 'Ver las ventas',
+    queHace: 'Lo que ha entrado cada día, y cuánto se ha ido en género',
+    icono: IconoDinero,
+    permiso: { cual: 'dato.ventas', como: 'ver' },
+    ir: '/negocio/ventas',
+  },
   {
     id: 'mi-acceso',
     app: null,
@@ -206,8 +266,8 @@ export function accionesQuePuedo(permisos: PermisosResueltos): readonly Accion[]
  */
 export const ACCIONES_DE_FABRICA: readonly string[] = [
   'nuevo-producto',
+  'apuntar-merma',
   'que-atender',
-  'bajo-minimo',
   'el-libro',
 ];
 

@@ -163,8 +163,16 @@ create table estook.fichaje (
   constraint fichaje_entrada_dice_donde check (
     (entro_latitud is not null) <> (entro_sin_donde is not null)
   ),
+  --
+  -- La salida, igual, **salvo que la haya puesto quien corrige**. El caso más
+  -- normal de corregir es justo ese: alguien se fue sin fichar la salida, y quien
+  -- lleva el equipo la pone al día siguiente. Ahí no hay aparato al que pedirle
+  -- la posición, y el porqué ya está escrito: es el motivo de la corrección, con
+  -- nombre. Sin esta excepción, cerrar un turno olvidado era imposible.
   constraint fichaje_salida_dice_donde check (
-    salio_en is null or ((salio_latitud is not null) <> (salio_sin_donde is not null))
+    salio_en is null
+    or corregido_por is not null
+    or ((salio_latitud is not null) <> (salio_sin_donde is not null))
   )
 );
 
@@ -359,6 +367,87 @@ create trigger horario_habitual_sube_version before update on estook.horario_hab
 -- Corregir sí es de otro, y por eso es una política aparte con `app.equipo` en
 -- «ver y editar»: es lo que separa mirar las horas de tocarlas.
 
+-- ── A quién lleva cada uno ──────────────────────────────────────────────────
+--
+-- «Resumen para gerentes o managers (todos), o jefe de cocina si son cocineros,
+-- o jefe de sala si son camareros.» Es decir: **un jefe de cocina mira a la
+-- cocina y no a la sala**, aunque los dos tengan la app Equipo en «ver».
+--
+-- `personas_visibles` no sirve para esto, y no por un fallo: contesta «a quién
+-- conoces en tu organización», que para un jefe de cocina es todo el mundo —tiene
+-- que poder ver quién es la camarera para trabajar con ella—. Lo que no tiene que
+-- ver son **sus horas**. Son dos preguntas, y esta es la segunda.
+--
+-- Se decide por el rol más amplio que alcanza el local:
+--
+--   gerente, área manager, dirección, RRHH   a todo el equipo del local
+--   jefe de cocina                           a la cocina: cocineros y jefes de cocina
+--   jefe de sala                             a la sala: camareros y jefes de sala
+--   el resto                                 a sí mismo, y a nadie más
+--
+-- Y va en la base, en una función y en la política, y no en cada consulta: la
+-- regla se cumple porque no hay camino que la rodee, no porque cada pantalla se
+-- acuerde de filtrar. `security definer` porque tiene que leer las membresías de
+-- toda la organización para decidir, igual que `locales_visibles`.
+
+create or replace function estook.a_quien_lleva(p_local uuid)
+returns table (persona_id uuid)
+language sql
+stable
+security definer
+set search_path = estook, pg_catalog, pg_temp
+as $$
+  with mi_rol as (
+    select r.codigo, r.amplitud
+      from estook.membresia m
+      join estook.rol r on r.codigo = m.rol
+      join estook.local l on l.id = p_local
+     where m.persona_id = estook.persona_actual()
+       and m.organizacion_id = l.organizacion_id
+       and (
+         m.alcance = 'organizacion'
+         or (m.alcance = 'area' and l.area_id = m.area_id)
+         or (m.alcance = 'local' and l.id = m.local_id)
+       )
+       and m.desde <= current_date
+       and (m.hasta is null or m.hasta >= current_date)
+       and (m.revocada_en is null or m.revocada_en > now())
+     order by r.amplitud desc
+     limit 1
+  ),
+  familia as (
+    select case (select codigo from mi_rol)
+             when 'jefe_de_cocina' then array['cocinero', 'jefe_de_cocina']
+             when 'jefe_de_sala'   then array['camarero', 'jefe_de_sala']
+             else null
+           end as roles
+  )
+  select estook.persona_actual()
+  union
+  select distinct m.persona_id
+    from estook.membresia m
+    join estook.local l on l.id = p_local
+   where m.organizacion_id = l.organizacion_id
+     and (
+       m.alcance = 'organizacion'
+       or (m.alcance = 'area' and l.area_id = m.area_id)
+       or (m.alcance = 'local' and l.id = m.local_id)
+     )
+     -- De jefe para arriba. Un cocinero no lleva a nadie: se ve a sí mismo.
+     and coalesce((select amplitud from mi_rol), 0) >= 50
+     -- El `::text[]` no es adorno: sin él, `any (select …)` se lee como «algún
+     -- elemento de esta subconsulta», que devuelve una fila con un array, y
+     -- Postgres acaba comparando un texto con un array entero. Con el cast es una
+     -- expresión, y `any` recorre el array. Lo cazó la prueba de migraciones.
+     and (
+       (select roles from familia) is null
+       or m.rol = any ((select roles from familia)::text[])
+     )
+$$;
+
+comment on function estook.a_quien_lleva(uuid) is
+  'A quien lleva quien pregunta en ese local: todo el equipo desde gerente, su familia (cocina o sala) si es jefe, y a si mismo si no. Decide de quien se ven las horas.';
+
 alter table estook.fichaje          enable row level security;
 alter table estook.retribucion      enable row level security;
 alter table estook.horario_habitual enable row level security;
@@ -369,7 +458,7 @@ create policy fichaje_el_mio on estook.fichaje
 create policy fichaje_los_del_equipo on estook.fichaje
   for select using (
     estook.puede_ver('app.equipo', local_id)
-    and persona_id in (select persona_id from estook.personas_visibles())
+    and persona_id in (select q.persona_id from estook.a_quien_lleva(local_id) q)
   );
 
 -- Fichar: solo el propio, y solo en un local que se alcance.

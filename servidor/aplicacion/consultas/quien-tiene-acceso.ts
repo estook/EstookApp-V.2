@@ -38,6 +38,12 @@ export interface QuienTieneAcceso {
   readonly hasta: string | null;
   readonly tienePin: boolean;
   readonly ultimoAccesoEn: string | null;
+  /**
+   * Si tiene una sesión viva ahora mismo. «Que no ponga "dentro" cuando ya esté
+   * dentro, sino "en línea" si se conecta, y si no la última vez.» El estado de
+   * antes decía «dentro» a quien entró una vez hace tres meses.
+   */
+  readonly enLinea: boolean;
 }
 
 export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[]>({
@@ -77,6 +83,7 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
         tiene_pin: boolean;
         ultimo_acceso_en: Date | null;
         vigente: boolean;
+        en_linea: boolean;
       }[]
     >`
       select p.id as persona_id,
@@ -90,6 +97,12 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
                 where n.persona_id = p.id and n.local_id = ${entrada.local_id}
              ) as tiene_pin,
              p.ultimo_acceso_en,
+             exists (
+               select 1 from estook.sesion s
+                where s.persona_id = p.id
+                  and s.cerrada_en is null
+                  and s.caduca_en > now()
+             ) as en_linea,
              -- La vigencia la decide Postgres, no JavaScript. Comparar fechas en
              -- el servidor de aplicacion abre la puerta a que un cambio de huso
              -- deje a alguien fuera un dia antes de tiempo.
@@ -134,6 +147,7 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
         hasta: f.hasta?.toISOString().slice(0, 10) ?? null,
         tienePin: f.tiene_pin,
         ultimoAccesoEn: f.ultimo_acceso_en?.toISOString() ?? null,
+        enLinea: f.vigente && f.en_linea,
       };
     });
   },

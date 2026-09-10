@@ -642,12 +642,16 @@ test('quien lleva el local puede dar una contraseña nueva, y se enseña una vez
   // Se piden las dos y se filtra por visible: el marcado de la otra sigue en el
   // DOM, escondido, y sin `:visible` esto casaria con dos y Playwright se planta.
   const suya = page.locator('tr:visible, li:visible').filter({ hasText: nombre });
-  await expect(suya.getByRole('button', { name: 'Contraseña nueva' })).toBeVisible();
-  await suya.getByRole('button', { name: 'Contraseña nueva' }).click();
+
+  // Desde M6½ los tres botones de acceso van en un desplegable: «Acceso», y
+  // dentro el PIN, la contraseña y retirar. Eran tres botones por fila.
+  await suya.getByRole('button', { name: 'Acceso' }).click();
+  const hoja = page.getByRole('dialog', { name: new RegExp(`El acceso de ${nombre}`) });
+  await hoja.getByRole('button', { name: 'Darle una contraseña nueva' }).click();
 
   // Sale, y **dice que se enseña una sola vez**, que es lo que evita la llamada
   // de «¿dónde vuelvo a verla?».
-  await expect(page.getByText('Se enseña una sola vez')).toBeVisible();
+  await expect(page.getByText('Solo se enseña esta vez')).toBeVisible();
   await page.getByRole('button', { name: 'Hecho' }).click();
 });
 

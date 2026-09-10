@@ -1,13 +1,24 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState } from 'react';
+import { nombreEn } from '../datos/nombreEn.ts';
 import { useQuery } from '@tanstack/react-query';
-import { NOMBRE_DEL_ESTADO } from '@estook/dominio';
+import {
+  AVISAR_ANTES_DE_ENTRAR,
+  NOMBRE_DEL_ESTADO,
+  NOMBRE_DEL_ORIGEN_DEL_CIERRE,
+  minutosHasta,
+  porcentajeDe,
+} from '@estook/dominio';
 import { appsVisibles, puedeVer } from '@estook/permisos';
 import {
+  Avatar,
+  Boton,
+  Cargando,
   Cifra,
   EstadoVacio,
   Etiqueta,
   Proporcion,
   Tarjeta,
+  Tira,
   acentoDelWidget,
   appPorPermiso,
   clases,
@@ -15,16 +26,28 @@ import {
   type App,
   type TamanoDeWidget,
 } from '@estook/ui';
+import { IconoAnadir, IconoCamara, IconoEntrar, IconoSalir, IconoUbicacion } from '@estook/iconos';
 import { useNavigate } from 'react-router-dom';
 import { usarLoDeHoy } from '../ganchos/usarLoDeHoy.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { AccesosRapidos } from './AccesosRapidos.tsx';
+import { ApuntarMerma } from '../inventario/ApuntarMerma.tsx';
+import { usarFichar } from '../ganchos/usarFichar.ts';
+import {
+  comoSeLeeLaHora,
+  comoSeLeenMinutos,
+  ultimaVez,
+  type FichajesDeHoy,
+} from '../equipo/contrato.ts';
+import type { MisCierres } from '../servicio/contrato.ts';
 import {
   TONO_DEL_ESTADO,
   comoDinero,
   comoSeLeeElDia,
+  comoSeLeeLaFecha,
   conUnidadDeUso,
   cuandoSeAgota,
+  type MermaDeHoy,
   type MisMovimientos,
 } from '../inventario/contrato.ts';
 
@@ -108,7 +131,11 @@ function Cual({
   if (id === 'valor-de-la-camara') return <ValorDeLaCamara />;
   if (id === 'cuanto-genero') return <CuantoGenero />;
   if (id === 'mis-apps') return <MisApps tamano={tamano} />;
-  if (id === 'mi-equipo') return <MiEquipo />;
+  if (id === 'fichar') return <FicharDesdeElPanel tamano={tamano} />;
+  if (id === 'fichajes') return <QuienEstaTrabajandoWidget tamano={tamano} />;
+  if (id === 'personas') return <PersonasWidget tamano={tamano} />;
+  if (id === 'merma') return <MermaWidget tamano={tamano} />;
+  if (id === 'ventas-de-hoy') return <VentasDeHoyWidget />;
   if (id === 'ultimos-movimientos') return <UltimosMovimientos tamano={tamano} />;
   return null;
 }
@@ -451,67 +478,532 @@ function MisApps({ tamano }: { readonly tamano: TamanoDeWidget }) {
   );
 }
 
-// ── Tu equipo ────────────────────────────────────────────────────────────────
+// ── Fichar, desde el Panel ───────────────────────────────────────────────────
 
-interface AccesoEnPanel {
-  readonly personaId: string;
-  readonly nombre: string;
-  readonly rolNombre: string;
-  readonly estado: 'dentro' | 'sin_estrenar' | 'fuera';
+/**
+ * Fichar · entrar y salir del turno.
+ *
+ * ── Por qué vive aquí y no dentro de Equipo ─────────────────────────────────
+ *
+ * Porque un cocinero **no tiene la app Equipo**: la matriz de M1 no se la da, y
+ * con razón. Si fichar viviera solo dentro de Equipo, la mitad de la plantilla no
+ * podría fichar, que es justo la mitad que ficha.
+ *
+ * ── Y el aviso, que es lo que pedía la lista ────────────────────────────────
+ *
+ * «Avisar según el horario a la gente: mañana entras a las…, o entras en 5
+ * minutos, ficha ya.» Eso entero son notificaciones, y las notificaciones son M25
+ * —correo con Resend y push con su trabajador de servicio— con el reloj de la
+ * decisión 0016 detrás.
+ *
+ * Lo que **sí se puede hacer hoy, y se hace**, es lo que no necesita nada de eso:
+ * si tu turno empieza dentro de media hora y no has fichado, el widget te lo dice
+ * en cuanto abres la aplicación. No suena, no llega al bolsillo, y no promete que
+ * lo haga. El horario de siempre de cada uno se pone en su ficha.
+ */
+function FicharDesdeElPanel({ tamano }: { readonly tamano: TamanoDeWidget }) {
+  const fichar = usarFichar();
+  const mio = fichar.mio;
+
+  if (fichar.cargando) {
+    return (
+      <Caja titulo="Fichar">
+        <Cargando que="tu turno" lineas={2} />
+      </Caja>
+    );
+  }
+
+  if (mio === undefined || !mio.puedoFichar) {
+    return (
+      <Caja titulo="Fichar">
+        <p className="text-secundario text-texto-suave">
+          Tu acceso no incluye fichar. Las horas las lleva quien tenga ese permiso.
+        </p>
+      </Caja>
+    );
+  }
+
+  const abierto = mio.abierto;
+  const dentro = abierto !== null;
+  const deHoy = comoSeLeenMinutos(mio.minutosDeHoy);
+
+  // Su turno de hoy, si tiene horario puesto. Es de lo que cuelga el aviso.
+  const deHoyEnElHorario = mio.horario.filter((tramo) => tramo.dia === mio.diaDeLaSemana);
+  const entraHoy = deHoyEnElHorario[0]?.entra ?? null;
+  const faltan = entraHoy === null ? null : minutosHasta(mio.horaDelLocal, entraHoy);
+  const tocaFichar =
+    !dentro && faltan !== null && faltan <= AVISAR_ANTES_DE_ENTRAR && faltan > -240;
+
+  return (
+    <Caja
+      titulo={dentro ? 'Estás dentro' : 'Fichar'}
+      origen={abierto !== null ? `Desde las ${comoSeLeeLaHora(abierto.entroEn)}` : `Hoy: ${deHoy}`}
+    >
+      <div className="flex h-full flex-col justify-between gap-e3">
+        <div>
+          {abierto !== null ? (
+            <p className="text-titulo font-semibold tabular-nums">
+              {comoSeLeenMinutos(abierto.minutos)}
+            </p>
+          ) : tocaFichar ? (
+            <p className="text-cuerpo font-medium text-atencion">
+              {faltan > 0
+                ? `Entras en ${faltan} min. Ficha ya.`
+                : `Entrabas a las ${entraHoy ?? ''}. Todavía no has fichado.`}
+            </p>
+          ) : (
+            <p className="text-secundario text-texto-suave">
+              {mio.minutosDeHoy > 0
+                ? `Hoy llevas ${deHoy}. Esta semana, ${comoSeLeenMinutos(mio.minutosDeLaSemana)}.`
+                : entraHoy === null
+                  ? 'No has fichado hoy.'
+                  : `Hoy entras a las ${entraHoy}.`}
+            </p>
+          )}
+
+          {fichar.error !== null && (
+            <p className="mt-e2 text-secundario text-mal">{fichar.error.quePasa}</p>
+          )}
+
+          {fichar.acabaDe !== null && fichar.error === null && (
+            <p aria-live="polite" className="mt-e2 text-secundario text-bien">
+              {fichar.acabaDe.entro ? 'Entrada apuntada' : 'Salida apuntada'}
+              {fichar.acabaDe.metros === null ? '' : `, a ${fichar.acabaDe.metros} m del local`}.
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-e2">
+          <Boton
+            tono={dentro ? 'secundario' : 'principal'}
+            ancho
+            icono={dentro ? <IconoSalir size={18} /> : <IconoEntrar size={18} />}
+            cargando={fichar.fichando}
+            textoCargando={
+              fichar.paso === 'buscando_ubicacion' ? 'Buscando dónde estás' : 'Apuntando'
+            }
+            onClick={dentro ? fichar.salir : fichar.entrar}
+          >
+            {dentro ? 'Fichar la salida' : 'Fichar la entrada'}
+          </Boton>
+
+          {/*
+            Que se va a pedir la ubicación, dicho **antes** de pulsar. Un permiso
+            del navegador que salta de golpe se deniega por reflejo, y una vez
+            denegado no se vuelve a preguntar: se queda denegado para siempre en
+            ese aparato. Decirlo antes es la diferencia entre que la gente lo
+            acepte o que todos los fichajes salgan sin ubicación.
+          */}
+          {tamano !== 'chico' && (
+            <p className="flex items-start gap-e2 text-etiqueta text-texto-tenue">
+              <span aria-hidden className="mt-[1px] shrink-0">
+                <IconoUbicacion size={14} />
+              </span>
+              <span>
+                Se te pedirá la ubicación al fichar.{' '}
+                {mio.elLocalSabeDondeEsta
+                  ? `Queda apuntado a cuántos metros del local estabas.`
+                  : 'Tu local todavía no tiene su posición puesta, así que se guarda sin comparar.'}{' '}
+                Si el móvil no la da, se ficha igual.
+              </span>
+            </p>
+          )}
+        </div>
+      </div>
+    </Caja>
+  );
 }
 
-function MiEquipo() {
-  const { cliente, yo, permisos } = usarSesion();
-  const localId = yo?.local?.id ?? '';
+// ── Quién está trabajando ────────────────────────────────────────────────────
+
+/**
+ * ── Por qué esto no es «Tu equipo» ─────────────────────────────────────────
+ *
+ * Había un widget que enseñaba la plantilla entera en pastillas y ocupaba media
+ * pantalla de un TPV para contestar algo que no se pregunta a diario: quién tiene
+ * acceso. Para eso se entra en Equipo.
+ *
+ * Esto contesta la pregunta de las siete de la tarde: **quién ha fichado y quién
+ * no**. Y ya no dice «los fichajes llegan en M15», que es lo que decía cada
+ * mañana desde M5.
+ */
+function QuienEstaTrabajandoWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
+  const { cliente, permisos, yo } = usarSesion();
+  const cuantos = tamano === 'grande' ? 8 : 4;
 
   const consulta = useQuery({
-    queryKey: ['quien_tiene_acceso', localId],
-    enabled: localId !== '' && puedeVer(permisos, 'app.equipo'),
-    queryFn: async (): Promise<readonly AccesoEnPanel[]> => {
-      const respuesta = await cliente.consultar<readonly AccesoEnPanel[]>('quien_tiene_acceso', {
-        local_id: localId,
-      });
+    queryKey: ['fichajes_de_hoy'],
+    enabled: puedeVer(permisos, 'app.equipo') && yo?.local !== null && yo?.local !== undefined,
+    queryFn: async (): Promise<FichajesDeHoy> => {
+      const respuesta = await cliente.consultar<FichajesDeHoy>('fichajes_de_hoy');
+      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
+      return respuesta.datos;
+    },
+    staleTime: 60_000,
+  });
+
+  const datos = consulta.data;
+  const dentro = (datos?.gente ?? []).filter((quien) => quien.dentro);
+  const fuera = (datos?.gente ?? []).filter((quien) => !quien.dentro);
+
+  return (
+    <Caja
+      titulo={dentro.length === 1 ? '1 persona dentro' : `${dentro.length} personas dentro`}
+      origen={`Fichajes de hoy · son las ${datos?.horaDelLocal ?? '--:--'} en el local`}
+      ir="/equipo/hoy"
+    >
+      {datos === undefined ? (
+        <Cargando que="los fichajes" lineas={3} />
+      ) : datos.gente.length === 0 ? (
+        <EstadoVacio
+          compacto
+          titulo="Todavía no hay equipo"
+          frase="Cuando alguien más tenga acceso a este local, aquí verás quién ha fichado."
+          sinAccionPorque="Se invita desde Equipo · Personas."
+        />
+      ) : dentro.length === 0 ? (
+        <p className="text-secundario text-texto-suave">
+          Nadie ha fichado todavía.{' '}
+          {fuera.filter((quien) => quien.entraHoyALas !== null).length > 0
+            ? `${fuera.filter((quien) => quien.entraHoyALas !== null).length} tienen turno hoy.`
+            : ''}
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-e1">
+          {dentro.slice(0, cuantos).map((quien) => (
+            <li key={quien.personaId} className="flex items-center gap-e2">
+              <span className="min-w-0 flex-1 truncate text-cuerpo">{quien.nombre}</span>
+              <span className="shrink-0 text-secundario tabular-nums text-texto-suave">
+                {comoSeLeenMinutos(quien.minutos ?? 0)}
+              </span>
+              {quien.turnoSospechoso && <Etiqueta tono="atencion">revisar</Etiqueta>}
+            </li>
+          ))}
+          {dentro.length > cuantos && (
+            <li className="text-secundario text-texto-suave">y {dentro.length - cuantos} más</li>
+          )}
+        </ul>
+      )}
+
+      {datos !== undefined && fuera.length > 0 && dentro.length > 0 && (
+        <p className="mt-e2 text-secundario text-texto-suave">
+          {fuera.length === 1 ? '1 persona no ha fichado' : `${fuera.length} no han fichado`}.
+        </p>
+      )}
+    </Caja>
+  );
+}
+
+// ── Personas ─────────────────────────────────────────────────────────────────
+
+/**
+ * Quién hay, quién está en línea y cuándo se le vio.
+ *
+ * ── «En línea» y «ha fichado» no son lo mismo ──────────────────────────────
+ *
+ * Y mezclarlos era lo que hacía el widget de antes. Estar en línea es tener la
+ * aplicación abierta —puede ser desde casa—; haber fichado es estar trabajando.
+ * Un jefe de cocina necesita lo segundo y quien lleva el local necesita lo primero
+ * para saber si a alguien le falla el acceso. Son dos widgets porque son dos
+ * preguntas.
+ */
+function PersonasWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
+  const { cliente, permisos, yo } = usarSesion();
+  const navegar = useNavigate();
+  const cuantos = tamano === 'grande' ? 10 : 5;
+
+  const consulta = useQuery({
+    queryKey: ['fichajes_de_hoy'],
+    enabled: puedeVer(permisos, 'app.equipo') && yo?.local !== null && yo?.local !== undefined,
+    queryFn: async (): Promise<FichajesDeHoy> => {
+      const respuesta = await cliente.consultar<FichajesDeHoy>('fichajes_de_hoy');
+      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
+      return respuesta.datos;
+    },
+    staleTime: 60_000,
+  });
+
+  const gente = consulta.data?.gente ?? [];
+  const enLinea = gente.filter((quien) => quien.enLinea).length;
+
+  return (
+    <Caja
+      titulo={gente.length === 1 ? '1 persona' : `${gente.length} personas`}
+      origen={enLinea === 0 ? 'Nadie en línea ahora' : `${enLinea} en línea ahora`}
+      ir="/equipo/personas/con-acceso"
+    >
+      {consulta.data === undefined ? (
+        <Cargando que="tu equipo" lineas={3} />
+      ) : gente.length === 0 ? (
+        <EstadoVacio
+          compacto
+          titulo="Llevas el local solo"
+          frase="Cuando des acceso a alguien, aquí verás quién es y cuándo se le vio por última vez."
+          sinAccionPorque="Se invita desde Equipo · Personas."
+        />
+      ) : (
+        <ul className="flex flex-col gap-e1">
+          {gente.slice(0, cuantos).map((quien) => (
+            <li key={quien.personaId}>
+              {/* Al nombre se pulsa y se abre su ficha. Es lo que pedía la lista:
+                  el nombre y la cara son enlaces a la persona, desde donde estén. */}
+              <button
+                type="button"
+                onClick={() => {
+                  navegar(`/equipo/personas/con-acceso?persona=${quien.personaId}`);
+                }}
+                className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
+              >
+                <Avatar nombre={`${quien.nombre} ${quien.apellidos ?? ''}`.trim()} tamano={24} />
+                <span className="min-w-0 flex-1 truncate text-cuerpo">{quien.nombre}</span>
+                <span className="shrink-0 text-secundario text-texto-suave">
+                  {/* Color **y** palabra, nunca solo color (B8). */}
+                  {quien.enLinea ? 'En línea' : ultimaVez(quien.ultimoAccesoEn)}
+                </span>
+              </button>
+            </li>
+          ))}
+          {gente.length > cuantos && (
+            <li className="px-e1 text-secundario text-texto-suave">
+              y {gente.length - cuantos} más
+            </li>
+          )}
+        </ul>
+      )}
+    </Caja>
+  );
+}
+
+// ── La merma del día ─────────────────────────────────────────────────────────
+
+/**
+ * Lo que se ha ido hoy sin venderse, con su tira de los días de antes.
+ *
+ * ── Por qué esto es un widget y no una pantalla más ────────────────────────
+ *
+ * Porque la merma se apunta **en mitad de un servicio**, con una mano ocupada, y
+ * lo que no está a un toque no se apunta. Y una merma que no se apunta es food
+ * cost que aparece a fin de mes sin explicación.
+ *
+ * La tira de catorce días está porque una cifra sola no dice nada: doce euros de
+ * merma es mucho o poco según lo de siempre, y eso es exactamente lo que una tira
+ * de barras contesta sin leer un número.
+ */
+function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
+  const { cliente, permisos, yo } = usarSesion();
+  const [apuntando, setApuntando] = useState(false);
+
+  const consulta = useQuery({
+    queryKey: ['merma_de_hoy'],
+    enabled:
+      puedeVer(permisos, 'accion.registrar_merma') && yo?.local !== null && yo?.local !== undefined,
+    queryFn: async (): Promise<MermaDeHoy> => {
+      const respuesta = await cliente.consultar<MermaDeHoy>('merma_de_hoy');
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
       return respuesta.datos;
     },
   });
 
-  const equipo = (consulta.data ?? []).filter((a) => a.estado !== 'fuera');
-  const sinEntrar = equipo.filter((a) => a.estado === 'sin_estrenar').length;
+  const datos = consulta.data;
+  const conPrecios = datos?.puedeVerPrecios === true;
 
   return (
     <Caja
-      titulo="Tu equipo"
+      titulo="Merma de hoy"
       origen={
-        sinEntrar === 0
-          ? 'Con acceso a este local'
-          : `${sinEntrar} sin entrar todavía: su PIN sigue valiendo`
+        conPrecios && datos.mediaCentimos !== null && datos.mediaCentimos !== undefined
+          ? `La media de estos catorce días es ${comoDinero(datos.mediaCentimos)}`
+          : 'Lo que ha salido de cámara sin venderse'
       }
-      ir="/equipo/personas/con-acceso"
+      // «Ver» solo a quien tiene Inventario: a un camarero le llevaría a una
+      // pantalla que no puede abrir.
+      {...(puedeVer(permisos, 'app.inventario') ? { ir: '/inventario/movimientos/mermas' } : {})}
     >
-      {equipo.length <= 1 ? (
-        <EstadoVacio
-          compacto
-          titulo="Llevas el local solo"
-          frase="Cuando des acceso a alguien, aquí verás quién es y quién no ha entrado todavía."
-          sinAccionPorque="Se invita desde Equipo · Personas."
-        />
+      {datos === undefined ? (
+        <Cargando que="la merma" lineas={2} />
       ) : (
-        <ul className="flex flex-col gap-e1">
-          {equipo.slice(0, 5).map((persona) => (
-            <li key={persona.personaId} className="flex items-center gap-e2">
-              <span className="min-w-0 flex-1 truncate text-cuerpo">{persona.nombre}</span>
-              <span className="shrink-0 text-secundario text-texto-suave">{persona.rolNombre}</span>
-              {persona.estado === 'sin_estrenar' && <Etiqueta tono="atencion">sin entrar</Etiqueta>}
-            </li>
-          ))}
-        </ul>
+        <div className="flex h-full flex-col justify-between gap-e3">
+          <div>
+            {conPrecios ? (
+              <Cifra
+                etiqueta="Hoy"
+                valor={datos.deHoy.valorCentimos ?? 0}
+                formato={(v) => comoDinero(v)}
+                origen={
+                  datos.deHoy.cuantas === 0
+                    ? 'Nada apuntado hoy'
+                    : `${datos.deHoy.cuantas} ${datos.deHoy.cuantas === 1 ? 'apunte' : 'apuntes'}`
+                }
+              />
+            ) : (
+              <Cifra
+                etiqueta="Hoy"
+                valor={datos.deHoy.cuantas}
+                formato={(v) => String(v)}
+                origen={datos.deHoy.cuantas === 1 ? 'apunte' : 'apuntes'}
+              />
+            )}
+
+            {datos.deHoy.loPeor !== null && (
+              <p className="mt-e1 text-secundario text-texto-suave">
+                Lo más caro: {datos.deHoy.loPeor.producto}
+                {conPrecios ? ` · ${comoDinero(datos.deHoy.loPeor.valorCentimos)}` : ''}
+              </p>
+            )}
+
+            {tamano !== 'ancho' || datos.dias.length > 0 ? (
+              <div className="mt-e3">
+                <Tira
+                  titulo="Merma de los últimos catorce días"
+                  puntos={datos.dias.map((dia) => ({
+                    valor: conPrecios ? (dia.valorCentimos ?? 0) : dia.cuantas,
+                    cuando: comoSeLeeLaFecha(dia.fecha),
+                  }))}
+                  formato={(v) => (conPrecios ? comoDinero(v) : String(v))}
+                  color="var(--color-app-inventario)"
+                  alto={tamano === 'grande' ? 56 : 36}
+                />
+              </div>
+            ) : null}
+          </div>
+
+          {datos.puedeApuntar && (
+            <div className="flex flex-wrap gap-e2">
+              <Boton
+                tono="principal"
+                icono={<IconoAnadir size={18} />}
+                onClick={() => {
+                  setApuntando(true);
+                }}
+              >
+                Apuntar
+              </Boton>
+              {/*
+                La cámara, apagada y con su motivo. Leer una foto y sacar de ahí el
+                producto y el peso lo hace Fogón, y llega con M22. Se deja el sitio
+                hecho porque saber que va a poder hacerse cambia cómo se usa esto
+                hoy, y **no se puede pulsar**: un botón que promete algo y no lo
+                hace es el fallo que este proyecto persigue desde M4.
+              */}
+              <Boton
+                tono="secundario"
+                disabled
+                icono={<IconoCamara size={18} />}
+                onClick={() => undefined}
+              >
+                Con una foto · M22
+              </Boton>
+            </div>
+          )}
+
+          {/* La hoja vive aquí y no en la rejilla: se abre desde el widget y desde
+              la pantalla de mermas, y es el mismo formulario en los dos sitios. */}
+          <ApuntarMerma
+            abierta={apuntando}
+            alCerrar={() => {
+              setApuntando(false);
+            }}
+          />
+        </div>
       )}
-      {/* Lo que este widget **no** dice, dicho: «poner un cero en gris seria
-          inventarse una cifra». */}
-      <p className="mt-e2 text-secundario text-texto-tenue">
-        Quién está fichado y cuántas horas lleva son los fichajes, M15.
-      </p>
+    </Caja>
+  );
+}
+
+// ── Las ventas de hoy ────────────────────────────────────────────────────────
+
+/**
+ * Lo que ha entrado hoy.
+ *
+ * ── Esta tarjeta llevaba desde M5 diciendo que llegaba en M20 ──────────────
+ *
+ * Y decía la verdad mientras la cifra tenía que venir del TPV. El problema es que
+ * **media hostelería no va a conectar un TPV nunca**: un bar con una caja de
+ * veinte años y un papel de Z no tiene API, así que el widget habría seguido
+ * apagado para ellos para siempre.
+ *
+ * Desde M6½ la cifra sale del cierre de caja, que se apunta a mano, se sube de un
+ * CSV o se saca de una foto del Z. Cuando llegue el conector de M20, lo que traiga
+ * se guarda en la misma tabla y este widget no se entera de que ha cambiado nada.
+ *
+ * Y si no hay cierre, **no pinta un cero**: dice que falta cerrar y lleva ahí. «Un
+ * cero en gris sería inventarse una cifra», y ese fallo ya estuvo en esta misma
+ * tarjeta.
+ */
+function VentasDeHoyWidget() {
+  const { cliente, permisos, yo } = usarSesion();
+  const navegar = useNavigate();
+
+  const consulta = useQuery({
+    queryKey: ['mis_cierres', 'panel'],
+    enabled: puedeVer(permisos, 'dato.ventas') && yo?.local !== null && yo?.local !== undefined,
+    queryFn: async (): Promise<MisCierres> => {
+      const respuesta = await cliente.consultar<MisCierres>('mis_cierres', { limite: '7' });
+      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
+      return respuesta.datos;
+    },
+  });
+
+  const datos = consulta.data;
+  const deHoy = datos?.cierres.find((cierre) => cierre.fecha === datos.jornada) ?? null;
+  // El food cost del día lo cuenta el dominio, que es su único dueño (regla 6).
+  const foodCostDeHoy =
+    deHoy === null ? null : porcentajeDe(deHoy.consumoCentimos ?? 0, deHoy.totalCentimos);
+
+  return (
+    <Caja
+      titulo="Ventas de hoy"
+      origen={
+        deHoy === null
+          ? 'Sin cerrar todavía'
+          : nombreEn(NOMBRE_DEL_ORIGEN_DEL_CIERRE, deHoy.origen, 'Del cierre de caja')
+      }
+      ir="/servicio/jornada/cierre"
+    >
+      {datos === undefined ? (
+        <Cargando que="las ventas" lineas={2} />
+      ) : deHoy === null ? (
+        <div className="flex h-full flex-col justify-between gap-e3">
+          <p className="text-secundario text-texto-suave">
+            {datos.comoSeCierra === 'sin_decidir'
+              ? 'Todavía no has elegido cómo entran tus ventas.'
+              : datos.comoSeCierra === 'tpv'
+                ? 'Tu TPV traerá las ventas cuando esté conectado. Hasta entonces se pueden apuntar a mano.'
+                : 'La caja de hoy no está cerrada.'}
+          </p>
+          {datos.puedeCerrar && (
+            <div>
+              <Boton
+                tono="principal"
+                onClick={() => {
+                  navegar('/servicio/jornada/cierre');
+                }}
+              >
+                Cerrar la caja
+              </Boton>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          <Cifra
+            etiqueta="Facturado"
+            valor={deHoy.totalCentimos}
+            formato={(v) => comoDinero(v)}
+            origen={
+              deHoy.tickets === null
+                ? 'Con IVA, tal cual la caja'
+                : `${deHoy.tickets} ${deHoy.tickets === 1 ? 'ticket' : 'tickets'}`
+            }
+          />
+          {datos.puedeVerCostes && deHoy.consumoCentimos !== null && (
+            <p className="mt-e2 text-secundario text-texto-suave">
+              Género gastado hoy: {comoDinero(deHoy.consumoCentimos)}
+              {foodCostDeHoy === null ? '' : ` · ${foodCostDeHoy.toLocaleString('es-ES')} %`}
+            </p>
+          )}
+        </>
+      )}
     </Caja>
   );
 }

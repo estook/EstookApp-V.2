@@ -61,8 +61,20 @@ export default tseslint.config(
   // calculo, un unico dueno). Son el unico sitio del proyecto donde `Math.round`
   // esta permitido, y por eso la regla 9 apunta a ellos: para que nadie mas
   // redondee dinero por su cuenta. Si esta lista crece, algo se esta haciendo mal.
+  //
+  // M6½ la hace crecer en tres, **y es lo contrario de hacerlo mal**: son tres
+  // motores nuevos del dominio —lo que cuesta una hora, la merma y el cierre de
+  // caja—, y cada uno redondea **una sola vez y al final**, que es justo lo que
+  // la regla protege. Sin ellos, ese redondeo se habria escrito en cada pantalla
+  // que enseña un coste de personal o un food cost, que es el fallo de verdad.
   {
-    files: ['packages/dominio/src/dinero.ts', 'packages/dominio/src/coste.ts'],
+    files: [
+      'packages/dominio/src/dinero.ts',
+      'packages/dominio/src/coste.ts',
+      'packages/dominio/src/equipo.ts',
+      'packages/dominio/src/merma.ts',
+      'packages/dominio/src/cierre.ts',
+    ],
     rules: { 'no-restricted-syntax': 'off' },
   },
 

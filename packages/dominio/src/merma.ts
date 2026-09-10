@@ -1,5 +1,16 @@
-import type { Centimos } from './dinero.ts';
+import { centimos, type Centimos } from './dinero.ts';
 import { cantidad, costeDeLinea, milesimas, type Milesimas } from './coste.ts';
+
+/**
+ * La merma media de un día, en céntimos. Un solo redondeo, y al final (regla 9).
+ *
+ * Es la cifra con la que se compara la de hoy: doce euros de merma son mucho o
+ * poco según lo de siempre, y «lo de siempre» es esto.
+ */
+export function mediaPorDia(totalCentimos: number, dias: number): Centimos {
+  if (dias <= 0) return centimos(0);
+  return centimos(Math.round(totalCentimos / dias));
+}
 
 /**
  * La merma (M6½) · el motivo manda, y la partida sale del motivo.

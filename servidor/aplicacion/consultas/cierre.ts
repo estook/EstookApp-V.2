@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { fechaOperativa, horaDeCorte, jornadaDe, masDias } from '@estook/dominio';
+import { fechaOperativa, horaDeCorte, jornadaDe, masDias, porcentajeDe } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 
 /**
@@ -101,6 +101,8 @@ export const entradaMisCierres = z
       .regex(/^\d{4}-\d{2}-\d{2}$/)
       .optional(),
     limite: z.coerce.number().int().min(1).max(400).optional(),
+    /** Cuántos días hacia atrás. La fecha la pone el servidor (regla 10). */
+    dias: z.coerce.number().int().min(1).max(730).optional(),
   })
   .strict();
 
@@ -119,7 +121,8 @@ export const misCierres = consulta<EntradaMisCierres, SalidaMisCierres>({
     const ficha = await comoCierra(contexto, localId);
 
     const hasta = entrada.hasta ?? ficha.jornada;
-    const desde = entrada.desde ?? masDias(fechaOperativa(hasta), -(POR_DEFECTO_DIAS - 1));
+    const desde =
+      entrada.desde ?? masDias(fechaOperativa(hasta), -((entrada.dias ?? POR_DEFECTO_DIAS) - 1));
     const limite = entrada.limite ?? 90;
 
     const permisos = await contexto.sql<{ cerrar: boolean; costes: boolean }[]>`
@@ -216,7 +219,7 @@ export const misCierres = consulta<EntradaMisCierres, SalidaMisCierres>({
             // Un porcentaje con un decimal. Nulo cuando no hay ventas: un food
             // cost sin denominador no es cero, es que no se sabe, y poner cero
             // ahí sería inventarse la cifra más importante de la pantalla.
-            foodCost: total > 0 ? Math.round((consumo / total) * 1000) / 10 : null,
+            foodCost: porcentajeDe(consumo, total),
           }
         : {}),
     };
@@ -293,9 +296,7 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
     const lineas =
       fila === undefined
         ? []
-        : await contexto.sql<
-            { concepto: string; unidades: string; importe: string | null }[]
-          >`
+        : await contexto.sql<{ concepto: string; unidades: string; importe: string | null }[]>`
             select concepto, unidades::text as unidades, importe_centimos::text as importe
               from estook.linea_de_cierre
              where cierre_id = ${fila.id}

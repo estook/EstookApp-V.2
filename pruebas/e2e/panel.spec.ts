@@ -73,6 +73,11 @@ async function panelDeFabrica(page: Page) {
 }
 
 test.describe('el Panel se guarda de verdad', () => {
+  // **Una detrás de otra.** Las dos tocan el mismo Panel —el de Rosa en este
+  // aparato— y a la vez se pisan: una lo deja de fábrica mientras la otra acaba
+  // de quitar un widget. El primer rojo de esta prueba fue ese, y no un fallo.
+  test.describe.configure({ mode: 'serial' });
+
   test('un widget quitado sigue quitado después de recargar', async ({ page }) => {
     await entrar(page, 'rosa@ejemplo.estook.com');
     await panelDeFabrica(page);

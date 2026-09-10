@@ -7,6 +7,7 @@ import {
   Boton,
   Campo,
   Cargando,
+  ErrorEnCristiano,
   EstadoVacio,
   Etiqueta,
   Selector,
@@ -14,10 +15,12 @@ import {
   Tarjeta,
   type Columna,
 } from '@estook/ui';
-import { IconoAnadir, IconoBuscar } from '@estook/iconos';
+import { IconoAnadir, IconoBuscar, IconoQuitar } from '@estook/iconos';
+import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { NuevoProducto } from './NuevoProducto.tsx';
+import { MoverGenero, type QueSeMueve } from './MoverGenero.tsx';
 import {
   TONO_DEL_ESTADO,
   comoDinero,
@@ -83,6 +86,27 @@ export function Productos({
   const [ofrecerQuitarEjemplos, setOfrecerQuitarEjemplos] = useState(false);
   const [quitando, setQuitando] = useState(false);
   const [poniendo, setPoniendo] = useState(false);
+  /**
+   * El producto al que se le está apuntando algo desde la lista, y qué.
+   *
+   * ── Los botones **+** y **−** de cada fila ─────────────────────────────────
+   *
+   * «A la derecha un más verde y a la derecha un menos rojo.» Apuntar dos kilos
+   * de algo obligaba a abrir su ficha entera, que es un panel con seis secciones,
+   * para pulsar un botón. Es el gesto que más se repite en Inventario —cuarenta
+   * veces en un día normal—, y ahora está en la misma fila que el producto.
+   *
+   * El **+** es «ha llegado» con el precio de la lista ya puesto, que se cambia
+   * si esta vez ha costado otro. El **−** es «ha salido» y pregunta por qué: si
+   * es merma, se apunta como merma. Los dos son el mismo formulario que la ficha,
+   * no otro: un solo sitio donde se apunta género.
+   */
+  const [moviendo, setMoviendo] = useState<{
+    readonly producto: ProductoEnLista;
+    readonly que: QueSeMueve;
+  } | null>(null);
+  const [apuntado, setApuntado] = useState<string | null>(null);
+  const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
 
   const puedeTocar = puedeEditar(permisos, 'app.inventario');
 
@@ -121,6 +145,8 @@ export function Productos({
     await cache.invalidateQueries({ queryKey: ['mis_productos'] });
     await cache.invalidateQueries({ queryKey: ['mis_movimientos'] });
     await cache.invalidateQueries({ queryKey: ['inventario_hoy'] });
+    await cache.invalidateQueries({ queryKey: ['merma_de_hoy'] });
+    await cache.invalidateQueries({ queryKey: ['mis_mermas'] });
     await cache.invalidateQueries({ queryKey: ['el_alta'] });
   }
 
@@ -211,9 +237,49 @@ export function Productos({
                 <span>{p.costePorUnidad ?? '—'}</span>
                 {p.precioCentimos !== null && p.precioCentimos !== undefined && (
                   <span className="text-secundario text-texto-tenue">
-                    {comoDinero(p.precioCentimos)} el envase
+                    {comoDinero(p.precioCentimos)} {p.formato === null ? 'la unidad' : 'el envase'}
                   </span>
                 )}
+              </span>
+            ),
+          } satisfies Columna<ProductoEnLista>,
+        ]
+      : []),
+    // Y los dos botones, al final de la fila, para quien puede apuntar. El
+    // `stopPropagation` es lo que evita que pulsar el más abra también la ficha:
+    // la fila entera es un botón, y estos van dentro.
+    ...(puedeTocar && vista !== 'desactivados'
+      ? [
+          {
+            clave: 'mover',
+            titulo: 'Apuntar',
+            numerica: true,
+            celda: (p: ProductoEnLista) => (
+              <span className="flex justify-end gap-e1">
+                <button
+                  type="button"
+                  aria-label={`Ha llegado ${p.nombre}`}
+                  onClick={(evento) => {
+                    evento.stopPropagation();
+                    setApuntado(null);
+                    setMoviendo({ producto: p, que: 'entrada' });
+                  }}
+                  className="grid size-[40px] place-items-center rounded-medio border border-bien/40 bg-bien/10 text-bien hover:bg-bien/20"
+                >
+                  <IconoAnadir size={20} />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Ha salido ${p.nombre}`}
+                  onClick={(evento) => {
+                    evento.stopPropagation();
+                    setApuntado(null);
+                    setMoviendo({ producto: p, que: 'salida' });
+                  }}
+                  className="grid size-[40px] place-items-center rounded-medio border border-mal/40 bg-mal/10 text-mal hover:bg-mal/20"
+                >
+                  <IconoQuitar size={20} />
+                </button>
               </span>
             ),
           } satisfies Columna<ProductoEnLista>,
@@ -252,13 +318,27 @@ export function Productos({
         </Aviso>
       )}
 
+      {apuntado !== null && (
+        <Aviso
+          tono="bien"
+          titulo={apuntado}
+          esNoticia
+          alCerrar={() => {
+            setApuntado(null);
+          }}
+        >
+          Queda en el libro con tu nombre y la hora.
+        </Aviso>
+      )}
+      {fallo !== null && <ErrorEnCristiano error={fallo} />}
+
       {/* Una sola fila de filtros, y el botón principal al final de ella. Antes
           eran cuatro controles en tres alturas. */}
       <div className="flex flex-wrap items-end gap-e3">
         <div className="min-w-[14rem] flex-1">
           <Campo
             etiqueta="Buscar en tu género"
-            ayuda="Vale con erratas y sin acentos. También sirve el código de barras."
+            ayuda="Vale con erratas, sin acentos y con el código de barras."
             value={texto}
             delante={<IconoBuscar size={16} />}
             onChange={(e) => {
@@ -334,6 +414,27 @@ export function Productos({
           </p>
         )}
       </Tarjeta>
+
+      {moviendo !== null && (
+        <MoverGenero
+          que={moviendo.que}
+          producto={moviendo.producto}
+          puedeVerPrecios={datos.puedeVerPrecios}
+          alCerrar={() => {
+            setMoviendo(null);
+          }}
+          alHecho={(frase) => {
+            setApuntado(`${moviendo.producto.nombre}: ${frase}`);
+            setFallo(null);
+            setMoviendo(null);
+            void refrescar();
+          }}
+          alFallar={(error) => {
+            setFallo(error);
+            setMoviendo(null);
+          }}
+        />
+      )}
 
       <NuevoProducto
         abierta={creando}

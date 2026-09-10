@@ -69,13 +69,8 @@ import { catalogoDeReferencia, recetasDeReferencia } from './consultas/catalogo-
 import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
 import { miPanel } from './consultas/mi-panel.ts';
-import { mermaDeHoy, misMermas } from './consultas/merma.ts';
-import {
-  fichajesDeHoy,
-  miFichaje,
-  resumenDelEquipo,
-  unaPersona,
-} from './consultas/equipo.ts';
+import { mermaDeHoy, misMermas, productosParaMerma } from './consultas/merma.ts';
+import { fichajesDeHoy, miFichaje, resumenDelEquipo, unaPersona } from './consultas/equipo.ts';
 import { misCierres, unCierre } from './consultas/cierre.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
@@ -123,6 +118,7 @@ export const catalogo = {
     // M6½ · la merma, que el libro sabia guardar y no habia forma de apuntar.
     [mermaDeHoy.nombre]: mermaDeHoy,
     [misMermas.nombre]: misMermas,
+    [productosParaMerma.nombre]: productosParaMerma,
     // M6½ · los fichajes y la ficha de cada persona. El permiso `accion.fichar`
     //        existia desde M1 y no habia donde fichar.
     [miFichaje.nombre]: miFichaje,

@@ -48,11 +48,7 @@ async function comoDuena<T>(consulta: string, parametros: unknown[] = []): Promi
   return rows;
 }
 
-async function como<T>(
-  correo: string,
-  consulta: string,
-  parametros: unknown[] = [],
-): Promise<T[]> {
+async function como<T>(correo: string, consulta: string, parametros: unknown[] = []): Promise<T[]> {
   const quien = await base.personaPorCorreo(correo);
   return base.comoPersona(quien, async () => {
     const { rows } = await base.bd.query<T>(consulta, parametros);
@@ -230,10 +226,7 @@ describe('lo que cobra cada uno', () => {
 
     // Marcos es cocinero: tiene Inventario entera, Servicio, Escandallos… y **no
     // tiene `dato.coste_de_personal`**. No ve un solo euro de nadie.
-    const loQueVeMarcos = await como<{ id: string }>(
-      MARCOS,
-      `select id from estook.retribucion`,
-    );
+    const loQueVeMarcos = await como<{ id: string }>(MARCOS, `select id from estook.retribucion`);
     expect(loQueVeMarcos).toEqual([]);
   });
 
@@ -473,9 +466,9 @@ describe('las horas y lo que cuestan', () => {
     ).toBeNull();
 
     // 1.800 € al mes con 40 h a la semana: 40 × 52/12 = 173,33 h/mes → 10,38 €/h.
-    expect(
-      costeDeUnaHora({ forma: 'mensual', importeCentimos: 180_000, horasSemanales: 40 }),
-    ).toBe(1038);
+    expect(costeDeUnaHora({ forma: 'mensual', importeCentimos: 180_000, horasSemanales: 40 })).toBe(
+      1038,
+    );
   });
 
   it('lo que cuesta un turno se cuenta por minutos, no por horas redondeadas', () => {
@@ -504,5 +497,102 @@ describe('las horas y lo que cuestan', () => {
     expect(valorDeLaMerma(2.5, 850_000)).toBe(2125);
     // El signo da igual: en el libro va negativa y aquí se pregunta cuánto vale.
     expect(valorDeLaMerma(-2.5, 850_000)).toBe(2125);
+  });
+});
+
+// ── A quién lleva cada uno ───────────────────────────────────────────────────
+
+describe('un jefe de cocina mira a la cocina, y no a la sala', () => {
+  it('Luis, jefe de cocina de Bar Puerto, no ve las horas de la camarera', async () => {
+    // «Resumen para gerentes o managers (todos), o jefe de cocina si son
+    // cocineros, o jefe de sala si son camareros.» Lo decide la base, en la
+    // política de los fichajes: una pantalla que filtrara lo que le llega sería
+    // una pantalla que un día se olvida de filtrar.
+    const puerto = await base.localPorCodigo('bar-puerto');
+    const nuria = await base.personaPorCorreo('nuria@ejemplo.estook.com');
+    const luis = await base.personaPorCorreo('luis@ejemplo.estook.com');
+
+    await comoDuena(
+      `insert into estook.fichaje (local_id, persona_id, fecha_operativa, entro_en, entro_sin_donde)
+       values ($1, $2, current_date, now() - interval '2 hours', 'sin_senal')`,
+      [puerto, nuria],
+    );
+    await comoDuena(
+      `insert into estook.fichaje (local_id, persona_id, fecha_operativa, entro_en, entro_sin_donde)
+       values ($1, $2, current_date, now() - interval '1 hours', 'sin_senal')`,
+      [puerto, luis],
+    );
+
+    const loQueVeLuis = await como<{ persona_id: string }>(
+      'luis@ejemplo.estook.com',
+      `select persona_id::text as persona_id from estook.fichaje where local_id = $1`,
+      [puerto],
+    );
+    const personas = loQueVeLuis.map((f) => f.persona_id);
+
+    // Las suyas, sí. Las de la sala, no: Nuria es camarera.
+    expect(personas).toContain(luis);
+    expect(personas).not.toContain(nuria);
+  });
+
+  it('y a quién lleva lo dice la función, no cada consulta', async () => {
+    const puerto = await base.localPorCodigo('bar-puerto');
+    const luis = await base.personaPorCorreo('luis@ejemplo.estook.com');
+    const nuria = await base.personaPorCorreo('nuria@ejemplo.estook.com');
+
+    const lleva = await como<{ persona_id: string }>(
+      'luis@ejemplo.estook.com',
+      `select persona_id::text as persona_id from estook.a_quien_lleva($1::uuid)`,
+      [puerto],
+    );
+    const ids = lleva.map((f) => f.persona_id);
+    expect(ids).toContain(luis);
+    expect(ids).not.toContain(nuria);
+
+    // Y una camarera no lleva a nadie más que a sí misma.
+    const ella = await como<{ persona_id: string }>(
+      'nuria@ejemplo.estook.com',
+      `select persona_id::text as persona_id from estook.a_quien_lleva($1::uuid)`,
+      [puerto],
+    );
+    expect(ella.map((f) => f.persona_id)).toEqual([nuria]);
+  });
+});
+
+describe('un turno olvidado se cierra corrigiéndolo', () => {
+  it('sin posición no se cierra, salvo que lo cierre alguien con nombre y motivo', async () => {
+    // El caso más normal de corregir: alguien se fue sin fichar la salida y quien
+    // lleva el equipo se la pone al día siguiente. No hay aparato al que pedirle
+    // la posición: el porqué es el motivo de la corrección.
+    const puerto = await base.localPorCodigo('bar-puerto');
+    const asesoria = await base.personaPorCorreo('asesoria@ejemplo.estook.com');
+    const luis = await base.personaPorCorreo('luis@ejemplo.estook.com');
+
+    await comoDuena(
+      `insert into estook.fichaje (local_id, persona_id, fecha_operativa, entro_en, entro_sin_donde)
+       values ($1, $2, current_date - 1, now() - interval '20 hours', 'sin_senal')`,
+      [puerto, asesoria],
+    );
+
+    // Sin corregir, una salida sin posición y sin porqué no entra.
+    await expect(
+      comoDuena(
+        `update estook.fichaje set salio_en = now() - interval '12 hours'
+          where persona_id = $1 and salio_en is null`,
+        [asesoria],
+      ),
+    ).rejects.toThrow(/fichaje_salida_dice_donde/);
+
+    // Con nombre y motivo, sí.
+    const cerrados = await comoDuena<{ id: string }>(
+      `update estook.fichaje
+          set salio_en = now() - interval '12 hours',
+              corregido_por = $2, corregido_en = now(),
+              motivo_de_la_correccion = 'Se fue sin fichar la salida'
+        where persona_id = $1 and salio_en is null
+       returning id::text as id`,
+      [asesoria, luis],
+    );
+    expect(cerrados).toHaveLength(1);
   });
 });

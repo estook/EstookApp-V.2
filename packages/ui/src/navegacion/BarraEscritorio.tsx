@@ -73,7 +73,7 @@ export function BarraEscritorio({
   alAbrirFogon,
 }: BarraEscritorioProps) {
   return (
-    <header className="sticky top-0 z-40 hidden h-[--alto-barra-escritorio] items-center gap-e3 border-b border-borde bg-superficie px-e4 lg:flex">
+    <header className="sticky top-0 z-40 hidden h-[--alto-barra-escritorio] items-center gap-e3 border-b border-borde bg-superficie px-e4 lg:flex no-imprimir">
       <button
         type="button"
         onClick={alIrAlPanel}

@@ -322,3 +322,97 @@ export function comoSeLeeElDia(fecha: string, hoy: string): string {
   }
   return dia.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
 }
+
+// ── La merma (M6½) ───────────────────────────────────────────────────────────
+
+/**
+ * Lo que devuelven `merma_de_hoy` y `mis_mermas`.
+ *
+ * Ojo con el dinero, como siempre: **llega opcional**. Un cocinero apunta mermas
+ * y no ve lo que valen, porque el servidor no se lo envía.
+ */
+export interface DiaDeMerma {
+  readonly fecha: string;
+  readonly cuantas: number;
+  readonly valorCentimos?: number | null;
+}
+
+export interface MermaDeHoy {
+  readonly jornada: string;
+  readonly deHoy: {
+    readonly cuantas: number;
+    readonly valorCentimos?: number | null;
+    readonly loPeor: { readonly producto: string; readonly valorCentimos?: number | null } | null;
+  };
+  readonly dias: readonly DiaDeMerma[];
+  readonly mediaCentimos?: number | null;
+  readonly puedeVerPrecios: boolean;
+  readonly puedeApuntar: boolean;
+}
+
+export interface LineaDeMerma {
+  readonly id: string;
+  readonly productoId: string;
+  readonly producto: string;
+  readonly unidadDeUso: string;
+  readonly cuanto: number;
+  readonly motivo: string;
+  readonly partida: string;
+  readonly detalle: string | null;
+  readonly fechaOperativa: string;
+  readonly ocurrioEn: string;
+  readonly quien: string | null;
+  readonly categoria: string | null;
+  readonly valorCentimos?: number | null;
+}
+
+export interface TotalPorPartida {
+  readonly partida: string;
+  readonly cuantas: number;
+  readonly valorCentimos?: number | null;
+}
+
+export interface MisMermas {
+  readonly mermas: readonly LineaDeMerma[];
+  readonly hayMas: boolean;
+  readonly desde: string;
+  readonly hasta: string;
+  readonly jornada: string;
+  readonly porPartida: readonly TotalPorPartida[];
+  readonly porMotivo: readonly {
+    readonly motivo: string;
+    readonly cuantas: number;
+    readonly valorCentimos?: number | null;
+  }[];
+  readonly porProducto: readonly {
+    readonly productoId: string;
+    readonly producto: string;
+    readonly cuantas: number;
+    readonly valorCentimos?: number | null;
+  }[];
+  readonly cuantasEnTotal: number;
+  readonly valorTotalCentimos?: number | null;
+  readonly puedeVerPrecios: boolean;
+  readonly puedeApuntar: boolean;
+}
+
+/** «12 de septiembre», para una fecha operativa suelta. */
+export function comoSeLeeLaFecha(fecha: string): string {
+  return new Date(`${fecha}T12:00:00Z`).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short',
+  });
+}
+
+/** Lo justo para elegir qué se ha ido: sin un precio. Es de `productos_para_merma`. */
+export interface ProductoParaMerma {
+  readonly id: string;
+  readonly nombre: string;
+  readonly unidadDeUso: string;
+  readonly cantidad: number;
+  readonly esEjemplo: boolean;
+}
+
+export interface ProductosParaMerma {
+  readonly productos: readonly ProductoParaMerma[];
+}

@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 10 de septiembre de 2026 · M6½ terminado en el código, por fusionar
+Última actualización: 10 de septiembre de 2026 · M6½ fusionado, migrado y desplegado
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -16,19 +16,19 @@
 
 |                |                                                                                                                         |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6** ✓ · **M6½**: tres entregas fusionadas (#37, #38, #39) y la cuarta **escrita, sin fusionar**             |
+| **Terminados** | **M0** a **M6** ✓ · **M6½** ✓ en cuatro entregas (#37, #38, #39 y #40), fusionado, migrado y desplegado                 |
 | **Siguiente**  | **M7** · Proveedores y compras                                                                                          |
-| **Pruebas**    | 757 unitarias y de base de datos · 329 de pantalla en escritorio y móvil, todas en verde · catálogo **77 de 83** (93 %) |
-| **Rama**       | `m6-medio-tercera-tanda`, con su pull request abierto                                                                   |
-| **Base**       | **26 de 26** aplicadas en Supabase. La `0027`, la `0028` y la `0029`, **sin aplicar**                                   |
-| **API**        | **Por desplegar** con esta entrega, que trae 18 operaciones nuevas                                                      |
+| **Pruebas**    | 757 unitarias y de base de datos · 327 de pantalla en escritorio y móvil, todas en verde · catálogo **77 de 83** (93 %) |
+| **Rama**       | `m6-medio-la-prueba-del-panel`: solo el arreglo de una prueba que salió «flaky» al fusionar la #40                      |
+| **Base**       | **29 de 29** aplicadas en Supabase, **44 tablas**, todas con seguridad por filas · leído el 10 de septiembre            |
+| **API**        | **Desplegada y al día**: conoce las 25 consultas y los 58 comandos · comprobado el 10 de septiembre                     |
 | **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                  |
 | **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                   |
 
-> **Lo que hay que hacer, en orden y con lo que tiene que salir en cada paso:**
-> [`docs/pasos-para-cerrar-m6-medio.md`](docs/pasos-para-cerrar-m6-medio.md).
-> Son cuatro y esta vez hacen falta los cuatro: fusionar, aplicar las tres
-> migraciones, desplegar la API y mirarlo en un móvil.
+> **M6½ está cerrado.** Richi hizo los cuatro pasos de
+> [`docs/pasos-para-cerrar-m6-medio.md`](docs/pasos-para-cerrar-m6-medio.md) el 10
+> de septiembre, y los dos de máquina están comprobados contra Supabase. **Lo que
+> salga de mirarlo en el móvil se apunta aquí**, tal cual.
 
 ---
 
@@ -59,16 +59,14 @@ qué aprueba una persona).
 
 ## 2 · Qué hay que hacer
 
-### Para cerrar M6½
+### Ahora mismo
 
-1. **Fusionar el pull request** de `m6-medio-tercera-tanda`. Las aplicaciones se
-   publican solas.
-2. **Aplicar la `0027`, la `0028` y la `0029`** (`.\estook.cmd bd:migrar`): 29 de
-   29, y de 39 tablas a 44.
-3. **Desplegar la API a mano**, que es el que se olvida. `bd:comprobar-api`
-   pregunta ahora por las 25 consultas **y por los 58 comandos**.
-4. **Mirarlo en un móvil de verdad** (regla 11): 28 cosas, con lo que tiene que
-   pasar en cada una, en el documento de los pasos.
+1. **Fusionar el arreglo de la prueba del Panel** (`m6-medio-la-prueba-del-panel`).
+   Al fusionar la #40, una prueba nueva del Panel falló la primera vez en Safari y
+   pasó al repetirse: el Panel del móvil de Rosa lo tocaban a la vez dos
+   navegadores. No toca la aplicación: ni migración ni despliegue.
+2. **Decidir si los días de reparto son eventos de calendario**, antes de la
+   primera línea de M7 (abajo).
 
 ### Lo que M6½ deja preparado, y dónde se termina
 
@@ -121,8 +119,8 @@ entonces el motor dice «sin regla» y para ([0006](docs/decisiones/0006-el-moto
 
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan
 gratuito, por el agrupador de sesión (la conexión directa de los proyectos nuevos
-solo va por IPv6). **26 de 26 migraciones** y 39 tablas, todas con seguridad por
-filas; la única vista es `estook.existencias`. Con esta entrega: **29 y 44**. Se
+solo va por IPv6). **29 de 29 migraciones** y 44 tablas, todas con seguridad por
+filas; la única vista es `estook.existencias`. Leído el 10 de septiembre. Se
 comprueba con `.\estook.cmd bd:comprobar`, que lo lee de la base y no de aquí.
 
 **Organizaciones:** `bar-centro`, `casa-lola` y `grupo-costa` son semillas de
@@ -240,7 +238,11 @@ Plan.
 16. **Un dato con dos dueños acaba con dos valores**, aunque sea una frase.
 17. **Un andamio de pruebas no va en una pantalla de verdad.**
 18. **Lo que toca un estado compartido, en un bloque, de una en una**, y ningún
-    otro fichero tocándolo.
+    otro fichero tocándolo. **Y en un solo navegador de móvil**: el móvil pequeño y
+    Safari comparten el Panel del móvil, y en la integración continua corren a la
+    vez. Una prueba nueva del Panel con Rosa salió «flaky» por eso al fusionar la #40.
+    Y no vale buscar «una cuenta que no toca nadie»: se probó con Luis, y otra prueba
+    le añadía un segundo local, así que dejaba de entrar directo a su Panel.
 19. **Guardar tarde es perder.** El retraso solo donde hay ráfaga; lo pendiente se
     manda al irse.
 20. **Una sola cosa pinta la pantalla**: lo que se guarda se escribe en la caché.
@@ -393,7 +395,7 @@ y se monta en M8.
 
 **Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase. Hoy pasan los tres primeros —757 pruebas; 329 de pantalla, más tres que
+Supabase. Hoy pasan los tres primeros —757 pruebas; 327 de pantalla, más tres que
 hablan con la API a pelo y por eso corren en un solo navegador; y 77 de las 83
 operaciones ejecutadas, con las seis que faltan apuntadas como deuda y con su
-módulo—, y el cuarto, cuando se apliquen las tres migraciones y se despliegue la API.
+módulo—, y el cuarto también: la base y la API desplegada, al día el 10 de septiembre.

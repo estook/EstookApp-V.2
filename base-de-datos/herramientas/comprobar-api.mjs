@@ -1013,7 +1013,7 @@ try {
           where n.nspname = 'estook' and p.proname = 'a_quien_lleva') as quien_lleva
     `;
     comprobar(
-      'las cinco tablas nuevas, todas con seguridad por filas',
+      'las cinco tablas de M6½, todas con seguridad por filas',
       m6medio.tablas === 5,
       `${m6medio.tablas} de 5`,
     );

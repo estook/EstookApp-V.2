@@ -760,6 +760,16 @@ test.describe('accesibilidad', () => {
 test.describe('el Panel de cada uno, que es uno solo', () => {
   test.describe.configure({ mode: 'default' });
 
+  // **En un solo navegador de móvil.** El Panel es de la persona y del aparato, y
+  // el móvil pequeño y Safari son dos proyectos con un mismo Panel —el de Rosa en
+  // el móvil—. En la integración continua corren a la vez, y uno lo dejaba de
+  // fábrica mientras el otro acababa de quitar un widget. Lo que se prueba aquí es
+  // lo que guarda el servidor, que no cambia de un navegador a otro.
+  test.skip(
+    ({ browserName }) => browserName === 'webkit',
+    'Safari y el móvil pequeño comparten el Panel del móvil, y a la vez se pisan.',
+  );
+
   test('flujo 1 · quitar un widget del Panel, y devolverlo', async ({ page }) => {
     /*
       ── El flujo que esto sustituye ────────────────────────────────────────────
@@ -945,6 +955,32 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     );
     await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toHaveCount(0);
     await expect(page.getByText('Lo cambiaste en otro aparato')).toHaveCount(0);
+  });
+
+  test('lo que se quita se puede volver a poner, y sigue puesto al recargar', async ({ page }) => {
+    // «Acciones rápidas se puede eliminar pero no volver a añadir.» Se quitaba del
+    // Panel y no había forma de recuperarla desde «Añadir».
+    //
+    // Vive aquí, en este bloque, y no en un fichero suyo: tocar el Panel de Rosa
+    // desde otro fichero es tocarlo en mitad de estas. Se probó con un fichero
+    // aparte y con otra persona, y otra prueba le añadía un local a esa persona.
+    await comoGerente(page);
+    await panelDeFabrica(page);
+
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await page.getByRole('button', { name: 'Quitar Acciones rápidas del panel' }).click();
+    await page.getByRole('button', { name: 'Listo' }).click();
+    await yaEstaGuardado(page);
+
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
+    await page.getByRole('button', { name: /^Acciones rápidas/ }).click();
+    await page.getByRole('button', { name: 'Listo' }).click();
+    await yaEstaGuardado(page);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 2, name: 'Acciones rápidas' })).toBeVisible();
   });
 });
 

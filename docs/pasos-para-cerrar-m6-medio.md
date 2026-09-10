@@ -7,17 +7,17 @@
 > fichar, la merma, el cierre de caja, el equipo, la rueda, los textos— y los
 > documentos.
 >
-> | Qué                 | Cómo está                                                   |
-> | ------------------- | ----------------------------------------------------------- |
-> | El código           | **Escrito y en verde**, en la rama `m6-medio-tercera-tanda` |
-> | Su pull request     | **Por fusionar** · paso 1                                   |
-> | Migraciones         | **La `0027`, la `0028` y la `0029`, sin aplicar** · paso 2  |
-> | La API              | **Sin desplegar** · paso 3                                  |
-> | Mirarlo en tu móvil | **Sin hacer** · paso 4, y es el que no puedo hacer yo       |
+> | Qué                 | Cómo está                                                 |
+> | ------------------- | --------------------------------------------------------- |
+> | El pull request     | **Fusionado** (#40), con las tres comprobaciones en verde |
+> | Migraciones         | **Aplicadas**: 29 de 29 y 44 tablas, leído en Supabase    |
+> | La API              | **Desplegada**: conoce las 25 consultas y los 58 comandos |
+> | Mirarlo en tu móvil | **Hecho por Richi** el 10 de septiembre                   |
 >
-> **Esta vez hacen falta los cuatro, y en este orden.** Hay cinco tablas de base de
-> datos nuevas y dieciocho operaciones nuevas en la API. Sin el paso 2 y el 3, los
-> botones nuevos salen en la pantalla y cada uno contesta un error.
+> **Los cuatro están hechos.** Queda fusionar un arreglo pequeño de una prueba del
+> Panel que salió «flaky» al fusionar la #40 —falló una vez en Safari y pasó al
+> repetirse—; no toca la aplicación. Lo de abajo se deja como estaba, para poder
+> repasarlo.
 
 ## Cómo se escriben los comandos aquí
 

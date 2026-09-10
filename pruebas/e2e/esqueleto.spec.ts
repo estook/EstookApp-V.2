@@ -760,6 +760,16 @@ test.describe('accesibilidad', () => {
 test.describe('el Panel de cada uno, que es uno solo', () => {
   test.describe.configure({ mode: 'default' });
 
+  // **En un solo navegador de móvil.** El Panel es de la persona y del aparato, y
+  // el móvil pequeño y Safari son dos proyectos con un mismo Panel —el de Rosa en
+  // el móvil—. En la integración continua corren a la vez, y uno lo dejaba de
+  // fábrica mientras el otro acababa de quitar un widget. Lo que se prueba aquí es
+  // lo que guarda el servidor, que no cambia de un navegador a otro.
+  test.skip(
+    ({ browserName }) => browserName === 'webkit',
+    'Safari y el móvil pequeño comparten el Panel del móvil, y a la vez se pisan.',
+  );
+
   test('flujo 1 · quitar un widget del Panel, y devolverlo', async ({ page }) => {
     /*
       ── El flujo que esto sustituye ────────────────────────────────────────────

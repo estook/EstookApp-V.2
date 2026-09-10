@@ -5,27 +5,40 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * ── Por qué esta prueba existe ───────────────────────────────────────────────
  *
- * Porque el Panel se guarda en el servidor desde la migración 0025 y **no había
- * ni una prueba que lo comprobara**: ni de base de datos, ni de servidor, ni de
- * pantalla. Las de `esqueleto.spec.ts` quitan un widget para abrir la barra de
- * deshacer, pero ninguna **recarga** y mira si sigue quitado, que es justo lo
- * único que importa aquí.
+ * «Si modificas el panel y actualizas, vuelve a su estado original.» Un dato que
+ * se guarda en el servidor y no se comprueba recargando es un dato que se guarda
+ * en la memoria del navegador hasta que alguien mira.
  *
- * Y era lo que fallaba: «si modificas el panel y actualizas, vuelve a su estado
- * original». Un dato que se guarda en el servidor y no se comprueba recargando es
- * un dato que se guarda en la memoria del navegador hasta que alguien mira.
- *
- * Se comprueban las dos mitades, que son dos fallos distintos:
+ * Se comprueban dos cosas:
  *
  *   1. **Quitar y recargar.** El widget sigue fuera.
- *   2. **Añadir y recargar.** El widget sigue puesto.
+ *   2. **Lo que se quita se puede volver a poner**, y sigue puesto al recargar.
+ *      Un widget que desaparece del catálogo de «Añadir» al quitarlo es un widget
+ *      que se pierde para siempre: le pasaba a «Acciones rápidas».
  *
- * Y una tercera que no es de persistencia pero se cae por el mismo agujero:
- * **lo que se quita se puede volver a poner**. Un widget que desaparece del
- * catálogo de «Añadir» al quitarlo es un widget que se pierde para siempre.
+ * ── Por qué con Luis, y por qué no en Safari ─────────────────────────────────
+ *
+ * El Panel es **de la persona y del aparato** (móvil o escritorio), y es estado
+ * del servidor: una prueba que lo toca lo deja tocado para cualquier otra que
+ * mire el mismo a la vez. La primera versión de este fichero usaba a Rosa, que es
+ * la de `esqueleto.spec.ts`, y en la integración continua salió en rojo una vez
+ * de cada tantas: una prueba dejaba el Panel de fábrica mientras la otra acababa
+ * de quitar un widget.
+ *
+ * Así que dos reglas, las dos por lo mismo:
+ *
+ *   · **Luis**, cuyo Panel no toca ninguna otra prueba: las demás solo usan su
+ *     cuenta para hablar con la API.
+ *   · **Un solo navegador de móvil.** El móvil pequeño y Safari son dos proyectos
+ *     y un mismo Panel —el del móvil—, y en la integración continua corren a la
+ *     vez. Lo que se prueba aquí es el servidor, que no cambia de un navegador a
+ *     otro.
  */
 const APP = 'http://localhost:5174/';
 const CLAVE = 'estook en desarrollo';
+
+/** Luis es jefe de cocina en Bar Puerto. Su Panel es solo de estas pruebas. */
+const LUIS = 'luis@ejemplo.estook.com';
 
 async function entrar(page: Page, correo: string) {
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
@@ -73,13 +86,17 @@ async function panelDeFabrica(page: Page) {
 }
 
 test.describe('el Panel se guarda de verdad', () => {
-  // **Una detrás de otra.** Las dos tocan el mismo Panel —el de Rosa en este
-  // aparato— y a la vez se pisan: una lo deja de fábrica mientras la otra acaba
-  // de quitar un widget. El primer rojo de esta prueba fue ese, y no un fallo.
+  // Una detrás de otra: las dos tocan el mismo Panel.
   test.describe.configure({ mode: 'serial' });
 
+  // Y en un solo navegador de móvil: arriba está por qué.
+  test.skip(
+    ({ browserName }) => browserName === 'webkit',
+    'Safari y el móvil pequeño comparten el Panel del móvil, y a la vez se pisan.',
+  );
+
   test('un widget quitado sigue quitado después de recargar', async ({ page }) => {
-    await entrar(page, 'rosa@ejemplo.estook.com');
+    await entrar(page, LUIS);
     await panelDeFabrica(page);
 
     // El primero de la rejilla, sea el que sea: la prueba no se casa con un
@@ -99,7 +116,7 @@ test.describe('el Panel se guarda de verdad', () => {
   });
 
   test('lo que se quita se puede volver a poner, y sigue puesto al recargar', async ({ page }) => {
-    await entrar(page, 'rosa@ejemplo.estook.com');
+    await entrar(page, LUIS);
     await panelDeFabrica(page);
 
     // Acciones rápidas es el que Richi encontró sin vuelta atrás: se quitaba del
@@ -109,7 +126,7 @@ test.describe('el Panel se guarda de verdad', () => {
     await listo(page);
 
     await editar(page);
-    await page.getByRole('button', { name: 'Añadir' }).first().click();
+    await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
     await page.getByRole('button', { name: /^Acciones rápidas/ }).click();
     await listo(page);
 

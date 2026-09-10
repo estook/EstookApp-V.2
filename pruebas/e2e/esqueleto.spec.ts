@@ -956,6 +956,32 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toHaveCount(0);
     await expect(page.getByText('Lo cambiaste en otro aparato')).toHaveCount(0);
   });
+
+  test('lo que se quita se puede volver a poner, y sigue puesto al recargar', async ({ page }) => {
+    // «Acciones rápidas se puede eliminar pero no volver a añadir.» Se quitaba del
+    // Panel y no había forma de recuperarla desde «Añadir».
+    //
+    // Vive aquí, en este bloque, y no en un fichero suyo: tocar el Panel de Rosa
+    // desde otro fichero es tocarlo en mitad de estas. Se probó con un fichero
+    // aparte y con otra persona, y otra prueba le añadía un local a esa persona.
+    await comoGerente(page);
+    await panelDeFabrica(page);
+
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await page.getByRole('button', { name: 'Quitar Acciones rápidas del panel' }).click();
+    await page.getByRole('button', { name: 'Listo' }).click();
+    await yaEstaGuardado(page);
+
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
+    await page.getByRole('button', { name: /^Acciones rápidas/ }).click();
+    await page.getByRole('button', { name: 'Listo' }).click();
+    await yaEstaGuardado(page);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 2, name: 'Acciones rápidas' })).toBeVisible();
+  });
 });
 
 // ── La rueda, sin el cuadrado naranja ────────────────────────────────────────

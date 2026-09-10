@@ -18,7 +18,7 @@
 | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6** ✓ · **M6½** ✓ en cuatro entregas (#37, #38, #39 y #40), fusionado, migrado y desplegado                 |
 | **Siguiente**  | **M7** · Proveedores y compras                                                                                          |
-| **Pruebas**    | 757 unitarias y de base de datos · 329 de pantalla en escritorio y móvil, todas en verde · catálogo **77 de 83** (93 %) |
+| **Pruebas**    | 757 unitarias y de base de datos · 327 de pantalla en escritorio y móvil, todas en verde · catálogo **77 de 83** (93 %) |
 | **Rama**       | `m6-medio-la-prueba-del-panel`: solo el arreglo de una prueba que salió «flaky» al fusionar la #40                      |
 | **Base**       | **29 de 29** aplicadas en Supabase, **44 tablas**, todas con seguridad por filas · leído el 10 de septiembre            |
 | **API**        | **Desplegada y al día**: conoce las 25 consultas y los 58 comandos · comprobado el 10 de septiembre                     |
@@ -241,6 +241,8 @@ Plan.
     otro fichero tocándolo. **Y en un solo navegador de móvil**: el móvil pequeño y
     Safari comparten el Panel del móvil, y en la integración continua corren a la
     vez. Una prueba nueva del Panel con Rosa salió «flaky» por eso al fusionar la #40.
+    Y no vale buscar «una cuenta que no toca nadie»: se probó con Luis, y otra prueba
+    le añadía un segundo local, así que dejaba de entrar directo a su Panel.
 19. **Guardar tarde es perder.** El retraso solo donde hay ráfaga; lo pendiente se
     manda al irse.
 20. **Una sola cosa pinta la pantalla**: lo que se guarda se escribe en la caché.
@@ -393,7 +395,7 @@ y se monta en M8.
 
 **Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase. Hoy pasan los tres primeros —757 pruebas; 329 de pantalla, más tres que
+Supabase. Hoy pasan los tres primeros —757 pruebas; 327 de pantalla, más tres que
 hablan con la API a pelo y por eso corren en un solo navegador; y 77 de las 83
 operaciones ejecutadas, con las seis que faltan apuntadas como deuda y con su
 módulo—, y el cuarto también: la base y la API desplegada, al día el 10 de septiembre.

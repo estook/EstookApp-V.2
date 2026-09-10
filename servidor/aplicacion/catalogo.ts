@@ -41,6 +41,14 @@ import { retirarAcceso } from './comandos/retirar-acceso.ts';
 import { salir } from './comandos/salir.ts';
 import { crearCategoria, ponerLosEjemplos } from './comandos/categorias.ts';
 import { apuntarEntrada, apuntarSalida, ajustarStock } from './comandos/movimientos.ts';
+import { apuntarMerma } from './comandos/merma.ts';
+import { corregirFichaje, ficharEntrada, ficharSalida } from './comandos/fichar.ts';
+import {
+  ponerDondeEstaElLocal,
+  ponerHorarioHabitual,
+  ponerRetribucion,
+} from './comandos/equipo.ts';
+import { cerrarLaCaja, elegirComoSeCierra } from './comandos/cierre.ts';
 import { ponerPrecio } from './comandos/precios.ts';
 import {
   cambiarProducto,
@@ -61,6 +69,14 @@ import { catalogoDeReferencia, recetasDeReferencia } from './consultas/catalogo-
 import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
 import { miPanel } from './consultas/mi-panel.ts';
+import { mermaDeHoy, misMermas } from './consultas/merma.ts';
+import {
+  fichajesDeHoy,
+  miFichaje,
+  resumenDelEquipo,
+  unaPersona,
+} from './consultas/equipo.ts';
+import { misCierres, unCierre } from './consultas/cierre.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
 import { quienSoy } from './consultas/quien-soy.ts';
@@ -104,6 +120,19 @@ export const catalogo = {
     //        y el Panel que cada uno se monta.
     [misMovimientos.nombre]: misMovimientos,
     [miPanel.nombre]: miPanel,
+    // M6½ · la merma, que el libro sabia guardar y no habia forma de apuntar.
+    [mermaDeHoy.nombre]: mermaDeHoy,
+    [misMermas.nombre]: misMermas,
+    // M6½ · los fichajes y la ficha de cada persona. El permiso `accion.fichar`
+    //        existia desde M1 y no habia donde fichar.
+    [miFichaje.nombre]: miFichaje,
+    [fichajesDeHoy.nombre]: fichajesDeHoy,
+    [resumenDelEquipo.nombre]: resumenDelEquipo,
+    [unaPersona.nombre]: unaPersona,
+    // M6½ · lo que entra. Sin esto Estook sabia lo que cuesta el genero y no
+    //        lo que se factura, que es la mitad del negocio.
+    [misCierres.nombre]: misCierres,
+    [unCierre.nombre]: unCierre,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -180,5 +209,22 @@ export const catalogo = {
     [cambiarProveedor.nombre]: cambiarProveedor,
     [crearCategoria.nombre]: crearCategoria,
     [ponerLosEjemplos.nombre]: ponerLosEjemplos,
+
+    // ── M6½ · la merma, los fichajes y el cierre de caja ─────────────────
+    //
+    // Los tres tapan el mismo tipo de agujero: un permiso que existia desde M1
+    // —`accion.registrar_merma`, `accion.fichar`, `accion.conectar_tpv`— sin
+    // ninguna pantalla ni ningun comando detras.
+    [apuntarMerma.nombre]: apuntarMerma,
+    [ficharEntrada.nombre]: ficharEntrada,
+    [ficharSalida.nombre]: ficharSalida,
+    [corregirFichaje.nombre]: corregirFichaje,
+    // La retribucion exige `dato.coste_de_personal`, no `app.equipo`: un jefe de
+    // cocina lleva a su equipo y no ve lo que cobra.
+    [ponerRetribucion.nombre]: ponerRetribucion,
+    [ponerHorarioHabitual.nombre]: ponerHorarioHabitual,
+    [ponerDondeEstaElLocal.nombre]: ponerDondeEstaElLocal,
+    [elegirComoSeCierra.nombre]: elegirComoSeCierra,
+    [cerrarLaCaja.nombre]: cerrarLaCaja,
   } as Record<string, Comando<never, unknown>>,
 };

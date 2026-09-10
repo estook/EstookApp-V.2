@@ -138,6 +138,15 @@ export interface Apunte {
   readonly costeMilesimas?: number | null;
   readonly loteId?: string | null;
   readonly motivo?: string | null;
+  /**
+   * Por qué se perdió, de la lista cerrada de la 0028. **Solo en las mermas.**
+   *
+   * Va aparte de `motivo` y no dentro, y esa es la decisión: `motivo` es texto
+   * libre y sirve para explicar; esto es un código de una lista de ocho y sirve
+   * para **sumar**. La restricción de la base exige que las mermas lo lleven y que
+   * nada más lo lleve, así que no hay forma de que un día se cuelen mezclados.
+   */
+  readonly motivoDeMerma?: string | null;
   readonly origen?: string;
   readonly referencia?: Record<string, unknown> | null;
   readonly esEjemplo?: boolean;
@@ -206,7 +215,7 @@ export async function apuntar(
   const insertados = await contexto.sql<{ id: string }[]>`
     insert into estook.movimiento_de_stock (
       local_id, producto_id, tipo, cantidad, coste_milesimas,
-      cantidad_despues, coste_medio_despues, lote_id, motivo,
+      cantidad_despues, coste_medio_despues, lote_id, motivo, motivo_de_merma,
       fecha_operativa, ocurrido_en, persona_id, correlacion_id,
       origen, referencia, es_ejemplo
     )
@@ -220,6 +229,7 @@ export async function apuntar(
       ${despues.coste},
       ${apunte.loteId ?? null},
       ${apunte.motivo ?? null},
+      ${apunte.motivoDeMerma ?? null}::estook.motivo_de_merma,
       ${fecha}::date,
       ${cuando.toISOString()}::timestamptz,
       ${contexto.personaId},

@@ -94,6 +94,29 @@ export function Panel() {
         </div>
       </section>
 
+      {/*
+        Que un guardado que falla se vea, que es lo que no pasaba.
+
+        La rejilla pinta el cambio al momento, así que un no del servidor se veía
+        igual que un sí hasta que alguien recargaba y se encontraba el Panel de
+        antes. Aquí sale la frase del servidor, con su botón, en la misma pantalla
+        y en el mismo momento.
+      */}
+      {mio.noSeHaGuardado !== null && (
+        <Aviso
+          tono="mal"
+          titulo={mio.noSeHaGuardado.quePasa}
+          accion={
+            <Boton tono="secundario" onClick={mio.reintentar}>
+              Reintentar
+            </Boton>
+          }
+        >
+          {mio.noSeHaGuardado.queSePuedeHacer} Lo que has colocado se ve, pero{' '}
+          <strong>todavía no está guardado</strong>: si recargas ahora, vuelve el de antes.
+        </Aviso>
+      )}
+
       {mio.loCambioOtroAparato && (
         <Aviso
           tono="atencion"

@@ -11,6 +11,7 @@ import {
 } from '@estook/ui';
 import type { PermisoDeApp } from '@estook/permisos';
 import { puedeVer } from '@estook/permisos';
+import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -59,6 +60,25 @@ export interface MiPanel {
   readonly guardando: boolean;
   /** Si el servidor dice que otro aparato lo cambió mientras tanto. */
   readonly loCambioOtroAparato: boolean;
+  /**
+   * Lo que dijo el servidor la última vez que no se pudo guardar.
+   *
+   * ── Por qué esto existe, y por qué es la mitad del arreglo ─────────────────
+   *
+   * Porque **un guardado que falla no se notaba hasta el día siguiente**. La
+   * pantalla escribe el cambio en la caché al momento —para que se vea al
+   * instante, que es lo correcto—, así que si el comando volvía con un no, el
+   * Panel seguía viéndose perfecto: colocado, ordenado, con «guardando…»
+   * apagado. Y al recargar volvía el de antes, sin una sola pista de por qué.
+   *
+   * Eso es lo que hace que un fallo así se pueda arrastrar meses: por fuera se
+   * ve exactamente igual que si funcionara. Ahora, si no se ha podido guardar,
+   * se dice **en el sitio y en el momento**, con la frase del servidor y un
+   * botón para reintentar.
+   */
+  readonly noSeHaGuardado: ErrorDeLaApi | null;
+  /** Vuelve a mandar lo que no se pudo guardar. */
+  readonly reintentar: () => void;
   readonly reordenar: (puestos: readonly WidgetPuesto[]) => void;
   readonly anadir: (id: string) => void;
   readonly quitar: (id: string) => void;
@@ -133,6 +153,7 @@ export function usarMiPanel(): MiPanel {
    */
   const [guardando, setGuardando] = useState(false);
   const [loCambioOtroAparato, setLoCambioOtroAparato] = useState(false);
+  const [noSeHaGuardado, setNoSeHaGuardado] = useState<ErrorDeLaApi | null>(null);
   const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** Lo último que hay que guardar, para poder mandarlo antes de tiempo. */
   const pendiente = useRef<readonly WidgetPuesto[] | null>(null);
@@ -170,17 +191,26 @@ export function usarMiPanel(): MiPanel {
     // guardado que salió bien.
     const antes = cache.getQueryData<ElPanelGuardado>(clave);
 
-    const respuesta = await cliente.ejecutar<{ version: number }>('guardar_mi_panel', {
-      aparato,
-      widgets: nuevos.map((p) => ({ id: p.id, tamano: p.tamano })),
-      version: antes?.version ?? 0,
-    });
-    enVuelo.current = false;
+    let respuesta;
+    try {
+      respuesta = await cliente.ejecutar<{ version: number }>('guardar_mi_panel', {
+        aparato,
+        widgets: nuevos.map((p) => ({ id: p.id, tamano: p.tamano })),
+        version: antes?.version ?? 0,
+      });
+    } finally {
+      // **`finally`, y no la línea de después.** Si la petición revienta —el
+      // móvil pierde la red a mitad, que en un bar pasa— el `await` lanza y
+      // `enVuelo` se quedaba en `true` **para siempre**: a partir de ahí ningún
+      // guardado volvía a salir, en toda la sesión, sin un solo aviso. Es la
+      // clase de fallo que solo se ve al día siguiente.
+      enVuelo.current = false;
+    }
 
     // **Se marca como mandado solo si nadie ha tocado nada mientras tanto.** Si
     // `pendiente` ya no es lo que se mandó, es que ha entrado otro cambio y ese
     // sigue esperando: ponerlo a nulo aquí sería tirarlo.
-    if (pendiente.current === nuevos) pendiente.current = null;
+    if (respuesta.ok && pendiente.current === nuevos) pendiente.current = null;
     if (pendiente.current === null) setGuardando(false);
 
     if (respuesta.ok) {
@@ -193,6 +223,7 @@ export function usarMiPanel(): MiPanel {
         version: respuesta.datos.version,
       }));
       setLoCambioOtroAparato(false);
+      setNoSeHaGuardado(null);
 
       // Y lo que haya llegado mientras este iba y venía sale ahora. **Después de
       // escribir la versión**, no antes: si saliera antes se llevaría la versión
@@ -201,10 +232,23 @@ export function usarMiPanel(): MiPanel {
       if (pendiente.current !== null) void mandarAhora.current();
       return;
     }
+
+    // ── Y si no se ha podido guardar, se dice ─────────────────────────────────
+    //
+    // Antes se callaba, y esa era la mitad que faltaba: la pantalla ya había
+    // pintado el cambio, así que un no del servidor se veía **exactamente igual
+    // que un sí** hasta que alguien recargaba. Ahora lo pendiente se queda
+    // pendiente —no se tira— y arriba sale la frase del servidor con su botón.
+    setGuardando(false);
+
     // «Lo cambió otra persona» aquí quiere decir «lo cambiaste tú en el otro
-    // aparato». Se dice, y no se pisa nada: lo que hay en el servidor se queda
-    // como está hasta que se recargue a propósito.
-    if (respuesta.error.codigo === 'lo_cambio_otra_persona') setLoCambioOtroAparato(true);
+    // aparato». Tiene su propio aviso, que ofrece traerse el de allí, así que no
+    // se cuenta dos veces.
+    if (respuesta.error.codigo === 'lo_cambio_otra_persona') {
+      setLoCambioOtroAparato(true);
+      return;
+    }
+    setNoSeHaGuardado(respuesta.error);
   }, [cliente, aparato, cache, clave]);
 
   /**
@@ -371,14 +415,32 @@ export function usarMiPanel(): MiPanel {
 
   const recargar = useCallback(() => {
     setLoCambioOtroAparato(false);
+    setNoSeHaGuardado(null);
+    pendiente.current = null;
     void consulta.refetch();
   }, [consulta]);
+
+  /**
+   * Reintentar lo que no se pudo guardar.
+   *
+   * Lo pendiente sigue en su sitio —no se tira al fallar—, así que esto es
+   * literalmente volver a mandarlo. Si el fallo era la red de un bar, con esto
+   * se acabó; si no, vuelve a salir el aviso, que también es una respuesta.
+   */
+  const reintentar = useCallback(() => {
+    setNoSeHaGuardado(null);
+    if (pendiente.current === null) return;
+    setGuardando(true);
+    void mandarAhora.current();
+  }, []);
 
   return {
     puestos: puestos ?? [],
     cargando: consulta.isPending,
     guardando,
     loCambioOtroAparato,
+    noSeHaGuardado,
+    reintentar,
     reordenar,
     anadir,
     quitar,

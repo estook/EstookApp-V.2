@@ -234,3 +234,59 @@ export type {
   Sugerencia,
   CambioDePrecio,
 } from './inventario.ts';
+
+// ── M6½ · equipo · horas, lo que cuestan y el horario de siempre ─────────────
+//
+// Las horas se cuentan **en minutos enteros** y se redondean una sola vez y al
+// final, porque el resultado acaba en una nomina. Vive aqui y no en el servidor
+// porque la misma cuenta la hacen el resumen del mes, la pantalla de fichar y el
+// perfil de cada persona (regla 6).
+export {
+  DIAS_DE_LA_SEMANA,
+  AVISAR_ANTES_DE_ENTRAR,
+  TURNO_SOSPECHOSO_DESDE,
+  minutos,
+  duracionDelTurno,
+  loQueLlevaDentro,
+  comoSeLeenLasHoras,
+  enHoras,
+  costeDeUnaHora,
+  loQueCuesta,
+  comoVaConSuContrato,
+  comoSeLlamaElDia,
+  minutosHasta,
+} from './equipo.ts';
+
+export type { Minutos, FormaDeRetribucion, Retribucion } from './equipo.ts';
+
+// ── M6½ · merma · el motivo manda, y la partida sale del motivo ──────────────
+//
+// «La comida del personal no es merma, ni las invitaciones: van con motivo propio
+// y como partida aparte, o el food cost miente» (Manifiesto 28).
+export {
+  MOTIVOS_DE_MERMA,
+  PARTIDAS_DE_MERMA,
+  NOMBRE_DEL_MOTIVO_DE_MERMA,
+  QUE_ES_CADA_MOTIVO,
+  NOMBRE_DE_LA_PARTIDA,
+  QUE_ES_CADA_PARTIDA,
+  esMotivoDeMerma,
+  partidaDe,
+  valorDeLaMerma,
+} from './merma.ts';
+
+export type { MotivoDeMerma, PartidaDeMerma } from './merma.ts';
+
+// ── M6½ · el cierre de caja · con TPV o sin el, la misma tabla ───────────────
+export {
+  COMO_SE_CIERRA,
+  NOMBRE_DE_COMO_SE_CIERRA,
+  QUE_ES_CADA_FORMA_DE_CERRAR,
+  ORIGENES_DEL_CIERRE,
+  NOMBRE_DEL_ORIGEN_DEL_CIERRE,
+  ticketMedio,
+  loQueNoCuadra,
+  leerUnCsvDeCierre,
+} from './cierre.ts';
+
+export type { ComoSeCierra, OrigenDelCierre, LineaDeCierre, LoQueTraeElCsv } from './cierre.ts';

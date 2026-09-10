@@ -3,7 +3,7 @@ import { ALERGENOS, UNIDADES_DE_USO } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
-import { costeDeUso } from '../inventario.ts';
+import { apuntar, costeDeUso, elProductoBloqueado } from '../inventario.ts';
 
 /**
  * El producto (M6) · crear, cambiar, desactivar y volver a activar.
@@ -65,6 +65,39 @@ export const entradaCrearProducto = z
     /** Lo que cuesta el formato, en céntimos enteros. Nulo = todavía sin precio. */
     precio_centimos: z.number().int().min(0).nullable().optional(),
     notas: z.string().trim().max(2000).nullable().optional(),
+    /**
+     * Cuánto hay ya en cámara, en unidades de uso.
+     *
+     * ── El agujero que esto tapa, y era gordo ────────────────────────────────
+     *
+     * «Añades un producto nuevo y debería actualizarse lo que hay.» Y no se
+     * actualizaba: `crear_producto` creaba la ficha y **el stock quedaba en
+     * cero**, porque el stock es el libro de movimientos y nadie apuntaba nada.
+     * Así que había que dar de alta el producto y **acordarse de entrar en su
+     * ficha a apuntar una entrada**, dos pantallas para una sola cosa. El
+     * resultado real es un inventario con treinta productos a cero, que es un
+     * inventario que no sirve para nada.
+     *
+     * Ahora se pregunta al dar de alta —«¿cuánto hay?»— y el comando **apunta la
+     * entrada en el libro**, con su precio si lo trae. No hay un segundo camino
+     * para el stock: es el mismo `apuntar` de siempre, así que la cámara sigue
+     * siendo exactamente la última línea del libro (regla 8).
+     */
+    cantidad_inicial: z.number().min(0).max(10_000_000).nullable().optional(),
+    /**
+     * La caducidad de lo que hay, si la tiene.
+     *
+     * **La más próxima**, y eso hay que decirlo en la pantalla: si de una cosa hay
+     * cinco unidades con cinco fechas, apuntar la que caduca antes es lo que hace
+     * que el aviso llegue a tiempo. Las cinco fechas por separado son lotes, y eso
+     * se apunta en las entradas de después; pedirlas el primer día es pedirle a
+     * alguien que teclee veinte fechas para dar de alta un producto.
+     */
+    caduca_el: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'La fecha se escribe así: 2026-09-30.')
+      .nullable()
+      .optional(),
   })
   .strict();
 
@@ -75,6 +108,8 @@ export interface SalidaCrearProducto {
   readonly nombre: string;
   readonly sinVerificar: boolean;
   readonly conPrecio: boolean;
+  /** Lo que ha quedado en camara, si se dijo cuanto habia. */
+  readonly cantidadInicial: number;
   /** Cuántos ejemplos le quedan al local, para poder ofrecer quitarlos. */
   readonly ejemplosQueQuedan: number;
 }
@@ -268,11 +303,52 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
       )
     `;
 
+    // ── Y lo que ya hay en cámara ────────────────────────────────────────────
+    //
+    // **Se apunta en el libro, como cualquier otra entrada.** No hay un segundo
+    // camino para el stock: la cámara sigue siendo la última línea del libro
+    // (regla 8), y por eso esto se hace con el mismo `apuntar` que usa «ha
+    // llegado género». Lo que cambia es solo el origen, que queda como `alta`
+    // para poder distinguir después «esto es lo que había el primer día» de «esto
+    // llegó en un pedido».
+    let cantidadInicial = 0;
+    if ((entrada.cantidad_inicial ?? 0) > 0) {
+      const producto = await elProductoBloqueado(contexto, productoId);
+
+      // El lote, solo si trae fecha. Un lote vacío por cada producto llenaría la
+      // pantalla de caducidades de nada.
+      let loteId: string | null = null;
+      if (entrada.caduca_el !== null && entrada.caduca_el !== undefined) {
+        const lotes = await contexto.sql<{ id: string }[]>`
+          insert into estook.lote (local_id, producto_id, caduca_el, recibido_el, es_ejemplo)
+          values (${localId}, ${productoId}, ${entrada.caduca_el}::date, current_date, false)
+          returning id
+        `;
+        loteId = lotes[0]?.id ?? null;
+      }
+
+      const apuntado = await apuntar(contexto, producto, {
+        tipo: 'entrada',
+        cantidad: entrada.cantidad_inicial ?? 0,
+        // El coste sale del precio que se acaba de poner, con el motor de M2 que
+        // es su único dueño. Sin precio entra sin valorar, y eso es correcto: «un
+        // producto sin precio se usa igual, cuenta cero y queda marcado».
+        costeMilesimas: conPrecio
+          ? costeDeUso(entrada.precio_centimos ?? 0, factor, rendimiento)
+          : null,
+        loteId,
+        motivo: 'Lo que había al dar de alta el producto',
+        origen: 'alta',
+        esEjemplo: false,
+      });
+      cantidadInicial = apuntado.despues.cantidad;
+    }
+
     await publicar(contexto.sql, {
       tipo: 'producto.creado',
       organizacionId,
       localId,
-      datos: { productoId, nombre: entrada.nombre, conPrecio },
+      datos: { productoId, nombre: entrada.nombre, conPrecio, cantidadInicial },
       correlacionId: contexto.correlacionId,
     });
 
@@ -289,6 +365,7 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
       nombre: entrada.nombre,
       sinVerificar,
       conPrecio,
+      cantidadInicial,
       ejemplosQueQuedan: ejemplos[0]?.contar_ejemplos ?? 0,
     };
   },

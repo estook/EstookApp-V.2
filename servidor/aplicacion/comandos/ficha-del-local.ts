@@ -46,8 +46,8 @@ export const guardarTipoDeLocal = comando<{ tipo: string }, { tipo: string }>({
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'local', ${localId},
         ${localId}::uuid,
-        ${JSON.stringify({ tipo: antes[0]?.tipo ?? null })}::jsonb,
-        ${JSON.stringify({ tipo: entrada.tipo })}::jsonb,
+        ${JSON.stringify({ tipo: antes[0]?.tipo ?? null })}::text::jsonb,
+        ${JSON.stringify({ tipo: entrada.tipo })}::text::jsonb,
         null
       )
     `;
@@ -136,7 +136,7 @@ export const guardarDondeEsta = comando<EntradaDondeEsta, { localId: string }>({
     await contexto.sql`
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'local', ${localId},
-        ${localId}::uuid, null, ${JSON.stringify(entrada)}::jsonb, null
+        ${localId}::uuid, null, ${JSON.stringify(entrada)}::text::jsonb, null
       )
     `;
 
@@ -212,7 +212,7 @@ export const guardarRegimenFiscal = comando<EntradaRegimenFiscal, { regimen: str
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'local', ${localId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ territorio: entrada.territorio, regimen })}::jsonb,
+        ${JSON.stringify({ territorio: entrada.territorio, regimen })}::text::jsonb,
         null
       )
     `;

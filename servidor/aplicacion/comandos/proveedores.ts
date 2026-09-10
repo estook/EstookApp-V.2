@@ -79,7 +79,7 @@ export const crearProveedor = comando<
       select estook.anotar(
         ${organizacionId}::uuid, 'crear', 'proveedor', ${proveedorId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ nombre: entrada.nombre })}::jsonb, null
+        ${JSON.stringify({ nombre: entrada.nombre })}::text::jsonb, null
       )
     `;
 
@@ -138,8 +138,8 @@ export const cambiarProveedor = comando<EntradaCambiarProveedor, { proveedorId: 
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'proveedor', ${entrada.proveedor_id},
         ${antes.local_id}::uuid,
-        ${JSON.stringify({ nombre: antes.nombre, activo: antes.activo })}::jsonb,
-        ${JSON.stringify({ nombre: entrada.nombre, activo: entrada.activo })}::jsonb,
+        ${JSON.stringify({ nombre: antes.nombre, activo: antes.activo })}::text::jsonb,
+        ${JSON.stringify({ nombre: entrada.nombre, activo: entrada.activo })}::text::jsonb,
         null
       )
     `;

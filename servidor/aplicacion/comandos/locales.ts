@@ -250,7 +250,7 @@ export const crearLocal = comando<EntradaCrearLocal, SalidaCrearLocal>({
       select estook.anotar(
         ${organizacionId}::uuid, 'crear', 'local', ${localId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ nombre: entrada.nombre, duplicado_de: entrada.duplicar_de ?? null })}::jsonb,
+        ${JSON.stringify({ nombre: entrada.nombre, duplicado_de: entrada.duplicar_de ?? null })}::text::jsonb,
         null
       )
     `;

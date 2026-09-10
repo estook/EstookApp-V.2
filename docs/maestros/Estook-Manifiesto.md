@@ -442,7 +442,7 @@ Una conversación corta, una pregunta por pantalla, con botones grandes y la opc
 1. **«¿Cómo te llamas?»** Nombre y correo. Ese correo recibe lo importante.
 2. **«¿Qué tipo de local tienes?»** Bar de tapas · Restaurante de carta · Cafetería · Obrador · Food truck · Otro. Determina la plantilla de APPCC, las categorías de producto, los objetivos de margen y qué apps vienen encendidas.
 3. **«¿Cuántos locales?»** Con dos o más se crea la organización primero y se ofrece duplicar el local.
-4. **«¿Cuál es tu restaurante?»** Se escribe el nombre y salen los resultados de Google. Al tocar el tuyo se rellenan nombre, dirección, teléfono y horarios, se traen tus reseñas y se detectan los locales de tu zona.
+4. **«¿Cuál es tu restaurante?»** Se escribe el nombre y salen los resultados de Google. Al tocar el tuyo se rellenan nombre, dirección, teléfono y horarios, se traen tus reseñas y se detectan los locales de tu zona. Y se guarda **su posición exacta**, que es el centro del radio de fichaje desde el primer día ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)).
 5. **«Sube tu logo y elige tu color.»** Se aplican a la app y a todos los documentos, con previsualización.
 6. **Régimen fiscal y objetivos.** Península, Canarias o Ceuta y Melilla, y los porcentajes objetivo de materia prima y personal.
 7. **Invita a tu equipo**, si quieres ahora.
@@ -893,7 +893,8 @@ El acceso de cada uno —PIN nuevo, contraseña nueva, retirar— va dentro de u
 
 Se ficha **en un toque**, desde el Panel o desde Equipo › Hoy: «Fichar la entrada», «Fichar la salida».
 
-- **Se pide la ubicación al entrar y al salir**, y se guarda a cuántos metros del local se hizo. El local se marca una vez en Ajustes —«estoy en el local: márcalo»— con el radio que acepta.
+- **Se pide la ubicación al entrar y al salir**, y se guarda a cuántos metros del local se hizo. **Dónde está el local lo dice su ficha de Google**, que se elige en el alta ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)); mientras no esté conectado, se marca una vez en Ajustes —«estoy en el local: márcalo»— **desde un móvil dentro del local**, con el radio que acepta. Un ordenador o un TPV no tienen GPS y marcan la manzana: Ajustes lo avisa.
+- **El permiso no cuenta como espera.** Si el móvil pregunta «¿permitir la ubicación?», se espera a que se conteste; y si la posición exacta no llega, vale la aproximada de la wifi, con su precisión apuntada.
 - **Nunca bloquea.** Si la persona no da permiso, si no hay señal o si el aparato no la da, se ficha igual y **queda escrito por qué**. Un fichaje hecho lejos no se rechaza: se señala, y lo mira quien lleva el equipo.
 - **Nada de huella ni de biometría.** Y en un aparato del local en modo quiosco, con PIN, cuando llegue.
 
@@ -932,6 +933,8 @@ Se abre sola con el primer fichaje o la primera venta importada. Fija la **fecha
 > **Regla que no se rompe:** una jornada estimada no entra en la desviación de género sin avisar. Sale sombreada y etiquetada.
 
 **Sin TPV conectado, la caja se cierra a mano, y en un minuto.** El total del día, cómo se cobró —efectivo, tarjeta, otros—, tickets y comensales, y si se quiere **qué platos salieron y cuántos**. O se sube el CSV que saca el TPV y se rellena solo. Con eso ya hay ticket medio y, al cruzarlo con el libro de movimientos, **food cost del día**. La foto del Z llega con Fogón (M22). Negocio › Ventas lo lee de ahí, sin volver a escribirlo.
+
+**Al apuntar un plato, el importe se pone solo**: con el precio de la carta cuando exista (M10), y hasta entonces con el de la última vez que se apuntó ese plato. Se ve de dónde sale —«a 12,50 € cada uno, como la última vez»— y se puede cambiar.
 
 ## Delivery
 
@@ -1236,6 +1239,7 @@ Apps (encender y apagar partes, con el aviso concreto de qué pasa; se ocultan, 
 11. Cada app con su icono y su acento de color, sobre el mismo fondo. **Y cada widget del Panel lleva el acento de la app de la que cuenta algo**, para que se lea de un vistazo de dónde sale cada cifra sin tener que leer el título.
 12. **El color del local puede pintar la aplicación entera**, con su interruptor en Ajustes. El color que se guarda es el que eligió el local; el que se pinta se ajusta hasta cumplir el contraste, y se dice cuando ha hecho falta. Un color de marca no puede dejar un texto ilegible.
 13. Tamaño de letra en tres pasos: el pase de cocina se lee de lejos.
+14. **En el ordenador y en el TPV, lo que se abre encima es una ventana en el centro**, con el ancho de un formulario —lo que se lee sin girar la cabeza—, nunca de lado a lado de la pantalla. En el móvil sube desde abajo. Y una ficha se lee de un vistazo: **una etiqueta y su dato**, lo raro plegado, y ni una frase que explique lo que ya se ve.
 
 ## El principio que ordena todo lo demás
 

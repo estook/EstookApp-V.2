@@ -170,7 +170,7 @@ export const retirarAcceso = comando<EntradaRetirarAcceso, SalidaRetirarAcceso>(
       select estook.anotar(
         ${membresia.organizacion_id}::uuid, 'revocar', 'membresia', ${membresia.id},
         ${membresia.local_id}::uuid, null,
-        ${JSON.stringify({ persona_id: entrada.persona_id, rol: membresia.rol })}::jsonb,
+        ${JSON.stringify({ persona_id: entrada.persona_id, rol: membresia.rol })}::text::jsonb,
         ${entrada.motivo ?? null}
       )
     `;

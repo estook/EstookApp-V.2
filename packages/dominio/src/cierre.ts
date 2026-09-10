@@ -130,6 +130,38 @@ export function porcentajeDe(parte: number, total: number): number | null {
   return Math.round((parte / total) * 1000) / 10;
 }
 
+// ── Lo que cuesta cada plato, sin tener que escribirlo ───────────────────────
+
+/**
+ * Lo que costó cada uno, sacado de una línea del cierre: «3 raciones, 37,50 €»
+ * son 12,50 € la ración. Nulo sin importe o sin unidades.
+ *
+ * Es lo que deja **proponer** el importe la próxima vez: se escribe el plato y
+ * cuántos, y el importe ya está puesto —y se puede cambiar—. Cuando exista la
+ * carta (M10) el precio saldrá de ella; hasta entonces, de la última vez que se
+ * apuntó ese plato.
+ */
+export function precioPorUnidad(importeCentimos: number | null, unidades: number): Centimos | null {
+  if (importeCentimos === null || importeCentimos <= 0 || unidades <= 0) return null;
+  return centimos(Math.round(importeCentimos / unidades));
+}
+
+/** Y al revés: cuántos por lo que cuesta cada uno, en céntimos enteros. */
+export function importeDeLinea(precioUnidadCentimos: number, unidades: number): Centimos {
+  return centimos(Math.round(precioUnidadCentimos * Math.max(0, unidades)));
+}
+
+/**
+ * La clave de un plato para reconocerlo escrito de otra forma: sin acentos, en
+ * minúsculas y sin espacios en los bordes. Es la misma idea que el
+ * `concepto_normalizado` que guarda la base, para que «Croquetas » y «croquetas»
+ * sean el mismo plato.
+ */
+export function claveDePlato(texto: string): string {
+  // U+0300 a U+036F son los acentos sueltos que deja `NFD` al separar «á» en «a» + «´».
+  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
 // ── El CSV que escupe un TPV ─────────────────────────────────────────────────
 
 export interface LoQueTraeElCsv {

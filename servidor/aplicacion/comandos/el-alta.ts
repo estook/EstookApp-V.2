@@ -105,7 +105,7 @@ export const terminarElAlta = comando<Record<string, never>, { terminado: boolea
       select estook.anotar(
         ${organizacionId}::uuid, 'terminar', 'onboarding', ${localId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ saltados: filas[0]?.onboarding_saltados ?? [] })}::jsonb,
+        ${JSON.stringify({ saltados: filas[0]?.onboarding_saltados ?? [] })}::text::jsonb,
         null
       )
     `;

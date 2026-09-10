@@ -380,7 +380,7 @@ export function Productos({
         titulo={comoSeCuenta(datos.cuantosHay, vista)}
         origen={
           datos.puedeVerPrecios && vista !== 'desactivados'
-            ? `La cámara vale ${comoDinero(datos.valorTotalCentimos)} a precio medio ponderado, sin contar los ejemplos`
+            ? `La cámara vale ${comoDinero(datos.valorTotalCentimos)}, sin contar los ejemplos`
             : 'Lo que hay en cámara, según el libro de movimientos'
         }
       >

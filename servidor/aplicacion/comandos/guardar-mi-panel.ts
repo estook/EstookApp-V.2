@@ -90,7 +90,7 @@ export const guardarMiPanel = comando<EntradaGuardarMiPanel, { version: number }
     if (entrada.version === 0) {
       const puestas = await sql<{ version: number }[]>`
         insert into estook.panel_de_persona (persona_id, aparato, widgets)
-        values (${personaId}, ${entrada.aparato}, ${comoJson}::jsonb)
+        values (${personaId}, ${entrada.aparato}, ${comoJson}::text::jsonb)
         on conflict (persona_id, aparato) do nothing
         returning version
       `;
@@ -108,7 +108,7 @@ export const guardarMiPanel = comando<EntradaGuardarMiPanel, { version: number }
 
     const cambiadas = await sql<{ version: number }[]>`
       update estook.panel_de_persona
-         set widgets = ${comoJson}::jsonb
+         set widgets = ${comoJson}::text::jsonb
        where persona_id = ${personaId}
          and aparato = ${entrada.aparato}
          and version = ${entrada.version}

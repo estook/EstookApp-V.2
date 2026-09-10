@@ -149,7 +149,7 @@ export const ponerRetribucion = comando<
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'retribucion', ${puesta.id},
         ${entrada.local_id ?? null}::uuid, null,
-        ${JSON.stringify({ persona_id: entrada.persona_id, forma: entrada.forma })}::jsonb,
+        ${JSON.stringify({ persona_id: entrada.persona_id, forma: entrada.forma })}::text::jsonb,
         null
       )
     `;

@@ -290,6 +290,9 @@ export {
   loQueNoCuadra,
   porcentajeDe,
   leerUnCsvDeCierre,
+  precioPorUnidad,
+  importeDeLinea,
+  claveDePlato,
 } from './cierre.ts';
 
 export type { ComoSeCierra, OrigenDelCierre, LineaDeCierre, LoQueTraeElCsv } from './cierre.ts';

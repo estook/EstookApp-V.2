@@ -84,6 +84,8 @@ export interface ProductoEnLista {
   /** «0,0039 €/g». Texto, para que no se pueda seguir calculando con él. */
   readonly costePorUnidad?: string | null;
   readonly valorCentimos?: number | null;
+  /** Si el valor sale del precio de hoy porque lo que hay entró sin coste. */
+  readonly valorEsEstimado?: boolean;
 
   // ── La capa inteligente ────────────────────────────────────────────────────
   readonly consumo: Consumo;
@@ -106,6 +108,9 @@ const LO_QUE_ES_DINERO: readonly string[] = [
   'costeMilesimas',
   'costePorUnidad',
   'valorCentimos',
+  // No es un importe, pero dice de dónde sale uno: a quien no ve precios no le
+  // sirve de nada y es una pista de más.
+  'valorEsEstimado',
 ];
 
 /** Devuelve una copia con solo las claves que no son dinero. */
@@ -276,6 +281,33 @@ async function leerProductos(
   return { filas, hoy, desde };
 }
 
+/**
+ * Lo que vale lo que hay en cámara, y si es una estimación.
+ *
+ * ── El caso que esto arregla ─────────────────────────────────────────────────
+ *
+ * Una ficha decía «500 ud · lo que hay vale 0,00 €». Las 500 habían entrado con
+ * un ajuste, y un ajuste no trae coste: el precio medio se quedó a cero. Es la
+ * cuenta bien hecha y el dato mal dicho.
+ *
+ * Cuando el medio es cero —o no hay— y el producto tiene precio, se valora **a su
+ * precio de hoy**, y se marca como estimado para que la pantalla lo diga. En
+ * cuanto entre género con su precio, el medio deja de ser cero y manda él.
+ */
+function loQueValeLoQueHay(
+  cantidad: number,
+  costeMedio: number | null,
+  costeVigente: number | null,
+): { readonly valor: number | null; readonly estimado: boolean } {
+  const sinCoste = costeMedio === null || costeMedio === 0;
+  const coste = sinCoste && cantidad > 0 && costeVigente !== null ? costeVigente : costeMedio;
+  if (coste === null) return { valor: null, estimado: false };
+  return {
+    valor: valorDeLasExistencias({ cantidad: cuantasHay(cantidad), coste: enMilesimas(coste) }),
+    estimado: coste !== costeMedio,
+  };
+}
+
 function componer(fila: FilaDeProducto, hoy: FechaOperativa, desde: FechaOperativa, ahora: Date) {
   const cantidad = fila.cantidad === null ? 0 : Number(fila.cantidad);
   const minimo = fila.minimo === null ? null : Number(fila.minimo);
@@ -297,6 +329,7 @@ function componer(fila: FilaDeProducto, hoy: FechaOperativa, desde: FechaOperati
   const cobertura = diasDeCobertura(cantidad, consumo.porDia);
   const seAgota = previsionDeAgotamiento(cantidad, consumo.porDia, ahora);
   const costeVigente = fila.coste_vigente === null ? null : Number(fila.coste_vigente);
+  const valorado = loQueValeLoQueHay(cantidad, costeMedio, costeVigente);
 
   const producto: ProductoEnLista = {
     id: fila.id,
@@ -329,13 +362,8 @@ function componer(fila: FilaDeProducto, hoy: FechaOperativa, desde: FechaOperati
     // lista: es lo que de verdad costó llenar esa cámara. La cuenta la hace
     // `valorDeLasExistencias`, del motor de coste de M2, que es quien sabe pasar
     // de milésimas a céntimos con un solo redondeo y al final.
-    valorCentimos:
-      costeMedio === null
-        ? null
-        : valorDeLasExistencias({
-            cantidad: cuantasHay(cantidad),
-            coste: enMilesimas(costeMedio),
-          }),
+    valorCentimos: valorado.valor,
+    valorEsEstimado: valorado.estimado,
 
     consumo,
     diasDeCobertura: cobertura,
@@ -449,9 +477,15 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
     // avisos, ni análisis, ni salud de los datos, ni informes» (Manifiesto 8).
     const valor = conPrecios
       ? await contexto.sql<{ total: string | null }[]>`
-          select sum(round(e.coste_milesimas * e.cantidad / 1000))::text as total
+          -- Lo que entró sin coste —un ajuste, o un producto dado de alta antes de
+          -- que el alta apuntara lo que había— tiene el medio a cero, y contarlo a
+          -- cero es decir que 500 burratas no valen nada: se cuenta a su precio de hoy.
+          select sum(round(
+                   coalesce(nullif(e.coste_milesimas, 0), pr.coste_milesimas, 0) * e.cantidad / 1000
+                 ))::text as total
             from estook.existencias e
             join estook.producto p on p.id = e.producto_id
+            left join estook.precio_vigente(p.id) pr on true
            where p.local_id = ${localId} and p.activo and not p.es_ejemplo
              and e.cantidad > 0
         `
@@ -831,9 +865,15 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
 
     const valor = conPrecios
       ? await contexto.sql<{ total: string | null }[]>`
-          select sum(round(e.coste_milesimas * e.cantidad / 1000))::text as total
+          -- Lo que entró sin coste —un ajuste, o un producto dado de alta antes de
+          -- que el alta apuntara lo que había— tiene el medio a cero, y contarlo a
+          -- cero es decir que 500 burratas no valen nada: se cuenta a su precio de hoy.
+          select sum(round(
+                   coalesce(nullif(e.coste_milesimas, 0), pr.coste_milesimas, 0) * e.cantidad / 1000
+                 ))::text as total
             from estook.existencias e
             join estook.producto p on p.id = e.producto_id
+            left join estook.precio_vigente(p.id) pr on true
            where p.local_id = ${localId} and p.activo and not p.es_ejemplo
              and e.cantidad > 0
         `

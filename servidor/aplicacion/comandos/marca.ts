@@ -81,7 +81,7 @@ export const guardarColorDeMarca = comando<
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'local', ${localId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ color: entrada.color, enLaApp })}::jsonb, null
+        ${JSON.stringify({ color: entrada.color, enLaApp })}::text::jsonb, null
       )
     `;
 
@@ -166,7 +166,7 @@ export const ponerLogo = comando<EntradaLogo, { puesto: boolean }>({
     await contexto.sql`
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'local', ${localId},
-        ${localId}::uuid, null, ${JSON.stringify({ logo: 'puesto' })}::jsonb, null
+        ${localId}::uuid, null, ${JSON.stringify({ logo: 'puesto' })}::text::jsonb, null
       )
     `;
 
@@ -215,7 +215,7 @@ export const quitarLogo = comando<Record<string, never>, { quitado: boolean }>({
     await contexto.sql`
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'local', ${localId},
-        ${localId}::uuid, null, ${JSON.stringify({ logo: 'quitado' })}::jsonb, null
+        ${localId}::uuid, null, ${JSON.stringify({ logo: 'quitado' })}::text::jsonb, null
       )
     `;
 

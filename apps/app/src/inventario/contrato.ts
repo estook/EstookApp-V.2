@@ -52,6 +52,8 @@ export interface ProductoEnLista {
   readonly costeMilesimas?: number | null;
   readonly costePorUnidad?: string | null;
   readonly valorCentimos?: number | null;
+  /** Si el valor sale del precio de hoy, porque lo que hay entró sin coste. */
+  readonly valorEsEstimado?: boolean;
 
   readonly consumo: Consumo;
   readonly diasDeCobertura: number | null;

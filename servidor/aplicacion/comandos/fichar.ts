@@ -394,8 +394,8 @@ export const corregirFichaje = comando<
       select estook.anotar(
         ${laOrganizacionDeLaSesion(contexto)}::uuid, 'cambiar', 'fichaje',
         ${entrada.fichaje_id}, ${elDeAntes.local_id}::uuid,
-        ${JSON.stringify({ entro_en: elDeAntes.entro_en, salio_en: elDeAntes.salio_en })}::jsonb,
-        ${JSON.stringify({ entro_en: entrada.entro_en ?? elDeAntes.entro_en, salio_en: tocaLaSalida ? salidaNueva : elDeAntes.salio_en })}::jsonb,
+        ${JSON.stringify({ entro_en: elDeAntes.entro_en, salio_en: elDeAntes.salio_en })}::text::jsonb,
+        ${JSON.stringify({ entro_en: entrada.entro_en ?? elDeAntes.entro_en, salio_en: tocaLaSalida ? salidaNueva : elDeAntes.salio_en })}::text::jsonb,
         ${entrada.motivo}
       )
     `;

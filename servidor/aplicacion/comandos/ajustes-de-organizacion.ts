@@ -76,7 +76,7 @@ export const exigirDobleFactor = comando<
       select estook.anotar(
         ${entrada.organizacion_id}::uuid, 'modificar', 'organizacion',
         ${entrada.organizacion_id}, null, null,
-        ${JSON.stringify({ exige_doble_factor: entrada.exigir })}::jsonb, null
+        ${JSON.stringify({ exige_doble_factor: entrada.exigir })}::text::jsonb, null
       )
     `;
 
@@ -157,7 +157,7 @@ export const ponerCorreoDeRecuperacion = comando<
       select estook.anotar(
         ${entrada.organizacion_id}::uuid, 'modificar', 'organizacion',
         ${entrada.organizacion_id}, null, null,
-        ${JSON.stringify({ correo_de_recuperacion: entrada.correo === null ? 'quitado' : 'puesto' })}::jsonb,
+        ${JSON.stringify({ correo_de_recuperacion: entrada.correo === null ? 'quitado' : 'puesto' })}::text::jsonb,
         null
       )
     `;

@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { fechaOperativa, horaDeCorte, jornadaDe, masDias, porcentajeDe } from '@estook/dominio';
+import {
+  fechaOperativa,
+  horaDeCorte,
+  jornadaDe,
+  masDias,
+  porcentajeDe,
+  precioPorUnidad,
+} from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 
 /**
@@ -238,6 +245,12 @@ export interface SalidaUnCierre {
   readonly fecha: string;
   readonly comoSeCierra: string;
   readonly puedeCerrar: boolean;
+  /** Lo que costó cada plato la última vez, para proponer el importe. */
+  readonly platosConocidos: readonly {
+    readonly clave: string;
+    readonly concepto: string;
+    readonly precioUnidadCentimos: number;
+  }[];
 }
 
 export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>({
@@ -303,6 +316,25 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
              order by importe_centimos desc nulls last, unidades desc
           `;
 
+    // Lo que costó cada plato **la última vez que se apuntó**, para proponer el
+    // importe en vez de pedirlo: se escribe «croquetas, 3» y los 37,50 € ya están
+    // puestos. Cuando exista la carta (M10) el precio saldrá de ella, y esto
+    // quedará para lo que no esté en la carta.
+    const conocidos = await contexto.sql<
+      { clave: string; concepto: string; unidades: string; importe: string }[]
+    >`
+      select distinct on (l.concepto_normalizado)
+             l.concepto_normalizado as clave, l.concepto,
+             l.unidades::text as unidades, l.importe_centimos::text as importe
+        from estook.linea_de_cierre l
+        join estook.cierre_de_caja c on c.id = l.cierre_id
+       where c.local_id = ${localId}
+         and l.importe_centimos > 0
+         and c.fecha_operativa >= ${fecha}::date - 180
+       order by l.concepto_normalizado, c.fecha_operativa desc, l.id desc
+       limit 300
+    `;
+
     return {
       cierre:
         fila === undefined
@@ -330,6 +362,12 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
       fecha,
       comoSeCierra: ficha.comoSeCierra,
       puedeCerrar: permisos[0]?.cerrar === true,
+      platosConocidos: conocidos.flatMap((plato) => {
+        const precio = precioPorUnidad(Number(plato.importe), Number(plato.unidades));
+        return precio === null
+          ? []
+          : [{ clave: plato.clave, concepto: plato.concepto, precioUnidadCentimos: precio }];
+      }),
     };
   },
 });

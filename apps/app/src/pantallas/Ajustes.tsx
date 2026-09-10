@@ -200,6 +200,8 @@ function DondeEstaElLocal() {
   const [buscando, setBuscando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [noLaDio, setNoLaDio] = useState(false);
+  /** Con cuánta precisión se marcó la última vez, en metros. Solo en esta visita. */
+  const [precision, setPrecision] = useState<number | null>(null);
 
   const consulta = useQuery({
     queryKey: ['mi_fichaje'],
@@ -227,6 +229,7 @@ function DondeEstaElLocal() {
 
   async function aqui() {
     setNoLaDio(false);
+    setPrecision(null);
     setBuscando(true);
     const donde = await preguntarDondeEstoy();
     setBuscando(false);
@@ -234,12 +237,20 @@ function DondeEstaElLocal() {
       setNoLaDio(true);
       return;
     }
+    setPrecision(donde.donde.precision ?? null);
     await guardar({
       latitud: donde.donde.latitud,
       longitud: donde.donde.longitud,
       radio_metros: radio,
     });
   }
+
+  /**
+   * Más de cien metros de error es marcar la manzana, no el local. Pasa en un
+   * ordenador o un TPV, que no tienen GPS y se sitúan por la wifi o por la
+   * conexión: se marca igual —algo es mejor que nada— y se dice cómo mejorarlo.
+   */
+  const pocoPreciso = precision !== null && precision > 100;
 
   if (consulta.isError) return null;
 
@@ -259,9 +270,18 @@ function DondeEstaElLocal() {
           </Aviso>
         )}
 
+        {pocoPreciso && (
+          <Aviso tono="atencion" titulo={`Marcado, pero con ±${precision} m de error`}>
+            Este aparato se sitúa por la conexión, no por GPS. Márcalo desde un móvil, dentro del
+            local y con la ubicación exacta activada.
+          </Aviso>
+        )}
+
         <p className="text-cuerpo">
           {puesto
-            ? 'Puesto. Cada fichaje dice a cuántos metros del local se hizo.'
+            ? precision !== null && !pocoPreciso
+              ? `Puesto, con ±${precision} m de error. Cada fichaje dice a cuántos metros del local se hizo.`
+              : 'Puesto. Cada fichaje dice a cuántos metros del local se hizo.'
             : 'Sin poner. Hazlo desde el propio local.'}
         </p>
 

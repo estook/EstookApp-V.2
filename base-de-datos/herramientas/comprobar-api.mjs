@@ -1029,6 +1029,31 @@ try {
     );
   }
 
+  // ── La 0030 · los JSON, como objetos y no como texto ──────────────────────
+  //
+  // En producción la API guardaba los JSON envueltos en un texto, y el Panel no
+  // se guardaba nunca. La 0030 arregla lo guardado; esto comprueba que **lo nuevo**
+  // sale bien, que es lo que dice si la API desplegada ya tiene el arreglo. Si
+  // sale mal después de desplegar, es que la API desplegada va por detrás.
+  if (cuantasMigraciones.ultima < 30) {
+    noSePuede(`la 0030 todavia no esta aplicada · la base va por la ${cuantasMigraciones.ultima}`);
+  } else {
+    const [envueltos] = await conexion`
+      select
+        (select count(*)::int from estook.panel_de_persona
+          where jsonb_typeof(widgets) = 'string') as panel,
+        (select count(*)::int from estook.bandeja_de_salida
+          where jsonb_typeof(datos) = 'string') as bandeja,
+        (select count(*)::int from estook.clave_de_idempotencia
+          where jsonb_typeof(respuesta) = 'string') as idempotencia
+    `;
+    comprobar(
+      'los JSON se guardan como objetos, no envueltos en un texto',
+      envueltos.panel + envueltos.bandeja + envueltos.idempotencia === 0,
+      `envueltos · panel ${envueltos.panel} · bandeja ${envueltos.bandeja} · idempotencia ${envueltos.idempotencia}`,
+    );
+  }
+
   titulo('La API DESPLEGADA, que es otra cosa');
 
   // ══════════════════════════════════════════════════════════════════════════

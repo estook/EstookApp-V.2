@@ -72,7 +72,7 @@ export const elegirComoSeCierra = comando<
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'local', ${localId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ como_se_cierra: entrada.como, tpv: fila.tpv })}::jsonb,
+        ${JSON.stringify({ como_se_cierra: entrada.como, tpv: fila.tpv })}::text::jsonb,
         null
       )
     `;
@@ -224,7 +224,7 @@ export const cerrarLaCaja = comando<EntradaCerrarLaCaja, SalidaCerrarLaCaja>({
       select estook.anotar(
         ${organizacionId}::uuid, ${seHaCorregido ? 'cambiar' : 'crear'}, 'cierre_de_caja',
         ${cierreId}, ${localId}::uuid, null,
-        ${JSON.stringify({ fecha, total_centimos: entrada.total_centimos, lineas: lineas.length })}::jsonb,
+        ${JSON.stringify({ fecha, total_centimos: entrada.total_centimos, lineas: lineas.length })}::text::jsonb,
         ${entrada.notas ?? null}
       )
     `;

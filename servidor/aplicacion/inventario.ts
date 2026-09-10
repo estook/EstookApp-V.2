@@ -249,7 +249,7 @@ export async function apuntar(
       ${contexto.personaId},
       ${contexto.correlacionId}::uuid,
       ${apunte.origen ?? 'a_mano'},
-      ${apunte.referencia === null || apunte.referencia === undefined ? null : JSON.stringify(apunte.referencia)}::jsonb,
+      ${apunte.referencia === null || apunte.referencia === undefined ? null : JSON.stringify(apunte.referencia)}::text::jsonb,
       ${apunte.esEjemplo ?? false}
     )
     returning id::text as id

@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   NOMBRE_DEL_ORIGEN_DEL_CIERRE,
+  claveDePlato,
+  importeDeLinea,
   leerUnCsvDeCierre,
   loQueNoCuadra,
   ticketMedio,
@@ -272,6 +274,11 @@ interface LineaEnElFormulario {
   readonly concepto: string;
   readonly unidades: string;
   readonly importe: Centimos | null;
+  /**
+   * Si el importe lo ha escrito una persona. Mientras no, se propone solo con el
+   * precio del plato; en cuanto alguien lo toca, manda lo que ha escrito.
+   */
+  readonly importeTocado: boolean;
 }
 
 function Formulario({
@@ -311,6 +318,7 @@ function Formulario({
       concepto: l.concepto,
       unidades: String(l.unidades),
       importe: l.importeCentimos as Centimos | null,
+      importeTocado: true,
     })),
   );
   const [origen, setOrigen] = useState<'a_mano' | 'csv'>(
@@ -320,6 +328,21 @@ function Formulario({
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
+
+  /*
+    ── El importe de cada plato, propuesto y no pedido ─────────────────────────
+    «Pones el importe de cada plato a mano: poner el que tiene en la carta, y que
+    se pueda cambiar.» La carta es M10; hasta entonces el precio sale de **la
+    última vez que se apuntó ese plato**. Se escribe «croquetas», se pone cuántas
+    y el importe sale solo; si no es ese, se cambia y manda lo escrito.
+  */
+  const precioDe = new Map(datos.platosConocidos.map((p) => [p.clave, p.precioUnidadCentimos]));
+  const precioDelPlato = (concepto: string) => precioDe.get(claveDePlato(concepto)) ?? null;
+  const propuesto = (concepto: string, unidades: string): Centimos | null => {
+    const precio = precioDelPlato(concepto);
+    const cuantos = Number(unidades.replace(',', '.'));
+    return precio === null || !(cuantos > 0) ? null : importeDeLinea(precio, cuantos);
+  };
 
   const diferencia =
     total === null
@@ -345,7 +368,12 @@ function Formulario({
       leido.lineas.map((l) => ({
         concepto: l.concepto,
         unidades: String(l.unidades),
-        importe: l.importeCentimos as Centimos | null,
+        // El fichero trae su importe, y ese manda. Si no lo trae, se propone.
+        importe:
+          l.importeCentimos === null
+            ? propuesto(l.concepto, String(l.unidades))
+            : (l.importeCentimos as Centimos),
+        importeTocado: l.importeCentimos !== null,
       })),
     );
     setNoEntendidas(leido.noEntendidas.map((f) => f.fila));
@@ -495,9 +523,17 @@ function Formulario({
             </Aviso>
           )}
 
+          {/* Los platos que ya se han apuntado alguna vez, para elegirlos. */}
+          <datalist id="platos-conocidos">
+            {datos.platosConocidos.map((plato) => (
+              <option key={plato.clave} value={plato.concepto} />
+            ))}
+          </datalist>
+
           {lineas.length === 0 ? (
             <p className="text-secundario text-texto-suave">
-              Opcional. Con esto, cuando exista la carta, Estook sabrá qué género gasta cada plato.
+              Opcional. El importe se pone solo con el precio de la última vez; cuando exista la
+              carta, con el de la carta.
             </p>
           ) : (
             <ul className="flex flex-col gap-e2">
@@ -508,11 +544,22 @@ function Formulario({
                 >
                   <Campo
                     etiqueta="Plato"
+                    list="platos-conocidos"
                     value={linea.concepto}
                     onChange={(e) => {
                       const valor = e.currentTarget.value;
                       setLineas((todas) =>
-                        todas.map((l, i) => (i === indice ? { ...l, concepto: valor } : l)),
+                        todas.map((l, i) =>
+                          i === indice
+                            ? {
+                                ...l,
+                                concepto: valor,
+                                ...(l.importeTocado
+                                  ? {}
+                                  : { importe: propuesto(valor, l.unidades) }),
+                              }
+                            : l,
+                        ),
                       );
                     }}
                   />
@@ -523,7 +570,17 @@ function Formulario({
                     onChange={(e) => {
                       const valor = e.currentTarget.value;
                       setLineas((todas) =>
-                        todas.map((l, i) => (i === indice ? { ...l, unidades: valor } : l)),
+                        todas.map((l, i) =>
+                          i === indice
+                            ? {
+                                ...l,
+                                unidades: valor,
+                                ...(l.importeTocado
+                                  ? {}
+                                  : { importe: propuesto(l.concepto, valor) }),
+                              }
+                            : l,
+                        ),
                       );
                     }}
                   />
@@ -531,8 +588,13 @@ function Formulario({
                     etiqueta="Importe"
                     valor={linea.importe}
                     alCambiar={(valor) => {
+                      // Borrarlo devuelve la propuesta: vacío no es «lo he tocado».
                       setLineas((todas) =>
-                        todas.map((l, i) => (i === indice ? { ...l, importe: valor } : l)),
+                        todas.map((l, i) =>
+                          i === indice
+                            ? { ...l, importe: valor, importeTocado: valor !== null }
+                            : l,
+                        ),
                       );
                     }}
                   />
@@ -546,6 +608,14 @@ function Formulario({
                   >
                     <IconoBorrar size={18} />
                   </button>
+                  {!linea.importeTocado &&
+                    linea.importe !== null &&
+                    precioDelPlato(linea.concepto) !== null && (
+                      <p className="col-span-full text-etiqueta text-texto-suave">
+                        A {comoDinero(precioDelPlato(linea.concepto))} cada uno, como la última vez.
+                        Cámbialo si no es así.
+                      </p>
+                    )}
                 </li>
               ))}
             </ul>
@@ -556,7 +626,10 @@ function Formulario({
               tono="texto"
               icono={<IconoAnadir size={16} />}
               onClick={() => {
-                setLineas((todas) => [...todas, { concepto: '', unidades: '1', importe: null }]);
+                setLineas((todas) => [
+                  ...todas,
+                  { concepto: '', unidades: '1', importe: null, importeTocado: false },
+                ]);
               }}
             >
               Añadir un plato

@@ -5,13 +5,14 @@
 > Todo M6½ está fusionado (#37 a #41), migrado y desplegado. Esta entrega arregla
 > lo que salió al mirarlo en el TPV y en el móvil.
 >
-> | Qué             | Cómo está                                                      |
-> | --------------- | -------------------------------------------------------------- |
-> | El código       | **Escrito y en verde**, en la rama `m6-medio-lo-que-vio-richi` |
-> | Su pull request | **Por fusionar** · paso 1                                      |
-> | Migración       | **La `0030`, sin aplicar** · paso 2                            |
-> | La API          | **Sin desplegar** · paso 3, y **es el que arregla el Panel**   |
-> | Mirarlo         | **Sin hacer** · paso 4                                         |
+> | Qué             | Cómo está                                                           |
+> | --------------- | ------------------------------------------------------------------- |
+> | El pull request | **Fusionado** (#42)                                                 |
+> | Migración       | **Aplicada**: 30 de 30                                              |
+> | La API          | **Desplegada**, y los JSON se guardan como objetos                  |
+> | Mirarlo         | **Hecho por Richi**: el Panel se guarda y el GPS ficha a 47 m, ±5 m |
+>
+> **M6½ está cerrado.** Lo de abajo se deja como estaba, para poder repasarlo.
 
 ## Qué arregla, una línea cada cosa
 
@@ -117,9 +118,11 @@ Y la comprobación:
 
 > **Lo que salga, apúntalo tal cual**, con una foto si puedes.
 
-## Lo que queda por decidir, y es tuyo
+## Lo que decidiste al cerrar
 
-- **Cuándo se conecta Google** para situar el local: está propuesto un módulo corto
-  justo después de M7 ([decisión 0030](decisiones/0030-el-local-se-situa-con-google.md)).
-  Hará falta tu clave de Google con facturación.
-- **Si los días de reparto son eventos de calendario**, antes de empezar M7.
+- **Google, al final de M7**, con Places bien acotada y actualizándose sola al
+  acabar el día ([decisión 0030](decisiones/0030-el-local-se-situa-con-google.md)).
+  Hará falta tu clave de Google con facturación y pedir el acceso a Business
+  Profile al empezar M7.
+- **Las entregas y las caducidades, en el Calendario**, y los avisos con los roles
+  que los ven ([decisión 0031](decisiones/0031-el-calendario-recoge-lo-de-todos.md)).

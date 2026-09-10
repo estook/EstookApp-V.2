@@ -40,4 +40,5 @@ alguien se preguntara «por que esta hecho asi».
 | **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo   |
 | **0028** | El alta de producto pregunta cuanto hay, no cuanto se aprovecha   |
 | **0029** | Lo que va a una columna JSON viaja como texto                     |
-| **0030** | El local se situa con Google, y de ahi salen fichaje y resenas    |
+| **0030** | El local se situa con Google, al final de M7, con tope de gasto   |
+| **0031** | El Calendario recoge lo de todos los modulos, con quien lo ve     |

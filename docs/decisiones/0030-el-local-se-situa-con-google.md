@@ -1,7 +1,7 @@
 # 0030 · El local se sitúa con Google, y de ahí salen el fichaje y las reseñas
 
 **Fecha:** 10 de septiembre de 2026
-**Estado:** decidido el qué; **el cuándo, propuesto y pendiente de Richi**
+**Estado:** decidido · se construye **al final de M7**, con Places y Business Profile
 **Completa:** la [decisión 0013](0013-google-places-se-aplaza-a-m23.md) y la
 [0025](0025-fichar-pide-donde-y-no-bloquea.md)
 
@@ -68,16 +68,44 @@ el cuadrante. Nunca se responde nada solo.
 - La posición de **las personas** se toma solo al fichar. No se sigue a nadie.
 - Fichar **nunca se bloquea** por la posición, venga de donde venga la del local.
 
-## Cuándo
+## Cuándo, y con qué tope · decidido
 
-La [0013](0013-google-places-se-aplaza-a-m23.md) aplazó Google entero a M23. Richi
-lo quiere «en próximos módulos», y tiene razón en que es lo que da sentido a la
-posición del fichaje. **Propuesta:** partirlo en dos.
+Richi, el 10 de septiembre: «Al final de M7, Places y Google Business, para verlo
+todo. Pero la API que cuesta dinero, la de Places, hay que acotarla bien, y que se
+actualice automáticamente al acabar el día.»
 
-1. **«El local en Google»**, un módulo corto justo después de M7: autocompletar en
-   el alta y en Ajustes, guardar la ficha y la posición, y el radio de fichaje
-   centrado en ella. Necesita la clave de Google con facturación, que es de Richi.
-2. **Reseñas, competencia y respuesta** siguen en M23, con Business Profile.
+Así que **«El local en Google» es el último bloque de M7**, y sustituye a la
+[0013](0013-google-places-se-aplaza-a-m23.md) en lo que toca a la ficha del local:
 
-**Queda por confirmar con Richi el momento** y la clave. Hasta entonces, la posición
-se marca a mano desde un móvil en el local.
+1. **Places, en el alta y en Ajustes.** Autocompletar con sesión y una sola ficha
+   pedida con lo justo. Se guardan el identificador, la dirección, el teléfono, la
+   web, el horario, la posición, la valoración y el número de reseñas. El radio de
+   fichaje se centra ahí.
+2. **Business Profile, para leer.** El dueño conecta **su** cuenta de Google y
+   Estook lee sus reseñas y su valoración. Responder, clasificar por tema y la
+   competencia siguen en M23. **Google pide solicitar el acceso a estas API y
+   aprobar el proyecto antes de dar cuota**, y eso tarda: se solicita al empezar
+   M7, no al final, para que no sea lo que lo retrase.
+3. **Se actualiza solo, una vez al día.** Al acabar la jornada de cada local —su
+   hora de corte—, el reloj pide la ficha y las reseñas nuevas. El reloj es
+   `pg_cron` llamando a nuestra API ([0016](0016-el-reloj-es-pg-cron-llamando-a-la-api.md)),
+   y **se monta en M7**, no en M8, porque esto lo necesita.
+
+### El tope de gasto, que es lo que Richi pidió cuidar
+
+- **Places se llama en dos momentos y en ninguno más**: al elegir el local —en el
+  alta o en Ajustes— y una vez al día por local, al cerrar la jornada. Abrir una
+  pantalla no llama a Google nunca: se lee lo guardado, con su fecha.
+- **Se pide solo lo que se guarda**, con la máscara de campos más corta que dé esos
+  datos.
+- **Un contador en la base, por local y día, con tope**, y un tope diario de todo el
+  proyecto. Si se pasa, se para y se avisa: nunca se sigue gastando por su cuenta.
+- **Todo por nuestra API**: la clave no sale del servidor y va restringida a las API
+  que se usan.
+- Los precios de Google se miran y se apuntan aquí **al contratar**, no antes. El
+  objetivo sigue siendo el de M5: **menos de 0,50 € por alta**, y céntimos al mes
+  por local.
+
+**Hasta entonces**, la posición del local se marca a mano desde un móvil en el
+local, y funciona: el 10 de septiembre, un fichaje en el local salió a 47 m con
+±5 m de precisión.

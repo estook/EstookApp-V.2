@@ -153,6 +153,10 @@ Dos cosas distintas, con dos reglas distintas ([decisión 0025](../decisiones/00
 
 **Cada uno ve lo que cobra él.** El de los demás se ve y se pone con el permiso de coste de personal, que se puede dar o quitar a mano; a quien no lo tiene **ese dato no le llega**. Y corregir un fichaje es de quien tiene Equipo, con nombre y motivo, siempre.
 
+## 1.11 Los avisos del Calendario
+
+Los publica quien puede editar el Calendario —gerente, jefes—, y **elige qué roles los ven**: toda la plantilla, solo la cocina, solo la sala. Lo filtra la base de datos, como las horas. Lo que publican los módulos —entregas, caducidades, turnos— lo ve quien ve ese módulo: una entrega, quien lleva compras e inventario; un turno, su dueño y quien lleva a esa persona ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)).
+
 ---
 
 # 2 · El area manager

@@ -349,6 +349,31 @@ Por hora, o al mes con sus horas de contrato
 
 **NO se toca:** ningún documento ni Fogón, que no reciben sueldos.
 
+## 2.25 Se publica un aviso en el Calendario
+
+```
+Titulo, cuando y para que roles
+├─ solo quien puede editar el Calendario
+├─ se guarda como evento de la capa «aviso», con quien lo puso
+├─ lo ven SOLO los roles elegidos: lo decide la base
+└─ sale en «Lo que viene» del Panel de esas personas, hoy y mañana
+```
+
+**NO se toca:** nada de lo que publican los módulos. Un aviso no mueve una entrega.
+
+## 2.26 Se cierra el día, y se actualiza la ficha de Google
+
+```
+El reloj, a la hora de corte de cada local
+├─ mira el contador de llamadas de ese local y del dia: si esta en el tope, para
+├─ pide a Places la ficha, con la mascara de campos corta
+├─ pide a Business Profile las reseñas nuevas, si la cuenta esta conectada
+├─ guarda lo que llega con su fecha, y suma al contador
+└─ si la direccion ha cambiado, avisa y PREGUNTA si se mueve el radio de fichaje
+```
+
+**NO se toca:** la posición del local si se puso a mano, sin preguntar. Y abrir una pantalla no llama a Google nunca.
+
 ---
 
 # 3 · De dónde salen las opciones

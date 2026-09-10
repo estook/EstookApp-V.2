@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 10 de septiembre de 2026 · M6½ fusionado, migrado y desplegado
+Última actualización: 10 de septiembre de 2026 · M6½ cerrado y comprobado · **listo para M7**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -16,19 +16,19 @@
 
 |                |                                                                                                                         |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6** ✓ · **M6½** ✓ en cinco entregas (#37 a #41) · la sexta, lo que vio Richi en el TPV, **sin fusionar**    |
-| **Siguiente**  | **M7** · Proveedores y compras                                                                                          |
+| **Terminados** | **M0** a **M6** ✓ · **M6½** ✓ en seis entregas (#37 a #42): fusionado, migrado, desplegado y mirado en TPV y móvil      |
+| **Siguiente**  | **M7** · Proveedores y compras, las entregas en el Calendario y, al final, el local en Google                           |
 | **Pruebas**    | 765 unitarias y de base de datos · 327 de pantalla en escritorio y móvil, todas en verde · catálogo **77 de 83** (93 %) |
-| **Rama**       | `m6-medio-lo-que-vio-richi`, con su pull request                                                                        |
-| **Base**       | **29 de 29** aplicadas en Supabase, **44 tablas** · la **`0030`**, sin aplicar · leído el 10 de septiembre              |
-| **API**        | Desplegada **sin el arreglo del Panel**: hay que desplegarla otra vez con esta entrega                                  |
+| **Rama**       | `m7-listo-para-empezar`: solo documentos, las dos decisiones de Richi para M7                                           |
+| **Base**       | **30 de 30** aplicadas en Supabase, **44 tablas**, todas con seguridad por filas · leído el 10 de septiembre            |
+| **API**        | **Desplegada y al día** · conoce las 25 consultas y los 58 comandos, y los JSON se guardan como objetos                 |
 | **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                  |
 | **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                   |
 
-> **Lo que salió al mirarlo en el TPV está arreglado en esta entrega.** Lo más
-> importante: **el Panel no se había guardado nunca en producción**, y el arreglo
-> está en el servidor. Los pasos, con lo que tiene que salir en cada uno, en
-> [`docs/pasos-para-cerrar-m6-medio.md`](docs/pasos-para-cerrar-m6-medio.md).
+> **M6½ está cerrado, y comprobado en la base de verdad el 10 de septiembre**: el
+> Panel ya se guarda (hay uno guardado, del móvil), el GPS del fichaje funciona (un
+> fichaje en el local a 47 m con ±5 m de precisión) y ya hay una caja cerrada. Lo
+> siguiente es M7, con lo que Richi decidió al cerrar: **sección 8**.
 
 ---
 
@@ -61,14 +61,18 @@ qué aprueba una persona).
 
 ### Ahora mismo
 
-1. **Fusionar `m6-medio-lo-que-vio-richi`, aplicar la `0030` y desplegar la API.**
-   Sin el despliegue el Panel sigue sin guardarse. Después, `bd:comprobar-api` tiene
-   que decir que los JSON se guardan como objetos.
-2. **Decidir cuándo se conecta Google** para situar el local, que es de donde tiene
-   que salir el centro del radio de fichaje. Propuesto: un módulo corto justo
-   después de M7 ([0030](docs/decisiones/0030-el-local-se-situa-con-google.md)).
-3. **Decidir si los días de reparto son eventos de calendario**, antes de la
-   primera línea de M7 (abajo).
+1. **Fusionar `m7-listo-para-empezar`**: solo documentos —las dos decisiones de
+   abajo, escritas en el Plan, el Manifiesto, Roles y la Auditoría—.
+2. **Empezar M7 en un chat nuevo**, con la sección 8 como punto de partida.
+
+### Lo que Richi decidió al cerrar M6½
+
+- **Google, al final de M7**: Places y Business Profile, «para verlo todo», con la
+  API de Places **bien acotada** y **actualizándose sola al acabar el día**
+  ([0030](docs/decisiones/0030-el-local-se-situa-con-google.md)).
+- **Las entregas y las caducidades son eventos del Calendario**, «para que lo sepa
+  la gente», y **los avisos se publican eligiendo qué roles los ven**. Un calendario
+  completo, «que quede bien sin pasarse» ([0031](docs/decisiones/0031-el-calendario-recoge-lo-de-todos.md)).
 
 ### Lo que M6½ deja preparado, y dónde se termina
 
@@ -87,13 +91,9 @@ Lo que Richi pidió «a futuro» tiene ya su sitio, sus datos y su documento:
 
 ### Lo que sigue sin decidirse · es de Richi
 
-1. **¿Los días de reparto son eventos de calendario?** Conviene decidirlo **antes
-   de la primera línea de M7**: las caducidades de M6 lo son, los repartos de M7
-   también, y el Calendario es M14. Fijar ahora qué es un evento cuesta poco;
-   rehacer M14, mucho.
-2. **Si Fogón habla antes de M22.** Tiene su sitio y su contexto; le falta la voz,
+1. **Si Fogón habla antes de M22.** Tiene su sitio y su contexto; le falta la voz,
    que necesita elegir modelo, presupuesto diario por local y caché.
-3. **Si se quitan de la API `mis_locales`, `mis_permisos` y `un_local`**, que
+2. **Si se quitan de la API `mis_locales`, `mis_permisos` y `un_local`**, que
    `quien_soy` dejó sin trabajo en M4.
 
 ### Pendiente de dato, no de código
@@ -104,13 +104,13 @@ entonces el motor dice «sin regla» y para ([0006](docs/decisiones/0006-el-moto
 
 ### Sin prisa
 
-| Qué                                                                   | Cuándo                                                                 |
-| --------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Quitar «Automatically expose new tables» en Supabase → Settings → API | antes de clientes                                                      |
-| Regenerar las claves de Google, que pasaron por un chat               | M27                                                                    |
-| Google Places en el alta                                              | M23 ([0013](docs/decisiones/0013-google-places-se-aplaza-a-m23.md))    |
-| Volver a `BrowserRouter` cuando haya `estook.com`                     | con dominio ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md)) |
-| El vectorial del logotipo y de Fogón                                  | cuando aparezcan; se sustituyen en un sitio                            |
+| Qué                                                                   | Cuándo                                                                         |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Quitar «Automatically expose new tables» en Supabase → Settings → API | antes de clientes                                                              |
+| Regenerar las claves de Google, que pasaron por un chat               | M27                                                                            |
+| Google Places y Business Profile                                      | **final de M7** ([0030](docs/decisiones/0030-el-local-se-situa-con-google.md)) |
+| Volver a `BrowserRouter` cuando haya `estook.com`                     | con dominio ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md))         |
+| El vectorial del logotipo y de Fogón                                  | cuando aparezcan; se sustituyen en un sitio                                    |
 
 ---
 
@@ -386,6 +386,26 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ## 8 · El siguiente paso · M7
 
+### Cómo arrancar el chat nuevo
+
+1. **Leer, en este orden**: este fichero entero; la ficha de **M7** en el
+   [Plan](docs/maestros/Estook-Plan-de-Desarrollo.md); las decisiones
+   [0030](docs/decisiones/0030-el-local-se-situa-con-google.md) —Google— y
+   [0031](docs/decisiones/0031-el-calendario-recoge-lo-de-todos.md) —Calendario—;
+   y la [0014](docs/decisiones/0014-las-reacciones-entre-modulos.md), porque las
+   entregas se publican con una reacción.
+2. **Comprobar que se parte de lo bueno**: la rama al día con `main`,
+   `.\estook.cmd verifica` en verde, y `.\estook.cmd bd:comprobar-api` diciendo 30
+   migraciones, las 83 operaciones conocidas y los JSON como objetos.
+3. **Pedirle a Richi, lo primero**, lo que tarda en llegar: **solicitar el acceso a
+   las API de Google Business Profile** con la cuenta de Google que gestiona la
+   ficha del local, y **una clave de Google Cloud con facturación** para Places. Sin
+   eso, el último bloque de M7 no se puede probar de verdad.
+4. **Crear la rama de M7** y empezar por el modelo de datos, que es lo que decide
+   todo lo demás.
+
+### M7 · Proveedores y compras, las entregas en el Calendario y el local en Google
+
 **Proveedores y compras.** M6 le deja la ficha corta del proveedor y M7 la completa;
 M6½ le deja el sitio: pedidos y facturas son **vistas del destino «Compras»** de
 Inventario, declaradas con su `M7`. **M7 no toca la navegación.**
@@ -398,9 +418,42 @@ o con cambios?» · factura conciliada con sus albaranes · abonos y devolucione
 **Y su capa inteligente.** La sugerencia de pedido **con su motivo escrito** —que M6
 ya calcula— respetando los días de reparto, y la comparación entre proveedores.
 
+**Y lo que Richi añadió al cerrar M6½:**
+
+- **Las entregas, en el Calendario** ([0031](docs/decisiones/0031-el-calendario-recoge-lo-de-todos.md)).
+  La tabla `estook.evento_de_calendario` con su capa, su origen, su local, cuándo,
+  qué dice y **qué roles lo ven** —filtrado por la base—. M7 publica las entregas
+  —días de reparto y pedidos con fecha— y las caducidades de los lotes, con una
+  reacción y una migración que pone las que ya hay. Y el widget del Panel **«Lo que
+  viene»**, con hoy y mañana. Las pantallas del Calendario y los avisos con roles
+  son de M14, que pinta lo que ya se publica.
+- **El reloj**: `pg_cron` llamando a nuestra API ([0016](docs/decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)),
+  que **se monta aquí** y no en M8. De paso vacía la bandeja de eventos y limpia la
+  idempotencia caducada.
+- **El último bloque: «El local en Google»** ([0030](docs/decisiones/0030-el-local-se-situa-con-google.md)).
+  Places en el alta y en Ajustes, con la posición como centro del radio de fichaje;
+  Business Profile para leer las reseñas; **actualización automática una vez al
+  día**, al cerrar la jornada de cada local; y **el tope de gasto**: Google solo se
+  llama al elegir el local y al cerrar el día, con un contador por local y día y
+  otro del proyecto, y todo por nuestra API.
+
 **Terminado cuando.** Un pedido recorre el ciclo, el inventario cuadra, el precio
 nuevo ya está repercutido, y una factura con tres albaranes y una diferencia sale
-conciliada con esa diferencia señalada.
+conciliada con esa diferencia señalada. **Y además**: las entregas de la semana salen
+en el Panel; al elegir el local en el alta se guardan su ficha y su posición; y al
+cerrar el día la ficha y las reseñas se actualizan solas, con el contador de llamadas
+por debajo de su tope.
+
+**Lo que no se puede olvidar en M7**, porque ya costó caro:
+
+- Lo que va a `jsonb`, con `${…}::text::jsonb` ([0029](docs/decisiones/0029-lo-que-va-a-jsonb-viaja-como-texto.md)).
+- Todo lo que mueve género, por `apuntar` y su candado por producto: recibir un
+  albarán son entradas en el libro.
+- Cada permiso nuevo nace con su pantalla, y cada operación nueva con una prueba que
+  la ejecute: `pnpm cobertura` tiene que seguir sin huecos nuevos.
+- Se prueba con el rol más pequeño que puede hacerlo, en móvil y en escritorio, y
+  **después de desplegar se mira la base de verdad**.
+- Lo nuevo se carga aparte: `app` va 7,8 KB por encima de la referencia.
 
 **Lo que ya tiene hecho:**
 
@@ -419,11 +472,11 @@ conciliada con esa diferencia señalada.
 para lo mismo en el momento. Un aviso sale de la pantalla solo si se lo gana, fuera
 de turno no suena nada y **ninguno llega sin decir qué hacer**. El reloj es
 `pg_cron` llamando a la API ([0016](docs/decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)),
-y se monta en M8.
+y se monta en M7.
 
 **Cómo se comprueba que M7 no ha roto lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase. Hoy pasan los tres primeros —757 pruebas; 327 de pantalla, más tres que
+Supabase. Hoy pasan los tres primeros —765 pruebas; 327 de pantalla, más tres que
 hablan con la API a pelo y por eso corren en un solo navegador; y 77 de las 83
 operaciones ejecutadas, con las seis que faltan apuntadas como deuda y con su
 módulo—, y el cuarto también: la base y la API desplegada, al día el 10 de septiembre.

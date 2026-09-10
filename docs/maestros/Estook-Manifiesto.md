@@ -821,18 +821,22 @@ Todo lo que pasa en el local, en un sitio. **No es un calendario de turnos: es e
 
 _Su navegación: Mes · Semana · Día · Turnos · Tareas_
 
-| Qué vive aquí |                                                            |
-| ------------- | ---------------------------------------------------------- |
-| Turnos        | Quién trabaja, en qué tramo y en qué puesto                |
-| Entregas      | Los repartos de cada proveedor, sacados de sus días        |
-| Limpiezas     | Campana, cámaras, extractores, fondos, con su periodicidad |
-| Tareas        | Apertura, cierre, y las que se creen                       |
-| Mantenimiento | Revisiones de equipos y visitas de técnicos                |
-| APPCC         | Los registros que tocan hoy                                |
-| Menús         | Qué menú del día está programado                           |
-| Eventos       | Reservas grandes, catering, celebraciones                  |
-| Cierres       | Vacaciones del local, festivos, días especiales            |
-| Personas      | Vacaciones, bajas y permisos aprobados                     |
+| Qué vive aquí |                                                               |
+| ------------- | ------------------------------------------------------------- |
+| Turnos        | Quién trabaja, en qué tramo y en qué puesto                   |
+| Entregas      | Los repartos de cada proveedor, sacados de sus días           |
+| Limpiezas     | Campana, cámaras, extractores, fondos, con su periodicidad    |
+| Tareas        | Apertura, cierre, y las que se creen                          |
+| Mantenimiento | Revisiones de equipos y visitas de técnicos                   |
+| APPCC         | Los registros que tocan hoy                                   |
+| Menús         | Qué menú del día está programado                              |
+| Eventos       | Reservas grandes, catering, celebraciones                     |
+| Cierres       | Vacaciones del local, festivos, días especiales               |
+| Personas      | Vacaciones, bajas y permisos aprobados                        |
+| Caducidades   | Lo que caduca, sacado de los lotes                            |
+| Avisos        | Lo que publica quien lleva el local, para los roles que elija |
+
+**Los módulos publican; el Calendario pinta** ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)). Compras escribe sus entregas, Inventario sus caducidades, Equipo sus turnos, Servicio su APPCC, y si el origen cambia, su evento cambia con él. Y quien lleva el local publica **avisos** —«Inspección el jueves», «Cena de equipo el 20»— eligiendo **qué roles los ven**: toda la plantilla, solo la cocina, solo la sala. Lo filtra la base, no la pantalla. Hoy y mañana salen en el Panel desde M7.
 
 ## Lo que hace que sea una app y no una rejilla
 
@@ -988,6 +992,8 @@ Dónde se va el margen, **con cada línea llevando a la app donde se arregla**: 
 **Reseñas** conectadas con Google: valoración, evolución, clasificación por tema, lo que se repite, detección de caídas y respuesta propuesta en el tono del local, **para mandarla tú**. Y el cruce que importa: si las quejas de espera coinciden con los viernes noche, lo cruza con el cuadrante y sugiere refuerzo.
 
 **Competencia:** los locales de tu zona con su precio de menú, su valoración y su evolución, refrescados una vez por semana.
+
+**Lo que viene de Google se lee una vez al día**, al cerrar la jornada, y se guarda: abrir una pantalla no llama a Google nunca. Cada llamada cuenta contra un tope por local y día, y si se llega, se para ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)).
 
 ## Exportar
 

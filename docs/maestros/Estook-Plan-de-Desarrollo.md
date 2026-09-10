@@ -532,9 +532,13 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y su capa inteligente.** **Sugerencia de pedido con su motivo escrito** («mantener unos 5 días de cobertura») y comparación entre proveedores para el mismo producto.
 
-**Reglas críticas.** El albarán mueve stock; **la factura confirma el precio**. La recepción es idempotente.
+**Y lo que M7 publica en el Calendario** ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)). La tabla de eventos, con su seguridad por roles · **las entregas** —los días de reparto de cada proveedor y los pedidos con fecha de llegada— y **las caducidades** de los lotes, como eventos · el widget del Panel **«Lo que viene»**, con hoy y mañana. Las pantallas del Calendario siguen siendo M14.
 
-**Terminado cuando.** Un pedido recorre el ciclo, el inventario cuadra, el precio nuevo ya está repercutido en los escandallos, y una factura con tres albaranes y una diferencia sale conciliada con esa diferencia señalada.
+**Y su último bloque · «El local en Google»** ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)). **Places** en el alta y en Ajustes, con autocompletar por sesión y una ficha pedida con lo justo: identificador, dirección, teléfono, web, horario, posición —el centro del radio de fichaje—, valoración y número de reseñas · **Business Profile para leer**: el dueño conecta su cuenta y se leen sus reseñas · **se actualiza sola una vez al día**, al cerrar la jornada de cada local, con **el reloj**, que se monta aquí ([0016](../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)) · **tope de gasto**: un contador por local y día y otro del proyecto, y Google solo se llama al elegir el local y al cerrar el día. El acceso a Business Profile se solicita a Google **al empezar M7**, porque tarda.
+
+**Reglas críticas.** El albarán mueve stock; **la factura confirma el precio**. La recepción es idempotente. **Abrir una pantalla no llama a Google nunca**: se lee lo guardado, con su fecha.
+
+**Terminado cuando.** Un pedido recorre el ciclo, el inventario cuadra, el precio nuevo ya está repercutido en los escandallos, y una factura con tres albaranes y una diferencia sale conciliada con esa diferencia señalada. **Y además**: las entregas de la semana salen en el Panel; al elegir el local en el alta se guardan su ficha y su posición; y al cerrar el día la ficha y las reseñas se actualizan solas, con el contador de llamadas por debajo de su tope.
 
 ### M8 · Inventario, mermas y desviación
 
@@ -599,6 +603,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 **Regla crítica.** **Nunca se publica automáticamente.** La propuesta nace en borrador.
 
 **La base ya está desde M6½**: el horario de siempre de cada persona y sus horas fichadas frente a su contrato, en Equipo › Resumen. Es lo primero que tiene que leer el generador de horarios.
+
+**Y lo que pinta ya lo publican otros** ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)): desde M7, las entregas y las caducidades están en la tabla de eventos. M14 **pinta**, no va a buscar: añade los turnos, **los avisos de quien lleva el local con los roles que los ven** —filtrados por la base, no por la pantalla—, las capas con el color de su app y sus filtros, y «solo lo mío». Todo lo necesario, y nada de más.
 
 **Terminado cuando.** Una semana con partidos se publica, cada persona recibe lo suyo, un cambio avisa solo al afectado, el cuadrante impreso sale legible, **y una propuesta de Fogón se puede editar antes de publicar**.
 
@@ -686,7 +692,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M23 · Reseñas, competencia y chat
 
-**La mitad de Google que se propone adelantar** ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)). Richi quiere Google «en próximos módulos», porque de la ficha del local sale su posición y de ella el radio de fichaje. La propuesta es un módulo corto, **«El local en Google»**, justo después de M7: autocompletar con Places en el alta y en Ajustes, guardar el identificador, la dirección, el horario y la posición, todo por nuestra API y con el tope de 0,50 € por alta. **El cuándo lo confirma Richi**, y necesita su clave de Google con facturación. Aquí quedan las reseñas, la competencia y la respuesta.
+**Lo que ya habrá hecho M7** ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)): la ficha del local desde Places, con su posición, y la cuenta de Business Profile conectada y leyendo reseñas, actualizado una vez al día al cerrar la jornada y con tope de gasto. **Aquí queda lo que se hace con las reseñas**: clasificarlas, la respuesta propuesta, el cruce con el cuadrante y la competencia.
 
 **Entra.** Enlace de la ficha del local autorizando con la cuenta de Google que la gestiona · reseñas por Google Business Profile, refrescadas cada 9 horas · conteo, clasificación por tema, media, evolución y detección de caídas **resueltos con consultas, sin llamar al modelo** · una sola llamada al modelo al día · cruce con el cuadrante y respuesta propuesta · competencia con recálculo cada 6 h sobre lo guardado y caché compartida por zona · chat con canales, directos, menciones, tarjetas de contexto, confirmación de lectura, buscador y silencio fuera de turno.
 
@@ -783,7 +789,7 @@ Código en su rama con commits legibles · migraciones numeradas y reversibles �
 2. **M1 y M2 antes que cualquier pantalla de negocio.** El modelo de alcances y los motores transversales son lo que se paga carísimo si se deja para después.
 3. **M3 antes que cualquier app**, para que ninguna invente su propio botón.
 4. Ningún módulo empieza con el anterior a medias.
-5. **Antes de M8 hay que haber decidido quién ejecuta los procesos de fondo.** La bandeja de salida y la cola de trabajos existen desde M2 y nadie las llama: en cuanto un módulo dependa de un evento, eso deja de ser gratis.
+5. **Antes de M8 hay que haber decidido quién ejecuta los procesos de fondo.** La bandeja de salida y la cola de trabajos existen desde M2 y nadie las llama: en cuanto un módulo dependa de un evento, eso deja de ser gratis. **Decidido**: `pg_cron` llamando a nuestra API ([0016](../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)), y **se monta en M7**, porque la actualización diaria de la ficha de Google lo necesita.
 6. **M29 y M30 van al final, y no es un descuido.** Una integración sobre un dominio a medio cerrar se rehace entera.
 7. **No se lanza sin M28.** Un mes con tres locales reales vale más que seis meses de suposiciones.
 

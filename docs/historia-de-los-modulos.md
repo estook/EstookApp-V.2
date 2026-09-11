@@ -1641,6 +1641,107 @@ caducidad** publicados por las reacciones, y el widget «Lo que viene», que est
 en el catálogo del Panel apagado con «llega con M14». M14 pintará el mes con la
 misma tabla.
 
+### M7 · el repaso: lo que vio Richi con la primera entrega en la mano
+
+Richi fusionó la #44, la miró en el móvil y en el TPV —«funciona bien, todo ok»— y
+volvió con once puntos y las respuestas a las cinco preguntas. Se reparten en cinco
+entregas pequeñas, cada una con su pull request, para que ninguna se quede a
+medias: **esta es la primera**, la de Inventario, el Panel y los fallos.
+
+#### Uno · Un lote que caduca se quita
+
+«Si hay un producto caducado, poder quitarlo con un botón en ese lote; si no, se
+queda siempre y no tiene sentido.» Cada lote lleva su **«Quitar»** en «Caduca esta
+semana» y en la ficha: **se ha gastado** —deja de avisar— o **se ha tirado**
+—sale de cámara como **merma por caducado**, por `apuntar`, con su lote—. El lote
+no se borra: se retira (`retirado_en`, `como_se_retiro`), y su evento del
+Calendario se va con él por la misma reacción que lo puso.
+
+#### Dos · Lo congelado se ve
+
+«Congelado», con la fecha en que se congeló: al dar de alta, en cada lote de la
+ficha y con «Congelar una parte» —un lote nuevo congelado hoy—. Sale como etiqueta
+en la lista, en «Hoy», en el widget de caducidades y en el Calendario, y tiene su
+vista, **Productos · Congelados**.
+
+#### Tres · Dos decimales, y cambiando de unidad
+
+«No pongas 1,7500 €: es 1,75 €.» El cuarto decimal venía de enseñar el precio por
+gramo o por mililitro. Ahora `comoPrecioPorUnidad` da siempre dos: lo que se cuenta
+en g o ml se lee en €/kg o €/l («0,64 €/l»), y lo que no llega a un céntimo, por
+cada cien. Por dentro sigue todo en milésimas ([0035](decisiones/0035-el-alta-pregunta-como-se-compra.md)).
+
+#### Cuatro · El alta pregunta cómo se compra
+
+«Queso azul en envases de 250 g: cuántas unidades, cuánto pesa cada una, cuánto
+cuestan todas o una, y que haga el cálculo. No explicándolo con texto sino con un
+buen diseño.» Tres tarjetas —por peso, por litros, por unidades—, las dos o tres
+preguntas de cada una y la línea de lo que se guarda: «Caja de 6 tarros de 250 g ·
+1,5 kg en total». El precio, el que se tenga a mano, y la otra cifra sale sola: «La
+caja sale a 21,00 € · 14,00 € el kg». La cuenta, en el dominio
+(`presentacion.ts`); la misma en el alta y al corregir la ficha, que no deja cambiar
+la forma de un producto con género apuntado ([0035](decisiones/0035-el-alta-pregunta-como-se-compra.md)).
+
+#### Cinco · El IVA, bien puesto
+
+«Mis precios llevan IVA. Una opción para elegir si está incluido o excluido, bien
+puesta: mira cómo lo hacen las mejores.» Como Xero, QuickBooks u Odoo: **se guarda
+sin IVA** y se escribe como venga el papel. Cada producto sabe su IVA de compra —el
+de su categoría, o el que se elija—; el local elige en Ajustes cómo escribe; cada
+campo de precio lleva «Sin IVA · Con IVA» con el tipo y la otra cifra; y a los
+precios que ya había se les quita **una vez**, dejando el de antes en el histórico
+([0033](decisiones/0033-los-precios-de-compra-se-guardan-sin-iva.md)).
+
+#### Seis · Los precios de antes, en una gráfica
+
+«Si llega un precio nuevo se actualiza, y se comparan los de antes, tipo gráfica.»
+En la ficha, con dos precios o más: lo que ha costado **cada proveedor**, en €/kg,
+€/l o €/ud —la misma medida aunque cambie el envase— y cuál es hoy el más barato.
+
+#### Siete · Los widgets no se pierden
+
+«Valor de la cámara, acciones rápidas, bajo mínimo, caduca esta semana: salen de
+fábrica, pero al dar a añadir no aparecen. ¿Si las borras las pierdes para
+siempre?» No se perdían, pero lo parecía: el catálogo **solo enseñaba lo que no
+estaba puesto**. Ahora salen todos, por grupos —lo que hay que atender, cifras,
+atajos, tu equipo— y con el filo del color de su app; los puestos dicen «En tu
+panel» con su «Quitar», y abajo, «Recuperar el panel de siempre». Una prueba exige
+que cada widget nuevo diga en qué grupo sale.
+
+#### Ocho · El salario que a veces fallaba
+
+«Puedo cambiarlo, pero a veces me dice "se nos ha roto algo por dentro".» Pasaba
+**la segunda vez que se cambiaba el mismo día**: el cambio cierra la fila vigente
+«hasta ayer» y abre una «desde hoy», y la segunda vez la fila vigente ya empezaba
+hoy, así que cerrarla hasta ayer rompía `hasta >= desde`. Ahora un cambio del mismo
+día **corrige la fila de hoy** en vez de abrir otra. Lección: una restricción de
+vigencia se prueba con dos cambios el mismo día, que es lo normal al corregir una
+errata.
+
+#### Nueve · Nadie echa a su igual
+
+«Que los gerentes, o gente del mismo nivel, no se puedan echar ni retirar el acceso
+entre ellos.» El permiso decía **qué** se podía hacer, no **a quién**. Ahora cada
+comando que toca a otra persona pide estar por encima en la amplitud del rol —la
+dirección, por encima de todos—, nadie da un rol que sea el suyo o esté por encima,
+y ni la pantalla de accesos ni la de invitar enseñan lo que va a decir que no
+([0034](decisiones/0034-nadie-gestiona-a-su-igual.md)).
+
+Lo destaparon las pruebas de pantalla: la primera versión dejaba invitar **hasta el
+propio nivel**, y un gerente nombraba a otro gerente al que en el mismo minuto no
+podía darle la contraseña. Quien nombra es quien después gestiona. Y la última
+dirección que intentaba irse oía «no es tu nivel» en vez de «el negocio se queda sin
+nadie que lo administre»: el guardián de siempre va ahora primero.
+
+#### Lo que queda de su lista, y en qué entrega
+
+| Entrega | Qué                                                                                       |
+| ------- | ----------------------------------------------------------------------------------------- |
+| **2**   | Avisar a jefes y gerentes de lo que hace su equipo, una vez; invitar a rellenar un pedido |
+| **3**   | Horarios, una app entera en Equipo: cuadrante, historial, horas, avisos y PDF             |
+| **4**   | El dominio `estook.com`                                                                   |
+| **5**   | Los topes de las API de Google por local, y conectarlas cuando lleguen los accesos        |
+
 ---
 
 ---

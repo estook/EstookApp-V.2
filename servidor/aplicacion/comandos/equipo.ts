@@ -111,35 +111,63 @@ export const ponerRetribucion = comando<
 
     const ambito = entrada.local_id ?? null;
 
-    // Se cierra la vigente **ayer**, no hoy: si se cerrara hoy, el día de hoy se
-    // quedaría con dos vigencias o con ninguna según cómo se mire, y el coste de
-    // hoy dependería del orden de las filas.
-    await contexto.sql`
+    // ── El fallo de «a veces me da error» ────────────────────────────────────
+    //
+    // Cambiarle el sueldo a alguien **dos veces el mismo día** —se teclea mal y
+    // se corrige al momento— cerraba el de esta mañana con fecha de ayer: una
+    // vigencia que acaba antes de empezar. La base la rechaza
+    // (`retribucion_vigencia_coherente`) y la pantalla decía «se nos ha roto algo
+    // por dentro». Solo pasaba la segunda vez, y por eso era «a veces».
+    //
+    // Lo de hoy todavía no es pasado: **se corrige en el sitio**. La regla de no
+    // reescribir el pasado sigue intacta para todo lo que empezó antes de hoy.
+    const corregidas = await contexto.sql<{ id: string; desde: string }[]>`
       update estook.retribucion
-         set hasta = current_date - 1, actualizado_en = now()
+         set forma = ${entrada.forma}::estook.forma_de_retribucion,
+             importe_centimos = ${entrada.importe_centimos},
+             horas_semanales = ${entrada.horas_semanales ?? null},
+             puesto = ${entrada.puesto ?? null},
+             actualizado_en = now()
        where persona_id = ${entrada.persona_id}
          and hasta is null
+         and desde >= current_date
          and local_id is not distinct from ${ambito}::uuid
-    `;
-
-    const puestas = await contexto.sql<{ id: string; desde: string }[]>`
-      insert into estook.retribucion (
-        organizacion_id, persona_id, local_id, forma, importe_centimos,
-        horas_semanales, puesto, desde, creado_por
-      )
-      values (
-        ${organizacionId}, ${entrada.persona_id}, ${ambito},
-        ${entrada.forma}::estook.forma_de_retribucion,
-        ${entrada.importe_centimos},
-        ${entrada.horas_semanales ?? null},
-        ${entrada.puesto ?? null},
-        current_date,
-        ${contexto.personaId}
-      )
       returning id, to_char(desde, 'YYYY-MM-DD') as desde
     `;
 
-    const puesta = puestas[0];
+    let puesta = corregidas[0];
+
+    if (puesta === undefined) {
+      // Se cierra la vigente **ayer**, no hoy: si se cerrara hoy, el día de hoy
+      // se quedaría con dos vigencias o con ninguna según cómo se mire, y el
+      // coste de hoy dependería del orden de las filas.
+      await contexto.sql`
+        update estook.retribucion
+           set hasta = current_date - 1, actualizado_en = now()
+         where persona_id = ${entrada.persona_id}
+           and hasta is null
+           and local_id is not distinct from ${ambito}::uuid
+      `;
+
+      const puestas = await contexto.sql<{ id: string; desde: string }[]>`
+        insert into estook.retribucion (
+          organizacion_id, persona_id, local_id, forma, importe_centimos,
+          horas_semanales, puesto, desde, creado_por
+        )
+        values (
+          ${organizacionId}, ${entrada.persona_id}, ${ambito},
+          ${entrada.forma}::estook.forma_de_retribucion,
+          ${entrada.importe_centimos},
+          ${entrada.horas_semanales ?? null},
+          ${entrada.puesto ?? null},
+          current_date,
+          ${contexto.personaId}
+        )
+        returning id, to_char(desde, 'YYYY-MM-DD') as desde
+      `;
+      puesta = puestas[0];
+    }
+
     if (!puesta) throw new FalloDeAplicacion('sin_permiso');
 
     // A la auditoría, y sin dudarlo: «todo lo que toca dinero». Sin el importe

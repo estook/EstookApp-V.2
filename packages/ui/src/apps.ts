@@ -237,7 +237,9 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // Los cuatro filtros que antes eran un interruptor suelto en mitad de la
         // pantalla y dos casillas de buscar. Son la misma lista mirada de otra
         // forma, asi que son vistas y no destinos.
-        vistas: vistas('Todo', 'Bajo mínimo', 'Sin precio', 'Desactivados'),
+        // «Congelados» (M7, repaso): lo que hay en la cámara de congelados, para
+        // tenerlo en mente sin abrir la puerta.
+        vistas: vistas('Todo', 'Bajo mínimo', 'Sin precio', 'Congelados', 'Desactivados'),
       },
       {
         id: 'movimientos',

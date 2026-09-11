@@ -69,6 +69,8 @@ interface Acceso {
   readonly tienePin: boolean;
   readonly ultimoAccesoEn: string | null;
   readonly enLinea: boolean;
+  /** Si está por debajo de quien mira: a un igual no se le toca el acceso (M7, repaso). */
+  readonly puedoGestionar: boolean;
 }
 
 /** Cómo está alguien, en palabras y con su color. Nunca solo color (B8). */
@@ -246,7 +248,11 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
       clave: 'acciones',
       titulo: 'Acceso',
       celda: (a: Acceso) =>
-        !puedeInvitar ? null : a.estado === 'fuera' ? (
+        !puedeInvitar ? null : !a.puedoGestionar && a.personaId !== yo?.personaId ? (
+          // «Que los gerentes, o gente del mismo nivel, no se puedan echar entre
+          // ellos.» No se enseña un botón que va a decir que no: se dice quién.
+          <span className="text-secundario text-texto-suave">Lo lleva quien está por encima</span>
+        ) : a.estado === 'fuera' ? (
           <Boton
             onClick={(evento) => {
               evento.stopPropagation();
@@ -490,15 +496,21 @@ function GestionarAcceso({
                 Darle una contraseña nueva
               </Boton>
             )}
-            <Boton
-              ancho
-              tono="peligro"
-              onClick={() => {
-                setSeguro(true);
-              }}
-            >
-              Retirar el acceso
-            </Boton>
+            {/*
+              A uno mismo no se le retira el acceso desde aquí: lo hace quien está
+              por encima, y el servidor lo dice igual si alguien lo intenta.
+            */}
+            {!esYo && (
+              <Boton
+                ancho
+                tono="peligro"
+                onClick={() => {
+                  setSeguro(true);
+                }}
+              >
+                Retirar el acceso
+              </Boton>
+            )}
           </>
         ) : (
           <Aviso

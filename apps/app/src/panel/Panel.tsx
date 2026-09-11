@@ -3,14 +3,17 @@ import {
   Aviso,
   Boton,
   Cargando,
+  Etiqueta,
   Hoja,
   Rejilla,
+  acentoDelWidget,
   clases,
   cuandoLlega,
-  loQueSePuedeAnadir,
+  elCatalogoParaAnadir,
   losQueLlegan,
   widgetPorId,
 } from '@estook/ui';
+import { IconoAnadir } from '@estook/iconos';
 import { puedeVer, type Permiso } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { TarjetasDelPanel } from '../pantallas/TarjetasDelPanel.tsx';
@@ -200,6 +203,12 @@ export function Panel() {
           setAnadiendo(false);
           setEditando(true);
         }}
+        alQuitar={mio.quitar}
+        alVolverAlDeSiempre={() => {
+          mio.volverAlDeFabrica();
+          setAnadiendo(false);
+          setEditando(true);
+        }}
       />
     </div>
   );
@@ -207,6 +216,15 @@ export function Panel() {
 
 /**
  * El catálogo de widgets, para añadir.
+ *
+ * ── Todos, y los que ya están lo dicen (M7, repaso) ─────────────────────────
+ *
+ * «Valor de la cámara, acciones rápidas, bajo mínimo, caduca esta semana: salen
+ *  de fábrica, pero al dar a añadir no aparecen. ¿Si las borras las pierdes para
+ *  siempre?» El catálogo enseñaba **solo lo que no estaba puesto**, así que los
+ *  de todos los días no salían nunca y quitar uno parecía perderlo. Ahora salen
+ *  todos, por grupos y con el color de su app: los puestos con «En tu panel» y su
+ *  «Quitar», y los demás con su «+». Y abajo, recuperar el de siempre.
  *
  * ── Y lo que llega, al final y sin poder pulsarse ────────────────────────────
  *
@@ -220,14 +238,18 @@ function AnadirWidget({
   puestos,
   tienePermiso,
   alAnadir,
+  alQuitar,
+  alVolverAlDeSiempre,
 }: {
   readonly abierta: boolean;
   readonly alCerrar: () => void;
   readonly puestos: readonly { readonly id: string }[];
   readonly tienePermiso: (permiso: Permiso) => boolean;
   readonly alAnadir: (id: string) => void;
+  readonly alQuitar: (id: string) => void;
+  readonly alVolverAlDeSiempre: () => void;
 }) {
-  const sePuede = loQueSePuedeAnadir(
+  const grupos = elCatalogoParaAnadir(
     puestos.map((p) => ({ id: p.id, tamano: 'ancho' as const })),
     tienePermiso,
   );
@@ -236,29 +258,68 @@ function AnadirWidget({
   return (
     <Hoja abierta={abierta} alCerrar={alCerrar} titulo="Añadir al panel">
       <div className="flex flex-col gap-e4">
-        {sePuede.length === 0 ? (
-          <p className="text-cuerpo">
-            Ya tienes puestos todos los que hay hoy. Los que faltan están abajo, con el módulo en el
-            que llegan.
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-e1">
-            {sePuede.map((widget) => (
-              <li key={widget.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    alAnadir(widget.id);
-                  }}
-                  className="flex w-full min-h-toque flex-col gap-e1 rounded-medio border border-borde p-e3 text-left hover:bg-fondo"
-                >
-                  <span className="text-cuerpo font-medium">{widget.nombre}</span>
-                  <span className="text-secundario text-texto-suave">{widget.queEnsena}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        {grupos.map((grupo) => (
+          <section key={grupo.grupo} aria-label={grupo.nombre}>
+            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">{grupo.nombre}</p>
+            <ul className="mt-e2 grid gap-e2 sm:grid-cols-2">
+              {grupo.widgets.map(({ widget, puesto }) => {
+                const acento = acentoDelWidget(widget.id);
+                // El filo del color de su app: se lee de qué es sin leer el título.
+                const filo =
+                  acento === undefined
+                    ? undefined
+                    : { borderLeftColor: acento, borderLeftWidth: '3px' };
+                return (
+                  <li key={widget.id}>
+                    {puesto ? (
+                      <div
+                        style={filo}
+                        className="flex min-h-toque items-start gap-e2 rounded-medio border border-borde bg-fondo p-e3"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="flex flex-wrap items-center gap-e2">
+                            <span className="text-cuerpo font-medium">{widget.nombre}</span>
+                            <Etiqueta tono="bien">En tu panel</Etiqueta>
+                          </span>
+                          <span className="block text-secundario text-texto-suave">
+                            {widget.queEnsena}
+                          </span>
+                        </span>
+                        <Boton
+                          tono="texto"
+                          onClick={() => {
+                            alQuitar(widget.id);
+                          }}
+                        >
+                          Quitar
+                        </Boton>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        style={filo}
+                        onClick={() => {
+                          alAnadir(widget.id);
+                        }}
+                        className="flex h-full w-full min-h-toque items-start gap-e2 rounded-medio border border-borde bg-superficie p-e3 text-left hover:bg-fondo"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-cuerpo font-medium">{widget.nombre}</span>
+                          <span className="block text-secundario text-texto-suave">
+                            {widget.queEnsena}
+                          </span>
+                        </span>
+                        <span aria-hidden="true" className="text-naranja">
+                          <IconoAnadir size={18} />
+                        </span>
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))}
 
         {llegan.length > 0 && (
           <section>
@@ -278,6 +339,14 @@ function AnadirWidget({
             </ul>
           </section>
         )}
+
+        {/* Nada se pierde: el de fábrica vuelve entero con un toque. */}
+        <div className="flex flex-wrap items-center gap-e2 border-t border-borde pt-e3">
+          <Boton tono="texto" onClick={alVolverAlDeSiempre}>
+            Recuperar el panel de siempre
+          </Boton>
+          <p className="text-secundario text-texto-suave">Vuelven los que traía de fábrica.</p>
+        </div>
       </div>
     </Hoja>
   );

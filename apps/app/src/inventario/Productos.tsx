@@ -124,9 +124,11 @@ export function Productos({
       ? { con_problema: 'true' }
       : vista === 'sin-precio'
         ? { sin_precio: 'true' }
-        : vista === 'desactivados'
-          ? { incluir_desactivados: 'true', solo_desactivados: 'true' }
-          : {};
+        : vista === 'congelados'
+          ? { congelados: 'true' }
+          : vista === 'desactivados'
+            ? { incluir_desactivados: 'true', solo_desactivados: 'true' }
+            : {};
 
   const consulta = useQuery({
     queryKey: ['mis_productos', texto, categoriaId, vista],
@@ -194,6 +196,8 @@ export function Productos({
             <span className={p.esEjemplo ? 'text-texto-suave' : ''}>{p.nombre}</span>
             {p.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
             {!p.activo && <Etiqueta>desactivado</Etiqueta>}
+            {/* Lo que hay en el congelador, para tenerlo en mente sin abrirlo. */}
+            {p.congelado && <Etiqueta tono="info">congelado</Etiqueta>}
             {p.sinVerificar && <Etiqueta tono="atencion">sin verificar</Etiqueta>}
           </span>
           {/* El envase, en pequeño y debajo. Es lo que distingue dos filas que se
@@ -420,6 +424,7 @@ export function Productos({
           que={moviendo.que}
           producto={moviendo.producto}
           puedeVerPrecios={datos.puedeVerPrecios}
+          preciosConIva={datos.preciosConIva}
           alCerrar={() => {
             setMoviendo(null);
           }}
@@ -450,6 +455,8 @@ export function Productos({
         categorias={datos.categorias}
         proveedores={datos.proveedores}
         puedeVerPrecios={datos.puedeVerPrecios}
+        preciosConIva={datos.preciosConIva}
+        territorio={datos.territorio}
       />
     </div>
   );
@@ -476,6 +483,7 @@ function comoSeCuenta(cuantos: number, vista: string): string {
   const cosa = cuantos === 1 ? 'producto' : 'productos';
   if (vista === 'bajo-minimo') return `${cuantos} ${cosa} por debajo del mínimo`;
   if (vista === 'sin-precio') return `${cuantos} ${cosa} sin precio`;
+  if (vista === 'congelados') return `${cuantos} ${cosa} con algo congelado`;
   if (vista === 'desactivados') return `${cuantos} ${cosa} desactivados`;
   return `${cuantos} ${cosa}`;
 }
@@ -531,6 +539,17 @@ function SinNada({
         titulo="Todos tienen precio"
         frase="No hay ningún producto contando cero en el valor de la cámara."
         sinAccionPorque="Un producto nuevo sin precio aparecerá aquí hasta que se le ponga uno."
+      />
+    );
+  }
+
+  if (vista === 'congelados') {
+    return (
+      <EstadoVacio
+        compacto
+        titulo="No hay nada congelado"
+        frase="Cuando congeles algo, sale aquí con la fecha en que se congeló y su caducidad."
+        sinAccionPorque="Se congela desde la ficha de cada producto, en «Lotes y caducidades»."
       />
     );
   }

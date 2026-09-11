@@ -273,7 +273,8 @@ test('se da de alta un producto en menos de treinta segundos', async ({ page }) 
   // de paso deja que los dos proyectos de Playwright —escritorio y móvil— corran
   // contra la misma base sin chocar con «ya tienes un producto que se llama así».
   await hoja.getByLabel(/^Producto/).fill(`Aceite de oliva ${Date.now()}`);
-  await hoja.getByLabel('Precio', { exact: true }).fill('42,50');
+  // Viene por litros, en garrafas de 5: el precio es el de la garrafa (M7, repaso).
+  await hoja.getByLabel('Precio de cada garrafa', { exact: true }).fill('42,50');
   await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
 
   // La ficha se abre sola con el producto creado.
@@ -894,14 +895,14 @@ test('del catálogo se puede cambiar el envase, y la cuenta se rehace al escribi
   await expect(propuesta).toBeVisible();
   await propuesta.click();
 
-  // Lo que propone el catálogo, a la vista: cuánto trae el envase.
-  await expect(hoja.getByLabel('Cuánto trae')).toHaveValue('5000');
+  // Lo que propone el catálogo, contestado ya: por litros, en garrafas de 5.
+  await expect(hoja.getByLabel('Cuánto trae cada garrafa')).toHaveValue('5');
 
-  // Y se cambia. **Ya no hay «cómo lo compras»**: el envase se compone con lo
-  // que trae, y el precio es el de todo eso. La cuenta sale hecha al escribirlo.
-  await hoja.getByLabel('Cuánto trae').fill('8000');
-  await hoja.getByLabel('Precio', { exact: true }).fill('60,00');
-  await expect(hoja.getByText('Sale a 0,0075 €/ml')).toBeVisible();
+  // Y se cambia. La cuenta sale hecha al escribirlo, en euros el litro y con dos
+  // decimales: «0,0075 €/ml» no lo leía nadie.
+  await hoja.getByLabel('Cuánto trae cada garrafa').fill('8');
+  await hoja.getByLabel('Precio de cada garrafa', { exact: true }).fill('60,00');
+  await expect(hoja.getByText('Sale a 7,50 € el litro')).toBeVisible();
 
   const nombre = `Aceite de 8 litros ${Date.now()}`;
   await hoja.getByLabel(/^Producto/).fill(nombre);
@@ -909,7 +910,7 @@ test('del catálogo se puede cambiar el envase, y la cuenta se rehace al escribi
 
   // Y lo guardado es lo suyo, no lo del catálogo.
   await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
-  await expect(loQueSeVe(page, 'Envase de 8000 ml')).toBeVisible();
+  await expect(loQueSeVe(page, 'Garrafa de 8 l')).toBeVisible();
 });
 
 /**
@@ -1129,16 +1130,15 @@ test('un producto se da de alta con nombre, unidad y precio, sin hacer cuentas',
   await hoja.getByRole('button', { name: 'Crearlo a mano' }).click();
   await hoja.getByLabel(/^Producto/).fill(nombre);
 
-  // En qué se mide: cinco pastillas, no un desplegable que esconde cuatro.
-  await hoja.getByRole('radio', { name: 'kg', exact: true }).click();
-  await expect(hoja.getByRole('radio', { name: 'kg', exact: true })).toHaveAttribute(
+  // ¿Cómo lo compras? Tres tarjetas, y por peso es lo más normal.
+  await hoja.getByRole('radio', { name: /^Por peso/ }).click();
+  await expect(hoja.getByRole('radio', { name: /^Por peso/ })).toHaveAttribute(
     'aria-checked',
     'true',
   );
 
-  // A granel: trae 1, y el precio **es el del kg**. No hay nada que multiplicar.
-  await expect(hoja.getByLabel('Cuánto trae')).toHaveValue('1');
-  await hoja.getByLabel('Precio', { exact: true }).fill('1,20');
+  // Suelto, y el precio **es el del kg**. No hay nada que multiplicar.
+  await hoja.getByLabel('Precio del kg', { exact: true }).fill('1,20');
 
   // **Cuánto hay**, que es lo que faltaba entero: antes el producto nacía a cero
   // y había que entrar en su ficha a apuntar una entrada.
@@ -1166,20 +1166,229 @@ test('y quien compra por envases lo despliega, y la cuenta sigue saliendo', asyn
   const nombre = `Aceite en garrafa ${Date.now()}`;
   await hoja.getByRole('button', { name: 'Crearlo a mano' }).click();
   await hoja.getByLabel(/^Producto/).fill(nombre);
-  await hoja.getByRole('radio', { name: 'ml', exact: true }).click();
+  await hoja.getByRole('radio', { name: /^Por litros/ }).click();
 
-  // Sin pliegue y sin «cómo lo compras»: cuánto trae y lo que cuesta todo eso.
-  await hoja.getByLabel('Cuánto trae').fill('8000');
-  await hoja.getByLabel('Precio', { exact: true }).fill('60,00');
+  // En garrafas de un tamaño fijo: cuánto trae cada una y lo que cuesta.
+  await hoja.getByText('Viene en garrafas o bidones de un tamaño fijo').click();
+  await hoja.getByLabel('Cuánto trae cada garrafa').fill('8');
+  await hoja.getByLabel('Precio de cada garrafa', { exact: true }).fill('60,00');
 
   // La cuenta hecha, **antes** de guardar: es lo que hace que alguien se dé
   // cuenta de que se ha equivocado.
-  await expect(hoja.getByText('Sale a 0,0075 €/ml')).toBeVisible();
+  await expect(hoja.getByText('Sale a 7,50 € el litro')).toBeVisible();
 
   await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
 
   await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
-  await expect(loQueSeVe(page, 'Envase de 8000 ml')).toBeVisible();
+  await expect(loQueSeVe(page, 'Garrafa de 8 l')).toBeVisible();
+});
+
+/**
+ * «Pongo queso azul, que viene en un envase de 250 g: cuántas unidades, cuánto
+ *  pesa cada una y cuánto cuestan todas o el precio unitario, y que haga el
+ *  cálculo.» Seis tarros de 250 g a 3,50 € el tarro: la caja son 21,00 € y el
+ *  kilo sale a 14,00 €. Nadie escribe esa cuenta: se escribe el precio que se
+ *  tiene a mano y sale sola.
+ */
+test('el queso azul en tarros de 250 g: el precio de un tarro y la cuenta sale sola', async ({
+  page,
+}) => {
+  await entrar(page, ROSA);
+  await irAInventario(page, 'productos', 'todo');
+
+  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
+
+  const nombre = `Queso azul ${Date.now()}`;
+  await hoja.getByRole('button', { name: 'Crearlo a mano' }).click();
+  await hoja.getByLabel(/^Producto/).fill(nombre);
+
+  await hoja.getByRole('radio', { name: /^Por unidades/ }).click();
+  await hoja.getByLabel('Cómo viene cada una').selectOption('Tarro');
+  await hoja.getByLabel(/^Qué trae cada una/).fill('250');
+  await hoja.getByRole('textbox', { name: 'Cuántas vienen en cada caja' }).fill('6');
+  await expect(hoja.getByText('Caja de 6 tarros de 250 g · 1,5 kg en total')).toBeVisible();
+
+  // El precio que se tiene a mano: el de un tarro.
+  await hoja.getByRole('radio', { name: 'De cada tarro' }).click();
+  await hoja.getByLabel('Precio de cada tarro', { exact: true }).fill('3,50');
+  await expect(hoja.getByText('La caja sale a 21,00 € · 14,00 € el kg')).toBeVisible();
+
+  await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
+
+  await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
+  await expect(loQueSeVe(page, 'Caja de 6 tarros de 250 g')).toBeVisible();
+});
+
+// ── 7½ · Lotes, congelados e IVA (M7, repaso) ───────────────────────────────
+
+/**
+ * «Si hay un producto caducado, poder quitarlo con un botón en ese lote; si no,
+ *  se queda siempre y no tiene sentido.» Se quita desde «Hoy», que es donde se
+ *  ve; y lo tirado sale de cámara como merma por caducado, que es lo que el food
+ *  cost del mes tiene que saber.
+ */
+test('un lote que caduca se quita desde «Hoy», y lo tirado queda como merma', async ({
+  page,
+  request,
+}) => {
+  const token = await tokenDe(request, ROSA);
+  const nombre = `Nata que caduca ${Date.now()}`;
+  const manana = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  const creado = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre,
+    factor: 1,
+    unidad_de_uso: 'l',
+    precio_centimos: 250,
+    cantidad_inicial: 5,
+    caduca_el: manana,
+  });
+  expect(creado.estado).toBe(200);
+  const productoId = creado.datos?.productoId ?? '';
+
+  await entrar(page, ROSA);
+  await irAInventario(page, 'hoy');
+
+  await page
+    .getByRole('listitem')
+    .filter({ hasText: nombre })
+    .first()
+    .getByRole('button', { name: 'Quitar' })
+    .click();
+
+  const hoja = page.getByRole('dialog', { name: `Quitar ${nombre}` });
+  await hoja.getByRole('radio', { name: /^Se ha tirado/ }).click();
+  await hoja.getByLabel(/^Cuánto se tira/).fill('2');
+  await hoja.getByRole('button', { name: 'Quitarlo' }).click();
+
+  await expect(page.getByText(/queda apuntado como merma por caducado/)).toBeVisible();
+  await expect(page.getByRole('listitem').filter({ hasText: nombre })).toHaveCount(0);
+
+  const ficha = await consultar<{ producto: { cantidad: number }; lotes: unknown[] }>(
+    request,
+    token,
+    'un_producto',
+    { producto_id: productoId },
+  );
+  expect(ficha.datos?.lotes, 'el lote quitado ya no sale').toEqual([]);
+  expect(ficha.datos?.producto.cantidad, 'lo tirado sale de cámara').toBe(3);
+});
+
+/**
+ * «Poder indicar "producto congelado", cuándo se congeló, y que salga
+ *  "congelado": así tienen en mente lo que hay en la cámara de congelados.»
+ */
+test('lo congelado se ve: su vista «Congelados» y la fecha en su ficha', async ({
+  page,
+  request,
+}) => {
+  const token = await tokenDe(request, ROSA);
+  const nombre = `Carne picada ${Date.now()}`;
+  const creado = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre,
+    factor: 1,
+    unidad_de_uso: 'kg',
+    precio_centimos: 900,
+    cantidad_inicial: 4,
+  });
+  expect(creado.estado).toBe(200);
+  const productoId = creado.datos?.productoId ?? '';
+
+  // «La mitad va al congelador»: un lote nuevo, congelado hoy.
+  const congelado = await ejecutar<{ loteId: string }>(request, token, 'congelar', {
+    producto_id: productoId,
+  });
+  expect(congelado.estado).toBe(200);
+
+  const lista = await consultar<{ productos: { id: string; congelado: boolean }[] }>(
+    request,
+    token,
+    'mis_productos',
+    { congelados: 'true', limite: '200' },
+  );
+  expect(lista.datos?.productos.some((p) => p.id === productoId && p.congelado)).toBe(true);
+
+  await entrar(page, ROSA);
+  await irAInventario(page, 'productos', 'congelados');
+  await expect(loQueSeVe(page, nombre)).toBeVisible();
+  await pulsarLoQueSeVe(page, nombre);
+  await expect(page.getByText(/^congelado el /).first()).toBeVisible();
+});
+
+/**
+ * «Los precios llevan IVA; estaría genial elegir si está incluido o excluido,
+ *  bien puesto.» Se guardan sin IVA (decisión 0033): se elige cómo se escriben, y
+ *  a los que ya había se les quita **una vez**.
+ *
+ * En un local nuevo, y es a propósito: esto cambia un ajuste del local y todos
+ * sus precios, y las pruebas de alta de Bar Centro escriben precios «sin IVA»
+ * a la vez que esta corre.
+ */
+test('el IVA de los precios: se elige cómo se escriben y a los de antes se les quita una vez', async ({
+  request,
+}) => {
+  const token = await tokenDe(request, ELENA);
+  const local = await ejecutar<{ localId: string }>(request, token, 'crear_local', {
+    nombre: `Bar del IVA ${Date.now()}`,
+    duplicar_de: await unLocalDe(request, token, 'puerto'),
+  });
+  expect(local.estado).toBe(200);
+  await ejecutar(request, token, 'cambiar_de_contexto', { local_id: local.datos?.localId });
+
+  const creado = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre: `Aceite con IVA ${Date.now()}`,
+    factor: 1,
+    unidad_de_uso: 'l',
+    precio_centimos: 1100,
+  });
+  expect(creado.estado).toBe(200);
+
+  const puesto = await ejecutar(request, token, 'guardar_precios_con_iva', { con_iva: true });
+  expect(puesto.estado).toBe(200);
+  const como = await consultar<{ preciosConIva: boolean; ivaQuitadoEn: string | null }>(
+    request,
+    token,
+    'mis_productos',
+    { limite: '1' },
+  );
+  expect(como.datos?.preciosConIva).toBe(true);
+  expect(como.datos?.ivaQuitadoEn).toBeNull();
+
+  const quitado = await ejecutar<{ cambiados: number; sinTipo: number }>(
+    request,
+    token,
+    'quitar_iva_a_los_precios',
+    { confirmado: true },
+  );
+  expect(quitado.estado).toBe(200);
+  expect(quitado.datos?.cambiados).toBeGreaterThanOrEqual(1);
+
+  // 11,00 € con el 10 % de un alimento son 10,00 € sin él.
+  const ficha = await consultar<{ producto: { precioCentimos: number } }>(
+    request,
+    token,
+    'un_producto',
+    { producto_id: creado.datos?.productoId ?? '' },
+  );
+  expect(ficha.datos?.producto.precioCentimos).toBe(1000);
+
+  // Y una sola vez: la segunda contesta «ya estaba hecho» —que el catálogo de
+  // errores da como 200, porque repetir no es un fallo— y **no vuelve a dividir**.
+  // Eso es lo que importa: 10,00 € y no 9,09 €.
+  const otraVez = await ejecutar<{ cambiados: number }>(
+    request,
+    token,
+    'quitar_iva_a_los_precios',
+    { confirmado: true },
+  );
+  expect(otraVez.datos?.cambiados, 'la segunda vez ha vuelto a quitar el IVA').toBeUndefined();
+  const despues = await consultar<{ producto: { precioCentimos: number } }>(
+    request,
+    token,
+    'un_producto',
+    { producto_id: creado.datos?.productoId ?? '' },
+  );
+  expect(despues.datos?.producto.precioCentimos).toBe(1000);
 });
 
 // ── 8 · Delivery · el sitio, no la integración ──────────────────────────────

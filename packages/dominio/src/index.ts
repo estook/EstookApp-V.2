@@ -349,3 +349,30 @@ export type {
 // ── M7 · el Calendario · los módulos publican, el Calendario pinta ───────────
 export { CAPAS, NOMBRE_DE_LA_CAPA, APP_DE_LA_CAPA, esCapa, desplegar } from './calendario.ts';
 export type { Capa, EventoGuardado, Ocurrencia } from './calendario.ts';
+
+// ── M7 · repaso · el IVA de compra, cómo se compra y el precio que se lee ────
+export {
+  TIPOS_DE_IVA_DE_COMPRA,
+  ivaDeCompraPorDefecto,
+  sinIva,
+  conIva,
+  comoSeDiceElTipo,
+} from './iva.ts';
+export {
+  ENVASES,
+  BULTOS,
+  enPlural,
+  presentacionDe,
+  precioDelFormato,
+  loQueSale,
+  comoSeCompraDe,
+} from './presentacion.ts';
+export type {
+  ModoDeCompra,
+  UnidadDeLaCompra,
+  UnidadDelContenido,
+  ComoSeCompra,
+  Presentacion,
+  LoQueSale,
+} from './presentacion.ts';
+export { eurosPorUnidadVisible } from './coste.ts';

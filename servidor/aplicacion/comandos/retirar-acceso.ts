@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { publicar } from '../../eventos/bandeja.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
+import { exigirQueMandeMas } from '../jerarquia.ts';
 
 /**
  * Retirar el acceso a alguien (M4).
@@ -97,6 +98,23 @@ export const retirarAcceso = comando<EntradaRetirarAcceso, SalidaRetirarAcceso>(
     if (foto?.con === true && !foto.sin) {
       throw new FalloDeAplicacion('se_queda_sin_administrador');
     }
+
+    // ── 1½ · Y solo a quien está por debajo ──────────────────────────────────
+    //
+    // «Que los gerentes, o gente del mismo nivel, no se puedan echar entre
+    // ellos» (M7, repaso; 0034). La regla vive en `jerarquia.ts` y la usan todas
+    // las puertas de la gestión de personas.
+    //
+    // Va **después** del guardián de arriba, y es a propósito: si la última
+    // dirección intenta irse, lo que tiene que oír es «el negocio se queda sin
+    // nadie que lo administre» —que le dice qué hacer—, no un «no es tu nivel».
+    await exigirQueMandeMas(
+      sql,
+      membresia.organizacion_id,
+      sesion.personaId,
+      entrada.persona_id,
+      'Retirar el acceso',
+    );
 
     // ── 2 · La membresia se cierra, no se borra ──────────────────────────────
     //

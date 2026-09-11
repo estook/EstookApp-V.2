@@ -111,7 +111,7 @@ No ve costes de materia prima ni escandallos con importes.
 
 ## 1.7 Gerente
 
-Todo lo de su local. Es quien tiene el Panel completo, quien pone los objetivos, quien invita y quita accesos, quien conecta el TPV y **las integraciones**, y quien recibe los avisos de negocio. Ve las horas de todo el local y **pone lo que cobra cada uno**, salvo a quien está por encima de él y a sí mismo. Marca dónde está el local para los fichajes y elige cómo entran las ventas.
+Todo lo de su local. Es quien tiene el Panel completo, quien pone los objetivos, quien invita y quita accesos —**a quien está por debajo**: a otro gerente lo gestiona quien está por encima de los dos, y nadie da un rol que sea el suyo o esté por encima (decisión 0034)—, quien conecta el TPV y **las integraciones**, y quien recibe los avisos de negocio. Ve las horas de todo el local y **pone lo que cobra cada uno**, salvo a quien está por encima de él y a sí mismo. Marca dónde está el local para los fichajes y elige cómo entran las ventas.
 
 **No ve:** los directos entre dos empleados en el chat, ni otros locales de la organización si no se le han dado.
 

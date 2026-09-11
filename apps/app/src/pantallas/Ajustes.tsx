@@ -8,7 +8,7 @@ import {
   IconoUbicacion,
 } from '@estook/iconos';
 import { IDIOMAS, NOMBRE_DEL_IDIOMA } from '@estook/dominio';
-import { puedeEditar } from '@estook/permisos';
+import { puedeEditar, puedeVer } from '@estook/permisos';
 import {
   Aviso,
   Boton,
@@ -33,6 +33,7 @@ import { MiAcceso } from './MiAcceso.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
 import { preguntarDondeEstoy } from '../ganchos/usarFichar.ts';
+import { TusPreciosDeCompra } from '../inventario/TusPreciosDeCompra.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
 
 /**
@@ -76,6 +77,11 @@ export function Ajustes() {
   };
 
   const llevaElLocal = puedeEditar(permisos, 'app.ajustes') && yo?.local !== null;
+  // Quien pone precios y ve el inventario: el mismo permiso que el servidor pide.
+  const llevaLosPrecios =
+    puedeEditar(permisos, 'dato.precio_de_compra') &&
+    puedeVer(permisos, 'app.inventario') &&
+    yo?.local !== null;
 
   return (
     <div className="flex max-w-[44rem] flex-col gap-e4">
@@ -141,6 +147,7 @@ export function Ajustes() {
 
       {llevaElLocal && <ComoEntranTusVentas modo="ajustes" />}
       {llevaElLocal && <DondeEstaElLocal />}
+      {llevaLosPrecios && <TusPreciosDeCompra />}
 
       {/* El ancla de «tu cuenta»: «Mi acceso» de la hoja del avatar lleva aqui. */}
       <span id="mi-acceso" />

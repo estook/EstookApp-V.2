@@ -98,8 +98,25 @@ export const entradaCrearProducto = z
       .regex(/^\d{4}-\d{2}-\d{2}$/, 'La fecha se escribe así: 2026-09-30.')
       .nullable()
       .optional(),
+    // ── M7, repaso ───────────────────────────────────────────────────────────
+    /** Lo que hay está congelado: se apunta en un lote congelado hoy. */
+    congelado: z.boolean().optional(),
+    /** El IVA que se paga al comprarlo, si no es el de su categoría. 0,10 es un 10 %. */
+    iva_de_compra: z.number().min(0).max(0.3).nullable().optional(),
+    /** Lo que trae cada unidad, cuando se cuenta por unidades: 250 (g). */
+    contenido_por_unidad: z.number().positive().max(1_000_000).nullable().optional(),
+    unidad_del_contenido: z.enum(['g', 'kg', 'ml', 'l']).nullable().optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (e) =>
+      (e.contenido_por_unidad === null || e.contenido_por_unidad === undefined) ===
+      (e.unidad_del_contenido === null || e.unidad_del_contenido === undefined),
+    {
+      message: 'Lo que trae cada unidad va con su medida: 250 g, 1 l.',
+      path: ['contenido_por_unidad'],
+    },
+  );
 
 export type EntradaCrearProducto = z.infer<typeof entradaCrearProducto>;
 
@@ -242,7 +259,8 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
       insert into estook.producto (
         local_id, categoria_id, nombre, formato, factor, unidad_de_uso, rendimiento,
         categoria_fiscal, alergenos, peso_variable, codigo_de_barras, minimo,
-        proveedor_id, producto_de_referencia_id, sin_verificar, notas
+        proveedor_id, producto_de_referencia_id, sin_verificar, notas,
+        iva_de_compra, contenido_por_unidad, unidad_del_contenido
       )
       values (
         ${localId},
@@ -260,7 +278,10 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
         ${entrada.proveedor_id ?? null},
         ${plantilla.referenciaId},
         ${sinVerificar},
-        ${entrada.notas ?? null}
+        ${entrada.notas ?? null},
+        ${entrada.iva_de_compra ?? null},
+        ${entrada.contenido_por_unidad ?? null},
+        ${entrada.unidad_del_contenido ?? null}::estook.unidad_de_uso
       )
       returning id
     `;
@@ -315,13 +336,21 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
     if ((entrada.cantidad_inicial ?? 0) > 0) {
       const producto = await elProductoBloqueado(contexto, productoId);
 
-      // El lote, solo si trae fecha. Un lote vacío por cada producto llenaría la
-      // pantalla de caducidades de nada.
+      // El lote, solo si trae fecha o está congelado. Un lote vacío por cada
+      // producto llenaría la pantalla de caducidades de nada; uno congelado es lo
+      // que hace que salga en «Congelados» (M7, repaso).
       let loteId: string | null = null;
-      if (entrada.caduca_el !== null && entrada.caduca_el !== undefined) {
+      const conFecha = entrada.caduca_el !== null && entrada.caduca_el !== undefined;
+      if (conFecha || entrada.congelado === true) {
         const lotes = await contexto.sql<{ id: string }[]>`
-          insert into estook.lote (local_id, producto_id, caduca_el, recibido_el, es_ejemplo)
-          values (${localId}, ${productoId}, ${entrada.caduca_el}::date, current_date, false)
+          insert into estook.lote (
+            local_id, producto_id, caduca_el, recibido_el, congelado_el, es_ejemplo
+          )
+          values (
+            ${localId}, ${productoId}, ${entrada.caduca_el ?? null}::date, current_date,
+            case when ${entrada.congelado === true} then current_date end,
+            false
+          )
           returning id
         `;
         loteId = lotes[0]?.id ?? null;
@@ -418,8 +447,25 @@ export const entradaCambiarProducto = z
      * estar «sin verificar», que es lo que hace que la marca signifique algo.
      */
     verificado: z.boolean().optional(),
+    // ── M7, repaso ───────────────────────────────────────────────────────────
+    //
+    // Estos tres sí son «si no llega, se queda como estaba»: las pantallas de
+    // antes no los mandan, y guardar una ficha desde ellas no puede borrárselos a
+    // nadie. A nulo, se quitan.
+    iva_de_compra: z.number().min(0).max(0.3).nullable().optional(),
+    contenido_por_unidad: z.number().positive().max(1_000_000).nullable().optional(),
+    unidad_del_contenido: z.enum(['g', 'kg', 'ml', 'l']).nullable().optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (e) =>
+      (e.contenido_por_unidad === undefined) === (e.unidad_del_contenido === undefined) &&
+      (e.contenido_por_unidad === null) === (e.unidad_del_contenido === null),
+    {
+      message: 'Lo que trae cada unidad va con su medida: 250 g, 1 l.',
+      path: ['contenido_por_unidad'],
+    },
+  );
 
 export type EntradaCambiarProducto = z.infer<typeof entradaCambiarProducto>;
 
@@ -451,10 +497,21 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
     const organizacionId = laOrganizacionDeLaSesion(contexto);
 
     const antes = await contexto.sql<
-      { local_id: string; nombre: string; factor: string; rendimiento: string }[]
+      {
+        local_id: string;
+        nombre: string;
+        factor: string;
+        rendimiento: string;
+        unidad_de_uso: string;
+        con_movimientos: boolean;
+      }[]
     >`
-      select local_id, nombre, factor::text as factor, rendimiento::text as rendimiento
-        from estook.producto where id = ${entrada.producto_id}
+      select p.local_id, p.nombre, p.factor::text as factor, p.rendimiento::text as rendimiento,
+             p.unidad_de_uso::text as unidad_de_uso,
+             exists (
+               select 1 from estook.movimiento_de_stock m where m.producto_id = p.id
+             ) as con_movimientos
+        from estook.producto p where p.id = ${entrada.producto_id}
     `;
 
     const previo = antes[0];
@@ -489,9 +546,24 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       });
     }
 
+    // ── La unidad no se cambia con género dentro (M7, repaso) ────────────────
+    //
+    // El libro guarda cantidades, no «kilos» ni «gramos»: si lo que hay son 750
+    // y la unidad pasa de g a kg, la cámara diría 750 kg sin que nadie haya
+    // apuntado nada. Eso ya se podía hacer, y no avisaba. Lo que se cambia es
+    // **cuánto trae** lo que se compra; la unidad en que se cuenta, no.
+    if (previo.unidad_de_uso !== entrada.unidad_de_uso && previo.con_movimientos) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['unidad_de_uso'],
+        porque: `Lo que hay de «${previo.nombre}» está apuntado en ${previo.unidad_de_uso}, y cambiar la unidad lo contaría mal. Si ahora lo compras de otra forma, cambia cuánto trae, no en qué se cuenta.`,
+      });
+    }
+
     const cambiaElCoste =
       Number(previo.factor) !== entrada.factor ||
       Number(previo.rendimiento) !== entrada.rendimiento;
+    const cambiaElIva = entrada.iva_de_compra !== undefined;
+    const cambiaElContenido = entrada.contenido_por_unidad !== undefined;
 
     await contexto.sql`
       update estook.producto
@@ -508,6 +580,15 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
              minimo           = ${entrada.minimo},
              proveedor_id     = ${entrada.proveedor_id},
              notas            = ${entrada.notas},
+             iva_de_compra    = case when ${cambiaElIva}
+                                     then ${entrada.iva_de_compra ?? null}::numeric
+                                     else iva_de_compra end,
+             contenido_por_unidad = case when ${cambiaElContenido}
+                                         then ${entrada.contenido_por_unidad ?? null}::numeric
+                                         else contenido_por_unidad end,
+             unidad_del_contenido = case when ${cambiaElContenido}
+                                         then ${entrada.unidad_del_contenido ?? null}::estook.unidad_de_uso
+                                         else unidad_del_contenido end,
              sin_verificar    = ${entrada.verificado === true ? false : !cambiaElCoste},
              actualizado_en   = now()
        where id = ${entrada.producto_id}

@@ -208,15 +208,17 @@ function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
       ) : (
         <ul className="flex flex-col gap-e1">
           {caducan.slice(0, cuantos).map((lote) => (
-            <li key={`${lote.productoId}-${lote.caducaEl}`}>
+            <li key={lote.loteId}>
+              {/* A su producto, que es donde se quita o se congela el lote. */}
               <button
                 type="button"
                 onClick={() => {
-                  navegar('/inventario/hoy');
+                  navegar(`/inventario/productos/todo?producto=${lote.productoId}`);
                 }}
                 className="flex w-full items-center gap-e2 rounded-medio px-e1 py-e1 text-left hover:bg-fondo"
               >
                 <span className="min-w-0 flex-1 truncate text-cuerpo">{lote.producto}</span>
+                {lote.congelado && <Etiqueta tono="info">congelado</Etiqueta>}
                 <Etiqueta tono={lote.dias <= 1 ? 'mal' : 'atencion'}>
                   {lote.dias <= 0 ? 'caducado' : lote.dias === 1 ? 'mañana' : `${lote.dias} d`}
                 </Etiqueta>

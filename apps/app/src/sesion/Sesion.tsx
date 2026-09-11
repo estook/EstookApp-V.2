@@ -78,6 +78,8 @@ export interface QuienSoy {
     readonly organizacionId: string;
   }[];
   readonly permisos: PermisosResueltos;
+  /** Los roles que puede dar: los que quedan por debajo del suyo (0034). */
+  readonly rolesQuePuedoDar: readonly string[];
   readonly debeCambiarClave: boolean;
   readonly faltaDobleFactor: boolean;
   readonly debeActivarDobleFactor: boolean;

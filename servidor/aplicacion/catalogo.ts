@@ -61,6 +61,8 @@ import { cambiarPedido, cancelarPedido, crearPedido, enviarPedido } from './coma
 import { devolverAlProveedor, recibirAlbaran } from './comandos/recibir.ts';
 import { conciliarFactura, registrarFactura } from './comandos/facturas.ts';
 import { dejarDePactar, pactarPrecio } from './comandos/pactado.ts';
+import { congelar, quitarLote } from './comandos/lotes.ts';
+import { guardarPreciosConIva, quitarIvaALosPrecios } from './comandos/precios-con-iva.ts';
 import { comprasDeHoy, misPedidos, sugerenciaDePedido, unPedido } from './consultas/pedidos.ts';
 import {
   misAlbaranes,
@@ -267,5 +269,14 @@ export const catalogo = {
     [conciliarFactura.nombre]: conciliarFactura,
     [pactarPrecio.nombre]: pactarPrecio,
     [dejarDePactar.nombre]: dejarDePactar,
+
+    // ── M7 · lo que vio Richi ──────────────────────────────────────────────
+    //
+    // Quitar un lote que se gastó o se tiró —el segundo, una merma por
+    // `apuntar`—, congelar, y cómo escribe cada local sus precios de compra.
+    [quitarLote.nombre]: quitarLote,
+    [congelar.nombre]: congelar,
+    [guardarPreciosConIva.nombre]: guardarPreciosConIva,
+    [quitarIvaALosPrecios.nombre]: quitarIvaALosPrecios,
   } as Record<string, Comando<never, unknown>>,
 };

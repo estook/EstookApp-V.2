@@ -3,6 +3,7 @@ import { ALCANCE_DEL_ROL, ROLES } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { ponerPinNuevo } from '../pines.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
+import { exigirQueNoDeMasDeLoQueTiene } from '../jerarquia.ts';
 
 /**
  * Invitar a alguien (M4).
@@ -86,6 +87,13 @@ export const invitarPersona = comando<EntradaInvitar, SalidaInvitar>({
         porque: 'Un area manager lleva un área, así que hay que decir cuál.',
       });
     }
+
+    // ── Un rol que no esté por encima del tuyo ───────────────────────────────
+    //
+    // Un gerente no nombra a un área manager ni a dirección (M7, repaso ·
+    // `jerarquia.ts`). Dar un rol de tu mismo nivel sí: dos gerentes en un local
+    // es normal, y quien lo invita no podrá después retirárselo, que es lo justo.
+    await exigirQueNoDeMasDeLoQueTiene(sql, entrada.organizacion_id, sesion.personaId, entrada.rol);
 
     // ── ¿Existe ya ese correo? ───────────────────────────────────────────────
     const encontrada = await sql<{ persona_id: string; activa: boolean }[]>`

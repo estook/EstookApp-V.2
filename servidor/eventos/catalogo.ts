@@ -103,6 +103,13 @@ export const EVENTOS = [
   'factura.conciliada',
   'precio.pactado',
   'lote.creado',
+  // ── M7 · lo que vio Richi ───────────────────────────────────────────────
+  //
+  //   lote.congelado       su caducidad en el Calendario dice «congelado», y
+  //                        suele cambiar de fecha
+  //   lote.retirado        se gastó o se tiró: su caducidad se va del Calendario
+  'lote.congelado',
+  'lote.retirado',
 ] as const;
 
 export type TipoDeEvento = (typeof EVENTOS)[number];

@@ -16,9 +16,19 @@ const CAJA_DE_ACEITE = { factor: 3000, rendimiento: 0.85 };
 
 describe('coste por unidad de uso', () => {
   it('reproduce el ejemplo del documento: caja de 3 kg, 85 % de rendimiento', () => {
-    // 10 € ÷ (3.000 g × 0,85) = 0,0039 €/g
+    // 10 € ÷ (3.000 g × 0,85) = 0,0039 €/g, que se lee por kilo: 3,92 €/kg.
     const coste = costePorUnidadDeUso(desdeEuros(10), CAJA_DE_ACEITE);
-    expect(comoPrecioPorUnidad(coste, 'g')).toBe('0,0039 €/g');
+    expect(coste).toBe(392);
+    expect(comoPrecioPorUnidad(coste, 'g')).toBe('3,92 €/kg');
+  });
+
+  it('se enseña con dos decimales, y lo que no llega al céntimo, por cien', () => {
+    // «1,7500 €» era lo que salía: son 1,75 €.
+    expect(comoPrecioPorUnidad(milesimas(175_000), 'ud')).toBe('1,75 €/ud');
+    // 32 € el envase de 50 l: 0,64 €/l, no «0,6400 €/l».
+    expect(comoPrecioPorUnidad(milesimas(64), 'ml')).toBe('0,64 €/l');
+    // Una servilleta a 0,004 €.
+    expect(comoPrecioPorUnidad(milesimas(400), 'ud')).toBe('0,40 € cada 100 ud');
   });
 
   it('sin factor ni rendimiento, el precio es el precio', () => {

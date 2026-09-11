@@ -9,6 +9,7 @@ import { Aviso, Boton, Cargando, Cifra, EstadoVacio, Etiqueta, Tarjeta, Tira } f
 import { IconoAnadir, IconoAtencion, IconoCamara, IconoReloj, IconoVacio } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ApuntarMerma } from './ApuntarMerma.tsx';
+import { QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
 import {
   TONO_DEL_ESTADO,
   comoDinero,
@@ -43,6 +44,9 @@ import {
  */
 export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string) => void }) {
   const { cliente, permisos } = usarSesion();
+  const puedeTocar = puedeEditar(permisos, 'app.inventario');
+  const [quitando, setQuitando] = useState<LoteQueSeQuita | null>(null);
+  const [hecho, setHecho] = useState<string | null>(null);
 
   const consulta = useQuery({
     queryKey: ['inventario_hoy'],
@@ -75,6 +79,34 @@ export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string
 
   return (
     <div className="grid gap-e3 md:grid-cols-2 xl:grid-cols-3">
+      {hecho !== null && (
+        <div className="md:col-span-2 xl:col-span-3">
+          <Aviso
+            tono="bien"
+            titulo={hecho}
+            esNoticia
+            alCerrar={() => {
+              setHecho(null);
+            }}
+          >
+            Con tu nombre y la hora.
+          </Aviso>
+        </div>
+      )}
+
+      {quitando !== null && (
+        <QuitarLote
+          lote={quitando}
+          alCerrar={() => {
+            setQuitando(null);
+          }}
+          alHecho={(frase) => {
+            setQuitando(null);
+            setHecho(frase);
+          }}
+        />
+      )}
+
       {hoy.cuantosProductos === 0 ? (
         <Tarjeta titulo="Todavía no tienes género">
           <EstadoVacio
@@ -127,25 +159,48 @@ export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string
             <Tarjeta titulo="Caduca esta semana" origen="Lotes con fecha · próximos 7 días">
               <ul className="flex flex-col gap-e2">
                 {hoy.caducan.map((lote) => (
-                  <li key={`${lote.productoId}-${lote.caducaEl}`}>
+                  <li key={lote.loteId} className="flex items-center gap-e2">
                     <button
                       type="button"
                       onClick={() => {
                         alAbrirProducto(lote.productoId);
                       }}
-                      className="flex w-full min-h-toque items-center gap-e3 rounded-medio px-e2 text-left hover:bg-fondo"
+                      className="flex min-h-toque min-w-0 flex-1 items-center gap-e3 rounded-medio px-e2 text-left hover:bg-fondo"
                     >
                       <span className={lote.dias < 0 ? 'text-mal' : 'text-atencion'}>
                         <IconoReloj size={18} />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-cuerpo">{lote.producto}</span>
+                        <span className="flex flex-wrap items-center gap-e2">
+                          <span className="text-cuerpo">{lote.producto}</span>
+                          {lote.congelado && <Etiqueta tono="info">congelado</Etiqueta>}
+                        </span>
                         <span className="block text-secundario text-texto-suave">
                           {cuandoCaduca(lote.dias)}
                           {lote.lote === null ? '' : ` · lote ${lote.lote}`}
                         </span>
                       </span>
                     </button>
+                    {/*
+                      «Si se gasta o se tira el que estaba a punto de caducar, se
+                       tiene que poder quitar»: aquí mismo, sin abrir la ficha.
+                    */}
+                    {puedeTocar && (
+                      <Boton
+                        tono={lote.dias < 0 ? 'principal' : 'secundario'}
+                        onClick={() => {
+                          setQuitando({
+                            id: lote.loteId,
+                            producto: lote.producto,
+                            codigo: lote.lote,
+                            caducaEl: lote.caducaEl,
+                            unidadDeUso: lote.unidadDeUso,
+                          });
+                        }}
+                      >
+                        Quitar
+                      </Boton>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -64,6 +64,16 @@ export interface ProductoEnLista {
     readonly cuanto: number;
     readonly motivo: string;
   } | null;
+
+  // ── M7, repaso ─────────────────────────────────────────────────────────────
+  /** Si tiene algo en el congelador. */
+  readonly congelado: boolean;
+  /** El IVA que se paga al comprarlo: el suyo o el de su categoría. Nulo: sin tipo. */
+  readonly ivaDeCompra: number | null;
+  readonly ivaDeCompraElegido: boolean;
+  /** Lo que trae cada unidad, cuando se cuenta por unidades: 250 (g). */
+  readonly contenidoPorUnidad: number | null;
+  readonly unidadDelContenido: string | null;
 }
 
 export interface CategoriaDelLocal {
@@ -86,6 +96,12 @@ export interface MisProductos {
   readonly puedeVerPrecios: boolean;
   readonly ejemplos: number;
   readonly valorTotalCentimos?: number | null;
+  /** Si en este local los precios de compra se escriben con IVA. */
+  readonly preciosConIva: boolean;
+  /** El día que se les quitó el IVA a los precios que ya había. */
+  readonly ivaQuitadoEn: string | null;
+  /** Dónde está a efectos fiscales: de ahí sale el IVA que se propone al dar de alta. */
+  readonly territorio: string;
 }
 
 export interface PrecioEnFicha {
@@ -123,6 +139,8 @@ export interface LoteEnFicha {
   readonly caducaEl: string | null;
   readonly recibidoEl: string;
   readonly diasParaCaducar: number | null;
+  /** Cuándo se congeló. Nulo: no está congelado. */
+  readonly congeladoEl: string | null;
 }
 
 export interface UnProducto {
@@ -133,16 +151,21 @@ export interface UnProducto {
   readonly alergenos: readonly Alergeno[];
   readonly enCuantasFichas: number;
   readonly puedeVerPrecios: boolean;
+  /** Si en este local los precios de compra se escriben con IVA. */
+  readonly preciosConIva: boolean;
 }
 
 export interface InventarioHoy {
   readonly atencion: readonly ProductoEnLista[];
   readonly caducan: readonly {
+    readonly loteId: string;
     readonly productoId: string;
     readonly producto: string;
     readonly lote: string | null;
     readonly caducaEl: string;
     readonly dias: number;
+    readonly congelado: boolean;
+    readonly unidadDeUso: string;
   }[];
   readonly sinPrecio: readonly { readonly id: string; readonly nombre: string }[];
   readonly cuantosProductos: number;

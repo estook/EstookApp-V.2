@@ -201,10 +201,13 @@ export async function publicarLaCaducidad(contexto: Contexto, loteId: string): P
       es_ejemplo: boolean;
       producto_id: string;
       producto: string;
+      retirado: boolean;
+      congelado: boolean;
     }[]
   >`
     select l.local_id, to_char(l.caduca_el, 'YYYY-MM-DD') as caduca_el, l.codigo,
-           l.es_ejemplo, p.id as producto_id, p.nombre as producto
+           l.es_ejemplo, p.id as producto_id, p.nombre as producto,
+           l.retirado_en is not null as retirado, l.congelado_el is not null as congelado
       from estook.lote l
       join estook.producto p on p.id = l.producto_id
      where l.id = ${loteId}
@@ -213,20 +216,23 @@ export async function publicarLaCaducidad(contexto: Contexto, loteId: string): P
   const lote = filas[0];
   if (!lote) return;
 
-  if (lote.caduca_el === null) {
+  // Sin fecha, o quitado porque se gastó o se tiró: no hay nada que avisar.
+  if (lote.caduca_el === null || lote.retirado) {
     await quitar(contexto, 'lote', loteId);
     return;
   }
 
   // El mismo título y el mismo destino que pone la migración 0032 a las que ya
-  // había: si uno cambia y el otro no, la prueba de las caducidades lo caza.
+  // había: si uno cambia y el otro no, la prueba de las caducidades lo caza. Lo
+  // congelado lo dice, para saber de qué cámara hay que sacarlo.
+  const titulo = lote.congelado ? `Caduca ${lote.producto} (congelado)` : `Caduca ${lote.producto}`;
   const puestos = await contexto.sql<{ id: string }[]>`
     insert into estook.evento_de_calendario (
       local_id, capa, origen, origen_id, dia, titulo, detalle, ir, es_ejemplo
     )
     values (
       ${lote.local_id}, 'caducidad', 'lote', ${loteId}, ${lote.caduca_el}::date,
-      ${`Caduca ${lote.producto}`},
+      ${titulo},
       ${lote.codigo === null ? null : `Lote ${lote.codigo}`},
       ${`/inventario/productos/todo?producto=${lote.producto_id}`},
       ${lote.es_ejemplo}

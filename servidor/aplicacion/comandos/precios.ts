@@ -1,9 +1,6 @@
 import { z } from 'zod';
-import { comoHaCambiado } from '@estook/dominio';
-import { publicar } from '../../eventos/bandeja.ts';
-import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
-import { costeDeUso } from '../inventario.ts';
+import { ponerUnPrecio } from '../inventario.ts';
 
 /**
  * El precio de compra (M6) · con vigencia, y sin reescribir el pasado.
@@ -23,6 +20,10 @@ import { costeDeUso } from '../inventario.ts';
  * género** a ese precio, que es lo que de verdad cambia lo que hay en cámara.
  * Cambiar el precio de la lista sin recibir nada no vuelve más caro lo que ya
  * tienes guardado.
+ *
+ * Desde M7 la vigencia se abre en `ponerUnPrecio`, que es el mismo sitio que usan
+ * el albarán y la factura: tres caminos para poner un precio, una sola forma de
+ * hacerlo.
  */
 
 export const entradaPonerPrecio = z
@@ -61,8 +62,6 @@ export const ponerPrecio = comando<EntradaPonerPrecio, SalidaPonerPrecio>({
   exige: 'dato.precio_de_compra',
 
   async ejecutar(contexto, entrada) {
-    const organizacionId = laOrganizacionDeLaSesion(contexto);
-
     const productos = await contexto.sql<
       {
         local_id: string;
@@ -86,92 +85,28 @@ export const ponerPrecio = comando<EntradaPonerPrecio, SalidaPonerPrecio>({
       });
     }
 
-    const factor = entrada.factor ?? Number(producto.factor);
-    const rendimiento = entrada.rendimiento ?? Number(producto.rendimiento);
-    const formato = entrada.formato ?? producto.formato;
-    const proveedorId = entrada.proveedor_id ?? null;
-
-    // El que estaba vigente **de ese mismo proveedor**: dos proveedores tienen
-    // dos precios vivos a la vez, que es lo que permite compararlos.
-    const vigentes = await contexto.sql<{ id: string; precio_centimos: string }[]>`
-      select id, precio_centimos::text as precio_centimos
-        from estook.precio_de_producto
-       where producto_id = ${entrada.producto_id}
-         and hasta is null
-         and proveedor_id is not distinct from ${proveedorId}::uuid
-    `;
-
-    const anterior = vigentes[0];
-    const cambio = comoHaCambiado(
-      anterior === undefined ? null : Number(anterior.precio_centimos),
-      entrada.precio_centimos,
-    );
-
-    if (anterior !== undefined) {
-      // Se cierra **ayer**, no hoy: si se cerrara hoy, el vigente nuevo y el
-      // viejo compartirían el día de hoy y una consulta por fecha devolvería
-      // dos precios para el mismo momento.
-      await contexto.sql`
-        update estook.precio_de_producto
-           set hasta = greatest(desde, current_date - 1)
-         where id = ${anterior.id}
-      `;
-    }
-
-    const coste = costeDeUso(entrada.precio_centimos, factor, rendimiento);
-
-    const puestos = await contexto.sql<{ id: string }[]>`
-      insert into estook.precio_de_producto (
-        producto_id, proveedor_id, precio_centimos, formato, factor, unidad_de_uso,
-        rendimiento, coste_milesimas, desde, origen, creado_por
-      )
-      values (
-        ${entrada.producto_id}, ${proveedorId}, ${entrada.precio_centimos}, ${formato},
-        ${factor}, ${producto.unidad_de_uso}::estook.unidad_de_uso, ${rendimiento},
-        ${coste}, current_date, 'a_mano', ${contexto.personaId}
-      )
-      returning id
-    `;
-
-    const precioId = puestos[0]?.id;
-    if (precioId === undefined) throw new FalloDeAplicacion('sin_permiso');
-
-    await contexto.sql`
-      select estook.anotar(
-        ${organizacionId}::uuid, 'cambiar', 'precio_de_producto', ${precioId},
-        ${producto.local_id}::uuid,
-        ${anterior === undefined ? null : JSON.stringify({ precio_centimos: Number(anterior.precio_centimos) })}::text::jsonb,
-        ${JSON.stringify({ precio_centimos: entrada.precio_centimos, coste_milesimas: coste })}::text::jsonb,
-        null
-      )
-    `;
-
-    // **El principio de la cascada de la Auditoría 2.1.** Aquí acaba lo que M6
-    // puede hacer: se cierra la vigencia anterior, se abre la nueva y se avisa.
-    // Lo de después —recalcular las elaboraciones que lo llevan, y de ahí los
-    // platos, y de ahí margen, food cost y alerta— necesita fichas técnicas, y
-    // esas son M9. El evento se publica ya, con la variación dentro, porque un
-    // evento que se añade después no trae el pasado consigo.
-    await publicar(contexto.sql, {
-      tipo: 'precio.cambiado',
-      organizacionId,
+    const puesto = await ponerUnPrecio(contexto, {
+      productoId: entrada.producto_id,
       localId: producto.local_id,
-      datos: {
-        productoId: entrada.producto_id,
-        nombre: producto.nombre,
-        proveedorId,
-        precioCentimos: entrada.precio_centimos,
-        costeMilesimas: coste,
-        variacion: cambio.variacion,
-      },
-      correlacionId: contexto.correlacionId,
+      nombre: producto.nombre,
+      unidadDeUso: producto.unidad_de_uso,
+      proveedorId: entrada.proveedor_id ?? null,
+      precioCentimos: entrada.precio_centimos,
+      formato: entrada.formato ?? producto.formato,
+      factor: entrada.factor ?? Number(producto.factor),
+      rendimiento: entrada.rendimiento ?? Number(producto.rendimiento),
+      origen: 'a_mano',
     });
 
+    // Sin `soloSiCambia`, siempre abre una: quien lo pone a mano lo pone a
+    // propósito, aunque sea el mismo número.
+    if (puesto === null) throw new FalloDeAplicacion('sin_permiso');
+
     return {
-      precioId,
-      costeMilesimas: coste,
-      frase: cambio.frase,
-      variacion: cambio.variacion,
+      precioId: puesto.precioId,
+      costeMilesimas: puesto.costeMilesimas,
+      frase: puesto.cambio.frase,
+      variacion: puesto.cambio.variacion,
     };
   },
 });

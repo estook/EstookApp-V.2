@@ -497,7 +497,7 @@ Dieciocho puntos que, tal y como estaban escritos, habrían obligado a improvisa
 
 **7 · «Agotado» y «sin stock» se confundían.** **Decisión:** son dos marcas independientes. Agotado lo pone una persona y afecta a la carta. Sin stock lo calcula el sistema y afecta a los avisos. **Un plato puede estar agotado con la cámara llena.**
 
-**8 · Faltaba decidir qué manda entre albarán y factura.** **Decisión:** el albarán mueve stock en el momento; **la factura confirma el precio** y, si difiere, abre vigencia nueva con efecto desde la fecha del albarán.
+**8 · Faltaba decidir qué manda entre albarán y factura.** **Decisión:** el albarán mueve stock en el momento; **la factura confirma el precio** y, si difiere, abre vigencia nueva. **Corregido en M7** ([decisión 0032](../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)): la vigencia nueva vale **desde hoy**, porque el libro no se reescribe; lo que dice la factura se guarda en la línea del albarán **con su fecha**, y M9 recalcula con eso lo que costaron los platos de esos días. La factura que no cuadra no se bloquea: queda conciliada con la diferencia señalada.
 
 **9 · No estaba escrito el orden de los recálculos.** **Decisión:** el recálculo va siempre en el mismo orden —**precio, elaboración, plato, margen, aviso**— y se hace en cola por producto, así que dos cambios seguidos producen el mismo resultado que uno tras otro.
 

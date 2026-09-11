@@ -1,10 +1,10 @@
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Cargando } from '@estook/ui';
+import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { Hoy } from './Hoy.tsx';
 import { Productos } from './Productos.tsx';
-import { Proveedores } from './Proveedores.tsx';
 import type { MisProductos } from './contrato.ts';
 
 /**
@@ -42,6 +42,12 @@ import type { MisProductos } from './contrato.ts';
  * móvil como una hoja. Por eso el producto abierto vive aquí y no dentro de cada
  * destino: se puede abrir desde los cuatro, y se cierra volviendo al mismo sitio.
  *
+ * Y desde M7 vive **en la dirección**, `?producto=…`, no en un estado: la
+ * caducidad de un lote en el Calendario lleva a su producto, la ficha de un
+ * proveedor abre lo que te sirve, y la comparativa de precios abre el aceite.
+ * Cuatro sitios que no están unos dentro de otros; con la dirección, ninguno
+ * tiene que saber de los demás, y el botón de atrás del móvil cierra la ficha.
+ *
  * ── Y dos cosas se cargan aparte ─────────────────────────────────────────────
  *
  * `FichaDeProducto` son **1.300 líneas** con sus tres hojas —apuntar entrada,
@@ -78,6 +84,18 @@ const Mermas = lazy(async () => {
   return { default: modulo.Mermas };
 });
 
+/**
+ * Compras (M7), aparte de todo lo demás.
+ *
+ * Son cinco vistas con sus fichas —pedidos, recibir, albaranes, facturas,
+ * proveedores y precios— y quien abre Inventario para ver lo que hay no tiene por
+ * qué bajarse la conciliación de facturas. Se carga al entrar en Compras.
+ */
+const Compras = lazy(async () => {
+  const modulo = await import('../compras/Compras.tsx');
+  return { default: modulo.Compras };
+});
+
 export function Inventario({
   destino,
   vista,
@@ -86,7 +104,9 @@ export function Inventario({
   readonly vista: string;
 }) {
   const { cliente } = usarSesion();
-  const [productoAbierto, setProductoAbierto] = useState<string | null>(null);
+  const producto = usarAbiertoEnLaDireccion('producto');
+  const productoAbierto = producto.abierto;
+  const setProductoAbierto = producto.abrir;
 
   // Las categorías y los proveedores los necesitan la ficha y el alta, y salen
   // de la misma consulta que la lista para no pedirlos dos veces.
@@ -113,7 +133,11 @@ export function Inventario({
           <Mermas alAbrirProducto={setProductoAbierto} />
         </Suspense>
       )}
-      {destino === 'compras' && <Proveedores />}
+      {destino === 'compras' && (
+        <Suspense fallback={<Cargando que="las compras" />}>
+          <Compras vista={vista} />
+        </Suspense>
+      )}
 
       {/*
         La ficha solo se monta cuando hay un producto abierto: asi el `lazy` no se
@@ -123,10 +147,9 @@ export function Inventario({
       {productoAbierto !== null && (
         <Suspense fallback={<Cargando que="la ficha" />}>
           <FichaDeProducto
+            key={productoAbierto}
             productoId={productoAbierto}
-            alCerrar={() => {
-              setProductoAbierto(null);
-            }}
+            alCerrar={producto.cerrar}
             categorias={contexto.data?.categorias ?? []}
             proveedores={contexto.data?.proveedores ?? []}
           />

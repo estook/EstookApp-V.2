@@ -170,7 +170,6 @@ export interface App {
  */
 export const MODULOS: Readonly<Record<string, string>> = {
   M6: 'M6 · Inventario',
-  M7: 'M7 · Proveedores y compras',
   M9: 'M9 · Escandallos',
   M10: 'M10 · Carta, menús y análisis',
   M14: 'M14 · Calendario',
@@ -202,7 +201,7 @@ function comoRuta(nombre: string): string {
  * Unas vistas, escritas con sus nombres.
  *
  * `vistas('Todo', 'Bajo mínimo')` da los identificadores hechos. Con un modulo
- * detras, `vistas(['Pedidos', 'M7'])`, la vista queda apuntada como pendiente.
+ * detras, `vistas(['Mes', 'M14'])`, la vista queda apuntada como pendiente.
  */
 function vistas(...nombres: readonly (string | readonly [string, string])[]): readonly Vista[] {
   return nombres.map((nombre) =>
@@ -258,8 +257,11 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         id: 'compras',
         nombre: 'Compras',
         icono: IconoOrganizacion,
-        queContesta: '¿A quién se lo compro y a qué precio?',
-        vistas: vistas('Proveedores', ['Pedidos', 'M7'], ['Facturas', 'M7']),
+        queContesta: '¿Qué pido, qué ha llegado y a qué precio?',
+        // M7 · construidas las cinco. **Pedidos va primero** porque es lo que se
+        // hace cada día —a quién toca pedir y qué llega—; Proveedores, que en M6
+        // era todo lo que había aquí, se toca al darlos de alta y poco más.
+        vistas: vistas('Pedidos', 'Albaranes', 'Facturas', 'Proveedores', 'Precios'),
       },
     ],
   },

@@ -58,7 +58,12 @@ export interface ProductoEnLista {
   readonly consumo: Consumo;
   readonly diasDeCobertura: number | null;
   readonly seAgotaEn: string | null;
-  readonly sugerencia: { readonly cuanto: number; readonly motivo: string } | null;
+  /** Cuánto pedir: en formatos enteros —nadie compra media caja— y en unidad de uso. */
+  readonly sugerencia: {
+    readonly formatos: number;
+    readonly cuanto: number;
+    readonly motivo: string;
+  } | null;
 }
 
 export interface CategoriaDelLocal {

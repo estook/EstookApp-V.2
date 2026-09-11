@@ -317,20 +317,20 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 Y sus vistas, donde las hay:
 
-| Destino                  | Sus vistas                                     |
-| ------------------------ | ---------------------------------------------- |
-| Inventario · Productos   | Todo · Bajo mínimo · Sin precio · Desactivados |
-| Inventario · Movimientos | Todo · Entradas · Salidas · Mermas · Ajustes   |
-| Inventario · Compras     | Proveedores · Pedidos · Facturas               |
-| Escandallos · Fichas     | Todas · Bajo objetivo · Sin coste              |
-| Carta · Carta            | Por secciones · Todos los platos · Agotados    |
-| Carta · Análisis         | Matriz · Por canal · Histórico                 |
-| Calendario · Calendario  | Mes · Semana · Día                             |
-| Calendario · Tareas      | Pendientes · Periódicas · Hechas               |
-| Equipo · Personas        | Con acceso · Sin entrar todavía · Retirados    |
-| Servicio · Jornada       | Cierre · En marcha                             |
-| Servicio · Ventas        | Del turno · Del día · Por producto             |
-| Cuaderno · Incidencias   | Abiertas · Cerradas                            |
+| Destino                  | Sus vistas                                             |
+| ------------------------ | ------------------------------------------------------ |
+| Inventario · Productos   | Todo · Bajo mínimo · Sin precio · Desactivados         |
+| Inventario · Movimientos | Todo · Entradas · Salidas · Mermas · Ajustes           |
+| Inventario · Compras     | Pedidos · Albaranes · Facturas · Proveedores · Precios |
+| Escandallos · Fichas     | Todas · Bajo objetivo · Sin coste                      |
+| Carta · Carta            | Por secciones · Todos los platos · Agotados            |
+| Carta · Análisis         | Matriz · Por canal · Histórico                         |
+| Calendario · Calendario  | Mes · Semana · Día                                     |
+| Calendario · Tareas      | Pendientes · Periódicas · Hechas                       |
+| Equipo · Personas        | Con acceso · Sin entrar todavía · Retirados            |
+| Servicio · Jornada       | Cierre · En marcha                                     |
+| Servicio · Ventas        | Del turno · Del día · Por producto                     |
+| Cuaderno · Incidencias   | Abiertas · Cerradas                                    |
 
 **El catálogo de `packages/ui/src/apps.ts` es el único dueño de estas dos tablas**, y hay una prueba que las lee **de este documento** y las compara. Antes la prueba llevaba los valores copiados dentro, y por eso pudo estar en verde mientras el código decía que Negocio tenía «Reseñas» donde esta tabla decía «Pulse».
 
@@ -539,6 +539,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 **Reglas críticas.** El albarán mueve stock; **la factura confirma el precio**. La recepción es idempotente. **Abrir una pantalla no llama a Google nunca**: se lee lo guardado, con su fecha.
 
 **Terminado cuando.** Un pedido recorre el ciclo, el inventario cuadra, el precio nuevo ya está repercutido en los escandallos, y una factura con tres albaranes y una diferencia sale conciliada con esa diferencia señalada. **Y además**: las entregas de la semana salen en el Panel; al elegir el local en el alta se guardan su ficha y su posición; y al cerrar el día la ficha y las reseñas se actualizan solas, con el contador de llamadas por debajo de su tope.
+
+**Se entrega en dos veces** ([decisión 0032](../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)). **La primera**: las compras enteras —ficha del proveedor, pedidos, recepción, devoluciones, facturas y abonos conciliados, lo pactado y la comparativa— en cinco vistas del destino Compras, y el Calendario con sus entregas, sus caducidades y «Lo que viene». El precio nuevo queda repercutido en el coste de cada producto, que es lo que leerán los escandallos de M9. «PDF» es **imprimir**, con «Guardar como PDF»; el documento con membrete es M11. **La segunda**: el reloj y el local en Google, que esperan el acceso a Business Profile y la clave de Google Cloud.
 
 ### M8 · Inventario, mermas y desviación
 

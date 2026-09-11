@@ -122,6 +122,32 @@ export function fechaEnElLocal(instante: Date, zonaHoraria: string): FechaOperat
 }
 
 /** Suma (o resta, con negativo) días de calendario a una fecha. */
+/**
+ * Qué hora es en el local, «HH:MM» (M7).
+ *
+ * Hace falta para saber si **hoy todavía se llega** a pedir: «si me lo dices
+ * antes de las ocho, te lo llevo mañana». Es la hora del reloj de pared del local,
+ * no la jornada: a las dos de la mañana la jornada es la de ayer, pero el
+ * proveedor cuenta con el día de hoy.
+ */
+export function horaEnElLocal(instante: Date, zonaHoraria: string): string {
+  const reloj = relojDelLocal(instante, zonaHoraria);
+  return `${String(reloj.hora).padStart(2, '0')}:${String(reloj.minuto).padStart(2, '0')}`;
+}
+
+/**
+ * El día de la semana de una fecha, del 1 (lunes) al 7 (domingo) (M7).
+ *
+ * Es el `isodow` de Postgres, que es como se guardan los días de reparto de un
+ * proveedor y lo que se repite en el Calendario. Se cuenta sobre la fecha, sin
+ * zona: el martes es martes en cualquier sitio.
+ */
+export function diaDeLaSemana(fecha: FechaOperativa): number {
+  const [anio, mes, dia] = fecha.split('-').map(Number) as [number, number, number];
+  const domingoEsCero = new Date(Date.UTC(anio, mes - 1, dia)).getUTCDay();
+  return domingoEsCero === 0 ? 7 : domingoEsCero;
+}
+
 export function masDias(fecha: FechaOperativa, dias: number): FechaOperativa {
   const [anio, mes, dia] = fecha.split('-').map(Number) as [number, number, number];
   const movida = new Date(Date.UTC(anio, mes - 1, dia));

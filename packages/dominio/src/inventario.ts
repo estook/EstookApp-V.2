@@ -370,37 +370,21 @@ export function urgenciaDe(estado: EstadoDeExistencias): number {
 
 // ── La sugerencia de pedido, con su motivo escrito ───────────────────────────
 
-export interface Sugerencia {
-  readonly cuanto: number;
-  /** «Mantener unos 5 días de cobertura». Se enseña tal cual, sin recomponerla. */
-  readonly motivo: string;
-}
-
 /**
- * Cuánto pedir, y por qué.
+ * Cuánto pedir, y por qué. «La cifra sin el motivo no vale: una recomendación que
+ * no se puede discutir no se sigue.»
  *
- * «Motivo: mantener unos 5 días de cobertura» (Manifiesto 12). La cifra sin el
- * motivo no vale: una recomendación que no se puede discutir no se sigue.
- *
- * **Lo que esta función no hace, y es de M7**: mirar qué días reparte el
- * proveedor y si el pedido llega a su pedido mínimo. Hasta entonces la
- * sugerencia es honesta con lo que sabe, y lo dice en su motivo.
+ * **La cuenta ya no vive aquí.** En M6 era `pedidoRecomendado`, que cubría cinco
+ * días y no sabía qué día reparte el proveedor. M7 la sustituye por `cuantoPedir`
+ * (`compras.ts`), que cuenta hasta el reparto de después, redondea a cajas enteras
+ * y sigue diciendo «cinco días» cuando el proveedor no tiene días puestos. Dos
+ * funciones sugiriendo cantidades acabarían diciendo dos cosas (regla 6).
  */
-export function pedidoRecomendado(
-  existencias: number,
-  consumoPorDia: number | null,
-  diasObjetivo: number = DIAS_DE_COBERTURA_OBJETIVO,
-): Sugerencia | null {
-  if (consumoPorDia === null || consumoPorDia <= 0) return null;
-
-  const objetivo = consumoPorDia * diasObjetivo;
-  const falta = objetivo - existencias;
-  if (falta <= 0) return null;
-
-  return {
-    cuanto: Number(falta.toFixed(2)),
-    motivo: `Mantener unos ${diasObjetivo} días de cobertura al ritmo al que se está gastando.`,
-  };
+export interface Sugerencia {
+  /** En unidad de uso. */
+  readonly cuanto: number;
+  /** «Llega el martes y el reparto siguiente es el viernes…». Se enseña tal cual. */
+  readonly motivo: string;
 }
 
 // ── El cambio de precio, contado como lo que es ──────────────────────────────

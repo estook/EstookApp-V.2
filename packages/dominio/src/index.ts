@@ -57,6 +57,8 @@ export {
   horaDeCorte,
   jornadaDe,
   fechaEnElLocal,
+  horaEnElLocal,
+  diaDeLaSemana,
   masDias,
   diasEntre,
   esAnterior,
@@ -220,7 +222,6 @@ export {
   diaDeAgotamiento,
   comoEsta,
   urgenciaDe,
-  pedidoRecomendado,
   comoHaCambiado,
 } from './inventario.ts';
 
@@ -296,3 +297,55 @@ export {
 } from './cierre.ts';
 
 export type { ComoSeCierra, OrigenDelCierre, LineaDeCierre, LoQueTraeElCsv } from './cierre.ts';
+
+// ── M7 · compras · qué pedir, cuándo llega, qué ha llegado y si cuadra ───────
+//
+// La sugerencia de la ficha de un producto, la del pedido de un proveedor y la de
+// «hoy toca pedir» son **la misma cuenta**, y por eso tiene un solo dueño.
+export {
+  MARGEN_DE_SEGURIDAD,
+  INCIDENCIAS,
+  NOMBRE_DE_LA_INCIDENCIA,
+  proximoReparto,
+  comoSeLePide,
+  cuandoCae,
+  cuantoPedir,
+  precioPorFormato,
+  comoSePide,
+  importeEstimado,
+  totalDelPedido,
+  comoVaElMinimo,
+  textoDelPedido,
+  numeroParaWhatsApp,
+  enlaceDeWhatsApp,
+  enlaceDeCorreo,
+  lineaRecibida,
+  incidenciasDe,
+  conciliar,
+  quienLoDejaMejor,
+  puntualidad,
+} from './compras.ts';
+
+export type {
+  CalendarioDeReparto,
+  ProximoReparto,
+  LoQueHay,
+  SugerenciaDeCompra,
+  CuandoLlega,
+  TotalDelPedido,
+  ComoVaElMinimo,
+  LineaParaMandar,
+  PedidoParaMandar,
+  LineaQueLlega,
+  LineaRecibida,
+  Incidencia,
+  AlbaranParaConciliar,
+  Conciliacion,
+  PrecioDeUnProveedor,
+  Comparacion,
+  Puntualidad,
+} from './compras.ts';
+
+// ── M7 · el Calendario · los módulos publican, el Calendario pinta ───────────
+export { CAPAS, NOMBRE_DE_LA_CAPA, APP_DE_LA_CAPA, esCapa, desplegar } from './calendario.ts';
+export type { Capa, EventoGuardado, Ocurrencia } from './calendario.ts';

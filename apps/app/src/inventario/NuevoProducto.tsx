@@ -377,8 +377,8 @@ export function NuevoProducto({
                   etiqueta="Precio"
                   ayuda={
                     porEnvases
-                      ? `Lo que cuesta todo eso, no la unidad.`
-                      : `Lo que cuesta un ${unidad}.`
+                      ? `Lo que cuesta todo eso, no la unidad. Sin IVA, como en el albarán.`
+                      : `Lo que cuesta un ${unidad}, sin IVA, como en el albarán.`
                   }
                   valor={precio}
                   alCambiar={setPrecio}

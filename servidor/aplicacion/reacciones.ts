@@ -1,5 +1,6 @@
 import { deEstaPeticion } from '../eventos/bandeja.ts';
 import { esEvento, type TipoDeEvento } from '../eventos/catalogo.ts';
+import { publicarLaCaducidad, publicarLaEntrega, publicarLosRepartos } from './calendario.ts';
 import type { Contexto } from './contrato.ts';
 import { sembrarElInventario } from './inventario.ts';
 
@@ -94,16 +95,27 @@ async function sembrar(contexto: Contexto, evento: EventoOcurrido): Promise<void
   });
 }
 
+/** El identificador que un evento lleva en sus datos, como texto. */
+function elDe(evento: EventoOcurrido, clave: string): string {
+  const valor = evento.datos[clave];
+  // Solo texto: un identificador que llegara como objeto se escribiría
+  // «[object Object]», y buscar eso en la base no encontraría nada sin avisar.
+  return typeof valor === 'string' ? valor : '';
+}
+
 /**
  * Todas las reacciones del sistema, en una lista.
  *
- * Son dos y las dos hacen lo mismo, porque **el tipo de local puede llegar
+ * Las dos primeras hacen lo mismo, porque **el tipo de local puede llegar
  * después que el local**. Al duplicar un local de una cadena, el tipo viene
  * copiado y se sabe al crearlo; en el alta normal, el local ya existe desde que
  * se invitó a su gerente y el tipo se responde en el paso 2. Las categorías
  * dependen del tipo, así que hay que reaccionar en los dos momentos.
  *
- * Sembrar es idempotente, así que reaccionar dos veces no duplica nada.
+ * Las de M7 publican en el Calendario (decisión 0031). **Cada una deja el evento
+ * como tiene que estar mirando cómo está su origen ahora**, así que da igual cuál
+ * de los cambios la llame: enviar, cambiar, recibir y cancelar un pedido pasan por
+ * la misma función. Todas son idempotentes: reaccionar dos veces no duplica nada.
  */
 export const REACCIONES: readonly Reaccion[] = [
   {
@@ -116,6 +128,25 @@ export const REACCIONES: readonly Reaccion[] = [
     a: 'local.ficha_cambiada',
     leToca: (evento) => evento.datos['que'] === 'tipo',
     reaccionar: sembrar,
+  },
+
+  // ── M7 · lo que tiene fecha, al Calendario ──────────────────────────────
+  ...(['proveedor.creado', 'proveedor.cambiado'] as const).map((a): Reaccion => ({
+    nombre: 'M7 · los días de reparto de un proveedor, en el Calendario',
+    a,
+    reaccionar: (contexto, evento) => publicarLosRepartos(contexto, elDe(evento, 'proveedorId')),
+  })),
+  ...(['pedido.enviado', 'pedido.cambiado', 'pedido.recibido', 'pedido.cancelado'] as const).map(
+    (a): Reaccion => ({
+      nombre: 'M7 · la entrega de un pedido, en el Calendario',
+      a,
+      reaccionar: (contexto, evento) => publicarLaEntrega(contexto, elDe(evento, 'pedidoId')),
+    }),
+  ),
+  {
+    nombre: 'M6 · la caducidad de un lote, en el Calendario',
+    a: 'lote.creado',
+    reaccionar: (contexto, evento) => publicarLaCaducidad(contexto, elDe(evento, 'loteId')),
   },
 ];
 

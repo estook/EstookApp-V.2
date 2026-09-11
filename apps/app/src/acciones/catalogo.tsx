@@ -10,6 +10,7 @@ import {
   IconoPersona,
   IconoQuitar,
   IconoReloj,
+  IconoReparto,
   type Icono,
 } from '@estook/iconos';
 import type { Permiso, PermisosResueltos } from '@estook/permisos';
@@ -136,10 +137,47 @@ export const ACCIONES: readonly Accion[] = [
     id: 'nuevo-proveedor',
     app: 'inventario',
     nombre: 'Añadir un proveedor',
-    queHace: 'La ficha corta, que es lo que hace falta para comparar precios',
+    queHace: 'Su ficha: cuándo reparte, cómo se le pide y a quién llamar',
     icono: IconoOrganizacion,
     permiso: { cual: 'app.inventario', como: 'editar' },
     ir: '/inventario/compras/proveedores?hacer=nuevo',
+  },
+  // ── M7 · las compras ─────────────────────────────────────────────────────
+  {
+    id: 'nuevo-pedido',
+    app: 'inventario',
+    nombre: 'Hacer un pedido',
+    queHace: 'Eliges a quién, y empieza por lo que Estook le pediría hoy',
+    icono: IconoAnadir,
+    permiso: { cual: 'app.inventario', como: 'editar' },
+    ir: '/inventario/compras/pedidos?hacer=nuevo',
+  },
+  {
+    id: 'recibir',
+    app: 'inventario',
+    nombre: 'Recibir lo que ha llegado',
+    queHace: '¿Entero o con cambios? Entero son dos toques',
+    icono: IconoReparto,
+    permiso: { cual: 'app.inventario', como: 'editar' },
+    ir: '/inventario/compras/pedidos?hacer=recibir',
+  },
+  {
+    id: 'apuntar-factura',
+    app: 'inventario',
+    nombre: 'Apuntar una factura',
+    queHace: 'Con sus albaranes, y te dice si te cobran lo que llegó',
+    icono: IconoDocumento,
+    permiso: { cual: 'dato.precio_de_compra', como: 'editar' },
+    ir: '/inventario/compras/facturas?hacer=nueva',
+  },
+  {
+    id: 'comparar-precios',
+    app: 'inventario',
+    nombre: 'Ver quién me lo deja mejor',
+    queHace: 'La comparativa entre proveedores, lo que ha subido y lo pactado',
+    icono: IconoDinero,
+    permiso: { cual: 'dato.precio_de_compra', como: 'ver' },
+    ir: '/inventario/compras/precios',
   },
   {
     id: 'invitar',
@@ -266,9 +304,12 @@ export function accionesQuePuedo(permisos: PermisosResueltos): readonly Accion[]
  */
 export const ACCIONES_DE_FABRICA: readonly string[] = [
   'nuevo-producto',
+  // M7 · «Hacer un pedido» entra en lugar de «Ver el libro»: pedir es de cada
+  // día y leer el libro, de cuando algo no cuadra. El libro sigue a un toque en
+  // Inventario · Movimientos y en el buscador.
+  'nuevo-pedido',
   'apuntar-merma',
   'que-atender',
-  'el-libro',
 ];
 
 /**

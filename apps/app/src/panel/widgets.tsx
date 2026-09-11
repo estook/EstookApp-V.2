@@ -3,12 +3,13 @@ import { nombreEn } from '../datos/nombreEn.ts';
 import { useQuery } from '@tanstack/react-query';
 import {
   AVISAR_ANTES_DE_ENTRAR,
+  NOMBRE_DE_LA_CAPA,
   NOMBRE_DEL_ESTADO,
   NOMBRE_DEL_ORIGEN_DEL_CIERRE,
   minutosHasta,
   porcentajeDe,
 } from '@estook/dominio';
-import { appsVisibles, puedeVer } from '@estook/permisos';
+import { appsVisibles, puedeEditar, puedeVer } from '@estook/permisos';
 import {
   Avatar,
   Boton,
@@ -40,6 +41,8 @@ import {
   type FichajesDeHoy,
 } from '../equipo/contrato.ts';
 import type { MisCierres } from '../servicio/contrato.ts';
+import { usarLectura } from '../ganchos/usarLectura.ts';
+import type { ComprasDeHoy, LoQueViene } from '../compras/contrato.ts';
 import {
   TONO_DEL_ESTADO,
   comoDinero,
@@ -137,6 +140,8 @@ function Cual({
   if (id === 'merma') return <MermaWidget tamano={tamano} />;
   if (id === 'ventas-de-hoy') return <VentasDeHoyWidget />;
   if (id === 'ultimos-movimientos') return <UltimosMovimientos tamano={tamano} />;
+  if (id === 'pedidos') return <ComprasDeHoyWidget tamano={tamano} />;
+  if (id === 'calendario') return <LoQueVieneWidget tamano={tamano} />;
   return null;
 }
 
@@ -1007,6 +1012,181 @@ function VentasDeHoyWidget() {
             </p>
           )}
         </>
+      )}
+    </Caja>
+  );
+}
+
+// ── Las compras de hoy (M7) ──────────────────────────────────────────────────
+
+/**
+ * A quién toca pedir hoy, lo que llega y lo que espera a mandarse.
+ *
+ * «El bajo mínimo sabe qué día reparte tu proveedor. Avisar el jueves de un
+ * pescado que llega los martes no sirve de nada» (Manifiesto 28). Esto es ese
+ * aviso **el día que sirve**, cada línea con su botón: pedir abre el pedido con
+ * lo sugerido, y recibir abre la recepción directamente.
+ */
+function ComprasDeHoyWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
+  const { permisos, yo } = usarSesion();
+  const navegar = useNavigate();
+  const puedeTocar = puedeEditar(permisos, 'app.inventario');
+  const cuantos = tamano === 'grande' ? 6 : 3;
+
+  const consulta = usarLectura<ComprasDeHoy>(
+    'compras_de_hoy',
+    {},
+    puedeVer(permisos, 'app.inventario') && yo?.local !== null && yo?.local !== undefined,
+  );
+
+  const datos = consulta.data;
+  const tocaPedir = (datos?.tocaPedir ?? []).filter((t) => !t.yaPedido);
+  const borradores = datos?.borradores.length ?? 0;
+
+  return (
+    <Caja
+      titulo="Compras de hoy"
+      origen={
+        borradores === 0
+          ? 'Lo que llega y a quién toca pedir'
+          : `${borradores === 1 ? '1 borrador' : `${borradores} borradores`} sin mandar`
+      }
+      ir="/inventario/compras/pedidos"
+    >
+      {datos === undefined ? (
+        <Cargando que="las compras" lineas={2} />
+      ) : tocaPedir.length === 0 && datos.llegan.length === 0 ? (
+        <p className="text-secundario text-texto-suave">
+          Hoy no llega nada y no toca pedirle a nadie.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-e1">
+          {tocaPedir.slice(0, cuantos).map((t) => (
+            <li key={t.proveedorId}>
+              <button
+                type="button"
+                onClick={() => {
+                  navegar(
+                    t.borradorId === null
+                      ? `/inventario/compras/pedidos?pedir=${t.proveedorId}`
+                      : `/inventario/compras/pedidos?pedido=${t.borradorId}`,
+                  );
+                }}
+                className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
+              >
+                <span className="min-w-0 flex-1 truncate text-cuerpo">Pedir a {t.proveedor}</span>
+                <Etiqueta tono="atencion">
+                  {t.pedirAntesDe === null ? 'hoy' : `antes de las ${t.pedirAntesDe}`}
+                </Etiqueta>
+              </button>
+            </li>
+          ))}
+          {datos.llegan.slice(0, cuantos).map((l) => (
+            <li key={l.pedidoId}>
+              <button
+                type="button"
+                onClick={() => {
+                  navegar(
+                    `/inventario/compras/pedidos?pedido=${l.pedidoId}${puedeTocar ? '&recibir=1' : ''}`,
+                  );
+                }}
+                className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
+              >
+                <span className="min-w-0 flex-1 truncate text-cuerpo">Llega {l.proveedor}</span>
+                <Etiqueta tono={l.atrasado ? 'mal' : 'info'}>
+                  {l.atrasado ? 'no ha llegado' : l.llegaCuando}
+                </Etiqueta>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Caja>
+  );
+}
+
+// ── Lo que viene (M7): hoy y mañana, del Calendario de todos ─────────────────
+
+/**
+ * Hoy y mañana, de la tabla del Calendario (decisión 0031).
+ *
+ * «Los módulos publican; el Calendario pinta.» M7 publica las entregas de los
+ * pedidos, los repartos de cada proveedor y las caducidades de los lotes, y esto
+ * es lo primero que las pinta. El Calendario entero —mes, semana, turnos y
+ * tareas— es M14, y leerá la misma tabla.
+ *
+ * Quién ve qué no lo decide el widget: lo decide la base. A un camarero no le
+ * llega ninguna entrega, porque no lleva Inventario; le llegan sus avisos.
+ */
+function LoQueVieneWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
+  const { permisos, yo } = usarSesion();
+  const navegar = useNavigate();
+  const cuantos = tamano === 'grande' ? 8 : 4;
+
+  const consulta = usarLectura<LoQueViene>(
+    'lo_que_viene',
+    {},
+    puedeVer(permisos, 'app.calendario') && yo?.local !== null && yo?.local !== undefined,
+  );
+
+  const dias = consulta.data?.dias ?? [];
+  const nada = dias.every((dia) => dia.ocurrencias.length === 0);
+
+  return (
+    <Caja titulo="Lo que viene" origen="Hoy y mañana · entregas, repartos, caducidades y avisos">
+      {consulta.data === undefined ? (
+        <Cargando que="lo que viene" lineas={3} />
+      ) : nada ? (
+        <p className="text-secundario text-texto-suave">Nada apuntado para hoy ni para mañana.</p>
+      ) : (
+        <div className="flex flex-col gap-e2">
+          {dias.map((dia) =>
+            dia.ocurrencias.length === 0 ? null : (
+              <div key={dia.fecha}>
+                <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+                  {dia.cuando}
+                </p>
+                <ul className="flex flex-col">
+                  {dia.ocurrencias.slice(0, cuantos).map((o) => (
+                    <li key={`${o.id}-${dia.fecha}`}>
+                      <button
+                        type="button"
+                        disabled={o.ir === null}
+                        onClick={() => {
+                          if (o.ir !== null) navegar(o.ir);
+                        }}
+                        className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo disabled:cursor-default disabled:hover:bg-transparent"
+                      >
+                        {o.desde !== null && (
+                          <span className="shrink-0 text-secundario tabular-nums text-texto-suave">
+                            {o.desde}
+                          </span>
+                        )}
+                        <span
+                          className={clases(
+                            'min-w-0 flex-1 truncate text-cuerpo',
+                            o.hecho && 'text-texto-suave line-through',
+                          )}
+                        >
+                          {o.titulo}
+                        </span>
+                        {/* La capa dicha con palabra, no solo con color (B8). */}
+                        <span className="shrink-0 text-etiqueta text-texto-tenue">
+                          {NOMBRE_DE_LA_CAPA[o.capa]}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                  {dia.ocurrencias.length > cuantos && (
+                    <li className="px-e1 text-secundario text-texto-suave">
+                      y {dia.ocurrencias.length - cuantos} más
+                    </li>
+                  )}
+                </ul>
+              </div>
+            ),
+          )}
+        </div>
       )}
     </Caja>
   );

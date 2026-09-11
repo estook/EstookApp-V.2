@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { NOMBRE_DEL_ESTADO } from '@estook/dominio';
-import { puedeVer } from '@estook/permisos';
+import { NOMBRE_DEL_ESTADO, comoSePide } from '@estook/dominio';
+import { puedeEditar, puedeVer } from '@estook/permisos';
+import { usarLectura } from '../ganchos/usarLectura.ts';
+import type { ComprasDeHoy } from '../compras/contrato.ts';
 import { Aviso, Boton, Cargando, Cifra, EstadoVacio, Etiqueta, Tarjeta, Tira } from '@estook/ui';
 import { IconoAnadir, IconoAtencion, IconoCamara, IconoReloj, IconoVacio } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -26,10 +28,10 @@ import {
  *  recibir, precios que han subido, productos sin precio y recuento pendiente.
  *  **Cada línea con su botón**» (Manifiesto 12).
  *
- * De esa lista, M6 puede dar cuatro: bajo mínimo con previsión, caducidades,
- * productos sin precio y el valor de la cámara. Los pedidos por recibir son M7 y
- * el recuento es M8, y se dice cuál falta y dónde llega en vez de dejar el hueco
- * en blanco.
+ * De esa lista, M6 dio cuatro: bajo mínimo con previsión, caducidades, productos
+ * sin precio y el valor de la cámara. M7 añade **los pedidos por recibir y a
+ * quién toca pedir hoy**, con su botón. El recuento es M8, y se dice que falta y
+ * dónde llega en vez de dejar el hueco en blanco.
  *
  * ── La regla que ordena esta pantalla ────────────────────────────────────────
  *
@@ -221,22 +223,122 @@ export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string
       {puedeVer(permisos, 'accion.registrar_merma') && <MermaDeLaJornada />}
 
       {/*
-        Y lo que esta pantalla todavía no puede dar, dicho por su nombre. La merma
-        ya no está en esta lista: está arriba, funcionando.
+        Los pedidos por recibir, que el Manifiesto pone en esta pantalla y que
+        hasta M7 eran una línea de «llega con Proveedores y compras».
       */}
-      <Tarjeta titulo="Y lo que falta por venir" origen="Pedidos y recuento">
-        <ul className="flex flex-col gap-e2 text-secundario text-texto-suave">
-          <li>
-            <strong className="text-texto">Pedidos por recibir</strong> · con la sugerencia que
-            respeta los días de reparto de cada proveedor. Llega con Proveedores y compras.
-          </li>
-          <li>
-            <strong className="text-texto">Recuento y desviación</strong> · lo que dice el papel
-            contra lo que dice Estook, con su causa probable. Llega con Recuentos.
-          </li>
-        </ul>
+      {puedeVer(permisos, 'app.inventario') && <ComprasDeHoyEnHoy />}
+
+      {/*
+        Y lo que esta pantalla todavía no puede dar, dicho por su nombre. La merma
+        y los pedidos ya no están en esta lista: están arriba, funcionando.
+      */}
+      <Tarjeta titulo="Y lo que falta por venir" origen="Recuento">
+        <p className="text-secundario text-texto-suave">
+          <strong className="text-texto">Recuento y desviación</strong> · lo que dice el papel
+          contra lo que dice Estook, con su causa probable. Llega con Recuentos.
+        </p>
       </Tarjeta>
     </div>
+  );
+}
+
+/**
+ * Las compras de hoy · lo que llega, con su botón de recibir, y a quién toca
+ * pedirle antes de su hora límite.
+ *
+ * Es la misma consulta que la cabecera de Compras · Pedidos y que el widget del
+ * Panel, con la misma clave de caché: tres sitios y un solo viaje.
+ */
+function ComprasDeHoyEnHoy() {
+  const { permisos } = usarSesion();
+  const navegar = useNavigate();
+  const puedeTocar = puedeEditar(permisos, 'app.inventario');
+  const consulta = usarLectura<ComprasDeHoy>('compras_de_hoy');
+
+  const datos = consulta.data;
+  const tocaPedir = (datos?.tocaPedir ?? []).filter((t) => !t.yaPedido);
+  const nada = datos !== undefined && datos.llegan.length === 0 && tocaPedir.length === 0;
+
+  return (
+    <Tarjeta
+      titulo="Compras de hoy"
+      origen="Lo que llega y a quién toca pedir"
+      accion={
+        <Boton
+          tono="texto"
+          onClick={() => {
+            navegar('/inventario/compras/pedidos');
+          }}
+        >
+          Ver pedidos
+        </Boton>
+      }
+    >
+      {datos === undefined ? (
+        <Cargando que="las compras" lineas={2} />
+      ) : nada ? (
+        <p className="text-secundario text-texto-suave">
+          Hoy no llega nada y no toca pedirle a nadie.
+          {datos.borradores.length > 0
+            ? ` Hay ${datos.borradores.length === 1 ? 'un borrador' : `${datos.borradores.length} borradores`} sin mandar.`
+            : ''}
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-e2">
+          {datos.llegan.map((l) => (
+            <li key={l.pedidoId} className="flex flex-wrap items-center gap-e3">
+              <span className="min-w-0 flex-1">
+                <span className="block text-cuerpo">{l.proveedor}</span>
+                <span
+                  className={
+                    l.atrasado
+                      ? 'block text-secundario text-mal'
+                      : 'block text-secundario text-texto-suave'
+                  }
+                >
+                  {l.atrasado ? `Tenía que llegar ${l.llegaCuando}` : `Llega ${l.llegaCuando}`}
+                </span>
+              </span>
+              <Boton
+                tono={puedeTocar ? 'principal' : 'secundario'}
+                onClick={() => {
+                  navegar(
+                    `/inventario/compras/pedidos?pedido=${l.pedidoId}${puedeTocar ? '&recibir=1' : ''}`,
+                  );
+                }}
+              >
+                {puedeTocar ? 'Recibir' : 'Ver'}
+              </Boton>
+            </li>
+          ))}
+          {tocaPedir.map((t) => (
+            <li key={t.proveedorId} className="flex flex-wrap items-center gap-e3">
+              <span className="min-w-0 flex-1">
+                <span className="block text-cuerpo">Toca pedirle a {t.proveedor}</span>
+                <span className="block text-secundario text-atencion">
+                  {t.pedirAntesDe === null ? 'Hoy' : `Antes de las ${t.pedirAntesDe}`}, para que
+                  llegue {t.llegaCuando}
+                </span>
+              </span>
+              {puedeTocar && (
+                <Boton
+                  tono="secundario"
+                  onClick={() => {
+                    navegar(
+                      t.borradorId === null
+                        ? `/inventario/compras/pedidos?pedir=${t.proveedorId}`
+                        : `/inventario/compras/pedidos?pedido=${t.borradorId}`,
+                    );
+                  }}
+                >
+                  {t.borradorId === null ? 'Hacer el pedido' : 'Seguir el borrador'}
+                </Boton>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Tarjeta>
   );
 }
 
@@ -266,6 +368,9 @@ function LineaDeAtencion({
   readonly alAbrir: () => void;
 }) {
   const agota = cuandoSeAgota(producto.seAgotaEn, producto.diasDeCobertura);
+  const { permisos } = usarSesion();
+  const navegar = useNavigate();
+  const puedePedir = puedeEditar(permisos, 'app.inventario');
 
   return (
     <div className="flex flex-col gap-e2 rounded-medio border border-borde p-e3">
@@ -292,15 +397,36 @@ function LineaDeAtencion({
 
       {producto.sugerencia !== null && (
         <p className="text-secundario">
-          <strong>Pide {conUnidadDeUso(producto.sugerencia.cuanto, producto.unidadDeUso)}.</strong>{' '}
+          {/* Como se pide, en cajas enteras: «Pide 2 × Caja 10 kg», no «pide 13,6 kg». */}
+          <strong>
+            Pide{' '}
+            {comoSePide(
+              producto.sugerencia.formatos,
+              producto.formato,
+              producto.factor,
+              producto.unidadDeUso,
+            )}
+            .
+          </strong>{' '}
           <span className="text-texto-suave">{producto.sugerencia.motivo}</span>
         </p>
       )}
 
-      <div>
+      <div className="flex flex-wrap gap-e2">
         <Boton tono="secundario" onClick={alAbrir}>
           Ver la ficha
         </Boton>
+        {/* Y el botón que hace algo con el aviso: pedírselo a su proveedor. */}
+        {producto.sugerencia !== null && producto.proveedorId !== null && puedePedir && (
+          <Boton
+            tono="principal"
+            onClick={() => {
+              navegar(`/inventario/compras/pedidos?pedir=${producto.proveedorId ?? ''}`);
+            }}
+          >
+            Pedírselo a {producto.proveedor ?? 'su proveedor'}
+          </Boton>
+        )}
       </div>
     </div>
   );

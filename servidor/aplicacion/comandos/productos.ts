@@ -325,6 +325,19 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
           returning id
         `;
         loteId = lotes[0]?.id ?? null;
+
+        // Su caducidad sale en el Calendario (M7). Lo hace la reacción que escucha
+        // esto, no este comando: quien crea un lote no tiene por qué saber quién
+        // pinta las caducidades.
+        if (loteId !== null) {
+          await publicar(contexto.sql, {
+            tipo: 'lote.creado',
+            organizacionId,
+            localId,
+            datos: { loteId, productoId, caducaEl: entrada.caduca_el },
+            correlacionId: contexto.correlacionId,
+          });
+        }
       }
 
       const apuntado = await apuntar(contexto, producto, {

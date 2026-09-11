@@ -11,7 +11,6 @@ import {
   consumoMedioDiario,
   diaDeAgotamiento,
   diasDeCobertura,
-  pedidoRecomendado,
   previsionDeAgotamiento,
   reconstruir,
   siguienteEstado,
@@ -322,23 +321,9 @@ describe('como esta un producto', () => {
   });
 });
 
-describe('la sugerencia de pedido', () => {
-  it('dice cuanto y por que', () => {
-    const sugerencia = pedidoRecomendado(4.2, 3.1);
-    // Cinco dias a 3,1 son 15,5; hay 4,2; faltan 11,3.
-    expect(sugerencia?.cuanto).toBeCloseTo(11.3, 2);
-    expect(sugerencia?.motivo).toContain('5 días de cobertura');
-  });
-
-  it('no sugiere nada si ya hay de sobra', () => {
-    expect(pedidoRecomendado(100, 3.1)).toBeNull();
-  });
-
-  it('no sugiere nada si no sabe a que ritmo se gasta', () => {
-    // Una recomendacion sin base es peor que ninguna.
-    expect(pedidoRecomendado(4.2, null)).toBeNull();
-  });
-});
+// La sugerencia de pedido se mudó a `compras.prueba.ts` con M7: ahora cuenta
+// hasta el reparto de después del proveedor, con el 20 % de margen de la
+// Auditoría (hallazgo 1), y en cajas enteras.
 
 describe('cuanto ha cambiado un precio', () => {
   it('cuenta la subida en su frase', () => {

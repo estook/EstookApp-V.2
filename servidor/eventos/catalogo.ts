@@ -75,6 +75,34 @@ export const EVENTOS = [
   'fichaje.corregido',
   'caja.cerrada',
   'local.como_cierra',
+  // ── M7 · proveedores, compras y el Calendario ───────────────────────────
+  //
+  // La regla 14 otra vez, y con la misma disciplina: solo lo que le importa a
+  // alguien más.
+  //
+  //   proveedor.creado     el Calendario pone sus días de reparto
+  //   proveedor.cambiado   y los cambia, o los quita si se desactiva
+  //   pedido.enviado       la entrega sale en el Calendario y en «Lo que viene»
+  //   pedido.cambiado      la entrega se mueve si cambia el día
+  //   pedido.recibido      la entrega se tacha; M21 mide la puntualidad
+  //   pedido.cancelado     la entrega se va
+  //   albaran.apuntado     **las compras**: M8 las necesita para el food cost
+  //                        real, «(inicial + compras − final) ÷ ventas»
+  //   factura.conciliada   el gasto por proveedor, la gestoría y, si hay
+  //                        diferencia, un aviso a quien tiene que reclamarla
+  //   precio.pactado       M24 compara lo pactado entre locales
+  //   lote.creado          la caducidad sale en el Calendario. Es de M6, y hasta
+  //                        hoy no la escuchaba nadie, así que no se publicaba
+  'proveedor.creado',
+  'proveedor.cambiado',
+  'pedido.enviado',
+  'pedido.cambiado',
+  'pedido.recibido',
+  'pedido.cancelado',
+  'albaran.apuntado',
+  'factura.conciliada',
+  'precio.pactado',
+  'lote.creado',
 ] as const;
 
 export type TipoDeEvento = (typeof EVENTOS)[number];

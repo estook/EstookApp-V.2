@@ -73,3 +73,25 @@ no la pantalla. El aviso lleva escrito quién lo puso, y quien lo ve sabe que es
 - **M14:** las pantallas —mes, semana, día, turnos y tareas—, los avisos con roles,
   las capas y sus filtros, «solo lo mío», las recurrencias y la suscripción desde el
   móvil. **M14 no rehace nada**: pinta lo que ya se publica.
+
+## Cómo quedó en M7 (11 de septiembre)
+
+- **La tabla**, en la migración `0032`: capa, origen y fila de origen —únicos juntos,
+  para que publicar dos veces no duplique—, día, hasta cuándo, horas, **los días de
+  la semana que se repite**, título, detalle, a dónde lleva, grupo, roles y si ya
+  está hecho. Y la migración puso como eventos **las caducidades de los lotes que ya
+  había**.
+- **Quién ve qué, en la base**: una entrega o una caducidad, quien ve Inventario; un
+  aviso, quien tiene Calendario y alguno de sus roles —o quien lo puso, o quien
+  edita el Calendario—. `estook.mis_roles_en(local)` dice los roles de cada uno. Un
+  aviso que nombra un rol que no existe no se guarda.
+- **Lo publican las reacciones**, nunca los comandos: los repartos de cada proveedor
+  como un evento que se repite los días que reparte; cada pedido mandado, el día
+  que llega —y tachado el día que llegó—; cada lote con fecha, el día que caduca.
+  **Un pedido concreto tapa el reparto de ese día**: si el martes llega el pedido 23
+  de Makro, no sale además «Reparte Makro».
+- **Se despliega en el dominio** (`desplegar`), que convierte lo que se repite en
+  días concretos. M14 lo usará igual para pintar un mes.
+- **El widget «Lo que viene»**, con hoy y mañana, y la consulta `lo_que_viene`, que
+  ya sabe pedir hasta 31 días. Cada línea lleva a su pedido, a su proveedor o a su
+  producto.

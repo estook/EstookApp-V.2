@@ -162,6 +162,18 @@ export const apuntarEntrada = comando<EntradaApuntarEntrada, SalidaDeMovimiento>
         returning id
       `;
       loteId = lotes[0]?.id ?? null;
+
+      // La entrada no publica evento, pero **un lote con fecha sí**: su caducidad
+      // sale en el Calendario (M7), y eso lo hace la reacción que escucha esto.
+      if (loteId !== null && entrada.caduca_el !== null && entrada.caduca_el !== undefined) {
+        await publicar(contexto.sql, {
+          tipo: 'lote.creado',
+          organizacionId: laOrganizacionDeLaSesion(contexto),
+          localId: producto.localId,
+          datos: { loteId, productoId: producto.id, caducaEl: entrada.caduca_el },
+          correlacionId: contexto.correlacionId,
+        });
+      }
     }
 
     const apuntado = await apuntar(contexto, producto, {

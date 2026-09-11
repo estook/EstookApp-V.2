@@ -57,6 +57,20 @@ import {
   reactivarProducto,
 } from './comandos/productos.ts';
 import { cambiarProveedor, crearProveedor } from './comandos/proveedores.ts';
+import { cambiarPedido, cancelarPedido, crearPedido, enviarPedido } from './comandos/pedidos.ts';
+import { devolverAlProveedor, recibirAlbaran } from './comandos/recibir.ts';
+import { conciliarFactura, registrarFactura } from './comandos/facturas.ts';
+import { dejarDePactar, pactarPrecio } from './comandos/pactado.ts';
+import { comprasDeHoy, misPedidos, sugerenciaDePedido, unPedido } from './consultas/pedidos.ts';
+import {
+  misAlbaranes,
+  misFacturas,
+  paraConciliar,
+  unAlbaran,
+  unaFactura,
+} from './consultas/albaranes.ts';
+import { compararPrecios, unProveedor } from './consultas/proveedores.ts';
+import { loQueViene } from './consultas/calendario.ts';
 import { buscar } from './consultas/buscar.ts';
 import {
   inventarioHoy,
@@ -129,6 +143,20 @@ export const catalogo = {
     //        lo que se factura, que es la mitad del negocio.
     [misCierres.nombre]: misCierres,
     [unCierre.nombre]: unCierre,
+    // M7 · compras: lo que se pide, lo que llega, lo que se cobra y a quién.
+    [misPedidos.nombre]: misPedidos,
+    [unPedido.nombre]: unPedido,
+    [sugerenciaDePedido.nombre]: sugerenciaDePedido,
+    [comprasDeHoy.nombre]: comprasDeHoy,
+    [misAlbaranes.nombre]: misAlbaranes,
+    [unAlbaran.nombre]: unAlbaran,
+    [misFacturas.nombre]: misFacturas,
+    [unaFactura.nombre]: unaFactura,
+    [paraConciliar.nombre]: paraConciliar,
+    [unProveedor.nombre]: unProveedor,
+    [compararPrecios.nombre]: compararPrecios,
+    // M7 · el Calendario de todos: hoy y mañana en el Panel; M14 pinta el resto.
+    [loQueViene.nombre]: loQueViene,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -222,5 +250,22 @@ export const catalogo = {
     [ponerDondeEstaElLocal.nombre]: ponerDondeEstaElLocal,
     [elegirComoSeCierra.nombre]: elegirComoSeCierra,
     [cerrarLaCaja.nombre]: cerrarLaCaja,
+
+    // ── M7 · proveedores y compras ────────────────────────────────────────
+    //
+    // Pedir no mueve nada; **recibir es lo único que mueve género**, y lo mueve
+    // por `apuntar`, como todo lo demás. La factura no mueve género: confirma el
+    // precio y se concilia. Mandar un pedido pide su propio permiso,
+    // `accion.enviar_pedidos`, porque compromete dinero del local.
+    [crearPedido.nombre]: crearPedido,
+    [cambiarPedido.nombre]: cambiarPedido,
+    [enviarPedido.nombre]: enviarPedido,
+    [cancelarPedido.nombre]: cancelarPedido,
+    [recibirAlbaran.nombre]: recibirAlbaran,
+    [devolverAlProveedor.nombre]: devolverAlProveedor,
+    [registrarFactura.nombre]: registrarFactura,
+    [conciliarFactura.nombre]: conciliarFactura,
+    [pactarPrecio.nombre]: pactarPrecio,
+    [dejarDePactar.nombre]: dejarDePactar,
   } as Record<string, Comando<never, unknown>>,
 };

@@ -203,6 +203,7 @@ function Dentro({
  * Lo que ya funciona de verdad, y de que modulo es cada cosa:
  *
  *   Inventario · Hoy, Productos, Movimientos, Compras     M6 · con Mermas en M6½
+ *   Inventario · Compras entera                           M7 · pedidos, albaranes, facturas y precios
  *   Equipo · Personas                                     M4 · dar acceso y quitarlo
  *   Equipo · Hoy y Resumen                                M6½ · fichajes y horas
  *   Servicio · Jornada · Cierre                           M6½ · el cierre de caja

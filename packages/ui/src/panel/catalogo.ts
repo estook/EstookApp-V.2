@@ -104,6 +104,33 @@ export const WIDGETS: readonly Widget[] = [
     permiso: 'app.inventario',
     tamanos: ['ancho', 'grande'],
   },
+  /**
+   * Compras de hoy (M7) · a quién toca pedir, lo que llega y lo que espera a
+   * mandarse. Es el aviso del Manifiesto 28 —«el bajo mínimo sabe qué día reparte
+   * tu proveedor»— puesto donde se mira cada mañana, con su botón.
+   */
+  {
+    id: 'pedidos',
+    nombre: 'Compras de hoy',
+    queEnsena: 'A quién toca pedir hoy, lo que llega y lo que espera a mandarse',
+    permiso: 'app.inventario',
+    tamanos: ['ancho', 'grande'],
+  },
+  /**
+   * Lo que viene (M7) · hoy y mañana, del Calendario de todos (0031).
+   *
+   * Estaba apagado con «llega con M14», y M7 es el primer módulo que **publica**
+   * en el Calendario: las entregas de los proveedores, los repartos y las
+   * caducidades. El Calendario entero —mes, semana, turnos y tareas— sigue siendo
+   * M14; lo de hoy y mañana ya tiene de qué llenarse.
+   */
+  {
+    id: 'calendario',
+    nombre: 'Lo que viene',
+    queEnsena: 'Hoy y mañana: las entregas de tus proveedores, lo que caduca y los avisos',
+    permiso: 'app.calendario',
+    tamanos: ['ancho', 'grande'],
+  },
   {
     id: 'sin-precio',
     nombre: 'Productos sin precio',
@@ -244,14 +271,6 @@ export const WIDGETS: readonly Widget[] = [
     modulo: 'M21',
   },
   {
-    id: 'calendario',
-    nombre: 'Calendario',
-    queEnsena: 'Lo de hoy y lo de mañana: turnos, entregas, limpiezas y tareas',
-    permiso: 'app.calendario',
-    tamanos: ['ancho', 'grande'],
-    modulo: 'M14',
-  },
-  {
     id: 'mi-turno',
     nombre: 'Mi turno',
     queEnsena: 'Con quién trabajo hoy y qué me toca hacer',
@@ -329,6 +348,11 @@ export const PANEL_DE_FABRICA: readonly WidgetPuesto[] = [
   { id: 'acciones-rapidas', tamano: 'ancho' },
   { id: 'caducidades', tamano: 'ancho' },
   { id: 'bajo-minimo', tamano: 'ancho' },
+  // M7: a quién toca pedir y qué llega, y lo de hoy y mañana del Calendario. Se
+  // filtran por permisos como todo: un camarero no tiene Inventario y le sale
+  // «Lo que viene» con sus avisos, sin una sola entrega.
+  { id: 'pedidos', tamano: 'ancho' },
+  { id: 'calendario', tamano: 'ancho' },
   { id: 'mis-apps', tamano: 'ancho' },
 ];
 

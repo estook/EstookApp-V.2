@@ -156,7 +156,11 @@ export function crearDespachador(puertos: Puertos): Despachador {
           );
           if (cerrada) return { estado: 'fallo', codigo: cerrada };
 
-          if (!(await tienePermiso(contexto, laConsulta.exige))) {
+          // Leer pide poder **ver**, no poder cambiar (M7). Hasta M7 esto pedía
+          // «ver y editar», y a quien la matriz le da algo solo para mirar —el
+          // jefe de cocina con Equipo, el jefe de sala con las ventas, el cocinero
+          // con el Calendario— se le cerraba la puerta hasta para mirar.
+          if (!(await tienePermiso(contexto, laConsulta.exige, 'ver'))) {
             return { estado: 'fallo', codigo: 'sin_permiso' };
           }
 
@@ -194,7 +198,7 @@ export function crearDespachador(puertos: Puertos): Despachador {
           const cerrada = porQueNoPasa(elComando, contexto.sesion);
           if (cerrada) return { estado: 'fallo', codigo: cerrada };
 
-          if (!(await tienePermiso(contexto, elComando.exige))) {
+          if (!(await tienePermiso(contexto, elComando.exige, 'editar'))) {
             return { estado: 'fallo', codigo: 'sin_permiso' };
           }
 
@@ -270,32 +274,60 @@ export function crearDespachador(puertos: Puertos): Despachador {
  *
  * El permiso se resuelve sobre el local de la sesión. Los de ámbito de
  * organización —plan, facturación, catálogo maestro— se resuelven sobre ella.
+ *
+ * **Y el nivel depende de lo que se haga** (M7): una consulta pide poder ver, un
+ * comando pide poder editar. Es lo que dice la matriz de M1 con sus tres estados
+ * —sin acceso, ver, y ver y editar—, y lo que el despachador no distinguía.
+ *
+ * ── Y la organización, solo para lo que es de la organización ────────────────
+ *
+ * Hasta M7, si el nivel del local no llegaba, se preguntaba **además** por el de
+ * toda la organización. Ese no mira los recortes de cada local, así que **un
+ * recorte no llegaba a esta puerta**: a quien el gerente le había dejado un
+ * permiso solo para ver en su local, el despachador le dejaba pasar a editar con
+ * el nivel de su rol. Lo paraba la política de la base, más abajo, con un error
+ * que no decía la verdad.
+ *
+ * Ahora: con un local en la sesión manda el nivel **de ese local**, que es el que
+ * miran las políticas; la organización se pregunta solo para los permisos que son
+ * suyos —plan, facturación, locales, catálogo maestro— o cuando la sesión no está
+ * en ningún local, como la vista consolidada de una cadena.
  */
-async function tienePermiso(contexto: Contexto, exige: Permiso | undefined): Promise<boolean> {
+async function tienePermiso(
+  contexto: Contexto,
+  exige: Permiso | undefined,
+  para: 'ver' | 'editar',
+): Promise<boolean> {
   if (exige === undefined) return true;
   if (contexto.sesion === null) return false;
 
   const { localId, organizacionId } = contexto.sesion;
+  const alcanza = (nivel: string | null | undefined) =>
+    para === 'editar' ? nivel === 'ver_y_editar' : nivel === 'ver' || nivel === 'ver_y_editar';
 
-  if (localId !== null) {
-    const filas = await contexto.sql<{ nivel: string }[]>`
-      select estook.nivel_de_permiso(
-        ${contexto.personaId}::uuid, ${localId}::uuid, ${exige}
-      )::text as nivel
-    `;
-    if (filas[0]?.nivel === 'ver_y_editar') return true;
+  const filas = await contexto.sql<
+    { ambito: string; en_el_local: string | null; en_la_organizacion: string | null }[]
+  >`
+    select p.ambito::text as ambito,
+           case when ${localId}::uuid is null then null
+                else estook.nivel_de_permiso(${contexto.personaId}::uuid, ${localId}::uuid, ${exige})::text
+           end as en_el_local,
+           case when ${organizacionId}::uuid is null then null
+                else estook.nivel_de_permiso_en_organizacion(
+                       ${contexto.personaId}::uuid, ${organizacionId}::uuid, ${exige}
+                     )::text
+           end as en_la_organizacion
+      from estook.permiso p
+     where p.codigo = ${exige}
+  `;
+
+  const fila = filas[0];
+  if (fila === undefined) return false;
+
+  if (fila.ambito === 'organizacion') {
+    return alcanza(fila.en_la_organizacion) || alcanza(fila.en_el_local);
   }
-
-  if (organizacionId !== null) {
-    const filas = await contexto.sql<{ nivel: string }[]>`
-      select estook.nivel_de_permiso_en_organizacion(
-        ${contexto.personaId}::uuid, ${organizacionId}::uuid, ${exige}
-      )::text as nivel
-    `;
-    if (filas[0]?.nivel === 'ver_y_editar') return true;
-  }
-
-  return false;
+  return localId !== null ? alcanza(fila.en_el_local) : alcanza(fila.en_la_organizacion);
 }
 
 /**

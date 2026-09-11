@@ -1578,6 +1578,71 @@ devolviendo el `text-charcoal` al botón, y se pone roja con «con #1f3a5f,
 
 ---
 
+### M7 · Proveedores y compras · la primera entrega
+
+«Esta sección es fácil, pero no hay que dejar de organizarlo y hacerlo bien.
+Piensa en cómo piensa un hostelero: quiere tenerlo todo accesible, bonito y bien.»
+Con eso, M7 se partió en dos: **las compras enteras y el Calendario ahora**, y el
+reloj y Google cuando Richi tenga el acceso a Business Profile y la clave de Google
+Cloud. Las nueve preguntas que dejaba abiertas el Plan están contestadas en la
+[decisión 0032](decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md).
+
+#### Uno · El orden de un bar, no el de una base de datos
+
+Compras eran tres vistas —Proveedores, Pedidos, Facturas— con Proveedores delante,
+porque era lo único que había en M6. Ahora son cinco y **en el orden en que se usan**:
+Pedidos, Albaranes, Facturas, Proveedores y Precios. Y Pedidos no empieza por la
+lista: empieza por **lo de hoy** —a quién toca pedirle antes de su hora límite, lo
+que llega hoy y mañana con su botón de recibir, y los borradores que esperan a que
+alguien los mande—.
+
+Lo mismo sale en «Hoy» de Inventario, en el widget «Compras de hoy» del Panel y en
+«Lo que viene», y los tres hacen **un solo viaje**: leen la misma consulta con la
+misma clave de caché.
+
+#### Dos · Lo que se pulsa en la puerta
+
+- **Recibir entero son dos toques** desde cualquier sitio donde salga el pedido:
+  «Recibir» abre la recepción directamente, y «Sí, ha llegado entero».
+- **El peso variable no se supone**: aunque haya llegado entero, se pregunta lo que
+  dice la báscula de eso, y solo de eso.
+- **Con cambios**, cada línea con su − y su +, «no se acepta», y lote, caducidad y
+  nota plegados hasta que hacen falta. Al acabar, lo que no cuadró con su nombre
+  —«ha venido menos», «precio distinto»— y **«pedirle lo que faltó»** de un toque.
+- **Mandar el pedido** abre WhatsApp o el correo con el pedido escrito, lo copia o lo
+  imprime, y pregunta **«¿ya se lo has mandado?»** antes de apuntarlo.
+
+#### Tres · La factura, que casi ningún programa concilia
+
+Se apunta la factura, **los albaranes sin factura de ese proveedor se marcan solos**
+—una factura de mes suele cubrirlos todos— y la cuenta sale **mientras se escribe**,
+con la misma función del dominio que usa el servidor. En cada línea se puede poner
+lo que dice la factura, y eso es lo que confirma el precio.
+
+#### Cuatro · Lo que encontraron las pruebas, y no ninguna de las viejas
+
+- **El despachador pedía «editar» para leer.** Un rol con Inventario en solo
+  lectura no podía ni mirar un pedido. Ahora una consulta pide «ver».
+- **Un permiso de la organización pasaba por encima de un recorte del local.** Si a
+  alguien se le quitaba Inventario en un local, lo seguía viendo por tenerlo en la
+  organización. Ahora el recorte manda.
+- **Una lista vacía de un tipo enumerado** llegaba a la base como `''` desde el
+  conductor de las pruebas, y la base la rechazaba. Las listas viajan como texto,
+  igual que el JSON desde M6½ (`comoLista`).
+- **Un borrador hecho por quien no ve precios se guardaba sin precio esperado**, y
+  al recibirlo no había con qué comparar. Ahora el precio esperado se pone al leerlo,
+  al mandarlo y al recibirlo, siempre por quien sí los ve.
+
+#### Cinco · El Calendario, que M7 es el primero en llenar
+
+La tabla de la [0031](decisiones/0031-el-calendario-recoge-lo-de-todos.md) con su
+seguridad por roles, **los repartos de cada proveedor, cada pedido mandado y cada
+caducidad** publicados por las reacciones, y el widget «Lo que viene», que estaba
+en el catálogo del Panel apagado con «llega con M14». M14 pintará el mes con la
+misma tabla.
+
+---
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

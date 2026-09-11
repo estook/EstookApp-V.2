@@ -62,6 +62,9 @@ export const PERMISOS_DE_ACCION = [
   'accion.gestionar_locales',
   'accion.catalogo_maestro',
   'accion.contratos_marco',
+  // M7 · mandar un pedido compromete dinero del local. Prepararlo y recibir lo
+  // que llega es de quien lleva Inventario; mandarlo, de quien tenga esto.
+  'accion.enviar_pedidos',
 ] as const;
 
 export const PERMISOS = [...PERMISOS_DE_APP, ...PERMISOS_DE_DATO, ...PERMISOS_DE_ACCION] as const;

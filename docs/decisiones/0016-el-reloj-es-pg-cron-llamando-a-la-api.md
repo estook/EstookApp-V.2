@@ -1,6 +1,6 @@
 # 0016 · El reloj es `pg_cron` llamando a nuestra API, no una acción de GitHub
 
-**Fecha:** 5 de septiembre de 2026 · **Módulo:** decidido en M6, se monta en M8 ·
+**Fecha:** 5 de septiembre de 2026 · **Módulo:** decidido en M6; el Plan lo adelantó a M7, y se monta en su segunda entrega, con Google ([0032](0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)) ·
 **Estado:** aceptada
 
 ## Qué se decide

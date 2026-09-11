@@ -4,6 +4,7 @@ import {
   CATEGORIAS_FISCALES,
   NOMBRE_DEL_ALERGENO,
   NOMBRE_DEL_ESTADO,
+  comoSePide,
   UNIDADES_DE_USO,
   comoPorcentaje,
 } from '@estook/dominio';
@@ -217,7 +218,13 @@ export function FichaDeProducto({
               {seAgota !== null && <Par que="Se acaba">{seAgota}</Par>}
               {datos.producto.sugerencia !== null && (
                 <Par que="Pide">
-                  {conUnidadDeUso(datos.producto.sugerencia.cuanto, datos.producto.unidadDeUso)}
+                  {/* En cajas enteras, como se pide (M7): «2 × Caja 10 kg». */}
+                  {comoSePide(
+                    datos.producto.sugerencia.formatos,
+                    datos.producto.formato,
+                    datos.producto.factor,
+                    datos.producto.unidadDeUso,
+                  )}
                   <span className="font-normal text-texto-suave">
                     {' '}
                     · {datos.producto.sugerencia.motivo}
@@ -830,8 +837,8 @@ function CambiarPrecio({
           etiqueta="Lo que cuesta ahora"
           ayuda={
             producto.producto.formato === null
-              ? 'El precio de la unidad de compra.'
-              : `El precio de una ${producto.producto.formato.toLowerCase()}, entera.`
+              ? 'El precio de la unidad de compra, sin IVA, como en el albarán.'
+              : `El precio de una ${producto.producto.formato.toLowerCase()} entera, sin IVA, como en el albarán.`
           }
           valor={precio}
           alCambiar={setPrecio}

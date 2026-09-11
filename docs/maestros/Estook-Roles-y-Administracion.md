@@ -103,6 +103,8 @@ No ve costes de materia prima ni escandallos con importes.
 
 **Su Panel:** gasto de cocina contra objetivo, platos bajo objetivo, valor en cámara, caducidades de la semana, pedidos por recibir y APPCC pendiente. Y **la parte de cocina de Pulse**: food cost, mermas y desviación, sin la parte de personal de sala ni la de facturación.
 
+**Y manda los pedidos** (M7). Hacer el borrador y recibir el camión es de cualquiera con Inventario —el cocinero sabe lo que falta y es quien está en la puerta—; **mandarlo al proveedor, o cancelar uno ya mandado, compromete dinero del local** y pide `accion.enviar_pedidos`, que tienen el jefe de cocina, el gerente, el responsable de área, dirección y compras central. Al cocinero no se le esconde el botón: se le dice quién lo manda, y a quien puede le sale como borrador por mandar ([decisión 0032](../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)). Las facturas, lo pactado y la comparativa de precios son de quien ve precios de compra.
+
 **Manda en:** Inventario entera, Escandallos entera, la parte de cocina de la Carta, el APPCC, el cuadrante de cocina y las fichas de su equipo. Ve los fichajes y las horas **de la cocina** —cocineros y jefes de cocina—, sin lo que cobra nadie.
 
 **No ve:** el margen global del negocio, el coste de personal de sala, la facturación ni la parte de plan y facturación de Ajustes.

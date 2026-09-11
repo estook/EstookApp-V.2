@@ -402,8 +402,8 @@ function ElFormulario({
                   etiqueta={producto.formato === null ? 'Precio' : 'Precio del envase'}
                   ayuda={
                     deLaLista === null
-                      ? 'Si lo dejas en blanco, entra sin valorar.'
-                      : `Es el de tu lista. Si esta vez te ha costado otro, cámbialo: queda apuntado.`
+                      ? 'Sin IVA, como en el albarán. Si lo dejas en blanco, entra sin valorar.'
+                      : `Es el de tu lista, sin IVA. Si esta vez te ha costado otro, cámbialo: queda apuntado.`
                   }
                   valor={precio}
                   alCambiar={setPrecio}

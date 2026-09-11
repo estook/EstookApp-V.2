@@ -1,15 +1,19 @@
 import {
   CAMARA_VACIA,
   cantidad,
+  comoHaCambiado,
   costePorUnidadDeUso,
   centimos,
   jornadaDe,
   horaDeCorte,
   milesimas,
   siguienteEstado,
+  type CambioDePrecio,
   type EstadoDelStock,
   type TipoDeMovimiento,
 } from '@estook/dominio';
+import { publicar } from '../eventos/bandeja.ts';
+import { laOrganizacionDeLaSesion } from './alta.ts';
 import { FalloDeAplicacion, type Contexto } from './contrato.ts';
 
 /**
@@ -285,6 +289,153 @@ export function costeDeUso(precioCentimos: number, factor: number, rendimiento: 
         'El factor tiene que ser mayor que cero y el rendimiento estar entre 0 y 1, donde 0,85 es un 85 %.',
     });
   }
+}
+
+// ── Abrir un precio nuevo, en un solo sitio ──────────────────────────────────
+
+/** De dónde sale un precio. Es el `origen_de_precio` de la 0023, que ya esperaba a M7. */
+export type OrigenDePrecio = 'a_mano' | 'catalogo' | 'albaran' | 'factura';
+
+export interface PrecioQueSePone {
+  readonly productoId: string;
+  readonly localId: string;
+  /** El nombre del producto, para la auditoría y el evento. */
+  readonly nombre: string;
+  readonly unidadDeUso: string;
+  readonly proveedorId: string | null;
+  /** Lo que cuesta el formato, sin impuestos, en céntimos enteros. */
+  readonly precioCentimos: number;
+  readonly formato: string | null;
+  readonly factor: number;
+  readonly rendimiento: number;
+  readonly origen: OrigenDePrecio;
+  /** El papel del que sale: `{ albaranId, numero }`, `{ facturaId }`. */
+  readonly referencia?: Record<string, unknown> | null;
+  /**
+   * Si el que vale hoy de ese proveedor ya es este, no abrir otro.
+   *
+   * Un albarán que llega al precio de siempre no es un precio nuevo: abrir una
+   * vigencia por cada entrega llenaría el histórico de filas iguales y ocultaría
+   * las subidas de verdad, que son lo único que se viene a buscar ahí.
+   */
+  readonly soloSiCambia?: boolean;
+}
+
+export interface PrecioPuesto {
+  readonly precioId: string;
+  readonly costeMilesimas: number;
+  readonly cambio: CambioDePrecio;
+}
+
+/**
+ * Abre la vigencia nueva de un precio, cierra la anterior y lo cuenta.
+ *
+ * Es lo que hacía `poner_precio` dentro, sacado aquí en M7 porque **ahora hay tres
+ * sitios que ponen precio**: a mano, al recibir un albarán y al conciliar una
+ * factura. Los tres tienen que cerrar la vigencia de la misma forma, calcular el
+ * mismo coste por unidad de uso y publicar el mismo `precio.cambiado`, del que
+ * cuelga la cascada entera de la Auditoría (2.1). Tres copias de esto serían tres
+ * formas de que el histórico de un producto dijera cosas distintas.
+ *
+ * No toca nada del pasado: ni el coste de lo que ya entró, ni el precio medio de
+ * la cámara. El precio nuevo vale **desde hoy**.
+ */
+export async function ponerUnPrecio(
+  contexto: Contexto,
+  precio: PrecioQueSePone,
+): Promise<PrecioPuesto | null> {
+  // El que estaba vigente **de ese mismo proveedor**: dos proveedores tienen
+  // dos precios vivos a la vez, que es lo que permite compararlos.
+  const vigentes = await contexto.sql<{ id: string; precio_centimos: string }[]>`
+    select id, precio_centimos::text as precio_centimos
+      from estook.precio_de_producto
+     where producto_id = ${precio.productoId}
+       and hasta is null
+       and proveedor_id is not distinct from ${precio.proveedorId}::uuid
+  `;
+
+  const anterior = vigentes[0];
+  if (
+    precio.soloSiCambia === true &&
+    anterior !== undefined &&
+    Number(anterior.precio_centimos) === precio.precioCentimos
+  ) {
+    return null;
+  }
+
+  const cambio = comoHaCambiado(
+    anterior === undefined ? null : Number(anterior.precio_centimos),
+    precio.precioCentimos,
+  );
+
+  if (anterior !== undefined) {
+    // Se cierra **ayer**, no hoy: si se cerrara hoy, el vigente nuevo y el viejo
+    // compartirían el día de hoy y una consulta por fecha devolvería dos precios
+    // para el mismo momento.
+    await contexto.sql`
+      update estook.precio_de_producto
+         set hasta = greatest(desde, current_date - 1)
+       where id = ${anterior.id}
+    `;
+  }
+
+  const coste = costeDeUso(precio.precioCentimos, precio.factor, precio.rendimiento);
+  const referencia =
+    precio.referencia === null || precio.referencia === undefined
+      ? null
+      : JSON.stringify(precio.referencia);
+
+  const puestos = await contexto.sql<{ id: string }[]>`
+    insert into estook.precio_de_producto (
+      producto_id, proveedor_id, precio_centimos, formato, factor, unidad_de_uso,
+      rendimiento, coste_milesimas, desde, origen, referencia, creado_por
+    )
+    values (
+      ${precio.productoId}, ${precio.proveedorId}, ${precio.precioCentimos}, ${precio.formato},
+      ${precio.factor}, ${precio.unidadDeUso}::estook.unidad_de_uso, ${precio.rendimiento},
+      ${coste}, current_date, ${precio.origen}::estook.origen_de_precio,
+      ${referencia}::text::jsonb, ${contexto.personaId}
+    )
+    returning id
+  `;
+
+  const precioId = puestos[0]?.id;
+  if (precioId === undefined) throw new FalloDeAplicacion('sin_permiso');
+
+  const organizacionId = laOrganizacionDeLaSesion(contexto);
+
+  await contexto.sql`
+    select estook.anotar(
+      ${organizacionId}::uuid, 'cambiar', 'precio_de_producto', ${precioId},
+      ${precio.localId}::uuid,
+      ${anterior === undefined ? null : JSON.stringify({ precio_centimos: Number(anterior.precio_centimos) })}::text::jsonb,
+      ${JSON.stringify({ precio_centimos: precio.precioCentimos, coste_milesimas: coste, origen: precio.origen })}::text::jsonb,
+      null
+    )
+  `;
+
+  // **El principio de la cascada de la Auditoría 2.1.** Aquí acaba lo que se
+  // puede hacer hoy: se cierra la vigencia anterior, se abre la nueva y se avisa.
+  // Lo de después —elaboraciones, platos, margen, food cost y alerta— necesita
+  // fichas técnicas, y esas son M9. El evento va ya, porque un evento que se
+  // añade después no trae el pasado consigo.
+  await publicar(contexto.sql, {
+    tipo: 'precio.cambiado',
+    organizacionId,
+    localId: precio.localId,
+    datos: {
+      productoId: precio.productoId,
+      nombre: precio.nombre,
+      proveedorId: precio.proveedorId,
+      precioCentimos: precio.precioCentimos,
+      costeMilesimas: coste,
+      variacion: cambio.variacion,
+      origen: precio.origen,
+    },
+    correlacionId: contexto.correlacionId,
+  });
+
+  return { precioId, costeMilesimas: coste, cambio };
 }
 
 // ── Los datos de ejemplo ─────────────────────────────────────────────────────

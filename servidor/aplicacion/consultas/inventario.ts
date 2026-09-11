@@ -5,18 +5,21 @@ import {
   comoEsta,
   comoPrecioPorUnidad,
   consumoMedioDiario,
+  cuandoCae,
   diasDeCobertura,
   fechaEnElLocal,
+  horaEnElLocal,
   masDias,
   milesimas as enMilesimas,
-  pedidoRecomendado,
+  cuantoPedir,
   previsionDeAgotamiento,
+  proximoReparto,
   urgenciaDe,
   valorDeLasExistencias,
   type Consumo,
   type EstadoDeExistencias,
   type FechaOperativa,
-  type Sugerencia,
+  type SugerenciaDeCompra,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 
@@ -92,7 +95,8 @@ export interface ProductoEnLista {
   readonly diasDeCobertura: number | null;
   /** ISO completo, con hora: «se agota el viernes a las 20:30». */
   readonly seAgotaEn: string | null;
-  readonly sugerencia: Sugerencia | null;
+  /** Cuánto pedir en cajas enteras y por qué, contando con el reparto (M7). */
+  readonly sugerencia: SugerenciaDeCompra | null;
 }
 
 /**
@@ -174,6 +178,17 @@ interface FilaDeProducto {
   coste_vigente: string | null;
   salidas: string | null;
   dias_con_datos: number;
+  // M7 · cómo reparte su proveedor principal, para que la sugerencia sepa qué día
+  // llega lo que se pide y hasta cuándo tiene que durar.
+  dias_de_reparto: number[] | null;
+  plazo_de_entrega: number | null;
+  hora_limite: string | null;
+}
+
+/** El reloj de pared del local, que es con lo que cuenta un proveedor. */
+interface RelojDelLocal {
+  readonly hoy: FechaOperativa;
+  readonly hora: string;
 }
 
 async function leerProductos(
@@ -191,6 +206,11 @@ async function leerProductos(
      * el presupuesto de velocidad de B7 no perdona eso.
      */
     productoId: string | null;
+    /**
+     * Solo los de este proveedor principal (M7). Es lo que sugiere un pedido: lo
+     * de Makro que no llega a su reparto de después.
+     */
+    proveedorId?: string | null;
     soloConProblema: boolean;
     /**
      * Solo los que no tienen precio vigente.
@@ -217,13 +237,19 @@ async function leerProductos(
     limite: number;
     salto: number;
   },
-): Promise<{ filas: FilaDeProducto[]; hoy: FechaOperativa; desde: FechaOperativa }> {
+): Promise<{
+  filas: FilaDeProducto[];
+  hoy: FechaOperativa;
+  desde: FechaOperativa;
+  reloj: RelojDelLocal;
+}> {
   const zonas = await contexto.sql<{ zona_horaria: string }[]>`
     select zona_horaria from estook.local where id = ${localId}
   `;
   const zona = zonas[0]?.zona_horaria ?? 'Europe/Madrid';
   const hoy = fechaEnElLocal(contexto.ahora, zona);
   const desde = masDias(hoy, -VENTANA_DE_CONSUMO);
+  const reloj: RelojDelLocal = { hoy, hora: horaEnElLocal(contexto.ahora, zona) };
 
   const filas = await contexto.sql<FilaDeProducto[]>`
     select p.id, p.nombre, c.nombre as categoria, p.categoria_id, p.proveedor_id,
@@ -255,7 +281,10 @@ async function leerProductos(
              )
                from estook.movimiento_de_stock m
               where m.producto_id = p.id
-           ) as dias_con_datos
+           ) as dias_con_datos,
+           pv.dias_de_reparto::int[] as dias_de_reparto,
+           pv.plazo_de_entrega::int as plazo_de_entrega,
+           to_char(pv.hora_limite, 'HH24:MI') as hora_limite
       from estook.producto p
       left join estook.categoria_de_producto c on c.id = p.categoria_id
       left join estook.proveedor pv on pv.id = p.proveedor_id
@@ -263,6 +292,8 @@ async function leerProductos(
       left join estook.precio_vigente(p.id) pr on true
      where p.local_id = ${localId}
        and (${filtros.productoId}::uuid is null or p.id = ${filtros.productoId}::uuid)
+       and (${filtros.proveedorId ?? null}::uuid is null
+            or p.proveedor_id = ${filtros.proveedorId ?? null}::uuid)
        and (${filtros.incluirDesactivados} or p.activo)
        and (not ${filtros.soloDesactivados} or not p.activo)
        and (${filtros.incluirEjemplos} or not p.es_ejemplo)
@@ -278,7 +309,27 @@ async function leerProductos(
      limit ${filtros.limite} offset ${filtros.salto}
   `;
 
-  return { filas, hoy, desde };
+  return { filas, hoy, desde, reloj };
+}
+
+/**
+ * Cuándo llegaría lo que se pida hoy de este producto, si su proveedor principal
+ * tiene días de reparto. Nulo si no: la sugerencia lo dice y calcula cinco días.
+ */
+function cuandoLlegaria(fila: FilaDeProducto, reloj: RelojDelLocal) {
+  if (fila.dias_de_reparto === null || fila.dias_de_reparto.length === 0) return null;
+  const reparto = proximoReparto(
+    {
+      dias: fila.dias_de_reparto,
+      plazo: fila.plazo_de_entrega ?? 1,
+      horaLimite: fila.hora_limite,
+    },
+    reloj.hoy,
+    reloj.hora,
+  );
+  return reparto === null
+    ? null
+    : { hoy: reloj.hoy, llega: reparto.llega, siguiente: reparto.siguiente };
 }
 
 /**
@@ -308,7 +359,13 @@ function loQueValeLoQueHay(
   };
 }
 
-function componer(fila: FilaDeProducto, hoy: FechaOperativa, desde: FechaOperativa, ahora: Date) {
+function componer(
+  fila: FilaDeProducto,
+  hoy: FechaOperativa,
+  desde: FechaOperativa,
+  ahora: Date,
+  reloj: RelojDelLocal,
+) {
   const cantidad = fila.cantidad === null ? 0 : Number(fila.cantidad);
   const minimo = fila.minimo === null ? null : Number(fila.minimo);
   const costeMedio = fila.coste_medio === null ? null : Number(fila.coste_medio);
@@ -368,10 +425,75 @@ function componer(fila: FilaDeProducto, hoy: FechaOperativa, desde: FechaOperati
     consumo,
     diasDeCobertura: cobertura,
     seAgotaEn: seAgota === null ? null : seAgota.toISOString(),
-    sugerencia: pedidoRecomendado(cantidad, consumo.porDia),
+    // La misma cuenta que el pedido de su proveedor y que «hoy toca pedir»: hasta
+    // el reparto de después, con margen, en cajas enteras (M7, `cuantoPedir`).
+    sugerencia: cuantoPedir(
+      {
+        existencias: cantidad,
+        consumoPorDia: consumo.porDia,
+        minimo,
+        factor: Number(fila.factor),
+        unidadDeUso,
+      },
+      cuandoLlegaria(fila, reloj),
+    ),
   };
 
   return producto;
+}
+
+/**
+ * Los productos cuyo proveedor principal es este, con su sugerencia hecha (M7).
+ *
+ * Es **la misma lectura y la misma cuenta** que la lista de productos: por eso la
+ * sugerencia del pedido de Makro y la de la ficha del aceite dicen lo mismo. Trae
+ * los importes enteros; quien la use para contestar a alguien que no ve precios
+ * tiene que quitárselos.
+ */
+export async function productosDelProveedor(
+  contexto: Contexto,
+  localId: string,
+  proveedorId: string,
+): Promise<ProductoEnLista[]> {
+  const { filas, hoy, desde, reloj } = await leerProductos(contexto, localId, {
+    texto: '',
+    categoriaId: null,
+    productoId: null,
+    proveedorId,
+    soloConProblema: false,
+    soloSinPrecio: false,
+    soloDesactivados: false,
+    incluirEjemplos: true,
+    incluirDesactivados: false,
+    limite: 200,
+    salto: 0,
+  });
+  return filas.map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
+}
+
+/** Todos los activos del local, con su sugerencia y su consumo. Para comparar precios. */
+export async function productosActivos(
+  contexto: Contexto,
+  localId: string,
+): Promise<ProductoEnLista[]> {
+  const { filas, hoy, desde, reloj } = await leerProductos(contexto, localId, {
+    texto: '',
+    categoriaId: null,
+    productoId: null,
+    soloConProblema: false,
+    soloSinPrecio: false,
+    soloDesactivados: false,
+    incluirEjemplos: false,
+    incluirDesactivados: false,
+    limite: 200,
+    salto: 0,
+  });
+  return filas.map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
+}
+
+/** Quita el dinero de un producto, para quien no ve precios. */
+export function sinElDinero(producto: ProductoEnLista): ProductoEnLista {
+  return sinPrecios(producto);
 }
 
 // ── La lista de productos ────────────────────────────────────────────────────
@@ -427,7 +549,7 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
     const limite = entrada.limite ?? 50;
     const salto = entrada.salto ?? 0;
 
-    const { filas, hoy, desde } = await leerProductos(contexto, localId, {
+    const { filas, hoy, desde, reloj } = await leerProductos(contexto, localId, {
       texto: entrada.texto ?? '',
       categoriaId: entrada.categoria_id ?? null,
       productoId: null,
@@ -443,7 +565,7 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
     const hayMas = filas.length > limite;
     let productos = filas
       .slice(0, limite)
-      .map((fila) => componer(fila, hoy, desde, contexto.ahora));
+      .map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
 
     if (entrada.con_problema === true) {
       productos = productos.filter((p) => urgenciaDe(p.estado) <= urgenciaDe('bajo_minimo'));
@@ -585,7 +707,7 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
     const localId = elLocal(contexto);
     const conPrecios = await puedeVerPrecios(contexto, localId);
 
-    const { filas, hoy, desde } = await leerProductos(contexto, localId, {
+    const { filas, hoy, desde, reloj } = await leerProductos(contexto, localId, {
       texto: '',
       categoriaId: null,
       productoId: entrada.producto_id,
@@ -605,7 +727,7 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
       });
     }
 
-    const compuesto = componer(fila, hoy, desde, contexto.ahora);
+    const compuesto = componer(fila, hoy, desde, contexto.ahora, reloj);
     const producto = conPrecios ? compuesto : sinPrecios(compuesto);
 
     // El histórico entero, incluido el de cada proveedor. Es la mitad de la capa
@@ -782,7 +904,7 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
     // para nada: ni avisos, ni análisis, ni salud de los datos, ni informes»
     // (Manifiesto 8). Salen en la lista, marcados en gris; en lo que hay que
     // atender, no.
-    const { filas, hoy, desde } = await leerProductos(contexto, localId, {
+    const { filas, hoy, desde, reloj } = await leerProductos(contexto, localId, {
       texto: '',
       categoriaId: null,
       productoId: null,
@@ -795,7 +917,7 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
       salto: 0,
     });
 
-    const todos = filas.map((fila) => componer(fila, hoy, desde, contexto.ahora));
+    const todos = filas.map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
 
     const atencion = todos
       .filter((p) => urgenciaDe(p.estado) <= urgenciaDe('bajo_minimo'))
@@ -910,8 +1032,16 @@ export interface ProveedorEnLista {
   readonly notas: string | null;
   readonly activo: boolean;
   readonly cuantosProductos: number;
-  /** Cuánto se le compra, sumando el precio vigente de lo suyo. Con permiso. */
-  readonly gastoMedioCentimos?: number | null;
+  // ── M7 · lo que la lista necesita para decidir a quién llamar hoy ─────────
+  readonly contacto: string | null;
+  readonly telefono: string | null;
+  readonly diasDeReparto: readonly number[];
+  /** «Llega el martes», si se le pide ahora. Nulo sin días de reparto. */
+  readonly llegaCuando: string | null;
+  /** Para llegar a su próximo reparto hay que pedirle hoy. */
+  readonly tocaPedirHoy: boolean;
+  readonly pedirAntesDe: string | null;
+  readonly pedidosAbiertos: number;
 }
 
 export const misProveedores = consulta<
@@ -926,12 +1056,37 @@ export const misProveedores = consulta<
     const localId = elLocal(contexto);
     const conPrecios = await puedeVerPrecios(contexto, localId);
 
+    const zonas = await contexto.sql<{ zona_horaria: string }[]>`
+      select zona_horaria from estook.local where id = ${localId}
+    `;
+    const zona = zonas[0]?.zona_horaria ?? 'Europe/Madrid';
+    const reloj: RelojDelLocal = {
+      hoy: fechaEnElLocal(contexto.ahora, zona),
+      hora: horaEnElLocal(contexto.ahora, zona),
+    };
+
     const filas = await contexto.sql<
-      { id: string; nombre: string; notas: string | null; activo: boolean; cuantos: number }[]
+      {
+        id: string;
+        nombre: string;
+        notas: string | null;
+        activo: boolean;
+        cuantos: number;
+        contacto: string | null;
+        telefono: string | null;
+        dias: number[];
+        plazo: number;
+        hora_limite: string | null;
+        abiertos: number;
+      }[]
     >`
       select pv.id, pv.nombre, pv.notas, pv.activo,
              (select count(*)::int from estook.producto p
-               where p.proveedor_id = pv.id and p.activo) as cuantos
+               where p.proveedor_id = pv.id and p.activo) as cuantos,
+             pv.contacto, pv.telefono, pv.dias_de_reparto::int[] as dias,
+             pv.plazo_de_entrega::int as plazo, to_char(pv.hora_limite, 'HH24:MI') as hora_limite,
+             (select count(*)::int from estook.pedido_de_compra pd
+               where pd.proveedor_id = pv.id and pd.estado in ('borrador', 'enviado')) as abiertos
         from estook.proveedor pv
        where pv.local_id = ${localId}
          and (${entrada.incluir_desactivados === true} or pv.activo)
@@ -940,13 +1095,30 @@ export const misProveedores = consulta<
     `;
 
     return {
-      proveedores: filas.map((f) => ({
-        id: f.id,
-        nombre: f.nombre,
-        notas: f.notas,
-        activo: f.activo,
-        cuantosProductos: f.cuantos,
-      })),
+      proveedores: filas.map((f) => {
+        const reparto =
+          f.activo && f.dias.length > 0
+            ? proximoReparto(
+                { dias: f.dias, plazo: f.plazo, horaLimite: f.hora_limite },
+                reloj.hoy,
+                reloj.hora,
+              )
+            : null;
+        return {
+          id: f.id,
+          nombre: f.nombre,
+          notas: f.notas,
+          activo: f.activo,
+          cuantosProductos: f.cuantos,
+          contacto: f.contacto,
+          telefono: f.telefono,
+          diasDeReparto: f.dias,
+          llegaCuando: reparto === null ? null : cuandoCae(reparto.llega, reloj.hoy),
+          tocaPedirHoy: reparto !== null && reparto.pedirEl === reloj.hoy,
+          pedirAntesDe: reparto?.pedirAntesDe ?? null,
+          pedidosAbiertos: f.abiertos,
+        };
+      }),
       puedeVerPrecios: conPrecios,
     };
   },

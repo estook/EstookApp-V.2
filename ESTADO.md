@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 11 de septiembre de 2026 · **M7: la primera entrega fusionada (#44); el repaso de lo que vio Richi, primera de cinco entregas, construida y sin fusionar**
+Última actualización: 12 de septiembre de 2026 · **M7: fusionadas la #44 y la #45 (el repaso, entrega 1). Ahora, `estook.com`: la app salió en blanco al estrenar el dominio y el arreglo está sin fusionar**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -17,16 +17,17 @@
 |                |                                                                                                                                       |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6½** ✓ · **M7, primera entrega** ✓ (#44): compras y Calendario, fusionada y mirada por Richi en el móvil y en el TPV      |
-| **Ahora**      | **El repaso de M7**, en cinco entregas. **La primera** —Inventario, Panel y fallos— hecha, probada y sin fusionar                     |
+| **Ahora**      | **El dominio `estook.com`** (entrega 4, adelantada): estrenarlo dejó la app en blanco. Arreglado en el código, sin fusionar           |
 | **Pruebas**    | 911 unitarias y de base de datos · 343 de pantalla en escritorio y móvil, en verde · catálogo **103 de 109** (94 %)                   |
-| **Rama**       | `m7-lo-que-vio-richi`, con su pull request abierto                                                                                    |
+| **Rama**       | `estook-com`, con su pull request abierto. La `m7-lo-que-vio-richi` se fusionó en la #45                                              |
 | **Base**       | En el código, **33** migraciones y 51 tablas: la `0033` solo añade columnas. En Supabase, las que se aplicaron; `bd:comprobar` lo lee |
-| **API**        | La desplegada es la de la primera entrega: **no conoce las cuatro operaciones nuevas**. El código tiene 37 consultas y 72 comandos    |
+| **API**        | Desplegada el 11 de septiembre con las cuatro operaciones nuevas. **Hay que volver a desplegarla** para que acepte `estook.com`       |
 | **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                                |
 | **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                                 |
 
-> **Los once puntos de Richi van en cinco entregas pequeñas**, cada una con su pull
-> request. Para cerrar la primera: **[`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md)**.
+> **Lo urgente:** la aplicación está caída en `estook.com` hasta que se fusione el pull
+> request de `estook-com` y se vuelva a desplegar la API. Los pasos, en
+> **[`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md)**.
 
 ---
 
@@ -61,9 +62,11 @@ qué aprueba una persona).
 
 Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden:
 
-1. **Fusionar** el pull request de `m7-lo-que-vio-richi`.
-2. **`bd:migrar`** y **`bd:comprobar`**: 33 de 33 y 51 tablas.
-3. **Desplegar la API** y **`bd:comprobar-api`**: que conozca las cuatro nuevas.
+1. **Fusionar** el pull request de `estook-com`. Al fusionar se publica solo, y
+   `estook.com` vuelve a pintar.
+2. **Desplegar la API** (Actions → Desplegar la API → `desplegar`), para que acepte
+   las llamadas desde `estook.com`.
+3. **`bd:migrar`** y **`bd:comprobar`**, si no se hizo con la #45: 33 de 33 y 51 tablas.
 4. **Quitarles el IVA a sus precios, una vez**: Ajustes → «Tus precios de compra».
    Antes de meter precios nuevos.
 5. **Mirarlo en el TPV y en el móvil**, con la lista del paso 5.
@@ -82,10 +85,10 @@ Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden
 
 | Entrega | Qué                                                                                                           | Cómo está               |
 | ------- | ------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| **1**   | Quitar y congelar lotes, dos decimales, el alta por cómo se compra, IVA, gráfica, widgets, salario, jerarquía | **Hecha, sin fusionar** |
+| **1**   | Quitar y congelar lotes, dos decimales, el alta por cómo se compra, IVA, gráfica, widgets, salario, jerarquía | **Fusionada** (#45)     |
 | **2**   | Avisos a jefes y gerentes de lo que hace su equipo, una vez; invitar a rellenar un pedido                     | La siguiente            |
 | **3**   | **Horarios**, una app entera en Equipo: cuadrante, historial, horas, avisos, PDF con logo                     | Después                 |
-| **4**   | El dominio **`estook.com`**                                                                                   | Después                 |
+| **4**   | El dominio **`estook.com`**, adelantado: el sitio ya vive ahí                                                 | **Hecha, sin fusionar** |
 | **5**   | Los topes de Google por local, y conectar Places, Business Profile y Gemini                                   | Espera los accesos      |
 
 ### Lo que deja preparado, y dónde se termina
@@ -121,20 +124,21 @@ Por lo mismo, **en Canarias, Ceuta y Melilla no se propone IVA de compra** (0033
 
 ### Sin prisa
 
-| Qué                                                                   | Cuándo                                                               |
-| --------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Quitar «Automatically expose new tables» en Supabase → Settings → API | antes de clientes                                                    |
-| Regenerar las claves de Google, que pasaron por un chat               | M27                                                                  |
-| Volver a `BrowserRouter` con `estook.com`                             | entrega 4 ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md)) |
-| El vectorial del logotipo y de Fogón                                  | cuando aparezcan; se sustituyen en un sitio                          |
+| Qué                                                                   | Cuándo                                                                  |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Quitar «Automatically expose new tables» en Supabase → Settings → API | antes de clientes                                                       |
+| Regenerar las claves de Google, que pasaron por un chat               | M27                                                                     |
+| Volver a `BrowserRouter`: ya hay dominio y Pages copia el `404.html`  | cuando toque ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md)) |
+| El vectorial del logotipo y de Fogón                                  | cuando aparezcan; se sustituyen en un sitio                             |
 
 ---
 
 ## 3 · Lo que está vivo
 
-**Web:** https://estook.github.io/EstookApp-V.2/ · `/app/` · `/carta/` · `/admin/`
-(el catálogo del sistema de diseño está en `/admin/`). **`estook.com` llega con la
-entrega 4.**
+**Web:** https://estook.com · `/app/` · `/carta/` · `/admin/` (el catálogo del
+sistema de diseño está en `/admin/`). El DNS lo lleva Hostinger: cuatro registros
+A a GitHub Pages y `www` por CNAME. La dirección vieja redirige sola
+([0036](docs/decisiones/0036-la-direccion-es-estook-com.md)).
 
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan
 gratuito, por el agrupador de sesión (la conexión directa de los proyectos nuevos
@@ -286,6 +290,12 @@ dentro». Ahora el cambio del mismo día corrige la fila de hoy, con su prueba.
 44. **Un permiso dice qué; la amplitud del rol, a quién** (0034).
 45. **Un precio se lee con dos decimales.** Si no llega, se cambia de unidad; las
     cuentas siguen en milésimas.
+46. **`current_date` es UTC, y no es «hoy».** La fecha la pone el servidor con la
+    zona y la hora de corte del local (`jornadaDe`, regla 10). Lo cazó una prueba
+    corriendo a las 00:30: lo congelado quedaba fechado el día anterior.
+47. **La dirección del producto va en el código** ([0036](docs/decisiones/0036-la-direccion-es-estook-com.md)).
+    Estrenar `estook.com` dejó la app en blanco porque la raíz y los orígenes vivían
+    en variables y secretos que había que acordarse de cambiar.
 
 ---
 
@@ -330,6 +340,7 @@ En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 | **0033** | **Los precios de compra se guardan sin IVA, y se escriben como venga**  |
 | **0034** | **Nadie gestiona el acceso de su igual: lo hace quien está por encima** |
 | **0035** | **El alta pregunta cómo se compra, y la cuenta la hace el dominio**     |
+| **0036** | **La dirección es `estook.com`, y la sabe el código**                   |
 
 Otras, sin fichero propio:
 

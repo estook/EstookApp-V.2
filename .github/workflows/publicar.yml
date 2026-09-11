@@ -28,12 +28,18 @@ jobs:
     env:
       ENTORNO: produccion
       VITE_ENTORNO: ${{ vars.VITE_ENTORNO || 'produccion' }}
-      # Si no hay variable declarada se deduce del nombre del repositorio:
-      #   estook/EstookApp-V.2  ->  /EstookApp-V.2/
-      # que es la direccion de hoy. El dia que haya dominio propio (estook.com),
-      # se declara la variable VITE_BASE con el valor "/" y esto deja de aplicar.
-      VITE_BASE: ${{ vars.VITE_BASE || format('/{0}/', github.event.repository.name) }}
-      VITE_APP_URL: ${{ vars.VITE_APP_URL || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
+      # ── La direccion es estook.com, y va aqui ────────────────────────────
+      #
+      # Antes se deducia del nombre del repositorio —/EstookApp-V.2/— salvo que
+      # alguien declarara una variable. Al poner el dominio propio en Pages, la
+      # pagina quedo **en blanco**: el HTML pedia sus ficheros en /EstookApp-V.2/
+      # y ahi ya no habia nada. Un fallo que deja la aplicacion caida no puede
+      # depender de acordarse de declarar una variable en otra pantalla (0036).
+      #
+      # Con dominio propio la raiz es "/" y las cuatro aplicaciones cuelgan de
+      # ella: estook.com, /app/, /carta/ y /admin/.
+      VITE_BASE: '/'
+      VITE_APP_URL: 'https://estook.com/'
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       # M4. Donde vive la API. Mientras no este declarada, la aplicacion publicada
@@ -86,6 +92,10 @@ jobs:
           for aplicacion in app carta admin; do
             cp "_publicacion/$aplicacion/index.html" "_publicacion/$aplicacion/404.html"
           done
+
+          # El dominio, tambien en lo que se publica: si un dia se pierde el
+          # ajuste de Pages, el sitio sigue sabiendo donde vive (0036).
+          echo estook.com > _publicacion/CNAME
 
           # Sin esto, Pages se come las carpetas que empiezan por guion bajo.
           touch _publicacion/.nojekyll

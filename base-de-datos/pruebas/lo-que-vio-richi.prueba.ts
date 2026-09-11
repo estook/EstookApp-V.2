@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { fechaEnElLocal, masDias } from '@estook/dominio';
+import { fechaEnElLocal, horaDeCorte, jornadaDe, masDias } from '@estook/dominio';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
 import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
 
@@ -27,6 +27,17 @@ let rosa: string;
 let marcos: string;
 
 const hoy = fechaEnElLocal(new Date(Date.now()), 'Europe/Madrid');
+
+/**
+ * La jornada de hoy en Bar Centro, que cierra a las 03:00.
+ *
+ * No es lo mismo que la fecha del calendario, y por eso está aquí: lo que se
+ * congela a las dos de la madrugada pertenece a la jornada del día anterior,
+ * igual que una venta (regla 10). Comparar con la fecha de Madrid hacía que esta
+ * prueba fallara sola al pasar la medianoche, y con razón: lo que estaba mal era
+ * la comparación, no el servidor.
+ */
+const laJornada = jornadaDe(new Date(Date.now()), 'Europe/Madrid', horaDeCorte('03:00'));
 
 beforeAll(async () => {
   base = await levantarBase();
@@ -326,7 +337,7 @@ describe('congelar', () => {
     const despues = losDatos<{ lotes: { congeladoEl: string | null; caducaEl: string }[] }>(
       await api.consultar(rosa, 'un_producto', { producto_id: carne }),
     );
-    expect(despues.lotes[0]?.congeladoEl).toBe(hoy);
+    expect(despues.lotes[0]?.congeladoEl).toBe(laJornada);
     expect(despues.lotes[0]?.caducaEl).toBe(masDias(hoy, 20));
   });
 

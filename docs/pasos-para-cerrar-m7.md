@@ -1,17 +1,45 @@
-# Pasos para cerrar M7 · el repaso de lo que viste
+# Pasos para cerrar M7 · el repaso, y el dominio estook.com
 
 > ## Cómo está
 >
-> | Qué                      | Cómo está                                                               |
-> | ------------------------ | ----------------------------------------------------------------------- |
-> | La primera entrega (#44) | **Fusionada**, y mirada por ti en el móvil y en el TPV                  |
-> | Este repaso              | **Pull request abierto**: `m7-lo-que-vio-richi`                         |
-> | Migración                | **Una nueva sin aplicar**: `0033_lotes_congelados_y_precios_con_iva`    |
-> | La API                   | **Sin desplegar**: la publicada no conoce las cuatro operaciones nuevas |
-> | Lo que queda de tu lista | **Cuatro entregas más**, al final de este documento                     |
+> | Qué                     | Cómo está                                                              |
+> | ----------------------- | ---------------------------------------------------------------------- |
+> | La entrega 1 del repaso | **Fusionada** (#45)                                                    |
+> | `estook.com`            | **Conectado y en blanco**: la app se construía para la dirección vieja |
+> | El arreglo              | **Pull request abierto**: `estook-com`. Al fusionarlo se publica solo  |
+> | La API                  | Desplegada, pero **no acepta `estook.com`** hasta volver a desplegarla |
+>
+> **Primero esto, que la aplicación está caída.** Los dos pasos de abajo la
+> levantan; lo demás puede esperar.
 
-Tus once puntos van en **cinco entregas pequeñas**, cada una con su pull request, para
-que ninguna se quede a medias. Esta es la primera: Inventario, el Panel y los fallos.
+## Lo urgente · dos pasos
+
+### 1 · Fusionar el pull request del dominio
+
+**Dónde:** GitHub → **Pull requests** → «estook.com: la app en su dominio» → espera
+las tres comprobaciones en verde → **Merge pull request** → **Confirm merge**.
+
+Al fusionar, la publicación se lanza sola y tarda un minuto.
+
+**Qué tiene que salir:** `https://estook.com` pinta la web, y `https://estook.com/app/`
+enseña la pantalla de entrar. Si sigues viéndolo en blanco, cierra la pestaña y
+ábrela otra vez: el navegador guarda la página vieja.
+
+### 2 · Volver a desplegar la API
+
+**Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** → escribe
+`desplegar` → **Run workflow**.
+
+Hace falta porque la API solo deja entrar a las direcciones que conoce, y ahora
+lleva `estook.com` escrito dentro. **No tienes que tocar nada en Supabase.**
+
+**Qué tiene que salir:** entras en `estook.com/app/` con tu correo y ves tu Panel.
+Si dice «no hay conexión», dímelo.
+
+> Si compraste **estook.es**: no está configurado, no existe en los DNS. Lo más
+> simple es una redirección permanente a `https://estook.com` desde Hostinger.
+
+---
 
 ## Qué trae, una línea cada cosa
 
@@ -37,9 +65,11 @@ va en su recuadro, de uno en uno. Se abre PowerShell en la carpeta del proyecto.
 
 ---
 
-## Paso 1 · Fusionar el pull request
+## Paso 1 · Fusionar el pull request del repaso · **ya hecho** (#45)
 
-**Dónde:** GitHub → **Pull requests** → «M7 · lo que vio Richi…» → abajo del todo.
+Lo fusionaste el 11 de septiembre. Se queda escrito para saber por dónde iba.
+
+**Dónde fue:** GitHub → **Pull requests** → «M7 · lo que vio Richi…» → abajo del todo.
 
 Espera a las tres comprobaciones en verde —`Calidad`, `Construccion y
 presupuestos` y `Migraciones reversibles`— y entonces **Merge pull request** →
@@ -75,7 +105,9 @@ seguridad por filas.
 
 ---
 
-## Paso 3 · Desplegar la API
+## Paso 3 · Desplegar la API · **hazlo otra vez** (es el paso 2 de arriba)
+
+Se desplegó el 11 de septiembre, pero hay que repetirlo para que acepte el dominio.
 
 **Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** → escribe
 `desplegar` → **Run workflow**. En verde en dos o tres minutos.

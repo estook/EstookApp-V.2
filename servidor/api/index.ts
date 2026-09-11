@@ -39,9 +39,8 @@ interface Variables {
  * Quien puede llamar desde un navegador (M4).
  *
  * Hasta M4 esto no hacia falta: la API no la llamaba nadie desde una pagina. Ahora
- * la aplicacion vive en un dominio (GitHub Pages hoy, `estook.com` manana) y la
- * API en otro (Supabase Edge Functions), asi que sin esto el navegador **no deja
- * ni salir la peticion**.
+ * la aplicacion vive en un dominio (`estook.com`) y la API en otro (Supabase
+ * Edge Functions), asi que sin esto el navegador **no deja ni salir la peticion**.
  *
  * Y a proposito **no es `*`**. Con `*` cualquier pagina del mundo podria llamar a
  * la API desde el navegador de quien la visite. Como el token viaja en una
@@ -49,9 +48,19 @@ interface Variables {
  * confiando en eso es apostar a que nadie cambie nunca a cookies. Se declara la
  * lista, y punto.
  *
- * Los origenes se leen del entorno, separados por comas, porque cambian con el
- * dominio y no con el codigo.
+ * ── Los nuestros van en el codigo, y no en un secreto ────────────────────────
+ *
+ * `estook.com` es **nuestra direccion**, no un ajuste de cada instalacion: la
+ * decide el producto (0036). Cuando vivia solo en `ORIGENES_PERMITIDOS`, poner el
+ * dominio propio dejaba la aplicacion cargando y la API diciendo que no a un
+ * origen que es el nuestro, y para arreglarlo habia que entrar en Supabase. Un
+ * dato que decide el producto no se guarda donde no se ve.
+ *
+ * `ORIGENES_PERMITIDOS` sigue existiendo **para lo que si cambia**: una
+ * previsualizacion, un dominio de un cliente, una prueba desde otro sitio.
  */
+export const NUESTROS_ORIGENES = ['https://estook.com', 'https://www.estook.com'] as const;
+
 function origenesPermitidos(): string[] {
   const declarados = variable('ORIGENES_PERMITIDOS') ?? '';
   const delEntorno = declarados
@@ -59,14 +68,15 @@ function origenesPermitidos(): string[] {
     .map((o) => o.trim())
     .filter((o) => o !== '');
 
-  // En desarrollo, las cuatro aplicaciones en su puerto. No se anaden en
-  // produccion: ahi solo vale lo que diga `ORIGENES_PERMITIDOS`.
+  // En desarrollo, las cuatro aplicaciones en su puerto. En produccion no: ahi
+  // valen los nuestros y lo que anada `ORIGENES_PERMITIDOS`.
   const enDesarrollo = variable('ENTORNO') !== 'produccion';
   const locales = enDesarrollo
     ? [5173, 5174, 5175, 5176].map((puerto) => `http://localhost:${puerto}`)
     : [];
 
-  return [...delEntorno, ...locales];
+  // Sin repetidos: quien lo tuviera declarado en el entorno no rompe nada.
+  return [...new Set([...NUESTROS_ORIGENES, ...delEntorno, ...locales])];
 }
 
 function cabecerasDeCors(origen: string): Record<string, string> {

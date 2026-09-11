@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { publicar } from '../../eventos/bandeja.ts';
 import { ponerPinNuevo } from '../pines.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
+import { exigirQueMandeMas, exigirQueNoDeMasDeLoQueTiene } from '../jerarquia.ts';
 
 /**
  * Reactivar a quien se fue (M4).
@@ -66,6 +67,17 @@ export const reactivarPersona = comando<EntradaReactivar, SalidaReactivar>({
       select id, activa from estook.persona where id = ${entrada.persona_id}
     `;
     if (!personas[0]) throw new FalloDeAplicacion('no_existe');
+
+    // Solo se devuelve el acceso a quien queda por debajo, y con un rol que no
+    // esté por encima del tuyo (M7, repaso · `jerarquia.ts`).
+    await exigirQueNoDeMasDeLoQueTiene(sql, entrada.organizacion_id, sesion.personaId, entrada.rol);
+    await exigirQueMandeMas(
+      sql,
+      entrada.organizacion_id,
+      sesion.personaId,
+      entrada.persona_id,
+      'Devolver el acceso',
+    );
 
     // Lo que recupera. Se cuenta antes de tocar nada, para poder ensenarlo.
     const pasadas = await sql<{ cuantas: number }[]>`

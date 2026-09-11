@@ -7,20 +7,11 @@ import {
   type MotivoDeMerma,
 } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
-import {
-  Aviso,
-  Boton,
-  Botones,
-  Campo,
-  CampoMoneda,
-  Hoja,
-  Interruptor,
-  Selector,
-  clases,
-} from '@estook/ui';
+import { Aviso, Boton, Botones, Campo, Hoja, Interruptor, Selector, clases } from '@estook/ui';
 import type { Centimos } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { CampoPrecioDeCompra } from './CampoPrecioDeCompra.tsx';
 import { comoDinero, conUnidadDeUso, type ProductoEnLista } from './contrato.ts';
 
 /**
@@ -85,6 +76,7 @@ export function MoverGenero({
   que,
   producto,
   puedeVerPrecios,
+  preciosConIva,
   alCerrar,
   alHecho,
   alFallar,
@@ -92,6 +84,8 @@ export function MoverGenero({
   readonly que: QueSeMueve | null;
   readonly producto: ProductoEnLista;
   readonly puedeVerPrecios: boolean;
+  /** Cómo apunta este local los precios: con IVA o sin él (Ajustes). */
+  readonly preciosConIva: boolean;
   readonly alCerrar: () => void;
   readonly alHecho: (frase: string) => void;
   readonly alFallar: (error: ErrorDeLaApi) => void;
@@ -106,6 +100,7 @@ export function MoverGenero({
       que={que}
       producto={producto}
       puedeVerPrecios={puedeVerPrecios}
+      preciosConIva={preciosConIva}
       alCerrar={alCerrar}
       alHecho={alHecho}
       alFallar={alFallar}
@@ -117,6 +112,7 @@ function ElFormulario({
   que,
   producto,
   puedeVerPrecios,
+  preciosConIva,
   alCerrar,
   alHecho,
   alFallar,
@@ -124,6 +120,7 @@ function ElFormulario({
   readonly que: QueSeMueve;
   readonly producto: ProductoEnLista;
   readonly puedeVerPrecios: boolean;
+  readonly preciosConIva: boolean;
   readonly alCerrar: () => void;
   readonly alHecho: (frase: string) => void;
   readonly alFallar: (error: ErrorDeLaApi) => void;
@@ -398,15 +395,17 @@ function ElFormulario({
             {/* ── Lo que ha costado · solo en la entrada ──────────────────── */}
             {que === 'entrada' && puedeVerPrecios && (
               <>
-                <CampoMoneda
+                <CampoPrecioDeCompra
                   etiqueta={producto.formato === null ? 'Precio' : 'Precio del envase'}
                   ayuda={
                     deLaLista === null
-                      ? 'Sin IVA, como en el albarán. Si lo dejas en blanco, entra sin valorar.'
-                      : `Es el de tu lista, sin IVA. Si esta vez te ha costado otro, cámbialo: queda apuntado.`
+                      ? 'Si lo dejas en blanco, entra sin valorar.'
+                      : 'Es el de tu lista. Si esta vez te ha costado otro, cámbialo: queda apuntado.'
                   }
                   valor={precio}
                   alCambiar={setPrecio}
+                  iva={producto.ivaDeCompra}
+                  conIvaDeEntrada={preciosConIva}
                 />
                 {precioDistinto && puedeTocarPrecios && (
                   <Interruptor

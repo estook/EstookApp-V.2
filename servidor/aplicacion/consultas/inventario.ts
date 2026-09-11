@@ -9,6 +9,7 @@ import {
   diasDeCobertura,
   fechaEnElLocal,
   horaEnElLocal,
+  ivaDeCompraPorDefecto,
   masDias,
   milesimas as enMilesimas,
   cuantoPedir,
@@ -97,6 +98,20 @@ export interface ProductoEnLista {
   readonly seAgotaEn: string | null;
   /** Cuánto pedir en cajas enteras y por qué, contando con el reparto (M7). */
   readonly sugerencia: SugerenciaDeCompra | null;
+
+  // ── M7, repaso · lo que vio Richi ──────────────────────────────────────────
+  /** Si tiene algo en el congelador: un lote congelado que no se ha quitado. */
+  readonly congelado: boolean;
+  /**
+   * El IVA que se paga al comprarlo: el que se le eligió, o el de su categoría.
+   * Nulo: sin tipo, como en Canarias. No es un importe: lo ve todo el mundo.
+   */
+  readonly ivaDeCompra: number | null;
+  /** Si ese tipo lo eligió alguien, o sale de la categoría. */
+  readonly ivaDeCompraElegido: boolean;
+  /** Lo que trae cada unidad, cuando se cuenta por unidades: 250 (g). */
+  readonly contenidoPorUnidad: number | null;
+  readonly unidadDelContenido: string | null;
 }
 
 /**
@@ -183,6 +198,12 @@ interface FilaDeProducto {
   dias_de_reparto: number[] | null;
   plazo_de_entrega: number | null;
   hora_limite: string | null;
+  // M7, repaso · congelado, IVA de compra y lo que trae cada unidad.
+  congelado: boolean;
+  iva_de_compra: string | null;
+  territorio: string;
+  contenido_por_unidad: string | null;
+  unidad_del_contenido: string | null;
 }
 
 /** El reloj de pared del local, que es con lo que cuenta un proveedor. */
@@ -234,6 +255,8 @@ async function leerProductos(
      * quiere cuando se va a buscar uno para traerlo de vuelta.
      */
     soloDesactivados: boolean;
+    /** Solo los que tienen algo congelado, que es la vista «Congelados» (M7, repaso). */
+    soloCongelados?: boolean;
     limite: number;
     salto: number;
   },
@@ -284,8 +307,18 @@ async function leerProductos(
            ) as dias_con_datos,
            pv.dias_de_reparto::int[] as dias_de_reparto,
            pv.plazo_de_entrega::int as plazo_de_entrega,
-           to_char(pv.hora_limite, 'HH24:MI') as hora_limite
+           to_char(pv.hora_limite, 'HH24:MI') as hora_limite,
+           exists (
+             select 1 from estook.lote lo
+              where lo.producto_id = p.id
+                and lo.congelado_el is not null and lo.retirado_en is null
+           ) as congelado,
+           p.iva_de_compra::text as iva_de_compra,
+           lc.territorio::text as territorio,
+           p.contenido_por_unidad::text as contenido_por_unidad,
+           p.unidad_del_contenido::text as unidad_del_contenido
       from estook.producto p
+      join estook.local lc on lc.id = p.local_id
       left join estook.categoria_de_producto c on c.id = p.categoria_id
       left join estook.proveedor pv on pv.id = p.proveedor_id
       left join estook.existencias e on e.producto_id = p.id
@@ -299,6 +332,11 @@ async function leerProductos(
        and (${filtros.incluirEjemplos} or not p.es_ejemplo)
        and (${filtros.categoriaId}::uuid is null or p.categoria_id = ${filtros.categoriaId}::uuid)
        and (not ${filtros.soloSinPrecio} or pr.precio_centimos is null)
+       and (not ${filtros.soloCongelados ?? false} or exists (
+             select 1 from estook.lote lo
+              where lo.producto_id = p.id
+                and lo.congelado_el is not null and lo.retirado_en is null
+           ))
        and (
          ${filtros.texto} = ''
          or estook.sin_acentos(p.nombre) like '%' || estook.sin_acentos(${filtros.texto}) || '%'
@@ -437,9 +475,45 @@ function componer(
       },
       cuandoLlegaria(fila, reloj),
     ),
+
+    congelado: fila.congelado,
+    // El IVA de compra sale del dominio si nadie lo ha elegido: la categoría y el
+    // territorio lo deciden, y en Canarias no se supone nada.
+    ivaDeCompra:
+      fila.iva_de_compra === null
+        ? ivaDeCompraPorDefecto(fila.categoria_fiscal, fila.territorio)
+        : Number(fila.iva_de_compra),
+    ivaDeCompraElegido: fila.iva_de_compra !== null,
+    contenidoPorUnidad:
+      fila.contenido_por_unidad === null ? null : Number(fila.contenido_por_unidad),
+    unidadDelContenido: fila.unidad_del_contenido,
   };
 
   return producto;
+}
+
+/** Cómo escribe este local sus precios de compra, y si ya se les quitó el IVA. */
+async function comoApuntaLosPrecios(
+  contexto: Contexto,
+  localId: string,
+): Promise<{
+  readonly conIva: boolean;
+  readonly ivaQuitadoEn: string | null;
+  readonly territorio: string;
+}> {
+  const filas = await contexto.sql<
+    { con_iva: boolean; quitado: string | null; territorio: string }[]
+  >`
+    select precios_de_compra_con_iva as con_iva,
+           to_char(iva_quitado_de_los_precios_en, 'YYYY-MM-DD') as quitado,
+           territorio::text as territorio
+      from estook.local where id = ${localId}
+  `;
+  return {
+    conIva: filas[0]?.con_iva === true,
+    ivaQuitadoEn: filas[0]?.quitado ?? null,
+    territorio: filas[0]?.territorio ?? 'peninsula_y_baleares',
+  };
 }
 
 /**
@@ -508,6 +582,8 @@ export const entradaMisProductos = z
     sin_precio: z.coerce.boolean().optional(),
     /** Solo los que se quitaron de en medio. Es la vista «Desactivados». */
     solo_desactivados: z.coerce.boolean().optional(),
+    /** Solo los que tienen algo congelado. Es la vista «Congelados» (M7, repaso). */
+    congelados: z.coerce.boolean().optional(),
     incluir_ejemplos: z.coerce.boolean().optional(),
     incluir_desactivados: z.coerce.boolean().optional(),
     limite: z.coerce.number().int().min(1).max(200).optional(),
@@ -532,6 +608,12 @@ export interface SalidaMisProductos {
   readonly ejemplos: number;
   /** Lo que vale la cámara entera, sin contar los ejemplos. Solo con permiso. */
   readonly valorTotalCentimos?: number | null;
+  /** Si en este local los precios de compra se escriben con IVA (M7, repaso). */
+  readonly preciosConIva: boolean;
+  /** El día que se les quitó el IVA a los precios que ya había. Una vez. */
+  readonly ivaQuitadoEn: string | null;
+  /** Dónde está a efectos fiscales: de ahí sale el IVA que se propone al dar de alta. */
+  readonly territorio: string;
 }
 
 export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
@@ -556,11 +638,13 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
       soloConProblema: entrada.con_problema === true,
       soloSinPrecio: entrada.sin_precio === true,
       soloDesactivados: entrada.solo_desactivados === true,
+      soloCongelados: entrada.congelados === true,
       incluirEjemplos: entrada.incluir_ejemplos !== false,
       incluirDesactivados: entrada.incluir_desactivados === true,
       limite: limite + 1,
       salto,
     });
+    const precios = await comoApuntaLosPrecios(contexto, localId);
 
     const hayMas = filas.length > limite;
     let productos = filas
@@ -627,6 +711,9 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
               valor?.[0]?.total === null || valor?.[0] === undefined ? 0 : Number(valor[0].total),
           }
         : {}),
+      preciosConIva: precios.conIva,
+      ivaQuitadoEn: precios.ivaQuitadoEn,
+      territorio: precios.territorio,
     };
   },
 });
@@ -681,6 +768,8 @@ export interface LoteEnFicha {
   readonly caducaEl: string | null;
   readonly recibidoEl: string;
   readonly diasParaCaducar: number | null;
+  /** Cuándo se congeló. Nulo: no está congelado (M7, repaso). */
+  readonly congeladoEl: string | null;
 }
 
 export interface SalidaUnProducto {
@@ -696,6 +785,8 @@ export interface SalidaUnProducto {
    */
   readonly enCuantasFichas: number;
   readonly puedeVerPrecios: boolean;
+  /** Si en este local los precios de compra se escriben con IVA (M7, repaso). */
+  readonly preciosConIva: boolean;
 }
 
 export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
@@ -800,6 +891,8 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
        limit 50
     `;
 
+    // Solo los que siguen ahí: un lote que se gastó o se tiró ya no es de esta
+    // cámara, y enseñarlo es lo que hacía que «se quedara siempre» (M7, repaso).
     const lotes = await contexto.sql<
       {
         id: string;
@@ -807,17 +900,21 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
         caduca_el: string | null;
         recibido_el: string;
         dias: number | null;
+        congelado_el: string | null;
       }[]
     >`
       select id, codigo,
              to_char(caduca_el, 'YYYY-MM-DD') as caduca_el,
              to_char(recibido_el, 'YYYY-MM-DD') as recibido_el,
-             (caduca_el - ${hoy}::date)::int as dias
+             (caduca_el - ${hoy}::date)::int as dias,
+             to_char(congelado_el, 'YYYY-MM-DD') as congelado_el
         from estook.lote
        where producto_id = ${entrada.producto_id}
+         and retirado_en is null
        order by caduca_el nulls last, recibido_el desc
        limit 30
     `;
+    const comoApunta = await comoApuntaLosPrecios(contexto, localId);
 
     const alergenos = await contexto.sql<{ alergenos: string[] }[]>`
       select alergenos from estook.producto where id = ${entrada.producto_id}
@@ -861,10 +958,12 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
         caducaEl: l.caduca_el,
         recibidoEl: l.recibido_el,
         diasParaCaducar: l.dias,
+        congeladoEl: l.congelado_el,
       })),
       alergenos: alergenos[0]?.alergenos ?? [],
       enCuantasFichas: 0,
       puedeVerPrecios: conPrecios,
+      preciosConIva: comoApunta.conIva,
     };
   },
 });
@@ -875,11 +974,15 @@ export interface SalidaInventarioHoy {
   /** Lo que hay que atender, ya ordenado por urgencia. */
   readonly atencion: readonly ProductoEnLista[];
   readonly caducan: readonly {
+    /** El lote, para poder quitarlo desde aquí cuando se gasta o se tira. */
+    readonly loteId: string;
     readonly productoId: string;
     readonly producto: string;
     readonly lote: string | null;
     readonly caducaEl: string;
     readonly dias: number;
+    readonly congelado: boolean;
+    readonly unidadDeUso: string;
   }[];
   readonly sinPrecio: readonly { readonly id: string; readonly nombre: string }[];
   readonly cuantosProductos: number;
@@ -933,22 +1036,29 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
 
     const caducan = await contexto.sql<
       {
+        lote_id: string;
         producto_id: string;
         producto: string;
         lote: string | null;
         caduca_el: string;
         dias: number;
+        congelado: boolean;
+        unidad_de_uso: string;
       }[]
     >`
-      select l.producto_id, p.nombre as producto, l.codigo as lote,
+      select l.id as lote_id, l.producto_id, p.nombre as producto, l.codigo as lote,
              to_char(l.caduca_el, 'YYYY-MM-DD') as caduca_el,
-             (l.caduca_el - ${hoy}::date)::int as dias
+             (l.caduca_el - ${hoy}::date)::int as dias,
+             l.congelado_el is not null as congelado,
+             p.unidad_de_uso::text as unidad_de_uso
         from estook.lote l
         join estook.producto p on p.id = l.producto_id
        where l.local_id = ${localId}
          and not p.es_ejemplo
          and p.activo
          and l.caduca_el is not null
+         -- Lo que ya se gastó o se tiró no avisa más (M7, repaso).
+         and l.retirado_en is null
          -- El ::int no es adorno: sin el, el parametro viaja sin tipo y
          -- Postgres no sabe si sumar a una fecha es sumar dias o sumar un
          -- intervalo. Contesta "operator is not unique: date + unknown" y tumba
@@ -1004,11 +1114,14 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
     return {
       atencion,
       caducan: caducan.map((c) => ({
+        loteId: c.lote_id,
         productoId: c.producto_id,
         producto: c.producto,
         lote: c.lote,
         caducaEl: c.caduca_el,
         dias: c.dias,
+        congelado: c.congelado,
+        unidadDeUso: c.unidad_de_uso,
       })),
       sinPrecio,
       cuantosProductos: cuentas[0]?.cuantos ?? 0,

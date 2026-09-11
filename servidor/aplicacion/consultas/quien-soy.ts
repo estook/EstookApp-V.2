@@ -4,6 +4,7 @@ import { esPermiso, type Nivel, type PermisosResueltos } from '@estook/permisos'
 import type { Sql } from '../../infraestructura/postgres.ts';
 import { decidirDestino } from '../acceso.ts';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { rolesQuePuedeDar } from '../jerarquia.ts';
 
 /**
  * Quien soy, donde estoy y que puedo (M4).
@@ -109,6 +110,13 @@ export interface QuienSoy {
   /** Vacio mientras no se esta dentro de un local: no hay sobre que resolverlos. */
   readonly permisos: PermisosResueltos;
 
+  /**
+   * Los roles que puede dar en esta organización: los que quedan por debajo del
+   * suyo (0034). Sale de la base, que es la única que sabe la amplitud de cada
+   * rol; la pantalla de invitar solo ofrece estos, y no un rol que va a decir que no.
+   */
+  readonly rolesQuePuedoDar: readonly string[];
+
   readonly debeCambiarClave: boolean;
   readonly faltaDobleFactor: boolean;
   readonly debeActivarDobleFactor: boolean;
@@ -179,6 +187,11 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
     `;
     const loTiene = dobleFactor[0]?.confirmado === true;
 
+    const rolesQuePuedoDar =
+      destino.organizacionId === null
+        ? []
+        : await rolesQuePuedeDar(sql, destino.organizacionId, sesion.personaId);
+
     return {
       personaId: persona.id,
       nombre: persona.nombre,
@@ -201,6 +214,7 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
       })),
 
       permisos,
+      rolesQuePuedoDar,
 
       debeCambiarClave: sesion.debeCambiarClave,
       faltaDobleFactor: !sesion.dobleFactorSuperado,

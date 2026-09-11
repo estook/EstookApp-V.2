@@ -400,6 +400,74 @@ export function loQueSePuedeAnadir(
   );
 }
 
+/**
+ * Los grupos del catalogo, al anadir (M7, repaso).
+ *
+ * «Valor de la camara, acciones rapidas, bajo minimo, caduca esta semana: salen
+ *  en el Panel, pero al dar a anadir no aparecen. ¿Si las borras las pierdes para
+ *  siempre?» No se perdian —se podian volver a poner con «Volver al panel de
+ *  siempre»—, pero el catalogo **solo ensenaba los que no estaban**, asi que lo
+ *  que se veia era una lista corta de cosas raras y ninguna de las de todos los
+ *  dias. Ahora salen todos, agrupados, y los que ya estan lo dicen.
+ */
+export type GrupoDeWidget = 'atender' | 'cifras' | 'atajos' | 'equipo';
+
+export const NOMBRE_DEL_GRUPO: Readonly<Record<GrupoDeWidget, string>> = {
+  atender: 'Lo que hay que atender',
+  cifras: 'Cifras',
+  atajos: 'Atajos',
+  equipo: 'Tu equipo',
+};
+
+const ORDEN_DE_LOS_GRUPOS: readonly GrupoDeWidget[] = ['atender', 'cifras', 'atajos', 'equipo'];
+
+/**
+ * De que grupo es cada widget construido. Uno nuevo sin grupo sale en «Cifras» y
+ * lo dice una prueba: `catalogo.prueba.ts` exige que todos tengan el suyo.
+ */
+export const GRUPO_DEL_WIDGET: Readonly<Record<string, GrupoDeWidget>> = {
+  caducidades: 'atender',
+  'bajo-minimo': 'atender',
+  pedidos: 'atender',
+  calendario: 'atender',
+  'sin-precio': 'atender',
+  'valor-de-la-camara': 'cifras',
+  'cuanto-genero': 'cifras',
+  'ventas-de-hoy': 'cifras',
+  'ultimos-movimientos': 'cifras',
+  'acciones-rapidas': 'atajos',
+  'mis-apps': 'atajos',
+  fichar: 'atajos',
+  merma: 'atajos',
+  fichajes: 'equipo',
+  personas: 'equipo',
+};
+
+export interface GrupoDelCatalogo {
+  readonly grupo: GrupoDeWidget;
+  readonly nombre: string;
+  readonly widgets: readonly { readonly widget: Widget; readonly puesto: boolean }[];
+}
+
+/** Todos los que se pueden tener, por grupos, y si ya estan puestos. */
+export function elCatalogoParaAnadir(
+  puestos: readonly WidgetPuesto[],
+  tienePermiso: (permiso: Permiso) => boolean,
+): readonly GrupoDelCatalogo[] {
+  const yaEsta = new Set(puestos.map((p) => p.id));
+  const construidos = WIDGETS.filter(
+    (widget) =>
+      widget.modulo === undefined && (widget.permiso === null || tienePermiso(widget.permiso)),
+  );
+  return ORDEN_DE_LOS_GRUPOS.map((grupo) => ({
+    grupo,
+    nombre: NOMBRE_DEL_GRUPO[grupo],
+    widgets: construidos
+      .filter((widget) => (GRUPO_DEL_WIDGET[widget.id] ?? 'cifras') === grupo)
+      .map((widget) => ({ widget, puesto: yaEsta.has(widget.id) })),
+  })).filter((grupo) => grupo.widgets.length > 0);
+}
+
 /** Los que todavia no estan, para poder decir en que modulo llegan. */
 export function losQueLlegan(tienePermiso: (permiso: Permiso) => boolean): readonly Widget[] {
   return WIDGETS.filter(

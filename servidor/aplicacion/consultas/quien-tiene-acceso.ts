@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { consulta, FalloDeAplicacion } from '../contrato.ts';
+import { estaPorEncima, suAmplitud } from '../jerarquia.ts';
 
 /**
  * Quien tiene acceso a este local, y con que (M4).
@@ -44,6 +45,12 @@ export interface QuienTieneAcceso {
    * antes decía «dentro» a quien entró una vez hace tres meses.
    */
   readonly enLinea: boolean;
+  /**
+   * Si quien mira puede tocar el acceso de esta persona: está por encima de ella
+   * (M7, repaso · `jerarquia.ts`). A un igual no se le retira ni se le cambia la
+   * clave; la pantalla lo dice en vez de enseñar un botón que va a decir que no.
+   */
+  readonly puedoGestionar: boolean;
 }
 
 export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[]>({
@@ -84,9 +91,21 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
         ultimo_acceso_en: Date | null;
         vigente: boolean;
         en_linea: boolean;
+        amplitud_del_rol: number;
+        su_amplitud: number | null;
+        organizacion_id: string;
       }[]
     >`
       select p.id as persona_id,
+             r.amplitud::int as amplitud_del_rol,
+             l.organizacion_id,
+             (select max(r2.amplitud)::int
+                from estook.membresia m2
+                join estook.rol r2 on r2.codigo = m2.rol
+               where m2.persona_id = p.id
+                 and m2.organizacion_id = l.organizacion_id
+                 and m2.revocada_en is null
+                 and (m2.hasta is null or m2.hasta >= current_date)) as su_amplitud,
              m.id as membresia_id,
              p.nombre, p.apellidos, p.correo,
              m.rol, r.nombre as rol_nombre,
@@ -126,7 +145,14 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
        order by r.amplitud desc, p.nombre
     `;
 
+    const organizacionId = filas[0]?.organizacion_id;
+    const mia = organizacionId === undefined ? 0 : await suAmplitud(sql, organizacionId, personaId);
+
     return filas.map((f) => {
+      // Contra el rol más alto que tenga vivo y, si está fuera, contra el rol que
+      // se le devolvería: a un gerente retirado no lo reactiva otro gerente.
+      const suya = Math.max(f.su_amplitud ?? 0, f.amplitud_del_rol);
+      const puedoGestionar = f.persona_id !== personaId && estaPorEncima(mia, suya);
       const estado: QuienTieneAcceso['estado'] = !f.vigente
         ? 'fuera'
         : f.ultimo_acceso_en === null
@@ -148,6 +174,7 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
         tienePin: f.tiene_pin,
         ultimoAccesoEn: f.ultimo_acceso_en?.toISOString() ?? null,
         enLinea: f.vigente && f.en_linea,
+        puedoGestionar,
       };
     });
   },

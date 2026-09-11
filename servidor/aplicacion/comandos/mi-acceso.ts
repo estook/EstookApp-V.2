@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { comprobar, derivar, porQueNoValeLaClave } from '../../dominio/secretos.ts';
 import { ponerPinNuevo } from '../pines.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
+import { exigirQueMandeMas } from '../jerarquia.ts';
 
 /**
  * «Mi acceso» · los cuatro comandos de la pantalla (M4).
@@ -139,6 +140,16 @@ export const ponerClaveA = comando<EntradaPonerClaveA, { readonly puesta: true }
     `;
     if (!suya[0]) throw new FalloDeAplicacion('no_existe');
 
+    // Una contraseña se le pone a quien está por debajo (M7, repaso): ponérsela a
+    // un igual es poder entrar con su cuenta.
+    await exigirQueMandeMas(
+      sql,
+      entrada.organizacion_id,
+      sesion.personaId,
+      entrada.persona_id,
+      'Poner una contraseña',
+    );
+
     const derivada = await derivar(entrada.nueva);
 
     // `debe_cambiarla` en `true`: es la mitad de lo que hace esto aceptable.
@@ -210,6 +221,20 @@ export const regenerarPin = comando<
         )::text as nivel
       `;
       if (nivel[0]?.nivel !== 'ver_y_editar') throw new FalloDeAplicacion('sin_permiso');
+
+      // El PIN de otro, solo si está por debajo (M7, repaso · `jerarquia.ts`).
+      const deLaOrganizacion = await sql<{ organizacion_id: string }[]>`
+        select organizacion_id from estook.local where id = ${entrada.local_id}
+      `;
+      const organizacion = deLaOrganizacion[0]?.organizacion_id;
+      if (organizacion === undefined) throw new FalloDeAplicacion('no_existe');
+      await exigirQueMandeMas(
+        sql,
+        organizacion,
+        sesion.personaId,
+        entrada.persona_id,
+        'Darle un PIN nuevo',
+      );
     }
 
     // Que esa persona tenga acceso a ese local: un PIN de un local para quien no

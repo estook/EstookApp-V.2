@@ -1,37 +1,34 @@
-# Pasos para cerrar M7 · la primera entrega: las compras y el Calendario
+# Pasos para cerrar M7 · el repaso de lo que viste
 
 > ## Cómo está
 >
-> | Qué             | Cómo está                                                           |
-> | --------------- | ------------------------------------------------------------------- |
-> | El pull request | **Abierto**, sin fusionar: `m7-proveedores-y-compras`               |
-> | Migraciones     | **Dos nuevas sin aplicar**: `0031_compras` y `0032_el_calendario`   |
-> | La API          | **Sin desplegar**: la publicada no conoce las 22 operaciones nuevas |
-> | Mirarlo         | **Pendiente**: en el TPV y en el móvil, con la lista del paso 4     |
-> | Google          | **Pendiente de ti**: el paso 5, que tarda en llegar                 |
+> | Qué                      | Cómo está                                                               |
+> | ------------------------ | ----------------------------------------------------------------------- |
+> | La primera entrega (#44) | **Fusionada**, y mirada por ti en el móvil y en el TPV                  |
+> | Este repaso              | **Pull request abierto**: `m7-lo-que-vio-richi`                         |
+> | Migración                | **Una nueva sin aplicar**: `0033_lotes_congelados_y_precios_con_iva`    |
+> | La API                   | **Sin desplegar**: la publicada no conoce las cuatro operaciones nuevas |
+> | Lo que queda de tu lista | **Cuatro entregas más**, al final de este documento                     |
+
+Tus once puntos van en **cinco entregas pequeñas**, cada una con su pull request, para
+que ninguna se quede a medias. Esta es la primera: Inventario, el Panel y los fallos.
 
 ## Qué trae, una línea cada cosa
 
-- **Compras, entera**, en cinco vistas: Pedidos, Albaranes, Facturas, Proveedores y
-  Precios. Pedidos empieza por **lo de hoy**: a quién toca pedirle antes de su hora
-  límite, lo que llega hoy y mañana, y los borradores por mandar.
-- **La ficha del proveedor** completa: con quién hablas, teléfono, WhatsApp, correo,
-  web, CIF, **qué días reparte, con cuántos días de antelación y hasta qué hora**,
-  forma de pago, pedido mínimo y portes. Y se llena sola: qué te sirve, gasto del
-  mes, incidencias, puntualidad y lo que te ha subido.
-- **Hacer un pedido** empieza por lo que Estook le pediría hoy, en cajas enteras y
-  con el porqué. Se manda **por WhatsApp o por correo con el pedido escrito**, se
-  copia o se imprime, y se apunta «mandado» cuando dices que lo has mandado.
-- **Recibir entero son dos toques.** Con cambios, cada línea: lo que ha llegado, a
-  cuánto, si no se acepta, lote y caducidad. Lo que falta se vuelve a pedir de un
-  toque, y lo que se ve malo después se **devuelve**.
-- **La factura se compara con sus albaranes mientras la escribes**: «te cobran
-  6,50 € de más». Y si una línea viene cobrada distinta, el precio nuevo se apunta.
-- **Lo pactado** con cada proveedor, y **quién te lo deja mejor**, en euros al mes.
-- **El Calendario empieza a llenarse**: los repartos, los pedidos que llegan y lo que
-  caduca. En el Panel, dos widgets nuevos: **«Compras de hoy»** y **«Lo que viene»**.
-- **Un cocinero** hace el borrador y recibe el camión **sin ver un solo precio**, y
-  mandar el pedido lo hace quien puede comprometer el dinero del local.
+- **Quitar un lote** que caduca o ha caducado, en «Caduca esta semana» y en la ficha:
+  se ha gastado, o se ha tirado (y entonces es merma por caducado).
+- **Congelado**, con su fecha: al dar de alta, en cada lote, «Congelar una parte», su
+  etiqueta en todas partes y la vista **Productos · Congelados**.
+- **Dos decimales**: «1,75 €», «0,64 €/l». Nunca más «1,7500 €».
+- **El alta, rehecha**: ¿cómo lo compras? Por peso, por litros o por unidades, y la
+  cuenta sale sola: «Caja de 6 tarros de 250 g · la caja sale a 21,00 € · 14,00 € el kg».
+- **El IVA, bien puesto**: se guarda sin IVA, tú eliges cómo lo escribes, y a los
+  precios que ya tienes se les quita una vez.
+- **Los precios de antes en una gráfica**, proveedor a proveedor, y cuál es el más barato.
+- **Los widgets**: al dar a Añadir salen todos, los puestos dicen «En tu panel», y
+  el panel de siempre se recupera de un toque.
+- **El salario** ya no falla al cambiarlo dos veces el mismo día.
+- **Nadie echa a su igual**: a un gerente lo gestiona quien está por encima.
 
 ## Cómo se escriben los comandos aquí
 
@@ -42,8 +39,7 @@ va en su recuadro, de uno en uno. Se abre PowerShell en la carpeta del proyecto.
 
 ## Paso 1 · Fusionar el pull request
 
-**Dónde:** GitHub → **Pull requests** → el que se llama «M7 · proveedores y
-compras…» → abajo del todo.
+**Dónde:** GitHub → **Pull requests** → «M7 · lo que vio Richi…» → abajo del todo.
 
 Espera a las tres comprobaciones en verde —`Calidad`, `Construccion y
 presupuestos` y `Migraciones reversibles`— y entonces **Merge pull request** →
@@ -55,23 +51,24 @@ presupuestos` y `Migraciones reversibles`— y entonces **Merge pull request** �
 
 ---
 
-## Paso 2 · Aplicar las dos migraciones
+## Paso 2 · Aplicar la migración
 
-Crean las tablas de las compras —pedidos, albaranes, facturas y lo pactado— y la
-del Calendario, y ponen en el Calendario las caducidades de los lotes que ya hay.
+No crea tablas: añade columnas —lo congelado y lo retirado de cada lote, el IVA de
+compra de cada producto y cómo escribe los precios el local—.
 
 ```bash
 .\estook.cmd bd:migrar
 ```
 
-**Qué sale si va bien:** dos líneas, la `0031_compras` y la `0032_el_calendario`, y
-que la base está al día.
+**Qué sale si va bien:** la línea `0033_lotes_congelados_y_precios_con_iva`, y que la
+base está al día. (Si también salen la `0031` y la `0032`, es que no se aplicaron con
+la primera entrega: está bien, van en orden.)
 
 ```bash
 .\estook.cmd bd:comprobar
 ```
 
-**Qué tiene que decir:** **32 de 32** migraciones y **51 tablas**, todas con
+**Qué tiene que decir:** **33 de 33** migraciones y **51 tablas**, todas con
 seguridad por filas.
 
 **Si sale un error:** no sigas; cópiame el texto rojo tal cual.
@@ -80,116 +77,135 @@ seguridad por filas.
 
 ## Paso 3 · Desplegar la API
 
-Las pantallas nuevas hablan con 22 operaciones que la API publicada todavía no
-conoce. Hasta este paso, Compras dirá que no puede leer nada.
-
 **Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** → escribe
 `desplegar` → **Run workflow**. En verde en dos o tres minutos.
-
-Y la comprobación:
 
 ```bash
 .\estook.cmd bd:comprobar-api
 ```
 
 **Qué tiene que decir:** «y conoce todas las consultas que tiene el código» y «y
-conoce todos los comandos», y los JSON como objetos. **Si dice «FALTA
-DESPLEGARLA»** con una lista de nombres, el paso de arriba no ha terminado bien:
-vuelve a lanzarlo y dímelo si se repite.
+conoce todos los comandos». **Si dice «FALTA DESPLEGARLA»** con nombres como
+`quitar_lote` o `congelar`, el paso de arriba no ha terminado bien: vuelve a
+lanzarlo y dímelo si se repite.
 
 ---
 
-## Paso 4 · Mirarlo en el TPV y en el móvil
+## Paso 4 · Quitarles el IVA a tus precios, una vez
 
-Todo está en **Inventario → Compras**. Hazlo con calma y apunta lo que no te guste.
+Me dijiste que tus precios llevan IVA. Estook los guarda sin él —el IVA de compra lo
+recuperas, así que lo que te cuesta de verdad es sin él—, así que hay que
+quitárselo **una sola vez** a los que ya tienes. Hazlo **antes** de meter precios
+nuevos.
 
-1. **Un proveedor de verdad**: Compras → **Proveedores** → **Añadir**. Pon con quién
-   hablas, **tu propio móvil como WhatsApp** (para probar sin molestar a nadie),
-   los días que reparte, cuántos días antes hay que pedir y hasta qué hora.
-   **Qué tiene que salir:** debajo de los días, la frase «Se le pide la víspera,
-   hasta las 20:00» (o la que toque), y en la lista, cuándo es su próximo reparto.
-2. **Que te sirva algo**: abre un producto y ponle ese proveedor, o da de alta uno
-   nuevo con él.
-3. **Un pedido**: Compras → **Pedidos** → **Hacer un pedido** → elige el proveedor.
-   **Qué tiene que salir:** «Si lo pides hoy antes de las…, llega el…», y lo que le
-   pediría. Empieza con eso o en blanco, cambia una cantidad con el + y **Guardar
-   los cambios**.
-4. **Mandarlo**: **Por WhatsApp**. Se abre WhatsApp con el pedido escrito, **sin
-   precios**, saludando a quien pusiste. Mándatelo, vuelve a Estook y pulsa **«Sí,
-   ya está mandado»**.
-   **Qué tiene que salir:** «Apuntado: mandado por WhatsApp», y el pedido en
-   **Inventario → Hoy**, en «Compras de hoy».
-5. **Recibirlo entero**: **Recibir lo que ha llegado** → **Sí, ha llegado entero**.
-   **Qué tiene que salir:** «Apuntado: ha entrado todo en cámara», y en el producto,
-   lo que había más lo que ha llegado.
-6. **Otro, con cambios**: haz y manda otro pedido de dos cajas, y al recibir pulsa
-   **Con cambios**: pon que ha llegado una y otro precio.
-   **Qué tiene que salir:** «Ha venido menos» y «Precio distinto», y el botón
-   **«Pedirle lo que faltó»**.
-7. **La factura**: Compras → **Facturas** → **Apuntar una factura** → el proveedor,
-   un número, la fecha y una base un euro más alta que lo que llegó.
-   **Qué tiene que salir, mientras escribes:** «te cobran 1,00 € de más».
-8. **El Panel**: tus Paneles guardados **no reciben los widgets nuevos solos**.
-   **Editar** → **Añadir** → **«Compras de hoy»** y **«Lo que viene»**, en el TPV y
-   en el móvil, que cada aparato tiene el suyo.
-9. **Si tienes una cuenta de cocinero**, entra con ella y abre un borrador.
-   **Qué tiene que salir:** «Queda en borrador: lo manda quien puede mandar
-   pedidos», y ni un euro en toda la ficha.
+1. Apunta el precio de un producto que conozcas, por ejemplo uno de 11,00 €.
+2. **Ajustes** → tarjeta **«Tus precios de compra»**.
+3. Enciende **«Escribo los precios con IVA»**. Desde ahora, cada campo de precio
+   empieza en «Con IVA» y te enseña debajo lo que se guarda sin él.
+4. Pulsa **«Quitar el IVA a los que ya tengo»** → lee el aviso → **«Sí, quitárselo»**.
+
+**Qué tiene que salir:** «Hecho: N precios quedan sin IVA». Y el producto del paso 1,
+en 10,00 € (si es alimento, al 10 %) o en 9,09 € (si va al 21 %). En su ficha, debajo
+del precio: «Sin IVA. Con IVA (10 %), 11,00 €». Y en la tarjeta, la fecha en que se
+hizo: el botón ya no sale, porque no se puede hacer dos veces.
+
+**Si un producto no es del 10 %** —el pan o la leche van al 4 %—: ábrelo → **Corregir
+la ficha** → **IVA al comprarlo**. Mejor antes del paso 4, para que se le quite el suyo.
+
+---
+
+## Paso 5 · Mirarlo en el TPV y en el móvil
+
+1. **Un producto como el queso azul**: Inventario → Productos → **Añadir producto** →
+   **Crearlo a mano** → **Por unidades** → cómo viene cada una: **Tarro** → qué trae:
+   **250 g** → cuántas en cada caja: **6** → **De cada tarro** → **3,50**.
+   **Qué tiene que salir:** «Caja de 6 tarros de 250 g · 1,5 kg en total» y «La caja
+   sale a 21,00 € · 14,00 € el kg». Al guardar, en su ficha, «Envase: Caja de 6
+   tarros de 250 g».
+2. **Fruta**: lo mismo con **Por peso** y el precio del kg. **Leche o aceite**: **Por
+   litros**, y si viene en garrafa, enciende «Viene en garrafas…» y pon cuánto trae.
+3. **Dos decimales**: en la lista de productos, ninguna cifra con cuatro decimales.
+4. **Quitar un lote**: Inventario → **Hoy** → «Caduca esta semana» → **Quitar** en
+   uno → **Se ha tirado** → cuánto → **Quitarlo**.
+   **Qué tiene que salir:** «Quitado. Lo tirado de… queda apuntado como merma por
+   caducado», el lote fuera de la lista, y la merma en «Merma de hoy».
+5. **Congelar**: abre un producto con género → «Lotes y caducidades» → **Congelar
+   una parte** → **Congelarlo**.
+   **Qué tiene que salir:** «congelado el …» en el lote, la etiqueta «congelado» en
+   la lista, y el producto en **Productos · Congelados**.
+6. **La gráfica**: en un producto con dos precios o más (cambia el precio una vez si
+   hace falta), la gráfica de lo que ha costado, en €/kg.
+7. **El Panel**: **Editar** → **Añadir**. **Qué tiene que salir:** todos los widgets
+   por grupos; «Valor de la cámara», «Acciones rápidas», «Bajo mínimo» y
+   «Caducidades» con **«En tu panel»**. Quita uno desde ahí y vuelve a ponerlo.
+   Abajo, «Recuperar el panel de siempre».
+8. **El salario**: Equipo → una persona → cambia su salario **dos veces seguidas**.
+   **Qué tiene que salir:** las dos veces, guardado. Ni un «se nos ha roto algo».
+9. **Nadie echa a su igual**: si tienes dos gerentes, entra como uno y ve a Equipo →
+   Accesos. **Qué tiene que salir:** en el otro gerente, «Lo lleva quien está por
+   encima», sin botón de retirar.
 
 > **Lo que salga raro, apúntalo tal cual**, con una foto si puedes.
 
 ---
 
-## Paso 5 · Lo de Google, que tarda en llegar
+## Paso 6 · Lo de Google, con los topes que pusiste
 
-Es para **la segunda entrega de M7**: el local en Google y sus reseñas, que se
-actualizan solas al cerrar el día. Sin estos dos accesos no se puede probar de
-verdad, y el segundo tarda días o semanas. Los nombres de los botones de Google
-cambian a veces: si alguno no está donde digo, búscalo por su nombre.
+Para **la quinta entrega**. Tus números están bien pensados, con dos correcciones
+que te debo decir antes:
 
-### A · Una clave de Google Cloud, con facturación, para Places
+- **Un presupuesto de Google Cloud avisa, pero no corta.** «Presupuestos y alertas»
+  manda un correo al llegar a la cifra y **sigue cobrando**. Lo que corta de verdad
+  son **las cuotas de cada API** —un máximo de peticiones al día— y, por encima,
+  **nuestro propio contador por local** en la API de Estook, que es donde irán tus
+  topes: 40 de Places y 1.800 de Gemini al mes por local.
+- **Gemini 1.5 Flash ya no se puede contratar**: Google lo retiró. Se usa el Flash
+  que esté vigente al conectarlo, con el mismo tope de 1.800 al mes; cuesta del orden
+  de lo que calculaste.
 
-1. Entra en **console.cloud.google.com** con tu cuenta de Google.
-2. Arriba, **Seleccionar un proyecto** → **Proyecto nuevo** → nombre `Estook` →
-   **Crear**.
-3. Menú ☰ → **Facturación** → **Vincular una cuenta de facturación** (una tarjeta).
-   Google da un crédito mensual gratis para Maps; con el tope que pondremos, no
-   deberías pasar de él.
-4. Menú ☰ → **APIs y servicios** → **Biblioteca** → busca **«Places API (New)»** →
-   **Habilitar**.
-5. **APIs y servicios** → **Credenciales** → **Crear credenciales** → **Clave de
-   API**. Después, **Editar la clave** → **Restricciones de API** → marca solo
-   **Places API (New)** → **Guardar**.
-6. **Facturación** → **Presupuestos y alertas** → **Crear presupuesto** de **10 € al
-   mes**, con aviso por correo.
-7. **No me pegues la clave en el chat**: una clave que pasa por un chat hay que
-   cambiarla. Guárdala tú; en la segunda entrega te digo dónde ponerla.
+### A · La clave de Places, con su corte
 
-### B · El acceso a las API de Google Business Profile
+1. **console.cloud.google.com** → **Seleccionar un proyecto** → **Proyecto nuevo** →
+   `Estook` → **Crear**.
+2. ☰ → **Facturación** → **Vincular una cuenta de facturación**.
+3. ☰ → **APIs y servicios** → **Biblioteca** → **«Places API (New)»** → **Habilitar**.
+4. **Credenciales** → **Crear credenciales** → **Clave de API** → **Editar la clave**
+   → **Restricciones de API** → solo **Places API (New)** → **Guardar**.
+5. **El corte**: **APIs y servicios** → **Places API (New)** → **Cuotas** → las
+   peticiones por día → **Editar** → **50**. Con cuarenta al mes por local, cincuenta
+   al día solo se alcanzan si algo va mal, y ahí para.
+6. **El aviso**: **Facturación** → **Presupuestos y alertas** → **Crear presupuesto**
+   de **8 € al mes**, con avisos al 50 %, al 90 % y al 100 %.
+7. **No me pegues la clave en el chat.** Guárdala tú; te digo dónde ponerla.
 
-1. Hazlo con **la cuenta de Google que gestiona la ficha del local** en Google Maps.
-2. En el proyecto `Estook` de arriba, apunta su **número de proyecto** (sale en el
-   Panel del proyecto).
-3. Busca «**Google Business Profile APIs** solicitar acceso» y rellena el formulario
-   de acceso de Google: el nombre del negocio, su web, el número de proyecto, y para
-   qué: «leer las reseñas y la ficha de mi propio local desde mi aplicación de
-   gestión».
-4. Google contesta por correo. **Cuando te lo aprueben, avísame**, y empiezo la
-   segunda entrega.
+### B · El acceso a Google Business Profile
+
+1. Con **la cuenta de Google que gestiona la ficha del local**.
+2. En el proyecto `Estook`, apunta su **número de proyecto**.
+3. Busca «**Google Business Profile APIs** solicitar acceso» y rellena el formulario:
+   el negocio, su web, el número de proyecto, y para qué: «leer las reseñas y la
+   ficha de mi propio local desde mi aplicación de gestión». No tiene coste.
+4. Google contesta por correo. **Cuando te lo aprueben, avísame.**
 
 ---
 
-## Lo que necesito que me confirmes
+## Lo que me confirmaste, y dónde queda
 
-1. **Mandar pedidos**: el cocinero hace el borrador y recibe, pero **mandarlo al
-   proveedor** lo hacen el jefe de cocina, el gerente y los de arriba. ¿Te vale así?
-2. **Los precios, sin IVA**: los pedidos, albaranes y facturas se comparan sin IVA.
-   **¿Los precios que pusiste a tus productos llevaban IVA?** Si sí, hay que
-   corregirlos, o las facturas no te cuadrarán.
-3. **El pedido no sale solo**: Estook abre tu WhatsApp o tu correo con el pedido
-   escrito, y lo mandas tú. El PDF con tu logo llega con los documentos (M11).
-4. **Lo pactado es de cada local**. El precio pactado para toda una cadena llega con
-   el catálogo maestro (M24).
-5. **Si una factura cobra distinto, el precio nuevo vale desde hoy**, y lo que
-   cobró queda apuntado con su fecha para recalcular los platos de esos días cuando
-   estén los escandallos (M9).
+1. **El IVA**: tus precios lo llevan, y querías elegir. Hecho en esta entrega
+   ([0033](decisiones/0033-los-precios-de-compra-se-guardan-sin-iva.md)); el paso 4 lo
+   deja bien.
+2. **Mandar pedidos**, de jefe de cocina para arriba, y **«te han invitado a hacer
+   este pedido»** para que otro lo rellene y el jefe lo mande: **entrega 2**.
+3. **El pedido no sale solo**: se queda como está, WhatsApp o correo con el pedido
+   escrito.
+4. **El precio nuevo vale desde hoy**, y los de antes se comparan: la gráfica de esta
+   entrega.
+
+## Lo que viene
+
+| Entrega | Qué                                                                                                                                     |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **2**   | Avisos a jefes y gerentes de lo que hace su equipo —un borrador, la carta, un pedido—, **una vez**; e invitar a rellenar un pedido      |
+| **3**   | **Horarios**, una app entera en Equipo: cuadrante semanal, por persona, historial, horas oficiales, avisos al cambiar y PDF con tu logo |
+| **4**   | El dominio **`estook.com`**: el código, los documentos y los pasos de DNS                                                               |
+| **5**   | Los topes de Google por local y, con tus accesos, el local en Google y sus reseñas                                                      |

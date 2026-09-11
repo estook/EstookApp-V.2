@@ -105,10 +105,19 @@ async function dondeEsta(peticion: APIRequestContext, token: string): Promise<Do
   const yo = await consultar(peticion, token, 'quien_soy');
   const datos = yo.cuerpo['datos'] as {
     local: { id: string } | null;
+    locales: { id: string }[];
     organizacion: { id: string };
   };
-  if (datos.local === null) throw new Error('esa persona no tiene un local elegido');
-  return { localId: datos.local.id, organizacionId: datos.organizacion.id };
+  if (datos.local !== null) {
+    return { localId: datos.local.id, organizacionId: datos.organizacion.id };
+  }
+  // Quien llega a varios locales entra sin ninguno elegido: se elige el primero,
+  // como haría en el selector de la barra.
+  const primero = datos.locales[0];
+  if (primero === undefined) throw new Error('esa persona no llega a ningún local');
+  const elegido = await ejecutar(peticion, token, 'cambiar_de_contexto', { local_id: primero.id });
+  expect(elegido.estado).toBe(200);
+  return { localId: primero.id, organizacionId: datos.organizacion.id };
 }
 
 /**
@@ -123,7 +132,9 @@ async function dondeEsta(peticion: APIRequestContext, token: string): Promise<Do
 async function unaPersonaNueva(
   peticion: APIRequestContext,
   quienInvita: string,
-  rol = 'gerente',
+  // Por debajo de quien invita, que es lo único que se puede dar (0034): Rosa es
+  // gerente, así que un gerente nuevo lo tiene que nombrar alguien de más arriba.
+  rol = 'jefe_de_cocina',
 ): Promise<{ personaId: string; membresiaId: string; correo: string; token: string } & Donde> {
   const jefe = await unToken(peticion, quienInvita);
   const donde = await dondeEsta(peticion, jefe);
@@ -598,7 +609,10 @@ test.describe('el recordatorio del alta', () => {
     // Se guarda en el servidor justo para esto: apagarlo en el ordenador tiene que
     // apagarlo en el teléfono. Una prueba que solo mirara la pantalla no
     // distinguiría las dos cosas, y `localStorage` habría pasado igual.
-    const suya = await unaPersonaNueva(request, 'rosa@ejemplo.estook.com');
+    //
+    // Un gerente, porque el recordatorio es de quien lleva el local (`app.ajustes`
+    // en editar). Y lo nombra la dirección: un gerente no nombra a otro (0034).
+    const suya = await unaPersonaNueva(request, 'elena@ejemplo.estook.com', 'gerente');
 
     const apagado = await ejecutar(request, suya.token, 'ocultar_el_recordatorio_del_alta', {});
     expect(apagado.estado).toBe(200);

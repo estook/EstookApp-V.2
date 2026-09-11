@@ -4,9 +4,15 @@ import {
   CATEGORIAS_FISCALES,
   NOMBRE_DEL_ALERGENO,
   NOMBRE_DEL_ESTADO,
-  comoSePide,
-  UNIDADES_DE_USO,
+  TIPOS_DE_IVA_DE_COMPRA,
+  centimos,
   comoPorcentaje,
+  comoSeCompraDe,
+  comoSeDiceElTipo,
+  comoSePide,
+  conIva,
+  presentacionDe,
+  type ComoSeCompra,
 } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import {
@@ -14,7 +20,6 @@ import {
   Boton,
   Botones,
   Campo,
-  CampoMoneda,
   Cargando,
   Cifra,
   ErrorEnCristiano,
@@ -29,6 +34,10 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { SelectorDeCategoria } from './SelectorDeCategoria.tsx';
 import { MoverGenero, type QueSeMueve } from './MoverGenero.tsx';
+import { CampoPrecioDeCompra } from './CampoPrecioDeCompra.tsx';
+import { ComoLoCompras } from './ComoLoCompras.tsx';
+import { Congelar, QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
+import { HistoricoDePrecios } from './HistoricoDePrecios.tsx';
 import { IconoAnadir, IconoQuitar } from '@estook/iconos';
 import {
   COMO_SE_LLAMA_EL_MOVIMIENTO,
@@ -83,6 +92,11 @@ export function FichaDeProducto({
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [noticia, setNoticia] = useState<string | null>(null);
   const [todosLosMovimientos, setTodosLosMovimientos] = useState(false);
+  const [quitandoLote, setQuitandoLote] = useState<LoteQueSeQuita | null>(null);
+  /** Congelando: un lote, o una parte nueva (`lote: null`). */
+  const [congelando, setCongelando] = useState<{
+    readonly lote: { readonly id: string; readonly caducaEl: string | null } | null;
+  } | null>(null);
 
   const puedeTocar = puedeEditar(permisos, 'app.inventario');
   const puedeTocarPrecios = puedeEditar(permisos, 'dato.precio_de_compra');
@@ -315,6 +329,20 @@ export function FichaDeProducto({
                     <span className="text-texto-suave">{loQueEsElPrecio(datos.producto)}</span>
                   </p>
                   {/*
+                    Se guarda sin IVA, que es lo que cuesta de verdad al negocio:
+                    el IVA de compra se recupera. Y al lado, con IVA, que es lo que
+                    dice el ticket, para reconocerlo de un vistazo.
+                  */}
+                  {datos.producto.ivaDeCompra !== null && datos.producto.ivaDeCompra > 0 && (
+                    <p className="text-etiqueta text-texto-suave">
+                      Sin IVA. Con IVA ({comoSeDiceElTipo(datos.producto.ivaDeCompra)}),{' '}
+                      {comoDinero(
+                        conIva(centimos(datos.producto.precioCentimos), datos.producto.ivaDeCompra),
+                      )}
+                      .
+                    </p>
+                  )}
+                  {/*
                     Quién lo puso y desde cuándo. «Lo que hace cada uno queda con
                     su nombre» (Manifiesto 8), y un precio mal metido se arrastra a
                     todos los escandallos.
@@ -328,6 +356,17 @@ export function FichaDeProducto({
                   )}
                 </>
               )}
+
+              {/*
+                «Si llega un precio nuevo se actualiza, y se comparan los de antes
+                de forma optimizada, tipo gráfica.» Con dos precios o más, lo que
+                ha costado a cada proveedor, en €/kg, €/l o €/ud: la misma medida
+                aunque el envase haya cambiado.
+              */}
+              <HistoricoDePrecios
+                precios={datos.precios}
+                unidadDeUso={datos.producto.unidadDeUso}
+              />
 
               {/* El histórico, plegado: se abre cuando se busca, no se lee siempre. */}
               {anteriores.length > 0 && (
@@ -415,28 +454,94 @@ export function FichaDeProducto({
 
           {/* ── 5 · Lotes ─────────────────────────────────────────────── */}
 
-          {datos.lotes.length > 0 && (
+          {/*
+            «Si hay un producto caducado, poder quitarlo con un botón en ese lote;
+             si no, se queda siempre y no tiene sentido.» Cada lote lleva su
+            «Quitar» —se ha gastado o se ha tirado— y su «Congelar». Y arriba,
+            «Congelar una parte», para cuando la mitad va al congelador.
+          */}
+          {(datos.lotes.length > 0 || puedeTocar) && (
             <section className="flex flex-col gap-e2">
-              <h3 className="text-seccion font-semibold">Caducidades</h3>
-              <ul className="flex flex-col">
-                {datos.lotes.map((lote) => (
-                  <li
-                    key={lote.id}
-                    className="flex flex-wrap items-baseline justify-between gap-e2 border-b border-borde py-e2 last:border-0"
+              <div className="flex flex-wrap items-center justify-between gap-e2">
+                <h3 className="text-seccion font-semibold">Lotes y caducidades</h3>
+                {puedeTocar && (
+                  <Boton
+                    tono="texto"
+                    onClick={() => {
+                      setCongelando({ lote: null });
+                    }}
                   >
-                    <span>
-                      {lote.caducaEl === null
-                        ? 'Sin fecha de caducidad'
-                        : `Caduca el ${comoSeLeeLaFecha(lote.caducaEl)}`}
-                    </span>
-                    <span className="text-etiqueta text-texto-suave">
-                      {lote.codigo === null
-                        ? `Llegó el ${comoSeLeeLaFecha(lote.recibidoEl)}`
-                        : `Lote ${lote.codigo}`}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                    Congelar una parte
+                  </Boton>
+                )}
+              </div>
+              {datos.lotes.length === 0 ? (
+                <p className="text-secundario text-texto-suave">
+                  Nada con fecha. Cuando entre género con su caducidad, sale aquí.
+                </p>
+              ) : (
+                <ul className="flex flex-col">
+                  {datos.lotes.map((lote) => {
+                    const caducado = lote.diasParaCaducar !== null && lote.diasParaCaducar < 0;
+                    return (
+                      <li
+                        key={lote.id}
+                        className="flex flex-wrap items-center justify-between gap-e2 border-b border-borde py-e2 last:border-0"
+                      >
+                        <span className="min-w-0">
+                          <span className="flex flex-wrap items-center gap-e2">
+                            <span className={caducado ? 'text-mal' : undefined}>
+                              {lote.caducaEl === null
+                                ? 'Sin fecha de caducidad'
+                                : `${caducado ? 'Caducó' : 'Caduca'} el ${comoSeLeeLaFecha(lote.caducaEl)}`}
+                            </span>
+                            {lote.congeladoEl !== null && (
+                              <Etiqueta tono="info">
+                                congelado el {comoSeLeeLaFecha(lote.congeladoEl)}
+                              </Etiqueta>
+                            )}
+                          </span>
+                          <span className="block text-etiqueta text-texto-suave">
+                            {lote.codigo === null
+                              ? `Llegó el ${comoSeLeeLaFecha(lote.recibidoEl)}`
+                              : `Lote ${lote.codigo}`}
+                          </span>
+                        </span>
+                        {puedeTocar && (
+                          <span className="flex flex-wrap gap-e1">
+                            {lote.congeladoEl === null && (
+                              <Boton
+                                tono="texto"
+                                onClick={() => {
+                                  setCongelando({
+                                    lote: { id: lote.id, caducaEl: lote.caducaEl },
+                                  });
+                                }}
+                              >
+                                Congelar
+                              </Boton>
+                            )}
+                            <Boton
+                              tono={caducado ? 'principal' : 'secundario'}
+                              onClick={() => {
+                                setQuitandoLote({
+                                  id: lote.id,
+                                  producto: datos.producto.nombre,
+                                  codigo: lote.codigo,
+                                  caducaEl: lote.caducaEl,
+                                  unidadDeUso: datos.producto.unidadDeUso,
+                                });
+                              }}
+                            >
+                              Quitar
+                            </Boton>
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </section>
           )}
 
@@ -512,10 +617,39 @@ export function FichaDeProducto({
 
       {datos !== undefined && (
         <>
+          {quitandoLote !== null && (
+            <QuitarLote
+              lote={quitandoLote}
+              alCerrar={() => {
+                setQuitandoLote(null);
+              }}
+              alHecho={(frase) => {
+                setQuitandoLote(null);
+                setNoticia(frase);
+              }}
+            />
+          )}
+
+          {congelando !== null && (
+            <Congelar
+              productoId={datos.producto.id}
+              producto={datos.producto.nombre}
+              lote={congelando.lote}
+              alCerrar={() => {
+                setCongelando(null);
+              }}
+              alHecho={(frase) => {
+                setCongelando(null);
+                setNoticia(frase);
+              }}
+            />
+          )}
+
           <MoverGenero
             que={haciendo === 'precio' ? null : haciendo}
             producto={datos.producto}
             puedeVerPrecios={datos.puedeVerPrecios}
+            preciosConIva={datos.preciosConIva}
             alCerrar={() => {
               setHaciendo(null);
             }}
@@ -833,15 +967,17 @@ function CambiarPrecio({
           entonces: cambiar el precio de hoy no reescribe lo que costó en enero.
         </p>
 
-        <CampoMoneda
+        <CampoPrecioDeCompra
           etiqueta="Lo que cuesta ahora"
           ayuda={
             producto.producto.formato === null
-              ? 'El precio de la unidad de compra, sin IVA, como en el albarán.'
-              : `El precio de una ${producto.producto.formato.toLowerCase()} entera, sin IVA, como en el albarán.`
+              ? 'El precio de la unidad de compra, como en el albarán.'
+              : `El de ${producto.producto.formato.toLowerCase()} entero, como en el albarán.`
           }
           valor={precio}
           alCambiar={setPrecio}
+          iva={producto.producto.ivaDeCompra}
+          conIvaDeEntrada={producto.preciosConIva}
         />
 
         <Selector
@@ -883,9 +1019,12 @@ function CorregirLaFicha({
   const ficha = producto.producto;
 
   const [nombre, setNombre] = useState(ficha.nombre);
-  const [formato, setFormato] = useState(ficha.formato ?? '');
-  const [factor, setFactor] = useState(String(ficha.factor));
-  const [unidad, setUnidad] = useState(ficha.unidadDeUso);
+  // Cómo se compra, con las mismas tres preguntas del alta y lo que ya tenía.
+  const [comoEra] = useState<ComoSeCompra>(() => comoSeCompraDe(ficha));
+  const [como, setComo] = useState<ComoSeCompra>(comoEra);
+  const ivaDeAntes =
+    ficha.ivaDeCompraElegido && ficha.ivaDeCompra !== null ? String(ficha.ivaDeCompra) : '';
+  const [iva, setIva] = useState(ivaDeAntes);
   const [minimo, setMinimo] = useState(ficha.minimo === null ? '' : String(ficha.minimo));
   // ── Estos cuatro salían en blanco, y se llevaban el dato por delante ────────
   //
@@ -916,8 +1055,17 @@ function CorregirLaFicha({
   // comando guarda la ficha entera, y mandar otro valor sería cambiarlo sin que
   // nadie lo haya pedido. Se mide, no se teclea (ver la cabecera del alta).
   const nuevoRendimiento = ficha.rendimiento;
-  const nuevoFactor = Number(factor.replace(',', '.')) || 1;
+  // Si no se ha tocado cómo se compra, viaja lo que había tal cual: un producto
+  // con el envase «Saco de harina de 25 kg» no se renombra a «Saco de 25 kg» por
+  // corregir una errata en el nombre.
+  const presentacion = presentacionDe(como);
+  const cambiaLaForma = JSON.stringify(como) !== JSON.stringify(comoEra);
+  const nuevoFactor = cambiaLaForma ? presentacion.factor : ficha.factor;
+  const unidad = cambiaLaForma ? presentacion.unidadDeUso : ficha.unidadDeUso;
   const cambiaElCoste = nuevoFactor !== ficha.factor;
+  // Con género apuntado, la unidad no se cambia: el libro está en esa unidad y
+  // el servidor lo rechaza. Se dice antes, en vez de dejar tocarlo.
+  const formaFija = producto.movimientos.length > 0;
 
   async function guardar() {
     setGuardando(true);
@@ -926,9 +1074,16 @@ function CorregirLaFicha({
       producto_id: ficha.id,
       nombre: nombre.trim(),
       categoria_id: categoriaId === '' ? null : categoriaId,
-      formato: formato.trim() === '' ? null : formato.trim(),
+      formato: cambiaLaForma ? presentacion.formato : ficha.formato,
       factor: nuevoFactor,
       unidad_de_uso: unidad,
+      ...(cambiaLaForma
+        ? {
+            contenido_por_unidad: presentacion.contenidoPorUnidad,
+            unidad_del_contenido: presentacion.unidadDelContenido,
+          }
+        : {}),
+      ...(iva === ivaDeAntes ? {} : { iva_de_compra: iva === '' ? null : Number(iva) }),
       rendimiento: nuevoRendimiento,
       categoria_fiscal: categoriaFiscal,
       alergenos: producto.alergenos,
@@ -1016,48 +1171,10 @@ function CorregirLaFicha({
         />
 
         {/*
-          En qué se mide, y el envase si lo hay.
-
-          El alta pregunta esto **plegado**, porque quien da de alta harina no
-          compra por envases y no tiene por qué contestar tres preguntas para
-          decir «a tanto el kilo». Aquí, editando, va abierto: si alguien abre la
-          ficha de un producto es justo para corregir cosas como estas, y
-          esconderlas obligaría a buscarlas.
-
-          Lo que sí cambia es el nombre. «Unidad con la que cocinas» preguntaba por
-          la cocina, y lo que decide esto es **cómo lo compras y cómo lo cuentas en
-          cámara**; los gramos de una ración son de la ficha técnica, que es M9.
+          Cómo se compra: las mismas tres preguntas del alta, con lo que ya
+          tenía contestado. Es la misma cuenta en los dos sitios (M7, repaso).
         */}
-        <div className="grid gap-e3 sm:grid-cols-2">
-          <Selector
-            etiqueta="En qué se mide"
-            ayuda="Cómo lo cuentas en cámara y cómo te lo cobran"
-            opciones={UNIDADES_DE_USO.map((u) => ({ valor: u, texto: u }))}
-            value={unidad}
-            onChange={(e) => {
-              setUnidad(e.currentTarget.value);
-            }}
-          />
-          <Campo
-            etiqueta="Cuánto trae"
-            tipo="numero"
-            ayuda={`En ${unidad}. Déjalo en 1 si no lo compras por envases`}
-            detras={unidad}
-            value={factor}
-            onChange={(e) => {
-              setFactor(e.currentTarget.value);
-            }}
-          />
-        </div>
-
-        <Campo
-          etiqueta="Nombre del envase"
-          ayuda="Opcional. Si lo dejas en blanco se llama por lo que trae."
-          value={formato}
-          onChange={(e) => {
-            setFormato(e.currentTarget.value);
-          }}
-        />
+        <ComoLoCompras valor={como} alCambiar={setComo} formaFija={formaFija} />
 
         <Campo
           etiqueta="Mínimo"
@@ -1099,6 +1216,36 @@ function CorregirLaFicha({
             setCategoriaFiscal(e.currentTarget.value);
           }}
         />
+
+        {/*
+          El IVA que se paga al comprarlo. Casi siempre es el de su categoría —el
+          10 % de un alimento— y así se deja; se cambia para lo raro: el pan y la
+          leche, al 4 %.
+        */}
+        {producto.puedeVerPrecios && (
+          <Selector
+            etiqueta="IVA al comprarlo"
+            ayuda="El que trae el ticket del proveedor. Sirve para quitárselo a los precios que escribas con IVA."
+            opciones={[
+              {
+                valor: '',
+                texto:
+                  ficha.ivaDeCompraElegido || ficha.ivaDeCompra === null
+                    ? 'El de su categoría'
+                    : `El de su categoría (${comoSeDiceElTipo(ficha.ivaDeCompra)})`,
+              },
+              ...TIPOS_DE_IVA_DE_COMPRA.map((t) => ({
+                valor: String(t),
+                texto: comoSeDiceElTipo(t),
+              })),
+              { valor: '0', texto: 'Sin IVA' },
+            ]}
+            value={iva}
+            onChange={(e) => {
+              setIva(e.currentTarget.value);
+            }}
+          />
+        )}
 
         <Campo
           etiqueta="Notas"

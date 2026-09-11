@@ -26,10 +26,16 @@ export function Invitar({
   alHecho: (quien: { nombre: string; pin: string | null; yaExistia: boolean }) => void;
 }) {
   const { cliente, yo } = usarSesion();
+  // Solo los que se pueden dar: los que quedan por debajo del rol de quien invita
+  // (0034). Un gerente no ve «Gerente»: lo nombra quien está por encima de los dos.
+  const sePuedenDar = new Set(yo?.rolesQuePuedoDar ?? []);
+  const roles = ROLES_DE_LOCAL.filter((r) => sePuedenDar.has(r.valor));
   const [correo, setCorreo] = useState('');
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
-  const [rol, setRol] = useState<string>('camarero');
+  const [rol, setRol] = useState<string>(
+    roles.some((r) => r.valor === 'camarero') ? 'camarero' : (roles.at(-1)?.valor ?? 'camarero'),
+  );
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -104,7 +110,8 @@ export function Invitar({
         <Selector
           etiqueta="Qué hace aquí"
           value={rol}
-          opciones={[...ROLES_DE_LOCAL]}
+          opciones={[...roles]}
+          ayuda="Los que quedan por debajo del tuyo. A alguien de tu nivel lo nombra quien está por encima."
           onChange={(evento) => {
             setRol(evento.target.value);
           }}

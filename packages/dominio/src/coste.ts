@@ -150,10 +150,41 @@ export function valorDeLasExistencias(existencias: Existencias): Centimos {
 }
 
 /**
- * Para enseñarlo: «0,0039 €/g». Devuelve texto, para que no se pueda seguir
+ * Lo que cuesta la unidad en euros, **en la unidad que se lee**.
+ *
+ * Nadie compra a tanto el gramo: se dice el kilo y el litro. Los gramos y los
+ * mililitros se enseñan por kilo y por litro, y lo guardado no cambia —el coste
+ * sigue en milésimas por gramo—. Es para pintar una cifra o una gráfica.
+ */
+export function eurosPorUnidadVisible(
+  coste: Milesimas,
+  unidad: string,
+): { readonly euros: number; readonly unidad: string } {
+  const euros = coste / (MILESIMAS_POR_CENTIMO * 100);
+  if (unidad === 'g') return { euros: euros * 1000, unidad: 'kg' };
+  if (unidad === 'ml') return { euros: euros * 1000, unidad: 'l' };
+  return { euros, unidad };
+}
+
+/**
+ * Para enseñarlo: «3,92 €/kg». Devuelve texto, para que no se pueda seguir
  * calculando con ello.
+ *
+ * ── Con dos decimales, que es como se leen los euros ────────────────────────
+ *
+ * Decía «0,0039 €/g» y «1,7500 €»: cuatro decimales porque el coste por gramo no
+ * cabe en céntimos. «No pongas estos números: 1,7500 € es 1,75 €, solo dos
+ * decimales, es lo habitual.» Tenía razón, y la salida es la de siempre: **se
+ * cambia de unidad en vez de añadir decimales**. 0,0039 €/g son 3,92 €/kg.
+ *
+ * Y lo que de verdad no llega al céntimo —una servilleta a 0,004 €— se dice por
+ * cien: «0,40 € cada 100 ud». Un «0,00 €/ud» sería mentir.
  */
 export function comoPrecioPorUnidad(coste: Milesimas, unidad: string): string {
-  const euros = coste / (MILESIMAS_POR_CENTIMO * 100);
-  return `${euros.toFixed(4).replace('.', ',')} €/${unidad}`;
+  const visible = eurosPorUnidadVisible(coste, unidad);
+  const dos = (n: number) => n.toFixed(2).replace('.', ',');
+  if (visible.euros > 0 && visible.euros < 0.01) {
+    return `${dos(visible.euros * 100)} € cada 100 ${visible.unidad}`;
+  }
+  return `${dos(visible.euros)} €/${visible.unidad}`;
 }

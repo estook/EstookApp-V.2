@@ -64,7 +64,7 @@ Los que no pueden pisar el navegador jamas.
 | `AI_MODELO_ANALISIS`  | El modelo bueno para el analisis nocturno   |
 | `APP_URL`             | La direccion publica, para los enlaces      |
 | `DATABASE_URL`        | La cadena del **agrupador de sesion** (M4)  |
-| `ORIGENES_PERMITIDOS` | Desde que dominios se puede llamar (M4)     |
+| `ORIGENES_PERMITIDOS` | Origenes de mas, si alguno hace falta (M4)  |
 | `ENTORNO`             | `produccion` (M4)                           |
 
 `GOOGLE_MAPS_KEY` **ya no hace falta para M5**: Google Places se aplaza a M23,
@@ -79,9 +79,11 @@ Los tres ultimos los necesita la API desplegada. `DATABASE_URL` tiene que ir por
 el **agrupador de sesion** (`pooler`), no por la conexion directa: la directa de
 los proyectos nuevos solo funciona por IPv6.
 
-Y `ORIGENES_PERMITIDOS` **no se deja vacia ni se pone a `*`**: es la lista de
-paginas que pueden llamar a la API desde un navegador. Hoy,
-`https://estook.github.io`.
+Y `ORIGENES_PERMITIDOS` **ya no hace falta para lo nuestro**: `estook.com` y
+`www.estook.com` los lleva el codigo de la API (0036), que es donde se ve. Se deja
+para anadir algun origen mas —una previsualizacion, el dominio de un cliente—,
+separados por comas. **Nunca `*`**: seria dejar que cualquier pagina del mundo
+llame a la API desde el navegador de quien la visite.
 
 ## En tu maquina
 

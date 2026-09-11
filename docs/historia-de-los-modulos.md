@@ -1733,6 +1733,21 @@ podía darle la contraseña. Quien nombra es quien después gestiona. Y la últi
 dirección que intentaba irse oía «no es tu nivel» en vez de «el negocio se queda sin
 nadie que lo administre»: el guardián de siempre va ahora primero.
 
+#### Y el dominio, que se adelantó a la fuerza
+
+Richi conectó `estook.com` y **la aplicación se quedó en blanco**: seguía
+construida para `estook.github.io/EstookApp-V.2/` y pedía sus ficheros donde ya no
+había nada. La raíz se deducía del repositorio salvo que alguien declarara una
+variable, y la API solo aceptaba el dominio viejo porque la lista vivía en un
+secreto de Supabase. Dos pantallas fuera del código que había que recordar, y el
+producto caído mientras tanto. Ahora la dirección y los orígenes los sabe el
+código, con su prueba ([0036](decisiones/0036-la-direccion-es-estook-com.md)).
+
+De paso salió otro: `congelar` y el alta fechaban con `current_date`, que en
+Supabase es UTC. Lo cazó la prueba de congelar corriendo a las 00:30 de Madrid,
+cuando en UTC era el día anterior. La fecha la pone el servidor con la zona y la
+hora de corte del local, como cualquier movimiento (regla 10).
+
 #### Lo que queda de su lista, y en qué entrega
 
 | Entrega | Qué                                                                                       |

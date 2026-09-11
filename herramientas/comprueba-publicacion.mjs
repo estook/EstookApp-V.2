@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url';
  * Comprueba que lo construido apunta a donde se va a publicar.
  *
  * Existe por un fallo real: la primera publicacion salio en blanco porque el HTML
- * pedia los ficheros en `/assets/...` cuando estaban en `/EstookApp-V.2/assets/...`.
+ * pedia los ficheros donde no estaban. Volvio a pasar al estrenar `estook.com`,
+ * al reves: el HTML pedia `/EstookApp-V.2/assets/...` y ahi ya no habia nada.
  * No fallaba nada, no habia error en ninguna consola de construccion: simplemente
  * la pagina no pintaba. Un fallo asi no se puede quedar sin vigilar.
  *
@@ -73,9 +74,9 @@ if (hayFallo) {
       '',
       'Que ha pasado: lo construido apunta a una direccion distinta de donde se',
       'publica. Publicado asi, la pagina saldria en blanco.',
-      'Que se puede hacer: revisar VITE_BASE. Vale "/EstookApp-V.2/" mientras la',
-      'direccion sea estook.github.io/EstookApp-V.2/, y "/" con dominio propio.',
-      'Esta escrito en docs/decisiones/0001-publicacion-en-github-pages.md',
+      'Que se puede hacer: revisar VITE_BASE. Con estook.com vale "/", y lo fija',
+      'el flujo de publicacion; no hace falta ninguna variable.',
+      'Esta escrito en docs/decisiones/0036-la-direccion-es-estook-com.md',
     ].join('\n'),
   );
   process.exit(1);

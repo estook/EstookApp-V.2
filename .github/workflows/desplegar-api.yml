@@ -25,8 +25,11 @@ name: Desplegar la API
 # Y en Supabase → Project Settings → Edge Functions → Secrets:
 #
 #   DATABASE_URL          la del agrupador de sesion, no la directa
-#   ORIGENES_PERMITIDOS   https://estook.github.io
 #   ENTORNO               produccion
+#
+# `ORIGENES_PERMITIDOS` ya **no hace falta** para lo nuestro: estook.com y
+# www.estook.com los lleva el codigo (0036). Se deja para anadir algun origen
+# mas —una previsualizacion, el dominio de un cliente—, separados por comas.
 #
 # ── Por que no se despliega solo en cada fusion ──────────────────────────────
 #

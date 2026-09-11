@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { partidaDe, valorDeLaMerma } from '@estook/dominio';
+import { horaDeCorte, jornadaDe, partidaDe, valorDeLaMerma } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
@@ -191,9 +191,19 @@ export const congelar = comando<EntradaCongelar, { loteId: string }>({
     const organizacionId = laOrganizacionDeLaSesion(contexto);
 
     const productos = await contexto.sql<
-      { local_id: string; nombre: string; es_ejemplo: boolean }[]
+      {
+        local_id: string;
+        nombre: string;
+        es_ejemplo: boolean;
+        zona_horaria: string;
+        hora_de_corte: string;
+      }[]
     >`
-      select local_id, nombre, es_ejemplo from estook.producto where id = ${entrada.producto_id}
+      select p.local_id, p.nombre, p.es_ejemplo,
+             l.zona_horaria, to_char(l.hora_de_corte, 'HH24:MI') as hora_de_corte
+        from estook.producto p
+        join estook.local l on l.id = p.local_id
+       where p.id = ${entrada.producto_id}
     `;
     const producto = productos[0];
     if (!producto) {
@@ -202,13 +212,26 @@ export const congelar = comando<EntradaCongelar, { loteId: string }>({
       });
     }
 
+    // ── Qué día es «hoy» ─────────────────────────────────────────────────────
+    //
+    // Lo decide el servidor con la zona y la hora de corte del local, nunca
+    // `current_date`, que en Supabase es UTC (regla 10). Con `current_date`, lo
+    // que se congelaba a las dos de la madrugada en Madrid quedaba fechado el día
+    // anterior; y a las 00:30, un día menos del que dice el reloj de la cocina.
+    // Lo cazó la prueba de congelar, corriendo de madrugada.
+    const hoy = jornadaDe(
+      contexto.ahora,
+      producto.zona_horaria,
+      horaDeCorte(producto.hora_de_corte),
+    );
+
     let loteId: string | undefined;
 
     if (entrada.lote_id !== undefined) {
       const cambiaLaFecha = entrada.caduca_el !== undefined;
       const congelados = await contexto.sql<{ id: string; ya: boolean }[]>`
         update estook.lote
-           set congelado_el = coalesce(congelado_el, current_date),
+           set congelado_el = coalesce(congelado_el, ${hoy}::date),
                caduca_el = case when ${cambiaLaFecha} then ${entrada.caduca_el ?? null}::date
                                 else caduca_el end
          where id = ${entrada.lote_id}
@@ -229,7 +252,7 @@ export const congelar = comando<EntradaCongelar, { loteId: string }>({
         )
         values (
           ${producto.local_id}, ${entrada.producto_id}, ${entrada.codigo ?? null},
-          ${entrada.caduca_el ?? null}::date, current_date, current_date, ${producto.es_ejemplo}
+          ${entrada.caduca_el ?? null}::date, ${hoy}::date, ${hoy}::date, ${producto.es_ejemplo}
         )
         returning id
       `;

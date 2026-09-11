@@ -150,7 +150,7 @@ new secret**, tres veces:
 | Name                  | Value                                       |
 | --------------------- | ------------------------------------------- |
 | `DATABASE_URL`        | la cadena de conexión, **la del agrupador** |
-| `ORIGENES_PERMITIDOS` | `https://estook.github.io`                  |
+| `ORIGENES_PERMITIDOS` | vacía: los nuestros van en el código (0036) |
 | `ENTORNO`             | `produccion`                                |
 
 Sobre la primera: en Supabase, botón **Connect**, elige **Session pooler** (no
@@ -217,7 +217,7 @@ O, si prefieres, cualquier cosa que fusiones en `main` la vuelve a publicar sola
 
 ### Cómo saber que ha ido bien
 
-Abre https://estook.github.io/EstookApp-V.2/app/ en el móvil. El aviso naranja
+Abre https://estook.com/app/ en el móvil. El aviso naranja
 tiene que haber desaparecido y en su sitio tienen que estar los dos campos.
 
 Entra con:

@@ -46,3 +46,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0033** | Los precios de compra se guardan sin IVA, y se escriben como venga el papel |
 | **0034** | Nadie gestiona el acceso de su igual: lo hace quien esta por encima         |
 | **0035** | El alta pregunta como se compra, y la cuenta la hace el dominio             |
+| **0036** | La direccion es estook.com, y la sabe el codigo                             |

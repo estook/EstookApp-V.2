@@ -2,7 +2,9 @@
 
 **Fecha:** 31 de agosto de 2026
 **Modulo:** M0
-**Estado:** aceptada
+**Estado:** aceptada · **la direccion la sustituye la [0036](0036-la-direccion-es-estook-com.md)**
+(11 de septiembre de 2026): el sitio vive en `estook.com` y `VITE_BASE` es `/`.
+Lo demas —Pages, las cuatro aplicaciones por subcarpeta, el `404.html`— sigue igual.
 
 ## El problema
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { crearApi } from './index.ts';
+import { crearApi, NUESTROS_ORIGENES } from './index.ts';
 import { crearDespachador, type Contexto, type Puertos } from '../aplicacion/index.ts';
 import { CABECERA_IDEMPOTENCIA, tokenDeLaCabecera } from './cabeceras.ts';
 import { porQueNoSeAtiende, versionSoportada, VERSION_ACTUAL } from './version.ts';
@@ -294,5 +294,35 @@ describe('el token de sesion', () => {
 
     expect(respuesta.status).toBe(401);
     expect((await cuerpoDe(respuesta)).error?.codigo).toBe('sin_sesion');
+  });
+});
+
+/**
+ * ── El dominio propio, fijado en una prueba ──────────────────────────────────
+ *
+ * Estrenar `estook.com` dejo la aplicacion caida: la API solo aceptaba llamadas
+ * de `estook.github.io`, porque la lista vivia en un secreto de Supabase y nadie
+ * la habia cambiado. Ahora los nuestros los sabe el codigo (0036), y esta prueba
+ * es lo que impide que se vuelvan a perder de vista.
+ */
+describe('desde donde se puede llamar', () => {
+  async function preguntaDesde(origen: string) {
+    const { app } = api();
+    return app.request('/api/v1/consultas/mis_locales', {
+      method: 'OPTIONS',
+      headers: { origin: origen, 'access-control-request-method': 'GET' },
+    });
+  }
+
+  it('estook.com y su www, siempre', async () => {
+    for (const nuestro of NUESTROS_ORIGENES) {
+      const respuesta = await preguntaDesde(nuestro);
+      expect(respuesta.headers.get('access-control-allow-origin'), nuestro).toBe(nuestro);
+    }
+  });
+
+  it('y cualquier otra pagina, no', async () => {
+    const respuesta = await preguntaDesde('https://la-que-sea.example');
+    expect(respuesta.headers.get('access-control-allow-origin')).toBeNull();
   });
 });

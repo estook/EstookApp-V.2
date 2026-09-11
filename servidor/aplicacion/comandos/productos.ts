@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ALERGENOS, UNIDADES_DE_USO } from '@estook/dominio';
+import { ALERGENOS, UNIDADES_DE_USO, horaDeCorte, jornadaDe } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -341,14 +341,21 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
       // que hace que salga en «Congelados» (M7, repaso).
       let loteId: string | null = null;
       const conFecha = entrada.caduca_el !== null && entrada.caduca_el !== undefined;
+      // El día lo pone el servidor con la zona y la hora de corte del local, no
+      // `current_date`, que es UTC (regla 10): de madrugada fechaba el día de antes.
+      const hoy = jornadaDe(
+        contexto.ahora,
+        producto.zonaHoraria,
+        horaDeCorte(producto.horaDeCorte),
+      );
       if (conFecha || entrada.congelado === true) {
         const lotes = await contexto.sql<{ id: string }[]>`
           insert into estook.lote (
             local_id, producto_id, caduca_el, recibido_el, congelado_el, es_ejemplo
           )
           values (
-            ${localId}, ${productoId}, ${entrada.caduca_el ?? null}::date, current_date,
-            case when ${entrada.congelado === true} then current_date end,
+            ${localId}, ${productoId}, ${entrada.caduca_el ?? null}::date, ${hoy}::date,
+            case when ${entrada.congelado === true} then ${hoy}::date end,
             false
           )
           returning id

@@ -10,6 +10,7 @@ import {
   fechaEnElLocal,
   horaEnElLocal,
   ivaDeCompraPorDefecto,
+  ivaDeVentaPorDefecto,
   masDias,
   milesimas as enMilesimas,
   cuantoPedir,
@@ -109,6 +110,21 @@ export interface ProductoEnLista {
   readonly ivaDeCompra: number | null;
   /** Si ese tipo lo eligió alguien, o sale de la categoría. */
   readonly ivaDeCompraElegido: boolean;
+  /**
+   * A cuánto se vende tal cual, con impuesto, cuando se vende tal cual (0034).
+   *
+   * ── Y por qué esto sí lo ve todo el mundo ─────────────────────────────────
+   *
+   * Porque **está en la pizarra**. Lo que un cocinero no ve son los costes, los
+   * márgenes y los precios de compra; el precio de la caña lo sabe hasta quien
+   * entra por la puerta. Lo que no puede ver es el margen, y el margen no viaja:
+   * se calcula con el coste, y el coste sigue sin llegarle.
+   */
+  readonly precioDeVentaCentimos: number | null;
+  /** El tipo que se repercute al venderlo: el suyo, o el de la actividad. */
+  readonly ivaDeVenta: number | null;
+  /** Si ese tipo lo eligió alguien, o sale de la actividad del local. */
+  readonly ivaDeVentaElegido: boolean;
   /** Lo que trae cada unidad, cuando se cuenta por unidades: 250 (g). */
   readonly contenidoPorUnidad: number | null;
   readonly unidadDelContenido: string | null;
@@ -201,6 +217,8 @@ interface FilaDeProducto {
   // M7, repaso · congelado, IVA de compra y lo que trae cada unidad.
   congelado: boolean;
   iva_de_compra: string | null;
+  precio_de_venta_centimos: string | null;
+  iva_de_venta: string | null;
   territorio: string;
   contenido_por_unidad: string | null;
   unidad_del_contenido: string | null;
@@ -314,6 +332,8 @@ async function leerProductos(
                 and lo.congelado_el is not null and lo.retirado_en is null
            ) as congelado,
            p.iva_de_compra::text as iva_de_compra,
+           p.precio_de_venta_centimos::text as precio_de_venta_centimos,
+           p.iva_de_venta::text as iva_de_venta,
            lc.territorio::text as territorio,
            p.contenido_por_unidad::text as contenido_por_unidad,
            p.unidad_del_contenido::text as unidad_del_contenido
@@ -484,6 +504,15 @@ function componer(
         ? ivaDeCompraPorDefecto(fila.categoria_fiscal, fila.territorio)
         : Number(fila.iva_de_compra),
     ivaDeCompraElegido: fila.iva_de_compra !== null,
+    precioDeVentaCentimos:
+      fila.precio_de_venta_centimos === null ? null : Number(fila.precio_de_venta_centimos),
+    // Igual que el de compra: si nadie lo ha elegido, lo pone la actividad, y
+    // donde no es IVA no se supone nada.
+    ivaDeVenta:
+      fila.iva_de_venta === null
+        ? ivaDeVentaPorDefecto(fila.territorio)
+        : Number(fila.iva_de_venta),
+    ivaDeVentaElegido: fila.iva_de_venta !== null,
     contenidoPorUnidad:
       fila.contenido_por_unidad === null ? null : Number(fila.contenido_por_unidad),
     unidadDelContenido: fila.unidad_del_contenido,
@@ -760,6 +789,8 @@ export interface MovimientoEnFicha {
   readonly quien: string | null;
   readonly lote: string | null;
   readonly costeMilesimas?: number | null;
+  /** Lo que se cobro, en las ventas (0034). Solo a quien puede ver dinero. */
+  readonly ingresoCentimos?: number | null;
 }
 
 export interface LoteEnFicha {
@@ -868,6 +899,7 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
         cantidad_despues: string;
         coste_milesimas: string | null;
         motivo: string | null;
+        ingreso_centimos: string | null;
         fecha_operativa: string;
         ocurrido_en: string;
         quien: string | null;
@@ -879,6 +911,7 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
              m.cantidad_despues::text as cantidad_despues,
              m.coste_milesimas::text as coste_milesimas,
              m.motivo,
+             m.ingreso_centimos::text as ingreso_centimos,
              to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha_operativa,
              to_char(m.ocurrido_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ocurrido_en,
              pe.nombre as quien,
@@ -948,9 +981,12 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
           quien: m.quien,
           lote: m.lote,
           costeMilesimas: m.coste_milesimas === null ? null : Number(m.coste_milesimas),
+          ingresoCentimos: m.ingreso_centimos === null ? null : Number(m.ingreso_centimos),
         };
         // Igual que arriba: el campo se quita, no se vacía.
-        return conPrecios ? linea : sinLosCamposDeDinero(linea, ['costeMilesimas']);
+        return conPrecios
+          ? linea
+          : sinLosCamposDeDinero(linea, ['costeMilesimas', 'ingresoCentimos']);
       }),
       lotes: lotes.map((l) => ({
         id: l.id,
@@ -1281,6 +1317,11 @@ export interface MovimientoDelLibro {
   readonly esEjemplo: boolean;
   /** Lo que costo, si quien mira puede ver dinero. Si no, no viaja. */
   readonly costeMilesimas?: number | null;
+  /**
+   * Lo que se cobro, en las ventas (0034). Como el coste: **no se esconde, no se
+   * manda** a quien no puede ver dinero.
+   */
+  readonly ingresoCentimos?: number | null;
 }
 
 export const entradaMovimientos = z
@@ -1291,9 +1332,27 @@ export const entradaMovimientos = z
      * Se valida contra la lista cerrada y no se cuela en el `where` a pelo: es
      * texto que llega de fuera.
      */
-    tipo: z.enum(['entrada', 'salida', 'ajuste']).optional(),
+    tipo: z.enum(['entrada', 'salida', 'venta', 'ajuste', 'merma']).optional(),
     producto_id: z.string().uuid().optional(),
+    /**
+     * Qué se busca: el producto, quién lo apuntó o el motivo.
+     *
+     * ── Y por qué esto tiene que estar en el servidor ─────────────────────────
+     *
+     * Porque estaba en la pantalla, filtrando **las cien líneas ya traídas**. Con
+     * un libro de cien líneas eso funciona y con uno de diez mil miente: buscar
+     * «aceite» contestaba «nada con eso» cuando lo que pasaba es que el aceite
+     * estaba en la línea tres mil. Un filtro que solo funciona cuando la lista
+     * cabe entera es un filtro que miente, y es la misma lección que ya obligó a
+     * subir al servidor las vistas de Productos.
+     */
+    texto: z.string().trim().max(120).optional(),
     desde: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    /** Hasta qué jornada, incluida. Con `desde`, es el tramo que se mira. */
+    hasta: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)
       .optional(),
@@ -1352,6 +1411,7 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
         cantidad_despues: string;
         coste_milesimas: string | null;
         motivo: string | null;
+        ingreso_centimos: string | null;
         fecha_operativa: string;
         ocurrido_en: string;
         quien: string | null;
@@ -1366,6 +1426,7 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
              m.cantidad_despues::text as cantidad_despues,
              m.coste_milesimas::text as coste_milesimas,
              m.motivo,
+             m.ingreso_centimos::text as ingreso_centimos,
              to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha_operativa,
              to_char(m.ocurrido_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ocurrido_en,
              pe.nombre as quien,
@@ -1381,6 +1442,15 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
               or m.producto_id = ${entrada.producto_id ?? null}::uuid)
          and (${entrada.desde ?? null}::date is null
               or m.fecha_operativa >= ${entrada.desde ?? null}::date)
+         and (${entrada.hasta ?? null}::date is null
+              or m.fecha_operativa <= ${entrada.hasta ?? null}::date)
+         and (
+           ${entrada.texto ?? ''} = ''
+           or estook.sin_acentos(p.nombre) like '%' || estook.sin_acentos(${entrada.texto ?? ''}) || '%'
+           or estook.sin_acentos(coalesce(pe.nombre, '')) like '%' || estook.sin_acentos(${entrada.texto ?? ''}) || '%'
+           or estook.sin_acentos(coalesce(m.motivo, '')) like '%' || estook.sin_acentos(${entrada.texto ?? ''}) || '%'
+           or estook.sin_acentos(coalesce(l.codigo, '')) like '%' || estook.sin_acentos(${entrada.texto ?? ''}) || '%'
+         )
        order by m.ocurrido_en desc, m.id desc
        limit ${limite + 1} offset ${salto}
     `;
@@ -1410,6 +1480,7 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
           ? {
               ...linea,
               costeMilesimas: f.coste_milesimas === null ? null : Number(f.coste_milesimas),
+              ingresoCentimos: f.ingreso_centimos === null ? null : Number(f.ingreso_centimos),
             }
           : linea;
       }),

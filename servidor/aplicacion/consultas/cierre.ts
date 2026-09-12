@@ -6,6 +6,7 @@ import {
   masDias,
   porcentajeDe,
   precioPorUnidad,
+  sinAcentos,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 
@@ -178,7 +179,9 @@ export const misCierres = consulta<EntradaMisCierres, SalidaMisCierres>({
                  join estook.producto pr on pr.id = m.producto_id
                 where m.local_id = c.local_id
                   and m.fecha_operativa = c.fecha_operativa
-                  and m.tipo in ('salida', 'merma', 'consumo')
+                  -- Y las ventas (0034): género que salió de la cámara y se
+                  -- cobró sigue siendo género que salió, y cuesta lo que costó.
+                  and m.tipo in ('salida', 'merma', 'venta', 'consumo')
                   and not pr.es_ejemplo
              ) as consumo
         from estook.cierre_de_caja c
@@ -250,6 +253,22 @@ export interface SalidaUnCierre {
     readonly clave: string;
     readonly concepto: string;
     readonly precioUnidadCentimos: number;
+  }[];
+  /**
+   * Lo que se ha vendido apuntándolo en Inventario esa jornada (0034).
+   *
+   * **Es una propuesta, no un apunte.** El dinero de una jornada tiene un solo
+   * dueño, que es este cierre; si una salida de cámara sumara por su cuenta y
+   * además se metiera el papel de la caja, el día se contaría dos veces y no se
+   * vería. Así que aquí sale lo vendido, con su nombre y su importe, y se añade
+   * a las líneas **si alguien lo dice**.
+   */
+  readonly vendidoEnCamara: readonly {
+    readonly concepto: string;
+    readonly unidades: number;
+    readonly importeCentimos: number;
+    /** Si ese concepto ya está entre las líneas del cierre: no se añade dos veces. */
+    readonly yaEstaPuesto: boolean;
   }[];
 }
 
@@ -335,6 +354,28 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
        limit 300
     `;
 
+    // ── Lo vendido desde Inventario esa jornada ──────────────────────────────
+    //
+    // Agrupado por producto y con lo que se cobró sumado. Se piden solo las que
+    // llevan importe: una venta apuntada sin acordarse de a cuánto no puede
+    // proponer un euro, y proponerlo a cero sería inventarse la cifra.
+    const vendido = await contexto.sql<{ concepto: string; unidades: string; importe: string }[]>`
+      select p.nombre as concepto,
+             sum(abs(m.cantidad))::text as unidades,
+             sum(m.ingreso_centimos)::text as importe
+        from estook.movimiento_de_stock m
+        join estook.producto p on p.id = m.producto_id
+       where m.local_id = ${localId}
+         and m.fecha_operativa = ${fecha}::date
+         and m.ingreso_centimos is not null
+         and not p.es_ejemplo
+       group by p.nombre
+       order by sum(m.ingreso_centimos) desc
+       limit 100
+    `;
+
+    const yaPuestos = new Set(lineas.map((l) => sinAcentos(l.concepto.trim().toLowerCase())));
+
     return {
       cierre:
         fila === undefined
@@ -368,6 +409,12 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
           ? []
           : [{ clave: plato.clave, concepto: plato.concepto, precioUnidadCentimos: precio }];
       }),
+      vendidoEnCamara: vendido.map((v) => ({
+        concepto: v.concepto,
+        unidades: Number(v.unidades),
+        importeCentimos: Number(v.importe),
+        yaEstaPuesto: yaPuestos.has(sinAcentos(v.concepto.trim().toLowerCase())),
+      })),
     };
   },
 });

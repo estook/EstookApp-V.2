@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { IconoCerrar, IconoDeshacer } from '@estook/iconos';
 import { SEGUNDOS_PARA_DESHACER, usarDeshacer } from '../ganchos/usarDeshacer.tsx';
+import { usarLaCapaDeArriba } from '../ganchos/capaDeArriba.ts';
 import { Aviso } from './Aviso.tsx';
 
 /**
@@ -20,20 +22,35 @@ import { Aviso } from './Aviso.tsx';
 export function Deshacer() {
   const { pendiente, deshacer, olvidar, fallo } = usarDeshacer();
   const quedan = useCuentaAtras(pendiente?.id ?? null);
+  /*
+    ── Dónde se pinta, que no es donde parecía ─────────────────────────────────
+
+    Si hay una hoja o un panel abiertos, **dentro de ellos**. Un `<dialog>` modal
+    vive en la capa superior del navegador: por encima de cualquier `z-index`, y
+    con su fondo tragándose los clics. Esta barra se quedaba debajo —se veía y no
+    se podía pulsar— justo en el momento en el que hace falta, que es después de
+    guardar algo en una hoja.
+
+    Lo encontró una prueba de pantalla intentando pulsarla veinte veces. Lo cuenta
+    entero `capaDeArriba.ts`.
+  */
+  const encima = usarLaCapaDeArriba();
+  const enSuSitio = (contenido: ReactNode) =>
+    encima === null ? contenido : createPortal(contenido, encima);
 
   if (fallo !== null) {
-    return (
+    return enSuSitio(
       <div className="fixed inset-x-e3 bottom-e3 z-50 mx-auto max-w-[34rem] sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
         <Aviso tono="mal" titulo={fallo.titulo} esNoticia alCerrar={olvidar}>
           {fallo.texto}
         </Aviso>
-      </div>
+      </div>,
     );
   }
 
   if (!pendiente) return null;
 
-  return (
+  return enSuSitio(
     <div
       // `status` y no `alert`: se anuncia sin cortar lo que el lector este
       // diciendo, porque no es una urgencia.
@@ -74,7 +91,7 @@ export function Deshacer() {
       >
         <IconoCerrar size={18} />
       </button>
-    </div>
+    </div>,
   );
 }
 

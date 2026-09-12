@@ -1046,6 +1046,57 @@ test('el libro se pinta por días, con quién apuntó cada línea', async ({ pag
   await expect(page.getByText(/quedaron /).first()).toBeVisible({ timeout: 15_000 });
 });
 
+/**
+ * ── El libro largo: el tramo, «Ver más» y buscar de verdad ──────────────────
+ *
+ * Esto decía «se enseñan los cien últimos. Busca por producto para encontrar los
+ * de antes», y el buscador filtraba **esas cien líneas ya traídas**: buscar algo
+ * de hace tres meses contestaba «nada con eso». Un filtro que solo funciona
+ * cuando la lista cabe entera es un filtro que miente, y ya nos costó una vez en
+ * la lista de Productos.
+ */
+test('el libro se acota por tramo, y busca en el servidor', async ({ page, request }) => {
+  const token = await tokenDe(request, ROSA);
+  // Un producto con su línea en el libro, y un nombre que no se parece a nada.
+  const nombre = `Azafrán ${Date.now()}`;
+  const creado = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre,
+    factor: 1,
+    unidad_de_uso: 'g',
+    precio_centimos: 1200,
+    cantidad_inicial: 50,
+  });
+  expect(creado.estado).toBe(200);
+
+  await entrar(page, ROSA);
+  await irAInventario(page, 'movimientos', 'todo');
+
+  // Hasta dónde se mira, que es lo que acota de verdad. De fábrica, el trimestre.
+  const tramo = page.getByLabel('Hasta dónde miro');
+  await expect(tramo).toHaveValue('trimestre');
+  await expect(page.getByText(/quedaron /).first()).toBeVisible({ timeout: 15_000 });
+
+  // ── Buscar busca en el servidor, y por eso encuentra ─────────────────────
+  //
+  // Antes esto filtraba **las cien líneas ya traídas**, así que un producto que
+  // no estuviera entre ellas contestaba «nada con eso» aunque estuviera en el
+  // libro. Ahora se busca en todo el tramo, y lo que sale es solo lo suyo.
+  await page.getByLabel('Buscar en el libro').fill(nombre);
+  await expect(loQueSeVe(page, nombre)).toBeVisible({ timeout: 15_000 });
+
+  // Y lo que no existe deja la lista vacía **con su frase**, en vez de recortar
+  // lo que ya estaba en pantalla.
+  await page.getByLabel('Buscar en el libro').fill('zzzz-nada-de-esto');
+  await expect(page.getByText('Nada con eso')).toBeVisible({ timeout: 15_000 });
+
+  // Y cambiar el tramo vuelve a preguntar al servidor, sin romperse.
+  await page.getByLabel('Buscar en el libro').fill('');
+  await tramo.selectOption('mes');
+  await expect(tramo).toHaveValue('mes');
+  await expect(page.getByText('No he podido leer el libro')).toHaveCount(0);
+  await expect(page.getByText(/quedaron /).first()).toBeVisible({ timeout: 15_000 });
+});
+
 // ── 6 · Las vistas de Productos filtran de verdad ───────────────────────────
 
 /**
@@ -1391,6 +1442,83 @@ test('el IVA de los precios: se elige cómo se escriben y a los de antes se les 
   expect(despues.datos?.producto.precioCentimos).toBe(1000);
 });
 
+// ── 7½ · La ficha, repasada: lo que deja, el aprovechamiento y deshacer ─────
+
+/**
+ * ── Las tres cosas que Richi no encontraba en la ficha ──────────────────────
+ *
+ *   · «El diseño de la tarjeta de producto es demasiado sencillo, los botones no
+ *     existen.» Cada sección es ahora una tarjeta con su título y su botón.
+ *   · «Hay un tag naranja que dice "sin verificar" y no sé cómo quitarlo.» El
+ *     dato vive donde se lee y **con qué se arregla al lado**.
+ *   · «El deshacer ha desaparecido.» Está, en lo que se edita y se puede volver
+ *     a editar: la ficha, el precio de compra y el de venta.
+ */
+test('la ficha dice lo que deja, deja medir el aprovechamiento y se puede deshacer', async ({
+  page,
+  request,
+}) => {
+  const token = await tokenDe(request, ROSA);
+  const nombre = `Botellín ${Date.now()}`;
+  const creado = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre,
+    factor: 1,
+    unidad_de_uso: 'ud',
+    // 0,45 € de coste: con 2,50 € de venta al 10 %, el género se lleva un 20 %.
+    precio_centimos: 45,
+    cantidad_inicial: 24,
+  });
+  expect(creado.estado).toBe(200);
+
+  await entrar(page, ROSA);
+  await page.goto(`${APP}#/inventario/productos/todo?producto=${creado.datos?.productoId ?? ''}`, {
+    waitUntil: 'domcontentloaded',
+  });
+
+  const ficha = page.getByRole('dialog', { name: nombre });
+
+  // ── Lo que deja, que antes no existía ────────────────────────────────────
+  await ficha.getByRole('button', { name: 'Poner precio de venta' }).click();
+  const hoja = page.getByRole('dialog', { name: 'A cuánto lo vendes' });
+  await hoja.getByLabel(/^Lo que cobras/).fill('2,50');
+  // La cuenta se ve antes de guardar: 2,50 € con el 10 % dentro son 2,27 €.
+  await expect(hoja.getByText(/te entran/i)).toContainText('2,27');
+  await hoja.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await expect(hoja).toHaveCount(0);
+
+  // Y el margen, con el coste ya restado y sin regalarse el impuesto: 2,50 € con
+  // el 10 % dentro son 2,27 €, menos 0,45 € de coste, 1,82 €.
+  await expect(ficha.getByText('Te queda', { exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(ficha.getByText('1,82 €')).toBeVisible();
+
+  // ── Y deshacer, que es lo que pidió ──────────────────────────────────────
+  const deshacer = page.getByRole('button', { name: /Deshacer/ });
+  await expect(deshacer).toBeVisible();
+  await deshacer.click();
+  await expect(ficha.getByRole('button', { name: 'Poner precio de venta' })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  // ── El aprovechamiento: se lee, y se mide desde aquí ─────────────────────
+  await expect(ficha.getByText('supuesto, sin medir')).toBeVisible();
+  await ficha.getByRole('button', { name: 'Lo he medido' }).click();
+  const medir = page.getByRole('dialog', { name: 'Cuánto se aprovecha' });
+  await medir.getByLabel(/^Lo que entra/).fill('10');
+  await medir.getByLabel(/^Lo que queda limpio/).fill('8');
+  await expect(medir.getByText('Se aprovecha un 80 %')).toBeVisible();
+  await medir.getByRole('button', { name: 'Guardarlo' }).click();
+  await expect(medir).toHaveCount(0);
+  await expect(ficha.getByText('medido en esta cocina')).toBeVisible({ timeout: 15_000 });
+
+  // Y corregir una errata en el nombre **no** lo vuelve a marcar como supuesto,
+  // que es lo que hacía que la etiqueta naranja saliera en todos los productos.
+  await ficha.getByRole('button', { name: 'Corregir la ficha' }).click();
+  const corregir = page.getByRole('dialog', { name: 'Corregir la ficha' });
+  await corregir.getByLabel(/^Producto/).fill(`${nombre} frío`);
+  await corregir.getByRole('button', { name: /^Guardar/ }).click();
+  await expect(corregir).toHaveCount(0);
+  await expect(ficha.getByText('medido en esta cocina')).toBeVisible({ timeout: 15_000 });
+});
 // ── 8 · Delivery · el sitio, no la integración ──────────────────────────────
 
 test('el reparto tiene su sitio, con Uber Eats por su nombre y sin botón de mentira', async ({

@@ -253,7 +253,10 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // «Los recuentos y las mermas seran vistas de Movimientos», y esto es la
         // primera de las dos cumpliendose: la merma es una salida de genero con
         // motivo, no una app aparte.
-        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Mermas', 'Ajustes'),
+        // Y «Ventas» desde el repaso de M7: el género que sale de la cámara y se
+        // cobra tal cual —media barra de un bar— dejo de ser una salida con una
+        // nota y tiene su propia linea en el libro (0037).
+        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Ventas', 'Mermas', 'Ajustes'),
       },
       {
         id: 'compras',

@@ -198,7 +198,21 @@ export function Productos({
             {!p.activo && <Etiqueta>desactivado</Etiqueta>}
             {/* Lo que hay en el congelador, para tenerlo en mente sin abrirlo. */}
             {p.congelado && <Etiqueta tono="info">congelado</Etiqueta>}
-            {p.sinVerificar && <Etiqueta tono="atencion">sin verificar</Etiqueta>}
+            {/*
+              ── Aquí había una etiqueta naranja de «sin verificar», y se va ───
+
+              Salía en **todos** los productos, por dos motivos a la vez: un
+              producto nace sin verificar —nadie sabe cuánto se aprovecha el día
+              que lo da de alta— y, además, guardar su ficha para corregir una
+              errata volvía a marcarlo (el servidor lo hacía solo; arreglado con
+              el repaso). Así que era naranja en toda la lista, no se podía quitar
+              desde ninguna parte y no distinguía nada de nada.
+
+              «Una marca que sale en todos no marca nada.» El dato sigue, y sigue
+              importando —un aprovechamiento mal puesto es el error más caro del
+              sistema—, pero vive **donde se puede hacer algo con él**: en la
+              ficha, con su cifra y con el botón de medirlo.
+            */}
           </span>
           {/* El envase, en pequeño y debajo. Es lo que distingue dos filas que se
               llaman igual —«Aceite de oliva», garrafa de 5 l y de 8 l— y hasta

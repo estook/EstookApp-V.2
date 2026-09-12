@@ -1754,8 +1754,107 @@ hora de corte del local, como cualquier movimiento (regla 10).
 | ------- | ----------------------------------------------------------------------------------------- |
 | **2**   | Avisar a jefes y gerentes de lo que hace su equipo, una vez; invitar a rellenar un pedido |
 | **3**   | Horarios, una app entera en Equipo: cuadrante, historial, horas, avisos y PDF             |
-| **4**   | El dominio `estook.com`                                                                   |
 | **5**   | Los topes de las API de Google por local, y conectarlas cuando lleguen los accesos        |
+
+---
+
+### M7 · las bases, antes de seguir al M8
+
+> «No vamos a continuar hasta que las bases sean profesionales. Cómo se suman y se
+> restan los datos, los cálculos internos, el dinero, el fallo humano. Hay que
+> pulirlo todo.»
+
+Ocho cosas vistas con la aplicación abierta en el TPV. Cinco eran producto y tres
+eran fallos de verdad que nadie había visto.
+
+#### Uno · «Gastado o vendido» era un solo botón
+
+Y con eso, Estook no podía contestar **si por lo que salió de la cámara entró
+dinero**, que es de lo que cuelga el margen entero. Ahora el porqué va en tres
+familias —se vende, se usa, no se aprovecha—, cada una dice lo que significa antes
+de elegir, y lo vendido se apunta con lo que se cobró.
+
+La decisión de fondo no es esa, sino la siguiente: **ese dinero no suma solo**. El
+de una jornada tiene un único dueño, que es el cierre de caja; si una salida de
+cámara sumara por su cuenta y además se metiera el papel del Z, el día valdría el
+doble y **no se vería** —el total del mes saldría mal y todo lo demás parecería
+correcto—. Así que lo vendido espera, y al cerrar la caja sale propuesto con su
+nombre y su importe ([0037](decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md)).
+
+Con ello, un producto que se vende tal cual tiene por fin **margen**: lo que entra
+sin impuesto, lo que cuesta, lo que queda y qué parte se va en género. La cuenta la
+hace el dominio, que quita el IVA antes de restar: restar el precio de carta menos
+el coste es regalarse el impuesto como margen, y es el error más repetido que hay en
+la hoja de cálculo de un bar.
+
+#### Dos · La etiqueta que no se podía quitar
+
+«Sin verificar», en naranja, en **todos** los productos. Richi la buscó por toda la
+aplicación y no encontró dónde quitarla, porque no estaba en ninguna parte: el
+servidor guardaba `sin_verificar = !cambiaElCoste`, así que **corregir una errata en
+el nombre volvía a marcar el producto**. Una marca que sale en todos no marca nada.
+
+Ahora son tres estados y no dos —si no llega `verificado`, no se toca— y el dato
+vive donde se lee y con qué se arregla al lado: «Se aprovecha · 100 % · supuesto,
+sin medir», con un botón que pregunta lo que entra y lo que queda limpio y hace la
+cuenta. Y enseña el impacto antes de guardar, porque el aprovechamiento multiplica.
+
+De paso se separó lo que estaba mezclado: cambiar cuánto trae una caja **no es**
+medir cuánto se aprovecha de ella. Son dos datos que se multiplican en la misma
+fórmula, y darlos por medidos juntos era lo que vaciaba de significado la marca.
+
+#### Tres · La ficha del producto no se leía
+
+Secciones sueltas con un título encima y, a la derecha, botones de tono «texto».
+Sobre el tema oscuro eso es letra blanca sobre fondo negro: no se veía dónde
+empezaba una sección, y las tres cosas que se vienen a hacer —congelar, cambiar el
+precio, corregir la ficha— parecían párrafos.
+
+Ahora cada bloque es una tarjeta con su título y sus botones; arriba, la categoría,
+el proveedor y el envase, que estaban al final; y una barra que dice de un vistazo
+si se llega al mínimo.
+
+#### Cuatro · El buscador del libro mentía
+
+Decía «se enseñan los cien últimos; busca por producto para encontrar los de
+antes», y **buscaba dentro de esas cien**. Buscar algo de hace tres meses contestaba
+«nada con eso». Es el mismo fallo que ya costó las vistas de Productos: un filtro
+que solo funciona cuando la lista cabe entera es un filtro que miente.
+
+Ahora el libro y las mermas van por tramos de tiempo —un mes, tres, seis, un año—,
+buscan en el servidor y traen más de tanto en tanto, con cuántas se llevan. El
+gancho es uno (`usarListaLarga`) para que la siguiente lista que crezca no lo
+reinvente.
+
+Y de paso: **la vista «Mermas» del libro estaba rota desde M6½**. La barra mandaba
+`tipo=merma` y la consulta solo aceptaba entrada, salida y ajuste: contestaba «datos
+no válidos» y la pantalla salía en rojo.
+
+#### Cinco · El deshacer, y dónde se había metido
+
+Estaba —en cambiar de local, en el Panel y en el idioma— y no en lo que se edita a
+mano. Vuelve a la ficha del producto, al precio de compra y al de venta, con su
+contraria escrita en cada caso, que es como funciona desde M3.
+
+Lo que **no** lleva deshacer, y no es un olvido: apuntar género. El libro solo se
+añade, y un movimiento equivocado se enmienda con otro.
+
+**Y lo que encontró intentar probarlo:** la barra de deshacer **no se podía
+pulsar con una hoja o un panel abiertos**. No es un problema de `z-index`: un
+`<dialog>` con `showModal()` vive en la capa superior del navegador y su fondo se
+traga los clics. Se veía y no se podía tocar, justo en el momento en el que hace
+falta —acabas de guardar una ficha y el panel sigue abierto—. La prueba de pantalla
+lo intentó veinte veces y el navegador contestó siempre lo mismo.
+
+Se arregla pintando la barra **dentro** del diálogo de arriba, que es la única forma
+de entrar en esa capa sin ser uno mismo un modal. Lo cuenta `ganchos/capaDeArriba.ts`.
+
+#### Seis · La merma buscaba en el catálogo de ejemplo
+
+Al apuntar una merma salían los productos de mentira mezclados con los de verdad.
+En la lista de Productos salen a propósito —para mirarlos y aprender de ellos—, pero
+esto se abre en mitad de un servicio para decir qué se acaba de romper, y una merma
+de un producto de ejemplo no cuenta para nada sin que quien la apunta lo sepa.
 
 ---
 

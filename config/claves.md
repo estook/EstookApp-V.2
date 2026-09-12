@@ -55,17 +55,38 @@ alcance de cualquiera con un navegador se hace mirando, no de paso.
 
 Los que no pueden pisar el navegador jamas.
 
-| Nombre                | Que es                                      |
-| --------------------- | ------------------------------------------- |
-| `CLAVE_DE_SERVICIO`   | La clave secreta del proyecto               |
-| `GOOGLE_MAPS_KEY`     | Google Maps Platform · Places, **para M23** |
-| `AI_API_KEY`          | El proveedor de IA de Fogon · M22           |
-| `AI_MODELO_RAPIDO`    | El modelo barato para lo cotidiano          |
-| `AI_MODELO_ANALISIS`  | El modelo bueno para el analisis nocturno   |
-| `APP_URL`             | La direccion publica, para los enlaces      |
-| `DATABASE_URL`        | La cadena del **agrupador de sesion** (M4)  |
-| `ORIGENES_PERMITIDOS` | Origenes de mas, si alguno hace falta (M4)  |
-| `ENTORNO`             | `produccion` (M4)                           |
+| Nombre                | Que es                                           |
+| --------------------- | ------------------------------------------------ |
+| `CLAVE_DE_SERVICIO`   | La clave secreta del proyecto                    |
+| `GOOGLE_MAPS_KEY`     | Google Maps Platform · Places, **para M23**      |
+| `GOOGLE_BUSINESS_KEY` | Google Business Profile · la ficha y las resenas |
+| `RESEND_API_KEY`      | El correo que manda Estook (0017)                |
+| `AI_API_KEY`          | El proveedor de IA de Fogon · M22                |
+| `AI_MODELO_RAPIDO`    | El modelo barato para lo cotidiano               |
+| `AI_MODELO_ANALISIS`  | El modelo bueno para el analisis nocturno        |
+| `APP_URL`             | La direccion publica, para los enlaces           |
+| `DATABASE_URL`        | La cadena del **agrupador de sesion** (M4)       |
+| `ORIGENES_PERMITIDOS` | Origenes de mas, si alguno hace falta (M4)       |
+| `ENTORNO`             | `produccion` (M4)                                |
+
+### Las cuatro que faltan, y que **no bloquean nada hoy**
+
+Richi preguntó por ellas en el repaso de M7. Las cuatro estan sin poner, y ninguna
+frena lo que hay construido: **cada una la estrena el modulo que la usa**, y hasta
+entonces el sitio esta hecho y apagado con su motivo, que es como se hacen aqui las
+integraciones (0022).
+
+| Clave                 | Que enciende                                | Cuando hace falta                                      |
+| --------------------- | ------------------------------------------- | ------------------------------------------------------ |
+| `GOOGLE_MAPS_KEY`     | Situar el local y buscarlo por su direccion | **Entrega 5 de M7** (0030)                             |
+| `GOOGLE_BUSINESS_KEY` | Leer la ficha del local y sus resenas       | **Entrega 5 de M7**, con el acceso aprobado por Google |
+| `RESEND_API_KEY`      | Los avisos por correo                       | **Entrega 2 de M7** (0017)                             |
+| `AI_API_KEY`          | Que Fogon hable                             | **M22**, y antes hay que elegir modelo y tope (0023)   |
+
+Las dos de Google llevan **tope de gasto por local** antes de encenderse: un
+presupuesto de Google Cloud avisa y no corta, asi que lo que corta son las cuotas de
+cada API y nuestro propio contador (0030). Los pasos, en
+[`pasos-para-cerrar-m7.md`](../docs/pasos-para-cerrar-m7.md).
 
 `GOOGLE_MAPS_KEY` **ya no hace falta para M5**: Google Places se aplaza a M23,
 que es donde viven las resenas y la competencia y donde hay que enlazar la ficha

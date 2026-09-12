@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { nombreEn } from '../datos/nombreEn.ts';
-import { useQuery } from '@tanstack/react-query';
+import { usarListaLarga } from '../ganchos/usarListaLarga.ts';
 import {
   MOTIVOS_DE_MERMA,
   NOMBRE_DEL_MOTIVO_DE_MERMA,
@@ -31,7 +31,6 @@ import {
   IconoDocumento,
 } from '@estook/iconos';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
-import { usarSesion } from '../sesion/Sesion.tsx';
 import { ApuntarMerma } from './ApuntarMerma.tsx';
 import {
   comoDinero,
@@ -78,8 +77,6 @@ import {
  * llega con los documentos.
  */
 export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: string) => void }) {
-  const { cliente } = usarSesion();
-
   const [texto, setTexto] = useState('');
   const [motivo, setMotivo] = useState('');
   const [partida, setPartida] = useState('');
@@ -92,22 +89,18 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
     setApuntando(true);
   });
 
-  const consulta = useQuery({
-    queryKey: ['mis_mermas', dias, motivo, partida, texto],
-    queryFn: async (): Promise<MisMermas> => {
-      const respuesta = await cliente.consultar<MisMermas>('mis_mermas', {
-        ...(motivo === '' ? {} : { motivo }),
-        ...(partida === '' ? {} : { partida }),
-        ...(texto.trim() === '' ? {} : { texto: texto.trim() }),
-        // Los días y no la fecha: la fecha la pone el servidor con el reloj del
-        // local (regla 10), y aquí solo se dice cuánto hacia atrás.
-        ...(dias === '' ? {} : { dias }),
-        limite: '200',
-      });
-      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
+  const consulta = usarListaLarga<MisMermas>(
+    'mis_mermas',
+    {
+      ...(motivo === '' ? {} : { motivo }),
+      ...(partida === '' ? {} : { partida }),
+      ...(texto.trim() === '' ? {} : { texto: texto.trim() }),
+      // Los días y no la fecha: la fecha la pone el servidor con el reloj del
+      // local (regla 10), y aquí solo se dice cuánto hacia atrás.
+      ...(dias === '' ? {} : { dias }),
     },
-  });
+    50,
+  );
 
   if (consulta.isPending) {
     return (
@@ -125,9 +118,15 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
     );
   }
 
-  const datos = consulta.data;
+  // Los resúmenes —por partida, por motivo, por producto y el total— los calcula
+  // el servidor sobre **el periodo entero**, no sobre la página: son los mismos
+  // en todas, así que se leen de la primera. Las líneas, en cambio, se van
+  // juntando conforme se pide «Ver más».
+  const datos = consulta.data.pages[0];
+  if (datos === undefined) return null;
+  const mermas = consulta.data.pages.flatMap((p) => p.mermas);
   const conPrecios = datos.puedeVerPrecios;
-  const porDia = agruparPorDia(datos.mermas);
+  const porDia = agruparPorDia(mermas);
 
   const columnas: Columna<LineaDeMerma>[] = [
     {
@@ -450,10 +449,27 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
         ))
       )}
 
-      {datos.hayMas && (
-        <p className="text-secundario text-texto-suave">
-          Se enseñan los doscientos últimos. Acorta el periodo o busca por producto.
-        </p>
+      {/*
+        «Ver más», y cuántas se llevan. Antes esto decía «se enseñan los
+        doscientos últimos» y ahí se acababa: lo de antes no había forma de
+        verlo, ni siquiera buscándolo.
+      */}
+      {consulta.hasNextPage && (
+        <div className="flex flex-wrap items-center gap-e3">
+          <Boton
+            tono="secundario"
+            cargando={consulta.isFetchingNextPage}
+            textoCargando="Trayendo"
+            onClick={() => {
+              void consulta.fetchNextPage();
+            }}
+          >
+            Ver más
+          </Boton>
+          <span className="text-secundario text-texto-suave">
+            Llevas {mermas.length} de las que hay en el periodo.
+          </span>
+        </div>
       )}
 
       <ApuntarMerma

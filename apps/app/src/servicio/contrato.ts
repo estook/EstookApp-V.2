@@ -76,4 +76,17 @@ export interface ElCierreDeUnDia {
     readonly concepto: string;
     readonly precioUnidadCentimos: number;
   }[];
+  /**
+   * Lo que se ha vendido apuntándolo en Inventario esa jornada (M7, repaso).
+   *
+   * **Es una propuesta, no un apunte.** El dinero de un día se cuenta aquí y en
+   * ningún otro sitio; si una salida de cámara sumara por su cuenta y además se
+   * metiera el papel de la caja, el día valdría el doble y nadie lo vería.
+   */
+  readonly vendidoEnCamara: readonly {
+    readonly concepto: string;
+    readonly unidades: number;
+    readonly importeCentimos: number;
+    readonly yaEstaPuesto: boolean;
+  }[];
 }

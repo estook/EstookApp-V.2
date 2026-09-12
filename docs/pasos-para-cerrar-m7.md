@@ -1,47 +1,177 @@
-# Pasos para cerrar M7 · el repaso, y el dominio estook.com
+# Pasos para cerrar M7 · el repaso, las bases y el dominio
 
 > ## Cómo está
 >
-> | Qué                     | Cómo está                                                              |
-> | ----------------------- | ---------------------------------------------------------------------- |
-> | La entrega 1 del repaso | **Fusionada** (#45)                                                    |
-> | `estook.com`            | **Conectado y en blanco**: la app se construía para la dirección vieja |
-> | El arreglo              | **Pull request abierto**: `estook-com`. Al fusionarlo se publica solo  |
-> | La API                  | Desplegada, pero **no acepta `estook.com`** hasta volver a desplegarla |
->
-> **Primero esto, que la aplicación está caída.** Los dos pasos de abajo la
-> levantan; lo demás puede esperar.
+> | Qué                     | Cómo está                                                               |
+> | ----------------------- | ----------------------------------------------------------------------- |
+> | La entrega 1 del repaso | **Fusionada** (#45)                                                     |
+> | `estook.com`            | **Funcionando** (#46): la web y la aplicación pintan en su dominio      |
+> | **Las bases** (esta)    | **Pull request abierto**: `m7-las-bases`. Al fusionarlo se publica solo |
+> | La base de datos        | Le falta la **`0034`**, que añade tres columnas y el valor `venta`      |
+> | La API                  | Hay que **volver a desplegarla**: lleva el `apuntar_salida` nuevo       |
 
-## Lo urgente · dos pasos
+## Los tres pasos de esta entrega
 
-### 1 · Fusionar el pull request del dominio
+### 1 · Fusionar el pull request de las bases
 
-**Dónde:** GitHub → **Pull requests** → «estook.com: la app en su dominio» → espera
-las tres comprobaciones en verde → **Merge pull request** → **Confirm merge**.
+**Dónde:** GitHub → **Pull requests** → «M7 · las bases» → espera las tres
+comprobaciones en verde —`Calidad`, `Construccion y presupuestos` y
+`Migraciones reversibles`— → **Merge pull request** → **Confirm merge**.
 
 Al fusionar, la publicación se lanza sola y tarda un minuto.
 
-**Qué tiene que salir:** `https://estook.com` pinta la web, y `https://estook.com/app/`
-enseña la pantalla de entrar. Si sigues viéndolo en blanco, cierra la pestaña y
-ábrela otra vez: el navegador guarda la página vieja.
+**Si alguna comprobación sale en rojo:** no fusiones; mándame una foto de la que
+falla.
 
-### 2 · Volver a desplegar la API
+### 2 · Aplicar la migración
+
+No crea ninguna tabla: añade a cada producto **a cuánto lo vendes**, al libro de
+movimientos **lo que se cobró**, y un tipo de movimiento nuevo, `venta`.
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué sale si va bien:** la línea `0034_lo_que_sale_dice_si_se_vendio`, y que la
+base está al día.
+
+```bash
+.\estook.cmd bd:comprobar
+```
+
+**Qué tiene que decir:** **34 de 34** migraciones y **51 tablas**, todas con
+seguridad por filas.
+
+**Si sale un error:** no sigas; cópiame el texto rojo tal cual.
+
+### 3 · Volver a desplegar la API
 
 **Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** → escribe
-`desplegar` → **Run workflow**.
+`desplegar` → **Run workflow**. En verde en dos o tres minutos.
 
-Hace falta porque la API solo deja entrar a las direcciones que conoce, y ahora
-lleva `estook.com` escrito dentro. **No tienes que tocar nada en Supabase.**
+```bash
+.\estook.cmd bd:comprobar-api
+```
 
-**Qué tiene que salir:** entras en `estook.com/app/` con tu correo y ves tu Panel.
-Si dice «no hay conexión», dímelo.
-
-> Si compraste **estook.es**: no está configurado, no existe en los DNS. Lo más
-> simple es una redirección permanente a `https://estook.com` desde Hostinger.
+**Qué tiene que decir:** «y conoce todas las consultas que tiene el código» y «y
+conoce todos los comandos».
 
 ---
 
-## Qué trae, una línea cada cosa
+## Lo que trae esta entrega, y qué mirar
+
+### 1 · Sacar género ya no dice «gastado o vendido»
+
+**Dónde:** Inventario → Productos → el **−** rojo de cualquier fila.
+
+Ahora el porqué va en tres grupos, y cada uno dice lo que significa:
+
+- **Se ha vendido** · ha entrado dinero; se cuenta en la caja del día.
+- **Se ha usado** · gastado en cocina, o a otro local. No entra dinero.
+- **No se ha aprovechado** · caducado, malo, roto, del personal, invitación… Eso
+  es merma, con su partida.
+
+**Qué tiene que salir:** al pulsar **Vendido a un cliente** aparece «Cuánto has
+cobrado», y debajo: «Esto se cuenta en la caja del día». Al guardar: «7,50 €
+apuntados: salen propuestos al cerrar la caja de hoy».
+
+> **Por qué no se suma a las ganancias ahí mismo.** Porque el dinero de un día se
+> cuenta en un solo sitio, que es el cierre de caja. Si se sumara en los dos, el
+> día que además metes el Z **el día valdría el doble** y no habría forma de
+> verlo: el total del mes saldría mal y todo lo demás parecería correcto. Así que
+> lo que cobras queda apuntado y, al cerrar la caja, te sale propuesto con su
+> nombre y su importe. Lo añades de un toque, o no, si ese total ya viene del TPV.
+
+### 2 · La caja lo propone
+
+**Dónde:** Servicio → Jornada → **Cierre**, el mismo día en que hayas apuntado una
+venta.
+
+**Qué tiene que salir:** encima de las líneas, «Se ha vendido esto desde Inventario
+hoy», con lo vendido y su importe, y un botón **Añadirlas a la lista**.
+
+### 3 · A cuánto lo vendes, y lo que te deja
+
+**Dónde:** Inventario → Productos → abre un producto que vendas tal cual —un
+botellín, una copa— → **Poner precio de venta**.
+
+Pon lo que cobras, **con IVA**, tal cual está en la pizarra.
+
+**Qué tiene que salir:** debajo, «con el 10 % dentro, te entran 2,27 €». Y al
+guardar, la tarjeta **Lo que deja**: lo que entra, lo que cuesta, lo que queda y
+qué parte se va en género. Si el género se lleva más de un tercio, lo dice; si
+vendes por debajo de lo que te cuesta, sale en rojo.
+
+> Esto **no es la carta**. Es para lo que se vende sin cocinar. El margen de un
+> plato sale de su escandallo, que es el módulo 9.
+
+### 4 · El «sin verificar» naranja
+
+Ya no está en la lista, y no es que se haya escondido: **era un fallo**. El
+servidor volvía a marcar el producto cada vez que se guardaba su ficha, así que
+salía en todos y no había forma de quitarlo.
+
+**Dónde está ahora:** en la ficha del producto, abajo, en **La ficha**.
+
+**Qué tiene que salir:** «Se aprovecha · 100 % · supuesto, sin medir», con un botón
+**Lo he medido**. Ahí se pesa lo que entra y lo que queda limpio, y Estook hace la
+cuenta y te dice cuánto sube o baja el coste **antes** de guardar.
+
+### 5 · La ficha del producto, de otra manera
+
+**Qué tiene que salir:** arriba, la categoría, el proveedor y el envase en
+pastillas; cada bloque en su tarjeta, con su botón a la derecha; y, si tienes
+mínimo puesto, una barra que dice de un vistazo si llegas.
+
+### 6 · Las listas largas
+
+**Dónde:** Inventario → **Movimientos**.
+
+**Qué tiene que salir:** arriba, «Hasta dónde miro», empezando por **los últimos
+tres meses**; el buscador encuentra cosas que no están en pantalla —porque ahora
+pregunta al servidor—; y abajo, **Ver más**, con cuántas llevas.
+
+Lo mismo en **Mermas**.
+
+### 7 · Deshacer
+
+**Dónde:** en la ficha de un producto, cambia el precio, o el precio de venta, o
+corrige la ficha.
+
+**Qué tiene que salir:** abajo, la barra oscura con **Deshacer** y una cuenta atrás
+de diez segundos. Pulsándola, vuelve lo de antes.
+
+**Lo que no lleva deshacer, y no es un olvido:** apuntar género. El libro de
+movimientos solo se añade —es lo que hace que la cámara se pueda auditar— y un
+movimiento equivocado se corrige con otro, que es «¿No cuadra lo que hay?».
+
+> **Lo que salga raro, apúntalo tal cual**, con una foto si puedes.
+
+---
+
+## Las cuatro claves que faltan
+
+Ninguna frena lo que hay hecho. Cada una la estrena su entrega, y hasta entonces el
+sitio está hecho y apagado con su motivo.
+
+| Clave                | Para qué                                    | Cuándo hace falta                 |
+| -------------------- | ------------------------------------------- | --------------------------------- |
+| **Places**           | Situar el local y buscarlo por su dirección | Entrega 5                         |
+| **Business Profile** | Leer tu ficha de Google y sus reseñas       | Entrega 5, con el acceso aprobado |
+| **Resend**           | Los avisos por correo                       | Entrega 2                         |
+| **La de IA**         | Que Fogón hable                             | M22                               |
+
+Los pasos de las dos de Google, con sus topes, están abajo en el **paso 6**.
+
+---
+
+## Lo de antes, que ya está hecho
+
+### `estook.com` · **hecho** (#46)
+
+Se fusionó y se desplegó la API. La web y la aplicación pintan en su dominio.
+
+### La entrega 1 del repaso · **hecha** (#45)
 
 - **Quitar un lote** que caduca o ha caducado, en «Caduca esta semana» y en la ficha:
   se ha gastado, o se ha tirado (y entonces es merma por caducado).
@@ -62,64 +192,6 @@ Si dice «no hay conexión», dímelo.
 
 **El lanzador es `.\estook.cmd`**, y PowerShell **no entiende `&&`**: cada comando
 va en su recuadro, de uno en uno. Se abre PowerShell en la carpeta del proyecto.
-
----
-
-## Paso 1 · Fusionar el pull request del repaso · **ya hecho** (#45)
-
-Lo fusionaste el 11 de septiembre. Se queda escrito para saber por dónde iba.
-
-**Dónde fue:** GitHub → **Pull requests** → «M7 · lo que vio Richi…» → abajo del todo.
-
-Espera a las tres comprobaciones en verde —`Calidad`, `Construccion y
-presupuestos` y `Migraciones reversibles`— y entonces **Merge pull request** →
-**Confirm merge**.
-
-**Qué sale si va bien:** el pull request en morado, con **Merged**.
-
-**Si alguna sale en rojo:** no fusiones; mándame una foto de la que falla.
-
----
-
-## Paso 2 · Aplicar la migración
-
-No crea tablas: añade columnas —lo congelado y lo retirado de cada lote, el IVA de
-compra de cada producto y cómo escribe los precios el local—.
-
-```bash
-.\estook.cmd bd:migrar
-```
-
-**Qué sale si va bien:** la línea `0033_lotes_congelados_y_precios_con_iva`, y que la
-base está al día. (Si también salen la `0031` y la `0032`, es que no se aplicaron con
-la primera entrega: está bien, van en orden.)
-
-```bash
-.\estook.cmd bd:comprobar
-```
-
-**Qué tiene que decir:** **33 de 33** migraciones y **51 tablas**, todas con
-seguridad por filas.
-
-**Si sale un error:** no sigas; cópiame el texto rojo tal cual.
-
----
-
-## Paso 3 · Desplegar la API · **hazlo otra vez** (es el paso 2 de arriba)
-
-Se desplegó el 11 de septiembre, pero hay que repetirlo para que acepte el dominio.
-
-**Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** → escribe
-`desplegar` → **Run workflow**. En verde en dos o tres minutos.
-
-```bash
-.\estook.cmd bd:comprobar-api
-```
-
-**Qué tiene que decir:** «y conoce todas las consultas que tiene el código» y «y
-conoce todos los comandos». **Si dice «FALTA DESPLEGARLA»** con nombres como
-`quitar_lote` o `congelar`, el paso de arriba no ha terminado bien: vuelve a
-lanzarlo y dímelo si se repite.
 
 ---
 
@@ -223,7 +295,7 @@ que te debo decir antes:
 
 ## Lo que me confirmaste, y dónde queda
 
-1. **El IVA**: tus precios lo llevan, y querías elegir. Hecho en esta entrega
+1. **El IVA**: tus precios lo llevan, y querías elegir. Hecho en la entrega 1
    ([0033](decisiones/0033-los-precios-de-compra-se-guardan-sin-iva.md)); el paso 4 lo
    deja bien.
 2. **Mandar pedidos**, de jefe de cocina para arriba, y **«te han invitado a hacer
@@ -239,5 +311,6 @@ que te debo decir antes:
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | **2**   | Avisos a jefes y gerentes de lo que hace su equipo —un borrador, la carta, un pedido—, **una vez**; e invitar a rellenar un pedido      |
 | **3**   | **Horarios**, una app entera en Equipo: cuadrante semanal, por persona, historial, horas oficiales, avisos al cambiar y PDF con tu logo |
-| **4**   | El dominio **`estook.com`**: el código, los documentos y los pasos de DNS                                                               |
 | **5**   | Los topes de Google por local y, con tus accesos, el local en Google y sus reseñas                                                      |
+
+La **4**, el dominio, ya está hecha: `estook.com` funciona desde el 12 de septiembre.

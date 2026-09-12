@@ -320,7 +320,7 @@ Y sus vistas, donde las hay:
 | Destino                  | Sus vistas                                                  |
 | ------------------------ | ----------------------------------------------------------- |
 | Inventario · Productos   | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados |
-| Inventario · Movimientos | Todo · Entradas · Salidas · Mermas · Ajustes                |
+| Inventario · Movimientos | Todo · Entradas · Salidas · Ventas · Mermas · Ajustes       |
 | Inventario · Compras     | Pedidos · Albaranes · Facturas · Proveedores · Precios      |
 | Escandallos · Fichas     | Todas · Bajo objetivo · Sin coste                           |
 | Carta · Carta            | Por secciones · Todos los platos · Agotados                 |

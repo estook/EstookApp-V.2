@@ -165,6 +165,14 @@ export interface Apunte {
    * nada más lo lleve, así que no hay forma de que un día se cuelen mezclados.
    */
   readonly motivoDeMerma?: string | null;
+  /**
+   * Lo que se cobró por este género, con impuesto. **Solo en las ventas** (0034).
+   *
+   * No suma a ninguna ganancia por su cuenta: el dinero de una jornada lo cuenta
+   * el cierre de caja, y contarlo aquí además sería contar el día dos veces sin
+   * que se viera. Aquí se guarda para que al cerrar la caja salga propuesto.
+   */
+  readonly ingresoCentimos?: number | null;
   readonly origen?: string;
   readonly referencia?: Record<string, unknown> | null;
   readonly esEjemplo?: boolean;
@@ -234,6 +242,7 @@ export async function apuntar(
     insert into estook.movimiento_de_stock (
       local_id, producto_id, tipo, cantidad, coste_milesimas,
       cantidad_despues, coste_medio_despues, lote_id, motivo, motivo_de_merma,
+      ingreso_centimos,
       fecha_operativa, ocurrido_en, persona_id, correlacion_id,
       origen, referencia, es_ejemplo
     )
@@ -248,6 +257,7 @@ export async function apuntar(
       ${apunte.loteId ?? null},
       ${apunte.motivo ?? null},
       ${apunte.motivoDeMerma ?? null}::estook.motivo_de_merma,
+      ${apunte.ingresoCentimos ?? null},
       ${fecha}::date,
       ${cuando.toISOString()}::timestamptz,
       ${contexto.personaId},

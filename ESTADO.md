@@ -161,6 +161,12 @@ Por lo mismo, **en Canarias, Ceuta y Melilla no se propone IVA de compra** (0033
 | Regenerar las claves de Google, que pasaron por un chat               | M27                                                                     |
 | Volver a `BrowserRouter`: ya hay dominio y Pages copia el `404.html`  | cuando toque ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md)) |
 | El vectorial del logotipo y de Fogón                                  | cuando aparezcan; se sustituyen en un sitio                             |
+| Pasar Pedidos, Albaranes y Facturas a `usarListaLarga`                | cuando una de las tres crezca                                           |
+
+Lo último no es un fallo hoy: esas tres traen más pidiendo la lista otra vez con un
+tope mayor, y **no tienen buscador**, así que no engañan a nadie —que era lo que sí
+hacía el libro—. Cuando un local lleve un año de albaranes, el tramo de tiempo y el
+«Ver más» por páginas ya están escritos y es cambiar el gancho.
 
 ---
 

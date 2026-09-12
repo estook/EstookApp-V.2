@@ -63,9 +63,14 @@ export {
   diasEntre,
   esAnterior,
   estaVigente,
+  TRAMOS_QUE_SE_MIRAN,
+  DIAS_DEL_TRAMO,
+  NOMBRE_DEL_TRAMO,
+  esTramoQueSeMira,
+  desdeCuandoMira,
 } from './tiempo.ts';
 
-export type { FechaOperativa, HoraDeCorte } from './tiempo.ts';
+export type { FechaOperativa, HoraDeCorte, TramoQueSeMira } from './tiempo.ts';
 
 // ── M2 · unidades y coste · precio ÷ (factor × rendimiento) ───────────────────
 export {
@@ -376,3 +381,29 @@ export type {
   LoQueSale,
 } from './presentacion.ts';
 export { eurosPorUnidadVisible } from './coste.ts';
+
+// ── M7 · repaso · por qué sale el género, y qué se gana con lo que se vende ──
+//
+// «Gastado o vendido» era un solo botón para dos cosas que no se parecen en
+// nada. Ahora son tres familias —se vende, se usa, se pierde— y cada una dice
+// qué línea del libro produce.
+export {
+  FAMILIAS_DE_SALIDA,
+  MOTIVOS_DE_SALIDA,
+  NOMBRE_DE_LA_FAMILIA,
+  QUE_ES_CADA_FAMILIA,
+  QUE_ES_CADA_SALIDA,
+  esMotivoDeSalida,
+  losDeLaFamilia,
+  esVenta,
+  esMerma,
+} from './salida.ts';
+export type { FamiliaDeSalida, MotivoDeSalida, QueEsUnaSalida } from './salida.ts';
+
+export {
+  FOOD_COST_QUE_PREOCUPA,
+  ivaDeVentaPorDefecto,
+  margenDe,
+  comoEstaElMargen,
+} from './margen.ts';
+export type { Margen } from './margen.ts';

@@ -189,3 +189,62 @@ export function estaVigente(
 ): boolean {
   return fecha >= desde && (hasta === null || fecha <= hasta);
 }
+
+// ── Hasta dónde se mira hacia atrás ──────────────────────────────────────────
+
+/**
+ * Los tramos que se ofrecen en una lista larga (M7, repaso).
+ *
+ * ── Por qué esto existe ──────────────────────────────────────────────────────
+ *
+ * Porque un libro de movimientos, un histórico de mermas o una lista de albaranes
+ * **crecen todos los días y no paran**. Un local en marcha apunta cuarenta líneas
+ * diarias: a los seis meses son siete mil, y ninguna pantalla puede traerlas ni
+ * ninguna persona puede recorrerlas.
+ *
+ * Las dos salidas malas son conocidas: traerlo todo —que funciona el primer mes y
+ * se cae el sexto— o cortar por un número fijo y decir «se enseñan los cien
+ * últimos», que es lo que había y que convierte el buscador en una mentira: buscar
+ * «aceite» contestaba «nada con eso» cuando el aceite estaba en la línea tres mil.
+ *
+ * La buena es la de las aplicaciones que llevan años con esto: **se ve un tramo de
+ * tiempo, se puede ampliar de tanto en tanto, y buscar busca en todo el tramo**,
+ * no en lo que se haya traído. Tres meses es el tramo con el que trabaja un bar
+ * —un trimestre— y por eso es el de en medio.
+ *
+ * Vive en el dominio y no en cada pantalla porque lo usan el libro, las mermas y
+ * lo que venga: un catálogo, un dueño (regla 6).
+ */
+export const TRAMOS_QUE_SE_MIRAN = ['mes', 'trimestre', 'semestre', 'ano'] as const;
+
+export type TramoQueSeMira = (typeof TRAMOS_QUE_SE_MIRAN)[number];
+
+/** Cuántos días hacia atrás mira cada tramo. */
+export const DIAS_DEL_TRAMO: Readonly<Record<TramoQueSeMira, number>> = {
+  mes: 30,
+  trimestre: 90,
+  semestre: 180,
+  ano: 365,
+};
+
+/** Cómo se llama en pantalla. En cristiano: nadie dice «últimos 90 días». */
+export const NOMBRE_DEL_TRAMO: Readonly<Record<TramoQueSeMira, string>> = {
+  mes: 'El último mes',
+  trimestre: 'Los últimos tres meses',
+  semestre: 'Los últimos seis meses',
+  ano: 'El último año',
+};
+
+export function esTramoQueSeMira(valor: unknown): valor is TramoQueSeMira {
+  return typeof valor === 'string' && (TRAMOS_QUE_SE_MIRAN as readonly string[]).includes(valor);
+}
+
+/**
+ * Desde qué jornada empieza un tramo, contando desde hoy.
+ *
+ * `hoy` llega de fuera **y del servidor**: aquí no se mira el reloj del navegador
+ * (regla 10), que a las dos de la mañana no sabe en qué jornada está un bar.
+ */
+export function desdeCuandoMira(tramo: TramoQueSeMira, hoy: FechaOperativa): FechaOperativa {
+  return masDias(hoy, -DIAS_DEL_TRAMO[tramo]);
+}

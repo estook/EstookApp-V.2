@@ -450,7 +450,6 @@ export interface ProductoParaMerma {
   readonly nombre: string;
   readonly unidadDeUso: string;
   readonly cantidad: number;
-  readonly esEjemplo: boolean;
 }
 
 /**
@@ -484,22 +483,32 @@ export const productosParaMerma = consulta<
         nombre: string;
         unidad_de_uso: string;
         cantidad: string | null;
-        es_ejemplo: boolean;
       }[]
     >`
       select p.id::text as id, p.nombre, p.unidad_de_uso::text as unidad_de_uso,
-             e.cantidad::text as cantidad, p.es_ejemplo
+             e.cantidad::text as cantidad
         from estook.producto p
         left join estook.existencias e on e.producto_id = p.id
        where p.local_id = ${localId}
          and p.activo
+         -- ── Y los de ejemplo **no** ─────────────────────────────────────────
+         --
+         -- Salen en la lista de Productos para poder mirarlos y aprender de
+         -- ellos, y ahí tiene sentido. Aquí no: esto se abre en mitad de un
+         -- servicio para decir qué se acaba de romper, y lo que sale al escribir
+         -- tres letras tiene que ser género de verdad. Una merma de un producto
+         -- de mentira no cuenta para nada y quien la apunta no lo sabe.
+         --
+         -- Es la misma regla que ya cumplían el resto de las consultas de este
+         -- fichero desde M6½; esta se quedó atrás.
+         and not p.es_ejemplo
          and (
            ${texto} = ''
            or estook.sin_acentos(p.nombre) like '%' || estook.sin_acentos(${texto}) || '%'
            or similarity(estook.sin_acentos(p.nombre), estook.sin_acentos(${texto})) > 0.3
            or p.codigo_de_barras = ${texto}
          )
-       order by p.es_ejemplo, p.nombre
+       order by p.nombre
        limit 10
     `;
 
@@ -509,7 +518,6 @@ export const productosParaMerma = consulta<
         nombre: f.nombre,
         unidadDeUso: f.unidad_de_uso,
         cantidad: f.cantidad === null ? 0 : Number(f.cantidad),
-        esEjemplo: f.es_ejemplo,
       })),
     };
   },

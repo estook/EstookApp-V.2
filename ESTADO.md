@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 12 de septiembre de 2026 · **M7: fusionadas la #44 y la #45 (el repaso, entrega 1). Ahora, `estook.com`: la app salió en blanco al estrenar el dominio y el arreglo está sin fusionar**
+Última actualización: 12 de septiembre de 2026 · **M7: fusionadas la #44, la #45 y la #46. `estook.com` ya pinta. Ahora, el repaso de las bases: lo que sale de cámara dice si se vendió, y la ficha se lee**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -16,17 +16,17 @@
 
 |                |                                                                                                                                       |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, primera entrega** ✓ (#44): compras y Calendario, fusionada y mirada por Richi en el móvil y en el TPV      |
-| **Ahora**      | **El dominio `estook.com`** (entrega 4, adelantada): estrenarlo dejó la app en blanco. Arreglado en el código, sin fusionar           |
-| **Pruebas**    | 911 unitarias y de base de datos · 343 de pantalla en escritorio y móvil, en verde · catálogo **103 de 109** (94 %)                   |
-| **Rama**       | `estook-com`, con su pull request abierto. La `m7-lo-que-vio-richi` se fusionó en la #45                                              |
-| **Base**       | En el código, **33** migraciones y 51 tablas: la `0033` solo añade columnas. En Supabase, las que se aplicaron; `bd:comprobar` lo lee |
-| **API**        | Desplegada el 11 de septiembre con las cuatro operaciones nuevas. **Hay que volver a desplegarla** para que acepte `estook.com`       |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1 y 4** ✓ (#44, #45, #46): compras, el Calendario, el repaso de Richi y el dominio                |
+| **Ahora**      | **El repaso de las bases** (rama `m7-las-bases`, sin fusionar): vender no es gastar, la ficha se lee, y las listas largas se recorren |
+| **Pruebas**    | 945 unitarias y de base de datos · 347 de pantalla en escritorio y móvil, en verde · catálogo **103 de 109** (94 %)                   |
+| **Rama**       | `m7-las-bases`, con su pull request. La `estook-com` se fusionó en la #46                                                             |
+| **Base**       | En el código, **34** migraciones y 51 tablas: la `0034` solo añade columnas y un valor al catálogo de movimientos                     |
+| **API**        | **Hay que volver a desplegarla** con esta entrega: `apuntar_salida` cambia y el cierre propone lo vendido                             |
 | **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                                |
 | **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                                 |
 
-> **Lo urgente:** la aplicación está caída en `estook.com` hasta que se fusione el pull
-> request de `estook-com` y se vuelva a desplegar la API. Los pasos, en
+> **Lo de ahora:** `estook.com` funciona. Lo que falta es fusionar el repaso de las
+> bases, aplicar la `0034` y volver a desplegar la API. Los pasos, en
 > **[`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md)**.
 
 ---
@@ -62,16 +62,16 @@ qué aprueba una persona).
 
 Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden:
 
-1. **Fusionar** el pull request de `estook-com`. Al fusionar se publica solo, y
-   `estook.com` vuelve a pintar.
-2. **Desplegar la API** (Actions → Desplegar la API → `desplegar`), para que acepte
-   las llamadas desde `estook.com`.
-3. **`bd:migrar`** y **`bd:comprobar`**, si no se hizo con la #45: 33 de 33 y 51 tablas.
-4. **Quitarles el IVA a sus precios, una vez**: Ajustes → «Tus precios de compra».
-   Antes de meter precios nuevos.
+1. **Fusionar** el pull request de `m7-las-bases`. Al fusionar se publica solo.
+2. **`bd:migrar`** y **`bd:comprobar`**: 34 de 34 y 51 tablas.
+3. **Desplegar la API** (Actions → Desplegar la API → `desplegar`), que lleva el
+   `apuntar_salida` nuevo y lo que propone la caja.
+4. **Quitarles el IVA a sus precios, una vez**, si no está hecho: Ajustes → «Tus
+   precios de compra». Antes de meter precios nuevos.
 5. **Mirarlo en el TPV y en el móvil**, con la lista del paso 5.
-6. **Los dos accesos de Google**, con la cuota de cada API puesta (paso 6): un
-   presupuesto de Google Cloud avisa, pero no corta.
+6. **Los cuatro accesos que faltan** —Places, Business Profile, Resend y el de IA—,
+   con su tope de gasto puesto. **No frenan nada de lo que hay**: cada uno lo
+   estrena su entrega ([`config/claves.md`](config/claves.md)).
 
 ### Lo que Richi confirmó el 11 de septiembre
 
@@ -81,15 +81,46 @@ Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden
 3. **El pedido no sale solo**: se queda así.
 4. **El precio nuevo vale desde hoy**, y los de antes se comparan: la gráfica de la ficha.
 
-### Las cinco entregas del repaso
+### Las entregas del repaso
 
 | Entrega | Qué                                                                                                           | Cómo está               |
 | ------- | ------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | **1**   | Quitar y congelar lotes, dos decimales, el alta por cómo se compra, IVA, gráfica, widgets, salario, jerarquía | **Fusionada** (#45)     |
+| **1½**  | **Las bases**: vender no es gastar, la ficha se lee, las listas largas se recorren, y vuelve el deshacer      | **Hecha, sin fusionar** |
 | **2**   | Avisos a jefes y gerentes de lo que hace su equipo, una vez; invitar a rellenar un pedido                     | La siguiente            |
 | **3**   | **Horarios**, una app entera en Equipo: cuadrante, historial, horas, avisos, PDF con logo                     | Después                 |
-| **4**   | El dominio **`estook.com`**, adelantado: el sitio ya vive ahí                                                 | **Hecha, sin fusionar** |
-| **5**   | Los topes de Google por local, y conectar Places, Business Profile y Gemini                                   | Espera los accesos      |
+| **4**   | El dominio **`estook.com`**: el sitio ya vive ahí                                                             | **Fusionada** (#46)     |
+| **5**   | Los topes de Google por local, y conectar Places, Business Profile y el modelo de IA                          | Espera los accesos      |
+
+### La entrega 1½ · las bases, punto por punto
+
+Son los ocho que trajo Richi mirando la aplicación en su TPV, en su orden:
+
+| Lo que dijo                                          | Qué se ha hecho                                                                                                                                     |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| «La merma me busca en el catálogo de ejemplo»        | Ya no: la búsqueda de merma solo trae género de verdad                                                                                              |
+| «Que quede claro si se ha vendido, y cuánto»         | Tres familias al sacar género, y lo vendido se apunta con lo que se cobró ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md)) |
+| «¿Se suma a ganancias?»                              | Sí, **en la caja del día**: sale propuesto al cerrarla, y por eso no se cuenta dos veces                                                            |
+| «El tag naranja de "sin verificar" no sé quitarlo»   | Se iba y volvía solo: era un fallo del servidor. Ahora es el aprovechamiento, en su ficha y con «Lo he medido»                                      |
+| «La tarjeta de producto es demasiado sencilla»       | Cada sección es una tarjeta con su título y sus botones; y una nueva, «Lo que deja», con el margen                                                  |
+| «Si hay listas enormes, ver más y buscar por tiempo» | El libro y las mermas van por tramos —mes, trimestre, semestre, año—, buscan en el servidor y traen más                                             |
+| «El deshacer ha desaparecido»                        | Vuelve donde se edita algo que importa: la ficha, el precio de compra y el de venta                                                                 |
+| «Si ves mejoras, aplícalas»                          | Cuatro fallos encontrados de paso, abajo                                                                                                            |
+
+**Lo que se encontró de paso, y era de antes:**
+
+1. **«Sin verificar» se volvía a poner solo.** El servidor guardaba
+   `sin_verificar = !cambiaElCoste`: corregir una errata en el nombre marcaba el
+   producto como sin medir. Por eso la etiqueta salía en todos y no se podía quitar.
+2. **La vista «Mermas» del libro estaba rota.** La barra mandaba `tipo=merma` y la
+   consulta solo aceptaba entrada, salida y ajuste: contestaba «datos no válidos».
+   Llevaba así desde M6½.
+3. **El buscador del libro mentía.** Filtraba las cien líneas ya traídas, así que
+   buscar algo de hace tres meses contestaba «nada con eso». Es el mismo fallo que
+   ya costó las vistas de Productos.
+4. **Cambiar el envase daba el aprovechamiento por medido.** Son dos datos que se
+   multiplican en la misma fórmula, y darlos por medidos juntos vaciaba de
+   significado la marca.
 
 ### Lo que deja preparado, y dónde se termina
 
@@ -143,8 +174,10 @@ A a GitHub Pages y `www` por CNAME. La dirección vieja redirige sola
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan
 gratuito, por el agrupador de sesión (la conexión directa de los proyectos nuevos
 solo va por IPv6). Todas las tablas con seguridad por filas; la única vista es
-`estook.existencias`. **Con la `0033`, 33 migraciones y 51 tablas.** Se comprueba
-con `.\estook.cmd bd:comprobar`, que lo lee de la base y no de aquí.
+`estook.existencias`. **Con la `0034`, 34 migraciones y 51 tablas**: la `0034` no
+crea ninguna tabla, añade tres columnas y el valor `venta` al catálogo de
+movimientos. Se comprueba con `.\estook.cmd bd:comprobar`, que lo lee de la base y
+no de aquí.
 
 **Organizaciones:** `bar-centro`, `casa-lola` y `grupo-costa` son semillas de
 ejemplo, **con las cuentas cerradas desde el 3 de septiembre** —tenían una
@@ -156,15 +189,17 @@ enlazado. **Variables** del repositorio: `VITE_SUPABASE_URL`,
 Secrets, `TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`. Todo en
 [`config/claves.md`](config/claves.md).
 
-**El peso**, medido con `pnpm tamano` el 11 de septiembre:
+**El peso**, medido con `pnpm tamano` el 12 de septiembre:
 
 | Aplicación      | Peso inicial | De los cuales tipografía |
 | --------------- | ------------ | ------------------------ |
-| `app`           | **266,6 KB** | 106,1 KB                 |
-| `admin`         | 186,3 KB     | 106,1 KB                 |
+| `app`           | **268,4 KB** | 106,1 KB                 |
+| `admin`         | 186,5 KB     | 106,1 KB                 |
 | `web` · `carta` | 165,9 KB     | 106,1 KB                 |
 
-La referencia es 250 y **se mide, no bloquea**. El repaso sube `app` 6,1 KB: el
+La referencia es 250 y **se mide, no bloquea**. Las bases suben `app` 1,8 KB: el
+catálogo de porqués, el margen y el tramo de las listas largas son texto y una
+resta. Antes, el repaso había subido 6,1 KB: el
 alta por cómo se compra, el precio con IVA, los lotes y la gráfica de precios van
 con el resto de Inventario, y la tarjeta del IVA con Ajustes. **Compras entera y
 Recharts se siguen cargando aparte.**
@@ -186,7 +221,7 @@ En una línea. **El detalle está en
 | **M5**  | El alta en ocho pasos, el catálogo de referencia, los ejemplos y el modo demostración            |
 | **M6**  | Inventario: productos, el libro de movimientos, precio medio ponderado, lotes, previsión         |
 | **M6½** | La capa de producto: destinos y vistas, Panel en el servidor, merma, fichajes, caja y equipo     |
-| **M7**  | Las compras enteras y el Calendario (#44); el repaso de lo que vio Richi, en cinco entregas      |
+| **M7**  | Las compras enteras y el Calendario (#44); el repaso de lo que vio Richi, y las bases            |
 
 ### M7 · el repaso, primera entrega
 
@@ -205,6 +240,33 @@ En una línea. **El detalle está en
 **Lo que se encontró:** cambiar el salario **dos veces el mismo día** rompía la
 restricción `hasta >= desde` de la vigencia y salía «se nos ha roto algo por
 dentro». Ahora el cambio del mismo día corrige la fila de hoy, con su prueba.
+
+### M7 · las bases, antes de seguir
+
+- **Vender deja de ser lo mismo que gastar.** Al sacar género se elige entre tres
+  familias —se vende, se usa, no se aprovecha—, y lo vendido se apunta **con lo que
+  se ha cobrado** ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md)).
+  Ese dinero **no suma solo**: sale propuesto al cerrar la caja del día, que es su
+  único dueño, y así el día no se cuenta dos veces.
+- **A cuánto lo vendes, y lo que te deja.** Un precio de venta en la ficha, con IVA
+  —el de la pizarra—, y debajo lo que entra sin impuesto, lo que cuesta y lo que
+  queda, con aviso si el género se lleva más de un tercio.
+- **La ficha se lee.** Cada sección es una tarjeta con su título y sus botones, con
+  la categoría, el proveedor y el envase arriba, y una barra del mínimo.
+- **El aprovechamiento, en su sitio y con su botón.** La etiqueta «sin verificar»
+  se va de la lista: **volvía sola** cada vez que se guardaba la ficha —un fallo del
+  servidor— y salía en todos los productos.
+- **Las listas largas se recorren.** El libro y las mermas van por tramos de tiempo,
+  buscan en el servidor y traen más de tanto en tanto.
+- **Vuelve el deshacer** en lo que se edita y se puede volver a editar: la ficha, el
+  precio de compra y el de venta.
+- **La merma solo busca en tu género**, no en el catálogo de ejemplo.
+
+**Lo que se encontró:** cuatro fallos de antes. «Sin verificar» se volvía a poner
+sola al guardar la ficha; la vista **Mermas** del libro contestaba «datos no
+válidos» desde M6½; el buscador del libro filtraba solo lo ya traído; y **la barra
+de deshacer no se podía pulsar con una hoja abierta** —un `<dialog>` modal vive en
+la capa superior del navegador— que es justo cuando hace falta.
 
 ---
 
@@ -296,6 +358,23 @@ dentro». Ahora el cambio del mismo día corrige la fila de hoy, con su prueba.
 47. **La dirección del producto va en el código** ([0036](docs/decisiones/0036-la-direccion-es-estook-com.md)).
     Estrenar `estook.com` dejó la app en blanco porque la raíz y los orígenes vivían
     en variables y secretos que había que acordarse de cambiar.
+48. **Dos cosas en el mismo botón es no preguntar nada.** «Gastado o vendido» hacía
+    imposible saber si por lo que salió entró dinero, que es de lo que cuelga el
+    margen entero ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md)).
+49. **El dinero de un día tiene un solo dueño.** Si una salida de cámara sumara a las
+    ganancias y además se metiera el papel de la caja, el día valdría el doble y no
+    se vería: el total del mes saldría mal y todo lo demás parecería correcto.
+50. **Una marca que sale en todos no marca nada.** «Sin verificar» se volvía a poner
+    sola al guardar la ficha, salía en naranja en toda la lista y no se podía quitar
+    desde ninguna parte. Un dato que no se puede corregir desde donde se lee es un
+    dato que nadie corrige.
+51. **Un filtro que solo funciona cuando la lista cabe entera es un filtro que
+    miente.** Ya costó las vistas de Productos, y el libro de movimientos seguía
+    buscando dentro de las cien líneas traídas. Toda lista que crece a diario va con
+    su tramo de tiempo, su búsqueda en el servidor y su «Ver más».
+52. **Restar el precio de carta menos el coste es regalarse el IVA como margen.** El
+    de venta se ingresa y el de compra se recupera: la resta se hace con las dos
+    cifras sin impuesto, y por eso la hace el dominio y no la pantalla.
 
 ---
 
@@ -303,44 +382,45 @@ dentro». Ahora el cambio del mismo día corrige la fila de hoy, con su prueba.
 
 En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 
-| Núm      | Qué                                                                     |
-| -------- | ----------------------------------------------------------------------- |
-| **0001** | GitHub Pages en vez de Netlify                                          |
-| **0002** | La API en Hono sobre Supabase Edge Functions                            |
-| **0003** | M0 crea el esqueleto mínimo de alcances                                 |
-| **0004** | El presupuesto de velocidad de B7, reconstruido                         |
-| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción       |
-| **0006** | El motor fiscal: sin regla, no se inventa un tipo                       |
-| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta       |
-| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages       |
-| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`        |
-| **0010** | El login es nuestro, no de Supabase Auth                                |
-| **0011** | Las pruebas de extremo a extremo levantan la API de verdad              |
-| **0012** | El producto nace en M6, y M5 le deja el diccionario                     |
-| **0013** | Google Places se aplaza a M23                                           |
-| **0014** | Un módulo reacciona a otro en la misma transacción                      |
-| **0015** | Fogón es una burbuja que va contigo, no una pestaña por app             |
-| **0016** | El reloj es `pg_cron` llamando a nuestra API · se monta con Google      |
-| **0017** | Cómo avisa Estook: pantalla, correo con Resend y push                   |
-| **0018** | Cada app tiene destinos, y cada destino sus vistas                      |
-| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato         |
-| **0020** | Un catálogo de acciones, y una acción es una dirección                  |
-| **0021** | El producto se mide en una unidad; los gramajes son de la ficha         |
-| **0022** | El reparto tiene sitio antes que conexión; Uber Eats el primero         |
-| **0023** | Fogón nunca arma su contexto en el navegador: lo arma el servidor       |
-| **0024** | El color del local pinta la app, y hay dos temas                        |
-| **0025** | Fichar pide dónde, y no bloquea nunca                                   |
-| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe             |
-| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo         |
-| **0028** | El alta de producto pregunta cuánto hay, no cuánto se aprovecha         |
-| **0029** | Lo que va a una columna JSON viaja como texto                           |
-| **0030** | El local se sitúa con Google, al final de M7, con tope de gasto         |
-| **0031** | El Calendario recoge lo de todos los módulos, con quién lo ve           |
-| **0032** | Las compras: Estook no manda, el albarán mueve y la factura confirma    |
-| **0033** | **Los precios de compra se guardan sin IVA, y se escriben como venga**  |
-| **0034** | **Nadie gestiona el acceso de su igual: lo hace quien está por encima** |
-| **0035** | **El alta pregunta cómo se compra, y la cuenta la hace el dominio**     |
-| **0036** | **La dirección es `estook.com`, y la sabe el código**                   |
+| Núm      | Qué                                                                      |
+| -------- | ------------------------------------------------------------------------ |
+| **0001** | GitHub Pages en vez de Netlify                                           |
+| **0002** | La API en Hono sobre Supabase Edge Functions                             |
+| **0003** | M0 crea el esqueleto mínimo de alcances                                  |
+| **0004** | El presupuesto de velocidad de B7, reconstruido                          |
+| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción        |
+| **0006** | El motor fiscal: sin regla, no se inventa un tipo                        |
+| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta        |
+| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages        |
+| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`         |
+| **0010** | El login es nuestro, no de Supabase Auth                                 |
+| **0011** | Las pruebas de extremo a extremo levantan la API de verdad               |
+| **0012** | El producto nace en M6, y M5 le deja el diccionario                      |
+| **0013** | Google Places se aplaza a M23                                            |
+| **0014** | Un módulo reacciona a otro en la misma transacción                       |
+| **0015** | Fogón es una burbuja que va contigo, no una pestaña por app              |
+| **0016** | El reloj es `pg_cron` llamando a nuestra API · se monta con Google       |
+| **0017** | Cómo avisa Estook: pantalla, correo con Resend y push                    |
+| **0018** | Cada app tiene destinos, y cada destino sus vistas                       |
+| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato          |
+| **0020** | Un catálogo de acciones, y una acción es una dirección                   |
+| **0021** | El producto se mide en una unidad; los gramajes son de la ficha          |
+| **0022** | El reparto tiene sitio antes que conexión; Uber Eats el primero          |
+| **0023** | Fogón nunca arma su contexto en el navegador: lo arma el servidor        |
+| **0024** | El color del local pinta la app, y hay dos temas                         |
+| **0025** | Fichar pide dónde, y no bloquea nunca                                    |
+| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe              |
+| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo          |
+| **0028** | El alta de producto pregunta cuánto hay, no cuánto se aprovecha          |
+| **0029** | Lo que va a una columna JSON viaja como texto                            |
+| **0030** | El local se sitúa con Google, al final de M7, con tope de gasto          |
+| **0031** | El Calendario recoge lo de todos los módulos, con quién lo ve            |
+| **0032** | Las compras: Estook no manda, el albarán mueve y la factura confirma     |
+| **0033** | **Los precios de compra se guardan sin IVA, y se escriben como venga**   |
+| **0034** | **Nadie gestiona el acceso de su igual: lo hace quien está por encima**  |
+| **0035** | **El alta pregunta cómo se compra, y la cuenta la hace el dominio**      |
+| **0036** | **La dirección es `estook.com`, y la sabe el código**                    |
+| **0037** | **Lo que sale de cámara dice si se vendió; el dinero lo cuenta la caja** |
 
 Otras, sin fichero propio:
 
@@ -366,8 +446,13 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`,
   `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0033`.** Se amplían con una `0034`, nunca se editan
+- **Las migraciones `0001` a `0034`.** Se amplían con una `0035`, nunca se editan
   (regla 2). Y al ampliar una función SQL, **se copia la original entera**.
+- **Un valor de un tipo enumerado no se quita**: Postgres no sabe hacerlo. Por eso
+  la `0034` añade `venta` con `add value if not exists … after 'merma'`, y su
+  reversión **para** si ya hay ventas apuntadas en vez de borrarles el importe.
+  Y por eso su restricción compara `tipo::text`: el valor nuevo no se puede **usar**
+  en la misma transacción en la que se añade.
 - **Lo que va a una columna JSON se escribe `${…}::text::jsonb`**, nunca `::jsonb` a
   secas; **y las listas, `${comoLista(…)}::text::tipo[]`** ([0029](docs/decisiones/0029-lo-que-va-a-jsonb-viaja-como-texto.md), [0032](docs/decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)).
 - **El libro de movimientos.** Solo se añade; un movimiento equivocado se enmienda
@@ -410,9 +495,11 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ### Antes de empezarla
 
-1. **Que la primera esté cerrada**: fusionada, `bd:comprobar` con 33 de 33, la API
-   desplegada con `bd:comprobar-api` en verde, el IVA quitado a los precios de Richi,
-   y Richi habiéndolo mirado en el TPV y en el móvil.
+1. **Que las bases estén cerradas**: la `m7-las-bases` fusionada, `bd:comprobar` con
+   34 de 34, la API desplegada con `bd:comprobar-api` en verde, el IVA quitado a los
+   precios de Richi, y Richi habiéndolo mirado en el TPV y en el móvil.
+2. **La clave de Resend**, que es lo que manda los correos de los avisos (0017). Sin
+   ella, la entrega 2 se queda en los avisos de pantalla.
 
 ### Qué entra
 

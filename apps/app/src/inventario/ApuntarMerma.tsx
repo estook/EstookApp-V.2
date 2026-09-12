@@ -8,17 +8,7 @@ import {
   partidaDe,
   type MotivoDeMerma,
 } from '@estook/dominio';
-import {
-  Aviso,
-  Boton,
-  Botones,
-  Campo,
-  Cargando,
-  ErrorEnCristiano,
-  Etiqueta,
-  Hoja,
-  clases,
-} from '@estook/ui';
+import { Aviso, Boton, Botones, Campo, Cargando, ErrorEnCristiano, Hoja, clases } from '@estook/ui';
 import { IconoBuscar, IconoCamara } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -237,7 +227,6 @@ export function ApuntarMerma({
                           Quedan {conUnidadDeUso(producto.cantidad, producto.unidadDeUso)}
                         </span>
                       </span>
-                      {producto.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
                     </button>
                   </li>
                 ))}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { IconoCerrar } from '@estook/iconos';
 import { clases } from '../clases.ts';
+import { entraEnLaCapaDeArriba } from '../ganchos/capaDeArriba.ts';
 
 /**
  * La hoja y el panel lateral · Partes B4, B5 y B6 del Plan.
@@ -34,6 +35,25 @@ function useDialogo(abierta: boolean, alCerrar: () => void) {
 
     if (abierta && !dialogo.open) dialogo.showModal();
     if (!abierta && dialogo.open) dialogo.close();
+  }, [abierta]);
+
+  /*
+    Y mientras está abierta, se apunta en la capa de arriba.
+
+    Un `<dialog>` con `showModal()` vive en la capa superior del navegador, por
+    encima de toda la página y de cualquier `z-index`, y su fondo se traga los
+    clics. Eso es lo que lo hace modal y está bien. Lo que no estaba bien es que
+    **la barra de deshacer se quedaba debajo**, visible y sin poder pulsarse, que
+    es justo el momento en el que hace falta: se corrige una ficha, se guarda, y
+    el panel sigue abierto.
+
+    Apuntándose aquí, lo que tenga que ir por encima de todo se pinta dentro de
+    esta hoja. Lo cuenta entero `capaDeArriba.ts`.
+  */
+  useEffect(() => {
+    const dialogo = referencia.current;
+    if (!dialogo || !abierta) return;
+    return entraEnLaCapaDeArriba(dialogo);
   }, [abierta]);
 
   useEffect(() => {

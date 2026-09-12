@@ -1,8 +1,25 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Aviso, Campo, Cargando, EstadoVacio, Etiqueta, Tarjeta } from '@estook/ui';
+import {
+  NOMBRE_DEL_TRAMO,
+  TRAMOS_QUE_SE_MIRAN,
+  desdeCuandoMira,
+  type FechaOperativa,
+  type TramoQueSeMira,
+} from '@estook/dominio';
+import {
+  Aviso,
+  Boton,
+  Campo,
+  Cargando,
+  EstadoVacio,
+  Etiqueta,
+  Selector,
+  Tarjeta,
+} from '@estook/ui';
 import { IconoBuscar } from '@estook/iconos';
-import { usarSesion } from '../sesion/Sesion.tsx';
+import { usarLectura } from '../ganchos/usarLectura.ts';
+import { usarListaLarga } from '../ganchos/usarListaLarga.ts';
+import { usarQueEspere } from '../ganchos/usarQueEspere.ts';
 import {
   COMO_SE_LLAMA_EL_MOVIMIENTO,
   comoSeLeeElDia,
@@ -48,26 +65,36 @@ export function Movimientos({
   readonly vista: string;
   readonly alAbrirProducto: (id: string) => void;
 }) {
-  const { cliente } = usarSesion();
   const [texto, setTexto] = useState('');
+  const [tramo, setTramo] = useState<TramoQueSeMira>('trimestre');
+  /**
+   * Lo que se teclea, esperado un momento antes de preguntar.
+   *
+   * Ahora la búsqueda va al servidor —que es lo que hace que encuentre lo de hace
+   * tres meses y no solo lo que ya estaba en pantalla— y sin esto sería un viaje
+   * por cada letra: siete peticiones para escribir «aceite».
+   */
+  const buscado = usarQueEspere(texto, 300);
 
-  // La vista es el tipo: `todo` no filtra, y los otros tres van tal cual al
-  // servidor, que los valida contra su lista cerrada.
+  // La vista es el tipo: `todo` no filtra, y los otros van tal cual al servidor,
+  // que los valida contra su lista cerrada.
   const tipo = vista === 'todo' || vista === '' ? undefined : vista.replace(/s$/, '');
 
-  const consulta = useQuery({
-    queryKey: ['mis_movimientos', tipo ?? ''],
-    queryFn: async (): Promise<MisMovimientos> => {
-      const respuesta = await cliente.consultar<MisMovimientos>('mis_movimientos', {
-        ...(tipo === undefined ? {} : { tipo }),
-        limite: '100',
-      });
-      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
-    },
-  });
+  // La jornada de hoy la dice el servidor, nunca el navegador (regla 10). El
+  // primer viaje la trae, y con ella se calcula desde cuándo se mira.
+  const hoy = usarLectura<MisMovimientos>('mis_movimientos', { limite: '1' }).data?.hoy ?? null;
 
-  if (consulta.isPending) {
+  const consulta = usarListaLarga<MisMovimientos>(
+    'mis_movimientos',
+    {
+      ...(tipo === undefined ? {} : { tipo }),
+      ...(buscado.trim() === '' ? {} : { texto: buscado.trim() }),
+      ...(hoy === null ? {} : { desde: desdeCuandoMira(tramo, hoy as FechaOperativa) }),
+    },
+    50,
+  );
+
+  if (consulta.isPending || hoy === null) {
     return (
       <div className="py-e6">
         <Cargando que="el libro de movimientos" />
@@ -83,22 +110,7 @@ export function Movimientos({
     );
   }
 
-  const datos = consulta.data;
-
-  // El buscador filtra aqui y no en el servidor a proposito: son cien lineas ya
-  // traidas, y pedirlas otra vez por cada letra seria un viaje por pulsacion para
-  // recortar una lista que ya esta en la mano.
-  const buscado = texto.trim().toLowerCase();
-  const lineas =
-    buscado === ''
-      ? datos.movimientos
-      : datos.movimientos.filter(
-          (m) =>
-            m.producto.toLowerCase().includes(buscado) ||
-            (m.quien ?? '').toLowerCase().includes(buscado) ||
-            (m.motivo ?? '').toLowerCase().includes(buscado),
-        );
-
+  const lineas = consulta.data.pages.flatMap((p) => p.movimientos);
   const porDia = agruparPorDia(lineas);
 
   return (
@@ -112,32 +124,52 @@ export function Movimientos({
         abrir una lista**. Nadie viene aquí a editar una línea: viene a ver qué
         pasó. Lo que hay que decir se dice en el momento en el que hace falta —al
         intentar corregir algo— y no antes, ocupando la primera pantalla del
-        móvil. Y lo que había debajo, en la tarjeta vacía, ya lo explicaba: «se
-        apunta desde la ficha de cada producto».
-        Es la clase de párrafo que llena esta aplicación y que hay que ir
-        quitando: sobreexplica una decisión buena en el sitio donde estorba.
+        móvil.
       */}
-      <div className="max-w-[24rem]">
-        <Campo
-          etiqueta="Buscar en el libro"
-          ayuda="Por producto, por quién lo apuntó o por el motivo."
-          value={texto}
-          delante={<IconoBuscar size={16} />}
-          onChange={(e) => {
-            setTexto(e.currentTarget.value);
-          }}
-        />
+      <div className="flex flex-wrap items-end gap-e3">
+        <div className="min-w-[14rem] flex-1 max-w-[24rem]">
+          <Campo
+            etiqueta="Buscar en el libro"
+            ayuda="Por producto, por quién lo apuntó, por el motivo o por el lote."
+            value={texto}
+            delante={<IconoBuscar size={16} />}
+            onChange={(e) => {
+              setTexto(e.currentTarget.value);
+            }}
+          />
+        </div>
+        <div className="min-w-[12rem]">
+          {/*
+            ── Y el tramo, que es lo que acota de verdad ────────────────────
+            Un libro crece todos los días y no para. Antes esto decía «se enseñan
+            los cien últimos» y el buscador filtraba **esas cien**, así que buscar
+            algo de hace tres meses contestaba «nada con eso». Ahora se elige
+            hasta dónde se mira, se busca en todo ese tramo y «Ver más» trae lo
+            siguiente sin volver a empezar.
+          */}
+          <Selector
+            etiqueta="Hasta dónde miro"
+            opciones={TRAMOS_QUE_SE_MIRAN.map((t) => ({
+              valor: t,
+              texto: NOMBRE_DEL_TRAMO[t],
+            }))}
+            value={tramo}
+            onChange={(e) => {
+              setTramo(e.currentTarget.value as TramoQueSeMira);
+            }}
+          />
+        </div>
       </div>
 
       {porDia.length === 0 ? (
         <Tarjeta titulo="Nada apuntado">
           <EstadoVacio
             compacto
-            titulo={buscado === '' ? 'El libro está vacío' : 'Nada con eso'}
+            titulo={buscado.trim() === '' ? 'Nada en este tramo' : 'Nada con eso'}
             frase={
-              buscado === ''
-                ? 'En cuanto se apunte lo primero que entre o salga, aparecerá aquí con su fecha y con quién lo apuntó.'
-                : 'Prueba con menos letras, o cambia de vista arriba.'
+              buscado.trim() === ''
+                ? `No hay movimientos en ${NOMBRE_DEL_TRAMO[tramo].toLowerCase()}. Prueba a mirar más atrás, o apunta lo primero que entre o salga.`
+                : 'Prueba con menos letras, mira más atrás, o cambia de vista arriba.'
             }
             sinAccionPorque="Se apunta desde la ficha de cada producto, en «Productos»."
           />
@@ -146,7 +178,7 @@ export function Movimientos({
         porDia.map(([dia, delDia]) => (
           <section key={dia} className="flex flex-col gap-e2">
             <h2 className="text-etiqueta uppercase tracking-wide text-texto-suave">
-              {comoSeLeeElDia(dia, datos.hoy)}
+              {comoSeLeeElDia(dia, hoy)}
               <span className="ml-e2 normal-case tracking-normal">
                 {delDia.length === 1 ? '1 movimiento' : `${delDia.length} movimientos`}
               </span>
@@ -168,9 +200,33 @@ export function Movimientos({
         ))
       )}
 
-      {datos.hayMas && (
+      {/*
+        «Ver más» y, debajo, cuántas se llevan. La cifra importa: sin ella nadie
+        sabe si ha visto veinte líneas o quinientas, y «Ver más» deja de decir
+        nada.
+      */}
+      {consulta.hasNextPage && (
+        <div className="flex flex-wrap items-center gap-e3">
+          <Boton
+            tono="secundario"
+            cargando={consulta.isFetchingNextPage}
+            textoCargando="Trayendo"
+            onClick={() => {
+              void consulta.fetchNextPage();
+            }}
+          >
+            Ver más
+          </Boton>
+          <span className="text-secundario text-texto-suave">
+            Llevas {lineas.length} de {NOMBRE_DEL_TRAMO[tramo].toLowerCase()}.
+          </span>
+        </div>
+      )}
+      {!consulta.hasNextPage && lineas.length > 0 && (
         <p className="text-secundario text-texto-suave">
-          Se enseñan los cien últimos. Busca por producto para encontrar los de antes.
+          Eso es todo {NOMBRE_DEL_TRAMO[tramo].toLowerCase()}: {lineas.length}{' '}
+          {lineas.length === 1 ? 'movimiento' : 'movimientos'}. Para ver más atrás, cambia el tramo
+          de arriba.
         </p>
       )}
     </div>

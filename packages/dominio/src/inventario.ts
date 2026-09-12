@@ -50,14 +50,28 @@ import { masDias, type FechaOperativa } from './tiempo.ts';
  *   salida    M6 a mano: género que sale y no es merma ni venta
  *   ajuste    M6 · «ajustar lo que hay en cámara», con motivo obligatorio
  *   merma     M8 · con su lista cerrada de motivos y su partida aparte
+ *   venta     M7, repaso · género que salió y se cobró, con lo que se cobró
  *   consumo   M20 · lo que descuentan las ventas al explotar sus fichas
  *   recuento  M8 · el cierre de un inventario físico
+ *
+ * ── Por qué `venta` no es una `salida` con una nota ─────────────────────────
+ *
+ * Porque una nota no se puede sumar. «Gastado o vendido» era un solo botón, y con
+ * él Estook no podía contestar «¿cuánto he vendido de esto?» ni «¿cuánto me ha
+ * dejado?», que son las dos cosas de las que cuelga el margen. Es el mismo motivo
+ * por el que la merma tiene motivo de una lista cerrada y no un campo de texto
+ * (0026), un escalón más arriba.
+ *
+ * Y no es lo mismo que `consumo`: `consumo` lo produce M20 al explotar la ficha
+ * de un plato vendido —sale harina porque se vendió una pizza— y `venta` es el
+ * género que se vende **tal cual**, que es media barra de un bar.
  */
 export const TIPOS_DE_MOVIMIENTO = [
   'entrada',
   'salida',
   'ajuste',
   'merma',
+  'venta',
   'consumo',
   'recuento',
 ] as const;

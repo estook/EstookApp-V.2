@@ -337,6 +337,14 @@ function Formulario({
     y el importe sale solo; si no es ese, se cambia y manda lo escrito.
   */
   const precioDe = new Map(datos.platosConocidos.map((p) => [p.clave, p.precioUnidadCentimos]));
+
+  // Lo vendido en Inventario que todavía no está entre las líneas. Lo que ya
+  // está no se vuelve a ofrecer: añadirlo dos veces es el fallo que esto viene a
+  // evitar, no uno nuevo que trae.
+  const yaPuestos = new Set(lineas.map((l) => claveDePlato(l.concepto)));
+  const porPoner = datos.vendidoEnCamara.filter(
+    (v) => !v.yaEstaPuesto && !yaPuestos.has(claveDePlato(v.concepto)),
+  );
   const precioDelPlato = (concepto: string) => precioDe.get(claveDePlato(concepto)) ?? null;
   const propuesto = (concepto: string, unidades: string): Centimos | null => {
     const precio = precioDelPlato(concepto);
@@ -529,6 +537,61 @@ function Formulario({
               <option key={plato.clave} value={plato.concepto} />
             ))}
           </datalist>
+
+          {/*
+            ── Lo que se vendió desde Inventario, propuesto ──────────────────
+
+            Quien saca un botellín de la cámara y dice «vendido» apunta lo que ha
+            cobrado, y esa línea **espera aquí**: al cerrar la caja sale con su
+            nombre y su importe, y se añade de un toque.
+
+            No se añade sola, y esa es la decisión. Si este cierre viene del Z o
+            del TPV, esas ventas ya están dentro del total, y meterlas otra vez
+            contaría el día dos veces. Lo sabe quien cierra la caja, no Estook,
+            así que lo decide quien cierra la caja.
+          */}
+          {porPoner.length > 0 && (
+            <div className="flex flex-col gap-e2 rounded-medio border border-borde bg-fondo p-e3">
+              <p className="text-secundario">
+                <strong>Se ha vendido esto desde Inventario hoy.</strong> Si tu total de arriba sale
+                del TPV o del Z, ya está contado: no lo añadas.
+              </p>
+              <ul className="flex flex-col gap-e1">
+                {porPoner.map((v) => (
+                  <li
+                    key={v.concepto}
+                    className="flex flex-wrap items-baseline justify-between gap-e2"
+                  >
+                    <span>
+                      {v.concepto}{' '}
+                      <span className="text-texto-suave">
+                        · {v.unidades.toLocaleString('es-ES')}
+                      </span>
+                    </span>
+                    <span className="font-medium">{comoDinero(v.importeCentimos)}</span>
+                  </li>
+                ))}
+              </ul>
+              <div>
+                <Boton
+                  tono="secundario"
+                  onClick={() => {
+                    setLineas((todas) => [
+                      ...todas,
+                      ...porPoner.map((v) => ({
+                        concepto: v.concepto,
+                        unidades: String(v.unidades),
+                        importe: v.importeCentimos as Centimos,
+                        importeTocado: true,
+                      })),
+                    ]);
+                  }}
+                >
+                  Añadirlas a la lista
+                </Boton>
+              </div>
+            </div>
+          )}
 
           {lineas.length === 0 ? (
             <p className="text-secundario text-texto-suave">

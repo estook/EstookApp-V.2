@@ -74,6 +74,16 @@ export interface ProductoEnLista {
   /** Lo que trae cada unidad, cuando se cuenta por unidades: 250 (g). */
   readonly contenidoPorUnidad: number | null;
   readonly unidadDelContenido: string | null;
+  /**
+   * A cuánto se vende tal cual, con impuesto. Nulo: no se vende solo.
+   *
+   * Este **sí** lo ve todo el mundo, y no es una excepción: está en la pizarra.
+   * El margen no viaja, porque el margen necesita el coste y el coste no llega a
+   * quien no puede ver precios.
+   */
+  readonly precioDeVentaCentimos: number | null;
+  readonly ivaDeVenta: number | null;
+  readonly ivaDeVentaElegido: boolean;
 }
 
 export interface CategoriaDelLocal {
@@ -131,6 +141,8 @@ export interface MovimientoEnFicha {
   readonly quien: string | null;
   readonly lote: string | null;
   readonly costeMilesimas?: number | null;
+  /** Lo que se cobró, en las ventas. Solo llega a quien puede ver dinero. */
+  readonly ingresoCentimos?: number | null;
 }
 
 export interface LoteEnFicha {
@@ -290,6 +302,7 @@ export const COMO_SE_LLAMA_EL_MOVIMIENTO: Readonly<Record<string, string>> = {
   salida: 'Ha salido',
   ajuste: 'Ajuste de cámara',
   merma: 'Merma',
+  venta: 'Vendido',
   consumo: 'Consumido al vender',
   recuento: 'Recuento',
 };
@@ -319,6 +332,8 @@ export interface MovimientoDelLibro {
   readonly lote: string | null;
   readonly esEjemplo: boolean;
   readonly costeMilesimas?: number | null;
+  /** Lo que se cobró, en las ventas. Solo llega a quien puede ver dinero. */
+  readonly ingresoCentimos?: number | null;
 }
 
 export interface MisMovimientos {
@@ -440,7 +455,6 @@ export interface ProductoParaMerma {
   readonly nombre: string;
   readonly unidadDeUso: string;
   readonly cantidad: number;
-  readonly esEjemplo: boolean;
 }
 
 export interface ProductosParaMerma {

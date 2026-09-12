@@ -258,14 +258,31 @@ test('el + apunta lo que llega con su precio puesto, y el − pregunta por qué 
   await expect(sale).toHaveCount(0);
   await expect(loQueSeVe(page, '13 kg')).toBeVisible({ timeout: 15_000 });
 
-  // Y lo normal, que es lo que más se pulsa: se ha gastado. Eso es una salida,
-  // no una merma, y no sube el coste de la comida perdida.
+  // Y lo normal en cocina: se ha gastado. Eso es una salida, no una merma, y no
+  // sube el coste de la comida perdida.
   await page.locator(`[aria-label="Ha salido ${nombre}"] >> visible=true`).click();
-  await sale.getByRole('radio', { name: 'Gastado o vendido' }).click();
+  await sale.getByRole('radio', { name: 'Gastado en cocina' }).click();
   await sale.getByLabel(/^Cuánto/).fill('1');
   await sale.getByRole('button', { name: 'Apuntar la salida' }).click();
   await expect(sale).toHaveCount(0);
   await expect(loQueSeVe(page, '12 kg')).toBeVisible({ timeout: 15_000 });
+
+  // ── Y lo que antes no se podía decir: que se ha vendido ───────────────────
+  //
+  // «Gastado o vendido» era un solo botón, y con las dos cosas juntas Estook no
+  // sabía si por lo que salió entró dinero. Ahora se dice, se apunta lo que se ha
+  // cobrado, y **ese dinero no se suma a ninguna ganancia aquí**: espera al
+  // cierre de caja, que es su único dueño.
+  await page.locator(`[aria-label="Ha salido ${nombre}"] >> visible=true`).click();
+  // El «cuánto» primero, que mientras no se diga «vendido» es el único campo que
+  // empieza por esa palabra. Después el porqué, y entonces aparece el importe.
+  await sale.getByLabel(/^Cuánto/).fill('2');
+  await sale.getByRole('radio', { name: 'Vendido a un cliente' }).click();
+  await sale.getByLabel('Cuánto has cobrado').fill('7,50');
+  await expect(sale.getByText('Esto se cuenta en la caja del día')).toBeVisible();
+  await sale.getByRole('button', { name: 'Apuntar la salida' }).click();
+  await expect(sale).toHaveCount(0);
+  await expect(loQueSeVe(page, '10 kg')).toBeVisible({ timeout: 15_000 });
 
   const rosa = await tokenDe(request, ROSA);
   const mermas = await consultar<{ mermas: { producto: string; motivo: string }[] }>(
@@ -274,6 +291,19 @@ test('el + apunta lo que llega con su precio puesto, y el − pregunta por qué 
     'mis_mermas',
   );
   expect(mermas.datos?.mermas.find((m) => m.producto === nombre)?.motivo).toBe('caducado');
+
+  // La venta queda en el libro como venta, con lo que se cobró.
+  const libro = await consultar<{
+    movimientos: { producto: string; tipo: string; ingresoCentimos?: number | null }[];
+  }>(request, rosa, 'mis_movimientos', { tipo: 'venta', limite: '50' });
+  const laVenta = libro.datos?.movimientos.find((m) => m.producto === nombre);
+  expect(laVenta?.ingresoCentimos).toBe(750);
+
+  // Y sale propuesta al cerrar la caja, sin haber sumado nada por su cuenta.
+  const caja = await consultar<{
+    vendidoEnCamara: { concepto: string; importeCentimos: number }[];
+  }>(request, rosa, 'un_cierre');
+  expect(caja.datos?.vendidoEnCamara.find((v) => v.concepto === nombre)?.importeCentimos).toBe(750);
 });
 
 // ── 4 · La caja, a mano ──────────────────────────────────────────────────────

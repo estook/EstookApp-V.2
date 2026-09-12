@@ -1,5 +1,13 @@
 import { z } from 'zod';
-import { ajusteHasta, cantidad } from '@estook/dominio';
+import {
+  MOTIVOS_DE_SALIDA,
+  QUE_ES_CADA_SALIDA,
+  ajusteHasta,
+  cantidad,
+  esMerma,
+  esVenta,
+  type MotivoDeSalida,
+} from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -210,11 +218,31 @@ export const apuntarEntrada = comando<EntradaApuntarEntrada, SalidaDeMovimiento>
 
 // ── Se ha sacado género ──────────────────────────────────────────────────────
 
+/**
+ * Los porqués que pasan por aquí.
+ *
+ * Los que son merma **no**: tienen su propio comando, su lista cerrada de
+ * motivos, su partida y su permiso —el de la camarera, que no tiene Inventario—.
+ * Se filtran del catálogo en vez de escribirlos otra vez, para que añadir un
+ * motivo de merma no obligue a acordarse de este fichero.
+ */
+const PORQUES_QUE_NO_SON_MERMA = MOTIVOS_DE_SALIDA.filter((motivo) => !esMerma(motivo)) as [
+  MotivoDeSalida,
+  ...MotivoDeSalida[],
+];
+
 export const entradaApuntarSalida = z
   .object({
     producto_id: z.string().uuid(),
     cuanto: z.number().positive().max(10_000_000),
     como: comoSeCuenta.optional(),
+    /**
+     * Por qué sale, del catálogo cerrado (0034). Sin decir nada es «gastado»,
+     * que es lo que hacían todas las salidas antes de que la pregunta existiera.
+     */
+    por_que: z.enum(PORQUES_QUE_NO_SON_MERMA).optional(),
+    /** Lo que se cobró, con impuesto. Solo cuando se ha vendido. */
+    ingreso_centimos: z.number().int().min(0).max(100_000_000).nullable().optional(),
     motivo: z.string().trim().max(400).nullable().optional(),
   })
   .strict();
@@ -222,13 +250,24 @@ export const entradaApuntarSalida = z
 export type EntradaApuntarSalida = z.infer<typeof entradaApuntarSalida>;
 
 /**
- * Género que sale y no es ni una venta ni una merma.
+ * Género que sale de la cámara y no es merma.
  *
- * Un traspaso a otro local, un pedido de un catering, lo que se lleva el jefe.
- * **La merma tiene su propio comando y su lista cerrada de motivos, y es M8**,
- * porque «la comida del personal no es merma, ni las invitaciones: van con
- * motivo propio y como partida aparte, o el food cost miente» (Manifiesto 28), y
- * esa partida aparte no existe hasta que exista el food cost.
+ * ── Vender y gastar dejan de ser el mismo botón ─────────────────────────────
+ *
+ * Hasta M7 esto era una sola cosa: «ha salido género», con una nota. Y una nota
+ * no se puede sumar, así que Estook no sabía si dos kilos de solomillo se habían
+ * cocinado o se habían vendido. Son los dos extremos de la misma cuenta: uno es
+ * lo que cuesta lo que vendes y el otro es lo que ingresas.
+ *
+ * Ahora el porqué viene del catálogo de la 0034 y decide **qué línea del libro
+ * se apunta**: `venta` cuando se cobró, `salida` cuando no.
+ *
+ * ── Y el dinero no se suma solo ─────────────────────────────────────────────
+ *
+ * `ingreso_centimos` queda guardado en la línea, y **no toca ninguna ganancia**.
+ * El dinero de una jornada tiene un solo dueño, que es el cierre de caja (0027);
+ * sumarlo también aquí contaría el día dos veces sin que se viera. Al cerrar la
+ * caja, lo vendido sale propuesto y decide una persona.
  */
 export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
   nombre: 'apuntar_salida',
@@ -239,10 +278,33 @@ export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
     const producto = await elProductoBloqueado(contexto, entrada.producto_id);
     const cuanto = aUnidadesDeUso(producto, entrada.cuanto, entrada.como ?? 'unidades_de_uso');
 
+    const porQue = entrada.por_que ?? 'gastado';
+    const queEs = QUE_ES_CADA_SALIDA[porQue];
+
+    // La restricción de la 0034 lo diría igual, y diciéndolo aquí se lee: un
+    // importe colgado de «gastado en cocina» sería dinero que no entró.
+    if (
+      entrada.ingreso_centimos !== null &&
+      entrada.ingreso_centimos !== undefined &&
+      !esVenta(porQue)
+    ) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['ingreso_centimos'],
+        porque: `«${queEs.nombre}» no es una venta, así que no lleva lo que se ha cobrado.`,
+      });
+    }
+
+    // El motivo que se lee en el libro sale del catálogo, y la nota se le suma
+    // detrás. Escribirlo en la pantalla dejaría dos sitios diciendo cómo se
+    // llama cada cosa, y un día dirían cosas distintas (regla 6).
+    const nota = entrada.motivo ?? null;
+    const motivo = nota === null || nota === '' ? queEs.nombre : `${queEs.nombre} · ${nota}`;
+
     const apuntado = await apuntar(contexto, producto, {
-      tipo: 'salida',
+      tipo: queEs.tipo,
       cantidad: -cuanto,
-      motivo: entrada.motivo ?? null,
+      motivo,
+      ingresoCentimos: entrada.ingreso_centimos ?? null,
       origen: 'a_mano',
       esEjemplo: producto.esEjemplo,
     });
@@ -251,8 +313,8 @@ export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
       select estook.anotar(
         ${laOrganizacionDeLaSesion(contexto)}::uuid, 'crear', 'movimiento_de_stock',
         ${apuntado.movimientoId}, ${producto.localId}::uuid, null,
-        ${JSON.stringify({ tipo: 'salida', cantidad: -cuanto, producto: producto.nombre })}::text::jsonb,
-        ${entrada.motivo ?? null}
+        ${JSON.stringify({ tipo: queEs.tipo, cantidad: -cuanto, producto: producto.nombre, porQue })}::text::jsonb,
+        ${motivo}
       )
     `;
 

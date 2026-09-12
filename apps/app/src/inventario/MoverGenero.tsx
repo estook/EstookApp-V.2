@@ -1,13 +1,32 @@
 import { useState } from 'react';
 import {
-  MOTIVOS_DE_MERMA,
-  NOMBRE_DEL_MOTIVO_DE_MERMA,
+  FAMILIAS_DE_SALIDA,
+  NOMBRE_DE_LA_FAMILIA,
   NOMBRE_DE_LA_PARTIDA,
+  QUE_ES_CADA_FAMILIA,
+  QUE_ES_CADA_SALIDA,
+  centimos,
+  conSimbolo,
+  esMerma,
+  esVenta,
+  losDeLaFamilia,
   partidaDe,
+  porCantidad,
   type MotivoDeMerma,
+  type MotivoDeSalida,
 } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
-import { Aviso, Boton, Botones, Campo, Hoja, Interruptor, Selector, clases } from '@estook/ui';
+import {
+  Aviso,
+  Boton,
+  Botones,
+  Campo,
+  CampoMoneda,
+  Hoja,
+  Interruptor,
+  Selector,
+  clases,
+} from '@estook/ui';
 import type { Centimos } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -32,11 +51,22 @@ import { comoDinero, conUnidadDeUso, type ProductoEnLista } from './contrato.ts'
  *     precio del producto desde hoy. **No se olvida**: cada entrada guarda lo que
  *     costó, que es de donde saldrá «este mes has pagado el aceite un 8 % más».
  *
- *   · **La salida pregunta por qué.** Con pastillas y no con un campo de texto:
- *     «se ha gastado», las cuatro mermas, la comida del personal, una invitación,
- *     un traspaso u otra cosa. Las que son merma **se apuntan como merma**, con su
- *     motivo y su partida; las que no, como una salida. Antes todo era «ha salido»
- *     con una nota, y una nota no se puede sumar.
+ *   · **La salida pregunta por qué, y en tres familias** (M7, repaso). Antes la
+ *     primera opción era «Gastado o vendido», las dos cosas en el mismo botón, y
+ *     con ellas juntas Estook no podía saber cuánto se había vendido de nada.
+ *     Ahora se elige dentro de una de tres, y cada una dice lo que significa:
+ *
+ *       **Se ha vendido** · entra dinero. Se apunta lo que se ha cobrado.
+ *       **Se ha usado** · no entra dinero: se cocinó, se fue a otro local.
+ *       **No se ha aprovechado** · merma, con su motivo y su partida.
+ *
+ *     El catálogo vive en el dominio (`salida.ts`) y lo leen esta pantalla y el
+ *     servidor, para que no haya dos sitios diciendo cómo se llama cada cosa.
+ *
+ *   · **Y lo vendido no suma dinero desde aquí.** Se guarda lo que se cobró, y
+ *     el dinero del día lo cuenta el cierre de caja, que es su único dueño: al
+ *     cerrarla, esto sale propuesto. Sumarlo en los dos sitios contaría el día
+ *     dos veces sin que se viera, que es el fallo más caro que hay en una caja.
  *
  *   · **«Ajustar lo que hay» deja de ser un botón de los tres.** Tres botones del
  *     mismo tamaño decían que las tres cosas eran igual de normales, y no lo son:
@@ -46,31 +76,6 @@ import { comoDinero, conUnidadDeUso, type ProductoEnLista } from './contrato.ts'
  */
 
 export type QueSeMueve = 'entrada' | 'salida' | 'ajuste';
-
-/** Por qué sale el género. Las mermas son las de la lista cerrada de la 0028. */
-type PorQueSale = 'gastado' | 'traspaso' | MotivoDeMerma;
-
-const POR_QUE_SALE: readonly { readonly cual: PorQueSale; readonly nombre: string }[] = [
-  // Lo más normal, primero: que se haya gastado en cocina o vendido.
-  { cual: 'gastado', nombre: 'Gastado o vendido' },
-  ...MOTIVOS_DE_MERMA.filter((m) => m !== 'otro').map((m) => ({
-    cual: m,
-    nombre: NOMBRE_DEL_MOTIVO_DE_MERMA[m],
-  })),
-  { cual: 'traspaso', nombre: 'A otro local' },
-  { cual: 'otro', nombre: 'Otra cosa' },
-];
-
-/**
- * Si lo que sale se apunta como merma.
- *
- * «Otra cosa» **no**: es una salida con su nota. Una merma de motivo «otro» cuenta
- * como pérdida y sube el food cost, y quien pulsa «otra cosa» al sacar género no
- * está diciendo que se haya perdido nada.
- */
-function esMerma(cual: PorQueSale): cual is Exclude<MotivoDeMerma, 'otro'> {
-  return cual !== 'gastado' && cual !== 'traspaso' && cual !== 'otro';
-}
 
 export function MoverGenero({
   que,
@@ -137,7 +142,10 @@ function ElFormulario({
   const [quedarseConElPrecio, setQuedarseConElPrecio] = useState(false);
   const [lote, setLote] = useState('');
   const [caduca, setCaduca] = useState('');
-  const [porQue, setPorQue] = useState<PorQueSale>('gastado');
+  const [porQue, setPorQue] = useState<MotivoDeSalida>('gastado');
+  /** Lo que se ha cobrado, con impuesto. Solo cuando se ha vendido. */
+  const [ingreso, setIngreso] = useState<Centimos | null>(null);
+  const [ingresoTocado, setIngresoTocado] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
   const numero = Number(cuanto.replace(',', '.'));
@@ -145,24 +153,42 @@ function ElFormulario({
   const enUnidadesDeUso = como === 'formatos' ? numero * producto.factor : numero;
   const puedeTocarPrecios = puedeEditar(permisos, 'dato.precio_de_compra');
   const precioDistinto = precio !== null && deLaLista !== null && precio !== deLaLista;
+  const queEsEstaSalida = QUE_ES_CADA_SALIDA[porQue];
+
+  /**
+   * Lo que se habrá cobrado, si el producto tiene precio de venta.
+   *
+   * Se propone y **no se impone**: en cuanto alguien escribe un importe, manda el
+   * suyo. Un precio propuesto que se pisa solo al cambiar la cantidad es un
+   * importe inventado con la firma de quien lo apuntó.
+   */
+  const propuesto =
+    producto.precioDeVentaCentimos === null || !hayNumero || enUnidadesDeUso <= 0
+      ? null
+      : porCantidad(centimos(producto.precioDeVentaCentimos), enUnidadesDeUso);
+  const loCobrado = ingresoTocado ? ingreso : propuesto;
 
   const listo =
     hayNumero &&
     (que === 'ajuste' ? numero >= 0 && nota.trim() !== '' : numero > 0) &&
-    (que !== 'salida' || porQue !== 'otro' || nota.trim() !== '') &&
+    (que !== 'salida' || !queEsEstaSalida.pideNota || nota.trim() !== '') &&
     !guardando;
 
   async function guardar() {
     setGuardando(true);
 
     // ── La salida que es merma va como merma ─────────────────────────────────
+    //
+    // Y va por su comando, no por este: la merma tiene su partida, su lista
+    // cerrada de motivos y **su permiso**, que es el de la camarera, que no tiene
+    // Inventario. El catálogo dice cuáles son; aquí solo se obedece.
     if (que === 'salida' && esMerma(porQue)) {
       const respuesta = await cliente.ejecutar<{ cantidad: number; unidadDeUso: string }>(
         'apuntar_merma',
         {
           producto_id: producto.id,
           cuanto: Math.abs(enUnidadesDeUso),
-          motivo: porQue,
+          motivo: queEsEstaSalida.motivoDeMerma,
           ...(nota.trim() === '' ? {} : { detalle: nota.trim() }),
         },
       );
@@ -172,20 +198,13 @@ function ElFormulario({
         return;
       }
       alHecho(
-        `Merma apuntada (${NOMBRE_DE_LA_PARTIDA[partidaDe(porQue)].toLowerCase()}). Quedan ${conUnidadDeUso(respuesta.datos.cantidad, respuesta.datos.unidadDeUso)}.`,
+        `Merma apuntada (${NOMBRE_DE_LA_PARTIDA[partidaDe(queEsEstaSalida.motivoDeMerma as MotivoDeMerma)].toLowerCase()}). Quedan ${conUnidadDeUso(respuesta.datos.cantidad, respuesta.datos.unidadDeUso)}.`,
       );
       return;
     }
 
     const comando =
       que === 'ajuste' ? 'ajustar_stock' : que === 'entrada' ? 'apuntar_entrada' : 'apuntar_salida';
-
-    const motivoDeLaSalida =
-      porQue === 'gastado'
-        ? 'Gastado o vendido'
-        : porQue === 'traspaso'
-          ? 'A otro local'
-          : nota.trim();
 
     const cuerpo =
       que === 'ajuste'
@@ -204,10 +223,12 @@ function ElFormulario({
               producto_id: producto.id,
               cuanto: Math.abs(numero),
               como,
-              motivo:
-                porQue !== 'otro' && nota.trim() !== ''
-                  ? `${motivoDeLaSalida} · ${nota.trim()}`
-                  : motivoDeLaSalida,
+              por_que: porQue,
+              // Cómo se llama cada porqué lo escribe el servidor desde el mismo
+              // catálogo: aquí solo viaja la nota, que es lo que ha escrito una
+              // persona.
+              ...(nota.trim() === '' ? {} : { motivo: nota.trim() }),
+              ...(esVenta(porQue) && loCobrado !== null ? { ingreso_centimos: loCobrado } : {}),
             };
 
     const respuesta = await cliente.ejecutar<{
@@ -245,8 +266,16 @@ function ElFormulario({
       return;
     }
 
+    // Y cuando se ha vendido, se dice en la misma frase **dónde cuenta ese
+    // dinero**. Callarlo dejaría a quien lo apunta creyendo que ya está sumado a
+    // las ganancias, que es justo lo que no pasa.
+    const fraseVenta =
+      que === 'salida' && esVenta(porQue) && loCobrado !== null
+        ? ` ${conSimbolo(loCobrado)} apuntados: salen propuestos al cerrar la caja de hoy.`
+        : '';
+
     alHecho(
-      `Apuntado. Quedan ${conUnidadDeUso(respuesta.datos.cantidad, respuesta.datos.unidadDeUso)}.${frasePrecio}`,
+      `Apuntado. Quedan ${conUnidadDeUso(respuesta.datos.cantidad, respuesta.datos.unidadDeUso)}.${frasePrecio}${fraseVenta}`,
     );
   }
 
@@ -311,46 +340,71 @@ function ElFormulario({
         ) : (
           <>
             {/* ── Por qué sale · solo en la salida ─────────────────────────── */}
+            {/*
+              Tres grupos con su título, y no once pastillas seguidas. Las once
+              estaban, y la primera decía «Gastado o vendido»: con las dos cosas
+              en el mismo botón nadie elegía mal, porque no había nada que elegir,
+              y Estook se quedaba sin saber lo único que importa —si por eso que
+              salió entró dinero o no—.
+            */}
             {que === 'salida' && (
-              <div>
+              <div
+                role="radiogroup"
+                aria-labelledby="por-que-sale"
+                className="flex flex-col gap-e3"
+              >
                 <p
                   id="por-que-sale"
                   className="text-etiqueta uppercase tracking-wide text-texto-suave"
                 >
                   Por qué sale
                 </p>
-                <div
-                  role="radiogroup"
-                  aria-labelledby="por-que-sale"
-                  className="mt-e2 flex flex-wrap gap-e2"
-                >
-                  {POR_QUE_SALE.map(({ cual, nombre }) => {
-                    const puesto = cual === porQue;
-                    return (
-                      <button
-                        key={cual}
-                        type="button"
-                        role="radio"
-                        aria-checked={puesto}
-                        onClick={() => {
-                          setPorQue(cual);
-                        }}
-                        className={clases(
-                          'inline-flex min-h-toque items-center rounded-medio border px-e3 text-secundario font-medium',
-                          puesto
-                            ? 'border-naranja bg-naranja-suave text-texto'
-                            : 'border-borde-fuerte bg-superficie text-texto-suave hover:bg-fondo',
-                        )}
-                      >
-                        {nombre}
-                      </button>
-                    );
-                  })}
-                </div>
+
+                {FAMILIAS_DE_SALIDA.map((familia) => (
+                  <div key={familia} className="flex flex-col gap-e2">
+                    <p className="text-secundario font-semibold">
+                      {NOMBRE_DE_LA_FAMILIA[familia]}
+                      <span className="ml-e2 font-normal text-texto-suave">
+                        {QUE_ES_CADA_FAMILIA[familia]}
+                      </span>
+                    </p>
+                    <div className="flex flex-wrap gap-e2">
+                      {losDeLaFamilia(familia).map((cual) => {
+                        const puesto = cual === porQue;
+                        return (
+                          <button
+                            key={cual}
+                            type="button"
+                            role="radio"
+                            aria-checked={puesto}
+                            title={QUE_ES_CADA_SALIDA[cual].que}
+                            onClick={() => {
+                              setPorQue(cual);
+                            }}
+                            className={clases(
+                              'inline-flex min-h-toque items-center rounded-medio border px-e3 text-secundario font-medium',
+                              puesto
+                                ? 'border-naranja bg-naranja-suave text-texto'
+                                : 'border-borde-fuerte bg-superficie text-texto-suave hover:bg-fondo',
+                            )}
+                          >
+                            {QUE_ES_CADA_SALIDA[cual].nombre}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
                 {esMerma(porQue) && (
-                  <p aria-live="polite" className="mt-e2 text-secundario text-texto-suave">
+                  <p aria-live="polite" className="text-secundario text-texto-suave">
                     Se apunta como merma, en la partida de{' '}
-                    <strong>{NOMBRE_DE_LA_PARTIDA[partidaDe(porQue)].toLowerCase()}</strong>.
+                    <strong>
+                      {NOMBRE_DE_LA_PARTIDA[
+                        partidaDe(queEsEstaSalida.motivoDeMerma as MotivoDeMerma)
+                      ].toLowerCase()}
+                    </strong>
+                    .
                   </p>
                 )}
               </div>
@@ -391,6 +445,52 @@ function ElFormulario({
                 setCuanto(e.currentTarget.value);
               }}
             />
+
+            {/* ── Lo que se ha cobrado · solo cuando se ha vendido ────────── */}
+            {/*
+              ── La pregunta de «¿esto se suma a mis ganancias?» ──────────────
+
+              Se contesta aquí, y se contesta con la verdad: **el dinero de una
+              jornada se cuenta en un solo sitio**, que es el cierre de caja. Si
+              esto sumara por su cuenta y además se metiera el papel de la caja,
+              el día valdría el doble y no habría forma de verlo.
+
+              Así que lo que se cobra se apunta, y al cerrar la caja sale
+              propuesto con su nombre y su importe. Decide una persona, una vez.
+            */}
+            {que === 'salida' && esVenta(porQue) && (
+              <div className="flex flex-col gap-e2 rounded-medio border border-borde bg-fondo p-e3">
+                <CampoMoneda
+                  etiqueta="Cuánto has cobrado"
+                  ayuda={
+                    producto.precioDeVentaCentimos === null
+                      ? 'Con IVA, lo que ha pagado el cliente. Si no lo sabes, déjalo en blanco.'
+                      : `A su precio de venta salen ${conSimbolo(propuesto ?? centimos(0))}. Cámbialo si has cobrado otra cosa.`
+                  }
+                  valor={loCobrado}
+                  alCambiar={(nuevo) => {
+                    setIngresoTocado(true);
+                    setIngreso(nuevo);
+                  }}
+                />
+
+                {producto.precioDeVentaCentimos === null && (
+                  <p className="text-etiqueta text-texto-tenue">
+                    Si le pones precio de venta en su ficha, la próxima vez sale puesto solo.
+                  </p>
+                )}
+
+                <p className="text-secundario text-texto-suave">
+                  <strong className="text-texto">Esto se cuenta en la caja del día.</strong> Queda
+                  apuntado con lo que has cobrado y te sale propuesto al cerrar la caja de hoy. No
+                  se suma aquí y allí: el día se contaría dos veces.
+                </p>
+                <p className="text-etiqueta text-texto-tenue">
+                  Y puedes ahorrártelo: conectando el TPV, o subiendo el fichero o la foto del
+                  cierre, las ventas entran solas. Está en Servicio, en «Cómo entran tus ventas».
+                </p>
+              </div>
+            )}
 
             {/* ── Lo que ha costado · solo en la entrada ──────────────────── */}
             {que === 'entrada' && puedeVerPrecios && (
@@ -438,9 +538,9 @@ function ElFormulario({
             )}
 
             <Campo
-              etiqueta={que === 'salida' && porQue === 'otro' ? 'Qué ha pasado' : 'Nota'}
-              obligatorio={que === 'salida' && porQue === 'otro'}
-              {...(que === 'salida' && porQue === 'otro' ? {} : { ayuda: 'Opcional.' })}
+              etiqueta={que === 'salida' && queEsEstaSalida.pideNota ? 'Qué ha pasado' : 'Nota'}
+              obligatorio={que === 'salida' && queEsEstaSalida.pideNota}
+              {...(que === 'salida' && queEsEstaSalida.pideNota ? {} : { ayuda: 'Opcional.' })}
               value={nota}
               onChange={(e) => {
                 setNota(e.currentTarget.value);

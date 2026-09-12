@@ -449,11 +449,19 @@ export const entradaCambiarProducto = z
     proveedor_id: z.string().uuid().nullable(),
     notas: z.string().trim().max(2000).nullable(),
     /**
-     * Cuando alguien cambia el factor o el rendimiento a mano, deja de ser una
-     * suposición: es la medida de esta cocina. Y entonces el producto deja de
-     * estar «sin verificar», que es lo que hace que la marca signifique algo.
+     * Si el aprovechamiento es **una medida de esta cocina** o una suposición.
+     *
+     * Tres estados, y los tres hacen falta: `true` lo da por medido, `false` lo
+     * vuelve a dejar por medir, y **sin mandarlo no se toca**. Esa tercera es la
+     * que faltaba: sin ella, guardar la ficha para corregir una errata volvía a
+     * marcar el producto como sin verificar, y la etiqueta naranja no se podía
+     * quitar desde ninguna parte.
      */
     verificado: z.boolean().optional(),
+    /** A cuánto se vende tal cual, con impuesto. A nulo, deja de venderse solo. */
+    precio_de_venta_centimos: z.number().int().min(0).max(100_000_000).nullable().optional(),
+    /** El tipo que se repercute al venderlo. A nulo, el de la actividad. */
+    iva_de_venta: z.number().min(0).max(0.3).nullable().optional(),
     // ── M7, repaso ───────────────────────────────────────────────────────────
     //
     // Estos tres sí son «si no llega, se queda como estaba»: las pantallas de
@@ -571,6 +579,24 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       Number(previo.rendimiento) !== entrada.rendimiento;
     const cambiaElIva = entrada.iva_de_compra !== undefined;
     const cambiaElContenido = entrada.contenido_por_unidad !== undefined;
+    const cambiaElPrecioDeVenta = entrada.precio_de_venta_centimos !== undefined;
+    const cambiaElIvaDeVenta = entrada.iva_de_venta !== undefined;
+
+    /**
+     * ── «Sin verificar», que se volvía a poner solo ──────────────────────────
+     *
+     * Esto decía `sin_verificar = verificado === true ? false : !cambiaElCoste`,
+     * y esa segunda mitad es un fallo de verdad: **corregir una errata en el
+     * nombre volvía a marcar el producto como sin verificar**, porque no había
+     * cambiado la cuenta. La etiqueta naranja salía en todos los productos, no se
+     * podía quitar desde ninguna parte y volvía sola en cuanto se guardaba la
+     * ficha. Era imposible que significara nada.
+     *
+     * Ahora son tres estados y no dos: si no llega `verificado`, **no se toca**.
+     * Se pone a mano —«lo he medido»— o se quita a mano, y esa es la única forma
+     * de que la marca quiera decir algo.
+     */
+    const sinVerificarNuevo = entrada.verificado === undefined ? null : !entrada.verificado;
 
     await contexto.sql`
       update estook.producto
@@ -596,7 +622,15 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
              unidad_del_contenido = case when ${cambiaElContenido}
                                          then ${entrada.unidad_del_contenido ?? null}::estook.unidad_de_uso
                                          else unidad_del_contenido end,
-             sin_verificar    = ${entrada.verificado === true ? false : !cambiaElCoste},
+             precio_de_venta_centimos = case when ${cambiaElPrecioDeVenta}
+                                             then ${entrada.precio_de_venta_centimos ?? null}::bigint
+                                             else precio_de_venta_centimos end,
+             iva_de_venta     = case when ${cambiaElIvaDeVenta}
+                                     then ${entrada.iva_de_venta ?? null}::numeric
+                                     else iva_de_venta end,
+             sin_verificar    = case when ${sinVerificarNuevo === null}
+                                     then sin_verificar
+                                     else ${sinVerificarNuevo ?? false} end,
              actualizado_en   = now()
        where id = ${entrada.producto_id}
     `;

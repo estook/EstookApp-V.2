@@ -47,3 +47,8 @@ alguien se preguntara «por que esta hecho asi».
 | **0034** | Nadie gestiona el acceso de su igual: lo hace quien esta por encima         |
 | **0035** | El alta pregunta como se compra, y la cuenta la hace el dominio             |
 | **0036** | La direccion es estook.com, y la sabe el codigo                             |
+| **0037** | Lo que sale de camara dice si se vendio; el dinero lo cuenta la caja        |
+| **0038** | Cada producto es de una zona, y cada uno trabaja con la suya                |
+| **0039** | El Panel se monta como un movil, y cada uno se pone sus cifras              |
+| **0040** | El local se busca en Google, con el tope contado antes de llamar            |
+| **0041** | El panel de administracion: el cliente es la organizacion                   |

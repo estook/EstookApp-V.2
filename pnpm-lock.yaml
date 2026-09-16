@@ -209,6 +209,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@estook/cliente-api':
+        specifier: workspace:*
+        version: link:../../packages/cliente-api
       '@estook/iconos':
         specifier: workspace:*
         version: link:../../packages/iconos

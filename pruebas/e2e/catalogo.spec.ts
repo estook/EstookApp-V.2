@@ -142,7 +142,7 @@ test.describe('el catálogo', () => {
     await expect(page.getByText('null · no es lo mismo que cero')).toBeVisible();
   });
 
-  test('los veintiún errores del catálogo se pintan, y ninguno enseña su código', async ({
+  test('los veintiséis errores del catálogo se pintan, y ninguno enseña su código', async ({
     page,
   }) => {
     // «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría
@@ -160,6 +160,10 @@ test.describe('el catálogo', () => {
     //
     // Y la 0041 añade dos, las puertas del admin: `falta_activar_doble_factor` y
     // `se_queda_sin_admin`. Son veintiuno.
+    //
+    // Y la 0042 añade cinco, los de crear cuenta: `codigo_incorrecto`,
+    // `espera_un_momento`, `demasiadas_cuentas`, `sin_cuenta` y
+    // `todavia_no_disponible`. Son veintiséis.
     await abrir(page);
     await irA(page, 'Avisos y vacíos');
 
@@ -167,7 +171,7 @@ test.describe('el catálogo', () => {
       has: page.getByRole('heading', { name: 'ErrorEnCristiano' }),
     });
     const avisos = seccion.getByRole('alert');
-    await expect(avisos).toHaveCount(21);
+    await expect(avisos).toHaveCount(26);
 
     const texto = (await seccion.innerText()).toLowerCase();
     for (const codigo of [

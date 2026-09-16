@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es-ES">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#111C1F" />
+
+    <!--
+      La marca. El favicon va en SVG, que escala y pesa menos de un kilobyte; el
+      PNG solo existe porque iOS lo exige. Los genera
+      herramientas/iconos-de-marca.mjs a partir del mismo simbolo, y los deja en
+      public/marca de cada aplicacion: no se editan a mano.
+    -->
+    <link rel="icon" type="image/svg+xml" href="../marca/favicon.svg" />
+    <link rel="apple-touch-icon" href="../marca/apple-touch-icon.png" />
+    <meta name="description" content="Las condiciones de uso de Estook" />
+    <title>Condiciones de uso · Estook</title>
+  </head>
+  <body>
+    <div id="raiz"></div>
+    <script type="module" src="/src/paginas/condiciones.tsx"></script>
+  </body>
+</html>

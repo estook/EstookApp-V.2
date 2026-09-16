@@ -258,3 +258,38 @@ export const auditoriaDelAdmin = consulta<
     };
   },
 });
+
+// ── La oferta de prueba (0042) ───────────────────────────────────────────────
+
+export interface OfertaEnElAdmin {
+  readonly activa: boolean;
+  readonly dias: number;
+  readonly cambiadaEn: string;
+  /** Nulo si no la ha cambiado nadie desde que existe. */
+  readonly cambiadaPor: string | null;
+}
+
+export const ofertaEnElAdmin = consulta<Record<string, never>, OfertaEnElAdmin>({
+  nombre: 'admin_oferta',
+  entrada: z.object({}).strict(),
+  soloAdmin: true,
+
+  async ejecutar({ sql }) {
+    const filas = await sql<
+      { activa: boolean; dias: number; cambiada_en: Date; cambiada_por: string | null }[]
+    >`
+      select o.activa, o.dias, o.cambiada_en, p.nombre as cambiada_por
+        from plataforma.oferta_de_prueba o
+        left join estook.persona p on p.id = o.cambiada_por
+       where o.unica
+    `;
+    const fila = filas[0];
+    if (fila === undefined) throw new FalloDeAplicacion('fallo_nuestro');
+    return {
+      activa: fila.activa,
+      dias: fila.dias,
+      cambiadaEn: fila.cambiada_en.toISOString(),
+      cambiadaPor: fila.cambiada_por,
+    };
+  },
+});

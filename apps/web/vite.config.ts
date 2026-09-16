@@ -39,6 +39,15 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       sourcemap: true,
       target: 'es2022',
+      // Tres páginas (0042): la portada y las dos legales, cada una con su HTML, para
+      // que `estook.com/privacidad/` exista de verdad y no dependa de una ruta en JS.
+      rollupOptions: {
+        input: {
+          portada: fileURLToPath(new URL('./index.html', import.meta.url)),
+          privacidad: fileURLToPath(new URL('./privacidad/index.html', import.meta.url)),
+          condiciones: fileURLToPath(new URL('./condiciones/index.html', import.meta.url)),
+        },
+      },
       // El presupuesto de B7 se comprueba aparte, en herramientas/presupuesto-tamano.mjs
       chunkSizeWarningLimit: 250,
     },

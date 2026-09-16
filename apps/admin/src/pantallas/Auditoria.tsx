@@ -47,6 +47,13 @@ function queHizo(linea: LineaDelAdmin): string {
     // Los dos rescates de `bd:dar-admin`, que solo hace la consola.
     case 'poner_clave_nueva':
       return `le puso una contraseña de un solo uso a ${sobre}`;
+    case 'cambiar_oferta': {
+      const activa = linea.despues?.['activa'] === true;
+      const dias = linea.despues?.['dias'];
+      return activa
+        ? `encendió la oferta de prueba, con ${String(dias)} días`
+        : 'apagó la oferta de prueba';
+    }
     case 'quitar_segundo_factor':
       return `le quitó el segundo factor a ${sobre}, para volver a montarlo`;
     default:

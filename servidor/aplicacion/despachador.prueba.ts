@@ -74,6 +74,8 @@ function bancoDePruebas(sesion: Contexto['sesion'] = SESION_NORMAL) {
         // puertas, y el almacen se enchufa en `servidor/index.ts`.
         almacen: null,
         google: null,
+        correo: null,
+        identidadDeGoogle: null,
         correlacionId: quien.correlacionId,
         desde: null,
         ahora: new Date(Date.UTC(2026, 8, 1)),
@@ -292,6 +294,12 @@ describe('las puertas se cierran solas', () => {
         'entrar_en_demostracion',
         // 0041 · la puerta del admin, que abre otra clase de sesión.
         'entrar_en_admin',
+        // 0042 · crear cuenta y entrar con Google: quien llega aún no tiene sesión,
+        // y la pantalla de entrar necesita saber qué formas hay antes de que la haya.
+        'como_se_entra',
+        'pedir_codigo_de_registro',
+        'confirmar_registro',
+        'entrar_con_google',
       ].sort(),
     );
   });
@@ -340,6 +348,9 @@ describe('las puertas se cierran solas', () => {
         'admin_auditoria',
         'admin_dar_acceso',
         'admin_quitar_acceso',
+        // 0042 · la oferta de prueba.
+        'admin_oferta',
+        'admin_cambiar_oferta',
       ].sort(),
     );
 
@@ -464,7 +475,7 @@ describe('los secretos no se guardan para repetirlos', () => {
    *
    * Se vio repasando, no probando. Estas dos pruebas son para que no vuelva.
    */
-  it('los diez comandos que devuelven un secreto están marcados', () => {
+  it('los doce comandos que devuelven un secreto están marcados', () => {
     const conSecreto = Object.values(catalogo.comandos)
       .filter((comando) => comando.conSecreto === true)
       .map((comando) => comando.nombre)
@@ -489,6 +500,9 @@ describe('los secretos no se guardan para repetirlos', () => {
         // recibe acceso sin tener cuenta.
         'entrar_en_admin',
         'admin_dar_acceso',
+        // 0042 · el token de quien acaba de crear su cuenta o entra con Google.
+        'confirmar_registro',
+        'entrar_con_google',
       ].sort(),
     );
   });
@@ -505,6 +519,8 @@ describe('los secretos no se guardan para repetirlos', () => {
           sesion: SESION_NORMAL,
           almacen: null,
           google: null,
+          correo: null,
+          identidadDeGoogle: null,
           correlacionId: quien.correlacionId,
           desde: null,
           ahora: new Date(Date.UTC(2026, 8, 1)),

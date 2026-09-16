@@ -2,7 +2,9 @@ import type { z } from 'zod';
 import type { CodigoDeError } from '@estook/dominio';
 import type { Permiso } from '@estook/permisos';
 import type { AlmacenDeFicheros } from '../infraestructura/almacen.ts';
+import type { CorreoSaliente } from '../infraestructura/correo.ts';
 import type { LugaresDeGoogle } from '../infraestructura/google.ts';
+import type { IdentidadDeGoogle } from '../infraestructura/identidad-de-google.ts';
 import type { SesionViva, Sql } from '../infraestructura/postgres.ts';
 
 /**
@@ -50,6 +52,13 @@ export interface Contexto {
    */
   readonly google: LugaresDeGoogle | null;
   /**
+   * El correo que sale (0042). Nulo sin `RESEND_API_KEY`, y entonces crear cuenta
+   * con correo **dice que todavía no se puede** en vez de romperse.
+   */
+  readonly correo: CorreoSaliente | null;
+  /** Entrar con Google (0042). Nulo sin el cliente de OAuth y su secreto. */
+  readonly identidadDeGoogle: IdentidadDeGoogle | null;
+  /**
    * Desde qué dirección llega la petición, tal como la ve la API, o nulo (0041).
    *
    * **Solo para la auditoría del admin.** No decide nada: una dirección se puede
@@ -69,13 +78,38 @@ export interface Contexto {
 export class FalloDeAplicacion extends Error {
   readonly codigo: CodigoDeError;
   readonly detalle: Record<string, unknown> | undefined;
+  /**
+   * **Lo escrito antes de fallar se guarda** (repaso de la 0042).
+   *
+   * Un fallo normal deshace la transacción entera, y es lo que se quiere casi
+   * siempre. Pero hay fallos que **son** el dato: el intento de contraseña que
+   * no cuadra tiene que quedar contado, o el bloqueo a los cinco intentos no
+   * bloquea nunca. Y eso es exactamente lo que pasaba desde M4: `entrar` apuntaba
+   * el intento, fallaba, y el fallo se llevaba el apunte por delante.
+   *
+   * Solo se usa donde se ha escrito a propósito lo que hay que conservar.
+   */
+  readonly conservarLoHecho: boolean;
 
-  constructor(codigo: CodigoDeError, detalle?: Record<string, unknown>) {
+  constructor(
+    codigo: CodigoDeError,
+    detalle?: Record<string, unknown>,
+    opciones?: { readonly conservarLoHecho?: true },
+  ) {
     super(codigo);
     this.name = 'FalloDeAplicacion';
     this.codigo = codigo;
     this.detalle = detalle;
+    this.conservarLoHecho = opciones?.conservarLoHecho === true;
   }
+}
+
+/** Un fallo que no deshace lo escrito antes de él. Ver `conservarLoHecho`. */
+export function falloQueSeGuarda(
+  codigo: CodigoDeError,
+  detalle?: Record<string, unknown>,
+): FalloDeAplicacion {
+  return new FalloDeAplicacion(codigo, detalle, { conservarLoHecho: true });
 }
 
 /**

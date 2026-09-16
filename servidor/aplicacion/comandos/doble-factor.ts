@@ -8,7 +8,10 @@ import {
 } from '../../dominio/doble-factor.ts';
 import { comprobar, derivar } from '../../dominio/secretos.ts';
 import type { Sql } from '../../infraestructura/postgres.ts';
-import { comando, FalloDeAplicacion } from '../contrato.ts';
+import { comando, FalloDeAplicacion, falloQueSeGuarda } from '../contrato.ts';
+
+/** Cinco códigos mal, quince minutos: lo mismo que la contraseña (0039). */
+const FALLOS_ANTES_DE_PARAR = 5;
 
 /**
  * El segundo factor, sus cuatro comandos (M4).
@@ -100,8 +103,10 @@ export const confirmarDobleFactor = comando<
     if (!fila) throw new FalloDeAplicacion('no_existe');
     if (fila.confirmado_en !== null) throw new FalloDeAplicacion('ya_hecho');
 
+    // «Ese código no es correcto», y no «ese correo y esa contraseña no cuadran»,
+    // que es lo que decía y no tiene nada que ver con lo que se ha escrito.
     if (!(await comprobarCodigo(fila.secreto, entrada.codigo, ahora))) {
-      throw new FalloDeAplicacion('no_cuadra');
+      throw new FalloDeAplicacion('codigo_incorrecto');
     }
 
     // Los de respaldo se ensenan **una sola vez** y se guardan derivados, igual
@@ -141,15 +146,27 @@ export const superarDobleFactor = comando<
     if (sesion === null) throw new FalloDeAplicacion('sin_sesion');
     if (sesion.dobleFactorSuperado) return { superado: true, conUnoDeRespaldo: false };
 
-    const filas = await sql<{ secreto: string; codigos_de_respaldo: string[] }[]>`
-      select secreto, codigos_de_respaldo from estook.doble_factor
+    const filas = await sql<
+      { secreto: string; codigos_de_respaldo: string[]; bloqueado: boolean }[]
+    >`
+      select secreto, codigos_de_respaldo,
+             coalesce(bloqueado_hasta > now(), false) as bloqueado
+        from estook.doble_factor
        where persona_id = ${sesion.personaId} and confirmado_en is not null
     `;
     const fila = filas[0];
     if (!fila) throw new FalloDeAplicacion('no_existe');
 
+    // **Con límite de intentos**, que no tenía (0039): seis cifras sin límite se
+    // prueban enteras en una tarde.
+    if (fila.bloqueado) throw new FalloDeAplicacion('demasiados_intentos');
+
     if (await comprobarCodigo(fila.secreto, entrada.codigo, ahora)) {
       await sql`update estook.sesion set doble_factor_superado = true where id = ${sesion.id}`;
+      await sql`
+        update estook.doble_factor set intentos_fallidos = 0, bloqueado_hasta = null
+         where persona_id = ${sesion.personaId}
+      `;
       return { superado: true, conUnoDeRespaldo: false };
     }
 
@@ -161,11 +178,26 @@ export const superarDobleFactor = comando<
       if (await comprobar(limpio, derivado)) cual = i;
     }
 
-    if (cual < 0) throw new FalloDeAplicacion('no_cuadra');
+    if (cual < 0) {
+      // El fallo se cuenta **y se guarda**: si el error deshiciera el apunte, el
+      // límite no limitaría nada, que es lo que le pasaba a la contraseña.
+      await sql`
+        update estook.doble_factor
+           set intentos_fallidos = intentos_fallidos + 1,
+               bloqueado_hasta = case
+                 when intentos_fallidos + 1 >= ${FALLOS_ANTES_DE_PARAR}
+                   then now() + interval '15 minutes'
+                 else bloqueado_hasta
+               end
+         where persona_id = ${sesion.personaId}
+      `;
+      throw falloQueSeGuarda('codigo_incorrecto');
+    }
 
     const quedan = fila.codigos_de_respaldo.filter((_, i) => i !== cual);
     await sql`
-      update estook.doble_factor set codigos_de_respaldo = ${quedan}
+      update estook.doble_factor
+         set codigos_de_respaldo = ${quedan}, intentos_fallidos = 0, bloqueado_hasta = null
        where persona_id = ${sesion.personaId}
     `;
     await sql`update estook.sesion set doble_factor_superado = true where id = ${sesion.id}`;

@@ -6,6 +6,7 @@ import { Catalogo } from './catalogo/Catalogo.tsx';
 import { soloLaHora } from './datos/cliente.ts';
 import { Administradores } from './pantallas/Administradores.tsx';
 import { Auditoria } from './pantallas/Auditoria.tsx';
+import { OfertaDePrueba } from './pantallas/Oferta.tsx';
 import {
   Entrar,
   EscribirElCodigo,
@@ -73,6 +74,7 @@ function LaPuerta(props: AplicacionProps) {
 
 const SECCIONES = [
   { id: 'administradores', nombre: 'Administradores' },
+  { id: 'oferta', nombre: 'Oferta' },
   { id: 'auditoria', nombre: 'Auditoría' },
   { id: 'diseno', nombre: 'Sistema de diseño' },
 ] as const;
@@ -149,7 +151,13 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
         <Catalogo entorno={entorno} sesionId={sesionId} />
       ) : (
         <main className="mx-auto max-w-[64rem] px-e4 py-e5">
-          {seccion === 'administradores' ? <Administradores /> : <Auditoria />}
+          {seccion === 'administradores' ? (
+            <Administradores />
+          ) : seccion === 'oferta' ? (
+            <OfertaDePrueba />
+          ) : (
+            <Auditoria />
+          )}
         </main>
       )}
     </div>

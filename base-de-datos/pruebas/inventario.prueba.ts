@@ -568,6 +568,13 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // dentro de la política de `producto`, así que tiene que leer el rol de la
     // membresía sin volver a pasar por la seguridad de `membresia`. Es la misma
     // razón, la tercera vez. Son dieciocho.
+    //
+    // **Y la 0042 añade seis, a propósito: crear cuenta y entrar con Google.**
+    // Quien las usa todavía no tiene sesión, así que no hay persona con la que
+    // pasar la seguridad de las filas: pedir el código y anotar sus intentos,
+    // leer el registro pendiente, crear la cuenta con su negocio, y buscar o unir
+    // la identidad de Google. Las tablas que tocan no tienen ninguna política
+    // para `estook_api`: solo se llega a ellas por aquí.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -582,24 +589,30 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'abrir_sesion',
       'anotar_intento_de_contrasena',
       'anotar_intento_de_pin',
+      'anotar_intento_de_registro',
       'cerrar_demostracion',
       'cerrar_sesiones_de',
+      'crear_cuenta_con_negocio',
       'credencial_para_entrar',
       'dar_de_alta_persona',
       'locales_visibles',
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',
       'organizaciones_visibles',
+      'pedir_codigo_de_registro',
       'persona_por_correo',
+      'persona_por_identidad',
       'personas_visibles',
       'pin_del_quiosco',
       'pines_para_entrar',
       'poner_credencial',
       'reconocer_dispositivo',
+      'registro_pendiente_de',
       'sembrar_categorias',
       'sesion_activa',
       'suscripcion_al_crear_organizacion',
       'tiene_como_volver_a_entrar',
+      'unir_identidad',
       'zonas_que_ve',
     ]);
   });

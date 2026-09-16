@@ -128,6 +128,43 @@ export const ERRORES = {
     { texto: 'Montarlo', accion: 'activar_doble_factor' },
   ),
 
+  // ── Crear cuenta y entrar con Google (0042) ────────────────────────────────
+  codigo_incorrecto: error(
+    'codigo_incorrecto',
+    'Ese código no es correcto.',
+    'Si es el de tu aplicación de autenticación, escribe el que enseña ahora. Si te lo hemos mandado por correo, el del último correo: vale media hora.',
+    401,
+  ),
+
+  espera_un_momento: error(
+    'espera_un_momento',
+    'Acabamos de mandarte un código.',
+    'Espera un minuto antes de pedir otro, y mira también en la carpeta de correo no deseado.',
+    429,
+  ),
+
+  demasiadas_cuentas: error(
+    'demasiadas_cuentas',
+    'Se han empezado demasiadas cuentas desde aquí en poco tiempo.',
+    'Vuelve a intentarlo dentro de una hora. Si es un error, escríbenos.',
+    429,
+  ),
+
+  sin_cuenta: error(
+    'sin_cuenta',
+    'No hay ninguna cuenta de Estook con ese correo.',
+    'Crea la tuya: es un minuto, y puedes hacerlo con la misma cuenta de Google.',
+    404,
+    { texto: 'Crear cuenta', accion: 'crear_cuenta' },
+  ),
+
+  todavia_no_disponible: error(
+    'todavia_no_disponible',
+    'Esto todavía no está disponible.',
+    'Estamos terminando de conectarlo. Mientras, usa otra de las formas de entrar.',
+    503,
+  ),
+
   se_queda_sin_admin: error(
     'se_queda_sin_admin',
     'Estook no se puede quedar sin nadie con acceso total al admin.',

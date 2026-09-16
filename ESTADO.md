@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 16 de septiembre de 2026 · **Antes de M8: A1, la puerta del admin, y su repaso (#51 a #54), en producción con Richi dentro. Google y la IA, revisados con Richi: Places a punto de encender. De las veinte mejoras y del resto del admin no hay nada construido todavía**
+Última actualización: 16 de septiembre de 2026 · **Antes de M8: A1 en producción. E1 —la portada, crear cuenta con correo o Google, entrar con Google y la oferta de prueba— hecha en su rama, con sus pruebas; falta fusionarla y que Richi ponga Resend y Google. De las veinte mejoras y del resto del admin no hay nada construido todavía**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -14,19 +14,20 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                                                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel                 |
-| **Ahora**      | **Antes de M8**: A1 y su repaso **en producción**. Lo siguiente, **V · Lo que se ve**                                                             |
-| **Pruebas**    | 1.023 unitarias y de base de datos · 367 de pantalla en escritorio y móvil, en verde · catálogo **115 de 121** (95 %)                             |
-| **Rama**       | `antes-de-m8-conectar-google-y-comandos`: los pasos de Google y la IA, y los comandos sin barra. Solo documentos y una prueba                     |
-| **Base**       | En Supabase, **37 de 37**, 52 tablas en `estook` y 2 en `plataforma` (comprobado el 16-sep). Igual que en el código                               |
-| **API**        | Desplegada después de la #54, el 16-sep a las 20:05. Al día con `main`                                                                            |
-| **Entrar**     | App: la cuenta de Ricardo (`ikatz`); ninguna de ejemplo entra. Admin: `estookapp@gmail.com` (dentro, con segundo factor) y Santi (sin entrar aún) |
-| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                                             |
+|                |                                                                                                                                                    |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel                  |
+| **Ahora**      | **Antes de M8**: A1 en producción; **E1 · crear cuenta y Google**, en su pull request. Lo siguiente, **E2 · el pago con Stripe**                   |
+| **Pruebas**    | 1.059 unitarias y de base de datos · 380 de pantalla en escritorio y móvil, en verde · catálogo **121 de 127** (95 %)                              |
+| **Rama**       | `antes-de-m8-entrar-y-crear-cuenta`: E1 ([0042](docs/decisiones/0042-registro-abierto-google-y-la-oferta.md)), con las migraciones `0038` y `0039` |
+| **Base**       | En Supabase, **37 de 37**, 52 tablas en `estook` y 2 en `plataforma` (comprobado el 16-sep). **En el código, 39**: faltan la `0038` y la `0039`    |
+| **API**        | Desplegada después de la #54, el 16-sep a las 20:05. Al día con `main`                                                                             |
+| **Entrar**     | App: la cuenta de Ricardo (`ikatz`); ninguna de ejemplo entra. Admin: `estookapp@gmail.com` (dentro, con segundo factor) y Santi (sin entrar aún)  |
+| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                                              |
 
-> **Lo de ahora:** poner la clave de Places en Supabase, apagar el login de Google de
-> Supabase, mirar el admin en el móvil y que Santi entre. Todo en
+> **Lo de ahora:** fusionar E1, migrar y desplegar; verificar el dominio en Resend y
+> poner sus secretos; preparar el cliente de Google y poner los suyos; y darme los datos
+> del titular para lo legal. Luego, mirar el admin en el móvil y que Santi entre. Todo en
 > **[`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)**. Los planes:
 > **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)** y
 > **[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md)**. **M8 no
@@ -65,12 +66,17 @@ qué aprueba una persona).
 
 Los pasos, en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md):
 
-1. **Places**: restringir la clave a Places API (New) y ponerla en Supabase como
-   `GOOGLE_MAPS_KEY`, **solo la clave**, sin `key=`. Se comprueba en Ajustes → Tu
-   local en Google. («Google y la IA · A».)
-2. **Apagar «Sign in with Google» en Supabase** (Authentication → Providers): es el
-   login de Supabase, que Estook no usa (0010). Borrar el JSON del cliente de OAuth de
-   Descargas: su secreto pasó por el chat y se cambiará al construir la conexión.
+1. **E1** (arriba del todo en los pasos): fusionar, `bd:migrar` (39 de 39), desplegar
+   la API; **Resend** —verificar `estook.com` con sus registros en Hostinger y poner
+   `RESEND_API_KEY` y `CORREO_REMITENTE`—; **Google** —las vueltas
+   `https://estook.com/app/` y `https://www.estook.com/app/`, un secreto nuevo, publicar
+   la pantalla de consentimiento y poner `GOOGLE_OAUTH_CLIENT_ID` y
+   `GOOGLE_OAUTH_CLIENT_SECRET`—; y probarlo de punta a punta.
+2. **Los datos del titular** (razón social, NIF, domicilio) para la privacidad y las
+   condiciones; y **crear la cuenta de Stripe** para E2, sin pasar claves por el chat.
+   **«Sign in with Google» de Supabase, apagado** (Authentication → Providers).
+   **Places**: Richi dice que la clave ya está puesta; se comprueba en Ajustes → Tu
+   local en Google.
 3. **Business Profile**: mandar el formulario de acceso si no está mandado, y **avisar
    cuando Google lo apruebe**. Hasta entonces la cuota es 0 y no hay nada que conectar.
 4. **Mirar el admin en el móvil**: la cabecera en dos líneas y las secciones deslizables.
@@ -81,7 +87,7 @@ Los pasos, en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md):
    no está hecho (Inventario → Productos → «De dónde»; Ajustes → «Tus precios de compra»).
 8. **La IA, todavía nada**: ninguna parte de Estook la usa hoy. Está decidido Gemini
    Flash con tope de 1.800 al mes por local; la clave se saca cuando toque (M22).
-   **Resend**, lo mismo: con la entrega R.
+   **Resend** ya se usa: el código de crear cuenta (E1).
 
 **Ya hecho y comprobado en producción el 16 de septiembre:** las cuatro fusiones (#51 a
 #54), la `0036` y la `0037` aplicadas, la API desplegada a las 20:05, y
@@ -132,6 +138,26 @@ se pidió, cómo se hace mejor, qué hay ya y qué necesita de fuera— en dos d
 | 8     | **L · El lector**             | Códigos de barras                                             | Falta                            |
 | 9     | **A3 · Vendedores y códigos** | Vendedores, `?ref=`, asignaciones con historial               | Falta                            |
 | 10    | **A4 · Ventas**               | El tablero                                                    | Falta                            |
+
+### Antes de M8 · E1, crear cuenta y entrar con Google
+
+Richi, el 16 de septiembre: registrarse **con Google o con correo y verificación**,
+entrar **con cuenta, PIN o Google** «que se vean bien las opciones», y una **portada
+básica** con los dos accesos. Y: **se paga al empezar**, y la prueba de 12 días es una
+**oferta que se enciende desde el admin**. Todo en la
+[0042](docs/decisiones/0042-registro-abierto-google-y-la-oferta.md).
+
+| Entrega                        | Qué lleva                                                                                                                   | Cómo está                     |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| **E1 · Entrar y crear cuenta** | Portada, privacidad y condiciones, crear cuenta (correo con código o Google), Google al entrar, Elegir plan, admin → Oferta | **Hecha**, en su pull request |
+| **E2 · Pagar**                 | Stripe: pagar, portal, avisos; **el estado de la suscripción cumplido en el servidor**                                      | La siguiente                  |
+| **E3 · Google en el alta**     | Places en el paso 4 del alta; Business Profile cuando Google apruebe                                                        | Falta                         |
+
+**Lo que E1 no hace todavía, y hay que saberlo:** **no se cobra** —Elegir plan enseña
+los planes y dice que el pago se abre en unos días—, y **el estado de la suscripción no
+se cumple en la API**: una cuenta pendiente de pago ve Elegir plan, pero la API no le
+impide nada si la llama a pelo. Eso es E2, antes de anunciar nada. Tampoco hay **recuperar
+la contraseña por correo** (hoy la da quien lleva el local, o la consola).
 
 ### Lo que todavía NO está en la app
 
@@ -256,26 +282,25 @@ comprueba con `.\estook.cmd bd:comprobar`, que lo lee de la base y no de aquí.
 ejemplo, **con las cuentas cerradas desde el 3 de septiembre** —tenían una
 contraseña publicada en este repositorio—. **`ikatz` es el negocio de verdad**, y
 `bd:comprobar` enseña además **`burger-king`** (dos locales y una persona con
-dirección), que no es de ejemplo y no está apuntado en ningún documento: **pendiente
-de que Richi diga si es un cliente de verdad o una prueba**.
+dirección), que **es de prueba: la creó Richi** (16 de septiembre).
 
 **Errores:** `estook-app` en Sentry, solo «Error monitoring», con el repositorio
 enlazado. **Variables** del repositorio: `VITE_SUPABASE_URL`,
 `VITE_SUPABASE_ANON_KEY`, `VITE_APP_URL`, `VITE_SENTRY_DSN` y `VITE_API_URL`; en
-Secrets, `TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`. **`GOOGLE_MAPS_KEY` todavía no
-está puesta** en los secretos de Supabase: sin ella, Ajustes dice que Google no está
-conectado. Todo en
+Secrets, `TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`. **`GOOGLE_MAPS_KEY`, puesta** en los
+secretos de Supabase según Richi (16-sep; sin comprobar en Ajustes). **Faltan** los de E1:
+`RESEND_API_KEY`, `CORREO_REMITENTE`, `GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET`. Todo en
 [`config/claves.md`](config/claves.md).
 
 **El peso**, medido con `pnpm tamano` el 16 de septiembre:
 
 | Aplicación      | Peso inicial | De los cuales tipografía |
 | --------------- | ------------ | ------------------------ |
-| `app`           | **275,7 KB** | 106,1 KB                 |
-| `admin`         | **203,1 KB** | 106,1 KB                 |
+| `app`           | **280,4 KB** | 106,1 KB                 |
+| `admin`         | **204,4 KB** | 106,1 KB                 |
 | `web` · `carta` | 166,3 KB     | 106,1 KB                 |
 
-La referencia es 250 y **se mide, no bloquea**. **La puerta del admin sube `admin` 16 KB**: TanStack Query y el cliente de la API, que la app ya llevaba; `app` no cambia. El local en Google sube `app` 1,8 KB
+La referencia es 250 y **se mide, no bloquea**. **Crear cuenta y Google (E1) suben `app` 4,7 KB**: la pantalla de crear cuenta, la de elegir plan y la vuelta de Google, que hacen falta antes de entrar; la web baja 0,9 KB al quitar el marcador de M0. **La puerta del admin sube `admin` 16 KB**: TanStack Query y el cliente de la API, que la app ya llevaba; `app` no cambia. El local en Google sube `app` 1,8 KB
 —la tarjeta de Ajustes—. El Panel vivo la subió 3,5 KB —la
 tarjeta del indicador, la línea y la rejilla nueva— y **`@dnd-kit` no cuenta**: va en
 su propio trozo (17 KB) y solo se descarga al editar el Panel. Las apps conectadas subieron `app`
@@ -304,7 +329,30 @@ En una línea. **El detalle está en
 | **M6**   | Inventario: productos, el libro de movimientos, precio medio ponderado, lotes, previsión         |
 | **M6½**  | La capa de producto: destinos y vistas, Panel en el servidor, merma, fichajes, caja y equipo     |
 | **M7**   | Compras y Calendario (#44); el repaso, las bases, las apps conectadas y el Panel vivo            |
-| **→ M8** | Los planes de las veinte mejoras y del admin; A1, la puerta del admin                            |
+| **→ M8** | Los planes de las veinte mejoras y del admin; A1, la puerta del admin; E1, crear cuenta y Google |
+
+### Antes de M8 · E1, crear cuenta y entrar con Google
+
+- **Crear cuenta** en `estook.com/app/#/crear-cuenta`: el negocio y las condiciones
+  arriba, y **Google** o **correo con un código de seis cifras** (30 minutos, 5
+  intentos, uno por minuto, diez cuentas por hora por dirección). **No se dice si un
+  correo tiene cuenta**, ni por la respuesta ni por el tiempo.
+- **Google con código y PKCE**, sin scripts de Google en la página; el secreto solo lo
+  tiene la API; mismo correo verificado, misma cuenta. Puertos con su adaptador de
+  mentira para las pruebas (`correoEnMemoria`, `identidadDeMentira`).
+- **La cuenta nace pendiente de pago** y va a **Elegir plan**; con la **oferta**
+  encendida en **admin → Oferta**, nace en prueba con sus días.
+- **La portada básica**, la **privacidad** y las **condiciones**
+  ([`docs/web-publica.md`](docs/web-publica.md)).
+- **Entrar**: Google arriba, contraseña y PIN en dos pestañas, crear cuenta abajo.
+
+**Lo que se encontró, y es serio:** **los intentos fallidos de entrar no se guardaban
+desde M4**. El fallo deshacía la transacción entera, y con ella el contador: el bloqueo
+a los cinco intentos de contraseña y de PIN **no bloqueaba nunca**. Y el segundo factor
+**no tenía límite de intentos**. Ahora un fallo puede guardar lo suyo
+(`falloQueSeGuarda`), la `0039` cuenta los del segundo factor, y hay pruebas contra la
+base que fallaban sin el arreglo. También, que un código del segundo factor mal escrito
+decía «el correo y la contraseña no cuadran».
 
 ### Antes de M8 · A1, la puerta del admin
 
@@ -705,9 +753,9 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **El catálogo de referencia** (`0021`): se corrige con una migración, no desde la
   aplicación.
 - **Las funciones `security definer`.** Son la puerta de atrás del sistema y están
-  tasadas: una prueba las cuenta con sus nombres. **Veinticuatro en `estook`** —la
-  última, `zonas_que_ve` ([0038](docs/decisiones/0038-cada-producto-es-de-una-zona.md))—
-  y **dos en `plataforma`**, `nivel_de` y `dar_acceso` (0041). Aquí ponía
+  tasadas: una prueba las cuenta con sus nombres. **Treinta en `estook`** —las seis
+  últimas, las de crear cuenta y Google (0042)— y **tres en `plataforma`**, `nivel_de`,
+  `dar_acceso` (0041) y `oferta_vigente` (0042). Aquí ponía
   «dieciocho» y la prueba lista veinticuatro: se dejó de actualizar.
 - **La puerta del admin** (0041): ser admin es de `plataforma`, no un rol de la matriz;
   **la sesión del admin y la de la app no se cruzan**, y lo mira el despachador
@@ -731,7 +779,29 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ---
 
-## 8 · El siguiente paso · V, lo que se ve
+## 8 · El siguiente paso · E2, el pago con Stripe
+
+### Antes de empezarla
+
+1. **E1 fusionada**, con la `0038` y la `0039` aplicadas y la API desplegada.
+2. **Richi con su cuenta de Stripe creada y activada.** Las claves no pasan por el chat.
+
+### Qué entra
+
+- Los **productos y precios** de la [0042](docs/decisiones/0042-registro-abierto-google-y-la-oferta.md)
+  en Stripe, con el IVA incluido, al mes y al año; **pagar** desde Elegir plan (Checkout);
+  **el portal** para cambiar tarjeta, plan o cancelar; **los avisos de Stripe**
+  (webhook firmado, idempotente).
+- **El estado de la suscripción cumplido en la API**: pendiente de pago, impago y la
+  prueba caducada dejan de ser solo una pantalla. Con cuidado con **los clientes que ya
+  están** (hoy con la prueba caducada): pasarlos a `activa` antes de encender nada.
+- Stripe en la privacidad, y el admin sabiendo quién ha pagado.
+
+**Terminado cuando:** una cuenta nueva paga en modo prueba de Stripe y entra al alta; una
+pendiente de pago no puede escribir llamando a la API a pelo; y cancelar en el portal
+deja la cuenta en solo lectura al acabar el periodo.
+
+## 9 · Y después · V, lo que se ve
 
 ### Antes de empezarla
 

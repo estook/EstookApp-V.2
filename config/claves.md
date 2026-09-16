@@ -55,18 +55,21 @@ alcance de cualquiera con un navegador se hace mirando, no de paso.
 
 Los que no pueden pisar el navegador jamas.
 
-| Nombre                | Que es                                            |
-| --------------------- | ------------------------------------------------- |
-| `CLAVE_DE_SERVICIO`   | La clave secreta del proyecto                     |
-| `GOOGLE_MAPS_KEY`     | Google Places (New) · **ya la lee la API** (0040) |
-| `RESEND_API_KEY`      | El correo que manda Estook (0017)                 |
-| `AI_API_KEY`          | El proveedor de IA de Fogon · M22                 |
-| `AI_MODELO_RAPIDO`    | El modelo barato para lo cotidiano                |
-| `AI_MODELO_ANALISIS`  | El modelo bueno para el analisis nocturno         |
-| `APP_URL`             | La direccion publica, para los enlaces            |
-| `DATABASE_URL`        | La cadena del **agrupador de sesion** (M4)        |
-| `ORIGENES_PERMITIDOS` | Origenes de mas, si alguno hace falta (M4)        |
-| `ENTORNO`             | `produccion` (M4)                                 |
+| Nombre                       | Que es                                                          |
+| ---------------------------- | --------------------------------------------------------------- |
+| `CLAVE_DE_SERVICIO`          | La clave secreta del proyecto                                   |
+| `GOOGLE_MAPS_KEY`            | Google Places (New) · **ya la lee la API** (0040)               |
+| `RESEND_API_KEY`             | El correo que manda Estook (0017) · **ya la lee la API** (0042) |
+| `CORREO_REMITENTE`           | Quién firma: `Estook <hola@estook.com>` (0042)                  |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Entrar y crear cuenta con Google (0042)                         |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Su secreto: solo lo tiene el servidor (0042)                    |
+| `AI_API_KEY`                 | El proveedor de IA de Fogon · M22                               |
+| `AI_MODELO_RAPIDO`           | El modelo barato para lo cotidiano                              |
+| `AI_MODELO_ANALISIS`         | El modelo bueno para el analisis nocturno                       |
+| `APP_URL`                    | La direccion publica, para los enlaces                          |
+| `DATABASE_URL`               | La cadena del **agrupador de sesion** (M4)                      |
+| `ORIGENES_PERMITIDOS`        | Origenes de mas, si alguno hace falta (M4)                      |
+| `ENTORNO`                    | `produccion` (M4)                                               |
 
 ### Las que faltan, cuál usa ya el código y dónde van
 
@@ -74,18 +77,21 @@ Revisado el 16 de septiembre de 2026. **Ninguna frena lo que hay construido**: l
 que depende de una clave está hecho y apagado con su motivo (0022), y se enciende al
 ponerla.
 
-| Qué                         | Nombre exacto                                          | Dónde se pone                           | ¿La usa ya el código?                        |
-| --------------------------- | ------------------------------------------------------ | --------------------------------------- | -------------------------------------------- |
-| **Google Places (New)**     | `GOOGLE_MAPS_KEY`                                      | Secretos de Supabase (Edge Functions)   | **Sí** · Ajustes → Tu local en Google (0040) |
-| **Google Business Profile** | **No es una clave**: acceso aprobado + OAuth           | —                                       | No · espera a que Google apruebe             |
-| **Resend** (correo)         | `RESEND_API_KEY` y el dominio verificado               | Secretos de Supabase + DNS en Hostinger | No · entrega 2 (0017)                        |
-| **IA** (Fogón)              | `AI_API_KEY`, `AI_MODELO_RAPIDO`, `AI_MODELO_ANALISIS` | Secretos de Supabase                    | No · M22, con modelo y tope elegidos (0023)  |
+| Qué                         | Nombre exacto                                                | Dónde se pone                           | ¿La usa ya el código?                        |
+| --------------------------- | ------------------------------------------------------------ | --------------------------------------- | -------------------------------------------- |
+| **Google Places (New)**     | `GOOGLE_MAPS_KEY`                                            | Secretos de Supabase (Edge Functions)   | **Sí** · Ajustes → Tu local en Google (0040) |
+| **Google Business Profile** | **No es una clave**: acceso aprobado + OAuth                 | —                                       | No · espera a que Google apruebe             |
+| **Resend** (correo)         | `RESEND_API_KEY`, `CORREO_REMITENTE` y el dominio verificado | Secretos de Supabase + DNS en Hostinger | **Sí** · el código de crear cuenta (0042)    |
+| **Entrar con Google**       | `GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET`      | Secretos de Supabase                    | **Sí** · entrar y crear cuenta (0042)        |
+| **IA** (Fogón)              | `AI_API_KEY`, `AI_MODELO_RAPIDO`, `AI_MODELO_ANALISIS`       | Secretos de Supabase                    | No · M22, con modelo y tope elegidos (0023)  |
+
+**Entrar con Google (0042)** usa el cliente de OAuth «Estook»: el identificador es público (lo enseña la pantalla de entrar) y **el secreto solo lo tiene la API**, que canjea el código. Sin los dos, el botón de Google no sale. Las direcciones de vuelta son `https://estook.com/app/` y `https://www.estook.com/app/`, y están escritas también en el código (`VUELTAS_DE_GOOGLE`). Sin `RESEND_API_KEY`, crear cuenta con correo dice que se abre pronto. Los pasos, en [`docs/pasos-antes-de-m8.md`](../docs/pasos-antes-de-m8.md), «E1».
 
 **Business Profile no funciona con una clave**, y el nombre `GOOGLE_BUSINESS_KEY`
 que había aquí era un error: esa API exige que **el dueño de la ficha autorice con
 su cuenta de Google** (OAuth), y que Google **apruebe el acceso** del proyecto. Lo
-que hará falta cuando lo aprueben es un «ID de cliente de OAuth» del proyecto de
-Google Cloud, y se le pondrá nombre entonces, con su decisión.
+que hará falta cuando lo aprueben es el mismo cliente de OAuth, con el permiso de
+Business Profile añadido, y su propia vuelta; se decide al construirlo (E3).
 
 **Cómo está (16 de septiembre de 2026):** el cliente de OAuth «Estook» (aplicación web)
 **ya existe** en Google Cloud y la API está habilitada con **cuota 0** hasta la
@@ -147,9 +153,9 @@ herramientas de migracion de tu ordenador.
 
 ## Pendientes de dar de alta
 
-Stripe (secreta, publicable, webhook e identificadores de precio) para M26, la API
-unificada del TPV para M18, Resend para el correo y el acceso OAuth de Google
-Business Profile para las resenas propias. Cuando existan, las publicas van a Variables y las secretas a
+Stripe (secreta, publicable, webhook e identificadores de precio) antes de M8 (0042,
+entrega 2), la API unificada del TPV para M18 y el acceso OAuth de Google Business
+Profile para las resenas propias. Cuando existan, las publicas van a Variables y las secretas a
 los secretos de Supabase.
 
 ## Si una clave se filtra

@@ -127,6 +127,38 @@ function porQueNoPasa(puertas: Puertas, sesion: SesionViva | null): CodigoDeErro
 }
 
 /**
+ * Ejecuta el comando, y si falla **conservando lo hecho**, lo convierte en un
+ * resultado en vez de dejar que el fallo deshaga la transacción.
+ *
+ * Es lo que hace que un intento de contraseña que no cuadra quede contado: hasta
+ * el repaso de la 0042, el fallo se llevaba por delante el apunte y el bloqueo a
+ * los cinco intentos no bloqueaba nunca. Los demás fallos siguen deshaciéndolo
+ * todo, que es lo correcto.
+ */
+async function ejecutarGuardandoLoQueFalla(
+  hacer: () => Promise<unknown>,
+): Promise<
+  | { readonly datos: unknown; readonly fallo: null }
+  | { readonly datos: null; readonly fallo: Resultado }
+> {
+  try {
+    return { datos: await hacer(), fallo: null };
+  } catch (fallo) {
+    if (fallo instanceof FalloDeAplicacion && fallo.conservarLoHecho) {
+      return {
+        datos: null,
+        fallo: {
+          estado: 'fallo',
+          codigo: fallo.codigo,
+          ...(fallo.detalle ? { detalle: fallo.detalle } : {}),
+        },
+      };
+    }
+    throw fallo;
+  }
+}
+
+/**
  * La puerta del admin (0041), que va detrás de las otras cuatro.
  *
  * Separa **dos mundos que no se tocan**: una sesión del admin solo vale para lo
@@ -264,7 +296,11 @@ export function crearDespachador(puertos: Puertos): Despachador {
           // respuesta seria guardar el token, o el PIN, en una tabla. Está
           // razonado en `conSecreto`, en el contrato.
           if (elComando.conSecreto) {
-            const datos = await elComando.ejecutar(contexto, validada.data);
+            const salida = await ejecutarGuardandoLoQueFalla(() =>
+              elComando.ejecutar(contexto, validada.data),
+            );
+            if (salida.fallo !== null) return salida.fallo;
+            const datos = salida.datos;
             // También aquí, y no solo en el camino de abajo: un comando que
             // devuelve un secreto no se recuerda, pero eso no lo exime de que
             // otros módulos tengan que enterarse de lo que ha hecho.
@@ -295,7 +331,11 @@ export function crearDespachador(puertos: Puertos): Despachador {
             };
           }
 
-          const datos = await elComando.ejecutar(contexto, validada.data);
+          const salida = await ejecutarGuardandoLoQueFalla(() =>
+            elComando.ejecutar(contexto, validada.data),
+          );
+          if (salida.fallo !== null) return salida.fallo;
+          const datos = salida.datos;
 
           // Y lo que otros módulos tengan que hacer por haber pasado esto (M6).
           // Va aquí, en la misma transacción, y no dentro del comando: quien

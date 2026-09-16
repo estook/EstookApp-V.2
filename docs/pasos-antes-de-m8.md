@@ -12,10 +12,185 @@
 > | `estookapp@gmail.com`                | **Dentro del admin**: contraseña propia puesta y segundo factor montado ✓   |
 > | `santidearmijo58@gmail.com`          | Con acceso total, **todavía sin entrar**: le falta montar su segundo factor |
 > | **El repaso de A1** (#54)            | **Fusionado y desplegado** ✓                                                |
-> | **Google y la IA**                   | Places: clave creada, **falta ponerla en Supabase**. Resto: abajo, al final |
-> | Lo siguiente                         | **V · Lo que se ve** (`mejoras-antes-de-m8.md`)                             |
+> | **Google y la IA**                   | Places: **puesta en Supabase** (lo dice Richi). Resto: abajo, al final      |
+> | **E1 · Crear cuenta y Google**       | **En su pull request**: lo que te toca, justo debajo                        |
+> | Lo siguiente                         | **E2 · el pago con Stripe**, luego E3 (Places en el alta) y V               |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
+
+---
+
+## E1 · Crear cuenta, entrar con Google y la portada · lo que te toca
+
+Lo que trae ([0042](decisiones/0042-registro-abierto-google-y-la-oferta.md)): la portada
+básica de `estook.com` con **Crear cuenta** e **Iniciar sesión**; la privacidad y las
+condiciones; crear cuenta **con Google o con correo y código**; entrar **con Google,
+contraseña o PIN**; **Elegir plan** al crear la cuenta; y **admin → Oferta** para
+encender la prueba de 12 días. Y un arreglo de seguridad importante: **los intentos
+fallidos de entrar no se estaban contando** (el bloqueo a los cinco no bloqueaba) y el
+segundo factor no tenía límite. Ya sí.
+
+**Sin los secretos no se rompe nada:** sin Resend, «crear cuenta con correo» dice que se
+abre pronto; sin Google, el botón de Google no sale. Así que fusionar y migrar **no
+esperan** a lo demás.
+
+### 1 · Fusionar
+
+**Dónde:** GitHub → **Pull requests** → «Antes de M8 · E1: crear cuenta, entrar con
+Google y la portada» → las tres comprobaciones en verde → **Merge pull request** →
+**Confirm merge**.
+
+### 2 · Aplicar las dos migraciones
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué sale si va bien:** `0038_crear_cuenta_y_entrar_con_google` y
+`0039_los_intentos_se_cuentan_de_verdad`.
+
+```bash
+.\estook.cmd bd:comprobar
+```
+
+**Qué tiene que decir:** **39 de 39** migraciones, y en `plataforma` una tabla más,
+`oferta_de_prueba`, con `RLS`.
+
+### 3 · Volver a desplegar la API
+
+**Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** → escribe
+`desplegar` → **Run workflow**. Cuando termine:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los comandos».
+
+**Mirarlo ya:** abre **https://estook.com** → sale «Tu cocina, bajo control.» con
+**Crear cuenta** e **Iniciar sesión**. **Iniciar sesión** lleva a entrar, con las
+pestañas **Con contraseña** y **Con PIN**. Entra con tu cuenta de siempre: tiene que
+funcionar igual que antes.
+
+### 4 · Resend · el correo que manda el código
+
+**4.1 · Verificar el dominio.** resend.com → **Domains** → **Add Domain** → escribe
+`estook.com` → región **Ireland (eu-west-1)** → **Add**. Te enseña **tres o cuatro
+registros**: un `TXT` que empieza por `resend._domainkey`, un `MX` y un `TXT` de `send`,
+y quizá uno de `_dmarc`.
+
+**4.2 · Ponerlos en Hostinger.** hpanel.hostinger.com → **Dominios** → `estook.com` →
+**DNS / Nameservers** → **Gestionar registros DNS**. Para cada registro de Resend:
+**Tipo** el mismo; **Nombre** lo que Resend pone en «Name» (`resend._domainkey`,
+`send`…, **sin** `.estook.com` detrás); **Valor** el de «Value»; en el `MX`, prioridad
+**10** → **Añadir registro**.
+
+**Cuidado:** **no borres** los registros que ya hay (los de GitHub Pages hacen que
+`estook.com` funcione). Solo se añade.
+
+**4.3 · Comprobar.** En Resend → **Verify DNS Records**. Puede tardar de minutos a unas
+horas. **Qué tiene que salir:** el dominio **Verified**.
+
+**4.4 · Los secretos, cuando esté «Verified».** supabase.com/dashboard → tu proyecto →
+**Edge Functions** → **Secrets** → **Add new secret**, uno a uno → **Save**:
+
+| Nombre             | Valor                                                      |
+| ------------------ | ---------------------------------------------------------- |
+| `RESEND_API_KEY`   | La clave de Resend que tienes apuntada (empieza por `re_`) |
+| `CORREO_REMITENTE` | `Estook <hola@estook.com>`                                 |
+
+**Por qué después de verificar:** con la clave puesta y el dominio sin verificar, Resend
+rechaza los correos y crear cuenta diría «se nos ha roto algo». Sin la clave, dice que se
+abre pronto, que es mejor.
+
+**Si la clave que tienes es de «Full access»:** mejor una de **Sending access** solo
+para `estook.com` (Resend → **API Keys** → **Create API Key**). Si esa se escapa, solo
+sirve para mandar correos, no para tocar la cuenta.
+
+### 5 · Google · entrar y crear cuenta con Google
+
+Se usa **el mismo cliente de OAuth «Estook»** que creaste para Business Profile.
+
+**5.1 · Las direcciones de vuelta.** console.cloud.google.com → tu proyecto → **APIs y
+servicios** → **Credenciales** → **ID de clientes de OAuth 2.0** → **Estook** →
+**URIs de redireccionamiento autorizados**:
+
+- **Borra** la de Supabase (la que acaba en `/auth/v1/callback`).
+- **Añade** exactamente estas dos, **con la barra final**:
+  - `https://estook.com/app/`
+  - `https://www.estook.com/app/`
+
+**Orígenes de JavaScript autorizados:** vacío, no hace falta. → **Guardar**.
+
+**5.2 · Un secreto nuevo** (el de antes pasó por el chat). En esa misma pantalla →
+**Secretos del cliente** → **Añadir secreto** → copia el nuevo (empieza por `GOCSPX-`) →
+en el viejo, **Inhabilitar** y después **Eliminar**.
+
+**5.3 · La pantalla de consentimiento.** **Google Auth Platform** (o «Pantalla de
+consentimiento de OAuth»):
+
+- **Marca / Branding:** nombre **Estook**; correo de asistencia `estookapp@gmail.com`;
+  página principal `https://estook.com`; política de privacidad
+  `https://estook.com/privacidad/`; condiciones `https://estook.com/condiciones/`;
+  **dominios autorizados** `estook.com` → **Guardar**.
+- **Acceso a datos / Data access:** solo `openid`, `.../auth/userinfo.email` y
+  `.../auth/userinfo.profile`. Son los básicos y **no piden revisión de Google**.
+- **Público / Audience:** **Publicar app** → **Confirmar**, para que quede «En
+  producción».
+
+**Por qué publicar:** mientras está «En pruebas», **solo entran los usuarios de prueba**
+que apuntes; los demás ven «acceso bloqueado». Con los tres permisos básicos, publicar no
+necesita verificación. **Business Profile** añadirá un permiso «sensible» que sí pide
+revisión: eso es E3, no ahora.
+
+**5.4 · Los secretos.** Supabase → **Edge Functions** → **Secrets** → **Add new secret**:
+
+| Nombre                       | Valor                                                       |
+| ---------------------------- | ----------------------------------------------------------- |
+| `GOOGLE_OAUTH_CLIENT_ID`     | El «ID de cliente» (acaba en `.apps.googleusercontent.com`) |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | El secreto nuevo del 5.2 (empieza por `GOCSPX-`)            |
+
+**5.5 · El login de Supabase, apagado.** Supabase → **Authentication** → **Sign In /
+Providers** → **Google** → **«Enable Sign in with Google» apagado**. No es este Google
+(0010).
+
+**Si a los dos minutos el botón de Google no sale** en `estook.com/app/`: GitHub →
+Actions → **Desplegar la API** → `desplegar`, y vuelve a mirar.
+
+### 6 · Probarlo de punta a punta
+
+En una **ventana de incógnito** y con correos **que no tengan cuenta** en Estook.
+
+1. **https://estook.com** → **Crear cuenta** → nombre del negocio (p. ej. «Prueba
+   Richi») → marca **Acepto las condiciones** → **Continuar con Google** → elige la cuenta.
+   **Qué tiene que salir:** vuelves a Estook y ves **Elige tu plan** (sin oferta).
+2. Otra ventana de incógnito → **Crear cuenta** → nombre del negocio, condiciones, **tu
+   nombre, otro correo y una contraseña** → **Crear cuenta**.
+   **Qué tiene que salir:** «Mira tu correo», y en ese correo **un código de seis cifras**
+   con el asunto «NNNNNN es tu código de Estook» (si no está, mira en **correo no
+   deseado**). Escríbelo → **Crear mi cuenta** → **Elige tu plan**.
+3. **Iniciar sesión** → **Continuar con Google** con el Gmail de tu cuenta de siempre (la
+   de `ikatz`), si lo es: **entras en tu negocio**, y desde entonces Google y la contraseña
+   son la misma cuenta.
+4. **Admin → Oferta** → enciende **Oferta de prueba encendida**, deja **12** →
+   **Guardar**. Abre **estook.com**: sale «Prueba 12 días gratis, sin tarjeta» y el botón
+   dice **Empezar la prueba**. Una cuenta creada ahora **entra al alta**, no a elegir plan.
+   **Apágala al terminar**, si no estás de campaña. En **Admin → Auditoría** queda la línea
+   del cambio.
+
+> **Las cuentas del paso 6** quedan como clientes «pendientes de pago». No molestan; en
+> A2 (la lista de clientes) se podrán dar de baja desde el admin.
+
+### 7 · Lo que necesito de ti
+
+- **Para lo legal:** la **razón social**, el **NIF/CIF** y el **domicilio** del titular de
+  Estook (si todavía no hay sociedad, dímelo y lo pongo como autónomo). Hoy la privacidad y
+  las condiciones enseñan solo «Estook» y `estookapp@gmail.com`, sin inventar nada.
+- **Para E2 (Stripe):** crear la cuenta en **stripe.com** con el correo de Estook y
+  **activarla** con los datos del negocio y la cuenta bancaria. **No me pases ninguna clave
+  por el chat**: cuando lleguemos te digo cuál, con qué nombre y dónde va.
+
+> **Lo que salga raro, apúntalo tal cual**, con una foto si puedes.
 
 ---
 

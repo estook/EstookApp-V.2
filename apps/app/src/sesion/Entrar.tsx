@@ -1,35 +1,43 @@
-import { useState, type FormEvent } from 'react';
-import { Aviso, Boton, Campo, ErrorEnCristiano, Logo, clases } from '@estook/ui';
+import { useState, type FormEvent, type ReactNode } from 'react';
+import { Aviso, Boton, Campo, ErrorEnCristiano, clases } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { elAparato, hayApi } from '../datos/cliente.ts';
 import { olvidarLosAplazamientos } from '../pantallas/recordatorios.ts';
+import { BotonDeGoogle, MarcoDeLaPuerta, Separador, type ComoSeEntra } from './Formas.tsx';
+import { irAGoogle } from './google.ts';
 import { usarSesion } from './Sesion.tsx';
 
 /**
- * La pantalla de entrar (M4).
+ * La pantalla de entrar (M4, con Google y crear cuenta desde la 0042).
  *
- * «Formulario unico con correo y, debajo, contrasena **o** PIN» (Manifiesto 28).
- * Un solo formulario, no dos pestanas: para quien entra, entrar es una cosa.
+ * «Si das a iniciar sesión, puedes hacerlo con tu cuenta, con PIN o con Google,
+ *  pero que se vean bien las opciones.» Así, de arriba abajo:
  *
- * ── Por que el PIN esta al mismo nivel y no escondido ────────────────────────
+ *   1. **Continuar con Google**, arriba y a lo ancho, que es lo más rápido.
+ *   2. Un «o», y **correo con contraseña o PIN**, con una pestaña para elegir.
+ *      El PIN no se esconde detrás de «más opciones»: para media plantilla es la
+ *      forma normal de entrar.
+ *   3. **¿No tienes cuenta? Créala**, abajo, que es a donde mira quien no la tiene.
+ *   4. Y la demostración, al final, para quien solo quiere mirar.
  *
- * Porque para media plantilla **es la forma normal de entrar**. Una camarera que
- * ficha todos los dias no tiene una contrasena de doce caracteres en la cabeza:
- * tiene seis numeros que le dieron el primer dia. Esconder el PIN detras de «mas
- * opciones» seria esconder la puerta principal.
+ * ── Lo que no se hace aquí, a propósito ──────────────────────────────────────
  *
- * ── Lo que no se hace aqui, a proposito ──────────────────────────────────────
+ * **No se dice si el correo existe.** El servidor devuelve la misma frase para «ese
+ * correo no está» y para «esa contraseña no es»; aquí se enseña tal cual.
  *
- * **No se dice si el correo existe.** Ni antes de escribir la contrasena, ni
- * despues. El servidor devuelve la misma frase para «ese correo no esta» y para
- * «esa contrasena no es»; aqui se ensena tal cual. Si dijera cual de las dos es,
- * cualquiera podria averiguar quien trabaja donde probando direcciones.
- *
- * **No hay registro.** «Tres formas de entrar por primera vez: registro (creas tu
- * negocio), invitacion (te unen a uno) y nada mas. No hay registro abierto»
- * (Manifiesto 28). El registro llega con M5, que es quien monta el alta.
+ * **Google no sale si no está conectado**: un botón que no lleva a ningún sitio es
+ * peor que no tener botón (0022). Lo dice `como_se_entra`.
  */
-export function Entrar() {
+export function Entrar({
+  como,
+  alCrearCuenta,
+  avisoDeGoogle,
+}: {
+  readonly como: ComoSeEntra | undefined;
+  readonly alCrearCuenta: () => void;
+  /** Lo que ha pasado al volver de Google, si ha ido mal. */
+  readonly avisoDeGoogle: ReactNode;
+}) {
   const { entrar, cliente } = usarSesion();
 
   const [correo, setCorreo] = useState('');
@@ -38,6 +46,7 @@ export function Entrar() {
   const [conPin, setConPin] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [yendoAGoogle, setYendoAGoogle] = useState(false);
 
   async function alEnviar(evento: FormEvent) {
     evento.preventDefault();
@@ -46,10 +55,8 @@ export function Entrar() {
     setEnviando(true);
     setError(null);
 
-    // El aparato viaja con la entrada (M5). Sin esto, cada login abre una fila
-    // nueva de sesion y «Mis dispositivos» acaba ensenando veintitres visitas
-    // identicas en vez de un movil. Es opcional: en navegacion privada no se
-    // puede guardar la marca, y entonces se entra igual sin ella.
+    // El aparato viaja con la entrada (M5), para que «Mis dispositivos» diga
+    // «Chrome en Android» y no veintitrés visitas iguales.
     const aparato = elAparato();
 
     const respuesta = await cliente.ejecutar<{ token: string }>('entrar', {
@@ -61,45 +68,86 @@ export function Entrar() {
     if (!respuesta.ok) {
       setError(respuesta.error);
       setEnviando(false);
-      // Lo escrito **no se borra**, salvo el secreto. Volver a teclear el correo
-      // cada vez que uno se equivoca de contrasena es de las cosas que mas
-      // molestan de cualquier aplicacion.
+      // Lo escrito **no se borra**, salvo el secreto.
       if (conPin) setPin('');
       else setContrasena('');
       return;
     }
 
-    // No se navega desde aqui: se guarda el token y ya esta. A donde va cada uno
-    // lo decide `Puerta` mirando `quien_soy`, que es un solo dueno (regla 6). Si
-    // esta pantalla tambien navegara, habria dos sitios decidiendo lo mismo y un
-    // dia dirian cosas distintas.
-    // Entrar con contrasena o con PIN es sentarse a hacer cosas. Los avisos que
-    // alguien aplazo con un «recuerdamelo» vuelven aqui: sin esto, «recuerdamelo»
-    // acababa siendo «no me lo ensenes nunca mas».
+    // Entrar es sentarse a hacer cosas: los avisos aplazados vuelven.
     olvidarLosAplazamientos();
 
     await entrar(respuesta.datos.token);
     setEnviando(false);
   }
 
+  async function conGoogle() {
+    if (como?.google == null) return;
+    setYendoAGoogle(true);
+    try {
+      await irAGoogle(como.google.clienteId, { intencion: 'entrar' });
+    } catch {
+      setYendoAGoogle(false);
+    }
+  }
+
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-fondo px-e4 py-e6">
-      <div className="w-full max-w-[26rem]">
-        <div className="mb-e5 flex justify-center">
-          <Logo alto={40} />
-        </div>
+    <MarcoDeLaPuerta
+      titulo="Entra en Estook"
+      frase="Con Google, con tu contraseña o con el PIN de tu local."
+    >
+      {!hayApi ? (
+        <Aviso tono="atencion" titulo="Todavía no hay servidor al que preguntar">
+          La aplicación está publicada, pero la API aún no está desplegada, así que no hay dónde
+          comprobar quién eres. En cuanto se despliegue, esta pantalla funciona sin tocar nada.
+        </Aviso>
+      ) : (
+        <>
+          {avisoDeGoogle}
 
-        <h1 className="mb-e2 text-center text-pantalla font-semibold">Entra en Estook</h1>
-        <p className="mb-e5 text-center text-secundario text-texto-suave">
-          Con tu correo y tu contraseña, o con el PIN de tu local.
-        </p>
+          {como?.google != null && (
+            <>
+              <BotonDeGoogle
+                cargando={yendoAGoogle}
+                alPulsar={() => {
+                  void conGoogle();
+                }}
+              />
+              <Separador />
+            </>
+          )}
 
-        {!hayApi ? (
-          <Aviso tono="atencion" titulo="Todavía no hay servidor al que preguntar">
-            La aplicación está publicada, pero la API aún no está desplegada, así que no hay dónde
-            comprobar quién eres. En cuanto se despliegue, esta pantalla funciona sin tocar nada.
-          </Aviso>
-        ) : (
+          {/* Contraseña o PIN: dos pestañas, las dos a la vista. */}
+          <div
+            role="tablist"
+            aria-label="Cómo quieres entrar"
+            className="mb-e4 grid grid-cols-2 gap-e1 rounded-medio bg-borde/40 p-e1"
+          >
+            {[
+              { valor: false, texto: 'Con contraseña' },
+              { valor: true, texto: 'Con PIN' },
+            ].map((opcion) => (
+              <button
+                key={opcion.texto}
+                type="button"
+                role="tab"
+                aria-selected={conPin === opcion.valor}
+                onClick={() => {
+                  setConPin(opcion.valor);
+                  setError(null);
+                }}
+                className={clases(
+                  'min-h-toque rounded-medio text-cuerpo',
+                  conPin === opcion.valor
+                    ? 'bg-superficie font-medium text-texto shadow-s1'
+                    : 'text-texto-suave hover:text-texto',
+                )}
+              >
+                {opcion.texto}
+              </button>
+            ))}
+          </div>
+
           <form
             onSubmit={(evento) => {
               void alEnviar(evento);
@@ -155,58 +203,33 @@ export function Entrar() {
             >
               Entrar
             </Boton>
-
-            <button
-              type="button"
-              onClick={() => {
-                setConPin((antes) => !antes);
-                setError(null);
-              }}
-              className={clases(
-                'min-h-toque rounded-medio text-secundario text-texto-suave underline',
-                'hover:text-texto',
-              )}
-            >
-              {conPin ? 'Prefiero usar mi contraseña' : 'Prefiero usar mi PIN'}
-            </button>
           </form>
-        )}
 
-        {/*
-          «Segundo administrador o correo de recuperacion obligatorio» es lo que
-          hace que esto pueda decir algo util en vez de un enlace de «he olvidado
-          mi contrasena» que no lleva a ningun sitio mientras no haya correo.
-        */}
-        <p className="mt-e5 text-center text-secundario text-texto-suave">
-          ¿No te acuerdas? Quien lleva tu local puede darte una contraseña nueva o un PIN nuevo en
-          un momento, desde Equipo.
-        </p>
+          <p className="mt-e4 text-center text-secundario text-texto-suave">
+            ¿No te acuerdas? Quien lleva tu local puede darte una contraseña nueva o un PIN nuevo en
+            un momento, desde Equipo.
+          </p>
 
-        {hayApi && <LaDemostracion />}
-      </div>
-    </main>
+          <div className="mt-e5 flex flex-col items-center gap-e2 border-t border-borde pt-e5">
+            <p className="text-cuerpo">¿No tienes cuenta?</p>
+            <Boton tono="secundario" ancho onClick={alCrearCuenta}>
+              Crear cuenta
+            </Boton>
+          </div>
+
+          <LaDemostracion />
+        </>
+      )}
+    </MarcoDeLaPuerta>
   );
 }
 
 /**
- * «Mirarlo sin cuenta» · el modo demostracion (M5).
+ * «Verlo por dentro sin cuenta» · el modo demostración (M5).
  *
- * «**Modo demostracion aparte**, con un restaurante ficticio entero. Se entra y
- *  se sale sin dejar rastro» (Manifiesto 8).
- *
- * ── Por que esta aqui abajo y no arriba ──────────────────────────────────────
- *
- * Porque quien llega a esta pantalla casi siempre viene a trabajar, no a mirar.
- * Poner «pruébalo» al mismo nivel que «entra» le pondria delante una decision que
- * no tiene: ya tiene cuenta. Va al final, donde lo encuentra quien de verdad lo
- * busca.
- *
- * ── Y que hace exactamente ───────────────────────────────────────────────────
- *
- * Abre una sesion de **solo lectura** en el restaurante de ejemplo, con su
- * equipo, su Panel y sus locales. No se puede escribir nada: lo impide el
- * despachador, en el mismo sitio que las tres puertas de M4. Por eso no hay nada
- * que limpiar despues, que es lo que hace verdad «sin dejar rastro».
+ * Va al final: quien llega aquí casi siempre viene a trabajar o a crear su cuenta.
+ * Abre una sesión de **solo lectura** en el restaurante de ejemplo; no se puede
+ * escribir nada, así que no hay nada que limpiar después.
  */
 function LaDemostracion() {
   const { entrar, cliente } = usarSesion();
@@ -220,8 +243,6 @@ function LaDemostracion() {
     const respuesta = await cliente.ejecutar<{ token: string }>('entrar_en_demostracion', {});
 
     if (!respuesta.ok) {
-      // Sin restaurante de ejemplo montado no hay demostracion. Se dice, y no se
-      // ensena un error rojo: no es un fallo de nadie.
       setNoSePuede(true);
       setEntrando(false);
       return;
@@ -240,7 +261,7 @@ function LaDemostracion() {
   }
 
   return (
-    <div className="mt-e5 flex flex-col items-center gap-e1 border-t border-borde pt-e5">
+    <div className="mt-e4 flex flex-col items-center gap-e1">
       <Boton
         tono="texto"
         cargando={entrando}

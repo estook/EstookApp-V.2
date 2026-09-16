@@ -30,8 +30,9 @@ function quien(cambios: Partial<QuienAcabaDeEntrar> = {}): QuienAcabaDeEntrar {
 }
 
 describe('el catalogo', () => {
-  it('son seis destinos, ni uno mas', () => {
-    expect(DESTINOS).toHaveLength(6);
+  it('son siete destinos, ni uno mas', () => {
+    // El septimo, `elegir_plan`, llega con el registro abierto (0042).
+    expect(DESTINOS).toHaveLength(7);
   });
 });
 
@@ -50,6 +51,36 @@ describe('1 · la suscripcion', () => {
     expect(salida.destino).toBe('cuenta_parada');
     // «Nada se borra nunca, y pagar lo devuelve todo tal cual» (Manifiesto 28).
     expect(salida.porque).toContain('Nada se ha borrado');
+  });
+
+  it('recien creada y sin pagar, a elegir su plan, y con su organizacion ya puesta', () => {
+    const salida = aDondeEntra(
+      quien({
+        organizaciones: [
+          {
+            id: CADENA,
+            nombre: 'Grupo Costa',
+            estado: 'pendiente_de_pago',
+            alcance: 'organizacion',
+          },
+        ],
+      }),
+    );
+    expect(salida.destino).toBe('elegir_plan');
+    expect(salida.organizacionId).toBe(CADENA);
+  });
+
+  it('y si ademas trabaja en otra empresa que si paga, entra en esa', () => {
+    const salida = aDondeEntra(
+      quien({
+        organizaciones: [
+          { id: CADENA, nombre: 'Grupo Costa', estado: 'activa', alcance: 'local' },
+          { id: OTRA, nombre: 'Mar', estado: 'pendiente_de_pago', alcance: 'organizacion' },
+        ],
+      }),
+    );
+    expect(salida.destino).not.toBe('elegir_plan');
+    expect(salida.organizacionId).toBe(CADENA);
   });
 
   it('impagada tampoco', () => {

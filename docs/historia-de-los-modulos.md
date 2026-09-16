@@ -2100,6 +2100,53 @@ cambiarla y a montar el segundo factor antes de ver nada.
   móvil la cabecera del admin se comía un tercio de la pantalla**, y la fila propia
   enseñaba «Acceso» vacío: se vio sacando capturas, no con las pruebas en verde.
 
+### Antes de M8 · E1, crear cuenta y entrar con Google
+
+Richi pidió que la gente **se pudiera registrar**, con Google o con correo y
+verificación; entrar **con cuenta, PIN o Google**, con las opciones a la vista; y una
+**portada básica** en `estook.com` con los dos accesos. A las preguntas: **se paga al
+empezar**, y la prueba de 12 días es **una oferta** que se enciende desde el admin
+cuando hay campaña ([0042](decisiones/0042-registro-abierto-google-y-la-oferta.md),
+migraciones `0038` y `0039`).
+
+#### Uno · Un código, no un enlace
+
+El enlace del correo se abre muchas veces en otro navegador —el del móvil—, y la cuenta
+acababa creada lejos de donde estaba la persona. El código se escribe donde se empezó.
+Y la cuenta **no existe** hasta escribirlo: sin eso se podrían crear cuentas con correos
+de otros.
+
+#### Dos · Nada que diga qué correos usan Estook
+
+Pedir el código contesta lo mismo tenga cuenta o no; a quien ya la tiene le llega un
+correo de «ya tienes cuenta». **Y tarda lo mismo**: la primera versión se saltaba la
+derivación de la contraseña cuando el correo existía, y por el tiempo de respuesta se
+habría sabido. Se vio repasando: ahora se deriva siempre.
+
+#### Tres · Google sin scripts de Google
+
+Código con PKCE, ida y vuelta por el navegador: la política de seguridad sigue en
+`script-src 'self'`, el secreto solo lo tiene la API y la sesión que sale es la nuestra.
+Para probarlo sin salir a internet, **puertos con adaptador de mentira**: un correo en
+memoria que la API de pruebas enseña en `/api/pruebas/ultimo-correo`, y un Google que
+acepta `prueba|sujeto|correo|nombre`.
+
+#### Lo que se encontró, y es lo más serio del proyecto hasta hoy
+
+- **Los intentos fallidos de entrar no se guardaban desde M4.** Un fallo lanza un error,
+  el error deshace la transacción, y **con ella el contador**. El bloqueo a los cinco
+  intentos de contraseña y de PIN no bloqueaba nunca, y las pruebas no lo veían porque
+  comprobaban la respuesta, no la base. Ahora hay fallos que **guardan lo hecho**
+  (`falloQueSeGuarda`), y pruebas que miran la base y que se vieron fallar sin el
+  arreglo.
+- **El segundo factor no tenía límite de intentos**: seis cifras se pueden probar.
+  La `0039` los cuenta y bloquea.
+- **Un código del segundo factor mal escrito decía «el correo y la contraseña no
+  cuadran»**, con la contraseña ya aceptada. Ahora, «ese código no es correcto».
+- **Windows no distingue mayúsculas**: al crear `privacidad.tsx` junto a
+  `Privacidad.tsx`, el primero pisó al segundo sin avisar. Las entradas de las páginas
+  viven en `src/paginas/`.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

@@ -13,7 +13,8 @@ import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Panel } from './panel/Panel.tsx';
 import { PantallaDeApp } from './pantallas/PantallaDeApp.tsx';
 import { VistaDeCadena } from './pantallas/VistaDeCadena.tsx';
-import { Entrar } from './sesion/Entrar.tsx';
+import { ElegirPlan } from './sesion/ElegirPlan.tsx';
+import { SinEntrar } from './sesion/SinEntrar.tsx';
 import {
   CuentaParada,
   ElegirLocal,
@@ -140,7 +141,7 @@ function Puerta() {
   usarElColorDeLaApp(yo?.local?.colorEnLaApp === true ? yo.local.colorDeMarca : null);
 
   // Sin API no hay a quien preguntar. Se dice, en la propia pantalla de entrar.
-  if (!hayApi) return <Entrar />;
+  if (!hayApi) return <SinEntrar />;
 
   if (cargando) {
     return (
@@ -150,7 +151,8 @@ function Puerta() {
     );
   }
 
-  if (yo === null) return <Entrar />;
+  // Sin nadie dentro: entrar o crear cuenta, y la vuelta de Google (0042).
+  if (yo === null) return <SinEntrar />;
 
   // 1 · El segundo factor, antes que nada: la sesion esta a medias y el servidor
   //     no va a contestar a nada mas.
@@ -161,6 +163,8 @@ function Puerta() {
 
   // 3 · Y las cuatro paradas de la resolucion de destino.
   if (yo.destino === 'cuenta_parada') return <CuentaParada porque={yo.porque} />;
+  // Cuenta recién creada sin oferta de prueba: elige su plan antes de entrar (0042).
+  if (yo.destino === 'elegir_plan') return <ElegirPlan />;
   if (yo.destino === 'elegir_organizacion') return <ElegirOrganizacion />;
   if (yo.destino === 'elegir_local') return <ElegirLocal />;
 

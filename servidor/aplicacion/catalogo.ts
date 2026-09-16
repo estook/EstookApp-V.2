@@ -79,8 +79,24 @@ import {
 import { compararPrecios, unProveedor } from './consultas/proveedores.ts';
 import { loQueViene } from './consultas/calendario.ts';
 import { buscar } from './consultas/buscar.ts';
-import { accesosAlAdmin, auditoriaDelAdmin, yoEnElAdmin } from './consultas/admin.ts';
-import { darAccesoAlAdmin, entrarEnAdmin, quitarAccesoAlAdmin } from './comandos/admin.ts';
+import {
+  accesosAlAdmin,
+  auditoriaDelAdmin,
+  ofertaEnElAdmin,
+  yoEnElAdmin,
+} from './consultas/admin.ts';
+import {
+  cambiarLaOferta,
+  darAccesoAlAdmin,
+  entrarEnAdmin,
+  quitarAccesoAlAdmin,
+} from './comandos/admin.ts';
+import {
+  comoSeEntra,
+  confirmarRegistro,
+  entrarConGoogle,
+  pedirCodigoDeRegistro,
+} from './comandos/crear-cuenta.ts';
 import {
   inventarioHoy,
   misMovimientos,
@@ -127,6 +143,9 @@ export const catalogo = {
     [yoEnElAdmin.nombre]: yoEnElAdmin,
     [accesosAlAdmin.nombre]: accesosAlAdmin,
     [auditoriaDelAdmin.nombre]: auditoriaDelAdmin,
+    [ofertaEnElAdmin.nombre]: ofertaEnElAdmin,
+    // 0042 · lo que la pantalla de entrar necesita saber antes de que haya nadie.
+    [comoSeEntra.nombre]: comoSeEntra,
     [misLocales.nombre]: misLocales,
     [unLocal.nombre]: unLocal,
     // M3 · lo que necesitan el esqueleto y el buscador universal.
@@ -315,5 +334,11 @@ export const catalogo = {
     [entrarEnAdmin.nombre]: entrarEnAdmin,
     [darAccesoAlAdmin.nombre]: darAccesoAlAdmin,
     [quitarAccesoAlAdmin.nombre]: quitarAccesoAlAdmin,
+    [cambiarLaOferta.nombre]: cambiarLaOferta,
+
+    // ── Crear cuenta y entrar con Google (0042) ────────────────────────────
+    [pedirCodigoDeRegistro.nombre]: pedirCodigoDeRegistro,
+    [confirmarRegistro.nombre]: confirmarRegistro,
+    [entrarConGoogle.nombre]: entrarConGoogle,
   } as Record<string, Comando<never, unknown>>,
 };

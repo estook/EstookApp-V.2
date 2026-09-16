@@ -90,6 +90,7 @@ import { catalogoDeReferencia, recetasDeReferencia } from './consultas/catalogo-
 import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
 import { miPanel } from './consultas/mi-panel.ts';
+import { unIndicador } from './consultas/indicador.ts';
 import { mermaDeHoy, misMermas, productosParaMerma } from './consultas/merma.ts';
 import { fichajesDeHoy, miFichaje, resumenDelEquipo, unaPersona } from './consultas/equipo.ts';
 import { misCierres, unCierre } from './consultas/cierre.ts';
@@ -164,6 +165,8 @@ export const catalogo = {
     [compararPrecios.nombre]: compararPrecios,
     // M7 · el Calendario de todos: hoy y mañana en el Panel; M14 pinta el resto.
     [loQueViene.nombre]: loQueViene,
+    // M7 · el Panel vivo: una cifra con su periodo, su comparación y sus días.
+    [unIndicador.nombre]: unIndicador,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {

@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { GRUPO_DEL_WIDGET, PANEL_DE_FABRICA, WIDGETS, elCatalogoParaAnadir } from './catalogo.ts';
+import type { Permiso } from '@estook/permisos';
+import {
+  GRUPO_DEL_WIDGET,
+  PANEL_DE_FABRICA,
+  WIDGETS,
+  elCatalogoParaAnadir,
+  loQueSePuedePintar,
+  losIndicadoresQueSePuedenTener,
+  widgetPorId,
+} from './catalogo.ts';
 
 /**
  * El catálogo de «Añadir al panel» (M7, repaso).
@@ -32,5 +41,32 @@ describe('el catálogo para añadir', () => {
     );
     expect(todos.some((w) => w.widget.modulo !== undefined)).toBe(false);
     expect(todos.some((w) => w.widget.permiso === 'app.equipo')).toBe(false);
+  });
+});
+
+describe('los indicadores, como widgets (0039)', () => {
+  it('un indicador puesto se lee con su nombre y sus tres tamaños', () => {
+    const widget = widgetPorId('indicador-ventas-7');
+    expect(widget?.nombre).toBe('Ventas · 7 días');
+    expect(widget?.tamanos).toEqual(['ancho', 'chico', 'grande']);
+  });
+
+  it('el food cost pide ver las ventas **y** los costes', () => {
+    const soloVentas = (permiso: Permiso) => permiso === 'dato.ventas';
+    expect(
+      loQueSePuedePintar([{ id: 'indicador-food-cost-30', tamano: 'ancho' }], soloVentas),
+    ).toEqual([]);
+    expect(losIndicadoresQueSePuedenTener(soloVentas)).not.toContain('food-cost');
+    expect(losIndicadoresQueSePuedenTener(soloVentas)).toContain('ventas');
+  });
+
+  it('las horas propias las tiene cualquiera', () => {
+    expect(losIndicadoresQueSePuedenTener(() => false)).toEqual(['mis-horas']);
+  });
+
+  it('un indicador inventado no se pinta', () => {
+    expect(
+      loQueSePuedePintar([{ id: 'indicador-propinas-7', tamano: 'ancho' }], () => true),
+    ).toEqual([]);
   });
 });

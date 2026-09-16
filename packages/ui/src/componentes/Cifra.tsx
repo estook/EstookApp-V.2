@@ -189,7 +189,7 @@ function useCuenta(destino: number): number {
  * widget de móvil, que es el sitio más estrecho donde vive una `Cifra`. No es una
  * escala nueva: son tres escalones del mismo uso de B2 (ver `fichas.css`).
  */
-function comoDeGrande(escrito: string): string {
+export function comoDeGrande(escrito: string): string {
   if (escrito.length <= 7) return 'text-cifra';
   if (escrito.length <= 11) return 'text-cifra-media';
   return 'text-cifra-larga';

@@ -1,154 +1,101 @@
-# Pasos para cerrar M7 · las apps conectadas
+# Pasos para cerrar M7 · el Panel vivo
 
 > ## Cómo está
 >
-> | Qué                            | Cómo está                                                                  |
-> | ------------------------------ | -------------------------------------------------------------------------- |
-> | El repaso y las bases          | **Fusionados** (#45 y #47)                                                 |
-> | `estook.com`                   | **Funcionando** (#46)                                                      |
-> | **Las apps conectadas** (esta) | **Pull request abierto**: `m7-conectar-las-apps`                           |
-> | La base de datos               | Le falta la **`0035`**: quita el precio de venta y pone la zona del género |
-> | La API                         | Hay que **volver a desplegarla**: el recuento es nuevo                     |
+> | Qué                                        | Cómo está                                                           |
+> | ------------------------------------------ | ------------------------------------------------------------------- |
+> | El repaso, las bases y las apps conectadas | **Fusionados** (#45, #47 y #48)                                     |
+> | `estook.com`                               | **Funcionando** (#46)                                               |
+> | La base de datos                           | **Al día**: 35 de 35 migraciones, comprobado el 16 de septiembre    |
+> | La API                                     | **Al día con la #48**. Le falta lo de esta entrega: `un_indicador`  |
+> | **El Panel vivo** (esta)                   | **Pull request abierto**: `m7-el-panel-vivo`. **No trae migración** |
 
-## Los tres pasos, y uno más que es tuyo
+## Los dos pasos
 
 ### 1 · Fusionar el pull request
 
-**Dónde:** GitHub → **Pull requests** → «M7 · las apps conectadas» → espera las
-tres comprobaciones en verde —`Calidad`, `Construccion y presupuestos` y
+**Dónde:** GitHub → **Pull requests** → «M7 · el Panel vivo» → espera las tres
+comprobaciones en verde —`Calidad`, `Construccion y presupuestos` y
 `Migraciones reversibles`— → **Merge pull request** → **Confirm merge**.
 
 **Si alguna sale en rojo:** no fusiones; mándame una foto de la que falla.
 
-### 2 · Aplicar la migración
-
-Quita el precio de venta del producto, le pone a cada uno **de dónde es**, deja que
-un lote diga cuánto lleva, y cambia quién ve qué.
-
-```bash
-.\estook.cmd bd:migrar
-```
-
-**Qué sale si va bien:** la línea `0035_el_precio_vive_en_la_carta_y_el_genero_tiene_zona`.
-
-```bash
-.\estook.cmd bd:comprobar
-```
-
-**Qué tiene que decir:** **35 de 35** migraciones y **51 tablas**.
-
-> **Lo que se pierde, y te lo digo yo antes de que lo veas:** si estos días le
-> pusiste precio de venta a algún producto, esa cifra desaparece. Es la que estaba
-> en el sitio equivocado. No se pierde nada de lo que mueve género.
-
-### 3 · Volver a desplegar la API
+### 2 · Volver a desplegar la API
 
 **Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** →
-escribe `desplegar` → **Run workflow**.
+escribe `desplegar` → **Run workflow**. Cuando termine, en PowerShell, en la
+carpeta del proyecto:
 
 ```bash
 .\estook.cmd bd:comprobar-api
 ```
 
 **Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los
-comandos». Si dice «FALTA DESPLEGARLA» con `cerrar_recuento`, el paso no ha
+comandos». Si dice «FALTA DESPLEGARLA» con `un_indicador`, el despliegue no ha
 terminado: vuelve a lanzarlo.
 
-### 4 · Repasar de dónde es tu género · **este es tuyo**
-
-La migración no deja tus nueve productos en un montón: los reparte con lo que ya
-sabe. **Las bebidas van a sala** —cerveza, refrescos, alcohol, por su categoría
-fiscal— y **lo demás se queda en cocina**, que es de donde venía.
-
-Lo que hay que repasar a mano es **lo de limpieza**, que no hay forma de adivinar.
-
-**Dónde:** Inventario → Productos → abre el producto → **Corregir la ficha** →
-**De dónde es**.
+**Esta vez no hay `bd:migrar`**: la entrega no toca la base.
 
 ---
 
 ## Lo que trae, y qué mirar
 
-### 1 · El «a cuánto lo vendes» se ha ido de la ficha
+### 1 · Editar el Panel como en el móvil
 
-Tenías razón y era el modelo, no la pantalla. Un kilo de queso no tiene precio de
-venta: lo tiene **el plato** que lo lleva.
+**Dónde:** el Panel.
 
-```
-lo que cuesta   ←  Inventario · el precio de compra, sin IVA
-cuánto lleva    ←  el escandallo (M9)
-a cuánto sale   ←  la carta (M10)
-lo que entró    ←  el cierre de caja, o el TPV (M20)
-```
+- **Mantén pulsado** cualquier widget medio segundo. **Qué tiene que salir:** el
+  Panel entra en edición —«Arrastra para ordenar» arriba— y los widgets **tiemblan**.
+  En un móvil Android notarás un toque de vibración; el iPhone no deja a las webs
+  vibrar, así que ahí solo tiembla.
+- **Arrastra** uno desde cualquier parte hasta otro sitio. **Qué tiene que salir:**
+  los demás **se apartan deslizándose** mientras lo llevas, y donde estaba queda un
+  hueco. Suelta y se queda ahí.
+- En el móvil, **deja el dedo quieto un instante** antes de arrastrar; si lo mueves
+  rápido, hace scroll. Es a propósito: si no, cada vez que bajaras por el Panel
+  cogerías un widget.
+- El **«−»** de la esquina lo quita (con **Deshacer** abajo), y **Pequeño · Ancho ·
+  Grande** le cambia el tamaño. Las flechas ← → de antes ya no están.
+- **Listo** (o `Esc`) para salir. El botón **Editar** sigue ahí.
 
-**Qué tiene que salir:** en la ficha de un producto **ya no hay** «Lo que deja» ni
-«Poner precio de venta». Y al sacar género y decir «Vendido a un cliente», tampoco
-se pregunta cuánto has cobrado: se apunta que se vendió, y el importe sale de la
-caja cuando la cierres.
+### 2 · Lo vacío se aparta
 
-**Lo que se queda**, que era lo bueno: sigue distinguiendo **vendido**, **gastado
-en cocina** y **no aprovechado**.
+**Qué tiene que salir:** si no caduca nada, no hay nada bajo mínimo o no llega
+ningún pedido, **esos widgets no ocupan sitio**. Debajo del Panel sale una línea:
+«Sin nada ahora en Caducidades y Bajo mínimo. Vuelven en cuanto haya algo.»
 
-### 2 · De dónde es cada producto
+- En cuanto haya algo que decir, **vuelven solos** a su sitio.
+- Al **editar** se ven todos, con «Vacío ahora», para poder colocarlos.
+- Y ya no quedan **huecos** en la rejilla: si detrás de uno pequeño va uno ancho que
+  no cabe, el siguiente pequeño rellena el hueco.
 
-**Dónde:** Inventario → Productos. Al lado del buscador, **«De dónde»**: Todo ·
-Cocina · Sala · Limpieza, con cuántos hay en cada una.
+### 3 · Tus cifras, con su gráfica y su flecha
 
-**Qué tiene que salir:**
+**Dónde:** **Editar** → **Añadir** → arriba, **«Tus cifras, con su gráfica»**.
 
-- Al elegir **Sala**, la lista trae solo lo de la barra, y **la categoría cuenta
-  dentro de sala**: ya no sale «Carnes (14)» para luego no enseñar ninguna.
-- Al elegir **Limpieza**, el desplegable de categoría **desaparece**. No se apaga:
-  no está. Son quince cosas y no llevan árbol.
-- Al **añadir un producto**, lo pregunta con tres botones grandes.
+1. Elige **qué quieres seguir**: Ventas, Ticket medio, Food cost, Merma, Compras o
+   Mis horas. Solo salen las que tu acceso puede ver: un cocinero ve «Mis horas».
+2. Elige **7 días** o **30 días**.
+3. **Añadir al panel**.
 
-**Y lo que no se ve, que es la mitad:** un cocinero **no recibe** los productos de
-sala. No se le esconden en la pantalla: la base no se los da. Un camarero, al
-revés. Los dos ven lo de limpieza, porque los dos limpian. De jefe de cocina y
-jefe de sala para arriba, todo.
+**Qué tiene que salir:** una tarjeta «Ventas · 7 días» con la cifra grande, una
+píldora **▲ 12 %** o **▼ 8 %** frente a los 7 días anteriores, y **la línea de los
+días** debajo, que se dibuja al abrir.
 
-### 3 · Congelar una parte
+- **El color dice si es buena noticia**, no hacia dónde va: que la merma **baje** sale
+  en verde; que las ventas bajen, en rojo. Compras y horas no tienen color.
+- **El food cost cambia en puntos** («▲ 3 pt»): del 30 % al 33 % son tres puntos.
+- **Un día sin caja cerrada corta la línea**: no vendiste cero, es que no se sabe.
+- Si no hay nada con qué comparar —la primera semana—, **no hay flecha**.
+- El food cost de la tarjeta **es el mismo que el de Servicio**: salen de la misma
+  cuenta.
+- Puedes poner la misma cifra de 7 y de 30 días; la misma dos veces, no.
 
-**Dónde:** la ficha de un producto → **Congelar una parte**.
+### 4 · Ventas de hoy y la pantalla grande
 
-**Qué tiene que salir:** lo primero que te pregunta es **cuánto**, con lo que hay
-delante: «De 43 kg que hay». Y si escribes más de lo que hay, te lo dice y no te
-deja.
-
-Después, en la lista y en la ficha, sale **«10 kg congelados»** en vez de
-«congelado» a secas sobre los 43. Eso era lo que estaba mal.
-
-### 4 · El recuento · «esto es lo que hay»
-
-**Dónde:** Inventario → Productos → **Hacer recuento**. (También en Movimientos →
-Recuento.)
-
-Se elige qué estás contando —cocina, sala o limpieza—, se escribe lo contado y
-cada producto pasa a valer eso. **No suma: cambia.**
-
-**Qué tiene que salir:**
-
-- Las casillas salen **en blanco**, y debajo, en pequeño, «El libro dice 43 kg».
-  No se rellenan con lo que había a propósito: una cifra puesta de antemano se
-  confirma sin mirar, y entonces el recuento no cuenta nada.
-- Al escribir, la diferencia sale al momento: **−5 kg** en rojo.
-- Al cerrar: cuántos has corregido, cuántos ya cuadraban, y **«Lo que más
-  bailaba»**, que es lo que se viene a mirar.
-- **Lo que no cuentes no se toca.** Si quieres vaciarlo, hay que decirlo, y antes
-  te dice cuántos productos se van a poner a cero.
-
-**Y si lo tienes en un fichero:** dos columnas —el producto y cuánto hay— y se
-sube. Lo que no encaje con ningún producto te lo dice con su número de fila. La
-foto sigue apagada con su motivo: leerla es Fogón, y es el módulo 22.
-
-### 5 · El Panel
-
-- **«Hola, Ricardo» se abre.** Dentro: lo que llevas fichado hoy, lo de la semana,
-  qué hay que atender y qué caduca.
-- **Las cifras grandes ya no se cortan**: eligen su tamaño según lo que ocupan.
-- **En el ordenador se estira**: en un monitor grande deja de estar en una columna
-  en el medio.
-- **«Tu género»** enseña una barra con cocina, sala y limpieza.
+- **Ventas de hoy**, con la caja cerrada, lleva su flecha **frente al mismo día de
+  la semana pasada**: un martes se compara con un martes.
+- **En un monitor grande** el Panel pasa a **seis columnas**.
 
 > **Lo que salga raro, apúntalo tal cual**, con una foto si puedes.
 
@@ -174,6 +121,19 @@ Los pasos de las dos de Google, con sus topes, están abajo en el **paso 6**.
 ### `estook.com` · **hecho** (#46)
 
 Se fusionó y se desplegó la API. La web y la aplicación pintan en su dominio.
+
+### Las apps conectadas · **hechas** (#48)
+
+La `0035` está aplicada y la API desplegada. El precio de venta se fue a la carta,
+cada producto es de **cocina, sala o limpieza**, congelar pregunta **cuánto**, y
+llegó el **recuento** («esto es lo que hay»). **Lo que tienes que repasar tú**, si no
+está hecho: los productos de **limpieza**, a mano (Inventario → Productos → abre uno
+→ **Corregir la ficha** → **De dónde es**).
+
+Y una aclaración sobre las zonas: cada uno **trabaja** con la suya —la lista de
+Inventario de un cocinero no trae la barra, y no puede cambiar su ficha—, pero
+**leer se lee todo el local**, porque la merma la apunta quien la rompe: una camarera
+tiene que poder apuntar la nata que se le ha caído.
 
 ### Las bases · **hechas** (#47)
 

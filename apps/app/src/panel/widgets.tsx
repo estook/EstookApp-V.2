@@ -9,8 +9,11 @@ import {
   type Zona,
   NOMBRE_DEL_ESTADO,
   NOMBRE_DEL_ORIGEN_DEL_CIERRE,
+  comoCambia,
+  masDias,
   minutosHasta,
   porcentajeDe,
+  type FechaOperativa,
 } from '@estook/dominio';
 import { appsVisibles, puedeEditar, puedeVer } from '@estook/permisos';
 import {
@@ -23,11 +26,13 @@ import {
   Proporcion,
   Tarjeta,
   Tira,
+  Variacion,
   acentoDelWidget,
   appPorPermiso,
   clases,
   rutaDe,
   type App,
+  usarQueEstaVacio,
   type TamanoDeWidget,
 } from '@estook/ui';
 import { IconoAnadir, IconoCamara, IconoEntrar, IconoSalir, IconoUbicacion } from '@estook/iconos';
@@ -35,6 +40,7 @@ import { useNavigate } from 'react-router-dom';
 import { usarLoDeHoy } from '../ganchos/usarLoDeHoy.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { AccesosRapidos } from './AccesosRapidos.tsx';
+import { IndicadorWidget } from './Indicador.tsx';
 import { ApuntarMerma } from '../inventario/ApuntarMerma.tsx';
 import { usarFichar } from '../ganchos/usarFichar.ts';
 import {
@@ -145,6 +151,8 @@ function Cual({
   if (id === 'ultimos-movimientos') return <UltimosMovimientos tamano={tamano} />;
   if (id === 'pedidos') return <ComprasDeHoyWidget tamano={tamano} />;
   if (id === 'calendario') return <LoQueVieneWidget tamano={tamano} />;
+  // Los indicadores son una familia: lo elegido va en el identificador (0039).
+  if (id.startsWith('indicador-')) return <IndicadorWidget id={id} tamano={tamano} />;
   return null;
 }
 
@@ -199,6 +207,8 @@ function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const navegar = useNavigate();
   const caducan = consulta.data?.caducan ?? [];
   const cuantos = tamano === 'grande' ? 6 : 3;
+  // Si no caduca nada, se aparta del Panel y lo dice la línea de debajo (0039).
+  usarQueEstaVacio(consulta.data === undefined ? undefined : caducan.length === 0);
 
   return (
     <Caja
@@ -246,6 +256,7 @@ function BajoMinimo({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const navegar = useNavigate();
   const atencion = consulta.data?.atencion ?? [];
   const cuantos = tamano === 'grande' ? 6 : 3;
+  usarQueEstaVacio(consulta.data === undefined ? undefined : atencion.length === 0);
 
   return (
     <Caja
@@ -337,6 +348,7 @@ function SinPrecio({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const consulta = usarLoDeHoy();
   const hoy = consulta.data;
   const sinPrecio = hoy?.sinPrecio ?? [];
+  usarQueEstaVacio(hoy === undefined ? undefined : sinPrecio.length === 0);
 
   return (
     <Caja
@@ -985,7 +997,7 @@ function VentasDeHoyWidget() {
     queryKey: ['mis_cierres', 'panel'],
     enabled: puedeVer(permisos, 'dato.ventas') && yo?.local !== null && yo?.local !== undefined,
     queryFn: async (): Promise<MisCierres> => {
-      const respuesta = await cliente.consultar<MisCierres>('mis_cierres', { limite: '7' });
+      const respuesta = await cliente.consultar<MisCierres>('mis_cierres', { dias: '8' });
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
       return respuesta.datos;
     },
@@ -993,6 +1005,18 @@ function VentasDeHoyWidget() {
 
   const datos = consulta.data;
   const deHoy = datos?.cierres.find((cierre) => cierre.fecha === datos.jornada) ?? null;
+  // El mismo día de la semana pasada, que es con lo que se compara un día en
+  // hostelería: un martes no se parece a un sábado.
+  const deLaSemanaPasada =
+    datos === undefined
+      ? null
+      : (datos.cierres.find(
+          (cierre) => cierre.fecha === masDias(datos.jornada as FechaOperativa, -7),
+        ) ?? null);
+  const cambio =
+    deHoy === null || deLaSemanaPasada === null
+      ? null
+      : comoCambia('ventas', deHoy.totalCentimos, deLaSemanaPasada.totalCentimos);
   // El food cost del día lo cuenta el dominio, que es su único dueño (regla 6).
   const foodCostDeHoy =
     deHoy === null ? null : porcentajeDe(deHoy.consumoCentimos ?? 0, deHoy.totalCentimos);
@@ -1033,6 +1057,16 @@ function VentasDeHoyWidget() {
         </div>
       ) : (
         <>
+          {cambio !== null && (
+            <div className="mb-e1">
+              <Variacion
+                sube={cambio.sube}
+                cuanto={cambio.cuanto}
+                bueno={cambio.bueno}
+                frenteA="frente al mismo día de la semana pasada"
+              />
+            </div>
+          )}
           <Cifra
             etiqueta="Facturado"
             valor={deHoy.totalCentimos}
@@ -1080,6 +1114,11 @@ function ComprasDeHoyWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const datos = consulta.data;
   const tocaPedir = (datos?.tocaPedir ?? []).filter((t) => !t.yaPedido);
   const borradores = datos?.borradores.length ?? 0;
+  usarQueEstaVacio(
+    datos === undefined
+      ? undefined
+      : tocaPedir.length === 0 && datos.llegan.length === 0 && borradores === 0,
+  );
 
   return (
     <Caja
@@ -1169,6 +1208,7 @@ function LoQueVieneWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   const dias = consulta.data?.dias ?? [];
   const nada = dias.every((dia) => dia.ocurrencias.length === 0);
+  usarQueEstaVacio(consulta.data === undefined ? undefined : nada);
 
   return (
     <Caja titulo="Lo que viene" origen="Hoy y mañana · entregas, repartos, caducidades y avisos">
@@ -1248,6 +1288,7 @@ function UltimosMovimientos({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   const datos = consulta.data;
   const lineas = datos?.movimientos ?? [];
+  usarQueEstaVacio(datos === undefined ? undefined : lineas.length === 0);
 
   return (
     <Caja

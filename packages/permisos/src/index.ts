@@ -16,6 +16,8 @@
  * que la pantalla no ensene lo que no toca, no para vigilar la puerta.
  */
 
+import type { Indicador } from '@estook/dominio';
+
 export const NIVELES = ['sin_acceso', 'ver', 'ver_y_editar'] as const;
 export type Nivel = (typeof NIVELES)[number];
 
@@ -189,4 +191,35 @@ export function comprobarAccion(
   permiso: Permiso,
 ): { readonly puede: true } | { readonly puede: false; readonly falta: Permiso } {
   return puedeEditar(permisos, permiso) ? { puede: true } : { puede: false, falta: permiso };
+}
+
+// ── M7 · el Panel vivo · lo que pide cada indicador (0039) ───────────────────
+
+/**
+ * Lo que hay que poder ver para tener cada indicador en el Panel.
+ *
+ * Vive aquí, y no en el servidor ni en el catálogo de widgets, porque **lo usan
+ * los dos**: el catálogo no lo ofrece a quien no lo tiene, y la consulta lo vuelve
+ * a comprobar (regla 26). Escrito dos veces, un día el catálogo ofrecería uno que
+ * el servidor rechaza.
+ *
+ * Alguno pide dos: el food cost cruza lo vendido con lo que cuesta el género, y un
+ * jefe de sala que ve las ventas pero no los precios de compra no puede tenerlo
+ * sin que se le cuele el coste por la resta.
+ */
+export const LO_QUE_PIDE_EL_INDICADOR: Readonly<Record<Indicador, readonly Permiso[]>> = {
+  ventas: ['dato.ventas'],
+  'ticket-medio': ['dato.ventas'],
+  'food-cost': ['dato.ventas', 'dato.precio_de_compra'],
+  merma: ['app.inventario', 'dato.precio_de_compra'],
+  compras: ['app.inventario', 'dato.precio_de_compra'],
+  // Las horas son de cada uno: las tiene cualquiera que entre.
+  'mis-horas': [],
+};
+
+export function puedeTenerElIndicador(
+  tienePermiso: (permiso: Permiso) => boolean,
+  indicador: Indicador,
+): boolean {
+  return LO_QUE_PIDE_EL_INDICADOR[indicador].every(tienePermiso);
 }

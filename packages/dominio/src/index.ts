@@ -430,3 +430,27 @@ export type {
   LineaDeRecuento,
   LoQueTraeElRecuento,
 } from './recuento.ts';
+
+// ── M7 · el Panel vivo · los indicadores que cada uno se pone ───────────────
+//
+// Una cifra con su periodo, su comparación y su línea de días, siempre de un dato
+// que Estook ya guarda con un dueño (0039).
+export {
+  INDICADORES,
+  PERIODOS_DEL_INDICADOR,
+  COMO_ES_EL_INDICADOR,
+  esIndicador,
+  esPeriodoDelIndicador,
+  idDelIndicador,
+  leerIdDelIndicador,
+  nombreDelIndicador,
+  comoCambia,
+} from './indicador.ts';
+export type {
+  Indicador,
+  PeriodoDelIndicador,
+  UnidadDelIndicador,
+  SentidoDelIndicador,
+  ComoEsElIndicador,
+  CambioDelIndicador,
+} from './indicador.ts';

@@ -11,7 +11,8 @@
  *   Rueda de apps                 desenfoque 120 ms, sectores
  *                                 escalonados cada 30 ms          260 ms
  *   Entrar en una app             desde el sector que se pulso    240 ms
- *   Widget que se arrastra        levanta 4 px con sombra s3      120 ms
+ *   Widget que se arrastra        pegado al dedo, los demas se    200 ms
+ *                                 deslizan (0039, con @dnd-kit)
  *   Cifra que cambia              cuenta desde el valor anterior  400 ms
  *   Aviso que se cierra           se desliza y colapsa su hueco   200 ms
  *   Deshacer                      aparece abajo, se va a los 10 s 200 ms
@@ -141,4 +142,64 @@
   );
   background-size: 200% 100%;
   animation: estook-esqueleto 1.4s linear infinite;
+}
+
+/*
+ * ── El Panel vivo (M7, decisión 0039) ─────────────────────────────────────────
+ *
+ * Tres movimientos más, y los tres explican algo, que es la regla de B6:
+ *
+ *   Widget que entra al abrir el Panel   sube 8 px y aparece, escalonado   240 ms
+ *   Línea de una tendencia               se dibuja de izquierda a derecha   600 ms
+ *   Panel en edición                     los widgets tiemblan               ciclo 280 ms
+ *
+ * **El temblor es una excepción escrita a «nada gira».** Richi lo pidió con esas
+ * palabras —«que vibren como en Apple»— y tiene una razón que no es adorno: dice,
+ * sin leer nada, **que el Panel está en otro modo** y que lo que tiembla se puede
+ * mover. Es el mismo lenguaje que el iPhone lleva quince años enseñando a todo el
+ * mundo. Gira menos de un grado, solo mientras se edita, y con «reducir movimiento»
+ * no tiembla nada: el modo lo dicen los controles.
+ */
+@keyframes estook-entra {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes estook-trazo {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes estook-tiembla {
+  0% {
+    transform: rotate(-0.7deg);
+  }
+  50% {
+    transform: rotate(0.7deg);
+  }
+  100% {
+    transform: rotate(-0.7deg);
+  }
+}
+
+@utility anima-entra {
+  animation: estook-entra 240ms var(--curva) backwards;
+}
+
+@utility anima-trazo {
+  animation: estook-trazo 600ms var(--curva) backwards;
+}
+
+@utility anima-tiembla {
+  animation: estook-tiembla 280ms ease-in-out infinite;
 }

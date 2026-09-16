@@ -1,4 +1,16 @@
-import type { Permiso, PermisoDeApp } from '@estook/permisos';
+import {
+  COMO_ES_EL_INDICADOR,
+  INDICADORES,
+  leerIdDelIndicador,
+  nombreDelIndicador,
+  type Indicador,
+} from '@estook/dominio';
+import {
+  LO_QUE_PIDE_EL_INDICADOR,
+  puedeTenerElIndicador,
+  type Permiso,
+  type PermisoDeApp,
+} from '@estook/permisos';
 import { MODULOS } from '../apps.ts';
 
 /**
@@ -76,6 +88,8 @@ export interface Widget {
    * boton que existe para ella.
    */
   readonly permiso: Permiso | null;
+  /** Un segundo permiso, cuando hacen falta dos (el food cost: ventas y costes). */
+  readonly yTambien?: Permiso;
   /** Los tamanos que admite. El primero es el que se pone al anadirlo. */
   readonly tamanos: readonly TamanoDeWidget[];
   /** Si todavia no esta construido, el modulo que lo trae. */
@@ -305,7 +319,48 @@ export const WIDGETS: readonly Widget[] = [
 ];
 
 export function widgetPorId(id: string): Widget | undefined {
-  return WIDGETS.find((widget) => widget.id === id);
+  return WIDGETS.find((widget) => widget.id === id) ?? widgetDelIndicador(id);
+}
+
+/**
+ * Un indicador puesto en el Panel, como widget (0039).
+ *
+ * No está en `WIDGETS` porque no es uno: es una familia —seis cifras por dos
+ * periodos— y lo elegido va en el identificador (`indicador-ventas-7`). Lo que
+ * pide para verse sale de `@estook/permisos`, que es lo mismo que comprueba el
+ * servidor.
+ *
+ * Es el único widget que admite los tres tamaños, y no por descuido: una cifra
+ * con su flecha cabe en un cuadrado, con su línea en uno ancho y con la línea
+ * grande y sus días en uno grande.
+ */
+function widgetDelIndicador(id: string): Widget | undefined {
+  const leido = leerIdDelIndicador(id);
+  if (leido === null) return undefined;
+  const pide = LO_QUE_PIDE_EL_INDICADOR[leido.indicador];
+  return {
+    id,
+    nombre: nombreDelIndicador(leido.indicador, leido.dias),
+    queEnsena: COMO_ES_EL_INDICADOR[leido.indicador].queEnsena,
+    permiso: pide[0] ?? null,
+    ...(pide[1] === undefined ? {} : { yTambien: pide[1] }),
+    tamanos: ['ancho', 'chico', 'grande'],
+  };
+}
+
+/** Los indicadores que esta persona puede ponerse, en el orden del dominio. */
+export function losIndicadoresQueSePuedenTener(
+  tienePermiso: (permiso: Permiso) => boolean,
+): readonly Indicador[] {
+  return INDICADORES.filter((indicador) => puedeTenerElIndicador(tienePermiso, indicador));
+}
+
+/** Si esta persona puede tener este widget: su permiso y, si pide dos, el otro. */
+function sePuedeTener(widget: Widget, tienePermiso: (permiso: Permiso) => boolean): boolean {
+  return (
+    (widget.permiso === null || tienePermiso(widget.permiso)) &&
+    (widget.yTambien === undefined || tienePermiso(widget.yTambien))
+  );
 }
 
 /** El nombre entero del modulo de un widget, o nada si esta construido. */
@@ -376,7 +431,7 @@ export function loQueSePuedePintar(
     const widget = widgetPorId(puesto.id);
     if (widget === undefined) return [];
     if (widget.modulo !== undefined) return [];
-    if (widget.permiso !== null && !tienePermiso(widget.permiso)) return [];
+    if (!sePuedeTener(widget, tienePermiso)) return [];
 
     vistos.add(puesto.id);
     const tamano = widget.tamanos.includes(puesto.tamano)
@@ -394,9 +449,7 @@ export function loQueSePuedeAnadir(
   const yaEsta = new Set(puestos.map((p) => p.id));
   return WIDGETS.filter(
     (widget) =>
-      !yaEsta.has(widget.id) &&
-      widget.modulo === undefined &&
-      (widget.permiso === null || tienePermiso(widget.permiso)),
+      !yaEsta.has(widget.id) && widget.modulo === undefined && sePuedeTener(widget, tienePermiso),
   );
 }
 
@@ -456,8 +509,7 @@ export function elCatalogoParaAnadir(
 ): readonly GrupoDelCatalogo[] {
   const yaEsta = new Set(puestos.map((p) => p.id));
   const construidos = WIDGETS.filter(
-    (widget) =>
-      widget.modulo === undefined && (widget.permiso === null || tienePermiso(widget.permiso)),
+    (widget) => widget.modulo === undefined && sePuedeTener(widget, tienePermiso),
   );
   return ORDEN_DE_LOS_GRUPOS.map((grupo) => ({
     grupo,
@@ -471,8 +523,7 @@ export function elCatalogoParaAnadir(
 /** Los que todavia no estan, para poder decir en que modulo llegan. */
 export function losQueLlegan(tienePermiso: (permiso: Permiso) => boolean): readonly Widget[] {
   return WIDGETS.filter(
-    (widget) =>
-      widget.modulo !== undefined && (widget.permiso === null || tienePermiso(widget.permiso)),
+    (widget) => widget.modulo !== undefined && sePuedeTener(widget, tienePermiso),
   );
 }
 

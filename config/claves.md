@@ -55,42 +55,47 @@ alcance de cualquiera con un navegador se hace mirando, no de paso.
 
 Los que no pueden pisar el navegador jamas.
 
-| Nombre                | Que es                                           |
-| --------------------- | ------------------------------------------------ |
-| `CLAVE_DE_SERVICIO`   | La clave secreta del proyecto                    |
-| `GOOGLE_MAPS_KEY`     | Google Maps Platform · Places, **para M23**      |
-| `GOOGLE_BUSINESS_KEY` | Google Business Profile · la ficha y las resenas |
-| `RESEND_API_KEY`      | El correo que manda Estook (0017)                |
-| `AI_API_KEY`          | El proveedor de IA de Fogon · M22                |
-| `AI_MODELO_RAPIDO`    | El modelo barato para lo cotidiano               |
-| `AI_MODELO_ANALISIS`  | El modelo bueno para el analisis nocturno        |
-| `APP_URL`             | La direccion publica, para los enlaces           |
-| `DATABASE_URL`        | La cadena del **agrupador de sesion** (M4)       |
-| `ORIGENES_PERMITIDOS` | Origenes de mas, si alguno hace falta (M4)       |
-| `ENTORNO`             | `produccion` (M4)                                |
+| Nombre                | Que es                                            |
+| --------------------- | ------------------------------------------------- |
+| `CLAVE_DE_SERVICIO`   | La clave secreta del proyecto                     |
+| `GOOGLE_MAPS_KEY`     | Google Places (New) · **ya la lee la API** (0040) |
+| `RESEND_API_KEY`      | El correo que manda Estook (0017)                 |
+| `AI_API_KEY`          | El proveedor de IA de Fogon · M22                 |
+| `AI_MODELO_RAPIDO`    | El modelo barato para lo cotidiano                |
+| `AI_MODELO_ANALISIS`  | El modelo bueno para el analisis nocturno         |
+| `APP_URL`             | La direccion publica, para los enlaces            |
+| `DATABASE_URL`        | La cadena del **agrupador de sesion** (M4)        |
+| `ORIGENES_PERMITIDOS` | Origenes de mas, si alguno hace falta (M4)        |
+| `ENTORNO`             | `produccion` (M4)                                 |
 
-### Las cuatro que faltan, y que **no bloquean nada hoy**
+### Las que faltan, cuál usa ya el código y dónde van
 
-Richi preguntó por ellas en el repaso de M7. Las cuatro estan sin poner, y ninguna
-frena lo que hay construido: **cada una la estrena el modulo que la usa**, y hasta
-entonces el sitio esta hecho y apagado con su motivo, que es como se hacen aqui las
-integraciones (0022).
+Revisado el 16 de septiembre de 2026. **Ninguna frena lo que hay construido**: lo
+que depende de una clave está hecho y apagado con su motivo (0022), y se enciende al
+ponerla.
 
-| Clave                 | Que enciende                                | Cuando hace falta                                      |
-| --------------------- | ------------------------------------------- | ------------------------------------------------------ |
-| `GOOGLE_MAPS_KEY`     | Situar el local y buscarlo por su direccion | **Entrega 5 de M7** (0030)                             |
-| `GOOGLE_BUSINESS_KEY` | Leer la ficha del local y sus resenas       | **Entrega 5 de M7**, con el acceso aprobado por Google |
-| `RESEND_API_KEY`      | Los avisos por correo                       | **Entrega 2 de M7** (0017)                             |
-| `AI_API_KEY`          | Que Fogon hable                             | **M22**, y antes hay que elegir modelo y tope (0023)   |
+| Qué                         | Nombre exacto                                          | Dónde se pone                           | ¿La usa ya el código?                        |
+| --------------------------- | ------------------------------------------------------ | --------------------------------------- | -------------------------------------------- |
+| **Google Places (New)**     | `GOOGLE_MAPS_KEY`                                      | Secretos de Supabase (Edge Functions)   | **Sí** · Ajustes → Tu local en Google (0040) |
+| **Google Business Profile** | **No es una clave**: acceso aprobado + OAuth           | —                                       | No · espera a que Google apruebe             |
+| **Resend** (correo)         | `RESEND_API_KEY` y el dominio verificado               | Secretos de Supabase + DNS en Hostinger | No · entrega 2 (0017)                        |
+| **IA** (Fogón)              | `AI_API_KEY`, `AI_MODELO_RAPIDO`, `AI_MODELO_ANALISIS` | Secretos de Supabase                    | No · M22, con modelo y tope elegidos (0023)  |
 
-Las dos de Google llevan **tope de gasto por local** antes de encenderse: un
-presupuesto de Google Cloud avisa y no corta, asi que lo que corta son las cuotas de
-cada API y nuestro propio contador (0030). Los pasos, en
-[`pasos-para-cerrar-m7.md`](../docs/pasos-para-cerrar-m7.md).
+**Business Profile no funciona con una clave**, y el nombre `GOOGLE_BUSINESS_KEY`
+que había aquí era un error: esa API exige que **el dueño de la ficha autorice con
+su cuenta de Google** (OAuth), y que Google **apruebe el acceso** del proyecto. Lo
+que hará falta cuando lo aprueben es un «ID de cliente de OAuth» del proyecto de
+Google Cloud, y se le pondrá nombre entonces, con su decisión.
 
-`GOOGLE_MAPS_KEY` **ya no hace falta para M5**: Google Places se aplaza a M23,
-que es donde viven las resenas y la competencia y donde hay que enlazar la ficha
-de Google de todas formas (decision 0013). El paso 4 del alta se escribe a mano.
+**Places ya está construido y probado.** Al poner la clave en los secretos de
+Supabase se enciende sin desplegar otra vez: la API la lee al arrancar cada función.
+Lleva **tope por local**: 40 fichas y 400 búsquedas al mes, contadas antes de llamar
+(0040). Los pasos para sacarla, con la cuota diaria y el aviso de presupuesto, en
+[`pasos-para-cerrar-m7.md`](../docs/pasos-para-cerrar-m7.md), paso 6.
+
+`GOOGLE_MAPS_KEY` la lee la API desde M7 (0040). El paso 4 del alta se sigue
+escribiendo a mano: la búsqueda en Google vive en Ajustes hasta que esté conectada
+y probada en un local de verdad.
 
 `CLAVE_DE_SERVICIO` la estrena M5, y es la mas delicada de todas: **es la
 unica que se salta la seguridad por filas**. La usa la API para firmar los enlaces
@@ -136,8 +141,8 @@ herramientas de migracion de tu ordenador.
 ## Pendientes de dar de alta
 
 Stripe (secreta, publicable, webhook e identificadores de precio) para M26, la API
-unificada del TPV para M18, Resend para el correo y Google Business Profile para
-las resenas propias. Cuando existan, las publicas van a Variables y las secretas a
+unificada del TPV para M18, Resend para el correo y el acceso OAuth de Google
+Business Profile para las resenas propias. Cuando existan, las publicas van a Variables y las secretas a
 los secretos de Supabase.
 
 ## Si una clave se filtra

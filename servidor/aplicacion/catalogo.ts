@@ -91,6 +91,12 @@ import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
 import { miPanel } from './consultas/mi-panel.ts';
 import { unIndicador } from './consultas/indicador.ts';
+import { miLocalEnGoogle } from './consultas/local-en-google.ts';
+import {
+  actualizarMiFichaDeGoogle,
+  buscarMiLocalEnGoogle,
+  elegirMiLocalDeGoogle,
+} from './comandos/google.ts';
 import { mermaDeHoy, misMermas, productosParaMerma } from './consultas/merma.ts';
 import { fichajesDeHoy, miFichaje, resumenDelEquipo, unaPersona } from './consultas/equipo.ts';
 import { misCierres, unCierre } from './consultas/cierre.ts';
@@ -167,12 +173,18 @@ export const catalogo = {
     [loQueViene.nombre]: loQueViene,
     // M7 · el Panel vivo: una cifra con su periodo, su comparación y sus días.
     [unIndicador.nombre]: unIndicador,
+    // M7 · el local en Google: lo guardado, con su fecha y lo gastado del tope.
+    [miLocalEnGoogle.nombre]: miLocalEnGoogle,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
     [cambiarMiIdioma.nombre]: cambiarMiIdioma,
     // M6½ · como tiene cada uno montado su Panel, por aparato.
     [guardarMiPanel.nombre]: guardarMiPanel,
+    // M7 · el local en Google (0040): buscarlo, elegirlo y traer su ficha otra vez.
+    [buscarMiLocalEnGoogle.nombre]: buscarMiLocalEnGoogle,
+    [elegirMiLocalDeGoogle.nombre]: elegirMiLocalDeGoogle,
+    [actualizarMiFichaDeGoogle.nombre]: actualizarMiFichaDeGoogle,
     // M4 · la sesion.
     [entrar.nombre]: entrar,
     [salir.nombre]: salir,

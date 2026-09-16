@@ -72,6 +72,7 @@ function bancoDePruebas(sesion: Contexto['sesion'] = SESION_NORMAL) {
         // M5. El despachador no toca ficheros: lo que se prueba aqui son las
         // puertas, y el almacen se enchufa en `servidor/index.ts`.
         almacen: null,
+        google: null,
         correlacionId: quien.correlacionId,
         ahora: new Date(Date.UTC(2026, 8, 1)),
       }),
@@ -421,6 +422,7 @@ describe('los secretos no se guardan para repetirlos', () => {
           personaId: SESION_NORMAL.personaId,
           sesion: SESION_NORMAL,
           almacen: null,
+          google: null,
           correlacionId: quien.correlacionId,
           ahora: new Date(Date.UTC(2026, 8, 1)),
         }),

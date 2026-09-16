@@ -2,6 +2,7 @@ import type { z } from 'zod';
 import type { CodigoDeError } from '@estook/dominio';
 import type { Permiso } from '@estook/permisos';
 import type { AlmacenDeFicheros } from '../infraestructura/almacen.ts';
+import type { LugaresDeGoogle } from '../infraestructura/google.ts';
 import type { SesionViva, Sql } from '../infraestructura/postgres.ts';
 
 /**
@@ -43,6 +44,11 @@ export interface Contexto {
    * Supabase Storage o un mapa en memoria.
    */
   readonly almacen: AlmacenDeFicheros | null;
+  /**
+   * Google Places (M7, entrega 5). Nulo sin clave, y entonces buscar el local
+   * **dice que Google no está conectado** en vez de romperse (0022, 0040).
+   */
+  readonly google: LugaresDeGoogle | null;
 }
 
 /**

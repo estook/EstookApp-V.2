@@ -2016,6 +2016,45 @@ Panel se guarda igual que desde la 0025: sin migración.
 
 ---
 
+### M7 · el local en Google, apagado hasta la clave y con el tope delante
+
+«Ahora preguntas dónde está el local, pero eso se verá cuando se conecte con Google
+Business y Places.» Y antes, el 10 de septiembre: «la API que cuesta dinero hay que
+acotarla bien», con una cifra, **cuarenta al mes por local**.
+
+#### Se construye sin la clave, y se enciende al ponerla
+
+Google está detrás de **un puerto**, como el almacén de ficheros de M5: la capa de
+aplicación sabe buscar un sitio y pedir su ficha, y no sabe que detrás hay Google.
+Con eso se probó todo con **un Google de mentira que cuenta sus llamadas**, y la API
+de pruebas lleva otro para que la pantalla se pueda recorrer entera. Sin la clave en
+Supabase, Ajustes dice «Google todavía no está conectado» y no enseña un buscador
+que no busca ([0040](decisiones/0040-el-local-se-busca-en-google-con-tope.md)).
+
+#### El tope, antes de gastar
+
+Lo que corta de verdad no es el presupuesto de Google —avisa y sigue cobrando— sino
+**un contador por local y mes**, y se cuenta **antes** de llamar, con una sola orden
+que solo suma si queda sitio. La prueba que importa es la que llena el contador y
+comprueba que **Google no llega a enterarse** de la petición siguiente.
+
+#### La ubicación de a mano manda
+
+Marcar el local desde un TPV sitúa la manzana; la de Google no depende del aparato.
+Pero dentro de un centro comercial el punto de Google cae en el aparcamiento. Así
+que se guarda **de dónde sale** la posición, y la marcada desde el local no la pisa
+nadie: ni elegir el local en Google, ni traer su ficha otra vez.
+
+#### Lo que se encontró
+
+- **`GOOGLE_BUSINESS_KEY` no existía.** Llevaba desde M5 en `config/claves.md` como
+  una clave más, y Business Profile no se usa con clave: es **OAuth del dueño de la
+  ficha** y un acceso que Google tiene que aprobar. Se habría pedido algo que Google
+  no da.
+- **La API de pruebas no arrancaba** con la clase del error de Google: Node quita los
+  tipos sin compilar, y las propiedades declaradas en el constructor no se dejan
+  quitar. Se escribió a la antigua.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

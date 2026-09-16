@@ -454,3 +454,13 @@ export type {
   ComoEsElIndicador,
   CambioDelIndicador,
 } from './indicador.ts';
+
+// ── M7 · el local en Google · los topes de lo que cuesta dinero ─────────────
+export {
+  TOPES_DE_GOOGLE,
+  LETRAS_PARA_BUSCAR,
+  topeDeGoogle,
+  quedanDeGoogle,
+  mesDe,
+} from './google.ts';
+export type { UsoDeGoogle } from './google.ts';

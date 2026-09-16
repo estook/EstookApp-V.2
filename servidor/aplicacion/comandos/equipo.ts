@@ -311,6 +311,10 @@ export const ponerDondeEstaElLocal = comando<
                             else latitud end,
              longitud = case when ${cambiaLaPosicion} then ${entrada.longitud ?? null}::numeric
                              else longitud end,
+             -- Marcada desde el local: la de a mano manda sobre la de Google (0040).
+             posicion_de = case when ${cambiaLaPosicion}
+                                then case when ${entrada.latitud ?? null}::numeric is null then null else 'a_mano' end
+                                else posicion_de end,
              radio_de_fichaje_metros = coalesce(
                ${entrada.radio_metros ?? null}::int, radio_de_fichaje_metros
              )

@@ -1,6 +1,7 @@
 import { crearApi } from './api/index.ts';
 import { crearDespachador, type Puertos } from './aplicacion/index.ts';
 import { almacenDeSupabase } from './infraestructura/almacen.ts';
+import { lugaresDeGoogle } from './infraestructura/google.ts';
 import { anotar, recordar } from './infraestructura/idempotencia.ts';
 import { enTransaccion } from './infraestructura/postgres.ts';
 
@@ -32,6 +33,9 @@ import { enTransaccion } from './infraestructura/postgres.ts';
  */
 const almacen = almacenDeSupabase();
 
+/** Google Places, si está su clave (`GOOGLE_MAPS_KEY`). Nulo si no: se dice, no se rompe. */
+const google = lugaresDeGoogle();
+
 const puertos: Puertos = {
   enTransaccion: (quien, hacer) =>
     enTransaccion(quien, (sql, sesion) =>
@@ -42,6 +46,7 @@ const puertos: Puertos = {
         personaId: sesion?.personaId ?? null,
         sesion,
         almacen,
+        google,
         correlacionId: quien.correlacionId,
         // El instante lo pone el servidor, nunca el navegador (regla 10).
         ahora: new Date(Date.now()),

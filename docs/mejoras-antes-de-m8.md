@@ -483,7 +483,7 @@ antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
 
 **Cómo va:** la **1** está **fusionada y en producción** (#53), con Richi dentro del
 admin y su segundo factor montado. Su repaso (rescatar a un admin, la cabecera del
-móvil y una puerta de la API) va en un pull request aparte. La siguiente es la **2**.
+móvil y una puerta de la API) también está en producción (#54). La siguiente es la **2**.
 
 **Qué esperan de fuera, y no frenan el orden:** **Resend** (el correo del informe y
 de los avisos), **Business Profile** (las respuestas a reseñas), **la clave de IA**

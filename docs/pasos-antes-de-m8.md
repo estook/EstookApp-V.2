@@ -4,17 +4,18 @@
 >
 > Comprobado en producción el 16 de septiembre de 2026, leyendo la base y la API.
 >
-> | Qué                                  | Cómo está                                                                     |
-> | ------------------------------------ | ----------------------------------------------------------------------------- |
-> | #51 (Google), #52 (planes), #53 (A1) | **Fusionadas**, con las tres comprobaciones en verde                          |
-> | La base de datos                     | **37 de 37** migraciones, 52 tablas en `estook` y 2 en `plataforma`           |
-> | La API                               | **Desplegada** después de la #53, y conoce las 42 consultas y los 79 comandos |
-> | `estookapp@gmail.com`                | **Dentro del admin**: contraseña propia puesta y segundo factor montado ✓     |
-> | `santidearmijo58@gmail.com`          | Con acceso total, **todavía sin entrar**: le falta montar su segundo factor   |
-> | **El repaso de A1**                  | **Pull request abierto** (rama `antes-de-m8-repaso-de-a1`): ver abajo         |
-> | Lo siguiente                         | **V · Lo que se ve** (`mejoras-antes-de-m8.md`)                               |
+> | Qué                                  | Cómo está                                                                   |
+> | ------------------------------------ | --------------------------------------------------------------------------- |
+> | #51 (Google), #52 (planes), #53 (A1) | **Fusionadas**, con las tres comprobaciones en verde                        |
+> | La base de datos                     | **37 de 37** migraciones, 52 tablas en `estook` y 2 en `plataforma`         |
+> | La API                               | **Desplegada** después de la #54 (el repaso), a las 20:05                   |
+> | `estookapp@gmail.com`                | **Dentro del admin**: contraseña propia puesta y segundo factor montado ✓   |
+> | `santidearmijo58@gmail.com`          | Con acceso total, **todavía sin entrar**: le falta montar su segundo factor |
+> | **El repaso de A1** (#54)            | **Fusionado y desplegado** ✓                                                |
+> | **Google y la IA**                   | Places: clave creada, **falta ponerla en Supabase**. Resto: abajo, al final |
+> | Lo siguiente                         | **V · Lo que se ve** (`mejoras-antes-de-m8.md`)                             |
 
-Los comandos van con `.estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
+Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
@@ -127,20 +128,23 @@ aparte:
 3. **En el móvil, la cabecera del admin ocupaba un tercio de la pantalla**, y en tu
    fila salía «Acceso» vacío. Ahora son dos líneas, con las secciones deslizables.
 
-### 1 · Fusionar el repaso
+> **Los pasos 1 y 2 ya están hechos** (#54 fusionada y API desplegada a las 20:05).
+> Te quedan el 3 y el 4.
+
+### 1 · Fusionar el repaso · **hecho**
 
 **Dónde:** GitHub → **Pull requests** → «Antes de M8 · repaso de A1» → las tres
 comprobaciones en verde → **Merge pull request** → **Confirm merge**.
 
 **No trae migración**, así que no hay que tocar la base.
 
-### 2 · Volver a desplegar la API
+### 2 · Volver a desplegar la API · **hecho**
 
 **Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** → escribe
 `desplegar` → **Run workflow**. Cuando termine:
 
 ```bash
-.estook.cmd bd:comprobar-api
+.\estook.cmd bd:comprobar-api
 ```
 
 **Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los comandos».
@@ -162,7 +166,7 @@ factor con su móvil y apuntar sus códigos de respaldo (el paso 5 de arriba, de
 Si no se acuerda de la contraseña:
 
 ```bash
-.estook.cmd bd:dar-admin santidearmijo58@gmail.com --nueva-clave
+.\estook.cmd bd:dar-admin santidearmijo58@gmail.com --nueva-clave
 ```
 
 **Qué sale:** una contraseña de cinco palabras. Dásela en mano o por teléfono, **nunca
@@ -171,8 +175,95 @@ por un chat**.
 ### Si un día alguien pierde el móvil y los códigos
 
 ```bash
-.estook.cmd bd:dar-admin su@correo.com --sin-segundo-factor
+.\estook.cmd bd:dar-admin su@correo.com --sin-segundo-factor
 ```
 
 **Qué sale:** «segundo factor borrado» y cuántas sesiones se han cerrado. Al entrar,
 montará uno nuevo. Queda apuntado en la auditoría.
+
+---
+
+## Google y la IA · qué conectar y qué no todavía
+
+Revisado el 16 de septiembre de 2026 con tus capturas. **Resumen:** Places se conecta
+ya; Business Profile está bien empezado pero **hay que deshacer una cosa en Supabase** y
+esperar a que Google apruebe; la IA **no se conecta todavía** porque ninguna parte de
+Estook la usa aún.
+
+### A · Places · se conecta ya
+
+La clave ya la tienes. **Google te enseña `key=API_KEY` porque es su ejemplo para
+pegarla en una dirección**; Estook no la usa así: la manda por dentro, en una cabecera.
+Tú pegas **solo la clave**, sin `key=`.
+
+**1 · Que la clave solo sirva para Places.** console.cloud.google.com → **APIs y
+servicios** → **Credenciales** → tu clave → **Restricciones de API** → **Restringir
+clave** → marca solo **Places API (New)** → **Guardar**. En «Restricciones de
+aplicación» deja **Ninguna**: la usa el servidor de Supabase, que no tiene una IP fija.
+
+**Por qué:** en tus capturas la clave aparece también en las métricas de Business
+Profile, así que ahora mismo vale para más de lo que necesita.
+
+**2 · Las cuotas y el aviso**, si no están: los puntos 5 y 6 del «Paso 6 · A» de
+[`pasos-para-cerrar-m7.md`](pasos-para-cerrar-m7.md) (300 autocompletados y 50 fichas
+al día, y un presupuesto de 8 € con avisos).
+
+**3 · Ponerla en Supabase.** supabase.com/dashboard → tu proyecto → **Edge Functions**
+→ **Secrets** → **Add new secret** → nombre **`GOOGLE_MAPS_KEY`** → valor, **solo la
+clave** → **Save**.
+
+**4 · Comprobarlo.** En Estook (la app, no el admin): **Ajustes → Tu local en Google**.
+
+**Qué tiene que salir:** «Buscar mi local en Google» en vez de «Apagado». Busca «ikatz»
+y tu ciudad, toca el tuyo y **Es este**. Debajo: «Este mes: 1 de 40 fichas».
+
+**Si a los dos minutos sigue diciendo «Apagado»:** GitHub → Actions → **Desplegar la
+API** → `desplegar`, y vuelve a mirar.
+
+### B · Business Profile · deshacer una cosa, y esperar a Google
+
+**Lo que está bien:** has habilitado la API y has creado un cliente de OAuth «Aplicación
+web» llamado Estook. Eso hace falta.
+
+**1 · Lo de Supabase, no.** La pantalla de tus capturas —**Authentication → Sign In /
+Providers → Google**— es **el login de Supabase**, y Estook no lo usa: el login es
+nuestro ([0010](decisiones/0010-el-login-es-nuestro.md)). Encenderlo no conecta Business
+Profile; abriría otra puerta de entrada que no queremos. **Pulsa «Cancel»** y comprueba
+que **«Enable Sign in with Google» queda apagado**.
+
+**2 · La cuota está a 0, y es normal.** La página de la API lo dice: hasta que Google
+**apruebe el acceso** del proyecto, no deja hacer ni una llamada. Si no has mandado el
+formulario, es el «Paso 6 · B» de [`pasos-para-cerrar-m7.md`](pasos-para-cerrar-m7.md).
+**Cuando te llegue el correo de aprobación, avísame.**
+
+**3 · El secreto del cliente ha pasado por el chat** (el fichero JSON que adjuntaste).
+Se da por visto. **No lo pongas en ningún sitio todavía**, borra el JSON de Descargas, y
+cuando construyamos la conexión crearemos un secreto nuevo en Google («Add secret») y
+borraremos este.
+
+**4 · La «URI de redireccionamiento»** que pusiste es la del login de Supabase. La buena
+será una dirección de nuestra API que todavía no existe: te la daré al construir la
+conexión. **No hace falta tocarla ahora.**
+
+**5 · Para más adelante:** el permiso para gestionar una ficha es de los que Google
+llama «sensibles». Mientras la app esté «En pruebas», la conexión caduca cada siete
+días; para dejarla fija, Google revisa la app (pide la política de privacidad en
+estook.com y el dominio verificado). Se hace cuando la conexión esté construida.
+
+**Lo que falta de código:** la pantalla «Conectar mi ficha de Google» y la vuelta de la
+autorización. No está hecho, y solo se puede probar de verdad **cuando Google apruebe**.
+
+### C · La IA · todavía nada
+
+Ninguna parte de Estook llama hoy a una IA: Fogón tiene su sitio, pero **no habla**.
+Lo primero que la usará es leer fotos de albaranes y del Z (M22); antes de eso, el
+informe semanal y los avisos salen de reglas, sin IA. Poner hoy una clave no
+encendería nada.
+
+**Lo que ya está decidido:** Gemini, el Flash que esté vigente al conectarlo, con tope de
+1.800 llamadas al mes por local.
+
+**Lo que harás cuando toque**, y te lo diré con cada paso: sacar la clave en Google AI
+Studio **dentro de este mismo proyecto y con la facturación puesta** —en el plan
+gratuito Google puede usar lo que se le manda para entrenar, y aquí van datos de un
+restaurante—, y ponerla en Supabase como `AI_API_KEY`.

@@ -26,6 +26,7 @@ const SESION_NORMAL: Contexto['sesion'] = {
   dobleFactorSuperado: true,
   debeCambiarClave: false,
   esDemostracion: false,
+  paraAdmin: false,
 };
 
 /**
@@ -74,6 +75,7 @@ function bancoDePruebas(sesion: Contexto['sesion'] = SESION_NORMAL) {
         almacen: null,
         google: null,
         correlacionId: quien.correlacionId,
+        desde: null,
         ahora: new Date(Date.UTC(2026, 8, 1)),
       }),
 
@@ -284,7 +286,14 @@ describe('las puertas se cierran solas', () => {
       .map((operacion) => operacion.nombre)
       .sort();
 
-    expect(abiertas).toEqual(['entrar', 'entrar_en_demostracion'].sort());
+    expect(abiertas).toEqual(
+      [
+        'entrar',
+        'entrar_en_demostracion',
+        // 0041 · la puerta del admin, que abre otra clase de sesión.
+        'entrar_en_admin',
+      ].sort(),
+    );
   });
 
   it('y la lista de las que pasan con la sesión a medias está tasada', () => {
@@ -309,8 +318,77 @@ describe('las puertas se cierran solas', () => {
         // M5 · una visita de demostracion no tiene segundo factor que superar,
         // asi que sin esto no podria ni irse.
         'salir_de_la_demostracion',
+        // 0041 · el admin tiene que saber que falta el código para pedirlo.
+        'admin_quien_soy',
       ].sort(),
     );
+  });
+
+  it('lo que es solo del admin está tasado, y todo empieza por `admin_`', () => {
+    // Una operación del admin que no lo declare **nace abierta a cualquier sesión
+    // de la app**. Esta lista obliga a declararlo; y el prefijo, a que se vea en el
+    // nombre de qué lado está.
+    const delAdmin = [...Object.values(catalogo.consultas), ...Object.values(catalogo.comandos)]
+      .filter((operacion) => operacion.soloAdmin === true)
+      .map((operacion) => operacion.nombre)
+      .sort();
+
+    expect(delAdmin).toEqual(
+      [
+        'admin_quien_soy',
+        'admin_administradores',
+        'admin_auditoria',
+        'admin_dar_acceso',
+        'admin_quitar_acceso',
+      ].sort(),
+    );
+
+    const conPrefijoSinDeclarar = [
+      ...Object.values(catalogo.consultas),
+      ...Object.values(catalogo.comandos),
+    ].filter((operacion) => operacion.nombre.startsWith('admin_') && operacion.soloAdmin !== true);
+    expect(conPrefijoSinDeclarar.map((o) => o.nombre)).toEqual([]);
+  });
+
+  it('y lo que una sesión del admin puede usar fuera del admin, también', () => {
+    const enLosDos = [...Object.values(catalogo.consultas), ...Object.values(catalogo.comandos)]
+      .filter((operacion) => operacion.tambienEnElAdmin === true)
+      .map((operacion) => operacion.nombre)
+      .sort();
+
+    expect(enLosDos).toEqual(
+      [
+        // Lo que es de la persona, esté donde esté.
+        'salir',
+        'cambiar_mi_clave',
+        'activar_doble_factor',
+        'confirmar_doble_factor',
+        'superar_doble_factor',
+        // Y la entrada, que todavía no tiene sesión del admin.
+        'entrar_en_admin',
+      ].sort(),
+    );
+  });
+});
+
+describe('la puerta del admin (0041)', () => {
+  const DEL_ADMIN: Contexto['sesion'] = { ...SESION_NORMAL, paraAdmin: true };
+
+  it('una sesión del admin no abre lo que no es del admin', async () => {
+    const { despachador } = bancoDePruebas(DEL_ADMIN);
+    const resultado = await despachador.ejecutar(
+      quien,
+      'sumar',
+      { cuanto: 1 },
+      'una-clave-del-admin',
+    );
+    expect(resultado).toEqual({ estado: 'fallo', codigo: 'sin_permiso' });
+  });
+
+  it('y una sesión de la app no abre lo del admin, sin llegar a preguntar a la base', async () => {
+    const { despachador } = bancoDePruebas(SESION_NORMAL);
+    const resultado = await despachador.consultar(quien, 'admin_administradores', {});
+    expect(resultado).toEqual({ estado: 'fallo', codigo: 'sin_permiso' });
   });
 });
 
@@ -386,7 +464,7 @@ describe('los secretos no se guardan para repetirlos', () => {
    *
    * Se vio repasando, no probando. Estas dos pruebas son para que no vuelva.
    */
-  it('los ocho comandos que devuelven un secreto están marcados', () => {
+  it('los diez comandos que devuelven un secreto están marcados', () => {
     const conSecreto = Object.values(catalogo.comandos)
       .filter((comando) => comando.conSecreto === true)
       .map((comando) => comando.nombre)
@@ -407,6 +485,10 @@ describe('los secretos no se guardan para repetirlos', () => {
         // equipo que entra de una vez desde un fichero.
         'entrar_en_demostracion',
         'confirmar_importacion',
+        // 0041 · el token del admin, y la contraseña de un solo uso de quien
+        // recibe acceso sin tener cuenta.
+        'entrar_en_admin',
+        'admin_dar_acceso',
       ].sort(),
     );
   });
@@ -424,6 +506,7 @@ describe('los secretos no se guardan para repetirlos', () => {
           almacen: null,
           google: null,
           correlacionId: quien.correlacionId,
+          desde: null,
           ahora: new Date(Date.UTC(2026, 8, 1)),
         }),
       recordar: (_contexto, _clave, nombre) => {

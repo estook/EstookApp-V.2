@@ -50,8 +50,7 @@ Tres de las veinte **no pueden quedar al 100 % antes de M8**, y conviene decirlo
   Lo que sí se deja hecho: **el QR definitivo de cada local**, para imprimirlo una vez
   y que no cambie nunca (punto 20).
 
-**Pregunta para Richi:** ¿estas tres esperan a su módulo (lo recomendado), o se
-adelantan M9 y M10 enteros antes de M8? Ver [«Lo que queda por decidir»](#lo-que-queda-por-decidir).
+**Richi lo decidió:** esperan a su módulo. Ver [«Lo que decidió Richi»](#lo-que-decidió-richi).
 
 ---
 
@@ -478,22 +477,22 @@ antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
 | 9     | **Admin · Vendedores y códigos** | Vendedores, códigos, `?ref=`, asignaciones                    | Necesita la ficha de clientes                                        |
 | 10    | **Admin · Ventas**               | El tablero de ventas                                          | Necesita el reloj (uso diario) y los vendedores                      |
 
+**Cómo va:** la **1** está hecha y sin fusionar, en la rama `m7-admin-la-puerta`. La
+siguiente es la **2**.
+
 **Qué esperan de fuera, y no frenan el orden:** **Resend** (el correo del informe y
 de los avisos), **Business Profile** (las respuestas a reseñas), **la clave de IA**
 (las fotos) y **Stripe** (el dinero real del admin, en M26).
 
 ---
 
-## Lo que queda por decidir
+## Lo que decidió Richi
 
-Para Richi, con lo que se recomienda:
+El 16 de septiembre de 2026, a las tres preguntas que dejaba este plan:
 
-1. **¿Las tres que esperan módulo (11, 19 respuestas, 20 carta) se quedan para su
-   módulo?** Recomendado: **sí**, con lo que se deja preparado arriba. Adelantar M9 y
-   M10 enteros son dos módulos grandes antes de M8.
-2. **¿El orden de arriba vale, empezando por la puerta del admin?** Recomendado: sí.
-   Si se prefieren primero las mejoras del producto, la puerta del admin pasa al
-   puesto 4 y no cambia nada más.
-3. **El modo cocina, ¿se enciende solo en las tabletas del pase o también lo puede
-   poner cada uno en su móvil?** Recomendado: **cada aparato lo elige**, como el tema;
-   y en el alta de una tableta de cocina se propone encendido.
+1. **Lo que espera a su módulo se queda ahí**: leer fotos (11) en M22, responder
+   reseñas (19) cuando Google apruebe Business Profile, y la carta con QR (20) en M12.
+   Antes de M8 se deja hecho lo que no depende de eso.
+2. **El orden, el recomendado**: empieza la puerta del admin y sigue la tabla de arriba.
+3. **El modo cocina lo elige cada aparato**, como el tema; y en el alta de una tableta
+   de cocina se propone encendido.

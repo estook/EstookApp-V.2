@@ -48,6 +48,7 @@ const puertos: Puertos = {
         almacen,
         google,
         correlacionId: quien.correlacionId,
+        desde: quien.desde ?? null,
         // El instante lo pone el servidor, nunca el navegador (regla 10).
         ahora: new Date(Date.now()),
       }),

@@ -22,7 +22,11 @@ insert into estook.persona (correo, nombre, apellidos, idioma, es_ejemplo) value
   ('nuria@ejemplo.estook.com',   'Nuria',   'Sanmartin','ca', true),
   ('asesoria@ejemplo.estook.com','Asesoria','Cuenta Clara', 'es', true),
   -- Casa Lola · la que acaba de darse de alta y tiene el alta a medias (M5)
-  ('pablo@ejemplo.estook.com',   'Pablo',   'Ferrer',   'es', true)
+  ('pablo@ejemplo.estook.com',   'Pablo',   'Ferrer',   'es', true),
+  -- El admin de Estook (0041). Sin membresía: no trabaja en ningún restaurante.
+  -- Su acceso al admin lo pone la semilla de acceso, que no corre contra una base
+  -- remota: aquí solo nace la persona.
+  ('plataforma@ejemplo.estook.com', 'Ada', 'Plataforma', 'es', true)
 on conflict (correo) do update
   set nombre = excluded.nombre,
       apellidos = excluded.apellidos,

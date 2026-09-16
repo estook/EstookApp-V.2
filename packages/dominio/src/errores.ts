@@ -116,6 +116,25 @@ export const ERRORES = {
     { texto: 'Ir a Ajustes', accion: 'abrir_ajustes_de_organizacion' },
   ),
 
+  // ── El admin (0041) ────────────────────────────────────────────────────────
+  //
+  // Dos, y los dos son puertas, no fallos. El segundo factor en el admin **no es
+  // opcional**: quien entra sin él puede montarlo y nada más.
+  falta_activar_doble_factor: error(
+    'falta_activar_doble_factor',
+    'Para entrar en el admin hace falta el segundo factor.',
+    'Móntalo ahora con tu aplicación de autenticación: es un minuto y solo se hace una vez.',
+    403,
+    { texto: 'Montarlo', accion: 'activar_doble_factor' },
+  ),
+
+  se_queda_sin_admin: error(
+    'se_queda_sin_admin',
+    'Estook no se puede quedar sin nadie con acceso total al admin.',
+    'Da antes acceso total a otra persona, y después quita este.',
+    409,
+  ),
+
   /**
    * La visita de demostración, que mira todo y no escribe nada (M5).
    *

@@ -79,6 +79,8 @@ import {
 import { compararPrecios, unProveedor } from './consultas/proveedores.ts';
 import { loQueViene } from './consultas/calendario.ts';
 import { buscar } from './consultas/buscar.ts';
+import { accesosAlAdmin, auditoriaDelAdmin, yoEnElAdmin } from './consultas/admin.ts';
+import { darAccesoAlAdmin, entrarEnAdmin, quitarAccesoAlAdmin } from './comandos/admin.ts';
 import {
   inventarioHoy,
   misMovimientos,
@@ -121,6 +123,10 @@ import type { Comando, Consulta } from './contrato.ts';
  */
 export const catalogo = {
   consultas: {
+    // La puerta del admin (0041): quién soy ahí, quién más entra y lo que se ha hecho.
+    [yoEnElAdmin.nombre]: yoEnElAdmin,
+    [accesosAlAdmin.nombre]: accesosAlAdmin,
+    [auditoriaDelAdmin.nombre]: auditoriaDelAdmin,
     [misLocales.nombre]: misLocales,
     [unLocal.nombre]: unLocal,
     // M3 · lo que necesitan el esqueleto y el buscador universal.
@@ -301,5 +307,13 @@ export const catalogo = {
     [congelar.nombre]: congelar,
     [guardarPreciosConIva.nombre]: guardarPreciosConIva,
     [quitarIvaALosPrecios.nombre]: quitarIvaALosPrecios,
+
+    // ── La puerta del admin (0041) ─────────────────────────────────────────
+    //
+    // Entrar con otra clase de sesión, y dar y quitar el acceso con el código
+    // otra vez. Ninguno toca un dato de un restaurante.
+    [entrarEnAdmin.nombre]: entrarEnAdmin,
+    [darAccesoAlAdmin.nombre]: darAccesoAlAdmin,
+    [quitarAccesoAlAdmin.nombre]: quitarAccesoAlAdmin,
   } as Record<string, Comando<never, unknown>>,
 };

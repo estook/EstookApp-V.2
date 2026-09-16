@@ -87,6 +87,7 @@ export function montarLaApi(
               doble_factor_superado: boolean;
               debe_cambiar_clave: boolean;
               es_demostracion: boolean;
+              para_admin: boolean;
             }>('select * from estook.sesion_activa($1)', [
               await huellaDeToken(quien.tokenDeSesion),
             ]);
@@ -100,6 +101,7 @@ export function montarLaApi(
                 dobleFactorSuperado: fila.doble_factor_superado,
                 debeCambiarClave: fila.debe_cambiar_clave,
                 esDemostracion: fila.es_demostracion,
+                paraAdmin: fila.para_admin,
               };
             }
           }
@@ -118,6 +120,7 @@ export function montarLaApi(
             almacen: null,
             google: opciones.google ?? null,
             correlacionId: quien.correlacionId,
+            desde: quien.desde ?? null,
             ahora: new Date(Date.now()),
           });
 

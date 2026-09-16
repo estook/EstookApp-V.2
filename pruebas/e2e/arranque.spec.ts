@@ -11,10 +11,12 @@ import { expect, test } from '@playwright/test';
  * de diseno.
  */
 const APLICACIONES = [
-  { nombre: 'web', url: 'http://localhost:5173/', titulo: /Estook/, esElEsqueleto: false },
-  { nombre: 'app', url: 'http://localhost:5174/', titulo: /Estook/, esElEsqueleto: true },
-  { nombre: 'carta', url: 'http://localhost:5175/', titulo: /Carta/, esElEsqueleto: false },
-  { nombre: 'admin', url: 'http://localhost:5176/', titulo: /Estook/, esElEsqueleto: false },
+  { nombre: 'web', url: 'http://localhost:5173/', titulo: /Estook/, puerta: null },
+  { nombre: 'app', url: 'http://localhost:5174/', titulo: /Estook/, puerta: 'Entra en Estook' },
+  { nombre: 'carta', url: 'http://localhost:5175/', titulo: /Carta/, puerta: null },
+  // Desde la 0041 el admin también empieza por su puerta: el catálogo que se veía
+  // aquí sin entrar está detrás.
+  { nombre: 'admin', url: 'http://localhost:5176/', titulo: /Estook/, puerta: 'Entra en el admin' },
 ];
 
 /** B7 · abrir una aplicacion. Se deja holgura porque la maquina de CI es lenta. */
@@ -36,10 +38,10 @@ for (const aplicacion of APLICACIONES) {
 
       await expect(page).toHaveTitle(aplicacion.titulo);
 
-      if (aplicacion.esElEsqueleto) {
+      if (aplicacion.puerta !== null) {
         // La puerta de M4. Que lo primero sea esto y no el Panel es la mitad del
         // modulo: antes de saber quien eres no hay nada que ensenar.
-        await expect(page.getByRole('heading', { level: 1 })).toContainText('Entra en Estook');
+        await expect(page.getByRole('heading', { level: 1 })).toContainText(aplicacion.puerta);
       } else {
         // El marcador de sitio de M0, que sigue diciendo como ha arrancado.
         await expect(page.getByText('Entorno', { exact: true })).toBeVisible();

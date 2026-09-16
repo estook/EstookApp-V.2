@@ -49,6 +49,9 @@ Y lo que se añade porque la propuesta no lo cubría:
 
 ## 1 · Quién entra y cómo
 
+> **Construido en A1** (rama `m7-admin-la-puerta`, migración `0037`). Lo que sigue
+> es cómo funciona hoy.
+
 ### La puerta
 
 - **Dónde:** `estook.com/admin/`. Un subdominio `admin.estook.com` no se puede servir
@@ -61,7 +64,18 @@ Y lo que se añade porque la propuesta no lo cubría:
 - **Ser admin es un permiso de la plataforma, no un rol de una organización.** Un
   admin no pertenece a ningún restaurante por serlo, y un gerente no llega nunca al
   admin por muy alto que sea su rol.
-- El catálogo del sistema de diseño, que hoy vive suelto en `/admin/`, **pasa dentro**,
+- **La app y el admin no se abren el uno al otro.** Entrar en el admin abre otra clase
+  de sesión, marcada en la base: no vale para nada de la app, y una sesión de la app no
+  vale para el admin, aunque sea de la misma persona. Solo lo que es de la persona
+  —salir, su contraseña, su segundo factor— vale en los dos sitios.
+- **El acceso se mira en cada petición.** Quitárselo a alguien le cierra la puerta en su
+  siguiente paso, aunque tenga el admin abierto.
+- **La sesión se va al cerrar la pestaña** (se guarda en `sessionStorage`): nadie
+  necesita el admin abierto en un portátil que se queda en una mesa.
+- **A quien no es admin se le contesta lo mismo que a una contraseña mal**, para que
+  nadie pueda averiguar qué correos administran Estook.
+- **Quien tiene acceso al admin no se puede quitar el segundo factor** desde la app.
+- El catálogo del sistema de diseño, que vivía suelto en `/admin/`, **está dentro**,
   detrás de la puerta.
 
 ### La primera cuenta
@@ -69,9 +83,12 @@ Y lo que se añade porque la propuesta no lo cubría:
 `estookapp@gmail.com`, creada con un comando nuevo, `.\estook.cmd bd:dar-admin`,
 **igual que `bd:cuenta-de-verdad`**:
 
-1. Genera **una contraseña de un solo uso** y la enseña una vez por pantalla.
-2. La cuenta nace con **«debes cambiarla»**: al entrar, se pone una propia.
-3. Y con el segundo factor por montar.
+1. Si el correo no tiene cuenta, la crea con **una contraseña de un solo uso** que
+   enseña una vez por pantalla, y la cuenta nace con **«debes cambiarla»**.
+2. **Si ya tiene cuenta, no le toca la contraseña**: entra con la suya.
+3. Le da acceso total y lo apunta en la auditoría, a nombre de «la consola».
+4. **No monta el segundo factor**: lo monta la persona en su móvil la primera vez que
+   entra, antes de ver nada, para que el secreto no pase por ninguna otra mano.
 
 **La contraseña que se escribió en el chat no se usa.** Es la regla que ya tiene el
 proyecto: lo que pasa por un chat se da por visto (lo mismo se hizo con las claves de
@@ -79,12 +96,20 @@ Google). Por eso el comando genera una y obliga a cambiarla.
 
 ### Más admins
 
-Desde dentro, **Administradores → Añadir**: se escribe un correo y el nivel. Si esa
-persona ya tiene cuenta en Estook, se le da el permiso; si no, se crea con su clave de
-un solo uso. **Nunca se puede quitar al último admin con nivel total**, y nadie se
-quita el suyo a sí mismo.
+Desde dentro, **Administradores → Dar acceso**: correo, nombre y **el código del
+segundo factor otra vez**. Si esa persona ya tiene cuenta en Estook, se le da el acceso
+y entra con la suya; si no, se crea con una contraseña de un solo uso que se enseña una
+vez. A una persona de ejemplo no se le da nunca.
 
-**Los niveles**, pensados desde ya aunque hoy solo se use el primero:
+**Quitar el acceso** pide un motivo y el código otra vez. **Nadie se quita el suyo a sí
+mismo**, y **nunca se queda Estook sin un admin total**: lo impide el comando y, por
+debajo, la base. Los quitados se quedan en la lista como historia, con quién y por qué.
+
+Todo sale en **Auditoría**, dicho en una frase: quién entró, quién dio o quitó acceso a
+quién, cuándo, con qué motivo y desde qué dirección.
+
+**Los niveles**, pensados desde ya aunque **hoy solo se puede dar el total**: ofrecer
+los otros sería dar un acceso que no abre nada.
 
 | Nivel         | Qué hace                                                           | Cuándo se estrena |
 | ------------- | ------------------------------------------------------------------ | ----------------- |

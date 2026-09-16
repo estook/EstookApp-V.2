@@ -59,6 +59,8 @@ export const salir = comando<Record<string, never>, { readonly cerrada: boolean 
   // Una visita tiene que poder irse. Es lo único que escribe, y lo que escribe
   // es su propia desaparición.
   enDemostracion: true,
+  // Y desde el admin, que también hay que poder irse (0041).
+  tambienEnElAdmin: true,
 
   async ejecutar(contexto) {
     await cerrarLaSesion(contexto);

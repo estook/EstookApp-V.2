@@ -54,6 +54,11 @@ export interface SesionViva {
   readonly debeCambiarClave: boolean;
   /** Una visita al restaurante de ejemplo (M5). Mira todo y no escribe nada. */
   readonly esDemostracion: boolean;
+  /**
+   * Una sesión abierta desde el admin (0041). Solo vale para el admin, dura ocho
+   * horas como mucho, y el admin no acepta ninguna otra.
+   */
+  readonly paraAdmin: boolean;
 }
 
 export interface QuienPregunta {
@@ -132,6 +137,7 @@ async function resolver(sql: Sql, huella: string): Promise<SesionViva | null> {
       doble_factor_superado: boolean;
       debe_cambiar_clave: boolean;
       es_demostracion: boolean;
+      para_admin: boolean;
     }[]
   >`select * from estook.sesion_activa(${huella})`;
 
@@ -146,6 +152,7 @@ async function resolver(sql: Sql, huella: string): Promise<SesionViva | null> {
     dobleFactorSuperado: fila.doble_factor_superado,
     debeCambiarClave: fila.debe_cambiar_clave,
     esDemostracion: fila.es_demostracion,
+    paraAdmin: fila.para_admin,
   };
 }
 

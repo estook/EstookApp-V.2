@@ -1,8 +1,8 @@
 # 0041 · El panel de administración: el cliente es la organización, y el admin solo es dueño de lo comercial
 
 **Fecha:** 16 de septiembre de 2026
-**Estado:** decidido; se construye en cuatro entregas antes de M8 (A1 a A4) y se
-termina en M26
+**Estado:** decidido. **A1 construida** (migración `0037`, rama `m7-admin-la-puerta`);
+A2 a A4 antes de M8, y se termina en M26
 **Detalle entero:** [`docs/panel-de-administracion.md`](../panel-de-administracion.md)
 **Precisa:** la sección 4 de [Roles y administración](../maestros/Estook-Roles-y-Administracion.md)
 
@@ -24,7 +24,7 @@ una organización, y un admin no pertenece a ninguna por serlo. Así, **ningún 
 cliente llega nunca al admin**, por alto que sea.
 
 Se entra con la misma cuenta (0010), **solo con contraseña**, **con segundo factor
-obligatorio** y **sesión de 8 horas**, en `estook.com/admin/`.
+obligatorio** y **sesión de 8 horas**, en `estook.com/admin/`. Y **las dos sesiones no se cruzan**: la del admin no vale para la app, ni la de la app para el admin, aunque sean de la misma persona; lo comprueba el despachador en cada petición, junto con que el acceso siga vivo.
 
 ### Dos · El cliente es la organización que ya existe
 

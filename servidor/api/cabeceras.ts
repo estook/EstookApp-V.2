@@ -39,3 +39,19 @@ export function tokenDeLaCabecera(valor: string | undefined): string | null {
   const token = partes[1]?.trim() ?? '';
   return token === '' ? null : token;
 }
+
+/**
+ * La dirección desde la que llega la petición (0041), o nulo.
+ *
+ * Supabase pone delante de la API un proxy, así que la dirección de verdad viene
+ * en `x-forwarded-for`: la primera de la lista es la del navegador. Se guarda en
+ * la auditoría del admin y **no decide nada**: se puede falsear, y por eso solo
+ * se acepta con forma de dirección —números, puntos y dos puntos— y corta. Lo que
+ * no la tenga, no se guarda.
+ */
+export const CABECERA_DIRECCION = 'x-forwarded-for';
+
+export function direccionDeLaPeticion(valor: string | undefined): string | null {
+  const primera = valor?.split(',')[0]?.trim() ?? '';
+  return /^[0-9a-fA-F.:]{3,45}$/.test(primera) ? primera : null;
+}

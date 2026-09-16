@@ -110,6 +110,13 @@ export const EVENTOS = [
   //   lote.retirado        se gastó o se tiró: su caducidad se va del Calendario
   'lote.congelado',
   'lote.retirado',
+  // ── M7 · las apps conectadas ────────────────────────────────────────────
+  //
+  //   inventario.recontado  se ha contado la cámara a mano y el libro se ha
+  //                         corregido. Lo escucha la previsión de cada producto
+  //                         corregido y, en M8, la desviación del periodo, que es
+  //                         para lo que se cuenta de verdad.
+  'inventario.recontado',
 ] as const;
 
 export type TipoDeEvento = (typeof EVENTOS)[number];

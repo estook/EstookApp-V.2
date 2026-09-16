@@ -6,6 +6,7 @@ import {
   type Alergeno,
   type Consumo,
   type EstadoDeExistencias,
+  type Zona,
 } from '@estook/dominio';
 
 /**
@@ -68,6 +69,8 @@ export interface ProductoEnLista {
   // ── M7, repaso ─────────────────────────────────────────────────────────────
   /** Si tiene algo en el congelador. */
   readonly congelado: boolean;
+  /** Cuánto hay congelado, si los lotes lo dicen. Nulo: hay algo y no se sabe cuánto. */
+  readonly congeladoCuanto: number | null;
   /** El IVA que se paga al comprarlo: el suyo o el de su categoría. Nulo: sin tipo. */
   readonly ivaDeCompra: number | null;
   readonly ivaDeCompraElegido: boolean;
@@ -75,15 +78,14 @@ export interface ProductoEnLista {
   readonly contenidoPorUnidad: number | null;
   readonly unidadDelContenido: string | null;
   /**
-   * A cuánto se vende tal cual, con impuesto. Nulo: no se vende solo.
+   * De dónde es: cocina, sala o limpieza.
    *
-   * Este **sí** lo ve todo el mundo, y no es una excepción: está en la pizarra.
-   * El margen no viaja, porque el margen necesita el coste y el coste no llega a
-   * quien no puede ver precios.
+   * **El precio de venta no está aquí, y no es un olvido**: un ingrediente no se
+   * vende. Lo que se vende es un plato, y su precio vive en la carta (M10); lo
+   * que cuesta sale de su escandallo (M9). Poner un precio de venta en el género
+   * era inventarse un tercer sitio para un dato que ya tiene el suyo.
    */
-  readonly precioDeVentaCentimos: number | null;
-  readonly ivaDeVenta: number | null;
-  readonly ivaDeVentaElegido: boolean;
+  readonly zona: Zona;
 }
 
 export interface CategoriaDelLocal {
@@ -105,6 +107,8 @@ export interface MisProductos {
   readonly hayMas: boolean;
   readonly puedeVerPrecios: boolean;
   readonly ejemplos: number;
+  /** Cuántos hay en cada zona que esta persona ve (cocina, sala, limpieza). */
+  readonly porZona: readonly { readonly zona: string; readonly cuantos: number }[];
   readonly valorTotalCentimos?: number | null;
   /** Si en este local los precios de compra se escriben con IVA. */
   readonly preciosConIva: boolean;
@@ -141,8 +145,6 @@ export interface MovimientoEnFicha {
   readonly quien: string | null;
   readonly lote: string | null;
   readonly costeMilesimas?: number | null;
-  /** Lo que se cobró, en las ventas. Solo llega a quien puede ver dinero. */
-  readonly ingresoCentimos?: number | null;
 }
 
 export interface LoteEnFicha {
@@ -153,6 +155,8 @@ export interface LoteEnFicha {
   readonly diasParaCaducar: number | null;
   /** Cuándo se congeló. Nulo: no está congelado. */
   readonly congeladoEl: string | null;
+  /** Cuánto lleva este lote. Nulo: no se sabe. */
+  readonly cantidad: number | null;
 }
 
 export interface UnProducto {
@@ -182,6 +186,8 @@ export interface InventarioHoy {
   readonly sinPrecio: readonly { readonly id: string; readonly nombre: string }[];
   readonly cuantosProductos: number;
   readonly ejemplos: number;
+  /** Cuántos hay en cada zona: cocina, sala y limpieza. */
+  readonly porZona: readonly { readonly zona: string; readonly cuantos: number }[];
   readonly puedeVerPrecios: boolean;
   readonly valorTotalCentimos?: number | null;
 }
@@ -332,8 +338,6 @@ export interface MovimientoDelLibro {
   readonly lote: string | null;
   readonly esEjemplo: boolean;
   readonly costeMilesimas?: number | null;
-  /** Lo que se cobró, en las ventas. Solo llega a quien puede ver dinero. */
-  readonly ingresoCentimos?: number | null;
 }
 
 export interface MisMovimientos {

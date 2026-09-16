@@ -85,6 +85,18 @@ const Mermas = lazy(async () => {
 });
 
 /**
+ * El recuento, aparte también.
+ *
+ * Es la vista que menos se abre —se cuenta la cámara una vez al mes— y la que más
+ * trae consigo: la lista entera con una casilla por producto y el lector del
+ * fichero. Bajarla con el libro sería pagarla trescientas veces para usarla una.
+ */
+const Recuento = lazy(async () => {
+  const modulo = await import('./Recuento.tsx');
+  return { default: modulo.Recuento };
+});
+
+/**
  * Compras (M7), aparte de todo lo demás.
  *
  * Son cinco vistas con sus fichas —pedidos, recibir, albaranes, facturas,
@@ -123,7 +135,7 @@ export function Inventario({
     <>
       {destino === 'hoy' && <Hoy alAbrirProducto={setProductoAbierto} />}
       {destino === 'productos' && <Productos vista={vista} alAbrirProducto={setProductoAbierto} />}
-      {destino === 'movimientos' && vista !== 'mermas' && (
+      {destino === 'movimientos' && vista !== 'mermas' && vista !== 'recuento' && (
         <Suspense fallback={<Cargando que="el libro de movimientos" />}>
           <Movimientos vista={vista} alAbrirProducto={setProductoAbierto} />
         </Suspense>
@@ -131,6 +143,11 @@ export function Inventario({
       {destino === 'movimientos' && vista === 'mermas' && (
         <Suspense fallback={<Cargando que="las mermas" />}>
           <Mermas alAbrirProducto={setProductoAbierto} />
+        </Suspense>
+      )}
+      {destino === 'movimientos' && vista === 'recuento' && (
+        <Suspense fallback={<Cargando que="tu género" />}>
+          <Recuento />
         </Suspense>
       )}
       {destino === 'compras' && (

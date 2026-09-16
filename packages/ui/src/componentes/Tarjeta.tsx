@@ -103,6 +103,20 @@ export interface EtiquetaProps {
 }
 
 export function Etiqueta({ tono = 'neutro', icono, children }: EtiquetaProps) {
+  /*
+    ── El punto, cuando la etiqueta dice un estado ───────────────────────────
+
+    «Las píldoras las veo súper básicas.» Y lo eran: texto de 11 px dentro de un
+    borde. Un punto del color del estado las hace reconocibles **antes de
+    leerlas**, que es como se mira una lista de trescientas filas: se busca el
+    rojo, no se lee «En negativo» treinta veces.
+
+    No es color en lugar de texto —eso lo prohíbe B8 y con razón—: es color
+    **además** del texto, que sigue entero. Y no sale en `neutro`, porque un punto
+    gris no distingue nada de nada; ni cuando hay icono, que ya hace ese trabajo.
+  */
+  const conPunto = tono !== 'neutro' && icono === undefined;
+
   return (
     <span
       className={clases(
@@ -112,6 +126,9 @@ export function Etiqueta({ tono = 'neutro', icono, children }: EtiquetaProps) {
       )}
     >
       {icono}
+      {conPunto && (
+        <span aria-hidden className="size-[6px] shrink-0 rounded-redondo bg-current opacity-70" />
+      )}
       {children}
     </span>
   );

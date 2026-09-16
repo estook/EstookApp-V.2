@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ALERGENOS, UNIDADES_DE_USO, horaDeCorte, jornadaDe } from '@estook/dominio';
+import { ALERGENOS, UNIDADES_DE_USO, ZONAS, horaDeCorte, jornadaDe } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -62,6 +62,11 @@ export const entradaCrearProducto = z
       .optional(),
     minimo: z.number().min(0).nullable().optional(),
     proveedor_id: z.string().uuid().nullable().optional(),
+    /**
+     * De dónde es: cocina, sala o limpieza (0035). Sin decirlo, cocina, que es
+     * donde está casi todo y de donde venía Inventario entero hasta hoy.
+     */
+    zona: z.enum(ZONAS).optional(),
     /** Lo que cuesta el formato, en céntimos enteros. Nulo = todavía sin precio. */
     precio_centimos: z.number().int().min(0).nullable().optional(),
     notas: z.string().trim().max(2000).nullable().optional(),
@@ -260,7 +265,7 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
         local_id, categoria_id, nombre, formato, factor, unidad_de_uso, rendimiento,
         categoria_fiscal, alergenos, peso_variable, codigo_de_barras, minimo,
         proveedor_id, producto_de_referencia_id, sin_verificar, notas,
-        iva_de_compra, contenido_por_unidad, unidad_del_contenido
+        iva_de_compra, contenido_por_unidad, unidad_del_contenido, zona
       )
       values (
         ${localId},
@@ -281,7 +286,8 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
         ${entrada.notas ?? null},
         ${entrada.iva_de_compra ?? null},
         ${entrada.contenido_por_unidad ?? null},
-        ${entrada.unidad_del_contenido ?? null}::estook.unidad_de_uso
+        ${entrada.unidad_del_contenido ?? null}::estook.unidad_de_uso,
+        ${entrada.zona ?? 'cocina'}::estook.zona_del_producto
       )
       returning id
     `;
@@ -458,10 +464,14 @@ export const entradaCambiarProducto = z
      * quitar desde ninguna parte.
      */
     verificado: z.boolean().optional(),
-    /** A cuánto se vende tal cual, con impuesto. A nulo, deja de venderse solo. */
-    precio_de_venta_centimos: z.number().int().min(0).max(100_000_000).nullable().optional(),
-    /** El tipo que se repercute al venderlo. A nulo, el de la actividad. */
-    iva_de_venta: z.number().min(0).max(0.3).nullable().optional(),
+    /**
+     * De dónde es: cocina, sala o limpieza (0035).
+     *
+     * Si no llega, **no se toca**. Las pantallas de antes no lo mandan, y guardar
+     * una ficha desde una de ellas no puede mover un producto de almacén sin que
+     * nadie lo haya pedido.
+     */
+    zona: z.enum(ZONAS).optional(),
     // ── M7, repaso ───────────────────────────────────────────────────────────
     //
     // Estos tres sí son «si no llega, se queda como estaba»: las pantallas de
@@ -579,8 +589,7 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       Number(previo.rendimiento) !== entrada.rendimiento;
     const cambiaElIva = entrada.iva_de_compra !== undefined;
     const cambiaElContenido = entrada.contenido_por_unidad !== undefined;
-    const cambiaElPrecioDeVenta = entrada.precio_de_venta_centimos !== undefined;
-    const cambiaElIvaDeVenta = entrada.iva_de_venta !== undefined;
+    const cambiaLaZona = entrada.zona !== undefined;
 
     /**
      * ── «Sin verificar», que se volvía a poner solo ──────────────────────────
@@ -598,7 +607,7 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
      */
     const sinVerificarNuevo = entrada.verificado === undefined ? null : !entrada.verificado;
 
-    await contexto.sql`
+    const cambiados = await contexto.sql<{ id: string }[]>`
       update estook.producto
          set nombre           = ${entrada.nombre},
              categoria_id     = ${entrada.categoria_id},
@@ -622,18 +631,33 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
              unidad_del_contenido = case when ${cambiaElContenido}
                                          then ${entrada.unidad_del_contenido ?? null}::estook.unidad_de_uso
                                          else unidad_del_contenido end,
-             precio_de_venta_centimos = case when ${cambiaElPrecioDeVenta}
-                                             then ${entrada.precio_de_venta_centimos ?? null}::bigint
-                                             else precio_de_venta_centimos end,
-             iva_de_venta     = case when ${cambiaElIvaDeVenta}
-                                     then ${entrada.iva_de_venta ?? null}::numeric
-                                     else iva_de_venta end,
+             zona             = case when ${cambiaLaZona}
+                                     then ${entrada.zona ?? null}::estook.zona_del_producto
+                                     else zona end,
              sin_verificar    = case when ${sinVerificarNuevo === null}
                                      then sin_verificar
                                      else ${sinVerificarNuevo ?? false} end,
              actualizado_en   = now()
        where id = ${entrada.producto_id}
+      returning id
     `;
+
+    /*
+      ── Y se mira si ha cambiado algo, que es lo que no se hacía ─────────────
+
+      Este `update` podía no tocar ninguna fila y el comando seguía adelante
+      contestando «Ficha guardada». Pasa siempre que la política de la tabla dice
+      que no: desde la 0035, un cocinero no edita la ficha de las botellas de la
+      barra —no es su almacén (0038)— y hasta hoy se iba creyendo que sí.
+
+      «Guardar sin decir que ha fallado es peor que no guardar» (regla 34). Lo
+      cazó la prueba del cocinero intentando cambiar un producto de sala.
+    */
+    if (cambiados.length === 0) {
+      throw new FalloDeAplicacion('sin_permiso', {
+        porque: `«${previo.nombre}» no es de tu almacén, así que no puedes cambiar su ficha. Pídeselo a quien lleve esa zona.`,
+      });
+    }
 
     await contexto.sql`
       select estook.anotar(

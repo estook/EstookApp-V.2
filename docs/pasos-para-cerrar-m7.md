@@ -1,163 +1,167 @@
-# Pasos para cerrar M7 · el repaso, las bases y el dominio
+# Pasos para cerrar M7 · las apps conectadas
 
 > ## Cómo está
 >
-> | Qué                     | Cómo está                                                               |
-> | ----------------------- | ----------------------------------------------------------------------- |
-> | La entrega 1 del repaso | **Fusionada** (#45)                                                     |
-> | `estook.com`            | **Funcionando** (#46): la web y la aplicación pintan en su dominio      |
-> | **Las bases** (esta)    | **Pull request abierto**: `m7-las-bases`. Al fusionarlo se publica solo |
-> | La base de datos        | Le falta la **`0034`**, que añade tres columnas y el valor `venta`      |
-> | La API                  | Hay que **volver a desplegarla**: lleva el `apuntar_salida` nuevo       |
+> | Qué                            | Cómo está                                                                  |
+> | ------------------------------ | -------------------------------------------------------------------------- |
+> | El repaso y las bases          | **Fusionados** (#45 y #47)                                                 |
+> | `estook.com`                   | **Funcionando** (#46)                                                      |
+> | **Las apps conectadas** (esta) | **Pull request abierto**: `m7-conectar-las-apps`                           |
+> | La base de datos               | Le falta la **`0035`**: quita el precio de venta y pone la zona del género |
+> | La API                         | Hay que **volver a desplegarla**: el recuento es nuevo                     |
 
-## Los tres pasos de esta entrega
+## Los tres pasos, y uno más que es tuyo
 
-### 1 · Fusionar el pull request de las bases
+### 1 · Fusionar el pull request
 
-**Dónde:** GitHub → **Pull requests** → «M7 · las bases» → espera las tres
-comprobaciones en verde —`Calidad`, `Construccion y presupuestos` y
+**Dónde:** GitHub → **Pull requests** → «M7 · las apps conectadas» → espera las
+tres comprobaciones en verde —`Calidad`, `Construccion y presupuestos` y
 `Migraciones reversibles`— → **Merge pull request** → **Confirm merge**.
 
-Al fusionar, la publicación se lanza sola y tarda un minuto.
-
-**Si alguna comprobación sale en rojo:** no fusiones; mándame una foto de la que
-falla.
+**Si alguna sale en rojo:** no fusiones; mándame una foto de la que falla.
 
 ### 2 · Aplicar la migración
 
-No crea ninguna tabla: añade a cada producto **a cuánto lo vendes**, al libro de
-movimientos **lo que se cobró**, y un tipo de movimiento nuevo, `venta`.
+Quita el precio de venta del producto, le pone a cada uno **de dónde es**, deja que
+un lote diga cuánto lleva, y cambia quién ve qué.
 
 ```bash
 .\estook.cmd bd:migrar
 ```
 
-**Qué sale si va bien:** la línea `0034_lo_que_sale_dice_si_se_vendio`, y que la
-base está al día.
+**Qué sale si va bien:** la línea `0035_el_precio_vive_en_la_carta_y_el_genero_tiene_zona`.
 
 ```bash
 .\estook.cmd bd:comprobar
 ```
 
-**Qué tiene que decir:** **34 de 34** migraciones y **51 tablas**, todas con
-seguridad por filas.
+**Qué tiene que decir:** **35 de 35** migraciones y **51 tablas**.
 
-**Si sale un error:** no sigas; cópiame el texto rojo tal cual.
+> **Lo que se pierde, y te lo digo yo antes de que lo veas:** si estos días le
+> pusiste precio de venta a algún producto, esa cifra desaparece. Es la que estaba
+> en el sitio equivocado. No se pierde nada de lo que mueve género.
 
 ### 3 · Volver a desplegar la API
 
-**Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** → escribe
-`desplegar` → **Run workflow**. En verde en dos o tres minutos.
+**Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** →
+escribe `desplegar` → **Run workflow**.
 
 ```bash
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** «y conoce todas las consultas que tiene el código» y «y
-conoce todos los comandos».
+**Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los
+comandos». Si dice «FALTA DESPLEGARLA» con `cerrar_recuento`, el paso no ha
+terminado: vuelve a lanzarlo.
+
+### 4 · Repasar de dónde es tu género · **este es tuyo**
+
+La migración no deja tus nueve productos en un montón: los reparte con lo que ya
+sabe. **Las bebidas van a sala** —cerveza, refrescos, alcohol, por su categoría
+fiscal— y **lo demás se queda en cocina**, que es de donde venía.
+
+Lo que hay que repasar a mano es **lo de limpieza**, que no hay forma de adivinar.
+
+**Dónde:** Inventario → Productos → abre el producto → **Corregir la ficha** →
+**De dónde es**.
 
 ---
 
-## Lo que trae esta entrega, y qué mirar
+## Lo que trae, y qué mirar
 
-### 1 · Sacar género ya no dice «gastado o vendido»
+### 1 · El «a cuánto lo vendes» se ha ido de la ficha
 
-**Dónde:** Inventario → Productos → el **−** rojo de cualquier fila.
+Tenías razón y era el modelo, no la pantalla. Un kilo de queso no tiene precio de
+venta: lo tiene **el plato** que lo lleva.
 
-Ahora el porqué va en tres grupos, y cada uno dice lo que significa:
+```
+lo que cuesta   ←  Inventario · el precio de compra, sin IVA
+cuánto lleva    ←  el escandallo (M9)
+a cuánto sale   ←  la carta (M10)
+lo que entró    ←  el cierre de caja, o el TPV (M20)
+```
 
-- **Se ha vendido** · ha entrado dinero; se cuenta en la caja del día.
-- **Se ha usado** · gastado en cocina, o a otro local. No entra dinero.
-- **No se ha aprovechado** · caducado, malo, roto, del personal, invitación… Eso
-  es merma, con su partida.
+**Qué tiene que salir:** en la ficha de un producto **ya no hay** «Lo que deja» ni
+«Poner precio de venta». Y al sacar género y decir «Vendido a un cliente», tampoco
+se pregunta cuánto has cobrado: se apunta que se vendió, y el importe sale de la
+caja cuando la cierres.
 
-**Qué tiene que salir:** al pulsar **Vendido a un cliente** aparece «Cuánto has
-cobrado», y debajo: «Esto se cuenta en la caja del día». Al guardar: «7,50 €
-apuntados: salen propuestos al cerrar la caja de hoy».
+**Lo que se queda**, que era lo bueno: sigue distinguiendo **vendido**, **gastado
+en cocina** y **no aprovechado**.
 
-> **Por qué no se suma a las ganancias ahí mismo.** Porque el dinero de un día se
-> cuenta en un solo sitio, que es el cierre de caja. Si se sumara en los dos, el
-> día que además metes el Z **el día valdría el doble** y no habría forma de
-> verlo: el total del mes saldría mal y todo lo demás parecería correcto. Así que
-> lo que cobras queda apuntado y, al cerrar la caja, te sale propuesto con su
-> nombre y su importe. Lo añades de un toque, o no, si ese total ya viene del TPV.
+### 2 · De dónde es cada producto
 
-### 2 · La caja lo propone
+**Dónde:** Inventario → Productos. Al lado del buscador, **«De dónde»**: Todo ·
+Cocina · Sala · Limpieza, con cuántos hay en cada una.
 
-**Dónde:** Servicio → Jornada → **Cierre**, el mismo día en que hayas apuntado una
-venta.
+**Qué tiene que salir:**
 
-**Qué tiene que salir:** encima de las líneas, «Se ha vendido esto desde Inventario
-hoy», con lo vendido y su importe, y un botón **Añadirlas a la lista**.
+- Al elegir **Sala**, la lista trae solo lo de la barra, y **la categoría cuenta
+  dentro de sala**: ya no sale «Carnes (14)» para luego no enseñar ninguna.
+- Al elegir **Limpieza**, el desplegable de categoría **desaparece**. No se apaga:
+  no está. Son quince cosas y no llevan árbol.
+- Al **añadir un producto**, lo pregunta con tres botones grandes.
 
-### 3 · A cuánto lo vendes, y lo que te deja
+**Y lo que no se ve, que es la mitad:** un cocinero **no recibe** los productos de
+sala. No se le esconden en la pantalla: la base no se los da. Un camarero, al
+revés. Los dos ven lo de limpieza, porque los dos limpian. De jefe de cocina y
+jefe de sala para arriba, todo.
 
-**Dónde:** Inventario → Productos → abre un producto que vendas tal cual —un
-botellín, una copa— → **Poner precio de venta**.
+### 3 · Congelar una parte
 
-Pon lo que cobras, **con IVA**, tal cual está en la pizarra.
+**Dónde:** la ficha de un producto → **Congelar una parte**.
 
-**Qué tiene que salir:** debajo, «con el 10 % dentro, te entran 2,27 €». Y al
-guardar, la tarjeta **Lo que deja**: lo que entra, lo que cuesta, lo que queda y
-qué parte se va en género. Si el género se lleva más de un tercio, lo dice; si
-vendes por debajo de lo que te cuesta, sale en rojo.
+**Qué tiene que salir:** lo primero que te pregunta es **cuánto**, con lo que hay
+delante: «De 43 kg que hay». Y si escribes más de lo que hay, te lo dice y no te
+deja.
 
-> Esto **no es la carta**. Es para lo que se vende sin cocinar. El margen de un
-> plato sale de su escandallo, que es el módulo 9.
+Después, en la lista y en la ficha, sale **«10 kg congelados»** en vez de
+«congelado» a secas sobre los 43. Eso era lo que estaba mal.
 
-### 4 · El «sin verificar» naranja
+### 4 · El recuento · «esto es lo que hay»
 
-Ya no está en la lista, y no es que se haya escondido: **era un fallo**. El
-servidor volvía a marcar el producto cada vez que se guardaba su ficha, así que
-salía en todos y no había forma de quitarlo.
+**Dónde:** Inventario → Productos → **Hacer recuento**. (También en Movimientos →
+Recuento.)
 
-**Dónde está ahora:** en la ficha del producto, abajo, en **La ficha**.
+Se elige qué estás contando —cocina, sala o limpieza—, se escribe lo contado y
+cada producto pasa a valer eso. **No suma: cambia.**
 
-**Qué tiene que salir:** «Se aprovecha · 100 % · supuesto, sin medir», con un botón
-**Lo he medido**. Ahí se pesa lo que entra y lo que queda limpio, y Estook hace la
-cuenta y te dice cuánto sube o baja el coste **antes** de guardar.
+**Qué tiene que salir:**
 
-### 5 · La ficha del producto, de otra manera
+- Las casillas salen **en blanco**, y debajo, en pequeño, «El libro dice 43 kg».
+  No se rellenan con lo que había a propósito: una cifra puesta de antemano se
+  confirma sin mirar, y entonces el recuento no cuenta nada.
+- Al escribir, la diferencia sale al momento: **−5 kg** en rojo.
+- Al cerrar: cuántos has corregido, cuántos ya cuadraban, y **«Lo que más
+  bailaba»**, que es lo que se viene a mirar.
+- **Lo que no cuentes no se toca.** Si quieres vaciarlo, hay que decirlo, y antes
+  te dice cuántos productos se van a poner a cero.
 
-**Qué tiene que salir:** arriba, la categoría, el proveedor y el envase en
-pastillas; cada bloque en su tarjeta, con su botón a la derecha; y, si tienes
-mínimo puesto, una barra que dice de un vistazo si llegas.
+**Y si lo tienes en un fichero:** dos columnas —el producto y cuánto hay— y se
+sube. Lo que no encaje con ningún producto te lo dice con su número de fila. La
+foto sigue apagada con su motivo: leerla es Fogón, y es el módulo 22.
 
-### 6 · Las listas largas
+### 5 · El Panel
 
-**Dónde:** Inventario → **Movimientos**.
-
-**Qué tiene que salir:** arriba, «Hasta dónde miro», empezando por **los últimos
-tres meses**; el buscador encuentra cosas que no están en pantalla —porque ahora
-pregunta al servidor—; y abajo, **Ver más**, con cuántas llevas.
-
-Lo mismo en **Mermas**.
-
-### 7 · Deshacer
-
-**Dónde:** en la ficha de un producto, cambia el precio, o el precio de venta, o
-corrige la ficha.
-
-**Qué tiene que salir:** abajo, la barra oscura con **Deshacer** y una cuenta atrás
-de diez segundos. Pulsándola, vuelve lo de antes.
-
-**Lo que no lleva deshacer, y no es un olvido:** apuntar género. El libro de
-movimientos solo se añade —es lo que hace que la cámara se pueda auditar— y un
-movimiento equivocado se corrige con otro, que es «¿No cuadra lo que hay?».
+- **«Hola, Ricardo» se abre.** Dentro: lo que llevas fichado hoy, lo de la semana,
+  qué hay que atender y qué caduca.
+- **Las cifras grandes ya no se cortan**: eligen su tamaño según lo que ocupan.
+- **En el ordenador se estira**: en un monitor grande deja de estar en una columna
+  en el medio.
+- **«Tu género»** enseña una barra con cocina, sala y limpieza.
 
 > **Lo que salga raro, apúntalo tal cual**, con una foto si puedes.
 
 ---
 
-## Las cuatro claves que faltan
+## Lo que sigue pendiente, y es tuyo
 
-Ninguna frena lo que hay hecho. Cada una la estrena su entrega, y hasta entonces el
-sitio está hecho y apagado con su motivo.
+Las cuatro claves. **Ninguna frena lo que hay hecho:**
 
 | Clave                | Para qué                                    | Cuándo hace falta                 |
 | -------------------- | ------------------------------------------- | --------------------------------- |
 | **Places**           | Situar el local y buscarlo por su dirección | Entrega 5                         |
-| **Business Profile** | Leer tu ficha de Google y sus reseñas       | Entrega 5, con el acceso aprobado |
+| **Business Profile** | Tu ficha de Google y sus reseñas            | Entrega 5, con el acceso aprobado |
 | **Resend**           | Los avisos por correo                       | Entrega 2                         |
 | **La de IA**         | Que Fogón hable                             | M22                               |
 
@@ -170,6 +174,12 @@ Los pasos de las dos de Google, con sus topes, están abajo en el **paso 6**.
 ### `estook.com` · **hecho** (#46)
 
 Se fusionó y se desplegó la API. La web y la aplicación pintan en su dominio.
+
+### Las bases · **hechas** (#47)
+
+Vender dejó de ser lo mismo que gastar, la ficha se lee, el libro y las mermas van
+por tramos de tiempo, y volvió el deshacer. De ahí salió lo de esta entrega: el
+precio de venta estaba en el sitio equivocado, y lo dijiste en cuanto lo viste.
 
 ### La entrega 1 del repaso · **hecha** (#45)
 

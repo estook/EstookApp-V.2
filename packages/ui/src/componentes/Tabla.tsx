@@ -38,6 +38,32 @@ export interface TablaProps<T> {
   /** Que sale cuando no hay filas. Siempre hay algo: nunca una tabla en blanco. */
   readonly cuandoNoHay: ReactNode;
   readonly alPulsar?: (fila: T) => void;
+  /**
+   * Cómo se pinta una fila **en móvil**, cuando la tarjeta de pares no vale.
+   *
+   * ── Por qué esto existe ───────────────────────────────────────────────────
+   *
+   * Porque la tarjeta de pares —etiqueta y valor, uno por columna— es perfecta
+   * para una tabla de cinco filas y **imposible para una de trescientas**. Una
+   * lista de productos con cuatro columnas son cinco líneas por producto: en un
+   * móvil eso es un producto y medio por pantalla, y trescientos productos son
+   * doscientas pantallas de desplazamiento.
+   *
+   * Cuando se pasa esto, el móvil pinta lo que diga la pantalla —normalmente dos
+   * líneas: qué es, y las dos cifras que importan— y la tabla de escritorio se
+   * queda igual. Lo que sigue poniendo la pieza es lo que no se ve y cuesta
+   * acertar: el área de toque, el velo que hace pulsable la tarjeta entera y que
+   * los botones de dentro queden por encima de ese velo.
+   */
+  readonly filaCompacta?: (fila: T) => ReactNode;
+  /**
+   * Cómo se llama una fila, para el botón que la abre en la versión compacta.
+   *
+   * Sin esto, las trescientas filas tendrían un botón que se llama «Abrir», y un
+   * lector de pantalla leería trescientas veces lo mismo. Con esto dice «Abrir
+   * Cebolla», que es lo que hace falta para elegir una.
+   */
+  readonly nombreDeLaFila?: (fila: T) => string;
 }
 
 export function Tabla<T>({
@@ -47,6 +73,8 @@ export function Tabla<T>({
   claveDe,
   cuandoNoHay,
   alPulsar,
+  filaCompacta,
+  nombreDeLaFila,
 }: TablaProps<T>) {
   if (filas.length === 0) return <>{cuandoNoHay}</>;
 
@@ -107,14 +135,33 @@ export function Tabla<T>({
       </table>
 
       {/* ── Movil: la misma tabla, en tarjetas ────────────────────────────── */}
-      <ul className="flex flex-col gap-e2 md:hidden">
+      {/*
+        Con `filaCompacta`, una lista de verdad: sin hueco entre filas y con la
+        linea separadora, que es lo que deja recorrer trescientos productos con el
+        pulgar. Sin ella, las tarjetas de pares de siempre.
+      */}
+      <ul
+        className={clases(
+          'md:hidden',
+          filaCompacta === undefined
+            ? 'flex flex-col gap-e2'
+            : 'flex flex-col overflow-hidden rounded-medio border border-borde bg-superficie',
+        )}
+      >
         {filas.map((fila) => (
-          <li key={claveDe(fila)}>
+          <li
+            key={claveDe(fila)}
+            className={clases(
+              filaCompacta !== undefined && 'border-b border-borde last:border-b-0',
+            )}
+          >
             <ElementoDeTabla
               fila={fila}
               columnas={columnas}
               principal={principal}
               {...(alPulsar === undefined ? {} : { alPulsar })}
+              {...(filaCompacta === undefined ? {} : { compacta: filaCompacta })}
+              {...(nombreDeLaFila === undefined ? {} : { nombreDeLaFila })}
             />
           </li>
         ))}
@@ -128,14 +175,20 @@ function ElementoDeTabla<T>({
   columnas,
   principal,
   alPulsar,
+  compacta,
+  nombreDeLaFila,
 }: {
   readonly fila: T;
   readonly columnas: readonly Columna<T>[];
   readonly principal: Columna<T> | undefined;
   readonly alPulsar?: (fila: T) => void;
+  readonly compacta?: (fila: T) => ReactNode;
+  readonly nombreDeLaFila?: (fila: T) => string;
 }) {
   const pinta =
-    'block w-full min-h-toque text-left bg-superficie border border-borde rounded-medio p-e3';
+    compacta === undefined
+      ? 'block w-full min-h-toque text-left bg-superficie border border-borde rounded-medio p-e3'
+      : 'block w-full min-h-toque-cocina text-left bg-superficie px-e3 py-e2';
 
   const titulo = principal === undefined ? null : principal.celda(fila);
 
@@ -151,40 +204,65 @@ function ElementoDeTabla<T>({
     botones y enlaces de las celdas se ponen **por encima** de ese velo, y son
     los únicos que no abren la fila.
   */
-  const contenido = (
-    <>
-      {titulo !== null &&
-        (alPulsar === undefined ? (
-          <p className="text-seccion font-semibold">{titulo}</p>
-        ) : (
+  // La compacta la pinta la pantalla entera: el velo que hace pulsable la fila lo
+  // sigue poniendo la pieza, con un botón invisible por encima de todo.
+  const contenido =
+    compacta !== undefined ? (
+      <>
+        {alPulsar !== undefined && (
           <button
             type="button"
             className={clases(
-              'block w-full text-left text-seccion font-semibold',
-              "after:absolute after:inset-0 after:rounded-medio after:content-['']",
-              'focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-naranja',
+              "absolute inset-0 z-0 content-['']",
+              'focus-visible:outline-2 focus-visible:outline-naranja',
             )}
             onClick={() => {
               alPulsar(fila);
             }}
           >
-            {titulo}
+            <span className="sr-only">
+              {nombreDeLaFila === undefined ? 'Abrir' : `Abrir ${nombreDeLaFila(fila)}`}
+            </span>
           </button>
-        ))}
-      <dl className="mt-e2 grid grid-cols-[auto_1fr] gap-x-e3 gap-y-e1">
-        {columnas
-          .filter((columna) => columna.clave !== principal?.clave)
-          .map((columna) => (
-            <div key={columna.clave} className="contents">
-              <dt className="text-etiqueta uppercase tracking-wide text-texto-suave self-center">
-                {columna.titulo}
-              </dt>
-              <dd className="text-cuerpo text-right">{columna.celda(fila)}</dd>
-            </div>
+        )}
+        <div className="pointer-events-none relative [&_a]:pointer-events-auto [&_button]:pointer-events-auto">
+          {compacta(fila)}
+        </div>
+      </>
+    ) : (
+      <>
+        {titulo !== null &&
+          (alPulsar === undefined ? (
+            <p className="text-seccion font-semibold">{titulo}</p>
+          ) : (
+            <button
+              type="button"
+              className={clases(
+                'block w-full text-left text-seccion font-semibold',
+                "after:absolute after:inset-0 after:rounded-medio after:content-['']",
+                'focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-naranja',
+              )}
+              onClick={() => {
+                alPulsar(fila);
+              }}
+            >
+              {titulo}
+            </button>
           ))}
-      </dl>
-    </>
-  );
+        <dl className="mt-e2 grid grid-cols-[auto_1fr] gap-x-e3 gap-y-e1">
+          {columnas
+            .filter((columna) => columna.clave !== principal?.clave)
+            .map((columna) => (
+              <div key={columna.clave} className="contents">
+                <dt className="text-etiqueta uppercase tracking-wide text-texto-suave self-center">
+                  {columna.titulo}
+                </dt>
+                <dd className="text-cuerpo text-right">{columna.celda(fila)}</dd>
+              </div>
+            ))}
+        </dl>
+      </>
+    );
 
   return (
     <div

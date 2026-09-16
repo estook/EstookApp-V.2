@@ -160,7 +160,9 @@ test.describe('criterio · una camarera con dos locales elige donde esta', () =>
     // En el Panel, debajo del saludo, pone donde esta. Se busca en un parrafo a
     // proposito: los selectores de local llevan ese mismo texto dentro de sus
     // opciones, que estan escondidas hasta que se abren.
-    await expect(page.locator('main p').filter({ hasText: 'Bar Puerto' }).first()).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1 }).filter({ hasText: 'Bar Puerto' }),
+    ).toBeVisible();
   });
 
   test('y **no se le vuelve a preguntar** al recargar', async ({ page }) => {

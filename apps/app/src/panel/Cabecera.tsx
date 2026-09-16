@@ -1,4 +1,10 @@
+import { useState } from 'react';
+import { comoSeLeenLasHoras } from '@estook/dominio';
+import { puedeVer } from '@estook/permisos';
 import { Logo, clases } from '@estook/ui';
+import { IconoFlechaAbajo } from '@estook/iconos';
+import { usarFichar } from '../ganchos/usarFichar.ts';
+import { usarLoDeHoy } from '../ganchos/usarLoDeHoy.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -33,6 +39,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  */
 export function CabeceraDelPanel() {
   const { yo } = usarSesion();
+  const [abierta, setAbierta] = useState(false);
 
   const local = yo?.local ?? null;
   const donde = local?.nombre ?? yo?.organizacion?.nombre ?? '';
@@ -47,25 +54,162 @@ export function CabeceraDelPanel() {
         {...(color === null ? {} : { style: { background: color } })}
       />
 
-      <div className="flex flex-wrap items-center gap-e3 px-e4 py-e3">
-        <span
-          aria-hidden
-          className="grid size-[44px] shrink-0 place-items-center overflow-hidden rounded-medio border border-borde bg-fondo"
-        >
-          {local?.logo == null ? (
-            <Logo alto={16} />
-          ) : (
-            <img src={local.logo} alt="" className="max-h-[34px] max-w-[34px] object-contain" />
-          )}
-        </span>
+      {/*
+        ── Y se abre ────────────────────────────────────────────────────────
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-etiqueta uppercase tracking-wide text-texto-suave">{donde}</p>
-          <h1 className="truncate text-pantalla font-semibold">
-            Hola, {yo?.nombre.split(' ')[0] ?? ''}
-          </h1>
-        </div>
-      </div>
+        «Usar el "hola usuario" de arriba para hacer un desplegable con cosas:
+        avisos leves, avisos graves, horas trabajadas.» La cabecera ocupaba una
+        franja entera para decir dos cosas que ya se sabían —cómo te llamas y
+        dónde estás—; ahora eso es la portada de lo que sí se viene a mirar.
+
+        Se pide **al abrirla**, no al pintar el Panel: son dos consultas más, y el
+        Panel tiene un segundo entero para pintarse con un año de datos (B7). Si
+        ya están en la caché porque hay un widget que las usa, no se pide nada.
+      */}
+      {/*
+        El `h1` **envuelve al botón**, y no al revés.
+
+        Un `<button>` solo admite contenido de frase, así que un `<h1>` dentro es
+        HTML inválido; y quitar el `h1` dejaba al Panel —la primera pantalla de la
+        aplicación— **sin encabezado de nivel 1**, que es por donde entra quien
+        navega con un lector de pantalla. Lo cazaron trece pruebas de acceso a la
+        vez, y con razón.
+
+        Envolviéndolo se cumplen las dos cosas: sigue siendo el encabezado de la
+        pantalla y es el patrón de siempre para algo que se abre y se cierra.
+      */}
+      <h1>
+        <button
+          type="button"
+          aria-expanded={abierta}
+          onClick={() => {
+            setAbierta((antes) => !antes);
+          }}
+          className="flex w-full flex-wrap items-center gap-e3 px-e4 py-e3 text-left hover:bg-fondo"
+        >
+          <span
+            aria-hidden
+            className="grid size-[44px] shrink-0 place-items-center overflow-hidden rounded-medio border border-borde bg-fondo"
+          >
+            {local?.logo == null ? (
+              <Logo alto={16} />
+            ) : (
+              <img src={local.logo} alt="" className="max-h-[34px] max-w-[34px] object-contain" />
+            )}
+          </span>
+
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-etiqueta uppercase tracking-wide text-texto-suave">
+              {donde}
+            </span>
+            <span className="block truncate text-pantalla font-semibold">
+              Hola, {yo?.nombre.split(' ')[0] ?? ''}
+            </span>
+          </span>
+
+          <span
+            aria-hidden
+            className={clases(
+              'shrink-0 text-texto-suave transition-transform duration-rapido',
+              abierta && 'rotate-180',
+            )}
+          >
+            <IconoFlechaAbajo size={20} />
+          </span>
+          <span className="sr-only">{abierta ? 'Cerrar el resumen' : 'Ver tu resumen'}</span>
+        </button>
+      </h1>
+
+      {abierta && <TuResumen />}
     </header>
+  );
+}
+
+/**
+ * Lo tuyo de hoy, en cuatro cifras.
+ *
+ * ── Qué entra aquí, y qué no ────────────────────────────────────────────────
+ *
+ * Entra **lo que es de esta persona y de hoy**: lo que lleva fichado, lo que hay
+ * que atender, lo que caduca esta semana. No entra ni una cifra de dinero, y no
+ * es una omisión: esto se abre en la primera pantalla del día, delante de quien
+ * pase por al lado, y lo que vale la cámara ya tiene su widget para quien lo
+ * pueda ver.
+ *
+ * Y lo que no se puede contestar **no se pinta con un cero**: sin la app de
+ * Inventario en el acceso, esas dos cifras no están. Un cero significa «no hay
+ * nada que atender», que es lo contrario de «no lo puedes ver».
+ */
+function TuResumen() {
+  const { permisos } = usarSesion();
+  const fichaje = usarFichar();
+  const hoy = usarLoDeHoy();
+  const veInventario = puedeVer(permisos, 'app.inventario');
+
+  const atencion = hoy.data?.atencion.length ?? 0;
+  const caducan = hoy.data?.caducan.length ?? 0;
+  const minutos = fichaje.mio?.minutosDeHoy ?? 0;
+  const deLaSemana = fichaje.mio?.minutosDeLaSemana ?? 0;
+
+  return (
+    <div className="anima-desplegar border-t border-borde px-e4 py-e3">
+      <dl className="grid gap-e3 sm:grid-cols-2 lg:grid-cols-4">
+        <Dato
+          que="Llevas hoy"
+          valor={comoSeLeenLasHoras(minutos)}
+          detalle={
+            fichaje.mio?.abierto == null
+              ? 'Sin fichar ahora mismo'
+              : `Dentro desde las ${fichaje.mio.abierto.entroEn.slice(11, 16)}`
+          }
+        />
+        <Dato que="Esta semana" valor={comoSeLeenLasHoras(deLaSemana)} detalle="De lunes a hoy" />
+
+        {veInventario && (
+          <>
+            <Dato
+              que="Hay que atender"
+              valor={String(atencion)}
+              tono={atencion > 0 ? 'atencion' : 'bien'}
+              detalle={atencion === 0 ? 'Nada bajo mínimo' : 'Bajo mínimo o agotado'}
+            />
+            <Dato
+              que="Caduca esta semana"
+              valor={String(caducan)}
+              tono={caducan > 0 ? 'atencion' : 'bien'}
+              detalle={caducan === 0 ? 'Nada con fecha cerca' : 'Lotes con fecha'}
+            />
+          </>
+        )}
+      </dl>
+    </div>
+  );
+}
+
+function Dato({
+  que,
+  valor,
+  detalle,
+  tono = 'neutro',
+}: {
+  readonly que: string;
+  readonly valor: string;
+  readonly detalle: string;
+  readonly tono?: 'neutro' | 'bien' | 'atencion';
+}) {
+  return (
+    <div className="rounded-medio border border-borde bg-fondo px-e3 py-e2">
+      <dt className="text-etiqueta uppercase tracking-wide text-texto-suave">{que}</dt>
+      <dd
+        className={clases(
+          'text-seccion font-semibold tabular-nums',
+          tono === 'atencion' && 'text-atencion',
+          tono === 'bien' && 'text-bien',
+        )}
+      >
+        {valor}
+      </dd>
+      <dd className="text-etiqueta text-texto-tenue">{detalle}</dd>
+    </div>
   );
 }

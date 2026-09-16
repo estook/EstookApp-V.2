@@ -568,7 +568,19 @@ function Formulario({
                         · {v.unidades.toLocaleString('es-ES')}
                       </span>
                     </span>
-                    <span className="font-medium">{comoDinero(v.importeCentimos)}</span>
+                    {/*
+                      El importe sale de lo que costó ese mismo concepto la última
+                      vez que se cerró la caja, **no del producto**: un ingrediente
+                      no tiene precio de venta. Si nunca se ha cerrado, se dice que
+                      falta en vez de inventarlo.
+                    */}
+                    <span className="font-medium">
+                      {v.precioUnidadCentimos === null ? (
+                        <span className="font-normal text-texto-suave">pon tú el importe</span>
+                      ) : (
+                        comoDinero(v.precioUnidadCentimos * v.unidades)
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -581,8 +593,14 @@ function Formulario({
                       ...porPoner.map((v) => ({
                         concepto: v.concepto,
                         unidades: String(v.unidades),
-                        importe: v.importeCentimos as Centimos,
-                        importeTocado: true,
+                        importe:
+                          v.precioUnidadCentimos === null
+                            ? null
+                            : ((v.precioUnidadCentimos * v.unidades) as Centimos),
+                        // Sin tocar cuando no se sabía: así, si luego se escribe
+                        // el concepto de otra forma, el importe se vuelve a
+                        // proponer solo en vez de quedarse en blanco para siempre.
+                        importeTocado: v.precioUnidadCentimos !== null,
                       })),
                     ]);
                   }}

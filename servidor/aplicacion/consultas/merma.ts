@@ -502,6 +502,15 @@ export const productosParaMerma = consulta<
          -- Es la misma regla que ya cumplían el resto de las consultas de este
          -- fichero desde M6½; esta se quedó atrás.
          and not p.es_ejemplo
+         -- ── Y aquí **no** se filtra por zona, a propósito ──────────────────
+         --
+         -- «La merma la apunta quien la rompe» (0026), y una camarera que tira
+         -- una nata de la cámara tiene que poder apuntarla. Filtrar esto por la
+         -- zona de cada uno dejaba a la camarera sin poder decir lo que se le
+         -- había caído, que es justo para lo que se construyó esta pantalla.
+         --
+         -- La zona acota **lo que cada uno gestiona** —la lista de Inventario y
+         -- la ficha—, no lo que puede romper (0038).
          and (
            ${texto} = ''
            or estook.sin_acentos(p.nombre) like '%' || estook.sin_acentos(${texto}) || '%'

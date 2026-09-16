@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { NOMBRE_DEL_ESTADO } from '@estook/dominio';
+import {
+  NOMBRE_DEL_ESTADO,
+  NOMBRE_DE_LA_ZONA,
+  ZONAS,
+  llevaCategorias,
+  type Zona,
+} from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import {
   Aviso,
@@ -13,9 +19,10 @@ import {
   Selector,
   Tabla,
   Tarjeta,
+  clases,
   type Columna,
 } from '@estook/ui';
-import { IconoAnadir, IconoBuscar, IconoQuitar } from '@estook/iconos';
+import { IconoAnadir, IconoBuscar, IconoDocumento, IconoQuitar } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -82,6 +89,15 @@ export function Productos({
 
   const [texto, setTexto] = useState('');
   const [categoriaId, setCategoriaId] = useState('');
+  /**
+   * De qué zona se está mirando. Vacío es «todas las que veo».
+   *
+   * Es un filtro y **no es lo que protege el dato**: un cocinero no ve los
+   * productos de sala aunque elija «Sala», porque la política de la tabla no se
+   * los da. Aquí solo se elige qué mirar de lo que ya se puede ver.
+   */
+  const [zona, setZona] = useState<Zona | ''>('');
+  const hayCategorias = zona === '' || llevaCategorias(zona);
   const [creando, setCreando] = useState(false);
   const [ofrecerQuitarEjemplos, setOfrecerQuitarEjemplos] = useState(false);
   const [quitando, setQuitando] = useState(false);
@@ -109,6 +125,12 @@ export function Productos({
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
 
   const puedeTocar = puedeEditar(permisos, 'app.inventario');
+  const puedeContar = puedeEditar(permisos, 'accion.cerrar_recuento');
+
+  /** A la vista de recuento, que vive en Movimientos. */
+  function alRecuento() {
+    window.location.hash = '#/inventario/movimientos/recuento';
+  }
 
   // «Añadir un producto» es una acción del catálogo, y se puede pulsar desde el
   // Panel y desde el buscador: llega como `?hacer=nuevo`.
@@ -131,11 +153,14 @@ export function Productos({
             : {};
 
   const consulta = useQuery({
-    queryKey: ['mis_productos', texto, categoriaId, vista],
+    queryKey: ['mis_productos', texto, categoriaId, vista, zona],
     queryFn: async (): Promise<MisProductos> => {
       const respuesta = await cliente.consultar<MisProductos>('mis_productos', {
         ...(texto.trim() === '' ? {} : { texto: texto.trim() }),
-        ...(categoriaId === '' ? {} : { categoria_id: categoriaId }),
+        ...(zona === '' ? {} : { zona }),
+        // En limpieza no hay categorías, así que tampoco se manda la que hubiera
+        // quedado puesta al cambiar de zona: sería filtrar por algo invisible.
+        ...(categoriaId === '' || !hayCategorias ? {} : { categoria_id: categoriaId }),
         ...deLaVista,
       });
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
@@ -197,7 +222,13 @@ export function Productos({
             {p.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
             {!p.activo && <Etiqueta>desactivado</Etiqueta>}
             {/* Lo que hay en el congelador, para tenerlo en mente sin abrirlo. */}
-            {p.congelado && <Etiqueta tono="info">congelado</Etiqueta>}
+            {p.congelado && (
+              <Etiqueta tono="info">
+                {p.congeladoCuanto === null
+                  ? 'congelado'
+                  : `${conUnidadDeUso(p.congeladoCuanto, p.unidadDeUso)} congelados`}
+              </Etiqueta>
+            )}
             {/*
               ── Aquí había una etiqueta naranja de «sin verificar», y se va ───
 
@@ -274,30 +305,22 @@ export function Productos({
             numerica: true,
             celda: (p: ProductoEnLista) => (
               <span className="flex justify-end gap-e1">
-                <button
-                  type="button"
-                  aria-label={`Ha llegado ${p.nombre}`}
-                  onClick={(evento) => {
-                    evento.stopPropagation();
+                <BotonDeApuntar
+                  que="entrada"
+                  producto={p}
+                  onClick={() => {
                     setApuntado(null);
                     setMoviendo({ producto: p, que: 'entrada' });
                   }}
-                  className="grid size-[40px] place-items-center rounded-medio border border-bien/40 bg-bien/10 text-bien hover:bg-bien/20"
-                >
-                  <IconoAnadir size={20} />
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Ha salido ${p.nombre}`}
-                  onClick={(evento) => {
-                    evento.stopPropagation();
+                />
+                <BotonDeApuntar
+                  que="salida"
+                  producto={p}
+                  onClick={() => {
                     setApuntado(null);
                     setMoviendo({ producto: p, que: 'salida' });
                   }}
-                  className="grid size-[40px] place-items-center rounded-medio border border-mal/40 bg-mal/10 text-mal hover:bg-mal/20"
-                >
-                  <IconoQuitar size={20} />
-                </button>
+                />
               </span>
             ),
           } satisfies Columna<ProductoEnLista>,
@@ -365,21 +388,70 @@ export function Productos({
           />
         </div>
 
+        {/*
+          ── De dónde es, al lado de la categoría ────────────────────────────
+
+          «Ahora la categoría es del total de productos que hay, pero vamos a
+          cambiar esto.» Y se cambia entero: primero se elige el almacén —cocina,
+          sala o limpieza— y la categoría pasa a ser el índice **de ese almacén**,
+          con sus cuentas ya hechas sobre él.
+
+          Y en limpieza el desplegable de categoría **no se esconde: no está**.
+          Son quince cosas y no llevan árbol; un control apagado obliga a mirarlo
+          para descubrir que no sirve.
+        */}
         <div className="min-w-[12rem]">
           <Selector
-            etiqueta="Categoría"
-            opciones={datos.categorias.map((c) => ({
-              valor: c.id,
-              texto: `${c.nombre} (${c.cuantos})`,
+            etiqueta="De dónde"
+            opciones={ZONAS.filter((z) => cuantosDeLaZona(datos, z) > 0 || z === zona).map((z) => ({
+              valor: z,
+              texto: `${NOMBRE_DE_LA_ZONA[z]} (${cuantosDeLaZona(datos, z)})`,
             }))}
-            sinElegir="Todas"
-            cuandoNoHay="Este local todavía no tiene categorías"
-            value={categoriaId}
+            sinElegir="Todo"
+            cuandoNoHay="Todavía no tienes género"
+            value={zona}
             onChange={(e) => {
-              setCategoriaId(e.currentTarget.value);
+              const elegida = e.currentTarget.value as Zona | '';
+              setZona(elegida);
+              // Al cambiar de almacén, la categoría de antes deja de significar
+              // nada: «Carnes» no existe en sala. Se suelta en vez de dejarla
+              // puesta filtrando a cero.
+              setCategoriaId('');
             }}
           />
         </div>
+
+        {hayCategorias && (
+          <div className="min-w-[12rem]">
+            <Selector
+              etiqueta="Categoría"
+              opciones={datos.categorias
+                .filter((c) => c.cuantos > 0 || c.id === categoriaId)
+                .map((c) => ({
+                  valor: c.id,
+                  texto: `${c.nombre} (${c.cuantos})`,
+                }))}
+              sinElegir="Todas"
+              cuandoNoHay="Aquí todavía no hay categorías"
+              value={categoriaId}
+              onChange={(e) => {
+                setCategoriaId(e.currentTarget.value);
+              }}
+            />
+          </div>
+        )}
+
+        {/*
+          «Hacer recuento» al lado de «Añadir producto»: es la otra cosa que se
+          hace desde esta pantalla con la lista delante, y es donde se busca. La
+          vista vive en Movimientos —un recuento es un movimiento— y se llega con
+          un enlace, no duplicando la pantalla.
+        */}
+        {puedeContar && (
+          <Boton tono="secundario" icono={<IconoDocumento size={18} />} onClick={alRecuento}>
+            Hacer recuento
+          </Boton>
+        )}
 
         {puedeTocar && (
           <Boton
@@ -410,6 +482,74 @@ export function Productos({
           alPulsar={(p) => {
             alAbrirProducto(p.id);
           }}
+          /*
+            ── En móvil, dos líneas por producto ──────────────────────────────
+
+            La tarjeta de pares de siempre ponía cinco: el nombre y luego «EN
+            CÁMARA», «DURA», «COSTE» y «APUNTAR», cada una en su fila. Eso es un
+            producto y medio por pantalla, y con trescientos productos la lista
+            deja de poder recorrerse.
+
+            Aquí va lo que se mira de verdad al buscar algo en la cámara: qué es,
+            cuánto queda y cómo está. El coste va debajo en pequeño y el resto
+            —el ritmo, la previsión, la sugerencia— está en la ficha, que se abre
+            de un toque.
+          */
+          nombreDeLaFila={(p) => p.nombre}
+          filaCompacta={(p) => (
+            <div className="flex items-center gap-e3">
+              <span className="min-w-0 flex-1">
+                <span className="flex flex-wrap items-center gap-x-e2">
+                  <span className={clases('font-medium', p.esEjemplo && 'text-texto-suave')}>
+                    {p.nombre}
+                  </span>
+                  {p.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
+                  {!p.activo && <Etiqueta>desactivado</Etiqueta>}
+                </span>
+                <span className="block truncate text-etiqueta text-texto-tenue">
+                  {[
+                    p.formato,
+                    datos.puedeVerPrecios && p.costePorUnidad !== null ? p.costePorUnidad : null,
+                    p.congelado
+                      ? p.congeladoCuanto === null
+                        ? 'congelado'
+                        : `${conUnidadDeUso(p.congeladoCuanto, p.unidadDeUso)} congelados`
+                      : null,
+                  ]
+                    .filter((trozo) => trozo !== null && trozo !== '')
+                    .join(' · ')}
+                </span>
+              </span>
+
+              <span className="shrink-0 text-right">
+                <span className="block font-semibold tabular-nums">
+                  {conUnidadDeUso(p.cantidad, p.unidadDeUso)}
+                </span>
+                <Etiqueta tono={TONO_DEL_ESTADO[p.estado]}>{NOMBRE_DEL_ESTADO[p.estado]}</Etiqueta>
+              </span>
+
+              {puedeTocar && vista !== 'desactivados' && (
+                <span className="flex shrink-0 gap-e1">
+                  <BotonDeApuntar
+                    que="entrada"
+                    producto={p}
+                    onClick={() => {
+                      setApuntado(null);
+                      setMoviendo({ producto: p, que: 'entrada' });
+                    }}
+                  />
+                  <BotonDeApuntar
+                    que="salida"
+                    producto={p}
+                    onClick={() => {
+                      setApuntado(null);
+                      setMoviendo({ producto: p, que: 'salida' });
+                    }}
+                  />
+                </span>
+              )}
+            </div>
+          )}
           cuandoNoHay={
             <SinNada
               vista={vista}
@@ -604,5 +744,57 @@ function SinNada({
         ? {}
         : { sinAccionPorque: 'Tu acceso permite mirar el género, no darlo de alta.' })}
     />
+  );
+}
+
+/**
+ * Cuántos productos activos hay en una zona.
+ *
+ * Lo cuenta el servidor sobre el local entero y no la pantalla sobre lo que ha
+ * llegado: la lista viene acotada a cincuenta, y contar lo traído diría «Sala
+ * (0)» en un local con trescientas botellas. Es el mismo motivo por el que las
+ * vistas de arriba son filtros del servidor y no recortes al llegar.
+ */
+function cuantosDeLaZona(datos: MisProductos, zona: Zona): number {
+  return datos.porZona.find((z) => z.zona === zona)?.cuantos ?? 0;
+}
+
+/**
+ * El **+** verde y el **−** rojo de cada fila.
+ *
+ * Están en la tabla de escritorio y en la fila compacta del móvil, así que viven
+ * aquí: dos copias del mismo botón acaban siendo dos botones distintos, y este en
+ * concreto es el gesto que más se repite en Inventario —cuarenta veces en un día
+ * normal—.
+ */
+function BotonDeApuntar({
+  que,
+  producto,
+  onClick,
+}: {
+  readonly que: 'entrada' | 'salida';
+  readonly producto: ProductoEnLista;
+  readonly onClick: () => void;
+}) {
+  const entra = que === 'entrada';
+  return (
+    <button
+      type="button"
+      aria-label={`${entra ? 'Ha llegado' : 'Ha salido'} ${producto.nombre}`}
+      onClick={(evento) => {
+        // La fila entera abre la ficha: sin esto, apuntar dos kilos abriría
+        // además el panel de al lado.
+        evento.stopPropagation();
+        onClick();
+      }}
+      className={clases(
+        'grid size-[40px] place-items-center rounded-medio border transition-colors duration-rapido',
+        entra
+          ? 'border-bien/40 bg-bien/10 text-bien hover:bg-bien/20'
+          : 'border-mal/40 bg-mal/10 text-mal hover:bg-mal/20',
+      )}
+    >
+      {entra ? <IconoAnadir size={20} /> : <IconoQuitar size={20} />}
+    </button>
   );
 }

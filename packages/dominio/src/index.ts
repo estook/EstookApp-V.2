@@ -400,10 +400,33 @@ export {
 } from './salida.ts';
 export type { FamiliaDeSalida, MotivoDeSalida, QueEsUnaSalida } from './salida.ts';
 
+// ── M7 · las apps conectadas · de dónde es cada producto ────────────────────
+//
+// El precio de venta **no** vive aquí: vive en la carta (M10), y lo que cuesta
+// sale del escandallo (M9). Lo que vive aquí es de dónde es el género y quién lo
+// ve, que es lo que ordena Inventario.
 export {
-  FOOD_COST_QUE_PREOCUPA,
-  ivaDeVentaPorDefecto,
-  margenDe,
-  comoEstaElMargen,
-} from './margen.ts';
-export type { Margen } from './margen.ts';
+  ZONAS,
+  NOMBRE_DE_LA_ZONA,
+  QUE_ES_CADA_ZONA,
+  ZONAS_DEL_ROL,
+  llevaCategorias,
+  esZona,
+  zonasDe,
+} from './zona.ts';
+export type { Zona } from './zona.ts';
+
+// ── M7 · el recuento · «esto es lo que hay», y la desviación que sale ───────
+export {
+  QUE_HAGO_CON_LO_QUE_FALTA,
+  NOMBRE_DE_LO_QUE_FALTA,
+  QUE_ES_LO_QUE_FALTA,
+  esQueHagoConLoQueFalta,
+  leerUnCsvDeRecuento,
+} from './recuento.ts';
+export type {
+  LoContado,
+  QueHagoConLoQueFalta,
+  LineaDeRecuento,
+  LoQueTraeElRecuento,
+} from './recuento.ts';

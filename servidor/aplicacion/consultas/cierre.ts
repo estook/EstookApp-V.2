@@ -5,6 +5,7 @@ import {
   jornadaDe,
   masDias,
   porcentajeDe,
+  claveDePlato,
   precioPorUnidad,
   sinAcentos,
 } from '@estook/dominio';
@@ -180,7 +181,7 @@ export const misCierres = consulta<EntradaMisCierres, SalidaMisCierres>({
                 where m.local_id = c.local_id
                   and m.fecha_operativa = c.fecha_operativa
                   -- Y las ventas (0034): género que salió de la cámara y se
-                  -- cobró sigue siendo género que salió, y cuesta lo que costó.
+                  -- vendió sigue siendo género que salió, y cuesta lo que costó.
                   and m.tipo in ('salida', 'merma', 'venta', 'consumo')
                   and not pr.es_ejemplo
              ) as consumo
@@ -266,7 +267,15 @@ export interface SalidaUnCierre {
   readonly vendidoEnCamara: readonly {
     readonly concepto: string;
     readonly unidades: number;
-    readonly importeCentimos: number;
+    /**
+     * Lo que costó la última vez que se cerró ese concepto, si se sabe (0035).
+     *
+     * **No sale del producto**: un ingrediente no tiene precio de venta. Sale de
+     * lo que ya se apuntó en un cierre anterior, que es lo más cerca que está hoy
+     * de la carta. Cuando exista la carta (M10), saldrá de ella y esta línea no
+     * se entera.
+     */
+    readonly precioUnidadCentimos: number | null;
     /** Si ese concepto ya está entre las líneas del cierre: no se añade dos veces. */
     readonly yaEstaPuesto: boolean;
   }[];
@@ -356,21 +365,21 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
 
     // ── Lo vendido desde Inventario esa jornada ──────────────────────────────
     //
-    // Agrupado por producto y con lo que se cobró sumado. Se piden solo las que
-    // llevan importe: una venta apuntada sin acordarse de a cuánto no puede
-    // proponer un euro, y proponerlo a cero sería inventarse la cifra.
-    const vendido = await contexto.sql<{ concepto: string; unidades: string; importe: string }[]>`
-      select p.nombre as concepto,
-             sum(abs(m.cantidad))::text as unidades,
-             sum(m.ingreso_centimos)::text as importe
+    // Agrupado por producto y **con sus unidades, no con un importe**: un
+    // ingrediente no tiene precio de venta (0035). El importe, si se sabe, sale
+    // de lo que costó ese mismo concepto la última vez que se cerró la caja —que
+    // es lo que hay más cerca de una carta hasta que exista la carta— y se
+    // calcula abajo, con `precioDe`.
+    const vendido = await contexto.sql<{ concepto: string; unidades: string }[]>`
+      select p.nombre as concepto, sum(abs(m.cantidad))::text as unidades
         from estook.movimiento_de_stock m
         join estook.producto p on p.id = m.producto_id
        where m.local_id = ${localId}
          and m.fecha_operativa = ${fecha}::date
-         and m.ingreso_centimos is not null
+         and m.tipo::text = 'venta'
          and not p.es_ejemplo
        group by p.nombre
-       order by sum(m.ingreso_centimos) desc
+       order by sum(abs(m.cantidad)) desc
        limit 100
     `;
 
@@ -409,12 +418,19 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
           ? []
           : [{ clave: plato.clave, concepto: plato.concepto, precioUnidadCentimos: precio }];
       }),
-      vendidoEnCamara: vendido.map((v) => ({
-        concepto: v.concepto,
-        unidades: Number(v.unidades),
-        importeCentimos: Number(v.importe),
-        yaEstaPuesto: yaPuestos.has(sinAcentos(v.concepto.trim().toLowerCase())),
-      })),
+      vendidoEnCamara: vendido.map((v) => {
+        const conocido = conocidos.find((p) => p.clave === claveDePlato(v.concepto));
+        const precio =
+          conocido === undefined
+            ? null
+            : precioPorUnidad(Number(conocido.importe), Number(conocido.unidades));
+        return {
+          concepto: v.concepto,
+          unidades: Number(v.unidades),
+          precioUnidadCentimos: precio,
+          yaEstaPuesto: yaPuestos.has(sinAcentos(v.concepto.trim().toLowerCase())),
+        };
+      }),
     };
   },
 });

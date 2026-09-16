@@ -49,6 +49,14 @@ export interface Contexto {
    * **dice que Google no está conectado** en vez de romperse (0022, 0040).
    */
   readonly google: LugaresDeGoogle | null;
+  /**
+   * Desde qué dirección llega la petición, tal como la ve la API, o nulo (0041).
+   *
+   * **Solo para la auditoría del admin.** No decide nada: una dirección se puede
+   * falsear y cambia en cada red móvil. Sirve para leer después «desde dónde se
+   * hizo», que es lo que se pregunta cuando algo no cuadra.
+   */
+  readonly desde: string | null;
 }
 
 /**
@@ -130,6 +138,23 @@ export interface Puertas {
    * cuarenta.
    */
   readonly enDemostracion?: true;
+  /**
+   * **Solo para el admin** (0041). La operación exige una sesión abierta desde el
+   * admin, de una persona con acceso vivo y **con el segundo factor montado**.
+   *
+   * Lo comprueba el despachador antes de ejecutar nada, igual que las otras
+   * puertas. Y al revés también: una sesión del admin no vale para ninguna
+   * operación que no lo declare, así que un token del admin robado no abre la
+   * app de nadie, y uno de la app no abre el admin.
+   */
+  readonly soloAdmin?: true;
+  /** Además de admin, con este nivel. Hoy solo existe la exigencia de «total». */
+  readonly nivelDeAdmin?: 'total';
+  /**
+   * Una operación de la app que también se usa desde el admin: salir, cambiar la
+   * contraseña y montar el segundo factor. Son de la persona, no del sitio.
+   */
+  readonly tambienEnElAdmin?: true;
 }
 
 export interface Consulta<Entrada, Salida> extends Puertas {

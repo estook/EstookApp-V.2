@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 16 de septiembre de 2026 · **M7: el Panel vivo fusionado (#49); el local en Google no llegó a `main` y lo lleva la #51. Pausa antes de M8: las veinte mejoras de Richi y el panel de administración, con su plan escrito**
+Última actualización: 16 de septiembre de 2026 · **Antes de M8: los planes de las mejoras y del admin (#52), y la primera entrega hecha, A1 · la puerta del admin. El local en Google va a `main` con la #51**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -14,20 +14,21 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                                                      |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel    |
-| **Ahora**      | **La #51** lleva el local en Google a `main`. Después, **las mejoras y el admin antes de M8**, empezando por **la puerta del admin** |
-| **Pruebas**    | 998 unitarias y de base de datos · 361 de pantalla en escritorio y móvil, en verde · catálogo **109 de 115** (95 %)                  |
-| **Rama**       | `mejoras-y-admin-el-plan`: solo documentos. Sale de la de Google, así que **se fusiona después de la #51**                           |
-| **Base**       | En Supabase, **35** y 51 tablas (comprobado el 16-sep). Con la #51, **36** y 52: la `0036` trae la ficha de Google y su contador     |
-| **API**        | Desplegada con lo de la #48. **Hay que volver a desplegarla**: `un_indicador` y los tres comandos de Google                          |
-| **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar. El admin, todavía sin puerta                 |
-| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                                |
+|                |                                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel     |
+| **Ahora**      | **Antes de M8**: A1, **la puerta del admin**, hecha y sin fusionar. Antes van la #51 (Google a `main`) y la #52 (los planes)          |
+| **Pruebas**    | 1.021 unitarias y de base de datos · 367 de pantalla en escritorio y móvil, en verde · catálogo **115 de 121** (95 %)                 |
+| **Rama**       | `m7-admin-la-puerta`, sobre `mejoras-y-admin-el-plan` (#52), que sale de la de Google (#51). **Se fusionan en ese orden**             |
+| **Base**       | En Supabase, **35** y 51 tablas (comprobado el 16-sep). En el código, **37**: la `0036` (Google) y la `0037`, el esquema `plataforma` |
+| **API**        | Desplegada con lo de la #48. **Hay que volver a desplegarla**: `un_indicador`, Google y la puerta del admin                           |
+| **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar. El admin, con `bd:dar-admin` al fusionar      |
+| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                                 |
 
-> **Lo de ahora:** fusionar la #51, aplicar la `0036` y volver a desplegar la API
-> ([`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md)). Y leer los dos
-> planes nuevos: **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)** y
+> **Lo de ahora:** fusionar la #51, la #52 y la puerta del admin, aplicar la `0036` y la
+> `0037`, desplegar la API y darse acceso con `bd:dar-admin`: todo en
+> **[`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)**. Los planes:
+> **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)** y
 > **[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md)**. **M8 no
 > empieza hasta que los dos estén al 100 %.**
 
@@ -62,24 +63,27 @@ qué aprueba una persona).
 
 ### Ahora mismo · es de Richi
 
-Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden:
+Los pasos, en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md), en orden:
 
-1. **Fusionar la #51**, que lleva el local en Google a `main`: la #50 se fusionó en la
-   rama del Panel y no llegó. **Después**, el pull request de los planes. Al fusionar
-   se publica solo.
-2. **`bd:migrar`** y **`bd:comprobar`**: 36 de 36 y 52 tablas.
+1. **Fusionar la #51** (Google a `main`: la #50 se fusionó en la rama del Panel y no
+   llegó), **después la #52** (los planes) y **después la puerta del admin**. Al
+   fusionar se publica solo.
+2. **`bd:migrar`** y **`bd:comprobar`**: 37 de 37, 52 tablas en `estook` y las dos de
+   `plataforma`.
 3. **Desplegar la API** (Actions → Desplegar la API → `desplegar`) y
-   **`bd:comprobar-api`**: tiene que conocer `un_indicador` y los de Google.
-4. **Mirarlo en el TPV y en el móvil**: mantener pulsado un widget, arrastrarlo,
-   ponerse una cifra desde «Añadir».
-5. **La clave de Places** (`GOOGLE_MAPS_KEY`) en los secretos de Supabase, **nueva**
+   **`bd:comprobar-api`**.
+4. **`bd:dar-admin estookapp@gmail.com "Estook"`**, entrar en `estook.com/admin/`,
+   ponerse contraseña y montar el segundo factor. **La contraseña del chat no se usa.**
+5. **Mirar el Panel vivo en el TPV y en el móvil**, si no está hecho: mantener pulsado
+   un widget, arrastrarlo, ponerse una cifra desde «Añadir».
+6. **La clave de Places** (`GOOGLE_MAPS_KEY`) en los secretos de Supabase, **nueva**
    —las de antes pasaron por un chat—, con su cuota diaria y su aviso de presupuesto.
    Se enciende sin desplegar.
-6. **Repasar las zonas de tu género**, si no está hecho: lo de limpieza va a mano
+7. **Repasar las zonas de tu género**, si no está hecho: lo de limpieza va a mano
    (Inventario → Productos → «De dónde»).
-7. **Quitarles el IVA a sus precios, una vez**, si no está hecho: Ajustes → «Tus
+8. **Quitarles el IVA a sus precios, una vez**, si no está hecho: Ajustes → «Tus
    precios de compra».
-8. **Lo que falta de fuera** —el acceso a Business Profile, Resend y la de IA—.
+9. **Lo que falta de fuera** —el acceso a Business Profile, Resend y la de IA—.
    **No frenan nada de lo que hay**: cada una la estrena su entrega
    ([`config/claves.md`](config/claves.md)).
 
@@ -218,8 +222,9 @@ hacía el libro—. Cuando un local lleve un año de albaranes, el tramo de tiem
 
 ## 3 · Lo que está vivo
 
-**Web:** https://estook.com · `/app/` · `/carta/` · `/admin/` (el catálogo del
-sistema de diseño está en `/admin/`). El DNS lo lleva Hostinger: cuatro registros
+**Web:** https://estook.com · `/app/` · `/carta/` · `/admin/` (hoy, el catálogo del
+sistema de diseño, a la vista; **con la puerta del admin pasa detrás del segundo
+factor**). El DNS lo lleva Hostinger: cuatro registros
 A a GitHub Pages y `www` por CNAME. La dirección vieja redirige sola
 ([0036](docs/decisiones/0036-la-direccion-es-estook-com.md)).
 
@@ -248,10 +253,10 @@ conectado. Todo en
 | Aplicación      | Peso inicial | De los cuales tipografía |
 | --------------- | ------------ | ------------------------ |
 | `app`           | **275,7 KB** | 106,1 KB                 |
-| `admin`         | 187,1 KB     | 106,1 KB                 |
+| `admin`         | **203,1 KB** | 106,1 KB                 |
 | `web` · `carta` | 166,3 KB     | 106,1 KB                 |
 
-La referencia es 250 y **se mide, no bloquea**. El local en Google sube `app` 1,8 KB
+La referencia es 250 y **se mide, no bloquea**. **La puerta del admin sube `admin` 16 KB**: TanStack Query y el cliente de la API, que la app ya llevaba; `app` no cambia. El local en Google sube `app` 1,8 KB
 —la tarjeta de Ajustes—. El Panel vivo la subió 3,5 KB —la
 tarjeta del indicador, la línea y la rejilla nueva— y **`@dnd-kit` no cuenta**: va en
 su propio trozo (17 KB) y solo se descarga al editar el Panel. Las apps conectadas subieron `app`
@@ -269,17 +274,37 @@ Recharts se siguen cargando aparte.**
 En una línea. **El detalle está en
 [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md).**
 
-| Módulo  | Qué dejó                                                                                         |
-| ------- | ------------------------------------------------------------------------------------------------ |
-| **M0**  | Monorepo, reglas, integración continua con el candado de `main`, publicación en GitHub Pages     |
-| **M1**  | Alcances, roles y permisos en la base, con seguridad por filas en cada tabla                     |
-| **M2**  | La API (Hono), el despachador de comandos y consultas, los motores de dinero, fechas e impuestos |
-| **M3**  | El sistema de diseño, el esqueleto de las ocho apps, la rueda y el buscador universal            |
-| **M4**  | El login propio, PIN, segundo factor, sesiones y el primer despliegue de verdad                  |
-| **M5**  | El alta en ocho pasos, el catálogo de referencia, los ejemplos y el modo demostración            |
-| **M6**  | Inventario: productos, el libro de movimientos, precio medio ponderado, lotes, previsión         |
-| **M6½** | La capa de producto: destinos y vistas, Panel en el servidor, merma, fichajes, caja y equipo     |
-| **M7**  | Compras y Calendario (#44); el repaso, las bases, las apps conectadas y el Panel vivo            |
+| Módulo   | Qué dejó                                                                                         |
+| -------- | ------------------------------------------------------------------------------------------------ |
+| **M0**   | Monorepo, reglas, integración continua con el candado de `main`, publicación en GitHub Pages     |
+| **M1**   | Alcances, roles y permisos en la base, con seguridad por filas en cada tabla                     |
+| **M2**   | La API (Hono), el despachador de comandos y consultas, los motores de dinero, fechas e impuestos |
+| **M3**   | El sistema de diseño, el esqueleto de las ocho apps, la rueda y el buscador universal            |
+| **M4**   | El login propio, PIN, segundo factor, sesiones y el primer despliegue de verdad                  |
+| **M5**   | El alta en ocho pasos, el catálogo de referencia, los ejemplos y el modo demostración            |
+| **M6**   | Inventario: productos, el libro de movimientos, precio medio ponderado, lotes, previsión         |
+| **M6½**  | La capa de producto: destinos y vistas, Panel en el servidor, merma, fichajes, caja y equipo     |
+| **M7**   | Compras y Calendario (#44); el repaso, las bases, las apps conectadas y el Panel vivo            |
+| **→ M8** | Los planes de las veinte mejoras y del admin; A1, la puerta del admin                            |
+
+### Antes de M8 · A1, la puerta del admin
+
+- **Ser admin es de la plataforma**: esquema `plataforma`, con `administrador` (nivel e
+  historia; nada se borra) y su `auditoria`, que solo se añade ([0041](docs/decisiones/0041-el-panel-de-administracion.md)).
+- **`estook.com/admin/` tiene puerta**: contraseña, **segundo factor obligatorio**,
+  sesión de **ocho horas** —lo impide la base— y guardada en `sessionStorage`.
+- **La sesión del admin y la de la app no se cruzan**, y el acceso se mira en cada
+  petición: quitarlo cierra la puerta en el siguiente paso.
+- **Administradores**: dar acceso (con cuenta nueva y clave de un solo uso, o con la
+  suya) y quitarlo con motivo; los dos piden **el código otra vez**. Nunca uno mismo,
+  nunca el último total. **Auditoría**, en frases, de cincuenta en cincuenta.
+- **`bd:dar-admin`** da el primer acceso desde la consola. El catálogo del sistema de
+  diseño, que se veía sin entrar, va detrás de la puerta.
+
+**Lo que se encontró:** que **la #50 nunca llegó a `main`** (regla 66); que los pasos
+de M7 mandaban escribir `.estook.cmd`, sin la barra, que PowerShell no encuentra; y
+que aquí ponía «dieciocho funciones `security definer`» cuando la prueba lista
+veinticuatro.
 
 ### M7 · el repaso, primera entrega
 
@@ -531,6 +556,12 @@ la capa superior del navegador— que es justo cuando hace falta.
     borra. La #50 apuntaba a la rama del Panel; al fusionarla, la #49 ya estaba en
     `main`, y Google acabó en una rama que nadie iba a fusionar. **Los pull requests
     van a `main`**, y si uno depende de otro, se dice y se fusiona en orden.
+67. **Una sesión vale para un sitio.** La del admin y la de la app no se cruzan aunque
+    sean de la misma persona, y lo decide el despachador, no la pantalla: un token
+    olvidado en la tablet del pase no puede abrir el admin.
+68. **Una pieza que se renderiza dos veces se busca por la que se ve.** La tabla pinta
+    la de escritorio y las tarjetas del móvil a la vez, una oculta: `getByText` a secas
+    encuentra dos, o la que no se ve (`filter({ visible: true })`).
 
 ---
 
@@ -608,7 +639,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`,
   `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0036`.** Se amplían con una `0037`, nunca se editan
+- **Las migraciones `0001` a `0037`.** Se amplían con una `0038`, nunca se editan
   (regla 2). Y al ampliar una función SQL, **se copia la original entera**.
 - **Un valor de un tipo enumerado no se quita**: Postgres no sabe hacerlo. Por eso
   la `0034` añade `venta` con `add value if not exists … after 'merma'`, y su
@@ -643,9 +674,15 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   (`apps/app/src/acciones/catalogo.tsx`).
 - **El catálogo de referencia** (`0021`): se corrige con una migración, no desde la
   aplicación.
-- **Las dieciocho funciones `security definer`.** Son la puerta de atrás del
-  sistema y están tasadas: una prueba las cuenta con sus nombres, y la última es
-  `zonas_que_ve`, que decide qué género gestiona cada uno ([0038](docs/decisiones/0038-cada-producto-es-de-una-zona.md)).
+- **Las funciones `security definer`.** Son la puerta de atrás del sistema y están
+  tasadas: una prueba las cuenta con sus nombres. **Veinticuatro en `estook`** —la
+  última, `zonas_que_ve` ([0038](docs/decisiones/0038-cada-producto-es-de-una-zona.md))—
+  y **dos en `plataforma`**, `nivel_de` y `dar_acceso` (0041). Aquí ponía
+  «dieciocho» y la prueba lista veinticuatro: se dejó de actualizar.
+- **La puerta del admin** (0041): ser admin es de `plataforma`, no un rol de la matriz;
+  **la sesión del admin y la de la app no se cruzan**, y lo mira el despachador
+  (`porQueNoPasaElAdmin`); toda operación del admin declara `soloAdmin` y empieza por
+  `admin_`, y una prueba lo tasa. La auditoría de `plataforma` solo se añade.
 - **Qué pide cada indicador vive en `@estook/permisos`** (`LO_QUE_PIDE_EL_INDICADOR`),
   y **cómo es cada uno en el dominio** (`indicador.ts`): el catálogo, la tarjeta y el
   servidor leen de ahí. Lo elegido va en el identificador del widget
@@ -664,38 +701,31 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ---
 
-## 8 · El siguiente paso · A1, la puerta del admin
+## 8 · El siguiente paso · V, lo que se ve
 
 ### Antes de empezarla
 
-1. **La #51 fusionada**, con la `0036` aplicada y la API desplegada
-   (`bd:comprobar-api` en verde).
-2. **El pull request de los planes, fusionado**, y Richi de acuerdo con el orden (o
-   con el que prefiera: A1 puede ir cuarta sin cambiar nada más).
+1. **La #51, la #52 y la puerta del admin, fusionadas**, con la `0036` y la `0037`
+   aplicadas, la API desplegada y Richi dentro del admin con su segundo factor.
+2. Nada de fuera: V no necesita ninguna clave.
 
 ### Qué entra
 
-Lo de la sección 1 y la entrega A1 de
-[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md), con la
-[0041](docs/decisiones/0041-el-panel-de-administracion.md):
+Las mejoras 1 a 5 de [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md):
 
-- **La migración `0037`**: el esquema `plataforma`, `plataforma.administrador` con su
-  nivel, y `plataforma.auditoria`, que solo se añade.
-- **`.\estook.cmd bd:dar-admin correo`**, copiando la forma de `bd:cuenta-de-verdad`:
-  clave de un solo uso, «debes cambiarla». **La contraseña que salió en el chat no se
-  usa.**
-- **Entrar en `/admin/`** con contraseña, **segundo factor obligatorio** y sesión de
-  8 horas. El catálogo del sistema de diseño pasa detrás de la puerta.
-- **Administradores**: ver, añadir y quitar, con el código otra vez; nunca el último
-  total, nunca uno mismo.
-- **Los comandos `admin_…`** rechazados en el despachador a quien no es admin.
+- **El modo cocina**, un ajuste del aparato (lo decidió Richi): toques de 64 px,
+  contraste 7:1, sin gestos que no sean un toque, y los botones de subir y bajar del
+  Panel de vuelta. Se propone encendido en el alta de una tableta de cocina.
+- **Las flechas y las gráficas del Panel en Inventario, Servicio y Equipo**, con el
+  mismo `Indicador` y `un_indicador` ampliado.
+- **Inicio en cada app**, solo al entrar desde la rueda.
+- **Estados vacíos con dibujo y una acción**, cargados aparte.
+- **El tema oscuro repasado con capturas**, y **las fotos de producto** en el almacén.
 
-**Terminado cuando:** `estookapp@gmail.com` entra, se pone su contraseña, monta el
-segundo factor y añade a otro admin; una persona normal y un gerente llaman a la API
-del admin a pelo y reciben `403`; quitar al último admin total falla; y todo sale en
-la auditoría.
+**Terminado cuando:** una prueba recorre las pantallas de cocina con el modo puesto y
+ningún botón baja de 64 px ni de 7:1; las tres apps enseñan sus cifras con flecha y la
+del food cost cuadra con el Panel; y las capturas en oscuro se comparan en la prueba.
 
 **Cómo se comprueba que no rompe lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase. **Y la prueba que cuenta las funciones `security definer`**, que sube por
-la que decide quién es admin.
+Supabase.

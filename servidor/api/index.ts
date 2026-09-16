@@ -3,8 +3,10 @@ import { CABECERA_CORRELACION, correlacionIdDeEntrada, variable } from '@estook/
 import type { Despachador, Resultado } from '../aplicacion/index.ts';
 import {
   CABECERA_AUTORIZACION,
+  CABECERA_DIRECCION,
   CABECERA_IDEMPOTENCIA,
   CABECERA_REPETIDA,
+  direccionDeLaPeticion,
   tokenDeLaCabecera,
 } from './cabeceras.ts';
 import { respuestaConDatos, respuestaDeError } from './respuestas.ts';
@@ -201,7 +203,11 @@ export function crearApi(despachador: Despachador) {
     if (problema) return problema;
 
     const resultado = await despachador.consultar(
-      quienLlama(c.req.header(CABECERA_AUTORIZACION), correlacionId),
+      quienLlama(
+        c.req.header(CABECERA_AUTORIZACION),
+        correlacionId,
+        c.req.header(CABECERA_DIRECCION),
+      ),
       c.req.param('nombre'),
       Object.fromEntries(new URL(c.req.url).searchParams),
     );
@@ -218,7 +224,11 @@ export function crearApi(despachador: Despachador) {
     const cuerpo: unknown = await c.req.json().catch(() => null);
 
     const resultado = await despachador.ejecutar(
-      quienLlama(c.req.header(CABECERA_AUTORIZACION), correlacionId),
+      quienLlama(
+        c.req.header(CABECERA_AUTORIZACION),
+        correlacionId,
+        c.req.header(CABECERA_DIRECCION),
+      ),
       c.req.param('nombre'),
       cuerpo,
       c.req.header(CABECERA_IDEMPOTENCIA) ?? '',
@@ -230,11 +240,21 @@ export function crearApi(despachador: Despachador) {
   return api;
 }
 
-function quienLlama(autorizacion: string | undefined, correlacionId: string) {
+function quienLlama(
+  autorizacion: string | undefined,
+  correlacionId: string,
+  direccion: string | undefined,
+) {
   // Desde M4 quien llama no dice quien es: trae un token y la infraestructura lo
   // resuelve contra `estook.sesion`. Sin token no se ve nada, igual que antes:
   // las politicas de M1 no ensenan una fila sin identidad.
-  return { tokenDeSesion: tokenDeLaCabecera(autorizacion), correlacionId };
+  //
+  // La dirección solo viaja para la auditoría del admin (0041): no abre nada.
+  return {
+    tokenDeSesion: tokenDeLaCabecera(autorizacion),
+    correlacionId,
+    desde: direccionDeLaPeticion(direccion),
+  };
 }
 
 function comprobarVersion(version: number, correlacionId: string): Response | null {

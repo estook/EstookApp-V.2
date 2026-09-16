@@ -34,6 +34,8 @@ export const cambiarMiClave = comando<EntradaCambiarMiClave, { readonly cambiada
   entrada: entradaCambiarMiClave,
   // Es justo lo que hay que poder hacer con la contrasena por cambiar.
   aunConClavePorCambiar: true,
+  // La contraseña es de la persona, no del sitio: también se cambia desde el admin.
+  tambienEnElAdmin: true,
 
   async ejecutar({ sql, sesion }, entrada) {
     if (sesion === null) throw new FalloDeAplicacion('sin_sesion');

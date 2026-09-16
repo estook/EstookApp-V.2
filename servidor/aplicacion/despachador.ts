@@ -42,6 +42,8 @@ export interface QuienLlama {
    */
   readonly tokenDeSesion: string | null;
   readonly correlacionId: string;
+  /** La dirección de la petición, para la auditoría del admin (0041). */
+  readonly desde?: string | null;
 }
 
 /** Los puertos. La implementación de verdad se inyecta. */
@@ -124,6 +126,49 @@ function porQueNoPasa(puertas: Puertas, sesion: SesionViva | null): CodigoDeErro
   return null;
 }
 
+/**
+ * La puerta del admin (0041), que va detrás de las otras cuatro.
+ *
+ * Separa **dos mundos que no se tocan**: una sesión del admin solo vale para lo
+ * que se declara del admin (o para lo que es de la persona en cualquier sitio:
+ * salir, su contraseña, su segundo factor), y lo del admin solo acepta sesiones
+ * del admin. Así un token de la app olvidado en una tablet no abre el admin, y
+ * uno del admin no sirve para apuntar una merma en nombre de nadie.
+ *
+ * Y dentro del admin, tres cosas que se miran **en la base y en cada petición**:
+ * que el acceso siga vivo —quitárselo a alguien le cierra la puerta en la
+ * siguiente petición, sin esperar a que caduque—, el nivel, y que tenga el
+ * segundo factor montado. Sin segundo factor solo se puede montarlo.
+ */
+async function porQueNoPasaElAdmin(
+  contexto: Contexto,
+  puertas: Puertas,
+): Promise<CodigoDeError | null> {
+  const { sesion } = contexto;
+  // Sin sesión decide la primera puerta, que ya ha pasado.
+  if (sesion === null) return null;
+
+  if (!puertas.soloAdmin) {
+    return sesion.paraAdmin && !puertas.tambienEnElAdmin ? 'sin_permiso' : null;
+  }
+
+  if (!sesion.paraAdmin) return 'sin_permiso';
+
+  const filas = await contexto.sql<{ nivel: string | null; con_doble_factor: boolean }[]>`
+    select plataforma.nivel_de(${sesion.personaId}::uuid)::text as nivel,
+           exists (
+             select 1 from estook.doble_factor d
+              where d.persona_id = ${sesion.personaId}::uuid and d.confirmado_en is not null
+           ) as con_doble_factor
+  `;
+  const fila = filas[0];
+  if (fila?.nivel === undefined || fila.nivel === null) return 'sin_permiso';
+  if (puertas.nivelDeAdmin === 'total' && fila.nivel !== 'total') return 'sin_permiso';
+  if (!fila.con_doble_factor && !puertas.aunSinDobleFactor) return 'falta_activar_doble_factor';
+
+  return null;
+}
+
 export function crearDespachador(puertos: Puertos): Despachador {
   return {
     async consultar(quien, nombre, entrada) {
@@ -155,6 +200,9 @@ export function crearDespachador(puertos: Puertos): Despachador {
             contexto.sesion,
           );
           if (cerrada) return { estado: 'fallo', codigo: cerrada };
+
+          const delAdmin = await porQueNoPasaElAdmin(contexto, laConsulta);
+          if (delAdmin) return { estado: 'fallo', codigo: delAdmin };
 
           // Leer pide poder **ver**, no poder cambiar (M7). Hasta M7 esto pedía
           // «ver y editar», y a quien la matriz le da algo solo para mirar —el
@@ -197,6 +245,9 @@ export function crearDespachador(puertos: Puertos): Despachador {
         puertos.enTransaccion(quien, async (contexto): Promise<Resultado> => {
           const cerrada = porQueNoPasa(elComando, contexto.sesion);
           if (cerrada) return { estado: 'fallo', codigo: cerrada };
+
+          const delAdmin = await porQueNoPasaElAdmin(contexto, elComando);
+          if (delAdmin) return { estado: 'fallo', codigo: delAdmin };
 
           if (!(await tienePermiso(contexto, elComando.exige, 'editar'))) {
             return { estado: 'fallo', codigo: 'sin_permiso' };

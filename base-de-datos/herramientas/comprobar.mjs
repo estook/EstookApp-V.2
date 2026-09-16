@@ -35,6 +35,31 @@ try {
     console.log(`  ${marca}  ${t.tabla.padEnd(24)} ${t.politicas} politica(s)`);
   }
 
+  // El admin (0041), aparte: no es de ningún cliente. Solo cuántos tienen acceso,
+  // nunca quiénes: esto se pega en un chat para comprobar un despliegue.
+  const [hayPlataforma] = await sql`
+    select exists (select 1 from pg_namespace where nspname = 'plataforma') as hay
+  `;
+  if (hayPlataforma.hay) {
+    titulo('Tablas del esquema plataforma');
+    const deLaPlataforma = await sql`
+      select c.relname as tabla,
+             c.relrowsecurity as con_rls,
+             (select count(*) from pg_policy p where p.polrelid = c.oid)::int as politicas
+        from pg_class c
+       where c.relnamespace = 'plataforma'::regnamespace and c.relkind = 'r'
+       order by c.relname
+    `;
+    for (const t of deLaPlataforma) {
+      const marca = t.con_rls ? 'RLS' : '   ';
+      console.log(`  ${marca}  ${t.tabla.padEnd(24)} ${t.politicas} politica(s)`);
+    }
+    const [admins] = await sql`
+      select count(*)::int as vivos from plataforma.administrador where quitado_en is null
+    `;
+    console.log(`  Con acceso al admin: ${admins.vivos}`);
+  }
+
   titulo('Catalogo');
   const [catalogo] = await sql`
     select (select count(*) from estook.rol)::int             as roles,

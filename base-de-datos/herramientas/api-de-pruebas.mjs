@@ -207,6 +207,9 @@ async function unaTransaccion(quien, hacer) {
           // se comportaba distinto era el de **las pruebas**, no el de
           // produccion. Cualquier copia a mano de una fila acaba discrepando.
           esDemostracion: fila.es_demostracion,
+          // 0041. Igual que la de arriba: una copia a mano de la fila que se
+          // olvida un campo deja pasar una sesión de la app al admin.
+          paraAdmin: fila.para_admin,
         };
       }
     }
@@ -223,6 +226,7 @@ async function unaTransaccion(quien, hacer) {
       almacen,
       google,
       correlacionId: quien.correlacionId,
+      desde: quien.desde ?? null,
       ahora: new Date(Date.now()),
     });
 

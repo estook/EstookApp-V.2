@@ -47,6 +47,8 @@ export const activarDobleFactor = comando<Record<string, never>, SalidaActivar>(
   // Quien tiene que activarlo porque lo exige su organizacion entra sin el: si
   // no, no podria activarlo nunca.
   aunSinDobleFactor: true,
+  // Y en el admin es obligatorio, así que tiene que poder montarse desde ahí (0041).
+  tambienEnElAdmin: true,
 
   async ejecutar({ sql, sesion }) {
     if (sesion === null) throw new FalloDeAplicacion('sin_sesion');
@@ -85,6 +87,7 @@ export const confirmarDobleFactor = comando<
   // Devuelve los codigos de respaldo: no se recuerdan.
   conSecreto: true,
   aunSinDobleFactor: true,
+  tambienEnElAdmin: true,
 
   async ejecutar({ sql, sesion, ahora }, entrada) {
     if (sesion === null) throw new FalloDeAplicacion('sin_sesion');
@@ -132,6 +135,7 @@ export const superarDobleFactor = comando<
   entrada: z.object({ codigo: z.string().trim().min(6).max(16) }).strict(),
   aunSinDobleFactor: true,
   aunConClavePorCambiar: true,
+  tambienEnElAdmin: true,
 
   async ejecutar({ sql, sesion, ahora }, entrada) {
     if (sesion === null) throw new FalloDeAplicacion('sin_sesion');
@@ -201,6 +205,18 @@ export const quitarDobleFactor = comando<
        where o.id in (select organizacion_id from estook.organizaciones_visibles())
     `;
     if (exigido[0]?.exige === true) throw new FalloDeAplicacion('sin_permiso');
+
+    // Y quien tiene acceso al admin, tampoco (0041): ahí el segundo factor es
+    // obligatorio, y quitárselo desde la app dejaría el admin con la puerta floja.
+    const admin = await sql<{ nivel: string | null }[]>`
+      select plataforma.nivel_de(${sesion.personaId}::uuid)::text as nivel
+    `;
+    if (admin[0]?.nivel != null) {
+      throw new FalloDeAplicacion('sin_permiso', {
+        porque:
+          'Tienes acceso al admin de Estook, y ahí el segundo factor es obligatorio. Para quitarlo, primero hay que quitarte ese acceso.',
+      });
+    }
 
     await sql`delete from estook.doble_factor where persona_id = ${sesion.personaId}`;
 

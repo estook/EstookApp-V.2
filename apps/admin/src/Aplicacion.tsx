@@ -1,27 +1,145 @@
-import { ProveedorDeDeshacer, Deshacer } from '@estook/ui';
+import { useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Boton, Cargando, Deshacer, Logo, ProveedorDeDeshacer } from '@estook/ui';
 import type { Entorno } from '@estook/utiles';
 import { Catalogo } from './catalogo/Catalogo.tsx';
+import { soloLaHora } from './datos/cliente.ts';
+import { Administradores } from './pantallas/Administradores.tsx';
+import { Auditoria } from './pantallas/Auditoria.tsx';
+import {
+  Entrar,
+  EscribirElCodigo,
+  MontarElSegundoFactor,
+  PonerMiContrasena,
+} from './sesion/Puerta.tsx';
+import { ProveedorDeSesion, usarSesion } from './sesion/Sesion.tsx';
 
 /**
- * El panel interno (M3).
+ * El admin de Estook (M3, con su puerta desde la 0041).
  *
- * Hoy contiene el catálogo del sistema de diseño, que es la herramienta de dentro
- * que hacía falta al cerrar M3. Las cuentas, los planes, el uso y el soporte
- * llegan con M23, y entonces esto pasa a ser una sección más.
+ * Hasta la 0041 esto era el catálogo del sistema de diseño, suelto y a la vista de
+ * cualquiera. Ahora **todo va detrás de la puerta**: el catálogo es una sección
+ * más, al lado de quién tiene acceso y de lo que se ha hecho. Los clientes, los
+ * vendedores y las ventas llegan en las entregas A2 a A4
+ * (`docs/panel-de-administracion.md`).
  *
- * El proveedor de deshacer está aquí y no dentro del catálogo porque la barra
- * vive en la raíz: si estuviera dentro de una pantalla, navegar se la llevaría.
+ * El proveedor de deshacer está aquí y no dentro de una pantalla porque la barra
+ * vive en la raíz: si estuviera dentro, navegar se la llevaría.
  */
 export interface AplicacionProps {
   readonly entorno: Entorno;
   readonly sesionId: string;
 }
 
-export function Aplicacion({ entorno, sesionId }: AplicacionProps) {
+const cache = new QueryClient({
+  defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: true } },
+});
+
+export function Aplicacion(props: AplicacionProps) {
   return (
-    <ProveedorDeDeshacer>
-      <Catalogo entorno={entorno} sesionId={sesionId} />
-      <Deshacer />
-    </ProveedorDeDeshacer>
+    <QueryClientProvider client={cache}>
+      <ProveedorDeDeshacer>
+        <ProveedorDeSesion>
+          <LaPuerta {...props} />
+        </ProveedorDeSesion>
+        <Deshacer />
+      </ProveedorDeDeshacer>
+    </QueryClientProvider>
+  );
+}
+
+/**
+ * Qué pantalla toca. **El orden importa**: el código va antes que la contraseña,
+ * porque cambiarla exige haber pasado ya el segundo factor; y montarlo va después
+ * de la contraseña, porque montarlo con la que salió por pantalla sería montarlo
+ * sobre una cuenta que otra persona ha podido ver.
+ */
+function LaPuerta(props: AplicacionProps) {
+  const { yo, cargando } = usarSesion();
+
+  if (cargando) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-fondo">
+        <Cargando que="Comprobando quién eres" />
+      </main>
+    );
+  }
+  if (yo === null) return <Entrar />;
+  if (yo.faltaElCodigo) return <EscribirElCodigo />;
+  if (yo.debeCambiarClave) return <PonerMiContrasena />;
+  if (!yo.conDobleFactor) return <MontarElSegundoFactor />;
+  return <Dentro {...props} />;
+}
+
+const SECCIONES = [
+  { id: 'administradores', nombre: 'Administradores' },
+  { id: 'auditoria', nombre: 'Auditoría' },
+  { id: 'diseno', nombre: 'Sistema de diseño' },
+] as const;
+
+type Seccion = (typeof SECCIONES)[number]['id'];
+
+function Dentro({ entorno, sesionId }: AplicacionProps) {
+  const { yo, salir } = usarSesion();
+  const [seccion, setSeccion] = useState<Seccion>('administradores');
+
+  return (
+    <div className="min-h-dvh bg-fondo">
+      <div className="border-b border-borde bg-superficie">
+        <div className="mx-auto flex max-w-[64rem] flex-wrap items-center gap-x-e4 gap-y-e2 px-e4 py-e3">
+          <div className="flex items-center gap-e2">
+            <Logo alto={24} />
+            <span className="text-etiqueta font-medium uppercase tracking-wide text-texto-suave">
+              Admin
+            </span>
+          </div>
+
+          <nav aria-label="Secciones del admin" className="flex flex-wrap gap-e1">
+            {SECCIONES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => {
+                  setSeccion(s.id);
+                }}
+                aria-current={s.id === seccion ? 'page' : undefined}
+                className={[
+                  'inline-flex min-h-toque items-center rounded-medio px-e3 text-cuerpo',
+                  s.id === seccion
+                    ? 'bg-naranja-suave text-texto'
+                    : 'text-texto-suave hover:bg-fondo hover:text-texto',
+                ].join(' ')}
+              >
+                {s.nombre}
+              </button>
+            ))}
+          </nav>
+
+          <div className="ml-auto flex items-center gap-e3">
+            {yo !== null && (
+              <span className="text-secundario text-texto-suave">
+                {yo.nombre} · hasta las {soloLaHora(yo.caducaEn)}
+              </span>
+            )}
+            <Boton
+              tono="texto"
+              onClick={() => {
+                void salir();
+              }}
+            >
+              Salir
+            </Boton>
+          </div>
+        </div>
+      </div>
+
+      {seccion === 'diseno' ? (
+        <Catalogo entorno={entorno} sesionId={sesionId} />
+      ) : (
+        <main className="mx-auto max-w-[64rem] px-e4 py-e5">
+          {seccion === 'administradores' ? <Administradores /> : <Auditoria />}
+        </main>
+      )}
+    </div>
   );
 }

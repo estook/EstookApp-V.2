@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { entrarEnElAdmin } from './entrar-en-el-admin.ts';
 
 /**
  * M3 · el catálogo del sistema de diseño.
@@ -16,7 +17,6 @@ import { expect, test, type Page } from '@playwright/test';
  * que la tabla se convierta en tarjetas por debajo de 768 px. Es la red que hace
  * que el catálogo sirva para algo más que para mirarlo.
  */
-const ADMIN = 'http://localhost:5176/';
 
 /** Las seis familias, con lo que tiene que salir en cada una. */
 const FAMILIAS = [
@@ -31,8 +31,13 @@ const FAMILIAS = [
   { nombre: 'Navegar', piezas: ['Migas', 'RuedaDeApps'] },
 ];
 
+/**
+ * Desde la 0041 el catálogo va **detrás de la puerta del admin**: estaba suelto y
+ * a la vista de cualquiera. Así que se entra como una persona, y se abre.
+ */
 async function abrir(page: Page) {
-  await page.goto(ADMIN, { waitUntil: 'domcontentloaded' });
+  await entrarEnElAdmin(page);
+  await page.getByRole('button', { name: 'Sistema de diseño', exact: true }).click();
   await page.getByRole('heading', { level: 1, name: 'Sistema de diseño' }).waitFor();
 }
 
@@ -137,7 +142,7 @@ test.describe('el catálogo', () => {
     await expect(page.getByText('null · no es lo mismo que cero')).toBeVisible();
   });
 
-  test('los diecinueve errores del catálogo se pintan, y ninguno enseña su código', async ({
+  test('los veintiún errores del catálogo se pintan, y ninguno enseña su código', async ({
     page,
   }) => {
     // «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría
@@ -152,6 +157,9 @@ test.describe('el catálogo', () => {
     // Y M5 añade el diecinueve, `solo_lectura`: la visita de demostración, que
     // no es un fallo ni una falta de permiso sino lo que se prometió. Volvió a
     // fallar al añadirlo, que es exactamente lo que tenía que pasar.
+    //
+    // Y la 0041 añade dos, las puertas del admin: `falta_activar_doble_factor` y
+    // `se_queda_sin_admin`. Son veintiuno.
     await abrir(page);
     await irA(page, 'Avisos y vacíos');
 
@@ -159,7 +167,7 @@ test.describe('el catálogo', () => {
       has: page.getByRole('heading', { name: 'ErrorEnCristiano' }),
     });
     const avisos = seccion.getByRole('alert');
-    await expect(avisos).toHaveCount(19);
+    await expect(avisos).toHaveCount(21);
 
     const texto = (await seccion.innerText()).toLowerCase();
     for (const codigo of [

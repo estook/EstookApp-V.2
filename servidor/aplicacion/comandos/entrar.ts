@@ -235,14 +235,20 @@ export const entrar = comando<EntradaEntrar, SalidaEntrar>({
   },
 });
 
-interface QuienEntra {
+export interface QuienEntra {
   readonly personaId: string;
   readonly debeCambiarClave: boolean;
   /** Si entro con PIN, el local de ese PIN. Ya dice donde esta. */
   readonly localDelPin: string | null;
 }
 
-async function porContrasena(
+/**
+ * Comprobar correo y contraseña, con las tres cosas de seguridad de arriba.
+ *
+ * Exportada para `entrar_en_admin` (0041): el admin entra con la misma cuenta, y
+ * dos copias de esto serían dos sitios donde un día uno deja de tardar lo mismo.
+ */
+export async function porContrasena(
   contexto: Contexto,
   correo: string,
   contrasena: string,
@@ -347,7 +353,10 @@ async function exigeDobleFactor(contexto: Contexto, organizaciones: string[]): P
   return filas[0]?.exige === true;
 }
 
-async function tieneDobleFactorConfirmado(contexto: Contexto, personaId: string): Promise<boolean> {
+export async function tieneDobleFactorConfirmado(
+  contexto: Contexto,
+  personaId: string,
+): Promise<boolean> {
   const filas = await contexto.sql<{ hay: boolean }[]>`
     select true as hay
       from estook.doble_factor

@@ -44,8 +44,15 @@ import { derivar, derivarConSalDelLocal, pinNuevo } from '../../servidor/dominio
  * sitio. Y para limpiar lo que ya esté puesto, `pnpm bd:sin-cuentas-de-ejemplo`.
  */
 
-/** La contraseña de las ocho personas de ejemplo. No es secreta y no lo pretende. */
-export const CLAVE_DE_EJEMPLO = 'estook en desarrollo';
+// Las claves de ejemplo viven en su propio fichero, sin dependencias, para que las
+// pruebas de pantalla las puedan leer sin arrastrar el código del servidor (0041).
+import {
+  ADMIN_DE_EJEMPLO,
+  CLAVE_DE_EJEMPLO,
+  SECRETO_DEL_ADMIN_DE_EJEMPLO,
+} from './claves-de-ejemplo.ts';
+
+export { ADMIN_DE_EJEMPLO, CLAVE_DE_EJEMPLO, SECRETO_DEL_ADMIN_DE_EJEMPLO };
 
 /**
  * A qué Postgres se está sembrando. **Lo dice quien abre la conexión**, no una
@@ -208,6 +215,30 @@ export async function sembrarAcceso(
 
     pines.push({ correo: alcance.correo, local: alcance.codigo, pin });
   }
+
+  // ── El admin de ejemplo (0041) ─────────────────────────────────────────────
+  //
+  // Con acceso total y el segundo factor ya montado. Va directo a las tablas, sin
+  // `dar_acceso`: esa función no deja dar acceso a una persona de ejemplo, y está
+  // bien que no deje. Aquí sí se puede, porque aquí no hay nada de verdad.
+  await ejecutar(
+    `insert into plataforma.administrador (persona_id, nivel)
+     select p.id, 'total' from estook.persona p
+      where p.correo = $1 and p.es_ejemplo
+        and not exists (
+          select 1 from plataforma.administrador a
+           where a.persona_id = p.id and a.quitado_en is null
+        )`,
+    [ADMIN_DE_EJEMPLO],
+  );
+  await ejecutar(
+    `insert into estook.doble_factor (persona_id, secreto, confirmado_en)
+     select p.id, $2, now() from estook.persona p
+      where p.correo = $1 and p.es_ejemplo
+     on conflict (persona_id) do update
+       set secreto = excluded.secreto, confirmado_en = excluded.confirmado_en`,
+    [ADMIN_DE_EJEMPLO, SECRETO_DEL_ADMIN_DE_EJEMPLO],
+  );
 
   return { credenciales: personas.length, pines };
 }

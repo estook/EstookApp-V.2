@@ -1955,6 +1955,67 @@ envolviéndolo, que además es el patrón de siempre para algo que se abre y se 
 
 ---
 
+### M7 · el Panel vivo: editar como en el móvil, y las cifras de cada uno
+
+Con las apps conectadas fusionadas, la `0035` aplicada y la API desplegada, Richi
+pidió acabar lo que quedaba del Panel antes de seguir: «que se puedan mantener para
+editarlos, que vibren como en Apple y se arrastren mejor que las flechas; quitar los
+cuadrados vacíos; añadir los nuestros; gráficas y flechas de subida y bajada».
+
+#### Uno · Se copia el iPhone entero, porque cada pieza tiene su razón
+
+Mantener pulsado entra en edición; los widgets tiemblan; se arrastran desde
+cualquier parte y los demás se deslizan para hacerles sitio. Nada de eso es adorno:
+**temblar dice que se está editando** sin leer nada, y que los demás se aparten dice
+**dónde va a caer** antes de soltar. Con el arrastre hecho a mano desde M6½ los
+widgets saltaban de golpe al pasar el dedo.
+
+Aquí entró **la primera librería de movimiento del proyecto**, `@dnd-kit`, y se
+eligió con la 0007 en la mano: aquella decisión decía que haría falta cuando
+hubiera que animar un cambio de sitio, y es justo esto. **Se descarga solo al
+editar** (17 KB comprimidos, en su propio trozo): el Panel de cada mañana no la paga.
+Y «nada gira» tiene ahora una excepción escrita, una sola: el temblor
+([0039](decisiones/0039-el-panel-se-monta-como-un-movil.md)).
+
+#### Dos · Lo vacío se aparta, y se dice
+
+«Caduca esta semana: nada caduca» ocupaba un cuadrado para no decir nada. Ahora
+**cada widget avisa de si está vacío** y la rejilla lo aparta, sin desmontarlo
+—sigue pidiendo sus datos y vuelve solo— y lo nombra en una línea debajo. Cargando
+no cuenta como vacío: si contara, el Panel abriría en blanco e iría apareciendo.
+
+#### Tres · «Añadir los nuestros» son preguntas, no gráficas
+
+Un editor libre de gráficas es lo que tienen las herramientas de análisis, y es lo
+contrario de lo que pide un bar. Lo que se construyó es lo de Shopify o Square:
+**qué cifra y de cuántos días**. Seis cifras que Estook ya guarda con un dueño
+—ventas, ticket medio, food cost, merma, compras y tus horas—, con su flecha frente
+al periodo anterior y su línea de días.
+
+Las reglas que hacen que la flecha no mienta son de dominio y tienen prueba: una
+proporción se calcula sobre el periodo y no como media de días; **un día sin caja no
+vendió cero** y corta la línea; un porcentaje cambia en puntos; de nada a algo no
+hay flecha. Y **el food cost del Panel es el de Servicio**: la prueba los pide a los
+dos y los compara.
+
+Lo elegido va en el identificador del widget (`indicador-ventas-7`), así que el
+Panel se guarda igual que desde la 0025: sin migración.
+
+#### Lo que se rompió al hacerlo
+
+- **El «quitar» temblaba con la tarjeta, y no se podía pulsar.** Lo cazaron casi todas
+  las pruebas del Panel a la vez: Playwright espera a que un botón pare antes de pulsarlo, y un
+  botón que tiembla no para nunca. A un dedo con prisa le pasa lo mismo. Los
+  controles van quietos; tiembla la tarjeta.
+- **La línea de las gráficas salía a trozos.** Con un trazo que no escala, Chrome
+  calcula los guiones de la animación en píxeles de pantalla. Se dibuja recortando
+  la caja, y se ve entera.
+- **Dos pruebas daban por hecho que «Bajo mínimo» se ve siempre**, aunque esté vacío,
+  que es justo lo que cambió. Ahora «puesto» se mira en la casilla, y «se ve» acepta
+  las dos respuestas correctas: se ve, o sale nombrado en la línea.
+
+---
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

@@ -96,7 +96,7 @@ M0 ✓  M1 ✓  M2 ✓  M3 ✓  M4 ✓  M5 ✓  M6 ✓
 | Estilos            | Tailwind con los tokens de B1                  | Sin CSS suelto por ahí                               |
 | Estado de servidor | TanStack Query                                 | Caché, reintentos, invalidación por evento           |
 | Enrutado           | React Router                                   | Simple y suficiente                                  |
-| Animación          | Motion + CSS                                   | Con respeto a `prefers-reduced-motion`               |
+| Animación          | CSS; `@dnd-kit` para arrastrar (0007, 0039)    | Con respeto a `prefers-reduced-motion`               |
 | Gráficas           | Recharts                                       | Suficiente y ligero                                  |
 | PWA                | vite-plugin-pwa                                | Instalable, aguanta red intermitente                 |
 | Base de datos      | PostgreSQL (Supabase)                          | Relacional, RLS, extensiones, copias                 |
@@ -354,19 +354,22 @@ Y en 375 px eso son cinco botones y el avatar. Los botones se quedan en el toque
 
 La animación explica de dónde viene lo que aparece. **Si no explica nada, sobra.**
 
-| Qué                         | Cómo                                                  | Duración       |
-| --------------------------- | ----------------------------------------------------- | -------------- |
-| Hoja que sube en móvil      | Desde abajo, con curva                                | 260 ms         |
-| Panel lateral en escritorio | Desde la derecha                                      | 200 ms         |
-| Rueda de apps               | Fondo se desenfoca, sectores escalonados cada 30 ms   | 260 ms         |
-| Entrar en una app           | Desde el sector que se pulsó, y al volver se invierte | 240 ms         |
-| Widget que se arrastra      | Levanta 4 px con sombra `--s3`                        | 120 ms         |
-| Cifra que cambia            | Cuenta desde el valor anterior                        | 400 ms         |
-| Aviso que se cierra         | Se desliza y colapsa su hueco                         | 200 ms         |
-| Deshacer                    | Aparece abajo y se va sola a los 10 s                 | 200 ms         |
-| Cargando                    | Esqueleto con brillo lento                            | ciclo de 1,4 s |
+| Qué                          | Cómo                                                                | Duración        |
+| ---------------------------- | ------------------------------------------------------------------- | --------------- |
+| Hoja que sube en móvil       | Desde abajo, con curva                                              | 260 ms          |
+| Panel lateral en escritorio  | Desde la derecha                                                    | 200 ms          |
+| Rueda de apps                | Fondo se desenfoca, sectores escalonados cada 30 ms                 | 260 ms          |
+| Entrar en una app            | Desde el sector que se pulsó, y al volver se invierte               | 240 ms          |
+| Widget que se arrastra       | Va pegado al dedo, un 3 % mayor y con `--s3`; los demás se deslizan | 200 ms          |
+| Panel en edición             | Los widgets tiemblan, menos de un grado (0039)                      | ciclo de 280 ms |
+| Widget que entra en el Panel | Sube 8 px y aparece, escalonado cada 35 ms                          | 240 ms          |
+| Línea de una tendencia       | Se dibuja de izquierda a derecha                                    | 600 ms          |
+| Cifra que cambia             | Cuenta desde el valor anterior                                      | 400 ms          |
+| Aviso que se cierra          | Se desliza y colapsa su hueco                                       | 200 ms          |
+| Deshacer                     | Aparece abajo y se va sola a los 10 s                               | 200 ms          |
+| Cargando                     | Esqueleto con brillo lento                                          | ciclo de 1,4 s  |
 
-`prefers-reduced-motion` **se respeta siempre**. Nada rebota más de una vez, nada gira, nada parpadea.
+`prefers-reduced-motion` **se respeta siempre**. Nada rebota más de una vez, nada gira, nada parpadea. **Una excepción escrita:** el temblor del Panel en edición, que dice sin leer que se está editando, como en un móvil ([0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)).
 
 ## B7 · Presupuesto de velocidad
 

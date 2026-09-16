@@ -1,6 +1,6 @@
 # 0007 · El movimiento, en CSS y sin librería de animación
 
-**Fecha:** 1 de septiembre de 2026 · **Módulo:** M3 · **Estado:** aceptada
+**Fecha:** 1 de septiembre de 2026 · **Módulo:** M3 · **Estado:** aceptada · **el arrastre, cambiado por la [0039](0039-el-panel-se-monta-como-un-movil.md)** (16-sep-2026)
 
 ## Qué se decide
 
@@ -46,3 +46,15 @@ estar justificada hoy.
 
 Si dos módulos seguidos acaban escribiendo animación a mano que se parece a lo
 que hace Motion. Entonces se trae, y esta decisión se sustituye por otra.
+
+## Lo que pasó · 16 de septiembre de 2026
+
+Pasó lo que esta decisión decía que haría falta: **animación de disposición**, y
+no en el cuadrante de M10 sino en el Panel. Richi pidió que los widgets se
+mantuvieran pulsados, temblaran y se arrastraran «mejor que las flechas», y eso es
+que los demás se aparten con movimiento mientras se arrastra.
+
+La respuesta no fue `Motion`, sino **`@dnd-kit`**: lo que faltaba era arrastrar
+—sensores de dedo, ratón y teclado, anuncios accesibles— y la animación de los que
+se apartan viene con ello. Se descarga solo al editar el Panel. El resto de esta
+decisión sigue igual: todo lo demás se mueve con CSS ([0039](0039-el-panel-se-monta-como-un-movil.md)).

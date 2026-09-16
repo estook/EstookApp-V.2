@@ -19,6 +19,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { TarjetasDelPanel } from '../pantallas/TarjetasDelPanel.tsx';
 import { CabeceraDelPanel } from './Cabecera.tsx';
 import { LoQueFalta } from './LoQueFalta.tsx';
+import { ElegirIndicador } from './ElegirIndicador.tsx';
 import { Widget } from './widgets.tsx';
 import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
@@ -258,6 +259,9 @@ function AnadirWidget({
   return (
     <Hoja abierta={abierta} alCerrar={alCerrar} titulo="Añadir al panel">
       <div className="flex flex-col gap-e4">
+        {/* Lo nuevo, arriba: «añadir los nuestros» (0039). */}
+        <ElegirIndicador puestos={puestos} tienePermiso={tienePermiso} alAnadir={alAnadir} />
+
         {grupos.map((grupo) => (
           <section key={grupo.grupo} aria-label={grupo.nombre}>
             <p className="text-etiqueta uppercase tracking-wide text-texto-suave">{grupo.nombre}</p>
@@ -320,6 +324,36 @@ function AnadirWidget({
             </ul>
           </section>
         ))}
+
+        {puestos.some((p) => p.id.startsWith('indicador-')) && (
+          <section aria-label="Tus cifras puestas">
+            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+              Tus cifras puestas
+            </p>
+            <ul className="mt-e2 grid gap-e2 sm:grid-cols-2">
+              {puestos
+                .filter((p) => p.id.startsWith('indicador-'))
+                .map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex min-h-toque items-center gap-e2 rounded-medio border border-borde bg-fondo px-e3 py-e2"
+                  >
+                    <span className="min-w-0 flex-1 text-cuerpo font-medium">
+                      {widgetPorId(p.id)?.nombre ?? p.id}
+                    </span>
+                    <Boton
+                      tono="texto"
+                      onClick={() => {
+                        alQuitar(p.id);
+                      }}
+                    >
+                      Quitar
+                    </Boton>
+                  </li>
+                ))}
+            </ul>
+          </section>
+        )}
 
         {llegan.length > 0 && (
           <section>

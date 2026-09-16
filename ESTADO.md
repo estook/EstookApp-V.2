@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 16 de septiembre de 2026 · **M7: fusionada la #47 (las bases). Ahora, las apps conectadas: el precio de venta vuelve a la carta, el género tiene zona, y llega el recuento**
+Última actualización: 16 de septiembre de 2026 · **M7: fusionadas las bases (#47) y las apps conectadas (#48), con la `0035` aplicada y la API desplegada. Ahora, el Panel vivo: mantener, temblar y arrastrar, lo vacío se aparta, y cada uno se pone sus cifras con su gráfica**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -14,19 +14,19 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1 y 4** ✓ (#44, #45, #46): compras, el Calendario, el repaso de Richi y el dominio                |
-| **Ahora**      | **El repaso de las bases** (rama `m7-las-bases`, sin fusionar): vender no es gastar, la ficha se lee, y las listas largas se recorren |
-| **Pruebas**    | 965 unitarias y de base de datos · 353 de pantalla en escritorio y móvil, en verde · catálogo **104 de 110** (95 %)                   |
-| **Rama**       | `m7-las-bases`, con su pull request. La `estook-com` se fusionó en la #46                                                             |
-| **Base**       | En el código, **34** migraciones y 51 tablas: la `0034` solo añade columnas y un valor al catálogo de movimientos                     |
-| **API**        | **Hay que volver a desplegarla** con esta entrega: `apuntar_salida` cambia y el cierre propone lo vendido                             |
-| **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                                |
-| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                                 |
+|                |                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾ y 4** ✓ (#44 a #48): compras, Calendario, repaso, dominio, bases y zonas   |
+| **Ahora**      | **El Panel vivo** (rama `m7-el-panel-vivo`, sin fusionar): editar como en un móvil, lo vacío se aparta y los indicadores |
+| **Pruebas**    | 990 unitarias y de base de datos · 359 de pantalla en escritorio y móvil, en verde · catálogo **105 de 111** (95 %)      |
+| **Rama**       | `m7-el-panel-vivo`, con su pull request. La `m7-conectar-las-apps` se fusionó en la #48                                  |
+| **Base**       | **35** migraciones y 51 tablas, **aplicadas en Supabase** (comprobado el 16-sep). Esta entrega no trae migración         |
+| **API**        | Desplegada con lo de la #48. **Hay que volver a desplegarla** con esta entrega: trae la consulta `un_indicador`          |
+| **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                   |
+| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                    |
 
-> **Lo de ahora:** `estook.com` funciona. Lo que falta es fusionar el repaso de las
-> bases, aplicar la `0034` y volver a desplegar la API. Los pasos, en
+> **Lo de ahora:** fusionar el Panel vivo y volver a desplegar la API. No hay
+> migración. Los pasos, en
 > **[`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md)**.
 
 ---
@@ -62,19 +62,18 @@ qué aprueba una persona).
 
 Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden:
 
-1. **Fusionar** el pull request de `m7-conectar-las-apps`. Al fusionar se publica solo.
-2. **`bd:migrar`** y **`bd:comprobar`**: 35 de 35 y 51 tablas.
-3. **Desplegar la API** (Actions → Desplegar la API → `desplegar`), que lleva el
-   recuento y la ficha sin precio de venta.
-4. **Repasar las zonas de tu género**: la migración reparte lo que ya había con la
-   categoría fiscal —las bebidas a sala, lo demás a cocina—, y lo de limpieza hay
-   que ponerlo a mano. Inventario → Productos → «De dónde».
+1. **Fusionar** el pull request de `m7-el-panel-vivo`. Al fusionar se publica solo.
+2. **Desplegar la API** (Actions → Desplegar la API → `desplegar`) y
+   **`bd:comprobar-api`**: tiene que conocer `un_indicador`.
+3. **Mirarlo en el TPV y en el móvil**: mantener pulsado un widget, arrastrarlo,
+   ponerse una cifra desde «Añadir».
+4. **Repasar las zonas de tu género**, si no está hecho: lo de limpieza va a mano
+   (Inventario → Productos → «De dónde»).
 5. **Quitarles el IVA a sus precios, una vez**, si no está hecho: Ajustes → «Tus
-   precios de compra». Antes de meter precios nuevos.
-6. **Mirarlo en el TPV y en el móvil**, con la lista de los pasos.
-7. **Los cuatro accesos que faltan** —Places, Business Profile, Resend y el de IA—,
-   con su tope de gasto puesto. **No frenan nada de lo que hay**: cada uno lo
-   estrena su entrega ([`config/claves.md`](config/claves.md)).
+   precios de compra».
+6. **Las claves que faltan** —Google, Resend y la de IA—, con su tope de gasto.
+   **No frenan nada de lo que hay**: cada una la estrena su entrega
+   ([`config/claves.md`](config/claves.md)).
 
 ### Lo que Richi confirmó el 11 de septiembre
 
@@ -90,7 +89,8 @@ Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden
 | ------- | ------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | **1**   | Quitar y congelar lotes, dos decimales, el alta por cómo se compra, IVA, gráfica, widgets, salario, jerarquía | **Fusionada** (#45)     |
 | **1½**  | **Las bases**: vender no es gastar, la ficha se lee, las listas largas se recorren, y vuelve el deshacer      | **Fusionada** (#47)     |
-| **1¾**  | **Las apps conectadas**: el precio de venta a la carta, la zona del género, congelar una parte y el recuento  | **Hecha, sin fusionar** |
+| **1¾**  | **Las apps conectadas**: el precio de venta a la carta, la zona del género, congelar una parte y el recuento  | **Fusionada** (#48)     |
+| **1⅞**  | **El Panel vivo**: mantener y arrastrar, lo vacío se aparta, las cifras de cada uno con gráfica y flecha      | **Hecha, sin fusionar** |
 | **2**   | Avisos a jefes y gerentes de lo que hace su equipo, una vez; invitar a rellenar un pedido                     | La siguiente            |
 | **3**   | **Horarios**, una app entera en Equipo: cuadrante, historial, horas, avisos, PDF con logo                     | Después                 |
 | **4**   | El dominio **`estook.com`**: el sitio ya vive ahí                                                             | **Fusionada** (#46)     |
@@ -100,16 +100,16 @@ Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden
 
 Son los ocho que trajo Richi mirando la aplicación en su TPV, en su orden:
 
-| Lo que dijo                                          | Qué se ha hecho                                                                                                                                     |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| «La merma me busca en el catálogo de ejemplo»        | Ya no: la búsqueda de merma solo trae género de verdad                                                                                              |
-| «Que quede claro si se ha vendido, y cuánto»         | Tres familias al sacar género, y lo vendido se apunta con lo que se cobró ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md)) |
-| «¿Se suma a ganancias?»                              | Sí, **en la caja del día**: sale propuesto al cerrarla, y por eso no se cuenta dos veces                                                            |
-| «El tag naranja de "sin verificar" no sé quitarlo»   | Se iba y volvía solo: era un fallo del servidor. Ahora es el aprovechamiento, en su ficha y con «Lo he medido»                                      |
-| «La tarjeta de producto es demasiado sencilla»       | Cada sección es una tarjeta con su título y sus botones; y una nueva, «Lo que deja», con el margen                                                  |
-| «Si hay listas enormes, ver más y buscar por tiempo» | El libro y las mermas van por tramos —mes, trimestre, semestre, año—, buscan en el servidor y traen más                                             |
-| «El deshacer ha desaparecido»                        | Vuelve donde se edita algo que importa: la ficha, el precio de compra y el de venta                                                                 |
-| «Si ves mejoras, aplícalas»                          | Cuatro fallos encontrados de paso, abajo                                                                                                            |
+| Lo que dijo                                          | Qué se ha hecho                                                                                                                                              |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| «La merma me busca en el catálogo de ejemplo»        | Ya no: la búsqueda de merma solo trae género de verdad                                                                                                       |
+| «Que quede claro si se ha vendido, y cuánto»         | Tres familias al sacar género ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md)). **El importe se quitó en la 1¾**: lo cuenta la caja |
+| «¿Se suma a ganancias?»                              | Sí, **en la caja del día**: sale propuesto al cerrarla, y por eso no se cuenta dos veces                                                                     |
+| «El tag naranja de "sin verificar" no sé quitarlo»   | Se iba y volvía solo: era un fallo del servidor. Ahora es el aprovechamiento, en su ficha y con «Lo he medido»                                               |
+| «La tarjeta de producto es demasiado sencilla»       | Cada sección es una tarjeta con su título y sus botones. «Lo que deja» **se retiró en la 1¾**: el margen es del plato                                        |
+| «Si hay listas enormes, ver más y buscar por tiempo» | El libro y las mermas van por tramos —mes, trimestre, semestre, año—, buscan en el servidor y traen más                                                      |
+| «El deshacer ha desaparecido»                        | Vuelve donde se edita algo que importa: la ficha y el precio de compra                                                                                       |
+| «Si ves mejoras, aplícalas»                          | Cuatro fallos encontrados de paso, abajo                                                                                                                     |
 
 **Lo que se encontró de paso, y era de antes:**
 
@@ -184,8 +184,8 @@ A a GitHub Pages y `www` por CNAME. La dirección vieja redirige sola
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan
 gratuito, por el agrupador de sesión (la conexión directa de los proyectos nuevos
 solo va por IPv6). Todas las tablas con seguridad por filas; la única vista es
-`estook.existencias`. **Con la `0035`, 35 migraciones y 51 tablas**: ninguna de las
-dos últimas crea una tabla. La `0035` quita el precio de venta del producto, le
+`estook.existencias`. **35 migraciones y 51 tablas, aplicadas** (comprobado el 16 de
+septiembre): ninguna de las dos últimas crea una tabla. La `0035` quita el precio de venta del producto, le
 pone su **zona**, le da cantidad a los lotes y cambia la política de `producto`. Se
 comprueba con `.\estook.cmd bd:comprobar`, que lo lee de la base y no de aquí.
 
@@ -203,11 +203,13 @@ Secrets, `TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`. Todo en
 
 | Aplicación      | Peso inicial | De los cuales tipografía |
 | --------------- | ------------ | ------------------------ |
-| `app`           | **270,4 KB** | 106,1 KB                 |
-| `admin`         | 186,8 KB     | 106,1 KB                 |
-| `web` · `carta` | 166,1 KB     | 106,1 KB                 |
+| `app`           | **273,9 KB** | 106,1 KB                 |
+| `admin`         | 187,1 KB     | 106,1 KB                 |
+| `web` · `carta` | 166,3 KB     | 106,1 KB                 |
 
-La referencia es 250 y **se mide, no bloquea**. Las apps conectadas suben `app`
+La referencia es 250 y **se mide, no bloquea**. El Panel vivo sube `app` 3,5 KB —la
+tarjeta del indicador, la línea y la rejilla nueva— y **`@dnd-kit` no cuenta**: va en
+su propio trozo (17 KB) y solo se descarga al editar el Panel. Las apps conectadas subieron `app`
 2,0 KB: las zonas y el margen son texto y una resta, y **el recuento se carga
 aparte**, que es la pantalla más grande de la entrega y se abre una vez al mes.
 Antes, las bases habían subido 1,8 KB y el repaso 6,1 KB: el
@@ -232,7 +234,7 @@ En una línea. **El detalle está en
 | **M5**  | El alta en ocho pasos, el catálogo de referencia, los ejemplos y el modo demostración            |
 | **M6**  | Inventario: productos, el libro de movimientos, precio medio ponderado, lotes, previsión         |
 | **M6½** | La capa de producto: destinos y vistas, Panel en el servidor, merma, fichajes, caja y equipo     |
-| **M7**  | Las compras enteras y el Calendario (#44); el repaso de lo que vio Richi, y las bases            |
+| **M7**  | Compras y Calendario (#44); el repaso, las bases, las apps conectadas y el Panel vivo            |
 
 ### M7 · el repaso, primera entrega
 
@@ -252,16 +254,38 @@ En una línea. **El detalle está en
 restricción `hasta >= desde` de la vigencia y salía «se nos ha roto algo por
 dentro». Ahora el cambio del mismo día corrige la fila de hoy, con su prueba.
 
+### M7 · el Panel vivo
+
+- **Se edita como un móvil** ([0039](docs/decisiones/0039-el-panel-se-monta-como-un-movil.md)):
+  mantener pulsado entra en edición, los widgets tiemblan, se arrastran desde
+  cualquier parte y los demás se deslizan. Las flechas se van; el teclado sigue
+  pudiendo moverlo todo. El arrastre es `@dnd-kit`, y **solo se descarga al editar**.
+- **Lo vacío se aparta**, y lo dice una línea debajo: «Sin nada ahora en…». Cada
+  widget sabe si está vacío (`usarQueEstaVacio`); cargando no cuenta como vacío.
+  Y la rejilla rellena sus huecos con el flujo denso.
+- **Cada uno se pone sus cifras**: ventas, ticket medio, food cost, merma, compras y
+  sus horas, de 7 o 30 días, **con su flecha frente al periodo anterior y su línea
+  de días**. Salen de `un_indicador`, que cuenta como `mis_cierres`: el food cost
+  del Panel es el de Servicio, y una prueba lo compara.
+- **Ventas de hoy** lleva su flecha frente al mismo día de la semana pasada.
+- **Seis columnas** en monitores grandes.
+
+**Lo que se encontró:** que el temblor hacía **imposible pulsar el «quitar»**: un
+botón que se mueve no se deja pulsar, ni por una prueba ni por un dedo con prisa.
+Los controles van quietos y tiembla la tarjeta. Y la línea de las gráficas **salía a
+trozos** en Chrome: con un trazo que no escala, los guiones se calculan en píxeles
+de pantalla. Se dibuja recortando la caja.
+
 ### M7 · las apps conectadas
 
 - **El precio de venta vuelve a la carta.** Un ingrediente no se vende: se vende
   un plato, y su precio es de la carta (M10) y su coste del escandallo (M9).
   Se quitan del producto, y con ellos el importe que se tecleaba al sacar género
   ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md), corregida).
-- **Cada producto es de una zona** —cocina, sala o limpieza— y la zona **decide
-  quién lo ve**: un cocinero no ve la barra y un camarero no ve la cámara
-  ([0038](docs/decisiones/0038-cada-producto-es-de-una-zona.md)). Va en la política
-  de la tabla, no en un filtro de pantalla.
+- **Cada producto es de una zona** —cocina, sala o limpieza— y la zona **decide con
+  qué trabaja cada uno**: la lista de Inventario de un cocinero no trae la barra, y
+  no puede cambiar su ficha ([0038](docs/decisiones/0038-cada-producto-es-de-una-zona.md)).
+  **Leer, se lee todo el local**: la merma la apunta quien la rompe.
 - **La categoría es el índice de la zona**, con sus cuentas hechas sobre ella. Y
   limpieza no lleva categorías: no se apaga el desplegable, no está.
 - **Congelar dice cuánto.** Antes marcaba el producto entero: diez kilos de
@@ -275,13 +299,12 @@ dentro». Ahora el cambio del mismo día corrige la fila de hoy, con su prueba.
 ### M7 · las bases, antes de seguir
 
 - **Vender deja de ser lo mismo que gastar.** Al sacar género se elige entre tres
-  familias —se vende, se usa, no se aprovecha—, y lo vendido se apunta **con lo que
-  se ha cobrado** ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md)).
+  familias —se vende, se usa, no se aprovecha—. El importe cobrado **se quitó en la
+  1¾** ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md)).
   Ese dinero **no suma solo**: sale propuesto al cerrar la caja del día, que es su
   único dueño, y así el día no se cuenta dos veces.
-- **A cuánto lo vendes, y lo que te deja.** Un precio de venta en la ficha, con IVA
-  —el de la pizarra—, y debajo lo que entra sin impuesto, lo que cuesta y lo que
-  queda, con aviso si el género se lleva más de un tercio.
+- ~~**A cuánto lo vendes, y lo que te deja.**~~ **Retirado en la 1¾**: un ingrediente
+  no tiene precio de venta; lo tiene el plato, en la carta (M10).
 - **La ficha se lee.** Cada sección es una tarjeta con su título y sus botones, con
   la categoría, el proveedor y el envase arriba, y una barra del mínimo.
 - **El aprovechamiento, en su sitio y con su botón.** La etiqueta «sin verificar»
@@ -289,8 +312,8 @@ dentro». Ahora el cambio del mismo día corrige la fila de hoy, con su prueba.
   servidor— y salía en todos los productos.
 - **Las listas largas se recorren.** El libro y las mermas van por tramos de tiempo,
   buscan en el servidor y traen más de tanto en tanto.
-- **Vuelve el deshacer** en lo que se edita y se puede volver a editar: la ficha, el
-  precio de compra y el de venta.
+- **Vuelve el deshacer** en lo que se edita y se puede volver a editar: la ficha y el
+  precio de compra.
 - **La merma solo busca en tu género**, no en el catálogo de ejemplo.
 
 **Lo que se encontró:** cuatro fallos de antes. «Sin verificar» se volvía a poner
@@ -427,6 +450,14 @@ la capa superior del navegador— que es justo cuando hace falta.
     almacén el jueves es lo normal.
 59. **Una cifra elige su tamaño por lo que ocupa escrita.** «128 h 45 min» a 34 px
     parte en dos líneas; «9 l» a 20 px desperdicia la tarjeta.
+60. **Un botón que se mueve no se deja pulsar.** El temblor va en la tarjeta; los
+    controles, quietos. Lo cazó Playwright esperando a que el «quitar» parase.
+61. **Una flecha compara lo mismo con lo mismo**: el periodo con el anterior del
+    mismo largo, una proporción sobre el periodo entero, y un día sin caja como
+    «no se sabe», no como cero. De nada a algo no hay flecha.
+62. **Que un título no se vea ya no dice que se haya quitado.** Desde que lo vacío
+    se aparta, las pruebas de quitar miran la casilla (`data-widget`), y las de
+    ver aceptan «se ve» o «está nombrado en la línea».
 
 ---
 
@@ -474,6 +505,7 @@ En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 | **0036** | **La dirección es `estook.com`, y la sabe el código**                    |
 | **0037** | **Lo que sale de cámara dice si se vendió; el dinero lo cuenta la caja** |
 | **0038** | **Cada producto es de una zona, y cada uno trabaja con la suya**         |
+| **0039** | **El Panel se monta como un móvil, y cada uno se pone sus cifras**       |
 
 Otras, sin fichero propio:
 
@@ -484,7 +516,9 @@ Otras, sin fichero propio:
 - **Los ganchos de React se llaman en español** (`usar…`) y viven en `ganchos/`.
 - **El token va en `Authorization: Bearer`**, no en una cookie: la aplicación y la
   API viven en dominios distintos.
-- **Dependencias nuevas justificadas:** `@electric-sql/pglite`, solo de desarrollo.
+- **Dependencias nuevas justificadas:** `@electric-sql/pglite`, solo de desarrollo; y
+  `@dnd-kit/core`, `sortable` y `utilities` para arrastrar los widgets (0039), que
+  van en su propio trozo y solo se descargan al editar el Panel.
   Contraseñas, segundo factor y tokens van con `crypto.subtle`.
 
 ---
@@ -536,7 +570,11 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   aplicación.
 - **Las dieciocho funciones `security definer`.** Son la puerta de atrás del
   sistema y están tasadas: una prueba las cuenta con sus nombres, y la última es
-  `zonas_que_ve`, que decide qué género ve cada uno ([0038](docs/decisiones/0038-cada-producto-es-de-una-zona.md)).
+  `zonas_que_ve`, que decide qué género gestiona cada uno ([0038](docs/decisiones/0038-cada-producto-es-de-una-zona.md)).
+- **Qué pide cada indicador vive en `@estook/permisos`** (`LO_QUE_PIDE_EL_INDICADOR`),
+  y **cómo es cada uno en el dominio** (`indicador.ts`): el catálogo, la tarjeta y el
+  servidor leen de ahí. Lo elegido va en el identificador del widget
+  (`indicador-ventas-7`), así que la tabla del Panel no cambia.
 - **El precio de venta no vive en el producto.** Lo que se vende es un plato, y su
   precio es de la carta (M10); lo que cuesta sale de su escandallo (M9). Se
   intentó en la `0034` y se retiró en la `0035`: está escrito para no repetirlo.
@@ -551,9 +589,9 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ### Antes de empezarla
 
-1. **Que las bases estén cerradas**: la `m7-las-bases` fusionada, `bd:comprobar` con
-   34 de 34, la API desplegada con `bd:comprobar-api` en verde, el IVA quitado a los
-   precios de Richi, y Richi habiéndolo mirado en el TPV y en el móvil.
+1. **Que el Panel vivo esté cerrado**: la `m7-el-panel-vivo` fusionada, la API
+   desplegada con `bd:comprobar-api` en verde, el IVA quitado a los precios de Richi,
+   y Richi habiéndolo mirado en el TPV y en el móvil.
 2. **La clave de Resend**, que es lo que manda los correos de los avisos (0017). Sin
    ella, la entrega 2 se queda en los avisos de pantalla.
 

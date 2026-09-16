@@ -47,6 +47,10 @@ export type { SelectorProps, InterruptorProps, Opcion } from './componentes/Sele
 export { Tarjeta, Etiqueta, Avatar, inicialesDe, colorDe } from './componentes/Tarjeta.tsx';
 export { Proporcion } from './componentes/Proporcion.tsx';
 export { Tira } from './componentes/Tira.tsx';
+export { Tendencia } from './componentes/Tendencia.tsx';
+export type { TendenciaProps } from './componentes/Tendencia.tsx';
+export { Variacion } from './componentes/Variacion.tsx';
+export type { VariacionProps } from './componentes/Variacion.tsx';
 export type { TiraProps, PuntoDeLaTira } from './componentes/Tira.tsx';
 export type { ProporcionProps, Trozo } from './componentes/Proporcion.tsx';
 export type {
@@ -64,7 +68,7 @@ export type { LogoProps, IconoDeFogonProps } from './componentes/Marca.tsx';
 export { Tabla, Lista } from './componentes/Tabla.tsx';
 export type { TablaProps, Columna, ListaProps, ElementoDeLista } from './componentes/Tabla.tsx';
 
-export { Cifra } from './componentes/Cifra.tsx';
+export { Cifra, comoDeGrande } from './componentes/Cifra.tsx';
 export type { CifraProps, SentidoDeLaComparacion } from './componentes/Cifra.tsx';
 
 export { Grafica } from './componentes/Grafica.tsx';
@@ -110,11 +114,13 @@ export {
   losQueLlegan,
   acentoDelWidget,
   widgetPorId,
+  losIndicadoresQueSePuedenTener,
 } from './panel/catalogo.ts';
 export type { TamanoDeWidget, Widget, WidgetPuesto } from './panel/catalogo.ts';
 
 export { Rejilla } from './panel/Rejilla.tsx';
-export type { RejillaProps } from './panel/Rejilla.tsx';
+export type { RejillaProps } from './panel/rejilla.ts';
+export { usarQueEstaVacio } from './ganchos/usarQueEstaVacio.ts';
 
 export { MenuLateral } from './navegacion/MenuLateral.tsx';
 export type { MenuLateralProps } from './navegacion/MenuLateral.tsx';

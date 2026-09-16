@@ -1858,6 +1858,103 @@ de un producto de ejemplo no cuenta para nada sin que quien la apunta lo sepa.
 
 ---
 
+### M7 · las apps conectadas, y el precio que estaba en el sitio equivocado
+
+Cuatro días después de fusionar las bases, Richi las miró en el TPV y trajo once
+cosas más. La primera era una corrección, y era del modelo.
+
+#### Uno · «¿A cuánto lo vendes?» en un ingrediente
+
+> «Has puesto una opción en Inventario que pregunta en una ficha de producto "a
+> cuánto lo vendes". **No se venden los ingredientes sueltos**: con ellos se crean
+> platos, y ahí ponemos el precio de venta. Si es queso en gramos, se sabe por el
+> escandallo cuánto cuesta y por la carta a cuánto lo vendes. A eso me refiero con
+> conectar todo bien.»
+
+Tenía razón, y no era un detalle de pantalla. Un kilo de queso no tiene precio de
+venta; lo tiene el plato que lo lleva. Ponérselo al producto era **inventarse un
+tercer sitio para un dato que ya tiene el suyo**, y encima el equivocado:
+
+```
+lo que cuesta   ←  inventario (precio de compra, sin IVA)
+cuánto lleva    ←  escandallo (M9)
+a cuánto sale   ←  carta (M10)
+lo que entró    ←  el cierre de caja, o el TPV (M20)
+```
+
+Así que se quitan las dos columnas de la 0034 y el importe que se tecleaba al
+sacar género —que era pedir dos veces la misma cifra—. **Lo que se queda es el
+tipo de movimiento `venta`**, que era lo bueno de aquella entrega: seguir sabiendo
+si lo que salió se vendió, se cocinó o se tiró. Y al cerrar la caja, lo vendido
+sale propuesto con el importe que ya se sabe de la última vez que se cerró ese
+mismo concepto, que es lo más cerca que está hoy de una carta.
+
+La decisión 0037 se queda escrita **con su corrección encima y el apartado cinco
+tachado**: es la primera vez que una decisión de este proyecto se retira a los
+cuatro días, y borrarla habría escondido justo lo que enseña.
+
+#### Dos · Inventario era un solo montón
+
+«Añade un filtro de sala, cocina y limpieza. Cocineros ven cocina y limpieza,
+camareros ven sala y limpieza, y jefes ven todo.»
+
+Cada producto es ahora de una zona, y la zona hace tres cosas: **ordena** la lista,
+**decide si hay categorías** —limpieza no las lleva, que son quince cosas— y
+**decide quién lo ve**. Esto último no es un filtro de pantalla: es la política de
+la tabla, con su función `zonas_que_ve`, que es la puerta de atrás número
+dieciocho ([0038](decisiones/0038-cada-producto-es-de-una-zona.md)).
+
+Y las categorías pasan a contarse **dentro de la zona que se mira**. Antes contaban
+sobre el local entero: en «Sala» salía «Carnes (14)» y al elegirla no había
+ninguna, que es una promesa rota en un desplegable.
+
+Lo que ya estaba se repartió con la categoría fiscal —las bebidas a sala, lo demás
+a cocina— en vez de dejar trescientos productos en un montón para que alguien los
+ordenara uno a uno.
+
+#### Tres · «Los congelados están fatal»
+
+Y lo estaban: congelar marcaba **el producto entero**. Diez kilos de los cuarenta
+y tres que hay dejaban los cuarenta y tres con la etiqueta de congelado, y en la
+lista parecía que no quedaba nada fresco. Ahora se dice cuánto —con lo que hay
+delante, y sin dejar pasarse— y la etiqueta dice «10 kg congelados».
+
+#### Cuatro · El recuento, que llevaba siete módulos prometido
+
+«Que se pueda subir el inventario que han hecho para actualizar todo. Es una opción
+que **cambia**, no suma.» Eso es un recuento, y `accion.cerrar_recuento` estaba en
+la matriz de permisos **desde M1 sin ninguna pantalla detrás**: la tercera promesa
+rota que aparece en este proyecto, después de la merma y de fichar.
+
+Tres decisiones dentro: las casillas salen **en blanco** con lo que decía el libro
+debajo —una cifra puesta de antemano se confirma sin mirar—; se cuenta **una zona
+cada vez**, que es como se hace de verdad; y **lo que no se cuenta no se toca**,
+salvo que se pida, y entonces se dice cuántos se van a vaciar antes de tocar nada.
+
+Las líneas de un recuento comparten la correlación que ya lleva cada petición desde
+M2, así que el libro puede contestar «esto fue el recuento del martes» sin una tabla
+nueva ni un identificador inventado.
+
+#### Cinco · Y la pantalla
+
+Las tarjetas de producto ocupaban cinco líneas en un móvil —el nombre y cuatro
+pares de etiqueta y valor—: un producto y medio por pantalla, y con trescientos
+productos la lista deja de poder recorrerse. Ahora son dos líneas, y la pieza sigue
+poniendo lo que cuesta acertar: el área de toque y el velo que hace pulsable la
+fila entera.
+
+Las cifras eligen su tamaño por lo que ocupan escritas —«128 h 45 min» a 34 px
+partía en dos líneas—, el contenedor se estira en monitores grandes, y la cabecera
+del Panel se abre y dice lo tuyo de hoy.
+
+**Y lo que se rompió al hacerlo:** convertir el «Hola, Ricardo» en un botón dejó al
+Panel **sin encabezado de nivel 1**, que es por donde entra quien navega con un
+lector de pantalla. Lo cazaron trece pruebas de acceso a la vez. Un `<button>` solo
+admite contenido de frase, así que el `h1` no puede ir dentro: va fuera,
+envolviéndolo, que además es el patrón de siempre para algo que se abre y se cierra.
+
+---
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

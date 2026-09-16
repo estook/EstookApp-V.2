@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 12 de septiembre de 2026 · **M7: fusionadas la #44, la #45 y la #46. `estook.com` ya pinta. Ahora, el repaso de las bases: lo que sale de cámara dice si se vendió, y la ficha se lee**
+Última actualización: 16 de septiembre de 2026 · **M7: fusionada la #47 (las bases). Ahora, las apps conectadas: el precio de venta vuelve a la carta, el género tiene zona, y llega el recuento**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -18,7 +18,7 @@
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1 y 4** ✓ (#44, #45, #46): compras, el Calendario, el repaso de Richi y el dominio                |
 | **Ahora**      | **El repaso de las bases** (rama `m7-las-bases`, sin fusionar): vender no es gastar, la ficha se lee, y las listas largas se recorren |
-| **Pruebas**    | 945 unitarias y de base de datos · 347 de pantalla en escritorio y móvil, en verde · catálogo **103 de 109** (94 %)                   |
+| **Pruebas**    | 965 unitarias y de base de datos · 353 de pantalla en escritorio y móvil, en verde · catálogo **104 de 110** (95 %)                   |
 | **Rama**       | `m7-las-bases`, con su pull request. La `estook-com` se fusionó en la #46                                                             |
 | **Base**       | En el código, **34** migraciones y 51 tablas: la `0034` solo añade columnas y un valor al catálogo de movimientos                     |
 | **API**        | **Hay que volver a desplegarla** con esta entrega: `apuntar_salida` cambia y el cierre propone lo vendido                             |
@@ -62,14 +62,17 @@ qué aprueba una persona).
 
 Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden:
 
-1. **Fusionar** el pull request de `m7-las-bases`. Al fusionar se publica solo.
-2. **`bd:migrar`** y **`bd:comprobar`**: 34 de 34 y 51 tablas.
+1. **Fusionar** el pull request de `m7-conectar-las-apps`. Al fusionar se publica solo.
+2. **`bd:migrar`** y **`bd:comprobar`**: 35 de 35 y 51 tablas.
 3. **Desplegar la API** (Actions → Desplegar la API → `desplegar`), que lleva el
-   `apuntar_salida` nuevo y lo que propone la caja.
-4. **Quitarles el IVA a sus precios, una vez**, si no está hecho: Ajustes → «Tus
+   recuento y la ficha sin precio de venta.
+4. **Repasar las zonas de tu género**: la migración reparte lo que ya había con la
+   categoría fiscal —las bebidas a sala, lo demás a cocina—, y lo de limpieza hay
+   que ponerlo a mano. Inventario → Productos → «De dónde».
+5. **Quitarles el IVA a sus precios, una vez**, si no está hecho: Ajustes → «Tus
    precios de compra». Antes de meter precios nuevos.
-5. **Mirarlo en el TPV y en el móvil**, con la lista del paso 5.
-6. **Los cuatro accesos que faltan** —Places, Business Profile, Resend y el de IA—,
+6. **Mirarlo en el TPV y en el móvil**, con la lista de los pasos.
+7. **Los cuatro accesos que faltan** —Places, Business Profile, Resend y el de IA—,
    con su tope de gasto puesto. **No frenan nada de lo que hay**: cada uno lo
    estrena su entrega ([`config/claves.md`](config/claves.md)).
 
@@ -86,7 +89,8 @@ Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden
 | Entrega | Qué                                                                                                           | Cómo está               |
 | ------- | ------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | **1**   | Quitar y congelar lotes, dos decimales, el alta por cómo se compra, IVA, gráfica, widgets, salario, jerarquía | **Fusionada** (#45)     |
-| **1½**  | **Las bases**: vender no es gastar, la ficha se lee, las listas largas se recorren, y vuelve el deshacer      | **Hecha, sin fusionar** |
+| **1½**  | **Las bases**: vender no es gastar, la ficha se lee, las listas largas se recorren, y vuelve el deshacer      | **Fusionada** (#47)     |
+| **1¾**  | **Las apps conectadas**: el precio de venta a la carta, la zona del género, congelar una parte y el recuento  | **Hecha, sin fusionar** |
 | **2**   | Avisos a jefes y gerentes de lo que hace su equipo, una vez; invitar a rellenar un pedido                     | La siguiente            |
 | **3**   | **Horarios**, una app entera en Equipo: cuadrante, historial, horas, avisos, PDF con logo                     | Después                 |
 | **4**   | El dominio **`estook.com`**: el sitio ya vive ahí                                                             | **Fusionada** (#46)     |
@@ -180,10 +184,10 @@ A a GitHub Pages y `www` por CNAME. La dirección vieja redirige sola
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan
 gratuito, por el agrupador de sesión (la conexión directa de los proyectos nuevos
 solo va por IPv6). Todas las tablas con seguridad por filas; la única vista es
-`estook.existencias`. **Con la `0034`, 34 migraciones y 51 tablas**: la `0034` no
-crea ninguna tabla, añade tres columnas y el valor `venta` al catálogo de
-movimientos. Se comprueba con `.\estook.cmd bd:comprobar`, que lo lee de la base y
-no de aquí.
+`estook.existencias`. **Con la `0035`, 35 migraciones y 51 tablas**: ninguna de las
+dos últimas crea una tabla. La `0035` quita el precio de venta del producto, le
+pone su **zona**, le da cantidad a los lotes y cambia la política de `producto`. Se
+comprueba con `.\estook.cmd bd:comprobar`, que lo lee de la base y no de aquí.
 
 **Organizaciones:** `bar-centro`, `casa-lola` y `grupo-costa` son semillas de
 ejemplo, **con las cuentas cerradas desde el 3 de septiembre** —tenían una
@@ -195,17 +199,18 @@ enlazado. **Variables** del repositorio: `VITE_SUPABASE_URL`,
 Secrets, `TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`. Todo en
 [`config/claves.md`](config/claves.md).
 
-**El peso**, medido con `pnpm tamano` el 12 de septiembre:
+**El peso**, medido con `pnpm tamano` el 16 de septiembre:
 
 | Aplicación      | Peso inicial | De los cuales tipografía |
 | --------------- | ------------ | ------------------------ |
-| `app`           | **268,4 KB** | 106,1 KB                 |
-| `admin`         | 186,5 KB     | 106,1 KB                 |
-| `web` · `carta` | 165,9 KB     | 106,1 KB                 |
+| `app`           | **270,4 KB** | 106,1 KB                 |
+| `admin`         | 186,8 KB     | 106,1 KB                 |
+| `web` · `carta` | 166,1 KB     | 106,1 KB                 |
 
-La referencia es 250 y **se mide, no bloquea**. Las bases suben `app` 1,8 KB: el
-catálogo de porqués, el margen y el tramo de las listas largas son texto y una
-resta. Antes, el repaso había subido 6,1 KB: el
+La referencia es 250 y **se mide, no bloquea**. Las apps conectadas suben `app`
+2,0 KB: las zonas y el margen son texto y una resta, y **el recuento se carga
+aparte**, que es la pantalla más grande de la entrega y se abre una vez al mes.
+Antes, las bases habían subido 1,8 KB y el repaso 6,1 KB: el
 alta por cómo se compra, el precio con IVA, los lotes y la gráfica de precios van
 con el resto de Inventario, y la tarjeta del IVA con Ajustes. **Compras entera y
 Recharts se siguen cargando aparte.**
@@ -246,6 +251,26 @@ En una línea. **El detalle está en
 **Lo que se encontró:** cambiar el salario **dos veces el mismo día** rompía la
 restricción `hasta >= desde` de la vigencia y salía «se nos ha roto algo por
 dentro». Ahora el cambio del mismo día corrige la fila de hoy, con su prueba.
+
+### M7 · las apps conectadas
+
+- **El precio de venta vuelve a la carta.** Un ingrediente no se vende: se vende
+  un plato, y su precio es de la carta (M10) y su coste del escandallo (M9).
+  Se quitan del producto, y con ellos el importe que se tecleaba al sacar género
+  ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md), corregida).
+- **Cada producto es de una zona** —cocina, sala o limpieza— y la zona **decide
+  quién lo ve**: un cocinero no ve la barra y un camarero no ve la cámara
+  ([0038](docs/decisiones/0038-cada-producto-es-de-una-zona.md)). Va en la política
+  de la tabla, no en un filtro de pantalla.
+- **La categoría es el índice de la zona**, con sus cuentas hechas sobre ella. Y
+  limpieza no lleva categorías: no se apaga el desplegable, no está.
+- **Congelar dice cuánto.** Antes marcaba el producto entero: diez kilos de
+  cuarenta y tres dejaban los cuarenta y tres con la etiqueta.
+- **El recuento**: «hemos contado la cámara, esto es lo que hay», a mano o desde
+  un fichero, con la desviación al lado. Estrena `accion.cerrar_recuento`, que
+  llevaba **desde M1** en la matriz sin ninguna pantalla detrás.
+- **El Panel**: la cabecera se abre y dice lo tuyo de hoy, las cifras eligen su
+  tamaño por lo que ocupan, y se estira en pantallas grandes.
 
 ### M7 · las bases, antes de seguir
 
@@ -381,6 +406,27 @@ la capa superior del navegador— que es justo cuando hace falta.
 52. **Restar el precio de carta menos el coste es regalarse el IVA como margen.** El
     de venta se ingresa y el de compra se recupera: la resta se hace con las dos
     cifras sin impuesto, y por eso la hace el dominio y no la pantalla.
+53. **Un ingrediente no tiene precio de venta.** Lo que se vende es un plato, y su
+    precio vive en la carta; lo que cuesta sale de su escandallo. Ponerle un precio
+    de venta al género era inventarse un tercer sitio para un dato que ya tiene el
+    suyo ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md),
+    corregida).
+54. **Un dato que se pide dos veces acaba con dos respuestas.** Preguntar «cuánto
+    has cobrado» al sacar género, teniendo la carta y la caja, era pedir la misma
+    cifra por segunda vez.
+55. **Acotar lo que se gestiona no es esconder el dato.** Meter la zona en la
+    lectura del género dejó a una camarera sin poder apuntar la merma de una nata.
+    Se lee todo el local; lo que se acota es la lista de Inventario y quién edita
+    la ficha ([0038](docs/decisiones/0038-cada-producto-es-de-una-zona.md)).
+56. **Un catálogo cuenta dentro de lo que se está mirando.** «Carnes (14)» en la
+    vista de sala, con cero al entrar, es peor que no ofrecer la categoría.
+57. **Una marca sobre un total miente cuando es una parte.** «Congelado» sobre un
+    producto de 43 kg del que hay 10 congelados decía que no quedaba nada fresco.
+58. **Un recuento no pone a cero lo que no se ha contado**, salvo que se diga a
+    propósito y se enseñe cuántos se van a vaciar. Contar la cámara el martes y el
+    almacén el jueves es lo normal.
+59. **Una cifra elige su tamaño por lo que ocupa escrita.** «128 h 45 min» a 34 px
+    parte en dos líneas; «9 l» a 20 px desperdicia la tarjeta.
 
 ---
 
@@ -427,6 +473,7 @@ En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 | **0035** | **El alta pregunta cómo se compra, y la cuenta la hace el dominio**      |
 | **0036** | **La dirección es `estook.com`, y la sabe el código**                    |
 | **0037** | **Lo que sale de cámara dice si se vendió; el dinero lo cuenta la caja** |
+| **0038** | **Cada producto es de una zona, y cada uno trabaja con la suya**         |
 
 Otras, sin fichero propio:
 
@@ -452,7 +499,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`,
   `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0034`.** Se amplían con una `0035`, nunca se editan
+- **Las migraciones `0001` a `0035`.** Se amplían con una `0036`, nunca se editan
   (regla 2). Y al ampliar una función SQL, **se copia la original entera**.
 - **Un valor de un tipo enumerado no se quita**: Postgres no sabe hacerlo. Por eso
   la `0034` añade `venta` con `add value if not exists … after 'merma'`, y su
@@ -487,9 +534,12 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   (`apps/app/src/acciones/catalogo.tsx`).
 - **El catálogo de referencia** (`0021`): se corrige con una migración, no desde la
   aplicación.
-- **Las diecisiete funciones `security definer`.** Son la puerta de atrás del
-  sistema y están tasadas: una prueba las cuenta, y la última es `a_quien_lleva`.
-  El repaso no añade ninguna.
+- **Las dieciocho funciones `security definer`.** Son la puerta de atrás del
+  sistema y están tasadas: una prueba las cuenta con sus nombres, y la última es
+  `zonas_que_ve`, que decide qué género ve cada uno ([0038](docs/decisiones/0038-cada-producto-es-de-una-zona.md)).
+- **El precio de venta no vive en el producto.** Lo que se vende es un plato, y su
+  precio es de la carta (M10); lo que cuesta sale de su escandallo (M9). Se
+  intentó en la `0034` y se retiró en la `0035`: está escrito para no repetirlo.
 
 Sobre el candado de `main`: las comprobaciones obligatorias van **sin tilde** —
 `Calidad`, `Construccion y presupuestos`, `Migraciones reversibles`—. **Nunca

@@ -328,7 +328,19 @@ export function Esqueleto() {
         linea de cualquier pantalla no quede debajo de ella. En escritorio no hay
         barra abajo, asi que no hace falta.
       */}
-        <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e5))] pt-e4 lg:px-e5 lg:pb-e7">
+        {/*
+          ── Hasta dónde se estira en una pantalla grande ───────────────────
+
+          «En el ordenador sobra mucho espacio: el panel está en un cuadrado en
+          el medio.» Y era verdad: 76rem son 1.216 px, así que en un monitor de
+          1.920 se quedaban 350 px en blanco a cada lado.
+
+          Se estira, y **hasta un punto**: una línea de texto de dos metros no se
+          lee, y por eso el tope sigue existiendo. Lo que cambia es dónde está, y
+          cambia solo en las pantallas que de verdad son grandes; en un TPV de
+          1.280 no se mueve nada.
+        */}
+        <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e5))] pt-e4 lg:px-e5 lg:pb-e7 2xl:max-w-[92rem]">
           {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
           <Outlet />
         </main>

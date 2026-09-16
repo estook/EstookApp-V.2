@@ -109,6 +109,29 @@
   animation: estook-deshacer var(--normal) var(--curva);
 }
 
+/*
+ * Lo que se despliega: baja un poco y aparece.
+ *
+ * Es «sube» del reves, y hace falta porque desde M7 hay cosas que se abren hacia
+ * abajo en su sitio —el resumen de la cabecera del Panel— y no como una hoja. Sin
+ * movimiento, un bloque que aparece de golpe debajo del dedo se lee como un salto
+ * de la pantalla, no como algo que se ha abierto.
+ */
+@keyframes estook-despliega {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility anima-desplegar {
+  animation: estook-despliega var(--normal) var(--curva);
+}
+
 @utility esqueleto {
   background-image: linear-gradient(
     90deg,

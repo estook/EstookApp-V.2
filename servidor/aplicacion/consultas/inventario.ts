@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  ZONAS,
   VENTANA_DE_CONSUMO,
   cantidad as cuantasHay,
   comoEsta,
@@ -10,7 +11,6 @@ import {
   fechaEnElLocal,
   horaEnElLocal,
   ivaDeCompraPorDefecto,
-  ivaDeVentaPorDefecto,
   masDias,
   milesimas as enMilesimas,
   cuantoPedir,
@@ -103,6 +103,8 @@ export interface ProductoEnLista {
   // ── M7, repaso · lo que vio Richi ──────────────────────────────────────────
   /** Si tiene algo en el congelador: un lote congelado que no se ha quitado. */
   readonly congelado: boolean;
+  /** Cuánto hay congelado, si los lotes lo dicen. Nulo: hay algo y no se sabe cuánto. */
+  readonly congeladoCuanto: number | null;
   /**
    * El IVA que se paga al comprarlo: el que se le eligió, o el de su categoría.
    * Nulo: sin tipo, como en Canarias. No es un importe: lo ve todo el mundo.
@@ -111,20 +113,13 @@ export interface ProductoEnLista {
   /** Si ese tipo lo eligió alguien, o sale de la categoría. */
   readonly ivaDeCompraElegido: boolean;
   /**
-   * A cuánto se vende tal cual, con impuesto, cuando se vende tal cual (0034).
+   * De dónde es: cocina, sala o limpieza (0035).
    *
-   * ── Y por qué esto sí lo ve todo el mundo ─────────────────────────────────
-   *
-   * Porque **está en la pizarra**. Lo que un cocinero no ve son los costes, los
-   * márgenes y los precios de compra; el precio de la caña lo sabe hasta quien
-   * entra por la puerta. Lo que no puede ver es el margen, y el margen no viaja:
-   * se calcula con el coste, y el coste sigue sin llegarle.
+   * No es solo un filtro: decide **quién lo ve**. Un cocinero no recibe los
+   * productos de sala, y no porque se le escondan: la política de la tabla no se
+   * los da.
    */
-  readonly precioDeVentaCentimos: number | null;
-  /** El tipo que se repercute al venderlo: el suyo, o el de la actividad. */
-  readonly ivaDeVenta: number | null;
-  /** Si ese tipo lo eligió alguien, o sale de la actividad del local. */
-  readonly ivaDeVentaElegido: boolean;
+  readonly zona: string;
   /** Lo que trae cada unidad, cuando se cuenta por unidades: 250 (g). */
   readonly contenidoPorUnidad: number | null;
   readonly unidadDelContenido: string | null;
@@ -216,9 +211,9 @@ interface FilaDeProducto {
   hora_limite: string | null;
   // M7, repaso · congelado, IVA de compra y lo que trae cada unidad.
   congelado: boolean;
+  congelado_cuanto: string | null;
   iva_de_compra: string | null;
-  precio_de_venta_centimos: string | null;
-  iva_de_venta: string | null;
+  zona: string;
   territorio: string;
   contenido_por_unidad: string | null;
   unidad_del_contenido: string | null;
@@ -275,6 +270,14 @@ async function leerProductos(
     soloDesactivados: boolean;
     /** Solo los que tienen algo congelado, que es la vista «Congelados» (M7, repaso). */
     soloCongelados?: boolean;
+    /**
+     * De qué zona: cocina, sala o limpieza (0035). Sin decir nada, las que se vean.
+     *
+     * **No es lo que protege el dato**: eso lo hace la política de la tabla, que
+     * no le da a un cocinero los productos de sala aunque los pida. Esto es el
+     * filtro de la pantalla, que es otra cosa y va en otra capa.
+     */
+    zona?: string | null;
     limite: number;
     salto: number;
   },
@@ -331,9 +334,18 @@ async function leerProductos(
               where lo.producto_id = p.id
                 and lo.congelado_el is not null and lo.retirado_en is null
            ) as congelado,
+           -- Cuánto hay congelado, cuando los lotes lo dicen (0035). Nulo si
+           -- ninguno lleva cantidad: «hay algo congelado» y no cuánto, que es lo
+           -- único que se sabía antes y lo que Richi vio mal.
+           (
+             select sum(lo.cantidad)::text
+               from estook.lote lo
+              where lo.producto_id = p.id
+                and lo.congelado_el is not null and lo.retirado_en is null
+                and lo.cantidad is not null
+           ) as congelado_cuanto,
            p.iva_de_compra::text as iva_de_compra,
-           p.precio_de_venta_centimos::text as precio_de_venta_centimos,
-           p.iva_de_venta::text as iva_de_venta,
+           p.zona::text as zona,
            lc.territorio::text as territorio,
            p.contenido_por_unidad::text as contenido_por_unidad,
            p.unidad_del_contenido::text as unidad_del_contenido
@@ -350,6 +362,19 @@ async function leerProductos(
        and (${filtros.incluirDesactivados} or p.activo)
        and (not ${filtros.soloDesactivados} or not p.activo)
        and (${filtros.incluirEjemplos} or not p.es_ejemplo)
+       -- ── La zona que se está mirando, y las que se pueden mirar ───────────
+       --
+       -- Dos cosas en una línea, y las dos hacen falta. La primera es el filtro:
+       -- lo que se ha elegido arriba. La segunda es **lo de cada uno**: un
+       -- cocinero no ve en esta lista el género de la barra, aunque pida «Sala» a
+       -- mano, porque esta pantalla es su almacén y no el de otro (0038).
+       --
+       -- Va aquí y no en la política de la tabla a propósito: leer el género del
+       -- local hace falta para apuntar una merma, recibir un albarán o buscar. Lo
+       -- que se acota es **esta lista**, no el dato.
+       and (${filtros.zona ?? null}::text is null
+            or p.zona::text = ${filtros.zona ?? null}::text)
+       and p.zona = any (estook.zonas_que_ve(p.local_id))
        and (${filtros.categoriaId}::uuid is null or p.categoria_id = ${filtros.categoriaId}::uuid)
        and (not ${filtros.soloSinPrecio} or pr.precio_centimos is null)
        and (not ${filtros.soloCongelados ?? false} or exists (
@@ -497,6 +522,7 @@ function componer(
     ),
 
     congelado: fila.congelado,
+    congeladoCuanto: fila.congelado_cuanto === null ? null : Number(fila.congelado_cuanto),
     // El IVA de compra sale del dominio si nadie lo ha elegido: la categoría y el
     // territorio lo deciden, y en Canarias no se supone nada.
     ivaDeCompra:
@@ -504,15 +530,7 @@ function componer(
         ? ivaDeCompraPorDefecto(fila.categoria_fiscal, fila.territorio)
         : Number(fila.iva_de_compra),
     ivaDeCompraElegido: fila.iva_de_compra !== null,
-    precioDeVentaCentimos:
-      fila.precio_de_venta_centimos === null ? null : Number(fila.precio_de_venta_centimos),
-    // Igual que el de compra: si nadie lo ha elegido, lo pone la actividad, y
-    // donde no es IVA no se supone nada.
-    ivaDeVenta:
-      fila.iva_de_venta === null
-        ? ivaDeVentaPorDefecto(fila.territorio)
-        : Number(fila.iva_de_venta),
-    ivaDeVentaElegido: fila.iva_de_venta !== null,
+    zona: fila.zona,
     contenidoPorUnidad:
       fila.contenido_por_unidad === null ? null : Number(fila.contenido_por_unidad),
     unidadDelContenido: fila.unidad_del_contenido,
@@ -613,6 +631,8 @@ export const entradaMisProductos = z
     solo_desactivados: z.coerce.boolean().optional(),
     /** Solo los que tienen algo congelado. Es la vista «Congelados» (M7, repaso). */
     congelados: z.coerce.boolean().optional(),
+    /** De qué zona: cocina, sala o limpieza. Sin decir nada, las que se vean (0035). */
+    zona: z.enum(ZONAS).optional(),
     incluir_ejemplos: z.coerce.boolean().optional(),
     incluir_desactivados: z.coerce.boolean().optional(),
     limite: z.coerce.number().int().min(1).max(200).optional(),
@@ -635,6 +655,15 @@ export interface SalidaMisProductos {
   readonly puedeVerPrecios: boolean;
   /** Cuántos de ejemplo quedan, para poder ofrecer quitarlos. */
   readonly ejemplos: number;
+  /**
+   * Cuántos productos activos hay en cada zona que esta persona ve (0035).
+   *
+   * Va aquí y no se cuenta en la pantalla porque la lista viene acotada a
+   * cincuenta: contar lo que ha llegado diría «Sala (0)» en un local con
+   * trescientas botellas. Es el mismo motivo por el que las vistas son filtros
+   * del servidor.
+   */
+  readonly porZona: readonly { readonly zona: string; readonly cuantos: number }[];
   /** Lo que vale la cámara entera, sin contar los ejemplos. Solo con permiso. */
   readonly valorTotalCentimos?: number | null;
   /** Si en este local los precios de compra se escriben con IVA (M7, repaso). */
@@ -668,6 +697,7 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
       soloSinPrecio: entrada.sin_precio === true,
       soloDesactivados: entrada.solo_desactivados === true,
       soloCongelados: entrada.congelados === true,
+      zona: entrada.zona ?? null,
       incluirEjemplos: entrada.incluir_ejemplos !== false,
       incluirDesactivados: entrada.incluir_desactivados === true,
       limite: limite + 1,
@@ -686,10 +716,21 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
 
     if (!conPrecios) productos = productos.map(sinPrecios);
 
+    // ── Las categorías, contadas **dentro de la zona que se está mirando** ──
+    //
+    // Antes contaban sobre el local entero, así que en «Sala» salía «Carnes
+    // (14)» y al elegirla no había ninguna. Una categoría que promete catorce y
+    // enseña cero es peor que no ofrecerla: la lista de categorías es el índice
+    // de lo que estás mirando, no del almacén entero.
+    //
+    // Y por eso se devuelven **con cero incluido** solo si la zona no está
+    // elegida: al elegir zona, las que no tienen nada no se ofrecen.
     const categorias = await contexto.sql<{ id: string; nombre: string; cuantos: number }[]>`
       select c.id, c.nombre,
              (select count(*)::int from estook.producto p
-               where p.categoria_id = c.id and p.activo) as cuantos
+               where p.categoria_id = c.id and p.activo
+                 and (${entrada.zona ?? null}::text is null
+                      or p.zona::text = ${entrada.zona ?? null}::text)) as cuantos
         from estook.categoria_de_producto c
        where c.local_id = ${localId} and c.activa
        order by c.orden, c.nombre
@@ -699,6 +740,17 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
       select id, nombre from estook.proveedor
        where local_id = ${localId} and activo
        order by nombre
+    `;
+
+    // Cuántos hay en cada zona **de las que ve esta persona**: a un cocinero,
+    // «Sala» no le sale con cero, no le sale. La misma condición que la lista, o
+    // el desplegable ofrecería un camino a ninguna parte.
+    const porZona = await contexto.sql<{ zona: string; cuantos: number }[]>`
+      select p.zona::text as zona, count(*)::int as cuantos
+        from estook.producto p
+       where p.local_id = ${localId} and p.activo
+         and p.zona = any (estook.zonas_que_ve(p.local_id))
+       group by p.zona
     `;
 
     const cuentas = await contexto.sql<{ cuantos: number; ejemplos: number }[]>`
@@ -734,6 +786,7 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
       hayMas,
       puedeVerPrecios: conPrecios,
       ejemplos: cuentas[0]?.ejemplos ?? 0,
+      porZona: porZona.map((z) => ({ zona: z.zona, cuantos: z.cuantos })),
       ...(conPrecios
         ? {
             valorTotalCentimos:
@@ -789,8 +842,6 @@ export interface MovimientoEnFicha {
   readonly quien: string | null;
   readonly lote: string | null;
   readonly costeMilesimas?: number | null;
-  /** Lo que se cobro, en las ventas (0034). Solo a quien puede ver dinero. */
-  readonly ingresoCentimos?: number | null;
 }
 
 export interface LoteEnFicha {
@@ -801,6 +852,8 @@ export interface LoteEnFicha {
   readonly diasParaCaducar: number | null;
   /** Cuándo se congeló. Nulo: no está congelado (M7, repaso). */
   readonly congeladoEl: string | null;
+  /** Cuánto lleva este lote, en unidad de uso. Nulo: no se sabe (0035). */
+  readonly cantidad: number | null;
 }
 
 export interface SalidaUnProducto {
@@ -899,7 +952,6 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
         cantidad_despues: string;
         coste_milesimas: string | null;
         motivo: string | null;
-        ingreso_centimos: string | null;
         fecha_operativa: string;
         ocurrido_en: string;
         quien: string | null;
@@ -911,7 +963,6 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
              m.cantidad_despues::text as cantidad_despues,
              m.coste_milesimas::text as coste_milesimas,
              m.motivo,
-             m.ingreso_centimos::text as ingreso_centimos,
              to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha_operativa,
              to_char(m.ocurrido_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ocurrido_en,
              pe.nombre as quien,
@@ -934,13 +985,15 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
         recibido_el: string;
         dias: number | null;
         congelado_el: string | null;
+        cantidad: string | null;
       }[]
     >`
       select id, codigo,
              to_char(caduca_el, 'YYYY-MM-DD') as caduca_el,
              to_char(recibido_el, 'YYYY-MM-DD') as recibido_el,
              (caduca_el - ${hoy}::date)::int as dias,
-             to_char(congelado_el, 'YYYY-MM-DD') as congelado_el
+             to_char(congelado_el, 'YYYY-MM-DD') as congelado_el,
+             cantidad::text as cantidad
         from estook.lote
        where producto_id = ${entrada.producto_id}
          and retirado_en is null
@@ -981,12 +1034,9 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
           quien: m.quien,
           lote: m.lote,
           costeMilesimas: m.coste_milesimas === null ? null : Number(m.coste_milesimas),
-          ingresoCentimos: m.ingreso_centimos === null ? null : Number(m.ingreso_centimos),
         };
         // Igual que arriba: el campo se quita, no se vacía.
-        return conPrecios
-          ? linea
-          : sinLosCamposDeDinero(linea, ['costeMilesimas', 'ingresoCentimos']);
+        return conPrecios ? linea : sinLosCamposDeDinero(linea, ['costeMilesimas']);
       }),
       lotes: lotes.map((l) => ({
         id: l.id,
@@ -995,6 +1045,7 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
         recibidoEl: l.recibido_el,
         diasParaCaducar: l.dias,
         congeladoEl: l.congelado_el,
+        cantidad: l.cantidad === null ? null : Number(l.cantidad),
       })),
       alergenos: alergenos[0]?.alergenos ?? [],
       enCuantasFichas: 0,
@@ -1023,6 +1074,8 @@ export interface SalidaInventarioHoy {
   readonly sinPrecio: readonly { readonly id: string; readonly nombre: string }[];
   readonly cuantosProductos: number;
   readonly ejemplos: number;
+  /** Cuántos hay en cada zona que esta persona ve (0035). */
+  readonly porZona: readonly { readonly zona: string; readonly cuantos: number }[];
   readonly puedeVerPrecios: boolean;
   readonly valorTotalCentimos?: number | null;
 }
@@ -1131,6 +1184,17 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
        where p.local_id = ${localId}
     `;
 
+    // Y cómo se reparte entre cocina, sala y limpieza, que es lo que enseña el
+    // widget de «Tu género»: un número suelto no dice nada, y tres que suman ese
+    // número cuentan cómo es este local. De las zonas de cada uno, como la lista.
+    const porZona = await contexto.sql<{ zona: string; cuantos: number }[]>`
+      select p.zona::text as zona, count(*)::int as cuantos
+        from estook.producto p
+       where p.local_id = ${localId} and p.activo and not p.es_ejemplo
+         and p.zona = any (estook.zonas_que_ve(p.local_id))
+       group by p.zona
+    `;
+
     const valor = conPrecios
       ? await contexto.sql<{ total: string | null }[]>`
           -- Lo que entró sin coste —un ajuste, o un producto dado de alta antes de
@@ -1162,6 +1226,7 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
       sinPrecio,
       cuantosProductos: cuentas[0]?.cuantos ?? 0,
       ejemplos: cuentas[0]?.ejemplos ?? 0,
+      porZona: porZona.map((z) => ({ zona: z.zona, cuantos: z.cuantos })),
       puedeVerPrecios: conPrecios,
       ...(conPrecios
         ? {
@@ -1317,11 +1382,6 @@ export interface MovimientoDelLibro {
   readonly esEjemplo: boolean;
   /** Lo que costo, si quien mira puede ver dinero. Si no, no viaja. */
   readonly costeMilesimas?: number | null;
-  /**
-   * Lo que se cobro, en las ventas (0034). Como el coste: **no se esconde, no se
-   * manda** a quien no puede ver dinero.
-   */
-  readonly ingresoCentimos?: number | null;
 }
 
 export const entradaMovimientos = z
@@ -1332,7 +1392,7 @@ export const entradaMovimientos = z
      * Se valida contra la lista cerrada y no se cuela en el `where` a pelo: es
      * texto que llega de fuera.
      */
-    tipo: z.enum(['entrada', 'salida', 'venta', 'ajuste', 'merma']).optional(),
+    tipo: z.enum(['entrada', 'salida', 'venta', 'ajuste', 'merma', 'recuento']).optional(),
     producto_id: z.string().uuid().optional(),
     /**
      * Qué se busca: el producto, quién lo apuntó o el motivo.
@@ -1411,7 +1471,6 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
         cantidad_despues: string;
         coste_milesimas: string | null;
         motivo: string | null;
-        ingreso_centimos: string | null;
         fecha_operativa: string;
         ocurrido_en: string;
         quien: string | null;
@@ -1426,7 +1485,6 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
              m.cantidad_despues::text as cantidad_despues,
              m.coste_milesimas::text as coste_milesimas,
              m.motivo,
-             m.ingreso_centimos::text as ingreso_centimos,
              to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha_operativa,
              to_char(m.ocurrido_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ocurrido_en,
              pe.nombre as quien,
@@ -1480,7 +1538,6 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
           ? {
               ...linea,
               costeMilesimas: f.coste_milesimas === null ? null : Number(f.coste_milesimas),
-              ingresoCentimos: f.ingreso_centimos === null ? null : Number(f.ingreso_centimos),
             }
           : linea;
       }),

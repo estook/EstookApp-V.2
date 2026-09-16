@@ -51,6 +51,31 @@ async function comoDuena<T>(consulta: string, parametros: unknown[] = []): Promi
   return rows;
 }
 
+/**
+ * El cuerpo que pide `cambiar_producto`, que guarda la ficha entera.
+ *
+ * Se escribe una vez aquí para que cada prueba solo diga lo que le importa: sin
+ * esto, comprobar que un campo se rechaza obliga a copiar los trece que sí van.
+ */
+function laFichaDe(productoId: string, nombre: string, unidadDeUso: string) {
+  return {
+    producto_id: productoId,
+    nombre,
+    categoria_id: null,
+    formato: null,
+    factor: 1,
+    unidad_de_uso: unidadDeUso,
+    rendimiento: 1,
+    categoria_fiscal: 'alimento',
+    alergenos: [],
+    peso_variable: false,
+    codigo_de_barras: null,
+    minimo: null,
+    proveedor_id: null,
+    notas: null,
+  };
+}
+
 async function loQueHay(productoId: string): Promise<number> {
   const [fila] = await comoDuena<{ cantidad: string }>(
     'select cantidad::text as cantidad from estook.existencias where producto_id = $1',
@@ -120,95 +145,90 @@ describe('apuntar merma busca solo en tu género', () => {
 // 2 · Vender y gastar dejan de ser el mismo botón
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('lo que sale dice si se vendió, y a cuánto', () => {
+describe('lo que sale dice si se vendió, y el dinero lo cuenta la caja', () => {
   let cerveza: string;
 
-  it('se da de alta con su precio de venta', async () => {
+  it('un producto no tiene precio de venta, y no se le puede poner', async () => {
     cerveza = losDatos<{ productoId: string }>(
       await api.ejecutar(rosa, 'crear_producto', {
         nombre: 'Botellín de las bases',
         unidad_de_uso: 'ud',
+        zona: 'sala',
         cantidad_inicial: 100,
         precio_centimos: 45,
       }),
     ).productoId;
 
-    await api.ejecutar(rosa, 'cambiar_producto', {
-      producto_id: cerveza,
-      nombre: 'Botellín de las bases',
-      categoria_id: null,
-      formato: null,
-      factor: 1,
-      unidad_de_uso: 'ud',
-      rendimiento: 1,
-      categoria_fiscal: 'bebida_alcoholica',
-      alergenos: [],
-      peso_variable: false,
-      codigo_de_barras: null,
-      minimo: null,
-      proveedor_id: null,
-      notas: null,
-      precio_de_venta_centimos: 250,
-    });
+    // ── La corrección de Richi, en una prueba ────────────────────────────────
+    //
+    // La primera entrega le puso a cada producto un «a cuánto lo vendes», y está
+    // mal: no se venden los ingredientes sueltos. Lo que se vende es un plato, y
+    // su precio vive en la carta (M10). Que el comando lo rechace es lo que
+    // impide que vuelva a colarse (0035).
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'cambiar_producto', {
+          ...laFichaDe(cerveza, 'Botellín de las bases', 'ud'),
+          precio_de_venta_centimos: 250,
+        }),
+      ),
+    ).toBe('faltan_datos');
 
-    const ficha = losDatos<{ producto: { precioDeVentaCentimos: number; ivaDeVenta: number } }>(
+    const ficha = losDatos<Record<string, unknown>>(
       await api.consultar(rosa, 'un_producto', { producto_id: cerveza }),
     );
-    expect(ficha.producto.precioDeVentaCentimos).toBe(250);
-    // Nadie lo ha elegido, así que lo pone la actividad: un servicio de
-    // restauración en la península va al 10 %, sea cerveza o sea sopa.
-    expect(ficha.producto.ivaDeVenta).toBe(0.1);
+    expect(ficha['producto']).not.toHaveProperty('precioDeVentaCentimos');
+    expect(ficha['producto']).not.toHaveProperty('ivaDeVenta');
   });
 
-  it('«vendido» apunta una venta con lo que se ha cobrado', async () => {
+  it('«vendido» apunta una venta, y sin tocar ningún importe', async () => {
     await api.ejecutar(rosa, 'apuntar_salida', {
       producto_id: cerveza,
       cuanto: 2,
       por_que: 'vendido',
-      ingreso_centimos: 500,
     });
 
-    const [linea] = await comoDuena<{ tipo: string; ingreso: string | null; motivo: string }>(
-      `select tipo::text as tipo, ingreso_centimos::text as ingreso, motivo
+    const [linea] = await comoDuena<{ tipo: string; motivo: string }>(
+      `select tipo::text as tipo, motivo
          from estook.movimiento_de_stock
         where producto_id = $1 order by id desc limit 1`,
       [cerveza],
     );
     expect(linea?.tipo).toBe('venta');
-    expect(Number(linea?.ingreso)).toBe(500);
     // El nombre del motivo lo pone el servidor desde el catálogo, no la pantalla.
     expect(linea?.motivo).toBe('Vendido a un cliente');
     expect(await loQueHay(cerveza)).toBe(98);
   });
 
-  it('«gastado» sigue siendo una salida, y no trae dinero', async () => {
+  it('y aquí ya no se puede teclear lo que se ha cobrado', async () => {
+    // Era pedir dos veces el mismo dato: lo que se cobra lo dice la carta, y lo
+    // que ha entrado hoy lo dice la caja. Dos respuestas para una pregunta acaban
+    // sin cuadrar.
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'apuntar_salida', {
+          producto_id: cerveza,
+          cuanto: 1,
+          por_que: 'vendido',
+          ingreso_centimos: 500,
+        }),
+      ),
+    ).toBe('faltan_datos');
+  });
+
+  it('«gastado» sigue siendo una salida', async () => {
     await api.ejecutar(rosa, 'apuntar_salida', {
       producto_id: cerveza,
       cuanto: 1,
       por_que: 'gastado',
     });
 
-    const [linea] = await comoDuena<{ tipo: string; ingreso: string | null }>(
-      `select tipo::text as tipo, ingreso_centimos::text as ingreso
-         from estook.movimiento_de_stock
+    const [linea] = await comoDuena<{ tipo: string }>(
+      `select tipo::text as tipo from estook.movimiento_de_stock
         where producto_id = $1 order by id desc limit 1`,
       [cerveza],
     );
     expect(linea?.tipo).toBe('salida');
-    expect(linea?.ingreso).toBeNull();
-  });
-
-  it('una salida que no es venta no puede traer dinero', async () => {
-    expect(
-      elFallo(
-        await api.ejecutar(rosa, 'apuntar_salida', {
-          producto_id: cerveza,
-          cuanto: 1,
-          por_que: 'gastado',
-          ingreso_centimos: 300,
-        }),
-      ),
-    ).toBe('faltan_datos');
   });
 
   it('una merma no entra por aquí: tiene su comando y su partida', async () => {
@@ -238,13 +258,19 @@ describe('lo que sale dice si se vendió, y a cuánto', () => {
   it('lo vendido sale propuesto al cerrar la caja, y no suma solo', async () => {
     const caja = losDatos<{
       cierre: unknown;
-      vendidoEnCamara: { concepto: string; unidades: number; importeCentimos: number }[];
+      vendidoEnCamara: {
+        concepto: string;
+        unidades: number;
+        precioUnidadCentimos: number | null;
+      }[];
     }>(await api.consultar(rosa, 'un_cierre'));
 
     const suyo = caja.vendidoEnCamara.find((v) => v.concepto === 'Botellín de las bases');
     expect(suyo).toBeDefined();
     expect(suyo?.unidades).toBe(2);
-    expect(suyo?.importeCentimos).toBe(500);
+    // Sin ningún cierre anterior con ese concepto, no hay precio que proponer: se
+    // dice que falta en vez de inventarlo.
+    expect(suyo?.precioUnidadCentimos).toBeNull();
 
     // **Y la caja sigue sin existir.** Es la mitad de la decisión: el dinero de
     // una jornada lo cuenta el cierre, y una salida de cámara no lo suma por su
@@ -259,7 +285,6 @@ describe('lo que sale dice si se vendió, y a cuánto', () => {
     }>(await api.consultar(marcos, 'mis_movimientos', { limite: '50' }));
 
     for (const linea of libro.movimientos) {
-      expect(linea).not.toHaveProperty('ingresoCentimos');
       expect(linea).not.toHaveProperty('costeMilesimas');
     }
   });

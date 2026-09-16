@@ -5,28 +5,16 @@ import {
   NOMBRE_DE_LA_PARTIDA,
   QUE_ES_CADA_FAMILIA,
   QUE_ES_CADA_SALIDA,
-  centimos,
-  conSimbolo,
   esMerma,
   esVenta,
   losDeLaFamilia,
   partidaDe,
-  porCantidad,
   type MotivoDeMerma,
   type MotivoDeSalida,
 } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
-import {
-  Aviso,
-  Boton,
-  Botones,
-  Campo,
-  CampoMoneda,
-  Hoja,
-  Interruptor,
-  Selector,
-  clases,
-} from '@estook/ui';
+import { Aviso, Boton, Botones, Campo, Hoja, Interruptor, Selector, clases } from '@estook/ui';
+import { IconoDinero } from '@estook/iconos';
 import type { Centimos } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -143,9 +131,6 @@ function ElFormulario({
   const [lote, setLote] = useState('');
   const [caduca, setCaduca] = useState('');
   const [porQue, setPorQue] = useState<MotivoDeSalida>('gastado');
-  /** Lo que se ha cobrado, con impuesto. Solo cuando se ha vendido. */
-  const [ingreso, setIngreso] = useState<Centimos | null>(null);
-  const [ingresoTocado, setIngresoTocado] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
   const numero = Number(cuanto.replace(',', '.'));
@@ -154,19 +139,6 @@ function ElFormulario({
   const puedeTocarPrecios = puedeEditar(permisos, 'dato.precio_de_compra');
   const precioDistinto = precio !== null && deLaLista !== null && precio !== deLaLista;
   const queEsEstaSalida = QUE_ES_CADA_SALIDA[porQue];
-
-  /**
-   * Lo que se habrá cobrado, si el producto tiene precio de venta.
-   *
-   * Se propone y **no se impone**: en cuanto alguien escribe un importe, manda el
-   * suyo. Un precio propuesto que se pisa solo al cambiar la cantidad es un
-   * importe inventado con la firma de quien lo apuntó.
-   */
-  const propuesto =
-    producto.precioDeVentaCentimos === null || !hayNumero || enUnidadesDeUso <= 0
-      ? null
-      : porCantidad(centimos(producto.precioDeVentaCentimos), enUnidadesDeUso);
-  const loCobrado = ingresoTocado ? ingreso : propuesto;
 
   const listo =
     hayNumero &&
@@ -228,7 +200,6 @@ function ElFormulario({
               // catálogo: aquí solo viaja la nota, que es lo que ha escrito una
               // persona.
               ...(nota.trim() === '' ? {} : { motivo: nota.trim() }),
-              ...(esVenta(porQue) && loCobrado !== null ? { ingreso_centimos: loCobrado } : {}),
             };
 
     const respuesta = await cliente.ejecutar<{
@@ -266,13 +237,11 @@ function ElFormulario({
       return;
     }
 
-    // Y cuando se ha vendido, se dice en la misma frase **dónde cuenta ese
-    // dinero**. Callarlo dejaría a quien lo apunta creyendo que ya está sumado a
-    // las ganancias, que es justo lo que no pasa.
+    // Y cuando se ha vendido, se dice **dónde cuenta ese dinero**. Callarlo
+    // dejaría a quien lo apunta creyendo que ya está sumado a las ganancias, que
+    // es justo lo que no pasa.
     const fraseVenta =
-      que === 'salida' && esVenta(porQue) && loCobrado !== null
-        ? ` ${conSimbolo(loCobrado)} apuntados: salen propuestos al cerrar la caja de hoy.`
-        : '';
+      que === 'salida' && esVenta(porQue) ? ' Sale propuesto al cerrar la caja de hoy.' : '';
 
     alHecho(
       `Apuntado. Quedan ${conUnidadDeUso(respuesta.datos.cantidad, respuesta.datos.unidadDeUso)}.${frasePrecio}${fraseVenta}`,
@@ -446,49 +415,36 @@ function ElFormulario({
               }}
             />
 
-            {/* ── Lo que se ha cobrado · solo cuando se ha vendido ────────── */}
+            {/* ── Lo vendido, y dónde se cuenta ──────────────────────────── */}
             {/*
-              ── La pregunta de «¿esto se suma a mis ganancias?» ──────────────
+              ── «¿Esto se suma a mis ganancias?», contestado ─────────────────
 
-              Se contesta aquí, y se contesta con la verdad: **el dinero de una
-              jornada se cuenta en un solo sitio**, que es el cierre de caja. Si
-              esto sumara por su cuenta y además se metiera el papel de la caja,
-              el día valdría el doble y no habría forma de verlo.
+              Sí, y **aquí no se teclea ni un euro**. Es la corrección de lo que
+              se entregó primero: se preguntaba «cuánto has cobrado», y eso es
+              pedir dos veces un dato que ya tiene dueño. Lo que se cobra por algo
+              lo dice la carta; lo que ha entrado hoy, la caja al cerrarla.
 
-              Así que lo que se cobra se apunta, y al cerrar la caja sale
-              propuesto con su nombre y su importe. Decide una persona, una vez.
+              Lo que sí hace falta saber aquí —y era lo que faltaba de verdad— es
+              **que se vendió**: eso distingue lo que cuesta lo que vendes de lo
+              que se perdió. Al cerrar la caja, esto sale propuesto con su nombre
+              y sus unidades, y con el precio que ya se sabe de la última vez.
             */}
             {que === 'salida' && esVenta(porQue) && (
-              <div className="flex flex-col gap-e2 rounded-medio border border-borde bg-fondo p-e3">
-                <CampoMoneda
-                  etiqueta="Cuánto has cobrado"
-                  ayuda={
-                    producto.precioDeVentaCentimos === null
-                      ? 'Con IVA, lo que ha pagado el cliente. Si no lo sabes, déjalo en blanco.'
-                      : `A su precio de venta salen ${conSimbolo(propuesto ?? centimos(0))}. Cámbialo si has cobrado otra cosa.`
-                  }
-                  valor={loCobrado}
-                  alCambiar={(nuevo) => {
-                    setIngresoTocado(true);
-                    setIngreso(nuevo);
-                  }}
-                />
-
-                {producto.precioDeVentaCentimos === null && (
-                  <p className="text-etiqueta text-texto-tenue">
-                    Si le pones precio de venta en su ficha, la próxima vez sale puesto solo.
+              <div className="flex items-start gap-e3 rounded-medio border border-borde bg-fondo p-e3">
+                <span aria-hidden className="mt-[2px] shrink-0 text-texto-tenue">
+                  <IconoDinero size={20} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-secundario text-texto-suave">
+                    <strong className="text-texto">El dinero lo cuenta la caja.</strong> Esto sale
+                    de cámara y se apunta como vendido; al cerrar la caja de hoy te saldrá
+                    propuesto, con lo que costó la última vez.
                   </p>
-                )}
-
-                <p className="text-secundario text-texto-suave">
-                  <strong className="text-texto">Esto se cuenta en la caja del día.</strong> Queda
-                  apuntado con lo que has cobrado y te sale propuesto al cerrar la caja de hoy. No
-                  se suma aquí y allí: el día se contaría dos veces.
-                </p>
-                <p className="text-etiqueta text-texto-tenue">
-                  Y puedes ahorrártelo: conectando el TPV, o subiendo el fichero o la foto del
-                  cierre, las ventas entran solas. Está en Servicio, en «Cómo entran tus ventas».
-                </p>
+                  <p className="mt-e1 text-etiqueta text-texto-tenue">
+                    Y puedes ahorrártelo entero: conectando el TPV, o subiendo el fichero o la foto
+                    del cierre, las ventas entran solas y descuentan lo suyo.
+                  </p>
+                </div>
               </div>
             )}
 

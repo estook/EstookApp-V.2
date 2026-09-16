@@ -176,6 +176,27 @@
   --text-cifra--line-height: 1.1;
   --text-cifra--font-weight: 700;
 
+  /*
+   * ── La misma cifra, cuando es larga ───────────────────────────────────────
+   *
+   * No es un uso nuevo de B2: es **la cifra**, con el tamano que le cabe. En un
+   * movil, «12.400,00 €» a 34 px no entra en la mitad de un widget, asi que
+   * partia en dos lineas y la tarjeta crecia; con las horas —«128 h 45 min»—
+   * pasaba siempre.
+   *
+   * Y no se arregla bajando el tamano de todas: «9 l» a 22 px desperdicia la
+   * mitad de la tarjeta, y la gracia de una cifra es que se lea de lejos. Asi que
+   * son tres escalones y los elige el propio componente segun lo que va a
+   * escribir, que es lo unico que sabe cuanto ocupa.
+   */
+  --text-cifra-media: calc(26px * var(--escala));
+  --text-cifra-media--line-height: 1.15;
+  --text-cifra-media--font-weight: 700;
+
+  --text-cifra-larga: calc(20px * var(--escala));
+  --text-cifra-larga--line-height: 1.2;
+  --text-cifra-larga--font-weight: 700;
+
   --text-pantalla: calc(22px * var(--escala));
   --text-pantalla--line-height: 1.2;
   --text-pantalla--font-weight: 600;

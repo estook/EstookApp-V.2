@@ -40,7 +40,12 @@ import { reactivarPersona } from './comandos/reactivar-persona.ts';
 import { retirarAcceso } from './comandos/retirar-acceso.ts';
 import { salir } from './comandos/salir.ts';
 import { crearCategoria, ponerLosEjemplos } from './comandos/categorias.ts';
-import { apuntarEntrada, apuntarSalida, ajustarStock } from './comandos/movimientos.ts';
+import {
+  apuntarEntrada,
+  apuntarSalida,
+  ajustarStock,
+  cerrarRecuento,
+} from './comandos/movimientos.ts';
 import { apuntarMerma } from './comandos/merma.ts';
 import { corregirFichaje, ficharEntrada, ficharSalida } from './comandos/fichar.ts';
 import {
@@ -231,6 +236,9 @@ export const catalogo = {
     [apuntarEntrada.nombre]: apuntarEntrada,
     [apuntarSalida.nombre]: apuntarSalida,
     [ajustarStock.nombre]: ajustarStock,
+    // `accion.cerrar_recuento` estaba en la matriz desde M1 y no tenia donde
+    // usarse: siete modulos con la promesa rota (M7, las apps conectadas).
+    [cerrarRecuento.nombre]: cerrarRecuento,
     [crearProveedor.nombre]: crearProveedor,
     [cambiarProveedor.nombre]: cambiarProveedor,
     [crearCategoria.nombre]: crearCategoria,

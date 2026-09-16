@@ -6,9 +6,11 @@ import {
   enPlural,
   ivaDeCompraPorDefecto,
   loQueSale,
+  llevaCategorias,
   precioDelFormato,
   presentacionDe,
   type ComoSeCompra,
+  type Zona,
 } from '@estook/dominio';
 import {
   Aviso,
@@ -29,6 +31,7 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { SelectorDeCategoria } from './SelectorDeCategoria.tsx';
 import { ComoLoCompras } from './ComoLoCompras.tsx';
+import { ElegirZona } from './ElegirZona.tsx';
 import { CampoPrecioDeCompra } from './CampoPrecioDeCompra.tsx';
 import {
   comoDinero,
@@ -115,6 +118,11 @@ export function NuevoProducto({
   const [caducaEl, setCaducaEl] = useState('');
   const [congelado, setCongelado] = useState(false);
   const [categoriaId, setCategoriaId] = useState('');
+  /**
+   * De dónde es. Empieza en cocina porque es donde está casi todo, y porque
+   * Inventario ha sido la cámara hasta hoy: quien no se fije acierta.
+   */
+  const [zona, setZona] = useState<Zona>('cocina');
   const [proveedorId, setProveedorId] = useState('');
 
   const DESDE_CUANTAS_LETRAS = 2;
@@ -207,7 +215,8 @@ export function NuevoProducto({
     }>('crear_producto', {
       nombre: nombre.trim(),
       ...(elegida === null ? {} : { de_referencia: elegida.id }),
-      categoria_id: categoriaId === '' ? null : categoriaId,
+      zona,
+      categoria_id: !llevaCategorias(zona) || categoriaId === '' ? null : categoriaId,
       proveedor_id: proveedorId === '' ? null : proveedorId,
       precio_centimos: elDelFormato,
       // Se compone, no se escribe: «Caja de 6 tarros de 250 g».
@@ -480,13 +489,22 @@ export function NuevoProducto({
               />
             )}
 
-            {/* 5 · Categoría y proveedor */}
-            <SelectorDeCategoria
-              categorias={categorias}
-              valor={categoriaId}
-              alElegir={setCategoriaId}
-              sinElegir="Sin categoría"
-            />
+            {/* 5 · De dónde es, y con eso la categoría y el proveedor */}
+            {/*
+              La zona va antes que la categoría porque manda sobre ella: en
+              limpieza no hay categorías, y en sala las que hay son otras. Y manda
+              sobre algo más gordo: **quién va a ver este producto** (0035).
+            */}
+            <ElegirZona valor={zona} alElegir={setZona} />
+
+            {llevaCategorias(zona) && (
+              <SelectorDeCategoria
+                categorias={categorias}
+                valor={categoriaId}
+                alElegir={setCategoriaId}
+                sinElegir="Sin categoría"
+              />
+            )}
 
             {/*
               El proveedor solo se pide a quien puede ver precios. Un cocinero da de

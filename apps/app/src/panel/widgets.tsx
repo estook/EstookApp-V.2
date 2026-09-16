@@ -4,6 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import {
   AVISAR_ANTES_DE_ENTRAR,
   NOMBRE_DE_LA_CAPA,
+  NOMBRE_DE_LA_ZONA,
+  ZONAS,
+  type Zona,
   NOMBRE_DEL_ESTADO,
   NOMBRE_DEL_ORIGEN_DEL_CIERRE,
   minutosHasta,
@@ -132,7 +135,7 @@ function Cual({
   if (id === 'bajo-minimo') return <BajoMinimo tamano={tamano} />;
   if (id === 'sin-precio') return <SinPrecio tamano={tamano} />;
   if (id === 'valor-de-la-camara') return <ValorDeLaCamara />;
-  if (id === 'cuanto-genero') return <CuantoGenero />;
+  if (id === 'cuanto-genero') return <CuantoGenero tamano={tamano} />;
   if (id === 'mis-apps') return <MisApps tamano={tamano} />;
   if (id === 'fichar') return <FicharDesdeElPanel tamano={tamano} />;
   if (id === 'fichajes') return <QuienEstaTrabajandoWidget tamano={tamano} />;
@@ -400,7 +403,14 @@ function ValorDeLaCamara() {
   );
 }
 
-function CuantoGenero() {
+/** El color de cada zona en la barra. Tres tonos que ya existen, no tres nuevos. */
+const TONO_DE_LA_ZONA: Readonly<Record<Zona, 'marca' | 'info' | 'neutro'>> = {
+  cocina: 'marca',
+  sala: 'info',
+  limpieza: 'neutro',
+};
+
+function CuantoGenero({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const consulta = usarLoDeHoy();
   const hoy = consulta.data;
 
@@ -418,6 +428,32 @@ function CuantoGenero() {
               : 'Todos de verdad'
         }
       />
+
+      {/*
+        Y cómo se reparte: cocina, sala y limpieza. Un número suelto no dice nada
+        —«312 productos», ¿y qué?— y tres que suman ese número cuentan cómo es
+        este local de un vistazo. Es el mismo dato que ya trae la consulta para el
+        filtro de Productos, así que no cuesta un viaje más.
+      */}
+      {tamano !== 'chico' && (hoy?.porZona.length ?? 0) > 1 && (
+        <div className="mt-e3">
+          <Proporcion
+            titulo="Cómo se reparte tu género"
+            trozos={ZONAS.flatMap((zona) => {
+              const cuantos = hoy?.porZona.find((z) => z.zona === zona)?.cuantos ?? 0;
+              return cuantos === 0
+                ? []
+                : [
+                    {
+                      que: NOMBRE_DE_LA_ZONA[zona],
+                      cuantos,
+                      tono: TONO_DE_LA_ZONA[zona],
+                    },
+                  ];
+            })}
+          />
+        </div>
+      )}
 
       {/*
         Y cuántos de esos llevan precio, en una barra.

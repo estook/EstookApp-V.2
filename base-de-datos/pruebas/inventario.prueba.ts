@@ -562,7 +562,12 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // leer las membresías de toda la organización, igual que `locales_visibles`.
     // Sin privilegio, la política de `membresia` la llamaría a ella y volvería a
     // consultar `membresia`: la misma recursión que obligó a M1 a hacer lo mismo.
-    // Son diecisiete.
+    //
+    // **Y M7 añade la dieciocho: `zonas_que_ve`** (0035). Decide qué género ve
+    // cada uno —un cocinero no ve la barra, un camarero no ve la cámara— y está
+    // dentro de la política de `producto`, así que tiene que leer el rol de la
+    // membresía sin volver a pasar por la seguridad de `membresia`. Es la misma
+    // razón, la tercera vez. Son dieciocho.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -595,6 +600,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'sesion_activa',
       'suscripcion_al_crear_organizacion',
       'tiene_como_volver_a_entrar',
+      'zonas_que_ve',
     ]);
   });
 

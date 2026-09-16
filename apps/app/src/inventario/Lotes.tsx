@@ -3,7 +3,7 @@ import { Boton, Botones, Campo, ErrorEnCristiano, Hoja, clases } from '@estook/u
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarRefrescarLotes } from '../ganchos/usarRefrescarLotes.ts';
-import { comoSeLeeLaFecha } from './contrato.ts';
+import { comoSeLeeLaFecha, conUnidadDeUso } from './contrato.ts';
 
 /**
  * Quitar un lote y congelar (M7, repaso).
@@ -162,26 +162,46 @@ export function QuitarLote({
  * Con un lote, se congela ese; sin él, se apunta uno congelado hoy. La fecha de
  * caducidad nueva es opcional: congelado aguanta meses, y quien no la sabe no
  * tiene por qué inventarla.
+ *
+ * ── Lo que faltaba, y era lo primero ────────────────────────────────────────
+ *
+ * **Cuánto.** Esto marcaba el producto entero: congelar 10 kg de los 43 que hay
+ * dejaba los 43 con la etiqueta de congelado, y en la lista salía «Bacon ·
+ * congelado» como si no quedara nada fresco. Richi lo vio a la primera y tenía
+ * razón: congelar una parte es el caso normal, no el raro.
+ *
+ * Ahora se dice cuánto y se separa esa parte. Lo que queda fresco sigue siendo lo
+ * que hay menos lo congelado, y las dos cifras se leen en la ficha.
  */
 export function Congelar({
   productoId,
   producto,
   lote,
+  unidadDeUso,
+  hay,
   alCerrar,
   alHecho,
 }: {
   readonly productoId: string;
   readonly producto: string;
   readonly lote: { readonly id: string; readonly caducaEl: string | null } | null;
+  readonly unidadDeUso: string;
+  /** Lo que hay en cámara, para no dejar congelar más de lo que existe. */
+  readonly hay: number;
   readonly alCerrar: () => void;
   readonly alHecho: (frase: string) => void;
 }) {
   const { cliente } = usarSesion();
   const refrescar = usarRefrescarLotes();
+  const [cuanto, setCuanto] = useState('');
   const [caducaEl, setCaducaEl] = useState('');
   const [codigo, setCodigo] = useState('');
   const [congelando, setCongelando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
+
+  const cuantoEscrito = Number(cuanto.replace(',', '.'));
+  const hayCuanto = cuanto.trim() !== '' && Number.isFinite(cuantoEscrito) && cuantoEscrito > 0;
+  const sePasa = hayCuanto && cuantoEscrito > hay;
 
   async function congelar() {
     setCongelando(true);
@@ -189,6 +209,7 @@ export function Congelar({
     const respuesta = await cliente.ejecutar('congelar', {
       producto_id: productoId,
       ...(lote === null ? {} : { lote_id: lote.id }),
+      ...(hayCuanto ? { cuanto: cuantoEscrito } : {}),
       ...(caducaEl === '' ? {} : { caduca_el: caducaEl }),
       ...(lote === null && codigo.trim() !== '' ? { codigo: codigo.trim() } : {}),
     });
@@ -198,7 +219,11 @@ export function Congelar({
       return;
     }
     await refrescar();
-    alHecho(`${producto}: congelado hoy. Sale en «Congelados» con su fecha.`);
+    alHecho(
+      hayCuanto
+        ? `${producto}: ${conUnidadDeUso(cuantoEscrito, unidadDeUso)} al congelador. Salen en «Congelados» con su fecha.`
+        : `${producto}: congelado hoy. Sale en «Congelados» con su fecha.`,
+    );
   }
 
   return (
@@ -213,6 +238,7 @@ export function Congelar({
           </Boton>
           <Boton
             tono="principal"
+            disabled={sePasa}
             cargando={congelando}
             textoCargando="Congelando"
             onClick={() => {
@@ -226,6 +252,28 @@ export function Congelar({
     >
       <div className="flex flex-col gap-e3">
         {error !== null && <ErrorEnCristiano error={error} />}
+
+        {/*
+          Cuánto, lo primero y con lo que hay delante: «de 43 kg». Es la pregunta
+          que faltaba, y la que evita marcar como congelado lo que sigue fresco.
+        */}
+        <Campo
+          etiqueta="Cuánto se congela"
+          tipo="numero"
+          autoFocus
+          detras={unidadDeUso}
+          ayuda={
+            sePasa
+              ? `Solo hay ${conUnidadDeUso(hay, unidadDeUso)}.`
+              : `De ${conUnidadDeUso(hay, unidadDeUso)} que hay. Si lo dejas en blanco, se apunta sin decir cuánto.`
+          }
+          {...(sePasa ? { error: 'No puedes congelar más de lo que hay.' } : {})}
+          value={cuanto}
+          onChange={(e) => {
+            setCuanto(e.currentTarget.value);
+          }}
+        />
+
         <Campo
           etiqueta="Caduca el, ya congelado"
           tipo="fecha"

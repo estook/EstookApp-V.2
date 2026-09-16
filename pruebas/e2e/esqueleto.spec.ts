@@ -545,10 +545,14 @@ test.describe('deshacer universal', () => {
     // El nombre del local se comprueba en la cabecera del Panel, y **no suelto**:
     // el selector es un `<select>`, y sus `<option>` llevan el mismo texto sin
     // estar visibles. Un `getByText` suelto encuentra la opcion, no el rotulo.
-    await expect(page.locator('main p').filter({ hasText: 'Bar Puerto' }).first()).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1 }).filter({ hasText: 'Bar Puerto' }),
+    ).toBeVisible();
 
     await page.getByRole('button', { name: /Deshacer/ }).click();
-    await expect(page.locator('main p').filter({ hasText: 'Bar Playa' }).first()).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1 }).filter({ hasText: 'Bar Playa' }),
+    ).toBeVisible();
   });
 });
 

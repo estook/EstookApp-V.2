@@ -1,7 +1,26 @@
 # 0037 · Lo que sale de la cámara dice si se vendió, y el dinero lo cuenta la caja
 
-**Fecha:** 12 de septiembre de 2026
-**Estado:** decidido y construido en el repaso de M7 (migración `0034`)
+**Fecha:** 12 de septiembre de 2026 · **corregida el 16 de septiembre**
+**Estado:** decidido y construido en el repaso de M7 (migraciones `0034` y `0035`)
+
+> ## Lo que se corrigió cuatro días después
+>
+> Esta decisión traía un error, y Richi lo vio en cuanto lo tuvo delante:
+>
+> > «¿Preguntas en una ficha de producto "a cuánto lo vendes"? **No se venden los
+> > ingredientes sueltos**: con ellos se crean platos, y ahí ponemos el precio de
+> > venta. Si es queso en gramos, se sabe por el escandallo cuánto cuesta y por la
+> > carta a cuánto lo vendes.»
+>
+> Tiene razón y no es un detalle de pantalla: es el modelo. Se quitan el precio de
+> venta del producto y el importe que se tecleaba al sacar género (migración
+> `0035`). Lo que **se queda** es el tipo de movimiento `venta`, que era lo bueno
+> de esta decisión: seguir distinguiendo lo que se vendió de lo que se cocinó y de
+> lo que se tiró.
+>
+> Lo tachado abajo se lee con eso delante: el apartado **cinco** ya no vale, y el
+> **tres** vale más que antes —el dinero lo cuenta la caja, y ahora también el
+> precio sale de donde tiene que salir—.
 
 ## Lo que dijo Richi
 
@@ -100,7 +119,13 @@ TPV, o subiendo el fichero o la foto del cierre, las ventas entran solas». Los 
 caminos ya existen y acaban en la misma tabla (0027); lo que falta es la conexión
 del TPV, que es M20, y leer una foto, que es M22.
 
-### Cinco · A cuánto se vende, para lo que se vende tal cual
+### Cinco · ~~A cuánto se vende, para lo que se vende tal cual~~ · **retirado**
+
+> **Esto se quitó el 16 de septiembre** (migración `0035`). Lo de abajo se queda
+> escrito para saber qué se probó y por qué no valía: un producto no tiene precio
+> de venta, y ponérselo era inventarse un tercer sitio para un dato que ya tiene
+> el suyo. El precio de venta vive en la carta (M10) y el coste sale del
+> escandallo (M9).
 
 `producto.precio_de_venta_centimos`, **con impuesto**, que es el precio de la
 pizarra. Al revés que el de compra ([0033](0033-los-precios-de-compra-se-guardan-sin-iva.md))
@@ -128,17 +153,17 @@ es M10. Esto es el precio de un producto que se vende sin pasar por ninguna rece
 Richi pidió que «cada dato se compare para que la app lo sepa todo». Esta es la
 cadena entera, con lo que hay hoy y lo que falta:
 
-| Eslabón                            | Dónde está hoy                    | Qué falta             |
-| ---------------------------------- | --------------------------------- | --------------------- |
-| Lo que cuesta el género            | Precio de compra, sin IVA (0033)  | —                     |
-| Lo que hay y lo que se gasta       | El libro de movimientos (M6)      | —                     |
-| Lo que se pierde, y en qué partida | La merma con motivo (0026)        | —                     |
-| Lo que se vende **tal cual**       | **Esta decisión**                 | —                     |
-| Lo que se vende **cocinado**       | Las líneas del cierre, como texto | La carta, **M10**     |
-| Lo que cuesta cada plato           | —                                 | El escandallo, **M9** |
-| Lo que entra cada día              | El cierre de caja, a mano o CSV   | El TPV, **M20**       |
-| Leer una foto del Z o de un tíquet | El sitio, apagado con su motivo   | Fogón, **M22**        |
-| Descontar lo vendido del almacén   | —                                 | **M20**               |
+| Eslabón                            | Dónde está hoy                    | Qué falta                    |
+| ---------------------------------- | --------------------------------- | ---------------------------- |
+| Lo que cuesta el género            | Precio de compra, sin IVA (0033)  | —                            |
+| Lo que hay y lo que se gasta       | El libro de movimientos (M6)      | —                            |
+| Lo que se pierde, y en qué partida | La merma con motivo (0026)        | —                            |
+| Lo que se vende **tal cual**       | El movimiento de tipo `venta`     | Su precio: la carta, **M10** |
+| Lo que se vende **cocinado**       | Las líneas del cierre, como texto | La carta, **M10**            |
+| Lo que cuesta cada plato           | —                                 | El escandallo, **M9**        |
+| Lo que entra cada día              | El cierre de caja, a mano o CSV   | El TPV, **M20**              |
+| Leer una foto del Z o de un tíquet | El sitio, apagado con su motivo   | Fogón, **M22**               |
+| Descontar lo vendido del almacén   | —                                 | **M20**                      |
 
 Lo que hace esta decisión es cerrar el eslabón que faltaba y **dejar los otros
 enchufados**: cuando llegue M20, lo que traiga el TPV se guarda en la misma tabla y

@@ -86,7 +86,8 @@ export interface ElCierreDeUnDia {
   readonly vendidoEnCamara: readonly {
     readonly concepto: string;
     readonly unidades: number;
-    readonly importeCentimos: number;
+    /** Lo que costó la última vez que se cerró ese concepto, si se sabe. */
+    readonly precioUnidadCentimos: number | null;
     readonly yaEstaPuesto: boolean;
   }[];
 }

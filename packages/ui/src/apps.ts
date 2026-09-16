@@ -256,7 +256,10 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // Y «Ventas» desde el repaso de M7: el género que sale de la cámara y se
         // cobra tal cual —media barra de un bar— dejo de ser una salida con una
         // nota y tiene su propia linea en el libro (0037).
-        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Ventas', 'Mermas', 'Ajustes'),
+        // Y «Recuento», que es contar la camara a mano y corregir el libro con lo
+        // contado. Es una vista de Movimientos y no una app: «los recuentos y las
+        // mermas seran vistas de Movimientos», escrito desde M6.
+        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Ventas', 'Mermas', 'Ajustes', 'Recuento'),
       },
       {
         id: 'compras',

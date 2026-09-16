@@ -77,7 +77,7 @@ async function irAlLocal(page: Page, nombre: string) {
 
   // Se espera al nombre en la cabecera del Panel: hasta que no está, la sesión
   // todavía puede ser la de antes.
-  await expect(page.locator('main p').filter({ hasText: nombre }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 }).filter({ hasText: nombre })).toBeVisible();
 }
 
 async function abrirLimpio(page: Page) {
@@ -128,6 +128,28 @@ async function irAInventario(page: Page, destino: string, vista?: string) {
  * Costó una prueba en rojo que parecía un fallo de la pantalla y no lo era.
  */
 async function pulsarLoQueSeVe(page: Page, texto: string) {
+  /*
+    ── Primero, el botón que abre la fila ────────────────────────────────────
+
+    Desde M7, la lista de Productos en móvil son **filas compactas**: dos líneas
+    por producto, con un botón invisible que cubre la fila entera para que se
+    abra tocando en cualquier sitio. Ese botón se traga el clic sobre el nombre,
+    que es lo que hacía esta función, así que se busca primero.
+
+    Y se llama «Abrir Cebolla», no «Abrir»: sin el nombre, un lector de pantalla
+    leería trescientas veces lo mismo, y aquí no habría forma de elegir una.
+  */
+  const abrir = page.getByRole('button', { name: `Abrir ${texto}` });
+  if (
+    await abrir
+      .first()
+      .isVisible()
+      .catch(() => false)
+  ) {
+    await abrir.first().click();
+    return;
+  }
+
   const candidatos = page.getByText(texto, { exact: false });
   await candidatos.first().waitFor({ state: 'attached', timeout: 15_000 });
 
@@ -1447,6 +1469,8 @@ test('el IVA de los precios: se elige cómo se escriben y a los de antes se les 
 /**
  * ── Las tres cosas que Richi no encontraba en la ficha ──────────────────────
  *
+ *   · «¿A cuánto lo vendes en una ficha de producto? No se venden los
+ *     ingredientes sueltos.» Y no se venden: eso vive en la carta (0035).
  *   · «El diseño de la tarjeta de producto es demasiado sencillo, los botones no
  *     existen.» Cada sección es ahora una tarjeta con su título y su botón.
  *   · «Hay un tag naranja que dice "sin verificar" y no sé cómo quitarlo.» El
@@ -1454,7 +1478,7 @@ test('el IVA de los precios: se elige cómo se escriben y a los de antes se les 
  *   · «El deshacer ha desaparecido.» Está, en lo que se edita y se puede volver
  *     a editar: la ficha, el precio de compra y el de venta.
  */
-test('la ficha dice lo que deja, deja medir el aprovechamiento y se puede deshacer', async ({
+test('la ficha no vende ingredientes, deja medir el aprovechamiento y se puede deshacer', async ({
   page,
   request,
 }) => {
@@ -1477,25 +1501,31 @@ test('la ficha dice lo que deja, deja medir el aprovechamiento y se puede deshac
 
   const ficha = page.getByRole('dialog', { name: nombre });
 
-  // ── Lo que deja, que antes no existía ────────────────────────────────────
-  await ficha.getByRole('button', { name: 'Poner precio de venta' }).click();
-  const hoja = page.getByRole('dialog', { name: 'A cuánto lo vendes' });
-  await hoja.getByLabel(/^Lo que cobras/).fill('2,50');
-  // La cuenta se ve antes de guardar: 2,50 € con el 10 % dentro son 2,27 €.
-  await expect(hoja.getByText(/te entran/i)).toContainText('2,27');
-  await hoja.getByRole('button', { name: 'Guardar', exact: true }).click();
-  await expect(hoja).toHaveCount(0);
+  // ── Un ingrediente NO tiene precio de venta ──────────────────────────────
+  //
+  // La primera entrega le puso uno, y Richi lo vio a la primera: «¿preguntas en
+  // una ficha de producto a cuánto lo vendes? No se venden los ingredientes
+  // sueltos». Tenía razón, y aquí se comprueba que no ha vuelto: lo que se vende
+  // es un plato, y su precio vive en la carta (0035).
+  await expect(ficha.getByRole('button', { name: 'Poner precio de venta' })).toHaveCount(0);
+  await expect(ficha.getByText('Lo que deja')).toHaveCount(0);
 
-  // Y el margen, con el coste ya restado y sin regalarse el impuesto: 2,50 € con
-  // el 10 % dentro son 2,27 €, menos 0,45 € de coste, 1,82 €.
-  await expect(ficha.getByText('Te queda', { exact: true })).toBeVisible({ timeout: 15_000 });
-  await expect(ficha.getByText('1,82 €')).toBeVisible();
+  // ── De dónde es, que sí está ─────────────────────────────────────────────
+  await expect(ficha.getByText('De dónde es')).toBeVisible();
 
-  // ── Y deshacer, que es lo que pidió ──────────────────────────────────────
+  // ── Deshacer, que es lo que pidió ────────────────────────────────────────
+  //
+  // Se prueba con la ficha, que es lo que se edita y se vuelve a editar.
+  await ficha.getByRole('button', { name: 'Corregir la ficha' }).click();
+  const primera = page.getByRole('dialog', { name: 'Corregir la ficha' });
+  await primera.getByLabel(/^Producto/).fill(`${nombre} de la barra`);
+  await primera.getByRole('button', { name: /^Guardar/ }).click();
+  await expect(primera).toHaveCount(0);
+
   const deshacer = page.getByRole('button', { name: /Deshacer/ });
   await expect(deshacer).toBeVisible();
   await deshacer.click();
-  await expect(ficha.getByRole('button', { name: 'Poner precio de venta' })).toBeVisible({
+  await expect(ficha.getByRole('heading', { name: nombre, exact: true })).toBeVisible({
     timeout: 15_000,
   });
 
@@ -1519,6 +1549,186 @@ test('la ficha dice lo que deja, deja medir el aprovechamiento y se puede deshac
   await expect(corregir).toHaveCount(0);
   await expect(ficha.getByText('medido en esta cocina')).toBeVisible({ timeout: 15_000 });
 });
+
+// ── 7¾ · Las zonas, congelar una parte y el recuento ────────────────────────
+
+/**
+ * ── «Añade un filtro de sala, cocina y limpieza» ────────────────────────────
+ *
+ * Inventario era un solo montón: un cocinero buscando harina pasaba por las
+ * servilletas y el lavavajillas. Ahora el género es de una zona, el filtro está
+ * al lado del de categoría, y las categorías se cuentan **dentro de la zona que
+ * se mira**, que era la mitad de lo que estaba mal.
+ */
+test('el género se filtra por zona, y la categoría cuenta dentro de ella', async ({
+  page,
+  request,
+}) => {
+  const token = await tokenDe(request, ROSA);
+  const marca = Date.now();
+  const enSala = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre: `Vermut ${marca}`,
+    factor: 1,
+    unidad_de_uso: 'ud',
+    zona: 'sala',
+    cantidad_inicial: 6,
+  });
+  expect(enSala.estado).toBe(200);
+
+  // Y uno de cocina, porque **el filtro solo ofrece las zonas que tienen algo**:
+  // un desplegable con «Cocina (0)» es un camino a una lista vacía.
+  const enCocina = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre: `Merluza ${marca}`,
+    factor: 1,
+    unidad_de_uso: 'kg',
+    zona: 'cocina',
+    cantidad_inicial: 4,
+  });
+  expect(enCocina.estado).toBe(200);
+
+  await entrar(page, ROSA);
+  await irAInventario(page, 'productos', 'todo');
+
+  // Se busca por la marca, que llevan los dos: la lista viene acotada a cincuenta
+  // y en una base con doscientos productos de otras pruebas estos dos podrían no
+  // estar entre ellos. Es lo mismo que haría una persona.
+  await page.getByLabel('Buscar en tu género').fill(String(marca));
+
+  // De fábrica se ve todo, y están los dos.
+  await expect(loQueSeVe(page, `Vermut ${marca}`)).toBeVisible({ timeout: 15_000 });
+  await expect(loQueSeVe(page, `Merluza ${marca}`)).toBeVisible();
+
+  // Filtrando por cocina, el vermut desaparece y la merluza se queda.
+  await page.getByLabel('De dónde').selectOption('cocina');
+  await expect(loQueSeVe(page, `Merluza ${marca}`)).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(`Vermut ${marca}`)).toHaveCount(0);
+
+  // Y en sala, al revés. Con la categoría al lado, que sala sí las lleva.
+  await page.getByLabel('De dónde').selectOption('sala');
+  await expect(loQueSeVe(page, `Vermut ${marca}`)).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(`Merluza ${marca}`)).toHaveCount(0);
+  await expect(page.getByLabel('Categoría')).toBeVisible();
+
+  await page.getByLabel('Buscar en tu género').fill('');
+
+  // En limpieza, el desplegable de categoría **no está**: son quince cosas y no
+  // llevan árbol. No se apaga, no está (Auditoría, parte 3).
+  const deLimpieza = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre: `Lejía ${marca}`,
+    factor: 1,
+    unidad_de_uso: 'l',
+    zona: 'limpieza',
+    cantidad_inicial: 2,
+  });
+  expect(deLimpieza.estado).toBe(200);
+
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.getByLabel('De dónde')).toBeVisible({ timeout: 15_000 });
+  await page.getByLabel('De dónde').selectOption('limpieza');
+  await expect(page.getByLabel('Categoría')).toHaveCount(0);
+});
+
+/**
+ * «Los congelados no funcionan bien: deberías poder elegir cuántas unidades o
+ * peso quieres congelar y separar esa parte. Ahora generaliza todo.»
+ */
+test('se congela una parte, y se ve cuánta', async ({ page, request }) => {
+  const token = await tokenDe(request, ROSA);
+  const nombre = `Bacon ${Date.now()}`;
+  const creado = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre,
+    factor: 1,
+    unidad_de_uso: 'kg',
+    cantidad_inicial: 43,
+  });
+  expect(creado.estado).toBe(200);
+
+  await entrar(page, ROSA);
+  await page.goto(`${APP}#/inventario/productos/todo?producto=${creado.datos?.productoId ?? ''}`, {
+    waitUntil: 'domcontentloaded',
+  });
+
+  const ficha = page.getByRole('dialog', { name: nombre });
+  await ficha.getByRole('button', { name: 'Congelar una parte' }).click();
+
+  const hoja = page.getByRole('dialog', { name: `Congelar ${nombre}` });
+  await expect(hoja.getByText('De 43 kg que hay')).toBeVisible();
+
+  // No se puede congelar más de lo que hay: se dice y no se deja.
+  await hoja.getByLabel(/^Cuánto se congela/).fill('50');
+  await expect(hoja.getByText('No puedes congelar más de lo que hay.')).toBeVisible();
+
+  await hoja.getByLabel(/^Cuánto se congela/).fill('10');
+  await hoja.getByRole('button', { name: 'Congelarlo' }).click();
+  await expect(hoja).toHaveCount(0);
+
+  // Y lo que se ve es «10 kg congelados», no «congelado» a secas sobre los 43.
+  await expect(ficha.getByText('10 kg congelados').first()).toBeVisible({ timeout: 15_000 });
+
+  const suyo = await consultar<{
+    producto: { congeladoCuanto: number | null; cantidad: number };
+  }>(request, token, 'un_producto', { producto_id: creado.datos?.productoId ?? '' });
+  expect(suyo.datos?.producto.congeladoCuanto).toBe(10);
+  // Congelar no saca género de la cámara: siguen siendo 43.
+  expect(suyo.datos?.producto.cantidad).toBe(43);
+});
+
+/**
+ * «Que se pueda subir foto o archivo del inventario que hayan hecho para
+ * actualizar todo. Es una opción que cambia todo, no suma.»
+ *
+ * Eso es un recuento, y el permiso —`accion.cerrar_recuento`— llevaba desde M1 en
+ * la matriz **sin ninguna pantalla detrás**.
+ */
+test('el recuento cambia lo que hay y dice cuánto bailaba', async ({ page, request }) => {
+  const token = await tokenDe(request, ROSA);
+  const nombre = `Arroz ${Date.now()}`;
+  const creado = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre,
+    factor: 1,
+    unidad_de_uso: 'kg',
+    zona: 'cocina',
+    cantidad_inicial: 43,
+  });
+  expect(creado.estado).toBe(200);
+
+  await entrar(page, ROSA);
+  await irAInventario(page, 'movimientos', 'recuento');
+
+  await expect(page.getByText('Esto cambia lo que hay, no lo suma')).toBeVisible({
+    timeout: 15_000,
+  });
+
+  // Se busca el que se está contando y se escribe lo contado. Lo que decía el
+  // libro sale debajo, **nunca dentro de la casilla**: una cifra puesta de
+  // antemano se confirma sin mirar.
+  await page.getByLabel('Buscar', { exact: true }).fill(nombre);
+  await expect(page.getByText('El libro dice 43 kg')).toBeVisible({ timeout: 15_000 });
+
+  await page.getByLabel('Contado').first().fill('38');
+  // La diferencia se dice al momento, que es el dato que se viene a buscar.
+  await expect(page.getByText('−5 kg')).toBeVisible();
+
+  await page.getByRole('button', { name: /Cerrar el recuento/ }).click();
+  await expect(page.getByText('Recuento cerrado')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Lo que más bailaba')).toBeVisible();
+
+  const suyo = await consultar<{ producto: { cantidad: number } }>(request, token, 'un_producto', {
+    producto_id: creado.datos?.productoId ?? '',
+  });
+  expect(suyo.datos?.producto.cantidad).toBe(38);
+
+  // Y en el libro queda como recuento, no como ajuste: un ajuste es una cámara
+  // que no cuadraba; un recuento es la cámara contada entera.
+  const libro = await consultar<{ movimientos: { producto: string; tipo: string }[] }>(
+    request,
+    token,
+    'mis_movimientos',
+    { tipo: 'recuento', limite: '50' },
+  );
+  expect(libro.datos?.movimientos.some((m) => m.producto === nombre)).toBe(true);
+});
+
 // ── 8 · Delivery · el sitio, no la integración ──────────────────────────────
 
 test('el reparto tiene su sitio, con Uber Eats por su nombre y sin botón de mentira', async ({

@@ -56,8 +56,21 @@ export function Cifra({
         cuando cambia, sin interrumpir. Y el valor de verdad va en `aria-label`,
         no el que se esta animando: quien escucha oye el final, no la cuenta.
       */}
+      {/*
+        ── El tamaño lo decide lo que se va a escribir ───────────────────────
+
+        «Cuando salen cifras grandes se cortan y bajan y queda feo; mejor que si
+        es poco sea más grande, y si tiene más ceros se haga más pequeña.» En un
+        móvil, «128 h 45 min» a 34 px no cabe en media tarjeta: partía en dos
+        líneas y el widget crecía.
+
+        Se mide **lo que va a escribirse**, no el número: «9 l» son tres letras y
+        «12.400,00 €» son once, y el que ocupa es el texto. El valor de verdad
+        sigue yendo en `aria-label`, así que quien escucha oye lo mismo pase lo
+        que pase.
+      */}
       <p
-        className="text-cifra font-bold leading-tight"
+        className={clases(comoDeGrande(formato(valor)), 'font-bold leading-tight tabular-nums')}
         aria-live="polite"
         aria-label={`${etiqueta}: ${formato(valor)}`}
       >
@@ -167,4 +180,17 @@ function useCuenta(destino: number): number {
   }, [destino]);
 
   return pintado;
+}
+
+/**
+ * Qué tamaño le toca a una cifra, por lo que ocupa escrita.
+ *
+ * Los cortes están donde dejan de caber dos cifras juntas en la mitad de un
+ * widget de móvil, que es el sitio más estrecho donde vive una `Cifra`. No es una
+ * escala nueva: son tres escalones del mismo uso de B2 (ver `fichas.css`).
+ */
+function comoDeGrande(escrito: string): string {
+  if (escrito.length <= 7) return 'text-cifra';
+  if (escrito.length <= 11) return 'text-cifra-media';
+  return 'text-cifra-larga';
 }

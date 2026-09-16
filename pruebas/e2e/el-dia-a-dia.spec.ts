@@ -270,16 +270,15 @@ test('el + apunta lo que llega con su precio puesto, y el − pregunta por qué 
   // ── Y lo que antes no se podía decir: que se ha vendido ───────────────────
   //
   // «Gastado o vendido» era un solo botón, y con las dos cosas juntas Estook no
-  // sabía si por lo que salió entró dinero. Ahora se dice, se apunta lo que se ha
-  // cobrado, y **ese dinero no se suma a ninguna ganancia aquí**: espera al
-  // cierre de caja, que es su único dueño.
+  // sabía si por lo que salió entró dinero. Ahora se dice, **y no se pregunta
+  // cuánto**: el precio de venta vive en la carta y el dinero lo cuenta la caja.
   await page.locator(`[aria-label="Ha salido ${nombre}"] >> visible=true`).click();
-  // El «cuánto» primero, que mientras no se diga «vendido» es el único campo que
-  // empieza por esa palabra. Después el porqué, y entonces aparece el importe.
   await sale.getByLabel(/^Cuánto/).fill('2');
   await sale.getByRole('radio', { name: 'Vendido a un cliente' }).click();
-  await sale.getByLabel('Cuánto has cobrado').fill('7,50');
-  await expect(sale.getByText('Esto se cuenta en la caja del día')).toBeVisible();
+  await expect(sale.getByText('El dinero lo cuenta la caja')).toBeVisible();
+  // Y aquí ya no hay ninguna casilla de importe: era pedir dos veces el mismo
+  // dato, y Richi lo cazó a la primera.
+  await expect(sale.getByLabel('Cuánto has cobrado')).toHaveCount(0);
   await sale.getByRole('button', { name: 'Apuntar la salida' }).click();
   await expect(sale).toHaveCount(0);
   await expect(loQueSeVe(page, '10 kg')).toBeVisible({ timeout: 15_000 });
@@ -292,18 +291,20 @@ test('el + apunta lo que llega con su precio puesto, y el − pregunta por qué 
   );
   expect(mermas.datos?.mermas.find((m) => m.producto === nombre)?.motivo).toBe('caducado');
 
-  // La venta queda en el libro como venta, con lo que se cobró.
+  // La venta queda en el libro **como venta**, que es lo que distingue lo que
+  // cuesta lo que vendes de lo que se ha perdido.
   const libro = await consultar<{
-    movimientos: { producto: string; tipo: string; ingresoCentimos?: number | null }[];
+    movimientos: { producto: string; tipo: string }[];
   }>(request, rosa, 'mis_movimientos', { tipo: 'venta', limite: '50' });
-  const laVenta = libro.datos?.movimientos.find((m) => m.producto === nombre);
-  expect(laVenta?.ingresoCentimos).toBe(750);
+  expect(libro.datos?.movimientos.some((m) => m.producto === nombre)).toBe(true);
 
-  // Y sale propuesta al cerrar la caja, sin haber sumado nada por su cuenta.
+  // Y sale propuesta al cerrar la caja, con sus unidades. El importe saldrá de lo
+  // que costó ese concepto la última vez que se cerró; sin cierres previos, no se
+  // inventa ninguno.
   const caja = await consultar<{
-    vendidoEnCamara: { concepto: string; importeCentimos: number }[];
+    vendidoEnCamara: { concepto: string; unidades: number; precioUnidadCentimos: number | null }[];
   }>(request, rosa, 'un_cierre');
-  expect(caja.datos?.vendidoEnCamara.find((v) => v.concepto === nombre)?.importeCentimos).toBe(750);
+  expect(caja.datos?.vendidoEnCamara.find((v) => v.concepto === nombre)?.unidades).toBe(2);
 });
 
 // ── 4 · La caja, a mano ──────────────────────────────────────────────────────

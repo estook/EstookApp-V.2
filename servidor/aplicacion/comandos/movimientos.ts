@@ -2,14 +2,18 @@ import { z } from 'zod';
 import {
   MOTIVOS_DE_SALIDA,
   QUE_ES_CADA_SALIDA,
+  QUE_HAGO_CON_LO_QUE_FALTA,
+  ZONAS,
   ajusteHasta,
   cantidad,
   esMerma,
-  esVenta,
+  horaDeCorte,
+  jornadaDe,
   type MotivoDeSalida,
 } from '@estook/dominio';
+import { comoLista } from '../listas.ts';
 import { publicar } from '../../eventos/bandeja.ts';
-import { laOrganizacionDeLaSesion } from '../alta.ts';
+import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import {
   apuntar,
@@ -241,8 +245,6 @@ export const entradaApuntarSalida = z
      * que es lo que hacían todas las salidas antes de que la pregunta existiera.
      */
     por_que: z.enum(PORQUES_QUE_NO_SON_MERMA).optional(),
-    /** Lo que se cobró, con impuesto. Solo cuando se ha vendido. */
-    ingreso_centimos: z.number().int().min(0).max(100_000_000).nullable().optional(),
     motivo: z.string().trim().max(400).nullable().optional(),
   })
   .strict();
@@ -260,14 +262,18 @@ export type EntradaApuntarSalida = z.infer<typeof entradaApuntarSalida>;
  * lo que cuesta lo que vendes y el otro es lo que ingresas.
  *
  * Ahora el porqué viene del catálogo de la 0034 y decide **qué línea del libro
- * se apunta**: `venta` cuando se cobró, `salida` cuando no.
+ * se apunta**: `venta` cuando se ha cobrado, `salida` cuando no.
  *
- * ── Y el dinero no se suma solo ─────────────────────────────────────────────
+ * ── Y aquí no se pregunta cuánto se ha cobrado ──────────────────────────────
  *
- * `ingreso_centimos` queda guardado en la línea, y **no toca ninguna ganancia**.
- * El dinero de una jornada tiene un solo dueño, que es el cierre de caja (0027);
- * sumarlo también aquí contaría el día dos veces sin que se viera. Al cerrar la
- * caja, lo vendido sale propuesto y decide una persona.
+ * La 0034 lo preguntaba, y era pedir dos veces el mismo dato. **Lo que se cobra
+ * por algo lo dice la carta** (M10), y lo que entró en el día lo dice la caja al
+ * cerrarla (0027). Sacar género de la cámara no es el sitio donde se sabe un
+ * precio de venta: es el sitio donde se sabe qué ha salido y por qué.
+ *
+ * Lo que sí queda es **que se vendió**, que es la mitad que faltaba: al cerrar la
+ * caja, lo vendido sale propuesto por su nombre y sus unidades, con el importe
+ * que ya se sabe de la última vez ([0037](docs/decisiones/0037-lo-que-sale-de-camara-dice-si-se-vendio.md)).
  */
 export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
   nombre: 'apuntar_salida',
@@ -281,19 +287,6 @@ export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
     const porQue = entrada.por_que ?? 'gastado';
     const queEs = QUE_ES_CADA_SALIDA[porQue];
 
-    // La restricción de la 0034 lo diría igual, y diciéndolo aquí se lee: un
-    // importe colgado de «gastado en cocina» sería dinero que no entró.
-    if (
-      entrada.ingreso_centimos !== null &&
-      entrada.ingreso_centimos !== undefined &&
-      !esVenta(porQue)
-    ) {
-      throw new FalloDeAplicacion('faltan_datos', {
-        campos: ['ingreso_centimos'],
-        porque: `«${queEs.nombre}» no es una venta, así que no lleva lo que se ha cobrado.`,
-      });
-    }
-
     // El motivo que se lee en el libro sale del catálogo, y la nota se le suma
     // detrás. Escribirlo en la pantalla dejaría dos sitios diciendo cómo se
     // llama cada cosa, y un día dirían cosas distintas (regla 6).
@@ -304,7 +297,6 @@ export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
       tipo: queEs.tipo,
       cantidad: -cuanto,
       motivo,
-      ingresoCentimos: entrada.ingreso_centimos ?? null,
       origen: 'a_mano',
       esEjemplo: producto.esEjemplo,
     });
@@ -428,6 +420,233 @@ export const ajustarStock = comando<EntradaAjustarStock, SalidaAjustarStock>({
       fechaOperativa: apuntado.fechaOperativa,
       diferencia,
       yaCuadraba: false,
+    };
+  },
+});
+
+// ── El recuento · «hemos hecho inventario, esto es lo que hay» ───────────────
+
+/**
+ * La jornada de hoy en el local, que no es la fecha del calendario (regla 10).
+ *
+ * Lo mismo que hace el cierre de caja en su fichero. Se escribe otra vez aquí y no
+ * se importa de allí a propósito: un comando de inventario no depende de uno de
+ * servicio, y son cinco líneas que lo único que hacen es preguntarle al motor de
+ * tiempo, que sí es el único dueño de la cuenta.
+ */
+async function laJornadaDeEsteLocal(contexto: Contexto, localId: string): Promise<string> {
+  const filas = await contexto.sql<{ zona_horaria: string; hora_de_corte: string }[]>`
+    select zona_horaria, to_char(hora_de_corte, 'HH24:MI') as hora_de_corte
+      from estook.local where id = ${localId}
+  `;
+  const fila = filas[0];
+  if (!fila) throw new FalloDeAplicacion('local_ajeno');
+  return jornadaDe(contexto.ahora, fila.zona_horaria, horaDeCorte(fila.hora_de_corte));
+}
+
+export const entradaCerrarRecuento = z
+  .object({
+    /**
+     * Lo contado, producto a producto. Doscientos como mucho por vuelta: un
+     * recuento de trescientos productos se manda en dos, y así ninguna petición
+     * se queda a medias por tardar demasiado.
+     */
+    lineas: z
+      .array(
+        z
+          .object({
+            producto_id: z.string().uuid(),
+            /** Lo que hay **de verdad**, no la diferencia. Cero vale. */
+            hay: z.number().min(0).max(10_000_000),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(200),
+    /** Qué hacer con lo que no se ha contado. Por defecto, dejarlo. */
+    lo_que_falta: z.enum(QUE_HAGO_CON_LO_QUE_FALTA).optional(),
+    /** De qué zona era el recuento, cuando se ha contado solo una. */
+    zona: z.enum(ZONAS).nullable().optional(),
+    notas: z.string().trim().max(400).nullable().optional(),
+  })
+  .strict();
+
+export type EntradaCerrarRecuento = z.infer<typeof entradaCerrarRecuento>;
+
+export interface SalidaCerrarRecuento {
+  readonly fechaOperativa: string;
+  /** Cuántos productos se han tocado de verdad: los que no cuadraban. */
+  readonly corregidos: number;
+  /** Cuántos ya cuadraban. No se apunta nada de ellos: un cero no es un movimiento. */
+  readonly yaCuadraban: number;
+  /** Cuántos se han puesto a cero por no estar en la lista. */
+  readonly vaciados: number;
+  /** Lo que más bailaba, para poder mirarlo. Los diez primeros. */
+  readonly loQueMasBaila: readonly {
+    readonly productoId: string;
+    readonly producto: string;
+    readonly decia: number;
+    readonly hay: number;
+    readonly unidadDeUso: string;
+  }[];
+}
+
+/**
+ * Cerrar un recuento.
+ *
+ * ── Por qué esto no es «apuntar cien ajustes» ───────────────────────────────
+ *
+ * Porque un recuento es **un acto**, no cien. Todas sus líneas comparten la misma
+ * correlación —la que ya lleva cada petición desde M2—, así que el libro puede
+ * contestar «esto se apuntó en el recuento del martes» sin una tabla nueva y sin
+ * un identificador inventado. Y por eso el tipo de movimiento es `recuento` y no
+ * `ajuste`: un ajuste es una cámara que no cuadraba y alguien corrigió; un
+ * recuento es la cámara entera contada a mano.
+ *
+ * ── Y por qué no pone a cero lo que no se ha contado ────────────────────────
+ *
+ * Porque contar la cámara el martes y el almacén el jueves es lo normal, y si el
+ * primero borrase el segundo no se podría hacer inventario por partes. Se puede
+ * pedir —hay locales que cuentan todo de una vez— y entonces se dice **antes**
+ * cuántos productos se van a vaciar.
+ *
+ * ── El permiso ─────────────────────────────────────────────────────────────
+ *
+ * `accion.cerrar_recuento`, que está en la matriz desde M1 y **no tenía dónde
+ * usarse**: un permiso sin pantalla es una promesa rota, y esta llevaba siete
+ * módulos rota.
+ */
+export const cerrarRecuento = comando<EntradaCerrarRecuento, SalidaCerrarRecuento>({
+  nombre: 'cerrar_recuento',
+  entrada: entradaCerrarRecuento,
+  exige: 'accion.cerrar_recuento',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeLaSesion(contexto);
+    const organizacionId = laOrganizacionDeLaSesion(contexto);
+    const loQueFalta = entrada.lo_que_falta ?? 'dejarlo';
+
+    const baila: {
+      productoId: string;
+      producto: string;
+      decia: number;
+      hay: number;
+      unidadDeUso: string;
+    }[] = [];
+    let corregidos = 0;
+    let yaCuadraban = 0;
+
+    // De una en una y en orden, que es como se apunta en un libro. El candado de
+    // `apuntar` es por producto (`pg_advisory_xact_lock`), así que dos personas
+    // contando a la vez no se pisan.
+    for (const linea of entrada.lineas) {
+      const producto = await elProductoBloqueado(contexto, linea.producto_id);
+      if (producto.localId !== localId) {
+        throw new FalloDeAplicacion('local_ajeno', {
+          porque: `«${producto.nombre}» no es de este local.`,
+        });
+      }
+
+      const hayAhora = await loQueHay(contexto, producto.id);
+      const diferencia = ajusteHasta(cantidad(hayAhora.cantidad), cantidad(linea.hay));
+
+      if (diferencia === null) {
+        yaCuadraban += 1;
+        continue;
+      }
+
+      await apuntar(contexto, producto, {
+        tipo: 'recuento',
+        cantidad: diferencia,
+        motivo: entrada.notas ?? 'Recuento',
+        origen: 'a_mano',
+        esEjemplo: producto.esEjemplo,
+      });
+
+      corregidos += 1;
+      baila.push({
+        productoId: producto.id,
+        producto: producto.nombre,
+        decia: hayAhora.cantidad,
+        hay: linea.hay,
+        unidadDeUso: producto.unidadDeUso,
+      });
+    }
+
+    // ── Y lo que no se ha contado, si se ha pedido vaciarlo ─────────────────
+    let vaciados = 0;
+    if (loQueFalta === 'a_cero') {
+      const contados = entrada.lineas.map((l) => l.producto_id);
+      const sobrantes = await contexto.sql<{ id: string }[]>`
+        select p.id::text as id
+          from estook.producto p
+          join estook.existencias e on e.producto_id = p.id
+         where p.local_id = ${localId}
+           and p.activo
+           and not p.es_ejemplo
+           and e.cantidad <> 0
+           and (${entrada.zona ?? null}::text is null
+                or p.zona::text = ${entrada.zona ?? null}::text)
+           and not (p.id = any (${comoLista(contados)}::text::uuid[]))
+         limit 500
+      `;
+
+      for (const fila of sobrantes) {
+        const producto = await elProductoBloqueado(contexto, fila.id);
+        const hayAhora = await loQueHay(contexto, producto.id);
+        const diferencia = ajusteHasta(cantidad(hayAhora.cantidad), cantidad(0));
+        if (diferencia === null) continue;
+
+        await apuntar(contexto, producto, {
+          tipo: 'recuento',
+          cantidad: diferencia,
+          motivo: 'Recuento · no estaba en lo contado',
+          origen: 'a_mano',
+          esEjemplo: producto.esEjemplo,
+        });
+        vaciados += 1;
+      }
+    }
+
+    const fechaOperativa = await laJornadaDeEsteLocal(contexto, localId);
+
+    await contexto.sql`
+      select estook.anotar(
+        ${organizacionId}::uuid, 'crear', 'recuento', ${contexto.correlacionId},
+        ${localId}::uuid, null,
+        ${JSON.stringify({ contados: entrada.lineas.length, corregidos, vaciados, zona: entrada.zona ?? null })}::text::jsonb,
+        ${entrada.notas ?? null}
+      )
+    `;
+
+    // Lo que escucha esto: la previsión de cada producto corregido, el valor de la
+    // cámara y —cuando llegue M8— la desviación del periodo, que es para lo que
+    // se cuenta de verdad.
+    await publicar(contexto.sql, {
+      tipo: 'inventario.recontado',
+      organizacionId,
+      localId,
+      datos: {
+        fechaOperativa,
+        contados: entrada.lineas.length,
+        corregidos,
+        vaciados,
+        zona: entrada.zona ?? null,
+      },
+      correlacionId: contexto.correlacionId,
+    });
+
+    return {
+      fechaOperativa,
+      corregidos,
+      yaCuadraban,
+      vaciados,
+      // Los diez que más bailan, de mayor a menor. Es lo que se mira después de
+      // contar: no los cien que cuadraban, los cinco que no.
+      loQueMasBaila: baila
+        .slice()
+        .sort((a, b) => Math.abs(b.hay - b.decia) - Math.abs(a.hay - a.decia))
+        .slice(0, 10),
     };
   },
 });

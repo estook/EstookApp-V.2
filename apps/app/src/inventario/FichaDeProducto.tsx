@@ -3,22 +3,19 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CATEGORIAS_FISCALES,
   NOMBRE_DEL_ALERGENO,
-  cantidad,
-  costeDeLinea,
   NOMBRE_DEL_ESTADO,
+  NOMBRE_DE_LA_ZONA,
   TIPOS_DE_IVA_DE_COMPRA,
+  llevaCategorias,
   centimos,
-  comoEstaElMargen,
   comoPorcentaje,
   comoSeCompraDe,
   comoSeDiceElTipo,
   comoSePide,
   conIva,
-  margenDe,
-  milesimas,
   presentacionDe,
-  sinIva,
   type ComoSeCompra,
+  type Zona,
 } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import {
@@ -26,7 +23,6 @@ import {
   Boton,
   Botones,
   Campo,
-  CampoMoneda,
   Cargando,
   Cifra,
   ErrorEnCristiano,
@@ -36,7 +32,6 @@ import {
   PanelLateral,
   Proporcion,
   Selector,
-  clases,
   usarDeshacer,
 } from '@estook/ui';
 import type { Centimos } from '@estook/dominio';
@@ -47,6 +42,7 @@ import { SelectorDeCategoria } from './SelectorDeCategoria.tsx';
 import { MoverGenero, type QueSeMueve } from './MoverGenero.tsx';
 import { CampoPrecioDeCompra } from './CampoPrecioDeCompra.tsx';
 import { ComoLoCompras } from './ComoLoCompras.tsx';
+import { ElegirZona } from './ElegirZona.tsx';
 import { Congelar, QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
 import { HistoricoDePrecios } from './HistoricoDePrecios.tsx';
 import { IconoAnadir, IconoQuitar } from '@estook/iconos';
@@ -98,9 +94,7 @@ export function FichaDeProducto({
   const { cliente, permisos } = usarSesion();
   const cache = useQueryClient();
 
-  const [haciendo, setHaciendo] = useState<QueSeMueve | 'precio' | 'venta' | 'rendimiento' | null>(
-    null,
-  );
+  const [haciendo, setHaciendo] = useState<QueSeMueve | 'precio' | 'rendimiento' | null>(null);
   const [editando, setEditando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [noticia, setNoticia] = useState<string | null>(null);
@@ -211,10 +205,18 @@ export function FichaDeProducto({
             sin contexto.
           */}
           <div className="flex flex-wrap items-center gap-e2">
+            {/* De dónde es, primero: es lo que dice de qué almacén hablamos. */}
+            <Chip>{NOMBRE_DE_LA_ZONA[datos.producto.zona]}</Chip>
             {datos.producto.categoria !== null && <Chip>{datos.producto.categoria}</Chip>}
             {datos.producto.proveedor !== null && <Chip>{datos.producto.proveedor}</Chip>}
             {datos.producto.formato !== null && <Chip>{datos.producto.formato}</Chip>}
-            {datos.producto.congelado && <Etiqueta tono="info">congelado</Etiqueta>}
+            {datos.producto.congelado && (
+              <Etiqueta tono="info">
+                {datos.producto.congeladoCuanto === null
+                  ? 'congelado'
+                  : `${conUnidadDeUso(datos.producto.congeladoCuanto, datos.producto.unidadDeUso)} congelados`}
+              </Etiqueta>
+            )}
             {!datos.producto.activo && <Etiqueta>desactivado</Etiqueta>}
           </div>
 
@@ -446,27 +448,6 @@ export function FichaDeProducto({
             </Seccion>
           )}
 
-          {/* ── 3½ · Lo que deja ──────────────────────────────────────── */}
-
-          {/*
-            ── El otro extremo de la cuenta ─────────────────────────────────
-
-            Estook sabía lo que cuesta el género y no sabía **lo que deja**. Para
-            un producto que se vende tal cual —una caña, un botellín, una botella
-            de vino— eso es una resta, y una resta que casi todo el mundo hace
-            mal: el precio de la pizarra lleva IVA y el coste no, así que restar a
-            pelo es regalarse el impuesto como si fuera margen.
-            La cuenta la hace el dominio (`margenDe`), aquí solo se pinta.
-          */}
-          {datos.puedeVerPrecios && puedeTocar && (
-            <LoQueDeja
-              producto={datos.producto}
-              alPonerPrecio={() => {
-                setHaciendo('venta');
-              }}
-            />
-          )}
-
           {/* ── 4 · El libro ──────────────────────────────────────────── */}
 
           <Seccion titulo="Últimos movimientos">
@@ -495,19 +476,9 @@ export function FichaDeProducto({
                             </span>
                           )}
                         </span>
-                        <span className="shrink-0 text-right">
-                          {/* Lo que se cobró, en las ventas: es la mitad de la
-                              línea, y sin ella «Vendido −2 ud» no cuenta nada. */}
-                          {movimiento.ingresoCentimos !== null &&
-                            movimiento.ingresoCentimos !== undefined && (
-                              <span className="block font-semibold text-bien">
-                                {comoDinero(movimiento.ingresoCentimos)}
-                              </span>
-                            )}
-                          <span className="block text-etiqueta text-texto-suave">
-                            {comoSeLeeLaFecha(movimiento.fechaOperativa)}
-                            {movimiento.quien === null ? '' : ` · ${movimiento.quien}`}
-                          </span>
+                        <span className="shrink-0 text-right text-etiqueta text-texto-suave">
+                          {comoSeLeeLaFecha(movimiento.fechaOperativa)}
+                          {movimiento.quien === null ? '' : ` · ${movimiento.quien}`}
                         </span>
                       </li>
                     ),
@@ -573,6 +544,11 @@ export function FichaDeProducto({
                                 ? 'Sin fecha de caducidad'
                                 : `${caducado ? 'Caducó' : 'Caduca'} el ${comoSeLeeLaFecha(lote.caducaEl)}`}
                             </span>
+                            {lote.cantidad !== null && (
+                              <span className="font-semibold">
+                                {conUnidadDeUso(lote.cantidad, datos.producto.unidadDeUso)}
+                              </span>
+                            )}
                             {lote.congeladoEl !== null && (
                               <Etiqueta tono="info">
                                 congelado el {comoSeLeeLaFecha(lote.congeladoEl)}
@@ -642,6 +618,7 @@ export function FichaDeProducto({
           >
             {/* Solo lo que dice algo: «código de barras: no tiene» no dice nada. */}
             <dl className="grid grid-cols-[auto_1fr] gap-x-e4 gap-y-e1 text-secundario">
+              <Par que="De dónde es">{NOMBRE_DE_LA_ZONA[datos.producto.zona]}</Par>
               <Par que="Categoría">{datos.producto.categoria ?? 'Sin categoría'}</Par>
               <Par que="Proveedor">{datos.producto.proveedor ?? 'Sin proveedor'}</Par>
               <Par que="Envase">{datos.producto.formato ?? 'Suelto'}</Par>
@@ -728,6 +705,8 @@ export function FichaDeProducto({
             <Congelar
               productoId={datos.producto.id}
               producto={datos.producto.nombre}
+              unidadDeUso={datos.producto.unidadDeUso}
+              hay={datos.producto.cantidad}
               lote={congelando.lote}
               alCerrar={() => {
                 setCongelando(null);
@@ -740,11 +719,7 @@ export function FichaDeProducto({
           )}
 
           <MoverGenero
-            que={
-              haciendo === 'precio' || haciendo === 'venta' || haciendo === 'rendimiento'
-                ? null
-                : haciendo
-            }
+            que={haciendo === 'precio' || haciendo === 'rendimiento' ? null : haciendo}
             producto={datos.producto}
             puedeVerPrecios={datos.puedeVerPrecios}
             preciosConIva={datos.preciosConIva}
@@ -763,20 +738,6 @@ export function FichaDeProducto({
             abierta={haciendo === 'precio'}
             producto={datos}
             proveedores={proveedores}
-            alCerrar={() => {
-              setHaciendo(null);
-            }}
-            alHecho={(frase) => {
-              setHaciendo(null);
-              setNoticia(frase);
-              void refrescar();
-            }}
-            alFallar={setError}
-          />
-
-          <PrecioDeVenta
-            abierta={haciendo === 'venta'}
-            producto={datos}
             alCerrar={() => {
               setHaciendo(null);
             }}
@@ -1081,149 +1042,6 @@ function BarraDelMinimo({
 }
 
 /**
- * Lo que deja este producto si se vende tal cual (M7, repaso).
- *
- * ── Por qué solo si se vende tal cual ───────────────────────────────────────
- *
- * Porque un ingrediente no tiene margen propio: la harina no se vende, se vende
- * la pizza, y el margen de la pizza sale de su escandallo, que es M9. Lo que sí
- * tiene margen propio es lo que sale de la cámara y se cobra sin pasar por
- * ninguna receta, que es media barra de un bar: los botellines, el vino, los
- * refrescos, las bolsas de patatas.
- *
- * Así que esto no se rellena solo ni se reclama: se ofrece una vez, y quien lo
- * tenga lo pone. Un producto sin precio de venta sigue estando perfecto.
- */
-function LoQueDeja({
-  producto,
-  alPonerPrecio,
-}: {
-  readonly producto: ProductoEnLista;
-  readonly alPonerPrecio: () => void;
-}) {
-  const coste = producto.costeMilesimas ?? null;
-  const venta = producto.precioDeVentaCentimos;
-  const iva = producto.ivaDeVenta;
-
-  if (venta === null || venta === 0) {
-    return (
-      <Seccion
-        titulo="Lo que deja"
-        accion={
-          <Boton tono="secundario" onClick={alPonerPrecio}>
-            Poner precio de venta
-          </Boton>
-        }
-      >
-        <p className="text-secundario text-texto-suave">
-          Si esto se vende tal cual —un botellín, una copa, una bolsa de patatas—, dime a cuánto lo
-          cobras y aquí sale lo que te deja cada uno y qué parte del precio se va en género. Lo que
-          se cocina no lo necesita: su margen sale de la ficha del plato.
-        </p>
-      </Seccion>
-    );
-  }
-
-  // Sin coste no hay resta. Se dice, en vez de enseñar un margen del cien por
-  // cien, que es lo que saldría restándole cero.
-  const margen =
-    coste === null || iva === null ? null : margenDe(centimos(venta), iva, costeDeUnaUnidad(coste));
-  const como = margen === null ? null : comoEstaElMargen(margen);
-
-  return (
-    <Seccion
-      titulo="Lo que deja"
-      accion={
-        <Boton tono="secundario" onClick={alPonerPrecio}>
-          Cambiar el precio de venta
-        </Boton>
-      }
-    >
-      <div className="flex flex-wrap items-baseline gap-x-e3 gap-y-e1">
-        <span className="text-cifra">{comoDinero(venta)}</span>
-        <span className="text-secundario text-texto-suave">
-          lo que cobras por {LA_UNIDAD[producto.unidadDeUso] ?? `el ${producto.unidadDeUso}`}
-          {iva === null ? '' : `, con el ${comoSeDiceElTipo(iva)} dentro`}
-        </span>
-      </div>
-
-      {margen === null || como === null ? (
-        <p className="text-secundario text-texto-suave">
-          {coste === null
-            ? 'Cuando tenga precio de compra, aquí sale lo que te deja cada uno.'
-            : 'Aquí no es IVA (Canarias, Ceuta y Melilla): pon el tipo que repercutes y sale la cuenta.'}
-        </p>
-      ) : (
-        <>
-          <dl className="grid grid-cols-[auto_1fr] gap-x-e4 gap-y-e1 text-secundario">
-            <Par que="Te entra">{comoDinero(margen.baseCentimos)} · sin el impuesto</Par>
-            <Par que="Te cuesta">{comoDinero(margen.costeCentimos)}</Par>
-            <Par que="Te queda">
-              <span
-                className={clases(
-                  'font-semibold',
-                  como === 'mal' ? 'text-mal' : como === 'atencion' ? 'text-atencion' : 'text-bien',
-                )}
-              >
-                {comoDinero(margen.margenCentimos)}
-              </span>{' '}
-              <span className="font-normal text-texto-suave">
-                ({comoPorcentaje(margen.margenPorcentaje)} de lo que entra)
-              </span>
-            </Par>
-          </dl>
-
-          <Proporcion
-            titulo="De lo que cobras, qué parte se va en género y qué parte te queda"
-            trozos={[
-              {
-                que: 'Se va en género',
-                cuantos: Math.max(0, margen.costeCentimos),
-                tono: como === 'bien' ? 'info' : 'atencion',
-                comoSeLee: comoPorcentaje(margen.foodCostPorcentaje),
-              },
-              {
-                que: 'Te queda',
-                cuantos: Math.max(0, margen.margenCentimos),
-                tono: como === 'mal' ? 'mal' : 'bien',
-                comoSeLee: comoPorcentaje(Math.max(0, margen.margenPorcentaje)),
-              },
-            ]}
-          />
-
-          {como === 'mal' && (
-            <Aviso tono="mal" titulo="Lo estás vendiendo por debajo de lo que te cuesta">
-              Con este precio de compra y este de venta, cada uno que sale te cuesta dinero.
-              Compruébalo: puede ser el precio de compra, el envase o lo que trae cada uno.
-            </Aviso>
-          )}
-          {como === 'atencion' && (
-            <p className="text-secundario text-texto-suave">
-              Más de un tercio de lo que cobras se va en género. No es un error, pero es la cifra
-              con la que se lleva un bar: merece una mirada.
-            </p>
-          )}
-        </>
-      )}
-    </Seccion>
-  );
-}
-
-/**
- * Lo que cuesta **una** unidad de uso, en céntimos.
- *
- * El coste vive en milésimas de céntimo porque un gramo de algo no llega a medio
- * céntimo (regla 9 y `coste.ts`). Para restarlo de un precio hay que bajarlo a
- * céntimos, y ese redondeo se hace aquí, una sola vez y al final.
- */
-function costeDeUnaUnidad(costeMilesimas: number) {
-  // `costeDeLinea` es quien sabe bajar de milésimas a céntimos, con un solo
-  // redondeo y al final. Hacerlo aquí a mano sería un segundo dueño del mismo
-  // cálculo, y la regla 9 lo prohíbe con razón.
-  return costeDeLinea(milesimas(costeMilesimas), cantidad(1));
-}
-
-/**
  * El aprovechamiento, con su cifra y su botón.
  *
  * «Un rendimiento mal puesto es el error más caro del sistema» (Auditoría 1.2),
@@ -1475,6 +1293,7 @@ function CorregirLaFicha({
   // identificadores, así que el desplegable no tenía con qué preseleccionar. Se
   // arregla en los dos sitios: la consulta los envía y aquí se usan.
   const [categoriaId, setCategoriaId] = useState(ficha.categoriaId ?? '');
+  const [zona, setZona] = useState<Zona>(ficha.zona);
   const [proveedorId, setProveedorId] = useState(ficha.proveedorId ?? '');
   const [categoriaFiscal, setCategoriaFiscal] = useState(ficha.categoriaFiscal);
   const [notas, setNotas] = useState(ficha.notas ?? '');
@@ -1507,7 +1326,11 @@ function CorregirLaFicha({
     const respuesta = await cliente.ejecutar<{ cambiaElCoste: boolean }>('cambiar_producto', {
       producto_id: ficha.id,
       nombre: nombre.trim(),
-      categoria_id: categoriaId === '' ? null : categoriaId,
+      zona,
+      // Limpieza no lleva categorías: si se mueve ahí, la que tuviera se suelta.
+      // Guardarla escondida dejaría un producto clasificado en un sitio que ya no
+      // enseña clasificaciones, y reaparecería al volver a moverlo.
+      categoria_id: !llevaCategorias(zona) || categoriaId === '' ? null : categoriaId,
       formato: cambiaLaForma ? presentacion.formato : ficha.formato,
       factor: nuevoFactor,
       unidad_de_uso: unidad,
@@ -1633,12 +1456,21 @@ function CorregirLaFicha({
           con la suya puesta**, así que la opción vacía significa de verdad
           quitarla. Antes decía «dejar» y hacía lo contrario.
         */}
-        <SelectorDeCategoria
-          categorias={categorias}
-          valor={categoriaId}
-          alElegir={setCategoriaId}
-          sinElegir="Sin categoría"
-        />
+        {/*
+          De dónde es. Va **antes** de la categoría a propósito: la zona decide si
+          hay categorías —limpieza no las lleva— y quién ve el producto, así que
+          es la pregunta de la que cuelga la siguiente.
+        */}
+        <ElegirZona valor={zona} alElegir={setZona} />
+
+        {llevaCategorias(zona) && (
+          <SelectorDeCategoria
+            categorias={categorias}
+            valor={categoriaId}
+            alElegir={setCategoriaId}
+            sinElegir="Sin categoría"
+          />
+        )}
 
         {/*
           Cómo se compra: las mismas tres preguntas del alta, con lo que ya
@@ -1804,190 +1636,8 @@ function laFichaEntera(producto: UnProducto): Record<string, unknown> {
     minimo: ficha.minimo,
     proveedor_id: ficha.proveedorId,
     notas: ficha.notas,
+    zona: ficha.zona,
   };
-}
-
-// ── El precio de venta ───────────────────────────────────────────────────────
-
-/**
- * A cuánto se vende tal cual.
- *
- * ── Por qué el precio se escribe con IVA y el de compra sin él ──────────────
- *
- * Porque son dos impuestos distintos con dos destinos distintos. El IVA de compra
- * **se recupera**, así que no es coste y el precio se guarda sin él (0033). El de
- * venta **se ingresa**: lo cobras y lo devuelves, no es tuyo. Y lo que está
- * escrito en la pizarra lo lleva dentro, así que pedirlo de otra forma sería
- * obligar a hacer una cuenta antes de escribir un número que ya se sabe.
- *
- * Lo que sí se enseña, debajo, es lo que queda después del impuesto: es la cifra
- * con la que se calcula el margen, y verla evita el error más repetido que hay en
- * la hoja de cálculo de un bar.
- */
-function PrecioDeVenta({
-  abierta,
-  producto,
-  alCerrar,
-  alHecho,
-  alFallar,
-}: {
-  readonly abierta: boolean;
-  readonly producto: UnProducto;
-  readonly alCerrar: () => void;
-  readonly alHecho: (frase: string) => void;
-  readonly alFallar: (error: ErrorDeLaApi) => void;
-}) {
-  const { cliente } = usarSesion();
-  const { sePuedeDeshacer } = usarDeshacer();
-  const volverALeer = usarVolverALeerElProducto(producto.producto.id);
-  const ficha = producto.producto;
-
-  const [precio, setPrecio] = useState<Centimos | null>(
-    ficha.precioDeVentaCentimos === null ? null : (ficha.precioDeVentaCentimos as Centimos),
-  );
-  const [tipo, setTipo] = useState(ficha.ivaDeVentaElegido ? String(ficha.ivaDeVenta) : '');
-  const [guardando, setGuardando] = useState(false);
-
-  if (!abierta) return null;
-
-  const elTipo = tipo === '' ? ficha.ivaDeVenta : Number(tipo);
-
-  async function poner(
-    cuanto: number | null,
-    conQueTipo: number | null,
-    { esDeshacer = false } = {},
-  ) {
-    setGuardando(true);
-    const respuesta = await cliente.ejecutar('cambiar_producto', {
-      ...laFichaEntera(producto),
-      precio_de_venta_centimos: cuanto,
-      iva_de_venta: conQueTipo,
-    });
-    setGuardando(false);
-
-    if (!respuesta.ok) {
-      if (esDeshacer) throw new Error(respuesta.error.codigo);
-      alFallar(respuesta.error);
-      return;
-    }
-
-    if (esDeshacer) {
-      await volverALeer();
-      return;
-    }
-
-    // ── Y aquí sí se puede deshacer ────────────────────────────────────────
-    //
-    // Un precio de venta es un dato de la ficha, no una línea del libro: se
-    // cambia, no se enmienda. Así que deshacer es volver a poner el de antes, y
-    // eso es exactamente lo que hace falta cuando alguien teclea 2,50 donde
-    // quería 25,00 y lo ve medio segundo después.
-    const antesPrecio = ficha.precioDeVentaCentimos;
-    const antesTipo = ficha.ivaDeVentaElegido ? ficha.ivaDeVenta : null;
-    sePuedeDeshacer({
-      que:
-        cuanto === null
-          ? `«${ficha.nombre}» deja de venderse tal cual`
-          : `«${ficha.nombre}» se vende a ${comoDinero(cuanto)}`,
-      deshacer: () => poner(antesPrecio, antesTipo, { esDeshacer: true }),
-    });
-
-    alHecho(
-      cuanto === null
-        ? 'Quitado el precio de venta.'
-        : `Guardado: lo vendes a ${comoDinero(cuanto)}.`,
-    );
-  }
-
-  return (
-    <Hoja
-      abierta
-      alCerrar={alCerrar}
-      titulo="A cuánto lo vendes"
-      pie={
-        <Botones>
-          <Boton tono="texto" onClick={alCerrar}>
-            Dejarlo
-          </Boton>
-          <Boton
-            tono="principal"
-            cargando={guardando}
-            textoCargando="Guardando"
-            onClick={() => {
-              void poner(precio, tipo === '' ? null : Number(tipo));
-            }}
-          >
-            Guardar
-          </Boton>
-        </Botones>
-      }
-    >
-      <div className="flex flex-col gap-e3">
-        <p className="text-cuerpo text-texto-suave">
-          Esto es para lo que se vende <strong>tal cual</strong>: un botellín, una copa, una bolsa
-          de patatas. Lo que se cocina no lo necesita, porque su precio está en la carta y su margen
-          sale de la ficha del plato.
-        </p>
-
-        <CampoMoneda
-          etiqueta={`Lo que cobras por ${LA_UNIDAD[ficha.unidadDeUso] ?? `el ${ficha.unidadDeUso}`}`}
-          ayuda="Con IVA, tal cual está en la pizarra."
-          valor={precio}
-          alCambiar={setPrecio}
-        />
-
-        {precio !== null && precio > 0 && elTipo !== null && (
-          <p className="text-secundario text-texto-suave">
-            Con el {comoSeDiceElTipo(elTipo)} dentro, te entran{' '}
-            <strong>{comoDinero(sinIva(centimos(precio), elTipo))}</strong>. Lo demás es el
-            impuesto, que lo cobras y lo devuelves.
-          </p>
-        )}
-
-        {/*
-          El tipo, plegado. En península y Baleares un servicio de restauración va
-          al 10 % sea lo que sea lo que se sirva —lo que se vende es el servicio,
-          no la botella— así que preguntarlo siempre sería preguntar por algo que
-          ya se sabe. Donde no es IVA, no se supone: hay que ponerlo.
-        */}
-        <details open={ficha.ivaDeVenta === null}>
-          <summary className="cursor-pointer text-secundario text-texto-suave">
-            {ficha.ivaDeVenta === null
-              ? 'Aquí no es IVA: pon el tipo que repercutes'
-              : `El impuesto que repercutes (${comoSeDiceElTipo(ficha.ivaDeVenta)})`}
-          </summary>
-          <div className="mt-e2">
-            <Selector
-              etiqueta="Tipo al venderlo"
-              ayuda="Déjalo en «el de tu actividad» si no es un caso raro."
-              opciones={TIPOS_DE_IVA_DE_COMPRA.map((t) => ({
-                valor: String(t),
-                texto: comoSeDiceElTipo(t),
-              }))}
-              sinElegir="El de tu actividad"
-              value={tipo}
-              onChange={(e) => {
-                setTipo(e.currentTarget.value);
-              }}
-            />
-          </div>
-        </details>
-
-        {ficha.precioDeVentaCentimos !== null && (
-          <div>
-            <Boton
-              tono="texto"
-              onClick={() => {
-                void poner(null, null);
-              }}
-            >
-              Ya no lo vendo tal cual
-            </Boton>
-          </div>
-        )}
-      </div>
-    </Hoja>
-  );
 }
 
 // ── Medir el aprovechamiento ─────────────────────────────────────────────────

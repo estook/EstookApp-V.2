@@ -168,6 +168,14 @@ export const entradaCongelar = z
      */
     caduca_el: fecha.nullable().optional(),
     codigo: z.string().trim().max(64).nullable().optional(),
+    /**
+     * **Cuánto** se congela, en la unidad de uso del producto (0035).
+     *
+     * Era lo que faltaba, y era lo normal: «la mitad de la carne va al
+     * congelador» son 10 kg de 43, no «el bacon». Sin decirlo se queda en nulo,
+     * que quiere decir «no se sabe cuánto», no «todo».
+     */
+    cuanto: z.number().positive().max(10_000_000).optional(),
   })
   .strict();
 
@@ -177,10 +185,17 @@ export type EntradaCongelar = z.infer<typeof entradaCongelar>;
  * Congelar género: «la mitad de la carne va al congelador».
  *
  * **No mueve nada**: el producto es el mismo y está en el mismo local. Lo que
- * cambia es que ese lote queda marcado como congelado, con su fecha, y
- * normalmente con otra caducidad —congelado aguanta meses—. Sale como tal en la
- * lista de productos, en su ficha y en el Calendario, y los productos que tienen
- * algo congelado tienen su vista: «Congelados».
+ * cambia es que ese lote queda marcado como congelado, con su fecha, con cuánto
+ * lleva y normalmente con otra caducidad —congelado aguanta meses—. Sale como tal
+ * en la lista de productos, en su ficha y en el Calendario, y los productos que
+ * tienen algo congelado tienen su vista: «Congelados».
+ *
+ * ── Y por qué lleva cantidad desde el repaso ────────────────────────────────
+ *
+ * Porque sin ella marcaba **el producto entero**: congelar 10 kg de los 43 que
+ * hay dejaba los 43 con la etiqueta de congelado. Richi lo vio a la primera —«eso
+ * está fatal»— y tenía razón: congelar una parte es justo el caso normal, y era
+ * el único que no se podía contar.
  */
 export const congelar = comando<EntradaCongelar, { loteId: string }>({
   nombre: 'congelar',
@@ -232,6 +247,7 @@ export const congelar = comando<EntradaCongelar, { loteId: string }>({
       const congelados = await contexto.sql<{ id: string; ya: boolean }[]>`
         update estook.lote
            set congelado_el = coalesce(congelado_el, ${hoy}::date),
+               cantidad = coalesce(${entrada.cuanto ?? null}::numeric, cantidad),
                caduca_el = case when ${cambiaLaFecha} then ${entrada.caduca_el ?? null}::date
                                 else caduca_el end
          where id = ${entrada.lote_id}
@@ -248,11 +264,13 @@ export const congelar = comando<EntradaCongelar, { loteId: string }>({
     } else {
       const nuevos = await contexto.sql<{ id: string }[]>`
         insert into estook.lote (
-          local_id, producto_id, codigo, caduca_el, recibido_el, congelado_el, es_ejemplo
+          local_id, producto_id, codigo, caduca_el, recibido_el, congelado_el, es_ejemplo,
+          cantidad
         )
         values (
           ${producto.local_id}, ${entrada.producto_id}, ${entrada.codigo ?? null},
-          ${entrada.caduca_el ?? null}::date, ${hoy}::date, ${hoy}::date, ${producto.es_ejemplo}
+          ${entrada.caduca_el ?? null}::date, ${hoy}::date, ${hoy}::date, ${producto.es_ejemplo},
+          ${entrada.cuanto ?? null}
         )
         returning id
       `;

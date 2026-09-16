@@ -140,8 +140,14 @@ export function Administradores() {
                 {
                   clave: 'quitar',
                   titulo: 'Acceso',
+                  // Siempre dice algo: en el móvil la etiqueta «Acceso» se quedaba
+                  // sola, sin nada al lado, en la fila de quien mira.
                   celda: (a) =>
-                    puedeDar && !a.soyYo ? (
+                    a.soyYo ? (
+                      <span className="text-secundario text-texto-suave">
+                        El tuyo: te lo quita otro admin
+                      </span>
+                    ) : puedeDar ? (
                       <Boton
                         tono="texto"
                         onClick={() => {
@@ -150,7 +156,9 @@ export function Administradores() {
                       >
                         Quitar el acceso
                       </Boton>
-                    ) : null,
+                    ) : (
+                      <span className="text-secundario text-texto-suave">Solo un admin total</span>
+                    ),
                 },
               ]}
             />

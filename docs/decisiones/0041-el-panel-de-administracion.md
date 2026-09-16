@@ -1,7 +1,7 @@
 # 0041 · El panel de administración: el cliente es la organización, y el admin solo es dueño de lo comercial
 
 **Fecha:** 16 de septiembre de 2026
-**Estado:** decidido. **A1 construida** (migración `0037`, rama `m7-admin-la-puerta`);
+**Estado:** decidido. **A1 en producción** (migración `0037`, #53; su repaso, aparte);
 A2 a A4 antes de M8, y se termina en M26
 **Detalle entero:** [`docs/panel-de-administracion.md`](../panel-de-administracion.md)
 **Precisa:** la sección 4 de [Roles y administración](../maestros/Estook-Roles-y-Administracion.md)

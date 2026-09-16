@@ -85,8 +85,13 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
 
   return (
     <div className="min-h-dvh bg-fondo">
+      {/*
+        En el ordenador, una sola línea. En el móvil, dos: arriba la marca y
+        «Salir», y debajo las secciones en una tira que se desliza. Antes se partían
+        en tres líneas y la cabecera se comía un tercio de la pantalla (repaso de A1).
+      */}
       <div className="border-b border-borde bg-superficie">
-        <div className="mx-auto flex max-w-[64rem] flex-wrap items-center gap-x-e4 gap-y-e2 px-e4 py-e3">
+        <div className="mx-auto flex max-w-[64rem] flex-wrap items-center gap-x-e4 px-e4 pt-e3 md:flex-nowrap md:py-e3">
           <div className="flex items-center gap-e2">
             <Logo alto={24} />
             <span className="text-etiqueta font-medium uppercase tracking-wide text-texto-suave">
@@ -94,7 +99,14 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
             </span>
           </div>
 
-          <nav aria-label="Secciones del admin" className="flex flex-wrap gap-e1">
+          <nav
+            aria-label="Secciones del admin"
+            className={[
+              'order-last -mx-e4 flex w-[calc(100%+var(--spacing-e4)*2)] gap-e1 overflow-x-auto px-e4 py-e2',
+              '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+              'md:order-none md:mx-0 md:w-auto md:overflow-visible md:p-0',
+            ].join(' ')}
+          >
             {SECCIONES.map((s) => (
               <button
                 key={s.id}
@@ -104,7 +116,7 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
                 }}
                 aria-current={s.id === seccion ? 'page' : undefined}
                 className={[
-                  'inline-flex min-h-toque items-center rounded-medio px-e3 text-cuerpo',
+                  'inline-flex min-h-toque shrink-0 items-center rounded-medio px-e3 text-cuerpo',
                   s.id === seccion
                     ? 'bg-naranja-suave text-texto'
                     : 'text-texto-suave hover:bg-fondo hover:text-texto',
@@ -117,8 +129,8 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
 
           <div className="ml-auto flex items-center gap-e3">
             {yo !== null && (
-              <span className="text-secundario text-texto-suave">
-                {yo.nombre} · hasta las {soloLaHora(yo.caducaEn)}
+              <span className="hidden text-secundario text-texto-suave sm:inline">
+                {yo.nombre} · sesión hasta las {soloLaHora(yo.caducaEn)}
               </span>
             )}
             <Boton

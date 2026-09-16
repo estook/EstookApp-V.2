@@ -2055,6 +2055,51 @@ nadie: ni elegir el local en Google, ni traer su ficha otra vez.
   tipos sin compilar, y las propiedades declaradas en el constructor no se dejan
   quitar. Se escribió a la antigua.
 
+### Antes de M8 · los planes, y la puerta del admin
+
+El 16 de septiembre Richi paró M7 con **veinte mejoras** y **el panel de
+administración** entero —clientes, vendedores con código, ventas y auditoría—, y una
+condición: M8 no empieza hasta tenerlo todo. Se escribieron los dos planes
+([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y
+[`panel-de-administracion.md`](panel-de-administracion.md), #52) y se construyó la
+primera entrega, **A1 · la puerta** (#53, migración `0037`).
+
+#### Uno · Ser admin no es un rol
+
+La tentación era un rol «admin» más en la matriz de M1. Se descartó: esos roles viven
+dentro de una organización, y una política mal escrita habría dejado a un gerente
+llegar al admin. Ser admin es de un esquema aparte, `plataforma`, con su nivel y su
+historia ([0041](decisiones/0041-el-panel-de-administracion.md)).
+
+#### Dos · Dos sesiones que no se cruzan
+
+Entrar en el admin abre **otra clase de sesión**, marcada en la base y de ocho horas
+como mucho. El despachador no deja usar una del admin en la app ni una de la app en el
+admin, y mira en cada petición que el acceso siga vivo y que haya segundo factor. Así
+un token olvidado en la tablet del pase no abre el admin, y quitarle el acceso a
+alguien le cierra la puerta en su siguiente paso.
+
+#### Tres · La contraseña del chat no se usó
+
+Richi escribió en el chat una contraseña para `estookapp@gmail.com`. No se usó: lo que
+pasa por un chat se da por visto. `bd:dar-admin` genera una de un solo uso y obliga a
+cambiarla y a montar el segundo factor antes de ver nada.
+
+#### Lo que se encontró
+
+- **La #50 nunca llegó a `main`**: se fusionó en la rama del Panel vivo, que ya estaba
+  fusionada. La llevó la #51 (regla 66).
+- **Los pasos de M7 decían `.estook.cmd`**, sin la barra, que PowerShell no encuentra.
+- **`ESTADO.md` hablaba de dieciocho funciones con privilegio** y la prueba lista
+  veinticuatro.
+- **En el repaso de A1, tres más.** Con la contraseña de un solo uso sin cambiar, **las
+  consultas del admin se podían leer llamando a la API a pelo**: la pantalla no lo
+  dejaba, la API sí. Ahora el despachador lo para, con su prueba vista fallar. **No
+  había forma de rescatar a un admin** que olvidara la contraseña o perdiera el móvil y
+  los códigos: `bd:dar-admin` gana `--nueva-clave` y `--sin-segundo-factor`. Y **en el
+  móvil la cabecera del admin se comía un tercio de la pantalla**, y la fila propia
+  enseñaba «Acceso» vacío: se vio sacando capturas, no con las pruebas en verde.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

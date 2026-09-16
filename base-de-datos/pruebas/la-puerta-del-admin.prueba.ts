@@ -307,6 +307,15 @@ describe('dar acceso al admin', () => {
     expect(entrada.debeActivarDobleFactor).toBe(true);
 
     const suyo = entrada.token;
+
+    // Con la contraseña de un solo uso, **ni leer**: la ha visto quien la dio.
+    expect(elFallo(await api.consultar(suyo, 'admin_administradores'))).toBe('clave_por_cambiar');
+    expect(elFallo(await api.consultar(suyo, 'admin_auditoria'))).toBe('clave_por_cambiar');
+    expect(
+      losDatos<{ debeCambiarClave: boolean }>(await api.consultar(suyo, 'admin_quien_soy'))
+        .debeCambiarClave,
+    ).toBe(true);
+
     losDatos(
       await api.ejecutar(suyo, 'cambiar_mi_clave', {
         actual: clave,

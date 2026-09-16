@@ -44,6 +44,7 @@ import { fileURLToPath } from 'node:url';
 import { crearApi } from '../../servidor/api/index.ts';
 import { crearDespachador } from '../../servidor/aplicacion/index.ts';
 import { almacenEnMemoria } from '../../servidor/infraestructura/almacen.ts';
+import { lugaresDeMentira } from '../../servidor/infraestructura/google.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { sembrarAcceso } from '../semillas/acceso.ts';
@@ -167,6 +168,11 @@ const puertos = {
 /** Los ficheros de M5, en memoria: mueren con el servidor, como la base. */
 const almacen = almacenEnMemoria();
 
+// Google de mentira (M7, entrega 5): la API de pruebas no tiene clave, y sin
+// esto no se podría probar desde la pantalla buscar y elegir el local. Contesta
+// siempre lo mismo y no sale a internet.
+const google = lugaresDeMentira();
+
 /**
  * Una transaccion, con el orden de la decision 0005 y el de `postgres.ts`:
  * disfraz, sesion, identidad. Cambiarlo aqui haria que las pruebas comprobaran
@@ -215,6 +221,7 @@ async function unaTransaccion(quien, hacer) {
       // El almacen de M5, en memoria: la API de pruebas no tiene credenciales de
       // Supabase, y sin puerto no se podria probar el alta con su logo.
       almacen,
+      google,
       correlacionId: quien.correlacionId,
       ahora: new Date(Date.now()),
     });

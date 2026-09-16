@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 16 de septiembre de 2026 · **M7: fusionadas las bases (#47) y las apps conectadas (#48), con la `0035` aplicada y la API desplegada. Ahora, el Panel vivo: mantener, temblar y arrastrar, lo vacío se aparta, y cada uno se pone sus cifras con su gráfica**
+Última actualización: 16 de septiembre de 2026 · **M7: fusionadas las bases (#47) y las apps conectadas (#48), con la `0035` aplicada y la API desplegada. Ahora, dos entregas encadenadas: el Panel vivo (#49) y el local en Google, con su tope por local**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -14,19 +14,19 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                                          |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾ y 4** ✓ (#44 a #48): compras, Calendario, repaso, dominio, bases y zonas   |
-| **Ahora**      | **El Panel vivo** (rama `m7-el-panel-vivo`, sin fusionar): editar como en un móvil, lo vacío se aparta y los indicadores |
-| **Pruebas**    | 990 unitarias y de base de datos · 359 de pantalla en escritorio y móvil, en verde · catálogo **105 de 111** (95 %)      |
-| **Rama**       | `m7-el-panel-vivo`, con su pull request. La `m7-conectar-las-apps` se fusionó en la #48                                  |
-| **Base**       | **35** migraciones y 51 tablas, **aplicadas en Supabase** (comprobado el 16-sep). Esta entrega no trae migración         |
-| **API**        | Desplegada con lo de la #48. **Hay que volver a desplegarla** con esta entrega: trae la consulta `un_indicador`          |
-| **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                   |
-| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                    |
+|                |                                                                                                                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾ y 4** ✓ (#44 a #48): compras, Calendario, repaso, dominio, bases y zonas             |
+| **Ahora**      | **El Panel vivo** (#49) y, encima, **el local en Google** (`m7-el-local-en-google`): Places con tope, apagado hasta la clave       |
+| **Pruebas**    | 998 unitarias y de base de datos · 361 de pantalla en escritorio y móvil, en verde · catálogo **109 de 115** (95 %)                |
+| **Rama**       | `m7-el-local-en-google`, sobre `m7-el-panel-vivo` (#49). **Se fusiona primero la #49**                                             |
+| **Base**       | En Supabase, **35** y 51 tablas (comprobado el 16-sep). En el código, **36** y 52: la `0036` trae la ficha de Google y su contador |
+| **API**        | Desplegada con lo de la #48. **Hay que volver a desplegarla**: `un_indicador` y los tres comandos de Google                        |
+| **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                             |
+| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                              |
 
-> **Lo de ahora:** fusionar el Panel vivo y volver a desplegar la API. No hay
-> migración. Los pasos, en
+> **Lo de ahora:** fusionar la #49 y después la de Google, aplicar la `0036` y volver a
+> desplegar la API. La clave de Google se pone cuando se tenga. Los pasos, en
 > **[`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md)**.
 
 ---
@@ -62,16 +62,21 @@ qué aprueba una persona).
 
 Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden:
 
-1. **Fusionar** el pull request de `m7-el-panel-vivo`. Al fusionar se publica solo.
-2. **Desplegar la API** (Actions → Desplegar la API → `desplegar`) y
-   **`bd:comprobar-api`**: tiene que conocer `un_indicador`.
-3. **Mirarlo en el TPV y en el móvil**: mantener pulsado un widget, arrastrarlo,
+1. **Fusionar la #49** (el Panel vivo) y **después** la del local en Google. Al
+   fusionar se publica solo.
+2. **`bd:migrar`** y **`bd:comprobar`**: 36 de 36 y 52 tablas.
+3. **Desplegar la API** (Actions → Desplegar la API → `desplegar`) y
+   **`bd:comprobar-api`**: tiene que conocer `un_indicador` y los de Google.
+4. **Mirarlo en el TPV y en el móvil**: mantener pulsado un widget, arrastrarlo,
    ponerse una cifra desde «Añadir».
-4. **Repasar las zonas de tu género**, si no está hecho: lo de limpieza va a mano
+5. **La clave de Places** (`GOOGLE_MAPS_KEY`) en los secretos de Supabase, **nueva**
+   —las de antes pasaron por un chat—, con su cuota diaria y su aviso de presupuesto.
+   Se enciende sin desplegar.
+6. **Repasar las zonas de tu género**, si no está hecho: lo de limpieza va a mano
    (Inventario → Productos → «De dónde»).
-5. **Quitarles el IVA a sus precios, una vez**, si no está hecho: Ajustes → «Tus
+7. **Quitarles el IVA a sus precios, una vez**, si no está hecho: Ajustes → «Tus
    precios de compra».
-6. **Las claves que faltan** —Google, Resend y la de IA—, con su tope de gasto.
+8. **Lo que falta de fuera** —el acceso a Business Profile, Resend y la de IA—.
    **No frenan nada de lo que hay**: cada una la estrena su entrega
    ([`config/claves.md`](config/claves.md)).
 
@@ -85,16 +90,16 @@ Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden
 
 ### Las entregas del repaso
 
-| Entrega | Qué                                                                                                           | Cómo está               |
-| ------- | ------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| **1**   | Quitar y congelar lotes, dos decimales, el alta por cómo se compra, IVA, gráfica, widgets, salario, jerarquía | **Fusionada** (#45)     |
-| **1½**  | **Las bases**: vender no es gastar, la ficha se lee, las listas largas se recorren, y vuelve el deshacer      | **Fusionada** (#47)     |
-| **1¾**  | **Las apps conectadas**: el precio de venta a la carta, la zona del género, congelar una parte y el recuento  | **Fusionada** (#48)     |
-| **1⅞**  | **El Panel vivo**: mantener y arrastrar, lo vacío se aparta, las cifras de cada uno con gráfica y flecha      | **Hecha, sin fusionar** |
-| **2**   | Avisos a jefes y gerentes de lo que hace su equipo, una vez; invitar a rellenar un pedido                     | La siguiente            |
-| **3**   | **Horarios**, una app entera en Equipo: cuadrante, historial, horas, avisos, PDF con logo                     | Después                 |
-| **4**   | El dominio **`estook.com`**: el sitio ya vive ahí                                                             | **Fusionada** (#46)     |
-| **5**   | Los topes de Google por local, y conectar Places, Business Profile y el modelo de IA                          | Espera los accesos      |
+| Entrega | Qué                                                                                                                                                           | Cómo está                              |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| **1**   | Quitar y congelar lotes, dos decimales, el alta por cómo se compra, IVA, gráfica, widgets, salario, jerarquía                                                 | **Fusionada** (#45)                    |
+| **1½**  | **Las bases**: vender no es gastar, la ficha se lee, las listas largas se recorren, y vuelve el deshacer                                                      | **Fusionada** (#47)                    |
+| **1¾**  | **Las apps conectadas**: el precio de venta a la carta, la zona del género, congelar una parte y el recuento                                                  | **Fusionada** (#48)                    |
+| **1⅞**  | **El Panel vivo**: mantener y arrastrar, lo vacío se aparta, las cifras de cada uno con gráfica y flecha                                                      | **Hecha, sin fusionar**                |
+| **2**   | Avisos a jefes y gerentes de lo que hace su equipo, una vez; invitar a rellenar un pedido                                                                     | La siguiente                           |
+| **3**   | **Horarios**, una app entera en Equipo: cuadrante, historial, horas, avisos, PDF con logo                                                                     | Después                                |
+| **4**   | El dominio **`estook.com`**: el sitio ya vive ahí                                                                                                             | **Fusionada** (#46)                    |
+| **5**   | **Places con tope por local**: hecho, sin fusionar ([0040](docs/decisiones/0040-el-local-se-busca-en-google-con-tope.md)). Business Profile, el reloj y la IA | Places hecho · el resto espera accesos |
 
 ### La entrega 1½ · las bases, punto por punto
 
@@ -128,17 +133,17 @@ Son los ocho que trajo Richi mirando la aplicación en su TPV, en su orden:
 
 ### Lo que deja preparado, y dónde se termina
 
-| Qué                                                                        | Dónde se termina | Qué hay ya                                               |
-| -------------------------------------------------------------------------- | ---------------- | -------------------------------------------------------- |
-| El reloj y el local en Google                                              | **Entrega 5**    | Decidido en 0016 y 0030; espera los accesos de Google    |
-| Las pantallas del Calendario, los avisos con roles y los turnos            | **M14**          | La tabla, su seguridad por roles y «Lo que viene»        |
-| Recalcular los platos de los días que la factura corrigió                  | **M9**           | Lo cobrado, guardado en cada línea del albarán con fecha |
-| El pedido en PDF con el logo                                               | **M11**          | «Imprimir», que da el PDF sin membrete                   |
-| El precio pactado para toda una cadena                                     | **M24**          | Lo pactado por local, con su aviso en la puerta          |
-| Leer el albarán de una foto                                                | **M22**          | La recepción línea a línea, que es donde entrará         |
-| Avisos «mañana entras a las 9» y «entras en 5 minutos, ficha ya», por push | **M25**          | El horario de siempre; el widget ya lo dice              |
-| El recuento, la desviación y la calibración del aprovechamiento            | **M8**           | La merma con motivo; los albaranes y sus incidencias     |
-| Descontar lo vendido del inventario                                        | **M20**          | El cierre guarda los platos con el nombre normalizado    |
+| Qué                                                                        | Dónde se termina | Qué hay ya                                                   |
+| -------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------ |
+| El reloj diario, y Business Profile                                        | **Con accesos**  | Places guardado con su fecha y su botón de «otra vez» (0040) |
+| Las pantallas del Calendario, los avisos con roles y los turnos            | **M14**          | La tabla, su seguridad por roles y «Lo que viene»            |
+| Recalcular los platos de los días que la factura corrigió                  | **M9**           | Lo cobrado, guardado en cada línea del albarán con fecha     |
+| El pedido en PDF con el logo                                               | **M11**          | «Imprimir», que da el PDF sin membrete                       |
+| El precio pactado para toda una cadena                                     | **M24**          | Lo pactado por local, con su aviso en la puerta              |
+| Leer el albarán de una foto                                                | **M22**          | La recepción línea a línea, que es donde entrará             |
+| Avisos «mañana entras a las 9» y «entras en 5 minutos, ficha ya», por push | **M25**          | El horario de siempre; el widget ya lo dice                  |
+| El recuento, la desviación y la calibración del aprovechamiento            | **M8**           | La merma con motivo; los albaranes y sus incidencias         |
+| Descontar lo vendido del inventario                                        | **M20**          | El cierre guarda los platos con el nombre normalizado        |
 
 ### Lo que sigue sin decidirse · es de Richi
 
@@ -196,18 +201,21 @@ contraseña publicada en este repositorio—. **`ikatz` es el negocio de verdad*
 **Errores:** `estook-app` en Sentry, solo «Error monitoring», con el repositorio
 enlazado. **Variables** del repositorio: `VITE_SUPABASE_URL`,
 `VITE_SUPABASE_ANON_KEY`, `VITE_APP_URL`, `VITE_SENTRY_DSN` y `VITE_API_URL`; en
-Secrets, `TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`. Todo en
+Secrets, `TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`. **`GOOGLE_MAPS_KEY` todavía no
+está puesta** en los secretos de Supabase: sin ella, Ajustes dice que Google no está
+conectado. Todo en
 [`config/claves.md`](config/claves.md).
 
 **El peso**, medido con `pnpm tamano` el 16 de septiembre:
 
 | Aplicación      | Peso inicial | De los cuales tipografía |
 | --------------- | ------------ | ------------------------ |
-| `app`           | **273,9 KB** | 106,1 KB                 |
+| `app`           | **275,7 KB** | 106,1 KB                 |
 | `admin`         | 187,1 KB     | 106,1 KB                 |
 | `web` · `carta` | 166,3 KB     | 106,1 KB                 |
 
-La referencia es 250 y **se mide, no bloquea**. El Panel vivo sube `app` 3,5 KB —la
+La referencia es 250 y **se mide, no bloquea**. El local en Google sube `app` 1,8 KB
+—la tarjeta de Ajustes—. El Panel vivo la subió 3,5 KB —la
 tarjeta del indicador, la línea y la rejilla nueva— y **`@dnd-kit` no cuenta**: va en
 su propio trozo (17 KB) y solo se descarga al editar el Panel. Las apps conectadas subieron `app`
 2,0 KB: las zonas y el margen son texto y una resta, y **el recuento se carga
@@ -253,6 +261,24 @@ En una línea. **El detalle está en
 **Lo que se encontró:** cambiar el salario **dos veces el mismo día** rompía la
 restricción `hasta >= desde` de la vigencia y salía «se nos ha roto algo por
 dentro». Ahora el cambio del mismo día corrige la fila de hoy, con su prueba.
+
+### M7 · el local en Google
+
+- **Ajustes → Tu local en Google**: se busca por el nombre, se toca y se guarda su
+  ficha —dirección, teléfono, web, Maps, horario, valoración y reseñas— con su
+  fecha. Lo escrito a mano en el alta no se pisa.
+- **La ubicación del fichaje puede salir de Google**, y se guarda de dónde sale:
+  **la marcada a mano manda** ([0040](docs/decisiones/0040-el-local-se-busca-en-google-con-tope.md)).
+- **Tope por local, contado antes de llamar**: 40 fichas y 400 búsquedas al mes. Al
+  acabarse, Google no llega a enterarse. Abrir Ajustes no llama nunca.
+- **Apagado hasta que haya clave**, y dicho. La API de pruebas lleva un Google de
+  mentira, y la base de datos lo prueba con uno que cuenta sus llamadas.
+- **Lo que no entra, y por qué:** Business Profile no es una clave —es OAuth del
+  dueño y acceso aprobado por Google—, y el reloj diario es la 0016, que no existe.
+
+**Lo que se encontró:** que `GOOGLE_BUSINESS_KEY`, apuntada en `config/claves.md`
+desde M5, **no existe**: esa API no se usa con una clave. Estaba escrito así para
+«cuando llegue», y habría mandado a pedir algo que Google no da.
 
 ### M7 · el Panel vivo
 
@@ -458,6 +484,12 @@ la capa superior del navegador— que es justo cuando hace falta.
 62. **Que un título no se vea ya no dice que se haya quitado.** Desde que lo vacío
     se aparta, las pruebas de quitar miran la casilla (`data-widget`), y las de
     ver aceptan «se ve» o «está nombrado en la línea».
+63. **Lo que cuesta dinero se cuenta antes de gastarlo**, en una sola orden que solo
+    suma si queda sitio. Un aviso de presupuesto avisa y sigue cobrando.
+64. **Una integración se construye con su puerto y uno de mentira**, y se enciende
+    con la clave. Sin clave se dice, no se rompe (0022, 0040).
+65. **Un nombre de clave se comprueba contra la API de verdad antes de apuntarlo.**
+    `GOOGLE_BUSINESS_KEY` llevaba desde M5 en la lista y esa API no usa claves.
 
 ---
 
@@ -506,6 +538,7 @@ En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 | **0037** | **Lo que sale de cámara dice si se vendió; el dinero lo cuenta la caja** |
 | **0038** | **Cada producto es de una zona, y cada uno trabaja con la suya**         |
 | **0039** | **El Panel se monta como un móvil, y cada uno se pone sus cifras**       |
+| **0040** | **El local se busca en Google, con el tope contado antes de llamar**     |
 
 Otras, sin fichero propio:
 
@@ -533,7 +566,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`,
   `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0035`.** Se amplían con una `0036`, nunca se editan
+- **Las migraciones `0001` a `0036`.** Se amplían con una `0037`, nunca se editan
   (regla 2). Y al ampliar una función SQL, **se copia la original entera**.
 - **Un valor de un tipo enumerado no se quita**: Postgres no sabe hacerlo. Por eso
   la `0034` añade `venta` con `add value if not exists … after 'merma'`, y su
@@ -575,6 +608,10 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   y **cómo es cada uno en el dominio** (`indicador.ts`): el catálogo, la tarjeta y el
   servidor leen de ahí. Lo elegido va en el identificador del widget
   (`indicador-ventas-7`), así que la tabla del Panel no cambia.
+- **Google, solo por la API y por su puerto** (`servidor/infraestructura/google.ts`).
+  La clave no va al navegador jamás, y **todo lo que llama a Google pasa antes por
+  `contar`** (`comandos/google.ts`), que es el tope. Los topes viven en
+  `packages/dominio/src/google.ts`.
 - **El precio de venta no vive en el producto.** Lo que se vende es un plato, y su
   precio es de la carta (M10); lo que cuesta sale de su escandallo (M9). Se
   intentó en la `0034` y se retiró en la `0035`: está escrito para no repetirlo.

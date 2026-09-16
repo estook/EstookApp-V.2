@@ -3,6 +3,7 @@ import { crearDespachador, type Resultado } from '../../servidor/aplicacion/inde
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import type { SesionViva, Sql } from '../../servidor/infraestructura/postgres.ts';
+import type { LugaresDeGoogle } from '../../servidor/infraestructura/google.ts';
 
 /**
  * El despachador de verdad, contra la base efímera de las pruebas (M7).
@@ -54,7 +55,10 @@ function adaptador(bd: PGlite): Sql {
   return sql as unknown as Sql;
 }
 
-export function montarLaApi(bd: PGlite): ApiDePrueba {
+export function montarLaApi(
+  bd: PGlite,
+  opciones: { readonly google?: LugaresDeGoogle | null } = {},
+): ApiDePrueba {
   // PGlite es una sola conexión: las transacciones van de una en una.
   let laCola: Promise<unknown> = Promise.resolve();
   function deUnaEnUna<T>(hacer: () => Promise<T>): Promise<T> {
@@ -112,6 +116,7 @@ export function montarLaApi(bd: PGlite): ApiDePrueba {
             personaId: sesion?.personaId ?? null,
             sesion,
             almacen: null,
+            google: opciones.google ?? null,
             correlacionId: quien.correlacionId,
             ahora: new Date(Date.now()),
           });

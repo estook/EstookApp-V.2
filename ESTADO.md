@@ -14,16 +14,16 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                                                   |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾ y 4** ✓ (#44 a #48): compras, Calendario, repaso, dominio, bases y zonas            |
-| **Ahora**      | **El Panel vivo** (rama `m7-el-panel-vivo`, sin fusionar): editar como en un móvil, lo vacío se aparta y los indicadores          |
-| **Pruebas**    | **UNITARIAS** unitarias y de base de datos · **PANTALLA** de pantalla en escritorio y móvil, en verde · catálogo ****CATALOGO**** |
-| **Rama**       | `m7-el-panel-vivo`, con su pull request. La `m7-conectar-las-apps` se fusionó en la #48                                           |
-| **Base**       | **35** migraciones y 51 tablas, **aplicadas en Supabase** (comprobado el 16-sep). Esta entrega no trae migración                  |
-| **API**        | Desplegada con lo de la #48. **Hay que volver a desplegarla** con esta entrega: trae la consulta `un_indicador`                   |
-| **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                            |
-| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                             |
+|                |                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾ y 4** ✓ (#44 a #48): compras, Calendario, repaso, dominio, bases y zonas   |
+| **Ahora**      | **El Panel vivo** (rama `m7-el-panel-vivo`, sin fusionar): editar como en un móvil, lo vacío se aparta y los indicadores |
+| **Pruebas**    | 990 unitarias y de base de datos · 359 de pantalla en escritorio y móvil, en verde · catálogo **105 de 111** (95 %)      |
+| **Rama**       | `m7-el-panel-vivo`, con su pull request. La `m7-conectar-las-apps` se fusionó en la #48                                  |
+| **Base**       | **35** migraciones y 51 tablas, **aplicadas en Supabase** (comprobado el 16-sep). Esta entrega no trae migración         |
+| **API**        | Desplegada con lo de la #48. **Hay que volver a desplegarla** con esta entrega: trae la consulta `un_indicador`          |
+| **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                   |
+| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                    |
 
 > **Lo de ahora:** fusionar el Panel vivo y volver a desplegar la API. No hay
 > migración. Los pasos, en

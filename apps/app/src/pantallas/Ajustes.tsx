@@ -30,6 +30,7 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { TuMarca } from '../marca/TuMarca.tsx';
 import { AjustesDeOrganizacion } from './AjustesDeOrganizacion.tsx';
 import { MiAcceso } from './MiAcceso.tsx';
+import { TuLocalEnGoogle } from './TuLocalEnGoogle.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
 import { preguntarDondeEstoy } from '../ganchos/usarFichar.ts';
@@ -146,6 +147,7 @@ export function Ajustes() {
       <TuMarca />
 
       {llevaElLocal && <ComoEntranTusVentas modo="ajustes" />}
+      {llevaElLocal && <TuLocalEnGoogle />}
       {llevaElLocal && <DondeEstaElLocal />}
       {llevaLosPrecios && <TusPreciosDeCompra />}
 
@@ -193,10 +195,10 @@ export function Ajustes() {
  *
  * ── Por qué con un botón y no con la dirección ──────────────────────────────
  *
- * Porque pasar una dirección escrita a coordenadas es un servicio de fuera que hoy
- * no está contratado (Google Places se aplazó a M23, decisión 0013). Y porque sale
- * mejor: quien lo pone está **en el local**, y el móvil sabe dónde está con más
- * precisión que cualquier dirección.
+ * Porque sale mejor: quien lo pone está **en el local**, y el móvil sabe dónde está
+ * con más precisión que cualquier dirección. Desde M7 la ubicación también puede
+ * salir de la ficha de Google (tarjeta de arriba, decisión 0040), y **la marcada
+ * aquí manda** sobre la de Google.
  *
  * Sin esto, los fichajes guardan su posición igual y no se comparan con nada. Se
  * puede poner cualquier día sin perder lo de antes.

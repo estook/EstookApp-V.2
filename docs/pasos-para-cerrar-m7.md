@@ -1,18 +1,19 @@
-# Pasos para cerrar M7 · el Panel vivo
+# Pasos para cerrar M7 · el Panel vivo y el local en Google
 
 > ## Cómo está
 >
-> | Qué                                        | Cómo está                                                           |
-> | ------------------------------------------ | ------------------------------------------------------------------- |
-> | El repaso, las bases y las apps conectadas | **Fusionados** (#45, #47 y #48)                                     |
-> | `estook.com`                               | **Funcionando** (#46)                                               |
-> | La base de datos                           | **Al día**: 35 de 35 migraciones, comprobado el 16 de septiembre    |
-> | La API                                     | **Al día con la #48**. Le falta lo de esta entrega: `un_indicador`  |
-> | **El Panel vivo** (esta)                   | **Pull request abierto**: `m7-el-panel-vivo`. **No trae migración** |
+> | Qué                                        | Cómo está                                                                        |
+> | ------------------------------------------ | -------------------------------------------------------------------------------- |
+> | El repaso, las bases y las apps conectadas | **Fusionados** (#45, #47 y #48)                                                  |
+> | `estook.com`                               | **Funcionando** (#46)                                                            |
+> | La base de datos                           | 35 de 35, comprobado el 16 de septiembre. **Le falta la `0036`** (Google)        |
+> | La API                                     | Al día con la #48. Le falta lo de las dos entregas de abajo                      |
+> | **El Panel vivo**                          | **Pull request #49** abierto: `m7-el-panel-vivo`. Sin migración                  |
+> | **El local en Google**                     | **Pull request abierto** encima del #49: `m7-el-local-en-google`. Trae la `0036` |
 
-## Los dos pasos
+## Los pasos, en este orden
 
-### 1 · Fusionar el pull request
+### 1 · Fusionar primero el Panel vivo (#49)
 
 **Dónde:** GitHub → **Pull requests** → «M7 · el Panel vivo» → espera las tres
 comprobaciones en verde —`Calidad`, `Construccion y presupuestos` y
@@ -20,21 +21,52 @@ comprobaciones en verde —`Calidad`, `Construccion y presupuestos` y
 
 **Si alguna sale en rojo:** no fusiones; mándame una foto de la que falla.
 
-### 2 · Volver a desplegar la API
+### 2 · Después, el local en Google
 
-**Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** →
-escribe `desplegar` → **Run workflow**. Cuando termine, en PowerShell, en la
-carpeta del proyecto:
+El segundo pull request está **encima del primero**: al fusionar el #49, GitHub lo
+pasa a apuntar a `main` solo. Espera otra vez las tres comprobaciones en verde y
+fusiónalo igual. **En este orden**: al revés, el segundo arrastraría el primero sin
+que lo hubieras mirado.
+
+### 3 · Aplicar la migración
 
 ```bash
-.\estook.cmd bd:comprobar-api
+.estook.cmd bd:migrar
+```
+
+**Qué sale si va bien:** la línea `0036_el_local_en_google`.
+
+```bash
+.estook.cmd bd:comprobar
+```
+
+**Qué tiene que decir:** **36 de 36** migraciones y **52 tablas** (la nueva es
+`uso_de_google`, el contador del tope).
+
+### 4 · Volver a desplegar la API
+
+**Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** →
+escribe `desplegar` → **Run workflow**. Cuando termine:
+
+```bash
+.estook.cmd bd:comprobar-api
 ```
 
 **Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los
-comandos». Si dice «FALTA DESPLEGARLA» con `un_indicador`, el despliegue no ha
-terminado: vuelve a lanzarlo.
+comandos». Si dice «FALTA DESPLEGARLA», el despliegue no ha terminado: vuelve a
+lanzarlo.
 
-**Esta vez no hay `bd:migrar`**: la entrega no toca la base.
+### 5 · La clave de Google · **cuando la tengas**
+
+Sin ella no se rompe nada: Ajustes dice «Google todavía no está conectado». Los
+pasos para sacarla están abajo, en el **paso 6 · A**, y ponerla es:
+
+**Dónde:** **supabase.com/dashboard** → tu proyecto → **Edge Functions** →
+**Secrets** (en algunas versiones: **Project Settings → Edge Functions**) →
+**Add new secret** → nombre **`GOOGLE_MAPS_KEY`**, valor, la clave → **Save**.
+
+**Qué tiene que salir:** en Estook, **Ajustes → Tu local en Google** deja de decir
+«Apagado» y sale **«Buscar mi local en Google»**. No hace falta desplegar otra vez.
 
 ---
 
@@ -97,22 +129,44 @@ días** debajo, que se dibuja al abrir.
   la semana pasada**: un martes se compara con un martes.
 - **En un monitor grande** el Panel pasa a **seis columnas**.
 
+### 5 · Tu local en Google
+
+**Dónde:** **Ajustes → Tu local en Google**. Hasta que pongas la clave, dice
+«Apagado» y no hay más que mirar. Con la clave:
+
+1. **Buscar mi local en Google** → escribe «ikatz» y la ciudad. Salen hasta cinco
+   sitios.
+2. Toca el tuyo. Si ya marcaste la ubicación desde el local, **«Medir los fichajes
+   desde su ubicación de Google» sale apagado**: la de a mano suele ser más exacta.
+3. **Es este**.
+
+**Qué tiene que salir:** el nombre, la dirección, **★ la valoración y sus reseñas**,
+el teléfono, «Su web», «Verlo en Google Maps», el horario plegado, y debajo **«Este
+mes: 1 de 40 fichas y N de 400 búsquedas»**. Si has escrito tu dirección o tu
+teléfono en el alta, **no se tocan**.
+
+**Traerlo otra vez de Google** solo pide la ficha una vez cada 24 horas: la segunda
+vez te dice que ya se trajo.
+
 > **Lo que salga raro, apúntalo tal cual**, con una foto si puedes.
 
 ---
 
 ## Lo que sigue pendiente, y es tuyo
 
-Las cuatro claves. **Ninguna frena lo que hay hecho:**
+Las claves y accesos. **Ninguno frena lo que hay hecho**, y todos se ponen en
+**Supabase → Edge Functions → Secrets**, nunca en el chat ni en el código. El detalle
+de cada uno, en [`config/claves.md`](../config/claves.md).
 
-| Clave                | Para qué                                    | Cuándo hace falta                 |
-| -------------------- | ------------------------------------------- | --------------------------------- |
-| **Places**           | Situar el local y buscarlo por su dirección | Entrega 5                         |
-| **Business Profile** | Tu ficha de Google y sus reseñas            | Entrega 5, con el acceso aprobado |
-| **Resend**           | Los avisos por correo                       | Entrega 2                         |
-| **La de IA**         | Que Fogón hable                             | M22                               |
+| Qué                  | Nombre del secreto                           | Para qué                                 | Cómo está en el código            |
+| -------------------- | -------------------------------------------- | ---------------------------------------- | --------------------------------- |
+| **Places**           | `GOOGLE_MAPS_KEY`                            | Buscar el local, su ficha y su ubicación | **Hecho**: se enciende al ponerla |
+| **Business Profile** | No es una clave: **acceso aprobado + OAuth** | Todas las reseñas, y responderlas        | Espera a que Google lo apruebe    |
+| **Resend**           | `RESEND_API_KEY` + dominio verificado        | Los avisos por correo                    | Entrega 2                         |
+| **IA**               | `AI_API_KEY` y los dos modelos               | Que Fogón hable                          | M22, eligiendo modelo y tope      |
 
-Los pasos de las dos de Google, con sus topes, están abajo en el **paso 6**.
+Los pasos de las dos de Google, con sus topes, están abajo en el **paso 6**; poner la de
+Places, arriba en **«5 · La clave de Google»**.
 
 ---
 
@@ -244,13 +298,19 @@ que te debo decir antes:
 2. ☰ → **Facturación** → **Vincular una cuenta de facturación**.
 3. ☰ → **APIs y servicios** → **Biblioteca** → **«Places API (New)»** → **Habilitar**.
 4. **Credenciales** → **Crear credenciales** → **Clave de API** → **Editar la clave**
-   → **Restricciones de API** → solo **Places API (New)** → **Guardar**.
+   → **Restricciones de API** → solo **Places API (New)** → **Guardar**. En
+   «Restricciones de aplicación» deja **Ninguna**: la usa el servidor de Supabase, no
+   una web, y no tiene una IP fija.
 5. **El corte**: **APIs y servicios** → **Places API (New)** → **Cuotas** → las
-   peticiones por día → **Editar** → **50**. Con cuarenta al mes por local, cincuenta
-   al día solo se alcanzan si algo va mal, y ahí para.
+   peticiones **de autocompletar** por día → **Editar** → **300**, y las de **detalles
+   del sitio** (Place Details) por día → **50**. Buscar un local son unas cinco
+   peticiones de autocompletar —una por pausa al escribir— y una de detalles, así
+   que con esto sobra para buscarlo varias veces al día y corta si algo va mal.
+   Estook además lleva **su propio tope por local**: 40 fichas y 400 búsquedas al mes.
 6. **El aviso**: **Facturación** → **Presupuestos y alertas** → **Crear presupuesto**
    de **8 € al mes**, con avisos al 50 %, al 90 % y al 100 %.
-7. **No me pegues la clave en el chat.** Guárdala tú; te digo dónde ponerla.
+7. **No me pegues la clave en el chat.** Ponla tú directamente en Supabase: arriba,
+   en **«5 · La clave de Google»**.
 
 ### B · El acceso a Google Business Profile
 

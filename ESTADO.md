@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 16 de septiembre de 2026 · **Antes de M8: #51, #52 y #53 fusionadas, migradas y desplegadas; A1, la puerta del admin, en producción con Richi dentro. Su repaso, en un pull request aparte. De las veinte mejoras y del resto del admin no hay nada construido todavía**
+Última actualización: 16 de septiembre de 2026 · **Antes de M8: A1, la puerta del admin, y su repaso (#51 a #54), en producción con Richi dentro. Google y la IA, revisados con Richi: Places a punto de encender. De las veinte mejoras y del resto del admin no hay nada construido todavía**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -17,16 +17,16 @@
 |                |                                                                                                                                                   |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel                 |
-| **Ahora**      | **Antes de M8**: A1 (la puerta del admin) **en producción**; su repaso, sin fusionar. Lo siguiente, **V · Lo que se ve**                          |
-| **Pruebas**    | 1.021 unitarias y de base de datos · 367 de pantalla en escritorio y móvil, en verde · catálogo **115 de 121** (95 %)                             |
-| **Rama**       | `antes-de-m8-repaso-de-a1`, sobre `main`: el repaso de A1. Sin migración                                                                          |
+| **Ahora**      | **Antes de M8**: A1 y su repaso **en producción**. Lo siguiente, **V · Lo que se ve**                                                             |
+| **Pruebas**    | 1.023 unitarias y de base de datos · 367 de pantalla en escritorio y móvil, en verde · catálogo **115 de 121** (95 %)                             |
+| **Rama**       | `antes-de-m8-conectar-google-y-comandos`: los pasos de Google y la IA, y los comandos sin barra. Solo documentos y una prueba                     |
 | **Base**       | En Supabase, **37 de 37**, 52 tablas en `estook` y 2 en `plataforma` (comprobado el 16-sep). Igual que en el código                               |
-| **API**        | Desplegada después de la #53 (42 consultas y 79 comandos). **El repaso cambia el despachador**: al fusionarlo, desplegar otra vez                 |
+| **API**        | Desplegada después de la #54, el 16-sep a las 20:05. Al día con `main`                                                                            |
 | **Entrar**     | App: la cuenta de Ricardo (`ikatz`); ninguna de ejemplo entra. Admin: `estookapp@gmail.com` (dentro, con segundo factor) y Santi (sin entrar aún) |
 | **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                                             |
 
-> **Lo de ahora:** fusionar el repaso de A1, desplegar la API y mirar el admin en el
-> móvil; y que Santi entre y monte su segundo factor. Todo en
+> **Lo de ahora:** poner la clave de Places en Supabase, apagar el login de Google de
+> Supabase, mirar el admin en el móvil y que Santi entre. Todo en
 > **[`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)**. Los planes:
 > **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)** y
 > **[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md)**. **M8 no
@@ -63,27 +63,29 @@ qué aprueba una persona).
 
 ### Ahora mismo · es de Richi
 
-Los pasos, en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md) («El repaso de A1»):
+Los pasos, en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md):
 
-1. **Fusionar el repaso de A1** y **desplegar la API** (Actions → Desplegar la API →
-   `desplegar`), con `bd:comprobar-api` en verde. No trae migración.
-2. **Mirar el admin en el móvil**: la cabecera en dos líneas y las secciones deslizables.
-3. **Que Santi entre en `estook.com/admin/`** con su contraseña de siempre y monte su
+1. **Places**: restringir la clave a Places API (New) y ponerla en Supabase como
+   `GOOGLE_MAPS_KEY`, **solo la clave**, sin `key=`. Se comprueba en Ajustes → Tu
+   local en Google. («Google y la IA · A».)
+2. **Apagar «Sign in with Google» en Supabase** (Authentication → Providers): es el
+   login de Supabase, que Estook no usa (0010). Borrar el JSON del cliente de OAuth de
+   Descargas: su secreto pasó por el chat y se cambiará al construir la conexión.
+3. **Business Profile**: mandar el formulario de acceso si no está mandado, y **avisar
+   cuando Google lo apruebe**. Hasta entonces la cuota es 0 y no hay nada que conectar.
+4. **Mirar el admin en el móvil**: la cabecera en dos líneas y las secciones deslizables.
+5. **Que Santi entre en `estook.com/admin/`** con su contraseña de siempre y monte su
    segundo factor. Si no la recuerda, `bd:dar-admin su@correo --nueva-clave`.
-4. **Mirar el Panel vivo en el TPV y en el móvil**, si no está hecho: mantener pulsado
-   un widget, arrastrarlo, ponerse una cifra desde «Añadir».
-5. **La clave de Places** (`GOOGLE_MAPS_KEY`) en los secretos de Supabase, **nueva**
-   —las de antes pasaron por un chat—, con su cuota diaria y su aviso de presupuesto.
-   Se enciende sin desplegar.
-6. **Repasar las zonas de tu género** y **quitarles el IVA a tus precios, una vez**, si
+6. **Mirar el Panel vivo en el TPV y en el móvil**, si no está hecho.
+7. **Repasar las zonas de tu género** y **quitarles el IVA a tus precios, una vez**, si
    no está hecho (Inventario → Productos → «De dónde»; Ajustes → «Tus precios de compra»).
-7. **Lo que falta de fuera** —el acceso a Business Profile, Resend y la de IA—.
-   **No frenan nada de lo que hay**: cada una la estrena su entrega
-   ([`config/claves.md`](config/claves.md)).
+8. **La IA, todavía nada**: ninguna parte de Estook la usa hoy. Está decidido Gemini
+   Flash con tope de 1.800 al mes por local; la clave se saca cuando toque (M22).
+   **Resend**, lo mismo: con la entrega R.
 
-**Ya hecho y comprobado en producción el 16 de septiembre:** las tres fusiones, la
-`0036` y la `0037` aplicadas, la API desplegada, y `estookapp@gmail.com` dentro del
-admin con su contraseña y su segundo factor.
+**Ya hecho y comprobado en producción el 16 de septiembre:** las cuatro fusiones (#51 a
+#54), la `0036` y la `0037` aplicadas, la API desplegada a las 20:05, y
+`estookapp@gmail.com` dentro del admin con su contraseña y su segundo factor.
 
 ### Lo que Richi confirmó el 11 de septiembre
 
@@ -118,18 +120,18 @@ se pidió, cómo se hace mejor, qué hay ya y qué necesita de fuera— en dos d
   decisión, la [0041](docs/decisiones/0041-el-panel-de-administracion.md): clientes,
   vendedores y códigos, ventas y auditoría, en cuatro entregas (A1 a A4).
 
-| Orden | Entrega                       | Qué lleva                                                     | Cómo está                          |
-| ----- | ----------------------------- | ------------------------------------------------------------- | ---------------------------------- |
-| 1     | **A1 · La puerta del admin**  | Entrar con segundo factor, la primera cuenta, más admins      | **En producción** · repaso abierto |
-| 2     | **V · Lo que se ve**          | Modo cocina, flechas en todas las apps, Inicio, vacíos, fotos | La siguiente                       |
-| 3     | **O · Lo que se ordena**      | Botón de acciones, Ajustes, «Hoy», paneles por rol, semáforo  | Falta                              |
-| 4     | **A2 · Clientes**             | Lista, ficha, contrato y actividad, editar con auditoría      | Falta                              |
-| 5     | **R · El reloj y los avisos** | El reloj, la entrega 2, pedido sugerido, precios, informe     | Falta                              |
-| 6     | **H · Horarios**              | La entrega 3, con el coste en vivo y las horas extra          | Falta                              |
-| 7     | **I · La app instalable**     | Push y sin conexión                                           | Falta                              |
-| 8     | **L · El lector**             | Códigos de barras                                             | Falta                              |
-| 9     | **A3 · Vendedores y códigos** | Vendedores, `?ref=`, asignaciones con historial               | Falta                              |
-| 10    | **A4 · Ventas**               | El tablero                                                    | Falta                              |
+| Orden | Entrega                       | Qué lleva                                                     | Cómo está                        |
+| ----- | ----------------------------- | ------------------------------------------------------------- | -------------------------------- |
+| 1     | **A1 · La puerta del admin**  | Entrar con segundo factor, la primera cuenta, más admins      | **En producción**, con su repaso |
+| 2     | **V · Lo que se ve**          | Modo cocina, flechas en todas las apps, Inicio, vacíos, fotos | La siguiente                     |
+| 3     | **O · Lo que se ordena**      | Botón de acciones, Ajustes, «Hoy», paneles por rol, semáforo  | Falta                            |
+| 4     | **A2 · Clientes**             | Lista, ficha, contrato y actividad, editar con auditoría      | Falta                            |
+| 5     | **R · El reloj y los avisos** | El reloj, la entrega 2, pedido sugerido, precios, informe     | Falta                            |
+| 6     | **H · Horarios**              | La entrega 3, con el coste en vivo y las horas extra          | Falta                            |
+| 7     | **I · La app instalable**     | Push y sin conexión                                           | Falta                            |
+| 8     | **L · El lector**             | Códigos de barras                                             | Falta                            |
+| 9     | **A3 · Vendedores y códigos** | Vendedores, `?ref=`, asignaciones con historial               | Falta                            |
+| 10    | **A4 · Ventas**               | El tablero                                                    | Falta                            |
 
 ### Lo que todavía NO está en la app
 
@@ -317,7 +319,7 @@ En una línea. **El detalle está en
   nunca el último total. **Auditoría**, en frases, de cincuenta en cincuenta.
 - **`bd:dar-admin`** da el primer acceso desde la consola. El catálogo del sistema de
   diseño, que se veía sin entrar, va detrás de la puerta.
-- **El repaso de después de fusionar** (sin fusionar todavía): con la contraseña de un
+- **El repaso de después de fusionar** (#54, en producción): con la contraseña de un
   solo uso sin cambiar **no se lee nada del admin**, ni por la API a pelo;
   `bd:dar-admin` **rescata** a un admin (`--nueva-clave`, `--sin-segundo-factor`); y la
   cabecera del móvil pasa a dos líneas.

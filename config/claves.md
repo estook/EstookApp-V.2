@@ -87,6 +87,13 @@ su cuenta de Google** (OAuth), y que Google **apruebe el acceso** del proyecto. 
 que hará falta cuando lo aprueben es un «ID de cliente de OAuth» del proyecto de
 Google Cloud, y se le pondrá nombre entonces, con su decisión.
 
+**Cómo está (16 de septiembre de 2026):** el cliente de OAuth «Estook» (aplicación web)
+**ya existe** en Google Cloud y la API está habilitada con **cuota 0** hasta la
+aprobación. Su secreto **pasó por un chat**, así que al construir la conexión se crea
+otro y se borra ese. **No va en el login de Supabase** (Authentication → Providers →
+Google): Estook no usa ese login (0010), y ese interruptor tiene que quedar apagado.
+Los pasos, en [`docs/pasos-antes-de-m8.md`](../docs/pasos-antes-de-m8.md), al final.
+
 **Places ya está construido y probado.** Al poner la clave en los secretos de
 Supabase se enciende sin desplegar otra vez: la API la lee al arrancar cada función.
 Lleva **tope por local**: 40 fichas y 400 búsquedas al mes, contadas antes de llamar

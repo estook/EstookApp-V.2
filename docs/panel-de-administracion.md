@@ -27,7 +27,7 @@ Comprobado en producción el 16 de septiembre de 2026.
 | Sesión del admin y de la app separadas; el acceso se mira en cada petición                  | **Hecho y en producción**                                      |
 | Administradores: dar acceso total y quitarlo, con el código otra vez                        | **Hecho y en producción**                                      |
 | Auditoría del admin: quién, qué, cuándo, motivo y dirección IP                              | **Hecho y en producción** (el aparato se guarda, no se enseña) |
-| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | Dar: en producción · **Rescatar: repaso de A1, sin fusionar**  |
+| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | **Hecho y en producción** (rescatar llegó con el repaso, #54)  |
 | El catálogo del sistema de diseño detrás de la puerta                                       | **Hecho y en producción**                                      |
 | **Niveles** comercial, soporte y vendedor                                                   | Existen en la base; **no se pueden dar** hasta A3 y M26        |
 | **Clientes**: lista, filtros, búsqueda, CSV, ficha, contrato, actividad, notas, editar      | **Falta · A2**                                                 |
@@ -123,8 +123,8 @@ Y lo que se añade porque la propuesta no lo cubría:
 **Y rescata a quien se ha quedado fuera** —el admin no tiene «he olvidado mi
 contraseña» mientras no haya correo—:
 
-- `.estook.cmd bd:dar-admin correo --nueva-clave`: una contraseña de un solo uso.
-- `.estook.cmd bd:dar-admin correo --sin-segundo-factor`: borra el segundo factor,
+- `.\estook.cmd bd:dar-admin correo --nueva-clave`: una contraseña de un solo uso.
+- `.\estook.cmd bd:dar-admin correo --sin-segundo-factor`: borra el segundo factor,
   para volver a montarlo al entrar (móvil y códigos de respaldo perdidos).
 
 Las dos cierran todas sus sesiones, quedan en la auditoría y **solo valen con quien ya

@@ -2,42 +2,49 @@
 
 > ## Cómo está
 >
-> | Qué                                        | Cómo está                                                                        |
-> | ------------------------------------------ | -------------------------------------------------------------------------------- |
-> | El repaso, las bases y las apps conectadas | **Fusionados** (#45, #47 y #48)                                                  |
-> | `estook.com`                               | **Funcionando** (#46)                                                            |
-> | La base de datos                           | 35 de 35, comprobado el 16 de septiembre. **Le falta la `0036`** (Google)        |
-> | La API                                     | Al día con la #48. Le falta lo de las dos entregas de abajo                      |
-> | **El Panel vivo**                          | **Pull request #49** abierto: `m7-el-panel-vivo`. Sin migración                  |
-> | **El local en Google**                     | **Pull request abierto** encima del #49: `m7-el-local-en-google`. Trae la `0036` |
+> | Qué                                        | Cómo está                                                                      |
+> | ------------------------------------------ | ------------------------------------------------------------------------------ |
+> | El repaso, las bases y las apps conectadas | **Fusionados** (#45, #47 y #48)                                                |
+> | `estook.com`                               | **Funcionando** (#46)                                                          |
+> | **El Panel vivo**                          | **Fusionado** en `main` (#49). Sin migración                                   |
+> | **El local en Google**                     | **No llegó a `main`**: la #50 se fusionó en la rama del Panel. Lo lleva la #51 |
+> | La base de datos                           | 35 de 35, comprobado el 16 de septiembre. **Le falta la `0036`** (Google)      |
+> | La API                                     | Al día con la #48. Le falta lo del Panel vivo y lo de Google                   |
 
 ## Los pasos, en este orden
 
-### 1 · Fusionar primero el Panel vivo (#49)
+### 1 · Fusionar la #51 · el local en Google, esta vez a `main`
 
-**Dónde:** GitHub → **Pull requests** → «M7 · el Panel vivo» → espera las tres
-comprobaciones en verde —`Calidad`, `Construccion y presupuestos` y
+**Qué pasó:** la #50 tenía como base la rama del Panel vivo. Estos pasos decían que,
+al fusionar la #49, GitHub la cambiaría a `main` sola, **y no lo hizo**: eso solo pasa
+si se borra la rama de abajo. Así que la #50 se fusionó en la rama del Panel y a
+`main` no llegó nada. **El código es el mismo que ya miraste**; la #51 solo lo lleva a
+su sitio.
+
+**Dónde:** GitHub → **Pull requests** → «M7 · el local en Google, a main» → espera
+las tres comprobaciones en verde —`Calidad`, `Construccion y presupuestos` y
 `Migraciones reversibles`— → **Merge pull request** → **Confirm merge**.
 
 **Si alguna sale en rojo:** no fusiones; mándame una foto de la que falla.
 
-### 2 · Después, el local en Google
+### 2 · Comprobar que esta vez sí está en `main`
 
-El segundo pull request está **encima del primero**: al fusionar el #49, GitHub lo
-pasa a apuntar a `main` solo. Espera otra vez las tres comprobaciones en verde y
-fusiónalo igual. **En este orden**: al revés, el segundo arrastraría el primero sin
-que lo hubieras mirado.
+**Dónde:** GitHub → la pestaña **Code** (con `main` elegida arriba a la izquierda) →
+carpeta `docs` → carpeta `decisiones`.
+
+**Qué tiene que salir:** el fichero `0040-el-local-se-busca-en-google-con-tope.md`.
+Si no está, para y dímelo.
 
 ### 3 · Aplicar la migración
 
 ```bash
-.estook.cmd bd:migrar
+.\estook.cmd bd:migrar
 ```
 
 **Qué sale si va bien:** la línea `0036_el_local_en_google`.
 
 ```bash
-.estook.cmd bd:comprobar
+.\estook.cmd bd:comprobar
 ```
 
 **Qué tiene que decir:** **36 de 36** migraciones y **52 tablas** (la nueva es
@@ -49,7 +56,7 @@ que lo hubieras mirado.
 escribe `desplegar` → **Run workflow**. Cuando termine:
 
 ```bash
-.estook.cmd bd:comprobar-api
+.\estook.cmd bd:comprobar-api
 ```
 
 **Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los
@@ -337,10 +344,16 @@ que te debo decir antes:
 
 ## Lo que viene
 
-| Entrega | Qué                                                                                                                                     |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **2**   | Avisos a jefes y gerentes de lo que hace su equipo —un borrador, la carta, un pedido—, **una vez**; e invitar a rellenar un pedido      |
-| **3**   | **Horarios**, una app entera en Equipo: cuadrante semanal, por persona, historial, horas oficiales, avisos al cambiar y PDF con tu logo |
-| **5**   | Los topes de Google por local y, con tus accesos, el local en Google y sus reseñas                                                      |
+**Antes de M8 van tus veinte mejoras y el panel de administración**, en diez entregas.
+El orden y el porqué de cada una están en
+[`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), y el admin entero en
+[`panel-de-administracion.md`](panel-de-administracion.md). Las dos entregas que
+quedaban de este repaso van dentro de ese orden:
 
-La **4**, el dominio, ya está hecha: `estook.com` funciona desde el 12 de septiembre.
+| Entrega | Qué                                                                                                                                     | Dónde queda                            |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| **2**   | Avisos a jefes y gerentes de lo que hace su equipo —un borrador, la carta, un pedido—, **una vez**; e invitar a rellenar un pedido      | Con **el reloj y los avisos** (R)      |
+| **3**   | **Horarios**, una app entera en Equipo: cuadrante semanal, por persona, historial, horas oficiales, avisos al cambiar y PDF con tu logo | **Horarios** (H), con el coste en vivo |
+
+La **4** (el dominio) y la **5** (Places con su tope) ya están hechas; lo de Business
+Profile espera a que Google lo apruebe.

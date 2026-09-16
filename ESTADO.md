@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 16 de septiembre de 2026 · **M7: fusionadas las bases (#47) y las apps conectadas (#48), con la `0035` aplicada y la API desplegada. Ahora, dos entregas encadenadas: el Panel vivo (#49) y el local en Google, con su tope por local**
+Última actualización: 16 de septiembre de 2026 · **M7: el Panel vivo fusionado (#49); el local en Google no llegó a `main` y lo lleva la #51. Pausa antes de M8: las veinte mejoras de Richi y el panel de administración, con su plan escrito**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -14,20 +14,22 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                                                    |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾ y 4** ✓ (#44 a #48): compras, Calendario, repaso, dominio, bases y zonas             |
-| **Ahora**      | **El Panel vivo** (#49) y, encima, **el local en Google** (`m7-el-local-en-google`): Places con tope, apagado hasta la clave       |
-| **Pruebas**    | 998 unitarias y de base de datos · 361 de pantalla en escritorio y móvil, en verde · catálogo **109 de 115** (95 %)                |
-| **Rama**       | `m7-el-local-en-google`, sobre `m7-el-panel-vivo` (#49). **Se fusiona primero la #49**                                             |
-| **Base**       | En Supabase, **35** y 51 tablas (comprobado el 16-sep). En el código, **36** y 52: la `0036` trae la ficha de Google y su contador |
-| **API**        | Desplegada con lo de la #48. **Hay que volver a desplegarla**: `un_indicador` y los tres comandos de Google                        |
-| **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar                                             |
-| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                              |
+|                |                                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel    |
+| **Ahora**      | **La #51** lleva el local en Google a `main`. Después, **las mejoras y el admin antes de M8**, empezando por **la puerta del admin** |
+| **Pruebas**    | 998 unitarias y de base de datos · 361 de pantalla en escritorio y móvil, en verde · catálogo **109 de 115** (95 %)                  |
+| **Rama**       | `mejoras-y-admin-el-plan`: solo documentos. Sale de la de Google, así que **se fusiona después de la #51**                           |
+| **Base**       | En Supabase, **35** y 51 tablas (comprobado el 16-sep). Con la #51, **36** y 52: la `0036` trae la ficha de Google y su contador     |
+| **API**        | Desplegada con lo de la #48. **Hay que volver a desplegarla**: `un_indicador` y los tres comandos de Google                          |
+| **Entrar**     | La cuenta de Ricardo, con su negocio (`ikatz`). Ninguna cuenta de ejemplo puede entrar. El admin, todavía sin puerta                 |
+| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                                |
 
-> **Lo de ahora:** fusionar la #49 y después la de Google, aplicar la `0036` y volver a
-> desplegar la API. La clave de Google se pone cuando se tenga. Los pasos, en
-> **[`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md)**.
+> **Lo de ahora:** fusionar la #51, aplicar la `0036` y volver a desplegar la API
+> ([`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md)). Y leer los dos
+> planes nuevos: **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)** y
+> **[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md)**. **M8 no
+> empieza hasta que los dos estén al 100 %.**
 
 ---
 
@@ -62,8 +64,9 @@ qué aprueba una persona).
 
 Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden:
 
-1. **Fusionar la #49** (el Panel vivo) y **después** la del local en Google. Al
-   fusionar se publica solo.
+1. **Fusionar la #51**, que lleva el local en Google a `main`: la #50 se fusionó en la
+   rama del Panel y no llegó. **Después**, el pull request de los planes. Al fusionar
+   se publica solo.
 2. **`bd:migrar`** y **`bd:comprobar`**: 36 de 36 y 52 tablas.
 3. **Desplegar la API** (Actions → Desplegar la API → `desplegar`) y
    **`bd:comprobar-api`**: tiene que conocer `un_indicador` y los de Google.
@@ -90,16 +93,45 @@ Todo en [`docs/pasos-para-cerrar-m7.md`](docs/pasos-para-cerrar-m7.md), en orden
 
 ### Las entregas del repaso
 
-| Entrega | Qué                                                                                                                                                           | Cómo está                              |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| **1**   | Quitar y congelar lotes, dos decimales, el alta por cómo se compra, IVA, gráfica, widgets, salario, jerarquía                                                 | **Fusionada** (#45)                    |
-| **1½**  | **Las bases**: vender no es gastar, la ficha se lee, las listas largas se recorren, y vuelve el deshacer                                                      | **Fusionada** (#47)                    |
-| **1¾**  | **Las apps conectadas**: el precio de venta a la carta, la zona del género, congelar una parte y el recuento                                                  | **Fusionada** (#48)                    |
-| **1⅞**  | **El Panel vivo**: mantener y arrastrar, lo vacío se aparta, las cifras de cada uno con gráfica y flecha                                                      | **Hecha, sin fusionar**                |
-| **2**   | Avisos a jefes y gerentes de lo que hace su equipo, una vez; invitar a rellenar un pedido                                                                     | La siguiente                           |
-| **3**   | **Horarios**, una app entera en Equipo: cuadrante, historial, horas, avisos, PDF con logo                                                                     | Después                                |
-| **4**   | El dominio **`estook.com`**: el sitio ya vive ahí                                                                                                             | **Fusionada** (#46)                    |
-| **5**   | **Places con tope por local**: hecho, sin fusionar ([0040](docs/decisiones/0040-el-local-se-busca-en-google-con-tope.md)). Business Profile, el reloj y la IA | Places hecho · el resto espera accesos |
+| Entrega | Qué                                                                                                                                            | Cómo está                               |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **1**   | Quitar y congelar lotes, dos decimales, el alta por cómo se compra, IVA, gráfica, widgets, salario, jerarquía                                  | **Fusionada** (#45)                     |
+| **1½**  | **Las bases**: vender no es gastar, la ficha se lee, las listas largas se recorren, y vuelve el deshacer                                       | **Fusionada** (#47)                     |
+| **1¾**  | **Las apps conectadas**: el precio de venta a la carta, la zona del género, congelar una parte y el recuento                                   | **Fusionada** (#48)                     |
+| **1⅞**  | **El Panel vivo**: mantener y arrastrar, lo vacío se aparta, las cifras de cada uno con gráfica y flecha                                       | **Fusionada** (#49)                     |
+| **2**   | Avisos a jefes y gerentes de lo que hace su equipo, una vez; invitar a rellenar un pedido                                                      | Dentro de **R** (mejoras)               |
+| **3**   | **Horarios**, una app entera en Equipo: cuadrante, historial, horas, avisos, PDF con logo                                                      | Dentro de **H** (mejoras)               |
+| **4**   | El dominio **`estook.com`**: el sitio ya vive ahí                                                                                              | **Fusionada** (#46)                     |
+| **5**   | **Places con tope por local** ([0040](docs/decisiones/0040-el-local-se-busca-en-google-con-tope.md)). Business Profile y la IA esperan accesos | Places, en la **#51** · el resto espera |
+
+### Antes de M8 · las mejoras y el admin
+
+Richi paró M7 el 16 de septiembre con **veinte mejoras** y **el panel de
+administración**, y M8 no empieza hasta tenerlo todo. Cada punto está explicado —qué
+se pidió, cómo se hace mejor, qué hay ya y qué necesita de fuera— en dos documentos:
+
+- **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)**: las veinte, en
+  siete entregas (V, O, R, H, I, L y lo que espera a su módulo).
+- **[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md)** y su
+  decisión, la [0041](docs/decisiones/0041-el-panel-de-administracion.md): clientes,
+  vendedores y códigos, ventas y auditoría, en cuatro entregas (A1 a A4).
+
+| Orden | Entrega                       | Qué lleva                                                     |
+| ----- | ----------------------------- | ------------------------------------------------------------- |
+| 1     | **A1 · La puerta del admin**  | Entrar con segundo factor, la primera cuenta, más admins      |
+| 2     | **V · Lo que se ve**          | Modo cocina, flechas en todas las apps, Inicio, vacíos, fotos |
+| 3     | **O · Lo que se ordena**      | Botón de acciones, Ajustes, «Hoy», paneles por rol, semáforo  |
+| 4     | **A2 · Clientes**             | Lista, ficha, contrato y actividad, editar con auditoría      |
+| 5     | **R · El reloj y los avisos** | El reloj, la entrega 2, pedido sugerido, precios, informe     |
+| 6     | **H · Horarios**              | La entrega 3, con el coste en vivo y las horas extra          |
+| 7     | **I · La app instalable**     | Push y sin conexión                                           |
+| 8     | **L · El lector**             | Códigos de barras                                             |
+| 9     | **A3 · Vendedores y códigos** | Vendedores, `?ref=`, asignaciones con historial               |
+| 10    | **A4 · Ventas**               | El tablero                                                    |
+
+**Tres no pueden quedar al 100 % antes de M8**, y está dicho en el plan: leer fotos
+(la IA, M22), responder reseñas (Business Profile) y la carta con QR (los platos, M9
+y M10). De las tres se deja hecho lo que no depende de eso.
 
 ### La entrega 1½ · las bases, punto por punto
 
@@ -135,13 +167,14 @@ Son los ocho que trajo Richi mirando la aplicación en su TPV, en su orden:
 
 | Qué                                                                        | Dónde se termina | Qué hay ya                                                   |
 | -------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------ |
-| El reloj diario, y Business Profile                                        | **Con accesos**  | Places guardado con su fecha y su botón de «otra vez» (0040) |
+| El reloj diario                                                            | **Mejoras · R**  | Places guardado con su fecha y su botón de «otra vez» (0040) |
+| Business Profile                                                           | **Con accesos**  | Places guardado con su fecha y su botón de «otra vez» (0040) |
 | Las pantallas del Calendario, los avisos con roles y los turnos            | **M14**          | La tabla, su seguridad por roles y «Lo que viene»            |
 | Recalcular los platos de los días que la factura corrigió                  | **M9**           | Lo cobrado, guardado en cada línea del albarán con fecha     |
 | El pedido en PDF con el logo                                               | **M11**          | «Imprimir», que da el PDF sin membrete                       |
 | El precio pactado para toda una cadena                                     | **M24**          | Lo pactado por local, con su aviso en la puerta              |
 | Leer el albarán de una foto                                                | **M22**          | La recepción línea a línea, que es donde entrará             |
-| Avisos «mañana entras a las 9» y «entras en 5 minutos, ficha ya», por push | **M25**          | El horario de siempre; el widget ya lo dice                  |
+| Avisos «mañana entras a las 9» y «entras en 5 minutos, ficha ya», por push | **Mejoras · I**  | El horario de siempre; el widget ya lo dice                  |
 | El recuento, la desviación y la calibración del aprovechamiento            | **M8**           | La merma con motivo; los albaranes y sus incidencias         |
 | Descontar lo vendido del inventario                                        | **M20**          | El cierre guarda los platos con el nombre normalizado        |
 
@@ -154,6 +187,10 @@ Son los ocho que trajo Richi mirando la aplicación en su TPV, en su orden:
    que necesita elegir modelo, presupuesto diario por local y caché.
 3. **Si se quitan de la API `mis_locales`, `mis_permisos` y `un_local`**, que
    `quien_soy` dejó sin trabajo en M4.
+4. **Las tres preguntas del plan de mejoras**: si lo que espera a su módulo (fotos,
+   respuestas a reseñas, carta) se queda ahí; si vale el orden empezando por la puerta
+   del admin; y si el modo cocina lo elige cada aparato. Las tres llevan su
+   recomendación en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
 
 ### Pendiente de dato, no de código
 
@@ -490,6 +527,10 @@ la capa superior del navegador— que es justo cuando hace falta.
     con la clave. Sin clave se dice, no se rompe (0022, 0040).
 65. **Un nombre de clave se comprueba contra la API de verdad antes de apuntarlo.**
     `GOOGLE_BUSINESS_KEY` llevaba desde M5 en la lista y esa API no usa claves.
+66. **Un pull request encadenado no cambia de base solo** si la rama de abajo no se
+    borra. La #50 apuntaba a la rama del Panel; al fusionarla, la #49 ya estaba en
+    `main`, y Google acabó en una rama que nadie iba a fusionar. **Los pull requests
+    van a `main`**, y si uno depende de otro, se dice y se fusiona en orden.
 
 ---
 
@@ -539,6 +580,7 @@ En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 | **0038** | **Cada producto es de una zona, y cada uno trabaja con la suya**         |
 | **0039** | **El Panel se monta como un móvil, y cada uno se pone sus cifras**       |
 | **0040** | **El local se busca en Google, con el tope contado antes de llamar**     |
+| **0041** | **El panel de administración: el cliente es la organización**            |
 
 Otras, sin fichero propio:
 
@@ -622,32 +664,38 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ---
 
-## 8 · El siguiente paso · la entrega 2 del repaso
+## 8 · El siguiente paso · A1, la puerta del admin
 
 ### Antes de empezarla
 
-1. **Que el Panel vivo esté cerrado**: la `m7-el-panel-vivo` fusionada, la API
-   desplegada con `bd:comprobar-api` en verde, el IVA quitado a los precios de Richi,
-   y Richi habiéndolo mirado en el TPV y en el móvil.
-2. **La clave de Resend**, que es lo que manda los correos de los avisos (0017). Sin
-   ella, la entrega 2 se queda en los avisos de pantalla.
+1. **La #51 fusionada**, con la `0036` aplicada y la API desplegada
+   (`bd:comprobar-api` en verde).
+2. **El pull request de los planes, fusionado**, y Richi de acuerdo con el orden (o
+   con el que prefiera: A1 puede ir cuarta sin cambiar nada más).
 
 ### Qué entra
 
-- **Los avisos a quien manda**: «Avisar a gerentes y jefes cuando alguien por
-  debajo empieza un borrador, edita la carta o abre un pedido; **solo una vez**,
-  para no petar.» Un centro de avisos dentro de Estook, con lo que cada rol recibe de
-  quién está por debajo en la amplitud (0034), **uno por cosa y persona** —el
-  primer toque de un borrador avisa; los veinte siguientes, no—, sobre lo que decidió
-  la [0017](docs/decisiones/0017-como-avisa-estook.md).
-- **«Te han invitado a hacer este pedido»**: un jefe invita a alguien a rellenar un
-  borrador; esa persona solo rellena, y lo manda el jefe (`accion.enviar_pedidos`).
+Lo de la sección 1 y la entrega A1 de
+[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md), con la
+[0041](docs/decisiones/0041-el-panel-de-administracion.md):
 
-**Terminado cuando:** un cocinero empieza un borrador y su jefe de cocina y su
-gerente reciben un aviso, uno; el cocinero sigue tocándolo y no llega ninguno más; y
-un jefe invita a un camarero a rellenar un pedido, el camarero lo rellena sin poder
-mandarlo, y el jefe lo manda.
+- **La migración `0037`**: el esquema `plataforma`, `plataforma.administrador` con su
+  nivel, y `plataforma.auditoria`, que solo se añade.
+- **`.\estook.cmd bd:dar-admin correo`**, copiando la forma de `bd:cuenta-de-verdad`:
+  clave de un solo uso, «debes cambiarla». **La contraseña que salió en el chat no se
+  usa.**
+- **Entrar en `/admin/`** con contraseña, **segundo factor obligatorio** y sesión de
+  8 horas. El catálogo del sistema de diseño pasa detrás de la puerta.
+- **Administradores**: ver, añadir y quitar, con el código otra vez; nunca el último
+  total, nunca uno mismo.
+- **Los comandos `admin_…`** rechazados en el despachador a quien no es admin.
+
+**Terminado cuando:** `estookapp@gmail.com` entra, se pone su contraseña, monta el
+segundo factor y añade a otro admin; una persona normal y un gerente llaman a la API
+del admin a pelo y reciben `403`; quitar al último admin total falla; y todo sale en
+la auditoría.
 
 **Cómo se comprueba que no rompe lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase.
+Supabase. **Y la prueba que cuenta las funciones `security definer`**, que sube por
+la que decide quién es admin.

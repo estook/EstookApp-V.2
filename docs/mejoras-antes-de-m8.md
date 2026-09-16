@@ -1,0 +1,499 @@
+# Las mejoras antes de M8
+
+**Fecha:** 16 de septiembre de 2026
+**De dónde sale:** la lista de veinte mejoras que mandó Richi al parar M7, con esta
+instrucción: «no hace falta que lo hagas al pie de la letra; si se puede mejorar,
+optimizar o hacer mucho mejor, hazlo». **M8 no empieza hasta que esto esté al 100 %.**
+
+> Cada punto dice cuatro cosas: **qué se pidió**, **cómo se va a hacer** (con lo que
+> cambia respecto a lo pedido y por qué), **qué hay ya** en el código y **qué
+> necesita** que no depende de nosotros. Al final, el orden de las entregas.
+
+El panel de administración va en su propio documento:
+[`panel-de-administracion.md`](panel-de-administracion.md).
+
+---
+
+## Resumen en una tabla
+
+| #   | Mejora                                   | Entrega                  | Necesita de fuera                          |
+| --- | ---------------------------------------- | ------------------------ | ------------------------------------------ |
+| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       |
+| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       |
+| 3   | Inicio de cada app con tarjetas          | **V**                    | Nada                                       |
+| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            |
+| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    |
+| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       |
+| 7   | Ajustes en secciones y con buscador      | **O**                    | Nada                                       |
+| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       |
+| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       |
+| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       |
+| 12  | Pedido sugerido                          | **R · El reloj**         | Nada (el reloj es de Supabase, gratis)     |
+| 13  | Alertas de subida de precio              | **R**                    | Nada                                       |
+| 16  | Informe semanal para el gerente          | **R**                    | **Resend** para el correo; la pantalla, no |
+| 19  | Reseñas: aviso de bajada y respuesta     | **R** y después          | Places ya; **Business Profile** y **IA**   |
+| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                       |
+| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)    |
+| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                       |
+| 10  | Escanear el código de barras             | **L · El lector**        | Nada                                       |
+| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                         |
+| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún    |
+
+Tres de las veinte **no pueden quedar al 100 % antes de M8**, y conviene decirlo ya:
+
+- **11 · Leer una foto** necesita un modelo de visión, es decir, la clave de IA y el
+  presupuesto por local de M22. Lo que sí se deja hecho: la foto se sube, se guarda y
+  se revisa en la misma pantalla donde se escribirá lo leído.
+- **19 · Responder reseñas** necesita que Google apruebe Business Profile. El aviso
+  de que baja la valoración **sí** se puede hacer ya, con Places.
+- **20 · La carta con QR** necesita platos con precio y alérgenos, que son M9 y M10.
+  Lo que sí se deja hecho: **el QR definitivo de cada local**, para imprimirlo una vez
+  y que no cambie nunca (punto 20).
+
+**Pregunta para Richi:** ¿estas tres esperan a su módulo (lo recomendado), o se
+adelantan M9 y M10 enteros antes de M8? Ver [«Lo que queda por decidir»](#lo-que-queda-por-decidir).
+
+---
+
+## V · Lo que se ve
+
+### 1 · Modo cocina
+
+**Se pidió:** letra y botones más grandes, alto contraste y que se use con guantes.
+
+**Cómo se hace.** Un **tercer ajuste del aparato**, al lado del tamaño de letra y del
+tema, que ya son del aparato y no de la persona (0024): la tableta del pase lo lleva
+puesto y el móvil del mismo cocinero, no. Encenderlo cambia todo esto a la vez, y
+se hace **en las fichas de diseño, nunca pantalla a pantalla** (regla 32):
+
+| Qué                    | Normal     | Modo cocina                                               |
+| ---------------------- | ---------- | --------------------------------------------------------- |
+| Zona que se toca       | 44 px      | **64 px**, y 12 px de separación mínima entre dos botones |
+| Texto                  | El elegido | Un escalón más, y cifras en negrita                       |
+| Contraste              | AA         | **AAA** (7:1), sin grises claros ni bordes finos          |
+| Gestos                 | Todos      | **Sin deslizar ni mantener pulsado**: todo, con un toque  |
+| Confirmar lo que borra | Hoja       | Botón grande que se llena al pulsarlo dos veces, sin hoja |
+
+**Lo que cambia respecto a lo pedido:** con guantes el problema no es solo el tamaño,
+es **el gesto**. Un guante de nitrilo toca bien pero no desliza fino, y mantener
+pulsado con la mano mojada dispara el arrastre. Por eso en modo cocina **no hay
+ningún gesto que no sea un toque**: para ordenar el Panel sin arrastrar, **vuelven los
+botones de subir y bajar**, que el Panel vivo quitó (0039) y el teclado ya sabe hacer.
+
+**Y se une con M9:** el «modo cocina» de las fichas de escandallo será este mismo
+ajuste, no otro. Un nombre, una cosa.
+
+**Qué hay ya:** `usarTema` y el tamaño de letra por aparato; las fichas con contraste
+probado (`contraste.prueba.ts`). **Terminado cuando:** con el modo puesto, una prueba
+recorre las pantallas de cocina y ningún botón mide menos de 64 px ni baja de 7:1.
+
+### 2 · Todas las apps con el aspecto del Panel
+
+**Se pidió:** flechas y gráficas pequeñas también en Inventario, Servicio y Equipo.
+
+**Cómo se hace.** No se copia la tarjeta: **se usa la misma**. El `Indicador` del
+Panel vivo (0039) pasa a `@estook/ui` y las tres apps lo usan con sus cifras:
+
+| App        | Cifras con flecha y línea de días                                  |
+| ---------- | ------------------------------------------------------------------ |
+| Inventario | Valor de la cámara, merma en euros, compras, productos bajo mínimo |
+| Servicio   | Ventas, ticket medio, food cost, cierres hechos frente a días      |
+| Equipo     | Horas fichadas, coste de personal (solo con su permiso), retrasos  |
+
+Todas salen de `un_indicador`, que ya compara con el periodo anterior del mismo
+largo y dice «no se sabe» en vez de cero (regla 61). **Hoy sabe seis** —ventas, ticket
+medio, food cost, merma, compras y horas—; **se le añaden las que faltan** (valor de la
+cámara, bajo mínimo, cierres, coste de personal y retrasos) en el dominio, con la
+misma forma. **Una cifra, un dueño**: el food cost de Servicio y el del Panel ya son el
+mismo, y una prueba lo vigila.
+
+### 3 · Cada app abre con su resumen
+
+**Se pidió:** una pantalla de inicio con tarjetas en vez de ir directo a la lista.
+
+**Cómo se hace, y el cuidado que pide.** Cada app gana un destino **«Inicio»** (B5 y 0018) con cuatro a seis tarjetas **de esa app** —las del punto 2 más lo urgente suyo—
+y, debajo, **sus acciones de siempre a un toque**.
+
+**Lo que cambia respecto a lo pedido:** quien entra en Inventario **para apuntar una
+merma** no puede tener un paso más. Así que:
+
+- Inicio abre **solo cuando se entra a la app desde la rueda**. Desde una acción, un
+  aviso o el buscador, se va directo a lo pedido, como ahora.
+- La lista sigue a un toque en la barra de abajo.
+- Un rol que no ve cifras (un camarero en Inventario) no tiene Inicio: va a la lista.
+
+### 4 · Estados vacíos que invitan a empezar
+
+**Se pidió:** ilustración y un botón para dar el primer paso.
+
+**Cómo se hace.** `EstadoVacio` ya existe; se le añade **un dibujo y una sola
+acción**, y se repasa uno por uno. Los dibujos:
+
+- **Una familia de dibujos de línea** con el trazo y los colores de la marca, en SVG
+  y pintados con las fichas: **salen bien en claro y en oscuro sin hacer dos**.
+- **Se cargan aparte** del paquete inicial: nadie descarga el dibujo de «todavía no
+  hay pedidos» para fichar.
+- **Un botón, no tres**, y que haga lo que dice: «Añade tu primer producto», no
+  «Empezar».
+- El vacío **de un filtro** no es el vacío **de verdad**: «nada con eso» ofrece
+  quitar el filtro, no crear algo.
+
+### 5 · Tema oscuro, repasado, y fotos de producto
+
+**Tema oscuro.** Se hace un repaso pantalla a pantalla **con capturas en los dos
+temas**, que se quedan como prueba: las pruebas de pantalla todavía no comparan
+capturas, y esta entrega lo estrena con Playwright. Lo que se encuentre
+se arregla en las fichas, nunca con una clase en la pantalla (0024, regla 32). Y se
+comprueba en un móvil de verdad (regla 29: cumplir el contraste no basta).
+
+**Fotos de producto.** Van **al mismo almacén que el logo del local** (el de Supabase,
+montado en M5), **en un cubo suyo** y con el mismo camino: se sube por la API, la
+fila se escribe después de subir y la foto vieja se borra.
+
+- Se reducen **en el móvil antes de subir**: 800 px de lado y WebP, unos 80 KB. Una
+  foto de 4 MB por 3G desde la cámara es una merma que no se apunta.
+- Se guarda también **una miniatura** de 160 px para las listas.
+- **Se cargan cuando se ven** (`loading="lazy"`), nunca en la lista entera de golpe.
+- Sin foto, la ficha sigue igual: la inicial y el color de su categoría.
+- La foto es de la ficha **de ese local**; en M24, la del catálogo maestro de la
+  cadena se hereda.
+
+---
+
+## O · Lo que se ordena
+
+### 6 · La barra de acciones en el móvil
+
+**Se pidió:** una barra fija abajo con lo que más se hace: merma, fichar y recibir.
+
+**Cómo se hace.** La barra de abajo ya existe y es la navegación de cada app; poner
+otra encima dejaría **dos barras**, que en un móvil pequeño es un cuarto de pantalla.
+Lo mejor:
+
+- **Un botón central «+»** en la barra de siempre, que abre las acciones del que mira
+  en **un toque más**, grandes y con su icono.
+- **Las acciones salen del catálogo de acciones** (0020) y **dependen del rol**: un
+  cocinero ve «Merma», «Fichar» y «Recibir pedido»; una camarera, «Merma» y «Fichar»;
+  un gerente, además, «Cerrar caja».
+- **Fichar se pone arriba solo cuando toca**: si tiene turno y no ha fichado, sale
+  primero y resaltado. Si ya fichó, pasa a «Salir».
+- Cada uno **puede cambiar sus tres**, igual que el Panel.
+
+### 7 · Ajustes en secciones, con buscador
+
+**Se pidió:** agrupar en Local, Equipo, Cuenta e Integraciones, con buscador.
+
+**Cómo se hace.** Cinco secciones, porque la organización **no es el local** y
+mezclarlas es donde se equivoca quien lleva tres:
+
+| Sección           | Qué lleva                                                                               | Quién la ve                  |
+| ----------------- | --------------------------------------------------------------------------------------- | ---------------------------- |
+| **Mi cuenta**     | Nombre, contraseña, PIN, segundo factor, aparatos, letra, tema, **modo cocina**, idioma | Todos                        |
+| **Local**         | Datos, ubicación, horario y hora de corte, marca, IVA de compra, zonas                  | Quien lleva el local         |
+| **Equipo**        | Quién tiene acceso, invitar, roles                                                      | Quien gestiona personas      |
+| **Integraciones** | Google, TPV y reparto, con su estado en un vistazo                                      | Quien lleva el local         |
+| **Organización**  | Locales, segundo factor obligatorio, plan y facturación (M26)                           | Dirección y admin. de cuenta |
+
+**El buscador** busca **dentro de los ajustes que esa persona ve**, por su nombre y
+por lo que la gente escribe de verdad («contraseña», «clave», «logo», «IVA»). Y los
+mismos resultados salen en **el buscador universal**: nadie tiene que saber que «el
+tema» está en Ajustes.
+
+### 8 · Un «Hoy» único, por urgencia
+
+**Se pidió:** un «Hoy» que junte caducidades, pedidos, turnos y caja.
+
+**Cómo se hace.** Es **la zona de atención del Panel** que ya describe Roles 1.2, y
+va arriba del Panel, fija. No se crea un noveno sitio. Cada cosa entra con **por qué
+es urgente y su botón**:
+
+| Orden | Qué                                        | Ejemplo                                          |
+| ----- | ------------------------------------------ | ------------------------------------------------ |
+| 1     | **Lo que ya ha pasado y no se hizo**       | «El pedido de Frutas Pepe debía llegar a las 10» |
+| 2     | **Lo que cuesta dinero hoy**               | «3 lotes caducan hoy · 42 €»                     |
+| 3     | **Lo que tiene hora hoy**                  | «Entras a las 16:00» · «Llega Makro a las 12»    |
+| 4     | **Lo que hay que hacer hoy**               | «Cierre de caja de ayer sin hacer»               |
+| 5     | **Mañana**, solo si hay que prepararlo hoy | «Mañana no reparte nadie: pide hoy»              |
+
+Dentro de un mismo escalón, **manda el dinero en juego**. La lista la ordena **el
+servidor**, no la pantalla (regla 5), y respeta los permisos: una camarera no ve la
+caja. **Y se puede resolver desde ahí**: quitar un lote, fichar, abrir el pedido. Lo
+resuelto se va; lo pospuesto vuelve a la hora elegida.
+
+El «Hoy» de Inventario se queda como **el de Inventario**: la misma lista, filtrada.
+
+### 9 · Paneles de fábrica por rol
+
+**Se pidió:** paneles pensados para cocinero, camarero, jefe y gerente.
+
+**Cómo se hace.** Hoy hay **un** `PANEL_DE_FABRICA` para todos, filtrado por permisos.
+Pasa a ser uno **por familia de rol**, en el catálogo de widgets:
+
+| Rol                     | Arriba                               | Después                                                 |
+| ----------------------- | ------------------------------------ | ------------------------------------------------------- |
+| **Cocinero**            | Fichar · mi turno                    | Caducidades · bajo mínimo · merma rápida · lo que llega |
+| **Camarero**            | Fichar · mi turno                    | Merma rápida · avisos · lo que viene                    |
+| **Jefe de cocina/sala** | Hoy de su partida                    | Food cost o ventas 7 días · pedidos · su equipo hoy     |
+| **Gerente**             | Ventas de hoy · food cost · personal | Objetivos con semáforo · merma € · caja · pedidos       |
+| **Dirección / area**    | Sus locales comparados               | Lo que se sale · objetivos por local                    |
+
+**Lo que no cambia:** quien ya ha tocado su Panel **se queda con el suyo** (0019). El
+de fábrica es para quien no lo ha tocado; y un botón «Volver al de mi puesto».
+
+### 17 · Objetivos con semáforo
+
+**Se pidió:** food cost bajo el 30 %, merma bajo X €.
+
+**Cómo se hace.** Los objetivos **ya existen desde M5**, con vigencia y en fracción:
+materia prima, personal y margen. Se añaden **merma en euros por semana** y **ventas
+por semana**, y el semáforo lo pinta el Panel con `comoVa`, que ya está en el dominio.
+
+- **Tres colores con franja**: verde dentro, **ámbar a menos de un 10 % del límite**,
+  rojo fuera. Sin ámbar, el aviso llega cuando ya no hay nada que hacer.
+- **Nunca el color solo** (M21): «Food cost 32 %, objetivo 30 %, **la merluza ha
+  subido un 18 %**». La causa sale de lo que ya se sabe; si no se sabe, no se inventa.
+- **El objetivo de enero juzga enero** aunque se cambie en marzo: ya está así.
+- Lo pone quien lleva el local; lo ve quien ve esa cifra.
+
+---
+
+## R · El reloj y los avisos
+
+Estas cuatro necesitan que Estook **haga cosas sin que nadie abra la app**: mirar a
+las 7:00 qué pedido no ha llegado, mandar el informe el lunes. Eso es **el reloj**, la
+decisión [0016](decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md) que nunca se
+llegó a montar: `pg_cron` dentro de Supabase llamando a nuestra API. **Es gratis en
+el plan actual.** Se monta al principio de esta entrega, y con él se cierran también
+la actualización diaria de Google (0040) y **la entrega 2 del repaso de M7**:
+
+- **Avisos a quien manda**, uno por cosa y persona: un cocinero empieza un borrador y
+  su jefe de cocina y su gerente reciben **un** aviso; sigue tocándolo y no llega
+  ninguno más (0017, 0034).
+- **«Te han invitado a hacer este pedido»**: un jefe invita a un camarero a rellenar
+  un borrador; el camarero lo rellena sin poder mandarlo, y lo manda el jefe.
+
+Ese centro de avisos es por donde llegan también los de 12, 13, 16 y 19.
+
+### 12 · El pedido sugerido
+
+**Se pidió:** que se rellene solo por previsión de consumo y por el día de reparto.
+
+**Cómo se hace.** La cuenta, en el dominio y con un solo dueño:
+
+```
+lo que hay que pedir =
+    consumo previsto hasta el reparto SIGUIENTE al que se está pidiendo
+  + el mínimo del producto
+  − lo que hay
+  − lo que ya está pedido y no ha llegado
+  → redondeado hacia arriba al formato en que se compra (caja de 6, saco de 25 kg)
+```
+
+- **El consumo** sale del libro de movimientos. Hoy `consumoMedioDiario` da una media
+  de todos los días; **se le añade el reparto por día de la semana**, porque un
+  viernes no gasta lo que un martes. Cuando llegue M20, se cambia por el
+  consumo de lo vendido y la cuenta no cambia.
+- **Los días de reparto** ya están en el proveedor (`dias_de_reparto`, 0031).
+- **El pedido no sale solo** (lo dijo Richi): se abre **un borrador** con cada línea
+  explicada —«quedan 4 kg, gastas 2,1 al día, reparte el jueves»— y se manda a mano.
+- Con menos de **dos semanas** de movimientos, no propone: dice que aún está
+  aprendiendo. La previsión de hoy se conforma con 7 días (`DIAS_MINIMOS_PARA_PREDECIR`),
+  pero repartir por día de la semana con una sola semana es tener un dato por día, y
+  una cifra inventada en un pedido es dinero tirado.
+- El reloj lo prepara **la víspera del día de pedir**, y avisa.
+
+### 13 · Alertas de subida de precio
+
+**Se pidió:** avisar cuando un proveedor sube, comparando con los demás.
+
+**Cómo se hace.** Se mira **en el momento en que entra el precio** —al recibir el
+albarán, al conciliar la factura o al cambiarlo a mano—, en la misma transacción
+(0014), y no con un repaso nocturno que avisaría tarde:
+
+- **Sube frente a su último precio** un 5 % o más (el umbral lo cambia el gerente),
+  **sin IVA** los dos (0033).
+- **Y si otro proveedor tiene ese mismo producto**, se dice cuánto: «Frutas Pepe te
+  cobra el tomate a 2,10 €/kg (+12 %). Distribuciones Sur te lo dejó a 1,85 € el 3
+  de septiembre».
+- **Solo se compara lo comparable**: el mismo producto de tu inventario, llevado a la
+  misma unidad (0021). No se compara «tomate» con «tomate pera».
+- **Qué no se promete:** precios de mercado que no tenemos. Solo tus proveedores.
+- Llega a quien manda pedidos, **una vez por producto y proveedor** (entrega 2), y la
+  gráfica de precios de la ficha marca el salto.
+
+### 16 · Informe semanal
+
+**Se pidió:** por correo al gerente: ventas, food cost, merma y horas.
+
+**Cómo se hace.** Primero **una pantalla** «Tu semana», y el correo es su resumen con
+un enlace. Así:
+
+- **Sirve ya, sin Resend.** El lunes a las 8:00 el reloj lo deja hecho y avisa en la app.
+- **Los números son los mismos que los de la app**, porque salen de `un_indicador`.
+- Cada cifra con **su flecha frente a la semana anterior y frente al objetivo** (17),
+  y **tres frases**: lo que ha ido mejor, lo que ha ido peor y lo que conviene mirar.
+  Las frases salen de reglas, no de un modelo (M22 las mejorará).
+- **El PDF lo hace el servidor** (regla 7), con el logo y el color del local.
+- Cuando esté **Resend**, el correo sale solo, y cada uno elige si lo quiere.
+- Las horas y el coste de personal **solo a quien los puede ver**.
+
+### 19 · Reseñas
+
+**Se pidió:** respuesta propuesta y aviso cuando baja la valoración.
+
+**Cómo se hace, en dos partes:**
+
+1. **Ya, con Places.** El reloj trae la ficha **una vez al día** —30 al mes, dentro
+   del tope de 40 (0040)— y guarda la valoración y el número de reseñas. **Si la media
+   baja o entran reseñas nuevas con la media hundida**, avisa al gerente con la cifra
+   de antes y la de ahora.
+2. **Cuando Google apruebe Business Profile y esté la IA (M22 y M23):** leer cada
+   reseña, **proponer** una respuesta con el tono del local, y **que la mande una
+   persona**. Estook nunca responde por su cuenta (M23).
+
+---
+
+## H · Horarios
+
+### 18 · Cuadrante con coste en vivo y horas extra
+
+**Se pidió:** coste de personal en vivo y aviso de horas extra, adelantando M14.
+
+**Cómo se hace.** **Entra en la entrega 3 del repaso de M7**, que ya es Horarios como
+app entera. No se hace aparte: sería montar el cuadrante dos veces.
+
+- Mientras se monta la semana, arriba: **coste de la semana**, **% sobre las ventas
+  previstas** y la diferencia con la anterior.
+- **Horas extra**: cada persona con sus horas de la semana frente a las de su
+  contrato; en ámbar al acercarse, en rojo al pasarse, **antes de publicar**.
+- **Descansos**: aviso si entre dos turnos quedan menos de 12 horas.
+- **El coste solo lo ve quien tiene su permiso** (M13). Quien monta el cuadrante sin
+  él ve las horas, no los euros.
+
+---
+
+## I · La app instalable
+
+Push y sin conexión comparten la misma pieza: **un _service worker_**, que hoy no
+existe. Con él, Estook se instala en el móvil como una app. Se hacen juntas.
+
+### 14 · Notificaciones push
+
+**Cómo se hace.** Push web con claves propias (VAPID), **sin servicio de pago**:
+
+- **En Android**, funciona desde el navegador.
+- **En iPhone, solo si Estook está instalada** en la pantalla de inicio (iOS 16.4 o
+  posterior). Es una regla de Apple, no nuestra, y la app **lo explica en el momento
+  de pedir permiso**, con los dos toques que hay que dar.
+- **Se pide permiso cuando tiene sentido**, al fichar por primera vez, nunca al entrar.
+- Los tres avisos pedidos: **caducidades** (la víspera a las 18:00 y a primera hora),
+  **«entras en 5 minutos»** (del horario, M25 adelantado) y **pedido que no ha
+  llegado** (a la hora de reparto más 30 minutos).
+- **No se duplica canal** (0017): lo que llega por push no llega también por correo.
+- Cada uno **elige cuáles quiere** en Mi cuenta, y hay **horas de silencio**.
+
+### 15 · Sin conexión para fichar y apuntar mermas
+
+**Cómo se hace.** Lo apuntado se guarda en el móvil y se manda al volver la señal.
+La idempotencia **ya está** en el cliente de la API: cada comando lleva su clave, así
+que mandarlo dos veces no apunta dos mermas.
+
+**Lo delicado es la hora del fichaje**, porque la regla 10 dice que la fecha la
+decide el servidor y un móvil puede tener la hora mal. La solución:
+
+- El móvil guarda **la última hora del servidor** que vio y **cuánto tiempo ha pasado
+  desde entonces** con el reloj interno, que no se puede cambiar desde Ajustes.
+- Al volver la señal, **el servidor calcula la hora** con eso, no con la del móvil.
+- El fichaje sale marcado **«hecho sin conexión»**, y si han pasado más de 12 horas
+  sin señal, lo revisa quien lleva el equipo.
+- La merma igual: **la jornada la decide el servidor** con esa hora.
+
+Mientras tanto, la app dice **cuántas cosas tiene pendientes de mandar**. Guardar sin
+decir que no se ha mandado es peor que no guardar (regla 34).
+
+---
+
+## L · El lector
+
+### 10 · Escanear el código de barras
+
+**Qué hay ya:** el producto tiene `codigo_de_barras` desde M6, único por local, y el
+buscador ya lo encuentra. Falta la cámara.
+
+**Cómo se hace:**
+
+- **La cámara del móvil.** En Android con lo que trae el navegador; en iPhone hace
+  falta una librería de lectura, que **se descarga solo al abrir el lector**.
+- **Y los lectores de mano** USB o Bluetooth (15–30 €), que escriben el código como un
+  teclado: **no necesitan nada**, y en un almacén con guantes son mucho más rápidos que
+  la cámara. Estook los reconoce en cualquier pantalla que busque.
+- **Recuento:** escanear suma uno; escanear y teclear, pone la cantidad. Pita y vibra
+  distinto si el código no es de ningún producto.
+- **Alta:** si el código no existe, abre el alta con él puesto. **Y propone el
+  nombre** si lo conoce Open Food Facts (gratis y sin clave), como propuesta: en
+  hostelería muchos códigos son de distribuidor y no estarán.
+- **Recibir un pedido:** escanear marca la línea del albarán.
+
+---
+
+## Lo que espera a su módulo
+
+### 11 · Leer el albarán y el Z con una foto → M22
+
+Necesita un modelo de visión (clave de IA y presupuesto por local). **Se deja hecho
+ahora** lo que no depende de eso: el botón de cámara ya está en merma y en el cierre
+desde M6½; en esta tanda la foto **se sube y se guarda** con el albarán y el cierre,
+como justificante. M22 solo añade la lectura, y **siempre propone: confirma una
+persona**.
+
+### 20 · Carta digital con QR → M12
+
+Una carta que se actualiza sola al cambiar precios y alérgenos necesita **platos con
+precio (M10) y alérgenos calculados (M9)**, que no existen. Hacerla ahora sería una
+carta escrita a mano que habría que tirar.
+
+**Se deja hecho ahora, y es lo que importa: el QR definitivo.** Cada local recibe su
+dirección fija (`estook.com/carta/nombre-del-local`) y su QR en tres formatos para
+imprimir. Hasta M12 enseña el nombre, la dirección, el horario y el teléfono de
+Google (0040). **El día que llegue la carta, el mismo QR ya impreso la enseña**, sin
+reimprimir nada.
+
+---
+
+## El orden de las entregas
+
+Cada entrega, **una rama y un pull request**, y Richi la mira en el TPV y en el móvil
+antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
+
+| Orden | Entrega                          | Qué lleva                                                     | Por qué en este orden                                                |
+| ----- | -------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1     | **Admin · La puerta**            | Entrar en `/admin/`, la primera cuenta, más admins, auditoría | Pequeña, no toca nada del local, y Richi pidió empezar por lo básico |
+| 2     | **V · Lo que se ve**             | 1, 2, 3, 4, 5                                                 | Todo lo demás se construye encima de este aspecto                    |
+| 3     | **O · Lo que se ordena**         | 6, 7, 8, 9, 17 · el QR definitivo (20)                        | Necesita las tarjetas de la anterior                                 |
+| 4     | **Admin · Clientes**             | Lista, ficha, estados, notas, editar con auditoría            | Con la puerta hecha, lo que más se usará                             |
+| 5     | **R · El reloj y los avisos**    | El reloj, entrega 2 de M7, 12, 13, 16, 19 (valoración)        | Los avisos necesitan el reloj; 12 y 13 necesitan los avisos          |
+| 6     | **H · Horarios**                 | Entrega 3 de M7 y 18                                          | Los avisos de turno salen de la entrega anterior                     |
+| 7     | **I · La app instalable**        | 14 y 15                                                       | Push necesita los avisos y los turnos                                |
+| 8     | **L · El lector**                | 10                                                            | Independiente; aquí porque no bloquea a nadie                        |
+| 9     | **Admin · Vendedores y códigos** | Vendedores, códigos, `?ref=`, asignaciones                    | Necesita la ficha de clientes                                        |
+| 10    | **Admin · Ventas**               | El tablero de ventas                                          | Necesita el reloj (uso diario) y los vendedores                      |
+
+**Qué esperan de fuera, y no frenan el orden:** **Resend** (el correo del informe y
+de los avisos), **Business Profile** (las respuestas a reseñas), **la clave de IA**
+(las fotos) y **Stripe** (el dinero real del admin, en M26).
+
+---
+
+## Lo que queda por decidir
+
+Para Richi, con lo que se recomienda:
+
+1. **¿Las tres que esperan módulo (11, 19 respuestas, 20 carta) se quedan para su
+   módulo?** Recomendado: **sí**, con lo que se deja preparado arriba. Adelantar M9 y
+   M10 enteros son dos módulos grandes antes de M8.
+2. **¿El orden de arriba vale, empezando por la puerta del admin?** Recomendado: sí.
+   Si se prefieren primero las mejoras del producto, la puerta del admin pasa al
+   puesto 4 y no cambia nada más.
+3. **El modo cocina, ¿se enciende solo en las tabletas del pase o también lo puede
+   poner cada uno en su móvil?** Recomendado: **cada aparato lo elige**, como el tema;
+   y en el alta de una tableta de cocina se propone encendido.

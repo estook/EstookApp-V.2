@@ -354,7 +354,9 @@ ACCIONES (se crean como tareas con responsable y fecha)
 
 # 4 · Nuestro panel de administración
 
-En `admin.estook.com`. **Solo para nosotros**, con doble factor obligatorio y sesión de ocho horas. Es lo que nos permite no vender a ciegas.
+En `estook.com/admin/` (`admin.estook.com` se reconsidera en M27). **Solo para nosotros**, con doble factor obligatorio y sesión de ocho horas. Es lo que nos permite no vender a ciegas.
+
+> **Desde el 16 de septiembre de 2026** ([decisión 0041](../decisiones/0041-el-panel-de-administracion.md)), el detalle de clientes, vendedores y códigos, ventas y auditoría está en **[`docs/panel-de-administracion.md`](../panel-de-administracion.md)**, que manda sobre esta sección donde las dos hablan de lo mismo. Lo que cambia aquí: **ser admin es de la plataforma, no un rol de una organización**; el cliente es la organización que ya existe; y el admin **sí escribe en lo comercial** —contrato, plan, notas— y **nunca en los datos del restaurante** (4.8).
 
 ## 4.1 Inicio
 
@@ -420,7 +422,7 @@ Bandeja de incidencias **con contexto** (local, rol, pantalla y última acción,
 
 ## 4.8 Lo que el panel interno no hace
 
-- **No permite escribir en los datos de un cliente.**
+- **No permite escribir en los datos del restaurante** (inventario, compras, personas, horarios, ventas). Lo comercial —contrato, plan y notas— es nuestro y sí se edita, con auditoría (0041).
 - No permite ver el chat del equipo de nadie.
 - No permite descargar datos personales de empleados.
 - **No tiene un botón de «entrar como» sin autorización.**

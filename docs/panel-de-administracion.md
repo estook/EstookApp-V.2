@@ -14,6 +14,34 @@ cómo se entra en los datos de un cliente.
 
 ---
 
+## Cómo va · qué hay y qué falta
+
+**Hoy, en `estook.com/admin/`, solo está la puerta (A1).** Lo que Richi describió
+—clientes, ficha tipo CRM, vendedores y códigos, ventas— **todavía no está**: son las
+entregas A2, A3 y A4, y van en el orden de [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md).
+Comprobado en producción el 16 de septiembre de 2026.
+
+| Qué                                                                                         | Cómo está                                                      |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Entrar con contraseña y segundo factor obligatorio, sesión de 8 h                           | **Hecho y en producción** (A1, #53)                            |
+| Sesión del admin y de la app separadas; el acceso se mira en cada petición                  | **Hecho y en producción**                                      |
+| Administradores: dar acceso total y quitarlo, con el código otra vez                        | **Hecho y en producción**                                      |
+| Auditoría del admin: quién, qué, cuándo, motivo y dirección IP                              | **Hecho y en producción** (el aparato se guarda, no se enseña) |
+| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | Dar: en producción · **Rescatar: repaso de A1, sin fusionar**  |
+| El catálogo del sistema de diseño detrás de la puerta                                       | **Hecho y en producción**                                      |
+| **Niveles** comercial, soporte y vendedor                                                   | Existen en la base; **no se pueden dar** hasta A3 y M26        |
+| **Clientes**: lista, filtros, búsqueda, CSV, ficha, contrato, actividad, notas, editar      | **Falta · A2**                                                 |
+| Copiar a la auditoría del cliente lo que el admin haga sobre él                             | **Falta · A2**                                                 |
+| **Vendedores y códigos**: `?ref=`, llegadas, asignaciones, panel del vendedor               | **Falta · A3**                                                 |
+| **Ventas**: tablero, gráficas, foto diaria del uso                                          | **Falta · A4** (necesita el reloj, entrega R)                  |
+| Borrar solas las IP de más de dos años                                                      | **Falta** · necesita el reloj (R); se cierra en M27            |
+| Cambiar el correo de acceso de un cliente con doble confirmación                            | **Falta** · necesita Resend                                    |
+| Suscripciones y cobros de verdad, comisiones, liquidaciones                                 | **M26** · necesita Stripe                                      |
+| Entrar a los datos de un cliente con su permiso (Roles 4.3), costes, integraciones, soporte | **M26**                                                        |
+| `admin.estook.com` en vez de `estook.com/admin/`                                            | **M27**, si cambia el alojamiento                              |
+
+---
+
 ## 0 · Lo que cambia respecto a la propuesta, y por qué
 
 La propuesta era buena y casi todo entra. Estos son los cambios, uno por uno:
@@ -75,6 +103,8 @@ Y lo que se añade porque la propuesta no lo cubría:
 - **A quien no es admin se le contesta lo mismo que a una contraseña mal**, para que
   nadie pueda averiguar qué correos administran Estook.
 - **Quien tiene acceso al admin no se puede quitar el segundo factor** desde la app.
+- **Con la contraseña de un solo uso sin cambiar, no se lee nada del admin**, ni
+  llamando a la API a pelo: esa contraseña la ha visto quien la dio.
 - El catálogo del sistema de diseño, que vivía suelto en `/admin/`, **está dentro**,
   detrás de la puerta.
 
@@ -89,6 +119,16 @@ Y lo que se añade porque la propuesta no lo cubría:
 3. Le da acceso total y lo apunta en la auditoría, a nombre de «la consola».
 4. **No monta el segundo factor**: lo monta la persona en su móvil la primera vez que
    entra, antes de ver nada, para que el secreto no pase por ninguna otra mano.
+
+**Y rescata a quien se ha quedado fuera** —el admin no tiene «he olvidado mi
+contraseña» mientras no haya correo—:
+
+- `.estook.cmd bd:dar-admin correo --nueva-clave`: una contraseña de un solo uso.
+- `.estook.cmd bd:dar-admin correo --sin-segundo-factor`: borra el segundo factor,
+  para volver a montarlo al entrar (móvil y códigos de respaldo perdidos).
+
+Las dos cierran todas sus sesiones, quedan en la auditoría y **solo valen con quien ya
+es admin**.
 
 **La contraseña que se escribió en el chat no se usa.** Es la regla que ya tiene el
 proyecto: lo que pasa por un chat se da por visto (lo mismo se hizo con las claves de
@@ -396,7 +436,8 @@ borrar**: lo impide la base de datos, como la auditoría de M1.
 (Roles 4.3). **Las consultas no se auditan**, salvo tres: **exportar**, **abrir los
 datos de un cliente** (cuando exista el acceso de Roles 4.3) y **ver lo cobrado**.
 
-Las IP se guardan **dos años** y después se borran solas (RGPD, M27).
+Las IP se guardarán **dos años** y después se borrarán solas (RGPD). **Todavía no**: el
+borrado lo hace el reloj, que llega con la entrega R, y se comprueba en M27.
 
 ---
 

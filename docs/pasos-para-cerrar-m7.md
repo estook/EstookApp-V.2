@@ -2,14 +2,20 @@
 
 > ## Cómo está
 >
-> | Qué                                        | Cómo está                                                                      |
-> | ------------------------------------------ | ------------------------------------------------------------------------------ |
-> | El repaso, las bases y las apps conectadas | **Fusionados** (#45, #47 y #48)                                                |
-> | `estook.com`                               | **Funcionando** (#46)                                                          |
-> | **El Panel vivo**                          | **Fusionado** en `main` (#49). Sin migración                                   |
-> | **El local en Google**                     | **No llegó a `main`**: la #50 se fusionó en la rama del Panel. Lo lleva la #51 |
-> | La base de datos                           | 35 de 35, comprobado el 16 de septiembre. **Le falta la `0036`** (Google)      |
-> | La API                                     | Al día con la #48. Le falta lo del Panel vivo y lo de Google                   |
+> Comprobado en producción el 16 de septiembre de 2026.
+>
+> | Qué                                        | Cómo está                                                            |
+> | ------------------------------------------ | -------------------------------------------------------------------- |
+> | El repaso, las bases y las apps conectadas | **Fusionados** (#45, #47 y #48)                                      |
+> | `estook.com`                               | **Funcionando** (#46)                                                |
+> | **El Panel vivo**                          | **Fusionado** (#49)                                                  |
+> | **El local en Google**                     | **Fusionado** por la #51 (la #50 no había llegado a `main`)          |
+> | La base de datos                           | **37 de 37**: la `0036` aplicada (y la `0037` del admin)             |
+> | La API                                     | **Desplegada** con todo, y conoce las 42 consultas y los 79 comandos |
+>
+> **Los pasos 1 a 4 ya están hechos.** Te quedan el **5** (la clave de Google, cuando
+> la tengas) y **mirarlo en el TPV y en el móvil**, si no lo has hecho: «Lo que trae,
+> y qué mirar». Lo que viene después está en `pasos-antes-de-m8.md`.
 
 ## Los pasos, en este orden
 

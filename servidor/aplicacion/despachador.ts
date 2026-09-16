@@ -139,6 +139,12 @@ function porQueNoPasa(puertas: Puertas, sesion: SesionViva | null): CodigoDeErro
  * que el acceso siga vivo —quitárselo a alguien le cierra la puerta en la
  * siguiente petición, sin esperar a que caduque—, el nivel, y que tenga el
  * segundo factor montado. Sin segundo factor solo se puede montarlo.
+ *
+ * **Y con la contraseña por cambiar, en el admin no se lee nada.** En la app una
+ * consulta sí pasa con ella —quien acaba de ser invitado tiene que ver su
+ * pantalla—, pero en el admin la contraseña de un solo uso la ha visto quien la
+ * dio, y con ella se leería quién administra Estook y lo que se ha hecho. Lo cazó
+ * el repaso de A1: la pantalla no lo dejaba, y la API a pelo sí (regla 4).
  */
 async function porQueNoPasaElAdmin(
   contexto: Contexto,
@@ -153,6 +159,7 @@ async function porQueNoPasaElAdmin(
   }
 
   if (!sesion.paraAdmin) return 'sin_permiso';
+  if (sesion.debeCambiarClave && !puertas.aunConClavePorCambiar) return 'clave_por_cambiar';
 
   const filas = await contexto.sql<{ nivel: string | null; con_doble_factor: boolean }[]>`
     select plataforma.nivel_de(${sesion.personaId}::uuid)::text as nivel,

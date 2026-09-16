@@ -5,9 +5,12 @@ import { derivar } from '../../servidor/dominio/secretos.ts';
 import { claveDeUnSoloUso } from '@estook/dominio';
 
 /**
- * Dar acceso total al admin desde la consola (0041).
+ * El admin desde la consola (0041): dar el primer acceso, y rescatar a quien se
+ * ha quedado fuera.
  *
  *   .\estook.cmd bd:dar-admin estookapp@gmail.com "Estook"
+ *   .\estook.cmd bd:dar-admin estookapp@gmail.com --nueva-clave
+ *   .\estook.cmd bd:dar-admin estookapp@gmail.com --sin-segundo-factor
  *
  * ── Por qué hace falta ───────────────────────────────────────────────────────
  *
@@ -15,7 +18,7 @@ import { claveDeUnSoloUso } from '@estook/dominio';
  * dar nadie. Es el mismo problema que resolvió `bd:cuenta-de-verdad` para la
  * primera cuenta de la app, y se resuelve igual.
  *
- * ── Lo que hace, y lo que no ─────────────────────────────────────────────────
+ * ── Dar acceso ───────────────────────────────────────────────────────────────
  *
  * 1. **Si el correo no tiene cuenta, la crea** con una contraseña de un solo uso
  *    que se enseña una vez por pantalla y nace con «debes cambiarla».
@@ -25,20 +28,44 @@ import { claveDeUnSoloUso } from '@estook/dominio';
  * 4. **No monta el segundo factor**: eso lo hace la persona en su móvil la primera
  *    vez que entra, porque el secreto no tiene que pasar por ninguna otra mano.
  *
+ * ── Rescatar (lo añadió el repaso de A1) ─────────────────────────────────────
+ *
+ * Sin esto, quien olvidara la contraseña o perdiera el móvil **y** sus códigos de
+ * respaldo se quedaba fuera del admin para siempre: el admin no tiene «he olvidado
+ * mi contraseña» —no hay correo todavía— y nadie puede tocar el segundo factor de
+ * otra persona desde la API, a propósito.
+ *
+ *   --nueva-clave          una contraseña de un solo uso, que obliga a cambiarla
+ *   --sin-segundo-factor   borra el segundo factor: al entrar lo vuelve a montar
+ *
+ * Las dos **cierran todas sus sesiones** —si alguien tenía el móvil perdido, fuera— y
+ * quedan en la auditoría a nombre de la consola. Solo valen con quien ya es admin:
+ * rescatar la cuenta de cualquiera desde aquí sería una puerta de atrás.
+ *
  * **No usa una contraseña escrita en ningún sitio**, tampoco en un chat: lo que
  * pasa por un chat se da por visto.
  */
-const [correoEscrito, nombre = 'Administrador'] = process.argv.slice(2);
+const argumentos = process.argv.slice(2);
+const opciones = new Set(argumentos.filter((a) => a.startsWith('--')));
+const [correoEscrito, nombre = 'Administrador'] = argumentos.filter((a) => !a.startsWith('--'));
 const correo = (correoEscrito ?? '').trim().toLowerCase();
 
-if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(correo)) {
+const CONOCIDAS = new Set(['--nueva-clave', '--sin-segundo-factor']);
+const desconocidas = [...opciones].filter((o) => !CONOCIDAS.has(o));
+const rescatar = opciones.size > 0;
+
+if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(correo) || desconocidas.length > 0) {
   console.error(
     [
-      'Falta el correo, o no tiene forma de correo.',
+      desconocidas.length > 0
+        ? `No conozco ${desconocidas.join(', ')}.`
+        : 'Falta el correo, o no tiene forma de correo.',
       '',
-      '  .\\estook.cmd bd:dar-admin tu@correo.com "Tu Nombre"',
+      '  .\\estook.cmd bd:dar-admin tu@correo.com "Tu Nombre"        dar acceso total',
+      '  .\\estook.cmd bd:dar-admin tu@correo.com --nueva-clave      contraseña de un solo uso',
+      '  .\\estook.cmd bd:dar-admin tu@correo.com --sin-segundo-factor   volver a montarlo',
       '',
-      'Ese correo es con el que entraras en estook.com/admin/.',
+      'Ese correo es con el que se entra en estook.com/admin/.',
     ].join('\n'),
   );
   process.exit(1);
@@ -59,6 +86,11 @@ try {
     }
     if (existente && !existente.activa) {
       throw new Error(`${correo} está dada de baja en Estook, así que no podría entrar.`);
+    }
+
+    if (rescatar) {
+      await rescatarA(tx, existente);
+      return;
     }
 
     const [persona] = existente
@@ -122,4 +154,56 @@ try {
   process.exitCode = 1;
 } finally {
   await sql.end();
+}
+
+/** Nueva contraseña, segundo factor borrado, o las dos. Solo a quien ya es admin. */
+async function rescatarA(tx, persona) {
+  const [vivo] = persona
+    ? await tx`
+        select 1 as hay from plataforma.administrador
+         where persona_id = ${persona.id} and quitado_en is null
+      `
+    : [];
+  if (!vivo) {
+    throw new Error(
+      `${correo} no tiene acceso al admin. Rescatar solo vale con quien ya lo tiene: para darlo, sin opciones.`,
+    );
+  }
+
+  console.log(`\n  Rescate en la base ${sql.donde}, para ${correo}.\n`);
+
+  if (opciones.has('--nueva-clave')) {
+    const clave = claveDeUnSoloUso();
+    await tx`
+      insert into estook.credencial (persona_id, derivada, debe_cambiarla)
+      values (${persona.id}, ${await derivar(clave)}, true)
+      on conflict (persona_id) do update
+        set derivada = excluded.derivada, debe_cambiarla = true,
+            intentos_fallidos = 0, bloqueada_hasta = null
+    `;
+    await tx`
+      insert into plataforma.auditoria (accion, entidad, entidad_id, despues)
+      values ('poner_clave_nueva', 'administrador', ${persona.id},
+              ${JSON.stringify({ correo, desde: 'consola' })}::text::jsonb)
+    `;
+    console.log(`  contrasena  ${clave}`);
+    console.log(`              se enseña una vez; al entrar hay que cambiarla`);
+  }
+
+  if (opciones.has('--sin-segundo-factor')) {
+    await tx`delete from estook.doble_factor where persona_id = ${persona.id}`;
+    await tx`
+      insert into plataforma.auditoria (accion, entidad, entidad_id, despues)
+      values ('quitar_segundo_factor', 'administrador', ${persona.id},
+              ${JSON.stringify({ correo, desde: 'consola' })}::text::jsonb)
+    `;
+    console.log(`  segundo factor borrado: al entrar se vuelve a montar antes de ver nada`);
+  }
+
+  const cerradas = await tx`
+    update estook.sesion set cerrada_en = now()
+     where persona_id = ${persona.id} and cerrada_en is null
+    returning 1
+  `;
+  console.log(`  sesiones cerradas: ${cerradas.length}\n`);
 }

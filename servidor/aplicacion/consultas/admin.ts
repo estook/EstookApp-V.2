@@ -37,6 +37,8 @@ export const yoEnElAdmin = consulta<Record<string, never>, YoEnElAdmin>({
   entrada: z.object({}).strict(),
   soloAdmin: true,
   aunSinDobleFactor: true,
+  // Y con la contraseña por cambiar: es lo que dice a la pantalla que la pida.
+  aunConClavePorCambiar: true,
 
   async ejecutar({ sql, sesion }) {
     if (sesion === null) throw new FalloDeAplicacion('sin_sesion');

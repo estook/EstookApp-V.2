@@ -44,6 +44,11 @@ function queHizo(linea: LineaDelAdmin): string {
     }
     case 'quitar_acceso':
       return `quitó el acceso a ${sobre}`;
+    // Los dos rescates de `bd:dar-admin`, que solo hace la consola.
+    case 'poner_clave_nueva':
+      return `le puso una contraseña de un solo uso a ${sobre}`;
+    case 'quitar_segundo_factor':
+      return `le quitó el segundo factor a ${sobre}, para volver a montarlo`;
     default:
       return linea.accion.replace(/_/g, ' ');
   }

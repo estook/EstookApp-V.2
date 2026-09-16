@@ -16,28 +16,32 @@ El panel de administración va en su propio documento:
 
 ## Resumen en una tabla
 
-| #   | Mejora                                   | Entrega                  | Necesita de fuera                          |
-| --- | ---------------------------------------- | ------------------------ | ------------------------------------------ |
-| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       |
-| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       |
-| 3   | Inicio de cada app con tarjetas          | **V**                    | Nada                                       |
-| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            |
-| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    |
-| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       |
-| 7   | Ajustes en secciones y con buscador      | **O**                    | Nada                                       |
-| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       |
-| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       |
-| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       |
-| 12  | Pedido sugerido                          | **R · El reloj**         | Nada (el reloj es de Supabase, gratis)     |
-| 13  | Alertas de subida de precio              | **R**                    | Nada                                       |
-| 16  | Informe semanal para el gerente          | **R**                    | **Resend** para el correo; la pantalla, no |
-| 19  | Reseñas: aviso de bajada y respuesta     | **R** y después          | Places ya; **Business Profile** y **IA**   |
-| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                       |
-| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)    |
-| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                       |
-| 10  | Escanear el código de barras             | **L · El lector**        | Nada                                       |
-| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                         |
-| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún    |
+**Ninguna de las veinte está hecha todavía** (16 de septiembre de 2026): la primera
+entrega construida fue la puerta del admin. Cada una cambia a «Hecha» cuando se
+fusiona y se despliega su entrega.
+
+| #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                  |
+| --- | ---------------------------------------- | ------------------------ | ------------------------------------------ | -------------------------- |
+| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | Falta                      |
+| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | Falta                      |
+| 3   | Inicio de cada app con tarjetas          | **V**                    | Nada                                       | Falta                      |
+| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            | Falta                      |
+| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    | Falta                      |
+| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       | Falta                      |
+| 7   | Ajustes en secciones y con buscador      | **O**                    | Nada                                       | Falta                      |
+| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       | Falta                      |
+| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       | Falta                      |
+| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       | Falta                      |
+| 12  | Pedido sugerido                          | **R · El reloj**         | Nada (el reloj es de Supabase, gratis)     | Falta                      |
+| 13  | Alertas de subida de precio              | **R**                    | Nada                                       | Falta                      |
+| 16  | Informe semanal para el gerente          | **R**                    | **Resend** para el correo; la pantalla, no | Falta                      |
+| 19  | Reseñas: aviso de bajada y respuesta     | **R** y después          | Places ya; **Business Profile** y **IA**   | Falta                      |
+| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                       | Falta                      |
+| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)    | Falta                      |
+| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                       | Falta                      |
+| 10  | Escanear el código de barras             | **L · El lector**        | Nada                                       | Falta                      |
+| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                         | Espera a M22               |
+| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún    | Espera a M12 · el QR, en O |
 
 Tres de las veinte **no pueden quedar al 100 % antes de M8**, y conviene decirlo ya:
 
@@ -477,8 +481,9 @@ antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
 | 9     | **Admin · Vendedores y códigos** | Vendedores, códigos, `?ref=`, asignaciones                    | Necesita la ficha de clientes                                        |
 | 10    | **Admin · Ventas**               | El tablero de ventas                                          | Necesita el reloj (uso diario) y los vendedores                      |
 
-**Cómo va:** la **1** está hecha y sin fusionar, en la rama `m7-admin-la-puerta`. La
-siguiente es la **2**.
+**Cómo va:** la **1** está **fusionada y en producción** (#53), con Richi dentro del
+admin y su segundo factor montado. Su repaso (rescatar a un admin, la cabecera del
+móvil y una puerta de la API) va en un pull request aparte. La siguiente es la **2**.
 
 **Qué esperan de fuera, y no frenan el orden:** **Resend** (el correo del informe y
 de los avisos), **Business Profile** (las respuestas a reseñas), **la clave de IA**

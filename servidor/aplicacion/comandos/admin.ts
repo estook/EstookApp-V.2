@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { claveDeUnSoloUso } from '@estook/dominio';
+import { DIAS_DE_OFERTA_MAXIMOS, DIAS_DE_OFERTA_MINIMOS, claveDeUnSoloUso } from '@estook/dominio';
 import { derivar, huellaDeToken, tokenNuevo } from '../../dominio/secretos.ts';
 import { anotarEnElAdmin, comprobarMiCodigo } from '../admin.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
@@ -307,5 +307,60 @@ export const quitarAccesoAlAdmin = comando<EntradaQuitarAccesoAlAdmin, { readonl
     });
 
     return { quitado: true };
+  },
+});
+
+// ── La oferta de prueba (0042) ───────────────────────────────────────────────
+
+export const entradaCambiarLaOferta = z
+  .object({
+    activa: z.boolean(),
+    dias: z.number().int().min(DIAS_DE_OFERTA_MINIMOS).max(DIAS_DE_OFERTA_MAXIMOS),
+  })
+  .strict();
+
+export type EntradaCambiarLaOferta = z.infer<typeof entradaCambiarLaOferta>;
+
+/**
+ * Encender o apagar la oferta de prueba, y cuántos días da.
+ *
+ * «De vez en cuando subiremos una prueba de 12 días para marketing; desde el admin
+ *  manejamos si activamos la oferta o no.» Con ella encendida, quien crea su cuenta
+ * entra con esos días; apagada, paga al empezar. **No cambia a quien ya tiene
+ * cuenta**: su prueba es la que le tocó al crearla.
+ */
+export const cambiarLaOferta = comando<
+  EntradaCambiarLaOferta,
+  { readonly activa: boolean; readonly dias: number }
+>({
+  nombre: 'admin_cambiar_oferta',
+  entrada: entradaCambiarLaOferta,
+  soloAdmin: true,
+  nivelDeAdmin: 'total',
+
+  async ejecutar(contexto, entrada) {
+    const { sql, sesion } = contexto;
+    if (sesion === null) throw new FalloDeAplicacion('sin_sesion');
+
+    const antes = await sql<{ activa: boolean; dias: number }[]>`
+      select activa, dias from plataforma.oferta_de_prueba where unica
+    `;
+
+    await sql`
+      update plataforma.oferta_de_prueba
+         set activa = ${entrada.activa}, dias = ${entrada.dias},
+             cambiada_en = now(), cambiada_por = ${sesion.personaId}::uuid
+       where unica
+    `;
+
+    await anotarEnElAdmin(contexto, {
+      accion: 'cambiar_oferta',
+      entidad: 'oferta_de_prueba',
+      entidadId: null,
+      antes: antes[0] === undefined ? null : { activa: antes[0].activa, dias: antes[0].dias },
+      despues: { activa: entrada.activa, dias: entrada.dias },
+    });
+
+    return { activa: entrada.activa, dias: entrada.dias };
   },
 });

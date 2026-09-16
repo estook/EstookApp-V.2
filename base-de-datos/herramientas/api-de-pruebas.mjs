@@ -45,6 +45,8 @@ import { crearApi } from '../../servidor/api/index.ts';
 import { crearDespachador } from '../../servidor/aplicacion/index.ts';
 import { almacenEnMemoria } from '../../servidor/infraestructura/almacen.ts';
 import { lugaresDeMentira } from '../../servidor/infraestructura/google.ts';
+import { correoEnMemoria } from '../../servidor/infraestructura/correo.ts';
+import { identidadDeMentira } from '../../servidor/infraestructura/identidad-de-google.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { sembrarAcceso } from '../semillas/acceso.ts';
@@ -173,6 +175,11 @@ const almacen = almacenEnMemoria();
 // siempre lo mismo y no sale a internet.
 const google = lugaresDeMentira();
 
+// 0042 · el correo, en memoria, para que las pruebas de pantalla lean el código;
+// y un Google de mentira, cuyo código dice quién es.
+const correo = correoEnMemoria();
+const identidadDeGoogle = identidadDeMentira();
+
 /**
  * Una transaccion, con el orden de la decision 0005 y el de `postgres.ts`:
  * disfraz, sesion, identidad. Cambiarlo aqui haria que las pruebas comprobaran
@@ -225,6 +232,8 @@ async function unaTransaccion(quien, hacer) {
       // Supabase, y sin puerto no se podria probar el alta con su logo.
       almacen,
       google,
+      correo,
+      identidadDeGoogle,
       correlacionId: quien.correlacionId,
       desde: quien.desde ?? null,
       ahora: new Date(Date.now()),
@@ -284,6 +293,20 @@ const servidor = createServer((peticion, respuesta) => {
   peticion.on('data', (trozo) => cuerpo.push(trozo));
   peticion.on('end', () => {
     const url = `http://localhost:${PUERTO}${peticion.url ?? '/'}`;
+
+    // 0042 · el último correo mandado a una dirección, para que las pruebas de
+    // pantalla lean el código como lo leería una persona en su bandeja. **Solo
+    // existe en esta API de pruebas**: la de verdad manda los correos por Resend y
+    // no guarda ninguno.
+    const pedido = new URL(url);
+    if (pedido.pathname === '/api/pruebas/ultimo-correo') {
+      const para = (pedido.searchParams.get('para') ?? '').toLowerCase();
+      const ultimo = [...correo.mandados].reverse().find((c) => c.para === para) ?? null;
+      respuesta.writeHead(ultimo ? 200 : 404, { 'content-type': 'application/json' });
+      respuesta.end(JSON.stringify(ultimo));
+      return;
+    }
+
     const entrada = new Request(url, {
       method: peticion.method,
       headers: peticion.headers,

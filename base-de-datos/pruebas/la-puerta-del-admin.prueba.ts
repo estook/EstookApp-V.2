@@ -73,16 +73,17 @@ describe('el esquema plataforma', () => {
     expect(sinRls.map((f) => f.relname)).toEqual([]);
   });
 
-  it('sus funciones con privilegio son exactamente dos, y no las ejecuta cualquiera', async () => {
-    // Las mismas razones que las dieciocho de `estook`, contadas aparte: si un día
-    // son tres, que sea a propósito.
+  it('sus funciones con privilegio son exactamente tres, y no las ejecuta cualquiera', async () => {
+    // Las mismas razones que las de `estook`, contadas aparte: si un día son
+    // cuatro, que sea a propósito. La tercera es de la 0042: `oferta_vigente`, que
+    // la pantalla de crear cuenta lee antes de que haya sesión.
     const definer = await comoDuena<{ proname: string; publico: boolean }>(
       `select p.proname, has_function_privilege('public', p.oid, 'execute') as publico
          from pg_proc p
         where p.pronamespace = 'plataforma'::regnamespace and p.prosecdef
         order by p.proname`,
     );
-    expect(definer.map((f) => f.proname)).toEqual(['dar_acceso', 'nivel_de']);
+    expect(definer.map((f) => f.proname)).toEqual(['dar_acceso', 'nivel_de', 'oferta_vigente']);
     for (const fila of definer) {
       expect(fila.publico, `${fila.proname} la puede ejecutar cualquiera`).toBe(false);
     }

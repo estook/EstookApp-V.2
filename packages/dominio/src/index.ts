@@ -464,3 +464,20 @@ export {
   mesDe,
 } from './google.ts';
 export type { UsoDeGoogle } from './google.ts';
+
+// ── 0042 · crear cuenta, la oferta de prueba y los planes ────────────────────
+export {
+  CUENTAS_POR_DIRECCION_A_LA_HORA,
+  DIAS_DE_OFERTA_MAXIMOS,
+  DIAS_DE_OFERTA_MINIMOS,
+  DIAS_DE_OFERTA_POR_DEFECTO,
+  INTENTOS_DEL_CODIGO_DE_REGISTRO,
+  MINUTOS_DEL_CODIGO_DE_REGISTRO,
+  PLANES,
+  SEGUNDOS_ENTRE_CODIGOS,
+  VUELTAS_DE_GOOGLE,
+  codigoDeRegistro,
+  esCodigoDeRegistro,
+  planPorCodigo,
+} from './registro.ts';
+export type { CodigoDePlan, OfertaDePrueba, Plan, VueltaDeGoogle } from './registro.ts';

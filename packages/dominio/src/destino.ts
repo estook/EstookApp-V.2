@@ -33,6 +33,12 @@
 export const DESTINOS = [
   /** La suscripcion esta archivada o impagada: no se pasa de aqui. */
   'cuenta_parada',
+  /**
+   * Acaba de crear su cuenta y todavia no ha pagado (0042). Elige su plan y paga;
+   * hasta entonces no se entra al negocio. Con la oferta de prueba encendida no se
+   * pasa por aqui.
+   */
+  'elegir_plan',
   /** Trabaja en varias empresas. Primero, en cual. */
   'elegir_organizacion',
   /** Alcance de organizacion o de area: el consolidado, no un local. */
@@ -53,7 +59,8 @@ export interface QuienAcabaDeEntrar {
   readonly organizaciones: readonly {
     readonly id: string;
     readonly nombre: string;
-    readonly estado: 'prueba' | 'activa' | 'impago' | 'solo_lectura' | 'archivada';
+    readonly estado:
+      'prueba' | 'activa' | 'impago' | 'solo_lectura' | 'archivada' | 'pendiente_de_pago';
     /** El alcance mas amplio que tiene en esta organizacion. */
     readonly alcance: 'organizacion' | 'area' | 'local';
   }[];
@@ -100,7 +107,23 @@ export function aDondeEntra(quien: QuienAcabaDeEntrar): ResolucionDeDestino {
   // Va primero, antes que nada: no tiene sentido preguntar donde estas hoy si la
   // cuenta esta archivada. Basta con que **alguna** deje trabajar; quien lleva
   // dos empresas y una esta impagada entra igual en la otra.
-  const vivas = candidatas.filter((o) => !laCuentaEstaParada(o.estado));
+  const noParadas = candidatas.filter((o) => !laCuentaEstaParada(o.estado));
+
+  // Y la que se acaba de crear sin pagar (0042) tampoco deja entrar al negocio,
+  // pero no es una cuenta parada: es una que todavia no ha empezado. Si es lo
+  // unico que tiene, va a elegir su plan; si ademas trabaja en otra empresa,
+  // entra en esa y el plan lo elige cuando cambie.
+  const vivas = noParadas.filter((o) => o.estado !== 'pendiente_de_pago');
+  const porPagar = noParadas.find((o) => o.estado === 'pendiente_de_pago');
+
+  if (vivas.length === 0 && porPagar !== undefined) {
+    return {
+      destino: 'elegir_plan',
+      organizacionId: porPagar.id,
+      localId: null,
+      porque: 'Tu cuenta está creada. Elige tu plan para empezar a usar Estook.',
+    };
+  }
 
   if (candidatas.length > 0 && vivas.length === 0) {
     const primera = candidatas[0];

@@ -409,7 +409,7 @@ Serio y directo. Se le habla a alguien que lleva veinte años con un bar y no ti
 
 ## C2 · Estructura de la portada
 
-1. **Encabezado.** Titular en una línea: _La gestión de tu restaurante, en una sola aplicación._ Dos botones: «Probar 14 días» y «Ver cómo funciona».
+1. **Encabezado.** Titular en una línea: _La gestión de tu restaurante, en una sola aplicación._ Dos botones: «Crear cuenta» —«Empezar la prueba» cuando hay oferta (0042)— y «Ver cómo funciona».
 2. **El problema, con números.** Tres datos honestos y verificables. Sin dramatismo.
 3. **La bifurcación.** Dos tarjetas: _Tengo un local_ / _Tengo varios locales_.
 4. **Las ocho apps.** Rejilla con icono, nombre y una frase. Al pasar el ratón, captura.
@@ -723,7 +723,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M26 · Suscripciones, web y panel interno
 
-**Entra.** Motor de derechos de uso: plan → derechos y cupos comprobados en servidor, con `402` y el código del derecho · contadores por día natural · prueba de 14 días sin tarjeta con paso a solo lectura el día 15 · antiabuso por ficha de Google, CIF y dirección · planes en Stripe con anual, pausa y prorrateo · una factura por organización con desglose por local · impago escalonado **sin cortar en mitad del servicio** · baja con exportación completa · la web pública entera de la parte C · panel interno completo según el documento de Roles.
+**Entra.** Motor de derechos de uso: plan → derechos y cupos comprobados en servidor, con `402` y el código del derecho · contadores por día natural · se paga al empezar, y la prueba sin tarjeta es una oferta que se enciende desde el admin, con paso a solo lectura al acabar (0042) · antiabuso por ficha de Google, CIF y dirección · planes en Stripe con anual, pausa y prorrateo · una factura por organización con desglose por local · impago escalonado **sin cortar en mitad del servicio** · baja con exportación completa · la web pública entera de la parte C · panel interno completo según el documento de Roles.
 
 **Terminado cuando.** Cada derecho tiene su prueba llamando a la API con un plan inferior y esperando `402`; cambiar los derechos en el navegador no desbloquea nada; y un local se da de alta y contrata de principio a fin sin que intervengamos.
 

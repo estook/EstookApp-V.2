@@ -54,6 +54,8 @@ function puertosDeMentira() {
         // M5. La API es transporte: no toca ficheros, así que aquí no hay almacén.
         almacen: null,
         google: null,
+        correo: null,
+        identidadDeGoogle: null,
         correlacionId: quien.correlacionId,
         desde: null,
         ahora: new Date(Date.UTC(2026, 8, 1, 12, 0, 0)),

@@ -52,3 +52,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0039** | El Panel se monta como un movil, y cada uno se pone sus cifras              |
 | **0040** | El local se busca en Google, con el tope contado antes de llamar            |
 | **0041** | El panel de administracion: el cliente es la organizacion                   |
+| **0042** | Registro abierto con correo o Google, y se paga al empezar salvo oferta     |

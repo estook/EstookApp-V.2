@@ -7,11 +7,17 @@ import { expect, test } from '@playwright/test';
  * ensena **no es el Panel sino la puerta**: sin haber entrado no se pinta ni una
  * barra ni un dato, que es exactamente lo que tiene que pasar.
  *
- * Las otras tres siguen siendo el marcador de sitio de M0, pintado con el sistema
- * de diseno.
+ * La carta sigue siendo el marcador de sitio de M0, pintado con el sistema de
+ * diseno; la web, desde la 0042, es la portada basica.
  */
 const APLICACIONES = [
-  { nombre: 'web', url: 'http://localhost:5173/', titulo: /Estook/, puerta: null },
+  // Desde la 0042 la web es la portada básica, con sus dos accesos.
+  {
+    nombre: 'web',
+    url: 'http://localhost:5173/',
+    titulo: /Estook/,
+    puerta: 'Tu cocina, bajo control',
+  },
   { nombre: 'app', url: 'http://localhost:5174/', titulo: /Estook/, puerta: 'Entra en Estook' },
   { nombre: 'carta', url: 'http://localhost:5175/', titulo: /Carta/, puerta: null },
   // Desde la 0041 el admin también empieza por su puerta: el catálogo que se veía
@@ -39,8 +45,9 @@ for (const aplicacion of APLICACIONES) {
       await expect(page).toHaveTitle(aplicacion.titulo);
 
       if (aplicacion.puerta !== null) {
-        // La puerta de M4. Que lo primero sea esto y no el Panel es la mitad del
-        // modulo: antes de saber quien eres no hay nada que ensenar.
+        // La puerta de M4 (o la portada, en la web). Que lo primero sea esto y no
+        // el Panel es la mitad del modulo: antes de saber quien eres no hay nada
+        // que ensenar.
         await expect(page.getByRole('heading', { level: 1 })).toContainText(aplicacion.puerta);
       } else {
         // El marcador de sitio de M0, que sigue diciendo como ha arrancado.

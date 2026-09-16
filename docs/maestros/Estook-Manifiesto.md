@@ -1329,7 +1329,7 @@ Detalles pequeños que, mal resueltos, hacen que un hostelero abandone en la pri
 
 Separada de la app, con enlace a entrar. Bifurcación en la portada: **tengo un local / tengo varios locales**.
 
-**Camino de local único:** qué es y en qué ayuda → recorrido con capturas reales → **los documentos que genera**, que se pueden abrir y ver (es el bloque que más convierte, porque es lo único tangible) → cómo se conecta con tu TPV → precios → preguntas frecuentes → probar 14 días. Autoservicio de principio a fin.
+**Camino de local único:** qué es y en qué ayuda → recorrido con capturas reales → **los documentos que genera**, que se pueden abrir y ver (es el bloque que más convierte, porque es lo único tangible) → cómo se conecta con tu TPV → precios → preguntas frecuentes → crear cuenta (o probar gratis, cuando haya oferta). Autoservicio de principio a fin.
 
 **Camino de cadena:** página propia con la comparativa entre locales, el catálogo maestro, el rol de area manager y los informes de grupo.
 
@@ -1343,17 +1343,17 @@ Además: una página por app, una de la carta digital, una de Fogón, una para g
 
 # 31 · Acceso y prueba
 
-**Un correo, una identidad.** Formulario único con correo y, debajo, contraseña o PIN. Tres formas de entrar por primera vez: registro, invitación, y nada más. **No hay registro abierto.**
+**Un correo, una identidad.** Se entra con **Google**, con **contraseña** o con **PIN**, las tres a la vista. Dos formas de llegar por primera vez: **crear cuenta** desde `estook.com` —con Google, o con el correo y un código de seis cifras que demuestra que es tuyo— o **una invitación** de quien lleva el local. El mismo correo con Google y con contraseña es la misma persona (decisión 0042).
 
 Después de entrar, en este orden: se comprueba el estado de la suscripción → si pertenece a varias organizaciones, se elige → si su alcance es organización o área, entra en la vista de cadena → si llega a varios locales, «¿dónde estás hoy?» → si no ha terminado el onboarding, sigue por donde iba.
 
 **Cambiar de local no cierra la sesión:** cambia el contexto, y el color y el logo de la cabecera, para que nadie apunte una merma en el local equivocado.
 
-**La prueba: 14 días, sin tarjeta.** Este producto exige configurar cosas, y pedir la tarjeta en la puerta hunde el número de pruebas. Lo que evita el abuso no es la tarjeta: es el freno y el límite.
+**Se paga al empezar, y la prueba es una oferta.** Quien crea su cuenta monta su negocio y elige plan. **Cuando hay campaña**, se enciende desde el admin una prueba gratis —12 días, sin tarjeta— y las cuentas creadas mientras está encendida entran con ella; la web lo anuncia sola. Lo que evita el abuso no es la tarjeta: es el freno y el límite (decisión 0042).
 
 Durante la prueba: 10 preguntas a Fogón y 3 documentos al día, 5 albaranes por foto en total, una consulta de competencia, reseñas en solo lectura y sin acceso para la gestoría. **La conexión con el TPV sí entra en la prueba**, porque es justo lo que hay que demostrar. Los avisos de Fogón siguen funcionando, que son los que enganchan y cuestan cero.
 
-Al día 15 sin contratar: **solo lectura, con todo exportable**. A los 60 días, archivo. **Nada se borra nunca**, y pagar lo devuelve todo tal cual.
+Al acabar la prueba sin contratar: **solo lectura, con todo exportable**. A los 60 días, archivo. **Nada se borra nunca**, y pagar lo devuelve todo tal cual.
 
 **Seguridad:** contraseñas con hash moderno, PIN único por local con bloqueo a los cinco intentos, doble factor exigible desde la organización, límites de peticiones, enlaces de fichero firmados y caducos, y auditoría de todo lo que toca dinero, permisos o registros legales. **Nunca vemos ni guardamos datos de tarjeta.**
 

@@ -4,6 +4,8 @@ import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import type { SesionViva, Sql } from '../../servidor/infraestructura/postgres.ts';
 import type { LugaresDeGoogle } from '../../servidor/infraestructura/google.ts';
+import type { CorreoSaliente } from '../../servidor/infraestructura/correo.ts';
+import type { IdentidadDeGoogle } from '../../servidor/infraestructura/identidad-de-google.ts';
 
 /**
  * El despachador de verdad, contra la base efímera de las pruebas (M7).
@@ -38,6 +40,13 @@ export interface ApiDePrueba {
     entrada: unknown,
     clave?: string,
   ): Promise<Resultado>;
+  /** Como `ejecutar`, llegando desde una dirección: para los límites por dirección. */
+  ejecutarDesde(
+    desde: string,
+    token: string | null,
+    nombre: string,
+    entrada: unknown,
+  ): Promise<Resultado>;
 }
 
 const CLAVE_DE_EJEMPLO = 'estook en desarrollo';
@@ -57,7 +66,11 @@ function adaptador(bd: PGlite): Sql {
 
 export function montarLaApi(
   bd: PGlite,
-  opciones: { readonly google?: LugaresDeGoogle | null } = {},
+  opciones: {
+    readonly google?: LugaresDeGoogle | null;
+    readonly correo?: CorreoSaliente | null;
+    readonly identidadDeGoogle?: IdentidadDeGoogle | null;
+  } = {},
 ): ApiDePrueba {
   // PGlite es una sola conexión: las transacciones van de una en una.
   let laCola: Promise<unknown> = Promise.resolve();
@@ -119,6 +132,8 @@ export function montarLaApi(
             sesion,
             almacen: null,
             google: opciones.google ?? null,
+            correo: opciones.correo ?? null,
+            identidadDeGoogle: opciones.identidadDeGoogle ?? null,
             correlacionId: quien.correlacionId,
             desde: quien.desde ?? null,
             ahora: new Date(Date.now()),
@@ -180,6 +195,9 @@ export function montarLaApi(
 
     ejecutar: (token, nombre, entrada, clave = crypto.randomUUID()) =>
       despachador.ejecutar(quien(token), nombre, entrada, clave),
+
+    ejecutarDesde: (desde, token, nombre, entrada) =>
+      despachador.ejecutar({ ...quien(token), desde }, nombre, entrada, crypto.randomUUID()),
   };
 }
 

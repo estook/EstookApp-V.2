@@ -39,7 +39,7 @@ async function entrar(page: Page, correo: string, secreto = CLAVE, conPin = fals
 
   await page.getByLabel('Tu correo').fill(correo);
   if (conPin) {
-    await page.getByRole('button', { name: 'Prefiero usar mi PIN' }).click();
+    await page.getByRole('tab', { name: 'Con PIN' }).click();
     await page.getByLabel('Tu PIN').fill(secreto);
   } else {
     await page.getByLabel('Tu contraseña').fill(secreto);

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { Destino as ADonde } from '@estook/dominio';
 import { comprobar, esPinConForma, huellaDeToken, tokenNuevo } from '../../dominio/secretos.ts';
 import { decidirDestino } from '../acceso.ts';
-import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { comando, FalloDeAplicacion, falloQueSeGuarda, type Contexto } from '../contrato.ts';
 
 /**
  * Entrar (M4).
@@ -136,104 +136,126 @@ export const entrar = comando<EntradaEntrar, SalidaEntrar>({
         ? await porContrasena(contexto, entrada.correo, entrada.contrasena ?? '')
         : await porPin(contexto, entrada.correo, entrada.pin);
 
-    // ── La sesion ────────────────────────────────────────────────────────────
-
-    const token = tokenNuevo();
-    const huella = await huellaDeToken(token);
-
-    // El destino se decide **antes** de abrir la sesion, con la identidad ya
-    // puesta por la transaccion... que todavia no lo esta, porque `entrar` corre
-    // sin sesion. Asi que se declara a mano, solo para esta transaccion.
-    await contexto.sql`select set_config('estook.persona_id', ${quien.personaId}, true)`;
-
-    const destino = await decidirDestino(contexto.sql, {
-      organizacionId: null,
-      localId: quien.localDelPin,
-    });
-
-    const exigeDoble = await exigeDobleFactor(
+    return abrirLaSesion(
       contexto,
-      destino.organizaciones.map((o) => o.id),
+      quien,
+      entrada.pin === undefined ? 'contrasena' : 'pin',
+      entrada.aparato,
     );
-    const tieneDoble = await tieneDobleFactorConfirmado(contexto, quien.personaId);
-
-    // ── Las dos preguntas del segundo factor, que NO son la misma ────────────
-    //
-    //   ¿hay que pedir un codigo ahora?   → lo tiene activado, lo exija o no
-    //   ¿hay que activarlo?               → la organizacion lo exige y no lo tiene
-    //
-    // Quien lo activa por su cuenta tiene que pasarlo aunque su organizacion no
-    // lo exija; si no, activarlo seria decorativo. Y a quien tiene que activarlo
-    // y aun no lo ha hecho **se le deja entrar**: no podria activarlo desde
-    // fuera, asi que exigirselo antes de entrar le dejaria fuera para siempre.
-    const faltaElCodigo = tieneDoble;
-    const debeActivarlo = exigeDoble && !tieneDoble;
-
-    // ── El aparato, antes de abrir la sesión ─────────────────────────────────
-    //
-    // Se resuelve primero porque la sesión cuelga de él. Y se resuelve con la
-    // identidad ya declarada un poco más arriba, así que la política de
-    // `dispositivo` —«los tuyos siempre»— aplica y no hace falta comprobar de
-    // quién es.
-    //
-    // Si no viene aparato, la sesión nace sin dispositivo, como todas las de M4.
-    // No se inventa uno: un dispositivo sin huella no se podría reconocer la
-    // próxima vez y sería una fila nueva en cada entrada, que es exactamente el
-    // problema que esto viene a arreglar.
-    let dispositivoId: string | null = null;
-    if (entrada.aparato !== undefined) {
-      const aparatos = await contexto.sql<{ reconocer_dispositivo: string | null }[]>`
-        select estook.reconocer_dispositivo(
-          ${quien.personaId}::uuid,
-          ${entrada.aparato.huella},
-          ${entrada.aparato.nombre},
-          ${entrada.aparato.tipo}::estook.tipo_de_dispositivo,
-          ${quien.localDelPin}::uuid
-        ) as reconocer_dispositivo
-      `;
-      dispositivoId = aparatos[0]?.reconocer_dispositivo ?? null;
-    }
-
-    const filas = await contexto.sql<{ abrir_sesion: string }[]>`
-      select estook.abrir_sesion(
-        ${quien.personaId}::uuid,
-        ${huella},
-        ${entrada.pin === undefined ? 'contrasena' : 'pin'},
-        ${destino.organizacionId}::uuid,
-        ${destino.localId}::uuid,
-        ${!faltaElCodigo},
-        ${DIAS_DE_SESION},
-        ${dispositivoId}::uuid
-      ) as abrir_sesion
-    `;
-    const sesionId = filas[0]?.abrir_sesion;
-    if (sesionId === undefined) throw new FalloDeAplicacion('fallo_nuestro');
-
-    if (destino.organizacionId !== null) {
-      await contexto.sql`
-        select estook.anotar(
-          ${destino.organizacionId}::uuid, 'entrar', 'sesion', ${sesionId},
-          ${destino.localId}::uuid, null,
-          ${JSON.stringify({ con: entrada.pin === undefined ? 'contrasena' : 'pin' })}::text::jsonb,
-          null
-        )
-      `;
-    }
-
-    return {
-      token,
-      destino: destino.destino,
-      organizacionId: destino.organizacionId,
-      localId: destino.localId,
-      porque: destino.porque,
-      faltaDobleFactor: faltaElCodigo,
-      debeActivarDobleFactor: debeActivarlo,
-      debeCambiarClave: quien.debeCambiarClave,
-      organizaciones: destino.organizaciones.map((o) => ({ id: o.id, nombre: o.nombre })),
-      locales: destino.locales.map((l) => ({ id: l.id, nombre: l.nombre })),
-    };
   },
 });
+
+/**
+ * Abrir la sesión de quien ya ha demostrado quién es: el destino, el segundo
+ * factor, el aparato y la sesión, en ese orden.
+ *
+ * **Una sola, para las tres puertas** —contraseña o PIN, el código del correo al
+ * crear la cuenta, y Google (0042)—. Si cada una abriera la sesión a su manera,
+ * un día una se saltaría el segundo factor y nadie lo vería.
+ */
+export async function abrirLaSesion(
+  contexto: Contexto,
+  quien: QuienEntra,
+  entroCon: 'contrasena' | 'pin' | 'google',
+  aparato: z.infer<typeof elAparato> | undefined,
+): Promise<SalidaEntrar> {
+  // ── La sesion ────────────────────────────────────────────────────────────
+
+  const token = tokenNuevo();
+  const huella = await huellaDeToken(token);
+
+  // El destino se decide **antes** de abrir la sesion, con la identidad ya
+  // puesta por la transaccion... que todavia no lo esta, porque `entrar` corre
+  // sin sesion. Asi que se declara a mano, solo para esta transaccion.
+  await contexto.sql`select set_config('estook.persona_id', ${quien.personaId}, true)`;
+
+  const destino = await decidirDestino(contexto.sql, {
+    organizacionId: null,
+    localId: quien.localDelPin,
+  });
+
+  const exigeDoble = await exigeDobleFactor(
+    contexto,
+    destino.organizaciones.map((o) => o.id),
+  );
+  const tieneDoble = await tieneDobleFactorConfirmado(contexto, quien.personaId);
+
+  // ── Las dos preguntas del segundo factor, que NO son la misma ────────────
+  //
+  //   ¿hay que pedir un codigo ahora?   → lo tiene activado, lo exija o no
+  //   ¿hay que activarlo?               → la organizacion lo exige y no lo tiene
+  //
+  // Quien lo activa por su cuenta tiene que pasarlo aunque su organizacion no
+  // lo exija; si no, activarlo seria decorativo. Y a quien tiene que activarlo
+  // y aun no lo ha hecho **se le deja entrar**: no podria activarlo desde
+  // fuera, asi que exigirselo antes de entrar le dejaria fuera para siempre.
+  const faltaElCodigo = tieneDoble;
+  const debeActivarlo = exigeDoble && !tieneDoble;
+
+  // ── El aparato, antes de abrir la sesión ─────────────────────────────────
+  //
+  // Se resuelve primero porque la sesión cuelga de él. Y se resuelve con la
+  // identidad ya declarada un poco más arriba, así que la política de
+  // `dispositivo` —«los tuyos siempre»— aplica y no hace falta comprobar de
+  // quién es.
+  //
+  // Si no viene aparato, la sesión nace sin dispositivo, como todas las de M4.
+  // No se inventa uno: un dispositivo sin huella no se podría reconocer la
+  // próxima vez y sería una fila nueva en cada entrada, que es exactamente el
+  // problema que esto viene a arreglar.
+  let dispositivoId: string | null = null;
+  if (aparato !== undefined) {
+    const aparatos = await contexto.sql<{ reconocer_dispositivo: string | null }[]>`
+      select estook.reconocer_dispositivo(
+        ${quien.personaId}::uuid,
+        ${aparato.huella},
+        ${aparato.nombre},
+        ${aparato.tipo}::estook.tipo_de_dispositivo,
+        ${quien.localDelPin}::uuid
+      ) as reconocer_dispositivo
+    `;
+    dispositivoId = aparatos[0]?.reconocer_dispositivo ?? null;
+  }
+
+  const filas = await contexto.sql<{ abrir_sesion: string }[]>`
+    select estook.abrir_sesion(
+      ${quien.personaId}::uuid,
+      ${huella},
+      ${entroCon},
+      ${destino.organizacionId}::uuid,
+      ${destino.localId}::uuid,
+      ${!faltaElCodigo},
+      ${DIAS_DE_SESION},
+      ${dispositivoId}::uuid
+    ) as abrir_sesion
+  `;
+  const sesionId = filas[0]?.abrir_sesion;
+  if (sesionId === undefined) throw new FalloDeAplicacion('fallo_nuestro');
+
+  if (destino.organizacionId !== null) {
+    await contexto.sql`
+      select estook.anotar(
+        ${destino.organizacionId}::uuid, 'entrar', 'sesion', ${sesionId},
+        ${destino.localId}::uuid, null,
+        ${JSON.stringify({ con: entroCon })}::text::jsonb,
+        null
+      )
+    `;
+  }
+
+  return {
+    token,
+    destino: destino.destino,
+    organizacionId: destino.organizacionId,
+    localId: destino.localId,
+    porque: destino.porque,
+    faltaDobleFactor: faltaElCodigo,
+    debeActivarDobleFactor: debeActivarlo,
+    debeCambiarClave: quien.debeCambiarClave,
+    organizaciones: destino.organizaciones.map((o) => ({ id: o.id, nombre: o.nombre })),
+    locales: destino.locales.map((l) => ({ id: l.id, nombre: l.nombre })),
+  };
+}
 
 export interface QuienEntra {
   readonly personaId: string;
@@ -282,8 +304,10 @@ export async function porContrasena(
   // Ojo con el orden: el intento se anota **antes** de mirar si la persona esta
   // activa. Si no, a quien esta de baja se le podrian probar contrasenas sin
   // gastar intentos.
-  if (!acierta) throw new FalloDeAplicacion('no_cuadra');
-  if (!fila.persona_activa) throw new FalloDeAplicacion('no_cuadra');
+  // **Conservando el apunte de arriba**: si el fallo lo deshiciera, el bloqueo a
+  // los cinco intentos no bloquearía nunca, y no bloqueaba (repaso de la 0042).
+  if (!acierta) throw falloQueSeGuarda('no_cuadra');
+  if (!fila.persona_activa) throw falloQueSeGuarda('no_cuadra');
 
   return { personaId: fila.persona_id, debeCambiarClave: fila.debe_cambiarla, localDelPin: null };
 }
@@ -325,8 +349,9 @@ async function porPin(contexto: Contexto, correo: string, pin: string): Promise<
   }
 
   if (acertado === null) {
-    if (bloqueadoEnAlguno) throw new FalloDeAplicacion('demasiados_intentos');
-    throw new FalloDeAplicacion('no_cuadra');
+    // Conservando los intentos apuntados en cada local, por lo mismo.
+    if (bloqueadoEnAlguno) throw falloQueSeGuarda('demasiados_intentos');
+    throw falloQueSeGuarda('no_cuadra');
   }
 
   await contexto.sql`select estook.anotar_intento_de_pin(${acertado.pin_id}::uuid, true)`;

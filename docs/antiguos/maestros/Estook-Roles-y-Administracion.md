@@ -1,8 +1,8 @@
 ---
 titulo: Roles, vistas, auditorías y administración
 tipo: Documento maestro de comportamiento por rol
-fecha: Septiembre de 2026 · versión 1.2
-nota: Qué ve exactamente cada rol pantalla por pantalla, qué le llega a cada uno del centro de alertas, cómo navega el area manager entre sus locales, las auditorías completas y el panel interno. Documentos hermanos: Evolución, Manifiesto, Plan de desarrollo, Auditoría de flujos y el Anexo de TPV y facturación.
+fecha: Septiembre de 2026 · versión 1.1
+nota: Qué ve exactamente cada rol pantalla por pantalla, qué le llega a cada uno del centro de alertas, cómo navega el area manager entre sus locales, las auditorías completas y el panel interno.
 ---
 
 # Qué es este documento
@@ -15,8 +15,6 @@ Aquí está el detalle que, sin escribir, se acaba improvisando:
 - **Nuestro panel de administración**, sección por sección.
 
 **Qué cambia en la versión 1.1.** Recoge la Evolución de producto 1.0: cada rol tiene ahora su **zona de atención** en el Panel y su reparto de alertas, se dice quién ve **Estook Pulse**, las auditorías **detectan solas** lo que el resto de Estook ya sabe, y el panel interno vigila también las integraciones.
-
-**Qué cambia en la versión 1.2.** Estook también cobra (Evolución, capítulo 19). Entra el apartado **1.12**, con quién puede tomar nota, cobrar, facturar, rectificar y llevar la caja; se tocan el camarero, el cocinero y la gestoría; y el panel interno no puede tocar nada de facturación (4.8).
 
 ---
 
@@ -55,7 +53,7 @@ Tres cosas, y las tres respetan el principio de arriba.
 
 **Entra y ve:** su turno de hoy, el menú del día, los agotados, los alérgenos y sus horas de la semana.
 
-**Su rueda:** Calendario, Carta (solo lectura), Cuaderno y Servicio limitado a registrar mermas. Cuatro sectores grandes. **Si el local cobra con Estook**, Servicio le abre además la sala: sus mesas, tomar nota y, si el local lo permite, cobrar (1.12).
+**Su rueda:** Calendario, Carta (solo lectura), Cuaderno y Servicio limitado a registrar mermas. Cuatro sectores grandes.
 
 ```
 Buenos dias, Sara
@@ -81,7 +79,7 @@ Buenos dias, Sara
 
 **Qué puede hacer:** fichar, consultar la carta y los alérgenos, marcar un plato agotado, apuntar una merma, escribir en el chat, dejar una incidencia y descargarse su horario. Ficha **con la ubicación**, que se pide y no bloquea; apunta la merma **sin ver lo que vale**; y en su ficha ve sus horas y sus fichajes.
 
-**Qué no ve, en ningún sitio:** costes, márgenes, precios de compra, ventas del local, datos de otras personas, el cuadrante completo ni lo que cobran los demás. Lo suyo, sí: es suyo. **Con el TPV de Estook** ve el precio de venta de lo que sirve, el total de sus mesas y sus propios cobros del turno: sin eso no se puede cobrar. El total del local, no.
+**Qué no ve, en ningún sitio:** costes, márgenes, precios de compra, ventas del local, datos de otras personas, el cuadrante completo ni lo que cobran los demás. Lo suyo, sí: es suyo.
 
 ## 1.4 Cocinero
 
@@ -91,7 +89,7 @@ Buenos dias, Sara
 
 **Lo que hace especial su experiencia:** el **modo cocina** a pantalla completa, con letra grande, foto del plato, gramajes, pasos con sus fotos y el truco del jefe, en su idioma y **sin un solo importe**. Se avanza con un gesto o diciendo «siguiente». Y el **modo aprendizaje**: marca «ya la sé» y en su Panel ve cuántas lleva.
 
-**Qué no ve:** **ningún importe.** Ni coste de línea, ni coste total, ni margen, ni precio recomendado. **Esa columna no existe para él**, tampoco en la respuesta del servidor. La pantalla de cocina del TPV es igual: platos, tiempos y notas, sin un precio.
+**Qué no ve:** **ningún importe.** Ni coste de línea, ni coste total, ni margen, ni precio recomendado. **Esa columna no existe para él**, tampoco en la respuesta del servidor.
 
 **Y como el camarero:** ficha, apunta mermas sin ver lo que valen y ve **sus** horas. Las de sus compañeros, no.
 
@@ -105,7 +103,7 @@ No ve costes de materia prima ni escandallos con importes.
 
 **Su Panel:** gasto de cocina contra objetivo, platos bajo objetivo, valor en cámara, caducidades de la semana, pedidos por recibir y APPCC pendiente. Y **la parte de cocina de Pulse**: food cost, mermas y desviación, sin la parte de personal de sala ni la de facturación.
 
-**Y manda los pedidos** (M7). Hacer el borrador y recibir el camión es de cualquiera con Inventario —el cocinero sabe lo que falta y es quien está en la puerta—; **mandarlo al proveedor, o cancelar uno ya mandado, compromete dinero del local** y pide `accion.enviar_pedidos`, que tienen el jefe de cocina, el gerente, el responsable de área, dirección y compras central. Al cocinero no se le esconde el botón: se le dice quién lo manda, y a quien puede le sale como borrador por mandar ([decisión 0032](../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)). Las facturas, lo pactado y la comparativa de precios son de quien ve precios de compra.
+**Y manda los pedidos** (M7). Hacer el borrador y recibir el camión es de cualquiera con Inventario —el cocinero sabe lo que falta y es quien está en la puerta—; **mandarlo al proveedor, o cancelar uno ya mandado, compromete dinero del local** y pide `accion.enviar_pedidos`, que tienen el jefe de cocina, el gerente, el responsable de área, dirección y compras central. Al cocinero no se le esconde el botón: se le dice quién lo manda, y a quien puede le sale como borrador por mandar ([decisión 0032](../../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)). Las facturas, lo pactado y la comparativa de precios son de quien ve precios de compra.
 
 **Manda en:** Inventario entera, Escandallos entera, la parte de cocina de la Carta, el APPCC, el cuadrante de cocina y las fichas de su equipo. Ve los fichajes y las horas **de la cocina** —cocineros y jefes de cocina—, sin lo que cobra nadie.
 
@@ -131,7 +129,7 @@ GESTORIA · Bar Centro
 └─────────────────────────────────────────────┘
 ```
 
-**Solo lectura**, solo de los locales que se le asignen, y con descarga en PDF, CSV y en los formatos de A3, Sage, Contasol y Holded. Si el local cobra con Estook, ve también **sus tickets y facturas** con su estado ante Hacienda, y los descarga.
+**Solo lectura**, solo de los locales que se le asignen, y con descarga en PDF, CSV y en los formatos de A3, Sage, Contasol y Holded.
 
 **No ve** fichas técnicas, ni recetas, ni el chat, ni datos personales del equipo más allá de las horas.
 
@@ -145,7 +143,7 @@ GESTORIA · Bar Centro
 
 ## 1.10 Las horas y lo que cobra cada uno
 
-Dos cosas distintas, con dos reglas distintas ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)). **Las decide la base de datos**, no la pantalla.
+Dos cosas distintas, con dos reglas distintas ([decisión 0025](../../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)). **Las decide la base de datos**, no la pantalla.
 
 | Quien mira                    | Horas y fichajes de                | Lo que cobra                                                                 |
 | ----------------------------- | ---------------------------------- | ---------------------------------------------------------------------------- |
@@ -159,41 +157,9 @@ Dos cosas distintas, con dos reglas distintas ([decisión 0025](../decisiones/00
 
 ## 1.11 Los avisos del Calendario
 
-Los publica quien puede editar el Calendario —gerente, jefes—, y **elige qué roles los ven**: toda la plantilla, solo la cocina, solo la sala. Lo filtra la base de datos, como las horas. Lo que publican los módulos —entregas, caducidades, turnos— lo ve quien ve ese módulo: una entrega, quien lleva compras e inventario; un turno, su dueño y quien lleva a esa persona ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)).
+Los publica quien puede editar el Calendario —gerente, jefes—, y **elige qué roles los ven**: toda la plantilla, solo la cocina, solo la sala. Lo filtra la base de datos, como las horas. Lo que publican los módulos —entregas, caducidades, turnos— lo ve quien ve ese módulo: una entrega, quien lleva compras e inventario; un turno, su dueño y quien lleva a esa persona ([decisión 0031](../../decisiones/0031-el-calendario-recoge-lo-de-todos.md)).
 
 ---
-
-## 1.12 Sala, cocina, cobro y facturas
-
-_Desde la versión 1.2, solo en locales que cobran con Estook. Es la propuesta por defecto: el gerente la ajusta por rol dentro de lo que permite M1, y **la decide la base de datos**, no la pantalla._
-
-| Acción                                            | Camarero                                           | Jefe de sala   | Gerente             | Otros                                                      |
-| ------------------------------------------------- | -------------------------------------------------- | -------------- | ------------------- | ---------------------------------------------------------- |
-| Tomar nota y mandar a cocina                      | Sí                                                 | Sí             | Sí                  | Area manager, dirección                                    |
-| **Marcar un plato agotado**                       | Sí                                                 | Sí             | Sí                  | **Cocinero y jefe de cocina: son los primeros en saberlo** |
-| Quitar un plato **antes** de mandarlo             | Sí                                                 | Sí             | Sí                  |                                                            |
-| Quitar un plato **ya en cocina**                  | Lo pide; lo aprueba un jefe con su PIN             | Sí, con motivo | Sí, con motivo      |                                                            |
-| **Marchar** la siguiente tanda                    | Sí                                                 | Sí             | Sí                  | Jefe de cocina                                             |
-| **Traspasar una mesa** a otro camarero            | La suya                                            | Cualquiera     | Cualquiera          |                                                            |
-| **Marcar un plato listo** en cocina               | No                                                 | No             | Sí                  | Cocinero y jefe de cocina                                  |
-| **Deshacer** un plato marcado, pasado el margen   | No                                                 | No             | Sí                  | Jefe de cocina                                             |
-| Configurar **partidas y pantallas** de cocina     | No                                                 | No             | Sí                  | Jefe de cocina                                             |
-| Invitar o descontar                               | No                                                 | Sí, con motivo | Sí, con motivo      |                                                            |
-| Cobrar                                            | Sí, si el local lo permite (encendido por defecto) | Sí             | Sí                  |                                                            |
-| Factura a petición del cliente (canje del ticket) | No                                                 | Sí             | Sí                  |                                                            |
-| Rectificar o devolver                             | No                                                 | No             | Sí, con motivo      | Area manager, dirección                                    |
-| Anular un documento que nunca debió existir       | No                                                 | No             | Sí, con motivo      | Dirección                                                  |
-| Abrir caja, entradas y salidas, arqueo            | No                                                 | Sí             | Sí                  |                                                            |
-| Alta de facturación y series                      | No                                                 | No             | Sí                  | Dirección, administrador de cuenta                         |
-| Ver tickets y facturas                            | Los suyos del turno                                | Los del local  | Todos los del local | Gestoría, en lectura                                       |
-
-**La autorización ante Hacienda** para que los registros se envíen en nombre del negocio **solo la firma el titular o su representante legal**. Estook guarda quién firmó y cuándo, y no deja firmarla a nadie más aunque tenga el rol de gerente.
-
-**Con qué modo abre cada uno.** El camarero y el jefe de sala entran directamente en **Sala**; el cocinero y el jefe de cocina, en **Cocina**; el gerente, en el **Panel** de siempre. Se sale del modo con un botón, y en quiosco pide PIN. Cada uno puede cambiarlo para sí mismo, salvo que el local lo tenga fijado.
-
-**Cocina:** el cocinero ve la pantalla de cocina sin importes; el jefe de cocina, además, ordena prioridades.
-
-**Fogón**, con cualquier rol, puede explicar un ticket o una factura, pero **nunca emite, anula ni corrige** ninguno, ni lo ofrece como acción de un toque.
 
 # 2 · El area manager
 
@@ -390,7 +356,7 @@ ACCIONES (se crean como tareas con responsable y fecha)
 
 En `estook.com/admin/` (`admin.estook.com` se reconsidera en M27). **Solo para nosotros**, con doble factor obligatorio y sesión de ocho horas. Es lo que nos permite no vender a ciegas.
 
-> **Desde el 16 de septiembre de 2026** ([decisión 0041](../decisiones/0041-el-panel-de-administracion.md)), el detalle de clientes, vendedores y códigos, ventas y auditoría está en **[`docs/panel-de-administracion.md`](../panel-de-administracion.md)**, que manda sobre esta sección donde las dos hablan de lo mismo. Lo que cambia aquí: **ser admin es de la plataforma, no un rol de una organización**; el cliente es la organización que ya existe; y el admin **sí escribe en lo comercial** —contrato, plan, notas— y **nunca en los datos del restaurante** (4.8).
+> **Desde el 16 de septiembre de 2026** ([decisión 0041](../../decisiones/0041-el-panel-de-administracion.md)), el detalle de clientes, vendedores y códigos, ventas y auditoría está en **[`docs/panel-de-administracion.md`](../../panel-de-administracion.md)**, que manda sobre esta sección donde las dos hablan de lo mismo. Lo que cambia aquí: **ser admin es de la plataforma, no un rol de una organización**; el cliente es la organización que ya existe; y el admin **sí escribe en lo comercial** —contrato, plan, notas— y **nunca en los datos del restaurante** (4.8).
 
 ## 4.1 Inicio
 
@@ -456,9 +422,7 @@ Bandeja de incidencias **con contexto** (local, rol, pantalla y última acción,
 
 ## 4.8 Lo que el panel interno no hace
 
-- **No permite escribir en los datos del restaurante** (inventario, compras, personas, horarios, ventas, tickets y facturas).
-- **Nunca toca la facturación de un cliente:** ni edita, ni anula, ni reenvía, ni da de baja su NIF en el proveedor de VeriFactu. Ve el estado de los envíos para dar soporte, y nada más.
-- Lo comercial —contrato, plan y notas— es nuestro y sí se edita, con auditoría (0041).
+- **No permite escribir en los datos del restaurante** (inventario, compras, personas, horarios, ventas). Lo comercial —contrato, plan y notas— es nuestro y sí se edita, con auditoría (0041).
 - No permite ver el chat del equipo de nadie.
 - No permite descargar datos personales de empleados.
 - **No tiene un botón de «entrar como» sin autorización.**

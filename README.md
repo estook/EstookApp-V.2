@@ -103,6 +103,15 @@ las secretas a los secretos de Supabase. Esta todo en
 
 ## Documentos maestros
 
-El Manifiesto (que es el producto), el Plan de desarrollo (como se construye y en
-que orden) y Roles, vistas, auditorias y administracion (que ve cada persona). Si
-algo no esta escrito ahi, se pregunta antes de construirlo.
+Son **seis**, y viven en [`docs/maestros/`](docs/maestros/). El PDF sale con
+`pnpm maestros`. Si algo no esta escrito ahi, se pregunta antes de construirlo.
+
+1. **Evolucion** · hacia donde va y en que orden. Se lee primero.
+2. **Manifiesto** · que es el producto y cuanto cuesta.
+3. **Plan de desarrollo** · como se construye y con que reglas.
+4. **Roles y administracion** · que ve exactamente cada persona.
+5. **Auditoria de flujos** · que desencadena cada cambio. Se pasa antes de cerrar modulo.
+6. **Anexo · TPV y facturacion** · como se cobra y se factura. **Manda** en todo lo que
+   toque sala, cocina, cobro, caja o facturacion.
+
+Las versiones anteriores se guardan en [`docs/antiguos/maestros/`](docs/antiguos/maestros/).

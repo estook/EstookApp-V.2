@@ -10,6 +10,7 @@ import {
   clases,
   comoSeLlamaElModulo,
   destinoPorId,
+  dondeEntraEnElDestino,
   rutaDe,
   type App,
   type Destino,
@@ -76,10 +77,19 @@ export function PantallaDeApp() {
   */
   if (destino === undefined) return <Navigate to={rutaDe(app)} replace />;
 
+  /*
+    La vista que pide la direccion, y si no la nombra o no existe, **la vista de
+    entrada del destino: la primera construida**, no la primera de la lista.
+
+    Aqui se llama a la misma funcion que usa `rutaDe`, y no se repite el criterio:
+    si los dos lo decidieran por su cuenta, la direccion a la que redirige y la
+    vista que se pinta podrian dejar de ser la misma y el navegador se quedaria
+    dando vueltas entre las dos.
+  */
   const vista =
     destino.vistas.length === 0
       ? undefined
-      : (destino.vistas.find((v) => v.id === idDeLaVista) ?? destino.vistas[0]);
+      : (destino.vistas.find((v) => v.id === idDeLaVista) ?? dondeEntraEnElDestino(destino));
 
   // Un destino con vistas siempre tiene una en la direccion: asi el enlace se
   // puede copiar y compartir, y volver atras devuelve a la vista de antes.

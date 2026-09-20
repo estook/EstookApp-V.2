@@ -1,8 +1,8 @@
 ---
 titulo: Auditoría de flujos, dependencias y efectos en cadena
 tipo: Documento de control
-fecha: Septiembre de 2026 · versión 1.2
-nota: Qué dato alimenta a qué, qué desencadena cada cambio, de dónde salen las opciones y qué pasa cuando algo falla. Se pasa entero antes de cerrar cualquier módulo. Documentos hermanos: Evolución, Manifiesto, Plan de desarrollo, Roles y administración y el Anexo de TPV y facturación.
+fecha: Septiembre de 2026 · versión 1.1
+nota: Qué dato alimenta a qué, qué desencadena cada cambio, de dónde salen las opciones y qué pasa cuando algo falla. Se pasa entero antes de cerrar cualquier módulo.
 ---
 
 # Cómo se lee este documento
@@ -12,8 +12,6 @@ Esta auditoría revisa los documentos maestros buscando lo que se acaba improvis
 Las partes 1 a 5 son **referencia de construcción**. La parte 6 son los **hallazgos**, con la decisión tomada en cada uno. La 7 son las decisiones que hay que dejar cerradas. La 8 es la **lista que se pasa antes de cerrar cada módulo**.
 
 **Qué cambia en la versión 1.1.** Recoge la Evolución de producto 1.0: entran los canales de reparto en el mapa de dependencias, cuatro efectos en cadena nuevos, la máquina de estado de una alerta y de un pedido externo, seis hallazgos nuevos (del 13 al 18) y las decisiones de improvisación que traen las integraciones.
-
-**Qué cambia en la versión 1.2.** Estook también cobra. Entran las ventas del TPV de Estook en el mapa, la ficha del **documento de facturación**, siete efectos en cadena (del 2.27 al 2.33), cuatro selectores, seis máquinas de estado, cinco fallos, cuatro hallazgos (del 19 al 22), siete decisiones y la lista de comprobación de **Facturación**.
 
 ---
 
@@ -40,8 +38,7 @@ TIPO IMPOSITIVO ─────────────────┘
 
 OBJETIVO ────────────────▶ SEMAFORO Y AVISO
 
-VENTAS DE ESTOOK ───┐
-VENTAS DEL TPV ─────┤
+VENTAS DEL TPV ─────┐
 VENTAS DE REPARTO ──┼──▶ × GRAMAJE ──▶ CONSUMO TEORICO
                     │                         │
 RECUENTO ───────────┼─────────────────────────┼──▶ DESVIACION
@@ -65,9 +62,7 @@ Para cada uno: **quién lo crea, quién lo consume, qué pasa si falta y qué pa
 
 **PVP Y TIPO IMPOSITIVO.** _Los crea:_ la lista de precios del canal, o la importación del TPV. _Los consumen:_ margen · food cost · análisis de rentabilidad · exportación de la gestoría. _Si falta el tipo:_ se asume el general del régimen del local y se marca para revisar. _Si cambia el PVP:_ **no reescribe el pasado.** Cada línea de venta guarda el precio que tenía ese día. **Trampa conocida:** un solo precio para todos los canales falsea el margen en cuanto hay terraza o reparto.
 
-**VENTAS.** _Las crea:_ el TPV de Estook al cobrar, el conector del TPV, un canal de reparto conectado, un fichero, la foto del Z o el total del día. _Las consume:_ consumo teórico · desviación · análisis de carta · productividad · previsión · Pulse. _Si faltan:_ la jornada se cierra igual, **marcada como estimada**, y no entra en la desviación de género. **Cada origen lleva su fiabilidad y viaja con ella hasta el informe final.** Un número estimado nunca se enseña como si fuera exacto.
-
-**DOCUMENTO DE FACTURACIÓN** (ticket o factura). _Lo crea:_ solo el módulo de facturación (M20B), al cobrar o cuando el cliente pide factura, y solo cuando el proveedor de VeriFactu ha generado su registro. _Lo consume:_ la venta, que nace de él · la caja · Negocio · la gestoría · el cliente. _Si falta:_ no hay cobro cerrado; sin conexión se entrega un justificante provisional y el documento se emite al volver. _Si cambia:_ **no cambia nunca.** Se corrige con otro documento: rectificativa, canje o, si nunca debió existir, anulación. **Trampa conocida:** tratarlo como una venta más y dejar que un recálculo, un reproceso o un arreglo a mano lo toque. **La venta se puede reprocesar; el documento, jamás.**
+**VENTAS.** _Las crea:_ el conector del TPV, un canal de reparto conectado, un fichero, la foto del Z o el total del día. _Las consume:_ consumo teórico · desviación · análisis de carta · productividad · previsión · Pulse. _Si faltan:_ la jornada se cierra igual, **marcada como estimada**, y no entra en la desviación de género. **Cada origen lleva su fiabilidad y viaja con ella hasta el informe final.** Un número estimado nunca se enseña como si fuera exacto.
 
 **RECUENTO.** _Lo crea:_ el inventario físico. _Lo consume:_ desviación · valoración del stock · calibración · food cost real. _Si falta:_ no hay desviación posible, solo teórico. Estook lo dice: «llevas 42 días sin recuento; lo que ves es teórico».
 
@@ -77,18 +72,18 @@ Para cada uno: **quién lo crea, quién lo consume, qué pasa si falta y qué pa
 
 ## 1.3 Qué usa cada app de las demás
 
-| App         | De dónde lee                                  | Qué produce para otras                                                            |
-| ----------- | --------------------------------------------- | --------------------------------------------------------------------------------- |
-| Inventario  | Nada. **Es el origen**                        | Coste por unidad de uso, stock, caducidades, precios, previsión de agotamiento    |
-| Escandallos | Inventario                                    | Coste del plato, alérgenos, nutrición, consumo por venta                          |
-| Carta       | Escandallos                                   | Platos publicados, agotados, precios por canal                                    |
-| Calendario  | Equipo, Inventario, Servicio, Cuaderno        | Turnos publicados, tareas, entregas                                               |
-| Equipo      | Calendario                                    | Horas, coste de personal, quién sabe qué ficha                                    |
-| Servicio    | Escandallos, Carta, Inventario, conectores    | Jornadas, sala y cocina, cobros, tickets y facturas, consumo, APPCC, trazabilidad |
-| Negocio     | Todas                                         | Agregados, desviación, previsión, Pulse, informes                                 |
-| Cuaderno    | Calendario                                    | Incidencias, revisiones de equipos                                                |
-| **Alertas** | **Todas**                                     | **Nada. Es un sumidero, no una fuente**                                           |
-| **Fogón**   | **Todas, con los permisos de quien pregunta** | **Explicaciones y propuestas. Nunca datos nuevos**                                |
+| App         | De dónde lee                                  | Qué produce para otras                                                         |
+| ----------- | --------------------------------------------- | ------------------------------------------------------------------------------ |
+| Inventario  | Nada. **Es el origen**                        | Coste por unidad de uso, stock, caducidades, precios, previsión de agotamiento |
+| Escandallos | Inventario                                    | Coste del plato, alérgenos, nutrición, consumo por venta                       |
+| Carta       | Escandallos                                   | Platos publicados, agotados, precios por canal                                 |
+| Calendario  | Equipo, Inventario, Servicio, Cuaderno        | Turnos publicados, tareas, entregas                                            |
+| Equipo      | Calendario                                    | Horas, coste de personal, quién sabe qué ficha                                 |
+| Servicio    | Escandallos, Inventario, conectores           | Jornadas, consumo, APPCC, trazabilidad                                         |
+| Negocio     | Todas                                         | Agregados, desviación, previsión, Pulse, informes                              |
+| Cuaderno    | Calendario                                    | Incidencias, revisiones de equipos                                             |
+| **Alertas** | **Todas**                                     | **Nada. Es un sumidero, no una fuente**                                        |
+| **Fogón**   | **Todas, con los permisos de quien pregunta** | **Explicaciones y propuestas. Nunca datos nuevos**                             |
 
 > **Regla que evita el desastre: las flechas van en un solo sentido.** La Carta lee de Escandallos y nunca escribe en ella. Escandallos lee de Inventario y nunca escribe en él. Si alguna vez hace falta lo contrario, es una **operación explícita** —«dar de alta este ingrediente en Inventario»— y no un efecto lateral.
 >
@@ -379,132 +374,36 @@ El reloj, a la hora de corte de cada local
 
 **NO se toca:** la posición del local si se puso a mano, sin preguntar. Y abrir una pantalla no llama a Google nunca.
 
-## 2.27 Se manda una tanda a cocina
-
-```
-El camarero manda la tanda
-├─ cada linea va a SU PARTIDA, heredada de su seccion de carta
-│   └─ sin partida: sale en TODAS y en la lista de fallos. Nunca se pierde
-├─ si la mesa tiene aviso de alergia y el plato lo lleva:
-│   ├─ la sala avisa ANTES de mandarlo
-│   └─ la comanda sale marcada en cocina y no se cierra sin confirmar
-├─ cada pantalla de cocina ve lo suyo; el pase ve el pedido entero
-├─ arranca el reloj de cada plato, con los minutos que puso el local
-├─ se deja un trabajo en la cola de impresion, si el local imprime
-└─ NO se toca el stock: descuenta al cerrarse la venta (2.29)
-```
-
-**NO se toca:** el inventario, la caja ni nada fiscal. Una comanda no es una venta.
-
-## 2.28 Se marca un plato listo
-
-```
-El cocinero lo marca
-├─ el pase lo ve, y cuando estan todas las partidas marca el pedido
-├─ la sala recibe el aviso
-├─ se guarda el tiempo real del plato → ficha de M9 y analitica de M21
-└─ dentro de un margen corto se puede deshacer; despues, solo un jefe
-```
-
-## 2.29 Se cobra una mesa con el TPV de Estook
-
-```
-Cobrar → forma de pago (efectivo, datafono, mixto) y, si se divide, cada parte
-├─ facturacion emite el ticket (F2): numero de su serie, registro y QR
-│   └─ sin conexion: justificante provisional y venta pendiente de ticket
-├─ se imprime el ticket con su QR y la leyenda
-├─ la cuenta queda cobrada y la mesa libre
-├─ la caja suma el cobro en su forma de pago
-├─ evento venta.cerrada → M20 descuenta el genero con la ficha vigente ese dia
-├─ Negocio › Ventas y el cierre de caja lo leen, con origen «TPV de Estook»
-└─ minutos despues, Hacienda responde → estado del registro
-```
-
-**NO se toca:** nada ya emitido. Si Hacienda rechaza el registro, se corrige con otro documento.
-
-## 2.30 El cliente pide factura
-
-```
-Desde su ticket → datos del cliente (nombre o razon social, NIF, domicilio)
-├─ se emite una factura completa que sustituye al ticket (F3), en su serie
-├─ el ticket queda marcado como canjeado: no se canjea dos veces
-├─ el importe es el del ticket
-└─ se imprime o se manda por correo (PDF del servidor)
-```
-
-**NO se toca:** el ticket original, el stock ni la caja.
-
-## 2.31 Se devuelve algo ya cobrado
-
-```
-Rectificativa del ticket (R5), en la serie de rectificativas, con su registro
-├─ caja: salida de dinero con motivo
-├─ ventas: la linea queda devuelta
-└─ inventario: vuelve al libro solo si el genero vuelve (lo dice quien devuelve)
-```
-
-**NO se toca:** el ticket original.
-
-## 2.32 Se cae internet en pleno servicio
-
-```
-La sala sigue tomando nota en el aparato
-├─ la pantalla de cocina no recibe hasta que vuelve la red: la sala lo ve avisado
-├─ al cobrar: justificante provisional, que dice que no es factura y como pedirla
-├─ la venta queda pendiente de ticket, en el orden del cobro
-└─ al volver: los tickets pendientes se emiten en orden, marcados como incidencia,
-   con la fecha de operacion real si ha pasado mas de un dia
-```
-
-**NO se toca:** ningún número se reserva a mano. **[VERIFICAR con el asesor el texto del justificante provisional.]**
-
-## 2.33 Hacienda no responde, o rechaza
-
-```
-No responde: el proveedor reintenta. En el local no cambia nada y se sigue cobrando
-Rechaza:     aviso al gerente con el motivo en cristiano y la correccion que toca
-             └─ la correccion es otro documento; el rechazado conserva su numero
-```
-
 ---
 
 # 3 · De dónde salen las opciones
 
 Cada desplegable de la aplicación, con su fuente, su orden y su estado vacío. **Sin esta tabla, quien construya se inventará una fuente distinta en cada pantalla.**
 
-| Selector                               | De dónde salen                                                      | Orden                                                       | Si está vacío                                                          |
-| -------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Producto (en una ficha)                | Productos activos del local                                         | Los más usados en fichas primero                            | «No tienes productos. Búscalo en el catálogo de referencia o créalo»   |
-| Producto (en un pedido)                | Productos del proveedor elegido, luego el resto                     | Los que compras a ese proveedor primero                     | «Este proveedor no tiene productos asignados aún»                      |
-| Proveedor                              | Proveedores activos del local                                       | Por uso reciente                                            | «Crea tu primer proveedor», con el botón                               |
-| Categoría de producto                  | Categorías del local, sembradas por tipo de local                   | Alfabético, con las usadas arriba                           | Nunca vacío: vienen de serie                                           |
-| Unidad de uso                          | Lista cerrada: g · ml · ud · kg · l                                 | Fijo                                                        | Nunca vacío                                                            |
-| Alérgeno                               | Los 14 oficiales de la normativa                                    | Fijo, con icono                                             | Nunca vacío                                                            |
-| Motivo de merma                        | Lista cerrada de ocho, cada uno con su partida                      | Fijo: de lo más normal a «otra cosa», que obliga a escribir | Nunca vacío                                                            |
-| Por qué sale (el −)                    | Gastado o vendido, los motivos de merma, a otro local, otra cosa    | Fijo, lo más normal primero                                 | Nunca vacío                                                            |
-| TPV (en «Tus ventas»)                  | Lista fija de los más comunes, y «Otro»                             | Fijo                                                        | Nunca vacío. **No promete conexión**                                   |
-| Plato (en la carta)                    | Platos activos de Escandallos                                       | Los no colocados aún primero                                | «Crea tu primer plato o conecta tu TPV»                                |
-| Sección de carta                       | Secciones de esa carta                                              | El orden que tienen                                         | «Crea la primera sección»                                              |
-| Canal                                  | Canales activos del local                                           | Fijo                                                        | Nunca vacío: sala viene de serie                                       |
-| Persona (en un turno)                  | Personas activas con acceso a ese local                             | Disponibles primero, luego las que tienen conflicto         | «Invita a tu equipo»                                                   |
-| Puesto                                 | Puestos del local                                                   | Por uso                                                     | Sembrados por tipo de local                                            |
-| Tipo de ausencia                       | Lista cerrada                                                       | Fijo                                                        | Nunca vacío                                                            |
-| Punto de APPCC                         | Puntos del plan vigente                                             | El orden del plan                                           | «Monta tu plan de APPCC», con plantilla                                |
-| Plantilla de documento                 | Las del tipo de documento                                           | Recomendada primero                                         | Nunca vacío                                                            |
-| Plantilla de auditoría                 | Las de la organización, más las de serie                            | Por uso                                                     | Las de serie                                                           |
-| Local (en el selector)                 | Locales visibles de esa persona                                     | El último usado primero                                     | No aparece si solo tiene uno                                           |
-| TPV (al conectar)                      | Lista de conectores soportados                                      | Los más usados primero, con buscador y «el mío no está»     | Nunca vacío                                                            |
-| **Integración (al conectar)**          | **Catálogo de integraciones, con su estado real**                   | **Disponibles primero, luego próximamente, luego manual**   | **Nunca vacío**                                                        |
-| Equipo (en mantenimiento)              | Equipos del local                                                   | Por próxima revisión                                        | «Da de alta tu primera cámara»                                         |
-| **Mesa**                               | **Mesas activas de la zona**                                        | **El plano del local**                                      | **«Monta tu sala», con plantilla**                                     |
-| **Forma de pago**                      | **Lista cerrada: efectivo, tarjeta (datáfono), mixto, otros**       | **Fijo**                                                    | **Nunca vacío**                                                        |
-| **Motivo (quitar, invitar, devolver)** | **Lista cerrada por acción, con «otra cosa» que obliga a escribir** | **Fijo**                                                    | **Nunca vacío**                                                        |
-| **Serie de facturación**               | **Series del local para ese tipo de documento**                     | **Fijo**                                                    | **No se puede cobrar: lleva al alta de facturación**                   |
-| **Impresora (de una sección)**         | **Impresoras del local, sea cual sea su agente**                    | **Por uso**                                                 | **«No tienes impresoras. Usa la pantalla de cocina o da una de alta»** |
-| **Partida de cocina**                  | **Lista del local, sembrada por tipo de local**                     | **El orden del pase**                                       | **Nunca vacío: fría, caliente y postres vienen de serie**              |
-| **Tanda**                              | **Lista del local: entrantes, principales, postres y las suyas**    | **El orden del servicio**                                   | **Nunca vacío**                                                        |
-| **Comensal (al tomar nota)**           | **Del 1 al número de comensales de la mesa, más «sin asignar»**     | **Fijo**                                                    | **Nunca vacío: «sin asignar» siempre está**                            |
-| **Alérgeno (aviso de mesa)**           | **Los 14 oficiales**                                                | **Fijo, con icono**                                         | **Nunca vacío**                                                        |
+| Selector                      | De dónde salen                                                   | Orden                                                       | Si está vacío                                                        |
+| ----------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------- |
+| Producto (en una ficha)       | Productos activos del local                                      | Los más usados en fichas primero                            | «No tienes productos. Búscalo en el catálogo de referencia o créalo» |
+| Producto (en un pedido)       | Productos del proveedor elegido, luego el resto                  | Los que compras a ese proveedor primero                     | «Este proveedor no tiene productos asignados aún»                    |
+| Proveedor                     | Proveedores activos del local                                    | Por uso reciente                                            | «Crea tu primer proveedor», con el botón                             |
+| Categoría de producto         | Categorías del local, sembradas por tipo de local                | Alfabético, con las usadas arriba                           | Nunca vacío: vienen de serie                                         |
+| Unidad de uso                 | Lista cerrada: g · ml · ud · kg · l                              | Fijo                                                        | Nunca vacío                                                          |
+| Alérgeno                      | Los 14 oficiales de la normativa                                 | Fijo, con icono                                             | Nunca vacío                                                          |
+| Motivo de merma               | Lista cerrada de ocho, cada uno con su partida                   | Fijo: de lo más normal a «otra cosa», que obliga a escribir | Nunca vacío                                                          |
+| Por qué sale (el −)           | Gastado o vendido, los motivos de merma, a otro local, otra cosa | Fijo, lo más normal primero                                 | Nunca vacío                                                          |
+| TPV (en «Tus ventas»)         | Lista fija de los más comunes, y «Otro»                          | Fijo                                                        | Nunca vacío. **No promete conexión**                                 |
+| Plato (en la carta)           | Platos activos de Escandallos                                    | Los no colocados aún primero                                | «Crea tu primer plato o conecta tu TPV»                              |
+| Sección de carta              | Secciones de esa carta                                           | El orden que tienen                                         | «Crea la primera sección»                                            |
+| Canal                         | Canales activos del local                                        | Fijo                                                        | Nunca vacío: sala viene de serie                                     |
+| Persona (en un turno)         | Personas activas con acceso a ese local                          | Disponibles primero, luego las que tienen conflicto         | «Invita a tu equipo»                                                 |
+| Puesto                        | Puestos del local                                                | Por uso                                                     | Sembrados por tipo de local                                          |
+| Tipo de ausencia              | Lista cerrada                                                    | Fijo                                                        | Nunca vacío                                                          |
+| Punto de APPCC                | Puntos del plan vigente                                          | El orden del plan                                           | «Monta tu plan de APPCC», con plantilla                              |
+| Plantilla de documento        | Las del tipo de documento                                        | Recomendada primero                                         | Nunca vacío                                                          |
+| Plantilla de auditoría        | Las de la organización, más las de serie                         | Por uso                                                     | Las de serie                                                         |
+| Local (en el selector)        | Locales visibles de esa persona                                  | El último usado primero                                     | No aparece si solo tiene uno                                         |
+| TPV (al conectar)             | Lista de conectores soportados                                   | Los más usados primero, con buscador y «el mío no está»     | Nunca vacío                                                          |
+| **Integración (al conectar)** | **Catálogo de integraciones, con su estado real**                | **Disponibles primero, luego próximamente, luego manual**   | **Nunca vacío**                                                      |
+| Equipo (en mantenimiento)     | Equipos del local                                                | Por próxima revisión                                        | «Da de alta tu primera cámara»                                       |
 
 **Tres reglas para todos:**
 
@@ -520,30 +419,23 @@ Y una cuarta que la Evolución añade:
 
 # 4 · Estados y transiciones
 
-Una entidad sin máquina de estado escrita **acaba con estados imposibles**. Estas son las veinte que importan.
+Una entidad sin máquina de estado escrita **acaba con estados imposibles**. Estas son las trece que importan.
 
-| Entidad                        | Estados                                                                                                                                                                                                                                   |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Producto**                   | `activo → desactivado → activo`. Nunca borrado. Desactivar exige confirmar si está en fichas                                                                                                                                              |
-| **Pedido a proveedor**         | `borrador → enviado → recibido \| recibido con incidencias \| cancelado`. Desde recibido no se vuelve atrás: se corrige con un ajuste o con un abono                                                                                      |
-| **Ficha técnica**              | `borrador → publicada → versión nueva`. **Una versión publicada no se edita jamás**: se crea otra. `archivada` solo si el plato se retira                                                                                                 |
-| **Recuento**                   | `abierto → cerrado`. Cerrado no se edita. Corregir es un ajuste posterior con motivo                                                                                                                                                      |
-| **Turno**                      | `borrador → publicado → modificado → cumplido \| no cubierto`. **Publicado es el punto sin retorno**: a partir de ahí, todo cambio avisa                                                                                                  |
-| **Jornada**                    | `abierta → cerrada → reabierta → cerrada`. Reabrir exige motivo y queda en auditoría                                                                                                                                                      |
-| **Fichaje**                    | `abierto → cerrado → corregido`. **Uno abierto por persona**. No se borra: se corrige con nombre y motivo, y la auditoría guarda el antes y el después                                                                                    |
-| **Cierre de caja**             | `sin cerrar → cerrado → corregido`. Uno por local y día: cerrarlo otra vez lo corrige. Guarda su origen: a mano, CSV, foto o TPV                                                                                                          |
-| **Registro de APPCC**          | `pendiente → registrado \| fuera de rango → con acción correctiva`. **Fuera de rango sin acción correctiva no es un estado final válido**: bloquea el cierre                                                                              |
-| **Visita de auditoría**        | `programada → en curso → cerrada → con acciones pendientes → resuelta`                                                                                                                                                                    |
-| **Suscripción**                | `prueba → activa → impago → solo lectura → archivada`, y desde cualquiera de vuelta a activa pagando                                                                                                                                      |
-| **Alerta**                     | `viva → pospuesta → cerrada → viva otra vez si el dato cambia`. Una alerta cerrada no revive sola                                                                                                                                         |
-| **Pedido de un canal externo** | `recibido → aceptado \| rechazado → en preparación → listo → entregado \| cancelado`. **El paso de `recibido` a `aceptado` o `rechazado` tiene plazo**, y si se pasa lo decide la plataforma, no nosotros                                 |
-| **Cuenta de mesa**             | `abierta → pidió la cuenta → cobrada`, o `abierta → cerrada sin cobro` con motivo y permiso. **Cobrada no se reabre**: lo que haya que cambiar va por rectificativa                                                                       |
-| **Línea de comanda**           | `pedida → en cocina → lista → servida`, o `quitada` con autor y motivo. Quitarla después de mandarla pide permiso, y cocina lo ve. **De `lista` se puede volver a `en cocina` dentro de un margen corto**; pasado el margen, solo un jefe |
-| **Tanda de una mesa**          | `pendiente → marchada → en cocina → lista → servida`. Se marcha a mano, al retirar la anterior o por tiempo. **Una tanda sin marchar se ve en cocina en espera**, no desaparece                                                           |
-| **Documento de facturación**   | `emitido`, y es final. Su registro ante Hacienda: `pendiente → aceptado \| aceptado con errores \| rechazado`, y los dos últimos se resuelven con **otro** documento                                                                      |
-| **Venta pendiente de ticket**  | `pendiente → emitida con incidencia`. Solo existe si no hubo conexión al cobrar                                                                                                                                                           |
-| **Alta de facturación**        | `sin empezar → datos fiscales → NIF dado de alta → autorización firmada → activa`, y `pausada` si la cuenta de Estook pasa a solo lectura: no se emite, **no se borra nada**                                                              |
-| **Sesión de caja**             | `abierta → arqueada → cerrada`. El descuadre se guarda, no bloquea                                                                                                                                                                        |
+| Entidad                        | Estados                                                                                                                                                                                                   |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Producto**                   | `activo → desactivado → activo`. Nunca borrado. Desactivar exige confirmar si está en fichas                                                                                                              |
+| **Pedido a proveedor**         | `borrador → enviado → recibido \| recibido con incidencias \| cancelado`. Desde recibido no se vuelve atrás: se corrige con un ajuste o con un abono                                                      |
+| **Ficha técnica**              | `borrador → publicada → versión nueva`. **Una versión publicada no se edita jamás**: se crea otra. `archivada` solo si el plato se retira                                                                 |
+| **Recuento**                   | `abierto → cerrado`. Cerrado no se edita. Corregir es un ajuste posterior con motivo                                                                                                                      |
+| **Turno**                      | `borrador → publicado → modificado → cumplido \| no cubierto`. **Publicado es el punto sin retorno**: a partir de ahí, todo cambio avisa                                                                  |
+| **Jornada**                    | `abierta → cerrada → reabierta → cerrada`. Reabrir exige motivo y queda en auditoría                                                                                                                      |
+| **Fichaje**                    | `abierto → cerrado → corregido`. **Uno abierto por persona**. No se borra: se corrige con nombre y motivo, y la auditoría guarda el antes y el después                                                    |
+| **Cierre de caja**             | `sin cerrar → cerrado → corregido`. Uno por local y día: cerrarlo otra vez lo corrige. Guarda su origen: a mano, CSV, foto o TPV                                                                          |
+| **Registro de APPCC**          | `pendiente → registrado \| fuera de rango → con acción correctiva`. **Fuera de rango sin acción correctiva no es un estado final válido**: bloquea el cierre                                              |
+| **Visita de auditoría**        | `programada → en curso → cerrada → con acciones pendientes → resuelta`                                                                                                                                    |
+| **Suscripción**                | `prueba → activa → impago → solo lectura → archivada`, y desde cualquiera de vuelta a activa pagando                                                                                                      |
+| **Alerta**                     | `viva → pospuesta → cerrada → viva otra vez si el dato cambia`. Una alerta cerrada no revive sola                                                                                                         |
+| **Pedido de un canal externo** | `recibido → aceptado \| rechazado → en preparación → listo → entregado \| cancelado`. **El paso de `recibido` a `aceptado` o `rechazado` tiene plazo**, y si se pasa lo decide la plataforma, no nosotros |
 
 > **Regla general:** toda transición registra **quién, cuándo y desde dónde**. Y **ningún estado final se puede editar**: se corrige creando algo nuevo que lo enmiende.
 
@@ -553,39 +445,31 @@ Una entidad sin máquina de estado escrita **acaba con estados imposibles**. Est
 
 Los fallos parciales son los que hunden la confianza, **porque el usuario no sabe si su trabajo se ha guardado**. Para cada uno: qué pasa por dentro y qué ve exactamente.
 
-| Fallo                                     | Qué hace el sistema                                      | Qué ve el usuario                                                                   |
-| ----------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Se cae la red al guardar una ficha        | Se guarda en local y se reintenta                        | «Guardado en tu móvil. Se subirá al recuperar señal.» Sin perder nada               |
-| La foto del albarán se lee mal            | Se guarda la foto y lo que sí ha entendido               | Pantalla de repaso con lo dudoso en amarillo: «he leído 14 líneas, revisa estas 3»  |
-| El albarán trae un producto desconocido   | No se descarta                                           | «No conozco Aceite AOVE 5L. ¿Es tu aceite de oliva o es nuevo?»                     |
-| El TPV manda un artículo sin emparejar    | Entra la venta en dinero, no descuenta género            | Aviso en Servicio y contador en el Panel                                            |
-| El fichero del TPV cambia de formato      | Se guarda el original y no se procesa                    | «El fichero no tiene el formato de siempre. Lo he guardado.» Y aviso interno        |
-| El recuento se queda a medias             | Se conserva como abierto con lo contado                  | «Tienes un recuento a medias del martes, ¿sigues o lo descartas?»                   |
-| Dos personas editan la misma ficha        | Gana quien guarda primero                                | Al segundo: qué ha cambiado y opción de fusionar. **Nunca se pisa en silencio**     |
-| Se agotan los créditos de Fogón           | Se pausa **solo** lo que llama al modelo                 | «Has usado tus 300 créditos. Los avisos y los cálculos siguen funcionando.»         |
-| Falla la generación de un PDF             | Se reintenta una vez y se guarda la receta               | «No he podido generarlo. Reintentar / avisar», sin perder la configuración          |
-| Google Places no responde                 | Se usa lo guardado                                       | La sección enseña la fecha del último dato, **sin error rojo**                      |
-| Se sube un CSV con columnas raras         | Se propone el mapeo y se pide confirmar                  | Pantalla de emparejar columnas con vista previa de 5 filas                          |
-| El correo de invitación no llega          | El PIN sigue siendo válido                               | «Puedes darle el PIN en mano», con el código y botón de reenviar                    |
-| La foto pesa 8 MB                         | Se reduce antes de subir                                 | Barra de progreso, y nada más                                                       |
-| Alguien intenta ver otro local            | `403` en el servidor                                     | «No tienes acceso a ese local» y vuelta a lo suyo                                   |
-| **Un webhook de reparto llega dos veces** | **Se descarta por identificador de pedido**              | **Nada. Es lo correcto: el usuario no tiene que enterarse**                         |
-| **Un webhook llega con la firma mal**     | **Se descarta y se registra el intento**                 | **Nada en el local. Aviso interno a nosotros**                                      |
-| **No se acepta un pedido a tiempo**       | **La plataforma lo cancela. Se registra con su motivo**  | **«Este pedido se canceló por tiempo», con la hora exacta**                         |
-| **La API del canal de reparto cae**       | **Se encola y se reintenta con espera creciente**        | **Estado de la integración en amarillo, con la última sincronización**              |
-| **Fogón propone un horario imposible**    | **Se entrega igual, con los huecos señalados**           | **«Falta 1 camarero el miércoles de 20:00 a 22:00», antes de publicar**             |
-| No hay ubicación al fichar                | Se ficha igual y se guarda por qué no la hay             | «Entrada apuntada». En su ficha: «sin ubicación», con el motivo                     |
-| El Panel no se ha podido guardar          | Lo pendiente se queda en la pantalla                     | «No se ha guardado el Panel», en rojo, con «Reintentar»                             |
-| Un CSV de cierre trae filas raras         | Se lee lo que se entiende y se cuenta lo que no          | «Hay filas que no he entendido», con cuáles. Lo demás, ya rellenado                 |
-| El desglose de la caja no suma el total   | Se guarda lo que se escribió                             | Una nota con la diferencia, sin bloquear el cierre                                  |
-| **Se cae internet al cobrar**             | **Justificante provisional y venta pendiente de ticket** | **«Sin conexión: se entrega justificante. El ticket saldrá solo al volver la red»** |
-| **El proveedor rechaza los datos (400)**  | **No se emite nada y la mesa sigue abierta**             | **Qué dato falla, en cristiano, y cómo arreglarlo**                                 |
-| **Hacienda rechaza un registro**          | **El documento queda emitido con su número**             | **Aviso al gerente con el motivo y el botón de la corrección que toca**             |
-| **Hacienda no responde**                  | **El proveedor reintenta**                               | **Nada en sala. Si pasa de una hora, aviso al gerente**                             |
-| **La impresora de tickets no responde**   | **El ticket ya está emitido; se reintenta**              | **«Ticket emitido, no impreso»: reimprimir o mandar por correo**                    |
-| **Un plato no tiene partida asignada**    | **Sale en todas las pantallas de cocina**                | **Aparece en «platos sin partida», para arreglarlo. Nunca se pierde un plato**      |
-| **Se marca un plato listo por error**     | **Se puede deshacer dentro de un margen corto**          | **Botón de deshacer con su cuenta atrás. Después, lo desmarca un jefe**             |
-| **Cae la red entre sala y cocina**        | **La comanda se queda en el aparato y sube al volver**   | **En sala, avisado: «la cocina todavía no lo tiene». Con Enlace, el papel sí sale** |
+| Fallo                                     | Qué hace el sistema                                     | Qué ve el usuario                                                                  |
+| ----------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Se cae la red al guardar una ficha        | Se guarda en local y se reintenta                       | «Guardado en tu móvil. Se subirá al recuperar señal.» Sin perder nada              |
+| La foto del albarán se lee mal            | Se guarda la foto y lo que sí ha entendido              | Pantalla de repaso con lo dudoso en amarillo: «he leído 14 líneas, revisa estas 3» |
+| El albarán trae un producto desconocido   | No se descarta                                          | «No conozco Aceite AOVE 5L. ¿Es tu aceite de oliva o es nuevo?»                    |
+| El TPV manda un artículo sin emparejar    | Entra la venta en dinero, no descuenta género           | Aviso en Servicio y contador en el Panel                                           |
+| El fichero del TPV cambia de formato      | Se guarda el original y no se procesa                   | «El fichero no tiene el formato de siempre. Lo he guardado.» Y aviso interno       |
+| El recuento se queda a medias             | Se conserva como abierto con lo contado                 | «Tienes un recuento a medias del martes, ¿sigues o lo descartas?»                  |
+| Dos personas editan la misma ficha        | Gana quien guarda primero                               | Al segundo: qué ha cambiado y opción de fusionar. **Nunca se pisa en silencio**    |
+| Se agotan los créditos de Fogón           | Se pausa **solo** lo que llama al modelo                | «Has usado tus 300 créditos. Los avisos y los cálculos siguen funcionando.»        |
+| Falla la generación de un PDF             | Se reintenta una vez y se guarda la receta              | «No he podido generarlo. Reintentar / avisar», sin perder la configuración         |
+| Google Places no responde                 | Se usa lo guardado                                      | La sección enseña la fecha del último dato, **sin error rojo**                     |
+| Se sube un CSV con columnas raras         | Se propone el mapeo y se pide confirmar                 | Pantalla de emparejar columnas con vista previa de 5 filas                         |
+| El correo de invitación no llega          | El PIN sigue siendo válido                              | «Puedes darle el PIN en mano», con el código y botón de reenviar                   |
+| La foto pesa 8 MB                         | Se reduce antes de subir                                | Barra de progreso, y nada más                                                      |
+| Alguien intenta ver otro local            | `403` en el servidor                                    | «No tienes acceso a ese local» y vuelta a lo suyo                                  |
+| **Un webhook de reparto llega dos veces** | **Se descarta por identificador de pedido**             | **Nada. Es lo correcto: el usuario no tiene que enterarse**                        |
+| **Un webhook llega con la firma mal**     | **Se descarta y se registra el intento**                | **Nada en el local. Aviso interno a nosotros**                                     |
+| **No se acepta un pedido a tiempo**       | **La plataforma lo cancela. Se registra con su motivo** | **«Este pedido se canceló por tiempo», con la hora exacta**                        |
+| **La API del canal de reparto cae**       | **Se encola y se reintenta con espera creciente**       | **Estado de la integración en amarillo, con la última sincronización**             |
+| **Fogón propone un horario imposible**    | **Se entrega igual, con los huecos señalados**          | **«Falta 1 camarero el miércoles de 20:00 a 22:00», antes de publicar**            |
+| No hay ubicación al fichar                | Se ficha igual y se guarda por qué no la hay            | «Entrada apuntada». En su ficha: «sin ubicación», con el motivo                    |
+| El Panel no se ha podido guardar          | Lo pendiente se queda en la pantalla                    | «No se ha guardado el Panel», en rojo, con «Reintentar»                            |
+| Un CSV de cierre trae filas raras         | Se lee lo que se entiende y se cuenta lo que no         | «Hay filas que no he entendido», con cuáles. Lo demás, ya rellenado                |
+| El desglose de la caja no suma el total   | Se guarda lo que se escribió                            | Una nota con la diferencia, sin bloquear el cierre                                 |
 
 **Tres reglas de error, para todos:**
 
@@ -597,7 +481,7 @@ Los fallos parciales son los que hunden la confianza, **porque el usuario no sab
 
 # 6 · Hallazgos de la auditoría
 
-Veintidós puntos que, tal y como estaban escritos, habrían obligado a improvisar. **Cada uno con su decisión.**
+Dieciocho puntos que, tal y como estaban escritos, habrían obligado a improvisar. **Cada uno con su decisión.**
 
 **1 · El stock mínimo estaba a mano y no debería.** Escribir «8 kg» en cada producto es un trabajo que nadie hace y que envejece mal. **Decisión:** se calcula. `consumo medio diario × días hasta el próximo reparto + 20 % de seguridad`, recalculado cada semana. Se puede fijar a mano, y entonces se respeta y se marca como manual.
 
@@ -613,7 +497,7 @@ Veintidós puntos que, tal y como estaban escritos, habrían obligado a improvis
 
 **7 · «Agotado» y «sin stock» se confundían.** **Decisión:** son dos marcas independientes. Agotado lo pone una persona y afecta a la carta. Sin stock lo calcula el sistema y afecta a los avisos. **Un plato puede estar agotado con la cámara llena.**
 
-**8 · Faltaba decidir qué manda entre albarán y factura.** **Decisión:** el albarán mueve stock en el momento; **la factura confirma el precio** y, si difiere, abre vigencia nueva. **Corregido en M7** ([decisión 0032](../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)): la vigencia nueva vale **desde hoy**, porque el libro no se reescribe; lo que dice la factura se guarda en la línea del albarán **con su fecha**, y M9 recalcula con eso lo que costaron los platos de esos días. La factura que no cuadra no se bloquea: queda conciliada con la diferencia señalada.
+**8 · Faltaba decidir qué manda entre albarán y factura.** **Decisión:** el albarán mueve stock en el momento; **la factura confirma el precio** y, si difiere, abre vigencia nueva. **Corregido en M7** ([decisión 0032](../../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)): la vigencia nueva vale **desde hoy**, porque el libro no se reescribe; lo que dice la factura se guarda en la línea del albarán **con su fecha**, y M9 recalcula con eso lo que costaron los platos de esos días. La factura que no cuadra no se bloquea: queda conciliada con la diferencia señalada.
 
 **9 · No estaba escrito el orden de los recálculos.** **Decisión:** el recálculo va siempre en el mismo orden —**precio, elaboración, plato, margen, aviso**— y se hace en cola por producto, así que dos cambios seguidos producen el mismo resultado que uno tras otro.
 
@@ -636,16 +520,6 @@ Veintidós puntos que, tal y como estaban escritos, habrían obligado a improvis
 **17 · No estaba escrito qué pasa cuando Fogón propone algo y nadie lo mira.** **Decisión:** una propuesta de Fogón —horario, menú, precio, pedido, respuesta a reseña— **es siempre un borrador con caducidad**. Si nadie la aprueba, caduca y se registra que caducó. Nunca se aplica sola, y nunca se queda viva para siempre ensuciando la pantalla.
 
 **18 · Faltaba decir qué pasa si un componente de Pulse no tiene datos.** **Decisión:** el componente sin datos **no cuenta como cero**: se excluye y se reparte su peso entre los demás, y Pulse dice cuántos componentes está usando. Contar como cero castigaría a un local recién dado de alta por no tener aún un recuento, que es exactamente lo contrario de lo que se quiere.
-
-## Los cuatro que trae la versión 1.2
-
-**19 · Estook pasaba a emitir tickets sin estar escrito qué es intocable.** **Decisión:** regla 15 del Plan y principio 17 del Manifiesto. La facturación vive en su propio esquema, solo de inserción, y ni una migración, ni un script, ni el panel interno pueden tocar un documento emitido.
-
-**20 · La venta y el documento se podían confundir.** Son dos cosas. **Decisión:** la venta es operativa y se puede reprocesar —emparejar tarde, corregir un escandallo—; el documento no cambia nunca. La venta apunta al documento; el documento no depende de la venta.
-
-**21 · Sin conexión no había salida legal.** **Decisión:** se sigue cobrando con un **justificante provisional** que dice que no es factura y cómo pedirla, y al volver se emiten los tickets pendientes en orden y marcados como incidencia. **[VERIFICAR con el asesor.]**
-
-**22 · El camarero no veía ventas, y ahora cobra.** **Decisión:** ve el precio de venta de lo que sirve, el total de sus mesas y sus cobros del turno. Nunca costes, márgenes ni el total del local.
 
 ---
 
@@ -678,13 +552,6 @@ Cosas que quien construya **va a tener que decidir sí o sí**, y que por tanto 
 | **¿Se acepta un pedido automáticamente?**                            | **Es una opción del local, apagada por defecto**, y con su registro. Nunca la decide Fogón                                                                                                                 |
 | **¿Qué manda si el TPV y el canal de reparto traen la misma venta?** | **El canal, para su propio pedido.** Se descarta el duplicado por identificador y se avisa una vez, no cada día                                                                                            |
 | **¿La API pública puede saltarse un permiso?**                       | **No.** Pasa por los mismos comandos, los mismos permisos y la misma auditoría. Un tercero nunca ve más que quien autorizó la conexión                                                                     |
-| **¿Se puede editar o borrar un ticket o una factura?**               | **No, nunca, desde ningún sitio.** Se corrige con otro documento                                                                                                                                           |
-| **¿Cuándo se asigna el número de un ticket?**                        | Cuando el proveedor de VeriFactu devuelve 200. Si devuelve error, el número no se consume                                                                                                                  |
-| **¿Quién calcula la huella y encadena?**                             | **El proveedor.** Estook guarda lo que devuelve: identificador, QR, huella y estado. Nunca calcula una segunda cadena                                                                                      |
-| **¿Se puede cobrar sin conexión?**                                   | Sí, con justificante provisional. El ticket se emite al volver, en orden y con incidencia                                                                                                                  |
-| **¿La hora de un documento la pone quién?**                          | El servidor, y la del registro, el proveedor. **Nunca el aparato**                                                                                                                                         |
-| **¿Descuenta stock una mesa abierta?**                               | **No.** Descuenta al cerrarse la venta                                                                                                                                                                     |
-| **¿Fogón puede emitir, anular o corregir un documento?**             | **No.** Ni proponerlo como acción de un toque                                                                                                                                                              |
 
 ---
 
@@ -750,34 +617,3 @@ Al cerrar cada módulo se comprueban las que apliquen. **Cada línea es una prue
 - Si la API del canal cae, se encola y se reintenta sin perder nada.
 - Un pedido externo **no crea productos ni platos**.
 - Añadir un canal nuevo es escribir un adaptador, **no tocar el núcleo**.
-
-## Sala y cocina
-
-- Un plato sin partida sale en **todas** las pantallas y en la lista de fallos.
-- Cada pantalla de cocina enseña **solo** las partidas que tiene configuradas.
-- Marchar desde sala llega a cocina en menos de 2 segundos.
-- Un plato marcado listo se puede deshacer dentro del margen; fuera del margen, solo un jefe.
-- Una mesa con aviso de alergia **avisa en sala antes de mandar** el plato que la lleva, y sale marcado en cocina.
-- Se vende en barra sin abrir mesa, y se cobra en el mismo gesto.
-- Se traspasa una mesa abierta a otro camarero y las ventas quedan a nombre del nuevo.
-- Quitar una línea ya mandada avisa a cocina, con autor y motivo.
-- Un cocinero no recibe ni un importe llamando a la API a pelo.
-- El tiempo real de un plato llega a su ficha y a la analítica.
-
-## Facturación
-
-- Ningún rol, ni el panel interno, ni una migración puede hacer `UPDATE` o `DELETE` sobre un documento emitido.
-- Un documento solo existe si el proveedor ha devuelto 200; un error no consume número.
-- La numeración de cada serie es correlativa y sin huecos con cobros simultáneos desde cinco aparatos.
-- Un webhook repetido del proveedor no cambia nada.
-- Una mesa no se cierra cobrada sin ticket o sin justificante provisional.
-- El canje no toca el ticket ni el stock, y un ticket canjeado no se canjea dos veces.
-- Sin conexión, los tickets pendientes salen al volver en el orden de los cobros y marcados como incidencia.
-- Un local foral, en SII o de Canarias, Ceuta o Melilla no puede activar la facturación.
-- Las claves del proveedor no aparecen en el cliente, en los registros ni en los mensajes de error.
-- Reimprimir un ticket no genera ningún registro nuevo y sale marcado como copia.
-- La dirección de una impresora no aparece en el cliente ni en ningún registro.
-- Con todas las tablets apagadas, una comanda lanzada desde otro sitio se imprime igual.
-- **La misma comanda sale idéntica por tres marcas distintas de impresora**, una de ellas de impacto.
-- Con Estook Enlace instalado y sin internet, **la cocina sigue imprimiendo**.
-- El núcleo no conoce ninguna marca de impresora: solo deja trabajos en la cola.

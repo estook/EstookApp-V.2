@@ -165,7 +165,7 @@ La lista **no** incluye palabras ambiguas —`esta`/`está`, `mas`/`más`,
 #### Cómo se comprueba que M4 está terminado
 
 Su criterio, punto por punto, es
-[`pruebas/e2e/acceso.spec.ts`](pruebas/e2e/acceso.spec.ts):
+[`pruebas/e2e/acceso.spec.ts`](../pruebas/e2e/acceso.spec.ts):
 
 | Criterio del Plan                             | Cómo se comprueba                                       |
 | --------------------------------------------- | ------------------------------------------------------- |
@@ -400,18 +400,18 @@ una cuenta de verdad.
 #### Cómo se comprueba que M5 está terminado
 
 Su criterio, punto por punto, es
-[`pruebas/e2e/alta.spec.ts`](pruebas/e2e/alta.spec.ts):
+[`pruebas/e2e/alta.spec.ts`](../pruebas/e2e/alta.spec.ts):
 
-| Criterio del Plan                           | Cómo se comprueba                                                                                   |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| El alta en menos de cuatro minutos          | El recorrido entero, cronometrado, en escritorio y en móvil pequeño                                 |
-| Un producto del catálogo en quince segundos | **A medias**, y se dice: el catálogo devuelve la ficha rellena; crear                               |
-|                                             | el producto es M6 ([0012](docs/decisiones/0012-el-producto-nace-en-m6.md))                          |
-| El botón de quitar ejemplos los borra todos | Contra la base de datos, con el registro y sus políticas                                            |
-| El gasto de Google por debajo de 0,50 €     | **Es cero**: Google se aplaza a M23 ([0013](docs/decisiones/0013-google-places-se-aplaza-a-m23.md)) |
+| Criterio del Plan                           | Cómo se comprueba                                                                              |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| El alta en menos de cuatro minutos          | El recorrido entero, cronometrado, en escritorio y en móvil pequeño                            |
+| Un producto del catálogo en quince segundos | **A medias**, y se dice: el catálogo devuelve la ficha rellena; crear                          |
+|                                             | el producto es M6 ([0012](decisiones/0012-el-producto-nace-en-m6.md))                          |
+| El botón de quitar ejemplos los borra todos | Contra la base de datos, con el registro y sus políticas                                       |
+| El gasto de Google por debajo de 0,50 €     | **Es cero**: Google se aplaza a M23 ([0013](decisiones/0013-google-places-se-aplaza-a-m23.md)) |
 
 Y la lista de la Auditoría de flujos, pasada punto por punto, en
-[`docs/auditorias/m5.md`](docs/auditorias/m5.md).
+[`docs/auditorias/m5.md`](auditorias/m5.md).
 
 #### Y el catorce, que es el mismo que el de M4
 
@@ -550,7 +550,7 @@ la misma transacción** del comando que la provoca.
 
 Va en la misma transacción y no en un proceso de fondo porque **un local que se
 queda cinco minutos sin categorías es un local roto**. Está razonado entero en la
-[decisión 0014](docs/decisiones/0014-las-reacciones-entre-modulos.md).
+[decisión 0014](decisiones/0014-las-reacciones-entre-modulos.md).
 
 #### Diez fallos que M6 encontró, y cuatro eran de antes
 
@@ -619,7 +619,7 @@ construir algo y no enchufarlo a nada. En cuanto se escribió encontró cinco.
 #### Cómo se comprueba que M6 está terminado
 
 Su criterio, punto por punto, es
-[`pruebas/e2e/inventario.spec.ts`](pruebas/e2e/inventario.spec.ts):
+[`pruebas/e2e/inventario.spec.ts`](../pruebas/e2e/inventario.spec.ts):
 
 | Criterio del Plan                                      | Cómo se comprueba                                                                           |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
@@ -629,7 +629,7 @@ Su criterio, punto por punto, es
 | La previsión acierta el día con consumo estable        | Un local nuevo con tres semanas de consumo sembrado, y la fecha cuadra con la cuenta        |
 
 Y la lista de la Auditoría de flujos, pasada punto por punto, en
-[`docs/auditorias/m6.md`](docs/auditorias/m6.md).
+[`docs/auditorias/m6.md`](auditorias/m6.md).
 
 #### Y cuatro más del repaso de después de fusionar
 
@@ -839,7 +839,7 @@ Salieron **seis fallos**, y uno de ellos era de seguridad.
 estaba escrita desde M6 —«una consulta que ninguna prueba llama es una consulta
 rota que todavía no sabes que lo está»— y era **solo prosa**. Ahora la API de
 pruebas apunta qué operación ejecuta cada prueba mientras corren, y
-[`pnpm cobertura`](herramientas/cobertura-del-catalogo.mjs) lo compara con el
+[`pnpm cobertura`](../herramientas/cobertura-del-catalogo.mjs) lo compara con el
 catálogo al terminar. **La primera medición: 43 de 62.**
 
 No se puede medir leyendo el código, y por eso no se había medido antes: las
@@ -935,7 +935,7 @@ problemas: son ocho pestañas en barras que B5 limita a cuatro; te obligan a sal
 de lo que estás haciendo para preguntar por lo que estás haciendo; y dicen que
 Fogón es un sitio al que se va, cuando es algo que está.
 
-**Lo decidido** ([decisión 0015](docs/decisiones/0015-fogon-es-una-burbuja-no-una-pestana.md)):
+**Lo decidido** ([decisión 0015](decisiones/0015-fogon-es-una-burbuja-no-una-pestana.md)):
 
 - **Burbuja flotante en móvil**, por encima de la barra de abajo, en todas las
   pantallas.
@@ -1010,7 +1010,7 @@ todo lo demás, y que estaban esperando a módulos que llegan mucho después.
 
 **Lo que hay:**
 
-- **Destinos y vistas** ([decisión 0018](docs/decisiones/0018-destinos-y-vistas.md)).
+- **Destinos y vistas** ([decisión 0018](decisiones/0018-destinos-y-vistas.md)).
   Cada app tiene como mucho cuatro **destinos** —un sitio que contesta una
   pregunta, abajo en móvil y en menú lateral en escritorio— y cada destino sus
   **vistas**, que son la misma pantalla mirada de otra forma, en un control
@@ -1022,13 +1022,13 @@ todo lo demás, y que estaban esperando a módulos que llegan mucho después.
 - **El menú lateral de cada app en escritorio**, que B5 mandaba desde M3 y no se
   había construido. Con la pregunta que contesta cada destino debajo de su nombre:
   en una pastilla solo cabe una palabra.
-- **El Panel de cada uno** ([decisión 0019](docs/decisiones/0019-el-panel-de-cada-uno-vive-en-el-servidor.md)).
+- **El Panel de cada uno** ([decisión 0019](decisiones/0019-el-panel-de-cada-uno-vive-en-el-servidor.md)).
   Zona de atención fija arriba, y debajo una rejilla de widgets **de dos columnas
   en móvil** y cuatro en escritorio, con tres tamaños, que se arrastra, se añade y
   se quita, y **se guarda en el servidor por persona y por aparato** (migración
   `0025`). Con su catálogo de dieciséis widgets: los nueve que existen hoy y los
   siete que llegan con su módulo, en gris y sin poder pulsarse.
-- **Un catálogo de acciones** ([decisión 0020](docs/decisiones/0020-un-catalogo-de-acciones.md)),
+- **Un catálogo de acciones** ([decisión 0020](decisiones/0020-un-catalogo-de-acciones.md)),
   único dueño de «qué se puede hacer». De ahí salen los accesos rápidos del Panel
   —que el Manifiesto pedía y no existían—, la paleta del buscador universal y los
   botones de Fogón. Y **una acción es una dirección**, así que el enlace a «añadir
@@ -1191,7 +1191,7 @@ Ahora pregunta **cómo se llama, en qué se mide y lo que cuesta esa medida**, y
 eliges kilos la casilla dice «lo que te cuesta el kg». Lo del envase está plegado
 debajo y se abre solo cuando el catálogo propone uno. Por debajo es lo mismo: en el
 modo sencillo el factor es 1, así que el precio del kilo **es** el coste por unidad
-de uso, y no hay un segundo camino de datos ([decisión 0021](docs/decisiones/0021-el-producto-se-mide-en-una-unidad.md)).
+de uso, y no hay un segundo camino de datos ([decisión 0021](decisiones/0021-el-producto-se-mide-en-una-unidad.md)).
 
 Y la razón de fondo, que es la que importa para lo que viene: **cuántos gramos
 lleva una ración es de la ficha técnica**, no del producto. Eso es M9, y ahora no
@@ -1204,7 +1204,7 @@ tanda agrupando el formulario, y se ve en la captura sin tener que buscarlo.
 **5 · Delivery no estaba en ninguna parte.** Ahora Servicio tiene su destino
 `Delivery`, con Uber Eats por su nombre y su icono, y el Panel su widget en el
 catálogo. **Sin ningún botón de conectar**: la integración es M29
-([decisión 0022](docs/decisiones/0022-el-reparto-tiene-sitio-antes-que-conexion.md)).
+([decisión 0022](decisiones/0022-el-reparto-tiene-sitio-antes-que-conexion.md)).
 
 Para que cupiera sin pasar de cuatro destinos, **el cierre pasa a ser una vista de
 la jornada**, que es lo que es: cerrar la jornada es el final de la jornada, no otro
@@ -1312,7 +1312,7 @@ No tiene ficha en el Plan, así que su criterio es este:
   probarlo, y el lector de los de verdad —que escribe como un teclado— ya funciona.
 - **El reparto tiene sitio y no tiene conexión.** Uber Eats es el primero y llega
   con M29; hasta entonces la pantalla dice qué va a entrar y no ofrece conectar
-  nada ([decisión 0022](docs/decisiones/0022-el-reparto-tiene-sitio-antes-que-conexion.md)).
+  nada ([decisión 0022](decisiones/0022-el-reparto-tiene-sitio-antes-que-conexion.md)).
 - **Los filtros de una lista no se llevan en la dirección**, solo la vista. Buscar
   «pulpo» en Productos y volver atrás pierde el texto. No es personalización —no se
   guarda por persona— pero el enlace a una búsqueda concreta tampoco se puede
@@ -1382,7 +1382,7 @@ por la que el selector de local existe.
 Y hay un segundo consumidor que lo hacía peor: **el contexto de Fogón se arma con
 esa caché**. Hoy solo se enseña en la ventana; en M22 es lo que iba a recibir el
 modelo, y una frase en prosa no lleva encima de dónde salió el número. De ahí sale
-la [decisión 0023](docs/decisiones/0023-fogon-nunca-arma-su-contexto-en-el-navegador.md):
+la [decisión 0023](decisiones/0023-fogon-nunca-arma-su-contexto-en-el-navegador.md):
 **el contexto de Fogón lo arma el servidor**, con su sello de persona, local y
 hora, y se comprueba antes de mandar nada.
 
@@ -1433,7 +1433,7 @@ persona en tu pantalla. Van por persona.
 promesa de que nadie escribiría un `innerHTML` con datos de nadie. Eso es una
 promesa sobre el código de mañana. Ahora hay `script-src 'self'`, que lo cumple el
 navegador, y se calcula al construir porque `connect-src` depende de dónde esté la
-API ([`herramientas/politica-de-seguridad.ts`](herramientas/politica-de-seguridad.ts)).
+API ([`herramientas/politica-de-seguridad.ts`](../herramientas/politica-de-seguridad.ts)).
 
 **7 · El alta iba en el paquete inicial.** Dos mil doscientas líneas que se usan
 una vez por local, descargadas cada mañana por todo el mundo para no verlas. Ahora
@@ -1538,7 +1538,7 @@ otro—. Y hay colores que no admiten texto legible de ninguna clase: un gris de
 50 % da 3,95 con el blanco y 4,34 con el charcoal. Para esos, el acento se empuja
 hasta que sí, y **se dice en Ajustes** que se ha tocado.
 
-Está entero en la [decisión 0024](docs/decisiones/0024-el-color-del-local-pinta-la-app.md).
+Está entero en la [decisión 0024](decisiones/0024-el-color-del-local-pinta-la-app.md).
 
 #### Cuatro · El Panel, que ya tenía el color escrito y no lo usaba
 
@@ -2246,7 +2246,7 @@ raíz hay [`estook.cmd`](estook.cmd), que lo busca donde de verdad está:
 
 Con M4 sirviendo de verdad se hizo el primer repaso **mirando algo que
 funciona**, y salieron cosas que ninguna prueba veía. Está entero en
-[`docs/repaso-despues-de-m4.md`](docs/repaso-despues-de-m4.md). Lo que hay que
+[`docs/repaso-despues-de-m4.md`](repaso-despues-de-m4.md). Lo que hay que
 tener presente al empezar M5:
 
 - **Hay tres mecanismos de fondo y ninguno se ejecuta**: la bandeja de salida, la

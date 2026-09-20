@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 16 de septiembre de 2026 · **Antes de M8: A1 en producción. E1 —la portada, crear cuenta con correo o Google, entrar con Google y la oferta de prueba— hecha en su rama, con sus pruebas; falta fusionarla y que Richi ponga Resend y Google. De las veinte mejoras y del resto del admin no hay nada construido todavía**
+Última actualización: 20 de septiembre de 2026 · **Cambio de rumbo: Estook también cobra. Seis documentos maestros, `docs/` reordenado y los [VERIFICAR] comprobables, comprobados. Del TPV no hay ni una línea de código, y no toca: es la Fase 4. Antes de M8: A1 en producción, E1 fusionada (#56) y pendiente de que Richi migre, despliegue y ponga Resend y Google. De las veinte mejoras y del resto del admin, nada construido**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -14,49 +14,168 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                                                                    |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel                  |
-| **Ahora**      | **Antes de M8**: A1 en producción; **E1 · crear cuenta y Google**, en su pull request. Lo siguiente, **E2 · el pago con Stripe**                   |
-| **Pruebas**    | 1.059 unitarias y de base de datos · 380 de pantalla en escritorio y móvil, en verde · catálogo **121 de 127** (95 %)                              |
-| **Rama**       | `antes-de-m8-entrar-y-crear-cuenta`: E1 ([0042](docs/decisiones/0042-registro-abierto-google-y-la-oferta.md)), con las migraciones `0038` y `0039` |
-| **Base**       | En Supabase, **37 de 37**, 52 tablas en `estook` y 2 en `plataforma` (comprobado el 16-sep). **En el código, 39**: faltan la `0038` y la `0039`    |
-| **API**        | Desplegada después de la #54, el 16-sep a las 20:05. Al día con `main`                                                                             |
-| **Entrar**     | App: la cuenta de Ricardo (`ikatz`); ninguna de ejemplo entra. Admin: `estookapp@gmail.com` (dentro, con segundo factor) y Santi (sin entrar aún)  |
-| **Dirección**  | **Evolución de producto 1.0**: de aplicación de gestión a sistema operativo del local                                                              |
+|                |                                                                                                                                                                       |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel                                     |
+| **Ahora**      | **Antes de M8**: A1 en producción; **E1 · crear cuenta y Google**, fusionada en la **#56**. Lo siguiente, **E2 · el pago con Stripe**                                 |
+| **Pruebas**    | 1.059 unitarias y de base de datos · 380 de pantalla en escritorio y móvil · catálogo **121 de 127** (95 %). **Cifras del 16-sep, sin volver a pasar desde entonces** |
+| **Rama**       | `cambio-de-rumbo-tpv-y-facturacion`: **solo documentación**. Ni código ni migraciones                                                                                 |
+| **Base**       | En Supabase, **37 de 37** (comprobado el 16-sep). **En el código, 39**: faltan la `0038` y la `0039` de E1, que ya está en `main`. **Migrar es lo primero que toca**  |
+| **API**        | Desplegada el 16-sep a las 20:05, **antes de la #56**. Hay que volver a desplegar                                                                                     |
+| **Entrar**     | App: la cuenta de Ricardo (`ikatz`); ninguna de ejemplo entra. Admin: `estookapp@gmail.com` (dentro, con segundo factor) y Santi (sin entrar aún)                     |
+| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                                |
 
-> **Lo de ahora:** fusionar E1, migrar y desplegar; verificar el dominio en Resend y
-> poner sus secretos; preparar el cliente de Google y poner los suyos; y darme los datos
-> del titular para lo legal. Luego, mirar el admin en el móvil y que Santi entre. Todo en
-> **[`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)**. Los planes:
-> **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)** y
+> **Lo de ahora:** migrar la base a 39, desplegar la API, verificar el dominio en
+> Resend y poner sus secretos, preparar el cliente de Google y poner los suyos, y darme
+> los datos del titular para lo legal. Luego, mirar el admin en el móvil y que Santi
+> entre. Todo en **[`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)**. Los
+> planes: **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)** y
 > **[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md)**. **M8 no
 > empieza hasta que los dos estén al 100 %.**
 
 ---
 
-## 0 · Los cinco documentos maestros
+## 0 · Los seis documentos maestros
 
 Viven en [`docs/maestros/`](docs/maestros/) en Markdown; el PDF sale con
 `pnpm maestros`. Se leen en este orden:
 
-| Documento                                                                | Qué responde                       | Cuándo se lee            |
-| ------------------------------------------------------------------------ | ---------------------------------- | ------------------------ |
-| [Evolución 1.0](docs/maestros/Estook-Evolucion-1.0.md)                   | Hacia dónde va y en qué orden      | **Primero, siempre**     |
-| [Manifiesto](docs/maestros/Estook-Manifiesto.md)                         | Qué es el producto y cuánto cuesta | Antes de diseñar         |
-| [Plan de desarrollo](docs/maestros/Estook-Plan-de-Desarrollo.md)         | Cómo se construye y con qué reglas | Antes de escribir código |
-| [Roles y administración](docs/maestros/Estook-Roles-y-Administracion.md) | Qué ve exactamente cada persona    | Antes de tocar permisos  |
-| [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)       | Qué desencadena cada cambio        | Antes de cerrar módulo   |
+| Documento                                                                    | Versión | Qué responde                       | Cuándo se lee                                          |
+| ---------------------------------------------------------------------------- | ------- | ---------------------------------- | ------------------------------------------------------ |
+| [Evolución](docs/maestros/Estook-Evolucion.md)                               | 1.1     | Hacia dónde va y en qué orden      | **Primero, siempre**                                   |
+| [Manifiesto](docs/maestros/Estook-Manifiesto.md)                             | 1.2     | Qué es el producto y cuánto cuesta | Antes de diseñar                                       |
+| [Plan de desarrollo](docs/maestros/Estook-Plan-de-Desarrollo.md)             | 1.2     | Cómo se construye y con qué reglas | Antes de escribir código                               |
+| [Roles y administración](docs/maestros/Estook-Roles-y-Administracion.md)     | 1.2     | Qué ve exactamente cada persona    | Antes de tocar permisos                                |
+| [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)           | 1.2     | Qué desencadena cada cambio        | Antes de cerrar módulo                                 |
+| [Anexo · TPV y facturación](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md) | 1.0     | Cómo se cobra y se factura         | Antes de tocar sala, cocina, cobro, caja o facturación |
 
-**Si dos parecen decir cosas distintas, manda el más específico.** Si de verdad se
-contradicen, se para y se pregunta (regla 13). Y si uno se queda corto frente a lo
-que el producto necesita, se propone lo mejor y **se cambia el documento**, con su
-decisión escrita: un maestro no frena el producto.
+Y el mapa corto de lo que queda, en
+[`docs/MAPA-de-modulos.md`](docs/MAPA-de-modulos.md).
 
-Lo que cambió con la **Evolución 1.0**: el tamaño del paquete se mide y no bloquea
-(bloquea la velocidad); cada módulo nace con su capa inteligente dentro; y nada
-entra aislado (regla 14: qué datos usa, quién se entera, qué automatiza Fogón y
-qué aprueba una persona).
+**Manda el más específico.** En todo lo que toque sala, cocina, cobro, caja o
+facturación **manda el Anexo**. Si dos se contradicen de verdad, se para y se
+pregunta (regla 13). Y si uno se queda corto frente a lo que el producto
+necesita, se propone lo mejor y **se cambia el documento**, con su decisión
+escrita: un maestro no frena el producto.
+
+**Dónde está cada cosa, desde el 20 de septiembre de 2026:**
+
+- **Los seis maestros vigentes**, en `docs/maestros/`. Es su sitio de siempre, y
+  por eso `pnpm maestros` y los enlaces del código siguen funcionando sin tocar
+  nada.
+- **Las versiones anteriores**, en
+  [`docs/antiguos/maestros/`](docs/antiguos/maestros/), con sus PDF. **No se
+  borran:** son la referencia de qué decía el proyecto antes del cambio de rumbo.
+- **Todo lo demás sigue donde estaba**: las 42 decisiones en
+  [`docs/decisiones/`](docs/decisiones/), la
+  [historia de los módulos](docs/historia-de-los-modulos.md), las auditorías de
+  módulo, los pasos y los planes.
+
+Lo que cambió con la **Evolución 1.0** sigue en pie: el tamaño del paquete se
+mide y no bloquea (bloquea la velocidad); cada módulo nace con su capa
+inteligente dentro; y nada entra aislado (regla 14).
+
+---
+
+## 0½ · Cambio de rumbo · Estook también cobra
+
+_20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._
+
+Estook deja de ser «no cobro y no facturo». El local elige entre **cobrar con Estook**
+—el TPV propio: sala, cocina, cobro, caja, tickets y facturas con VeriFactu—, **lo
+trae mi TPV** o **lo apunto yo**. Con eso Estook pasa a ser **fabricante de un sistema
+informático de facturación** en España.
+
+**Dos cosas que hay que tener claras para no equivocarse de trabajo:**
+
+- **Esto no rehace nada.** M0 a M17 se quedan como están: mismo repositorio, mismo
+  dominio, misma API, misma base de datos y mismo despliegue.
+- **Esto no es lo de ahora.** El TPV es la **Fase 4**, trece módulos por delante. Lo
+  de ahora sigue siendo **«Antes de M8»**: E2, las veinte mejoras y el panel de
+  administración.
+
+El repaso del esquema y del código contra el Anexo está hecho y escrito en
+**[`docs/lo-que-el-tpv-toca-de-lo-construido.md`](docs/lo-que-el-tpv-toca-de-lo-construido.md)**:
+qué hay que ampliar del cierre de caja, del motor fiscal y de los permisos, y las dos
+cosas que hay que **decidir antes de escribir la primera pantalla de Sala**.
+
+### Las reglas duras de esta parte
+
+1. **Web, una sola base de código.** El TPV va **dentro de `apps/app`** como modo de
+   pantalla, no en una aplicación aparte. `apps/movil` es una cáscara de Capacitor
+   **sin pantallas propias**, opcional, y llega en M20A. Razonado en A5 del Plan:
+   **no se reabre**.
+2. **La facturación es intocable.** Un ticket o una factura emitidos no se editan ni
+   se borran jamás, desde ningún sitio. Se corrigen con otro documento. Viven en su
+   propio esquema, **solo de inserción**, y solo los escribe su módulo (regla 15 de
+   A1; principio 17 del Manifiesto).
+3. **Estook no toca el dinero.** La tarjeta la cobra el datáfono del banco del local.
+4. **No calculamos huellas ni encadenamos registros.** Eso lo hace el proveedor
+   (Verifacti). Si aparece un SHA-256 de un registro de facturación en nuestro código,
+   es una segunda cadena y está mal.
+5. **Nada de facturación llega a producción** sin las siete condiciones del capítulo 9
+   del Anexo.
+6. **La impresión no se ata a una marca.** El núcleo solo deja trabajos en una cola,
+   en un formato intermedio propio. Una marca nueva es un traductor nuevo, no tocar el
+   núcleo (capítulo 6 del Anexo).
+7. **No se inventa ni un campo ni un endpoint.** Ni de Verifacti, ni de la AEAT, ni de
+   Revo, ni de Last.app. Primero la documentación oficial vigente; hasta entonces,
+   esqueleto con `TODO` y adaptador simulado con el que se pueda probar todo lo demás.
+
+### Los [VERIFICAR] · lo comprobado el 20 de septiembre de 2026
+
+**Eran nueve.** **Cuatro los he podido comprobar yo contra la fuente oficial y están
+resueltos dentro del propio Anexo**, con su enlace: el límite de la factura
+simplificada, qué rectificativa toca, los campos de la declaración responsable y los
+territorios. Los otros cinco dependen del asesor, de una compra o de que se publique un
+BOE, y están abajo. El resumen, más la comprobación del QR y la del proveedor:
+
+| Qué                                                   | Respuesta                                                                                                                                                                                                                                                                                  | Fuente                                                                                                                                                                                       |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Límite de la factura simplificada en restauración** | **3.000 €, IVA incluido.** El general es 400 € (art. 4.1); el art. 4.2.e) lo sube a 3.000 € para hostelería «para consumir en el acto». Anexo 4.6                                                                                                                                          | [RD 1619/2012, art. 4 · BOE](https://www.boe.es/buscar/act.php?id=BOE-A-2012-14696)                                                                                                          |
+| **Qué rectificativa toca**                            | **R5** para el ticket. **R1** por error fundado en derecho (art. 80.Uno, Dos y Seis LIVA) sobre factura completa; R2 concurso y R3 incobrables **no se programan**; R4, el resto. Anexo 4.5                                                                                                | [AEAT · procedimientos de facturación](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/procedimientos-facturacion.html)      |
+| **Campos de la declaración responsable**              | **Orden HAC/1177/2024, cap. IV, art. 15**: doce datos, y **dentro de la app, legible e individualizada, accesible de forma rápida, fácil e intuitiva**. Escritos uno a uno en el Anexo 4.14                                                                                                | [Orden HAC/1177/2024, art. 15 · BOE](https://www.boe.es/buscar/act.php?id=BOE-A-2024-22138)                                                                                                  |
+| **El QR**                                             | **Art. 21**: nivel M, 30×30 a 40×40 mm, cinco datos y su leyenda. **Coincide exactamente** con lo que ya decía el Anexo 4.7                                                                                                                                                                | [Orden HAC/1177/2024, art. 21 · BOE](https://www.boe.es/buscar/act.php?id=BOE-A-2024-22138)                                                                                                  |
+| **Territorios**                                       | **Canarias, Ceuta y Melilla están dentro del ámbito legal.** País Vasco y Navarra, fuera (foral). SII, excluido. La fecha del fabricante, **29 de julio de 2025**, vencida                                                                                                                 | [AEAT · ámbitos de aplicación](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/cuestiones-generales-ambitos-aplicacion.html) |
+| **Verifacti**                                         | Clave **por NIF y entorno**; `POST /verifactu/create` devuelve el **QR en base 64**; `GET /verifactu/status`; `POST /nifs` da de alta la empresa; **huella y cadena, del proveedor**; los registros se encolan y salen en dos minutos como mucho; webhooks recomendados frente a consultar | [Verifacti · guía rápida](https://www.verifacti.com/es/guia-rapida)                                                                                                                          |
+
+**Y dos hallazgos del repaso, ya metidos en el Anexo:**
+
+- **Faltaba la naturaleza de la rectificación** —`S` por sustitución o `I` por
+  diferencias—, que VeriFactu exige junto a la clave R. Está escrito en el Anexo 4.5,
+  con su `[VERIFICAR]`: cuál toca lo dice el asesor, y **el nombre del campo se lee de
+  la API del proveedor, no se inventa**.
+- **Canarias, Ceuta y Melilla se bloqueaban con un motivo falso.** Decidido en la
+  [0043](docs/decisiones/0043-hasta-donde-llega-la-facturacion.md): **Canarias entra
+  con IGIC** —el esquema y el motor fiscal ya lo soportan desde la `0012`—, **Ceuta y
+  Melilla esperan** por el IPSI y su categoría de establecimiento, y la pantalla
+  distingue «no se puede» de «todavía no». El Anexo 1.4 está reescrito.
+
+### Lo que queda, y de quién es
+
+**Del asesor fiscal** —y hasta que conteste, no se programa ninguna:
+
+1. **El tipo de IVA del servicio de restauración**, y el de «para llevar» y reparto.
+2. **El IGIC de hostelería**, ahora que Canarias entra.
+3. **`S` o `I`** en la rectificativa de una devolución, y **R1 frente a R4** en una
+   factura completa.
+4. **El texto exacto del justificante provisional** de venta sin conexión.
+5. **Las propinas:** si la de efectivo puede quedarse fuera del ticket.
+6. **Si el límite de 3.000 € vale también para el reparto a domicilio**, que la ley
+   describe como «para consumir en el acto».
+7. **La declaración responsable de Estook**, redactada y firmada.
+8. **La revisión escrita del planteamiento entero**, que es condición 4 del capítulo 9
+   del Anexo.
+
+**De Richi, y no hace falta todavía:** las claves de Verifacti. Cómo se sacan y cuándo
+se piden está al final del apartado **«Ahora mismo · es de Richi»**, más abajo. Y el
+precio real de una impresora que pregunta sola (Anexo 6.3), al comprarla.
+
+**Y uno que no depende de nadie de aquí:** el **[VERIFICAR] del registro horario**
+(Plan, M15). El Real Decreto de fichaje digital sigue **en tramitación y sin publicar
+en el BOE** a día de hoy, así que no obliga. Cuando se publique hay que mirar el
+formato exacto de la exportación para la Inspección y si exige una API. **Hasta
+entonces se hace la exportación y no se inventa ningún protocolo.**
 
 ---
 
@@ -66,7 +185,7 @@ qué aprueba una persona).
 
 Los pasos, en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md):
 
-1. **E1** (arriba del todo en los pasos): fusionar, `bd:migrar` (39 de 39), desplegar
+1. **E1, ya fusionada en la #56** (arriba del todo en los pasos): `bd:migrar` (39 de 39) y desplegar
    la API; **Resend** —verificar `estook.com` con sus registros en Hostinger y poner
    `RESEND_API_KEY` y `CORREO_REMITENTE`—; **Google** —las vueltas
    `https://estook.com/app/` y `https://www.estook.com/app/`, un secreto nuevo, publicar
@@ -88,6 +207,28 @@ Los pasos, en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md):
 8. **La IA, todavía nada**: ninguna parte de Estook la usa hoy. Está decidido Gemini
    Flash con tope de 1.800 al mes por local; la clave se saca cuando toque (M22).
    **Resend** ya se usa: el código de crear cuenta (E1).
+
+**Las claves de Verifacti · no hacen falta todavía, y así se sacan cuando toquen.** El
+trabajo de M20B se hace **primero contra un adaptador simulado**, con toda la lógica,
+las pruebas y las pantallas terminadas. El proveedor de verdad se enchufa al final, y
+en dos momentos:
+
+- **Cuando haya que probar el alta de un NIF y el webhook** (paso 4 del alta de
+  facturación). Hace falta la **clave de pruebas**: se saca de la cuenta gratuita que
+  ya tienes, en el panel de Verifacti → ajustes de la cuenta para la clave de cuenta, y
+  dentro de la empresa de prueba para la suya. Empieza por `vf_test_`. **La URL no
+  cambia entre entornos: la clave es la que decide**, así que una clave de pruebas en
+  producción emite de mentira sin avisar.
+- **Cuando se vaya a producción**, y solo con las siete condiciones del capítulo 9 del
+  Anexo cumplidas. Hace falta: **suscripción de pago** con Verifacti, dar de alta tu
+  **NIF real** en su panel, y **firmar el modelo de representación** ante Hacienda —lo
+  da relleno el propio proveedor, y **solo lo puede firmar el titular**—. La clave
+  empieza por `vf_prod_`.
+
+**Cómo me las pasas:** nunca por el chat. Se ponen como secretos en Supabase Vault, y
+me dices solo que están puestas y con qué nombre. **Y una que no hay que tocar jamás:**
+el endpoint de borrado permanente de un NIF en Verifacti elimina sus registros sin
+vuelta atrás. Dar de baja a un cliente es **desactivar**.
 
 **Ya hecho y comprobado en producción el 16 de septiembre:** las cuatro fusiones (#51 a
 #54), la `0036` y la `0037` aplicadas, la API desplegada a las 20:05, y
@@ -147,11 +288,11 @@ básica** con los dos accesos. Y: **se paga al empezar**, y la prueba de 12 día
 **oferta que se enciende desde el admin**. Todo en la
 [0042](docs/decisiones/0042-registro-abierto-google-y-la-oferta.md).
 
-| Entrega                        | Qué lleva                                                                                                                   | Cómo está                     |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| **E1 · Entrar y crear cuenta** | Portada, privacidad y condiciones, crear cuenta (correo con código o Google), Google al entrar, Elegir plan, admin → Oferta | **Hecha**, en su pull request |
-| **E2 · Pagar**                 | Stripe: pagar, portal, avisos; **el estado de la suscripción cumplido en el servidor**                                      | La siguiente                  |
-| **E3 · Google en el alta**     | Places en el paso 4 del alta; Business Profile cuando Google apruebe                                                        | Falta                         |
+| Entrega                        | Qué lleva                                                                                                                   | Cómo está                                     |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| **E1 · Entrar y crear cuenta** | Portada, privacidad y condiciones, crear cuenta (correo con código o Google), Google al entrar, Elegir plan, admin → Oferta | **Fusionada** (#56). Falta migrar y desplegar |
+| **E2 · Pagar**                 | Stripe: pagar, portal, avisos; **el estado de la suscripción cumplido en el servidor**                                      | La siguiente                                  |
+| **E3 · Google en el alta**     | Places en el paso 4 del alta; Business Profile cuando Google apruebe                                                        | Falta                                         |
 
 **Lo que E1 no hace todavía, y hay que saberlo:** **no se cobra** —Elegir plan enseña
 los planes y dice que el pago se abre en unos días—, y **el estado de la suscripción no

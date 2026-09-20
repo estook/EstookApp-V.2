@@ -12,7 +12,7 @@ import { marked } from 'marked';
  *
  * ── Por que existe ──────────────────────────────────────────────────────────
  *
- * Los cuatro documentos maestros vivian **solo como PDF en un escritorio**. Sin
+ * Los documentos maestros vivian **solo como PDF en un escritorio**. Sin
  * fuente, sin historial y sin forma de ver que cambio entre dos versiones: para
  * corregir una linea habia que rehacer el documento entero a mano.
  *

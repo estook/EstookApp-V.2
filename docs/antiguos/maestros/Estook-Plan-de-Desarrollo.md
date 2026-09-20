@@ -1,8 +1,8 @@
 ---
 titulo: Plan de desarrollo
 tipo: Documento de construcción
-fecha: Septiembre de 2026 · versión 1.2
-nota: Reglas de trabajo, sistema de diseño, web pública y 31 módulos, más M6½ y los tres del TPV (M20A, M20B y M20C), en orden. Escrito para que no haga falta inventar nada. Documentos hermanos - Evolución, Manifiesto, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
+fecha: Septiembre de 2026 · versión 1.1
+nota: Reglas de trabajo, sistema de diseño, web pública y 31 módulos en orden. Escrito para que no haga falta inventar nada. Documentos hermanos - Evolución 1.0, Manifiesto, Roles y administración, y Auditoría de flujos.
 ---
 
 # Qué es este documento
@@ -11,15 +11,13 @@ Este documento va dirigido a quien construya Estook, que será en su mayor parte
 
 **Qué cambia en la versión 1.1.** Recoge la Evolución de producto 1.0. Los cambios están en A1 (la regla 14), en B7 (el tamaño deja de bloquear), en la parte D (cada módulo lleva ahora su capa inteligente, y hay dos módulos nuevos) y en E3. Lo demás sigue igual.
 
-**Qué cambia en la versión 1.2.** Estook también cobra (Evolución, capítulo 19). Cambian A1 (regla 15), A3 y A4 (dos piezas nuevas), M5, **la Fase 4, que se reordena y gana M20A, M20B y M20C**, M18, M20, M26, M27, M28, M29 y E3. La especificación completa del TPV y de la facturación está en el **Anexo TPV y facturación**, que manda en su tema.
-
-Documentos hermanos: **Evolución**, que se lee antes que este; el **Manifiesto**, que dice qué es el producto; **Roles, vistas, auditorías y administración**, que dice qué ve cada persona; la **Auditoría de flujos**, que es el documento de control obligatorio antes de cerrar cualquier módulo; y el **Anexo de TPV y facturación**, que manda en sala, cocina, cobro, caja y facturación.
+Documentos hermanos: **Evolución 1.0**, que se lee antes que este; el **Manifiesto**, que dice qué es el producto; **Roles, vistas, auditorías y administración**, que dice qué ve cada persona; y la **Auditoría de flujos**, que es el documento de control obligatorio antes de cerrar cualquier módulo.
 
 ---
 
 # A · Cómo se trabaja
 
-## A1 · Las quince reglas que evitan el desastre
+## A1 · Las catorce reglas que evitan el desastre
 
 Se leen al empezar cada sesión de trabajo, y **una decisión que las incumpla se revierte aunque el código funcione**.
 
@@ -37,7 +35,6 @@ Se leen al empezar cada sesión de trabajo, y **una decisión que las incumpla s
 12. Nunca se avanza al siguiente módulo con el anterior a medias.
 13. Si aparece una decisión de producto que no está escrita, **se pregunta y se para**. No se inventa.
 14. **Nada entra aislado.** Antes de construir algo se responde: qué datos usa, de dónde vienen, qué otras partes de Estook tienen que enterarse cuando cambien, qué puede automatizar Fogón, qué tiene que aprobar una persona, qué permisos tiene cada rol, qué pasa si falla internet, qué pasa si se ejecuta dos veces y qué queda en auditoría.
-15. **Nunca se escribe, se edita ni se borra un documento de facturación fuera de su módulo.** Ni una migración de arreglo, ni un script, ni el panel interno. Lo emitido se corrige emitiendo otro documento.
 
 > La regla 14 es la que la Evolución 1.0 añade, y es la que convierte «ocho apps que funcionan» en «un sistema donde cada dato nuevo hace más inteligente al resto».
 
@@ -82,7 +79,7 @@ M0 ✓  M1 ✓  M2 ✓  M3 ✓  M4 ✓  M5 ✓  M6 ✓
 | CONTEXTO   | Qué módulo, qué existe ya, qué documentos leer    |
 | OBJETIVO   | Qué tiene que funcionar al terminar, en una frase |
 | FICHEROS   | Los que puede tocar. Los demás son intocables     |
-| REGLAS     | Las quince de A1, más las del módulo              |
+| REGLAS     | Las catorce de A1, más las del módulo             |
 | NO HACER   | Las tentaciones concretas de esta tarea           |
 | PRUEBAS    | Qué pruebas escribe y qué cubren                  |
 | ACEPTACIÓN | La lista del módulo, punto por punto              |
@@ -92,30 +89,27 @@ M0 ✓  M1 ✓  M2 ✓  M3 ✓  M4 ✓  M5 ✓  M6 ✓
 
 ## A3 · Stack, cerrado
 
-| Capa                  | Tecnología                                                  | Por qué                                                                  |
-| --------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Repositorio           | Monorepo con pnpm workspaces + Turborepo                    | Todas las superficies compartiendo dominio, tipos y UI                   |
-| Aplicación            | React 18 + Vite + TypeScript estricto                       | Terreno conocido y rápido en móvil                                       |
-| Estilos               | Tailwind con los tokens de B1                               | Sin CSS suelto por ahí                                                   |
-| Estado de servidor    | TanStack Query                                              | Caché, reintentos, invalidación por evento                               |
-| Enrutado              | React Router                                                | Simple y suficiente                                                      |
-| Animación             | CSS; `@dnd-kit` para arrastrar (0007, 0039)                 | Con respeto a `prefers-reduced-motion`                                   |
-| Gráficas              | Recharts                                                    | Suficiente y ligero                                                      |
-| PWA                   | vite-plugin-pwa                                             | Instalable, aguanta red intermitente                                     |
-| Base de datos         | PostgreSQL (Supabase)                                       | Relacional, RLS, extensiones, copias                                     |
-| API y dominio         | Servicio propio en TypeScript con Hono                      | El dominio aislado del transporte                                        |
-| Autenticación         | Sesiones propias + PIN                                      | Login único con dos formas de entrar                                     |
-| Trabajos              | Cola en tabla + worker programado                           | Analítica, IA nocturna, reintentos                                       |
-| Documentos            | Chromium sin interfaz + HTML/CSS con `@page`                | Tipografías incrustadas y paginación real                                |
-| IA                    | Detrás de una interfaz propia `ProveedorIA`                 | Cambiar de modelo es cambiar un adaptador                                |
-| Enlace                | Rust, servicio de Windows con icono de bandeja              | Ligero, firmable, sin interfaz que mantener                              |
-| Pagos                 | Stripe Billing + webhooks                                   | Suscripciones y prorrateos                                               |
-| Facturación           | Verifacti (API VeriFactu) tras `ProveedorFacturacion`       | Registro, huella, cadena, envío y QR los hace un especialista            |
-| Impresión             | Cola en el servidor + **Estook Enlace** hablando ESC/POS    | Un navegador no abre sockets. Con el agente vale **cualquier** impresora |
-| App de tablet y móvil | La misma web envuelta en **Capacitor**, en Play y App Store | Da sockets, quiosco y avisos sin rehacer la aplicación                   |
-| Correo                | Resend con dominio verificado                               | Invitaciones, horarios, documentos                                       |
-| Pruebas               | Vitest · Postgres efímero · Playwright                      | Las tres capas, obligatorias                                             |
-| CI/CD                 | GitHub Actions                                              | Todo desde GitHub                                                        |
+| Capa               | Tecnología                                     | Por qué                                              |
+| ------------------ | ---------------------------------------------- | ---------------------------------------------------- |
+| Repositorio        | Monorepo con pnpm workspaces + Turborepo       | Cuatro aplicaciones compartiendo dominio, tipos y UI |
+| Aplicación         | React 18 + Vite + TypeScript estricto          | Terreno conocido y rápido en móvil                   |
+| Estilos            | Tailwind con los tokens de B1                  | Sin CSS suelto por ahí                               |
+| Estado de servidor | TanStack Query                                 | Caché, reintentos, invalidación por evento           |
+| Enrutado           | React Router                                   | Simple y suficiente                                  |
+| Animación          | CSS; `@dnd-kit` para arrastrar (0007, 0039)    | Con respeto a `prefers-reduced-motion`               |
+| Gráficas           | Recharts                                       | Suficiente y ligero                                  |
+| PWA                | vite-plugin-pwa                                | Instalable, aguanta red intermitente                 |
+| Base de datos      | PostgreSQL (Supabase)                          | Relacional, RLS, extensiones, copias                 |
+| API y dominio      | Servicio propio en TypeScript con Hono         | El dominio aislado del transporte                    |
+| Autenticación      | Sesiones propias + PIN                         | Login único con dos formas de entrar                 |
+| Trabajos           | Cola en tabla + worker programado              | Analítica, IA nocturna, reintentos                   |
+| Documentos         | Chromium sin interfaz + HTML/CSS con `@page`   | Tipografías incrustadas y paginación real            |
+| IA                 | Detrás de una interfaz propia `ProveedorIA`    | Cambiar de modelo es cambiar un adaptador            |
+| Enlace             | Rust, servicio de Windows con icono de bandeja | Ligero, firmable, sin interfaz que mantener          |
+| Pagos              | Stripe Billing + webhooks                      | Suscripciones y prorrateos                           |
+| Correo             | Resend con dominio verificado                  | Invitaciones, horarios, documentos                   |
+| Pruebas            | Vitest · Postgres efímero · Playwright         | Las tres capas, obligatorias                         |
+| CI/CD              | GitHub Actions                                 | Todo desde GitHub                                    |
 
 **Descartado a propósito:** Next.js, Flutter, jsPDF, cualquier librería de componentes pesada, y cualquier dependencia nueva que no se justifique por escrito.
 
@@ -130,8 +124,7 @@ estook/
 │   ├── web/               landing publica
 │   ├── app/               la aplicacion (Panel + 8 apps)
 │   ├── carta/             carta digital publica
-│   ├── admin/             panel interno
-│   └── movil/             cascara Capacitor. Carga apps/app. SIN pantallas propias
+│   └── admin/             panel interno
 ├── packages/
 │   ├── dominio/           tipos, reglas puras, calculos (sin red)
 │   ├── ui/                sistema de diseno y componentes
@@ -148,7 +141,6 @@ estook/
 │   ├── eventos/           catalogo, publicacion, bandeja de salida
 │   ├── trabajos/          workers
 │   ├── conectores/        uno por TPV y por canal de reparto
-│   ├── facturacion/       adaptador de VeriFactu. Lo unico que habla con Verifacti
 │   └── ia/                orquestador y herramientas de Fogon
 ├── enlace/                el conector de Windows
 ├── base-de-datos/
@@ -158,85 +150,9 @@ estook/
 └── pruebas/
 ```
 
-**Las superficies y por qué están así están en A5.** `apps/movil` no tiene pantallas: carga `apps/app`.
-
 **Regla de dependencias, en un solo sentido:** `apps → packages`, `api → aplicacion → dominio`, y el dominio no importa nada de infraestructura ni de red. Se comprueba en integración continua con `dependency-cruiser`.
 
 > **Los documentos maestros viven en el repositorio.** Su fuente es el Markdown de `docs/maestros/` y el PDF es lo que sale, generado con `pnpm maestros`. Es la misma regla que el resto del producto: los documentos son salidas, nunca entradas. Un documento maestro que solo existe como PDF en un escritorio no se puede versionar, ni comparar, ni corregir sin rehacerlo entero.
-
-## A5 · Las superficies, y dónde vive cada cosa
-
-Esta sección existe porque es la pregunta que más veces se vuelve a hacer, y porque contestarla mal significa reescribir meses de trabajo. **Está decidida y no se reabre sin una razón escrita.**
-
-### La decisión, en una línea
-
-> **Todo Estook es una sola base de código, en web.** No hay una aplicación aparte para el TPV, ni una versión nativa del producto. Lo que cambia de un sitio a otro es **el modo de pantalla**, no la aplicación.
-
-### Las cinco superficies
-
-| Superficie        | Dónde vive                        | Qué es                                                                                              | Estado                                                                        |
-| ----------------- | --------------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| **Landing**       | `apps/web` → `estook.com`         | Vender y contratar                                                                                  | En construcción (`ESTADO.md`)                                                 |
-| **La aplicación** | `apps/app` → `estook.com/app`     | El Panel, las ocho apps **y el TPV**                                                                | En construcción. **Hasta dónde llega lo dice `ESTADO.md`, no este documento** |
-| **Carta digital** | `apps/carta`                      | La carta pública con QR, sin login                                                                  | M12                                                                           |
-| **Panel interno** | `apps/admin` → `estook.com/admin` | Nuestro, para administrar clientes                                                                  | En construcción (`ESTADO.md`)                                                 |
-| **Estook Enlace** | `enlace/`                         | Programa que se instala en el local: trae las ventas del TPV externo **y habla con las impresoras** | M19, y su parte de impresión en M20A                                          |
-
-Y una pieza que **no es una superficie nueva**, sino un envoltorio de la segunda:
-
-|                   | Dónde vive   | Qué es                                                                                                    |
-| ----------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
-| **App de Estook** | `apps/movil` | La misma `apps/app`, empaquetada con Capacitor para Play y App Store. **No tiene ni una pantalla propia** |
-
-### Por qué el TPV va dentro de la aplicación y no aparte
-
-Porque separarlo obliga a duplicar exactamente lo que más caro cuesta mantener:
-
-- **La sesión y los permisos.** El camarero que ficha a las 12:00 y el que cobra a las 14:30 son la misma persona, con el mismo PIN y el mismo rol. Dos aplicaciones son dos autenticaciones y dos matrices de permisos que se desincronizan a la primera.
-- **Los datos.** La carta del TPV es la carta de M10. El plato que se vende es la ficha de M9. La venta mueve el inventario de M6. Separarlo crearía una segunda fuente de verdad, que es lo que el proyecto entero prohíbe.
-- **El diseño.** Un botón nuevo tendría que hacerse dos veces.
-- **Y lo que se perdería:** que el jefe de cocina vea el margen del plato que acaba de salir sin cambiar de aplicación. Eso es el producto.
-
-### Modos de pantalla, que sí existen
-
-La aplicación normal —el Panel, la rueda, las ocho apps— es lo que ya está construido y no cambia. Encima de eso hay **dos modos**, y solo dos: una disposición a pantalla completa, sin barra de navegación, para un aparato que hace **una sola cosa durante todo el servicio**.
-
-| Modo       | Para                              | Cómo es                                                             |
-| ---------- | --------------------------------- | ------------------------------------------------------------------- |
-| **Sala**   | La tablet o el móvil del camarero | Apaisado, botones grandes, mesas y comanda. Sin barra de navegación |
-| **Cocina** | La pantalla fija de la cocina     | Completa, letra grande, tiempos, **sin un solo importe**            |
-
-- **Se entra** desde el Panel, con un botón grande, o **directamente al abrir sesión** si el rol lo tiene por defecto: un camarero en Sala, un cocinero en Cocina, un gerente en el Panel de siempre.
-- **Se sale** con un botón explícito, que en quiosco pide PIN.
-- **Un modo no es un destino ni gasta un nivel de profundidad.** Es otra puerta a la misma aplicación, con el mismo login y los mismos permisos.
-
-**Y el cobro no es un modo.** Se cobra cerrando una mesa dentro de Sala, y lo que se consulta vive donde le toca en la aplicación normal: **la caja es una vista de Servicio · Jornada** y **los tickets y facturas, una vista de Servicio · Ventas** (B5). Servicio ya tiene sus cuatro destinos y el máximo es cuatro: por eso Sala y Cocina son modos y no destinos.
-
-### Qué aporta la cáscara nativa, y por qué no es obligatoria
-
-`apps/movil` es un proyecto de Capacitor que **carga `apps/app` y no tiene pantallas propias**. Lo que añade es lo que un navegador no puede dar:
-
-|                                      | Por qué importa                            |
-| ------------------------------------ | ------------------------------------------ |
-| Sockets TCP                          | Imprimir en cualquier impresora sin agente |
-| Modo quiosco                         | Que un empleado no se salga de la app      |
-| Pantalla siempre encendida           | En servicio, que no se apague sola         |
-| Avisos con sonido en segundo plano   | Que a cocina le llegue el pedido           |
-| Cámara y lector de códigos de verdad | Albaranes, códigos de barras               |
-
-**No es obligatoria, y esto es importante:** con Estook Enlace instalado, el TPV funciona en un navegador normal, imprime, y la cocina recibe sus comandas. La cáscara es una mejora para el local que quiere una tablet dedicada, no un requisito para cobrar.
-
-Se construye **en M20A**, con la sala y la cocina, y no bloquea nada de lo anterior.
-
-### Lo que esto significa para lo ya construido
-
-**Nada se rehace.** El TPV se añade dentro de `apps/app`: dos modos de pantalla y dos vistas nuevas en Servicio. Lo que hay de M0 a M17 se queda tal cual: el mismo repositorio, el mismo dominio, la misma API, el mismo despliegue, la misma base de datos.
-
-### Lo que queda descartado, por escrito
-
-- Rehacer el producto en nativo. Sería tirar M0–M17, mantener tres plataformas y meter cada cambio en la revisión de una tienda.
-- Una aplicación de TPV separada, con su propio repositorio o su propio dominio.
-- Un TPV de escritorio para Windows. **Estook Enlace no es un TPV**: es un servicio sin interfaz que mueve ficheros e imprime.
 
 ---
 
@@ -412,20 +328,11 @@ Y sus vistas, donde las hay:
 | Calendario · Calendario  | Mes · Semana · Día                                               |
 | Calendario · Tareas      | Pendientes · Periódicas · Hechas                                 |
 | Equipo · Personas        | Con acceso · Sin entrar todavía · Retirados                      |
-| Servicio · Jornada       | En marcha · Caja · Cierre                                        |
-| Servicio · Ventas        | Del turno · Del día · Por producto · Tickets y facturas          |
+| Servicio · Jornada       | Cierre · En marcha                                               |
+| Servicio · Ventas        | Del turno · Del día · Por producto                               |
 | Cuaderno · Incidencias   | Abiertas · Cerradas                                              |
 
 **El catálogo de `packages/ui/src/apps.ts` es el único dueño de estas dos tablas**, y hay una prueba que las lee **de este documento** y las compara. Antes la prueba llevaba los valores copiados dentro, y por eso pudo estar en verde mientras el código decía que Negocio tenía «Reseñas» donde esta tabla decía «Pulse».
-
-### Los modos de pantalla · Sala y Cocina
-
-**Sala y Cocina no son destinos de Servicio**, y esto no es un detalle: Servicio ya tiene sus cuatro —Jornada, Ventas, Delivery y APPCC— y el máximo es cuatro. Son **modos de pantalla** (A5): una disposición completa, sin barra de navegación, pensada para un aparato que hace una sola cosa durante todo el servicio.
-
-- **Se entra** desde el Panel, con un botón grande, o **directamente al abrir sesión** si el rol lo tiene por defecto: un camarero entra en Sala, un cocinero en Cocina.
-- **Se sale** con un botón explícito, que en modo quiosco pide PIN.
-- **No gastan un nivel de profundidad** del `app → destino → ficha`: son otra puerta, no otro piso.
-- Lo del cobro que sí es de consulta vive donde le toca: **la caja es una vista de Servicio · Jornada** y **los tickets y facturas, una vista de Servicio · Ventas**.
 
 **Escritorio ·** barra superior y menú lateral propio. Arriba, el selector de local, las ocho apps con su desplegable —cada uno con sus destinos y **la pregunta que contesta cada uno**— y, a la derecha: **buscar, avisos, chat, Fogón, Ajustes y el avatar**. El avatar abre tu cuenta —mi acceso, cambiar de local y salir—, y Ajustes sigue teniendo su icono propio: en un ordenador hay sitio, y quien lleva un local entra ahí muchas veces al día. Dentro de una app, menú lateral con sus destinos y la ficha abriéndose en panel derecho sin tapar la lista.
 
@@ -462,7 +369,7 @@ La animación explica de dónde viene lo que aparece. **Si no explica nada, sobr
 | Deshacer                     | Aparece abajo y se va sola a los 10 s                               | 200 ms          |
 | Cargando                     | Esqueleto con brillo lento                                          | ciclo de 1,4 s  |
 
-`prefers-reduced-motion` **se respeta siempre**. Nada rebota más de una vez, nada gira, nada parpadea. **Una excepción escrita:** el temblor del Panel en edición, que dice sin leer que se está editando, como en un móvil ([0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)).
+`prefers-reduced-motion` **se respeta siempre**. Nada rebota más de una vez, nada gira, nada parpadea. **Una excepción escrita:** el temblor del Panel en edición, que dice sin leer que se está editando, como en un móvil ([0039](../../decisiones/0039-el-panel-se-monta-como-un-movil.md)).
 
 ## B7 · Presupuesto de velocidad
 
@@ -544,7 +451,7 @@ Una página por app, por tipo de local y por caso de uso, cada una con su títul
 
 # D · Los módulos
 
-**31 módulos, de M0 a M30, más M6½ y los tres del TPV (M20A, M20B y M20C)**, en el orden exacto de construcción, con la Fase 4 reordenada como dice su cabecera. Cada uno se entrega funcionando, probado en móvil real y con datos de verdad. **Ninguno se da por bueno «al 90 %».**
+**31 módulos, de M0 a M30**, en el orden exacto de construcción. Cada uno se entrega funcionando, probado en móvil real y con datos de verdad. **Ninguno se da por bueno «al 90 %».**
 
 Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Datos · Reglas críticas · Errores típicos · Terminado cuando · Pruebas._
 
@@ -594,9 +501,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M5 · Onboarding y arranque asistido
 
-**Entra.** Los ocho pasos del alta · Google Places con volcado de ficha, reseñas y competidores · régimen fiscal y objetivos · logo y color con previsualización · camino de grupo con duplicado de local · datos de ejemplo mínimos etiquetados como ejemplo, que no cuentan para nada y se borran con un botón · catálogo de referencia consultable de unos 250 productos · recetas de referencia opcionales · importadores con mapeo propuesto por Fogón · importación por acumulación de albaranes · modo demostración con salida limpia · barra de progreso con valor · guía de instalación distinta para iPhone y Android · la tarjeta del Panel que pregunta cómo entran las ventas (desde M6½ ya no pide «Conecta tus ventas»: [decisión 0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)).
+**Entra.** Los ocho pasos del alta · Google Places con volcado de ficha, reseñas y competidores · régimen fiscal y objetivos · logo y color con previsualización · camino de grupo con duplicado de local · datos de ejemplo mínimos etiquetados como ejemplo, que no cuentan para nada y se borran con un botón · catálogo de referencia consultable de unos 250 productos · recetas de referencia opcionales · importadores con mapeo propuesto por Fogón · importación por acumulación de albaranes · modo demostración con salida limpia · barra de progreso con valor · guía de instalación distinta para iPhone y Android · la tarjeta del Panel que pregunta cómo entran las ventas (desde M6½ ya no pide «Conecta tus ventas»: [decisión 0027](../../decisiones/0027-la-caja-se-cierra-sin-tpv.md)).
 
-**Dependencia que hay que respetar.** El asistente de conexión con el TPV **no se construye aquí**: vive en M18 y M20. En M5 solo existe la tarjeta del Panel. Desde la versión 1.2 esa tarjeta tiene tres respuestas —cobro con Estook, lo trae mi TPV, lo apunto yo— y la primera solo **anota la elección**: el alta de facturación es M20B.
+**Dependencia que hay que respetar.** El asistente de conexión con el TPV **no se construye aquí**: vive en M18 y M20. En M5 solo existe la tarjeta del Panel.
 
 **Terminado cuando.** Un local termina el alta en menos de cuatro minutos con su nombre real, su valoración, sus competidores y su marca aplicada; crear un producto desde el catálogo de referencia lleva menos de quince segundos; y el gasto de Google queda por debajo de 0,50 €.
 
@@ -616,7 +523,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **No estaba en el plan, y se hizo entre M6 y M7**, porque M6 dejó Inventario construido dentro de una aplicación que todavía no se podía usar de verdad: sin destinos, sin un Panel que se guardara, sin forma de apuntar una merma ni de fichar, con permisos que existían desde M1 y ninguna pantalla que los usara.
 
-**Entra.** Destinos y vistas en cada app ([0018](../decisiones/0018-destinos-y-vistas.md)) · el Panel de cada uno en el servidor ([0019](../decisiones/0019-el-panel-de-cada-uno-vive-en-el-servidor.md)), que avisa si no ha podido guardar · el catálogo de acciones ([0020](../decisiones/0020-un-catalogo-de-acciones.md)) · marca, dos temas y tamaño de letra ([0024](../decisiones/0024-el-color-del-local-pinta-la-app.md)) · **la merma con motivo y partida**, también desde la sala ([0026](../decisiones/0026-la-merma-tiene-motivo-y-partida.md)) · **fichar con la ubicación, sin bloquear nunca**, la ficha de cada persona con sus horas, lo que cobra en privado y su horario de siempre, y el Resumen de horas para quien lleva gente ([0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)) · **el cierre de caja a mano o con CSV**, la pregunta de cómo entran las ventas y Negocio › Ventas ([0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)) · **el alta de producto con lo que hay**, y el + y el − de cada producto ([0028](../decisiones/0028-el-alta-pregunta-cuanto-hay.md)) · la rueda con el Panel en el centro · los textos de toda la app, recortados.
+**Entra.** Destinos y vistas en cada app ([0018](../../decisiones/0018-destinos-y-vistas.md)) · el Panel de cada uno en el servidor ([0019](../../decisiones/0019-el-panel-de-cada-uno-vive-en-el-servidor.md)), que avisa si no ha podido guardar · el catálogo de acciones ([0020](../../decisiones/0020-un-catalogo-de-acciones.md)) · marca, dos temas y tamaño de letra ([0024](../../decisiones/0024-el-color-del-local-pinta-la-app.md)) · **la merma con motivo y partida**, también desde la sala ([0026](../../decisiones/0026-la-merma-tiene-motivo-y-partida.md)) · **fichar con la ubicación, sin bloquear nunca**, la ficha de cada persona con sus horas, lo que cobra en privado y su horario de siempre, y el Resumen de horas para quien lleva gente ([0025](../../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)) · **el cierre de caja a mano o con CSV**, la pregunta de cómo entran las ventas y Negocio › Ventas ([0027](../../decisiones/0027-la-caja-se-cierra-sin-tpv.md)) · **el alta de producto con lo que hay**, y el + y el − de cada producto ([0028](../../decisiones/0028-el-alta-pregunta-cuanto-hay.md)) · la rueda con el Panel en el centro · los textos de toda la app, recortados.
 
 **Reglas críticas.** Todo lo que mueve género sigue pasando por el libro. **Quién ve las horas de quién lo decide la base**, no la pantalla. Lo que cobra una persona no viaja a quien no tiene el permiso, y nadie lo pone hacia arriba. Una pregunta de configuración se hace una vez y se cambia en Ajustes.
 
@@ -628,21 +535,21 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y su capa inteligente.** **Sugerencia de pedido con su motivo escrito** («mantener unos 5 días de cobertura») y comparación entre proveedores para el mismo producto.
 
-**Y lo que M7 publica en el Calendario** ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)). La tabla de eventos, con su seguridad por roles · **las entregas** —los días de reparto de cada proveedor y los pedidos con fecha de llegada— y **las caducidades** de los lotes, como eventos · el widget del Panel **«Lo que viene»**, con hoy y mañana. Las pantallas del Calendario siguen siendo M14.
+**Y lo que M7 publica en el Calendario** ([decisión 0031](../../decisiones/0031-el-calendario-recoge-lo-de-todos.md)). La tabla de eventos, con su seguridad por roles · **las entregas** —los días de reparto de cada proveedor y los pedidos con fecha de llegada— y **las caducidades** de los lotes, como eventos · el widget del Panel **«Lo que viene»**, con hoy y mañana. Las pantallas del Calendario siguen siendo M14.
 
-**Y su último bloque · «El local en Google»** ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)). **Places** en el alta y en Ajustes, con autocompletar por sesión y una ficha pedida con lo justo: identificador, dirección, teléfono, web, horario, posición —el centro del radio de fichaje—, valoración y número de reseñas · **Business Profile para leer**: el dueño conecta su cuenta y se leen sus reseñas · **se actualiza sola una vez al día**, al cerrar la jornada de cada local, con **el reloj**, que se monta aquí ([0016](../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)) · **tope de gasto**: un contador por local y día y otro del proyecto, y Google solo se llama al elegir el local y al cerrar el día. El acceso a Business Profile se solicita a Google **al empezar M7**, porque tarda.
+**Y su último bloque · «El local en Google»** ([decisión 0030](../../decisiones/0030-el-local-se-situa-con-google.md)). **Places** en el alta y en Ajustes, con autocompletar por sesión y una ficha pedida con lo justo: identificador, dirección, teléfono, web, horario, posición —el centro del radio de fichaje—, valoración y número de reseñas · **Business Profile para leer**: el dueño conecta su cuenta y se leen sus reseñas · **se actualiza sola una vez al día**, al cerrar la jornada de cada local, con **el reloj**, que se monta aquí ([0016](../../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)) · **tope de gasto**: un contador por local y día y otro del proyecto, y Google solo se llama al elegir el local y al cerrar el día. El acceso a Business Profile se solicita a Google **al empezar M7**, porque tarda.
 
 **Reglas críticas.** El albarán mueve stock; **la factura confirma el precio**. La recepción es idempotente. **Abrir una pantalla no llama a Google nunca**: se lee lo guardado, con su fecha.
 
 **Terminado cuando.** Un pedido recorre el ciclo, el inventario cuadra, el precio nuevo ya está repercutido en los escandallos, y una factura con tres albaranes y una diferencia sale conciliada con esa diferencia señalada. **Y además**: las entregas de la semana salen en el Panel; al elegir el local en el alta se guardan su ficha y su posición; y al cerrar el día la ficha y las reseñas se actualizan solas, con el contador de llamadas por debajo de su tope.
 
-**Se entrega en dos veces** ([decisión 0032](../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)). **La primera**: las compras enteras —ficha del proveedor, pedidos, recepción, devoluciones, facturas y abonos conciliados, lo pactado y la comparativa— en cinco vistas del destino Compras, y el Calendario con sus entregas, sus caducidades y «Lo que viene». El precio nuevo queda repercutido en el coste de cada producto, que es lo que leerán los escandallos de M9. «PDF» es **imprimir**, con «Guardar como PDF»; el documento con membrete es M11. **La segunda**: el reloj y el local en Google, que esperan el acceso a Business Profile y la clave de Google Cloud.
+**Se entrega en dos veces** ([decisión 0032](../../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)). **La primera**: las compras enteras —ficha del proveedor, pedidos, recepción, devoluciones, facturas y abonos conciliados, lo pactado y la comparativa— en cinco vistas del destino Compras, y el Calendario con sus entregas, sus caducidades y «Lo que viene». El precio nuevo queda repercutido en el coste de cada producto, que es lo que leerán los escandallos de M9. «PDF» es **imprimir**, con «Guardar como PDF»; el documento con membrete es M11. **La segunda**: el reloj y el local en Google, que esperan el acceso a Business Profile y la clave de Google Cloud.
 
 ### M8 · Inventario, mermas y desviación
 
 **Entra.** Recuento cíclico con lector · inventario valorado a precio medio ponderado · mermas en tres toques con motivo obligatorio, por voz y con foto · partida aparte para consumo de personal e invitaciones · desviación · calibración con estado «aprendiendo» hasta el tercer recuento · **FEFO** · stock mínimo calculado · **food cost real global** junto al teórico y su brecha · causa probable de la desviación · permiso separado para cerrar recuento.
 
-**Adelantado en M6½** ([decisión 0026](../decisiones/0026-la-merma-tiene-motivo-y-partida.md)): la merma en tres toques, con motivo de una lista cerrada y su partida aparte —pérdida, comida del personal, invitación—, desde el Panel, desde la lista de productos y por quien la rompe, camareros incluidos; y su listado con totales, CSV e impresión. **Queda para M8**: por voz y con foto (con M22), y todo lo demás de esta lista.
+**Adelantado en M6½** ([decisión 0026](../../decisiones/0026-la-merma-tiene-motivo-y-partida.md)): la merma en tres toques, con motivo de una lista cerrada y su partida aparte —pérdida, comida del personal, invitación—, desde el Panel, desde la lista de productos y por quien la rompe, camareros incluidos; y su listado con totales, CSV e impresión. **Queda para M8**: por voz y con foto (con M22), y todo lo demás de esta lista.
 
 **Terminado cuando.** Con dos recuentos, la desviación sale explicada producto a producto; y un producto que se sirve de más deja de saltar tras el tercer recuento.
 
@@ -688,7 +595,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Reglas críticas.** El coste por hora **solo lo ve quien tiene ese permiso**. No aparece en documentos ni en Fogón.
 
-**Adelantado en M6½** ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): la ficha de cada persona con sus horas, sus fichajes y su última conexión, y **lo que cobra**, por hora o al mes, con permiso propio y nunca hacia arriba. **Queda**: contratos con vigencia y documentos, coste medio por puesto, festivos, ausencias y bolsa de horas.
+**Adelantado en M6½** ([decisión 0025](../../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): la ficha de cada persona con sus horas, sus fichajes y su última conexión, y **lo que cobra**, por hora o al mes, con permiso propio y nunca hacia arriba. **Queda**: contratos con vigencia y documentos, coste medio por puesto, festivos, ausencias y bolsa de horas.
 
 **Terminado cuando.** Con costes por puesto y sin un solo sueldo individual, el porcentaje de personal del Panel sale correcto.
 
@@ -702,31 +609,15 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **La base ya está desde M6½**: el horario de siempre de cada persona y sus horas fichadas frente a su contrato, en Equipo › Resumen. Es lo primero que tiene que leer el generador de horarios.
 
-**Y lo que pinta ya lo publican otros** ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)): desde M7, las entregas y las caducidades están en la tabla de eventos. M14 **pinta**, no va a buscar: añade los turnos, **los avisos de quien lleva el local con los roles que los ven** —filtrados por la base, no por la pantalla—, las capas con el color de su app y sus filtros, y «solo lo mío». Todo lo necesario, y nada de más.
+**Y lo que pinta ya lo publican otros** ([decisión 0031](../../decisiones/0031-el-calendario-recoge-lo-de-todos.md)): desde M7, las entregas y las caducidades están en la tabla de eventos. M14 **pinta**, no va a buscar: añade los turnos, **los avisos de quien lleva el local con los roles que los ven** —filtrados por la base, no por la pantalla—, las capas con el color de su app y sus filtros, y «solo lo mío». Todo lo necesario, y nada de más.
 
 **Terminado cuando.** Una semana con partidos se publica, cada persona recibe lo suyo, un cambio avisa solo al afectado, el cuadrante impreso sale legible, **y una propuesta de Fogón se puede editar antes de publicar**.
 
 ### M15 · Fichajes
 
-**Adelantado en M6½** ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): fichar en un toque desde el Panel y desde Equipo › Hoy, con **hora del servidor** y **la ubicación pedida al entrar y al salir, que nunca bloquea** —se guardan los metros, o por qué no los hay— · un turno abierto por persona · correcciones con nombre y motivo, y el turno olvidado lo cierra quien corrige · quién ve los fichajes de quién, decidido en la base.
+**Adelantado en M6½** ([decisión 0025](../../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): fichar en un toque desde el Panel y desde Equipo › Hoy, con **hora del servidor** y **la ubicación pedida al entrar y al salir, que nunca bloquea** —se guardan los metros, o por qué no los hay— · un turno abierto por persona · correcciones con nombre y motivo, y el turno olvidado lo cierra quien corrige · quién ve los fichajes de quién, decidido en la base.
 
 **Entra.** Modo quiosco en cualquier dispositivo registrado del local, con PIN · para el local que lo quiera, fichar **solo** desde sus aparatos · comparativa de lo planificado contra lo fichado con su coste (con M14).
-
-**Y la ley de registro horario, que afecta a esto directamente.** Registrar la jornada es obligatorio en España desde mayo de 2019, y la Inspección ya sanciona los registros que considera poco fiables. Además hay un **Real Decreto de registro horario digital en tramitación** —a septiembre de 2026 **no está publicado en el BOE**, así que todavía no obliga— cuyo borrador exige cosas muy concretas. Estook ya cumple varias por diseño, y las que faltan se construyen aquí porque hacerlo después es rehacer:
-
-| Lo que exige el borrador                               | Cómo está Estook                                                                  |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| Registro solo digital, con sellado de hora automático  | **Ya:** la hora la pone el servidor                                               |
-| Toda corrección con quién, cuándo y por qué, inmutable | **Ya:** correcciones con nombre y motivo, y auditoría                             |
-| Credencial individual e intransferible                 | **Ya:** PIN por persona                                                           |
-| Sin huella ni reconocimiento facial                    | **Ya, y es regla dura del módulo**                                                |
-| El trabajador ve sus propios registros al momento      | **Ya:** cada uno ve lo suyo                                                       |
-| **Registrar también las pausas**                       | **Falta.** Entra aquí: pausa y vuelta, como un tramo más del turno                |
-| **Distinguir horas ordinarias de extraordinarias**     | **Falta.** Se calcula contra el contrato de M13 y se marca                        |
-| **Conservar cuatro años** con integridad               | **Falta decirlo.** Se escribe en la política de retención de M27                  |
-| **Acceso de la Inspección a los datos**                | **Falta.** Exportación completa del periodo, firmada y con su fecha, desde Equipo |
-
-> **[VERIFICAR] cuando el Real Decreto se publique en el BOE:** el formato exacto de la exportación para la Inspección y si exige una API. Hasta entonces se hace la exportación y no se inventa ningún protocolo. Es la misma regla que con VeriFactu.
 
 **Errores típicos.** **Bloquear el fichaje por la ubicación**: sin señal no se ficha, y el registro se queda con huecos que nadie puede explicar. Se pide, se guarda y se señala; no se impide. **Y huella o biometría, nunca.**
 
@@ -744,20 +635,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Terminado cuando.** El turno de la mañana lee la incidencia de la noche anterior sin que nadie se lo cuente.
 
-## Fase 4 · Las ventas
-
-> **Orden de construcción de la Fase 4 desde la versión 1.2:**
->
-> **M20 → M19a → M20A → M20B → M20C → M18 → M19b**
->
-> M20 va primero porque su motor de consumo sirve para todas las vías —cierre a mano, CSV, TPV de Estook y conectores— y ya trabaja con lo que dejó M6½.
->
-> **Y Estook Enlace se parte en dos, porque hace dos cosas que se necesitan en momentos distintos:**
->
-> - **M19a · el agente y la impresión.** El servicio, su emparejamiento con el local y su parte de impresión. Va **antes de M20A**, porque la sala y la cocina no sirven de nada sin imprimir.
-> - **M19b · el conector de TPV.** Vigilar la carpeta y los lectores de formato de cada marca. Va con M18, al final, porque solo lo necesita quien sigue con su TPV.
->
-> Los números de los módulos no cambian, para no romper las referencias de las decisiones ya escritas.
+## Fase 4 · Los datos de venta
 
 ### M18 · El conector · vía nube
 
@@ -765,28 +643,17 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Reglas críticas.** **Nunca pedimos las credenciales del TPV dentro de Estook cuando existe autorización**; cuando el proveedor las entrega bajo petición, se explica de dónde salen y las pedimos nosotros. **Importar dos veces el mismo día no cambia nada.**
 
-**Revo y Last.app (septiembre de 2026).** El acceso a sus API está solicitado: Revo por su formulario de integradores y Last.app escribiendo a su equipo de integraciones. **No se implementa ninguno hasta tener la aprobación, la documentación oficial y un entorno de pruebas**; mientras, salen como «próximamente». Last.app tiene un límite de peticiones estricto: se usa su webhook, y la sincronización por API va en tramos cortos, con espera al recibir un 429. Todo webhook de un TPV entra por una bandeja de entrada: se verifica la firma, se guarda en bruto, se responde en menos de 2 segundos y se procesa en la cola de M2.
-
 **Terminado cuando.** Un día de ventas real entra solo y el consumo mueve el inventario; y al conectar por primera vez, **la Carta aparece montada** con todos los artículos del TPV, sus precios y sus secciones, sin que nadie escriba un plato a mano.
 
 > **Aclaración que evita un error caro.** El TPV trae **artículos de venta, no ingredientes**. Sabe que se vendió una hamburguesa a 14,50 €; no sabe qué lleva dentro ni lo que costó. Conectar monta la Carta; el inventario y los escandallos los pone el restaurante, y eso es precisamente lo que aporta Estook.
 
-### M19 · Estook Enlace · se entrega en dos partes
+### M19 · El conector · Estook Enlace
 
-**M19a va antes de M20A y M19b va al final**, por lo dicho en la cabecera de la fase. Lo de abajo es el módulo entero; lo que entra en cada parte se dice al final de la ficha.
+**Entra.** Servicio de Windows en Rust, firmado, que **vigila una carpeta** y sube los ficheros nuevos · emparejamiento con un código de un solo uso · solo lectura, sin puertos abiertos, saliente y cifrado · latido cada 15 minutos · cola local si no hay red · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
 
-**Entra.** Servicio en Rust, firmado, **para Windows, Linux y macOS** —vale un mini PC o una Raspberry—, que **vigila una carpeta** y sube los ficheros nuevos · emparejamiento con un código de un solo uso · solo lectura, sin puertos abiertos, saliente y cifrado · latido cada 15 minutos · cola local si no hay red · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
-
-**Y su segundo trabajo, desde la versión 1.2: imprimir.** Enlace lee la cola de impresión y habla **ESC/POS** con las impresoras del local, por red, USB o Bluetooth. Es la vía principal de impresión de Estook porque **vale con cualquier impresora** y funciona con todas las tablets apagadas (capítulo 6 del Anexo).
-
-**Reglas críticas.** **Enlace no entra en la base de datos del TPV.** Si un formato cambia, guarda el fichero original, avisa y no rompe nada. **Si se cae internet, Enlace sigue imprimiendo lo que tenga en cola.**
+**Reglas críticas.** **Enlace no entra en la base de datos del TPV.** Si un formato cambia, guarda el fichero original, avisa y no rompe nada.
 
 **Terminado cuando.** Con el PC apagado dos días, al arrancar sube lo pendiente sin duplicar; y un fichero con formato inesperado se queda guardado con su aviso.
-
-**Qué entra en cada parte.**
-
-- **M19a · el agente y la impresión** (antes de M20A): el servicio en Rust para Windows, Linux y macOS, firmado · emparejamiento con código de un solo uso · saliente y cifrado, sin puertos abiertos · latido · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · **suscripción a la cola de impresión, traducción del formato intermedio a ESC/POS y envío a la impresora por red, USB o Bluetooth, con su cola local si no hay internet**.
-- **M19b · el conector de TPV** (con M18, al final): vigilancia de la carpeta, subida de ficheros nuevos y lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
 
 ### M20 · Ventas, emparejamiento y consumo
 
@@ -794,70 +661,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Reglas críticas.** Una jornada estimada **no entra en la desviación sin avisar**. El menú importado se explota a sus platos.
 
-**Adelantado en M6½** ([decisión 0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)): el cierre de caja a mano o con el CSV del TPV, con su origen, en la misma tabla donde escribirá el conector; los platos apuntados con el nombre ya normalizado para emparejarlos; y la pregunta de cómo entran las ventas. **Queda** todo lo de esta lista, empezando por el emparejamiento y el consumo teórico.
+**Adelantado en M6½** ([decisión 0027](../../decisiones/0027-la-caja-se-cierra-sin-tpv.md)): el cierre de caja a mano o con el CSV del TPV, con su origen, en la misma tabla donde escribirá el conector; los platos apuntados con el nombre ya normalizado para emparejarlos; y la pregunta de cómo entran las ventas. **Queda** todo lo de esta lista, empezando por el emparejamiento y el consumo teórico.
 
 **Terminado cuando.** El stock se mueve solo con las ventas del día y el cierre cuadra con el Z; **reimportar el mismo fichero no cambia nada**.
-
-**Y lo que añade la versión 1.2.**
-
-- **Un solo motor de consumo para todas las vías.** La venta que nace en el TPV de Estook (M20C) entra con su plato ya emparejado —es un plato de la carta— y pasa por el mismo motor que la del CSV o la del conector. Nadie escribe un segundo motor.
-- **Cuándo descuenta:** al cerrarse la venta —ticket emitido, o jornada importada—. Una mesa abierta no descuenta.
-- **Anulaciones y devoluciones** generan los movimientos contrarios con el mismo coste que se congeló. Nunca se borra un movimiento.
-- **Emparejar tarde:** al confirmar un emparejamiento se ofrece aplicar las ventas pendientes de ese artículo, valoradas con el precio medio **de su fecha**, no con el de hoy. Siempre bajo petición, nunca solo (hallazgo 6).
-- **Menú sin desglose:** si la vía no dice qué platos se eligieron, el local configura un reparto estimado, y esas salidas se marcan como estimadas.
-- **Modificadores sin configurar** se guardan, no descuentan y salen en una lista con cuántas veces han aparecido.
-- **Ficheros:** codificación UTF-8 y Windows-1252, separador `;` o `,`, decimales con coma, fechas `dd/mm/aaaa` y filas de totales ignoradas. **Reimportar una jornada agregada la sustituye**: se anulan los movimientos de la anterior y se aplican los nuevos, y el resultado es igual que importar solo el fichero nuevo.
-- **El total del día sin desglose no descuenta género**, y la pantalla lo explica.
-
-### M20A · Sala y cocina
-
-**Objetivo.** Que la sala tome nota en tablet o en móvil y la cocina lo reciba al momento, sin papel. Todavía sin cobrar.
-
-**Entra** (el detalle, en el capítulo 3 del Anexo).
-
-- **Los modos Sala y Cocina** según B5, con su entrada desde el Panel y su salida con PIN en quiosco, y `apps/movil`, la cáscara de Capacitor que carga `apps/app` (A5).
-- **Sala:** plano de mesas por zonas · **tres caminos de venta: mesa, barra y para llevar** · tomar nota con la carta del canal (M10), extras, modificadores y notas · **asignar líneas a comensales**, porque sin eso no se puede dividir la cuenta después · **aviso de alergia de la mesa** con los alérgenos de M9 · tandas y **marchar** —a mano, al retirar la anterior o por tiempo— · quitar una línea ya mandada con motivo, permiso y **aviso a cocina** · mover, juntar, dividir y **traspasar una mesa a otro camarero**, que es el cambio de turno · agotado desde la comanda, con aviso previo calculado con el stock real.
-- **Cocina:** **enrutado por partida**, con cada pantalla configurada y los platos sin partida saliendo en todas y en una lista de fallos · **pantalla de pase** · tiempos en tres tramos con los minutos que pone el local · marcar listo, **deshacer dentro de un margen** · aviso sonoro distinto para alergia y prioridad · **contador del día por plato** · **la ficha técnica de M9 en modo cocina desde cualquier plato** · **sin un solo importe**, tampoco en la respuesta del servidor.
-- **Lo que la cocina devuelve:** tiempo real por plato y partida hacia M9 y M21, agotados hacia M7, devoluciones hacia la merma de M8.
-- **Precuenta** con «PRECUENTA · No válido como factura», sin serie ni QR.
-- **Cola de impresión** con su formato intermedio propio y los tres agentes que la consumen, con Ajustes › Impresoras y su botón de imprimir prueba (capítulo 6 del Anexo).
-- Con la red caída, la comanda se guarda en el aparato y sube al volver; con Enlace, la impresa sale igual.
-
-**Y su capa inteligente.** Prioridades, retrasos y el aviso de «quedan pocas raciones» son **reglas en código**, sin gastar créditos. Lo que sí es de Fogón —por qué un plato va tarde siempre— llega con M22 y se alimenta de lo que se mide aquí.
-
-**No entra.** Cobrar, tickets y caja (M20C). Facturación (M20B).
-
-**Depende de.** M3 (A5 y B5), M4, M9, M10, M16 y **M19a**, que es lo que imprime.
-
-**Reglas críticas.** **Sala y Cocina son modos de pantalla, no destinos**: Servicio ya tiene sus cuatro. Una comanda no es una factura y no lleva nada que lo parezca. Lo que se quita queda con autor y motivo. La cocina funciona sin IA. Un cocinero no recibe importes, tampoco en la respuesta del servidor.
-
-**Terminado cuando.** Pasan **todas las pruebas del apartado 3.7 del Anexo**. En corto: un servicio de una mesa de seis con tres tandas, dos alergias y un plato retirado ya en cocina cuadra en sala, en cocina y en el pase; con tres pantallas cada partida ve solo lo suyo; se vende en barra sin abrir mesa; se traspasa una mesa a otro camarero; **la misma comanda sale idéntica por tres marcas de impresora, una de impacto, en menos de 6 segundos y con todas las tablets apagadas**; con el wifi cortado se sigue tomando nota; y un cocinero no recibe ni un importe llamando a la API a pelo.
-
-### M20B · Facturación VeriFactu
-
-**Objetivo.** Que Estook emita tickets y facturas legales, con su registro enviado a Hacienda, sin que nada del resto de la app pueda tocarlos.
-
-**Entra** (el detalle, en el Anexo TPV y facturación). Esquema `facturacion` aislado y solo de inserción · adaptador `ProveedorFacturacion` con Verifacti · **alta de facturación del local**: datos del titular, régimen, series, alta del NIF en Verifacti y firma de la autorización de representación, con el cobro bloqueado hasta completarla · ticket (F2), factura (F1), canje (F3), rectificativas (R5 para el ticket; R1 a R4 según diga el asesor), abono y anulación restringida · numeración correlativa por serie y rectificativas en serie propia · QR y leyenda · webhooks del proveedor con su idempotencia · estado de cada registro y pantalla de registros con error · justificante provisional sin conexión y emisión posterior con incidencia · declaración responsable visible en la app · bloqueo para régimen foral, SII y, de momento, Canarias, Ceuta y Melilla.
-
-**No entra.** La sala y el cobro (M20A y M20C). Calcular la huella o encadenar registros: lo hace el proveedor.
-
-**Depende de.** M1, M2 (el motor fiscal desglosa los impuestos) y M11 (plantillas para la factura completa en PDF).
-
-**Reglas críticas.** Regla 15 de A1. Las claves del proveedor, solo en el servidor. **Nunca se llama a la eliminación permanente de un NIF en el proveedor.** Un documento solo existe si el proveedor ha devuelto 200. **Nada va a producción sin la revisión escrita del asesor y la declaración responsable publicada** (E3).
-
-**Terminado cuando.** Todas las pruebas del Anexo pasan contra el entorno de pruebas del proveedor; un rechazo simulado llega a la pantalla de errores y se corrige sin tocar el original; y ningún rol, ni el panel interno, consigue modificar un documento emitido llamando a la API a pelo.
-
-### M20C · Cobro y caja
-
-**Objetivo.** Cerrar una mesa cobrada con su ticket legal, y que eso mueva caja, ventas, inventario y Negocio sin que nadie teclee nada más.
-
-**Entra.** Cobro en efectivo (entregado y cambio), con tarjeta en el datáfono del local (el camarero confirma) y mixto · dividir la cuenta por comensal, por platos o a partes iguales, con un ticket por cobro · invitaciones y descuentos con permiso y motivo · emisión por M20B y, si falla, la mesa sigue abierta · **impresión del ticket** por la cola de M20A, y envío por correo o por QR si el cliente lo pide · factura a petición del cliente desde su ticket · devoluciones por rectificativa · **caja como vista de Servicio · Jornada** y **tickets y facturas como vista de Servicio · Ventas** (B5), con apertura de caja, entradas y salidas con motivo, arqueo y descuadre · el cierre de caja de M6½ se rellena solo con origen «TPV de Estook» · evento `venta.cerrada` hacia M20.
-
-**Depende de.** M20A, M20B, M16 y M6½.
-
-**Reglas críticas.** Nunca se cierra una mesa cobrada sin ticket o sin justificante provisional. Reabrir lo cobrado no existe: se rectifica. Los PDF —factura completa, ticket por correo— salen del servidor (regla 7); el ticket impreso no es un PDF. **La impresión no bloquea el cobro**: si falla, el ticket ya está emitido y se reimprime.
-
-**Terminado cuando.** Un servicio de prueba completo —diez mesas, una dividida, un pago mixto, una factura pedida y una devolución— cuadra al céntimo entre caja, tickets, ventas e inventario; y con internet cortado se cobra con justificante y al volver salen los tickets en orden. Reimprimir un ticket sale idéntico, marcado como copia, y no crea ningún registro nuevo.
 
 ## Fase 5 · Inteligencia
 
@@ -891,7 +697,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M23 · Reseñas, competencia y chat
 
-**Lo que ya habrá hecho M7** ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)): la ficha del local desde Places, con su posición, y la cuenta de Business Profile conectada y leyendo reseñas, actualizado una vez al día al cerrar la jornada y con tope de gasto. **Aquí queda lo que se hace con las reseñas**: clasificarlas, la respuesta propuesta, el cruce con el cuadrante y la competencia.
+**Lo que ya habrá hecho M7** ([decisión 0030](../../decisiones/0030-el-local-se-situa-con-google.md)): la ficha del local desde Places, con su posición, y la cuenta de Business Profile conectada y leyendo reseñas, actualizado una vez al día al cerrar la jornada y con tope de gasto. **Aquí queda lo que se hace con las reseñas**: clasificarlas, la respuesta propuesta, el cruce con el cuadrante y la competencia.
 
 **Entra.** Enlace de la ficha del local autorizando con la cuenta de Google que la gestiona · reseñas por Google Business Profile, refrescadas cada 9 horas · conteo, clasificación por tema, media, evolución y detección de caídas **resueltos con consultas, sin llamar al modelo** · una sola llamada al modelo al día · cruce con el cuadrante y respuesta propuesta · competencia con recálculo cada 6 h sobre lo guardado y caché compartida por zona · chat con canales, directos, menciones, tarjetas de contexto, confirmación de lectura, buscador y silencio fuera de turno.
 
@@ -921,25 +727,15 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Terminado cuando.** Cada derecho tiene su prueba llamando a la API con un plan inferior y esperando `402`; cambiar los derechos en el navegador no desbloquea nada; y un local se da de alta y contrata de principio a fin sin que intervengamos.
 
-**Y las facturas de Estook a sus clientes.** Estook también factura sus suscripciones, así que esas facturas tienen que salir de un sistema conforme antes de la fecha de su titular: 1 de julio de 2027 si factura como autónomo, 1 de enero de 2027 si es una sociedad. Se resuelve con el mismo adaptador de M20B y el NIF de Estook, o con un programa de facturación ya adaptado; lo decide el titular con su asesor. **En qué plan entra el TPV** también se escribe aquí, cuando esté decidido (Evolución, capítulo 19).
-
 ### M27 · Endurecimiento y puesta en producción
 
-**Entra.** Revisión de seguridad y de RLS tabla por tabla · límites de petición · pruebas de carga en los caminos calientes · índices revisados con planes reales · RGPD: registro de actividades, retención por tipo de dato aplicada por un trabajo nocturno —**fichajes y jornada, cuatro años**; tickets y facturas, su plazo legal aunque el cliente se dé de baja—, borrado y portabilidad, contrato de encargado (con Verifacti como subencargado para quien cobra con Estook), **datos alojados en la Unión Europea, comprobado región por región en Supabase, en el almacenamiento y en cada proveedor**, aviso a empleados sobre fichajes, ubicación del fichaje y chat · copias diarias con prueba de restauración · página de estado · dominio, correo verificado y certificados · la lista de claves · alta de la cuenta propia.
-
-**Y cómo se despliega sobre restaurantes que están dando de comer.** Esto no estaba escrito y es de lo que más caro sale aprender:
-
-- **Ventana de despliegue:** de 04:00 a 07:00, que es el único rato en que ningún local con cocina está en servicio. **Nunca entre las 12:00 y las 16:30 ni entre las 19:30 y las 00:30.** Un despliegue urgente fuera de ventana lo autoriza una persona y queda escrito.
-- **Migraciones compatibles hacia atrás, siempre** (regla 2 de A1): primero se añade la columna, después se despliega el código que la usa, y solo en un despliegue posterior se quita lo viejo. Así una versión antigua abierta en una tablet **no se rompe**.
-- **Vuelta atrás probada.** Cada despliegue tiene que poder deshacerse, y se ensaya, no se supone.
-- **La versión vieja en la tablet.** La PWA se queda cacheada: una tablet que lleva encendida desde el martes puede tener código de hace días. El servidor **manda su versión mínima**; si la del aparato es menor, la app avisa y se actualiza sola. **Nunca en mitad de una comanda:** se espera a que la mesa se cierre.
-- **Nada de facturación se despliega el mismo día que otra cosa.** Va solo, y con la cola vigilada después.
+**Entra.** Revisión de seguridad y de RLS tabla por tabla · límites de petición · pruebas de carga en los caminos calientes · índices revisados con planes reales · RGPD: registro de actividades, retención por tipo de dato aplicada por un trabajo nocturno, borrado y portabilidad, contrato de encargado, aviso a empleados sobre fichajes y chat · copias diarias con prueba de restauración · página de estado · dominio, correo verificado y certificados · la lista de claves · alta de la cuenta propia.
 
 **Y algo que la construcción de M4 enseñó.** Aquí se cierra el hueco de los procesos de fondo: **la bandeja de salida, la cola de trabajos y la limpieza de caducados necesitan quién los ejecute.** Una API que atiende y se apaga no tiene reloj. La decisión —`pg_cron` dentro de Supabase, o una función con programador— se escribe antes de M8, no aquí, pero aquí se comprueba que funciona bajo carga.
 
 ### M28 · Piloto real
 
-**Entra.** Tres locales reales durante un mes, uno con Ágora, otro con Glop y, si M20C está terminado y la facturación aprobada por el asesor, uno cobrando con Estook · acompañamiento en la instalación y la primera semana · **registro de cada fricción y cada llamada** · medición de activación, salud de datos y coste real · corrección con prioridad sobre cualquier función nueva · entrevista de salida.
+**Entra.** Tres locales reales durante un mes, uno con Ágora y otro con Glop · acompañamiento en la instalación y la primera semana · **registro de cada fricción y cada llamada** · medición de activación, salud de datos y coste real · corrección con prioridad sobre cualquier función nueva · entrevista de salida.
 
 **Regla crítica.** **No se abre ninguna función nueva mientras haya fricción del piloto sin resolver.**
 
@@ -955,7 +751,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Regla crítica de datos.** Los pedidos se transforman **al modelo interno de Estook**. Crear una estructura paralela sería una segunda fuente de verdad.
 
-**Qué NO entra.** Meter los pedidos de reparto en la sala o en el cobro. El canal de reparto es externo; Estook agrega y analiza.
+**Qué NO entra.** Convertir Estook en un TPV. El canal de reparto es externo; Estook agrega y analiza.
 
 **Antes de escribir una línea.** Se investiga la documentación oficial vigente: proceso de alta y aprobación, OAuth y autorización del restaurante, permisos y alcances, identificación de tiendas, APIs de pedidos, datos que devuelve cada pedido, webhooks y eventos, tiempos para aceptar o rechazar, sincronización de estados, impuestos, descuentos y totales, límites de la API, requisitos técnicos y comerciales, y entorno de pruebas y certificación. **No se implementa nada basándose en suposiciones.**
 
@@ -998,10 +794,9 @@ Código en su rama con commits legibles · migraciones numeradas y reversibles �
 2. **M1 y M2 antes que cualquier pantalla de negocio.** El modelo de alcances y los motores transversales son lo que se paga carísimo si se deja para después.
 3. **M3 antes que cualquier app**, para que ninguna invente su propio botón.
 4. Ningún módulo empieza con el anterior a medias.
-5. **Antes de M8 hay que haber decidido quién ejecuta los procesos de fondo.** La bandeja de salida y la cola de trabajos existen desde M2 y nadie las llama: en cuanto un módulo dependa de un evento, eso deja de ser gratis. **Decidido**: `pg_cron` llamando a nuestra API ([0016](../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)), y **se monta en M7**, porque la actualización diaria de la ficha de Google lo necesita.
+5. **Antes de M8 hay que haber decidido quién ejecuta los procesos de fondo.** La bandeja de salida y la cola de trabajos existen desde M2 y nadie las llama: en cuanto un módulo dependa de un evento, eso deja de ser gratis. **Decidido**: `pg_cron` llamando a nuestra API ([0016](../../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)), y **se monta en M7**, porque la actualización diaria de la ficha de Google lo necesita.
 6. **M29 y M30 van al final, y no es un descuido.** Una integración sobre un dominio a medio cerrar se rehace entera.
 7. **No se lanza sin M28.** Un mes con tres locales reales vale más que seis meses de suposiciones.
-8. **La facturación no se enciende en producción** sin tres cosas: todas las pruebas del Anexo en verde contra el entorno de pruebas, la declaración responsable publicada en la app y la revisión del asesor fiscal por escrito.
 
 > **Documento de control obligatorio.** Antes de cerrar cualquier módulo se pasa la lista de la **Auditoría de flujos, dependencias y efectos en cadena**, que define el mapa de dependencias de datos, los efectos en cascada de cada cambio, de dónde salen las opciones de cada desplegable, las máquinas de estado y el comportamiento ante fallos parciales.
 
@@ -1021,4 +816,4 @@ Lo que costó caro, escrito para no repetirlo.
 
 **Se prueba con el rol más pequeño que puede hacerlo.** La merma pasaba todas las pruebas de base de datos y a la camarera le decía «ese producto no está»: el candado del producto exigía permiso de editarlo. Solo lo encontró una prueba de pantalla entrando como ella.
 
-**El conductor de la base también es un «sitio».** Las pruebas hablan con PGlite; producción, con `postgres.js`, que convierte a JSON lo que va a una columna JSON. El código ya se lo daba convertido, así que se guardaba envuelto en un texto, y **el Panel no se guardó nunca en producción** con todo en verde ([decisión 0029](../decisiones/0029-lo-que-va-a-jsonb-viaja-como-texto.md)). Lo que depende del conductor se escribe de forma que dé igual cuál sea —`::text::jsonb`— y se comprueba contra la base de verdad después de desplegar.
+**El conductor de la base también es un «sitio».** Las pruebas hablan con PGlite; producción, con `postgres.js`, que convierte a JSON lo que va a una columna JSON. El código ya se lo daba convertido, así que se guardaba envuelto en un texto, y **el Panel no se guardó nunca en producción** con todo en verde ([decisión 0029](../../decisiones/0029-lo-que-va-a-jsonb-viaja-como-texto.md)). Lo que depende del conductor se escribe de forma que dé igual cuál sea —`::text::jsonb`— y se comprueba contra la base de verdad después de desplegar.

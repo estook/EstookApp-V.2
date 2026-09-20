@@ -176,6 +176,10 @@ export const MODULOS: Readonly<Record<string, string>> = {
   M16: 'M16 · Servicio, APPCC y trazabilidad',
   M17: 'M17 · Cuaderno',
   M20: 'M20 · Ventas, emparejamiento y consumo',
+  // La caja y los tickets del TPV de Estook. Es M20C y no M20 a secas: son dos
+  // fichas distintas del Plan, y decir «M20» donde va «M20C» le promete a quien
+  // lee la pantalla un modulo que llega antes de lo que llega de verdad.
+  M20C: 'M20C · Cobro y caja',
   M21: 'M21 · Negocio, analítica y Estook Pulse',
   M22: 'M22 · Fogón',
   M23: 'M23 · Reseñas, competencia y chat',
@@ -474,14 +478,35 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // Y el cierre **ya no espera a M16**: es el cierre de caja de M6½, que es
         // por donde entran las ventas de quien no conecta un TPV. Lo que sigue
         // siendo M16 es «En marcha», que necesita el APPCC y la jornada abierta.
-        vistas: vistas('Cierre', ['En marcha', 'M16']),
+        //
+        // **Caja es la del TPV de Estook** (M20C): apertura con fondo, entradas y
+        // salidas con motivo y arqueo. No es lo mismo que «Cierre», y por eso son
+        // dos vistas: la caja es lo que pasa durante el servicio, y el cierre es
+        // el resumen del día —que con el TPV propio **se rellena solo** desde
+        // ella— (Anexo, 5.5). Sin TPV de Estook, el cierre se sigue escribiendo a
+        // mano y Caja no llega nunca a tener contenido.
+        //
+        // El orden es el de la tabla de B5, que es el de un día: qué está pasando,
+        // la caja mientras se sirve, y el cierre al final. **No es el orden en el
+        // que se han construido**, y por eso se entra por `dondeEntraEnElDestino`
+        // y no por la primera.
+        vistas: vistas(['En marcha', 'M16'], ['Caja', 'M20C'], 'Cierre'),
       },
       {
         id: 'ventas',
         nombre: 'Ventas',
         icono: IconoNegocio,
         queContesta: '¿Qué se ha vendido, y qué consumo ha generado?',
-        vistas: vistas(['Del turno', 'M20'], ['Del día', 'M20'], ['Por producto', 'M20']),
+        // «Tickets y facturas» es M20C y no M20: las tres primeras salen de
+        // cualquier vía de ventas —CSV, conector o TPV—, y esta solo existe si el
+        // local **cobra con Estook**, porque es la lista de lo que ha emitido su
+        // propio sistema de facturación con su estado ante Hacienda (Anexo, 5.1).
+        vistas: vistas(
+          ['Del turno', 'M20'],
+          ['Del día', 'M20'],
+          ['Por producto', 'M20'],
+          ['Tickets y facturas', 'M20C'],
+        ),
         modulo: 'M20',
       },
       {
@@ -657,15 +682,53 @@ export function dondeEntra(app: App): Destino | undefined {
   return destinosConstruidos(app)[0] ?? app.destinos[0];
 }
 
+/**
+ * Las vistas que existen de verdad dentro de un destino.
+ *
+ * Es la hermana de `destinosConstruidos` un piso mas abajo, con una diferencia
+ * que importa: **una vista pendiente si se ensena** en el control segmentado, a
+ * proposito. Un destino sin construir en la barra de abajo es una pestana muerta
+ * que roba una de cuatro posiciones; una vista apagada que dice «Caja · llega con
+ * M20C» no roba nada y contesta «y la caja, donde esta?» antes de que nadie la
+ * busque.
+ */
+export function vistasConstruidas(destino: Destino): readonly Vista[] {
+  return destino.vistas.filter((vista) => vista.modulo === undefined);
+}
+
+/**
+ * La vista por la que se entra a un destino: **la primera construida**, y si no
+ * hay ninguna construida, la primera de todas.
+ *
+ * ── Por que no es `vistas[0]` ───────────────────────────────────────────────
+ *
+ * Porque el orden de las vistas lo manda la tabla de B5, y esa tabla esta escrita
+ * en el orden en el que se **entienden**, no en el que se han construido:
+ * «En marcha · Caja · Cierre» es el orden de un dia. Con `vistas[0]`, abrir
+ * Servicio · Jornada caeria en «En marcha», que es M16, y **la pantalla que de
+ * verdad funciona —el cierre de caja de M6½— quedaria escondida detras de un
+ * cartel** de «todavia no».
+ *
+ * Es exactamente el fallo de las pestanas muertas de B5, un piso mas abajo, y se
+ * arregla igual que arriba: `dondeEntra` tampoco es `destinos[0]`.
+ *
+ * Si no hay ninguna construida se devuelve la primera igualmente, porque el
+ * destino entero sera entonces un cartel y la direccion tiene que seguir siendo
+ * copiable y compartible.
+ */
+export function dondeEntraEnElDestino(destino: Destino): Vista | undefined {
+  return vistasConstruidas(destino)[0] ?? destino.vistas[0];
+}
+
 export function destinoPorId(app: App, id: string): Destino | undefined {
   return app.destinos.find((destino) => destino.id === id);
 }
 
-/** La direccion de un destino, con su primera vista si tiene vistas. */
+/** La direccion de un destino, con su vista de entrada si tiene vistas. */
 export function rutaDe(app: App, destino?: Destino, vista?: Vista): string {
   const elDestino = destino ?? dondeEntra(app);
   if (elDestino === undefined) return `/${app.id}`;
-  const laVista = vista ?? elDestino.vistas[0];
+  const laVista = vista ?? dondeEntraEnElDestino(elDestino);
   return laVista === undefined
     ? `/${app.id}/${elDestino.id}`
     : `/${app.id}/${elDestino.id}/${laVista.id}`;

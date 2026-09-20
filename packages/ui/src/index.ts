@@ -28,7 +28,9 @@ export {
   destinosConstruidos,
   destinosQueLlegan,
   dondeEntra,
+  dondeEntraEnElDestino,
   rutaDe,
+  vistasConstruidas,
 } from './apps.ts';
 export type { App, Destino, Vista, FormaDeApp } from './apps.ts';
 

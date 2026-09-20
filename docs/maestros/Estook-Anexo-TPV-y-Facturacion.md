@@ -338,7 +338,7 @@ interface ProveedorFacturacion {
 Cinco pasos, uno por pantalla, y **hasta el último el botón de cobrar sale bloqueado diciendo qué falta**:
 
 1. **Datos fiscales del titular:** razón social o nombre y apellidos, NIF, domicilio fiscal completo. Es lo que sale impreso en cada ticket.
-2. **Régimen:** IVA peninsular o balear · SII · foral · Canarias, Ceuta o Melilla. Todo lo que no sea el primero bloquea el módulo con su explicación (1.4).
+2. **Régimen:** **no se pregunta el territorio**, que ya lo dijo el alta del local (M5) y vive en `local.territorio`; se enseña y se pide confirmarlo. Lo que sí se pregunta es **si la empresa está acogida al SII**, que es lo único que Estook no sabe todavía. Con eso, **IVA peninsular o balear e IGIC canario siguen adelante**; foral, SII, Ceuta y Melilla paran el módulo, cada uno con su explicación y diciendo si es definitivo o un «todavía no» (1.4 y [0043](../decisiones/0043-hasta-donde-llega-la-facturacion.md)).
 3. **Series:** prefijo propio, comprobando que no choca con otro sistema que el local ya use. Propuesta: `T-{LOCAL}-{AÑO}-` para tickets, `F-{LOCAL}-{AÑO}-` para facturas y `R-{LOCAL}-{AÑO}-` para rectificativas. **Serie más número no pasan de 60 caracteres.**
 4. **Alta del NIF en Verifacti**, por su API de gestión de NIF, y guardado de la clave en Vault.
 5. **Autorización ante Hacienda:** se firma el modelo de representación que permite que los registros se envíen en nombre del negocio. Verifacti da el formulario relleno y el camino para firmarlo, por su web o por su API. **Solo lo firma el titular o su representante legal** (Roles 1.12), y Estook guarda quién firmó y cuándo.
@@ -832,12 +832,13 @@ Todas automáticas, contra el entorno de pruebas. Cada una se rompe a propósito
 
 16. Cobro a las 02:30: jornada del día anterior, fecha de expedición del día real.
 17. Los dos cambios de hora del año, correctos.
-18. Un local foral, en SII o de Canarias no puede activar el módulo, y la pantalla lo explica.
+18. Un local **foral, en SII, de Ceuta o de Melilla** no puede activar el módulo, y la pantalla explica **su** motivo, no uno genérico, diciendo si es definitivo o un «todavía no».
+19. Un local **canario sí lo activa**, emite con **IGIC** y **no puede emitir con IVA**; y un local peninsular no puede emitir con IGIC.
 
 **De punta a punta**
 
-19. Servicio completo de diez mesas, una dividida en tres, un pago mixto, una factura pedida y una devolución: caja, tickets, ventas e inventario cuadran al céntimo.
-20. El QR impreso en 58 y en 80 mm se lee con la aplicación de la AEAT.
+20. Servicio completo de diez mesas, una dividida en tres, un pago mixto, una factura pedida y una devolución: caja, tickets, ventas e inventario cuadran al céntimo.
+21. El QR impreso en 58 y en 80 mm se lee con la aplicación de la AEAT.
 
 ---
 

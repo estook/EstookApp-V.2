@@ -11,7 +11,9 @@ import {
   destinosConstruidos,
   destinosQueLlegan,
   dondeEntra,
+  dondeEntraEnElDestino,
   rutaDe,
+  vistasConstruidas,
 } from './apps.ts';
 import { WIDGETS } from './panel/catalogo.ts';
 
@@ -226,19 +228,31 @@ describe('las ocho', () => {
  * parte D del Plan.
  */
 describe('los modulos que se nombran en pantalla', () => {
-  /** Los titulos `### M9 · Escandallos` de la parte D, tal cual estan escritos. */
+  /**
+   * Los titulos `### M9 · Escandallos` de la parte D, tal cual estan escritos.
+   *
+   * **La letra de detras del numero cuenta.** Desde la version 1.2 del Plan, la
+   * Fase 4 tiene `M20A · Sala y cocina`, `M20B · Facturacion VeriFactu` y
+   * `M20C · Cobro y caja`, que son tres fichas distintas de `M20`. Sin la letra,
+   * una pantalla que dijera «esto llega con M20C» no encontraria su ficha y el
+   * nombre que se ensena saldria del identificador pelado.
+   *
+   * `M6½` se queda fuera a proposito: no lo nombra ninguna pantalla, porque es lo
+   * que ya esta construido.
+   */
   const delPlan = new Map<string, string>();
   for (const linea of PLAN.split('\n')) {
-    const encaja = /^### (M(\d+) · .+)$/.exec(linea.trim());
+    const encaja = /^### (M(\d+[A-Z]?) · .+)$/.exec(linea.trim());
     if (encaja?.[1] !== undefined && encaja[2] !== undefined) {
       delPlan.set(`M${encaja[2]}`, encaja[1]);
     }
   }
 
-  it('el Plan tiene sus treinta y una fichas de modulo', () => {
-    // De M0 a M30. Si esto se cae, es que el Plan ha cambiado de forma y hay que
-    // mirarlo antes de creerse el resto de esta descripcion.
-    expect(delPlan.size).toBe(31);
+  it('el Plan tiene sus treinta y cuatro fichas de modulo', () => {
+    // De M0 a M30, mas M20A, M20B y M20C. Si esto se cae, es que el Plan ha
+    // cambiado de forma y hay que mirarlo antes de creerse el resto de esta
+    // descripcion.
+    expect(delPlan.size).toBe(34);
   });
 
   it('cada modulo del catalogo se llama como en el Plan', () => {
@@ -322,11 +336,55 @@ describe('lo construido y lo que llega', () => {
     expect(rutaDe(laApp('servicio'))).toBe('/servicio/jornada/cierre');
   });
 
-  it('la ruta lleva la primera vista cuando el destino tiene vistas', () => {
+  it('la ruta lleva la vista de entrada cuando el destino tiene vistas', () => {
     const inventario = laApp('inventario');
     expect(rutaDe(inventario)).toBe('/inventario/hoy');
     const productos = inventario.destinos.find((d) => d.id === 'productos');
     expect(rutaDe(inventario, productos)).toBe('/inventario/productos/todo');
+  });
+
+  /**
+   * La vista de entrada · el fallo que trajo el Plan 1.2 y que esto para.
+   *
+   * La tabla de B5 pasó a decir `Servicio · Jornada: En marcha · Caja · Cierre`,
+   * que es el orden de un día. Con `vistas[0]`, abrir Servicio habría caído en
+   * «En marcha» —que es M16— y **el cierre de caja de M6½, que es la pantalla que
+   * de verdad funciona, habría quedado detrás de un cartel de «todavía no»**.
+   *
+   * Es la pestaña muerta de B5 un piso más abajo, y por eso se comprueba igual
+   * que se comprueba `dondeEntra`.
+   */
+  it('se entra por la primera vista construida, no por la primera de la tabla', () => {
+    const jornada = laApp('servicio').destinos.find((d) => d.id === 'jornada');
+    expect(jornada, 'Servicio ya no tiene Jornada').toBeDefined();
+    if (jornada === undefined) throw new Error('jornada');
+
+    // El orden de la tabla del Plan se respeta tal cual: no se reordena el
+    // catálogo para esquivar el problema.
+    expect(jornada.vistas.map((v) => v.nombre)).toEqual(['En marcha', 'Caja', 'Cierre']);
+    // Y aun así se entra por la que existe.
+    expect(dondeEntraEnElDestino(jornada)?.id).toBe('cierre');
+    expect(vistasConstruidas(jornada).map((v) => v.id)).toEqual(['cierre']);
+  });
+
+  it('si ninguna vista esta construida, se entra por la primera', () => {
+    // Servicio · Ventas es M20 entero: las cuatro vistas están pendientes. La
+    // dirección tiene que seguir siendo copiable, así que se entra por la primera
+    // y el destino enseña su cartel.
+    const ventas = laApp('servicio').destinos.find((d) => d.id === 'ventas');
+    expect(ventas, 'Servicio ya no tiene Ventas').toBeDefined();
+    if (ventas === undefined) throw new Error('ventas');
+
+    expect(vistasConstruidas(ventas)).toHaveLength(0);
+    expect(dondeEntraEnElDestino(ventas)?.id).toBe('del-turno');
+  });
+
+  it('un destino sin vistas no tiene vista de entrada', () => {
+    const hoy = laApp('inventario').destinos.find((d) => d.id === 'hoy');
+    expect(hoy?.vistas).toHaveLength(0);
+    if (hoy === undefined) throw new Error('hoy');
+    expect(dondeEntraEnElDestino(hoy)).toBeUndefined();
+    expect(rutaDe(laApp('inventario'), hoy)).toBe('/inventario/hoy');
   });
 });
 

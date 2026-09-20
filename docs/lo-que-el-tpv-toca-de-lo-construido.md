@@ -19,6 +19,13 @@ contra la Evolución 1.1 y el [Anexo · TPV y facturación](maestros/Estook-Anex
 queda corto y **uno** donde el modelo actual no puede representar lo que el Anexo
 pide. Los cuatro primeros son ampliar; el quinto es una decisión de arquitectura.
 
+> **Lo único que ya está hecho: la navegación.** La tabla de vistas de B5 cambió con el
+> Plan 1.2, y la prueba que la lee del documento lo cazó en el acto. `Servicio · Jornada`
+> ya tiene su vista **Caja** y `Servicio · Ventas` su **Tickets y facturas**, las dos
+> apagadas y marcadas **M20C**, y se entra a un destino por la primera vista **construida**
+> y no por la primera de la tabla. **No hace falta volver a tocarlo en M20C**: solo darles
+> contenido.
+
 ---
 
 ## 1 · El cierre de caja de M6½ · ampliar

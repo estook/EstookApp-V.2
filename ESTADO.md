@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 20 de septiembre de 2026 · **Cambio de rumbo: Estook también cobra. Seis documentos maestros, `docs/` reordenado y los [VERIFICAR] comprobables, comprobados. Del TPV no hay ni una línea de código, y no toca: es la Fase 4. Antes de M8: A1 en producción, E1 fusionada (#56) y pendiente de que Richi migre, despliegue y ponga Resend y Google. De las veinte mejoras y del resto del admin, nada construido**
+Última actualización: 20 de septiembre de 2026 · **Cambio de rumbo: Estook también cobra. Seis documentos maestros en `docs/maestros/`, los [VERIFICAR] comprobables comprobados, y la navegación al día con el Plan 1.2 —Servicio gana dos vistas pendientes, y se entra por la vista que existe—. Del TPV no hay nada más, y no toca: es la Fase 4. Antes de M8: A1 en producción, E1 fusionada (#56) y pendiente de que Richi migre, despliegue y ponga Resend y Google. De las veinte mejoras y del resto del admin, nada construido**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -14,16 +14,16 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                                                                                       |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel                                     |
-| **Ahora**      | **Antes de M8**: A1 en producción; **E1 · crear cuenta y Google**, fusionada en la **#56**. Lo siguiente, **E2 · el pago con Stripe**                                 |
-| **Pruebas**    | 1.059 unitarias y de base de datos · 380 de pantalla en escritorio y móvil · catálogo **121 de 127** (95 %). **Cifras del 16-sep, sin volver a pasar desde entonces** |
-| **Rama**       | `cambio-de-rumbo-tpv-y-facturacion`: **solo documentación**. Ni código ni migraciones                                                                                 |
-| **Base**       | En Supabase, **37 de 37** (comprobado el 16-sep). **En el código, 39**: faltan la `0038` y la `0039` de E1, que ya está en `main`. **Migrar es lo primero que toca**  |
-| **API**        | Desplegada el 16-sep a las 20:05, **antes de la #56**. Hay que volver a desplegar                                                                                     |
-| **Entrar**     | App: la cuenta de Ricardo (`ikatz`); ninguna de ejemplo entra. Admin: `estookapp@gmail.com` (dentro, con segundo factor) y Santi (sin entrar aún)                     |
-| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                                |
+|                |                                                                                                                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel                                                                |
+| **Ahora**      | **Antes de M8**: A1 en producción; **E1 · crear cuenta y Google**, fusionada en la **#56**. Lo siguiente, **E2 · el pago con Stripe**                                                            |
+| **Pruebas**    | 1.059 unitarias y de base de datos · 380 de pantalla en escritorio y móvil · catálogo **121 de 127** (95 %). **Cifras del 16-sep, sin volver a pasar desde entonces**                            |
+| **Rama**       | `cambio-de-rumbo-tpv-y-facturacion`: los seis maestros, la [0043](docs/decisiones/0043-hasta-donde-llega-la-facturacion.md) y **el catálogo de navegación al día con B5**. **Ninguna migración** |
+| **Base**       | En Supabase, **37 de 37** (comprobado el 16-sep). **En el código, 39**: faltan la `0038` y la `0039` de E1, que ya está en `main`. **Migrar es lo primero que toca**                             |
+| **API**        | Desplegada el 16-sep a las 20:05, **antes de la #56**. Hay que volver a desplegar                                                                                                                |
+| **Entrar**     | App: la cuenta de Ricardo (`ikatz`); ninguna de ejemplo entra. Admin: `estookapp@gmail.com` (dentro, con segundo factor) y Santi (sin entrar aún)                                                |
+| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                                                           |
 
 > **Lo de ahora:** migrar la base a 39, desplegar la API, verificar el dominio en
 > Resend y poner sus secretos, preparar el cliente de Google y poner los suyos, y darme
@@ -93,6 +93,44 @@ informático de facturación** en España.
 - **Esto no es lo de ahora.** El TPV es la **Fase 4**, trece módulos por delante. Lo
   de ahora sigue siendo **«Antes de M8»**: E2, las veinte mejoras y el panel de
   administración.
+
+### Lo único que se ha tocado de código, y por qué
+
+**El Plan 1.2 cambió la tabla de vistas de B5, y eso es código.** La prueba de
+navegación **lee esa tabla del fichero del Plan**, así que poner el Plan nuevo en su
+sitio puso la integración en rojo al momento. Eso es la prueba haciendo su trabajo.
+
+| Qué dice ahora B5                                   | Qué se ha hecho                                                                                                                                                                                                                                  |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Servicio · Jornada`: **En marcha · Caja · Cierre** | **Caja** entra en el catálogo marcada como **M20C**. Es la caja del TPV —fondo, entradas y salidas, arqueo—, que **no es lo mismo que «Cierre»**: el cierre es el resumen del día, y con el TPV propio se rellena solo desde la caja (Anexo 5.5) |
+| `Servicio · Ventas`: gana **Tickets y facturas**    | Entra marcada como **M20C**. Solo existe si el local cobra con Estook: es lo que ha emitido su propio sistema, con su estado ante Hacienda                                                                                                       |
+| El orden pasa a ser el de un día                    | **Se respeta tal cual**, y a cambio se arregla lo de abajo                                                                                                                                                                                       |
+
+**Y el fallo de fondo que eso destapó.** Se entraba a un destino por `vistas[0]`, la
+primera de la tabla. Pero las tablas del Plan están escritas **en el orden en el que se
+entienden**, no en el que se construyen: con el orden nuevo, abrir Servicio habría caído
+en «En marcha», que es M16, y **el cierre de caja de M6½ —lo único que funciona ahí—
+habría quedado detrás de un cartel de «todavía no»**. Es la pestaña muerta de B5 un piso
+más abajo.
+
+Ahora se entra por **`dondeEntraEnElDestino`: la primera vista construida**, y si no hay
+ninguna, la primera. Lo usan `rutaDe` y la pantalla, **la misma función en los dos**,
+porque dos sitios decidiendo lo mismo acaban decidiendo distinto. Está escrito en B5 del
+Plan, que no decía nada de esto, y tiene tres pruebas.
+
+Una vista pendiente **se sigue enseñando** en el control segmentado, apagada y con su
+módulo al lado. Ahí no le quita el sitio a nadie y contesta «¿y la caja, dónde está?»
+antes de que nadie la busque.
+
+**Nada de esto adelanta el TPV.** Son dos pastillas apagadas que dicen «M20C».
+
+### Lo que se ha corregido de los documentos
+
+- **Anexo 1.4**, reescrito con la [0043](docs/decisiones/0043-hasta-donde-llega-la-facturacion.md), y **4.3 y las pruebas 18 y 19 puestas de acuerdo con él**: decían que Canarias no podía activar el módulo.
+- **Anexo 4.5, 4.6, 4.7 y 4.14**, con las respuestas comprobadas y su fuente.
+- **Plan A4** decía «los cinco documentos» cuando ya son seis.
+- **El mapa de módulos** decía «el módulo 22 de 36» y «M7, a medias». Ahora dice lo que es, y dice que mandan el Plan y este fichero.
+- Líneas duplicadas en el Anexo 3.7 y en la tabla de Roles 1.12.
 
 El repaso del esquema y del código contra el Anexo está hecho y escrito en
 **[`docs/lo-que-el-tpv-toca-de-lo-construido.md`](docs/lo-que-el-tpv-toca-de-lo-construido.md)**:
@@ -781,6 +819,26 @@ la capa superior del navegador— que es justo cuando hace falta.
 70. **Lo que da un acceso tiene que poder rescatarlo.** El admin nació sin forma de
     volver a entrar si se perdía la contraseña o el móvil: una puerta sin llave de
     repuesto es una puerta que un día hay que tirar.
+71. **Cambiar un documento maestro es cambiar el código.** La prueba de B5 lee la tabla
+    del Plan **del fichero**, así que poner el Plan 1.2 en su sitio puso la integración
+    en rojo al momento: la tabla decía «En marcha · Caja · Cierre» y el catálogo decía
+    otra cosa. **Eso es la prueba funcionando**, no un estorbo. Un documento maestro que
+    nadie compara con el código es un documento que se queda atrás en silencio.
+72. **Se entra por lo que existe, no por lo primero de la lista.** Las tablas del Plan
+    se escriben en el orden en el que se entienden —«En marcha · Caja · Cierre» es el
+    orden de un día—, no en el que se construyen. Con `vistas[0]`, Servicio habría
+    abierto en «En marcha», que es M16, y el cierre de caja de M6½ —lo único que
+    funciona ahí— habría quedado detrás de un cartel. Es la pestaña muerta de B5 un
+    piso más abajo, y se arregla igual: `dondeEntraEnElDestino`.
+73. **Dos sitios que deciden lo mismo acaban decidiendo distinto.** La dirección a la
+    que se redirige y la vista que se pinta las calculaban `rutaDe` y `PantallaDeApp`
+    por separado. Mientras el criterio era «la primera» daba igual; en cuanto dejó de
+    serlo, habrían sido dos criterios y un bucle de redirecciones. Ahora los dos llaman
+    a la misma función (regla 6).
+74. **Un número escrito en un documento envejece solo.** El mapa decía «el módulo 22 de
+    36» y el Plan decía «los cinco documentos» cuando ya eran seis. Si un número no lo
+    comprueba nadie, o se quita o se le pone una prueba: la de las fichas de módulo
+    pasó de 31 a 34 y saltó sola.
 
 ---
 

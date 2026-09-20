@@ -1,6 +1,8 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás a mitad de **M7**. Quedan 27 módulos. Esto es lo que hay en cada uno y por qué está donde está.
+Estás en **«Antes de M8»**: las compras de M7 están entregadas, y lo que le falta —los avisos a quien manda, Horarios, el reloj diario y Business Profile— se reparte entre las veinte mejoras y lo que espera a Google. Esto es lo que hay en cada módulo que queda y por qué está donde está.
+
+> Este mapa es **un resumen para orientarse**. Lo que manda es la **parte D del [Plan de desarrollo](maestros/Estook-Plan-de-Desarrollo.md)**, que es donde cada módulo dice qué entra, de qué depende y cuándo está terminado; y **lo que está construido de verdad lo dice [`ESTADO.md`](../ESTADO.md)**. Si los tres no dicen lo mismo, manda el Plan para lo que va a pasar y `ESTADO.md` para lo que ya ha pasado.
 
 ---
 
@@ -14,17 +16,17 @@ La pregunta de fondo es: si el cobro es lo que más vende, ¿por qué no lo prim
 
 **3 · Lo que ya tienes ya se vende.** La gestión —inventario, escandallos, carta, equipo, documentos— es lo que venden Gstock y Apicbase, y es donde está tu precio. El TPV es lo que te quita la dependencia de que un TPV ajeno te dé acceso, pero no es lo que te da de comer el primer año.
 
-> Y el matiz que importa: **el TPV está en la mitad, no al final.** Es el módulo 22 de 36. Al final están la analítica, el ecosistema y la API pública.
+> Y el matiz que importa: **el TPV está en la mitad, no al final.** Cae en la Fase 4 de siete, y detrás quedan la analítica, Fogón, la cadena, el negocio y el ecosistema.
 
 ---
 
 ## Fase 2 · Lo que da valor en cocina _(estás aquí)_
 
-### M7 · Proveedores y compras — a medias
+### M7 · Proveedores y compras — las compras, entregadas
 
 Ficha del proveedor con sus días de reparto y su pedido mínimo, el ciclo `borrador → enviado → recibido`, la sugerencia de pedido con su motivo escrito, recepción con «¿entero o con cambios?», y la factura conciliada con sus albaranes. Más el reloj del sistema y la ficha del local en Google.
 
-**Se entrega en dos veces:** las compras enteras primero; el reloj y Google después, porque esperan el acceso de Google.
+**Se entrega en dos veces:** las compras enteras primero —hechas—; el reloj y Google después. El reloj entró en las mejoras de antes de M8, y Business Profile espera a que Google apruebe el acceso.
 
 ### M8 · Inventario, mermas y desviación
 

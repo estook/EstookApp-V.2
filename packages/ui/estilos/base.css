@@ -11,8 +11,17 @@
     /*
      * Los tres tamanos de letra de B2 (0,9 · 1 · 1,15). El de en medio por
      * defecto. Lo cambia Ajustes poniendo `data-letra` en el <html>.
+     *
+     * Son **dos** fichas y no una, y la razon es el modo cocina (`cocina.css`):
+     * ese modo sube un escalon mas **encima de lo que haya elegido el aparato**,
+     * y para multiplicar por 1,15 hace falta poder leer el valor de partida sin
+     * que la variable se refiera a si misma, que en CSS no vale.
+     *
+     *   --escala-del-aparato   lo que eligio quien mira esta pantalla
+     *   --escala               lo que se usa de verdad, ya con el modo cocina
      */
-    --escala: 1;
+    --escala-del-aparato: 1;
+    --escala: var(--escala-del-aparato);
 
     /*
      * El claro es el de fabrica, y lo sigue siendo: quien no toque Ajustes ve lo
@@ -28,10 +37,10 @@
   }
 
   :root[data-letra='pequena'] {
-    --escala: 0.9;
+    --escala-del-aparato: 0.9;
   }
   :root[data-letra='grande'] {
-    --escala: 1.15;
+    --escala-del-aparato: 1.15;
   }
 
   * {

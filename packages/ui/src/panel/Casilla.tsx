@@ -5,7 +5,7 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from 'react';
-import { IconoAnadir, IconoQuitar } from '@estook/iconos';
+import { IconoAnadir, IconoFlechaAbajo, IconoFlechaArriba, IconoQuitar } from '@estook/iconos';
 import { clases } from '../clases.ts';
 import { AvisoDeVacio } from './vacio.ts';
 import type { TamanoDeWidget } from './catalogo.ts';
@@ -38,6 +38,22 @@ export interface CasillaProps extends HTMLAttributes<HTMLDivElement> {
   readonly avisarDeVacio: (id: string, vacio: boolean) => void;
   readonly alQuitar: () => void;
   readonly alCambiarTamano: (tamano: TamanoDeWidget) => void;
+  /**
+   * Mover con botones en vez de arrastrando · **solo en modo cocina** (entrega V).
+   *
+   * Sin esto se arrastra, que es como lo pidió Richi en M7 y sigue siendo lo
+   * normal ([0039](../../../../docs/decisiones/0039-el-panel-se-monta-como-un-movil.md)).
+   * Pero con un guante mojado, mantener pulsado dispara el arrastre sin querer, y
+   * entonces «mover un widget» se convierte en «mover el widget que no era».
+   *
+   * Cuando llega, salen los dos botones y **no se arrastra**. Es opcional a
+   * propósito: la rejilla quieta no mueve nada, y fuera de modo cocina esto no
+   * existe y no ocupa ni un píxel.
+   */
+  readonly alMover?: (hacia: 'arriba' | 'abajo') => void;
+  /** Si es el primero o el último, para no ofrecer un botón que no hace nada. */
+  readonly esElPrimero?: boolean;
+  readonly esElUltimo?: boolean;
   readonly estilo?: CSSProperties;
   readonly children: ReactNode;
 }
@@ -55,6 +71,9 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
     avisarDeVacio,
     alQuitar,
     alCambiarTamano,
+    alMover,
+    esElPrimero = false,
+    esElUltimo = false,
     estilo,
     children,
     className,
@@ -106,6 +125,9 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
           vacio={vacio}
           alQuitar={alQuitar}
           alCambiarTamano={alCambiarTamano}
+          {...(alMover === undefined ? {} : { alMover })}
+          esElPrimero={esElPrimero}
+          esElUltimo={esElUltimo}
         />
       )}
     </div>
@@ -128,6 +150,9 @@ function ControlesDeEdicion({
   vacio,
   alQuitar,
   alCambiarTamano,
+  alMover,
+  esElPrimero = false,
+  esElUltimo = false,
 }: {
   readonly nombre: string;
   readonly tamano: TamanoDeWidget;
@@ -135,6 +160,9 @@ function ControlesDeEdicion({
   readonly vacio: boolean;
   readonly alQuitar: () => void;
   readonly alCambiarTamano: (tamano: TamanoDeWidget) => void;
+  readonly alMover?: (hacia: 'arriba' | 'abajo') => void;
+  readonly esElPrimero?: boolean;
+  readonly esElUltimo?: boolean;
 }) {
   return (
     <>
@@ -163,6 +191,57 @@ function ControlesDeEdicion({
         <span className="absolute right-e2 top-e2 rounded-redondo bg-fondo px-e2 py-[2px] text-etiqueta font-medium text-texto-suave">
           Vacío ahora
         </span>
+      )}
+
+      {/*
+        Subir y bajar · **solo en modo cocina** (entrega V).
+
+        Richi pidió en M7 que se arrastrara «mejor que las flechas», y así es
+        fuera de aquí. Pero con guante mojado el arrastre se dispara solo, así que
+        en modo cocina vuelven las flechas **y se quita el arrastre**: un gesto y
+        su alternativa a la vez serían dos formas de mover la misma cosa, y con
+        guantes ganaría siempre la que no se quería.
+
+        Van arriba a la derecha, lejos del «−» de quitar: dos botones de 44 px
+        pegados a uno que borra es como se quita un widget sin querer.
+      */}
+      {alMover !== undefined && (
+        <div className="absolute -top-[6px] right-[6px] inline-flex overflow-hidden rounded-redondo border border-borde-fuerte bg-superficie shadow-s2">
+          <button
+            type="button"
+            aria-label={`Subir ${nombre}`}
+            disabled={esElPrimero}
+            onPointerDown={(evento) => {
+              evento.stopPropagation();
+            }}
+            onClick={() => {
+              alMover('arriba');
+            }}
+            className={clases(
+              'grid min-h-toque min-w-toque place-items-center',
+              esElPrimero ? 'cursor-not-allowed text-texto-tenue' : 'text-texto hover:bg-fondo',
+            )}
+          >
+            <IconoFlechaArriba size={20} />
+          </button>
+          <button
+            type="button"
+            aria-label={`Bajar ${nombre}`}
+            disabled={esElUltimo}
+            onPointerDown={(evento) => {
+              evento.stopPropagation();
+            }}
+            onClick={() => {
+              alMover('abajo');
+            }}
+            className={clases(
+              'grid min-h-toque min-w-toque place-items-center border-l border-borde',
+              esElUltimo ? 'cursor-not-allowed text-texto-tenue' : 'text-texto hover:bg-fondo',
+            )}
+          >
+            <IconoFlechaAbajo size={20} />
+          </button>
+        </div>
       )}
 
       {/* El tamaño, si admite más de uno. Con uno solo no se ofrece: un control

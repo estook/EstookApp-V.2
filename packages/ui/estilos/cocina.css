@@ -1,0 +1,134 @@
+/*
+ * El modo cocina · mejora 1 de la entrega V.
+ *
+ * ── Qué se pidió, y qué problema resuelve de verdad ──────────────────────────
+ *
+ * Richi lo pidió así: «letra y botones más grandes, alto contraste y que se use
+ * con guantes». Lo primero es fácil. Lo de los guantes no lo es, y es lo que
+ * decide el diseño de este fichero.
+ *
+ * **Con un guante el problema no es el tamaño: es el gesto.** Un guante de
+ * nitrilo toca bien, pero no desliza fino; y mantener pulsado con la mano mojada
+ * dispara el arrastre sin querer. Por eso en modo cocina **no hay ningún gesto
+ * que no sea un toque**: ni deslizar, ni mantener pulsado, ni arrastrar. Lo que
+ * se ordenaba arrastrando se ordena con botones de subir y bajar, que además es
+ * lo que ya sabe hacer el teclado.
+ *
+ * ── Por qué está aquí y no en cada pantalla ──────────────────────────────────
+ *
+ * Regla 32: lo visual se cambia **en las fichas**, nunca pantalla a pantalla. Es
+ * lo mismo que hacen el tema y el tamaño de letra. `min-h-toque` compila a
+ * `min-height: var(--spacing-toque)`, así que **redefinir esa variable hace
+ * crecer todos los botones de la aplicación a la vez**, y ninguna pantalla tiene
+ * que enterarse. Si esto se hubiera hecho con una clase por pantalla, el modo
+ * cocina estaría roto en la tercera pantalla nueva.
+ *
+ * ── Por qué es del aparato y no de la persona ────────────────────────────────
+ *
+ * Igual que el tema y la letra (decisión 0024): **la tableta del pase lo lleva
+ * puesto y el móvil del mismo cocinero, no.** Es una preferencia del cristal que
+ * se está mirando, así que no viaja, no necesita conexión y no pide permiso.
+ *
+ * ── Y por qué los colores no están puestos a ojo ─────────────────────────────
+ *
+ * Los mide `contraste.prueba.ts`, y aquí el mínimo no es el 4,5:1 de B8: es
+ * **7:1, que es el AAA de WCAG**. Una cocina tiene vapor, grasa en la pantalla y
+ * a alguien mirando de lejos y de lado. Los valores de abajo llevan su razón de
+ * contraste escrita al lado, medida, no estimada.
+ */
+
+@layer base {
+  /*
+   * El modo cocina se monta **encima** del tema que haya, claro u oscuro, así
+   * que hay un bloque por tema. Se importa después de `temas.css` para poder
+   * ganarle, y por eso el orden del `@import` de `estook.css` no es decorativo.
+   */
+  :root[data-cocina='si'] {
+    /*
+     * ── El toque ──────────────────────────────────────────────────────────
+     *
+     * De 44 px a 64. No es «un poco más grande»: 44 px es el mínimo para un dedo
+     * desnudo, y un guante de nitrilo añade grosor y quita precisión. Y 12 px de
+     * separación mínima, porque dos botones de 64 px pegados siguen siendo dos
+     * botones que se pulsan a la vez.
+     */
+    --spacing-toque: 64px;
+    /*
+     * Y la hermana mayor sube con ella. `--spacing-toque-cocina` son las filas
+     * que ya se pulsan de lejos —botones grandes, filas de tabla en movil, los
+     * sectores de la rueda—: si se quedara en 52, en modo cocina seria **mas
+     * pequena** que un boton normal, que es justo lo contrario de lo que dice su
+     * nombre.
+     */
+    --spacing-toque-cocina: 72px;
+    --spacing-entre-toques: 12px;
+
+    /*
+     * ── La letra ──────────────────────────────────────────────────────────
+     *
+     * Un escalón por encima de lo que haya elegido el aparato, **multiplicando**
+     * y no fijando: quien ya tenía la letra grande en el pase la sigue teniendo
+     * más grande que quien la tenía normal. Fijarla aquí habría borrado su
+     * elección.
+     */
+    --escala: calc(var(--escala-del-aparato) * 1.15);
+  }
+
+  /*
+   * ── El contraste, en claro ──────────────────────────────────────────────
+   *
+   * `texto` ya cumple AAA de sobra (17,4:1 sobre blanco) y no se toca. Los que
+   * no llegaban son los dos grises: 6,0:1 y 5,2:1, que pasan B8 y **no** pasan
+   * AAA. Se oscurecen lo justo, manteniendo que «suave» siga siendo más oscuro
+   * que «tenue» para que la jerarquía no se pierda.
+   */
+  :root[data-cocina='si']:not([data-tema='oscuro']) {
+    --color-texto-suave: #40484b; /* 9,35:1 sobre blanco · 8,13:1 sobre el fondo */
+    --color-texto-tenue: #454e51; /* 8,53:1 sobre blanco · 7,42:1 sobre el fondo */
+    /* Sin bordes finos: el borde normal pasa a ser el fuerte, y el fuerte se ve. */
+    --color-borde: #a49b8c;
+    --color-borde-fuerte: #5a6568;
+  }
+
+  /*
+   * ── El contraste, en oscuro ─────────────────────────────────────────────
+   *
+   * Aquí el que no llegaba era `texto-tenue`, con 6,55:1 sobre la superficie. En
+   * oscuro «más contraste» es **más claro**, así que los dos grises suben.
+   */
+  :root[data-cocina='si'][data-tema='oscuro'],
+  :root[data-cocina='si'][data-tema='sistema'] {
+    --color-texto-suave: #d2dadc; /* 11,55:1 sobre la superficie · 12,99:1 sobre el fondo */
+    --color-texto-tenue: #c8d1d4; /* 10,55:1 sobre la superficie · 11,87:1 sobre el fondo */
+    --color-borde: #55666b;
+    --color-borde-fuerte: #9aa6a9;
+  }
+
+  /*
+   * ── Los gestos ────────────────────────────────────────────────────────────
+   *
+   * `touch-action: manipulation` ya quitaba el zoom del doble toque. Aquí se
+   * quita además **el desplazamiento por arrastre horizontal**, que es lo que
+   * dispara un carrusel sin querer con la mano mojada, y se apaga la selección
+   * de texto, que con un guante es lo que sale en vez de un toque largo.
+   *
+   * Lo que **no** se puede apagar desde CSS es el arrastrar y soltar del Panel:
+   * eso lo apaga el componente leyendo `usarModoCocina`, y tiene su prueba.
+   */
+  :root[data-cocina='si'] body {
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /*
+   * Y la separación entre botones vecinos, para que 64 px de alto no acaben
+   * siendo dos objetivos pegados. Solo entre hermanos: no toca el interior de
+   * nada.
+   */
+  :root[data-cocina='si'] button + button,
+  :root[data-cocina='si'] a + button,
+  :root[data-cocina='si'] button + a {
+    margin-inline-start: var(--spacing-entre-toques);
+  }
+}

@@ -19,6 +19,11 @@
 
 @import './fichas.css';
 @import './temas.css';
+/*
+ * El modo cocina va **detras de los temas** y no es casualidad: se monta encima
+ * del claro o del oscuro, y necesita poder ganarles el contraste.
+ */
+@import './cocina.css';
 @import './tipografia.css';
 @import './base.css';
 @import './movimiento.css';

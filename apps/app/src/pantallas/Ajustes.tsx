@@ -6,6 +6,7 @@ import {
   IconoSol,
   IconoTamanoDeLetra,
   IconoUbicacion,
+  IconoVer,
 } from '@estook/iconos';
 import { IDIOMAS, NOMBRE_DEL_IDIOMA } from '@estook/dominio';
 import { puedeEditar, puedeVer } from '@estook/permisos';
@@ -15,12 +16,14 @@ import {
   COMO_SE_LLAMA,
   COMO_SE_LLAMA_EL_TEMA,
   CUANTO_MULTIPLICA,
+  Interruptor,
   Selector,
   TAMANOS,
   TEMAS,
   Tarjeta,
   clases,
   usarDeshacer,
+  usarModoCocina,
   usarTamanoDeLetra,
   usarTema,
   type TamanoDeLetra,
@@ -143,6 +146,8 @@ export function Ajustes() {
           ))}
         </div>
       </Tarjeta>
+
+      <ModoCocina />
 
       <TuMarca />
 
@@ -327,6 +332,53 @@ function DondeEstaElLocal() {
             </div>
           )}
         </div>
+      </div>
+    </Tarjeta>
+  );
+}
+
+/**
+ * El modo cocina · mejora 1 de la entrega V.
+ *
+ * Lo que hace está entero en `estilos/cocina.css`: aquí solo está el interruptor
+ * y el texto que explica qué cambia, **sin jerga** (principio 14: «lo que hay en
+ * cámara», no «stock disponible»).
+ *
+ * Va debajo del tema y de la letra a propósito: los tres son lo mismo —cómo se
+ * ve **este aparato**— y quien busca uno encuentra los otros dos al lado.
+ */
+function ModoCocina() {
+  const { puesto, poner } = usarModoCocina();
+  const { sePuedeDeshacer } = usarDeshacer();
+
+  return (
+    <Tarjeta titulo="Modo cocina">
+      {/* El ancla del buscador: «modo cocina» y «guantes» llevan aquí. */}
+      <span id="modo-cocina" />
+      <div className="flex flex-col gap-e3">
+        <Interruptor
+          etiqueta="Ponlo en la tablet de la cocina"
+          ayuda="Botones grandes, letra más grande, más contraste y todo con un solo toque: ni deslizar ni mantener pulsado, que con guantes no sale. Se queda guardado en este aparato."
+          puesto={puesto}
+          alCambiar={(nuevo) => {
+            poner(nuevo);
+            sePuedeDeshacer({
+              que: nuevo ? 'Modo cocina puesto' : 'Modo cocina quitado',
+              deshacer: () => {
+                poner(!nuevo);
+              },
+            });
+          }}
+        />
+        {puesto && (
+          <p className="flex items-start gap-e2 text-secundario text-texto-suave">
+            <IconoVer size={18} className="mt-[2px] shrink-0" />
+            <span>
+              Los botones no bajan de 64 píxeles y el texto se lee a más de dos metros. Si has
+              elegido letra grande, sigue siendo más grande que la normal.
+            </span>
+          </p>
+        )}
       </div>
     </Tarjeta>
   );

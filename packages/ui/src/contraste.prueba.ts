@@ -333,3 +333,91 @@ describe('B8 en el tema oscuro', () => {
     expect(contraste(oscuro('borde-fuerte'), SUPERFICIE_O())).toBeGreaterThanOrEqual(2.5);
   });
 });
+
+/**
+ * El modo cocina · AAA, y por qué el listón sube.
+ *
+ * B8 pide 4,5:1 en texto, que es el AA de WCAG y es lo que cumple la aplicación
+ * entera. **En una cocina eso no basta**, y no es una opinión: hay vapor, hay
+ * grasa en el cristal, la tablet está en alto y se mira de lejos y de lado. El
+ * modo cocina de la entrega V sube el mínimo a **7:1, el AAA**.
+ *
+ * Esta prueba existe porque los colores de `cocina.css` **no los mira nadie más**:
+ * el bloque de arriba lee `fichas.css` y el de en medio `temas.css`. Sin esto,
+ * alguien podría aclarar un gris «para que se vea mejor» y romper justo el modo
+ * que existe para ver mejor.
+ */
+const COCINA = readFileSync(
+  fileURLToPath(new URL('../estilos/cocina.css', import.meta.url)),
+  'utf8',
+);
+
+/** Un color del modo cocina, del bloque claro o del oscuro. */
+function cocina(nombre: string, tema: 'claro' | 'oscuro'): string {
+  const desde = COCINA.indexOf(
+    tema === 'claro' ? ":not([data-tema='oscuro'])" : "[data-cocina='si'][data-tema='oscuro']",
+  );
+  const bloque = COCINA.slice(desde, COCINA.indexOf('}', desde));
+  const encontrado = new RegExp(`--color-${nombre}:\\s*(#[0-9a-fA-F]{6})`).exec(bloque);
+  if (!encontrado?.[1]) throw new Error(`No esta declarado --color-${nombre} en cocina ${tema}`);
+  return encontrado[1];
+}
+
+describe('el modo cocina cumple AAA', () => {
+  const AAA = 7;
+
+  it('en claro, los dos grises pasan de 7:1 sobre la superficie y sobre el fondo', () => {
+    for (const tono of ['texto-suave', 'texto-tenue']) {
+      expect(
+        contraste(cocina(tono, 'claro'), SUPERFICIE()),
+        `${tono} sobre la superficie`,
+      ).toBeGreaterThanOrEqual(AAA);
+      expect(
+        contraste(cocina(tono, 'claro'), FONDO()),
+        `${tono} sobre el fondo`,
+      ).toBeGreaterThanOrEqual(AAA);
+    }
+  });
+
+  it('en oscuro, igual', () => {
+    const fondoO = oscuro('fondo');
+    const superficieO = oscuro('superficie');
+    for (const tono of ['texto-suave', 'texto-tenue']) {
+      expect(
+        contraste(cocina(tono, 'oscuro'), superficieO),
+        `${tono} sobre la superficie`,
+      ).toBeGreaterThanOrEqual(AAA);
+      expect(
+        contraste(cocina(tono, 'oscuro'), fondoO),
+        `${tono} sobre el fondo`,
+      ).toBeGreaterThanOrEqual(AAA);
+    }
+  });
+
+  it('y el texto normal ya cumplia AAA, asi que no se toca', () => {
+    // Si algun dia dejara de cumplirlo, esta prueba obliga a anadirlo al modo
+    // cocina en vez de dejarlo pasar porque «el texto principal siempre se ve».
+    expect(contraste(color('texto'), SUPERFICIE())).toBeGreaterThanOrEqual(AAA);
+    expect(contraste(oscuro('texto'), oscuro('superficie'))).toBeGreaterThanOrEqual(AAA);
+  });
+
+  it('la jerarquia no se pierde: suave sigue separandose de tenue', () => {
+    // Subir los dos al mismo valor cumpliria AAA y dejaria la pantalla plana, que
+    // es otra forma de no verse.
+    expect(cocina('texto-suave', 'claro')).not.toBe(cocina('texto-tenue', 'claro'));
+    expect(cocina('texto-suave', 'oscuro')).not.toBe(cocina('texto-tenue', 'oscuro'));
+  });
+
+  it('el toque sube a 64, el de cocina a 72, y se separan 12', () => {
+    // «Ningun boton mide menos de 64 px» es el liston que pone la entrega V.
+    expect(/--spacing-toque:\s*64px/.test(COCINA)).toBe(true);
+    expect(/--spacing-toque-cocina:\s*72px/.test(COCINA)).toBe(true);
+    expect(/--spacing-entre-toques:\s*12px/.test(COCINA)).toBe(true);
+  });
+
+  it('la letra sube sobre la del aparato, no la sustituye', () => {
+    // Fijarla aqui borraria la eleccion de quien ya puso la letra grande en el
+    // pase. Se multiplica, y por eso `base.css` tiene dos fichas y no una.
+    expect(/--escala:\s*calc\(var\(--escala-del-aparato\)\s*\*\s*1\.15\)/.test(COCINA)).toBe(true);
+  });
+});

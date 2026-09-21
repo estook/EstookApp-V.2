@@ -178,6 +178,8 @@ export {
 } from './ganchos/usarTamanoDeLetra.ts';
 export type { TamanoDeLetra } from './ganchos/usarTamanoDeLetra.ts';
 
+export { usarModoCocina, usarSeVeEnModoCocina } from './ganchos/usarModoCocina.ts';
+
 export {
   usarMedia,
   usarMovimientoReducido,

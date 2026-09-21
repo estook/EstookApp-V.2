@@ -1425,7 +1425,7 @@ Estook no toca dinero. Si el local cobra con Estook, sus tickets y facturas pasa
 | Pasarela de pago                   | 0,84            |
 | **Total**                          | **≈ 4,02 €**    |
 
-> **Coste añadido si el local cobra con Estook:** el proveedor de VeriFactu (Verifacti) cobra **por NIF** en producción, no por local ni por aparato; el primero es el más caro y el precio baja con el volumen. El precio vigente se mira en su web **antes de fijar en qué plan entra el TPV**, que es una decisión pendiente (Evolución, capítulo 19).
+> **Coste añadido si el local cobra con Estook.** El proveedor de VeriFactu (Verifacti) cobra **por NIF activo en producción**, no por local ni por aparato, y el precio baja con el volumen: **de 5,59 € por NIF con diez, a 3,71 € con cincuenta**, sin IVA. Incluye **3.000 facturas al mes por NIF**, y a partir de ahí 0,002 € cada una, que es lo que de verdad mueve el coste: un bar de tapas hace el triple de tickets que un restaurante de carta facturando lo mismo. Las cuentas, con los tres casos y lo que queda por preguntar, en [`docs/el-precio-de-verifacti.md`](../el-precio-de-verifacti.md). _Propuesta recibida el 21 de septiembre de 2026._
 
 ## Los planes
 
@@ -1445,7 +1445,7 @@ _Coste para nosotros ≈ 3,90 € · Margen 45,10 € · 92 %_
 
 Para el local que factura de verdad y quiere que Estook trabaje solo. Todo lo de Esencial, y además:
 
-- **Cobro con Estook**: sala, cocina, caja y tickets y facturas cumpliendo VeriFactu. _Propuesta pendiente de confirmar con el precio del proveedor delante (Evolución, capítulo 19)._
+- **Cobro con Estook**: sala, cocina, caja y tickets y facturas cumpliendo VeriFactu. _Las cuentas salen con el precio del proveedor delante —el margen aguanta entre el 81 % y el 44 % según cuántos tickets haga el local—, y **falta una respuesta suya: qué se paga con menos de diez NIF** ([`el-precio-de-verifacti.md`](../el-precio-de-verifacti.md)). Hasta entonces, propuesta._
 - **Conexión automática con el TPV**, sincronizando cada 15 minutos y al cierre.
 - **Canales de reparto conectados**, con su comisión descontada.
 - **Fogón Pro**: 1.500 créditos al mes, con el modelo grande. Análisis del cierre cada noche, resumen semanal, propuestas de menú, de precios y de cuadrante.

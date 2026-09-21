@@ -279,6 +279,14 @@ BOE, y están abajo. El resumen, más la comprobación del QR y la del proveedor
 se piden está al final del apartado **«Ahora mismo · es de Richi»**, más abajo. Y el
 precio real de una impresora que pregunta sola (Anexo 6.3), al comprarla.
 
+**Y uno que ya está resuelto: el precio de Verifacti.** Llegó su propuesta el 21 de
+septiembre: **por NIF activo en producción**, de 5,59 € con diez a 3,71 € con cincuenta,
+sin IVA, con 3.000 facturas al mes por NIF incluidas. Las cuentas salen y **el TPV cabe
+en Pro sin subir el precio**; queda **una pregunta para ellos: qué se paga con menos de
+diez NIF**. Todo, en
+[`docs/el-precio-de-verifacti.md`](docs/el-precio-de-verifacti.md). **La propuesta
+caduca hacia el 19 de octubre.**
+
 **Y uno que no depende de nadie de aquí:** el **[VERIFICAR] del registro horario**
 (Plan, M15). El Real Decreto de fichaje digital sigue **en tramitación y sin publicar
 en el BOE** a día de hoy, así que no obliga. Cuando se publique hay que mirar el
@@ -293,18 +301,24 @@ entonces se hace la exportación y no se inventa ningún protocolo.**
 
 **Lo primero, y es de hoy:**
 
-1. **Desplegar la API.** La #59 toca el servidor y se fusionó **después** del último
-   despliegue (14:51 frente a 13:43). Hasta que se despliegue, el arreglo del correo
-   no está en producción. GitHub → Actions → «Desplegar la API», escribiendo la
-   palabra que pide.
-2. **Verificar `estook.com` en Resend.** Es lo que casi seguro está rompiendo crear
-   cuenta con correo: Resend → Domains → meter en Hostinger los registros que dé
-   (SPF, DKIM y el MX de rebotes) y darle a verificar. **Tener la clave puesta no es
-   tener el dominio verificado**; hasta ahora se había dado por bueno lo uno por lo
-   otro.
-3. **Probar crear cuenta con correo** después de los dos pasos de arriba, con un
-   correo tuyo que no tenga cuenta. Si falla, el registro del servidor ya dice el
-   motivo exacto: pídemelo y se mira.
+1. **Leer el registro del servidor y decir qué contesta Resend.** El arreglo de la #59
+   ya está desplegado (21-sep, 16:39) y **está funcionando**: crear cuenta con correo ya
+   no dice «se nos ha roto algo», dice «el correo todavía no sale de aquí». Eso
+   significa que **Resend devuelve un 4xx: es configuración, no una caída**. El motivo
+   exacto está escrito en el registro:
+
+   > Supabase → **Edge Functions** → `api` → **Logs**, y buscar
+   > `el correo del código de registro no ha salido`.
+
+   La línea trae el código y la frase literal de Resend. **Con eso se arregla en un
+   minuto**; sin eso, se adivina.
+
+2. **Y lo que casi seguro dirá: verificar `estook.com` en Resend.** Resend → Domains →
+   meter en Hostinger los registros que dé (SPF, DKIM y el MX de rebotes) y darle a
+   verificar. **Tener la clave puesta no es tener el dominio verificado**; hasta el
+   21-sep se había dado por bueno lo uno por lo otro, y era el error.
+
+3. **Probar crear cuenta con correo** después, con un correo que no tenga cuenta.
 
 **Y lo que desbloquea E2:**
 

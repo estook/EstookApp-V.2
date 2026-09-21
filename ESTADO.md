@@ -1,9 +1,13 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 21 de septiembre de 2026 · **Todo lo de Richi, hecho y comprobado contra producción: base en 39 de 39, API desplegada con E1, Google y el correo puestos, y Santi dentro del admin con su segundo factor. Crear cuenta funciona: hay cuatro cuentas creadas con Google. Lo siguiente es E2 · el pago con Stripe, y corre prisa: dos suscripciones tienen la prueba caducada. De las veinte mejoras y del resto del admin sigue sin haber nada**
+Última actualización: 21 de septiembre de 2026, por la tarde · **Antes de M8. Fusionadas la #57 (cambio de rumbo, seis maestros), la #58 (este fichero al día) y la #59 (el correo dice por qué falla, y el titular de la web puesto). Falta una cosa para cerrar el día: redesplegar la API, porque la #59 toca el servidor y se fusionó después del último despliegue. La entrega V está empezada en su rama: el modo cocina, hecho; quedan sus otros cuatro puntos**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
+>
+> **¿Empiezas un chat nuevo?** Con decir «lee `ESTADO.md` entero y dime dónde
+> estamos» basta. El porqué y los casos raros, en
+> [`docs/empezar-un-chat-nuevo.md`](docs/empezar-un-chat-nuevo.md).
 >
 > Aquí está lo que hace falta para trabajar hoy. **Lo que hizo cada módulo, con sus
 > fallos y sus porqués, está entero en
@@ -14,26 +18,62 @@
 
 ## 1 · Dónde estamos
 
-_Todo lo de esta tabla se comprobó contra producción el 21 de septiembre de 2026._
+_Comprobado contra producción el 21 de septiembre de 2026._
 
-|                |                                                                                                                                                                                        |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56)                             |
-| **Ahora**      | **Antes de M8**. Lo siguiente es **E2 · el pago con Stripe**, y después **V · Lo que se ve**                                                                                           |
-| **Pruebas**    | **1.062** unitarias y de base de datos, en verde (pasadas el 21-sep) · las de pantalla, en verde en la #57 · catálogo **121 de 127** (95 %), con sus **seis deudas apuntadas**         |
-| **Rama**       | `main`. Todo fusionado hasta la **#57**. Sin nada pendiente en el árbol                                                                                                                |
-| **Base**       | En Supabase, **39 de 39** ✓, y **39 en el código**: al día. 54 tablas, todas con seguridad por filas                                                                                   |
-| **API**        | Desplegada el **17-sep a las 00:13**, después de la #56, **con E1 dentro**: `como_se_entra` responde en producción. La #57 no la tocó (es interfaz), así que no hace falta redesplegar |
-| **Sitio**      | `estook.com`, `/app/` y `/admin/` responden 200. Publicado tras la #57                                                                                                                 |
-| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas reales de abajo. Admin: **`estookapp@gmail.com` y Santi, los dos dentro y con segundo factor**                                                    |
-| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                                                 |
+|                |                                                                                                                                                            |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56) |
+| **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** empezada. **E2 · Stripe** va en paralelo y está bloqueada por lo que falta de Richi                   |
+| **Pruebas**    | **1.068** unitarias y de base de datos, en verde · las de pantalla, en verde en la #59 · catálogo **121 de 127** (95 %), con sus seis deudas apuntadas     |
+| **Rama**       | `main`, con todo fusionado hasta la **#59**. Y `v-lo-que-se-ve`, **subida y sin pull request todavía**: se abre cuando V esté entera                       |
+| **Base**       | En Supabase, **39 de 39** ✓, igual que en el código. 54 tablas, todas con seguridad por filas. **La #59 no trae migraciones**                              |
+| **API**        | **Desplegada el 21-sep a las 13:43, antes de fusionar la #59 (14:51). Le falta el arreglo del correo: hay que volver a desplegar**                         |
+| **Sitio**      | `estook.com`, `/app/` y `/admin/` responden 200. Se publica solo al fusionar                                                                               |
+| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas reales de abajo. Admin: **`estookapp@gmail.com` y Santi**, los dos con segundo factor                                 |
+| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                     |
 
 > **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
 > 100 %.** Lo decidió Richi el 16 de septiembre. Los planes:
 > **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)** y
 > **[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md)**.
 
-### Lo que hay de verdad en producción, hoy
+### El orden, y dónde estamos en él
+
+| #   | Entrega                          | Cómo está                                             |
+| --- | -------------------------------- | ----------------------------------------------------- |
+| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                            |
+| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                 |
+| 1   | **V · Lo que se ve**             | **Empezada.** Punto 1 de 5 hecho, en `v-lo-que-se-ve` |
+| 2   | **E2 · El pago con Stripe**      | **Bloqueada por Richi** (abajo). Va en paralelo a V   |
+| 3   | **O · Lo que se ordena**         | Falta                                                 |
+| 4   | **A2 · Clientes**                | Falta                                                 |
+| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7               |
+| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7               |
+| 7   | **I · La app instalable**        | Falta                                                 |
+| 8   | **L · El lector**                | Falta                                                 |
+| 9   | **A3 · Vendedores y códigos**    | Falta                                                 |
+| 10  | **A4 · Ventas**                  | Falta                                                 |
+| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                           |
+
+### La entrega V, punto por punto
+
+El plan entero está en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md),
+apartado «V · Lo que se ve». **Rama `v-lo-que-se-ve`, sin pull request todavía.**
+
+| Punto | Qué                                                            | Cómo está               |
+| ----- | -------------------------------------------------------------- | ----------------------- |
+| **1** | **Modo cocina**: 64 px, AAA, y ni un gesto que no sea un toque | **Hecho**, sin fusionar |
+| **2** | Todas las apps con las flechas y las gráficas del Panel        | La siguiente            |
+| **3** | Cada app abre con su resumen                                   | Falta                   |
+| **4** | Estados vacíos que invitan a empezar                           | Falta                   |
+| **5** | Tema oscuro repasado, y fotos de producto                      | Falta                   |
+
+**Lo que el punto 1 dejó hecho, y no hay que volver a tocar:** `cocina.css` con las
+fichas del modo, `usarModoCocina` como ajuste del aparato —igual que el tema y la
+letra—, el interruptor en Ajustes, y los botones de subir y bajar del Panel, que
+vuelven **solo con guantes** porque ahí el arrastre se dispara solo. 15 pruebas.
+
+### Lo que hay de verdad en producción
 
 Cuatro organizaciones reales, además de las tres de ejemplo:
 
@@ -44,22 +84,24 @@ Cuatro organizaciones reales, además de las tres de ejemplo:
 | `prueba1`     | 17 de sep | `pendiente_de_pago`               | **Se quedó en el paso 0** |
 | `prueba1-1`   | 17 de sep | prueba, hasta el 28 de sep        | Terminada                 |
 
-Y el uso real: 9 productos, 36 movimientos de género, 4 cierres de caja, 21 fichajes,
-3 pedidos y 2 proveedores.
+Y el uso real: 9 productos, 36 movimientos, 4 cierres de caja, 21 fichajes, 3 pedidos
+y 2 proveedores.
 
-**Tres cosas que salen de aquí y hay que tener presentes:**
+**Tres cosas que salen de aquí y no se pueden perder:**
 
 1. **Dos pruebas están caducadas, y la API no lo hace cumplir.** Hoy no pasa nada
    porque E1 solo elige pantalla. **El día que E2 lo cumpla en el servidor, Richi se
-   queda fuera de su propio local.** Así que E2 tiene que pasar a `activa` a las
-   cuentas que ya existen **en la misma entrega**, antes de encender nada.
-2. **Crear cuenta con correo no se ha probado nunca en producción.** Las cuatro cuentas
-   entraron **con Google** (hay 4 identidades externas) y la tabla que cuenta los
-   códigos por correo está **vacía**. El remitente está configurado —la API dice
-   `conCorreo: true`—, pero **que Resend tenga el dominio verificado no está
-   comprobado**: se sabrá con el primer código que se mande.
-3. **`prueba1` se quedó en el paso 0 del alta.** Una cuenta real que entró y no pasó de
-   la primera pantalla. Es justo lo que la entrega **V** viene a arreglar.
+   queda fuera de su propio local.** E2 tiene que pasarlas a `activa` **en la misma
+   entrega**, y se comprueba antes de fusionar.
+2. **Crear cuenta con correo falla en producción, y el motivo casi seguro es que el
+   dominio `estook.com` no está verificado en Resend.** La clave sí está puesta —la
+   API dice `conCorreo: true`—, pero eso solo prueba que hay clave, no que el dominio
+   esté verificado: son dos cosas. Las cuatro cuentas que existen entraron **con
+   Google**. Desde la #59, el registro del servidor dice el motivo exacto que
+   contesta Resend, y la pantalla ya **no manda a reintentar** cuando es de
+   configuración: ofrece Google, que sí funciona.
+3. **`prueba1` se quedó en el paso 0 del alta.** Una cuenta real que entró y no pasó
+   de la primera pantalla. Es lo que viene a arreglar la entrega **V**.
 
 ---
 
@@ -249,31 +291,48 @@ entonces se hace la exportación y no se inventa ningún protocolo.**
 
 ### Ahora mismo · es de Richi
 
-**Comprobado contra producción el 21 de septiembre de 2026: los cinco primeros pasos de
-la lista anterior están hechos.** Base en 39 de 39, API desplegada con E1, Google
-devolviendo su cliente, el remitente de correo configurado, y Santi dentro del admin con
-su segundo factor. Lo que queda es esto:
+**Lo primero, y es de hoy:**
 
-1. **Los datos del titular** —razón social, NIF y domicilio— para la privacidad y las
-   condiciones (`apps/web/src/Legal.tsx`). **Es lo único que bloquea cobrar de verdad**,
-   porque sin condiciones publicadas no se puede vender.
-2. **Crear la cuenta de Stripe**, para E2. Sin pasar claves por el chat: van a los
-   secretos de Supabase y me dices solo que están puestas.
-3. **Probar crear cuenta con correo, una vez.** Las cuatro cuentas que hay entraron con
-   Google, y **el camino del correo no se ha usado nunca en producción**. Si Resend no
-   tiene el dominio verificado, el primer cliente que lo intente se estrella. Hazlo con
-   un correo tuyo que no tenga cuenta y dime si llega el código.
-4. **«Sign in with Google» de Supabase, apagado** (Authentication → Providers), si no
+1. **Desplegar la API.** La #59 toca el servidor y se fusionó **después** del último
+   despliegue (14:51 frente a 13:43). Hasta que se despliegue, el arreglo del correo
+   no está en producción. GitHub → Actions → «Desplegar la API», escribiendo la
+   palabra que pide.
+2. **Verificar `estook.com` en Resend.** Es lo que casi seguro está rompiendo crear
+   cuenta con correo: Resend → Domains → meter en Hostinger los registros que dé
+   (SPF, DKIM y el MX de rebotes) y darle a verificar. **Tener la clave puesta no es
+   tener el dominio verificado**; hasta ahora se había dado por bueno lo uno por lo
+   otro.
+3. **Probar crear cuenta con correo** después de los dos pasos de arriba, con un
+   correo tuyo que no tenga cuenta. Si falla, el registro del servidor ya dice el
+   motivo exacto: pídemelo y se mira.
+
+**Y lo que desbloquea E2:**
+
+4. **Activar la cuenta de Stripe** —datos fiscales y cuenta bancaria— y dejarla en
+   modo prueba. **No crear productos ni precios a mano**: los crea el código con los
+   planes del Manifiesto, para que el precio viva en un solo sitio.
+5. **El alta de autónomo en Hacienda** (modelo 036/037), si no está hecha. No es del
+   código ni de Stripe, pero es lo que de verdad bloquea cobrarle al primer cliente.
+   **Es del asesor, no mío.**
+
+> **Los datos del titular ya están puestos** (#59). Y hay que saberlo: mientras no
+> haya sociedad, en `estook.com/privacidad/` y `/condiciones/` sale el **domicilio
+> particular** de Ricardo. Es lo normal en un autónomo y lo exige el artículo 10 de
+> la LSSI-CE; se cambia en un solo sitio el día que se constituya la sociedad.
+
+**Lo demás, sin prisa:**
+
+6. **«Sign in with Google» de Supabase, apagado** (Authentication → Providers), si no
    lo está: el nuestro es propio y no pasa por ahí.
-5. **Places**: comprobar en Ajustes → «Tu local en Google» que la clave responde.
-6. **Business Profile**: mandar el formulario de acceso si no está mandado, y avisar
+7. **Places**: comprobar en Ajustes → «Tu local en Google» que la clave responde.
+8. **Business Profile**: mandar el formulario de acceso si no está mandado, y avisar
    cuando Google lo apruebe. Hasta entonces la cuota es 0 y no hay nada que conectar.
-7. **Mirar en el móvil**: el admin (cabecera en dos líneas, secciones deslizables) y el
-   Panel vivo, si no lo has hecho.
-8. **Repasar las zonas de tu género** y **quitarles el IVA a tus precios, una vez**
-   (Inventario → Productos → «De dónde»; Ajustes → «Tus precios de compra»).
-9. **La IA, todavía nada**: ninguna parte de Estook la usa hoy. Está decidido Gemini
-   Flash con tope de 1.800 al mes por local; la clave se saca en M22.
+9. **Mirar en el móvil**: el admin (cabecera en dos líneas, secciones deslizables) y
+   el Panel vivo, si no lo has hecho.
+10. **Repasar las zonas de tu género** y **quitarles el IVA a tus precios, una vez**
+    (Inventario → Productos → «De dónde»; Ajustes → «Tus precios de compra»).
+11. **La IA, todavía nada**: ninguna parte de Estook la usa hoy. Está decidido Gemini
+    Flash con tope de 1.800 al mes por local; la clave se saca en M22.
 
 **Las claves de Verifacti · no hacen falta todavía, y así se sacan cuando toquen.** El
 trabajo de M20B se hace **primero contra un adaptador simulado**, con toda la lógica,
@@ -298,7 +357,7 @@ el endpoint de borrado permanente de un NIF en Verifacti elimina sus registros s
 vuelta atrás. Dar de baja a un cliente es **desactivar**.
 
 **Ya hecho, y comprobado contra producción el 21 de septiembre:** las fusiones #51 a
-#57 · las migraciones **hasta la `0039`** aplicadas · la API desplegada el 17-sep a las
+#59 · las migraciones **hasta la `0039`** aplicadas · la API desplegada el 17-sep a las
 00:13, **con E1 dentro** · el cliente de Google respondiendo · el remitente de correo
 configurado · **`estookapp@gmail.com` y Santi, los dos dentro del admin con su segundo
 factor** · y **cuatro cuentas creadas de verdad con Google**.

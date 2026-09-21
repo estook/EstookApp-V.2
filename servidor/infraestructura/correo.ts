@@ -22,14 +22,45 @@ export interface CorreoSaliente {
   mandar(correo: CorreoParaMandar): Promise<void>;
 }
 
-/** Resend no ha contestado bien. Lo traduce a una frase la capa de aplicación. */
+/**
+ * Resend no ha contestado bien. Lo traduce a una frase la capa de aplicación.
+ *
+ * ── Por qué lleva el motivo y no solo el código ──────────────────────────────
+ *
+ * Porque el código no dice nada y el motivo lo dice todo. Al encender el correo
+ * en producción, crear cuenta devolvía «se nos ha roto algo por dentro» y **no
+ * quedaba rastro de por qué**: el fallo se atrapaba, se traducía y se tiraba.
+ * Desde fuera era indistinguible un dominio sin verificar de una caída de
+ * Resend, y las dos se arreglan de forma opuesta.
+ *
+ * Ahora viaja lo que contesta Resend, que es donde está la frase de verdad
+ * («The estook.com domain is not verified», «You can only send testing emails to
+ * your own email address»). **No se le enseña a nadie de fuera**: va al registro
+ * del servidor, que es quien tiene que verlo.
+ */
 export class CorreoNoSale extends Error {
   readonly estado: number;
+  /** Lo que contestó Resend, recortado. Para el registro, nunca para la pantalla. */
+  readonly motivo: string;
 
-  constructor(estado: number) {
-    super(`Resend ha contestado ${estado}`);
+  constructor(estado: number, motivo = '') {
+    super(`Resend ha contestado ${estado}${motivo === '' ? '' : `: ${motivo}`}`);
     this.name = 'CorreoNoSale';
     this.estado = estado;
+    this.motivo = motivo;
+  }
+
+  /**
+   * Si es cosa de cómo está configurado, y por tanto **no se arregla esperando**.
+   *
+   * Un 4xx de Resend es el dominio sin verificar, el remitente mal escrito o la
+   * clave equivocada: dentro de un minuto va a fallar igual. Un 5xx o un corte de
+   * red sí es pasajero. Se separan porque lo que hay que decirle a quien está
+   * delante de la pantalla es distinto: a uno se le ofrece Google, al otro se le
+   * pide que reintente.
+   */
+  get esDeConfiguracion(): boolean {
+    return this.estado >= 400 && this.estado < 500;
   }
 }
 
@@ -63,7 +94,16 @@ export function correoDeResend(
           html: correo.html,
         }),
       });
-      if (!respuesta.ok) throw new CorreoNoSale(respuesta.status);
+      if (!respuesta.ok) {
+        // El cuerpo es donde Resend explica qué pasa. Se lee con cuidado: si no
+        // se puede leer, el fallo sigue siendo el fallo, y quedarse sin motivo es
+        // peor que quedarse sin nada.
+        const motivo = await respuesta
+          .text()
+          .then((texto) => texto.slice(0, 400))
+          .catch(() => '');
+        throw new CorreoNoSale(respuesta.status, motivo);
+      }
     },
   };
 }

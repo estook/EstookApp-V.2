@@ -13,21 +13,34 @@ import { Marco } from './Marco.tsx';
  *
  * ── Quién es el titular ──────────────────────────────────────────────────────
  *
- * La razón social, el NIF y el domicilio los tiene que dar Richi. Hasta entonces
- * se enseña lo que sí se sabe —el nombre y el correo de contacto— y **no se
- * inventa nada**: un NIF de mentira en una página legal es peor que ninguno.
+ * Puestos el 21 de septiembre de 2026. **Todavía no hay sociedad**: el titular es
+ * una persona física, y por eso donde iba la razón social va su nombre y
+ * apellidos, y el NIF es su DNI.
+ *
+ * Esto es **obligatorio y público**, no una formalidad: el artículo 10 de la
+ * LSSI-CE exige que quien presta un servicio por internet dé su nombre, su NIF y
+ * su domicilio de forma «permanente, fácil, directa y gratuita». Sin esto no se
+ * puede cobrar a nadie.
+ *
+ * > **Y lo que eso significa, dicho claro:** hasta que haya una sociedad con su
+ * > domicilio social, el que sale publicado es **el domicilio particular del
+ * > titular**. Es lo que le pasa a cualquier autónomo, y se arregla el día que se
+ * > constituya la sociedad: se cambia aquí, y ya.
+ *
+ * Cuando exista la sociedad hay que cambiar además el CIF, añadir los datos del
+ * Registro Mercantil, y volver a mirar las condiciones enteras.
  */
 export const TITULAR = {
   nombre: 'Estook',
-  /** Razón social, cuando Richi la dé. */
-  razonSocial: null as string | null,
-  nif: null as string | null,
-  domicilio: null as string | null,
+  /** Nombre y apellidos mientras no haya sociedad. */
+  razonSocial: 'Ricardo Ruiz García' as string | null,
+  nif: '54217804L' as string | null,
+  domicilio: 'Avenida del Monte 59, 28250 Torrelodones, Madrid, España' as string | null,
   correo: 'estookapp@gmail.com',
 } as const;
 
 /** La fecha de la versión vigente. Se cambia cada vez que cambie el texto. */
-export const VERSION_DE_LOS_TEXTOS = '16 de septiembre de 2026';
+export const VERSION_DE_LOS_TEXTOS = '21 de septiembre de 2026';
 
 export function PaginaLegal({
   titulo,

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { codigoEn } from '../../servidor/dominio/doble-factor.ts';
-import { correoEnMemoria } from '../../servidor/infraestructura/correo.ts';
+import { CorreoNoSale, correoEnMemoria } from '../../servidor/infraestructura/correo.ts';
 import { identidadDeMentira } from '../../servidor/infraestructura/identidad-de-google.ts';
 import {
   ADMIN_DE_EJEMPLO,
@@ -394,5 +394,93 @@ describe('entrar con Google', () => {
     );
     expect(dentro.faltaDobleFactor).toBe(true);
     expect(elFallo(await api.consultar(dentro.token, 'mis_locales'))).toBe('falta_doble_factor');
+  });
+});
+
+/**
+ * Cuando el correo no sale · lo que se vio en producción el 21 de septiembre.
+ *
+ * Richi encendió el correo, rellenó «Crea tu cuenta» y le salió **«Se nos ha roto
+ * algo por dentro. Inténtalo en un minuto»**. Y no se arreglaba en un minuto,
+ * porque no era una caída: era la configuración de Resend. Además, el fallo se
+ * atrapaba y se traducía, así que **no quedaba ni una línea en el registro**: por
+ * fuera era indistinguible de una caída de verdad.
+ *
+ * Estas pruebas fijan las dos mitades del arreglo:
+ *
+ *   · **Un 4xx no se arregla esperando**, así que no se manda a reintentar: se
+ *     dice lo que es y se ofrece Google, que sí funciona.
+ *   · **Un 5xx sí es pasajero**, y ahí reintentar es la respuesta correcta.
+ *
+ * Y una que importa tanto como las otras dos: **no se guarda nada** si el correo
+ * no sale. Si se guardara, el siguiente intento chocaría con «espera un minuto»
+ * por un código que nunca llegó.
+ */
+describe('cuando el correo no sale', () => {
+  /** Una API cuyo correo siempre falla, con el código que se le diga. */
+  const conCorreoQueFalla = (estado: number, motivo: string) =>
+    montarLaApi(base.bd, {
+      correo: {
+        mandar() {
+          return Promise.reject(new CorreoNoSale(estado, motivo));
+        },
+      },
+      identidadDeGoogle: identidadDeMentira(),
+    });
+
+  const pedirCon = async (apiRota: ApiDePrueba, para: string) =>
+    apiRota.ejecutarDesde(otraDireccion(), null, 'pedir_codigo_de_registro', {
+      nombre: 'Marta',
+      negocio: 'Taberna',
+      correo: para,
+      contrasena: 'una frase que me sé',
+      aceptaCondiciones: true,
+    });
+
+  it('el dominio sin verificar no manda a reintentar: ofrece Google', async () => {
+    // Es el caso de verdad: Resend contesta 403 «The estook.com domain is not
+    // verified». Dentro de un minuto contestará lo mismo, así que «inténtalo en
+    // un minuto» es mandar a perder el tiempo.
+    const rota = conCorreoQueFalla(403, 'The estook.com domain is not verified');
+    expect(elFallo(await pedirCon(rota, 'sin-verificar@correo-de-prueba.com'))).toBe(
+      'todavia_no_disponible',
+    );
+  });
+
+  it('la clave mala, igual: es configuracion, no una caida', async () => {
+    const rota = conCorreoQueFalla(401, 'API key is invalid');
+    expect(elFallo(await pedirCon(rota, 'clave-mala@correo-de-prueba.com'))).toBe(
+      'todavia_no_disponible',
+    );
+  });
+
+  it('pero una caida de Resend si es pasajera, y ahi se reintenta', async () => {
+    const rota = conCorreoQueFalla(503, 'Service Unavailable');
+    expect(elFallo(await pedirCon(rota, 'caida@correo-de-prueba.com'))).toBe('fallo_nuestro');
+  });
+
+  it('en ninguno de los dos casos queda la cuenta a medias', async () => {
+    // Lo importante de verdad: si el registro pendiente se quedara guardado, el
+    // segundo intento chocaria con «espera un minuto» por un codigo que nunca
+    // llego, y la persona no podria volver a intentarlo.
+    const rota = conCorreoQueFalla(403, 'The estook.com domain is not verified');
+    await pedirCon(rota, 'nada-a-medias@correo-de-prueba.com');
+
+    const pendientes = await comoDuena<{ cuantos: number }>(
+      `select count(*)::int as cuantos from estook.registro_pendiente where correo = $1`,
+      ['nada-a-medias@correo-de-prueba.com'],
+    );
+    expect(pendientes[0]?.cuantos).toBe(0);
+
+    const personas = await comoDuena<{ cuantas: number }>(
+      `select count(*)::int as cuantas from estook.persona where correo = $1`,
+      ['nada-a-medias@correo-de-prueba.com'],
+    );
+    expect(personas[0]?.cuantas).toBe(0);
+  });
+
+  it('y el de verdad sigue funcionando, para que se note la diferencia', async () => {
+    await pedir('sigue-bien@correo-de-prueba.com');
+    expect(codigoPara('sigue-bien@correo-de-prueba.com')).toMatch(/^\d{6}$/);
   });
 });

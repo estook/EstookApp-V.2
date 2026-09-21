@@ -100,6 +100,28 @@ test.describe('la portada', () => {
     await page.getByRole('link', { name: 'Condiciones' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Condiciones de uso');
   });
+
+  test('las dos paginas dicen quien es el titular, con su NIF y su domicilio', async ({ page }) => {
+    /*
+      No es una formalidad: **el artículo 10 de la LSSI-CE lo exige**, y sin esto
+      no se le puede cobrar a nadie. Hasta el 21 de septiembre los tres datos
+      estaban vacíos a propósito —«un NIF de mentira en una página legal es peor
+      que ninguno»— y la página los escondía sin romperse.
+
+      Ahora están puestos, y esta prueba es lo que impide que un día vuelvan a
+      desaparecer sin que nadie lo note: se verían las dos páginas enteras, bien
+      maquetadas, y sin lo único que la ley pide.
+    */
+    for (const pagina of ['privacidad', 'condiciones']) {
+      // Son carpetas de verdad, no una ruta de JavaScript: `estook.com/privacidad/`
+      // existe aunque no arranque el guion (ver `apps/web/vite.config.ts`).
+      await page.goto(`${WEB}${pagina}/`, { waitUntil: 'domcontentloaded' });
+      const principal = page.getByRole('main');
+      await expect(principal.getByText(/Titular:/)).toBeVisible();
+      await expect(principal.getByText(/NIF:/)).toBeVisible();
+      await expect(principal.getByText(/Domicilio:/)).toBeVisible();
+    }
+  });
 });
 
 // ── Entrar: las tres formas a la vista ───────────────────────────────────────

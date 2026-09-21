@@ -11,6 +11,7 @@ import {
   type OfertaDePrueba,
 } from '@estook/dominio';
 import { comprobar, derivar, porQueNoValeLaClave } from '../../dominio/secretos.ts';
+import { CorreoNoSale } from '../../infraestructura/correo.ts';
 import { GoogleNoIdentifica } from '../../infraestructura/identidad-de-google.ts';
 import { correoConElCodigo, correoDeYaTienesCuenta } from '../correos.ts';
 import {
@@ -149,7 +150,45 @@ export const pedirCodigoDeRegistro = comando<
           ? correoDeYaTienesCuenta(entrada.correo)
           : correoConElCodigo(entrada.correo, entrada.nombre, codigo),
       );
-    } catch {
+    } catch (fallo) {
+      /*
+        ── Por qué esto se registra, y por qué no todos los fallos son iguales ──
+
+        Antes este `catch` se comía el error entero y devolvía «se nos ha roto
+        algo por dentro». Al encender el correo en producción **eso fue
+        exactamente lo que se vio**, y no quedó rastro de por qué: desde fuera,
+        un dominio sin verificar en Resend y una caída de Resend eran la misma
+        pantalla. Se arreglan de forma opuesta.
+
+        Ahora pasan dos cosas:
+
+        1. **Se registra el motivo** que contestó Resend, con su código. Va al
+           registro del servidor, nunca a la pantalla: ahí no se enseña ni un
+           código (Auditoría de flujos, parte 5).
+        2. **Se separa lo que se arregla esperando de lo que no.** Un 4xx es el
+           dominio sin verificar, el remitente mal escrito o la clave mala: en un
+           minuto fallará igual, así que mandar a reintentar es mandar a perder el
+           tiempo. Ahí se dice lo que es —esto todavía no está conectado— y se
+           ofrece Google, **que sí funciona**. Un 5xx o un corte de red sí es
+           pasajero, y ahí reintentar es la respuesta correcta.
+      */
+      const esDeConfiguracion = fallo instanceof CorreoNoSale && fallo.esDeConfiguracion;
+      console.error(
+        JSON.stringify({
+          nivel: 'error',
+          mensaje: 'el correo del código de registro no ha salido',
+          correlacion_id: contexto.correlacionId,
+          de_configuracion: esDeConfiguracion,
+          detalle: fallo instanceof Error ? fallo.message : String(fallo),
+        }),
+      );
+
+      if (esDeConfiguracion) {
+        throw new FalloDeAplicacion('todavia_no_disponible', {
+          porque:
+            'El correo todavía no sale de aquí. Crea la cuenta con Google mientras lo conectamos.',
+        });
+      }
       throw new FalloDeAplicacion('fallo_nuestro');
     }
 

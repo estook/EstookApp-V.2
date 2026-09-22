@@ -89,7 +89,11 @@ y móvil), y **encontró tres fallos de verdad**:
    modo se aplicaba a «el del sistema» **aunque el sistema estuviera en claro**.
 3. **Muchos botones no llegaban a 64 px**: los de «ha llegado / ha salido» de cada
    producto (40), las vistas (36), las migas (20). Ahora lo dice una sola regla de
-   `cocina.css`, fuera de la capa base para que ninguna clase la pise.
+   `cocina.css`, fuera de la capa base para que ninguna clase la pise. Y con todo más
+   grande, **en un iPhone SE la barra de arriba no cabía** y cortaba el botón de tu
+   cuenta: lo vio la integración continua, que prueba también Safari. Con el modo
+   puesto y por debajo de 440 px, Avisos y Chat —que hoy solo dicen lo que serán— se
+   recogen; cuando los avisos existan (entrega I), hay que volver a mirarlo.
 
 **Lo que el punto 2 dejó hecho** ([0044](docs/decisiones/0044-las-cifras-de-cada-app.md)):
 **«Cómo va»** en la primera pantalla de Inventario, Servicio y Equipo, debajo de lo

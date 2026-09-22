@@ -190,10 +190,24 @@ for (const pantalla of PANTALLAS) {
 
     // Y con todo más grande, nada se sale por los lados: una pantalla que se
     // desplaza de lado con un guante es una pantalla que no se usa.
-    const seSale = await page.evaluate(
-      () => document.documentElement.scrollWidth > window.innerWidth + 1,
-    );
-    expect(seSale, 'la pantalla se sale por los lados').toBe(false);
+    // Y si se sale, qué se sale: sin eso, el rojo no dice dónde mirar.
+    const loQueSeSale = await page.evaluate(() => {
+      if (document.documentElement.scrollWidth <= window.innerWidth + 1) return [];
+      return Array.from(document.querySelectorAll<HTMLElement>('body *'))
+        .filter((el) => el.getBoundingClientRect().right > window.innerWidth + 1)
+        .filter(
+          (el) =>
+            !Array.from(el.children).some(
+              (hijo) => hijo.getBoundingClientRect().right > window.innerWidth + 1,
+            ),
+        )
+        .slice(0, 8)
+        .map(
+          (el) =>
+            `${el.tagName.toLowerCase()}.${el.className.slice(0, 70)} → ${Math.ceil(el.getBoundingClientRect().right)} px`,
+        );
+    });
+    expect(loQueSeSale, 'la pantalla se sale por los lados').toEqual([]);
   });
 }
 

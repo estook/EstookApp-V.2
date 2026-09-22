@@ -2182,6 +2182,10 @@ cuando» pedía **recorrer las pantallas midiendo 64 px y 7:1**. La prueba que l
   sistema en claro**: habría puesto texto casi blanco sobre blanco.
 - **Una regla de la capa base pierde contra cualquier clase de utilidad.** La de 64 px
   no llegaba a las vistas (`min-h-[36px]`); va fuera de la capa.
+- **En un iPhone SE la barra de arriba no cabía** con los botones a 64 px y cortaba
+  el de tu cuenta. En Chrome la prueba no lo veía; en Safari, sí (la integración
+  continua prueba los tres). Con el modo puesto y por debajo de 440 px se recogen
+  Avisos y Chat, que hoy solo dicen lo que serán.
 - **Nada refrescaba las cifras con flecha** al cerrar la caja, apuntar una merma o
   fichar: la caché las guardaba un minuto.
 - **Una prueba pasaba por el orden**: las cifras de Inventario solo salían si otra

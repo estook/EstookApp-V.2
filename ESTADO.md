@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 21 de septiembre de 2026, por la tarde · **Antes de M8. Fusionadas la #57 (cambio de rumbo, seis maestros), la #58 (este fichero al día) y la #59 (el correo dice por qué falla, y el titular de la web puesto). Falta una cosa para cerrar el día: redesplegar la API, porque la #59 toca el servidor y se fusionó después del último despliegue. La entrega V está empezada en su rama: el modo cocina, hecho; quedan sus otros cuatro puntos**
+Última actualización: 22 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #61. El correo de crear cuenta sigue sin salir, y el motivo está escrito en el registro del servidor, esperando a que Richi lo mire. La entrega V está empezada en su rama: el modo cocina, hecho; quedan sus otros cuatro puntos**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -18,16 +18,16 @@
 
 ## 1 · Dónde estamos
 
-_Comprobado contra producción el 21 de septiembre de 2026._
+_Comprobado contra producción el 22 de septiembre de 2026._
 
 |                |                                                                                                                                                            |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56) |
 | **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** empezada. **E2 · Stripe** va en paralelo y está bloqueada por lo que falta de Richi                   |
-| **Pruebas**    | **1.068** unitarias y de base de datos, en verde · las de pantalla, en verde en la #59 · catálogo **121 de 127** (95 %), con sus seis deudas apuntadas     |
-| **Rama**       | `main`, con todo fusionado hasta la **#59**. Y `v-lo-que-se-ve`, **subida y sin pull request todavía**: se abre cuando V esté entera                       |
-| **Base**       | En Supabase, **39 de 39** ✓, igual que en el código. 54 tablas, todas con seguridad por filas. **La #59 no trae migraciones**                              |
-| **API**        | **Desplegada el 21-sep a las 13:43, antes de fusionar la #59 (14:51). Le falta el arreglo del correo: hay que volver a desplegar**                         |
+| **Pruebas**    | **1.068** unitarias y de base de datos, en verde · las de pantalla, en verde en la #61 · catálogo **121 de 127** (95 %), con sus seis deudas apuntadas     |
+| **Rama**       | `main`, con todo fusionado hasta la **#61**. Y `v-lo-que-se-ve`, **subida y sin pull request todavía**: se abre cuando V esté entera                       |
+| **Base**       | En Supabase, **39 de 39** ✓, igual que en el código. 54 tablas, todas con seguridad por filas                                                              |
+| **API**        | **Desplegada el 21-sep a las 16:39, con el arreglo del correo dentro** ✓. La #60 y la #61 son solo documentos y no la tocan                                |
 | **Sitio**      | `estook.com`, `/app/` y `/admin/` responden 200. Se publica solo al fusionar                                                                               |
 | **Entrar**     | App: Ricardo (`ikatz`) y las cuentas reales de abajo. Admin: **`estookapp@gmail.com` y Santi**, los dos con segundo factor                                 |
 | **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                     |
@@ -93,15 +93,50 @@ y 2 proveedores.
    porque E1 solo elige pantalla. **El día que E2 lo cumpla en el servidor, Richi se
    queda fuera de su propio local.** E2 tiene que pasarlas a `activa` **en la misma
    entrega**, y se comprueba antes de fusionar.
-2. **Crear cuenta con correo falla en producción, y el motivo casi seguro es que el
-   dominio `estook.com` no está verificado en Resend.** La clave sí está puesta —la
-   API dice `conCorreo: true`—, pero eso solo prueba que hay clave, no que el dominio
-   esté verificado: son dos cosas. Las cuatro cuentas que existen entraron **con
-   Google**. Desde la #59, el registro del servidor dice el motivo exacto que
-   contesta Resend, y la pantalla ya **no manda a reintentar** cuando es de
-   configuración: ofrece Google, que sí funciona.
+2. **Crear cuenta con correo no funciona todavía, y se sabe por qué tipo de fallo es.**
+   Desde la #59 la pantalla dice «el correo todavía no sale de aquí» en vez de «se nos
+   ha roto algo», y eso **prueba que Resend devuelve un 4xx: es configuración, no una
+   caída**. El motivo literal está en el registro del servidor, y nadie lo ha mirado
+   todavía. **Google sí funciona**, y las cuatro cuentas que existen entraron por ahí.
 3. **`prueba1` se quedó en el paso 0 del alta.** Una cuenta real que entró y no pasó
    de la primera pantalla. Es lo que viene a arreglar la entrega **V**.
+
+---
+
+## 1½ · Lo que hay que tener en cuenta de aquí al final
+
+_Las consecuencias del cambio de rumbo del 20 de septiembre, en una lista. Ninguna es
+para hoy; todas son para no llevarse una sorpresa._
+
+1. **Estook es fabricante de un sistema de facturación**, y eso no se deshace. Obliga a
+   la declaración responsable dentro de la app, a numerar sin huecos, a poner el QR, y
+   a que **nada de facturación llegue a producción sin la revisión escrita del asesor**
+   (las siete condiciones del capítulo 9 del Anexo).
+2. **La facturación es intocable.** Un ticket emitido no se edita ni se borra desde
+   ningún sitio, ni con una migración de arreglo ni desde el panel interno. Es la regla
+   15 de A1 y el principio 17 del Manifiesto.
+3. **Son seis documentos maestros, no cinco**, y en sala, cocina, cobro, caja o
+   facturación **manda el Anexo** por encima de los demás.
+4. **Las pruebas leen los documentos.** Cambiar la tabla de B5 del Plan pone la
+   integración en rojo hasta que el código la siga. **Eso es la prueba funcionando**, no
+   un estorbo: es lo que impide que el documento y la aplicación se separen en silencio.
+5. **El TPV es la Fase 4**, después de M17. No se adelanta, y lo que ya está preparado
+   para él —dos vistas apagadas en Servicio— está marcado `M20C` y no hace nada.
+6. **Hay cuatro sitios de lo construido que se quedan cortos** para el TPV, y uno que
+   no cabe en el modelo actual: **un aparato no puede existir sin dueño**, y el Anexo
+   exige que la tablet de sala sea del local. Está todo en
+   [`docs/lo-que-el-tpv-toca-de-lo-construido.md`](docs/lo-que-el-tpv-toca-de-lo-construido.md),
+   con lo que hay que decidir **antes de escribir la primera pantalla de Sala**.
+7. **Cobrar con Estook trae un coste por cliente** (Verifacti, por NIF). Las cuentas
+   salen y el TPV cabe en Pro, pero **falta preguntarles qué se paga con menos de diez
+   NIF**: [`docs/el-precio-de-verifacti.md`](docs/el-precio-de-verifacti.md).
+8. **Canarias entra con IGIC; Ceuta y Melilla, todavía no.** Foral y SII quedan fuera
+   **por ley** ([0043](docs/decisiones/0043-hasta-donde-llega-la-facturacion.md)).
+9. **El asesor fiscal es un bloqueante de verdad**, no un trámite: los tipos de IVA, el
+   texto del justificante provisional, las propinas y la revisión del planteamiento
+   entero. Sin eso, M20B no sale a producción.
+10. **Y antes de todo eso, M8 no empieza** hasta que las veinte mejoras y el panel de
+    administración estén al 100 %.
 
 ---
 
@@ -299,7 +334,7 @@ entonces se hace la exportación y no se inventa ningún protocolo.**
 
 ### Ahora mismo · es de Richi
 
-**Lo primero, y es de hoy:**
+**Lo primero, y es lo único que bloquea algo:**
 
 1. **Leer el registro del servidor y decir qué contesta Resend.** El arreglo de la #59
    ya está desplegado (21-sep, 16:39) y **está funcionando**: crear cuenta con correo ya
@@ -370,8 +405,8 @@ me dices solo que están puestas y con qué nombre. **Y una que no hay que tocar
 el endpoint de borrado permanente de un NIF en Verifacti elimina sus registros sin
 vuelta atrás. Dar de baja a un cliente es **desactivar**.
 
-**Ya hecho, y comprobado contra producción el 21 de septiembre:** las fusiones #51 a
-#59 · las migraciones **hasta la `0039`** aplicadas · la API desplegada el 17-sep a las
+**Ya hecho, y comprobado contra producción el 22 de septiembre:** las fusiones #51 a
+#61 · las migraciones **hasta la `0039`** aplicadas · la API desplegada el 17-sep a las
 00:13, **con E1 dentro** · el cliente de Google respondiendo · el remitente de correo
 configurado · **`estookapp@gmail.com` y Santi, los dos dentro del admin con su segundo
 factor** · y **cuatro cuentas creadas de verdad con Google**.

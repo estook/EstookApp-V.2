@@ -55,21 +55,21 @@ alcance de cualquiera con un navegador se hace mirando, no de paso.
 
 Los que no pueden pisar el navegador jamas.
 
-| Nombre                       | Que es                                                          |
-| ---------------------------- | --------------------------------------------------------------- |
-| `CLAVE_DE_SERVICIO`          | La clave secreta del proyecto                                   |
-| `GOOGLE_MAPS_KEY`            | Google Places (New) · **ya la lee la API** (0040)               |
-| `RESEND_API_KEY`             | El correo que manda Estook (0017) · **ya la lee la API** (0042) |
-| `CORREO_REMITENTE`           | Quién firma: `Estook <hola@estook.com>` (0042)                  |
-| `GOOGLE_OAUTH_CLIENT_ID`     | Entrar y crear cuenta con Google (0042)                         |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | Su secreto: solo lo tiene el servidor (0042)                    |
-| `AI_API_KEY`                 | El proveedor de IA de Fogon · M22                               |
-| `AI_MODELO_RAPIDO`           | El modelo barato para lo cotidiano                              |
-| `AI_MODELO_ANALISIS`         | El modelo bueno para el analisis nocturno                       |
-| `APP_URL`                    | La direccion publica, para los enlaces                          |
-| `DATABASE_URL`               | La cadena del **agrupador de sesion** (M4)                      |
-| `ORIGENES_PERMITIDOS`        | Origenes de mas, si alguno hace falta (M4)                      |
-| `ENTORNO`                    | `produccion` (M4)                                               |
+| Nombre                       | Que es                                                            |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `CLAVE_DE_SERVICIO`          | La clave secreta del proyecto                                     |
+| `GOOGLE_MAPS_KEY`            | Google Places (New) · **ya la lee la API** (0040)                 |
+| `RESEND_API_KEY`             | El correo que manda Estook (0017) · **ya la lee la API** (0042)   |
+| `CORREO_REMITENTE`           | Quién firma. **De un dominio verificado, nunca de Gmail** (abajo) |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Entrar y crear cuenta con Google (0042)                           |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Su secreto: solo lo tiene el servidor (0042)                      |
+| `AI_API_KEY`                 | El proveedor de IA de Fogon · M22                                 |
+| `AI_MODELO_RAPIDO`           | El modelo barato para lo cotidiano                                |
+| `AI_MODELO_ANALISIS`         | El modelo bueno para el analisis nocturno                         |
+| `APP_URL`                    | La direccion publica, para los enlaces                            |
+| `DATABASE_URL`               | La cadena del **agrupador de sesion** (M4)                        |
+| `ORIGENES_PERMITIDOS`        | Origenes de mas, si alguno hace falta (M4)                        |
+| `ENTORNO`                    | `produccion` (M4)                                                 |
 
 ### Las que faltan, cuál usa ya el código y dónde van
 
@@ -86,6 +86,21 @@ ponerla.
 | **IA** (Fogón)              | `AI_API_KEY`, `AI_MODELO_RAPIDO`, `AI_MODELO_ANALISIS`       | Secretos de Supabase                    | No · M22, con modelo y tope elegidos (0023)  |
 
 **Entrar con Google (0042)** usa el cliente de OAuth «Estook»: el identificador es público (lo enseña la pantalla de entrar) y **el secreto solo lo tiene la API**, que canjea el código. Sin los dos, el botón de Google no sale. Las direcciones de vuelta son `https://estook.com/app/` y `https://www.estook.com/app/`, y están escritas también en el código (`VUELTAS_DE_GOOGLE`). Sin `RESEND_API_KEY`, crear cuenta con correo dice que se abre pronto. Los pasos, en [`docs/pasos-antes-de-m8.md`](../docs/pasos-antes-de-m8.md), «E1».
+
+> **Dos cosas que parecen una, y costaron un día.** Tener el dominio **verificado** en
+> Resend y **enviar desde ese dominio** no es lo mismo, y se puede tener lo primero y
+> fallar en lo segundo.
+>
+> El 21 de septiembre de 2026 `estook.com` llevaba verificado desde el 17, y crear
+> cuenta no funcionaba: `CORREO_REMITENTE` estaba puesto a `estookapp@gmail.com` —el
+> correo de la cuenta, que es lo que parece razonable— y Resend contestaba **«The
+> gmail.com domain is not verified»**. **Desde Gmail no se envía**: ese dominio no es
+> tuyo y no hay forma de verificarlo.
+>
+> Se escribe `Estook <hola@estook.com>`, con un dominio que salga **verificado** en
+> Resend → Domains. Desde entonces el servidor lo comprueba antes de llamar a Resend:
+> si el remitente es de un correo gratuito, lo dice en el registro y usa el de siempre
+> en vez de quedarse sin mandar nada (`servidor/infraestructura/correo.ts`).
 
 **Business Profile no funciona con una clave**, y el nombre `GOOGLE_BUSINESS_KEY`
 que había aquí era un error: esa API exige que **el dueño de la ficha autorice con

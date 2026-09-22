@@ -1,9 +1,13 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 20 de septiembre de 2026 · **Cambio de rumbo: Estook también cobra. Seis documentos maestros en `docs/maestros/`, los [VERIFICAR] comprobables comprobados, y la navegación al día con el Plan 1.2 —Servicio gana dos vistas pendientes, y se entra por la vista que existe—. Del TPV no hay nada más, y no toca: es la Fase 4. Antes de M8: A1 en producción, E1 fusionada (#56) y pendiente de que Richi migre, despliegue y ponga Resend y Google. De las veinte mejoras y del resto del admin, nada construido**
+Última actualización: 22 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #61. El correo de crear cuenta sigue sin salir, y el motivo está escrito en el registro del servidor, esperando a que Richi lo mire. La entrega V está empezada en su rama: el modo cocina, hecho; quedan sus otros cuatro puntos**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
+>
+> **¿Empiezas un chat nuevo?** Con decir «lee `ESTADO.md` entero y dime dónde
+> estamos» basta. El porqué y los casos raros, en
+> [`docs/empezar-un-chat-nuevo.md`](docs/empezar-un-chat-nuevo.md).
 >
 > Aquí está lo que hace falta para trabajar hoy. **Lo que hizo cada módulo, con sus
 > fallos y sus porqués, está entero en
@@ -14,24 +18,127 @@
 
 ## 1 · Dónde estamos
 
-|                |                                                                                                                                                                                                  |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49): compras, Calendario, repaso, dominio, bases, zonas y Panel                                                                |
-| **Ahora**      | **Antes de M8**: A1 en producción; **E1 · crear cuenta y Google**, fusionada en la **#56**. Lo siguiente, **E2 · el pago con Stripe**                                                            |
-| **Pruebas**    | 1.059 unitarias y de base de datos · 380 de pantalla en escritorio y móvil · catálogo **121 de 127** (95 %). **Cifras del 16-sep, sin volver a pasar desde entonces**                            |
-| **Rama**       | `cambio-de-rumbo-tpv-y-facturacion`: los seis maestros, la [0043](docs/decisiones/0043-hasta-donde-llega-la-facturacion.md) y **el catálogo de navegación al día con B5**. **Ninguna migración** |
-| **Base**       | En Supabase, **37 de 37** (comprobado el 16-sep). **En el código, 39**: faltan la `0038` y la `0039` de E1, que ya está en `main`. **Migrar es lo primero que toca**                             |
-| **API**        | Desplegada el 16-sep a las 20:05, **antes de la #56**. Hay que volver a desplegar                                                                                                                |
-| **Entrar**     | App: la cuenta de Ricardo (`ikatz`); ninguna de ejemplo entra. Admin: `estookapp@gmail.com` (dentro, con segundo factor) y Santi (sin entrar aún)                                                |
-| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                                                           |
+_Comprobado contra producción el 22 de septiembre de 2026._
 
-> **Lo de ahora:** migrar la base a 39, desplegar la API, verificar el dominio en
-> Resend y poner sus secretos, preparar el cliente de Google y poner los suyos, y darme
-> los datos del titular para lo legal. Luego, mirar el admin en el móvil y que Santi
-> entre. Todo en **[`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)**. Los
-> planes: **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)** y
-> **[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md)**. **M8 no
-> empieza hasta que los dos estén al 100 %.**
+|                |                                                                                                                                                            |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56) |
+| **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** empezada. **E2 · Stripe** va en paralelo y está bloqueada por lo que falta de Richi                   |
+| **Pruebas**    | **1.068** unitarias y de base de datos, en verde · las de pantalla, en verde en la #61 · catálogo **121 de 127** (95 %), con sus seis deudas apuntadas     |
+| **Rama**       | `main`, con todo fusionado hasta la **#61**. Y `v-lo-que-se-ve`, **subida y sin pull request todavía**: se abre cuando V esté entera                       |
+| **Base**       | En Supabase, **39 de 39** ✓, igual que en el código. 54 tablas, todas con seguridad por filas                                                              |
+| **API**        | **Desplegada el 21-sep a las 16:39, con el arreglo del correo dentro** ✓. La #60 y la #61 son solo documentos y no la tocan                                |
+| **Sitio**      | `estook.com`, `/app/` y `/admin/` responden 200. Se publica solo al fusionar                                                                               |
+| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas reales de abajo. Admin: **`estookapp@gmail.com` y Santi**, los dos con segundo factor                                 |
+| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                     |
+
+> **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
+> 100 %.** Lo decidió Richi el 16 de septiembre. Los planes:
+> **[`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)** y
+> **[`docs/panel-de-administracion.md`](docs/panel-de-administracion.md)**.
+
+### El orden, y dónde estamos en él
+
+| #   | Entrega                          | Cómo está                                             |
+| --- | -------------------------------- | ----------------------------------------------------- |
+| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                            |
+| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                 |
+| 1   | **V · Lo que se ve**             | **Empezada.** Punto 1 de 5 hecho, en `v-lo-que-se-ve` |
+| 2   | **E2 · El pago con Stripe**      | **Bloqueada por Richi** (abajo). Va en paralelo a V   |
+| 3   | **O · Lo que se ordena**         | Falta                                                 |
+| 4   | **A2 · Clientes**                | Falta                                                 |
+| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7               |
+| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7               |
+| 7   | **I · La app instalable**        | Falta                                                 |
+| 8   | **L · El lector**                | Falta                                                 |
+| 9   | **A3 · Vendedores y códigos**    | Falta                                                 |
+| 10  | **A4 · Ventas**                  | Falta                                                 |
+| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                           |
+
+### La entrega V, punto por punto
+
+El plan entero está en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md),
+apartado «V · Lo que se ve». **Rama `v-lo-que-se-ve`, sin pull request todavía.**
+
+| Punto | Qué                                                            | Cómo está               |
+| ----- | -------------------------------------------------------------- | ----------------------- |
+| **1** | **Modo cocina**: 64 px, AAA, y ni un gesto que no sea un toque | **Hecho**, sin fusionar |
+| **2** | Todas las apps con las flechas y las gráficas del Panel        | La siguiente            |
+| **3** | Cada app abre con su resumen                                   | Falta                   |
+| **4** | Estados vacíos que invitan a empezar                           | Falta                   |
+| **5** | Tema oscuro repasado, y fotos de producto                      | Falta                   |
+
+**Lo que el punto 1 dejó hecho, y no hay que volver a tocar:** `cocina.css` con las
+fichas del modo, `usarModoCocina` como ajuste del aparato —igual que el tema y la
+letra—, el interruptor en Ajustes, y los botones de subir y bajar del Panel, que
+vuelven **solo con guantes** porque ahí el arrastre se dispara solo. 15 pruebas.
+
+### Lo que hay de verdad en producción
+
+Cuatro organizaciones reales, además de las tres de ejemplo:
+
+| Organización  | Nacida    | Suscripción                       | Alta del local            |
+| ------------- | --------- | --------------------------------- | ------------------------- |
+| `ikatz`       | 3 de sep  | **prueba, caducada el 17 de sep** | Terminada                 |
+| `burger-king` | 4 de sep  | **prueba, caducada el 18 de sep** | Terminada, dos locales    |
+| `prueba1`     | 17 de sep | `pendiente_de_pago`               | **Se quedó en el paso 0** |
+| `prueba1-1`   | 17 de sep | prueba, hasta el 28 de sep        | Terminada                 |
+
+Y el uso real: 9 productos, 36 movimientos, 4 cierres de caja, 21 fichajes, 3 pedidos
+y 2 proveedores.
+
+**Tres cosas que salen de aquí y no se pueden perder:**
+
+1. **Dos pruebas están caducadas, y la API no lo hace cumplir.** Hoy no pasa nada
+   porque E1 solo elige pantalla. **El día que E2 lo cumpla en el servidor, Richi se
+   queda fuera de su propio local.** E2 tiene que pasarlas a `activa` **en la misma
+   entrega**, y se comprueba antes de fusionar.
+2. **Crear cuenta con correo: encontrado, y es de un minuto.** El registro del
+   servidor lo decía con todas las letras: Resend contesta **403, «The gmail.com
+   domain is not verified»**. No era `estook.com` —que lleva verificado desde el 17—
+   sino que **`CORREO_REMITENTE` estaba puesto a un correo de Gmail**, y desde Gmail no
+   se puede enviar. **Se arregla cambiando ese secreto** a `Estook <hola@estook.com>`.
+   Mientras tanto Google sigue funcionando, y las cuatro cuentas que existen entraron
+   por ahí.
+3. **`prueba1` se quedó en el paso 0 del alta.** Una cuenta real que entró y no pasó
+   de la primera pantalla. Es lo que viene a arreglar la entrega **V**.
+
+---
+
+## 1½ · Lo que hay que tener en cuenta de aquí al final
+
+_Las consecuencias del cambio de rumbo del 20 de septiembre, en una lista. Ninguna es
+para hoy; todas son para no llevarse una sorpresa._
+
+1. **Estook es fabricante de un sistema de facturación**, y eso no se deshace. Obliga a
+   la declaración responsable dentro de la app, a numerar sin huecos, a poner el QR, y
+   a que **nada de facturación llegue a producción sin la revisión escrita del asesor**
+   (las siete condiciones del capítulo 9 del Anexo).
+2. **La facturación es intocable.** Un ticket emitido no se edita ni se borra desde
+   ningún sitio, ni con una migración de arreglo ni desde el panel interno. Es la regla
+   15 de A1 y el principio 17 del Manifiesto.
+3. **Son seis documentos maestros, no cinco**, y en sala, cocina, cobro, caja o
+   facturación **manda el Anexo** por encima de los demás.
+4. **Las pruebas leen los documentos.** Cambiar la tabla de B5 del Plan pone la
+   integración en rojo hasta que el código la siga. **Eso es la prueba funcionando**, no
+   un estorbo: es lo que impide que el documento y la aplicación se separen en silencio.
+5. **El TPV es la Fase 4**, después de M17. No se adelanta, y lo que ya está preparado
+   para él —dos vistas apagadas en Servicio— está marcado `M20C` y no hace nada.
+6. **Hay cuatro sitios de lo construido que se quedan cortos** para el TPV, y uno que
+   no cabe en el modelo actual: **un aparato no puede existir sin dueño**, y el Anexo
+   exige que la tablet de sala sea del local. Está todo en
+   [`docs/lo-que-el-tpv-toca-de-lo-construido.md`](docs/lo-que-el-tpv-toca-de-lo-construido.md),
+   con lo que hay que decidir **antes de escribir la primera pantalla de Sala**.
+7. **Cobrar con Estook trae un coste por cliente** (Verifacti, por NIF). Las cuentas
+   salen y el TPV cabe en Pro, pero **falta preguntarles qué se paga con menos de diez
+   NIF**: [`docs/el-precio-de-verifacti.md`](docs/el-precio-de-verifacti.md).
+8. **Canarias entra con IGIC; Ceuta y Melilla, todavía no.** Foral y SII quedan fuera
+   **por ley** ([0043](docs/decisiones/0043-hasta-donde-llega-la-facturacion.md)).
+9. **El asesor fiscal es un bloqueante de verdad**, no un trámite: los tipos de IVA, el
+   texto del justificante provisional, las propinas y la revisión del planteamiento
+   entero. Sin eso, M20B no sale a producción.
+10. **Y antes de todo eso, M8 no empieza** hasta que las veinte mejoras y el panel de
+    administración estén al 100 %.
 
 ---
 
@@ -209,6 +316,14 @@ BOE, y están abajo. El resumen, más la comprobación del QR y la del proveedor
 se piden está al final del apartado **«Ahora mismo · es de Richi»**, más abajo. Y el
 precio real de una impresora que pregunta sola (Anexo 6.3), al comprarla.
 
+**Y uno que ya está resuelto: el precio de Verifacti.** Llegó su propuesta el 21 de
+septiembre: **por NIF activo en producción**, de 5,59 € con diez a 3,71 € con cincuenta,
+sin IVA, con 3.000 facturas al mes por NIF incluidas. Las cuentas salen y **el TPV cabe
+en Pro sin subir el precio**; queda **una pregunta para ellos: qué se paga con menos de
+diez NIF**. Todo, en
+[`docs/el-precio-de-verifacti.md`](docs/el-precio-de-verifacti.md). **La propuesta
+caduca hacia el 19 de octubre.**
+
 **Y uno que no depende de nadie de aquí:** el **[VERIFICAR] del registro horario**
 (Plan, M15). El Real Decreto de fichaje digital sigue **en tramitación y sin publicar
 en el BOE** a día de hoy, así que no obliga. Cuando se publique hay que mirar el
@@ -221,30 +336,54 @@ entonces se hace la exportación y no se inventa ningún protocolo.**
 
 ### Ahora mismo · es de Richi
 
-Los pasos, en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md):
+**Lo primero, y es lo único que bloquea algo:**
 
-1. **E1, ya fusionada en la #56** (arriba del todo en los pasos): `bd:migrar` (39 de 39) y desplegar
-   la API; **Resend** —verificar `estook.com` con sus registros en Hostinger y poner
-   `RESEND_API_KEY` y `CORREO_REMITENTE`—; **Google** —las vueltas
-   `https://estook.com/app/` y `https://www.estook.com/app/`, un secreto nuevo, publicar
-   la pantalla de consentimiento y poner `GOOGLE_OAUTH_CLIENT_ID` y
-   `GOOGLE_OAUTH_CLIENT_SECRET`—; y probarlo de punta a punta.
-2. **Los datos del titular** (razón social, NIF, domicilio) para la privacidad y las
-   condiciones; y **crear la cuenta de Stripe** para E2, sin pasar claves por el chat.
-   **«Sign in with Google» de Supabase, apagado** (Authentication → Providers).
-   **Places**: Richi dice que la clave ya está puesta; se comprueba en Ajustes → Tu
-   local en Google.
-3. **Business Profile**: mandar el formulario de acceso si no está mandado, y **avisar
-   cuando Google lo apruebe**. Hasta entonces la cuota es 0 y no hay nada que conectar.
-4. **Mirar el admin en el móvil**: la cabecera en dos líneas y las secciones deslizables.
-5. **Que Santi entre en `estook.com/admin/`** con su contraseña de siempre y monte su
-   segundo factor. Si no la recuerda, `bd:dar-admin su@correo --nueva-clave`.
-6. **Mirar el Panel vivo en el TPV y en el móvil**, si no está hecho.
-7. **Repasar las zonas de tu género** y **quitarles el IVA a tus precios, una vez**, si
-   no está hecho (Inventario → Productos → «De dónde»; Ajustes → «Tus precios de compra»).
-8. **La IA, todavía nada**: ninguna parte de Estook la usa hoy. Está decidido Gemini
-   Flash con tope de 1.800 al mes por local; la clave se saca cuando toque (M22).
-   **Resend** ya se usa: el código de crear cuenta (E1).
+1. **Leer el registro del servidor y decir qué contesta Resend.** El arreglo de la #59
+   ya está desplegado (21-sep, 16:39) y **está funcionando**: crear cuenta con correo ya
+   no dice «se nos ha roto algo», dice «el correo todavía no sale de aquí». Eso
+   significa que **Resend devuelve un 4xx: es configuración, no una caída**. El motivo
+   exacto está escrito en el registro:
+
+   > Supabase → **Edge Functions** → `api` → **Logs**, y buscar
+   > `el correo del código de registro no ha salido`.
+
+   La línea trae el código y la frase literal de Resend. **Con eso se arregla en un
+   minuto**; sin eso, se adivina.
+
+2. **Y lo que casi seguro dirá: verificar `estook.com` en Resend.** Resend → Domains →
+   meter en Hostinger los registros que dé (SPF, DKIM y el MX de rebotes) y darle a
+   verificar. **Tener la clave puesta no es tener el dominio verificado**; hasta el
+   21-sep se había dado por bueno lo uno por lo otro, y era el error.
+
+3. **Probar crear cuenta con correo** después, con un correo que no tenga cuenta.
+
+**Y lo que desbloquea E2:**
+
+4. **Activar la cuenta de Stripe** —datos fiscales y cuenta bancaria— y dejarla en
+   modo prueba. **No crear productos ni precios a mano**: los crea el código con los
+   planes del Manifiesto, para que el precio viva en un solo sitio.
+5. **El alta de autónomo en Hacienda** (modelo 036/037), si no está hecha. No es del
+   código ni de Stripe, pero es lo que de verdad bloquea cobrarle al primer cliente.
+   **Es del asesor, no mío.**
+
+> **Los datos del titular ya están puestos** (#59). Y hay que saberlo: mientras no
+> haya sociedad, en `estook.com/privacidad/` y `/condiciones/` sale el **domicilio
+> particular** de Ricardo. Es lo normal en un autónomo y lo exige el artículo 10 de
+> la LSSI-CE; se cambia en un solo sitio el día que se constituya la sociedad.
+
+**Lo demás, sin prisa:**
+
+6. **«Sign in with Google» de Supabase, apagado** (Authentication → Providers), si no
+   lo está: el nuestro es propio y no pasa por ahí.
+7. **Places**: comprobar en Ajustes → «Tu local en Google» que la clave responde.
+8. **Business Profile**: mandar el formulario de acceso si no está mandado, y avisar
+   cuando Google lo apruebe. Hasta entonces la cuota es 0 y no hay nada que conectar.
+9. **Mirar en el móvil**: el admin (cabecera en dos líneas, secciones deslizables) y
+   el Panel vivo, si no lo has hecho.
+10. **Repasar las zonas de tu género** y **quitarles el IVA a tus precios, una vez**
+    (Inventario → Productos → «De dónde»; Ajustes → «Tus precios de compra»).
+11. **La IA, todavía nada**: ninguna parte de Estook la usa hoy. Está decidido Gemini
+    Flash con tope de 1.800 al mes por local; la clave se saca en M22.
 
 **Las claves de Verifacti · no hacen falta todavía, y así se sacan cuando toquen.** El
 trabajo de M20B se hace **primero contra un adaptador simulado**, con toda la lógica,
@@ -268,9 +407,11 @@ me dices solo que están puestas y con qué nombre. **Y una que no hay que tocar
 el endpoint de borrado permanente de un NIF en Verifacti elimina sus registros sin
 vuelta atrás. Dar de baja a un cliente es **desactivar**.
 
-**Ya hecho y comprobado en producción el 16 de septiembre:** las cuatro fusiones (#51 a
-#54), la `0036` y la `0037` aplicadas, la API desplegada a las 20:05, y
-`estookapp@gmail.com` dentro del admin con su contraseña y su segundo factor.
+**Ya hecho, y comprobado contra producción el 22 de septiembre:** las fusiones #51 a
+#61 · las migraciones **hasta la `0039`** aplicadas · la API desplegada el 17-sep a las
+00:13, **con E1 dentro** · el cliente de Google respondiendo · el remitente de correo
+configurado · **`estookapp@gmail.com` y Santi, los dos dentro del admin con su segundo
+factor** · y **cuatro cuentas creadas de verdad con Google**.
 
 ### Lo que Richi confirmó el 11 de septiembre
 
@@ -328,7 +469,7 @@ básica** con los dos accesos. Y: **se paga al empezar**, y la prueba de 12 día
 
 | Entrega                        | Qué lleva                                                                                                                   | Cómo está                                     |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| **E1 · Entrar y crear cuenta** | Portada, privacidad y condiciones, crear cuenta (correo con código o Google), Google al entrar, Elegir plan, admin → Oferta | **Fusionada** (#56). Falta migrar y desplegar |
+| **E1 · Entrar y crear cuenta** | Portada, privacidad y condiciones, crear cuenta (correo con código o Google), Google al entrar, Elegir plan, admin → Oferta | **En producción** (#56), migrada y desplegada |
 | **E2 · Pagar**                 | Stripe: pagar, portal, avisos; **el estado de la suscripción cumplido en el servidor**                                      | La siguiente                                  |
 | **E3 · Google en el alta**     | Places en el paso 4 del alta; Business Profile cuando Google apruebe                                                        | Falta                                         |
 
@@ -839,6 +980,18 @@ la capa superior del navegador— que es justo cuando hace falta.
     36» y el Plan decía «los cinco documentos» cuando ya eran seis. Si un número no lo
     comprueba nadie, o se quita o se le pone una prueba: la de las fichas de módulo
     pasó de 31 a 34 y saltó sola.
+75. **Tener un dominio verificado y enviar desde él son dos cosas.** `estook.com`
+    llevaba verificado en Resend desde el 17 de septiembre, y crear cuenta no
+    funcionaba: `CORREO_REMITENTE` estaba puesto a `estookapp@gmail.com` —el correo de
+    la cuenta, que es lo que parece razonable— y **desde Gmail no se envía**. Se buscó
+    el fallo un día entero en el sitio equivocado. Ahora el servidor **comprueba el
+    remitente antes de llamar a Resend** y, si es de un correo gratuito, lo dice y usa
+    el de siempre en vez de quedarse sin mandar nada.
+76. **Cuando algo de fuera falla, lo primero es leer lo que contesta, no deducirlo.**
+    El motivo literal —«The gmail.com domain is not verified»— llevaba un día en el
+    registro del servidor, con todas las letras. Mientras no se miró, se estuvo
+    adivinando; en cuanto se miró, el arreglo fue cambiar un secreto. **La suposición
+    más razonable no es un diagnóstico.**
 
 ---
 
@@ -982,8 +1135,18 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ### Antes de empezarla
 
-1. **E1 fusionada**, con la `0038` y la `0039` aplicadas y la API desplegada.
+1. **E1 fusionada, migrada y desplegada.** ✓ Comprobado el 21 de septiembre.
 2. **Richi con su cuenta de Stripe creada y activada.** Las claves no pasan por el chat.
+   **Falta.**
+3. **Los datos del titular** —razón social, NIF y domicilio— en las condiciones y la
+   privacidad. **Falta**, y sin eso no se puede cobrar a nadie.
+
+> **Lo que no se puede olvidar, con fechas de verdad.** El 21 de septiembre,
+> `ikatz` tiene la prueba caducada desde el **17** y `burger-king` desde el **18**.
+> Hoy no pasa nada porque la API no lo hace cumplir. **La entrega que encienda el
+> cumplimiento tiene que pasar esas cuentas a `activa` en la misma entrega**, o Richi
+> se queda fuera de su propio local el día del despliegue. Se comprueba antes de
+> fusionar, no después.
 
 ### Qué entra
 

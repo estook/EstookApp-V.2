@@ -27,6 +27,7 @@ import {
 import { IconoAnadir, IconoBorrar, IconoCamara, IconoDocumento } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { ComoEntranTusVentas } from './ComoEntranTusVentas.tsx';
 import { comoSeLeeElDia, type ElCierreDeUnDia } from './contrato.ts';
 import { comoDinero } from '../inventario/contrato.ts';
@@ -172,6 +173,13 @@ export function CierreDeCaja() {
           </p>
         </Tarjeta>
       )}
+
+      {/*
+        «Cómo va» · ventas, ticket medio, food cost y cajas cerradas, con su flecha
+        (V, punto 2). Debajo del cierre del día, que es lo que se viene a hacer; son
+        las mismas cuentas que `mis_cierres`, y el food cost lo vigila una prueba.
+      */}
+      <CifrasDeLaApp app="servicio" />
     </div>
   );
 }
@@ -425,6 +433,7 @@ function Formulario({
     setHecho(respuesta.datos.seHaCorregido ? 'Cierre corregido' : 'Caja cerrada');
     await cache.invalidateQueries({ queryKey: ['un_cierre'] });
     await cache.invalidateQueries({ queryKey: ['mis_cierres'] });
+    await cache.invalidateQueries({ queryKey: ['un_indicador'] });
     alTerminar();
   }
 

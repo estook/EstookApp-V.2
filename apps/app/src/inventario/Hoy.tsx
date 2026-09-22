@@ -8,6 +8,7 @@ import type { ComprasDeHoy } from '../compras/contrato.ts';
 import { Aviso, Boton, Cargando, Cifra, EstadoVacio, Etiqueta, Tarjeta, Tira } from '@estook/ui';
 import { IconoAnadir, IconoAtencion, IconoCamara, IconoReloj, IconoVacio } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { ApuntarMerma } from './ApuntarMerma.tsx';
 import { QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
 import {
@@ -30,7 +31,7 @@ import {
  *  **Cada línea con su botón**» (Manifiesto 12).
  *
  * De esa lista, M6 dio cuatro: bajo mínimo con previsión, caducidades, productos
- * sin precio y el valor de la cámara. M7 añade **los pedidos por recibir y a
+ * sin precio y el valor de la cámara —desde V, con su flecha, en «Cómo va»—. M7 añade **los pedidos por recibir y a
  * quién toca pedir hoy**, con su botón. El recuento es M8, y se dice que falta y
  * dónde llega en vez de dejar el hueco en blanco.
  *
@@ -207,40 +208,16 @@ export function Hoy({ alAbrirProducto }: { readonly alAbrirProducto: (id: string
             </Tarjeta>
           )}
 
-          {hoy.puedeVerPrecios && (
-            <Tarjeta
-              titulo="Lo que hay en cámara"
-              origen="A precio medio; lo que entró sin coste, a su precio de hoy · sin los ejemplos"
-            >
-              <Cifra
-                etiqueta="Valor del género"
-                valor={hoy.valorTotalCentimos ?? 0}
-                formato={(v) => comoDinero(v)}
-                origen="Suma de lo que costó lo que hay"
-              />
+          {/*
+            «Cómo va» · las cifras de Inventario con su flecha (V, punto 2).
 
-              {/*
-                ── Por qué esta cifra parecía no moverse ────────────────────────
-                Se valora `cantidad × coste medio`, y el coste medio de un producto
-                **solo se mueve cuando entra género con un precio**. Un producto
-                dado de alta con su precio en la lista y sin ninguna entrada tenía
-                coste medio cero, así que valía cero y la cámara «no se
-                actualizaba» por muchos productos que se metieran.
-                Lo que lo arregla de raíz está en el alta: dar de alta un producto
-                **apunta la entrada de lo que hay**, con su precio, así que el
-                coste medio nace puesto. Y aquí se dice cuánto queda sin valorar,
-                que es lo que faltaba: sin esa línea, la cifra parecía mal en vez
-                de parecer incompleta.
-              */}
-              {hoy.sinPrecio.length > 0 && (
-                <p className="mt-e2 text-secundario text-atencion">
-                  {hoy.sinPrecio.length === 1
-                    ? 'Hay 1 producto sin precio: cuenta cero en esta cifra.'
-                    : `Hay ${hoy.sinPrecio.length} productos sin precio: cuentan cero en esta cifra.`}
-                </p>
-              )}
-            </Tarjeta>
-          )}
+            Sustituye a la tarjeta «Lo que hay en cámara», que enseñaba el mismo
+            valor sin compararlo con nada: ahora es la primera cifra de la fila, y
+            **es la misma cuenta** —la foto del libro del dominio da hoy lo mismo que
+            `inventario_hoy`, y una prueba contra la base lo vigila—. Lo que quedaba
+            sin valorar sigue dicho justo debajo, en «Sin precio todavía».
+          */}
+          <CifrasDeLaApp app="inventario" clase="md:col-span-2 xl:col-span-3" />
 
           {hoy.sinPrecio.length > 0 && (
             <Tarjeta titulo="Sin precio todavía" origen="Cuentan cero en el valor de la cámara">

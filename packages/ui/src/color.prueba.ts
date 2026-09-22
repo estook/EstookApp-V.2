@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CONTRASTE_DE_COCINA,
   CONTRASTE_DE_ICONO,
   CONTRASTE_DE_TEXTO,
   ajustarHasta,
@@ -143,6 +144,42 @@ describe('el acento que sale de un color de marca', () => {
       }
     });
   }
+
+  for (const [comoSeLlama, donde] of [
+    ['en claro', CLARO],
+    ['en oscuro', OSCURO],
+  ] as const) {
+    it(`${comoSeLlama} y en modo cocina, **todo lo que se lee llega a 7:1** con cualquier color`, () => {
+      // La tablet del pase de un local con su color puesto: el botón principal, la
+      // pastilla y «Deshacer» se leen con vapor o no sirven (entrega V, mejora 1).
+      for (const marca of A_PROBAR) {
+        const { acento, sobreAcento, acentoSuave, acentoEnOscuro } = derivarAcento(
+          marca,
+          donde,
+          CONTRASTE_DE_COCINA,
+        );
+        expect(contraste(sobreAcento, acento), `texto sobre ${marca}`).toBeGreaterThanOrEqual(
+          CONTRASTE_DE_COCINA,
+        );
+        expect(contraste(donde.texto, acentoSuave), `pastilla de ${marca}`).toBeGreaterThanOrEqual(
+          CONTRASTE_DE_COCINA,
+        );
+        expect(
+          contraste(acentoEnOscuro, donde.oscuro),
+          `«Deshacer» con ${marca}`,
+        ).toBeGreaterThanOrEqual(CONTRASTE_DE_COCINA);
+        expect(contraste(acento, donde.superficie), `acento de ${marca}`).toBeGreaterThanOrEqual(
+          CONTRASTE_DE_ICONO,
+        );
+      }
+    });
+  }
+
+  it('fuera del modo cocina no cambia nada: el mínimo de siempre da lo de siempre', () => {
+    expect(derivarAcento('#1f3a5f', CLARO)).toEqual(
+      derivarAcento('#1f3a5f', CLARO, CONTRASTE_DE_TEXTO),
+    );
+  });
 
   it('avisa cuando ha tenido que tocar el color elegido', () => {
     // El naranja de Estook sobre blanco no llega a 3:1, así que se ajusta. Es lo

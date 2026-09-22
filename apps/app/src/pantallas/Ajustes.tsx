@@ -34,6 +34,7 @@ import { TuMarca } from '../marca/TuMarca.tsx';
 import { AjustesDeOrganizacion } from './AjustesDeOrganizacion.tsx';
 import { MiAcceso } from './MiAcceso.tsx';
 import { TuLocalEnGoogle } from './TuLocalEnGoogle.tsx';
+import { CuandoEsLlegarTarde } from './CuandoEsLlegarTarde.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
 import { preguntarDondeEstoy } from '../ganchos/usarFichar.ts';
@@ -59,6 +60,7 @@ import type { MiFichaje } from '../equipo/contrato.ts';
  *
  *   · **Tus ventas**: a mano o con el TPV. Se elige en el Panel y se cambia aquí.
  *   · **Dónde está el local**: para que cada fichaje diga si se hizo en el local.
+ *   · **Cuándo es llegar tarde**: el margen antes de contar un retraso (0040).
  */
 export function Ajustes() {
   const { tamano, poner } = usarTamanoDeLetra();
@@ -154,6 +156,7 @@ export function Ajustes() {
       {llevaElLocal && <ComoEntranTusVentas modo="ajustes" />}
       {llevaElLocal && <TuLocalEnGoogle />}
       {llevaElLocal && <DondeEstaElLocal />}
+      {llevaElLocal && <CuandoEsLlegarTarde />}
       {llevaLosPrecios && <TusPreciosDeCompra />}
 
       {/* El ancla de «tu cuenta»: «Mi acceso» de la hoja del avatar lleva aqui. */}

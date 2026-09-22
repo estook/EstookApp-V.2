@@ -39,6 +39,8 @@ export interface MiFichaje {
   readonly horario: readonly TramoDelHorario[];
   readonly elLocalSabeDondeEsta: boolean;
   readonly radioMetros: number;
+  /** Los minutos de margen antes de contar un retraso (0040). */
+  readonly margenDeRetrasoMinutos: number;
   readonly puedoFichar: boolean;
 }
 
@@ -80,6 +82,12 @@ export interface FilaDelResumen {
   readonly sinUbicacion: number;
   readonly horasSemanales: number | null;
   readonly frenteAlContrato: number | null;
+  /**
+   * Veces que llegó tarde frente a su horario de siempre. Nulo sin horario (0040).
+   * Opcional porque la web se publica sola al fusionar y la API se despliega
+   * después: en ese rato la respuesta todavía no lo trae, y no se pinta.
+   */
+  readonly retrasos?: number | null;
   readonly costeCentimos?: number | null;
   readonly costeDeLaHoraCentimos?: number | null;
 }
@@ -90,6 +98,8 @@ export interface ResumenDelEquipo {
   readonly hasta: string;
   readonly dias: number;
   readonly minutosTotales: number;
+  /** Los minutos de margen del local antes de contar un retraso. Opcional por lo mismo. */
+  readonly margenDeRetraso?: number;
   readonly puedeVerCostes: boolean;
   readonly costeTotalCentimos?: number | null;
 }

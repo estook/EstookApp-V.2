@@ -6,6 +6,8 @@ import {
   EstadoVacio,
   ProveedorDeDeshacer,
   usarElColorDeLaApp,
+  usarModoCocina,
+  usarTamanoDeLetra,
   usarTema,
 } from '@estook/ui';
 import { Esqueleto } from './Esqueleto.tsx';
@@ -85,6 +87,16 @@ export function Aplicacion() {
   // también se ve, y verla en claro y que se vuelva oscura al entrar sería
   // exactamente el parpadeo que este gancho existe para evitar.
   usarTema();
+
+  // Y los otros dos ajustes del aparato, por lo mismo y en el mismo sitio.
+  //
+  // **Solo los llamaba Ajustes**, así que la letra grande y el modo cocina se
+  // ponían al abrir Ajustes y se perdían al volver a abrir la aplicación: la
+  // tableta del pase arrancaba cada mañana con los botones pequeños aunque lo
+  // tuviera guardado. Lo cazó la prueba del modo cocina, que recarga la página
+  // como se enciende una tableta. El de la letra llevaba así desde M3.
+  usarTamanoDeLetra();
+  usarModoCocina();
 
   return (
     <QueryClientProvider client={cache}>

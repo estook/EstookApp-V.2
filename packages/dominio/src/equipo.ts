@@ -160,6 +160,46 @@ export function comoVaConSuContrato(
   return Math.round(trabajados - esperados);
 }
 
+const SEGUNDOS_POR_MINUTO = 60;
+
+/**
+ * Los minutos de unos segundos fichados, **al más cercano**.
+ *
+ * Es como los cuenta el Resumen de Equipo, que suma en Postgres y convierte con
+ * `::int` —que redondea al más cercano—. La cifra de horas del equipo suma los
+ * segundos de cada persona y redondea aquí, y así las dos pantallas dicen lo mismo.
+ */
+export function minutosDeSegundos(segundos: number): number {
+  return Math.round(Math.max(0, segundos) / SEGUNDOS_POR_MINUTO);
+}
+
+// ── Llegar tarde ─────────────────────────────────────────────────────────────
+
+/**
+ * El margen de fábrica, en minutos (0040). Lo decidió Richi el 23 de septiembre
+ * de 2026: cinco, y cada local lo cambia en Ajustes.
+ */
+export const MARGEN_DE_RETRASO_DE_FABRICA = 5;
+
+/** Los márgenes que se ofrecen en Ajustes. La base acepta de 0 a 60. */
+export const MARGENES_DE_RETRASO = [0, 5, 10, 15] as const;
+
+/**
+ * Si una entrada cuenta como retraso.
+ *
+ * `minutosTarde` es cuánto después de su hora del horario de siempre se fichó:
+ * negativo si se llegó antes. **Es retraso pasar del margen, no llegar a él**: con
+ * cinco minutos, fichar a las 9:05 de un turno de las 9:00 es llegar a tiempo, y
+ * a las 9:06, tarde. Es como lo cuenta cualquiera en un bar, y es lo que dice el
+ * texto de Ajustes.
+ *
+ * Lo que no decide: **quién faltó**. Una entrada que no se fichó no es un retraso,
+ * es una ausencia, y eso lo contará Horarios (entrega H) con el cuadrante.
+ */
+export function llegoTarde(minutosTarde: number, margen: number): boolean {
+  return minutosTarde > Math.max(0, margen);
+}
+
 // ── El horario de siempre ────────────────────────────────────────────────────
 
 /** 1 lunes … 7 domingo, como `isodow` de Postgres. */

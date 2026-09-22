@@ -16,14 +16,14 @@ El panel de administración va en su propio documento:
 
 ## Resumen en una tabla
 
-**Ninguna de las veinte está hecha todavía** (16 de septiembre de 2026): la primera
-entrega construida fue la puerta del admin. Cada una cambia a «Hecha» cuando se
-fusiona y se despliega su entrega.
+**Ninguna de las veinte está en producción todavía** (23 de septiembre de 2026). La 1
+y la 2 están **hechas en la rama `v-lo-que-se-ve`**, sin fusionar: la entrega V se
+fusiona entera. Cada una cambia a «Hecha» cuando se fusiona y se despliega su entrega.
 
 | #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                  |
 | --- | ---------------------------------------- | ------------------------ | ------------------------------------------ | -------------------------- |
-| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | Falta                      |
-| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | Falta                      |
+| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | **En la rama**             |
+| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | **En la rama**             |
 | 3   | Inicio de cada app con tarjetas          | **V**                    | Nada                                       | Falta                      |
 | 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            | Falta                      |
 | 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    | Falta                      |
@@ -109,6 +109,24 @@ medio, food cost, merma, compras y horas—; **se le añaden las que faltan** (v
 cámara, bajo mínimo, cierres, coste de personal y retrasos) en el dominio, con la
 misma forma. **Una cifra, un dueño**: el food cost de Servicio y el del Panel ya son el
 mismo, y una prueba lo vigila.
+
+**Hecho (23 de septiembre de 2026, en la rama).** Lo decidió Richi y está razonado en
+la [0044](decisiones/0044-las-cifras-de-cada-app.md):
+
+- **En la primera pantalla de cada app**, bajo el título «Cómo va» y debajo de lo
+  urgente: Inventario · Hoy, Servicio · Cierre y Equipo · Hoy. Dos tarjetas por fila
+  en el móvil y cuatro en una pantalla ancha, con «7 días · 30 días» recordado en el
+  aparato. **Cada tarjeta entera lleva a su detalle.**
+- **Siempre las mismas por app**, y cada uno ve las que su rol le deja: un cocinero
+  ve «Bajo mínimo» y ni un euro. Las doce se pueden poner también en el Panel.
+- **Seis nuevas**: valor de la cámara y bajo mínimo (una foto del libro de cada día,
+  con las cuentas de «Hoy»), cajas cerradas, horas del equipo y coste de personal
+  (contados como el Resumen de Equipo) y **retrasos**.
+- **Retrasos, con un margen de cinco minutos que cada local cambia** en Ajustes →
+  «Cuándo es llegar tarde» (migración `0040`). El Resumen de Equipo gana su columna
+  de retrasos, contada con la misma pieza.
+- Donde había dos cifras iguales, queda una: la tarjeta «Lo que hay en cámara» de
+  Inventario · Hoy es ahora la primera cifra de la fila, con su flecha.
 
 ### 3 · Cada app abre con su resumen
 

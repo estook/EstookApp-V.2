@@ -81,27 +81,120 @@
    * no llegaban son los dos grises: 6,0:1 y 5,2:1, que pasan B8 y **no** pasan
    * AAA. Se oscurecen lo justo, manteniendo que «suave» siga siendo más oscuro
    * que «tenue» para que la jerarquía no se pierda.
+   *
+   * ── Y los colores con significado, que al principio se quedaron fuera ────
+   *
+   * La primera versión solo subía los grises, y la prueba que recorre las
+   * pantallas con el modo puesto (`modo-cocina.spec.ts`) midió lo que quedaba: el
+   * botón principal a 6,6:1, un botón rojo a 5,3 y la pestaña activa, que va en
+   * el color de su app, a 3,4. **Todo lo que se lee tiene que llegar a 7:1**, así
+   * que suben también los cuatro estados, el texto del botón principal y el
+   * acento de cada app. Cada uno es el más parecido al suyo que llega, calculado
+   * y no a ojo: se oscurece hasta 7:1 sobre la superficie, los dos fondos —el
+   * del tema claro y el de «el del sistema» en claro— y, en los estados, su propio
+   * fondo suave, que es donde van sus etiquetas. Las cifras de al lado son lo peor
+   * de todos esos.
+   *
+   * Los selectores no incluyen «el del sistema» a propósito: ese va abajo, en su
+   * `@media`, porque solo es claro cuando el sistema lo es (igual que en
+   * `temas.css`). Antes de V el bloque oscuro se aplicaba a «el del sistema»
+   * siempre, y con el sistema en claro habría dejado texto casi blanco sobre
+   * blanco en el modo que existe para leer mejor.
    */
-  :root[data-cocina='si']:not([data-tema='oscuro']) {
+  :root[data-cocina='si']:not([data-tema='oscuro']):not([data-tema='sistema']) {
     --color-texto-suave: #40484b; /* 9,35:1 sobre blanco · 8,13:1 sobre el fondo */
     --color-texto-tenue: #454e51; /* 8,53:1 sobre blanco · 7,42:1 sobre el fondo */
     /* Sin bordes finos: el borde normal pasa a ser el fuerte, y el fuerte se ve. */
     --color-borde: #a49b8c;
     --color-borde-fuerte: #5a6568;
+
+    --color-bien: #135b38; /* 7,08:1 en lo peor */
+    --color-atencion: #734500; /* 7,08:1 */
+    --color-mal: #912920; /* 7,10:1 */
+    --color-info: #215375; /* 7,12:1 */
+    /* El texto del botón principal: con #111c1f el naranja da 6,64; con negro, 8,04. */
+    --color-sobre-naranja: #000000;
+
+    --color-app-inventario: #734500; /* 7,08:1 · el mismo tono que atención */
+    --color-app-escandallos: #135b3a; /* 7,07:1 */
+    --color-app-carta: #8a2d56; /* 7,05:1 */
+    --color-app-calendario: #215375; /* 7,14:1 */
+    --color-app-equipo: #574098; /* 7,05:1 */
+    --color-app-servicio: #0a595a; /* 7,06:1 */
+    --color-app-negocio: #932920; /* 7,09:1 */
+    --color-app-cuaderno: #594e3f; /* 7,07:1 */
+    --color-app-fogon: #803d00; /* 7,07:1 */
   }
 
   /*
    * ── El contraste, en oscuro ─────────────────────────────────────────────
    *
    * Aquí el que no llegaba era `texto-tenue`, con 6,55:1 sobre la superficie. En
-   * oscuro «más contraste» es **más claro**, así que los dos grises suben.
+   * oscuro «más contraste» es **más claro**, así que los dos grises suben. De los
+   * estados y los acentos, los que no llegaban se aclaran lo justo; los demás ya
+   * pasaban de 7:1 en oscuro y no se tocan.
    */
-  :root[data-cocina='si'][data-tema='oscuro'],
-  :root[data-cocina='si'][data-tema='sistema'] {
+  :root[data-cocina='si'][data-tema='oscuro'] {
     --color-texto-suave: #d2dadc; /* 11,55:1 sobre la superficie · 12,99:1 sobre el fondo */
     --color-texto-tenue: #c8d1d4; /* 10,55:1 sobre la superficie · 11,87:1 sobre el fondo */
     --color-borde: #55666b;
     --color-borde-fuerte: #9aa6a9;
+
+    --color-mal: #f28f84; /* 7,05:1 en lo peor: sobre su fondo suave */
+    --color-info: #70b4e0; /* 7,11:1 */
+    --color-sobre-naranja: #000000;
+
+    --color-app-carta: #e791b4; /* 7,10:1 */
+    --color-app-equipo: #b2a0eb; /* 7,12:1 */
+    --color-app-negocio: #f28f84; /* 7,05:1 */
+  }
+
+  /*
+   * «El del sistema», con los mismos valores que los dos bloques de arriba según
+   * lo que diga el sistema. Van escritos dos veces por lo mismo que en
+   * `temas.css`: un selector no se combina con una media query. Una prueba
+   * (`contraste.prueba.ts`) comprueba que las copias dicen lo mismo que el original.
+   */
+  @media (prefers-color-scheme: light) {
+    :root[data-cocina='si'][data-tema='sistema'] {
+      --color-texto-suave: #40484b;
+      --color-texto-tenue: #454e51;
+      --color-borde: #a49b8c;
+      --color-borde-fuerte: #5a6568;
+
+      --color-bien: #135b38;
+      --color-atencion: #734500;
+      --color-mal: #912920;
+      --color-info: #215375;
+      --color-sobre-naranja: #000000;
+
+      --color-app-inventario: #734500;
+      --color-app-escandallos: #135b3a;
+      --color-app-carta: #8a2d56;
+      --color-app-calendario: #215375;
+      --color-app-equipo: #574098;
+      --color-app-servicio: #0a595a;
+      --color-app-negocio: #932920;
+      --color-app-cuaderno: #594e3f;
+      --color-app-fogon: #803d00;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root[data-cocina='si'][data-tema='sistema'] {
+      --color-texto-suave: #d2dadc;
+      --color-texto-tenue: #c8d1d4;
+      --color-borde: #55666b;
+      --color-borde-fuerte: #9aa6a9;
+
+      --color-mal: #f28f84;
+      --color-info: #70b4e0;
+      --color-sobre-naranja: #000000;
+
+      --color-app-carta: #e791b4;
+      --color-app-equipo: #b2a0eb;
+      --color-app-negocio: #f28f84;
+    }
   }
 
   /*
@@ -131,4 +224,46 @@
   :root[data-cocina='si'] button + a {
     margin-inline-start: var(--spacing-entre-toques);
   }
+}
+
+/*
+ * ── Todo lo que se toca, 64 px de alto y de ancho ─────────────────────────
+ *
+ * Subir `--spacing-toque` hace crecer lo que usa `min-h-toque`, que es casi
+ * todo. **Casi**: la prueba de las pantallas encontró lo que no lo usaba —los
+ * botones de «ha llegado» y «ha salido» de cada producto, a 40 px, que son
+ * justo lo que más se toca en una cocina; el control de las vistas, a 36; las
+ * migas, a 20; un «Ver» de 41 de ancho—. Arreglarlos uno a uno sería esperar a
+ * que el siguiente botón nuevo se olvide (regla 32), así que se dice aquí una
+ * vez: en modo cocina, **nada que se toque baja de 64 px, ni de alto ni de
+ * ancho**. Un guante no acierta en una raya de 36 px aunque sea larga.
+ *
+ * Fuera quedan las casillas nativas que van escondidas detrás de un interruptor
+ * (`.sr-only`): lo que se toca ahí es su etiqueta, no ellas. Y lo que va en
+ * línea dentro de un texto no cambia: el alto mínimo no se aplica a lo que va
+ * en línea, y un enlace en mitad de una frase no es un botón. Lo que sí entra es
+ * la etiqueta que envuelve una casilla escondida: esa es la parte que se toca de
+ * un interruptor, y medía 26 px.
+ *
+ * **Va fuera de `@layer base`, a propósito.** Una clase de utilidad de Tailwind
+ * gana a cualquier regla de la capa base, y las vistas llevan `min-h-[36px]`:
+ * dentro de la capa, esta regla perdía justo donde hacía falta. Lo que no está en
+ * ninguna capa gana a todas, que es lo que tiene que pasar en modo cocina.
+ */
+:root[data-cocina='si']
+  :is(
+    button,
+    a[href],
+    summary,
+    select,
+    [role='button'],
+    [role='tab'],
+    [role='radio'],
+    [role='switch'],
+    [role='menuitem'],
+    input:not([type='checkbox'], [type='radio'], [type='hidden'], [type='file'], [type='range']),
+    label:has(> input.sr-only)
+  ):not(.sr-only) {
+  min-height: var(--spacing-toque);
+  min-width: var(--spacing-toque);
 }

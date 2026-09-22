@@ -6,10 +6,13 @@ import {
   fechaOperativa,
   horaDeCorte,
   jornadaDe,
+  llegoTarde,
   loQueCuesta,
   masDias,
+  type Retribucion,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { comoLista } from '../listas.ts';
 
 /**
  * Lo que Equipo enseña de verdad (M6½, anticipando M13 y M15).
@@ -45,6 +48,7 @@ interface RelojDelLocal {
   readonly latitud: number | null;
   readonly longitud: number | null;
   readonly radio: number;
+  readonly margenDeRetraso: number;
 }
 
 async function elReloj(contexto: Contexto, localId: string): Promise<RelojDelLocal> {
@@ -57,6 +61,7 @@ async function elReloj(contexto: Contexto, localId: string): Promise<RelojDelLoc
       latitud: string | null;
       longitud: string | null;
       radio: number;
+      margen: number;
     }[]
   >`
     select l.zona_horaria,
@@ -68,7 +73,8 @@ async function elReloj(contexto: Contexto, localId: string): Promise<RelojDelLoc
            to_char(${contexto.ahora.toISOString()}::timestamptz at time zone l.zona_horaria, 'HH24:MI') as ahora,
            extract(isodow from (${contexto.ahora.toISOString()}::timestamptz at time zone l.zona_horaria))::int as dia,
            l.latitud::text as latitud, l.longitud::text as longitud,
-           l.radio_de_fichaje_metros as radio
+           l.radio_de_fichaje_metros as radio,
+           l.margen_de_retraso_minutos as margen
       from estook.local l
      where l.id = ${localId}
   `;
@@ -87,6 +93,7 @@ async function elReloj(contexto: Contexto, localId: string): Promise<RelojDelLoc
     latitud: fila.latitud === null ? null : Number(fila.latitud),
     longitud: fila.longitud === null ? null : Number(fila.longitud),
     radio: fila.radio,
+    margenDeRetraso: fila.margen,
   };
 }
 
@@ -131,6 +138,8 @@ export interface MiFichaje {
   /** Si el local tiene marcado dónde está: de eso depende poder decir «a X m». */
   readonly elLocalSabeDondeEsta: boolean;
   readonly radioMetros: number;
+  /** Los minutos de margen antes de contar un retraso (0040). Se cambian en Ajustes. */
+  readonly margenDeRetrasoMinutos: number;
   readonly puedoFichar: boolean;
 }
 
@@ -220,6 +229,7 @@ export const miFichaje = consulta<Record<string, never>, MiFichaje>({
       horario,
       elLocalSabeDondeEsta: reloj.latitud !== null && reloj.longitud !== null,
       radioMetros: reloj.radio,
+      margenDeRetrasoMinutos: reloj.margenDeRetraso,
       puedoFichar: puede[0]?.puede === true,
     };
   },
@@ -408,6 +418,12 @@ export interface FilaDelResumen {
   readonly horasSemanales: number | null;
   /** Minutos de más (positivo) o de menos frente al contrato. Nulo si no hay. */
   readonly frenteAlContrato: number | null;
+  /**
+   * Cuántas veces llegó tarde frente a su horario de siempre (0040). Nulo si no
+   * tiene horario puesto en el periodo: sin hora de entrada no se llega tarde,
+   * pero tampoco a tiempo, y un cero diría lo segundo.
+   */
+  readonly retrasos: number | null;
 
   // ── Solo con `dato.coste_de_personal` ──────────────────────────────────────
   readonly costeCentimos?: number | null;
@@ -420,6 +436,8 @@ export interface SalidaResumenDelEquipo {
   readonly hasta: string;
   readonly dias: number;
   readonly minutosTotales: number;
+  /** Los minutos de margen del local antes de contar un retraso (0040). */
+  readonly margenDeRetraso: number;
   readonly puedeVerCostes: boolean;
   readonly costeTotalCentimos?: number | null;
 }
@@ -569,6 +587,16 @@ export const resumenDelEquipo = consulta<EntradaResumenDelEquipo, SalidaResumenD
     `;
     const dias = cuantos[0]?.dias ?? 1;
 
+    // Los retrasos, con la misma pieza que la cifra de Equipo: si la regla
+    // cambia, cambia en los dos sitios a la vez.
+    const { margen, entradas } = await lasEntradasDelHorario(contexto, localId, desde, hasta);
+    const retrasosDe = new Map<string, number>();
+    for (const entrada of entradas) {
+      const antes = retrasosDe.get(entrada.personaId) ?? 0;
+      const tarde = entrada.minutosTarde !== null && llegoTarde(entrada.minutosTarde, margen);
+      retrasosDe.set(entrada.personaId, antes + (tarde ? 1 : 0));
+    }
+
     let costeTotal = 0;
     const compuestas = filas.map((f) => {
       const horasSemanales = f.horas_semanales === null ? null : Number(f.horas_semanales);
@@ -585,6 +613,7 @@ export const resumenDelEquipo = consulta<EntradaResumenDelEquipo, SalidaResumenD
         sinUbicacion: f.sin_ubicacion,
         horasSemanales,
         frenteAlContrato: comoVaConSuContrato(f.minutos, horasSemanales, dias),
+        retrasos: retrasosDe.get(f.persona_id) ?? null,
       };
 
       if (!puedeVerCostes || f.forma === null || f.importe_centimos === null) return base;
@@ -607,11 +636,237 @@ export const resumenDelEquipo = consulta<EntradaResumenDelEquipo, SalidaResumenD
       hasta,
       dias,
       minutosTotales: filas.reduce((total, f) => total + f.minutos, 0),
+      margenDeRetraso: margen,
       puedeVerCostes,
       ...(puedeVerCostes ? { costeTotalCentimos: costeTotal } : {}),
     };
   },
 });
+
+// ── V · lo que comparten el Resumen y las cifras de Equipo ────────────────────
+//
+// Las horas y los retrasos de la gente que llevas salen en dos sitios: el Resumen,
+// persona a persona, y las cifras con flecha de Equipo, día a día. **Tienen que
+// cuadrar**, y por eso lo que decide quién llegó tarde se escribe una vez, aquí, y
+// lo llaman los dos. La gente es la misma que la del Resumen —el mismo `with
+// equipo`—, y una prueba contra la base compara los totales
+// (`las-cifras-de-cada-app.prueba.ts`).
+
+/** Una entrada del horario de siempre que ya ha llegado su hora. */
+export interface EntradaDelHorario {
+  readonly personaId: string;
+  /** La jornada a la que pertenece. */
+  readonly fecha: string;
+  /**
+   * Minutos enteros entre la hora de entrada y el fichaje más cercano a ella:
+   * positivo si tarde, negativo si antes. **Nulo si no se fichó** en las tres
+   * horas de alrededor, que no es un retraso: es una ausencia, y eso es de
+   * Horarios (entrega H), con el cuadrante.
+   */
+  readonly minutosTarde: number | null;
+}
+
+/**
+ * Las entradas del horario de siempre de la gente que llevas, con cuándo fichó
+ * cada uno, y el margen del local (0040).
+ *
+ * ── Cuál es la hora de entrada de un día ────────────────────────────────────
+ *
+ * La del `horario_habitual` de esa persona en este local, **vigente ese día** y
+ * del día de la semana **de la jornada**, no del reloj: quien entra a las 00:30
+ * de la noche del viernes al sábado, en un bar que corta a las 05:00, entra en la
+ * jornada del viernes. Una hora de entrada anterior a la hora de corte es, por
+ * eso, del día siguiente del calendario.
+ *
+ * ── Qué fichaje es el de esa entrada ────────────────────────────────────────
+ *
+ * **El más cercano** a esa hora, en las tres horas de antes o de después. Así
+ * una jornada partida —entra a las 12:00 y a las 20:00— casa cada entrada con su
+ * fichaje, y volver del descanso a las 16:30 no cuenta como llegar cuatro horas y
+ * media tarde a las 12:00.
+ *
+ * Solo las entradas **cuya hora ya ha pasado**: a las 8:00 no se sabe si quien
+ * entra a las 9:00 llegará tarde.
+ */
+export async function lasEntradasDelHorario(
+  contexto: Contexto,
+  localId: string,
+  desde: string,
+  hasta: string,
+): Promise<{ readonly margen: number; readonly entradas: readonly EntradaDelHorario[] }> {
+  const locales = await contexto.sql<{ margen: number }[]>`
+    select margen_de_retraso_minutos as margen from estook.local where id = ${localId}
+  `;
+  const local = locales[0];
+  if (!local) throw new FalloDeAplicacion('local_ajeno');
+
+  const filas = await contexto.sql<
+    { persona_id: string; fecha: string; minutos_tarde: number | null }[]
+  >`
+    with equipo as (
+      -- La misma gente que el Resumen: con acceso a este local, activa y que llevas.
+      select distinct on (p.id) p.id
+        from estook.membresia m
+        join estook.persona p on p.id = m.persona_id
+        join estook.rol r on r.codigo = m.rol
+        join estook.local l on l.id = ${localId}::uuid
+       where m.organizacion_id = l.organizacion_id
+         and (
+           m.alcance = 'organizacion'
+           or (m.alcance = 'area' and l.area_id = m.area_id)
+           or (m.alcance = 'local' and l.id = m.local_id)
+         )
+         and p.activa
+         and (m.revocada_en is null or m.revocada_en > now())
+         and p.id in (select q.persona_id from estook.a_quien_lleva(${localId}::uuid) q)
+       order by p.id, r.amplitud desc
+    ),
+    dias as (
+      select d::date as fecha
+        from generate_series(${desde}::date, ${hasta}::date, interval '1 day') d
+    ),
+    entradas as (
+      select e.id as persona_id, dd.fecha,
+             (
+               (case when hh.entra >= l.hora_de_corte then dd.fecha else dd.fecha + 1 end)
+               + hh.entra
+             ) at time zone l.zona_horaria as instante
+        from equipo e
+        join estook.local l on l.id = ${localId}::uuid
+        join dias dd on true
+        join estook.horario_habitual hh
+          on hh.persona_id = e.id
+         and hh.local_id = l.id
+         and hh.dia_de_la_semana = extract(isodow from dd.fecha)::int
+         and hh.desde <= dd.fecha
+         and (hh.hasta is null or hh.hasta >= dd.fecha)
+    )
+    select en.persona_id::text as persona_id,
+           to_char(en.fecha, 'YYYY-MM-DD') as fecha,
+           floor(extract(epoch from (f.entro_en - en.instante)) / 60)::int as minutos_tarde
+      from entradas en
+      left join lateral (
+        select fi.entro_en
+          from estook.fichaje fi
+         where fi.persona_id = en.persona_id
+           and fi.local_id = ${localId}
+           and fi.entro_en between en.instante - interval '3 hours'
+                               and en.instante + interval '3 hours'
+         order by abs(extract(epoch from (fi.entro_en - en.instante)))
+         limit 1
+      ) f on true
+     where en.instante <= ${contexto.ahora.toISOString()}::timestamptz
+     order by en.fecha, en.persona_id
+  `;
+
+  return {
+    margen: local.margen,
+    entradas: filas.map((f) => ({
+      personaId: f.persona_id,
+      fecha: f.fecha,
+      minutosTarde: f.minutos_tarde,
+    })),
+  };
+}
+
+/** Los segundos que ha fichado cada persona que llevas, cada día, en este local. */
+export interface HorasDeUnDia {
+  readonly personaId: string;
+  readonly fecha: string;
+  readonly segundos: number;
+}
+
+/**
+ * Lo fichado por la gente que llevas, por persona y día, en este local.
+ *
+ * Los segundos y no los minutos, a propósito: el Resumen redondea **el total de
+ * cada persona** (`::int` sobre la suma), y redondear cada día por separado daría
+ * otro total. Quien llama suma y redondea igual que el Resumen, y así la cifra
+ * de Equipo y el Resumen dicen las mismas horas.
+ */
+export async function lasHorasDelEquipo(
+  contexto: Contexto,
+  localId: string,
+  desde: string,
+  hasta: string,
+): Promise<readonly HorasDeUnDia[]> {
+  const filas = await contexto.sql<{ persona_id: string; fecha: string; segundos: string }[]>`
+    with equipo as (
+      select distinct on (p.id) p.id
+        from estook.membresia m
+        join estook.persona p on p.id = m.persona_id
+        join estook.rol r on r.codigo = m.rol
+        join estook.local l on l.id = ${localId}::uuid
+       where m.organizacion_id = l.organizacion_id
+         and (
+           m.alcance = 'organizacion'
+           or (m.alcance = 'area' and l.area_id = m.area_id)
+           or (m.alcance = 'local' and l.id = m.local_id)
+         )
+         and p.activa
+         and (m.revocada_en is null or m.revocada_en > now())
+         and p.id in (select q.persona_id from estook.a_quien_lleva(${localId}::uuid) q)
+       order by p.id, r.amplitud desc
+    )
+    select f.persona_id::text as persona_id,
+           to_char(f.fecha_operativa, 'YYYY-MM-DD') as fecha,
+           -- El turno abierto cuenta hasta ahora, como en el Resumen.
+           sum(extract(epoch from (
+             coalesce(f.salio_en, ${contexto.ahora.toISOString()}::timestamptz) - f.entro_en
+           )))::text as segundos
+      from estook.fichaje f
+      join equipo e on e.id = f.persona_id
+     where f.local_id = ${localId}
+       and f.fecha_operativa between ${desde}::date and ${hasta}::date
+     group by f.persona_id, f.fecha_operativa
+  `;
+  return filas.map((f) => ({
+    personaId: f.persona_id,
+    fecha: f.fecha,
+    segundos: Number(f.segundos),
+  }));
+}
+
+/** Lo que cobra cada uno de los que se le pide, vigente un día (el del final del periodo). */
+export async function lasRetribuciones(
+  contexto: Contexto,
+  localId: string,
+  personas: readonly string[],
+  cuando: string,
+): Promise<ReadonlyMap<string, Retribucion>> {
+  if (personas.length === 0) return new Map();
+  const filas = await contexto.sql<
+    {
+      persona_id: string;
+      forma: string;
+      importe_centimos: string;
+      horas_semanales: string | null;
+    }[]
+  >`
+    -- La vigente ese día, con la del local por delante de la de toda la
+    -- organización: el mismo orden que el Resumen.
+    select distinct on (re.persona_id)
+           re.persona_id::text as persona_id, re.forma::text as forma,
+           re.importe_centimos::text as importe_centimos,
+           re.horas_semanales::text as horas_semanales
+      from estook.retribucion re
+     where re.persona_id = any (${comoLista(personas)}::text::uuid[])
+       and re.desde <= ${cuando}::date
+       and (re.hasta is null or re.hasta >= ${cuando}::date)
+       and (re.local_id is null or re.local_id = ${localId})
+     order by re.persona_id, re.local_id nulls last, re.desde desc
+  `;
+  return new Map(
+    filas.map((f) => [
+      f.persona_id,
+      {
+        forma: f.forma as 'por_hora' | 'mensual',
+        importeCentimos: Number(f.importe_centimos),
+        horasSemanales: f.horas_semanales === null ? null : Number(f.horas_semanales),
+      },
+    ]),
+  );
+}
 
 // ── La ficha de una persona ──────────────────────────────────────────────────
 

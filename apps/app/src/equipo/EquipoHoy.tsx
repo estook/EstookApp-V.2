@@ -4,6 +4,7 @@ import { puedeEditar } from '@estook/permisos';
 import { Aviso, Avatar, Boton, Cargando, EstadoVacio, Etiqueta, Tarjeta, clases } from '@estook/ui';
 import { IconoEntrar, IconoSalir } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { FichaDePersona } from './FichaDePersona.tsx';
 import { usarFichar } from '../ganchos/usarFichar.ts';
 import { usarPersonaAbierta } from '../ganchos/usarPersonaAbierta.ts';
@@ -183,6 +184,13 @@ export function EquipoHoy() {
           </Tarjeta>
         </div>
       )}
+
+      {/*
+        «Cómo va» · las horas, el coste y los retrasos de la gente que llevas, con
+        su flecha (V, punto 2). Debajo de quién está, que es lo que se viene a
+        mirar aquí; el detalle, persona a persona, en el Resumen.
+      */}
+      <CifrasDeLaApp app="equipo" />
 
       <FichaDePersona personaId={persona.abierta} alCerrar={persona.cerrar} />
     </div>

@@ -142,14 +142,26 @@ export function usarSeVeEnModoCocina(): boolean {
   useEffect(() => {
     // El modo se cambia en Ajustes, que puede estar en otra pestaña del mismo
     // aparato —el pase abierto y Ajustes en el móvil no, pero dos pestañas del
-    // mismo navegador sí—. `storage` solo llega a las **otras** pestañas, que es
-    // exactamente lo que hace falta: la que lo cambió ya se enteró por su estado.
+    // mismo navegador sí—. `storage` solo llega a las **otras** pestañas.
     const alCambiar = (evento: StorageEvent) => {
       if (evento.key === DONDE_SE_GUARDA) setPuesto(leerGuardado());
     };
     window.addEventListener('storage', alCambiar);
+
+    // Y en **esta** pestaña se sabe por el atributo del <html>, que es lo que pinta
+    // el modo: quien lo lee aquí —el color del local, que en cocina se ajusta a
+    // 7:1— se entera en el mismo momento en que cambia la pantalla, sin recargar.
+    const vigilante = new MutationObserver(() => {
+      setPuesto(document.documentElement.getAttribute(ATRIBUTO) === PUESTO);
+    });
+    vigilante.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: [ATRIBUTO],
+    });
+
     return () => {
       window.removeEventListener('storage', alCambiar);
+      vigilante.disconnect();
     };
   }, []);
 

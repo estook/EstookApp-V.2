@@ -2,21 +2,75 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 16 de septiembre de 2026, leyendo la base y la API.
+> Comprobado en producción el 23 de septiembre de 2026, leyendo la base y la API.
 >
-> | Qué                                  | Cómo está                                                                   |
-> | ------------------------------------ | --------------------------------------------------------------------------- |
-> | #51 (Google), #52 (planes), #53 (A1) | **Fusionadas**, con las tres comprobaciones en verde                        |
-> | La base de datos                     | **37 de 37** migraciones, 52 tablas en `estook` y 2 en `plataforma`         |
-> | La API                               | **Desplegada** después de la #54 (el repaso), a las 20:05                   |
-> | `estookapp@gmail.com`                | **Dentro del admin**: contraseña propia puesta y segundo factor montado ✓   |
-> | `santidearmijo58@gmail.com`          | Con acceso total, **todavía sin entrar**: le falta montar su segundo factor |
-> | **El repaso de A1** (#54)            | **Fusionado y desplegado** ✓                                                |
-> | **Google y la IA**                   | Places: **puesta en Supabase** (lo dice Richi). Resto: abajo, al final      |
-> | **E1 · Crear cuenta y Google**       | **En su pull request**: lo que te toca, justo debajo                        |
-> | Lo siguiente                         | **E2 · el pago con Stripe**, luego E3 (Places en el alta) y V               |
+> | Qué                        | Cómo está                                                                                    |
+> | -------------------------- | -------------------------------------------------------------------------------------------- |
+> | Pull requests              | **Todas fusionadas hasta la #63**                                                            |
+> | La base de datos           | **39 de 39** migraciones, igual que `main`                                                   |
+> | La API                     | **Desplegada el 22 de septiembre a las 17:55**, con la #63 dentro                            |
+> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                  |
+> | E1 · crear cuenta y Google | **Hecho**. Falta cambiar `CORREO_REMITENTE` y probar crear cuenta con correo (E1 · 4)        |
+> | **V · lo que se ve**       | **En su rama**, puntos 1 y 2 hechos. El pull request se abre con V entera (sección V, abajo) |
+> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                                 |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
+
+---
+
+## V · Lo que se ve · lo que te toca cuando se abra su pull request
+
+**Todavía no hay nada que hacer:** V se fusiona entera, cuando estén sus cinco puntos.
+Esto queda escrito para ese día. Lo que trae hasta ahora: **el modo cocina** (Ajustes →
+«Modo cocina») y **«Cómo va»**, las cifras con flecha en la primera pantalla de
+Inventario, Servicio y Equipo, con **Ajustes → «Cuándo es llegar tarde»**
+([0044](decisiones/0044-las-cifras-de-cada-app.md)).
+
+**El orden importa, y es el de siempre:** fusionar, migrar y desplegar la API, **seguidos**.
+La web se publica sola al fusionar, y hasta que la API esté desplegada las cifras nuevas
+dirán «No he podido leerlo» y «Cuándo es llegar tarde» saldrá sin poder cambiarse.
+**No se rompe nada de lo que ya funciona**, pero cuanto menos rato pase, mejor.
+
+### 1 · Fusionar
+
+**Dónde:** GitHub → **Pull requests** → el de «V · Lo que se ve» → las tres
+comprobaciones en verde → **Merge pull request** → **Confirm merge**.
+
+### 2 · Aplicar la migración
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué sale si va bien:** `0040_cuando_es_llegar_tarde`. Añade a cada local su margen
+de retraso, con **5 minutos** puestos a todos.
+
+```bash
+.\estook.cmd bd:comprobar
+```
+
+**Qué tiene que decir:** **40 de 40** migraciones.
+
+### 3 · Volver a desplegar la API
+
+**Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** → escribe
+`desplegar` → **Run workflow**. Cuando termine:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los comandos».
+
+### 4 · Mirarlo
+
+- **Inventario → Hoy:** debajo de lo que hay que atender, **«Cómo va»** con cuatro
+  cifras. Toca **7 días / 30 días** y cambian; toca una tarjeta y te lleva a su detalle.
+- **Servicio → Cierre** y **Equipo → Hoy:** lo mismo, con sus cifras.
+- **Equipo → Resumen:** una columna nueva, **Retrasos**. Sale una raya a quien no tiene
+  horario de siempre puesto en su ficha: sin hora de entrada no se puede llegar tarde.
+- **Ajustes → «Cuándo es llegar tarde»:** 5 minutos. Si en tu local lo normal es otro
+  margen, cámbialo ahí.
 
 ---
 
@@ -106,6 +160,21 @@ abre pronto, que es mejor.
 **Si la clave que tienes es de «Full access»:** mejor una de **Sending access** solo
 para `estook.com` (Resend → **API Keys** → **Create API Key**). Si esa se escapa, solo
 sirve para mandar correos, no para tocar la cuenta.
+
+**4.5 · Lo que queda de esto (23 de septiembre).** El dominio **ya está «Verified»**
+desde el 17, y la clave está puesta. Lo que falló fue el remitente: `CORREO_REMITENTE`
+se puso a `estookapp@gmail.com`, y **desde Gmail no se puede enviar** (Resend contesta
+«The gmail.com domain is not verified»). Desde la #63 el servidor se da cuenta y envía
+desde `hola@estook.com` por su cuenta, pero hay que dejarlo bien:
+
+1. supabase.com/dashboard → tu proyecto → **Edge Functions** → **Secrets** → busca
+   `CORREO_REMITENTE` → cámbialo a exactamente `Estook <hola@estook.com>` → **Save**.
+2. Abre **https://estook.com/app/#/crear-cuenta** en una ventana privada, con un correo
+   **que no tenga cuenta en Estook**, y elige «con correo».
+3. **Qué tiene que salir:** te llega un correo de **Estook** con un código de seis cifras
+   en un par de minutos (mira también en spam), y al escribirlo entras en **Elegir plan**.
+4. **Si no llega:** Supabase → **Edge Functions** → `api` → **Logs**, busca
+   `el correo del código de registro no ha salido` y pásame la línea entera.
 
 ### 5 · Google · entrar y crear cuenta con Google
 

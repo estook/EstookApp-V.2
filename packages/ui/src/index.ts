@@ -53,6 +53,8 @@ export { Tendencia } from './componentes/Tendencia.tsx';
 export type { TendenciaProps } from './componentes/Tendencia.tsx';
 export { Variacion } from './componentes/Variacion.tsx';
 export type { VariacionProps } from './componentes/Variacion.tsx';
+export { ElegirPeriodo } from './componentes/ElegirPeriodo.tsx';
+export type { ElegirPeriodoProps } from './componentes/ElegirPeriodo.tsx';
 export type { TiraProps, PuntoDeLaTira } from './componentes/Tira.tsx';
 export type { ProporcionProps, Trozo } from './componentes/Proporcion.tsx';
 export type {
@@ -120,6 +122,9 @@ export {
 } from './panel/catalogo.ts';
 export type { TamanoDeWidget, Widget, WidgetPuesto } from './panel/catalogo.ts';
 
+export { TarjetaDeIndicador } from './panel/TarjetaDeIndicador.tsx';
+export { comoSeEscribe } from './panel/comoSeEscribe.ts';
+export type { TarjetaDeIndicadorProps, DatosDelIndicador } from './panel/TarjetaDeIndicador.tsx';
 export { Rejilla } from './panel/Rejilla.tsx';
 export type { RejillaProps } from './panel/rejilla.ts';
 export { usarQueEstaVacio } from './ganchos/usarQueEstaVacio.ts';
@@ -158,6 +163,7 @@ export {
 export type { Tema } from './ganchos/usarTema.ts';
 export { usarElColorDeLaApp } from './ganchos/usarElColorDeLaApp.ts';
 export {
+  CONTRASTE_DE_COCINA,
   CONTRASTE_DE_ICONO,
   CONTRASTE_DE_TEXTO,
   contraste,

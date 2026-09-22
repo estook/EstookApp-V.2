@@ -77,8 +77,19 @@ export function mezclar(uno: ColorHex, otro: ColorHex, cuanto: number): ColorHex
  * que más contrasta. Con un amarillo la diferencia es de 1,07 contra 14,7, y
  * elegir mal es el botón ilegible del que va todo esto.
  */
-export function loQueSeLeeEncima(fondo: ColorHex): ColorHex {
-  return contraste('#ffffff', fondo) >= contraste('#111c1f', fondo) ? '#ffffff' : '#111c1f';
+export function loQueSeLeeEncima(fondo: ColorHex, oscuro: ColorHex = '#111c1f'): ColorHex {
+  return contraste('#ffffff', fondo) >= contraste(oscuro, fondo) ? '#ffffff' : oscuro;
+}
+
+/**
+ * El texto oscuro que se escribe encima de un acento, según el mínimo que se pida.
+ *
+ * Con el de B8 (4,5:1), el charcoal de la marca. Con el del modo cocina (7:1), el
+ * negro: el charcoal se queda en 6,6:1 sobre el naranja de fábrica, y el negro da
+ * 8,0. Es lo mismo que hace `cocina.css` con `--color-sobre-naranja`.
+ */
+function textoOscuroPara(minimoDeTexto: number): ColorHex {
+  return minimoDeTexto > CONTRASTE_DE_TEXTO ? '#000000' : '#111c1f';
 }
 
 /**
@@ -108,6 +119,8 @@ export function ajustarHasta(color: ColorHex, fondo: ColorHex, minimo: number): 
 /** Los mínimos de B8, escritos una vez. */
 export const CONTRASTE_DE_TEXTO = 4.5;
 export const CONTRASTE_DE_ICONO = 3;
+/** El del modo cocina: el AAA de WCAG (entrega V, mejora 1). */
+export const CONTRASTE_DE_COCINA = 7;
 
 /**
  * El acento, empujado hasta que cumple **las dos cosas a la vez**.
@@ -127,7 +140,9 @@ function acentoQueSePinta(
   marca: ColorHex,
   superficie: ColorHex,
   tinte: ColorHex = superficie,
+  minimoDeTexto: number = CONTRASTE_DE_TEXTO,
 ): ColorHex {
+  const oscuro = textoOscuroPara(minimoDeTexto);
   const hacia = luminancia(superficie) > 0.35 ? '#000000' : '#ffffff';
 
   for (let paso = 0; paso <= 40; paso += 1) {
@@ -139,7 +154,7 @@ function acentoQueSePinta(
     const seVe =
       contraste(intento, superficie) >= CONTRASTE_DE_ICONO &&
       contraste(intento, tinte) >= CONTRASTE_DE_ICONO;
-    const seLeeEncima = contraste(loQueSeLeeEncima(intento), intento) >= CONTRASTE_DE_TEXTO;
+    const seLeeEncima = contraste(loQueSeLeeEncima(intento, oscuro), intento) >= minimoDeTexto;
     if (seVe && seLeeEncima) return intento;
   }
   return hacia;
@@ -187,7 +202,16 @@ export interface AcentoPintable {
  *     sale un tono distinto. Sin esto, un color de marca oscuro deja «Deshacer»
  *     invisible sobre negro, que es justo el fallo que da miedo.
  */
-export function derivarAcento(marca: ColorHex, donde: DondeSePinta): AcentoPintable {
+export function derivarAcento(
+  marca: ColorHex,
+  donde: DondeSePinta,
+  /**
+   * Lo que tiene que contrastar lo que se lee. El de B8 si no se dice; en modo
+   * cocina, `CONTRASTE_DE_COCINA`: un local con su color puesto no puede dejar el
+   * botón principal por debajo de 7:1 en la tablet del pase.
+   */
+  minimoDeTexto: number = CONTRASTE_DE_TEXTO,
+): AcentoPintable {
   /*
     Primero el tinte, y después el acento. El orden importa.
 
@@ -201,21 +225,17 @@ export function derivarAcento(marca: ColorHex, donde: DondeSePinta): AcentoPinta
   */
   const enClaro = luminancia(donde.superficie) > 0.35;
   let acentoSuave = mezclar(donde.superficie, marca, enClaro ? 0.12 : 0.22);
-  for (
-    let paso = 0;
-    paso < 24 && contraste(donde.texto, acentoSuave) < CONTRASTE_DE_TEXTO;
-    paso += 1
-  ) {
+  for (let paso = 0; paso < 24 && contraste(donde.texto, acentoSuave) < minimoDeTexto; paso += 1) {
     acentoSuave = mezclar(acentoSuave, donde.superficie, 0.3);
   }
 
-  const acento = acentoQueSePinta(marca, donde.superficie, acentoSuave);
+  const acento = acentoQueSePinta(marca, donde.superficie, acentoSuave, minimoDeTexto);
 
   return {
     acento,
-    sobreAcento: loQueSeLeeEncima(acento),
+    sobreAcento: loQueSeLeeEncima(acento, textoOscuroPara(minimoDeTexto)),
     acentoSuave,
-    acentoEnOscuro: ajustarHasta(marca, donde.oscuro, CONTRASTE_DE_TEXTO),
+    acentoEnOscuro: ajustarHasta(marca, donde.oscuro, minimoDeTexto),
     seAjusto: acento !== marca,
   };
 }

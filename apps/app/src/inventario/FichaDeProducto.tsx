@@ -124,6 +124,7 @@ export function FichaDeProducto({
     await cache.invalidateQueries({ queryKey: ['un_producto', productoId] });
     await cache.invalidateQueries({ queryKey: ['mis_productos'] });
     await cache.invalidateQueries({ queryKey: ['inventario_hoy'] });
+    await cache.invalidateQueries({ queryKey: ['un_indicador'] });
   }
 
   const datos = consulta.data;

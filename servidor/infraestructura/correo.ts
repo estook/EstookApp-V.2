@@ -68,9 +68,90 @@ export class CorreoNoSale extends Error {
  * Quién firma. Tiene que ser de un dominio verificado en Resend, y por eso se puede
  * cambiar sin tocar código; si no se dice, `hola@estook.com`.
  */
+/**
+ * Los dominios desde los que **nunca** se puede enviar.
+ *
+ * No es una lista de seguridad: es una lista de cosas que no funcionan. Resend
+ * —y cualquier otro— solo deja enviar desde un dominio que hayas verificado, y
+ * el correo de Gmail con el que abriste la cuenta **no es tuyo**: es de Google.
+ *
+ * Está escrita porque pasó. El 21 de septiembre se puso `CORREO_REMITENTE` a
+ * `estookapp@gmail.com` —que es el correo de la cuenta, y parece lo razonable— y
+ * crear cuenta dejó de funcionar. Resend contestaba **«The gmail.com domain is
+ * not verified»**, y se perdió un día buscando el fallo en `estook.com`, que
+ * llevaba verificado desde el 17.
+ */
+const DE_ESTOS_NO_SE_PUEDE_ENVIAR = [
+  'gmail.com',
+  'googlemail.com',
+  'hotmail.com',
+  'hotmail.es',
+  'outlook.com',
+  'outlook.es',
+  'live.com',
+  'yahoo.com',
+  'yahoo.es',
+  'icloud.com',
+  'me.com',
+  'aol.com',
+  'proton.me',
+  'protonmail.com',
+];
+
+/** El dominio de un remitente, venga como `Nombre <a@b.com>` o como `a@b.com`. */
+export function dominioDelRemitente(remitente: string): string {
+  const dentroDeAngulos = /<([^>]+)>/.exec(remitente);
+  const direccion = (dentroDeAngulos?.[1] ?? remitente).trim();
+  return (direccion.split('@')[1] ?? '').toLowerCase();
+}
+
+/**
+ * Por qué un remitente no vale, o nulo si vale.
+ *
+ * Se comprueba **antes de llamar a Resend**, para que el fallo lo diga la lista
+ * de claves y no un 403 traducido tres capas más arriba. Es la lección 65 otra
+ * vez: un valor de configuración se comprueba contra lo que de verdad exige el
+ * servicio, no contra lo que parece razonable.
+ */
+export function porQueNoValeElRemitente(remitente: string): string | null {
+  const dominio = dominioDelRemitente(remitente);
+  if (dominio === '') {
+    return `«${remitente}» no tiene una dirección de correo dentro. Se escribe «Estook <hola@estook.com>».`;
+  }
+  if (DE_ESTOS_NO_SE_PUEDE_ENVIAR.includes(dominio)) {
+    return (
+      `Desde «${dominio}» no se puede enviar: ese dominio no es tuyo y no se puede verificar. ` +
+      'CORREO_REMITENTE tiene que ser una dirección de un dominio verificado en Resend, ' +
+      'como «Estook <hola@estook.com>».'
+    );
+  }
+  return null;
+}
+
+/**
+ * Quién firma. Tiene que ser de un dominio verificado en Resend.
+ *
+ * Si `CORREO_REMITENTE` no vale, **se ignora y se usa el de siempre**, dejando
+ * dicho por qué en el registro. Quedarse con un remitente imposible sería
+ * cambiar un fallo de configuración por un correo que no sale nunca, y eso ya
+ * costó un día.
+ */
 function remitente(): string {
+  const porDefecto = 'Estook <hola@estook.com>';
   const puesto = variable('CORREO_REMITENTE');
-  return puesto !== undefined && puesto.trim() !== '' ? puesto : 'Estook <hola@estook.com>';
+  if (puesto === undefined || puesto.trim() === '') return porDefecto;
+
+  const porque = porQueNoValeElRemitente(puesto);
+  if (porque === null) return puesto;
+
+  console.error(
+    JSON.stringify({
+      nivel: 'error',
+      mensaje: 'CORREO_REMITENTE no vale, se usa el de siempre',
+      detalle: porque,
+    }),
+  );
+  return porDefecto;
 }
 
 export function correoDeResend(

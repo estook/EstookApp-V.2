@@ -93,11 +93,13 @@ y 2 proveedores.
    porque E1 solo elige pantalla. **El día que E2 lo cumpla en el servidor, Richi se
    queda fuera de su propio local.** E2 tiene que pasarlas a `activa` **en la misma
    entrega**, y se comprueba antes de fusionar.
-2. **Crear cuenta con correo no funciona todavía, y se sabe por qué tipo de fallo es.**
-   Desde la #59 la pantalla dice «el correo todavía no sale de aquí» en vez de «se nos
-   ha roto algo», y eso **prueba que Resend devuelve un 4xx: es configuración, no una
-   caída**. El motivo literal está en el registro del servidor, y nadie lo ha mirado
-   todavía. **Google sí funciona**, y las cuatro cuentas que existen entraron por ahí.
+2. **Crear cuenta con correo: encontrado, y es de un minuto.** El registro del
+   servidor lo decía con todas las letras: Resend contesta **403, «The gmail.com
+   domain is not verified»**. No era `estook.com` —que lleva verificado desde el 17—
+   sino que **`CORREO_REMITENTE` estaba puesto a un correo de Gmail**, y desde Gmail no
+   se puede enviar. **Se arregla cambiando ese secreto** a `Estook <hola@estook.com>`.
+   Mientras tanto Google sigue funcionando, y las cuatro cuentas que existen entraron
+   por ahí.
 3. **`prueba1` se quedó en el paso 0 del alta.** Una cuenta real que entró y no pasó
    de la primera pantalla. Es lo que viene a arreglar la entrega **V**.
 
@@ -978,6 +980,18 @@ la capa superior del navegador— que es justo cuando hace falta.
     36» y el Plan decía «los cinco documentos» cuando ya eran seis. Si un número no lo
     comprueba nadie, o se quita o se le pone una prueba: la de las fichas de módulo
     pasó de 31 a 34 y saltó sola.
+75. **Tener un dominio verificado y enviar desde él son dos cosas.** `estook.com`
+    llevaba verificado en Resend desde el 17 de septiembre, y crear cuenta no
+    funcionaba: `CORREO_REMITENTE` estaba puesto a `estookapp@gmail.com` —el correo de
+    la cuenta, que es lo que parece razonable— y **desde Gmail no se envía**. Se buscó
+    el fallo un día entero en el sitio equivocado. Ahora el servidor **comprueba el
+    remitente antes de llamar a Resend** y, si es de un correo gratuito, lo dice y usa
+    el de siempre en vez de quedarse sin mandar nada.
+76. **Cuando algo de fuera falla, lo primero es leer lo que contesta, no deducirlo.**
+    El motivo literal —«The gmail.com domain is not verified»— llevaba un día en el
+    registro del servidor, con todas las letras. Mientras no se miró, se estuvo
+    adivinando; en cuanto se miró, el arreglo fue cambiar un secreto. **La suposición
+    más razonable no es un diagnóstico.**
 
 ---
 

@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 23 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #63. La entrega V avanza en su rama: el modo cocina y «Cómo va» (las cifras de cada app), hechos y probados; quedan tres puntos. Del correo de crear cuenta solo falta cambiar un secreto y probarlo**
+Última actualización: 23 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #63. La entrega V avanza en su rama: el modo cocina y «Cómo va» (las cifras de cada app), hechos y probados; quedan tres puntos. Crear cuenta con correo, funcionando: Richi lo probó el 23**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -124,13 +124,10 @@ y 2 proveedores.
    porque E1 solo elige pantalla. **El día que E2 lo cumpla en el servidor, Richi se
    queda fuera de su propio local.** E2 tiene que pasarlas a `activa` **en la misma
    entrega**, y se comprueba antes de fusionar.
-2. **Crear cuenta con correo: arreglado en el servidor, falta el secreto y probarlo.**
-   Resend contestaba **403, «The gmail.com domain is not verified»**: `CORREO_REMITENTE`
-   estaba puesto a un correo de Gmail, y desde Gmail no se envía. La #63, desplegada el
-   22 a las 17:55, hace que el servidor se dé cuenta y envíe desde `hola@estook.com`
-   (verificado desde el 17). **Falta cambiar el secreto y probar crear cuenta con un
-   correo nuevo**: los pasos, en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md),
-   E1 · 4.5. Las cuatro cuentas que existen entraron con Google.
+2. **Crear cuenta con correo: funcionando** desde el 23 de septiembre. Resend contestaba
+   **403, «The gmail.com domain is not verified»** porque `CORREO_REMITENTE` estaba
+   puesto a un Gmail. La #63 hace que el servidor se dé cuenta, y Richi cambió el
+   secreto a `Estook <hola@estook.com>` y comprobó que los códigos llegan.
 3. **`prueba1` se quedó en el paso 0 del alta.** Una cuenta real que entró y no pasó
    de la primera pantalla. Es lo que viene a arreglar la entrega **V**.
 
@@ -367,17 +364,7 @@ entonces se hace la exportación y no se inventa ningún protocolo.**
 
 ### Ahora mismo · es de Richi
 
-**Lo primero: que crear cuenta con correo funcione.** El servidor ya está arreglado
-(#63); lo que queda es tuyo y son dos minutos. Paso a paso, en
-[`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md), E1 · 4.5:
-
-1. **Cambiar `CORREO_REMITENTE`** en Supabase → Edge Functions → Secrets a
-   exactamente `Estook <hola@estook.com>`. Hoy está puesto a un Gmail, y desde Gmail
-   no se puede enviar.
-2. **Probar crear cuenta con correo** en una ventana privada, con un correo que no
-   tenga cuenta. Tiene que llegar un código de Estook y llevarte a Elegir plan.
-3. **Si no llega**, el motivo está en Supabase → Edge Functions → `api` → Logs,
-   buscando `el correo del código de registro no ha salido`: pásame esa línea.
+**Crear cuenta con correo, hecho** ✓ (23-sep): el secreto cambiado y los códigos llegan.
 
 **Y lo que desbloquea E2:**
 
@@ -429,7 +416,7 @@ me dices solo que están puestas y con qué nombre. **Y una que no hay que tocar
 el endpoint de borrado permanente de un NIF en Verifacti elimina sus registros sin
 vuelta atrás. Dar de baja a un cliente es **desactivar**.
 
-**Ya hecho, y comprobado contra producción el 23 de septiembre:** las fusiones #51 a
+**Ya hecho, y comprobado contra producción el 23 de septiembre:** crear cuenta con correo, funcionando · las fusiones #51 a
 #63 · las migraciones **hasta la `0039`** aplicadas · la API desplegada el 22-sep a las
 17:55, **con la #63 dentro** · el cliente de Google respondiendo ·
 **`estookapp@gmail.com` y Santi, los dos dentro del admin con su segundo factor** · y
@@ -634,8 +621,7 @@ enlazado. **Variables** del repositorio: `VITE_SUPABASE_URL`,
 Secrets, `TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`. **`GOOGLE_MAPS_KEY`, puesta** en los
 secretos de Supabase según Richi (16-sep; sin comprobar en Ajustes). **Los de E1, puestos**:
 `GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET` (se entra con Google) y
-`RESEND_API_KEY` (Resend contesta); **`CORREO_REMITENTE` está puesto a un Gmail y hay que
-cambiarlo** a `Estook <hola@estook.com>`. Todo en
+`RESEND_API_KEY` (Resend contesta); y `CORREO_REMITENTE`, a `Estook <hola@estook.com>` desde el 23-sep. Todo en
 [`config/claves.md`](config/claves.md).
 
 **El peso**, medido con `pnpm tamano` el 23 de septiembre **en la rama de V**:

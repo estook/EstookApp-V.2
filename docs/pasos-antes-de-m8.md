@@ -10,7 +10,7 @@
 > | La base de datos           | **39 de 39** migraciones, igual que `main`                                                   |
 > | La API                     | **Desplegada el 22 de septiembre a las 17:55**, con la #63 dentro                            |
 > | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                  |
-> | E1 · crear cuenta y Google | **Hecho**. Falta cambiar `CORREO_REMITENTE` y probar crear cuenta con correo (E1 · 4)        |
+> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                             |
 > | **V · lo que se ve**       | **En su rama**, puntos 1 y 2 hechos. El pull request se abre con V entera (sección V, abajo) |
 > | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                                 |
 

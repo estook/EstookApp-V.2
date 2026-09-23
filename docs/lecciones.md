@@ -264,7 +264,9 @@
 94. **«En línea» es tener la app delante, no tener una sesión.** Una sesión dura días.
     Y lo que depende de las políticas de otra tabla se prueba con el rol más pequeño que
     lo mira: el jefe de cocina veía a todos fuera de línea porque no puede leer sesiones
-    ajenas (regla 35, otra vez).
+    ajenas (regla 35, otra vez). Y un aviso que sale cuando la página se esconde puede
+    salir justo antes de que se vaya: Safari corta la petición y lo cuenta como un fallo.
+    Ese aviso espera un segundo y no sale si la página se va (`pagehide`).
 95. **Un trabajo nocturno que no lanza nadie no existe.** Las claves de idempotencia
     caducadas las tenía que tirar un proceso de fondo que todavía no tiene reloj: en
     producción había 440. Lo que tiene que pasar pasa en un camino que ya se recorre.

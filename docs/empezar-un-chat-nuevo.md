@@ -41,9 +41,10 @@ Con una captura basta. Lo que ayuda de verdad es decir **qué estabas haciendo**
 - Ni el historial de lo hecho: está en `ESTADO.md` y en
   [`historia-de-los-modulos.md`](historia-de-los-modulos.md).
 - Ni las reglas de trabajo: están en el
-  [Plan de desarrollo](maestros/Estook-Plan-de-Desarrollo.md), parte A1.
+  [Plan de desarrollo](maestros/Estook-Plan-de-Desarrollo.md), parte A1, en
+  [`reglas.md`](reglas.md) y, con su porqué, en [`lecciones.md`](lecciones.md).
 - Ni por qué algo está hecho así: está en [`decisiones/`](decisiones/).
-- Ni los documentos maestros: `ESTADO.md` los enlaza en su apartado 0.
+- Ni los documentos maestros: `ESTADO.md` los enlaza en su apartado 3.
 
 ---
 

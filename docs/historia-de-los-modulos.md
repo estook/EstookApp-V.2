@@ -2334,6 +2334,9 @@ móvil, y una auditoría de Supabase, GitHub y la app. Lleva **tres migraciones*
   cada 45 segundos mientras se ve (`sigo_aqui`, que no se guarda para repetirlo) y
   una vez al esconderse; dos minutos sin aviso, y deja de salir. «Última vez» es el
   último aviso, no la última entrada.
+  **Lo cazó Safari en GitHub:** al recargar, la página se esconde y después se va, y el
+  «ya no estoy» salía entre las dos cosas y se cortaba —un fallo de página por cada app
+  que abría la prueba—. Ahora espera un segundo y no sale si la página se va.
 - **El TPV**: lo que Richi describió —añadir terminal con nombre y función (Sala, Barra
   o Cocina), emparejado por código o QR, que carga su pantalla y al que se entra con
   PIN, y que es del local y no del trabajador— encaja con el Anexo 3.4, y **lo que no

@@ -74,7 +74,7 @@ export function TuMarca() {
 
   const pintable = esColorHex(color)
     ? derivarAcento(color, {
-        superficie: seVeOscuro ? '#182124' : '#ffffff',
+        superficie: seVeOscuro ? '#151c1f' : '#ffffff',
         texto: seVeOscuro ? '#eef2f3' : '#111c1f',
         oscuro: seVeOscuro ? '#26333a' : '#111c1f',
       })

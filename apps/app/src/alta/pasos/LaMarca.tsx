@@ -149,7 +149,7 @@ export function LaMarca({ alta, cliente, alGuardar, alFallar }: PropsDeUnPaso) {
       </div>
 
       <div>
-        <p className="mb-e2 text-etiqueta uppercase tracking-wide text-texto-suave">Tu color</p>
+        <p className="mb-e2 text-secundario font-medium text-texto-suave">Tu color</p>
         <div className="flex flex-wrap gap-e2">
           {COLORES.map((uno) => (
             <button
@@ -188,7 +188,7 @@ export function LaMarca({ alta, cliente, alGuardar, alFallar }: PropsDeUnPaso) {
       </div>
 
       <div>
-        <p className="mb-e2 text-etiqueta uppercase tracking-wide text-texto-suave">Tu logo</p>
+        <p className="mb-e2 text-secundario font-medium text-texto-suave">Tu logo</p>
         <input
           ref={elFichero}
           type="file"

@@ -178,7 +178,7 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
   return (
     <div className="flex flex-col gap-e4">
       {/* ── 1 · Cuánto, partido en las tres partidas ─────────────────────── */}
-      <div className="grid gap-e3 lg:grid-cols-2">
+      <div className="grid items-start gap-e3 lg:grid-cols-2">
         <Tarjeta
           titulo="Lo que se ha ido"
           origen={`Del ${comoSeLeeLaFecha(datos.desde)} al ${comoSeLeeLaFecha(datos.hasta)} · sin contar los ejemplos`}
@@ -278,9 +278,7 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
 
           {datos.porMotivo.length > 0 && (
             <>
-              <p className="mt-e3 text-etiqueta uppercase tracking-wide text-texto-suave">
-                Por qué
-              </p>
+              <p className="mt-e3 text-secundario font-medium text-texto-suave">Por qué</p>
               <ul className="mt-e1 flex flex-wrap gap-e2">
                 {datos.porMotivo.map((m) => (
                   <li
@@ -425,7 +423,7 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
       ) : (
         porDia.map(([dia, delDia]) => (
           <section key={dia} className="flex flex-col gap-e2">
-            <h2 className="text-etiqueta uppercase tracking-wide text-texto-suave">
+            <h2 className="text-secundario font-medium text-texto-suave">
               {comoSeLeeElDia(dia, datos.jornada)}
               <span className="ml-e2 normal-case tracking-normal">
                 {conPrecios

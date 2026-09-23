@@ -242,7 +242,7 @@ export function TuLocalEnGoogle() {
                   </ul>
                 </details>
               )}
-              <p className="flex items-center gap-e1 text-etiqueta uppercase tracking-wide text-texto-suave">
+              <p className="flex items-center gap-e1 text-secundario font-medium text-texto-suave">
                 <IconoUbicacion size={14} />
                 {datos.posicionDe === 'google'
                   ? 'Los fichajes se miden desde esta ubicación'

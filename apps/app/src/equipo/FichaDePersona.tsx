@@ -86,6 +86,7 @@ export function FichaDePersona({
     await cache.invalidateQueries({ queryKey: ['una_persona', personaId] });
     await cache.invalidateQueries({ queryKey: ['resumen_del_equipo'] });
     await cache.invalidateQueries({ queryKey: ['fichajes_de_hoy'] });
+    await cache.invalidateQueries({ queryKey: ['un_indicador'] });
   }
 
   const datos = consulta.data;

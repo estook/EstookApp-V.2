@@ -25,7 +25,7 @@ export function ElegirZona({
 }) {
   return (
     <div>
-      <p id="de-donde-es" className="text-etiqueta uppercase tracking-wide text-texto-suave">
+      <p id="de-donde-es" className="text-secundario font-medium text-texto-suave">
         {etiqueta}
       </p>
       <div

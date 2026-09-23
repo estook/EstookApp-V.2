@@ -2,25 +2,151 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 16 de septiembre de 2026, leyendo la base y la API.
+> Comprobado en producción el 23 de septiembre de 2026, leyendo la base y la API.
 >
-> | Qué                                  | Cómo está                                                                   |
-> | ------------------------------------ | --------------------------------------------------------------------------- |
-> | #51 (Google), #52 (planes), #53 (A1) | **Fusionadas**, con las tres comprobaciones en verde                        |
-> | La base de datos                     | **37 de 37** migraciones, 52 tablas en `estook` y 2 en `plataforma`         |
-> | La API                               | **Desplegada** después de la #54 (el repaso), a las 20:05                   |
-> | `estookapp@gmail.com`                | **Dentro del admin**: contraseña propia puesta y segundo factor montado ✓   |
-> | `santidearmijo58@gmail.com`          | Con acceso total, **todavía sin entrar**: le falta montar su segundo factor |
-> | **El repaso de A1** (#54)            | **Fusionado y desplegado** ✓                                                |
-> | **Google y la IA**                   | Places: **puesta en Supabase** (lo dice Richi). Resto: abajo, al final      |
-> | **E1 · Crear cuenta y Google**       | **En su pull request**: lo que te toca, justo debajo                        |
-> | Lo siguiente                         | **E2 · el pago con Stripe**, luego E3 (Places en el alta) y V               |
+> | Qué                        | Cómo está                                                                                                     |
+> | -------------------------- | ------------------------------------------------------------------------------------------------------------- |
+> | Pull requests              | **Todas fusionadas hasta la #63**                                                                             |
+> | La base de datos           | **39 de 39** migraciones, igual que `main`                                                                    |
+> | La API                     | **Desplegada el 22 de septiembre a las 17:55**, con la #63 dentro                                             |
+> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                                   |
+> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                                              |
+> | **V · lo que se ve**       | **Primera parte lista para fusionar**: puntos 1, 2 y 3, la mejora 7 y el arreglo de entrar (sección V, abajo) |
+> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                                                  |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## E1 · Crear cuenta, entrar con Google y la portada · lo que te toca
+## V · Lo que se ve, primera parte · lo que te toca ahora
+
+> **V se fusiona en dos partes** (decidido el 23-sep): así lo hecho se ve ya en
+> `estook.com` y no espera a los puntos 4 y 5. **El pull request de la primera parte
+> está abierto**, con las tres comprobaciones en verde. Mientras no lo fusiones, la web
+> sigue como estaba: por eso al entrar hoy la veías igual.
+
+**Lo que trae:** el modo cocina; «Cómo va», las cifras con flecha; el **Resumen** de
+cada app (antes «Hoy»); las tarjetas **en mosaico**, sin huecos; **Ajustes por
+secciones** con buscador; **el aspecto nuevo**; y **el arreglo de entrar**: la cuenta que
+solo es del admin ya no pide el código en la app, y la pantalla del código dice de qué
+cuenta es ([0044](decisiones/0044-las-cifras-de-cada-app.md),
+[0045](decisiones/0045-el-aspecto-y-el-orden.md)).
+
+**El orden importa, y no se cambia:** primero fusionar, luego la migración, luego la
+API, **seguidos y en ese orden**. Si se aplica la migración antes de fusionar, la base
+va por delante del código, y eso es justo lo que la regla 1 prohíbe. La web se publica
+sola al fusionar; hasta que la API esté desplegada, las cifras nuevas dirán «No he
+podido leerlo». **No se rompe nada de lo que ya funciona**, pero cuanto menos rato pase
+entre un paso y otro, mejor: unos diez minutos en total.
+
+### 1 · Fusionar
+
+**Qué es:** meter la rama de V dentro de `main`, que es lo que se publica.
+
+**Dónde:** en **github.com**, en el repositorio de Estook:
+
+1. Arriba, la pestaña **Pull requests**.
+2. Entra en el que se llama **«V · Lo que se ve (primera parte)»**.
+3. Baja hasta el final. Tienen que salir **tres comprobaciones en verde**: `Calidad`,
+   `Construccion y presupuestos` y `Migraciones reversibles`. Si alguna está en
+   amarillo, espera a que acabe. **Si alguna sale en rojo, para y avísame**.
+4. Pulsa el botón verde **Merge pull request** y después **Confirm merge**.
+
+**Qué tiene que salir:** «Pull request successfully merged and closed», en morado.
+
+### 2 · Aplicar la migración
+
+**Qué es:** añadir a la base de datos de verdad lo que V necesita: el margen de retraso
+de cada local, con 5 minutos puestos a todos.
+
+**Dónde:** en **PowerShell**, dentro de la carpeta del proyecto
+(`C:\Users\rixy-\Documents\GitHub\EstookApp-V.2`). Antes, trae lo que acabas de
+fusionar a tu ordenador:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+**Qué tiene que salir:** que ha bajado cambios («Fast-forward» y una lista de ficheros).
+
+Ahora la migración:
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0040_cuando_es_llegar_tarde.sql ... hecho
+  1 migracion(es) aplicadas · 40 en total
+```
+
+Si dice **«la base de datos ya estaba al dia»**, es que el `git pull` no ha bajado lo
+fusionado: vuelve a hacerlo. **Si sale un error en rojo, no repitas el comando: cópiamelo tal cual.**
+
+Y se comprueba, leyéndolo de la base:
+
+```bash
+.\estook.cmd bd:comprobar
+```
+
+**Qué tiene que decir:** «Migraciones aplicadas: **40** (hasta la **40**)».
+
+### 3 · Volver a desplegar la API
+
+**Qué es:** poner en marcha el servidor con el código nuevo.
+
+**Dónde:** en **github.com**, en el repositorio:
+
+1. Arriba, la pestaña **Actions**.
+2. A la izquierda, **Desplegar la API**.
+3. A la derecha, el botón **Run workflow**. Se abre un recuadro: deja la rama en
+   `main`, escribe **`desplegar`** en el campo y pulsa el botón verde **Run workflow**.
+4. Espera a que salga el **círculo verde** (un par de minutos). Si sale una **cruz roja**,
+   avísame.
+
+Cuando esté en verde, en PowerShell:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los comandos».
+
+### 4 · Mirarlo en tu TPV
+
+Abre `estook.com/app/` y **recarga con Ctrl + F5** para que no te enseñe la versión vieja.
+
+- **Inventario:** abre en **Resumen**, no en «Hoy». Arriba, lo que necesita tu atención,
+  en tarjetas que encajan sin huecos; cada aviso en tres líneas, con **«¿Por qué?»** para
+  ver la cuenta. Debajo, **«Cómo va»**, y al tocar **7 días / 30 días** las cifras cambian.
+- **Equipo:** abre en **Resumen** (quién está hoy). Las horas de cada uno, con la columna
+  **Retrasos**, están ahora en **Fichajes**.
+- **Servicio → Cierre:** las mismas cifras de siempre, con la tarjeta nueva.
+- **El Panel:** los widgets encajan como en un iPad, sin huecos entre ellos.
+- **Ajustes:** a la izquierda, las secciones. Escribe «oscuro» o «IVA» en el buscador y
+  te lleva al sitio. En **Tu local → «Cuándo es llegar tarde»** salen 5 minutos; si en tu
+  local lo normal es otro margen, cámbialo ahí.
+- **Modo cocina:** Ajustes → Este aparato. Ponlo en la tablet de la cocina.
+- **Entrar:** sal de tu cuenta y entra en la **app** con `estookapp@gmail.com`. Tiene que
+  decir «Esta cuenta no tiene ningún negocio en Estook» **sin pedirte el código**. Luego
+  entra con la tuya (`belicar1905@gmail.com`) como siempre.
+
+Si algo no se ve como te digo, hazle una captura y me la pasas.
+
+---
+
+## E1 · Crear cuenta, entrar con Google y la portada · **hecho**
+
+> **Hecho y comprobado el 23 de septiembre de 2026.** Fusionada (#56), migrada,
+> desplegada; **Resend** con el remitente `hola@estook.com` y **Google** con sus dos
+> secretos, los dos probados por Richi. **No hay nada que hacer.** Lo de abajo se queda
+> como referencia, por si un día hay que volver a montarlo.
 
 Lo que trae ([0042](decisiones/0042-registro-abierto-google-y-la-oferta.md)): la portada
 básica de `estook.com` con **Crear cuenta** e **Iniciar sesión**; la privacidad y las
@@ -106,6 +232,21 @@ abre pronto, que es mejor.
 **Si la clave que tienes es de «Full access»:** mejor una de **Sending access** solo
 para `estook.com` (Resend → **API Keys** → **Create API Key**). Si esa se escapa, solo
 sirve para mandar correos, no para tocar la cuenta.
+
+**4.5 · Lo que queda de esto (23 de septiembre).** El dominio **ya está «Verified»**
+desde el 17, y la clave está puesta. Lo que falló fue el remitente: `CORREO_REMITENTE`
+se puso a `estookapp@gmail.com`, y **desde Gmail no se puede enviar** (Resend contesta
+«The gmail.com domain is not verified»). Desde la #63 el servidor se da cuenta y envía
+desde `hola@estook.com` por su cuenta, pero hay que dejarlo bien:
+
+1. supabase.com/dashboard → tu proyecto → **Edge Functions** → **Secrets** → busca
+   `CORREO_REMITENTE` → cámbialo a exactamente `Estook <hola@estook.com>` → **Save**.
+2. Abre **https://estook.com/app/#/crear-cuenta** en una ventana privada, con un correo
+   **que no tenga cuenta en Estook**, y elige «con correo».
+3. **Qué tiene que salir:** te llega un correo de **Estook** con un código de seis cifras
+   en un par de minutos (mira también en spam), y al escribirlo entras en **Elegir plan**.
+4. **Si no llega:** Supabase → **Edge Functions** → `api` → **Logs**, busca
+   `el correo del código de registro no ha salido` y pásame la línea entera.
 
 ### 5 · Google · entrar y crear cuenta con Google
 

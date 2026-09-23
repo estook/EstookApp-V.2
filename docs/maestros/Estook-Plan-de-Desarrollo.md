@@ -338,7 +338,7 @@ Las cifras siempre con `font-variant-numeric: tabular-nums`. Tres tamaños de le
 | Cuaderno    | `notebook-pen`     | `#7A6A56`    |
 | Fogón       | `flame`            | `--naranja`  |
 
-El acento se usa con moderación: el icono de la app, la línea superior de su cabecera y el sector de la rueda. **El fondo y los botones no cambian de color entre apps**, o parecerían cuatro productos distintos.
+El acento se usa con moderación: el icono de la app —**en su pastilla, en la cabecera de la pantalla y de cada tarjeta**— y el sector de la rueda. **El fondo y los botones no cambian de color entre apps**, o parecerían cuatro productos distintos. Hasta la entrega V el acento iba en una línea de tres píxeles encima de cada tarjeta, y se quitó: era lo que más envejecía la aplicación ([0045](../decisiones/0045-el-aspecto-y-el-orden.md)).
 
 > **Un icono dice lo que hace la función, no a quién va dirigida.** Nada de símbolos de accesibilidad para marcar opciones que usa cualquiera: para «reducir movimiento» va una rejilla, y para «se maneja con teclado» va un teclado.
 
@@ -346,7 +346,7 @@ El acento se usa con moderación: el icono de la app, la línea superior de su c
 
 Se construyen una vez en `packages/ui` y **nadie escribe uno nuevo sin justificarlo**:
 
-`Boton` (principal, secundario, texto, peligro · tamaños m y l · estado cargando) · `Campo` (texto, número, moneda, fecha, hora, selección, búsqueda) · `Selector` · `Interruptor` · `Tarjeta` · `Hoja` (deslizante en móvil al 92 %) · `PanelLateral` · `Tabla` (que se convierte en tarjetas por debajo de 768 px) · `Lista` · `Cifra` (con su comparación, su objetivo y su origen debajo) · `Grafica` · `Aviso` · `EstadoVacio` (siempre con acción) · `Buscador` · `Etiqueta` · `Avatar` · `Migas` · `Paginador` · `Deshacer` · `Cargando` (esqueletos, nunca ruedas girando) · `Alerta` (con su causa, su impacto y su botón).
+`Boton` (principal, secundario, texto, peligro · tamaños m y l · estado cargando) · `Campo` (texto, número, moneda, fecha, hora, selección, búsqueda) · `Selector` · `Interruptor` · `Tarjeta` (con su icono, su contador y su enlace «Ver ›») · `Mosaico` (las tarjetas de una pantalla, cada una del alto de lo que lleva) · `Hoja` (deslizante en móvil al 92 %) · `PanelLateral` · `Tabla` (que se convierte en tarjetas por debajo de 768 px) · `Lista` · `Cifra` (con su comparación, su objetivo y su origen debajo) · `Grafica` · `Aviso` · `EstadoVacio` (siempre con acción) · `Buscador` · `Etiqueta` · `Avatar` · `Migas` · `Paginador` · `Deshacer` · `Cargando` (esqueletos, nunca ruedas girando) · `Alerta` (con su causa, su impacto y su botón).
 
 **Reglas de componente:**
 
@@ -357,6 +357,10 @@ Se construyen una vez en `packages/ui` y **nadie escribe uno nuevo sin justifica
 - **Todo estado vacío lleva una frase y un botón.** Nunca una pantalla en blanco.
 - **Todo error dice qué ha pasado, qué se puede hacer y con qué botón.**
 - **Toda lista larga se acorta.** Una lista de veintitrés filas idénticas no informa: se enseñan las más recientes y el resto se piden.
+- **Una tarjeta mide lo que lleva dentro** (entrega V). Varias tarjetas en una pantalla van en `Mosaico`, nunca en una rejilla por filas: una fila mide lo que su tarjeta más alta, y las demás se estiran con un hueco vacío.
+- **Un aviso cabe en tres líneas**: qué es, cuánto y cuándo, y qué hacer. La explicación de la cuenta se pliega en «¿Por qué?»; no se quita, pero no la lee cada vez quien ya se fía.
+- **Sin mayúsculas grises espaciadas.** Las etiquetas, los pies y los rótulos van en minúscula, en el gris que les toca. El origen de una cifra se sigue escribiendo: lo que cambia es que no grita.
+- **Lo que todavía no existe no ocupa sitio en una pantalla que funciona.** Se dice en el menú («Llega después») y en el plan, no con una tarjeta o un botón apagado en mitad de lo que sí se usa. Las vistas pendientes del control segmentado son otra cosa (B5): ahí no le quitan el sitio a nada.
 
 ## B5 · Navegación
 
@@ -390,16 +394,16 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 > **Y por qué vista se entra a un destino: por la primera que esté construida.** No por la primera de la tabla. Las vistas se escriben aquí **en el orden en el que se entienden** —«En marcha · Caja · Cierre» es el orden de un día—, y ese orden casi nunca coincide con el orden en el que se construyen. Entrar por la primera de la lista dejaría la pantalla que de verdad funciona escondida detrás de un cartel de «todavía no», que es la pestaña muerta de arriba un piso más abajo. Una vista pendiente **sí se enseña** en el control segmentado, con su módulo: ahí no le quita el sitio a nada y contesta «¿y la caja, dónde está?» antes de que nadie la busque. Si ninguna está construida, se entra por la primera, porque la dirección tiene que seguir siendo copiable.
 
-| App         | Sus destinos                            |
-| ----------- | --------------------------------------- |
-| Inventario  | Hoy · Productos · Movimientos · Compras |
-| Escandallos | Hoy · Fichas · Elaboraciones · Análisis |
-| Carta       | Carta · Menús · Análisis                |
-| Calendario  | Calendario · Tareas · Turnos            |
-| Equipo      | Hoy · Personas · Horarios · Resumen     |
-| Servicio    | Jornada · Ventas · Delivery · APPCC     |
-| Negocio     | Ventas · Pulse · Costes · Reseñas       |
-| Cuaderno    | Incidencias · Notas · Equipos           |
+| App         | Sus destinos                                |
+| ----------- | ------------------------------------------- |
+| Inventario  | Resumen · Productos · Movimientos · Compras |
+| Escandallos | Resumen · Fichas · Elaboraciones · Análisis |
+| Carta       | Carta · Menús · Análisis                    |
+| Calendario  | Calendario · Tareas · Turnos                |
+| Equipo      | Resumen · Personas · Horarios · Fichajes    |
+| Servicio    | Jornada · Ventas · Delivery · APPCC         |
+| Negocio     | Ventas · Pulse · Costes · Reseñas           |
+| Cuaderno    | Incidencias · Notas · Equipos               |
 
 Y sus vistas, donde las hay:
 
@@ -710,7 +714,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M15 · Fichajes
 
-**Adelantado en M6½** ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): fichar en un toque desde el Panel y desde Equipo › Hoy, con **hora del servidor** y **la ubicación pedida al entrar y al salir, que nunca bloquea** —se guardan los metros, o por qué no los hay— · un turno abierto por persona · correcciones con nombre y motivo, y el turno olvidado lo cierra quien corrige · quién ve los fichajes de quién, decidido en la base.
+**Adelantado en M6½** ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): fichar en un toque desde el Panel y desde Equipo › Resumen, con **hora del servidor** y **la ubicación pedida al entrar y al salir, que nunca bloquea** —se guardan los metros, o por qué no los hay— · un turno abierto por persona · correcciones con nombre y motivo, y el turno olvidado lo cierra quien corrige · quién ve los fichajes de quién, decidido en la base.
 
 **Entra.** Modo quiosco en cualquier dispositivo registrado del local, con PIN · para el local que lo quiera, fichar **solo** desde sus aparatos · comparativa de lo planificado contra lo fichado con su coste (con M14).
 

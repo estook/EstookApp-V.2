@@ -318,7 +318,7 @@ export function NuevoProducto({
 
                 {catalogo.data !== undefined && catalogo.data.productos.length > 0 && (
                   <div className="flex flex-col gap-e2">
-                    <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+                    <p className="text-secundario font-medium text-texto-suave">
                       Del catálogo · vienen rellenos
                     </p>
                     <ul className="flex flex-col gap-e2">

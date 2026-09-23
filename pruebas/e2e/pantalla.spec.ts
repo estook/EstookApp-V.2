@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
  * Lo que se ve, y que de verdad se ve.
@@ -36,7 +37,7 @@ const CLAVE = 'estook en desarrollo';
 const ROSA = 'rosa@ejemplo.estook.com';
 
 async function abrirLimpio(page: Page) {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, APP);
   await page.evaluate(() => {
     try {
       window.localStorage.clear();
@@ -44,7 +45,8 @@ async function abrirLimpio(page: Page) {
       /* en navegacion privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
+  await abrirSinQueSeCaiga(page, APP);
 }
 
 async function entrar(page: Page, correo = ROSA) {
@@ -299,7 +301,7 @@ test.describe('la rueda dice dónde estás', () => {
 
   test('desde dentro de una app resalta esa, y solo esa', async ({ page }) => {
     await entrar(page);
-    await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
     await abrirLaRueda(page);
 
     const aqui = page.locator('[role="menuitem"][aria-current="page"]');
@@ -408,8 +410,8 @@ test.describe('Fogón', () => {
       await page.keyboard.press('Escape');
 
       // Y desde Inventario, sin que nadie se lo diga.
-      await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
+      await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
       await expect(page.getByText('Fogón sabe que estás en')).toContainText('Inventario');
       await expect(page.getByText(/Dictarle una merma/)).toBeVisible();
@@ -423,8 +425,8 @@ test.describe('Fogón', () => {
         una frase, como la diría una persona.
       */
       await entrar(page);
-      await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
+      await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
       const ventana = page.getByRole('dialog', { name: 'Fogón' });
@@ -447,7 +449,7 @@ test.describe('Fogón', () => {
       await expect(ventana.getByText('Lo que puedes hacer aquí ahora')).toBeVisible();
 
       await ventana.getByRole('button', { name: 'Ver qué hay que atender' }).click();
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
     });
 
     test('y dice la verdad: todavía no se puede hablar con él', async ({ page }) => {
@@ -475,7 +477,7 @@ test.describe('Fogón', () => {
     test('el icono de arriba abre la misma ventana, y sabe dónde estás', async ({ page }) => {
       await entrar(page);
       await page.goto(`${APP}#/escandallos`, { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
       await page
         .getByRole('banner')
@@ -641,7 +643,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
 
   test('el tema oscuro se elige en Ajustes y aguanta una recarga', async ({ page }) => {
     await entrar(page);
-    await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${APP}#/ajustes/aparato`, { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await page.getByRole('radio', { name: /Oscuro/ }).click();
@@ -656,7 +658,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
             .trim(),
         ),
       )
-      .toBe('#0f1517');
+      .toBe('#0c1113');
 
     // Es del aparato, como el tamaño de letra: tiene que sobrevivir a recargar.
     await page.reload({ waitUntil: 'domcontentloaded' });
@@ -707,7 +709,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
       que es el que no contrasta con nada.
     */
     await entrar(page);
-    await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${APP}#/ajustes/local`, { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await elInterruptor(page, true);
@@ -750,7 +752,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
         `con ${color}, «${medido?.que ?? ''}»`,
       ).toBeGreaterThanOrEqual(4.5);
 
-      await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${APP}#/ajustes/local`, { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     }
 

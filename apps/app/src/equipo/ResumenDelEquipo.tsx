@@ -81,6 +81,9 @@ export function ResumenDelEquipo() {
 
   const datos = consulta.data;
   const sePasan = datos.filas.filter((f) => (f.frenteAlContrato ?? 0) > 60);
+  const llegaronTarde = datos.filas.reduce((total, f) => total + (f.retrasos ?? 0), 0);
+  // Sin nadie con horario, «ningún retraso» sería decir que todos llegan a su hora.
+  const conHorario = datos.filas.some((f) => (f.retrasos ?? null) !== null);
   const porRevisar = datos.filas.filter(
     (f) => f.sinCerrar > 0 || f.fueraDelLocal > 0 || f.sinUbicacion > 0,
   );
@@ -118,6 +121,21 @@ export function ResumenDelEquipo() {
         ),
     },
     { clave: 'turnos', titulo: 'Turnos', numerica: true, celda: (f) => String(f.turnos) },
+    {
+      // Frente a su horario de siempre, con el margen del local (0040). Una raya
+      // sin horario puesto: sin hora de entrada no se llega ni tarde ni a tiempo.
+      clave: 'retrasos',
+      titulo: 'Retrasos',
+      numerica: true,
+      celda: (f) =>
+        (f.retrasos ?? null) === null ? (
+          <span className="text-texto-tenue">—</span>
+        ) : f.retrasos === 0 ? (
+          <span className="tabular-nums">0</span>
+        ) : (
+          <Etiqueta tono="atencion">{String(f.retrasos)}</Etiqueta>
+        ),
+    },
     {
       clave: 'revisar',
       titulo: 'A revisar',
@@ -198,6 +216,16 @@ export function ResumenDelEquipo() {
               ? 'Ningún fichaje raro.'
               : `${porRevisar.length} con fichajes que revisar.`}
           </p>
+          {/* Sin margen en la respuesta es la API de antes: no se dice nada. */}
+          {datos.margenDeRetraso !== undefined && (
+            <p className="text-secundario text-texto-suave">
+              {!conHorario
+                ? 'Sin horarios de siempre puestos: no hay retrasos que contar.'
+                : llegaronTarde === 0
+                  ? `Ningún retraso de más de ${datos.margenDeRetraso} min.`
+                  : `${llegaronTarde} ${llegaronTarde === 1 ? 'retraso' : 'retrasos'} de más de ${datos.margenDeRetraso} min.`}
+            </p>
+          )}
         </Tarjeta>
       </div>
 

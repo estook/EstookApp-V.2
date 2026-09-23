@@ -6,6 +6,8 @@ import {
   EstadoVacio,
   ProveedorDeDeshacer,
   usarElColorDeLaApp,
+  usarModoCocina,
+  usarTamanoDeLetra,
   usarTema,
 } from '@estook/ui';
 import { Esqueleto } from './Esqueleto.tsx';
@@ -47,9 +49,9 @@ const ElAlta = lazy(async () => {
  * ── Por que `HashRouter` y no el normal ──────────────────────────────────────
  *
  * Estook se publica hoy en GitHub Pages (decision 0001), que sirve **ficheros**:
- * no sabe reescribir `/app/inventario/hoy` a `index.html`, asi que abrir un
+ * no sabe reescribir `/app/inventario/resumen` a `index.html`, asi que abrir un
  * enlace profundo, o recargar dentro de una app, daria un 404. Con la almohadilla
- * la direccion es `/app/#/inventario/hoy`, el servidor solo ve `/app/` y siempre
+ * la direccion es `/app/#/inventario/resumen`, el servidor solo ve `/app/` y siempre
  * encuentra la pagina.
  *
  * No es para siempre: el dia que haya `estook.com` con un servidor que reescriba,
@@ -85,6 +87,16 @@ export function Aplicacion() {
   // también se ve, y verla en claro y que se vuelva oscura al entrar sería
   // exactamente el parpadeo que este gancho existe para evitar.
   usarTema();
+
+  // Y los otros dos ajustes del aparato, por lo mismo y en el mismo sitio.
+  //
+  // **Solo los llamaba Ajustes**, así que la letra grande y el modo cocina se
+  // ponían al abrir Ajustes y se perdían al volver a abrir la aplicación: la
+  // tableta del pase arrancaba cada mañana con los botones pequeños aunque lo
+  // tuviera guardado. Lo cazó la prueba del modo cocina, que recarga la página
+  // como se enciende una tableta. El de la letra llevaba así desde M3.
+  usarTamanoDeLetra();
+  usarModoCocina();
 
   return (
     <QueryClientProvider client={cache}>
@@ -198,6 +210,7 @@ function Puerta() {
           />
           <Route path="cadena" element={<VistaDeCadena />} />
           <Route path="ajustes" element={<Ajustes />} />
+          <Route path="ajustes/:seccion" element={<Ajustes />} />
           {/*
             App -> destino -> vista.
 

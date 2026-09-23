@@ -50,6 +50,7 @@ import { apuntarMerma } from './comandos/merma.ts';
 import { corregirFichaje, ficharEntrada, ficharSalida } from './comandos/fichar.ts';
 import {
   ponerDondeEstaElLocal,
+  guardarMargenDeRetraso,
   ponerHorarioHabitual,
   ponerRetribucion,
 } from './comandos/equipo.ts';
@@ -298,6 +299,7 @@ export const catalogo = {
     [ponerRetribucion.nombre]: ponerRetribucion,
     [ponerHorarioHabitual.nombre]: ponerHorarioHabitual,
     [ponerDondeEstaElLocal.nombre]: ponerDondeEstaElLocal,
+    [guardarMargenDeRetraso.nombre]: guardarMargenDeRetraso,
     [elegirComoSeCierra.nombre]: elegirComoSeCierra,
     [cerrarLaCaja.nombre]: cerrarLaCaja,
 

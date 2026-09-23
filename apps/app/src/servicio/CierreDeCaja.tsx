@@ -24,9 +24,10 @@ import {
   EstadoVacio,
   Tarjeta,
 } from '@estook/ui';
-import { IconoAnadir, IconoBorrar, IconoCamara, IconoDocumento } from '@estook/iconos';
+import { IconoAnadir, IconoBorrar, IconoDocumento } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { ComoEntranTusVentas } from './ComoEntranTusVentas.tsx';
 import { comoSeLeeElDia, type ElCierreDeUnDia } from './contrato.ts';
 import { comoDinero } from '../inventario/contrato.ts';
@@ -172,6 +173,13 @@ export function CierreDeCaja() {
           </p>
         </Tarjeta>
       )}
+
+      {/*
+        «Cómo va» · ventas, ticket medio, food cost y cajas cerradas, con su flecha
+        (V, punto 2). Debajo del cierre del día, que es lo que se viene a hacer; son
+        las mismas cuentas que `mis_cierres`, y el food cost lo vigila una prueba.
+      */}
+      <CifrasDeLaApp app="servicio" />
     </div>
   );
 }
@@ -241,9 +249,7 @@ function Resumen({
 
       {datos.lineas.length > 0 && (
         <>
-          <h3 className="mt-e4 text-etiqueta uppercase tracking-wide text-texto-suave">
-            Lo que salió
-          </h3>
+          <h3 className="mt-e4 text-secundario font-medium text-texto-suave">Lo que salió</h3>
           <ul className="mt-e2 flex flex-col">
             {datos.lineas.map((linea, indice) => (
               <li
@@ -425,6 +431,7 @@ function Formulario({
     setHecho(respuesta.datos.seHaCorregido ? 'Cierre corregido' : 'Caja cerrada');
     await cache.invalidateQueries({ queryKey: ['un_cierre'] });
     await cache.invalidateQueries({ queryKey: ['mis_cierres'] });
+    await cache.invalidateQueries({ queryKey: ['un_indicador'] });
     alTerminar();
   }
 
@@ -512,15 +519,8 @@ function Formulario({
                   }}
                 />
               </label>
-              {/* La foto del Z, apagada con su motivo: leer una foto es Fogón (M22). */}
-              <Boton
-                tono="secundario"
-                disabled
-                icono={<IconoCamara size={16} />}
-                onClick={() => undefined}
-              >
-                Con una foto · M22
-              </Boton>
+              {/* Leer el Z de una foto llega con Fogón (M22); el botón apagado que
+                  había aquí se quitó en la entrega V (0045). */}
             </div>
           </div>
 

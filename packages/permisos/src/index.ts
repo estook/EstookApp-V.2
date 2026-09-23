@@ -215,6 +215,19 @@ export const LO_QUE_PIDE_EL_INDICADOR: Readonly<Record<Indicador, readonly Permi
   compras: ['app.inventario', 'dato.precio_de_compra'],
   // Las horas son de cada uno: las tiene cualquiera que entre.
   'mis-horas': [],
+
+  // ── V · las cifras de cada app (mejora 2) ─────────────────────────────────
+  'valor-camara': ['app.inventario', 'dato.precio_de_compra'],
+  // Cuántos productos, sin un euro: lo ve quien ve el inventario, igual que la
+  // lista de atención de «Hoy».
+  'bajo-minimo': ['app.inventario'],
+  // Contar días no enseña dinero, pero la base solo deja leer los cierres con
+  // `dato.ventas` (0029): pedir menos daría un cero que es mentira.
+  cierres: ['dato.ventas'],
+  // Las de la gente que llevas, que es lo que enseña Equipo · Resumen.
+  'horas-equipo': ['app.equipo'],
+  'coste-personal': ['app.equipo', 'dato.coste_de_personal'],
+  retrasos: ['app.equipo'],
 };
 
 export function puedeTenerElIndicador(

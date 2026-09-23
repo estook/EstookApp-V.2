@@ -16,6 +16,8 @@ const LO_QUE_TOCAN_LOS_LOTES = [
   'merma_de_hoy',
   'mis_mermas',
   'mis_movimientos',
+  // El valor de la cámara y la merma, con su flecha (V, punto 2).
+  'un_indicador',
 ] as const;
 
 export function usarRefrescarLotes(): () => Promise<void> {

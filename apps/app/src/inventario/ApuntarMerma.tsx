@@ -130,6 +130,7 @@ export function ApuntarMerma({
     await cache.invalidateQueries({ queryKey: ['mis_productos'] });
     await cache.invalidateQueries({ queryKey: ['mis_movimientos'] });
     await cache.invalidateQueries({ queryKey: ['inventario_hoy'] });
+    await cache.invalidateQueries({ queryKey: ['un_indicador'] });
     await cache.invalidateQueries({ queryKey: ['un_producto', elegido.id] });
     alApuntar?.();
 
@@ -275,10 +276,7 @@ export function ApuntarMerma({
 
             {/* ── 3 · Por qué ─────────────────────────────────────────────── */}
             <div>
-              <p
-                id="por-que-la-merma"
-                className="text-etiqueta uppercase tracking-wide text-texto-suave"
-              >
+              <p id="por-que-la-merma" className="text-secundario font-medium text-texto-suave">
                 Por qué
               </p>
               <div

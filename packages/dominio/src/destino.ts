@@ -146,7 +146,10 @@ export function aDondeEntra(quien: QuienAcabaDeEntrar): ResolucionDeDestino {
       organizacionId: null,
       localId: null,
       porque:
-        'Tu cuenta no está asociada a ningún negocio todavía. Pídele a quien te invitó que lo revise.',
+        // Desde la entrega V ya no se llega aquí al entrar —el servidor lo dice
+        // antes, con `sin_negocio`—, pero sí con una sesión abierta de antes o si a
+        // alguien le quitan su último acceso mientras está dentro.
+        'Tu cuenta no está asociada a ningún negocio. Si es la del panel de administración, entra en estook.com/admin; si trabajas en un local, pide a quien lo lleva que te dé acceso.',
     };
   }
 

@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -331,5 +332,253 @@ describe('B8 en el tema oscuro', () => {
   it('y la superficie se separa del fondo, o no habría tarjetas', () => {
     expect(contraste(SUPERFICIE_O(), FONDO_O())).toBeGreaterThan(1.08);
     expect(contraste(oscuro('borde-fuerte'), SUPERFICIE_O())).toBeGreaterThanOrEqual(2.5);
+  });
+});
+
+/**
+ * El modo cocina · AAA, y por qué el listón sube.
+ *
+ * B8 pide 4,5:1 en texto, que es el AA de WCAG y es lo que cumple la aplicación
+ * entera. **En una cocina eso no basta**, y no es una opinión: hay vapor, hay
+ * grasa en el cristal, la tablet está en alto y se mira de lejos y de lado. El
+ * modo cocina de la entrega V sube el mínimo a **7:1, el AAA**.
+ *
+ * Esta prueba existe porque los colores de `cocina.css` **no los mira nadie más**:
+ * el bloque de arriba lee `fichas.css` y el de en medio `temas.css`. Sin esto,
+ * alguien podría aclarar un gris «para que se vea mejor» y romper justo el modo
+ * que existe para ver mejor.
+ */
+const COCINA = readFileSync(
+  fileURLToPath(new URL('../estilos/cocina.css', import.meta.url)),
+  'utf8',
+);
+
+/** Un color del modo cocina, del bloque claro o del oscuro. */
+function cocina(nombre: string, tema: 'claro' | 'oscuro'): string {
+  const desde = COCINA.indexOf(
+    tema === 'claro' ? ":not([data-tema='oscuro'])" : "[data-cocina='si'][data-tema='oscuro']",
+  );
+  const bloque = COCINA.slice(desde, COCINA.indexOf('}', desde));
+  const encontrado = new RegExp(`--color-${nombre}:\\s*(#[0-9a-fA-F]{6})`).exec(bloque);
+  if (!encontrado?.[1]) throw new Error(`No esta declarado --color-${nombre} en cocina ${tema}`);
+  return encontrado[1];
+}
+
+describe('el modo cocina cumple AAA', () => {
+  const AAA = 7;
+
+  it('en claro, los dos grises pasan de 7:1 sobre la superficie y sobre el fondo', () => {
+    for (const tono of ['texto-suave', 'texto-tenue']) {
+      expect(
+        contraste(cocina(tono, 'claro'), SUPERFICIE()),
+        `${tono} sobre la superficie`,
+      ).toBeGreaterThanOrEqual(AAA);
+      expect(
+        contraste(cocina(tono, 'claro'), FONDO()),
+        `${tono} sobre el fondo`,
+      ).toBeGreaterThanOrEqual(AAA);
+    }
+  });
+
+  it('en oscuro, igual', () => {
+    const fondoO = oscuro('fondo');
+    const superficieO = oscuro('superficie');
+    for (const tono of ['texto-suave', 'texto-tenue']) {
+      expect(
+        contraste(cocina(tono, 'oscuro'), superficieO),
+        `${tono} sobre la superficie`,
+      ).toBeGreaterThanOrEqual(AAA);
+      expect(
+        contraste(cocina(tono, 'oscuro'), fondoO),
+        `${tono} sobre el fondo`,
+      ).toBeGreaterThanOrEqual(AAA);
+    }
+  });
+
+  it('y el texto normal ya cumplia AAA, asi que no se toca', () => {
+    // Si algun dia dejara de cumplirlo, esta prueba obliga a anadirlo al modo
+    // cocina en vez de dejarlo pasar porque «el texto principal siempre se ve».
+    expect(contraste(color('texto'), SUPERFICIE())).toBeGreaterThanOrEqual(AAA);
+    expect(contraste(oscuro('texto'), oscuro('superficie'))).toBeGreaterThanOrEqual(AAA);
+  });
+
+  it('la jerarquia no se pierde: suave sigue separandose de tenue', () => {
+    // Subir los dos al mismo valor cumpliria AAA y dejaria la pantalla plana, que
+    // es otra forma de no verse.
+    expect(cocina('texto-suave', 'claro')).not.toBe(cocina('texto-tenue', 'claro'));
+    expect(cocina('texto-suave', 'oscuro')).not.toBe(cocina('texto-tenue', 'oscuro'));
+  });
+
+  it('el toque sube a 64, el de cocina a 72, y se separan 12', () => {
+    // «Ningun boton mide menos de 64 px» es el liston que pone la entrega V.
+    expect(/--spacing-toque:\s*64px/.test(COCINA)).toBe(true);
+    expect(/--spacing-toque-cocina:\s*72px/.test(COCINA)).toBe(true);
+    expect(/--spacing-entre-toques:\s*12px/.test(COCINA)).toBe(true);
+  });
+
+  it('la letra sube sobre la del aparato, no la sustituye', () => {
+    // Fijarla aqui borraria la eleccion de quien ya puso la letra grande en el
+    // pase. Se multiplica, y por eso `base.css` tiene dos fichas y no una.
+    expect(/--escala:\s*calc\(var\(--escala-del-aparato\)\s*\*\s*1\.15\)/.test(COCINA)).toBe(true);
+  });
+});
+
+/**
+ * El modo cocina · también los colores con significado.
+ *
+ * La primera versión solo subía los grises, y la prueba que recorre las pantallas
+ * con el modo puesto midió el resto: el botón principal a 6,6:1, un botón rojo a
+ * 5,3 y la pestaña activa, en el color de su app, a 3,4. Aquí se vigila que
+ * **todo lo que se lee** en modo cocina llegue a 7:1 en los dos temas, y que las
+ * copias de «el del sistema» digan lo mismo que el original.
+ */
+describe('el modo cocina: estados, acentos y el botón principal a 7:1', () => {
+  const AAA = 7;
+  const ESTADOS = ['bien', 'atencion', 'mal', 'info'] as const;
+  const APPS = [
+    'inventario',
+    'escandallos',
+    'carta',
+    'calendario',
+    'equipo',
+    'servicio',
+    'negocio',
+    'cuaderno',
+  ] as const;
+
+  /** Lo que vale un color en modo cocina: el suyo si lo cambia, y si no, el del tema. */
+  function enCocina(nombre: string, tema: 'claro' | 'oscuro'): string {
+    try {
+      return cocina(nombre, tema);
+    } catch {
+      return tema === 'claro' ? color(nombre) : oscuro(nombre);
+    }
+  }
+
+  for (const tema of ['claro', 'oscuro'] as const) {
+    const superficie = () => (tema === 'claro' ? SUPERFICIE() : oscuro('superficie'));
+    const fondo = () => (tema === 'claro' ? FONDO() : oscuro('fondo'));
+    const suave = (estado: string) =>
+      tema === 'claro' ? color(`${estado}-suave`) : oscuro(`${estado}-suave`);
+
+    it(`en ${tema}, los cuatro estados se leen a 7:1 sobre la superficie, el fondo y su tinte`, () => {
+      for (const estado of ESTADOS) {
+        const tinta = enCocina(estado, tema);
+        for (const [donde, debajo] of [
+          ['la superficie', superficie()],
+          ['el fondo', fondo()],
+          ['su tinte', suave(estado)],
+        ] as const) {
+          expect(contraste(tinta, debajo), `${estado} sobre ${donde}`).toBeGreaterThanOrEqual(AAA);
+        }
+      }
+    });
+
+    it(`en ${tema}, el acento de cada app se lee a 7:1, que es como va la pestaña activa`, () => {
+      for (const app of APPS) {
+        const tinta = enCocina(`app-${app}`, tema);
+        expect(contraste(tinta, superficie()), `${app} sobre la superficie`).toBeGreaterThanOrEqual(
+          AAA,
+        );
+        expect(contraste(tinta, fondo()), `${app} sobre el fondo`).toBeGreaterThanOrEqual(AAA);
+      }
+    });
+
+    it(`en ${tema}, el texto del botón principal llega a 7:1 sobre el naranja`, () => {
+      const naranja = tema === 'claro' ? color('naranja') : color('naranja');
+      expect(contraste(cocina('sobre-naranja', tema), naranja)).toBeGreaterThanOrEqual(AAA);
+    });
+  }
+
+  /** Las declaraciones de color de un trozo de `cocina.css`, en orden. */
+  function colores(desde: string, hasta: string): Record<string, string> {
+    const inicio = COCINA.indexOf(desde);
+    const bloque = COCINA.slice(inicio, COCINA.indexOf(hasta, inicio + desde.length));
+    const encontrados: Record<string, string> = {};
+    for (const [, nombre, valor] of bloque.matchAll(/(--color-[a-z-]+):\s*(#[0-9a-fA-F]{6})/g)) {
+      if (nombre !== undefined && valor !== undefined) encontrados[nombre] = valor;
+    }
+    return encontrados;
+  }
+
+  it('«el del sistema» dice lo mismo que el claro y que el oscuro, según el sistema', () => {
+    // Van escritos dos veces porque un selector no se combina con una media
+    // query. Dos copias que nadie compara acaban diciendo cosas distintas.
+    const claro = colores(":not([data-tema='oscuro']):not([data-tema='sistema'])", '}');
+    const oscuroEnCocina = colores("[data-cocina='si'][data-tema='oscuro'] {", '}');
+    const sistemaClaro = colores('@media (prefers-color-scheme: light)', '}');
+    const sistemaOscuro = colores('@media (prefers-color-scheme: dark)', '}');
+
+    expect(Object.keys(claro).length).toBeGreaterThan(10);
+    expect(sistemaClaro).toEqual(claro);
+    expect(sistemaOscuro).toEqual(oscuroEnCocina);
+  });
+
+  it('y el bloque claro no se aplica a «el del sistema»: con el sistema en oscuro, taparía el oscuro', () => {
+    expect(COCINA).toContain(
+      ":root[data-cocina='si']:not([data-tema='oscuro']):not([data-tema='sistema'])",
+    );
+    expect(
+      /:root\[data-cocina='si'\]\[data-tema='oscuro'\],\s*:root\[data-cocina='si'\]\[data-tema='sistema'\]/.test(
+        COCINA,
+      ),
+    ).toBe(false);
+  });
+
+  it('nada que se toque baja de 64 px, en ninguna pantalla, escrito una vez aquí', () => {
+    // La prueba de pantalla (`modo-cocina.spec.ts`) lo mide; esto vigila que la
+    // regla que lo consigue sigue en su sitio y no se ha pasado a cada pantalla.
+    expect(COCINA).toMatch(
+      /min-height:\s*var\(--spacing-toque\);\s*min-width:\s*var\(--spacing-toque\)/,
+    );
+  });
+});
+
+/**
+ * La entrega V · lo que el repaso del tema oscuro encontró (0045).
+ *
+ * Dos fallos que ninguna prueba miraba, y que ahora sí:
+ *
+ *   · **«El del sistema» con el móvil en claro no era el tema claro.** Llevaba el
+ *     fondo `#fafaf8` de B1, que se abandonó en M6½ porque la tarjeta no se
+ *     separaba de él, y cuatro colores más de antes. Elegir «el del sistema» daba
+ *     otra aplicación, más lavada.
+ *   · **Lo elegido no se leía en oscuro.** «7 días», «Listo» o el tamaño de un
+ *     widget iban en `bg-charcoal text-superficie`: en claro, blanco sobre casi
+ *     negro; en oscuro, la superficie oscura sobre el charcoal oscuro, a 1,4:1.
+ */
+describe('la entrega V · «el del sistema» y lo elegido', () => {
+  it('«el del sistema» en claro dice exactamente lo mismo que el tema claro', () => {
+    const bloque = TEMAS.slice(TEMAS.indexOf('@media (prefers-color-scheme: light)'));
+    for (const [, nombre, valor] of bloque.matchAll(/--color-([a-z-]+):\s*(#[0-9a-fA-F]{6})/g)) {
+      if (nombre === undefined || valor === undefined) continue;
+      expect(valor.toLowerCase(), `--color-${nombre}`).toBe(color(nombre).toLowerCase());
+    }
+  });
+
+  it('ninguna pieza pinta la superficie encima del charcoal', () => {
+    const raices = ['..', '../../../apps/app/src', '../../../apps/admin/src'].map((r) =>
+      fileURLToPath(new URL(r, import.meta.url)),
+    );
+    const malos: string[] = [];
+    const mirar = (carpeta: string) => {
+      for (const entrada of readdirSync(carpeta, { withFileTypes: true })) {
+        const ruta = join(carpeta, entrada.name);
+        if (entrada.isDirectory()) {
+          if (entrada.name !== 'node_modules') mirar(ruta);
+        } else if (entrada.name.endsWith('.tsx')) {
+          if (
+            /bg-charcoal[^'"`]*text-superficie|text-superficie[^'"`]*bg-charcoal/.test(
+              readFileSync(ruta, 'utf8'),
+            )
+          )
+            malos.push(ruta);
+        }
+      }
+    };
+    raices.forEach(mirar);
+    expect(malos, 'lo elegido va en bg-texto text-superficie, que se lee en los dos temas').toEqual(
+      [],
+    );
   });
 });

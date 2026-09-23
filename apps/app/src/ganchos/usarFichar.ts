@@ -215,6 +215,7 @@ export function usarFichar(): Fichar {
       await cache.invalidateQueries({ queryKey: ['mi_fichaje'] });
       await cache.invalidateQueries({ queryKey: ['fichajes_de_hoy'] });
       await cache.invalidateQueries({ queryKey: ['resumen_del_equipo'] });
+      await cache.invalidateQueries({ queryKey: ['un_indicador'] });
       await cache.invalidateQueries({ queryKey: ['una_persona'] });
     },
     [cliente, cache],

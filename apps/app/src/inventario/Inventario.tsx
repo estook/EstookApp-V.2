@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Cargando } from '@estook/ui';
 import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { Hoy } from './Hoy.tsx';
+import { Resumen } from './Resumen.tsx';
 import { Productos } from './Productos.tsx';
 import type { MisProductos } from './contrato.ts';
 
@@ -25,11 +25,13 @@ import type { MisProductos } from './contrato.ts';
  *
  * | Destino         | Su pregunta                                       |
  * | --------------- | ------------------------------------------------- |
- * | **Hoy**         | ¿Qué tengo que atender ahora mismo?               |
+ * | **Resumen**     | ¿Qué tengo que atender y cómo va?                 |
  * | **Productos**   | ¿Qué hay en cámara, cuánto cuesta y cuánto dura?  |
  * | **Movimientos** | ¿Qué ha entrado, qué ha salido y quién lo apuntó? |
- * | **Mermas**      | ¿Cuánto se me va sin venderse, y en qué?          |
- * | **Compras**     | ¿A quién se lo compro y a qué precio?             |
+ * | **Compras**     | ¿Qué pido, qué ha llegado y a qué precio?         |
+ *
+ * («Resumen» se llamaba «Hoy» hasta la entrega V, 0045; y las mermas son una
+ * vista de Movimientos desde M6½.)
  *
  * Y sobreviven a M7 y M8 sin volver a inventar un «Más»: los pedidos y las
  * facturas son **vistas de Compras**, y los recuentos y las mermas serán vistas
@@ -133,7 +135,7 @@ export function Inventario({
 
   return (
     <>
-      {destino === 'hoy' && <Hoy alAbrirProducto={setProductoAbierto} />}
+      {destino === 'resumen' && <Resumen alAbrirProducto={setProductoAbierto} />}
       {destino === 'productos' && <Productos vista={vista} alAbrirProducto={setProductoAbierto} />}
       {destino === 'movimientos' && vista !== 'mermas' && vista !== 'recuento' && (
         <Suspense fallback={<Cargando que="el libro de movimientos" />}>

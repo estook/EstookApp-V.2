@@ -69,7 +69,7 @@ export function MiCuenta({
             ya: una lista de un elemento no es una lista. */}
         {yo?.local !== null && yo?.local !== undefined && (
           <section className="flex flex-col gap-e1">
-            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">Dónde estás</p>
+            <p className="text-secundario font-medium text-texto-suave">Dónde estás</p>
             {susLocales.length <= 1 ? (
               <p className="flex items-center gap-e2 px-e2 py-e2 text-cuerpo">
                 <IconoLocal size={18} />
@@ -95,9 +95,7 @@ export function MiCuenta({
                     <IconoLocal size={18} />
                     <span className="min-w-0 flex-1 truncate">{local.nombre}</span>
                     {esDeAhora && (
-                      <span className="text-etiqueta uppercase tracking-wide text-texto-suave">
-                        aquí
-                      </span>
+                      <span className="text-secundario font-medium text-texto-suave">aquí</span>
                     )}
                   </button>
                 );
@@ -107,7 +105,7 @@ export function MiCuenta({
         )}
 
         <section className="flex flex-col gap-e1">
-          <p className="text-etiqueta uppercase tracking-wide text-texto-suave">Tu cuenta</p>
+          <p className="text-secundario font-medium text-texto-suave">Tu cuenta</p>
 
           <Fila
             icono={<IconoPersona size={18} />}

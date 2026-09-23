@@ -5,16 +5,24 @@ import {
   fechaOperativa,
   horaDeCorte,
   jornadaDe,
+  lasFotosDeLaCamara,
+  llegoTarde,
+  loQueCuesta,
   masDias,
+  minutosDeSegundos,
   porcentajeDe,
   ticketMedio,
   esPeriodoDelIndicador,
   type Indicador,
+  type LineaDelLibro,
   type PeriodoDelIndicador,
+  type ProductoDeLaFoto,
+  type Retribucion,
 } from '@estook/dominio';
 import { LO_QUE_PIDE_EL_INDICADOR } from '@estook/permisos';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
+import { lasEntradasDelHorario, lasHorasDelEquipo, lasRetribuciones } from './equipo.ts';
 
 /**
  * Un indicador del Panel, con su línea de días (M7, decisión 0039).
@@ -32,6 +40,19 @@ import { comoLista } from '../listas.ts';
  *   merma         libro, a coste medio                app.inventario + precio de compra
  *   compras       entradas del libro, sin IVA         app.inventario + precio de compra
  *   mis-horas     tus fichajes                        cualquiera con sesión
+ *
+ * Y desde V (mejora 2), las de cada app:
+ *
+ *   valor-camara    foto del libro, a coste medio      app.inventario + precio de compra
+ *   bajo-minimo     foto del libro, con los mínimos    app.inventario
+ *   cierres         días con la caja cerrada           dato.ventas
+ *   horas-equipo    fichajes de quien llevas           app.equipo
+ *   coste-personal  esas horas por su salario          app.equipo + coste de personal
+ *   retrasos        fichajes frente al horario         app.equipo
+ *
+ * Todas menos los cierres **no se cuentan por su cuenta**: la cámara se
+ * reconstruye como la cuenta «Hoy» de Inventario, y las del equipo como el Resumen
+ * de Equipo. Cada una tiene su prueba que compara.
  *
  * Las cuentas del food cost son **las mismas que `mis_cierres`**: el consumo es lo
  * que salió de cámara ese día —salidas, mermas, ventas y consumos—, y solo cuenta
@@ -108,6 +129,16 @@ async function laJornada(contexto: Contexto, localId: string): Promise<string> {
   return jornadaDe(contexto.ahora, fila.zona_horaria, horaDeCorte(fila.hora_de_corte));
 }
 
+/**
+ * Los que se cuentan día a día desde una sola tabla, con numerador y denominador.
+ * Los otros cinco van por su camino, abajo: la cámara es una foto, y las horas, el
+ * coste y los retrasos del equipo se cuentan como en el Resumen.
+ */
+type PorDias = Exclude<
+  Indicador,
+  'valor-camara' | 'bajo-minimo' | 'horas-equipo' | 'coste-personal' | 'retrasos'
+>;
+
 /** Lo de un día: el numerador y, si es un cociente, el denominador. */
 interface DelDia {
   readonly arriba: number;
@@ -123,7 +154,7 @@ interface DelDia {
 async function losDias(
   contexto: Contexto,
   localId: string,
-  indicador: Indicador,
+  indicador: PorDias,
   desde: string,
   hasta: string,
 ): Promise<Map<string, DelDia>> {
@@ -205,6 +236,19 @@ async function losDias(
            and not p.es_ejemplo
            and m.fecha_operativa between ${desde}::date and ${hasta}::date
          group by m.fecha_operativa
+      `;
+      break;
+
+    case 'cierres':
+      // Un día cuenta una vez, aunque tenga más de un cierre: la pregunta es
+      // «¿se cerró la caja ese día?», no cuántas veces.
+      filas = await sql<Fila[]>`
+        select to_char(c.fecha_operativa, 'YYYY-MM-DD') as fecha,
+               '1' as arriba, null::text as abajo
+          from estook.cierre_de_caja c
+         where c.local_id = ${localId}
+           and c.fecha_operativa between ${desde}::date and ${hasta}::date
+         group by c.fecha_operativa
       `;
       break;
 
@@ -291,32 +335,302 @@ export const unIndicador = consulta<EntradaUnIndicador, SalidaUnIndicador>({
 
     const jornada = await laJornada(contexto, localId);
     const hoy = fechaOperativa(jornada);
-    const desdeElAnterior = masDias(hoy, -(dias * 2 - 1));
-    const delDia = await losDias(contexto, localId, indicador, desdeElAnterior, jornada);
 
     const fechasDe = (desdeHace: number): string[] =>
       Array.from({ length: dias }, (_, i) => masDias(hoy, -(desdeHace - i)));
-    const deAhora = fechasDe(dias - 1);
-    const deAntes = fechasDe(dias * 2 - 1);
-
-    const serie = deAhora.map((fecha) => {
-      const suyo = delDia.get(fecha);
-      if (suyo === undefined) return { fecha, valor: sinFilaEsCero(indicador) ? 0 : null };
-      return { fecha, valor: elValor(indicador, suyo.arriba, suyo.abajo) };
-    });
-
-    const ahora = elPeriodo(indicador, delDia, deAhora);
-    const antes = elPeriodo(indicador, delDia, deAntes);
-
-    return {
-      indicador,
-      dias,
+    const periodos: LosDosPeriodos = {
+      deAntes: fechasDe(dias * 2 - 1),
+      deAhora: fechasDe(dias - 1),
       jornada,
-      serie,
-      total: ahora.total,
-      // Sin un solo dato antes, no hay con qué comparar: nulo, y no hay flecha.
-      anterior: antes.conDato === 0 && !sinFilaEsCero(indicador) ? null : antes.total,
-      diasConDato: ahora.conDato,
     };
+
+    let calculado: Calculado;
+    switch (indicador) {
+      case 'valor-camara':
+      case 'bajo-minimo':
+        calculado = await laCamara(contexto, localId, indicador, periodos);
+        break;
+      case 'horas-equipo':
+      case 'coste-personal':
+        calculado = await elEquipo(contexto, localId, indicador, periodos);
+        break;
+      case 'retrasos':
+        calculado = await losRetrasos(contexto, localId, periodos);
+        break;
+      default:
+        calculado = await porDias(contexto, localId, indicador, periodos);
+    }
+
+    return { indicador, dias, jornada, ...calculado };
   },
 });
+
+// ── Los caminos ─────────────────────────────────────────────────────────────
+
+/** Los días del periodo pedido y los del anterior, del mismo largo, de viejo a nuevo. */
+interface LosDosPeriodos {
+  readonly deAntes: readonly string[];
+  readonly deAhora: readonly string[];
+  readonly jornada: string;
+}
+
+type Calculado = Pick<SalidaUnIndicador, 'serie' | 'total' | 'anterior' | 'diasConDato'>;
+
+/** Lo que sale de una tabla día a día: ventas, ticket, food cost, merma, compras, horas y cierres. */
+async function porDias(
+  contexto: Contexto,
+  localId: string,
+  indicador: PorDias,
+  { deAntes, deAhora, jornada }: LosDosPeriodos,
+): Promise<Calculado> {
+  const delDia = await losDias(contexto, localId, indicador, deAntes[0] ?? jornada, jornada);
+
+  const serie = deAhora.map((fecha) => {
+    const suyo = delDia.get(fecha);
+    if (suyo === undefined) return { fecha, valor: sinFilaEsCero(indicador) ? 0 : null };
+    return { fecha, valor: elValor(indicador, suyo.arriba, suyo.abajo) };
+  });
+
+  const ahora = elPeriodo(indicador, delDia, deAhora);
+  const antes = elPeriodo(indicador, delDia, deAntes);
+
+  return {
+    serie,
+    total: ahora.total,
+    // Sin un solo dato antes, no hay con qué comparar: nulo, y no hay flecha.
+    anterior: antes.conDato === 0 && !sinFilaEsCero(indicador) ? null : antes.total,
+    diasConDato: ahora.conDato,
+  };
+}
+
+/**
+ * El valor de la cámara y lo que está bajo mínimo: **una foto de cada día**.
+ *
+ * Lo que hay no se suma: el valor de la semana es lo que había al acabar la
+ * semana, y se compara con lo que había al acabar la anterior. Cada día se
+ * reconstruye del libro con `lasFotosDeLaCamara`, que es del dominio (regla 6), y
+ * el de hoy tiene que ser el mismo que enseña Inventario · Hoy.
+ *
+ * Aquí solo se lee: los productos que cuentan —activos y sin los ejemplos, como
+ * en «Hoy»— y, de cada uno, **la última línea del libro de cada día**, más la
+ * última de antes de empezar.
+ */
+async function laCamara(
+  contexto: Contexto,
+  localId: string,
+  indicador: 'valor-camara' | 'bajo-minimo',
+  { deAntes, deAhora, jornada }: LosDosPeriodos,
+): Promise<Calculado> {
+  const todas = [...deAntes, ...deAhora];
+  const primera = todas[0] ?? jornada;
+
+  const productos = await contexto.sql<
+    {
+      id: string;
+      minimo: string | null;
+      precio_de_hoy: string | null;
+      en_mis_zonas: boolean;
+      desde: string | null;
+    }[]
+  >`
+    select p.id::text as id, p.minimo::text as minimo,
+           pr.coste_milesimas::text as precio_de_hoy,
+           -- El bajo mínimo es el de la lista de «Hoy», que es la de tus zonas
+           -- (0038). El valor, el del local entero, como en «Hoy».
+           p.zona = any (estook.zonas_que_ve(p.local_id)) as en_mis_zonas,
+           -- Desde qué jornada existe: la de su alta, o la de su primer
+           -- movimiento si es anterior (un alta de hoy con género de ayer).
+           to_char(least(
+             ((p.creado_en at time zone l.zona_horaria) - l.hora_de_corte::interval)::date,
+             (select min(m.fecha_operativa) from estook.movimiento_de_stock m
+               where m.producto_id = p.id)
+           ), 'YYYY-MM-DD') as desde
+      from estook.producto p
+      join estook.local l on l.id = p.local_id
+      left join estook.precio_vigente(p.id) pr on true
+     where p.local_id = ${localId} and p.activo and not p.es_ejemplo
+  `;
+
+  const lineas = await contexto.sql<
+    {
+      producto_id: string;
+      dia: string | null;
+      orden: string;
+      cantidad: string;
+      coste: string;
+    }[]
+  >`
+    -- La última línea de cada producto en cada día pedido, y la última de antes
+    -- (dia nulo). «Última» por orden del libro, como la vista de existencias.
+    select distinct on (m.producto_id, dia)
+           m.producto_id::text as producto_id, dia, m.id::text as orden,
+           m.cantidad_despues::text as cantidad, m.coste_medio_despues::text as coste
+      from (
+        select m.*,
+               case when m.fecha_operativa < ${primera}::date then null
+                    else to_char(m.fecha_operativa, 'YYYY-MM-DD') end as dia
+          from estook.movimiento_de_stock m
+         where m.local_id = ${localId}
+           and m.fecha_operativa <= ${jornada}::date
+      ) m
+     order by m.producto_id, dia, m.id desc
+  `;
+
+  const antes = new Map<string, LineaDelLibro>();
+  const delDia = new Map<string, Map<string, LineaDelLibro>>();
+  for (const linea of lineas) {
+    const hay: LineaDelLibro = {
+      orden: Number(linea.orden),
+      cantidad: Number(linea.cantidad),
+      costeMedio: Number(linea.coste),
+    };
+    if (linea.dia === null) {
+      antes.set(linea.producto_id, hay);
+      continue;
+    }
+    const suyos = delDia.get(linea.producto_id) ?? new Map<string, LineaDelLibro>();
+    suyos.set(linea.dia, hay);
+    delDia.set(linea.producto_id, suyos);
+  }
+
+  const fotos = lasFotosDeLaCamara(
+    productos.map((p): ProductoDeLaFoto => ({
+      desde: p.desde ?? jornada,
+      minimo: p.minimo === null ? null : Number(p.minimo),
+      precioDeHoy: p.precio_de_hoy === null ? null : Number(p.precio_de_hoy),
+      cuentaEnElMinimo: p.en_mis_zonas,
+      antes: antes.get(p.id) ?? null,
+      delDia: delDia.get(p.id) ?? new Map(),
+    })),
+    todas,
+  );
+
+  const deCadaDia = new Map(
+    fotos.map((foto) => [foto.fecha, indicador === 'valor-camara' ? foto.valor : foto.bajoMinimo]),
+  );
+  const ultimoDe = (fechas: readonly string[]): number | null => {
+    const ultima = fechas.at(-1);
+    return ultima === undefined ? null : (deCadaDia.get(ultima) ?? null);
+  };
+
+  return {
+    serie: deAhora.map((fecha) => ({ fecha, valor: deCadaDia.get(fecha) ?? null })),
+    total: ultimoDe(deAhora),
+    anterior: ultimoDe(deAntes),
+    // Lo que hay se sabe todos los días.
+    diasConDato: deAhora.length,
+  };
+}
+
+/**
+ * Las horas y el coste del equipo, **contados como en Equipo · Resumen**.
+ *
+ * El Resumen redondea el total de cada persona y le aplica **la retribución
+ * vigente al final del periodo** («un resumen de marzo cuesta lo que costaba en
+ * marzo»). El total de aquí hace exactamente lo mismo, persona a persona, para que
+ * las dos pantallas digan las mismas horas y el mismo dinero —lo vigila una
+ * prueba—. La línea de los días se cuenta día a día con la misma regla, así que
+ * puede diferir del total en algún céntimo de redondeo, que en una línea no se ve.
+ */
+async function elEquipo(
+  contexto: Contexto,
+  localId: string,
+  indicador: 'horas-equipo' | 'coste-personal',
+  { deAntes, deAhora, jornada }: LosDosPeriodos,
+): Promise<Calculado> {
+  const horas = await lasHorasDelEquipo(contexto, localId, deAntes[0] ?? jornada, jornada);
+  const personas = [...new Set(horas.map((h) => h.personaId))];
+
+  const conCoste = indicador === 'coste-personal';
+  const finDeAntes = deAntes.at(-1) ?? jornada;
+  const cobraAhora = conCoste
+    ? await lasRetribuciones(contexto, localId, personas, jornada)
+    : new Map<string, Retribucion>();
+  const cobraAntes = conCoste
+    ? await lasRetribuciones(contexto, localId, personas, finDeAntes)
+    : new Map<string, Retribucion>();
+
+  /** Lo de una persona con sus minutos ya redondeados: minutos, o lo que cuestan. */
+  const loDe = (personaId: string, minutos: number, cobra: ReadonlyMap<string, Retribucion>) => {
+    if (!conCoste) return minutos;
+    const retribucion = cobra.get(personaId);
+    // Sin salario puesto no cuenta, como en el Resumen.
+    return retribucion === undefined ? 0 : (loQueCuesta(minutos, retribucion) ?? 0);
+  };
+
+  const delPeriodo = (fechas: readonly string[], cobra: ReadonlyMap<string, Retribucion>) => {
+    const dentro = new Set(fechas);
+    const segundosDe = new Map<string, number>();
+    const dias = new Set<string>();
+    for (const h of horas) {
+      if (!dentro.has(h.fecha)) continue;
+      dias.add(h.fecha);
+      segundosDe.set(h.personaId, (segundosDe.get(h.personaId) ?? 0) + h.segundos);
+    }
+    let total = 0;
+    for (const [personaId, segundos] of segundosDe) {
+      total += loDe(personaId, minutosDeSegundos(segundos), cobra);
+    }
+    return { total, conDato: dias.size };
+  };
+
+  const serie = deAhora.map((fecha) => {
+    let valor = 0;
+    for (const h of horas) {
+      if (h.fecha === fecha) valor += loDe(h.personaId, minutosDeSegundos(h.segundos), cobraAhora);
+    }
+    return { fecha, valor };
+  });
+
+  const ahora = delPeriodo(deAhora, cobraAhora);
+  const antes = delPeriodo(deAntes, cobraAntes);
+  return { serie, total: ahora.total, anterior: antes.total, diasConDato: ahora.conDato };
+}
+
+/**
+ * Los retrasos: las entradas del horario de siempre que se ficharon tarde.
+ *
+ * Con la pieza que usa el Resumen (`lasEntradasDelHorario`) y la regla del dominio
+ * (`llegoTarde`): lo que aquí es un retraso, allí también. **Un día en el que nadie
+ * tenía que entrar no tiene dato**, ni un periodo sin horarios puestos: un equipo
+ * sin horario saldría perfecto, y es lo contrario de lo que se sabe.
+ */
+async function losRetrasos(
+  contexto: Contexto,
+  localId: string,
+  { deAntes, deAhora, jornada }: LosDosPeriodos,
+): Promise<Calculado> {
+  const { margen, entradas } = await lasEntradasDelHorario(
+    contexto,
+    localId,
+    deAntes[0] ?? jornada,
+    jornada,
+  );
+
+  const tardeDe = new Map<string, number>();
+  for (const entrada of entradas) {
+    const tarde = entrada.minutosTarde !== null && llegoTarde(entrada.minutosTarde, margen);
+    tardeDe.set(entrada.fecha, (tardeDe.get(entrada.fecha) ?? 0) + (tarde ? 1 : 0));
+  }
+
+  const delPeriodo = (fechas: readonly string[]) => {
+    let total = 0;
+    let conDato = 0;
+    for (const fecha of fechas) {
+      const suyos = tardeDe.get(fecha);
+      if (suyos === undefined) continue;
+      conDato += 1;
+      total += suyos;
+    }
+    return { total: conDato === 0 ? null : total, conDato };
+  };
+
+  const ahora = delPeriodo(deAhora);
+  const antes = delPeriodo(deAntes);
+  return {
+    serie: deAhora.map((fecha) => ({ fecha, valor: tardeDe.get(fecha) ?? null })),
+    total: ahora.total,
+    anterior: antes.total,
+    diasConDato: ahora.conDato,
+  };
+}

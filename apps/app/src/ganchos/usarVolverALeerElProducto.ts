@@ -20,5 +20,6 @@ export function usarVolverALeerElProducto(productoId: string): () => Promise<voi
   return async () => {
     await cache.invalidateQueries({ queryKey: ['un_producto', productoId] });
     await cache.invalidateQueries({ queryKey: ['mis_productos'] });
+    await cache.invalidateQueries({ queryKey: ['un_indicador'] });
   };
 }

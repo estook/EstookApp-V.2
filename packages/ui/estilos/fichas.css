@@ -115,9 +115,18 @@
   --spacing-e7: 48px;
   --spacing-e8: 64px;
 
-  /* El toque minimo de B4: 44 px, y 52 en listas de cocina. */
+  /*
+   * El toque minimo de B4: 44 px, y 52 en las filas que ya se pulsan de lejos
+   * —los botones grandes, las filas de tabla en movil, los sectores de la rueda—.
+   *
+   * **Las dos suben en modo cocina** (`cocina.css`), a 64 y a 72: la ficha es la
+   * misma, y por eso todos los botones crecen a la vez sin que ninguna pantalla
+   * se entere.
+   */
   --spacing-toque: 44px;
   --spacing-toque-cocina: 52px;
+  /* Lo que se separan dos botones vecinos. En modo cocina sube a 12 px. */
+  --spacing-entre-toques: 0px;
 
   /*
    * ── Radio ─────────────────────────────────────────────────────────────────

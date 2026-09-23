@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M6 · aceptación, punto por punto.
@@ -81,7 +82,7 @@ async function irAlLocal(page: Page, nombre: string) {
 }
 
 async function abrirLimpio(page: Page) {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, APP);
   await page.evaluate(() => {
     try {
       window.localStorage.clear();
@@ -89,7 +90,8 @@ async function abrirLimpio(page: Page) {
       /* en navegacion privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
+  await abrirSinQueSeCaiga(page, APP);
 }
 
 async function entrar(page: Page, correo: string) {
@@ -962,7 +964,7 @@ test('si no se toca el envase, se guarda el del catálogo', async ({ page }) => 
   await expect(loQueSeVe(page, 'Garrafa de 5 l')).toBeVisible();
 });
 
-// ── 7 · «Hoy», que es la pantalla que más se abre y no la probaba nadie ──────
+// ── 7 · «Resumen» (antes «Hoy»), la pantalla que más se abre ────────────────
 
 /**
  * **La pantalla principal de M6 devolvía un 500 a todo el mundo, siempre.**
@@ -984,7 +986,7 @@ test('si no se toca el envase, se guarda el del catálogo', async ({ page }) => 
  * De ahí las dos de aquí: una pregunta a la API si contesta, y la otra mira si
  * la pantalla enseña algo o el aviso de que se ha roto.
  */
-test('«Hoy» contesta, en vez de caerse con un 500', async ({ request }) => {
+test('«Resumen» contesta, en vez de caerse con un 500', async ({ request }) => {
   const token = await tokenDe(request, ROSA);
 
   const hoy = await consultar<{ atencion: unknown[]; caducan: unknown[] }>(
@@ -999,12 +1001,12 @@ test('«Hoy» contesta, en vez de caerse con un 500', async ({ request }) => {
   expect(Array.isArray(hoy.datos?.caducan)).toBe(true);
 });
 
-test('«Hoy» se pinta, y no con el aviso de que se ha roto', async ({ page }) => {
+test('«Resumen» se pinta, y no con el aviso de que se ha roto', async ({ page }) => {
   await entrar(page, ROSA);
-  await irAInventario(page, 'hoy');
+  await irAInventario(page, 'resumen');
 
   // El titulo es **el destino**, no la app: es donde estas de verdad.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
   // El aviso que salía antes con el 500.
   await expect(page.getByText('No he podido leer')).toHaveCount(0);
 });
@@ -1301,7 +1303,7 @@ test('el queso azul en tarros de 250 g: el precio de un tarro y la cuenta sale s
  *  ve; y lo tirado sale de cámara como merma por caducado, que es lo que el food
  *  cost del mes tiene que saber.
  */
-test('un lote que caduca se quita desde «Hoy», y lo tirado queda como merma', async ({
+test('un lote que caduca se quita desde «Resumen», y lo tirado queda como merma', async ({
   page,
   request,
 }) => {
@@ -1320,7 +1322,7 @@ test('un lote que caduca se quita desde «Hoy», y lo tirado queda como merma', 
   const productoId = creado.datos?.productoId ?? '';
 
   await entrar(page, ROSA);
-  await irAInventario(page, 'hoy');
+  await irAInventario(page, 'resumen');
 
   await page
     .getByRole('listitem')
@@ -1334,7 +1336,11 @@ test('un lote que caduca se quita desde «Hoy», y lo tirado queda como merma', 
   await hoja.getByLabel(/^Cuánto se tira/).fill('2');
   await hoja.getByRole('button', { name: 'Quitarlo' }).click();
 
-  await expect(page.getByText(/queda apuntado como merma por caducado/)).toBeVisible();
+  // Con quince segundos, como lo demás que espera al servidor: con las cuatrocientas
+  // pruebas a la vez contra una sola base, quitar el lote tardó más de cinco (23-sep).
+  await expect(page.getByText(/queda apuntado como merma por caducado/)).toBeVisible({
+    timeout: 15_000,
+  });
   await expect(page.getByRole('listitem').filter({ hasText: nombre })).toHaveCount(0);
 
   const ficha = await consultar<{ producto: { cantidad: number }; lotes: unknown[] }>(
@@ -1500,6 +1506,11 @@ test('la ficha no vende ingredientes, deja medir el aprovechamiento y se puede d
   });
 
   const ficha = page.getByRole('dialog', { name: nombre });
+  // Primero, que la ficha esté abierta. Las dos comprobaciones de debajo son «esto
+  // NO está», y sin esto pasaban aunque la ficha no se hubiera abierto todavía: no
+  // miraban nada. Lo destapó una vuelta cargada del 23-sep, en la que la ficha tardó
+  // más de cinco segundos y falló la tercera, que sí necesita la ficha.
+  await expect(ficha).toBeVisible({ timeout: 15_000 });
 
   // ── Un ingrediente NO tiene precio de venta ──────────────────────────────
   //
@@ -1752,4 +1763,35 @@ test('el reparto tiene su sitio, con Uber Eats por su nombre y sin botón de men
 
   // Ni un botón que prometa una conexión que no existe.
   await expect(page.getByRole('button', { name: /Conectar/ })).toHaveCount(0);
+});
+
+// ── La red de debajo de cada pantalla (entrega V) ────────────────────────────
+
+/**
+ * Un trozo de la aplicación que no llega —la wifi de la cocina, o una versión
+ * nueva publicada con la app abierta— ya no deja la pantalla en blanco.
+ *
+ * Se corta a propósito la descarga de Movimientos. La red recarga sola una vez (lo
+ * que arregla lo de la versión nueva); como aquí el trozo sigue sin llegar, la
+ * segunda vez lo dice, con su botón, y **las barras siguen**: se puede ir a otra
+ * pantalla sin recargar nada.
+ */
+test('si un trozo de la app no llega, se dice y las barras siguen', async ({ page }) => {
+  await entrar(page, ROSA);
+  await page.route('**/assets/Movimientos-*.js', (ruta) => ruta.abort());
+
+  await page.goto(`${APP}#/inventario/movimientos/todo`, { waitUntil: 'domcontentloaded' });
+
+  await expect(page.getByText('Esta pantalla no ha terminado de cargar')).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.getByRole('button', { name: 'Volver a cargar' })).toBeVisible();
+  // Y el resto de la aplicación, en pie: la barra de arriba, con el buscador.
+  await expect(page.getByRole('button', { name: 'Buscar en todo' }).first()).toBeVisible();
+
+  // Cambiar de pantalla lo olvida.
+  await page.unroute('**/assets/Movimientos-*.js');
+  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { level: 1, name: 'Resumen' })).toBeVisible();
+  await expect(page.getByText('Esta pantalla no ha terminado de cargar')).toHaveCount(0);
 });

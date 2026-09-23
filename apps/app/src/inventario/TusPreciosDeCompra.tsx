@@ -45,7 +45,7 @@ export function TusPreciosDeCompra() {
 
   async function refrescar() {
     await Promise.all(
-      ['mis_productos', 'un_producto', 'inventario_hoy'].map((clave) =>
+      ['mis_productos', 'un_producto', 'inventario_hoy', 'un_indicador'].map((clave) =>
         cache.invalidateQueries({ queryKey: [clave] }),
       ),
     );

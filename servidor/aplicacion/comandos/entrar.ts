@@ -174,6 +174,20 @@ export async function abrirLaSesion(
     localId: quien.localDelPin,
   });
 
+  // ── Sin ningún negocio, no se entra en la app (entrega V, 23-sep) ─────────
+  //
+  // Lo vio Richi: entrando en la app con la cuenta que se creó **solo para el
+  // admin**, se le pedía el código de su segundo factor y, después, una pantalla
+  // de «tu cuenta no está asociada a ningún negocio». Parecía que las cuentas se
+  // mezclaban. No se mezclaba nada —el segundo factor es de la persona, y esa
+  // persona existe por el admin—, pero pedir un código para luego no dejar pasar
+  // es el orden al revés, y abría una sesión que no servía para nada.
+  //
+  // Ahora se dice aquí, **antes del código y sin abrir sesión**, y con el camino:
+  // si es la del admin, que entre por el admin. Solo lo lee quien ha acertado la
+  // contraseña (o Google), así que no descubre a nadie qué correos existen.
+  if (destino.organizaciones.length === 0) throw new FalloDeAplicacion('sin_negocio');
+
   const exigeDoble = await exigeDobleFactor(
     contexto,
     destino.organizaciones.map((o) => o.id),

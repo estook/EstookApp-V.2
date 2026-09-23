@@ -322,10 +322,7 @@ function ElFormulario({
                 aria-labelledby="por-que-sale"
                 className="flex flex-col gap-e3"
               >
-                <p
-                  id="por-que-sale"
-                  className="text-etiqueta uppercase tracking-wide text-texto-suave"
-                >
+                <p id="por-que-sale" className="text-secundario font-medium text-texto-suave">
                   Por qué sale
                 </p>
 

@@ -100,3 +100,25 @@ test.describe('la puerta del admin', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Entra en el admin' })).toBeVisible();
   });
 });
+
+/**
+ * La cuenta del admin, tecleada en la **app** (entrega V, 23-sep).
+ *
+ * Richi entró en la app con la cuenta que solo es del admin y la app le pidió el
+ * código de su segundo factor, para después decirle que no tenía negocio. Le pareció
+ * que las cuentas se mezclaban. Ahora se dice a la primera, sin pedir código.
+ */
+test('la cuenta del admin, en la app, dice que no tiene negocio y no pide el código', async ({
+  page,
+}) => {
+  await page.goto('http://localhost:5174/', { waitUntil: 'domcontentloaded' });
+  await page.getByLabel('Tu correo').fill('plataforma@ejemplo.estook.com');
+  await page.getByLabel('Tu contraseña').fill('estook en desarrollo');
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+
+  await expect(page.getByText('Esta cuenta no tiene ningún negocio en Estook.')).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByText(/estook\.com\/admin/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu código de seis dígitos' })).toHaveCount(0);
+});

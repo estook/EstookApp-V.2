@@ -617,4 +617,6 @@ export const LO_QUE_TOCAN_LAS_COMPRAS = [
   ['un_producto'],
   ['inventario_hoy'],
   ['mis_movimientos'],
+  // Las cifras con flecha: el valor de la cámara y las compras (V, punto 2).
+  ['un_indicador'],
 ] as const;

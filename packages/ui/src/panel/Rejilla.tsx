@@ -78,7 +78,7 @@ export function Rejilla(props: RejillaProps) {
   return (
     <div className="flex flex-col gap-e3">
       <div className="flex flex-wrap items-center justify-between gap-e2">
-        <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+        <p className="text-secundario font-medium text-texto-suave">
           {editando ? 'Arrastra para ordenar' : 'Tu panel'}
           {guardando && <span className="ml-e2 normal-case tracking-normal">guardando…</span>}
         </p>
@@ -102,7 +102,7 @@ export function Rejilla(props: RejillaProps) {
             className={clases(
               'inline-flex min-h-toque items-center gap-e1 rounded-redondo px-e3 text-secundario font-medium',
               editando
-                ? 'bg-charcoal text-superficie'
+                ? 'bg-texto text-superficie'
                 : 'border border-borde-fuerte bg-superficie hover:bg-fondo',
             )}
           >

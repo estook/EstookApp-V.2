@@ -77,6 +77,18 @@ export const ERRORES = {
     401,
   ),
 
+  // Quien acierta la contraseña pero no tiene ningún negocio (entrega V, 23-sep).
+  // Pasaba con la cuenta que se creó solo para el admin: la app pedía su código
+  // del segundo factor y, después, decía que no había negocio. Ahora se dice
+  // antes, sin pedir código y sin abrir sesión. **No descubre nada**: solo lo lee
+  // quien ya ha demostrado la contraseña de esa cuenta.
+  sin_negocio: error(
+    'sin_negocio',
+    'Esta cuenta no tiene ningún negocio en Estook.',
+    'Si es la cuenta del panel de administración, entra en estook.com/admin. Si trabajas en un local, pide a quien lo lleva que te dé acceso; y si quieres dar de alta el tuyo, crea una cuenta nueva.',
+    403,
+  ),
+
   demasiados_intentos: error(
     'demasiados_intentos',
     'Se han fallado cinco veces seguidas, así que la entrada está parada un rato.',

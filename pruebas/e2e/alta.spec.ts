@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M5 · aceptación, punto por punto.
@@ -33,7 +34,7 @@ const PABLO = 'pablo@ejemplo.estook.com';
 const ROSA = 'rosa@ejemplo.estook.com';
 
 async function abrirLimpio(page: Page) {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, APP);
   await page.evaluate(() => {
     try {
       window.localStorage.clear();
@@ -41,7 +42,8 @@ async function abrirLimpio(page: Page) {
       /* en navegacion privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
+  await abrirSinQueSeCaiga(page, APP);
 }
 
 async function entrar(page: Page, correo: string) {

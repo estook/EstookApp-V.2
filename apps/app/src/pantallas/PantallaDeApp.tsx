@@ -164,9 +164,17 @@ function Dentro({
         */}
         <Migas camino={[{ nombre: 'Panel', ir: alVolver }, { nombre: app.nombre }]} />
 
-        <div className="flex items-start gap-e3">
-          <span className="mt-[2px] shrink-0" style={{ color: app.acento }}>
-            <app.icono size={28} />
+        <div className="flex items-center gap-e3">
+          {/* El icono de la app en su pastilla, como el de cada tarjeta (0045). */}
+          <span
+            aria-hidden
+            className="grid size-12 shrink-0 place-items-center rounded-grande"
+            style={{
+              color: app.acento,
+              background: `color-mix(in srgb, ${app.acento} 14%, transparent)`,
+            }}
+          >
+            <app.icono size={26} />
           </span>
           <div className="min-w-0">
             {/*
@@ -175,8 +183,8 @@ function Dentro({
               la de Productos. El nombre de la app va encima, pequeno, que es
               donde se lee sin robarle sitio.
             */}
-            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">{app.nombre}</p>
-            <h1 className="text-pantalla font-semibold">{destino.nombre}</h1>
+            <p className="text-secundario font-medium text-texto-suave">{app.nombre}</p>
+            <h1 className="text-pantalla font-semibold tracking-[-0.015em]">{destino.nombre}</h1>
             <p className="text-secundario text-texto-suave">{destino.queContesta}</p>
           </div>
         </div>
@@ -241,8 +249,8 @@ function Contenido({
   if (app.id === 'equipo' && destino.id === 'personas') {
     return <QuienTieneAcceso vista={vista?.id ?? ''} />;
   }
-  if (app.id === 'equipo' && destino.id === 'hoy') return <EquipoHoy />;
-  if (app.id === 'equipo' && destino.id === 'resumen') return <ResumenDelEquipo />;
+  if (app.id === 'equipo' && destino.id === 'resumen') return <EquipoHoy />;
+  if (app.id === 'equipo' && destino.id === 'fichajes') return <ResumenDelEquipo />;
 
   // El cierre es una **vista** de la jornada: el resto de la jornada —«En
   // marcha»— sigue siendo M16 y cae abajo, a su cartel.

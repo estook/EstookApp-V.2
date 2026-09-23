@@ -1,5 +1,13 @@
 import { useEffect } from 'react';
-import { derivarAcento, esColorHex, type AcentoPintable, type DondeSePinta } from '../color.ts';
+import {
+  CONTRASTE_DE_COCINA,
+  CONTRASTE_DE_TEXTO,
+  derivarAcento,
+  esColorHex,
+  type AcentoPintable,
+  type DondeSePinta,
+} from '../color.ts';
+import { usarSeVeEnModoCocina } from './usarModoCocina.ts';
 import { usarSeVeOscuro } from './usarTema.ts';
 
 /**
@@ -63,6 +71,8 @@ function dondeSePintaAhora(): DondeSePinta {
  */
 export function usarElColorDeLaApp(color: string | null): void {
   const oscuro = usarSeVeOscuro();
+  // En modo cocina lo que se lee pide 7:1, también encima del color del local.
+  const enCocina = usarSeVeEnModoCocina();
 
   useEffect(() => {
     const raiz = document.documentElement;
@@ -72,7 +82,11 @@ export function usarElColorDeLaApp(color: string | null): void {
       return;
     }
 
-    const pintable = derivarAcento(color, dondeSePintaAhora());
+    const pintable = derivarAcento(
+      color,
+      dondeSePintaAhora(),
+      enCocina ? CONTRASTE_DE_COCINA : CONTRASTE_DE_TEXTO,
+    );
     for (const [cual, ficha] of Object.entries(FICHAS)) {
       raiz.style.setProperty(ficha, pintable[cual as keyof AcentoPintable] as string);
     }
@@ -83,6 +97,7 @@ export function usarElColorDeLaApp(color: string | null): void {
       for (const ficha of Object.values(FICHAS)) raiz.style.removeProperty(ficha);
     };
     // `oscuro` esta en las dependencias a proposito: cuando cambia, la superficie
-    // de debajo es otra y el acento hay que volver a ajustarlo.
-  }, [color, oscuro]);
+    // de debajo es otra y el acento hay que volver a ajustarlo. Y `enCocina`,
+    // porque cambia el minimo que tiene que cumplir.
+  }, [color, oscuro, enCocina]);
 }

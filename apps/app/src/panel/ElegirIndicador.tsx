@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import {
   COMO_ES_EL_INDICADOR,
-  PERIODOS_DEL_INDICADOR,
   idDelIndicador,
   type Indicador,
   type PeriodoDelIndicador,
 } from '@estook/dominio';
 import type { Permiso } from '@estook/permisos';
-import { Boton, Etiqueta, clases, losIndicadoresQueSePuedenTener } from '@estook/ui';
+import { Boton, ElegirPeriodo, Etiqueta, clases, losIndicadoresQueSePuedenTener } from '@estook/ui';
 import { IconoAnadir } from '@estook/iconos';
 
 /**
@@ -42,9 +41,7 @@ export function ElegirIndicador({
   return (
     <section aria-label="Tus cifras, con su gráfica" className="flex flex-col gap-e3">
       <div>
-        <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
-          Tus cifras, con su gráfica
-        </p>
+        <p className="text-secundario font-medium text-texto-suave">Tus cifras, con su gráfica</p>
         <p className="mt-e1 text-secundario text-texto-suave">
           Elige qué quieres seguir y de cuántos días. Sale con su flecha frente a los días de antes.
         </p>
@@ -79,29 +76,7 @@ export function ElegirIndicador({
       </div>
 
       <div className="flex flex-wrap items-center gap-e3">
-        <div
-          role="radiogroup"
-          aria-label="De cuántos días"
-          className="inline-flex overflow-hidden rounded-redondo border border-borde-fuerte"
-        >
-          {PERIODOS_DEL_INDICADOR.map((cuantos) => (
-            <button
-              key={cuantos}
-              type="button"
-              role="radio"
-              aria-checked={cuantos === dias}
-              onClick={() => {
-                setDias(cuantos);
-              }}
-              className={clases(
-                'min-h-toque px-e3 text-secundario font-medium',
-                cuantos === dias ? 'bg-charcoal text-superficie' : 'bg-superficie hover:bg-fondo',
-              )}
-            >
-              {cuantos} días
-            </button>
-          ))}
-        </div>
+        <ElegirPeriodo periodo={dias} alElegir={setDias} />
 
         {yaEsta ? (
           <Etiqueta tono="bien">Ya está en tu panel</Etiqueta>

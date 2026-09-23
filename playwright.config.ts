@@ -47,7 +47,7 @@ const APLICACIONES = [
  * Lo que no toca pantalla y por tanto corre en un solo proyecto. Cada fichero que
  * entre aqui tiene que decir en su cabecera por que no necesita navegador.
  */
-const SIN_PANTALLA = ['**/catalogo-vivo.spec.ts'];
+const SIN_PANTALLA = ['**/catalogo-vivo.spec.ts', '**/abrir.spec.ts'];
 
 const enCI = Boolean(process.env['CI']);
 const conWebkit = enCI || Boolean(process.env['CON_WEBKIT']);

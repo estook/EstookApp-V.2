@@ -46,13 +46,29 @@ export type { CampoProps, CampoMonedaProps, TipoDeCampo } from './componentes/Ca
 export { Selector, Interruptor } from './componentes/Selector.tsx';
 export type { SelectorProps, InterruptorProps, Opcion } from './componentes/Selector.tsx';
 
-export { Tarjeta, Etiqueta, Avatar, inicialesDe, colorDe } from './componentes/Tarjeta.tsx';
+export {
+  Tarjeta,
+  EnlaceDeTarjeta,
+  Etiqueta,
+  Avatar,
+  inicialesDe,
+  colorDe,
+} from './componentes/Tarjeta.tsx';
+export { Mosaico, Pieza, CLASES_DEL_MOSAICO } from './componentes/Mosaico.tsx';
+export {
+  usarFilasDelMosaico,
+  FILA_DEL_MOSAICO,
+  HUECO_DEL_MOSAICO,
+} from './ganchos/usarFilasDelMosaico.ts';
+export type { MosaicoProps, PiezaProps } from './componentes/Mosaico.tsx';
 export { Proporcion } from './componentes/Proporcion.tsx';
 export { Tira } from './componentes/Tira.tsx';
 export { Tendencia } from './componentes/Tendencia.tsx';
 export type { TendenciaProps } from './componentes/Tendencia.tsx';
 export { Variacion } from './componentes/Variacion.tsx';
 export type { VariacionProps } from './componentes/Variacion.tsx';
+export { ElegirPeriodo } from './componentes/ElegirPeriodo.tsx';
+export type { ElegirPeriodoProps } from './componentes/ElegirPeriodo.tsx';
 export type { TiraProps, PuntoDeLaTira } from './componentes/Tira.tsx';
 export type { ProporcionProps, Trozo } from './componentes/Proporcion.tsx';
 export type {
@@ -88,6 +104,8 @@ export { Migas, Paginador } from './componentes/Migas.tsx';
 export type { MigasProps, Camino, Paso, PaginadorProps } from './componentes/Migas.tsx';
 
 export { Deshacer } from './componentes/Deshacer.tsx';
+export { SiAlgoFalla, esUnTrozoQueNoLlega } from './componentes/SiAlgoFalla.tsx';
+export type { SiAlgoFallaProps } from './componentes/SiAlgoFalla.tsx';
 
 // ── Navegacion (B5) ──────────────────────────────────────────────────────────
 export { BarraMovil, BarraDeApp } from './navegacion/BarraMovil.tsx';
@@ -115,11 +133,15 @@ export {
   loQueSePuedePintar,
   losQueLlegan,
   acentoDelWidget,
+  appDelWidget,
   widgetPorId,
   losIndicadoresQueSePuedenTener,
 } from './panel/catalogo.ts';
 export type { TamanoDeWidget, Widget, WidgetPuesto } from './panel/catalogo.ts';
 
+export { TarjetaDeIndicador } from './panel/TarjetaDeIndicador.tsx';
+export { comoSeEscribe } from './panel/comoSeEscribe.ts';
+export type { TarjetaDeIndicadorProps, DatosDelIndicador } from './panel/TarjetaDeIndicador.tsx';
 export { Rejilla } from './panel/Rejilla.tsx';
 export type { RejillaProps } from './panel/rejilla.ts';
 export { usarQueEstaVacio } from './ganchos/usarQueEstaVacio.ts';
@@ -158,6 +180,7 @@ export {
 export type { Tema } from './ganchos/usarTema.ts';
 export { usarElColorDeLaApp } from './ganchos/usarElColorDeLaApp.ts';
 export {
+  CONTRASTE_DE_COCINA,
   CONTRASTE_DE_ICONO,
   CONTRASTE_DE_TEXTO,
   contraste,
@@ -177,6 +200,8 @@ export {
   CUANTO_MULTIPLICA,
 } from './ganchos/usarTamanoDeLetra.ts';
 export type { TamanoDeLetra } from './ganchos/usarTamanoDeLetra.ts';
+
+export { usarModoCocina, usarSeVeEnModoCocina } from './ganchos/usarModoCocina.ts';
 
 export {
   usarMedia,

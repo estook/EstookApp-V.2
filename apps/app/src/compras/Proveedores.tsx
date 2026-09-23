@@ -639,9 +639,7 @@ function DiasDeReparto({
 }) {
   return (
     <fieldset className="flex flex-col gap-e2">
-      <legend className="text-etiqueta uppercase tracking-wide text-texto-suave">
-        Días que reparte
-      </legend>
+      <legend className="text-secundario font-medium text-texto-suave">Días que reparte</legend>
       <div className="flex flex-wrap gap-e1">
         {INICIALES_DE_LOS_DIAS.map((inicial, i) => {
           const dia = i + 1;
@@ -873,7 +871,7 @@ function EditarProveedor({
           <h3 className="text-seccion font-semibold">Cuándo reparte</h3>
           <DiasDeReparto dias={dias} alCambiar={setDias} />
           <div className="flex flex-col gap-e1">
-            <span className="text-etiqueta uppercase tracking-wide text-texto-suave">
+            <span className="text-secundario font-medium text-texto-suave">
               Cuántos días antes hay que pedir
             </span>
             <Cuantos

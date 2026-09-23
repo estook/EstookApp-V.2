@@ -334,7 +334,7 @@ function Terminar({
 
       {pendientes.length > 0 && (
         <div className="rounded-medio border border-borde bg-superficie p-e4">
-          <h2 className="mb-e2 text-etiqueta uppercase tracking-wide text-texto-suave">
+          <h2 className="mb-e2 text-secundario font-medium text-texto-suave">
             Te queda por decirme
           </h2>
           <ul className="flex flex-col gap-e2">

@@ -98,7 +98,16 @@ export function BarraArribaMovil({
     >
       <DondeEstas local={local} locales={locales} alCambiar={alCambiarDeLocal} />
 
-      <div className="flex shrink-0 items-center gap-0">
+      {/*
+        En modo cocina cada botón mide 64 px, y cinco más su separación son 368: en
+        un móvil de 320 no caben, y el último —tu cuenta— quedaba cortado (lo cazó la
+        prueba del modo cocina en el iPhone SE). Así que, **solo con el modo puesto
+        y por debajo de 440 px**, se recogen Avisos y Chat, que hoy solo dicen lo
+        que serán, y los tres que quedan van juntos: cada uno ya es un blanco de 64
+        px y no necesita los 12 de separación. Cuando los avisos existan de verdad
+        (entrega I), esto se vuelve a mirar: un aviso no se puede esconder.
+      */}
+      <div className="flex shrink-0 items-center gap-0 in-[[data-cocina=si]]:max-[440px]:[&>button]:ms-0">
         <Redondo etiqueta="Buscar en todo" alPulsar={alBuscar}>
           <IconoBuscar size={20} />
         </Redondo>
@@ -106,6 +115,7 @@ export function BarraArribaMovil({
         <Redondo
           etiqueta={avisos > 0 ? `Avisos: ${avisos} sin leer` : 'Avisos'}
           alPulsar={alAbrirAvisos}
+          recogibleEnCocina
         >
           <span className="relative">
             <IconoAvisos size={20} />
@@ -118,7 +128,7 @@ export function BarraArribaMovil({
           </span>
         </Redondo>
 
-        <Redondo etiqueta="Chat del equipo" alPulsar={alAbrirChat}>
+        <Redondo etiqueta="Chat del equipo" alPulsar={alAbrirChat} recogibleEnCocina>
           <IconoChat size={20} />
         </Redondo>
 
@@ -224,17 +234,23 @@ function Redondo({
   etiqueta,
   alPulsar,
   children,
+  recogibleEnCocina = false,
 }: {
   readonly etiqueta: string;
   readonly alPulsar: () => void;
   readonly children: ReactNode;
+  /** Si se recoge en modo cocina cuando la pantalla no da para cinco botones de 64. */
+  readonly recogibleEnCocina?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={alPulsar}
       aria-label={etiqueta}
-      className="grid size-toque place-items-center rounded-medio text-texto-suave"
+      className={clases(
+        'grid size-toque place-items-center rounded-medio text-texto-suave',
+        recogibleEnCocina && 'in-[[data-cocina=si]]:max-[440px]:hidden',
+      )}
     >
       {children}
     </button>

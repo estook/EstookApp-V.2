@@ -27,11 +27,11 @@ const APP = 'http://localhost:5174/';
  * entrar en un cartel.
  */
 const LAS_OCHO = [
-  { id: 'inventario', nombre: 'Inventario', entra: 'Hoy' },
-  { id: 'escandallos', nombre: 'Escandallos', entra: 'Hoy' },
+  { id: 'inventario', nombre: 'Inventario', entra: 'Resumen' },
+  { id: 'escandallos', nombre: 'Escandallos', entra: 'Resumen' },
   { id: 'carta', nombre: 'Carta', entra: 'Carta' },
   { id: 'calendario', nombre: 'Calendario', entra: 'Calendario' },
-  { id: 'equipo', nombre: 'Equipo', entra: 'Hoy' },
+  { id: 'equipo', nombre: 'Equipo', entra: 'Resumen' },
   { id: 'servicio', nombre: 'Servicio', entra: 'Jornada' },
   { id: 'negocio', nombre: 'Negocio', entra: 'Ventas' },
   { id: 'cuaderno', nombre: 'Cuaderno', entra: 'Incidencias' },
@@ -410,7 +410,7 @@ test.describe('la rueda de apps', () => {
     // Panel.» Antes decía «arrastra o pulsa», que es una instrucción y no un
     // sitio, y para volver al Panel desde una app había que buscarlo.
     await comoGerente(page);
-    await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await abrirLaRueda(page);
@@ -535,7 +535,7 @@ async function quitarUnWidget(page: Page) {
 test.describe('deshacer universal', () => {
   test('flujo 2 · el tamano de letra vuelve al de antes', async ({ page }) => {
     await comoGerente(page);
-    await abrir(page, '/ajustes');
+    await abrir(page, '/ajustes/aparato');
 
     const antes = await page.evaluate(() => document.documentElement.dataset['letra'] ?? 'normal');
 
@@ -718,7 +718,7 @@ test.describe('accesibilidad', () => {
 
   test('los tres tamanos de letra cambian la pantalla entera', async ({ page }) => {
     await comoGerente(page);
-    await abrir(page, '/ajustes');
+    await abrir(page, '/ajustes/aparato');
 
     const medir = () =>
       page.evaluate(() => {
@@ -958,8 +958,8 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     // Aquí **no se espera a nada**: se toca y se sale, que es el gesto que perdía
     // el cambio. Cambiar de pantalla no tira la petición —es la misma página—,
     // pero sí desmontaba el Panel, y al desmontar se tiraba lo pendiente.
-    await abrir(page, '/inventario/hoy');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
+    await abrir(page, '/inventario/resumen');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
     await abrir(page, '/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');

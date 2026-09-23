@@ -12,27 +12,37 @@ import { clases } from '../clases.ts';
  *     (`comoCambia`), no la pantalla.
  *   · **El color nunca va solo** (B1): lleva la flecha, y para quien no ve, la
  *     frase entera —«Sube un 12 % frente a los 7 días anteriores»—.
+ *
+ * ── Tres formas de decir cuánto (V, mejora 2) ───────────────────────────────
+ *
+ * En **por ciento** el dinero y las horas; en **puntos** lo que ya es un
+ * porcentaje; y en **unidades** lo que se cuenta: de 2 retrasos a 3 es «▲ 1», no
+ * «▲ 50 %». Lo decide el dominio por la unidad de cada cifra.
  */
 export interface VariacionProps {
   /** Verdadero si sube, falso si baja, nulo si está igual. */
   readonly sube: boolean | null;
   /** Cuánto, en positivo. */
   readonly cuanto: number;
-  /** En puntos, para lo que ya es un porcentaje. */
-  readonly enPuntos?: boolean;
+  /** En qué se dice cuánto. Por ciento, si no se dice. */
+  readonly en?: 'por_ciento' | 'puntos' | 'unidades';
   /** Si es buena noticia. Nulo = ni buena ni mala. */
   readonly bueno: boolean | null;
   /** «frente a los 7 días anteriores». Va en la frase para quien no ve. */
   readonly frenteA: string;
 }
 
-export function Variacion({ sube, cuanto, enPuntos = false, bueno, frenteA }: VariacionProps) {
+export function Variacion({ sube, cuanto, en = 'por_ciento', bueno, frenteA }: VariacionProps) {
   const numero = cuanto.toLocaleString('es-ES', { maximumFractionDigits: 1 });
-  const unidad = enPuntos ? (cuanto === 1 ? ' punto' : ' puntos') : ' %';
+  const corto = en === 'puntos' ? `${numero} pt` : en === 'unidades' ? numero : `${numero} %`;
+  const cuantoEnLetra =
+    en === 'puntos'
+      ? `${numero} ${cuanto === 1 ? 'punto' : 'puntos'}`
+      : en === 'unidades'
+        ? `en ${numero}`
+        : `un ${numero} %`;
   const frase =
-    sube === null
-      ? `Igual ${frenteA}`
-      : `${sube ? 'Sube' : 'Baja'} ${enPuntos ? '' : 'un '}${numero}${unidad} ${frenteA}`;
+    sube === null ? `Igual ${frenteA}` : `${sube ? 'Sube' : 'Baja'} ${cuantoEnLetra} ${frenteA}`;
 
   const tono =
     bueno === null
@@ -50,7 +60,7 @@ export function Variacion({ sube, cuanto, enPuntos = false, bueno, frenteA }: Va
       )}
     >
       <span aria-hidden>{sube === null ? '=' : sube ? '▲' : '▼'}</span>
-      <span aria-hidden>{sube === null ? 'Igual' : `${numero}${enPuntos ? ' pt' : ' %'}`}</span>
+      <span aria-hidden>{sube === null ? 'Igual' : corto}</span>
       <span className="sr-only">{frase}</span>
     </span>
   );

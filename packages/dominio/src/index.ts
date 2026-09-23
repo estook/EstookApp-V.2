@@ -259,6 +259,10 @@ export {
   costeDeUnaHora,
   loQueCuesta,
   comoVaConSuContrato,
+  minutosDeSegundos,
+  MARGEN_DE_RETRASO_DE_FABRICA,
+  MARGENES_DE_RETRASO,
+  llegoTarde,
   comoSeLlamaElDia,
   minutosHasta,
 } from './equipo.ts';
@@ -445,6 +449,8 @@ export {
   leerIdDelIndicador,
   nombreDelIndicador,
   comoCambia,
+  LAS_CIFRAS_DE,
+  lasFotosDeLaCamara,
 } from './indicador.ts';
 export type {
   Indicador,
@@ -453,6 +459,10 @@ export type {
   SentidoDelIndicador,
   ComoEsElIndicador,
   CambioDelIndicador,
+  AppConCifras,
+  LineaDelLibro,
+  ProductoDeLaFoto,
+  FotoDeLaCamara,
 } from './indicador.ts';
 
 // ── M7 · el local en Google · los topes de lo que cuesta dinero ─────────────

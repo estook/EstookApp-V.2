@@ -83,9 +83,7 @@ export function Vistas({ vistas, activa, acento, alElegir, de }: VistasProps) {
           >
             {vista.nombre}
             {falta && (
-              <span className="text-etiqueta uppercase tracking-wide text-texto-tenue">
-                {vista.modulo}
-              </span>
+              <span className="text-etiqueta font-medium text-texto-tenue">{vista.modulo}</span>
             )}
           </button>
         );

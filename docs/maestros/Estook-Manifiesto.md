@@ -901,7 +901,7 @@ Ficha con rol, alcance, contacto, contrato y sus documentos. Alta por invitació
 
 El **coste por hora** vive aquí, con vigencia y con permiso propio. Y para quien no quiera meter sueldos, la alternativa por defecto: **coste medio por puesto**, que da un porcentaje de personal correcto sin datos individuales.
 
-**La ficha de cada persona** se abre desde donde aparezca su nombre —la lista del equipo, el widget de Personas, Equipo › Hoy— y enseña: su puesto, si está **en línea** o **cuándo entró por última vez**, sus horas de hoy, de la semana y del mes, sus últimos fichajes y su horario de siempre.
+**La ficha de cada persona** se abre desde donde aparezca su nombre —la lista del equipo, el widget de Personas, Equipo › Resumen— y enseña: su puesto, si está **en línea** o **cuándo entró por última vez**, sus horas de hoy, de la semana y del mes, sus últimos fichajes y su horario de siempre.
 
 **Lo que cobra, aparte y privado.** Por hora, o al mes con sus horas de contrato —y entonces Estook lo reparte: `sueldo ÷ (horas semanales × 52 ÷ 12)`—. **Cada uno ve lo suyo.** El de los demás lo ve y lo pone solo quien tiene el permiso de coste de personal, **nunca hacia arriba** —un gerente no ve ni pone lo que cobra quien está por encima de él— y **nadie se pone el suyo**. A quien no tiene ese permiso el dato no le llega: no se esconde, no se envía.
 
@@ -909,7 +909,7 @@ El acceso de cada uno —PIN nuevo, contraseña nueva, retirar— va dentro de u
 
 ## Fichajes
 
-Se ficha **en un toque**, desde el Panel o desde Equipo › Hoy: «Fichar la entrada», «Fichar la salida».
+Se ficha **en un toque**, desde el Panel o desde Equipo › Resumen: «Fichar la entrada», «Fichar la salida».
 
 - **Se pide la ubicación al entrar y al salir**, y se guarda a cuántos metros del local se hizo. **Dónde está el local lo dice su ficha de Google**, que se elige en el alta ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)); mientras no esté conectado, se marca una vez en Ajustes —«estoy en el local: márcalo»— **desde un móvil dentro del local**, con el radio que acepta. Un ordenador o un TPV no tienen GPS y marcan la manzana: Ajustes lo avisa.
 - **El permiso no cuenta como espera.** Si el móvil pregunta «¿permitir la ubicación?», se espera a que se conteste; y si la posición exacta no llega, vale la aproximada de la wifi, con su precisión apuntada.

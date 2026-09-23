@@ -59,3 +59,14 @@ export function identificarSesion(datos: {
     local_id: datos.local_id ?? 'sin-local',
   });
 }
+
+/**
+ * Avisar de un fallo que la pantalla ha recogido (entrega V).
+ *
+ * Los que nadie recoge ya le llegan a Sentry solos. Los que recoge la red de debajo
+ * de cada pantalla (`SiAlgoFalla`) no, porque dejan de ser «sin recoger»: por eso se
+ * mandan aquí. Sin Sentry arrancado —en local o sin clave— no hace nada.
+ */
+export function avisarDelFallo(fallo: unknown, donde: string): void {
+  Sentry.captureException(fallo, { tags: { donde } });
+}

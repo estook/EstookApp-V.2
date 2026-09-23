@@ -46,14 +46,19 @@ export function CabeceraDelPanel() {
   const color = local?.colorDeMarca ?? null;
 
   return (
-    <header className="overflow-hidden rounded-grande border border-borde bg-superficie shadow-s1">
-      {/* La banda de color. Sin texto encima, a propósito. */}
-      <div
-        aria-hidden
-        className={clases('h-[6px] w-full', color === null && 'bg-naranja')}
-        {...(color === null ? {} : { style: { background: color } })}
-      />
-
+    <header
+      className="overflow-hidden rounded-mayor border border-borde bg-superficie [box-shadow:var(--sombra-tarjeta)]"
+      /*
+        El color del local, como un velo que entra por la esquina (entrega V,
+        0045). Hasta aquí era una banda de seis píxeles arriba: se veía, pero era
+        la línea de color de una web de 2005. El velo dice lo mismo —esta es tu
+        casa— y deja el texto sobre la superficie de siempre: a la izquierda, donde
+        va el nombre, apenas tiñe, así que el contraste no cambia.
+      */
+      style={{
+        backgroundImage: `linear-gradient(120deg, color-mix(in srgb, ${color ?? 'var(--color-naranja)'} 16%, transparent) 0%, transparent 45%)`,
+      }}
+    >
       {/*
         ── Y se abre ────────────────────────────────────────────────────────
 
@@ -99,7 +104,7 @@ export function CabeceraDelPanel() {
           </span>
 
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-etiqueta uppercase tracking-wide text-texto-suave">
+            <span className="block truncate text-secundario font-medium text-texto-suave">
               {donde}
             </span>
             <span className="block truncate text-pantalla font-semibold">
@@ -199,7 +204,7 @@ function Dato({
 }) {
   return (
     <div className="rounded-medio border border-borde bg-fondo px-e3 py-e2">
-      <dt className="text-etiqueta uppercase tracking-wide text-texto-suave">{que}</dt>
+      <dt className="text-secundario font-medium text-texto-suave">{que}</dt>
       <dd
         className={clases(
           'text-seccion font-semibold tabular-nums',

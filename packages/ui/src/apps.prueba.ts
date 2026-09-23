@@ -318,27 +318,28 @@ describe('lo construido y lo que llega', () => {
     expect(destinosConstruidos(laApp('carta'))).toHaveLength(0);
   });
 
-  it('Equipo tiene Hoy, Personas y Resumen construidos', () => {
-    // Personas la trajo M4. Hoy y Resumen, M6½: con los fichajes ya se puede
+  it('Equipo tiene Resumen, Personas y Fichajes construidos', () => {
+    // Personas la trajo M4. Resumen y Fichajes, M6½: con los fichajes ya se puede
     // contestar quién está y cuántas horas lleva cada uno. Horarios sigue en M14.
+    // (Hasta la entrega V se llamaban «Hoy» y «Resumen»: 0045.)
     expect(destinosConstruidos(laApp('equipo')).map((d) => d.id)).toEqual([
-      'hoy',
-      'personas',
       'resumen',
+      'personas',
+      'fichajes',
     ]);
   });
 
   it('donde entra una app es su primer destino construido', () => {
-    expect(dondeEntra(laApp('inventario'))?.id).toBe('hoy');
-    // Equipo entra en Hoy, que ya no es un cartel: quién ha fichado y quién no.
-    expect(dondeEntra(laApp('equipo'))?.id).toBe('hoy');
+    expect(dondeEntra(laApp('inventario'))?.id).toBe('resumen');
+    // Equipo entra en su Resumen, que ya no es un cartel: quién ha fichado y quién no.
+    expect(dondeEntra(laApp('equipo'))?.id).toBe('resumen');
     // Y Servicio entra en la jornada por el cierre, que es lo que funciona.
     expect(rutaDe(laApp('servicio'))).toBe('/servicio/jornada/cierre');
   });
 
   it('la ruta lleva la vista de entrada cuando el destino tiene vistas', () => {
     const inventario = laApp('inventario');
-    expect(rutaDe(inventario)).toBe('/inventario/hoy');
+    expect(rutaDe(inventario)).toBe('/inventario/resumen');
     const productos = inventario.destinos.find((d) => d.id === 'productos');
     expect(rutaDe(inventario, productos)).toBe('/inventario/productos/todo');
   });
@@ -380,11 +381,11 @@ describe('lo construido y lo que llega', () => {
   });
 
   it('un destino sin vistas no tiene vista de entrada', () => {
-    const hoy = laApp('inventario').destinos.find((d) => d.id === 'hoy');
-    expect(hoy?.vistas).toHaveLength(0);
-    if (hoy === undefined) throw new Error('hoy');
-    expect(dondeEntraEnElDestino(hoy)).toBeUndefined();
-    expect(rutaDe(laApp('inventario'), hoy)).toBe('/inventario/hoy');
+    const resumen = laApp('inventario').destinos.find((d) => d.id === 'resumen');
+    expect(resumen?.vistas).toHaveLength(0);
+    if (resumen === undefined) throw new Error('resumen');
+    expect(dondeEntraEnElDestino(resumen)).toBeUndefined();
+    expect(rutaDe(laApp('inventario'), resumen)).toBe('/inventario/resumen');
   });
 });
 

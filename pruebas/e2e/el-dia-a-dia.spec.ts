@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M6½ · lo que pasa durante el servicio, de punta a punta.
@@ -26,7 +27,7 @@ const MARCOS = 'marcos@ejemplo.estook.com';
 const SARA = 'sara@ejemplo.estook.com';
 
 async function entrar(page: Page, correo: string) {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, APP);
   await page.evaluate(() => {
     try {
       window.localStorage.clear();
@@ -34,7 +35,8 @@ async function entrar(page: Page, correo: string) {
       /* en navegación privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
+  await abrirSinQueSeCaiga(page, APP);
   await page.getByLabel('Tu correo').fill(correo);
   await page.getByLabel('Tu contraseña').fill(CLAVE);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
@@ -353,11 +355,11 @@ test('quien lleva el local ve quién está dentro y las horas; un cocinero no ll
 }) => {
   await entrar(page, ROSA);
 
-  await page.goto(`${APP}#/equipo/hoy`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/equipo/resumen`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('button', { name: /^Fichar la (entrada|salida)$/ })).toBeVisible();
   await expect(page.getByText(/Hoy llevas/)).toBeVisible();
 
-  await page.goto(`${APP}#/equipo/resumen`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/equipo/fichajes`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Horas del equipo' })).toBeVisible();
 
   // Las horas de los demás son de quien lleva a esas personas. Un cocinero ve

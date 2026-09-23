@@ -2147,6 +2147,53 @@ acepta `prueba|sujeto|correo|nombre`.
   `Privacidad.tsx`, el primero pisó al segundo sin avisar. Las entradas de las páginas
   viven en `src/paginas/`.
 
+### Antes de M8 · V, lo que se ve (puntos 1 y 2, sin fusionar)
+
+**En la rama `v-lo-que-se-ve`**, que se fusiona con V entera. El modo cocina (mejora 1)
+y «Cómo va», las cifras con flecha de cada app (mejora 2,
+[0044](decisiones/0044-las-cifras-de-cada-app.md), migración `0040`).
+
+#### Uno · La misma tarjeta, y las mismas cuentas
+
+La tarjeta del Panel pasó a `@estook/ui` y la usan el Panel y las tres apps. Richi
+decidió que las cifras van **en la primera pantalla de cada app**, **fijas por app**, y
+que un retraso es pasar de **cinco minutos que cada local cambia**. Las seis nuevas se
+cuentan **como la pantalla de la que salen**: la cámara, como Inventario · Hoy, con una
+foto de cada día reconstruida del libro (lo que hay no se suma); las horas, el coste y
+los retrasos, como el Resumen de Equipo, que gana su columna de retrasos contada con la
+misma pieza. Cada una tiene su prueba contra la base que compara las dos pantallas.
+
+#### Dos · Medir el modo cocina en las pantallas, y no en las fichas
+
+El punto 1 se había dado por hecho con las pruebas de sus fichas, y su «terminado
+cuando» pedía **recorrer las pantallas midiendo 64 px y 7:1**. La prueba que lo hace
+(`modo-cocina.spec.ts`) se escribió después, y el primer día encontró tres fallos.
+
+#### Lo que se encontró
+
+- **Los ajustes del aparato solo se aplicaban al abrir Ajustes.** La letra grande
+  **desde M3** y el modo cocina desde que existe: al volver a abrir la app se perdían, y
+  la tableta del pase arrancaba cada mañana con los botones pequeños. Se aplican en la
+  raíz, como el tema.
+- **El modo cocina solo subía los grises.** El botón principal quedaba a 6,6:1, uno
+  rojo a 5,3 y la pestaña activa, en el color de su app, a 3,4. Suben los estados, el
+  texto del botón principal y los acentos, calculados; y el color propio de un local se
+  ajusta a 7:1 en cocina. El bloque oscuro se aplicaba a «el del sistema» **con el
+  sistema en claro**: habría puesto texto casi blanco sobre blanco.
+- **Una regla de la capa base pierde contra cualquier clase de utilidad.** La de 64 px
+  no llegaba a las vistas (`min-h-[36px]`); va fuera de la capa.
+- **En un iPhone SE la barra de arriba no cabía** con los botones a 64 px y cortaba
+  el de tu cuenta. En Chrome la prueba no lo veía; en Safari, sí (la integración
+  continua prueba los tres). Con el modo puesto y por debajo de 440 px se recogen
+  Avisos y Chat, que hoy solo dicen lo que serán.
+- **Nada refrescaba las cifras con flecha** al cerrar la caja, apuntar una merma o
+  fichar: la caché las guardaba un minuto.
+- **Una prueba pasaba por el orden**: las cifras de Inventario solo salían si otra
+  prueba había dado de alta un producto antes. Y la prueba del margen de retraso cazó
+  que **cambiar el margen y recargar en el mismo instante lo perdía**, sin que la
+  pantalla dijera nada. Ahora dice «Guardando…» y «Guardado», y el selector no vuelve
+  atrás mientras tanto (lo guardado se escribe en la caché).
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

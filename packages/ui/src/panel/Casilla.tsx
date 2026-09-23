@@ -5,9 +5,14 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from 'react';
-import { IconoAnadir, IconoQuitar } from '@estook/iconos';
+import { IconoAnadir, IconoFlechaAbajo, IconoFlechaArriba, IconoQuitar } from '@estook/iconos';
 import { clases } from '../clases.ts';
 import { AvisoDeVacio } from './vacio.ts';
+import {
+  FILA_DEL_MOSAICO,
+  HUECO_DEL_MOSAICO,
+  usarFilasDelMosaico,
+} from '../ganchos/usarFilasDelMosaico.ts';
 import type { TamanoDeWidget } from './catalogo.ts';
 import { CLASES_DEL_TAMANO, COMO_SE_LLAMA_EL_TAMANO } from './rejilla.ts';
 
@@ -38,6 +43,22 @@ export interface CasillaProps extends HTMLAttributes<HTMLDivElement> {
   readonly avisarDeVacio: (id: string, vacio: boolean) => void;
   readonly alQuitar: () => void;
   readonly alCambiarTamano: (tamano: TamanoDeWidget) => void;
+  /**
+   * Mover con botones en vez de arrastrando · **solo en modo cocina** (entrega V).
+   *
+   * Sin esto se arrastra, que es como lo pidió Richi en M7 y sigue siendo lo
+   * normal ([0039](../../../../docs/decisiones/0039-el-panel-se-monta-como-un-movil.md)).
+   * Pero con un guante mojado, mantener pulsado dispara el arrastre sin querer, y
+   * entonces «mover un widget» se convierte en «mover el widget que no era».
+   *
+   * Cuando llega, salen los dos botones y **no se arrastra**. Es opcional a
+   * propósito: la rejilla quieta no mueve nada, y fuera de modo cocina esto no
+   * existe y no ocupa ni un píxel.
+   */
+  readonly alMover?: (hacia: 'arriba' | 'abajo') => void;
+  /** Si es el primero o el último, para no ofrecer un botón que no hace nada. */
+  readonly esElPrimero?: boolean;
+  readonly esElUltimo?: boolean;
   readonly estilo?: CSSProperties;
   readonly children: ReactNode;
 }
@@ -55,6 +76,9 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
     avisarDeVacio,
     alQuitar,
     alCambiarTamano,
+    alMover,
+    esElPrimero = false,
+    esElUltimo = false,
     estilo,
     children,
     className,
@@ -68,12 +92,14 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
     },
     [avisarDeVacio, id],
   );
+  // Lo que ocupa en alto lo dice lo que hay dentro (el mosaico, 0045).
+  const { medir, estilo: filas } = usarFilasDelMosaico<HTMLDivElement>();
 
   return (
     <div
       ref={ref}
       data-widget={id}
-      style={{ ...estilo, animationDelay: `${Math.min(indice, 12) * 35}ms` }}
+      style={{ ...filas, ...estilo, animationDelay: `${Math.min(indice, 12) * 35}ms` }}
       className={clases(
         CLASES_DEL_TAMANO[tamano],
         'relative min-w-0 anima-entra',
@@ -84,30 +110,40 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
       )}
       {...resto}
     >
-      <div
-        className={clases('h-full', editando && !hueco && 'anima-tiembla', hueco && 'opacity-30')}
-        // Cada uno con su desfase, como en el iPhone: si tiemblan todos a la vez
-        // parece que se mueve la pantalla, no los widgets.
-        style={editando ? { animationDelay: `${(indice % 4) * -70}ms` } : undefined}
-      >
-        <AvisoDeVacio.Provider value={avisar}>{children}</AvisoDeVacio.Provider>
-      </div>
-
       {/*
-        Los controles, **fuera de lo que tiembla**. Tiembla la tarjeta, que es lo
-        que dice «estás editando»; el «quitar» y el tamaño se quedan quietos, que
-        un botón que se mueve es un botón que se falla con el dedo.
+        Lo que se mide es esto, y no la casilla: la casilla se estira hasta sus
+        filas, que son unos píxeles más que la tarjeta. Los controles van aquí
+        dentro para quedarse pegados a la tarjeta y no al hueco de debajo.
       */}
-      {editando && (
-        <ControlesDeEdicion
-          nombre={nombre}
-          tamano={tamano}
-          tamanos={tamanos}
-          vacio={vacio}
-          alQuitar={alQuitar}
-          alCambiarTamano={alCambiarTamano}
-        />
-      )}
+      <div ref={medir} className="relative">
+        <div
+          className={clases(editando && !hueco && 'anima-tiembla', hueco && 'opacity-30')}
+          // Cada uno con su desfase, como en el iPhone: si tiemblan todos a la vez
+          // parece que se mueve la pantalla, no los widgets.
+          style={editando ? { animationDelay: `${(indice % 4) * -70}ms` } : undefined}
+        >
+          <AvisoDeVacio.Provider value={avisar}>{children}</AvisoDeVacio.Provider>
+        </div>
+
+        {/*
+          Los controles, **fuera de lo que tiembla**. Tiembla la tarjeta, que es lo
+          que dice «estás editando»; el «quitar» y el tamaño se quedan quietos, que
+          un botón que se mueve es un botón que se falla con el dedo.
+        */}
+        {editando && (
+          <ControlesDeEdicion
+            nombre={nombre}
+            tamano={tamano}
+            tamanos={tamanos}
+            vacio={vacio}
+            alQuitar={alQuitar}
+            alCambiarTamano={alCambiarTamano}
+            {...(alMover === undefined ? {} : { alMover })}
+            esElPrimero={esElPrimero}
+            esElUltimo={esElUltimo}
+          />
+        )}
+      </div>
     </div>
   );
 });
@@ -128,6 +164,9 @@ function ControlesDeEdicion({
   vacio,
   alQuitar,
   alCambiarTamano,
+  alMover,
+  esElPrimero = false,
+  esElUltimo = false,
 }: {
   readonly nombre: string;
   readonly tamano: TamanoDeWidget;
@@ -135,12 +174,15 @@ function ControlesDeEdicion({
   readonly vacio: boolean;
   readonly alQuitar: () => void;
   readonly alCambiarTamano: (tamano: TamanoDeWidget) => void;
+  readonly alMover?: (hacia: 'arriba' | 'abajo') => void;
+  readonly esElPrimero?: boolean;
+  readonly esElUltimo?: boolean;
 }) {
   return (
     <>
       {/* La capa que impide pulsar dentro del widget mientras se edita. Sin ella,
           arrastrar sobre un botón del widget lo activaría al soltar. */}
-      <div aria-hidden className="absolute inset-0 rounded-grande bg-superficie/30" />
+      <div aria-hidden className="absolute inset-0 rounded-mayor bg-superficie/30" />
 
       <button
         type="button"
@@ -165,6 +207,57 @@ function ControlesDeEdicion({
         </span>
       )}
 
+      {/*
+        Subir y bajar · **solo en modo cocina** (entrega V).
+
+        Richi pidió en M7 que se arrastrara «mejor que las flechas», y así es
+        fuera de aquí. Pero con guante mojado el arrastre se dispara solo, así que
+        en modo cocina vuelven las flechas **y se quita el arrastre**: un gesto y
+        su alternativa a la vez serían dos formas de mover la misma cosa, y con
+        guantes ganaría siempre la que no se quería.
+
+        Van arriba a la derecha, lejos del «−» de quitar: dos botones de 44 px
+        pegados a uno que borra es como se quita un widget sin querer.
+      */}
+      {alMover !== undefined && (
+        <div className="absolute -top-[6px] right-[6px] inline-flex overflow-hidden rounded-redondo border border-borde-fuerte bg-superficie shadow-s2">
+          <button
+            type="button"
+            aria-label={`Subir ${nombre}`}
+            disabled={esElPrimero}
+            onPointerDown={(evento) => {
+              evento.stopPropagation();
+            }}
+            onClick={() => {
+              alMover('arriba');
+            }}
+            className={clases(
+              'grid min-h-toque min-w-toque place-items-center',
+              esElPrimero ? 'cursor-not-allowed text-texto-tenue' : 'text-texto hover:bg-fondo',
+            )}
+          >
+            <IconoFlechaArriba size={20} />
+          </button>
+          <button
+            type="button"
+            aria-label={`Bajar ${nombre}`}
+            disabled={esElUltimo}
+            onPointerDown={(evento) => {
+              evento.stopPropagation();
+            }}
+            onClick={() => {
+              alMover('abajo');
+            }}
+            className={clases(
+              'grid min-h-toque min-w-toque place-items-center border-l border-borde',
+              esElUltimo ? 'cursor-not-allowed text-texto-tenue' : 'text-texto hover:bg-fondo',
+            )}
+          >
+            <IconoFlechaAbajo size={20} />
+          </button>
+        </div>
+      )}
+
       {/* El tamaño, si admite más de uno. Con uno solo no se ofrece: un control
           de una opción es un control que no hace nada. */}
       {tamanos.length > 1 && (
@@ -183,9 +276,7 @@ function ControlesDeEdicion({
                 }}
                 className={clases(
                   'min-h-[30px] px-e2 text-etiqueta font-semibold',
-                  cual === tamano
-                    ? 'bg-charcoal text-superficie'
-                    : 'text-texto-suave hover:bg-fondo',
+                  cual === tamano ? 'bg-texto text-superficie' : 'text-texto-suave hover:bg-fondo',
                 )}
               >
                 {COMO_SE_LLAMA_EL_TAMANO[cual]}
@@ -200,18 +291,26 @@ function ControlesDeEdicion({
 
 /** El hueco de añadir, dentro de la rejilla y no en un menú escondido. */
 export function HuecoDeAnadir({ alAnadir }: { readonly alAnadir: () => void }) {
+  // No tiene contenido que medir: mide lo que medía una casilla pequeña antes del
+  // mosaico, 152 px, más su hueco.
+  const filas = Math.ceil((ALTO_DEL_HUECO + HUECO_DEL_MOSAICO) / FILA_DEL_MOSAICO);
   return (
-    <button
-      type="button"
-      onClick={alAnadir}
-      className={clases(
-        'col-span-1 row-span-1 flex flex-col items-center justify-center gap-e1',
-        'rounded-grande border-2 border-dashed border-borde-fuerte text-texto-suave',
-        'hover:border-naranja hover:text-texto',
-      )}
-    >
-      <IconoAnadir size={24} />
-      <span className="text-secundario font-medium">Añadir</span>
-    </button>
+    <div className="col-span-1" style={{ gridRowEnd: `span ${filas}` }}>
+      <button
+        type="button"
+        onClick={alAnadir}
+        style={{ height: ALTO_DEL_HUECO }}
+        className={clases(
+          'flex w-full flex-col items-center justify-center gap-e1',
+          'rounded-mayor border-2 border-dashed border-borde-fuerte text-texto-suave',
+          'hover:border-naranja hover:text-texto',
+        )}
+      >
+        <IconoAnadir size={24} />
+        <span className="text-secundario font-medium">Añadir</span>
+      </button>
+    </div>
   );
 }
+
+const ALTO_DEL_HUECO = 152;

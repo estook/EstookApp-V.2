@@ -118,7 +118,7 @@ describe('los radios', () => {
 describe('los espacios', () => {
   const ESPACIOS = fichasDe('spacing');
 
-  it('estan los ocho de la escala de 4, mas los dos toques', () => {
+  it('estan los ocho de la escala de 4, los dos toques y lo que los separa', () => {
     expect(ESPACIOS.sort()).toEqual([
       'e1',
       'e2',
@@ -128,6 +128,7 @@ describe('los espacios', () => {
       'e6',
       'e7',
       'e8',
+      'entre-toques',
       'toque',
       'toque-cocina',
     ]);
@@ -164,6 +165,14 @@ describe('los espacios', () => {
     // teorico: se usa con prisa y con las manos mojadas.
     expect(/--spacing-toque:\s*44px/.test(FICHAS)).toBe(true);
     expect(/--spacing-toque-cocina:\s*52px/.test(FICHAS)).toBe(true);
+  });
+
+  it('los botones no se separan, salvo en modo cocina', () => {
+    // La ficha existe siempre para que la regla de `cocina.css` tenga algo que
+    // redefinir, y **en normal vale cero**: asi no mueve ni un pixel de lo que ya
+    // hay. Una ficha nueva que corriera la aplicacion entera seria un rediseno
+    // colado por la puerta de atras.
+    expect(/--spacing-entre-toques:\s*0px/.test(FICHAS)).toBe(true);
   });
 });
 

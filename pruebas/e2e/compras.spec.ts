@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M7 · proveedores y compras, de punta a punta.
@@ -30,7 +31,7 @@ const MARCOS = 'marcos@ejemplo.estook.com';
 const UNA_VEZ = 'Habla con la API a pelo: basta con correrla en un proyecto.';
 
 async function entrar(page: Page, correo: string) {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, APP);
   await page.evaluate(() => {
     try {
       window.localStorage.clear();
@@ -38,7 +39,8 @@ async function entrar(page: Page, correo: string) {
       /* en navegación privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
+  await abrirSinQueSeCaiga(page, APP);
   await page.getByLabel('Tu correo').fill(correo);
   await page.getByLabel('Tu contraseña').fill(CLAVE);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
@@ -490,7 +492,7 @@ test('desde la pantalla: se manda, sale en Hoy, y se recibe entero en dos toques
   await expect(ficha.getByRole('button', { name: 'Recibir lo que ha llegado' })).toBeVisible();
 
   // ── Y sale en «Hoy», con su botón de recibir ──────────────────────────────
-  await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { level: 2, name: 'Compras de hoy' })).toBeVisible();
   await expect(page.getByText(nombre).first()).toBeVisible();
 

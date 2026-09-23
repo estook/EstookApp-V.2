@@ -333,3 +333,52 @@ export const ponerDondeEstaElLocal = comando<
     };
   },
 });
+
+// ── Cuándo es llegar tarde ───────────────────────────────────────────────────
+
+export const entradaGuardarMargenDeRetraso = z
+  .object({
+    // Lo que acepta la base (0040). La pantalla ofrece 0, 5, 10 y 15.
+    minutos: z.number().int().min(0).max(60),
+  })
+  .strict();
+
+export type EntradaGuardarMargenDeRetraso = z.infer<typeof entradaGuardarMargenDeRetraso>;
+
+/**
+ * Cuántos minutos después de su hora de entrada cuenta como retraso (0040).
+ *
+ * «Cinco minutos de fábrica, y cada local lo cambia»: lo decidió Richi el 23 de
+ * septiembre de 2026. Es un ajuste del local, como el radio del fichaje, y lo
+ * cambia quien toca la ficha del local: `app.ajustes`, que la política
+ * `local_edicion` vuelve a comprobar (regla 26, dos capas).
+ *
+ * Cambiarlo **cambia los retrasos de antes también**: no se guarda cuál era el
+ * margen de cada día, porque un retraso no se apunta, se cuenta al mirar. Es lo
+ * que se espera: quien sube el margen a diez está diciendo que siete minutos no
+ * es llegar tarde en su local, tampoco el mes pasado.
+ */
+export const guardarMargenDeRetraso = comando<EntradaGuardarMargenDeRetraso, { minutos: number }>({
+  nombre: 'guardar_margen_de_retraso',
+  entrada: entradaGuardarMargenDeRetraso,
+  exige: 'app.ajustes',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeLaSesion(contexto);
+    const filas = await contexto.sql<{ minutos: number }[]>`
+      update estook.local set margen_de_retraso_minutos = ${entrada.minutos}
+       where id = ${localId}
+      returning margen_de_retraso_minutos as minutos
+    `;
+    const fila = filas[0];
+    if (!fila) throw new FalloDeAplicacion('sin_permiso');
+
+    await contexto.sql`
+      select estook.anotar(
+        ${laOrganizacionDeLaSesion(contexto)}::uuid, 'cambiar', 'local', ${localId}, ${localId}::uuid,
+        null, ${JSON.stringify({ margen_de_retraso_minutos: fila.minutos })}::text::jsonb, null
+      )
+    `;
+    return { minutos: fila.minutos };
+  },
+});

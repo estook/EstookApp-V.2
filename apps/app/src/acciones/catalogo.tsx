@@ -104,7 +104,7 @@ export const ACCIONES: readonly Accion[] = [
     queHace: 'Lo que se acaba, lo que caduca y lo que no tiene precio, con su botón',
     icono: IconoAtencion,
     permiso: { cual: 'app.inventario', como: 'ver' },
-    ir: '/inventario/hoy',
+    ir: '/inventario/resumen',
   },
   {
     id: 'bajo-minimo',
@@ -226,7 +226,7 @@ export const ACCIONES: readonly Accion[] = [
     queHace: 'Quién ha fichado, desde cuándo y quién no',
     icono: IconoEquipo,
     permiso: { cual: 'app.equipo', como: 'ver' },
-    ir: '/equipo/hoy',
+    ir: '/equipo/resumen',
   },
   {
     id: 'horas',
@@ -235,7 +235,7 @@ export const ACCIONES: readonly Accion[] = [
     queHace: 'Las horas de cada uno frente a su contrato, y lo que cuestan',
     icono: IconoReloj,
     permiso: { cual: 'app.equipo', como: 'ver' },
-    ir: '/equipo/resumen',
+    ir: '/equipo/fichajes',
   },
   {
     id: 'cerrar-caja',
@@ -262,7 +262,7 @@ export const ACCIONES: readonly Accion[] = [
     queHace: 'Tu contraseña, tu PIN, el doble factor y tus aparatos',
     icono: IconoReloj,
     permiso: null,
-    ir: '/ajustes#mi-acceso',
+    ir: '/ajustes/cuenta#mi-acceso',
   },
   {
     id: 'buscar',

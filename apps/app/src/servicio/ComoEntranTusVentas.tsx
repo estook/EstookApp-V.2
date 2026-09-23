@@ -151,7 +151,7 @@ export function ComoEntranTusVentas({ modo }: { readonly modo: 'tarjeta' | 'ajus
       >
         <h2
           id="como-entran-tus-ventas"
-          className="mb-e3 text-etiqueta uppercase tracking-wide text-texto-suave"
+          className="mb-e3 text-secundario font-medium text-texto-suave"
         >
           ¿Cómo entran tus ventas?
         </h2>

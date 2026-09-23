@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 22 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #61. El correo de crear cuenta sigue sin salir, y el motivo está escrito en el registro del servidor, esperando a que Richi lo mire. La entrega V está empezada en su rama: el modo cocina, hecho; quedan sus otros cuatro puntos**
+Última actualización: 23 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #63. V se fusiona en dos partes: la primera —modo cocina, «Cómo va», el Resumen, el mosaico, Ajustes por secciones, el aspecto nuevo y el arreglo de entrar— tiene su pull request abierto y esperando a Richi. Quedan los puntos 4 y 5**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -18,19 +18,19 @@
 
 ## 1 · Dónde estamos
 
-_Comprobado contra producción el 22 de septiembre de 2026._
+_Producción comprobada el 23 de septiembre de 2026 con `bd:comprobar` y `bd:comprobar-api`._
 
-|                |                                                                                                                                                            |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56) |
-| **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** empezada. **E2 · Stripe** va en paralelo y está bloqueada por lo que falta de Richi                   |
-| **Pruebas**    | **1.068** unitarias y de base de datos, en verde · las de pantalla, en verde en la #61 · catálogo **121 de 127** (95 %), con sus seis deudas apuntadas     |
-| **Rama**       | `main`, con todo fusionado hasta la **#61**. Y `v-lo-que-se-ve`, **subida y sin pull request todavía**: se abre cuando V esté entera                       |
-| **Base**       | En Supabase, **39 de 39** ✓, igual que en el código. 54 tablas, todas con seguridad por filas                                                              |
-| **API**        | **Desplegada el 21-sep a las 16:39, con el arreglo del correo dentro** ✓. La #60 y la #61 son solo documentos y no la tocan                                |
-| **Sitio**      | `estook.com`, `/app/` y `/admin/` responden 200. Se publica solo al fusionar                                                                               |
-| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas reales de abajo. Admin: **`estookapp@gmail.com` y Santi**, los dos con segundo factor                                 |
-| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                     |
+|                |                                                                                                                                                                |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56)     |
+| **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** a medias: puntos 1, 2 y 3 y la mejora 7, hechos. **E2 · Stripe** espera a la cuenta de Stripe de Richi    |
+| **Pruebas**    | En la rama de V, el 23-sep: **1.147** unitarias y de base, **420** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
+| **Rama**       | `main`, con todo fusionado hasta la **#63**. Y `v-lo-que-se-ve`, con `main` dentro: **su primera parte, con el pull request abierto** y esperando a Richi      |
+| **Base**       | En Supabase, **39 de 39** ✓, igual que `main`. 58 tablas (55 en `estook` y 3 en `plataforma`), todas con seguridad por filas. **La `0040` va con V**           |
+| **API**        | **Desplegada el 22-sep a las 17:55, con la #63 dentro** ✓: conoce las 44 consultas y los 83 comandos de `main`                                                 |
+| **Sitio**      | `estook.com`, `/app/` y `/admin/` responden 200. Se publica solo al fusionar                                                                                   |
+| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas reales de abajo. Admin: **`estookapp@gmail.com` y Santi**, los dos con segundo factor                                     |
+| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                         |
 
 > **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
 > 100 %.** Lo decidió Richi el 16 de septiembre. Los planes:
@@ -39,21 +39,21 @@ _Comprobado contra producción el 22 de septiembre de 2026._
 
 ### El orden, y dónde estamos en él
 
-| #   | Entrega                          | Cómo está                                             |
-| --- | -------------------------------- | ----------------------------------------------------- |
-| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                            |
-| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                 |
-| 1   | **V · Lo que se ve**             | **Empezada.** Punto 1 de 5 hecho, en `v-lo-que-se-ve` |
-| 2   | **E2 · El pago con Stripe**      | **Bloqueada por Richi** (abajo). Va en paralelo a V   |
-| 3   | **O · Lo que se ordena**         | Falta                                                 |
-| 4   | **A2 · Clientes**                | Falta                                                 |
-| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7               |
-| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7               |
-| 7   | **I · La app instalable**        | Falta                                                 |
-| 8   | **L · El lector**                | Falta                                                 |
-| 9   | **A3 · Vendedores y códigos**    | Falta                                                 |
-| 10  | **A4 · Ventas**                  | Falta                                                 |
-| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                           |
+| #   | Entrega                          | Cómo está                                                             |
+| --- | -------------------------------- | --------------------------------------------------------------------- |
+| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                                            |
+| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                 |
+| 1   | **V · Lo que se ve**             | **A medias.** Puntos 1, 2 y 3 de 5 y la mejora 7, en `v-lo-que-se-ve` |
+| 2   | **E2 · El pago con Stripe**      | **Espera a Richi** (abajo). Va en paralelo a V                        |
+| 3   | **O · Lo que se ordena**         | Falta                                                                 |
+| 4   | **A2 · Clientes**                | Falta                                                                 |
+| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7                               |
+| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                               |
+| 7   | **I · La app instalable**        | Falta                                                                 |
+| 8   | **L · El lector**                | Falta                                                                 |
+| 9   | **A3 · Vendedores y códigos**    | Falta                                                                 |
+| 10  | **A4 · Ventas**                  | Falta                                                                 |
+| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                           |
 
 ### La entrega V, punto por punto
 
@@ -63,19 +63,95 @@ apartado «V · Lo que se ve». **Rama `v-lo-que-se-ve`, sin pull request todav�
 | Punto | Qué                                                            | Cómo está               |
 | ----- | -------------------------------------------------------------- | ----------------------- |
 | **1** | **Modo cocina**: 64 px, AAA, y ni un gesto que no sea un toque | **Hecho**, sin fusionar |
-| **2** | Todas las apps con las flechas y las gráficas del Panel        | La siguiente            |
-| **3** | Cada app abre con su resumen                                   | Falta                   |
-| **4** | Estados vacíos que invitan a empezar                           | Falta                   |
+| **2** | **«Cómo va»**: las cifras con flecha en todas las apps         | **Hecho**, sin fusionar |
+| **3** | **Cada app abre con su Resumen**, y el mosaico y el aspecto    | **Hecho**, sin fusionar |
+| **7** | **Ajustes en secciones, con buscador** (era de la entrega O)   | **Hecho**, sin fusionar |
+| **4** | Estados vacíos que invitan a empezar                           | **La siguiente**        |
 | **5** | Tema oscuro repasado, y fotos de producto                      | Falta                   |
 
 **Lo que el punto 1 dejó hecho, y no hay que volver a tocar:** `cocina.css` con las
 fichas del modo, `usarModoCocina` como ajuste del aparato —igual que el tema y la
 letra—, el interruptor en Ajustes, y los botones de subir y bajar del Panel, que
-vuelven **solo con guantes** porque ahí el arrastre se dispara solo. 15 pruebas.
+vuelven **solo con guantes** porque ahí el arrastre se dispara solo.
+
+**Y lo que le faltaba, completado el 23 de septiembre.** Su «terminado cuando» pedía
+**una prueba que recorriera las pantallas con el modo puesto midiendo 64 px y 7:1**, y
+no existía: se había dado por hecho con las pruebas de las fichas. Ahora existe
+(`modo-cocina.spec.ts`: ocho pantallas del cocinero y la hoja de merma, en escritorio
+y móvil), y **encontró tres fallos de verdad**:
+
+1. **El modo cocina no se aplicaba al abrir la app**, solo al pasar por Ajustes: la
+   tableta del pase arrancaba cada mañana con los botones pequeños. **La letra grande
+   tenía el mismo fallo desde M3.** Los dos se aplican ahora en la raíz, como el tema.
+2. **Solo subían los grises.** El botón principal quedaba a 6,6:1, un botón rojo a 5,3
+   y la pestaña activa, en el color de su app, a 3,4. Ahora suben también los cuatro
+   estados, el texto del botón principal y el acento de cada app, calculados; y el
+   color propio de un local se ajusta a 7:1 en cocina. De paso: el bloque oscuro del
+   modo se aplicaba a «el del sistema» **aunque el sistema estuviera en claro**.
+3. **Muchos botones no llegaban a 64 px**: los de «ha llegado / ha salido» de cada
+   producto (40), las vistas (36), las migas (20). Ahora lo dice una sola regla de
+   `cocina.css`, fuera de la capa base para que ninguna clase la pise. Y con todo más
+   grande, **en un iPhone SE la barra de arriba no cabía** y cortaba el botón de tu
+   cuenta: lo vio la integración continua, que prueba también Safari. Con el modo
+   puesto y por debajo de 440 px, Avisos y Chat —que hoy solo dicen lo que serán— se
+   recogen; cuando los avisos existan (entrega I), hay que volver a mirarlo.
+
+**Lo que el punto 2 dejó hecho** ([0044](docs/decisiones/0044-las-cifras-de-cada-app.md)):
+**«Cómo va»** en la primera pantalla de Inventario, Servicio y Equipo, debajo de lo
+urgente, con «7 días · 30 días» y cada tarjeta llevando a su detalle. La tarjeta del
+Panel pasa a `@estook/ui` y la usan todos. **Seis cifras nuevas** —valor de la cámara,
+bajo mínimo, cajas cerradas, horas del equipo, coste de personal y retrasos—, contadas
+**como las pantallas de las que salen**, con su prueba contra la base que lo compara.
+Y **Ajustes → «Cuándo es llegar tarde»**: cinco minutos que cada local cambia
+(migración `0040`), con su columna de retrasos en Equipo · Fichajes (que entonces se llamaba «Resumen»).
+
+**Lo que el punto 3 dejó hecho** ([0045](docs/decisiones/0045-el-aspecto-y-el-orden.md)),
+con lo que Richi pidió el 23 de septiembre mirando la app en su TPV:
+
+- **«Hoy» se llama «Resumen»** en Inventario, Escandallos y Equipo, y en Equipo el
+  «Resumen» de las horas pasa a **«Fichajes»**. B5 del Plan, cambiada.
+- **Las tarjetas van en mosaico** (`Mosaico`, y la misma medida en la casilla del
+  Panel): cada una mide lo que lleva y las demás encajan debajo. Se acabaron las
+  tarjetas estiradas con un hueco vacío dentro.
+- **Menos texto**: cada aviso en tres líneas con el porqué plegado en «¿Por qué?», los
+  cuatro primeros a la vista, el menú lateral solo con el nombre y cada enlace de
+  tarjeta en «Ver ›». Fuera la tarjeta «Y lo que falta por venir» y los cuatro botones
+  apagados «Con una foto · M22».
+- **Ajustes por secciones** —Este aparato, Mi cuenta, Tu local, Conexiones y
+  Organización—, cada una con su dirección y un buscador que sale también en el
+  buscador universal (`lasSeccionesDeAjustes.ts`).
+- **El aspecto nuevo**: tarjeta de 24 px con sombra en dos capas, el icono de la app en
+  su pastilla en vez de la línea de color, sin mayúsculas grises, el velo del color del
+  local en el Panel, y el oscuro un punto más hondo. La tarjeta se adapta a su propio
+  ancho.
+- **Dos fallos de antes, con su prueba:** lo elegido («7 días», «Listo») no se leía en
+  oscuro —1,4:1—, y «el del sistema» en claro no era el tema claro. Con esto, lo que el
+  punto 5 tenía apuntado del tema del sistema queda hecho.
+
+**Y el arreglo de entrar** (23-sep, lo trajo Richi). Entrando en la **app** con
+`estookapp@gmail.com` —la cuenta que solo es del admin, sin ningún negocio— la app pedía
+el código del segundo factor y después decía «no está asociada a ningún negocio».
+Parecía que las cuentas se mezclaban. **No se mezclaba nada**, comprobado en la base: el
+segundo factor es de la persona, y solo lo tienen `estookapp@gmail.com` y Santi, que
+son los del admin; `belicar1905@gmail.com` no lo tiene, y ninguna cuenta ve nada de otro
+negocio. Lo que estaba mal era el orden. Ahora **una cuenta sin negocio se para antes
+del código**, sin abrir sesión, con el error `sin_negocio` que manda al admin; y la
+pantalla del código **dice de qué cuenta es**, porque la sesión a medias se quedaba en
+el navegador y volvía sola días después. Con su prueba contra la base y de pantalla.
+
+**Y la red de debajo de cada pantalla** (23-sep, la destapó Safari en la #64). La app se
+descarga a trozos —Movimientos, Compras, la ficha, el alta, las gráficas— y **si un trozo
+no llegaba, el fallo no lo recogía nadie**: la pantalla podía quedarse en blanco. Pasa si
+se va la conexión y, sobre todo, **al publicar una versión nueva con la app abierta**, que
+es justo lo que va a pasar al fusionar V. Ahora `SiAlgoFalla` (en `@estook/ui`) está en
+la raíz de la app y del admin y debajo de cada pantalla: un trozo que no llega **recarga
+sola una vez** para traer la versión nueva; si vuelve a fallar, lo dice con su botón y
+las barras siguen. Cada fallo recogido se manda a Sentry (`avisarDelFallo`). Con su prueba
+de pantalla, que corta la descarga de Movimientos a propósito y se vio fallar sin la red.
 
 ### Lo que hay de verdad en producción
 
-Cuatro organizaciones reales, además de las tres de ejemplo:
+_Leído de la base el 22 de septiembre de 2026._ Cuatro organizaciones reales, además de las tres de ejemplo:
 
 | Organización  | Nacida    | Suscripción                       | Alta del local            |
 | ------------- | --------- | --------------------------------- | ------------------------- |
@@ -93,13 +169,10 @@ y 2 proveedores.
    porque E1 solo elige pantalla. **El día que E2 lo cumpla en el servidor, Richi se
    queda fuera de su propio local.** E2 tiene que pasarlas a `activa` **en la misma
    entrega**, y se comprueba antes de fusionar.
-2. **Crear cuenta con correo: encontrado, y es de un minuto.** El registro del
-   servidor lo decía con todas las letras: Resend contesta **403, «The gmail.com
-   domain is not verified»**. No era `estook.com` —que lleva verificado desde el 17—
-   sino que **`CORREO_REMITENTE` estaba puesto a un correo de Gmail**, y desde Gmail no
-   se puede enviar. **Se arregla cambiando ese secreto** a `Estook <hola@estook.com>`.
-   Mientras tanto Google sigue funcionando, y las cuatro cuentas que existen entraron
-   por ahí.
+2. **Crear cuenta con correo: funcionando** desde el 23 de septiembre. Resend contestaba
+   **403, «The gmail.com domain is not verified»** porque `CORREO_REMITENTE` estaba
+   puesto a un Gmail. La #63 hace que el servidor se dé cuenta, y Richi cambió el
+   secreto a `Estook <hola@estook.com>` y comprobó que los códigos llegan.
 3. **`prueba1` se quedó en el paso 0 del alta.** Una cuenta real que entró y no pasó
    de la primera pantalla. Es lo que viene a arreglar la entrega **V**.
 
@@ -173,7 +246,7 @@ escrita: un maestro no frena el producto.
 - **Las versiones anteriores**, en
   [`docs/antiguos/maestros/`](docs/antiguos/maestros/), con sus PDF. **No se
   borran:** son la referencia de qué decía el proyecto antes del cambio de rumbo.
-- **Todo lo demás sigue donde estaba**: las 42 decisiones en
+- **Todo lo demás sigue donde estaba**: las decisiones en
   [`docs/decisiones/`](docs/decisiones/), la
   [historia de los módulos](docs/historia-de-los-modulos.md), las auditorías de
   módulo, los pasos y los planes.
@@ -336,54 +409,28 @@ entonces se hace la exportación y no se inventa ningún protocolo.**
 
 ### Ahora mismo · es de Richi
 
-**Lo primero, y es lo único que bloquea algo:**
+**Ya hecho por Richi, y comprobado en la base el 23 de septiembre** —no se vuelve a
+pedir—: **Resend** (el dominio `estook.com` y el remitente `hola@estook.com`, los
+códigos llegan), **entrar y crear cuenta con Google** (los dos secretos puestos, cuatro
+cuentas creadas con Google) y **Places** (IKATZ enlazado con Google desde el 16-sep).
 
-1. **Leer el registro del servidor y decir qué contesta Resend.** El arreglo de la #59
-   ya está desplegado (21-sep, 16:39) y **está funcionando**: crear cuenta con correo ya
-   no dice «se nos ha roto algo», dice «el correo todavía no sale de aquí». Eso
-   significa que **Resend devuelve un 4xx: es configuración, no una caída**. El motivo
-   exacto está escrito en el registro:
+**Lo único que falta de Richi, y es lo que desbloquea E2:**
 
-   > Supabase → **Edge Functions** → `api` → **Logs**, y buscar
-   > `el correo del código de registro no ha salido`.
-
-   La línea trae el código y la frase literal de Resend. **Con eso se arregla en un
-   minuto**; sin eso, se adivina.
-
-2. **Y lo que casi seguro dirá: verificar `estook.com` en Resend.** Resend → Domains →
-   meter en Hostinger los registros que dé (SPF, DKIM y el MX de rebotes) y darle a
-   verificar. **Tener la clave puesta no es tener el dominio verificado**; hasta el
-   21-sep se había dado por bueno lo uno por lo otro, y era el error.
-
-3. **Probar crear cuenta con correo** después, con un correo que no tenga cuenta.
-
-**Y lo que desbloquea E2:**
-
-4. **Activar la cuenta de Stripe** —datos fiscales y cuenta bancaria— y dejarla en
+1. **Activar la cuenta de Stripe** —datos fiscales y cuenta bancaria— y dejarla en
    modo prueba. **No crear productos ni precios a mano**: los crea el código con los
    planes del Manifiesto, para que el precio viva en un solo sitio.
-5. **El alta de autónomo en Hacienda** (modelo 036/037), si no está hecha. No es del
-   código ni de Stripe, pero es lo que de verdad bloquea cobrarle al primer cliente.
-   **Es del asesor, no mío.**
+2. **El alta de autónomo en Hacienda** (modelo 036/037), si no está hecha. Es del
+   asesor, no del código, pero es lo que de verdad bloquea cobrarle al primer cliente.
 
-> **Los datos del titular ya están puestos** (#59). Y hay que saberlo: mientras no
-> haya sociedad, en `estook.com/privacidad/` y `/condiciones/` sale el **domicilio
-> particular** de Ricardo. Es lo normal en un autónomo y lo exige el artículo 10 de
-> la LSSI-CE; se cambia en un solo sitio el día que se constituya la sociedad.
+> **Los datos del titular ya están puestos** (#59). Mientras no haya sociedad, en
+> `estook.com/privacidad/` y `/condiciones/` sale el **domicilio particular** de
+> Ricardo: es lo normal en un autónomo y lo exige el artículo 10 de la LSSI-CE. Se
+> cambia en un solo sitio el día que se constituya la sociedad.
 
-**Lo demás, sin prisa:**
-
-6. **«Sign in with Google» de Supabase, apagado** (Authentication → Providers), si no
-   lo está: el nuestro es propio y no pasa por ahí.
-7. **Places**: comprobar en Ajustes → «Tu local en Google» que la clave responde.
-8. **Business Profile**: mandar el formulario de acceso si no está mandado, y avisar
-   cuando Google lo apruebe. Hasta entonces la cuota es 0 y no hay nada que conectar.
-9. **Mirar en el móvil**: el admin (cabecera en dos líneas, secciones deslizables) y
-   el Panel vivo, si no lo has hecho.
-10. **Repasar las zonas de tu género** y **quitarles el IVA a tus precios, una vez**
-    (Inventario → Productos → «De dónde»; Ajustes → «Tus precios de compra»).
-11. **La IA, todavía nada**: ninguna parte de Estook la usa hoy. Está decidido Gemini
-    Flash con tope de 1.800 al mes por local; la clave se saca en M22.
+**Cuando quieras, y no bloquea nada:** Business Profile (las reseñas) espera a que
+Google apruebe el acceso; repasar las zonas de tu género y, una vez, quitar el IVA a
+tus precios de antes (Inventario → Productos → «De dónde»; Ajustes → Tu local → «Tus
+precios de compra»). La IA no se usa todavía: su clave se saca en M22.
 
 **Las claves de Verifacti · no hacen falta todavía, y así se sacan cuando toquen.** El
 trabajo de M20B se hace **primero contra un adaptador simulado**, con toda la lógica,
@@ -407,11 +454,11 @@ me dices solo que están puestas y con qué nombre. **Y una que no hay que tocar
 el endpoint de borrado permanente de un NIF en Verifacti elimina sus registros sin
 vuelta atrás. Dar de baja a un cliente es **desactivar**.
 
-**Ya hecho, y comprobado contra producción el 22 de septiembre:** las fusiones #51 a
-#61 · las migraciones **hasta la `0039`** aplicadas · la API desplegada el 17-sep a las
-00:13, **con E1 dentro** · el cliente de Google respondiendo · el remitente de correo
-configurado · **`estookapp@gmail.com` y Santi, los dos dentro del admin con su segundo
-factor** · y **cuatro cuentas creadas de verdad con Google**.
+**Ya hecho, y comprobado contra producción el 23 de septiembre:** crear cuenta con correo, funcionando · las fusiones #51 a
+#63 · las migraciones **hasta la `0039`** aplicadas · la API desplegada el 22-sep a las
+17:55, **con la #63 dentro** · el cliente de Google respondiendo ·
+**`estookapp@gmail.com` y Santi, los dos dentro del admin con su segundo factor** · y
+**cuatro cuentas creadas de verdad con Google**.
 
 ### Lo que Richi confirmó el 11 de septiembre
 
@@ -449,8 +496,8 @@ se pidió, cómo se hace mejor, qué hay ya y qué necesita de fuera— en dos d
 | Orden | Entrega                       | Qué lleva                                                     | Cómo está                        |
 | ----- | ----------------------------- | ------------------------------------------------------------- | -------------------------------- |
 | 1     | **A1 · La puerta del admin**  | Entrar con segundo factor, la primera cuenta, más admins      | **En producción**, con su repaso |
-| 2     | **V · Lo que se ve**          | Modo cocina, flechas en todas las apps, Inicio, vacíos, fotos | La siguiente                     |
-| 3     | **O · Lo que se ordena**      | Botón de acciones, Ajustes, «Hoy», paneles por rol, semáforo  | Falta                            |
+| 2     | **V · Lo que se ve**          | Modo cocina, flechas, Resumen, Ajustes, vacíos, fotos         | **A medias**, en su rama         |
+| 3     | **O · Lo que se ordena**      | Botón de acciones, «Hoy» del Panel, paneles por rol, semáforo | Falta                            |
 | 4     | **A2 · Clientes**             | Lista, ficha, contrato y actividad, editar con auditoría      | Falta                            |
 | 5     | **R · El reloj y los avisos** | El reloj, la entrega 2, pedido sugerido, precios, informe     | Falta                            |
 | 6     | **H · Horarios**              | La entrega 3, con el coste en vivo y las horas extra          | Falta                            |
@@ -483,8 +530,11 @@ la contraseña por correo** (hoy la da quien lleva el local, o la consola).
 
 Para que nadie dé por hecho lo que solo está escrito:
 
-- **De las veinte mejoras, ninguna.** Todas tienen su plan y su entrega; la tabla con
-  cada una está en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
+- **De las veinte mejoras, ninguna en producción.** La 1 (modo cocina), la 2 (las
+  cifras de cada app), la 3 (el Resumen) y la 7 (Ajustes en secciones) están hechas en
+  la rama de V, sin fusionar. Todas tienen su plan
+  y su entrega; la tabla con cada una está en
+  [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
 - **Del admin, solo la puerta** (A1). **No hay clientes** —lista, ficha tipo CRM,
   contrato y actividad, notas, editar, exportar—, **ni vendedores y códigos** (`?ref=`,
   asignaciones, comisiones), **ni ventas** (tablero y gráficas). Los niveles
@@ -592,35 +642,36 @@ A a GitHub Pages y `www` por CNAME. La dirección vieja redirige sola
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan
 gratuito, por el agrupador de sesión (la conexión directa de los proyectos nuevos
 solo va por IPv6). Todas las tablas con seguridad por filas; la única vista es
-`estook.existencias`. **37 migraciones, 52 tablas en `estook` y 2 en `plataforma`,
-aplicadas** (comprobado el 16 de septiembre). La `0036` trae la ficha de Google del
-local y su contador; la `0037`, el esquema `plataforma` —quién administra Estook y su
-auditoría— y la marca de la sesión del admin. Se
-comprueba con `.\estook.cmd bd:comprobar`, que lo lee de la base y no de aquí.
+`estook.existencias`. **39 migraciones, 55 tablas en `estook` y 3 en `plataforma`,
+aplicadas** (comprobado el 23 de septiembre). La `0038` y la `0039` son las de E1
+—crear cuenta, Google, la oferta y los intentos que se cuentan—; la `0040`, el margen
+de retraso de cada local, **va con V** y se aplica al fusionarla. Se comprueba con `.\estook.cmd bd:comprobar`, que lo lee de la base y no de aquí.
 
 **Organizaciones:** `bar-centro`, `casa-lola` y `grupo-costa` son semillas de
 ejemplo, **con las cuentas cerradas desde el 3 de septiembre** —tenían una
 contraseña publicada en este repositorio—. **`ikatz` es el negocio de verdad**, y
 `bd:comprobar` enseña además **`burger-king`** (dos locales y una persona con
-dirección), que **es de prueba: la creó Richi** (16 de septiembre).
+dirección), que **es de prueba: la creó Richi** (16 de septiembre). Y `prueba1` y
+`prueba1-1`, las dos cuentas creadas con Google el 17.
 
 **Errores:** `estook-app` en Sentry, solo «Error monitoring», con el repositorio
 enlazado. **Variables** del repositorio: `VITE_SUPABASE_URL`,
 `VITE_SUPABASE_ANON_KEY`, `VITE_APP_URL`, `VITE_SENTRY_DSN` y `VITE_API_URL`; en
 Secrets, `TOKEN_DE_SUPABASE` y `PROYECTO_DE_SUPABASE`. **`GOOGLE_MAPS_KEY`, puesta** en los
-secretos de Supabase según Richi (16-sep; sin comprobar en Ajustes). **Faltan** los de E1:
-`RESEND_API_KEY`, `CORREO_REMITENTE`, `GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET`. Todo en
+secretos de Supabase según Richi (16-sep; sin comprobar en Ajustes). **Los de E1, puestos**:
+`GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET` (se entra con Google) y
+`RESEND_API_KEY` (Resend contesta); y `CORREO_REMITENTE`, a `Estook <hola@estook.com>` desde el 23-sep. Todo en
 [`config/claves.md`](config/claves.md).
 
-**El peso**, medido con `pnpm tamano` el 16 de septiembre:
+**El peso**, medido con `pnpm tamano` el 23 de septiembre **en la rama de V**:
 
-| Aplicación      | Peso inicial | De los cuales tipografía |
-| --------------- | ------------ | ------------------------ |
-| `app`           | **280,4 KB** | 106,1 KB                 |
-| `admin`         | **204,4 KB** | 106,1 KB                 |
-| `web` · `carta` | 166,3 KB     | 106,1 KB                 |
+| Aplicación      | Peso inicial     | De los cuales tipografía |
+| --------------- | ---------------- | ------------------------ |
+| `app`           | **292,1 KB**     | 106,1 KB                 |
+| `admin`         | **209,8 KB**     | 106,1 KB                 |
+| `web` · `carta` | 166,0 · 167,1 KB | 106,1 KB                 |
 
-La referencia es 250 y **se mide, no bloquea**. **Crear cuenta y Google (E1) suben `app` 4,7 KB**: la pantalla de crear cuenta, la de elegir plan y la vuelta de Google, que hacen falta antes de entrar; la web baja 0,9 KB al quitar el marcador de M0. **La puerta del admin sube `admin` 16 KB**: TanStack Query y el cliente de la API, que la app ya llevaba; `app` no cambia. El local en Google sube `app` 1,8 KB
+La referencia es 250 y **se mide, no bloquea**; el presupuesto de velocidad, que es el que manda, pasa en la prueba de pantalla. Lo de V es sobre todo **«Cómo va»** (la tarjeta, que ya estaba, y tres filas pequeñas), las reglas de `cocina.css` y, en el punto 3, **3,6 KB más**: el mosaico, el catálogo de Ajustes y la tarjeta nueva; y **4,5 KB más en `app` y 4,4 en `admin`** con la red de debajo de cada pantalla y su aviso a Sentry. **Crear cuenta y Google (E1) suben `app` 4,7 KB**: la pantalla de crear cuenta, la de elegir plan y la vuelta de Google, que hacen falta antes de entrar; la web baja 0,9 KB al quitar el marcador de M0. **La puerta del admin sube `admin` 16 KB**: TanStack Query y el cliente de la API, que la app ya llevaba; `app` no cambia. El local en Google sube `app` 1,8 KB
 —la tarjeta de Ajustes—. El Panel vivo la subió 3,5 KB —la
 tarjeta del indicador, la línea y la rejilla nueva— y **`@dnd-kit` no cuenta**: va en
 su propio trozo (17 KB) y solo se descarga al editar el Panel. Las apps conectadas subieron `app`
@@ -638,18 +689,18 @@ Recharts se siguen cargando aparte.**
 En una línea. **El detalle está en
 [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md).**
 
-| Módulo   | Qué dejó                                                                                         |
-| -------- | ------------------------------------------------------------------------------------------------ |
-| **M0**   | Monorepo, reglas, integración continua con el candado de `main`, publicación en GitHub Pages     |
-| **M1**   | Alcances, roles y permisos en la base, con seguridad por filas en cada tabla                     |
-| **M2**   | La API (Hono), el despachador de comandos y consultas, los motores de dinero, fechas e impuestos |
-| **M3**   | El sistema de diseño, el esqueleto de las ocho apps, la rueda y el buscador universal            |
-| **M4**   | El login propio, PIN, segundo factor, sesiones y el primer despliegue de verdad                  |
-| **M5**   | El alta en ocho pasos, el catálogo de referencia, los ejemplos y el modo demostración            |
-| **M6**   | Inventario: productos, el libro de movimientos, precio medio ponderado, lotes, previsión         |
-| **M6½**  | La capa de producto: destinos y vistas, Panel en el servidor, merma, fichajes, caja y equipo     |
-| **M7**   | Compras y Calendario (#44); el repaso, las bases, las apps conectadas y el Panel vivo            |
-| **→ M8** | Los planes de las veinte mejoras y del admin; A1, la puerta del admin; E1, crear cuenta y Google |
+| Módulo   | Qué dejó                                                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **M0**   | Monorepo, reglas, integración continua con el candado de `main`, publicación en GitHub Pages                             |
+| **M1**   | Alcances, roles y permisos en la base, con seguridad por filas en cada tabla                                             |
+| **M2**   | La API (Hono), el despachador de comandos y consultas, los motores de dinero, fechas e impuestos                         |
+| **M3**   | El sistema de diseño, el esqueleto de las ocho apps, la rueda y el buscador universal                                    |
+| **M4**   | El login propio, PIN, segundo factor, sesiones y el primer despliegue de verdad                                          |
+| **M5**   | El alta en ocho pasos, el catálogo de referencia, los ejemplos y el modo demostración                                    |
+| **M6**   | Inventario: productos, el libro de movimientos, precio medio ponderado, lotes, previsión                                 |
+| **M6½**  | La capa de producto: destinos y vistas, Panel en el servidor, merma, fichajes, caja y equipo                             |
+| **M7**   | Compras y Calendario (#44); el repaso, las bases, las apps conectadas y el Panel vivo                                    |
+| **→ M8** | Los planes de las veinte mejoras y del admin; A1, la puerta del admin; E1, crear cuenta y Google; V, a medias en su rama |
 
 ### Antes de M8 · E1, crear cuenta y entrar con Google
 
@@ -992,6 +1043,58 @@ la capa superior del navegador— que es justo cuando hace falta.
     registro del servidor, con todas las letras. Mientras no se miró, se estuvo
     adivinando; en cuanto se miró, el arreglo fue cambiar un secreto. **La suposición
     más razonable no es un diagnóstico.**
+77. **Un «terminado cuando» que no comprueba nadie no está terminado.** El modo cocina
+    se dio por hecho con las pruebas de sus fichas, y su criterio pedía medir las
+    pantallas. La prueba que las mide encontró tres fallos el primer día, uno de ellos
+    desde M3: la letra grande y el modo cocina **no se aplicaban al abrir la app**.
+78. **Cumplir en la ficha no es cumplir en la pantalla.** Una clase de utilidad
+    (`min-h-[36px]`) gana a cualquier regla de la capa base, y un color con
+    significado (el rojo, el acento de la app) no es un gris. Lo que se promete para
+    toda la aplicación se mide en el navegador, pantalla a pantalla (`modo-cocina.spec.ts`).
+79. **Una cifra que ya sale en otra pantalla se cuenta como allí**, y una prueba las
+    compara. Y **lo que se tiene no se suma**: el valor de la cámara de una semana es
+    una foto del último día, no siete fotos juntas.
+80. **Una caché solo dice la verdad si sabe qué la ensucia.** Las cifras con flecha se
+    guardaban un minuto y ni cerrar la caja ni apuntar una merma las refrescaban. Lo
+    que cambia un dato refresca **todo** lo que lo enseña.
+81. **Una prueba que pasa por el orden en que se ejecutan no prueba nada.** Las cifras
+    de Inventario pasaban solo porque otra prueba, antes, daba de alta un producto.
+    Cada prueba se prepara lo suyo.
+82. **Una rejilla por filas estira lo corto.** Una fila mide lo que su tarjeta más alta,
+    así que la de tres líneas acababa con ochocientos píxeles de nada. Varias tarjetas
+    en una pantalla van en `Mosaico` (0045).
+83. **Un color se mide en los dos temas, y también cuando va de fondo.** «7 días» iba
+    en `bg-charcoal text-superficie`: blanco sobre casi negro en claro y 1,4:1 en
+    oscuro. Llevaba así desde M6½ porque la prueba de contraste mira la paleta, no las
+    parejas que escribe cada pantalla. Ahora hay una que busca esa pareja.
+84. **Dos copias de una paleta acaban siendo dos paletas.** «El del sistema» en claro
+    seguía con el fondo de B1 tres semanas después de que el tema claro lo cambiara.
+    Lo que se escribe dos veces se compara en una prueba, o no se escribe dos veces.
+85. **Lo que todavía no existe no se enseña en la pantalla que se usa.** Una tarjeta de
+    «lo que falta por venir» o un botón apagado con su módulo en mitad del día a día
+    son texto sobre el futuro que alguien tiene que leer cada vez. Va en el menú
+    («Llega después») y en el plan.
+86. **Un documento se sube igual que el código: con `verifica` antes.** Los pasos de V
+    se subieron sin pasarla, con los tres comandos
+    escritos `.estook.cmd` sin la barra, que PowerShell no encuentra,
+    y con la carpeta rota; la prueba del lanzador lo cazó en GitHub, no aquí. Y al escribir un fichero desde la consola, **las barras
+    `\` se las come la consola**: se escribe con el editor, no con `sed` ni `node -e`.
+87. **Un rojo dentro de una vuelta en verde también se mira, y un arreglo se comprueba
+    en el sitio donde falló.** «1 flaky» quiere decir que una prueba falló y pasó al
+    repetirla. El 22-sep era Safari («WebKit encountered an internal error») al
+    recargar; se cambió a abrir la dirección otra vez y se dio por arreglado **sin
+    verlo en la integración continua**, que es el único sitio donde corre Safari. El
+    23-sep volvió a pasar, al abrir. Es el motor del navegador antes de cargar nada, no
+    Estook: ahora las diez ayudas de entrar abren con `abrirSinQueSeCaiga` (`pruebas/e2e/abrir.ts`),
+    que repite una vez **solo con ese error**, y una prueba vigila que no tape ningún otro.
+88. **Una puerta que va a decir que no, lo dice antes de pedir nada más.** Pedir el
+    código del segundo factor para luego contestar «no tienes negocio» abría una sesión
+    inútil y hacía creer que las cuentas se mezclaban. Y **una pantalla que pide algo
+    dice a quién se lo pide**: el código sin el correo delante no se sabe de quién es.
+89. **Lo que se descarga a trozos necesita una red debajo.** Partir la app para que
+    abra rápido (B7) crea un fallo nuevo: el trozo que no llega. Sin nada que lo recoja,
+    la primera versión que se publica con la app abierta deja pantallas en blanco. Lo
+    cazó una prueba de Safari que falló una vez; mirado a fondo, no era Safari.
 
 ---
 
@@ -999,49 +1102,53 @@ la capa superior del navegador— que es justo cuando hace falta.
 
 En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 
-| Núm      | Qué                                                                      |
-| -------- | ------------------------------------------------------------------------ |
-| **0001** | GitHub Pages en vez de Netlify                                           |
-| **0002** | La API en Hono sobre Supabase Edge Functions                             |
-| **0003** | M0 crea el esqueleto mínimo de alcances                                  |
-| **0004** | El presupuesto de velocidad de B7, reconstruido                          |
-| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción        |
-| **0006** | El motor fiscal: sin regla, no se inventa un tipo                        |
-| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta        |
-| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages        |
-| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`         |
-| **0010** | El login es nuestro, no de Supabase Auth                                 |
-| **0011** | Las pruebas de extremo a extremo levantan la API de verdad               |
-| **0012** | El producto nace en M6, y M5 le deja el diccionario                      |
-| **0013** | Google Places se aplaza a M23                                            |
-| **0014** | Un módulo reacciona a otro en la misma transacción                       |
-| **0015** | Fogón es una burbuja que va contigo, no una pestaña por app              |
-| **0016** | El reloj es `pg_cron` llamando a nuestra API · se monta con Google       |
-| **0017** | Cómo avisa Estook: pantalla, correo con Resend y push                    |
-| **0018** | Cada app tiene destinos, y cada destino sus vistas                       |
-| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato          |
-| **0020** | Un catálogo de acciones, y una acción es una dirección                   |
-| **0021** | El producto se mide en una unidad; los gramajes son de la ficha          |
-| **0022** | El reparto tiene sitio antes que conexión; Uber Eats el primero          |
-| **0023** | Fogón nunca arma su contexto en el navegador: lo arma el servidor        |
-| **0024** | El color del local pinta la app, y hay dos temas                         |
-| **0025** | Fichar pide dónde, y no bloquea nunca                                    |
-| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe              |
-| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo          |
-| **0028** | El alta de producto pregunta cuánto hay, no cuánto se aprovecha          |
-| **0029** | Lo que va a una columna JSON viaja como texto                            |
-| **0030** | El local se sitúa con Google, al final de M7, con tope de gasto          |
-| **0031** | El Calendario recoge lo de todos los módulos, con quién lo ve            |
-| **0032** | Las compras: Estook no manda, el albarán mueve y la factura confirma     |
-| **0033** | **Los precios de compra se guardan sin IVA, y se escriben como venga**   |
-| **0034** | **Nadie gestiona el acceso de su igual: lo hace quien está por encima**  |
-| **0035** | **El alta pregunta cómo se compra, y la cuenta la hace el dominio**      |
-| **0036** | **La dirección es `estook.com`, y la sabe el código**                    |
-| **0037** | **Lo que sale de cámara dice si se vendió; el dinero lo cuenta la caja** |
-| **0038** | **Cada producto es de una zona, y cada uno trabaja con la suya**         |
-| **0039** | **El Panel se monta como un móvil, y cada uno se pone sus cifras**       |
-| **0040** | **El local se busca en Google, con el tope contado antes de llamar**     |
-| **0041** | **El panel de administración: el cliente es la organización**            |
+| Núm      | Qué                                                                         |
+| -------- | --------------------------------------------------------------------------- |
+| **0001** | GitHub Pages en vez de Netlify                                              |
+| **0002** | La API en Hono sobre Supabase Edge Functions                                |
+| **0003** | M0 crea el esqueleto mínimo de alcances                                     |
+| **0004** | El presupuesto de velocidad de B7, reconstruido                             |
+| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción           |
+| **0006** | El motor fiscal: sin regla, no se inventa un tipo                           |
+| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta           |
+| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages           |
+| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`            |
+| **0010** | El login es nuestro, no de Supabase Auth                                    |
+| **0011** | Las pruebas de extremo a extremo levantan la API de verdad                  |
+| **0012** | El producto nace en M6, y M5 le deja el diccionario                         |
+| **0013** | Google Places se aplaza a M23                                               |
+| **0014** | Un módulo reacciona a otro en la misma transacción                          |
+| **0015** | Fogón es una burbuja que va contigo, no una pestaña por app                 |
+| **0016** | El reloj es `pg_cron` llamando a nuestra API · se monta con Google          |
+| **0017** | Cómo avisa Estook: pantalla, correo con Resend y push                       |
+| **0018** | Cada app tiene destinos, y cada destino sus vistas                          |
+| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato             |
+| **0020** | Un catálogo de acciones, y una acción es una dirección                      |
+| **0021** | El producto se mide en una unidad; los gramajes son de la ficha             |
+| **0022** | El reparto tiene sitio antes que conexión; Uber Eats el primero             |
+| **0023** | Fogón nunca arma su contexto en el navegador: lo arma el servidor           |
+| **0024** | El color del local pinta la app, y hay dos temas                            |
+| **0025** | Fichar pide dónde, y no bloquea nunca                                       |
+| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe                 |
+| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo             |
+| **0028** | El alta de producto pregunta cuánto hay, no cuánto se aprovecha             |
+| **0029** | Lo que va a una columna JSON viaja como texto                               |
+| **0030** | El local se sitúa con Google, al final de M7, con tope de gasto             |
+| **0031** | El Calendario recoge lo de todos los módulos, con quién lo ve               |
+| **0032** | Las compras: Estook no manda, el albarán mueve y la factura confirma        |
+| **0033** | **Los precios de compra se guardan sin IVA, y se escriben como venga**      |
+| **0034** | **Nadie gestiona el acceso de su igual: lo hace quien está por encima**     |
+| **0035** | **El alta pregunta cómo se compra, y la cuenta la hace el dominio**         |
+| **0036** | **La dirección es `estook.com`, y la sabe el código**                       |
+| **0037** | **Lo que sale de cámara dice si se vendió; el dinero lo cuenta la caja**    |
+| **0038** | **Cada producto es de una zona, y cada uno trabaja con la suya**            |
+| **0039** | **El Panel se monta como un móvil, y cada uno se pone sus cifras**          |
+| **0040** | **El local se busca en Google, con el tope contado antes de llamar**        |
+| **0041** | **El panel de administración: el cliente es la organización**               |
+| **0042** | **Registro abierto con correo o Google, y se paga al empezar salvo oferta** |
+| **0043** | **Canarias entra con IGIC; Ceuta y Melilla esperan; foral y SII, fuera**    |
+| **0044** | **Las cifras de cada app: la misma tarjeta, las mismas cuentas** (en V)     |
+| **0045** | **El aspecto y el orden: Resumen, mosaico y Ajustes por secciones** (en V)  |
 
 Otras, sin fichero propio:
 
@@ -1069,7 +1176,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`,
   `packages/ui/fuentes/` y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0037`.** Se amplían con una `0038`, nunca se editan
+- **Las migraciones `0001` a `0040`.** Se amplían con una `0041`, nunca se editan
   (regla 2). Y al ampliar una función SQL, **se copia la original entera**.
 - **Un valor de un tipo enumerado no se quita**: Postgres no sabe hacerlo. Por eso
   la `0034` añade `venta` con `add value if not exists … after 'merma'`, y su
@@ -1098,6 +1205,26 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   **Y quién ve qué del Calendario, la política de su tabla** ([0031](docs/decisiones/0031-el-calendario-recoge-lo-de-todos.md)).
   **Y quién gestiona a quién, `servidor/aplicacion/jerarquia.ts`**, con la amplitud
   de cada rol que guarda la base ([0034](docs/decisiones/0034-nadie-gestiona-a-su-igual.md)).
+- **El mosaico** (0045): varias tarjetas en una pantalla van en `Mosaico`, y el Panel
+  usa la misma medida (`usarFilasDelMosaico`). Volver a una rejilla por filas devuelve
+  las tarjetas estiradas. **Y lo elegido va en `bg-texto text-superficie`**, nunca en
+  `bg-charcoal text-superficie`, que en oscuro no se lee: una prueba lo vigila.
+- **La red de debajo de cada pantalla** (`SiAlgoFalla`): en la raíz de la app y del admin,
+  y alrededor del `<Outlet />` del esqueleto. Una pantalla nueva que se cargue aparte
+  (`lazy`) queda cubierta sola; quitar la red devuelve las pantallas en blanco.
+- **Qué ajustes hay y dónde viven**, en `pantallas/lasSeccionesDeAjustes.ts`: lo leen
+  la pantalla, su buscador y el buscador universal. Un ajuste nuevo se escribe ahí.
+- **Las cifras con flecha** (0039, 0044): **una sola tarjeta**, `TarjetaDeIndicador` de
+  `@estook/ui`, para el Panel y las apps; cada cifra, en el dominio (`indicador.ts`), y
+  **contada como la pantalla de la que sale**: la cámara como Inventario · Resumen
+  (`lasFotosDeLaCamara`, del libro, sin guardar fotos), y las horas, el coste y los
+  retrasos como Equipo · Fichajes (`lasEntradasDelHorario`, una sola pieza para los
+  dos). Una cifra nueva que ya salga en otra pantalla lleva su prueba que las compara.
+- **El modo cocina se hace en `cocina.css`**, nunca en una pantalla: los colores AAA
+  calculados y la regla de 64 px para todo lo que se toca, **fuera de `@layer base`**
+  para que ninguna clase de utilidad la pise. Y los tres ajustes del aparato —tema,
+  letra y modo cocina— **se aplican en la raíz de la app** (`Aplicacion.tsx`), no en
+  Ajustes.
 - **Los catálogos**: el de navegación (`packages/ui/src/apps.ts`, cuyas tablas se
   cambian en B5 del Plan primero), el de widgets (`packages/ui/src/panel/catalogo.ts`,
   donde cada widget construido dice su grupo) y el de acciones
@@ -1131,22 +1258,47 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ---
 
-## 8 · El siguiente paso · E2, el pago con Stripe
+## 8 · El siguiente paso · V, los puntos 4 y 5
+
+**V se fusiona en dos partes** (23-sep): Richi quería ver ya lo hecho, y esperar a los
+cinco puntos lo tenía mirando la web vieja. **La primera parte** —puntos 1, 2 y 3, la
+mejora 7 y el arreglo de entrar— tiene su pull request abierto; lo que tiene que hacer
+Richi está en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md), sección V:
+fusionar, aplicar la `0040` y desplegar la API, seguidos. **Los puntos 4 y 5** van en
+una rama nueva, con su propio pull request.
+
+### Lo que queda
+
+- **4 · Estados vacíos con dibujo y una acción**, cargados aparte. Uno de los casos: con
+  la cámara vacía, Inventario · Resumen enseña cómo empezar y no «Cómo va». Hoy los
+  vacíos dicen «Se empieza por Productos» sin botón: el 4 les pone el botón.
+- **5 · El tema oscuro repasado con capturas que se comparan en la prueba, y las fotos
+  de producto.** Lo del tema del sistema ya está hecho (0045). Queda estrenar la
+  comparación de capturas con Playwright y las fotos en el almacén del logo.
+
+**Terminado cuando** (del plan): las tres apps enseñan sus cifras con flecha y la del
+food cost cuadra con el Panel —hecho—; el modo cocina se mide en las pantallas —hecho—;
+cada app abre con su resumen —hecho—; los vacíos invitan a empezar; y las capturas en
+oscuro se comparan en la prueba.
+
+**Cómo se comprueba que no rompe lo de antes:** `pnpm verifica`,
+`pnpm prueba:e2e:completa` (que ya incluye `pnpm cobertura`) y, tras desplegar,
+`.\estook.cmd bd:comprobar-api` contra Supabase.
+
+## 9 · En paralelo · E2, el pago con Stripe
 
 ### Antes de empezarla
 
-1. **E1 fusionada, migrada y desplegada.** ✓ Comprobado el 21 de septiembre.
-2. **Richi con su cuenta de Stripe creada y activada.** Las claves no pasan por el chat.
-   **Falta.**
-3. **Los datos del titular** —razón social, NIF y domicilio— en las condiciones y la
-   privacidad. **Falta**, y sin eso no se puede cobrar a nadie.
+1. **E1 fusionada, migrada y desplegada.** ✓
+2. **Los datos del titular** en las condiciones y la privacidad. ✓ Puestos en la #59.
+3. **Richi con su cuenta de Stripe creada y activada**, en modo prueba. Las claves no
+   pasan por el chat. **Falta.**
 
-> **Lo que no se puede olvidar, con fechas de verdad.** El 21 de septiembre,
-> `ikatz` tiene la prueba caducada desde el **17** y `burger-king` desde el **18**.
-> Hoy no pasa nada porque la API no lo hace cumplir. **La entrega que encienda el
-> cumplimiento tiene que pasar esas cuentas a `activa` en la misma entrega**, o Richi
-> se queda fuera de su propio local el día del despliegue. Se comprueba antes de
-> fusionar, no después.
+> **Lo que no se puede olvidar, con fechas de verdad.** `ikatz` tiene la prueba
+> caducada desde el **17 de septiembre** y `burger-king` desde el **18**. Hoy no pasa
+> nada porque la API no lo hace cumplir. **La entrega que encienda el cumplimiento tiene
+> que pasar esas cuentas a `activa` en la misma entrega**, o Richi se queda fuera de su
+> propio local el día del despliegue. Se comprueba antes de fusionar, no después.
 
 ### Qué entra
 
@@ -1155,39 +1307,9 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
   **el portal** para cambiar tarjeta, plan o cancelar; **los avisos de Stripe**
   (webhook firmado, idempotente).
 - **El estado de la suscripción cumplido en la API**: pendiente de pago, impago y la
-  prueba caducada dejan de ser solo una pantalla. Con cuidado con **los clientes que ya
-  están** (hoy con la prueba caducada): pasarlos a `activa` antes de encender nada.
+  prueba caducada dejan de ser solo una pantalla.
 - Stripe en la privacidad, y el admin sabiendo quién ha pagado.
 
 **Terminado cuando:** una cuenta nueva paga en modo prueba de Stripe y entra al alta; una
 pendiente de pago no puede escribir llamando a la API a pelo; y cancelar en el portal
 deja la cuenta en solo lectura al acabar el periodo.
-
-## 9 · Y después · V, lo que se ve
-
-### Antes de empezarla
-
-1. **La #51, la #52 y la puerta del admin, fusionadas**, con la `0036` y la `0037`
-   aplicadas, la API desplegada y Richi dentro del admin con su segundo factor.
-2. Nada de fuera: V no necesita ninguna clave.
-
-### Qué entra
-
-Las mejoras 1 a 5 de [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md):
-
-- **El modo cocina**, un ajuste del aparato (lo decidió Richi): toques de 64 px,
-  contraste 7:1, sin gestos que no sean un toque, y los botones de subir y bajar del
-  Panel de vuelta. Se propone encendido en el alta de una tableta de cocina.
-- **Las flechas y las gráficas del Panel en Inventario, Servicio y Equipo**, con el
-  mismo `Indicador` y `un_indicador` ampliado.
-- **Inicio en cada app**, solo al entrar desde la rueda.
-- **Estados vacíos con dibujo y una acción**, cargados aparte.
-- **El tema oscuro repasado con capturas**, y **las fotos de producto** en el almacén.
-
-**Terminado cuando:** una prueba recorre las pantallas de cocina con el modo puesto y
-ningún botón baja de 64 px ni de 7:1; las tres apps enseñan sus cifras con flecha y la
-del food cost cuadra con el Panel; y las capturas en oscuro se comparan en la prueba.
-
-**Cómo se comprueba que no rompe lo de antes:** `pnpm verifica`,
-`pnpm prueba:e2e:completa`, `pnpm cobertura` y `pnpm bd:comprobar-api` contra
-Supabase.

@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M4 · aceptacion, punto por punto.
@@ -23,7 +24,8 @@ const API = 'http://localhost:5177/api';
 const CLAVE = 'estook en desarrollo';
 
 async function abrirLimpio(page: Page) {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
+  await abrirSinQueSeCaiga(page, APP);
   await page.evaluate(() => {
     try {
       window.localStorage.removeItem('estook.sesion');
@@ -31,7 +33,7 @@ async function abrirLimpio(page: Page) {
       /* en navegacion privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, APP);
 }
 
 async function entrar(page: Page, correo: string, secreto = CLAVE, conPin = false) {
@@ -130,7 +132,7 @@ test.describe('entrar', () => {
 
   test('y salir la cierra de verdad', async ({ page }) => {
     await entrar(page, 'rosa@ejemplo.estook.com');
-    await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${APP}#/ajustes/cuenta`, { waitUntil: 'domcontentloaded' });
 
     await page.getByRole('button', { name: /^Salir/ }).click();
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Entra en Estook');
@@ -667,7 +669,7 @@ test('quien lleva el local puede dar una contraseña nueva, y se enseña una vez
  */
 test('el doble factor se puede poner Y quitar, no solo poner', async ({ page }) => {
   await entrar(page, 'rosa@ejemplo.estook.com');
-  await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/ajustes/cuenta`, { waitUntil: 'domcontentloaded' });
 
   // La sección existe y ofrece activarlo. Rosa no lo tiene puesto, así que lo
   // que se comprueba aquí es que la pantalla conoce las dos direcciones: antes

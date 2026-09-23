@@ -16,19 +16,20 @@ El panel de administración va en su propio documento:
 
 ## Resumen en una tabla
 
-**Ninguna de las veinte está hecha todavía** (16 de septiembre de 2026): la primera
-entrega construida fue la puerta del admin. Cada una cambia a «Hecha» cuando se
-fusiona y se despliega su entrega.
+**Ninguna de las veinte está en producción todavía** (23 de septiembre de 2026). La 1,
+la 2, la 3 y la 7 están **hechas en la rama `v-lo-que-se-ve`**, sin fusionar: V se fusiona en
+dos partes, y estas cuatro van en la primera. **La 7 (Ajustes en secciones) era de la entrega O y se
+adelantó** porque Richi la pidió al ver Ajustes el 23 de septiembre ([0045](decisiones/0045-el-aspecto-y-el-orden.md)). Cada una cambia a «Hecha» cuando se fusiona y se despliega su entrega.
 
 | #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                  |
 | --- | ---------------------------------------- | ------------------------ | ------------------------------------------ | -------------------------- |
-| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | Falta                      |
-| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | Falta                      |
-| 3   | Inicio de cada app con tarjetas          | **V**                    | Nada                                       | Falta                      |
+| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | **En la rama**             |
+| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | **En la rama**             |
+| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                       | **En la rama**             |
 | 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            | Falta                      |
 | 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    | Falta                      |
 | 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       | Falta                      |
-| 7   | Ajustes en secciones y con buscador      | **O**                    | Nada                                       | Falta                      |
+| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                       | **En la rama**             |
 | 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       | Falta                      |
 | 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       | Falta                      |
 | 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       | Falta                      |
@@ -110,7 +111,36 @@ cámara, bajo mínimo, cierres, coste de personal y retrasos) en el dominio, con
 misma forma. **Una cifra, un dueño**: el food cost de Servicio y el del Panel ya son el
 mismo, y una prueba lo vigila.
 
+**Hecho (23 de septiembre de 2026, en la rama).** Lo decidió Richi y está razonado en
+la [0044](decisiones/0044-las-cifras-de-cada-app.md):
+
+- **En la primera pantalla de cada app**, bajo el título «Cómo va» y debajo de lo
+  urgente: Inventario · Hoy, Servicio · Cierre y Equipo · Hoy. Dos tarjetas por fila
+  en el móvil y cuatro en una pantalla ancha, con «7 días · 30 días» recordado en el
+  aparato. **Cada tarjeta entera lleva a su detalle.**
+- **Siempre las mismas por app**, y cada uno ve las que su rol le deja: un cocinero
+  ve «Bajo mínimo» y ni un euro. Las doce se pueden poner también en el Panel.
+- **Seis nuevas**: valor de la cámara y bajo mínimo (una foto del libro de cada día,
+  con las cuentas de «Hoy»), cajas cerradas, horas del equipo y coste de personal
+  (contados como el Resumen de Equipo) y **retrasos**.
+- **Retrasos, con un margen de cinco minutos que cada local cambia** en Ajustes →
+  «Cuándo es llegar tarde» (migración `0040`). El Resumen de Equipo gana su columna
+  de retrasos, contada con la misma pieza.
+- Donde había dos cifras iguales, queda una: la tarjeta «Lo que hay en cámara» de
+  Inventario · Hoy es ahora la primera cifra de la fila, con su flecha.
+
 ### 3 · Cada app abre con su resumen
+
+**Hecho (23 de septiembre de 2026, en la rama)**, con la [0045](decisiones/0045-el-aspecto-y-el-orden.md).
+Richi eligió el camino corto y más limpio: **no hay un «Inicio» nuevo; el primer
+destino se llama «Resumen»** (Inventario, Escandallos y Equipo), porque ya era la
+pantalla que abría la app con lo urgente y «Cómo va». En Equipo, el «Resumen» de antes
+—las horas— pasa a llamarse **«Fichajes»**. Y con él vinieron tres cosas que pidió
+mirando la pantalla: **las tarjetas en mosaico** (cada una del alto de lo que lleva, en
+las apps y en el Panel), **menos texto** (cada aviso en tres líneas, el porqué
+plegado, los cuatro primeros a la vista) y **el aspecto nuevo** (tarjeta, cabeceras,
+etiquetas sin mayúsculas y tema oscuro). Lo que sigue es el plan de antes, que queda
+de referencia:
 
 **Se pidió:** una pantalla de inicio con tarjetas en vez de ir directo a la lista.
 
@@ -183,6 +213,13 @@ Lo mejor:
 - Cada uno **puede cambiar sus tres**, igual que el Panel.
 
 ### 7 · Ajustes en secciones, con buscador
+
+**Hecho en la entrega V (23 de septiembre de 2026, en la rama)**, adelantado de la O.
+Son cinco secciones —**Este aparato, Mi cuenta, Tu local, Conexiones y Organización**—,
+cada una con su dirección, y el buscador encuentra por lo que la gente escribe y sale
+también en el buscador universal. **«Equipo» no es una sección de Ajustes**: quién
+tiene acceso ya vive en Equipo · Personas, y dos sitios para lo mismo acaban diciendo
+cosas distintas. Lo que sigue es el plan de antes:
 
 **Se pidió:** agrupar en Local, Equipo, Cuenta e Integraciones, con buscador.
 
@@ -471,8 +508,8 @@ antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
 | Orden | Entrega                          | Qué lleva                                                     | Por qué en este orden                                                |
 | ----- | -------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------- |
 | 1     | **Admin · La puerta**            | Entrar en `/admin/`, la primera cuenta, más admins, auditoría | Pequeña, no toca nada del local, y Richi pidió empezar por lo básico |
-| 2     | **V · Lo que se ve**             | 1, 2, 3, 4, 5                                                 | Todo lo demás se construye encima de este aspecto                    |
-| 3     | **O · Lo que se ordena**         | 6, 7, 8, 9, 17 · el QR definitivo (20)                        | Necesita las tarjetas de la anterior                                 |
+| 2     | **V · Lo que se ve**             | 1, 2, 3, 4, 5 · y la 7, adelantada                            | Todo lo demás se construye encima de este aspecto                    |
+| 3     | **O · Lo que se ordena**         | 6, 8, 9, 17 · el QR definitivo (20)                           | Necesita las tarjetas de la anterior                                 |
 | 4     | **Admin · Clientes**             | Lista, ficha, estados, notas, editar con auditoría            | Con la puerta hecha, lo que más se usará                             |
 | 5     | **R · El reloj y los avisos**    | El reloj, entrega 2 de M7, 12, 13, 16, 19 (valoración)        | Los avisos necesitan el reloj; 12 y 13 necesitan los avisos          |
 | 6     | **H · Horarios**                 | Entrega 3 de M7 y 18                                          | Los avisos de turno salen de la entrega anterior                     |
@@ -483,7 +520,9 @@ antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
 
 **Cómo va:** la **1** está **fusionada y en producción** (#53), con Richi dentro del
 admin y su segundo factor montado. Su repaso (rescatar a un admin, la cabecera del
-móvil y una puerta de la API) también está en producción (#54). La siguiente es la **2**.
+móvil y una puerta de la API) también está en producción (#54). **La 2, V, va a medias
+en su rama**: hechos los puntos 1, 2 y 3 y la mejora 7; faltan el 4 (vacíos) y el 5
+(capturas del oscuro y fotos de producto).
 
 **Qué esperan de fuera, y no frenan el orden:** **Resend** (el correo del informe y
 de los avisos), **Business Profile** (las respuestas a reseñas), **la clave de IA**

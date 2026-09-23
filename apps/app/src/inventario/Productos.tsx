@@ -175,6 +175,7 @@ export function Productos({
     await cache.invalidateQueries({ queryKey: ['merma_de_hoy'] });
     await cache.invalidateQueries({ queryKey: ['mis_mermas'] });
     await cache.invalidateQueries({ queryKey: ['el_alta'] });
+    await cache.invalidateQueries({ queryKey: ['un_indicador'] });
   }
 
   async function quitarLosEjemplos() {

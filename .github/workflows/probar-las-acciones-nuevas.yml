@@ -1,0 +1,41 @@
+name: Probar las acciones nuevas (temporal)
+
+# Temporal: se quita antes de fusionar. «Desplegar la API» y «Publicar» solo corren
+# en main o a mano, así que las versiones nuevas de sus acciones no se verían hasta
+# después de fusionar. Esto las prueba en el pull request, sin desplegar nada.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  cli:
+    name: La CLI de Supabase se instala
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.116.0
+      - run: supabase --version | tee /dev/stderr | grep -q '2.116.0'
+
+  paginas:
+    name: El paquete de la web lleva .nojekyll
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: |
+          mkdir -p _publicacion
+          echo hola > _publicacion/index.html
+          touch _publicacion/.nojekyll
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _publicacion
+          include-hidden-files: true
+      - uses: actions/download-artifact@v5
+        with:
+          name: github-pages
+          path: descargado
+      - run: tar -tf descargado/artifact.tar | tee /dev/stderr | grep -q '\.nojekyll'

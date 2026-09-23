@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 import { entrarEnElAdmin } from './entrar-en-el-admin.ts';
 
 /**
@@ -32,7 +33,8 @@ function unico(info: { project: { name: string } }): string {
 }
 
 async function abrirLimpio(page: Page, direccion: string) {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
+  await abrirSinQueSeCaiga(page, APP);
   await page.evaluate(() => {
     try {
       window.localStorage.removeItem('estook.sesion');
@@ -41,7 +43,7 @@ async function abrirLimpio(page: Page, direccion: string) {
       /* en navegación privada no se puede, y no pasa nada */
     }
   });
-  await page.goto(direccion, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, direccion);
 }
 
 /** Dentro, recién creada: o el alta, o elegir plan. Nunca la puerta. */

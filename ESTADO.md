@@ -24,7 +24,7 @@ _Producción comprobada el 23 de septiembre de 2026 con `bd:comprobar` y `bd:com
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56)     |
 | **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** a medias: puntos 1, 2 y 3 y la mejora 7, hechos. **E2 · Stripe** espera a la cuenta de Stripe de Richi    |
-| **Pruebas**    | En la rama de V, el 23-sep: **1.145** unitarias y de base, **415** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
+| **Pruebas**    | En la rama de V, el 23-sep: **1.145** unitarias y de base, **418** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
 | **Rama**       | `main`, con todo fusionado hasta la **#63**. Y `v-lo-que-se-ve`, con `main` dentro: **su primera parte, con el pull request abierto** y esperando a Richi      |
 | **Base**       | En Supabase, **39 de 39** ✓, igual que `main`. 58 tablas (55 en `estook` y 3 en `plataforma`), todas con seguridad por filas. **La `0040` va con V**           |
 | **API**        | **Desplegada el 22-sep a las 17:55, con la #63 dentro** ✓: conoce las 44 consultas y los 83 comandos de `main`                                                 |
@@ -1069,10 +1069,14 @@ la capa superior del navegador— que es justo cuando hace falta.
     escritos `.estook.cmd` sin la barra, que PowerShell no encuentra,
     y con la carpeta rota; la prueba del lanzador lo cazó en GitHub, no aquí. Y al escribir un fichero desde la consola, **las barras
     `\` se las come la consola**: se escribe con el editor, no con `sed` ni `node -e`.
-87. **Un rojo dentro de una vuelta en verde también se mira.** «1 flaky» quiere decir que
-    una prueba falló y pasó al repetirla. La del 22-sep era Safari cayéndose por dentro
-    al recargar la página justo después de vaciar el almacenamiento: no era Estook,
-    pero se arregló igual (se vuelve a abrir la dirección en vez de recargar).
+87. **Un rojo dentro de una vuelta en verde también se mira, y un arreglo se comprueba
+    en el sitio donde falló.** «1 flaky» quiere decir que una prueba falló y pasó al
+    repetirla. El 22-sep era Safari («WebKit encountered an internal error») al
+    recargar; se cambió a abrir la dirección otra vez y se dio por arreglado **sin
+    verlo en la integración continua**, que es el único sitio donde corre Safari. El
+    23-sep volvió a pasar, al abrir. Es el motor del navegador antes de cargar nada, no
+    Estook: ahora las diez ayudas de entrar abren con `abrirSinQueSeCaiga` (`pruebas/e2e/abrir.ts`),
+    que repite una vez **solo con ese error**, y una prueba vigila que no tape ningún otro.
 88. **Una puerta que va a decir que no, lo dice antes de pedir nada más.** Pedir el
     código del segundo factor para luego contestar «no tienes negocio» abría una sesión
     inútil y hacía creer que las cuentas se mezclaban. Y **una pantalla que pide algo

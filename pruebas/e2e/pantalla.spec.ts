@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
  * Lo que se ve, y que de verdad se ve.
@@ -36,7 +37,7 @@ const CLAVE = 'estook en desarrollo';
 const ROSA = 'rosa@ejemplo.estook.com';
 
 async function abrirLimpio(page: Page) {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, APP);
   await page.evaluate(() => {
     try {
       window.localStorage.clear();
@@ -44,10 +45,8 @@ async function abrirLimpio(page: Page) {
       /* en navegacion privada no se puede, y no pasa nada */
     }
   });
-  // Se vuelve a abrir, no se recarga: el Safari de las pruebas (WebKit) se cae a veces
-  // por dentro al recargar justo después de vaciar el almacenamiento. Pasó en la
-  // integración continua el 22-sep, y la prueba pasó al repetirla (regla 24).
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
+  await abrirSinQueSeCaiga(page, APP);
 }
 
 async function entrar(page: Page, correo = ROSA) {

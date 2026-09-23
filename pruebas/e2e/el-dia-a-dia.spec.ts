@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M6½ · lo que pasa durante el servicio, de punta a punta.
@@ -26,7 +27,7 @@ const MARCOS = 'marcos@ejemplo.estook.com';
 const SARA = 'sara@ejemplo.estook.com';
 
 async function entrar(page: Page, correo: string) {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, APP);
   await page.evaluate(() => {
     try {
       window.localStorage.clear();
@@ -34,10 +35,8 @@ async function entrar(page: Page, correo: string) {
       /* en navegación privada no se puede, y no pasa nada */
     }
   });
-  // Se vuelve a abrir, no se recarga: el Safari de las pruebas (WebKit) se cae a veces
-  // por dentro al recargar justo después de vaciar el almacenamiento. Pasó en la
-  // integración continua el 22-sep, y la prueba pasó al repetirla (regla 24).
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
+  await abrirSinQueSeCaiga(page, APP);
   await page.getByLabel('Tu correo').fill(correo);
   await page.getByLabel('Tu contraseña').fill(CLAVE);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();

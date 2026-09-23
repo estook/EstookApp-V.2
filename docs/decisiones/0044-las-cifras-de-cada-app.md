@@ -1,7 +1,7 @@
 # 0044 · Las cifras de cada app: la misma tarjeta, las mismas cuentas, y cuándo es llegar tarde
 
 **Fecha:** 23 de septiembre de 2026
-**Estado:** decidido y construido en la rama `v-lo-que-se-ve` (entrega V, punto 2). **Sin fusionar**
+**Estado:** en producción desde el 23 de septiembre de 2026 (#64, migración `0040` aplicada). **En Inventario, «Cómo va» pasó arriba del todo el mismo día**: lo decidió Richi y está en la [0045](0045-el-aspecto-y-el-orden.md), apartado «Seis»
 **Amplía:** [0039](0039-el-panel-se-monta-como-un-movil.md) (los indicadores del Panel)
 **Migración:** `0040_cuando_es_llegar_tarde`
 

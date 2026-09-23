@@ -1,7 +1,7 @@
 # 0045 · El aspecto y el orden: cada app abre con su Resumen, las tarjetas van en mosaico y Ajustes va por secciones
 
 **Fecha:** 23 de septiembre de 2026
-**Estado:** decidido y construido en la rama `v-lo-que-se-ve` (entrega V, punto 3, y la mejora 7 adelantada). **Sin fusionar**
+**Estado:** en producción desde el 23 de septiembre de 2026 (#64). El apartado «Seis», en la rama `arreglos-tras-la-64`
 **Cambia:** B3, B4 y B5 del Plan de desarrollo · [0018](0018-destinos-y-vistas.md) (el nombre del primer destino) · [0039](0039-el-panel-se-monta-como-un-movil.md) (el alto de los widgets)
 **Migración:** ninguna
 
@@ -135,6 +135,17 @@ Lo que hacía vieja la aplicación no era un color: eran cuatro cosas a la vez.
   2. **«El del sistema» en claro no era el tema claro**: llevaba el fondo `#fafaf8`
      de B1 y cuatro colores de antes. Ahora es el claro cifra a cifra, y una prueba lo
      compara. (Era el punto que el 5 de V tenía apuntado.)
+
+### Seis · En Inventario, «Cómo va» arriba del todo (23-sep, después de la #64)
+
+Richi, usándolo ya en producción: «poner el "Cómo va" arriba del todo en Inventario, ya
+que es lo que más se ve». Cambia lo que decía la [0044](0044-las-cifras-de-cada-app.md)
+—las cifras debajo de lo urgente, por el capítulo 5 de la Evolución— **para esta
+pantalla**. Es una fila de cuatro cifras: no empuja lo urgente fuera, que queda justo
+debajo. La prueba de «Cómo va» comprueba ahora el orden nuevo.
+
+**Queda por decidir**, y se le pregunta a Richi: si Equipo y Servicio hacen lo mismo. Hoy
+siguen con las cifras debajo de quién está y del cierre del día.
 
 ## Lo que no se decide aquí
 

@@ -4,26 +4,46 @@
 >
 > Comprobado en producción el 23 de septiembre de 2026, leyendo la base y la API.
 >
-> | Qué                        | Cómo está                                                                                                     |
-> | -------------------------- | ------------------------------------------------------------------------------------------------------------- |
-> | Pull requests              | **Todas fusionadas hasta la #63**                                                                             |
-> | La base de datos           | **39 de 39** migraciones, igual que `main`                                                                    |
-> | La API                     | **Desplegada el 22 de septiembre a las 17:55**, con la #63 dentro                                             |
-> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                                   |
-> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                                              |
-> | **V · lo que se ve**       | **Primera parte lista para fusionar**: puntos 1, 2 y 3, la mejora 7 y el arreglo de entrar (sección V, abajo) |
-> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                                                  |
+> | Qué                        | Cómo está                                                                                   |
+> | -------------------------- | ------------------------------------------------------------------------------------------- |
+> | Pull requests              | **Todas fusionadas hasta la #64**. Los arreglos de después, para fusionar (primer apartado) |
+> | La base de datos           | **40 de 40** migraciones, igual que `main`                                                  |
+> | La API                     | **Desplegada el 23 de septiembre a las 18:43**, con la #64 dentro                           |
+> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                 |
+> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                            |
+> | **V · lo que se ve**       | **Primera parte en producción** (#64). Faltan los puntos 4 y 5                              |
+> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                                |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## V · Lo que se ve, primera parte · lo que te toca ahora
+## Los arreglos de después de la #64 · lo que te toca ahora
 
-> **V se fusiona en dos partes** (decidido el 23-sep): así lo hecho se ve ya en
-> `estook.com` y no espera a los puntos 4 y 5. **El pull request de la primera parte
-> está abierto**, con las tres comprobaciones en verde. Mientras no lo fusiones, la web
-> sigue como estaba: por eso al entrar hoy la veías igual.
+**Qué trae:** el widget de fichar y los demás del Panel dicen «No he podido leerlo»
+cuando no pueden leer, en vez de «tu acceso no incluye fichar» o «nada caduca»; en
+Inventario, **«Cómo va» arriba del todo**; y el despliegue de la API **ya no despliega
+si la base va por detrás**.
+
+**Esta vez es un solo paso: fusionar.** No lleva migración y la API no cambia; la web se
+publica sola al fusionar, en un par de minutos.
+
+1. En **github.com**, pestaña **Pull requests** → **«Arreglos tras la #64»**.
+2. Abajo, las **tres comprobaciones en verde**. Si alguna sale en rojo, para y avísame.
+3. **Merge pull request** → **Confirm merge**. Tiene que salir en morado «merged».
+4. Espera dos minutos, abre `estook.com/app/` y pulsa **Ctrl + F5**. Mira:
+   - **Inventario → Resumen**: «Cómo va» arriba del todo y lo urgente debajo.
+   - **El Panel → Fichar**: el botón «Fichar la entrada».
+   - **Equipo → Resumen y Fichajes**: quién está y las horas.
+
+---
+
+## V · Lo que se ve, primera parte · **hecho** (#64)
+
+> **En producción desde el 23 de septiembre de 2026.** Se fusionó y **se desplegó la API
+> sin aplicar la `0040`**: Equipo y el fichar del Panel dejaron de funcionar hasta que
+> se aplicó, unas horas después. Por eso el despliegue ahora lo comprueba solo. Los pasos
+> de abajo se quedan como estaban, de referencia.
 
 **Lo que trae:** el modo cocina; «Cómo va», las cifras con flecha; el **Resumen** de
 cada app (antes «Hoy»); las tarjetas **en mosaico**, sin huecos; **Ajustes por
@@ -36,8 +56,8 @@ cuenta es ([0044](decisiones/0044-las-cifras-de-cada-app.md),
 API, **seguidos y en ese orden**. Si se aplica la migración antes de fusionar, la base
 va por delante del código, y eso es justo lo que la regla 1 prohíbe. La web se publica
 sola al fusionar; hasta que la API esté desplegada, las cifras nuevas dirán «No he
-podido leerlo». **No se rompe nada de lo que ya funciona**, pero cuanto menos rato pase
-entre un paso y otro, mejor: unos diez minutos en total.
+podido leerlo». **Y si se despliega la API antes de migrar, sí se rompe**: pasó el 23-sep
+con esta misma entrega. Desde entonces el despliegue lo comprueba y no deja hacerlo.
 
 ### 1 · Fusionar
 

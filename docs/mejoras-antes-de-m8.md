@@ -16,20 +16,20 @@ El panel de administración va en su propio documento:
 
 ## Resumen en una tabla
 
-**Ninguna de las veinte está en producción todavía** (23 de septiembre de 2026). La 1,
-la 2, la 3 y la 7 están **hechas en la rama `v-lo-que-se-ve`**, sin fusionar: V se fusiona en
-dos partes, y estas cuatro van en la primera. **La 7 (Ajustes en secciones) era de la entrega O y se
+**Cuatro de las veinte están en producción** desde el 23 de septiembre de 2026 (#64): la
+1, la 2, la 3 y la 7, que eran la primera parte de V. V se fusiona en dos partes; la
+segunda lleva la 4 y la 5. **La 7 (Ajustes en secciones) era de la entrega O y se
 adelantó** porque Richi la pidió al ver Ajustes el 23 de septiembre ([0045](decisiones/0045-el-aspecto-y-el-orden.md)). Cada una cambia a «Hecha» cuando se fusiona y se despliega su entrega.
 
 | #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                  |
 | --- | ---------------------------------------- | ------------------------ | ------------------------------------------ | -------------------------- |
-| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | **En la rama**             |
-| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | **En la rama**             |
-| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                       | **En la rama**             |
+| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | **En producción** (#64)    |
+| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | **En producción** (#64)    |
+| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                       | **En producción** (#64)    |
 | 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            | Falta                      |
 | 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    | Falta                      |
 | 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       | Falta                      |
-| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                       | **En la rama**             |
+| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                       | **En producción** (#64)    |
 | 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       | Falta                      |
 | 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       | Falta                      |
 | 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       | Falta                      |

@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 23 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #63. V se fusiona en dos partes: la primera —modo cocina, «Cómo va», el Resumen, el mosaico, Ajustes por secciones, el aspecto nuevo y el arreglo de entrar— tiene su pull request abierto y esperando a Richi. Quedan los puntos 4 y 5**
+Última actualización: 23 de septiembre de 2026 · **Antes de M8. La primera parte de V está en producción (#64), con la `0040` aplicada y la API desplegada. Los arreglos de después —el fichar que decía «no puedes», los widgets que no decían que no podían leer, «Cómo va» arriba en Inventario y el despliegue que no deja adelantarse a la base— van en `arreglos-tras-la-64`, con su pull request. Quedan los puntos 4 y 5 de V**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -20,17 +20,17 @@
 
 _Producción comprobada el 23 de septiembre de 2026 con `bd:comprobar` y `bd:comprobar-api`._
 
-|                |                                                                                                                                                                |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56)     |
-| **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** a medias: puntos 1, 2 y 3 y la mejora 7, hechos. **E2 · Stripe** espera a la cuenta de Stripe de Richi    |
-| **Pruebas**    | En la rama de V, el 23-sep: **1.147** unitarias y de base, **420** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
-| **Rama**       | `main`, con todo fusionado hasta la **#63**. Y `v-lo-que-se-ve`, con `main` dentro: **su primera parte, con el pull request abierto** y esperando a Richi      |
-| **Base**       | En Supabase, **39 de 39** ✓, igual que `main`. 58 tablas (55 en `estook` y 3 en `plataforma`), todas con seguridad por filas. **La `0040` va con V**           |
-| **API**        | **Desplegada el 22-sep a las 17:55, con la #63 dentro** ✓: conoce las 44 consultas y los 83 comandos de `main`                                                 |
-| **Sitio**      | `estook.com`, `/app/` y `/admin/` responden 200. Se publica solo al fusionar                                                                                   |
-| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas reales de abajo. Admin: **`estookapp@gmail.com` y Santi**, los dos con segundo factor                                     |
-| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                         |
+|                |                                                                                                                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56)              |
+| **Ahora**      | **Antes de M8**. V: la primera parte **en producción** (#64); los arreglos de después, en su pull request; faltan los puntos 4 y 5. **E2 · Stripe** espera a Richi      |
+| **Pruebas**    | En `arreglos-tras-la-64`, el 23-sep: **1.152** unitarias y de base, **422** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
+| **Rama**       | `main`, con todo fusionado hasta la **#64**. Y `arreglos-tras-la-64`, con su pull request, esperando a Richi                                                            |
+| **Base**       | En Supabase, **40 de 40** ✓, igual que `main` (la `0040` se aplicó el 23-sep, después de desplegar: ver abajo). 58 tablas, todas con seguridad por filas                |
+| **API**        | **Desplegada el 23-sep a las 18:43, con la #64 dentro** ✓: conoce las 44 consultas y los 84 comandos de `main`                                                          |
+| **Sitio**      | `estook.com`, `/app/` y `/admin/` responden 200. Se publica solo al fusionar                                                                                            |
+| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas reales de abajo. Admin: **`estookapp@gmail.com` y Santi**, los dos con segundo factor                                              |
+| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, **y de no cobrar a cobrar**                                                                  |
 
 > **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
 > 100 %.** Lo decidió Richi el 16 de septiembre. Los planes:
@@ -39,33 +39,33 @@ _Producción comprobada el 23 de septiembre de 2026 con `bd:comprobar` y `bd:com
 
 ### El orden, y dónde estamos en él
 
-| #   | Entrega                          | Cómo está                                                             |
-| --- | -------------------------------- | --------------------------------------------------------------------- |
-| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                                            |
-| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                 |
-| 1   | **V · Lo que se ve**             | **A medias.** Puntos 1, 2 y 3 de 5 y la mejora 7, en `v-lo-que-se-ve` |
-| 2   | **E2 · El pago con Stripe**      | **Espera a Richi** (abajo). Va en paralelo a V                        |
-| 3   | **O · Lo que se ordena**         | Falta                                                                 |
-| 4   | **A2 · Clientes**                | Falta                                                                 |
-| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7                               |
-| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                               |
-| 7   | **I · La app instalable**        | Falta                                                                 |
-| 8   | **L · El lector**                | Falta                                                                 |
-| 9   | **A3 · Vendedores y códigos**    | Falta                                                                 |
-| 10  | **A4 · Ventas**                  | Falta                                                                 |
-| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                           |
+| #   | Entrega                          | Cómo está                                                      |
+| --- | -------------------------------- | -------------------------------------------------------------- |
+| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                                     |
+| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                          |
+| 1   | **V · Lo que se ve**             | **Primera parte en producción** (#64). Faltan los puntos 4 y 5 |
+| 2   | **E2 · El pago con Stripe**      | **Espera a Richi** (abajo). Va en paralelo a V                 |
+| 3   | **O · Lo que se ordena**         | Falta                                                          |
+| 4   | **A2 · Clientes**                | Falta                                                          |
+| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7                        |
+| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                        |
+| 7   | **I · La app instalable**        | Falta                                                          |
+| 8   | **L · El lector**                | Falta                                                          |
+| 9   | **A3 · Vendedores y códigos**    | Falta                                                          |
+| 10  | **A4 · Ventas**                  | Falta                                                          |
+| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                    |
 
 ### La entrega V, punto por punto
 
 El plan entero está en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md),
-apartado «V · Lo que se ve». **Rama `v-lo-que-se-ve`, sin pull request todavía.**
+apartado «V · Lo que se ve». **Se fusiona en dos partes**: la primera está en producción (#64).
 
 | Punto | Qué                                                            | Cómo está               |
 | ----- | -------------------------------------------------------------- | ----------------------- |
-| **1** | **Modo cocina**: 64 px, AAA, y ni un gesto que no sea un toque | **Hecho**, sin fusionar |
-| **2** | **«Cómo va»**: las cifras con flecha en todas las apps         | **Hecho**, sin fusionar |
-| **3** | **Cada app abre con su Resumen**, y el mosaico y el aspecto    | **Hecho**, sin fusionar |
-| **7** | **Ajustes en secciones, con buscador** (era de la entrega O)   | **Hecho**, sin fusionar |
+| **1** | **Modo cocina**: 64 px, AAA, y ni un gesto que no sea un toque | **En producción** (#64) |
+| **2** | **«Cómo va»**: las cifras con flecha en todas las apps         | **En producción** (#64) |
+| **3** | **Cada app abre con su Resumen**, y el mosaico y el aspecto    | **En producción** (#64) |
+| **7** | **Ajustes en secciones, con buscador** (era de la entrega O)   | **En producción** (#64) |
 | **4** | Estados vacíos que invitan a empezar                           | **La siguiente**        |
 | **5** | Tema oscuro repasado, y fotos de producto                      | Falta                   |
 
@@ -98,7 +98,7 @@ y móvil), y **encontró tres fallos de verdad**:
 
 **Lo que el punto 2 dejó hecho** ([0044](docs/decisiones/0044-las-cifras-de-cada-app.md)):
 **«Cómo va»** en la primera pantalla de Inventario, Servicio y Equipo, debajo de lo
-urgente, con «7 días · 30 días» y cada tarjeta llevando a su detalle. La tarjeta del
+urgente (en Inventario, **arriba del todo** desde el 23-sep, lo pidió Richi), con «7 días · 30 días» y cada tarjeta llevando a su detalle. La tarjeta del
 Panel pasa a `@estook/ui` y la usan todos. **Seis cifras nuevas** —valor de la cámara,
 bajo mínimo, cajas cerradas, horas del equipo, coste de personal y retrasos—, contadas
 **como las pantallas de las que salen**, con su prueba contra la base que lo compara.
@@ -148,6 +148,28 @@ la raíz de la app y del admin y debajo de cada pantalla: un trozo que no llega 
 sola una vez** para traer la versión nueva; si vuelve a fallar, lo dice con su botón y
 las barras siguen. Cada fallo recogido se manda a Sentry (`avisarDelFallo`). Con su prueba
 de pantalla, que corta la descarga de Movimientos a propósito y se vio fallar sin la red.
+
+### Lo que pasó al fusionar la #64, y lo que se arregló después
+
+**Se desplegó la API sin aplicar la `0040`** (23-sep, 18:43). El código nuevo leía el
+margen de retraso de cada local, que crea esa migración; como no existía, **Equipo entero
+y el fichar del Panel dejaron de funcionar**. Se aplicó la `0040` a las pocas horas y
+volvió todo: comprobado **como cada persona real** de los cuatro negocios, con las 33
+consultas del día a día, en una transacción de solo lectura —**cero fallos, y nadie ve
+nada de otro negocio**—.
+
+Y de ahí salieron tres arreglos, en la rama `arreglos-tras-la-64`:
+
+- **El despliegue ya no deja adelantarse a la base.** «Desplegar la API» pregunta a
+  Supabase, en solo lectura, en qué migración está la base, y **si va por detrás del
+  código no despliega** y dice que se aplique `bd:migrar` antes
+  (`herramientas/la-base-va-al-dia.mjs`). Si no puede preguntar, avisa y despliega: esa
+  puerta de Supabase es «beta» y no puede dejar a Richi sin desplegar un arreglo.
+- **Un fallo al leer ya no se disfraza.** El widget de fichar le dijo a Richi, director,
+  «tu acceso no incluye fichar» cuando lo que pasaba era que no se podía leer; y los
+  demás widgets, sin datos, decían «nada caduca» o se quedaban cargando. Ahora dicen «No
+  he podido leerlo» con su botón de volver a intentarlo.
+- **En Inventario, «Cómo va» arriba del todo** (lo pidió Richi; 0045, apartado «Seis»).
 
 ### Lo que hay de verdad en producción
 
@@ -455,8 +477,8 @@ el endpoint de borrado permanente de un NIF en Verifacti elimina sus registros s
 vuelta atrás. Dar de baja a un cliente es **desactivar**.
 
 **Ya hecho, y comprobado contra producción el 23 de septiembre:** crear cuenta con correo, funcionando · las fusiones #51 a
-#63 · las migraciones **hasta la `0039`** aplicadas · la API desplegada el 22-sep a las
-17:55, **con la #63 dentro** · el cliente de Google respondiendo ·
+#64 · las migraciones **hasta la `0040`** aplicadas · la API desplegada el 23-sep a las
+18:43, **con la #64 dentro** · el cliente de Google respondiendo ·
 **`estookapp@gmail.com` y Santi, los dos dentro del admin con su segundo factor** · y
 **cuatro cuentas creadas de verdad con Google**.
 
@@ -530,9 +552,9 @@ la contraseña por correo** (hoy la da quien lleva el local, o la consola).
 
 Para que nadie dé por hecho lo que solo está escrito:
 
-- **De las veinte mejoras, ninguna en producción.** La 1 (modo cocina), la 2 (las
-  cifras de cada app), la 3 (el Resumen) y la 7 (Ajustes en secciones) están hechas en
-  la rama de V, sin fusionar. Todas tienen su plan
+- **De las veinte mejoras, cuatro en producción** desde la #64: la 1 (modo cocina), la
+  2 (las cifras de cada app), la 3 (el Resumen) y la 7 (Ajustes en secciones). Las demás
+  faltan. Todas tienen su plan
   y su entrega; la tabla con cada una está en
   [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
 - **Del admin, solo la puerta** (A1). **No hay clientes** —lista, ficha tipo CRM,
@@ -642,10 +664,10 @@ A a GitHub Pages y `www` por CNAME. La dirección vieja redirige sola
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan
 gratuito, por el agrupador de sesión (la conexión directa de los proyectos nuevos
 solo va por IPv6). Todas las tablas con seguridad por filas; la única vista es
-`estook.existencias`. **39 migraciones, 55 tablas en `estook` y 3 en `plataforma`,
+`estook.existencias`. **40 migraciones, 55 tablas en `estook` y 3 en `plataforma`,
 aplicadas** (comprobado el 23 de septiembre). La `0038` y la `0039` son las de E1
 —crear cuenta, Google, la oferta y los intentos que se cuentan—; la `0040`, el margen
-de retraso de cada local, **va con V** y se aplica al fusionarla. Se comprueba con `.\estook.cmd bd:comprobar`, que lo lee de la base y no de aquí.
+de retraso de cada local, la de V. Se comprueba con `.\estook.cmd bd:comprobar`, que lo lee de la base y no de aquí.
 
 **Organizaciones:** `bar-centro`, `casa-lola` y `grupo-costa` son semillas de
 ejemplo, **con las cuentas cerradas desde el 3 de septiembre** —tenían una
@@ -667,7 +689,7 @@ secretos de Supabase según Richi (16-sep; sin comprobar en Ajustes). **Los de E
 
 | Aplicación      | Peso inicial     | De los cuales tipografía |
 | --------------- | ---------------- | ------------------------ |
-| `app`           | **292,1 KB**     | 106,1 KB                 |
+| `app`           | **292,3 KB**     | 106,1 KB                 |
 | `admin`         | **209,8 KB**     | 106,1 KB                 |
 | `web` · `carta` | 166,0 · 167,1 KB | 106,1 KB                 |
 
@@ -1095,6 +1117,14 @@ la capa superior del navegador— que es justo cuando hace falta.
     abra rápido (B7) crea un fallo nuevo: el trozo que no llega. Sin nada que lo recoja,
     la primera versión que se publica con la app abierta deja pantallas en blanco. Lo
     cazó una prueba de Safari que falló una vez; mirado a fondo, no era Safari.
+90. **Una regla que se puede saltar, un día se salta.** «Primero migrar, después
+    desplegar» estaba escrita en cada paso, y la #64 se desplegó sin la `0040`: Equipo
+    dejó de funcionar. Ahora el despliegue lo comprueba y no deja pasar
+    (`la-base-va-al-dia.mjs`). Lo que protege producción lo hace la máquina, no la memoria.
+91. **«No he podido leerlo» no es «no puedes» ni «no hay nada».** El widget de fichar le
+    dijo al director que su acceso no incluía fichar, y los demás, sin datos, decían que
+    no caducaba nada. Un dato que no ha llegado se dice así, con su botón de volver a
+    intentarlo; nunca se pinta como una respuesta.
 
 ---
 
@@ -1258,14 +1288,18 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ---
 
-## 8 · El siguiente paso · V, los puntos 4 y 5
+## 8 · El siguiente paso
 
-**V se fusiona en dos partes** (23-sep): Richi quería ver ya lo hecho, y esperar a los
-cinco puntos lo tenía mirando la web vieja. **La primera parte** —puntos 1, 2 y 3, la
-mejora 7 y el arreglo de entrar— tiene su pull request abierto; lo que tiene que hacer
-Richi está en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md), sección V:
-fusionar, aplicar la `0040` y desplegar la API, seguidos. **Los puntos 4 y 5** van en
-una rama nueva, con su propio pull request.
+**Primero, los arreglos de después de la #64** (rama `arreglos-tras-la-64`, con su pull
+request): Richi la fusiona y mira el Panel y Equipo. **No lleva migración, y la API no
+cambia**: la web se publica sola al fusionar. Sus pasos, en
+[`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md).
+
+**Luego, V · segunda parte**: los puntos 4 y 5, en una rama nueva con su propio pull
+request. **Antes de empezarla, dos preguntas a Richi:** si «Cómo va» sube también arriba
+del todo en Equipo y en Servicio, como en Inventario; y, para la entrega O, si el jefe de
+cocina ve el food cost en su panel (el plan de la mejora 9 lo pone, y la tabla 1.6 de
+Roles y los permisos, no).
 
 ### Lo que queda
 

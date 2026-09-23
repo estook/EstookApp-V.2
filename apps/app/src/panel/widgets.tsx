@@ -163,11 +163,19 @@ function Caja({
   titulo,
   origen,
   ir,
+  leyendo,
   children,
 }: {
   readonly titulo: string;
   readonly origen?: string;
   readonly ir?: string;
+  /**
+   * La lectura de la que vive el widget (entrega V, 23-sep). Si ha fallado, la caja
+   * lo dice y deja volver a intentarlo, **en vez de enseñar lo de dentro**: sin esto,
+   * un widget que no podía leer decía «nada caduca esta semana» o se quedaba
+   * cargando para siempre, y quien lo mira se lo cree.
+   */
+  readonly leyendo?: { readonly isError: boolean; readonly refetch: () => unknown };
   readonly children: React.ReactNode;
 }) {
   const navegar = useNavigate();
@@ -184,7 +192,7 @@ function Caja({
         titulo={titulo}
         {...(acento === undefined ? {} : { acento })}
         {...(IconoDeLaApp === undefined ? {} : { icono: <IconoDeLaApp size={18} /> })}
-        {...(origen === undefined ? {} : { origen })}
+        {...(origen === undefined || leyendo?.isError === true ? {} : { origen })}
         {...(ir === undefined
           ? {}
           : {
@@ -198,7 +206,25 @@ function Caja({
               ),
             })}
       >
-        <div className="min-h-0 flex-1">{children}</div>
+        <div className="min-h-0 flex-1">
+          {leyendo?.isError === true ? (
+            <div className="flex flex-col items-start gap-e3">
+              <p className="text-secundario text-texto-suave">
+                No he podido leerlo. Vuelve a intentarlo dentro de un momento.
+              </p>
+              <Boton
+                tono="secundario"
+                onClick={() => {
+                  void leyendo.refetch();
+                }}
+              >
+                Volver a intentarlo
+              </Boton>
+            </div>
+          ) : (
+            children
+          )}
+        </div>
       </Tarjeta>
     </div>
   );
@@ -216,6 +242,7 @@ function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   return (
     <Caja
+      leyendo={consulta}
       titulo="Caduca esta semana"
       origen="Lotes con fecha · próximos 7 días"
       ir="/inventario/resumen"
@@ -264,6 +291,7 @@ function BajoMinimo({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   return (
     <Caja
+      leyendo={consulta}
       titulo="Bajo mínimo"
       origen="De tu inventario, ahora mismo"
       ir="/inventario/productos/bajo-minimo"
@@ -356,6 +384,7 @@ function SinPrecio({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   return (
     <Caja
+      leyendo={consulta}
       titulo="Sin precio"
       origen="Cuentan cero en el valor de la cámara"
       ir="/inventario/productos/sin-precio"
@@ -395,7 +424,7 @@ function ValorDeLaCamara() {
   // mandado dinero, el widget lo dice en vez de pintar un cero.
   if (hoy !== undefined && !hoy.puedeVerPrecios) {
     return (
-      <Caja titulo="Valor de la cámara">
+      <Caja leyendo={consulta} titulo="Valor de la cámara">
         <p className="text-secundario text-texto-suave">
           Tu acceso no incluye los costes del género.
         </p>
@@ -405,6 +434,7 @@ function ValorDeLaCamara() {
 
   return (
     <Caja
+      leyendo={consulta}
       titulo="Valor de la cámara"
       origen="A precio medio; lo que entró sin coste, a su precio de hoy"
       ir="/inventario/resumen"
@@ -431,7 +461,7 @@ function CuantoGenero({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const hoy = consulta.data;
 
   return (
-    <Caja titulo="Tu género" ir="/inventario/productos/todo">
+    <Caja leyendo={consulta} titulo="Tu género" ir="/inventario/productos/todo">
       <Cifra
         etiqueta="Productos de alta"
         valor={hoy?.cuantosProductos ?? 0}
@@ -576,6 +606,23 @@ function FicharDesdeElPanel({ tamano }: { readonly tamano: TamanoDeWidget }) {
     );
   }
 
+  // Un fallo al leer **no es** «no puedes fichar»: se dice lo que ha pasado y se
+  // puede volver a intentar (entrega V, 23-sep).
+  if (fichar.noSeHaPodidoLeer) {
+    return (
+      <Caja titulo="Fichar">
+        <p className="text-secundario text-texto-suave">
+          No he podido leer tu fichaje. Vuelve a intentarlo dentro de un momento.
+        </p>
+        <div className="mt-e3">
+          <Boton tono="secundario" onClick={fichar.volverALeer}>
+            Volver a intentarlo
+          </Boton>
+        </div>
+      </Caja>
+    );
+  }
+
   if (mio === undefined || !mio.puedoFichar) {
     return (
       <Caja titulo="Fichar">
@@ -711,6 +758,7 @@ function QuienEstaTrabajandoWidget({ tamano }: { readonly tamano: TamanoDeWidget
 
   return (
     <Caja
+      leyendo={consulta}
       titulo={dentro.length === 1 ? '1 persona dentro' : `${dentro.length} personas dentro`}
       origen={`Fichajes de hoy · son las ${datos?.horaDelLocal ?? '--:--'} en el local`}
       ir="/equipo/resumen"
@@ -791,6 +839,7 @@ function PersonasWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   return (
     <Caja
+      leyendo={consulta}
       titulo={gente.length === 1 ? '1 persona' : `${gente.length} personas`}
       origen={enLinea === 0 ? 'Nadie en línea ahora' : `${enLinea} en línea ahora`}
       ir="/equipo/personas/con-acceso"
@@ -872,6 +921,7 @@ function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   return (
     <Caja
+      leyendo={consulta}
       titulo="Merma de hoy"
       origen={
         conPrecios && datos.mediaCentimos !== null && datos.mediaCentimos !== undefined
@@ -1018,6 +1068,7 @@ function VentasDeHoyWidget() {
 
   return (
     <Caja
+      leyendo={consulta}
       titulo="Ventas de hoy"
       origen={
         deHoy === null
@@ -1117,6 +1168,7 @@ function ComprasDeHoyWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   return (
     <Caja
+      leyendo={consulta}
       titulo="Compras de hoy"
       origen={
         borradores === 0
@@ -1206,7 +1258,11 @@ function LoQueVieneWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
   usarQueEstaVacio(consulta.data === undefined ? undefined : nada);
 
   return (
-    <Caja titulo="Lo que viene" origen="Hoy y mañana · entregas, repartos, caducidades y avisos">
+    <Caja
+      leyendo={consulta}
+      titulo="Lo que viene"
+      origen="Hoy y mañana · entregas, repartos, caducidades y avisos"
+    >
       {consulta.data === undefined ? (
         <Cargando que="lo que viene" lineas={3} />
       ) : nada ? (
@@ -1285,6 +1341,7 @@ function UltimosMovimientos({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   return (
     <Caja
+      leyendo={consulta}
       titulo="Lo último apuntado"
       origen="Del libro de movimientos"
       ir="/inventario/movimientos/todo"

@@ -769,3 +769,36 @@ test.describe('cómo se ve · el tema y el color del local', () => {
       .toBe('');
   });
 });
+
+// ── Cuando el Panel no puede leer (23-sep) ───────────────────────────────────
+
+/**
+ * Lo que vio Richi el día que la API iba por delante de la base: el widget de
+ * fichar le decía a él, director, «tu acceso no incluye fichar». Era mentira: lo
+ * que pasaba es que no se podía leer. Y los demás widgets, sin datos, decían
+ * «nada caduca» o se quedaban cargando.
+ *
+ * Se hace fallar a propósito la lectura de lo de hoy y la del fichaje, y se
+ * comprueba que el Panel **dice que no ha podido leer**, con su botón, y no se
+ * inventa un «no puedes» ni un «no hay nada».
+ */
+test('si el Panel no puede leer, lo dice, y no se inventa un «no puedes» ni un «no hay nada»', async ({
+  page,
+}) => {
+  await entrar(page);
+  await page.route('**/api/v1/consultas/inventario_hoy*', (ruta) =>
+    ruta.fulfill({ status: 500, contentType: 'application/json', body: '{}' }),
+  );
+  await page.route('**/api/v1/consultas/mi_fichaje*', (ruta) =>
+    ruta.fulfill({ status: 500, contentType: 'application/json', body: '{}' }),
+  );
+  await page.reload({ waitUntil: 'domcontentloaded' });
+
+  await expect(page.getByText('No he podido leer tu fichaje.', { exact: false })).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.getByText('Tu acceso no incluye fichar.', { exact: false })).toHaveCount(0);
+  await expect(page.getByText('No he podido leerlo.', { exact: false }).first()).toBeVisible();
+  await expect(page.getByText('Nada caduca en los próximos siete días.')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Volver a intentarlo' }).first()).toBeVisible();
+});

@@ -86,8 +86,9 @@ const AVISOS_A_LA_VISTA = 4;
  * «Una alerta que no se puede accionar no es una alerta, es ruido» (Evolución
  * 1.0, capítulo 9). Cada línea de aquí lleva qué ocurre, por qué, qué impacto
  * tiene y un botón. Y **los datos de ejemplo no salen**: eso lo filtra el
- * servidor, no esta pantalla. Lo urgente va **antes** que «Cómo va» (Evolución,
- * capítulo 5; 0044).
+ * servidor, no esta pantalla. **«Cómo va» va arriba del todo** y lo urgente justo
+ * debajo: lo decidió Richi el 23-sep, y cambia lo que decían la 0044 y el capítulo 5
+ * de la Evolución para esta pantalla (0045, apartado «Seis»).
  */
 export function Resumen({ alAbrirProducto }: { readonly alAbrirProducto: (id: string) => void }) {
   const { cliente, permisos } = usarSesion();
@@ -162,11 +163,22 @@ export function Resumen({ alAbrirProducto }: { readonly alAbrirProducto: (id: st
         </Tarjeta>
       ) : (
         <>
+          {/*
+            «Cómo va» · las cifras de Inventario con su flecha, **arriba del todo**.
+
+            Hasta el 23-sep iban debajo de lo urgente (0044), que es lo que dice la
+            Evolución 1.0 en su capítulo 5. Richi, usándolo: «poner el "Cómo va"
+            arriba del todo en Inventario, ya que es lo que más se ve». Es una fila de
+            cuatro cifras, así que no empuja lo urgente fuera de la pantalla: queda
+            justo debajo, y en el móvil a un dedo. La primera es el valor de la cámara,
+            la misma cuenta que `inventario_hoy` (una prueba contra la base lo vigila).
+          */}
+          <CifrasDeLaApp app="inventario" />
+
           <Mosaico>
             {/*
-              La zona de atención va primero y no se puede quitar (Evolución 1.0,
-              capítulo 5): terminar de mirar lo que falta va antes que cualquier
-              cifra bonita.
+              La zona de atención, justo debajo de las cifras, y no se puede quitar:
+              cada aviso con su botón.
             */}
             <LoQueNecesitaTuAtencion hoy={hoy} alAbrirProducto={alAbrirProducto} />
 
@@ -243,13 +255,6 @@ export function Resumen({ alAbrirProducto }: { readonly alAbrirProducto: (id: st
               <SinPrecio productos={hoy.sinPrecio} alAbrirProducto={alAbrirProducto} />
             )}
           </Mosaico>
-
-          {/*
-            «Cómo va» · las cifras de Inventario con su flecha (V, punto 2), debajo
-            de lo urgente y a todo lo ancho. La primera es el valor de la cámara, la
-            misma cuenta que `inventario_hoy` (una prueba contra la base lo vigila).
-          */}
-          <CifrasDeLaApp app="inventario" />
         </>
       )}
     </div>

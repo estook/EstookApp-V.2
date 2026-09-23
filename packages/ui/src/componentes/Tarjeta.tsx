@@ -14,8 +14,15 @@ import { clases } from '../clases.ts';
  */
 export interface TarjetaProps {
   readonly titulo?: string;
-  /** El acento de la app, si la tarjeta es de una. Pinta la linea de arriba. */
+  /**
+   * El acento de la app, si la tarjeta es de una. Pinta el icono de la cabecera,
+   * o un punto al lado del título si la tarjeta no lleva icono.
+   */
   readonly acento?: string;
+  /** El icono de la cabecera, en su pastilla del color del acento. */
+  readonly icono?: ReactNode;
+  /** Un número al lado del título: cuántas cosas hay dentro. */
+  readonly cuantos?: number;
   /** A la derecha del titulo: un boton, un selector de periodo. */
   readonly accion?: ReactNode;
   /** Debajo del todo, en gris: de donde sale el dato y de cuando es. */
@@ -25,45 +32,133 @@ export interface TarjetaProps {
   readonly pegado?: boolean;
 }
 
+/*
+  ── El aspecto, desde la entrega V (0045) ─────────────────────────────────────
+
+  «Las tarjetitas son muy feas. Parece una aplicación de los 2000.» Lo que las
+  hacía viejas no era un color: eran cuatro cosas a la vez, y se cambian las cuatro.
+
+    · **Un borde duro y una sombra de un píxel.** Ahora el borde es más suave y la
+      sombra tiene dos capas —una pegada, otra lejana y difusa—, que es lo que hace
+      que una tarjeta se lea como algo que está encima y no como un recuadro.
+    · **Esquinas de 16 px en todo.** Pasan a 24, las de un widget del iPhone.
+    · **La línea de color de tres píxeles arriba.** Es lo más «web de 2005» que
+      había. El acento sigue diciendo de qué app es, pero en el **icono de la
+      cabecera**, dentro de una pastilla de su color, o en un punto al lado del
+      título. «El acento se usa con moderación» (B3) se sigue cumpliendo: un icono.
+    · **El pie en mayúsculas y espaciado** («SOBRE 10 PRODUCTOS · AHORA MISMO»).
+      Unas mayúsculas grises en cada tarjeta gritan poco pero gritan todas. El pie
+      sigue ahí —una cifra sin origen no vale—, en minúscula y en el gris tenue.
+*/
 export function Tarjeta({
   titulo,
   acento,
+  icono,
+  cuantos,
   accion,
   origen,
   children,
   pegado = false,
 }: TarjetaProps) {
+  const conCabecera = titulo !== undefined || accion !== undefined;
   return (
     <section
       className={clases(
-        'relative overflow-hidden bg-superficie border border-borde rounded-grande shadow-s1',
+        // `@container`: la tarjeta se adapta a **su** ancho, no al de la pantalla.
+        // Un widget pequeño del Panel en un monitor es tan estrecho como uno en un
+        // móvil, y es ahí donde el título partía en tres líneas.
+        '@container relative overflow-hidden rounded-mayor border border-borde bg-superficie',
+        '[box-shadow:var(--sombra-tarjeta)]',
       )}
     >
-      {acento !== undefined && (
-        // «El acento se usa con moderacion: [...] la linea superior de su
-        // cabecera» (B3). Tres pixeles, y nada mas de color en toda la tarjeta.
-        <div aria-hidden className="h-[3px] w-full" style={{ background: acento }} />
-      )}
-
-      {(titulo !== undefined || accion !== undefined) && (
-        <header className="flex items-center justify-between gap-e3 px-e4 pt-e4 pb-e2">
-          {titulo !== undefined && <h2 className="text-seccion font-semibold">{titulo}</h2>}
+      {conCabecera && (
+        <header className="flex min-h-toque items-center justify-between gap-e2 px-e4 pt-e4 pb-e2 @min-[22rem]:px-e5">
+          {titulo !== undefined && (
+            <div className="flex min-w-0 items-center gap-e2">
+              {icono !== undefined ? (
+                <span
+                  aria-hidden
+                  // En una tarjeta estrecha el icono cede su sitio al título.
+                  className="grid size-8 shrink-0 place-items-center rounded-medio @max-[16rem]:hidden"
+                  style={{
+                    color: acento ?? 'var(--color-texto-suave)',
+                    background: `color-mix(in srgb, ${acento ?? 'var(--color-texto-suave)'} 14%, transparent)`,
+                  }}
+                >
+                  {icono}
+                </span>
+              ) : (
+                acento !== undefined && (
+                  <span
+                    aria-hidden
+                    className="size-2 shrink-0 rounded-redondo"
+                    style={{ background: acento }}
+                  />
+                )
+              )}
+              <h2 className="min-w-0 text-seccion font-semibold leading-tight tracking-[-0.01em]">
+                {titulo}
+              </h2>
+              {cuantos !== undefined && cuantos > 0 && (
+                <span className="shrink-0 rounded-redondo bg-fondo px-e2 py-[1px] text-etiqueta font-semibold text-texto-suave">
+                  {cuantos}
+                </span>
+              )}
+            </div>
+          )}
           {accion}
         </header>
       )}
 
       <div
-        className={clases(pegado ? '' : 'px-e4 pb-e4', titulo === undefined && !pegado && 'pt-e4')}
+        className={clases(
+          pegado ? '' : 'px-e4 pb-e4 @min-[22rem]:px-e5',
+          !conCabecera && !pegado && 'pt-e4',
+        )}
       >
         {children}
       </div>
 
       {origen !== undefined && (
-        <footer className="px-e4 pb-e3 pt-e1 text-etiqueta text-texto-suave uppercase tracking-wide">
+        <footer className="px-e4 pb-e4 pt-e1 text-etiqueta text-texto-tenue @min-[22rem]:px-e5">
           {origen}
         </footer>
       )}
     </section>
+  );
+}
+
+/**
+ * El enlace de la cabecera de una tarjeta: «Ver ›».
+ *
+ * **En pantalla dice «Ver» y nada más**, en todas las tarjetas: «Ver pedidos» y
+ * «Ver a detalle» al lado del título eran los que lo partían en dos líneas, y la
+ * tarjeta ya dice de qué es. Quien no ve la pantalla oye el nombre entero
+ * (`etiqueta`), que empieza por lo que se ve, como pide WCAG 2.5.3.
+ */
+export function EnlaceDeTarjeta({
+  etiqueta,
+  onClick,
+}: {
+  /** Lo que oye un lector de pantalla: «Ver pedidos». Empieza por «Ver». */
+  readonly etiqueta: string;
+  readonly onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={etiqueta}
+      className={clases(
+        '-mr-e2 inline-flex min-h-toque shrink-0 items-center gap-e1 whitespace-nowrap rounded-redondo px-e3',
+        'text-secundario font-medium text-texto-suave hover:bg-fondo hover:text-texto',
+      )}
+    >
+      Ver
+      <span aria-hidden className="text-cuerpo text-texto-tenue">
+        ›
+      </span>
+    </button>
   );
 }
 

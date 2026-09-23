@@ -97,7 +97,7 @@ export function LoQueLlegaDespues({
           <p className="text-cuerpo">{ficha.queEs}</p>
 
           <div>
-            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">Qué hará</p>
+            <p className="text-secundario font-medium text-texto-suave">Qué hará</p>
             <ul className="mt-e2 flex flex-col gap-e2">
               {ficha.queHara.map((linea) => (
                 <li key={linea} className="flex gap-e2 text-cuerpo">
@@ -118,7 +118,7 @@ export function LoQueLlegaDespues({
           <p className="text-cuerpo font-medium">{ficha.cuando}</p>
 
           <div className="rounded-medio bg-fondo p-e3">
-            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">Mientras tanto</p>
+            <p className="text-secundario font-medium text-texto-suave">Mientras tanto</p>
             <p className="mt-e1 text-cuerpo">{ficha.mientrasTanto}</p>
           </div>
         </div>

@@ -230,7 +230,7 @@ export function FichaDeProducto({
             del libro de movimientos»— y había que leerlas todas para saber cómo
             estaba el producto. Ahora es una rejilla: qué, y cuánto.
           */}
-          <section className="flex flex-col gap-e3 rounded-grande border border-borde bg-superficie p-e4 shadow-s1">
+          <section className="flex flex-col gap-e3 rounded-mayor border border-borde bg-superficie p-e4 [box-shadow:var(--sombra-tarjeta)]">
             <div className="flex flex-wrap items-start justify-between gap-e2">
               <Cifra
                 etiqueta="Lo que hay en cámara"
@@ -977,7 +977,7 @@ function Seccion({
   readonly children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-e3 rounded-grande border border-borde bg-superficie p-e4 shadow-s1">
+    <section className="flex flex-col gap-e3 rounded-mayor border border-borde bg-superficie p-e4 [box-shadow:var(--sombra-tarjeta)]">
       <div className="flex flex-wrap items-center justify-between gap-e2">
         <h3 className="text-seccion font-semibold">{titulo}</h3>
         {accion}

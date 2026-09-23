@@ -264,7 +264,7 @@ function AnadirWidget({
 
         {grupos.map((grupo) => (
           <section key={grupo.grupo} aria-label={grupo.nombre}>
-            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">{grupo.nombre}</p>
+            <p className="text-secundario font-medium text-texto-suave">{grupo.nombre}</p>
             <ul className="mt-e2 grid gap-e2 sm:grid-cols-2">
               {grupo.widgets.map(({ widget, puesto }) => {
                 const acento = acentoDelWidget(widget.id);
@@ -327,9 +327,7 @@ function AnadirWidget({
 
         {puestos.some((p) => p.id.startsWith('indicador-')) && (
           <section aria-label="Tus cifras puestas">
-            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
-              Tus cifras puestas
-            </p>
+            <p className="text-secundario font-medium text-texto-suave">Tus cifras puestas</p>
             <ul className="mt-e2 grid gap-e2 sm:grid-cols-2">
               {puestos
                 .filter((p) => p.id.startsWith('indicador-'))
@@ -357,13 +355,13 @@ function AnadirWidget({
 
         {llegan.length > 0 && (
           <section>
-            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">Llegan después</p>
+            <p className="text-secundario font-medium text-texto-suave">Llegan después</p>
             <ul className="mt-e2 flex flex-col gap-e2">
               {llegan.map((widget) => (
                 <li key={widget.id} className={clases('rounded-medio bg-fondo p-e3')}>
                   <p className="flex flex-wrap items-center gap-e2">
                     <span className="text-cuerpo text-texto-suave">{widget.nombre}</span>
-                    <span className="text-etiqueta uppercase tracking-wide text-texto-tenue">
+                    <span className="text-etiqueta font-medium text-texto-tenue">
                       {cuandoLlega(widget) ?? ''}
                     </span>
                   </p>

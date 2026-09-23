@@ -17,9 +17,7 @@ export function Grupo({
 }) {
   return (
     <section>
-      <h2 className="px-e3 pt-e3 pb-e1 text-etiqueta uppercase tracking-wide text-texto-suave">
-        {titulo}
-      </h2>
+      <h2 className="px-e3 pt-e3 pb-e1 text-secundario font-medium text-texto-suave">{titulo}</h2>
       <ul>{children}</ul>
     </section>
   );
@@ -70,9 +68,7 @@ export function Fila({
         </span>
 
         {etiqueta !== undefined && (
-          <span className="shrink-0 text-etiqueta uppercase tracking-wide text-texto-suave">
-            {etiqueta}
-          </span>
+          <span className="shrink-0 text-secundario font-medium text-texto-suave">{etiqueta}</span>
         )}
       </button>
     </li>

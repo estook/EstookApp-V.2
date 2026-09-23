@@ -34,6 +34,19 @@
 
 @layer base {
   /*
+   * La sombra de una tarjeta (entrega V, 0045).
+   *
+   * Dos capas: una pegada, que dibuja el canto, y otra lejana y difusa, que es la
+   * que hace que una tarjeta parezca estar **encima** de la página y no pintada
+   * en ella. Vive aquí y no en `@theme` porque cambia con el tema: Tailwind
+   * escribe las sombras de `@theme` dentro de cada utilidad, y así no habría
+   * forma de cambiarla en oscuro. Esta se lee con `var()`.
+   */
+  :root {
+    --sombra-tarjeta: 0 1px 2px rgba(17, 28, 31, 0.05), 0 8px 24px -12px rgba(17, 28, 31, 0.14);
+  }
+
+  /*
    * El oscuro, o el del sistema cuando se ha elegido «el del sistema».
    *
    * Las dos reglas escriben lo mismo y estan escritas dos veces a proposito: un
@@ -42,10 +55,15 @@
    */
   :root[data-tema='oscuro'],
   :root[data-tema='sistema'] {
-    --color-fondo: #0f1517;
-    --color-superficie: #182124;
-    --color-borde: #2a3438;
-    --color-borde-fuerte: #55666b;
+    /*
+     * Un punto más hondo desde la entrega V (0045): el fondo casi negro y la
+     * tarjeta un escalón por encima, con un filo de luz arriba en vez de un borde
+     * que se vea. Así es como se separan las piezas en un tema oscuro de ahora.
+     */
+    --color-fondo: #0c1113;
+    --color-superficie: #151c1f;
+    --color-borde: #243034;
+    --color-borde-fuerte: #56686d;
 
     --color-texto: #eef2f3;
     --color-texto-suave: #b9c3c6;
@@ -98,6 +116,9 @@
      * desplegables nativos y el calendario de un `<input type="date">` salen
      * blancos en mitad de una pantalla oscura.
      */
+    /* En oscuro la sombra no se ve: lo que separa es el filo de luz de arriba. */
+    --sombra-tarjeta: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 12px 32px -16px rgba(0, 0, 0, 0.7);
+
     color-scheme: dark;
   }
 
@@ -108,19 +129,26 @@
    */
   @media (prefers-color-scheme: light) {
     :root[data-tema='sistema'] {
-      --color-fondo: #fafaf8;
+      /*
+       * **Los mismos que el claro de `fichas.css`**, cifra a cifra (entrega V,
+       * punto 5). Hasta el 23 de septiembre esto llevaba el fondo `#fafaf8` de B1,
+       * que se abandonó en M6½ porque la tarjeta no se separaba de él: elegir «el
+       * del sistema» con el móvil en claro daba **otra aplicación**, más lavada, que
+       * el tema claro. Lo vigila `contraste.prueba.ts`.
+       */
+      --color-fondo: #f1efea;
       --color-superficie: #ffffff;
-      --color-borde: #e6e3de;
-      --color-borde-fuerte: #cfcac2;
+      --color-borde: #e0dcd4;
+      --color-borde-fuerte: #a49b8c;
 
       --color-texto: #111c1f;
       --color-texto-suave: #5a6568;
-      --color-texto-tenue: #6d7577;
+      --color-texto-tenue: #666e70;
 
       --color-charcoal: #111c1f;
 
-      --color-bien: #1a7d4f;
-      --color-atencion: #9f5f00;
+      --color-bien: #187648;
+      --color-atencion: #9a5c00;
       --color-mal: #c4372b;
       --color-info: #2c6e9b;
 
@@ -140,6 +168,8 @@
       --color-app-servicio: #0f8b8d;
       --color-app-negocio: #c4372b;
       --color-app-cuaderno: #7a6a56;
+
+      --sombra-tarjeta: 0 1px 2px rgba(17, 28, 31, 0.05), 0 8px 24px -12px rgba(17, 28, 31, 0.14);
 
       color-scheme: light;
     }

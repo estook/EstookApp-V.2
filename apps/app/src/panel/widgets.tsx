@@ -27,7 +27,9 @@ import {
   Tarjeta,
   Tira,
   Variacion,
+  EnlaceDeTarjeta,
   acentoDelWidget,
+  appDelWidget,
   appPorPermiso,
   clases,
   rutaDe,
@@ -35,7 +37,7 @@ import {
   usarQueEstaVacio,
   type TamanoDeWidget,
 } from '@estook/ui';
-import { IconoAnadir, IconoCamara, IconoEntrar, IconoSalir, IconoUbicacion } from '@estook/iconos';
+import { IconoAnadir, IconoEntrar, IconoSalir, IconoUbicacion } from '@estook/iconos';
 import { useNavigate } from 'react-router-dom';
 import { usarLoDeHoy } from '../ganchos/usarLoDeHoy.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -171,26 +173,28 @@ function Caja({
   const navegar = useNavigate();
   const quien = useContext(QuienSePinta);
   const acento = quien === null ? undefined : acentoDelWidget(quien);
+  // El icono de su app, en la pastilla de la cabecera (0045): dice de dónde es el
+  // widget sin la línea de color de arriba, que era lo que lo hacía viejo.
+  const deLaApp = quien === null ? undefined : appDelWidget(quien);
+  const IconoDeLaApp = deLaApp === undefined ? undefined : appPorPermiso(deLaApp)?.icono;
 
   return (
     <div className="h-full [&>section]:h-full [&>section]:flex [&>section]:flex-col">
       <Tarjeta
         titulo={titulo}
         {...(acento === undefined ? {} : { acento })}
+        {...(IconoDeLaApp === undefined ? {} : { icono: <IconoDeLaApp size={18} /> })}
         {...(origen === undefined ? {} : { origen })}
         {...(ir === undefined
           ? {}
           : {
               accion: (
-                <button
-                  type="button"
+                <EnlaceDeTarjeta
+                  etiqueta={`Ver ${titulo.charAt(0).toLowerCase()}${titulo.slice(1)}`}
                   onClick={() => {
                     navegar(ir);
                   }}
-                  className="min-h-toque rounded-medio px-e2 text-secundario font-medium text-texto-suave hover:text-texto"
-                >
-                  Ver
-                </button>
+                />
               ),
             })}
       >
@@ -214,7 +218,7 @@ function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
     <Caja
       titulo="Caduca esta semana"
       origen="Lotes con fecha · próximos 7 días"
-      ir="/inventario/hoy"
+      ir="/inventario/resumen"
     >
       {caducan.length === 0 ? (
         <p className="text-secundario text-texto-suave">Nada caduca en los próximos siete días.</p>
@@ -403,7 +407,7 @@ function ValorDeLaCamara() {
     <Caja
       titulo="Valor de la cámara"
       origen="A precio medio; lo que entró sin coste, a su precio de hoy"
-      ir="/inventario/hoy"
+      ir="/inventario/resumen"
     >
       <Cifra
         etiqueta="El género que hay"
@@ -709,7 +713,7 @@ function QuienEstaTrabajandoWidget({ tamano }: { readonly tamano: TamanoDeWidget
     <Caja
       titulo={dentro.length === 1 ? '1 persona dentro' : `${dentro.length} personas dentro`}
       origen={`Fichajes de hoy · son las ${datos?.horaDelLocal ?? '--:--'} en el local`}
-      ir="/equipo/hoy"
+      ir="/equipo/resumen"
     >
       {datos === undefined ? (
         <Cargando que="los fichajes" lineas={3} />
@@ -938,20 +942,11 @@ function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
                 Apuntar
               </Boton>
               {/*
-                La cámara, apagada y con su motivo. Leer una foto y sacar de ahí el
-                producto y el peso lo hace Fogón, y llega con M22. Se deja el sitio
-                hecho porque saber que va a poder hacerse cambia cómo se usa esto
-                hoy, y **no se puede pulsar**: un botón que promete algo y no lo
-                hace es el fallo que este proyecto persigue desde M4.
+                Aquí iba «Con una foto · M22», apagado. Se quitó en la entrega V
+                (0045): un botón que no se puede pulsar en mitad de lo que se usa
+                cada día es ruido. Leer la foto llega con Fogón, en M22, y entonces
+                sí tendrá su botón.
               */}
-              <Boton
-                tono="secundario"
-                disabled
-                icono={<IconoCamara size={18} />}
-                onClick={() => undefined}
-              >
-                Con una foto · M22
-              </Boton>
             </div>
           )}
 
@@ -1221,9 +1216,7 @@ function LoQueVieneWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
           {dias.map((dia) =>
             dia.ocurrencias.length === 0 ? null : (
               <div key={dia.fecha}>
-                <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
-                  {dia.cuando}
-                </p>
+                <p className="text-secundario font-medium text-texto-suave">{dia.cuando}</p>
                 <ul className="flex flex-col">
                   {dia.ocurrencias.slice(0, cuantos).map((o) => (
                     <li key={`${o.id}-${dia.fecha}`}>

@@ -227,10 +227,14 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     queHace: 'Qué hay, qué cuesta, qué se acaba y qué caduca',
     destinos: [
       {
-        id: 'hoy',
-        nombre: 'Hoy',
-        icono: IconoAtencion,
-        queContesta: '¿Qué tengo que atender ahora mismo?',
+        // **«Resumen» desde la entrega V** (antes «Hoy»): es la pantalla con la que
+        // se abre la app, y lleva lo urgente **y** «Cómo va». «Hoy» decía solo la
+        // mitad. Lo pidió Richi: «cambia hoy a resumen, para que sea más claro que
+        // ahí va a estar todo el resumen de la aplicación» (0045).
+        id: 'resumen',
+        nombre: 'Resumen',
+        icono: IconoPanel,
+        queContesta: '¿Qué tengo que atender y cómo va?',
         vistas: [],
       },
       {
@@ -289,9 +293,9 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     queHace: 'Lo que cuesta de verdad cada plato y el margen que deja',
     destinos: [
       {
-        id: 'hoy',
-        nombre: 'Hoy',
-        icono: IconoAtencion,
+        id: 'resumen',
+        nombre: 'Resumen',
+        icono: IconoPanel,
         queContesta: '¿Qué plato ha dejado de dar margen, y por culpa de qué?',
         vistas: [],
         modulo: 'M9',
@@ -413,10 +417,12 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // **Construido en M6½.** Llevaba desde M3 con su cartel de «llega en
         // M13», y lo que hacia falta para contestar su pregunta no era el modulo
         // entero de Equipo: eran los fichajes, que es lo que dice quien esta.
-        id: 'hoy',
-        nombre: 'Hoy',
-        icono: IconoAtencion,
-        queContesta: '¿Quién está hoy, quién falta y qué hay que resolver?',
+        //
+        // «Resumen» desde la entrega V, como la primera pantalla de todas (0045).
+        id: 'resumen',
+        nombre: 'Resumen',
+        icono: IconoPanel,
+        queContesta: '¿Quién está hoy, quién falta y cómo van las horas?',
         vistas: [],
       },
       {
@@ -446,8 +452,12 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // de cada persona estan en su ficha. Lo que sigue siendo M15 es la parte
         // laboral de encima —contratos, ausencias, convenio, el informe para la
         // inspeccion— y entrara como vistas de este mismo destino.
-        id: 'resumen',
-        nombre: 'Resumen',
+        //
+        // **«Fichajes» desde la entrega V**: «Resumen» pasó a ser el nombre de la
+        // primera pantalla de cada app, y dos «Resumen» en la misma app son dos
+        // puertas con el mismo cartel (0045).
+        id: 'fichajes',
+        nombre: 'Fichajes',
         icono: IconoReloj,
         queContesta: '¿Cuántas horas lleva cada uno, quién se pasa y cuánto cuesta?',
         vistas: [],

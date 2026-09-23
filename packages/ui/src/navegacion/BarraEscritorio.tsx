@@ -317,7 +317,7 @@ function AppConDesplegable({
                       <destino.icono size={16} />
                     </span>
                     {destino.nombre}
-                    <span className="text-etiqueta uppercase tracking-wide">{destino.modulo}</span>
+                    <span className="text-etiqueta font-medium">{destino.modulo}</span>
                   </p>
                 ))}
               </>

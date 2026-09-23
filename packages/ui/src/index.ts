@@ -46,7 +46,21 @@ export type { CampoProps, CampoMonedaProps, TipoDeCampo } from './componentes/Ca
 export { Selector, Interruptor } from './componentes/Selector.tsx';
 export type { SelectorProps, InterruptorProps, Opcion } from './componentes/Selector.tsx';
 
-export { Tarjeta, Etiqueta, Avatar, inicialesDe, colorDe } from './componentes/Tarjeta.tsx';
+export {
+  Tarjeta,
+  EnlaceDeTarjeta,
+  Etiqueta,
+  Avatar,
+  inicialesDe,
+  colorDe,
+} from './componentes/Tarjeta.tsx';
+export { Mosaico, Pieza, CLASES_DEL_MOSAICO } from './componentes/Mosaico.tsx';
+export {
+  usarFilasDelMosaico,
+  FILA_DEL_MOSAICO,
+  HUECO_DEL_MOSAICO,
+} from './ganchos/usarFilasDelMosaico.ts';
+export type { MosaicoProps, PiezaProps } from './componentes/Mosaico.tsx';
 export { Proporcion } from './componentes/Proporcion.tsx';
 export { Tira } from './componentes/Tira.tsx';
 export { Tendencia } from './componentes/Tendencia.tsx';
@@ -117,6 +131,7 @@ export {
   loQueSePuedePintar,
   losQueLlegan,
   acentoDelWidget,
+  appDelWidget,
   widgetPorId,
   losIndicadoresQueSePuedenTener,
 } from './panel/catalogo.ts';

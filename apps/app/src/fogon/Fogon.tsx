@@ -259,7 +259,7 @@ export function VentanaDeFogon({
         */}
         {acciones.length > 0 && (
           <div>
-            <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+            <p className="text-secundario font-medium text-texto-suave">
               Lo que puedes hacer aquí ahora
             </p>
             <div className="mt-e2 grid gap-e2 sm:grid-cols-2">
@@ -291,7 +291,7 @@ export function VentanaDeFogon({
         )}
 
         <div>
-          <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
+          <p className="text-secundario font-medium text-texto-suave">
             Cuando hable, podrás pedirle
           </p>
           <ul className="mt-e2 flex flex-col gap-e2">

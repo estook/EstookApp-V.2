@@ -24,7 +24,7 @@ import {
   EstadoVacio,
   Tarjeta,
 } from '@estook/ui';
-import { IconoAnadir, IconoBorrar, IconoCamara, IconoDocumento } from '@estook/iconos';
+import { IconoAnadir, IconoBorrar, IconoDocumento } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
@@ -249,9 +249,7 @@ function Resumen({
 
       {datos.lineas.length > 0 && (
         <>
-          <h3 className="mt-e4 text-etiqueta uppercase tracking-wide text-texto-suave">
-            Lo que salió
-          </h3>
+          <h3 className="mt-e4 text-secundario font-medium text-texto-suave">Lo que salió</h3>
           <ul className="mt-e2 flex flex-col">
             {datos.lineas.map((linea, indice) => (
               <li
@@ -521,15 +519,8 @@ function Formulario({
                   }}
                 />
               </label>
-              {/* La foto del Z, apagada con su motivo: leer una foto es Fogón (M22). */}
-              <Boton
-                tono="secundario"
-                disabled
-                icono={<IconoCamara size={16} />}
-                onClick={() => undefined}
-              >
-                Con una foto · M22
-              </Boton>
+              {/* Leer el Z de una foto llega con Fogón (M22); el botón apagado que
+                  había aquí se quitó en la entrega V (0045). */}
             </div>
           </div>
 

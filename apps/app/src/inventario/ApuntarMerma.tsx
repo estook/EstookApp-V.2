@@ -276,10 +276,7 @@ export function ApuntarMerma({
 
             {/* ── 3 · Por qué ─────────────────────────────────────────────── */}
             <div>
-              <p
-                id="por-que-la-merma"
-                className="text-etiqueta uppercase tracking-wide text-texto-suave"
-              >
+              <p id="por-que-la-merma" className="text-secundario font-medium text-texto-suave">
                 Por qué
               </p>
               <div

@@ -81,7 +81,7 @@ export function ComoLoCompras({
   return (
     <div className="flex flex-col gap-e3">
       <div>
-        <p id="como-lo-compras" className="text-etiqueta uppercase tracking-wide text-texto-suave">
+        <p id="como-lo-compras" className="text-secundario font-medium text-texto-suave">
           ¿Cómo lo compras?
         </p>
         <div
@@ -163,7 +163,7 @@ export function ComoLoCompras({
             </div>
           </div>
           <div className="flex flex-col gap-e1">
-            <span className="text-etiqueta uppercase tracking-wide text-texto-suave">
+            <span className="text-secundario font-medium text-texto-suave">
               Cuántas vienen en cada caja
             </span>
             <Cuantos

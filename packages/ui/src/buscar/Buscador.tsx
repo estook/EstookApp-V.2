@@ -30,6 +30,11 @@ export interface Accion {
   readonly nombre: string;
   /** Donde esta: «Ajustes», «Inventario». Ayuda a distinguir dos parecidas. */
   readonly donde?: string;
+  /**
+   * Lo que la gente escribe para encontrarla y no sale en pantalla: «clave» para
+   * la contraseña, «IVA» para los precios de compra. Cuenta como el «donde».
+   */
+  readonly palabras?: string;
   readonly icono?: ReactNode;
   readonly hacer: () => void;
 }
@@ -79,7 +84,7 @@ export function Buscador({
         // puntuara todo junto, una errata dejaria de encontrar la accion.
         (a) => a.nombre,
         undefined,
-        (a) => a.donde ?? '',
+        (a) => `${a.donde ?? ''} ${a.palabras ?? ''}`,
       ).slice(0, 5),
     [acciones, escrito],
   );

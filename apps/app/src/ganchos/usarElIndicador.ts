@@ -22,9 +22,9 @@ export const DONDE_SE_MIRA: Readonly<Record<Indicador, string | null>> = {
   cierres: '/servicio/jornada/cierre',
   // Las tres de Equipo se miran persona a persona en el Resumen, que es donde
   // están sus horas, su coste y sus retrasos contados igual.
-  'horas-equipo': '/equipo/resumen',
-  'coste-personal': '/equipo/resumen',
-  retrasos: '/equipo/resumen',
+  'horas-equipo': '/equipo/fichajes',
+  'coste-personal': '/equipo/fichajes',
+  retrasos: '/equipo/fichajes',
 };
 
 /**

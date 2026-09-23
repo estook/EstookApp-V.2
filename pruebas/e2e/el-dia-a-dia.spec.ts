@@ -353,11 +353,11 @@ test('quien lleva el local ve quién está dentro y las horas; un cocinero no ll
 }) => {
   await entrar(page, ROSA);
 
-  await page.goto(`${APP}#/equipo/hoy`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/equipo/resumen`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('button', { name: /^Fichar la (entrada|salida)$/ })).toBeVisible();
   await expect(page.getByText(/Hoy llevas/)).toBeVisible();
 
-  await page.goto(`${APP}#/equipo/resumen`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/equipo/fichajes`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Horas del equipo' })).toBeVisible();
 
   // Las horas de los demás son de quien lleva a esas personas. Un cocinero ve

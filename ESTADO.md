@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 23 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #63. La entrega V avanza en su rama: el modo cocina y «Cómo va» (las cifras de cada app), hechos y probados; quedan tres puntos. Crear cuenta con correo, funcionando: Richi lo probó el 23**
+Última actualización: 23 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #63. La entrega V avanza en su rama: el modo cocina, «Cómo va», el Resumen de cada app, el mosaico, Ajustes por secciones y el aspecto nuevo, hechos y probados; quedan los puntos 4 y 5. Crear cuenta con correo, funcionando: Richi lo probó el 23**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -23,8 +23,8 @@ _Producción comprobada el 23 de septiembre de 2026 con `bd:comprobar` y `bd:com
 |                |                                                                                                                                                                |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56)     |
-| **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** a medias: puntos 1 y 2 hechos. **E2 · Stripe** espera a la cuenta de Stripe de Richi                      |
-| **Pruebas**    | En la rama de V, el 23-sep: **1.142** unitarias y de base, **413** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
+| **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** a medias: puntos 1, 2 y 3 y la mejora 7, hechos. **E2 · Stripe** espera a la cuenta de Stripe de Richi    |
+| **Pruebas**    | En la rama de V, el 23-sep: **1.144** unitarias y de base, **413** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
 | **Rama**       | `main`, con todo fusionado hasta la **#63**. Y `v-lo-que-se-ve`, **con `main` dentro, subida y sin pull request**: se abre cuando V esté entera                |
 | **Base**       | En Supabase, **39 de 39** ✓, igual que `main`. 58 tablas (55 en `estook` y 3 en `plataforma`), todas con seguridad por filas. **La `0040` va con V**           |
 | **API**        | **Desplegada el 22-sep a las 17:55, con la #63 dentro** ✓: conoce las 44 consultas y los 83 comandos de `main`                                                 |
@@ -39,21 +39,21 @@ _Producción comprobada el 23 de septiembre de 2026 con `bd:comprobar` y `bd:com
 
 ### El orden, y dónde estamos en él
 
-| #   | Entrega                          | Cómo está                                            |
-| --- | -------------------------------- | ---------------------------------------------------- |
-| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                           |
-| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                |
-| 1   | **V · Lo que se ve**             | **A medias.** Puntos 1 y 2 de 5, en `v-lo-que-se-ve` |
-| 2   | **E2 · El pago con Stripe**      | **Espera a Richi** (abajo). Va en paralelo a V       |
-| 3   | **O · Lo que se ordena**         | Falta                                                |
-| 4   | **A2 · Clientes**                | Falta                                                |
-| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7              |
-| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7              |
-| 7   | **I · La app instalable**        | Falta                                                |
-| 8   | **L · El lector**                | Falta                                                |
-| 9   | **A3 · Vendedores y códigos**    | Falta                                                |
-| 10  | **A4 · Ventas**                  | Falta                                                |
-| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                          |
+| #   | Entrega                          | Cómo está                                                             |
+| --- | -------------------------------- | --------------------------------------------------------------------- |
+| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                                            |
+| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                 |
+| 1   | **V · Lo que se ve**             | **A medias.** Puntos 1, 2 y 3 de 5 y la mejora 7, en `v-lo-que-se-ve` |
+| 2   | **E2 · El pago con Stripe**      | **Espera a Richi** (abajo). Va en paralelo a V                        |
+| 3   | **O · Lo que se ordena**         | Falta                                                                 |
+| 4   | **A2 · Clientes**                | Falta                                                                 |
+| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7                               |
+| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                               |
+| 7   | **I · La app instalable**        | Falta                                                                 |
+| 8   | **L · El lector**                | Falta                                                                 |
+| 9   | **A3 · Vendedores y códigos**    | Falta                                                                 |
+| 10  | **A4 · Ventas**                  | Falta                                                                 |
+| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                           |
 
 ### La entrega V, punto por punto
 
@@ -64,8 +64,9 @@ apartado «V · Lo que se ve». **Rama `v-lo-que-se-ve`, sin pull request todav�
 | ----- | -------------------------------------------------------------- | ----------------------- |
 | **1** | **Modo cocina**: 64 px, AAA, y ni un gesto que no sea un toque | **Hecho**, sin fusionar |
 | **2** | **«Cómo va»**: las cifras con flecha en todas las apps         | **Hecho**, sin fusionar |
-| **3** | Cada app abre con su resumen                                   | **La siguiente**        |
-| **4** | Estados vacíos que invitan a empezar                           | Falta                   |
+| **3** | **Cada app abre con su Resumen**, y el mosaico y el aspecto    | **Hecho**, sin fusionar |
+| **7** | **Ajustes en secciones, con buscador** (era de la entrega O)   | **Hecho**, sin fusionar |
+| **4** | Estados vacíos que invitan a empezar                           | **La siguiente**        |
 | **5** | Tema oscuro repasado, y fotos de producto                      | Falta                   |
 
 **Lo que el punto 1 dejó hecho, y no hay que volver a tocar:** `cocina.css` con las
@@ -102,7 +103,30 @@ Panel pasa a `@estook/ui` y la usan todos. **Seis cifras nuevas** —valor de la
 bajo mínimo, cajas cerradas, horas del equipo, coste de personal y retrasos—, contadas
 **como las pantallas de las que salen**, con su prueba contra la base que lo compara.
 Y **Ajustes → «Cuándo es llegar tarde»**: cinco minutos que cada local cambia
-(migración `0040`), con su columna de retrasos en el Resumen de Equipo.
+(migración `0040`), con su columna de retrasos en Equipo · Fichajes (que entonces se llamaba «Resumen»).
+
+**Lo que el punto 3 dejó hecho** ([0045](docs/decisiones/0045-el-aspecto-y-el-orden.md)),
+con lo que Richi pidió el 23 de septiembre mirando la app en su TPV:
+
+- **«Hoy» se llama «Resumen»** en Inventario, Escandallos y Equipo, y en Equipo el
+  «Resumen» de las horas pasa a **«Fichajes»**. B5 del Plan, cambiada.
+- **Las tarjetas van en mosaico** (`Mosaico`, y la misma medida en la casilla del
+  Panel): cada una mide lo que lleva y las demás encajan debajo. Se acabaron las
+  tarjetas estiradas con un hueco vacío dentro.
+- **Menos texto**: cada aviso en tres líneas con el porqué plegado en «¿Por qué?», los
+  cuatro primeros a la vista, el menú lateral solo con el nombre y cada enlace de
+  tarjeta en «Ver ›». Fuera la tarjeta «Y lo que falta por venir» y los cuatro botones
+  apagados «Con una foto · M22».
+- **Ajustes por secciones** —Este aparato, Mi cuenta, Tu local, Conexiones y
+  Organización—, cada una con su dirección y un buscador que sale también en el
+  buscador universal (`lasSeccionesDeAjustes.ts`).
+- **El aspecto nuevo**: tarjeta de 24 px con sombra en dos capas, el icono de la app en
+  su pastilla en vez de la línea de color, sin mayúsculas grises, el velo del color del
+  local en el Panel, y el oscuro un punto más hondo. La tarjeta se adapta a su propio
+  ancho.
+- **Dos fallos de antes, con su prueba:** lo elegido («7 días», «Listo») no se leía en
+  oscuro —1,4:1—, y «el del sistema» en claro no era el tema claro. Con esto, lo que el
+  punto 5 tenía apuntado del tema del sistema queda hecho.
 
 ### Lo que hay de verdad en producción
 
@@ -201,7 +225,7 @@ escrita: un maestro no frena el producto.
 - **Las versiones anteriores**, en
   [`docs/antiguos/maestros/`](docs/antiguos/maestros/), con sus PDF. **No se
   borran:** son la referencia de qué decía el proyecto antes del cambio de rumbo.
-- **Todo lo demás sigue donde estaba**: las 42 decisiones en
+- **Todo lo demás sigue donde estaba**: las decisiones en
   [`docs/decisiones/`](docs/decisiones/), la
   [historia de los módulos](docs/historia-de-los-modulos.md), las auditorías de
   módulo, los pasos y los planes.
@@ -458,8 +482,8 @@ se pidió, cómo se hace mejor, qué hay ya y qué necesita de fuera— en dos d
 | Orden | Entrega                       | Qué lleva                                                     | Cómo está                        |
 | ----- | ----------------------------- | ------------------------------------------------------------- | -------------------------------- |
 | 1     | **A1 · La puerta del admin**  | Entrar con segundo factor, la primera cuenta, más admins      | **En producción**, con su repaso |
-| 2     | **V · Lo que se ve**          | Modo cocina, flechas en todas las apps, Inicio, vacíos, fotos | La siguiente                     |
-| 3     | **O · Lo que se ordena**      | Botón de acciones, Ajustes, «Hoy», paneles por rol, semáforo  | Falta                            |
+| 2     | **V · Lo que se ve**          | Modo cocina, flechas, Resumen, Ajustes, vacíos, fotos         | **A medias**, en su rama         |
+| 3     | **O · Lo que se ordena**      | Botón de acciones, «Hoy» del Panel, paneles por rol, semáforo | Falta                            |
 | 4     | **A2 · Clientes**             | Lista, ficha, contrato y actividad, editar con auditoría      | Falta                            |
 | 5     | **R · El reloj y los avisos** | El reloj, la entrega 2, pedido sugerido, precios, informe     | Falta                            |
 | 6     | **H · Horarios**              | La entrega 3, con el coste en vivo y las horas extra          | Falta                            |
@@ -492,8 +516,9 @@ la contraseña por correo** (hoy la da quien lleva el local, o la consola).
 
 Para que nadie dé por hecho lo que solo está escrito:
 
-- **De las veinte mejoras, ninguna en producción.** La 1 (modo cocina) y la 2 (las
-  cifras de cada app) están hechas en la rama de V, sin fusionar. Todas tienen su plan
+- **De las veinte mejoras, ninguna en producción.** La 1 (modo cocina), la 2 (las
+  cifras de cada app), la 3 (el Resumen) y la 7 (Ajustes en secciones) están hechas en
+  la rama de V, sin fusionar. Todas tienen su plan
   y su entrega; la tabla con cada una está en
   [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
 - **Del admin, solo la puerta** (A1). **No hay clientes** —lista, ficha tipo CRM,
@@ -628,11 +653,11 @@ secretos de Supabase según Richi (16-sep; sin comprobar en Ajustes). **Los de E
 
 | Aplicación      | Peso inicial     | De los cuales tipografía |
 | --------------- | ---------------- | ------------------------ |
-| `app`           | **284,0 KB**     | 106,1 KB                 |
-| `admin`         | **205,0 KB**     | 106,1 KB                 |
-| `web` · `carta` | 165,8 · 166,7 KB | 106,1 KB                 |
+| `app`           | **287,6 KB**     | 106,1 KB                 |
+| `admin`         | **205,4 KB**     | 106,1 KB                 |
+| `web` · `carta` | 166,0 · 167,1 KB | 106,1 KB                 |
 
-La referencia es 250 y **se mide, no bloquea**; el presupuesto de velocidad, que es el que manda, pasa en la prueba de pantalla. Lo de V es sobre todo **«Cómo va»** (la tarjeta, que ya estaba, y tres filas pequeñas) y las reglas de `cocina.css`. **Crear cuenta y Google (E1) suben `app` 4,7 KB**: la pantalla de crear cuenta, la de elegir plan y la vuelta de Google, que hacen falta antes de entrar; la web baja 0,9 KB al quitar el marcador de M0. **La puerta del admin sube `admin` 16 KB**: TanStack Query y el cliente de la API, que la app ya llevaba; `app` no cambia. El local en Google sube `app` 1,8 KB
+La referencia es 250 y **se mide, no bloquea**; el presupuesto de velocidad, que es el que manda, pasa en la prueba de pantalla. Lo de V es sobre todo **«Cómo va»** (la tarjeta, que ya estaba, y tres filas pequeñas), las reglas de `cocina.css` y, en el punto 3, **3,6 KB más**: el mosaico, el catálogo de Ajustes y la tarjeta nueva. **Crear cuenta y Google (E1) suben `app` 4,7 KB**: la pantalla de crear cuenta, la de elegir plan y la vuelta de Google, que hacen falta antes de entrar; la web baja 0,9 KB al quitar el marcador de M0. **La puerta del admin sube `admin` 16 KB**: TanStack Query y el cliente de la API, que la app ya llevaba; `app` no cambia. El local en Google sube `app` 1,8 KB
 —la tarjeta de Ajustes—. El Panel vivo la subió 3,5 KB —la
 tarjeta del indicador, la línea y la rejilla nueva— y **`@dnd-kit` no cuenta**: va en
 su propio trozo (17 KB) y solo se descarga al editar el Panel. Las apps conectadas subieron `app`
@@ -1021,6 +1046,20 @@ la capa superior del navegador— que es justo cuando hace falta.
 81. **Una prueba que pasa por el orden en que se ejecutan no prueba nada.** Las cifras
     de Inventario pasaban solo porque otra prueba, antes, daba de alta un producto.
     Cada prueba se prepara lo suyo.
+82. **Una rejilla por filas estira lo corto.** Una fila mide lo que su tarjeta más alta,
+    así que la de tres líneas acababa con ochocientos píxeles de nada. Varias tarjetas
+    en una pantalla van en `Mosaico` (0045).
+83. **Un color se mide en los dos temas, y también cuando va de fondo.** «7 días» iba
+    en `bg-charcoal text-superficie`: blanco sobre casi negro en claro y 1,4:1 en
+    oscuro. Llevaba así desde M6½ porque la prueba de contraste mira la paleta, no las
+    parejas que escribe cada pantalla. Ahora hay una que busca esa pareja.
+84. **Dos copias de una paleta acaban siendo dos paletas.** «El del sistema» en claro
+    seguía con el fondo de B1 tres semanas después de que el tema claro lo cambiara.
+    Lo que se escribe dos veces se compara en una prueba, o no se escribe dos veces.
+85. **Lo que todavía no existe no se enseña en la pantalla que se usa.** Una tarjeta de
+    «lo que falta por venir» o un botón apagado con su módulo en mitad del día a día
+    son texto sobre el futuro que alguien tiene que leer cada vez. Va en el menú
+    («Llega después») y en el plan.
 
 ---
 
@@ -1074,6 +1113,7 @@ En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 | **0042** | **Registro abierto con correo o Google, y se paga al empezar salvo oferta** |
 | **0043** | **Canarias entra con IGIC; Ceuta y Melilla esperan; foral y SII, fuera**    |
 | **0044** | **Las cifras de cada app: la misma tarjeta, las mismas cuentas** (en V)     |
+| **0045** | **El aspecto y el orden: Resumen, mosaico y Ajustes por secciones** (en V)  |
 
 Otras, sin fichero propio:
 
@@ -1130,11 +1170,17 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   **Y quién ve qué del Calendario, la política de su tabla** ([0031](docs/decisiones/0031-el-calendario-recoge-lo-de-todos.md)).
   **Y quién gestiona a quién, `servidor/aplicacion/jerarquia.ts`**, con la amplitud
   de cada rol que guarda la base ([0034](docs/decisiones/0034-nadie-gestiona-a-su-igual.md)).
+- **El mosaico** (0045): varias tarjetas en una pantalla van en `Mosaico`, y el Panel
+  usa la misma medida (`usarFilasDelMosaico`). Volver a una rejilla por filas devuelve
+  las tarjetas estiradas. **Y lo elegido va en `bg-texto text-superficie`**, nunca en
+  `bg-charcoal text-superficie`, que en oscuro no se lee: una prueba lo vigila.
+- **Qué ajustes hay y dónde viven**, en `pantallas/lasSeccionesDeAjustes.ts`: lo leen
+  la pantalla, su buscador y el buscador universal. Un ajuste nuevo se escribe ahí.
 - **Las cifras con flecha** (0039, 0044): **una sola tarjeta**, `TarjetaDeIndicador` de
   `@estook/ui`, para el Panel y las apps; cada cifra, en el dominio (`indicador.ts`), y
-  **contada como la pantalla de la que sale**: la cámara como Inventario · Hoy
+  **contada como la pantalla de la que sale**: la cámara como Inventario · Resumen
   (`lasFotosDeLaCamara`, del libro, sin guardar fotos), y las horas, el coste y los
-  retrasos como el Resumen de Equipo (`lasEntradasDelHorario`, una sola pieza para los
+  retrasos como Equipo · Fichajes (`lasEntradasDelHorario`, una sola pieza para los
   dos). Una cifra nueva que ya salga en otra pantalla lleva su prueba que las compara.
 - **El modo cocina se hace en `cocina.css`**, nunca en una pantalla: los colores AAA
   calculados y la regla de 64 px para todo lo que se toca, **fuera de `@layer base`**
@@ -1174,32 +1220,26 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ---
 
-## 8 · El siguiente paso · V, los puntos 3 a 5
+## 8 · El siguiente paso · V, los puntos 4 y 5
 
 Rama `v-lo-que-se-ve`, con `main` dentro. **El pull request se abre cuando estén los
 cinco**, y lo que tendrá que hacer Richi ese día está escrito en
 [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md), sección V: fusionar, aplicar
-la `0040` y desplegar la API, seguidos.
+la `0040` y desplegar la API, seguidos. El punto 3 no añade migración.
 
 ### Lo que queda
 
-- **3 · Cada app abre con su resumen.** Hay que decidirlo con Richi al empezar, y hay
-  una razón de peso: **Inventario ya tiene sus cuatro destinos construidos**, y B5 no
-  deja un quinto. Lo natural es que el resumen **sea la primera pantalla que ya existe**
-  —Inventario · Hoy y Equipo · Hoy, que desde el punto 2 ya llevan «Cómo va»—, con sus
-  acciones de siempre a un toque y **solo al entrar desde la rueda** (el plan). Servicio
-  no tiene un «Hoy»: abre en el Cierre, que también lleva ya sus cifras.
 - **4 · Estados vacíos con dibujo y una acción**, cargados aparte. Uno de los casos: con
-  la cámara vacía, Inventario · Hoy enseña cómo empezar y no «Cómo va».
-- **5 · El tema oscuro repasado con capturas, y las fotos de producto.** Ya hay algo
-  apuntado para el repaso: **«el del sistema» en claro pinta el fondo `#fafaf8`, y el
-  tema claro `#f1efea`** (`temas.css`). Son dos fondos distintos para el mismo tema;
-  hay que decidir cuál es el bueno y dejar uno.
+  la cámara vacía, Inventario · Resumen enseña cómo empezar y no «Cómo va». Hoy los
+  vacíos dicen «Se empieza por Productos» sin botón: el 4 les pone el botón.
+- **5 · El tema oscuro repasado con capturas que se comparan en la prueba, y las fotos
+  de producto.** Lo del tema del sistema ya está hecho (0045). Queda estrenar la
+  comparación de capturas con Playwright y las fotos en el almacén del logo.
 
 **Terminado cuando** (del plan): las tres apps enseñan sus cifras con flecha y la del
 food cost cuadra con el Panel —hecho—; el modo cocina se mide en las pantallas —hecho—;
-cada app abre con su resumen; los vacíos invitan a empezar; y las capturas en oscuro se
-comparan en la prueba.
+cada app abre con su resumen —hecho—; los vacíos invitan a empezar; y las capturas en
+oscuro se comparan en la prueba.
 
 **Cómo se comprueba que no rompe lo de antes:** `pnpm verifica`,
 `pnpm prueba:e2e:completa` (que ya incluye `pnpm cobertura`) y, tras desplegar,

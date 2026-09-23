@@ -92,7 +92,7 @@ export function Tabla<T>({
                 key={columna.clave}
                 scope="col"
                 className={clases(
-                  'px-e3 py-e2 text-etiqueta font-medium uppercase tracking-wide',
+                  'px-e3 py-e2 text-secundario font-medium',
                   'text-texto-suave',
                   columna.numerica === true ? 'text-right' : 'text-left',
                 )}
@@ -254,9 +254,7 @@ function ElementoDeTabla<T>({
             .filter((columna) => columna.clave !== principal?.clave)
             .map((columna) => (
               <div key={columna.clave} className="contents">
-                <dt className="text-etiqueta uppercase tracking-wide text-texto-suave self-center">
-                  {columna.titulo}
-                </dt>
+                <dt className="text-secundario text-texto-suave self-center">{columna.titulo}</dt>
                 <dd className="text-cuerpo text-right">{columna.celda(fila)}</dd>
               </div>
             ))}

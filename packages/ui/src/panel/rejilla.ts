@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { TamanoDeWidget, WidgetPuesto } from './catalogo.ts';
+import { CLASES_DEL_MOSAICO } from '../componentes/Mosaico.tsx';
 
 /**
  * Lo que comparten la rejilla del Panel y su versión en edición (0039): sus
@@ -38,13 +39,18 @@ export interface RejillaConVacios extends RejillaProps {
   readonly avisarDeVacio: (id: string, vacio: boolean) => void;
 }
 
-/** Dos columnas en móvil, cuatro en un portátil y seis en un monitor grande. */
+/**
+ * Dos columnas en móvil, cuatro en un portátil y seis en un monitor grande.
+ *
+ * El tamaño decide **el ancho y cuánto enseña**, no el alto. Desde la entrega V el
+ * alto lo pone lo que el widget tiene dentro (el mosaico, 0045): antes «grande»
+ * era doble alto fijo y «pequeño» un alto mínimo, y un widget de tres líneas al
+ * lado de uno de doce se estiraba hasta los doce con un hueco en medio.
+ */
 export const CLASES_DEL_TAMANO: Readonly<Record<TamanoDeWidget, string>> = {
-  chico: 'col-span-1 row-span-1',
-  ancho: 'col-span-2 row-span-1',
-  // Doble alto, y por eso las filas de la rejilla llevan una altura mínima fija:
-  // sin ella, «doble alto» no significa nada.
-  grande: 'col-span-2 row-span-2',
+  chico: 'col-span-1',
+  ancho: 'col-span-2',
+  grande: 'col-span-2',
 };
 
 export const COMO_SE_LLAMA_EL_TAMANO: Readonly<Record<TamanoDeWidget, string>> = {
@@ -63,6 +69,11 @@ export const COMO_SE_LLAMA_EL_TAMANO: Readonly<Record<TamanoDeWidget, string>> =
  * rellena el hueco con el siguiente widget que quepa, que es lo que hace la
  * pantalla de inicio de un móvil. El orden de lectura sigue siendo el de la
  * lista, que es el que se guarda.
+ *
+ * ── Y el mosaico, que es la otra mitad (entrega V, 0045) ─────────────────────
+ *
+ * Las filas son de cuatro píxeles y cada casilla dice cuántas ocupa, medido. Con
+ * el flujo denso, eso coloca cada widget debajo del más corto: el Panel se
+ * encaja como un iPad y no por filas del alto del más alto.
  */
-export const CLASES_DE_LA_REJILLA =
-  'grid grid-flow-row-dense grid-cols-2 gap-e3 [grid-auto-rows:minmax(9.5rem,auto)] lg:grid-cols-4 2xl:grid-cols-6';
+export const CLASES_DE_LA_REJILLA = `${CLASES_DEL_MOSAICO} grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6`;

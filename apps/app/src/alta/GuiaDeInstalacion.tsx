@@ -98,7 +98,7 @@ export function GuiaDeInstalacion() {
           <li key={paso} className="flex gap-e3">
             <span
               aria-hidden
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-redondo bg-charcoal text-etiqueta font-semibold text-superficie"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-redondo bg-texto text-etiqueta font-semibold text-superficie"
             >
               {i + 1}
             </span>

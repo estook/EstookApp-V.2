@@ -490,7 +490,7 @@ test('desde la pantalla: se manda, sale en Hoy, y se recibe entero en dos toques
   await expect(ficha.getByRole('button', { name: 'Recibir lo que ha llegado' })).toBeVisible();
 
   // ── Y sale en «Hoy», con su botón de recibir ──────────────────────────────
-  await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { level: 2, name: 'Compras de hoy' })).toBeVisible();
   await expect(page.getByText(nombre).first()).toBeVisible();
 

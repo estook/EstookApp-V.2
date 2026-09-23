@@ -79,7 +79,7 @@ export function Envoltorio({
 }: Comunes & { readonly id: string; readonly children: ReactNode }) {
   return (
     <div className="flex flex-col gap-e1">
-      <label htmlFor={id} className="text-etiqueta text-texto-suave uppercase tracking-wide">
+      <label htmlFor={id} className="text-secundario font-medium text-texto-suave">
         {etiqueta}
         {obligatorio === true && (
           // El asterisco solo no dice nada a quien no ve. La palabra si.

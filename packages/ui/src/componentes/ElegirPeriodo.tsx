@@ -38,7 +38,7 @@ export function ElegirPeriodo({
           }}
           className={clases(
             'min-h-toque px-e3 text-secundario font-medium',
-            cuantos === periodo ? 'bg-charcoal text-superficie' : 'bg-superficie hover:bg-fondo',
+            cuantos === periodo ? 'bg-texto text-superficie' : 'bg-superficie hover:bg-fondo',
           )}
         >
           {cuantos} días

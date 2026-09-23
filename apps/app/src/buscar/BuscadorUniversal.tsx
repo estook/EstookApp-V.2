@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { IconoAjustes, IconoPanel, IconoTamanoDeLetra } from '@estook/iconos';
+import { IconoAjustes, IconoPanel } from '@estook/iconos';
 import {
   Buscador,
   destinosConstruidos,
@@ -12,6 +12,11 @@ import {
 } from '@estook/ui';
 import { hayApi } from '../datos/cliente.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import {
+  ajustesQueVe,
+  nombreDeLaSeccion,
+  rutaDelAjuste,
+} from '../pantallas/lasSeccionesDeAjustes.ts';
 
 /**
  * El buscador universal, enchufado (M3, Parte B5).
@@ -44,7 +49,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
   // M4: el cliente es el de la sesion. Antes se creaba uno con el identificador
   // de desarrollo puesto a mano; ahora lleva el token de quien ha entrado, asi
   // que el buscador encuentra exactamente lo que esa persona puede ver.
-  const { cliente, yo } = usarSesion();
+  const { cliente, yo, permisos } = usarSesion();
   const [escrito, setEscrito] = useState('');
   const [reposado, setReposado] = useState('');
 
@@ -128,17 +133,27 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
           navegar('/ajustes');
         },
       },
-      {
-        id: 'tamano-de-letra',
-        nombre: 'Cambiar el tamaño de letra',
-        donde: 'Ajustes',
-        icono: <IconoTamanoDeLetra size={18} />,
+      /*
+        Y cada ajuste que esta persona ve, con las palabras con las que se busca
+        (entrega V, mejora 7): «nadie tiene que saber que el tema está en
+        Ajustes». Salen del mismo catálogo que la pantalla de Ajustes.
+      */
+      ...ajustesQueVe({
+        permisos,
+        tieneLocal: yo?.local !== null && yo?.local !== undefined,
+        tieneOrganizacion: yo?.organizacion !== null && yo?.organizacion !== undefined,
+      }).map((ajuste) => ({
+        id: `ajuste-${ajuste.id}`,
+        nombre: ajuste.nombre,
+        donde: `Ajustes · ${nombreDeLaSeccion(ajuste.seccion)}`,
+        palabras: ajuste.palabras,
+        icono: <IconoAjustes size={18} />,
         hacer: () => {
-          navegar('/ajustes#tamano-de-letra');
+          navegar(rutaDelAjuste(ajuste));
         },
-      },
+      })),
     ],
-    [apps, navegar],
+    [apps, navegar, permisos, yo?.local, yo?.organizacion],
   );
 
   const resultados = useMemo<readonly ResultadoDeBusqueda[]>(

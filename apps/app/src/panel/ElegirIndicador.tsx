@@ -41,9 +41,7 @@ export function ElegirIndicador({
   return (
     <section aria-label="Tus cifras, con su gráfica" className="flex flex-col gap-e3">
       <div>
-        <p className="text-etiqueta uppercase tracking-wide text-texto-suave">
-          Tus cifras, con su gráfica
-        </p>
+        <p className="text-secundario font-medium text-texto-suave">Tus cifras, con su gráfica</p>
         <p className="mt-e1 text-secundario text-texto-suave">
           Elige qué quieres seguir y de cuántos días. Sale con su flecha frente a los días de antes.
         </p>

@@ -436,7 +436,7 @@ export function Esqueleto() {
             navegar('/ajustes');
           }}
           alIrAMiAcceso={() => {
-            navegar('/ajustes#mi-acceso');
+            navegar('/ajustes/cuenta#mi-acceso');
           }}
           alCambiarDeLocal={(id) => {
             void cambiarDeLocal(id);

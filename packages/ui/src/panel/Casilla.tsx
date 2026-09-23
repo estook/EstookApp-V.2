@@ -8,6 +8,11 @@ import {
 import { IconoAnadir, IconoFlechaAbajo, IconoFlechaArriba, IconoQuitar } from '@estook/iconos';
 import { clases } from '../clases.ts';
 import { AvisoDeVacio } from './vacio.ts';
+import {
+  FILA_DEL_MOSAICO,
+  HUECO_DEL_MOSAICO,
+  usarFilasDelMosaico,
+} from '../ganchos/usarFilasDelMosaico.ts';
 import type { TamanoDeWidget } from './catalogo.ts';
 import { CLASES_DEL_TAMANO, COMO_SE_LLAMA_EL_TAMANO } from './rejilla.ts';
 
@@ -87,12 +92,14 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
     },
     [avisarDeVacio, id],
   );
+  // Lo que ocupa en alto lo dice lo que hay dentro (el mosaico, 0045).
+  const { medir, estilo: filas } = usarFilasDelMosaico<HTMLDivElement>();
 
   return (
     <div
       ref={ref}
       data-widget={id}
-      style={{ ...estilo, animationDelay: `${Math.min(indice, 12) * 35}ms` }}
+      style={{ ...filas, ...estilo, animationDelay: `${Math.min(indice, 12) * 35}ms` }}
       className={clases(
         CLASES_DEL_TAMANO[tamano],
         'relative min-w-0 anima-entra',
@@ -103,33 +110,40 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
       )}
       {...resto}
     >
-      <div
-        className={clases('h-full', editando && !hueco && 'anima-tiembla', hueco && 'opacity-30')}
-        // Cada uno con su desfase, como en el iPhone: si tiemblan todos a la vez
-        // parece que se mueve la pantalla, no los widgets.
-        style={editando ? { animationDelay: `${(indice % 4) * -70}ms` } : undefined}
-      >
-        <AvisoDeVacio.Provider value={avisar}>{children}</AvisoDeVacio.Provider>
-      </div>
-
       {/*
-        Los controles, **fuera de lo que tiembla**. Tiembla la tarjeta, que es lo
-        que dice «estás editando»; el «quitar» y el tamaño se quedan quietos, que
-        un botón que se mueve es un botón que se falla con el dedo.
+        Lo que se mide es esto, y no la casilla: la casilla se estira hasta sus
+        filas, que son unos píxeles más que la tarjeta. Los controles van aquí
+        dentro para quedarse pegados a la tarjeta y no al hueco de debajo.
       */}
-      {editando && (
-        <ControlesDeEdicion
-          nombre={nombre}
-          tamano={tamano}
-          tamanos={tamanos}
-          vacio={vacio}
-          alQuitar={alQuitar}
-          alCambiarTamano={alCambiarTamano}
-          {...(alMover === undefined ? {} : { alMover })}
-          esElPrimero={esElPrimero}
-          esElUltimo={esElUltimo}
-        />
-      )}
+      <div ref={medir} className="relative">
+        <div
+          className={clases(editando && !hueco && 'anima-tiembla', hueco && 'opacity-30')}
+          // Cada uno con su desfase, como en el iPhone: si tiemblan todos a la vez
+          // parece que se mueve la pantalla, no los widgets.
+          style={editando ? { animationDelay: `${(indice % 4) * -70}ms` } : undefined}
+        >
+          <AvisoDeVacio.Provider value={avisar}>{children}</AvisoDeVacio.Provider>
+        </div>
+
+        {/*
+          Los controles, **fuera de lo que tiembla**. Tiembla la tarjeta, que es lo
+          que dice «estás editando»; el «quitar» y el tamaño se quedan quietos, que
+          un botón que se mueve es un botón que se falla con el dedo.
+        */}
+        {editando && (
+          <ControlesDeEdicion
+            nombre={nombre}
+            tamano={tamano}
+            tamanos={tamanos}
+            vacio={vacio}
+            alQuitar={alQuitar}
+            alCambiarTamano={alCambiarTamano}
+            {...(alMover === undefined ? {} : { alMover })}
+            esElPrimero={esElPrimero}
+            esElUltimo={esElUltimo}
+          />
+        )}
+      </div>
     </div>
   );
 });
@@ -168,7 +182,7 @@ function ControlesDeEdicion({
     <>
       {/* La capa que impide pulsar dentro del widget mientras se edita. Sin ella,
           arrastrar sobre un botón del widget lo activaría al soltar. */}
-      <div aria-hidden className="absolute inset-0 rounded-grande bg-superficie/30" />
+      <div aria-hidden className="absolute inset-0 rounded-mayor bg-superficie/30" />
 
       <button
         type="button"
@@ -262,9 +276,7 @@ function ControlesDeEdicion({
                 }}
                 className={clases(
                   'min-h-[30px] px-e2 text-etiqueta font-semibold',
-                  cual === tamano
-                    ? 'bg-charcoal text-superficie'
-                    : 'text-texto-suave hover:bg-fondo',
+                  cual === tamano ? 'bg-texto text-superficie' : 'text-texto-suave hover:bg-fondo',
                 )}
               >
                 {COMO_SE_LLAMA_EL_TAMANO[cual]}
@@ -279,18 +291,26 @@ function ControlesDeEdicion({
 
 /** El hueco de añadir, dentro de la rejilla y no en un menú escondido. */
 export function HuecoDeAnadir({ alAnadir }: { readonly alAnadir: () => void }) {
+  // No tiene contenido que medir: mide lo que medía una casilla pequeña antes del
+  // mosaico, 152 px, más su hueco.
+  const filas = Math.ceil((ALTO_DEL_HUECO + HUECO_DEL_MOSAICO) / FILA_DEL_MOSAICO);
   return (
-    <button
-      type="button"
-      onClick={alAnadir}
-      className={clases(
-        'col-span-1 row-span-1 flex flex-col items-center justify-center gap-e1',
-        'rounded-grande border-2 border-dashed border-borde-fuerte text-texto-suave',
-        'hover:border-naranja hover:text-texto',
-      )}
-    >
-      <IconoAnadir size={24} />
-      <span className="text-secundario font-medium">Añadir</span>
-    </button>
+    <div className="col-span-1" style={{ gridRowEnd: `span ${filas}` }}>
+      <button
+        type="button"
+        onClick={alAnadir}
+        style={{ height: ALTO_DEL_HUECO }}
+        className={clases(
+          'flex w-full flex-col items-center justify-center gap-e1',
+          'rounded-mayor border-2 border-dashed border-borde-fuerte text-texto-suave',
+          'hover:border-naranja hover:text-texto',
+        )}
+      >
+        <IconoAnadir size={24} />
+        <span className="text-secundario font-medium">Añadir</span>
+      </button>
+    </div>
   );
 }
+
+const ALTO_DEL_HUECO = 152;

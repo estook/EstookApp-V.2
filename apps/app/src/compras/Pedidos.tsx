@@ -360,7 +360,7 @@ function LoDeHoy({
   if (nada) return null;
 
   return (
-    <div className="grid gap-e3 md:grid-cols-2">
+    <div className="grid items-start gap-e3 md:grid-cols-2">
       {tocaPedir.length > 0 && (
         <Tarjeta titulo="Toca pedir hoy" origen="Para llegar a su próximo reparto">
           <ul className="flex flex-col gap-e3">

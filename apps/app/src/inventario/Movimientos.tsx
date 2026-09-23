@@ -177,7 +177,7 @@ export function Movimientos({
       ) : (
         porDia.map(([dia, delDia]) => (
           <section key={dia} className="flex flex-col gap-e2">
-            <h2 className="text-etiqueta uppercase tracking-wide text-texto-suave">
+            <h2 className="text-secundario font-medium text-texto-suave">
               {comoSeLeeElDia(dia, hoy)}
               <span className="ml-e2 normal-case tracking-normal">
                 {delDia.length === 1 ? '1 movimiento' : `${delDia.length} movimientos`}

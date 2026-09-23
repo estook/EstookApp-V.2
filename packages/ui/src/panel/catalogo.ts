@@ -560,10 +560,17 @@ const DE_QUE_APP: Readonly<Record<string, PermisoDeApp>> = {
 };
 
 export function acentoDelWidget(id: string): string | undefined {
-  const widget = widgetPorId(id);
-  const permiso = widget?.permiso;
-  if (permiso == null) return undefined;
-  const deLaApp = permiso.startsWith('app.') ? (permiso as PermisoDeApp) : DE_QUE_APP[permiso];
+  const deLaApp = appDelWidget(id);
   if (deLaApp === undefined) return undefined;
   return `var(--color-app-${deLaApp.replace('app.', '')})`;
+}
+
+/**
+ * De qué app es un widget, por su permiso. Lo usa el acento y, desde la entrega
+ * V, el icono de la cabecera de cada widget (0045): los dos salen del mismo sitio.
+ */
+export function appDelWidget(id: string): PermisoDeApp | undefined {
+  const permiso = widgetPorId(id)?.permiso;
+  if (permiso == null) return undefined;
+  return permiso.startsWith('app.') ? (permiso as PermisoDeApp) : DE_QUE_APP[permiso];
 }

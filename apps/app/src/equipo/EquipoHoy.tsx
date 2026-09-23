@@ -1,8 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { puedeEditar } from '@estook/permisos';
-import { Aviso, Avatar, Boton, Cargando, EstadoVacio, Etiqueta, Tarjeta, clases } from '@estook/ui';
-import { IconoEntrar, IconoSalir } from '@estook/iconos';
+import {
+  Aviso,
+  Avatar,
+  Boton,
+  Cargando,
+  EstadoVacio,
+  Etiqueta,
+  Mosaico,
+  Tarjeta,
+  clases,
+} from '@estook/ui';
+import { IconoEntrar, IconoEquipo, IconoReloj, IconoSalir } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { FichaDePersona } from './FichaDePersona.tsx';
@@ -18,7 +28,7 @@ import {
 } from './contrato.ts';
 
 /**
- * Equipo · Hoy (M6½).
+ * Equipo · Resumen (M6½; «Hoy» hasta la entrega V, 0045).
  *
  * «¿Quién está hoy, quién falta y qué hay que resolver?» Llevaba desde M3 con su
  * cartel de «llega en M13», y lo que hacía falta para contestarla no era el módulo
@@ -74,10 +84,10 @@ export function EquipoHoy() {
   const puedeMarcarElLocal = puedeEditar(permisos, 'app.ajustes');
 
   return (
-    <div className="flex flex-col gap-e4">
+    <div className="flex flex-col gap-e5">
       {/* ── 1 · Lo tuyo ─────────────────────────────────────────────────── */}
       {mio !== undefined && mio.puedoFichar && (
-        <section className="flex flex-wrap items-center justify-between gap-e3 rounded-grande border border-borde bg-superficie p-e3 shadow-s1">
+        <section className="flex flex-wrap items-center justify-between gap-e3 rounded-mayor border border-borde bg-superficie px-e4 py-e3 [box-shadow:var(--sombra-tarjeta)] sm:px-e5">
           <div>
             <p className="text-cuerpo font-semibold">
               {mio.abierto === null
@@ -114,7 +124,7 @@ export function EquipoHoy() {
             <Boton
               tono="secundario"
               onClick={() => {
-                navegar('/ajustes#donde-esta-el-local');
+                navegar('/ajustes/local#donde-esta-el-local');
               }}
             >
               Ir a Ajustes
@@ -135,16 +145,19 @@ export function EquipoHoy() {
           />
         </Tarjeta>
       ) : (
-        <div className="grid gap-e3 lg:grid-cols-2">
+        <Mosaico columnas="lg:grid-cols-2">
           {/* ── 2 · Quién está dentro ─────────────────────────────────── */}
           <Tarjeta
             titulo={dentro.length === 1 ? '1 persona dentro' : `${dentro.length} personas dentro`}
             origen={`Son las ${datos.horaDelLocal} en el local`}
+            icono={<IconoEquipo size={18} />}
             acento="var(--color-app-equipo)"
             pegado
           >
             {dentro.length === 0 ? (
-              <p className="p-e3 text-secundario text-texto-suave">Nadie ha fichado todavía.</p>
+              <p className="px-e4 pb-e4 text-secundario text-texto-suave @min-[22rem]:px-e5">
+                Nadie ha fichado todavía.
+              </p>
             ) : (
               <ul>
                 {dentro.map((quien) => (
@@ -164,10 +177,14 @@ export function EquipoHoy() {
           <Tarjeta
             titulo={fuera.length === 1 ? '1 sin fichar' : `${fuera.length} sin fichar`}
             origen="Con su hora de entrada, si tienen horario"
+            icono={<IconoReloj size={18} />}
+            acento="var(--color-texto-suave)"
             pegado
           >
             {fuera.length === 0 ? (
-              <p className="p-e3 text-secundario text-texto-suave">Han fichado todos.</p>
+              <p className="px-e4 pb-e4 text-secundario text-texto-suave @min-[22rem]:px-e5">
+                Han fichado todos.
+              </p>
             ) : (
               <ul>
                 {fuera.map((quien) => (
@@ -182,13 +199,13 @@ export function EquipoHoy() {
               </ul>
             )}
           </Tarjeta>
-        </div>
+        </Mosaico>
       )}
 
       {/*
         «Cómo va» · las horas, el coste y los retrasos de la gente que llevas, con
         su flecha (V, punto 2). Debajo de quién está, que es lo que se viene a
-        mirar aquí; el detalle, persona a persona, en el Resumen.
+        mirar aquí; el detalle, persona a persona, en Fichajes.
       */}
       <CifrasDeLaApp app="equipo" />
 
@@ -213,7 +230,7 @@ function Fila({
       <button
         type="button"
         onClick={alAbrir}
-        className="flex w-full min-h-toque items-center gap-e3 px-e3 py-e2 text-left hover:bg-fondo"
+        className="flex w-full min-h-toque items-center gap-e3 px-e4 py-e2 text-left hover:bg-fondo @min-[22rem]:px-e5"
       >
         <Avatar nombre={nombre} tamano={32} />
         <span className="min-w-0 flex-1">

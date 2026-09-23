@@ -962,7 +962,7 @@ test('si no se toca el envase, se guarda el del catálogo', async ({ page }) => 
   await expect(loQueSeVe(page, 'Garrafa de 5 l')).toBeVisible();
 });
 
-// ── 7 · «Hoy», que es la pantalla que más se abre y no la probaba nadie ──────
+// ── 7 · «Resumen» (antes «Hoy»), la pantalla que más se abre ────────────────
 
 /**
  * **La pantalla principal de M6 devolvía un 500 a todo el mundo, siempre.**
@@ -984,7 +984,7 @@ test('si no se toca el envase, se guarda el del catálogo', async ({ page }) => 
  * De ahí las dos de aquí: una pregunta a la API si contesta, y la otra mira si
  * la pantalla enseña algo o el aviso de que se ha roto.
  */
-test('«Hoy» contesta, en vez de caerse con un 500', async ({ request }) => {
+test('«Resumen» contesta, en vez de caerse con un 500', async ({ request }) => {
   const token = await tokenDe(request, ROSA);
 
   const hoy = await consultar<{ atencion: unknown[]; caducan: unknown[] }>(
@@ -999,12 +999,12 @@ test('«Hoy» contesta, en vez de caerse con un 500', async ({ request }) => {
   expect(Array.isArray(hoy.datos?.caducan)).toBe(true);
 });
 
-test('«Hoy» se pinta, y no con el aviso de que se ha roto', async ({ page }) => {
+test('«Resumen» se pinta, y no con el aviso de que se ha roto', async ({ page }) => {
   await entrar(page, ROSA);
-  await irAInventario(page, 'hoy');
+  await irAInventario(page, 'resumen');
 
   // El titulo es **el destino**, no la app: es donde estas de verdad.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hoy');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
   // El aviso que salía antes con el 500.
   await expect(page.getByText('No he podido leer')).toHaveCount(0);
 });
@@ -1301,7 +1301,7 @@ test('el queso azul en tarros de 250 g: el precio de un tarro y la cuenta sale s
  *  ve; y lo tirado sale de cámara como merma por caducado, que es lo que el food
  *  cost del mes tiene que saber.
  */
-test('un lote que caduca se quita desde «Hoy», y lo tirado queda como merma', async ({
+test('un lote que caduca se quita desde «Resumen», y lo tirado queda como merma', async ({
   page,
   request,
 }) => {
@@ -1320,7 +1320,7 @@ test('un lote que caduca se quita desde «Hoy», y lo tirado queda como merma', 
   const productoId = creado.datos?.productoId ?? '';
 
   await entrar(page, ROSA);
-  await irAInventario(page, 'hoy');
+  await irAInventario(page, 'resumen');
 
   await page
     .getByRole('listitem')

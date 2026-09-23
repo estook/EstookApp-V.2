@@ -44,9 +44,9 @@ async function entrar(page: Page, correo: string) {
 }
 
 /**
- * Un producto de Bar Centro, para que Inventario · Hoy tenga género que enseñar.
+ * Un producto de Bar Centro, para que Inventario · Resumen tenga género que enseñar.
  *
- * Con la cámara vacía «Hoy» enseña cómo empezar y no las cifras, que serían todo
+ * Con la cámara vacía «Resumen» enseña cómo empezar y no las cifras, que serían todo
  * ceros. Sin esto la prueba solo pasaba si otra, antes, había dado de alta algo:
  * dependía del orden, que es no probar nada.
  */
@@ -85,7 +85,7 @@ test('Inventario abre con sus cuatro cifras, debajo de lo que hay que atender', 
   page,
 }) => {
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
 
   const fila = lasCifrasDe(page, 'inventario');
   await expect(fila.getByRole('heading', { name: 'Cómo va' })).toBeVisible({ timeout: 15_000 });
@@ -105,7 +105,7 @@ test('Inventario abre con sus cuatro cifras, debajo de lo que hay que atender', 
 
 test('la semana o el mes, y cada tarjeta lleva a su detalle', async ({ page }) => {
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
   const fila = lasCifrasDe(page, 'inventario');
   await expect(fila).toBeVisible({ timeout: 15_000 });
 
@@ -127,7 +127,7 @@ test('la semana o el mes, y cada tarjeta lleva a su detalle', async ({ page }) =
 
 test('un cocinero ve lo que se acaba, y ni un euro', async ({ page }) => {
   await entrar(page, MARCOS);
-  await page.goto(`${APP}#/inventario/hoy`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
 
   const fila = lasCifrasDe(page, 'inventario');
   await expect(fila.locator('[data-cifra="bajo-minimo"]')).toBeVisible({ timeout: 15_000 });
@@ -150,9 +150,9 @@ test('Servicio enseña sus cifras debajo del cierre del día', async ({ page }) 
   await expect(fila.getByRole('button', { name: /a detalle/ })).toHaveCount(0);
 });
 
-test('Equipo enseña horas, coste y retrasos, y lleva al Resumen', async ({ page }) => {
+test('Equipo enseña horas, coste y retrasos, y lleva a Fichajes', async ({ page }) => {
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/equipo/hoy`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/equipo/resumen`, { waitUntil: 'domcontentloaded' });
 
   const fila = lasCifrasDe(page, 'equipo');
   await expect(fila.getByRole('heading', { name: 'Cómo va' })).toBeVisible({ timeout: 15_000 });
@@ -161,8 +161,8 @@ test('Equipo enseña horas, coste y retrasos, y lleva al Resumen', async ({ page
   }
 
   await fila.getByRole('button', { name: 'Ver retrasos a detalle' }).click();
-  await expect(page).toHaveURL(/#\/equipo\/resumen/);
-  // El Resumen cuenta los retrasos persona a persona. La tabla se pinta dos
+  await expect(page).toHaveURL(/#\/equipo\/fichajes/);
+  // Fichajes cuenta los retrasos persona a persona. La tabla se pinta dos
   // veces, una por ancho: se busca la que se ve (regla 68).
   await expect(
     page.getByText('Retrasos', { exact: true }).filter({ visible: true }).first(),
@@ -172,7 +172,7 @@ test('Equipo enseña horas, coste y retrasos, y lleva al Resumen', async ({ page
 test('cuándo es llegar tarde lo cambia quien lleva el local', async ({ page }, info) => {
   test.skip(info.project.name !== 'escritorio', UNA_VEZ);
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/ajustes/local`, { waitUntil: 'domcontentloaded' });
 
   const margen = page.getByLabel('Cuenta como retraso');
   await expect(margen).toHaveValue('5', { timeout: 15_000 });

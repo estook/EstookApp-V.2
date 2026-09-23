@@ -189,7 +189,7 @@ export default function RejillaQueSeEdita(props: RejillaConVacios) {
           <div
             className={clases(
               CLASES_DEL_TAMANO[elCogido.tamano],
-              'h-full scale-[1.03] cursor-grabbing rounded-grande shadow-s3',
+              'h-full scale-[1.03] cursor-grabbing rounded-mayor shadow-s3',
             )}
           >
             {pintar(elCogido)}

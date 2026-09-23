@@ -23,7 +23,7 @@ import {
   Tarjeta,
   clases,
 } from '@estook/ui';
-import { IconoBuscar, IconoCamara, IconoDocumento } from '@estook/iconos';
+import { IconoBuscar, IconoDocumento } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
@@ -303,15 +303,8 @@ export function Recuento() {
             }}
           />
         </label>
-        {/* La foto, apagada y con su motivo: leerla es Fogón, y es M22. */}
-        <Boton
-          tono="secundario"
-          disabled
-          icono={<IconoCamara size={16} />}
-          onClick={() => undefined}
-        >
-          Con una foto · M22
-        </Boton>
+        {/* Leer el recuento de una foto llega con Fogón (M22); el botón apagado que
+            había aquí se quitó en la entrega V (0045). */}
       </div>
 
       {noEntendidas.length > 0 && (

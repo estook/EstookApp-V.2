@@ -46,7 +46,7 @@ export function Cifra({
 
   return (
     <div className="flex flex-col gap-e1">
-      <p className="flex items-center gap-e1 text-etiqueta uppercase tracking-wide text-texto-suave">
+      <p className="flex items-center gap-e1 text-secundario font-medium text-texto-suave">
         {icono}
         {etiqueta}
       </p>
@@ -85,9 +85,7 @@ export function Cifra({
         <p className="text-secundario text-texto-suave">Objetivo: {objetivo}</p>
       )}
 
-      {origen !== undefined && (
-        <p className="text-etiqueta uppercase tracking-wide text-texto-suave">{origen}</p>
-      )}
+      {origen !== undefined && <p className="text-etiqueta text-texto-tenue">{origen}</p>}
     </div>
   );
 }

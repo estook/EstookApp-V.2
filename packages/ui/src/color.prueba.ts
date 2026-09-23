@@ -23,7 +23,7 @@ import {
 
 /** Los dos sitios donde se pinta, con los valores de `temas.css`. */
 const CLARO: DondeSePinta = { superficie: '#ffffff', texto: '#111c1f', oscuro: '#111c1f' };
-const OSCURO: DondeSePinta = { superficie: '#182124', texto: '#eef2f3', oscuro: '#26333a' };
+const OSCURO: DondeSePinta = { superficie: '#151c1f', texto: '#eef2f3', oscuro: '#26333a' };
 
 /**
  * Colores de verdad, elegidos para hacer daño.
@@ -110,7 +110,7 @@ describe('ajustar un color hasta que cumpla', () => {
   it('oscurece sobre claro y aclara sobre oscuro', () => {
     // Un amarillo sobre blanco no se ve; sobre la superficie oscura, sí.
     expect(ajustarHasta('#ffff00', '#ffffff', CONTRASTE_DE_ICONO)).not.toBe('#ffff00');
-    expect(ajustarHasta('#ffff00', '#182124', CONTRASTE_DE_ICONO)).toBe('#ffff00');
+    expect(ajustarHasta('#ffff00', '#151c1f', CONTRASTE_DE_ICONO)).toBe('#ffff00');
   });
 });
 

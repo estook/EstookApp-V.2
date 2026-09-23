@@ -79,7 +79,7 @@ export function Precios() {
   );
 
   return (
-    <div className="grid gap-e4 xl:grid-cols-2">
+    <div className="grid items-start gap-e4 xl:grid-cols-2">
       {error !== null && (
         <div className="xl:col-span-2">
           <ErrorEnCristiano error={error} />

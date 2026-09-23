@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -529,6 +530,55 @@ describe('el modo cocina: estados, acentos y el botón principal a 7:1', () => {
     // regla que lo consigue sigue en su sitio y no se ha pasado a cada pantalla.
     expect(COCINA).toMatch(
       /min-height:\s*var\(--spacing-toque\);\s*min-width:\s*var\(--spacing-toque\)/,
+    );
+  });
+});
+
+/**
+ * La entrega V · lo que el repaso del tema oscuro encontró (0045).
+ *
+ * Dos fallos que ninguna prueba miraba, y que ahora sí:
+ *
+ *   · **«El del sistema» con el móvil en claro no era el tema claro.** Llevaba el
+ *     fondo `#fafaf8` de B1, que se abandonó en M6½ porque la tarjeta no se
+ *     separaba de él, y cuatro colores más de antes. Elegir «el del sistema» daba
+ *     otra aplicación, más lavada.
+ *   · **Lo elegido no se leía en oscuro.** «7 días», «Listo» o el tamaño de un
+ *     widget iban en `bg-charcoal text-superficie`: en claro, blanco sobre casi
+ *     negro; en oscuro, la superficie oscura sobre el charcoal oscuro, a 1,4:1.
+ */
+describe('la entrega V · «el del sistema» y lo elegido', () => {
+  it('«el del sistema» en claro dice exactamente lo mismo que el tema claro', () => {
+    const bloque = TEMAS.slice(TEMAS.indexOf('@media (prefers-color-scheme: light)'));
+    for (const [, nombre, valor] of bloque.matchAll(/--color-([a-z-]+):\s*(#[0-9a-fA-F]{6})/g)) {
+      if (nombre === undefined || valor === undefined) continue;
+      expect(valor.toLowerCase(), `--color-${nombre}`).toBe(color(nombre).toLowerCase());
+    }
+  });
+
+  it('ninguna pieza pinta la superficie encima del charcoal', () => {
+    const raices = ['..', '../../../apps/app/src', '../../../apps/admin/src'].map((r) =>
+      fileURLToPath(new URL(r, import.meta.url)),
+    );
+    const malos: string[] = [];
+    const mirar = (carpeta: string) => {
+      for (const entrada of readdirSync(carpeta, { withFileTypes: true })) {
+        const ruta = join(carpeta, entrada.name);
+        if (entrada.isDirectory()) {
+          if (entrada.name !== 'node_modules') mirar(ruta);
+        } else if (entrada.name.endsWith('.tsx')) {
+          if (
+            /bg-charcoal[^'"`]*text-superficie|text-superficie[^'"`]*bg-charcoal/.test(
+              readFileSync(ruta, 'utf8'),
+            )
+          )
+            malos.push(ruta);
+        }
+      }
+    };
+    raices.forEach(mirar);
+    expect(malos, 'lo elegido va en bg-texto text-superficie, que se lee en los dos temas').toEqual(
+      [],
     );
   });
 });

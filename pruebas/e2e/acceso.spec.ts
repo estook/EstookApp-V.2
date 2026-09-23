@@ -130,7 +130,7 @@ test.describe('entrar', () => {
 
   test('y salir la cierra de verdad', async ({ page }) => {
     await entrar(page, 'rosa@ejemplo.estook.com');
-    await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${APP}#/ajustes/cuenta`, { waitUntil: 'domcontentloaded' });
 
     await page.getByRole('button', { name: /^Salir/ }).click();
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Entra en Estook');
@@ -667,7 +667,7 @@ test('quien lleva el local puede dar una contraseña nueva, y se enseña una vez
  */
 test('el doble factor se puede poner Y quitar, no solo poner', async ({ page }) => {
   await entrar(page, 'rosa@ejemplo.estook.com');
-  await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${APP}#/ajustes/cuenta`, { waitUntil: 'domcontentloaded' });
 
   // La sección existe y ofrece activarlo. Rosa no lo tiene puesto, así que lo
   // que se comprueba aquí es que la pantalla conoce las dos direcciones: antes

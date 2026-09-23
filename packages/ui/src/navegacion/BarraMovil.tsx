@@ -104,7 +104,7 @@ export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }:
         style={{ color: app.acento }}
       >
         <Icono size={24} />
-        <span className="text-[10px] font-semibold uppercase tracking-wide">Apps</span>
+        <span className="text-[11px] font-semibold">Apps</span>
       </button>
 
       {destinos.map((destino) => (
@@ -153,7 +153,7 @@ function Posicion({
       aria-current={activa ? 'page' : undefined}
       className={clases(
         'flex min-h-toque flex-1 flex-col items-center justify-center gap-[2px] rounded-medio px-e1',
-        'text-[10px] font-semibold uppercase tracking-wide',
+        'text-[11px] font-semibold',
         activa ? 'text-texto' : 'text-texto-suave',
       )}
       {...(activa && acento !== undefined ? { style: { color: acento } } : {})}

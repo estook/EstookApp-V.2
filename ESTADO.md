@@ -456,7 +456,7 @@ invitan a empezar; y las capturas en oscuro se comparan en la prueba.
 
 **Sin prisa, de código:** volver a `BrowserRouter` ahora que hay dominio
 ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md)); pasar Pedidos, Albaranes y
-Facturas a `usarListaLarga` cuando una crezca; subir a React Router 7; y el vectorial
+Facturas a `usarListaLarga` cuando una crezca; subir a React Router 7; **el 19 de octubre, mirar la integración continua**, que GitHub pasa `ubuntu-latest` a Ubuntu 26 ese día (hoy es solo un aviso); y el vectorial
 del logotipo y de Fogón cuando aparezcan.
 
 ## 9 · En paralelo · E2, el pago con Stripe

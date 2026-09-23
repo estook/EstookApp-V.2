@@ -4,15 +4,15 @@
 >
 > Comprobado en producción el 23 de septiembre de 2026, leyendo la base y la API.
 >
-> | Qué                        | Cómo está                                                                                    |
-> | -------------------------- | -------------------------------------------------------------------------------------------- |
-> | Pull requests              | **Todas fusionadas hasta la #63**                                                            |
-> | La base de datos           | **39 de 39** migraciones, igual que `main`                                                   |
-> | La API                     | **Desplegada el 22 de septiembre a las 17:55**, con la #63 dentro                            |
-> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                  |
-> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                             |
-> | **V · lo que se ve**       | **En su rama**, puntos 1 y 2 hechos. El pull request se abre con V entera (sección V, abajo) |
-> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                                 |
+> | Qué                        | Cómo está                                                                                                     |
+> | -------------------------- | ------------------------------------------------------------------------------------------------------------- |
+> | Pull requests              | **Todas fusionadas hasta la #63**                                                                             |
+> | La base de datos           | **39 de 39** migraciones, igual que `main`                                                                    |
+> | La API                     | **Desplegada el 22 de septiembre a las 17:55**, con la #63 dentro                                             |
+> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                                   |
+> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                                              |
+> | **V · lo que se ve**       | **En su rama**, puntos 1, 2 y 3 y la mejora 7 hechos. El pull request se abre con V entera (sección V, abajo) |
+> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                                                  |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -20,57 +20,120 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## V · Lo que se ve · lo que te toca cuando se abra su pull request
 
-**Todavía no hay nada que hacer:** V se fusiona entera, cuando estén sus cinco puntos.
-Esto queda escrito para ese día. Lo que trae hasta ahora: **el modo cocina** (Ajustes →
-«Modo cocina») y **«Cómo va»**, las cifras con flecha en la primera pantalla de
-Inventario, Servicio y Equipo, con **Ajustes → «Cuándo es llegar tarde»**
-([0044](decisiones/0044-las-cifras-de-cada-app.md)).
+> **Hoy no hay que hacer nada.** El trabajo está guardado en la **rama**
+> `v-lo-que-se-ve`, que es una copia aparte: `main` y `estook.com` no se han tocado, y
+> **no hay ningún pull request abierto**. El pull request lo abro yo cuando estén los
+> cinco puntos de V, y te aviso. **Estos pasos son para ese día, no antes.**
 
-**El orden importa, y es el de siempre:** fusionar, migrar y desplegar la API, **seguidos**.
-La web se publica sola al fusionar, y hasta que la API esté desplegada las cifras nuevas
-dirán «No he podido leerlo» y «Cuándo es llegar tarde» saldrá sin poder cambiarse.
-**No se rompe nada de lo que ya funciona**, pero cuanto menos rato pase, mejor.
+**Lo que traerá:** el modo cocina; «Cómo va», las cifras con flecha; el **Resumen** de
+cada app (antes «Hoy»); las tarjetas **en mosaico**, sin huecos; **Ajustes por
+secciones** con buscador; y **el aspecto nuevo** ([0044](decisiones/0044-las-cifras-de-cada-app.md),
+[0045](decisiones/0045-el-aspecto-y-el-orden.md)).
+
+**El orden importa, y no se cambia:** primero fusionar, luego la migración, luego la
+API, **seguidos y en ese orden**. Si se aplica la migración antes de fusionar, la base
+va por delante del código, y eso es justo lo que la regla 1 prohíbe. La web se publica
+sola al fusionar; hasta que la API esté desplegada, las cifras nuevas dirán «No he
+podido leerlo». **No se rompe nada de lo que ya funciona**, pero cuanto menos rato pase
+entre un paso y otro, mejor: unos diez minutos en total.
 
 ### 1 · Fusionar
 
-**Dónde:** GitHub → **Pull requests** → el de «V · Lo que se ve» → las tres
-comprobaciones en verde → **Merge pull request** → **Confirm merge**.
+**Qué es:** meter la rama de V dentro de `main`, que es lo que se publica.
+
+**Dónde:** en **github.com**, en el repositorio de Estook:
+
+1. Arriba, la pestaña **Pull requests**.
+2. Entra en el que se llama **«V · Lo que se ve»**.
+3. Baja hasta el final. Tienen que salir **tres comprobaciones en verde**: `Calidad`,
+   `Construccion y presupuestos` y `Migraciones reversibles`. Si alguna está en
+   amarillo, espera a que acabe. **Si alguna sale en rojo, para y avísame**.
+4. Pulsa el botón verde **Merge pull request** y después **Confirm merge**.
+
+**Qué tiene que salir:** «Pull request successfully merged and closed», en morado.
 
 ### 2 · Aplicar la migración
 
+**Qué es:** añadir a la base de datos de verdad lo que V necesita: el margen de retraso
+de cada local, con 5 minutos puestos a todos.
+
+**Dónde:** en **PowerShell**, dentro de la carpeta del proyecto
+(`C:Users
+ixy-DocumentsGitHubEstookApp-V.2`). Antes, trae lo que acabas de
+fusionar a tu ordenador:
+
 ```bash
-.\estook.cmd bd:migrar
+git checkout main
 ```
 
-**Qué sale si va bien:** `0040_cuando_es_llegar_tarde`. Añade a cada local su margen
-de retraso, con **5 minutos** puestos a todos.
-
 ```bash
-.\estook.cmd bd:comprobar
+git pull
 ```
 
-**Qué tiene que decir:** **40 de 40** migraciones.
+**Qué tiene que salir:** que ha bajado cambios («Fast-forward» y una lista de ficheros).
+
+Ahora la migración:
+
+```bash
+.estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0040_cuando_es_llegar_tarde.sql ... hecho
+  1 migracion(es) aplicadas · 40 en total
+```
+
+Si dice **«la base de datos ya estaba al dia»**, es que el `git pull` no ha bajado lo
+fusionado: vuelve a hacerlo. **Si sale un error en rojo, no repitas el comando: cópiamelo tal cual.**
+
+Y se comprueba, leyéndolo de la base:
+
+```bash
+.estook.cmd bd:comprobar
+```
+
+**Qué tiene que decir:** «Migraciones aplicadas: **40** (hasta la **40**)».
 
 ### 3 · Volver a desplegar la API
 
-**Dónde:** GitHub → **Actions** → **Desplegar la API** → **Run workflow** → escribe
-`desplegar` → **Run workflow**. Cuando termine:
+**Qué es:** poner en marcha el servidor con el código nuevo.
+
+**Dónde:** en **github.com**, en el repositorio:
+
+1. Arriba, la pestaña **Actions**.
+2. A la izquierda, **Desplegar la API**.
+3. A la derecha, el botón **Run workflow**. Se abre un recuadro: deja la rama en
+   `main`, escribe **`desplegar`** en el campo y pulsa el botón verde **Run workflow**.
+4. Espera a que salga el **círculo verde** (un par de minutos). Si sale una **cruz roja**,
+   avísame.
+
+Cuando esté en verde, en PowerShell:
 
 ```bash
-.\estook.cmd bd:comprobar-api
+.estook.cmd bd:comprobar-api
 ```
 
 **Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los comandos».
 
-### 4 · Mirarlo
+### 4 · Mirarlo en tu TPV
 
-- **Inventario → Hoy:** debajo de lo que hay que atender, **«Cómo va»** con cuatro
-  cifras. Toca **7 días / 30 días** y cambian; toca una tarjeta y te lleva a su detalle.
-- **Servicio → Cierre** y **Equipo → Hoy:** lo mismo, con sus cifras.
-- **Equipo → Resumen:** una columna nueva, **Retrasos**. Sale una raya a quien no tiene
-  horario de siempre puesto en su ficha: sin hora de entrada no se puede llegar tarde.
-- **Ajustes → «Cuándo es llegar tarde»:** 5 minutos. Si en tu local lo normal es otro
-  margen, cámbialo ahí.
+Abre `estook.com/app/` y **recarga con Ctrl + F5** para que no te enseñe la versión vieja.
+
+- **Inventario:** abre en **Resumen**, no en «Hoy». Arriba, lo que necesita tu atención,
+  en tarjetas que encajan sin huecos; cada aviso en tres líneas, con **«¿Por qué?»** para
+  ver la cuenta. Debajo, **«Cómo va»**, y al tocar **7 días / 30 días** las cifras cambian.
+- **Equipo:** abre en **Resumen** (quién está hoy). Las horas de cada uno, con la columna
+  **Retrasos**, están ahora en **Fichajes**.
+- **Servicio → Cierre:** las mismas cifras de siempre, con la tarjeta nueva.
+- **El Panel:** los widgets encajan como en un iPad, sin huecos entre ellos.
+- **Ajustes:** a la izquierda, las secciones. Escribe «oscuro» o «IVA» en el buscador y
+  te lleva al sitio. En **Tu local → «Cuándo es llegar tarde»** salen 5 minutos; si en tu
+  local lo normal es otro margen, cámbialo ahí.
+- **Modo cocina:** Ajustes → Este aparato. Ponlo en la tablet de la cocina.
+
+Si algo no se ve como te digo, hazle una captura y me la pasas.
 
 ---
 

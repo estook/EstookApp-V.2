@@ -182,7 +182,7 @@ for (const pantalla of PANTALLAS) {
     page,
   }) => {
     await entrarConElModoPuesto(page);
-    await page.goto(`${APP}${pantalla}`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}${pantalla}`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
     // Que termine de llegar lo que se carga aparte, que también se toca.
     await page.waitForLoadState('networkidle');
@@ -217,7 +217,7 @@ test('con el modo cocina, la hoja de apuntar una merma también se toca con guan
   page,
 }) => {
   await entrarConElModoPuesto(page);
-  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
   await page.getByRole('button', { name: 'Apuntar merma' }).first().click();
   const hoja = page.getByRole('dialog');
   await expect(hoja).toBeVisible({ timeout: 15_000 });
@@ -234,7 +234,7 @@ test('con el modo cocina, la hoja de apuntar una merma también se toca con guan
  * arrancaba cada mañana con los botones pequeños. La letra llevaba así desde M3.
  */
 test('la letra y el modo cocina guardados se ponen al abrir, antes de entrar', async ({ page }) => {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, APP);
   await page.evaluate((clave) => {
     window.localStorage.setItem('estook.tamano-de-letra', 'grande');
     window.localStorage.setItem(clave, 'si');

@@ -93,6 +93,12 @@ describe('lo que trae puesto cada rol', () => {
     expect(await nivelDelRol('jefe_de_cocina', 'dato.coste_de_personal')).toBe('sin_acceso');
   });
 
+  it('el jefe de cocina ve las ventas, pero no cierra la caja (migración 0041)', async () => {
+    // Richi, 23-sep-2026: «puede necesitar saber qué sale o qué no». Ver, y nada más:
+    // cerrar la caja es editar `dato.ventas`.
+    expect(await nivelDelRol('jefe_de_cocina', 'dato.ventas')).toBe('ver');
+  });
+
   it('el gerente lo tiene todo en su local', async () => {
     // «Todo lo de su local.»
     for (const permiso of [

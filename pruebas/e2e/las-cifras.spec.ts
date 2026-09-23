@@ -87,7 +87,7 @@ test('Inventario abre con sus cuatro cifras arriba del todo, y lo urgente debajo
   page,
 }) => {
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
 
   const fila = lasCifrasDe(page, 'inventario');
   await expect(fila.getByRole('heading', { name: 'Cómo va' })).toBeVisible({ timeout: 15_000 });
@@ -108,7 +108,7 @@ test('Inventario abre con sus cuatro cifras arriba del todo, y lo urgente debajo
 
 test('la semana o el mes, y cada tarjeta lleva a su detalle', async ({ page }) => {
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
   const fila = lasCifrasDe(page, 'inventario');
   await expect(fila).toBeVisible({ timeout: 15_000 });
 
@@ -130,7 +130,7 @@ test('la semana o el mes, y cada tarjeta lleva a su detalle', async ({ page }) =
 
 test('un cocinero ve lo que se acaba, y ni un euro', async ({ page }) => {
   await entrar(page, MARCOS);
-  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
 
   const fila = lasCifrasDe(page, 'inventario');
   await expect(fila.locator('[data-cifra="bajo-minimo"]')).toBeVisible({ timeout: 15_000 });
@@ -142,7 +142,7 @@ test('un cocinero ve lo que se acaba, y ni un euro', async ({ page }) => {
 
 test('Servicio enseña sus cifras debajo del cierre del día', async ({ page }) => {
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/servicio/jornada/cierre`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/servicio/jornada/cierre`);
 
   const fila = lasCifrasDe(page, 'servicio');
   await expect(fila.getByRole('heading', { name: 'Cómo va' })).toBeVisible({ timeout: 15_000 });
@@ -155,7 +155,7 @@ test('Servicio enseña sus cifras debajo del cierre del día', async ({ page }) 
 
 test('Equipo enseña horas, coste y retrasos, y lleva a Fichajes', async ({ page }) => {
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/equipo/resumen`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen`);
 
   const fila = lasCifrasDe(page, 'equipo');
   await expect(fila.getByRole('heading', { name: 'Cómo va' })).toBeVisible({ timeout: 15_000 });
@@ -175,7 +175,7 @@ test('Equipo enseña horas, coste y retrasos, y lleva a Fichajes', async ({ page
 test('cuándo es llegar tarde lo cambia quien lleva el local', async ({ page }, info) => {
   test.skip(info.project.name !== 'escritorio', UNA_VEZ);
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/ajustes/local`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
 
   const margen = page.getByLabel('Cuenta como retraso');
   await expect(margen).toHaveValue('5', { timeout: 15_000 });

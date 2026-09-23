@@ -181,9 +181,12 @@ test.describe('la barra de escritorio', () => {
     await entrar(page);
     const barra = page.getByRole('banner');
 
-    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo', 'Fogón', 'Ajustes']) {
+    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo', 'Ajustes']) {
       await expect(barra.getByRole('button', { name: new RegExp(que) }).first()).toBeVisible();
     }
+
+    // Fogón no está arriba: tiene su burbuja (23-sep, Richi: «se repite mucho»).
+    await expect(barra.getByRole('button', { name: /Fogón/ })).toHaveCount(0);
 
     await barra.getByRole('button', { name: /^Tu cuenta ·/ }).click();
     const hoja = page.getByRole('dialog', { name: 'Tu cuenta' });
@@ -221,7 +224,7 @@ test.describe('la barra de arriba en móvil', () => {
     // la de escritorio va antes en el documento y en un movil esta escondida.
     const barra = page.getByRole('banner');
 
-    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo', 'Fogón']) {
+    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo']) {
       await expect(barra.getByRole('button', { name: new RegExp(que) }).first()).toBeVisible();
     }
     await expect(barra.getByRole('button', { name: /^Tu cuenta ·/ })).toBeVisible();
@@ -245,7 +248,7 @@ test.describe('la barra de arriba en móvil', () => {
     expect(desborda, 'la barra de arriba desborda a lo ancho').toBe(false);
 
     const barra = page.getByRole('banner');
-    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo', 'Fogón']) {
+    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo']) {
       const caja = await barra
         .getByRole('button', { name: new RegExp(que) })
         .first()
@@ -301,7 +304,7 @@ test.describe('la rueda dice dónde estás', () => {
 
   test('desde dentro de una app resalta esa, y solo esa', async ({ page }) => {
     await entrar(page);
-    await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
     await abrirLaRueda(page);
 
     const aqui = page.locator('[role="menuitem"][aria-current="page"]');
@@ -364,10 +367,10 @@ test.describe('las tarjetas del Panel', () => {
  * Está escrito en `docs/decisiones/0015`. Lo que estas pruebas fijan es lo que
  * de verdad se puede romper sin que nadie se entere:
  *
- *   · que la burbuja **esté en el móvil y no en el escritorio**, donde ya está
- *     el icono de arriba: dos puertas a lo mismo en la misma pantalla es una de
- *     más;
- *   · que las dos abran **la misma ventana**;
+ *   · que la burbuja **esté en el móvil y en el escritorio**, y que arriba ya no
+ *     haya icono (23-sep-2026): dos puertas a lo mismo en la misma pantalla es una
+ *     de más, y ninguna es una de menos;
+ *   · que la burbuja y `Ctrl+J` abran **la misma ventana**;
  *   · y que la ventana **sepa en qué pantalla estás**, que es la mitad de la
  *     promesa de M22.
  *
@@ -390,7 +393,7 @@ test.describe('Fogón', () => {
 
     test('va contigo: sigue estando dentro de una app', async ({ page }) => {
       await entrar(page);
-      await page.goto(`${APP}#/inventario/productos`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/inventario/productos`);
 
       // Esperar al título antes de medir. `domcontentloaded` llega mientras la
       // pantalla todavía dice «Cargando tu sesión», y preguntar ahí qué hay en un
@@ -410,7 +413,7 @@ test.describe('Fogón', () => {
       await page.keyboard.press('Escape');
 
       // Y desde Inventario, sin que nadie se lo diga.
-      await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
       await expect(page.getByText('Fogón sabe que estás en')).toContainText('Inventario');
@@ -425,7 +428,7 @@ test.describe('Fogón', () => {
         una frase, como la diría una persona.
       */
       await entrar(page);
-      await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
@@ -466,23 +469,23 @@ test.describe('Fogón', () => {
   test.describe('en el escritorio', () => {
     test.use({ viewport: { width: 1280, height: 800 } });
 
-    test('la burbuja NO está: ya está el icono de arriba', async ({ page }) => {
+    test('la burbuja también está, y es la única puerta: arriba ya no hay icono', async ({
+      page,
+    }) => {
+      // Richi, 23-sep-2026: quitar el icono de arriba «que ya está la burbuja». Hasta
+      // entonces la burbuja se escondía en escritorio, así que quitar solo el icono
+      // habría dejado a Fogón sin botón en el ordenador. Se miran las dos cosas juntas.
       await entrar(page);
-
-      // Existe en el documento —es la misma aplicación— pero escondida con CSS,
-      // así que no está en el árbol de accesibilidad ni delante de nadie.
-      await expect(page.getByRole('button', { name: 'Abrir Fogón' })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Abrir Fogón' })).toBeVisible();
+      await expect(page.getByRole('banner').getByRole('button', { name: /Fogón/ })).toHaveCount(0);
     });
 
-    test('el icono de arriba abre la misma ventana, y sabe dónde estás', async ({ page }) => {
+    test('la burbuja abre la ventana, y sabe dónde estás', async ({ page }) => {
       await entrar(page);
-      await page.goto(`${APP}#/escandallos`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/escandallos`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
-      await page
-        .getByRole('banner')
-        .getByRole('button', { name: /^Fogón/ })
-        .click();
+      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
       await expect(page.getByText('Fogón sabe que estás en')).toContainText('Escandallos');
       await expect(page.getByText('Hablar con Fogón llega con el módulo 22.')).toBeVisible();
     });
@@ -643,7 +646,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
 
   test('el tema oscuro se elige en Ajustes y aguanta una recarga', async ({ page }) => {
     await entrar(page);
-    await page.goto(`${APP}#/ajustes/aparato`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}#/ajustes/aparato`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await page.getByRole('radio', { name: /Oscuro/ }).click();
@@ -709,7 +712,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
       que es el que no contrasta con nada.
     */
     await entrar(page);
-    await page.goto(`${APP}#/ajustes/local`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await elInterruptor(page, true);
@@ -724,7 +727,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
       await ponerElColor(page, color);
 
       // Al Panel, que es donde vive el botón principal de verdad.
-      await page.goto(`${APP}#/`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/`);
       await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
 
       const medido = await page.evaluate(() => {
@@ -752,7 +755,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
         `con ${color}, «${medido?.que ?? ''}»`,
       ).toBeGreaterThanOrEqual(4.5);
 
-      await page.goto(`${APP}#/ajustes/local`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     }
 

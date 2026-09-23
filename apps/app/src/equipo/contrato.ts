@@ -117,6 +117,13 @@ export interface FichajeDeLaFicha {
   readonly motivoDeLaCorreccion: string | null;
 }
 
+/** Una página del historial de fichajes de una persona: el «Ver todos» de su ficha. */
+export interface FichajesDeUnaPersona {
+  readonly fichajes: readonly FichajeDeLaFicha[];
+  readonly cuantos: number;
+  readonly hayMas: boolean;
+}
+
 export interface UnaPersona {
   readonly personaId: string;
   readonly nombre: string;
@@ -134,6 +141,8 @@ export interface UnaPersona {
   readonly minutosDelMes: number;
   readonly horario: readonly TramoDelHorario[];
   readonly ultimosFichajes: readonly FichajeDeLaFicha[];
+  /** Cuántos tiene en total: si pasan de los tres de la ficha, sale «Ver todos». */
+  readonly cuantosFichajes: number;
   readonly retribucion?: {
     readonly forma: 'por_hora' | 'mensual';
     readonly importeCentimos: number;

@@ -109,6 +109,8 @@ No ve costes de materia prima ni escandallos con importes.
 
 **Manda en:** Inventario entera, Escandallos entera, la parte de cocina de la Carta, el APPCC, el cuadrante de cocina y las fichas de su equipo. Ve los fichajes y las horas **de la cocina** —cocineros y jefes de cocina—, sin lo que cobra nadie.
 
+**Ve las ventas** (23-sep-2026, migración 0041): las del día, el ticket medio y los cierres de caja, porque «puede necesitar saber qué sale o qué no». Con el precio de compra que ya tenía, le sale también el food cost. **Solo verlas**: la caja la cierra quien lleva el local o la sala. Lo que sale plato a plato llega con el TPV (Fase 4); hasta entonces las ventas son las del cierre del día.
+
 **No ve:** el margen global del negocio, el coste de personal de sala, la facturación ni la parte de plan y facturación de Ajustes.
 
 ## 1.7 Gerente

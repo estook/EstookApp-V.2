@@ -180,6 +180,8 @@ function elLocal(contexto: Contexto): string {
  * B7 no perdona.
  */
 interface FilaDeProducto {
+  /** Cuántas filas cumplen los filtros, antes de partir la lista en trozos. */
+  total_filas: number;
   id: string;
   nombre: string;
   categoria: string | null;
@@ -218,6 +220,16 @@ interface FilaDeProducto {
   contenido_por_unidad: string | null;
   unidad_del_contenido: string | null;
 }
+
+/**
+ * Lo más que se lee de una vez cuando hay que filtrar o contar en el servidor.
+ *
+ * Hasta el 23-sep eran doscientos, y cortaban **en silencio**: «Hoy», el pedido
+ * sugerido y la comparativa de precios de un local con más de doscientos productos
+ * se dejaban fuera los del final del abecedario. Un local tiene cientos, no miles;
+ * el tope existe para que nunca sea una consulta sin fin.
+ */
+const TOPE_DE_PRODUCTOS = 5000;
 
 /** El reloj de pared del local, que es con lo que cuenta un proveedor. */
 interface RelojDelLocal {
@@ -295,8 +307,62 @@ async function leerProductos(
   const desde = masDias(hoy, -VENTANA_DE_CONSUMO);
   const reloj: RelojDelLocal = { hoy, hora: horaEnElLocal(contexto.ahora, zona) };
 
+  // ── En dos tiempos, y no es capricho (23-sep-2026) ─────────────────────────
+  //
+  // Primero se **eligen** los productos de esta página y se cuentan todos los que
+  // cumplen, con lo justo para filtrar; después se calcula lo caro —las salidas,
+  // los días con datos, lo congelado— **solo de los elegidos**. Contar con
+  // `count(*) over ()` en la consulta de siempre obligaba a Postgres a calcular esas
+  // columnas de todos los productos del local, no de los cincuenta de la página:
+  // con 400 productos, cada lista tardaba el doble (lo midió el repaso del 23-sep).
   const filas = await contexto.sql<FilaDeProducto[]>`
-    select p.id, p.nombre, c.nombre as categoria, p.categoria_id, p.proveedor_id,
+    with elegidos as (
+      select p.id, count(*) over ()::int as total_filas
+      from estook.producto p
+      join estook.local lc on lc.id = p.local_id
+     where p.local_id = ${localId}
+       and (${filtros.productoId}::uuid is null or p.id = ${filtros.productoId}::uuid)
+       and (${filtros.proveedorId ?? null}::uuid is null
+            or p.proveedor_id = ${filtros.proveedorId ?? null}::uuid)
+       and (${filtros.incluirDesactivados} or p.activo)
+       and (not ${filtros.soloDesactivados} or not p.activo)
+       and (${filtros.incluirEjemplos} or not p.es_ejemplo)
+       -- ── La zona que se está mirando, y las que se pueden mirar ───────────
+       --
+       -- Dos cosas en una línea, y las dos hacen falta. La primera es el filtro:
+       -- lo que se ha elegido arriba. La segunda es **lo de cada uno**: un
+       -- cocinero no ve en esta lista el género de la barra, aunque pida «Sala» a
+       -- mano, porque esta pantalla es su almacén y no el de otro (0038).
+       --
+       -- Va aquí y no en la política de la tabla a propósito: leer el género del
+       -- local hace falta para apuntar una merma, recibir un albarán o buscar. Lo
+       -- que se acota es **esta lista**, no el dato.
+       and (${filtros.zona ?? null}::text is null
+            or p.zona::text = ${filtros.zona ?? null}::text)
+       -- La zona de quien mira se calcula una vez, no una por producto: aquí se
+       -- recorren todos para contarlos.
+       and p.zona = any ((select estook.zonas_que_ve(${localId}::uuid))::estook.zona_del_producto[])
+       and (${filtros.categoriaId}::uuid is null or p.categoria_id = ${filtros.categoriaId}::uuid)
+       -- El precio vigente, solo si se está mirando «Sin precio»: calcularlo de
+       -- todos para contarlos era lo que hacía lenta la lista.
+       and (not ${filtros.soloSinPrecio}
+            or (estook.precio_vigente(p.id)).precio_centimos is null)
+       and (not ${filtros.soloCongelados ?? false} or exists (
+             select 1 from estook.lote lo
+              where lo.producto_id = p.id
+                and lo.congelado_el is not null and lo.retirado_en is null
+           ))
+       and (
+         ${filtros.texto} = ''
+         or estook.sin_acentos(p.nombre) like '%' || estook.sin_acentos(${filtros.texto}) || '%'
+         or similarity(estook.sin_acentos(p.nombre), estook.sin_acentos(${filtros.texto})) > 0.3
+         or p.codigo_de_barras = ${filtros.texto}
+       )
+       order by p.nombre, p.id
+       limit ${filtros.limite} offset ${filtros.salto}
+    )
+    select el.total_filas,
+           p.id, p.nombre, c.nombre as categoria, p.categoria_id, p.proveedor_id,
            p.categoria_fiscal::text as categoria_fiscal, p.notas, p.formato,
            p.unidad_de_uso::text as unidad_de_uso,
            p.factor::text as factor, p.rendimiento::text as rendimiento,
@@ -349,47 +415,17 @@ async function leerProductos(
            lc.territorio::text as territorio,
            p.contenido_por_unidad::text as contenido_por_unidad,
            p.unidad_del_contenido::text as unidad_del_contenido
-      from estook.producto p
+      from elegidos el
+      join estook.producto p on p.id = el.id
       join estook.local lc on lc.id = p.local_id
       left join estook.categoria_de_producto c on c.id = p.categoria_id
       left join estook.proveedor pv on pv.id = p.proveedor_id
       left join estook.existencias e on e.producto_id = p.id
-      left join estook.precio_vigente(p.id) pr on true
-     where p.local_id = ${localId}
-       and (${filtros.productoId}::uuid is null or p.id = ${filtros.productoId}::uuid)
-       and (${filtros.proveedorId ?? null}::uuid is null
-            or p.proveedor_id = ${filtros.proveedorId ?? null}::uuid)
-       and (${filtros.incluirDesactivados} or p.activo)
-       and (not ${filtros.soloDesactivados} or not p.activo)
-       and (${filtros.incluirEjemplos} or not p.es_ejemplo)
-       -- ── La zona que se está mirando, y las que se pueden mirar ───────────
-       --
-       -- Dos cosas en una línea, y las dos hacen falta. La primera es el filtro:
-       -- lo que se ha elegido arriba. La segunda es **lo de cada uno**: un
-       -- cocinero no ve en esta lista el género de la barra, aunque pida «Sala» a
-       -- mano, porque esta pantalla es su almacén y no el de otro (0038).
-       --
-       -- Va aquí y no en la política de la tabla a propósito: leer el género del
-       -- local hace falta para apuntar una merma, recibir un albarán o buscar. Lo
-       -- que se acota es **esta lista**, no el dato.
-       and (${filtros.zona ?? null}::text is null
-            or p.zona::text = ${filtros.zona ?? null}::text)
-       and p.zona = any (estook.zonas_que_ve(p.local_id))
-       and (${filtros.categoriaId}::uuid is null or p.categoria_id = ${filtros.categoriaId}::uuid)
-       and (not ${filtros.soloSinPrecio} or pr.precio_centimos is null)
-       and (not ${filtros.soloCongelados ?? false} or exists (
-             select 1 from estook.lote lo
-              where lo.producto_id = p.id
-                and lo.congelado_el is not null and lo.retirado_en is null
-           ))
-       and (
-         ${filtros.texto} = ''
-         or estook.sin_acentos(p.nombre) like '%' || estook.sin_acentos(${filtros.texto}) || '%'
-         or similarity(estook.sin_acentos(p.nombre), estook.sin_acentos(${filtros.texto})) > 0.3
-         or p.codigo_de_barras = ${filtros.texto}
-       )
-     order by p.nombre
-     limit ${filtros.limite} offset ${filtros.salto}
+      -- El precio vigente de todos los elegidos de una pasada (0044): pedirlo
+      -- producto a producto era lo más lento de la pantalla.
+      left join estook.precios_vigentes(array(select el2.id from elegidos el2)) pr
+        on pr.producto_id = p.id
+     order by p.nombre, p.id
   `;
 
   return { filas, hoy, desde, reloj };
@@ -586,7 +622,7 @@ export async function productosDelProveedor(
     soloDesactivados: false,
     incluirEjemplos: true,
     incluirDesactivados: false,
-    limite: 200,
+    limite: TOPE_DE_PRODUCTOS,
     salto: 0,
   });
   return filas.map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
@@ -606,7 +642,7 @@ export async function productosActivos(
     soloDesactivados: false,
     incluirEjemplos: false,
     incluirDesactivados: false,
-    limite: 200,
+    limite: TOPE_DE_PRODUCTOS,
     salto: 0,
   });
   return filas.map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
@@ -650,7 +686,13 @@ export interface SalidaMisProductos {
     readonly cuantos: number;
   }[];
   readonly proveedores: readonly { readonly id: string; readonly nombre: string }[];
+  /** Todos los productos activos del local, miren lo que miren. */
   readonly cuantosHay: number;
+  /**
+   * Cuántos cumplen **lo que se está mirando** —la vista, la zona, la categoría y
+   * lo buscado—, contando todas las páginas. Es el título de la lista (23-sep).
+   */
+  readonly cuantosCumplen: number;
   readonly hayMas: boolean;
   readonly puedeVerPrecios: boolean;
   /** Cuántos de ejemplo quedan, para poder ofrecer quitarlos. */
@@ -674,6 +716,48 @@ export interface SalidaMisProductos {
   readonly territorio: string;
 }
 
+/**
+ * Lo que vale lo que hay en la cámara, **sin los ejemplos**: «no cuenta para nada:
+ * ni avisos, ni análisis, ni salud de los datos, ni informes» (Manifiesto 8). La
+ * usan la lista de Productos y el Resumen de Inventario, y por eso vive aquí una
+ * sola vez: estaba escrita dos veces, igual (regla 6).
+ *
+ * Lo que entró sin coste —un ajuste, o un producto dado de alta antes de que el alta
+ * apuntara lo que había— tiene el medio a cero, y contarlo a cero es decir que 500
+ * burratas no valen nada: se cuenta a su precio de hoy.
+ *
+ * ── Producto a producto, y el precio solo si hace falta (24-sep-2026) ──────────
+ *
+ * Unida a pelo, la vista `existencias` se calculaba sobre **el libro entero** en cada
+ * consulta, y el precio vigente se buscaba para todos los productos: con 400
+ * productos era más de un segundo en la base de pruebas, y lo más lento de las dos
+ * pantallas. Ahora se lee la última línea de cada producto por su índice —la vista
+ * sigue siendo la única que sabe qué es «lo que hay»— y el precio de hoy solo de lo
+ * que entró sin coste, que `coalesce` no evalúa si no llega a él.
+ */
+async function elValorDeLaCamara(
+  contexto: Contexto,
+  localId: string,
+): Promise<{ total: string | null }[]> {
+  return contexto.sql<{ total: string | null }[]>`
+    select sum(round(
+             coalesce(
+               nullif(e.coste_milesimas, 0),
+               (estook.precio_vigente(p.id)).coste_milesimas,
+               0
+             ) * e.cantidad / 1000
+           ))::text as total
+      from estook.producto p
+      join lateral (
+        select x.cantidad, x.coste_milesimas
+          from estook.existencias x
+         where x.producto_id = p.id
+      ) e on true
+     where p.local_id = ${localId} and p.activo and not p.es_ejemplo
+       and e.cantidad > 0
+  `;
+}
+
 export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
   nombre: 'mis_productos',
   entrada: entradaMisProductos,
@@ -689,6 +773,25 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
     const limite = entrada.limite ?? 50;
     const salto = entrada.salto ?? 0;
 
+    /*
+      ── «Bajo mínimo» se filtra ANTES de partir la lista (23-sep) ──────────────
+
+      Lo vio Richi: «11 productos por debajo del mínimo» y salían tres. Eran dos
+      fallos. El título contaba **todos los productos del local**, no los de la
+      vista. Y esta vista traía los cincuenta primeros del abecedario y, de esos,
+      se quedaba con los que estaban bajo mínimo: con más de cincuenta productos,
+      uno bajo mínimo que empezara por «Z» no salía nunca. Es la regla 51 —un filtro
+      que solo funciona cuando la lista cabe entera miente— en la vista que más
+      importa.
+
+      El estado (bajo mínimo, agotado, negativo) sale de sumar el libro, así que no
+      se puede filtrar en la consulta: se leen **todos** los productos que cumplen
+      lo demás, se filtran aquí, y después se parte la lista. Un local tiene cientos
+      de productos, no cientos de miles; el tope de cinco mil es para que nunca sea
+      una consulta sin fin.
+    */
+    const conProblema = entrada.con_problema === true;
+
     const { filas, hoy, desde, reloj } = await leerProductos(contexto, localId, {
       texto: entrada.texto ?? '',
       categoriaId: entrada.categoria_id ?? null,
@@ -700,19 +803,22 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
       zona: entrada.zona ?? null,
       incluirEjemplos: entrada.incluir_ejemplos !== false,
       incluirDesactivados: entrada.incluir_desactivados === true,
-      limite: limite + 1,
-      salto,
+      limite: conProblema ? TOPE_DE_PRODUCTOS : limite,
+      salto: conProblema ? 0 : salto,
     });
     const precios = await comoApuntaLosPrecios(contexto, localId);
 
-    const hayMas = filas.length > limite;
-    let productos = filas
-      .slice(0, limite)
-      .map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
+    let productos = filas.map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
+    // Cuántos cumplen lo que se está mirando: **esto** es el título de la lista.
+    let cuantosCumplen = filas[0]?.total_filas ?? 0;
 
-    if (entrada.con_problema === true) {
+    if (conProblema) {
       productos = productos.filter((p) => urgenciaDe(p.estado) <= urgenciaDe('bajo_minimo'));
+      cuantosCumplen = productos.length;
+      productos = productos.slice(salto, salto + limite);
     }
+    // Con la lista partida en la consulta, lo que hay más allá lo dice el total.
+    const hayMas = salto + productos.length < cuantosCumplen;
 
     if (!conPrecios) productos = productos.map(sinPrecios);
 
@@ -762,27 +868,14 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
 
     // El valor de la cámara **sin los ejemplos**: «no cuenta para nada: ni
     // avisos, ni análisis, ni salud de los datos, ni informes» (Manifiesto 8).
-    const valor = conPrecios
-      ? await contexto.sql<{ total: string | null }[]>`
-          -- Lo que entró sin coste —un ajuste, o un producto dado de alta antes de
-          -- que el alta apuntara lo que había— tiene el medio a cero, y contarlo a
-          -- cero es decir que 500 burratas no valen nada: se cuenta a su precio de hoy.
-          select sum(round(
-                   coalesce(nullif(e.coste_milesimas, 0), pr.coste_milesimas, 0) * e.cantidad / 1000
-                 ))::text as total
-            from estook.existencias e
-            join estook.producto p on p.id = e.producto_id
-            left join estook.precio_vigente(p.id) pr on true
-           where p.local_id = ${localId} and p.activo and not p.es_ejemplo
-             and e.cantidad > 0
-        `
-      : null;
+    const valor = conPrecios ? await elValorDeLaCamara(contexto, localId) : null;
 
     return {
       productos,
       categorias,
       proveedores,
       cuantosHay: cuentas[0]?.cuantos ?? 0,
+      cuantosCumplen,
       hayMas,
       puedeVerPrecios: conPrecios,
       ejemplos: cuentas[0]?.ejemplos ?? 0,
@@ -1105,7 +1198,7 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
       soloDesactivados: false,
       incluirEjemplos: false,
       incluirDesactivados: false,
-      limite: 200,
+      limite: TOPE_DE_PRODUCTOS,
       salto: 0,
     });
 
@@ -1195,21 +1288,7 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
        group by p.zona
     `;
 
-    const valor = conPrecios
-      ? await contexto.sql<{ total: string | null }[]>`
-          -- Lo que entró sin coste —un ajuste, o un producto dado de alta antes de
-          -- que el alta apuntara lo que había— tiene el medio a cero, y contarlo a
-          -- cero es decir que 500 burratas no valen nada: se cuenta a su precio de hoy.
-          select sum(round(
-                   coalesce(nullif(e.coste_milesimas, 0), pr.coste_milesimas, 0) * e.cantidad / 1000
-                 ))::text as total
-            from estook.existencias e
-            join estook.producto p on p.id = e.producto_id
-            left join estook.precio_vigente(p.id) pr on true
-           where p.local_id = ${localId} and p.activo and not p.es_ejemplo
-             and e.cantidad > 0
-        `
-      : null;
+    const valor = conPrecios ? await elValorDeLaCamara(contexto, localId) : null;
 
     return {
       atencion,

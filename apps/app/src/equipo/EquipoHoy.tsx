@@ -116,6 +116,14 @@ export function EquipoHoy() {
         </section>
       )}
 
+      {/*
+        «Cómo va» · las horas, el coste y los retrasos de la gente que llevas, con su
+        flecha, **justo debajo de fichar** (23-sep). Hasta hoy iba al final, debajo de
+        quién está; Richi: «en Equipo, debajo de fichar, por importancia». El detalle,
+        persona a persona, en Fichajes.
+      */}
+      <CifrasDeLaApp app="equipo" />
+
       {mio !== undefined && !mio.elLocalSabeDondeEsta && puedeMarcarElLocal && (
         <Aviso
           tono="info"
@@ -201,13 +209,6 @@ export function EquipoHoy() {
           </Tarjeta>
         </Mosaico>
       )}
-
-      {/*
-        «Cómo va» · las horas, el coste y los retrasos de la gente que llevas, con
-        su flecha (V, punto 2). Debajo de quién está, que es lo que se viene a
-        mirar aquí; el detalle, persona a persona, en Fichajes.
-      */}
-      <CifrasDeLaApp app="equipo" />
 
       <FichaDePersona personaId={persona.abierta} alCerrar={persona.cerrar} />
     </div>

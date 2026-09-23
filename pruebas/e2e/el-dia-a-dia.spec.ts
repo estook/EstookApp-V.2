@@ -189,7 +189,7 @@ test('la camarera apunta una merma desde el Panel, y quien lleva el local la ve 
   // «Apuntar una merma» es una acción del catálogo: una dirección que abre la
   // hoja desde cualquier sitio, sin depender de qué widgets tenga cada uno.
   await entrar(page, SARA);
-  await page.goto(`${APP}#/?hacer=merma`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/?hacer=merma`);
   const hoja = page.getByRole('dialog', { name: 'Apuntar una merma' });
 
   await hoja.getByLabel('Qué se ha ido').fill(nombre);
@@ -238,7 +238,7 @@ test('el + apunta lo que llega con su precio puesto, y el − pregunta por qué 
   });
 
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/inventario/productos/todo`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/inventario/productos/todo`);
   await page.getByLabel('Buscar en tu género').fill(nombre);
 
   // El + · entra género, con el precio de la lista ya escrito.
@@ -329,9 +329,7 @@ test('se cierra la caja a mano, y el día sale en Negocio › Ventas', async ({
   const dia = new Date(jornada - atras * 86_400_000).toISOString().slice(0, 10);
 
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/servicio/jornada/cierre?fecha=${dia}`, {
-    waitUntil: 'domcontentloaded',
-  });
+  await abrirSinQueSeCaiga(page, `${APP}#/servicio/jornada/cierre?fecha=${dia}`);
 
   await page.getByLabel('Total facturado').fill('834,50');
   await page.getByLabel('Efectivo').fill('134,50');
@@ -342,7 +340,7 @@ test('se cierra la caja a mano, y el día sale en Negocio › Ventas', async ({
   await expect(page.getByText(/Caja cerrada/).first()).toBeVisible({ timeout: 15_000 });
 
   // Y Negocio lo lee de ahí: el mismo cierre, sin volver a escribirlo.
-  await page.goto(`${APP}#/negocio/ventas`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/negocio/ventas`);
   await expect(page.getByText('Ticket medio').first()).toBeVisible();
   await expect(loQueSeVe(page, '834,50')).toBeVisible();
 });
@@ -355,11 +353,11 @@ test('quien lleva el local ve quién está dentro y las horas; un cocinero no ll
 }) => {
   await entrar(page, ROSA);
 
-  await page.goto(`${APP}#/equipo/resumen`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen`);
   await expect(page.getByRole('button', { name: /^Fichar la (entrada|salida)$/ })).toBeVisible();
   await expect(page.getByText(/Hoy llevas/)).toBeVisible();
 
-  await page.goto(`${APP}#/equipo/fichajes`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/fichajes`);
   await expect(page.getByRole('heading', { name: 'Horas del equipo' })).toBeVisible();
 
   // Las horas de los demás son de quien lleva a esas personas. Un cocinero ve

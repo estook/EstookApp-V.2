@@ -39,6 +39,7 @@ import { cambiarMiClave, ponerClaveA, regenerarPin } from './comandos/mi-acceso.
 import { reactivarPersona } from './comandos/reactivar-persona.ts';
 import { retirarAcceso } from './comandos/retirar-acceso.ts';
 import { salir } from './comandos/salir.ts';
+import { sigoAqui } from './comandos/sigo-aqui.ts';
 import { crearCategoria, ponerLosEjemplos } from './comandos/categorias.ts';
 import {
   apuntarEntrada,
@@ -117,7 +118,13 @@ import {
   elegirMiLocalDeGoogle,
 } from './comandos/google.ts';
 import { mermaDeHoy, misMermas, productosParaMerma } from './consultas/merma.ts';
-import { fichajesDeHoy, miFichaje, resumenDelEquipo, unaPersona } from './consultas/equipo.ts';
+import {
+  fichajesDeHoy,
+  fichajesDeUnaPersona,
+  miFichaje,
+  resumenDelEquipo,
+  unaPersona,
+} from './consultas/equipo.ts';
 import { misCierres, unCierre } from './consultas/cierre.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
@@ -179,6 +186,7 @@ export const catalogo = {
     [fichajesDeHoy.nombre]: fichajesDeHoy,
     [resumenDelEquipo.nombre]: resumenDelEquipo,
     [unaPersona.nombre]: unaPersona,
+    [fichajesDeUnaPersona.nombre]: fichajesDeUnaPersona,
     // M6½ · lo que entra. Sin esto Estook sabia lo que cuesta el genero y no
     //        lo que se factura, que es la mitad del negocio.
     [misCierres.nombre]: misCierres,
@@ -214,6 +222,7 @@ export const catalogo = {
     // M4 · la sesion.
     [entrar.nombre]: entrar,
     [salir.nombre]: salir,
+    [sigoAqui.nombre]: sigoAqui,
     [cambiarDeContexto.nombre]: cambiarDeContexto,
     [cerrarSesion.nombre]: cerrarSesion,
     // M4 · mi acceso.

@@ -2,7 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
- * `abrirSinQueSeCaiga` repite **solo** cuando Safari se cae por dentro.
+ * `abrirSinQueSeCaiga` repite **solo** cuando Safari se cae por dentro, o cuando la
+ * página se estaba moviendo sola a su primera pestaña.
  *
  * **No necesita navegador**, y por eso va en `SIN_PANTALLA`: lo que se prueba es la
  * regla del ayudante —ese error se repite una vez; cualquier otro, no— con una página
@@ -29,6 +30,22 @@ function paginaQueFalla(...fallos: (string | null)[]): { page: Page; veces: () =
 test('si Safari se cae por dentro, se vuelve a abrir una vez', async () => {
   const { page, veces } = paginaQueFalla('page.goto: WebKit encountered an internal error', null);
   await abrirSinQueSeCaiga(page, 'http://localhost:5174/');
+  expect(veces()).toBe(2);
+});
+
+test('si la página se estaba moviendo sola a su pestaña, se vuelve a abrir una vez', async () => {
+  const { page, veces } = paginaQueFalla(
+    'page.goto: Navigation to "http://localhost:5174/#/cuaderno" is interrupted by another navigation to "http://localhost:5174/app/#/negocio/ventas"',
+    null,
+  );
+  await abrirSinQueSeCaiga(page, 'http://localhost:5174/#/cuaderno');
+  expect(veces()).toBe(2);
+});
+
+test('y si se interrumpe dos veces seguidas, tampoco se tapa', async () => {
+  const interrumpida = 'page.goto: Navigation to "x" is interrupted by another navigation to "y"';
+  const { page, veces } = paginaQueFalla(interrumpida, interrumpida);
+  await expect(abrirSinQueSeCaiga(page, 'http://localhost:5174/')).rejects.toThrow(/interrupted/);
   expect(veces()).toBe(2);
 });
 

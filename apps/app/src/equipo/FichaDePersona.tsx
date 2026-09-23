@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DIAS_DE_LA_SEMANA, comoSeLlamaElDia, type Centimos } from '@estook/dominio';
 import {
   Aviso,
@@ -26,6 +26,7 @@ import {
   comoSeLeenMinutos,
   ultimaVez,
   type FichajeDeLaFicha,
+  type FichajesDeUnaPersona,
   type TramoDelHorario,
   type UnaPersona,
 } from './contrato.ts';
@@ -63,6 +64,10 @@ export function FichaDePersona({
   const cache = useQueryClient();
   const [cambiando, setCambiando] = useState<'retribucion' | 'horario' | null>(null);
   const [corrigiendo, setCorrigiendo] = useState<FichajeDeLaFicha | null>(null);
+  // De quién está abierto el historial entero. Se guarda la persona y no un sí o
+  // un no para que, al abrir la ficha de otra, se vuelva a empezar por su ficha.
+  const [historialDe, setHistorialDe] = useState<string | null>(null);
+  const viendoElHistorial = historialDe !== null && historialDe === personaId;
   const [noticia, setNoticia] = useState<string | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
@@ -84,6 +89,7 @@ export function FichaDePersona({
     setCambiando(null);
     setCorrigiendo(null);
     await cache.invalidateQueries({ queryKey: ['una_persona', personaId] });
+    await cache.invalidateQueries({ queryKey: ['fichajes_de_una_persona', personaId] });
     await cache.invalidateQueries({ queryKey: ['resumen_del_equipo'] });
     await cache.invalidateQueries({ queryKey: ['fichajes_de_hoy'] });
     await cache.invalidateQueries({ queryKey: ['un_indicador'] });
@@ -94,8 +100,28 @@ export function FichaDePersona({
     datos === undefined ? 'Persona' : `${datos.nombre} ${datos.apellidos ?? ''}`.trim();
 
   return (
-    <PanelLateral abierta={personaId !== null} alCerrar={alCerrar} titulo={nombreEntero}>
+    <PanelLateral
+      abierta={personaId !== null}
+      alCerrar={alCerrar}
+      titulo={viendoElHistorial ? `Fichajes de ${nombreEntero}` : nombreEntero}
+    >
       {consulta.isPending && <Cargando que="la ficha" />}
+
+      {viendoElHistorial && datos !== undefined && (
+        <HistorialDeFichajes
+          personaId={personaId}
+          puedeCorregir={datos.puedeEditar}
+          alCorregir={setCorrigiendo}
+          alVolver={() => {
+            setHistorialDe(null);
+          }}
+          error={error}
+          noticia={noticia}
+          alCerrarLaNoticia={() => {
+            setNoticia(null);
+          }}
+        />
+      )}
 
       {consulta.isError && (
         <Aviso tono="mal" titulo="No he podido abrir esta ficha">
@@ -103,7 +129,7 @@ export function FichaDePersona({
         </Aviso>
       )}
 
-      {datos !== undefined && (
+      {datos !== undefined && !viendoElHistorial && (
         <div className="flex flex-col gap-e4">
           {error !== null && <ErrorEnCristiano error={error} />}
           {noticia !== null && (
@@ -246,51 +272,29 @@ export function FichaDePersona({
             )}
           </section>
 
-          {/* ── Sus fichajes ─────────────────────────────────────────────── */}
+          {/* ── Sus fichajes · los tres últimos, y el resto en «Ver todos» ─── */}
           <section className="flex flex-col gap-e2">
-            <h3 className="text-seccion font-semibold">Sus fichajes</h3>
+            <div className="flex flex-wrap items-center justify-between gap-e2">
+              <h3 className="text-seccion font-semibold">Sus fichajes</h3>
+              {datos.cuantosFichajes > datos.ultimosFichajes.length && (
+                <Boton
+                  tono="texto"
+                  onClick={() => {
+                    setHistorialDe(personaId);
+                  }}
+                >
+                  Ver todos ({datos.cuantosFichajes.toLocaleString('es-ES')})
+                </Boton>
+              )}
+            </div>
             {datos.ultimosFichajes.length === 0 ? (
               <p className="text-secundario text-texto-suave">Todavía no ha fichado nunca.</p>
             ) : (
-              <ul className="flex flex-col">
-                {datos.ultimosFichajes.map((fichaje) => (
-                  <li
-                    key={fichaje.fichajeId}
-                    className="flex flex-wrap items-center justify-between gap-e2 border-b border-borde py-e2 last:border-0"
-                  >
-                    <span className="min-w-0">
-                      <span className="block text-cuerpo">
-                        {fichaje.fecha} · {comoSeLeeLaHora(fichaje.entroEn)}–
-                        {fichaje.salioEn === null ? 'sin salir' : comoSeLeeLaHora(fichaje.salioEn)}
-                        {fichaje.minutos === null ? '' : ` · ${comoSeLeenMinutos(fichaje.minutos)}`}
-                      </span>
-                      <span
-                        className={clases(
-                          'block text-secundario',
-                          fichaje.enElLocal === false || fichaje.sinUbicacion !== null
-                            ? 'text-atencion'
-                            : 'text-texto-suave',
-                        )}
-                      >
-                        {comoSeLeeDonde(fichaje.metros, fichaje.enElLocal, fichaje.sinUbicacion)}
-                        {fichaje.corregidoPor === null
-                          ? ''
-                          : ` · corregido por ${fichaje.corregidoPor}: «${fichaje.motivoDeLaCorreccion ?? ''}»`}
-                      </span>
-                    </span>
-                    {datos.puedeEditar && (
-                      <Boton
-                        tono="texto"
-                        onClick={() => {
-                          setCorrigiendo(fichaje);
-                        }}
-                      >
-                        Corregir
-                      </Boton>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <ListaDeFichajes
+                fichajes={datos.ultimosFichajes}
+                puedeCorregir={datos.puedeEditar}
+                alCorregir={setCorrigiendo}
+              />
             )}
           </section>
 
@@ -340,6 +344,203 @@ export function FichaDePersona({
       )}
     </PanelLateral>
   );
+}
+
+// ── Los fichajes ─────────────────────────────────────────────────────────────
+
+/** Una lista de fichajes, con su «Corregir» a quien puede. La usan la ficha y el historial. */
+function ListaDeFichajes({
+  fichajes,
+  puedeCorregir,
+  alCorregir,
+}: {
+  readonly fichajes: readonly FichajeDeLaFicha[];
+  readonly puedeCorregir: boolean;
+  readonly alCorregir: (fichaje: FichajeDeLaFicha) => void;
+}) {
+  return (
+    <ul className="flex flex-col">
+      {fichajes.map((fichaje) => (
+        <li
+          key={fichaje.fichajeId}
+          className="flex flex-wrap items-center justify-between gap-e2 border-b border-borde py-e2 last:border-0"
+        >
+          <span className="min-w-0">
+            <span className="block text-cuerpo">
+              {fichaje.fecha} · {comoSeLeeLaHora(fichaje.entroEn)}–
+              {fichaje.salioEn === null ? 'sin salir' : comoSeLeeLaHora(fichaje.salioEn)}
+              {fichaje.minutos === null ? '' : ` · ${comoSeLeenMinutos(fichaje.minutos)}`}
+            </span>
+            <span
+              className={clases(
+                'block text-secundario',
+                fichaje.enElLocal === false || fichaje.sinUbicacion !== null
+                  ? 'text-atencion'
+                  : 'text-texto-suave',
+              )}
+            >
+              {comoSeLeeDonde(fichaje.metros, fichaje.enElLocal, fichaje.sinUbicacion)}
+              {fichaje.corregidoPor === null
+                ? ''
+                : ` · corregido por ${fichaje.corregidoPor}: «${fichaje.motivoDeLaCorreccion ?? ''}»`}
+            </span>
+          </span>
+          {puedeCorregir && (
+            <Boton
+              tono="texto"
+              onClick={() => {
+                alCorregir(fichaje);
+              }}
+            >
+              Corregir
+            </Boton>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Cuántos fichajes trae cada vez el historial. */
+const FICHAJES_POR_PAGINA = 50;
+
+/**
+ * Todos los fichajes de una persona, del último hacia atrás (23-sep-2026).
+ *
+ * La ficha enseña los tres últimos; esto es su «Ver todos». Se abre **dentro del
+ * mismo panel**, en lugar de una hoja encima, porque desde aquí también se corrige,
+ * y corregir ya abre su propia hoja: tres capas una encima de otra en un móvil no se
+ * entienden. Va por páginas de cincuenta y agrupado por meses, que es como se busca
+ * un fichaje: «el del martes de la semana pasada», «los de agosto».
+ */
+function HistorialDeFichajes({
+  personaId,
+  puedeCorregir,
+  alCorregir,
+  alVolver,
+  error,
+  noticia,
+  alCerrarLaNoticia,
+}: {
+  readonly personaId: string;
+  readonly puedeCorregir: boolean;
+  readonly alCorregir: (fichaje: FichajeDeLaFicha) => void;
+  readonly alVolver: () => void;
+  readonly error: ErrorDeLaApi | null;
+  readonly noticia: string | null;
+  readonly alCerrarLaNoticia: () => void;
+}) {
+  const { cliente } = usarSesion();
+  const historial = useInfiniteQuery({
+    queryKey: ['fichajes_de_una_persona', personaId],
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }): Promise<FichajesDeUnaPersona> => {
+      const respuesta = await cliente.consultar<FichajesDeUnaPersona>('fichajes_de_una_persona', {
+        persona_id: personaId,
+        limite: String(FICHAJES_POR_PAGINA),
+        salto: String(pageParam),
+      });
+      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
+      return respuesta.datos;
+    },
+    getNextPageParam: (ultima, paginas) =>
+      ultima.hayMas
+        ? paginas.reduce((suma, pagina) => suma + pagina.fichajes.length, 0)
+        : undefined,
+  });
+
+  const paginas = historial.data?.pages ?? [];
+  const fichajes = paginas.flatMap((pagina) => pagina.fichajes);
+  const cuantos = paginas[0]?.cuantos ?? 0;
+  const porMeses = agruparPorMeses(fichajes);
+
+  return (
+    <div className="flex flex-col gap-e4">
+      <div>
+        <Boton tono="texto" onClick={alVolver}>
+          ‹ Volver a la ficha
+        </Boton>
+      </div>
+
+      {error !== null && <ErrorEnCristiano error={error} />}
+      {noticia !== null && (
+        <Aviso tono="bien" titulo={noticia} esNoticia alCerrar={alCerrarLaNoticia}>
+          Queda guardado con tu nombre.
+        </Aviso>
+      )}
+
+      {historial.isPending && <Cargando que="los fichajes" />}
+
+      {historial.isError && (
+        <Aviso tono="mal" titulo="No he podido leer los fichajes">
+          <Boton
+            tono="texto"
+            onClick={() => {
+              void historial.refetch();
+            }}
+          >
+            Volver a intentarlo
+          </Boton>
+        </Aviso>
+      )}
+
+      {historial.isSuccess && (
+        <>
+          <p className="text-secundario text-texto-suave">
+            {cuantos === 1 ? 'Un fichaje' : `${cuantos.toLocaleString('es-ES')} fichajes`}, del
+            último hacia atrás.
+          </p>
+
+          {porMeses.map(({ mes, deEseMes }) => (
+            <section key={mes} className="flex flex-col gap-e1">
+              <h3 className="text-etiqueta font-semibold uppercase tracking-wide text-texto-suave">
+                {mes}
+              </h3>
+              <ListaDeFichajes
+                fichajes={deEseMes}
+                puedeCorregir={puedeCorregir}
+                alCorregir={alCorregir}
+              />
+            </section>
+          ))}
+
+          {historial.hasNextPage && (
+            <div>
+              <Boton
+                tono="texto"
+                cargando={historial.isFetchingNextPage}
+                textoCargando="Cargando"
+                onClick={() => {
+                  void historial.fetchNextPage();
+                }}
+              >
+                Ver más fichajes
+              </Boton>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/** «septiembre de 2026» → sus fichajes, en el orden en que llegan. */
+function agruparPorMeses(
+  fichajes: readonly FichajeDeLaFicha[],
+): { mes: string; deEseMes: FichajeDeLaFicha[] }[] {
+  const grupos: { mes: string; deEseMes: FichajeDeLaFicha[] }[] = [];
+  for (const fichaje of fichajes) {
+    // La fecha operativa es un día, sin hora: se lee a mediodía para que ningún
+    // huso la pase al mes de al lado.
+    const mes = new Date(`${fichaje.fecha}T12:00:00`).toLocaleDateString('es-ES', {
+      month: 'long',
+      year: 'numeric',
+    });
+    const ultimo = grupos.at(-1);
+    if (ultimo?.mes === mes) ultimo.deEseMes.push(fichaje);
+    else grupos.push({ mes, deEseMes: [fichaje] });
+  }
+  return grupos;
 }
 
 // ── Lo que cobra ─────────────────────────────────────────────────────────────

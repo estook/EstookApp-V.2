@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext } from 'react';
 
 /**
  * Lo que el esqueleto sabe abrir, para las pantallas de dentro.
@@ -20,7 +20,8 @@ import { createContext, useContext, type ReactNode } from 'react';
  * Porque el gancho y el componente no pueden convivir: los ganchos propios van en
  * `ganchos/`, que es donde `rules-of-hooks` está apagada —se llaman `usarX` y esa
  * regla solo entiende `use`— y porque un fichero que exporta un componente y
- * además una función rompe la recarga en caliente de Vite.
+ * además una función rompe la recarga en caliente de Vite. Por eso aquí no hay
+ * ningún componente: el esqueleto pone el contexto con `ContextoDelEsqueleto.Provider`.
  */
 export interface LoQueAbreElEsqueleto {
   readonly abrirElBuscador: () => void;
@@ -29,17 +30,7 @@ export interface LoQueAbreElEsqueleto {
   readonly abrirMiCuenta: () => void;
 }
 
-const ElEsqueleto = createContext<LoQueAbreElEsqueleto | null>(null);
-
-export function ProveedorDelEsqueleto({
-  loQueAbre,
-  children,
-}: {
-  readonly loQueAbre: LoQueAbreElEsqueleto;
-  readonly children: ReactNode;
-}) {
-  return <ElEsqueleto.Provider value={loQueAbre}>{children}</ElEsqueleto.Provider>;
-}
+export const ContextoDelEsqueleto = createContext<LoQueAbreElEsqueleto | null>(null);
 
 /**
  * Fuera del esqueleto no revienta: devuelve funciones que no hacen nada.
@@ -49,7 +40,7 @@ export function ProveedorDelEsqueleto({
  */
 export function usarElEsqueleto(): LoQueAbreElEsqueleto {
   return (
-    useContext(ElEsqueleto) ?? {
+    useContext(ContextoDelEsqueleto) ?? {
       abrirElBuscador: () => undefined,
       abrirFogon: () => undefined,
       abrirLosAvisos: () => undefined,

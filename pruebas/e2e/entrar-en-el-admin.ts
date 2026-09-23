@@ -1,5 +1,6 @@
 import { createHmac } from 'node:crypto';
 import { expect, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 import {
   ADMIN_DE_EJEMPLO,
   CLAVE_DE_EJEMPLO,
@@ -20,7 +21,7 @@ import {
 export const ADMIN = 'http://localhost:5176/';
 
 export async function entrarEnElAdmin(page: Page): Promise<void> {
-  await page.goto(ADMIN, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, ADMIN);
   await page.getByLabel('Tu correo').fill(ADMIN_DE_EJEMPLO);
   await page.getByLabel('Tu contraseña').fill(CLAVE_DE_EJEMPLO);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();

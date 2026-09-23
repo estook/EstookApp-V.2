@@ -21,9 +21,10 @@ import {
 import { BuscadorUniversal } from './buscar/BuscadorUniversal.tsx';
 import { BurbujaDeFogon, VentanaDeFogon } from './fogon/Fogon.tsx';
 import { LoQueLlegaDespues, type LoQueFalta } from './pantallas/LoQueLlegaDespues.tsx';
-import { ProveedorDelEsqueleto, type LoQueAbreElEsqueleto } from './ganchos/usarElEsqueleto.tsx';
+import { ContextoDelEsqueleto, type LoQueAbreElEsqueleto } from './ganchos/usarElEsqueleto.tsx';
 import { MiCuenta } from './pantallas/MiCuenta.tsx';
 import { usarSesion } from './sesion/Sesion.tsx';
+import { usarSigoAqui } from './ganchos/usarSigoAqui.ts';
 import { avisarDelFallo } from '@estook/utiles/observabilidad';
 
 /**
@@ -47,6 +48,8 @@ export function Esqueleto() {
   const { pathname } = useLocation();
   const { permisos, yo, salir, cambiarDeSitio } = usarSesion();
   const { sePuedeDeshacer } = usarDeshacer();
+  // Mientras se vea la app, cuenta como «en línea» para su equipo (0042).
+  usarSigoAqui();
 
   const [ruedaAbierta, setRuedaAbierta] = useState(false);
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
@@ -62,9 +65,9 @@ export function Esqueleto() {
   /**
    * Fogón, abierto o cerrado.
    *
-   * Lo lleva el esqueleto y no cada barra a propósito: la burbuja del móvil, el
-   * icono de arriba en escritorio y el atajo `Ctrl+J` abren **lo mismo**. Tres
-   * ventanas distintas para lo mismo acabarían diciendo cosas distintas.
+   * Lo lleva el esqueleto y no la burbuja a propósito: la burbuja y el atajo
+   * `Ctrl+J` abren **lo mismo**, y dos ventanas distintas para lo mismo acabarían
+   * diciendo cosas distintas.
    */
   const [fogonAbierto, setFogonAbierto] = useState(false);
 
@@ -242,7 +245,7 @@ export function Esqueleto() {
   );
 
   return (
-    <ProveedorDelEsqueleto loQueAbre={loQueAbre}>
+    <ContextoDelEsqueleto.Provider value={loQueAbre}>
       <div className="min-h-dvh bg-fondo">
         {laDemostracion}
         <BarraEscritorio
@@ -280,9 +283,6 @@ export function Esqueleto() {
           alAbrirChat={() => {
             setLoQueFalta('chat');
           }}
-          alAbrirFogon={() => {
-            setFogonAbierto(true);
-          }}
         />
 
         {/*
@@ -317,9 +317,6 @@ export function Esqueleto() {
           alAbrirChat={() => {
             setLoQueFalta('chat');
           }}
-          alAbrirFogon={() => {
-            setFogonAbierto(true);
-          }}
           alAbrirMiCuenta={() => {
             setMiCuentaAbierta(true);
           }}
@@ -342,7 +339,12 @@ export function Esqueleto() {
           cambia solo en las pantallas que de verdad son grandes; en un TPV de
           1.280 no se mueve nada.
         */}
-        <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e5))] pt-e4 lg:px-e5 lg:pb-e7 2xl:max-w-[92rem]">
+        {/*
+          Abajo se deja el sitio de la barra de abajo y **de la burbuja de Fogón**
+          (56 px y su margen), para que al llegar al final nada quede debajo de ella.
+          En escritorio no hay barra de abajo, pero desde el 23-sep sí hay burbuja.
+        */}
+        <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+56px+var(--spacing-e3)*2)] pt-e4 lg:px-e5 lg:pb-[calc(56px+var(--spacing-e5)+var(--spacing-e4))] 2xl:max-w-[92rem]">
           {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
           {/*
             La red de debajo de cada pantalla (entrega V): si un trozo no llega o algo
@@ -410,10 +412,10 @@ export function Esqueleto() {
         />
 
         {/*
-        Fogón · su sitio, decidido y construido antes que él (decisión 0015). En
-        el móvil, una burbuja que va contigo por toda la aplicación; en
-        escritorio, el icono de arriba que ya mandaba B5. Los dos abren la misma
-        ventana, y la ventana sabe en qué pantalla estás.
+        Fogón · su sitio, decidido y construido antes que él (decisión 0015). Una
+        burbuja que va contigo por toda la aplicación, en el móvil y en el
+        escritorio —el icono de la barra de arriba se quitó el 23-sep—, y en
+        escritorio también `Ctrl+J`. La ventana sabe en qué pantalla estás.
       */}
         <BurbujaDeFogon
           alPulsar={() => {
@@ -459,6 +461,6 @@ export function Esqueleto() {
 
         <Deshacer />
       </div>
-    </ProveedorDelEsqueleto>
+    </ContextoDelEsqueleto.Provider>
   );
 }

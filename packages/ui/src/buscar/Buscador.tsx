@@ -157,7 +157,7 @@ export function Buscador({
       aria-label="Buscar en todo"
       className="fixed inset-0 m-0 h-full max-h-none w-full max-w-none bg-transparent p-0 backdrop:bg-charcoal/35"
     >
-      <div className="flex h-full w-full justify-center p-e3 pt-[10vh]">
+      <div className="flex h-full w-full justify-center p-e3 pt-[max(10vh,calc(env(safe-area-inset-top)+var(--spacing-e3)))]">
         <div className="flex max-h-[70vh] w-full max-w-[36rem] flex-col overflow-hidden rounded-grande border border-borde bg-superficie shadow-s3">
           <div className="flex items-center gap-e2 border-b border-borde px-e3">
             <IconoBuscar size={20} className="shrink-0 text-texto-suave" />

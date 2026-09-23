@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { IconoAvisos, IconoBuscar, IconoChat, IconoLocal } from '@estook/iconos';
-import { IconoDeFogon } from '../componentes/Marca.tsx';
 import { clases } from '../clases.ts';
 import { Avatar } from '../componentes/Tarjeta.tsx';
 
@@ -33,11 +32,13 @@ import { Avatar } from '../componentes/Tarjeta.tsx';
  *     saber donde estas, a la vista y sin pulsar nada.
  *   · **Buscar.** En un movil no hay `Ctrl+K`.
  *   · **Avisos** y **chat**, cada uno el suyo.
- *   · **Fogon**, que ademas tiene su burbuja abajo. Son dos puertas a lo mismo y
- *     se quedan las dos: la burbuja es para el pulgar mientras trabajas, y el
- *     icono de arriba es donde lo busca quien viene del ordenador.
  *   · **El avatar**, que abre tu cuenta: ajustes, mi acceso, cambiar de local y
  *     salir.
+ *
+ * **Fogón ya no está aquí** (23-sep-2026). Tenía su icono arriba y su burbuja abajo,
+ * y Richi lo vio repetido: «ya hay una burbuja abajo a la derecha, y si no se repite
+ * mucho». Se queda la burbuja, que es la que se pulsa con el pulgar, y en escritorio
+ * también `Ctrl+J`.
  *
  * ── Lo que se fue, y lo que se llevo por delante sin querer ──────────────────
  *
@@ -72,7 +73,6 @@ export interface BarraArribaMovilProps {
   readonly alBuscar: () => void;
   readonly alAbrirAvisos: () => void;
   readonly alAbrirChat: () => void;
-  readonly alAbrirFogon: () => void;
   /** Tu cuenta: ajustes, mi acceso, cambiar de local y salir. */
   readonly alAbrirMiCuenta: () => void;
 }
@@ -86,14 +86,17 @@ export function BarraArribaMovil({
   alBuscar,
   alAbrirAvisos,
   alAbrirChat,
-  alAbrirFogon,
   alAbrirMiCuenta,
 }: BarraArribaMovilProps) {
   return (
     <header
       className={clases(
-        'sticky top-0 z-30 flex items-center gap-e1 border-b border-borde bg-superficie px-e2',
-        'h-[--alto-barra-movil] lg:hidden no-imprimir',
+        // La zona segura del teléfono (23-sep): con la app instalada, la página se pinta
+        // debajo del reloj y de la muesca del iPhone, así que la barra deja ese
+        // hueco arriba y a los lados, con su fondo detrás.
+        'sticky top-0 z-30 flex items-center gap-e1 border-b border-borde bg-superficie',
+        'pl-[max(var(--spacing-e2),env(safe-area-inset-left))] pr-[max(var(--spacing-e2),env(safe-area-inset-right))]',
+        'h-[calc(var(--alto-barra-movil)+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] lg:hidden no-imprimir',
       )}
     >
       <DondeEstas local={local} locales={locales} alCambiar={alCambiarDeLocal} />
@@ -132,11 +135,7 @@ export function BarraArribaMovil({
           <IconoChat size={20} />
         </Redondo>
 
-        {/* Fogon lleva su mascota, igual que en escritorio: es lo que lo hace
-            reconocible de un vistazo entre cuatro botones grises. */}
-        <Redondo etiqueta="Fogón" alPulsar={alAbrirFogon}>
-          <IconoDeFogon size={22} />
-        </Redondo>
+        {/* Fogón ya no va aquí (23-sep): está en su burbuja, a un dedo. */}
 
         <button
           type="button"

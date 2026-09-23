@@ -225,6 +225,15 @@ export const ERRORES = {
   ),
 
   // ── Lo que se pide ─────────────────────────────────────────────────────────
+  // Una merma de más de lo que hay (23-sep). El motivo concreto —cuánto queda y
+  // cuánto se tira— va en `detalle.porque`, que la pantalla enseña debajo.
+  mas_de_lo_que_hay: error(
+    'mas_de_lo_que_hay',
+    'No se puede tirar más de lo que hay.',
+    'Pon lo que se tira de verdad. Si hay más de lo que dice Estook, apunta antes lo que ha llegado o haz un recuento.',
+    422,
+  ),
+
   faltan_datos: error(
     'faltan_datos',
     'Falta algo por rellenar.',

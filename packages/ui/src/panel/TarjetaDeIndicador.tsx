@@ -7,7 +7,7 @@ import {
 } from '@estook/dominio';
 import { clases } from '../clases.ts';
 import { Cargando } from '../componentes/Cargando.tsx';
-import { comoDeGrande } from '../componentes/Cifra.tsx';
+import { comoDeGrande } from '../componentes/comoDeGrande.ts';
 import { Tarjeta } from '../componentes/Tarjeta.tsx';
 import { Tendencia } from '../componentes/Tendencia.tsx';
 import { Tira } from '../componentes/Tira.tsx';

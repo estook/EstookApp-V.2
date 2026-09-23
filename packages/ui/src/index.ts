@@ -40,20 +40,15 @@ export { clases } from './clases.ts';
 export { Boton, Botones } from './componentes/Boton.tsx';
 export type { BotonProps, TonoDeBoton, TamanoDeBoton } from './componentes/Boton.tsx';
 
-export { Campo, CampoMoneda, Envoltorio, aCentimos, CAJA } from './componentes/Campo.tsx';
+export { Campo, CampoMoneda, Envoltorio, CAJA } from './componentes/Campo.tsx';
+export { aCentimos } from './componentes/aCentimos.ts';
 export type { CampoProps, CampoMonedaProps, TipoDeCampo } from './componentes/Campo.tsx';
 
 export { Selector, Interruptor } from './componentes/Selector.tsx';
 export type { SelectorProps, InterruptorProps, Opcion } from './componentes/Selector.tsx';
 
-export {
-  Tarjeta,
-  EnlaceDeTarjeta,
-  Etiqueta,
-  Avatar,
-  inicialesDe,
-  colorDe,
-} from './componentes/Tarjeta.tsx';
+export { Tarjeta, EnlaceDeTarjeta, Etiqueta, Avatar } from './componentes/Tarjeta.tsx';
+export { inicialesDe, colorDe } from './componentes/iniciales.ts';
 export { Mosaico, Pieza, CLASES_DEL_MOSAICO } from './componentes/Mosaico.tsx';
 export {
   usarFilasDelMosaico,
@@ -86,7 +81,8 @@ export type { LogoProps, IconoDeFogonProps } from './componentes/Marca.tsx';
 export { Tabla, Lista } from './componentes/Tabla.tsx';
 export type { TablaProps, Columna, ListaProps, ElementoDeLista } from './componentes/Tabla.tsx';
 
-export { Cifra, comoDeGrande } from './componentes/Cifra.tsx';
+export { Cifra } from './componentes/Cifra.tsx';
+export { comoDeGrande } from './componentes/comoDeGrande.ts';
 export type { CifraProps, SentidoDeLaComparacion } from './componentes/Cifra.tsx';
 
 export { Grafica } from './componentes/Grafica.tsx';
@@ -161,11 +157,8 @@ export type { BuscadorProps, Accion, ResultadoDeBusqueda } from './buscar/Buscad
 export { parecido, trigramas, sinAcentos, filtrarPorParecido, UMBRAL } from './buscar/trigramas.ts';
 
 // ── Ganchos ──────────────────────────────────────────────────────────────────
-export {
-  ProveedorDeDeshacer,
-  usarDeshacer,
-  SEGUNDOS_PARA_DESHACER,
-} from './ganchos/usarDeshacer.tsx';
+export { usarDeshacer, SEGUNDOS_PARA_DESHACER } from './ganchos/usarDeshacer.tsx';
+export { ProveedorDeDeshacer } from './componentes/ProveedorDeDeshacer.tsx';
 export type { AccionQueSePuedeDeshacer, FalloQueHayQueDecir } from './ganchos/usarDeshacer.tsx';
 
 /* ── El aspecto: el tema y el color del local (M6½) ────────────────────────── */

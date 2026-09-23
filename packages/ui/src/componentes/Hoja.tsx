@@ -102,7 +102,9 @@ export function Hoja({ abierta, alCerrar, titulo, children, pie }: Comunes) {
       aria-label={titulo}
       className={clases(DIALOGO, 'fixed inset-0 w-full h-full')}
     >
-      <div className="relative flex h-full w-full flex-col justify-end md:items-center md:justify-center md:p-e6">
+      {/* La zona segura del teléfono arriba (23-sep): la franja de tocar para cerrar
+          empieza debajo de la muesca, no detrás. */}
+      <div className="relative flex h-full w-full flex-col justify-end pt-[env(safe-area-inset-top)] md:items-center md:justify-center md:p-e6">
         {/* Tocar fuera cierra. Es un boton de verdad para que tambien se pueda
             con teclado, aunque `Esc` ya haga lo mismo. En el movil es la franja
             de arriba; en el ordenador, todo lo que rodea a la ventana. */}
@@ -151,13 +153,19 @@ export function PanelLateral({ abierta, alCerrar, titulo, children, pie }: Comun
     >
       <div
         className={clases(
-          'flex h-full w-[min(420px,100vw)] flex-col bg-superficie shadow-s3',
+          // En el teléfono ocupa la pantalla entera: su cabecera deja la zona
+          // segura de arriba y su pie la de abajo, o la muesca tapa el título (23-sep).
+          'flex h-full w-[min(420px,100vw)] flex-col bg-superficie shadow-s3 pt-[env(safe-area-inset-top)]',
           'border-l border-borde anima-derecha',
         )}
       >
         <Cabecera titulo={titulo} alCerrar={alCerrar} />
         <div className="flex-1 overflow-y-auto px-e4 pb-e4">{children}</div>
-        {pie !== undefined && <footer className="border-t border-borde px-e4 py-e3">{pie}</footer>}
+        {pie !== undefined && (
+          <footer className="border-t border-borde px-e4 py-e3 pb-[calc(var(--spacing-e3)+env(safe-area-inset-bottom))]">
+            {pie}
+          </footer>
+        )}
       </div>
     </dialog>
   );

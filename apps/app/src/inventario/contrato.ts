@@ -104,6 +104,8 @@ export interface MisProductos {
   readonly categorias: readonly CategoriaDelLocal[];
   readonly proveedores: readonly ProveedorDelLocal[];
   readonly cuantosHay: number;
+  /** Los que cumplen lo que se mira, en todas las páginas: el título de la lista. */
+  readonly cuantosCumplen: number;
   readonly hayMas: boolean;
   readonly puedeVerPrecios: boolean;
   readonly ejemplos: number;

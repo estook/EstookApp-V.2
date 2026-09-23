@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { enEuros } from '@estook/dominio';
-import { aCentimos } from './Campo.tsx';
+import { aCentimos } from './aCentimos.ts';
 
 /**
  * M3 · el campo de moneda.

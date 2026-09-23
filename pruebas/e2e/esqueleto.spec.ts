@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M3 · aceptacion, punto por punto.
@@ -55,7 +56,7 @@ const APPS_CON_CONTENIDO = ['inventario', 'equipo', 'servicio', 'negocio'];
  * que haya un titulo es esperar a que la aplicacion este pintada de verdad.
  */
 async function abrir(page: Page, camino: string) {
-  await page.goto(`${APP}#${camino}`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#${camino}`);
   await page.getByRole('heading', { level: 1 }).waitFor({ state: 'visible' });
 }
 
@@ -72,7 +73,7 @@ async function abrir(page: Page, camino: string) {
 const CLAVE = 'estook en desarrollo';
 
 async function entrar(page: Page, correo: string) {
-  await page.goto(APP, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, APP);
 
   // Si venia una sesion de otra prueba, se tira: cada prueba entra limpia.
   await page.evaluate(() => {
@@ -410,7 +411,7 @@ test.describe('la rueda de apps', () => {
     // Panel.» Antes decía «arrastra o pulsa», que es una instrucción y no un
     // sitio, y para volver al Panel desde una app había que buscarlo.
     await comoGerente(page);
-    await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await abrirLaRueda(page);
@@ -726,7 +727,7 @@ test.describe('accesibilidad', () => {
         return h ? Number.parseFloat(getComputedStyle(h).fontSize) : 0;
       });
 
-    await page.getByRole('radio', { name: 'Pequena' }).click();
+    await page.getByRole('radio', { name: 'Pequeña' }).click();
     const pequena = await medir();
 
     await page.getByRole('radio', { name: 'Grande' }).click();

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { horaDeCorte, jornadaDe, partidaDe, valorDeLaMerma } from '@estook/dominio';
+import { horaDeCorte, jornadaDe, partidaDe, sePuedeTirar, valorDeLaMerma } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
@@ -90,6 +90,14 @@ export const quitarLote = comando<EntradaQuitarLote, SalidaQuitarLote>({
     if (entrada.como === 'tirado') {
       const cuanto = entrada.cuanto ?? 0;
       const antes = await loQueHay(contexto, producto.id);
+      // Lo mismo que cualquier merma: nunca más de lo que hay (23-sep).
+      const puede = sePuedeTirar(antes.cantidad, cuanto, producto.unidadDeUso);
+      if (!puede.sePuede) {
+        throw new FalloDeAplicacion('mas_de_lo_que_hay', {
+          porque: puede.porque,
+          campos: ['cuanto'],
+        });
+      }
       const valor = valorDeLaMerma(cuanto, antes.coste);
 
       const apuntado = await apuntar(contexto, producto, {

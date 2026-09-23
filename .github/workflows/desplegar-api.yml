@@ -73,7 +73,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # La version va fija, y no es manía. Con `latest`, la accion le pregunta a
       # la API de GitHub cual es la ultima **sin identificarse**, y eso tiene un
@@ -84,7 +84,7 @@ jobs:
       # Eso tumbo el primer intento de desplegar, y no tenia nada que ver con
       # nuestro codigo. Fijandola, el despliegue no depende de cuanta gente haya
       # desplegado hoy. Subirla es cambiar este numero, a proposito y mirando.
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: 2.116.0
 

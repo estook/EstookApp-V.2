@@ -146,6 +146,17 @@ export interface Puertas {
    */
   readonly conSecreto?: true;
   /**
+   * **Se repite cada poco y da igual cuántas veces llegue**, así que tampoco se
+   * recuerda (23-sep-2026).
+   *
+   * Es el «sigo aquí» de la app abierta: uno por minuto y aparato, todo el día.
+   * Guardarlos en `estook.clave_de_idempotencia` sería llenar esa tabla de avisos
+   * que no hay que repetir nunca, porque repetirlo ya es lo mismo: «se le vio ahora».
+   * Solo lo declara lo que es así de verdad; lo que suma, resta o crea algo se
+   * recuerda siempre.
+   */
+  readonly sinRecordar?: true;
+  /**
    * Se puede llamar con la sesion a medias, esperando el segundo factor. Solo lo
    * que hace falta para terminarlo o para irse.
    */

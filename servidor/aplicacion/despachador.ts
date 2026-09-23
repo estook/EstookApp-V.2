@@ -294,8 +294,9 @@ export function crearDespachador(puertos: Puertos): Despachador {
 
           // Un comando que devuelve un secreto no se recuerda: guardar la
           // respuesta seria guardar el token, o el PIN, en una tabla. Está
-          // razonado en `conSecreto`, en el contrato.
-          if (elComando.conSecreto) {
+          // razonado en `conSecreto`, en el contrato. Y uno que se repite sin
+          // efecto, como el «sigo aquí», tampoco (`sinRecordar`).
+          if (elComando.conSecreto || elComando.sinRecordar) {
             const salida = await ejecutarGuardandoLoQueFalla(() =>
               elComando.ejecutar(contexto, validada.data),
             );

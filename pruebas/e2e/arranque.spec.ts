@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M0 · aceptacion. Las cuatro aplicaciones arrancan, sin errores y a tiempo.
@@ -38,7 +39,7 @@ for (const aplicacion of APLICACIONES) {
       page.on('pageerror', (fallo) => errores.push(fallo.message));
 
       const comienzo = Date.now();
-      await page.goto(aplicacion.url, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, aplicacion.url);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       const tardanza = Date.now() - comienzo;
 
@@ -61,7 +62,7 @@ for (const aplicacion of APLICACIONES) {
     });
 
     test('no desborda a lo ancho en movil pequeno', async ({ page }) => {
-      await page.goto(aplicacion.url, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, aplicacion.url);
       const desborda = await page.evaluate(
         () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
       );
@@ -93,7 +94,7 @@ test.describe('con el sistema en oscuro', () => {
 
   for (const { nombre, url } of APLICACIONES.filter((a) => a.nombre !== 'app')) {
     test(`${nombre} sigue clara, y su logotipo se lee`, async ({ page }) => {
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, url);
 
       // Sin `data-tema`: esta aplicación no elige, así que no hay nada que elegir.
       await expect(page.locator('html')).not.toHaveAttribute('data-tema', /.+/);

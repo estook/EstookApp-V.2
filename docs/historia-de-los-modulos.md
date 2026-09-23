@@ -2147,9 +2147,9 @@ acepta `prueba|sujeto|correo|nombre`.
   `Privacidad.tsx`, el primero pisó al segundo sin avisar. Las entradas de las páginas
   viven en `src/paginas/`.
 
-### Antes de M8 · V, lo que se ve (puntos 1 y 2, sin fusionar)
+### Antes de M8 · V, lo que se ve (la primera parte, en producción con la #64)
 
-**En la rama `v-lo-que-se-ve`**, que se fusiona con V entera. El modo cocina (mejora 1)
+**Fusionada en la #64** el 23 de septiembre, con los arreglos de después en la #65. El modo cocina (mejora 1)
 y «Cómo va», las cifras con flecha de cada app (mejora 2,
 [0044](decisiones/0044-las-cifras-de-cada-app.md), migración `0040`).
 
@@ -2193,6 +2193,344 @@ cuando» pedía **recorrer las pantallas midiendo 64 px y 7:1**. La prueba que l
   que **cambiar el margen y recargar en el mismo instante lo perdía**, sin que la
   pantalla dijera nada. Ahora dice «Guardando…» y «Guardado», y el selector no vuelve
   atrás mientras tanto (lo guardado se escribe en la caché).
+
+#### Lo que dejó cada punto, contado entonces en `ESTADO.md`
+
+**Lo que el punto 1 dejó hecho, y no hay que volver a tocar:** `cocina.css` con las
+fichas del modo, `usarModoCocina` como ajuste del aparato —igual que el tema y la
+letra—, el interruptor en Ajustes, y los botones de subir y bajar del Panel, que
+vuelven **solo con guantes** porque ahí el arrastre se dispara solo.
+
+**Y lo que le faltaba, completado el 23 de septiembre.** Su «terminado cuando» pedía
+**una prueba que recorriera las pantallas con el modo puesto midiendo 64 px y 7:1**, y
+no existía: se había dado por hecho con las pruebas de las fichas. Ahora existe
+(`modo-cocina.spec.ts`: ocho pantallas del cocinero y la hoja de merma, en escritorio
+y móvil), y **encontró tres fallos de verdad**:
+
+1. **El modo cocina no se aplicaba al abrir la app**, solo al pasar por Ajustes: la
+   tableta del pase arrancaba cada mañana con los botones pequeños. **La letra grande
+   tenía el mismo fallo desde M3.** Los dos se aplican ahora en la raíz, como el tema.
+2. **Solo subían los grises.** El botón principal quedaba a 6,6:1, un botón rojo a 5,3
+   y la pestaña activa, en el color de su app, a 3,4. Ahora suben también los cuatro
+   estados, el texto del botón principal y el acento de cada app, calculados; y el
+   color propio de un local se ajusta a 7:1 en cocina. De paso: el bloque oscuro del
+   modo se aplicaba a «el del sistema» **aunque el sistema estuviera en claro**.
+3. **Muchos botones no llegaban a 64 px**: los de «ha llegado / ha salido» de cada
+   producto (40), las vistas (36), las migas (20). Ahora lo dice una sola regla de
+   `cocina.css`, fuera de la capa base para que ninguna clase la pise. Y con todo más
+   grande, **en un iPhone SE la barra de arriba no cabía** y cortaba el botón de tu
+   cuenta: lo vio la integración continua, que prueba también Safari. Con el modo
+   puesto y por debajo de 440 px, Avisos y Chat —que hoy solo dicen lo que serán— se
+   recogen; cuando los avisos existan (entrega I), hay que volver a mirarlo.
+
+**Lo que el punto 2 dejó hecho** ([0044](decisiones/0044-las-cifras-de-cada-app.md)):
+**«Cómo va»** en la primera pantalla de Inventario, Servicio y Equipo, debajo de lo
+urgente (en Inventario, **arriba del todo** desde el 23-sep, lo pidió Richi), con «7 días · 30 días» y cada tarjeta llevando a su detalle. La tarjeta del
+Panel pasa a `@estook/ui` y la usan todos. **Seis cifras nuevas** —valor de la cámara,
+bajo mínimo, cajas cerradas, horas del equipo, coste de personal y retrasos—, contadas
+**como las pantallas de las que salen**, con su prueba contra la base que lo compara.
+Y **Ajustes → «Cuándo es llegar tarde»**: cinco minutos que cada local cambia
+(migración `0040`), con su columna de retrasos en Equipo · Fichajes (que entonces se llamaba «Resumen»).
+
+**Lo que el punto 3 dejó hecho** ([0045](decisiones/0045-el-aspecto-y-el-orden.md)),
+con lo que Richi pidió el 23 de septiembre mirando la app en su TPV:
+
+- **«Hoy» se llama «Resumen»** en Inventario, Escandallos y Equipo, y en Equipo el
+  «Resumen» de las horas pasa a **«Fichajes»**. B5 del Plan, cambiada.
+- **Las tarjetas van en mosaico** (`Mosaico`, y la misma medida en la casilla del
+  Panel): cada una mide lo que lleva y las demás encajan debajo. Se acabaron las
+  tarjetas estiradas con un hueco vacío dentro.
+- **Menos texto**: cada aviso en tres líneas con el porqué plegado en «¿Por qué?», los
+  cuatro primeros a la vista, el menú lateral solo con el nombre y cada enlace de
+  tarjeta en «Ver ›». Fuera la tarjeta «Y lo que falta por venir» y los cuatro botones
+  apagados «Con una foto · M22».
+- **Ajustes por secciones** —Este aparato, Mi cuenta, Tu local, Conexiones y
+  Organización—, cada una con su dirección y un buscador que sale también en el
+  buscador universal (`lasSeccionesDeAjustes.ts`).
+- **El aspecto nuevo**: tarjeta de 24 px con sombra en dos capas, el icono de la app en
+  su pastilla en vez de la línea de color, sin mayúsculas grises, el velo del color del
+  local en el Panel, y el oscuro un punto más hondo. La tarjeta se adapta a su propio
+  ancho.
+- **Dos fallos de antes, con su prueba:** lo elegido («7 días», «Listo») no se leía en
+  oscuro —1,4:1—, y «el del sistema» en claro no era el tema claro. Con esto, lo que el
+  punto 5 tenía apuntado del tema del sistema queda hecho.
+
+**Y el arreglo de entrar** (23-sep, lo trajo Richi). Entrando en la **app** con
+`estookapp@gmail.com` —la cuenta que solo es del admin, sin ningún negocio— la app pedía
+el código del segundo factor y después decía «no está asociada a ningún negocio».
+Parecía que las cuentas se mezclaban. **No se mezclaba nada**, comprobado en la base: el
+segundo factor es de la persona, y solo lo tienen `estookapp@gmail.com` y Santi, que
+son los del admin; `belicar1905@gmail.com` no lo tiene, y ninguna cuenta ve nada de otro
+negocio. Lo que estaba mal era el orden. Ahora **una cuenta sin negocio se para antes
+del código**, sin abrir sesión, con el error `sin_negocio` que manda al admin; y la
+pantalla del código **dice de qué cuenta es**, porque la sesión a medias se quedaba en
+el navegador y volvía sola días después. Con su prueba contra la base y de pantalla.
+
+**Y la red de debajo de cada pantalla** (23-sep, la destapó Safari en la #64). La app se
+descarga a trozos —Movimientos, Compras, la ficha, el alta, las gráficas— y **si un trozo
+no llegaba, el fallo no lo recogía nadie**: la pantalla podía quedarse en blanco. Pasa si
+se va la conexión y, sobre todo, **al publicar una versión nueva con la app abierta**, que
+es justo lo que va a pasar al fusionar V. Ahora `SiAlgoFalla` (en `@estook/ui`) está en
+la raíz de la app y del admin y debajo de cada pantalla: un trozo que no llega **recarga
+sola una vez** para traer la versión nueva; si vuelve a fallar, lo dice con su botón y
+las barras siguen. Cada fallo recogido se manda a Sentry (`avisarDelFallo`). Con su prueba
+de pantalla, que corta la descarga de Movimientos a propósito y se vio fallar sin la red.
+
+#### Lo que pasó al fusionar la #64, y lo que se arregló después
+
+**Se desplegó la API sin aplicar la `0040`** (23-sep, 18:43). El código nuevo leía el
+margen de retraso de cada local, que crea esa migración; como no existía, **Equipo entero
+y el fichar del Panel dejaron de funcionar**. Se aplicó la `0040` a las pocas horas y
+volvió todo: comprobado **como cada persona real** de los cuatro negocios, con las 33
+consultas del día a día, en una transacción de solo lectura —**cero fallos, y nadie ve
+nada de otro negocio**—.
+
+Y de ahí salieron tres arreglos, en la rama `arreglos-tras-la-64`, fusionados en la #65:
+
+- **El despliegue ya no deja adelantarse a la base.** «Desplegar la API» pregunta a
+  Supabase, en solo lectura, en qué migración está la base, y **si va por detrás del
+  código no despliega** y dice que se aplique `bd:migrar` antes
+  (`herramientas/la-base-va-al-dia.mjs`). Si no puede preguntar, avisa y despliega: esa
+  puerta de Supabase es «beta» y no puede dejar a Richi sin desplegar un arreglo.
+- **Un fallo al leer ya no se disfraza.** El widget de fichar le dijo a Richi, director,
+  «tu acceso no incluye fichar» cuando lo que pasaba era que no se podía leer; y los
+  demás widgets, sin datos, decían «nada caduca» o se quedaban cargando. Ahora dicen «No
+  he podido leerlo» con su botón de volver a intentarlo.
+- **En Inventario, «Cómo va» arriba del todo** (lo pidió Richi; 0045, apartado «Seis»).
+
+### Antes de M8 · el repaso del 23 de septiembre
+
+**En la rama `el-repaso-del-23-sep`.** Doce cosas que trajo Richi mirando la app en el
+móvil, y una auditoría de Supabase, GitHub y la app. Lleva **cuatro migraciones**: de la
+`0041` a la `0044`.
+
+#### Lo que pidió, y lo que se hizo
+
+- **El jefe de cocina ve las ventas** —«puede necesitar saber qué sale o qué no»—: las
+  del día, el ticket medio, los cierres y, con el precio de compra que ya tenía, el food
+  cost. **Solo verlas**; la caja la sigue cerrando quien lleva el local o la sala
+  (migración `0041`, Roles 1.6). Lo que sale plato a plato llega con el TPV.
+- **La merma no tira más de lo que hay**, ni al apuntarla ni al quitar un lote tirado.
+  La hoja lo avisa en el campo y **el servidor lo impide** (`mas_de_lo_que_hay`, 422),
+  con la frase de qué hacer si de verdad hay más.
+- **Las listas cuentan lo que enseñan.** «11 productos por debajo del mínimo» y salían
+  tres; lo mismo en Congelados. El título contaba el local entero, y «Bajo mínimo» se
+  perdía los del final del abecedario al filtrar después de cortar. Ahora la consulta
+  devuelve `cuantosCumplen`, y los topes de 200 de las listas internas pasan a 5.000.
+  **Y medirlo destapó lo lento de verdad** (24-sep). Una prueba de Safari tardó de
+  más, y con 400 productos en la base de pruebas el Resumen de Inventario tardaba 2,6 s
+  (en `main`, 1,7). Midiendo cada consulta: el recuento nuevo obligaba a calcular lo
+  caro de todos (se cuenta ahora con lo barato); **el valor de la cámara recorría el
+  libro entero** y estaba escrito dos veces (ahora una, `elValorDeLaCamara`, producto
+  a producto); y sobre todo **el precio vigente se pedía producto a producto**
+  (migración `0044`: `precios_vigentes`, de una pasada, y la de uno la llama). Quedó
+  en 0,34 s el Resumen, 0,32 s «Bajo mínimo» y 0,27 s la lista: entre cuatro y cinco
+  veces más rápido que antes de esta rama. Dos cosas que se probaron y no cambiaban
+  nada —unir las existencias producto a producto en la lista y agrupar las cuentas del
+  libro— se deshicieron.
+- **La muesca del iPhone ya no tapa nada**: la barra de arriba, las hojas, el buscador,
+  entrar, crear cuenta, el alta y el admin dejan el hueco de la zona segura.
+- **Al tocar un campo, el móvil ya no hace zoom**: en pantallas táctiles los campos van
+  a 16 px como mínimo, que es lo que Safari mira.
+- **La letra «Pequeña», de verdad pequeña en el móvil** (0,82), sin tocar el ordenador;
+  y con tilde.
+- **Fogón sale de la barra de arriba**, en ordenador y en móvil: se queda la burbuja, y
+  en escritorio `Ctrl+J`. B5 del Plan, cambiada.
+- **En Equipo, «Cómo va» va justo debajo de fichar**; en Servicio se queda donde estaba.
+- **La ficha de una persona enseña sus tres últimos fichajes y «Ver todos»**, que abre
+  el historial entero dentro del mismo panel, agrupado por meses y de cincuenta en
+  cincuenta, con «Corregir» en cada uno (`fichajes_de_una_persona`). «En el local» se
+  mide con el radio del local donde se fichó.
+- **«En línea» es tener la app abierta y a la vista** (migración `0042`): la app avisa
+  cada 45 segundos mientras se ve (`sigo_aqui`, que no se guarda para repetirlo) y
+  una vez al esconderse; dos minutos sin aviso, y deja de salir. «Última vez» es el
+  último aviso, no la última entrada.
+  **Lo cazó Safari en GitHub:** al recargar, la página se esconde y después se va, y el
+  «ya no estoy» salía entre las dos cosas y se cortaba —un fallo de página por cada app
+  que abría la prueba—. Ahora espera un segundo y no sale si la página se va.
+- **El TPV**: lo que Richi describió —añadir terminal con nombre y función (Sala, Barra
+  o Cocina), emparejado por código o QR, que carga su pantalla y al que se entra con
+  PIN, y que es del local y no del trabajador— encaja con el Anexo 3.4, y **lo que no
+  estaba escrito se escribió** («Dar de alta un terminal»). Con eso queda decidida la
+  pregunta abierta de lo que el TPV toca de lo construido: el terminal es una pieza
+  aparte, `aparato_del_local`.
+- **ESTADO.md, resumido**: las lecciones pasan a [`lecciones.md`](lecciones.md) y el
+  detalle de lo hecho, aquí.
+
+#### Lo que encontró la auditoría
+
+- **Supabase, en producción y solo leyendo:** ninguna tabla sin seguridad por filas;
+  `anon` y `authenticated` sin acceso al esquema `estook`; ninguna función con
+  privilegio sin `search_path` fijo; el libro de movimientos cuadra entero; ningún
+  producto en negativo, ningún fichaje imposible, ningún cierre duplicado, y **ningún
+  dato cruzado entre negocios** (lotes, movimientos, membresías, pedidos, proveedores).
+- **Siete funciones con privilegio seguían ejecutables por cualquiera**, de antes de
+  que se cogiera la costumbre de cerrarlas. No se podía abusar —el esquema está
+  cerrado—, pero era una sola barrera. La `0043` las cierra todas sin nombrarlas, y la
+  prueba mira todas.
+- **«En línea» solo lo veía bien quien puede quitar accesos**: las políticas de las
+  sesiones no dejan leer las de los demás. Lo arregla la `0042`.
+- **440 claves de idempotencia caducadas sin borrar**: las tenía que tirar un trabajo
+  nocturno que no tiene reloj. Ahora las tira `anotar` al apuntar una nueva, solo las
+  de su organización.
+- **GitHub:** `main` protegida por su conjunto de reglas —ni borrar, ni reescribir, y
+  las tres comprobaciones obligatorias—. **Las acciones usaban Node 20**, que GitHub
+  retira: suben a las versiones con Node 24 (y `upload-pages-artifact` con
+  `include-hidden-files`, para que `.nojekyll` siga entrando). **Ocho avisos de
+  recarga rápida** del lint, arreglados de verdad: los proveedores de sesión, del
+  esqueleto y de deshacer van en su fichero, y cuatro funciones sueltas, en el suyo.
+- **Dependencias:** dos avisos moderados de React Router 6 que **no nos afectan** —uno
+  es de páginas generadas en el servidor, que no usamos; el otro necesita navegar a una
+  dirección escrita por alguien de fuera, y todas las nuestras salen del catálogo—. Se
+  van al subir a React Router 7.
+
+---
+
+### Cambio de rumbo · Estook también cobra
+
+_20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._
+
+Estook deja de ser «no cobro y no facturo». El local elige entre **cobrar con Estook**
+—el TPV propio: sala, cocina, cobro, caja, tickets y facturas con VeriFactu—, **lo
+trae mi TPV** o **lo apunto yo**. Con eso Estook pasa a ser **fabricante de un sistema
+informático de facturación** en España.
+
+**Dos cosas que hay que tener claras para no equivocarse de trabajo:**
+
+- **Esto no rehace nada.** M0 a M17 se quedan como están: mismo repositorio, mismo
+  dominio, misma API, misma base de datos y mismo despliegue.
+- **Esto no es lo de ahora.** El TPV es la **Fase 4**, trece módulos por delante. Lo
+  de ahora sigue siendo **«Antes de M8»**: E2, las veinte mejoras y el panel de
+  administración.
+
+#### Lo único que se ha tocado de código, y por qué
+
+**El Plan 1.2 cambió la tabla de vistas de B5, y eso es código.** La prueba de
+navegación **lee esa tabla del fichero del Plan**, así que poner el Plan nuevo en su
+sitio puso la integración en rojo al momento. Eso es la prueba haciendo su trabajo.
+
+| Qué dice ahora B5                                   | Qué se ha hecho                                                                                                                                                                                                                                  |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Servicio · Jornada`: **En marcha · Caja · Cierre** | **Caja** entra en el catálogo marcada como **M20C**. Es la caja del TPV —fondo, entradas y salidas, arqueo—, que **no es lo mismo que «Cierre»**: el cierre es el resumen del día, y con el TPV propio se rellena solo desde la caja (Anexo 5.5) |
+| `Servicio · Ventas`: gana **Tickets y facturas**    | Entra marcada como **M20C**. Solo existe si el local cobra con Estook: es lo que ha emitido su propio sistema, con su estado ante Hacienda                                                                                                       |
+| El orden pasa a ser el de un día                    | **Se respeta tal cual**, y a cambio se arregla lo de abajo                                                                                                                                                                                       |
+
+**Y el fallo de fondo que eso destapó.** Se entraba a un destino por `vistas[0]`, la
+primera de la tabla. Pero las tablas del Plan están escritas **en el orden en el que se
+entienden**, no en el que se construyen: con el orden nuevo, abrir Servicio habría caído
+en «En marcha», que es M16, y **el cierre de caja de M6½ —lo único que funciona ahí—
+habría quedado detrás de un cartel de «todavía no»**. Es la pestaña muerta de B5 un piso
+más abajo.
+
+Ahora se entra por **`dondeEntraEnElDestino`: la primera vista construida**, y si no hay
+ninguna, la primera. Lo usan `rutaDe` y la pantalla, **la misma función en los dos**,
+porque dos sitios decidiendo lo mismo acaban decidiendo distinto. Está escrito en B5 del
+Plan, que no decía nada de esto, y tiene tres pruebas.
+
+Una vista pendiente **se sigue enseñando** en el control segmentado, apagada y con su
+módulo al lado. Ahí no le quita el sitio a nadie y contesta «¿y la caja, dónde está?»
+antes de que nadie la busque.
+
+**Nada de esto adelanta el TPV.** Son dos pastillas apagadas que dicen «M20C».
+
+#### Lo que se ha corregido de los documentos
+
+- **Anexo 1.4**, reescrito con la [0043](decisiones/0043-hasta-donde-llega-la-facturacion.md), y **4.3 y las pruebas 18 y 19 puestas de acuerdo con él**: decían que Canarias no podía activar el módulo.
+- **Anexo 4.5, 4.6, 4.7 y 4.14**, con las respuestas comprobadas y su fuente.
+- **Plan A4** decía «los cinco documentos» cuando ya son seis.
+- **El mapa de módulos** decía «el módulo 22 de 36» y «M7, a medias». Ahora dice lo que es, y dice que mandan el Plan y este fichero.
+- Líneas duplicadas en el Anexo 3.7 y en la tabla de Roles 1.12.
+
+El repaso del esquema y del código contra el Anexo está hecho y escrito en
+**[`docs/lo-que-el-tpv-toca-de-lo-construido.md`](lo-que-el-tpv-toca-de-lo-construido.md)**:
+qué hay que ampliar del cierre de caja, del motor fiscal y de los permisos, y las dos
+cosas que hay que **decidir antes de escribir la primera pantalla de Sala**.
+
+#### Las reglas duras de esta parte
+
+1. **Web, una sola base de código.** El TPV va **dentro de `apps/app`** como modo de
+   pantalla, no en una aplicación aparte. `apps/movil` es una cáscara de Capacitor
+   **sin pantallas propias**, opcional, y llega en M20A. Razonado en A5 del Plan:
+   **no se reabre**.
+2. **La facturación es intocable.** Un ticket o una factura emitidos no se editan ni
+   se borran jamás, desde ningún sitio. Se corrigen con otro documento. Viven en su
+   propio esquema, **solo de inserción**, y solo los escribe su módulo (regla 15 de
+   A1; principio 17 del Manifiesto).
+3. **Estook no toca el dinero.** La tarjeta la cobra el datáfono del banco del local.
+4. **No calculamos huellas ni encadenamos registros.** Eso lo hace el proveedor
+   (Verifacti). Si aparece un SHA-256 de un registro de facturación en nuestro código,
+   es una segunda cadena y está mal.
+5. **Nada de facturación llega a producción** sin las siete condiciones del capítulo 9
+   del Anexo.
+6. **La impresión no se ata a una marca.** El núcleo solo deja trabajos en una cola,
+   en un formato intermedio propio. Una marca nueva es un traductor nuevo, no tocar el
+   núcleo (capítulo 6 del Anexo).
+7. **No se inventa ni un campo ni un endpoint.** Ni de Verifacti, ni de la AEAT, ni de
+   Revo, ni de Last.app. Primero la documentación oficial vigente; hasta entonces,
+   esqueleto con `TODO` y adaptador simulado con el que se pueda probar todo lo demás.
+
+#### Los [VERIFICAR] · lo comprobado el 20 de septiembre de 2026
+
+**Eran nueve.** **Cuatro los he podido comprobar yo contra la fuente oficial y están
+resueltos dentro del propio Anexo**, con su enlace: el límite de la factura
+simplificada, qué rectificativa toca, los campos de la declaración responsable y los
+territorios. Los otros cinco dependen del asesor, de una compra o de que se publique un
+BOE, y están abajo. El resumen, más la comprobación del QR y la del proveedor:
+
+| Qué                                                   | Respuesta                                                                                                                                                                                                                                                                                  | Fuente                                                                                                                                                                                       |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Límite de la factura simplificada en restauración** | **3.000 €, IVA incluido.** El general es 400 € (art. 4.1); el art. 4.2.e) lo sube a 3.000 € para hostelería «para consumir en el acto». Anexo 4.6                                                                                                                                          | [RD 1619/2012, art. 4 · BOE](https://www.boe.es/buscar/act.php?id=BOE-A-2012-14696)                                                                                                          |
+| **Qué rectificativa toca**                            | **R5** para el ticket. **R1** por error fundado en derecho (art. 80.Uno, Dos y Seis LIVA) sobre factura completa; R2 concurso y R3 incobrables **no se programan**; R4, el resto. Anexo 4.5                                                                                                | [AEAT · procedimientos de facturación](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/procedimientos-facturacion.html)      |
+| **Campos de la declaración responsable**              | **Orden HAC/1177/2024, cap. IV, art. 15**: doce datos, y **dentro de la app, legible e individualizada, accesible de forma rápida, fácil e intuitiva**. Escritos uno a uno en el Anexo 4.14                                                                                                | [Orden HAC/1177/2024, art. 15 · BOE](https://www.boe.es/buscar/act.php?id=BOE-A-2024-22138)                                                                                                  |
+| **El QR**                                             | **Art. 21**: nivel M, 30×30 a 40×40 mm, cinco datos y su leyenda. **Coincide exactamente** con lo que ya decía el Anexo 4.7                                                                                                                                                                | [Orden HAC/1177/2024, art. 21 · BOE](https://www.boe.es/buscar/act.php?id=BOE-A-2024-22138)                                                                                                  |
+| **Territorios**                                       | **Canarias, Ceuta y Melilla están dentro del ámbito legal.** País Vasco y Navarra, fuera (foral). SII, excluido. La fecha del fabricante, **29 de julio de 2025**, vencida                                                                                                                 | [AEAT · ámbitos de aplicación](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/cuestiones-generales-ambitos-aplicacion.html) |
+| **Verifacti**                                         | Clave **por NIF y entorno**; `POST /verifactu/create` devuelve el **QR en base 64**; `GET /verifactu/status`; `POST /nifs` da de alta la empresa; **huella y cadena, del proveedor**; los registros se encolan y salen en dos minutos como mucho; webhooks recomendados frente a consultar | [Verifacti · guía rápida](https://www.verifacti.com/es/guia-rapida)                                                                                                                          |
+
+**Y dos hallazgos del repaso, ya metidos en el Anexo:**
+
+- **Faltaba la naturaleza de la rectificación** —`S` por sustitución o `I` por
+  diferencias—, que VeriFactu exige junto a la clave R. Está escrito en el Anexo 4.5,
+  con su `[VERIFICAR]`: cuál toca lo dice el asesor, y **el nombre del campo se lee de
+  la API del proveedor, no se inventa**.
+- **Canarias, Ceuta y Melilla se bloqueaban con un motivo falso.** Decidido en la
+  [0043](decisiones/0043-hasta-donde-llega-la-facturacion.md): **Canarias entra
+  con IGIC** —el esquema y el motor fiscal ya lo soportan desde la `0012`—, **Ceuta y
+  Melilla esperan** por el IPSI y su categoría de establecimiento, y la pantalla
+  distingue «no se puede» de «todavía no». El Anexo 1.4 está reescrito.
+
+#### Lo que queda, y de quién es
+
+**Del asesor fiscal** —y hasta que conteste, no se programa ninguna:
+
+1. **El tipo de IVA del servicio de restauración**, y el de «para llevar» y reparto.
+2. **El IGIC de hostelería**, ahora que Canarias entra.
+3. **`S` o `I`** en la rectificativa de una devolución, y **R1 frente a R4** en una
+   factura completa.
+4. **El texto exacto del justificante provisional** de venta sin conexión.
+5. **Las propinas:** si la de efectivo puede quedarse fuera del ticket.
+6. **Si el límite de 3.000 € vale también para el reparto a domicilio**, que la ley
+   describe como «para consumir en el acto».
+7. **La declaración responsable de Estook**, redactada y firmada.
+8. **La revisión escrita del planteamiento entero**, que es condición 4 del capítulo 9
+   del Anexo.
+
+**De Richi, y no hace falta todavía:** las claves de Verifacti. Cómo se sacan y cuándo
+se piden está en `ESTADO.md`, en **«Lo que es de Richi»**. Y el
+precio real de una impresora que pregunta sola (Anexo 6.3), al comprarla.
+
+**Y uno que ya está resuelto: el precio de Verifacti.** Llegó su propuesta el 21 de
+septiembre: **por NIF activo en producción**, de 5,59 € con diez a 3,71 € con cincuenta,
+sin IVA, con 3.000 facturas al mes por NIF incluidas. Las cuentas salen y **el TPV cabe
+en Pro sin subir el precio**; queda **una pregunta para ellos: qué se paga con menos de
+diez NIF**. Todo, en
+[`docs/el-precio-de-verifacti.md`](el-precio-de-verifacti.md). **La propuesta
+caduca hacia el 19 de octubre.**
+
+**Y uno que no depende de nadie de aquí:** el **[VERIFICAR] del registro horario**
+(Plan, M15). El Real Decreto de fichaje digital sigue **en tramitación y sin publicar
+en el BOE** a día de hoy, así que no obliga. Cuando se publique hay que mirar el
+formato exacto de la exportación para la Inspección y si exige una API. **Hasta
+entonces se hace la exportación y no se inventa ningún protocolo.**
 
 ---
 

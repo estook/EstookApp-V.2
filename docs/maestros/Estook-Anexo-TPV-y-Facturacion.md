@@ -265,6 +265,16 @@ Una tablet de sala la usan cinco camareros, y la pantalla de cocina lleva encend
 
 **Y la regla que lo cierra:** un aparato registrado del local **no puede salirse a la aplicación de gestión** sin que alguien entre con su PIN. Una tablet de sala tirada en la barra no es una puerta al inventario ni a los sueldos.
 
+**Dar de alta un terminal** (Richi, 23-sep-2026). Así se pone en marcha un aparato del local:
+
+1. Quien lleva el local entra en **Ajustes › Terminales › Añadir terminal** y le pone **un nombre** («Tablet terraza», «Pantalla pase») y **una función**: **Sala**, **Barra** o **Cocina**. Sala y Barra son el mismo modo de Sala (3.1) con su forma de vender por defecto —mesa o barra—; Cocina es la pantalla de cocina (3.2).
+2. Estook enseña **un código corto y un QR**, de un solo uso y con caducidad de pocos minutos, como el emparejamiento del agente (M19a).
+3. En la tablet se abre Estook, se elige «Es un terminal del local» y se escribe el código o se lee el QR. **El terminal queda emparejado con el local, no con nadie**: es del restaurante, sigue ahí cuando cambia la plantilla, y se revoca desde la misma pantalla si se pierde.
+4. Al encenderse, **carga su función directamente**, a pantalla completa y sin la barra de navegación.
+5. Los trabajadores **entran en él con su PIN** —y quien no tenga PIN, con su usuario—, y cada acción que compromete algo queda a su nombre, como dice el párrafo de arriba.
+
+Esto decide la pregunta que dejaba abierta el documento de [lo que el TPV toca de lo construido](../lo-que-el-tpv-toca-de-lo-construido.md), punto 4: el terminal es **una pieza aparte, del local** —`aparato_del_local`, con su propia sesión—, y la sesión de persona de M4 se queda como está.
+
 ## 3.5 Precuenta
 
 Documento **no fiscal**:

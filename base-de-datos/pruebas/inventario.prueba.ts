@@ -403,6 +403,52 @@ describe('los precios', () => {
     // te podría costar. Lo barato se ve en la comparativa, que es otra pregunta.
     expect(Number(vigente?.precio_centimos)).toBe(9000);
   });
+
+  it('el de muchos a la vez da lo mismo que el de uno, en cada caso (0044)', async () => {
+    // La regla vive en `precios_vigentes`, y `precio_vigente` la llama con uno. Aquí
+    // se mira que las dos respuestas son la misma con los tres casos que hay: con
+    // proveedor principal, sin él (gana el último que se puso) y sin ningún precio.
+    const conPrincipal = await unProductoDePrueba();
+    const sinPrincipal = await unProductoDePrueba();
+    const sinPrecio = await unProductoDePrueba();
+
+    const proveedor = async (nombre: string) =>
+      (
+        await comoDuena<{ id: string }>(
+          `insert into estook.proveedor (local_id, nombre) values ($1, $2) returning id`,
+          [conPrincipal.localId, nombre],
+        )
+      )[0]?.id ?? null;
+    const uno = await proveedor(`Uno ${Date.now()}`);
+    const otro = await proveedor(`Otro ${Date.now()}`);
+
+    await ponPrecio(conPrincipal.productoId, 9000, uno);
+    await ponPrecio(conPrincipal.productoId, 4000, otro);
+    await comoDuena(`update estook.producto set proveedor_id = $1 where id = $2`, [
+      uno,
+      conPrincipal.productoId,
+    ]);
+    await ponPrecio(sinPrincipal.productoId, 3000, uno);
+    await ponPrecio(sinPrincipal.productoId, 3500, otro);
+
+    const ids = [conPrincipal.productoId, sinPrincipal.productoId, sinPrecio.productoId];
+    const deUnaVez = await comoDuena<{ producto_id: string; precio: string }>(
+      `select producto_id::text as producto_id, precio_centimos::text as precio
+         from estook.precios_vigentes($1::uuid[])`,
+      [ids],
+    );
+    for (const id of ids) {
+      const [deUno] = await comoDuena<{ precio: string | null }>(
+        `select precio_centimos::text as precio from estook.precio_vigente($1::uuid)`,
+        [id],
+      );
+      const deMuchos = deUnaVez.find((f) => f.producto_id === id);
+      expect(deMuchos?.precio ?? null, id).toBe(deUno?.precio ?? null);
+    }
+    // Y lo esperado, para que las dos no puedan estar mal a la vez.
+    expect(deUnaVez.find((f) => f.producto_id === conPrincipal.productoId)?.precio).toBe('9000');
+    expect(deUnaVez.find((f) => f.producto_id === sinPrecio.productoId)).toBeUndefined();
+  });
 });
 
 // ── Permisos: quién ve qué ───────────────────────────────────────────────────
@@ -575,6 +621,13 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // leer el registro pendiente, crear la cuenta con su negocio, y buscar o unir
     // la identidad de Google. Las tablas que tocan no tienen ninguna política
     // para `estook_api`: solo se llega a ellas por aquí.
+    //
+    // **Y la migración 0042 (en línea de verdad, 23-sep-2026) añade dos:
+    // `esta_en_linea` y `visto_por_ultima_vez`.** Un jefe de cocina no puede leer
+    // las sesiones de su gente —las políticas de la 0018 solo se las enseñan a quien
+    // puede cerrarlas—, y por eso veía a todos fuera de línea. Las dos leen la sesión
+    // con privilegio, contestan solo de gente que quien pregunta puede ver, y no
+    // devuelven nada más de la sesión que un sí o un no y una hora.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -595,6 +648,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'crear_cuenta_con_negocio',
       'credencial_para_entrar',
       'dar_de_alta_persona',
+      'esta_en_linea',
       'locales_visibles',
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',
@@ -613,8 +667,32 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'suscripcion_al_crear_organizacion',
       'tiene_como_volver_a_entrar',
       'unir_identidad',
+      'visto_por_ultima_vez',
       'zonas_que_ve',
     ]);
+  });
+
+  it('y ninguna de ellas la puede ejecutar cualquiera: solo la API (0043)', async () => {
+    // Siete nacieron antes de M4 abiertas a `public`, y así siguieron hasta que las
+    // cazó la auditoría de producción del 23-sep-2026. Esto no nombra ninguna: mira
+    // todas, así que una nueva que se olvide de cerrarse no pasa.
+    const abiertas = await comoDuena<{ nombre: string }>(
+      `select p.oid::regprocedure::text as nombre
+         from pg_proc p
+        where p.pronamespace = 'estook'::regnamespace
+          and p.prosecdef
+          and has_function_privilege('public', p.oid, 'execute')`,
+    );
+    expect(abiertas.map((f) => f.nombre)).toEqual([]);
+
+    const sinLaApi = await comoDuena<{ nombre: string }>(
+      `select p.oid::regprocedure::text as nombre
+         from pg_proc p
+        where p.pronamespace = 'estook'::regnamespace
+          and p.prosecdef
+          and not has_function_privilege('estook_api', p.oid, 'execute')`,
+    );
+    expect(sinLaApi.map((f) => f.nombre)).toEqual([]);
   });
 
   it('y `sembrar_categorias` no la puede ejecutar cualquiera', async () => {

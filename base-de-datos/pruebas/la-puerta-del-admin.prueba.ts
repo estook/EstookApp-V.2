@@ -208,11 +208,39 @@ describe('la app y el admin no se abren el uno al otro', () => {
     const deRosa = await api.entrar(ROSA);
     expect(elFallo(await api.consultar(deRosa, 'admin_administradores'))).toBe('sin_permiso');
     expect(elFallo(await api.consultar(deRosa, 'admin_quien_soy'))).toBe('sin_permiso');
+  });
 
-    // El admin de ejemplo entrando por la puerta de la app: tampoco.
-    const porLaApp = await api.entrar(ADMIN_DE_EJEMPLO);
-    losDatos(await api.ejecutar(porLaApp, 'superar_doble_factor', { codigo: await miCodigo() }));
-    expect(elFallo(await api.consultar(porLaApp, 'admin_administradores'))).toBe('sin_permiso');
+  /*
+    Lo que vio Richi el 23-sep: entrando en la **app** con la cuenta que solo es del
+    admin, la app le pedía el código del segundo factor y después le decía que no
+    tenía negocio. Parecía que las cuentas se mezclaban. Ahora la app lo dice antes
+    de pedir nada, y no abre ninguna sesión.
+  */
+  it('la cuenta que solo es del admin no entra en la app, y no se le pide el código', async () => {
+    const sesiones = async () =>
+      (
+        await comoDuena<{ n: number }>(
+          `select count(*)::int as n from estook.sesion s
+             join estook.persona p on p.id = s.persona_id
+            where p.correo = $1`,
+          [ADMIN_DE_EJEMPLO],
+        )
+      )[0]?.n ?? 0;
+    const antes = await sesiones();
+
+    const porLaApp = await api.ejecutar(null, 'entrar', {
+      correo: ADMIN_DE_EJEMPLO,
+      contrasena: CLAVE_DE_EJEMPLO,
+    });
+    expect(elFallo(porLaApp)).toBe('sin_negocio');
+    expect(await sesiones(), 'no se abre una sesión que no sirve para nada').toBe(antes);
+
+    // Y con la contraseña mal, lo de siempre: no descubre que la cuenta existe.
+    expect(
+      elFallo(
+        await api.ejecutar(null, 'entrar', { correo: ADMIN_DE_EJEMPLO, contrasena: 'no es esta' }),
+      ),
+    ).toBe('no_cuadra');
   });
 
   it('y una sesión del admin no sirve para la app', async () => {

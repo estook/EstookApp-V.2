@@ -17,8 +17,8 @@ El panel de administración va en su propio documento:
 ## Resumen en una tabla
 
 **Ninguna de las veinte está en producción todavía** (23 de septiembre de 2026). La 1,
-la 2, la 3 y la 7 están **hechas en la rama `v-lo-que-se-ve`**, sin fusionar: la
-entrega V se fusiona entera. **La 7 (Ajustes en secciones) era de la entrega O y se
+la 2, la 3 y la 7 están **hechas en la rama `v-lo-que-se-ve`**, sin fusionar: V se fusiona en
+dos partes, y estas cuatro van en la primera. **La 7 (Ajustes en secciones) era de la entrega O y se
 adelantó** porque Richi la pidió al ver Ajustes el 23 de septiembre ([0045](decisiones/0045-el-aspecto-y-el-orden.md)). Cada una cambia a «Hecha» cuando se fusiona y se despliega su entrega.
 
 | #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                  |

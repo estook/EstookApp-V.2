@@ -185,7 +185,7 @@ export function ElegirLocal() {
 // ── El segundo factor ────────────────────────────────────────────────────────
 
 export function PedirDobleFactor() {
-  const { cliente, refrescar, salir } = usarSesion();
+  const { cliente, refrescar, salir, yo } = usarSesion();
   const [codigo, setCodigo] = useState('');
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -218,6 +218,20 @@ export function PedirDobleFactor() {
         }}
         className="flex flex-col gap-e4"
       >
+        {/*
+          **De quién es este código**, dicho arriba (entrega V, 23-sep). La sesión a
+          medias —contraseña bien, código por escribir— se queda guardada en el
+          navegador: quien cerraba la pestaña y volvía días después se encontraba
+          esta pantalla sin haber escrito nada, y sin saber de qué cuenta era. A
+          Richi le pareció que la app mezclaba cuentas. Con el correo delante no
+          hay duda, y el botón de abajo deja entrar con otra.
+        */}
+        {yo !== null && (
+          <p className="rounded-grande bg-superficie px-e4 py-e3 text-center text-secundario text-texto-suave">
+            Entrando como <strong className="font-semibold text-texto">{yo.correo}</strong>
+          </p>
+        )}
+
         <Campo
           etiqueta="Código"
           tipo="pin"

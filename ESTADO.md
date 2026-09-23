@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 23 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #63. La entrega V avanza en su rama: el modo cocina, «Cómo va», el Resumen de cada app, el mosaico, Ajustes por secciones y el aspecto nuevo, hechos y probados; quedan los puntos 4 y 5. Crear cuenta con correo, funcionando: Richi lo probó el 23**
+Última actualización: 23 de septiembre de 2026 · **Antes de M8. Todo fusionado y desplegado hasta la #63. V se fusiona en dos partes: la primera —modo cocina, «Cómo va», el Resumen, el mosaico, Ajustes por secciones, el aspecto nuevo y el arreglo de entrar— tiene su pull request abierto y esperando a Richi. Quedan los puntos 4 y 5**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo
 > último. **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -24,8 +24,8 @@ _Producción comprobada el 23 de septiembre de 2026 con `bd:comprobar` y `bd:com
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56)     |
 | **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** a medias: puntos 1, 2 y 3 y la mejora 7, hechos. **E2 · Stripe** espera a la cuenta de Stripe de Richi    |
-| **Pruebas**    | En la rama de V, el 23-sep: **1.144** unitarias y de base, **413** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
-| **Rama**       | `main`, con todo fusionado hasta la **#63**. Y `v-lo-que-se-ve`, **con `main` dentro, subida y sin pull request**: se abre cuando V esté entera                |
+| **Pruebas**    | En la rama de V, el 23-sep: **1.145** unitarias y de base, **415** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
+| **Rama**       | `main`, con todo fusionado hasta la **#63**. Y `v-lo-que-se-ve`, con `main` dentro: **su primera parte, con el pull request abierto** y esperando a Richi      |
 | **Base**       | En Supabase, **39 de 39** ✓, igual que `main`. 58 tablas (55 en `estook` y 3 en `plataforma`), todas con seguridad por filas. **La `0040` va con V**           |
 | **API**        | **Desplegada el 22-sep a las 17:55, con la #63 dentro** ✓: conoce las 44 consultas y los 83 comandos de `main`                                                 |
 | **Sitio**      | `estook.com`, `/app/` y `/admin/` responden 200. Se publica solo al fusionar                                                                                   |
@@ -127,6 +127,17 @@ con lo que Richi pidió el 23 de septiembre mirando la app en su TPV:
 - **Dos fallos de antes, con su prueba:** lo elegido («7 días», «Listo») no se leía en
   oscuro —1,4:1—, y «el del sistema» en claro no era el tema claro. Con esto, lo que el
   punto 5 tenía apuntado del tema del sistema queda hecho.
+
+**Y el arreglo de entrar** (23-sep, lo trajo Richi). Entrando en la **app** con
+`estookapp@gmail.com` —la cuenta que solo es del admin, sin ningún negocio— la app pedía
+el código del segundo factor y después decía «no está asociada a ningún negocio».
+Parecía que las cuentas se mezclaban. **No se mezclaba nada**, comprobado en la base: el
+segundo factor es de la persona, y solo lo tienen `estookapp@gmail.com` y Santi, que
+son los del admin; `belicar1905@gmail.com` no lo tiene, y ninguna cuenta ve nada de otro
+negocio. Lo que estaba mal era el orden. Ahora **una cuenta sin negocio se para antes
+del código**, sin abrir sesión, con el error `sin_negocio` que manda al admin; y la
+pantalla del código **dice de qué cuenta es**, porque la sesión a medias se quedaba en
+el navegador y volvía sola días después. Con su prueba contra la base y de pantalla.
 
 ### Lo que hay de verdad en producción
 
@@ -388,35 +399,28 @@ entonces se hace la exportación y no se inventa ningún protocolo.**
 
 ### Ahora mismo · es de Richi
 
-**Crear cuenta con correo, hecho** ✓ (23-sep): el secreto cambiado y los códigos llegan.
+**Ya hecho por Richi, y comprobado en la base el 23 de septiembre** —no se vuelve a
+pedir—: **Resend** (el dominio `estook.com` y el remitente `hola@estook.com`, los
+códigos llegan), **entrar y crear cuenta con Google** (los dos secretos puestos, cuatro
+cuentas creadas con Google) y **Places** (IKATZ enlazado con Google desde el 16-sep).
 
-**Y lo que desbloquea E2:**
+**Lo único que falta de Richi, y es lo que desbloquea E2:**
 
-4. **Activar la cuenta de Stripe** —datos fiscales y cuenta bancaria— y dejarla en
+1. **Activar la cuenta de Stripe** —datos fiscales y cuenta bancaria— y dejarla en
    modo prueba. **No crear productos ni precios a mano**: los crea el código con los
    planes del Manifiesto, para que el precio viva en un solo sitio.
-5. **El alta de autónomo en Hacienda** (modelo 036/037), si no está hecha. No es del
-   código ni de Stripe, pero es lo que de verdad bloquea cobrarle al primer cliente.
-   **Es del asesor, no mío.**
+2. **El alta de autónomo en Hacienda** (modelo 036/037), si no está hecha. Es del
+   asesor, no del código, pero es lo que de verdad bloquea cobrarle al primer cliente.
 
-> **Los datos del titular ya están puestos** (#59). Y hay que saberlo: mientras no
-> haya sociedad, en `estook.com/privacidad/` y `/condiciones/` sale el **domicilio
-> particular** de Ricardo. Es lo normal en un autónomo y lo exige el artículo 10 de
-> la LSSI-CE; se cambia en un solo sitio el día que se constituya la sociedad.
+> **Los datos del titular ya están puestos** (#59). Mientras no haya sociedad, en
+> `estook.com/privacidad/` y `/condiciones/` sale el **domicilio particular** de
+> Ricardo: es lo normal en un autónomo y lo exige el artículo 10 de la LSSI-CE. Se
+> cambia en un solo sitio el día que se constituya la sociedad.
 
-**Lo demás, sin prisa:**
-
-6. **«Sign in with Google» de Supabase, apagado** (Authentication → Providers), si no
-   lo está: el nuestro es propio y no pasa por ahí.
-7. **Places**: comprobar en Ajustes → «Tu local en Google» que la clave responde.
-8. **Business Profile**: mandar el formulario de acceso si no está mandado, y avisar
-   cuando Google lo apruebe. Hasta entonces la cuota es 0 y no hay nada que conectar.
-9. **Mirar en el móvil**: el admin (cabecera en dos líneas, secciones deslizables) y
-   el Panel vivo, si no lo has hecho.
-10. **Repasar las zonas de tu género** y **quitarles el IVA a tus precios, una vez**
-    (Inventario → Productos → «De dónde»; Ajustes → «Tus precios de compra»).
-11. **La IA, todavía nada**: ninguna parte de Estook la usa hoy. Está decidido Gemini
-    Flash con tope de 1.800 al mes por local; la clave se saca en M22.
+**Cuando quieras, y no bloquea nada:** Business Profile (las reseñas) espera a que
+Google apruebe el acceso; repasar las zonas de tu género y, una vez, quitar el IVA a
+tus precios de antes (Inventario → Productos → «De dónde»; Ajustes → Tu local → «Tus
+precios de compra»). La IA no se usa todavía: su clave se saca en M22.
 
 **Las claves de Verifacti · no hacen falta todavía, y así se sacan cuando toquen.** El
 trabajo de M20B se hace **primero contra un adaptador simulado**, con toda la lógica,
@@ -1069,6 +1073,10 @@ la capa superior del navegador— que es justo cuando hace falta.
     una prueba falló y pasó al repetirla. La del 22-sep era Safari cayéndose por dentro
     al recargar la página justo después de vaciar el almacenamiento: no era Estook,
     pero se arregló igual (se vuelve a abrir la dirección en vez de recargar).
+88. **Una puerta que va a decir que no, lo dice antes de pedir nada más.** Pedir el
+    código del segundo factor para luego contestar «no tienes negocio» abría una sesión
+    inútil y hacía creer que las cuentas se mezclaban. Y **una pantalla que pide algo
+    dice a quién se lo pide**: el código sin el correo delante no se sabe de quién es.
 
 ---
 
@@ -1231,10 +1239,12 @@ añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
 ## 8 · El siguiente paso · V, los puntos 4 y 5
 
-Rama `v-lo-que-se-ve`, con `main` dentro. **El pull request se abre cuando estén los
-cinco**, y lo que tendrá que hacer Richi ese día está escrito en
-[`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md), sección V: fusionar, aplicar
-la `0040` y desplegar la API, seguidos. El punto 3 no añade migración.
+**V se fusiona en dos partes** (23-sep): Richi quería ver ya lo hecho, y esperar a los
+cinco puntos lo tenía mirando la web vieja. **La primera parte** —puntos 1, 2 y 3, la
+mejora 7 y el arreglo de entrar— tiene su pull request abierto; lo que tiene que hacer
+Richi está en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md), sección V:
+fusionar, aplicar la `0040` y desplegar la API, seguidos. **Los puntos 4 y 5** van en
+una rama nueva, con su propio pull request.
 
 ### Lo que queda
 

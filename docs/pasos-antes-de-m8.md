@@ -11,23 +11,25 @@
 > | La API                     | **Desplegada el 22 de septiembre a las 17:55**, con la #63 dentro                                             |
 > | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                                   |
 > | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                                              |
-> | **V · lo que se ve**       | **En su rama**, puntos 1, 2 y 3 y la mejora 7 hechos. El pull request se abre con V entera (sección V, abajo) |
+> | **V · lo que se ve**       | **Primera parte lista para fusionar**: puntos 1, 2 y 3, la mejora 7 y el arreglo de entrar (sección V, abajo) |
 > | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                                                  |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## V · Lo que se ve · lo que te toca cuando se abra su pull request
+## V · Lo que se ve, primera parte · lo que te toca ahora
 
-> **Hoy no hay que hacer nada.** El trabajo está guardado en la **rama**
-> `v-lo-que-se-ve`, que es una copia aparte: `main` y `estook.com` no se han tocado, y
-> **no hay ningún pull request abierto**. El pull request lo abro yo cuando estén los
-> cinco puntos de V, y te aviso. **Estos pasos son para ese día, no antes.**
+> **V se fusiona en dos partes** (decidido el 23-sep): así lo hecho se ve ya en
+> `estook.com` y no espera a los puntos 4 y 5. **El pull request de la primera parte
+> está abierto**, con las tres comprobaciones en verde. Mientras no lo fusiones, la web
+> sigue como estaba: por eso al entrar hoy la veías igual.
 
-**Lo que traerá:** el modo cocina; «Cómo va», las cifras con flecha; el **Resumen** de
+**Lo que trae:** el modo cocina; «Cómo va», las cifras con flecha; el **Resumen** de
 cada app (antes «Hoy»); las tarjetas **en mosaico**, sin huecos; **Ajustes por
-secciones** con buscador; y **el aspecto nuevo** ([0044](decisiones/0044-las-cifras-de-cada-app.md),
+secciones** con buscador; **el aspecto nuevo**; y **el arreglo de entrar**: la cuenta que
+solo es del admin ya no pide el código en la app, y la pantalla del código dice de qué
+cuenta es ([0044](decisiones/0044-las-cifras-de-cada-app.md),
 [0045](decisiones/0045-el-aspecto-y-el-orden.md)).
 
 **El orden importa, y no se cambia:** primero fusionar, luego la migración, luego la
@@ -44,7 +46,7 @@ entre un paso y otro, mejor: unos diez minutos en total.
 **Dónde:** en **github.com**, en el repositorio de Estook:
 
 1. Arriba, la pestaña **Pull requests**.
-2. Entra en el que se llama **«V · Lo que se ve»**.
+2. Entra en el que se llama **«V · Lo que se ve (primera parte)»**.
 3. Baja hasta el final. Tienen que salir **tres comprobaciones en verde**: `Calidad`,
    `Construccion y presupuestos` y `Migraciones reversibles`. Si alguna está en
    amarillo, espera a que acabe. **Si alguna sale en rojo, para y avísame**.
@@ -131,12 +133,20 @@ Abre `estook.com/app/` y **recarga con Ctrl + F5** para que no te enseñe la ver
   te lleva al sitio. En **Tu local → «Cuándo es llegar tarde»** salen 5 minutos; si en tu
   local lo normal es otro margen, cámbialo ahí.
 - **Modo cocina:** Ajustes → Este aparato. Ponlo en la tablet de la cocina.
+- **Entrar:** sal de tu cuenta y entra en la **app** con `estookapp@gmail.com`. Tiene que
+  decir «Esta cuenta no tiene ningún negocio en Estook» **sin pedirte el código**. Luego
+  entra con la tuya (`belicar1905@gmail.com`) como siempre.
 
 Si algo no se ve como te digo, hazle una captura y me la pasas.
 
 ---
 
-## E1 · Crear cuenta, entrar con Google y la portada · lo que te toca
+## E1 · Crear cuenta, entrar con Google y la portada · **hecho**
+
+> **Hecho y comprobado el 23 de septiembre de 2026.** Fusionada (#56), migrada,
+> desplegada; **Resend** con el remitente `hola@estook.com` y **Google** con sus dos
+> secretos, los dos probados por Richi. **No hay nada que hacer.** Lo de abajo se queda
+> como referencia, por si un día hay que volver a montarlo.
 
 Lo que trae ([0042](decisiones/0042-registro-abierto-google-y-la-oferta.md)): la portada
 básica de `estook.com` con **Crear cuenta** e **Iniciar sesión**; la privacidad y las

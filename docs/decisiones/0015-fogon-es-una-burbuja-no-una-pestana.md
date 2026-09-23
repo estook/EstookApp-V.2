@@ -14,6 +14,10 @@ contigo.**
   un **panel lateral** que no tapa lo que estabas mirando.
 - **`Ctrl+J`** abre lo mismo.
 
+> **Cambiado el 23-sep-2026:** el icono de arriba se quitó, en escritorio y en móvil
+> —Richi lo vio repetido: «ya está la burbuja»—, y **la burbuja sale también en
+> escritorio**, abajo a la derecha, abriendo el mismo panel lateral. `Ctrl+J` sigue.
+
 **2 · Sabe en qué pantalla estás, sin que se lo digas.** Se abre sabiendo si
 estás en Inventario, en Escandallos o en el Panel, y lo primero que hace es
 decirlo. Preguntarle por lo que tienes delante no debería obligarte a explicarle

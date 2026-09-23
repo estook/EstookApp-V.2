@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { MOTIVOS_DE_MERMA, partidaDe, valorDeLaMerma } from '@estook/dominio';
+import { MOTIVOS_DE_MERMA, partidaDe, sePuedeTirar, valorDeLaMerma } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
-import { comando } from '../contrato.ts';
+import { comando, FalloDeAplicacion } from '../contrato.ts';
 import { apuntar, elProductoBloqueado, loQueHay } from '../inventario.ts';
 
 /**
@@ -86,6 +86,17 @@ export const apuntarMerma = comando<EntradaApuntarMerma, SalidaApuntarMerma>({
     // lo perdido. Después de apuntar, el coste medio es el mismo —una salida no lo
     // mueve— pero leerlo antes deja claro de dónde sale el número.
     const antes = await loQueHay(contexto, producto.id);
+
+    // Nunca más de lo que hay (23-sep): se mira con el producto ya bloqueado, así que
+    // dos mermas a la vez no pueden tirar entre las dos lo que no hay.
+    const puede = sePuedeTirar(antes.cantidad, entrada.cuanto, producto.unidadDeUso);
+    if (!puede.sePuede) {
+      throw new FalloDeAplicacion('mas_de_lo_que_hay', {
+        porque: puede.porque,
+        campos: ['cuanto'],
+      });
+    }
+
     const valor = valorDeLaMerma(entrada.cuanto, antes.coste);
 
     const apuntado = await apuntar(contexto, producto, {

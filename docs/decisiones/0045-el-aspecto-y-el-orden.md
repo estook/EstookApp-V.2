@@ -1,7 +1,7 @@
 # 0045 · El aspecto y el orden: cada app abre con su Resumen, las tarjetas van en mosaico y Ajustes va por secciones
 
 **Fecha:** 23 de septiembre de 2026
-**Estado:** en producción desde el 23 de septiembre de 2026 (#64). El apartado «Seis», en la rama `arreglos-tras-la-64`
+**Estado:** en producción desde el 23 de septiembre de 2026 (#64). El apartado «Seis», en la #65; lo de Equipo, en `el-repaso-del-23-sep`
 **Cambia:** B3, B4 y B5 del Plan de desarrollo · [0018](0018-destinos-y-vistas.md) (el nombre del primer destino) · [0039](0039-el-panel-se-monta-como-un-movil.md) (el alto de los widgets)
 **Migración:** ninguna
 
@@ -144,8 +144,9 @@ que es lo que más se ve». Cambia lo que decía la [0044](0044-las-cifras-de-ca
 pantalla**. Es una fila de cuatro cifras: no empuja lo urgente fuera, que queda justo
 debajo. La prueba de «Cómo va» comprueba ahora el orden nuevo.
 
-**Queda por decidir**, y se le pregunta a Richi: si Equipo y Servicio hacen lo mismo. Hoy
-siguen con las cifras debajo de quién está y del cierre del día.
+**Y lo contestó Richi el mismo día:** «en Equipo, debajo de fichar, por importancia; en
+Servicio, no». En Equipo · Resumen, «Cómo va» va justo después de «Lo tuyo» (fichar) y
+antes de quién está; en Servicio se queda debajo del cierre del día.
 
 ## Lo que no se decide aquí
 

@@ -331,13 +331,9 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
              end as minutos,
              a.entro_metros as metros,
              coalesce(h.minutos, 0)::int as minutos_de_hoy,
-             e.ultimo_acceso_en,
-             exists (
-               select 1 from estook.sesion s
-                where s.persona_id = e.id
-                  and s.cerrada_en is null
-                  and s.caduca_en > now()
-             ) as en_linea,
+             estook.visto_por_ultima_vez(e.id) as ultimo_acceso_en,
+             -- Con la app abierta y a la vista, no «con una sesión sin cerrar» (0042).
+             estook.esta_en_linea(e.id) as en_linea,
              to_char(ho.entra, 'HH24:MI') as entra_hoy
         from equipo e
         left join lateral (
@@ -868,6 +864,159 @@ export async function lasRetribuciones(
   );
 }
 
+// ── Los fichajes de una persona ──────────────────────────────────────────────
+
+/**
+ * Cuántos fichajes enseña la ficha antes del «Ver todos» (23-sep-2026).
+ *
+ * Eran treinta seguidos, y la ficha se hacía larguísima. Richi: «mostrar los tres
+ * últimos y un "Ver más" que abra todo el historial».
+ */
+const FICHAJES_EN_LA_FICHA = 3;
+
+export interface FichajeDeUnaPersona {
+  readonly fichajeId: string;
+  readonly fecha: string;
+  readonly entroEn: string;
+  readonly salioEn: string | null;
+  readonly minutos: number | null;
+  readonly metros: number | null;
+  readonly enElLocal: boolean | null;
+  readonly sinUbicacion: string | null;
+  readonly corregidoPor: string | null;
+  readonly motivoDeLaCorreccion: string | null;
+}
+
+/**
+ * Los fichajes de una persona, del último hacia atrás, y cuántos hay en total.
+ *
+ * Lo que se ve lo deciden las políticas de la 0027 —los tuyos, y los de la gente que
+ * llevas en cada local—, así que aquí no se filtra nada a mano, y el total cuenta
+ * lo mismo que la lista. «En el local» se mide con el radio **del local donde se
+ * fichó**, no con el del que estás mirando: quien trabaja en dos locales ficha en
+ * los dos.
+ */
+async function leerFichajes(
+  contexto: Contexto,
+  personaId: string,
+  limite: number,
+  salto: number,
+): Promise<{ fichajes: FichajeDeUnaPersona[]; cuantos: number }> {
+  const filas = await contexto.sql<
+    {
+      id: string;
+      fecha: string;
+      entro_en: string;
+      salio_en: string | null;
+      minutos: number | null;
+      metros: number | null;
+      radio: number;
+      sin_donde: string | null;
+      corregido_por: string | null;
+      motivo: string | null;
+      total: number;
+    }[]
+  >`
+    select f.id::text as id,
+           to_char(f.fecha_operativa, 'YYYY-MM-DD') as fecha,
+           to_char(f.entro_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as entro_en,
+           to_char(f.salio_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as salio_en,
+           case when f.salio_en is null then null
+                else floor(extract(epoch from (f.salio_en - f.entro_en)) / 60)::int end as minutos,
+           f.entro_metros as metros,
+           l.radio_de_fichaje_metros as radio,
+           f.entro_sin_donde as sin_donde,
+           c.nombre as corregido_por,
+           f.motivo_de_la_correccion as motivo,
+           count(*) over ()::int as total
+      from estook.fichaje f
+      join estook.local l on l.id = f.local_id
+      left join estook.persona c on c.id = f.corregido_por
+     where f.persona_id = ${personaId}
+     order by f.entro_en desc, f.id
+     limit ${limite} offset ${salto}
+  `;
+
+  // Una página vacía no trae el total. Pasa al pedir más allá del final, y
+  // entonces se cuenta aparte para no decir «0» de alguien que sí ha fichado.
+  let cuantos = filas[0]?.total;
+  if (cuantos === undefined) {
+    const [cuenta] = await contexto.sql<{ total: number }[]>`
+      select count(*)::int as total from estook.fichaje where persona_id = ${personaId}
+    `;
+    cuantos = cuenta?.total ?? 0;
+  }
+
+  return {
+    cuantos,
+    fichajes: filas.map((f) => ({
+      fichajeId: f.id,
+      fecha: f.fecha,
+      entroEn: f.entro_en,
+      salioEn: f.salio_en,
+      minutos: f.minutos,
+      metros: f.metros,
+      enElLocal: f.metros === null ? null : f.metros <= f.radio,
+      sinUbicacion: f.sin_donde,
+      corregidoPor: f.corregido_por,
+      motivoDeLaCorreccion: f.motivo,
+    })),
+  };
+}
+
+export const entradaFichajesDeUnaPersona = z
+  .object({
+    persona_id: z.string().uuid(),
+    limite: z.coerce.number().int().min(1).max(100).optional(),
+    salto: z.coerce.number().int().min(0).max(100_000).optional(),
+  })
+  .strict();
+export type EntradaFichajesDeUnaPersona = z.infer<typeof entradaFichajesDeUnaPersona>;
+
+export interface SalidaFichajesDeUnaPersona {
+  readonly fichajes: readonly FichajeDeUnaPersona[];
+  readonly cuantos: number;
+  readonly hayMas: boolean;
+}
+
+/**
+ * El historial entero de fichajes de una persona, por páginas: es el «Ver todos»
+ * de su ficha.
+ *
+ * Pide lo mismo que la ficha para abrirse: que sea alguien a quien llevas en este
+ * local (`a_quien_lleva`, 0027), o tú. Sin eso, «no existe», igual que la ficha, para
+ * no confirmar a nadie de fuera que esa persona está en Estook.
+ */
+export const fichajesDeUnaPersona = consulta<
+  EntradaFichajesDeUnaPersona,
+  SalidaFichajesDeUnaPersona
+>({
+  nombre: 'fichajes_de_una_persona',
+  entrada: entradaFichajesDeUnaPersona,
+
+  async ejecutar(contexto, entrada) {
+    if (!contexto.personaId) throw new FalloDeAplicacion('sin_sesion');
+    const localId = elLocal(contexto);
+
+    const [laLlevas] = await contexto.sql<{ si: boolean }[]>`
+      select exists (
+        select 1 from estook.a_quien_lleva(${localId}::uuid) q
+         where q.persona_id = ${entrada.persona_id}::uuid
+      ) as si
+    `;
+    if (laLlevas?.si !== true) {
+      throw new FalloDeAplicacion('no_existe', {
+        porque: 'Esa persona no está, o no es de un local que puedas ver.',
+      });
+    }
+
+    const limite = entrada.limite ?? 50;
+    const salto = entrada.salto ?? 0;
+    const { fichajes, cuantos } = await leerFichajes(contexto, entrada.persona_id, limite, salto);
+    return { fichajes, cuantos, hayMas: salto + fichajes.length < cuantos };
+  },
+});
+
 // ── La ficha de una persona ──────────────────────────────────────────────────
 
 export interface SalidaUnaPersona {
@@ -889,18 +1038,10 @@ export interface SalidaUnaPersona {
   readonly minutosDelMes: number;
 
   readonly horario: readonly TramoDelHorario[];
-  readonly ultimosFichajes: readonly {
-    readonly fichajeId: string;
-    readonly fecha: string;
-    readonly entroEn: string;
-    readonly salioEn: string | null;
-    readonly minutos: number | null;
-    readonly metros: number | null;
-    readonly enElLocal: boolean | null;
-    readonly sinUbicacion: string | null;
-    readonly corregidoPor: string | null;
-    readonly motivoDeLaCorreccion: string | null;
-  }[];
+  /** Los tres últimos. El resto, en `fichajes_de_una_persona`. */
+  readonly ultimosFichajes: readonly FichajeDeUnaPersona[];
+  /** Cuántos tiene en total, los que quien mira puede ver: para el «Ver todos». */
+  readonly cuantosFichajes: number;
 
   // ── Solo con `dato.coste_de_personal` ──────────────────────────────────────
   readonly retribucion?: {
@@ -955,11 +1096,9 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
       select distinct on (p.id)
              p.id::text as id, p.nombre, p.apellidos, p.correo,
              m.rol, r.nombre as rol_nombre, r.amplitud, m.desde,
-             p.ultimo_acceso_en,
-             exists (
-               select 1 from estook.sesion s
-                where s.persona_id = p.id and s.cerrada_en is null and s.caduca_en > now()
-             ) as en_linea,
+             estook.visto_por_ultima_vez(p.id) as ultimo_acceso_en,
+             -- Con la app abierta y a la vista, no «con una sesión sin cerrar» (0042).
+             estook.esta_en_linea(p.id) as en_linea,
              (
                p.activa
                and m.desde <= current_date
@@ -1009,35 +1148,7 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
          and f.fecha_operativa <= ${reloj.jornada}::date
     `;
 
-    const fichajes = await contexto.sql<
-      {
-        id: string;
-        fecha: string;
-        entro_en: string;
-        salio_en: string | null;
-        minutos: number | null;
-        metros: number | null;
-        sin_donde: string | null;
-        corregido_por: string | null;
-        motivo: string | null;
-      }[]
-    >`
-      select f.id::text as id,
-             to_char(f.fecha_operativa, 'YYYY-MM-DD') as fecha,
-             to_char(f.entro_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as entro_en,
-             to_char(f.salio_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as salio_en,
-             case when f.salio_en is null then null
-                  else floor(extract(epoch from (f.salio_en - f.entro_en)) / 60)::int end as minutos,
-             f.entro_metros as metros,
-             f.entro_sin_donde as sin_donde,
-             c.nombre as corregido_por,
-             f.motivo_de_la_correccion as motivo
-        from estook.fichaje f
-        left join estook.persona c on c.id = f.corregido_por
-       where f.persona_id = ${entrada.persona_id}
-       order by f.entro_en desc
-       limit 30
-    `;
+    const fichajes = await leerFichajes(contexto, entrada.persona_id, FICHAJES_EN_LA_FICHA, 0);
 
     const horario = await contexto.sql<{ dia: number; entra: string; sale: string }[]>`
       select dia_de_la_semana as dia,
@@ -1121,18 +1232,8 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
       minutosDelMes: delMes,
 
       horario,
-      ultimosFichajes: fichajes.map((f) => ({
-        fichajeId: f.id,
-        fecha: f.fecha,
-        entroEn: f.entro_en,
-        salioEn: f.salio_en,
-        minutos: f.minutos,
-        metros: f.metros,
-        enElLocal: f.metros === null ? null : f.metros <= reloj.radio,
-        sinUbicacion: f.sin_donde,
-        corregidoPor: f.corregido_por,
-        motivoDeLaCorreccion: f.motivo,
-      })),
+      ultimosFichajes: fichajes.fichajes,
+      cuantosFichajes: fichajes.cuantos,
 
       ...(puedeVerCostes
         ? {

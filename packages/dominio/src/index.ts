@@ -284,9 +284,10 @@ export {
   partidaDe,
   valorDeLaMerma,
   mediaPorDia,
+  sePuedeTirar,
 } from './merma.ts';
 
-export type { MotivoDeMerma, PartidaDeMerma } from './merma.ts';
+export type { MotivoDeMerma, PartidaDeMerma, SePuedeTirar } from './merma.ts';
 
 // ── M6½ · el cierre de caja · con TPV o sin el, la misma tabla ───────────────
 export {

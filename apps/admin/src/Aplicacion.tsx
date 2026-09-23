@@ -13,7 +13,8 @@ import {
   MontarElSegundoFactor,
   PonerMiContrasena,
 } from './sesion/Puerta.tsx';
-import { ProveedorDeSesion, usarSesion } from './sesion/Sesion.tsx';
+import { ProveedorDeSesion } from './sesion/ProveedorDeSesion.tsx';
+import { usarSesion } from './sesion/Sesion.tsx';
 
 /**
  * El admin de Estook (M3, con su puerta desde la 0041).
@@ -92,7 +93,7 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
         «Salir», y debajo las secciones en una tira que se desliza. Antes se partían
         en tres líneas y la cabecera se comía un tercio de la pantalla (repaso de A1).
       */}
-      <div className="border-b border-borde bg-superficie">
+      <div className="border-b border-borde bg-superficie pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-[64rem] flex-wrap items-center gap-x-e4 px-e4 pt-e3 md:flex-nowrap md:py-e3">
           <div className="flex items-center gap-e2">
             <Logo alto={24} />

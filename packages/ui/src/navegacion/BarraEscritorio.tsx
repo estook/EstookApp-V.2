@@ -11,7 +11,7 @@ import {
 import type { App } from '../apps.ts';
 import { destinosConstruidos, destinosQueLlegan } from '../apps.ts';
 import { clases } from '../clases.ts';
-import { IconoDeFogon, Logo } from '../componentes/Marca.tsx';
+import { Logo } from '../componentes/Marca.tsx';
 import { Avatar } from '../componentes/Tarjeta.tsx';
 
 /**
@@ -52,7 +52,6 @@ export interface BarraEscritorioProps {
    */
   readonly alAbrirAvisos: () => void;
   readonly alAbrirChat: () => void;
-  readonly alAbrirFogon: () => void;
 }
 
 export function BarraEscritorio({
@@ -70,7 +69,6 @@ export function BarraEscritorio({
   avisos = 0,
   alAbrirAvisos,
   alAbrirChat,
-  alAbrirFogon,
 }: BarraEscritorioProps) {
   return (
     <header className="sticky top-0 z-40 hidden h-[--alto-barra-escritorio] items-center gap-e3 border-b border-borde bg-superficie px-e4 lg:flex no-imprimir">
@@ -126,11 +124,8 @@ export function BarraEscritorio({
           <IconoChat size={20} />
         </Redondo>
 
-        {/* Fogon lleva su mascota, no el icono de Lucide: es lo que lo hace
-            reconocible de un vistazo entre cinco botones grises. */}
-        <Redondo etiqueta="Fogón (Ctrl+J)" alPulsar={alAbrirFogon}>
-          <IconoDeFogon size={22} />
-        </Redondo>
+        {/* Fogón ya no va aquí (23-sep): está en su burbuja de abajo a la derecha
+            y con Ctrl+J. Richi: «se repite mucho». */}
 
         {/*
           Ajustes **si** esta aqui, y el avatar al lado.

@@ -6,6 +6,7 @@ import {
   NOMBRE_DE_LA_PARTIDA,
   QUE_ES_CADA_MOTIVO,
   partidaDe,
+  sePuedeTirar,
   type MotivoDeMerma,
 } from '@estook/dominio';
 import { Aviso, Boton, Botones, Campo, Cargando, ErrorEnCristiano, Hoja, clases } from '@estook/ui';
@@ -99,7 +100,15 @@ export function ApuntarMerma({
   const cuantoNumero = Number(cuanto.replace(',', '.'));
   const cuantoVale = Number.isFinite(cuantoNumero) && cuantoNumero > 0;
   const hayDetalle = motivo !== 'otro' || detalle.trim() !== '';
-  const listo = elegido !== null && cuantoVale && motivo !== null && hayDetalle && !guardando;
+  // Nunca más de lo que hay (23-sep): se dice al escribirlo, con la misma regla que
+  // cumple el servidor, para no tener que esperar al error.
+  const tirarDeMas =
+    elegido !== null && cuantoVale
+      ? sePuedeTirar(elegido.cantidad, cuantoNumero, elegido.unidadDeUso)
+      : null;
+  const deMas = tirarDeMas !== null && !tirarDeMas.sePuede ? tirarDeMas.porque : null;
+  const listo =
+    elegido !== null && cuantoVale && deMas === null && motivo !== null && hayDetalle && !guardando;
 
   async function guardar() {
     if (elegido === null || motivo === null) return;
@@ -269,6 +278,7 @@ export function ApuntarMerma({
               value={cuanto}
               detras={elegido.unidadDeUso}
               ayuda={`En ${elegido.unidadDeUso}, que es como lo mides tú.`}
+              {...(deMas === null ? {} : { error: deMas })}
               onChange={(e) => {
                 setCuanto(e.currentTarget.value);
               }}

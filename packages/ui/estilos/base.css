@@ -39,6 +39,18 @@
   :root[data-letra='pequena'] {
     --escala-del-aparato: 0.9;
   }
+  /*
+   * «Pequeña» en el teléfono, un escalón más (23-sep). Richi: «en el móvil, hacer las
+   * letras un poco más pequeñas en la versión pequeña de Ajustes, que queda súper
+   * grande y hay que deslizar mucho». En un teléfono caben la mitad de cosas que en
+   * un portátil, y 0,9 se notaba poco. En el ordenador sigue siendo 0,9, que está
+   * bien. Los botones no bajan de 44 px: se hace más pequeña la letra, no el dedo.
+   */
+  @media (max-width: 639px) {
+    :root[data-letra='pequena'] {
+      --escala-del-aparato: 0.82;
+    }
+  }
   :root[data-letra='grande'] {
     --escala-del-aparato: 1.15;
   }
@@ -49,7 +61,9 @@
 
   html {
     /* Un ancla no se pone justo debajo de la barra fija. */
-    scroll-padding-top: calc(var(--alto-barra-escritorio) + var(--spacing-e4));
+    scroll-padding-top: calc(
+      var(--alto-barra-escritorio) + env(safe-area-inset-top) + var(--spacing-e4)
+    );
     -webkit-text-size-adjust: 100%;
   }
 
@@ -208,5 +222,22 @@
     body {
       background: #fff;
     }
+  }
+}
+
+/*
+ * Los campos de escribir, nunca por debajo de 16 px en una pantalla táctil (23-sep).
+ *
+ * El iPhone **amplía la pantalla** al tocar un campo con la letra más pequeña de 16
+ * px, y luego hay que quitar el zoom a mano cada vez. Lo notó Richi. La salida de
+ * las aplicaciones buenas no es prohibir el zoom —se lo quitaría a quien lo necesita
+ * para leer, y lo pide B8—, sino que el campo tenga 16 px. Va **fuera de las capas**
+ * para que ninguna clase de utilidad lo pise, como la regla de 64 px de cocina.css.
+ */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
   }
 }

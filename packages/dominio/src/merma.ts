@@ -1,5 +1,6 @@
 import { centimos, type Centimos } from './dinero.ts';
 import { cantidad, costeDeLinea, milesimas, type Milesimas } from './coste.ts';
+import { conUnidad } from './textos.ts';
 
 /**
  * La merma media de un día, en céntimos. Un solo redondeo, y al final (regla 9).
@@ -135,4 +136,38 @@ export function valorDeLaMerma(cuanto: number, costeMilesimas: Milesimas | numbe
   // salió mal: las milésimas de Estook son **milésimas de céntimo**, no de euro,
   // así que el redondeo daba un valor cien veces menor. Lo cazó su propia prueba.
   return costeDeLinea(milesimas(Math.trunc(costeMilesimas)), cantidad(Math.abs(cuanto)));
+}
+
+/**
+ * Lo que se puede tirar: **nunca más de lo que hay** (23-sep-2026).
+ *
+ * Lo pidió Richi: «si algo se tira en merma y se está tirando más de lo que hay,
+ * indicar que no se puede tirar más a la basura de lo que hay». Hasta hoy el servidor
+ * restaba lo que se le dijera y el producto se quedaba en negativo: cinco kilos de
+ * merma de algo de lo que quedaban dos dejaban «−3 kg» y un food cost inflado.
+ *
+ * Si Estook cree que hay menos de lo que hay de verdad, lo que se corrige es eso
+ * —apuntar lo que llegó, o contar la cámara—, no la merma. Por eso la frase lo dice.
+ *
+ * Se compara con una diezmilésima de margen, que es la precisión con la que se
+ * guardan las cantidades: tirar «2» de algo que tiene 1,99995 no es tirar de más.
+ */
+export type SePuedeTirar =
+  { readonly sePuede: true } | { readonly sePuede: false; readonly porque: string };
+
+const MARGEN_DE_CANTIDAD = 0.00005;
+
+export function sePuedeTirar(hay: number, seTira: number, unidad: string): SePuedeTirar {
+  if (seTira <= hay + MARGEN_DE_CANTIDAD) return { sePuede: true };
+  const loQueSeTira = conUnidad(cantidad(seTira), unidad);
+  if (hay <= 0) {
+    return {
+      sePuede: false,
+      porque: `En Estook no queda nada, así que no se pueden tirar ${loQueSeTira}. Si de verdad lo hay, apunta antes lo que ha llegado o haz un recuento.`,
+    };
+  }
+  return {
+    sePuede: false,
+    porque: `Quedan ${conUnidad(cantidad(hay), unidad)} y se están tirando ${loQueSeTira}. Si de verdad hay más, apunta antes lo que ha llegado o haz un recuento.`,
+  };
 }

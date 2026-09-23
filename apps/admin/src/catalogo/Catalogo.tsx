@@ -60,7 +60,7 @@ export function Catalogo({ entorno, sesionId }: CatalogoProps) {
 
   return (
     <div className="min-h-dvh bg-fondo">
-      <header className="sticky top-0 z-40 border-b border-borde bg-superficie">
+      <header className="sticky top-0 z-40 border-b border-borde bg-superficie pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-[64rem] items-center gap-e4 px-e4 py-e3">
           <Logo alto={26} />
           <div className="min-w-0">

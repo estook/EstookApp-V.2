@@ -4,29 +4,136 @@
 >
 > Comprobado en producción el 23 de septiembre de 2026, leyendo la base y la API.
 >
-> | Qué                        | Cómo está                                                                                   |
-> | -------------------------- | ------------------------------------------------------------------------------------------- |
-> | Pull requests              | **Todas fusionadas hasta la #64**. Los arreglos de después, para fusionar (primer apartado) |
-> | La base de datos           | **40 de 40** migraciones, igual que `main`                                                  |
-> | La API                     | **Desplegada el 23 de septiembre a las 18:43**, con la #64 dentro                           |
-> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                 |
-> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                            |
-> | **V · lo que se ve**       | **Primera parte en producción** (#64). Faltan los puntos 4 y 5                              |
-> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                                |
+> | Qué                        | Cómo está                                                                                |
+> | -------------------------- | ---------------------------------------------------------------------------------------- |
+> | Pull requests              | **Todas fusionadas hasta la #65**. El repaso del 23-sep, para fusionar (primer apartado) |
+> | La base de datos           | **40 de 40** migraciones, igual que `main`                                               |
+> | La API                     | **Desplegada el 23 de septiembre a las 18:43**, con la #64 dentro                        |
+> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor              |
+> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                         |
+> | **V · lo que se ve**       | **Primera parte en producción** (#64 y #65). Faltan los puntos 4 y 5                     |
+> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                             |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Los arreglos de después de la #64 · lo que te toca ahora
+## El repaso del 23 de septiembre · lo que te toca ahora
+
+**Qué trae:** lo que viste en el móvil —la muesca, el zoom al tocar un campo, la letra
+«Pequeña», Fogón repetido arriba, «11 por debajo del mínimo» con tres en la lista, la
+merma que dejaba tirar más de lo que hay, los fichajes de la ficha y el «en línea» de
+gente que no estaba—, **el jefe de cocina viendo las ventas**, y lo que encontró la
+auditoría. Todo contado en `ESTADO.md`, apartado 1.
+
+**Esta vez son tres pasos, seguidos y en este orden:** fusionar, aplicar **tres**
+migraciones y desplegar la API. Entre fusionar y desplegar, la ficha de un trabajador
+dirá «No he podido leer los fichajes» al pulsar «Ver todos»: es normal, se arregla en el
+paso 3.
+
+### 1 · Fusionar
+
+1. En **github.com**, pestaña **Pull requests** → **«El repaso del 23 de septiembre»**.
+2. Abajo, las **tres comprobaciones en verde**: `Calidad`, `Construccion y
+presupuestos` y `Migraciones reversibles`. Si alguna está en amarillo, espera. **Si
+   alguna sale en rojo, para y avísame.**
+3. **Merge pull request** → **Confirm merge**. Tiene que salir en morado «merged».
+
+### 2 · Aplicar las tres migraciones
+
+**Qué es:** la `0041` deja al jefe de cocina ver las ventas; la `0042` hace que «en
+línea» sea tener la app abierta; y la `0043` cierra siete funciones de la base que
+podía ejecutar cualquiera.
+
+**Dónde:** en **PowerShell**, en la carpeta del proyecto
+(`C:\Users\rixy-\Documents\GitHub\EstookApp-V.2`). Primero trae lo fusionado:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+**Qué tiene que salir:** «Fast-forward» y una lista de ficheros. Ahora las migraciones:
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0041_el_jefe_de_cocina_ve_las_ventas.sql ... hecho
+  aplicando 0042_en_linea_de_verdad.sql ... hecho
+  aplicando 0043_las_funciones_con_privilegio_cerradas.sql ... hecho
+  3 migracion(es) aplicadas · 43 en total
+```
+
+Si dice **«la base de datos ya estaba al dia»**, el `git pull` no ha bajado lo fusionado:
+vuelve a hacerlo. **Si sale un error en rojo, no repitas el comando: cópiamelo tal cual.**
+
+Y se comprueba:
+
+```bash
+.\estook.cmd bd:comprobar
+```
+
+**Qué tiene que decir:** «Migraciones aplicadas: **43** (hasta la **43**)».
+
+### 3 · Volver a desplegar la API
+
+1. En **github.com**, pestaña **Actions** → a la izquierda, **Desplegar la API**.
+2. **Run workflow**: deja la rama en `main`, escribe **`desplegar`** y pulsa el botón
+   verde **Run workflow**.
+3. Espera al **círculo verde** (un par de minutos). Si sale una **cruz roja**, avísame.
+   Si dice que la base va por detrás, es que falta el paso 2.
+
+Cuando esté en verde, en PowerShell:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los comandos».
+
+### 4 · Mirarlo en el móvil y en el TPV
+
+Abre `estook.com/app/` y recarga (**Ctrl + F5** en el ordenador; en el móvil, cierra la
+app y ábrela otra vez).
+
+- **La muesca:** en el iPhone, la barra de arriba y las hojas ya no quedan debajo del
+  reloj.
+- **El zoom:** toca un campo cualquiera (el buscador, una cantidad): la pantalla no se
+  acerca.
+- **La letra:** Ajustes → Este aparato → **«Pequeña»**. En el móvil, todo más pequeño; en
+  el ordenador, igual que antes.
+- **Fogón:** arriba ya no está su icono. La burbuja, abajo a la derecha, en el móvil **y
+  en el ordenador**.
+- **Inventario → Productos → Bajo mínimo** y **Congelados**: el número de arriba es el
+  de los que salen en la lista.
+- **La merma:** apunta una de más de lo que hay. Tiene que decirte «Quedan X y se están
+  tirando Y» y no dejarte guardar.
+- **Equipo → Resumen:** «Cómo va» justo debajo de fichar. Abre la ficha de alguien: sus
+  **tres últimos fichajes** y **«Ver todos»**, que abre el historial entero.
+- **«En línea»:** solo sale quien tiene la app abierta en ese momento. Si cierras la app
+  en el móvil, en un par de minutos deja de salir en el ordenador.
+- **El jefe de cocina** (si tienes uno): ve **Ventas de hoy** en el Panel y los cierres en
+  Servicio, pero no puede cerrar la caja.
+
+Si algo no se ve como te digo, hazle una captura y me la pasas.
+
+---
+
+## Los arreglos de después de la #64 · **hecho** (#65)
 
 **Qué trae:** el widget de fichar y los demás del Panel dicen «No he podido leerlo»
 cuando no pueden leer, en vez de «tu acceso no incluye fichar» o «nada caduca»; en
 Inventario, **«Cómo va» arriba del todo**; y el despliegue de la API **ya no despliega
 si la base va por detrás**.
 
-**Esta vez es un solo paso: fusionar.** No lleva migración y la API no cambia; la web se
-publica sola al fusionar, en un par de minutos.
+**Fusionada el 23 de septiembre.** No llevaba migración y la API no cambiaba.
 
 1. En **github.com**, pestaña **Pull requests** → **«Arreglos tras la #64»**.
 2. Abajo, las **tres comprobaciones en verde**. Si alguna sale en rojo, para y avísame.

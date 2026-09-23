@@ -180,6 +180,8 @@ function elLocal(contexto: Contexto): string {
  * B7 no perdona.
  */
 interface FilaDeProducto {
+  /** Cuántas filas cumplen los filtros, antes de partir la lista en trozos. */
+  total_filas: number;
   id: string;
   nombre: string;
   categoria: string | null;
@@ -218,6 +220,16 @@ interface FilaDeProducto {
   contenido_por_unidad: string | null;
   unidad_del_contenido: string | null;
 }
+
+/**
+ * Lo más que se lee de una vez cuando hay que filtrar o contar en el servidor.
+ *
+ * Hasta el 23-sep eran doscientos, y cortaban **en silencio**: «Hoy», el pedido
+ * sugerido y la comparativa de precios de un local con más de doscientos productos
+ * se dejaban fuera los del final del abecedario. Un local tiene cientos, no miles;
+ * el tope existe para que nunca sea una consulta sin fin.
+ */
+const TOPE_DE_PRODUCTOS = 5000;
 
 /** El reloj de pared del local, que es con lo que cuenta un proveedor. */
 interface RelojDelLocal {
@@ -296,7 +308,8 @@ async function leerProductos(
   const reloj: RelojDelLocal = { hoy, hora: horaEnElLocal(contexto.ahora, zona) };
 
   const filas = await contexto.sql<FilaDeProducto[]>`
-    select p.id, p.nombre, c.nombre as categoria, p.categoria_id, p.proveedor_id,
+    select count(*) over ()::int as total_filas,
+           p.id, p.nombre, c.nombre as categoria, p.categoria_id, p.proveedor_id,
            p.categoria_fiscal::text as categoria_fiscal, p.notas, p.formato,
            p.unidad_de_uso::text as unidad_de_uso,
            p.factor::text as factor, p.rendimiento::text as rendimiento,
@@ -586,7 +599,7 @@ export async function productosDelProveedor(
     soloDesactivados: false,
     incluirEjemplos: true,
     incluirDesactivados: false,
-    limite: 200,
+    limite: TOPE_DE_PRODUCTOS,
     salto: 0,
   });
   return filas.map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
@@ -606,7 +619,7 @@ export async function productosActivos(
     soloDesactivados: false,
     incluirEjemplos: false,
     incluirDesactivados: false,
-    limite: 200,
+    limite: TOPE_DE_PRODUCTOS,
     salto: 0,
   });
   return filas.map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
@@ -650,7 +663,13 @@ export interface SalidaMisProductos {
     readonly cuantos: number;
   }[];
   readonly proveedores: readonly { readonly id: string; readonly nombre: string }[];
+  /** Todos los productos activos del local, miren lo que miren. */
   readonly cuantosHay: number;
+  /**
+   * Cuántos cumplen **lo que se está mirando** —la vista, la zona, la categoría y
+   * lo buscado—, contando todas las páginas. Es el título de la lista (23-sep).
+   */
+  readonly cuantosCumplen: number;
   readonly hayMas: boolean;
   readonly puedeVerPrecios: boolean;
   /** Cuántos de ejemplo quedan, para poder ofrecer quitarlos. */
@@ -689,6 +708,25 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
     const limite = entrada.limite ?? 50;
     const salto = entrada.salto ?? 0;
 
+    /*
+      ── «Bajo mínimo» se filtra ANTES de partir la lista (23-sep) ──────────────
+
+      Lo vio Richi: «11 productos por debajo del mínimo» y salían tres. Eran dos
+      fallos. El título contaba **todos los productos del local**, no los de la
+      vista. Y esta vista traía los cincuenta primeros del abecedario y, de esos,
+      se quedaba con los que estaban bajo mínimo: con más de cincuenta productos,
+      uno bajo mínimo que empezara por «Z» no salía nunca. Es la regla 51 —un filtro
+      que solo funciona cuando la lista cabe entera miente— en la vista que más
+      importa.
+
+      El estado (bajo mínimo, agotado, negativo) sale de sumar el libro, así que no
+      se puede filtrar en la consulta: se leen **todos** los productos que cumplen
+      lo demás, se filtran aquí, y después se parte la lista. Un local tiene cientos
+      de productos, no cientos de miles; el tope de cinco mil es para que nunca sea
+      una consulta sin fin.
+    */
+    const conProblema = entrada.con_problema === true;
+
     const { filas, hoy, desde, reloj } = await leerProductos(contexto, localId, {
       texto: entrada.texto ?? '',
       categoriaId: entrada.categoria_id ?? null,
@@ -700,19 +738,22 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
       zona: entrada.zona ?? null,
       incluirEjemplos: entrada.incluir_ejemplos !== false,
       incluirDesactivados: entrada.incluir_desactivados === true,
-      limite: limite + 1,
-      salto,
+      limite: conProblema ? TOPE_DE_PRODUCTOS : limite,
+      salto: conProblema ? 0 : salto,
     });
     const precios = await comoApuntaLosPrecios(contexto, localId);
 
-    const hayMas = filas.length > limite;
-    let productos = filas
-      .slice(0, limite)
-      .map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
+    let productos = filas.map((fila) => componer(fila, hoy, desde, contexto.ahora, reloj));
+    // Cuántos cumplen lo que se está mirando: **esto** es el título de la lista.
+    let cuantosCumplen = filas[0]?.total_filas ?? 0;
 
-    if (entrada.con_problema === true) {
+    if (conProblema) {
       productos = productos.filter((p) => urgenciaDe(p.estado) <= urgenciaDe('bajo_minimo'));
+      cuantosCumplen = productos.length;
+      productos = productos.slice(salto, salto + limite);
     }
+    // Con la lista partida en la consulta, lo que hay más allá lo dice el total.
+    const hayMas = salto + productos.length < cuantosCumplen;
 
     if (!conPrecios) productos = productos.map(sinPrecios);
 
@@ -783,6 +824,7 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
       categorias,
       proveedores,
       cuantosHay: cuentas[0]?.cuantos ?? 0,
+      cuantosCumplen,
       hayMas,
       puedeVerPrecios: conPrecios,
       ejemplos: cuentas[0]?.ejemplos ?? 0,
@@ -1105,7 +1147,7 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
       soloDesactivados: false,
       incluirEjemplos: false,
       incluirDesactivados: false,
-      limite: 200,
+      limite: TOPE_DE_PRODUCTOS,
       salto: 0,
     });
 

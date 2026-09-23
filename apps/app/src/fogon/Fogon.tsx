@@ -19,9 +19,9 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * Se decidió lo contrario, y está escrito en
  * [`docs/decisiones/0015`](../../../../docs/decisiones/0015-fogon-es-una-burbuja-no-una-pestana.md):
  *
- *   · **En móvil, una burbuja flotante** que va contigo por toda la aplicación.
- *   · **En escritorio, el icono de arriba a la derecha** que ya estaba en B5,
- *     abriendo un panel lateral que no tapa la pantalla.
+ *   · **Una burbuja flotante** que va contigo por toda la aplicación, en el móvil y
+ *     en el escritorio, donde abre un panel lateral que no tapa la pantalla. Hasta
+ *     el 23-sep-2026 el escritorio tenía un icono arriba en su lugar; se quitó.
  *   · **Sabe en qué página estás** en los dos casos, sin que se lo digas.
  *   · **Nunca una pestaña dentro de una app.** Las pestañas son para los
  *     análisis periódicos que Fogón deja hechos, no para hablar con él.
@@ -150,7 +150,7 @@ const POR_DEFECTO: LoDeAqui = {
   ],
 };
 
-// ── La burbuja del móvil ─────────────────────────────────────────────────────
+// ── La burbuja ───────────────────────────────────────────────────────────────
 
 /**
  * «Mejor una burbuja flotante que detecte la página en la que estés.»
@@ -159,8 +159,10 @@ const POR_DEFECTO: LoDeAqui = {
  * navegar (B5, y es lo que recomienda Apple), y Fogón no es un sitio al que se
  * va, es algo que está. Y a la derecha, que es donde llega el pulgar.
  *
- * En escritorio no sale: allí ya está el icono de arriba a la derecha que manda
- * B5, y dos puertas a lo mismo en la misma pantalla es una de más.
+ * **Y en escritorio también** (23-sep-2026). Allí salía un icono en la barra de arriba
+ * y la burbuja se escondía; Richi lo vio repetido y pidió quitar el icono «que ya está
+ * la burbuja». Así que la burbuja es la única puerta en los dos, y en escritorio queda
+ * además `Ctrl+J`. Como allí no hay barra de abajo, va a su margen de siempre.
  */
 export function BurbujaDeFogon({ alPulsar }: { readonly alPulsar: () => void }) {
   return (
@@ -169,9 +171,9 @@ export function BurbujaDeFogon({ alPulsar }: { readonly alPulsar: () => void }) 
       onClick={alPulsar}
       aria-label="Abrir Fogón"
       className={clases(
-        'fixed right-e3 z-30 grid size-[56px] place-items-center lg:hidden no-imprimir',
+        'fixed right-e3 z-30 grid size-[56px] place-items-center no-imprimir lg:right-e5',
         'rounded-redondo bg-superficie text-naranja shadow-s3 border border-borde',
-        'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e3))]',
+        'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e3))] lg:bottom-e5',
       )}
     >
       <IconoDeFogon size={30} />

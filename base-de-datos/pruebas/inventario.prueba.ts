@@ -575,6 +575,13 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // leer el registro pendiente, crear la cuenta con su negocio, y buscar o unir
     // la identidad de Google. Las tablas que tocan no tienen ninguna política
     // para `estook_api`: solo se llega a ellas por aquí.
+    //
+    // **Y la migración 0042 (en línea de verdad, 23-sep-2026) añade dos:
+    // `esta_en_linea` y `visto_por_ultima_vez`.** Un jefe de cocina no puede leer
+    // las sesiones de su gente —las políticas de la 0018 solo se las enseñan a quien
+    // puede cerrarlas—, y por eso veía a todos fuera de línea. Las dos leen la sesión
+    // con privilegio, contestan solo de gente que quien pregunta puede ver, y no
+    // devuelven nada más de la sesión que un sí o un no y una hora.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -595,6 +602,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'crear_cuenta_con_negocio',
       'credencial_para_entrar',
       'dar_de_alta_persona',
+      'esta_en_linea',
       'locales_visibles',
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',
@@ -613,8 +621,32 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'suscripcion_al_crear_organizacion',
       'tiene_como_volver_a_entrar',
       'unir_identidad',
+      'visto_por_ultima_vez',
       'zonas_que_ve',
     ]);
+  });
+
+  it('y ninguna de ellas la puede ejecutar cualquiera: solo la API (0043)', async () => {
+    // Siete nacieron antes de M4 abiertas a `public`, y así siguieron hasta que las
+    // cazó la auditoría de producción del 23-sep-2026. Esto no nombra ninguna: mira
+    // todas, así que una nueva que se olvide de cerrarse no pasa.
+    const abiertas = await comoDuena<{ nombre: string }>(
+      `select p.oid::regprocedure::text as nombre
+         from pg_proc p
+        where p.pronamespace = 'estook'::regnamespace
+          and p.prosecdef
+          and has_function_privilege('public', p.oid, 'execute')`,
+    );
+    expect(abiertas.map((f) => f.nombre)).toEqual([]);
+
+    const sinLaApi = await comoDuena<{ nombre: string }>(
+      `select p.oid::regprocedure::text as nombre
+         from pg_proc p
+        where p.pronamespace = 'estook'::regnamespace
+          and p.prosecdef
+          and not has_function_privilege('estook_api', p.oid, 'execute')`,
+    );
+    expect(sinLaApi.map((f) => f.nombre)).toEqual([]);
   });
 
   it('y `sembrar_categorias` no la puede ejecutar cualquiera', async () => {

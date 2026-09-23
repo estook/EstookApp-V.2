@@ -507,6 +507,19 @@ describe('los secretos no se guardan para repetirlos', () => {
     );
   });
 
+  it('y lo que no se recuerda sin llevar secreto también está tasado', () => {
+    // `sinRecordar` salta la idempotencia. Solo vale para lo que da igual cuántas
+    // veces llegue; si algo que suma o crea lo declarara, un reintento lo haría dos
+    // veces. Esta lista obliga a pensarlo.
+    const sinRecordar = Object.values(catalogo.comandos)
+      .filter((comando) => comando.sinRecordar === true)
+      .map((comando) => comando.nombre)
+      .sort();
+
+    // 23-sep-2026 · el «sigo aquí» de la app abierta: uno por minuto y aparato.
+    expect(sinRecordar).toEqual(['sigo_aqui']);
+  });
+
   it('y de esos no se guarda ni se consulta la respuesta', async () => {
     const guardadas: string[] = [];
     const preguntadas: string[] = [];

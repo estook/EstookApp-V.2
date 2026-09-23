@@ -29,7 +29,7 @@ export const TAMANOS = ['pequena', 'normal', 'grande'] as const;
 export type TamanoDeLetra = (typeof TAMANOS)[number];
 
 export const COMO_SE_LLAMA: Record<TamanoDeLetra, string> = {
-  pequena: 'Pequena',
+  pequena: 'Pequeña',
   normal: 'Normal',
   grande: 'Grande',
 };

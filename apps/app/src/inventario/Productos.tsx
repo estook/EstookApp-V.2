@@ -468,7 +468,7 @@ export function Productos({
       </div>
 
       <Tarjeta
-        titulo={comoSeCuenta(datos.cuantosHay, vista)}
+        titulo={comoSeCuenta(datos.cuantosCumplen, vista)}
         origen={
           datos.puedeVerPrecios && vista !== 'desactivados'
             ? `La cámara vale ${comoDinero(datos.valorTotalCentimos)}, sin contar los ejemplos`

@@ -114,8 +114,9 @@ mismo, y una prueba lo vigila.
 **Hecho (23 de septiembre de 2026, en la rama).** Lo decidió Richi y está razonado en
 la [0044](decisiones/0044-las-cifras-de-cada-app.md):
 
-- **En la primera pantalla de cada app**, bajo el título «Cómo va» y debajo de lo
-  urgente: Inventario · Hoy, Servicio · Cierre y Equipo · Hoy. Dos tarjetas por fila
+- **En la primera pantalla de cada app**, bajo el título «Cómo va»: Inventario ·
+  Resumen (**arriba del todo**, desde el 23-sep), Servicio · Cierre (debajo de lo
+  urgente) y Equipo · Resumen (**justo debajo de fichar**, desde el 23-sep). Dos tarjetas por fila
   en el móvil y cuatro en una pantalla ancha, con «7 días · 30 días» recordado en el
   aparato. **Cada tarjeta entera lleva a su detalle.**
 - **Siempre las mismas por app**, y cada uno ve las que su rol le deja: un cocinero
@@ -276,6 +277,10 @@ Pasa a ser uno **por familia de rol**, en el catálogo de widgets:
 | **Jefe de cocina/sala** | Hoy de su partida                    | Food cost o ventas 7 días · pedidos · su equipo hoy     |
 | **Gerente**             | Ventas de hoy · food cost · personal | Objetivos con semáforo · merma € · caja · pedidos       |
 | **Dirección / area**    | Sus locales comparados               | Lo que se sale · objetivos por local                    |
+
+**El food cost del jefe de cocina, ya posible:** desde la migración `0041` (23-sep) el
+jefe de cocina ve las ventas —«puede necesitar saber qué sale o qué no», Richi—, y con el
+precio de compra que ya tenía le sale el food cost. Era lo que faltaba para esta fila.
 
 **Lo que no cambia:** quien ya ha tocado su Panel **se queda con el suyo** (0019). El
 de fábrica es para quien no lo ha tocado; y un botón «Volver al de mi puesto».

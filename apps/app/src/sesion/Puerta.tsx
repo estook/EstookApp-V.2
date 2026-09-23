@@ -33,7 +33,7 @@ function Marco({
   children: ReactNode;
 }) {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-fondo px-e4 py-e6">
+    <main className="flex min-h-dvh items-center justify-center bg-fondo px-e4 py-e6 pt-[calc(env(safe-area-inset-top)+var(--spacing-e6))]">
       <div className="w-full max-w-[30rem]">
         <div className="mb-e5 flex justify-center">
           <Logo alto={36} />

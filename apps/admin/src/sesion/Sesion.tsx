@@ -1,15 +1,5 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { createContext, useContext } from 'react';
 import type { ClienteApi } from '@estook/cliente-api';
-import { crearClienteDelAdmin, guardarToken, hayApi, leerToken } from '../datos/cliente.ts';
 
 /**
  * Quién está dentro del admin (0041).
@@ -20,7 +10,6 @@ import { crearClienteDelAdmin, guardarToken, hayApi, leerToken } from '../datos/
  * le quitan el acceso con el admin abierto, la siguiente pregunta contesta que no
  * y la pantalla le saca.
  */
-
 export interface YoEnElAdmin {
   readonly personaId: string;
   readonly nombre: string;
@@ -42,84 +31,14 @@ export interface SesionDelAdmin {
   readonly refrescar: () => Promise<void>;
 }
 
-const Contexto = createContext<SesionDelAdmin | null>(null);
-
-export function ProveedorDeSesion({ children }: { readonly children: ReactNode }) {
-  const cache = useQueryClient();
-  const [hayToken, setHayToken] = useState(() => leerToken() !== null);
-
-  const olvidarToken = useRef<() => void>(() => undefined);
-  const cliente = useMemo(
-    () =>
-      crearClienteDelAdmin(() => {
-        olvidarToken.current();
-      }),
-    [],
-  );
-
-  olvidarToken.current = useCallback(() => {
-    guardarToken(null);
-    setHayToken(false);
-    cache.clear();
-  }, [cache]);
-
-  const consulta = useQuery({
-    queryKey: ['admin_quien_soy'],
-    enabled: hayApi && hayToken,
-    retry: false,
-    queryFn: async (): Promise<YoEnElAdmin> => {
-      const respuesta = await cliente.consultar<YoEnElAdmin>('admin_quien_soy');
-      if (!respuesta.ok) {
-        // Sin acceso —o con una sesión que no es del admin— no hay nada que
-        // enseñar: se vuelve a la puerta en vez de dejar una pantalla a medias.
-        if (respuesta.error.codigo === 'sin_permiso') olvidarToken.current();
-        throw new Error(respuesta.error.codigo);
-      }
-      return respuesta.datos;
-    },
-  });
-
-  const entrar = useCallback(
-    async (token: string) => {
-      guardarToken(token);
-      setHayToken(true);
-      await cache.invalidateQueries({ queryKey: ['admin_quien_soy'] });
-    },
-    [cache],
-  );
-
-  const salir = useCallback(async () => {
-    // Se avisa al servidor y **luego** se borra el token pase lo que pase: un
-    // botón de salir que deja dentro es lo peor que puede hacer un botón de salir.
-    try {
-      await cliente.ejecutar('salir', {});
-    } finally {
-      olvidarToken.current();
-    }
-  }, [cliente]);
-
-  const refrescar = useCallback(async () => {
-    await cache.invalidateQueries({ queryKey: ['admin_quien_soy'] });
-  }, [cache]);
-
-  const valor = useMemo<SesionDelAdmin>(
-    () => ({
-      yo: hayToken ? (consulta.data ?? null) : null,
-      cargando: hayApi && hayToken && consulta.isLoading,
-      hayApi,
-      cliente,
-      entrar,
-      salir,
-      refrescar,
-    }),
-    [consulta.data, consulta.isLoading, hayToken, cliente, entrar, salir, refrescar],
-  );
-
-  return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
-}
+/**
+ * Dónde vive la sesión del admin. Lo llena `ProveedorDeSesion`, en su propio
+ * fichero, para que este no mezcle componentes con el gancho.
+ */
+export const ContextoDeSesion = createContext<SesionDelAdmin | null>(null);
 
 export function usarSesion(): SesionDelAdmin {
-  const sesion = useContext(Contexto);
+  const sesion = useContext(ContextoDeSesion);
   if (!sesion) throw new Error('usarSesion() necesita estar dentro de <ProveedorDeSesion>.');
   return sesion;
 }

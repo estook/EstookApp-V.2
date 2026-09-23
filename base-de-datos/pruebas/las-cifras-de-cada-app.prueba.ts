@@ -194,6 +194,26 @@ describe('las cajas cerradas', () => {
     // Un día sin caja es un día sin caja: cero, no «no se sabe».
     expect(despues.serie.every((d) => d.valor !== null)).toBe(true);
   });
+
+  it('el jefe de cocina ve las ventas y los cierres, y no cierra la caja (migración 0041)', async () => {
+    const ventas = await api.consultar(luis, 'un_indicador', { indicador: 'ventas', dias: '7' });
+    expect(ventas.estado).toBe('ok');
+    const cierres = await api.consultar(luis, 'mis_cierres', {});
+    expect(cierres.estado).toBe('ok');
+
+    const hoy = (await indicador(luis, 'ventas')).jornada as FechaOperativa;
+    const cerrar = await api.ejecutar(luis, 'cerrar_la_caja', {
+      fecha: masDias(hoy, -5),
+      total_centimos: 10_000,
+      tickets: 4,
+    });
+    expect(elFallo(cerrar)).toBe('sin_permiso');
+  });
+
+  it('un cocinero sigue sin ver las ventas', async () => {
+    const ventas = await api.consultar(marcos, 'un_indicador', { indicador: 'ventas', dias: '7' });
+    expect(elFallo(ventas)).toBe('sin_permiso');
+  });
 });
 
 // ── Equipo ───────────────────────────────────────────────────────────────────

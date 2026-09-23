@@ -24,7 +24,8 @@ import {
   PedirDobleFactor,
   PonerMiContrasena,
 } from './sesion/Puerta.tsx';
-import { ProveedorDeSesion, usarSesion } from './sesion/Sesion.tsx';
+import { ProveedorDeSesion } from './sesion/ProveedorDeSesion.tsx';
+import { usarSesion } from './sesion/Sesion.tsx';
 
 /**
  * El alta, **aparte del paquete inicial**.

@@ -1,13 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext } from 'react';
 
 /**
  * El deshacer universal · Manifiesto y Partes B4 y B6 del Plan.
@@ -43,7 +34,7 @@ export interface AccionQueSePuedeDeshacer {
   readonly deshacer: () => void | Promise<void>;
 }
 
-interface Pendiente extends AccionQueSePuedeDeshacer {
+export interface Pendiente extends AccionQueSePuedeDeshacer {
   readonly id: number;
 }
 
@@ -60,7 +51,7 @@ export interface FalloQueHayQueDecir {
   readonly texto: string;
 }
 
-interface Contexto {
+export interface Contexto {
   /** Apunta una accion como deshacible. Sustituye a la anterior, si la habia. */
   readonly sePuedeDeshacer: (accion: AccionQueSePuedeDeshacer) => void;
   readonly pendiente: Pendiente | null;
@@ -82,95 +73,12 @@ interface Contexto {
 /** Los diez segundos del Plan. Se exporta para que la prueba no los adivine. */
 export const SEGUNDOS_PARA_DESHACER = 10;
 
-const DeshacerContexto = createContext<Contexto | null>(null);
-
-export function ProveedorDeDeshacer({ children }: { readonly children: ReactNode }) {
-  const [pendiente, setPendiente] = useState<Pendiente | null>(null);
-  const [fallo, setFallo] = useState<FalloQueHayQueDecir | null>(null);
-  const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const siguienteId = useRef(0);
-
-  const parar = useCallback(() => {
-    if (reloj.current !== null) clearTimeout(reloj.current);
-    reloj.current = null;
-  }, []);
-
-  const olvidar = useCallback(() => {
-    parar();
-    setPendiente(null);
-    setFallo(null);
-  }, [parar]);
-
-  const sePuedeDeshacer = useCallback(
-    (accion: AccionQueSePuedeDeshacer) => {
-      parar();
-      setFallo(null);
-      siguienteId.current += 1;
-      setPendiente({ ...accion, id: siguienteId.current });
-
-      reloj.current = setTimeout(() => {
-        // Se acabo el plazo. Lo hecho, hecho esta.
-        setPendiente(null);
-      }, SEGUNDOS_PARA_DESHACER * 1000);
-    },
-    [parar],
-  );
-
-  const deshacer = useCallback(() => {
-    const laAccion = pendiente;
-    if (!laAccion) return;
-
-    parar();
-    setPendiente(null);
-
-    // Si deshacer falla (no hay red, alguien lo cambio antes), hay que decirlo:
-    // callarselo dejaria a la persona creyendo que se deshizo.
-    void (async () => {
-      try {
-        await laAccion.deshacer();
-      } catch {
-        setFallo({
-          titulo: 'No se ha podido deshacer',
-          texto: `No se ha podido deshacer «${laAccion.que}». Compruebalo antes de seguir.`,
-        });
-      }
-    })();
-  }, [pendiente, parar]);
-
-  // Al desmontar, que no quede un temporizador suelto.
-  useEffect(() => parar, [parar]);
-
-  // «Ctrl+Z» de toda la vida. No se pisa el de un campo de texto: si el foco
-  // esta escribiendo, deshacer es cosa del navegador, no nuestra.
-  useEffect(() => {
-    const alPulsar = (evento: KeyboardEvent) => {
-      if (evento.key !== 'z' || !(evento.ctrlKey || evento.metaKey) || evento.shiftKey) return;
-
-      const donde = document.activeElement;
-      const escribiendo =
-        donde instanceof HTMLInputElement ||
-        donde instanceof HTMLTextAreaElement ||
-        (donde instanceof HTMLElement && donde.isContentEditable);
-      if (escribiendo) return;
-
-      if (!pendiente) return;
-      evento.preventDefault();
-      deshacer();
-    };
-
-    window.addEventListener('keydown', alPulsar);
-    return () => {
-      window.removeEventListener('keydown', alPulsar);
-    };
-  }, [pendiente, deshacer]);
-
-  const valor = useMemo<Contexto>(
-    () => ({ sePuedeDeshacer, pendiente, deshacer, olvidar, fallo, avisarDeUnFallo: setFallo }),
-    [sePuedeDeshacer, pendiente, deshacer, olvidar, fallo],
-  );
-
-  return <DeshacerContexto.Provider value={valor}>{children}</DeshacerContexto.Provider>;
-}
+/**
+ * Dónde vive el deshacer. Lo llena `ProveedorDeDeshacer`, que está en
+ * `componentes/`: así este fichero no mezcla un componente con el gancho y la
+ * recarga en caliente de Vite no tiene que recargar la página entera.
+ */
+export const DeshacerContexto = createContext<Contexto | null>(null);
 
 export function usarDeshacer(): Contexto {
   const contexto = useContext(DeshacerContexto);

@@ -142,7 +142,7 @@ test.describe('el catálogo', () => {
     await expect(page.getByText('null · no es lo mismo que cero')).toBeVisible();
   });
 
-  test('los veintisiete errores del catálogo se pintan, y ninguno enseña su código', async ({
+  test('los veintiocho errores del catálogo se pintan, y ninguno enseña su código', async ({
     page,
   }) => {
     // «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría
@@ -168,6 +168,8 @@ test.describe('el catálogo', () => {
     // Y la entrega V añade `sin_negocio`: la cuenta que acierta la contraseña pero
     // no tiene ningún negocio —la del admin, tecleada en la app— se para antes de
     // pedir el código. Son veintisiete, y esta prueba volvió a fallar al añadirlo.
+    //
+    // Y `mas_de_lo_que_hay`: una merma no tira más de lo que hay (23-sep). Veintiocho.
     await abrir(page);
     await irA(page, 'Avisos y vacíos');
 
@@ -175,7 +177,7 @@ test.describe('el catálogo', () => {
       has: page.getByRole('heading', { name: 'ErrorEnCristiano' }),
     });
     const avisos = seccion.getByRole('alert');
-    await expect(avisos).toHaveCount(27);
+    await expect(avisos).toHaveCount(28);
 
     const texto = (await seccion.innerText()).toLowerCase();
     for (const codigo of [

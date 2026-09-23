@@ -67,6 +67,13 @@ export async function recordar(
 /**
  * Guarda el resultado. Va en la misma transaccion que el comando: si el comando
  * se cae, esto se cae con el y la clave queda libre para el reintento.
+ *
+ * **Y de paso tira las caducadas de la misma organización** (23-sep-2026). Las
+ * tenía que tirar un trabajo nocturno, `limpiarCaducadas`, pero el reloj de los
+ * procesos de fondo todavía no existe, y la auditoría de producción encontró 440
+ * claves caducadas sin borrar. Solo las de su organización, que son las únicas que
+ * la seguridad por filas le deja ver, y por el índice de `caduca_en`: como se tiran
+ * a la vez que se apuntan, nunca hay muchas.
  */
 export async function anotar(
   sql: Sql,
@@ -79,6 +86,10 @@ export async function anotar(
   estadoHttp: number,
 ): Promise<void> {
   await sql`
+    delete from estook.clave_de_idempotencia
+     where organizacion_id = ${organizacionId} and caduca_en <= now()
+  `;
+  await sql`
     insert into estook.clave_de_idempotencia
       (clave, huella, organizacion_id, persona_id, comando, respuesta, estado_http)
     values (
@@ -89,7 +100,11 @@ export async function anotar(
   `;
 }
 
-/** Las claves caducadas se tiran. Lo llama un trabajo nocturno. */
+/**
+ * Las claves caducadas de todas las organizaciones, de una vez. Lo llamará el trabajo
+ * nocturno cuando exista el reloj de los procesos de fondo; hasta entonces las tira
+ * `anotar`, organización a organización.
+ */
 export async function limpiarCaducadas(sql: Sql): Promise<number> {
   const filas = await sql<{ cuantas: number }[]>`
     with borradas as (

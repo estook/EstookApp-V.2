@@ -726,7 +726,7 @@ test.describe('accesibilidad', () => {
         return h ? Number.parseFloat(getComputedStyle(h).fontSize) : 0;
       });
 
-    await page.getByRole('radio', { name: 'Pequena' }).click();
+    await page.getByRole('radio', { name: 'Pequeña' }).click();
     const pequena = await medir();
 
     await page.getByRole('radio', { name: 'Grande' }).click();

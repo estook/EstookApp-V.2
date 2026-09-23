@@ -131,8 +131,12 @@ Anexo dice que no puede pasar.
    queda como está.
 
 La segunda es más limpia y no toca nada de M4, que es un módulo terminado y probado.
-**No se decide aquí**, pero se deja dicho que hay que decidirlo **antes de escribir la
-primera pantalla de Sala** (regla 1).
+
+**Decidido el 23-sep-2026: la segunda.** Richi lo describió así: «añadir terminal», con
+función (Sala, Barra o Cocina) y nombre, emparejado con el local por código o QR, que
+carga su pantalla al encenderse, al que los trabajadores entran con su PIN o su
+usuario, y que **es del restaurante y no del trabajador**. Está escrito en el Anexo,
+3.4, «Dar de alta un terminal».
 
 ---
 

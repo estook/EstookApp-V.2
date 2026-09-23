@@ -110,6 +110,15 @@ jobs:
       - name: Comprobar que el grafo resuelve
         run: node herramientas/revisa-el-grafo-de-deno.mjs
 
+      # Que la base no vaya por detras del codigo (23-sep-2026): se desplego la #64
+      # sin la migracion 0040 y Equipo dejo de funcionar. Si la base va por detras,
+      # no se despliega y se dice que hacer. Esta en herramientas/la-base-va-al-dia.mjs.
+      - name: Comprobar que la base va al dia
+        env:
+          TOKEN_DE_SUPABASE: ${{ secrets.TOKEN_DE_SUPABASE }}
+          PROYECTO_DE_SUPABASE: ${{ secrets.PROYECTO_DE_SUPABASE }}
+        run: node herramientas/la-base-va-al-dia.mjs
+
       - name: Desplegar la funcion
         env:
           # Este nombre **si** es el de Supabase, y no se puede cambiar: es la

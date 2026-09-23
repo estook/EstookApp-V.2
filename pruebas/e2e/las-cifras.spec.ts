@@ -83,7 +83,7 @@ function lasCifrasDe(page: Page, app: string) {
   return page.locator(`[data-cifras-de="${app}"]`);
 }
 
-test('Inventario abre con sus cuatro cifras, debajo de lo que hay que atender', async ({
+test('Inventario abre con sus cuatro cifras arriba del todo, y lo urgente debajo', async ({
   page,
 }) => {
   await entrar(page, ROSA);
@@ -96,13 +96,14 @@ test('Inventario abre con sus cuatro cifras, debajo de lo que hay que atender', 
   }
   await expect(fila.getByRole('heading', { name: 'Valor de la cámara' })).toBeVisible();
 
-  // Lo que hay que atender va antes que cualquier cifra (Evolución, capítulo 5).
+  // «Cómo va» arriba del todo, y lo que hay que atender justo debajo: lo decidió
+  // Richi el 23-sep («es lo que más se ve»), y cambia la 0044 para esta pantalla.
   const atencion = await page
     .getByRole('heading', { name: /tu atención|Nada que atender/ })
     .first()
     .boundingBox();
   const cifras = await fila.boundingBox();
-  expect(atencion?.y ?? 0).toBeLessThan(cifras?.y ?? 0);
+  expect(cifras?.y ?? 0).toBeLessThan(atencion?.y ?? 0);
 });
 
 test('la semana o el mes, y cada tarjeta lleva a su detalle', async ({ page }) => {

@@ -158,6 +158,13 @@ export async function preguntarDondeEstoy(): Promise<DondeEstoy> {
 export interface Fichar {
   readonly mio: MiFichaje | undefined;
   readonly cargando: boolean;
+  /**
+   * Si no se ha podido leer (entrega V, 23-sep). **No es lo mismo que no poder
+   * fichar**: el widget del Panel lo confundía y le decía a Richi, director, «tu
+   * acceso no incluye fichar» el día que la API iba por delante de la base.
+   */
+  readonly noSeHaPodidoLeer: boolean;
+  readonly volverALeer: () => void;
   /** Mientras se busca la ubicación y se manda. Es lo que dura el botón apagado. */
   readonly fichando: boolean;
   /** Qué está pasando, para decirlo en el botón: «Buscando dónde estás…». */
@@ -224,6 +231,10 @@ export function usarFichar(): Fichar {
   return {
     mio: consulta.data,
     cargando: consulta.isPending,
+    noSeHaPodidoLeer: consulta.isError,
+    volverALeer: () => {
+      void consulta.refetch();
+    },
     fichando: paso !== 'quieto',
     paso,
     error,

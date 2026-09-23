@@ -44,7 +44,10 @@ async function abrirLimpio(page: Page) {
       /* en navegacion privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  // Se vuelve a abrir, no se recarga: el Safari de las pruebas (WebKit) se cae a veces
+  // por dentro al recargar justo después de vaciar el almacenamiento. Pasó en la
+  // integración continua el 22-sep, y la prueba pasó al repetirla (regla 24).
+  await page.goto(APP, { waitUntil: 'domcontentloaded' });
 }
 
 async function entrar(page: Page, correo = ROSA) {

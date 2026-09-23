@@ -58,8 +58,7 @@ entre un paso y otro, mejor: unos diez minutos en total.
 de cada local, con 5 minutos puestos a todos.
 
 **Dónde:** en **PowerShell**, dentro de la carpeta del proyecto
-(`C:Users
-ixy-DocumentsGitHubEstookApp-V.2`). Antes, trae lo que acabas de
+(`C:\Users\rixy-\Documents\GitHub\EstookApp-V.2`). Antes, trae lo que acabas de
 fusionar a tu ordenador:
 
 ```bash
@@ -75,7 +74,7 @@ git pull
 Ahora la migración:
 
 ```bash
-.estook.cmd bd:migrar
+.\estook.cmd bd:migrar
 ```
 
 **Qué tiene que salir**, tal cual:
@@ -91,7 +90,7 @@ fusionado: vuelve a hacerlo. **Si sale un error en rojo, no repitas el comando: 
 Y se comprueba, leyéndolo de la base:
 
 ```bash
-.estook.cmd bd:comprobar
+.\estook.cmd bd:comprobar
 ```
 
 **Qué tiene que decir:** «Migraciones aplicadas: **40** (hasta la **40**)».
@@ -112,7 +111,7 @@ Y se comprueba, leyéndolo de la base:
 Cuando esté en verde, en PowerShell:
 
 ```bash
-.estook.cmd bd:comprobar-api
+.\estook.cmd bd:comprobar-api
 ```
 
 **Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los comandos».

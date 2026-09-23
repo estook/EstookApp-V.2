@@ -1060,6 +1060,15 @@ la capa superior del navegador— que es justo cuando hace falta.
     «lo que falta por venir» o un botón apagado con su módulo en mitad del día a día
     son texto sobre el futuro que alguien tiene que leer cada vez. Va en el menú
     («Llega después») y en el plan.
+86. **Un documento se sube igual que el código: con `verifica` antes.** Los pasos de V
+    se subieron sin pasarla, con los tres comandos
+    escritos `.estook.cmd` sin la barra, que PowerShell no encuentra,
+    y con la carpeta rota; la prueba del lanzador lo cazó en GitHub, no aquí. Y al escribir un fichero desde la consola, **las barras
+    `\` se las come la consola**: se escribe con el editor, no con `sed` ni `node -e`.
+87. **Un rojo dentro de una vuelta en verde también se mira.** «1 flaky» quiere decir que
+    una prueba falló y pasó al repetirla. La del 22-sep era Safari cayéndose por dentro
+    al recargar la página justo después de vaciar el almacenamiento: no era Estook,
+    pero se arregló igual (se vuelve a abrir la dirección en vez de recargar).
 
 ---
 

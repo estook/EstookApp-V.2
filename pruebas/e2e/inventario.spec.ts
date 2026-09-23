@@ -89,7 +89,10 @@ async function abrirLimpio(page: Page) {
       /* en navegacion privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  // Se vuelve a abrir, no se recarga: el Safari de las pruebas (WebKit) se cae a veces
+  // por dentro al recargar justo después de vaciar el almacenamiento. Pasó en la
+  // integración continua el 22-sep, y la prueba pasó al repetirla (regla 24).
+  await page.goto(APP, { waitUntil: 'domcontentloaded' });
 }
 
 async function entrar(page: Page, correo: string) {
@@ -1334,7 +1337,11 @@ test('un lote que caduca se quita desde «Resumen», y lo tirado queda como merm
   await hoja.getByLabel(/^Cuánto se tira/).fill('2');
   await hoja.getByRole('button', { name: 'Quitarlo' }).click();
 
-  await expect(page.getByText(/queda apuntado como merma por caducado/)).toBeVisible();
+  // Con quince segundos, como lo demás que espera al servidor: con las cuatrocientas
+  // pruebas a la vez contra una sola base, quitar el lote tardó más de cinco (23-sep).
+  await expect(page.getByText(/queda apuntado como merma por caducado/)).toBeVisible({
+    timeout: 15_000,
+  });
   await expect(page.getByRole('listitem').filter({ hasText: nombre })).toHaveCount(0);
 
   const ficha = await consultar<{ producto: { cantidad: number }; lotes: unknown[] }>(
@@ -1500,6 +1507,11 @@ test('la ficha no vende ingredientes, deja medir el aprovechamiento y se puede d
   });
 
   const ficha = page.getByRole('dialog', { name: nombre });
+  // Primero, que la ficha esté abierta. Las dos comprobaciones de debajo son «esto
+  // NO está», y sin esto pasaban aunque la ficha no se hubiera abierto todavía: no
+  // miraban nada. Lo destapó una vuelta cargada del 23-sep, en la que la ficha tardó
+  // más de cinco segundos y falló la tercera, que sí necesita la ficha.
+  await expect(ficha).toBeVisible({ timeout: 15_000 });
 
   // ── Un ingrediente NO tiene precio de venta ──────────────────────────────
   //

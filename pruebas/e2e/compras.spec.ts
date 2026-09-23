@@ -38,7 +38,10 @@ async function entrar(page: Page, correo: string) {
       /* en navegación privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  // Se vuelve a abrir, no se recarga: el Safari de las pruebas (WebKit) se cae a veces
+  // por dentro al recargar justo después de vaciar el almacenamiento. Pasó en la
+  // integración continua el 22-sep, y la prueba pasó al repetirla (regla 24).
+  await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.getByLabel('Tu correo').fill(correo);
   await page.getByLabel('Tu contraseña').fill(CLAVE);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();

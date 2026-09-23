@@ -2301,8 +2301,8 @@ Y de ahí salieron tres arreglos, en la rama `arreglos-tras-la-64`, fusionados e
 ### Antes de M8 · el repaso del 23 de septiembre
 
 **En la rama `el-repaso-del-23-sep`.** Doce cosas que trajo Richi mirando la app en el
-móvil, y una auditoría de Supabase, GitHub y la app. Lleva **tres migraciones**: la
-`0041`, la `0042` y la `0043`.
+móvil, y una auditoría de Supabase, GitHub y la app. Lleva **cuatro migraciones**: de la
+`0041` a la `0044`.
 
 #### Lo que pidió, y lo que se hizo
 
@@ -2317,10 +2317,17 @@ móvil, y una auditoría de Supabase, GitHub y la app. Lleva **tres migraciones*
   tres; lo mismo en Congelados. El título contaba el local entero, y «Bajo mínimo» se
   perdía los del final del abecedario al filtrar después de cortar. Ahora la consulta
   devuelve `cuantosCumplen`, y los topes de 200 de las listas internas pasan a 5.000.
-  **Contar costó un repaso más**: con `count(*) over ()` cada lista calculaba lo caro
-  de todos los productos y tardaba el doble (medido: 1,2 s frente a 2,3 s con 400 en la
-  base de pruebas). Ahora se eligen y cuentan con lo barato, y lo caro se calcula solo
-  de los de la página: la lista vuelve a tardar lo que tardaba.
+  **Y medirlo destapó lo lento de verdad** (24-sep). Una prueba de Safari tardó de
+  más, y con 400 productos en la base de pruebas el Resumen de Inventario tardaba 2,6 s
+  (en `main`, 1,7). Midiendo cada consulta: el recuento nuevo obligaba a calcular lo
+  caro de todos (se cuenta ahora con lo barato); **el valor de la cámara recorría el
+  libro entero** y estaba escrito dos veces (ahora una, `elValorDeLaCamara`, producto
+  a producto); y sobre todo **el precio vigente se pedía producto a producto**
+  (migración `0044`: `precios_vigentes`, de una pasada, y la de uno la llama). Quedó
+  en 0,34 s el Resumen, 0,32 s «Bajo mínimo» y 0,27 s la lista: entre cuatro y cinco
+  veces más rápido que antes de esta rama. Dos cosas que se probaron y no cambiaban
+  nada —unir las existencias producto a producto en la lista y agrupar las cuentas del
+  libro— se deshicieron.
 - **La muesca del iPhone ya no tapa nada**: la barra de arriba, las hojas, el buscador,
   entrar, crear cuenta, el alta y el admin dejan el hueco de la zona segura.
 - **Al tocar un campo, el móvil ya no hace zoom**: en pantallas táctiles los campos van

@@ -132,7 +132,7 @@ test.describe('entrar', () => {
 
   test('y salir la cierra de verdad', async ({ page }) => {
     await entrar(page, 'rosa@ejemplo.estook.com');
-    await page.goto(`${APP}#/ajustes/cuenta`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}#/ajustes/cuenta`);
 
     await page.getByRole('button', { name: /^Salir/ }).click();
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Entra en Estook');
@@ -226,10 +226,10 @@ test.describe('criterio · un area manager entra en su consolidado', () => {
     await page.getByRole('button', { name: 'Entrar' }).first().click();
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
 
-    await page.goto(`${APP}#/ajustes`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}#/ajustes`);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Ajustes');
 
-    await page.goto(`${APP}#/`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}#/`);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
   });
 });
@@ -640,7 +640,7 @@ test('quien lleva el local puede dar una contraseña nueva, y se enseña una vez
   });
 
   await entrar(page, 'rosa@ejemplo.estook.com');
-  await page.goto(`${APP}#/equipo/personas`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/personas`);
 
   // En escritorio la tabla son filas; en movil, la misma tabla en tarjetas (`li`).
   // Se piden las dos y se filtra por visible: el marcado de la otra sigue en el
@@ -669,7 +669,7 @@ test('quien lleva el local puede dar una contraseña nueva, y se enseña una vez
  */
 test('el doble factor se puede poner Y quitar, no solo poner', async ({ page }) => {
   await entrar(page, 'rosa@ejemplo.estook.com');
-  await page.goto(`${APP}#/ajustes/cuenta`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/cuenta`);
 
   // La sección existe y ofrece activarlo. Rosa no lo tiene puesto, así que lo
   // que se comprueba aquí es que la pantalla conoce las dos direcciones: antes

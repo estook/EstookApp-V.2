@@ -260,7 +260,10 @@
     **Y contar no puede costar lo que enseñar**: el primer arreglo contaba con
     `count(*) over ()` y obligaba a calcular lo caro de todos los productos, no de los
     cincuenta de la página; la lista tardaba el doble. Se vio por una prueba de Safari
-    que tardó más de la cuenta, y se **midió** antes de tocar nada.
+    que tardó más de la cuenta, y se **midió** antes de tocar nada. Y medir consulta
+    a consulta encontró lo que nadie sospechaba: el precio vigente, pedido producto a
+    producto, era casi todo el tiempo de la pantalla. **Lo lento no se adivina: se
+    cronometra**, y lo que no cambia el número se deshace.
 93. **Lo que no puede pasar en la cámara no puede pasar en el libro.** Tirar cinco kilos
     de los dos que hay dejaba el producto en negativo sin decir nada. La pantalla lo
     avisa, y **el servidor lo impide** (`mas_de_lo_que_hay`), porque la pantalla no se

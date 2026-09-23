@@ -26,7 +26,7 @@ merma que dejaba tirar más de lo que hay, los fichajes de la ficha y el «en l�
 gente que no estaba—, **el jefe de cocina viendo las ventas**, y lo que encontró la
 auditoría. Todo contado en `ESTADO.md`, apartado 1.
 
-**Esta vez son tres pasos, seguidos y en este orden:** fusionar, aplicar **tres**
+**Esta vez son tres pasos, seguidos y en este orden:** fusionar, aplicar **cuatro**
 migraciones y desplegar la API. Entre fusionar y desplegar, la ficha de un trabajador
 dirá «No he podido leer los fichajes» al pulsar «Ver todos»: es normal, se arregla en el
 paso 3.
@@ -39,11 +39,12 @@ presupuestos` y `Migraciones reversibles`. Si alguna está en amarillo, espera. 
    alguna sale en rojo, para y avísame.**
 3. **Merge pull request** → **Confirm merge**. Tiene que salir en morado «merged».
 
-### 2 · Aplicar las tres migraciones
+### 2 · Aplicar las cuatro migraciones
 
 **Qué es:** la `0041` deja al jefe de cocina ver las ventas; la `0042` hace que «en
-línea» sea tener la app abierta; y la `0043` cierra siete funciones de la base que
-podía ejecutar cualquiera.
+línea» sea tener la app abierta; la `0043` cierra siete funciones de la base que
+podía ejecutar cualquiera; y la `0044` hace el Resumen de Inventario varias veces más
+rápido.
 
 **Dónde:** en **PowerShell**, en la carpeta del proyecto
 (`C:\Users\rixy-\Documents\GitHub\EstookApp-V.2`). Primero trae lo fusionado:
@@ -68,7 +69,8 @@ git pull
   aplicando 0041_el_jefe_de_cocina_ve_las_ventas.sql ... hecho
   aplicando 0042_en_linea_de_verdad.sql ... hecho
   aplicando 0043_las_funciones_con_privilegio_cerradas.sql ... hecho
-  3 migracion(es) aplicadas · 43 en total
+  aplicando 0044_el_precio_vigente_de_muchos_a_la_vez.sql ... hecho
+  4 migracion(es) aplicadas · 44 en total
 ```
 
 Si dice **«la base de datos ya estaba al dia»**, el `git pull` no ha bajado lo fusionado:
@@ -80,7 +82,7 @@ Y se comprueba:
 .\estook.cmd bd:comprobar
 ```
 
-**Qué tiene que decir:** «Migraciones aplicadas: **43** (hasta la **43**)».
+**Qué tiene que decir:** «Migraciones aplicadas: **44** (hasta la **44**)».
 
 ### 3 · Volver a desplegar la API
 
@@ -112,7 +114,7 @@ app y ábrela otra vez).
 - **Fogón:** arriba ya no está su icono. La burbuja, abajo a la derecha, en el móvil **y
   en el ordenador**.
 - **Inventario → Productos → Bajo mínimo** y **Congelados**: el número de arriba es el
-  de los que salen en la lista.
+  de los que salen en la lista. Y **Inventario abre bastante más rápido**.
 - **La merma:** apunta una de más de lo que hay. Tiene que decirte «Quedan X y se están
   tirando Y» y no dejarte guardar.
 - **Equipo → Resumen:** «Cómo va» justo debajo de fichar. Abre la ficha de alguien: sus

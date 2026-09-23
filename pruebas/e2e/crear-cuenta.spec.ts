@@ -77,14 +77,15 @@ async function comoSiVolvieraDeGoogle(
     ],
   );
   const parametros = new URLSearchParams({ code: codigo, state: estado });
-  await page.goto(`${APP}?${parametros.toString()}`, { waitUntil: 'domcontentloaded' });
+  // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
+  await abrirSinQueSeCaiga(page, `${APP}?${parametros.toString()}`);
 }
 
 // ── La web pública ───────────────────────────────────────────────────────────
 
 test.describe('la portada', () => {
   test('lleva a crear cuenta y a entrar, y enseña lo legal', async ({ page }) => {
-    await page.goto(WEB, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, WEB);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tu cocina, bajo control.');
 
     // Los accesos: el del encabezado se esconde en móvil, el del centro no.
@@ -117,7 +118,7 @@ test.describe('la portada', () => {
     for (const pagina of ['privacidad', 'condiciones']) {
       // Son carpetas de verdad, no una ruta de JavaScript: `estook.com/privacidad/`
       // existe aunque no arranque el guion (ver `apps/web/vite.config.ts`).
-      await page.goto(`${WEB}${pagina}/`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${WEB}${pagina}/`);
       const principal = page.getByRole('main');
       await expect(principal.getByText(/Titular:/)).toBeVisible();
       await expect(principal.getByText(/NIF:/)).toBeVisible();
@@ -252,7 +253,7 @@ test('la oferta se enciende desde el admin y la puerta la anuncia', async ({ pag
     await expect(page.getByText('Las cuentas nuevas entran con 12 días de prueba')).toBeVisible();
 
     const app = await page.context().newPage();
-    await app.goto(`${APP}#/crear-cuenta`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(app, `${APP}#/crear-cuenta`);
     await expect(app.getByText('12 días de prueba, sin tarjeta')).toBeVisible();
     await app.close();
   } finally {

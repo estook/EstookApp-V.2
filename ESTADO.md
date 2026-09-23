@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 23 de septiembre de 2026 · **Antes de M8. V, primera parte, en producción (#64 y #65). El repaso del 23-sep —lo que Richi vio en el móvil y la auditoría— va en `el-repaso-del-23-sep`, con su pull request y tres migraciones (`0041` a `0043`). Después: los puntos 4 y 5 de V**
+Última actualización: 23 de septiembre de 2026 · **Antes de M8. V, primera parte, en producción (#64 y #65). El repaso del 23-sep —lo que Richi vio en el móvil y la auditoría— va en `el-repaso-del-23-sep`, con su pull request ([#66](https://github.com/estook/EstookApp-V.2/pull/66)) y cuatro migraciones (`0041` a `0044`). Después: los puntos 4 y 5 de V**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -25,7 +25,7 @@ _Producción leída el 23 de septiembre de 2026, en una transacción de solo lec
 | **Terminados** | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1**, la puerta del admin · **E1**, crear cuenta y Google · **V, primera parte** (puntos 1, 2, 3 y 7) |
 | **Ahora**      | **El repaso del 23-sep**, en la rama `el-repaso-del-23-sep` con su pull request. Después, **V · puntos 4 y 5**. **E2 · Stripe** espera a Richi                   |
 | **`main`**     | Todo fusionado hasta la **#65**                                                                                                                                  |
-| **Base**       | Supabase, **40 de 40** migraciones, igual que `main`. **La rama trae tres más** (`0041` a `0043`): hay que aplicarlas al fusionar                                |
+| **Base**       | Supabase, **40 de 40** migraciones, igual que `main`. **La rama trae cuatro más** (`0041` a `0044`): hay que aplicarlas al fusionar                              |
 | **API**        | Desplegada el 23-sep a las 18:43 con la #64: 44 consultas y 84 comandos. **La rama trae una de cada** (45 y 85) y hay que desplegarla después de migrar          |
 | **Sitio**      | `estook.com`, `/app/` y `/admin/`. Se publica solo al fusionar                                                                                                   |
 | **Pruebas**    | En la rama: **1.177** unitarias y de base y **424** de pantalla, en verde · catálogo **124 de 130** (95 %), con sus seis deudas apuntadas                        |
@@ -75,6 +75,7 @@ septiembre».
 | **«En línea» solo con la app abierta**                                          | Aviso cada 45 s mientras se ve (`sigo_aqui`); dos minutos sin él, fuera · **`0042`**   |
 | **El TPV: «añadir terminal»**                                                   | Encaja con el Anexo 3.4, y lo que faltaba está escrito ahí («Dar de alta un terminal») |
 | **Auditoría**: siete funciones con privilegio abiertas                          | Cerradas todas, y una prueba mira todas · **`0043`**                                   |
+| **Velocidad**: el Resumen de Inventario tardaba 2,6 s con 400 productos         | El precio vigente, de una pasada: 0,34 s · **`0044`**                                  |
 | **Auditoría**: 440 claves caducadas sin borrar                                  | Las tira `anotar` al apuntar una nueva                                                 |
 | **Auditoría**: acciones de GitHub con Node 20 y ocho avisos del lint            | A Node 24; los avisos, arreglados sin apagar la regla                                  |
 | **ESTADO.md, resumido**                                                         | Esto. Las lecciones y el detalle, en su documento                                      |
@@ -127,7 +128,7 @@ Uso real: 11 productos, 316 movimientos, 7 cierres de caja, 25 fichajes y 4 pedi
 (IKATZ enlazado desde el 16-sep) · los datos del titular en privacidad y condiciones
 (#59).
 
-**Ahora:** fusionar el pull request del repaso, **aplicar las tres migraciones** y
+**Ahora:** fusionar el pull request del repaso, **aplicar las cuatro migraciones** y
 **desplegar la API**, en ese orden. Los pasos, uno a uno, en
 [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md).
 
@@ -361,7 +362,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`, `packages/ui/fuentes/`
   y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0043`.** Se amplían con una `0044`, nunca se editan
+- **Las migraciones `0001` a `0044`.** Se amplían con una `0045`, nunca se editan
   (regla 2). Y al ampliar una función SQL, **se copia la original entera**.
 - **Un valor de un tipo enumerado no se quita**: Postgres no sabe. Se añade con
   `add value if not exists`, y no se usa en la misma transacción.
@@ -372,6 +373,10 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   candado es `pg_advisory_xact_lock`** ([0026](docs/decisiones/0026-la-merma-tiene-motivo-y-partida.md)).
   **Una merma no tira más de lo que hay** (`sePuedeTirar`, en el dominio y en el servidor).
 - **Un lote no se borra: se retira**; **un producto con género no cambia de unidad**.
+- **Cuál es el precio vigente lo dice `estook.precios_vigentes`** (migración `0044`), y
+  `precio_vigente` la llama con uno. Una lista de productos lo pide **de una pasada**,
+  nunca producto a producto: era casi todo el tiempo del Resumen de Inventario. Y **el
+  valor de la cámara** se calcula en un solo sitio, `elValorDeLaCamara`.
 - **La factura no mueve género**, y **los importes de compra van sin impuestos**; el IVA
   se calcula al enseñarlo ([0032](docs/decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md),
   [0033](docs/decisiones/0033-los-precios-de-compra-se-guardan-sin-iva.md)).
@@ -417,7 +422,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 ## 8 · El siguiente paso
 
 **Primero, el repaso del 23-sep** (rama `el-repaso-del-23-sep`, con su pull request):
-Richi lo fusiona, aplica las migraciones `0041` a `0043` y despliega la API. Luego mira
+Richi lo fusiona, aplica las migraciones `0041` a `0044` y despliega la API. Luego mira
 en el móvil la muesca, el zoom, la letra pequeña, la merma y la ficha de un trabajador.
 
 **Luego, V · segunda parte**, en una rama nueva:

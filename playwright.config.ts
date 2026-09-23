@@ -69,7 +69,23 @@ export default defineConfig({
       use: { ...devices['Pixel 5'], viewport: { width: 375, height: 667 } },
     },
     ...(conWebkit
-      ? [{ name: 'movil-safari', testIgnore: SIN_PANTALLA, use: { ...devices['iPhone SE'] } }]
+      ? [
+          {
+            name: 'movil-safari',
+            testIgnore: SIN_PANTALLA,
+            use: { ...devices['iPhone SE'] },
+            /*
+              Diez segundos de espera, y **solo aquí** (24-sep-2026). En la integración
+              continua es el único navegador que corre sobre el motor de Safari en
+              Linux, y va bastante más lento que los otros dos. Lo que se le acababa
+              —una vez por pasada, cada vez en una prueba distinta, y siempre pasando
+              al repetir— era esperar a que una pantalla cambiara tras contestar la API
+              de pruebas, que atiende a los tres navegadores a la vez. No era la app:
+              ninguna de esas esperas falló por otra cosa que el reloj.
+            */
+            expect: { timeout: 10_000 },
+          },
+        ]
       : []),
   ],
 

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { abrirSinQueSeCaiga } from './abrir.ts';
 import { ADMIN, codigoAhora, entrarEnElAdmin } from './entrar-en-el-admin.ts';
 
 /**
@@ -20,7 +21,7 @@ import { ADMIN, codigoAhora, entrarEnElAdmin } from './entrar-en-el-admin.ts';
 
 test.describe('la puerta del admin', () => {
   test('sin entrar no se ve nada del admin, ni el catálogo', async ({ page }) => {
-    await page.goto(ADMIN, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, ADMIN);
     await expect(page.getByRole('heading', { level: 1, name: 'Entra en el admin' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Sistema de diseño' })).toHaveCount(0);
   });
@@ -28,7 +29,7 @@ test.describe('la puerta del admin', () => {
   test('una contraseña que no es no deja entrar, y no dice si el correo existe', async ({
     page,
   }) => {
-    await page.goto(ADMIN, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, ADMIN);
     await page.getByLabel('Tu correo').fill('plataforma@ejemplo.estook.com');
     await page.getByLabel('Tu contraseña').fill('no es esta');
     await page.getByRole('button', { name: 'Entrar', exact: true }).click();
@@ -111,7 +112,7 @@ test.describe('la puerta del admin', () => {
 test('la cuenta del admin, en la app, dice que no tiene negocio y no pide el código', async ({
   page,
 }) => {
-  await page.goto('http://localhost:5174/', { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, 'http://localhost:5174/');
   await page.getByLabel('Tu correo').fill('plataforma@ejemplo.estook.com');
   await page.getByLabel('Tu contraseña').fill('estook en desarrollo');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();

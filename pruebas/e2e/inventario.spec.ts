@@ -113,7 +113,7 @@ async function entrar(page: Page, correo: string) {
  */
 async function irAInventario(page: Page, destino: string, vista?: string) {
   const camino = vista === undefined ? destino : `${destino}/${vista}`;
-  await page.goto(`${APP}#/inventario/${camino}`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/inventario/${camino}`);
 }
 
 /**
@@ -1501,9 +1501,10 @@ test('la ficha no vende ingredientes, deja medir el aprovechamiento y se puede d
   expect(creado.estado).toBe(200);
 
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/inventario/productos/todo?producto=${creado.datos?.productoId ?? ''}`, {
-    waitUntil: 'domcontentloaded',
-  });
+  await abrirSinQueSeCaiga(
+    page,
+    `${APP}#/inventario/productos/todo?producto=${creado.datos?.productoId ?? ''}`,
+  );
 
   const ficha = page.getByRole('dialog', { name: nombre });
   // Primero, que la ficha esté abierta. Las dos comprobaciones de debajo son «esto
@@ -1655,9 +1656,10 @@ test('se congela una parte, y se ve cuánta', async ({ page, request }) => {
   expect(creado.estado).toBe(200);
 
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/inventario/productos/todo?producto=${creado.datos?.productoId ?? ''}`, {
-    waitUntil: 'domcontentloaded',
-  });
+  await abrirSinQueSeCaiga(
+    page,
+    `${APP}#/inventario/productos/todo?producto=${creado.datos?.productoId ?? ''}`,
+  );
 
   const ficha = page.getByRole('dialog', { name: nombre });
   await ficha.getByRole('button', { name: 'Congelar una parte' }).click();
@@ -1755,7 +1757,7 @@ test('el reparto tiene su sitio, con Uber Eats por su nombre y sin botón de men
     por disponible hasta verificar sus requisitos y capacidades reales».
   */
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/servicio/delivery`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/servicio/delivery`);
 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Delivery');
   await expect(page.getByText('Uber Eats').first()).toBeVisible();
@@ -1780,7 +1782,7 @@ test('si un trozo de la app no llega, se dice y las barras siguen', async ({ pag
   await entrar(page, ROSA);
   await page.route('**/assets/Movimientos-*.js', (ruta) => ruta.abort());
 
-  await page.goto(`${APP}#/inventario/movimientos/todo`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/inventario/movimientos/todo`);
 
   await expect(page.getByText('Esta pantalla no ha terminado de cargar')).toBeVisible({
     timeout: 20_000,
@@ -1791,7 +1793,7 @@ test('si un trozo de la app no llega, se dice y las barras siguen', async ({ pag
 
   // Cambiar de pantalla lo olvida.
   await page.unroute('**/assets/Movimientos-*.js');
-  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+  await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
   await expect(page.getByRole('heading', { level: 1, name: 'Resumen' })).toBeVisible();
   await expect(page.getByText('Esta pantalla no ha terminado de cargar')).toHaveCount(0);
 });

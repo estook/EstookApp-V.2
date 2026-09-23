@@ -128,9 +128,7 @@ test('la ficha enseña tres fichajes, y «Ver todos» abre el historial y vuelve
   const { personaId } = await unaCamareraConCuatroTurnos(request);
 
   await entrar(page, ROSA);
-  await page.goto(`${APP}#/equipo/resumen?persona=${personaId}`, {
-    waitUntil: 'domcontentloaded',
-  });
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen?persona=${personaId}`);
 
   const ficha = page.getByRole('dialog', { name: 'Lucía De la Ficha' });
   await expect(ficha.getByRole('heading', { name: 'Sus fichajes' })).toBeVisible();

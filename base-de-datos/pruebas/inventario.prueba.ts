@@ -403,6 +403,52 @@ describe('los precios', () => {
     // te podría costar. Lo barato se ve en la comparativa, que es otra pregunta.
     expect(Number(vigente?.precio_centimos)).toBe(9000);
   });
+
+  it('el de muchos a la vez da lo mismo que el de uno, en cada caso (0044)', async () => {
+    // La regla vive en `precios_vigentes`, y `precio_vigente` la llama con uno. Aquí
+    // se mira que las dos respuestas son la misma con los tres casos que hay: con
+    // proveedor principal, sin él (gana el último que se puso) y sin ningún precio.
+    const conPrincipal = await unProductoDePrueba();
+    const sinPrincipal = await unProductoDePrueba();
+    const sinPrecio = await unProductoDePrueba();
+
+    const proveedor = async (nombre: string) =>
+      (
+        await comoDuena<{ id: string }>(
+          `insert into estook.proveedor (local_id, nombre) values ($1, $2) returning id`,
+          [conPrincipal.localId, nombre],
+        )
+      )[0]?.id ?? null;
+    const uno = await proveedor(`Uno ${Date.now()}`);
+    const otro = await proveedor(`Otro ${Date.now()}`);
+
+    await ponPrecio(conPrincipal.productoId, 9000, uno);
+    await ponPrecio(conPrincipal.productoId, 4000, otro);
+    await comoDuena(`update estook.producto set proveedor_id = $1 where id = $2`, [
+      uno,
+      conPrincipal.productoId,
+    ]);
+    await ponPrecio(sinPrincipal.productoId, 3000, uno);
+    await ponPrecio(sinPrincipal.productoId, 3500, otro);
+
+    const ids = [conPrincipal.productoId, sinPrincipal.productoId, sinPrecio.productoId];
+    const deUnaVez = await comoDuena<{ producto_id: string; precio: string }>(
+      `select producto_id::text as producto_id, precio_centimos::text as precio
+         from estook.precios_vigentes($1::uuid[])`,
+      [ids],
+    );
+    for (const id of ids) {
+      const [deUno] = await comoDuena<{ precio: string | null }>(
+        `select precio_centimos::text as precio from estook.precio_vigente($1::uuid)`,
+        [id],
+      );
+      const deMuchos = deUnaVez.find((f) => f.producto_id === id);
+      expect(deMuchos?.precio ?? null, id).toBe(deUno?.precio ?? null);
+    }
+    // Y lo esperado, para que las dos no puedan estar mal a la vez.
+    expect(deUnaVez.find((f) => f.producto_id === conPrincipal.productoId)?.precio).toBe('9000');
+    expect(deUnaVez.find((f) => f.producto_id === sinPrecio.productoId)).toBeUndefined();
+  });
 });
 
 // ── Permisos: quién ve qué ───────────────────────────────────────────────────

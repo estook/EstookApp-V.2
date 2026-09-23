@@ -421,7 +421,10 @@ async function leerProductos(
       left join estook.categoria_de_producto c on c.id = p.categoria_id
       left join estook.proveedor pv on pv.id = p.proveedor_id
       left join estook.existencias e on e.producto_id = p.id
-      left join estook.precio_vigente(p.id) pr on true
+      -- El precio vigente de todos los elegidos de una pasada (0044): pedirlo
+      -- producto a producto era lo más lento de la pantalla.
+      left join estook.precios_vigentes(array(select el2.id from elegidos el2)) pr
+        on pr.producto_id = p.id
      order by p.nombre, p.id
   `;
 
@@ -713,6 +716,48 @@ export interface SalidaMisProductos {
   readonly territorio: string;
 }
 
+/**
+ * Lo que vale lo que hay en la cámara, **sin los ejemplos**: «no cuenta para nada:
+ * ni avisos, ni análisis, ni salud de los datos, ni informes» (Manifiesto 8). La
+ * usan la lista de Productos y el Resumen de Inventario, y por eso vive aquí una
+ * sola vez: estaba escrita dos veces, igual (regla 6).
+ *
+ * Lo que entró sin coste —un ajuste, o un producto dado de alta antes de que el alta
+ * apuntara lo que había— tiene el medio a cero, y contarlo a cero es decir que 500
+ * burratas no valen nada: se cuenta a su precio de hoy.
+ *
+ * ── Producto a producto, y el precio solo si hace falta (24-sep-2026) ──────────
+ *
+ * Unida a pelo, la vista `existencias` se calculaba sobre **el libro entero** en cada
+ * consulta, y el precio vigente se buscaba para todos los productos: con 400
+ * productos era más de un segundo en la base de pruebas, y lo más lento de las dos
+ * pantallas. Ahora se lee la última línea de cada producto por su índice —la vista
+ * sigue siendo la única que sabe qué es «lo que hay»— y el precio de hoy solo de lo
+ * que entró sin coste, que `coalesce` no evalúa si no llega a él.
+ */
+async function elValorDeLaCamara(
+  contexto: Contexto,
+  localId: string,
+): Promise<{ total: string | null }[]> {
+  return contexto.sql<{ total: string | null }[]>`
+    select sum(round(
+             coalesce(
+               nullif(e.coste_milesimas, 0),
+               (estook.precio_vigente(p.id)).coste_milesimas,
+               0
+             ) * e.cantidad / 1000
+           ))::text as total
+      from estook.producto p
+      join lateral (
+        select x.cantidad, x.coste_milesimas
+          from estook.existencias x
+         where x.producto_id = p.id
+      ) e on true
+     where p.local_id = ${localId} and p.activo and not p.es_ejemplo
+       and e.cantidad > 0
+  `;
+}
+
 export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
   nombre: 'mis_productos',
   entrada: entradaMisProductos,
@@ -823,21 +868,7 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
 
     // El valor de la cámara **sin los ejemplos**: «no cuenta para nada: ni
     // avisos, ni análisis, ni salud de los datos, ni informes» (Manifiesto 8).
-    const valor = conPrecios
-      ? await contexto.sql<{ total: string | null }[]>`
-          -- Lo que entró sin coste —un ajuste, o un producto dado de alta antes de
-          -- que el alta apuntara lo que había— tiene el medio a cero, y contarlo a
-          -- cero es decir que 500 burratas no valen nada: se cuenta a su precio de hoy.
-          select sum(round(
-                   coalesce(nullif(e.coste_milesimas, 0), pr.coste_milesimas, 0) * e.cantidad / 1000
-                 ))::text as total
-            from estook.existencias e
-            join estook.producto p on p.id = e.producto_id
-            left join estook.precio_vigente(p.id) pr on true
-           where p.local_id = ${localId} and p.activo and not p.es_ejemplo
-             and e.cantidad > 0
-        `
-      : null;
+    const valor = conPrecios ? await elValorDeLaCamara(contexto, localId) : null;
 
     return {
       productos,
@@ -1257,21 +1288,7 @@ export const inventarioHoy = consulta<Record<string, never>, SalidaInventarioHoy
        group by p.zona
     `;
 
-    const valor = conPrecios
-      ? await contexto.sql<{ total: string | null }[]>`
-          -- Lo que entró sin coste —un ajuste, o un producto dado de alta antes de
-          -- que el alta apuntara lo que había— tiene el medio a cero, y contarlo a
-          -- cero es decir que 500 burratas no valen nada: se cuenta a su precio de hoy.
-          select sum(round(
-                   coalesce(nullif(e.coste_milesimas, 0), pr.coste_milesimas, 0) * e.cantidad / 1000
-                 ))::text as total
-            from estook.existencias e
-            join estook.producto p on p.id = e.producto_id
-            left join estook.precio_vigente(p.id) pr on true
-           where p.local_id = ${localId} and p.activo and not p.es_ejemplo
-             and e.cantidad > 0
-        `
-      : null;
+    const valor = conPrecios ? await elValorDeLaCamara(contexto, localId) : null;
 
     return {
       atencion,

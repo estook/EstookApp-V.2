@@ -304,7 +304,7 @@ test.describe('la rueda dice dónde estás', () => {
 
   test('desde dentro de una app resalta esa, y solo esa', async ({ page }) => {
     await entrar(page);
-    await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
     await abrirLaRueda(page);
 
     const aqui = page.locator('[role="menuitem"][aria-current="page"]');
@@ -393,7 +393,7 @@ test.describe('Fogón', () => {
 
     test('va contigo: sigue estando dentro de una app', async ({ page }) => {
       await entrar(page);
-      await page.goto(`${APP}#/inventario/productos`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/inventario/productos`);
 
       // Esperar al título antes de medir. `domcontentloaded` llega mientras la
       // pantalla todavía dice «Cargando tu sesión», y preguntar ahí qué hay en un
@@ -413,7 +413,7 @@ test.describe('Fogón', () => {
       await page.keyboard.press('Escape');
 
       // Y desde Inventario, sin que nadie se lo diga.
-      await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
       await expect(page.getByText('Fogón sabe que estás en')).toContainText('Inventario');
@@ -428,7 +428,7 @@ test.describe('Fogón', () => {
         una frase, como la diría una persona.
       */
       await entrar(page);
-      await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
@@ -482,7 +482,7 @@ test.describe('Fogón', () => {
 
     test('la burbuja abre la ventana, y sabe dónde estás', async ({ page }) => {
       await entrar(page);
-      await page.goto(`${APP}#/escandallos`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/escandallos`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
       await page.getByRole('button', { name: 'Abrir Fogón' }).click();
@@ -646,7 +646,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
 
   test('el tema oscuro se elige en Ajustes y aguanta una recarga', async ({ page }) => {
     await entrar(page);
-    await page.goto(`${APP}#/ajustes/aparato`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}#/ajustes/aparato`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await page.getByRole('radio', { name: /Oscuro/ }).click();
@@ -712,7 +712,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
       que es el que no contrasta con nada.
     */
     await entrar(page);
-    await page.goto(`${APP}#/ajustes/local`, { waitUntil: 'domcontentloaded' });
+    await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await elInterruptor(page, true);
@@ -727,7 +727,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
       await ponerElColor(page, color);
 
       // Al Panel, que es donde vive el botón principal de verdad.
-      await page.goto(`${APP}#/`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/`);
       await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
 
       const medido = await page.evaluate(() => {
@@ -755,7 +755,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
         `con ${color}, «${medido?.que ?? ''}»`,
       ).toBeGreaterThanOrEqual(4.5);
 
-      await page.goto(`${APP}#/ajustes/local`, { waitUntil: 'domcontentloaded' });
+      await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     }
 

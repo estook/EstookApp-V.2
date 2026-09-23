@@ -257,6 +257,10 @@
     Y «Bajo mínimo» traía los cincuenta primeros y filtraba después, así que se perdía
     los del final del abecedario. El total lo da la misma consulta que la lista
     (`cuantosCumplen`), y una prueba lo mira en cada vista y partida en páginas.
+    **Y contar no puede costar lo que enseñar**: el primer arreglo contaba con
+    `count(*) over ()` y obligaba a calcular lo caro de todos los productos, no de los
+    cincuenta de la página; la lista tardaba el doble. Se vio por una prueba de Safari
+    que tardó más de la cuenta, y se **midió** antes de tocar nada.
 93. **Lo que no puede pasar en la cámara no puede pasar en el libro.** Tirar cinco kilos
     de los dos que hay dejaba el producto en negativo sin decir nada. La pantalla lo
     avisa, y **el servidor lo impide** (`mas_de_lo_que_hay`), porque la pantalla no se

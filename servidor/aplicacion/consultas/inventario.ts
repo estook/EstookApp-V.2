@@ -307,8 +307,61 @@ async function leerProductos(
   const desde = masDias(hoy, -VENTANA_DE_CONSUMO);
   const reloj: RelojDelLocal = { hoy, hora: horaEnElLocal(contexto.ahora, zona) };
 
+  // ── En dos tiempos, y no es capricho (23-sep-2026) ─────────────────────────
+  //
+  // Primero se **eligen** los productos de esta página y se cuentan todos los que
+  // cumplen, con lo justo para filtrar; después se calcula lo caro —las salidas,
+  // los días con datos, lo congelado— **solo de los elegidos**. Contar con
+  // `count(*) over ()` en la consulta de siempre obligaba a Postgres a calcular esas
+  // columnas de todos los productos del local, no de los cincuenta de la página:
+  // con 400 productos, cada lista tardaba el doble (lo midió el repaso del 23-sep).
   const filas = await contexto.sql<FilaDeProducto[]>`
-    select count(*) over ()::int as total_filas,
+    with elegidos as (
+      select p.id, count(*) over ()::int as total_filas
+      from estook.producto p
+      join estook.local lc on lc.id = p.local_id
+     where p.local_id = ${localId}
+       and (${filtros.productoId}::uuid is null or p.id = ${filtros.productoId}::uuid)
+       and (${filtros.proveedorId ?? null}::uuid is null
+            or p.proveedor_id = ${filtros.proveedorId ?? null}::uuid)
+       and (${filtros.incluirDesactivados} or p.activo)
+       and (not ${filtros.soloDesactivados} or not p.activo)
+       and (${filtros.incluirEjemplos} or not p.es_ejemplo)
+       -- ── La zona que se está mirando, y las que se pueden mirar ───────────
+       --
+       -- Dos cosas en una línea, y las dos hacen falta. La primera es el filtro:
+       -- lo que se ha elegido arriba. La segunda es **lo de cada uno**: un
+       -- cocinero no ve en esta lista el género de la barra, aunque pida «Sala» a
+       -- mano, porque esta pantalla es su almacén y no el de otro (0038).
+       --
+       -- Va aquí y no en la política de la tabla a propósito: leer el género del
+       -- local hace falta para apuntar una merma, recibir un albarán o buscar. Lo
+       -- que se acota es **esta lista**, no el dato.
+       and (${filtros.zona ?? null}::text is null
+            or p.zona::text = ${filtros.zona ?? null}::text)
+       -- La zona de quien mira se calcula una vez, no una por producto: aquí se
+       -- recorren todos para contarlos.
+       and p.zona = any ((select estook.zonas_que_ve(${localId}::uuid))::estook.zona_del_producto[])
+       and (${filtros.categoriaId}::uuid is null or p.categoria_id = ${filtros.categoriaId}::uuid)
+       -- El precio vigente, solo si se está mirando «Sin precio»: calcularlo de
+       -- todos para contarlos era lo que hacía lenta la lista.
+       and (not ${filtros.soloSinPrecio}
+            or (estook.precio_vigente(p.id)).precio_centimos is null)
+       and (not ${filtros.soloCongelados ?? false} or exists (
+             select 1 from estook.lote lo
+              where lo.producto_id = p.id
+                and lo.congelado_el is not null and lo.retirado_en is null
+           ))
+       and (
+         ${filtros.texto} = ''
+         or estook.sin_acentos(p.nombre) like '%' || estook.sin_acentos(${filtros.texto}) || '%'
+         or similarity(estook.sin_acentos(p.nombre), estook.sin_acentos(${filtros.texto})) > 0.3
+         or p.codigo_de_barras = ${filtros.texto}
+       )
+       order by p.nombre, p.id
+       limit ${filtros.limite} offset ${filtros.salto}
+    )
+    select el.total_filas,
            p.id, p.nombre, c.nombre as categoria, p.categoria_id, p.proveedor_id,
            p.categoria_fiscal::text as categoria_fiscal, p.notas, p.formato,
            p.unidad_de_uso::text as unidad_de_uso,
@@ -362,47 +415,14 @@ async function leerProductos(
            lc.territorio::text as territorio,
            p.contenido_por_unidad::text as contenido_por_unidad,
            p.unidad_del_contenido::text as unidad_del_contenido
-      from estook.producto p
+      from elegidos el
+      join estook.producto p on p.id = el.id
       join estook.local lc on lc.id = p.local_id
       left join estook.categoria_de_producto c on c.id = p.categoria_id
       left join estook.proveedor pv on pv.id = p.proveedor_id
       left join estook.existencias e on e.producto_id = p.id
       left join estook.precio_vigente(p.id) pr on true
-     where p.local_id = ${localId}
-       and (${filtros.productoId}::uuid is null or p.id = ${filtros.productoId}::uuid)
-       and (${filtros.proveedorId ?? null}::uuid is null
-            or p.proveedor_id = ${filtros.proveedorId ?? null}::uuid)
-       and (${filtros.incluirDesactivados} or p.activo)
-       and (not ${filtros.soloDesactivados} or not p.activo)
-       and (${filtros.incluirEjemplos} or not p.es_ejemplo)
-       -- ── La zona que se está mirando, y las que se pueden mirar ───────────
-       --
-       -- Dos cosas en una línea, y las dos hacen falta. La primera es el filtro:
-       -- lo que se ha elegido arriba. La segunda es **lo de cada uno**: un
-       -- cocinero no ve en esta lista el género de la barra, aunque pida «Sala» a
-       -- mano, porque esta pantalla es su almacén y no el de otro (0038).
-       --
-       -- Va aquí y no en la política de la tabla a propósito: leer el género del
-       -- local hace falta para apuntar una merma, recibir un albarán o buscar. Lo
-       -- que se acota es **esta lista**, no el dato.
-       and (${filtros.zona ?? null}::text is null
-            or p.zona::text = ${filtros.zona ?? null}::text)
-       and p.zona = any (estook.zonas_que_ve(p.local_id))
-       and (${filtros.categoriaId}::uuid is null or p.categoria_id = ${filtros.categoriaId}::uuid)
-       and (not ${filtros.soloSinPrecio} or pr.precio_centimos is null)
-       and (not ${filtros.soloCongelados ?? false} or exists (
-             select 1 from estook.lote lo
-              where lo.producto_id = p.id
-                and lo.congelado_el is not null and lo.retirado_en is null
-           ))
-       and (
-         ${filtros.texto} = ''
-         or estook.sin_acentos(p.nombre) like '%' || estook.sin_acentos(${filtros.texto}) || '%'
-         or similarity(estook.sin_acentos(p.nombre), estook.sin_acentos(${filtros.texto})) > 0.3
-         or p.codigo_de_barras = ${filtros.texto}
-       )
-     order by p.nombre
-     limit ${filtros.limite} offset ${filtros.salto}
+     order by p.nombre, p.id
   `;
 
   return { filas, hoy, desde, reloj };

@@ -2317,6 +2317,10 @@ móvil, y una auditoría de Supabase, GitHub y la app. Lleva **tres migraciones*
   tres; lo mismo en Congelados. El título contaba el local entero, y «Bajo mínimo» se
   perdía los del final del abecedario al filtrar después de cortar. Ahora la consulta
   devuelve `cuantosCumplen`, y los topes de 200 de las listas internas pasan a 5.000.
+  **Contar costó un repaso más**: con `count(*) over ()` cada lista calculaba lo caro
+  de todos los productos y tardaba el doble (medido: 1,2 s frente a 2,3 s con 400 en la
+  base de pruebas). Ahora se eligen y cuentan con lo barato, y lo caro se calcula solo
+  de los de la página: la lista vuelve a tardar lo que tardaba.
 - **La muesca del iPhone ya no tapa nada**: la barra de arriba, las hojas, el buscador,
   entrar, crear cuenta, el alta y el admin dejan el hueco de la zona segura.
 - **Al tocar un campo, el móvil ya no hace zoom**: en pantallas táctiles los campos van

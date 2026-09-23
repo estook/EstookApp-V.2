@@ -24,7 +24,7 @@ _Producción comprobada el 23 de septiembre de 2026 con `bd:comprobar` y `bd:com
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6½** ✓ · **M7, entregas 1, 1½, 1¾, 1⅞ y 4** ✓ (#44 a #49) · **A1 · la puerta del admin** ✓ (#53, #54) · **E1 · crear cuenta y Google** ✓ (#56)     |
 | **Ahora**      | **Antes de M8**, con la entrega **V · Lo que se ve** a medias: puntos 1, 2 y 3 y la mejora 7, hechos. **E2 · Stripe** espera a la cuenta de Stripe de Richi    |
-| **Pruebas**    | En la rama de V, el 23-sep: **1.145** unitarias y de base, **418** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
+| **Pruebas**    | En la rama de V, el 23-sep: **1.147** unitarias y de base, **420** de pantalla, todas en verde · catálogo **122 de 128** (95 %), con sus seis deudas apuntadas |
 | **Rama**       | `main`, con todo fusionado hasta la **#63**. Y `v-lo-que-se-ve`, con `main` dentro: **su primera parte, con el pull request abierto** y esperando a Richi      |
 | **Base**       | En Supabase, **39 de 39** ✓, igual que `main`. 58 tablas (55 en `estook` y 3 en `plataforma`), todas con seguridad por filas. **La `0040` va con V**           |
 | **API**        | **Desplegada el 22-sep a las 17:55, con la #63 dentro** ✓: conoce las 44 consultas y los 83 comandos de `main`                                                 |
@@ -138,6 +138,16 @@ negocio. Lo que estaba mal era el orden. Ahora **una cuenta sin negocio se para 
 del código**, sin abrir sesión, con el error `sin_negocio` que manda al admin; y la
 pantalla del código **dice de qué cuenta es**, porque la sesión a medias se quedaba en
 el navegador y volvía sola días después. Con su prueba contra la base y de pantalla.
+
+**Y la red de debajo de cada pantalla** (23-sep, la destapó Safari en la #64). La app se
+descarga a trozos —Movimientos, Compras, la ficha, el alta, las gráficas— y **si un trozo
+no llegaba, el fallo no lo recogía nadie**: la pantalla podía quedarse en blanco. Pasa si
+se va la conexión y, sobre todo, **al publicar una versión nueva con la app abierta**, que
+es justo lo que va a pasar al fusionar V. Ahora `SiAlgoFalla` (en `@estook/ui`) está en
+la raíz de la app y del admin y debajo de cada pantalla: un trozo que no llega **recarga
+sola una vez** para traer la versión nueva; si vuelve a fallar, lo dice con su botón y
+las barras siguen. Cada fallo recogido se manda a Sentry (`avisarDelFallo`). Con su prueba
+de pantalla, que corta la descarga de Movimientos a propósito y se vio fallar sin la red.
 
 ### Lo que hay de verdad en producción
 
@@ -657,11 +667,11 @@ secretos de Supabase según Richi (16-sep; sin comprobar en Ajustes). **Los de E
 
 | Aplicación      | Peso inicial     | De los cuales tipografía |
 | --------------- | ---------------- | ------------------------ |
-| `app`           | **287,6 KB**     | 106,1 KB                 |
-| `admin`         | **205,4 KB**     | 106,1 KB                 |
+| `app`           | **292,1 KB**     | 106,1 KB                 |
+| `admin`         | **209,8 KB**     | 106,1 KB                 |
 | `web` · `carta` | 166,0 · 167,1 KB | 106,1 KB                 |
 
-La referencia es 250 y **se mide, no bloquea**; el presupuesto de velocidad, que es el que manda, pasa en la prueba de pantalla. Lo de V es sobre todo **«Cómo va»** (la tarjeta, que ya estaba, y tres filas pequeñas), las reglas de `cocina.css` y, en el punto 3, **3,6 KB más**: el mosaico, el catálogo de Ajustes y la tarjeta nueva. **Crear cuenta y Google (E1) suben `app` 4,7 KB**: la pantalla de crear cuenta, la de elegir plan y la vuelta de Google, que hacen falta antes de entrar; la web baja 0,9 KB al quitar el marcador de M0. **La puerta del admin sube `admin` 16 KB**: TanStack Query y el cliente de la API, que la app ya llevaba; `app` no cambia. El local en Google sube `app` 1,8 KB
+La referencia es 250 y **se mide, no bloquea**; el presupuesto de velocidad, que es el que manda, pasa en la prueba de pantalla. Lo de V es sobre todo **«Cómo va»** (la tarjeta, que ya estaba, y tres filas pequeñas), las reglas de `cocina.css` y, en el punto 3, **3,6 KB más**: el mosaico, el catálogo de Ajustes y la tarjeta nueva; y **4,5 KB más en `app` y 4,4 en `admin`** con la red de debajo de cada pantalla y su aviso a Sentry. **Crear cuenta y Google (E1) suben `app` 4,7 KB**: la pantalla de crear cuenta, la de elegir plan y la vuelta de Google, que hacen falta antes de entrar; la web baja 0,9 KB al quitar el marcador de M0. **La puerta del admin sube `admin` 16 KB**: TanStack Query y el cliente de la API, que la app ya llevaba; `app` no cambia. El local en Google sube `app` 1,8 KB
 —la tarjeta de Ajustes—. El Panel vivo la subió 3,5 KB —la
 tarjeta del indicador, la línea y la rejilla nueva— y **`@dnd-kit` no cuenta**: va en
 su propio trozo (17 KB) y solo se descarga al editar el Panel. Las apps conectadas subieron `app`
@@ -1081,6 +1091,10 @@ la capa superior del navegador— que es justo cuando hace falta.
     código del segundo factor para luego contestar «no tienes negocio» abría una sesión
     inútil y hacía creer que las cuentas se mezclaban. Y **una pantalla que pide algo
     dice a quién se lo pide**: el código sin el correo delante no se sabe de quién es.
+89. **Lo que se descarga a trozos necesita una red debajo.** Partir la app para que
+    abra rápido (B7) crea un fallo nuevo: el trozo que no llega. Sin nada que lo recoja,
+    la primera versión que se publica con la app abierta deja pantallas en blanco. Lo
+    cazó una prueba de Safari que falló una vez; mirado a fondo, no era Safari.
 
 ---
 
@@ -1195,6 +1209,9 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   usa la misma medida (`usarFilasDelMosaico`). Volver a una rejilla por filas devuelve
   las tarjetas estiradas. **Y lo elegido va en `bg-texto text-superficie`**, nunca en
   `bg-charcoal text-superficie`, que en oscuro no se lee: una prueba lo vigila.
+- **La red de debajo de cada pantalla** (`SiAlgoFalla`): en la raíz de la app y del admin,
+  y alrededor del `<Outlet />` del esqueleto. Una pantalla nueva que se cargue aparte
+  (`lazy`) queda cubierta sola; quitar la red devuelve las pantallas en blanco.
 - **Qué ajustes hay y dónde viven**, en `pantallas/lasSeccionesDeAjustes.ts`: lo leen
   la pantalla, su buscador y el buscador universal. Un ajuste nuevo se escribe ahí.
 - **Las cifras con flecha** (0039, 0044): **una sola tarjeta**, `TarjetaDeIndicador` de

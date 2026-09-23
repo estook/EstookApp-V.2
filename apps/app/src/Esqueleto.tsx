@@ -9,6 +9,7 @@ import {
   BarraMovil,
   Deshacer,
   RuedaDeApps,
+  SiAlgoFalla,
   appPorPermiso,
   destinoPorId,
   dondeEntra,
@@ -23,6 +24,7 @@ import { LoQueLlegaDespues, type LoQueFalta } from './pantallas/LoQueLlegaDespue
 import { ProveedorDelEsqueleto, type LoQueAbreElEsqueleto } from './ganchos/usarElEsqueleto.tsx';
 import { MiCuenta } from './pantallas/MiCuenta.tsx';
 import { usarSesion } from './sesion/Sesion.tsx';
+import { avisarDelFallo } from '@estook/utiles/observabilidad';
 
 /**
  * El esqueleto · Parte B5 del Plan.
@@ -342,7 +344,19 @@ export function Esqueleto() {
         */}
         <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e5))] pt-e4 lg:px-e5 lg:pb-e7 2xl:max-w-[92rem]">
           {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
-          <Outlet />
+          {/*
+            La red de debajo de cada pantalla (entrega V): si un trozo no llega o algo
+            se rompe, las barras siguen y solo esta pantalla dice qué ha pasado.
+            Cambiar de pantalla lo olvida.
+          */}
+          <SiAlgoFalla
+            clave={pathname}
+            alFallar={(fallo) => {
+              avisarDelFallo(fallo, pathname);
+            }}
+          >
+            <Outlet />
+          </SiAlgoFalla>
         </main>
 
         {appActiva === null ? (

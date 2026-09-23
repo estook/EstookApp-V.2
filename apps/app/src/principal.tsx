@@ -1,7 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { crearRegistro, resolverEntorno } from '@estook/utiles';
-import { arrancarObservabilidad } from '@estook/utiles/observabilidad';
+import { arrancarObservabilidad, avisarDelFallo } from '@estook/utiles/observabilidad';
+import { SiAlgoFalla } from '@estook/ui';
 import { Aplicacion } from './Aplicacion.tsx';
 import './estilos.css';
 
@@ -22,6 +23,15 @@ if (!raiz) throw new Error('Falta el elemento #raiz en index.html');
 
 createRoot(raiz).render(
   <StrictMode>
-    <Aplicacion />
+    {/* La red de la raíz: si algo se rompe fuera de las pantallas —el alta, la
+        puerta—, se dice a pantalla completa en vez de quedarse en blanco. */}
+    <SiAlgoFalla
+      aPantallaCompleta
+      alFallar={(fallo) => {
+        avisarDelFallo(fallo, 'raiz');
+      }}
+    >
+      <Aplicacion />
+    </SiAlgoFalla>
   </StrictMode>,
 );

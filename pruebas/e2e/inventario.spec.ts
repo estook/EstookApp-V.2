@@ -1764,3 +1764,34 @@ test('el reparto tiene su sitio, con Uber Eats por su nombre y sin botón de men
   // Ni un botón que prometa una conexión que no existe.
   await expect(page.getByRole('button', { name: /Conectar/ })).toHaveCount(0);
 });
+
+// ── La red de debajo de cada pantalla (entrega V) ────────────────────────────
+
+/**
+ * Un trozo de la aplicación que no llega —la wifi de la cocina, o una versión
+ * nueva publicada con la app abierta— ya no deja la pantalla en blanco.
+ *
+ * Se corta a propósito la descarga de Movimientos. La red recarga sola una vez (lo
+ * que arregla lo de la versión nueva); como aquí el trozo sigue sin llegar, la
+ * segunda vez lo dice, con su botón, y **las barras siguen**: se puede ir a otra
+ * pantalla sin recargar nada.
+ */
+test('si un trozo de la app no llega, se dice y las barras siguen', async ({ page }) => {
+  await entrar(page, ROSA);
+  await page.route('**/assets/Movimientos-*.js', (ruta) => ruta.abort());
+
+  await page.goto(`${APP}#/inventario/movimientos/todo`, { waitUntil: 'domcontentloaded' });
+
+  await expect(page.getByText('Esta pantalla no ha terminado de cargar')).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.getByRole('button', { name: 'Volver a cargar' })).toBeVisible();
+  // Y el resto de la aplicación, en pie: la barra de arriba, con el buscador.
+  await expect(page.getByRole('button', { name: 'Buscar en todo' }).first()).toBeVisible();
+
+  // Cambiar de pantalla lo olvida.
+  await page.unroute('**/assets/Movimientos-*.js');
+  await page.goto(`${APP}#/inventario/resumen`, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { level: 1, name: 'Resumen' })).toBeVisible();
+  await expect(page.getByText('Esta pantalla no ha terminado de cargar')).toHaveCount(0);
+});

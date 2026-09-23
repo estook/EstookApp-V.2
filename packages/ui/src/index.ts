@@ -104,6 +104,8 @@ export { Migas, Paginador } from './componentes/Migas.tsx';
 export type { MigasProps, Camino, Paso, PaginadorProps } from './componentes/Migas.tsx';
 
 export { Deshacer } from './componentes/Deshacer.tsx';
+export { SiAlgoFalla, esUnTrozoQueNoLlega } from './componentes/SiAlgoFalla.tsx';
+export type { SiAlgoFallaProps } from './componentes/SiAlgoFalla.tsx';
 
 // ── Navegacion (B5) ──────────────────────────────────────────────────────────
 export { BarraMovil, BarraDeApp } from './navegacion/BarraMovil.tsx';

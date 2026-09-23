@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 23 de septiembre de 2026 · **Antes de M8. V, primera parte, en producción (#64 y #65). El repaso del 23-sep —lo que Richi vio en el móvil y la auditoría— va en `el-repaso-del-23-sep`, con su pull request ([#66](https://github.com/estook/EstookApp-V.2/pull/66)) y cuatro migraciones (`0041` a `0044`). Después: los puntos 4 y 5 de V**
+Última actualización: 24 de septiembre de 2026 · **Antes de M8. V, primera parte, en producción (#64 y #65). El repaso del 23-sep —lo que Richi vio en el móvil y la auditoría— va en `el-repaso-del-23-sep`, con su pull request ([#66](https://github.com/estook/EstookApp-V.2/pull/66)) y cuatro migraciones (`0041` a `0044`). Después: los puntos 4 y 5 de V**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -61,24 +61,24 @@ Lo que Richi trajo mirando la app en el móvil, y la auditoría que pidió. Cont
 en la [historia](docs/historia-de-los-modulos.md), apartado «el repaso del 23 de
 septiembre».
 
-| Qué                                                                             | Cómo                                                                                   |
-| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| **El jefe de cocina ve las ventas** (ventas, ticket medio, cierres y food cost) | Solo ver; la caja la cierra quien lleva el local o la sala · **migración `0041`**      |
-| **La merma no tira más de lo que hay**                                          | Lo avisa la hoja y lo impide el servidor (`mas_de_lo_que_hay`)                         |
-| **«11 por debajo del mínimo» y salían 3**, y en Congelados                      | El título cuenta lo que enseña (`cuantosCumplen`); «Bajo mínimo» ya no pierde el final |
-| **La muesca del iPhone tapaba la barra y las hojas**                            | Zona segura en la barra, las hojas, el buscador, entrar, el alta y el admin            |
-| **Zoom al tocar un campo** en el móvil                                          | Campos a 16 px mínimo en pantallas táctiles                                            |
-| **«Pequeña», más pequeña en el móvil**                                          | 0,82 solo por debajo de 640 px; el ordenador no cambia                                 |
-| **Fogón, fuera de la barra de arriba**                                          | La burbuja sale también en el ordenador, y `Ctrl+J`. B5 y la 0015, cambiadas           |
-| **Equipo: «Cómo va» debajo de fichar**                                          | Servicio no cambia                                                                     |
-| **La ficha: tres fichajes y «Ver todos»**                                       | El historial entero, por meses y de 50 en 50 (`fichajes_de_una_persona`)               |
-| **«En línea» solo con la app abierta**                                          | Aviso cada 45 s mientras se ve (`sigo_aqui`); dos minutos sin él, fuera · **`0042`**   |
-| **El TPV: «añadir terminal»**                                                   | Encaja con el Anexo 3.4, y lo que faltaba está escrito ahí («Dar de alta un terminal») |
-| **Auditoría**: siete funciones con privilegio abiertas                          | Cerradas todas, y una prueba mira todas · **`0043`**                                   |
-| **Velocidad**: el Resumen de Inventario tardaba 2,6 s con 400 productos         | El precio vigente, de una pasada: 0,34 s · **`0044`**                                  |
-| **Auditoría**: 440 claves caducadas sin borrar                                  | Las tira `anotar` al apuntar una nueva                                                 |
-| **Auditoría**: acciones de GitHub con Node 20 y ocho avisos del lint            | A Node 24; los avisos, arreglados sin apagar la regla                                  |
-| **ESTADO.md, resumido**                                                         | Esto. Las lecciones y el detalle, en su documento                                      |
+| Qué                                                                             | Cómo                                                                                         |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **El jefe de cocina ve las ventas** (ventas, ticket medio, cierres y food cost) | Solo ver; la caja la cierra quien lleva el local o la sala · **migración `0041`**            |
+| **La merma no tira más de lo que hay**                                          | Lo avisa la hoja y lo impide el servidor (`mas_de_lo_que_hay`)                               |
+| **«11 por debajo del mínimo» y salían 3**, y en Congelados                      | El título cuenta lo que enseña (`cuantosCumplen`); «Bajo mínimo» ya no pierde el final       |
+| **La muesca del iPhone tapaba la barra y las hojas**                            | Zona segura en la barra, las hojas, el buscador, entrar, el alta y el admin                  |
+| **Zoom al tocar un campo** en el móvil                                          | Campos a 16 px mínimo en pantallas táctiles                                                  |
+| **«Pequeña», más pequeña en el móvil**                                          | 0,82 solo por debajo de 640 px; el ordenador no cambia                                       |
+| **Fogón, fuera de la barra de arriba**                                          | La burbuja sale también en el ordenador, y `Ctrl+J`. B5 y la 0015, cambiadas                 |
+| **Equipo: «Cómo va» debajo de fichar**                                          | Servicio no cambia                                                                           |
+| **La ficha: tres fichajes y «Ver todos»**                                       | El historial entero, por meses y de 50 en 50 (`fichajes_de_una_persona`)                     |
+| **«En línea» solo con la app abierta**                                          | Aviso cada 45 s mientras se ve (`sigo_aqui`); dos minutos sin él, fuera · **`0042`**         |
+| **El TPV: «añadir terminal»**                                                   | Encaja con el Anexo 3.4, y lo que faltaba está escrito ahí («Dar de alta un terminal»)       |
+| **Auditoría**: siete funciones con privilegio abiertas                          | Cerradas todas, y una prueba mira todas · **`0043`**                                         |
+| **Velocidad**: lo lento de Inventario, medido con 400 productos                 | Resumen 1,7 s → 0,34 s; lista 1,2 s → 0,27 s (el precio vigente, de una pasada) · **`0044`** |
+| **Auditoría**: 440 claves caducadas sin borrar                                  | Las tira `anotar` al apuntar una nueva                                                       |
+| **Auditoría**: acciones de GitHub con Node 20 y ocho avisos del lint            | A Node 24; los avisos, arreglados sin apagar la regla                                        |
+| **ESTADO.md, resumido**                                                         | Esto. Las lecciones y el detalle, en su documento                                            |
 
 **La auditoría no encontró** ninguna tabla sin seguridad por filas, ningún dato
 cruzado entre negocios, ningún producto en negativo, ningún fichaje imposible ni ningún

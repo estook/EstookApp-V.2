@@ -28,7 +28,7 @@ _Producción leída el 23 de septiembre de 2026, en una transacción de solo lec
 | **Base**       | Supabase, **40 de 40** migraciones, igual que `main`. **La rama trae cuatro más** (`0041` a `0044`): hay que aplicarlas al fusionar                              |
 | **API**        | Desplegada el 23-sep a las 18:43 con la #64: 44 consultas y 84 comandos. **La rama trae una de cada** (45 y 85) y hay que desplegarla después de migrar          |
 | **Sitio**      | `estook.com`, `/app/` y `/admin/`. Se publica solo al fusionar                                                                                                   |
-| **Pruebas**    | En la rama: **1.177** unitarias y de base y **424** de pantalla, en verde · catálogo **124 de 130** (95 %), con sus seis deudas apuntadas                        |
+| **Pruebas**    | En la rama: **1.178** unitarias y de base y **613** de pantalla (los tres navegadores), en verde y sin repetidas · catálogo **124 de 130** (95 %)                |
 | **Entrar**     | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                  |
 | **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                     |
 

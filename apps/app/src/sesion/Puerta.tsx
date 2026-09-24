@@ -161,6 +161,7 @@ export function ElegirLocal() {
     >
       {suyos.length === 0 ? (
         <EstadoVacio
+          dibujo="local"
           titulo="Todavía no tienes ningún local"
           frase="Pídeselo a quien lleva el negocio: en cuanto te dé acceso, aparecerá aquí."
         />

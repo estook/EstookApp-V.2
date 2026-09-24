@@ -1,5 +1,6 @@
 import type { Vista } from '../apps.ts';
 import { clases } from '../clases.ts';
+import { acentoParaTexto } from '../color.ts';
 
 /**
  * Las vistas de un destino · el control segmentado.
@@ -79,7 +80,9 @@ export function Vistas({ vistas, activa, acento, alElegir, de }: VistasProps) {
                   ? 'cursor-not-allowed text-texto-tenue'
                   : 'text-texto-suave hover:text-texto',
             )}
-            {...(esActiva ? { style: { color: acento } } : {})}
+            // El nombre de la elegida, en el acento **para texto**: el acento a secas no
+            // llega a 4,5:1 en claro (entrega V, lo midió la prueba del contraste).
+            {...(esActiva ? { style: { color: acentoParaTexto(acento) } } : {})}
           >
             {vista.nombre}
             {falta && (

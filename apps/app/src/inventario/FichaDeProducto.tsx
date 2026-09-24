@@ -45,6 +45,7 @@ import { ComoLoCompras } from './ComoLoCompras.tsx';
 import { ElegirZona } from './ElegirZona.tsx';
 import { Congelar, QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
 import { HistoricoDePrecios } from './HistoricoDePrecios.tsx';
+import { FotoDeLaFicha } from './FotoDeLaFicha.tsx';
 import { IconoAnadir, IconoQuitar } from '@estook/iconos';
 import {
   COMO_SE_LLAMA_EL_MOVIMIENTO,
@@ -205,20 +206,36 @@ export function FichaDeProducto({
             que es lo último que se lee. Así que la ficha empezaba con una cifra
             sin contexto.
           */}
-          <div className="flex flex-wrap items-center gap-e2">
-            {/* De dónde es, primero: es lo que dice de qué almacén hablamos. */}
-            <Chip>{NOMBRE_DE_LA_ZONA[datos.producto.zona]}</Chip>
-            {datos.producto.categoria !== null && <Chip>{datos.producto.categoria}</Chip>}
-            {datos.producto.proveedor !== null && <Chip>{datos.producto.proveedor}</Chip>}
-            {datos.producto.formato !== null && <Chip>{datos.producto.formato}</Chip>}
-            {datos.producto.congelado && (
-              <Etiqueta tono="info">
-                {datos.producto.congeladoCuanto === null
-                  ? 'congelado'
-                  : `${conUnidadDeUso(datos.producto.congeladoCuanto, datos.producto.unidadDeUso)} congelados`}
-              </Etiqueta>
-            )}
-            {!datos.producto.activo && <Etiqueta>desactivado</Etiqueta>}
+          {/* Y su foto al lado, que es lo que más rápido lo reconoce (entrega V). */}
+          <div className="flex items-start gap-e3">
+            <FotoDeLaFicha
+              datos={datos}
+              puedeTocar={puedeTocar}
+              alHecho={async (frase) => {
+                setError(null);
+                setNoticia(frase);
+                await refrescar();
+              }}
+              alFallar={(fallo) => {
+                setNoticia(null);
+                setError(fallo);
+              }}
+            />
+            <div className="flex min-w-0 flex-wrap items-center gap-e2">
+              {/* De dónde es, primero: es lo que dice de qué almacén hablamos. */}
+              <Chip>{NOMBRE_DE_LA_ZONA[datos.producto.zona]}</Chip>
+              {datos.producto.categoria !== null && <Chip>{datos.producto.categoria}</Chip>}
+              {datos.producto.proveedor !== null && <Chip>{datos.producto.proveedor}</Chip>}
+              {datos.producto.formato !== null && <Chip>{datos.producto.formato}</Chip>}
+              {datos.producto.congelado && (
+                <Etiqueta tono="info">
+                  {datos.producto.congeladoCuanto === null
+                    ? 'congelado'
+                    : `${conUnidadDeUso(datos.producto.congeladoCuanto, datos.producto.unidadDeUso)} congelados`}
+                </Etiqueta>
+              )}
+              {!datos.producto.activo && <Etiqueta>desactivado</Etiqueta>}
+            </div>
           </div>
 
           {/* ── 1 · Lo que hay ─────────────────────────────────────────── */}

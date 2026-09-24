@@ -15,7 +15,9 @@ import {
   Cargando,
   ErrorEnCristiano,
   EstadoVacio,
+  NadaConEso,
   Etiqueta,
+  FotoDeProducto,
   Selector,
   Tabla,
   Tarjeta,
@@ -210,6 +212,12 @@ export function Productos({
   }
 
   const datos = consulta.data;
+  /**
+   * Ni un producto activo en el local, mire lo que mire: no hay nada que filtrar.
+   * Los desactivados son otra cosa —se pueden traer de vuelta—, y esa vista sigue
+   * enseñándose entera.
+   */
+  const camaraVacia = datos.cuantosHay === 0 && vista !== 'desactivados';
 
   const columnas: Columna<ProductoEnLista>[] = [
     {
@@ -217,20 +225,30 @@ export function Productos({
       titulo: 'Producto',
       principal: true,
       celda: (p) => (
-        <span className="flex min-w-0 flex-col">
-          <span className="flex flex-wrap items-center gap-e2">
-            <span className={p.esEjemplo ? 'text-texto-suave' : ''}>{p.nombre}</span>
-            {p.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
-            {!p.activo && <Etiqueta>desactivado</Etiqueta>}
-            {/* Lo que hay en el congelador, para tenerlo en mente sin abrirlo. */}
-            {p.congelado && (
-              <Etiqueta tono="info">
-                {p.congeladoCuanto === null
-                  ? 'congelado'
-                  : `${conUnidadDeUso(p.congeladoCuanto, p.unidadDeUso)} congelados`}
-              </Etiqueta>
-            )}
-            {/*
+        <span className="flex min-w-0 items-center gap-e3">
+          {/* Su foto, o su inicial con el color de la categoría (entrega V). */}
+          <FotoDeProducto nombre={p.nombre} categoria={p.categoria} enlace={p.miniatura} />
+          <span className="flex min-w-0 flex-col">
+            <span className="flex flex-wrap items-center gap-e2">
+              <span
+                className={clases(
+                  'min-w-0 [overflow-wrap:anywhere]',
+                  p.esEjemplo && 'text-texto-suave',
+                )}
+              >
+                {p.nombre}
+              </span>
+              {p.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
+              {!p.activo && <Etiqueta>desactivado</Etiqueta>}
+              {/* Lo que hay en el congelador, para tenerlo en mente sin abrirlo. */}
+              {p.congelado && (
+                <Etiqueta tono="info">
+                  {p.congeladoCuanto === null
+                    ? 'congelado'
+                    : `${conUnidadDeUso(p.congeladoCuanto, p.unidadDeUso)} congelados`}
+                </Etiqueta>
+              )}
+              {/*
               ── Aquí había una etiqueta naranja de «sin verificar», y se va ───
 
               Salía en **todos** los productos, por dos motivos a la vez: un
@@ -245,13 +263,14 @@ export function Productos({
               sistema—, pero vive **donde se puede hacer algo con él**: en la
               ficha, con su cifra y con el botón de medirlo.
             */}
-          </span>
-          {/* El envase, en pequeño y debajo. Es lo que distingue dos filas que se
+            </span>
+            {/* El envase, en pequeño y debajo. Es lo que distingue dos filas que se
               llaman igual —«Aceite de oliva», garrafa de 5 l y de 8 l— y hasta
               ahora había que abrir la ficha para saber cuál era cuál. */}
-          {p.formato !== null && p.formato !== '' && (
-            <span className="text-secundario text-texto-tenue">{p.formato}</span>
-          )}
+            {p.formato !== null && p.formato !== '' && (
+              <span className="text-secundario text-texto-tenue">{p.formato}</span>
+            )}
+          </span>
         </span>
       ),
     },
@@ -374,22 +393,49 @@ export function Productos({
       )}
       {fallo !== null && <ErrorEnCristiano error={fallo} />}
 
-      {/* Una sola fila de filtros, y el botón principal al final de ella. Antes
-          eran cuatro controles en tres alturas. */}
-      <div className="flex flex-wrap items-end gap-e3">
-        <div className="min-w-[14rem] flex-1">
-          <Campo
-            etiqueta="Buscar en tu género"
-            ayuda="Vale con erratas, sin acentos y con el código de barras."
-            value={texto}
-            delante={<IconoBuscar size={16} />}
-            onChange={(e) => {
-              setTexto(e.currentTarget.value);
+      {/*
+        ── Con la cámara vacía, solo el vacío (entrega V) ─────────────────────
+        Sin un solo producto, la barra de filtros decía «Todavía no tienes género»
+        dentro de un desplegable y «Aquí todavía no hay categorías» en otro, había
+        un «Hacer recuento» de nada, dos botones naranjas y «0 productos · la
+        cámara vale 0,00 €». Cinco cosas que no sirven encima de la única que sí:
+        empezar. Así que no se pintan hasta que haya algo que filtrar.
+      */}
+      {camaraVacia ? (
+        <Tarjeta>
+          <SinNada
+            vista="todo"
+            buscado=""
+            buscando={false}
+            puedeTocar={puedeTocar}
+            poniendo={poniendo}
+            alCrear={() => {
+              setCreando(true);
             }}
+            alPonerEjemplos={() => {
+              void ponerLosEjemplos();
+            }}
+            alQuitarElFiltro={() => undefined}
           />
-        </div>
+        </Tarjeta>
+      ) : (
+        <>
+          {/* Una sola fila de filtros, y el botón principal al final de ella. Antes
+          eran cuatro controles en tres alturas. */}
+          <div className="flex flex-wrap items-end gap-e3">
+            <div className="min-w-[14rem] flex-1">
+              <Campo
+                etiqueta="Buscar en tu género"
+                ayuda="Vale con erratas, sin acentos y con el código de barras."
+                value={texto}
+                delante={<IconoBuscar size={16} />}
+                onChange={(e) => {
+                  setTexto(e.currentTarget.value);
+                }}
+              />
+            </div>
 
-        {/*
+            {/*
           ── De dónde es, al lado de la categoría ────────────────────────────
 
           «Ahora la categoría es del total de productos que hay, pero vamos a
@@ -401,89 +447,91 @@ export function Productos({
           Son quince cosas y no llevan árbol; un control apagado obliga a mirarlo
           para descubrir que no sirve.
         */}
-        <div className="min-w-[12rem]">
-          <Selector
-            etiqueta="De dónde"
-            opciones={ZONAS.filter((z) => cuantosDeLaZona(datos, z) > 0 || z === zona).map((z) => ({
-              valor: z,
-              texto: `${NOMBRE_DE_LA_ZONA[z]} (${cuantosDeLaZona(datos, z)})`,
-            }))}
-            sinElegir="Todo"
-            cuandoNoHay="Todavía no tienes género"
-            value={zona}
-            onChange={(e) => {
-              const elegida = e.currentTarget.value as Zona | '';
-              setZona(elegida);
-              // Al cambiar de almacén, la categoría de antes deja de significar
-              // nada: «Carnes» no existe en sala. Se suelta en vez de dejarla
-              // puesta filtrando a cero.
-              setCategoriaId('');
-            }}
-          />
-        </div>
+            <div className="min-w-[12rem]">
+              <Selector
+                etiqueta="De dónde"
+                opciones={ZONAS.filter((z) => cuantosDeLaZona(datos, z) > 0 || z === zona).map(
+                  (z) => ({
+                    valor: z,
+                    texto: `${NOMBRE_DE_LA_ZONA[z]} (${cuantosDeLaZona(datos, z)})`,
+                  }),
+                )}
+                sinElegir="Todo"
+                cuandoNoHay="Todavía no tienes género"
+                value={zona}
+                onChange={(e) => {
+                  const elegida = e.currentTarget.value as Zona | '';
+                  setZona(elegida);
+                  // Al cambiar de almacén, la categoría de antes deja de significar
+                  // nada: «Carnes» no existe en sala. Se suelta en vez de dejarla
+                  // puesta filtrando a cero.
+                  setCategoriaId('');
+                }}
+              />
+            </div>
 
-        {hayCategorias && (
-          <div className="min-w-[12rem]">
-            <Selector
-              etiqueta="Categoría"
-              opciones={datos.categorias
-                .filter((c) => c.cuantos > 0 || c.id === categoriaId)
-                .map((c) => ({
-                  valor: c.id,
-                  texto: `${c.nombre} (${c.cuantos})`,
-                }))}
-              sinElegir="Todas"
-              cuandoNoHay="Aquí todavía no hay categorías"
-              value={categoriaId}
-              onChange={(e) => {
-                setCategoriaId(e.currentTarget.value);
-              }}
-            />
-          </div>
-        )}
+            {hayCategorias && (
+              <div className="min-w-[12rem]">
+                <Selector
+                  etiqueta="Categoría"
+                  opciones={datos.categorias
+                    .filter((c) => c.cuantos > 0 || c.id === categoriaId)
+                    .map((c) => ({
+                      valor: c.id,
+                      texto: `${c.nombre} (${c.cuantos})`,
+                    }))}
+                  sinElegir="Todas"
+                  cuandoNoHay="Aquí todavía no hay categorías"
+                  value={categoriaId}
+                  onChange={(e) => {
+                    setCategoriaId(e.currentTarget.value);
+                  }}
+                />
+              </div>
+            )}
 
-        {/*
+            {/*
           «Hacer recuento» al lado de «Añadir producto»: es la otra cosa que se
           hace desde esta pantalla con la lista delante, y es donde se busca. La
           vista vive en Movimientos —un recuento es un movimiento— y se llega con
           un enlace, no duplicando la pantalla.
         */}
-        {puedeContar && (
-          <Boton tono="secundario" icono={<IconoDocumento size={18} />} onClick={alRecuento}>
-            Hacer recuento
-          </Boton>
-        )}
+            {puedeContar && (
+              <Boton tono="secundario" icono={<IconoDocumento size={18} />} onClick={alRecuento}>
+                Hacer recuento
+              </Boton>
+            )}
 
-        {puedeTocar && (
-          <Boton
-            tono="principal"
-            icono={<IconoAnadir size={18} />}
-            onClick={() => {
-              setCreando(true);
-            }}
+            {puedeTocar && (
+              <Boton
+                tono="principal"
+                icono={<IconoAnadir size={18} />}
+                onClick={() => {
+                  setCreando(true);
+                }}
+              >
+                Añadir producto
+              </Boton>
+            )}
+          </div>
+
+          <Tarjeta
+            titulo={comoSeCuenta(datos.cuantosCumplen, vista)}
+            origen={
+              datos.puedeVerPrecios && vista !== 'desactivados'
+                ? `La cámara vale ${comoDinero(datos.valorTotalCentimos)}, sin contar los ejemplos`
+                : 'Lo que hay en cámara, según el libro de movimientos'
+            }
           >
-            Añadir producto
-          </Boton>
-        )}
-      </div>
-
-      <Tarjeta
-        titulo={comoSeCuenta(datos.cuantosCumplen, vista)}
-        origen={
-          datos.puedeVerPrecios && vista !== 'desactivados'
-            ? `La cámara vale ${comoDinero(datos.valorTotalCentimos)}, sin contar los ejemplos`
-            : 'Lo que hay en cámara, según el libro de movimientos'
-        }
-      >
-        <Tabla
-          titulo="Tu género"
-          columnas={columnas}
-          filas={datos.productos}
-          claveDe={(p) => p.id}
-          alPulsar={(p) => {
-            alAbrirProducto(p.id);
-          }}
-          /*
+            <Tabla
+              titulo="Tu género"
+              columnas={columnas}
+              filas={datos.productos}
+              claveDe={(p) => p.id}
+              alPulsar={(p) => {
+                alAbrirProducto(p.id);
+              }}
+              /*
             ── En móvil, dos líneas por producto ──────────────────────────────
 
             La tarjeta de pares de siempre ponía cinco: el nombre y luego «EN
@@ -496,83 +544,103 @@ export function Productos({
             —el ritmo, la previsión, la sugerencia— está en la ficha, que se abre
             de un toque.
           */
-          nombreDeLaFila={(p) => p.nombre}
-          filaCompacta={(p) => (
-            <div className="flex items-center gap-e3">
-              <span className="min-w-0 flex-1">
-                <span className="flex flex-wrap items-center gap-x-e2">
-                  <span className={clases('font-medium', p.esEjemplo && 'text-texto-suave')}>
-                    {p.nombre}
+              nombreDeLaFila={(p) => p.nombre}
+              filaCompacta={(p) => (
+                <div className="flex items-center gap-e3">
+                  <FotoDeProducto nombre={p.nombre} categoria={p.categoria} enlace={p.miniatura} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-x-e2">
+                      {/* Una palabra larga se parte en vez de pisar la cantidad de al lado: con la
+                          miniatura, en un móvil pequeño queda poco sitio (entrega V). */}
+                      <span
+                        className={clases(
+                          'min-w-0 font-medium [overflow-wrap:anywhere]',
+                          p.esEjemplo && 'text-texto-suave',
+                        )}
+                      >
+                        {p.nombre}
+                      </span>
+                      {p.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
+                      {!p.activo && <Etiqueta>desactivado</Etiqueta>}
+                    </span>
+                    <span className="block truncate text-etiqueta text-texto-tenue">
+                      {[
+                        p.formato,
+                        datos.puedeVerPrecios && p.costePorUnidad !== null
+                          ? p.costePorUnidad
+                          : null,
+                        p.congelado
+                          ? p.congeladoCuanto === null
+                            ? 'congelado'
+                            : `${conUnidadDeUso(p.congeladoCuanto, p.unidadDeUso)} congelados`
+                          : null,
+                      ]
+                        .filter((trozo) => trozo !== null && trozo !== '')
+                        .join(' · ')}
+                    </span>
                   </span>
-                  {p.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
-                  {!p.activo && <Etiqueta>desactivado</Etiqueta>}
-                </span>
-                <span className="block truncate text-etiqueta text-texto-tenue">
-                  {[
-                    p.formato,
-                    datos.puedeVerPrecios && p.costePorUnidad !== null ? p.costePorUnidad : null,
-                    p.congelado
-                      ? p.congeladoCuanto === null
-                        ? 'congelado'
-                        : `${conUnidadDeUso(p.congeladoCuanto, p.unidadDeUso)} congelados`
-                      : null,
-                  ]
-                    .filter((trozo) => trozo !== null && trozo !== '')
-                    .join(' · ')}
-                </span>
-              </span>
 
-              <span className="shrink-0 text-right">
-                <span className="block font-semibold tabular-nums">
-                  {conUnidadDeUso(p.cantidad, p.unidadDeUso)}
-                </span>
-                <Etiqueta tono={TONO_DEL_ESTADO[p.estado]}>{NOMBRE_DEL_ESTADO[p.estado]}</Etiqueta>
-              </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block font-semibold tabular-nums">
+                      {conUnidadDeUso(p.cantidad, p.unidadDeUso)}
+                    </span>
+                    <Etiqueta tono={TONO_DEL_ESTADO[p.estado]}>
+                      {NOMBRE_DEL_ESTADO[p.estado]}
+                    </Etiqueta>
+                  </span>
 
-              {puedeTocar && vista !== 'desactivados' && (
-                <span className="flex shrink-0 gap-e1">
-                  <BotonDeApuntar
-                    que="entrada"
-                    producto={p}
-                    onClick={() => {
-                      setApuntado(null);
-                      setMoviendo({ producto: p, que: 'entrada' });
-                    }}
-                  />
-                  <BotonDeApuntar
-                    que="salida"
-                    producto={p}
-                    onClick={() => {
-                      setApuntado(null);
-                      setMoviendo({ producto: p, que: 'salida' });
-                    }}
-                  />
-                </span>
+                  {puedeTocar && vista !== 'desactivados' && (
+                    <span className="flex shrink-0 gap-e1">
+                      <BotonDeApuntar
+                        que="entrada"
+                        producto={p}
+                        onClick={() => {
+                          setApuntado(null);
+                          setMoviendo({ producto: p, que: 'entrada' });
+                        }}
+                      />
+                      <BotonDeApuntar
+                        que="salida"
+                        producto={p}
+                        onClick={() => {
+                          setApuntado(null);
+                          setMoviendo({ producto: p, que: 'salida' });
+                        }}
+                      />
+                    </span>
+                  )}
+                </div>
               )}
-            </div>
-          )}
-          cuandoNoHay={
-            <SinNada
-              vista={vista}
-              buscando={texto.trim() !== '' || categoriaId !== ''}
-              puedeTocar={puedeTocar}
-              poniendo={poniendo}
-              alCrear={() => {
-                setCreando(true);
-              }}
-              alPonerEjemplos={() => {
-                void ponerLosEjemplos();
-              }}
+              cuandoNoHay={
+                <SinNada
+                  vista={vista}
+                  buscado={texto}
+                  buscando={texto.trim() !== '' || categoriaId !== '' || zona !== ''}
+                  puedeTocar={puedeTocar}
+                  poniendo={poniendo}
+                  alCrear={() => {
+                    setCreando(true);
+                  }}
+                  alPonerEjemplos={() => {
+                    void ponerLosEjemplos();
+                  }}
+                  alQuitarElFiltro={() => {
+                    setTexto('');
+                    setCategoriaId('');
+                    setZona('');
+                  }}
+                />
+              }
             />
-          }
-        />
 
-        {datos.hayMas && (
-          <p className="mt-e3 text-secundario text-texto-suave">
-            Se enseñan los cincuenta primeros. Busca por nombre para encontrar el que quieras.
-          </p>
-        )}
-      </Tarjeta>
+            {datos.hayMas && (
+              <p className="mt-e3 text-secundario text-texto-suave">
+                Se enseñan los cincuenta primeros. Busca por nombre para encontrar el que quieras.
+              </p>
+            )}
+          </Tarjeta>
+        </>
+      )}
 
       {moviendo !== null && (
         <MoverGenero
@@ -649,29 +717,36 @@ function comoSeCuenta(cuantos: number, vista: string): string {
  * Y **no dice lo mismo en las cuatro vistas**, que es lo que pasaba antes: una
  * lista vacía porque no hay género y una lista vacía porque nada está bajo mínimo
  * son noticias opuestas. La segunda es buena.
+ *
+ * Y lo buscado que no está (entrega V) **ofrece quitar el filtro**, no dar de alta:
+ * el buscador aguanta erratas, así que lo normal es que el producto exista y el
+ * filtro de zona o de categoría lo esté escondiendo.
  */
 function SinNada({
   vista,
+  buscado,
   buscando,
   puedeTocar,
   poniendo,
   alCrear,
   alPonerEjemplos,
+  alQuitarElFiltro,
 }: {
   readonly vista: string;
+  readonly buscado: string;
   readonly buscando: boolean;
   readonly puedeTocar: boolean;
   readonly poniendo: boolean;
   readonly alCrear: () => void;
   readonly alPonerEjemplos: () => void;
+  readonly alQuitarElFiltro: () => void;
 }) {
   if (buscando) {
     return (
-      <EstadoVacio
-        compacto
-        titulo="Nada con eso"
-        frase="Prueba con menos letras, o quita el filtro de categoría."
-        sinAccionPorque="El buscador aguanta erratas, pero no adivina."
+      <NadaConEso
+        buscado={buscado}
+        frase="Prueba con menos letras, o busca en todas las zonas y categorías."
+        alQuitar={alQuitarElFiltro}
       />
     );
   }
@@ -680,6 +755,7 @@ function SinNada({
     return (
       <EstadoVacio
         compacto
+        dibujo="todo-en-orden"
         titulo="Nada por debajo del mínimo"
         frase="Ningún producto está por debajo de lo que le pusiste como mínimo."
         sinAccionPorque="Cuando algo baje, aparecerá aquí solo y también en «Hoy»."
@@ -691,6 +767,7 @@ function SinNada({
     return (
       <EstadoVacio
         compacto
+        dibujo="todo-en-orden"
         titulo="Todos tienen precio"
         frase="No hay ningún producto contando cero en el valor de la cámara."
         sinAccionPorque="Un producto nuevo sin precio aparecerá aquí hasta que se le ponga uno."
@@ -702,6 +779,7 @@ function SinNada({
     return (
       <EstadoVacio
         compacto
+        dibujo="congelador"
         titulo="No hay nada congelado"
         frase="Cuando congeles algo, sale aquí con la fecha en que se congeló y su caducidad."
         sinAccionPorque="Se congela desde la ficha de cada producto, en «Lotes y caducidades»."
@@ -713,6 +791,7 @@ function SinNada({
     return (
       <EstadoVacio
         compacto
+        dibujo="archivo"
         titulo="No has quitado nada de en medio"
         frase="Aquí aparecen los productos desactivados, con todo su histórico, para poder traerlos de vuelta."
         sinAccionPorque="Se desactiva desde la ficha de cada producto."
@@ -722,27 +801,30 @@ function SinNada({
 
   return (
     <EstadoVacio
+      dibujo="camara"
+      acento="var(--color-app-inventario)"
       titulo="Todavía no tienes género"
-      frase="Se empieza por lo que más compras. Con el catálogo de referencia, cada producto son quince segundos: escribes «aceite» y viene con su formato, su factor y sus alérgenos puestos."
-      accion={
-        puedeTocar ? (
-          <div className="flex flex-wrap gap-e2">
-            <Boton tono="principal" icono={<IconoAnadir size={18} />} onClick={alCrear}>
-              Añadir mi primer producto
-            </Boton>
-            <Boton
-              tono="secundario"
-              cargando={poniendo}
-              textoCargando="Poniendo"
-              onClick={alPonerEjemplos}
-            >
-              Ponme unos ejemplos para verlo
-            </Boton>
-          </div>
-        ) : undefined
-      }
+      frase="Empieza por lo que más compras. Escribes «aceite» y el catálogo lo trae con su formato y sus alérgenos."
       {...(puedeTocar
-        ? {}
+        ? {
+            accion: (
+              <Boton tono="principal" icono={<IconoAnadir size={18} />} onClick={alCrear}>
+                Añade tu primer producto
+              </Boton>
+            ),
+            // Un botón, no dos (entrega V): los ejemplos son la otra salida, y van
+            // en texto y debajo, para quien quiere verlo lleno antes de empezar.
+            alternativa: (
+              <Boton
+                tono="texto"
+                cargando={poniendo}
+                textoCargando="Poniendo los ejemplos"
+                onClick={alPonerEjemplos}
+              >
+                O ponme unos ejemplos para verlo
+              </Boton>
+            ),
+          }
         : { sinAccionPorque: 'Tu acceso permite mirar el género, no darlo de alta.' })}
     />
   );

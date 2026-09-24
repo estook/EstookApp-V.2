@@ -87,7 +87,12 @@ jobs:
 
   construccion:
     name: Construccion y presupuestos
-    runs-on: ubuntu-latest
+    # Con su version de Ubuntu fija, y no `ubuntu-latest` (entrega V): aqui se
+    # comparan las capturas de pantalla, y una letra no se pinta igual en otra
+    # version del sistema. Si GitHub cambiara el Ubuntu por debajo —lo hace el 19 de
+    # octubre de 2026—, las 32 capturas saldrian en rojo sin que la aplicacion haya
+    # cambiado en nada. Se sube a mano, y con las capturas rehechas en el mismo cambio.
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
       # M4: desde que hay login, las pruebas de extremo a extremo necesitan una
@@ -133,6 +138,19 @@ jobs:
         with:
           name: informe-playwright
           path: playwright-report/
+          retention-days: 7
+
+      # Las capturas que no han coincidido, o que no existian, con el nombre que
+      # tendrian en su sitio (entrega V). Se bajan con `pnpm capturas:traer`, se
+      # miran, y si son lo que se queria se suben: asi se da por buena una pantalla
+      # que ha cambiado a proposito.
+      - name: Guardar las capturas nuevas si alguna no coincide
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: capturas-nuevas
+          path: pruebas/e2e/capturas-nuevas/
+          if-no-files-found: ignore
           retention-days: 7
 
   migraciones:

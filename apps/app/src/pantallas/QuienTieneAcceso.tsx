@@ -325,6 +325,8 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
             vista === 'sin-entrar-todavia' ? (
               <EstadoVacio
                 compacto
+                dibujo="todo-en-orden"
+                acento="var(--color-app-equipo)"
                 titulo="Han entrado todos"
                 frase="Nadie se ha quedado con un PIN sin estrenar."
                 sinAccionPorque="Quien se invite aparecerá aquí hasta que entre la primera vez."
@@ -332,6 +334,8 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
             ) : vista === 'retirados' ? (
               <EstadoVacio
                 compacto
+                dibujo="archivo"
+                acento="var(--color-app-equipo)"
                 titulo="No has retirado el acceso a nadie"
                 frase="Aquí aparece quien se fue, con su historial entero, para poder devolvérselo."
                 sinAccionPorque="Se retira desde «Acceso», en cada persona."

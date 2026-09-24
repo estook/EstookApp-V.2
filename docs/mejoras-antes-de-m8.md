@@ -18,31 +18,31 @@ El panel de administración va en su propio documento:
 
 **Cuatro de las veinte están en producción** desde el 23 de septiembre de 2026 (#64): la
 1, la 2, la 3 y la 7, que eran la primera parte de V. V se fusiona en dos partes; la
-segunda lleva la 4 y la 5. **La 7 (Ajustes en secciones) era de la entrega O y se
+segunda lleva la 4 y la 5, **hechas en la rama `v-vacios-oscuro-y-fotos`** ([0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)) y a falta de fusionar. **La 7 (Ajustes en secciones) era de la entrega O y se
 adelantó** porque Richi la pidió al ver Ajustes el 23 de septiembre ([0045](decisiones/0045-el-aspecto-y-el-orden.md)). Cada una cambia a «Hecha» cuando se fusiona y se despliega su entrega.
 
-| #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                  |
-| --- | ---------------------------------------- | ------------------------ | ------------------------------------------ | -------------------------- |
-| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | **En producción** (#64)    |
-| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | **En producción** (#64)    |
-| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                       | **En producción** (#64)    |
-| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            | Falta                      |
-| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    | Falta                      |
-| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       | Falta                      |
-| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                       | **En producción** (#64)    |
-| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       | Falta                      |
-| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       | Falta                      |
-| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       | Falta                      |
-| 12  | Pedido sugerido                          | **R · El reloj**         | Nada (el reloj es de Supabase, gratis)     | Falta                      |
-| 13  | Alertas de subida de precio              | **R**                    | Nada                                       | Falta                      |
-| 16  | Informe semanal para el gerente          | **R**                    | **Resend** para el correo; la pantalla, no | Falta                      |
-| 19  | Reseñas: aviso de bajada y respuesta     | **R** y después          | Places ya; **Business Profile** y **IA**   | Falta                      |
-| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                       | Falta                      |
-| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)    | Falta                      |
-| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                       | Falta                      |
-| 10  | Escanear el código de barras             | **L · El lector**        | Nada                                       | Falta                      |
-| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                         | Espera a M22               |
-| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún    | Espera a M12 · el QR, en O |
+| #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                    |
+| --- | ---------------------------------------- | ------------------------ | ------------------------------------------ | ---------------------------- |
+| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | **En producción** (#64)      |
+| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | **En producción** (#64)      |
+| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                       | **En producción** (#64)      |
+| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            | **Hecha, en su rama** (0046) |
+| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    | **Hecha, en su rama** (0046) |
+| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       | Falta                        |
+| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                       | **En producción** (#64)      |
+| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       | Falta                        |
+| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       | Falta                        |
+| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       | Falta                        |
+| 12  | Pedido sugerido                          | **R · El reloj**         | Nada (el reloj es de Supabase, gratis)     | Falta                        |
+| 13  | Alertas de subida de precio              | **R**                    | Nada                                       | Falta                        |
+| 16  | Informe semanal para el gerente          | **R**                    | **Resend** para el correo; la pantalla, no | Falta                        |
+| 19  | Reseñas: aviso de bajada y respuesta     | **R** y después          | Places ya; **Business Profile** y **IA**   | Falta                        |
+| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                       | Falta                        |
+| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)    | Falta                        |
+| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                       | Falta                        |
+| 10  | Escanear el código de barras             | **L · El lector**        | Nada                                       | Falta                        |
+| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                         | Espera a M22                 |
+| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún    | Espera a M12 · el QR, en O   |
 
 Tres de las veinte **no pueden quedar al 100 % antes de M8**, y conviene decirlo ya:
 
@@ -172,6 +172,13 @@ acción**, y se repasa uno por uno. Los dibujos:
 - El vacío **de un filtro** no es el vacío **de verdad**: «nada con eso» ofrece
   quitar el filtro, no crear algo.
 
+**Hecho (24 de septiembre de 2026, en la rama `v-vacios-oscuro-y-fotos`)**, con la
+[0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md): veinte dibujos de una
+familia, cada uno en su trozo; el dibujo, obligatorio en `EstadoVacio`; un botón que
+dice lo que hace —las acciones del catálogo, solo a quien las puede hacer— y los
+ejemplos como salida en texto; `NadaConEso` para lo filtrado; Inventario · Resumen
+enseña cómo empezar, sin «Cómo va», y Productos sin género enseña solo el vacío.
+
 ### 5 · Tema oscuro, repasado, y fotos de producto
 
 **Tema oscuro.** Se hace un repaso pantalla a pantalla **con capturas en los dos
@@ -191,6 +198,20 @@ fila se escribe después de subir y la foto vieja se borra.
 - Sin foto, la ficha sigue igual: la inicial y el color de su categoría.
 - La foto es de la ficha **de ese local**; en M24, la del catálogo maestro de la
   cadena se hereda.
+
+**Hecho (24 de septiembre de 2026, en la misma rama)**, con la
+[0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md):
+
+- **El oscuro**: una prueba mide el contraste de cada texto en diecisiete pantallas,
+  en los dos temas y en ordenador y móvil; lo que encontró —el color de la app como
+  texto en claro— se arregló en la pieza (`acentoParaTexto`). Y **treinta y dos
+  capturas** se comparan en la integración continua, en Linux y con Ubuntu fijo; las
+  nuevas se traen con `pnpm capturas:traer`.
+- **Las fotos**: migración `0045`, cubo `fotos-de-producto` (creado el 24-sep con
+  `almacen:preparar`), reducidas en el teléfono a 800 px en WebP —JPG en Safari— con
+  miniatura cuadrada de 160, firmadas de una tanda, y en la lista, la ficha y el
+  recuento.
+- **Falta, de Richi**: mirarlo en un móvil de verdad (regla 29).
 
 ---
 
@@ -525,9 +546,9 @@ antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
 
 **Cómo va:** la **1** está **fusionada y en producción** (#53), con Richi dentro del
 admin y su segundo factor montado. Su repaso (rescatar a un admin, la cabecera del
-móvil y una puerta de la API) también está en producción (#54). **La 2, V, va a medias
-en su rama**: hechos los puntos 1, 2 y 3 y la mejora 7; faltan el 4 (vacíos) y el 5
-(capturas del oscuro y fotos de producto).
+móvil y una puerta de la API) también está en producción (#54). **La 2, V, está entera**: los puntos 1, 2 y 3 y la mejora 7, en producción (#64, #65);
+el 4 y el 5, en la rama `v-vacios-oscuro-y-fotos`, a falta de fusionar. **Lo siguiente es
+la 3, O**, en paralelo con E2 en cuanto esté la cuenta de Stripe.
 
 **Qué esperan de fuera, y no frenan el orden:** **Resend** (el correo del informe y
 de los avisos), **Business Profile** (las respuestas a reseñas), **la clave de IA**

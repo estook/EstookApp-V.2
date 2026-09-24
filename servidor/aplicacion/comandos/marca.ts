@@ -3,6 +3,7 @@ import { publicar } from '../../eventos/bandeja.ts';
 import { TIPOS_DE_LOGO, TOPE_DEL_LOGO, claveDelLogo } from '../../infraestructura/almacen.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion, respondido } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
+import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
 
 /**
  * La marca del local (M5) · paso 5 del alta.
@@ -125,6 +126,14 @@ export const ponerLogo = comando<EntradaLogo, { puesto: boolean }>({
     }
 
     const bytes = decodificar(entrada.contenido);
+    // Que sea de verdad una imagen de ese tipo, y no otra cosa con su nombre
+    // (entrega V): el tipo lo dice quien llama, y el almacén se lo creería.
+    if (!esDeVerdadDeEseTipo(bytes, entrada.tipo)) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['contenido'],
+        porque: 'Eso no es una imagen PNG, JPG o WebP. Prueba con otra.',
+      });
+    }
     if (bytes.byteLength > TOPE_DEL_LOGO) {
       throw new FalloDeAplicacion('faltan_datos', {
         campos: ['contenido'],
@@ -223,25 +232,5 @@ export const quitarLogo = comando<Record<string, never>, { quitado: boolean }>({
   },
 });
 
-/**
- * De base64 a bytes, sin librerías.
- *
- * `atob` existe igual en Node, en Deno y en el navegador, que es la misma razón
- * por la que las contraseñas se derivan con `crypto.subtle` (decisión 0010).
- */
-function decodificar(base64: string): Uint8Array {
-  const limpio = base64.replace(/^data:[^;]+;base64,/, '');
-  let binario: string;
-  try {
-    binario = atob(limpio);
-  } catch {
-    throw new FalloDeAplicacion('faltan_datos', {
-      campos: ['contenido'],
-      porque: 'Ese fichero no ha llegado entero. Vuelve a intentarlo.',
-    });
-  }
-
-  const bytes = new Uint8Array(binario.length);
-  for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
-  return bytes;
-}
+// `decodificar` vive en `../ficheros.ts` desde la entrega V: la usan el logo y las
+// fotos de producto, y dos copias de lo mismo acaban leyendo distinto.

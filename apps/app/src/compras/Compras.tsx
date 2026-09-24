@@ -60,6 +60,7 @@ export function Compras({ vista }: { readonly vista: string }) {
           // qué no la ve, y quién sí.
           <Tarjeta titulo={vista === 'facturas' ? 'Facturas' : 'Precios'}>
             <EstadoVacio
+              dibujo="candado"
               titulo="Esto es cosa de quien ve los precios"
               frase={
                 vista === 'facturas'

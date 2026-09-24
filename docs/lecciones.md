@@ -280,3 +280,20 @@
 96. **Una costumbre que llega tarde deja atrás lo de antes.** Desde M4 toda función con
     privilegio nace cerrada, y las siete de antes se quedaron abiertas. La prueba no
     nombra ninguna: mira todas, así que la próxima que se olvide no pasa.
+97. **Cumplir en la paleta no es cumplir en la pantalla.** Cada ficha llegaba a su
+    contraste, y la pestaña elegida de cada vista pintaba su nombre en el color de la
+    app: en claro, el ámbar de Inventario sobre blanco daba 3,46:1. Lo encontró medir
+    cada texto contra el fondo que tiene debajo, en pantallas de verdad. Y **se mide en
+    el móvil también**: la barra de abajo solo existe ahí, y era la mitad del fallo.
+98. **Una captura solo se compara con otra del mismo sistema.** La letra se suaviza
+    distinto en Windows y en Linux, y distinto en dos versiones de Ubuntu. Las de
+    referencia son las de la integración continua, con su Ubuntu fijo; las de otro
+    ordenador son para mirar. Y lo que sale en la foto no puede depender de lo que otra
+    prueba esté haciendo a la vez: por eso las hace una persona con la que no entra
+    nadie más.
+99. **Un navegador que no sabe hacer algo a veces no lo dice.** Safari, pedido un WebP
+    desde un lienzo, devuelve un PNG sin avisar. Se mira qué ha salido de verdad, no lo
+    que se pidió.
+100. **Lo que dice ser un fichero no lo es hasta que se miran sus primeros bytes.** El
+     tipo lo manda quien llama; la firma del formato, no. Vale para las fotos y valía,
+     sin mirarse, para el logo.

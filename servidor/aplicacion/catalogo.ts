@@ -26,6 +26,7 @@ import {
 } from './comandos/importar.ts';
 import { crearLocal, responderCuantosLocales } from './comandos/locales.ts';
 import { guardarColorDeMarca, ponerLogo, quitarLogo } from './comandos/marca.ts';
+import { ponerFotoDeProducto, quitarFotoDeProducto } from './comandos/fotos.ts';
 import { ponerObjetivos } from './comandos/objetivos.ts';
 import {
   activarDobleFactor,
@@ -253,6 +254,9 @@ export const catalogo = {
     [guardarColorDeMarca.nombre]: guardarColorDeMarca,
     [ponerLogo.nombre]: ponerLogo,
     [quitarLogo.nombre]: quitarLogo,
+    // Entrega V · la foto de cada producto, por el mismo camino que el logo.
+    [ponerFotoDeProducto.nombre]: ponerFotoDeProducto,
+    [quitarFotoDeProducto.nombre]: quitarFotoDeProducto,
     [guardarRegimenFiscal.nombre]: guardarRegimenFiscal,
     [ponerObjetivos.nombre]: ponerObjetivos,
     [crearLocal.nombre]: crearLocal,

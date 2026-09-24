@@ -52,6 +52,15 @@ const SIN_PANTALLA = ['**/catalogo-vivo.spec.ts', '**/abrir.spec.ts'];
 const enCI = Boolean(process.env['CI']);
 const conWebkit = enCI || Boolean(process.env['CON_WEBKIT']);
 
+/**
+ * Las capturas que se comparan (entrega V, punto 5): **solo en Linux**, que es
+ * donde se hicieron las de referencia y donde corre la integración continua. En
+ * otro sistema la letra se suaviza distinto y no coincidirían nunca; ahí solo se
+ * comparan si se pide con `CON_CAPTURAS=1`, contra las suyas (`capturas/win32/`),
+ * que no se suben. Está contado en `pruebas/e2e/capturas.spec.ts`.
+ */
+const conCapturas = process.platform === 'linux' || Boolean(process.env['CON_CAPTURAS']);
+
 export default defineConfig({
   testDir: './pruebas/e2e',
   fullyParallel: true,
@@ -59,6 +68,24 @@ export default defineConfig({
   retries: enCI ? 1 : 0,
   reporter: enCI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: { trace: 'on-first-retry' },
+
+  snapshotPathTemplate: '{testDir}/capturas/{platform}/{arg}-{projectName}{ext}',
+  ignoreSnapshots: !conCapturas,
+  // La que falte o no coincida **es un rojo, siempre**, también en la integración
+  // continua, y la nueva se guarda en `capturas-nuevas/` para mirarla antes de darla
+  // por buena. Con `missing`, la que falta se escribe y la prueba falla sin repetirse
+  // (Playwright no deja que una segunda vuelta la dé por buena); con `none` no se
+  // escribía nada, y la primera vuelta de la entrega V no dejó captura que mirar.
+  updateSnapshots: 'missing',
+  expect: {
+    toHaveScreenshot: {
+      // Dos décimas de píxel de cada mil pueden cambiar sin que cambie nada: el
+      // suavizado de un borde. Un color, una letra o un hueco son muchos más.
+      maxDiffPixelRatio: 0.002,
+      animations: 'disabled',
+      caret: 'hide',
+    },
+  },
 
   projects: [
     { name: 'escritorio', use: { ...devices['Desktop Chrome'] } },

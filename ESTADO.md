@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 24 de septiembre de 2026 · **Antes de M8. V, primera parte, en producción (#64 y #65). El repaso del 23-sep —lo que Richi vio en el móvil y la auditoría— va en `el-repaso-del-23-sep`, con su pull request ([#66](https://github.com/estook/EstookApp-V.2/pull/66)) y cuatro migraciones (`0041` a `0044`). Después: los puntos 4 y 5 de V**
+Última actualización: 24 de septiembre de 2026 · **Antes de M8. El repaso del 23-sep, en producción (#66). V, segunda parte —los vacíos, el oscuro y las fotos de producto— en `v-vacios-oscuro-y-fotos`, con su pull request y una migración (`0045`). Con ella, V entera**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -9,7 +9,7 @@
 > Lo demás vive en su sitio, y aquí solo se enlaza:
 >
 > - **Lo que hizo cada módulo**, con sus fallos: [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)
-> - **Lo aprendido fallando** (96 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
+> - **Lo aprendido fallando** (100 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](docs/reglas.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](docs/decisiones/)
 > - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)
@@ -18,19 +18,19 @@
 
 ## 1 · Dónde estamos
 
-_Producción leída el 23 de septiembre de 2026, en una transacción de solo lectura._
+_Producción leída el 24 de septiembre de 2026 (migraciones y organizaciones, en solo lectura; la API desplegada, preguntada por sus operaciones nuevas). Las suscripciones y el uso real, del 23-sep._
 
-|                |                                                                                                                                                                  |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1**, la puerta del admin · **E1**, crear cuenta y Google · **V, primera parte** (puntos 1, 2, 3 y 7) |
-| **Ahora**      | **El repaso del 23-sep**, en la rama `el-repaso-del-23-sep` con su pull request. Después, **V · puntos 4 y 5**. **E2 · Stripe** espera a Richi                   |
-| **`main`**     | Todo fusionado hasta la **#65**                                                                                                                                  |
-| **Base**       | Supabase, **40 de 40** migraciones, igual que `main`. **La rama trae cuatro más** (`0041` a `0044`): hay que aplicarlas al fusionar                              |
-| **API**        | Desplegada el 23-sep a las 18:43 con la #64: 44 consultas y 84 comandos. **La rama trae una de cada** (45 y 85) y hay que desplegarla después de migrar          |
-| **Sitio**      | `estook.com`, `/app/` y `/admin/`. Se publica solo al fusionar                                                                                                   |
-| **Pruebas**    | En la rama: **1.178** unitarias y de base y **613** de pantalla (los tres navegadores), en verde y sin repetidas · catálogo **124 de 130** (95 %)                |
-| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                  |
-| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                     |
+|                |                                                                                                                                                                                                                   |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1**, la puerta del admin · **E1**, crear cuenta y Google · **V, primera parte** (puntos 1, 2, 3 y 7) · **el repaso del 23-sep**                       |
+| **Ahora**      | **V, segunda parte** (puntos 4 y 5), en la rama `v-vacios-oscuro-y-fotos` con su pull request. Con ella V queda entera. **E2 · Stripe** espera a Richi                                                            |
+| **`main`**     | Todo fusionado hasta la **#66**                                                                                                                                                                                   |
+| **Base**       | Supabase, **44 de 44** migraciones, igual que `main`. **La rama trae una más** (`0045`, la foto del producto): hay que aplicarla al fusionar. El cubo `fotos-de-producto` del almacén **ya está creado** (24-sep) |
+| **API**        | Desplegada el 24-sep a las 00:03 con la #66: 45 consultas y 85 comandos. **La rama trae dos comandos** (87: poner y quitar la foto) y hay que desplegarla después de migrar                                       |
+| **Sitio**      | `estook.com`, `/app/` y `/admin/`. Se publica solo al fusionar                                                                                                                                                    |
+| **Pruebas**    | En la rama, en GitHub: **1.197** unitarias y de base y **642** de pantalla (los tres navegadores), con las **32 capturas** comparadas, en verde y sin repetidas · catálogo **126 de 132** (95 %)                  |
+| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                                   |
+| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                                      |
 
 > **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
 > 100 %** (Richi, 16-sep). Los planes: [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)
@@ -38,59 +38,48 @@ _Producción leída el 23 de septiembre de 2026, en una transacción de solo lec
 
 ### El orden, y dónde estamos en él
 
-| #   | Entrega                          | Cómo está                                                                           |
-| --- | -------------------------------- | ----------------------------------------------------------------------------------- |
-| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                                                          |
-| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                               |
-| 1   | **V · Lo que se ve**             | Puntos 1, 2, 3 y 7 ✓ en producción (#64, #65). **Faltan el 4 y el 5**               |
-| —   | **El repaso del 23-sep**         | **En su pull request** (abajo)                                                      |
-| 2   | **E2 · El pago con Stripe**      | **Espera a Richi**: su cuenta de Stripe. Va en paralelo a V                         |
-| 3   | **O · Lo que se ordena**         | Falta                                                                               |
-| 4   | **A2 · Clientes**                | Falta                                                                               |
-| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7 (avisos a quien manda, invitar a un pedido) |
-| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                             |
-| 7   | **I · La app instalable**        | Falta                                                                               |
-| 8   | **L · El lector**                | Falta                                                                               |
-| 9   | **A3 · Vendedores y códigos**    | Falta                                                                               |
-| 10  | **A4 · Ventas**                  | Falta                                                                               |
-| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                                         |
+| #   | Entrega                          | Cómo está                                                                                  |
+| --- | -------------------------------- | ------------------------------------------------------------------------------------------ |
+| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                                                                 |
+| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                                      |
+| 1   | **V · Lo que se ve**             | Puntos 1, 2, 3 y 7 ✓ en producción (#64, #65). **El 4 y el 5, en su pull request** (abajo) |
+| —   | **El repaso del 23-sep**         | ✓ en producción (#66)                                                                      |
+| 2   | **E2 · El pago con Stripe**      | **Espera a Richi**: su cuenta de Stripe. Va en paralelo a V                                |
+| 3   | **O · Lo que se ordena**         | Falta                                                                                      |
+| 4   | **A2 · Clientes**                | Falta                                                                                      |
+| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7 (avisos a quien manda, invitar a un pedido)        |
+| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                                    |
+| 7   | **I · La app instalable**        | Falta                                                                                      |
+| 8   | **L · El lector**                | Falta                                                                                      |
+| 9   | **A3 · Vendedores y códigos**    | Falta                                                                                      |
+| 10  | **A4 · Ventas**                  | Falta                                                                                      |
+| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                                                |
 
-### El repaso del 23 de septiembre · lo que lleva la rama
+### V, segunda parte · lo que lleva la rama
 
-Lo que Richi trajo mirando la app en el móvil, y la auditoría que pidió. Contado entero
-en la [historia](docs/historia-de-los-modulos.md), apartado «el repaso del 23 de
-septiembre».
+Los puntos 4 y 5 de las mejoras, razonados en la
+[0046](docs/decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md) y contados en la
+[historia](docs/historia-de-los-modulos.md), apartado «V, la segunda parte».
 
-| Qué                                                                             | Cómo                                                                                         |
-| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **El jefe de cocina ve las ventas** (ventas, ticket medio, cierres y food cost) | Solo ver; la caja la cierra quien lleva el local o la sala · **migración `0041`**            |
-| **La merma no tira más de lo que hay**                                          | Lo avisa la hoja y lo impide el servidor (`mas_de_lo_que_hay`)                               |
-| **«11 por debajo del mínimo» y salían 3**, y en Congelados                      | El título cuenta lo que enseña (`cuantosCumplen`); «Bajo mínimo» ya no pierde el final       |
-| **La muesca del iPhone tapaba la barra y las hojas**                            | Zona segura en la barra, las hojas, el buscador, entrar, el alta y el admin                  |
-| **Zoom al tocar un campo** en el móvil                                          | Campos a 16 px mínimo en pantallas táctiles                                                  |
-| **«Pequeña», más pequeña en el móvil**                                          | 0,82 solo por debajo de 640 px; el ordenador no cambia                                       |
-| **Fogón, fuera de la barra de arriba**                                          | La burbuja sale también en el ordenador, y `Ctrl+J`. B5 y la 0015, cambiadas                 |
-| **Equipo: «Cómo va» debajo de fichar**                                          | Servicio no cambia                                                                           |
-| **La ficha: tres fichajes y «Ver todos»**                                       | El historial entero, por meses y de 50 en 50 (`fichajes_de_una_persona`)                     |
-| **«En línea» solo con la app abierta**                                          | Aviso cada 45 s mientras se ve (`sigo_aqui`); dos minutos sin él, fuera · **`0042`**         |
-| **El TPV: «añadir terminal»**                                                   | Encaja con el Anexo 3.4, y lo que faltaba está escrito ahí («Dar de alta un terminal»)       |
-| **Auditoría**: siete funciones con privilegio abiertas                          | Cerradas todas, y una prueba mira todas · **`0043`**                                         |
-| **Velocidad**: lo lento de Inventario, medido con 400 productos                 | Resumen 1,7 s → 0,34 s; lista 1,2 s → 0,27 s (el precio vigente, de una pasada) · **`0044`** |
-| **Auditoría**: 440 claves caducadas sin borrar                                  | Las tira `anotar` al apuntar una nueva                                                       |
-| **Auditoría**: acciones de GitHub con Node 20 y ocho avisos del lint            | A Node 24; los avisos, arreglados sin apagar la regla                                        |
-| **ESTADO.md, resumido**                                                         | Esto. Las lecciones y el detalle, en su documento                                            |
-
-**La auditoría no encontró** ninguna tabla sin seguridad por filas, ningún dato
-cruzado entre negocios, ningún producto en negativo, ningún fichaje imposible ni ningún
-cierre duplicado; y el libro de movimientos cuadra entero. `anon` y `authenticated` no
-tienen acceso al esquema `estook`.
+| Qué                                  | Cómo                                                                                                                                                     |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Los vacíos, con dibujo**           | Veinte dibujos de una familia (`packages/ui/src/dibujos/`), pintados con las fichas y **cada uno en su trozo**; obligatorio en `EstadoVacio`             |
+| **Un botón que hace lo que dice**    | Las acciones del catálogo (`usarAccion`, `BotonDeAccion`), solo a quien puede; otra salida, en texto y debajo                                            |
+| **Lo filtrado que no está**          | `NadaConEso`: ofrece quitar el filtro, nunca crear algo                                                                                                  |
+| **La cámara vacía**                  | El Resumen enseña cómo empezar (sin «Cómo va»); Productos enseña solo el vacío                                                                           |
+| **Lo del futuro que quedaba**        | Fuera de la hoja de merma y de Mermas (regla de la 0045)                                                                                                 |
+| **El contraste, medido en pantalla** | 17 pantallas, dos temas, ordenador y móvil. Encontró el color de la app como texto en claro (3,46:1): `acentoParaTexto`                                  |
+| **Las capturas**                     | 32, en claro y oscuro, comparadas en Linux con Ubuntu fijo; las hace **Vera** (Bar Ribera). Las nuevas, con `pnpm capturas:traer`                        |
+| **Las fotos de producto**            | Migración `0045`, cubo `fotos-de-producto`, reducidas en el teléfono (800 px WebP, JPG en Safari, miniatura de 160), en la lista, la ficha y el recuento |
+| **De paso**                          | El logo comprueba sus primeros bytes; un nombre largo ya no pisa la cantidad en el móvil                                                                 |
 
 ### Lo que todavía NO está en la app
 
 Para que nadie dé por hecho lo que solo está escrito:
 
 - **De las veinte mejoras, cuatro en producción**: la 1 (modo cocina), la 2 (las cifras
-  de cada app), la 3 (el Resumen) y la 7 (Ajustes en secciones). Las demás tienen su
+  de cada app), la 3 (el Resumen) y la 7 (Ajustes en secciones). **La 4 y la 5, en su
+  pull request**: hasta que se fusione, en `estook.com` no hay dibujos ni fotos. Las demás tienen su
   plan y su entrega en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
 - **Del admin, solo la puerta** (A1): ni clientes, ni vendedores y códigos, ni ventas.
   Los niveles comercial, soporte y vendedor existen en la base y no se pueden dar.
@@ -110,7 +99,7 @@ Cuatro organizaciones reales, además de las tres de ejemplo:
 | `prueba1`     | 1       | `pendiente_de_pago` · alta en paso 0 |
 | `prueba1-1`   | 1       | prueba, hasta el 28 de sep           |
 
-Uso real: 11 productos, 316 movimientos, 7 cierres de caja, 25 fichajes y 4 pedidos.
+Uso real, leído el 23-sep: 11 productos, 316 movimientos, 7 cierres de caja, 25 fichajes y 4 pedidos.
 `ikatz` es el negocio de Richi; `burger-king` es de prueba, lo creó él; `prueba1` y
 `prueba1-1` se crearon con Google el 17-sep.
 
@@ -128,8 +117,9 @@ Uso real: 11 productos, 316 movimientos, 7 cierres de caja, 25 fichajes y 4 pedi
 (IKATZ enlazado desde el 16-sep) · los datos del titular en privacidad y condiciones
 (#59).
 
-**Ahora:** fusionar el pull request del repaso, **aplicar las cuatro migraciones** y
-**desplegar la API**, en ese orden. Los pasos, uno a uno, en
+**Ahora:** fusionar el pull request de V, segunda parte, **aplicar la migración `0045`**
+y **desplegar la API**, en ese orden, y mirar en el móvil la foto de un producto, los
+vacíos y el oscuro. **El cubo de las fotos no hay que prepararlo**: ya está. Los pasos, uno a uno, en
 [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md).
 
 **Lo que desbloquea E2:**
@@ -244,8 +234,9 @@ reescribir, y tres comprobaciones obligatorias, **sin tilde**: `Calidad`, `Const
 y presupuestos` (que lleva dentro las pruebas de pantalla) y `Migraciones reversibles`—.
 **Nunca añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
-**El peso inicial** (`pnpm tamano`, 23-sep, en la rama de V): `app` **292,3 KB**, `admin`
-**209,8 KB**, `web` 166,0 y `carta` 167,1; de cada uno, 106,1 KB son la tipografía. La
+**El peso inicial** (`pnpm tamano`, 24-sep, en la rama de V, segunda parte): `app`
+**295,9 KB**, `admin` **212,1 KB**, `web` 166,2 y `carta` 166,0; de cada uno, 106,1 KB
+son la tipografía. Los veinte dibujos de los vacíos no suman: cada uno va en su trozo. La
 referencia es 250 y **se mide, no bloquea**: manda el presupuesto de velocidad, que pasa
 en la prueba de pantalla. Compras, Recharts y `@dnd-kit` se cargan aparte.
 
@@ -280,53 +271,54 @@ El resto, con su porqué, en [`docs/lecciones.md`](docs/lecciones.md).
 
 En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 
-| Núm      | Qué                                                                     |
-| -------- | ----------------------------------------------------------------------- |
-| **0001** | GitHub Pages en vez de Netlify                                          |
-| **0002** | La API en Hono sobre Supabase Edge Functions                            |
-| **0003** | M0 crea el esqueleto mínimo de alcances                                 |
-| **0004** | El presupuesto de velocidad de B7, reconstruido                         |
-| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción       |
-| **0006** | El motor fiscal: sin regla, no se inventa un tipo                       |
-| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta       |
-| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages       |
-| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`        |
-| **0010** | El login es nuestro, no de Supabase Auth                                |
-| **0011** | Las pruebas de extremo a extremo levantan la API de verdad              |
-| **0012** | El producto nace en M6, y M5 le deja el diccionario                     |
-| **0013** | Google Places se aplaza a M23                                           |
-| **0014** | Un módulo reacciona a otro en la misma transacción                      |
-| **0015** | Fogón es una burbuja que va contigo, no una pestaña por app             |
-| **0016** | El reloj es `pg_cron` llamando a nuestra API · se monta con Google      |
-| **0017** | Cómo avisa Estook: pantalla, correo con Resend y push                   |
-| **0018** | Cada app tiene destinos, y cada destino sus vistas                      |
-| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato         |
-| **0020** | Un catálogo de acciones, y una acción es una dirección                  |
-| **0021** | El producto se mide en una unidad; los gramajes son de la ficha         |
-| **0022** | El reparto tiene sitio antes que conexión; Uber Eats el primero         |
-| **0023** | Fogón nunca arma su contexto en el navegador: lo arma el servidor       |
-| **0024** | El color del local pinta la app, y hay dos temas                        |
-| **0025** | Fichar pide dónde, y no bloquea nunca                                   |
-| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe             |
-| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo         |
-| **0028** | El alta de producto pregunta cuánto hay, no cuánto se aprovecha         |
-| **0029** | Lo que va a una columna JSON viaja como texto                           |
-| **0030** | El local se sitúa con Google, al final de M7, con tope de gasto         |
-| **0031** | El Calendario recoge lo de todos los módulos, con quién lo ve           |
-| **0032** | Las compras: Estook no manda, el albarán mueve y la factura confirma    |
-| **0033** | Los precios de compra se guardan sin IVA, y se escriben como venga      |
-| **0034** | Nadie gestiona el acceso de su igual: lo hace quien está por encima     |
-| **0035** | El alta pregunta cómo se compra, y la cuenta la hace el dominio         |
-| **0036** | La dirección es `estook.com`, y la sabe el código                       |
-| **0037** | Lo que sale de cámara dice si se vendió; el dinero lo cuenta la caja    |
-| **0038** | Cada producto es de una zona, y cada uno trabaja con la suya            |
-| **0039** | El Panel se monta como un móvil, y cada uno se pone sus cifras          |
-| **0040** | El local se busca en Google, con el tope contado antes de llamar        |
-| **0041** | El panel de administración: el cliente es la organización               |
-| **0042** | Registro abierto con correo o Google, y se paga al empezar salvo oferta |
-| **0043** | Canarias entra con IGIC; Ceuta y Melilla esperan; foral y SII, fuera    |
-| **0044** | Las cifras de cada app: la misma tarjeta, las mismas cuentas            |
-| **0045** | El aspecto y el orden: Resumen, mosaico y Ajustes por secciones         |
+| Núm      | Qué                                                                            |
+| -------- | ------------------------------------------------------------------------------ |
+| **0001** | GitHub Pages en vez de Netlify                                                 |
+| **0002** | La API en Hono sobre Supabase Edge Functions                                   |
+| **0003** | M0 crea el esqueleto mínimo de alcances                                        |
+| **0004** | El presupuesto de velocidad de B7, reconstruido                                |
+| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción              |
+| **0006** | El motor fiscal: sin regla, no se inventa un tipo                              |
+| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta              |
+| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages              |
+| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`               |
+| **0010** | El login es nuestro, no de Supabase Auth                                       |
+| **0011** | Las pruebas de extremo a extremo levantan la API de verdad                     |
+| **0012** | El producto nace en M6, y M5 le deja el diccionario                            |
+| **0013** | Google Places se aplaza a M23                                                  |
+| **0014** | Un módulo reacciona a otro en la misma transacción                             |
+| **0015** | Fogón es una burbuja que va contigo, no una pestaña por app                    |
+| **0016** | El reloj es `pg_cron` llamando a nuestra API · se monta con Google             |
+| **0017** | Cómo avisa Estook: pantalla, correo con Resend y push                          |
+| **0018** | Cada app tiene destinos, y cada destino sus vistas                             |
+| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato                |
+| **0020** | Un catálogo de acciones, y una acción es una dirección                         |
+| **0021** | El producto se mide en una unidad; los gramajes son de la ficha                |
+| **0022** | El reparto tiene sitio antes que conexión; Uber Eats el primero                |
+| **0023** | Fogón nunca arma su contexto en el navegador: lo arma el servidor              |
+| **0024** | El color del local pinta la app, y hay dos temas                               |
+| **0025** | Fichar pide dónde, y no bloquea nunca                                          |
+| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe                    |
+| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo                |
+| **0028** | El alta de producto pregunta cuánto hay, no cuánto se aprovecha                |
+| **0029** | Lo que va a una columna JSON viaja como texto                                  |
+| **0030** | El local se sitúa con Google, al final de M7, con tope de gasto                |
+| **0031** | El Calendario recoge lo de todos los módulos, con quién lo ve                  |
+| **0032** | Las compras: Estook no manda, el albarán mueve y la factura confirma           |
+| **0033** | Los precios de compra se guardan sin IVA, y se escriben como venga             |
+| **0034** | Nadie gestiona el acceso de su igual: lo hace quien está por encima            |
+| **0035** | El alta pregunta cómo se compra, y la cuenta la hace el dominio                |
+| **0036** | La dirección es `estook.com`, y la sabe el código                              |
+| **0037** | Lo que sale de cámara dice si se vendió; el dinero lo cuenta la caja           |
+| **0038** | Cada producto es de una zona, y cada uno trabaja con la suya                   |
+| **0039** | El Panel se monta como un móvil, y cada uno se pone sus cifras                 |
+| **0040** | El local se busca en Google, con el tope contado antes de llamar               |
+| **0041** | El panel de administración: el cliente es la organización                      |
+| **0042** | Registro abierto con correo o Google, y se paga al empezar salvo oferta        |
+| **0043** | Canarias entra con IGIC; Ceuta y Melilla esperan; foral y SII, fuera           |
+| **0044** | Las cifras de cada app: la misma tarjeta, las mismas cuentas                   |
+| **0045** | El aspecto y el orden: Resumen, mosaico y Ajustes por secciones                |
+| **0046** | Los vacíos invitan, el oscuro se mide y fotografía, y la foto de cada producto |
 
 > **Ojo con los números:** las decisiones y las migraciones se numeran aparte. La
 > **decisión** 0041 es el panel de administración; la **migración** `0041` es la de que
@@ -362,7 +354,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`, `packages/ui/fuentes/`
   y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0044`.** Se amplían con una `0045`, nunca se editan
+- **Las migraciones `0001` a `0045`.** Se amplían con una `0046`, nunca se editan
   (regla 2). Y al ampliar una función SQL, **se copia la original entera**.
 - **Un valor de un tipo enumerado no se quita**: Postgres no sabe. Se añade con
   `add value if not exists`, y no se usa en la misma transacción.
@@ -416,30 +408,37 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Google, solo por la API y por su puerto**, y todo lo que lo llama pasa antes por
   `contar`, que es el tope.
 - **El precio de venta no vive en el producto**: es del plato, en la carta (M10).
+- **Los vacíos** (0046): todo `EstadoVacio` lleva su dibujo de `dibujos/catalogo.ts`, y
+  los dibujos **solo se importan con `import()`**, sin un color escrito a mano: lo vigila
+  `dibujos.prueba.ts`. Lo filtrado que no está va en `NadaConEso`.
+- **El acento como texto va en `acentoParaTexto`**, nunca a secas: en claro no llega a
+  4,5:1. Lo mide `contraste-de-los-temas.spec.ts` en pantallas de verdad.
+- **Las capturas de referencia son las de Linux** (`pruebas/e2e/capturas/linux/`), y el
+  trabajo que las compara lleva **Ubuntu fijo** (`ubuntu-24.04`). Una pantalla que cambia
+  a propósito se da por buena trayendo la nueva con `pnpm capturas:traer` y **mirándola**.
+  **Con Vera no entra ninguna otra prueba**: es la de las capturas.
+- **Las fotos de producto** (0046): la fila guarda claves, nunca direcciones; se sube
+  antes de escribir la fila, se toma la fila con `for update` antes de subir, y se mira
+  la firma de los bytes. Los enlaces se firman **de una tanda** (`enlaces`).
 
 ---
 
 ## 8 · El siguiente paso
 
-**Primero, el repaso del 23-sep** (rama `el-repaso-del-23-sep`, con su pull request):
-Richi lo fusiona, aplica las migraciones `0041` a `0044` y despliega la API. Luego mira
-en el móvil la muesca, el zoom, la letra pequeña, la merma y la ficha de un trabajador.
+**Primero, V, segunda parte** (rama `v-vacios-oscuro-y-fotos`, con su pull request):
+Richi la fusiona, aplica la migración `0045` y despliega la API. Luego mira en el móvil
+**la foto de un producto** (hacerla con la cámara desde su ficha), los vacíos y el oscuro
+(regla 29: medir el contraste no basta). Con eso, **V está terminada**: los vacíos invitan a
+empezar y las capturas en oscuro se comparan en la prueba, que era lo que faltaba de su
+«terminado cuando».
 
-**Luego, V · segunda parte**, en una rama nueva:
-
-- **4 · Estados vacíos con dibujo y una acción**, cargados aparte. Con la cámara vacía,
-  Inventario · Resumen enseña cómo empezar y no «Cómo va»; los vacíos que hoy dicen «Se
-  empieza por Productos» ganan su botón.
-- **5 · El tema oscuro con capturas que se comparan en la prueba, y las fotos de
-  producto** en el almacén del logo. Lo del tema del sistema ya está hecho (0045).
-
-**Terminado cuando** (del plan): las tres apps enseñan sus cifras —hecho—; el modo cocina
-se mide en las pantallas —hecho—; cada app abre con su Resumen —hecho—; los vacíos
-invitan a empezar; y las capturas en oscuro se comparan en la prueba.
+**Luego, O · Lo que se ordena** (mejoras 6, 8, 9 y 17, y el QR definitivo de la 20), en
+una rama nueva. **E2 · Stripe** en paralelo, en cuanto esté la cuenta de Richi.
 
 **Cómo se comprueba que no rompe lo de antes:** `.\estook.cmd verifica`,
 `.\estook.cmd prueba:e2e:completa` (que incluye la cobertura) y, tras desplegar,
-`.\estook.cmd bd:comprobar-api`.
+`.\estook.cmd bd:comprobar-api`. Si una captura sale en rojo en GitHub,
+`pnpm capturas:traer`, mirarla y subirla si es lo que se quería.
 
 ---
 

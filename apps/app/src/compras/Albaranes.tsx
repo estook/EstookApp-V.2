@@ -21,6 +21,8 @@ import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
+import { usarAccion } from '../ganchos/usarAccion.ts';
+import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { comoDinero, comoSeLeeLaFecha } from '../inventario/contrato.ts';
 import { Cuantos, Dato, Filtros } from './Comun.tsx';
 import {
@@ -46,6 +48,7 @@ type Filtro = 'todos' | 'sin_factura' | 'con_incidencias' | 'devoluciones';
  */
 export function Albaranes() {
   const albaran = usarAbiertoEnLaDireccion('albaran');
+  const recibir = usarAccion('recibir');
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [limite, setLimite] = useState(50);
   const lista = usarLectura<MisAlbaranes>('mis_albaranes', {
@@ -166,20 +169,52 @@ export function Albaranes() {
                 : []),
             ]}
             cuandoNoHay={
-              <EstadoVacio
-                compacto
-                titulo={
-                  filtro === 'todos'
-                    ? 'Todavía no ha llegado nada'
-                    : filtro === 'sin_factura'
+              filtro === 'todos' ? (
+                <EstadoVacio
+                  compacto
+                  dibujo="albaranes"
+                  acento="var(--color-app-inventario)"
+                  titulo="Todavía no ha llegado nada"
+                  frase="Cada vez que se recibe un pedido, o llega algo sin pedido, queda aquí su albarán."
+                  {...(recibir === null
+                    ? { sinAccionPorque: 'Lo recibe quien lleva las compras del local.' }
+                    : {
+                        accion: (
+                          <BotonDeAccion accion={recibir} texto="Recibir lo que ha llegado" />
+                        ),
+                      })}
+                />
+              ) : (
+                // Un filtro que no encuentra nada: casi siempre, buena noticia. Lo que
+                // se ofrece es volver a todos, no crear algo (entrega V, punto 4).
+                <EstadoVacio
+                  compacto
+                  dibujo={filtro === 'devoluciones' ? 'albaranes' : 'todo-en-orden'}
+                  acento="var(--color-app-inventario)"
+                  titulo={
+                    filtro === 'sin_factura'
                       ? 'Todos los albaranes tienen su factura'
                       : filtro === 'con_incidencias'
                         ? 'Ningún albarán con incidencias'
                         : 'Ninguna devolución'
-                }
-                frase="Cada vez que se recibe un pedido, o llega algo sin pedido, queda aquí su albarán."
-                sinAccionPorque="Se reciben desde Pedidos, con «Ha llegado algo»."
-              />
+                  }
+                  frase={
+                    filtro === 'devoluciones'
+                      ? 'Lo que se devuelve a un proveedor se apunta desde el albarán en que llegó.'
+                      : 'Nada pendiente por aquí.'
+                  }
+                  accion={
+                    <Boton
+                      tono="secundario"
+                      onClick={() => {
+                        setFiltro('todos');
+                      }}
+                    >
+                      Ver todos los albaranes
+                    </Boton>
+                  }
+                />
+              )
             }
           />
         )}

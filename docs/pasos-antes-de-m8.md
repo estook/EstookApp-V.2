@@ -2,23 +2,123 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 23 de septiembre de 2026, leyendo la base y la API.
+> Comprobado en producción el 24 de septiembre de 2026, leyendo la base y la API.
 >
-> | Qué                        | Cómo está                                                                                |
-> | -------------------------- | ---------------------------------------------------------------------------------------- |
-> | Pull requests              | **Todas fusionadas hasta la #65**. El repaso del 23-sep, para fusionar (primer apartado) |
-> | La base de datos           | **40 de 40** migraciones, igual que `main`                                               |
-> | La API                     | **Desplegada el 23 de septiembre a las 18:43**, con la #64 dentro                        |
-> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor              |
-> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                         |
-> | **V · lo que se ve**       | **Primera parte en producción** (#64 y #65). Faltan los puntos 4 y 5                     |
-> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                             |
+> | Qué                        | Cómo está                                                                            |
+> | -------------------------- | ------------------------------------------------------------------------------------ |
+> | Pull requests              | **Todas fusionadas hasta la #66**. V, segunda parte, para fusionar (primer apartado) |
+> | La base de datos           | **44 de 44** migraciones, igual que `main`. La rama trae la `0045`                   |
+> | La API                     | **Desplegada el 24 de septiembre a las 00:03**, con la #66 dentro                    |
+> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor          |
+> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                     |
+> | **V · lo que se ve**       | **Primera parte en producción** (#64, #65). **La segunda, en su pull request**       |
+> | El almacén de las fotos    | **Hecho**: el cubo `fotos-de-producto` lo creé el 24-sep, y está comprobado          |
+> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                         |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## El repaso del 23 de septiembre · lo que te toca ahora
+## V, segunda parte · los vacíos, el oscuro y las fotos · lo que te toca ahora
+
+**Qué trae:** los vacíos con su dibujo y un botón que hace lo que dice, el tema oscuro
+medido pantalla a pantalla (y un arreglo que salió en el claro), las capturas que se
+comparan en GitHub y **la foto de cada producto**. Todo contado en `ESTADO.md`,
+apartado 1, y en la decisión 0046.
+
+**Son tres pasos, seguidos y en este orden:** fusionar, aplicar **una** migración y
+desplegar la API. El almacén de las fotos **ya está preparado**: lo hice yo el 24-sep, no
+tienes que hacer nada ahí. Entre fusionar y desplegar, poner una foto a un producto dirá
+que no se ha podido: es normal, se arregla en el paso 3.
+
+### 1 · Fusionar
+
+1. En **github.com**, pestaña **Pull requests** → **«V, segunda parte: los vacíos, el
+   oscuro y las fotos»**.
+2. Abajo, las **tres comprobaciones en verde**: `Calidad`, `Construccion y
+presupuestos` y `Migraciones reversibles`. Si alguna está en amarillo, espera. **Si
+   alguna sale en rojo, para y avísame.**
+3. **Merge pull request** → **Confirm merge**. Tiene que salir en morado «merged».
+
+### 2 · Aplicar la migración
+
+**Qué es:** la `0045` le da a cada producto el sitio de su foto (dónde está guardada
+la foto y su miniatura). No cambia nada de lo que ya hay.
+
+**Dónde:** en **PowerShell**, en la carpeta del proyecto
+(`C:\Users\rixy-\Documents\GitHub\EstookApp-V.2`). Primero trae lo fusionado:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+**Qué tiene que salir:** «Fast-forward» y una lista de ficheros. Ahora la migración:
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0045_la_foto_del_producto.sql ... hecho
+  1 migracion(es) aplicadas · 45 en total
+```
+
+Si dice **«la base de datos ya estaba al dia»**, el `git pull` no ha bajado lo fusionado:
+vuelve a hacerlo. **Si sale un error en rojo, no repitas el comando: cópiamelo tal cual.**
+
+Y se comprueba:
+
+```bash
+.\estook.cmd bd:comprobar
+```
+
+**Qué tiene que decir:** «Migraciones aplicadas: **45** (hasta la **45**)».
+
+### 3 · Volver a desplegar la API
+
+1. En **github.com**, pestaña **Actions** → a la izquierda, **Desplegar la API**.
+2. **Run workflow**: deja la rama en `main`, escribe **`desplegar`** y pulsa el botón
+   verde **Run workflow**.
+3. Espera al **círculo verde** (un par de minutos). Si sale una **cruz roja**, avísame.
+   Si dice que la base va por detrás, es que falta el paso 2.
+
+Cuando esté en verde, en PowerShell:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «y conoce todas las consultas» y «y conoce todos los comandos».
+
+### 4 · Mirarlo en el móvil (esto no lo puede hacer ninguna prueba)
+
+Abre `estook.com/app/` y recarga (**Ctrl + F5** en el ordenador; en el móvil, cierra la
+app y ábrela otra vez).
+
+- **Una foto:** Inventario → Productos → abre un producto. Arriba a la izquierda, un
+  recuadro con una cámara que dice **«Poner foto»**. Tócalo en el móvil: te deja
+  **hacer la foto con la cámara** o elegirla de la galería. Tiene que salir «Foto
+  puesta», la foto pequeña en la ficha y **en la lista de productos**. Tocando la foto
+  se ve grande, y ahí están «Cambiar la foto» y «Quitar la foto».
+- **Sin foto**, cada producto lleva sus iniciales en un recuadro del color de su
+  categoría.
+- **Los vacíos:** Inventario → Compras → Pedidos → **Cancelados**: un dibujo, «Ningún
+  pedido cancelado» y el botón «Ver los abiertos». Busca en Productos algo que no
+  exista: «Nada con …» y **«Quitar el filtro»**.
+- **El oscuro:** Ajustes → Este aparato → **Oscuro**, y recorre las pantallas que más
+  uses. Si algo no se lee bien, hazle una captura y me la pasas.
+- **El claro:** arriba de Productos, la pestaña elegida («Todo») se lee mejor: el color
+  de Inventario ahora es más oscuro en el texto.
+
+---
+
+## El repaso del 23 de septiembre · **hecho** (#66)
 
 **Qué trae:** lo que viste en el móvil —la muesca, el zoom al tocar un campo, la letra
 «Pequeña», Fogón repetido arriba, «11 por debajo del mínimo» con tres en la lista, la

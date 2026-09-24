@@ -338,7 +338,7 @@ Las cifras siempre con `font-variant-numeric: tabular-nums`. Tres tamaños de le
 | Cuaderno    | `notebook-pen`     | `#7A6A56`    |
 | Fogón       | `flame`            | `--naranja`  |
 
-El acento se usa con moderación: el icono de la app —**en su pastilla, en la cabecera de la pantalla y de cada tarjeta**— y el sector de la rueda. **El fondo y los botones no cambian de color entre apps**, o parecerían cuatro productos distintos. Hasta la entrega V el acento iba en una línea de tres píxeles encima de cada tarjeta, y se quitó: era lo que más envejecía la aplicación ([0045](../decisiones/0045-el-aspecto-y-el-orden.md)).
+El acento se usa con moderación: el icono de la app —**en su pastilla, en la cabecera de la pantalla y de cada tarjeta**— y el sector de la rueda. **El fondo y los botones no cambian de color entre apps**, o parecerían cuatro productos distintos. Hasta la entrega V el acento iba en una línea de tres píxeles encima de cada tarjeta, y se quitó: era lo que más envejecía la aplicación ([0045](../decisiones/0045-el-aspecto-y-el-orden.md)). Y **cuando lo que lleva el acento es texto** —la vista elegida, el destino activo de la barra del móvil— va en `acentoParaTexto`, mezclado con el color del texto: el acento a secas no llega a 4,5:1 en claro, y mezclado se oscurece en claro y se aclara en oscuro ([0046](../decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)).
 
 > **Un icono dice lo que hace la función, no a quién va dirigida.** Nada de símbolos de accesibilidad para marcar opciones que usa cualquiera: para «reducir movimiento» va una rejilla, y para «se maneja con teclado» va un teclado.
 
@@ -346,7 +346,7 @@ El acento se usa con moderación: el icono de la app —**en su pastilla, en la 
 
 Se construyen una vez en `packages/ui` y **nadie escribe uno nuevo sin justificarlo**:
 
-`Boton` (principal, secundario, texto, peligro · tamaños m y l · estado cargando) · `Campo` (texto, número, moneda, fecha, hora, selección, búsqueda) · `Selector` · `Interruptor` · `Tarjeta` (con su icono, su contador y su enlace «Ver ›») · `Mosaico` (las tarjetas de una pantalla, cada una del alto de lo que lleva) · `Hoja` (deslizante en móvil al 92 %) · `PanelLateral` · `Tabla` (que se convierte en tarjetas por debajo de 768 px) · `Lista` · `Cifra` (con su comparación, su objetivo y su origen debajo) · `Grafica` · `Aviso` · `EstadoVacio` (siempre con acción) · `Buscador` · `Etiqueta` · `Avatar` · `Migas` · `Paginador` · `Deshacer` · `Cargando` (esqueletos, nunca ruedas girando) · `Alerta` (con su causa, su impacto y su botón).
+`Boton` (principal, secundario, texto, peligro · tamaños m y l · estado cargando) · `Campo` (texto, número, moneda, fecha, hora, selección, búsqueda) · `Selector` · `Interruptor` · `Tarjeta` (con su icono, su contador y su enlace «Ver ›») · `Mosaico` (las tarjetas de una pantalla, cada una del alto de lo que lleva) · `Hoja` (deslizante en móvil al 92 %) · `PanelLateral` · `Tabla` (que se convierte en tarjetas por debajo de 768 px) · `Lista` · `Cifra` (con su comparación, su objetivo y su origen debajo) · `Grafica` · `Aviso` · `EstadoVacio` (con su dibujo y una sola acción que dice lo que hace) · `NadaConEso` (el vacío de un filtro: ofrece quitarlo, nunca crear algo) · `Dibujo` (los de los vacíos: una familia, pintada con las fichas y cargada aparte) · `FotoDeProducto` (la foto, o la inicial con el color de su categoría) · `Buscador` · `Etiqueta` · `Avatar` · `Migas` · `Paginador` · `Deshacer` · `Cargando` (esqueletos, nunca ruedas girando) · `Alerta` (con su causa, su impacto y su botón).
 
 **Reglas de componente:**
 
@@ -490,7 +490,7 @@ La animación explica de dónde viene lo que aparece. **Si no explica nada, sobr
 
 ## B8 · Accesibilidad
 
-Contraste mínimo 4,5:1 en texto y 3:1 en iconos con significado · foco visible siempre, con anillo naranja de 2 px · toda la app manejable con teclado · etiquetas en todos los campos, nunca solo un texto de ejemplo dentro · los colores de estado acompañados de icono · `aria-live` para los avisos · la rueda con alternativa en rejilla.
+Contraste mínimo 4,5:1 en texto y 3:1 en iconos con significado · **medido en las pantallas de verdad y en los dos temas**, no solo en la paleta: una prueba recorre las pantallas y mide cada texto contra el fondo que tiene debajo ([0046](../decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)) · foco visible siempre, con anillo naranja de 2 px · toda la app manejable con teclado · etiquetas en todos los campos, nunca solo un texto de ejemplo dentro · los colores de estado acompañados de icono · `aria-live` para los avisos · la rueda con alternativa en rejilla.
 
 > Y una regla de lenguaje: **la accesibilidad no se marca con el símbolo de la discapacidad.** Reducir el movimiento lo agradece quien se marea, quien tiene migraña y quien simplemente lo prefiere; el teclado lo usa cualquiera que trabaje rápido. Se nombra la función, no a quién se supone que va dirigida.
 

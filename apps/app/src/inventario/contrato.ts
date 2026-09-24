@@ -86,6 +86,11 @@ export interface ProductoEnLista {
    * era inventarse un tercer sitio para un dato que ya tiene el suyo.
    */
   readonly zona: Zona;
+  /**
+   * El enlace de su miniatura de 160 px (entrega V). Firmado y con caducidad: no
+   * se guarda en ningún sitio. Nulo, o que no venga: sin foto, y se pinta la inicial.
+   */
+  readonly miniatura?: string | null;
 }
 
 export interface CategoriaDelLocal {
@@ -171,6 +176,8 @@ export interface UnProducto {
   readonly puedeVerPrecios: boolean;
   /** Si en este local los precios de compra se escriben con IVA. */
   readonly preciosConIva: boolean;
+  /** El enlace de su foto de 800 px (entrega V). Nulo: no tiene. */
+  readonly foto: string | null;
 }
 
 export interface InventarioHoy {

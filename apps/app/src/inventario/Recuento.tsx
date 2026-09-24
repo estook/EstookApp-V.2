@@ -19,6 +19,8 @@ import {
   ErrorEnCristiano,
   EstadoVacio,
   Etiqueta,
+  FotoDeProducto,
+  NadaConEso,
   Selector,
   Tarjeta,
   clases,
@@ -27,6 +29,8 @@ import { IconoBuscar, IconoDocumento } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
+import { usarAccion } from '../ganchos/usarAccion.ts';
+import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { conUnidadDeUso, type MisProductos, type ProductoEnLista } from './contrato.ts';
 
 /**
@@ -78,6 +82,7 @@ export function Recuento() {
   } | null>(null);
 
   const puedeContar = puedeEditar(permisos, 'accion.cerrar_recuento');
+  const alta = usarAccion('nuevo-producto');
 
   const lista = usarLectura<MisProductos>('mis_productos', {
     ...(zona === '' ? {} : { zona }),
@@ -90,6 +95,7 @@ export function Recuento() {
       <Tarjeta titulo="Recuento">
         <EstadoVacio
           compacto
+          dibujo="candado"
           titulo="Esto no lo llevas tú"
           frase="Contar la cámara y corregir lo que dice el libro lo hace quien responde de lo que falta."
           sinAccionPorque="Tu acceso permite mirar y apuntar, no cerrar un recuento."
@@ -324,12 +330,46 @@ export function Recuento() {
         }
       >
         {productos.length === 0 ? (
-          <EstadoVacio
-            compacto
-            titulo="Nada que contar aquí"
-            frase="Prueba con otra zona, o quita lo que has escrito en el buscador."
-            sinAccionPorque="El género se da de alta en «Productos»."
-          />
+          texto.trim() !== '' ? (
+            <NadaConEso
+              buscado={texto}
+              frase="Prueba con menos letras, o cuenta otra zona."
+              quitar="Borrar la búsqueda"
+              alQuitar={() => {
+                setTexto('');
+              }}
+            />
+          ) : zona !== '' ? (
+            // Una zona sin género —la limpieza, en un local que no la lleva— no es
+            // una cámara vacía: lo que resuelve es mirar las demás.
+            <EstadoVacio
+              compacto
+              dibujo="buscar"
+              titulo={`Nada que contar en ${NOMBRE_DE_LA_ZONA[zona].toLowerCase()}`}
+              frase="Esta zona no tiene género dado de alta. Puedes contar las demás."
+              accion={
+                <Boton
+                  tono="secundario"
+                  onClick={() => {
+                    setZona('');
+                  }}
+                >
+                  Contar todas las zonas
+                </Boton>
+              }
+            />
+          ) : (
+            <EstadoVacio
+              compacto
+              dibujo="camara"
+              acento="var(--color-app-inventario)"
+              titulo="Todavía no hay nada que contar"
+              frase="Se cuenta lo que está dado de alta. Empieza por lo que más compras."
+              {...(alta === null
+                ? { sinAccionPorque: 'El género lo da de alta quien lleva el inventario.' }
+                : { accion: <BotonDeAccion accion={alta} texto="Añade tu primer producto" /> })}
+            />
+          )
         ) : (
           <ul className="flex flex-col divide-y divide-borde">
             {productos.map((p) => (
@@ -446,6 +486,12 @@ function LineaDeRecuento({
 
   return (
     <li className="flex flex-wrap items-center gap-e3 py-e2">
+      {/* La foto, o su inicial: contando la cámara, se reconoce antes que se lee. */}
+      <FotoDeProducto
+        nombre={producto.nombre}
+        categoria={producto.categoria}
+        enlace={producto.miniatura}
+      />
       <span className="min-w-[10rem] flex-1">
         <span className="block font-medium">{producto.nombre}</span>
         <span className="block text-etiqueta text-texto-tenue">

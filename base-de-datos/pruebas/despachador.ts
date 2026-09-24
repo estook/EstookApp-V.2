@@ -6,6 +6,7 @@ import type { SesionViva, Sql } from '../../servidor/infraestructura/postgres.ts
 import type { LugaresDeGoogle } from '../../servidor/infraestructura/google.ts';
 import type { CorreoSaliente } from '../../servidor/infraestructura/correo.ts';
 import type { IdentidadDeGoogle } from '../../servidor/infraestructura/identidad-de-google.ts';
+import type { AlmacenDeFicheros } from '../../servidor/infraestructura/almacen.ts';
 
 /**
  * El despachador de verdad, contra la base efímera de las pruebas (M7).
@@ -70,6 +71,8 @@ export function montarLaApi(
     readonly google?: LugaresDeGoogle | null;
     readonly correo?: CorreoSaliente | null;
     readonly identidadDeGoogle?: IdentidadDeGoogle | null;
+    /** El almacén de ficheros: sin decir nada, no hay (como en la API sin credenciales). */
+    readonly almacen?: AlmacenDeFicheros | null;
   } = {},
 ): ApiDePrueba {
   // PGlite es una sola conexión: las transacciones van de una en una.
@@ -130,7 +133,7 @@ export function montarLaApi(
             sql: adaptador(bd),
             personaId: sesion?.personaId ?? null,
             sesion,
-            almacen: null,
+            almacen: opciones.almacen ?? null,
             google: opciones.google ?? null,
             correo: opciones.correo ?? null,
             identidadDeGoogle: opciones.identidadDeGoogle ?? null,

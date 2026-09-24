@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   NOMBRE_DEL_TRAMO,
   TRAMOS_QUE_SE_MIRAN,
@@ -13,6 +14,7 @@ import {
   Cargando,
   EstadoVacio,
   Etiqueta,
+  NadaConEso,
   Selector,
   Tarjeta,
 } from '@estook/ui';
@@ -65,8 +67,11 @@ export function Movimientos({
   readonly vista: string;
   readonly alAbrirProducto: (id: string) => void;
 }) {
+  const navegar = useNavigate();
   const [texto, setTexto] = useState('');
   const [tramo, setTramo] = useState<TramoQueSeMira>('trimestre');
+  /** El tramo siguiente, más largo: lo que ofrece el vacío. Ninguno si ya es el año. */
+  const masAtras = TRAMOS_QUE_SE_MIRAN[TRAMOS_QUE_SE_MIRAN.indexOf(tramo) + 1];
   /**
    * Lo que se teclea, esperado un momento antes de preguntar.
    *
@@ -162,17 +167,49 @@ export function Movimientos({
       </div>
 
       {porDia.length === 0 ? (
-        <Tarjeta titulo="Nada apuntado">
-          <EstadoVacio
-            compacto
-            titulo={buscado.trim() === '' ? 'Nada en este tramo' : 'Nada con eso'}
-            frase={
-              buscado.trim() === ''
-                ? `No hay movimientos en ${NOMBRE_DEL_TRAMO[tramo].toLowerCase()}. Prueba a mirar más atrás, o apunta lo primero que entre o salga.`
-                : 'Prueba con menos letras, mira más atrás, o cambia de vista arriba.'
-            }
-            sinAccionPorque="Se apunta desde la ficha de cada producto, en «Productos»."
-          />
+        <Tarjeta>
+          {buscado.trim() !== '' ? (
+            // Lo buscado que no está: se ofrece borrarlo, no apuntar nada (V, punto 4).
+            <NadaConEso
+              buscado={buscado}
+              frase="Prueba con menos letras, o mira más atrás."
+              quitar="Borrar la búsqueda"
+              alQuitar={() => {
+                setTexto('');
+              }}
+            />
+          ) : (
+            <EstadoVacio
+              compacto
+              dibujo="libro"
+              acento="var(--color-app-inventario)"
+              titulo="Nada en este tramo"
+              frase={`No hay movimientos en ${NOMBRE_DEL_TRAMO[tramo].toLowerCase()}. Lo que entra y lo que sale se apunta en cada producto.`}
+              accion={
+                // Si se puede mirar más atrás, eso es lo que resuelve; si ya se mira
+                // el año entero, lo que falta es apuntar, y se apunta en Productos.
+                masAtras === undefined ? (
+                  <Boton
+                    tono="secundario"
+                    onClick={() => {
+                      navegar('/inventario/productos/todo');
+                    }}
+                  >
+                    Ir a Productos
+                  </Boton>
+                ) : (
+                  <Boton
+                    tono="secundario"
+                    onClick={() => {
+                      setTramo(masAtras);
+                    }}
+                  >
+                    Mirar {NOMBRE_DEL_TRAMO[masAtras].toLowerCase()}
+                  </Boton>
+                )
+              }
+            />
+          )}
         </Tarjeta>
       ) : (
         porDia.map(([dia, delDia]) => (

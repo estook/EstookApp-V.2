@@ -24,6 +24,7 @@ import {
   type SugerenciaDeCompra,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { SEGUNDOS_DEL_ENLACE_DE_LA_FOTO } from '../../infraestructura/almacen.ts';
 
 /**
  * Lo que Inventario enseña (M6).
@@ -123,6 +124,15 @@ export interface ProductoEnLista {
   /** Lo que trae cada unidad, cuando se cuenta por unidades: 250 (g). */
   readonly contenidoPorUnidad: number | null;
   readonly unidadDelContenido: string | null;
+
+  // ── Entrega V · su foto ────────────────────────────────────────────────────
+  /**
+   * El enlace de su miniatura de 160 px, **firmado y con caducidad**. Nulo: no
+   * tiene foto, o el almacén no ha contestado, y la pantalla pinta la inicial. Solo
+   * lo traen las consultas que enseñan la lista y la ficha; las que cuentan (el
+   * pedido sugerido, «Hoy») no lo piden, y ahí no viene.
+   */
+  readonly miniatura?: string | null;
 }
 
 /**
@@ -219,6 +229,10 @@ interface FilaDeProducto {
   territorio: string;
   contenido_por_unidad: string | null;
   unidad_del_contenido: string | null;
+  // Entrega V · las claves de su foto en el almacén. No salen nunca hacia la
+  // pantalla: salen sus enlaces firmados, que caducan.
+  foto_clave: string | null;
+  miniatura_clave: string | null;
 }
 
 /**
@@ -414,7 +428,8 @@ async function leerProductos(
            p.zona::text as zona,
            lc.territorio::text as territorio,
            p.contenido_por_unidad::text as contenido_por_unidad,
-           p.unidad_del_contenido::text as unidad_del_contenido
+           p.unidad_del_contenido::text as unidad_del_contenido,
+           p.foto_clave, p.miniatura_clave
       from elegidos el
       join estook.producto p on p.id = el.id
       join estook.local lc on lc.id = p.local_id
@@ -573,6 +588,45 @@ function componer(
   };
 
   return producto;
+}
+
+/**
+ * Los enlaces de unas fotos, firmados **de una vez** (entrega V, punto 5).
+ *
+ * Una lista de cincuenta productos no puede costar cincuenta viajes al almacén:
+ * se piden todos en una tanda. Y **nunca rompe la lista**: si el almacén no está o
+ * no contesta, vuelve vacío, y cada producto sale con su inicial, que es como se
+ * veía antes de que hubiera fotos.
+ */
+async function firmarLasFotos(
+  contexto: Contexto,
+  claves: readonly (string | null)[],
+): Promise<ReadonlyMap<string, string>> {
+  const deVerdad = claves.filter((clave): clave is string => clave !== null);
+  if (deVerdad.length === 0 || contexto.almacen === null) return new Map();
+  try {
+    return await contexto.almacen.enlaces(deVerdad, SEGUNDOS_DEL_ENLACE_DE_LA_FOTO);
+  } catch {
+    return new Map();
+  }
+}
+
+/** Cada producto con el enlace de su miniatura, de una sola tanda. */
+async function conSusMiniaturas(
+  contexto: Contexto,
+  productos: readonly ProductoEnLista[],
+  filas: readonly FilaDeProducto[],
+): Promise<ProductoEnLista[]> {
+  const claveDe = new Map(filas.map((fila) => [fila.id, fila.miniatura_clave] as const));
+  // Solo las de los productos que se enseñan: las filas pueden ser muchas más.
+  const enlaces = await firmarLasFotos(
+    contexto,
+    productos.map((producto) => claveDe.get(producto.id) ?? null),
+  );
+  return productos.map((producto) => {
+    const clave = claveDe.get(producto.id) ?? null;
+    return { ...producto, miniatura: clave === null ? null : (enlaces.get(clave) ?? null) };
+  });
 }
 
 /** Cómo escribe este local sus precios de compra, y si ya se les quitó el IVA. */
@@ -822,6 +876,11 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
 
     if (!conPrecios) productos = productos.map(sinPrecios);
 
+    // Las miniaturas, **solo de la página que se enseña** y de una tanda: firmar
+    // las de los cinco mil de «Bajo mínimo» antes de partir la lista no serviría de
+    // nada (entrega V).
+    productos = await conSusMiniaturas(contexto, productos, filas);
+
     // ── Las categorías, contadas **dentro de la zona que se está mirando** ──
     //
     // Antes contaban sobre el local entero, así que en «Sala» salía «Carnes
@@ -964,6 +1023,11 @@ export interface SalidaUnProducto {
   readonly puedeVerPrecios: boolean;
   /** Si en este local los precios de compra se escriben con IVA (M7, repaso). */
   readonly preciosConIva: boolean;
+  /**
+   * El enlace de su foto de 800 px, firmado y con caducidad (entrega V). Nulo: no
+   * tiene. La miniatura va dentro del producto, como en la lista.
+   */
+  readonly foto: string | null;
 }
 
 export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
@@ -996,7 +1060,15 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
     }
 
     const compuesto = componer(fila, hoy, desde, contexto.ahora, reloj);
-    const producto = conPrecios ? compuesto : sinPrecios(compuesto);
+    const sinDinero = conPrecios ? compuesto : sinPrecios(compuesto);
+
+    // La foto y su miniatura, firmadas las dos de una vez (entrega V).
+    const fotos = await firmarLasFotos(contexto, [fila.foto_clave, fila.miniatura_clave]);
+    const producto: ProductoEnLista = {
+      ...sinDinero,
+      miniatura: fila.miniatura_clave === null ? null : (fotos.get(fila.miniatura_clave) ?? null),
+    };
+    const foto = fila.foto_clave === null ? null : (fotos.get(fila.foto_clave) ?? null);
 
     // El histórico entero, incluido el de cada proveedor. Es la mitad de la capa
     // inteligente de M6: «histórico de precio por proveedor», y la comparativa
@@ -1144,6 +1216,7 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
       enCuantasFichas: 0,
       puedeVerPrecios: conPrecios,
       preciosConIva: comoApunta.conIva,
+      foto,
     };
   },
 });

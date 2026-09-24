@@ -24,9 +24,10 @@ import {
   IconoOrganizacion,
   IconoQuitar,
   IconoReloj,
-  IconoVacio,
 } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { usarAccion } from '../ganchos/usarAccion.ts';
+import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { ApuntarMerma } from './ApuntarMerma.tsx';
 import { QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
@@ -152,15 +153,7 @@ export function Resumen({ alAbrirProducto }: { readonly alAbrirProducto: (id: st
       )}
 
       {hoy.cuantosProductos === 0 ? (
-        <Tarjeta titulo="Todavía no tienes género" icono={<IconoVacio size={18} />} acento={ACENTO}>
-          <EstadoVacio
-            compacto
-            icono={<IconoVacio size={24} />}
-            titulo="La cámara está vacía"
-            frase="En cuanto des de alta tu primer producto, aquí verás lo que se acaba, lo que caduca y lo que te cuesta."
-            sinAccionPorque="Se empieza por «Productos», al lado en el menú."
-          />
-        </Tarjeta>
+        <ComoEmpezar />
       ) : (
         <>
           {/*
@@ -260,6 +253,65 @@ export function Resumen({ alAbrirProducto }: { readonly alAbrirProducto: (id: st
     </div>
   );
 }
+
+/**
+ * Con la cámara vacía, **cómo se empieza** (entrega V, punto 4).
+ *
+ * Hasta la entrega V esto decía «la cámara está vacía» y «se empieza por
+ * "Productos", al lado en el menú»: una instrucción para ir a buscar un botón que
+ * podía estar aquí. Ahora el botón está aquí, y abre el alta directamente.
+ *
+ * Y «Cómo va» no sale: con cero productos, cuatro cifras que dicen «no se sabe» son
+ * cuatro cuadros vacíos encima de lo único que sirve, que es empezar. Debajo del
+ * botón van los tres pasos que hacen útil Inventario, en una línea cada uno: quien
+ * entra por primera vez sabe qué viene después sin tener que preguntar.
+ */
+function ComoEmpezar() {
+  const alta = usarAccion('nuevo-producto');
+
+  return (
+    <Tarjeta>
+      <EstadoVacio
+        dibujo="camara"
+        acento={ACENTO}
+        titulo="Tu cámara está vacía"
+        frase="Da de alta lo que más compras, y Estook te dirá lo que se acaba, lo que caduca y lo que te cuesta."
+        {...(alta === null
+          ? { sinAccionPorque: 'El género lo da de alta quien lleva el inventario del local.' }
+          : { accion: <BotonDeAccion accion={alta} texto="Añade tu primer producto" /> })}
+      />
+
+      {alta !== null && (
+        <ol className="grid gap-e3 border-t border-borde pt-e4 sm:grid-cols-3">
+          {PASOS_PARA_EMPEZAR.map((paso, i) => (
+            <li key={paso.que} className="flex items-start gap-e3">
+              <span
+                aria-hidden
+                // El número en el color del texto y el acento en el fondo: en el
+                // acento sobre su propio tinte no llegaría a 4,5:1 en claro.
+                className="grid size-[28px] shrink-0 place-items-center rounded-redondo text-etiqueta font-bold text-texto"
+                style={{ backgroundColor: `color-mix(in oklab, ${ACENTO} 18%, transparent)` }}
+              >
+                {i + 1}
+              </span>
+              <span className="flex min-w-0 flex-col">
+                <span className="text-secundario font-semibold">{paso.que}</span>
+                <span className="text-etiqueta text-texto-suave">{paso.como}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </Tarjeta>
+  );
+}
+
+/** Los tres pasos que hacen útil Inventario, en el orden en que se dan. */
+const PASOS_PARA_EMPEZAR = [
+  { que: 'Da de alta lo que más compras', como: 'Con el catálogo, unos segundos cada uno' },
+  { que: 'Pon a tus proveedores', como: 'Con sus días de reparto, sabe qué pedir y cuándo' },
+  { que: 'Apunta lo que entra y lo que sale', como: 'Con el + y el − de cada producto' },
+] as const;
 
 /**
  * Lo que necesita tu atención: bajo mínimo y agotado, con qué pedir.

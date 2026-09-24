@@ -123,6 +123,25 @@ export const CONTRASTE_DE_ICONO = 3;
 export const CONTRASTE_DE_COCINA = 7;
 
 /**
+ * El acento de una app **cuando lo que se pinta con él es texto** (entrega V).
+ *
+ * Los acentos de B3 están elegidos para un icono o una pastilla, que piden 3:1; el
+ * texto pide 4,5. Y en claro no llegan: el ámbar de Inventario sobre blanco da
+ * 3,46, el verde de Servicio 4,11. Lo encontró la prueba que mide el contraste en
+ * las pantallas de verdad, en la pestaña elegida de cada vista y en la barra de
+ * abajo del móvil, que llevaban el nombre en el color de la app.
+ *
+ * Se mezcla con **el color del texto**, y eso hace lo correcto en los dos temas a
+ * la vez: en claro lo oscurece y en oscuro lo aclara, porque el texto es lo más
+ * lejano del fondo en cada uno. Sigue viéndose ámbar, o verde; solo que se lee.
+ * Va en CSS y no calculado aquí porque el acento llega como una variable —el color
+ * del local, si lo ha encendido—, y cambia con el tema sin que nadie recalcule.
+ */
+export function acentoParaTexto(acento: string): string {
+  return `color-mix(in oklab, ${acento} 65%, var(--color-texto))`;
+}
+
+/**
  * El acento, empujado hasta que cumple **las dos cosas a la vez**.
  *
  * Se ve sobre la tarjeta (3:1) y además algo se lee encima de él (4,5:1). Son dos

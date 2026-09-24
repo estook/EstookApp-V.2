@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Boton, Hoja, IconoDeFogon, PanelLateral, clases, usarEsEscritorio } from '@estook/ui';
+import { Boton, Hoja, PanelLateral, clases, usarEsEscritorio } from '@estook/ui';
 import { accionesDeAqui } from '../acciones/catalogo.tsx';
 import { usarContextoDeFogon } from '../ganchos/usarContextoDeFogon.ts';
 import { usarElEsqueleto } from '../ganchos/usarElEsqueleto.tsx';
@@ -19,9 +19,10 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * Se decidió lo contrario, y está escrito en
  * [`docs/decisiones/0015`](../../../../docs/decisiones/0015-fogon-es-una-burbuja-no-una-pestana.md):
  *
- *   · **Una burbuja flotante** que va contigo por toda la aplicación, en el móvil y
- *     en el escritorio, donde abre un panel lateral que no tapa la pantalla. Hasta
- *     el 23-sep-2026 el escritorio tenía un icono arriba en su lugar; se quitó.
+ *   · **Una puerta que va contigo** por toda la aplicación, en el móvil y en el
+ *     escritorio, donde abre un panel lateral que no tapa la pantalla. Fue una
+ *     burbuja propia hasta la entrega O; desde entonces es el banner de arriba de
+ *     la hoja del botón «+» (0047), y `Ctrl+J` en escritorio.
  *   · **Sabe en qué página estás** en los dos casos, sin que se lo digas.
  *   · **Nunca una pestaña dentro de una app.** Las pestañas son para los
  *     análisis periódicos que Fogón deja hechos, no para hablar con él.
@@ -150,36 +151,13 @@ const POR_DEFECTO: LoDeAqui = {
   ],
 };
 
-// ── La burbuja ───────────────────────────────────────────────────────────────
-
-/**
- * «Mejor una burbuja flotante que detecte la página en la que estés.»
- *
- * Va **por encima de la barra de abajo**, no dentro: la barra de abajo es para
- * navegar (B5, y es lo que recomienda Apple), y Fogón no es un sitio al que se
- * va, es algo que está. Y a la derecha, que es donde llega el pulgar.
- *
- * **Y en escritorio también** (23-sep-2026). Allí salía un icono en la barra de arriba
- * y la burbuja se escondía; Richi lo vio repetido y pidió quitar el icono «que ya está
- * la burbuja». Así que la burbuja es la única puerta en los dos, y en escritorio queda
- * además `Ctrl+J`. Como allí no hay barra de abajo, va a su margen de siempre.
- */
-export function BurbujaDeFogon({ alPulsar }: { readonly alPulsar: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={alPulsar}
-      aria-label="Abrir Fogón"
-      className={clases(
-        'fixed right-e3 z-30 grid size-[56px] place-items-center no-imprimir lg:right-e5',
-        'rounded-redondo bg-superficie text-naranja shadow-s3 border border-borde',
-        'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e3))] lg:bottom-e5',
-      )}
-    >
-      <IconoDeFogon size={30} />
-    </button>
-  );
-}
+// ── La puerta ────────────────────────────────────────────────────────────────
+//
+// Hasta la entrega O, una burbuja flotante propia. Desde el 25-sep Fogón se abre
+// desde el botón «+» (`acciones/BotonDeHacer.tsx`), arriba del todo y en su propio
+// banner, y en escritorio también con `Ctrl+J`: dos botones flotantes en un móvil
+// eran demasiados, y Richi eligió uno solo con Fogón destacado dentro (0047, que
+// enmienda la 0015 en eso y solo en eso).
 
 // ── La ventana: hoja en móvil, panel lateral en escritorio ───────────────────
 

@@ -131,7 +131,10 @@ export type { RuedaDeAppsProps } from './navegacion/RuedaDeApps.tsx';
 // ── El Panel de cada uno (Manifiesto 6) ──────────────────────────────────────
 export {
   CUANTO_OCUPA,
-  PANEL_DE_FABRICA,
+  PANEL_DEL_PUESTO,
+  NOMBRE_DEL_PUESTO,
+  elPuestoDe,
+  elPanelDeFabrica,
   WIDGETS,
   cuandoLlega,
   loQueSePuedeAnadir,
@@ -145,7 +148,7 @@ export {
   widgetPorId,
   losIndicadoresQueSePuedenTener,
 } from './panel/catalogo.ts';
-export type { TamanoDeWidget, Widget, WidgetPuesto } from './panel/catalogo.ts';
+export type { TamanoDeWidget, Widget, WidgetPuesto, Puesto } from './panel/catalogo.ts';
 
 export { TarjetaDeIndicador } from './panel/TarjetaDeIndicador.tsx';
 export { comoSeEscribe } from './panel/comoSeEscribe.ts';

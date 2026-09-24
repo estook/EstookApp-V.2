@@ -200,6 +200,9 @@ export type {
   CifraDelSemaforo,
 } from './objetivos.ts';
 
+// ── Entrega O · la dirección de la carta, la del QR (0047) ──────────────────
+export { DIRECCION_DE_ESTOOK, direccionDeLaCarta, laCartaDeLaDireccion } from './carta.ts';
+
 // ── Entrega O · lo de hoy, por urgencia (0047) ───────────────────────────────
 export { NOMBRE_DEL_ESCALON, loDeHoy, ordenarLoDeHoy } from './hoy.ts';
 export type { Escalon, AppDeLoDeHoy, CosaDeHoy, LoQueHayHoy, MiTurnoDeHoy } from './hoy.ts';

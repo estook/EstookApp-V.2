@@ -87,11 +87,14 @@ jobs:
             cp -r "apps/$aplicacion/dist/." "_publicacion/$aplicacion/"
           done
 
-          # Pages no sabe de enrutado de cliente: cada aplicacion necesita su 404.
-          cp _publicacion/index.html _publicacion/404.html
-          for aplicacion in app carta admin; do
-            cp "_publicacion/$aplicacion/index.html" "_publicacion/$aplicacion/404.html"
-          done
+          # Pages sirve ficheros, y para lo que no existe sirve UNA pagina: la
+          # 404.html de la raiz (las de las carpetas no las usa). Esa pagina es la
+          # de la carta (0047): asi estook.com/carta/<local>, la direccion del QR
+          # que se imprime, abre la carta de ese local; y cualquier otra direccion
+          # que no exista dice que no existe y lleva a estook.com. La carta se
+          # construye con rutas absolutas (/carta/assets/...), asi que funciona
+          # servida desde cualquier direccion.
+          cp _publicacion/carta/index.html _publicacion/404.html
 
           # El dominio, tambien en lo que se publica: si un dia se pierde el
           # ajuste de Pages, el sitio sigue sabiendo donde vive (0036).

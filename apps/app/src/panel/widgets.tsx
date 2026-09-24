@@ -13,6 +13,7 @@ import {
   masDias,
   minutosHasta,
   porcentajeDe,
+  type CifraDelSemaforo,
   type FechaOperativa,
 } from '@estook/dominio';
 import { appsVisibles, puedeEditar, puedeVer } from '@estook/permisos';
@@ -39,7 +40,9 @@ import {
 } from '@estook/ui';
 import { IconoAnadir, IconoEntrar, IconoSalir, IconoUbicacion } from '@estook/iconos';
 import { useNavigate } from 'react-router-dom';
-import { usarLoDeHoy } from '../ganchos/usarLoDeHoy.ts';
+import { usarInventarioHoy } from '../ganchos/usarInventarioHoy.ts';
+import { usarMisObjetivos } from '../ganchos/usarMisObjetivos.ts';
+import { FilaDelSemaforo } from '../objetivos/Semaforo.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { AccesosRapidos } from './AccesosRapidos.tsx';
 import { IndicadorWidget } from './Indicador.tsx';
@@ -77,7 +80,7 @@ import {
  * la pidiera por su cuenta serían cuatro viajes para pintar una pantalla, y el
  * presupuesto de velocidad de B7 da un segundo para el Panel entero.
  *
- * La resuelve TanStack Query sola: los cuatro llaman a `usarLoDeHoy()`, que usa la
+ * La resuelve TanStack Query sola: los cuatro llaman a `usarInventarioHoy()`, que usa la
  * misma `queryKey`, así que el primero pide y los otros tres leen de la caché. No
  * hay que coordinar nada, y **quitar un widget del Panel deja de pedir su parte**
  * sin que nadie tenga que acordarse.
@@ -152,6 +155,7 @@ function Cual({
   if (id === 'personas') return <PersonasWidget tamano={tamano} />;
   if (id === 'merma') return <MermaWidget tamano={tamano} />;
   if (id === 'ventas-de-hoy') return <VentasDeHoyWidget />;
+  if (id === 'objetivos') return <ObjetivosWidget tamano={tamano} />;
   if (id === 'ultimos-movimientos') return <UltimosMovimientos tamano={tamano} />;
   if (id === 'pedidos') return <ComprasDeHoyWidget tamano={tamano} />;
   if (id === 'calendario') return <LoQueVieneWidget tamano={tamano} />;
@@ -235,7 +239,7 @@ function Caja({
 // ── Lo que caduca ────────────────────────────────────────────────────────────
 
 function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarLoDeHoy();
+  const consulta = usarInventarioHoy();
   const navegar = useNavigate();
   const caducan = consulta.data?.caducan ?? [];
   const cuantos = tamano === 'grande' ? 6 : 3;
@@ -285,7 +289,7 @@ function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
 // ── Lo que está bajo mínimo ──────────────────────────────────────────────────
 
 function BajoMinimo({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarLoDeHoy();
+  const consulta = usarInventarioHoy();
   const navegar = useNavigate();
   const atencion = consulta.data?.atencion ?? [];
   const cuantos = tamano === 'grande' ? 6 : 3;
@@ -379,7 +383,7 @@ function BajoMinimo({ tamano }: { readonly tamano: TamanoDeWidget }) {
 // ── Los que no tienen precio ─────────────────────────────────────────────────
 
 function SinPrecio({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarLoDeHoy();
+  const consulta = usarInventarioHoy();
   const hoy = consulta.data;
   const sinPrecio = hoy?.sinPrecio ?? [];
   usarQueEstaVacio(hoy === undefined ? undefined : sinPrecio.length === 0);
@@ -419,7 +423,7 @@ function SinPrecio({ tamano }: { readonly tamano: TamanoDeWidget }) {
 // ── Lo que vale la cámara ────────────────────────────────────────────────────
 
 function ValorDeLaCamara() {
-  const consulta = usarLoDeHoy();
+  const consulta = usarInventarioHoy();
   const hoy = consulta.data;
 
   // «Un rol sin costes no recibe ni un campo de coste»: si el servidor no ha
@@ -459,7 +463,7 @@ const TONO_DE_LA_ZONA: Readonly<Record<Zona, 'marca' | 'info' | 'neutro'>> = {
 };
 
 function CuantoGenero({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarLoDeHoy();
+  const consulta = usarInventarioHoy();
   const hoy = consulta.data;
 
   return (
@@ -1027,6 +1031,64 @@ function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
 }
 
 // ── Las ventas de hoy ────────────────────────────────────────────────────────
+
+/**
+ * Los objetivos, con su semáforo (entrega O, mejora 17 · 0047).
+ *
+ * En ancho, lo que se sale primero: lo rojo y lo ámbar, y si todo está en verde, se
+ * dice en una línea. En grande, las cinco. Cada una abre su porqué con un toque.
+ */
+function ObjetivosWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
+  const consulta = usarMisObjetivos();
+  const datos = consulta.data;
+
+  if (datos === undefined) {
+    return (
+      <Caja titulo="Objetivos" leyendo={consulta}>
+        <Cargando que="tus objetivos" lineas={3} />
+      </Caja>
+    );
+  }
+
+  const importa = (c: CifraDelSemaforo) => c.semaforo === 'rojo' || c.semaforo === 'ambar';
+  const peso: Readonly<Record<CifraDelSemaforo['semaforo'], number>> = {
+    rojo: 0,
+    ambar: 1,
+    sin_dato: 2,
+    verde: 3,
+  };
+  const ordenadas = [...datos.cifras].sort((a, b) => peso[a.semaforo] - peso[b.semaforo]);
+  const cuantas = tamano === 'grande' ? ordenadas.length : 3;
+  const enVerde = datos.cifras.filter((c) => c.semaforo === 'verde').length;
+
+  return (
+    <Caja
+      titulo="Objetivos"
+      origen="Estos siete días"
+      ir="/ajustes/local#objetivos"
+      leyendo={consulta}
+    >
+      {datos.cifras.length === 0 ? (
+        <p className="text-secundario text-texto-suave">
+          Tu acceso no incluye las cifras de los objetivos.
+        </p>
+      ) : (
+        <div className="flex flex-col divide-y divide-borde">
+          {tamano !== 'grande' && !datos.cifras.some(importa) && (
+            <p className="pb-e2 text-secundario text-texto-suave">
+              {enVerde === datos.cifras.length
+                ? 'Todo dentro de tus objetivos esta semana.'
+                : 'Nada fuera de tus objetivos esta semana.'}
+            </p>
+          )}
+          {ordenadas.slice(0, cuantas).map((cifra) => (
+            <FilaDelSemaforo key={cifra.que} cifra={cifra} />
+          ))}
+        </div>
+      )}
+    </Caja>
+  );
+}
 
 /**
  * Lo que ha entrado hoy.

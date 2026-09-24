@@ -11,8 +11,10 @@
     "tipos": "tsc --noEmit"
   },
   "dependencies": {
-    "@estook/ui": "workspace:*",
+    "@estook/cliente-api": "workspace:*",
+    "@estook/dominio": "workspace:*",
     "@estook/iconos": "workspace:*",
+    "@estook/ui": "workspace:*",
     "@estook/utiles": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

@@ -19,7 +19,7 @@ import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
 import { lasHorasDelEquipo, lasRetribuciones } from './equipo.ts';
-import { laJornada, losDias } from './indicador.ts';
+import { laJornada, losDias, type DelDia } from './indicador.ts';
 
 /**
  * Los objetivos del local y cómo va cada uno esta semana (entrega O, mejora 17).
@@ -87,10 +87,10 @@ export const misObjetivos = consulta<Record<string, never>, SalidaMisObjetivos>(
   async ejecutar(contexto) {
     const localId = elLocal(contexto);
 
-    const todos = [
+    const todos: Permiso[] = [
       ...new Set([
         ...LO_QUE_SE_JUZGA.flatMap((que) => LO_QUE_PIDE_EL_OBJETIVO[que]),
-        'accion.poner_objetivos' as Permiso,
+        'accion.poner_objetivos' as const,
       ]),
     ];
     const puede = await loQuePuede(contexto, localId, todos);
@@ -199,7 +199,7 @@ async function loQueSeSabe(
   // Las ventas por día: la misma cuenta que la cifra «Ventas».
   const ventasPorDia = lee.dinero
     ? await losDias(contexto, localId, 'ventas', desde, hasta)
-    : new Map();
+    : new Map<string, DelDia>();
   const conCaja = [...ventasPorDia.keys()].filter((fecha) => ahora.has(fecha));
   let ventas = 0;
   for (const fecha of conCaja) ventas += ventasPorDia.get(fecha)?.arriba ?? 0;

@@ -463,11 +463,11 @@ async function abrirLaRueda(page: Page) {
  * queda fuera y guardado; la siguiente prueba se lo encontraba sin estar.
  *
  * Se arregla desde la propia aplicacion y no tocando la base a mano: es un camino
- * de persona —«volver al panel de siempre»— y comprobarlo de paso no sobra.
+ * de persona —«volver al de mi puesto»— y comprobarlo de paso no sobra.
  */
 async function panelDeFabrica(page: Page) {
   await page.getByRole('button', { name: 'Editar' }).click();
-  await page.getByRole('button', { name: 'Volver al panel de siempre' }).click();
+  await page.getByRole('button', { name: 'Volver al de mi puesto' }).click();
   await page.getByRole('button', { name: 'Listo' }).click();
   await expect(page.getByRole('button', { name: 'Editar' })).toBeVisible();
   // Y se espera a que este guardado de verdad: si no, la prueba de al lado se

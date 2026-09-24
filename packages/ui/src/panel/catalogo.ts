@@ -167,6 +167,21 @@ export const WIDGETS: readonly Widget[] = [
     permiso: 'app.inventario',
     tamanos: ['chico'],
   },
+  /**
+   * Los objetivos con su semáforo (entrega O, mejora 17 · 0047).
+   *
+   * Food cost, personal, coste primo, merma y ventas de la semana, cada uno en
+   * verde, ámbar o rojo frente a su objetivo y **con su porqué**. Pide ver las
+   * ventas, que es de lo que cuelgan casi todas; cada cifra pide además lo suyo, y
+   * el servidor no manda la que no se puede ver.
+   */
+  {
+    id: 'objetivos',
+    nombre: 'Objetivos',
+    queEnsena: 'Cómo vas esta semana frente a tus objetivos, en verde, ámbar o rojo, y por qué',
+    permiso: 'dato.ventas',
+    tamanos: ['ancho', 'grande'],
+  },
   // ── Lo que se hace ─────────────────────────────────────────────────────────
   {
     id: 'acciones-rapidas',
@@ -376,40 +391,96 @@ export interface WidgetPuesto {
 }
 
 /**
- * Con que Panel empieza cada rol · «Nadie empieza con el Panel vacio».
+ * Con qué Panel empieza cada puesto · «Nadie empieza con el Panel vacío» (mejora 9).
  *
- * El Manifiesto da la lista por rol, y **no se cumplia**: todo el mundo empezaba
- * con las mismas seis tarjetas, andamio de pruebas incluido. Aqui esta la parte
- * que se puede cumplir hoy, que es la de Inventario y la de las apps; el resto
- * entra con su modulo.
+ * Hasta la entrega O había **uno** para todos, filtrado por permisos: el cocinero y
+ * la gerente arrancaban con las mismas tarjetas menos las que no podían ver. Ahora
+ * hay uno por **puesto**, pensado para lo que cada uno mira al abrir la app, como lo
+ * hacen las que mejor lo resuelven (7shifts, Toast, MarketMan): quien ficha y
+ * cocina ve fichar, lo que caduca y lo que falta; quien lleva el local ve ventas,
+ * costes y su semáforo.
  *
- * ── Como se elige, y por que no se pregunta el rol ──────────────────────────
+ * ── Cómo se sabe el puesto, y por qué no se pregunta el rol ─────────────────
  *
- * No por nombre de rol, **por permisos**. Hay doce roles y la matriz vive en la
- * base de datos: una lista por nombre de rol aqui seria una segunda copia de la
- * matriz, y se separaria de la de verdad en cuanto alguien recortara un permiso a
- * un local (que M1 permite hacer). Se pregunta lo mismo que pregunta la rueda.
+ * **Por permisos**, no por nombre de rol. Hay doce roles y la matriz vive en la base
+ * de datos: una lista por rol aquí sería una segunda copia de la matriz, y se
+ * separaría de la de verdad en cuanto alguien recortara un permiso a un local (que M1
+ * permite hacer). Se pregunta lo mismo que pregunta la rueda:
  *
- * El resultado se filtra ademas por lo construido, asi que quien tenga Negocio no
- * arranca con un widget de Pulse apagado: arranca sin el, y lo anade el dia que
- * exista.
+ *   gerente   ve lo que cuesta el personal y las ventas: lleva el local
+ *   jefe      ve las ventas, pero no lo que cobra cada uno (jefe de cocina o de sala)
+ *   cocina    ve el género, y ni un euro de ventas
+ *   sala      ni lo uno ni lo otro: ficha, apunta la merma y mira lo que viene
+ *
+ * Y todo pasa después por `loQueSePuedePintar`, así que un widget que alguien no
+ * pueda ver no llega aunque su puesto lo traiga.
  */
-export const PANEL_DE_FABRICA: readonly WidgetPuesto[] = [
-  // Fichar va **primero**, y no es un detalle de orden: para media plantilla es
-  // lo primero que hace al abrir la aplicacion, y con el Panel de dos columnas en
-  // movil eso significa que tiene que estar arriba a la izquierda.
-  { id: 'fichar', tamano: 'chico' },
-  { id: 'valor-de-la-camara', tamano: 'chico' },
-  { id: 'acciones-rapidas', tamano: 'ancho' },
-  { id: 'caducidades', tamano: 'ancho' },
-  { id: 'bajo-minimo', tamano: 'ancho' },
-  // M7: a quién toca pedir y qué llega, y lo de hoy y mañana del Calendario. Se
-  // filtran por permisos como todo: un camarero no tiene Inventario y le sale
-  // «Lo que viene» con sus avisos, sin una sola entrega.
-  { id: 'pedidos', tamano: 'ancho' },
-  { id: 'calendario', tamano: 'ancho' },
-  { id: 'mis-apps', tamano: 'ancho' },
-];
+export type Puesto = 'gerente' | 'jefe' | 'cocina' | 'sala';
+
+export const NOMBRE_DEL_PUESTO: Readonly<Record<Puesto, string>> = {
+  gerente: 'quien lleva el local',
+  jefe: 'jefe de cocina o de sala',
+  cocina: 'cocina',
+  sala: 'sala',
+};
+
+export function elPuestoDe(tienePermiso: (permiso: Permiso) => boolean): Puesto {
+  if (tienePermiso('dato.ventas') && tienePermiso('dato.coste_de_personal')) return 'gerente';
+  if (tienePermiso('dato.ventas')) return 'jefe';
+  if (tienePermiso('app.inventario')) return 'cocina';
+  return 'sala';
+}
+
+export const PANEL_DEL_PUESTO: Readonly<Record<Puesto, readonly WidgetPuesto[]>> = {
+  // Su reloj arriba, como todos; lo que ha entrado hoy, y el semáforo, que ya lleva
+  // el food cost, el personal y el coste primo: otra tarjeta con el food cost sería
+  // la misma cifra dos veces.
+  gerente: [
+    { id: 'fichar', tamano: 'chico' },
+    { id: 'ventas-de-hoy', tamano: 'chico' },
+    { id: 'objetivos', tamano: 'grande' },
+    { id: 'fichajes', tamano: 'ancho' },
+    { id: 'pedidos', tamano: 'ancho' },
+    { id: 'caducidades', tamano: 'ancho' },
+    { id: 'calendario', tamano: 'ancho' },
+  ],
+  // Lo suyo del día, cómo va su food cost día a día (la línea, que el semáforo no
+  // enseña) y su gente.
+  jefe: [
+    { id: 'fichar', tamano: 'chico' },
+    { id: 'indicador-food-cost-7', tamano: 'chico' },
+    { id: 'objetivos', tamano: 'ancho' },
+    { id: 'caducidades', tamano: 'ancho' },
+    { id: 'bajo-minimo', tamano: 'ancho' },
+    { id: 'pedidos', tamano: 'ancho' },
+    { id: 'fichajes', tamano: 'ancho' },
+  ],
+  // Fichar arriba a la izquierda, y lo que caduca, lo que falta y lo que llega.
+  cocina: [
+    { id: 'fichar', tamano: 'chico' },
+    { id: 'indicador-mis-horas-7', tamano: 'chico' },
+    { id: 'caducidades', tamano: 'ancho' },
+    { id: 'bajo-minimo', tamano: 'ancho' },
+    { id: 'merma', tamano: 'ancho' },
+    { id: 'pedidos', tamano: 'ancho' },
+    { id: 'calendario', tamano: 'ancho' },
+  ],
+  // Fichar, sus horas, la merma que rompe una copa y lo que viene.
+  sala: [
+    { id: 'fichar', tamano: 'chico' },
+    { id: 'indicador-mis-horas-7', tamano: 'chico' },
+    { id: 'merma', tamano: 'ancho' },
+    { id: 'calendario', tamano: 'ancho' },
+    { id: 'mis-apps', tamano: 'ancho' },
+  ],
+};
+
+/** El de fábrica de quien mira: el de su puesto, sin lo que no puede ver. */
+export function elPanelDeFabrica(
+  tienePermiso: (permiso: Permiso) => boolean,
+): readonly WidgetPuesto[] {
+  return loQueSePuedePintar(PANEL_DEL_PUESTO[elPuestoDe(tienePermiso)], tienePermiso);
+}
 
 /**
  * Deja la lista guardada en algo que se pueda pintar.
@@ -487,6 +558,7 @@ export const GRUPO_DEL_WIDGET: Readonly<Record<string, GrupoDeWidget>> = {
   'valor-de-la-camara': 'cifras',
   'cuanto-genero': 'cifras',
   'ventas-de-hoy': 'cifras',
+  objetivos: 'cifras',
   'ultimos-movimientos': 'cifras',
   'acciones-rapidas': 'atajos',
   'mis-apps': 'atajos',

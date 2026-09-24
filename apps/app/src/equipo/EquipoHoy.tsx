@@ -17,6 +17,8 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { FichaDePersona } from './FichaDePersona.tsx';
 import { usarFichar } from '../ganchos/usarFichar.ts';
+import { usarAccion } from '../ganchos/usarAccion.ts';
+import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { usarPersonaAbierta } from '../ganchos/usarPersonaAbierta.ts';
 import {
   comoSeLeeDonde,
@@ -49,6 +51,7 @@ export function EquipoHoy() {
   const navegar = useNavigate();
   const persona = usarPersonaAbierta();
   const fichar = usarFichar();
+  const invitar = usarAccion('invitar');
 
   const consulta = useQuery({
     queryKey: ['fichajes_de_hoy'],
@@ -144,12 +147,16 @@ export function EquipoHoy() {
       )}
 
       {datos.gente.length === 0 ? (
-        <Tarjeta titulo="Todavía no hay equipo">
+        <Tarjeta>
           <EstadoVacio
             compacto
+            dibujo="equipo"
+            acento="var(--color-app-equipo)"
             titulo="Llevas el local solo"
             frase="Cuando des acceso a alguien, aquí verás si ha fichado y desde cuándo."
-            sinAccionPorque="Se invita desde Personas."
+            {...(invitar === null
+              ? { sinAccionPorque: 'Da los accesos quien lleva el local.' }
+              : { accion: <BotonDeAccion accion={invitar} texto="Dar acceso a alguien" /> })}
           />
         </Tarjeta>
       ) : (

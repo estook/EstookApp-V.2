@@ -237,34 +237,62 @@ export function Pedidos() {
                   : []),
               ]}
               cuandoNoHay={
-                <EstadoVacio
-                  compacto
-                  titulo={
-                    filtro === 'abiertos'
-                      ? 'No hay pedidos abiertos'
-                      : filtro === 'recibidos'
+                filtro === 'abiertos' || filtro === 'todos' ? (
+                  <EstadoVacio
+                    compacto
+                    dibujo="pedidos"
+                    acento="var(--color-app-inventario)"
+                    titulo={
+                      filtro === 'abiertos'
+                        ? 'No hay pedidos abiertos'
+                        : 'Todavía no has hecho ningún pedido'
+                    }
+                    frase="Un pedido empieza con lo que Estook sugiere: lo que no llega al siguiente reparto, en cajas enteras."
+                    {...(puedeTocar
+                      ? {
+                          accion: (
+                            <Boton
+                              tono="principal"
+                              icono={<IconoAnadir size={18} />}
+                              onClick={() => {
+                                setNuevoPara('');
+                              }}
+                            >
+                              Hacer un pedido
+                            </Boton>
+                          ),
+                        }
+                      : { sinAccionPorque: 'Tu acceso permite mirar los pedidos, no hacerlos.' })}
+                  />
+                ) : (
+                  // Recibidos o cancelados sin nada: se ofrece volver a los abiertos,
+                  // que es donde se trabaja (entrega V, punto 4).
+                  <EstadoVacio
+                    compacto
+                    dibujo={filtro === 'recibidos' ? 'albaranes' : 'todo-en-orden'}
+                    acento="var(--color-app-inventario)"
+                    titulo={
+                      filtro === 'recibidos'
                         ? 'Todavía no ha llegado ningún pedido'
-                        : filtro === 'cancelados'
-                          ? 'Ningún pedido cancelado'
-                          : 'Todavía no has hecho ningún pedido'
-                  }
-                  frase="Un pedido empieza con lo que Estook sugiere: lo de ese proveedor que no llega a su siguiente reparto, en cajas enteras."
-                  {...(puedeTocar
-                    ? {
-                        accion: (
-                          <Boton
-                            tono="principal"
-                            icono={<IconoAnadir size={18} />}
-                            onClick={() => {
-                              setNuevoPara('');
-                            }}
-                          >
-                            Hacer un pedido
-                          </Boton>
-                        ),
-                      }
-                    : { sinAccionPorque: 'Tu acceso permite mirar los pedidos, no hacerlos.' })}
-                />
+                        : 'Ningún pedido cancelado'
+                    }
+                    frase={
+                      filtro === 'recibidos'
+                        ? 'Cuando recibas uno, sale aquí con lo que llegó y lo que no.'
+                        : 'Lo que se cancela sale aquí, con quién lo canceló.'
+                    }
+                    accion={
+                      <Boton
+                        tono="secundario"
+                        onClick={() => {
+                          setFiltro('abiertos');
+                        }}
+                      >
+                        Ver los abiertos
+                      </Boton>
+                    }
+                  />
+                )
               }
             />
           )}
@@ -626,6 +654,8 @@ function NuevoPedido({
             {datos.lineas.length === 0 ? (
               <EstadoVacio
                 compacto
+                dibujo="todo-en-orden"
+                acento="var(--color-app-inventario)"
                 titulo="Ahora mismo no te falta nada suyo"
                 frase={
                   datos.sinNecesidad > 0

@@ -25,7 +25,15 @@ const FAMILIAS = [
   { nombre: 'Datos', piezas: ['Cifra', 'Tabla', 'Lista', 'Grafica', 'Paginador'] },
   {
     nombre: 'Avisos y vacíos',
-    piezas: ['Aviso', 'ErrorEnCristiano', 'EstadoVacio', 'TodaviaNo', 'Cargando'],
+    piezas: [
+      'Aviso',
+      'ErrorEnCristiano',
+      'EstadoVacio',
+      'NadaConEso',
+      'Dibujo',
+      'TodaviaNo',
+      'Cargando',
+    ],
   },
   { nombre: 'Capas', piezas: ['Hoja', 'PanelLateral', 'Tarjeta', 'Deshacer'] },
   { nombre: 'Navegar', piezas: ['Migas', 'RuedaDeApps'] },

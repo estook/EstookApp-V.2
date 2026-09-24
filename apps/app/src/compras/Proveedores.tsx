@@ -183,6 +183,8 @@ export function Proveedores() {
           }))}
           cuandoNoHay={
             <EstadoVacio
+              dibujo="proveedores"
+              acento="var(--color-app-inventario)"
               titulo="Todavía no tienes proveedores"
               frase="Con sus días de reparto puestos, Estook sabe qué día tienes que pedirle, qué pedirle y cuándo llega."
               {...(puedeTocar
@@ -195,7 +197,7 @@ export function Proveedores() {
                           setCreando(true);
                         }}
                       >
-                        Crear mi primer proveedor
+                        Añade tu primer proveedor
                       </Boton>
                     ),
                   }

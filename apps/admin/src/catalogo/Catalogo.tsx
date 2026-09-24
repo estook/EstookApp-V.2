@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { estadoDeLasBanderas } from '@estook/utiles';
 import type { Entorno } from '@estook/utiles';
 import { Logo, Tarjeta } from '@estook/ui';
@@ -57,17 +57,63 @@ const SECCIONES = [
 export function Catalogo({ entorno, sesionId }: CatalogoProps) {
   const [seccion, setSeccion] = useState<string>(SECCIONES[0].id);
   const actual = SECCIONES.find((s) => s.id === seccion) ?? SECCIONES[0];
+  const [oscuro, setOscuro] = useState(false);
+
+  // ── Verlo en oscuro (entrega V) ──────────────────────────────────────────
+  //
+  // El admin no elige tema: solo la app lo hace, y lo guarda en el aparato. Pero
+  // las piezas de aquí son las de la app, y **se tienen que poder mirar en los dos
+  // temas**, que es la mitad del repaso del oscuro. Así que esto pone el tema en
+  // la página mientras se mira el catálogo, sin guardarlo en ningún sitio —la app
+  // comparte el almacén del navegador y no se le puede cambiar el suyo desde
+  // aquí—, y al salir deja la página como estaba.
+  useEffect(() => {
+    const pagina = document.documentElement;
+    const antes = pagina.dataset['tema'];
+    pagina.dataset['tema'] = oscuro ? 'oscuro' : 'claro';
+    return () => {
+      if (antes === undefined) delete pagina.dataset['tema'];
+      else pagina.dataset['tema'] = antes;
+    };
+  }, [oscuro]);
 
   return (
     <div className="min-h-dvh bg-fondo">
       <header className="sticky top-0 z-40 border-b border-borde bg-superficie pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-[64rem] items-center gap-e4 px-e4 py-e3">
           <Logo alto={26} />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="text-seccion font-semibold">Sistema de diseño</h1>
             <p className="text-secundario text-texto-suave">
               Cada componente de la Parte B, pintado en sus estados
             </p>
+          </div>
+          <div
+            role="group"
+            aria-label="Tema del catálogo"
+            className="flex shrink-0 rounded-medio border border-borde p-[2px]"
+          >
+            {[
+              { texto: 'Claro', esOscuro: false },
+              { texto: 'Oscuro', esOscuro: true },
+            ].map((opcion) => (
+              <button
+                key={opcion.texto}
+                type="button"
+                aria-pressed={oscuro === opcion.esOscuro}
+                onClick={() => {
+                  setOscuro(opcion.esOscuro);
+                }}
+                className={[
+                  'min-h-toque rounded-chico px-e3 text-secundario font-medium',
+                  oscuro === opcion.esOscuro
+                    ? 'bg-texto text-superficie'
+                    : 'text-texto-suave hover:text-texto',
+                ].join(' ')}
+              >
+                {opcion.texto}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -97,7 +143,11 @@ export function Catalogo({ entorno, sesionId }: CatalogoProps) {
       </header>
 
       <main className="mx-auto flex max-w-[64rem] flex-col gap-e5 px-e4 py-e5">
-        <actual.Pieza />
+        {/* Las piezas de la familia, juntas: es lo que fotografían las capturas
+            (entrega V). Lo de debajo lleva la sesión, que cambia en cada visita. */}
+        <div data-familia={actual.id} className="flex flex-col gap-e5">
+          <actual.Pieza />
+        </div>
 
         <Tarjeta titulo="Cómo ha arrancado" origen="Comprobación de M0, que sigue en pie">
           <dl className="grid grid-cols-[7rem_1fr] gap-x-e4 gap-y-e2 text-secundario">

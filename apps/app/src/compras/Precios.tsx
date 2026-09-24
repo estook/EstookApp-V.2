@@ -94,6 +94,8 @@ export function Precios() {
           {datos.comparaciones.length === 0 ? (
             <EstadoVacio
               compacto
+              dibujo="precios"
+              acento="var(--color-app-inventario)"
               titulo="Todavía no hay nada que comparar"
               frase="Para comparar hace falta que dos proveedores te hayan puesto precio al mismo producto. Pon el de otro proveedor en la ficha del producto, en «Cambiar el precio»."
               sinAccionPorque="Se compara solo en cuanto hay dos precios del mismo producto."

@@ -10,7 +10,7 @@ import {
   type MotivoDeMerma,
 } from '@estook/dominio';
 import { Aviso, Boton, Botones, Campo, Cargando, ErrorEnCristiano, Hoja, clases } from '@estook/ui';
-import { IconoBuscar, IconoCamara } from '@estook/iconos';
+import { IconoBuscar } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { conUnidadDeUso, type ProductoParaMerma, type ProductosParaMerma } from './contrato.ts';
@@ -29,17 +29,14 @@ import { conUnidadDeUso, type ProductoParaMerma, type ProductosParaMerma } from 
  * `like`— y un desplegable de ocho esconde siete. Con pastillas se ve de un
  * vistazo cuál es la de hoy.
  *
- * ── Y la cámara ─────────────────────────────────────────────────────────────
+ * ── Y la cámara, que ya no está (entrega V) ──────────────────────────────────
  *
- * El botón está, y está **apagado con su motivo**. Leer una foto y sacar de ahí el
- * producto y el peso es Fogón, que es M22 y todavía no habla; poner el botón
- * funcionando ahora significaría o inventarse la cifra o abrir un módulo entero
- * fuera de orden.
- *
- * Se deja el sitio hecho a propósito, y no vacío: saber que va a poder hacerse con
- * una foto cambia cómo se usa esto hoy, y un botón apagado que dice cuándo llega
- * es información. Lo que no se hace es que se pueda pulsar y no pase nada, que es
- * el fallo que este proyecto lleva persiguiendo desde M4.
+ * Aquí había un recuadro apagado: «Con una foto, más adelante… lo hace Fogón, y
+ * llega con el módulo 22». Leer una foto sigue siendo M22; lo que cambió es la
+ * regla de la pantalla. «Lo que todavía no existe no se enseña en pantallas que se
+ * usan» (0045): son cuatro líneas sobre el futuro en la hoja que se abre con el
+ * pase lleno, entre el buscador y la lista. El widget del Panel ya lo quitó en la
+ * primera parte de V; esta hoja se había quedado atrás.
  */
 export function ApuntarMerma({
   abierta,
@@ -196,21 +193,6 @@ export function ApuntarMerma({
                 setTexto(e.currentTarget.value);
               }}
             />
-
-            {/*
-              La cámara, apagada y con su motivo. No es un olvido y no es un botón
-              mudo: no se puede pulsar, y dice cuándo llega.
-            */}
-            <div className="flex items-start gap-e3 rounded-medio border border-borde bg-fondo p-e3">
-              <span aria-hidden className="mt-[2px] shrink-0 text-texto-tenue">
-                <IconoCamara size={20} />
-              </span>
-              <p className="text-secundario text-texto-suave">
-                <strong className="text-texto">Con una foto, más adelante.</strong> Hacer la foto y
-                que se rellene solo el producto y el peso lo hace Fogón, y llega con el módulo 22.
-                Hasta entonces se apunta aquí, que son tres toques.
-              </p>
-            </div>
 
             {!buscando ? (
               <p className="text-secundario text-texto-suave">

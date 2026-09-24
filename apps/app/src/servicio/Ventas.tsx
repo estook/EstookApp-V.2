@@ -16,6 +16,8 @@ import {
   type Columna,
 } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { usarAccion } from '../ganchos/usarAccion.ts';
+import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { ComoEntranTusVentas } from './ComoEntranTusVentas.tsx';
 import type { MisCierres, UnCierre } from './contrato.ts';
 import { comoDinero, comoSeLeeLaFecha } from '../inventario/contrato.ts';
@@ -43,6 +45,7 @@ import { comoDinero, comoSeLeeLaFecha } from '../inventario/contrato.ts';
 export function Ventas() {
   const { cliente } = usarSesion();
   const navegar = useNavigate();
+  const cerrarCaja = usarAccion('cerrar-caja');
   const [dias, setDias] = useState('30');
 
   const consulta = useQuery({
@@ -216,9 +219,13 @@ export function Ventas() {
           cuandoNoHay={
             <EstadoVacio
               compacto
+              dibujo="caja"
+              acento="var(--color-app-negocio)"
               titulo="Todavía no hay cajas cerradas"
               frase="En cuanto cierres la primera, aquí verás lo que entra cada día."
-              sinAccionPorque="Se cierra en Servicio · Jornada · Cierre."
+              {...(cerrarCaja === null
+                ? { sinAccionPorque: 'La caja la cierra quien lleva el local o la sala.' }
+                : { accion: <BotonDeAccion accion={cerrarCaja} texto="Cerrar la caja de hoy" /> })}
             />
           }
         />

@@ -241,6 +241,7 @@ function Puerta() {
 function NoEstaAqui() {
   return (
     <EstadoVacio
+      dibujo="perdido"
       titulo="Esta dirección no lleva a ningún sitio"
       frase="Puede que el enlace esté mal copiado, o que sea de una pantalla que todavía no existe."
       accion={

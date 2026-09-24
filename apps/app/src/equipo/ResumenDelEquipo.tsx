@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import {
   Aviso,
+  Boton,
   Cargando,
   Cifra,
   EstadoVacio,
@@ -48,6 +50,7 @@ import {
 export function ResumenDelEquipo() {
   const { cliente, yo } = usarSesion();
   const persona = usarPersonaAbierta();
+  const navegar = useNavigate();
   const [periodo, setPeriodo] = useState<'semana' | 'mes' | '30'>('30');
 
   // El periodo **por su nombre**, y las fechas las pone el servidor con el reloj
@@ -241,9 +244,33 @@ export function ResumenDelEquipo() {
           cuandoNoHay={
             <EstadoVacio
               compacto
+              dibujo="reloj"
+              acento="var(--color-app-equipo)"
               titulo="Nadie ha fichado en este periodo"
-              frase="Cuando el equipo fiche desde el Panel, aquí salen sus horas."
-              sinAccionPorque="Se ficha desde el Panel, con el widget «Fichar»."
+              frase="Cuando el equipo fiche, aquí salen sus horas frente a su contrato."
+              accion={
+                // Si se mira poco tiempo, lo que resuelve es mirar más; si ya son
+                // treinta días, lo que falta es fichar, y se ficha en el Resumen.
+                periodo === '30' ? (
+                  <Boton
+                    tono="secundario"
+                    onClick={() => {
+                      navegar('/equipo/resumen');
+                    }}
+                  >
+                    Ir a fichar
+                  </Boton>
+                ) : (
+                  <Boton
+                    tono="secundario"
+                    onClick={() => {
+                      setPeriodo('30');
+                    }}
+                  >
+                    Mirar los últimos 30 días
+                  </Boton>
+                )
+              }
             />
           }
         />

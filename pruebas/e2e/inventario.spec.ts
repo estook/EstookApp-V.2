@@ -117,6 +117,18 @@ async function irAInventario(page: Page, destino: string, vista?: string) {
 }
 
 /**
+ * El botón de dar de alta, esté la cámara vacía o no (entrega V).
+ *
+ * Con productos, es «Añadir producto», en la fila de filtros; con la cámara vacía
+ * esa fila no se pinta y el botón es el del vacío, «Añade tu primer producto». Las
+ * pruebas corren a la vez y el local de Rosa puede estar vacío cuando entra la
+ * primera: aceptar los dos es lo que evita un rojo que depende de quién llega antes.
+ */
+function elBotonDeAnadir(page: Page) {
+  return page.getByRole('button', { name: /^(Añadir producto|Añade tu primer producto)$/ });
+}
+
+/**
  * Pulsa el que se ve, de todos los que coinciden.
  *
  * ── Por qué hace falta esto y no vale `.first()` ─────────────────────────────
@@ -261,12 +273,12 @@ test('se da de alta un producto en menos de treinta segundos', async ({ page }) 
   await entrar(page, ROSA);
   await irAInventario(page, 'productos');
 
-  await expect(page.getByRole('button', { name: 'Añadir producto' })).toBeVisible();
+  await expect(elBotonDeAnadir(page)).toBeVisible();
 
   // El cronómetro empieza donde empieza la persona: al pulsar «Añadir».
   const arranque = Date.now();
 
-  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  await elBotonDeAnadir(page).click();
 
   // **Todo dentro de la hoja.** Sin acotarlo, el buscador de la pantalla de
   // detrás y las filas de la lista también coinciden con «Aceite de oliva», y la
@@ -911,7 +923,7 @@ test('del catálogo se puede cambiar el envase, y la cuenta se rehace al escribi
   await entrar(page, ROSA);
   await irAInventario(page, 'productos');
 
-  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  await elBotonDeAnadir(page).click();
   const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
 
   await hoja.getByLabel('¿Qué producto es?').fill('aceite de oliva');
@@ -949,7 +961,7 @@ test('si no se toca el envase, se guarda el del catálogo', async ({ page }) => 
   await entrar(page, ROSA);
   await irAInventario(page, 'productos');
 
-  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  await elBotonDeAnadir(page).click();
   const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
 
   await hoja.getByLabel('¿Qué producto es?').fill('aceite de oliva');
@@ -1109,12 +1121,15 @@ test('el libro se acota por tramo, y busca en el servidor', async ({ page, reque
   await expect(loQueSeVe(page, nombre)).toBeVisible({ timeout: 15_000 });
 
   // Y lo que no existe deja la lista vacía **con su frase**, en vez de recortar
-  // lo que ya estaba en pantalla.
+  // lo que ya estaba en pantalla. Y desde la entrega V, el vacío de lo buscado
+  // **ofrece borrarlo**, no apuntar nada: el botón vacía el buscador.
   await page.getByLabel('Buscar en el libro').fill('zzzz-nada-de-esto');
-  await expect(page.getByText('Nada con eso')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Nada con «zzzz-nada-de-esto»')).toBeVisible({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'Borrar la búsqueda' }).click();
+  await expect(page.getByLabel('Buscar en el libro')).toHaveValue('');
+  await expect(page.getByText(/quedaron /).first()).toBeVisible({ timeout: 15_000 });
 
   // Y cambiar el tramo vuelve a preguntar al servidor, sin romperse.
-  await page.getByLabel('Buscar en el libro').fill('');
   await tramo.selectOption('mes');
   await expect(tramo).toHaveValue('mes');
   await expect(page.getByText('No he podido leer el libro')).toHaveCount(0);
@@ -1193,7 +1208,7 @@ test('un producto se da de alta con nombre, unidad y precio, sin hacer cuentas',
   await entrar(page, ROSA);
   await irAInventario(page, 'productos', 'todo');
 
-  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  await elBotonDeAnadir(page).click();
   const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
 
   // Sin escribir nada **no sale ninguna lista**: antes salían doce referencias
@@ -1235,7 +1250,7 @@ test('y quien compra por envases lo despliega, y la cuenta sigue saliendo', asyn
   await entrar(page, ROSA);
   await irAInventario(page, 'productos', 'todo');
 
-  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  await elBotonDeAnadir(page).click();
   const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
 
   const nombre = `Aceite en garrafa ${Date.now()}`;
@@ -1271,7 +1286,7 @@ test('el queso azul en tarros de 250 g: el precio de un tarro y la cuenta sale s
   await entrar(page, ROSA);
   await irAInventario(page, 'productos', 'todo');
 
-  await page.getByRole('button', { name: 'Añadir producto' }).click();
+  await elBotonDeAnadir(page).click();
   const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
 
   const nombre = `Queso azul ${Date.now()}`;

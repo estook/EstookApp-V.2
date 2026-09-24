@@ -127,9 +127,11 @@ export function LosDatos() {
           cuandoNoHay={
             <EstadoVacio
               compacto
+              dibujo="platos"
+              acento="var(--color-app-escandallos)"
               titulo="Todavía no hay platos"
               frase="Cuando la carta tenga platos con su ficha, aquí sale lo que cuesta cada uno."
-              accion={<Boton tono="principal">Crear el primero</Boton>}
+              accion={<Boton tono="principal">Crea tu primer plato</Boton>}
             />
           }
         />
@@ -163,8 +165,10 @@ export function LosDatos() {
           cuandoNoHay={
             <EstadoVacio
               compacto
+              dibujo="reloj"
               titulo="Nadie en el turno"
               frase="Cuando alguien fiche, sale aquí."
+              sinAccionPorque="Cada uno ficha desde su Panel."
             />
           }
         />
@@ -189,7 +193,13 @@ export function LosDatos() {
               { semana: 'S4', margen: 66 },
             ]}
             cuandoNoHay={
-              <EstadoVacio compacto titulo="Sin datos" frase="No hay nada que dibujar." />
+              <EstadoVacio
+                compacto
+                dibujo="grafica"
+                titulo="Sin datos"
+                frase="No hay nada que dibujar."
+                sinAccionPorque="Se dibuja en cuanto hay una semana."
+              />
             }
           />
         </Tarjeta>

@@ -288,12 +288,18 @@ export function accionPorId(id: string): Accion | undefined {
  * a un cocinero un botón que le va a decir que no.
  */
 export function accionesQuePuedo(permisos: PermisosResueltos): readonly Accion[] {
-  return ACCIONES.filter((accion) => {
-    if (accion.permiso === null) return true;
-    return accion.permiso.como === 'editar'
-      ? puedeEditar(permisos, accion.permiso.cual)
-      : puedeVer(permisos, accion.permiso.cual);
-  });
+  return ACCIONES.filter((accion) => puedoHacer(permisos, accion));
+}
+
+/**
+ * Si esta persona puede hacer **esta** acción. Es la misma cuenta que la lista de
+ * arriba, para una sola: la usan los vacíos, que ofrecen un botón (entrega V).
+ */
+export function puedoHacer(permisos: PermisosResueltos, accion: Accion): boolean {
+  if (accion.permiso === null) return true;
+  return accion.permiso.como === 'editar'
+    ? puedeEditar(permisos, accion.permiso.cual)
+    : puedeVer(permisos, accion.permiso.cual);
 }
 
 /**

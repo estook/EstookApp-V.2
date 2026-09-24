@@ -86,6 +86,7 @@ export function CierreDeCaja() {
       <Tarjeta titulo="El cierre de caja">
         <EstadoVacio
           compacto
+          dibujo="candado"
           titulo="Lo cierra quien lleva la caja"
           frase="Las ventas del local no están en tu acceso."
           sinAccionPorque="Lo hace el encargado o la gerencia."

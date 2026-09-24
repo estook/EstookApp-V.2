@@ -173,32 +173,54 @@ export function Facturas() {
                 },
               ]}
               cuandoNoHay={
-                <EstadoVacio
-                  compacto
-                  titulo={
-                    filtro === 'todas'
-                      ? 'Todavía no has apuntado ninguna factura'
-                      : filtro === 'sin_conciliar'
+                filtro === 'todas' ? (
+                  <EstadoVacio
+                    compacto
+                    dibujo="facturas"
+                    acento="var(--color-app-inventario)"
+                    titulo="Todavía no has apuntado ninguna factura"
+                    frase="Con sus albaranes, Estook te dice si te cobran lo que llegó."
+                    {...(puedeApuntar
+                      ? {
+                          accion: (
+                            <Boton
+                              tono="principal"
+                              icono={<IconoAnadir size={18} />}
+                              onClick={() => {
+                                setApuntando(true);
+                              }}
+                            >
+                              Apuntar una factura
+                            </Boton>
+                          ),
+                        }
+                      : { sinAccionPorque: 'Tu acceso ve las facturas, no las apunta.' })}
+                  />
+                ) : (
+                  // El vacío de un filtro es buena noticia, y ofrece volver a todas
+                  // (entrega V): apuntar otra factura no es lo que se buscaba aquí.
+                  <EstadoVacio
+                    compacto
+                    dibujo="todo-en-orden"
+                    acento="var(--color-app-inventario)"
+                    titulo={
+                      filtro === 'sin_conciliar'
                         ? 'Todas están comprobadas'
                         : 'Ninguna factura con diferencia'
-                  }
-                  frase="Al apuntar una factura con sus albaranes, Estook te dice si te cobran lo que llegó, y si un precio ha cambiado lo apunta desde la factura."
-                  {...(puedeApuntar
-                    ? {
-                        accion: (
-                          <Boton
-                            tono="principal"
-                            icono={<IconoAnadir size={18} />}
-                            onClick={() => {
-                              setApuntando(true);
-                            }}
-                          >
-                            Apuntar una factura
-                          </Boton>
-                        ),
-                      }
-                    : { sinAccionPorque: 'Tu acceso ve las facturas, no las apunta.' })}
-                />
+                    }
+                    frase="Lo que te cobran cuadra con lo que llegó."
+                    accion={
+                      <Boton
+                        tono="secundario"
+                        onClick={() => {
+                          setFiltro('todas');
+                        }}
+                      >
+                        Ver todas las facturas
+                      </Boton>
+                    }
+                  />
+                )
               }
             />
           )}

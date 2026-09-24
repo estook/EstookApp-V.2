@@ -35,6 +35,15 @@ export interface AlmacenDeFicheros {
    * vez que hace falta enseñarlo.
    */
   enlace(clave: string, segundos: number): Promise<string | null>;
+  /**
+   * Muchos enlaces **de una vez** (entrega V, fotos de producto).
+   *
+   * Una lista de cincuenta productos con foto no puede costar cincuenta viajes al
+   * almacén: Supabase firma una tanda entera en una sola petición. Devuelve un mapa
+   * de clave a enlace; la que no se haya podido firmar, simplemente no está, y la
+   * pantalla enseña la inicial en su lugar.
+   */
+  enlaces(claves: readonly string[], segundos: number): Promise<ReadonlyMap<string, string>>;
   borrar(clave: string): Promise<void>;
 }
 
@@ -66,6 +75,50 @@ export const CUBO_DE_LA_MARCA = 'marca';
  */
 export function claveDelLogo(localId: string, extension: string, ahora: Date): string {
   return `${CUBO_DE_LA_MARCA}/${localId}/logo-${ahora.getTime()}.${extension}`;
+}
+
+// ── Las fotos de producto (entrega V, punto 5) ───────────────────────────────
+
+/** El cubo de las fotos de producto. Se crea con `pnpm almacen:preparar`, como el de la marca. */
+export const CUBO_DE_LAS_FOTOS = 'fotos-de-producto';
+
+/**
+ * Lo más grande que se acepta como foto y como miniatura, ya reducidas.
+ *
+ * El navegador las deja en 800 y 160 px de lado, en WebP o JPG: unos 80 KB y unos
+ * 8 KB. El tope da margen de sobra a una foto con mucho detalle, y es lo que impide
+ * que quien llame a la API a pelo con una foto de 12 megas llene el almacén.
+ */
+export const TOPE_DE_LA_FOTO = 400 * 1024;
+export const TOPE_DE_LA_MINIATURA = 40 * 1024;
+
+/**
+ * Los tipos que se aceptan para una foto: los dos en que el navegador sabe
+ * reducir. WebP donde se puede; JPG en Safari, que no sabe escribir WebP desde un
+ * lienzo. Ni PNG —una foto en PNG pesa diez veces más— ni SVG, que puede llevar
+ * JavaScript dentro.
+ */
+export const TIPOS_DE_FOTO: Readonly<Record<string, string>> = {
+  'image/webp': 'webp',
+  'image/jpeg': 'jpg',
+};
+
+/** Cuánto vive el enlace de una foto: un turno largo, con la lista abierta en la tableta. */
+export const SEGUNDOS_DEL_ENLACE_DE_LA_FOTO = 12 * 60 * 60;
+
+/**
+ * La clave de una foto o de su miniatura: el local, el producto y **una marca de
+ * tiempo**, por lo mismo que el logo: el navegador guarda las imágenes, y sin ella
+ * cambiar la foto dejaría la vieja en pantalla hasta recargar sin caché.
+ */
+export function claveDeLaFoto(
+  localId: string,
+  productoId: string,
+  cual: 'foto' | 'miniatura',
+  extension: string,
+  ahora: Date,
+): string {
+  return `${CUBO_DE_LAS_FOTOS}/${localId}/${productoId}/${cual}-${ahora.getTime()}.${extension}`;
 }
 
 // ── El de verdad · Supabase Storage ──────────────────────────────────────────
@@ -123,6 +176,46 @@ export function almacenDeSupabase(opciones?: {
       return datos.signedURL ? `${url.replace(/\/+$/, '')}/storage/v1${datos.signedURL}` : null;
     },
 
+    async enlaces(claves, segundos) {
+      const firmados = new Map<string, string>();
+
+      // La clave lleva el cubo delante (`fotos-de-producto/…`), y Supabase firma una
+      // tanda **por cubo**: se agrupan y se pide una vez por cada uno.
+      const porCubo = new Map<string, string[]>();
+      for (const clave of new Set(claves)) {
+        const barra = clave.indexOf('/');
+        if (barra <= 0) continue;
+        const cubo = clave.slice(0, barra);
+        porCubo.set(cubo, [...(porCubo.get(cubo) ?? []), clave.slice(barra + 1)]);
+      }
+
+      for (const [cubo, caminos] of porCubo) {
+        const respuesta = await pedir(`${raiz}/object/sign/${cubo}`, {
+          method: 'POST',
+          headers: { ...cabeceras, 'content-type': 'application/json' },
+          body: JSON.stringify({ expiresIn: segundos, paths: caminos }),
+        }).catch(() => null);
+        // Si el almacén no contesta, la lista sale igual, con las iniciales: una
+        // foto que no llega no puede dejar a nadie sin su lista de productos.
+        if (respuesta === null || !respuesta.ok) continue;
+
+        const datos = (await respuesta.json()) as readonly {
+          path?: string;
+          signedURL?: string | null;
+          error?: string | null;
+        }[];
+        for (const firmado of datos) {
+          if (!firmado.path || !firmado.signedURL) continue;
+          firmados.set(
+            `${cubo}/${firmado.path}`,
+            `${url.replace(/\/+$/, '')}/storage/v1${firmado.signedURL}`,
+          );
+        }
+      }
+
+      return firmados;
+    },
+
     async borrar(claveDelObjeto) {
       // Que falle no es un fallo del alta: el fichero ya no lo referencia nadie.
       // Se intenta y se sigue.
@@ -148,22 +241,40 @@ export function almacenDeSupabase(opciones?: {
  * En produccion no se usa jamas: `servidor/index.ts` coge este solo cuando no
  * hay credenciales de Supabase, y entonces tampoco habria a donde subir.
  */
-export function almacenEnMemoria(): AlmacenDeFicheros {
+export function almacenEnMemoria(): AlmacenDeFicheros & {
+  /** Qué hay guardado, para que una prueba compruebe que lo viejo se borró. */
+  readonly claves: () => readonly string[];
+} {
   const guardados = new Map<string, { contenido: Uint8Array; tipo: string }>();
 
+  function comoDireccion(clave: string): string | null {
+    const fichero = guardados.get(clave);
+    if (!fichero) return null;
+
+    let binario = '';
+    for (const byte of fichero.contenido) binario += String.fromCharCode(byte);
+    return `data:${fichero.tipo};base64,${btoa(binario)}`;
+  }
+
   return {
+    claves: () => [...guardados.keys()],
+
     guardar(clave, contenido, tipo) {
       guardados.set(clave, { contenido, tipo });
       return Promise.resolve();
     },
 
     enlace(clave) {
-      const fichero = guardados.get(clave);
-      if (!fichero) return Promise.resolve(null);
+      return Promise.resolve(comoDireccion(clave));
+    },
 
-      let binario = '';
-      for (const byte of fichero.contenido) binario += String.fromCharCode(byte);
-      return Promise.resolve(`data:${fichero.tipo};base64,${btoa(binario)}`);
+    enlaces(claves) {
+      const firmados = new Map<string, string>();
+      for (const clave of claves) {
+        const direccion = comoDireccion(clave);
+        if (direccion !== null) firmados.set(clave, direccion);
+      }
+      return Promise.resolve(firmados);
     },
 
     borrar(clave) {

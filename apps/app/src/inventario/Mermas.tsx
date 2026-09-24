@@ -16,6 +16,7 @@ import {
   Cargando,
   Cifra,
   EstadoVacio,
+  NadaConEso,
   Etiqueta,
   Proporcion,
   Selector,
@@ -23,13 +24,7 @@ import {
   Tarjeta,
   type Columna,
 } from '@estook/ui';
-import {
-  IconoAnadir,
-  IconoBuscar,
-  IconoCamara,
-  IconoDescargar,
-  IconoDocumento,
-} from '@estook/iconos';
+import { IconoAnadir, IconoBuscar, IconoDescargar, IconoDocumento } from '@estook/iconos';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { ApuntarMerma } from './ApuntarMerma.tsx';
 import {
@@ -391,34 +386,49 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
       </div>
 
       {/*
-        Y la cámara, apagada con su motivo. Está aquí y en la hoja de apuntar
-        porque es donde alguien la buscaría, y **no se puede pulsar**.
+        Aquí iba una línea sobre el futuro —apuntar con una foto, M22; el parte con
+        logotipo, M11— y se quitó en la entrega V: «lo que todavía no existe no se
+        enseña en pantallas que se usan» (0045). Sigue escrito en el plan.
       */}
-      {datos.puedeApuntar && (
-        <p className="flex items-start gap-e2 text-secundario text-texto-tenue no-imprimir">
-          <span aria-hidden className="mt-[2px] shrink-0">
-            <IconoCamara size={16} />
-          </span>
-          <span>
-            Apuntar una merma con una foto —que Estook lea el producto y el peso— lo hace Fogón, y
-            llega con el módulo 22. El parte con tu logotipo llega con los documentos, en el 11.
-          </span>
-        </p>
-      )}
 
       {/* ── 3 · Quién y cuándo ──────────────────────────────────────────── */}
       {porDia.length === 0 ? (
-        <Tarjeta titulo="Nada apuntado">
-          <EstadoVacio
-            compacto
-            titulo={texto.trim() === '' ? 'Sin mermas en este periodo' : 'Nada con eso'}
-            frase={
-              texto.trim() === ''
-                ? 'Es una buena noticia, o es que no se está apuntando. Las dos cosas conviene saberlas.'
-                : 'Prueba con menos letras, o cambia el periodo.'
-            }
-            sinAccionPorque="Se apunta con el botón de arriba, o desde el widget del Panel."
-          />
+        <Tarjeta>
+          {texto.trim() !== '' || motivo !== '' || partida !== '' ? (
+            // Lo filtrado que no está: se ofrece quitar el filtro (V, punto 4).
+            <NadaConEso
+              buscado={texto}
+              frase="Prueba con menos letras, otro motivo o un periodo más largo."
+              alQuitar={() => {
+                setTexto('');
+                setMotivo('');
+                setPartida('');
+              }}
+            />
+          ) : (
+            <EstadoVacio
+              compacto
+              dibujo="mermas"
+              acento="var(--color-app-inventario)"
+              titulo="Sin mermas en este periodo"
+              frase="Es una buena noticia, o es que no se está apuntando. Las dos cosas conviene saberlas."
+              {...(datos.puedeApuntar
+                ? {
+                    accion: (
+                      <Boton
+                        tono="secundario"
+                        icono={<IconoAnadir size={18} />}
+                        onClick={() => {
+                          setApuntando(true);
+                        }}
+                      >
+                        Apuntar una merma
+                      </Boton>
+                    ),
+                  }
+                : { sinAccionPorque: 'La apunta quien rompe o tira algo, desde su Panel.' })}
+            />
+          )}
         </Tarjeta>
       ) : (
         porDia.map(([dia, delDia]) => (

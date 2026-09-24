@@ -21,6 +21,8 @@ insert into estook.persona (correo, nombre, apellidos, idioma, es_ejemplo) value
   ('luis@ejemplo.estook.com',    'Luis',    'Amunarriz','eu', true),
   ('nuria@ejemplo.estook.com',   'Nuria',   'Sanmartin','ca', true),
   ('asesoria@ejemplo.estook.com','Asesoria','Cuenta Clara', 'es', true),
+  -- La de las capturas (entrega V): lleva el Bar Ribera y no entra ninguna otra prueba
+  ('vera@ejemplo.estook.com',    'Vera',    'Ribas',    'es', true),
   -- Casa Lola · la que acaba de darse de alta y tiene el alta a medias (M5)
   ('pablo@ejemplo.estook.com',   'Pablo',   'Ferrer',   'es', true),
   -- El admin de Estook (0041). Sin membresía: no trabaja en ningún restaurante.
@@ -99,6 +101,17 @@ select p.id, o.id, l.id, 'local', 'camarero'
 from estook.persona p, estook.organizacion o
 join estook.local l on l.organizacion_id = o.id and l.codigo in ('bar-puerto', 'bar-playa')
 where p.correo = 'nuria@ejemplo.estook.com' and o.codigo = 'grupo-costa'
+on conflict do nothing;
+
+-- Vera lleva el Bar Ribera, de la Zona Sur (entrega V). Es **la de las capturas**:
+-- las pruebas que fotografian la aplicacion en claro y en oscuro entran con ella, y
+-- ninguna otra lo hace, para que lo que sale en la foto no lo cambie otra prueba a
+-- la vez. Su local no tiene genero, que es justo lo que ensenan los vacios.
+insert into estook.membresia (persona_id, organizacion_id, local_id, alcance, rol)
+select p.id, o.id, l.id, 'local', 'gerente'
+from estook.persona p, estook.organizacion o
+join estook.local l on l.organizacion_id = o.id and l.codigo = 'bar-ribera'
+where p.correo = 'vera@ejemplo.estook.com' and o.codigo = 'grupo-costa'
 on conflict do nothing;
 
 -- La gestoria entra a toda la organizacion, en solo lectura y sin rueda de apps.

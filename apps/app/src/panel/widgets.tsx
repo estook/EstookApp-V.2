@@ -45,6 +45,8 @@ import { AccesosRapidos } from './AccesosRapidos.tsx';
 import { IndicadorWidget } from './Indicador.tsx';
 import { ApuntarMerma } from '../inventario/ApuntarMerma.tsx';
 import { usarFichar } from '../ganchos/usarFichar.ts';
+import { usarAccion } from '../ganchos/usarAccion.ts';
+import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import {
   comoSeLeeLaHora,
   comoSeLeenMinutos,
@@ -739,6 +741,7 @@ function FicharDesdeElPanel({ tamano }: { readonly tamano: TamanoDeWidget }) {
  */
 function QuienEstaTrabajandoWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const { cliente, permisos, yo } = usarSesion();
+  const invitar = usarAccion('invitar');
   const cuantos = tamano === 'grande' ? 8 : 4;
 
   const consulta = useQuery({
@@ -768,9 +771,13 @@ function QuienEstaTrabajandoWidget({ tamano }: { readonly tamano: TamanoDeWidget
       ) : datos.gente.length === 0 ? (
         <EstadoVacio
           compacto
+          dibujo="equipo"
+          acento="var(--color-app-equipo)"
           titulo="Todavía no hay equipo"
           frase="Cuando alguien más tenga acceso a este local, aquí verás quién ha fichado."
-          sinAccionPorque="Se invita desde Equipo · Personas."
+          {...(invitar === null
+            ? { sinAccionPorque: 'Da los accesos quien lleva el local.' }
+            : { accion: <BotonDeAccion accion={invitar} texto="Dar acceso a alguien" /> })}
         />
       ) : dentro.length === 0 ? (
         <p className="text-secundario text-texto-suave">
@@ -820,6 +827,7 @@ function QuienEstaTrabajandoWidget({ tamano }: { readonly tamano: TamanoDeWidget
  */
 function PersonasWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const { cliente, permisos, yo } = usarSesion();
+  const invitar = usarAccion('invitar');
   const navegar = useNavigate();
   const cuantos = tamano === 'grande' ? 10 : 5;
 
@@ -849,9 +857,13 @@ function PersonasWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
       ) : gente.length === 0 ? (
         <EstadoVacio
           compacto
+          dibujo="equipo"
+          acento="var(--color-app-equipo)"
           titulo="Llevas el local solo"
           frase="Cuando des acceso a alguien, aquí verás quién es y cuándo se le vio por última vez."
-          sinAccionPorque="Se invita desde Equipo · Personas."
+          {...(invitar === null
+            ? { sinAccionPorque: 'Da los accesos quien lleva el local.' }
+            : { accion: <BotonDeAccion accion={invitar} texto="Dar acceso a alguien" /> })}
         />
       ) : (
         <ul className="flex flex-col gap-e1">

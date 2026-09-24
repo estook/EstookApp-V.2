@@ -3,9 +3,10 @@
  *
  *   pnpm almacen:preparar
  *
- * Crea el cubo `marca`, donde vive el logo de cada local, y comprueba que se
- * puede subir, firmar y borrar. Se ejecuta **una vez por proyecto**, y es
- * idempotente: volver a lanzarlo no rompe nada.
+ * Crea el cubo `marca`, donde vive el logo de cada local, y el cubo
+ * `fotos-de-producto` (entrega V), y comprueba que en los dos se puede subir,
+ * firmar y borrar. Se ejecuta **una vez por proyecto**, y otra cada vez que
+ * aparece un cubo nuevo; es idempotente: volver a lanzarlo no rompe nada.
  *
  * ── Por que esto no es una migracion ─────────────────────────────────────────
  *
@@ -26,7 +27,13 @@
  * de verdad.
  */
 import { variable } from '@estook/utiles';
-import { CUBO_DE_LA_MARCA } from '../servidor/infraestructura/almacen.ts';
+import {
+  CUBO_DE_LA_MARCA,
+  CUBO_DE_LAS_FOTOS,
+  TIPOS_DE_FOTO,
+  TOPE_DE_LA_FOTO,
+  almacenDeSupabase,
+} from '../servidor/infraestructura/almacen.ts';
 
 const url = variable('SUPABASE_URL') ?? variable('VITE_SUPABASE_URL');
 const clave = variable('CLAVE_DE_SERVICIO');
@@ -155,14 +162,88 @@ await paso('y limpiar lo de la comprobacion', async () => {
   await fetch(`${raiz}/object/${laClave}`, { method: 'DELETE', headers: cabeceras });
 });
 
+// ── Las fotos de producto (entrega V, punto 5) ───────────────────────────────
+//
+// Un cubo suyo, privado como el de la marca, y la comprobación del camino que
+// recorren: subir la foto y su miniatura, **firmar las dos en una sola petición**
+// —que es como se firman las de una lista de cincuenta— y leerlas. La firma en
+// tanda se hace con `almacenDeSupabase`, el código de verdad de la API: si algún
+// día Supabase la cambiara, esto lo diría antes que la lista de productos.
+
+console.log('');
+
+todoBien &&= await paso('el cubo de las fotos de producto', async () => {
+  const existentes = await fetch(`${raiz}/bucket`, { headers: cabeceras });
+  if (!existentes.ok) throw new Error(`no se pueden listar los cubos (${existentes.status})`);
+
+  const cubos = await existentes.json();
+  if (cubos.some((c) => c.id === CUBO_DE_LAS_FOTOS)) return 'ya estaba';
+
+  const creado = await fetch(`${raiz}/bucket`, {
+    method: 'POST',
+    headers: { ...cabeceras, 'content-type': 'application/json' },
+    body: JSON.stringify({
+      id: CUBO_DE_LAS_FOTOS,
+      name: CUBO_DE_LAS_FOTOS,
+      // Privado, por lo mismo que la marca: nadie llega a una foto sin un enlace
+      // firmado por nosotros.
+      public: false,
+      // El tope de la API, y solo los dos tipos en que el móvil reduce.
+      file_size_limit: TOPE_DE_LA_FOTO,
+      allowed_mime_types: Object.keys(TIPOS_DE_FOTO),
+    }),
+  });
+
+  if (!creado.ok) throw new Error(`no se ha podido crear (${creado.status})`);
+  return 'creado';
+});
+
+// Lo mínimo que Supabase acepta como `image/jpeg`: la firma de un JPG. El almacén
+// no abre la imagen; la API sí mira la firma, y por eso se escribe con ella.
+const UN_JPG = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0, 16, 74, 70, 73, 70, 0, 1]);
+const lasDeLaComprobacion = ['foto', 'miniatura'].map(
+  (cual) => `${CUBO_DE_LAS_FOTOS}/comprobacion/producto/${cual}-${Date.now()}.jpg`,
+);
+const almacen = almacenDeSupabase({ url, clave });
+
+todoBien &&= await paso('subir una foto y su miniatura', async () => {
+  if (almacen === null) throw new Error('sin credenciales no hay almacen');
+  for (const laDeAhora of lasDeLaComprobacion) {
+    await almacen.guardar(laDeAhora, UN_JPG, 'image/jpeg');
+  }
+});
+
+todoBien &&= await paso('firmar las dos en una sola peticion', async () => {
+  if (almacen === null) throw new Error('sin credenciales no hay almacen');
+  const enlaces = await almacen.enlaces(lasDeLaComprobacion, 60);
+  if (enlaces.size !== 2) throw new Error(`han vuelto ${enlaces.size} enlaces, y eran 2`);
+
+  for (const enlaceDeLaFoto of enlaces.values()) {
+    const leido = await fetch(enlaceDeLaFoto);
+    if (!leido.ok) throw new Error(`un enlace firmado no sirve la foto (${leido.status})`);
+    const bytes = new Uint8Array(await leido.arrayBuffer());
+    if (bytes.byteLength !== UN_JPG.byteLength) {
+      throw new Error(`ha vuelto otra cosa: ${bytes.byteLength} bytes`);
+    }
+  }
+});
+
+await paso('y limpiar las fotos de la comprobacion', async () => {
+  if (almacen === null) return 'nada que limpiar';
+  for (const laDeAhora of lasDeLaComprobacion) await almacen.borrar(laDeAhora);
+});
+
 if (todoBien) {
-  console.log(`\n  El almacen esta listo. El logo del alta ya se puede subir.\n`);
+  console.log(
+    `\n  El almacen esta listo: el logo del alta y las fotos de producto ya se pueden subir.\n`,
+  );
 } else {
   console.log(
     [
       '',
-      '  El almacen NO esta listo, y hasta que lo este el paso 5 del alta dira que',
-      '  todavia no hay donde guardar el logo. El color de la marca si funciona.',
+      '  El almacen NO esta listo. Hasta que lo este, el paso 5 del alta dira que',
+      '  todavia no hay donde guardar el logo, y la ficha de un producto, que no hay',
+      '  donde guardar su foto. Todo lo demas funciona igual.',
       '',
     ].join('\n'),
   );

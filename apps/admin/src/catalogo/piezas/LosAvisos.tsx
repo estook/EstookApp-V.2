@@ -4,9 +4,13 @@ import {
   Aviso,
   Boton,
   Cargando,
+  Dibujo,
   ErrorEnCristiano,
   EstadoVacio,
   Esqueleto,
+  NOMBRES_DE_LOS_DIBUJOS,
+  NadaConEso,
+  PARA_QUE_ES,
   TarjetaCargando,
   TodaviaNo,
 } from '@estook/ui';
@@ -68,28 +72,59 @@ export function LosAvisos() {
 
       <Pieza
         nombre="EstadoVacio"
-        cuando="Siempre con una frase y un botón. Nunca una pantalla en blanco. Si de verdad no hay acción posible, hay que decir por qué."
+        cuando="Siempre con su dibujo, una frase y un botón que dice lo que hace. Nunca una pantalla en blanco. Si de verdad no hay acción posible, hay que decir por qué. Otra salida, si la hay, va en texto y debajo: nunca un segundo botón."
       >
         <div className="grid gap-e4 md:grid-cols-2">
           <div className="rounded-grande border border-borde">
             <EstadoVacio
-              titulo="Todavía no hay productos"
-              frase="Cuando entre el primer albarán, aquí sale lo que hay, lo que falta y lo que se ha ido sin explicación."
+              dibujo="camara"
+              acento="var(--color-app-inventario)"
+              titulo="Todavía no tienes género"
+              frase="Empieza por lo que más compras. Escribes «aceite» y el catálogo lo trae con su formato y sus alérgenos."
               accion={
                 <Boton tono="principal" icono={<IconoAnadir size={18} />}>
-                  Añadir un producto
+                  Añade tu primer producto
                 </Boton>
               }
+              alternativa={<Boton tono="texto">O ponme unos ejemplos para verlo</Boton>}
             />
           </div>
           <div className="rounded-grande border border-borde">
             <EstadoVacio
+              dibujo="todo-en-orden"
               titulo="No hay nada que revisar"
               frase="Cuando un APPCC se salga de rango, aparecerá aquí con lo que hay que hacer."
               sinAccionPorque="No hay nada que crear desde esta pantalla: los registros los abre el turno."
             />
           </div>
         </div>
+      </Pieza>
+
+      <Pieza
+        nombre="NadaConEso"
+        cuando="El vacío de un filtro o de una búsqueda. No es el vacío de verdad: ofrece quitar el filtro, nunca crear algo, porque lo normal es que exista y no se haya sabido buscar."
+      >
+        <div className="rounded-grande border border-borde">
+          <NadaConEso buscado="merluza" alQuitar={() => undefined} />
+        </div>
+      </Pieza>
+
+      <Pieza
+        nombre="Dibujo"
+        cuando="La familia de dibujos de los vacíos. Se pintan con las fichas, así que salen bien en claro y en oscuro; cada uno se descarga aparte, solo cuando se ve; y el acento es el de la app. Uno nuevo se añade al catálogo de dibujos y sale aquí solo."
+      >
+        <ul className="grid grid-cols-2 gap-e3 sm:grid-cols-4 lg:grid-cols-5">
+          {NOMBRES_DE_LOS_DIBUJOS.map((nombre) => (
+            <li
+              key={nombre}
+              className="flex flex-col items-center gap-e1 rounded-grande border border-borde p-e2 text-center"
+            >
+              <Dibujo nombre={nombre} compacto />
+              <span className="text-etiqueta font-semibold">{nombre}</span>
+              <span className="text-etiqueta text-texto-suave">{PARA_QUE_ES[nombre]}</span>
+            </li>
+          ))}
+        </ul>
       </Pieza>
 
       <Pieza

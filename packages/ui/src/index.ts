@@ -49,6 +49,8 @@ export type { SelectorProps, InterruptorProps, Opcion } from './componentes/Sele
 
 export { Tarjeta, EnlaceDeTarjeta, Etiqueta, Avatar } from './componentes/Tarjeta.tsx';
 export { inicialesDe, colorDe } from './componentes/iniciales.ts';
+export { FotoDeProducto } from './componentes/FotoDeProducto.tsx';
+export type { FotoDeProductoProps } from './componentes/FotoDeProducto.tsx';
 export { Mosaico, Pieza, CLASES_DEL_MOSAICO } from './componentes/Mosaico.tsx';
 export {
   usarFilasDelMosaico,
@@ -91,8 +93,18 @@ export type { GraficaProps, SerieDeGrafica, FormaDeGrafica } from './componentes
 export { Aviso, ErrorEnCristiano } from './componentes/Aviso.tsx';
 export type { AvisoProps, TonoDeAviso, ErrorDeLaApi } from './componentes/Aviso.tsx';
 
-export { EstadoVacio, TodaviaNo } from './componentes/EstadoVacio.tsx';
-export type { EstadoVacioProps, TodaviaNoProps } from './componentes/EstadoVacio.tsx';
+export { EstadoVacio, NadaConEso, TodaviaNo } from './componentes/EstadoVacio.tsx';
+export type {
+  EstadoVacioProps,
+  NadaConEsoProps,
+  TodaviaNoProps,
+} from './componentes/EstadoVacio.tsx';
+
+// ── Los dibujos de los vacíos (entrega V, punto 4): cada uno en su trozo ─────
+export { Dibujo } from './componentes/Dibujo.tsx';
+export type { DibujoProps } from './componentes/Dibujo.tsx';
+export { NOMBRES_DE_LOS_DIBUJOS, PARA_QUE_ES } from './dibujos/catalogo.ts';
+export type { NombreDelDibujo } from './dibujos/catalogo.ts';
 
 export { Cargando, Esqueleto, TarjetaCargando } from './componentes/Cargando.tsx';
 
@@ -176,6 +188,7 @@ export {
   CONTRASTE_DE_COCINA,
   CONTRASTE_DE_ICONO,
   CONTRASTE_DE_TEXTO,
+  acentoParaTexto,
   contraste,
   derivarAcento,
   esColorHex,

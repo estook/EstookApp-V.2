@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { IconoBuscar } from '@estook/iconos';
-import { EstadoVacio } from '../componentes/EstadoVacio.tsx';
+import { EstadoVacio, NadaConEso } from '../componentes/EstadoVacio.tsx';
 import { Cargando } from '../componentes/Cargando.tsx';
 import { Fila, Grupo } from './FilaDelBuscador.tsx';
 import { filtrarPorParecido } from './trigramas.ts';
@@ -184,6 +184,7 @@ export function Buscador({
             {cortito ? (
               <EstadoVacio
                 compacto
+                dibujo="buscar"
                 titulo="Escribe para buscar"
                 frase={`Con ${minimoDeLetras} letras basta. No hacen falta acentos, y aguanta alguna errata.`}
                 sinAccionPorque="También encuentra acciones: «ajustes», «tamaño de letra», el nombre de una app."
@@ -239,11 +240,14 @@ export function Buscador({
                 )}
 
                 {!buscando && todo.length === 0 && (
-                  <EstadoVacio
-                    compacto
-                    titulo={`No hay nada que se parezca a «${escrito.trim()}»`}
-                    frase="Prueba con menos letras, o con el código del local en vez del nombre."
-                    sinAccionPorque="Solo se busca en lo que tu acceso alcanza."
+                  <NadaConEso
+                    buscado={escrito}
+                    frase="Prueba con menos letras, o con el código del local en vez del nombre. Solo se busca en lo que tu acceso alcanza."
+                    quitar="Borrar lo escrito"
+                    alQuitar={() => {
+                      setEscrito('');
+                      campo.current?.focus();
+                    }}
                   />
                 )}
               </>

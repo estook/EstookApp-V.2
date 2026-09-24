@@ -96,6 +96,7 @@ export function Auditoria() {
         <ErrorEnCristiano error={consulta.error.error} />
       ) : lineas.length === 0 ? (
         <EstadoVacio
+          dibujo="libro"
           titulo="Todavía no se ha hecho nada"
           frase="En cuanto alguien entre o dé un acceso, aparecerá aquí."
         />

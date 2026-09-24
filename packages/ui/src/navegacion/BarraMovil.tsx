@@ -2,6 +2,7 @@ import { IconoAjustes, IconoPanel } from '@estook/iconos';
 import type { App } from '../apps.ts';
 import { destinosConstruidos } from '../apps.ts';
 import { clases } from '../clases.ts';
+import { acentoParaTexto } from '../color.ts';
 
 /**
  * La barra de movil · Parte B5 del Plan.
@@ -104,7 +105,11 @@ export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }:
         style={{ color: app.acento }}
       >
         <Icono size={24} />
-        <span className="text-[11px] font-semibold">Apps</span>
+        {/* El icono, en el acento; la palabra, en el acento para texto, que en
+            claro es el que llega a 4,5:1 (entrega V). */}
+        <span className="text-[11px] font-semibold" style={{ color: acentoParaTexto(app.acento) }}>
+          Apps
+        </span>
       </button>
 
       {destinos.map((destino) => (
@@ -156,7 +161,9 @@ function Posicion({
         'text-[11px] font-semibold',
         activa ? 'text-texto' : 'text-texto-suave',
       )}
-      {...(activa && acento !== undefined ? { style: { color: acento } } : {})}
+      // En el acento **para texto**: lleva el nombre, y el acento a secas no llega a
+      // 4,5:1 en claro (entrega V).
+      {...(activa && acento !== undefined ? { style: { color: acentoParaTexto(acento) } } : {})}
     >
       {icono}
       <span className="max-w-full truncate">{nombre}</span>

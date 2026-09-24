@@ -2300,7 +2300,7 @@ Y de ahí salieron tres arreglos, en la rama `arreglos-tras-la-64`, fusionados e
 
 ### Antes de M8 · el repaso del 23 de septiembre
 
-**En la rama `el-repaso-del-23-sep`.** Doce cosas que trajo Richi mirando la app en el
+**En producción desde el 24 de septiembre** (#66: fusionada, las cuatro migraciones aplicadas y la API desplegada a las 00:03). Doce cosas que trajo Richi mirando la app en el
 móvil, y una auditoría de Supabase, GitHub y la app. Lleva **cuatro migraciones**: de la
 `0041` a la `0044`.
 
@@ -2383,6 +2383,61 @@ móvil, y una auditoría de Supabase, GitHub y la app. Lleva **cuatro migracione
   es de páginas generadas en el servidor, que no usamos; el otro necesita navegar a una
   dirección escrita por alguien de fuera, y todas las nuestras salen del catálogo—. Se
   van al subir a React Router 7.
+
+---
+
+### Antes de M8 · V, la segunda parte: los vacíos, el oscuro y las fotos
+
+**En la rama `v-vacios-oscuro-y-fotos`**, con su pull request. Los puntos 4 y 5 del
+plan de mejoras, que cierran V. Una migración, la `0045`. Todo razonado en la
+[0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md).
+
+#### Lo que se hizo
+
+- **Los vacíos, con dibujo y un botón.** Veinte dibujos de línea de una sola familia
+  (`packages/ui/src/dibujos/`), pintados con las fichas y cada uno en su trozo; el
+  dibujo pasa a ser obligatorio en `EstadoVacio`. Se repasaron **uno a uno todos los
+  vacíos** de las apps y del admin —hoy son cuarenta y cuatro, contando los de un filtro—: los que decían «se hace desde otra pantalla»
+  ganaron el botón que lleva allí —las acciones del catálogo, con `usarAccion` y
+  `BotonDeAccion`, solo para quien puede—, y los de un filtro pasaron a `NadaConEso`,
+  que ofrece quitarlo. Los filtros vacíos que son buena noticia ofrecen volver a la
+  lista entera.
+- **Inventario · Resumen con la cámara vacía** enseña el botón del alta y los tres
+  pasos para empezar, y no «Cómo va». **Productos sin género** enseña solo el vacío:
+  mirándolo en oscuro se vio que la barra de filtros decía «Todavía no tienes género»
+  dentro de un desplegable, con un «Hacer recuento» de nada y dos botones naranjas.
+- **Lo del futuro que quedaba**: la hoja de apuntar una merma y la pantalla de Mermas
+  aún decían «con una foto, más adelante… llega con el módulo 22». Se fueron, por la
+  regla de la 0045.
+- **El contraste, medido en pantalla**: una prueba nueva mide cada texto visible
+  contra el fondo que tiene debajo, en diecisiete pantallas, en los dos temas y en
+  ordenador y móvil. **El oscuro pasó entero; el claro, no**: la vista elegida y la
+  barra de abajo del móvil llevaban el nombre en el color de la app, y el ámbar de
+  Inventario sobre blanco da 3,46:1. Se arregló en la pieza con `acentoParaTexto`.
+- **Las capturas**: treinta y dos, del sistema de diseño entero y de cinco pantallas,
+  en claro y en oscuro, comparadas en la integración continua (en Linux y con Ubuntu
+  fijo). Las hace **Vera**, una gerente sembrada en el Bar Ribera con la que no entra
+  ninguna otra prueba. Las nuevas se traen con `pnpm capturas:traer`. El catálogo del
+  admin ganó un selector «Claro · Oscuro» para mirar las piezas.
+- **Las fotos de producto**: migración `0045`, cubo `fotos-de-producto` (lo creó
+  `almacen:preparar` contra Supabase el 24-sep, y comprobó allí mismo la firma de dos
+  fotos en una petición), comandos `poner_foto_de_producto` y
+  `quitar_foto_de_producto`, reducción en el teléfono (800 px WebP, JPG en Safari, y
+  miniatura cuadrada de 160) y la foto en la lista, la ficha y el recuento.
+- **De paso**: el logo también comprueba que lo subido es una imagen de verdad (sus
+  primeros bytes); en la lista del móvil, un nombre con una palabra larga ya no pisa
+  la cantidad; y la tabla de personas de las semillas decía siete y eran once.
+
+#### Lo que costó, y lo que queda escrito
+
+- **Una prueba que no ha fallado nunca no se sabe si mira algo.** Las del servidor de
+  las fotos se vieron fallar quitando cada protección —el candado de la política,
+  borrar lo viejo y mirar los primeros bytes—, y cada una puso en rojo justo la suya.
+- **Una captura de Windows no vale para Linux**, ni una de Ubuntu 24 para Ubuntu 26.
+  Por eso se comparan solo en la integración continua y con su sistema fijo, y las de
+  Windows (`CON_CAPTURAS=1`) son para mirar.
+- **Medir el contraste solo en el ordenador no basta**: la barra de abajo solo existe
+  en el móvil, y era la mitad de lo que no se leía.
 
 ---
 

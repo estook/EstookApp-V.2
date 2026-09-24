@@ -18,7 +18,7 @@
 
 ## 1 · Dónde estamos
 
-_Producción leída el 24 de septiembre de 2026, en una transacción de solo lectura, y la API desplegada preguntada por sus operaciones nuevas._
+_Producción leída el 24 de septiembre de 2026 (migraciones y organizaciones, en solo lectura; la API desplegada, preguntada por sus operaciones nuevas). Las suscripciones y el uso real, del 23-sep._
 
 |                |                                                                                                                                                                                                                   |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -28,7 +28,7 @@ _Producción leída el 24 de septiembre de 2026, en una transacción de solo lec
 | **Base**       | Supabase, **44 de 44** migraciones, igual que `main`. **La rama trae una más** (`0045`, la foto del producto): hay que aplicarla al fusionar. El cubo `fotos-de-producto` del almacén **ya está creado** (24-sep) |
 | **API**        | Desplegada el 24-sep a las 00:03 con la #66: 45 consultas y 85 comandos. **La rama trae dos comandos** (87: poner y quitar la foto) y hay que desplegarla después de migrar                                       |
 | **Sitio**      | `estook.com`, `/app/` y `/admin/`. Se publica solo al fusionar                                                                                                                                                    |
-| **Pruebas**    | En la rama: **1.178** unitarias y de base y **613** de pantalla (los tres navegadores), en verde y sin repetidas · catálogo **124 de 130** (95 %)                                                                 |
+| **Pruebas**    | En la rama, en GitHub: **1.197** unitarias y de base y **642** de pantalla (los tres navegadores), con las **32 capturas** comparadas, en verde y sin repetidas · catálogo **126 de 132** (95 %)                  |
 | **Entrar**     | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                                   |
 | **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                                      |
 

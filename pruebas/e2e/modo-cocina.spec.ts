@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 
 /**
  * V · punto 1 · el modo cocina, medido en las pantallas de verdad.
@@ -52,7 +52,7 @@ async function entrarConElModoPuesto(page: Page) {
   await page.evaluate((clave) => {
     window.localStorage.setItem(clave, 'si');
   }, DONDE_SE_GUARDA);
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await recargarSinQueSeCaiga(page);
   await expect(page.locator('html')).toHaveAttribute('data-cocina', 'si');
 }
 
@@ -239,7 +239,7 @@ test('la letra y el modo cocina guardados se ponen al abrir, antes de entrar', a
     window.localStorage.setItem('estook.tamano-de-letra', 'grande');
     window.localStorage.setItem(clave, 'si');
   }, DONDE_SE_GUARDA);
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await recargarSinQueSeCaiga(page);
 
   // En la pantalla de entrar, que es lo primero que ve la tableta al encenderse.
   await expect(page.getByLabel('Tu correo')).toBeVisible();

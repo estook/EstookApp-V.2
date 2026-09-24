@@ -33,11 +33,35 @@ const LA_PAGINA_SE_MOVIA_SOLA = 'is interrupted by another navigation';
 
 const SE_PUEDE_REPETIR = [EL_MOTOR_SE_HA_CAIDO, LA_PAGINA_SE_MOVIA_SOLA];
 
-export async function abrirSinQueSeCaiga(page: Page, direccion: string): Promise<void> {
+/** Hasta dónde se espera: a que esté el documento (lo normal) o a que cargue todo. */
+type HastaCuando = 'domcontentloaded' | 'load';
+
+async function unaVezMasSiSeCae(navegar: () => Promise<unknown>): Promise<void> {
   try {
-    await page.goto(direccion, { waitUntil: 'domcontentloaded' });
+    await navegar();
   } catch (fallo) {
     if (!SE_PUEDE_REPETIR.some((motivo) => String(fallo).includes(motivo))) throw fallo;
-    await page.goto(direccion, { waitUntil: 'domcontentloaded' });
+    await navegar();
   }
+}
+
+export async function abrirSinQueSeCaiga(
+  page: Page,
+  direccion: string,
+  hasta: HastaCuando = 'domcontentloaded',
+): Promise<void> {
+  await unaVezMasSiSeCae(() => page.goto(direccion, { waitUntil: hasta }));
+}
+
+/**
+ * Recargar, con la misma regla (25-sep). Se habían protegido las aperturas y **no
+ * las recargas**: veinticuatro `page.reload` sueltos, y el del ayudante de entrar de
+ * `esqueleto.spec.ts` se cayó en Safari con el mismo error del motor. Una prueba
+ * (`las-aperturas-de-las-pruebas.prueba.ts`) vigila que no vuelva a haber ninguno.
+ */
+export async function recargarSinQueSeCaiga(
+  page: Page,
+  hasta: HastaCuando = 'domcontentloaded',
+): Promise<void> {
+  await unaVezMasSiSeCae(() => page.reload({ waitUntil: hasta }));
 }

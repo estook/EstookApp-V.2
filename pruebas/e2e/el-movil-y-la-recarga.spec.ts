@@ -1,4 +1,5 @@
 import { expect, test, type Locator } from '@playwright/test';
+import { recargarSinQueSeCaiga } from './abrir.ts';
 import { ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
 
 /**
@@ -119,7 +120,7 @@ test('si el servidor no contesta, la app lo dice y no pide entrar', async ({ pag
       }),
     }),
   );
-  await page.reload();
+  await recargarSinQueSeCaiga(page);
 
   // Tres reintentos, esperando 1, 2 y 4 segundos, y después lo dice.
   await expect(page.getByText('No llego al servidor')).toBeVisible({ timeout: 20_000 });
@@ -150,7 +151,7 @@ test('y si el servidor dice que la sesión no vale, entonces sí pide entrar', a
       }),
     }),
   );
-  await page.reload();
+  await recargarSinQueSeCaiga(page);
 
   await expect(page.getByRole('heading', { level: 1, name: 'Entra en Estook' })).toBeVisible();
   await expect(page.getByText('No llego al servidor')).toHaveCount(0);

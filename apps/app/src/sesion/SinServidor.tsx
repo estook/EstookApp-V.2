@@ -20,6 +20,7 @@ export function SinServidor() {
     <main className="flex min-h-dvh items-center justify-center bg-fondo px-e4 pt-[env(safe-area-inset-top)]">
       <div className="w-full max-w-[30rem]">
         <EstadoVacio
+          esLaPagina
           dibujo="sin-conexion"
           titulo="No llego al servidor"
           frase="Sigues dentro y no se ha perdido nada. Puede ser la conexión del teléfono o un momento de mucho trabajo del servidor."

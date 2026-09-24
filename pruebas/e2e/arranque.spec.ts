@@ -8,8 +8,9 @@ import { abrirSinQueSeCaiga } from './abrir.ts';
  * ensena **no es el Panel sino la puerta**: sin haber entrado no se pinta ni una
  * barra ni un dato, que es exactamente lo que tiene que pasar.
  *
- * La carta sigue siendo el marcador de sitio de M0, pintado con el sistema de
- * diseno; la web, desde la 0042, es la portada basica.
+ * La web, desde la 0042, es la portada basica; la carta, desde la entrega O (0047),
+ * la de cada local, y en su raiz explica que es. Ya no queda ninguna pantalla de
+ * cimientos de M0 a la vista de nadie.
  */
 const APLICACIONES = [
   // Desde la 0042 la web es la portada básica, con sus dos accesos.
@@ -20,7 +21,13 @@ const APLICACIONES = [
     puerta: 'Tu cocina, bajo control',
   },
   { nombre: 'app', url: 'http://localhost:5174/', titulo: /Estook/, puerta: 'Entra en Estook' },
-  { nombre: 'carta', url: 'http://localhost:5175/', titulo: /Carta/, puerta: null },
+  // La raíz de la carta explica qué es (0047): cada local tiene la suya.
+  {
+    nombre: 'carta',
+    url: 'http://localhost:5175/carta/',
+    titulo: /Carta/,
+    puerta: 'La carta de cada local',
+  },
   // Desde la 0041 el admin también empieza por su puerta: el catálogo que se veía
   // aquí sin entrar está detrás.
   { nombre: 'admin', url: 'http://localhost:5176/', titulo: /Estook/, puerta: 'Entra en el admin' },
@@ -45,17 +52,10 @@ for (const aplicacion of APLICACIONES) {
 
       await expect(page).toHaveTitle(aplicacion.titulo);
 
-      if (aplicacion.puerta !== null) {
-        // La puerta de M4 (o la portada, en la web). Que lo primero sea esto y no
-        // el Panel es la mitad del modulo: antes de saber quien eres no hay nada
-        // que ensenar.
-        await expect(page.getByRole('heading', { level: 1 })).toContainText(aplicacion.puerta);
-      } else {
-        // El marcador de sitio de M0, que sigue diciendo como ha arrancado.
-        await expect(page.getByText('Entorno', { exact: true })).toBeVisible();
-        await expect(page.getByText('Sesion', { exact: true })).toBeVisible();
-        await expect(page.getByText('Base de datos', { exact: true })).toBeVisible();
-      }
+      // La puerta de M4 (o la portada, en la web, o la raiz de la carta). Que lo
+      // primero sea esto y no el Panel es la mitad del modulo: antes de saber quien
+      // eres no hay nada que ensenar.
+      await expect(page.getByRole('heading', { level: 1 })).toContainText(aplicacion.puerta);
 
       expect(errores, `La consola no puede tener errores: ${errores.join(' · ')}`).toEqual([]);
       expect(tardanza, `Presupuesto de B7: ${PRESUPUESTO_MS} ms`).toBeLessThan(PRESUPUESTO_MS);

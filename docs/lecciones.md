@@ -311,3 +311,10 @@
      (y a 320 px, con cero) y la barra de abajo se salía por los lados. Y partir por
      cualquier letra (`overflow-wrap:anywhere`) tapa el problema en vez de dar sitio:
      lo que se da es ancho, y se parte por palabras.
+104. **Cada fecha con su reloj.** La caja y las cifras cuentan con la jornada, que corta
+     a la hora de corte del local; las caducidades y las compras, con el calendario, que
+     es el de la fecha impresa y el del proveedor. Juntar las dos en una pantalla es
+     elegir, cosa a cosa, cuál manda. Se ve de madrugada, así que se prueba de madrugada.
+105. **No se cambia de rama con una batería corriendo.** La API de pruebas se levanta
+     desde el código: cambiar de rama a mitad hace que unas pruebas corran contra un
+     código y otras contra otro, y los rojos no significan nada. Se repite entera.

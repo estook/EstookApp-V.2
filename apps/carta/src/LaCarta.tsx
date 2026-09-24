@@ -76,6 +76,7 @@ export function LaCarta() {
       {como.que === 'cargando' && <Cargando que="la carta" lineas={4} />}
       {como.que === 'no_existe' && (
         <EstadoVacio
+          esLaPagina
           dibujo="perdido"
           titulo="Esta carta no existe"
           frase="Puede que el local ya no use Estook, o que la dirección tenga una errata."
@@ -83,6 +84,7 @@ export function LaCarta() {
       )}
       {como.que === 'sin_red' && (
         <EstadoVacio
+          esLaPagina
           dibujo="sin-conexion"
           titulo="No llego a la carta"
           frase="Puede ser la conexión del móvil. Vuelve a escanear el código dentro de un momento."
@@ -224,6 +226,7 @@ function NoEsUnaCarta() {
     <main className="mx-auto flex min-h-dvh w-full max-w-[32rem] flex-col items-center justify-center gap-e4 px-e4 py-e7 text-center">
       <Logo alto={32} />
       <EstadoVacio
+        esLaPagina
         dibujo={enLaCarta ? 'platos' : 'perdido'}
         titulo={enLaCarta ? 'La carta de cada local' : 'Esta página no existe'}
         frase={

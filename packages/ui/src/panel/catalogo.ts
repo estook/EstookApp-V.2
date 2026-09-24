@@ -435,10 +435,17 @@ export const PANEL_DEL_PUESTO: Readonly<Record<Puesto, readonly WidgetPuesto[]>>
   // Su reloj arriba, como todos; lo que ha entrado hoy, y el semáforo, que ya lleva
   // el food cost, el personal y el coste primo: otra tarjeta con el food cost sería
   // la misma cifra dos veces.
+  //
+  // Después, lo que el Manifiesto le pone a quien lleva el local y ya existe: lo que
+  // vale la cámara y lo tirado esta semana, lo que está bajo mínimo, quién está
+  // trabajando, las compras de hoy, lo que caduca y lo que viene.
   gerente: [
     { id: 'fichar', tamano: 'chico' },
     { id: 'ventas-de-hoy', tamano: 'chico' },
     { id: 'objetivos', tamano: 'grande' },
+    { id: 'valor-de-la-camara', tamano: 'chico' },
+    { id: 'indicador-merma-7', tamano: 'chico' },
+    { id: 'bajo-minimo', tamano: 'ancho' },
     { id: 'fichajes', tamano: 'ancho' },
     { id: 'pedidos', tamano: 'ancho' },
     { id: 'caducidades', tamano: 'ancho' },
@@ -454,6 +461,7 @@ export const PANEL_DEL_PUESTO: Readonly<Record<Puesto, readonly WidgetPuesto[]>>
     { id: 'bajo-minimo', tamano: 'ancho' },
     { id: 'pedidos', tamano: 'ancho' },
     { id: 'fichajes', tamano: 'ancho' },
+    { id: 'calendario', tamano: 'ancho' },
   ],
   // Fichar arriba a la izquierda, y lo que caduca, lo que falta y lo que llega.
   cocina: [

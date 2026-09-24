@@ -396,7 +396,9 @@ Nadie empieza con el Panel vacío:
 - **Area manager:** comparativa de sus locales, lo que se sale de la media, calendario de sus locales.
 - **Gestoría:** periodos cerrados, exportaciones, avisos de cuadre.
 
-Y a todo el que ficha, **Fichar arriba del todo**: es lo primero que se hace al llegar, y si el horario dice que entras en cinco minutos, el widget lo dice. Quien puede apuntar mermas —camareros incluidos— lo tiene a un toque, desde el widget o desde las acciones rápidas.
+Y a todo el que ficha, **Fichar arriba del todo**: es lo primero que se hace al llegar, y si el horario dice que entras en cinco minutos, el widget lo dice. Quien puede apuntar mermas —camareros incluidos— lo tiene a un toque, desde el widget, desde las acciones rápidas o desde el botón «+».
+
+**Cómo se cumple hoy** (entrega O, decisión 0047): cada puesto —quien lleva el local, un jefe, cocina y sala— arranca con **lo de esta lista que ya existe**, sacado de sus permisos y no del nombre de su rol; lo que llega con su módulo (Pulse, las fichas, el APPCC) entra en su Panel el día que exista. Encima, **Lo de hoy**, la zona de atención, ordenada por el servidor.
 
 > **Regla sin excepción:** cada número lleva debajo, en letra pequeña, de dónde sale y de qué periodo es.
 

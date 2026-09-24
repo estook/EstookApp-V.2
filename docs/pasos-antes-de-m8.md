@@ -2,24 +2,25 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 24 de septiembre de 2026, leyendo la base y la API.
+> Comprobado en producción el 24 de septiembre de 2026 por la noche, leyendo la base, la
+> API y GitHub.
 >
-> | Qué                        | Cómo está                                                                            |
-> | -------------------------- | ------------------------------------------------------------------------------------ |
-> | Pull requests              | **Todas fusionadas hasta la #66**. V, segunda parte, para fusionar (primer apartado) |
-> | La base de datos           | **44 de 44** migraciones, igual que `main`. La rama trae la `0045`                   |
-> | La API                     | **Desplegada el 24 de septiembre a las 00:03**, con la #66 dentro                    |
-> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor          |
-> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep                     |
-> | **V · lo que se ve**       | **Primera parte en producción** (#64, #65). **La segunda, en su pull request**       |
-> | El almacén de las fotos    | **Hecho**: el cubo `fotos-de-producto` lo creé el 24-sep, y está comprobado          |
-> | E2 · el pago con Stripe    | Espera a tu cuenta de Stripe                                                         |
+> | Qué                        | Cómo está                                                                   |
+> | -------------------------- | --------------------------------------------------------------------------- |
+> | Pull requests              | **Todas fusionadas hasta la #67**                                           |
+> | La base de datos           | **45 de 45** migraciones, igual que `main`                                  |
+> | La API                     | **Desplegada el 24 de septiembre a las 19:31**, con la #67: 45 y 87         |
+> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
+> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep            |
+> | **V · lo que se ve**       | **Hecho y en producción** (#64, #65, #67), mirado por Richi en el móvil     |
+> | Los dos fallos del móvil   | Causa encontrada; el arreglo, en `arreglos-del-movil-y-la-recarga`          |
+> | E2 · el pago con Stripe    | Tu cuenta ya está. Hará falta **una clave de prueba** el día que empiece    |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## V, segunda parte · los vacíos, el oscuro y las fotos · lo que te toca ahora
+## V, segunda parte · los vacíos, el oscuro y las fotos · **hecho** (#67)
 
 **Qué trae:** los vacíos con su dibujo y un botón que hace lo que dice, el tema oscuro
 medido pantalla a pantalla (y un arreglo que salió en el claro), las capturas que se

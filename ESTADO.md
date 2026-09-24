@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 24 de septiembre de 2026 · **Antes de M8. El repaso del 23-sep, en producción (#66). V, segunda parte —los vacíos, el oscuro y las fotos de producto— en `v-vacios-oscuro-y-fotos`, con su pull request y una migración (`0045`). Con ella, V entera**
+Última actualización: 24 de septiembre de 2026 · **Antes de M8. V entera, en producción (#67, con la `0045`). Dos fallos que vio Richi en el móvil, con la causa encontrada y sin arreglar todavía. Lo siguiente, O · Lo que se ordena**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -18,19 +18,19 @@
 
 ## 1 · Dónde estamos
 
-_Producción leída el 24 de septiembre de 2026 (migraciones y organizaciones, en solo lectura; la API desplegada, preguntada por sus operaciones nuevas). Las suscripciones y el uso real, del 23-sep._
+_Producción leída el 24 de septiembre de 2026 por la noche: migraciones y organizaciones en solo lectura, la API desplegada preguntada por todas sus operaciones, y las tres ejecuciones de GitHub de la #67 miradas. Las suscripciones y el uso real, del 23-sep._
 
-|                |                                                                                                                                                                                                                   |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1**, la puerta del admin · **E1**, crear cuenta y Google · **V, primera parte** (puntos 1, 2, 3 y 7) · **el repaso del 23-sep**                       |
-| **Ahora**      | **V, segunda parte** (puntos 4 y 5), en la rama `v-vacios-oscuro-y-fotos` con su pull request. Con ella V queda entera. **E2 · Stripe** espera a Richi                                                            |
-| **`main`**     | Todo fusionado hasta la **#66**                                                                                                                                                                                   |
-| **Base**       | Supabase, **44 de 44** migraciones, igual que `main`. **La rama trae una más** (`0045`, la foto del producto): hay que aplicarla al fusionar. El cubo `fotos-de-producto` del almacén **ya está creado** (24-sep) |
-| **API**        | Desplegada el 24-sep a las 00:03 con la #66: 45 consultas y 85 comandos. **La rama trae dos comandos** (87: poner y quitar la foto) y hay que desplegarla después de migrar                                       |
-| **Sitio**      | `estook.com`, `/app/` y `/admin/`. Se publica solo al fusionar                                                                                                                                                    |
-| **Pruebas**    | En la rama, en GitHub: **1.197** unitarias y de base y **642** de pantalla (los tres navegadores), con las **32 capturas** comparadas, en verde y sin repetidas · catálogo **126 de 132** (95 %)                  |
-| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                                   |
-| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                                      |
+|                |                                                                                                                                                                                                     |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1**, la puerta del admin · **E1**, crear cuenta y Google · **V · Lo que se ve, entera** (#64, #65, #67) · **el repaso del 23-sep**      |
+| **Ahora**      | **Los dos fallos del móvil** (abajo), en la rama `arreglos-del-movil-y-la-recarga`. Después, **O · Lo que se ordena**, con las preguntas a Richi hechas antes de programar. **E2 · Stripe** después |
+| **`main`**     | Todo fusionado hasta la **#67**                                                                                                                                                                     |
+| **Base**       | Supabase, **45 de 45** migraciones, igual que `main`. El cubo `fotos-de-producto`, creado y en uso                                                                                                  |
+| **API**        | Desplegada el 24-sep a las 19:31 con la #67: **45 consultas y 87 comandos**, comprobado con `bd:comprobar-api`                                                                                      |
+| **Sitio**      | `estook.com`, `/app/` y `/admin/`. Se publica solo al fusionar (la #67, publicada el 24-sep a las 19:21)                                                                                            |
+| **Pruebas**    | En `main`, en GitHub: **1.197** unitarias y de base y **642** de pantalla (los tres navegadores), con las **32 capturas** comparadas, en verde y sin repetidas · catálogo **126 de 132** (95 %)     |
+| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                     |
+| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                        |
 
 > **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
 > 100 %** (Richi, 16-sep). Los planes: [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)
@@ -38,49 +38,51 @@ _Producción leída el 24 de septiembre de 2026 (migraciones y organizaciones, e
 
 ### El orden, y dónde estamos en él
 
-| #   | Entrega                          | Cómo está                                                                                  |
-| --- | -------------------------------- | ------------------------------------------------------------------------------------------ |
-| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                                                                 |
-| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                                      |
-| 1   | **V · Lo que se ve**             | Puntos 1, 2, 3 y 7 ✓ en producción (#64, #65). **El 4 y el 5, en su pull request** (abajo) |
-| —   | **El repaso del 23-sep**         | ✓ en producción (#66)                                                                      |
-| 2   | **E2 · El pago con Stripe**      | **Espera a Richi**: su cuenta de Stripe. Va en paralelo a V                                |
-| 3   | **O · Lo que se ordena**         | Falta                                                                                      |
-| 4   | **A2 · Clientes**                | Falta                                                                                      |
-| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7 (avisos a quien manda, invitar a un pedido)        |
-| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                                    |
-| 7   | **I · La app instalable**        | Falta                                                                                      |
-| 8   | **L · El lector**                | Falta                                                                                      |
-| 9   | **A3 · Vendedores y códigos**    | Falta                                                                                      |
-| 10  | **A4 · Ventas**                  | Falta                                                                                      |
-| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                                                |
+| #   | Entrega                          | Cómo está                                                                           |
+| --- | -------------------------------- | ----------------------------------------------------------------------------------- |
+| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                                                          |
+| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                               |
+| 1   | **V · Lo que se ve**             | ✓ en producción (#64, #65, #67)                                                     |
+| —   | **El repaso del 23-sep**         | ✓ en producción (#66)                                                               |
+| —   | **Los dos fallos del móvil**     | **Causa encontrada**, sin arreglar (abajo)                                          |
+| 2   | **O · Lo que se ordena**         | **Lo siguiente**: primero las preguntas a Richi, después la rama                    |
+| 3   | **E2 · El pago con Stripe**      | Richi ya tiene cuenta: **solo hará falta una clave de prueba** el día que empiece   |
+| 4   | **A2 · Clientes**                | Falta                                                                               |
+| 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7 (avisos a quien manda, invitar a un pedido) |
+| 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                             |
+| 7   | **I · La app instalable**        | Falta                                                                               |
+| 8   | **L · El lector**                | Falta                                                                               |
+| 9   | **A3 · Vendedores y códigos**    | Falta                                                                               |
+| 10  | **A4 · Ventas**                  | Falta                                                                               |
+| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                                         |
 
-### V, segunda parte · lo que lleva la rama
+### Los dos fallos que vio Richi en el móvil (24-sep)
 
-Los puntos 4 y 5 de las mejoras, razonados en la
-[0046](docs/decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md) y contados en la
-[historia](docs/historia-de-los-modulos.md), apartado «V, la segunda parte».
+V está contada en la [0046](docs/decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md) y en
+la [historia](docs/historia-de-los-modulos.md). Al mirarla en el móvil, Richi encontró dos
+cosas, y las dos tienen la causa comprobada:
 
-| Qué                                  | Cómo                                                                                                                                                     |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Los vacíos, con dibujo**           | Veinte dibujos de una familia (`packages/ui/src/dibujos/`), pintados con las fichas y **cada uno en su trozo**; obligatorio en `EstadoVacio`             |
-| **Un botón que hace lo que dice**    | Las acciones del catálogo (`usarAccion`, `BotonDeAccion`), solo a quien puede; otra salida, en texto y debajo                                            |
-| **Lo filtrado que no está**          | `NadaConEso`: ofrece quitar el filtro, nunca crear algo                                                                                                  |
-| **La cámara vacía**                  | El Resumen enseña cómo empezar (sin «Cómo va»); Productos enseña solo el vacío                                                                           |
-| **Lo del futuro que quedaba**        | Fuera de la hoja de merma y de Mermas (regla de la 0045)                                                                                                 |
-| **El contraste, medido en pantalla** | 17 pantallas, dos temas, ordenador y móvil. Encontró el color de la app como texto en claro (3,46:1): `acentoParaTexto`                                  |
-| **Las capturas**                     | 32, en claro y oscuro, comparadas en Linux con Ubuntu fijo; las hace **Vera** (Bar Ribera). Las nuevas, con `pnpm capturas:traer`                        |
-| **Las fotos de producto**            | Migración `0045`, cubo `fotos-de-producto`, reducidas en el teléfono (800 px WebP, JPG en Safari, miniatura de 160), en la lista, la ficha y el recuento |
-| **De paso**                          | El logo comprueba sus primeros bytes; un nombre largo ya no pisa la cantidad en el móvil                                                                 |
+| Qué vio                                                                                                             | La causa                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **En Productos, el nombre se parte letra a letra** («Nar / anj / a»)                                                | La fila del móvil deja fijos la cantidad, la etiqueta («Sin mínimo puesto») y los dos botones, y el nombre se queda con lo que sobra: en un móvil de 375 px, unos 50 px. El arreglo de V para que no pisara la cantidad (`[overflow-wrap:anywhere]`, en `inventario/Productos.tsx`) lo parte por cualquier letra                                                                                                    |
+| **Al recargar dos veces, la app pide entrar, y entrar da fallo**; con `estook.com/app` a secas vuelve a entrar sola | **La API se queda sin conexiones a la base.** Va por el agrupador de Supabase **en modo sesión**, que tiene un tope de **15**: con 30 consultas a la vez contesta 15 y las otras 15 dan error (medido el 24-sep contra producción). Una recarga doble lanza de golpe las consultas de dos pantallas. Y la app, si `quien_soy` falla por lo que sea, **enseña la pantalla de entrar** con la sesión todavía guardada |
+
+**El `#` de la dirección no es el fallo**: es el enrutado de la
+[0008](docs/decisiones/0008-enrutado-con-almohadilla.md), porque GitHub Pages solo sirve
+ficheros que existen.
 
 ### Lo que todavía NO está en la app
 
 Para que nadie dé por hecho lo que solo está escrito:
 
-- **De las veinte mejoras, cuatro en producción**: la 1 (modo cocina), la 2 (las cifras
-  de cada app), la 3 (el Resumen) y la 7 (Ajustes en secciones). **La 4 y la 5, en su
-  pull request**: hasta que se fusione, en `estook.com` no hay dibujos ni fotos. Las demás tienen su
-  plan y su entrega en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
+- **De las veinte mejoras, seis en producción**: la 1 (modo cocina), la 2 (las cifras
+  de cada app), la 3 (el Resumen), la 4 (los vacíos), la 5 (el oscuro y las fotos de
+  producto) y la 7 (Ajustes en secciones). Las demás tienen su plan y su entrega en
+  [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
+- **Las fotos son de producto, no de plato.** La foto del plato irá en la carta (M10), y
+  el escandallo (M9) desglosará cada ración con el coste del inventario. **Escanear el
+  código de barras** es la mejora 10, en la entrega L: el producto ya guarda su código
+  desde M6 y el buscador lo encuentra; falta la cámara.
 - **Del admin, solo la puerta** (A1): ni clientes, ni vendedores y códigos, ni ventas.
   Los niveles comercial, soporte y vendedor existen en la base y no se pueden dar.
 - **No se cobra** y el estado de la suscripción no se cumple en la API (E2). No hay
@@ -115,17 +117,18 @@ Uso real, leído el 23-sep: 11 productos, 316 movimientos, 7 cierres de caja, 25
 **Ya hecho, y no se vuelve a pedir:** Resend (dominio `estook.com`, remitente
 `hola@estook.com`, los códigos llegan) · entrar y crear cuenta con Google · Places
 (IKATZ enlazado desde el 16-sep) · los datos del titular en privacidad y condiciones
-(#59).
+(#59) · **V entera**: fusionada, `0045` aplicada, API desplegada y mirada en el móvil
+(24-sep) · **la cuenta de Stripe** (24-sep).
 
-**Ahora:** fusionar el pull request de V, segunda parte, **aplicar la migración `0045`**
-y **desplegar la API**, en ese orden, y mirar en el móvil la foto de un producto, los
-vacíos y el oscuro. **El cubo de las fotos no hay que prepararlo**: ya está. Los pasos, uno a uno, en
+**Ahora:** contestar las preguntas de O. Los pasos de cada entrega, uno a uno, en
 [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md).
 
-**Lo que desbloquea E2:**
+**Lo que hará falta para E2**, el día que empiece y no antes:
 
-1. **Activar la cuenta de Stripe** —datos fiscales y cuenta bancaria— y dejarla en modo
-   prueba. **Sin crear productos ni precios a mano**: los crea el código.
+1. **La clave secreta de prueba de Stripe** (empieza por `sk_test_`), puesta como secreto
+   en Supabase; por el chat, solo su nombre. **Sin crear productos, precios ni el aviso
+   (webhook) a mano**: los crea el código. Para cobrar de verdad, la cuenta tendrá que
+   estar activada (datos fiscales y banco); para probar, no hace falta.
 2. **El alta de autónomo en Hacienda** (036/037), si no está hecha. Es del asesor, pero
    es lo que de verdad bloquea cobrar al primer cliente.
 
@@ -234,7 +237,7 @@ reescribir, y tres comprobaciones obligatorias, **sin tilde**: `Calidad`, `Const
 y presupuestos` (que lleva dentro las pruebas de pantalla) y `Migraciones reversibles`—.
 **Nunca añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
-**El peso inicial** (`pnpm tamano`, 24-sep, en la rama de V, segunda parte): `app`
+**El peso inicial** (`pnpm tamano`, 24-sep, con V entera, hoy en `main`): `app`
 **295,9 KB**, `admin` **212,1 KB**, `web` 166,2 y `carta` 166,0; de cada uno, 106,1 KB
 son la tipografía. Los veinte dibujos de los vacíos no suman: cada uno va en su trozo. La
 referencia es 250 y **se mide, no bloquea**: manda el presupuesto de velocidad, que pasa
@@ -425,15 +428,16 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 
 ## 8 · El siguiente paso
 
-**Primero, V, segunda parte** (rama `v-vacios-oscuro-y-fotos`, con su pull request):
-Richi la fusiona, aplica la migración `0045` y despliega la API. Luego mira en el móvil
-**la foto de un producto** (hacerla con la cámara desde su ficha), los vacíos y el oscuro
-(regla 29: medir el contraste no basta). Con eso, **V está terminada**: los vacíos invitan a
-empezar y las capturas en oscuro se comparan en la prueba, que era lo que faltaba de su
-«terminado cuando».
+**Primero, los dos fallos del móvil** (apartado 1), en la rama
+`arreglos-del-movil-y-la-recarga`: la fila de Productos con el nombre entero, la API por
+el agrupador **en modo transacción** (el que Supabase recomienda para funciones, sin tope
+de 15), y la app que ante un fallo que no es «tu sesión ha caducado» reintenta y lo dice,
+en vez de mandar a entrar. Se comprueba repitiendo la ráfaga de 30 consultas contra
+producción después de desplegar: **ni un error**.
 
 **Luego, O · Lo que se ordena** (mejoras 6, 8, 9 y 17, y el QR definitivo de la 20), en
-una rama nueva. **E2 · Stripe** en paralelo, en cuanto esté la cuenta de Richi.
+una rama nueva, con las preguntas a Richi contestadas antes de programar. **Después,
+E2 · Stripe.**
 
 **Cómo se comprueba que no rompe lo de antes:** `.\estook.cmd verifica`,
 `.\estook.cmd prueba:e2e:completa` (que incluye la cobertura) y, tras desplegar,
@@ -463,10 +467,11 @@ una rama nueva. **E2 · Stripe** en paralelo, en cuanto esté la cuenta de Richi
 Facturas a `usarListaLarga` cuando una crezca; subir a React Router 7; **el 19 de octubre, mirar la integración continua**, que GitHub pasa `ubuntu-latest` a Ubuntu 26 ese día (hoy es solo un aviso); y el vectorial
 del logotipo y de Fogón cuando aparezcan.
 
-## 9 · En paralelo · E2, el pago con Stripe
+## 9 · Después de O · E2, el pago con Stripe
 
 **Antes de empezarla:** E1 fusionada, migrada y desplegada ✓ · los datos del titular ✓
-(#59) · **la cuenta de Stripe de Richi, activada y en modo prueba: falta.**
+(#59) · la cuenta de Stripe de Richi ✓ (24-sep) · **la clave secreta de prueba, puesta en
+Supabase: falta, y se pide al empezar.**
 
 **Qué entra:** los productos y precios de la
 [0042](docs/decisiones/0042-registro-abierto-google-y-la-oferta.md) en Stripe, con IVA

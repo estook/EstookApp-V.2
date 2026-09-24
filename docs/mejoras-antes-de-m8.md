@@ -16,33 +16,35 @@ El panel de administración va en su propio documento:
 
 ## Resumen en una tabla
 
-**Cuatro de las veinte están en producción** desde el 23 de septiembre de 2026 (#64): la
-1, la 2, la 3 y la 7, que eran la primera parte de V. V se fusiona en dos partes; la
-segunda lleva la 4 y la 5, **hechas en la rama `v-vacios-oscuro-y-fotos`** ([0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)) y a falta de fusionar. **La 7 (Ajustes en secciones) era de la entrega O y se
-adelantó** porque Richi la pidió al ver Ajustes el 23 de septiembre ([0045](decisiones/0045-el-aspecto-y-el-orden.md)). Cada una cambia a «Hecha» cuando se fusiona y se despliega su entrega.
+**Seis de las veinte están en producción**: la 1, la 2, la 3 y la 7 desde el 23 de
+septiembre de 2026 (#64), y la 4 y la 5 desde el 24 (#67,
+[0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)). Con ellas, **V está
+entera**. **La 7 (Ajustes en secciones) era de la entrega O y se adelantó** porque Richi
+la pidió al ver Ajustes el 23 de septiembre ([0045](decisiones/0045-el-aspecto-y-el-orden.md)).
+Cada una cambia a «En producción» cuando se fusiona y se despliega su entrega.
 
-| #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                    |
-| --- | ---------------------------------------- | ------------------------ | ------------------------------------------ | ---------------------------- |
-| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | **En producción** (#64)      |
-| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | **En producción** (#64)      |
-| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                       | **En producción** (#64)      |
-| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            | **Hecha, en su rama** (0046) |
-| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    | **Hecha, en su rama** (0046) |
-| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       | Falta                        |
-| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                       | **En producción** (#64)      |
-| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       | Falta                        |
-| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       | Falta                        |
-| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       | Falta                        |
-| 12  | Pedido sugerido                          | **R · El reloj**         | Nada (el reloj es de Supabase, gratis)     | Falta                        |
-| 13  | Alertas de subida de precio              | **R**                    | Nada                                       | Falta                        |
-| 16  | Informe semanal para el gerente          | **R**                    | **Resend** para el correo; la pantalla, no | Falta                        |
-| 19  | Reseñas: aviso de bajada y respuesta     | **R** y después          | Places ya; **Business Profile** y **IA**   | Falta                        |
-| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                       | Falta                        |
-| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)    | Falta                        |
-| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                       | Falta                        |
-| 10  | Escanear el código de barras             | **L · El lector**        | Nada                                       | Falta                        |
-| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                         | Espera a M22                 |
-| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún    | Espera a M12 · el QR, en O   |
+| #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                  |
+| --- | ---------------------------------------- | ------------------------ | ------------------------------------------ | -------------------------- |
+| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | **En producción** (#64)    |
+| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | **En producción** (#64)    |
+| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                       | **En producción** (#64)    |
+| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            | **En producción** (#67)    |
+| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    | **En producción** (#67)    |
+| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       | Falta                      |
+| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                       | **En producción** (#64)    |
+| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       | Falta                      |
+| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       | Falta                      |
+| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       | Falta                      |
+| 12  | Pedido sugerido                          | **R · El reloj**         | Nada (el reloj es de Supabase, gratis)     | Falta                      |
+| 13  | Alertas de subida de precio              | **R**                    | Nada                                       | Falta                      |
+| 16  | Informe semanal para el gerente          | **R**                    | **Resend** para el correo; la pantalla, no | Falta                      |
+| 19  | Reseñas: aviso de bajada y respuesta     | **R** y después          | Places ya; **Business Profile** y **IA**   | Falta                      |
+| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                       | Falta                      |
+| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)    | Falta                      |
+| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                       | Falta                      |
+| 10  | Escanear el código de barras             | **L · El lector**        | Nada                                       | Falta                      |
+| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                         | Espera a M22               |
+| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún    | Espera a M12 · el QR, en O |
 
 Tres de las veinte **no pueden quedar al 100 % antes de M8**, y conviene decirlo ya:
 
@@ -546,9 +548,9 @@ antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
 
 **Cómo va:** la **1** está **fusionada y en producción** (#53), con Richi dentro del
 admin y su segundo factor montado. Su repaso (rescatar a un admin, la cabecera del
-móvil y una puerta de la API) también está en producción (#54). **La 2, V, está entera**: los puntos 1, 2 y 3 y la mejora 7, en producción (#64, #65);
-el 4 y el 5, en la rama `v-vacios-oscuro-y-fotos`, a falta de fusionar. **Lo siguiente es
-la 3, O**, en paralelo con E2 en cuanto esté la cuenta de Stripe.
+móvil y una puerta de la API) también está en producción (#54). **La 2, V, está entera
+y en producción** (#64, #65, #67). **Lo siguiente es la 3, O**, y después E2: Richi ya
+tiene su cuenta de Stripe.
 
 **Qué esperan de fuera, y no frenan el orden:** **Resend** (el correo del informe y
 de los avisos), **Business Profile** (las respuestas a reseñas), **la clave de IA**

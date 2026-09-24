@@ -112,6 +112,7 @@ import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
 import { miPanel } from './consultas/mi-panel.ts';
 import { unIndicador } from './consultas/indicador.ts';
+import { misObjetivos } from './consultas/objetivos.ts';
 import { miLocalEnGoogle } from './consultas/local-en-google.ts';
 import {
   actualizarMiFichaDeGoogle,
@@ -210,6 +211,8 @@ export const catalogo = {
     [unIndicador.nombre]: unIndicador,
     // M7 · el local en Google: lo guardado, con su fecha y lo gastado del tope.
     [miLocalEnGoogle.nombre]: miLocalEnGoogle,
+    // O · los objetivos y su semáforo (0047).
+    [misObjetivos.nombre]: misObjetivos,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {

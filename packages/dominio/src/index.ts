@@ -205,6 +205,10 @@ export type {
   CifraDelSemaforo,
 } from './objetivos.ts';
 
+// ── Entrega O · lo de hoy, por urgencia (0047) ───────────────────────────────
+export { NOMBRE_DEL_ESCALON, loDeHoy, ordenarLoDeHoy } from './hoy.ts';
+export type { Escalon, AppDeLoDeHoy, CosaDeHoy, LoQueHayHoy } from './hoy.ts';
+
 // ── M4 · las reglas de acceso que la pantalla tambien necesita ───────────────
 //
 // El minimo de la contraseña lo comprueba el servidor, y ahi se queda la

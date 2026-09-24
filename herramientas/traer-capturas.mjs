@@ -20,7 +20,9 @@
  * Necesita `gh` con sesión abierta (`gh auth status`).
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const RAIZ = fileURLToPath(new URL('../', import.meta.url));
@@ -65,8 +67,13 @@ if (vuelta === undefined) {
 console.log(`\n  Bajando las capturas nuevas de la vuelta ${vuelta}…`);
 const antes = lasQueHay();
 
+// A una carpeta de paso y de ahí a su sitio. `gh run download` **no pisa un
+// fichero que ya existe**, y una captura que cambia a propósito siempre existe: era
+// justo el caso de uso, y el script decía «esa vuelta no dejó capturas» (25-sep).
+const dePaso = mkdtempSync(join(tmpdir(), 'capturas-'));
 try {
-  correr('gh', ['run', 'download', vuelta, '--name', 'capturas-nuevas', '--dir', DESTINO]);
+  correr('gh', ['run', 'download', vuelta, '--name', 'capturas-nuevas', '--dir', dePaso]);
+  cpSync(dePaso, DESTINO, { recursive: true, force: true });
 } catch {
   console.log(
     [
@@ -77,6 +84,8 @@ try {
     ].join('\n'),
   );
   process.exit(1);
+} finally {
+  rmSync(dePaso, { recursive: true, force: true });
 }
 
 const despues = lasQueHay();

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
   ACTIVIDADES,
-  CLAVES_DE_OBJETIVO,
+  CLAVES_DEL_ALTA,
   NOMBRE_DEL_OBJETIVO,
   QUE_ES_EL_OBJETIVO,
   REGIMEN_DEL_TERRITORIO,
   TERRITORIOS,
-  type ClaveDeObjetivo,
+  type ClaveDelAlta,
   type Territorio,
 } from '@estook/dominio';
 import { Aviso, Boton, Campo, Selector } from '@estook/ui';
@@ -65,7 +65,7 @@ export function FiscalYObjetivos({ alta, cliente, alGuardar, alFallar }: PropsDe
   // en porcentaje aunque por dentro sean fracción: nadie piensa en 0,28.
   const [valores, setValores] = useState<Record<string, string>>(() => {
     const inicio: Record<string, string> = {};
-    for (const clave of CLAVES_DE_OBJETIVO) {
+    for (const clave of CLAVES_DEL_ALTA) {
       const suyo = alta.objetivos.find((o) => o.clave === clave);
       const propuesto = alta.dePartida.find((o) => o.clave === clave);
       const valor = suyo?.valor ?? propuesto?.valor ?? 0.3;
@@ -80,7 +80,7 @@ export function FiscalYObjetivos({ alta, cliente, alGuardar, alFallar }: PropsDe
   const hacenFaltaTenedores = territorio === 'ceuta' || territorio === 'melilla';
   const sonDePartida = alta.objetivos.length === 0 || alta.objetivos.every((o) => o.dePartida);
 
-  const alguienMal = CLAVES_DE_OBJETIVO.some((clave) => {
+  const alguienMal = CLAVES_DEL_ALTA.some((clave) => {
     const numero = Number((valores[clave] ?? '').replace(',', '.'));
     return !Number.isFinite(numero) || numero < 0 || numero > 100;
   });
@@ -102,7 +102,7 @@ export function FiscalYObjetivos({ alta, cliente, alGuardar, alFallar }: PropsDe
     }
 
     const objetivos = await cliente.ejecutar('poner_objetivos', {
-      objetivos: CLAVES_DE_OBJETIVO.map((clave) => ({
+      objetivos: CLAVES_DEL_ALTA.map((clave) => ({
         clave,
         // De porcentaje a fracción, **en un solo sitio**: si esto se hiciera en
         // dos, un día alguien guardaría 28 en vez de 0,28 y toda la aplicación
@@ -162,7 +162,7 @@ export function FiscalYObjetivos({ alta, cliente, alGuardar, alFallar }: PropsDe
           </p>
         </div>
 
-        {CLAVES_DE_OBJETIVO.map((clave: ClaveDeObjetivo) => (
+        {CLAVES_DEL_ALTA.map((clave: ClaveDelAlta) => (
           <Campo
             key={clave}
             etiqueta={NOMBRE_DEL_OBJETIVO[clave]}

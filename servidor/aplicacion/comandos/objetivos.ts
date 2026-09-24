@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CLAVES_DE_OBJETIVO, type ClaveDeObjetivo } from '@estook/dominio';
+import { CLAVES_DE_OBJETIVO, CLAVES_DEL_ALTA, type ClaveDeObjetivo } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion, respondido } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
@@ -29,18 +29,27 @@ import { comando, FalloDeAplicacion } from '../contrato.ts';
  * lo que evita que un día alguien guarde 28 y tiña la aplicación entera de rojo.
  */
 
+/**
+ * Un objetivo: **en fracción** los que son un tanto por ciento, **en céntimos** las
+ * ventas de la semana (0047). Y `null` quita el de ventas, que es el único que se
+ * puede no tener: los demás tiñen el semáforo, y sin ellos no hay semáforo.
+ */
+const unObjetivo = z.discriminatedUnion('clave', [
+  z.object({ clave: z.literal('materia_prima'), valor: z.number().min(0).max(1) }).strict(),
+  z.object({ clave: z.literal('personal'), valor: z.number().min(0).max(1) }).strict(),
+  z.object({ clave: z.literal('margen'), valor: z.number().min(0).max(1) }).strict(),
+  z.object({ clave: z.literal('merma'), valor: z.number().min(0).max(1) }).strict(),
+  z
+    .object({
+      clave: z.literal('ventas_semanales'),
+      importeCentimos: z.number().int().positive().max(1_000_000_000).nullable(),
+    })
+    .strict(),
+]);
+
 export const entradaObjetivos = z
   .object({
-    objetivos: z
-      .array(
-        z.object({
-          clave: z.enum(CLAVES_DE_OBJETIVO),
-          /** Fracción, no porcentaje: 0,28 es el 28 %. */
-          valor: z.number().min(0).max(1),
-        }),
-      )
-      .min(1)
-      .max(CLAVES_DE_OBJETIVO.length),
+    objetivos: z.array(unObjetivo).min(1).max(CLAVES_DE_OBJETIVO.length),
   })
   .strict()
   .refine((e) => new Set(e.objetivos.map((o) => o.clave)).size === e.objetivos.length, {
@@ -50,7 +59,7 @@ export const entradaObjetivos = z
 export type EntradaObjetivos = z.infer<typeof entradaObjetivos>;
 
 export interface SalidaObjetivos {
-  readonly puestos: readonly { readonly clave: ClaveDeObjetivo; readonly valor: number }[];
+  readonly puestos: readonly { readonly clave: ClaveDeObjetivo }[];
 }
 
 export const ponerObjetivos = comando<EntradaObjetivos, SalidaObjetivos>({
@@ -64,8 +73,13 @@ export const ponerObjetivos = comando<EntradaObjetivos, SalidaObjetivos>({
     const hoy = contexto.ahora.toISOString().slice(0, 10);
 
     for (const objetivo of entrada.objetivos) {
-      const vigentes = await contexto.sql<{ id: string; valor: string; desde: string }[]>`
-        select id, valor::text as valor, desde::text as desde
+      const valor = 'valor' in objetivo ? objetivo.valor : null;
+      const importe = 'importeCentimos' in objetivo ? objetivo.importeCentimos : null;
+
+      const vigentes = await contexto.sql<
+        { id: string; valor: string | null; importe: string | null; desde: string }[]
+      >`
+        select id, valor::text as valor, importe_centimos::text as importe, desde::text as desde
           from estook.objetivo
          where local_id = ${localId} and clave = ${objetivo.clave}::estook.clave_de_objetivo
            and hasta is null
@@ -75,7 +89,14 @@ export const ponerObjetivos = comando<EntradaObjetivos, SalidaObjetivos>({
       // Poner el mismo número otra vez no abre una vigencia nueva. Sin esto, cada
       // visita a Ajustes dejaría una fila más y el histórico de objetivos sería
       // una lista de duplicados.
-      if (vigente && Number(vigente.valor) === objetivo.valor) continue;
+      const antes =
+        vigente === undefined
+          ? null
+          : vigente.valor === null
+            ? Number(vigente.importe)
+            : Number(vigente.valor);
+      const ahora = valor ?? importe;
+      if (antes === ahora) continue;
 
       if (vigente) {
         // El de ayer se cierra **ayer**, no hoy: si se cerrara hoy, habría un día
@@ -95,28 +116,35 @@ export const ponerObjetivos = comando<EntradaObjetivos, SalidaObjetivos>({
         }
       }
 
-      const puestos = await contexto.sql<{ id: string }[]>`
-        insert into estook.objetivo (local_id, clave, valor, desde, de_partida)
-        values (
-          ${localId}, ${objetivo.clave}::estook.clave_de_objetivo,
-          ${objetivo.valor}, ${hoy}::date, false
-        )
-        returning id
-      `;
-      if (puestos.length === 0) throw new FalloDeAplicacion('sin_permiso');
+      // Quitar el de ventas es cerrar el vigente y no abrir otro.
+      if (ahora !== null) {
+        const puestos = await contexto.sql<{ id: string }[]>`
+          insert into estook.objetivo (local_id, clave, valor, importe_centimos, desde, de_partida)
+          values (
+            ${localId}, ${objetivo.clave}::estook.clave_de_objetivo,
+            ${valor}, ${importe}, ${hoy}::date, false
+          )
+          returning id
+        `;
+        if (puestos.length === 0) throw new FalloDeAplicacion('sin_permiso');
+      }
 
       await contexto.sql`
         select estook.anotar(
           ${organizacionId}::uuid, 'cambiar', 'objetivo', ${objetivo.clave},
           ${localId}::uuid,
-          ${JSON.stringify({ valor: vigente ? Number(vigente.valor) : null })}::text::jsonb,
-          ${JSON.stringify({ valor: objetivo.valor })}::text::jsonb,
+          ${JSON.stringify({ valor: antes })}::text::jsonb,
+          ${JSON.stringify({ valor: ahora })}::text::jsonb,
           null
         )
       `;
     }
 
-    await respondido(contexto, localId, 'fiscal_y_objetivos');
+    // Solo cuenta como el paso del alta si trae los del alta: poner el de ventas
+    // desde Ajustes no es haber respondido «impuestos y objetivos».
+    if (entrada.objetivos.some((o) => (CLAVES_DEL_ALTA as readonly string[]).includes(o.clave))) {
+      await respondido(contexto, localId, 'fiscal_y_objetivos');
+    }
 
     // **Quién tiene que enterarse** (regla 14): todos los semáforos de la
     // aplicación, los avisos y Pulse. Un objetivo nuevo cambia el color de media
@@ -129,6 +157,6 @@ export const ponerObjetivos = comando<EntradaObjetivos, SalidaObjetivos>({
       correlacionId: contexto.correlacionId,
     });
 
-    return { puestos: entrada.objetivos };
+    return { puestos: entrada.objetivos.map((o) => ({ clave: o.clave })) };
   },
 });

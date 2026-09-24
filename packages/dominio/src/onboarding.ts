@@ -119,32 +119,8 @@ export function esTipoDeLocal(valor: unknown): valor is TipoDeLocal {
 
 // ── Los objetivos ────────────────────────────────────────────────────────────
 
-export const CLAVES_DE_OBJETIVO = ['materia_prima', 'personal', 'margen'] as const;
-
-export type ClaveDeObjetivo = (typeof CLAVES_DE_OBJETIVO)[number];
-
-export const NOMBRE_DEL_OBJETIVO: Readonly<Record<ClaveDeObjetivo, string>> = {
-  materia_prima: 'Materia prima',
-  personal: 'Personal',
-  margen: 'Margen',
-};
-
-/**
- * Qué significa cada uno, en una frase.
- *
- * No es decoración: «este es el dato más silencioso y más influyente del
- * sistema. Un objetivo mal puesto tiñe de rojo o de verde una aplicación
- * entera» (Auditoría 1.2). Quien no entiende qué está poniendo, lo pone mal.
- */
-export const QUE_ES_EL_OBJETIVO: Readonly<Record<ClaveDeObjetivo, string>> = {
-  materia_prima: 'De cada 100 € que facturas, cuántos se van en género.',
-  personal: 'De cada 100 € que facturas, cuántos se van en sueldos.',
-  margen: 'Lo que te queda de cada plato antes de contar los gastos del local.',
-};
-
-export function esClaveDeObjetivo(valor: unknown): valor is ClaveDeObjetivo {
-  return typeof valor === 'string' && (CLAVES_DE_OBJETIVO as readonly string[]).includes(valor);
-}
+// Viven en `objetivos.ts` desde la entrega O (0047): el alta pregunta tres, y la
+// merma y las ventas se ponen después, en Ajustes.
 
 // ── La barra de progreso, que cuenta valor y no tareas ───────────────────────
 

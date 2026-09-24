@@ -255,3 +255,20 @@ function comoNumero(celda: string): number | null {
   const valor = Number(normal);
   return Number.isFinite(valor) ? valor : null;
 }
+
+// ── El objetivo de ventas que se propone (entrega O, 0047) ─────────────────
+
+/**
+ * La propuesta del objetivo de ventas: lo que se ha vendido de media estas
+ * semanas, redondeado a cincuenta euros.
+ *
+ * Una propuesta sacada de lo tuyo y no de una media del sector, que no sabe si
+ * eres un bar de pueblo o un asador en el centro. Nula si no hay cuatro semanas
+ * con caja cerrada: con una semana suelta se propondría lo de una semana rara.
+ */
+export function propuestaDeVentas(semanas: readonly number[]): number | null {
+  const conDato = semanas.filter((s) => s > 0);
+  if (conDato.length < 4) return null;
+  const media = conDato.reduce((suma, s) => suma + s, 0) / conDato.length;
+  return Math.round(media / 5_000) * 5_000;
+}

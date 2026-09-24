@@ -239,8 +239,8 @@ export const crearLocal = comando<EntradaCrearLocal, SalidaCrearLocal>({
     // enero. Y se marcan como de partida, porque nadie los ha revisado para él.
     if (modelo !== null) {
       await contexto.sql`
-        insert into estook.objetivo (local_id, clave, valor, desde, de_partida)
-        select ${localId}, o.clave, o.valor, current_date, true
+        insert into estook.objetivo (local_id, clave, valor, importe_centimos, desde, de_partida)
+        select ${localId}, o.clave, o.valor, o.importe_centimos, current_date, true
           from estook.objetivo o
          where o.local_id = ${entrada.duplicar_de ?? null} and o.hasta is null
       `;

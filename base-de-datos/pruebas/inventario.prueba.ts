@@ -628,6 +628,12 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // puede cerrarlas—, y por eso veía a todos fuera de línea. Las dos leen la sesión
     // con privilegio, contestan solo de gente que quien pregunta puede ver, y no
     // devuelven nada más de la sesión que un sí o un no y una hora.
+    //
+    // **Y la 0046 (entrega O) añade dos, a propósito: la carta de cada local.**
+    // `la_carta_publica` la lee quien escanea el QR, que no ha entrado en ningún
+    // sitio, y solo devuelve lo que el local ya enseña al mundo. Y
+    // `direccion_libre_para_la_carta` mira las direcciones de todo Estook para no
+    // repetir una: sin privilegio, dos empresas podrían chocar. Son treinta y cuatro.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -648,7 +654,9 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'crear_cuenta_con_negocio',
       'credencial_para_entrar',
       'dar_de_alta_persona',
+      'direccion_libre_para_la_carta',
       'esta_en_linea',
+      'la_carta_publica',
       'locales_visibles',
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',

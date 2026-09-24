@@ -80,9 +80,11 @@ export function Catalogo({ entorno, sesionId }: CatalogoProps) {
   return (
     <div className="min-h-dvh bg-fondo">
       <header className="sticky top-0 z-40 border-b border-borde bg-superficie pt-[env(safe-area-inset-top)]">
-        <div className="mx-auto flex max-w-[64rem] items-center gap-e4 px-e4 py-e3">
+        <div className="mx-auto flex max-w-[64rem] flex-wrap items-center gap-x-e4 gap-y-e2 px-e4 py-e3">
           <Logo alto={26} />
-          <div className="min-w-0 flex-1">
+          {/* Con un mínimo de ancho: en un móvil de 320 px el selector de al lado le
+              dejaba cero, y el título desaparecía. Así, el que baja es el selector. */}
+          <div className="min-w-[10rem] flex-1">
             <h1 className="text-seccion font-semibold">Sistema de diseño</h1>
             <p className="text-secundario text-texto-suave">
               Cada componente de la Parte B, pintado en sus estados

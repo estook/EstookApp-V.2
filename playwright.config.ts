@@ -71,10 +71,12 @@ export default defineConfig({
 
   snapshotPathTemplate: '{testDir}/capturas/{platform}/{arg}-{projectName}{ext}',
   ignoreSnapshots: !conCapturas,
-  // En la integración continua **nunca** se escribe una captura de referencia: la
-  // que falte o no coincida es un rojo, y la nueva se guarda en `capturas-nuevas/`
-  // para mirarla antes de darla por buena.
-  updateSnapshots: enCI ? 'none' : 'missing',
+  // La que falte o no coincida **es un rojo, siempre**, también en la integración
+  // continua, y la nueva se guarda en `capturas-nuevas/` para mirarla antes de darla
+  // por buena. Con `missing`, la que falta se escribe y la prueba falla sin repetirse
+  // (Playwright no deja que una segunda vuelta la dé por buena); con `none` no se
+  // escribía nada, y la primera vuelta de la entrega V no dejó captura que mirar.
+  updateSnapshots: 'missing',
   expect: {
     toHaveScreenshot: {
       // Dos décimas de píxel de cada mil pueden cambiar sin que cambie nada: el

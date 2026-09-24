@@ -78,8 +78,8 @@ para que esta app sea profesional».
     sin que la aplicación hubiera cambiado.
   - **Cuando una pantalla cambia a propósito**, la integración continua sale en rojo
     y deja la captura nueva en el artefacto `capturas-nuevas`; `pnpm capturas:traer`
-    la baja a su sitio, se mira y, si es lo que se quería, se sube. Nunca se escribe
-    una captura de referencia sola en la integración continua.
+    la baja a su sitio, se mira y, si es lo que se quería, se sube. Una captura que
+    falta o no coincide **siempre es un rojo**: ninguna se da por buena sin mirarla.
 - **El catálogo del admin se puede ver en oscuro** con un selector propio. El admin no
   tiene tema, y no se le da: el selector pone el tema en la página mientras se mira y
   no lo guarda, porque el almacén del navegador es el mismo que el de la app.

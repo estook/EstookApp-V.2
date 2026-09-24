@@ -3,16 +3,20 @@ import {
   TURNO_SOSPECHOSO_DESDE,
   diaDeLaSemana,
   fechaEnLetra,
+  fechaOperativa,
   loDeHoy,
   masDias,
   minutosHasta,
   type CosaDeHoy,
+  type FechaOperativa,
   type LoQueHayHoy,
+  type MiTurnoDeHoy,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
 import { miFichaje } from './equipo.ts';
+import { laJornada } from './indicador.ts';
 import { inventarioHoy } from './inventario.ts';
 import { comprasDeHoy } from './pedidos.ts';
 
@@ -32,6 +36,11 @@ import { comprasDeHoy } from './pedidos.ts';
  */
 
 export interface SalidaLoDeHoy {
+  /**
+   * La jornada, la que corta a la hora de corte del local (regla 10): entre las
+   * doce y las cinco de la mañana sigue siendo «ayer». Es la de la caja y la de las
+   * cifras; las compras cuentan con el día del calendario, que es el del proveedor.
+   */
   readonly hoy: string;
   readonly cosas: readonly CosaDeHoy[];
 }
@@ -59,7 +68,7 @@ export const loDeHoyConsulta = consulta<Record<string, never>, SalidaLoDeHoy>({
     ]);
 
     let hay: LoQueHayHoy = {};
-    let hoy: string | null = null;
+    const hoy = fechaOperativa(await laJornada(contexto, localId));
 
     // ── Lo del género y las compras ──
     if (puede.ver('app.inventario')) {
@@ -71,7 +80,6 @@ export const loDeHoyConsulta = consulta<Record<string, never>, SalidaLoDeHoy>({
       ];
 
       const compras = await comprasDeHoy.ejecutar(contexto, {});
-      hoy = compras.hoy;
       const atrasados = compras.llegan.filter((p) => p.atrasado);
       const importes = puede.ver('dato.precio_de_compra')
         ? await losImportes(
@@ -122,12 +130,11 @@ export const loDeHoyConsulta = consulta<Record<string, never>, SalidaLoDeHoy>({
 
     // ── La caja ──
     if (puede.ver('dato.ventas')) {
-      hay = { ...hay, cajaSinCerrar: await laCajaSinCerrar(contexto, localId) };
+      hay = { ...hay, cajaSinCerrar: await laCajaSinCerrar(contexto, localId, hoy) };
     }
 
     // ── Mi turno ──
     const mio = await miFichaje.ejecutar(contexto, {});
-    hoy ??= mio.jornada;
     hay = { ...hay, miTurno: miTurno(mio) };
 
     return { hoy, cosas: loDeHoy(hay) };
@@ -148,9 +155,7 @@ async function losImportes(
      group by l.pedido_id
   `;
   return new Map(
-    filas
-      .filter((f) => f.centimos !== null)
-      .map((f) => [f.pedido_id, Number(f.centimos)] as const),
+    filas.filter((f) => f.centimos !== null).map((f) => [f.pedido_id, Number(f.centimos)] as const),
   );
 }
 
@@ -166,33 +171,29 @@ async function losImportes(
 async function laCajaSinCerrar(
   contexto: Contexto,
   localId: string,
+  hoy: FechaOperativa,
 ): Promise<{ readonly cuando: string } | null> {
+  const ayer = masDias(hoy, -1);
   const filas = await contexto.sql<
-    { como: string; hoy: string; ayer_cerrada: boolean; dias: number[] | null }[]
+    { como: string; ayer_cerrada: boolean; dias: number[] | null }[]
   >`
-    with reloj as (
-      select l.como_se_cierra::text as como,
-             (now() at time zone l.zona_horaria - l.hora_de_corte)::date as hoy
-        from estook.local l where l.id = ${localId}
-    )
-    select r.como, to_char(r.hoy, 'YYYY-MM-DD') as hoy,
+    select l.como_se_cierra::text as como,
            exists (select 1 from estook.cierre_de_caja c
-                    where c.local_id = ${localId} and c.fecha_operativa = r.hoy - 1) as ayer_cerrada,
+                    where c.local_id = l.id and c.fecha_operativa = ${ayer}::date) as ayer_cerrada,
            (select array_agg(distinct extract(isodow from c.fecha_operativa)::int)
               from estook.cierre_de_caja c
-             where c.local_id = ${localId}
-               and c.fecha_operativa between r.hoy - 29 and r.hoy - 2) as dias
-      from reloj r
+             where c.local_id = l.id
+               and c.fecha_operativa between ${ayer}::date - 28 and ${ayer}::date - 1) as dias
+      from estook.local l where l.id = ${localId}
   `;
   const fila = filas[0];
   if (fila === undefined || fila.como !== 'a_mano' || fila.ayer_cerrada) return null;
-  const ayer = masDias(fila.hoy as Parameters<typeof masDias>[0], -1);
   const suele = (fila.dias ?? []).includes(diaDeLaSemana(ayer));
   return suele ? { cuando: `ayer, ${fechaEnLetra(ayer)}` } : null;
 }
 
 /** Del fichaje de quien mira: si le toca entrar, o si lleva demasiadas horas dentro. */
-function miTurno(mio: Awaited<ReturnType<typeof miFichaje.ejecutar>>): LoQueHayHoy['miTurno'] {
+function miTurno(mio: Awaited<ReturnType<typeof miFichaje.ejecutar>>): MiTurnoDeHoy | null {
   if (!mio.puedoFichar) return null;
   if (mio.abierto !== null) {
     return mio.abierto.minutos >= TURNO_SOSPECHOSO_DESDE

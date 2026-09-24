@@ -97,6 +97,11 @@ export interface QuienSoy {
      * entonces el logotipo de Estook, que es lo correcto y no un hueco roto.
      */
     readonly logo: string | null;
+    /**
+     * Su dirección de carta, para siempre: `estook.com/carta/<esto>`. La lleva el QR
+     * que se imprime (0047), así que no cambia ni al renombrar el local.
+     */
+    readonly direccionDeLaCarta: string;
   } | null;
 
   /** Para el selector: todo lo que alcanza. */
@@ -289,10 +294,11 @@ async function leerLocal(
       color_de_marca: string | null;
       color_en_la_app: boolean;
       logo_clave: string | null;
+      direccion_de_la_carta: string;
     }[]
   >`
     select l.id, l.nombre, l.codigo, a.nombre as area,
-           l.color_de_marca, l.color_en_la_app, l.logo_clave
+           l.color_de_marca, l.color_en_la_app, l.logo_clave, l.direccion_de_la_carta
       from estook.local l
       left join estook.area a on a.id = l.area_id
      where l.id = ${id}
@@ -317,6 +323,7 @@ async function leerLocal(
     colorDeMarca: fila.color_de_marca,
     colorEnLaApp: fila.color_en_la_app,
     logo,
+    direccionDeLaCarta: fila.direccion_de_la_carta,
   };
 }
 

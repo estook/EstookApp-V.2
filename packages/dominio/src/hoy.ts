@@ -79,11 +79,12 @@ export interface LoQueHayHoy {
   }[];
   /** La caja de la última jornada, si el local cierra caja y esa no está. */
   readonly cajaSinCerrar?: { readonly cuando: string } | null;
-  readonly miTurno?:
-    | { readonly que: 'entra'; readonly aLas: string; readonly enMinutos: number }
-    | { readonly que: 'olvidada'; readonly horas: number }
-    | null;
+  readonly miTurno?: MiTurnoDeHoy | null;
 }
+
+export type MiTurnoDeHoy =
+  | { readonly que: 'entra'; readonly aLas: string; readonly enMinutos: number }
+  | { readonly que: 'olvidada'; readonly horas: number };
 
 /** «pulpo, merluza y 3 más». */
 function algunos(nombres: readonly string[]): string {
@@ -173,7 +174,10 @@ export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
     cosas.push({
       id: 'agotados',
       escalon: 2,
-      titulo: n === 1 ? `Te has quedado sin ${hay.agotados[0] ?? ''}` : `Te has quedado sin ${plural(n, 'producto', 'productos')}`,
+      titulo:
+        n === 1
+          ? `Te has quedado sin ${hay.agotados[0] ?? ''}`
+          : `Te has quedado sin ${plural(n, 'producto', 'productos')}`,
       detalle: n === 1 ? null : algunos(hay.agotados),
       centimos: null,
       app: 'inventario',

@@ -113,6 +113,8 @@ import { miAcceso } from './consultas/mi-acceso.ts';
 import { miPanel } from './consultas/mi-panel.ts';
 import { unIndicador } from './consultas/indicador.ts';
 import { misObjetivos } from './consultas/objetivos.ts';
+import { loDeHoyConsulta } from './consultas/hoy.ts';
+import { laCarta } from './consultas/carta.ts';
 import { miLocalEnGoogle } from './consultas/local-en-google.ts';
 import {
   actualizarMiFichaDeGoogle,
@@ -213,6 +215,10 @@ export const catalogo = {
     [miLocalEnGoogle.nombre]: miLocalEnGoogle,
     // O · los objetivos y su semáforo (0047).
     [misObjetivos.nombre]: misObjetivos,
+    // O · lo de hoy, la zona de atención del Panel ordenada por el servidor.
+    [loDeHoyConsulta.nombre]: loDeHoyConsulta,
+    // O · la carta de cada local, sin sesión: lo que enseña el QR de la mesa.
+    [laCarta.nombre]: laCarta,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {

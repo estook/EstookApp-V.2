@@ -166,12 +166,7 @@ export {
   comoVa,
 } from './onboarding.ts';
 
-export type {
-  PasoDelAlta,
-  TipoDeLocal,
-  ComoVaElAlta,
-  Progreso,
-} from './onboarding.ts';
+export type { PasoDelAlta, TipoDeLocal, ComoVaElAlta, Progreso } from './onboarding.ts';
 
 // ── Entrega O · los objetivos y su semáforo (0047) ─────────────────────────
 export {
@@ -207,7 +202,7 @@ export type {
 
 // ── Entrega O · lo de hoy, por urgencia (0047) ───────────────────────────────
 export { NOMBRE_DEL_ESCALON, loDeHoy, ordenarLoDeHoy } from './hoy.ts';
-export type { Escalon, AppDeLoDeHoy, CosaDeHoy, LoQueHayHoy } from './hoy.ts';
+export type { Escalon, AppDeLoDeHoy, CosaDeHoy, LoQueHayHoy, MiTurnoDeHoy } from './hoy.ts';
 
 // ── M4 · las reglas de acceso que la pantalla tambien necesita ───────────────
 //

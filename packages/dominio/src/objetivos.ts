@@ -117,7 +117,8 @@ export const MERMA_DE_PARTIDA = 0.04;
 export type Semaforo = 'verde' | 'ambar' | 'rojo' | 'sin_dato';
 
 /** Lo que se juzga: los objetivos con semáforo, coste primo incluido. */
-export type QueSeJuzga = 'materia_prima' | 'personal' | 'coste_primo' | 'merma' | 'ventas_semanales';
+export type QueSeJuzga =
+  'materia_prima' | 'personal' | 'coste_primo' | 'merma' | 'ventas_semanales';
 
 export const LO_QUE_SE_JUZGA: readonly QueSeJuzga[] = [
   'materia_prima',
@@ -321,8 +322,7 @@ export function lasCifrasDelSemaforo(
 
   // ── Personal ──
   const nadieCobra = sabe.personal === 0 && sabe.sinSalario > 0;
-  const personalEnPuntos =
-    conCaja && !nadieCobra ? porcentajeDe(sabe.personal, sabe.ventas) : null;
+  const personalEnPuntos = conCaja && !nadieCobra ? porcentajeDe(sabe.personal, sabe.ventas) : null;
   const uno = sabe.sinSalario === 1;
   const faltan =
     sabe.sinSalario === 0

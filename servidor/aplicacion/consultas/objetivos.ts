@@ -298,7 +298,13 @@ async function laPropuestaDeVentas(
   hoy: string,
 ): Promise<number | null> {
   const desde = masDias(fechaOperativa(hoy), -28);
-  const porDia = await losDias(contexto, localId, 'ventas', desde, masDias(fechaOperativa(hoy), -1));
+  const porDia = await losDias(
+    contexto,
+    localId,
+    'ventas',
+    desde,
+    masDias(fechaOperativa(hoy), -1),
+  );
   const semanas = [0, 0, 0, 0];
   for (const [fecha, delDia] of porDia) {
     const hace = Math.floor(

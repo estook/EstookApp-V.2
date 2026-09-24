@@ -43,6 +43,7 @@ export const DIBUJOS = {
   local: () => import('./Local.tsx'),
   grafica: () => import('./Grafica.tsx'),
   platos: () => import('./Platos.tsx'),
+  'sin-conexion': () => import('./SinConexion.tsx'),
 } as const satisfies Record<string, Cargador>;
 
 export type NombreDelDibujo = keyof typeof DIBUJOS;
@@ -69,6 +70,7 @@ export const PARA_QUE_ES: Readonly<Record<NombreDelDibujo, string>> = {
   local: 'Sin local',
   grafica: 'Sin datos que dibujar',
   platos: 'Sin platos',
+  'sin-conexion': 'El servidor no contesta',
 };
 
 export const NOMBRES_DE_LOS_DIBUJOS = Object.keys(DIBUJOS) as readonly NombreDelDibujo[];

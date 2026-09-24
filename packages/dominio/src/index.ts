@@ -217,6 +217,8 @@ export {
   DIAS_DE_COBERTURA_OBJETIVO,
   ESTADOS_DEL_STOCK,
   NOMBRE_DEL_ESTADO,
+  NOMBRE_CORTO_DEL_AVISO,
+  avisa,
   esTipoDeMovimiento,
   siguienteEstado,
   reconstruir,

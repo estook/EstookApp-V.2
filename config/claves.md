@@ -55,21 +55,21 @@ alcance de cualquiera con un navegador se hace mirando, no de paso.
 
 Los que no pueden pisar el navegador jamas.
 
-| Nombre                       | Que es                                                            |
-| ---------------------------- | ----------------------------------------------------------------- |
-| `CLAVE_DE_SERVICIO`          | La clave secreta del proyecto                                     |
-| `GOOGLE_MAPS_KEY`            | Google Places (New) · **ya la lee la API** (0040)                 |
-| `RESEND_API_KEY`             | El correo que manda Estook (0017) · **ya la lee la API** (0042)   |
-| `CORREO_REMITENTE`           | Quién firma. **De un dominio verificado, nunca de Gmail** (abajo) |
-| `GOOGLE_OAUTH_CLIENT_ID`     | Entrar y crear cuenta con Google (0042)                           |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | Su secreto: solo lo tiene el servidor (0042)                      |
-| `AI_API_KEY`                 | El proveedor de IA de Fogon · M22                                 |
-| `AI_MODELO_RAPIDO`           | El modelo barato para lo cotidiano                                |
-| `AI_MODELO_ANALISIS`         | El modelo bueno para el analisis nocturno                         |
-| `APP_URL`                    | La direccion publica, para los enlaces                            |
-| `DATABASE_URL`               | La cadena del **agrupador de sesion** (M4)                        |
-| `ORIGENES_PERMITIDOS`        | Origenes de mas, si alguno hace falta (M4)                        |
-| `ENTORNO`                    | `produccion` (M4)                                                 |
+| Nombre                       | Que es                                                                      |
+| ---------------------------- | --------------------------------------------------------------------------- |
+| `CLAVE_DE_SERVICIO`          | La clave secreta del proyecto                                               |
+| `GOOGLE_MAPS_KEY`            | Google Places (New) · **ya la lee la API** (0040)                           |
+| `RESEND_API_KEY`             | El correo que manda Estook (0017) · **ya la lee la API** (0042)             |
+| `CORREO_REMITENTE`           | Quién firma. **De un dominio verificado, nunca de Gmail** (abajo)           |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Entrar y crear cuenta con Google (0042)                                     |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Su secreto: solo lo tiene el servidor (0042)                                |
+| `AI_API_KEY`                 | El proveedor de IA de Fogon · M22                                           |
+| `AI_MODELO_RAPIDO`           | El modelo barato para lo cotidiano                                          |
+| `AI_MODELO_ANALISIS`         | El modelo bueno para el analisis nocturno                                   |
+| `APP_URL`                    | La direccion publica, para los enlaces                                      |
+| `DATABASE_URL`               | La cadena del **agrupador** (M4); la API entra por el modo transaccion sola |
+| `ORIGENES_PERMITIDOS`        | Origenes de mas, si alguno hace falta (M4)                                  |
+| `ENTORNO`                    | `produccion` (M4)                                                           |
 
 ### Las que faltan, cuál usa ya el código y dónde van
 
@@ -130,8 +130,11 @@ unica que se salta la seguridad por filas**. La usa la API para firmar los enlac
 del logo, y `pnpm almacen:preparar` para crear el cubo. No va al navegador jamas.
 
 Los tres ultimos los necesita la API desplegada. `DATABASE_URL` tiene que ir por
-el **agrupador de sesion** (`pooler`), no por la conexion directa: la directa de
-los proyectos nuevos solo funciona por IPv6.
+el **agrupador** (`pooler`), no por la conexion directa: la directa de los
+proyectos nuevos solo funciona por IPv6. Se pone la cadena de siempre, la del
+puerto `5432`, y **la API cambia sola al `6543`**, el modo transaccion
+(`laPuertaDeLaApi`, en `servidor/infraestructura/postgres.ts`): el de sesion admite
+quince clientes a la vez, y el 24-sep una recarga doble en el movil los agoto.
 
 Y `ORIGENES_PERMITIDOS` **ya no hace falta para lo nuestro**: `estook.com` y
 `www.estook.com` los lleva el codigo de la API (0036), que es donde se ve. Se deja

@@ -6,6 +6,7 @@ import {
   CAMARA_VACIA,
   DIAS_MINIMOS_PARA_PREDECIR,
   ajusteHasta,
+  avisa,
   comoEsta,
   comoHaCambiado,
   consumoMedioDiario,
@@ -304,6 +305,16 @@ describe('como esta un producto', () => {
     expect(comoEsta(3, 5)).toBe('bajo_minimo');
     expect(comoEsta(9, 5)).toBe('bien');
     expect(comoEsta(9, null)).toBe('sin_minimo');
+  });
+
+  it('en una lista solo avisan los tres que piden hacer algo', () => {
+    // «Sin mínimo puesto» en cada fila partía el nombre en el móvil y no decía
+    // nada: es un dato que falta, no un estado del género (24-sep).
+    expect(avisa('negativo')).toBe(true);
+    expect(avisa('agotado')).toBe(true);
+    expect(avisa('bajo_minimo')).toBe(true);
+    expect(avisa('sin_minimo')).toBe(false);
+    expect(avisa('bien')).toBe(false);
   });
 
   it('«no se» y «esta bien» no son lo mismo', () => {

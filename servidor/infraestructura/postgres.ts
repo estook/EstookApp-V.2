@@ -77,15 +77,43 @@ export interface QuienPregunta {
 
 let conexion: postgres.Sql | null = null;
 
+/**
+ * **La API habla con el agrupador de Supabase en modo transacción, siempre.**
+ *
+ * El agrupador tiene dos puertas en la misma dirección: la `5432`, en modo
+ * sesión, que da a cada cliente una conexión suya mientras siga abierto, y la
+ * `6543`, en modo transacción, que la presta solo lo que dura una transacción.
+ * La de sesión admite **15 clientes a la vez** en nuestro plan, y cada instancia
+ * de la función abre los suyos: el 24-sep, recargar dos veces la app en el móvil
+ * lanzó más de quince consultas a la vez, la mitad volvieron con error, y la app
+ * mandó a Richi a la pantalla de entrar. Medido contra producción: treinta
+ * transacciones a la vez, quince fallan por la 5432 y ninguna por la 6543.
+ *
+ * El modo transacción es el que Supabase recomienda para funciones, y a esta API
+ * no le quita nada: todo pasa dentro de `begin` (lo exige la 0005), la identidad
+ * va con `set local`, el candado es `pg_advisory_xact_lock` y no hay consultas
+ * preparadas con el agrupador.
+ *
+ * Se corrige aquí y no solo en el secreto para que no dependa de acordarse: la
+ * misma cadena de siempre —la que usan también las herramientas de la base, que
+ * sí van por sesión— sirve, y la API toma la otra puerta sola. Lo prueba
+ * `postgres.prueba.ts`.
+ */
+export function laPuertaDeLaApi(url: string): string {
+  if (!url.includes('pooler.supabase.com')) return url;
+  return url.replace(/(pooler\.supabase\.com):5432(?=\/|$|\?)/, '$1:6543');
+}
+
 function abrir(): postgres.Sql {
   if (conexion) return conexion;
 
-  const url = variable('DATABASE_URL');
-  if (!url) {
+  const secreto = variable('DATABASE_URL');
+  if (!secreto) {
     throw new Error(
       'Falta DATABASE_URL. La API no sabe a que Postgres conectarse. Se declara en los secretos del entorno, nunca en el repositorio.',
     );
   }
+  const url = laPuertaDeLaApi(secreto);
 
   conexion = postgres(url, {
     // El agrupador de Supabase no lleva bien las consultas preparadas.

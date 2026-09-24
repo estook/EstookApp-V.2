@@ -17,6 +17,7 @@ import { PantallaDeApp } from './pantallas/PantallaDeApp.tsx';
 import { VistaDeCadena } from './pantallas/VistaDeCadena.tsx';
 import { ElegirPlan } from './sesion/ElegirPlan.tsx';
 import { SinEntrar } from './sesion/SinEntrar.tsx';
+import { SinServidor } from './sesion/SinServidor.tsx';
 import {
   CuentaParada,
   ElegirLocal,
@@ -138,7 +139,7 @@ export function Aplicacion() {
  * cambie el orden.
  */
 function Puerta() {
-  const { yo, cargando, hayApi } = usarSesion();
+  const { yo, cargando, hayApi, sinServidor } = usarSesion();
 
   /*
     El color del local, si lo tiene encendido (migración 0026).
@@ -163,6 +164,9 @@ function Puerta() {
       </main>
     );
   }
+
+  // Hay sesión guardada y el servidor no contesta: no es «entra otra vez».
+  if (sinServidor) return <SinServidor />;
 
   // Sin nadie dentro: entrar o crear cuenta, y la vuelta de Google (0042).
   if (yo === null) return <SinEntrar />;

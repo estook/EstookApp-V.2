@@ -81,6 +81,21 @@ async function tokenDe(peticion: APIRequestContext, correo: string): Promise<str
  * un local y no se puede compartir a la vez.
  */
 test.describe.serial('el alta de Casa Lola, que es una sola', () => {
+  // **Y en un solo navegador** (24-sep). `serial` ordena las pruebas dentro de un
+  // proyecto, no entre proyectos: el alta cronometrada del móvil volvía a poner el
+  // alta al principio mientras el ordenador esperaba el paso del logo, y el móvil
+  // subía su logo mientras el ordenador comprobaba que no había ninguno. Salía en
+  // rojo según quién llegara antes. Casa Lola es una, así que se prueba en uno: el
+  // del móvil, que es donde un dueño hace el alta y donde un diseño se rompe antes.
+  // Playwright exige desestructurar el primer argumento aunque no se use.
+  // eslint-disable-next-line no-empty-pattern
+  test.beforeEach(({}, info) => {
+    test.skip(
+      info.project.name !== 'movil-pequeno',
+      'Casa Lola es una sola: se prueba en el móvil',
+    );
+  });
+
   test('un local termina el alta en menos de cuatro minutos', async ({ page, request }) => {
     // **El alta se reabre antes de empezar.** Playwright corre los dos proyectos
     // —escritorio y móvil pequeño— contra la misma API y la misma base efímera, así
@@ -230,6 +245,11 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     await request.post(`${API}/v1/comandos/retomar_el_alta`, {
       headers: { authorization: `Bearer ${antes}`, 'x-idempotencia': `logo-${Date.now()}` },
       data: { paso: 'marca' },
+    });
+    // Y sin logo, lo deje como lo deje una vuelta anterior que se quedara a medias.
+    await request.post(`${API}/v1/comandos/quitar_logo`, {
+      headers: { authorization: `Bearer ${antes}`, 'x-idempotencia': `sin-logo-${Date.now()}` },
+      data: {},
     });
 
     await entrar(page, PABLO);

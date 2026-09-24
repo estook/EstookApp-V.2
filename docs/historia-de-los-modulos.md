@@ -2438,6 +2438,19 @@ plan de mejoras, que cierran V. Una migración, la `0045`. Todo razonado en la
   Windows (`CON_CAPTURAS=1`) son para mirar.
 - **Medir el contraste solo en el ordenador no basta**: la barra de abajo solo existe
   en el móvil, y era la mitad de lo que no se leía.
+- **Lo que solo ve GitHub.** La primera vuelta encontró que, en el móvil de 320 px del
+  Safari de las pruebas, el selector «Claro · Oscuro» del catálogo dejaba el título sin
+  ancho; en local, a 375 px, cabía. Y no dejó ninguna captura que mirar: con
+  `updateSnapshots: 'none'` Playwright no escribe la que falta. Se pasó a `missing`,
+  que la escribe y sigue en rojo.
+- **Cada entrada es espera para las demás.** Las pruebas nuevas entraban una vez por
+  pantalla —unas setenta— contra una API de pruebas que atiende de una en una, y una
+  prueba de Safari de otro fichero se quedó esperando al entrar. Ahora entran una vez
+  por persona y tema.
+- **Y una carrera que ya existía salió a la luz**: el grupo del alta de Casa Lola era
+  `serial`, pero `serial` ordena dentro de un navegador, no entre los tres, y el logo y
+  el paso del alta de ese único local se pisaban. Ahora ese grupo corre solo en el
+  móvil.
 
 ---
 

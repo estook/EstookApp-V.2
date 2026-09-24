@@ -90,7 +90,9 @@ for (const ancho of [320, 375]) {
     // los botones a partes iguales y dejaba «Movimien…» con sitio de sobra al lado.
     if (ancho >= 375) {
       const cortadas = await page.evaluate(() =>
-        [...document.querySelectorAll('nav[aria-label="Inventario"] button span')]
+        Array.from(
+          document.querySelectorAll<HTMLElement>('nav[aria-label="Inventario"] button span'),
+        )
           .filter((texto) => texto.scrollWidth > texto.clientWidth)
           .map((texto) => texto.textContent),
       );

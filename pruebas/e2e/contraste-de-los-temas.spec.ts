@@ -157,17 +157,26 @@ for (const tema of TEMAS) {
     expect(fallos, JSON.stringify(fallos, null, 2)).toEqual([]);
   });
 
-  for (const pantalla of PANTALLAS) {
-    const quien = pantalla.quien.split('@')[0] ?? '';
-    test(`en ${tema}, ${pantalla.direccion || 'el Panel'} (${quien}) se lee entera`, async ({
+  // **Una entrada por persona y tema**, y se recorren sus pantallas. Una por
+  // pantalla eran setenta entradas contra la API de pruebas, que atiende de una en
+  // una: el Safari de las pruebas, que va más lento, se quedaba esperando al entrar
+  // en otras pruebas (24-sep). Con `expect.soft`, un fallo no esconde los de las
+  // pantallas de después.
+  for (const quien of [ROSA, VERA]) {
+    test(`en ${tema}, las pantallas de ${quien.split('@')[0] ?? ''} se leen enteras`, async ({
       page,
     }) => {
-      await entrarEnLaApp(page, pantalla.quien, tema);
-      await irA(page, pantalla.direccion);
-      await page.waitForLoadState('networkidle');
+      test.setTimeout(120_000);
+      await entrarEnLaApp(page, quien, tema);
 
-      const fallos = await loQueNoSeLee(page);
-      expect(fallos, JSON.stringify(fallos, null, 2)).toEqual([]);
+      for (const pantalla of PANTALLAS.filter((p) => p.quien === quien)) {
+        await irA(page, pantalla.direccion);
+        await page.waitForLoadState('networkidle');
+        const fallos = await loQueNoSeLee(page);
+        expect
+          .soft(fallos, `${pantalla.direccion || 'el Panel'}: ${JSON.stringify(fallos, null, 2)}`)
+          .toEqual([]);
+      }
     });
   }
 }

@@ -134,14 +134,22 @@ for (const tema of TEMAS) {
     await fotografiar(page, `entrar-${tema}.png`);
   });
 
-  for (const pantalla of PANTALLAS) {
-    test(`captura · ${pantalla.nombre}, en ${tema}`, async ({ page }) => {
-      await entrarEnLaApp(page, VERA, tema);
+  // Una sola entrada para las cuatro pantallas de Vera: la API de pruebas atiende
+  // de una en una, y cada entrada de más es espera para las demás pruebas.
+  test(`captura · las pantallas de la app, en ${tema}`, async ({ page }) => {
+    test.setTimeout(120_000);
+    await entrarEnLaApp(page, VERA, tema);
+    const tamano = page.viewportSize();
+
+    for (const pantalla of PANTALLAS) {
+      // Cada captura estira la ventana al alto de su página: se vuelve a la de
+      // siempre antes de abrir la siguiente.
+      if (tamano !== null) await page.setViewportSize(tamano);
       await irA(page, pantalla.direccion);
       await expect(page.getByText(pantalla.espera).first()).toBeVisible({ timeout: 15_000 });
       await fotografiar(page, `${pantalla.nombre}-${tema}.png`);
-    });
-  }
+    }
+  });
 
   test(`captura · el sistema de diseño, en ${tema}`, async ({ page }, info) => {
     // El catálogo se mira en el ordenador: es una herramienta de dentro, y en el

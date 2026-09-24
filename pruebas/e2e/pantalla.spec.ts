@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 
 /**
  * Lo que se ve, y que de verdad se ve.
@@ -73,7 +73,7 @@ async function volverAEntrar(page: Page, correo = ROSA) {
       /* en navegacion privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await recargarSinQueSeCaiga(page);
 
   await page.getByLabel('Tu correo').fill(correo);
   await page.getByLabel('Tu contraseña').fill(CLAVE);
@@ -348,7 +348,7 @@ test.describe('las tarjetas del Panel', () => {
     await expect(tarjeta).toHaveCount(0);
 
     // Recargar no la trae: aplazada es aplazada mientras dure la sesión.
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
     await expect(tarjeta).toHaveCount(0);
 
@@ -664,7 +664,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
       .toBe('#0c1113');
 
     // Es del aparato, como el tamaño de letra: tiene que sobrevivir a recargar.
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('data-tema', 'oscuro');
   });
@@ -691,7 +691,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
     await page.evaluate(() => {
       window.localStorage.setItem('estook.tema', 'oscuro');
     });
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
 
     await expect(page.locator('html')).toHaveAttribute('data-tema', 'oscuro');
     await expect(elLogo).toHaveAttribute('src', /estook-logo-oscuro.png/);
@@ -795,7 +795,7 @@ test('si el Panel no puede leer, lo dice, y no se inventa un «no puedes» ni un
   await page.route('**/api/v1/consultas/mi_fichaje*', (ruta) =>
     ruta.fulfill({ status: 500, contentType: 'application/json', body: '{}' }),
   );
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await recargarSinQueSeCaiga(page);
 
   await expect(page.getByText('No he podido leer tu fichaje.', { exact: false })).toBeVisible({
     timeout: 20_000,

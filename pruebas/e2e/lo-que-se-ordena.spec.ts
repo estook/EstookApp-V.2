@@ -16,6 +16,20 @@ const ROSA = 'rosa@ejemplo.estook.com'; // gerente de Bar Centro
 const LUIS = 'luis@ejemplo.estook.com'; // jefe de cocina de Bar Puerto: su Panel no lo toca nadie
 const CARTA = 'http://localhost:5175/carta/';
 
+/**
+ * Entrar como Luis, en su local. `acceso.spec.ts` le da acceso de camarero a otro
+ * local de la cadena, así que según el orden de las pruebas llega a «¿Dónde estás
+ * hoy?»: elige Bar Puerto, donde es jefe de cocina, como haría él.
+ */
+async function entrarComoLuis(page: Page): Promise<void> {
+  await entrarEnLaApp(page, LUIS);
+  const titulo = page.getByRole('heading', { level: 1 });
+  if ((await titulo.textContent())?.includes('¿Dónde estás hoy?') === true) {
+    await page.getByRole('button', { name: 'Bar Puerto' }).click();
+  }
+  await expect(titulo).toContainText('Hola');
+}
+
 /** Una tarjeta, por su título. */
 function laTarjeta(page: Page, titulo: string) {
   return page
@@ -29,7 +43,7 @@ function laTarjeta(page: Page, titulo: string) {
 test('un jefe de cocina arranca con su Panel: fichar y sus objetivos, sin lo del gerente', async ({
   page,
 }) => {
-  await entrarEnLaApp(page, LUIS);
+  await entrarComoLuis(page);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
   // Luis tiene el acceso recortado en su local (sin Inventario, semillas): su Panel
   // lleva lo de su puesto que puede ver, y ni un hueco por lo que no.
@@ -42,7 +56,7 @@ test('un jefe de cocina arranca con su Panel: fichar y sus objetivos, sin lo del
 // ── 6 · El botón «+» ─────────────────────────────────────────────────────────
 
 test('el «+» abre Fogón en su banner y los atajos de su puesto', async ({ page }) => {
-  await entrarEnLaApp(page, LUIS);
+  await entrarComoLuis(page);
   await page.getByRole('button', { name: 'Qué quieres hacer' }).click();
 
   const hoja = page.getByRole('dialog', { name: 'Qué quieres hacer' });
@@ -62,7 +76,7 @@ test('el «+» abre Fogón en su banner y los atajos de su puesto', async ({ pag
 test('los atajos se cambian en el «+» y valen también en las acciones rápidas', async ({
   page,
 }) => {
-  await entrarEnLaApp(page, LUIS);
+  await entrarComoLuis(page);
   await page.getByRole('button', { name: 'Qué quieres hacer' }).click();
   const hoja = page.getByRole('dialog', { name: 'Qué quieres hacer' });
   await hoja.getByRole('button', { name: 'Cambiarlos' }).click();
@@ -87,7 +101,7 @@ test('los atajos se cambian en el «+» y valen también en las acciones rápida
 });
 
 test('«Fichar» desde cualquier sitio abre el «+» con fichar arriba', async ({ page }) => {
-  await entrarEnLaApp(page, LUIS);
+  await entrarComoLuis(page);
   await irA(page, '?hacer=fichar');
   const hoja = page.getByRole('dialog', { name: 'Qué quieres hacer' });
   await expect(hoja.getByRole('region', { name: 'Fichar' })).toBeVisible();

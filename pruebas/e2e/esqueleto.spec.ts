@@ -1033,6 +1033,11 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await comoGerente(page);
     await panelDeFabrica(page);
 
+    // A la vista primero: con «Lo de hoy» y el semáforo arriba (entrega O), en el
+    // móvil queda debajo, y un dedo fuera de la pantalla no pulsa nada.
+    await enElPanel(page, 'valor-de-la-camara').evaluate((casilla) => {
+      casilla.scrollIntoView({ block: 'center' });
+    });
     const caja = await enElPanel(page, 'valor-de-la-camara').boundingBox();
     if (caja === null) throw new Error('El widget del valor de la cámara no está en el Panel.');
 

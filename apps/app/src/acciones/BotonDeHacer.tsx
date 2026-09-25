@@ -76,80 +76,88 @@ export function HojaDeHacer({
   return (
     <>
       <Ventana abierta={abierta} alCerrar={alCerrar} titulo="Qué quieres hacer">
-        <div className="flex flex-col gap-e4">
-          {/* ── Fogón, en su banner ── */}
-          <button
-            type="button"
-            onClick={() => {
-              alCerrar();
-              alAbrirFogon();
-            }}
-            className={clases(
-              'flex min-h-toque-cocina items-center gap-e3 rounded-grande p-e4 text-left',
-              // Lo destacado va en texto sobre superficie invertida: en los dos temas
-              // se lee, y es lo único oscuro de la hoja (0045).
-              'bg-texto text-superficie shadow-s2 hover:opacity-95',
-            )}
-          >
-            <span className="grid size-[44px] shrink-0 place-items-center rounded-redondo bg-superficie text-naranja">
-              <IconoDeFogon size={28} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-cuerpo font-semibold">Pregúntale a Fogón</span>
-              <span className="block text-secundario opacity-80">
-                Sabe que estás en {contexto.donde}
+        {/*
+          Solo mientras está abierta. La hoja es un `<dialog>` que al cerrarse se
+          esconde pero no se quita, y lo de dentro —el fichaje, dónde estás— quedaba
+          repetido y oculto en cada pantalla, pidiendo lo suyo al servidor sin que
+          nadie lo mirara.
+        */}
+        {abierta && (
+          <div className="flex flex-col gap-e4">
+            {/* ── Fogón, en su banner ── */}
+            <button
+              type="button"
+              onClick={() => {
+                alCerrar();
+                alAbrirFogon();
+              }}
+              className={clases(
+                'flex min-h-toque-cocina items-center gap-e3 rounded-grande p-e4 text-left',
+                // Lo destacado va en texto sobre superficie invertida: en los dos temas
+                // se lee, y es lo único oscuro de la hoja (0045).
+                'bg-texto text-superficie shadow-s2 hover:opacity-95',
+              )}
+            >
+              <span className="grid size-[44px] shrink-0 place-items-center rounded-redondo bg-superficie text-naranja">
+                <IconoDeFogon size={28} />
               </span>
-            </span>
-            <IconoAdelante size={20} />
-          </button>
+              <span className="min-w-0 flex-1">
+                <span className="block text-cuerpo font-semibold">Pregúntale a Fogón</span>
+                <span className="block text-secundario opacity-80">
+                  Sabe que estás en {contexto.donde}
+                </span>
+              </span>
+              <IconoAdelante size={20} />
+            </button>
 
-          <FicharAqui />
+            <FicharAqui />
 
-          {/* ── Tus atajos ── */}
-          <section aria-label="Tus atajos" className="flex flex-col gap-e2">
-            <div className="flex items-center justify-between gap-e2">
-              <p className="text-secundario font-medium text-texto-suave">Tus atajos</p>
-              <Boton
-                tono="texto"
-                onClick={() => {
-                  setEligiendo(true);
-                }}
-              >
-                Cambiarlos
-              </Boton>
-            </div>
-            {atajos.length === 0 ? (
-              <p className="text-secundario text-texto-suave">
-                No tienes ninguno. Pulsa «Cambiarlos» y pon los que uses.
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 gap-e2">
-                {atajos.slice(0, 8).map((accion) => (
-                  <button
-                    key={accion.id}
-                    type="button"
-                    onClick={() => {
-                      alCerrar();
-                      hacer(accion);
-                    }}
-                    className={clases(
-                      'flex min-h-[76px] flex-col items-start justify-between gap-e2 rounded-grande',
-                      'border border-borde bg-superficie p-e3 text-left shadow-s1',
-                      'hover:border-borde-fuerte',
-                    )}
-                  >
-                    <span className="grid size-[32px] place-items-center rounded-medio bg-fondo text-texto">
-                      <accion.icono size={18} />
-                    </span>
-                    <span className="text-secundario font-semibold leading-tight">
-                      {accion.nombre}
-                    </span>
-                  </button>
-                ))}
+            {/* ── Tus atajos ── */}
+            <section aria-label="Tus atajos" className="flex flex-col gap-e2">
+              <div className="flex items-center justify-between gap-e2">
+                <p className="text-secundario font-medium text-texto-suave">Tus atajos</p>
+                <Boton
+                  tono="texto"
+                  onClick={() => {
+                    setEligiendo(true);
+                  }}
+                >
+                  Cambiarlos
+                </Boton>
               </div>
-            )}
-          </section>
-        </div>
+              {atajos.length === 0 ? (
+                <p className="text-secundario text-texto-suave">
+                  No tienes ninguno. Pulsa «Cambiarlos» y pon los que uses.
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 gap-e2">
+                  {atajos.slice(0, 8).map((accion) => (
+                    <button
+                      key={accion.id}
+                      type="button"
+                      onClick={() => {
+                        alCerrar();
+                        hacer(accion);
+                      }}
+                      className={clases(
+                        'flex min-h-[76px] flex-col items-start justify-between gap-e2 rounded-grande',
+                        'border border-borde bg-superficie p-e3 text-left shadow-s1',
+                        'hover:border-borde-fuerte',
+                      )}
+                    >
+                      <span className="grid size-[32px] place-items-center rounded-medio bg-fondo text-texto">
+                        <accion.icono size={18} />
+                      </span>
+                      <span className="text-secundario font-semibold leading-tight">
+                        {accion.nombre}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        )}
       </Ventana>
 
       <ElegirAtajos

@@ -7,16 +7,119 @@
 >
 > | Qué                        | Cómo está                                                                   |
 > | -------------------------- | --------------------------------------------------------------------------- |
-> | Pull requests              | **Todas fusionadas hasta la #67**                                           |
+> | Pull requests              | **Todas fusionadas hasta la #67**. Esperan la #68 y la de O, en ese orden   |
 > | La base de datos           | **45 de 45** migraciones, igual que `main`                                  |
 > | La API                     | **Desplegada el 24 de septiembre a las 19:31**, con la #67: 45 y 87         |
 > | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
 > | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep            |
 > | **V · lo que se ve**       | **Hecho y en producción** (#64, #65, #67), mirado por Richi en el móvil     |
-> | Los dos fallos del móvil   | Causa encontrada; el arreglo, en `arreglos-del-movil-y-la-recarga`          |
+> | Los arreglos del móvil     | **Hechos**, en la #68 (sin migración)                                       |
+> | O · lo que se ordena       | **Hecha**, en su pull request, con la migración `0046`                      |
 > | E2 · el pago con Stripe    | Tu cuenta ya está. Hará falta **una clave de prueba** el día que empiece    |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
+
+---
+
+## Los arreglos del móvil (#68) y O · Lo que se ordena · lo que te toca ahora
+
+**Son dos pull requests, y van en este orden**: primero los arreglos (#68), que no
+llevan migración, y después O, que lleva **una** (`0046`). Cada uno se fusiona, se
+migra si toca y se despliega la API antes del siguiente.
+
+### Primero · los arreglos del móvil (#68)
+
+**Qué trae:** el nombre de los productos entero en el móvil, la recarga que ya no te
+saca de la app, y la barra de abajo que ya no se sale a 320 px. Contado en `ESTADO.md`,
+apartado 1.
+
+1. En **github.com**, pestaña **Pull requests** → **«Los arreglos del móvil: el nombre
+   entero, la API sin tope y un fallo que no echa»**.
+2. Abajo, las **tres comprobaciones en verde**: `Calidad`, `Construccion y
+presupuestos` y `Migraciones reversibles`. Si alguna está en amarillo, espera. **Si
+   alguna sale en rojo, para y avísame.**
+3. **Merge pull request** → **Confirm merge**. Tiene que salir en morado «merged».
+4. **Sin migración.** Ve directo a desplegar la API: pestaña **Actions** → a la
+   izquierda, **Desplegar la API** → **Run workflow**, deja la rama en `main`, escribe
+   **`desplegar`** y pulsa **Run workflow**. Espera al **círculo verde**.
+5. En PowerShell, en la carpeta del proyecto, trae lo fusionado:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+y comprueba la API:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «y conoce todas las consultas · las 45» y «y conoce todos los
+comandos · los 87». Después **avísame**: repito contra producción la ráfaga de 30
+consultas a la vez, y tiene que salir **sin un solo error** (antes fallaban 15).
+
+**En el móvil:** Inventario → Productos: los nombres largos en dos líneas enteras. Y
+recarga dos veces seguidas: sigues dentro.
+
+### Después · O, lo que se ordena
+
+**Qué trae:** el botón **«+»** (con Fogón arriba en su banner), **Lo de hoy** arriba
+del Panel, el **Panel de cada puesto**, los **objetivos con semáforo** y **el QR de tu
+carta**. Contado en `ESTADO.md`, apartado 1, y en la decisión 0047.
+
+1. En **github.com** → **Pull requests** → **«O · Lo que se ordena»**. Las tres
+   comprobaciones en verde, **Merge pull request** → **Confirm merge**.
+2. En PowerShell, trae lo fusionado:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+3. **La migración**. Qué es: la `0046` añade los objetivos de merma y de ventas, y le da
+   a cada local su dirección de carta para siempre (IKATZ, `estook.com/carta/ikatz`). No
+   cambia nada de lo que hay.
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0046_los_objetivos_y_la_carta_de_cada_local.sql ... hecho
+  1 migracion(es) aplicadas · 46 en total
+```
+
+Si dice «la base de datos ya estaba al dia», el `git pull` no ha bajado lo fusionado:
+repítelo. **Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+4. **Desplegar la API**, igual que antes (**Actions** → **Desplegar la API** → **Run
+   workflow** → `desplegar`), y comprobar:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 48» consultas y «los 87» comandos.
+
+5. **Mirarlo en el móvil** (recarga la app antes):
+   - **El «+»** abajo a la derecha: arriba, **Pregúntale a Fogón**; debajo, fichar y
+     tus atajos. «Cambiarlos» te deja poner los tuyos.
+   - **Lo de hoy**, arriba del Panel: lo que caduca, los pedidos, la caja… con su botón.
+   - **Tu Panel**: si nunca lo habías tocado, verás el de quien lleva el local. Si lo
+     tenías montado, sigue el tuyo; **Editar → «Volver al de mi puesto»** pone el nuevo.
+   - **Ajustes → Tu local → Tus objetivos**: revisa tu food cost (32 %), personal (32 %)
+     y merma (4 %), y pon las ventas de la semana si quieres.
+   - **Ajustes → Tu local → Tu carta y su QR**: abre `estook.com/carta/ikatz` desde el
+     móvil con la cámara, y si te gusta, **imprime el cartel**. Ese QR ya no cambia.
 
 ---
 

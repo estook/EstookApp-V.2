@@ -60,7 +60,7 @@ export function Portada() {
         <section className="mx-auto flex max-w-[48rem] flex-col items-center px-e4 py-e7 text-center">
           {oferta?.activa === true && (
             <p className="mb-e4 inline-flex rounded-redondo bg-naranja-suave px-e3 py-e1 text-secundario font-medium text-texto">
-              Prueba {oferta.dias} días gratis, sin tarjeta
+              Prueba {oferta.dias} días gratis
             </p>
           )}
           <h1 className="text-[clamp(2rem,6vw,3.25rem)] font-semibold leading-tight">

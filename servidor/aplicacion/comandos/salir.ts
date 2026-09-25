@@ -53,6 +53,8 @@ export async function cerrarLaSesion(contexto: Contexto): Promise<void> {
 
 export const salir = comando<Record<string, never>, { readonly cerrada: boolean }>({
   nombre: 'salir',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: z.object({}).strict(),
   aunSinDobleFactor: true,
   aunConClavePorCambiar: true,

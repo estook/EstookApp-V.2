@@ -17,11 +17,11 @@ import { entrarEnElAdmin } from './entrar-en-el-admin.ts';
  *
  * ── Lo que no se comprueba aquí, y dónde sí ─────────────────────────────────
  *
- * Si la cuenta nueva nace **en prueba** o **pendiente de pago** depende de la
- * oferta, que es una sola para todo Estook; y aquí corren varios navegadores a la
- * vez, uno de los cuales la enciende y la apaga. Así que las pruebas de crear
- * cuenta aceptan las dos salidas —el alta o elegir plan— y la regla exacta se
- * comprueba en `base-de-datos/pruebas/crear-cuenta.prueba.ts`, sin carreras.
+ * Desde la 0048 toda cuenta nueva paga antes de entrar: con o sin oferta, a elegir
+ * plan. Lo que cambia con la oferta es el título («Empieza tus 12 días gratis»), y
+ * como la oferta es una para todo Estook y aquí corren varios navegadores —uno la
+ * enciende y la apaga—, se aceptan los dos. El pago de punta a punta, en
+ * `el-pago.spec.ts`; la regla exacta, en `base-de-datos/pruebas/el-pago.prueba.ts`.
  */
 const WEB = 'http://localhost:5173/';
 const APP = 'http://localhost:5174/';
@@ -46,12 +46,12 @@ async function abrirLimpio(page: Page, direccion: string) {
   await abrirSinQueSeCaiga(page, direccion);
 }
 
-/** Dentro, recién creada: o el alta, o elegir plan. Nunca la puerta. */
+/** Dentro, recién creada: a elegir plan, con o sin oferta (0048). Nunca la puerta. */
 async function haEntradoConSuCuentaNueva(page: Page) {
   await expect(page.getByRole('heading', { level: 1, name: 'Crea tu cuenta' })).toHaveCount(0);
   await expect(page.getByRole('heading', { level: 1, name: 'Entra en Estook' })).toHaveCount(0);
   const titulo = page.getByRole('heading', { level: 1 });
-  await expect(titulo).toHaveText(/Elige tu plan|¿Cómo te llamas\?|¿Qué tipo de local tienes\?/);
+  await expect(titulo).toHaveText(/Elige tu plan|Empieza tus \d+ días gratis/);
 }
 
 /** Lo que `irAGoogle` deja guardado antes de irse, con un `state` conocido. */
@@ -267,7 +267,7 @@ test('la oferta se enciende desde el admin y la puerta la anuncia', async ({ pag
 
     const app = await page.context().newPage();
     await abrirSinQueSeCaiga(app, `${APP}#/crear-cuenta`);
-    await expect(app.getByText('12 días de prueba, sin tarjeta')).toBeVisible();
+    await expect(app.getByText('12 días de prueba gratis')).toBeVisible();
     await app.close();
   } finally {
     // Se deja apagada, que es como está Estook salvo campaña.

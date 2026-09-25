@@ -83,7 +83,8 @@ export function OfertaDePrueba() {
       <div>
         <h1 className="text-pantalla font-semibold">Oferta de prueba</h1>
         <p className="text-secundario text-texto-suave">
-          Si quien crea su cuenta entra con días de prueba o paga al empezar.
+          Si quien crea su cuenta tiene días de prueba gratis (con la tarjeta puesta, sin cobrarle
+          hasta el final) o paga al empezar.
         </p>
       </div>
 

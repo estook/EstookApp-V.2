@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Aviso, Boton, Campo, Selector, clases } from '@estook/ui';
+import { centimos, conSimbolo, planPorCodigo } from '@estook/dominio';
+import { usarMiSuscripcion } from '../../ganchos/usarMiSuscripcion.ts';
 import type { PropsDeUnPaso } from '../contrato.ts';
 
 /**
@@ -33,6 +36,12 @@ export function CuantosLocales({ alta, cliente, alGuardar, alFallar }: PropsDeUn
 
   const faltan = Math.max(cuantos - alta.cuantosLocales - recienCreados.length, 0);
 
+  // Lo que sumará a la cuota, dicho antes de crear (0048): la cuota es por local, y
+  // cambia sola en Stripe al crearlo. Solo si hay algo que cobrar.
+  const suya = usarMiSuscripcion(creando);
+  const cache = useQueryClient();
+  const conUnoMas = suya.data?.conStripe === true ? suya.data.conUnLocalMas : null;
+
   async function crear() {
     if (nombre.trim() === '') return;
     setEnviando(true);
@@ -49,6 +58,7 @@ export function CuantosLocales({ alta, cliente, alGuardar, alFallar }: PropsDeUn
     }
 
     setRecienCreados((antes) => [...antes, nombre.trim()]);
+    void cache.invalidateQueries({ queryKey: ['mi_suscripcion'] });
     setNombre('');
     setEnviando(false);
   }
@@ -127,6 +137,18 @@ export function CuantosLocales({ alta, cliente, alGuardar, alFallar }: PropsDeUn
               sinElegir="Empezar de cero"
               ayuda="Se copian el tipo, los impuestos, los objetivos y la hora de cierre. Nunca el stock ni la gente."
             />
+          )}
+
+          {conUnoMas !== null && conUnoMas.cuota !== null && (
+            <p className="text-secundario text-texto-suave">
+              Con este local, tu cuota pasa a{' '}
+              <strong className="text-texto">{conSimbolo(centimos(conUnoMas.cuota))}</strong>
+              {suya.data?.intervalo === 'ano' ? ' al año' : ' al mes'}
+              {conUnoMas.plan !== suya.data?.plan
+                ? ` (plan ${planPorCodigo(conUnoMas.plan)?.nombre ?? conUnoMas.plan}, más barato por local)`
+                : ''}
+              . Lo de este periodo se ajusta en la siguiente factura.
+            </p>
           )}
 
           <Boton

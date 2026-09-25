@@ -115,6 +115,15 @@ import { unIndicador } from './consultas/indicador.ts';
 import { misObjetivos } from './consultas/objetivos.ts';
 import { loDeHoyConsulta } from './consultas/hoy.ts';
 import { laCarta } from './consultas/carta.ts';
+import { adminLasCuentas, miSuscripcion } from './consultas/suscripcion.ts';
+import {
+  abrirElPortal,
+  cambiarDePlan,
+  cancelarLaSuscripcion,
+  empezarAPagar,
+  reanudarLaSuscripcion,
+  volverDelPago,
+} from './comandos/pago.ts';
 import { miLocalEnGoogle } from './consultas/local-en-google.ts';
 import {
   actualizarMiFichaDeGoogle,
@@ -219,9 +228,17 @@ export const catalogo = {
     [loDeHoyConsulta.nombre]: loDeHoyConsulta,
     // O · la carta de cada local, sin sesión: lo que enseña el QR de la mesa.
     [laCarta.nombre]: laCarta,
+    [miSuscripcion.nombre]: miSuscripcion,
+    [adminLasCuentas.nombre]: adminLasCuentas,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
+    [empezarAPagar.nombre]: empezarAPagar,
+    [volverDelPago.nombre]: volverDelPago,
+    [abrirElPortal.nombre]: abrirElPortal,
+    [cambiarDePlan.nombre]: cambiarDePlan,
+    [cancelarLaSuscripcion.nombre]: cancelarLaSuscripcion,
+    [reanudarLaSuscripcion.nombre]: reanudarLaSuscripcion,
     [cambiarMiIdioma.nombre]: cambiarMiIdioma,
     // M6½ · como tiene cada uno montado su Panel, por aparato.
     [guardarMiPanel.nombre]: guardarMiPanel,

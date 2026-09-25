@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   IconoAbrirFuera,
+  IconoDinero,
   IconoBuscar,
   IconoColor,
   IconoFlechaDerecha,
@@ -52,6 +53,7 @@ import { preguntarDondeEstoy } from '../ganchos/usarFichar.ts';
 import { TusPreciosDeCompra } from '../inventario/TusPreciosDeCompra.tsx';
 import { TusObjetivos } from './TusObjetivos.tsx';
 import { TuCartaYSuQr } from './TuCartaYSuQr.tsx';
+import { TuSuscripcion } from './TuSuscripcion.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
 import {
   ajustesQueVe,
@@ -100,6 +102,7 @@ export function Ajustes() {
     permisos,
     tieneLocal: yo?.local !== null && yo?.local !== undefined,
     tieneOrganizacion: yo?.organizacion !== null && yo?.organizacion !== undefined,
+    llevaLaSuscripcion: yo?.cuenta?.laLlevo === true,
   };
   const secciones = seccionesQueVe(quien);
   const encontrados = buscarAjustes(ajustesQueVe(quien), buscando);
@@ -263,6 +266,7 @@ const ICONO: Readonly<Record<IdDeSeccion, Icono>> = {
   cuenta: IconoPersona,
   local: IconoLocal,
   conexiones: IconoAbrirFuera,
+  suscripcion: IconoDinero,
   organizacion: IconoOrganizacion,
 };
 
@@ -345,6 +349,12 @@ function LaSeccion({ id }: { readonly id: IdDeSeccion }) {
             <TuLocalEnGoogle />
           </Ancla>
         </>
+      )}
+
+      {id === 'suscripcion' && (
+        <Ancla id="suscripcion">
+          <TuSuscripcion />
+        </Ancla>
       )}
 
       {id === 'organizacion' && (

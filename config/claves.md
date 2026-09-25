@@ -77,14 +77,14 @@ Revisado el 16 de septiembre de 2026. **Ninguna frena lo que hay construido**: l
 que depende de una clave está hecho y apagado con su motivo (0022), y se enciende al
 ponerla.
 
-| Qué                         | Nombre exacto                                                | Dónde se pone                           | ¿La usa ya el código?                        |
-| --------------------------- | ------------------------------------------------------------ | --------------------------------------- | -------------------------------------------- |
-| **Google Places (New)**     | `GOOGLE_MAPS_KEY`                                            | Secretos de Supabase (Edge Functions)   | **Sí** · Ajustes → Tu local en Google (0040) |
-| **Google Business Profile** | **No es una clave**: acceso aprobado + OAuth                 | —                                       | No · espera a que Google apruebe             |
-| **Resend** (correo)         | `RESEND_API_KEY`, `CORREO_REMITENTE` y el dominio verificado | Secretos de Supabase + DNS en Hostinger | **Sí** · el código de crear cuenta (0042)    |
-| **Entrar con Google**       | `GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET`      | Secretos de Supabase                    | **Sí** · entrar y crear cuenta (0042)        |
-| **Stripe** (el pago)        | `STRIPE_SECRET_KEY` (de prueba, empieza por `sk_test_`)      | Secretos de Supabase                    | No · E2, que la pide al empezar              |
-| **IA** (Fogón)              | `AI_API_KEY`, `AI_MODELO_RAPIDO`, `AI_MODELO_ANALISIS`       | Secretos de Supabase                    | No · M22, con modelo y tope elegidos (0023)  |
+| Qué                         | Nombre exacto                                                | Dónde se pone                            | ¿La usa ya el código?                        |
+| --------------------------- | ------------------------------------------------------------ | ---------------------------------------- | -------------------------------------------- |
+| **Google Places (New)**     | `GOOGLE_MAPS_KEY`                                            | Secretos de Supabase (Edge Functions)    | **Sí** · Ajustes → Tu local en Google (0040) |
+| **Google Business Profile** | **No es una clave**: acceso aprobado + OAuth                 | —                                        | No · espera a que Google apruebe             |
+| **Resend** (correo)         | `RESEND_API_KEY`, `CORREO_REMITENTE` y el dominio verificado | Secretos de Supabase + DNS en Hostinger  | **Sí** · el código de crear cuenta (0042)    |
+| **Entrar con Google**       | `GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET`      | Secretos de Supabase                     | **Sí** · entrar y crear cuenta (0042)        |
+| **Stripe** (el pago)        | `STRIPE_SECRET_KEY` (de prueba, empieza por `sk_test_`)      | Secretos de Supabase · **puesta 25-sep** | **Sí** · E2, desde que se despliegue (0048)  |
+| **IA** (Fogón)              | `AI_API_KEY`, `AI_MODELO_RAPIDO`, `AI_MODELO_ANALISIS`       | Secretos de Supabase                     | No · M22, con modelo y tope elegidos (0023)  |
 
 **Entrar con Google (0042)** usa el cliente de OAuth «Estook»: el identificador es público (lo enseña la pantalla de entrar) y **el secreto solo lo tiene la API**, que canjea el código. Sin los dos, el botón de Google no sale. Las direcciones de vuelta son `https://estook.com/app/` y `https://www.estook.com/app/`, y están escritas también en el código (`VUELTAS_DE_GOOGLE`). Sin `RESEND_API_KEY`, crear cuenta con correo dice que se abre pronto. Los pasos, en [`docs/pasos-antes-de-m8.md`](../docs/pasos-antes-de-m8.md), «E1».
 
@@ -172,10 +172,14 @@ herramientas de migracion de tu ordenador.
 
 ## Pendientes de dar de alta
 
-Stripe antes de M8 (0042, entrega 2): **una sola clave, `STRIPE_SECRET_KEY`**. El pago
-se hace en la página de Stripe, así que no hace falta la publicable; y los productos,
-los precios y el aviso (webhook) los crea el código, que guarda el secreto del aviso
-donde solo llega la API. La API unificada del TPV para M18 y el acceso OAuth de Google Business
+**Stripe ya no está pendiente** (E2, 0048): una sola clave, `STRIPE_SECRET_KEY`, de prueba,
+puesta el 25-sep. El pago se hace en la página de Stripe, así que no hace falta la
+publicable; y los productos, los precios y el aviso (webhook) los crea el código, que
+guarda el secreto del aviso donde solo llega la API. **La real (`sk_live_`) no se pone
+hasta que se decida cobrar**, con la cuenta de Stripe activada. El secreto del reloj
+tampoco se pone a mano: lo genera la migración `0047` en el Vault de Supabase.
+
+Pendientes: la API unificada del TPV para M18 y el acceso OAuth de Google Business
 Profile para las resenas propias. Cuando existan, las publicas van a Variables y las secretas a
 los secretos de Supabase.
 

@@ -18,6 +18,8 @@ import { comando, FalloDeAplicacion } from '../contrato.ts';
  */
 export const sigoAqui = comando<{ a_la_vista: boolean }, { apuntado: boolean }>({
   nombre: 'sigo_aqui',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: z.object({ a_la_vista: z.boolean() }).strict(),
   sinRecordar: true,
   // No se abre ninguna otra puerta: una visita de demostración no escribe nada

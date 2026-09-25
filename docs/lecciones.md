@@ -354,3 +354,13 @@
      salía al contestar el servidor, encima del formulario, y lo empujaba 94 px: quien
      pulsaba «Entrar» en ese momento tocaba el aire. Lo cazó Safari, el más lento, una
      vez de cada muchas. Lo que va a llegar ocupa su sitio desde el principio.
+114. **Una ruta nueva puede tapar a las de siempre.** El latido del reloj se escribió como
+     `/v:version/tareas/latir`, al lado de las consultas y los comandos, y el enrutador
+     de Hono dejó de encontrar **todas** las rutas: 404 en cada petición. Ni escrita a
+     mano como `/v1/…` se arreglaba. Lo que no es de la app va fuera de `/v1`
+     (`/tareas/latir`, `/stripe/aviso`), y una prueba mira que las de siempre siguen.
+115. **Quien entra sin poder entrar se queda sin sitio.** Una cuenta sin pagar abre la
+     sesión sin local, porque va a elegir su plan. Al pagar, la decisión ya le da su
+     local, pero la sesión no se enteraba, y cada comando decía «hay que estar dentro de
+     un local». Lo que cambia a dónde entra alguien pone al día su sesión en el mismo
+     paso; y `quien_soy`, por si el cambio llegó por otro camino (el aviso de Stripe).

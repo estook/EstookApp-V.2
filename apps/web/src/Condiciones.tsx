@@ -2,8 +2,9 @@ import { Apartado, ElTitular, Lista, PaginaLegal, TITULAR } from './Legal.tsx';
 
 /**
  * Las condiciones de uso (0042). Básicas, en lenguaje llano, y fieles a cómo
- * funciona Estook: se crea la cuenta, se monta el negocio y se paga al empezar,
- * salvo cuando hay una oferta de prueba encendida.
+ * funciona Estook: se crea la cuenta y se paga al empezar; con una oferta de prueba,
+ * se pone la tarjeta y el primer cobro es al acabar la prueba (0048). La renovación,
+ * cancelar y un cobro que falla, dicho aquí como se dice en la app.
  */
 export function Condiciones() {
   return (
@@ -34,12 +35,28 @@ export function Condiciones() {
             enseñan antes de pagar y llevan el IVA incluido.
           </li>
           <li>
-            El pago se hace al empezar y se renueva solo en cada periodo, hasta que lo canceles.
+            Se paga con tarjeta, en la página segura de Stripe, al empezar. Sin un plan pagado no se
+            puede usar Estook. <strong>La suscripción se renueva sola</strong> al final de cada
+            periodo, al precio de tu plan, hasta que la canceles.
+          </li>
+          <li>
+            La cuota es por local: si abres otro, se suma, y lo de ese periodo se ajusta en la
+            siguiente factura. Con dos locales o más en el plan Pro pasas al plan Cadena, que es más
+            barato por local.
           </li>
           <li>
             A veces hay una oferta de prueba gratis. Si creas la cuenta mientras está activa, tienes
-            esos días sin pagar; al acabar, eliges plan para seguir.
+            esos días de prueba: pones tu tarjeta al empezar,{' '}
+            <strong>ese día no se cobra nada</strong> y el primer cobro es el día que acaba la
+            prueba. Te avisamos por correo siete días antes. Si cancelas durante la prueba, no se te
+            cobra nada.
           </li>
+          <li>
+            Si un cobro no se puede hacer, te avisamos cada día por correo y tienes siete días para
+            arreglarlo. Pasados esos días, la cuenta queda en solo lectura: puedes ver y llevarte
+            tus datos, pero no apuntar nada, hasta que se pague. No se borra nada.
+          </li>
+          <li>Las facturas te llegan por correo y las tienes en Ajustes → Suscripción.</li>
           <li>
             Si cambiamos los precios, te avisamos con al menos 30 días, y el cambio se aplica a
             partir de tu siguiente renovación.
@@ -49,9 +66,9 @@ export function Condiciones() {
 
       <Apartado titulo="Cancelar">
         <p>
-          Puedes cancelar cuando quieras. Sigues teniendo acceso hasta el final del periodo que ya
-          has pagado y no se te vuelve a cobrar. Lo ya pagado no se devuelve, salvo que la ley diga
-          otra cosa.
+          Puedes cancelar cuando quieras, en Ajustes → Suscripción. Sigues teniendo acceso hasta el
+          final del periodo que ya has pagado y no se te vuelve a cobrar; después la cuenta queda en
+          solo lectura, con tus datos. Lo ya pagado no se devuelve, salvo que la ley diga otra cosa.
         </p>
       </Apartado>
 

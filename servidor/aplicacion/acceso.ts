@@ -1,4 +1,12 @@
-import { aDondeEntra, type QuienAcabaDeEntrar, type ResolucionDeDestino } from '@estook/dominio';
+import {
+  aDondeEntra,
+  comoEstaLaCuenta,
+  type CodigoDePlan,
+  type EstadoDeSuscripcion,
+  type FechaOperativa,
+  type QuienAcabaDeEntrar,
+  type ResolucionDeDestino,
+} from '@estook/dominio';
 import type { Contexto } from './contrato.ts';
 import type { Sql } from '../infraestructura/postgres.ts';
 
@@ -31,6 +39,12 @@ export async function reunirParaDecidir(
       id: string;
       nombre: string;
       estado: string;
+      plan: string | null;
+      prueba_hasta: string | null;
+      impago_desde: string | null;
+      de_la_casa: boolean;
+      es_ejemplo: boolean;
+      con_stripe: boolean;
       // Nulo cuando la membresia ya no esta vigente: la organizacion se sigue
       // viendo un rato por `organizaciones_visibles`, pero ya no es suya.
       alcance: string | null;
@@ -39,6 +53,11 @@ export async function reunirParaDecidir(
     select o.id,
            o.nombre,
            coalesce(s.estado::text, 'prueba') as estado,
+           -- Lo que hace falta para saber cómo está de verdad (0048): una prueba
+           -- vieja que ya acabó, un impago de más de siete días, lo de la casa.
+           s.plan, to_char(s.prueba_hasta, 'YYYY-MM-DD') as prueba_hasta,
+           s.impago_desde::text as impago_desde, coalesce(s.de_la_casa, false) as de_la_casa,
+           o.es_ejemplo, s.stripe_suscripcion is not null as con_stripe,
            -- El alcance mas amplio que tiene aqui. El orden importa: quien es
            -- gerente de un local y ademas area manager de la zona entra por lo
            -- segundo, que es lo que dice «gana el mas amplio».
@@ -86,7 +105,7 @@ export async function reunirParaDecidir(
       .map((o) => ({
         id: o.id,
         nombre: o.nombre,
-        estado: o.estado as QuienAcabaDeEntrar['organizaciones'][number]['estado'],
+        estado: comoEntra(o),
         alcance: o.alcance as 'organizacion' | 'area' | 'local',
       })),
     locales: locales.map((l) => ({
@@ -136,4 +155,38 @@ export async function guardarContexto(
            local_id = ${localId}
      where id = ${contexto.sesion.id}
   `;
+}
+
+/**
+ * Con qué estado se decide a dónde entra (0048): el de la base, **leído con la
+ * fecha**. Una prueba vieja sin tarjeta que ya acabó entra a elegir plan, igual que
+ * una pendiente de pago; un impago de más de siete días entra en solo lectura; y lo
+ * que trabaja (al día, en prueba, en los siete días de un impago) entra normal.
+ */
+function comoEntra(o: {
+  estado: string;
+  plan: string | null;
+  prueba_hasta: string | null;
+  impago_desde: string | null;
+  de_la_casa: boolean;
+  es_ejemplo: boolean;
+  con_stripe: boolean;
+}): QuienAcabaDeEntrar['organizaciones'][number]['estado'] {
+  const ahora = new Date(Date.now());
+  const { como } = comoEstaLaCuenta(
+    {
+      estado: o.estado as EstadoDeSuscripcion,
+      plan: o.plan as CodigoDePlan | null,
+      pruebaHasta: o.prueba_hasta as FechaOperativa | null,
+      impagoDesde: o.impago_desde === null ? null : new Date(o.impago_desde),
+      deLaCasa: o.de_la_casa,
+      esEjemplo: o.es_ejemplo,
+      conStripe: o.con_stripe,
+    },
+    ahora,
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(ahora) as FechaOperativa,
+  );
+  if (como === 'sin_pagar') return 'pendiente_de_pago';
+  if (como === 'solo_lectura') return 'solo_lectura';
+  return 'activa';
 }

@@ -27,6 +27,7 @@ import { ContextoDelEsqueleto, type LoQueAbreElEsqueleto } from './ganchos/usarE
 import { MiCuenta } from './pantallas/MiCuenta.tsx';
 import { usarSesion } from './sesion/Sesion.tsx';
 import { usarSigoAqui } from './ganchos/usarSigoAqui.ts';
+import { AvisoDeLaCuenta } from './pago/AvisoDeLaCuenta.tsx';
 import { avisarDelFallo } from '@estook/utiles/observabilidad';
 
 /**
@@ -357,6 +358,10 @@ export function Esqueleto() {
         */}
         <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+56px+var(--spacing-e3)*2)] pt-e4 lg:px-e5 lg:pb-[calc(56px+var(--spacing-e5)+var(--spacing-e4))] 2xl:max-w-[92rem]">
           {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
+          {/* Un cobro fallido o solo lectura (0048): arriba de todo, en cada pantalla. */}
+          <div className="mb-e3 empty:hidden">
+            <AvisoDeLaCuenta enAjustesDeSuscripcion={pathname.startsWith('/ajustes/suscripcion')} />
+          </div>
           {/*
             La red de debajo de cada pantalla (entrega V): si un trozo no llega o algo
             se rompe, las barras siguen y solo esta pantalla dice qué ha pasado.

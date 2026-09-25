@@ -536,7 +536,7 @@ describe('la suscripcion', () => {
     expect(sinSuscripcion).toEqual([]);
   });
 
-  it('y una organizacion nueva nace en prueba, sin que nadie se acuerde', async () => {
+  it('y una organizacion nueva nace pendiente de pago, sin que nadie se acuerde', async () => {
     await comoDuena(
       `insert into estook.organizacion (codigo, nombre) values ('bar-de-prueba', 'Bar de Prueba')`,
     );
@@ -547,9 +547,10 @@ describe('la suscripcion', () => {
         where o.codigo = 'bar-de-prueba'`,
     );
 
-    expect(suya?.estado).toBe('prueba');
-    // «La prueba: 14 dias, sin tarjeta.»
-    expect(suya?.prueba_hasta).not.toBeNull();
+    // Hasta la 0048 nacía en prueba de catorce días, sin tarjeta. Ahora sin pago no hay
+    // app: nace pendiente de pago, y la prueba, si hay oferta, la da Stripe con tarjeta.
+    expect(suya?.estado).toBe('pendiente_de_pago');
+    expect(suya?.prueba_hasta).toBeNull();
 
     await comoDuena(`delete from estook.suscripcion where organizacion_id in (
       select id from estook.organizacion where codigo = 'bar-de-prueba')`);

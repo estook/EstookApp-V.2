@@ -1171,6 +1171,29 @@ try {
     }
   }
 
+  titulo('El reloj (0016, montado en la 0048)');
+
+  // «Un reloj parado tiene que salir en rojo, no descubrirse tres semanas después
+  // porque faltan avisos» (0016, punto 4). Se lee de la base como su dueña: la
+  // tabla solo la ve «el sistema», y esta herramienta no se hace pasar por él.
+  const [reloj] = await conexion`
+    select programado, ultimo_latido, ultimo_diario::text as ultimo_diario,
+           now() - ultimo_latido < interval '2 hours' as reciente
+      from plataforma.reloj where unica
+  `.catch(() => []);
+  if (reloj === undefined) {
+    comprobar('el reloj existe', false, 'falta la 0047');
+  } else {
+    comprobar('pg_cron lo tiene programado', reloj.programado === true);
+    comprobar(
+      'y ha latido en las dos últimas horas',
+      reloj.reciente === true,
+      reloj.ultimo_latido === null
+        ? 'no ha latido nunca: ¿está desplegada la API con la 0048?'
+        : `el último, ${new Date(reloj.ultimo_latido).toISOString()} · el último día hecho, ${reloj.ultimo_diario ?? 'ninguno'}`,
+    );
+  }
+
   await conexion.end();
 } catch (fallo) {
   console.error(`\n  Se ha roto: ${fallo instanceof Error ? fallo.message : String(fallo)}`);

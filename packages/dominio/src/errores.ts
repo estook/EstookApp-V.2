@@ -200,6 +200,41 @@ export const ERRORES = {
     { texto: 'Quiero mi cuenta', accion: 'salir_de_la_demostracion' },
   ),
 
+  // ── El pago (0048) ─────────────────────────────────────────────────────────
+  //
+  // La quinta puerta del despachador: lo que dice cómo está la cuenta. **No es un
+  // fallo de quien pulsa**, y el texto lo cuenta así, con el botón que lo arregla.
+  cuenta_sin_pagar: error(
+    'cuenta_sin_pagar',
+    'Tu cuenta todavía no tiene un plan pagado.',
+    'Elige tu plan para empezar. Si no llevas tú la cuenta, díselo a quien la lleva.',
+    402,
+    { texto: 'Elegir plan', accion: 'ir_a_suscripcion' },
+  ),
+
+  cuenta_en_solo_lectura: error(
+    'cuenta_en_solo_lectura',
+    'Tu cuenta está en solo lectura.',
+    'Puedes verlo todo y llevarte tus datos, pero no apuntar nada hasta que se pague la suscripción. No se ha perdido nada.',
+    403,
+    { texto: 'Ver mi suscripción', accion: 'ir_a_suscripcion' },
+  ),
+
+  pago_sin_abrir: error(
+    'pago_sin_abrir',
+    'El pago con tarjeta todavía no está abierto.',
+    'Tu cuenta está creada y no se pierde. En cuanto se abra, podrás pagar desde aquí.',
+    503,
+  ),
+
+  pago_no_disponible: error(
+    'pago_no_disponible',
+    'No hemos podido hablar con el sistema de pago.',
+    'No se ha cobrado ni cambiado nada. Inténtalo dentro de un momento.',
+    502,
+    { texto: 'Reintentar', accion: 'reintentar' },
+  ),
+
   // ── Cosas que ya han pasado ────────────────────────────────────────────────
   ya_hecho: error(
     'ya_hecho',

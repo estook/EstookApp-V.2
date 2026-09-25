@@ -49,6 +49,8 @@ export interface SalidaCambiarDeContexto {
 
 export const cambiarDeContexto = comando<EntradaCambiarDeContexto, SalidaCambiarDeContexto>({
   nombre: 'cambiar_de_contexto',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: entradaCambiarDeContexto,
 
   async ejecutar(contexto, entrada) {

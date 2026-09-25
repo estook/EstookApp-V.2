@@ -27,6 +27,8 @@ export type EntradaCerrarSesion = z.infer<typeof entradaCerrarSesion>;
 
 export const cerrarSesion = comando<EntradaCerrarSesion, { readonly cerradas: number }>({
   nombre: 'cerrar_sesion',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: entradaCerrarSesion,
 
   async ejecutar({ sql, sesion }, entrada) {

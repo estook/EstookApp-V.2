@@ -44,6 +44,8 @@ export interface SalidaActivar {
 
 export const activarDobleFactor = comando<Record<string, never>, SalidaActivar>({
   nombre: 'activar_doble_factor',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: z.object({}).strict(),
   // Devuelve el secreto del segundo factor: no se recuerda.
   conSecreto: true,
@@ -86,6 +88,8 @@ export const confirmarDobleFactor = comando<
   { readonly codigosDeRespaldo: readonly string[] }
 >({
   nombre: 'confirmar_doble_factor',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: z.object({ codigo: z.string().trim().min(6).max(10) }).strict(),
   // Devuelve los codigos de respaldo: no se recuerdan.
   conSecreto: true,
@@ -137,6 +141,8 @@ export const superarDobleFactor = comando<
   { readonly superado: boolean; readonly conUnoDeRespaldo: boolean }
 >({
   nombre: 'superar_doble_factor',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: z.object({ codigo: z.string().trim().min(6).max(16) }).strict(),
   aunSinDobleFactor: true,
   aunConClavePorCambiar: true,
@@ -213,6 +219,8 @@ export const quitarDobleFactor = comando<
   { readonly quitado: boolean }
 >({
   nombre: 'quitar_doble_factor',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   // Con la contrasena delante a proposito: si no, a quien se dejara la sesion
   // abierta en la tablet del pase le podrian quitar el segundo factor de un clic,
   // que es justo de lo que protege el segundo factor.

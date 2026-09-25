@@ -237,6 +237,49 @@ export function crearApi(despachador: Despachador) {
     return traducir(resultado, correlacionId);
   });
 
+  /*
+    El aviso de Stripe (0048). Fuera de `/v1` porque no es de la app: la dirección la
+    guarda Stripe y no la cambia una versión nuestra. **El cuerpo va tal cual**, en
+    texto: la firma es del cuerpo exacto, y leerlo como JSON y volverlo a escribir
+    la rompería. Una firma que no vale es un 400 y no se toca nada; un fallo
+    nuestro es un 500, y Stripe lo vuelve a mandar más tarde.
+  */
+  api.post('/stripe/aviso', async (c) => {
+    const correlacionId = c.get('correlacionId');
+    const cuerpo = await c.req.text();
+    const recibido = await despachador.avisoDeStripe(
+      quienLlama(undefined, correlacionId, c.req.header(CABECERA_DIRECCION)),
+      cuerpo,
+      c.req.header('stripe-signature') ?? null,
+    );
+    if (!recibido.firmaValida) {
+      return respuestaDeError('sin_permiso', correlacionId, {
+        porque: 'La firma no es de Stripe.',
+      });
+    }
+    return respuestaConDatos(
+      { recibido: true, resultado: recibido.resultado },
+      correlacionId,
+      200,
+      {},
+    );
+  });
+
+  // El latido del reloj (0016, 0048): lo llama `pg_cron` con su secreto.
+  // Fuera de `/v1`, como el aviso de Stripe: la dirección la guarda `pg_cron` y no
+  // cambia con una versión nuestra. Y dentro no se puede: una ruta más que empiece por
+  // `/v…` junto a las de `v:version{[0-9]+}` deja al enrutador de Hono sin encontrar
+  // ninguna (lo cazó `api.prueba.ts`, 25-sep).
+  api.post('/tareas/latir', async (c) => {
+    const correlacionId = c.get('correlacionId');
+    const hecho = await despachador.latir(
+      quienLlama(undefined, correlacionId, c.req.header(CABECERA_DIRECCION)),
+      c.req.header('x-reloj') ?? null,
+    );
+    if (hecho === null) return respuestaDeError('sin_permiso', correlacionId);
+    return respuestaConDatos(hecho, correlacionId, 200, {});
+  });
+
   return api;
 }
 

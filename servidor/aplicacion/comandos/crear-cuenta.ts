@@ -21,6 +21,7 @@ import {
   falloQueSeGuarda,
   type Contexto,
 } from '../contrato.ts';
+import { cambiarLaSuscripcion } from '../pago.ts';
 import { abrirLaSesion, elAparato, type SalidaEntrar } from './entrar.ts';
 
 /**
@@ -406,8 +407,10 @@ interface CuentaNueva {
 /**
  * La cuenta, el negocio y la sesión, en la misma transacción.
  *
- * Con la oferta de prueba encendida, en prueba con sus días; si no, **pendiente de
- * pago**, y la sesión le lleva a elegir su plan (0042).
+ * La cuenta nace **pendiente de pago** siempre, y la sesión le lleva a elegir su plan:
+ * sin pago no hay app (0048). Con la oferta encendida, sus días de prueba se guardan
+ * en la suscripción y los da Stripe **con la tarjeta puesta**; apagar la oferta
+ * después no se los quita. Hasta la 0048, con oferta nacía en prueba y sin tarjeta.
  */
 async function crearLaCuentaYEntrar(
   contexto: Contexto,
@@ -424,7 +427,7 @@ async function crearLaCuentaYEntrar(
       select * from estook.crear_cuenta_con_negocio(
         ${cuenta.correo}, ${cuenta.nombre}, ${cuenta.apellidos}, ${cuenta.derivada},
         ${cuenta.negocio}, ${base.length >= 2 ? base : 'negocio'},
-        ${oferta.activa ? oferta.dias : null}::integer,
+        null::integer,
         ${cuenta.google === null ? null : 'google'}, ${cuenta.google}
       )
     `;
@@ -444,6 +447,16 @@ async function crearLaCuentaYEntrar(
 
   const fila = creada[0];
   if (fila === undefined) throw new FalloDeAplicacion('fallo_nuestro');
+
+  if (oferta.activa) {
+    await cambiarLaSuscripcion(
+      contexto,
+      fila.organizacion_id,
+      { dias_de_prueba: oferta.dias },
+      'crear_cuenta',
+      'la oferta de prueba que había al crear la cuenta',
+    );
+  }
 
   await contexto.sql`select set_config('estook.persona_id', ${fila.persona_id}, true)`;
   await contexto.sql`

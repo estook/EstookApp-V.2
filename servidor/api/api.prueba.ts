@@ -56,6 +56,7 @@ function puertosDeMentira() {
         google: null,
         correo: null,
         identidadDeGoogle: null,
+        pagos: null,
         correlacionId: quien.correlacionId,
         desde: null,
         ahora: new Date(Date.UTC(2026, 8, 1, 12, 0, 0)),
@@ -329,5 +330,32 @@ describe('desde donde se puede llamar', () => {
   it('y cualquier otra pagina, no', async () => {
     const respuesta = await preguntaDesde('https://la-que-sea.example');
     expect(respuesta.headers.get('access-control-allow-origin')).toBeNull();
+  });
+});
+
+describe('las dos puertas que no traen persona (0048)', () => {
+  it('un aviso que no firma Stripe se rechaza, y no se toca nada', async () => {
+    const { app } = api();
+    const respuesta = await app.request('/api/stripe/aviso', {
+      method: 'POST',
+      body: '{"id":"evt_1","type":"invoice.paid"}',
+    });
+    expect(respuesta.status).toBe(403);
+  });
+
+  it('un latido sin el secreto del reloj tampoco pasa', async () => {
+    const { app } = api();
+    const respuesta = await app.request('/api/tareas/latir', {
+      method: 'POST',
+      headers: { 'x-reloj': 'me lo invento' },
+    });
+    expect(respuesta.status).toBe(403);
+  });
+
+  it('y las dos viven fuera de `/v1`, sin tapar las rutas de siempre', async () => {
+    // Una ruta más que empezaba por `/v…` dejaba al enrutador sin encontrar ninguna.
+    const { app } = api();
+    const consulta = await app.request('/api/v1/consultas/no_existe_esta');
+    expect((await cuerpoDe(consulta)).error?.codigo).toBe('no_existe');
   });
 });

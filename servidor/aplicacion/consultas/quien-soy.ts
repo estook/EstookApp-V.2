@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import type { Destino as ADonde, Idioma } from '@estook/dominio';
+import type { ComoEstaLaCuenta, Destino as ADonde, Idioma } from '@estook/dominio';
 import { esPermiso, type Nivel, type PermisosResueltos } from '@estook/permisos';
 import type { Sql } from '../../infraestructura/postgres.ts';
-import { decidirDestino } from '../acceso.ts';
+import { decidirDestino, guardarContexto } from '../acceso.ts';
+import { comoEstaAhora, laSuscripcionDe } from '../pago.ts';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { rolesQuePuedeDar } from '../jerarquia.ts';
 
@@ -139,10 +140,28 @@ export interface QuienSoy {
    * hay un botón para irse.
    */
   readonly esDemostracion: boolean;
+
+  /**
+   * Cómo está la cuenta de la organización en la que está (0048), para el aviso de
+   * arriba: un cobro fallido con los días que quedan, o solo lectura. Nulo sin
+   * organización.
+   */
+  readonly cuenta: {
+    readonly como: ComoEstaLaCuenta;
+    readonly diasQuedan: number | null;
+    /**
+     * Si la lleva quien mira: «Plan y facturación», que es de la organización y no del
+     * local. Por eso no sale de `permisos`, que son del local y están vacíos en la
+     * vista de cadena, que es justo donde entra quien más paga.
+     */
+    readonly laLlevo: boolean;
+  } | null;
 }
 
 export const quienSoy = consulta<Record<string, never>, QuienSoy>({
   nombre: 'quien_soy',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: z.object({}).strict(),
   // Se puede preguntar con la sesion a medias: es lo que la pantalla necesita
   // para saber que tiene que pedir el codigo, y a quien.
@@ -175,6 +194,21 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
     // efecto en la peticion siguiente» (Auditoria, Parte 8).
     const destino = await decidirDestino(sql, sesion);
 
+    // **La sesión se pone al día si se ha quedado atrás** (0048). Quien entra sin
+    // pagar abre la sesión sin local —va a elegir su plan—, y al pagar la decisión
+    // ya le da su local, pero la sesión seguía sin él: la pantalla entraba al alta y
+    // cada comando contestaba «hay que estar dentro de un local». Pasa también si el
+    // aviso de Stripe llega antes que la persona. Solo rellena lo que falta, en la
+    // misma organización: no cambia a nadie de sitio.
+    if (
+      sesion.localId === null &&
+      destino.localId !== null &&
+      destino.organizacionId !== null &&
+      (sesion.organizacionId === null || sesion.organizacionId === destino.organizacionId)
+    ) {
+      await guardarContexto(contexto, destino.organizacionId, destino.localId);
+    }
+
     const laSuya = destino.organizaciones.find((o) => o.id === destino.organizacionId);
     const organizacion =
       destino.organizacionId === null
@@ -191,6 +225,23 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
         from estook.doble_factor where persona_id = ${sesion.personaId}
     `;
     const loTiene = dobleFactor[0]?.confirmado === true;
+
+    const suscripcion =
+      destino.organizacionId === null
+        ? null
+        : await laSuscripcionDe(contexto, destino.organizacionId);
+    const laLlevo =
+      destino.organizacionId === null
+        ? false
+        : (
+            await sql<{ nivel: string | null }[]>`
+              select estook.nivel_de_permiso_en_organizacion(
+                ${sesion.personaId}::uuid, ${destino.organizacionId}::uuid, 'dato.facturacion'
+              )::text as nivel
+            `
+          )[0]?.nivel === 'ver_y_editar';
+    const cuenta =
+      suscripcion === null ? null : { ...comoEstaAhora(suscripcion, contexto.ahora), laLlevo };
 
     const rolesQuePuedoDar =
       destino.organizacionId === null
@@ -229,6 +280,7 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
       // deduce de los datos: una organización de ejemplo mirada por su dueño de
       // verdad no es una demostración.
       esDemostracion: sesion.esDemostracion,
+      cuenta,
     };
   },
 });

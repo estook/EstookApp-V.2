@@ -1,5 +1,9 @@
 import type { PGlite } from '@electric-sql/pglite';
-import { crearDespachador, type Resultado } from '../../servidor/aplicacion/index.ts';
+import {
+  crearDespachador,
+  type Despachador,
+  type Resultado,
+} from '../../servidor/aplicacion/index.ts';
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import type { SesionViva, Sql } from '../../servidor/infraestructura/postgres.ts';
@@ -7,6 +11,7 @@ import type { LugaresDeGoogle } from '../../servidor/infraestructura/google.ts';
 import type { CorreoSaliente } from '../../servidor/infraestructura/correo.ts';
 import type { IdentidadDeGoogle } from '../../servidor/infraestructura/identidad-de-google.ts';
 import type { AlmacenDeFicheros } from '../../servidor/infraestructura/almacen.ts';
+import type { Pagos } from '../../servidor/infraestructura/stripe.ts';
 
 /**
  * El despachador de verdad, contra la base efímera de las pruebas (M7).
@@ -48,6 +53,8 @@ export interface ApiDePrueba {
     nombre: string,
     entrada: unknown,
   ): Promise<Resultado>;
+  /** El despachador entero, para lo que no trae persona: el aviso de Stripe y el reloj (0048). */
+  readonly despachador: Despachador;
 }
 
 const CLAVE_DE_EJEMPLO = 'estook en desarrollo';
@@ -73,6 +80,10 @@ export function montarLaApi(
     readonly identidadDeGoogle?: IdentidadDeGoogle | null;
     /** El almacén de ficheros: sin decir nada, no hay (como en la API sin credenciales). */
     readonly almacen?: AlmacenDeFicheros | null;
+    /** El pago (0048): sin decir nada, no hay (como en la API sin clave de Stripe). */
+    readonly pagos?: Pagos | null;
+    /** La hora que ve la API, para probar lo que depende de los días que pasan. */
+    readonly ahora?: () => Date;
   } = {},
 ): ApiDePrueba {
   // PGlite es una sola conexión: las transacciones van de una en una.
@@ -137,9 +148,10 @@ export function montarLaApi(
             google: opciones.google ?? null,
             correo: opciones.correo ?? null,
             identidadDeGoogle: opciones.identidadDeGoogle ?? null,
+            pagos: opciones.pagos ?? null,
             correlacionId: quien.correlacionId,
             desde: quien.desde ?? null,
-            ahora: new Date(Date.now()),
+            ahora: opciones.ahora?.() ?? new Date(Date.now()),
           });
 
           await bd.exec('commit');
@@ -201,6 +213,8 @@ export function montarLaApi(
 
     ejecutarDesde: (desde, token, nombre, entrada) =>
       despachador.ejecutar({ ...quien(token), desde }, nombre, entrada, crypto.randomUUID()),
+
+    despachador,
   };
 }
 

@@ -31,6 +31,8 @@ export type EntradaCambiarMiClave = z.infer<typeof entradaCambiarMiClave>;
 
 export const cambiarMiClave = comando<EntradaCambiarMiClave, { readonly cambiada: true }>({
   nombre: 'cambiar_mi_clave',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: entradaCambiarMiClave,
   // Es justo lo que hay que poder hacer con la contrasena por cambiar.
   aunConClavePorCambiar: true,

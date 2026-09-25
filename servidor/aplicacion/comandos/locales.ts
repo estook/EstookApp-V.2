@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { laCuotaSigueALosLocales } from './pago.ts';
 import { comoCodigo, numeroDelPaso } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion, respondido } from '../alta.ts';
@@ -265,6 +266,10 @@ export const crearLocal = comando<EntradaCrearLocal, SalidaCrearLocal>({
       datos: { nombre: entrada.nombre, tipo: modelo?.tipo ?? null, duplicado: modelo !== null },
       correlacionId: contexto.correlacionId,
     });
+
+    // Y la cuota sigue a los locales (0048): uno más, uno más en Stripe, prorrateado.
+    // Si Stripe no contesta, no se crea el local: mejor eso que un local sin cobrar.
+    await laCuotaSigueALosLocales(contexto, organizacionId);
 
     return { localId, codigo, duplicado: modelo !== null };
   },

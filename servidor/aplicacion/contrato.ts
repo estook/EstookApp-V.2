@@ -5,6 +5,7 @@ import type { AlmacenDeFicheros } from '../infraestructura/almacen.ts';
 import type { CorreoSaliente } from '../infraestructura/correo.ts';
 import type { LugaresDeGoogle } from '../infraestructura/google.ts';
 import type { IdentidadDeGoogle } from '../infraestructura/identidad-de-google.ts';
+import type { Pagos } from '../infraestructura/stripe.ts';
 import type { SesionViva, Sql } from '../infraestructura/postgres.ts';
 
 /**
@@ -58,6 +59,11 @@ export interface Contexto {
   readonly correo: CorreoSaliente | null;
   /** Entrar con Google (0042). Nulo sin el cliente de OAuth y su secreto. */
   readonly identidadDeGoogle: IdentidadDeGoogle | null;
+  /**
+   * El pago, con Stripe (0048). Nulo sin `STRIPE_SECRET_KEY`, y entonces pagar
+   * **dice que el pago no está abierto** en vez de romperse.
+   */
+  readonly pagos: Pagos | null;
   /**
    * Desde qué dirección llega la petición, tal como la ve la API, o nulo (0041).
    *
@@ -183,6 +189,17 @@ export interface Puertas {
    * cuarenta.
    */
   readonly enDemostracion?: true;
+  /**
+   * **Se puede aunque la cuenta no esté pagada** (0048).
+   *
+   * «Sin pago no hay app» (Richi, 25-sep): con la cuenta sin pagar no pasa nada,
+   * y en solo lectura no pasa ningún comando. Lo que sí tiene que pasar para poder
+   * pagar o irse —quién soy, la suscripción, pagar, el portal, salir, la
+   * contraseña— lo declara aquí. **Lo que no dice nada queda cerrado**, así que una
+   * operación nueva no abre un agujero por olvidarse de esto. Lo cumple el
+   * despachador, que es la quinta puerta.
+   */
+  readonly sinPagar?: true;
   /**
    * **Solo para el admin** (0041). La operación exige una sesión abierta desde el
    * admin, de una persona con acceso vivo y **con el segundo factor montado**.

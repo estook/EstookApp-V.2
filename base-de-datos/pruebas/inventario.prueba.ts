@@ -634,6 +634,11 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // sitio, y solo devuelve lo que el local ya enseña al mundo. Y
     // `direccion_libre_para_la_carta` mira las direcciones de todo Estook para no
     // repetir una: sin privilegio, dos empresas podrían chocar. Son treinta y cuatro.
+    //
+    // **Y la 0047 (E2, el pago) añade dos, a propósito.** `cambiar_la_suscripcion` la
+    // llaman el aviso de Stripe y el reloj, que no traen persona con la que pasar la
+    // seguridad de las filas, y deja el historial. `las_cuentas` las lee todas, para
+    // el reloj y para el admin, que tampoco son de una organización. Son treinta y seis.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -649,6 +654,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'anotar_intento_de_contrasena',
       'anotar_intento_de_pin',
       'anotar_intento_de_registro',
+      'cambiar_la_suscripcion',
       'cerrar_demostracion',
       'cerrar_sesiones_de',
       'crear_cuenta_con_negocio',
@@ -657,6 +663,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'direccion_libre_para_la_carta',
       'esta_en_linea',
       'la_carta_publica',
+      'las_cuentas',
       'locales_visibles',
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',

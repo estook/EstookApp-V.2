@@ -4,6 +4,9 @@ import type { SesionViva } from '../infraestructura/postgres.ts';
 import { FalloDeAplicacion, type Contexto, type Puertas } from './contrato.ts';
 import { catalogo } from './catalogo.ts';
 import { reaccionar } from './reacciones.ts';
+import { laFirmaEsDeStripe } from '../infraestructura/stripe.ts';
+import { aplicarElAviso, enNombreDelSistema, porQueNoPasaElPago } from './pago.ts';
+import { latir, type LoQueHizoElReloj } from './reloj.ts';
 
 /**
  * El despachador (M2, con las puertas de M4).
@@ -91,7 +94,18 @@ export interface Despachador {
     entrada: unknown,
     claveDeIdempotencia: string,
   ): Promise<Resultado>;
+  /**
+   * Un aviso de Stripe, tal como llega: el cuerpo sin tocar (la firma es del cuerpo
+   * exacto) y su cabecera `Stripe-Signature` (0048). Sin persona: lo hace el sistema.
+   */
+  avisoDeStripe(quien: QuienLlama, cuerpo: string, firma: string | null): Promise<AvisoRecibido>;
+  /** El latido del reloj (0016, 0048), con el secreto que manda `pg_cron`. */
+  latir(quien: QuienLlama, secreto: string | null): Promise<LoQueHizoElReloj | null>;
 }
+
+/** Lo que se hizo con un aviso de Stripe. Nulo si la firma no era de Stripe. */
+export type AvisoRecibido =
+  { readonly firmaValida: false } | { readonly firmaValida: true; readonly resultado: string };
 
 /**
  * Las tres puertas, en orden.
@@ -243,6 +257,10 @@ export function crearDespachador(puertos: Puertos): Despachador {
           const delAdmin = await porQueNoPasaElAdmin(contexto, laConsulta);
           if (delAdmin) return { estado: 'fallo', codigo: delAdmin };
 
+          // La quinta, la del pago (0048): sin pagar no se mira nada.
+          const delPago = await porQueNoPasaElPago(contexto, laConsulta, 'consultar');
+          if (delPago) return { estado: 'fallo', codigo: delPago };
+
           // Leer pide poder **ver**, no poder cambiar (M7). Hasta M7 esto pedía
           // «ver y editar», y a quien la matriz le da algo solo para mirar —el
           // jefe de cocina con Equipo, el jefe de sala con las ventas, el cocinero
@@ -287,6 +305,10 @@ export function crearDespachador(puertos: Puertos): Despachador {
 
           const delAdmin = await porQueNoPasaElAdmin(contexto, elComando);
           if (delAdmin) return { estado: 'fallo', codigo: delAdmin };
+
+          // Y la del pago: en solo lectura, tampoco se escribe.
+          const delPago = await porQueNoPasaElPago(contexto, elComando, 'ejecutar');
+          if (delPago) return { estado: 'fallo', codigo: delPago };
 
           if (!(await tienePermiso(contexto, elComando.exige, 'editar'))) {
             return { estado: 'fallo', codigo: 'sin_permiso' };
@@ -351,6 +373,34 @@ export function crearDespachador(puertos: Puertos): Despachador {
           return { estado: 'ok', datos };
         }),
       );
+    },
+
+    async avisoDeStripe(quien, cuerpo, firma) {
+      return puertos.enTransaccion(quien, async (contexto): Promise<AvisoRecibido> => {
+        if (contexto.pagos === null) return { firmaValida: false };
+        const pagos = contexto.pagos;
+        // El secreto con el que firma Stripe: solo lo lee el sistema (0047).
+        const secreto = await enNombreDelSistema(contexto, async () => {
+          const filas = await contexto.sql<{ aviso_secreto: string | null }[]>`
+            select aviso_secreto from plataforma.stripe where modo = ${pagos.modo}
+          `;
+          return filas[0]?.aviso_secreto ?? '';
+        });
+        const deStripe = await laFirmaEsDeStripe(
+          cuerpo,
+          firma,
+          secreto,
+          Math.floor(contexto.ahora.getTime() / 1000),
+        );
+        if (!deStripe) return { firmaValida: false };
+
+        const evento = JSON.parse(cuerpo) as Parameters<typeof aplicarElAviso>[1];
+        return { firmaValida: true, resultado: await aplicarElAviso(contexto, evento) };
+      });
+    },
+
+    async latir(quien, secreto) {
+      return puertos.enTransaccion(quien, (contexto) => latir(contexto, secreto));
     },
   };
 }

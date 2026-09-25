@@ -105,6 +105,8 @@ export const entrarEnDemostracion = comando<Record<string, never>, SalidaDemostr
  */
 export const salirDeLaDemostracion = comando<Record<string, never>, { salido: boolean }>({
   nombre: 'salir_de_la_demostracion',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: z.object({}).strict(),
   enDemostracion: true,
   // No hace falta segundo factor ni contraseña propia: no hay cuenta detrás.

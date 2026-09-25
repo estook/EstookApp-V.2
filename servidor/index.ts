@@ -6,6 +6,7 @@ import { lugaresDeGoogle } from './infraestructura/google.ts';
 import { identidadDeGoogle } from './infraestructura/identidad-de-google.ts';
 import { anotar, recordar } from './infraestructura/idempotencia.ts';
 import { enTransaccion } from './infraestructura/postgres.ts';
+import { pagosDeStripe } from './infraestructura/stripe.ts';
 
 /**
  * El punto donde se juntan las capas (M2).
@@ -42,6 +43,12 @@ const google = lugaresDeGoogle();
 const correo = correoDeResend();
 const identidad = identidadDeGoogle();
 
+/*
+  El pago (0048). Nulo sin `STRIPE_SECRET_KEY`: pagar dice que no está abierto, la
+  puerta del pago sigue cumpliéndose igual y los avisos de Stripe se rechazan.
+*/
+const pagos = pagosDeStripe();
+
 const puertos: Puertos = {
   enTransaccion: (quien, hacer) =>
     enTransaccion(quien, (sql, sesion) =>
@@ -55,6 +62,7 @@ const puertos: Puertos = {
         google,
         correo,
         identidadDeGoogle: identidad,
+        pagos,
         correlacionId: quien.correlacionId,
         desde: quien.desde ?? null,
         // El instante lo pone el servidor, nunca el navegador (regla 10).

@@ -77,6 +77,8 @@ export type EntradaGuardarMiPanel = z.infer<typeof entradaGuardarMiPanel>;
 
 export const guardarMiPanel = comando<EntradaGuardarMiPanel, { version: number }>({
   nombre: 'guardar_mi_panel',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: entradaGuardarMiPanel,
 
   async ejecutar({ sql, personaId }, entrada) {

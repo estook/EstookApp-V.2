@@ -18,7 +18,8 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  *   · la cuenta no existe hasta escribir el código, y el código se gasta
  *   · no se dice si un correo tiene cuenta, y a ese correo le llega un aviso
  *   · los límites: un código por minuto, cinco intentos, diez cuentas por hora
- *   · la oferta del admin decide si se entra en prueba o pendiente de pago
+ *   · la cuenta nace pendiente de pago, con o sin oferta; la oferta son sus días de
+ *     prueba, que se dan con la tarjeta puesta (0048)
  *   · Google une la cuenta que ya existía, crea la que no, y no crea al entrar
  *   · y sin correo ni Google, lo dice en vez de romperse
  */
@@ -244,20 +245,27 @@ describe('la oferta de prueba', () => {
     expect(publica.oferta).toEqual({ activa: true, dias: 12 });
   });
 
-  it('con la oferta encendida, la cuenta nueva entra en prueba con sus días y va al alta', async () => {
+  it('con la oferta encendida, la cuenta nueva también paga antes de entrar, y guarda sus días de prueba', async () => {
+    // Hasta la 0048 entraba en prueba sin tarjeta. Richi, 25-sep: «sin pago no hay
+    // app; si hay prueba, pones tarjeta y una vez validada empieza la prueba».
     const para = 'con-oferta@correo-de-prueba.com';
     losDatos(await pedir(para));
     const dentro = losDatos<{ destino: string }>(
       await api.ejecutar(null, 'confirmar_registro', { correo: para, codigo: codigoPara(para) }),
     );
-    expect(dentro.destino).toBe('onboarding');
+    expect(dentro.destino).toBe('elegir_plan');
 
     const suscripcion = await suscripcionDe(para);
-    expect(suscripcion?.estado).toBe('prueba');
-    const [dias] = await comoDuena<{ dias: number }>(`select ($1::date - current_date) as dias`, [
-      suscripcion?.prueba_hasta,
-    ]);
-    expect(dias?.dias).toBe(12);
+    expect(suscripcion?.estado).toBe('pendiente_de_pago');
+    expect(suscripcion?.prueba_hasta).toBeNull();
+    const [dias] = await comoDuena<{ dias_de_prueba: number }>(
+      `select s.dias_de_prueba from estook.suscripcion s
+         join estook.membresia m on m.organizacion_id = s.organizacion_id
+         join estook.persona p on p.id = m.persona_id
+        where p.correo = $1`,
+      [para],
+    );
+    expect(dias?.dias_de_prueba).toBe(12);
   });
 
   it('dos negocios con el mismo nombre son dos negocios', async () => {
@@ -321,7 +329,8 @@ describe('entrar con Google', () => {
         aceptaCondiciones: true,
       }),
     );
-    expect(['onboarding', 'elegir_plan']).toContain(creada.destino);
+    // Con o sin oferta, a pagar antes de nada (0048).
+    expect(creada.destino).toBe('elegir_plan');
 
     const [identidad] = await comoDuena<{ sujeto: string }>(
       `select i.sujeto from estook.identidad_externa i

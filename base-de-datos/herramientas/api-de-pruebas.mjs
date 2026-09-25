@@ -47,6 +47,7 @@ import { almacenEnMemoria } from '../../servidor/infraestructura/almacen.ts';
 import { lugaresDeMentira } from '../../servidor/infraestructura/google.ts';
 import { correoEnMemoria } from '../../servidor/infraestructura/correo.ts';
 import { identidadDeMentira } from '../../servidor/infraestructura/identidad-de-google.ts';
+import { pagosDeMentira } from '../../servidor/infraestructura/pagos-de-mentira.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { sembrarAcceso } from '../semillas/acceso.ts';
@@ -181,6 +182,14 @@ const correo = correoEnMemoria();
 const identidadDeGoogle = identidadDeMentira();
 
 /**
+ * El Stripe de mentira (0048): guarda en memoria y avisa firmado, por el mismo
+ * camino que Stripe. Su página de pago es `/api/pruebas/stripe/pagar`, más abajo.
+ * La app vuelve a `localhost:5174`, que es donde la sirven las pruebas.
+ */
+process.env['APP_URL'] = process.env['APP_URL'] ?? 'http://localhost:5174/';
+const pagos = pagosDeMentira(`http://localhost:${PUERTO}/api`);
+
+/**
  * Una transaccion, con el orden de la decision 0005 y el de `postgres.ts`:
  * disfraz, sesion, identidad. Cambiarlo aqui haria que las pruebas comprobaran
  * otra cosa distinta de lo que hace la API de verdad.
@@ -234,6 +243,7 @@ async function unaTransaccion(quien, hacer) {
       google,
       correo,
       identidadDeGoogle,
+      pagos,
       correlacionId: quien.correlacionId,
       desde: quien.desde ?? null,
       ahora: new Date(Date.now()),
@@ -248,6 +258,29 @@ async function unaTransaccion(quien, hacer) {
 }
 
 const api = crearApi(crearDespachador(puertos));
+
+// Los avisos del Stripe de mentira entran por la puerta de verdad, firmados.
+pagos.enganchar((cuerpo, firma) =>
+  api.fetch(
+    new Request(`http://localhost:${PUERTO}/api/stripe/aviso`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'stripe-signature': firma },
+      body: cuerpo,
+    }),
+  ),
+);
+
+/** La organización que lleva alguien, por su correo: para que una prueba haga fallar su cobro. */
+async function laOrganizacionDe(correoDeQuien) {
+  const { rows } = await deUnaEnUna(() =>
+    bd.query(
+      `select m.organizacion_id from estook.membresia m join estook.persona p on p.id = m.persona_id
+        where p.correo = $1 and m.rol = 'direccion' order by m.desde desc limit 1`,
+      [correoDeQuien.toLowerCase()],
+    ),
+  );
+  return rows[0]?.organizacion_id ?? null;
+}
 
 // ── El cuaderno de a bordo: qué operación llama alguien, y con qué resultado ──
 //
@@ -299,6 +332,43 @@ const servidor = createServer((peticion, respuesta) => {
     // existe en esta API de pruebas**: la de verdad manda los correos por Resend y
     // no guarda ninguno.
     const pedido = new URL(url);
+
+    // 0048 · el Stripe de mentira: abrir su página de pago es pagar, y vuelve a la
+    // app como vuelve Stripe. Y lo que en Stripe pasa solo: un cobro que falla, uno
+    // que entra. **Solo existe aquí.**
+    if (pedido.pathname.startsWith('/api/pruebas/stripe/')) {
+      const que = pedido.pathname.slice('/api/pruebas/stripe/'.length);
+      const hecho = (async () => {
+        if (que === 'pagar') {
+          return { a: await pagos.pagar(pedido.searchParams.get('sesion') ?? '') };
+        }
+        if (que === 'portal') return { a: pedido.searchParams.get('vuelta') ?? '/' };
+        const organizacion = await laOrganizacionDe(pedido.searchParams.get('correo') ?? '');
+        if (organizacion === null) throw new Error('Nadie lleva una cuenta con ese correo.');
+        if (que === 'fallar') await pagos.fallarElCobro(organizacion);
+        else if (que === 'cobrar') await pagos.cobrar(organizacion);
+        else throw new Error(`No sé hacer «${que}».`);
+        return { a: null };
+      })();
+      hecho
+        .then(({ a }) => {
+          if (a === null) {
+            respuesta.writeHead(200, { 'content-type': 'application/json' });
+            respuesta.end('{"datos":{"hecho":true}}');
+          } else {
+            respuesta.writeHead(302, { location: a });
+            respuesta.end();
+          }
+        })
+        .catch((fallo) => {
+          respuesta.writeHead(400, { 'content-type': 'application/json' });
+          respuesta.end(
+            JSON.stringify({ error: { codigo: 'faltan_datos', quePasa: String(fallo) } }),
+          );
+        });
+      return;
+    }
+
     if (pedido.pathname === '/api/pruebas/ultimo-correo') {
       const para = (pedido.searchParams.get('para') ?? '').toLowerCase();
       const ultimo = [...correo.mandados].reverse().find((c) => c.para === para) ?? null;

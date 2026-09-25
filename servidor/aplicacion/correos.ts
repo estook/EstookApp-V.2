@@ -1,4 +1,4 @@
-import { MINUTOS_DEL_CODIGO_DE_REGISTRO } from '@estook/dominio';
+import { MINUTOS_DEL_CODIGO_DE_REGISTRO, type CorreoDeLaCuenta } from '@estook/dominio';
 import type { CorreoParaMandar } from '../infraestructura/correo.ts';
 
 /**
@@ -84,6 +84,28 @@ export function correoDeYaTienesCuenta(para: string): CorreoParaMandar {
       'Alguien ha intentado crear una cuenta de Estook con este correo, pero <strong>ya tienes una</strong>.',
       'Entra en <a href="https://estook.com/app/">estook.com/app</a> con tu correo y tu contraseña, o con Google.',
       'Si no has sido tú, no hagas nada: no se ha creado nada ni se ha cambiado tu cuenta.',
+    ]),
+  };
+}
+
+/**
+ * Los correos del pago (0048): el de cada día de impago, el de solo lectura y el de
+ * fin de prueba. El texto lo escribe el dominio (`elCorreoDeHoy`); aquí se pinta, con
+ * lo que va entre dos asteriscos en negrita y un enlace a Ajustes → Suscripción.
+ */
+export function correoDeLaCuenta(para: string, correo: CorreoDeLaCuenta): CorreoParaMandar {
+  const enlace = 'https://estook.com/app/#/ajustes/suscripcion';
+  const sinMarcas = (texto: string) => texto.replace(/\*\*(.+?)\*\*/g, '$1');
+  const conNegrita = (texto: string) =>
+    escapar(texto).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  return {
+    para,
+    asunto: correo.asunto,
+    texto: [...correo.parrafos.map(sinMarcas), enlace].join('\n\n'),
+    html: envolver([
+      ...correo.parrafos.map(conNegrita),
+      `<a href="${enlace}" style="display:inline-block;background:#ff7a00;color:#1d2a2e;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px">Ir a mi suscripción</a>`,
     ]),
   };
 }

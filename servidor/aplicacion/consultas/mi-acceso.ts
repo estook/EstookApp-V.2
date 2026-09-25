@@ -51,6 +51,8 @@ export interface MiAcceso {
 
 export const miAcceso = consulta<Record<string, never>, MiAcceso>({
   nombre: 'mi_acceso',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: z.object({}).strict(),
 
   async ejecutar({ sql, sesion }) {

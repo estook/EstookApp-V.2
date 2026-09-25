@@ -31,6 +31,8 @@ export type EntradaCambiarMiIdioma = z.infer<typeof entradaCambiarMiIdioma>;
 
 export const cambiarMiIdioma = comando<EntradaCambiarMiIdioma, { version: number }>({
   nombre: 'cambiar_mi_idioma',
+  // Sin pagar también (0048): es de la persona, o hace falta para pagar o irse.
+  sinPagar: true,
   entrada: entradaCambiarMiIdioma,
 
   async ejecutar({ sql, personaId, correlacionId }, entrada) {

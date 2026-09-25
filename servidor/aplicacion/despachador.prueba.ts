@@ -76,6 +76,7 @@ function bancoDePruebas(sesion: Contexto['sesion'] = SESION_NORMAL) {
         google: null,
         correo: null,
         identidadDeGoogle: null,
+        pagos: null,
         correlacionId: quien.correlacionId,
         desde: null,
         ahora: new Date(Date.UTC(2026, 8, 1)),
@@ -354,6 +355,8 @@ describe('las puertas se cierran solas', () => {
         // 0042 · la oferta de prueba.
         'admin_oferta',
         'admin_cambiar_oferta',
+        // 0048 · quién ha pagado.
+        'admin_las_cuentas',
       ].sort(),
     );
 
@@ -362,6 +365,45 @@ describe('las puertas se cierran solas', () => {
       ...Object.values(catalogo.comandos),
     ].filter((operacion) => operacion.nombre.startsWith('admin_') && operacion.soloAdmin !== true);
     expect(conPrefijoSinDeclarar.map((o) => o.nombre)).toEqual([]);
+  });
+
+  it('lo que pasa sin pagar está tasado: pagar, irse y lo que es de la persona (0048)', () => {
+    // «Sin pago no hay app.» Una operación que se declara `sinPagar` abre la puerta del
+    // pago para siempre: esta lista obliga a que sea a propósito.
+    const sinPagar = [...Object.values(catalogo.consultas), ...Object.values(catalogo.comandos)]
+      .filter((operacion) => operacion.sinPagar === true)
+      .map((operacion) => operacion.nombre)
+      .sort();
+
+    expect(sinPagar).toEqual(
+      [
+        // Pagar y llevar la suscripción.
+        'mi_suscripcion',
+        'empezar_a_pagar',
+        'volver_del_pago',
+        'abrir_el_portal',
+        'cambiar_de_plan',
+        'cancelar_la_suscripcion',
+        'reanudar_la_suscripcion',
+        // Quién soy, a dónde voy e irse.
+        'quien_soy',
+        'cambiar_de_contexto',
+        'salir',
+        'cerrar_sesion',
+        'salir_de_la_demostracion',
+        'sigo_aqui',
+        // Lo que es de la persona.
+        'mi_acceso',
+        'cambiar_mi_clave',
+        'activar_doble_factor',
+        'confirmar_doble_factor',
+        'superar_doble_factor',
+        'quitar_doble_factor',
+        'cambiar_mi_idioma',
+        // Mover los widgets no apunta nada: vale también en solo lectura.
+        'guardar_mi_panel',
+      ].sort(),
+    );
   });
 
   it('y lo que una sesión del admin puede usar fuera del admin, también', () => {
@@ -537,6 +579,7 @@ describe('los secretos no se guardan para repetirlos', () => {
           google: null,
           correo: null,
           identidadDeGoogle: null,
+          pagos: null,
           correlacionId: quien.correlacionId,
           desde: null,
           ahora: new Date(Date.UTC(2026, 8, 1)),

@@ -524,3 +524,26 @@ export {
   planPorCodigo,
 } from './registro.ts';
 export type { CodigoDePlan, OfertaDePrueba, Plan, VueltaDeGoogle } from './registro.ts';
+
+// ── E2 · el pago · cómo está la cuenta y qué deja hacer (0048) ────────────────
+export {
+  DIAS_DE_AVISO_ANTES_DE_COBRAR,
+  DIAS_DE_GRACIA,
+  claveDelPrecio,
+  comoEstaLaCuenta,
+  dejaEscribir,
+  dejaMirar,
+  elCorreoDeHoy,
+  elEstadoDeStripe,
+  elPlanPorLosLocales,
+  laCuota,
+} from './suscripcion.ts';
+export type {
+  ComoEstaLaCuenta,
+  CorreoDeLaCuenta,
+  EstadoDeSuscripcion,
+  Intervalo,
+  LaCuentaAhora,
+  LaSuscripcion,
+  LoQueSabeElReloj,
+} from './suscripcion.ts';

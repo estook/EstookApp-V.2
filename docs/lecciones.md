@@ -337,3 +337,16 @@
      falló, y cada vez era una distinta. Sin ese rastro no se arregla, se espera a que
      no pase. Se graba la primera vuelta y se guarda si falla, también en verde. La
      siguiente repetida, con su rastro, resultó ser un fallo de verdad del Panel.
+110. **Lo que se estira a lo ancho no puede llevar nada redondo.** La línea de las
+     cifras es un SVG que se estira a lo ancho de la tarjeta; un día suelto se pintaba
+     como un círculo dentro, y en el móvil salía como una raya achatada que parecía un
+     fallo. Lo redondo va fuera del dibujo, en tanto por ciento. Y un hueco en los
+     datos se dice en discontinuo, no dejando piezas sueltas.
+111. **Una consulta apagada está pendiente para siempre.** En TanStack 5, `isPending`
+     es «no hay datos todavía», y una consulta con `enabled: false` no los tendrá
+     nunca: la ficha cerrada dejaba un «Cargando» vivo y escondido. Lo que se enseña
+     mientras llega es `isLoading`, que además pide que se esté pidiendo.
+112. **Una rejilla sin columnas dichas crece con la línea más larga.** Sin
+     `grid-cols-1`, la columna implícita toma el ancho mínimo de su contenido, y un
+     texto que no se parte la ensancha más allá de la pantalla. Se dice la columna
+     (`minmax(0, 1fr)`) y el recorte vuelve a funcionar.

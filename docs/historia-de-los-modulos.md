@@ -2494,7 +2494,7 @@ el arreglo quitado, y `postgres.prueba.ts`. Lecciones 101 a 105.
 
 ### Antes de M8 · O, lo que se ordena
 
-**En la rama `o-lo-que-se-ordena`**, con su pull request y la migración `0046`. Las
+**En producción desde el 25-sep** (#69), con la migración `0046`. Las
 mejoras 6, 8, 9 y 17 y el QR de la 20, razonadas en la
 [0047](decisiones/0047-lo-que-se-ordena.md) con lo que contestó Richi el 25-sep:
 «copia a los mejores y mejóralo», y Fogón destacado en su propio banner.
@@ -2557,6 +2557,53 @@ mejoras 6, 8, 9 y 17 y el QR de la 20, razonadas en la
 Las pruebas: `objetivos.prueba.ts`, `hoy.prueba.ts` y `carta.prueba.ts` en el dominio;
 `lo-que-se-ordena.prueba.ts` contra la base; `lo-que-se-ordena.spec.ts` y las de Fogón
 de `pantalla.spec.ts` en pantalla. Lecciones 106 a 109.
+
+### Antes de M8 · el Panel en el móvil, y un repaso
+
+_25 de septiembre de 2026, con la #68 y la #69 ya en producción._ Sin migración.
+
+Richi miró O en el móvil y mandó dos capturas: le gustaba, salvo tres cosas. Y pidió un
+repaso general de cómo se ve. Antes, la ráfaga que quedó pendiente de la #68, contra
+producción: **las treinta pasan**, y ahora es una herramienta (`bd:rafaga`).
+
+#### Lo que vio Richi
+
+- **«Hoy» ocupaba la pantalla entera.** Tres avisos, cada uno con su botón grande y
+  un «Luego» debajo, se comían el móvil antes del primer widget. Ahora, en el móvil,
+  sale **plegado**: «Hoy · 3 cosas», un punto de color por cada una y **solo la más
+  urgente** debajo; se abre tocando la cabecera y se recuerda en el aparato. Cada fila
+  es más baja —el botón en píldora, «Luego» como un reloj— y el título de la caja ya no
+  lleva la fecha entera («La caja de ayer está sin cerrar»). **Sin nada que atender, no
+  aparece**: ni la tarjeta ni el «Nada urgente por hoy».
+- **Un punto suelto a la derecha de la línea de ventas.** Un día con dato entre dos
+  huecos se pintaba como un círculo dentro de un SVG que se estira a lo ancho: salía
+  como una raya achatada. Ahora los días seguidos van en trazo entero, **el hueco en
+  discontinuo**, y un punto de verdad —fuera del dibujo— en el día suelto y en el
+  último (`formasDeLaTendencia`).
+- **El «+» se aparta al bajar y vuelve al subir**, solo en el móvil
+  (`usarSeEscondeAlBajar`). Con el foco del teclado vuelve siempre.
+
+#### Lo que salió del repaso
+
+Recorridas catorce pantallas en el móvil y cinco en el escritorio, en claro y en
+oscuro, mirando la consola, las peticiones y lo que se sale por los lados:
+
+- **La zona de atención se salía por la derecha** con una línea que no se parte
+  («3 productos sin precio»): la rejilla no tenía columnas dichas y crecía con ella.
+  Y vacía dejaba sus huecos: ahora se esconde.
+- **«3 productos sin precio»** pasa de tres líneas a dos, del mismo aire que «Hoy».
+- **Una ficha cerrada dejaba un «Cargando» vivo y escondido** (la de una persona y
+  la de un producto): `isPending` con la consulta apagada. Ahora `isLoading`.
+- **«Caduca esta semana» decía «caducado»** de lo que caduca hoy, mientras «Hoy» decía
+  «caduca hoy». Ahora dice «hoy».
+- **«Fichar la entrada» partía en dos líneas** en la casilla pequeña: ahí se ve
+  «Entrada», y se oye la frase entera.
+
+Ningún error de consola ni petición fallida en todo el recorrido.
+
+Las pruebas: `formasDeLaTendencia.prueba.ts`, el título de la caja en
+`lo-que-se-ordena.prueba.ts` y `el-panel-en-el-movil.spec.ts` (plegado, sin avisos, el
+«+» al bajar y ninguna ficha cargando a escondidas). Lecciones 110 a 112.
 
 ### Cambio de rumbo · Estook también cobra
 

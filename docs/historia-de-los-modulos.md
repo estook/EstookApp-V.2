@@ -2609,6 +2609,49 @@ Las pruebas: `formasDeLaTendencia.prueba.ts`, el título de la caja en
 `lo-que-se-ordena.prueba.ts` y `el-panel-en-el-movil.spec.ts` (plegado, sin avisos, el
 «+» al bajar y ninguna ficha cargando a escondidas). Lecciones 110 a 113.
 
+### Antes de M8 · E2, el pago con Stripe
+
+_25 de septiembre de 2026._ Con la migración `0047` y la
+[decisión 0048](decisiones/0048-el-pago-con-stripe.md). Richi contestó las siete
+preguntas el mismo día: la cuota cambia sola, tarjeta, **siete días** si falla un cobro
+(«hay IA y gastos») con un correo cada día, todo en **Ajustes → Suscripción**, **la
+prueba pide tarjeta**, solo `ikatz` sin cobrar y **sin pago no hay app**.
+
+#### Lo que se hizo
+
+- **La quinta puerta del despachador** (`porQueNoPasaElPago`): cómo está la cuenta lo
+  cuenta el dominio (`comoEstaLaCuenta`) con el estado y la hora, y se cumple en cada
+  petición. Sin pagar no pasa nada; en solo lectura, ningún comando. Lo que pasa sin
+  pagar lo declara la operación (`sinPagar`) y una prueba tasa la lista.
+- **Stripe, sin librería y con su versión fija** (`infraestructura/stripe.ts`): Checkout
+  para pagar, el portal para la tarjeta y las facturas, y el catálogo —productos,
+  precios, 21 % de IVA incluido, portal y aviso— creado por el código la primera vez. El
+  aviso se comprueba por su firma, se apunta una vez, y **se vuelve a leer la
+  suscripción a Stripe** en vez de creerse lo que trae.
+- **El reloj de la 0016, por fin** (`reloj.ts`): `pg_cron` llama cada hora con un secreto
+  que genera la migración; una vez al día, los correos del impago y del fin de prueba, y
+  cuadrar los locales con Stripe.
+- **La app:** Elegir plan paga de verdad; la vuelta de Stripe confirma y entra sola;
+  **Ajustes → Suscripción**; el aviso de arriba con los días que quedan; crear un local
+  dice antes cuánto sumará. **El admin**, su pestaña **Cuentas**.
+- **Lo legal:** condiciones y privacidad al día, y «Cómo funciona el pago» plegado en la
+  app. La portada y crear cuenta dejan de prometer una prueba «sin tarjeta».
+
+#### Lo que se torció por el camino
+
+- **La sesión sin local al pagar** (lección 115): lo cazó la batería del pago.
+- **Una ruta que tapaba a todas** (lección 114): lo cazó `api.prueba.ts`.
+- **La dueña de una cadena no habría visto su suscripción**: los permisos de la app se
+  resuelven sobre el local, y en la vista de cadena no hay local. «Plan y facturación»
+  se lee ahora de la organización (`cuenta.laLlevo`).
+- **La firma de los avisos caducaba en las pruebas**: el Stripe de mentira firmaba con la
+  hora de verdad y la prueba movía el reloj. Los cinco minutos de margen hacían su
+  trabajo; el de mentira firma ahora con la hora de quien lo usa.
+
+Las pruebas: `suscripcion.prueba.ts` (dominio), `stripe.prueba.ts` (la firma, el
+formulario y la traducción), `el-pago.prueba.ts` contra la base, las rutas en
+`api.prueba.ts` y `el-pago.spec.ts` en pantalla. Lecciones 114 y 115.
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

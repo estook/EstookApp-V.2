@@ -15,8 +15,8 @@
 > | **V · lo que se ve**       | **Hecho y en producción** (#64, #65, #67), mirado por Richi en el móvil     |
 > | Los arreglos del móvil     | **Hechos y en producción** (#68). La ráfaga: 90 de 90                       |
 > | O · lo que se ordena       | **Hecha y en producción** (#69), con la `0046`                              |
-> | El Panel en el móvil       | **Hecho**, en la #70 (sin migración, con despliegue)                        |
-> | E2 · el pago con Stripe    | Las preguntas, hechas. Falta **tu respuesta y la clave** (abajo)            |
+> | El Panel en el móvil       | **Hecho y en verde**, en la #70 (sin migración, con despliegue)             |
+> | E2 · el pago con Stripe    | **Hecha**, en su pull request, con la `0047`. Tu clave ya está puesta       |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -57,28 +57,88 @@ git pull
    - **Ventas · 7 días**: los días sin caja, en discontinuo; ni un punto suelto.
    - Baja por el Panel: **el «+» se va**; sube un poco: **vuelve**.
 
-## E2 · El pago con Stripe · la clave, paso a paso
+## E2 · El pago con Stripe · lo que te toca después de la #70
 
-**Solo la clave de prueba**, que no cobra nada de verdad. Empieza por `sk_test_`.
+**Qué trae:** el pago de verdad, en modo prueba. Sin pago no hay app; la prueba, con
+tarjeta; la cuota por local que cambia sola; siete días si falla un cobro, con un correo
+cada día; **Ajustes → Suscripción**; la pestaña **Cuentas** del admin; y el reloj que
+manda los correos. Contado en `ESTADO.md`, apartado 9, y en la decisión 0048.
 
-1. Entra en **dashboard.stripe.com** con tu cuenta.
-2. **Pasa a pruebas.** Arriba a la izquierda, en el selector de la cuenta, elige
-   **Entorno de prueba** (Stripe lo llama también «Sandbox» o «Modo de prueba»). Tiene
-   que salir una **franja naranja arriba** que lo dice. **Si no sale, no sigas**: la
-   clave sería la de verdad.
-3. A la izquierda, **Desarrolladores** → **Claves de API**.
-4. En **Clave secreta**, pulsa **Revelar clave de prueba** y **cópiala**. Tiene que
-   empezar por **`sk_test_`**. Si empieza por `sk_live_`, para: estás fuera de pruebas.
-5. Entra en **supabase.com** → el proyecto **`efgtzujwjztihyiwgpwg`** → a la izquierda,
-   **Edge Functions** → **Secrets** (en algunas pantallas: **Project Settings → Edge
-   Functions**).
-6. **Add new secret**: en **Name** escribe exactamente **`STRIPE_SECRET_KEY`**; en
-   **Value**, pega la clave. **Save**.
-7. **Dime solo que está puesta**, nunca la clave. No hace falta volver a desplegar nada.
+**La clave ya está** (`STRIPE_SECRET_KEY`, la pusiste el 25-sep). **No crees nada en
+Stripe a mano**: los productos, los precios, el IVA, el portal y el aviso los crea el
+código la primera vez que alguien pague.
 
-**No crees productos, precios ni el aviso (webhook) en Stripe**: los crea el código la
-primera vez. Y **para cobrar de verdad**, más adelante, Stripe te pedirá activar la
-cuenta (tus datos fiscales y el banco); para probar no hace falta.
+**Va después de la #70.** Esta lleva dentro los commits de la #70; al fusionar la #70
+primero, en esta quedan solo los suyos.
+
+1. En **github.com** → **Pull requests** → **«E2 · El pago con Stripe»**. Las **tres
+   comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
+2. En PowerShell, en la carpeta del proyecto, trae lo fusionado:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+3. **La migración.** Qué hace: prepara la suscripción para Stripe, pone **`ikatz` y los
+   ejemplos «de la casa»** (no pagan), y **enciende el reloj** que cada hora llama a la
+   API. No borra nada.
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0047_el_pago_con_stripe.sql ... hecho
+  1 migracion(es) aplicadas · 47 en total
+```
+
+Si además sale una línea con «El reloj no se ha podido programar», **cópiamela**: el
+resto está bien aplicado. **Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+4. **Desplegar la API**: **Actions** → **Desplegar la API** → **Run workflow**, rama
+   `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**.
+5. Comprueba:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 50» consultas, «los 93» comandos y, en «El reloj», **«pg_cron
+lo tiene programado»** en OK. La línea «y ha latido en las dos últimas horas» sale bien
+**después del primer latido**, que es a los siete minutos de cada hora: si la pasas
+antes, sale en rojo y es normal; vuelve a pasarla pasada la hora.
+
+6. **Prueba el pago, en modo prueba** (no se cobra nada de verdad). En el móvil o en una
+   ventana privada:
+   - `estook.com` → **Crear cuenta**, con un correo que no uses en Estook (por ejemplo,
+     `tucorreo+prueba@gmail.com`) y un negocio de prueba.
+   - Sale **«Elige tu plan»**: pulsa **«Elegir Esencial»**. Se abre la página de pago de
+     Stripe, con una **franja de «Entorno de prueba»** arriba.
+   - Tarjeta **`4242 4242 4242 4242`**, cualquier fecha futura, cualquier CVC, tu nombre y
+     una dirección → **Suscribirse**.
+   - Vuelves a Estook: **«Cargando tu pago»** un momento y **entras al alta**.
+   - Termina el alta y mira **Ajustes → Suscripción**: Esencial, 49,00 € al mes, se
+     renueva el…, «Visa ···· 4242». Prueba **Cancelar** y **Seguir con la suscripción**.
+7. **En tu cuenta de IKATZ** no cambia nada: en **Ajustes → Suscripción** pone que es
+   **de la casa**. **`burger-king`**, en cambio, **pide elegir plan** al entrar: es lo
+   que pediste.
+8. **En el admin** (`estook.com/admin/`), pestaña **Cuentas**: la cuenta de prueba, «Al
+   día», con su plan.
+9. **En Stripe** (en el entorno de prueba): **Clientes** tiene la cuenta nueva, y
+   **Desarrolladores → Webhooks** tiene «Estook · el estado de cada cuenta» con los
+   avisos en **200**. Si alguno sale en rojo, **dímelo con la hora**.
+
+**Para cobrar de verdad, más adelante** (hoy no): la sociedad o el alta de autónomo;
+activar la cuenta de Stripe con esos datos, que salen en cada factura; en Stripe,
+**Configuración → Facturación → Correos a clientes**, encender los recibos y las facturas;
+y cambiar `STRIPE_SECRET_KEY` por la clave real (`sk_live_…`). Esa clave **no se pone
+hasta que lo hablemos**: con ella se cobra de verdad.
 
 ---
 

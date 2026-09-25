@@ -319,3 +319,21 @@
 105. **Lo que solo se puede leer una vez no se repite a ciegas.** Repetir una navegación
      porque el navegador se cayó está bien, salvo si la primera ya gastó algo, como la
      vuelta de Google. Quien abre algo de un solo uso dice cómo volver a prepararlo.
+106. **Cada fecha con su reloj.** La caja y las cifras cuentan con la jornada, que corta
+     a la hora de corte del local; las caducidades y las compras, con el calendario, que
+     es el de la fecha impresa y el del proveedor. Juntar las dos en una pantalla es
+     elegir, cosa a cosa, cuál manda. Se ve de madrugada, así que se prueba de madrugada.
+107. **No se cambia de rama con una batería corriendo.** La API de pruebas se levanta
+     desde el código: cambiar de rama a mitad hace que unas pruebas corran contra un
+     código y otras contra otro, y los rojos no significan nada. Se repite entera.
+108. **Una persona de las pruebas es de todas las pruebas a la vez.** La prueba de «el
+     Panel no puede leer» daba por hecho que Rosa tenía el widget de fichar, y las del
+     Panel, en otro fichero y al mismo tiempo, se lo quitaban. Pasaba sola y fallaba en
+     compañía. Lo que otra prueba puede cambiar no se da por hecho: se contesta en la
+     propia prueba, o se prueba dentro del mismo bloque, que corre en fila.
+109. **De lo que se repite hay que guardar el intento que falla.** Playwright grababa
+     el rastro de la segunda vuelta, la que pasa, y el informe solo se subía con la
+     ejecución en rojo: de cada prueba de Safari repetida no quedaba nada de cuando
+     falló, y cada vez era una distinta. Sin ese rastro no se arregla, se espera a que
+     no pase. Se graba la primera vuelta y se guarda si falla, también en verde. La
+     siguiente repetida, con su rastro, resultó ser un fallo de verdad del Panel.

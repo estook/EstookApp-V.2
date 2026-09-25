@@ -1,2 +1,23 @@
 @import '@estook/ui/estilos';
 @source "./";
+
+/*
+ * El cartel del QR de la carta (entrega O, 0047).
+ *
+ * No se ve nunca en pantalla. Al pulsar «Imprimir el cartel» se marca el `body`, y
+ * al imprimir sale **solo el cartel**, a hoja entera: la aplicación de alrededor no
+ * pinta nada en una mesa. Fuera de las capas, para que ninguna utilidad lo pise.
+ */
+[data-cartel] {
+  display: none;
+}
+
+@media print {
+  body.imprimiendo-el-cartel > :not([data-cartel]) {
+    display: none !important;
+  }
+
+  body.imprimiendo-el-cartel > [data-cartel] {
+    display: flex;
+  }
+}

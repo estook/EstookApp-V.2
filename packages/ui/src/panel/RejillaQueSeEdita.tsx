@@ -6,9 +6,11 @@ import {
   MouseSensor,
   TouchSensor,
   closestCenter,
+  pointerWithin,
   useSensor,
   useSensors,
   type Announcements,
+  type CollisionDetection,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
@@ -27,6 +29,19 @@ import { usarSeVeEnModoCocina } from '../ganchos/usarModoCocina.ts';
 import { Casilla, HuecoDeAnadir } from './Casilla.tsx';
 import { CLASES_DE_LA_REJILLA, CLASES_DEL_TAMANO, type RejillaConVacios } from './rejilla.ts';
 import type { WidgetPuesto } from './catalogo.ts';
+
+/**
+ * **Donde está el dedo, ahí va** (25-sep). Con `closestCenter` mandaba el centro del
+ * widget que se arrastra, no el dedo: un widget grande cogido por su borde tiene el
+ * centro muy lejos de donde se toca, y al soltarlo encima de «Fichar» se iba a otro
+ * sitio. Una prueba lo hacía unas veces sí y otras no, según lo alto que saliera cada
+ * widget con los datos del día. Como en la pantalla de inicio del móvil, decide el
+ * dedo; y sin dedo —con el teclado— el centro, como antes.
+ */
+const dondeEstaElDedo: CollisionDetection = (argumentos) => {
+  const bajoElDedo = pointerWithin(argumentos);
+  return bajoElDedo.length > 0 ? bajoElDedo : closestCenter(argumentos);
+};
 
 /**
  * La rejilla en edición, con arrastre de verdad (M7, 0039).
@@ -146,7 +161,7 @@ export default function RejillaQueSeEdita(props: RejillaConVacios) {
   return (
     <DndContext
       sensors={sensores}
-      collisionDetection={closestCenter}
+      collisionDetection={dondeEstaElDedo}
       onDragStart={alCoger}
       onDragOver={alPasar}
       onDragEnd={alDejar}

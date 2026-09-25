@@ -463,11 +463,11 @@ async function abrirLaRueda(page: Page) {
  * queda fuera y guardado; la siguiente prueba se lo encontraba sin estar.
  *
  * Se arregla desde la propia aplicacion y no tocando la base a mano: es un camino
- * de persona —«volver al panel de siempre»— y comprobarlo de paso no sobra.
+ * de persona —«volver al de mi puesto»— y comprobarlo de paso no sobra.
  */
 async function panelDeFabrica(page: Page) {
   await page.getByRole('button', { name: 'Editar' }).click();
-  await page.getByRole('button', { name: 'Volver al panel de siempre' }).click();
+  await page.getByRole('button', { name: 'Volver al de mi puesto' }).click();
   await page.getByRole('button', { name: 'Listo' }).click();
   await expect(page.getByRole('button', { name: 'Editar' })).toBeVisible();
   // Y se espera a que este guardado de verdad: si no, la prueba de al lado se
@@ -635,12 +635,14 @@ test.describe('estados vacios', () => {
   test('y quien no tiene genero no ve ningun widget de genero', async ({ page }) => {
     // La camarera no tiene Inventario, asi que sus widgets no existen: «las apps
     // que el rol no tiene no aparecen en ningun sitio». Lo que si tiene es el
-    // resto del Panel, y ni una pantalla en blanco.
+    // Panel de sala (entrega O): fichar arriba, y ni una pantalla en blanco.
     await comoCamarera(page);
 
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
     await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toHaveCount(0);
-    await expect(page.getByRole('heading', { level: 2, name: 'Acciones rápidas' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 2, name: /^(Fichar|Estás dentro)$/ }),
+    ).toBeVisible();
   });
 
   test('el buscador dice que hacer cuando no hay nada escrito', async ({ page }) => {
@@ -877,8 +879,8 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await comoGerente(page);
     await panelDeFabrica(page);
 
-    // Los widgets de fabrica, con su titulo y su origen debajo.
-    await expect(page.getByRole('heading', { level: 2, name: 'Acciones rápidas' })).toBeVisible();
+    // Los widgets de fabrica de su puesto (entrega O), con su titulo y su origen.
+    await expect(page.getByRole('heading', { level: 2, name: 'Objetivos' })).toBeVisible();
     await seVeOEstaApartado(page, 'bajo-minimo', 'Bajo mínimo', 'Bajo mínimo');
 
     // Se anade uno que no estaba. `panelDeFabrica` deja el Panel sin el, asi que
@@ -999,7 +1001,8 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
   test('lo que se quita se puede volver a poner, y sigue puesto al recargar', async ({ page }) => {
     // «Acciones rápidas se puede eliminar pero no volver a añadir.» Se quitaba del
-    // Panel y no había forma de recuperarla desde «Añadir».
+    // Panel y no había forma de recuperarla desde «Añadir». Se prueba con el de los
+    // objetivos, que es de fábrica de quien lleva el local desde la entrega O.
     //
     // Vive aquí, en este bloque, y no en un fichero suyo: tocar el Panel de Rosa
     // desde otro fichero es tocarlo en mitad de estas. Se probó con un fichero
@@ -1008,19 +1011,19 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await panelDeFabrica(page);
 
     await page.getByRole('button', { name: 'Editar' }).click();
-    await page.getByRole('button', { name: 'Quitar Acciones rápidas del panel' }).click();
+    await page.getByRole('button', { name: 'Quitar Objetivos del panel' }).click();
     await page.getByRole('button', { name: 'Listo' }).click();
     await yaEstaGuardado(page);
 
     await page.getByRole('button', { name: 'Editar' }).click();
     await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
-    await page.getByRole('button', { name: /^Acciones rápidas/ }).click();
+    await page.getByRole('button', { name: /^Objetivos/ }).click();
     await page.getByRole('button', { name: 'Listo' }).click();
     await yaEstaGuardado(page);
 
     await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
-    await expect(page.getByRole('heading', { level: 2, name: 'Acciones rápidas' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Objetivos' })).toBeVisible();
   });
 
   // ── El Panel vivo (0039): mantener, arrastrar y ponerse sus cifras ─────────
@@ -1030,6 +1033,11 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await comoGerente(page);
     await panelDeFabrica(page);
 
+    // A la vista primero: con «Lo de hoy» y el semáforo arriba (entrega O), en el
+    // móvil queda debajo, y un dedo fuera de la pantalla no pulsa nada.
+    await enElPanel(page, 'valor-de-la-camara').evaluate((casilla) => {
+      casilla.scrollIntoView({ block: 'center' });
+    });
     const caja = await enElPanel(page, 'valor-de-la-camara').boundingBox();
     if (caja === null) throw new Error('El widget del valor de la cámara no está en el Panel.');
 
@@ -1049,7 +1057,8 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
   test('se arrastra un widget, los demás le hacen sitio, y el orden se guarda', async ({
     page,
   }) => {
-    // «Que se arrastren mejor que las flechas.»
+    // «Que se arrastren mejor que las flechas.» Con el de los objetivos, que está
+    // siempre en el Panel de quien lleva el local (entrega O) y no se aparta vacío.
     await comoGerente(page);
     await panelDeFabrica(page);
     await page.getByRole('button', { name: 'Editar' }).click();
@@ -1059,14 +1068,18 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
         .locator('[data-widget]')
         .evaluateAll((casillas) => casillas.map((casilla) => casilla.getAttribute('data-widget')));
     const antes = await orden();
-    expect(antes.indexOf('acciones-rapidas')).toBeGreaterThan(antes.indexOf('fichar'));
+    expect(antes.indexOf('objetivos')).toBeGreaterThan(antes.indexOf('fichar'));
 
     // Con los dos a la vista: en un móvil el Panel empieza debajo de la zona de
     // atención, y un ratón fuera de la pantalla no arrastra nada.
     await enElPanel(page, 'fichar').evaluate((casilla) => {
       casilla.scrollIntoView({ block: 'start' });
     });
-    const desde = await enElPanel(page, 'acciones-rapidas').boundingBox();
+    // **Alto, como un día con todas las cifras.** Cogido por arriba, su centro queda
+    // lejos del dedo: cuando mandaba el centro y no el dedo, se soltaba encima de
+    // «Fichar» y no iba ahí. Pasaba en GitHub unas veces sí y otras no (25-sep).
+    await page.addStyleTag({ content: '[data-widget="objetivos"] { min-height: 40rem; }' });
+    const desde = await enElPanel(page, 'objetivos').boundingBox();
     const hasta = await enElPanel(page, 'fichar').boundingBox();
     if (desde === null || hasta === null) throw new Error('Faltan widgets de fábrica.');
 
@@ -1079,7 +1092,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await expect
       .poll(async () => {
         const ahora = await orden();
-        return ahora.indexOf('acciones-rapidas') < ahora.indexOf('fichar');
+        return ahora.indexOf('objetivos') < ahora.indexOf('fichar');
       })
       .toBe(true);
 
@@ -1089,7 +1102,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
     await expect(enElPanel(page, 'fichar')).toHaveCount(1);
     const guardado = await orden();
-    expect(guardado.indexOf('acciones-rapidas')).toBeLessThan(guardado.indexOf('fichar'));
+    expect(guardado.indexOf('objetivos')).toBeLessThan(guardado.indexOf('fichar'));
   });
 
   test('cada uno se pone su cifra, con su periodo, y sigue al recargar', async ({ page }) => {

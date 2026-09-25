@@ -4,6 +4,7 @@ import {
   IconoBuscar,
   IconoDinero,
   IconoDocumento,
+  IconoEntrar,
   IconoEquipo,
   IconoInventario,
   IconoOrganizacion,
@@ -14,6 +15,7 @@ import {
   type Icono,
 } from '@estook/iconos';
 import type { Permiso, PermisosResueltos } from '@estook/permisos';
+import type { Puesto } from '@estook/ui';
 import { puedeEditar, puedeVer } from '@estook/permisos';
 
 /**
@@ -211,6 +213,29 @@ export const ACCIONES: readonly Accion[] = [
     ir: '/?hacer=merma',
   },
   {
+    // Entrega O · contar lo que hay. Es lo que cierra el día de un jefe de cocina, y
+    // vivía a dos pantallas: Inventario, Movimientos, la pestaña de recuento.
+    id: 'hacer-recuento',
+    app: 'inventario',
+    nombre: 'Hacer recuento',
+    queHace: 'Contar lo que hay y dejar la cámara como está de verdad',
+    icono: IconoDocumento,
+    permiso: { cual: 'accion.cerrar_recuento', como: 'editar' },
+    ir: '/inventario/movimientos/recuento',
+  },
+  {
+    // Entrega O · fichar desde cualquier sitio. Abre la hoja del botón «+», donde
+    // fichar va arriba del todo; se puede pedir desde el buscador, desde Fogón y
+    // desde «Lo de hoy» («Entras a las 16:00»).
+    id: 'fichar',
+    app: 'equipo',
+    nombre: 'Fichar',
+    queHace: 'Entrar o salir de tu turno, con dónde estás',
+    icono: IconoEntrar,
+    permiso: { cual: 'accion.fichar', como: 'editar' },
+    ir: '/?hacer=fichar',
+  },
+  {
     id: 'mermas',
     app: 'inventario',
     nombre: 'Ver las mermas',
@@ -303,20 +328,27 @@ export function puedoHacer(permisos: PermisosResueltos, accion: Accion): boolean
 }
 
 /**
- * Las que trae puestas el widget de accesos rápidos cuando nadie lo ha tocado.
+ * Los atajos de fábrica del botón «+» y de las acciones rápidas, **por puesto**
+ * (entrega O, mejora 6 · 0047).
  *
- * Cuatro, que es lo que cabe en un widget ancho sin apretar. Se filtran por
- * permisos como todo lo demás, así que a un cocinero le salen las suyas.
+ * Como lo hacen las aplicaciones de equipo que mejor lo resuelven (Homebase,
+ * 7shifts, Toast): cada uno tiene a mano **lo que hace varias veces al día** y nada
+ * más. Fichar no está aquí: va siempre arriba, aparte, y resaltado cuando toca. Y
+ * todo pasa por los permisos: a quien no puede cerrar la caja no le sale.
  */
-export const ACCIONES_DE_FABRICA: readonly string[] = [
-  'nuevo-producto',
-  // M7 · «Hacer un pedido» entra en lugar de «Ver el libro»: pedir es de cada
-  // día y leer el libro, de cuando algo no cuadra. El libro sigue a un toque en
-  // Inventario · Movimientos y en el buscador.
-  'nuevo-pedido',
-  'apuntar-merma',
-  'que-atender',
-];
+export const ACCIONES_DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
+  gerente: ['cerrar-caja', 'apuntar-merma', 'recibir', 'nuevo-pedido', 'hacer-recuento', 'invitar'],
+  jefe: [
+    'apuntar-merma',
+    'recibir',
+    'nuevo-pedido',
+    'hacer-recuento',
+    'cerrar-caja',
+    'que-atender',
+  ],
+  cocina: ['apuntar-merma', 'recibir', 'bajo-minimo', 'nuevo-pedido', 'hacer-recuento', 'buscar'],
+  sala: ['apuntar-merma', 'cerrar-caja', 'buscar'],
+};
 
 /**
  * Las de una pantalla, y luego las de toda la aplicacion.

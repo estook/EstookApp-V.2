@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  PANEL_DE_FABRICA,
+  elPanelDeFabrica,
   loQueSePuedePintar,
   usarDeshacer,
   usarEsEscritorio,
@@ -83,7 +83,7 @@ export interface MiPanel {
   readonly anadir: (id: string) => void;
   readonly quitar: (id: string) => void;
   readonly cambiarTamano: (id: string, tamano: TamanoDeWidget) => void;
-  /** Vuelve al Panel de fábrica del rol. */
+  /** Vuelve al Panel de fábrica de su puesto (mejora 9). */
   readonly volverAlDeFabrica: () => void;
   /**
    * Guarda ya lo que estuviera esperando.
@@ -175,7 +175,11 @@ export function usarMiPanel(): MiPanel {
   const puestos = useMemo(() => {
     const datos = consulta.data;
     if (datos === undefined) return null;
-    return loQueSePuedePintar(datos.widgets ?? PANEL_DE_FABRICA, tienePermiso);
+    // Sin tocar, el de su puesto (mejora 9); tocado, el suyo, aunque lo vaciara.
+    const guardados = datos.widgets ?? null;
+    return guardados === null
+      ? elPanelDeFabrica(tienePermiso)
+      : loQueSePuedePintar(guardados, tienePermiso);
   }, [consulta.data, tienePermiso]);
 
   const mandar = useCallback(async () => {
@@ -401,9 +405,9 @@ export function usarMiPanel(): MiPanel {
    */
   const volverAlDeFabrica = useCallback(() => {
     const antes = puestos ?? [];
-    cambiar(loQueSePuedePintar(PANEL_DE_FABRICA, tienePermiso));
+    cambiar(elPanelDeFabrica(tienePermiso));
     sePuedeDeshacer({
-      que: 'Panel de siempre puesto',
+      que: 'Panel de tu puesto puesto',
       deshacer: () => {
         cambiar(antes);
       },

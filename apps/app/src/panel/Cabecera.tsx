@@ -4,7 +4,7 @@ import { puedeVer } from '@estook/permisos';
 import { Logo, clases } from '@estook/ui';
 import { IconoFlechaAbajo } from '@estook/iconos';
 import { usarFichar } from '../ganchos/usarFichar.ts';
-import { usarLoDeHoy } from '../ganchos/usarLoDeHoy.ts';
+import { usarInventarioHoy } from '../ganchos/usarInventarioHoy.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -148,7 +148,7 @@ export function CabeceraDelPanel() {
 function TuResumen() {
   const { permisos } = usarSesion();
   const fichaje = usarFichar();
-  const hoy = usarLoDeHoy();
+  const hoy = usarInventarioHoy();
   const veInventario = puedeVer(permisos, 'app.inventario');
 
   const atencion = hoy.data?.atencion.length ?? 0;

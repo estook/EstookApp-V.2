@@ -108,3 +108,12 @@ botones de la barra que no hacían nada.
   ventana de Fogón: quien paga tiene que poder mirar cuánto lleva.
 - **La voz** —dictar una merma, una temperatura, un gramaje— entra por la misma
   burbuja, con el micrófono dentro de la ventana.
+
+## Enmienda · 25 de septiembre de 2026 ([0047](0047-lo-que-se-ordena.md))
+
+**La puerta de Fogón ya no es una burbuja propia.** Desde la entrega O, el sitio de
+la burbuja lo ocupa el botón «+» (lo que más se hace), y Fogón va **arriba del todo de
+su hoja, en su propio banner**, con dónde estás; en escritorio, además, `Ctrl+J`. Lo
+eligió Richi: dos botones flotantes en un móvil son demasiados, y Fogón tenía que
+destacar. Lo demás de esta decisión sigue igual: no es una pestaña, sabe dónde estás
+y no tiene casilla de escribir hasta M22.

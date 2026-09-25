@@ -19,6 +19,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { TarjetasDelPanel } from '../pantallas/TarjetasDelPanel.tsx';
 import { CabeceraDelPanel } from './Cabecera.tsx';
 import { LoQueFalta } from './LoQueFalta.tsx';
+import { LoDeHoy } from './LoDeHoy.tsx';
 import { ElegirIndicador } from './ElegirIndicador.tsx';
 import { Widget } from './widgets.tsx';
 import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
@@ -101,6 +102,10 @@ export function Panel() {
         aria-label="Lo que necesita tu atención"
         className="grid items-start gap-e3 lg:grid-cols-2"
       >
+        {/* Lo de hoy, ordenado por el servidor (entrega O, mejora 8), de lado a lado. */}
+        <div className="lg:col-span-2">
+          <LoDeHoy />
+        </div>
         <TarjetasDelPanel />
         {/* Lo que falta es una línea, y va de lado a lado. */}
         <div className="lg:col-span-2">
@@ -177,7 +182,7 @@ export function Panel() {
       {editando && (
         <div className="flex flex-wrap items-center gap-e2">
           <Boton tono="texto" onClick={mio.volverAlDeFabrica}>
-            Volver al panel de siempre
+            Volver al de mi puesto
           </Boton>
           <p className="text-secundario text-texto-suave">
             Se guarda solo, y vale en todos tus aparatos de este tipo.
@@ -205,7 +210,7 @@ export function Panel() {
           setEditando(true);
         }}
         alQuitar={mio.quitar}
-        alVolverAlDeSiempre={() => {
+        alVolverAlDeMiPuesto={() => {
           mio.volverAlDeFabrica();
           setAnadiendo(false);
           setEditando(true);
@@ -240,7 +245,7 @@ function AnadirWidget({
   tienePermiso,
   alAnadir,
   alQuitar,
-  alVolverAlDeSiempre,
+  alVolverAlDeMiPuesto,
 }: {
   readonly abierta: boolean;
   readonly alCerrar: () => void;
@@ -248,7 +253,7 @@ function AnadirWidget({
   readonly tienePermiso: (permiso: Permiso) => boolean;
   readonly alAnadir: (id: string) => void;
   readonly alQuitar: (id: string) => void;
-  readonly alVolverAlDeSiempre: () => void;
+  readonly alVolverAlDeMiPuesto: () => void;
 }) {
   const grupos = elCatalogoParaAnadir(
     puestos.map((p) => ({ id: p.id, tamano: 'ancho' as const })),
@@ -374,8 +379,8 @@ function AnadirWidget({
 
         {/* Nada se pierde: el de fábrica vuelve entero con un toque. */}
         <div className="flex flex-wrap items-center gap-e2 border-t border-borde pt-e3">
-          <Boton tono="texto" onClick={alVolverAlDeSiempre}>
-            Recuperar el panel de siempre
+          <Boton tono="texto" onClick={alVolverAlDeMiPuesto}>
+            Volver al de mi puesto
           </Boton>
           <p className="text-secundario text-texto-suave">Vuelven los que traía de fábrica.</p>
         </div>

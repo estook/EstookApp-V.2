@@ -58,6 +58,8 @@ export interface QuienSoy {
     /** Si ese color pinta la aplicación entera, y no solo la cabecera (0026). */
     readonly colorEnLaApp: boolean;
     readonly logo: string | null;
+    /** Su dirección de carta, para siempre: la del QR que se imprime (0047). */
+    readonly direccionDeLaCarta: string;
   } | null;
   readonly organizaciones: readonly { readonly id: string; readonly nombre: string }[];
   readonly locales: readonly {

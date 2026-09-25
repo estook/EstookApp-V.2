@@ -50,10 +50,13 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
 import { preguntarDondeEstoy } from '../ganchos/usarFichar.ts';
 import { TusPreciosDeCompra } from '../inventario/TusPreciosDeCompra.tsx';
+import { TusObjetivos } from './TusObjetivos.tsx';
+import { TuCartaYSuQr } from './TuCartaYSuQr.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
 import {
   ajustesQueVe,
   buscarAjustes,
+  llevaLosObjetivos,
   llevaLosPrecios,
   nombreDeLaSeccion,
   rutaDelAjuste,
@@ -313,6 +316,16 @@ function LaSeccion({ id }: { readonly id: IdDeSeccion }) {
           {llevaElLocal && (
             <Ancla id="llegar-tarde">
               <CuandoEsLlegarTarde />
+            </Ancla>
+          )}
+          {llevaLosObjetivos(permisos, tieneLocal) && (
+            <Ancla id="objetivos">
+              <TusObjetivos />
+            </Ancla>
+          )}
+          {llevaElLocal && (
+            <Ancla id="tu-carta">
+              <TuCartaYSuQr />
             </Ancla>
           )}
           {llevaLosPrecios(permisos, tieneLocal) && (

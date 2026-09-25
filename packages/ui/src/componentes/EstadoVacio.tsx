@@ -51,6 +51,12 @@ export interface EstadoVacioProps {
   readonly sinAccionPorque?: string;
   /** Dentro de un widget pequeno, sin tanto aire. */
   readonly compacto?: boolean;
+  /**
+   * El título es el de la página entera (`<h1>`), no el de un trozo. Para las
+   * páginas que son solo un vacío —la carta que no existe, «no llego al servidor»—:
+   * toda página tiene su título principal, y así lo encuentra un lector de pantalla.
+   */
+  readonly esLaPagina?: boolean;
 }
 
 export function EstadoVacio({
@@ -62,7 +68,9 @@ export function EstadoVacio({
   alternativa,
   sinAccionPorque,
   compacto = false,
+  esLaPagina = false,
 }: EstadoVacioProps) {
+  const Titulo = esLaPagina ? 'h1' : 'p';
   return (
     <div
       className={clases(
@@ -72,7 +80,9 @@ export function EstadoVacio({
     >
       <Dibujo nombre={dibujo} compacto={compacto} {...(acento === undefined ? {} : { acento })} />
 
-      <p className={clases('font-semibold', compacto ? 'text-cuerpo' : 'text-seccion')}>{titulo}</p>
+      <Titulo className={clases('font-semibold', compacto ? 'text-cuerpo' : 'text-seccion')}>
+        {titulo}
+      </Titulo>
 
       <p className="max-w-[38ch] text-secundario text-texto-suave">{frase}</p>
 

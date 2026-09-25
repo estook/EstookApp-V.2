@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  CLAVES_DEL_ALTA,
   comoVa,
   type ClaveDeObjetivo,
   type PasoDelAlta,
@@ -8,6 +9,7 @@ import {
 } from '@estook/dominio';
 import { elLocalDeLaSesion } from '../alta.ts';
 import { consulta, FalloDeAplicacion } from '../contrato.ts';
+import { comoLista } from '../listas.ts';
 
 /**
  * Todo lo que el alta necesita para pintarse, en una consulta (M5).
@@ -151,6 +153,8 @@ export const elAlta = consulta<Record<string, never>, ElAlta>({
       select clave::text as clave, valor::text as valor, de_partida
         from estook.objetivo
        where local_id = ${localId} and hasta is null
+         -- Los tres del alta: la merma y las ventas se ponen en Ajustes (0047).
+         and clave::text = any(${comoLista(CLAVES_DEL_ALTA)}::text::text[])
        order by clave
     `;
 

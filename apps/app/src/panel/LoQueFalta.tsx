@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { IconoAtencion } from '@estook/iconos';
-import { usarLoDeHoy } from '../ganchos/usarLoDeHoy.ts';
+import { usarInventarioHoy } from '../ganchos/usarInventarioHoy.ts';
 
 /**
  * Lo que le falta a Estook para funcionar bien · una línea, no un widget.
@@ -33,7 +33,7 @@ import { usarLoDeHoy } from '../ganchos/usarLoDeHoy.ts';
  */
 export function LoQueFalta() {
   const navegar = useNavigate();
-  const consulta = usarLoDeHoy();
+  const consulta = usarInventarioHoy();
 
   const hoy = consulta.data;
   if (hoy === undefined) return null;

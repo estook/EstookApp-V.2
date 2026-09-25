@@ -185,7 +185,7 @@ test.describe('la barra de escritorio', () => {
       await expect(barra.getByRole('button', { name: new RegExp(que) }).first()).toBeVisible();
     }
 
-    // Fogón no está arriba: tiene su burbuja (23-sep, Richi: «se repite mucho»).
+    // Fogón no está arriba: va en el botón «+», en su banner (23-sep y entrega O).
     await expect(barra.getByRole('button', { name: /Fogón/ })).toHaveCount(0);
 
     await barra.getByRole('button', { name: /^Tu cuenta ·/ }).click();
@@ -361,34 +361,36 @@ test.describe('las tarjetas del Panel', () => {
 // ── Fogón · su sitio, decidido y construido antes que él ─────────────────────
 
 /**
- * «Mejor una burbuja flotante que detecte la página en la que estés, y en el
- *  escritorio arriba a la derecha en el símbolo se abre el chat.»
+ * Fogón vive en el botón «+» desde la entrega O (0047, que enmienda la 0015 en eso):
+ * arriba del todo de la hoja y **en su propio banner**, que es lo que pidió Richi al
+ * elegir un solo botón flotante. Lo que estas pruebas fijan es lo que de verdad se
+ * puede romper sin que nadie se entere:
  *
- * Está escrito en `docs/decisiones/0015`. Lo que estas pruebas fijan es lo que
- * de verdad se puede romper sin que nadie se entere:
- *
- *   · que la burbuja **esté en el móvil y en el escritorio**, y que arriba ya no
- *     haya icono (23-sep-2026): dos puertas a lo mismo en la misma pantalla es una
- *     de más, y ninguna es una de menos;
- *   · que la burbuja y `Ctrl+J` abran **la misma ventana**;
+ *   · que el «+» **esté en el móvil y en el escritorio**, delante de la barra de
+ *     abajo, y que arriba no haya icono de Fogón;
+ *   · que el banner y `Ctrl+J` abran **la misma ventana**;
  *   · y que la ventana **sepa en qué pantalla estás**, que es la mitad de la
  *     promesa de M22.
  *
  * Lo que no se prueba aquí es la conversación, porque no existe: es M22 entera.
  */
+async function abrirFogon(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Qué quieres hacer' }).click();
+  await page.getByRole('button', { name: /Pregúntale a Fogón/ }).click();
+}
 test.describe('Fogón', () => {
   test.describe('en el móvil', () => {
     test.use({ viewport: { width: 375, height: 667 } });
 
-    test('la burbuja está, y se ve de verdad por encima de la barra de abajo', async ({ page }) => {
+    test('el «+» está, y se ve de verdad por encima de la barra de abajo', async ({ page }) => {
       await entrar(page);
 
-      const burbuja = page.getByRole('button', { name: 'Abrir Fogón' });
-      await expect(burbuja).toBeVisible();
+      const boton = page.getByRole('button', { name: 'Qué quieres hacer' });
+      await expect(boton).toBeVisible();
 
-      // Y no basta con que exista: tiene que estar delante. Una burbuja tapada
-      // por la barra de abajo es una burbuja que no se puede pulsar.
-      expect(await seVeDeVerdad(page, '[aria-label="Abrir Fogón"]')).toBe(true);
+      // Y no basta con que exista: tiene que estar delante. Un botón tapado por la
+      // barra de abajo es un botón que no se puede pulsar.
+      expect(await seVeDeVerdad(page, '[aria-label="Qué quieres hacer"]')).toBe(true);
     });
 
     test('va contigo: sigue estando dentro de una app', async ({ page }) => {
@@ -398,24 +400,26 @@ test.describe('Fogón', () => {
       // Esperar al título antes de medir. `domcontentloaded` llega mientras la
       // pantalla todavía dice «Cargando tu sesión», y preguntar ahí qué hay en un
       // punto de la pantalla contesta que no hay nada. Costó un rojo que parecía
-      // un fallo de la burbuja y era de la prueba.
+      // un fallo de la burbuja de antes y era de la prueba.
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Productos');
 
-      expect(await seVeDeVerdad(page, '[aria-label="Abrir Fogón"]')).toBe(true);
+      expect(await seVeDeVerdad(page, '[aria-label="Qué quieres hacer"]')).toBe(true);
     });
 
     test('sabe en qué pantalla estás', async ({ page }) => {
       await entrar(page);
 
       // Desde el Panel.
-      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
-      await expect(page.getByText('Estás en')).toContainText('el Panel');
+      await abrirFogon(page);
+      await expect(page.getByRole('dialog', { name: 'Fogón' }).getByText(/estás en/)).toContainText(
+        'el Panel',
+      );
       await page.keyboard.press('Escape');
 
       // Y desde Inventario, sin que nadie se lo diga.
       await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
-      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
+      await abrirFogon(page);
       await expect(page.getByText('Fogón sabe que estás en')).toContainText('Inventario');
       await expect(page.getByText(/Dictarle una merma/)).toBeVisible();
     });
@@ -431,7 +435,7 @@ test.describe('Fogón', () => {
       await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
-      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
+      await abrirFogon(page);
       const ventana = page.getByRole('dialog', { name: 'Fogón' });
       await expect(ventana.getByText('Fogón sabe que estás en')).toBeVisible();
       await expect(ventana.getByText('Productos de alta')).toHaveCount(0);
@@ -446,7 +450,7 @@ test.describe('Fogón', () => {
         cuenta, no se pinta como botón.
       */
       await entrar(page);
-      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
+      await abrirFogon(page);
 
       const ventana = page.getByRole('dialog', { name: 'Fogón' });
       await expect(ventana.getByText('Lo que puedes hacer aquí ahora')).toBeVisible();
@@ -459,7 +463,7 @@ test.describe('Fogón', () => {
       // Sin casilla de escribir. Una casilla que no contesta es un control
       // muerto, y de eso este proyecto ya lleva bastantes.
       await entrar(page);
-      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
+      await abrirFogon(page);
 
       await expect(page.getByText('Hablar con Fogón llega con el módulo 22.')).toBeVisible();
       await expect(page.getByRole('dialog').getByRole('textbox')).toHaveCount(0);
@@ -469,23 +473,23 @@ test.describe('Fogón', () => {
   test.describe('en el escritorio', () => {
     test.use({ viewport: { width: 1280, height: 800 } });
 
-    test('la burbuja también está, y es la única puerta: arriba ya no hay icono', async ({
+    test('el «+» también está, y es la única puerta: arriba no hay icono de Fogón', async ({
       page,
     }) => {
-      // Richi, 23-sep-2026: quitar el icono de arriba «que ya está la burbuja». Hasta
-      // entonces la burbuja se escondía en escritorio, así que quitar solo el icono
-      // habría dejado a Fogón sin botón en el ordenador. Se miran las dos cosas juntas.
+      // Richi, 23-sep-2026: quitar el icono de arriba «que ya está la burbuja». Desde
+      // la entrega O la puerta es el «+», con Fogón en su banner. Se miran las dos
+      // cosas juntas: que no haya dos puertas, y que no se quede sin ninguna.
       await entrar(page);
-      await expect(page.getByRole('button', { name: 'Abrir Fogón' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Qué quieres hacer' })).toBeVisible();
       await expect(page.getByRole('banner').getByRole('button', { name: /Fogón/ })).toHaveCount(0);
     });
 
-    test('la burbuja abre la ventana, y sabe dónde estás', async ({ page }) => {
+    test('el banner abre la ventana, y sabe dónde estás', async ({ page }) => {
       await entrar(page);
       await abrirSinQueSeCaiga(page, `${APP}#/escandallos`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
-      await page.getByRole('button', { name: 'Abrir Fogón' }).click();
+      await abrirFogon(page);
       await expect(page.getByText('Fogón sabe que estás en')).toContainText('Escandallos');
       await expect(page.getByText('Hablar con Fogón llega con el módulo 22.')).toBeVisible();
     });
@@ -789,6 +793,16 @@ test('si el Panel no puede leer, lo dice, y no se inventa un «no puedes» ni un
   page,
 }) => {
   await entrar(page);
+  // **Con el Panel de fábrica, y no con el que Rosa tenga guardado.** Las pruebas
+  // del Panel de `esqueleto.spec.ts` le quitan y le ponen widgets —el primero que
+  // quitan es el de fichar— y, corriendo a la vez, esta se encontraba sin él.
+  await page.route('**/api/v1/consultas/mi_panel*', (ruta) =>
+    ruta.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ datos: { widgets: null, version: 0 } }),
+    }),
+  );
   await page.route('**/api/v1/consultas/inventario_hoy*', (ruta) =>
     ruta.fulfill({ status: 500, contentType: 'application/json', body: '{}' }),
   );

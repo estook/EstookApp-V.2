@@ -119,7 +119,7 @@ function elLocal(contexto: Contexto): string {
   return localId;
 }
 
-async function laJornada(contexto: Contexto, localId: string): Promise<string> {
+export async function laJornada(contexto: Contexto, localId: string): Promise<string> {
   const filas = await contexto.sql<{ zona_horaria: string; hora_de_corte: string }[]>`
     select zona_horaria, to_char(hora_de_corte, 'HH24:MI') as hora_de_corte
       from estook.local where id = ${localId}
@@ -134,13 +134,13 @@ async function laJornada(contexto: Contexto, localId: string): Promise<string> {
  * Los otros cinco van por su camino, abajo: la cámara es una foto, y las horas, el
  * coste y los retrasos del equipo se cuentan como en el Resumen.
  */
-type PorDias = Exclude<
+export type PorDias = Exclude<
   Indicador,
   'valor-camara' | 'bajo-minimo' | 'horas-equipo' | 'coste-personal' | 'retrasos'
 >;
 
 /** Lo de un día: el numerador y, si es un cociente, el denominador. */
-interface DelDia {
+export interface DelDia {
   readonly arriba: number;
   readonly abajo: number | null;
 }
@@ -151,7 +151,7 @@ interface DelDia {
  * Una consulta por indicador, agrupada por día y por el índice de cada tabla.
  * Treinta días y los treinta de antes son sesenta filas como mucho.
  */
-async function losDias(
+export async function losDias(
   contexto: Contexto,
   localId: string,
   indicador: PorDias,

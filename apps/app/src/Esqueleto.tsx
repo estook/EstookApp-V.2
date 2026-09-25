@@ -19,7 +19,9 @@ import {
   type App,
 } from '@estook/ui';
 import { BuscadorUniversal } from './buscar/BuscadorUniversal.tsx';
-import { BurbujaDeFogon, VentanaDeFogon } from './fogon/Fogon.tsx';
+import { VentanaDeFogon } from './fogon/Fogon.tsx';
+import { BotonDeHacer, HojaDeHacer } from './acciones/BotonDeHacer.tsx';
+import { usarQueHacer } from './ganchos/usarQueHacer.ts';
 import { LoQueLlegaDespues, type LoQueFalta } from './pantallas/LoQueLlegaDespues.tsx';
 import { ContextoDelEsqueleto, type LoQueAbreElEsqueleto } from './ganchos/usarElEsqueleto.tsx';
 import { MiCuenta } from './pantallas/MiCuenta.tsx';
@@ -70,6 +72,15 @@ export function Esqueleto() {
    * diciendo cosas distintas.
    */
   const [fogonAbierto, setFogonAbierto] = useState(false);
+  /**
+   * La hoja del botón «+» (entrega O, mejora 6). Se abre con el botón y con
+   * `?hacer=fichar`, que es a donde llevan «Fichar» del buscador, de Fogón y de lo
+   * de hoy: fichar va arriba del todo de esta hoja.
+   */
+  const [haciendo, setHaciendo] = useState(false);
+  usarQueHacer('fichar', () => {
+    setHaciendo(true);
+  });
 
   const misApps = useMemo(
     () =>
@@ -412,13 +423,22 @@ export function Esqueleto() {
         />
 
         {/*
-        Fogón · su sitio, decidido y construido antes que él (decisión 0015). Una
-        burbuja que va contigo por toda la aplicación, en el móvil y en el
-        escritorio —el icono de la barra de arriba se quitó el 23-sep—, y en
-        escritorio también `Ctrl+J`. La ventana sabe en qué pantalla estás.
+        El botón «+» (entrega O, 0047): lo que más se hace, a un toque, en el sitio
+        donde estaba la burbuja de Fogón. Fogón va dentro, arriba y en su banner, y
+        en escritorio también `Ctrl+J`. La ventana de Fogón sabe en qué pantalla estás.
       */}
-        <BurbujaDeFogon
+        <BotonDeHacer
           alPulsar={() => {
+            setHaciendo(true);
+          }}
+        />
+
+        <HojaDeHacer
+          abierta={haciendo}
+          alCerrar={() => {
+            setHaciendo(false);
+          }}
+          alAbrirFogon={() => {
             setFogonAbierto(true);
           }}
         />

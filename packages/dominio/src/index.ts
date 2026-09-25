@@ -163,20 +163,49 @@ export {
   TIPOS_DE_LOCAL,
   NOMBRE_DEL_TIPO,
   esTipoDeLocal,
-  CLAVES_DE_OBJETIVO,
-  NOMBRE_DEL_OBJETIVO,
-  QUE_ES_EL_OBJETIVO,
-  esClaveDeObjetivo,
   comoVa,
 } from './onboarding.ts';
 
+export type { PasoDelAlta, TipoDeLocal, ComoVaElAlta, Progreso } from './onboarding.ts';
+
+// ── Entrega O · los objetivos y su semáforo (0047) ─────────────────────────
+export {
+  CLAVES_DE_OBJETIVO,
+  CLAVES_DEL_ALTA,
+  CLAVES_EN_FRACCION,
+  NOMBRE_DEL_OBJETIVO,
+  QUE_ES_EL_OBJETIVO,
+  LO_NORMAL_EN_EL_SECTOR,
+  MERMA_DE_PARTIDA,
+  LO_QUE_SE_JUZGA,
+  NOMBRE_DE_LO_QUE_SE_JUZGA,
+  FRANJA_EN_PUNTOS,
+  FRANJA_DE_VENTAS,
+  esClaveDeObjetivo,
+  vaEnFraccion,
+  comoVaFrenteAlObjetivo,
+  objetivoDelCostePrimo,
+  mermaSobreCompras,
+  lasCifrasDelSemaforo,
+  enPuntos,
+} from './objetivos.ts';
 export type {
-  PasoDelAlta,
-  TipoDeLocal,
   ClaveDeObjetivo,
-  ComoVaElAlta,
-  Progreso,
-} from './onboarding.ts';
+  ClaveDelAlta,
+  ClaveEnFraccion,
+  Semaforo,
+  QueSeJuzga,
+  LoQueSeSabeDeLaSemana,
+  ObjetivosVigentes,
+  CifraDelSemaforo,
+} from './objetivos.ts';
+
+// ── Entrega O · la dirección de la carta, la del QR (0047) ──────────────────
+export { DIRECCION_DE_ESTOOK, direccionDeLaCarta, laCartaDeLaDireccion } from './carta.ts';
+
+// ── Entrega O · lo de hoy, por urgencia (0047) ───────────────────────────────
+export { NOMBRE_DEL_ESCALON, loDeHoy, ordenarLoDeHoy } from './hoy.ts';
+export type { Escalon, AppDeLoDeHoy, CosaDeHoy, LoQueHayHoy, MiTurnoDeHoy } from './hoy.ts';
 
 // ── M4 · las reglas de acceso que la pantalla tambien necesita ───────────────
 //
@@ -302,6 +331,7 @@ export {
   ticketMedio,
   loQueNoCuadra,
   porcentajeDe,
+  propuestaDeVentas,
   leerUnCsvDeCierre,
   precioPorUnidad,
   importeDeLinea,

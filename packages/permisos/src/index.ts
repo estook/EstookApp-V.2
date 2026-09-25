@@ -16,7 +16,7 @@
  * que la pantalla no ensene lo que no toca, no para vigilar la puerta.
  */
 
-import type { Indicador } from '@estook/dominio';
+import type { Indicador, QueSeJuzga } from '@estook/dominio';
 
 export const NIVELES = ['sin_acceso', 'ver', 'ver_y_editar'] as const;
 export type Nivel = (typeof NIVELES)[number];
@@ -228,6 +228,21 @@ export const LO_QUE_PIDE_EL_INDICADOR: Readonly<Record<Indicador, readonly Permi
   'horas-equipo': ['app.equipo'],
   'coste-personal': ['app.equipo', 'dato.coste_de_personal'],
   retrasos: ['app.equipo'],
+};
+
+/**
+ * Lo que pide cada cifra del semáforo de objetivos (entrega O, 0047).
+ *
+ * Es lo mismo que pide la cifra de la que sale, y **el coste primo, lo de las
+ * dos**: quien no ve lo que cuesta el personal no puede ver el coste primo, porque
+ * restándole el food cost lo tendría.
+ */
+export const LO_QUE_PIDE_EL_OBJETIVO: Readonly<Record<QueSeJuzga, readonly Permiso[]>> = {
+  materia_prima: ['dato.ventas', 'dato.precio_de_compra'],
+  personal: ['dato.ventas', 'app.equipo', 'dato.coste_de_personal'],
+  coste_primo: ['dato.ventas', 'dato.precio_de_compra', 'app.equipo', 'dato.coste_de_personal'],
+  merma: ['app.inventario', 'dato.precio_de_compra'],
+  ventas_semanales: ['dato.ventas'],
 };
 
 export function puedeTenerElIndicador(

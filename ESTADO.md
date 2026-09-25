@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 25 de septiembre de 2026 · **Antes de M8. V entera, en producción (#67, con la `0045`). Los arreglos del móvil, en su pull request. Lo siguiente, O · Lo que se ordena, con las respuestas de Richi**
+Última actualización: 25 de septiembre de 2026 · **Antes de M8. V entera, en producción (#67). Los arreglos del móvil (#68) y O · Lo que se ordena (#69), hechos y cada uno en su pull request; O trae la migración `0046`. Después, E2**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -9,7 +9,7 @@
 > Lo demás vive en su sitio, y aquí solo se enlaza:
 >
 > - **Lo que hizo cada módulo**, con sus fallos: [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)
-> - **Lo aprendido fallando** (105 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
+> - **Lo aprendido fallando** (109 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](docs/reglas.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](docs/decisiones/)
 > - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)
@@ -20,17 +20,17 @@
 
 _Producción leída el 24 de septiembre de 2026 por la noche: migraciones y organizaciones en solo lectura, la API desplegada preguntada por todas sus operaciones, y las tres ejecuciones de GitHub de la #67 miradas. Las suscripciones y el uso real, del 23-sep._
 
-|                |                                                                                                                                                                                                       |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1**, la puerta del admin · **E1**, crear cuenta y Google · **V · Lo que se ve, entera** (#64, #65, #67) · **el repaso del 23-sep**        |
-| **Ahora**      | **Los arreglos del móvil**, hechos en la rama `arreglos-del-movil-y-la-recarga` con su pull request. Después, **O · Lo que se ordena**, con las respuestas de Richi (25-sep). **E2 · Stripe** después |
-| **`main`**     | Todo fusionado hasta la **#67**                                                                                                                                                                       |
-| **Base**       | Supabase, **45 de 45** migraciones, igual que `main`. El cubo `fotos-de-producto`, creado y en uso                                                                                                    |
-| **API**        | Desplegada el 24-sep a las 19:31 con la #67: **45 consultas y 87 comandos**, comprobado con `bd:comprobar-api`                                                                                        |
-| **Sitio**      | `estook.com`, `/app/` y `/admin/`. Se publica solo al fusionar (la #67, publicada el 24-sep a las 19:21)                                                                                              |
-| **Pruebas**    | En `main`, en GitHub: **1.197** unitarias y de base y **642** de pantalla (los tres navegadores), con las **32 capturas** comparadas, en verde y sin repetidas · catálogo **126 de 132** (95 %)       |
-| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                       |
-| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                          |
+|                |                                                                                                                                                                                                 |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados** | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1**, la puerta del admin · **E1**, crear cuenta y Google · **V · Lo que se ve, entera** (#64, #65, #67) · **el repaso del 23-sep**  |
+| **Ahora**      | **Los arreglos del móvil** (#68, sin migración) y **O · Lo que se ordena** (#69, con la `0046`), hechos y cada uno en su pull request: se fusionan en ese orden. **E2 · Stripe** después        |
+| **`main`**     | Todo fusionado hasta la **#67**                                                                                                                                                                 |
+| **Base**       | Supabase, **45 de 45** migraciones, igual que `main`. El cubo `fotos-de-producto`, creado y en uso                                                                                              |
+| **API**        | Desplegada el 24-sep a las 19:31 con la #67: **45 consultas y 87 comandos**, comprobado con `bd:comprobar-api`                                                                                  |
+| **Sitio**      | `estook.com`, `/app/` y `/admin/`. Se publica solo al fusionar (la #67, publicada el 24-sep a las 19:21)                                                                                        |
+| **Pruebas**    | En `main`, en GitHub: **1.197** unitarias y de base y **642** de pantalla (los tres navegadores), con las **32 capturas** comparadas, en verde y sin repetidas · catálogo **126 de 132** (95 %) |
+| **Entrar**     | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                 |
+| **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                    |
 
 > **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
 > 100 %** (Richi, 16-sep). Los planes: [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)
@@ -44,9 +44,9 @@ _Producción leída el 24 de septiembre de 2026 por la noche: migraciones y orga
 | —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                               |
 | 1   | **V · Lo que se ve**             | ✓ en producción (#64, #65, #67)                                                     |
 | —   | **El repaso del 23-sep**         | ✓ en producción (#66)                                                               |
-| —   | **Los arreglos del móvil**       | **Hechos, en su pull request** (abajo)                                              |
-| 2   | **O · Lo que se ordena**         | **Lo siguiente**: Richi contestó el 25-sep                                          |
-| 3   | **E2 · El pago con Stripe**      | Richi ya tiene cuenta: **solo hará falta una clave de prueba** el día que empiece   |
+| —   | **Los arreglos del móvil**       | **Hechos, en su pull request** (#68)                                                |
+| 2   | **O · Lo que se ordena**         | **Hecha, en su pull request** (#69), con la migración `0046` (abajo)                |
+| 3   | **E2 · El pago con Stripe**      | **Lo siguiente**. Richi ya tiene cuenta: **hará falta una clave de prueba**         |
 | 4   | **A2 · Clientes**                | Falta                                                                               |
 | 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7 (avisos a quien manda, invitar a un pedido) |
 | 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                             |
@@ -70,7 +70,27 @@ cuatro, arreglados en `arreglos-del-movil-y-la-recarga` y contados en la
 
 **Surte efecto al fusionar y desplegar la API** (sin migración). **El `#` de la dirección
 no era el fallo**: es el enrutado de la [0008](docs/decisiones/0008-enrutado-con-almohadilla.md),
-porque GitHub Pages solo sirve ficheros que existen.
+porque GitHub Pages solo sirve ficheros que existen. En GitHub, la #68: **1.203** unitarias
+y de base y **657** de pantalla, en verde y sin repetidas.
+
+### O · Lo que se ordena (25-sep) · en su pull request (#69), con la migración `0046`
+
+Las mejoras 6, 8, 9 y 17 y el QR de la 20, con lo que contestó Richi el 25-sep
+(«copia a los mejores y mejóralo»). Razonado en la [0047](docs/decisiones/0047-lo-que-se-ordena.md):
+
+| Qué                             | Cómo                                                                                                                                                             |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **El botón «+»** (6)            | Donde estaba la burbuja. **Fogón arriba, en su propio banner**; fichar cuando se puede; los atajos de cada puesto, los mismos que las acciones rápidas           |
+| **Lo de hoy** (8)               | Arriba del Panel, ordenado por el servidor en cinco escalones con las consultas de siempre; cada cosa con su botón y «Luego»                                     |
+| **El Panel de cada puesto** (9) | Gerente, jefe, cocina y sala, sacados de los permisos; todos con el reloj arriba; «Volver al de mi puesto»                                                       |
+| **Objetivos con semáforo** (17) | Food cost, personal, **coste primo**, merma (**en % de lo comprado**) y ventas de la semana; con su porqué plegado; se cambian en Ajustes · Tu local             |
+| **El QR para siempre** (20)     | `estook.com/carta/<local>`, fija y única (la pone la base); la carta sin sesión; SVG, PNG y cartel desde Ajustes. La carta es la página de «no existe» del sitio |
+
+En GitHub, la #69: **1.246** unitarias y de base y **681** de pantalla, en verde y **sin
+repetidas**. Al probarla salió un fallo de verdad del Panel: **al arrastrar un widget
+mandaba su centro y no el dedo**, y soltado encima de otro podía irse a un tercero.
+Ahora decide el dedo. Lo cazó el rastro del intento que falla, que desde ahora GitHub
+guarda siempre (lección 109).
 
 ### Lo que todavía NO está en la app
 
@@ -78,7 +98,9 @@ Para que nadie dé por hecho lo que solo está escrito:
 
 - **De las veinte mejoras, seis en producción**: la 1 (modo cocina), la 2 (las cifras
   de cada app), la 3 (el Resumen), la 4 (los vacíos), la 5 (el oscuro y las fotos de
-  producto) y la 7 (Ajustes en secciones). Las demás tienen su plan y su entrega en
+  producto) y la 7 (Ajustes en secciones). **La 6, la 8, la 9, la 17 y el QR de la 20,
+  hechas en la #69**: hasta fusionar, en `estook.com` no hay «+», ni lo de hoy,
+  ni semáforo, ni QR. Las demás tienen su plan y su entrega en
   [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
 - **Las fotos son de producto, no de plato.** La foto del plato irá en la carta (M10), y
   el escandallo (M9) desglosará cada ración con el coste del inventario. **Escanear el
@@ -89,7 +111,9 @@ Para que nadie dé por hecho lo que solo está escrito:
 - **No se cobra** y el estado de la suscripción no se cumple en la API (E2). No hay
   recuperar la contraseña por correo.
 - **Lo que espera a su módulo**: leer fotos (M22), responder reseñas (Business
-  Profile), la carta con QR (M9 y M10), hablar con Fogón (M22) y el TPV (Fase 4).
+  Profile), **los platos de la carta** (M9 y M10: el QR ya está, y hasta entonces enseña
+  el nombre, la dirección, el teléfono y el horario), hablar con Fogón (M22) y el TPV
+  (Fase 4).
 
 ### Lo que hay de verdad en producción
 
@@ -121,8 +145,8 @@ Uso real, leído el 23-sep: 11 productos, 316 movimientos, 7 cierres de caja, 25
 (#59) · **V entera**: fusionada, `0045` aplicada, API desplegada y mirada en el móvil
 (24-sep) · **la cuenta de Stripe** (24-sep).
 
-**Ahora:** fusionar los arreglos del móvil y desplegar la API (sin migración). Las
-preguntas de O, **contestadas** el 25-sep. Los pasos de cada entrega, uno a uno, en
+**Ahora:** fusionar los arreglos del móvil (#68) y desplegar la API, sin migración; y
+después O: fusionar, aplicar la `0046` y desplegar la API otra vez. Los pasos de cada entrega, uno a uno, en
 [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md).
 
 **Lo que hará falta para E2**, el día que empiece y no antes:
@@ -325,6 +349,7 @@ En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 | **0044** | Las cifras de cada app: la misma tarjeta, las mismas cuentas                   |
 | **0045** | El aspecto y el orden: Resumen, mosaico y Ajustes por secciones                |
 | **0046** | Los vacíos invitan, el oscuro se mide y fotografía, y la foto de cada producto |
+| **0047** | El «+» con Fogón, lo de hoy, el Panel de cada puesto, el semáforo y el QR      |
 
 > **Ojo con los números:** las decisiones y las migraciones se numeran aparte. La
 > **decisión** 0041 es el panel de administración; la **migración** `0041` es la de que
@@ -360,7 +385,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`, `packages/ui/fuentes/`
   y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0045`.** Se amplían con una `0046`, nunca se editan
+- **Las migraciones `0001` a `0046`.** Se amplían con una `0047`, nunca se editan
   (regla 2). Y al ampliar una función SQL, **se copia la original entera**.
 - **Un valor de un tipo enumerado no se quita**: Postgres no sabe. Se añade con
   `add value if not exists`, y no se usa en la misma transacción.
@@ -387,12 +412,24 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   `visto_por_ultima_vez`, migración `0042`): volver a leer las sesiones desde una
   consulta devuelve a todos fuera de línea para quien no puede quitar accesos.
 - **Las funciones `security definer`** son la puerta de atrás y están tasadas: una prueba
-  las cuenta con sus nombres —**32 en `estook`** y 3 en `plataforma`— y otra comprueba
+  las cuenta con sus nombres —**34 en `estook`** y 3 en `plataforma`— y otra comprueba
   que **ninguna la puede ejecutar nadie más que la API** (`0043`).
 - **`sinRecordar`** salta la idempotencia, y solo lo lleva `sigo_aqui`; una prueba tasa
   la lista. Lo que suma, resta o crea algo se recuerda siempre.
 - **El mosaico** (0045): varias tarjetas en una pantalla van en `Mosaico`. Y lo elegido va
   en `bg-texto text-superficie`, nunca en `bg-charcoal`, que en oscuro no se lee.
+- **Los atajos son uno** (`usarMisAtajos`): los del «+» y los de las acciones rápidas,
+  por persona y aparato; sin elegir, los de su puesto (`ACCIONES_DEL_PUESTO`). **El Panel
+  de fábrica sale del puesto** (`elPuestoDe`, por permisos, nunca por nombre de rol).
+- **Lo de hoy no cuenta nada por su cuenta**: `lo_de_hoy` llama a `inventario_hoy`,
+  `compras_de_hoy` y `mi_fichaje`, y el orden es del dominio (`loDeHoy`). **La caja y las
+  cifras cuentan con la jornada; las caducidades y las compras, con el calendario.**
+- **El semáforo cuenta como las cifras** (`losDias`, `lasHorasDelEquipo`) y lo pinta el
+  dominio (`lasCifrasDelSemaforo`); la merma, **en fracción de lo comprado**. Quien no ve
+  el personal no ve el coste primo.
+- **La dirección de la carta no se cambia nunca**: la pone la base al nacer el local
+  (`poner_la_direccion_de_la_carta`) y la lleva un QR impreso. La carta sin sesión sale
+  solo de `la_carta_publica`, y **la página de la carta es la `404.html` del sitio**.
 - **La API entra en Postgres por el modo transacción** (`laPuertaDeLaApi`): el de sesión
   admite 15 clientes. Nada de la API puede usar la conexión fuera de `begin`.
 - **Solo `sin_sesion` manda a entrar.** Cualquier otro fallo de `quien_soy` se reintenta

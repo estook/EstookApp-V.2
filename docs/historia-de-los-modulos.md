@@ -2492,6 +2492,72 @@ Las pruebas: `el-movil-y-la-recarga.spec.ts` (a 320 y 375 px, cada palabra en un
 línea y nada que se salga; el servidor fallando y la sesión caducada), vistas fallar con
 el arreglo quitado, y `postgres.prueba.ts`. Lecciones 101 a 105.
 
+### Antes de M8 · O, lo que se ordena
+
+**En la rama `o-lo-que-se-ordena`**, con su pull request y la migración `0046`. Las
+mejoras 6, 8, 9 y 17 y el QR de la 20, razonadas en la
+[0047](decisiones/0047-lo-que-se-ordena.md) con lo que contestó Richi el 25-sep:
+«copia a los mejores y mejóralo», y Fogón destacado en su propio banner.
+
+#### Lo que se hizo
+
+- **El botón «+»** donde estaba la burbuja de Fogón (`acciones/BotonDeHacer.tsx`):
+  Fogón arriba en su banner con dónde estás, fichar cuando se puede y los atajos de
+  cada puesto (`ACCIONES_DEL_PUESTO`), que son los mismos que las acciones rápidas del
+  Panel (`usarMisAtajos`). «Fichar» y «Hacer recuento» entran en el catálogo de
+  acciones; `?hacer=fichar` abre la hoja desde cualquier sitio.
+- **Lo de hoy** (`lo_de_hoy` y `loDeHoy`): la zona de atención del Panel, ordenada por
+  el servidor en cinco escalones con las consultas de siempre, con su botón en cada
+  cosa y «Luego». La caja sin cerrar solo avisa si ese día de la semana se suele
+  cerrar.
+- **El Panel de cada puesto** (`elPuestoDe`, `PANEL_DEL_PUESTO`): cuatro, sacados de los
+  permisos, todos con el reloj arriba; «Volver al de mi puesto».
+- **El semáforo** (`mis_objetivos`, `lasCifrasDelSemaforo`, el widget «Objetivos» y
+  Ajustes · Tu local): food cost, personal, coste primo, merma en % de lo comprado y
+  ventas de la semana, con su porqué plegado. Los objetivos, por fin fuera del alta.
+- **El QR para siempre** (`0046`, `la_carta`, `apps/carta`, `pantallas/TuCartaYSuQr.tsx`):
+  la dirección fija y única, la carta sin sesión y el QR en SVG, PNG y cartel, con `uqr`
+  cargado aparte. La página de la carta es la `404.html` de todo el sitio, y la de
+  pruebas de M0 que se veía en `estook.com/carta/` se ha ido.
+- De paso: `usarLoDeHoy`, que leía `inventario_hoy`, se llama ahora `usarInventarioHoy`;
+  `EstadoVacio` puede ser el título de la página (`esLaPagina`).
+
+#### Lo que se torció por el camino
+
+- **Dos relojes.** La primera versión de lo de hoy devolvía el día de las compras (el
+  del calendario) y juzgaba la caja con él; a la una de la madrugada, con el corte a
+  las cinco, la caja de «ayer» era la de anteayer. Cada cosa cuenta ahora con el suyo, y
+  la prueba que lo cazó se escribió a esa hora.
+- **Una batería de pruebas contaminada.** Se cambió de rama con la batería de pantalla
+  corriendo, y la API de pruebas se recarga desde el código: fallaron pruebas que
+  pasaban. Se repitió entera en su rama.
+- **El Panel del gerente sin su reloj.** El primer reparto quitaba «Fichar» a quien
+  lleva el local; lo vio una prueba, y el Manifiesto ya decía «a todo el que ficha,
+  Fichar arriba del todo».
+- **Una prueba que pasaba sola y fallaba en compañía.** La de «el Panel no puede leer»
+  esperaba el widget de fichar en el Panel guardado de Rosa, y las del Panel de
+  `esqueleto.spec.ts` se lo quitaban a la vez. Ahora contesta ella misma con el Panel
+  de fábrica.
+- **«Ver» en las tarjetas estrechas.** En el móvil, la palabra le quitaba sitio al
+  título y «Valor de la cámara» salía en tres líneas; por debajo de 16 rem queda solo
+  la flecha.
+- **Un botón que llevaba a donde ya estabas.** En Ajustes, la tarjeta de los objetivos
+  ofrecía «Poner tus objetivos». El semáforo ya no propone ir a la pantalla en la que
+  está (`usarSinIrAquiMismo`), y la prueba lo mira.
+- **Una repetida de Safari sin rastro.** La primera vuelta verde de la #69 repitió una
+  prueba al entrar, y GitHub no guardaba nada del intento que falló. Ahora el rastro
+  es de ese intento y el informe se sube también en verde.
+- **Al arrastrar, mandaba el centro y no el dedo.** Con el rastro, la siguiente
+  repetida se explicó sola: el Panel decidía dónde caía un widget por el centro del
+  que se arrastra (`closestCenter`), y el de los objetivos, alto y cogido por arriba,
+  tenía el centro muy lejos del dedo. Soltado encima de «Fichar», no iba ahí. Ahora
+  decide el dedo (`pointerWithin`), y el centro solo con el teclado. La prueba lo pone
+  alto a propósito: sin el cambio falla siempre.
+
+Las pruebas: `objetivos.prueba.ts`, `hoy.prueba.ts` y `carta.prueba.ts` en el dominio;
+`lo-que-se-ordena.prueba.ts` contra la base; `lo-que-se-ordena.spec.ts` y las de Fogón
+de `pantalla.spec.ts` en pantalla. Lecciones 106 a 109.
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

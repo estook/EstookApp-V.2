@@ -300,6 +300,9 @@ describe('las puertas se cierran solas', () => {
         'pedir_codigo_de_registro',
         'confirmar_registro',
         'entrar_con_google',
+        // Entrega O (0047) · la carta de un local: quien escanea el QR de la mesa
+        // no ha entrado en ningún sitio. Solo devuelve lo que el local ya enseña.
+        'la_carta',
       ].sort(),
     );
   });

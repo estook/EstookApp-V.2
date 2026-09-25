@@ -30,7 +30,7 @@ export interface Seccion {
 export const SECCIONES: readonly Seccion[] = [
   { id: 'aparato', nombre: 'Este aparato', queHay: 'Letra, tema y modo cocina' },
   { id: 'cuenta', nombre: 'Mi cuenta', queHay: 'Contraseña, PIN, doble factor e idioma' },
-  { id: 'local', nombre: 'Tu local', queHay: 'Marca, ubicación, retrasos y precios' },
+  { id: 'local', nombre: 'Tu local', queHay: 'Marca, objetivos, el QR de tu carta y precios' },
   { id: 'conexiones', nombre: 'Conexiones', queHay: 'Tus ventas y Google' },
   { id: 'organizacion', nombre: 'Organización', queHay: 'La seguridad de todo el negocio' },
 ];
@@ -92,6 +92,18 @@ export const AJUSTES: readonly Ajuste[] = [
     seccion: 'local',
     nombre: 'Cuándo es llegar tarde',
     palabras: 'retraso tarde margen minutos fichaje',
+  },
+  {
+    id: 'objetivos',
+    seccion: 'local',
+    nombre: 'Tus objetivos',
+    palabras: 'objetivos food cost coste materia prima personal merma ventas semáforo porcentaje',
+  },
+  {
+    id: 'tu-carta',
+    seccion: 'local',
+    nombre: 'Tu carta y su QR',
+    palabras: 'qr carta código mesa imprimir cartel menú dirección',
   },
   {
     id: 'precios-de-compra',
@@ -158,6 +170,14 @@ export function llevaLosPrecios(permisos: PermisosResueltos, tieneLocal: boolean
   );
 }
 
+/**
+ * Si alguien ve sus objetivos en Ajustes (entrega O): quien puede ponerlos, que es
+ * lo que pide el comando. Ver el semáforo es otra cosa, y está en el Panel.
+ */
+export function llevaLosObjetivos(permisos: PermisosResueltos, tieneLocal: boolean): boolean {
+  return tieneLocal && puedeEditar(permisos, 'accion.poner_objetivos');
+}
+
 /** Los ajustes que ve una persona: los de sus secciones. */
 export function ajustesQueVe(quien: QuienMira): readonly Ajuste[] {
   const suyas = new Set(seccionesQueVe(quien).map((s) => s.id));
@@ -165,6 +185,7 @@ export function ajustesQueVe(quien: QuienMira): readonly Ajuste[] {
   return AJUSTES.filter((ajuste) => {
     if (!suyas.has(ajuste.seccion)) return false;
     if (ajuste.id === 'precios-de-compra') return llevaLosPrecios(quien.permisos, quien.tieneLocal);
+    if (ajuste.id === 'objetivos') return llevaLosObjetivos(quien.permisos, quien.tieneLocal);
     if (ajuste.seccion === 'local' && ajuste.id !== 'tu-marca') return llevaElLocal;
     return true;
   });

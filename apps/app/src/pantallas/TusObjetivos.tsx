@@ -12,7 +12,7 @@ import {
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { Aviso, Boton, Campo, Cargando, ErrorEnCristiano, Tarjeta, aCentimos } from '@estook/ui';
 import { usarMisObjetivos } from '../ganchos/usarMisObjetivos.ts';
-import { FilaDelSemaforo } from '../objetivos/Semaforo.tsx';
+import { ListaDelSemaforo } from '../objetivos/Semaforo.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -119,13 +119,8 @@ export function TusObjetivos() {
     <Tarjeta titulo="Tus objetivos" origen="Pintan de verde, ámbar o rojo el semáforo del Panel">
       <div className="flex flex-col gap-e4">
         {datos.cifras.length > 0 && (
-          <section
-            aria-label="Cómo vas esta semana"
-            className="flex flex-col divide-y divide-borde"
-          >
-            {datos.cifras.map((cifra) => (
-              <FilaDelSemaforo key={cifra.que} cifra={cifra} />
-            ))}
+          <section aria-label="Cómo vas esta semana">
+            <ListaDelSemaforo cifras={datos.cifras} />
           </section>
         )}
 

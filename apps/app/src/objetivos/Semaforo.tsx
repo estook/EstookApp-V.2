@@ -79,3 +79,77 @@ export function FilaDelSemaforo({ cifra }: { readonly cifra: CifraDelSemaforo })
     </details>
   );
 }
+
+/** El orden de lo que se mira: primero lo que se sale. */
+const PESO: Readonly<Record<ColorDelSemaforo, number>> = {
+  rojo: 0,
+  ambar: 1,
+  verde: 2,
+  sin_dato: 3,
+};
+
+/**
+ * Las cifras del semáforo, con **las que no tienen datos juntas en una línea**.
+ *
+ * Cinco filas de «Sin datos» con una raya cada una es mucho texto para no decir
+ * nada, que es lo primero que ve quien acaba de empezar. Así, las que existen van en
+ * su fila —las rojas primero— y las demás dicen de una vez que faltan datos y qué
+ * hacer para tenerlos (sin repetir el mismo botón).
+ */
+export function ListaDelSemaforo({
+  cifras,
+  cuantas,
+}: {
+  readonly cifras: readonly CifraDelSemaforo[];
+  /** Cuántas filas como mucho, en un widget pequeño. Sin decirlo, todas. */
+  readonly cuantas?: number;
+}) {
+  const navegar = useNavigate();
+  const conDato = [...cifras]
+    .filter((c) => c.semaforo !== 'sin_dato')
+    .sort((a, b) => PESO[a.semaforo] - PESO[b.semaforo]);
+  const sinDato = cifras.filter((c) => c.semaforo === 'sin_dato');
+  const queHacer = [
+    ...new Map(
+      sinDato.flatMap((c) =>
+        c.queHacer === null ? [] : [[c.queHacer.texto, c.queHacer] as const],
+      ),
+    ).values(),
+  ];
+  const nombres = sinDato.map((c) => c.nombre);
+  const enUnaFrase =
+    nombres.length <= 1
+      ? (nombres[0] ?? '')
+      : `${nombres.slice(0, -1).join(', ')} y ${nombres.at(-1) ?? ''}`;
+
+  return (
+    <div className="flex flex-col divide-y divide-borde">
+      {conDato.slice(0, cuantas ?? conDato.length).map((cifra) => (
+        <FilaDelSemaforo key={cifra.que} cifra={cifra} />
+      ))}
+      {sinDato.length > 0 && (
+        <div className="flex flex-col gap-e2 px-e1 py-e3">
+          <p className="text-secundario text-texto-suave">
+            {conDato.length === 0 ? 'Todavía no hay datos de esta semana' : 'Sin datos todavía'}:{' '}
+            {enUnaFrase}.
+          </p>
+          {queHacer.length > 0 && (
+            <div className="flex flex-wrap gap-e2">
+              {queHacer.map((accion) => (
+                <Boton
+                  key={accion.texto}
+                  tono="secundario"
+                  onClick={() => {
+                    navegar(accion.ir);
+                  }}
+                >
+                  {accion.texto}
+                </Boton>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

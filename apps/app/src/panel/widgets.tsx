@@ -13,7 +13,6 @@ import {
   masDias,
   minutosHasta,
   porcentajeDe,
-  type CifraDelSemaforo,
   type FechaOperativa,
 } from '@estook/dominio';
 import { appsVisibles, puedeEditar, puedeVer } from '@estook/permisos';
@@ -42,7 +41,7 @@ import { IconoAnadir, IconoEntrar, IconoSalir, IconoUbicacion } from '@estook/ic
 import { useNavigate } from 'react-router-dom';
 import { usarInventarioHoy } from '../ganchos/usarInventarioHoy.ts';
 import { usarMisObjetivos } from '../ganchos/usarMisObjetivos.ts';
-import { FilaDelSemaforo } from '../objetivos/Semaforo.tsx';
+import { ListaDelSemaforo } from '../objetivos/Semaforo.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { AccesosRapidos } from './AccesosRapidos.tsx';
 import { IndicadorWidget } from './Indicador.tsx';
@@ -1035,8 +1034,9 @@ function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
 /**
  * Los objetivos, con su semáforo (entrega O, mejora 17 · 0047).
  *
- * En ancho, lo que se sale primero: lo rojo y lo ámbar, y si todo está en verde, se
- * dice en una línea. En grande, las cinco. Cada una abre su porqué con un toque.
+ * Lo que se sale primero, y lo que no tiene datos junto en una línea con lo que hay
+ * que hacer para tenerlos. En ancho, tres filas; en grande, todas. Cada una abre su
+ * porqué con un toque.
  */
 function ObjetivosWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const consulta = usarMisObjetivos();
@@ -1050,17 +1050,6 @@ function ObjetivosWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
     );
   }
 
-  const importa = (c: CifraDelSemaforo) => c.semaforo === 'rojo' || c.semaforo === 'ambar';
-  const peso: Readonly<Record<CifraDelSemaforo['semaforo'], number>> = {
-    rojo: 0,
-    ambar: 1,
-    sin_dato: 2,
-    verde: 3,
-  };
-  const ordenadas = [...datos.cifras].sort((a, b) => peso[a.semaforo] - peso[b.semaforo]);
-  const cuantas = tamano === 'grande' ? ordenadas.length : 3;
-  const enVerde = datos.cifras.filter((c) => c.semaforo === 'verde').length;
-
   return (
     <Caja
       titulo="Objetivos"
@@ -1073,18 +1062,7 @@ function ObjetivosWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
           Tu acceso no incluye las cifras de los objetivos.
         </p>
       ) : (
-        <div className="flex flex-col divide-y divide-borde">
-          {tamano !== 'grande' && !datos.cifras.some(importa) && (
-            <p className="pb-e2 text-secundario text-texto-suave">
-              {enVerde === datos.cifras.length
-                ? 'Todo dentro de tus objetivos esta semana.'
-                : 'Nada fuera de tus objetivos esta semana.'}
-            </p>
-          )}
-          {ordenadas.slice(0, cuantas).map((cifra) => (
-            <FilaDelSemaforo key={cifra.que} cifra={cifra} />
-          ))}
-        </div>
+        <ListaDelSemaforo cifras={datos.cifras} {...(tamano === 'grande' ? {} : { cuantas: 3 })} />
       )}
     </Caja>
   );

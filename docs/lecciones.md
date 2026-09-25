@@ -311,3 +311,11 @@
      (y a 320 px, con cero) y la barra de abajo se salía por los lados. Y partir por
      cualquier letra (`overflow-wrap:anywhere`) tapa el problema en vez de dar sitio:
      lo que se da es ancho, y se parte por palabras.
+104. **Quitar lo que alguien está esperando lo deja esperando para siempre.** Vaciar la
+     caché con `removeQueries` cuando una pantalla ya ha pedido lo suyo la deja mirando
+     una consulta que nadie vuelve a pedir. Para tirar lo de antes y seguir, se
+     reinicia (`resetQueries`). Y el orden importa: React monta a los hijos antes de que
+     corra el efecto del padre.
+105. **Lo que solo se puede leer una vez no se repite a ciegas.** Repetir una navegación
+     porque el navegador se cayó está bien, salvo si la primera ya gastó algo, como la
+     vuelta de Google. Quien abre algo de un solo uso dice cómo volver a prepararlo.

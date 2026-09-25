@@ -156,3 +156,17 @@ test('y si el servidor dice que la sesión no vale, entonces sí pide entrar', a
   await expect(page.getByRole('heading', { level: 1, name: 'Entra en Estook' })).toBeVisible();
   await expect(page.getByText('No llego al servidor')).toHaveCount(0);
 });
+
+test('quien tiene dos locales elige uno al entrar, y su Panel carga', async ({ page }) => {
+  // «Cargando tu panel» para siempre: al elegir local, la sesión vaciaba la caché
+  // con `removeQueries` justo después de que el Panel pidiera lo suyo, y lo dejaba
+  // colgado. Lo cazó una prueba de la entrega O con Luis; se arregla con
+  // `resetQueries`, que vuelve a pedir lo que está a la vista (25-sep).
+  await entrarEnLaApp(page, 'nuria@ejemplo.estook.com');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('¿Dónde estás hoy?');
+  await page.getByRole('button', { name: /Bar Playa/ }).click();
+
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  await expect(page.getByText('Cargando tu panel')).toHaveCount(0, { timeout: 15_000 });
+  await expect(page.locator('[data-widget]').first()).toBeVisible();
+});

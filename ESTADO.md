@@ -9,7 +9,7 @@
 > Lo demás vive en su sitio, y aquí solo se enlaza:
 >
 > - **Lo que hizo cada módulo**, con sus fallos: [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)
-> - **Lo aprendido fallando** (103 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
+> - **Lo aprendido fallando** (105 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](docs/reglas.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](docs/decisiones/)
 > - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)
@@ -58,8 +58,8 @@ _Producción leída el 24 de septiembre de 2026 por la noche: migraciones y orga
 
 ### Los arreglos del móvil (24 y 25-sep) · en su pull request, sin migración
 
-Al mirar V en el móvil, Richi encontró dos fallos; al probarlos salió un tercero. Los
-tres, arreglados en `arreglos-del-movil-y-la-recarga` y contados en la
+Al mirar V en el móvil, Richi encontró dos fallos; al probarlos salieron dos más. Los
+cuatro, arreglados en `arreglos-del-movil-y-la-recarga` y contados en la
 [historia](docs/historia-de-los-modulos.md):
 
 | Qué se veía                                               | La causa                                                                                                                      | El arreglo                                                                                                                                                  |

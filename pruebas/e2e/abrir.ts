@@ -36,21 +36,34 @@ const SE_PUEDE_REPETIR = [EL_MOTOR_SE_HA_CAIDO, LA_PAGINA_SE_MOVIA_SOLA];
 /** Hasta dónde se espera: a que esté el documento (lo normal) o a que cargue todo. */
 type HastaCuando = 'domcontentloaded' | 'load';
 
-async function unaVezMasSiSeCae(navegar: () => Promise<unknown>): Promise<void> {
+async function unaVezMasSiSeCae(
+  navegar: () => Promise<unknown>,
+  antesDeRepetir?: () => Promise<void>,
+): Promise<void> {
   try {
     await navegar();
   } catch (fallo) {
     if (!SE_PUEDE_REPETIR.some((motivo) => String(fallo).includes(motivo))) throw fallo;
+    await antesDeRepetir?.();
     await navegar();
   }
 }
 
+/**
+ * `antesDeRepetir`, para las direcciones **de un solo uso** (25-sep). La vuelta de
+ * Google se lee una vez: la app borra lo que guardó al salir hacia Google en cuanto
+ * la lee. Si el motor se caía después de que la app la hubiera leído, repetir la
+ * misma dirección encontraba lo guardado ya gastado, y la app enseñaba la puerta con
+ * «la vuelta no coincide». Pasó en Safari, en la #68. Quien abre una de esas deja
+ * aquí cómo volver a prepararla.
+ */
 export async function abrirSinQueSeCaiga(
   page: Page,
   direccion: string,
   hasta: HastaCuando = 'domcontentloaded',
+  antesDeRepetir?: () => Promise<void>,
 ): Promise<void> {
-  await unaVezMasSiSeCae(() => page.goto(direccion, { waitUntil: hasta }));
+  await unaVezMasSiSeCae(() => page.goto(direccion, { waitUntil: hasta }), antesDeRepetir);
 }
 
 /**

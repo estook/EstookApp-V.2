@@ -2598,12 +2598,16 @@ oscuro, mirando la consola, las peticiones y lo que se sale por los lados:
   «caduca hoy». Ahora dice «hoy».
 - **«Fichar la entrada» partía en dos líneas** en la casilla pequeña: ahí se ve
   «Entrada», y se oye la frase entera.
+- **Entrar a veces no hacía nada.** «Continuar con Google» aparecía al contestar el
+  servidor, encima del formulario, y lo empujaba: quien pulsaba «Entrar» en ese
+  momento tocaba donde ya no estaba. Lo cazó Safari en GitHub. Ahora Google ocupa su
+  sitio desde el principio.
 
 Ningún error de consola ni petición fallida en todo el recorrido.
 
 Las pruebas: `formasDeLaTendencia.prueba.ts`, el título de la caja en
 `lo-que-se-ordena.prueba.ts` y `el-panel-en-el-movil.spec.ts` (plegado, sin avisos, el
-«+» al bajar y ninguna ficha cargando a escondidas). Lecciones 110 a 112.
+«+» al bajar y ninguna ficha cargando a escondidas). Lecciones 110 a 113.
 
 ### Cambio de rumbo · Estook también cobra
 

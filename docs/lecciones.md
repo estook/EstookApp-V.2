@@ -350,3 +350,7 @@
      `grid-cols-1`, la columna implícita toma el ancho mínimo de su contenido, y un
      texto que no se parte la ensancha más allá de la pantalla. Se dice la columna
      (`minmax(0, 1fr)`) y el recorte vuelve a funcionar.
+113. **Lo que aparece encima de un botón mueve el botón.** «Continuar con Google»
+     salía al contestar el servidor, encima del formulario, y lo empujaba 94 px: quien
+     pulsaba «Entrar» en ese momento tocaba el aire. Lo cazó Safari, el más lento, una
+     vez de cada muchas. Lo que va a llegar ocupa su sitio desde el principio.

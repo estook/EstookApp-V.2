@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import { ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
+import { abrirSinQueSeCaiga } from './abrir.ts';
+import { APP, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
 
 /**
  * Lo que vio Richi en el Panel del móvil al mirar O (25-sep-2026).
@@ -10,7 +11,8 @@ import { ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
  *   c  El «+» se aparta al bajar por la pantalla y vuelve al subir, **solo en el
  *      móvil**: en una pantalla grande no tapa nada.
  *   d  Del repaso: la ficha de una persona o de un producto, cerrada, dejaba un
- *      «Cargando» escondido y vivo para siempre.
+ *      «Cargando» escondido y vivo para siempre; y «Entrar» se movía bajo el dedo
+ *      al aparecer Google.
  *
  * El punto de la línea de ventas (b) se prueba sin navegador, en
  * `formasDeLaTendencia.prueba.ts`.
@@ -80,19 +82,40 @@ test('lo de hoy sale plegado en el móvil y abierto en el escritorio, y se abre 
 test('sin nada que atender, lo de hoy no aparece: ni la tarjeta ni un «nada urgente»', async ({
   page,
 }) => {
-  await dosCosasParaHoy(page);
+  // Lo de hoy lo contesta la prueba, con una sola cosa. Con lo de verdad no se puede:
+  // en GitHub los tres navegadores comparten la base, y mientras esta apartaba lo de
+  // Rosa, las de compras le creaban pedidos en borrador, cada uno un aviso nuevo
+  // (Safari, 25-sep). Lo que se prueba aquí es la pantalla, no la lista.
+  await page.route('**/v1/consultas/lo_de_hoy', (ruta) =>
+    ruta.fulfill({
+      json: {
+        datos: {
+          hoy: '2026-09-25',
+          cosas: [
+            {
+              id: 'bajo-minimo',
+              escalon: 4,
+              titulo: '1 producto está por debajo del mínimo',
+              detalle: null,
+              centimos: null,
+              app: 'inventario',
+              tono: 'info',
+              accion: { texto: 'Verlos', ir: '/inventario/productos/bajo-minimo' },
+            },
+          ],
+        },
+      },
+    }),
+  );
   await entrarEnLaApp(page, ROSA);
 
   const hoy = page.getByRole('region', { name: 'Hoy' });
   await expect(hoy).toBeVisible();
-  // Todo a «Luego», una cosa detrás de otra: plegado, al apartar la primera sale la
-  // siguiente. Con un tope, por si otra prueba le añade cosas a Rosa mientras.
-  for (let vuelta = 0; vuelta < 12 && (await hoy.count()) > 0; vuelta += 1) {
-    await hoy
-      .getByRole('button', { name: /^Recordarme/ })
-      .first()
-      .click();
-  }
+  // Una sola cosa no se pliega: no hay nada que esconder.
+  await expect(hoy.getByRole('button', { name: /^Hoy/ })).toHaveCount(0);
+
+  // Apartada la única, lo de hoy se va entero.
+  await hoy.getByRole('button', { name: /^Recordarme/ }).click();
   await expect(hoy).toHaveCount(0);
   await expect(page.getByText('Nada urgente por hoy')).toHaveCount(0);
 });
@@ -135,4 +158,29 @@ test('una ficha cerrada no deja un «Cargando» escondido en la pantalla', async
     await irA(page, donde);
     await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
   }
+});
+
+test('«Entrar» no se mueve bajo el dedo cuando llega Google', async ({ page }) => {
+  // Se retiene `como_se_entra`, que es lo que dice si hay Google, y se mide el botón
+  // antes y después de soltarla. Antes de arreglarlo bajaba 94 px, y quien lo
+  // pulsaba justo entonces tocaba el aire (lo cazó Safari en GitHub, 25-sep).
+  let soltar: () => void = () => {};
+  const retenida = new Promise<void>((listo) => {
+    soltar = listo;
+  });
+  await page.route('**/v1/consultas/como_se_entra', async (ruta) => {
+    await retenida;
+    await ruta.continue();
+  });
+  await abrirSinQueSeCaiga(page, APP);
+
+  const entrar = page.getByRole('button', { name: 'Entrar', exact: true });
+  await expect(entrar).toBeVisible();
+  const antes = await entrar.boundingBox();
+
+  soltar();
+  await page.waitForResponse('**/v1/consultas/como_se_entra');
+  await expect(page.getByRole('button', { name: 'Continuar con Google' })).toBeVisible();
+  const despues = await entrar.boundingBox();
+  expect(despues?.y).toBe(antes?.y);
 });

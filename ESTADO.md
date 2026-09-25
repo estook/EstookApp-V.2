@@ -9,7 +9,7 @@
 > Lo demás vive en su sitio, y aquí solo se enlaza:
 >
 > - **Lo que hizo cada módulo**, con sus fallos: [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)
-> - **Lo aprendido fallando** (112 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
+> - **Lo aprendido fallando** (113 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](docs/reglas.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](docs/decisiones/)
 > - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)
@@ -77,6 +77,7 @@ Richi miró O en el móvil: le gustó, salvo tres cosas, y pidió un repaso gene
 | **Un punto suelto en la línea**       | Era un círculo dentro de un dibujo que se estira: salía como una raya. Ahora el hueco va **en discontinuo** y los puntos, redondos y fuera del dibujo       |
 | **El «+» tapaba al bajar**            | **Se aparta al bajar y vuelve al subir**, solo en el móvil                                                                                                  |
 | **Del repaso** (19 pantallas miradas) | La zona de atención se salía por la derecha; una ficha cerrada dejaba un «Cargando» escondido; «caducado» de lo que caduca hoy; «Fichar la entrada» partido |
+| **Entrar a veces no hacía nada**      | «Continuar con Google» aparecía tarde y empujaba el formulario bajo el dedo. Ahora ocupa su sitio desde el principio (lo cazó Safari en GitHub)             |
 
 Sin errores de consola ni peticiones fallidas en todo el recorrido. **Lleva un cambio
 de la API** (el título corto de la caja): se fusiona y se despliega la API.

@@ -2490,7 +2490,7 @@ Richi miró V en su móvil el 24-sep y mandó dos capturas. Sin migración.
 
 Las pruebas: `el-movil-y-la-recarga.spec.ts` (a 320 y 375 px, cada palabra en una
 línea y nada que se salga; el servidor fallando y la sesión caducada), vistas fallar con
-el arreglo quitado, y `postgres.prueba.ts`. Lecciones 101 a 103.
+el arreglo quitado, y `postgres.prueba.ts`. Lecciones 101 a 105.
 
 ### Cambio de rumbo · Estook también cobra
 

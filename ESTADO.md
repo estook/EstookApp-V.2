@@ -70,7 +70,8 @@ cuatro, arreglados en `arreglos-del-movil-y-la-recarga` y contados en la
 
 **Surte efecto al fusionar y desplegar la API** (sin migración). **El `#` de la dirección
 no era el fallo**: es el enrutado de la [0008](docs/decisiones/0008-enrutado-con-almohadilla.md),
-porque GitHub Pages solo sirve ficheros que existen.
+porque GitHub Pages solo sirve ficheros que existen. En GitHub, la #68: **1.203** unitarias
+y de base y **657** de pantalla, en verde y sin repetidas.
 
 ### O · Lo que se ordena (25-sep) · en su pull request (#69), con la migración `0046`
 
@@ -84,6 +85,12 @@ Las mejoras 6, 8, 9 y 17 y el QR de la 20, con lo que contestó Richi el 25-sep
 | **El Panel de cada puesto** (9) | Gerente, jefe, cocina y sala, sacados de los permisos; todos con el reloj arriba; «Volver al de mi puesto»                                                       |
 | **Objetivos con semáforo** (17) | Food cost, personal, **coste primo**, merma (**en % de lo comprado**) y ventas de la semana; con su porqué plegado; se cambian en Ajustes · Tu local             |
 | **El QR para siempre** (20)     | `estook.com/carta/<local>`, fija y única (la pone la base); la carta sin sesión; SVG, PNG y cartel desde Ajustes. La carta es la página de «no existe» del sitio |
+
+En GitHub, la #69: **1.246** unitarias y de base y **681** de pantalla, en verde y **sin
+repetidas**. Al probarla salió un fallo de verdad del Panel: **al arrastrar un widget
+mandaba su centro y no el dedo**, y soltado encima de otro podía irse a un tercero.
+Ahora decide el dedo. Lo cazó el rastro del intento que falla, que desde ahora GitHub
+guarda siempre (lección 109; las pruebas de pantalla tardan un par de minutos más).
 
 ### Lo que todavía NO está en la app
 

@@ -116,6 +116,7 @@ repítelo. **Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
    - **Lo de hoy**, arriba del Panel: lo que caduca, los pedidos, la caja… con su botón.
    - **Tu Panel**: si nunca lo habías tocado, verás el de quien lleva el local. Si lo
      tenías montado, sigue el tuyo; **Editar → «Volver al de mi puesto»** pone el nuevo.
+     Y al arrastrar un widget, **va donde sueltes el dedo**.
    - **Ajustes → Tu local → Tus objetivos**: revisa tu food cost (32 %), personal (32 %)
      y merma (4 %), y pon las ventas de la semana si quieres.
    - **Ajustes → Tu local → Tu carta y su QR**: abre `estook.com/carta/ikatz` desde el

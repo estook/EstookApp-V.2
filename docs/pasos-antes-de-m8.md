@@ -7,14 +7,14 @@
 >
 > | Qué                        | Cómo está                                                                   |
 > | -------------------------- | --------------------------------------------------------------------------- |
-> | Pull requests              | **Todas fusionadas hasta la #67**. Esperan la #68 y la de O, en ese orden   |
+> | Pull requests              | **Todas fusionadas hasta la #67**. Esperan la #68 y la #69, en ese orden    |
 > | La base de datos           | **45 de 45** migraciones, igual que `main`                                  |
 > | La API                     | **Desplegada el 24 de septiembre a las 19:31**, con la #67: 45 y 87         |
 > | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
 > | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep            |
 > | **V · lo que se ve**       | **Hecho y en producción** (#64, #65, #67), mirado por Richi en el móvil     |
 > | Los arreglos del móvil     | **Hechos**, en la #68 (sin migración)                                       |
-> | O · lo que se ordena       | **Hecha**, en su pull request, con la migración `0046`                      |
+> | O · lo que se ordena       | **Hecha**, en la #69, con la migración `0046`                               |
 > | E2 · el pago con Stripe    | Tu cuenta ya está. Hará falta **una clave de prueba** el día que empiece    |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
@@ -71,7 +71,7 @@ recarga dos veces seguidas: sigues dentro.
 del Panel, el **Panel de cada puesto**, los **objetivos con semáforo** y **el QR de tu
 carta**. Contado en `ESTADO.md`, apartado 1, y en la decisión 0047.
 
-1. En **github.com** → **Pull requests** → **«O · Lo que se ordena»**. Las tres
+1. En **github.com** → **Pull requests** → **«O · Lo que se ordena»** (la #69). Las tres
    comprobaciones en verde, **Merge pull request** → **Confirm merge**.
 2. En PowerShell, trae lo fusionado:
 

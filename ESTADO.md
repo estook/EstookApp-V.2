@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 25 de septiembre de 2026 · **Antes de M8. V entera, en producción (#67). Los arreglos del móvil (#68) y O · Lo que se ordena, hechos y cada uno en su pull request; O trae la migración `0046`. Después, E2**
+Última actualización: 25 de septiembre de 2026 · **Antes de M8. V entera, en producción (#67). Los arreglos del móvil (#68) y O · Lo que se ordena (#69), hechos y cada uno en su pull request; O trae la migración `0046`. Después, E2**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -23,7 +23,7 @@ _Producción leída el 24 de septiembre de 2026 por la noche: migraciones y orga
 |                |                                                                                                                                                                                                 |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminados** | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1**, la puerta del admin · **E1**, crear cuenta y Google · **V · Lo que se ve, entera** (#64, #65, #67) · **el repaso del 23-sep**  |
-| **Ahora**      | **Los arreglos del móvil** (#68, sin migración) y **O · Lo que se ordena** (con la `0046`), hechos y cada uno en su pull request: se fusionan en ese orden. **E2 · Stripe** después             |
+| **Ahora**      | **Los arreglos del móvil** (#68, sin migración) y **O · Lo que se ordena** (#69, con la `0046`), hechos y cada uno en su pull request: se fusionan en ese orden. **E2 · Stripe** después        |
 | **`main`**     | Todo fusionado hasta la **#67**                                                                                                                                                                 |
 | **Base**       | Supabase, **45 de 45** migraciones, igual que `main`. El cubo `fotos-de-producto`, creado y en uso                                                                                              |
 | **API**        | Desplegada el 24-sep a las 19:31 con la #67: **45 consultas y 87 comandos**, comprobado con `bd:comprobar-api`                                                                                  |
@@ -45,7 +45,7 @@ _Producción leída el 24 de septiembre de 2026 por la noche: migraciones y orga
 | 1   | **V · Lo que se ve**             | ✓ en producción (#64, #65, #67)                                                     |
 | —   | **El repaso del 23-sep**         | ✓ en producción (#66)                                                               |
 | —   | **Los arreglos del móvil**       | **Hechos, en su pull request** (#68)                                                |
-| 2   | **O · Lo que se ordena**         | **Hecha, en su pull request**, con la migración `0046` (abajo)                      |
+| 2   | **O · Lo que se ordena**         | **Hecha, en su pull request** (#69), con la migración `0046` (abajo)                |
 | 3   | **E2 · El pago con Stripe**      | **Lo siguiente**. Richi ya tiene cuenta: **hará falta una clave de prueba**         |
 | 4   | **A2 · Clientes**                | Falta                                                                               |
 | 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7 (avisos a quien manda, invitar a un pedido) |
@@ -72,7 +72,7 @@ cuatro, arreglados en `arreglos-del-movil-y-la-recarga` y contados en la
 no era el fallo**: es el enrutado de la [0008](docs/decisiones/0008-enrutado-con-almohadilla.md),
 porque GitHub Pages solo sirve ficheros que existen.
 
-### O · Lo que se ordena (25-sep) · en su pull request, con la migración `0046`
+### O · Lo que se ordena (25-sep) · en su pull request (#69), con la migración `0046`
 
 Las mejoras 6, 8, 9 y 17 y el QR de la 20, con lo que contestó Richi el 25-sep
 («copia a los mejores y mejóralo»). Razonado en la [0047](docs/decisiones/0047-lo-que-se-ordena.md):
@@ -92,7 +92,7 @@ Para que nadie dé por hecho lo que solo está escrito:
 - **De las veinte mejoras, seis en producción**: la 1 (modo cocina), la 2 (las cifras
   de cada app), la 3 (el Resumen), la 4 (los vacíos), la 5 (el oscuro y las fotos de
   producto) y la 7 (Ajustes en secciones). **La 6, la 8, la 9, la 17 y el QR de la 20,
-  hechas en su pull request**: hasta fusionar, en `estook.com` no hay «+», ni lo de hoy,
+  hechas en la #69**: hasta fusionar, en `estook.com` no hay «+», ni lo de hoy,
   ni semáforo, ni QR. Las demás tienen su plan y su entrega en
   [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
 - **Las fotos son de producto, no de plato.** La foto del plato irá en la carta (M10), y

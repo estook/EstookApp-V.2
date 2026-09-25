@@ -1075,6 +1075,10 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await enElPanel(page, 'fichar').evaluate((casilla) => {
       casilla.scrollIntoView({ block: 'start' });
     });
+    // **Alto, como un día con todas las cifras.** Cogido por arriba, su centro queda
+    // lejos del dedo: cuando mandaba el centro y no el dedo, se soltaba encima de
+    // «Fichar» y no iba ahí. Pasaba en GitHub unas veces sí y otras no (25-sep).
+    await page.addStyleTag({ content: '[data-widget="objetivos"] { min-height: 40rem; }' });
     const desde = await enElPanel(page, 'objetivos').boundingBox();
     const hasta = await enElPanel(page, 'fichar').boundingBox();
     if (desde === null || hasta === null) throw new Error('Faltan widgets de fábrica.');

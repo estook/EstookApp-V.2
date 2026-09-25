@@ -335,4 +335,5 @@
      el rastro de la segunda vuelta, la que pasa, y el informe solo se subía con la
      ejecución en rojo: de cada prueba de Safari repetida no quedaba nada de cuando
      falló, y cada vez era una distinta. Sin ese rastro no se arregla, se espera a que
-     no pase. Se graba la primera vuelta y se guarda si falla, también en verde.
+     no pase. Se graba la primera vuelta y se guarda si falla, también en verde. La
+     siguiente repetida, con su rastro, resultó ser un fallo de verdad del Panel.

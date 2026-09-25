@@ -2547,6 +2547,12 @@ mejoras 6, 8, 9 y 17 y el QR de la 20, razonadas en la
 - **Una repetida de Safari sin rastro.** La primera vuelta verde de la #69 repitió una
   prueba al entrar, y GitHub no guardaba nada del intento que falló. Ahora el rastro
   es de ese intento y el informe se sube también en verde.
+- **Al arrastrar, mandaba el centro y no el dedo.** Con el rastro, la siguiente
+  repetida se explicó sola: el Panel decidía dónde caía un widget por el centro del
+  que se arrastra (`closestCenter`), y el de los objetivos, alto y cogido por arriba,
+  tenía el centro muy lejos del dedo. Soltado encima de «Fichar», no iba ahí. Ahora
+  decide el dedo (`pointerWithin`), y el centro solo con el teclado. La prueba lo pone
+  alto a propósito: sin el cambio falla siempre.
 
 Las pruebas: `objetivos.prueba.ts`, `hoy.prueba.ts` y `carta.prueba.ts` en el dominio;
 `lo-que-se-ordena.prueba.ts` contra la base; `lo-que-se-ordena.spec.ts` y las de Fogón

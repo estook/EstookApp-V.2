@@ -67,7 +67,11 @@ export default defineConfig({
   forbidOnly: enCI,
   retries: enCI ? 1 : 0,
   reporter: enCI ? [['github'], ['html', { open: 'never' }]] : [['list']],
-  use: { trace: 'on-first-retry' },
+  // **El rastro, del intento que falla** (25-sep). Con `on-first-retry` se grababa la
+  // segunda vuelta, la que pasa: de cada prueba repetida de Safari quedaba el rastro
+  // de cuando salió bien, y ni uno de cuando falló. Así se graba la primera y solo
+  // se guarda si falla; y el informe se sube aunque la vuelta acabe en verde.
+  use: { trace: enCI ? 'retain-on-first-failure' : 'on-first-retry' },
 
   snapshotPathTemplate: '{testDir}/capturas/{platform}/{arg}-{projectName}{ext}',
   ignoreSnapshots: !conCapturas,

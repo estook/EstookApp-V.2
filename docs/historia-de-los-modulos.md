@@ -2544,10 +2544,13 @@ mejoras 6, 8, 9 y 17 y el QR de la 20, razonadas en la
 - **Un botón que llevaba a donde ya estabas.** En Ajustes, la tarjeta de los objetivos
   ofrecía «Poner tus objetivos». El semáforo ya no propone ir a la pantalla en la que
   está (`usarSinIrAquiMismo`), y la prueba lo mira.
+- **Una repetida de Safari sin rastro.** La primera vuelta verde de la #69 repitió una
+  prueba al entrar, y GitHub no guardaba nada del intento que falló. Ahora el rastro
+  es de ese intento y el informe se sube también en verde.
 
 Las pruebas: `objetivos.prueba.ts`, `hoy.prueba.ts` y `carta.prueba.ts` en el dominio;
 `lo-que-se-ordena.prueba.ts` contra la base; `lo-que-se-ordena.spec.ts` y las de Fogón
-de `pantalla.spec.ts` en pantalla. Lecciones 106 a 108.
+de `pantalla.spec.ts` en pantalla. Lecciones 106 a 109.
 
 ### Cambio de rumbo · Estook también cobra
 

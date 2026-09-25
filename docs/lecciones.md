@@ -331,3 +331,8 @@
      Panel, en otro fichero y al mismo tiempo, se lo quitaban. Pasaba sola y fallaba en
      compañía. Lo que otra prueba puede cambiar no se da por hecho: se contesta en la
      propia prueba, o se prueba dentro del mismo bloque, que corre en fila.
+109. **De lo que se repite hay que guardar el intento que falla.** Playwright grababa
+     el rastro de la segunda vuelta, la que pasa, y el informe solo se subía con la
+     ejecución en rojo: de cada prueba de Safari repetida no quedaba nada de cuando
+     falló, y cada vez era una distinta. Sin ese rastro no se arregla, se espera a que
+     no pase. Se graba la primera vuelta y se guarda si falla, también en verde.

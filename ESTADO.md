@@ -90,7 +90,7 @@ En GitHub, la #69: **1.246** unitarias y de base y **681** de pantalla, en verde
 repetidas**. Al probarla salió un fallo de verdad del Panel: **al arrastrar un widget
 mandaba su centro y no el dedo**, y soltado encima de otro podía irse a un tercero.
 Ahora decide el dedo. Lo cazó el rastro del intento que falla, que desde ahora GitHub
-guarda siempre (lección 109; las pruebas de pantalla tardan un par de minutos más).
+guarda siempre (lección 109).
 
 ### Lo que todavía NO está en la app
 

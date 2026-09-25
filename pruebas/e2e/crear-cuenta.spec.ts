@@ -61,24 +61,37 @@ async function comoSiVolvieraDeGoogle(
   codigo: string,
   estado = 'estado-de-prueba',
 ) {
-  await abrirLimpio(page, APP);
-  await page.evaluate(
-    ([datos]) => {
-      window.sessionStorage.setItem('estook.google', JSON.stringify(datos));
-    },
-    [
-      {
-        estado: 'estado-de-prueba',
-        // RFC 7636: de 43 a 128 caracteres.
-        verificador: 'v'.repeat(43),
-        vuelta: APP,
-        ...guardado,
+  // Lo que `irAGoogle` deja guardado antes de irse. Es de un solo uso: la app lo
+  // borra al leer la vuelta, así que si hay que repetir la navegación se guarda otra vez.
+  const dejarloGuardado = async () => {
+    await page.evaluate(
+      ([datos]) => {
+        window.sessionStorage.setItem('estook.google', JSON.stringify(datos));
       },
-    ],
-  );
+      [
+        {
+          estado: 'estado-de-prueba',
+          // RFC 7636: de 43 a 128 caracteres.
+          verificador: 'v'.repeat(43),
+          vuelta: APP,
+          ...guardado,
+        },
+      ],
+    );
+  };
+  await abrirLimpio(page, APP);
+  await dejarloGuardado();
   const parametros = new URLSearchParams({ code: codigo, state: estado });
   // Por `abrir.ts`: el Safari de las pruebas se cae a veces por dentro al navegar.
-  await abrirSinQueSeCaiga(page, `${APP}?${parametros.toString()}`);
+  await abrirSinQueSeCaiga(
+    page,
+    `${APP}?${parametros.toString()}`,
+    'domcontentloaded',
+    async () => {
+      await abrirSinQueSeCaiga(page, APP);
+      await dejarloGuardado();
+    },
+  );
 }
 
 // ── La web pública ───────────────────────────────────────────────────────────

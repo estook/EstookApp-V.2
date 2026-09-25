@@ -311,10 +311,18 @@
      (y a 320 px, con cero) y la barra de abajo se salía por los lados. Y partir por
      cualquier letra (`overflow-wrap:anywhere`) tapa el problema en vez de dar sitio:
      lo que se da es ancho, y se parte por palabras.
-104. **Cada fecha con su reloj.** La caja y las cifras cuentan con la jornada, que corta
+104. **Quitar lo que alguien está esperando lo deja esperando para siempre.** Vaciar la
+     caché con `removeQueries` cuando una pantalla ya ha pedido lo suyo la deja mirando
+     una consulta que nadie vuelve a pedir. Para tirar lo de antes y seguir, se
+     reinicia (`resetQueries`). Y el orden importa: React monta a los hijos antes de que
+     corra el efecto del padre.
+105. **Lo que solo se puede leer una vez no se repite a ciegas.** Repetir una navegación
+     porque el navegador se cayó está bien, salvo si la primera ya gastó algo, como la
+     vuelta de Google. Quien abre algo de un solo uso dice cómo volver a prepararlo.
+106. **Cada fecha con su reloj.** La caja y las cifras cuentan con la jornada, que corta
      a la hora de corte del local; las caducidades y las compras, con el calendario, que
      es el de la fecha impresa y el del proveedor. Juntar las dos en una pantalla es
      elegir, cosa a cosa, cuál manda. Se ve de madrugada, así que se prueba de madrugada.
-105. **No se cambia de rama con una batería corriendo.** La API de pruebas se levanta
+107. **No se cambia de rama con una batería corriendo.** La API de pruebas se levanta
      desde el código: cambiar de rama a mitad hace que unas pruebas corran contra un
      código y otras contra otro, y los rojos no significan nada. Se repite entera.

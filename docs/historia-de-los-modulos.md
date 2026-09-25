@@ -2477,9 +2477,20 @@ Richi miró V en su móvil el 24-sep y mandó dos capturas. Sin migración.
   sigue, enseña «No llego al servidor» con «Volver a probar» (`SinServidor`, con un
   dibujo nuevo, `sin-conexion`). Solo `sin_sesion` manda a entrar.
 
+- **Quien tiene dos locales elegía uno al entrar y se quedaba en «Cargando tu
+  panel».** Viene de M4: al cambiar de sitio, la sesión vacía la caché con
+  `removeQueries`, y React monta el Panel un instante antes; quitar una consulta que
+  ya tiene una pantalla esperándola la deja colgada para siempre. Ahora es
+  `resetQueries`, que vuelve a pedir lo que está a la vista. Lo cazó una prueba de O.
+- **Dos rojos escondidos en vueltas verdes de Safari**, arreglados de raíz: las
+  recargas de las pruebas no estaban protegidas contra el fallo del motor (24
+  sueltas, ahora por `recargarSinQueSeCaiga`), y repetir la vuelta de Google gastaba
+  lo que esa vuelta solo deja leer una vez. Y las capturas se comparan «en suave»:
+  salen todas las distintas en una vuelta, no una por vuelta.
+
 Las pruebas: `el-movil-y-la-recarga.spec.ts` (a 320 y 375 px, cada palabra en una
 línea y nada que se salga; el servidor fallando y la sesión caducada), vistas fallar con
-el arreglo quitado, y `postgres.prueba.ts`. Lecciones 101 a 103.
+el arreglo quitado, y `postgres.prueba.ts`. Lecciones 101 a 105.
 
 ### Antes de M8 · O, lo que se ordena
 
@@ -2526,7 +2537,7 @@ mejoras 6, 8, 9 y 17 y el QR de la 20, razonadas en la
 
 Las pruebas: `objetivos.prueba.ts`, `hoy.prueba.ts` y `carta.prueba.ts` en el dominio;
 `lo-que-se-ordena.prueba.ts` contra la base; `lo-que-se-ordena.spec.ts` y las de Fogón
-de `pantalla.spec.ts` en pantalla. Lecciones 104 y 105.
+de `pantalla.spec.ts` en pantalla. Lecciones 106 y 107.
 
 ### Cambio de rumbo · Estook también cobra
 

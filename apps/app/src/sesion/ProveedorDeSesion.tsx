@@ -153,6 +153,16 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
    *
    * `quien_soy` se queda: es la que acaba de traer la identidad nueva, y tirarla
    * seria pedirla otra vez para saber lo que ya se sabe.
+   *
+   * ── Y se vacía con `resetQueries`, no con `removeQueries` (25-sep) ─────────
+   *
+   * Quitar una consulta que ya tiene una pantalla esperándola **la deja colgada**:
+   * la pantalla sigue mirando la que se quitó, que no vuelve a pedirse nunca. Y eso
+   * pasaba siempre al elegir local al entrar, porque React monta el Panel **antes**
+   * de que corra este efecto: quien tiene dos locales elegía uno y se quedaba en
+   * «Cargando tu panel» para siempre. Lo encontró una prueba de la entrega O.
+   * `resetQueries` tira lo del local de antes igual, y **vuelve a pedir** lo que
+   * está a la vista.
    */
   const dondeEstaba = useRef<string | null>(null);
   useEffect(() => {
@@ -167,7 +177,7 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
     // vuelta de consultas nada mas entrar.
     if (antes === null || antes === ahora) return;
 
-    cache.removeQueries({
+    void cache.resetQueries({
       predicate: (consultaGuardada) => consultaGuardada.queryKey[0] !== 'quien_soy',
     });
   }, [consulta.data, cache]);

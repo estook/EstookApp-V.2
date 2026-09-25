@@ -105,7 +105,9 @@ export function FichaDePersona({
       alCerrar={alCerrar}
       titulo={viendoElHistorial ? `Fichajes de ${nombreEntero}` : nombreEntero}
     >
-      {consulta.isPending && <Cargando que="la ficha" />}
+      {/* `isLoading` y no `isPending`: con la ficha cerrada la consulta está apagada, y
+          apagada cuenta como pendiente para siempre: un «Cargando» escondido y vivo. */}
+      {consulta.isLoading && <Cargando que="la ficha" />}
 
       {viendoElHistorial && datos !== undefined && (
         <HistorialDeFichajes

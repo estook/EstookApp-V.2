@@ -25,7 +25,7 @@ import { comoSeEscribe } from './comoSeEscribe.ts';
  *   · **La flecha compara con el periodo anterior del mismo largo**, y su color
  *     dice si es buena noticia, que lo decide el dominio: que la merma baje es
  *     verde.
- *   · **La línea de los días**, cortada donde no hay dato. Un lunes cerrado no
+ *   · **La línea de los días**, en discontinuo donde no hay dato. Un lunes cerrado no
  *     vendió cero.
  *
  * ── Por qué vive aquí y no en la aplicación ─────────────────────────────────

@@ -368,6 +368,8 @@ describe('lo de hoy', () => {
     const cosas = await loDeHoy(rosa);
     const caja = cosas.find((c) => c.id === 'caja-sin-cerrar');
     expect(caja?.escalon).toBe(1);
+    // Corto, que en el móvil cabe en una línea: la fecha entera lo partía en tres.
+    expect(caja?.titulo).toBe('La caja de ayer está sin cerrar');
     expect(cosas[0]?.escalon).toBe(1);
   });
 

@@ -142,7 +142,9 @@ export function FichaDeProducto({
       alCerrar={alCerrar}
       titulo={datos === undefined ? 'Producto' : datos.producto.nombre}
     >
-      {consulta.isPending && <Cargando que="la ficha" />}
+      {/* `isLoading` y no `isPending`: con la ficha cerrada la consulta está apagada, y
+          apagada cuenta como pendiente para siempre: un «Cargando» escondido y vivo. */}
+      {consulta.isLoading && <Cargando que="la ficha" />}
 
       {datos !== undefined && (
         <div className="flex flex-col gap-e4">

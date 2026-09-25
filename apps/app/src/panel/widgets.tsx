@@ -269,7 +269,14 @@ function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
                 <span className="min-w-0 flex-1 truncate text-cuerpo">{lote.producto}</span>
                 {lote.congelado && <Etiqueta tono="info">congelado</Etiqueta>}
                 <Etiqueta tono={lote.dias <= 1 ? 'mal' : 'atencion'}>
-                  {lote.dias <= 0 ? 'caducado' : lote.dias === 1 ? 'mañana' : `${lote.dias} d`}
+                  {/* Lo que caduca hoy todavía no ha caducado: «hoy», como dice lo de hoy. */}
+                  {lote.dias < 0
+                    ? 'caducado'
+                    : lote.dias === 0
+                      ? 'hoy'
+                      : lote.dias === 1
+                        ? 'mañana'
+                        : `${lote.dias} d`}
                 </Etiqueta>
               </button>
             </li>
@@ -698,8 +705,18 @@ function FicharDesdeElPanel({ tamano }: { readonly tamano: TamanoDeWidget }) {
               fichar.paso === 'buscando_ubicacion' ? 'Buscando dónde estás' : 'Apuntando'
             }
             onClick={dentro ? fichar.salir : fichar.entrar}
+            // En la casilla pequeña del móvil «Fichar la entrada» partía en dos líneas
+            // (25-sep). Ahí se ve «Entrada», que la tarjeta ya se llama «Fichar», y un
+            // lector de pantalla oye la frase entera, que contiene lo que se ve (WCAG 2.5.3).
+            aria-label={dentro ? 'Fichar la salida' : 'Fichar la entrada'}
           >
-            {dentro ? 'Fichar la salida' : 'Fichar la entrada'}
+            {tamano === 'chico'
+              ? dentro
+                ? 'Salida'
+                : 'Entrada'
+              : dentro
+                ? 'Fichar la salida'
+                : 'Fichar la entrada'}
           </Boton>
 
           {/*

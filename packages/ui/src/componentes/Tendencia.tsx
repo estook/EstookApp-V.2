@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { clases } from '../clases.ts';
+import { ANCHO, formasDeLaTendencia } from './formasDeLaTendencia.ts';
 
 /**
  * La tendencia · una línea con su área, de las que caben en un widget (M7, 0039).
@@ -15,11 +16,16 @@ import { clases } from '../clases.ts';
  * Tampoco es `Grafica`: Recharts pesa más de cien kilobytes, y esto es un camino
  * de SVG.
  *
- * ── Los días sin dato, como un hueco ────────────────────────────────────────
+ * ── Los días sin dato, en discontinuo ───────────────────────────────────────
  *
- * Un día sin caja cerrada no vendió cero, así que **la línea se corta** y sigue
- * en el siguiente día con dato. Unirla por encima o bajarla a cero serían dos
- * formas distintas de inventarse ese día.
+ * Un día sin caja cerrada no vendió cero, así que la línea **no baja a cero**. Hasta
+ * el 25-sep además se cortaba, y un día suelto entre dos huecos salía como una raya
+ * corta y achatada a la derecha de la tarjeta, que en el móvil de Richi parecía un
+ * fallo (lo era: un círculo dentro de un SVG que se estira sale como una raya). Ahora
+ * se hace como la app Salud del iPhone: los días seguidos, en trazo entero; **el
+ * hueco, en discontinuo y más tenue**, que dice «aquí no hay dato» sin romper la
+ * forma; y un punto de verdad en cada día suelto y en el último. El pie ya dice
+ * cuántos días tienen dato.
  *
  * ── Y se lee sin verla ───────────────────────────────────────────────────────
  *
@@ -45,35 +51,16 @@ export function Tendencia({
   formato = (valor) => String(valor),
 }: TendenciaProps) {
   const degradado = useId();
-  const conDato = valores.filter((v): v is number => v !== null);
-  if (valores.length < 2 || conDato.length === 0) return null;
+  const formas = formasDeLaTendencia(valores, alto);
+  if (formas === null) return null;
 
-  const ancho = 100;
-  const menor = Math.min(...conDato, 0);
-  const mayor = Math.max(...conDato);
-  const rango = mayor - menor || 1;
-  // Un margen arriba y abajo para que el trazo no se corte en el borde.
-  const margen = 3;
-  const x = (i: number) => (i / (valores.length - 1)) * ancho;
-  const y = (v: number) => alto - margen - ((v - menor) / rango) * (alto - margen * 2);
-
-  // Tramos seguidos con dato: cada uno es su línea y su área.
-  const tramos: { i: number; v: number }[][] = [];
-  valores.forEach((valor, i) => {
-    if (valor === null) {
-      if ((tramos.at(-1)?.length ?? 0) > 0) tramos.push([]);
-      return;
-    }
-    if (tramos.length === 0) tramos.push([]);
-    tramos.at(-1)?.push({ i, v: valor });
-  });
-
+  const conDato = valores.filter((v) => v !== null).length;
   const ultimoConDato = [...valores.entries()].reverse().find(([, v]) => v !== null);
 
   return (
-    <div className="w-full">
+    <div className="relative w-full">
       <svg
-        viewBox={`0 0 ${ancho} ${alto}`}
+        viewBox={`0 0 ${ANCHO} ${alto}`}
         preserveAspectRatio="none"
         // Se dibuja de izquierda a derecha recortando la caja entera, y no con
         // `stroke-dasharray`: con un trazo que no escala, Chrome calcula los
@@ -89,39 +76,48 @@ export function Tendencia({
           </linearGradient>
         </defs>
 
-        {tramos
-          .filter((tramo) => tramo.length > 0)
-          .map((tramo, t) => {
-            const linea = tramo
-              .map((p, k) => `${k === 0 ? 'M' : 'L'}${x(p.i).toFixed(2)},${y(p.v).toFixed(2)}`)
-              .join(' ');
-            const primero = tramo[0];
-            const ultimo = tramo.at(-1);
-            if (primero === undefined || ultimo === undefined) return null;
-            const area = `${linea} L${x(ultimo.i).toFixed(2)},${alto} L${x(primero.i).toFixed(2)},${alto} Z`;
-            return (
-              <g key={t}>
-                <path d={area} fill={`url(#${degradado})`} />
-                {tramo.length === 1 ? (
-                  <circle cx={x(primero.i)} cy={y(primero.v)} r={1.6} fill={color} />
-                ) : (
-                  <path
-                    d={linea}
-                    fill="none"
-                    stroke={color}
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                )}
-              </g>
-            );
-          })}
+        {formas.area !== null && <path d={formas.area} fill={`url(#${degradado})`} />}
+        {formas.puentes.map((d) => (
+          <path
+            key={d}
+            d={d}
+            fill="none"
+            stroke={color}
+            strokeOpacity={0.5}
+            strokeWidth={1.5}
+            // Los guiones en píxeles de pantalla, que es lo que se quiere aquí:
+            // iguales en una tarjeta estrecha y en una ancha.
+            strokeDasharray="3 4"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        ))}
+        {formas.tramos.map((d) => (
+          <path
+            key={d}
+            d={d}
+            fill="none"
+            stroke={color}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        ))}
       </svg>
 
+      {/* Los puntos, fuera del SVG estirado: ahí serían rayas. */}
+      {formas.puntos.map((p) => (
+        <span
+          key={p.i}
+          aria-hidden
+          className="pointer-events-none absolute size-[7px] -translate-x-1/2 -translate-y-1/2 rounded-redondo ring-2 ring-superficie"
+          style={{ left: `${String(p.x)}%`, top: `${String(p.y)}px`, background: color }}
+        />
+      ))}
+
       <p className={clases('sr-only')}>
-        {titulo}. {valores.length} días, {conDato.length} con dato. Lo más alto, {formato(mayor)}.
+        {titulo}. {valores.length} días, {conDato} con dato. Lo más alto, {formato(formas.mayor)}.
         {ultimoConDato === undefined ? '' : ` El último, ${formato(ultimoConDato[1] ?? 0)}.`}
       </p>
     </div>

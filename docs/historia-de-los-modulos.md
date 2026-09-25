@@ -2388,8 +2388,8 @@ móvil, y una auditoría de Supabase, GitHub y la app. Lleva **cuatro migracione
 
 ### Antes de M8 · V, la segunda parte: los vacíos, el oscuro y las fotos
 
-**En la rama `v-vacios-oscuro-y-fotos`**, con su pull request. Los puntos 4 y 5 del
-plan de mejoras, que cierran V. Una migración, la `0045`. Todo razonado en la
+**En producción desde el 24-sep** (#67). Los puntos 4 y 5 del plan de mejoras, que
+cierran V. Una migración, la `0045`. Todo razonado en la
 [0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md).
 
 #### Lo que se hizo
@@ -2453,6 +2453,44 @@ plan de mejoras, que cierran V. Una migración, la `0045`. Todo razonado en la
   móvil.
 
 ---
+
+### Antes de M8 · los dos fallos que salieron al mirar V en el móvil
+
+Richi miró V en su móvil el 24-sep y mandó dos capturas. Sin migración.
+
+- **El nombre del producto, partido letra a letra** («Nar / anj / a»). La fila del
+  móvil dejaba fijos la cantidad, la etiqueta y los dos botones, y al nombre le
+  quedaban unos 50 px a 375 px y **cero** a 320. El arreglo de V para que no pisara la
+  cantidad (`overflow-wrap:anywhere`) lo partía por cualquier letra. Ahora la fila es
+  como la de las listas de inventario grandes: el nombre arriba con todo el ancho (dos
+  líneas como mucho, partiendo por palabras), la cantidad debajo y **la etiqueta solo
+  si avisa** (`avisa` y `NOMBRE_CORTO_DEL_AVISO`, en el dominio): «Sin mínimo puesto»
+  no es un estado del género, es un dato que falta, y vive en la ficha. Por debajo de
+  360 px, el + y el − van uno encima del otro.
+- **La barra de abajo se salía por los lados a 320 px.** Cada botón era `flex-1` sin
+  `min-w-0`, y no bajaba del ancho de su palabra.
+- **Recargar dos veces mandaba a entrar, y entrar fallaba.** La API iba por el
+  agrupador de Supabase **en modo sesión**, que admite quince clientes: treinta
+  transacciones a la vez contra producción, quince con error; por el modo transacción,
+  ninguna. La API entra ahora sola por el `6543` (`laPuertaDeLaApi`). Y la app ya no
+  confunde un fallo del servidor con no haber entrado: reintenta tres veces y, si
+  sigue, enseña «No llego al servidor» con «Volver a probar» (`SinServidor`, con un
+  dibujo nuevo, `sin-conexion`). Solo `sin_sesion` manda a entrar.
+
+- **Quien tiene dos locales elegía uno al entrar y se quedaba en «Cargando tu
+  panel».** Viene de M4: al cambiar de sitio, la sesión vacía la caché con
+  `removeQueries`, y React monta el Panel un instante antes; quitar una consulta que
+  ya tiene una pantalla esperándola la deja colgada para siempre. Ahora es
+  `resetQueries`, que vuelve a pedir lo que está a la vista. Lo cazó una prueba de O.
+- **Dos rojos escondidos en vueltas verdes de Safari**, arreglados de raíz: las
+  recargas de las pruebas no estaban protegidas contra el fallo del motor (24
+  sueltas, ahora por `recargarSinQueSeCaiga`), y repetir la vuelta de Google gastaba
+  lo que esa vuelta solo deja leer una vez. Y las capturas se comparan «en suave»:
+  salen todas las distintas en una vuelta, no una por vuelta.
+
+Las pruebas: `el-movil-y-la-recarga.spec.ts` (a 320 y 375 px, cada palabra en una
+línea y nada que se salga; el servidor fallando y la sesión caducada), vistas fallar con
+el arreglo quitado, y `postgres.prueba.ts`. Lecciones 101 a 105.
 
 ### Cambio de rumbo · Estook también cobra
 

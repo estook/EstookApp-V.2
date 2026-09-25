@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  NOMBRE_CORTO_DEL_AVISO,
   NOMBRE_DEL_ESTADO,
   NOMBRE_DE_LA_ZONA,
   ZONAS,
+  avisa,
   llevaCategorias,
   type Zona,
 } from '@estook/dominio';
@@ -230,12 +232,7 @@ export function Productos({
           <FotoDeProducto nombre={p.nombre} categoria={p.categoria} enlace={p.miniatura} />
           <span className="flex min-w-0 flex-col">
             <span className="flex flex-wrap items-center gap-e2">
-              <span
-                className={clases(
-                  'min-w-0 [overflow-wrap:anywhere]',
-                  p.esEjemplo && 'text-texto-suave',
-                )}
-              >
+              <span className={clases('min-w-0 break-words', p.esEjemplo && 'text-texto-suave')}>
                 {p.nombre}
               </span>
               {p.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
@@ -281,7 +278,10 @@ export function Productos({
       celda: (p) => (
         <span className="flex items-center justify-end gap-e2">
           <span>{conUnidadDeUso(p.cantidad, p.unidadDeUso)}</span>
-          <Etiqueta tono={TONO_DEL_ESTADO[p.estado]}>{NOMBRE_DEL_ESTADO[p.estado]}</Etiqueta>
+          {/* Solo lo que avisa: una etiqueta en cada fila no marca ninguna. */}
+          {avisa(p.estado) && (
+            <Etiqueta tono={TONO_DEL_ESTADO[p.estado]}>{NOMBRE_DEL_ESTADO[p.estado]}</Etiqueta>
+          )}
         </span>
       ),
     },
@@ -546,20 +546,38 @@ export function Productos({
           */
               nombreDeLaFila={(p) => p.nombre}
               filaCompacta={(p) => (
+                /*
+                  ── El nombre manda el ancho, no lo que tiene al lado ─────────
+
+                  La cantidad y su etiqueta iban en una columna fija a la derecha,
+                  junto a los dos botones. En un móvil de 375 px le dejaban al
+                  nombre unos 50 px, y «Naranja» salía «Nar / anj / a» (Richi,
+                  24-sep). Como en las listas de inventario de las aplicaciones
+                  grandes, el nombre va arriba con todo el ancho que queda —dos
+                  líneas como mucho, partiendo por palabras— y la cantidad debajo,
+                  con su aviso solo si lo hay. Lo prueba `inventario.spec.ts` a 320
+                  y a 375 px.
+                */
                 <div className="flex items-center gap-e3">
                   <FotoDeProducto nombre={p.nombre} categoria={p.categoria} enlace={p.miniatura} />
                   <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-x-e2">
-                      {/* Una palabra larga se parte en vez de pisar la cantidad de al lado: con la
-                          miniatura, en un móvil pequeño queda poco sitio (entrega V). */}
-                      <span
-                        className={clases(
-                          'min-w-0 font-medium [overflow-wrap:anywhere]',
-                          p.esEjemplo && 'text-texto-suave',
-                        )}
-                      >
-                        {p.nombre}
+                    <span
+                      className={clases(
+                        'line-clamp-2 break-words font-medium',
+                        p.esEjemplo && 'text-texto-suave',
+                      )}
+                    >
+                      {p.nombre}
+                    </span>
+                    <span className="flex flex-wrap items-center gap-x-e2 gap-y-e1">
+                      <span className="font-semibold tabular-nums">
+                        {conUnidadDeUso(p.cantidad, p.unidadDeUso)}
                       </span>
+                      {avisa(p.estado) && (
+                        <Etiqueta tono={TONO_DEL_ESTADO[p.estado]}>
+                          {NOMBRE_CORTO_DEL_AVISO[p.estado]}
+                        </Etiqueta>
+                      )}
                       {p.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
                       {!p.activo && <Etiqueta>desactivado</Etiqueta>}
                     </span>
@@ -580,17 +598,11 @@ export function Productos({
                     </span>
                   </span>
 
-                  <span className="shrink-0 text-right">
-                    <span className="block font-semibold tabular-nums">
-                      {conUnidadDeUso(p.cantidad, p.unidadDeUso)}
-                    </span>
-                    <Etiqueta tono={TONO_DEL_ESTADO[p.estado]}>
-                      {NOMBRE_DEL_ESTADO[p.estado]}
-                    </Etiqueta>
-                  </span>
-
                   {puedeTocar && vista !== 'desactivados' && (
-                    <span className="flex shrink-0 gap-e1">
+                    // Por debajo de 360 px (un iPhone SE de los viejos, un Android
+                    // pequeño), uno encima del otro: el nombre gana 44 px y deja de
+                    // cortarse en la segunda palabra.
+                    <span className="flex shrink-0 gap-e1 max-[359px]:flex-col">
                       <BotonDeApuntar
                         que="entrada"
                         producto={p}

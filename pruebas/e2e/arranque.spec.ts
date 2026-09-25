@@ -71,7 +71,7 @@ for (const aplicacion of APLICACIONES) {
 
     test('usa Montserrat autoalojada, no una fuente del sistema', async ({ page }) => {
       // B2: «autoalojada [...] Nada de cargarla desde un servidor ajeno».
-      await page.goto(aplicacion.url, { waitUntil: 'load' });
+      await abrirSinQueSeCaiga(page, aplicacion.url, 'load');
       await page.waitForFunction(() => document.fonts.status === 'loaded');
 
       const familia = await page.evaluate(() => getComputedStyle(document.body).fontFamily);

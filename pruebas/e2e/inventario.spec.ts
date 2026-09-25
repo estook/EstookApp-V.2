@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M6 · aceptación, punto por punto.
@@ -1649,7 +1649,7 @@ test('el género se filtra por zona, y la categoría cuenta dentro de ella', asy
   });
   expect(deLimpieza.estado).toBe(200);
 
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await recargarSinQueSeCaiga(page);
   await expect(page.getByLabel('De dónde')).toBeVisible({ timeout: 15_000 });
   await page.getByLabel('De dónde').selectOption('limpieza');
   await expect(page.getByLabel('Categoría')).toHaveCount(0);

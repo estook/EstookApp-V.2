@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M5 · aceptación, punto por punto.
@@ -433,7 +433,7 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
           const titulo = await page.getByRole('heading', { level: 1 }).innerText();
           if (titulo === 'Cinco pantallas y a trabajar') return titulo;
           await abrirElPaseo();
-          await page.reload({ waitUntil: 'domcontentloaded' });
+          await recargarSinQueSeCaiga(page);
           return page.getByRole('heading', { level: 1 }).innerText();
         },
         { timeout: 20_000 },

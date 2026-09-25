@@ -111,9 +111,13 @@ async function fotografiar(page: Page, nombre: string, donde?: Locator) {
     await expect(dibujos.nth(i).locator('svg')).toBeAttached();
   }
 
+  // **Suave** (25-sep): una captura distinta no para las siguientes. Con la
+  // comparación dura, la prueba se paraba en la primera, y cada vuelta de GitHub
+  // destapaba una más: tres vueltas de diez minutos para tres capturas que cambiaban
+  // por el mismo motivo. Así sale la lista entera en una, y la prueba falla igual.
   fotografiadas.push(nombre);
   if (donde !== undefined) {
-    await expect(donde).toHaveScreenshot(nombre);
+    await expect.soft(donde).toHaveScreenshot(nombre);
     return;
   }
 
@@ -124,7 +128,7 @@ async function fotografiar(page: Page, nombre: string, donde?: Locator) {
   const ancho = page.viewportSize()?.width ?? 1280;
   const alto = await page.evaluate(() => document.documentElement.scrollHeight);
   await page.setViewportSize({ width: ancho, height: Math.min(alto, 4000) });
-  await expect(page).toHaveScreenshot(nombre);
+  await expect.soft(page).toHaveScreenshot(nombre);
 }
 
 for (const tema of TEMAS) {

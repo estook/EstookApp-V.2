@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 
 /**
  * V · punto 2 · «Cómo va»: las cifras con flecha de cada app.
@@ -117,7 +117,7 @@ test('la semana o el mes, y cada tarjeta lleva a su detalle', async ({ page }) =
   await expect(mes).toHaveAttribute('aria-checked', 'true');
 
   // Y se recuerda en el aparato: al volver, sigue en el mes.
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await recargarSinQueSeCaiga(page);
   await expect(
     lasCifrasDe(page, 'inventario').getByRole('radio', { name: '30 días' }),
   ).toHaveAttribute('aria-checked', 'true', { timeout: 15_000 });
@@ -185,7 +185,7 @@ test('cuándo es llegar tarde lo cambia quien lleva el local', async ({ page }, 
   await expect(
     page.getByRole('status').filter({ hasText: 'Guardado: más de 10 min.' }),
   ).toBeVisible();
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await recargarSinQueSeCaiga(page);
   await expect(page.getByLabel('Cuenta como retraso')).toHaveValue('10', { timeout: 15_000 });
 
   // Y se deja como estaba, que es lo de fábrica.
@@ -193,6 +193,6 @@ test('cuándo es llegar tarde lo cambia quien lleva el local', async ({ page }, 
   await expect(
     page.getByRole('status').filter({ hasText: 'Guardado: más de 5 min.' }),
   ).toBeVisible();
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await recargarSinQueSeCaiga(page);
   await expect(page.getByLabel('Cuenta como retraso')).toHaveValue('5', { timeout: 15_000 });
 });

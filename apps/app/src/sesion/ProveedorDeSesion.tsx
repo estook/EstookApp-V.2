@@ -38,14 +38,34 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
   const consulta = useQuery({
     queryKey: ['quien_soy'],
     enabled: hayApi && hayToken,
-    // Si el token no vale, no se reintenta: el servidor ya ha dicho que no.
-    retry: false,
+    /*
+      ── Un fallo no es «tu sesión ha caducado» ────────────────────────────────
+
+      Antes no se reintentaba nada, y cualquier fallo de `quien_soy` —sin red, el
+      servidor que no llega a la base— dejaba `yo` vacío y la app pintaba la
+      pantalla de entrar **con la sesión todavía guardada**. Richi recargó dos
+      veces en el móvil, vio «Entra en Estook» en mitad de Inventario, y entrar
+      tampoco le funcionaba (24-sep; la causa de fondo estaba en la API y se
+      arregló allí, en `laPuertaDeLaApi`).
+
+      Ahora: si el servidor dice que el token no vale (`sin_sesion`), no se
+      reintenta, porque ya ha contestado y el cliente olvida el token. Cualquier
+      otro fallo se reintenta tres veces, esperando cada vez el doble; y si sigue,
+      la Puerta dice que no llega al servidor, con un botón para volver a probar.
+    */
+    retry: (veces, error) => error.message !== 'sin_sesion' && veces < 3,
+    retryDelay: (veces) => Math.min(500 * 2 ** veces, 4000),
     queryFn: async (): Promise<QuienSoy> => {
       const respuesta = await cliente.consultar<QuienSoy>('quien_soy');
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
       return respuesta.datos;
     },
   });
+
+  const { refetch } = consulta;
+  const volverAProbar = useCallback(() => {
+    void refetch();
+  }, [refetch]);
 
   const entrar = useCallback(
     async (token: string) => {
@@ -133,6 +153,16 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
    *
    * `quien_soy` se queda: es la que acaba de traer la identidad nueva, y tirarla
    * seria pedirla otra vez para saber lo que ya se sabe.
+   *
+   * ── Y se vacía con `resetQueries`, no con `removeQueries` (25-sep) ─────────
+   *
+   * Quitar una consulta que ya tiene una pantalla esperándola **la deja colgada**:
+   * la pantalla sigue mirando la que se quitó, que no vuelve a pedirse nunca. Y eso
+   * pasaba siempre al elegir local al entrar, porque React monta el Panel **antes**
+   * de que corra este efecto: quien tiene dos locales elegía uno y se quedaba en
+   * «Cargando tu panel» para siempre. Lo encontró una prueba de la entrega O.
+   * `resetQueries` tira lo del local de antes igual, y **vuelve a pedir** lo que
+   * está a la vista.
    */
   const dondeEstaba = useRef<string | null>(null);
   useEffect(() => {
@@ -147,7 +177,7 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
     // vuelta de consultas nada mas entrar.
     if (antes === null || antes === ahora) return;
 
-    cache.removeQueries({
+    void cache.resetQueries({
       predicate: (consultaGuardada) => consultaGuardada.queryKey[0] !== 'quien_soy',
     });
   }, [consulta.data, cache]);
@@ -157,6 +187,9 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
       yo: consulta.data ?? null,
       permisos: consulta.data?.permisos ?? {},
       cargando: hayApi && hayToken && consulta.isLoading,
+      sinServidor: hayApi && hayToken && consulta.isError && consulta.data === undefined,
+      probandoOtraVez: consulta.isFetching,
+      volverAProbar,
       hayApi,
       cliente,
       entrar,
@@ -167,6 +200,9 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
     [
       consulta.data,
       consulta.isLoading,
+      consulta.isError,
+      consulta.isFetching,
+      volverAProbar,
       hayToken,
       cliente,
       entrar,

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M3 · aceptacion, punto por punto.
@@ -83,7 +83,7 @@ async function entrar(page: Page, correo: string) {
       /* en navegacion privada no se puede, y no pasa nada */
     }
   });
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await recargarSinQueSeCaiga(page);
 
   await page.getByLabel('Tu correo').fill(correo);
   await page.getByLabel('Tu contraseña').fill(CLAVE);
@@ -892,7 +892,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     // vea o esté apartado por no tener nada apuntado todavía (0039).
     await page.getByRole('button', { name: 'Listo' }).click();
     await yaEstaGuardado(page);
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await seVeOEstaApartado(
       page,
       'ultimos-movimientos',
@@ -939,7 +939,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     // mundo. Lo que se comprueba es que **no hace falta pulsar nada** para que se
     // guarde —que era el fallo— y que el indicador dice la verdad.
     await yaEstaGuardado(page);
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
     await expect(enElPanel(page, 'caducidades')).toHaveCount(0);
   });
@@ -989,7 +989,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     // estrellen entre ellos. Así que hay que dejar que la cola se vacíe —eso es
     // exactamente lo que dice «guardando…»— antes de recargar.
     await yaEstaGuardado(page);
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
 
     await expect(enElPanel(page, 'caducidades')).toHaveCount(0);
@@ -1018,7 +1018,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await page.getByRole('button', { name: 'Listo' }).click();
     await yaEstaGuardado(page);
 
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
     await expect(page.getByRole('heading', { level: 2, name: 'Acciones rápidas' })).toBeVisible();
   });
@@ -1085,7 +1085,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
     await page.getByRole('button', { name: 'Listo' }).click();
     await yaEstaGuardado(page);
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
     await expect(enElPanel(page, 'fichar')).toHaveCount(1);
     const guardado = await orden();
@@ -1112,7 +1112,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
     await page.getByRole('button', { name: 'Listo' }).click();
     await yaEstaGuardado(page);
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await expect(
       page.getByRole('heading', { level: 2, name: 'Mis horas · 30 días' }),
     ).toBeVisible();

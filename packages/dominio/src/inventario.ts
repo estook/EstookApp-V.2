@@ -370,6 +370,27 @@ export const NOMBRE_DEL_ESTADO: Readonly<Record<EstadoDeExistencias, string>> = 
   sin_minimo: 'Sin mínimo puesto',
 };
 
+/**
+ * Los estados que **avisan**, y su nombre corto para una lista.
+ *
+ * Una lista marca lo que se sale de lo normal y nada más: si cada fila lleva su
+ * etiqueta —«Hay de sobra», «Sin mínimo puesto»—, la que dice «No queda nada» se
+ * pierde entre las otras cuarenta. «Sin mínimo puesto» ni siquiera es un estado
+ * del género: es un dato que falta, y se pide en la ficha, donde se puede poner.
+ *
+ * El nombre corto existe porque en un móvil de 375 px la etiqueta competía con el
+ * nombre del producto por el ancho, y lo partía letra a letra (24-sep).
+ */
+export const NOMBRE_CORTO_DEL_AVISO: Readonly<Partial<Record<EstadoDeExistencias, string>>> = {
+  negativo: 'En negativo',
+  agotado: 'Agotado',
+  bajo_minimo: 'Bajo mínimo',
+};
+
+export function avisa(estado: EstadoDeExistencias): boolean {
+  return NOMBRE_CORTO_DEL_AVISO[estado] !== undefined;
+}
+
 /** Cuánto pesa cada estado al ordenar la pantalla «Hoy»: primero lo peor. */
 export function urgenciaDe(estado: EstadoDeExistencias): number {
   const orden: Readonly<Record<EstadoDeExistencias, number>> = {

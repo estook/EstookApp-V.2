@@ -80,6 +80,14 @@ export interface Sesion {
   readonly yo: QuienSoy | null;
   readonly permisos: PermisosResueltos;
   readonly cargando: boolean;
+  /**
+   * Hay sesión guardada y el servidor no contesta, después de reintentar. **No es
+   * lo mismo que no haber entrado**: la Puerta lo dice y deja volver a probar, en
+   * vez de pedir la contraseña a quien ya está dentro (24-sep).
+   */
+  readonly sinServidor: boolean;
+  readonly probandoOtraVez: boolean;
+  readonly volverAProbar: () => void;
   /** `false` cuando no hay `VITE_API_URL`: no hay a quien preguntar. */
   readonly hayApi: boolean;
   readonly cliente: ClienteApi;

@@ -118,6 +118,7 @@ export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }:
           nombre={destino.nombre}
           activa={destino.id === destinoActivo}
           acento={app.acento}
+          segunSuPalabra
           icono={<destino.icono size={22} />}
           alPulsar={() => {
             alIrADestino(destino.id);
@@ -129,7 +130,7 @@ export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }:
 }
 
 const CAJA = [
-  'fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around gap-e1',
+  'fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around gap-e1 max-[359px]:gap-0',
   'border-t border-borde bg-superficie px-e2',
   'h-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom))]',
   'pb-[env(safe-area-inset-bottom)]',
@@ -142,7 +143,9 @@ function Posicion({
   alPulsar,
   icono,
   acento,
+  segunSuPalabra = false,
 }: {
+  readonly segunSuPalabra?: boolean;
   readonly nombre: string;
   readonly activa: boolean;
   readonly alPulsar: () => void;
@@ -157,7 +160,16 @@ function Posicion({
       // que escribirlo en el texto.
       aria-current={activa ? 'page' : undefined}
       className={clases(
-        'flex min-h-toque flex-1 flex-col items-center justify-center gap-[2px] rounded-medio px-e1',
+        // `min-w-0`: sin él, un botón flexible no baja del ancho de su palabra, el
+        // recorte de abajo no llegaba a actuar y a 320 px la barra se salía por los
+        // dos lados («pps» y «Compr», 24-sep).
+        //
+        // Y **según su palabra** en la barra de una app (`flex-auto`), no a partes
+        // iguales: con cuatro iguales, «Movimientos» se cortaba a 375 px aunque sobrara
+        // sitio al lado de «Resumen». Así solo se recorta cuando de verdad no cabe. En
+        // la del Panel van iguales, para que la rueda quede en el centro.
+        'flex min-h-toque min-w-0 flex-col items-center justify-center gap-[2px] rounded-medio px-e1',
+        segunSuPalabra ? 'flex-auto' : 'flex-1',
         'text-[11px] font-semibold',
         activa ? 'text-texto' : 'text-texto-suave',
       )}

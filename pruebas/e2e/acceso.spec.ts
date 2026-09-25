@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M4 · aceptacion, punto por punto.
@@ -126,7 +126,7 @@ test.describe('entrar', () => {
     await entrar(page, 'rosa@ejemplo.estook.com');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Rosa');
 
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Rosa');
   });
 
@@ -138,7 +138,7 @@ test.describe('entrar', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Entra en Estook');
 
     // Y recargar no la resucita.
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Entra en Estook');
   });
 });
@@ -174,7 +174,7 @@ test.describe('criterio · una camarera con dos locales elige donde esta', () =>
     await page.getByRole('button', { name: /Bar Puerto/ }).click();
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
 
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
   });
 

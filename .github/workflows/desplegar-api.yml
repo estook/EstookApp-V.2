@@ -24,7 +24,9 @@ name: Desplegar la API
 #
 # Y en Supabase → Project Settings → Edge Functions → Secrets:
 #
-#   DATABASE_URL          la del agrupador de sesion, no la directa
+#   DATABASE_URL          la del agrupador (la de siempre, puerto 5432), no la directa.
+#                         La API entra sola por el 6543, el modo transaccion: el de
+#                         sesion solo admite 15 clientes (laPuertaDeLaApi, 24-sep).
 #   ENTORNO               produccion
 #
 # `ORIGENES_PERMITIDOS` ya **no hace falta** para lo nuestro: estook.com y

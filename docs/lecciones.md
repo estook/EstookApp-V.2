@@ -297,3 +297,25 @@
 100. **Lo que dice ser un fichero no lo es hasta que se miran sus primeros bytes.** El
      tipo lo manda quien llama; la firma del formato, no. Vale para las fotos y valía,
      sin mirarse, para el logo.
+101. **Un tope que no se ve con una persona se ve con dos recargas.** La API iba por el
+     agrupador de Supabase en modo sesión, que admite quince clientes a la vez. Con las
+     pruebas y con una persona mirando nunca se llegaba; con Richi recargando dos veces
+     en el móvil, sí. Se encontró **midiendo**: treinta consultas a la vez contra
+     producción, quince fallaban. Lo que cuenta conexiones se prueba con una ráfaga.
+102. **Un fallo del servidor no es «no has entrado».** Si preguntar «¿quién soy?»
+     fallaba por lo que fuera, la app enseñaba la pantalla de entrar con la sesión
+     guardada. Solo el servidor diciendo `sin_sesion` manda a entrar; lo demás se
+     reintenta y se dice como lo que es.
+103. **Un hueco flexible no se estrecha por debajo de su palabra.** `flex-1` sin
+     `min-w-0` no deja que el recorte actúe: el nombre del producto se quedó con 50 px
+     (y a 320 px, con cero) y la barra de abajo se salía por los lados. Y partir por
+     cualquier letra (`overflow-wrap:anywhere`) tapa el problema en vez de dar sitio:
+     lo que se da es ancho, y se parte por palabras.
+104. **Quitar lo que alguien está esperando lo deja esperando para siempre.** Vaciar la
+     caché con `removeQueries` cuando una pantalla ya ha pedido lo suyo la deja mirando
+     una consulta que nadie vuelve a pedir. Para tirar lo de antes y seguir, se
+     reinicia (`resetQueries`). Y el orden importa: React monta a los hijos antes de que
+     corra el efecto del padre.
+105. **Lo que solo se puede leer una vez no se repite a ciegas.** Repetir una navegación
+     porque el navegador se cayó está bien, salvo si la primera ya gastó algo, como la
+     vuelta de Google. Quien abre algo de un solo uso dice cómo volver a prepararlo.

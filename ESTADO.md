@@ -9,7 +9,7 @@
 > Lo demás vive en su sitio, y aquí solo se enlaza:
 >
 > - **Lo que hizo cada módulo**, con sus fallos: [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)
-> - **Lo aprendido fallando** (107 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
+> - **Lo aprendido fallando** (108 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](docs/reglas.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](docs/decisiones/)
 > - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)
@@ -138,8 +138,8 @@ Uso real, leído el 23-sep: 11 productos, 316 movimientos, 7 cierres de caja, 25
 (#59) · **V entera**: fusionada, `0045` aplicada, API desplegada y mirada en el móvil
 (24-sep) · **la cuenta de Stripe** (24-sep).
 
-**Ahora:** fusionar los arreglos del móvil y desplegar la API (sin migración). Las
-preguntas de O, **contestadas** el 25-sep. Los pasos de cada entrega, uno a uno, en
+**Ahora:** fusionar los arreglos del móvil (#68) y desplegar la API, sin migración; y
+después O: fusionar, aplicar la `0046` y desplegar la API otra vez. Los pasos de cada entrega, uno a uno, en
 [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md).
 
 **Lo que hará falta para E2**, el día que empiece y no antes:

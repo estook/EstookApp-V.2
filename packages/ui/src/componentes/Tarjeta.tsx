@@ -151,11 +151,17 @@ export function EnlaceDeTarjeta({
       onClick={onClick}
       aria-label={etiqueta}
       className={clases(
-        '-mr-e2 inline-flex min-h-toque shrink-0 items-center gap-e1 whitespace-nowrap rounded-redondo px-e3',
+        '-mr-e2 inline-flex min-h-toque min-w-toque shrink-0 items-center justify-center gap-e1 whitespace-nowrap rounded-redondo px-e3',
         'text-secundario font-medium text-texto-suave hover:bg-fondo hover:text-texto',
+        '@max-[16rem]:px-e2',
       )}
     >
-      Ver
+      {/*
+        En una tarjeta estrecha —una cifra suelta del Panel en el móvil— la palabra
+        cede su sitio al título, como el icono: con ella, «Valor de la cámara» salía
+        en tres líneas (25-sep). Queda la flecha, y el lector sigue oyendo la etiqueta.
+      */}
+      <span className="@max-[16rem]:hidden">Ver</span>
       <span aria-hidden className="text-cuerpo text-texto-tenue">
         ›
       </span>

@@ -326,3 +326,8 @@
 107. **No se cambia de rama con una batería corriendo.** La API de pruebas se levanta
      desde el código: cambiar de rama a mitad hace que unas pruebas corran contra un
      código y otras contra otro, y los rojos no significan nada. Se repite entera.
+108. **Una persona de las pruebas es de todas las pruebas a la vez.** La prueba de «el
+     Panel no puede leer» daba por hecho que Rosa tenía el widget de fichar, y las del
+     Panel, en otro fichero y al mismo tiempo, se lo quitaban. Pasaba sola y fallaba en
+     compañía. Lo que otra prueba puede cambiar no se da por hecho: se contesta en la
+     propia prueba, o se prueba dentro del mismo bloque, que corre en fila.

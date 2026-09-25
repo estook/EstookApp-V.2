@@ -793,6 +793,16 @@ test('si el Panel no puede leer, lo dice, y no se inventa un «no puedes» ni un
   page,
 }) => {
   await entrar(page);
+  // **Con el Panel de fábrica, y no con el que Rosa tenga guardado.** Las pruebas
+  // del Panel de `esqueleto.spec.ts` le quitan y le ponen widgets —el primero que
+  // quitan es el de fichar— y, corriendo a la vez, esta se encontraba sin él.
+  await page.route('**/api/v1/consultas/mi_panel*', (ruta) =>
+    ruta.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ datos: { widgets: null, version: 0 } }),
+    }),
+  );
   await page.route('**/api/v1/consultas/inventario_hoy*', (ruta) =>
     ruta.fulfill({ status: 500, contentType: 'application/json', body: '{}' }),
   );

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 import { ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
 
 /**
@@ -158,11 +158,18 @@ test('los objetivos se cambian en Ajustes, con lo normal del sector al lado', as
   await tarjeta.getByRole('button', { name: 'Guardar los objetivos' }).click();
   await expect(tarjeta.getByText('Guardados.', { exact: false })).toBeVisible();
 
-  // El semáforo de arriba lo juzga ya con el nuevo.
-  await expect(tarjeta.getByText('objetivo 5 %')).toBeVisible();
-  await merma.fill('4');
-  await tarjeta.getByRole('button', { name: 'Guardar los objetivos' }).click();
-  await expect(tarjeta.getByText('objetivo 4 %')).toBeVisible();
+  // Está guardado de verdad: al volver a abrir Ajustes, sale el 5.
+  await recargarSinQueSeCaiga(page);
+  await expect(laTarjeta(page, 'Tus objetivos').getByLabel('Merma')).toHaveValue('5');
+
+  // Y se deja como estaba, para las demás pruebas.
+  await laTarjeta(page, 'Tus objetivos').getByLabel('Merma').fill('4');
+  await laTarjeta(page, 'Tus objetivos')
+    .getByRole('button', { name: 'Guardar los objetivos' })
+    .click();
+  await expect(
+    laTarjeta(page, 'Tus objetivos').getByText('Guardados.', { exact: false }),
+  ).toBeVisible();
 });
 
 // ── 20 · El QR y la carta ────────────────────────────────────────────────────

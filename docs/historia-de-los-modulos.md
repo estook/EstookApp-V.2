@@ -2534,10 +2534,17 @@ mejoras 6, 8, 9 y 17 y el QR de la 20, razonadas en la
 - **El Panel del gerente sin su reloj.** El primer reparto quitaba «Fichar» a quien
   lleva el local; lo vio una prueba, y el Manifiesto ya decía «a todo el que ficha,
   Fichar arriba del todo».
+- **Una prueba que pasaba sola y fallaba en compañía.** La de «el Panel no puede leer»
+  esperaba el widget de fichar en el Panel guardado de Rosa, y las del Panel de
+  `esqueleto.spec.ts` se lo quitaban a la vez. Ahora contesta ella misma con el Panel
+  de fábrica.
+- **«Ver» en las tarjetas estrechas.** En el móvil, la palabra le quitaba sitio al
+  título y «Valor de la cámara» salía en tres líneas; por debajo de 16 rem queda solo
+  la flecha.
 
 Las pruebas: `objetivos.prueba.ts`, `hoy.prueba.ts` y `carta.prueba.ts` en el dominio;
 `lo-que-se-ordena.prueba.ts` contra la base; `lo-que-se-ordena.spec.ts` y las de Fogón
-de `pantalla.spec.ts` en pantalla. Lecciones 106 y 107.
+de `pantalla.spec.ts` en pantalla. Lecciones 106 a 108.
 
 ### Cambio de rumbo · Estook también cobra
 

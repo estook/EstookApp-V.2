@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 25 de septiembre de 2026 · **Antes de M8. V entera, en producción (#67). Los arreglos del móvil (#68) y O · Lo que se ordena (#69), hechos y cada uno en su pull request; O trae la migración `0046`. Después, E2**
+Última actualización: 25 de septiembre de 2026 · **Antes de M8. Los arreglos del móvil (#68) y O (#69), en producción. El Panel en el móvil y un repaso, en su pull request (sin migración). E2 · Stripe: hechas las preguntas, falta que Richi conteste**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -9,7 +9,7 @@
 > Lo demás vive en su sitio, y aquí solo se enlaza:
 >
 > - **Lo que hizo cada módulo**, con sus fallos: [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)
-> - **Lo aprendido fallando** (109 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
+> - **Lo aprendido fallando** (113 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](docs/reglas.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](docs/decisiones/)
 > - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)
@@ -18,17 +18,17 @@
 
 ## 1 · Dónde estamos
 
-_Producción leída el 24 de septiembre de 2026 por la noche: migraciones y organizaciones en solo lectura, la API desplegada preguntada por todas sus operaciones, y las tres ejecuciones de GitHub de la #67 miradas. Las suscripciones y el uso real, del 23-sep._
+_Producción leída el 25 de septiembre de 2026 a mediodía: las migraciones y las organizaciones en solo lectura, la API desplegada preguntada por todas sus operaciones, la ráfaga de 30 consultas a la vez contra ella, y las ejecuciones de GitHub de `main` miradas por dentro. Las suscripciones y el uso real, del 23-sep._
 
 |                |                                                                                                                                                                                                 |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados** | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1**, la puerta del admin · **E1**, crear cuenta y Google · **V · Lo que se ve, entera** (#64, #65, #67) · **el repaso del 23-sep**  |
-| **Ahora**      | **Los arreglos del móvil** (#68, sin migración) y **O · Lo que se ordena** (#69, con la `0046`), hechos y cada uno en su pull request: se fusionan en ese orden. **E2 · Stripe** después        |
-| **`main`**     | Todo fusionado hasta la **#67**                                                                                                                                                                 |
-| **Base**       | Supabase, **45 de 45** migraciones, igual que `main`. El cubo `fotos-de-producto`, creado y en uso                                                                                              |
-| **API**        | Desplegada el 24-sep a las 19:31 con la #67: **45 consultas y 87 comandos**, comprobado con `bd:comprobar-api`                                                                                  |
-| **Sitio**      | `estook.com`, `/app/` y `/admin/`. Se publica solo al fusionar (la #67, publicada el 24-sep a las 19:21)                                                                                        |
-| **Pruebas**    | En `main`, en GitHub: **1.197** unitarias y de base y **642** de pantalla (los tres navegadores), con las **32 capturas** comparadas, en verde y sin repetidas · catálogo **126 de 132** (95 %) |
+| **Terminados** | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1** · **E1** · **V** (#64, #65, #67) · **el repaso del 23-sep** · **los arreglos del móvil** (#68) · **O · Lo que se ordena** (#69) |
+| **Ahora**      | **El Panel en el móvil y un repaso** (rama `repaso-del-panel-y-la-rafaga`, sin migración), en su pull request. **E2 · Stripe**: las preguntas, hechas; se programa cuando Richi conteste        |
+| **`main`**     | Todo fusionado hasta la **#69**                                                                                                                                                                 |
+| **Base**       | Supabase, **46 de 46** migraciones, igual que `main`. El cubo `fotos-de-producto`, creado y en uso                                                                                              |
+| **API**        | Desplegada el 25-sep a las 11:31 con la #69: **48 consultas y 87 comandos**, comprobado con `bd:comprobar-api`. **La ráfaga: 90 de 90** (tres tandas de 30 a la vez)                            |
+| **Sitio**      | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`. Se publica solo al fusionar (la #69, publicada el 25-sep a las 11:17)                                                                      |
+| **Pruebas**    | En `main`, en GitHub: **1.246** unitarias y de base y **681** de pantalla (los tres navegadores), con las **32 capturas** comparadas, en verde y sin repetidas                                  |
 | **Entrar**     | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                 |
 | **Dirección**  | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                    |
 
@@ -44,9 +44,10 @@ _Producción leída el 24 de septiembre de 2026 por la noche: migraciones y orga
 | —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                               |
 | 1   | **V · Lo que se ve**             | ✓ en producción (#64, #65, #67)                                                     |
 | —   | **El repaso del 23-sep**         | ✓ en producción (#66)                                                               |
-| —   | **Los arreglos del móvil**       | **Hechos, en su pull request** (#68)                                                |
-| 2   | **O · Lo que se ordena**         | **Hecha, en su pull request** (#69), con la migración `0046` (abajo)                |
-| 3   | **E2 · El pago con Stripe**      | **Lo siguiente**. Richi ya tiene cuenta: **hará falta una clave de prueba**         |
+| —   | **Los arreglos del móvil**       | ✓ en producción (#68)                                                               |
+| 2   | **O · Lo que se ordena**         | ✓ en producción (#69, migración `0046`)                                             |
+| —   | **El Panel en el móvil**         | **Hecho, en su pull request** (sin migración, con despliegue de la API)             |
+| 3   | **E2 · El pago con Stripe**      | **Las preguntas, hechas** (apartado 9). Falta que Richi conteste y ponga la clave   |
 | 4   | **A2 · Clientes**                | Falta                                                                               |
 | 5   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7 (avisos a quien manda, invitar a un pedido) |
 | 6   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                             |
@@ -56,52 +57,40 @@ _Producción leída el 24 de septiembre de 2026 por la noche: migraciones y orga
 | 10  | **A4 · Ventas**                  | Falta                                                                               |
 | —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                                         |
 
-### Los arreglos del móvil (24 y 25-sep) · en su pull request, sin migración
+### Los arreglos del móvil (#68) y O (#69) · en producción desde el 25-sep
 
-Al mirar V en el móvil, Richi encontró dos fallos; al probarlos salieron dos más. Los
-cuatro, arreglados en `arreglos-del-movil-y-la-recarga` y contados en la
-[historia](docs/historia-de-los-modulos.md):
+Contados en la [historia](docs/historia-de-los-modulos.md) y en la
+[0047](docs/decisiones/0047-lo-que-se-ordena.md). **La ráfaga que quedó pendiente**,
+repetida contra producción el 25-sep con `.\estook.cmd bd:rafaga` (ya es una
+herramienta): **90 de 90** consultas por la API desplegada, en tres tandas de 30 a la
+vez, y 30 de 30 transacciones por la puerta de la API (`6543`). Por la `5432` siguen
+fallando 15 de 30, que es lo que demuestra que la ráfaga ve el tope y que la API ya no
+pasa por ahí.
 
-| Qué se veía                                               | La causa                                                                                                                      | El arreglo                                                                                                                                                  |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **En Productos, el nombre partido letra a letra**         | Cantidad, etiqueta y botones fijos: al nombre le quedaban 50 px a 375 y **0** a 320, y se partía por cualquier letra          | El nombre arriba con todo el ancho (dos líneas, por palabras), la cantidad debajo, **la etiqueta solo si avisa**; a menos de 360 px, + y − en columna       |
-| **Recargar dos veces mandaba a entrar, y entrar fallaba** | El agrupador de Supabase **en modo sesión** admite 15 clientes: con 30 consultas a la vez, 15 fallaban (medido en producción) | La API entra sola por el **modo transacción** (`6543`): las 30 pasan. Y un fallo del servidor ya no manda a entrar: reintenta y dice «No llego al servidor» |
-| **A 320 px, la barra de abajo se salía por los lados**    | Cada botón no bajaba del ancho de su palabra (`flex-1` sin `min-w-0`)                                                         | Se estrechan y recortan                                                                                                                                     |
+### El Panel en el móvil y un repaso (25-sep) · en su pull request, sin migración
 
-**Surte efecto al fusionar y desplegar la API** (sin migración). **El `#` de la dirección
-no era el fallo**: es el enrutado de la [0008](docs/decisiones/0008-enrutado-con-almohadilla.md),
-porque GitHub Pages solo sirve ficheros que existen. En GitHub, la #68: **1.203** unitarias
-y de base y **657** de pantalla, en verde y sin repetidas.
+Richi miró O en el móvil: le gustó, salvo tres cosas, y pidió un repaso general.
 
-### O · Lo que se ordena (25-sep) · en su pull request (#69), con la migración `0046`
+| Qué                                   | Cómo queda                                                                                                                                                  |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **«Hoy» ocupaba la pantalla**         | En el móvil sale **plegado**: cuántas cosas hay, un punto por cada una y la más urgente; se abre tocando. Filas más bajas. **Sin avisos, no aparece**       |
+| **Un punto suelto en la línea**       | Era un círculo dentro de un dibujo que se estira: salía como una raya. Ahora el hueco va **en discontinuo** y los puntos, redondos y fuera del dibujo       |
+| **El «+» tapaba al bajar**            | **Se aparta al bajar y vuelve al subir**, solo en el móvil                                                                                                  |
+| **Del repaso** (19 pantallas miradas) | La zona de atención se salía por la derecha; una ficha cerrada dejaba un «Cargando» escondido; «caducado» de lo que caduca hoy; «Fichar la entrada» partido |
+| **Entrar a veces no hacía nada**      | «Continuar con Google» aparecía tarde y empujaba el formulario bajo el dedo. Ahora ocupa su sitio desde el principio (lo cazó Safari en GitHub)             |
 
-Las mejoras 6, 8, 9 y 17 y el QR de la 20, con lo que contestó Richi el 25-sep
-(«copia a los mejores y mejóralo»). Razonado en la [0047](docs/decisiones/0047-lo-que-se-ordena.md):
-
-| Qué                             | Cómo                                                                                                                                                             |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **El botón «+»** (6)            | Donde estaba la burbuja. **Fogón arriba, en su propio banner**; fichar cuando se puede; los atajos de cada puesto, los mismos que las acciones rápidas           |
-| **Lo de hoy** (8)               | Arriba del Panel, ordenado por el servidor en cinco escalones con las consultas de siempre; cada cosa con su botón y «Luego»                                     |
-| **El Panel de cada puesto** (9) | Gerente, jefe, cocina y sala, sacados de los permisos; todos con el reloj arriba; «Volver al de mi puesto»                                                       |
-| **Objetivos con semáforo** (17) | Food cost, personal, **coste primo**, merma (**en % de lo comprado**) y ventas de la semana; con su porqué plegado; se cambian en Ajustes · Tu local             |
-| **El QR para siempre** (20)     | `estook.com/carta/<local>`, fija y única (la pone la base); la carta sin sesión; SVG, PNG y cartel desde Ajustes. La carta es la página de «no existe» del sitio |
-
-En GitHub, la #69: **1.246** unitarias y de base y **681** de pantalla, en verde y **sin
-repetidas**. Al probarla salió un fallo de verdad del Panel: **al arrastrar un widget
-mandaba su centro y no el dedo**, y soltado encima de otro podía irse a un tercero.
-Ahora decide el dedo. Lo cazó el rastro del intento que falla, que desde ahora GitHub
-guarda siempre (lección 109).
+Sin errores de consola ni peticiones fallidas en todo el recorrido. **Lleva un cambio
+de la API** (el título corto de la caja): se fusiona y se despliega la API.
 
 ### Lo que todavía NO está en la app
 
 Para que nadie dé por hecho lo que solo está escrito:
 
-- **De las veinte mejoras, seis en producción**: la 1 (modo cocina), la 2 (las cifras
-  de cada app), la 3 (el Resumen), la 4 (los vacíos), la 5 (el oscuro y las fotos de
-  producto) y la 7 (Ajustes en secciones). **La 6, la 8, la 9, la 17 y el QR de la 20,
-  hechas en la #69**: hasta fusionar, en `estook.com` no hay «+», ni lo de hoy,
-  ni semáforo, ni QR. Las demás tienen su plan y su entrega en
-  [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
+- **De las veinte mejoras, diez en producción y el QR de la 20**: la 1 (modo cocina),
+  la 2 (las cifras de cada app), la 3 (el Resumen), la 4 (los vacíos), la 5 (el oscuro
+  y las fotos de producto), la 6 (el «+»), la 7 (Ajustes en secciones), la 8 (lo de
+  hoy), la 9 (el Panel de cada puesto) y la 17 (el semáforo). Las demás tienen su plan
+  y su entrega en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
 - **Las fotos son de producto, no de plato.** La foto del plato irá en la carta (M10), y
   el escandallo (M9) desglosará cada ración con el coste del inventario. **Escanear el
   código de barras** es la mejora 10, en la entrega L: el producto ya guarda su código
@@ -142,19 +131,20 @@ Uso real, leído el 23-sep: 11 productos, 316 movimientos, 7 cierres de caja, 25
 **Ya hecho, y no se vuelve a pedir:** Resend (dominio `estook.com`, remitente
 `hola@estook.com`, los códigos llegan) · entrar y crear cuenta con Google · Places
 (IKATZ enlazado desde el 16-sep) · los datos del titular en privacidad y condiciones
-(#59) · **V entera**: fusionada, `0045` aplicada, API desplegada y mirada en el móvil
-(24-sep) · **la cuenta de Stripe** (24-sep).
+(#59) · **V entera** (24-sep) · **la cuenta de Stripe** (24-sep) · **la #68 y la #69**:
+fusionadas, `0046` aplicada, API desplegada y miradas en el móvil (25-sep).
 
-**Ahora:** fusionar los arreglos del móvil (#68) y desplegar la API, sin migración; y
-después O: fusionar, aplicar la `0046` y desplegar la API otra vez. Los pasos de cada entrega, uno a uno, en
-[`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md).
+**Ahora:** fusionar el Panel en el móvil (sin migración) y desplegar la API; y
+**contestar las preguntas de E2 y poner la clave de prueba de Stripe** (apartado 9). Los
+pasos de cada entrega, uno a uno, en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md).
 
 **Lo que hará falta para E2**, el día que empiece y no antes:
 
-1. **La clave secreta de prueba de Stripe** (empieza por `sk_test_`), puesta como secreto
-   en Supabase; por el chat, solo su nombre. **Sin crear productos, precios ni el aviso
-   (webhook) a mano**: los crea el código. Para cobrar de verdad, la cuenta tendrá que
-   estar activada (datos fiscales y banco); para probar, no hace falta.
+1. **La clave secreta de prueba de Stripe** (empieza por `sk_test_`), puesta en
+   Supabase como el secreto **`STRIPE_SECRET_KEY`**; por el chat, solo el nombre. **Sin
+   crear productos, precios ni el aviso (webhook) a mano**: los crea el código. Para
+   cobrar de verdad, la cuenta tendrá que estar activada (datos fiscales y banco); para
+   probar, no hace falta.
 2. **El alta de autónomo en Hacienda** (036/037), si no está hecha. Es del asesor, pero
    es lo que de verdad bloquea cobrar al primer cliente.
 
@@ -166,8 +156,10 @@ Business Profile espera a que Google apruebe el acceso.
 **Del asesor fiscal**, y hasta que conteste no se programa ninguna: el IVA de
 restauración, de «para llevar» y reparto; el IGIC de hostelería; `S` o `I` y R1 frente a
 R4 en las rectificativas; el texto del justificante sin conexión; las propinas; si los
-3.000 € valen para el reparto; la declaración responsable de Estook; y la revisión
-escrita del planteamiento (condición 4 del capítulo 9 del Anexo).
+3.000 € valen para el reparto; la declaración responsable de Estook; la revisión
+escrita del planteamiento (condición 4 del capítulo 9 del Anexo); y, para E2, **la cuota
+de Estook a un cliente de Canarias, Ceuta o Melilla** (con el IVA incluido no vale igual)
+y **si la factura que hace Stripe basta hasta VeriFactu** (1-jul-2027 para autónomos).
 
 **Verifacti:** la propuesta es por NIF activo, de 5,59 € con diez a 3,71 € con cincuenta,
 **y caduca hacia el 19 de octubre**; falta preguntarles qué se paga con menos de diez
@@ -246,7 +238,7 @@ por CNAME ([0036](docs/decisiones/0036-la-direccion-es-estook-com.md)).
 
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan gratuito, por
 el agrupador: las herramientas, en modo sesión; **la API, en modo transacción** desde los
-arreglos del móvil (hasta desplegarlos, la de producción sigue en sesión). **58 tablas —55 en `estook` y 3 en `plataforma`— todas con
+arreglos del móvil (`bd:rafaga` lo mide). **58 tablas —55 en `estook` y 3 en `plataforma`— todas con
 seguridad por filas**; la única vista es `estook.existencias`. Se comprueba con
 `.\estook.cmd bd:comprobar`, que lo lee de la base y no de aquí.
 
@@ -435,6 +427,10 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Solo `sin_sesion` manda a entrar.** Cualquier otro fallo de `quien_soy` se reintenta
   y acaba en `SinServidor`, con la sesión guardada.
 - **En una lista, la etiqueta solo si avisa** (`avisa`): una en cada fila no marca nada.
+- **Lo de hoy, sin nada, no se pinta**, y en el móvil sale plegado. **La línea de las
+  cifras** no lleva nada redondo dentro del SVG que se estira: sus formas salen de
+  `formasDeLaTendencia`, y el hueco va en discontinuo. **El «+» se aparta al bajar**
+  solo por debajo de `lg`.
 - **La red de debajo de cada pantalla** (`SiAlgoFalla`), en la raíz de la app y del admin
   y alrededor del `<Outlet />` del esqueleto.
 - **La zona segura del móvil**: toda barra o pantalla pegada arriba suma
@@ -473,14 +469,9 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 
 ## 8 · El siguiente paso
 
-**Primero, los arreglos del móvil** (apartado 1): Richi fusiona y despliega la API. Luego
-se repite la ráfaga de 30 consultas contra producción: tiene que salir **ni un error**.
-
-**Luego, O · Lo que se ordena** (mejoras 6, 8, 9 y 17, y el QR definitivo de la 20), en
-una rama nueva. Richi contestó el 25-sep: lo recomendado en todo, copiando a los mejores
-y mejorándolo; el botón de acciones es el «+» redondo **con Fogón destacado en su propio
-banner**, y el QR va en `estook.com/carta/<local>`. **Después,
-E2 · Stripe.**
+**Primero, el Panel en el móvil** (apartado 1): Richi fusiona y despliega la API, sin
+migración, y lo mira en el móvil. **Después, E2 · Stripe** (apartado 9): se programa en
+cuanto Richi conteste las preguntas y ponga `STRIPE_SECRET_KEY` en Supabase.
 
 **Cómo se comprueba que no rompe lo de antes:** `.\estook.cmd verifica`,
 `.\estook.cmd prueba:e2e:completa` (que incluye la cobertura) y, tras desplegar,
@@ -510,11 +501,37 @@ E2 · Stripe.**
 Facturas a `usarListaLarga` cuando una crezca; subir a React Router 7; **el 19 de octubre, mirar la integración continua**, que GitHub pasa `ubuntu-latest` a Ubuntu 26 ese día (hoy es solo un aviso); y el vectorial
 del logotipo y de Fogón cuando aparezcan.
 
-## 9 · Después de O · E2, el pago con Stripe
+## 9 · E2, el pago con Stripe
 
 **Antes de empezarla:** E1 fusionada, migrada y desplegada ✓ · los datos del titular ✓
-(#59) · la cuenta de Stripe de Richi ✓ (24-sep) · **la clave secreta de prueba, puesta en
-Supabase: falta, y se pide al empezar.**
+(#59) · la cuenta de Stripe de Richi ✓ (24-sep) · **la clave secreta de prueba, en
+Supabase como `STRIPE_SECRET_KEY`: falta** · **las respuestas de Richi: faltan**.
+
+**Las preguntas, hechas el 25-sep** (con lo que recomiendo, mirando a Slack, Shopify,
+Holded o Notion; el detalle, en el chat de ese día):
+
+1. **Al abrir o cerrar un local, la cuota cambia sola**, prorrateada en la siguiente
+   factura; y con dos locales o más, Pro pasa solo a Cadena, que es más barato.
+2. **Se paga con tarjeta** (y Apple Pay y Google Pay, que vienen con ella); la
+   domiciliación SEPA, más adelante.
+3. **Si falla un cobro**: Stripe reintenta unas dos semanas y avisa; mientras, todo
+   funciona con un aviso arriba; si no se cobra, **solo lectura**. Nunca se borra nada.
+4. **Cancelar o pausar**: en el portal de Stripe, sigue hasta el final de lo pagado y
+   luego queda en solo lectura, con sus datos y exportable. **Pausa** (12 €), en la
+   misma entrega.
+5. **La prueba de la oferta, sin tarjeta**, como anuncia la web, con un correo tres días
+   antes de acabar.
+6. **Las cuentas de ahora**: `ikatz` y `burger-king`, **activas de la casa** (sin cobrar
+   y marcadas así en el admin); `prueba1` y `prueba1-1`, como cualquier cliente.
+7. **Quién factura**: Stripe hace y manda la factura, con el NIF del cliente pedido al
+   pagar. Falta saber si Richi factura como autónomo, y que el asesor lo revise:
+   VeriFactu obliga a los autónomos desde el **1 de julio de 2027**.
+
+**Lo que decido yo, porque no cambia lo que se ve:** el pago en la página de Stripe
+(Checkout) y no dentro de la app, así ni un script de Stripe entra en nuestras páginas;
+el portal de Stripe para tarjeta, plan y cancelar; solo el nivel dirección paga; los
+códigos promocionales, activados (los creará el admin en A3); el aviso de Stripe firmado
+e idempotente, y creado por el código con su secreto guardado donde solo llega la API.
 
 **Qué entra:** los productos y precios de la
 [0042](docs/decisiones/0042-registro-abierto-google-y-la-oferta.md) en Stripe, con IVA

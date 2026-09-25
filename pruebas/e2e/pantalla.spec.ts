@@ -550,12 +550,15 @@ test.describe('el Panel enseña lo de Inventario', () => {
     // quitar y que se ordena sola por prioridad» (Evolución 1.0, capítulo 5).
     await entrar(page);
 
-    const zona = page.getByRole('region', { name: 'Lo que necesita tu atención' });
-    await expect(zona).toBeVisible();
+    // Adjunta y no «visible»: desde el 25-sep, sin nada que atender no se ve —ni un
+    // «nada urgente», ni sus huecos—, y lo que haya dentro depende de las demás pruebas.
+    // Por su etiqueta y no por su papel: escondida, un papel no se encuentra.
+    const zona = page.locator('section[aria-label="Lo que necesita tu atención"]');
+    await expect(zona).toBeAttached();
 
     // Y en modo de edición sigue ahí: lo que se monta es la rejilla de debajo.
     await page.getByRole('button', { name: 'Editar' }).click();
-    await expect(zona).toBeVisible();
+    await expect(zona).toBeAttached();
   });
 });
 

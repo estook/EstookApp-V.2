@@ -2,7 +2,6 @@ import { z } from 'zod';
 import {
   TURNO_SOSPECHOSO_DESDE,
   diaDeLaSemana,
-  fechaEnLetra,
   fechaOperativa,
   loDeHoy,
   masDias,
@@ -189,7 +188,9 @@ async function laCajaSinCerrar(
   const fila = filas[0];
   if (fila === undefined || fila.como !== 'a_mano' || fila.ayer_cerrada) return null;
   const suele = (fila.dias ?? []).includes(diaDeLaSemana(ayer));
-  return suele ? { cuando: `ayer, ${fechaEnLetra(ayer)}` } : null;
+  // «Ayer» y nada más: la fecha entera partía el título en tres líneas en el móvil
+  // (25-sep), y ayer no necesita decir qué día fue.
+  return suele ? { cuando: 'ayer' } : null;
 }
 
 /** Del fichaje de quien mira: si le toca entrar, o si lleva demasiadas horas dentro. */

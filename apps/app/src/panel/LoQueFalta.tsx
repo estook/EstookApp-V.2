@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { IconoAtencion } from '@estook/iconos';
+import { IconoAdelante, IconoAtencion } from '@estook/iconos';
 import { usarInventarioHoy } from '../ganchos/usarInventarioHoy.ts';
 
 /**
@@ -56,24 +56,28 @@ export function LoQueFalta() {
       onClick={() => {
         navegar('/inventario/productos/sin-precio');
       }}
-      className="flex w-full min-h-toque items-center gap-e2 rounded-medio border border-borde bg-superficie px-e3 py-e2 text-left hover:bg-fondo"
+      // Del mismo aire que «Hoy», justo encima: esquinas grandes y dos líneas como
+      // mucho —qué pasa, y cuáles en una sola línea—. Antes eran tres (25-sep).
+      className="flex w-full min-h-toque items-center gap-e3 rounded-mayor border border-borde bg-superficie px-e4 py-e2 text-left hover:bg-fondo"
     >
       <span className="shrink-0 text-atencion">
         <IconoAtencion size={16} />
       </span>
-      <span className="min-w-0 flex-1 text-secundario">
-        <strong className="font-medium">
+      <span className="min-w-0 flex-1">
+        <strong className="block text-secundario font-medium">
           {sinPrecio.length === 1
             ? '1 producto sin precio'
             : `${sinPrecio.length} productos sin precio`}
         </strong>
-        <span className="text-texto-suave">
-          {' · '}
+        <span className="block truncate text-etiqueta text-texto-suave">
           {cuales}
           {yMas}
         </span>
       </span>
-      <span className="shrink-0 text-secundario font-medium text-texto-suave">Ponérselo</span>
+      <span className="flex shrink-0 items-center gap-e1 text-secundario font-medium text-texto-suave">
+        Ponérselo
+        <IconoAdelante size={16} />
+      </span>
     </button>
   );
 }

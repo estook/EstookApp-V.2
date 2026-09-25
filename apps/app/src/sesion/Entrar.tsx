@@ -105,7 +105,14 @@ export function Entrar({
         <>
           {avisoDeGoogle}
 
-          {como?.google != null && (
+          {/*
+            Mientras llega `como_se_entra`, Google ya ocupa su sitio. Antes aparecía
+            al llegar y empujaba el formulario unos 90 px: quien pulsaba «Entrar» en
+            ese momento tocaba donde ya no estaba el botón y no pasaba nada (lo cazó
+            Safari en las pruebas, 25-sep). Pulsarlo antes de tiempo no hace nada, y
+            si al final Google no está conectado, se va.
+          */}
+          {(como === undefined || como.google != null) && (
             <>
               <BotonDeGoogle
                 cargando={yendoAGoogle}

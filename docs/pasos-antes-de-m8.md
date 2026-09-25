@@ -2,26 +2,91 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 24 de septiembre de 2026 por la noche, leyendo la base, la
+> Comprobado en producción el 25 de septiembre de 2026 a mediodía, leyendo la base, la
 > API y GitHub.
 >
 > | Qué                        | Cómo está                                                                   |
 > | -------------------------- | --------------------------------------------------------------------------- |
-> | Pull requests              | **Todas fusionadas hasta la #67**. Esperan la #68 y la #69, en ese orden    |
-> | La base de datos           | **45 de 45** migraciones, igual que `main`                                  |
-> | La API                     | **Desplegada el 24 de septiembre a las 19:31**, con la #67: 45 y 87         |
+> | Pull requests              | **Todas fusionadas hasta la #69**. Espera la #70, el Panel en el móvil      |
+> | La base de datos           | **46 de 46** migraciones, igual que `main`                                  |
+> | La API                     | **Desplegada el 25 de septiembre a las 11:31**, con la #69: 48 y 87         |
 > | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
 > | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep            |
 > | **V · lo que se ve**       | **Hecho y en producción** (#64, #65, #67), mirado por Richi en el móvil     |
-> | Los arreglos del móvil     | **Hechos**, en la #68 (sin migración)                                       |
-> | O · lo que se ordena       | **Hecha**, en la #69, con la migración `0046`                               |
-> | E2 · el pago con Stripe    | Tu cuenta ya está. Hará falta **una clave de prueba** el día que empiece    |
+> | Los arreglos del móvil     | **Hechos y en producción** (#68). La ráfaga: 90 de 90                       |
+> | O · lo que se ordena       | **Hecha y en producción** (#69), con la `0046`                              |
+> | El Panel en el móvil       | **Hecho**, en la #70 (sin migración, con despliegue)                        |
+> | E2 · el pago con Stripe    | Las preguntas, hechas. Falta **tu respuesta y la clave** (abajo)            |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Los arreglos del móvil (#68) y O · Lo que se ordena · lo que te toca ahora
+## El Panel en el móvil (#70) · lo que te toca ahora
+
+**Qué trae:** «Hoy» plegado en el móvil (y fuera si no hay nada), la línea de ventas sin
+el punto suelto, el «+» que se aparta al bajar, y lo que salió del repaso. Contado en
+`ESTADO.md`, apartado 1. **Sin migración**, pero **con despliegue de la API** (el título
+corto de la caja lo pone el servidor).
+
+1. En **github.com** → **Pull requests** → **«El Panel en el móvil y un repaso»** (la
+   #70). Abajo, las **tres comprobaciones en verde**. **Merge pull request** → **Confirm
+   merge**: sale en morado «merged».
+2. **Actions** → a la izquierda, **Desplegar la API** → **Run workflow**, rama `main`,
+   escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**.
+3. En PowerShell, en la carpeta del proyecto:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 48» consultas y «los 87» comandos, igual que ahora.
+
+4. **En el móvil** (recarga la app antes):
+   - **Hoy**, arriba del Panel: una línea con «Hoy · N cosas», sus puntos de color y lo
+     más urgente. Tócala y se abre; vuelve a tocarla y se pliega. El reloj de cada fila
+     es «Luego».
+   - **Ventas · 7 días**: los días sin caja, en discontinuo; ni un punto suelto.
+   - Baja por el Panel: **el «+» se va**; sube un poco: **vuelve**.
+
+## E2 · El pago con Stripe · la clave, paso a paso
+
+**Solo la clave de prueba**, que no cobra nada de verdad. Empieza por `sk_test_`.
+
+1. Entra en **dashboard.stripe.com** con tu cuenta.
+2. **Pasa a pruebas.** Arriba a la izquierda, en el selector de la cuenta, elige
+   **Entorno de prueba** (Stripe lo llama también «Sandbox» o «Modo de prueba»). Tiene
+   que salir una **franja naranja arriba** que lo dice. **Si no sale, no sigas**: la
+   clave sería la de verdad.
+3. A la izquierda, **Desarrolladores** → **Claves de API**.
+4. En **Clave secreta**, pulsa **Revelar clave de prueba** y **cópiala**. Tiene que
+   empezar por **`sk_test_`**. Si empieza por `sk_live_`, para: estás fuera de pruebas.
+5. Entra en **supabase.com** → el proyecto **`efgtzujwjztihyiwgpwg`** → a la izquierda,
+   **Edge Functions** → **Secrets** (en algunas pantallas: **Project Settings → Edge
+   Functions**).
+6. **Add new secret**: en **Name** escribe exactamente **`STRIPE_SECRET_KEY`**; en
+   **Value**, pega la clave. **Save**.
+7. **Dime solo que está puesta**, nunca la clave. No hace falta volver a desplegar nada.
+
+**No crees productos, precios ni el aviso (webhook) en Stripe**: los crea el código la
+primera vez. Y **para cobrar de verdad**, más adelante, Stripe te pedirá activar la
+cuenta (tus datos fiscales y el banco); para probar no hace falta.
+
+---
+
+## Los arreglos del móvil (#68) y O · Lo que se ordena · **hecho**
+
+**Fusionadas, `0046` aplicada y la API desplegada el 25-sep** (comprobado en la base y
+en GitHub). La ráfaga de 30 consultas a la vez, repetida contra producción: **90 de 90**.
+Lo de abajo queda como estaba, por si hay que repetirlo.
 
 **Son dos pull requests, y van en este orden**: primero los arreglos (#68), que no
 llevan migración, y después O, que lleva **una** (`0046`). Cada uno se fusiona, se

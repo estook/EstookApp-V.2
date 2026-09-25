@@ -7,6 +7,7 @@ import { usarContextoDeFogon } from '../ganchos/usarContextoDeFogon.ts';
 import { usarFichar } from '../ganchos/usarFichar.ts';
 import { usarHacer } from '../ganchos/usarHacer.ts';
 import { usarMisAtajos } from '../ganchos/usarMisAtajos.ts';
+import { usarSeEscondeAlBajar } from '../ganchos/usarSeEscondeAlBajar.ts';
 import { ElegirAtajos } from './ElegirAtajos.tsx';
 
 /**
@@ -36,17 +37,25 @@ import { ElegirAtajos } from './ElegirAtajos.tsx';
  *      de tu puesto, y cada uno se pone los suyos
  */
 export function BotonDeHacer({ alPulsar }: { readonly alPulsar: () => void }) {
+  // En el móvil se aparta al bajar y vuelve al subir (Richi, 25-sep).
+  const escondido = usarSeEscondeAlBajar();
   return (
     <button
       type="button"
       onClick={alPulsar}
       aria-label="Qué quieres hacer"
+      data-escondido={escondido || undefined}
       className={clases(
         'fixed right-e3 z-30 grid size-[56px] place-items-center no-imprimir lg:right-e5',
         // El icono en charcoal y no en blanco: blanco sobre naranja da 2,6:1 (B8).
         'rounded-redondo bg-naranja text-sobre-naranja shadow-s3',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja',
         'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e3))] lg:bottom-e5',
+        'transition-[translate,opacity] duration-[--normal] ease-curva',
+        // Baja detrás de la barra de navegación y se apaga. Con el teclado, si recibe
+        // el foco, vuelve: nada se queda fuera de alcance por estar escondido.
+        escondido &&
+          'max-lg:pointer-events-none max-lg:translate-y-[calc(100%+var(--spacing-e5))] max-lg:opacity-0 focus-visible:translate-y-0 focus-visible:opacity-100',
       )}
     >
       <IconoAnadir size={28} />

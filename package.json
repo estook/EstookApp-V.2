@@ -28,6 +28,7 @@
     "bd:sembrar": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/sembrar.mjs",
     "bd:comprobar": "node --env-file-if-exists=.env.local base-de-datos/herramientas/comprobar.mjs",
     "bd:comprobar-api": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/comprobar-api.mjs",
+    "bd:rafaga": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/rafaga.mjs",
     "bd:sin-cuentas-de-ejemplo": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/sin-cuentas-de-ejemplo.mjs",
     "bd:reparar-categorias": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/reparar-categorias.mjs",
     "bd:cuenta-de-verdad": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/cuenta-de-verdad.mjs",

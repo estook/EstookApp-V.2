@@ -100,15 +100,19 @@ export function Panel() {
       */}
       <section
         aria-label="Lo que necesita tu atención"
-        className="grid items-start gap-e3 lg:grid-cols-2"
+        // `grid-cols-1` y no nada: sin él la columna crece con la línea más larga que
+        // no se parte, y «3 productos sin precio» se salía por la derecha (25-sep).
+        // Y sin nada dentro no ocupa: cada envoltorio vacío se esconde, y la zona
+        // entera también, que si no dejaba sus huecos encima del Panel.
+        className="grid grid-cols-1 items-start gap-e3 lg:grid-cols-2 [&:not(:has(>:not(:empty)))]:hidden"
       >
         {/* Lo de hoy, ordenado por el servidor (entrega O, mejora 8), de lado a lado. */}
-        <div className="lg:col-span-2">
+        <div className="empty:hidden lg:col-span-2">
           <LoDeHoy />
         </div>
         <TarjetasDelPanel />
         {/* Lo que falta es una línea, y va de lado a lado. */}
-        <div className="lg:col-span-2">
+        <div className="empty:hidden lg:col-span-2">
           <LoQueFalta />
         </div>
       </section>

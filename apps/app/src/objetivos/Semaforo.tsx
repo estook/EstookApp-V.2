@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import type { CifraDelSemaforo, Semaforo as ColorDelSemaforo } from '@estook/dominio';
 import { Boton, Etiqueta, clases } from '@estook/ui';
+import { usarSinIrAquiMismo } from '../ganchos/usarSinIrAquiMismo.ts';
 
 /**
  * Una cifra del semáforo de objetivos (entrega O, mejora 17 · 0047).
@@ -27,7 +28,10 @@ const COMO_VA: Readonly<
 
 export function FilaDelSemaforo({ cifra }: { readonly cifra: CifraDelSemaforo }) {
   const navegar = useNavigate();
+  const llevaAOtroSitio = usarSinIrAquiMismo();
   const como = COMO_VA[cifra.semaforo];
+  const queHacer =
+    cifra.queHacer !== null && llevaAOtroSitio(cifra.queHacer.ir) ? cifra.queHacer : null;
 
   return (
     <details className="group rounded-medio [&_summary::-webkit-details-marker]:hidden">
@@ -63,15 +67,15 @@ export function FilaDelSemaforo({ cifra }: { readonly cifra: CifraDelSemaforo })
             {frase}
           </p>
         ))}
-        {cifra.queHacer !== null && (
+        {queHacer !== null && (
           <div>
             <Boton
               tono="secundario"
               onClick={() => {
-                if (cifra.queHacer !== null) navegar(cifra.queHacer.ir);
+                navegar(queHacer.ir);
               }}
             >
-              {cifra.queHacer.texto}
+              {queHacer.texto}
             </Boton>
           </div>
         )}
@@ -105,6 +109,7 @@ export function ListaDelSemaforo({
   readonly cuantas?: number;
 }) {
   const navegar = useNavigate();
+  const llevaAOtroSitio = usarSinIrAquiMismo();
   const conDato = [...cifras]
     .filter((c) => c.semaforo !== 'sin_dato')
     .sort((a, b) => PESO[a.semaforo] - PESO[b.semaforo]);
@@ -112,7 +117,9 @@ export function ListaDelSemaforo({
   const queHacer = [
     ...new Map(
       sinDato.flatMap((c) =>
-        c.queHacer === null ? [] : [[c.queHacer.texto, c.queHacer] as const],
+        c.queHacer === null || !llevaAOtroSitio(c.queHacer.ir)
+          ? []
+          : [[c.queHacer.texto, c.queHacer] as const],
       ),
     ).values(),
   ];

@@ -2541,6 +2541,9 @@ mejoras 6, 8, 9 y 17 y el QR de la 20, razonadas en la
 - **«Ver» en las tarjetas estrechas.** En el móvil, la palabra le quitaba sitio al
   título y «Valor de la cámara» salía en tres líneas; por debajo de 16 rem queda solo
   la flecha.
+- **Un botón que llevaba a donde ya estabas.** En Ajustes, la tarjeta de los objetivos
+  ofrecía «Poner tus objetivos». El semáforo ya no propone ir a la pantalla en la que
+  está (`usarSinIrAquiMismo`), y la prueba lo mira.
 
 Las pruebas: `objetivos.prueba.ts`, `hoy.prueba.ts` y `carta.prueba.ts` en el dominio;
 `lo-que-se-ordena.prueba.ts` contra la base; `lo-que-se-ordena.spec.ts` y las de Fogón

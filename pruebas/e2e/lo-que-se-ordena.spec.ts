@@ -137,9 +137,16 @@ test('lo de hoy: lo que caduca hoy sale arriba del Panel, y «Luego» lo aparta'
   const zona = page.getByRole('region', { name: 'Lo que necesita tu atención' });
   const caduca = zona.getByRole('listitem').filter({ hasText: /caducan? hoy/ });
   await expect(caduca).toBeVisible();
-  await expect(caduca).toContainText(nombre);
-  await expect(caduca.getByRole('button', { name: 'Verlos' })).toBeVisible();
 
+  // Su lote se busca donde lleva «Verlos», que es la lista entera: lo de hoy nombra
+  // dos y dice «y N más», y con los tres navegadores a la vez, cada uno con su nata,
+  // la de Safari caía en el «y 1 más» (25-sep).
+  await caduca.getByRole('button', { name: 'Verlos' }).click();
+  await expect(page).toHaveURL(/#\/inventario\/resumen/);
+  await expect(page.getByText(nombre).first()).toBeVisible();
+
+  await page.goBack();
+  await expect(caduca).toBeVisible();
   await caduca.getByRole('button', { name: /Recordarme/ }).click();
   await expect(caduca).toHaveCount(0);
 });
@@ -152,6 +159,8 @@ test('los objetivos se cambian en Ajustes, con lo normal del sector al lado', as
 
   const tarjeta = laTarjeta(page, 'Tus objetivos');
   await expect(tarjeta.getByText(/Lo normal va del 4 al 10 %/)).toBeVisible();
+  // Aquí ya se ponen: el semáforo no ofrece ir a donde ya se está.
+  await expect(tarjeta.getByRole('button', { name: 'Poner tus objetivos' })).toHaveCount(0);
 
   const merma = tarjeta.getByLabel('Merma');
   await merma.fill('5');

@@ -58,6 +58,10 @@ export function Privacidad() {
           <li>Supabase: la base de datos y el servidor, alojados en la Unión Europea.</li>
           <li>Resend: el envío de correos, como el código para crear tu cuenta.</li>
           <li>Google: entrar con tu cuenta de Google, si lo eliges.</li>
+          <li>
+            Stripe: el pago de la suscripción. Tu tarjeta la guarda Stripe, nunca Estook; nosotros
+            solo sabemos su marca y sus cuatro últimas cifras, para enseñártelas.
+          </li>
           <li>Sentry: el registro de errores de la aplicación.</li>
           <li>GitHub: la publicación de esta web y de la aplicación.</li>
         </Lista>

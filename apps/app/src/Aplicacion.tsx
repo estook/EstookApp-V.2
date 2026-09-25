@@ -16,6 +16,7 @@ import { Panel } from './panel/Panel.tsx';
 import { PantallaDeApp } from './pantallas/PantallaDeApp.tsx';
 import { VistaDeCadena } from './pantallas/VistaDeCadena.tsx';
 import { ElegirPlan } from './sesion/ElegirPlan.tsx';
+import { usarLaVueltaDelPago } from './ganchos/usarLaVueltaDelPago.ts';
 import { SinEntrar } from './sesion/SinEntrar.tsx';
 import { SinServidor } from './sesion/SinServidor.tsx';
 import {
@@ -154,6 +155,9 @@ function Puerta() {
   */
   usarElColorDeLaApp(yo?.local?.colorEnLaApp === true ? yo.local.colorDeMarca : null);
 
+  // La vuelta de Stripe (0048): se confirma el pago antes de decidir a dónde se va.
+  const confirmandoElPago = usarLaVueltaDelPago();
+
   // Sin API no hay a quien preguntar. Se dice, en la propia pantalla de entrar.
   if (!hayApi) return <SinEntrar />;
 
@@ -171,6 +175,14 @@ function Puerta() {
   // Sin nadie dentro: entrar o crear cuenta, y la vuelta de Google (0042).
   if (yo === null) return <SinEntrar />;
 
+  if (confirmandoElPago) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-fondo">
+        <Cargando que="tu pago" />
+      </main>
+    );
+  }
+
   // 1 · El segundo factor, antes que nada: la sesion esta a medias y el servidor
   //     no va a contestar a nada mas.
   if (yo.faltaDobleFactor) return <PedirDobleFactor />;
@@ -180,7 +192,8 @@ function Puerta() {
 
   // 3 · Y las cuatro paradas de la resolucion de destino.
   if (yo.destino === 'cuenta_parada') return <CuentaParada porque={yo.porque} />;
-  // Cuenta recién creada sin oferta de prueba: elige su plan antes de entrar (0042).
+  // Sin pago no hay app (0048): toda cuenta nueva, y la que tiene una prueba vieja que
+  // ya acabó, elige su plan y paga antes de entrar. Lo cumple el servidor.
   if (yo.destino === 'elegir_plan') return <ElegirPlan />;
   if (yo.destino === 'elegir_organizacion') return <ElegirOrganizacion />;
   if (yo.destino === 'elegir_local') return <ElegirLocal />;

@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { Destino, Idioma } from '@estook/dominio';
+import type { Destino, Idioma, ComoEstaLaCuenta } from '@estook/dominio';
 import type { PermisosResueltos } from '@estook/permisos';
 import type { ClienteApi } from '@estook/cliente-api';
 
@@ -75,6 +75,16 @@ export interface QuienSoy {
   readonly debeActivarDobleFactor: boolean;
   /** Si es una visita de demostración: se mira todo y no se guarda nada (M5). */
   readonly esDemostracion: boolean;
+  /**
+   * Cómo está la cuenta (0048): para el aviso de arriba —un cobro fallido con los
+   * días que quedan, o solo lectura—. Nulo sin organización.
+   */
+  readonly cuenta: {
+    readonly como: ComoEstaLaCuenta;
+    readonly diasQuedan: number | null;
+    /** Si lleva «Plan y facturación», que es de la organización y no del local. */
+    readonly laLlevo: boolean;
+  } | null;
 }
 
 export interface Sesion {

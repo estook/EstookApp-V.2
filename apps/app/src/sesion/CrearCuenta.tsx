@@ -150,8 +150,9 @@ export function CrearCuenta({
 
       {como?.oferta.activa === true && (
         <div className="mb-e4">
-          <Aviso tono="bien" titulo={`${como.oferta.dias} días de prueba, sin tarjeta`}>
-            Al terminar la prueba eliges tu plan. Nada de lo que hagas se pierde.
+          {/* Con tarjeta desde la 0048: hoy no se cobra, y se cancela antes sin pagar nada. */}
+          <Aviso tono="bien" titulo={`${como.oferta.dias} días de prueba gratis`}>
+            Pones tu tarjeta y hoy no se cobra nada. Si cancelas antes de que acabe, no pagas nada.
           </Aviso>
         </div>
       )}

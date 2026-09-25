@@ -40,7 +40,7 @@ export const TITULAR = {
 } as const;
 
 /** La fecha de la versión vigente. Se cambia cada vez que cambie el texto. */
-export const VERSION_DE_LOS_TEXTOS = '21 de septiembre de 2026';
+export const VERSION_DE_LOS_TEXTOS = '25 de septiembre de 2026';
 
 export function PaginaLegal({
   titulo,

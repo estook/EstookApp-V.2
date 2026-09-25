@@ -142,6 +142,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
         permisos,
         tieneLocal: yo?.local !== null && yo?.local !== undefined,
         tieneOrganizacion: yo?.organizacion !== null && yo?.organizacion !== undefined,
+        llevaLaSuscripcion: yo?.cuenta?.laLlevo === true,
       }).map((ajuste) => ({
         id: `ajuste-${ajuste.id}`,
         nombre: ajuste.nombre,
@@ -153,7 +154,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
         },
       })),
     ],
-    [apps, navegar, permisos, yo?.local, yo?.organizacion],
+    [apps, navegar, permisos, yo?.local, yo?.organizacion, yo?.cuenta?.laLlevo],
   );
 
   const resultados = useMemo<readonly ResultadoDeBusqueda[]>(

@@ -18,7 +18,8 @@ import { sinAcentos } from '@estook/dominio';
  * una vez y aparece en los tres (regla 6).
  */
 
-export type IdDeSeccion = 'aparato' | 'cuenta' | 'local' | 'conexiones' | 'organizacion';
+export type IdDeSeccion =
+  'aparato' | 'cuenta' | 'local' | 'conexiones' | 'suscripcion' | 'organizacion';
 
 export interface Seccion {
   readonly id: IdDeSeccion;
@@ -32,6 +33,8 @@ export const SECCIONES: readonly Seccion[] = [
   { id: 'cuenta', nombre: 'Mi cuenta', queHay: 'Contraseña, PIN, doble factor e idioma' },
   { id: 'local', nombre: 'Tu local', queHay: 'Marca, objetivos, el QR de tu carta y precios' },
   { id: 'conexiones', nombre: 'Conexiones', queHay: 'Tus ventas y Google' },
+  // La suscripción, a mano de quien la paga (Richi, 25-sep · 0048).
+  { id: 'suscripcion', nombre: 'Suscripción', queHay: 'Plan, tarjeta, facturas y renovación' },
   { id: 'organizacion', nombre: 'Organización', queHay: 'La seguridad de todo el negocio' },
 ];
 
@@ -124,6 +127,13 @@ export const AJUSTES: readonly Ajuste[] = [
     palabras: 'google maps reseñas horario ficha valoración',
   },
   {
+    id: 'suscripcion',
+    seccion: 'suscripcion',
+    nombre: 'Tu suscripción',
+    palabras:
+      'suscripción plan pago pagar tarjeta factura facturas cancelar renovar cuota precio prueba baja pausa',
+  },
+  {
     id: 'acceso-de-la-organizacion',
     seccion: 'organizacion',
     nombre: 'Doble factor para todos y correo de recuperación',
@@ -136,6 +146,8 @@ export interface QuienMira {
   readonly permisos: PermisosResueltos;
   readonly tieneLocal: boolean;
   readonly tieneOrganizacion: boolean;
+  /** Si lleva la suscripción (`quien_soy` → `cuenta.laLlevo`): es de la organización. */
+  readonly llevaLaSuscripcion?: boolean;
 }
 
 /**
@@ -150,6 +162,7 @@ export function seccionesQueVe({
   permisos,
   tieneLocal,
   tieneOrganizacion,
+  llevaLaSuscripcion = false,
 }: QuienMira): readonly Seccion[] {
   const llevaElLocal = tieneLocal && puedeEditar(permisos, 'app.ajustes');
   return SECCIONES.filter((seccion) => {
@@ -157,6 +170,9 @@ export function seccionesQueVe({
     // «Tu marca» la ve cualquiera con local, igual que antes.
     if (seccion.id === 'local') return tieneLocal;
     if (seccion.id === 'conexiones') return llevaElLocal;
+    // La suscripción, quien lleva la facturación: lo mismo que pide `mi_suscripcion`, y
+    // de la organización, que en la vista de cadena no hay local del que sacarlo.
+    if (seccion.id === 'suscripcion') return tieneOrganizacion && llevaLaSuscripcion;
     return tieneOrganizacion && puedeEditar(permisos, 'app.ajustes');
   });
 }

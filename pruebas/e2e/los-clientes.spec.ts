@@ -3,7 +3,6 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { API, APP } from './en-la-app.ts';
 import { codigoAhora, entrarEnElAdmin } from './entrar-en-el-admin.ts';
-import { SECRETO_DEL_ADMIN_DE_EJEMPLO } from '../../base-de-datos/semillas/acceso.ts';
 
 /**
  * A2 · Los clientes, en el admin (decisión 0041 · migración 0049), desde la pantalla.
@@ -131,7 +130,7 @@ test('el correo de acceso se cambia con el enlace que llega al nuevo', async ({
   const hoja = page.getByRole('dialog', { name: 'Cambiar el correo de acceso' });
   await hoja.getByLabel('El correo nuevo').fill(nuevo);
   await hoja.getByLabel('Por qué').fill('Perdió el acceso al correo viejo');
-  await hoja.getByLabel('Tu código, otra vez').fill(codigoAhora(SECRETO_DEL_ADMIN_DE_EJEMPLO));
+  await hoja.getByLabel('Tu código, otra vez').fill(codigoAhora());
   await hoja.getByRole('button', { name: 'Mandar los dos correos' }).click();
   await expect(hoja.getByText('Mandados los dos correos')).toBeVisible();
 
@@ -152,7 +151,7 @@ test('se exporta lo que se ve, con el código otra vez', async ({ page }) => {
   await entrarEnElAdmin(page);
   await page.getByRole('button', { name: 'Exportar' }).click();
   const hoja = page.getByRole('dialog', { name: 'Exportar los clientes' });
-  await hoja.getByLabel('Tu código, otra vez').fill(codigoAhora(SECRETO_DEL_ADMIN_DE_EJEMPLO));
+  await hoja.getByLabel('Tu código, otra vez').fill(codigoAhora());
 
   const descarga = page.waitForEvent('download');
   await hoja.getByRole('button', { name: 'Descargar el CSV' }).click();

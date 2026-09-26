@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { IconoBuscar } from '@estook/iconos';
+import { IconoBuscar, IconoCerrar } from '@estook/iconos';
 import { EstadoVacio, NadaConEso } from '../componentes/EstadoVacio.tsx';
 import { Cargando } from '../componentes/Cargando.tsx';
 import { Fila, Grupo } from './FilaDelBuscador.tsx';
@@ -157,8 +157,19 @@ export function Buscador({
       aria-label="Buscar en todo"
       className="fixed inset-0 m-0 h-full max-h-none w-full max-w-none bg-transparent p-0 backdrop:bg-charcoal/35"
     >
-      <div className="flex h-full w-full justify-center p-e3 pt-[max(10vh,calc(env(safe-area-inset-top)+var(--spacing-e3)))]">
-        <div className="flex max-h-[70vh] w-full max-w-[36rem] flex-col overflow-hidden rounded-grande border border-borde bg-superficie shadow-s3">
+      {/*
+        Y tocar fuera también cierra, como cualquier ventana encima de otra: es lo que
+        se intenta primero en un móvil. Es un botón de verdad, detrás de la caja.
+      */}
+      <div className="relative flex h-full w-full justify-center p-e3 pt-[max(10vh,calc(env(safe-area-inset-top)+var(--spacing-e3)))]">
+        <button
+          type="button"
+          aria-label="Cerrar"
+          tabIndex={-1}
+          onClick={alCerrar}
+          className="absolute inset-0 cursor-default"
+        />
+        <div className="relative flex max-h-[70vh] w-full max-w-[36rem] flex-col overflow-hidden rounded-grande border border-borde bg-superficie shadow-s3">
           <div className="flex items-center gap-e2 border-b border-borde px-e3">
             <IconoBuscar size={20} className="shrink-0 text-texto-suave" />
             <input
@@ -178,6 +189,19 @@ export function Buscador({
               placeholder="Busca un local, una persona o una acción"
               className="min-h-toque w-full bg-transparent text-cuerpo outline-none placeholder:text-texto-tenue"
             />
+            {/*
+              Cerrar, a la vista (27-sep): en el ordenador solo se cerraba con Esc, y
+              en el móvil no había forma. Como en cualquier buscador de ahora, una X
+              al final del campo, del tamaño de un dedo.
+            */}
+            <button
+              type="button"
+              onClick={alCerrar}
+              aria-label="Cerrar el buscador"
+              className="-mr-e2 grid size-toque shrink-0 place-items-center rounded-medio text-texto-suave hover:bg-fondo hover:text-texto"
+            >
+              <IconoCerrar size={20} />
+            </button>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto">
@@ -254,7 +278,8 @@ export function Buscador({
             )}
           </div>
 
-          <p className="border-t border-borde px-e3 py-e2 text-etiqueta text-texto-suave">
+          {/* Las teclas, solo donde hay teclado: en un móvil no dicen nada. */}
+          <p className="border-t border-borde px-e3 py-e2 text-etiqueta text-texto-suave pointer-coarse:hidden">
             Flechas para moverte · Enter para abrir · Esc para cerrar
           </p>
         </div>

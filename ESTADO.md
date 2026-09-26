@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 26 de septiembre de 2026, por la noche · **Antes de M8. A2 · los clientes en el admin (#74, `0049`), en producción; nadie ha pagado todavía. La auditoría del 26-sep, en la #75, sin migración. Después, R**
+Última actualización: 27 de septiembre de 2026 · **Antes de M8. La auditoría del 26-sep (#75), en producción. R1 · la campana y los avisos, en su pull request con la migración `0050`. Después, R2**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -9,7 +9,7 @@
 > Lo demás vive en su sitio, y aquí solo se enlaza:
 >
 > - **Lo que hizo cada módulo**, con sus fallos: [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)
-> - **Lo aprendido fallando** (122 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
+> - **Lo aprendido fallando** (124 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](docs/reglas.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](docs/decisiones/)
 > - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)
@@ -18,20 +18,20 @@
 
 ## 1 · Dónde estamos
 
-_Producción leída el 26-sep por la noche, en solo lectura: migraciones, organizaciones y suscripciones; los despliegues, el admin publicado y GitHub de `main`, mirados por dentro._
+_Producción leída el 27-sep de madrugada, en solo lectura: migraciones, organizaciones, suscripciones y el reloj; GitHub de `main`, mirado por dentro._
 
-|                  |                                                                                                                                                                                                                                                                |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados**   | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1** · **E1** · **V** · **el repaso del 23-sep** · **los arreglos del móvil** · **O** · **el Panel en el móvil** (#70) · **E2** (#71) · **el repaso del 25-sep** (#72) · **L** (#73) · **A2** (#74) |
-| **Por fusionar** | **La auditoría del 26-sep** (#75), sin migración ni cambios en la API, con la [decisión 0051](docs/decisiones/0051-la-auditoria-del-26-sep.md). Apartado 12                                                                                                    |
-| **Ahora**        | Que Richi fusione la #75. Después, **R · el reloj y los avisos**                                                                                                                                                                                               |
-| **`main`**       | Todo fusionado hasta la **#74**, en verde y sin pruebas repetidas                                                                                                                                                                                              |
-| **Base**         | Supabase, **49 de 49** migraciones, igual que `main` (la `0049`, el 26-sep a las 17:43). La #75 no lleva                                                                                                                                                       |
-| **API**          | Desplegada el 26-sep a las 17:43 con la #74: **52 consultas y 111 comandos**, y **el reloj latiendo**. La #75 no la toca                                                                                                                                       |
-| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/` (ya con Clientes). Se publica solo al fusionar (la #74, el 26-sep a las 17:23)                                                                                                                             |
-| **Pruebas**      | En `main`: **1.362** unitarias y de base y **765** de pantalla, en verde y sin repetidas. En la #75, en local: **1.364** y **544** de pantalla (sin Safari)                                                                                                    |
-| **Entrar**       | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                                                                                |
-| **Dirección**    | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                                                                                   |
+|                  |                                                                                                                                                                                                                                                                                                    |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados**   | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1** · **E1** · **V** · **el repaso del 23-sep** · **los arreglos del móvil** · **O** · **el Panel en el móvil** (#70) · **E2** (#71) · **el repaso del 25-sep** (#72) · **L** (#73) · **A2** (#74) · **la auditoría del 26-sep** (#75) |
+| **Por fusionar** | **R1 · la campana y los avisos**, en la rama `r-el-reloj-y-los-avisos`, con la migración `0050`, la API y la [decisión 0052](docs/decisiones/0052-la-campana-y-los-avisos.md). Apartado 13                                                                                                         |
+| **Ahora**        | Que Richi fusione R1, aplique la `0050` y despliegue la API. Después, **R2**: el pedido sugerido, los informes y la nota de Google                                                                                                                                                                 |
+| **`main`**       | Todo fusionado hasta la **#75** (26-sep, 22:07), en verde y sin pruebas repetidas                                                                                                                                                                                                                  |
+| **Base**         | Supabase, **49 de 49** migraciones, igual que `main`. R1 trae la `0050`                                                                                                                                                                                                                            |
+| **API**          | Desplegada el 26-sep a las 17:43 con la #74: **52 consultas y 111 comandos**, y **el reloj latiendo** (el último latido leído, el 26-sep a las 23:07). Con R1: **56 y 116**                                                                                                                        |
+| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`. Se publica solo al fusionar (la #75, el 26-sep a las 22:08)                                                                                                                                                                                   |
+| **Pruebas**      | En `main`: **1.364** unitarias y de base y **778** de pantalla, en verde y sin repetidas. En R1, en local: **1.404** unitarias y de base                                                                                                                                                           |
+| **Entrar**       | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                                                                                                                    |
+| **Dirección**    | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                                                                                                                       |
 
 > **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
 > 100 %** (Richi, 16-sep). Los planes: [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)
@@ -39,39 +39,41 @@ _Producción leída el 26-sep por la noche, en solo lectura: migraciones, organi
 
 ### El orden, y dónde estamos en él
 
-| #   | Entrega                          | Cómo está                                                                     |
-| --- | -------------------------------- | ----------------------------------------------------------------------------- |
-| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                                                    |
-| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                         |
-| 1   | **V · Lo que se ve**             | ✓ en producción (#64, #65, #67)                                               |
-| —   | **El repaso del 23-sep**         | ✓ en producción (#66)                                                         |
-| —   | **Los arreglos del móvil**       | ✓ en producción (#68)                                                         |
-| 2   | **O · Lo que se ordena**         | ✓ en producción (#69, migración `0046`)                                       |
-| —   | **El Panel en el móvil**         | ✓ en producción (#70)                                                         |
-| 3   | **E2 · El pago con Stripe**      | ✓ en producción (#71, migración `0047`). **Falta probar el pago**: apartado 2 |
-| —   | **El repaso del 25-sep**         | ✓ en producción (#72, migración `0048`, decisión 0049)                        |
-| 4   | **L · El lector**                | ✓ en producción (#73; adelantada, era la 8)                                   |
-| 5   | **A2 · Clientes**                | ✓ en producción (#74, migración `0049`, decisión 0050)                        |
-| —   | **La auditoría del 26-sep**      | **En la #75** (decisión 0051). Apartado 12                                    |
-| 6   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7. **El reloj ya lo montó E2**          |
-| 7   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                       |
-| 8   | **I · La app instalable**        | Falta                                                                         |
-| 9   | **A3 · Vendedores y códigos**    | Falta                                                                         |
-| 10  | **A4 · Ventas**                  | Falta                                                                         |
-| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                                   |
+| #   | Entrega                          | Cómo está                                                                                                      |
+| --- | -------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| —   | **A1 · La puerta del admin**     | ✓ en producción (#53, #54)                                                                                     |
+| —   | **E1 · Crear cuenta y Google**   | ✓ en producción (#56)                                                                                          |
+| 1   | **V · Lo que se ve**             | ✓ en producción (#64, #65, #67)                                                                                |
+| —   | **El repaso del 23-sep**         | ✓ en producción (#66)                                                                                          |
+| —   | **Los arreglos del móvil**       | ✓ en producción (#68)                                                                                          |
+| 2   | **O · Lo que se ordena**         | ✓ en producción (#69, migración `0046`)                                                                        |
+| —   | **El Panel en el móvil**         | ✓ en producción (#70)                                                                                          |
+| 3   | **E2 · El pago con Stripe**      | ✓ en producción (#71, migración `0047`). **Falta probar el pago**: apartado 2                                  |
+| —   | **El repaso del 25-sep**         | ✓ en producción (#72, migración `0048`, decisión 0049)                                                         |
+| 4   | **L · El lector**                | ✓ en producción (#73; adelantada, era la 8)                                                                    |
+| 5   | **A2 · Clientes**                | ✓ en producción (#74, migración `0049`, decisión 0050)                                                         |
+| —   | **La auditoría del 26-sep**      | ✓ en producción (#75, decisión 0051)                                                                           |
+| 6   | **R · El reloj y los avisos**    | **R1 en su pull request** (`0050`, decisión 0052): la campana, la entrega 2 de M7 y la mejora 13. **Falta R2** |
+| 7   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                                                        |
+| 8   | **I · La app instalable**        | Falta                                                                                                          |
+| 9   | **A3 · Vendedores y códigos**    | Falta                                                                                                          |
+| 10  | **A4 · Ventas**                  | Falta                                                                                                          |
+| —   | **M8 · Inventario y desviación** | Después de todo lo anterior                                                                                    |
 
 ### Lo que todavía NO está en la app
 
 Para que nadie dé por hecho lo que solo está escrito:
 
-- **De las veinte mejoras, diez en producción y el QR de la 20**: la 1, 2, 3, 4, 5, 6, 7,
-  8, 9 y 17. Las demás, con su plan en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
-- **Nadie ha pagado todavía**, ni en modo prueba: el 26-sep por la tarde no hay ninguna
-  suscripción en Stripe (alguien abrió la página de pago una vez: el catálogo de Stripe
-  ya está creado). **Se cobra en modo prueba**; para cobrar de verdad hace falta la clave
-  real y la cuenta de Stripe activada con los datos fiscales de quien factura
-  (apartado 9).
+- **De las veinte mejoras, once en producción y el QR de la 20**: la 1, 2, 3, 4, 5, 6, 7,
+  8, 9, 10 y 17. **La 13** (subidas de precio) va en R1. Las demás, con su plan en
+  [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
+- **Nadie ha pagado de verdad.** En modo prueba, **uno**: Pizzeriacazzo (de Santi), el
+  26-sep a las 20:59, plan Pro, cobrado al momento porque no tenía oferta (0042). Para
+  cobrar de verdad hace falta la clave real y la cuenta de Stripe activada con los datos
+  fiscales de quien factura (apartado 9).
 - **Del admin, la puerta y los clientes**; ni vendedores y códigos (A3) ni ventas (A4).
+- **Ni notificaciones al móvil ni informes**: la campana y el correo llegan con R1; el
+  push, con I; los informes, con R2.
 - **No hay recuperar la contraseña por correo** (la da quien lleva el local).
 - **Lo que espera a su módulo**: los platos, sus fichas y sus escandallos (M9 y M10, con
   el diseño de Richi ya escrito en el Plan), leer fotos (M22), responder reseñas
@@ -79,15 +81,15 @@ Para que nadie dé por hecho lo que solo está escrito:
 
 ### Lo que hay de verdad en producción
 
-Cinco organizaciones reales, además de las tres de ejemplo (leído el 26-sep por la tarde):
+Cinco organizaciones reales, además de las tres de ejemplo (leído el 27-sep de madrugada):
 
-| Organización    | Locales | Cómo está                                                         |
-| --------------- | ------- | ----------------------------------------------------------------- |
-| `ikatz`         | 1       | **Activa, de la casa**: no paga. Richi ha entrado después de E2   |
-| `burger-king`   | 2       | Prueba caducada el 18-sep: **tiene que elegir plan** para entrar  |
-| `prueba1`       | 1       | Pendiente de pago                                                 |
-| `prueba1-1`     | 1       | Prueba hasta el 28-sep; después, elegir plan                      |
-| `pizzeriacazzo` | 1       | **Nueva, de Santi** (25-sep, 17:42): pendiente de pago, sin pagar |
+| Organización    | Locales | Cómo está                                                          |
+| --------------- | ------- | ------------------------------------------------------------------ |
+| `ikatz`         | 1       | **Activa, de la casa**: no paga. Richi ha entrado después de E2    |
+| `burger-king`   | 2       | Prueba caducada el 18-sep: **tiene que elegir plan** para entrar   |
+| `prueba1`       | 1       | Pendiente de pago                                                  |
+| `prueba1-1`     | 1       | Prueba hasta el 28-sep; después, elegir plan                       |
+| `pizzeriacazzo` | 1       | **De Santi**: activa, plan Pro, **pagada en modo prueba** (26-sep) |
 
 `ikatz` es el negocio de Richi; `burger-king` es de prueba, lo creó él; `prueba1` y
 `prueba1-1` se crearon con Google el 17-sep. Los tres ejemplos, **de la casa**.
@@ -102,17 +104,16 @@ datos del titular (#59) · **V entera** · **la #68, la #69 y la #70** · **la c
 Stripe** (24-sep) · **las siete respuestas de E2** · **`STRIPE_SECRET_KEY`** · **la #71
 fusionada, la `0047` aplicada, la API desplegada y `bd:comprobar-api` en OK con el reloj
 latiendo** (25-sep) · **los siete puntos del repaso y las tres respuestas de A2** (25-sep) ·
-**la #72, la #73 y la #74 fusionadas, la `0048` y la `0049` aplicadas, la API desplegada y comprobada** (26-sep).
+**la #72, la #73 y la #74 fusionadas, la `0048` y la `0049` aplicadas, la API desplegada y comprobada** (26-sep) ·
+**la #75 fusionada y publicada** · **el pago en modo prueba** (Pizzeriacazzo, 26-sep) · **las respuestas de R** (27-sep).
 
 **Ahora, en este orden** (los pasos, uno a uno, en
 [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **Fusionar la #75** (la auditoría): sin migración ni despliegue de la API. Mirar el
-   Panel, Almacén → Mermas y Ajustes → Tu local.
-2. **Probar el pago en modo prueba**, con una cuenta nueva y la tarjeta `4242 4242 4242
-4242`. Es lo único de E2 que no se puede comprobar desde aquí: pide crear una cuenta y
-   pagar, y eso lo haces tú.
-3. **Mirarlo en el iPhone**, con la app instalada: «Hoy», la barra de abajo y el lector.
+1. **R1 · la campana**: fusionar su pull request, aplicar la `0050` y desplegar la API.
+2. **Mirar la campana**: pedir ayuda con un pedido a alguien de cocina, y Ajustes → Avisos.
+3. **Mirarlo en el iPhone**, con la app instalada: «Hoy», la barra de abajo, el lector y
+   la campana.
 
 **Para cobrar de verdad, más adelante:** la sociedad o el alta de autónomo; activar la
 cuenta de Stripe con esos datos (salen en cada factura); cambiar la clave de prueba por
@@ -207,10 +208,9 @@ por CNAME ([0036](docs/decisiones/0036-la-direccion-es-estook-com.md)).
 
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan gratuito, por
 el agrupador: las herramientas, en modo sesión; **la API, en modo transacción**
-(`bd:rafaga` lo mide). **65 tablas —57 en `estook` y 8 en `plataforma`— todas con
-seguridad por filas** (con la #74, 69: la ficha comercial, las notas de cliente, la foto
-diaria del uso y los cambios de correo, las cuatro en `plataforma`); la única
-vista es `estook.existencias`. **`pg_cron` y `pg_net`, encendidos por la `0047`**: el
+(`bd:rafaga` lo mide). **69 tablas —57 en `estook` y 12 en `plataforma`— todas con
+seguridad por filas** (con la `0050`, 72: el aviso, lo que cada uno elige de sus avisos y
+la invitación a un pedido, las tres en `estook`); la única vista es `estook.existencias`. **`pg_cron` y `pg_net`, encendidos por la `0047`**: el
 reloj late a los siete minutos de cada hora. Se comprueba con `.\estook.cmd
 bd:comprobar`, que lo lee de la base y no de aquí.
 
@@ -322,11 +322,13 @@ En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 | **0049** | Almacén e Inventario, lo congelado aparte, el Tablón y la carta subida                   |
 | **0050** | Los clientes en el admin: todo de Stripe, tres gestos y el correo con doble confirmación |
 | **0051** | La auditoría del 26-sep: nada se esconde por vacío, mermas a la vista, Google junto      |
+| **0052** | La campana y los avisos: lo que hace el equipo, a quien manda, uno por cosa              |
 
 > **Ojo con los números:** las decisiones y las migraciones se numeran aparte. La
 > **decisión** 0048 es el pago y la monta la **migración** `0047`; la **decisión** 0049
 > es el repaso del 25-sep y la monta la **migración** `0048`; la **decisión** 0050 son los
-> clientes del admin y la monta la **migración** `0049`.
+> clientes del admin y la monta la **migración** `0049`; la **decisión** 0052 es la campana
+> y la monta la **migración** `0050`.
 
 Otras, sin fichero propio:
 
@@ -360,7 +362,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`, `packages/ui/fuentes/`
   y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0048`** (y la `0049` en cuanto se fusione). Se amplían con
+- **Las migraciones `0001` a `0049`** (y la `0050` en cuanto se fusione). Se amplían con
   la siguiente, nunca se editan (regla 2). Y al ampliar una función SQL, **se copia la
   original entera**; al cambiar el nombre de un permiso, **se leen sus políticas de
   `pg_policies`** en vez de reescribirlas (lección 119).
@@ -387,7 +389,8 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **«En línea» y «última vez» los contesta la base** (`esta_en_linea` y
   `visto_por_ultima_vez`).
 - **Las funciones `security definer`** son la puerta de atrás y están tasadas: una prueba
-  las cuenta con sus nombres —**44 en `estook`** y **6 en `plataforma`** (con A2)— y otra
+  las cuenta con sus nombres —**44 en `estook`** (45 con la `0050`: `quien_recibe`) y **6 en
+  `plataforma`**— y otra
   comprueba que **ninguna la puede ejecutar nadie más que la API** (`0043`).
 - **`sinRecordar`** salta la idempotencia, y solo lo lleva `sigo_aqui`; una prueba tasa
   la lista. Lo que suma, resta o crea algo se recuerda siempre.
@@ -485,15 +488,26 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   (`/almacen/mermas`; la dirección de antes lleva allí). **Google y el punto exacto van
   juntos en Tu local**, y el marcado a mano manda. **Lo que no es de alguien lo devuelve
   al Panel diciéndoselo.**
+- **La campana** (0052): **los avisos los escribe el sistema** (`enNombreDelSistema`, que se
+  puede anidar) en la misma transacción que lo que los provoca; cada uno solo lee los
+  suyos y solo marca «leído» (lo cuida un disparador). **A quién le llega lo dice
+  `estook.quien_recibe`, y solo al sistema.** Qué avisos hay, qué dicen y cómo vienen de
+  fábrica, en el dominio (`avisos.ts`); qué pide cada uno, en `LO_QUE_PIDE_EL_AVISO`; y de
+  cada evento su aviso, en `lo-que-avisa.ts`. **Uno por cosa y persona.** **El correo sale
+  con el comando ya guardado** (el despachador) y lo reintenta el reloj; **sin campana no
+  hay correo**. «Hoy» es lo que hay que hacer; la campana, lo que ha pasado: no se mezclan.
+  **La campana no se esconde nunca**, tampoco en el modo cocina.
 
 ---
 
 ## 8 · El siguiente paso
 
-**Primero, la #75** (la auditoría, sin migración). **Que Richi pruebe el pago** con la
-4242 (lo único de E2 sin comprobar) y mire el iPhone. **Después, R · el reloj y los
-avisos**, la siguiente del orden: los avisos por correo y en pantalla que manda el reloj,
-con la entrega 2 de M7 dentro, y las mejoras 12, 13, 16 y 19.
+**Primero, R1** (la campana, con la `0050`): fusionar, migrar y desplegar. **Después, R2**,
+con lo que contestó Richi el 27-sep (decisión 0052): **el pedido sugerido** (12), que se
+rellena al tocar el aviso de la víspera; **Tu día, Tu semana y Tu mes** en Negocio, con los
+informes diario, semanal y mensual por correo, cada uno con su interruptor, y «productos
+bajo mínimo» por correo si se enciende (16); y **la nota de Google** (19) cada tres días y
+al mirarla si tiene más de uno. El PDF, con Horarios.
 
 **Cómo se comprueba que no rompe lo de antes:** `.\estook.cmd verifica`,
 `.\estook.cmd prueba:e2e:completa` (que incluye la cobertura) y, tras desplegar,
@@ -502,25 +516,25 @@ con la entrega 2 de M7 dentro, y las mejoras 12, 13, 16 y 19.
 
 ### Lo que queda preparado, y dónde se termina
 
-| Qué                                                        | Dónde se termina | Qué hay ya                                                      |
-| ---------------------------------------------------------- | ---------------- | --------------------------------------------------------------- |
-| Los avisos del reloj (a quien manda, la bandeja de salida) | **Mejoras · R**  | **El reloj** (E2): latido cada hora y lo del día, con su prueba |
-| Business Profile                                           | Con accesos      | La ficha de Google del local                                    |
-| Calendario, avisos con roles y turnos                      | **M14**          | La tabla, su seguridad por roles y «Lo que viene»               |
-| Recalcular platos con lo que corrigió la factura           | **M9**           | Lo cobrado, en cada línea del albarán con fecha                 |
-| El pedido en PDF con el logo                               | **M11**          | «Imprimir», sin membrete                                        |
-| El precio pactado para toda una cadena                     | **M24**          | Lo pactado por local                                            |
-| Leer el albarán de una foto                                | **M22**          | La recepción línea a línea                                      |
-| Avisos de fichar por push                                  | **Mejoras · I**  | El horario de siempre, que el widget ya dice                    |
-| Recuento, desviación y calibración del aprovechamiento     | **M8**           | La merma con motivo; albaranes con incidencias; el recuento     |
-| Descontar lo vendido del inventario                        | **M20**          | El cierre guarda los platos con el nombre normalizado           |
-| Los terminales del local                                   | **M20A**         | Cómo se dan de alta, en el Anexo 3.4                            |
-| El vendedor de cada cliente y el código con que llegó      | **A3**           | La ficha de cada cliente (A2)                                   |
-| El tablero de ventas                                       | **A4**           | La foto diaria del uso de cada cliente (A2)                     |
-| Leer los platos de la carta subida y proponer los cambios  | **M10**          | La carta subida y enseñada por su QR (0049)                     |
-| Plato, ficha técnica y escandallo unidos por su id         | **M9**           | El diseño de Richi, escrito en el Plan (0049)                   |
-| La historia del Tablón, por días                           | **M17**          | El Tablón, con sus notas guardadas (0049)                       |
-| Cerrar un local (y que la cuota baje)                      | Sin fecha        | La cuota ya sube sola al abrir uno                              |
+| Qué                                                       | Dónde se termina | Qué hay ya                                                     |
+| --------------------------------------------------------- | ---------------- | -------------------------------------------------------------- |
+| El pedido sugerido, los informes y la nota de Google      | **Mejoras · R2** | **La campana y el correo** (R1) y **el reloj** (E2)            |
+| Business Profile                                          | Con accesos      | La ficha de Google del local                                   |
+| Calendario, avisos con roles y turnos                     | **M14**          | La tabla, su seguridad por roles y «Lo que viene»              |
+| Recalcular platos con lo que corrigió la factura          | **M9**           | Lo cobrado, en cada línea del albarán con fecha                |
+| El pedido en PDF con el logo                              | **M11**          | «Imprimir», sin membrete                                       |
+| El precio pactado para toda una cadena                    | **M24**          | Lo pactado por local                                           |
+| Leer el albarán de una foto                               | **M22**          | La recepción línea a línea                                     |
+| Avisos de fichar por push, y que fuera de turno no suene  | **Mejoras · I**  | La campana (R1) y el horario de siempre, que el widget ya dice |
+| Recuento, desviación y calibración del aprovechamiento    | **M8**           | La merma con motivo; albaranes con incidencias; el recuento    |
+| Descontar lo vendido del inventario                       | **M20**          | El cierre guarda los platos con el nombre normalizado          |
+| Los terminales del local                                  | **M20A**         | Cómo se dan de alta, en el Anexo 3.4                           |
+| El vendedor de cada cliente y el código con que llegó     | **A3**           | La ficha de cada cliente (A2)                                  |
+| El tablero de ventas                                      | **A4**           | La foto diaria del uso de cada cliente (A2)                    |
+| Leer los platos de la carta subida y proponer los cambios | **M10**          | La carta subida y enseñada por su QR (0049)                    |
+| Plato, ficha técnica y escandallo unidos por su id        | **M9**           | El diseño de Richi, escrito en el Plan (0049)                  |
+| La historia del Tablón, por días                          | **M17**          | El Tablón, con sus notas guardadas (0049)                      |
+| Cerrar un local (y que la cuota baje)                     | Sin fecha        | La cuota ya sube sola al abrir uno                             |
 
 **Sin prisa, de código:** volver a `BrowserRouter` ahora que hay dominio
 ([0008](docs/decisiones/0008-enrutado-con-almohadilla.md)); pasar Pedidos, Albaranes y
@@ -634,7 +648,7 @@ publicado con Clientes. **Falta que Richi lo mire**: Calcular ahora, e `ikatz` d
 
 ## 12 · La auditoría del 26-sep (#75)
 
-**Hecha el 26-sep** en la rama `auditoria-del-26-sep`, sin migración, con la
+**En producción desde el 26-sep** (#75, fusionada a las 22:07), sin migración, con la
 [decisión 0051](docs/decisiones/0051-la-auditoria-del-26-sep.md). Los cuatro puntos de
 Richi y lo que salió al recorrer la app con los siete roles, en el ordenador y en el móvil:
 
@@ -654,3 +668,31 @@ Richi y lo que salió al recorrer la app con los siete roles, en el ordenador y 
 ajustadas, y el recorrido automático por roles sin errores de consola, llamadas fallidas,
 desbordes ni textos rotos. **Anotado sin arreglar**, con su razón en la 0051: algún hueco
 del mosaico del Panel y el «+» flotante del móvil, que tapa lo que quede debajo.
+
+---
+
+## 13 · R1 · la campana y los avisos
+
+**Hecha el 27-sep** en la rama `r-el-reloj-y-los-avisos`, con la migración `0050`, la API y
+la [decisión 0052](docs/decisiones/0052-la-campana-y-los-avisos.md). Lo que contestó Richi
+a las siete preguntas, y el extra del buscador:
+
+| Qué                           | Cómo queda                                                                                          |
+| ----------------------------- | --------------------------------------------------------------------------------------------------- |
+| **La campana**                | Cuenta los sin leer (hasta «9+»); lo último arriba, por días; tocar lleva a donde se resuelve       |
+| **A quien manda**             | Pedido empezado, mandado, albarán con incidencias y merma de 20 € o más, a quien está por encima    |
+| **Uno por cosa y persona**    | Seguir tocando no vuelve a sonar; si lo rellena otro, su nombre se suma                             |
+| **Pedir ayuda con un pedido** | A quien lleva el almacén, al momento y por correo; «Listo, avisar a…»; lo manda quien lo pidió      |
+| **Subidas de precio** (13)    | Sin IVA y por unidad, desde un 5 % que se cambia; nombra al otro proveedor si es más barato         |
+| **Para todos**                | Carta nueva, a quien ve la Carta; el Tablón, a su zona, y leerla allí la marca aquí                 |
+| **Ajustes → Avisos**          | Campana y Correo por aviso, solo los que te pueden llegar; al correo de fábrica, solo la invitación |
+| **El buscador**               | Una X para cerrarlo y tocar fuera; las teclas, solo donde hay teclado                               |
+
+**Probado:** **27** contra la base (`los-avisos.prueba.ts`: a quién llega cada uno, uno por
+cosa, la invitación con su correo, las subidas, el Tablón, las preferencias, que nadie lee
+ni escribe los avisos de otro, y el reloj que reintenta y limpia), **13** del dominio, y
+**10** de pantalla (`los-avisos.spec.ts`), más las capturas de Ajustes → Avisos y la
+campana vacía en claro y oscuro. **Lo que no se puede probar aquí:** que el correo llegue
+de verdad a un buzón, y el iPhone — lo mira Richi.
+
+**Lo que queda para R2** está en el apartado 8.

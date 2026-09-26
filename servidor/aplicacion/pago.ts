@@ -62,11 +62,18 @@ export async function enNombreDelSistema<T>(
   contexto: Contexto,
   hacer: () => Promise<T>,
 ): Promise<T> {
+  // **Se puede anidar** (0052): el reloj, ya como sistema, manda los correos de los
+  // avisos, que también lo piden. Al salir se deja como estaba, no apagado: si no,
+  // la llamada de dentro le quitaría el sistema a la de fuera a medio camino.
+  const antes = await contexto.sql<{ valor: string }[]>`
+    select coalesce(current_setting('estook.sistema', true), '') as valor
+  `;
+  const estaba = antes[0]?.valor === 'si' ? 'si' : 'no';
   await contexto.sql`select set_config('estook.sistema', 'si', true)`;
   try {
     return await hacer();
   } finally {
-    await contexto.sql`select set_config('estook.sistema', 'no', true)`;
+    await contexto.sql`select set_config('estook.sistema', ${estaba}, true)`;
   }
 }
 

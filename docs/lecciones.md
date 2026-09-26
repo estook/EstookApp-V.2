@@ -395,3 +395,11 @@
      El Tablón, «Hoy» y cuatro tarjetas del Panel se escondían sin nada dentro. Parecía
      limpio, y Richi, que lo había pedido, no encontraba el Tablón. Un sitio que dice «sin
      avisos» enseña que existe y que está al día; uno que no sale, ni lo uno ni lo otro.
+123. **Un interruptor que se apaga al salir no se puede anidar.** `enNombreDelSistema`
+     ponía el modo sistema y al acabar lo apagaba. El reloj, ya como sistema, manda los
+     correos de los avisos, que también lo piden: la llamada de dentro apagaba el modo a
+     la de fuera a mitad de camino. Al salir se deja **como estaba**, no apagado.
+124. **Lo que se ve al momento todavía no está guardado.** Ajustes → Avisos cambia el
+     interruptor en pantalla y guarda por detrás; la prueba recargaba antes de que llegara
+     al servidor, y una vez de cada tres el cambio se perdía. No era la base ni otra
+     prueba a la vez: era no esperar. Antes de recargar, se espera a la respuesta.

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
-import { IconoAvisos, IconoBuscar, IconoChat, IconoLocal } from '@estook/iconos';
+import { IconoBuscar, IconoChat, IconoLocal } from '@estook/iconos';
+import { etiquetaDeLaCampana } from '@estook/dominio';
+import { LaCampana } from './LaCampana.tsx';
 import { clases } from '../clases.ts';
 import { Avatar } from '../componentes/Tarjeta.tsx';
 
@@ -105,30 +107,18 @@ export function BarraArribaMovil({
         En modo cocina cada botón mide 64 px, y cinco más su separación son 368: en
         un móvil de 320 no caben, y el último —tu cuenta— quedaba cortado (lo cazó la
         prueba del modo cocina en el iPhone SE). Así que, **solo con el modo puesto
-        y por debajo de 440 px**, se recogen Avisos y Chat, que hoy solo dicen lo
-        que serán, y los tres que quedan van juntos: cada uno ya es un blanco de 64
-        px y no necesita los 12 de separación. Cuando los avisos existan de verdad
-        (entrega I), esto se vuelve a mirar: un aviso no se puede esconder.
+        y por debajo de 440 px**, se recoge el Chat, que hoy solo dice lo que será, y
+        los que quedan van juntos: cada uno ya es un blanco de 64 px y no necesita
+        los 12 de separación. **La campana no se recoge nunca** (entrega R, 0052):
+        desde que avisa de verdad, un aviso no se puede esconder.
       */}
       <div className="flex shrink-0 items-center gap-0 in-[[data-cocina=si]]:max-[440px]:[&>button]:ms-0">
         <Redondo etiqueta="Buscar en todo" alPulsar={alBuscar}>
           <IconoBuscar size={20} />
         </Redondo>
 
-        <Redondo
-          etiqueta={avisos > 0 ? `Avisos: ${avisos} sin leer` : 'Avisos'}
-          alPulsar={alAbrirAvisos}
-          recogibleEnCocina
-        >
-          <span className="relative">
-            <IconoAvisos size={20} />
-            {avisos > 0 && (
-              <span
-                aria-hidden
-                className="absolute -right-[3px] -top-[3px] size-[8px] rounded-redondo bg-mal"
-              />
-            )}
-          </span>
+        <Redondo etiqueta={etiquetaDeLaCampana(avisos)} alPulsar={alAbrirAvisos}>
+          <LaCampana sinLeer={avisos} />
         </Redondo>
 
         <Redondo etiqueta="Chat del equipo" alPulsar={alAbrirChat} recogibleEnCocina>

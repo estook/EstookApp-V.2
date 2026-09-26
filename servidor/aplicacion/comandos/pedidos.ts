@@ -248,6 +248,15 @@ export const crearPedido = comando<
       )
     `;
 
+    // A quien lo puede mandar le llega que alguien lo ha empezado (entrega R, 0052).
+    await publicar(contexto.sql, {
+      tipo: 'pedido.creado',
+      organizacionId,
+      localId,
+      datos: { pedidoId, numero, proveedorId: proveedor.id },
+      correlacionId: contexto.correlacionId,
+    });
+
     return { pedidoId, numero, lineas: lineas.length, llegaEl };
   },
 });
@@ -329,6 +338,15 @@ export const cambiarPedido = comando<EntradaCambiarPedido, { pedidoId: string; l
         organizacionId,
         localId: pedido.localId,
         datos: { pedidoId: pedido.id, numero: pedido.numero, llegaEl },
+        correlacionId: contexto.correlacionId,
+      });
+    } else {
+      // Un borrador que rellena alguien más: su nombre se suma al aviso (0052).
+      await publicar(contexto.sql, {
+        tipo: 'pedido.tocado',
+        organizacionId,
+        localId: pedido.localId,
+        datos: { pedidoId: pedido.id },
         correlacionId: contexto.correlacionId,
       });
     }

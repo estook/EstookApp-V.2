@@ -571,3 +571,45 @@ export {
   laActividad,
 } from './clientes.ts';
 export type { ActividadDeCliente, LoQueHaceUnCliente, PestanaDeClientes } from './clientes.ts';
+
+// ── R · los avisos, la campana (0052) ────────────────────────────────────────
+export {
+  AMPLITUD_DE_QUIEN_LLEVA_EL_NEGOCIO,
+  COMO_ES_EL_AVISO,
+  DIAS_QUE_SE_GUARDA_UN_AVISO,
+  GRUPOS_DE_AVISOS,
+  MERMA_QUE_AVISA_CENTIMOS,
+  SUBIDA_QUE_AVISA_DE_FABRICA,
+  SUBIDA_QUE_AVISA_MAXIMA,
+  SUBIDA_QUE_AVISA_MINIMA,
+  TIPOS_DE_AVISO,
+  avisoDeCarta,
+  avisoDeIncidencias,
+  avisoDeInvitacion,
+  avisoDeMerma,
+  avisoDeNota,
+  avisoDePedidoEmpezado,
+  avisoDePedidoListo,
+  avisoDePedidoMandado,
+  avisoDeSubida,
+  cuandoFue,
+  cuantoSube,
+  deFabrica,
+  esTipoDeAviso,
+  etiquetaDeLaCampana,
+  laMermaAvisa,
+  laPreferencia,
+  laSubidaAvisa,
+  numeroDeLaCampana,
+  quienesEnUnaFrase,
+  tramoDelAviso,
+} from './avisos.ts';
+export type {
+  ComoEsElAviso,
+  GrupoDeAvisos,
+  LoQueDiceUnAviso,
+  OtroProveedorMasBarato,
+  PreferenciaDeAviso,
+  TipoDeAviso,
+  TramoDeAvisos,
+} from './avisos.ts';

@@ -1,4 +1,5 @@
 import {
+  DIAS_QUE_SE_GUARDA_UN_AVISO,
   elCorreoDeHoy,
   elPlanPorLosLocales,
   laCuota,
@@ -8,6 +9,7 @@ import {
   type FechaOperativa,
   type Intervalo,
 } from '@estook/dominio';
+import { mandarLosCorreosDeLosAvisos } from './avisos.ts';
 import { hacerLaFotoDelUso } from './clientes.ts';
 import type { Contexto } from './contrato.ts';
 import { correoDeLaCuenta } from './correos.ts';
@@ -29,6 +31,10 @@ import {
  *   1 · El correo de cada cuenta que le toque: el de cada día de impago, el de solo
  *       lectura y el de fin de prueba. Cada uno una vez (`plataforma.correo_de_la_cuenta`).
  *   2 · Cuadrar los locales con Stripe, por si al crear uno no se pudo.
+ *   3 · La foto del uso de cada cliente, para el admin.
+ *   4 · Borrar los avisos de hace más de un mes (0052).
+ *
+ * Y **cada hora**, los correos de los avisos que no salieron al momento (0052).
  *
  * Si algo falla a medias, el día no se da por hecho y el latido de la hora siguiente
  * lo vuelve a intentar; lo que ya salió no se repite.
@@ -92,6 +98,21 @@ export async function latir(
     `;
     const fila = reloj[0];
     if (fila === undefined) return null;
+
+    // Cada hora, los correos de avisos que no salieron al momento (0052). Un correo
+    // que no sale se queda pendiente para la hora siguiente; no para el reloj.
+    try {
+      await mandarLosCorreosDeLosAvisos(contexto);
+    } catch (fallo) {
+      console.error(
+        JSON.stringify({
+          nivel: 'error',
+          mensaje: 'el reloj no ha podido mandar los correos de los avisos',
+          correlacion_id: contexto.correlacionId,
+          detalle: fallo instanceof Error ? fallo.message : String(fallo),
+        }),
+      );
+    }
 
     const hoy = hoyEnMadrid(contexto.ahora);
     if (fila.ultimo_diario === hoy || laHoraEnMadrid(contexto.ahora) < HORA_DEL_DIARIO) {
@@ -243,6 +264,13 @@ async function elDiario(
       }),
     );
   }
+
+  // 4 · Los avisos de hace más de un mes: ya no avisan de nada (0052).
+  await contexto.sql`
+    delete from estook.aviso
+     where actualizado_en < ${contexto.ahora.toISOString()}::timestamptz
+                            - make_interval(days => ${DIAS_QUE_SE_GUARDA_UN_AVISO})
+  `;
 
   return { correos, cuadrados, fallos };
 }

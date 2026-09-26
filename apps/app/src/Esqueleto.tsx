@@ -29,6 +29,8 @@ import { MiCuenta } from './pantallas/MiCuenta.tsx';
 import { usarSesion } from './sesion/Sesion.tsx';
 import { usarSigoAqui } from './ganchos/usarSigoAqui.ts';
 import { AvisoDeLaCuenta } from './pago/AvisoDeLaCuenta.tsx';
+import { LosAvisos } from './avisos/LosAvisos.tsx';
+import { usarLaCampana } from './ganchos/usarLosAvisos.ts';
 import { avisarDelFallo } from '@estook/utiles/observabilidad';
 
 /**
@@ -83,6 +85,12 @@ export function Esqueleto() {
    * de hoy: fichar va arriba del todo de esta hoja.
    */
   const [haciendo, setHaciendo] = useState(false);
+  /**
+   * La campana (entrega R, 0052): el número se pregunta cada minuto con la app a la
+   * vista, y la lista, al abrirla.
+   */
+  const sinLeer = usarLaCampana();
+  const [avisosAbiertos, setAvisosAbiertos] = useState(false);
   usarQueHacer('fichar', () => {
     setHaciendo(true);
   });
@@ -253,7 +261,7 @@ export function Esqueleto() {
         setFogonAbierto(true);
       },
       abrirLosAvisos: () => {
-        setLoQueFalta('avisos');
+        setAvisosAbiertos(true);
       },
       abrirMiCuenta: () => {
         setMiCuentaAbierta(true);
@@ -295,8 +303,9 @@ export function Esqueleto() {
             void cambiarDeLocal(id);
           }}
           persona={yo?.nombre ?? ''}
+          avisos={sinLeer}
           alAbrirAvisos={() => {
-            setLoQueFalta('avisos');
+            setAvisosAbiertos(true);
           }}
           alAbrirChat={() => {
             setLoQueFalta('chat');
@@ -329,8 +338,9 @@ export function Esqueleto() {
           alBuscar={() => {
             setBuscadorAbierto(true);
           }}
+          avisos={sinLeer}
           alAbrirAvisos={() => {
-            setLoQueFalta('avisos');
+            setAvisosAbiertos(true);
           }}
           alAbrirChat={() => {
             setLoQueFalta('chat');
@@ -460,6 +470,13 @@ export function Esqueleto() {
           abierta={fogonAbierto}
           alCerrar={() => {
             setFogonAbierto(false);
+          }}
+        />
+
+        <LosAvisos
+          abierta={avisosAbiertos}
+          alCerrar={() => {
+            setAvisosAbiertos(false);
           }}
         />
 

@@ -19,12 +19,15 @@ import { Boton, Hoja } from '@estook/ui';
  * El día que el módulo llegue, se borra su entrada de aquí y el botón hace lo
  * suyo. Mientras tanto **no hay ningún botón mudo**.
  *
+ * **Los avisos salieron de aquí con la entrega R** (0052): la campana abre la de
+ * verdad, `avisos/LosAvisos.tsx`.
+ *
  * **Fogón salió de aquí y tiene lo suyo** ([`fogon/Fogon.tsx`](../fogon/Fogon.tsx)):
  * su sitio no es una hoja que se explica, es la burbuja del móvil y el icono de
  * arriba en el ordenador, sabiendo en qué pantalla estás. Eso es navegación, y
  * la navegación se decide ahora aunque la inteligencia llegue en M22.
  */
-export type LoQueFalta = 'avisos' | 'chat' | 'tpv';
+export type LoQueFalta = 'chat' | 'tpv';
 
 interface Ficha {
   readonly titulo: string;
@@ -35,17 +38,6 @@ interface Ficha {
 }
 
 const FICHAS: Readonly<Record<LoQueFalta, Ficha>> = {
-  avisos: {
-    titulo: 'Los avisos',
-    queEs: 'El sitio donde llega solo lo que necesita que hagas algo.',
-    queHara: [
-      'Cada aviso con qué pasa, por qué, qué impacto tiene y qué se recomienda.',
-      'Y un botón que lo resuelve, sin tener que ir a buscar la pantalla.',
-      'Ordenados por lo que más cuesta si se deja, no por hora de llegada.',
-    ],
-    cuando: 'Llegan con Fogón, el módulo 22.',
-    mientrasTanto: 'Lo que hay que atender hoy está en el Panel, y lo del género en Almacén · Hoy.',
-  },
   tpv: {
     titulo: 'Conectar tu TPV',
     queEs: 'Que tus ventas y tu carta entren solas, sin escribir nada a mano.',

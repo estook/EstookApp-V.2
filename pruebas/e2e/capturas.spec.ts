@@ -55,6 +55,8 @@ const PANTALLAS = [
     espera: 'No hay pedidos abiertos',
   },
   { nombre: 'ajustes-del-aparato', direccion: 'ajustes/aparato', espera: 'Tema' },
+  // R · la campana (0052): lo que cada uno elige que le llegue.
+  { nombre: 'ajustes-avisos', direccion: 'ajustes/avisos', espera: 'Qué te llega' },
 ] as const;
 
 const FAMILIAS = [
@@ -153,6 +155,22 @@ for (const tema of TEMAS) {
       await expect(page.getByText(pantalla.espera).first()).toBeVisible({ timeout: 15_000 });
       await fotografiar(page, `${pantalla.nombre}-${tema}.png`);
     }
+
+    // Y la campana abierta, sin nada: a Vera no le escribe nadie (0052).
+    if (tamano !== null) await page.setViewportSize(tamano);
+    await irA(page, '');
+    await page
+      .getByRole('banner')
+      .getByRole('button', { name: /^Avisos/ })
+      .click();
+    const campana = page.getByRole('dialog', { name: 'Avisos' });
+    await expect(campana.getByText('Todo al día')).toBeVisible({ timeout: 15_000 });
+    // Solo la hoja: lo de detrás es el Panel, que cambia con el día.
+    await fotografiar(
+      page,
+      `campana-vacia-${tema}.png`,
+      campana.locator('div.bg-superficie').first(),
+    );
   });
 
   test(`captura · el sistema de diseño, en ${tema}`, async ({ page }, info) => {

@@ -126,6 +126,11 @@ export interface InterruptorProps {
   readonly ayuda?: string;
   readonly disabled?: boolean;
   readonly id?: string;
+  /**
+   * La etiqueta la lee el lector de pantalla pero no se pinta: para una tabla de
+   * interruptores con la columna ya rotulada arriba (Ajustes → Avisos, 0052).
+   */
+  readonly etiquetaOculta?: boolean;
 }
 
 export function Interruptor({
@@ -135,6 +140,7 @@ export function Interruptor({
   ayuda,
   disabled = false,
   id,
+  etiquetaOculta = false,
 }: InterruptorProps) {
   const generado = useId();
   const suyo = id ?? generado;
@@ -183,7 +189,7 @@ export function Interruptor({
         />
       </label>
 
-      <div className="flex flex-col">
+      <div className={clases('flex flex-col', etiquetaOculta && 'sr-only')}>
         <label htmlFor={suyo} className={clases('text-cuerpo', !disabled && 'cursor-pointer')}>
           {etiqueta}
         </label>

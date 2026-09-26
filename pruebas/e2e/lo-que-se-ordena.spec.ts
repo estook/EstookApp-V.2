@@ -191,7 +191,7 @@ test('el QR de la carta se ve en Ajustes y se baja en SVG', async ({ page }) => 
   await entrarEnLaApp(page, ROSA);
   await irA(page, 'ajustes/local#tu-carta');
 
-  const tarjeta = laTarjeta(page, 'Tu carta y su QR');
+  const tarjeta = laTarjeta(page, 'El QR de tu carta');
   await expect(tarjeta.getByText('estook.com/carta/bar-centro')).toBeVisible();
   await expect(tarjeta.getByRole('img', { name: 'QR de la carta de Bar Centro' })).toBeVisible();
 

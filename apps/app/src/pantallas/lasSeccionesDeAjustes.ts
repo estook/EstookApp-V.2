@@ -31,8 +31,12 @@ export interface Seccion {
 export const SECCIONES: readonly Seccion[] = [
   { id: 'aparato', nombre: 'Este aparato', queHay: 'Letra, tema y modo cocina' },
   { id: 'cuenta', nombre: 'Mi cuenta', queHay: 'Contraseña, PIN, doble factor e idioma' },
-  { id: 'local', nombre: 'Tu local', queHay: 'Marca, objetivos, el QR de tu carta y precios' },
-  { id: 'conexiones', nombre: 'Conexiones', queHay: 'Tus ventas y Google' },
+  {
+    id: 'local',
+    nombre: 'Tu local',
+    queHay: 'Marca, dónde está y Google, objetivos, tu carta y precios',
+  },
+  { id: 'conexiones', nombre: 'Conexiones', queHay: 'Cómo entran tus ventas' },
   // La suscripción, a mano de quien la paga (Richi, 25-sep · 0048).
   { id: 'suscripcion', nombre: 'Suscripción', queHay: 'Plan, tarjeta, facturas y renovación' },
   { id: 'organizacion', nombre: 'Organización', queHay: 'La seguridad de todo el negocio' },
@@ -87,8 +91,8 @@ export const AJUSTES: readonly Ajuste[] = [
   {
     id: 'donde-esta-el-local',
     seccion: 'local',
-    nombre: 'Dónde está el local',
-    palabras: 'ubicación gps dirección fichar metros',
+    nombre: 'Marcar a mano el punto exacto del local',
+    palabras: 'ubicación gps dirección fichar metros punto mano mapa',
   },
   {
     id: 'llegar-tarde',
@@ -105,7 +109,7 @@ export const AJUSTES: readonly Ajuste[] = [
   {
     id: 'tu-carta',
     seccion: 'local',
-    nombre: 'Tu carta y su QR',
+    nombre: 'Tu carta y el QR de tu carta',
     palabras: 'qr carta código mesa imprimir cartel menú dirección subir pdf fotos',
   },
   {
@@ -122,9 +126,9 @@ export const AJUSTES: readonly Ajuste[] = [
   },
   {
     id: 'google',
-    seccion: 'conexiones',
-    nombre: 'Tu local en Google',
-    palabras: 'google maps reseñas horario ficha valoración',
+    seccion: 'local',
+    nombre: 'Dónde está tu local y Google',
+    palabras: 'google maps reseñas horario ficha valoración ubicación dirección business',
   },
   {
     id: 'suscripcion',

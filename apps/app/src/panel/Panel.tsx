@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Aviso,
   Boton,
@@ -71,6 +72,12 @@ export function Panel() {
 
   const tienePermiso = (permiso: Permiso) => puedeVer(permisos, permiso);
 
+  // Se llega aquí desde una pantalla que no está entre sus apps (`PantallaDeApp`).
+  const donde = useLocation();
+  const navegar = useNavigate();
+  const vieneSinAcceso =
+    (donde.state as { readonly sinAcceso?: boolean } | null)?.sinAcceso === true;
+
   // «Apuntar una merma», desde las acciones rápidas, el buscador o Fogón. Se abre
   // en el Panel porque el Panel lo tiene todo el mundo, y quien más mermas apunta
   // —el camarero que rompe una copa— no tiene la app de Almacén.
@@ -86,6 +93,18 @@ export function Panel() {
   return (
     <div className="flex flex-col gap-e4">
       <CabeceraDelPanel />
+
+      {vieneSinAcceso && (
+        <Aviso
+          tono="info"
+          titulo="Esa pantalla no está entre tus apps"
+          alCerrar={() => {
+            navegar('.', { replace: true, state: null });
+          }}
+        >
+          Si la necesitas, pídesela a quien lleva el local.
+        </Aviso>
+      )}
 
       {/*
         La zona de atención, arriba y sin poder quitarse.

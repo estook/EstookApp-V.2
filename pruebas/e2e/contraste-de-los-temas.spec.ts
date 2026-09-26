@@ -33,7 +33,7 @@ const PANTALLAS = [
   { quien: ROSA, direccion: 'almacen/resumen' },
   { quien: ROSA, direccion: 'almacen/productos/todo' },
   { quien: ROSA, direccion: 'almacen/movimientos/todo' },
-  { quien: ROSA, direccion: 'almacen/movimientos/mermas' },
+  { quien: ROSA, direccion: 'almacen/mermas' },
   { quien: ROSA, direccion: 'almacen/compras/pedidos' },
   { quien: ROSA, direccion: 'almacen/compras/proveedores' },
   { quien: ROSA, direccion: 'servicio' },

@@ -93,23 +93,35 @@ export interface BarraDeAppProps {
 export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }: BarraDeAppProps) {
   const Icono = app.icono;
   const destinos = destinosConstruidos(app);
+  // Con cinco destinos o más (Almacén, con sus Mermas desde el 26-sep), «Apps» se
+  // queda en su icono de color: sus letras son las que les faltaban a las demás
+  // para no cortarse. Lo que dice al lector de pantalla no cambia.
+  const apretada = destinos.length >= 5;
 
   return (
-    <nav aria-label={app.nombre} className={CAJA}>
+    <nav aria-label={app.nombre} className={clases(CAJA, apretada && 'gap-0 px-e1')}>
       {/* Volver al conjunto: «la flecha de atras, o el boton de la rueda». */}
       <button
         type="button"
         onClick={alAbrirLaRueda}
         aria-label="Ver todas las apps"
-        className="flex min-h-toque min-w-toque flex-col items-center justify-center gap-[2px] rounded-medio px-e1"
+        className={clases(
+          'flex min-h-toque flex-col items-center justify-center gap-[2px] rounded-medio px-e1',
+          apretada ? 'min-w-[40px] shrink-0' : 'min-w-toque',
+        )}
         style={{ color: app.acento }}
       >
         <Icono size={24} />
         {/* El icono, en el acento; la palabra, en el acento para texto, que en
             claro es el que llega a 4,5:1 (entrega V). */}
-        <span className="text-[11px] font-semibold" style={{ color: acentoParaTexto(app.acento) }}>
-          Apps
-        </span>
+        {!apretada && (
+          <span
+            className="text-[11px] font-semibold"
+            style={{ color: acentoParaTexto(app.acento) }}
+          >
+            Apps
+          </span>
+        )}
       </button>
 
       {destinos.map((destino) => (
@@ -119,6 +131,7 @@ export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }:
           activa={destino.id === destinoActivo}
           acento={app.acento}
           segunSuPalabra
+          apretada={apretada}
           icono={<destino.icono size={22} />}
           alPulsar={() => {
             alIrADestino(destino.id);
@@ -147,8 +160,11 @@ function Posicion({
   icono,
   acento,
   segunSuPalabra = false,
+  apretada = false,
 }: {
   readonly segunSuPalabra?: boolean;
+  /** Muchas en la barra: letra un punto más pequeña y más juntas. */
+  readonly apretada?: boolean;
   readonly nombre: string;
   readonly activa: boolean;
   readonly alPulsar: () => void;
@@ -171,9 +187,10 @@ function Posicion({
         // iguales: con cuatro iguales, «Movimientos» se cortaba a 375 px aunque sobrara
         // sitio al lado de «Resumen». Así solo se recorta cuando de verdad no cabe. En
         // la del Panel van iguales, para que la rueda quede en el centro.
-        'flex min-h-toque min-w-0 flex-col items-center justify-center gap-[2px] rounded-medio px-e1',
+        'flex min-h-toque min-w-0 flex-col items-center justify-center gap-[2px] rounded-medio',
+        apretada ? 'px-[3px]' : 'px-e1',
         segunSuPalabra ? 'flex-auto' : 'flex-1',
-        'text-[11px] font-semibold',
+        apretada ? 'text-[10.5px] font-semibold tracking-[-0.01em]' : 'text-[11px] font-semibold',
         activa ? 'text-texto' : 'text-texto-suave',
       )}
       // En el acento **para texto**: lleva el nombre, y el acento a secas no llega a
@@ -181,7 +198,11 @@ function Posicion({
       {...(activa && acento !== undefined ? { style: { color: acentoParaTexto(acento) } } : {})}
     >
       {icono}
-      <span className="max-w-full truncate">{nombre}</span>
+      {/* Apretada y por debajo de 360 px, solo la activa lleva su palabra: las demás
+          se quedaban en «Resum…» y «Merm…». El nombre sigue ahí para el lector. */}
+      <span className={clases('max-w-full truncate', apretada && !activa && 'max-[359px]:sr-only')}>
+        {nombre}
+      </span>
       {/* El subrayado del activo. Va debajo del texto para que se vea igual con
           icono y sin el. */}
       <span

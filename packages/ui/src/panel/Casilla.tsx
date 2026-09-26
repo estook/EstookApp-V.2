@@ -103,9 +103,8 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
       className={clases(
         CLASES_DEL_TAMANO[tamano],
         'relative min-w-0 anima-entra',
-        // Lo vacío se aparta, pero **no se desmonta**: si se desmontara, dejaría
-        // de pedir sus datos y no podría avisar de que ya tiene algo.
-        !editando && vacio && 'hidden',
+        // Lo vacío **se ve**, con lo que dice su vacío: apartado, nadie comprobaba
+        // que estaba todo en orden (Richi, 26-sep). En edición lleva «Vacío ahora».
         className,
       )}
       {...resto}

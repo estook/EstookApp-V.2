@@ -503,23 +503,12 @@ function enElPanel(page: Page, id: string) {
 }
 
 /**
- * Un widget puesto **se ve, o está apartado y nombrado** (0039).
- *
- * «Quitar cuadrados si están vacíos.» Un widget sin nada que decir no ocupa sitio,
- * pero no desaparece en silencio: sale en la línea «Sin nada ahora en…». Las dos
- * cosas son correctas; lo que no puede pasar es ninguna.
+ * Un widget puesto **se ve siempre**, también vacío, con lo que dice su vacío.
+ * Hasta el 26-sep lo vacío se apartaba a una línea; Richi prefirió verlo.
  */
-async function seVeOEstaApartado(
-  page: Page,
-  id: string,
-  titulo: string,
-  nombreEnElCatalogo: string,
-): Promise<'se ve' | 'apartado'> {
+async function seVe(page: Page, id: string, titulo: string): Promise<void> {
   await expect(enElPanel(page, id)).toHaveCount(1);
-  const titular = page.getByRole('heading', { level: 2, name: titulo });
-  const linea = page.getByText(/^Sin nada ahora en /).filter({ hasText: nombreEnElCatalogo });
-  await expect(titular.or(linea)).toBeVisible();
-  return (await titular.isVisible()) ? 'se ve' : 'apartado';
+  await expect(page.getByRole('heading', { level: 2, name: titulo })).toBeVisible();
 }
 
 /**
@@ -885,7 +874,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
     // Los widgets de fabrica de su puesto (entrega O), con su titulo y su origen.
     await expect(page.getByRole('heading', { level: 2, name: 'Objetivos' })).toBeVisible();
-    await seVeOEstaApartado(page, 'bajo-minimo', 'Bajo mínimo', 'Bajo mínimo');
+    await seVe(page, 'bajo-minimo', 'Bajo mínimo');
 
     // Se anade uno que no estaba. `panelDeFabrica` deja el Panel sin el, asi que
     // el catalogo lo ofrece siempre, corra esta prueba antes o despues que otras.
@@ -894,17 +883,11 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await page.getByRole('button', { name: /Lo último apuntado/ }).click();
     await expect(page.getByRole('heading', { level: 2, name: 'Lo último apuntado' })).toBeVisible();
 
-    // Y sigue ahi al recargar, porque se ha guardado en el servidor. Puesto, se
-    // vea o esté apartado por no tener nada apuntado todavía (0039).
+    // Y sigue ahi al recargar, porque se ha guardado en el servidor.
     await page.getByRole('button', { name: 'Listo' }).click();
     await yaEstaGuardado(page);
     await recargarSinQueSeCaiga(page);
-    await seVeOEstaApartado(
-      page,
-      'ultimos-movimientos',
-      'Lo último apuntado',
-      'Lo último apuntado',
-    );
+    await seVe(page, 'ultimos-movimientos', 'Lo último apuntado');
   });
 
   test('los widgets de género salen con datos de verdad, y con su origen debajo', async ({
@@ -916,15 +899,12 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await comoGerente(page);
     await panelDeFabrica(page);
 
-    const bajoMinimo = await seVeOEstaApartado(page, 'bajo-minimo', 'Bajo mínimo', 'Bajo mínimo');
-    await seVeOEstaApartado(page, 'caducidades', 'Caduca esta semana', 'Caducidades');
+    await seVe(page, 'bajo-minimo', 'Bajo mínimo');
+    await seVe(page, 'caducidades', 'Caduca esta semana');
 
     // «Cada número lleva de dónde sale y de qué periodo es» (Evolución 1.0), sin
-    // excepción. Si está apartado por vacío no enseña cifra, y no hay origen que
-    // mirar: lo que se mira entonces es que la línea lo nombre.
-    if (bajoMinimo === 'se ve') {
-      await expect(page.getByText('De tu almacén, ahora mismo')).toBeVisible();
-    }
+    // excepción, también vacío.
+    await expect(page.getByText('De tu almacén, ahora mismo')).toBeVisible();
   });
 
   test('sigue ahí al recargar, aunque no se pulse «Listo»', async ({ page }) => {

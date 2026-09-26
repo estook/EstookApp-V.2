@@ -1,6 +1,7 @@
 import {
   IconoAjustes,
   IconoAtencion,
+  IconoBorrar,
   IconoCalendario,
   IconoCarta,
   IconoCuaderno,
@@ -267,7 +268,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // Y «Recuento», que es contar la camara a mano y corregir el libro con lo
         // contado. Es una vista de Movimientos y no una app: «los recuentos y las
         // mermas seran vistas de Movimientos», escrito desde M6.
-        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Ventas', 'Mermas', 'Ajustes', 'Inventario'),
+        // Las mermas salieron de aquí el 26-sep a su propio destino, abajo.
+        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Ventas', 'Ajustes', 'Inventario'),
       },
       {
         id: 'compras',
@@ -278,6 +280,16 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // hace cada día —a quién toca pedir y qué llega—; Proveedores, que en M6
         // era todo lo que había aquí, se toca al darlos de alta y poco más.
         vistas: vistas('Pedidos', 'Albaranes', 'Facturas', 'Proveedores', 'Precios'),
+      },
+      {
+        // **Las mermas, a la vista** (Richi, 26-sep: «las mermas son importantes y
+        // están algo escondidas»). Eran una vista de Movimientos; ahora son el
+        // quinto destino, con su papelera. `/almacen/movimientos/mermas` lleva aquí.
+        id: 'mermas',
+        nombre: 'Mermas',
+        icono: IconoBorrar,
+        queContesta: '¿Qué se ha tirado, cuánto ha costado y por qué?',
+        vistas: [],
       },
     ],
   },

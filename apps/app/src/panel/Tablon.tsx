@@ -18,7 +18,8 @@ import { CLAVE_DEL_TABLON, usarElTablon, type NotaDelTablon } from '../ganchos/u
  *
  * ── Poco, y lo que importa ───────────────────────────────────────────────────
  *
- *   · **Sin notas, no está**, como «Hoy». Escribir se hace desde el «+».
+ *   · **Sin notas, se ve igual**, con una línea para escribir la primera: escondido,
+ *     nadie sabía que existía (Richi, 26-sep: «el tablón no lo veo en el Panel»).
  *   · Lo que no has leído, arriba y con su punto, y lo tuyo; lo leído, plegado.
  *   · Quien la escribió ve quién la ha leído; quien lleva al equipo, además, quién
  *     falta. Los demás, solo su «Leído».
@@ -34,7 +35,29 @@ export function Tablon({ alEscribir }: { readonly alEscribir: () => void }) {
   const notas = consulta.data?.notas;
   // Mientras carga, o si no se ha podido leer, nada: el Panel no se llena de un
   // «cargando» arriba del todo, igual que «Hoy».
-  if (notas === undefined || notas.length === 0) return null;
+  if (notas === undefined) return null;
+  if (notas.length === 0) {
+    return (
+      <section
+        aria-label="Tablón"
+        className="flex min-h-toque items-center gap-e2 rounded-mayor border border-borde bg-superficie px-e4 py-e1 [box-shadow:var(--sombra-tarjeta)]"
+      >
+        <span className="shrink-0 text-texto-suave">
+          <IconoTablon size={18} />
+        </span>
+        <h2 className="text-cuerpo font-semibold">Tablón</h2>
+        <p className="min-w-0 truncate text-secundario text-texto-suave">Sin avisos.</p>
+        <button
+          type="button"
+          onClick={alEscribir}
+          className="-mr-e2 ml-auto inline-flex min-h-toque shrink-0 items-center gap-e1 px-e2 text-secundario font-semibold text-texto-suave hover:text-texto"
+        >
+          <IconoAnadir size={16} />
+          Escribir
+        </button>
+      </section>
+    );
+  }
 
   // Lo que no has leído, y **lo tuyo**, que no se pliega nunca: quien escribe una
   // nota la quiere ver, y ver quién la ha leído. Se plegaba como «leída» y se perdía

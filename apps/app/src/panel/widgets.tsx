@@ -37,7 +37,7 @@ import {
   usarQueEstaVacio,
   type TamanoDeWidget,
 } from '@estook/ui';
-import { IconoAnadir, IconoEntrar, IconoSalir, IconoUbicacion } from '@estook/iconos';
+import { IconoAnadir, IconoBorrar, IconoEntrar, IconoSalir, IconoUbicacion } from '@estook/iconos';
 import { useNavigate } from 'react-router-dom';
 import { usarAlmacenHoy } from '../ganchos/usarAlmacenHoy.ts';
 import { usarMisObjetivos } from '../ganchos/usarMisObjetivos.ts';
@@ -166,12 +166,18 @@ function Cual({
 /** El envoltorio común: alto completo y el título pulsable si lleva a algún sitio. */
 function Caja({
   titulo,
+  icono,
   origen,
   ir,
   leyendo,
   children,
 }: {
   readonly titulo: string;
+  /**
+   * Un icono propio, cuando el de su app no dice lo que es: la merma lleva la
+   * papelera, como su destino en Almacén (26-sep), y no la caja de Almacén.
+   */
+  readonly icono?: React.ReactNode;
   readonly origen?: string;
   readonly ir?: string;
   /**
@@ -196,7 +202,11 @@ function Caja({
       <Tarjeta
         titulo={titulo}
         {...(acento === undefined ? {} : { acento })}
-        {...(IconoDeLaApp === undefined ? {} : { icono: <IconoDeLaApp size={18} /> })}
+        {...(icono !== undefined
+          ? { icono }
+          : IconoDeLaApp === undefined
+            ? {}
+            : { icono: <IconoDeLaApp size={18} /> })}
         {...(origen === undefined || leyendo?.isError === true ? {} : { origen })}
         {...(ir === undefined
           ? {}
@@ -954,6 +964,7 @@ function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
     <Caja
       leyendo={consulta}
       titulo="Merma de hoy"
+      icono={<IconoBorrar size={18} />}
       origen={
         conPrecios && datos.mediaCentimos !== null && datos.mediaCentimos !== undefined
           ? `La media de estos catorce días es ${comoDinero(datos.mediaCentimos)}`
@@ -961,7 +972,7 @@ function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
       }
       // «Ver» solo a quien tiene Almacén: a un camarero le llevaría a una
       // pantalla que no puede abrir.
-      {...(puedeVer(permisos, 'app.almacen') ? { ir: '/almacen/movimientos/mermas' } : {})}
+      {...(puedeVer(permisos, 'app.almacen') ? { ir: '/almacen/mermas' } : {})}
     >
       {datos === undefined ? (
         <Cargando que="la merma" lineas={2} />

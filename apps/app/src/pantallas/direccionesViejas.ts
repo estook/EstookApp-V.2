@@ -12,6 +12,8 @@
  * Devuelve `null` si la dirección no es de las de antes.
  */
 export function laDireccionDeAhora(ruta: string): string | null {
+  // Las mermas, de vista de Movimientos a destino propio de Almacén (26-sep).
+  if (/^\/(?:almacen|inventario)\/movimientos\/mermas\/?$/.test(ruta)) return '/almacen/mermas';
   const vieja = /^\/inventario(\/.*)?$/.exec(ruta);
   if (vieja === null) return null;
   const resto = (vieja[1] ?? '').replace(

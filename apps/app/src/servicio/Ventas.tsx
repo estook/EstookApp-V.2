@@ -18,7 +18,6 @@ import {
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
-import { ComoEntranTusVentas } from './ComoEntranTusVentas.tsx';
 import type { MisCierres, UnCierre } from './contrato.ts';
 import { comoDinero, comoSeLeeLaFecha } from '../almacen/contrato.ts';
 
@@ -129,7 +128,8 @@ export function Ventas() {
 
   return (
     <div className="flex flex-col gap-e4">
-      {datos.comoSeCierra === 'sin_decidir' && <ComoEntranTusVentas modo="ajustes" />}
+      {/* «¿Cómo entran tus ventas?» ya no se pregunta aquí (26-sep): salía en cuatro
+          sitios. Queda en el Panel, en Ajustes y al cerrar la caja. */}
 
       <div className="flex flex-wrap items-end justify-between gap-e3">
         <div className="min-w-[12rem]">

@@ -187,7 +187,8 @@ export function Esqueleto() {
   // por eso el alcance viene del servidor en vez de deducirse aquí: si se
   // dedujera, la flecha podría salir donde la resolución no manda al consolidado.
   const tieneConjunto = (yo?.organizacion?.alcance ?? 'local') !== 'local' && susLocales.length > 1;
-  const enElConjunto = primero === 'cadena';
+  // Sin local, el Panel **es** el conjunto: la flecha volvía a la misma pantalla (26-sep).
+  const enElConjunto = primero === 'cadena' || yo?.local === null || yo?.local === undefined;
 
   const volverAlConjunto =
     tieneConjunto && !enElConjunto ? (
@@ -198,7 +199,8 @@ export function Esqueleto() {
         }}
         className="inline-flex min-h-toque items-center gap-e1 rounded-medio text-secundario text-texto-suave hover:text-texto"
       >
-        <IconoAtras size={16} />← {yo?.organizacion?.nombre}
+        <IconoAtras size={16} />
+        {yo.organizacion?.nombre}
       </button>
     ) : null;
 

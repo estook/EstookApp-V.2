@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { IconoLocal } from '@estook/iconos';
-import { Boton, Lista, TodaviaNo, Tarjeta, clases } from '@estook/ui';
+import { IconoFlechaAbajo, IconoFlechaDerecha, IconoLocal } from '@estook/iconos';
+import { Lista, TodaviaNo, Tarjeta } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -25,6 +25,29 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * Asi que el hueco esta, dice de que modulo viene cada cosa, y se rellena solo
  * cuando lo que ponga sea verdad.
  */
+const LO_QUE_LLEGARA = [
+  {
+    que: 'Necesitan que vayas',
+    queHabra: 'los locales que se salen de objetivo, con su explicación',
+    modulo: 'M8 y M12',
+  },
+  {
+    que: 'Comparativa entre locales',
+    queHabra: 'ventas, materia prima, personal y margen, uno al lado de otro',
+    modulo: 'M17',
+  },
+  {
+    que: 'Visitas y estándares',
+    queHabra: 'las auditorías de cada local y su evolución',
+    modulo: 'más adelante',
+  },
+  {
+    que: 'El calendario del conjunto',
+    queHabra: 'visitas, entregas grandes y cierres de todos tus locales',
+    modulo: 'M14',
+  },
+] as const;
+
 export function VistaDeCadena() {
   const { yo, cambiarDeSitio } = usarSesion();
   const navegar = useNavigate();
@@ -63,15 +86,16 @@ export function VistaDeCadena() {
                 <IconoLocal size={20} />
               </span>
             ),
+            // La fila entera entra (26-sep): seis botones naranjas pegados unos a
+            // otros gritaban más que los locales.
+            alPulsar: () => {
+              void entrarEn(local.id);
+            },
             derecha: (
-              <Boton
-                tono="principal"
-                onClick={() => {
-                  void entrarEn(local.id);
-                }}
-              >
+              <span className="flex shrink-0 items-center gap-e1 text-secundario font-semibold text-texto-suave">
                 Entrar
-              </Boton>
+                <IconoFlechaDerecha size={16} />
+              </span>
             ),
           }))}
           cuandoNoHay={
@@ -84,28 +108,30 @@ export function VistaDeCadena() {
         />
       </Tarjeta>
 
-      <div className={clases('grid gap-e3', 'sm:grid-cols-2')}>
-        <TodaviaNo
-          que="Necesitan que vayas"
-          queHabra="Los locales que se salen de objetivo, con su explicación y el botón de entrar."
-          modulo="M8 y M12, que son los que traen el margen y las ventas"
-        />
-        <TodaviaNo
-          que="Comparativa entre locales"
-          queHabra="Ventas, materia prima, personal y margen de cada local, uno al lado de otro."
-          modulo="M17 · Negocio"
-        />
-        <TodaviaNo
-          que="Visitas y estándares"
-          queHabra="Las auditorías de local con sus plantillas, la nota de cada uno y su evolución."
-          modulo="su propio módulo, más adelante"
-        />
-        <TodaviaNo
-          que="El calendario del conjunto"
-          queHabra="Tus visitas, las entregas grandes y los cierres de todos tus locales a la vez."
-          modulo="M11 · Calendario"
-        />
-      </div>
+      {/*
+        Lo que llegará aquí, **en una línea plegada** (26-sep). Eran cuatro carteles
+        grandes de «todavía no tengo datos» en la pantalla con la que trabaja quien
+        lleva varios locales: lo que todavía no existe no ocupa la pantalla.
+      */}
+      <details className="group rounded-mayor border border-borde bg-superficie px-e4 [box-shadow:var(--sombra-tarjeta)]">
+        <summary className="flex min-h-toque cursor-pointer list-none items-center gap-e2 text-secundario font-semibold text-texto-suave [&::-webkit-details-marker]:hidden">
+          Lo que llegará aquí
+          <span className="ml-auto transition-transform group-open:rotate-180">
+            <IconoFlechaAbajo size={16} />
+          </span>
+        </summary>
+        <ul className="flex flex-col gap-e2 pb-e3 text-secundario">
+          {LO_QUE_LLEGARA.map((cosa) => (
+            <li key={cosa.que}>
+              <span className="font-semibold">{cosa.que}</span>
+              <span className="text-texto-suave">
+                {' '}
+                · {cosa.queHabra} ({cosa.modulo})
+              </span>
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }

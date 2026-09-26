@@ -136,7 +136,7 @@ export function TuMarca() {
   }
 
   return (
-    <Tarjeta titulo="Tu marca" {...(pintable === null ? {} : { acento: pintable.acento })}>
+    <Tarjeta titulo="Tu marca">
       {/* El ancla de «tu marca»: el buscador y «tu cuenta» llevan aquí. */}
       <span id="tu-marca" />
 

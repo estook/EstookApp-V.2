@@ -2,7 +2,7 @@ import { useId, useState, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NOMBRE_DEL_ESCALON, plural, type CosaDeHoy } from '@estook/dominio';
 import { clases, usarEsEscritorio } from '@estook/ui';
-import { IconoFlechaAbajo, IconoReloj } from '@estook/iconos';
+import { IconoFlechaAbajo, IconoHecho, IconoReloj } from '@estook/iconos';
 import { usarLoDeHoy } from '../ganchos/usarLoDeHoy.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
@@ -127,9 +127,25 @@ export function LoDeHoy() {
   const apartadas = hastaCuando(crudo);
   const aLaVista = cosas.filter((cosa) => (apartadas[cosa.id] ?? 0) <= ahora);
 
-  // Sin nada que atender, **nada**: ni la tarjeta ni un «nada urgente». Richi, 25-sep:
-  // «si no hay avisos, que no aparezca». El Panel empieza por lo suyo.
-  if (aLaVista.length === 0) return null;
+  // Sin nada que atender, **una línea que lo dice**. El 25-sep se escondía entera
+  // («si no hay avisos, que no aparezca»); el 26-sep Richi lo cambió: «mejor que no
+  // se oculten, así no se les pasa y revisan que está todo ok».
+  if (aLaVista.length === 0) {
+    return (
+      <section
+        aria-label="Hoy"
+        className="flex min-h-toque items-center gap-e2 rounded-mayor border border-borde bg-superficie px-e4 py-e2 [box-shadow:var(--sombra-tarjeta)]"
+      >
+        <span className="grid size-6 shrink-0 place-items-center rounded-redondo bg-bien-suave text-bien">
+          <IconoHecho size={14} />
+        </span>
+        <h2 className="text-cuerpo font-semibold">Hoy</h2>
+        <p className="min-w-0 text-secundario text-texto-suave">
+          Todo en orden: nada urgente para hoy.
+        </p>
+      </section>
+    );
+  }
 
   const plegable = aLaVista.length > 1;
   const abierto = !plegable || (elegido ?? enEscritorio);

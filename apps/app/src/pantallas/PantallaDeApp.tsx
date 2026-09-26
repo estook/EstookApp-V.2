@@ -65,7 +65,8 @@ export function PantallaDeApp() {
   // hace `un_local` en el servidor. Decir «existe pero no es tuya» seria contar
   // algo que no hace falta contar.
   const laTiene = app !== undefined && appsVisibles(permisos).includes(app.permiso);
-  if (!laTiene) return <Navigate to="/" replace />;
+  // Y al volver al Panel **se dice** (26-sep): volver sin explicación parecía un fallo.
+  if (!laTiene) return <Navigate to="/" replace state={{ sinAcceso: true }} />;
 
   const destino = idDelDestino === undefined ? undefined : destinoPorId(app, idDelDestino);
 

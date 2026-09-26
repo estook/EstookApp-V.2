@@ -117,11 +117,12 @@ describe('las ocho', () => {
     }
   });
 
-  it('ninguna pasa de cuatro destinos', () => {
-    // «Como mucho cuatro» (B5). El tope es del catalogo, no de la barra: una
-    // barra que aprieta cinco posiciones sigue teniendo cinco posiciones.
+  it('ninguna pasa de cinco destinos', () => {
+    // «Como mucho cinco» (B5; eran cuatro hasta que las mermas salieron a la vista,
+    // 0051). El tope es del catalogo, no de la barra: una barra que aprieta seis
+    // posiciones sigue teniendo seis posiciones.
     for (const app of APPS) {
-      expect(app.destinos.length).toBeLessThanOrEqual(4);
+      expect(app.destinos.length).toBeLessThanOrEqual(5);
       expect(app.destinos.length).toBeGreaterThan(0);
     }
   });
@@ -307,10 +308,11 @@ describe('lo construido y lo que llega', () => {
     return app;
   };
 
-  it('Almacén tiene sus cuatro destinos construidos', () => {
+  it('Almacén tiene sus cinco destinos construidos', () => {
     // Es la app de M6, y la que demuestra la regla: **ninguna posicion vacia**.
-    // Antes tenia cuatro pestanas y dos no llevaban a ningun sitio.
-    expect(destinosConstruidos(laApp('almacen'))).toHaveLength(4);
+    // Antes tenia cuatro pestanas y dos no llevaban a ningun sitio; las Mermas son
+    // la quinta desde el 26-sep (0051).
+    expect(destinosConstruidos(laApp('almacen'))).toHaveLength(5);
     expect(destinosQueLlegan(laApp('almacen'))).toHaveLength(0);
   });
 

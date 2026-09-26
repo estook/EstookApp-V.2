@@ -28,11 +28,23 @@ function unCodigo(): string {
   return `${cuerpo}${String((10 - (suma % 10)) % 10)}`;
 }
 
-/** Lo que hace un lector de mano: el código de golpe y un Intro, fuera de cualquier campo. */
+/**
+ * Lo que hace un lector de mano: el código de golpe y un Intro, fuera de cualquier campo.
+ *
+ * Las teclas se mandan **en el mismo instante**, desde la página: tecleadas desde
+ * Playwright, una máquina de GitHub cargada mete a veces más pausa entre dos que lo
+ * que tarda un lector (45 ms), y la lectura se toma por una persona. Lo de la
+ * velocidad lo prueba `codigos.prueba.ts`; aquí, lo que pasa con cada código.
+ */
 async function leerConUnLector(page: Page, codigo: string) {
-  await page.getByRole('heading', { level: 1 }).click();
-  await page.keyboard.type(codigo, { delay: 4 });
-  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: 'Escanear' })).toBeVisible();
+  await page.evaluate((teclas) => {
+    for (const tecla of [...Array.from(teclas), 'Enter']) {
+      document.body.dispatchEvent(
+        new KeyboardEvent('keydown', { key: tecla, bubbles: true, cancelable: true }),
+      );
+    }
+  }, codigo);
 }
 
 async function unProductoConCodigo(page: Page, nombre: string, codigo: string) {

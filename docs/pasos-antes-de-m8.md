@@ -2,27 +2,109 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 25 de septiembre de 2026 a mediodía, leyendo la base, la
+> Comprobado en producción el 25 de septiembre de 2026 por la noche, leyendo la base, la
 > API y GitHub.
 >
-> | Qué                        | Cómo está                                                                   |
-> | -------------------------- | --------------------------------------------------------------------------- |
-> | Pull requests              | **Todas fusionadas hasta la #69**. Espera la #70, el Panel en el móvil      |
-> | La base de datos           | **46 de 46** migraciones, igual que `main`                                  |
-> | La API                     | **Desplegada el 25 de septiembre a las 11:31**, con la #69: 48 y 87         |
-> | A1 · la puerta del admin   | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
-> | E1 · crear cuenta y Google | **Hecho**, y crear cuenta con correo probado por Richi el 23-sep            |
-> | **V · lo que se ve**       | **Hecho y en producción** (#64, #65, #67), mirado por Richi en el móvil     |
-> | Los arreglos del móvil     | **Hechos y en producción** (#68). La ráfaga: 90 de 90                       |
-> | O · lo que se ordena       | **Hecha y en producción** (#69), con la `0046`                              |
-> | El Panel en el móvil       | **Hecho y en verde**, en la #70 (sin migración, con despliegue)             |
-> | E2 · el pago con Stripe    | **Hecha**, en su pull request, con la `0047`. Tu clave ya está puesta       |
+> | Qué                         | Cómo está                                                                      |
+> | --------------------------- | ------------------------------------------------------------------------------ |
+> | Pull requests               | **Todas fusionadas hasta la #71**. Espera la #72, el repaso del 25-sep         |
+> | La base de datos            | **47 de 47** migraciones, igual que `main`                                     |
+> | La API                      | **Desplegada el 25-sep a las 17:49**, con la #71: 50 y 93, y el reloj latiendo |
+> | A1 · la puerta del admin    | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor    |
+> | E1 · crear cuenta y Google  | **Hecho**                                                                      |
+> | V, O y el Panel en el móvil | **Hechos y en producción** (#64 a #70)                                         |
+> | E2 · el pago con Stripe     | **En producción** (#71). **Falta que pruebes el pago**: nadie ha pagado aún    |
+> | El repaso del 25-sep        | **Hecho y en verde**, en la #72, con la `0048`                                 |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## El Panel en el móvil (#70) · lo que te toca ahora
+## Lo que te toca ahora · 25 de septiembre por la noche
+
+### 1 · Probar el pago, en modo prueba (E2 ya está desplegada)
+
+No se cobra nada de verdad. **Es lo único de E2 que no puedo probar yo**: pide crear una
+cuenta y pagar. En el móvil o en una ventana privada:
+
+1. `estook.com` → **Crear cuenta**, con un correo que no uses en Estook (por ejemplo,
+   `tucorreo+prueba@gmail.com`) y un negocio de prueba.
+2. Sale **«Elige tu plan»**: pulsa **«Elegir Esencial»**. Se abre la página de pago de
+   Stripe, con una franja de **«Entorno de prueba»** arriba.
+3. Tarjeta **`4242 4242 4242 4242`**, cualquier fecha futura, cualquier CVC, tu nombre y
+   una dirección → **Suscribirse**.
+4. Vuelves a Estook: **«Cargando tu pago»** un momento y **entras al alta**.
+5. Mira **Ajustes → Suscripción**: Esencial, 49,00 € al mes, «Visa ···· 4242».
+6. En **`estook.com/admin/`** → **Cuentas**: la cuenta nueva sale **pagando**, con su plan.
+
+**Si en el paso 2 sale un error en vez de la página de Stripe, cópiamelo tal cual.**
+
+### 2 · El repaso del 25-sep (#72)
+
+**Qué trae:** «Inventario» pasa a **Almacén** y «Recuento» a **Inventario**; lo congelado
+avisa por el tiempo que lleva (3 meses, cambiable en la ficha); el alta pide el mínimo y
+la unidad se toca para elegir kg o g; el **Tablón** en el Panel; **subir tu carta** (PDF o
+fotos) en Ajustes, que es lo que enseña el QR; y los dos fallos del iPhone («Hoy» y la
+barra de abajo). Contado en `ESTADO.md`, apartado 10, y en la decisión 0049.
+
+1. En **github.com** → **Pull requests** → **«El repaso del 25 de septiembre»** (la #72).
+   Abajo, las **tres comprobaciones en verde** → **Merge pull request** → **Confirm
+   merge**: sale en morado «merged».
+2. En PowerShell, en la carpeta del proyecto:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+3. **La migración.** Qué hace: cambia el nombre del permiso a `app.almacen` (con sus 23
+   políticas), pone «3 meses» a lo congelado de cada producto, crea el Tablón y el sitio
+   de la carta subida (y su cubo de ficheros). No borra nada.
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0048_almacen_congelado_tablon_y_carta.sql ... hecho
+  1 migracion(es) aplicadas · 48 en total
+```
+
+**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+4. **Desplegar la API**: **Actions** → **Desplegar la API** → **Run workflow**, rama
+   `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**.
+5. Comprueba:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 51» consultas y «los 99» comandos, y el reloj en OK.
+
+6. **En el iPhone, con la app instalada** (ciérrala del todo y ábrela):
+   - **Hoy**, arriba del Panel: tiene que salir siempre que haya algo, a la primera.
+   - Escribe algo en un campo (por ejemplo, **Apuntar** ventas), cierra el teclado y
+     desliza hacia arriba y hacia abajo: **la barra de abajo se queda abajo**. Con el
+     teclado abierto, la barra se aparta.
+   - **Almacén** en la barra, y en Movimientos, **Inventario**.
+   - **El «+» → Escribir en el tablón**: «Reserva a las 17:00 de 20 personas», hora
+     17:00. Sale en el Panel, en **Tablón**; desde otra cuenta del local, «Leído».
+   - **Ajustes → Tu local → Tu carta → Subir la carta**: elige un PDF de tu carta. Ves
+     las páginas, **Publicar**, y **Verla como el cliente**.
+   - **Añadir producto**: el **Mínimo** al lado de «Cuánto hay ahora», y toca **kg ▾**
+     para cambiar a gramos.
+   - Un producto con algo congelado: en su ficha, **«Cumple 3 meses congelado el…»**, y en
+     «Corregir la ficha», **Congelado aguanta**.
+
+---
+
+## El Panel en el móvil (#70) · **hecho** (25-sep)
 
 **Qué trae:** «Hoy» plegado en el móvil (y fuera si no hay nada), la línea de ventas sin
 el punto suelto, el «+» que se aparta al bajar, y lo que salió del repaso. Contado en
@@ -57,7 +139,7 @@ git pull
    - **Ventas · 7 días**: los días sin caja, en discontinuo; ni un punto suelto.
    - Baja por el Panel: **el «+» se va**; sube un poco: **vuelve**.
 
-## E2 · El pago con Stripe · lo que te toca después de la #70
+## E2 · El pago con Stripe · **fusionada, migrada y desplegada** (25-sep); el paso 6, arriba
 
 **Qué trae:** el pago de verdad, en modo prueba. Sin pago no hay app; la prueba, con
 tarjeta; la cuota por local que cambia sola; siete días si falla un cobro, con un correo

@@ -16,35 +16,38 @@ El panel de administración va en su propio documento:
 
 ## Resumen en una tabla
 
-**Seis de las veinte están en producción**: la 1, la 2, la 3 y la 7 desde el 23 de
-septiembre de 2026 (#64), y la 4 y la 5 desde el 24 (#67,
-[0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)). Con ellas, **V está
-entera**. **La 7 (Ajustes en secciones) era de la entrega O y se adelantó** porque Richi
-la pidió al ver Ajustes el 23 de septiembre ([0045](decisiones/0045-el-aspecto-y-el-orden.md)).
-Cada una cambia a «En producción» cuando se fusiona y se despliega su entrega. **La 6, la 8, la 9, la 17 y el QR de la 20, hechas en la rama `o-lo-que-se-ordena`** ([0047](decisiones/0047-lo-que-se-ordena.md)), a falta de fusionar.
+**Diez de las veinte están en producción**, y el QR de la 20: la 1, 2, 3 y 7 desde el 23 de
+septiembre de 2026 (#64), la 4 y la 5 desde el 24 (#67,
+[0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)), y la 6, 8, 9, 17 y el QR de
+la 20 desde el 25 (#69, [0047](decisiones/0047-lo-que-se-ordena.md)). **V y O están
+enteras.** Cada una cambia a «En producción» cuando se fusiona y se despliega su entrega.
+**La 10 (el lector) se adelanta** a después del repaso del 25-sep: Richi pidió «Escanear
+producto» junto a «Añadir producto» ([0049](decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)).
+Y **de la 20, la carta que ya tiene el local se puede subir** desde el repaso del 25-sep,
+y la enseña su QR (0049).
 
-| #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                              |
-| --- | ---------------------------------------- | ------------------------ | ------------------------------------------ | -------------------------------------- |
-| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | **En producción** (#64)                |
-| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | **En producción** (#64)                |
-| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                       | **En producción** (#64)                |
-| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            | **En producción** (#67)                |
-| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    | **En producción** (#67)                |
-| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       | **Hecha, en su rama** (0047)           |
-| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                       | **En producción** (#64)                |
-| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       | **Hecha, en su rama** (0047)           |
-| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       | **Hecha, en su rama** (0047)           |
-| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       | **Hecha, en su rama** (0047)           |
-| 12  | Pedido sugerido                          | **R · El reloj**         | Nada (el reloj es de Supabase, gratis)     | Falta                                  |
-| 13  | Alertas de subida de precio              | **R**                    | Nada                                       | Falta                                  |
-| 16  | Informe semanal para el gerente          | **R**                    | **Resend** para el correo; la pantalla, no | Falta                                  |
-| 19  | Reseñas: aviso de bajada y respuesta     | **R** y después          | Places ya; **Business Profile** y **IA**   | Falta                                  |
-| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                       | Falta                                  |
-| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)    | Falta                                  |
-| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                       | Falta                                  |
-| 10  | Escanear el código de barras             | **L · El lector**        | Nada                                       | Falta                                  |
-| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                         | Espera a M22                           |
-| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún    | Espera a M12 · **el QR, hecho** (0047) |
+| #   | Mejora                                   | Entrega                  | Necesita de fuera                          | Cómo está                          |
+| --- | ---------------------------------------- | ------------------------ | ------------------------------------------ | ---------------------------------- |
+| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                       | **En producción** (#64)            |
+| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                       | **En producción** (#64)            |
+| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                       | **En producción** (#64)            |
+| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)            | **En producción** (#67)            |
+| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo    | **En producción** (#67)            |
+| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                       | **En producción** (#69)            |
+| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                       | **En producción** (#64)            |
+| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                       | **En producción** (#69)            |
+| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                       | **En producción** (#69)            |
+| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                       | **En producción** (#69)            |
+| 12  | Pedido sugerido                          | **R · El reloj**         | Nada (el reloj es de Supabase, gratis)     | Falta                              |
+| 13  | Alertas de subida de precio              | **R**                    | Nada                                       | Falta                              |
+| 16  | Informe semanal para el gerente          | **R**                    | **Resend** para el correo; la pantalla, no | Falta                              |
+| 19  | Reseñas: aviso de bajada y respuesta     | **R** y después          | Places ya; **Business Profile** y **IA**   | Falta                              |
+| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                       | Falta                              |
+| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)    | Falta                              |
+| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                       | Falta                              |
+| 10  | Escanear el código de barras             | **L**, adelantada        | Nada                                       | **Después del repaso del 25-sep**  |
+| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                         | Espera a M22                       |
+| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún    | **QR (#69) y carta subida (0049)** |
 
 Tres de las veinte **no pueden quedar al 100 % antes de M8**, y conviene decirlo ya:
 
@@ -95,16 +98,16 @@ recorre las pantallas de cocina y ningún botón mide menos de 64 px ni baja de 
 
 ### 2 · Todas las apps con el aspecto del Panel
 
-**Se pidió:** flechas y gráficas pequeñas también en Inventario, Servicio y Equipo.
+**Se pidió:** flechas y gráficas pequeñas también en Almacén, Servicio y Equipo.
 
 **Cómo se hace.** No se copia la tarjeta: **se usa la misma**. El `Indicador` del
 Panel vivo (0039) pasa a `@estook/ui` y las tres apps lo usan con sus cifras:
 
-| App        | Cifras con flecha y línea de días                                  |
-| ---------- | ------------------------------------------------------------------ |
-| Inventario | Valor de la cámara, merma en euros, compras, productos bajo mínimo |
-| Servicio   | Ventas, ticket medio, food cost, cierres hechos frente a días      |
-| Equipo     | Horas fichadas, coste de personal (solo con su permiso), retrasos  |
+| App      | Cifras con flecha y línea de días                                  |
+| -------- | ------------------------------------------------------------------ |
+| Almacén  | Valor de la cámara, merma en euros, compras, productos bajo mínimo |
+| Servicio | Ventas, ticket medio, food cost, cierres hechos frente a días      |
+| Equipo   | Horas fichadas, coste de personal (solo con su permiso), retrasos  |
 
 Todas salen de `un_indicador`, que ya compara con el periodo anterior del mismo
 largo y dice «no se sabe» en vez de cero (regla 61). **Hoy sabe seis** —ventas, ticket
@@ -116,7 +119,7 @@ mismo, y una prueba lo vigila.
 **Hecho (23 de septiembre de 2026, en la rama).** Lo decidió Richi y está razonado en
 la [0044](decisiones/0044-las-cifras-de-cada-app.md):
 
-- **En la primera pantalla de cada app**, bajo el título «Cómo va»: Inventario ·
+- **En la primera pantalla de cada app**, bajo el título «Cómo va»: Almacén ·
   Resumen (**arriba del todo**, desde el 23-sep), Servicio · Cierre (debajo de lo
   urgente) y Equipo · Resumen (**justo debajo de fichar**, desde el 23-sep). Dos tarjetas por fila
   en el móvil y cuatro en una pantalla ancha, con «7 días · 30 días» recordado en el
@@ -130,13 +133,13 @@ la [0044](decisiones/0044-las-cifras-de-cada-app.md):
   «Cuándo es llegar tarde» (migración `0040`). El Resumen de Equipo gana su columna
   de retrasos, contada con la misma pieza.
 - Donde había dos cifras iguales, queda una: la tarjeta «Lo que hay en cámara» de
-  Inventario · Hoy es ahora la primera cifra de la fila, con su flecha.
+  Almacén · Hoy es ahora la primera cifra de la fila, con su flecha.
 
 ### 3 · Cada app abre con su resumen
 
 **Hecho (23 de septiembre de 2026, en la rama)**, con la [0045](decisiones/0045-el-aspecto-y-el-orden.md).
 Richi eligió el camino corto y más limpio: **no hay un «Inicio» nuevo; el primer
-destino se llama «Resumen»** (Inventario, Escandallos y Equipo), porque ya era la
+destino se llama «Resumen»** (Almacén, Escandallos y Equipo), porque ya era la
 pantalla que abría la app con lo urgente y «Cómo va». En Equipo, el «Resumen» de antes
 —las horas— pasa a llamarse **«Fichajes»**. Y con él vinieron tres cosas que pidió
 mirando la pantalla: **las tarjetas en mosaico** (cada una del alto de lo que lleva, en
@@ -150,13 +153,13 @@ de referencia:
 **Cómo se hace, y el cuidado que pide.** Cada app gana un destino **«Inicio»** (B5 y 0018) con cuatro a seis tarjetas **de esa app** —las del punto 2 más lo urgente suyo—
 y, debajo, **sus acciones de siempre a un toque**.
 
-**Lo que cambia respecto a lo pedido:** quien entra en Inventario **para apuntar una
+**Lo que cambia respecto a lo pedido:** quien entra en Almacén **para apuntar una
 merma** no puede tener un paso más. Así que:
 
 - Inicio abre **solo cuando se entra a la app desde la rueda**. Desde una acción, un
   aviso o el buscador, se va directo a lo pedido, como ahora.
 - La lista sigue a un toque en la barra de abajo.
-- Un rol que no ve cifras (un camarero en Inventario) no tiene Inicio: va a la lista.
+- Un rol que no ve cifras (un camarero en Almacén) no tiene Inicio: va a la lista.
 
 ### 4 · Estados vacíos que invitan a empezar
 
@@ -178,7 +181,7 @@ acción**, y se repasa uno por uno. Los dibujos:
 [0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md): veinte dibujos de una
 familia, cada uno en su trozo; el dibujo, obligatorio en `EstadoVacio`; un botón que
 dice lo que hace —las acciones del catálogo, solo a quien las puede hacer— y los
-ejemplos como salida en texto; `NadaConEso` para lo filtrado; Inventario · Resumen
+ejemplos como salida en texto; `NadaConEso` para lo filtrado; Almacén · Resumen
 enseña cómo empezar, sin «Cómo va», y Productos sin género enseña solo el vacío.
 
 ### 5 · Tema oscuro, repasado, y fotos de producto
@@ -212,7 +215,7 @@ fila se escribe después de subir y la foto vieja se borra.
 - **Las fotos**: migración `0045`, cubo `fotos-de-producto` (creado el 24-sep con
   `almacen:preparar`), reducidas en el teléfono a 800 px en WebP —JPG en Safari— con
   miniatura cuadrada de 160, firmadas de una tanda, y en la lista, la ficha y el
-  recuento.
+  inventario.
 - **Falta, de Richi**: mirarlo en un móvil de verdad (regla 29).
 
 ---
@@ -293,7 +296,7 @@ servidor**, no la pantalla (regla 5), y respeta los permisos: una camarera no ve
 caja. **Y se puede resolver desde ahí**: quitar un lote, fichar, abrir el pedido. Lo
 resuelto se va; lo pospuesto vuelve a la hora elegida.
 
-El «Hoy» de Inventario se queda como **el de Inventario**: la misma lista, filtrada.
+El «Hoy» de Almacén se queda como **el de Almacén**: la misma lista, filtrada.
 
 ### 9 · Paneles de fábrica por rol
 
@@ -401,7 +404,7 @@ albarán, al conciliar la factura o al cambiarlo a mano—, en la misma transacc
 - **Y si otro proveedor tiene ese mismo producto**, se dice cuánto: «Frutas Pepe te
   cobra el tomate a 2,10 €/kg (+12 %). Distribuciones Sur te lo dejó a 1,85 € el 3
   de septiembre».
-- **Solo se compara lo comparable**: el mismo producto de tu inventario, llevado a la
+- **Solo se compara lo comparable**: el mismo producto de tu almacén, llevado a la
   misma unidad (0021). No se compara «tomate» con «tomate pera».
 - **Qué no se promete:** precios de mercado que no tenemos. Solo tus proveedores.
 - Llega a quien manda pedidos, **una vez por producto y proveedor** (entrega 2), y la
@@ -513,7 +516,7 @@ buscador ya lo encuentra. Falta la cámara.
 - **Y los lectores de mano** USB o Bluetooth (15–30 €), que escriben el código como un
   teclado: **no necesitan nada**, y en un almacén con guantes son mucho más rápidos que
   la cámara. Estook los reconoce en cualquier pantalla que busque.
-- **Recuento:** escanear suma uno; escanear y teclear, pone la cantidad. Pita y vibra
+- **Inventario:** escanear suma uno; escanear y teclear, pone la cantidad. Pita y vibra
   distinto si el código no es de ningún producto.
 - **Alta:** si el código no existe, abre el alta con él puesto. **Y propone el
   nombre** si lo conoce Open Food Facts (gratis y sin clave), como propuesta: en
@@ -567,8 +570,9 @@ antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
 **Cómo va:** la **1** está **fusionada y en producción** (#53), con Richi dentro del
 admin y su segundo factor montado. Su repaso (rescatar a un admin, la cabecera del
 móvil y una puerta de la API) también está en producción (#54). **La 2, V, está entera
-y en producción** (#64, #65, #67). **La 3, O, está hecha en su rama** (0047), y después va E2: Richi ya
-tiene su cuenta de Stripe.
+y en producción** (#64, #65, #67). **La 3, O, también** (#69), y **E2 · el pago con
+Stripe** (#71, 0048). Después, **el repaso del 25-sep** (0049), **L · el lector**,
+adelantada, y **A2 · Clientes**.
 
 **Qué esperan de fuera, y no frenan el orden:** **Resend** (el correo del informe y
 de los avisos), **Business Profile** (las respuestas a reseñas), **la clave de IA**

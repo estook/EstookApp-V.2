@@ -95,7 +95,7 @@ Lo que **sí** hace Verifacti: generar el XML del registro, calcular la huella, 
 ```
 ┌─────────── ZONA OPERATIVA · esquema publico ────────────┐
 │  Mesas → Comandas → Cocina → Precuenta → Cobro          │
-│  Caja · Ventas · Inventario · Negocio · Fogon           │
+│  Caja · Ventas · Almacén · Negocio · Fogon              │
 │  Se puede corregir, reprocesar y recalcular             │
 └──────────────────────┬──────────────────────────────────┘
                        │ llama a
@@ -263,7 +263,7 @@ Una tablet de sala la usan cinco camareros, y la pantalla de cocina lleva encend
 
 **Pantalla de cocina en quiosco.** Sesión del aparato, no de una persona. Marcar un plato listo **no pide PIN** —en cocina eso no se puede hacer— y queda a nombre del aparato; lo que sí pide PIN es **salir del modo** y cualquier cosa de un jefe, como desmarcar pasado el margen.
 
-**Y la regla que lo cierra:** un aparato registrado del local **no puede salirse a la aplicación de gestión** sin que alguien entre con su PIN. Una tablet de sala tirada en la barra no es una puerta al inventario ni a los sueldos.
+**Y la regla que lo cierra:** un aparato registrado del local **no puede salirse a la aplicación de gestión** sin que alguien entre con su PIN. Una tablet de sala tirada en la barra no es una puerta al almacén ni a los sueldos.
 
 **Dar de alta un terminal** (Richi, 23-sep-2026). Así se pone en marcha un aparato del local:
 
@@ -847,7 +847,7 @@ Todas automáticas, contra el entorno de pruebas. Cada una se rompe a propósito
 
 **De punta a punta**
 
-20. Servicio completo de diez mesas, una dividida en tres, un pago mixto, una factura pedida y una devolución: caja, tickets, ventas e inventario cuadran al céntimo.
+20. Servicio completo de diez mesas, una dividida en tres, un pago mixto, una factura pedida y una devolución: caja, tickets, ventas y almacén cuadran al céntimo.
 21. El QR impreso en 58 y en 80 mm se lee con la aplicación de la AEAT.
 
 ---

@@ -10,11 +10,11 @@ Estás en **«Antes de M8»**: las compras de M7 están entregadas, y lo que le 
 
 La pregunta de fondo es: si el cobro es lo que más vende, ¿por qué no lo primero? Por tres razones, y las tres son de coste.
 
-**1 · Un TPV sin carta no existe.** Para tomar nota hace falta una carta con precios (M10), y para que la carta tenga sentido hacen falta fichas (M9), y para las fichas hace falta inventario con precios (M6 y M7). Construir el TPV antes significaría inventarse una carta provisional y tirarla después.
+**1 · Un TPV sin carta no existe.** Para tomar nota hace falta una carta con precios (M10), y para que la carta tenga sentido hacen falta fichas (M9), y para las fichas hace falta almacén con precios (M6 y M7). Construir el TPV antes significaría inventarse una carta provisional y tirarla después.
 
 **2 · Emitir tickets es irreversible.** El día que Estook emite su primer ticket, pasa a ser un sistema de facturación con responsabilidad legal. Eso no se enciende sobre cimientos a medias.
 
-**3 · Lo que ya tienes ya se vende.** La gestión —inventario, escandallos, carta, equipo, documentos— es lo que venden Gstock y Apicbase, y es donde está tu precio. El TPV es lo que te quita la dependencia de que un TPV ajeno te dé acceso, pero no es lo que te da de comer el primer año.
+**3 · Lo que ya tienes ya se vende.** La gestión —almacén, escandallos, carta, equipo, documentos— es lo que venden Gstock y Apicbase, y es donde está tu precio. El TPV es lo que te quita la dependencia de que un TPV ajeno te dé acceso, pero no es lo que te da de comer el primer año.
 
 > Y el matiz que importa: **el TPV está en la mitad, no al final.** Cae en la Fase 4 de siete, y detrás quedan la analítica, Fogón, la cadena, el negocio y el ecosistema.
 
@@ -30,7 +30,7 @@ Ficha del proveedor con sus días de reparto y su pedido mínimo, el ciclo `borr
 
 ### M8 · Inventario, mermas y desviación
 
-Recuento cíclico, inventario valorado, mermas en tres toques, consumo de personal como partida aparte, y **la desviación**: lo que dice el escandallo frente a lo que falta de verdad. Ahí está el dinero que se escapa, y es de lo que más vende.
+Inventario cíclico, almacén valorado, mermas en tres toques, consumo de personal como partida aparte, y **la desviación**: lo que dice el escandallo frente a lo que falta de verdad. Ahí está el dinero que se escapa, y es de lo que más vende.
 
 ### M9 · Escandallos
 
@@ -82,7 +82,7 @@ Incidencias del turno que lee el siguiente, notas, y el mantenimiento de los equ
 
 ### M20 · Ventas, emparejamiento y consumo
 
-**El motor, y va primero.** Convierte una venta —venga de donde venga— en movimientos de inventario, con su coste congelado. Sirve para las cuatro vías a la vez, así que se escribe una sola vez.
+**El motor, y va primero.** Convierte una venta —venga de donde venga— en movimientos del almacén, con su coste congelado. Sirve para las cuatro vías a la vez, así que se escribe una sola vez.
 
 ### M19a · Estook Enlace · agente e impresión
 
@@ -98,7 +98,7 @@ El esquema aislado y de solo inserción, el alta fiscal del local, los tipos de 
 
 ### M20C · Cobro y caja
 
-Efectivo, datáfono y mixto; dividir la cuenta; factura a petición; devoluciones por rectificativa; caja y arqueo. Cerrar una mesa mueve caja, ventas e inventario sin teclear nada más.
+Efectivo, datáfono y mixto; dividir la cuenta; factura a petición; devoluciones por rectificativa; caja y arqueo. Cerrar una mesa mueve caja, ventas y almacén sin teclear nada más.
 
 ### M18 · El conector · vía nube
 
@@ -168,7 +168,7 @@ Que un TPV o un ERP puedan leer y escribir con permiso del cliente. Va al final 
 | ----------------- | ---------------------------------------------------------- |
 | **M7 a M12**      | La gestión de cocina entera. **Esto ya se vende solo**     |
 | **M13 a M17**     | Y además el equipo, los horarios, los fichajes y el APPCC  |
-| **+ M20**         | Que las ventas muevan el inventario, por CSV o a mano      |
+| **+ M20**         | Que las ventas muevan el almacén, por CSV o a mano         |
 | **+ M19a y M20A** | **Comandero y cocina.** Puede cobrar con su TPV de siempre |
 | **+ M20B y M20C** | **El TPV completo**, con tickets legales                   |
 | **+ M18**         | O conectar el TPV que ya tiene                             |

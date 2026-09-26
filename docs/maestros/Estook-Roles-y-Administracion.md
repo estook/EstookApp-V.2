@@ -87,7 +87,7 @@ Buenos dias, Sara
 
 **Entra y ve:** su turno, las fichas nuevas que tiene que aprenderse, lo que caduca, sus tareas y la hoja de producción del día.
 
-**Su rueda:** Escandallos, Inventario (registrar), Servicio (APPCC y mermas), Calendario y Cuaderno.
+**Su rueda:** Escandallos, Almacén (registrar), Servicio (APPCC y mermas), Calendario y Cuaderno.
 
 **Lo que hace especial su experiencia:** el **modo cocina** a pantalla completa, con letra grande, foto del plato, gramajes, pasos con sus fotos y el truco del jefe, en su idioma y **sin un solo importe**. Se avanza con un gesto o diciendo «siguiente». Y el **modo aprendizaje**: marca «ya la sé» y en su Panel ve cuántas lleva.
 
@@ -105,9 +105,9 @@ No ve costes de materia prima ni escandallos con importes.
 
 **Su Panel:** gasto de cocina contra objetivo, platos bajo objetivo, valor en cámara, caducidades de la semana, pedidos por recibir y APPCC pendiente. Y **la parte de cocina de Pulse**: food cost, mermas y desviación, sin la parte de personal de sala ni la de facturación.
 
-**Y manda los pedidos** (M7). Hacer el borrador y recibir el camión es de cualquiera con Inventario —el cocinero sabe lo que falta y es quien está en la puerta—; **mandarlo al proveedor, o cancelar uno ya mandado, compromete dinero del local** y pide `accion.enviar_pedidos`, que tienen el jefe de cocina, el gerente, el responsable de área, dirección y compras central. Al cocinero no se le esconde el botón: se le dice quién lo manda, y a quien puede le sale como borrador por mandar ([decisión 0032](../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)). Las facturas, lo pactado y la comparativa de precios son de quien ve precios de compra.
+**Y manda los pedidos** (M7). Hacer el borrador y recibir el camión es de cualquiera con el Almacén —el cocinero sabe lo que falta y es quien está en la puerta—; **mandarlo al proveedor, o cancelar uno ya mandado, compromete dinero del local** y pide `accion.enviar_pedidos`, que tienen el jefe de cocina, el gerente, el responsable de área, dirección y compras central. Al cocinero no se le esconde el botón: se le dice quién lo manda, y a quien puede le sale como borrador por mandar ([decisión 0032](../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)). Las facturas, lo pactado y la comparativa de precios son de quien ve precios de compra.
 
-**Manda en:** Inventario entera, Escandallos entera, la parte de cocina de la Carta, el APPCC, el cuadrante de cocina y las fichas de su equipo. Ve los fichajes y las horas **de la cocina** —cocineros y jefes de cocina—, sin lo que cobra nadie.
+**Manda en:** Almacén entero, Escandallos entera, la parte de cocina de la Carta, el APPCC, el cuadrante de cocina y las fichas de su equipo. Ve los fichajes y las horas **de la cocina** —cocineros y jefes de cocina—, sin lo que cobra nadie.
 
 **Ve las ventas** (23-sep-2026, migración 0041): las del día, el ticket medio y los cierres de caja, porque «puede necesitar saber qué sale o qué no». Con el precio de compra que ya tenía, le sale también el food cost. **Solo verlas**: la caja la cierra quien lleva el local o la sala. Lo que sale plato a plato llega con el TPV (Fase 4); hasta entonces las ventas son las del cierre del día.
 
@@ -140,7 +140,7 @@ GESTORIA · Bar Centro
 ## 1.9 Roles de organización
 
 - **Chef corporativo:** Escandallos y Carta de todos los locales, más el catálogo maestro de recetas. Nada de personal ni de facturación.
-- **Compras central:** Inventario y proveedores de todos los locales, contratos marco y la comparativa de precios entre locales. Nada de recetas ni de personal.
+- **Compras central:** Almacén y proveedores de todos los locales, contratos marco y la comparativa de precios entre locales. Nada de recetas ni de personal.
 - **RRHH:** Equipo y Calendario de todos los locales, con costes de personal. Sin acceso a materia prima ni a márgenes.
 - **Administrador de cuenta:** plan, facturación, licencias, altas de local y de personas. Sin acceso a la operación diaria, salvo que se le dé expresamente.
 - **Dirección o propietario:** todo, en todos los locales.
@@ -161,7 +161,9 @@ Dos cosas distintas, con dos reglas distintas ([decisión 0025](../decisiones/00
 
 ## 1.11 Los avisos del Calendario
 
-Los publica quien puede editar el Calendario —gerente, jefes—, y **elige qué roles los ven**: toda la plantilla, solo la cocina, solo la sala. Lo filtra la base de datos, como las horas. Lo que publican los módulos —entregas, caducidades, turnos— lo ve quien ve ese módulo: una entrega, quien lleva compras e inventario; un turno, su dueño y quien lleva a esa persona ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)).
+Los publica quien puede editar el Calendario —gerente, jefes—, y **elige qué roles los ven**: toda la plantilla, solo la cocina, solo la sala. Lo filtra la base de datos, como las horas. Lo que publican los módulos —entregas, caducidades, turnos— lo ve quien ve ese módulo: una entrega, quien lleva compras y el almacén; un turno, su dueño y quien lleva a esa persona ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)).
+
+**El Tablón** es otra cosa: el corcho de la cocina, en el Panel ([decisión 0049](../decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)). **Escribe cualquiera del local**, a su nombre —quien más lo usa es la sala, con las reservas—, para todos o para la cocina o la sala: la cocina no ve lo de sala ni la sala lo de cocina, y quien lleva las dos lo ve todo. Cada uno marca **leído** lo suyo; **quien la escribió ve quién la ha leído**, y **quien lleva al equipo** (quien ve Equipo) ve además **quién falta** de a quien lleva. La quita su autor o quien lleva al equipo. Con hora, sale también en el Calendario y, una vez leída, en «Hoy», con la misma regla de quién la ve.
 
 ---
 
@@ -326,16 +328,16 @@ Las plantillas viven en el catálogo maestro, así que **todos los locales del g
 
 Lo que la Evolución 1.0 potencia: los puntos automáticos dejan de ser cuatro y pasan a ser **todo lo que Estook ya sabe**. Antes de que el area manager llegue al local, la visita ya trae detectado:
 
-| Lo que detecta solo      | De dónde lo saca                                   |
-| ------------------------ | -------------------------------------------------- |
-| APPCC incompleto         | Servicio · registros del periodo                   |
-| Inventario atrasado      | Inventario · fecha del último recuento             |
-| Desviación elevada       | Inventario · brecha entre food cost teórico y real |
-| Fichajes anómalos        | Equipo · planificado contra fichado                |
-| Formación pendiente      | Escandallos · fichas sin aprender por su equipo    |
-| Documentación incompleta | Cuaderno · revisiones de equipos vencidas          |
-| Problemas de stock       | Inventario · bajo mínimo y stock negativo          |
-| Tareas sin cerrar        | Calendario · tareas vencidas                       |
+| Lo que detecta solo      | De dónde lo saca                                |
+| ------------------------ | ----------------------------------------------- |
+| APPCC incompleto         | Servicio · registros del periodo                |
+| Inventario atrasado      | Almacén · fecha del último inventario           |
+| Desviación elevada       | Almacén · brecha entre food cost teórico y real |
+| Fichajes anómalos        | Equipo · planificado contra fichado             |
+| Formación pendiente      | Escandallos · fichas sin aprender por su equipo |
+| Documentación incompleta | Cuaderno · revisiones de equipos vencidas       |
+| Problemas de stock       | Almacén · bajo mínimo y stock negativo          |
+| Tareas sin cerrar        | Calendario · tareas vencidas                    |
 
 > El area manager llega al local **a mirar lo que un ordenador no puede ver** —la limpieza, el trato, cómo sale el plato— porque el resto ya está puntuado.
 
@@ -458,7 +460,7 @@ Bandeja de incidencias **con contexto** (local, rol, pantalla y última acción,
 
 ## 4.8 Lo que el panel interno no hace
 
-- **No permite escribir en los datos del restaurante** (inventario, compras, personas, horarios, ventas, tickets y facturas).
+- **No permite escribir en los datos del restaurante** (almacén, compras, personas, horarios, ventas, tickets y facturas).
 - **Nunca toca la facturación de un cliente:** ni edita, ni anula, ni reenvía, ni da de baja su NIF en el proveedor de VeriFactu. Ve el estado de los envíos para dar soporte, y nada más.
 - Lo comercial —contrato, plan y notas— es nuestro y sí se edita, con auditoría (0041).
 - No permite ver el chat del equipo de nadie.

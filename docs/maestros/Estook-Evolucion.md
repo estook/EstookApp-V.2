@@ -68,7 +68,7 @@ Estook deja de describirse como «la aplicación de gestión de tu restaurante»
         │                  │                  │
      PERSONAS          OPERACIONES         NEGOCIO
         │                  │                  │
-     Equipo             Inventario         Gastos
+     Equipo             Almacén            Gastos
      Horarios           Escandallos        Ventas
      Fichajes           Carta              Analitica
      Vacaciones         Servicio           Rentabilidad
@@ -100,7 +100,7 @@ Estook deja de describirse como «la aplicación de gestión de tu restaurante»
 ```
 Proveedor sube el precio del aceite
         ↓
-Inventario detecta el coste nuevo
+Almacén detecta el coste nuevo
         ↓
 Escandallos recalcula los platos afectados
         ↓
@@ -203,7 +203,7 @@ Las ocho apps se mantienen, y el Panel sigue siendo el centro de entrada. Lo que
 
 | App             | Su pregunta                                                                             |
 | --------------- | --------------------------------------------------------------------------------------- |
-| **Inventario**  | ¿Qué tenemos? ¿Qué nos cuesta? ¿Dónde lo compramos? ¿Qué se está acabando? ¿Qué caduca? |
+| **Almacén**     | ¿Qué tenemos? ¿Qué nos cuesta? ¿Dónde lo compramos? ¿Qué se está acabando? ¿Qué caduca? |
 | **Escandallos** | ¿Cuánto cuesta de verdad cada plato? ¿Qué margen deja? ¿Qué ha cambiado?                |
 | **Carta**       | ¿Qué vendemos? ¿A qué precio? ¿En qué canal? ¿Qué funciona? ¿Qué pierde dinero?         |
 | **Calendario**  | ¿Qué pasa hoy? ¿Quién trabaja? ¿Qué tareas, entregas, limpiezas o eventos hay?          |
@@ -303,9 +303,9 @@ Esto tiene precedente en el propio producto: el indicador de **salud de los dato
 
 Lo que la evolución añade dentro de cada aplicación. Todo respeta la arquitectura existente: las flechas siguen yendo en un solo sentido y nadie crea una segunda fuente de verdad.
 
-## Inventario predictivo
+## Almacén predictivo
 
-Inventario deja de ser una lista de cantidades. Añade consumo medio, velocidad de consumo, días restantes, previsión de agotamiento, caducidades, precio histórico, evolución del proveedor, sugerencia de pedido y comparación entre proveedores.
+El Almacén deja de ser una lista de cantidades. Añade consumo medio, velocidad de consumo, días restantes, previsión de agotamiento, caducidades, precio histórico, evolución del proveedor, sugerencia de pedido y comparación entre proveedores.
 
 ```
 POLLO
@@ -320,7 +320,7 @@ POLLO
   Motivo: mantener unos 5 dias de cobertura.
 ```
 
-**Lo que no se toca:** el stock sigue siendo un libro de movimientos, Inventario sigue siendo la única fuente de verdad del género, y el stock mínimo calculado ya estaba decidido (hallazgo 1 de la Auditoría). Lo nuevo es la **previsión con fecha y hora**, y que la sugerencia de pedido diga su motivo.
+**Lo que no se toca:** el stock sigue siendo un libro de movimientos, el Almacén sigue siendo la única fuente de verdad del género, y el stock mínimo calculado ya estaba decidido (hallazgo 1 de la Auditoría). Lo nuevo es la **previsión con fecha y hora**, y que la sugerencia de pedido diga su motivo.
 
 ## Escandallos con margen explicado
 
@@ -402,7 +402,7 @@ Fogón deja de ser una caja de «pregunta lo que quieras» y pasa a estar presen
 
 | Dónde       | Qué dice                                                                   |
 | ----------- | -------------------------------------------------------------------------- |
-| Inventario  | «El aceite ha subido un 12 %. Afecta a 7 platos y 2 quedan bajo objetivo.» |
+| Almacén     | «El aceite ha subido un 12 %. Afecta a 7 platos y 2 quedan bajo objetivo.» |
 | Escandallos | «El coste de esta receta ha subido un 8,2 % desde junio.»                  |
 | Carta       | «Este plato vende mucho y tiene uno de los peores márgenes de la carta.»   |
 | Equipo      | «El cuadrante actual cuesta un 6,8 % más que la semana pasada.»            |
@@ -530,7 +530,7 @@ ADAPTADOR · transformar al modelo interno de pedidos
     ↓
 POSTGRESQL
     ↓
-Ventas · Inventario · Escandallos · Carta · Analitica · Fogon
+Ventas · Almacén · Escandallos · Carta · Analitica · Fogon
 ```
 
 **Las reglas, que son las de siempre:**
@@ -628,11 +628,11 @@ El sistema de diseño de Estook no cambia: charcoal `#111C1F`, naranja `#FF7A00`
 
 La aplicación no pregunta **«¿qué tabla quieres modificar?»**. Pregunta **«¿qué quieres hacer?»**.
 
-| Nunca                           | Siempre                      |
-| ------------------------------- | ---------------------------- |
-| Editar movimiento de inventario | Ajustar lo que hay en cámara |
-| Crear entidad turno             | Crear horario                |
-| Crear registro de APPCC         | Completar el control de hoy  |
+| Nunca                         | Siempre                      |
+| ----------------------------- | ---------------------------- |
+| Editar movimiento del almacén | Ajustar lo que hay en cámara |
+| Crear entidad turno           | Crear horario                |
+| Crear registro de APPCC       | Completar el control de hoy  |
 
 Cero jerga técnica. Ya estaba en el Manifiesto (principio 14) y se mantiene sin cambios.
 
@@ -669,7 +669,7 @@ No se construye todo de golpe. Este es el orden, y **cada prioridad dice sobre q
 | --- | ----------------------------------------------------------------------------------------------- | --------------------------------- | ------------ |
 | 1   | **Rediseño del Panel**: alertas, tareas, métricas, estado del negocio, acciones rápidas y Fogón | M3 ampliado + Panel de M21        | —            |
 | 2   | **Fogón transversal** en las ocho apps                                                          | M22                               | 1            |
-| 3   | **Inventario predictivo**                                                                       | M6 y M8 ampliados                 | —            |
+| 3   | **Almacén predictivo**                                                                          | M6 y M8 ampliados                 | —            |
 | 4   | **Escandallos con análisis de margen**                                                          | M9 ampliado                       | 3            |
 | 5   | **Carta inteligente**                                                                           | M10 ampliado                      | 4            |
 | 6   | **Horarios inteligentes**                                                                       | M14 y M13 ampliados               | 2            |

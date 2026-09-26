@@ -11,12 +11,16 @@ import {
   Etiqueta,
   Hoja,
   Interruptor,
+  clases,
 } from '@estook/ui';
-import { IconoBien, IconoBorrar } from '@estook/iconos';
+import { IconoBien, IconoBorrar, IconoEscanear } from '@estook/iconos';
+import { Escaner } from '../lector/Escaner.tsx';
+import { pitar } from '../lector/pitar.ts';
+import { usarLectorDeMano } from '../ganchos/usarLectorDeMano.ts';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { comoDinero } from '../almacen/contrato.ts';
+import { comoDinero, type MisProductos } from '../almacen/contrato.ts';
 import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
 import { Cuantos } from './Comun.tsx';
 import { numeroEscrito } from './utilidades.ts';
@@ -117,6 +121,40 @@ export function Recibir({
   const [recibido, setRecibido] = useState<LoRecibido | null>(null);
   const [loQueFalto, setLoQueFalto] = useState<{ productoId: string; cantidad: number }[]>([]);
   const [pidiendo, setPidiendo] = useState(false);
+  /**
+   * El lector (entrega L): «recibir un pedido: escanear marca la línea del
+   * albarán». Cada caja que se escanea marca su línea; así se ve de un vistazo
+   * qué falta por llegar antes de firmar.
+   */
+  const [escaneando, setEscaneando] = useState(false);
+  const [escaneadas, setEscaneadas] = useState<ReadonlySet<string>>(new Set());
+  const [ultimoLeido, setUltimoLeido] = useState<string | null>(null);
+
+  async function marcarLaLinea(codigo: string) {
+    const respuesta = await cliente.consultar<MisProductos>('mis_productos', {
+      texto: codigo,
+      limite: '5',
+    });
+    const suyo = respuesta.ok
+      ? respuesta.datos.productos.find((p) => p.codigoDeBarras === codigo)
+      : undefined;
+    const linea = suyo === undefined ? undefined : lineas.find((l) => l.productoId === suyo.id);
+    if (linea === undefined) {
+      pitar(false);
+      setUltimoLeido(
+        suyo === undefined
+          ? `El ${codigo} no es de ningún producto de tu almacén.`
+          : `${suyo.nombre} no está en este pedido.`,
+      );
+      return;
+    }
+    pitar(true);
+    setEscaneadas((antes) => new Set([...antes, linea.clave]));
+    setUltimoLeido(`${linea.producto} · marcado`);
+    document.getElementById(`linea-${linea.clave}`)?.scrollIntoView({ block: 'center' });
+  }
+
+  usarLectorDeMano((codigo) => void marcarLaLinea(codigo), paso === 'cambios' && !escaneando);
 
   const proveedorId = pedido?.proveedor.id ?? proveedor?.id ?? '';
   const nombreDelProveedor = pedido?.proveedor.nombre ?? proveedor?.nombre ?? '';
@@ -375,14 +413,50 @@ export function Recibir({
         {paso === 'cambios' && (
           <section className="flex flex-col gap-e3">
             {lineas.length > 0 && (
+              <div className="flex flex-wrap items-center gap-e3">
+                <Boton
+                  tono="secundario"
+                  icono={<IconoEscanear size={18} />}
+                  onClick={() => {
+                    setEscaneando(true);
+                  }}
+                >
+                  Escanear lo que llega
+                </Boton>
+                <p aria-live="polite" className="text-secundario text-texto-suave">
+                  {escaneadas.size === 0
+                    ? (ultimoLeido ?? 'Cada caja que escanees marca su línea.')
+                    : `${String(escaneadas.size)} de ${String(lineas.length)} marcadas${ultimoLeido === null ? '' : ` · ${ultimoLeido}`}`}
+                </p>
+              </div>
+            )}
+            {escaneando && (
+              <Escaner
+                titulo="Escanear lo que llega"
+                seguido
+                ultimo={ultimoLeido}
+                alLeer={(codigo) => void marcarLaLinea(codigo)}
+                alCerrar={() => {
+                  setEscaneando(false);
+                }}
+              />
+            )}
+            {lineas.length > 0 && (
               <ul className="flex flex-col gap-e3">
                 {lineas.map((l) => (
                   <li
                     key={l.clave}
-                    className="flex flex-col gap-e3 rounded-medio border border-borde p-e3"
+                    id={`linea-${l.clave}`}
+                    className={clases(
+                      'flex flex-col gap-e3 rounded-medio border p-e3',
+                      escaneadas.has(l.clave) ? 'border-bien' : 'border-borde',
+                    )}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-e2">
-                      <span className="text-cuerpo font-medium">{l.producto}</span>
+                      <span className="flex flex-wrap items-center gap-e2 text-cuerpo font-medium">
+                        {l.producto}
+                        {escaneadas.has(l.clave) && <Etiqueta tono="bien">escaneada</Etiqueta>}
+                      </span>
                       {l.pedida !== null ? (
                         <span className="text-secundario text-texto-suave">
                           Pedido: {comoSePide(l.pedida, l.formato, l.factor, l.unidadDeUso)}

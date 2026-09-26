@@ -26,7 +26,16 @@ import {
   clases,
   type Columna,
 } from '@estook/ui';
-import { IconoAnadir, IconoBuscar, IconoDocumento, IconoQuitar } from '@estook/iconos';
+import {
+  IconoAnadir,
+  IconoBuscar,
+  IconoDocumento,
+  IconoEscanear,
+  IconoQuitar,
+} from '@estook/iconos';
+import { Escaner } from '../lector/Escaner.tsx';
+import { pitar } from '../lector/pitar.ts';
+import { usarLectorDeMano } from '../ganchos/usarLectorDeMano.ts';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -103,6 +112,13 @@ export function Productos({
   const [zona, setZona] = useState<Zona | ''>('');
   const hayCategorias = zona === '' || llevaCategorias(zona);
   const [creando, setCreando] = useState(false);
+  /**
+   * El lector (entrega L): la cámara abierta, y el código leído que no es de
+   * ningún producto, para darlo de alta con él puesto.
+   */
+  const [escaneando, setEscaneando] = useState(false);
+  const [codigoNuevo, setCodigoNuevo] = useState<string | null>(null);
+  const [noEsDeNada, setNoEsDeNada] = useState<string | null>(null);
   const [ofrecerQuitarEjemplos, setOfrecerQuitarEjemplos] = useState(false);
   const [quitando, setQuitando] = useState(false);
   const [poniendo, setPoniendo] = useState(false);
@@ -141,6 +157,41 @@ export function Productos({
   usarQueHacer('nuevo', () => {
     if (puedeTocar) setCreando(true);
   });
+
+  /**
+   * Un código leído, con la cámara o con un lector de mano (entrega L): si es de un
+   * producto, se abre su ficha; si no, **se da de alta con él puesto**. Pita y
+   * vibra distinto en cada caso.
+   */
+  async function alLeerCodigo(codigo: string) {
+    setEscaneando(false);
+    setNoEsDeNada(null);
+    const respuesta = await cliente.consultar<MisProductos>('mis_productos', {
+      texto: codigo,
+      limite: '5',
+    });
+    const suyo = respuesta.ok
+      ? respuesta.datos.productos.find((p) => p.codigoDeBarras === codigo)
+      : undefined;
+    if (suyo !== undefined) {
+      pitar(true);
+      alAbrirProducto(suyo.id);
+      return;
+    }
+    pitar(false);
+    if (puedeTocar) {
+      setCodigoNuevo(codigo);
+      setCreando(true);
+    } else {
+      setNoEsDeNada(codigo);
+    }
+  }
+
+  usarQueHacer('escanear', () => {
+    setEscaneando(true);
+  });
+  // Los lectores de mano escriben como un teclado: se reconocen solos.
+  usarLectorDeMano((codigo) => void alLeerCodigo(codigo), !creando && !escaneando);
 
   // Cada vista es un filtro del servidor, no un recorte de la lista al llegar:
   // la lista viene acotada a cincuenta, y filtrar cincuenta ya traídas daría
@@ -513,7 +564,28 @@ export function Productos({
                 Añadir producto
               </Boton>
             )}
+
+            {/*
+              A la derecha de «Añadir producto», como pidió Richi (25-sep): el lector
+              abre la ficha del producto, o su alta si el código es nuevo.
+            */}
+            <Boton
+              tono="secundario"
+              icono={<IconoEscanear size={18} />}
+              onClick={() => {
+                setEscaneando(true);
+              }}
+            >
+              Escanear
+            </Boton>
           </div>
+
+          {noEsDeNada !== null && (
+            <Aviso tono="info" titulo="Ese código no es de ningún producto" esNoticia>
+              El {noEsDeNada} no está en tu almacén. Quien lleve el almacén puede darlo de alta con
+              él.
+            </Aviso>
+          )}
 
           <Tarjeta
             titulo={comoSeCuenta(datos.cuantosCumplen, vista)}
@@ -676,13 +748,26 @@ export function Productos({
         />
       )}
 
+      {escaneando && (
+        <Escaner
+          titulo="Escanear un producto"
+          alLeer={(codigo) => void alLeerCodigo(codigo)}
+          alCerrar={() => {
+            setEscaneando(false);
+          }}
+        />
+      )}
+
       <NuevoProducto
         abierta={creando}
+        codigo={codigoNuevo}
         alCerrar={() => {
           setCreando(false);
+          setCodigoNuevo(null);
         }}
         alCrear={(productoId, ejemplosQueQuedan) => {
           setCreando(false);
+          setCodigoNuevo(null);
           if (ejemplosQueQuedan > 0) setOfrecerQuitarEjemplos(true);
           void refrescar();
           alAbrirProducto(productoId);

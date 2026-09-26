@@ -54,7 +54,7 @@ async function comoDuena<T>(consulta: string, parametros: unknown[] = []): Promi
   return rows;
 }
 
-const miCodigo = () => codigoEn(SECRETO_DEL_ADMIN_DE_EJEMPLO, new Date());
+const miCodigo = () => codigoEn(SECRETO_DEL_ADMIN_DE_EJEMPLO, new Date(Date.now()));
 
 async function entrarComoAdmin(): Promise<string> {
   const entrada = losDatos<{ token: string }>(

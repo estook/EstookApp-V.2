@@ -2704,6 +2704,30 @@ _25 de septiembre de 2026._ Sin migración. Richi pidió «Escanear producto» j
 Las pruebas: `codigos.prueba.ts` y `el-lector.spec.ts`. La cámara de verdad no se puede
 probar en un navegador de pruebas: la mira Richi en su móvil.
 
+### Antes de M8 · A2, los clientes en el admin
+
+_26 de septiembre de 2026._ Migración `0049`, [decisión
+0050](decisiones/0050-los-clientes-en-el-admin.md). Con las tres respuestas de Richi del
+25-sep: ver todo de Stripe y tres gestos con motivo, el correo de acceso con doble
+confirmación, y la actividad cada noche.
+
+- **Clientes** sustituye a Cuentas y es lo primero del admin: pestañas que son filtros,
+  buscador, filtros por tramos, orden por columnas hecho en el servidor, de cincuenta en
+  cincuenta, y exportar con el código otra vez.
+- **La ficha**, con siete pestañas; lo que el admin toca del cliente llega a la auditoría
+  del cliente.
+- **La foto del uso**, una por cliente y día, del reloj o de «Calcular ahora».
+
+**Lo que salió al revisar:** una cuenta recién creada salía «activa», porque montar la
+cuenta deja apuntes: ahora cuenta solo el trabajo. La ficha enseñaba códigos de dentro
+(«crear_cuenta organizacion»): ahora frases. Y dos pruebas del pago de E2 **caducaron
+solas** el 26-sep: fijaban el día y la base apunta con su `now()`; ahora cuentan desde
+hoy. Al pasarlo todo salió también que la hoja del Tablón esperaba a recargar el Panel
+para cerrarse: ahora se cierra al guardar.
+
+Las pruebas: `clientes.prueba.ts` (dominio y admin), `los-clientes.prueba.ts` (la base,
+contra el Stripe de mentira) y `los-clientes.spec.ts` (la pantalla).
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

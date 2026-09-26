@@ -16,29 +16,29 @@ cómo se entra en los datos de un cliente.
 
 ## Cómo va · qué hay y qué falta
 
-**Hoy, en `estook.com/admin/`, solo está la puerta (A1).** Lo que Richi describió
-—clientes, ficha tipo CRM, vendedores y códigos, ventas— **todavía no está**: son las
-entregas A2, A3 y A4, y van en el orden de [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md).
-Comprobado en producción el 16 de septiembre de 2026.
+**En `estook.com/admin/` están la puerta (A1) y los clientes (A2, [decisión
+0050](decisiones/0050-los-clientes-en-el-admin.md), en su PR).** Vendedores y códigos, y
+ventas, **todavía no**: son A3 y A4, en el orden de
+[`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md). Actualizado el 26 de septiembre de 2026.
 
-| Qué                                                                                         | Cómo está                                                      |
-| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| Entrar con contraseña y segundo factor obligatorio, sesión de 8 h                           | **Hecho y en producción** (A1, #53)                            |
-| Sesión del admin y de la app separadas; el acceso se mira en cada petición                  | **Hecho y en producción**                                      |
-| Administradores: dar acceso total y quitarlo, con el código otra vez                        | **Hecho y en producción**                                      |
-| Auditoría del admin: quién, qué, cuándo, motivo y dirección IP                              | **Hecho y en producción** (el aparato se guarda, no se enseña) |
-| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | **Hecho y en producción** (rescatar llegó con el repaso, #54)  |
-| El catálogo del sistema de diseño detrás de la puerta                                       | **Hecho y en producción**                                      |
-| **Niveles** comercial, soporte y vendedor                                                   | Existen en la base; **no se pueden dar** hasta A3 y M26        |
-| **Clientes**: lista, filtros, búsqueda, CSV, ficha, contrato, actividad, notas, editar      | **Falta · A2**                                                 |
-| Copiar a la auditoría del cliente lo que el admin haga sobre él                             | **Falta · A2**                                                 |
-| **Vendedores y códigos**: `?ref=`, llegadas, asignaciones, panel del vendedor               | **Falta · A3**                                                 |
-| **Ventas**: tablero, gráficas, foto diaria del uso                                          | **Falta · A4** (necesita el reloj, entrega R)                  |
-| Borrar solas las IP de más de dos años                                                      | **Falta** · necesita el reloj (R); se cierra en M27            |
-| Cambiar el correo de acceso de un cliente con doble confirmación                            | **Falta** · necesita Resend                                    |
-| Suscripciones y cobros de verdad, comisiones, liquidaciones                                 | **M26** · necesita Stripe                                      |
-| Entrar a los datos de un cliente con su permiso (Roles 4.3), costes, integraciones, soporte | **M26**                                                        |
-| `admin.estook.com` en vez de `estook.com/admin/`                                            | **M27**, si cambia el alojamiento                              |
+| Qué                                                                                         | Cómo está                                                        |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Entrar con contraseña y segundo factor obligatorio, sesión de 8 h                           | **Hecho y en producción** (A1, #53)                              |
+| Sesión del admin y de la app separadas; el acceso se mira en cada petición                  | **Hecho y en producción**                                        |
+| Administradores: dar acceso total y quitarlo, con el código otra vez                        | **Hecho y en producción**                                        |
+| Auditoría del admin: quién, qué, cuándo, motivo y dirección IP                              | **Hecho y en producción** (el aparato se guarda, no se enseña)   |
+| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | **Hecho y en producción** (rescatar llegó con el repaso, #54)    |
+| El catálogo del sistema de diseño detrás de la puerta                                       | **Hecho y en producción**                                        |
+| **Niveles** comercial, soporte y vendedor                                                   | Existen en la base; **no se pueden dar** hasta A3 y M26          |
+| **Clientes**: lista, filtros, búsqueda, CSV, ficha, contrato, actividad, notas, editar      | **Hecho en A2** (en su PR). Sin CIF: la organización no lo tiene |
+| Copiar a la auditoría del cliente lo que el admin haga sobre él                             | **Hecho en A2**                                                  |
+| **Vendedores y códigos**: `?ref=`, llegadas, asignaciones, panel del vendedor               | **Falta · A3**                                                   |
+| **Ventas**: tablero y gráficas                                                              | **Falta · A4**. La foto diaria del uso ya la hace A2             |
+| Borrar solas las IP de más de dos años                                                      | **Falta** · necesita el reloj (R); se cierra en M27              |
+| Cambiar el correo de acceso de un cliente con doble confirmación                            | **Hecho en A2**                                                  |
+| Suscripciones: ver todo de Stripe y tres gestos (alargar, de la casa, cancelar al acabar)   | **Hecho en A2**. Comisiones y liquidaciones, con A3              |
+| Entrar a los datos de un cliente con su permiso (Roles 4.3), costes, integraciones, soporte | **M26**                                                          |
+| `admin.estook.com` en vez de `estook.com/admin/`                                            | **M27**, si cambia el alojamiento                                |
 
 ---
 

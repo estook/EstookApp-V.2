@@ -27,7 +27,11 @@ function unico(info: { project: { name: string } }): string {
  * Una cuenta nueva por la API, desde una dirección suya: crear cuentas tiene un
  * tope por dirección y hora, y todas las pruebas llegan desde el mismo ordenador.
  */
-async function cuentaNueva(request: APIRequestContext, correo: string, negocio: string) {
+async function cuentaNueva(
+  request: APIRequestContext,
+  correo: string,
+  negocio: string,
+): Promise<string> {
   const desde = `10.${String(Math.floor(Math.random() * 250))}.${String(Math.floor(Math.random() * 250))}.${String(Math.floor(Math.random() * 250) + 1)}`;
   const pedir = await request.post(`${API}/v1/comandos/pedir_codigo_de_registro`, {
     headers: { 'x-idempotencia': `registro-${correo}`, 'x-forwarded-for': desde },
@@ -48,6 +52,26 @@ async function cuentaNueva(request: APIRequestContext, correo: string, negocio: 
     data: { correo, codigo: /\b(\d{6})\b/.exec(asunto)?.[1] ?? '' },
   });
   expect(confirmar.status(), await confirmar.text()).toBe(200);
+  return ((await confirmar.json()) as { datos: { token: string } }).datos.token;
+}
+
+/** Pagar Esencial por la API: la página del Stripe de mentira paga al abrirla. */
+async function pagar(request: APIRequestContext, token: string) {
+  const cabeceras = (que: string) => ({
+    authorization: `Bearer ${token}`,
+    'x-idempotencia': `${que}-${String(Date.now())}-${String(Math.random())}`,
+  });
+  const empezar = await request.post(`${API}/v1/comandos/empezar_a_pagar`, {
+    headers: cabeceras('pagar'),
+    data: { plan: 'esencial', intervalo: 'mes' },
+  });
+  const { url } = ((await empezar.json()) as { datos: { url: string } }).datos;
+  await request.get(url, { maxRedirects: 0 });
+  const volver = await request.post(`${API}/v1/comandos/volver_del_pago`, {
+    headers: cabeceras('volver'),
+    data: { sesion: new URL(url).searchParams.get('sesion') ?? '' },
+  });
+  expect(volver.status(), await volver.text()).toBe(200);
 }
 
 /** Buscar a un cliente y abrir su ficha. La tabla se pinta dos veces: se pulsa la que se ve. */
@@ -114,25 +138,94 @@ test('de la casa, con un motivo que queda en su historial', async ({ page, reque
   await expect(ficha.getByText(/Estook · de la casa: Es el bar de un socio/)).toBeVisible();
 });
 
+test('el contacto comercial se edita, y el nombre se cambia con motivo', async ({
+  page,
+  request,
+}, info) => {
+  const nombre = `Asador ${unico(info)}`;
+  await cuentaNueva(request, `asador-${unico(info)}@correo-de-prueba.com`, nombre);
+
+  await entrarEnElAdmin(page);
+  const ficha = await abrirLaFicha(page, nombre);
+  await ficha.getByRole('tab', { name: 'Datos' }).click();
+  await ficha.getByRole('button', { name: 'Editar' }).click();
+  const contacto = page.getByRole('dialog', { name: 'El contacto comercial' });
+  await contacto.getByLabel('Responsable del contrato').fill('Lucía Pérez');
+  await contacto.getByLabel('Teléfono').fill('+34 600 111 222');
+  await contacto.getByRole('button', { name: 'Guardar' }).click();
+  await expect(contacto).toHaveCount(0);
+  await expect(ficha.getByText('Lucía Pérez')).toBeVisible();
+
+  await ficha.getByRole('button', { name: 'Cambiar el nombre' }).click();
+  const hoja = page.getByRole('dialog', { name: 'Cambiar el nombre' });
+  await hoja.getByLabel('Nombre').fill(`${nombre} Nuevo`);
+  await hoja.getByLabel('Por qué').fill('Lo pidió por teléfono');
+  await hoja.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.getByRole('dialog', { name: `${nombre} Nuevo` })).toBeVisible();
+});
+
+test('a quien paga se le cancela al acabar el periodo, y se deshace', async ({
+  page,
+  request,
+}, info) => {
+  const nombre = `Bar que cierra ${unico(info)}`;
+  const token = await cuentaNueva(request, `cierra-${unico(info)}@correo-de-prueba.com`, nombre);
+  await pagar(request, token);
+
+  await entrarEnElAdmin(page);
+  const ficha = await abrirLaFicha(page, nombre);
+  await ficha.getByRole('tab', { name: 'Suscripción' }).click();
+  await ficha.getByRole('button', { name: 'Cancelar al acabar' }).click();
+  const hoja = page.getByRole('dialog', { name: 'Cancelar al acabar' });
+  await hoja.getByLabel('Por qué').fill('Cierra el bar en octubre');
+  await hoja.getByRole('button', { name: 'Guardar' }).click();
+  await expect(ficha.getByText('Se va al acabar').first()).toBeVisible();
+
+  await ficha.getByRole('button', { name: 'Que siga' }).click();
+  await hoja.getByLabel('Por qué').fill('Al final sigue');
+  await hoja.getByRole('button', { name: 'Guardar' }).click();
+  await expect(ficha.getByRole('button', { name: 'Cancelar al acabar' })).toBeVisible();
+});
+
 test('el correo de acceso se cambia con el enlace que llega al nuevo', async ({
   page,
   request,
 }, info) => {
   const nombre = `Taberna ${unico(info)}`;
   const nuevo = `nuevo-${unico(info)}@correo-de-prueba.com`;
-  await cuentaNueva(request, `viejo-${unico(info)}@correo-de-prueba.com`, nombre);
+  const viejo = `viejo-${unico(info)}@correo-de-prueba.com`;
+  await cuentaNueva(request, viejo, nombre);
 
   await entrarEnElAdmin(page);
   const ficha = await abrirLaFicha(page, nombre);
   await ficha.getByRole('tab', { name: 'Personas' }).click();
-  await ficha.getByRole('button', { name: 'Cambiar el correo de acceso' }).click();
 
-  const hoja = page.getByRole('dialog', { name: 'Cambiar el correo de acceso' });
-  await hoja.getByLabel('El correo nuevo').fill(nuevo);
-  await hoja.getByLabel('Por qué').fill('Perdió el acceso al correo viejo');
-  await hoja.getByLabel('Tu código, otra vez').fill(codigoAhora());
-  await hoja.getByRole('button', { name: 'Mandar los dos correos' }).click();
-  await expect(hoja.getByText('Mandados los dos correos')).toBeVisible();
+  const pedirElCambio = async () => {
+    await ficha.getByRole('button', { name: 'Cambiar el correo de acceso' }).click();
+    const hoja = page.getByRole('dialog', { name: 'Cambiar el correo de acceso' });
+    await hoja.getByLabel('El correo nuevo').fill(nuevo);
+    await hoja.getByLabel('Por qué').fill('Perdió el acceso al correo viejo');
+    await hoja.getByLabel('Tu código, otra vez').fill(codigoAhora());
+    await hoja.getByRole('button', { name: 'Mandar los dos correos' }).click();
+    await expect(hoja.getByText('Mandados los dos correos')).toBeVisible();
+    await hoja.getByRole('button', { name: 'Hecho' }).click();
+  };
+
+  // Primero, quien tiene el correo de ahora lo para desde su aviso.
+  await pedirElCambio();
+  const aviso = (await (
+    await request.get(`${API}/pruebas/ultimo-correo?para=${encodeURIComponent(viejo)}`)
+  ).json()) as { texto: string };
+  const parar = /#\/correo\?parar=\S+/.exec(aviso.texto)?.[0] ?? '';
+  expect(parar).not.toBe('');
+  const otra = await page.context().newPage();
+  await abrirSinQueSeCaiga(otra, `${APP}${parar}`);
+  await otra.getByRole('button', { name: 'Parar el cambio' }).click();
+  await expect(otra.getByRole('heading', { name: 'Cambio parado' })).toBeVisible();
+  await otra.close();
+
+  // Y se vuelve a pedir, y esta vez se confirma.
+  await pedirElCambio();
 
   // El enlace del correo nuevo, abierto en la app: no hace nada hasta pulsar.
   const { texto } = (await (

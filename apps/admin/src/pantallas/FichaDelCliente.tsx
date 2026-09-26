@@ -829,7 +829,8 @@ function HojaDelGesto({
       setError(respuesta.error);
       return;
     }
-    await alHecho();
+    // Hecho: la hoja se cierra ya, y la ficha y la lista se ponen al día por detrás.
+    void alHecho();
     if (gesto.que === 'correo') setMandado(true);
     else alCerrar();
   }

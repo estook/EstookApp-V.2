@@ -383,3 +383,11 @@
      `app.inventario` estaba escrito en 23 políticas. Copiarlas a mano en la migración
      era la forma de colar una diferencia; la `0048` las lee de `pg_policies` y solo
      cambia el nombre, y deshacerla hace lo contrario.
+120. **Una prueba con un día fijo caduca si la base apunta con su `now()`.** Las del pago
+     fijaban el reloj en el 25-sep, y el cobro fallido lo fechaba la base con la hora de
+     verdad: al día siguiente, «ocho días después» ya no lo era y la prueba cayó sola, sin
+     tocar nada. Lo que la prueba mueve en el tiempo se cuenta desde hoy.
+121. **Una hoja que espera a recargar la pantalla para cerrarse parece rota.** El Tablón
+     esperaba a que el Panel volviera a pedir sus datos antes de cerrar la hoja: con la red
+     lenta se quedaba abierta sin decir nada. Guardado es guardado: se cierra, y lo de
+     detrás se pone al día solo.

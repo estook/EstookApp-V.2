@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 25 de septiembre de 2026, por la noche · **Antes de M8. La #70 y la #71 (E2), en producción; nadie ha pagado todavía. El repaso del 25-sep, en la #72 con la migración `0048`; L · el lector, en la #73, encima. Después, A2**
+Última actualización: 26 de septiembre de 2026, por la tarde · **Antes de M8. El repaso del 25-sep (#72, `0048`) y L · el lector (#73), en producción; nadie ha pagado todavía. A2 · los clientes en el admin, en la #74 con la migración `0049`. Después, R**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -9,7 +9,7 @@
 > Lo demás vive en su sitio, y aquí solo se enlaza:
 >
 > - **Lo que hizo cada módulo**, con sus fallos: [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)
-> - **Lo aprendido fallando** (119 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
+> - **Lo aprendido fallando** (121 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](docs/reglas.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](docs/decisiones/)
 > - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)
@@ -18,20 +18,20 @@
 
 ## 1 · Dónde estamos
 
-_Producción leída el 25-sep por la noche, en solo lectura: migraciones, organizaciones, suscripciones y sesiones; la API desplegada preguntada por todas sus operaciones y por su reloj; y GitHub de `main` mirado por dentro._
+_Producción leída el 26-sep por la tarde, en solo lectura: migraciones, organizaciones y suscripciones; los despliegues y GitHub de `main`, mirados por dentro._
 
-|                  |                                                                                                                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Terminados**   | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1** · **E1** · **V** · **el repaso del 23-sep** · **los arreglos del móvil** · **O** · **el Panel en el móvil** (#70) · **E2** (#71) |
-| **Por fusionar** | **El repaso del 25-sep** (#72), con la migración `0048` y la [decisión 0049](docs/decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md). Apartado 10                                   |
-| **Ahora**        | **L · el lector**, adelantada, hecha en la #73 (encima de la #72, sin migración). Después, **A2 · Clientes**, con sus tres respuestas ya dadas                                                   |
-| **`main`**       | Todo fusionado hasta la **#71**                                                                                                                                                                  |
-| **Base**         | Supabase, **47 de 47** migraciones, igual que `main`. Con la #72 serán 48                                                                                                                        |
-| **API**          | Desplegada el 25-sep a las 17:49 con la #71: **50 consultas y 93 comandos**, y **el reloj latiendo** cada hora. Con la #72 serán 51 y 99                                                         |
-| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`. Se publica solo al fusionar (la #71, el 25-sep a las 17:33)                                                                                 |
-| **Pruebas**      | En `main`: **1.289** unitarias y de base y **711** de pantalla, en verde y sin repetidas. En la #72, en local: **1.323**                                                                         |
-| **Entrar**       | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                  |
-| **Dirección**    | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                     |
+|                  |                                                                                                                                                                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados**   | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1** · **E1** · **V** · **el repaso del 23-sep** · **los arreglos del móvil** · **O** · **el Panel en el móvil** (#70) · **E2** (#71) · **el repaso del 25-sep** (#72) · **L** (#73) |
+| **Por fusionar** | **A2 · los clientes en el admin** (#74), con la migración `0049` y la [decisión 0050](docs/decisiones/0050-los-clientes-en-el-admin.md). Apartado 11                                                                                            |
+| **Ahora**        | Que Richi fusione la #74, aplique la `0049` y despliegue la API. Después, **R · el reloj y los avisos**                                                                                                                                         |
+| **`main`**       | Todo fusionado hasta la **#73**, en verde y sin pruebas repetidas                                                                                                                                                                               |
+| **Base**         | Supabase, **48 de 48** migraciones, igual que `main` (la `0048`, el 26-sep a las 16:01). Con la #74 serán 49                                                                                                                                    |
+| **API**          | Desplegada el 26-sep a las 16:02 con la #72: **51 consultas y 99 comandos**, y **el reloj latiendo**. La #73 no tocaba la API. Con la #74 serán 52 y 111                                                                                        |
+| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`. Se publica solo al fusionar (la #73, el 26-sep a las 16:07)                                                                                                                                |
+| **Pruebas**      | En `main`: **1.326** unitarias y de base y **746** de pantalla, en verde y sin repetidas. En la #74, en local: **1.362** y **535** de pantalla (sin Safari)                                                                                     |
+| **Entrar**       | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                                                                 |
+| **Dirección**    | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                                                                    |
 
 > **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
 > 100 %** (Richi, 16-sep). Los planes: [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)
@@ -49,9 +49,9 @@ _Producción leída el 25-sep por la noche, en solo lectura: migraciones, organi
 | 2   | **O · Lo que se ordena**         | ✓ en producción (#69, migración `0046`)                                       |
 | —   | **El Panel en el móvil**         | ✓ en producción (#70)                                                         |
 | 3   | **E2 · El pago con Stripe**      | ✓ en producción (#71, migración `0047`). **Falta probar el pago**: apartado 2 |
-| —   | **El repaso del 25-sep**         | **En la #72** (migración `0048`, decisión 0049). Apartado 10                  |
-| 4   | **L · El lector**                | **Hecha, en la #73** (adelantada; era la 8). Sin migración. Apartado 10       |
-| 5   | **A2 · Clientes**                | Después de L. Sus tres preguntas, contestadas (apartado 10)                   |
+| —   | **El repaso del 25-sep**         | ✓ en producción (#72, migración `0048`, decisión 0049)                        |
+| 4   | **L · El lector**                | ✓ en producción (#73; adelantada, era la 8)                                   |
+| 5   | **A2 · Clientes**                | **Hecha, en la #74** (migración `0049`, decisión 0050). Apartado 11           |
 | 6   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7. **El reloj ya lo montó E2**          |
 | 7   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                       |
 | 8   | **I · La app instalable**        | Falta                                                                         |
@@ -65,22 +65,21 @@ Para que nadie dé por hecho lo que solo está escrito:
 
 - **De las veinte mejoras, diez en producción y el QR de la 20**: la 1, 2, 3, 4, 5, 6, 7,
   8, 9 y 17. Las demás, con su plan en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md).
-- **Nadie ha pagado todavía**, ni en modo prueba: a las 19:00 del 25-sep,
-  `plataforma.stripe` está vacía (es lo que el código crea en Stripe la primera vez que
-  alguien paga). **Se cobra en modo prueba**; para cobrar de verdad hace falta la clave
+- **Nadie ha pagado todavía**, ni en modo prueba: el 26-sep por la tarde no hay ninguna
+  suscripción en Stripe (alguien abrió la página de pago una vez: el catálogo de Stripe
+  ya está creado). **Se cobra en modo prueba**; para cobrar de verdad hace falta la clave
   real y la cuenta de Stripe activada con los datos fiscales de quien factura
   (apartado 9).
-- **Del admin, la puerta y la lista de cuentas**: ni la ficha de cada cliente (A2), ni
-  vendedores y códigos, ni ventas.
+- **Del admin, la puerta** y, con la #74, **los clientes**; ni vendedores y códigos (A3)
+  ni ventas (A4).
 - **No hay recuperar la contraseña por correo** (la da quien lleva el local).
 - **Lo que espera a su módulo**: los platos, sus fichas y sus escandallos (M9 y M10, con
   el diseño de Richi ya escrito en el Plan), leer fotos (M22), responder reseñas
-  (Business Profile), hablar con Fogón (M22) y el TPV (Fase 4). **La carta subida y el QR,
-  con la #72.**
+  (Business Profile), hablar con Fogón (M22) y el TPV (Fase 4).
 
 ### Lo que hay de verdad en producción
 
-Cinco organizaciones reales, además de las tres de ejemplo (leído el 25-sep por la noche):
+Cinco organizaciones reales, además de las tres de ejemplo (leído el 26-sep por la tarde):
 
 | Organización    | Locales | Cómo está                                                         |
 | --------------- | ------- | ----------------------------------------------------------------- |
@@ -102,17 +101,18 @@ Cinco organizaciones reales, además de las tres de ejemplo (leído el 25-sep po
 datos del titular (#59) · **V entera** · **la #68, la #69 y la #70** · **la cuenta de
 Stripe** (24-sep) · **las siete respuestas de E2** · **`STRIPE_SECRET_KEY`** · **la #71
 fusionada, la `0047` aplicada, la API desplegada y `bd:comprobar-api` en OK con el reloj
-latiendo** (25-sep) · **los siete puntos del repaso y las tres respuestas de A2** (25-sep).
+latiendo** (25-sep) · **los siete puntos del repaso y las tres respuestas de A2** (25-sep) ·
+**la #72 y la #73 fusionadas, la `0048` aplicada, la API desplegada y comprobada** (26-sep).
 
 **Ahora, en este orden** (los pasos, uno a uno, en
 [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **Probar el pago en modo prueba**, con una cuenta nueva y la tarjeta `4242 4242 4242
+1. **Fusionar la #74**, aplicar la `0049` y desplegar la API. Después, `bd:comprobar-api`
+   tiene que decir «52» y «111».
+2. **Probar el pago en modo prueba**, con una cuenta nueva y la tarjeta `4242 4242 4242
 4242`. Es lo único de E2 que no se puede comprobar desde aquí: pide crear una cuenta y
    pagar, y eso lo haces tú.
-2. **Fusionar la #72**, aplicar la `0048` y desplegar la API. Después, `bd:comprobar-api`
-   tiene que decir «51» y «99». **Y después, la #73** (L): sin migración ni despliegue.
-3. **Mirarla en el iPhone**, con la app instalada: la barra de abajo y «Hoy».
+3. **Mirarlo en el iPhone**, con la app instalada: «Hoy», la barra de abajo y el lector.
 
 **Para cobrar de verdad, más adelante:** la sociedad o el alta de autónomo; activar la
 cuenta de Stripe con esos datos (salen en cada factura); cambiar la clave de prueba por
@@ -144,8 +144,8 @@ a un cliente es desactivar.
 ### Lo que sigue sin decidirse · es de Richi
 
 1. **El chat de Estook**: mandar el horario a un grupo necesita un chat que no existe.
-   ¿Con Horarios o aparte? Mientras, el horario se comparte en PDF. (El Tablón de la #72
-   es para los avisos del día, no un chat.)
+   ¿Con Horarios o aparte? Mientras, el horario se comparte en PDF. (El Tablón es para
+   los avisos del día, no un chat.)
 2. **Si Fogón habla antes de M22**: le falta elegir modelo, presupuesto por local y caché.
 3. **Si se quitan de la API `mis_locales`, `mis_permisos` y `un_local`**, que `quien_soy`
    dejó sin trabajo en M4.
@@ -207,14 +207,15 @@ por CNAME ([0036](docs/decisiones/0036-la-direccion-es-estook-com.md)).
 
 **Base de datos:** Supabase `efgtzujwjztihyiwgpwg`, Europa (eu-west-1), plan gratuito, por
 el agrupador: las herramientas, en modo sesión; **la API, en modo transacción**
-(`bd:rafaga` lo mide). **63 tablas —55 en `estook` y 8 en `plataforma`— todas con
-seguridad por filas** (con la #72, 65: el Tablón y quién ha leído cada nota); la única
+(`bd:rafaga` lo mide). **65 tablas —57 en `estook` y 8 en `plataforma`— todas con
+seguridad por filas** (con la #74, 69: la ficha comercial, las notas de cliente, la foto
+diaria del uso y los cambios de correo, las cuatro en `plataforma`); la única
 vista es `estook.existencias`. **`pg_cron` y `pg_net`, encendidos por la `0047`**: el
 reloj late a los siete minutos de cada hora. Se comprueba con `.\estook.cmd
 bd:comprobar`, que lo lee de la base y no de aquí.
 
 **Almacén de ficheros:** Supabase Storage, con cubos privados —`marca`, `fotos-de-producto`
-y, **con la #72, `cartas`**, que crea la propia `0048`—. En las filas, claves; los
+y `cartas`—. En las filas, claves; los
 enlaces los firma la API y caducan.
 
 **Organizaciones de ejemplo:** `bar-centro`, `casa-lola` y `grupo-costa`, con las cuentas
@@ -231,12 +232,11 @@ reescribir, y tres comprobaciones obligatorias, **sin tilde**: `Calidad`, `Const
 y presupuestos` (que lleva dentro las pruebas de pantalla) y `Migraciones reversibles`—.
 **Nunca añadir `Construir` ni `Publicar`**: ese flujo solo corre después de fusionar.
 
-**El peso inicial** (`pnpm tamano`, 25-sep, rama de la #72): `app` **314,0 KB**, `admin`
-**214,3 KB**, `web` 166,4 y `carta` 172,1; de cada uno, 106,1 KB son la tipografía. La
+**El peso inicial** (`pnpm tamano`, 26-sep, rama de la #74): `app` **317,8 KB**, `admin`
+**222,5 KB**, `web` 166,4 y `carta` 172,1; de cada uno, 106,1 KB son la tipografía. La
 referencia es 250 y **se mide, no bloquea**: manda el presupuesto de velocidad, que pasa
 en la prueba de pantalla. Compras, Recharts, `@dnd-kit`, **PDF.js** (solo al subir la
-carta en PDF) y **el lector del iPhone** (solo al abrir la cámara) se cargan aparte. Con
-la #73, `app` pasa a **317,1 KB**.
+carta en PDF) y **el lector del iPhone** (solo al abrir la cámara) se cargan aparte.
 
 ---
 
@@ -269,61 +269,63 @@ El resto, con su porqué, en [`docs/lecciones.md`](docs/lecciones.md).
 
 En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 
-| Núm      | Qué                                                                             |
-| -------- | ------------------------------------------------------------------------------- |
-| **0001** | GitHub Pages en vez de Netlify                                                  |
-| **0002** | La API en Hono sobre Supabase Edge Functions                                    |
-| **0003** | M0 crea el esqueleto mínimo de alcances                                         |
-| **0004** | El presupuesto de velocidad de B7, reconstruido                                 |
-| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción               |
-| **0006** | El motor fiscal: sin regla, no se inventa un tipo                               |
-| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta               |
-| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages               |
-| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`                |
-| **0010** | El login es nuestro, no de Supabase Auth                                        |
-| **0011** | Las pruebas de extremo a extremo levantan la API de verdad                      |
-| **0012** | El producto nace en M6, y M5 le deja el diccionario                             |
-| **0013** | Google Places se aplaza a M23                                                   |
-| **0014** | Un módulo reacciona a otro en la misma transacción                              |
-| **0015** | Fogón es una burbuja que va contigo, no una pestaña por app                     |
-| **0016** | El reloj es `pg_cron` llamando a nuestra API · se monta con E2 (0048)           |
-| **0017** | Cómo avisa Estook: pantalla, correo con Resend y push                           |
-| **0018** | Cada app tiene destinos, y cada destino sus vistas                              |
-| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato                 |
-| **0020** | Un catálogo de acciones, y una acción es una dirección                          |
-| **0021** | El producto se mide en una unidad; los gramajes son de la ficha                 |
-| **0022** | El reparto tiene sitio antes que conexión; Uber Eats el primero                 |
-| **0023** | Fogón nunca arma su contexto en el navegador: lo arma el servidor               |
-| **0024** | El color del local pinta la app, y hay dos temas                                |
-| **0025** | Fichar pide dónde, y no bloquea nunca                                           |
-| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe                     |
-| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo                 |
-| **0028** | El alta de producto pregunta cuánto hay, no cuánto se aprovecha                 |
-| **0029** | Lo que va a una columna JSON viaja como texto                                   |
-| **0030** | El local se sitúa con Google, al final de M7, con tope de gasto                 |
-| **0031** | El Calendario recoge lo de todos los módulos, con quién lo ve                   |
-| **0032** | Las compras: Estook no manda, el albarán mueve y la factura confirma            |
-| **0033** | Los precios de compra se guardan sin IVA, y se escriben como venga              |
-| **0034** | Nadie gestiona el acceso de su igual: lo hace quien está por encima             |
-| **0035** | El alta pregunta cómo se compra, y la cuenta la hace el dominio                 |
-| **0036** | La dirección es `estook.com`, y la sabe el código                               |
-| **0037** | Lo que sale de cámara dice si se vendió; el dinero lo cuenta la caja            |
-| **0038** | Cada producto es de una zona, y cada uno trabaja con la suya                    |
-| **0039** | El Panel se monta como un móvil, y cada uno se pone sus cifras                  |
-| **0040** | El local se busca en Google, con el tope contado antes de llamar                |
-| **0041** | El panel de administración: el cliente es la organización                       |
-| **0042** | Registro abierto con correo o Google, y se paga al empezar salvo oferta         |
-| **0043** | Canarias entra con IGIC; Ceuta y Melilla esperan; foral y SII, fuera            |
-| **0044** | Las cifras de cada app: la misma tarjeta, las mismas cuentas                    |
-| **0045** | El aspecto y el orden: Resumen, mosaico y Ajustes por secciones                 |
-| **0046** | Los vacíos invitan, el oscuro se mide y fotografía, y la foto de cada producto  |
-| **0047** | El «+» con Fogón, lo de hoy, el Panel de cada puesto, el semáforo y el QR       |
-| **0048** | El pago con Stripe: sin pago no hay app, siete días de gracia y todo en Ajustes |
-| **0049** | Almacén e Inventario, lo congelado aparte, el Tablón y la carta subida          |
+| Núm      | Qué                                                                                      |
+| -------- | ---------------------------------------------------------------------------------------- |
+| **0001** | GitHub Pages en vez de Netlify                                                           |
+| **0002** | La API en Hono sobre Supabase Edge Functions                                             |
+| **0003** | M0 crea el esqueleto mínimo de alcances                                                  |
+| **0004** | El presupuesto de velocidad de B7, reconstruido                                          |
+| **0005** | Cómo se conecta la API: `set local role` dentro de la transacción                        |
+| **0006** | El motor fiscal: sin regla, no se inventa un tipo                                        |
+| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta                        |
+| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages                        |
+| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`                         |
+| **0010** | El login es nuestro, no de Supabase Auth                                                 |
+| **0011** | Las pruebas de extremo a extremo levantan la API de verdad                               |
+| **0012** | El producto nace en M6, y M5 le deja el diccionario                                      |
+| **0013** | Google Places se aplaza a M23                                                            |
+| **0014** | Un módulo reacciona a otro en la misma transacción                                       |
+| **0015** | Fogón es una burbuja que va contigo, no una pestaña por app                              |
+| **0016** | El reloj es `pg_cron` llamando a nuestra API · se monta con E2 (0048)                    |
+| **0017** | Cómo avisa Estook: pantalla, correo con Resend y push                                    |
+| **0018** | Cada app tiene destinos, y cada destino sus vistas                                       |
+| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato                          |
+| **0020** | Un catálogo de acciones, y una acción es una dirección                                   |
+| **0021** | El producto se mide en una unidad; los gramajes son de la ficha                          |
+| **0022** | El reparto tiene sitio antes que conexión; Uber Eats el primero                          |
+| **0023** | Fogón nunca arma su contexto en el navegador: lo arma el servidor                        |
+| **0024** | El color del local pinta la app, y hay dos temas                                         |
+| **0025** | Fichar pide dónde, y no bloquea nunca                                                    |
+| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe                              |
+| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo                          |
+| **0028** | El alta de producto pregunta cuánto hay, no cuánto se aprovecha                          |
+| **0029** | Lo que va a una columna JSON viaja como texto                                            |
+| **0030** | El local se sitúa con Google, al final de M7, con tope de gasto                          |
+| **0031** | El Calendario recoge lo de todos los módulos, con quién lo ve                            |
+| **0032** | Las compras: Estook no manda, el albarán mueve y la factura confirma                     |
+| **0033** | Los precios de compra se guardan sin IVA, y se escriben como venga                       |
+| **0034** | Nadie gestiona el acceso de su igual: lo hace quien está por encima                      |
+| **0035** | El alta pregunta cómo se compra, y la cuenta la hace el dominio                          |
+| **0036** | La dirección es `estook.com`, y la sabe el código                                        |
+| **0037** | Lo que sale de cámara dice si se vendió; el dinero lo cuenta la caja                     |
+| **0038** | Cada producto es de una zona, y cada uno trabaja con la suya                             |
+| **0039** | El Panel se monta como un móvil, y cada uno se pone sus cifras                           |
+| **0040** | El local se busca en Google, con el tope contado antes de llamar                         |
+| **0041** | El panel de administración: el cliente es la organización                                |
+| **0042** | Registro abierto con correo o Google, y se paga al empezar salvo oferta                  |
+| **0043** | Canarias entra con IGIC; Ceuta y Melilla esperan; foral y SII, fuera                     |
+| **0044** | Las cifras de cada app: la misma tarjeta, las mismas cuentas                             |
+| **0045** | El aspecto y el orden: Resumen, mosaico y Ajustes por secciones                          |
+| **0046** | Los vacíos invitan, el oscuro se mide y fotografía, y la foto de cada producto           |
+| **0047** | El «+» con Fogón, lo de hoy, el Panel de cada puesto, el semáforo y el QR                |
+| **0048** | El pago con Stripe: sin pago no hay app, siete días de gracia y todo en Ajustes          |
+| **0049** | Almacén e Inventario, lo congelado aparte, el Tablón y la carta subida                   |
+| **0050** | Los clientes en el admin: todo de Stripe, tres gestos y el correo con doble confirmación |
 
 > **Ojo con los números:** las decisiones y las migraciones se numeran aparte. La
 > **decisión** 0048 es el pago y la monta la **migración** `0047`; la **decisión** 0049
-> es el repaso del 25-sep y la monta la **migración** `0048`.
+> es el repaso del 25-sep y la monta la **migración** `0048`; la **decisión** 0050 son los
+> clientes del admin y la monta la **migración** `0049`.
 
 Otras, sin fichero propio:
 
@@ -357,7 +359,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **Las fichas de diseño** (`packages/ui/estilos/fichas.css`), que son B1.
 - **Los ficheros generados**: `packages/iconos/src/generados.tsx`, `packages/ui/fuentes/`
   y los PNG de `packages/ui/marca/`.
-- **Las migraciones `0001` a `0047`** (y la `0048` en cuanto se fusione). Se amplían con
+- **Las migraciones `0001` a `0048`** (y la `0049` en cuanto se fusione). Se amplían con
   la siguiente, nunca se editan (regla 2). Y al ampliar una función SQL, **se copia la
   original entera**; al cambiar el nombre de un permiso, **se leen sus políticas de
   `pg_policies`** en vez de reescribirlas (lección 119).
@@ -384,7 +386,7 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
 - **«En línea» y «última vez» los contesta la base** (`esta_en_linea` y
   `visto_por_ultima_vez`).
 - **Las funciones `security definer`** son la puerta de atrás y están tasadas: una prueba
-  las cuenta con sus nombres —**36 en `estook`** (con E2) y 3 en `plataforma`— y otra
+  las cuenta con sus nombres —**44 en `estook`** y **6 en `plataforma`** (con A2)— y otra
   comprueba que **ninguna la puede ejecutar nadie más que la API** (`0043`).
 - **`sinRecordar`** salta la idempotencia, y solo lo lleva `sigo_aqui`; una prueba tasa
   la lista. Lo que suma, resta o crea algo se recuerda siempre.
@@ -468,14 +470,23 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   un lector de mano se reconoce por su velocidad (`esDeUnLector`), fuera de los campos. La
   única excepción de `.dependency-cruiser.cjs` para él es su fichero WebAssembly (`?url`),
   que la herramienta no sabe resolver.
+- **Los clientes del admin** (0050): el admin **lee** a sus clientes solo por las funciones
+  de la `0049` (`los_clientes`, `un_cliente`, `el_uso_de`, `lo_que_hacen_los_clientes`),
+  que devuelven lo justo y comprueban ellas mismas que quien pregunta es admin o el reloj.
+  **Lo que el admin toca del cliente llega a la auditoría del cliente**
+  (`anotar_desde_el_admin`). **La actividad cuenta el trabajo, no montar la cuenta**, y la
+  decide el dominio (`laActividad`). **El correo de acceso solo cambia con el enlace del
+  correo nuevo**, que hay que pulsar; en la base, solo huellas.
+- **Una prueba no fija el día si la base apunta con `now()`**: cuenta desde hoy (lección
+  120).
 
 ---
 
 ## 8 · El siguiente paso
 
-**Primero, que Richi pruebe el pago** con la 4242 (lo único de E2 sin comprobar).
-**Después, la #72**: fusionar, aplicar la `0048`, desplegar la API y mirarla en el
-iPhone. **Luego, L · el lector** (adelantada) y **A2 · Clientes**, en ese orden.
+**Primero, la #74**: fusionar, aplicar la `0049`, desplegar la API y mirar Clientes en el
+admin. **Que Richi pruebe el pago** con la 4242 (lo único de E2 sin comprobar) y mire el
+iPhone. **Después, R · el reloj y los avisos**, la siguiente del orden.
 
 **Cómo se comprueba que no rompe lo de antes:** `.\estook.cmd verifica`,
 `.\estook.cmd prueba:e2e:completa` (que incluye la cobertura) y, tras desplegar,
@@ -497,7 +508,8 @@ iPhone. **Luego, L · el lector** (adelantada) y **A2 · Clientes**, en ese orde
 | Recuento, desviación y calibración del aprovechamiento     | **M8**           | La merma con motivo; albaranes con incidencias; el recuento     |
 | Descontar lo vendido del inventario                        | **M20**          | El cierre guarda los platos con el nombre normalizado           |
 | Los terminales del local                                   | **M20A**         | Cómo se dan de alta, en el Anexo 3.4                            |
-| La ficha de cada cliente, su historial y su vendedor       | **A2**           | La lista de cuentas del admin y el historial de estados (E2)    |
+| El vendedor de cada cliente y el código con que llegó      | **A3**           | La ficha de cada cliente (A2)                                   |
+| El tablero de ventas                                       | **A4**           | La foto diaria del uso de cada cliente (A2)                     |
 | Leer los platos de la carta subida y proponer los cambios  | **M10**          | La carta subida y enseñada por su QR (0049)                     |
 | Plato, ficha técnica y escandallo unidos por su id         | **M9**           | El diseño de Richi, escrito en el Plan (0049)                   |
 | La historia del Tablón, por días                           | **M17**          | El Tablón, con sus notas guardadas (0049)                       |
@@ -524,7 +536,7 @@ día; y el vectorial del logotipo y de Fogón cuando aparezcan.
 | **Un cobro que falla**    | **Siete días** trabajando con un aviso arriba y **un correo cada día**; el octavo, **solo lectura**. No se borra nada             |
 | **Ajustes → Suscripción** | Plan, cuota, renovación o fin de prueba, tarjeta; cambiar de plan (con Pausa), cancelar y seguir; tarjeta y facturas en el portal |
 | **Las cuentas de ahora**  | `ikatz` y los ejemplos, **de la casa**; las demás, como cualquier cliente                                                         |
-| **El admin**              | Pestaña **Cuentas**: cómo está cada una, qué plan y cuánto paga                                                                   |
+| **El admin**              | Era la pestaña **Cuentas**; con la #74, **Clientes** (apartado 11)                                                                |
 | **Lo legal**              | Condiciones y privacidad al día; en la app, plegado en «Cómo funciona el pago»; en Stripe, junto al botón                         |
 
 **Comprobado en producción el 25-sep:** la API conoce las 50 consultas y los 93 comandos;
@@ -538,13 +550,13 @@ hecho todavía (`plataforma.stripe` vacía: el catálogo de Stripe se crea con e
 pago). Es lo único que no se puede comprobar sin crear una cuenta y pagar.
 
 **Terminado cuando:** una cuenta nueva paga en modo prueba y entra al alta, desde el
-móvil de Richi, y la pestaña Cuentas del admin la enseña pagando.
+móvil de Richi, y el admin la enseña en Clientes, pestaña Pagando.
 
 ---
 
 ## 10 · El repaso del 25-sep, y lo decidido para L y A2
 
-**Hecho el 25-sep** en la rama `repaso-del-25-sep` (#72), con la migración `0048` y la
+**En producción desde el 26-sep** (#72), con la migración `0048` y la
 [decisión 0049](docs/decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md).
 Los siete puntos que Richi vio al mirar E2, con sus respuestas (las cuatro, la
 recomendada):
@@ -577,10 +589,36 @@ Tablón leída desde otra cuenta.
 
 ### L · El lector (#73)
 
-**Hecha el 25-sep, adelantada**, en la rama `l-el-lector`, encima de la #72 y **sin
-migración** (el plan, punto por punto, en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)):
+**En producción desde el 26-sep** (#73), adelantada y **sin migración** (el plan, punto por punto, en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)):
 **«Escanear»** a la derecha de «Añadir producto» (abre la ficha, o el alta con el código
 puesto y el nombre que propone **Open Food Facts**); **los lectores de mano**, reconocidos
 solos; **el inventario** suma uno por lectura; **recibir** marca la línea; pita y vibra
 distinto; y siempre se puede escribir el código a mano. **Probado**: `codigos.prueba.ts` y
 **5** de pantalla (`el-lector.spec.ts`). **La cámara de verdad**, en el móvil de Richi.
+
+---
+
+## 11 · A2, los clientes en el admin (#74)
+
+**Hecha el 26-sep** en la rama `a2-clientes`, con la migración `0049` y la
+[decisión 0050](docs/decisiones/0050-los-clientes-en-el-admin.md), con las tres
+respuestas de Richi del 25-sep:
+
+| Qué                      | Cómo queda                                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| **La lista**             | **Clientes** sustituye a Cuentas y es lo primero del admin: pestañas, buscador, filtros, orden por columnas, de 50 en 50        |
+| **Contrato y actividad** | Separados. La actividad, **una foto por cliente y día** que hace el reloj, o «Calcular ahora»; cuenta el trabajo, no el alta    |
+| **La ficha**             | Resumen, Datos, Personas, Suscripción, Uso, Actividad y Notas; las alertas arriba                                               |
+| **La suscripción**       | Todo lo de Stripe a la vista y **tres gestos con motivo**: alargar la prueba, de la casa, cancelar al acabar; «Abrir en Stripe» |
+| **El correo de acceso**  | Con motivo y el código otra vez; enlace al nuevo para confirmar y al de ahora para parar, 24 horas, un solo uso                 |
+| **Exportar**             | CSV para Excel, con el código otra vez y en la auditoría                                                                        |
+| **Lo que ve el cliente** | Lo que el admin le cambia, en su auditoría, «por: Estook» y con el motivo                                                       |
+
+**Probado:** **20** contra la base con el Stripe de mentira (`los-clientes.prueba.ts`), los
+del dominio y del admin, y **7** de pantalla (`los-clientes.spec.ts`). **Alargar la
+prueba** no tiene prueba de pantalla —la prueba nace de la oferta, que es una para todo
+Estook—: está en la deuda de la cobertura con su razón. **Sin CIF**: la organización no
+lo tiene todavía; se busca por nombre, código, correo y teléfono.
+
+**Terminado cuando:** con la #74 fusionada, la `0049` aplicada y la API desplegada, Richi
+abre Clientes en el admin, pulsa «Calcular ahora» y ve a `ikatz` de la casa.

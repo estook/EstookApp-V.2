@@ -244,3 +244,53 @@ async function unaPagina(page: Page): Promise<Buffer> {
   });
   return Buffer.from(base64, 'base64');
 }
+
+test('una carta en PDF se pasa a páginas en el navegador, una por hoja', async ({ page }) => {
+  await entrarEnLaApp(page, ROSA);
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
+  const tarjeta = page.locator('#tu-carta');
+  await tarjeta.getByLabel('Elegir el PDF o las fotos de tu carta').setInputFiles({
+    name: 'carta.pdf',
+    mimeType: 'application/pdf',
+    buffer: unPdf(['Entrantes', 'Postres']),
+  });
+
+  // Dos hojas, dos páginas: las pinta PDF.js, que solo se descarga ahora.
+  await expect(tarjeta.getByRole('img', { name: 'Página 2 de la carta' })).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(tarjeta.getByRole('button', { name: 'Publicar las 2 páginas' })).toBeVisible();
+  await tarjeta.getByRole('button', { name: 'Dejarlo' }).click();
+});
+
+/**
+ * Un PDF de verdad, escrito a mano: una hoja por título, con su texto. Las
+ * posiciones del índice (`xref`) se cuentan, que es lo que un lector de PDF mira.
+ */
+function unPdf(titulos: readonly string[]): Buffer {
+  const objetos: string[] = [];
+  const paginas = titulos.map((_, i) => 4 + i * 2);
+  objetos.push('<< /Type /Catalog /Pages 2 0 R >>');
+  objetos.push(
+    `<< /Type /Pages /Kids [${paginas.map((n) => `${String(n)} 0 R`).join(' ')}] /Count ${String(titulos.length)} >>`,
+  );
+  objetos.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+  titulos.forEach((titulo, i) => {
+    const contenido = `BT /F1 36 Tf 72 700 Td (${titulo}) Tj ET`;
+    objetos.push(
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents ${String(5 + i * 2)} 0 R >>`,
+    );
+    objetos.push(`<< /Length ${String(contenido.length)} >>\nstream\n${contenido}\nendstream`);
+  });
+  let pdf = '%PDF-1.4\n';
+  const posiciones: number[] = [];
+  objetos.forEach((objeto, i) => {
+    posiciones.push(pdf.length);
+    pdf += `${String(i + 1)} 0 obj\n${objeto}\nendobj\n`;
+  });
+  const indice = pdf.length;
+  pdf += `xref\n0 ${String(objetos.length + 1)}\n0000000000 65535 f \n`;
+  for (const posicion of posiciones) pdf += `${String(posicion).padStart(10, '0')} 00000 n \n`;
+  pdf += `trailer\n<< /Size ${String(objetos.length + 1)} /Root 1 0 R >>\nstartxref\n${String(indice)}\n%%EOF\n`;
+  return Buffer.from(pdf, 'latin1');
+}

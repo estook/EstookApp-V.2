@@ -551,8 +551,8 @@ recomendada):
 | **7 · La barra que sube en el iPhone** | El visor que se queda colgado tras el teclado: lo pegado abajo lo compensa (`anclaAbajo`) y con teclado se aparta              |
 
 **Probado:** **20** contra la base (`el-repaso-del-25-sep.prueba.ts`), los del dominio,
-la unidad del visor, las direcciones viejas y el que prohíbe `:has(:empty)`; y **6** de
-pantalla (`el-repaso-del-25-sep.spec.ts`). En local: **1.323** unitarias y de base, y la
+la unidad del visor, las direcciones viejas y el que prohíbe `:has(:empty)`; y **7** de
+pantalla (`el-repaso-del-25-sep.spec.ts`, una con un PDF de verdad). En local: **1.323** unitarias y de base, y la
 batería de pantalla en verde. **Lo que no se puede probar aquí**: el iPhone de verdad
 (los dos fallos son de WebKit en el teléfono) — lo mira Richi.
 

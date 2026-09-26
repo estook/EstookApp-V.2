@@ -67,8 +67,12 @@ async function paginasDelPdf(fichero: File, cuantasCaben: number): Promise<Pagin
 
   let documento;
   try {
-    documento = await pdfjs.getDocument({ data: new Uint8Array(await fichero.arrayBuffer()) })
-      .promise;
+    // Sin `eval`: la política de seguridad de la app no lo deja (script-src 'self'), y
+    // PDF.js tiene su camino sin él.
+    documento = await pdfjs.getDocument({
+      data: new Uint8Array(await fichero.arrayBuffer()),
+      isEvalSupported: false,
+    }).promise;
   } catch {
     throw new NoSeHaPodidoLeer(`«${fichero.name}» no se ha podido abrir. ¿Tiene contraseña?`);
   }

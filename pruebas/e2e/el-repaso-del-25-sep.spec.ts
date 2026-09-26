@@ -174,9 +174,11 @@ test('el Tablón: se escribe desde el «+», sale en el Panel, y cada uno lo mar
   await expect(hoja).toHaveCount(0);
 
   const tablon = page.getByRole('region', { name: 'Tablón' });
-  await expect(tablon.getByText(texto)).toBeVisible();
+  // Solo la suya: los otros navegadores dejan sus notas en la misma base.
+  const mia = tablon.getByRole('listitem').filter({ hasText: texto });
+  await expect(mia).toBeVisible();
   // La suya cuenta como leída, y ve cuántos la han leído.
-  await expect(tablon.getByRole('button', { name: /Quién la ha leído: 0 personas/ })).toBeVisible();
+  await expect(mia.getByRole('button', { name: /Quién la ha leído: 0 personas/ })).toBeVisible();
 
   // Una de otra persona sale por leer, y se marca leída.
   const deSara = `Faltan servilletas ${String(Date.now()).slice(-5)}`;

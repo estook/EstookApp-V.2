@@ -386,7 +386,7 @@ Hasta M6 cada app tenía una lista plana de «pestañas», y salió mal de tres 
 
 Ahora hay dos niveles, y cada uno tiene un trabajo:
 
-> **Destino** · un sitio de la app que responde a **una pregunta**. Va en la barra de abajo en móvil y en el menú lateral en escritorio. Como mucho **cinco** (eran cuatro; Almacén tiene cinco desde que las mermas salieron a la vista, 26-sep · decisión 0051: con cinco, en el móvil «Apps» se queda en su icono para que quepan), y **solo entran los que existen de verdad**: un destino que todavía no se ha construido no ocupa posición, y se cuenta aparte diciendo en qué módulo llega.
+> **Destino** · un sitio de la app que responde a **una pregunta**. Va en la barra de abajo en móvil y en el menú lateral en escritorio. Como mucho **cinco** (eran cuatro; Almacén tiene cinco desde que las mermas salieron a la vista, 26-sep · decisión 0051: con cinco, en el móvil «Apps» pasa de la barra de abajo a la cabecera de la pantalla para que quepan sus nombres enteros), y **solo entran los que existen de verdad**: un destino que todavía no se ha construido no ocupa posición, y se cuenta aparte diciendo en qué módulo llega.
 >
 > **Vista** · la misma pantalla mirada de otra forma. Va en un control segmentado arriba, dentro del destino. Cambiar de vista **no es entrar en ningún sitio**: no gasta un nivel de profundidad, el título no cambia y el botón de volver sigue llevando al mismo sitio que antes de tocarla.
 

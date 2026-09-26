@@ -645,7 +645,7 @@ Richi y lo que salió al recorrer la app con los siete roles, en el ordenador y 
 | **3 · Google y el punto exacto**  | Juntos en **Tu local → Dónde está tu local**; el manual, plegado debajo y explicado. Conexiones, solo ventas |
 | **4 · Las mermas, a la vista**    | **Quinto destino de Almacén**, con la papelera. La dirección de antes lleva allí                             |
 | **La barra de arriba**            | Con ocho apps, los iconos ya no se encogen a un punto                                                        |
-| **La barra del móvil**            | Con cinco destinos, sin cortes a 375 px; a 320 px, iconos y el activo con nombre                             |
+| **La barra del móvil**            | Con cinco destinos, sin cortes: «Apps» sube a la cabecera; a 320 px, iconos y el activo con nombre           |
 | **Sin acceso**                    | Vuelve al Panel con «Esa pantalla no está entre tus apps»                                                    |
 | **Grupo Costa**                   | Sin «← ←», la lista de locales limpia y lo que llegará en una línea plegada                                  |
 | **Detalles**                      | «En línea» una vez, «Tu marca» sin punto, «El QR de tu carta», el buscador trae la app primero               |

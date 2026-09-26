@@ -2,6 +2,8 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
 import {
   MenuLateral,
+  acentoParaTexto,
+  destinosConstruidos,
   Migas,
   Tarjeta,
   TodaviaNo,
@@ -24,6 +26,8 @@ import { ResumenDelEquipo } from '../equipo/ResumenDelEquipo.tsx';
 import { CierreDeCaja } from '../servicio/CierreDeCaja.tsx';
 import { Ventas } from '../servicio/Ventas.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { usarAbrirLaRueda } from '../ganchos/usarLaRueda.ts';
+import { IconoRejilla } from '@estook/iconos';
 
 /**
  * La pantalla de una app · Parte B5 del Plan.
@@ -154,6 +158,7 @@ function Dentro({
   readonly alIrADestino: (destino: Destino) => void;
   readonly alIrAVista: (id: string) => void;
 }) {
+  const abrirLaRueda = usarAbrirLaRueda();
   return (
     <div className={clases('flex w-full flex-col gap-e4', ANCHO[app.forma])}>
       <header className="flex flex-col gap-e2">
@@ -163,7 +168,25 @@ function Dentro({
           lateral y en la barra de abajo. Antes ponia «Panel · Almacén ·
           Productos», que dice tres veces donde estas y ninguna vez como salir.
         */}
-        <Migas camino={[{ nombre: 'Panel', ir: alVolver }, { nombre: app.nombre }]} />
+        <div className="flex items-center justify-between gap-e2">
+          <Migas camino={[{ nombre: 'Panel', ir: alVolver }, { nombre: app.nombre }]} />
+          {/*
+            En el móvil, con cinco destinos, «Apps» no cabe en la barra de abajo y se
+            muda aquí (26-sep, 0051): sigue a un toque, y la rueda resalta esta app.
+          */}
+          {abrirLaRueda !== null && destinosConstruidos(app).length >= 5 && (
+            <button
+              type="button"
+              onClick={abrirLaRueda}
+              aria-label="Ver todas las apps"
+              className="inline-flex min-h-toque shrink-0 items-center gap-e1 rounded-medio px-e2 text-secundario font-semibold lg:hidden"
+              style={{ color: acentoParaTexto(app.acento) }}
+            >
+              <IconoRejilla size={18} />
+              Apps
+            </button>
+          )}
+        </div>
 
         <div className="flex items-center gap-e3">
           {/* El icono de la app en su pastilla, como el de cada tarjeta (0045). */}

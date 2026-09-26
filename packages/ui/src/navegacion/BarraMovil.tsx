@@ -93,36 +93,35 @@ export interface BarraDeAppProps {
 export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }: BarraDeAppProps) {
   const Icono = app.icono;
   const destinos = destinosConstruidos(app);
-  // Con cinco destinos o más (Almacén, con sus Mermas desde el 26-sep), «Apps» se
-  // queda en su icono de color: sus letras son las que les faltaban a las demás
-  // para no cortarse. Lo que dice al lector de pantalla no cambia.
+  // Con cinco destinos o más (Almacén, con sus Mermas desde el 26-sep), **sin
+  // «Apps»**: con él, sus cinco palabras se cortaban en los móviles que pintan la
+  // letra un poco más ancha («Resum…», «Merm…», lo cazó GitHub en Linux). «Apps» se
+  // muda a la cabecera de la pantalla (`PantallaDeApp`), junto a la flecha de volver,
+  // y sigue abriendo la rueda con esta app resaltada.
   const apretada = destinos.length >= 5;
 
   return (
     <nav aria-label={app.nombre} className={clases(CAJA, apretada && 'gap-0 px-e1')}>
       {/* Volver al conjunto: «la flecha de atras, o el boton de la rueda». */}
-      <button
-        type="button"
-        onClick={alAbrirLaRueda}
-        aria-label="Ver todas las apps"
-        className={clases(
-          'flex min-h-toque flex-col items-center justify-center gap-[2px] rounded-medio px-e1',
-          apretada ? 'min-w-[40px] shrink-0' : 'min-w-toque',
-        )}
-        style={{ color: app.acento }}
-      >
-        <Icono size={24} />
-        {/* El icono, en el acento; la palabra, en el acento para texto, que en
-            claro es el que llega a 4,5:1 (entrega V). */}
-        {!apretada && (
+      {!apretada && (
+        <button
+          type="button"
+          onClick={alAbrirLaRueda}
+          aria-label="Ver todas las apps"
+          className="flex min-h-toque min-w-toque flex-col items-center justify-center gap-[2px] rounded-medio px-e1"
+          style={{ color: app.acento }}
+        >
+          <Icono size={24} />
+          {/* El icono, en el acento; la palabra, en el acento para texto, que en
+              claro es el que llega a 4,5:1 (entrega V). */}
           <span
             className="text-[11px] font-semibold"
             style={{ color: acentoParaTexto(app.acento) }}
           >
             Apps
           </span>
-        )}
-      </button>
+        </button>
+      )}
 
       {destinos.map((destino) => (
         <Posicion
@@ -188,9 +187,9 @@ function Posicion({
         // sitio al lado de «Resumen». Así solo se recorta cuando de verdad no cabe. En
         // la del Panel van iguales, para que la rueda quede en el centro.
         'flex min-h-toque min-w-0 flex-col items-center justify-center gap-[2px] rounded-medio',
-        apretada ? 'px-[3px]' : 'px-e1',
+        apretada ? 'px-[2px]' : 'px-e1',
         segunSuPalabra ? 'flex-auto' : 'flex-1',
-        apretada ? 'text-[10.5px] font-semibold tracking-[-0.01em]' : 'text-[11px] font-semibold',
+        apretada ? 'text-[10px] font-semibold tracking-[-0.01em]' : 'text-[11px] font-semibold',
         activa ? 'text-texto' : 'text-texto-suave',
       )}
       // En el acento **para texto**: lleva el nombre, y el acento a secas no llega a

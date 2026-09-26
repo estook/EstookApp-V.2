@@ -30,8 +30,10 @@ Y una auditoría completa por roles: fallos, errores y lo que se pueda mejorar.
   queda con las ventas.
 - **Quien abre una pantalla que no es suya vuelve al Panel y se le dice**: «Esa pantalla
   no está entre tus apps».
-- **La barra del móvil con cinco destinos o más**: «Apps» se queda en su icono de color, y
-  por debajo de 360 px solo lleva palabra el destino activo.
+- **La barra del móvil con cinco destinos o más** no lleva «Apps»: con él, los nombres se
+  cortaban en los móviles que pintan la letra más ancha (lo cazó GitHub en Linux). «Apps»
+  se muda a la cabecera de la pantalla, junto a la flecha de volver, y sigue abriendo la
+  rueda con la app resaltada. Por debajo de 360 px, iconos y el destino activo con nombre.
 - **La barra del ordenador**: los iconos no se encogen; la flechita de cada app, desde
   1536 px.
 - **El buscador**: empezar una palabra cuenta como empezar el nombre, y a igualdad gana el

@@ -22,6 +22,7 @@ import { BuscadorUniversal } from './buscar/BuscadorUniversal.tsx';
 import { VentanaDeFogon } from './fogon/Fogon.tsx';
 import { BotonDeHacer, HojaDeHacer } from './acciones/BotonDeHacer.tsx';
 import { usarQueHacer } from './ganchos/usarQueHacer.ts';
+import { AbrirLaRueda } from './ganchos/usarLaRueda.ts';
 import { LoQueLlegaDespues, type LoQueFalta } from './pantallas/LoQueLlegaDespues.tsx';
 import { ContextoDelEsqueleto, type LoQueAbreElEsqueleto } from './ganchos/usarElEsqueleto.tsx';
 import { MiCuenta } from './pantallas/MiCuenta.tsx';
@@ -55,6 +56,9 @@ export function Esqueleto() {
   usarSigoAqui();
 
   const [ruedaAbierta, setRuedaAbierta] = useState(false);
+  const abrirLaRueda = useCallback(() => {
+    setRuedaAbierta(true);
+  }, []);
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
   const [loQueFalta, setLoQueFalta] = useState<LoQueFalta | null>(null);
   /**
@@ -375,7 +379,9 @@ export function Esqueleto() {
               avisarDelFallo(fallo, pathname);
             }}
           >
-            <Outlet />
+            <AbrirLaRueda.Provider value={abrirLaRueda}>
+              <Outlet />
+            </AbrirLaRueda.Provider>
           </SiAlgoFalla>
         </main>
 

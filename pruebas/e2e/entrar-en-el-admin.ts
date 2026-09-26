@@ -30,7 +30,8 @@ export async function entrarEnElAdmin(page: Page): Promise<void> {
   await page.getByLabel('Código').fill(codigoAhora(SECRETO_DEL_ADMIN_DE_EJEMPLO));
   await page.getByRole('button', { name: 'Continuar' }).click();
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Administradores' })).toBeVisible();
+  // Se entra en Clientes, que es para lo que se abre el admin (A2).
+  await expect(page.getByRole('heading', { level: 1, name: 'Clientes' })).toBeVisible();
 }
 
 // ── El código de seis dígitos, como lo calcula una aplicación de autenticación ─

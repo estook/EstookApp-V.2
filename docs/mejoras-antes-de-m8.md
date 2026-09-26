@@ -592,8 +592,9 @@ antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
 admin y su segundo factor montado. Su repaso (rescatar a un admin, la cabecera del
 móvil y una puerta de la API) también está en producción (#54). **La 2, V, está entera
 y en producción** (#64, #65, #67). **La 3, O, también** (#69), y **E2 · el pago con
-Stripe** (#71, 0048). Después, **el repaso del 25-sep** (0049), **L · el lector**,
-adelantada, y **A2 · Clientes**.
+Stripe** (#71, 0048), **el repaso del 25-sep** (#72, 0049) y **L · el lector**,
+adelantada (#73), también. **La 4, A2 · Clientes, está hecha en la #74** (decisión 0050).
+La siguiente es la 5, **R · el reloj y los avisos**.
 
 **Qué esperan de fuera, y no frenan el orden:** **Resend** (el correo del informe y
 de los avisos), **Business Profile** (las respuestas a reseñas), **la clave de IA**

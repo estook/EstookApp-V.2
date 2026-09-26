@@ -190,6 +190,11 @@ test('el Tablón: se escribe desde el «+», sale en el Panel, y cada uno lo mar
   await expect(suya).toBeVisible();
   await suya.getByRole('button', { name: 'Leído', exact: true }).click();
   await expect(suya.getByRole('button', { name: 'Leído', exact: true })).toHaveCount(0);
+
+  // Y la suya la quita ella: la cruz pregunta, y «Quitar» la saca del tablón.
+  await mia.getByRole('button', { name: `Quitar del tablón «${texto}»` }).click();
+  await mia.getByRole('button', { name: 'Quitar', exact: true }).click();
+  await expect(tablon.getByText(texto)).toHaveCount(0);
 });
 
 // ── 3 · La carta del local, subida ───────────────────────────────────────────

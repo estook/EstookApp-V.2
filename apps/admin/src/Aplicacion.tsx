@@ -7,7 +7,7 @@ import { soloLaHora } from './datos/cliente.ts';
 import { Administradores } from './pantallas/Administradores.tsx';
 import { Auditoria } from './pantallas/Auditoria.tsx';
 import { OfertaDePrueba } from './pantallas/Oferta.tsx';
-import { Cuentas } from './pantallas/Cuentas.tsx';
+import { Clientes } from './pantallas/Clientes.tsx';
 import {
   Entrar,
   EscribirElCodigo,
@@ -22,8 +22,8 @@ import { usarSesion } from './sesion/Sesion.tsx';
  *
  * Hasta la 0041 esto era el catálogo del sistema de diseño, suelto y a la vista de
  * cualquiera. Ahora **todo va detrás de la puerta**: el catálogo es una sección
- * más, al lado de quién tiene acceso y de lo que se ha hecho. Los clientes, los
- * vendedores y las ventas llegan en las entregas A2 a A4
+ * más, al lado de quién tiene acceso y de lo que se ha hecho. Los clientes llegaron
+ * con A2 y son lo primero que se ve; los vendedores y las ventas llegan con A3 y A4
  * (`docs/panel-de-administracion.md`).
  *
  * El proveedor de deshacer está aquí y no dentro de una pantalla porque la barra
@@ -75,7 +75,7 @@ function LaPuerta(props: AplicacionProps) {
 }
 
 const SECCIONES = [
-  { id: 'cuentas', nombre: 'Cuentas' },
+  { id: 'clientes', nombre: 'Clientes' },
   { id: 'administradores', nombre: 'Administradores' },
   { id: 'oferta', nombre: 'Oferta' },
   { id: 'auditoria', nombre: 'Auditoría' },
@@ -86,7 +86,7 @@ type Seccion = (typeof SECCIONES)[number]['id'];
 
 function Dentro({ entorno, sesionId }: AplicacionProps) {
   const { yo, salir } = usarSesion();
-  const [seccion, setSeccion] = useState<Seccion>('administradores');
+  const [seccion, setSeccion] = useState<Seccion>('clientes');
 
   return (
     <div className="min-h-dvh bg-fondo">
@@ -154,8 +154,8 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
         <Catalogo entorno={entorno} sesionId={sesionId} />
       ) : (
         <main className="mx-auto max-w-[64rem] px-e4 py-e5">
-          {seccion === 'cuentas' ? (
-            <Cuentas />
+          {seccion === 'clientes' ? (
+            <Clientes />
           ) : seccion === 'administradores' ? (
             <Administradores />
           ) : seccion === 'oferta' ? (

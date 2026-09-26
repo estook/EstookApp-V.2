@@ -8,6 +8,7 @@ import {
   type FechaOperativa,
   type Intervalo,
 } from '@estook/dominio';
+import { hacerLaFotoDelUso } from './clientes.ts';
 import type { Contexto } from './contrato.ts';
 import { correoDeLaCuenta } from './correos.ts';
 import {
@@ -224,6 +225,23 @@ async function elDiario(
         );
       }
     }
+  }
+
+  // 3 · La foto del uso de cada cliente, para el admin (A2 · 0041): «la actividad se
+  // calcula cada noche» (Richi, 25-sep). Si falla, el día se repite en el latido
+  // siguiente, como los correos.
+  try {
+    await hacerLaFotoDelUso(contexto, hoy);
+  } catch (fallo) {
+    fallos += 1;
+    console.error(
+      JSON.stringify({
+        nivel: 'error',
+        mensaje: 'no se ha podido hacer la foto del uso de los clientes',
+        correlacion_id: contexto.correlacionId,
+        detalle: fallo instanceof Error ? fallo.message : String(fallo),
+      }),
+    );
   }
 
   return { correos, cuadrados, fallos };

@@ -48,6 +48,8 @@ const CUADERNO = new URL('../pruebas/.cobertura-del-catalogo.json', import.meta.
  * Quitar una línea de aquí es el trabajo; añadirla, la excusa.
  */
 const LA_DEUDA = {
+  'comando:admin_alargar_la_prueba':
+    'Solo se alarga una prueba en marcha, y la prueba nace de la oferta, que es una para todo Estook: encenderla desde una prueba de pantalla cambiaría las cuentas que crean las demás a la vez. La prueba contra el Stripe de mentira en `los-clientes.prueba.ts`. Se paga cuando las pruebas de pantalla tengan una base por navegador.',
   'consulta:recetas_de_referencia':
     'No la consume ninguna pantalla todavía: quien copia una receta a una ficha técnica es M9. Se paga en M9.',
   'comando:cambiar_mi_idioma':

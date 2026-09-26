@@ -2,52 +2,36 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 25 de septiembre de 2026 por la noche, leyendo la base, la
+> Comprobado en producción el 26 de septiembre de 2026 por la tarde, leyendo la base, la
 > API y GitHub.
 >
-> | Qué                         | Cómo está                                                                      |
-> | --------------------------- | ------------------------------------------------------------------------------ |
-> | Pull requests               | **Todas fusionadas hasta la #71**. Espera la #72, el repaso del 25-sep         |
-> | La base de datos            | **47 de 47** migraciones, igual que `main`                                     |
-> | La API                      | **Desplegada el 25-sep a las 17:49**, con la #71: 50 y 93, y el reloj latiendo |
-> | A1 · la puerta del admin    | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor    |
-> | E1 · crear cuenta y Google  | **Hecho**                                                                      |
-> | V, O y el Panel en el móvil | **Hechos y en producción** (#64 a #70)                                         |
-> | E2 · el pago con Stripe     | **En producción** (#71). **Falta que pruebes el pago**: nadie ha pagado aún    |
-> | El repaso del 25-sep        | **Hecho y en verde**, en la #72, con la `0048`                                 |
+> | Qué                         | Cómo está                                                                   |
+> | --------------------------- | --------------------------------------------------------------------------- |
+> | Pull requests               | **Todas fusionadas hasta la #73**. Espera la #74, los clientes en el admin  |
+> | La base de datos            | **48 de 48** migraciones, igual que `main`                                  |
+> | La API                      | **Desplegada el 26-sep a las 16:02**, con la #72: 51 y 99, reloj latiendo   |
+> | A1 · la puerta del admin    | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
+> | E1 · crear cuenta y Google  | **Hecho**                                                                   |
+> | V, O y el Panel en el móvil | **Hechos y en producción** (#64 a #70)                                      |
+> | E2 · el pago con Stripe     | **En producción** (#71). **Falta que pruebes el pago**: nadie ha pagado aún |
+> | El repaso del 25-sep y L    | **En producción** (#72 con la `0048`, y #73)                                |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · 25 de septiembre por la noche
+## Lo que te toca ahora · 26 de septiembre por la tarde
 
-### 1 · Probar el pago, en modo prueba (E2 ya está desplegada)
+### 1 · Los clientes en el admin (#74)
 
-No se cobra nada de verdad. **Es lo único de E2 que no puedo probar yo**: pide crear una
-cuenta y pagar. En el móvil o en una ventana privada:
+**Qué trae:** en `estook.com/admin/`, **Clientes** en vez de Cuentas: la lista con
+pestañas, buscador, filtros, orden por columnas y exportar a Excel; la ficha de cada
+cliente (resumen, datos, personas, suscripción, uso, actividad y notas); los tres gestos
+con motivo (alargar la prueba, de la casa, cancelar al acabar) y «Abrir en Stripe»;
+cambiar el correo de acceso con doble confirmación; y la actividad de cada noche.
+Contado en la decisión 0050.
 
-1. `estook.com` → **Crear cuenta**, con un correo que no uses en Estook (por ejemplo,
-   `tucorreo+prueba@gmail.com`) y un negocio de prueba.
-2. Sale **«Elige tu plan»**: pulsa **«Elegir Esencial»**. Se abre la página de pago de
-   Stripe, con una franja de **«Entorno de prueba»** arriba.
-3. Tarjeta **`4242 4242 4242 4242`**, cualquier fecha futura, cualquier CVC, tu nombre y
-   una dirección → **Suscribirse**.
-4. Vuelves a Estook: **«Cargando tu pago»** un momento y **entras al alta**.
-5. Mira **Ajustes → Suscripción**: Esencial, 49,00 € al mes, «Visa ···· 4242».
-6. En **`estook.com/admin/`** → **Cuentas**: la cuenta nueva sale **pagando**, con su plan.
-
-**Si en el paso 2 sale un error en vez de la página de Stripe, cópiamelo tal cual.**
-
-### 2 · El repaso del 25-sep (#72)
-
-**Qué trae:** «Inventario» pasa a **Almacén** y «Recuento» a **Inventario**; lo congelado
-avisa por el tiempo que lleva (3 meses, cambiable en la ficha); el alta pide el mínimo y
-la unidad se toca para elegir kg o g; el **Tablón** en el Panel; **subir tu carta** (PDF o
-fotos) en Ajustes, que es lo que enseña el QR; y los dos fallos del iPhone («Hoy» y la
-barra de abajo). Contado en `ESTADO.md`, apartado 10, y en la decisión 0049.
-
-1. En **github.com** → **Pull requests** → **«El repaso del 25 de septiembre»** (la #72).
+1. En **github.com** → **Pull requests** → **«A2 · Los clientes en el admin»** (la #74).
    Abajo, las **tres comprobaciones en verde** → **Merge pull request** → **Confirm
    merge**: sale en morado «merged».
 2. En PowerShell, en la carpeta del proyecto:
@@ -60,9 +44,9 @@ git checkout main
 git pull
 ```
 
-3. **La migración.** Qué hace: cambia el nombre del permiso a `app.almacen` (con sus 23
-   políticas), pone «3 meses» a lo congelado de cada producto, crea el Tablón y el sitio
-   de la carta subida (y su cubo de ficheros). No borra nada.
+3. **La migración.** Qué hace: crea la ficha comercial, las notas, la foto diaria del
+   uso y los cambios de correo, y las funciones con las que el admin lee a sus clientes.
+   No borra ni cambia nada de lo que hay.
 
 ```bash
 .\estook.cmd bd:migrar
@@ -71,8 +55,8 @@ git pull
 **Qué tiene que salir**, tal cual:
 
 ```
-  aplicando 0048_almacen_congelado_tablon_y_carta.sql ... hecho
-  1 migracion(es) aplicadas · 48 en total
+  aplicando 0049_los_clientes.sql ... hecho
+  1 migracion(es) aplicadas · 49 en total
 ```
 
 **Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
@@ -85,37 +69,47 @@ git pull
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** «las 51» consultas y «los 99» comandos, y el reloj en OK.
+**Qué tiene que decir:** «las 52» consultas y «los 111» comandos, y el reloj en OK.
 
-6. **En el iPhone, con la app instalada** (ciérrala del todo y ábrela):
-   - **Hoy**, arriba del Panel: tiene que salir siempre que haya algo, a la primera.
-   - Escribe algo en un campo (por ejemplo, **Apuntar** ventas), cierra el teclado y
-     desliza hacia arriba y hacia abajo: **la barra de abajo se queda abajo**. Con el
-     teclado abierto, la barra se aparta.
-   - **Almacén** en la barra, y en Movimientos, **Inventario**.
-   - **El «+» → Escribir en el tablón**: «Reserva a las 17:00 de 20 personas», hora
-     17:00. Sale en el Panel, en **Tablón**; desde otra cuenta del local, «Leído».
-   - **Ajustes → Tu local → Tu carta → Subir la carta**: elige un PDF de tu carta. Ves
-     las páginas, **Publicar**, y **Verla como el cliente**.
-   - **Añadir producto**: el **Mínimo** al lado de «Cuánto hay ahora», y toca **kg ▾**
-     para cambiar a gramos.
-   - Un producto con algo congelado: en su ficha, **«Cumple 3 meses congelado el…»**, y en
-     «Corregir la ficha», **Congelado aguanta**.
+6. En **`estook.com/admin/`** (recarga la página): entras en **Clientes**. Pulsa
+   **Calcular ahora**: cada cliente sale con su actividad. Abre **ikatz**: «De la casa».
 
-### 3 · L · el lector (#73), después de la #72
+### 2 · Probar el pago, en modo prueba
 
-**Qué trae:** «Escanear» a la derecha de «Añadir producto», los lectores de mano, contar
-el inventario escaneando y marcar lo que llega al recibir. **Sin migración y sin
-desplegar la API**: todo es de la app.
+No se cobra nada de verdad. **Es lo único de E2 que no puedo probar yo**: pide crear una
+cuenta y pagar. En el móvil o en una ventana privada:
 
-1. **Después de fusionar la #72**, en **Pull requests** → **«L · El lector»** (la #73):
-   GitHub la habrá movido sola a `main`. Las **tres comprobaciones en verde** → **Merge
-   pull request** → **Confirm merge**.
-2. **En el móvil**, en **Almacén → Productos → Escanear**: la primera vez pide permiso para
-   la cámara. Apunta al código de un producto que tengas dado de alta con su código: abre
-   su ficha. Con uno que no tengas: abre el alta con el código puesto y, si es de tienda,
-   el nombre que propone Open Food Facts.
-3. **Movimientos → Inventario → Escanear**: cada lectura suma uno.
+1. `estook.com` → **Crear cuenta**, con un correo que no uses en Estook (por ejemplo,
+   `tucorreo+prueba@gmail.com`) y un negocio de prueba.
+2. Sale **«Elige tu plan»**: pulsa **«Elegir Esencial»**. Se abre la página de pago de
+   Stripe, con una franja de **«Entorno de prueba»** arriba.
+3. Tarjeta **`4242 4242 4242 4242`**, cualquier fecha futura, cualquier CVC, tu nombre y
+   una dirección → **Suscribirse**.
+4. Vuelves a Estook: **«Cargando tu pago»** un momento y **entras al alta**.
+5. Mira **Ajustes → Suscripción**: Esencial, 49,00 € al mes, «Visa ···· 4242».
+6. En **`estook.com/admin/`** → **Clientes**, pestaña **Pagando**: la cuenta nueva, con
+   su plan. En su ficha, **Suscripción → Abrir en Stripe** abre su cliente en Stripe.
+
+**Si en el paso 2 sale un error en vez de la página de Stripe, cópiamelo tal cual.**
+
+### 3 · Mirarlo en el iPhone, con la app instalada
+
+Ciérrala del todo y ábrela:
+
+- **Hoy**, arriba del Panel: tiene que salir siempre que haya algo, a la primera.
+- Escribe algo en un campo, cierra el teclado y desliza: **la barra de abajo se queda
+  abajo**.
+- **Almacén → Productos → Escanear**: la primera vez pide permiso para la cámara; un
+  código que tengas dado de alta abre su ficha.
+
+---
+
+## El repaso del 25-sep (#72) y L · el lector (#73) · **hecho** (26-sep)
+
+Fusionadas, la `0048` aplicada y la API desplegada el 26-sep a las 16:02. La #73 no
+llevaba migración ni cambios en la API. Lo que traen: Almacén e Inventario, lo congelado
+aparte, el mínimo y kg o g en el alta, el Tablón, la carta subida, los dos fallos del
+iPhone y el lector (decisión 0049 y `ESTADO.md`).
 
 ---
 

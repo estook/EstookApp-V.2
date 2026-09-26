@@ -149,6 +149,10 @@ test.describe('las ocho apps', () => {
   });
 
   test('cada destino construido se abre, y ninguno lleva a un hueco', async ({ page }) => {
+    // Recorre todos los destinos de las ocho apps de un tirón: con la máquina cargada
+    // pasaba del medio minuto de siempre (26-sep, en local). No es lentitud de una
+    // pantalla —cada una tiene su espera—, es que son muchas.
+    test.setTimeout(90_000);
     /*
       ── Lo que esta prueba caza, y antes no ────────────────────────────────────
 

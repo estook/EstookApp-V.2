@@ -13,7 +13,7 @@ import { entrarEnElAdmin } from './entrar-en-el-admin.ts';
  *   · sin pago no hay app: se elige plan, se paga y se entra al alta
  *   · Ajustes → Suscripción: el plan, la renovación, cancelar y seguir
  *   · un cobro que falla: el aviso de arriba con los días que quedan
- *   · las cuentas de la casa lo dicen, y el admin ve quién ha pagado
+ *   · las cuentas de la casa lo dicen, y el admin ve quién ha pagado (en Clientes, desde A2)
  */
 const APP = 'http://localhost:5174/';
 const API = 'http://localhost:5177/api';
@@ -186,13 +186,14 @@ test('una cuenta de la casa lo dice en Ajustes, y no se cobra', async ({ page })
   ).toBeVisible();
 });
 
-test('el admin ve las cuentas y quién ha pagado', async ({ page }) => {
+test('el admin ve quién ha pagado, arriba de Clientes', async ({ page }) => {
   await entrarEnElAdmin(page);
-  await page.getByRole('button', { name: 'Cuentas', exact: true }).click();
-  const cuentas = page
-    .locator('section')
-    .filter({ has: page.getByRole('heading', { name: 'Cuentas' }) });
-  await expect(cuentas).toContainText(/cuentas? pagan?/);
-  // Las cuentas nuevas de estas pruebas están ahí, cada una con cómo está.
-  await expect(cuentas.getByText(/Al día|En prueba|Sin pagar|Cobro fallido/).first()).toBeVisible();
+  // Lo que era la pestaña Cuentas vive ahora encima de la lista de clientes (A2).
+  await expect(page.getByText(/pagan? · .* al mes/)).toBeVisible();
+  await expect(
+    page
+      .getByText(/Al día|Prueba|Sin pagar|Cobro fallido/)
+      .filter({ visible: true })
+      .first(),
+  ).toBeVisible();
 });

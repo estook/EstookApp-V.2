@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { IconoFlechaAbajo, IconoFlechaArriba } from '@estook/iconos';
 import { clases } from '../clases.ts';
 
 /**
@@ -28,6 +29,14 @@ export interface Columna<T> {
    * Solo una por tabla.
    */
   readonly principal?: boolean;
+  /** Si se ordena pulsando su cabecera. Lo ordena quien da las filas, no la tabla. */
+  readonly ordenable?: boolean;
+}
+
+/** Por qué columna va ordenada la tabla, y hacia dónde. */
+export interface OrdenDeTabla {
+  readonly clave: string;
+  readonly sentido: 'asc' | 'desc';
 }
 
 export interface TablaProps<T> {
@@ -64,6 +73,16 @@ export interface TablaProps<T> {
    * Cebolla», que es lo que hace falta para elegir una.
    */
   readonly nombreDeLaFila?: (fila: T) => string;
+  /**
+   * El orden de ahora, y qué hacer al pulsar la cabecera de una columna ordenable.
+   *
+   * **La tabla no ordena**: dice qué se ha pulsado. Con mil clientes llegando de
+   * cincuenta en cincuenta, ordenar lo cargado sería ordenar mal (regla 51): el
+   * orden lo hace el servidor. En móvil no hay cabeceras: la pantalla pone su
+   * selector de orden.
+   */
+  readonly orden?: OrdenDeTabla;
+  readonly alOrdenar?: (clave: string) => void;
 }
 
 export function Tabla<T>({
@@ -75,6 +94,8 @@ export function Tabla<T>({
   alPulsar,
   filaCompacta,
   nombreDeLaFila,
+  orden,
+  alOrdenar,
 }: TablaProps<T>) {
   if (filas.length === 0) return <>{cuandoNoHay}</>;
 
@@ -87,19 +108,53 @@ export function Tabla<T>({
         <caption className="sr-only">{titulo}</caption>
         <thead>
           <tr className="border-b border-borde">
-            {columnas.map((columna) => (
-              <th
-                key={columna.clave}
-                scope="col"
-                className={clases(
-                  'px-e3 py-e2 text-secundario font-medium',
-                  'text-texto-suave',
-                  columna.numerica === true ? 'text-right' : 'text-left',
-                )}
-              >
-                {columna.titulo}
-              </th>
-            ))}
+            {columnas.map((columna) => {
+              const ordenable = columna.ordenable === true && alOrdenar !== undefined;
+              const activa = orden?.clave === columna.clave;
+              return (
+                <th
+                  key={columna.clave}
+                  scope="col"
+                  {...(ordenable
+                    ? {
+                        'aria-sort': activa
+                          ? orden.sentido === 'asc'
+                            ? ('ascending' as const)
+                            : ('descending' as const)
+                          : ('none' as const),
+                      }
+                    : {})}
+                  className={clases(
+                    'px-e3 py-e2 text-secundario font-medium',
+                    'text-texto-suave',
+                    columna.numerica === true ? 'text-right' : 'text-left',
+                  )}
+                >
+                  {ordenable ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        alOrdenar(columna.clave);
+                      }}
+                      className={clases(
+                        'inline-flex min-h-toque items-center gap-e1 rounded-medio hover:text-texto',
+                        activa && 'text-texto',
+                      )}
+                    >
+                      {columna.titulo}
+                      {activa &&
+                        (orden.sentido === 'asc' ? (
+                          <IconoFlechaArriba size={14} />
+                        ) : (
+                          <IconoFlechaAbajo size={14} />
+                        ))}
+                    </button>
+                  ) : (
+                    columna.titulo
+                  )}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>

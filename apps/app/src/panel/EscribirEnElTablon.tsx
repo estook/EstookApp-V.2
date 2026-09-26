@@ -66,8 +66,10 @@ export function EscribirEnElTablon({ alCerrar }: { readonly alCerrar: () => void
       setError(respuesta.error);
       return;
     }
-    await cache.invalidateQueries({ queryKey: CLAVE_DEL_TABLON });
-    await cache.invalidateQueries({ queryKey: ['lo_de_hoy'] });
+    // Guardada, se cierra ya; el Panel se pone al día por detrás. Esperar a que se
+    // recargara dejaba la hoja abierta y sin decir nada con la red lenta (26-sep).
+    void cache.invalidateQueries({ queryKey: CLAVE_DEL_TABLON });
+    void cache.invalidateQueries({ queryKey: ['lo_de_hoy'] });
     alCerrar();
   }
 

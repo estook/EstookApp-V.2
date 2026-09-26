@@ -73,17 +73,26 @@ describe('el esquema plataforma', () => {
     expect(sinRls.map((f) => f.relname)).toEqual([]);
   });
 
-  it('sus funciones con privilegio son exactamente tres, y no las ejecuta cualquiera', async () => {
+  it('sus funciones con privilegio son exactamente seis, y no las ejecuta cualquiera', async () => {
     // Las mismas razones que las de `estook`, contadas aparte: si un día son
     // cuatro, que sea a propósito. La tercera es de la 0042: `oferta_vigente`, que
-    // la pantalla de crear cuenta lee antes de que haya sesión.
+    // la pantalla de crear cuenta lee antes de que haya sesión. Y la 0049 (A2) añade
+    // las tres del cambio del correo de acceso: pedirlo —solo un admin total, y lo
+    // comprueba ella—, y confirmarlo o pararlo desde el enlace, que no trae sesión.
     const definer = await comoDuena<{ proname: string; publico: boolean }>(
       `select p.proname, has_function_privilege('public', p.oid, 'execute') as publico
          from pg_proc p
         where p.pronamespace = 'plataforma'::regnamespace and p.prosecdef
         order by p.proname`,
     );
-    expect(definer.map((f) => f.proname)).toEqual(['dar_acceso', 'nivel_de', 'oferta_vigente']);
+    expect(definer.map((f) => f.proname)).toEqual([
+      'confirmar_cambio_de_correo',
+      'dar_acceso',
+      'nivel_de',
+      'oferta_vigente',
+      'parar_cambio_de_correo',
+      'pedir_cambio_de_correo',
+    ]);
     for (const fila of definer) {
       expect(fila.publico, `${fila.proname} la puede ejecutar cualquiera`).toBe(false);
     }

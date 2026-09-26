@@ -105,10 +105,10 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
       })),
       /*
         Y los destinos de cada app: son sitios, y buscar «movimientos» tiene que
-        llevar a Inventario · Movimientos sin pasar por Inventario.
+        llevar a Almacén · Movimientos sin pasar por Almacén.
 
         **Solo los construidos.** Antes salian todos, asi que el buscador ofrecia
-        «Inventario: Pedidos» y «Carta: Menus», que no llevaban a ningun sitio: se
+        «Almacén: Pedidos» y «Carta: Menus», que no llevaban a ningun sitio: se
         elegia un resultado y aparecia un cartel de «esto llega en M7». Un
         resultado de busqueda que no lleva a nada es peor que no salir, porque
         ademas ha tapado a otro que si.

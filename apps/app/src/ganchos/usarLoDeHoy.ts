@@ -5,7 +5,7 @@ import type { LoDeHoy } from '../objetivos/contrato.ts';
 /**
  * Lo de hoy · la zona de atención del Panel, ordenada por el servidor (mejora 8).
  *
- * No confundir con `usarInventarioHoy`, que es lo de Inventario: esto junta eso,
+ * No confundir con `usarAlmacenHoy`, que es lo de Almacén: esto junta eso,
  * las compras, la caja y el turno de quien mira, y el servidor lo ordena.
  */
 export function usarLoDeHoy(): UseQueryResult<LoDeHoy> {

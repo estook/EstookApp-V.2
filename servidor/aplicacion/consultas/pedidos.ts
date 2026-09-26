@@ -25,7 +25,7 @@ import {
 } from '../compras.ts';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
-import { productosDelProveedor } from './inventario.ts';
+import { productosDelProveedor } from './almacen.ts';
 
 /**
  * Lo que Compras enseña de los pedidos (M7).
@@ -112,7 +112,7 @@ export interface SalidaMisPedidos {
 export const misPedidos = consulta<EntradaMisPedidos, SalidaMisPedidos>({
   nombre: 'mis_pedidos',
   entrada: entradaMisPedidos,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocal(contexto);
@@ -303,7 +303,7 @@ export interface SalidaUnPedido {
 export const unPedido = consulta<{ pedido_id: string }, SalidaUnPedido>({
   nombre: 'un_pedido',
   entrada: z.object({ pedido_id: z.string().uuid() }).strict(),
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocal(contexto);
@@ -508,14 +508,14 @@ export const unPedido = consulta<{ pedido_id: string }, SalidaUnPedido>({
       hoy: reloj.hoy,
       puedeVerPrecios: precios.ver,
       puedeEnviar: await puedeEnviar(contexto, localId),
-      puedeTocar: await puedeTocarInventario(contexto, localId),
+      puedeTocar: await puedeTocarAlmacen(contexto, localId),
     };
   },
 });
 
-async function puedeTocarInventario(contexto: Contexto, localId: string): Promise<boolean> {
+async function puedeTocarAlmacen(contexto: Contexto, localId: string): Promise<boolean> {
   const filas = await contexto.sql<{ puede: boolean }[]>`
-    select estook.puede_editar('app.inventario', ${localId}::uuid) as puede
+    select estook.puede_editar('app.almacen', ${localId}::uuid) as puede
   `;
   return filas[0]?.puede === true;
 }
@@ -656,7 +656,7 @@ export async function sugerirPedido(
 export const sugerenciaDePedido = consulta<{ proveedor_id: string }, SalidaSugerenciaDePedido>({
   nombre: 'sugerencia_de_pedido',
   entrada: z.object({ proveedor_id: z.string().uuid() }).strict(),
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     return sugerirPedido(contexto, elLocal(contexto), entrada.proveedor_id);
@@ -707,7 +707,7 @@ export interface SalidaComprasDeHoy {
 export const comprasDeHoy = consulta<Record<string, never>, SalidaComprasDeHoy>({
   nombre: 'compras_de_hoy',
   entrada: z.object({}).strict(),
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto) {
     const localId = elLocal(contexto);

@@ -224,7 +224,7 @@ describe('lo que cobra cada uno', () => {
     );
     expect(puestas).toHaveLength(1);
 
-    // Marcos es cocinero: tiene Inventario entera, Servicio, Escandallos… y **no
+    // Marcos es cocinero: tiene Almacén entera, Servicio, Escandallos… y **no
     // tiene `dato.coste_de_personal`**. No ve un solo euro de nadie.
     const loQueVeMarcos = await como<{ id: string }>(MARCOS, `select id from estook.retribucion`);
     expect(loQueVeMarcos).toEqual([]);

@@ -92,7 +92,7 @@ export const ponerFotoDeProducto = comando<
 >({
   nombre: 'poner_foto_de_producto',
   entrada: entradaPonerFoto,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);
@@ -187,7 +187,7 @@ export const quitarFotoDeProducto = comando<
 >({
   nombre: 'quitar_foto_de_producto',
   entrada: z.object({ producto_id: z.string().uuid() }).strict(),
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);

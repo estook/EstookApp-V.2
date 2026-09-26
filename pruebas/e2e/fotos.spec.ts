@@ -45,7 +45,7 @@ test('se pone una foto desde la ficha, sale en la lista, y se quita', async ({ p
   });
 
   await entrarEnLaApp(page, ROSA);
-  await irA(page, 'inventario/productos/todo');
+  await irA(page, 'almacen/productos/todo');
   await page.getByLabel('Buscar en tu género').fill(nombre);
   await page.getByText(nombre).filter({ visible: true }).first().click();
 

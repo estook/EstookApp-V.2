@@ -19,7 +19,7 @@ import { consulta, FalloDeAplicacion } from '../contrato.ts';
  *
  * Quién ve qué no lo decide esta consulta: lo decide la política de la base. Un
  * camarero pregunta lo mismo que un jefe de cocina y le vuelve menos, porque las
- * entregas y las caducidades son de Inventario y él no lo lleva.
+ * entregas y las caducidades son de Almacén y él no lo lleva.
  */
 
 export interface OcurrenciaDicha {
@@ -110,6 +110,41 @@ export const loQueViene = consulta<{ dias?: number | undefined }, SalidaLoQueVie
       grupo: f.grupo,
       hecho: f.hecho,
     }));
+
+    // Las notas del Tablón con hora (repaso del 25-sep, 0049): «17:00 · Reserva de
+    // 20 personas» es un aviso que ha publicado una persona, que es la capa
+    // `aviso`. No se copian a esta tabla: se leen de la suya, con su política, y así
+    // quitar la nota la quita también de aquí.
+    const notas = await contexto.sql<
+      { id: string; dia: string; hora: string; texto: string; autor: string | null }[]
+    >`
+      select n.id::text as id, to_char(n.dia, 'YYYY-MM-DD') as dia,
+             to_char(n.hora, 'HH24:MI') as hora, n.texto, p.nombre as autor
+        from estook.nota_del_tablon n
+        left join estook.persona p on p.id = n.autor_id
+       where n.local_id = ${localId}
+         and n.quitada_en is null
+         and n.hora is not null
+         and n.dia between ${hoy}::date and ${hasta}::date
+       order by n.dia, n.hora
+       limit 100
+    `;
+    for (const nota of notas) {
+      eventos.push({
+        id: nota.id,
+        capa: 'aviso',
+        dia: fechaOperativa(nota.dia),
+        hastaEl: null,
+        desde: nota.hora,
+        hasta: null,
+        seRepite: null,
+        titulo: nota.texto,
+        detalle: `En el tablón · de ${nota.autor ?? 'alguien'}`,
+        ir: `/?nota=${nota.id}`,
+        grupo: null,
+        hecho: false,
+      });
+    }
 
     const ocurrencias = desplegar(eventos, hoy, hasta);
 

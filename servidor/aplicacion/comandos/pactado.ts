@@ -3,7 +3,7 @@ import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { elProveedor } from '../compras.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
-import { costeDeUso } from '../inventario.ts';
+import { costeDeUso } from '../almacen.ts';
 
 /**
  * Lo pactado (M7) · «Makro me deja el aceite a 42 € hasta diciembre».

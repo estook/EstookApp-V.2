@@ -163,11 +163,11 @@ export function sePuedeTirar(hay: number, seTira: number, unidad: string): SePue
   if (hay <= 0) {
     return {
       sePuede: false,
-      porque: `En Estook no queda nada, así que no se pueden tirar ${loQueSeTira}. Si de verdad lo hay, apunta antes lo que ha llegado o haz un recuento.`,
+      porque: `En Estook no queda nada, así que no se pueden tirar ${loQueSeTira}. Si de verdad lo hay, apunta antes lo que ha llegado o haz inventario.`,
     };
   }
   return {
     sePuede: false,
-    porque: `Quedan ${conUnidad(cantidad(hay), unidad)} y se están tirando ${loQueSeTira}. Si de verdad hay más, apunta antes lo que ha llegado o haz un recuento.`,
+    porque: `Quedan ${conUnidad(cantidad(hay), unidad)} y se están tirando ${loQueSeTira}. Si de verdad hay más, apunta antes lo que ha llegado o haz inventario.`,
   };
 }

@@ -108,14 +108,14 @@ export const WIDGETS: readonly Widget[] = [
     id: 'caducidades',
     nombre: 'Caducidades',
     queEnsena: 'Lo que caduca esta semana, con su lote y sus días',
-    permiso: 'app.inventario',
+    permiso: 'app.almacen',
     tamanos: ['ancho', 'grande'],
   },
   {
     id: 'bajo-minimo',
     nombre: 'Bajo mínimo',
     queEnsena: 'Lo que hay que pedir, con su previsión de agotamiento',
-    permiso: 'app.inventario',
+    permiso: 'app.almacen',
     tamanos: ['ancho', 'grande'],
   },
   /**
@@ -127,7 +127,7 @@ export const WIDGETS: readonly Widget[] = [
     id: 'pedidos',
     nombre: 'Compras de hoy',
     queEnsena: 'A quién toca pedir hoy, lo que llega y lo que espera a mandarse',
-    permiso: 'app.inventario',
+    permiso: 'app.almacen',
     tamanos: ['ancho', 'grande'],
   },
   /**
@@ -149,7 +149,7 @@ export const WIDGETS: readonly Widget[] = [
     id: 'sin-precio',
     nombre: 'Productos sin precio',
     queEnsena: 'Cuántos cuentan cero en el valor de la cámara, y cuáles',
-    permiso: 'app.inventario',
+    permiso: 'app.almacen',
     tamanos: ['chico', 'ancho'],
   },
   // ── Las cifras ─────────────────────────────────────────────────────────────
@@ -157,14 +157,14 @@ export const WIDGETS: readonly Widget[] = [
     id: 'valor-de-la-camara',
     nombre: 'Valor de la cámara',
     queEnsena: 'Lo que vale el género que hay, a precio medio ponderado',
-    permiso: 'app.inventario',
+    permiso: 'app.almacen',
     tamanos: ['chico', 'ancho'],
   },
   {
     id: 'cuanto-genero',
     nombre: 'Cuánto género',
     queEnsena: 'Cuántos productos tienes dados de alta',
-    permiso: 'app.inventario',
+    permiso: 'app.almacen',
     tamanos: ['chico'],
   },
   /**
@@ -251,7 +251,7 @@ export const WIDGETS: readonly Widget[] = [
     id: 'merma',
     nombre: 'Merma',
     queEnsena: 'Lo que se ha ido hoy sin venderse, y el botón para apuntarlo',
-    // Con el permiso de apuntar merma, y no con Inventario: el camarero no tiene
+    // Con el permiso de apuntar merma, y no con Almacén: el camarero no tiene
     // la app y es quien rompe una copa.
     permiso: 'accion.registrar_merma',
     tamanos: ['ancho', 'grande'],
@@ -260,7 +260,7 @@ export const WIDGETS: readonly Widget[] = [
     id: 'ultimos-movimientos',
     nombre: 'Lo último apuntado',
     queEnsena: 'Las últimas entradas, salidas y ajustes, con quién las apuntó',
-    permiso: 'app.inventario',
+    permiso: 'app.almacen',
     tamanos: ['ancho', 'grande'],
   },
   /**
@@ -427,7 +427,7 @@ export const NOMBRE_DEL_PUESTO: Readonly<Record<Puesto, string>> = {
 export function elPuestoDe(tienePermiso: (permiso: Permiso) => boolean): Puesto {
   if (tienePermiso('dato.ventas') && tienePermiso('dato.coste_de_personal')) return 'gerente';
   if (tienePermiso('dato.ventas')) return 'jefe';
-  if (tienePermiso('app.inventario')) return 'cocina';
+  if (tienePermiso('app.almacen')) return 'cocina';
   return 'sala';
 }
 
@@ -618,7 +618,7 @@ export function losQueLlegan(tienePermiso: (permiso: Permiso) => boolean): reado
  * coincide con las otras dos.
  *
  * Y ademas es lo que hace que signifique algo: el Panel deja de ser una pared de
- * tarjetas blancas y pasa a leerse de un vistazo —lo naranja es de Inventario, lo
+ * tarjetas blancas y pasa a leerse de un vistazo —lo naranja es de Almacén, lo
  * morado es de Equipo— sin tener que leer ningun titulo.
  *
  * Los que no son de ninguna app —las acciones rapidas, la rueda— no llevan
@@ -628,14 +628,14 @@ export function losQueLlegan(tienePermiso: (permiso: Permiso) => boolean): reado
  * De que app tira el acento de un widget cuyo permiso no es de una app.
  *
  * Fichar es de Equipo aunque su permiso sea `accion.fichar`, y la merma y las
- * ventas cuentan cosas de Inventario y de Negocio. Sin esto saldrian en blanco, y
+ * ventas cuentan cosas de Almacén y de Negocio. Sin esto saldrian en blanco, y
  * el acento es lo que hace que el Panel se lea de un vistazo sin leer titulos.
  */
 const DE_QUE_APP: Readonly<Record<string, PermisoDeApp>> = {
   'accion.fichar': 'app.equipo',
-  'accion.registrar_merma': 'app.inventario',
+  'accion.registrar_merma': 'app.almacen',
   'dato.ventas': 'app.negocio',
-  'dato.precio_de_compra': 'app.inventario',
+  'dato.precio_de_compra': 'app.almacen',
   'dato.coste_de_personal': 'app.equipo',
 };
 

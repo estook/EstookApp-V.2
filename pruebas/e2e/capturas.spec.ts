@@ -43,15 +43,15 @@ const TEMAS: readonly TemaDePrueba[] = ['claro', 'oscuro'];
 
 /** Las pantallas de la app que se fotografían, con lo que tiene que haber antes. */
 const PANTALLAS = [
-  { nombre: 'inventario-vacio', direccion: 'inventario/resumen', espera: 'Tu cámara está vacía' },
+  { nombre: 'almacen-vacio', direccion: 'almacen/resumen', espera: 'Tu cámara está vacía' },
   {
     nombre: 'productos-vacio',
-    direccion: 'inventario/productos/todo',
+    direccion: 'almacen/productos/todo',
     espera: 'Todavía no tienes género',
   },
   {
     nombre: 'pedidos-vacio',
-    direccion: 'inventario/compras/pedidos',
+    direccion: 'almacen/compras/pedidos',
     espera: 'No hay pedidos abiertos',
   },
   { nombre: 'ajustes-del-aparato', direccion: 'ajustes/aparato', espera: 'Tema' },

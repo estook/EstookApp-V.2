@@ -63,8 +63,8 @@ const POR_APP: Readonly<Record<string, LoDeAqui>> = {
       'Pedirle el resumen de la semana para mandárselo a quien lleve las cuentas.',
     ],
   },
-  inventario: {
-    donde: 'Inventario',
+  almacen: {
+    donde: 'Almacén',
     podras: [
       'Dictarle una merma con las manos ocupadas: «se me han caído dos kilos de pulpo».',
       'Pedirle el pedido de mañana, y que lo deje en borrador respetando los días de reparto.',
@@ -188,7 +188,7 @@ export function VentanaDeFogon({
   /**
    * El contexto, de verdad y no de adorno.
    *
-   * Hasta ahora la ventana decia «estas en Inventario» y ahi se acababa lo de
+   * Hasta ahora la ventana decia «estas en Almacén» y ahi se acababa lo de
    * «trabajando con el contexto de la pantalla». Ahora ademas trae **las cifras
    * que hay delante**, ya calculadas por la base de datos, que es exactamente lo
    * que M22 le mandara al modelo: un resumen compacto en vez del local entero.

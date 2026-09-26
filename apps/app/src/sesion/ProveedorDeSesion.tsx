@@ -44,7 +44,7 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
       Antes no se reintentaba nada, y cualquier fallo de `quien_soy` —sin red, el
       servidor que no llega a la base— dejaba `yo` vacío y la app pintaba la
       pantalla de entrar **con la sesión todavía guardada**. Richi recargó dos
-      veces en el móvil, vio «Entra en Estook» en mitad de Inventario, y entrar
+      veces en el móvil, vio «Entra en Estook» en mitad de Almacén, y entrar
       tampoco le funcionaba (24-sep; la causa de fondo estaba en la API y se
       arregló allí, en `laPuertaDeLaApi`).
 
@@ -138,7 +138,7 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
    * una merma se apunta mirando la pantalla.
    *
    * Y hay un segundo consumidor que lo hace peor: **el contexto de Fogon** se
-   * arma con `inventario_hoy`, o sea con la cache. En M22 eso es lo que se le
+   * arma con `almacen_hoy`, o sea con la cache. En M22 eso es lo que se le
    * manda al modelo. Un resumen del local equivocado no es una pantalla mal
    * pintada: es una respuesta con datos de otro sitio, dicha con seguridad.
    *

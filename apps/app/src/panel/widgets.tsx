@@ -39,13 +39,13 @@ import {
 } from '@estook/ui';
 import { IconoAnadir, IconoEntrar, IconoSalir, IconoUbicacion } from '@estook/iconos';
 import { useNavigate } from 'react-router-dom';
-import { usarInventarioHoy } from '../ganchos/usarInventarioHoy.ts';
+import { usarAlmacenHoy } from '../ganchos/usarAlmacenHoy.ts';
 import { usarMisObjetivos } from '../ganchos/usarMisObjetivos.ts';
 import { ListaDelSemaforo } from '../objetivos/Semaforo.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { AccesosRapidos } from './AccesosRapidos.tsx';
 import { IndicadorWidget } from './Indicador.tsx';
-import { ApuntarMerma } from '../inventario/ApuntarMerma.tsx';
+import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
 import { usarFichar } from '../ganchos/usarFichar.ts';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
@@ -67,19 +67,19 @@ import {
   cuandoSeAgota,
   type MermaDeHoy,
   type MisMovimientos,
-} from '../inventario/contrato.ts';
+} from '../almacen/contrato.ts';
 
 /**
  * Los widgets del Panel, uno por uno.
  *
  * ── Una consulta para todos, y no una por widget ─────────────────────────────
  *
- * Cuatro de los widgets de Inventario —caducidades, bajo mínimo, sin precio y el
- * valor de la cámara— salen de **la misma** consulta, `inventario_hoy`. Si cada uno
+ * Cuatro de los widgets de Almacén —caducidades, bajo mínimo, sin precio y el
+ * valor de la cámara— salen de **la misma** consulta, `almacen_hoy`. Si cada uno
  * la pidiera por su cuenta serían cuatro viajes para pintar una pantalla, y el
  * presupuesto de velocidad de B7 da un segundo para el Panel entero.
  *
- * La resuelve TanStack Query sola: los cuatro llaman a `usarInventarioHoy()`, que usa la
+ * La resuelve TanStack Query sola: los cuatro llaman a `usarAlmacenHoy()`, que usa la
  * misma `queryKey`, así que el primero pide y los otros tres leen de la caché. No
  * hay que coordinar nada, y **quitar un widget del Panel deja de pedir su parte**
  * sin que nadie tenga que acordarse.
@@ -238,7 +238,7 @@ function Caja({
 // ── Lo que caduca ────────────────────────────────────────────────────────────
 
 function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarInventarioHoy();
+  const consulta = usarAlmacenHoy();
   const navegar = useNavigate();
   const caducan = consulta.data?.caducan ?? [];
   const cuantos = tamano === 'grande' ? 6 : 3;
@@ -250,7 +250,7 @@ function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
       leyendo={consulta}
       titulo="Caduca esta semana"
       origen="Lotes con fecha · próximos 7 días"
-      ir="/inventario/resumen"
+      ir="/almacen/resumen"
     >
       {caducan.length === 0 ? (
         <p className="text-secundario text-texto-suave">Nada caduca en los próximos siete días.</p>
@@ -262,12 +262,11 @@ function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
               <button
                 type="button"
                 onClick={() => {
-                  navegar(`/inventario/productos/todo?producto=${lote.productoId}`);
+                  navegar(`/almacen/productos/todo?producto=${lote.productoId}`);
                 }}
                 className="flex w-full items-center gap-e2 rounded-medio px-e1 py-e1 text-left hover:bg-fondo"
               >
                 <span className="min-w-0 flex-1 truncate text-cuerpo">{lote.producto}</span>
-                {lote.congelado && <Etiqueta tono="info">congelado</Etiqueta>}
                 <Etiqueta tono={lote.dias <= 1 ? 'mal' : 'atencion'}>
                   {/* Lo que caduca hoy todavía no ha caducado: «hoy», como dice lo de hoy. */}
                   {lote.dias < 0
@@ -295,7 +294,7 @@ function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
 // ── Lo que está bajo mínimo ──────────────────────────────────────────────────
 
 function BajoMinimo({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarInventarioHoy();
+  const consulta = usarAlmacenHoy();
   const navegar = useNavigate();
   const atencion = consulta.data?.atencion ?? [];
   const cuantos = tamano === 'grande' ? 6 : 3;
@@ -305,8 +304,8 @@ function BajoMinimo({ tamano }: { readonly tamano: TamanoDeWidget }) {
     <Caja
       leyendo={consulta}
       titulo="Bajo mínimo"
-      origen="De tu inventario, ahora mismo"
-      ir="/inventario/productos/bajo-minimo"
+      origen="De tu almacén, ahora mismo"
+      ir="/almacen/productos/bajo-minimo"
     >
       {atencion.length === 0 ? (
         <p className="text-secundario text-texto-suave">
@@ -321,7 +320,7 @@ function BajoMinimo({ tamano }: { readonly tamano: TamanoDeWidget }) {
                 <button
                   type="button"
                   onClick={() => {
-                    navegar('/inventario/productos/bajo-minimo');
+                    navegar('/almacen/productos/bajo-minimo');
                   }}
                   className="w-full rounded-medio px-e1 py-e1 text-left hover:bg-fondo"
                 >
@@ -389,7 +388,7 @@ function BajoMinimo({ tamano }: { readonly tamano: TamanoDeWidget }) {
 // ── Los que no tienen precio ─────────────────────────────────────────────────
 
 function SinPrecio({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarInventarioHoy();
+  const consulta = usarAlmacenHoy();
   const hoy = consulta.data;
   const sinPrecio = hoy?.sinPrecio ?? [];
   usarQueEstaVacio(hoy === undefined ? undefined : sinPrecio.length === 0);
@@ -399,7 +398,7 @@ function SinPrecio({ tamano }: { readonly tamano: TamanoDeWidget }) {
       leyendo={consulta}
       titulo="Sin precio"
       origen="Cuentan cero en el valor de la cámara"
-      ir="/inventario/productos/sin-precio"
+      ir="/almacen/productos/sin-precio"
     >
       <Cifra
         etiqueta="Productos"
@@ -429,7 +428,7 @@ function SinPrecio({ tamano }: { readonly tamano: TamanoDeWidget }) {
 // ── Lo que vale la cámara ────────────────────────────────────────────────────
 
 function ValorDeLaCamara() {
-  const consulta = usarInventarioHoy();
+  const consulta = usarAlmacenHoy();
   const hoy = consulta.data;
 
   // «Un rol sin costes no recibe ni un campo de coste»: si el servidor no ha
@@ -449,7 +448,7 @@ function ValorDeLaCamara() {
       leyendo={consulta}
       titulo="Valor de la cámara"
       origen="A precio medio; lo que entró sin coste, a su precio de hoy"
-      ir="/inventario/resumen"
+      ir="/almacen/resumen"
     >
       <Cifra
         etiqueta="El género que hay"
@@ -469,11 +468,11 @@ const TONO_DE_LA_ZONA: Readonly<Record<Zona, 'marca' | 'info' | 'neutro'>> = {
 };
 
 function CuantoGenero({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarInventarioHoy();
+  const consulta = usarAlmacenHoy();
   const hoy = consulta.data;
 
   return (
-    <Caja leyendo={consulta} titulo="Tu género" ir="/inventario/productos/todo">
+    <Caja leyendo={consulta} titulo="Tu género" ir="/almacen/productos/todo">
       <Cifra
         etiqueta="Productos de alta"
         valor={hoy?.cuantosProductos ?? 0}
@@ -960,9 +959,9 @@ function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
           ? `La media de estos catorce días es ${comoDinero(datos.mediaCentimos)}`
           : 'Lo que ha salido de cámara sin venderse'
       }
-      // «Ver» solo a quien tiene Inventario: a un camarero le llevaría a una
+      // «Ver» solo a quien tiene Almacén: a un camarero le llevaría a una
       // pantalla que no puede abrir.
-      {...(puedeVer(permisos, 'app.inventario') ? { ir: '/inventario/movimientos/mermas' } : {})}
+      {...(puedeVer(permisos, 'app.almacen') ? { ir: '/almacen/movimientos/mermas' } : {})}
     >
       {datos === undefined ? (
         <Cargando que="la merma" lineas={2} />
@@ -1005,7 +1004,7 @@ function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
                     cuando: comoSeLeeLaFecha(dia.fecha),
                   }))}
                   formato={(v) => (conPrecios ? comoDinero(v) : String(v))}
-                  color="var(--color-app-inventario)"
+                  color="var(--color-app-almacen)"
                   alto={tamano === 'grande' ? 56 : 36}
                 />
               </div>
@@ -1217,13 +1216,13 @@ function VentasDeHoyWidget() {
 function ComprasDeHoyWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const { permisos, yo } = usarSesion();
   const navegar = useNavigate();
-  const puedeTocar = puedeEditar(permisos, 'app.inventario');
+  const puedeTocar = puedeEditar(permisos, 'app.almacen');
   const cuantos = tamano === 'grande' ? 6 : 3;
 
   const consulta = usarLectura<ComprasDeHoy>(
     'compras_de_hoy',
     {},
-    puedeVer(permisos, 'app.inventario') && yo?.local !== null && yo?.local !== undefined,
+    puedeVer(permisos, 'app.almacen') && yo?.local !== null && yo?.local !== undefined,
   );
 
   const datos = consulta.data;
@@ -1244,7 +1243,7 @@ function ComprasDeHoyWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
           ? 'Lo que llega y a quién toca pedir'
           : `${borradores === 1 ? '1 borrador' : `${borradores} borradores`} sin mandar`
       }
-      ir="/inventario/compras/pedidos"
+      ir="/almacen/compras/pedidos"
     >
       {datos === undefined ? (
         <Cargando que="las compras" lineas={2} />
@@ -1261,8 +1260,8 @@ function ComprasDeHoyWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
                 onClick={() => {
                   navegar(
                     t.borradorId === null
-                      ? `/inventario/compras/pedidos?pedir=${t.proveedorId}`
-                      : `/inventario/compras/pedidos?pedido=${t.borradorId}`,
+                      ? `/almacen/compras/pedidos?pedir=${t.proveedorId}`
+                      : `/almacen/compras/pedidos?pedido=${t.borradorId}`,
                   );
                 }}
                 className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
@@ -1280,7 +1279,7 @@ function ComprasDeHoyWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
                 type="button"
                 onClick={() => {
                   navegar(
-                    `/inventario/compras/pedidos?pedido=${l.pedidoId}${puedeTocar ? '&recibir=1' : ''}`,
+                    `/almacen/compras/pedidos?pedido=${l.pedidoId}${puedeTocar ? '&recibir=1' : ''}`,
                   );
                 }}
                 className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
@@ -1309,7 +1308,7 @@ function ComprasDeHoyWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
  * tareas— es M14, y leerá la misma tabla.
  *
  * Quién ve qué no lo decide el widget: lo decide la base. A un camarero no le
- * llega ninguna entrega, porque no lleva Inventario; le llegan sus avisos.
+ * llega ninguna entrega, porque no lleva Almacén; le llegan sus avisos.
  */
 function LoQueVieneWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const { permisos, yo } = usarSesion();
@@ -1396,7 +1395,7 @@ function UltimosMovimientos({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   const consulta = useQuery({
     queryKey: ['mis_movimientos', 'panel'],
-    enabled: puedeVer(permisos, 'app.inventario') && yo?.local !== null && yo?.local !== undefined,
+    enabled: puedeVer(permisos, 'app.almacen') && yo?.local !== null && yo?.local !== undefined,
     queryFn: async (): Promise<MisMovimientos> => {
       const respuesta = await cliente.consultar<MisMovimientos>('mis_movimientos', { limite: '8' });
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
@@ -1413,7 +1412,7 @@ function UltimosMovimientos({ tamano }: { readonly tamano: TamanoDeWidget }) {
       leyendo={consulta}
       titulo="Lo último apuntado"
       origen="Del libro de movimientos"
-      ir="/inventario/movimientos/todo"
+      ir="/almacen/movimientos/todo"
     >
       {lineas.length === 0 ? (
         <p className="text-secundario text-texto-suave">

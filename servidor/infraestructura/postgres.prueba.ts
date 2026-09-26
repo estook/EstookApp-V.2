@@ -6,7 +6,7 @@ import { laPuertaDeLaApi } from './postgres.ts';
  *
  * ── El fallo que estas pruebas existen para que no vuelva ────────────────────
  *
- * El 24 de septiembre de 2026 Richi recargó dos veces Inventario en el móvil y la
+ * El 24 de septiembre de 2026 Richi recargó dos veces Almacén en el móvil y la
  * app le pidió entrar; entrar tampoco funcionaba, y al rato sí. La API iba por el
  * agrupador de Supabase en modo sesión, que admite quince clientes a la vez: con
  * treinta transacciones seguidas, quince volvían con error. Por el modo

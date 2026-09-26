@@ -14,7 +14,7 @@ import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
  *
  *   1. Los desplegables de la barra de escritorio no se abrían. Se abrían, pero
  *      quedaban recortados por el `overflow-x` del `<nav>`.
- *   2. La rueda del móvil decía «estás en Inventario» estando en el Panel.
+ *   2. La rueda del móvil decía «estás en Almacén» estando en el Panel.
  *   3. En el móvil no había buscador, ni avisos, ni chat, ni Fogón, ni Ajustes.
  *   4. Avisos, chat y Fogón eran botones mudos también en el ordenador.
  *   5. «Termina de configurar tu local» no se podía quitar.
@@ -121,26 +121,26 @@ test.describe('la barra de escritorio', () => {
 
     await page
       .getByRole('banner')
-      .getByRole('button', { name: /Inventario/ })
+      .getByRole('button', { name: /Almacén/ })
       .click();
 
-    const menu = page.getByRole('menu', { name: 'Inventario' });
+    const menu = page.getByRole('menu', { name: 'Almacén' });
     await expect(menu).toBeVisible();
 
     // Y lo que `toBeVisible` no comprueba: que esté delante y dentro de la
     // ventana, no recortado por la barra.
-    expect(await seVeDeVerdad(page, '[role="menu"][aria-label="Inventario"]')).toBe(true);
+    expect(await seVeDeVerdad(page, '[role="menu"][aria-label="Almacén"]')).toBe(true);
 
     // Y que lleve a algún sitio, que es para lo que está.
     await menu.getByRole('menuitem', { name: 'Productos' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Productos');
-    await expect(page).toHaveURL(/inventario\/productos/);
+    await expect(page).toHaveURL(/almacen\/productos/);
   });
 
   test('las ocho abren la suya, y ninguna se queda recortada', async ({ page }) => {
     await entrar(page);
 
-    const apps = ['Inventario', 'Escandallos', 'Carta', 'Calendario', 'Equipo', 'Servicio'];
+    const apps = ['Almacén', 'Escandallos', 'Carta', 'Calendario', 'Equipo', 'Servicio'];
     for (const app of apps) {
       await page
         .getByRole('banner')
@@ -292,7 +292,7 @@ test.describe('la rueda dice dónde estás', () => {
     // El fallo: el cursor del teclado empezaba en cero, y el primer sector salía
     // pintado de naranja. En un móvil eso no se lee como «por aquí empiezan las
     // flechas»: se lee como «estás aquí». La rueda decía que estabas en
-    // Inventario estando en el Panel.
+    // Almacén estando en el Panel.
     await entrar(page);
     await abrirLaRueda(page);
 
@@ -304,12 +304,12 @@ test.describe('la rueda dice dónde estás', () => {
 
   test('desde dentro de una app resalta esa, y solo esa', async ({ page }) => {
     await entrar(page);
-    await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
+    await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
     await abrirLaRueda(page);
 
     const aqui = page.locator('[role="menuitem"][aria-current="page"]');
     await expect(aqui).toHaveCount(1);
-    await expect(aqui).toHaveAttribute('id', 'sector-inventario');
+    await expect(aqui).toHaveAttribute('id', 'sector-almacen');
   });
 });
 
@@ -395,7 +395,7 @@ test.describe('Fogón', () => {
 
     test('va contigo: sigue estando dentro de una app', async ({ page }) => {
       await entrar(page);
-      await abrirSinQueSeCaiga(page, `${APP}#/inventario/productos`);
+      await abrirSinQueSeCaiga(page, `${APP}#/almacen/productos`);
 
       // Esperar al título antes de medir. `domcontentloaded` llega mientras la
       // pantalla todavía dice «Cargando tu sesión», y preguntar ahí qué hay en un
@@ -416,11 +416,11 @@ test.describe('Fogón', () => {
       );
       await page.keyboard.press('Escape');
 
-      // Y desde Inventario, sin que nadie se lo diga.
-      await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
+      // Y desde Almacén, sin que nadie se lo diga.
+      await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
       await abrirFogon(page);
-      await expect(page.getByText('Fogón sabe que estás en')).toContainText('Inventario');
+      await expect(page.getByText('Fogón sabe que estás en')).toContainText('Almacén');
       await expect(page.getByText(/Dictarle una merma/)).toBeVisible();
     });
 
@@ -432,7 +432,7 @@ test.describe('Fogón', () => {
         una frase, como la diría una persona.
       */
       await entrar(page);
-      await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
+      await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
       await abrirFogon(page);
@@ -504,13 +504,13 @@ test.describe('Fogón', () => {
   });
 });
 
-// ── El Panel, enchufado a Inventario ────────────────────────────────────────
+// ── El Panel, enchufado a Almacén ────────────────────────────────────────
 
 /**
- * «Los pendientes los traen Inventario (M6) y Servicio (M12)», decía el Panel.
+ * «Los pendientes los traen Almacén (M6) y Servicio (M12)», decía el Panel.
  *
  * M6 terminó y **no los trajo**: las dos tarjetas seguían con su estado vacío
- * mientras `inventario_hoy` devolvía exactamente lo que les hacía falta. No
+ * mientras `almacen_hoy` devolvía exactamente lo que les hacía falta. No
  * faltaba código; faltaba que dos partes construidas se hablaran, que es el
  * fallo más caro y el que ninguna prueba de unidad ve.
  *
@@ -526,15 +526,15 @@ test.describe('Fogón', () => {
  * primera pantalla del día** enseña lo del género de verdad, y que a quien no
  * tiene la app no le enseña nada de eso.
  */
-test.describe('el Panel enseña lo de Inventario', () => {
+test.describe('el Panel enseña lo de Almacén', () => {
   // La prueba de los widgets de fábrica **se ha mudado a `esqueleto.spec.ts`**:
   // para comprobarlos hay que dejar el Panel de fábrica, y eso es tocarlo. El
   // Panel se guarda en el servidor por persona, así que dos ficheros que lo
   // toquen a la vez se pisan — y estos dos corren en paralelo.
 
-  test('quien no tiene Inventario no ve ninguno de sus widgets', async ({ page }) => {
+  test('quien no tiene Almacén no ve ninguno de sus widgets', async ({ page }) => {
     // «Las apps que el rol no tiene no aparecen **en ningún sitio**». Sara es
-    // camarera: pedirle `inventario_hoy` sería llevarle un «esto no está en tu
+    // camarera: pedirle `almacen_hoy` sería llevarle un «esto no está en tu
     // acceso» a la primera pantalla del día.
     await entrar(page, 'sara@ejemplo.estook.com');
 
@@ -806,7 +806,7 @@ test('si el Panel no puede leer, lo dice, y no se inventa un «no puedes» ni un
       body: JSON.stringify({ datos: { widgets: null, version: 0 } }),
     }),
   );
-  await page.route('**/api/v1/consultas/inventario_hoy*', (ruta) =>
+  await page.route('**/api/v1/consultas/almacen_hoy*', (ruta) =>
     ruta.fulfill({ status: 500, contentType: 'application/json', body: '{}' }),
   );
   await page.route('**/api/v1/consultas/mi_fichaje*', (ruta) =>

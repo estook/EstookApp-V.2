@@ -18,7 +18,7 @@ import {
 } from '@estook/ui';
 import { QuienTieneAcceso } from './QuienTieneAcceso.tsx';
 import { Delivery } from '../servicio/Delivery.tsx';
-import { Inventario } from '../inventario/Inventario.tsx';
+import { Almacen } from '../almacen/Almacen.tsx';
 import { EquipoHoy } from '../equipo/EquipoHoy.tsx';
 import { ResumenDelEquipo } from '../equipo/ResumenDelEquipo.tsx';
 import { CierreDeCaja } from '../servicio/CierreDeCaja.tsx';
@@ -72,7 +72,7 @@ export function PantallaDeApp() {
   /*
     Sin destino en la direccion, o con uno que no existe, se manda a donde entra
     la app: su **primer destino construido**. Antes esto caia en la primera
-    pestana del catalogo, que en Inventario era «Hoy» por suerte y en cualquier
+    pestana del catalogo, que en Almacén era «Hoy» por suerte y en cualquier
     app futura podia ser una pestana vacia.
   */
   if (destino === undefined) return <Navigate to={rutaDe(app)} replace />;
@@ -159,7 +159,7 @@ function Dentro({
         {/*
           Las migas llevan **dos pasos y no tres**: Panel y la app. La vista no
           entra porque no es un sitio, y el destino ya se ve resaltado en el menu
-          lateral y en la barra de abajo. Antes ponia «Panel · Inventario ·
+          lateral y en la barra de abajo. Antes ponia «Panel · Almacén ·
           Productos», que dice tres veces donde estas y ninguna vez como salir.
         */}
         <Migas camino={[{ nombre: 'Panel', ir: alVolver }, { nombre: app.nombre }]} />
@@ -220,8 +220,8 @@ function Dentro({
  *
  * Lo que ya funciona de verdad, y de que modulo es cada cosa:
  *
- *   Inventario · Hoy, Productos, Movimientos, Compras     M6 · con Mermas en M6½
- *   Inventario · Compras entera                           M7 · pedidos, albaranes, facturas y precios
+ *   Almacén · Hoy, Productos, Movimientos, Compras     M6 · con Mermas en M6½
+ *   Almacén · Compras entera                           M7 · pedidos, albaranes, facturas y precios
  *   Equipo · Personas                                     M4 · dar acceso y quitarlo
  *   Equipo · Hoy y Resumen                                M6½ · fichajes y horas
  *   Servicio · Jornada · Cierre                           M6½ · el cierre de caja
@@ -242,8 +242,8 @@ function Contenido({
   readonly destino: Destino;
   readonly vista: Vista | undefined;
 }) {
-  if (app.id === 'inventario' && destino.modulo === undefined) {
-    return <Inventario destino={destino.id} vista={vista?.id ?? ''} />;
+  if (app.id === 'almacen' && destino.modulo === undefined) {
+    return <Almacen destino={destino.id} vista={vista?.id ?? ''} />;
   }
 
   if (app.id === 'equipo' && destino.id === 'personas') {

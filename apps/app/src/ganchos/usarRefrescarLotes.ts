@@ -9,7 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
  * quede enseñando un lote que ya no está.
  */
 const LO_QUE_TOCAN_LOS_LOTES = [
-  'inventario_hoy',
+  'almacen_hoy',
   'un_producto',
   'mis_productos',
   'lo_que_viene',

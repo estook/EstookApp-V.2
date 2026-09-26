@@ -23,7 +23,7 @@ import { Aviso, Etiqueta, Tarjeta, clases } from '@estook/ui';
  * Lo que sí hay es **qué va a entrar por aquí, dicho por su nombre**, que es
  * información útil hoy: quien está montando su carta necesita saber que los
  * precios de delivery van a poder ser distintos, y quien está montando su
- * inventario, que esas ventas van a descontar género igual que las del TPV.
+ * almacén, que esas ventas van a descontar género igual que las del TPV.
  */
 
 /** Los canales, y por cuál se empieza. */
@@ -89,8 +89,8 @@ export function Delivery() {
         <ul className="flex flex-col gap-e3 text-secundario text-texto-suave">
           <li>
             <strong className="text-texto">Una venta de reparto es una venta.</strong> Descuenta
-            género del libro de movimientos igual que la del TPV, así que el inventario no se entera
-            de por dónde entró. Eso ya está construido.
+            género del libro de movimientos igual que la del TPV, así que el almacén no se entera de
+            por dónde entró. Eso ya está construido.
           </li>
           <li>
             <strong className="text-texto">Pero el precio puede ser otro.</strong> Un plato puede

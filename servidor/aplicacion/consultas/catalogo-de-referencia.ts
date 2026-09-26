@@ -13,7 +13,7 @@ import { consulta } from '../contrato.ts';
  * ── Lo que esta consulta NO hace, y es lo importante ─────────────────────────
  *
  * **No crea nada.** Devuelve una propuesta rellenada, y quien decide es una
- * persona: «Estook no mete nada en tu inventario. Te lo rellena cuando tú se lo
+ * persona: «Estook no mete nada en tu almacén. Te lo rellena cuando tú se lo
  * pides». Copiar una referencia a un producto de verdad es M6, y será un comando
  * suyo.
  *

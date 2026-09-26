@@ -59,11 +59,11 @@ describe('trigramas', () => {
 
 describe('parecido', () => {
   it('lo identico se parece del todo', () => {
-    expect(parecido('inventario', 'inventario')).toBe(1);
+    expect(parecido('almacen', 'almacen')).toBe(1);
   });
 
   it('lo que no tiene nada que ver no se parece nada', () => {
-    expect(parecido('inventario', 'zzqwx')).toBe(0);
+    expect(parecido('almacen', 'zzqwx')).toBe(0);
   });
 
   it('perdona una errata', () => {

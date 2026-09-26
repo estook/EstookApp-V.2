@@ -30,7 +30,7 @@ import { comoSeEscribe } from './comoSeEscribe.ts';
  *
  * ── Por qué vive aquí y no en la aplicación ─────────────────────────────────
  *
- * Porque desde la mejora 2 la usan el Panel **y las tres apps** —Inventario,
+ * Porque desde la mejora 2 la usan el Panel **y las tres apps** —Almacén,
  * Servicio y Equipo— con sus cifras. «No se copia la tarjeta: se usa la misma.»
  * Esta pieza solo pinta: los datos llegan hechos de `un_indicador` y quien la usa
  * se los pasa, así que el food cost del Panel es el mismo que el de Servicio.

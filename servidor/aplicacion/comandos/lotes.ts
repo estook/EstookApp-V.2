@@ -3,7 +3,7 @@ import { horaDeCorte, jornadaDe, partidaDe, sePuedeTirar, valorDeLaMerma } from 
 import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
-import { apuntar, elProductoBloqueado, loQueHay } from '../inventario.ts';
+import { apuntar, elProductoBloqueado, loQueHay } from '../almacen.ts';
 
 /**
  * Los lotes: quitarlos cuando se gastan o se tiran, y congelarlos (M7, repaso).
@@ -27,8 +27,6 @@ import { apuntar, elProductoBloqueado, loQueHay } from '../inventario.ts';
  *                      por `apuntar` como cualquier otra. Sin eso, el food cost
  *                      del mes no sabría que se tiró.
  */
-
-const fecha = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'La fecha se escribe así: 2026-09-30.');
 
 export const entradaQuitarLote = z
   .object({
@@ -55,7 +53,7 @@ export interface SalidaQuitarLote {
 export const quitarLote = comando<EntradaQuitarLote, SalidaQuitarLote>({
   nombre: 'quitar_lote',
   entrada: entradaQuitarLote,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const organizacionId = laOrganizacionDeLaSesion(contexto);
@@ -170,11 +168,6 @@ export const entradaCongelar = z
     producto_id: z.string().uuid(),
     /** Un lote que ya había: se congela ese. Sin él, se apunta uno nuevo, congelado hoy. */
     lote_id: z.string().uuid().optional(),
-    /**
-     * Hasta cuándo aguanta ya congelado. Sin mandarlo, se queda la que tuviera;
-     * a nulo, sin fecha.
-     */
-    caduca_el: fecha.nullable().optional(),
     codigo: z.string().trim().max(64).nullable().optional(),
     /**
      * **Cuánto** se congela, en la unidad de uso del producto (0035).
@@ -193,10 +186,17 @@ export type EntradaCongelar = z.infer<typeof entradaCongelar>;
  * Congelar género: «la mitad de la carne va al congelador».
  *
  * **No mueve nada**: el producto es el mismo y está en el mismo local. Lo que
- * cambia es que ese lote queda marcado como congelado, con su fecha, con cuánto
- * lleva y normalmente con otra caducidad —congelado aguanta meses—. Sale como tal
- * en la lista de productos, en su ficha y en el Calendario, y los productos que
- * tienen algo congelado tienen su vista: «Congelados».
+ * cambia es que ese lote queda marcado como congelado, con su fecha y con cuánto
+ * lleva. Sale como tal en la lista de productos, en su ficha y en el Calendario, y
+ * los productos que tienen algo congelado tienen su vista: «Congelados».
+ *
+ * ── Y por qué ya no pregunta la caducidad (repaso del 25-sep) ───────────────
+ *
+ * Porque lo congelado **no caduca: se queda viejo**. Richi: «no te puede avisar de
+ * que está caducado, sino que ese producto congelado te avisa cuando lleva mucho
+ * tiempo». La fecha de cuando estaba fresco se queda como estaba —dice de dónde
+ * viene—, y lo que avisa es lo que lleva en el congelador contra lo que aguanta
+ * congelado ese producto (`congelado_aguanta_meses`, tres meses si nadie lo cambia).
  *
  * ── Y por qué lleva cantidad desde el repaso ────────────────────────────────
  *
@@ -208,7 +208,7 @@ export type EntradaCongelar = z.infer<typeof entradaCongelar>;
 export const congelar = comando<EntradaCongelar, { loteId: string }>({
   nombre: 'congelar',
   entrada: entradaCongelar,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const organizacionId = laOrganizacionDeLaSesion(contexto);
@@ -251,13 +251,10 @@ export const congelar = comando<EntradaCongelar, { loteId: string }>({
     let loteId: string | undefined;
 
     if (entrada.lote_id !== undefined) {
-      const cambiaLaFecha = entrada.caduca_el !== undefined;
       const congelados = await contexto.sql<{ id: string; ya: boolean }[]>`
         update estook.lote
            set congelado_el = coalesce(congelado_el, ${hoy}::date),
-               cantidad = coalesce(${entrada.cuanto ?? null}::numeric, cantidad),
-               caduca_el = case when ${cambiaLaFecha} then ${entrada.caduca_el ?? null}::date
-                                else caduca_el end
+               cantidad = coalesce(${entrada.cuanto ?? null}::numeric, cantidad)
          where id = ${entrada.lote_id}
            and producto_id = ${entrada.producto_id}
            and retirado_en is null
@@ -272,12 +269,12 @@ export const congelar = comando<EntradaCongelar, { loteId: string }>({
     } else {
       const nuevos = await contexto.sql<{ id: string }[]>`
         insert into estook.lote (
-          local_id, producto_id, codigo, caduca_el, recibido_el, congelado_el, es_ejemplo,
+          local_id, producto_id, codigo, recibido_el, congelado_el, es_ejemplo,
           cantidad
         )
         values (
           ${producto.local_id}, ${entrada.producto_id}, ${entrada.codigo ?? null},
-          ${entrada.caduca_el ?? null}::date, ${hoy}::date, ${hoy}::date, ${producto.es_ejemplo},
+          ${hoy}::date, ${hoy}::date, ${producto.es_ejemplo},
           ${entrada.cuanto ?? null}
         )
         returning id
@@ -289,7 +286,7 @@ export const congelar = comando<EntradaCongelar, { loteId: string }>({
     await contexto.sql`
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'lote', ${loteId}, ${producto.local_id}::uuid, null,
-        ${JSON.stringify({ congelado: true, producto: producto.nombre, caduca_el: entrada.caduca_el ?? null })}::text::jsonb,
+        ${JSON.stringify({ congelado: true, producto: producto.nombre, cuanto: entrada.cuanto ?? null })}::text::jsonb,
         null
       )
     `;

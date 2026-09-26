@@ -28,7 +28,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  *      —arrastrar un widget son veinte reordenaciones, y no se mandan veinte
  *      comandos—. Si dentro de esos 800 ms se salía del Panel, el componente se
  *      desmontaba, **se cancelaba el reloj y lo pendiente se tiraba**. Colocabas
- *      un widget, entrabas en Inventario, volvías, y estaba donde estaba antes.
+ *      un widget, entrabas en Almacén, volvías, y estaba donde estaba antes.
  *   2. **Al recargar.** Al guardar no se tocaba la caché de TanStack Query, así
  *      que seguía teniendo lo viejo **y la versión vieja**. Volver al Panel leía
  *      esa caché y pisaba lo tuyo; y el siguiente guardado mandaba una versión

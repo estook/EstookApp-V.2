@@ -28,7 +28,7 @@ import { filtrarPorParecido } from './trigramas.ts';
 export interface Accion {
   readonly id: string;
   readonly nombre: string;
-  /** Donde esta: «Ajustes», «Inventario». Ayuda a distinguir dos parecidas. */
+  /** Donde esta: «Ajustes», «Almacén». Ayuda a distinguir dos parecidas. */
   readonly donde?: string;
   /**
    * Lo que la gente escribe para encontrarla y no sale en pantalla: «clave» para

@@ -446,7 +446,7 @@ test.describe('los datos de ejemplo', () => {
     // ── Y por qué en un local recién creado ────────────────────────────────
     //
     // Porque las pruebas corren en paralelo contra una sola base de datos, y los
-    // ejemplos de Rosa y de Marcos los mira `inventario.spec`. Quitárselos desde
+    // ejemplos de Rosa y de Marcos los mira `almacen.spec`. Quitárselos desde
     // aquí sería tirarle la prueba a otra, un día sí y otro también, sin que el
     // fallo tuviera nada que ver con lo que se rompió.
     //
@@ -496,7 +496,7 @@ test.describe('los datos de ejemplo', () => {
   });
 });
 
-// ── 6 · Lo que quedaba de Inventario ────────────────────────────────────────
+// ── 6 · Lo que quedaba de Almacén ────────────────────────────────────────
 
 test.describe('inventario · lo que ninguna prueba ejecutaba', () => {
   test('un producto se desactiva y deja de salir en la lista, sin perderse', async ({

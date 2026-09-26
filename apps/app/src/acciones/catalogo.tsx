@@ -6,12 +6,13 @@ import {
   IconoDocumento,
   IconoEntrar,
   IconoEquipo,
-  IconoInventario,
+  IconoAlmacen,
   IconoOrganizacion,
   IconoPersona,
   IconoQuitar,
   IconoReloj,
   IconoReparto,
+  IconoTablon,
   type Icono,
 } from '@estook/iconos';
 import type { Permiso, PermisosResueltos } from '@estook/permisos';
@@ -92,94 +93,94 @@ export interface Accion {
 export const ACCIONES: readonly Accion[] = [
   {
     id: 'nuevo-producto',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Añadir un producto',
     queHace: 'Abre el alta, con el catálogo de referencia para que sean quince segundos',
     icono: IconoAnadir,
-    permiso: { cual: 'app.inventario', como: 'editar' },
-    ir: '/inventario/productos/todo?hacer=nuevo',
+    permiso: { cual: 'app.almacen', como: 'editar' },
+    ir: '/almacen/productos/todo?hacer=nuevo',
   },
   {
     id: 'que-atender',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Ver qué hay que atender',
     queHace: 'Lo que se acaba, lo que caduca y lo que no tiene precio, con su botón',
     icono: IconoAtencion,
-    permiso: { cual: 'app.inventario', como: 'ver' },
-    ir: '/inventario/resumen',
+    permiso: { cual: 'app.almacen', como: 'ver' },
+    ir: '/almacen/resumen',
   },
   {
     id: 'bajo-minimo',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Ver lo que está bajo mínimo',
     queHace: 'Los productos por debajo de su mínimo, con su previsión de agotamiento',
-    icono: IconoInventario,
-    permiso: { cual: 'app.inventario', como: 'ver' },
-    ir: '/inventario/productos/bajo-minimo',
+    icono: IconoAlmacen,
+    permiso: { cual: 'app.almacen', como: 'ver' },
+    ir: '/almacen/productos/bajo-minimo',
   },
   {
     id: 'sin-precio',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Ponerles precio a los que no tienen',
     queHace: 'Los productos que cuentan cero en el valor de la cámara',
-    icono: IconoInventario,
-    permiso: { cual: 'app.inventario', como: 'ver' },
-    ir: '/inventario/productos/sin-precio',
+    icono: IconoAlmacen,
+    permiso: { cual: 'app.almacen', como: 'ver' },
+    ir: '/almacen/productos/sin-precio',
   },
   {
     id: 'el-libro',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Ver el libro de movimientos',
     queHace: 'Todo lo que ha entrado y salido, por día y con quién lo apuntó',
     icono: IconoDocumento,
-    permiso: { cual: 'app.inventario', como: 'ver' },
-    ir: '/inventario/movimientos/todo',
+    permiso: { cual: 'app.almacen', como: 'ver' },
+    ir: '/almacen/movimientos/todo',
   },
   {
     id: 'nuevo-proveedor',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Añadir un proveedor',
     queHace: 'Su ficha: cuándo reparte, cómo se le pide y a quién llamar',
     icono: IconoOrganizacion,
-    permiso: { cual: 'app.inventario', como: 'editar' },
-    ir: '/inventario/compras/proveedores?hacer=nuevo',
+    permiso: { cual: 'app.almacen', como: 'editar' },
+    ir: '/almacen/compras/proveedores?hacer=nuevo',
   },
   // ── M7 · las compras ─────────────────────────────────────────────────────
   {
     id: 'nuevo-pedido',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Hacer un pedido',
     queHace: 'Eliges a quién, y empieza por lo que Estook le pediría hoy',
     icono: IconoAnadir,
-    permiso: { cual: 'app.inventario', como: 'editar' },
-    ir: '/inventario/compras/pedidos?hacer=nuevo',
+    permiso: { cual: 'app.almacen', como: 'editar' },
+    ir: '/almacen/compras/pedidos?hacer=nuevo',
   },
   {
     id: 'recibir',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Recibir lo que ha llegado',
     queHace: '¿Entero o con cambios? Entero son dos toques',
     icono: IconoReparto,
-    permiso: { cual: 'app.inventario', como: 'editar' },
-    ir: '/inventario/compras/pedidos?hacer=recibir',
+    permiso: { cual: 'app.almacen', como: 'editar' },
+    ir: '/almacen/compras/pedidos?hacer=recibir',
   },
   {
     id: 'apuntar-factura',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Apuntar una factura',
     queHace: 'Con sus albaranes, y te dice si te cobran lo que llegó',
     icono: IconoDocumento,
     permiso: { cual: 'dato.precio_de_compra', como: 'editar' },
-    ir: '/inventario/compras/facturas?hacer=nueva',
+    ir: '/almacen/compras/facturas?hacer=nueva',
   },
   {
     id: 'comparar-precios',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Ver quién me lo deja mejor',
     queHace: 'La comparativa entre proveedores, lo que ha subido y lo pactado',
     icono: IconoDinero,
     permiso: { cual: 'dato.precio_de_compra', como: 'ver' },
-    ir: '/inventario/compras/precios',
+    ir: '/almacen/compras/precios',
   },
   {
     id: 'invitar',
@@ -201,11 +202,11 @@ export const ACCIONES: readonly Accion[] = [
   },
   // ── M6½ · la merma, las horas y lo que entra ─────────────────────────────
   {
-    // Va al Panel y no a Inventario, y es a propósito: **un camarero no tiene
-    // Inventario** y es quien rompe una copa. El Panel lo tiene todo el mundo, y
+    // Va al Panel y no a Almacén, y es a propósito: **un camarero no tiene
+    // Almacén** y es quien rompe una copa. El Panel lo tiene todo el mundo, y
     // la hoja de apuntar se abre ahí encima.
     id: 'apuntar-merma',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Apuntar una merma',
     queHace: 'Qué se ha ido, cuánto y por qué, en tres toques',
     icono: IconoQuitar,
@@ -214,14 +215,25 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     // Entrega O · contar lo que hay. Es lo que cierra el día de un jefe de cocina, y
-    // vivía a dos pantallas: Inventario, Movimientos, la pestaña de recuento.
+    // vivía a dos pantallas: Almacén, Movimientos, la pestaña de recuento.
     id: 'hacer-recuento',
-    app: 'inventario',
-    nombre: 'Hacer recuento',
+    app: 'almacen',
+    nombre: 'Hacer inventario',
     queHace: 'Contar lo que hay y dejar la cámara como está de verdad',
     icono: IconoDocumento,
     permiso: { cual: 'accion.cerrar_recuento', como: 'editar' },
-    ir: '/inventario/movimientos/recuento',
+    ir: '/almacen/movimientos/inventario',
+  },
+  {
+    // El repaso del 25-sep · el Tablón (0049). Sin permiso: el corcho es de todo el
+    // equipo, y quien más lo usa —la sala, con las reservas— no lleva nada más.
+    id: 'escribir-en-el-tablon',
+    app: null,
+    nombre: 'Escribir en el tablón',
+    queHace: 'Una nota para el equipo: una reserva, un aviso, lo que falta',
+    icono: IconoTablon,
+    permiso: null,
+    ir: '/?hacer=tablon',
   },
   {
     // Entrega O · fichar desde cualquier sitio. Abre la hoja del botón «+», donde
@@ -237,12 +249,12 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     id: 'mermas',
-    app: 'inventario',
+    app: 'almacen',
     nombre: 'Ver las mermas',
     queHace: 'Cuánto se va sin venderse y en qué, con la exportación',
     icono: IconoDocumento,
-    permiso: { cual: 'app.inventario', como: 'ver' },
-    ir: '/inventario/movimientos/mermas',
+    permiso: { cual: 'app.almacen', como: 'ver' },
+    ir: '/almacen/movimientos/mermas',
   },
   {
     id: 'quien-esta',
@@ -337,24 +349,38 @@ export function puedoHacer(permisos: PermisosResueltos, accion: Accion): boolean
  * todo pasa por los permisos: a quien no puede cerrar la caja no le sale.
  */
 export const ACCIONES_DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
-  gerente: ['cerrar-caja', 'apuntar-merma', 'recibir', 'nuevo-pedido', 'hacer-recuento', 'invitar'],
+  gerente: [
+    'cerrar-caja',
+    'apuntar-merma',
+    'recibir',
+    'nuevo-pedido',
+    'hacer-recuento',
+    'escribir-en-el-tablon',
+  ],
   jefe: [
     'apuntar-merma',
     'recibir',
     'nuevo-pedido',
     'hacer-recuento',
     'cerrar-caja',
-    'que-atender',
+    'escribir-en-el-tablon',
   ],
-  cocina: ['apuntar-merma', 'recibir', 'bajo-minimo', 'nuevo-pedido', 'hacer-recuento', 'buscar'],
-  sala: ['apuntar-merma', 'cerrar-caja', 'buscar'],
+  cocina: [
+    'apuntar-merma',
+    'recibir',
+    'bajo-minimo',
+    'nuevo-pedido',
+    'hacer-recuento',
+    'escribir-en-el-tablon',
+  ],
+  sala: ['escribir-en-el-tablon', 'apuntar-merma', 'cerrar-caja', 'buscar'],
 };
 
 /**
  * Las de una pantalla, y luego las de toda la aplicacion.
  *
- * Es el orden que necesita Fogon: quien abre la burbuja en Inventario quiere ver
- * primero lo de Inventario. Y las generales van detras y no se quitan, porque
+ * Es el orden que necesita Fogon: quien abre la burbuja en Almacén quiere ver
+ * primero lo de Almacén. Y las generales van detras y no se quitan, porque
  * «buscar en todo» sirve igual en las ocho.
  */
 export function accionesDeAqui(permisos: PermisosResueltos, idDeLaApp: string): readonly Accion[] {

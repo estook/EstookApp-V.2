@@ -60,7 +60,7 @@ const TEXTO = 4.5;
 const ICONO = 3;
 
 const ACENTOS = [
-  'inventario',
+  'almacen',
   'escandallos',
   'carta',
   'calendario',
@@ -436,7 +436,7 @@ describe('el modo cocina: estados, acentos y el botón principal a 7:1', () => {
   const AAA = 7;
   const ESTADOS = ['bien', 'atencion', 'mal', 'info'] as const;
   const APPS = [
-    'inventario',
+    'almacen',
     'escandallos',
     'carta',
     'calendario',

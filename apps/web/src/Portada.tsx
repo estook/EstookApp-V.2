@@ -21,7 +21,7 @@ interface Oferta {
 
 const LO_QUE_HACE = [
   {
-    titulo: 'Tu inventario, al día',
+    titulo: 'Tu almacén, al día',
     texto:
       'Lo que entra con cada albarán, lo que sale y lo que se tira, con su valor y sus caducidades.',
   },
@@ -67,8 +67,8 @@ export function Portada() {
             Tu cocina, bajo control.
           </h1>
           <p className="mt-e4 max-w-[36rem] text-cuerpo text-texto-suave">
-            Estook es la gestión de tu restaurante en una sola aplicación: inventario, compras,
-            equipo y caja. Sin cambiar de TPV.
+            Estook es la gestión de tu restaurante en una sola aplicación: almacén, compras, equipo
+            y caja. Sin cambiar de TPV.
           </p>
           <div className="mt-e6 flex w-full flex-col gap-e3 sm:w-auto sm:flex-row">
             <a

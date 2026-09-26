@@ -5,7 +5,7 @@ const CLAVE_DEL_PERIODO = 'estook.cifras.dias';
 
 /**
  * La semana o el mes, recordado **en este aparato** para todas las apps: quien
- * mira el mes en Inventario quiere el mes en Servicio. Es una comodidad, así que
+ * mira el mes en Almacén quiere el mes en Servicio. Es una comodidad, así que
  * si el navegador no deja guardar —ventana privada, almacenamiento bloqueado— se
  * sigue con la semana y no pasa nada.
  */

@@ -1,5 +1,6 @@
 import { useId, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { enEuros, type Centimos } from '@estook/dominio';
+import { IconoFlechaAbajo } from '@estook/iconos';
 import { clases } from '../clases.ts';
 import { aCentimos } from './aCentimos.ts';
 
@@ -64,9 +65,26 @@ interface Comunes {
   readonly detras?: ReactNode;
 }
 
+/**
+ * La unidad de detrás, **que se elige tocándola** (repaso del 25-sep): «kg ▾».
+ *
+ * Richi: «si pones por peso pone gramos; estaría bien poder elegir kg o g dando
+ * click a la g y que se abra un desplegable». Es el desplegable del sistema —en el
+ * móvil, su rueda—, puesto encima de la unidad sin que se vea la caja: se lee
+ * «kg ▾» y se toca donde está la unidad, que es donde se mira.
+ */
+export interface UnidadQueSeElige {
+  readonly valor: string;
+  /** «kg» y «kilos»: la corta se ve en el campo, la larga en el desplegable. */
+  readonly opciones: readonly { readonly valor: string; readonly larga: string }[];
+  readonly alElegir: (valor: string) => void;
+}
+
 export interface CampoProps
   extends Comunes, Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'className'> {
   readonly tipo?: TipoDeCampo;
+  /** En vez de `detras`: una unidad que se cambia tocándola. */
+  readonly unidad?: UnidadQueSeElige;
 }
 
 /** El armazon: etiqueta arriba, campo, y ayuda o error debajo. Lo comparten todos. */
@@ -120,6 +138,7 @@ export function Campo({
   obligatorio,
   delante,
   detras,
+  unidad,
   id,
   ...resto
 }: CampoProps) {
@@ -155,12 +174,40 @@ export function Campo({
             CAJA,
             delante !== undefined && 'pl-e7',
             detras !== undefined && 'pr-e7',
+            unidad !== undefined && 'pr-[4.5rem]',
             error !== undefined && 'border-mal',
           )}
           {...resto}
         />
-        {detras !== undefined && (
+        {detras !== undefined && unidad === undefined && (
           <span className="absolute right-e3 text-texto-suave text-secundario">{detras}</span>
+        )}
+        {unidad !== undefined && (
+          <span className="absolute right-e1 flex min-h-toque items-center">
+            <span
+              aria-hidden
+              className="pointer-events-none flex items-center gap-[2px] rounded-medio px-e2 text-secundario font-semibold text-texto"
+            >
+              {unidad.valor}
+              <IconoFlechaAbajo size={14} />
+            </span>
+            <select
+              aria-label={`Unidad de «${etiqueta}»`}
+              value={unidad.valor}
+              onChange={(e) => {
+                unidad.alElegir(e.currentTarget.value);
+              }}
+              // Encima de la unidad y sin verse: se toca «kg ▾» y se abre el del
+              // sistema, con su rueda en el móvil.
+              className="absolute inset-0 min-h-toque w-full cursor-pointer opacity-0"
+            >
+              {unidad.opciones.map((opcion) => (
+                <option key={opcion.valor} value={opcion.valor}>
+                  {opcion.valor} ({opcion.larga})
+                </option>
+              ))}
+            </select>
+          </span>
         )}
       </div>
     </Envoltorio>

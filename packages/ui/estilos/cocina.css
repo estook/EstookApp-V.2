@@ -115,7 +115,7 @@
     /* El texto del botón principal: con #111c1f el naranja da 6,64; con negro, 8,04. */
     --color-sobre-naranja: #000000;
 
-    --color-app-inventario: #734500; /* 7,08:1 · el mismo tono que atención */
+    --color-app-almacen: #734500; /* 7,08:1 · el mismo tono que atención */
     --color-app-escandallos: #135b3a; /* 7,07:1 */
     --color-app-carta: #8a2d56; /* 7,05:1 */
     --color-app-calendario: #215375; /* 7,14:1 */
@@ -168,7 +168,7 @@
       --color-info: #215375;
       --color-sobre-naranja: #000000;
 
-      --color-app-inventario: #734500;
+      --color-app-almacen: #734500;
       --color-app-escandallos: #135b3a;
       --color-app-carta: #8a2d56;
       --color-app-calendario: #215375;

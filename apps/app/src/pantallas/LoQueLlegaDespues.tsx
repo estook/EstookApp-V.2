@@ -44,8 +44,7 @@ const FICHAS: Readonly<Record<LoQueFalta, Ficha>> = {
       'Ordenados por lo que más cuesta si se deja, no por hora de llegada.',
     ],
     cuando: 'Llegan con Fogón, el módulo 22.',
-    mientrasTanto:
-      'Lo que hay que atender hoy está en el Panel, y lo del género en Inventario · Hoy.',
+    mientrasTanto: 'Lo que hay que atender hoy está en el Panel, y lo del género en Almacén · Hoy.',
   },
   tpv: {
     titulo: 'Conectar tu TPV',
@@ -57,7 +56,7 @@ const FICHAS: Readonly<Record<LoQueFalta, Ficha>> = {
     ],
     cuando: 'El asistente de conexión llega con el módulo 18, y el emparejamiento con el 20.',
     mientrasTanto:
-      'Las ventas se pueden meter a mano, y el inventario funciona igual: cada entrada y cada salida se apuntan en su libro.',
+      'Las ventas se pueden meter a mano, y el almacén funciona igual: cada entrada y cada salida se apuntan en su libro.',
   },
   chat: {
     titulo: 'El chat del equipo',

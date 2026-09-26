@@ -1,5 +1,5 @@
 import type { MotivoDeMerma } from './merma.ts';
-import type { TipoDeMovimiento } from './inventario.ts';
+import type { TipoDeMovimiento } from './almacen.ts';
 
 /**
  * Por qué sale el género (M7, repaso) · el catálogo cerrado de una sola pregunta.

@@ -72,4 +72,30 @@ describe('el orden de lo de hoy', () => {
     expect(cosas[0]?.id).toBe('salida-olvidada');
     expect(cosas[0]?.titulo).toBe('Llevas 14 horas dentro');
   });
+
+  it('lo congelado avisa por lo que lleva en el congelador, no por su caducidad (25-sep)', () => {
+    const cosas = loDeHoy({
+      congelados: { pasados: ['Bacon'], pronto: ['Gambas', 'Pulpo'] },
+    });
+    expect(cosas.map((c) => c.id)).toEqual(['congelados-pasados', 'congelados-pronto']);
+    expect(cosas[0]?.titulo).toBe('Bacon lleva demasiado tiempo congelado');
+    expect(cosas[1]?.titulo).toBe('2 congelados cumplen su tiempo esta semana');
+    expect(cosas[1]?.accion?.ir).toBe('/almacen/productos/congelados');
+  });
+
+  it('una nota del tablón con hora es de lo que tiene hora hoy (25-sep)', () => {
+    const cosas = loDeHoy({
+      bajoMinimo: 2,
+      notasConHora: [
+        { notaId: 'n1', hora: '17:00', texto: 'Reserva de 20 personas', autor: 'Ricardo' },
+      ],
+    });
+    expect(cosas[0]).toMatchObject({
+      id: 'nota:n1',
+      escalon: 3,
+      titulo: '17:00 · Reserva de 20 personas',
+      detalle: 'En el tablón · de Ricardo',
+      accion: { texto: 'Verla', ir: '/?nota=n1' },
+    });
+  });
 });

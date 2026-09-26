@@ -120,7 +120,7 @@ export function costeDeLineaDesdeCompra(
  *
  * «El último precio se guarda y se enseña, pero el que descuenta es el medio: es
  * lo único que evita que el margen salte cada vez que llega un albarán caro»
- * (Manifiesto, Inventario).
+ * (Manifiesto, Almacén).
  */
 export interface Existencias {
   readonly cantidad: Cantidad;

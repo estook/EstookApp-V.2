@@ -116,7 +116,7 @@ describe('la ficha del proveedor', () => {
     expect(ficha.proveedor.pedidoMinimoCentimos).toBe(15_000);
   });
 
-  it('sus repartos salen en el Calendario, para quien lleva Inventario', async () => {
+  it('sus repartos salen en el Calendario, para quien lleva Almacén', async () => {
     expect(await titulosDeLoQueViene(rosa)).toContain('entrega: Reparte Makro M7');
   });
 
@@ -779,7 +779,7 @@ describe('lo pactado, y quién te lo deja mejor', () => {
 });
 
 describe('quién ve qué', () => {
-  it('una camarera no lleva Inventario: ni pedidos ni entregas', async () => {
+  it('una camarera no lleva Almacén: ni pedidos ni entregas', async () => {
     expect(elFallo(await api.consultar(sara, 'mis_pedidos'))).toBe('sin_permiso');
     expect((await titulosDeLoQueViene(sara)).filter((t) => t.startsWith('entrega'))).toEqual([]);
   });

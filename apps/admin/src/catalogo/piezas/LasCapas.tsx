@@ -139,8 +139,8 @@ export function LasCapas() {
         <div className="grid gap-e3 md:grid-cols-2">
           <Tarjeta
             titulo="Con acento de app"
-            acento="var(--color-app-inventario)"
-            origen="Recuento del 3 de marzo"
+            acento="var(--color-app-almacen)"
+            origen="Inventario del 3 de marzo"
             accion={<Boton tono="texto">Ver todo</Boton>}
           >
             <p className="text-secundario text-texto-suave">

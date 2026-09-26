@@ -267,3 +267,26 @@ export function comoSeCompraDe(producto: {
     contenido: null,
   };
 }
+
+/**
+ * En qué se puede contar, según cómo se compra (repaso del 25-sep): por peso, kg o
+ * g; por litros, l o ml. Por unidades no hay nada que elegir. Es lo que sale al
+ * tocar la unidad de «Cuánto hay» y del mínimo en el alta.
+ */
+export function unidadesQueSeEligen(
+  modo: ModoDeCompra,
+): readonly { readonly valor: UnidadDeLaCompra; readonly larga: string }[] {
+  if (modo === 'peso') {
+    return [
+      { valor: 'kg', larga: 'kilos' },
+      { valor: 'g', larga: 'gramos' },
+    ];
+  }
+  if (modo === 'volumen') {
+    return [
+      { valor: 'l', larga: 'litros' },
+      { valor: 'ml', larga: 'mililitros' },
+    ];
+  }
+  return [];
+}

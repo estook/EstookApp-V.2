@@ -259,7 +259,7 @@ export {
   comoEsta,
   urgenciaDe,
   comoHaCambiado,
-} from './inventario.ts';
+} from './almacen.ts';
 
 export type {
   TipoDeMovimiento,
@@ -270,7 +270,7 @@ export type {
   EstadoDeExistencias,
   Sugerencia,
   CambioDePrecio,
-} from './inventario.ts';
+} from './almacen.ts';
 
 // ── M6½ · equipo · horas, lo que cuestan y el horario de siempre ─────────────
 //
@@ -408,6 +408,7 @@ export {
   precioDelFormato,
   loQueSale,
   comoSeCompraDe,
+  unidadesQueSeEligen,
 } from './presentacion.ts';
 export type {
   ModoDeCompra,
@@ -441,7 +442,7 @@ export type { FamiliaDeSalida, MotivoDeSalida, QueEsUnaSalida } from './salida.t
 //
 // El precio de venta **no** vive aquí: vive en la carta (M10), y lo que cuesta
 // sale del escandallo (M9). Lo que vive aquí es de dónde es el género y quién lo
-// ve, que es lo que ordena Inventario.
+// ve, que es lo que ordena Almacén.
 export {
   ZONAS,
   NOMBRE_DE_LA_ZONA,
@@ -467,6 +468,16 @@ export type {
   LineaDeRecuento,
   LoQueTraeElRecuento,
 } from './recuento.ts';
+
+// ── El repaso del 25-sep · lo congelado va aparte (0049) ─────────────────────
+export {
+  AVISO_DE_LO_CONGELADO_EN_DIAS,
+  MESES_CONGELADO_DE_FABRICA,
+  MESES_CONGELADO_MAXIMO,
+  MESES_CONGELADO_MINIMO,
+  comoEstaLoCongelado,
+  tituloDeLoCongelado,
+} from './congelado.ts';
 
 // ── M7 · el Panel vivo · los indicadores que cada uno se pone ───────────────
 //

@@ -21,7 +21,7 @@ import {
   elProductoBloqueado,
   loQueHay,
   type FichaBasica,
-} from '../inventario.ts';
+} from '../almacen.ts';
 
 /**
  * Mover género (M6) · apuntar lo que entra, lo que sale y lo que hay.
@@ -39,7 +39,7 @@ import {
  *  en cámara» en la de «siempre».
  *
  * Por debajo los tres hacen lo mismo, y lo hacen en un solo sitio: `apuntar`, de
- * `../inventario.ts`. Aquí solo se traduce la pregunta de la pantalla a una
+ * `../almacen.ts`. Aquí solo se traduce la pregunta de la pantalla a una
  * línea del libro.
  */
 
@@ -128,7 +128,7 @@ async function costeVigente(contexto: Contexto, productoId: string): Promise<num
 export const apuntarEntrada = comando<EntradaApuntarEntrada, SalidaDeMovimiento>({
   nombre: 'apuntar_entrada',
   entrada: entradaApuntarEntrada,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     // Se deja apuntar sobre un producto de ejemplo a propósito: sirve para ver
@@ -226,7 +226,7 @@ export const apuntarEntrada = comando<EntradaApuntarEntrada, SalidaDeMovimiento>
  * Los porqués que pasan por aquí.
  *
  * Los que son merma **no**: tienen su propio comando, su lista cerrada de
- * motivos, su partida y su permiso —el de la camarera, que no tiene Inventario—.
+ * motivos, su partida y su permiso —el de la camarera, que no tiene Almacén—.
  * Se filtran del catálogo en vez de escribirlos otra vez, para que añadir un
  * motivo de merma no obligue a acordarse de este fichero.
  */
@@ -278,7 +278,7 @@ export type EntradaApuntarSalida = z.infer<typeof entradaApuntarSalida>;
 export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
   nombre: 'apuntar_salida',
   entrada: entradaApuntarSalida,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const producto = await elProductoBloqueado(contexto, entrada.producto_id);
@@ -355,7 +355,7 @@ export interface SalidaAjustarStock extends SalidaDeMovimiento {
 export const ajustarStock = comando<EntradaAjustarStock, SalidaAjustarStock>({
   nombre: 'ajustar_stock',
   entrada: entradaAjustarStock,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const producto = await elProductoBloqueado(contexto, entrada.producto_id);
@@ -558,7 +558,7 @@ export const cerrarRecuento = comando<EntradaCerrarRecuento, SalidaCerrarRecuent
       await apuntar(contexto, producto, {
         tipo: 'recuento',
         cantidad: diferencia,
-        motivo: entrada.notas ?? 'Recuento',
+        motivo: entrada.notas ?? 'Inventario',
         origen: 'a_mano',
         esEjemplo: producto.esEjemplo,
       });
@@ -600,7 +600,7 @@ export const cerrarRecuento = comando<EntradaCerrarRecuento, SalidaCerrarRecuent
         await apuntar(contexto, producto, {
           tipo: 'recuento',
           cantidad: diferencia,
-          motivo: 'Recuento · no estaba en lo contado',
+          motivo: 'Inventario · no estaba en lo contado',
           origen: 'a_mano',
           esEjemplo: producto.esEjemplo,
         });

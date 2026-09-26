@@ -100,7 +100,12 @@ export function Hoja({ abierta, alCerrar, titulo, children, pie }: Comunes) {
     <dialog
       ref={dialogo}
       aria-label={titulo}
-      className={clases(DIALOGO, 'fixed inset-0 w-full h-full')}
+      // Con el desfase del visor, como la barra de abajo: en el iPhone la hoja subía
+      // con él (repaso del 25-sep, `anclaAbajo.ts`).
+      className={clases(
+        DIALOGO,
+        'fixed inset-0 w-full h-full translate-y-[var(--desfase-abajo,0px)]',
+      )}
     >
       {/* La zona segura del teléfono arriba (23-sep): la franja de tocar para cerrar
           empieza debajo de la muesca, no detrás. */}

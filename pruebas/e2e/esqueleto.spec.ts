@@ -28,7 +28,7 @@ const APP = 'http://localhost:5174/';
  * entrar en un cartel.
  */
 const LAS_OCHO = [
-  { id: 'inventario', nombre: 'Inventario', entra: 'Resumen' },
+  { id: 'almacen', nombre: 'Almacén', entra: 'Resumen' },
   { id: 'escandallos', nombre: 'Escandallos', entra: 'Resumen' },
   { id: 'carta', nombre: 'Carta', entra: 'Carta' },
   { id: 'calendario', nombre: 'Calendario', entra: 'Calendario' },
@@ -46,7 +46,7 @@ const LAS_OCHO = [
  * añada su línea, que es exactamente cuando hay que mirar si lo que enseña la
  * pantalla vacía sigue siendo verdad.
  */
-const APPS_CON_CONTENIDO = ['inventario', 'equipo', 'servicio', 'negocio'];
+const APPS_CON_CONTENIDO = ['almacen', 'equipo', 'servicio', 'negocio'];
 
 /**
  * Abre una pantalla y **espera a que la aplicacion este viva**.
@@ -137,7 +137,7 @@ test.describe('las ocho apps', () => {
       ).toBeVisible();
 
       // El título de la tarjeta es un `h2` **mientras la app sea un esqueleto**.
-      // Inventario dejó de serlo en M6 y Equipo · Personas en M4.
+      // Almacén dejó de serlo en M6 y Equipo · Personas en M4.
       if (!APPS_CON_CONTENIDO.includes(app.id)) {
         await expect(page.getByRole('heading', { level: 2, name: app.entra })).toBeVisible();
       }
@@ -209,7 +209,7 @@ test.describe('las ocho apps', () => {
       }
     }
 
-    // Inventario tiene cuatro construidos y Equipo uno; las otras seis entran en
+    // Almacén tiene cuatro construidos y Equipo uno; las otras seis entran en
     // su primer destino aunque no este construido, que es lo que hay hasta que su
     // modulo llegue.
     expect(abiertos).toBeGreaterThanOrEqual(11);
@@ -230,7 +230,7 @@ test.describe('las ocho apps', () => {
     // «Maximo tres niveles [...] Siempre hay una forma de volver que no es el
     // boton del navegador» (B5).
     await comoGerente(page);
-    await abrir(page, '/inventario/productos');
+    await abrir(page, '/almacen/productos');
 
     await expect(page.getByRole('navigation', { name: 'Donde estas' })).toBeVisible();
 
@@ -243,10 +243,10 @@ test.describe('las ocho apps', () => {
 
   test('una app que el rol no tiene no se abre ni escribiendo la direccion', async ({ page }) => {
     // «Esconder un boton no protege nada» (principio 7). Se entra como camarera,
-    // que no tiene Inventario, y se pide Inventario a mano.
+    // que no tiene Almacén, y se pide Almacén a mano.
     await comoCamarera(page);
 
-    await abrir(page, '/inventario');
+    await abrir(page, '/almacen');
 
     // Devuelve al Panel, sin decir si existe o no.
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
@@ -279,7 +279,7 @@ test.describe('la rueda de apps', () => {
     await abrirLaRueda(page);
     // Camarera: calendario, carta, servicio y cuaderno.
     await expect(page.getByRole('menuitem')).toHaveCount(4);
-    await expect(page.getByRole('menuitem', { name: /Inventario/ })).toHaveCount(0);
+    await expect(page.getByRole('menuitem', { name: /Almacén/ })).toHaveCount(0);
   });
 
   test('funciona con teclado: flechas y Enter', async ({ page }) => {
@@ -288,7 +288,7 @@ test.describe('la rueda de apps', () => {
     //
     // Esta prueba esperaba Escandallos, porque el cursor arrancaba en el primer
     // sector y una flecha lo movia al segundo. Eso era justo el fallo: arrancar
-    // resaltando Inventario se lee como «estas aqui», y desde el Panel era
+    // resaltando Almacén se lee como «estas aqui», y desde el Panel era
     // mentira. Ahora el cursor arranca **en ninguna**, asi que la primera flecha
     // a la derecha lleva al primer sector y la primera a la izquierda al ultimo.
     await comoGerente(page);
@@ -343,7 +343,7 @@ test.describe('la rueda de apps', () => {
     await page.mouse.move(cx, cy - caja.height * 0.35, { steps: 8 });
 
     /*
-      Y **se espera a que la rueda diga que está señalando Inventario** antes de
+      Y **se espera a que la rueda diga que está señalando Almacén** antes de
       soltar.
 
       Sin esto, la prueba suelta en el mismo instante que manda el último
@@ -356,10 +356,10 @@ test.describe('la rueda de apps', () => {
       `aria-activedescendant` es lo que la rueda usa para decir dónde está el
       dedo, así que esperar a eso es esperar exactamente a lo que hace falta.
     */
-    await expect(lienzo).toHaveAttribute('aria-activedescendant', 'sector-inventario');
+    await expect(lienzo).toHaveAttribute('aria-activedescendant', 'sector-almacen');
     await page.mouse.up();
 
-    await expect(page).toHaveURL(new RegExp('#/inventario(/|$)'));
+    await expect(page).toHaveURL(new RegExp('#/almacen(/|$)'));
   });
 
   test('los ocho nombres caben dentro del circulo', async ({ page }) => {
@@ -411,7 +411,7 @@ test.describe('la rueda de apps', () => {
     // Panel.» Antes decía «arrastra o pulsa», que es una instrucción y no un
     // sitio, y para volver al Panel desde una app había que buscarlo.
     await comoGerente(page);
-    await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
+    await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await abrirLaRueda(page);
@@ -599,9 +599,9 @@ test.describe('estados vacios', () => {
 
       if (APPS_CON_CONTENIDO.includes(app.id)) {
         // Esta prueba comprueba que **una app sin construir** dice qué irá ahí
-        // en vez de quedarse muda. Inventario está construida desde M6, así que
+        // en vez de quedarse muda. Almacén está construida desde M6, así que
         // ya no le toca: sus estados vacíos —la cámara vacía, nada que atender,
-        // ningún proveedor— los comprueba `inventario.spec.ts`, que además sabe
+        // ningún proveedor— los comprueba `almacen.spec.ts`, que además sabe
         // qué datos hay delante.
         //
         // Lo que sí se sigue mirando aquí es que la pantalla no está en blanco.
@@ -633,7 +633,7 @@ test.describe('estados vacios', () => {
   });
 
   test('y quien no tiene genero no ve ningun widget de genero', async ({ page }) => {
-    // La camarera no tiene Inventario, asi que sus widgets no existen: «las apps
+    // La camarera no tiene Almacén, asi que sus widgets no existen: «las apps
     // que el rol no tiene no aparecen en ningun sitio». Lo que si tiene es el
     // Panel de sala (entrega O): fichar arriba, y ni una pantalla en blanco.
     await comoCamarera(page);
@@ -668,16 +668,16 @@ test.describe('el buscador universal', () => {
     await comoGerente(page);
     await page.keyboard.press('Control+k');
 
-    await page.getByLabel('Que quieres buscar').fill('inven');
-    await expect(page.getByText('Ir a Inventario')).toBeVisible();
+    await page.getByLabel('Que quieres buscar').fill('alma');
+    await expect(page.getByText('Ir a Almacén')).toBeVisible();
   });
 
   test('aguanta erratas y no hace falta poner acentos', async ({ page }) => {
     await comoGerente(page);
     await page.keyboard.press('Control+k');
 
-    await page.getByLabel('Que quieres buscar').fill('invetario');
-    await expect(page.getByText('Ir a Inventario')).toBeVisible();
+    await page.getByLabel('Que quieres buscar').fill('almacen');
+    await expect(page.getByText('Ir a Almacén')).toBeVisible();
 
     await page.getByLabel('Que quieres buscar').fill('calenadrio');
     await expect(page.getByText('Ir a Calendario')).toBeVisible();
@@ -697,9 +697,9 @@ test.describe('el buscador universal', () => {
     await comoCamarera(page);
 
     await page.keyboard.press('Control+k');
-    await page.getByLabel('Que quieres buscar').fill('inven');
+    await page.getByLabel('Que quieres buscar').fill('alma');
 
-    await expect(page.getByText('Ir a Inventario')).toHaveCount(0);
+    await expect(page.getByText('Ir a Almacén')).toHaveCount(0);
   });
 });
 
@@ -919,7 +919,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     // excepción. Si está apartado por vacío no enseña cifra, y no hay origen que
     // mirar: lo que se mira entonces es que la línea lo nombre.
     if (bajoMinimo === 'se ve') {
-      await expect(page.getByText('De tu inventario, ahora mismo')).toBeVisible();
+      await expect(page.getByText('De tu almacén, ahora mismo')).toBeVisible();
     }
   });
 
@@ -961,7 +961,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     // Aquí **no se espera a nada**: se toca y se sale, que es el gesto que perdía
     // el cambio. Cambiar de pantalla no tira la petición —es la misma página—,
     // pero sí desmontaba el Panel, y al desmontar se tiraba lo pendiente.
-    await abrir(page, '/inventario/resumen');
+    await abrir(page, '/almacen/resumen');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
 
     await abrir(page, '/');

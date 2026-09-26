@@ -126,7 +126,7 @@ describe('las migraciones', () => {
 
       // Y lo que la 0023 tiene que haber hecho con los que ya estaban: **todos
       // los locales con tipo se quedan con sus categorías de serie**. Sin esto,
-      // el primero que entrara en Inventario encontraría el desplegable vacío,
+      // el primero que entrara en Almacén encontraría el desplegable vacío,
       // con la Auditoría prometiendo «nunca vacío: vienen de serie».
       const conTipo = await cuantasFilas(base.bd, 'local', 'tipo is not null');
       expect(conTipo).toBeGreaterThan(0);

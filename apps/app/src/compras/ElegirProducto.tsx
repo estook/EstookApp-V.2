@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Campo, Cargando } from '@estook/ui';
 import { IconoAnadir, IconoBuscar } from '@estook/iconos';
-import type { MisProductos, ProductoEnLista } from '../inventario/contrato.ts';
+import type { MisProductos, ProductoEnLista } from '../almacen/contrato.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 
 /**
  * Buscar un producto para añadirlo a un pedido o a lo que ha llegado (M7).
  *
- * Es el mismo `mis_productos` que la lista de Inventario, con el texto que se
+ * Es el mismo `mis_productos` que la lista de Almacén, con el texto que se
  * escribe: sin acentos y con erratas, como el buscador de siempre. Se pide a
  * partir de dos letras, que es cuando la lista deja de ser «todo».
  *

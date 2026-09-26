@@ -98,9 +98,9 @@ test('sin nada que atender, lo de hoy no aparece: ni la tarjeta ni un «nada urg
               titulo: '1 producto está por debajo del mínimo',
               detalle: null,
               centimos: null,
-              app: 'inventario',
+              app: 'almacen',
               tono: 'info',
-              accion: { texto: 'Verlos', ir: '/inventario/productos/bajo-minimo' },
+              accion: { texto: 'Verlos', ir: '/almacen/productos/bajo-minimo' },
             },
           ],
         },
@@ -154,7 +154,7 @@ test('una ficha cerrada no deja un «Cargando» escondido en la pantalla', async
   // Con la ficha cerrada su consulta está apagada, y TanStack la da por pendiente
   // para siempre: el «Cargando la ficha» se quedaba vivo, escondido, anunciándose.
   await entrarEnLaApp(page, ROSA);
-  for (const donde of ['equipo', 'equipo/personas', 'inventario/productos']) {
+  for (const donde of ['equipo', 'equipo/personas', 'almacen/productos']) {
     await irA(page, donde);
     await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
   }

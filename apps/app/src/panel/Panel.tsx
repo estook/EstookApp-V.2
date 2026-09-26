@@ -11,6 +11,7 @@ import {
   cuandoLlega,
   elCatalogoParaAnadir,
   losQueLlegan,
+  usarSinNadaDentro,
   widgetPorId,
 } from '@estook/ui';
 import { IconoAnadir } from '@estook/iconos';
@@ -20,11 +21,13 @@ import { TarjetasDelPanel } from '../pantallas/TarjetasDelPanel.tsx';
 import { CabeceraDelPanel } from './Cabecera.tsx';
 import { LoQueFalta } from './LoQueFalta.tsx';
 import { LoDeHoy } from './LoDeHoy.tsx';
+import { Tablon } from './Tablon.tsx';
+import { EscribirEnElTablon } from './EscribirEnElTablon.tsx';
 import { ElegirIndicador } from './ElegirIndicador.tsx';
 import { Widget } from './widgets.tsx';
 import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
-import { ApuntarMerma } from '../inventario/ApuntarMerma.tsx';
+import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
 
 /**
  * El Panel · el centro de control (Manifiesto 6, Evolución 1.0 capítulo 5).
@@ -63,14 +66,21 @@ export function Panel() {
   const [editando, setEditando] = useState(false);
   const [anadiendo, setAnadiendo] = useState(false);
   const [apuntandoMerma, setApuntandoMerma] = useState(false);
+  const [escribiendo, setEscribiendo] = useState(false);
+  const [zonaDeAtencion, sinNadaQueAtender] = usarSinNadaDentro<HTMLElement>();
 
   const tienePermiso = (permiso: Permiso) => puedeVer(permisos, permiso);
 
   // «Apuntar una merma», desde las acciones rápidas, el buscador o Fogón. Se abre
   // en el Panel porque el Panel lo tiene todo el mundo, y quien más mermas apunta
-  // —el camarero que rompe una copa— no tiene la app de Inventario.
+  // —el camarero que rompe una copa— no tiene la app de Almacén.
   usarQueHacer('merma', () => {
     setApuntandoMerma(true);
+  });
+
+  // Escribir en el Tablón, desde el «+», el buscador o la propia tarjeta (0049).
+  usarQueHacer('tablon', () => {
+    setEscribiendo(true);
   });
 
   return (
@@ -103,12 +113,24 @@ export function Panel() {
         // `grid-cols-1` y no nada: sin él la columna crece con la línea más larga que
         // no se parte, y «3 productos sin precio» se salía por la derecha (25-sep).
         // Y sin nada dentro no ocupa: cada envoltorio vacío se esconde, y la zona
-        // entera también, que si no dejaba sus huecos encima del Panel.
-        className="grid grid-cols-1 items-start gap-e3 lg:grid-cols-2 [&:not(:has(>:not(:empty)))]:hidden"
+        // entera también, que si no dejaba sus huecos encima del Panel. La zona la
+        // esconde la página y no `:has()`, que en el iPhone no se enteraba de que
+        // «Hoy» había llegado (repaso del 25-sep, `usarSinNadaDentro`).
+        ref={zonaDeAtencion}
+        hidden={sinNadaQueAtender}
+        className="grid grid-cols-1 items-start gap-e3 lg:grid-cols-2"
       >
         {/* Lo de hoy, ordenado por el servidor (entrega O, mejora 8), de lado a lado. */}
         <div className="empty:hidden lg:col-span-2">
           <LoDeHoy />
+        </div>
+        {/* El Tablón del local, debajo de «Hoy» y de lado a lado (repaso del 25-sep). */}
+        <div className="empty:hidden lg:col-span-2">
+          <Tablon
+            alEscribir={() => {
+              setEscribiendo(true);
+            }}
+          />
         </div>
         <TarjetasDelPanel />
         {/* Lo que falta es una línea, y va de lado a lado. */}
@@ -194,6 +216,14 @@ export function Panel() {
         </div>
       )}
 
+      {/* Solo abierta: una hoja cerrada dentro de la zona de atención la llenaría. */}
+      {escribiendo && (
+        <EscribirEnElTablon
+          alCerrar={() => {
+            setEscribiendo(false);
+          }}
+        />
+      )}
       <ApuntarMerma
         abierta={apuntandoMerma}
         alCerrar={() => {

@@ -19,7 +19,7 @@ import { IconoBorrar, IconoChat, IconoDocumento, IconoReparto } from '@estook/ic
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { comoDinero, comoSeLeeLaFecha, conUnidadDeUso } from '../inventario/contrato.ts';
+import { comoDinero, comoSeLeeLaFecha, conUnidadDeUso } from '../almacen/contrato.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
 import { Cuantos, Dato, EnlaceComoBoton } from './Comun.tsx';

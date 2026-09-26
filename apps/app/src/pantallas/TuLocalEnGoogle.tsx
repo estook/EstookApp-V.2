@@ -7,7 +7,7 @@ import { IconoBuscar, IconoUbicacion } from '@estook/iconos';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarQueEspere } from '../ganchos/usarQueEspere.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { comoSeLeeLaFecha } from '../inventario/contrato.ts';
+import { comoSeLeeLaFecha } from '../almacen/contrato.ts';
 
 /**
  * Tu local en Google (M7, entrega 5 · decisiones 0030 y 0040).

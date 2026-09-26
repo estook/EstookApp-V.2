@@ -126,7 +126,7 @@ export const CONTRASTE_DE_COCINA = 7;
  * El acento de una app **cuando lo que se pinta con él es texto** (entrega V).
  *
  * Los acentos de B3 están elegidos para un icono o una pastilla, que piden 3:1; el
- * texto pide 4,5. Y en claro no llegan: el ámbar de Inventario sobre blanco da
+ * texto pide 4,5. Y en claro no llegan: el ámbar de Almacén sobre blanco da
  * 3,46, el verde de Servicio 4,11. Lo encontró la prueba que mide el contraste en
  * las pantallas de verdad, en la pestaña elegida de cada vista y en la barra de
  * abajo del móvil, que llevaban el nombre en el color de la app.

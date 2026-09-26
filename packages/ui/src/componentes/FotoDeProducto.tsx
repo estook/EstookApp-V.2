@@ -10,7 +10,7 @@ import { colorDe, inicialesDe } from './iniciales.ts';
  * lista con diez fotos y cuarenta productos sin ella no parece a medias: los que no
  * la tienen llevan su recuadro de color, y los de la misma categoría se parecen.
  *
- * ── Por qué es un componente del sistema, y no de Inventario ────────────────
+ * ── Por qué es un componente del sistema, y no de Almacén ────────────────
  *
  * B4 pide justificar cada componente nuevo. Este lo pintan la lista de productos,
  * la ficha y el recuento, y mañana los escandallos (M9) y la carta (M10): si cada

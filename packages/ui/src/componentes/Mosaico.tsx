@@ -7,7 +7,7 @@ import { usarFilasDelMosaico } from '../ganchos/usarFilasDelMosaico.ts';
  *
  * «Hay campos vacíos enormes que no tienen ningún tipo de sentido. Que si una
  *  ocupa más, que ocupe más; que si una ocupa menos, que ocupe menos, y que todas
- *  se vayan colocando.» Lo dijo Richi mirando Inventario · Hoy y el Panel.
+ *  se vayan colocando.» Lo dijo Richi mirando Almacén · Hoy y el Panel.
  *
  * ── De dónde salían los huecos ───────────────────────────────────────────────
  *

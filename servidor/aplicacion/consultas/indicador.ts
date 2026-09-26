@@ -37,21 +37,21 @@ import { lasEntradasDelHorario, lasHorasDelEquipo, lasRetribuciones } from './eq
  *   ventas        cierre de caja, con IVA            dato.ventas
  *   ticket-medio  cierre de caja con tickets          dato.ventas
  *   food-cost     consumo del libro ÷ caja del día    dato.ventas + precio de compra
- *   merma         libro, a coste medio                app.inventario + precio de compra
- *   compras       entradas del libro, sin IVA         app.inventario + precio de compra
+ *   merma         libro, a coste medio                app.almacen + precio de compra
+ *   compras       entradas del libro, sin IVA         app.almacen + precio de compra
  *   mis-horas     tus fichajes                        cualquiera con sesión
  *
  * Y desde V (mejora 2), las de cada app:
  *
- *   valor-camara    foto del libro, a coste medio      app.inventario + precio de compra
- *   bajo-minimo     foto del libro, con los mínimos    app.inventario
+ *   valor-camara    foto del libro, a coste medio      app.almacen + precio de compra
+ *   bajo-minimo     foto del libro, con los mínimos    app.almacen
  *   cierres         días con la caja cerrada           dato.ventas
  *   horas-equipo    fichajes de quien llevas           app.equipo
  *   coste-personal  esas horas por su salario          app.equipo + coste de personal
  *   retrasos        fichajes frente al horario         app.equipo
  *
  * Todas menos los cierres **no se cuentan por su cuenta**: la cámara se
- * reconstruye como la cuenta «Hoy» de Inventario, y las del equipo como el Resumen
+ * reconstruye como la cuenta «Hoy» de Almacén, y las del equipo como el Resumen
  * de Equipo. Cada una tiene su prueba que compara.
  *
  * Las cuentas del food cost son **las mismas que `mis_cierres`**: el consumo es lo
@@ -409,7 +409,7 @@ async function porDias(
  * Lo que hay no se suma: el valor de la semana es lo que había al acabar la
  * semana, y se compara con lo que había al acabar la anterior. Cada día se
  * reconstruye del libro con `lasFotosDeLaCamara`, que es del dominio (regla 6), y
- * el de hoy tiene que ser el mismo que enseña Inventario · Hoy.
+ * el de hoy tiene que ser el mismo que enseña Almacén · Hoy.
  *
  * Aquí solo se lee: los productos que cuentan —activos y sin los ejemplos, como
  * en «Hoy»— y, de cada uno, **la última línea del libro de cada día**, más la

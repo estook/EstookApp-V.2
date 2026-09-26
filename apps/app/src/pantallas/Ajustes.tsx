@@ -50,9 +50,10 @@ import { CuandoEsLlegarTarde } from './CuandoEsLlegarTarde.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
 import { preguntarDondeEstoy } from '../ganchos/usarFichar.ts';
-import { TusPreciosDeCompra } from '../inventario/TusPreciosDeCompra.tsx';
+import { TusPreciosDeCompra } from '../almacen/TusPreciosDeCompra.tsx';
 import { TusObjetivos } from './TusObjetivos.tsx';
 import { TuCartaYSuQr } from './TuCartaYSuQr.tsx';
+import { TuCartaSubida } from './TuCartaSubida.tsx';
 import { TuSuscripcion } from './TuSuscripcion.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
 import {
@@ -329,7 +330,11 @@ function LaSeccion({ id }: { readonly id: IdDeSeccion }) {
           )}
           {llevaElLocal && (
             <Ancla id="tu-carta">
-              <TuCartaYSuQr />
+              {/* La carta que ya tiene el local, y su QR (repaso del 25-sep, 0049). */}
+              <div className="flex flex-col gap-e4">
+                <TuCartaSubida />
+                <TuCartaYSuQr />
+              </div>
             </Ancla>
           )}
           {llevaLosPrecios(permisos, tieneLocal) && (

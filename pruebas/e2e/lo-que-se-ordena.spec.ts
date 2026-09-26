@@ -45,7 +45,7 @@ test('un jefe de cocina arranca con su Panel: fichar y sus objetivos, sin lo del
 }) => {
   await entrarComoLuis(page);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
-  // Luis tiene el acceso recortado en su local (sin Inventario, semillas): su Panel
+  // Luis tiene el acceso recortado en su local (sin Almacén, semillas): su Panel
   // lleva lo de su puesto que puede ver, y ni un hueco por lo que no.
   await expect(page.getByRole('heading', { name: 'Fichar' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Objetivos' })).toBeVisible();
@@ -146,7 +146,7 @@ test('lo de hoy: lo que caduca hoy sale arriba del Panel, y «Luego» lo aparta'
   // dos y dice «y N más», y con los tres navegadores a la vez, cada uno con su nata,
   // la de Safari caía en el «y 1 más» (25-sep).
   await caduca.getByRole('button', { name: 'Verlos' }).click();
-  await expect(page).toHaveURL(/#\/inventario\/resumen/);
+  await expect(page).toHaveURL(/#\/almacen\/resumen/);
   await expect(page.getByText(nombre).first()).toBeVisible();
 
   await page.goBack();

@@ -7,7 +7,7 @@
  * ── Por que existe ───────────────────────────────────────────────────────────
  *
  * «Nunca vacio: vienen de serie» (Auditoria, parte 3). Un local con tipo y sin
- * categorias es un local roto: entras en Inventario, abres el desplegable de
+ * categorias es un local roto: entras en Almacén, abres el desplegable de
  * «Categoria» y no hay nada, justo donde la aplicacion promete que siempre lo
  * hay.
  *

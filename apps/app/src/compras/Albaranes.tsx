@@ -23,7 +23,7 @@ import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
-import { comoDinero, comoSeLeeLaFecha } from '../inventario/contrato.ts';
+import { comoDinero, comoSeLeeLaFecha } from '../almacen/contrato.ts';
 import { Cuantos, Dato, Filtros } from './Comun.tsx';
 import {
   comoSeLeeElInstante,
@@ -173,7 +173,7 @@ export function Albaranes() {
                 <EstadoVacio
                   compacto
                   dibujo="albaranes"
-                  acento="var(--color-app-inventario)"
+                  acento="var(--color-app-almacen)"
                   titulo="Todavía no ha llegado nada"
                   frase="Cada vez que se recibe un pedido, o llega algo sin pedido, queda aquí su albarán."
                   {...(recibir === null
@@ -190,7 +190,7 @@ export function Albaranes() {
                 <EstadoVacio
                   compacto
                   dibujo={filtro === 'devoluciones' ? 'albaranes' : 'todo-en-orden'}
-                  acento="var(--color-app-inventario)"
+                  acento="var(--color-app-almacen)"
                   titulo={
                     filtro === 'sin_factura'
                       ? 'Todos los albaranes tienen su factura'

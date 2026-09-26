@@ -14,7 +14,7 @@ describe('sePuedeTirar', () => {
     if (r.sePuede) return;
     expect(r.porque).toContain('Quedan 2 kg');
     expect(r.porque).toContain('5 kg');
-    expect(r.porque).toContain('recuento');
+    expect(r.porque).toContain('inventario');
   });
 
   it('sin nada en cámara, tampoco, y lo dice de otra forma', () => {

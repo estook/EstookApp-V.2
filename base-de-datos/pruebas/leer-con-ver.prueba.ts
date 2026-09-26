@@ -31,7 +31,7 @@ import { elFallo, montarLaApi, type ApiDePrueba } from './despachador.ts';
  * ── Y el segundo fallo, que salió al escribir esta prueba ────────────────────
  *
  * Con el primero arreglado, la tercera prueba seguía en rojo: a Marcos, con
- * Inventario recortado a «ver», **el despachador le dejaba ajustar la cámara**.
+ * Almacén recortado a «ver», **el despachador le dejaba ajustar la cámara**.
  * Si el nivel del local no llegaba, preguntaba por el de toda la organización,
  * que no mira los recortes de cada local. Lo paraba la política de la base, más
  * abajo, pero con un error que no era el suyo. Ahora la organización se pregunta
@@ -63,11 +63,11 @@ describe('una consulta pide poder ver, no poder cambiar', () => {
     expect((await api.consultar(marcos, 'lo_que_viene')).estado).toBe('ok');
   });
 
-  it('con Inventario solo para ver, se lee la lista y no se ajusta la cámara', async () => {
+  it('con Almacén solo para ver, se lee la lista y no se ajusta la cámara', async () => {
     // Un recorte, que es como se le deja a alguien mirar sin tocar.
     await base.bd.query(
       `insert into estook.recorte_de_permiso (membresia_id, local_id, permiso, nivel, motivo)
-       select m.id, m.local_id, 'app.inventario', 'ver', 'Solo mira'
+       select m.id, m.local_id, 'app.almacen', 'ver', 'Solo mira'
          from estook.membresia m
          join estook.persona p on p.id = m.persona_id
         where p.correo = 'marcos@ejemplo.estook.com'`,

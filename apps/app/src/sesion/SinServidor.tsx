@@ -6,7 +6,7 @@ import { usarSesion } from './Sesion.tsx';
  *
  * **No es la pantalla de entrar**, y esa es toda la razón de que exista. Antes,
  * cualquier fallo al preguntar quién eres —sin red, o la API sin conexiones a la
- * base— pintaba «Entra en Estook» en mitad de Inventario: parecía que te habían
+ * base— pintaba «Entra en Estook» en mitad de Almacén: parecía que te habían
  * echado, y la contraseña tampoco servía, porque el problema no era la sesión.
  *
  * Aquí se dice lo que pasa, que no es culpa de quien mira y que no se ha perdido

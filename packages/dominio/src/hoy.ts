@@ -17,8 +17,8 @@ import { plural } from './textos.ts';
  *
  * Dentro de un escalón **manda el dinero en juego**, y lo que no tiene importe va
  * detrás de lo que sí. Esta función no lee nada: recibe lo que el servidor ya ha
- * contado con las consultas de siempre (`inventario_hoy`, `compras_de_hoy`,
- * `mi_fichaje`), y así lo de hoy no puede decir un número distinto que Inventario.
+ * contado con las consultas de siempre (`almacen_hoy`, `compras_de_hoy`,
+ * `mi_fichaje`), y así lo de hoy no puede decir un número distinto que Almacén.
  *
  * Nunca el color solo: cada cosa dice qué pasa y lleva **su botón**, que resuelve
  * desde ahí o lleva a donde se resuelve.
@@ -34,7 +34,7 @@ export const NOMBRE_DEL_ESCALON: Readonly<Record<Escalon, string>> = {
   5: 'Para mañana',
 };
 
-export type AppDeLoDeHoy = 'inventario' | 'equipo' | 'servicio';
+export type AppDeLoDeHoy = 'almacen' | 'equipo' | 'servicio';
 
 export interface CosaDeHoy {
   /** Estable de un día a otro: es con lo que se aplaza. */
@@ -63,6 +63,14 @@ export interface LoQueHayHoy {
     readonly hoy: readonly string[];
     readonly manana: readonly string[];
   };
+  /**
+   * Lo congelado, por lo que lleva en el congelador (0049): lo que ya ha cumplido
+   * lo que aguanta y lo que lo cumple esta semana. No caduca: se queda viejo.
+   */
+  readonly congelados?: {
+    readonly pasados: readonly string[];
+    readonly pronto: readonly string[];
+  };
   readonly agotados?: readonly string[];
   readonly bajoMinimo?: number;
   readonly llegaHoy?: readonly { readonly pedidoId: string; readonly proveedor: string }[];
@@ -80,6 +88,13 @@ export interface LoQueHayHoy {
   /** La caja de la última jornada, si el local cierra caja y esa no está. */
   readonly cajaSinCerrar?: { readonly cuando: string } | null;
   readonly miTurno?: MiTurnoDeHoy | null;
+  /** Las notas del Tablón con hora hoy: «17:00 · Reserva de 20» (0049). */
+  readonly notasConHora?: readonly {
+    readonly notaId: string;
+    readonly hora: string;
+    readonly texto: string;
+    readonly autor: string;
+  }[];
 }
 
 export type MiTurnoDeHoy =
@@ -98,7 +113,8 @@ function conImporte(texto: string, centimosEnJuego: number | null): string {
     : `${texto} · ${conSimbolo(centimos(centimosEnJuego))}`;
 }
 
-const VER_LO_QUE_CADUCA = { texto: 'Verlos', ir: '/inventario/resumen' } as const;
+const VER_LO_QUE_CADUCA = { texto: 'Verlos', ir: '/almacen/resumen' } as const;
+const VER_LO_CONGELADO = { texto: 'Verlos', ir: '/almacen/productos/congelados' } as const;
 
 /** Todo lo de hoy, en el orden en que hay que atenderlo. */
 export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
@@ -112,9 +128,9 @@ export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
       titulo: `El pedido de ${pedido.proveedor} debía llegar ${pedido.llegaCuando}`,
       detalle: conImporte('Si ha llegado, recíbelo; si no, llama', pedido.centimos),
       centimos: pedido.centimos,
-      app: 'inventario',
+      app: 'almacen',
       tono: 'mal',
-      accion: { texto: 'Recibirlo', ir: '/inventario/compras/pedidos?hacer=recibir' },
+      accion: { texto: 'Recibirlo', ir: '/almacen/compras/pedidos?hacer=recibir' },
     });
   }
   if (hay.lotes !== undefined && hay.lotes.pasados.length > 0) {
@@ -125,7 +141,7 @@ export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
       titulo: `${plural(n, 'lote caducado sigue', 'lotes caducados siguen')} en cámara`,
       detalle: `${algunos(hay.lotes.pasados)}. Tíralo${n === 1 ? '' : 's'} y queda${n === 1 ? '' : 'n'} como merma`,
       centimos: null,
-      app: 'inventario',
+      app: 'almacen',
       tono: 'mal',
       accion: VER_LO_QUE_CADUCA,
     });
@@ -164,9 +180,25 @@ export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
       titulo: `${plural(n, 'lote caduca', 'lotes caducan')} hoy`,
       detalle: `${algunos(hay.lotes.hoy)}. Gástalo${n === 1 ? '' : 's'} en el servicio de hoy`,
       centimos: null,
-      app: 'inventario',
+      app: 'almacen',
       tono: 'atencion',
       accion: VER_LO_QUE_CADUCA,
+    });
+  }
+  if (hay.congelados !== undefined && hay.congelados.pasados.length > 0) {
+    const n = hay.congelados.pasados.length;
+    cosas.push({
+      id: 'congelados-pasados',
+      escalon: 2,
+      titulo:
+        n === 1
+          ? `${hay.congelados.pasados[0] ?? ''} lleva demasiado tiempo congelado`
+          : `${plural(n, 'producto lleva', 'productos llevan')} demasiado tiempo congelados`,
+      detalle: `${n === 1 ? '' : `${algunos(hay.congelados.pasados)}. `}Gástalo${n === 1 ? '' : 's'} cuanto antes o tíralo${n === 1 ? '' : 's'}`,
+      centimos: null,
+      app: 'almacen',
+      tono: 'atencion',
+      accion: VER_LO_CONGELADO,
     });
   }
   if (hay.agotados !== undefined && hay.agotados.length > 0) {
@@ -180,9 +212,9 @@ export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
           : `Te has quedado sin ${plural(n, 'producto', 'productos')}`,
       detalle: n === 1 ? null : algunos(hay.agotados),
       centimos: null,
-      app: 'inventario',
+      app: 'almacen',
       tono: 'atencion',
-      accion: { texto: 'Pedirlo', ir: '/inventario/productos/bajo-minimo' },
+      accion: { texto: 'Pedirlo', ir: '/almacen/productos/bajo-minimo' },
     });
   }
 
@@ -212,9 +244,22 @@ export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
       titulo: `Hoy llega el pedido de ${pedido.proveedor}`,
       detalle: 'Entero son dos toques',
       centimos: null,
-      app: 'inventario',
+      app: 'almacen',
       tono: 'info',
-      accion: { texto: 'Recibirlo', ir: '/inventario/compras/pedidos?hacer=recibir' },
+      accion: { texto: 'Recibirlo', ir: '/almacen/compras/pedidos?hacer=recibir' },
+    });
+  }
+
+  for (const nota of hay.notasConHora ?? []) {
+    cosas.push({
+      id: `nota:${nota.notaId}`,
+      escalon: 3,
+      titulo: `${nota.hora} · ${nota.texto}`,
+      detalle: `En el tablón · de ${nota.autor}`,
+      centimos: null,
+      app: null,
+      tono: 'info',
+      accion: { texto: 'Verla', ir: `/?nota=${nota.notaId}` },
     });
   }
 
@@ -226,9 +271,9 @@ export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
       titulo: `Hoy toca pedir a ${toca.proveedor}`,
       detalle: `Para que llegue ${toca.llegaCuando}${toca.productos > 0 ? ` · ${plural(toca.productos, 'producto', 'productos')} que pedirle` : ''}`,
       centimos: null,
-      app: 'inventario',
+      app: 'almacen',
       tono: 'atencion',
-      accion: { texto: 'Hacer el pedido', ir: '/inventario/compras/pedidos?hacer=nuevo' },
+      accion: { texto: 'Hacer el pedido', ir: '/almacen/compras/pedidos?hacer=nuevo' },
     });
   }
   for (const borrador of hay.borradores ?? []) {
@@ -238,9 +283,9 @@ export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
       titulo: `El pedido a ${borrador.proveedor} está sin mandar`,
       detalle: plural(borrador.lineas, 'línea', 'líneas'),
       centimos: null,
-      app: 'inventario',
+      app: 'almacen',
       tono: 'info',
-      accion: { texto: 'Mandarlo', ir: '/inventario/compras/pedidos' },
+      accion: { texto: 'Mandarlo', ir: '/almacen/compras/pedidos' },
     });
   }
   if (hay.bajoMinimo !== undefined && hay.bajoMinimo > 0) {
@@ -250,9 +295,23 @@ export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
       titulo: `${plural(hay.bajoMinimo, 'producto está', 'productos están')} por debajo del mínimo`,
       detalle: null,
       centimos: null,
-      app: 'inventario',
+      app: 'almacen',
       tono: 'info',
-      accion: { texto: 'Verlos', ir: '/inventario/productos/bajo-minimo' },
+      accion: { texto: 'Verlos', ir: '/almacen/productos/bajo-minimo' },
+    });
+  }
+
+  if (hay.congelados !== undefined && hay.congelados.pronto.length > 0) {
+    const n = hay.congelados.pronto.length;
+    cosas.push({
+      id: 'congelados-pronto',
+      escalon: 4,
+      titulo: `${plural(n, 'congelado cumple', 'congelados cumplen')} su tiempo esta semana`,
+      detalle: `${algunos(hay.congelados.pronto)}. Sácalo${n === 1 ? '' : 's'} para gastarlo${n === 1 ? '' : 's'}`,
+      centimos: null,
+      app: 'almacen',
+      tono: 'info',
+      accion: VER_LO_CONGELADO,
     });
   }
 
@@ -265,7 +324,7 @@ export function loDeHoy(hay: LoQueHayHoy): readonly CosaDeHoy[] {
       titulo: `Mañana ${n === 1 ? 'caduca un lote' : `caducan ${String(n)} lotes`}`,
       detalle: `${algunos(hay.lotes.manana)}. Mejor gastarlo${n === 1 ? '' : 's'} hoy`,
       centimos: null,
-      app: 'inventario',
+      app: 'almacen',
       tono: 'info',
       accion: VER_LO_QUE_CADUCA,
     });

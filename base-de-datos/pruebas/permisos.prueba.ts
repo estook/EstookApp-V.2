@@ -85,7 +85,7 @@ describe('lo que trae puesto cada rol', () => {
   it('el jefe de cocina manda en el genero pero no ve el negocio ni la facturacion', async () => {
     // «No ve: el margen global del negocio, el coste de personal de sala, la
     //  facturacion ni la parte de plan y facturacion de Ajustes.»
-    expect(await nivelDelRol('jefe_de_cocina', 'app.inventario')).toBe('ver_y_editar');
+    expect(await nivelDelRol('jefe_de_cocina', 'app.almacen')).toBe('ver_y_editar');
     expect(await nivelDelRol('jefe_de_cocina', 'app.escandallos')).toBe('ver_y_editar');
     expect(await nivelDelRol('jefe_de_cocina', 'dato.coste_de_plato')).toBe('ver_y_editar');
     expect(await nivelDelRol('jefe_de_cocina', 'app.negocio')).toBe('sin_acceso');
@@ -103,7 +103,7 @@ describe('lo que trae puesto cada rol', () => {
     // «Todo lo de su local.»
     for (const permiso of [
       'app.panel',
-      'app.inventario',
+      'app.almacen',
       'app.escandallos',
       'app.negocio',
       'dato.coste_de_plato',
@@ -130,7 +130,7 @@ describe('lo que trae puesto cada rol', () => {
 
   it('compras central no puede cerrar recuentos', async () => {
     // Decision 5 de la Auditoria de flujos: quien compra no valora su inventario.
-    expect(await nivelDelRol('compras_central', 'app.inventario')).toBe('ver_y_editar');
+    expect(await nivelDelRol('compras_central', 'app.almacen')).toBe('ver_y_editar');
     expect(await nivelDelRol('compras_central', 'accion.cerrar_recuento')).toBe('sin_acceso');
   });
 
@@ -227,9 +227,7 @@ describe('dos roles sobre el mismo local', () => {
   it('gana el mas amplio, permiso a permiso', async () => {
     // «Si alguien tiene dos roles sobre el mismo local, gana el mas amplio.»
     const sara = await base.personaPorCorreo('sara@ejemplo.estook.com');
-    expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'app.inventario')).toBe(
-      'sin_acceso',
-    );
+    expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'app.almacen')).toBe('sin_acceso');
 
     await base.bd.exec(`
       insert into estook.membresia (persona_id, organizacion_id, local_id, alcance, rol)
@@ -240,7 +238,7 @@ describe('dos roles sobre el mismo local', () => {
     `);
 
     // Ahora suma lo del jefe de cocina sin perder lo que ya tenia de camarera.
-    expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'app.inventario')).toBe(
+    expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'app.almacen')).toBe(
       'ver_y_editar',
     );
     expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'dato.coste_de_plato')).toBe(

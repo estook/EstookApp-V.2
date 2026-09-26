@@ -1,6 +1,6 @@
 import type { ComoVaElMinimo, Comparacion, Incidencia, Puntualidad } from '@estook/dominio';
 import type { EstadoDeExistencias } from '@estook/dominio';
-import { conUnidadDeUso } from '../inventario/contrato.ts';
+import { conUnidadDeUso } from '../almacen/contrato.ts';
 
 /**
  * Lo que Compras recibe del servidor, y cómo se dice cada cosa (M7).
@@ -9,7 +9,7 @@ import { conUnidadDeUso } from '../inventario/contrato.ts';
  * y no en un paquete compartido por la regla de dependencias: **la aplicación no
  * importa del servidor**, habla con él por `@estook/cliente-api`.
  *
- * Y los campos de dinero llegan **opcionales a propósito**, como en Inventario: un
+ * Y los campos de dinero llegan **opcionales a propósito**, como en Almacén: un
  * cocinero recibe pedidos y albaranes y no recibe ni un importe, porque el
  * servidor no se los manda. Que el tipo lo diga es lo que evita pintar «0,00 €»
  * donde lo correcto es no pintar nada.
@@ -612,10 +612,10 @@ export const LO_QUE_TOCAN_LAS_COMPRAS = [
   ['un_proveedor'],
   ['comparar_precios'],
   ['lo_que_viene'],
-  // Lo que cambia en Inventario cuando llega o se devuelve género.
+  // Lo que cambia en Almacén cuando llega o se devuelve género.
   ['mis_productos'],
   ['un_producto'],
-  ['inventario_hoy'],
+  ['almacen_hoy'],
   ['mis_movimientos'],
   // Las cifras con flecha: el valor de la cámara y las compras (V, punto 2).
   ['un_indicador'],

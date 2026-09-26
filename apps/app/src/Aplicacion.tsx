@@ -1,10 +1,11 @@
 import { Suspense, lazy } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { HashRouter, Link, Route, Routes } from 'react-router-dom';
+import { HashRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import {
   Cargando,
   EstadoVacio,
   ProveedorDeDeshacer,
+  usarAnclaAbajo,
   usarElColorDeLaApp,
   usarModoCocina,
   usarTamanoDeLetra,
@@ -17,6 +18,7 @@ import { PantallaDeApp } from './pantallas/PantallaDeApp.tsx';
 import { VistaDeCadena } from './pantallas/VistaDeCadena.tsx';
 import { ElegirPlan } from './sesion/ElegirPlan.tsx';
 import { usarLaVueltaDelPago } from './ganchos/usarLaVueltaDelPago.ts';
+import { laDireccionDeAhora } from './pantallas/direccionesViejas.ts';
 import { SinEntrar } from './sesion/SinEntrar.tsx';
 import { SinServidor } from './sesion/SinServidor.tsx';
 import {
@@ -52,9 +54,9 @@ const ElAlta = lazy(async () => {
  * ── Por que `HashRouter` y no el normal ──────────────────────────────────────
  *
  * Estook se publica hoy en GitHub Pages (decision 0001), que sirve **ficheros**:
- * no sabe reescribir `/app/inventario/resumen` a `index.html`, asi que abrir un
+ * no sabe reescribir `/app/almacen/resumen` a `index.html`, asi que abrir un
  * enlace profundo, o recargar dentro de una app, daria un 404. Con la almohadilla
- * la direccion es `/app/#/inventario/resumen`, el servidor solo ve `/app/` y siempre
+ * la direccion es `/app/#/almacen/resumen`, el servidor solo ve `/app/` y siempre
  * encuentra la pagina.
  *
  * No es para siempre: el dia que haya `estook.com` con un servidor que reescriba,
@@ -100,6 +102,10 @@ export function Aplicacion() {
   // como se enciende una tableta. El de la letra llevaba así desde M3.
   usarTamanoDeLetra();
   usarModoCocina();
+
+  // Lo pegado abajo, en el borde de la pantalla aunque el iPhone se líe con su
+  // visor al cerrar el teclado (repaso del 25-sep, `anclaAbajo.ts`).
+  usarAnclaAbajo();
 
   return (
     <QueryClientProvider client={cache}>
@@ -239,6 +245,8 @@ function Puerta() {
             devuelva a la vista de antes. La ficha sigue abriendose encima, en
             panel lateral, sin cambiar de direccion.
           */}
+          {/* Lo de antes del 25-sep: «Inventario» es ahora Almacén (0049). */}
+          <Route path="inventario/*" element={<ALaDireccionDeAhora />} />
           <Route path=":app" element={<PantallaDeApp />} />
           <Route path=":app/:destino" element={<PantallaDeApp />} />
           <Route path=":app/:destino/:vista" element={<PantallaDeApp />} />
@@ -247,6 +255,12 @@ function Puerta() {
       </Routes>
     </HashRouter>
   );
+}
+
+/** Una dirección de antes del 25-sep, llevada a la de ahora sin dejar rastro en el historial. */
+function ALaDireccionDeAhora() {
+  const { pathname, search } = useLocation();
+  return <Navigate replace to={`${laDireccionDeAhora(pathname) ?? '/'}${search}`} />;
 }
 
 /**

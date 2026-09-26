@@ -4,7 +4,7 @@ import { puedeVer } from '@estook/permisos';
 import { Logo, clases } from '@estook/ui';
 import { IconoFlechaAbajo } from '@estook/iconos';
 import { usarFichar } from '../ganchos/usarFichar.ts';
-import { usarInventarioHoy } from '../ganchos/usarInventarioHoy.ts';
+import { usarAlmacenHoy } from '../ganchos/usarAlmacenHoy.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -142,14 +142,14 @@ export function CabeceraDelPanel() {
  * pueda ver.
  *
  * Y lo que no se puede contestar **no se pinta con un cero**: sin la app de
- * Inventario en el acceso, esas dos cifras no están. Un cero significa «no hay
+ * Almacén en el acceso, esas dos cifras no están. Un cero significa «no hay
  * nada que atender», que es lo contrario de «no lo puedes ver».
  */
 function TuResumen() {
   const { permisos } = usarSesion();
   const fichaje = usarFichar();
-  const hoy = usarInventarioHoy();
-  const veInventario = puedeVer(permisos, 'app.inventario');
+  const hoy = usarAlmacenHoy();
+  const veAlmacen = puedeVer(permisos, 'app.almacen');
 
   const atencion = hoy.data?.atencion.length ?? 0;
   const caducan = hoy.data?.caducan.length ?? 0;
@@ -170,7 +170,7 @@ function TuResumen() {
         />
         <Dato que="Esta semana" valor={comoSeLeenLasHoras(deLaSemana)} detalle="De lunes a hoy" />
 
-        {veInventario && (
+        {veAlmacen && (
           <>
             <Dato
               que="Hay que atender"

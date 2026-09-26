@@ -1,7 +1,7 @@
 import { Brillo, Lienzo } from './Lienzo.tsx';
 import { OBJETO, TENUE } from './trazos.ts';
 
-/** La cámara, abierta y sin nada: Inventario y Productos antes del primer producto. */
+/** La cámara, abierta y sin nada: Almacén y Productos antes del primer producto. */
 export default function Camara() {
   return (
     <Lienzo>

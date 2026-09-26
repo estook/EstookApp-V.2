@@ -256,7 +256,7 @@ export interface SalidaUnCierre {
     readonly precioUnidadCentimos: number;
   }[];
   /**
-   * Lo que se ha vendido apuntándolo en Inventario esa jornada (0034).
+   * Lo que se ha vendido apuntándolo en Almacén esa jornada (0034).
    *
    * **Es una propuesta, no un apunte.** El dinero de una jornada tiene un solo
    * dueño, que es este cierre; si una salida de cámara sumara por su cuenta y
@@ -363,7 +363,7 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
        limit 300
     `;
 
-    // ── Lo vendido desde Inventario esa jornada ──────────────────────────────
+    // ── Lo vendido desde Almacén esa jornada ──────────────────────────────
     //
     // Agrupado por producto y **con sus unidades, no con un importe**: un
     // ingrediente no tiene precio de venta (0035). El importe, si se sabe, sale

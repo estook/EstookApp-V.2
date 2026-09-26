@@ -16,7 +16,7 @@ import { IconoBien, IconoBorrar } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { comoDinero } from '../inventario/contrato.ts';
+import { comoDinero } from '../almacen/contrato.ts';
 import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
 import { Cuantos } from './Comun.tsx';
 import { numeroEscrito } from './utilidades.ts';

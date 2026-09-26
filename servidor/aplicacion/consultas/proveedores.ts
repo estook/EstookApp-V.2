@@ -21,7 +21,7 @@ import {
   type CanalDePedido,
 } from '../compras.ts';
 import { consulta, FalloDeAplicacion } from '../contrato.ts';
-import { productosActivos, productosDelProveedor } from './inventario.ts';
+import { productosActivos, productosDelProveedor } from './almacen.ts';
 import { elLocal, type ProximoRepartoDicho } from './pedidos.ts';
 
 /**
@@ -108,7 +108,7 @@ export interface SalidaUnProveedor {
 export const unProveedor = consulta<{ proveedor_id: string }, SalidaUnProveedor>({
   nombre: 'un_proveedor',
   entrada: z.object({ proveedor_id: z.string().uuid() }).strict(),
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocal(contexto);
@@ -130,7 +130,7 @@ export const unProveedor = consulta<{ proveedor_id: string }, SalidaUnProveedor>
       }[]
     >`
       select notas, cif, web, forma_de_pago::text as forma_de_pago,
-             estook.puede_editar('app.inventario', ${localId}::uuid) as puede
+             estook.puede_editar('app.almacen', ${localId}::uuid) as puede
         from estook.proveedor where id = ${ficha.id}
     `;
 

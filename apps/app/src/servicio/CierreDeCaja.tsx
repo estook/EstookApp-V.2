@@ -30,7 +30,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { ComoEntranTusVentas } from './ComoEntranTusVentas.tsx';
 import { comoSeLeeElDia, type ElCierreDeUnDia } from './contrato.ts';
-import { comoDinero } from '../inventario/contrato.ts';
+import { comoDinero } from '../almacen/contrato.ts';
 
 /**
  * Servicio · Jornada · Cierre (M6½).
@@ -345,7 +345,7 @@ function Formulario({
   */
   const precioDe = new Map(datos.platosConocidos.map((p) => [p.clave, p.precioUnidadCentimos]));
 
-  // Lo vendido en Inventario que todavía no está entre las líneas. Lo que ya
+  // Lo vendido en Almacén que todavía no está entre las líneas. Lo que ya
   // está no se vuelve a ofrecer: añadirlo dos veces es el fallo que esto viene a
   // evitar, no uno nuevo que trae.
   const yaPuestos = new Set(lineas.map((l) => claveDePlato(l.concepto)));
@@ -540,7 +540,7 @@ function Formulario({
           </datalist>
 
           {/*
-            ── Lo que se vendió desde Inventario, propuesto ──────────────────
+            ── Lo que se vendió desde Almacén, propuesto ──────────────────
 
             Quien saca un botellín de la cámara y dice «vendido» apunta lo que ha
             cobrado, y esa línea **espera aquí**: al cerrar la caja sale con su
@@ -554,7 +554,7 @@ function Formulario({
           {porPoner.length > 0 && (
             <div className="flex flex-col gap-e2 rounded-medio border border-borde bg-fondo p-e3">
               <p className="text-secundario">
-                <strong>Se ha vendido esto desde Inventario hoy.</strong> Si tu total de arriba sale
+                <strong>Se ha vendido esto desde Almacén hoy.</strong> Si tu total de arriba sale
                 del TPV o del Z, ya está contado: no lo añadas.
               </p>
               <ul className="flex flex-col gap-e1">

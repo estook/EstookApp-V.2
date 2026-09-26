@@ -1,0 +1,491 @@
+import {
+  cantidad,
+  centimos,
+  conSimbolo,
+  conUnidad,
+  type Alergeno,
+  type Consumo,
+  type EstadoDeExistencias,
+  type Zona,
+} from '@estook/dominio';
+
+/**
+ * Lo que Almacén recibe del servidor, y cómo se enseña (M6).
+ *
+ * Los tipos son la copia de lo que devuelven `mis_productos`, `un_producto`,
+ * `almacen_hoy` y `mis_proveedores`. Están aquí y no en un paquete compartido
+ * por la regla de dependencias: **la aplicación no importa del servidor**, habla
+ * con él por `@estook/cliente-api`.
+ *
+ * Ojo con los campos de dinero: llegan **opcionales a propósito**. Un cocinero
+ * no recibe ni uno, porque el servidor no se los envía (Auditoría, parte 8), así
+ * que aquí `precioCentimos` no es `number | null`, es `number | undefined`. Que
+ * el tipo lo diga es lo que evita pintar un «0,00 €» donde lo correcto es no
+ * pintar nada.
+ */
+
+export interface ProductoEnLista {
+  readonly id: string;
+  readonly nombre: string;
+  readonly categoria: string | null;
+  /** Los identificadores, para poder volver a guardar sin borrar lo que hay. */
+  readonly categoriaId: string | null;
+  readonly proveedorId: string | null;
+  readonly formato: string | null;
+  readonly unidadDeUso: string;
+  readonly factor: number;
+  readonly rendimiento: number;
+  readonly sinVerificar: boolean;
+  readonly pesoVariable: boolean;
+  readonly esEjemplo: boolean;
+  readonly activo: boolean;
+  readonly proveedor: string | null;
+  readonly codigoDeBarras: string | null;
+  /** Decide el impuesto de lo que se venda. Nunca se supone. */
+  readonly categoriaFiscal: string;
+  readonly notas: string | null;
+
+  readonly cantidad: number;
+  readonly minimo: number | null;
+  readonly estado: EstadoDeExistencias;
+
+  readonly precioCentimos?: number | null;
+  readonly costeMilesimas?: number | null;
+  readonly costePorUnidad?: string | null;
+  readonly valorCentimos?: number | null;
+  /** Si el valor sale del precio de hoy, porque lo que hay entró sin coste. */
+  readonly valorEsEstimado?: boolean;
+
+  readonly consumo: Consumo;
+  readonly diasDeCobertura: number | null;
+  readonly seAgotaEn: string | null;
+  /** Cuánto pedir: en formatos enteros —nadie compra media caja— y en unidad de uso. */
+  readonly sugerencia: {
+    readonly formatos: number;
+    readonly cuanto: number;
+    readonly motivo: string;
+  } | null;
+
+  // ── M7, repaso ─────────────────────────────────────────────────────────────
+  /** Si tiene algo en el congelador. */
+  readonly congelado: boolean;
+  /** Cuánto hay congelado, si los lotes lo dicen. Nulo: hay algo y no se sabe cuánto. */
+  readonly congeladoCuanto: number | null;
+  /** El IVA que se paga al comprarlo: el suyo o el de su categoría. Nulo: sin tipo. */
+  readonly ivaDeCompra: number | null;
+  readonly ivaDeCompraElegido: boolean;
+  /** Lo que trae cada unidad, cuando se cuenta por unidades: 250 (g). */
+  readonly contenidoPorUnidad: number | null;
+  readonly unidadDelContenido: string | null;
+  /** Cuántos meses aguanta congelado: de ahí sale su aviso (repaso del 25-sep, 0049). */
+  readonly congeladoAguantaMeses: number;
+  /**
+   * De dónde es: cocina, sala o limpieza.
+   *
+   * **El precio de venta no está aquí, y no es un olvido**: un ingrediente no se
+   * vende. Lo que se vende es un plato, y su precio vive en la carta (M10); lo
+   * que cuesta sale de su escandallo (M9). Poner un precio de venta en el género
+   * era inventarse un tercer sitio para un dato que ya tiene el suyo.
+   */
+  readonly zona: Zona;
+  /**
+   * El enlace de su miniatura de 160 px (entrega V). Firmado y con caducidad: no
+   * se guarda en ningún sitio. Nulo, o que no venga: sin foto, y se pinta la inicial.
+   */
+  readonly miniatura?: string | null;
+}
+
+export interface CategoriaDelLocal {
+  readonly id: string;
+  readonly nombre: string;
+  readonly cuantos: number;
+}
+
+export interface ProveedorDelLocal {
+  readonly id: string;
+  readonly nombre: string;
+}
+
+export interface MisProductos {
+  readonly productos: readonly ProductoEnLista[];
+  readonly categorias: readonly CategoriaDelLocal[];
+  readonly proveedores: readonly ProveedorDelLocal[];
+  readonly cuantosHay: number;
+  /** Los que cumplen lo que se mira, en todas las páginas: el título de la lista. */
+  readonly cuantosCumplen: number;
+  readonly hayMas: boolean;
+  readonly puedeVerPrecios: boolean;
+  readonly ejemplos: number;
+  /** Cuántos hay en cada zona que esta persona ve (cocina, sala, limpieza). */
+  readonly porZona: readonly { readonly zona: string; readonly cuantos: number }[];
+  readonly valorTotalCentimos?: number | null;
+  /** Si en este local los precios de compra se escriben con IVA. */
+  readonly preciosConIva: boolean;
+  /** El día que se les quitó el IVA a los precios que ya había. */
+  readonly ivaQuitadoEn: string | null;
+  /** Dónde está a efectos fiscales: de ahí sale el IVA que se propone al dar de alta. */
+  readonly territorio: string;
+}
+
+export interface PrecioEnFicha {
+  readonly id: string;
+  readonly proveedor: string | null;
+  readonly proveedorId: string | null;
+  readonly precioCentimos: number;
+  readonly costeMilesimas: number;
+  readonly costePorUnidad: string;
+  readonly formato: string | null;
+  readonly desde: string;
+  readonly hasta: string | null;
+  readonly vigente: boolean;
+  readonly origen: string;
+  /** Quién lo puso. Nulo si esa persona ya no está. */
+  readonly quien: string | null;
+}
+
+export interface MovimientoEnFicha {
+  readonly id: string;
+  readonly tipo: string;
+  readonly cantidad: number;
+  readonly cantidadDespues: number;
+  readonly motivo: string | null;
+  readonly fechaOperativa: string;
+  readonly ocurrioEn: string;
+  readonly quien: string | null;
+  readonly lote: string | null;
+  readonly costeMilesimas?: number | null;
+}
+
+export interface LoteEnFicha {
+  readonly id: string;
+  readonly codigo: string | null;
+  readonly caducaEl: string | null;
+  readonly recibidoEl: string;
+  readonly diasParaCaducar: number | null;
+  /** Cuándo se congeló. Nulo: no está congelado. */
+  readonly congeladoEl: string | null;
+  /** El día que cumple lo que aguanta congelado y los días que le faltan (0049). */
+  readonly cumpleCongeladoEl: string | null;
+  readonly diasParaCumplir: number | null;
+  /** Cuánto lleva este lote. Nulo: no se sabe. */
+  readonly cantidad: number | null;
+}
+
+export interface UnProducto {
+  readonly producto: ProductoEnLista;
+  readonly precios: readonly PrecioEnFicha[];
+  readonly movimientos: readonly MovimientoEnFicha[];
+  readonly lotes: readonly LoteEnFicha[];
+  readonly alergenos: readonly Alergeno[];
+  readonly enCuantasFichas: number;
+  readonly puedeVerPrecios: boolean;
+  /** Si en este local los precios de compra se escriben con IVA. */
+  readonly preciosConIva: boolean;
+  /** El enlace de su foto de 800 px (entrega V). Nulo: no tiene. */
+  readonly foto: string | null;
+}
+
+export interface AlmacenHoy {
+  readonly atencion: readonly ProductoEnLista[];
+  readonly caducan: readonly {
+    readonly loteId: string;
+    readonly productoId: string;
+    readonly producto: string;
+    readonly lote: string | null;
+    readonly caducaEl: string;
+    readonly dias: number;
+    readonly unidadDeUso: string;
+  }[];
+  /** Lo congelado que cumple, o casi, lo que aguanta congelado (0049). */
+  readonly congelados: readonly {
+    readonly loteId: string;
+    readonly productoId: string;
+    readonly producto: string;
+    readonly congeladoEl: string;
+    readonly cumpleEl: string;
+    readonly dias: number;
+    readonly meses: number;
+    readonly cuanto: number | null;
+    readonly unidadDeUso: string;
+  }[];
+  readonly sinPrecio: readonly { readonly id: string; readonly nombre: string }[];
+  readonly cuantosProductos: number;
+  readonly ejemplos: number;
+  /** Cuántos hay en cada zona: cocina, sala y limpieza. */
+  readonly porZona: readonly { readonly zona: string; readonly cuantos: number }[];
+  readonly puedeVerPrecios: boolean;
+  readonly valorTotalCentimos?: number | null;
+}
+
+export interface ProveedorEnLista {
+  readonly id: string;
+  readonly nombre: string;
+  readonly notas: string | null;
+  readonly activo: boolean;
+  readonly cuantosProductos: number;
+}
+
+export interface MisProveedores {
+  readonly proveedores: readonly ProveedorEnLista[];
+  readonly puedeVerPrecios: boolean;
+}
+
+/** Lo que devuelve el catálogo de referencia de M5, que M6 es el primero en usar. */
+export interface ReferenciaDelCatalogo {
+  readonly id: string;
+  readonly codigo: string;
+  readonly nombre: string;
+  readonly categoria: string;
+  readonly formato: string;
+  readonly factor: number;
+  readonly unidadDeUso: string;
+  readonly rendimiento: number;
+  readonly categoriaFiscal: string;
+  readonly alergenos: readonly Alergeno[];
+  readonly comoSale: string;
+}
+
+export interface CatalogoDeReferencia {
+  readonly productos: readonly ReferenciaDelCatalogo[];
+  readonly categorias: readonly { readonly nombre: string; readonly cuantos: number }[];
+}
+
+// ── Cómo se enseña cada cosa ─────────────────────────────────────────────────
+
+/**
+ * Una cantidad con su unidad: «4,2 kg», «800 g».
+ *
+ * Lo compone `conUnidad` de `@estook/dominio`, que es su dueño desde M2: quita
+ * los ceros que sobran y pone la coma decimal española. Aquí solo se le da forma
+ * a la cantidad, que llega del servidor con cuatro decimales.
+ */
+/**
+ * Como se llama cada categoria fiscal en pantalla.
+ *
+ * **Decide el impuesto que lleva lo que se venda**, asi que se enseña con su
+ * nombre y se elige a mano: suponerla es cambiarle el IVA a un producto sin
+ * decirlo. La lista cerrada vive en el motor fiscal de M2.
+ */
+export const NOMBRE_DE_LA_CATEGORIA_FISCAL: Readonly<Record<string, string>> = {
+  alimento: 'Alimento',
+  bebida_alcoholica: 'Bebida con alcohol',
+  bebida_refrescante: 'Bebida sin alcohol',
+  bebida_refrescante_azucarada: 'Bebida azucarada',
+  otros: 'Otros',
+};
+
+export function conUnidadDeUso(cuanto: number, unidad: string): string {
+  return conUnidad(cantidad(cuanto), unidad);
+}
+
+/** Un importe en céntimos, o una raya cuando no se puede ver. */
+export function comoDinero(valor: number | null | undefined): string {
+  if (valor === null || valor === undefined) return '—';
+  return conSimbolo(centimos(Math.trunc(valor)));
+}
+
+/**
+ * «Se agota el viernes a las 20:30», que es la frase del Manifiesto.
+ *
+ * ── Por qué recibe los días y no los cuenta ──────────────────────────────────
+ *
+ * Porque contarlos aquí obligaría a mirar el reloj del navegador, y **la fecha
+ * la decide el servidor** (regla 10). No es una formalidad: el navegador de una
+ * tablet puede estar en otra zona horaria, y a las dos de la mañana de un sábado
+ * «hoy» no significa lo mismo para el reloj que para la jornada de un bar que
+ * cierra a las cinco.
+ *
+ * Así que el servidor manda el instante y los días de cobertura, y aquí solo se
+ * escribe la frase. Lo cazó la regla de lint de M0, que prohíbe `new Date()` en
+ * el navegador, y tenía razón.
+ */
+export function cuandoSeAgota(iso: string | null, diasDeCobertura: number | null): string | null {
+  if (iso === null) return null;
+
+  const cuando = new Date(iso);
+  const hora = cuando.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const dias = diasDeCobertura === null ? 0 : Math.floor(diasDeCobertura);
+
+  if (dias <= 0) return `hoy a las ${hora}`;
+  if (dias === 1) return `mañana a las ${hora}`;
+  if (dias < 7) {
+    const dia = cuando.toLocaleDateString('es-ES', { weekday: 'long' });
+    return `el ${dia} a las ${hora}`;
+  }
+
+  return `el ${cuando.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`;
+}
+
+/** El tono de la etiqueta de estado. Color **y** palabra, nunca solo color (B8). */
+export const TONO_DEL_ESTADO: Readonly<
+  Record<EstadoDeExistencias, 'bien' | 'atencion' | 'mal' | 'neutro'>
+> = {
+  negativo: 'mal',
+  agotado: 'mal',
+  bajo_minimo: 'atencion',
+  bien: 'bien',
+  sin_minimo: 'neutro',
+};
+
+/** Cómo se llama cada tipo de movimiento en pantalla. Sin jerga (principio 14). */
+export const COMO_SE_LLAMA_EL_MOVIMIENTO: Readonly<Record<string, string>> = {
+  entrada: 'Ha entrado',
+  salida: 'Ha salido',
+  ajuste: 'Ajuste de cámara',
+  merma: 'Merma',
+  venta: 'Vendido',
+  consumo: 'Consumido al vender',
+  recuento: 'Inventario',
+};
+
+// ── El libro de movimientos, entero ──────────────────────────────────────────
+
+/**
+ * Una linea del libro, como llega de `mis_movimientos`.
+ *
+ * Es hermana de `MovimientoEnFicha`, y no la misma: la de la ficha ya sabe de
+ * que producto es —lo dice la pantalla de alrededor— y esta no, porque el libro
+ * mezcla los de todos. Traer el nombre del producto en cada linea es lo que hace
+ * que la pantalla sirva para cuadrar sin abrir nada.
+ */
+export interface MovimientoDelLibro {
+  readonly id: string;
+  readonly tipo: string;
+  readonly producto: string;
+  readonly productoId: string;
+  readonly unidadDeUso: string;
+  readonly cantidad: number;
+  readonly cantidadDespues: number;
+  readonly motivo: string | null;
+  readonly fechaOperativa: string;
+  readonly ocurrioEn: string;
+  readonly quien: string | null;
+  readonly lote: string | null;
+  readonly esEjemplo: boolean;
+  readonly costeMilesimas?: number | null;
+}
+
+export interface MisMovimientos {
+  readonly movimientos: readonly MovimientoDelLibro[];
+  readonly hayMas: boolean;
+  readonly puedeVerPrecios: boolean;
+  /** La fecha de hoy **en el local**, para poder escribir «hoy» sin mirar el reloj. */
+  readonly hoy: string;
+}
+
+/**
+ * Como se escribe una fecha operativa en pantalla: «hoy», «ayer» o el dia.
+ *
+ * Recibe la fecha del servidor y **la de hoy tambien del servidor**, por la misma
+ * razon que `cuandoSeAgota`: aqui no se mira el reloj del navegador (regla 10).
+ */
+export function comoSeLeeElDia(fecha: string, hoy: string): string {
+  if (fecha === hoy) return 'Hoy';
+
+  const dia = new Date(`${fecha}T12:00:00Z`);
+  const elDeHoy = new Date(`${hoy}T12:00:00Z`);
+  // `trunc` y no `round`: la regla 9 prohibe redondear fuera de los motores de
+  // dominio, y aqui no hace falta redondear nada. Las dos fechas se fijan al
+  // mediodia a proposito —asi ningun cambio de hora mueve la cuenta— y la
+  // diferencia sale exacta en dias.
+  const diferencia = Math.trunc((elDeHoy.getTime() - dia.getTime()) / 86_400_000);
+
+  if (diferencia === 1) return 'Ayer';
+  if (diferencia > 1 && diferencia < 7) {
+    return dia.toLocaleDateString('es-ES', { weekday: 'long' });
+  }
+  return dia.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+}
+
+// ── La merma (M6½) ───────────────────────────────────────────────────────────
+
+/**
+ * Lo que devuelven `merma_de_hoy` y `mis_mermas`.
+ *
+ * Ojo con el dinero, como siempre: **llega opcional**. Un cocinero apunta mermas
+ * y no ve lo que valen, porque el servidor no se lo envía.
+ */
+export interface DiaDeMerma {
+  readonly fecha: string;
+  readonly cuantas: number;
+  readonly valorCentimos?: number | null;
+}
+
+export interface MermaDeHoy {
+  readonly jornada: string;
+  readonly deHoy: {
+    readonly cuantas: number;
+    readonly valorCentimos?: number | null;
+    readonly loPeor: { readonly producto: string; readonly valorCentimos?: number | null } | null;
+  };
+  readonly dias: readonly DiaDeMerma[];
+  readonly mediaCentimos?: number | null;
+  readonly puedeVerPrecios: boolean;
+  readonly puedeApuntar: boolean;
+}
+
+export interface LineaDeMerma {
+  readonly id: string;
+  readonly productoId: string;
+  readonly producto: string;
+  readonly unidadDeUso: string;
+  readonly cuanto: number;
+  readonly motivo: string;
+  readonly partida: string;
+  readonly detalle: string | null;
+  readonly fechaOperativa: string;
+  readonly ocurrioEn: string;
+  readonly quien: string | null;
+  readonly categoria: string | null;
+  readonly valorCentimos?: number | null;
+}
+
+export interface TotalPorPartida {
+  readonly partida: string;
+  readonly cuantas: number;
+  readonly valorCentimos?: number | null;
+}
+
+export interface MisMermas {
+  readonly mermas: readonly LineaDeMerma[];
+  readonly hayMas: boolean;
+  readonly desde: string;
+  readonly hasta: string;
+  readonly jornada: string;
+  readonly porPartida: readonly TotalPorPartida[];
+  readonly porMotivo: readonly {
+    readonly motivo: string;
+    readonly cuantas: number;
+    readonly valorCentimos?: number | null;
+  }[];
+  readonly porProducto: readonly {
+    readonly productoId: string;
+    readonly producto: string;
+    readonly cuantas: number;
+    readonly valorCentimos?: number | null;
+  }[];
+  readonly cuantasEnTotal: number;
+  readonly valorTotalCentimos?: number | null;
+  readonly puedeVerPrecios: boolean;
+  readonly puedeApuntar: boolean;
+}
+
+/** «12 de septiembre», para una fecha operativa suelta. */
+export function comoSeLeeLaFecha(fecha: string): string {
+  return new Date(`${fecha}T12:00:00Z`).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short',
+  });
+}
+
+/** Lo justo para elegir qué se ha ido: sin un precio. Es de `productos_para_merma`. */
+export interface ProductoParaMerma {
+  readonly id: string;
+  readonly nombre: string;
+  readonly unidadDeUso: string;
+  readonly cantidad: number;
+}
+
+export interface ProductosParaMerma {
+  readonly productos: readonly ProductoParaMerma[];
+}

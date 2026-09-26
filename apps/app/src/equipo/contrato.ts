@@ -8,7 +8,7 @@ import { comoSeLeenLasHoras, conSimbolo, centimos } from '@estook/dominio';
  * por la regla de dependencias: **la aplicación no importa del servidor**, habla
  * con él por `@estook/cliente-api`.
  *
- * Y ojo con lo mismo que en Inventario: **los campos de dinero llegan
+ * Y ojo con lo mismo que en Almacén: **los campos de dinero llegan
  * opcionales**. Un jefe de cocina ve las horas de su equipo y no recibe ni un
  * euro, porque el servidor no se los envía. Que el tipo lo diga es lo que evita
  * pintar un «0,00 €» donde lo correcto es no pintar nada.

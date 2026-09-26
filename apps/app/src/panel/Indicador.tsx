@@ -12,7 +12,7 @@ import { DONDE_SE_MIRA, usarElIndicador } from '../ganchos/usarElIndicador.ts';
  * Un indicador en el Panel (M7, decisión 0039).
  *
  * La tarjeta es de `@estook/ui` desde V: la comparten el Panel y las cifras de
- * Inventario, Servicio y Equipo (mejora 2). Aquí queda lo que es de la aplicación:
+ * Almacén, Servicio y Equipo (mejora 2). Aquí queda lo que es de la aplicación:
  * **leerla**, con el permiso de quien pregunta, y **adónde lleva** cada una.
  *
  * Lo que no hace: sumar. Todo llega hecho de `un_indicador`, y así el food cost del

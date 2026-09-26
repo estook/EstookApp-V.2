@@ -50,7 +50,9 @@ export function BotonDeHacer({ alPulsar }: { readonly alPulsar: () => void }) {
         // El icono en charcoal y no en blanco: blanco sobre naranja da 2,6:1 (B8).
         'rounded-redondo bg-naranja text-sobre-naranja shadow-s3',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja',
-        'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e3))] lg:bottom-e5',
+        // Con el desfase del visor, y fuera con el teclado, como la barra (repaso del 25-sep).
+        'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e3)-var(--desfase-abajo,0px))] lg:bottom-e5',
+        'max-lg:[[data-teclado]_&]:hidden',
         'transition-[translate,opacity] duration-[--normal] ease-curva',
         // Baja detrás de la barra de navegación y se apaga. Con el teclado, si recibe
         // el foco, vuelve: nada se queda fuera de alcance por estar escondido.

@@ -14,7 +14,7 @@ export type { GraficaProps, SerieDeGrafica, FormaDeGrafica } from './grafica-tip
  * Recharts pesa mas de 100 KB comprimido: el presupuesto de B7 entero es 250 KB
  * **para toda la aplicacion**. Si entrara en el paquete inicial, la mitad del
  * presupuesto se la comeria una libreria que la mayoria de pantallas no usa: en
- * Inventario no hay graficas, en el Cuaderno tampoco, y en un movil de cocina
+ * Almacén no hay graficas, en el Cuaderno tampoco, y en un movil de cocina
  * eso son segundos de espera para nada.
  *
  * Asi que se parte en dos: este fichero es un envoltorio de dos lineas que entra

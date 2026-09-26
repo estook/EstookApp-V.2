@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
-import { ponerUnPrecio } from '../inventario.ts';
+import { ponerUnPrecio } from '../almacen.ts';
 
 /**
  * El precio de compra (M6) · con vigencia, y sin reescribir el pasado.
@@ -56,8 +56,8 @@ export interface SalidaPonerPrecio {
 export const ponerPrecio = comando<EntradaPonerPrecio, SalidaPonerPrecio>({
   nombre: 'poner_precio',
   entrada: entradaPonerPrecio,
-  // **No es `app.inventario`, y esa es la diferencia que importa.** Un cocinero
-  // lleva Inventario entera y no ve precios de compra: apunta lo que entra y lo
+  // **No es `app.almacen`, y esa es la diferencia que importa.** Un cocinero
+  // lleva Almacén entera y no ve precios de compra: apunta lo que entra y lo
   // que sale, y lo que cuesta es cosa de quien compra.
   exige: 'dato.precio_de_compra',
 

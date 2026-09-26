@@ -20,11 +20,11 @@ export function LoQueNavega() {
       >
         <div className="flex flex-col gap-e3">
           <Migas camino={[{ nombre: 'Panel' }]} />
-          <Migas camino={[{ nombre: 'Panel', ir: () => undefined }, { nombre: 'Inventario' }]} />
+          <Migas camino={[{ nombre: 'Panel', ir: () => undefined }, { nombre: 'Almacén' }]} />
           <Migas
             camino={[
               { nombre: 'Panel', ir: () => undefined },
-              { nombre: 'Inventario', ir: () => undefined },
+              { nombre: 'Almacén', ir: () => undefined },
               { nombre: 'Tomate pera' },
             ]}
           />
@@ -59,7 +59,7 @@ export function LoQueNavega() {
           alElegir={() => {
             setRueda(false);
           }}
-          pendientes={{ inventario: 3, servicio: 12, cuaderno: 1 }}
+          pendientes={{ almacen: 3, servicio: 12, cuaderno: 1 }}
         />
       </Pieza>
 

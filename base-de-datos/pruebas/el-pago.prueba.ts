@@ -27,7 +27,10 @@ let base: BaseDePrueba;
 let api: ApiDePrueba;
 let sinStripe: ApiDePrueba;
 const correo = correoEnMemoria();
-let ahora = new Date('2026-09-25T10:00:00Z');
+// La hora de verdad, y no un día fijo: la base apunta el primer cobro fallido con su
+// `now()`, y con un día fijo «ocho días después» dejaba de serlo en cuanto pasaba un
+// día de verdad (se cayó sola el 26-sep). Lo que depende de la hora, se mueve desde aquí.
+let ahora = new Date(Date.now());
 const pagos = pagosDeMentira('http://localhost/api', () => ahora.getTime());
 const UN_DIA = 86_400_000;
 
@@ -378,12 +381,15 @@ describe('el reloj', () => {
     const { organizacion_id: org } = await suscripcionDe(para);
     await pagos.fallarElCobro(org);
 
+    // Mañana, contado desde hoy de verdad: con un día fijo, la prueba caducaba sola.
+    // Las horas en UTC caen antes y después de las ocho de Madrid en verano y en invierno.
+    const manana = new Date(Date.now() + UN_DIA).toISOString().slice(0, 10);
     const antes = ahora;
     try {
-      ahora = new Date('2026-09-26T04:30:00Z'); // 06:30 en Madrid
+      ahora = new Date(`${manana}T04:30:00Z`); // 06:30 en Madrid (05:30 en invierno)
       expect(await api.despachador.latir(quien(), SECRETO)).toMatchObject({ diario: false });
 
-      ahora = new Date('2026-09-26T07:10:00Z'); // 09:10 en Madrid
+      ahora = new Date(`${manana}T07:10:00Z`); // 09:10 en Madrid (08:10 en invierno)
       const cuantosAntes = correo.mandados.filter((c) => c.para === para).length;
       const hecho = await api.despachador.latir(quien(), SECRETO);
       expect(hecho).toMatchObject({ diario: true, fallos: 0 });
@@ -393,7 +399,7 @@ describe('el reloj', () => {
       expect(suyos.at(-1)?.texto).toContain('No se pierde nada');
 
       // El latido de la hora siguiente no lo repite.
-      ahora = new Date('2026-09-26T08:10:00Z');
+      ahora = new Date(`${manana}T08:10:00Z`);
       expect(await api.despachador.latir(quien(), SECRETO)).toMatchObject({ diario: false });
       expect(correo.mandados.filter((c) => c.para === para).length).toBe(cuantosAntes + 1);
 

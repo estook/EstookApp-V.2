@@ -2652,6 +2652,43 @@ Las pruebas: `suscripcion.prueba.ts` (dominio), `stripe.prueba.ts` (la firma, el
 formulario y la traducción), `el-pago.prueba.ts` contra la base, las rutas en
 `api.prueba.ts` y `el-pago.spec.ts` en pantalla. Lecciones 114 y 115.
 
+### Antes de M8 · el repaso del 25 de septiembre
+
+_25 de septiembre de 2026._ Con la migración `0048` y la
+[decisión 0049](decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md). Lo que
+Richi vio al mirar E2, siete puntos, y contestó las cuatro preguntas con la recomendada.
+
+#### Lo que se hizo
+
+- **Almacén e Inventario.** La app «Inventario» es **Almacén** y la vista «Recuento» es
+  **Inventario**, en pantallas, direcciones, permiso, código y documentos vivos. El
+  permiso cambia en la base leyendo sus 23 políticas, y las direcciones de antes llevan a
+  las nuevas.
+- **Lo congelado va aparte**: no avisa por caducidad sino por lo que lleva en el
+  congelador (tres meses si nadie lo cambia en la ficha), una semana antes y el día que se
+  cumple; congelar ya no pregunta la caducidad.
+- **El alta pide el mínimo**, y la unidad del campo se toca para elegir kg o g (una pieza
+  nueva del sistema de diseño).
+- **El Tablón** en el Panel: notas del equipo para todos o para cocina o sala, con hora si
+  la tienen (sale en «Hoy» y en el Calendario), «Leído», y quién la ha leído y quién falta.
+- **La carta subida**: el PDF o las fotos de la carta del local, pasadas a páginas en el
+  navegador, vistas antes de publicar y enseñadas por su QR. El diseño de plato, ficha
+  técnica y escandallo, escrito en el Plan para M9 y M10.
+- **Los dos fallos del iPhone**: «Hoy» que no salía (`:has(:empty)`, lección 116) y la
+  barra que se quedaba a media pantalla (el visor tras el teclado, lección 117).
+
+#### Lo que se torció por el camino
+
+- **Siete locales sin categorías** al renombrar una semilla (lección 118): lo cazó la
+  prueba de migraciones.
+- **Las pruebas buscaban «inven»** para llegar a la app: con el nombre nuevo, el
+  buscador encuentra «Almacén» por «alma», y «Hacer inventario» por «inven».
+
+Las pruebas: `el-repaso-del-25-sep.prueba.ts` contra la base (Almacén, congelado, Tablón
+y carta), `congelado.prueba.ts` y `hoy.prueba.ts` del dominio, `anclaAbajo.prueba.ts`,
+`sin-has.prueba.ts` y `direccionesViejas.prueba.ts`, y `el-repaso-del-25-sep.spec.ts` en
+pantalla. Lecciones 116 a 119.
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

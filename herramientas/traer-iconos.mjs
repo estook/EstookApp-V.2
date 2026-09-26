@@ -44,7 +44,7 @@ const VERSION = '0.469.0';
 const ICONOS = {
   // ── Las ocho apps, el Panel y Fogon (tabla de B3) ──────────────────────────
   'layout-dashboard': 'Panel',
-  package: 'Inventario',
+  package: 'Almacen',
   calculator: 'Escandallos',
   'book-open': 'Carta',
   'calendar-days': 'Calendario',
@@ -143,6 +143,16 @@ const ICONOS = {
   // llevan sus reglas de uso—: cada canal lleva el suyo cuando se conecte de
   // verdad, en M29.
   bike: 'Reparto',
+
+  // ── El repaso del 25-sep (0049) ────────────────────────────────────────────
+  //
+  // Lo congelado, que ahora va aparte y avisa por el tiempo que lleva; el lector
+  // de códigos (entrega L, adelantada); la chincheta del Tablón, que es lo que
+  // sujeta un papel en el corcho de una cocina; y subir la carta del local.
+  snowflake: 'Congelado',
+  'scan-barcode': 'Escanear',
+  pin: 'Tablon',
+  upload: 'Subir',
 };
 
 async function traer(nombre) {

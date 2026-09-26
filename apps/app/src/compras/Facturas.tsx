@@ -22,7 +22,7 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { comoDinero, comoSeLeeLaFecha } from '../inventario/contrato.ts';
+import { comoDinero, comoSeLeeLaFecha } from '../almacen/contrato.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
 import { Dato, Filtros } from './Comun.tsx';
@@ -177,7 +177,7 @@ export function Facturas() {
                   <EstadoVacio
                     compacto
                     dibujo="facturas"
-                    acento="var(--color-app-inventario)"
+                    acento="var(--color-app-almacen)"
                     titulo="Todavía no has apuntado ninguna factura"
                     frase="Con sus albaranes, Estook te dice si te cobran lo que llegó."
                     {...(puedeApuntar
@@ -202,7 +202,7 @@ export function Facturas() {
                   <EstadoVacio
                     compacto
                     dibujo="todo-en-orden"
-                    acento="var(--color-app-inventario)"
+                    acento="var(--color-app-almacen)"
                     titulo={
                       filtro === 'sin_conciliar'
                         ? 'Todas están comprobadas'

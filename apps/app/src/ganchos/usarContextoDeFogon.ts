@@ -7,7 +7,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  *
  * ── Lo que había, y por qué se ha quitado la mitad ──────────────────────────
  *
- * Este gancho pedía además `inventario_hoy` al abrir la ventana y pintaba sus
+ * Este gancho pedía además `almacen_hoy` al abrir la ventana y pintaba sus
  * cifras debajo —«PRODUCTOS DE ALTA · 2»—, **en todas las pantallas**, también en
  * Ajustes o en Equipo, donde no pintaban nada. Era una consulta por apertura para
  * enseñar un número que nadie había pedido. Se va entero.
@@ -21,7 +21,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * armarlo en el navegador fue lo que un día le habría dado cifras de otro local.
  */
 export interface ContextoDeFogon {
-  /** Dónde estás, en cristiano: «Inventario · Productos». */
+  /** Dónde estás, en cristiano: «Almacén · Productos». */
   readonly donde: string;
   /** El identificador de la app, para elegir qué acciones ofrecer. */
   readonly app: string;

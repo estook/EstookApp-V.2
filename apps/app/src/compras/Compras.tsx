@@ -10,7 +10,7 @@ import { Precios } from './Precios.tsx';
 import { FichaDeProveedor, Proveedores } from './Proveedores.tsx';
 
 /**
- * Inventario · Compras (M7).
+ * Almacén · Compras (M7).
  *
  * «¿Qué pido, qué ha llegado y a qué precio?» Cinco vistas de un mismo sitio, en
  * el orden en que se usan en un bar:

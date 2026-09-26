@@ -15,7 +15,7 @@ import { consulta, FalloDeAplicacion } from '../contrato.ts';
  * ── Las acciones no vienen de aqui ───────────────────────────────────────────
  *
  * «Que busca **tambien acciones**»: «cambiar el tamano de letra», «ir a
- * Inventario». Esas no estan en ninguna tabla, porque no son datos: son sitios y
+ * Almacén». Esas no estan en ninguna tabla, porque no son datos: son sitios y
  * botones de la propia pantalla. Las resuelve el cliente sobre su catalogo de
  * acciones, sin pedir nada.
  *

@@ -70,7 +70,7 @@ export function BarraMovil({
  * ── Lo que cambia, y el fallo que arregla ────────────────────────────────────
  *
  * Antes esta barra pintaba **todas** las pestanas del catalogo, existieran o no.
- * En Inventario eso significaba cuatro posiciones de las cuales **dos no
+ * En Almacén eso significaba cuatro posiciones de las cuales **dos no
  * llevaban a ningun sitio**: «Pedidos», que es M7 y ensenaba un cartel, y «Mas»,
  * que era el cajon donde vivia Proveedores. La barra de navegacion principal de
  * la app, en el aparato donde de verdad se usa Estook, con la mitad de los
@@ -130,7 +130,10 @@ export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }:
 }
 
 const CAJA = [
-  'fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around gap-e1 max-[359px]:gap-0',
+  // `bottom` con el desfase del visor y fuera con el teclado: en el iPhone lo pegado
+  // abajo se quedaba a media pantalla (repaso del 25-sep, `anclaAbajo.ts`).
+  'fixed inset-x-0 bottom-[calc(0px-var(--desfase-abajo,0px))] z-40 flex items-stretch justify-around gap-e1 max-[359px]:gap-0',
+  '[[data-teclado]_&]:hidden',
   'border-t border-borde bg-superficie px-e2',
   'h-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom))]',
   'pb-[env(safe-area-inset-bottom)]',

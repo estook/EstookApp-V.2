@@ -137,6 +137,8 @@ describe('la carta, sin sesión', () => {
         'logo',
         'mapa',
         'nombre',
+        // La carta que subió el local, en enlaces firmados (repaso del 25-sep, 0049).
+        'paginas',
         'resenas',
         'telefono',
         'valoracion',
@@ -375,7 +377,7 @@ describe('lo de hoy', () => {
 
   it('a cada uno, lo suyo: la camarera no ve ni la cámara ni la caja', async () => {
     const deSara = await loDeHoy(sara);
-    expect(deSara.filter((c) => c.app === 'inventario' || c.app === 'servicio')).toEqual([]);
+    expect(deSara.filter((c) => c.app === 'almacen' || c.app === 'servicio')).toEqual([]);
     // El cocinero ve lo que caduca, y no la caja.
     const deMarcos = await loDeHoy(marcos);
     expect(deMarcos.some((c) => c.id === 'lotes-caducan-hoy')).toBe(true);

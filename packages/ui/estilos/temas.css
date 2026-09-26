@@ -102,7 +102,7 @@
      * el azul de carta se van al negro.
      */
     --color-app-panel: #dfe6e8;
-    --color-app-inventario: #f0ae4e;
+    --color-app-almacen: #f0ae4e;
     --color-app-escandallos: #4ec98a;
     --color-app-carta: #e485ac;
     --color-app-calendario: #6fb3e0;
@@ -160,7 +160,7 @@
       --color-naranja-suave: #fff1e5;
 
       --color-app-panel: #111c1f;
-      --color-app-inventario: #c77700;
+      --color-app-almacen: #c77700;
       --color-app-escandallos: #1e8e5a;
       --color-app-carta: #b23a6e;
       --color-app-calendario: #2c6e9b;

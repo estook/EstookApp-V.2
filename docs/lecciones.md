@@ -364,3 +364,22 @@
      local, pero la sesión no se enteraba, y cada comando decía «hay que estar dentro de
      un local». Lo que cambia a dónde entra alguien pone al día su sesión en el mismo
      paso; y `quien_soy`, por si el cambio llegó por otro camino (el aviso de Stripe).
+116. **En el iPhone, `:has(:empty)` no se vuelve a mirar.** La zona de atención del Panel
+     se escondía con `:not(:has(>:not(:empty)))`; «Hoy» llega después que lo demás, y
+     WebKit —todos los navegadores del iPhone— no volvía a mirar el selector al llenarse:
+     la zona se quedaba escondida hasta que algo repintaba. En Chrome no pasa, así que
+     ninguna prueba de pantalla lo veía. Lo que se esconde por estar vacío lo decide la
+     página (`usarSinNadaDentro`), y una prueba lee el código para que no vuelva.
+117. **Lo `fixed` abajo se pega al visor de maquetación, no a la pantalla.** Con la app
+     instalada en el iPhone, al cerrar el teclado el visor visible se queda desplazado,
+     y la barra de abajo se quedaba a media pantalla. Lo pegado abajo mide
+     `visualViewport` y baja lo que se ha quedado colgado; y con el teclado abierto, se
+     aparta. No se reproduce en un navegador de pruebas: la prueba finge el visor.
+118. **Renombrar un fichero cambia cuándo se ejecuta.** Las semillas se cargan por orden
+     alfabético, y `inventario.sql` renombrada a `almacen.sql` pasaba a ir antes de las
+     que crean los locales: siete locales sin categorías. Lo cazó la prueba de
+     migraciones. El nombre de un fichero que se ordena solo es parte de su contrato.
+119. **Cambiar de nombre un permiso es leer las políticas, no reescribirlas.** El permiso
+     `app.inventario` estaba escrito en 23 políticas. Copiarlas a mano en la migración
+     era la forma de colar una diferencia; la `0048` las lee de `pg_policies` y solo
+     cambia el nombre, y deshacerla hace lo contrario.

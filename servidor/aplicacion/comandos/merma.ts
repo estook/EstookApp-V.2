@@ -3,7 +3,7 @@ import { MOTIVOS_DE_MERMA, partidaDe, sePuedeTirar, valorDeLaMerma } from '@esto
 import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
-import { apuntar, elProductoBloqueado, loQueHay } from '../inventario.ts';
+import { apuntar, elProductoBloqueado, loQueHay } from '../almacen.ts';
 
 /**
  * Apuntar una merma (M6½).
@@ -32,9 +32,9 @@ import { apuntar, elProductoBloqueado, loQueHay } from '../inventario.ts';
  *
  * ── El camarero puede, y por eso la política cambió ─────────────────────────
  *
- * Escribir en el libro pedía `app.inventario` en «ver y editar», que un camarero
+ * Escribir en el libro pedía `app.almacen` en «ver y editar», que un camarero
  * no tiene. Y el camarero es quien rompe una copa. La política de la 0028 deja
- * apuntar en el libro con Inventario **o** con permiso de merma, y en el segundo
+ * apuntar en el libro con Almacén **o** con permiso de merma, y en el segundo
  * caso **solo mermas**: un camarero no apunta una entrada de género.
  */
 
@@ -68,7 +68,7 @@ export interface SalidaApuntarMerma {
    * Lo que ha costado, si quien apunta puede ver precios.
    *
    * Un cocinero apunta la merma y **no ve lo que vale**: es la misma regla que
-   * ordena Inventario entera —«un rol sin costes no recibe ni un campo de coste en
+   * ordena Almacén entera —«un rol sin costes no recibe ni un campo de coste en
    * ninguna respuesta»— y no se esconde en la pantalla, no se envía.
    */
   readonly valorCentimos?: number | null;

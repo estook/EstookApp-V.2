@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { IconoAdelante, IconoAtencion } from '@estook/iconos';
-import { usarInventarioHoy } from '../ganchos/usarInventarioHoy.ts';
+import { usarAlmacenHoy } from '../ganchos/usarAlmacenHoy.ts';
 
 /**
  * Lo que le falta a Estook para funcionar bien · una línea, no un widget.
@@ -33,7 +33,7 @@ import { usarInventarioHoy } from '../ganchos/usarInventarioHoy.ts';
  */
 export function LoQueFalta() {
   const navegar = useNavigate();
-  const consulta = usarInventarioHoy();
+  const consulta = usarAlmacenHoy();
 
   const hoy = consulta.data;
   if (hoy === undefined) return null;
@@ -54,7 +54,7 @@ export function LoQueFalta() {
     <button
       type="button"
       onClick={() => {
-        navegar('/inventario/productos/sin-precio');
+        navegar('/almacen/productos/sin-precio');
       }}
       // Del mismo aire que «Hoy», justo encima: esquinas grandes y dos líneas como
       // mucho —qué pasa, y cuáles en una sola línea—. Antes eran tres (25-sep).

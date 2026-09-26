@@ -282,7 +282,7 @@ describe('los modulos que se nombran en pantalla', () => {
     if (widget.modulo !== undefined) nombrados.add(widget.modulo);
   }
   // M6 no lo nombra nada, porque es el que esta construido, y se queda a
-  // proposito: lo nombran las pantallas de Inventario.
+  // proposito: lo nombran las pantallas de Almacén.
   nombrados.add('M6');
 
   it('todo modulo que se nombra en pantalla esta en el catalogo', () => {
@@ -307,11 +307,11 @@ describe('lo construido y lo que llega', () => {
     return app;
   };
 
-  it('Inventario tiene sus cuatro destinos construidos', () => {
+  it('Almacén tiene sus cuatro destinos construidos', () => {
     // Es la app de M6, y la que demuestra la regla: **ninguna posicion vacia**.
     // Antes tenia cuatro pestanas y dos no llevaban a ningun sitio.
-    expect(destinosConstruidos(laApp('inventario'))).toHaveLength(4);
-    expect(destinosQueLlegan(laApp('inventario'))).toHaveLength(0);
+    expect(destinosConstruidos(laApp('almacen'))).toHaveLength(4);
+    expect(destinosQueLlegan(laApp('almacen'))).toHaveLength(0);
   });
 
   it('una app sin construir no tiene ningun destino en la barra', () => {
@@ -330,7 +330,7 @@ describe('lo construido y lo que llega', () => {
   });
 
   it('donde entra una app es su primer destino construido', () => {
-    expect(dondeEntra(laApp('inventario'))?.id).toBe('resumen');
+    expect(dondeEntra(laApp('almacen'))?.id).toBe('resumen');
     // Equipo entra en su Resumen, que ya no es un cartel: quién ha fichado y quién no.
     expect(dondeEntra(laApp('equipo'))?.id).toBe('resumen');
     // Y Servicio entra en la jornada por el cierre, que es lo que funciona.
@@ -338,10 +338,10 @@ describe('lo construido y lo que llega', () => {
   });
 
   it('la ruta lleva la vista de entrada cuando el destino tiene vistas', () => {
-    const inventario = laApp('inventario');
-    expect(rutaDe(inventario)).toBe('/inventario/resumen');
-    const productos = inventario.destinos.find((d) => d.id === 'productos');
-    expect(rutaDe(inventario, productos)).toBe('/inventario/productos/todo');
+    const almacen = laApp('almacen');
+    expect(rutaDe(almacen)).toBe('/almacen/resumen');
+    const productos = almacen.destinos.find((d) => d.id === 'productos');
+    expect(rutaDe(almacen, productos)).toBe('/almacen/productos/todo');
   });
 
   /**
@@ -381,11 +381,11 @@ describe('lo construido y lo que llega', () => {
   });
 
   it('un destino sin vistas no tiene vista de entrada', () => {
-    const resumen = laApp('inventario').destinos.find((d) => d.id === 'resumen');
+    const resumen = laApp('almacen').destinos.find((d) => d.id === 'resumen');
     expect(resumen?.vistas).toHaveLength(0);
     if (resumen === undefined) throw new Error('resumen');
     expect(dondeEntraEnElDestino(resumen)).toBeUndefined();
-    expect(rutaDe(laApp('inventario'), resumen)).toBe('/inventario/resumen');
+    expect(rutaDe(laApp('almacen'), resumen)).toBe('/almacen/resumen');
   });
 });
 
@@ -401,7 +401,7 @@ describe('el Panel no es una de las ocho', () => {
 
 describe('buscar una app', () => {
   it('por su identificador', () => {
-    expect(appPorId('inventario')?.nombre).toBe('Inventario');
+    expect(appPorId('almacen')?.nombre).toBe('Almacén');
     expect(appPorId('no-existe')).toBeUndefined();
   });
 

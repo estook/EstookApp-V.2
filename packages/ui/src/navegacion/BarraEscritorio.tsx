@@ -165,7 +165,7 @@ export function BarraEscritorio({
  * en recortado**: no hay forma de recortar a lo ancho y no a lo alto. Asi que el
  * desplegable se abria —el estado cambiaba, el nodo existia, las pruebas de
  * unidad lo encontraban— y quedaba entero por debajo del borde de la barra,
- * recortado. En pantalla, pulsar Inventario no hacia absolutamente nada.
+ * recortado. En pantalla, pulsar Almacén no hacia absolutamente nada.
  *
  * Lo encontro Richi mirando la aplicacion, no las pruebas: es el mismo fallo de
  * siempre, algo construido y probado que la pantalla no ensena.

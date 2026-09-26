@@ -9,8 +9,9 @@ import { IconoAbrirFuera, IconoLocal, IconoReloj } from '@estook/iconos';
  *
  * `estook.com/carta/<dirección>`: sin sesión, sin almohadilla y para siempre. Hasta
  * M12 enseña lo que el local ya enseña al mundo —su nombre, su valoración, dónde
- * está, su teléfono y su horario de Google—; el día que haya platos con precio y
- * alérgenos, **el mismo QR ya impreso** enseñará la carta entera.
+ * está, su teléfono y su horario de Google— y **la carta que haya subido** (repaso
+ * del 25-sep, 0049); el día que haya platos con precio y alérgenos, **el mismo QR ya
+ * impreso** los enseñará.
  *
  * ── Y por qué esta página también es la de «no existe» del sitio ────────────
  *
@@ -33,6 +34,8 @@ interface LaCartaDelLocal {
   readonly horario: readonly string[];
   readonly colorDeMarca: string | null;
   readonly logo: string | null;
+  /** La carta que subió el local, página a página (repaso del 25-sep, 0049). */
+  readonly paginas: readonly string[];
 }
 
 type ComoVa =
@@ -131,15 +134,34 @@ function ElLocal({ carta }: { readonly carta: LaCartaDelLocal }) {
         />
       </header>
 
-      <section
-        aria-label="La carta"
-        className="rounded-grande border border-borde bg-superficie p-e4 text-center shadow-s1"
-      >
-        <p className="font-semibold">La carta, muy pronto aquí</p>
-        <p className="mt-e1 text-secundario text-texto-suave">
-          Pregunta al personal por los platos del día y los alérgenos.
-        </p>
-      </section>
+      {carta.paginas.length > 0 ? (
+        // La carta que subió el local, página a página y a todo el ancho: se lee
+        // deslizando, y se amplía con dos dedos, sin abrir ningún visor aparte.
+        <section aria-label="La carta" className="-mx-e4 flex flex-col gap-e2 sm:mx-0">
+          {carta.paginas.map((pagina, i) => (
+            <img
+              key={pagina}
+              src={pagina}
+              alt={`La carta, página ${String(i + 1)} de ${String(carta.paginas.length)}`}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              className="block h-auto w-full bg-white sm:rounded-grande sm:border sm:border-borde"
+            />
+          ))}
+          <p className="px-e4 text-center text-etiqueta text-texto-suave sm:px-0">
+            Pregunta al personal por los alérgenos de cada plato.
+          </p>
+        </section>
+      ) : (
+        <section
+          aria-label="La carta"
+          className="rounded-grande border border-borde bg-superficie p-e4 text-center shadow-s1"
+        >
+          <p className="font-semibold">La carta, muy pronto aquí</p>
+          <p className="mt-e1 text-secundario text-texto-suave">
+            Pregunta al personal por los platos del día y los alérgenos.
+          </p>
+        </section>
+      )}
 
       <section aria-label="El local" className="flex flex-col gap-e3">
         {carta.direccion !== null && (

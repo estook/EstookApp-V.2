@@ -36,7 +36,7 @@ import {
   comoDinero,
   comoSeLeeLaFecha,
   conUnidadDeUso,
-} from '../inventario/contrato.ts';
+} from '../almacen/contrato.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
 import { Cuantos, Dato, EnlaceComoBoton } from './Comun.tsx';
@@ -95,7 +95,7 @@ function webConProtocolo(web: string): string {
 export function Proveedores() {
   const { permisos } = usarSesion();
   const proveedor = usarAbiertoEnLaDireccion('proveedor');
-  const puedeTocar = puedeEditar(permisos, 'app.inventario');
+  const puedeTocar = puedeEditar(permisos, 'app.almacen');
   const [verDesactivados, setVerDesactivados] = useState(false);
   const [creando, setCreando] = useState(false);
 
@@ -184,7 +184,7 @@ export function Proveedores() {
           cuandoNoHay={
             <EstadoVacio
               dibujo="proveedores"
-              acento="var(--color-app-inventario)"
+              acento="var(--color-app-almacen)"
               titulo="Todavía no tienes proveedores"
               frase="Con sus días de reparto puestos, Estook sabe qué día tienes que pedirle, qué pedirle y cuándo llega."
               {...(puedeTocar
@@ -336,7 +336,7 @@ export function FichaDeProveedor({
             ancho
             icono={<IconoAnadir size={20} />}
             onClick={() => {
-              navegar(`/inventario/compras/pedidos?pedir=${p.id}`);
+              navegar(`/almacen/compras/pedidos?pedir=${p.id}`);
             }}
           >
             Hacerle un pedido

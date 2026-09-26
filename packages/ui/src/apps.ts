@@ -8,7 +8,7 @@ import {
   IconoEquipo,
   IconoEscandallos,
   IconoHecho,
-  IconoInventario,
+  IconoAlmacen,
   IconoNegocio,
   IconoOrganizacion,
   IconoPanel,
@@ -30,7 +30,7 @@ type AppDeLaRueda = (typeof ORDEN_DE_LA_RUEDA)[number];
  * **Este fichero es el unico dueno de «que apps hay y por donde se navegan».**
  * El icono, el acento, la forma, los destinos y las vistas de cada una salen de
  * aqui y de ningun otro sitio: es la regla 6 (un calculo, un unico dueno)
- * aplicada a la navegacion. Si el acento de Inventario se cambia aqui, cambia en
+ * aplicada a la navegacion. Si el acento de Almacén se cambia aqui, cambia en
  * la rueda, en la cabecera y en el Panel a la vez, porque no esta escrito en
  * ningun otro lado.
  *
@@ -42,7 +42,7 @@ type AppDeLaRueda = (typeof ORDEN_DE_LA_RUEDA)[number];
  * Hasta M6 cada app tenia una lista plana de «pestanas», y salio mal de tres
  * maneras a la vez:
  *
- *   · **Pestanas muertas.** Inventario gastaba una de sus cuatro posiciones en
+ *   · **Pestanas muertas.** Almacén gastaba una de sus cuatro posiciones en
  *     «Pedidos», que es M7 y no hacia nada, y otra en un «Mas» que era el cajon
  *     donde vivia Proveedores. **Dos de cuatro no llevaban a ningun sitio.**
  *   · **Pestanas que eran la misma pantalla.** Calendario gastaba tres
@@ -93,7 +93,7 @@ type AppDeLaRueda = (typeof ORDEN_DE_LA_RUEDA)[number];
 export type FormaDeApp = 'panel' | 'lista' | 'calendario' | 'cuaderno';
 
 export interface Vista {
-  /** El trozo de la ruta: `/inventario/productos/bajo-minimo`. */
+  /** El trozo de la ruta: `/almacen/productos/bajo-minimo`. */
   readonly id: string;
   readonly nombre: string;
   /**
@@ -106,7 +106,7 @@ export interface Vista {
 }
 
 export interface Destino {
-  /** El trozo de la ruta: `/inventario/productos`. */
+  /** El trozo de la ruta: `/almacen/productos`. */
   readonly id: string;
   readonly nombre: string;
   readonly icono: Icono;
@@ -132,7 +132,7 @@ export interface Destino {
 }
 
 export interface App {
-  /** El trozo de la ruta: `/inventario`. */
+  /** El trozo de la ruta: `/almacen`. */
   readonly id: string;
   readonly nombre: string;
   /** El permiso que hay que tener para verla. Sin el, no aparece en ningun sitio. */
@@ -169,7 +169,7 @@ export interface App {
  * pestanas de Negocio no fueran las de B5.
  */
 export const MODULOS: Readonly<Record<string, string>> = {
-  M6: 'M6 · Inventario',
+  M6: 'M6 · Almacén',
   M9: 'M9 · Escandallos',
   M10: 'M10 · Carta, menús y análisis',
   M14: 'M14 · Calendario',
@@ -216,13 +216,13 @@ function vistas(...nombres: readonly (string | readonly [string, string])[]): re
 }
 
 const CATALOGO: Record<AppDeLaRueda, App> = {
-  // ── Inventario · M6, construida ────────────────────────────────────────────
-  'app.inventario': {
-    id: 'inventario',
-    nombre: 'Inventario',
-    permiso: 'app.inventario',
-    icono: IconoInventario,
-    acento: 'var(--color-app-inventario)',
+  // ── Almacén · M6, construida ────────────────────────────────────────────
+  'app.almacen': {
+    id: 'almacen',
+    nombre: 'Almacén',
+    permiso: 'app.almacen',
+    icono: IconoAlmacen,
+    acento: 'var(--color-app-almacen)',
     forma: 'lista',
     queHace: 'Qué hay, qué cuesta, qué se acaba y qué caduca',
     destinos: [
@@ -240,7 +240,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
       {
         id: 'productos',
         nombre: 'Productos',
-        icono: IconoInventario,
+        icono: IconoAlmacen,
         queContesta: '¿Qué hay en cámara, cuánto cuesta y cuánto dura?',
         // Los cuatro filtros que antes eran un interruptor suelto en mitad de la
         // pantalla y dos casillas de buscar. Son la misma lista mirada de otra
@@ -267,7 +267,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // Y «Recuento», que es contar la camara a mano y corregir el libro con lo
         // contado. Es una vista de Movimientos y no una app: «los recuentos y las
         // mermas seran vistas de Movimientos», escrito desde M6.
-        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Ventas', 'Mermas', 'Ajustes', 'Recuento'),
+        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Ventas', 'Mermas', 'Ajustes', 'Inventario'),
       },
       {
         id: 'compras',

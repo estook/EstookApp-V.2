@@ -12,7 +12,7 @@ import { FalloDeAplicacion, type Contexto } from './contrato.ts';
 /**
  * Lo que comparten las operaciones de compras (M7).
  *
- * Vive aparte por la misma razón que `inventario.ts` en M6: pedir, recibir y
+ * Vive aparte por la misma razón que `almacen.ts` en M6: pedir, recibir y
  * conciliar son comandos distintos con pantallas distintas, pero **leen al
  * proveedor igual, esperan el mismo precio y cierran el pedido con el mismo
  * candado**. Si cada uno lo hiciera a su manera, el pedido diría que el aceite

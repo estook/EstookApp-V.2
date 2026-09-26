@@ -231,7 +231,7 @@ export const IconoCuaderno = crearIcono(
 );
 
 /** Lucide `package` */
-export const IconoInventario = crearIcono(
+export const IconoAlmacen = crearIcono(
   'package',
   '<path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /><path d="M12 22V12" /><path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7" /><path d="m7.5 4.27 9 5.15" />',
 );
@@ -248,6 +248,12 @@ export const IconoEditar = crearIcono(
   '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" />',
 );
 
+/** Lucide `pin` */
+export const IconoTablon = crearIcono(
+  'pin',
+  '<path d="M12 17v5" /><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />',
+);
+
 /** Lucide `plus` */
 export const IconoAnadir = crearIcono('plus', '<path d="M5 12h14" /><path d="M12 5v14" />');
 
@@ -255,6 +261,12 @@ export const IconoAnadir = crearIcono('plus', '<path d="M5 12h14" /><path d="M12
 export const IconoReintentar = crearIcono(
   'rotate-ccw',
   '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />',
+);
+
+/** Lucide `scan-barcode` */
+export const IconoEscanear = crearIcono(
+  'scan-barcode',
+  '<path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M8 7v10" /><path d="M12 7v10" /><path d="M17 7v10" />',
 );
 
 /** Lucide `search` */
@@ -273,6 +285,12 @@ export const IconoAjustes = crearIcono(
 export const IconoFiltros = crearIcono(
   'sliders-horizontal',
   '<line x1="21" x2="14" y1="4" y2="4" /><line x1="10" x2="3" y1="4" y2="4" /><line x1="21" x2="12" y1="12" y2="12" /><line x1="8" x2="3" y1="12" y2="12" /><line x1="21" x2="16" y1="20" y2="20" /><line x1="12" x2="3" y1="20" y2="20" /><line x1="14" x2="14" y1="2" y2="6" /><line x1="8" x2="8" y1="10" y2="14" /><line x1="16" x2="16" y1="18" y2="22" />',
+);
+
+/** Lucide `snowflake` */
+export const IconoCongelado = crearIcono(
+  'snowflake',
+  '<path d="m10 20-1.25-2.5L6 18" /><path d="M10 4 8.75 6.5 6 6" /><path d="m14 20 1.25-2.5L18 18" /><path d="m14 4 1.25 2.5L18 6" /><path d="m17 21-3-6h-4" /><path d="m17 3-3 6 1.5 3" /><path d="M2 12h6.5L10 9" /><path d="m20 10-1.5 2 1.5 2" /><path d="M22 12h-6.5L14 15" /><path d="m4 10 1.5 2L4 14" /><path d="m7 21 3-6-1.5-3" /><path d="m7 3 3 6h4" />',
 );
 
 /** Lucide `sun` */
@@ -309,6 +327,12 @@ export const IconoTamanoDeLetra = crearIcono(
 export const IconoDeshacer = crearIcono(
   'undo-2',
   '<path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />',
+);
+
+/** Lucide `upload` */
+export const IconoSubir = crearIcono(
+  'upload',
+  '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" />',
 );
 
 /** Lucide `user` */

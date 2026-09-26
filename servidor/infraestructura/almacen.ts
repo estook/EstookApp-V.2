@@ -121,6 +121,49 @@ export function claveDeLaFoto(
   return `${CUBO_DE_LAS_FOTOS}/${localId}/${productoId}/${cual}-${ahora.getTime()}.${extension}`;
 }
 
+// ── La carta del local, subida (repaso del 25-sep, 0049) ───────────────────
+
+/** El cubo de las cartas. Lo crea la migración 0048, privado como los demás. */
+export const CUBO_DE_LAS_CARTAS = 'cartas';
+
+/**
+ * Lo más grande que se acepta por página, ya pasada a imagen en el navegador (1600
+ * px de ancho, en WebP o JPG). Una carta con mucha foto pesa más que una de texto,
+ * y aun así cabe de sobra; es el tope que impide llenar el almacén a pelo.
+ */
+export const TOPE_DE_LA_PAGINA = 1536 * 1024;
+
+/** Las páginas, como las fotos: WebP donde se puede, JPG en Safari. */
+export const TIPOS_DE_PAGINA: Readonly<Record<string, string>> = {
+  'image/webp': 'webp',
+  'image/jpeg': 'jpg',
+};
+
+/** Cuánto vive el enlace de una página: lo que dura una comida larga. */
+export const SEGUNDOS_DEL_ENLACE_DE_LA_CARTA = 3 * 60 * 60;
+
+/**
+ * La clave de una página de la carta: el local, **una marca de tiempo** —la de la
+ * subida, que es la de toda la carta— y su número. Con la marca, subir una carta
+ * nueva no deja la vieja en la caché de nadie.
+ */
+export function claveDeLaPagina(
+  localId: string,
+  subida: number,
+  pagina: number,
+  extension: string,
+): string {
+  return `${CUBO_DE_LAS_CARTAS}/${localId}/${String(subida)}-${String(pagina)}.${extension}`;
+}
+
+/** Si una clave es de una página de la carta de ese local: lo único que se deja publicar. */
+export function esDeLaCartaDe(clave: string, localId: string): boolean {
+  const prefijo = `${CUBO_DE_LAS_CARTAS}/${localId}/`;
+  return (
+    clave.startsWith(prefijo) && /^\d{10,}-\d{1,2}\.(webp|jpg)$/.test(clave.slice(prefijo.length))
+  );
+}
+
 // ── El de verdad · Supabase Storage ──────────────────────────────────────────
 
 /**

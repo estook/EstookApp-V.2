@@ -115,7 +115,7 @@ describe('sin pago no hay app (0048)', () => {
     expect(yo.cuenta.como).toBe('sin_pagar');
 
     expect(elFallo(await api.consultar(token, 'mis_productos'))).toBe('cuenta_sin_pagar');
-    expect(elFallo(await api.consultar(token, 'inventario_hoy'))).toBe('cuenta_sin_pagar');
+    expect(elFallo(await api.consultar(token, 'almacen_hoy'))).toBe('cuenta_sin_pagar');
     expect(
       elFallo(
         await api.ejecutar(token, 'crear_producto', {

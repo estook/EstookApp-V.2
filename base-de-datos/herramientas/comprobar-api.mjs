@@ -925,7 +925,7 @@ try {
     `;
 
     comprobar(
-      'las siete tablas de inventario, con seguridad por filas',
+      'las siete tablas del almacén, con seguridad por filas',
       inventario.tablas_con_rls === 7,
       `hay ${inventario.tablas_con_rls}`,
     );
@@ -1069,8 +1069,8 @@ try {
   // (esta razonado en su flujo: «desplegar la API es lo que pone los datos de
   // verdad al alcance de cualquiera con un navegador, y eso se hace mirando»).
   //
-  // Al cerrar M6 pasó exactamente eso: la app publicada con Inventario dentro, y
-  // la API sin desplegar. Entrar en Inventario devolvia «Eso ya no está» en cada
+  // Al cerrar M6 pasó exactamente eso: la app publicada con Almacén dentro, y
+  // la API sin desplegar. Entrar en Almacén devolvia «Eso ya no está» en cada
   // pantalla, y por fuera parecia que el modulo estaba roto.
   //
   // Asi que se pregunta a la de verdad. **Una operacion que el codigo tiene y la

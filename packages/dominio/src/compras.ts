@@ -1,7 +1,7 @@
 import { costeDeLinea, costePorUnidadDeUso, cantidad, milesimas, type Milesimas } from './coste.ts';
 import { centimos, conSimbolo, porCantidad, type Centimos } from './dinero.ts';
 import { comoSeLlamaElDia } from './equipo.ts';
-import { DIAS_DE_COBERTURA_OBJETIVO, type Sugerencia } from './inventario.ts';
+import { DIAS_DE_COBERTURA_OBJETIVO, type Sugerencia } from './almacen.ts';
 import { conUnidad, fechaEnLetra } from './textos.ts';
 import { diaDeLaSemana, diasEntre, masDias, type FechaOperativa } from './tiempo.ts';
 

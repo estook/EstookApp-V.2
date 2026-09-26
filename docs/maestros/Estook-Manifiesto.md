@@ -31,7 +31,7 @@ Cobrar lo puede seguir haciendo su TPV, conectado a Estook, o lo puede hacer Est
         ┌──────────────────┼──────────────────┐
      PERSONAS          OPERACIONES         NEGOCIO
         │                  │                  │
-     Equipo             Inventario         Gastos
+     Equipo             Almacén            Gastos
      Horarios           Escandallos        Ventas
      Fichajes           Carta              Analitica
      Vacaciones         Servicio           Rentabilidad
@@ -74,7 +74,7 @@ No es ninguna función suelta. Es que **todas las piezas están conectadas**, de
 ```
 Proveedor sube el precio del aceite
         ↓
-Inventario detecta el coste nuevo
+Almacén detecta el coste nuevo
         ↓
 Escandallos recalcula los platos afectados
         ↓
@@ -210,7 +210,7 @@ Una persona tiene una o varias membresías, y cada una es `persona + alcance + r
 
 # 4 · Los principios innegociables
 
-1. **Inventario es la única fuente de verdad del género.** La carta lee, no escribe.
+1. **Almacén es la única fuente de verdad del género.** La carta lee, no escribe.
 2. **Ningún dato se pide dos veces.** Si se puede derivar, se deriva. Si lo tiene el TPV, se trae.
 3. **Los documentos son salidas, nunca entradas.**
 4. **El cliente pide operaciones, no cambios de tablas.**
@@ -248,7 +248,7 @@ TARIO  DALLOS       DARIO         CIO    CIO   DERNO
 
 | App         | Qué resuelve                                 | Su pregunta                                   |
 | ----------- | -------------------------------------------- | --------------------------------------------- |
-| Inventario  | Qué hay, qué cuesta, a quién se le compra    | ¿Qué tenemos? ¿Qué se acaba? ¿Qué caduca?     |
+| Almacén     | Qué hay, qué cuesta, a quién se le compra    | ¿Qué tenemos? ¿Qué se acaba? ¿Qué caduca?     |
 | Escandallos | Todo lo que vendes, plato a plato            | ¿Cuánto cuesta de verdad? ¿Qué margen deja?   |
 | Carta       | Componer la carta y el menú, imprimirlos     | ¿Qué funciona? ¿Qué pierde dinero?            |
 | Calendario  | Qué pasa cada día en el local                | ¿Qué hay hoy? ¿Quién trabaja?                 |
@@ -271,7 +271,7 @@ No es una frase bonita. Es una regla de construcción, y cada una de las ocho la
 - Tiene su historial: lo que ha pasado ahí, quién lo hizo y cuándo.
 - Tiene su bandeja de pendientes y su contador, que aparece en la rueda y en el Panel.
 - Se puede abrir sola desde el móvil, con su acceso directo.
-- **Habla con las demás por datos, nunca por copia:** la Carta lee de Escandallos y Escandallos lee de Inventario.
+- **Habla con las demás por datos, nunca por copia:** la Carta lee de Escandallos y Escandallos lee del Almacén.
 
 ## Cómo se navega
 
@@ -290,7 +290,7 @@ La rueda se abre sobre fondo desenfocado, con un sector por app, su icono, su co
 Dentro de una app, en móvil, la barra de abajo pasa a ser la de esa app, con sus **destinos** —los sitios que contestan una pregunta— y nada más:
 
 ```
-INVENTARIO   │ Hoy │ Productos │ Movimientos │ Compras │
+ALMACÉN      │ Hoy │ Productos │ Movimientos │ Compras │
 ESCANDALLOS  │ Hoy │ Fichas    │ Elaboraciones │ Analisis │
 CALENDARIO   │ Calendario │ Tareas │ Turnos │
 ```
@@ -534,24 +534,24 @@ Glop entrega las claves de conexion a peticion del titular.
 | Canal, mesa o zona, si lo distingue    | Negocio                            | Margen por canal, con su comisión        |
 | Empleado que cobra, si lo da           | Negocio                            | Ventas por persona                       |
 | Cierre de caja                         | Servicio                           | El cuadre del día                        |
-| Inventario o proveedores, si los lleva | Inventario                         | Para no teclearlo                        |
+| Almacén o proveedores, si los lleva    | Almacén                            | Para no teclearlo                        |
 
 **Lo que ningún TPV tiene:** los ingredientes de cada plato y lo que cuestan. Un TPV sabe que vendiste una hamburguesa a 14,50 €; no sabe qué lleva dentro ni lo que te costó. **Eso lo pone el restaurante en Escandallos, y es exactamente lo que hace Estook.**
 
 ## El catálogo de referencia
 
-Estook **no mete nada en tu inventario.** Te lo rellena cuando tú se lo pides.
+Estook **no mete nada en tu almacén.** Te lo rellena cuando tú se lo pides.
 
 Al crear un producto, el buscador consulta un catálogo de referencia de unos 250 productos habituales de hostelería española. Escribes «aceite de oliva» y salen las variantes con su unidad de compra, su factor, su rendimiento aproximado, su categoría y sus alérgenos ya puestos. Aceptas, pones tu precio y tu proveedor: **un producto bien definido en quince segundos en vez de en dos minutos**, y sin el error clásico de confundir la unidad de compra con la de uso.
 
 Lo mismo con las recetas de referencia. Nadie obliga, y lo que no se usa no existe.
 
-> La diferencia es de fondo: el catálogo de referencia es **una ayuda que se consulta**, no un inventario que hay que limpiar.
+> La diferencia es de fondo: el catálogo de referencia es **una ayuda que se consulta**, no un almacén que hay que limpiar.
 
 ## Y el resto del arranque
 
 - Importadores desde Excel, CSV, PDF y foto, con el mapeo propuesto por Fogón y confirmado por una persona.
-- **Importación por acumulación:** fotografía los albaranes de una semana y el inventario se construye solo.
+- **Importación por acumulación:** fotografía los albaranes de una semana y el almacén se construye solo.
 - **Camino de mínimo esfuerzo:** «empieza por tus diez platos más vendidos». Con diez fichas, Estook ya da avisos útiles.
 - **Barra de progreso con valor, no con tareas:** «con lo que llevas ya calculo el margen de 6 platos; con 4 más te digo cuál te está costando dinero».
 - **Modo demostración** aparte, con un restaurante ficticio entero. Se entra y se sale sin dejar rastro.
@@ -606,7 +606,7 @@ Así una franquicia bloquea la receta del plato estrella y deja libre la carta d
 
 ---
 
-# 12 · APP · INVENTARIO
+# 12 · APP · ALMACÉN
 
 El corazón. Lo que la app sabe que hay y lo que no. Todas las demás leen de aquí.
 
@@ -614,7 +614,7 @@ _Su navegación: Hoy · Productos · Proveedores · Pedidos · Inventario · Mer
 
 ## Hoy
 
-La pantalla de inicio de la app: lo que hay que atender ahora. Bajo mínimo **con su previsión de agotamiento**, caducidades de esta semana, pedidos por recibir, precios que han subido, productos sin precio y recuento pendiente. Cada línea con su botón.
+La pantalla de inicio de la app: lo que hay que atender ahora. Bajo mínimo **con su previsión de agotamiento**, caducidades de esta semana, pedidos por recibir, precios que han subido, productos sin precio e inventario pendiente. Cada línea con su botón.
 
 ## Productos
 
@@ -622,7 +622,7 @@ Cada producto guarda nombre, categoría, foto, unidad de compra («caja 3 kg»),
 
 > **Y no se pregunta todo eso al darlo de alta.** El alta pregunta, con estas palabras: **producto**, **en qué se mide** (kg, L, unidades…), **cuánto trae** —en unidades, «cuántas unidades vienen»— y **el precio de todo eso**. Debajo, la cuenta hecha: «sale a 1,20 €/kg». Y dos cosas que antes faltaban: **cuánto hay ahora**, que entra en el libro como su primera línea, y **cuándo caduca lo más próximo**. Proveedor y categoría, opcionales.
 >
-> **Cuánto se aprovecha no se pregunta**: nadie lo sabe al dar de alta, y un número inventado ahí encarece o abarata todas las fichas que lo lleven. Nace en el 100 % y lo corrige la calibración, con recuentos de verdad ([decisión 0028](../decisiones/0028-el-alta-pregunta-cuanto-hay.md)). Y **cuántos gramos lleva una ración no es del producto: es de la ficha técnica** ([decisión 0021](../decisiones/0021-el-producto-se-mide-en-una-unidad.md)).
+> **Cuánto se aprovecha no se pregunta**: nadie lo sabe al dar de alta, y un número inventado ahí encarece o abarata todas las fichas que lo lleven. Nace en el 100 % y lo corrige la calibración, con inventarios de verdad ([decisión 0028](../decisiones/0028-el-alta-pregunta-cuanto-hay.md)). Y **cuántos gramos lleva una ración no es del producto: es de la ficha técnica** ([decisión 0021](../decisiones/0021-el-producto-se-mide-en-una-unidad.md)).
 
 **En la lista, dos botones por producto:** un **+ verde** —ha llegado género, con el precio de siempre ya escrito; si ha cambiado, se guarda como precio nuevo desde hoy y el de antes queda en el histórico— y un **− rojo** —ha salido, y se dice por qué: gastado o vendido, una merma con su motivo, a otro local u otra cosa—. Todo acaba en el libro de movimientos, con quién y cuándo. Y en la ficha, un enlace pequeño: **«¿No cuadra lo que hay? Corrígelo»**.
 
@@ -637,7 +637,7 @@ Un producto sin precio se usa igual: cuenta cero, sale en amarillo en las fichas
 
 El consumo se valora a **precio medio ponderado**, recalculado en cada entrada. Es lo único que evita que el margen salte cada vez que llega un albarán caro.
 
-## Inventario predictivo
+## Almacén predictivo
 
 Además del stock, cada producto enseña **consumo medio, velocidad de consumo, días restantes, previsión de agotamiento con fecha y hora, caducidades, precio histórico, evolución del proveedor y sugerencia de pedido con su motivo**:
 
@@ -668,16 +668,16 @@ Y algo que casi ningún programa hace: **la factura del proveedor se concilia co
 
 ## Inventario y Mermas
 
-- **Recuento cíclico:** cada semana las referencias que suman el 80 % del valor, el resto una vez al mes.
+- **Inventario cíclico:** cada semana las referencias que suman el 80 % del valor, el resto una vez al mes.
 - **El stock mínimo se calcula, no se escribe:** `consumo medio diario × días hasta el próximo reparto + 20 % de seguridad`, recalculado cada semana.
 - **Al consumir, primero lo que antes caduca.** Con varios lotes manda la fecha, no el orden de llegada.
 - **El food cost, teórico y real, uno al lado del otro.** El real sale de `(inventario inicial + compras − inventario final) ÷ ventas`. La brecha es donde está el dinero: por debajo de dos puntos es normal, por encima de tres hay algo que mirar, por encima de ocho hay una fuga.
 - **La desviación dice por qué.** Estook propone la causa más probable: consumo de personal sin registrar, error de escandallo, unidad de conteo distinta, recepción mal registrada o diferencia entre albarán y factura.
-- **Quien compra no tiene por qué cerrar el recuento.** Es un permiso aparte.
-- **La calibración:** si la cocina sirve un 6 % más de pulpo cada semana, eso pasa a ser el factor del producto. Necesita tres recuentos; hasta entonces sale como «aprendiendo».
+- **Quien compra no tiene por qué cerrar el inventario.** Es un permiso aparte.
+- **La calibración:** si la cocina sirve un 6 % más de pulpo cada semana, eso pasa a ser el factor del producto. Necesita tres inventarios; hasta entonces sale como «aprendiendo».
 - **Mermas en tres toques** con motivo obligatorio, también por voz y con foto. La comida del personal y las invitaciones van con motivo propio y como **partida aparte** del food cost.
 
-_Documentos: inventario valorado · listado de productos con precios · etiquetas de cámara · hoja de recuento · informe de desviación · parte de mermas · pedido para el proveedor · comparativa entre proveedores · gasto por proveedor._
+_Documentos: inventario valorado · listado de productos con precios · etiquetas de cámara · hoja de inventario · informe de desviación · parte de mermas · pedido para el proveedor · comparativa entre proveedores · gasto por proveedor._
 
 _Habla con: Escandallos (le da el coste), Servicio (le descuenta el consumo), Calendario (le pone las entregas), Negocio (le da el gasto)._
 
@@ -720,8 +720,8 @@ FICHA DEL PLATO
 ├─ coste vs. PVP                          → margen y food cost
 ├─ margen vs. objetivo                    → aviso de plato bajo objetivo
 ├─ × ventas del TPV                       → consumo teorico
-│                                         → movimientos de Inventario
-│                                         → desviacion contra el recuento
+│                                         → movimientos del Almacén
+│                                         → desviacion contra el inventario
 │                                         → coste real del dia
 ├─ ingredientes                           → alergenos y valor nutricional
 ├─ ingredientes                           → que pedir y cuanto
@@ -772,7 +772,7 @@ Pantalla completa, letra grande, **sin un solo importe**, pensado para leerse de
 
 **Escalado a evento.** «Esto es para 10, tengo un catering de 120»: gramajes, compra necesaria y coste total, en un botón.
 
-_Habla con: Inventario (le pide el coste), Carta (le da coste y margen), Servicio (le explica el consumo), Negocio (le da la rentabilidad)._
+_Habla con: Almacén (le pide el coste), Carta (le da coste y margen), Servicio (le explica el consumo), Negocio (le da la rentabilidad)._
 
 ---
 
@@ -852,7 +852,7 @@ _Su navegación: Mes · Semana · Día · Turnos · Tareas_
 | Caducidades   | Lo que caduca, sacado de los lotes                            |
 | Avisos        | Lo que publica quien lleva el local, para los roles que elija |
 
-**Los módulos publican; el Calendario pinta** ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)). Compras escribe sus entregas, Inventario sus caducidades, Equipo sus turnos, Servicio su APPCC, y si el origen cambia, su evento cambia con él. Y quien lleva el local publica **avisos** —«Inspección el jueves», «Cena de equipo el 20»— eligiendo **qué roles los ven**: toda la plantilla, solo la cocina, solo la sala. Lo filtra la base, no la pantalla. Hoy y mañana salen en el Panel desde M7.
+**Los módulos publican; el Calendario pinta** ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)). Compras escribe sus entregas, el Almacén sus caducidades, Equipo sus turnos, Servicio su APPCC, y si el origen cambia, su evento cambia con él. Y quien lleva el local publica **avisos** —«Inspección el jueves», «Cena de equipo el 20»— eligiendo **qué roles los ven**: toda la plantilla, solo la cocina, solo la sala. Lo filtra la base, no la pantalla. Hoy y mañana salen en el Panel desde M7.
 
 ## Lo que hace que sea una app y no una rejilla
 
@@ -989,7 +989,7 @@ Se abre sola con el primer fichaje o la primera venta importada. Fija la **fecha
 
 Los pedidos que entran por los canales de reparto: qué está entrando ahora, de qué canal, y con qué comisión. **Uber Eats el primero**, y detrás Glovo y Just Eat.
 
-Vive aquí y no en Carta porque lo que se mira en esta pantalla son los pedidos de hoy, que es la pregunta de Servicio. Lo que se publica en cada canal y a qué precio es de Carta, y ahí está: «Carta · Análisis · Por canal». Un plato puede valer distinto en la carta de sala y en la de reparto, con la comisión por medio, así que **el margen de delivery se mira aparte**; pero una venta de reparto descuenta género del libro de movimientos igual que la del TPV, así que **el inventario no se entera de por dónde entró**.
+Vive aquí y no en Carta porque lo que se mira en esta pantalla son los pedidos de hoy, que es la pregunta de Servicio. Lo que se publica en cada canal y a qué precio es de Carta, y ahí está: «Carta · Análisis · Por canal». Un plato puede valer distinto en la carta de sala y en la de reparto, con la comisión por medio, así que **el margen de delivery se mira aparte**; pero una venta de reparto descuenta género del libro de movimientos igual que la del TPV, así que **el almacén no se entera de por dónde entró**.
 
 **La pantalla existe desde M6½ y no tiene botón de conectar.** Nombra los canales y dice qué va a entrar por ahí; la integración de verdad es **M29**, con lo que exige Uber Eats —cuenta de desarrollador, aprobación y el plazo de once minutos y medio para aceptar— escrito en la Evolución, capítulo 11.1. Un botón que abriera un cartel sería el fallo que este proyecto persigue desde M4 en el sitio donde más caro sale: el que hace pensar que el dinero ya está entrando solo.
 
@@ -1006,9 +1006,9 @@ Y la **trazabilidad de lote**: de un lote concreto, en qué elaboraciones entró
 3. El APPCC que falte.
 4. Repaso y firma con PIN.
 
-Al cerrar se calcula el consumo teórico, se descuenta del inventario, se guarda la jornada con su origen y fiabilidad, y se dispara el análisis nocturno de Fogón. **Reabrir exige motivo escrito y queda en auditoría.**
+Al cerrar se calcula el consumo teórico, se descuenta del almacén, se guarda la jornada con su origen y fiabilidad, y se dispara el análisis nocturno de Fogón. **Reabrir exige motivo escrito y queda en auditoría.**
 
-**Lo que ya existe es el primer paso**: la caja de cada día, a mano o con CSV, con su origen guardado. Los platos que se apuntan quedan listos para cruzarse con la carta y sus fichas —y de ahí con el inventario— cuando existan (M9 y M10); descontar el consumo teórico es M20.
+**Lo que ya existe es el primer paso**: la caja de cada día, a mano o con CSV, con su origen guardado. Los platos que se apuntan quedan listos para cruzarse con la carta y sus fichas —y de ahí con el almacén— cuando existan (M9 y M10); descontar el consumo teórico es M20.
 
 ---
 
@@ -1068,7 +1068,7 @@ No es un chat pegado al lado. Es **la capa que lee las ocho apps**, y precisamen
 
 | Dónde       | Qué dice                                                                   |
 | ----------- | -------------------------------------------------------------------------- |
-| Inventario  | «El aceite ha subido un 12 %. Afecta a 7 platos y 2 quedan bajo objetivo.» |
+| Almacén     | «El aceite ha subido un 12 %. Afecta a 7 platos y 2 quedan bajo objetivo.» |
 | Escandallos | «El coste de esta receta ha subido un 8,2 % desde junio.»                  |
 | Carta       | «Este plato vende mucho y tiene uno de los peores márgenes de la carta.»   |
 | Equipo      | «El cuadrante actual cuesta un 6,8 % más que la semana pasada.»            |
@@ -1237,7 +1237,7 @@ TPV ───────────┘
 
 Cada proveedor tiene su adaptador; **todos transforman a los modelos internos de Estook**. No se crea una estructura de datos paralela: sería una segunda fuente de verdad.
 
-Los pedidos alimentan ventas, inventario, escandallos, carta, analítica, rentabilidad, alertas y Fogón, exactamente igual que los del TPV. Con idempotencia por identificador de pedido, auditoría, reintentos y recuperación ante pérdida de conexión.
+Los pedidos alimentan ventas, almacén, escandallos, carta, analítica, rentabilidad, alertas y Fogón, exactamente igual que los del TPV. Con idempotencia por identificador de pedido, auditoría, reintentos y recuperación ante pérdida de conexión.
 
 Y siempre que la API lo permita, Estook gestiona desde su interfaz el ciclo del pedido: aceptar, rechazar, cancelar o marcar como preparado.
 
@@ -1296,11 +1296,11 @@ Apps (encender y apagar partes, con el aviso concreto de qué pasa; se ocultan, 
 
 La aplicación no pregunta «¿qué tabla quieres modificar?». Pregunta **«¿qué quieres hacer?»**.
 
-| Nunca                           | Siempre                      |
-| ------------------------------- | ---------------------------- |
-| Editar movimiento de inventario | Ajustar lo que hay en cámara |
-| Crear entidad turno             | Crear horario                |
-| Crear registro de APPCC         | Completar el control de hoy  |
+| Nunca                         | Siempre                      |
+| ----------------------------- | ---------------------------- |
+| Editar movimiento del almacén | Ajustar lo que hay en cámara |
+| Crear entidad turno           | Crear horario                |
+| Crear registro de APPCC       | Completar el control de hoy  |
 
 ## Velocidad, con números
 

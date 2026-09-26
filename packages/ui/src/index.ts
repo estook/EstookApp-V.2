@@ -42,7 +42,12 @@ export type { BotonProps, TonoDeBoton, TamanoDeBoton } from './componentes/Boton
 
 export { Campo, CampoMoneda, Envoltorio, CAJA } from './componentes/Campo.tsx';
 export { aCentimos } from './componentes/aCentimos.ts';
-export type { CampoProps, CampoMonedaProps, TipoDeCampo } from './componentes/Campo.tsx';
+export type {
+  CampoProps,
+  CampoMonedaProps,
+  TipoDeCampo,
+  UnidadQueSeElige,
+} from './componentes/Campo.tsx';
 
 export { Selector, Interruptor } from './componentes/Selector.tsx';
 export type { SelectorProps, InterruptorProps, Opcion } from './componentes/Selector.tsx';
@@ -156,6 +161,9 @@ export type { TarjetaDeIndicadorProps, DatosDelIndicador } from './panel/Tarjeta
 export { Rejilla } from './panel/Rejilla.tsx';
 export type { RejillaProps } from './panel/rejilla.ts';
 export { usarQueEstaVacio } from './ganchos/usarQueEstaVacio.ts';
+export { usarSinNadaDentro } from './ganchos/usarSinNadaDentro.ts';
+export { usarAnclaAbajo } from './ganchos/usarAnclaAbajo.ts';
+export { comoQuedaAbajo } from './navegacion/anclaAbajo.ts';
 
 export { MenuLateral } from './navegacion/MenuLateral.tsx';
 export type { MenuLateralProps } from './navegacion/MenuLateral.tsx';

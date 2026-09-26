@@ -23,10 +23,10 @@ const DONDE_SE_GUARDA = 'estook.modo-cocina';
 /** Las pantallas de un cocinero. */
 const PANTALLAS = [
   '#/',
-  '#/inventario/resumen',
-  '#/inventario/productos/todo',
-  '#/inventario/movimientos/todo',
-  '#/inventario/compras/pedidos',
+  '#/almacen/resumen',
+  '#/almacen/productos/todo',
+  '#/almacen/movimientos/todo',
+  '#/almacen/compras/pedidos',
   '#/calendario',
   '#/servicio',
   '#/ajustes/aparato',
@@ -217,7 +217,7 @@ test('con el modo cocina, la hoja de apuntar una merma también se toca con guan
   page,
 }) => {
   await entrarConElModoPuesto(page);
-  await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
   await page.getByRole('button', { name: 'Apuntar merma' }).first().click();
   const hoja = page.getByRole('dialog');
   await expect(hoja).toBeVisible({ timeout: 15_000 });

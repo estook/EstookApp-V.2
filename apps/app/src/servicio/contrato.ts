@@ -77,7 +77,7 @@ export interface ElCierreDeUnDia {
     readonly precioUnidadCentimos: number;
   }[];
   /**
-   * Lo que se ha vendido apuntándolo en Inventario esa jornada (M7, repaso).
+   * Lo que se ha vendido apuntándolo en Almacén esa jornada (M7, repaso).
    *
    * **Es una propuesta, no un apunte.** El dinero de un día se cuenta aquí y en
    * ningún otro sitio; si una salida de cámara sumara por su cuenta y además se

@@ -1,9 +1,17 @@
 import { z } from 'zod';
-import { ALERGENOS, UNIDADES_DE_USO, ZONAS, horaDeCorte, jornadaDe } from '@estook/dominio';
+import {
+  ALERGENOS,
+  MESES_CONGELADO_MAXIMO,
+  MESES_CONGELADO_MINIMO,
+  UNIDADES_DE_USO,
+  ZONAS,
+  horaDeCorte,
+  jornadaDe,
+} from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
-import { apuntar, costeDeUso, elProductoBloqueado } from '../inventario.ts';
+import { apuntar, costeDeUso, elProductoBloqueado } from '../almacen.ts';
 
 /**
  * El producto (M6) · crear, cambiar, desactivar y volver a activar.
@@ -64,7 +72,7 @@ export const entradaCrearProducto = z
     proveedor_id: z.string().uuid().nullable().optional(),
     /**
      * De dónde es: cocina, sala o limpieza (0035). Sin decirlo, cocina, que es
-     * donde está casi todo y de donde venía Inventario entero hasta hoy.
+     * donde está casi todo y de donde venía Almacén entero hasta hoy.
      */
     zona: z.enum(ZONAS).optional(),
     /** Lo que cuesta el formato, en céntimos enteros. Nulo = todavía sin precio. */
@@ -224,7 +232,7 @@ async function categoriaPorNombre(
 export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>({
   nombre: 'crear_producto',
   entrada: entradaCrearProducto,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);
@@ -480,6 +488,16 @@ export const entradaCambiarProducto = z
     iva_de_compra: z.number().min(0).max(0.3).nullable().optional(),
     contenido_por_unidad: z.number().positive().max(1_000_000).nullable().optional(),
     unidad_del_contenido: z.enum(['g', 'kg', 'ml', 'l']).nullable().optional(),
+    /**
+     * Cuántos meses aguanta congelado (repaso del 25-sep, 0049): de ahí sale el
+     * aviso de lo congelado. Si no llega, no se toca.
+     */
+    congelado_aguanta_meses: z
+      .number()
+      .int()
+      .min(MESES_CONGELADO_MINIMO)
+      .max(MESES_CONGELADO_MAXIMO)
+      .optional(),
   })
   .strict()
   .refine(
@@ -516,7 +534,7 @@ export interface SalidaCambiarProducto {
 export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProducto>({
   nombre: 'cambiar_producto',
   entrada: entradaCambiarProducto,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const organizacionId = laOrganizacionDeLaSesion(contexto);
@@ -590,6 +608,7 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
     const cambiaElIva = entrada.iva_de_compra !== undefined;
     const cambiaElContenido = entrada.contenido_por_unidad !== undefined;
     const cambiaLaZona = entrada.zona !== undefined;
+    const cambiaLoCongelado = entrada.congelado_aguanta_meses !== undefined;
 
     /**
      * ── «Sin verificar», que se volvía a poner solo ──────────────────────────
@@ -634,6 +653,9 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
              zona             = case when ${cambiaLaZona}
                                      then ${entrada.zona ?? null}::estook.zona_del_producto
                                      else zona end,
+             congelado_aguanta_meses = case when ${cambiaLoCongelado}
+                                            then ${entrada.congelado_aguanta_meses ?? null}::smallint
+                                            else congelado_aguanta_meses end,
              sin_verificar    = case when ${sinVerificarNuevo === null}
                                      then sin_verificar
                                      else ${sinVerificarNuevo ?? false} end,
@@ -681,6 +703,9 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
         cambiaElCoste,
         factor: entrada.factor,
         rendimiento: entrada.rendimiento,
+        // Lo que aguanta congelado mueve los avisos de lo que ya está en el
+        // congelador (0049).
+        cambiaLoCongelado,
       },
       correlacionId: contexto.correlacionId,
     });
@@ -706,7 +731,7 @@ export const desactivarProducto = comando<
 >({
   nombre: 'desactivar_producto',
   entrada: z.object({ producto_id: z.string().uuid() }).strict(),
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const organizacionId = laOrganizacionDeLaSesion(contexto);
@@ -753,7 +778,7 @@ export const reactivarProducto = comando<
 >({
   nombre: 'reactivar_producto',
   entrada: z.object({ producto_id: z.string().uuid() }).strict(),
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const organizacionId = laOrganizacionDeLaSesion(contexto);

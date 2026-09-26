@@ -13,7 +13,7 @@ import { useSearchParams } from 'react-router-dom';
  * pegado al navegar, se dispara dos veces si se vuelve atrás, y no se puede
  * compartir.
  *
- * Así que una acción es **una dirección**: `/inventario/productos/todo?hacer=nuevo`.
+ * Así que una acción es **una dirección**: `/almacen/productos/todo?hacer=nuevo`.
  * Eso trae tres cosas gratis:
  *
  *   · El enlace se puede copiar y pegar en el chat del equipo, y funciona.

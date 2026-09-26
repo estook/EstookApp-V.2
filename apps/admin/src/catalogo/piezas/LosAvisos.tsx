@@ -39,7 +39,7 @@ export function LosAvisos() {
         cuando="Los colores de estado nunca van solos: siempre con icono y con texto, porque hay gente que no distingue rojo de verde."
       >
         <div className="flex flex-col gap-e3">
-          <Aviso tono="bien" titulo="Recuento cerrado">
+          <Aviso tono="bien" titulo="Inventario cerrado">
             El inventario de hoy cuadra con lo que había ayer más lo recibido.
           </Aviso>
           <Aviso tono="atencion" titulo="Tres productos caducan esta semana">
@@ -78,7 +78,7 @@ export function LosAvisos() {
           <div className="rounded-grande border border-borde">
             <EstadoVacio
               dibujo="camara"
-              acento="var(--color-app-inventario)"
+              acento="var(--color-app-almacen)"
               titulo="Todavía no tienes género"
               frase="Empieza por lo que más compras. Escribes «aceite» y el catálogo lo trae con su formato y sus alérgenos."
               accion={
@@ -133,7 +133,7 @@ export function LosAvisos() {
       >
         <div className="rounded-grande border border-borde">
           <TodaviaNo
-            que="Inventario · Pedidos"
+            que="Almacén · Pedidos"
             queHabra="Los pedidos a proveedor, su recepción y la conciliación con la factura."
             modulo="M7 · Proveedores y compras"
           />

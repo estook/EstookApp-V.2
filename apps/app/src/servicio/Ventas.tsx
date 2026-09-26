@@ -20,7 +20,7 @@ import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { ComoEntranTusVentas } from './ComoEntranTusVentas.tsx';
 import type { MisCierres, UnCierre } from './contrato.ts';
-import { comoDinero, comoSeLeeLaFecha } from '../inventario/contrato.ts';
+import { comoDinero, comoSeLeeLaFecha } from '../almacen/contrato.ts';
 
 /**
  * Negocio · Ventas (M6½).
@@ -210,7 +210,7 @@ export function Ventas() {
                   {
                     clave: 'genero',
                     nombre: 'Género gastado',
-                    color: 'var(--color-app-inventario)',
+                    color: 'var(--color-app-almacen)',
                   },
                 ]
               : []),

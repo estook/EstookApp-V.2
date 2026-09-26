@@ -277,7 +277,7 @@ function SectorDeApp({
       {/*
         El sector senalado se marca con un borde grueso del acento y un tinte,
         **no rellenandolo del acento**. Con relleno habria que poner el nombre en
-        blanco encima, y sobre los acentos de Inventario, Escandallos y Servicio
+        blanco encima, y sobre los acentos de Almacén, Escandallos y Servicio
         eso da entre 3,5 y 4,1:1, por debajo del 4,5 que pide B8 para el texto.
         Asi el nombre va siempre en charcoal (16:1) y se lee en los ocho.
       */}

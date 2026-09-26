@@ -96,12 +96,12 @@ describe('el servidor no envia lo que el rol no puede ver', () => {
 describe('dos roles sobre el mismo local', () => {
   it('gana el mas amplio, permiso a permiso', () => {
     const camarera = { 'app.carta': 'ver', 'app.cuaderno': 'ver_y_editar' } as const;
-    const jefaDeCocina = { 'app.carta': 'ver_y_editar', 'app.inventario': 'ver_y_editar' } as const;
+    const jefaDeCocina = { 'app.carta': 'ver_y_editar', 'app.almacen': 'ver_y_editar' } as const;
 
     const juntos = elMasAmplio(camarera, jefaDeCocina);
     expect(juntos['app.carta']).toBe('ver_y_editar');
     expect(juntos['app.cuaderno']).toBe('ver_y_editar');
-    expect(juntos['app.inventario']).toBe('ver_y_editar');
+    expect(juntos['app.almacen']).toBe('ver_y_editar');
   });
 
   it('no baja nada: nunca quita lo que ya tenia', () => {

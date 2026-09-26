@@ -14,7 +14,7 @@ import {
   yaEstaCerrado,
 } from '../compras.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
-import { productosDelProveedor } from '../consultas/inventario.ts';
+import { productosDelProveedor } from '../consultas/almacen.ts';
 
 /**
  * Los pedidos (M7) · `borrador → enviado → recibido | cancelado`.
@@ -26,7 +26,7 @@ import { productosDelProveedor } from '../consultas/inventario.ts';
  *
  * ── Quién hace qué ───────────────────────────────────────────────────────────
  *
- * Hacer y cambiar un borrador es de Inventario: el cocinero sabe lo que falta.
+ * Hacer y cambiar un borrador es de Almacén: el cocinero sabe lo que falta.
  * **Mandarlo, o cancelar uno mandado, pide `accion.enviar_pedidos`**, porque
  * compromete dinero del local (0031_compras, parte B).
  */
@@ -184,7 +184,7 @@ export const crearPedido = comando<
 >({
   nombre: 'crear_pedido',
   entrada: entradaCrearPedido,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);
@@ -276,7 +276,7 @@ export type EntradaCambiarPedido = z.infer<typeof entradaCambiarPedido>;
 export const cambiarPedido = comando<EntradaCambiarPedido, { pedidoId: string; lineas: number }>({
   nombre: 'cambiar_pedido',
   entrada: entradaCambiarPedido,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const pedido = await elPedidoBloqueado(contexto, entrada.pedido_id);
@@ -453,14 +453,14 @@ export type EntradaCancelarPedido = z.infer<typeof entradaCancelarPedido>;
 /**
  * Cancelar un pedido. Nada se borra: queda cancelado, con quién, cuándo y por qué.
  *
- * Un borrador lo cancela quien lleva Inventario. **Uno ya mandado, solo quien
+ * Un borrador lo cancela quien lleva Almacén. **Uno ya mandado, solo quien
  * puede mandar**: el proveedor ya lo está preparando, y cancelarlo es tan serio
  * como mandarlo.
  */
 export const cancelarPedido = comando<EntradaCancelarPedido, { pedidoId: string }>({
   nombre: 'cancelar_pedido',
   entrada: entradaCancelarPedido,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const pedido = await elPedidoBloqueado(contexto, entrada.pedido_id);

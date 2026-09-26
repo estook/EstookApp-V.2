@@ -128,7 +128,7 @@ on conflict do nothing;
 
 insert into estook.recorte_de_permiso (membresia_id, local_id, permiso, nivel, motivo)
 select m.id, l.id, 'accion.cerrar_recuento', 'sin_acceso',
-       'En este local el recuento lo cierra el gerente'
+       'En este local el inventario lo cierra el gerente'
 from estook.membresia m
 join estook.persona p on p.id = m.persona_id and p.correo = 'luis@ejemplo.estook.com'
 join estook.local l on l.id = m.local_id and l.codigo = 'bar-puerto'

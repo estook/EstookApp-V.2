@@ -106,7 +106,7 @@ export const AJUSTES: readonly Ajuste[] = [
     id: 'tu-carta',
     seccion: 'local',
     nombre: 'Tu carta y su QR',
-    palabras: 'qr carta código mesa imprimir cartel menú dirección',
+    palabras: 'qr carta código mesa imprimir cartel menú dirección subir pdf fotos',
   },
   {
     id: 'precios-de-compra',
@@ -156,7 +156,7 @@ export interface QuienMira {
  * Si una sección saliera en la lista y dentro no hubiera nada, sería la pestaña
  * muerta de B5 otra vez. Por eso se pide aquí lo mismo que pide la tarjeta:
  * llevar el local es `editar` en Ajustes; los precios, además, editar el precio de
- * compra y ver Inventario.
+ * compra y ver Almacén.
  */
 export function seccionesQueVe({
   permisos,
@@ -182,7 +182,7 @@ export function llevaLosPrecios(permisos: PermisosResueltos, tieneLocal: boolean
   return (
     tieneLocal &&
     puedeEditar(permisos, 'dato.precio_de_compra') &&
-    puedeVer(permisos, 'app.inventario')
+    puedeVer(permisos, 'app.almacen')
   );
 }
 

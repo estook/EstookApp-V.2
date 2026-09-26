@@ -24,7 +24,7 @@ export type Nivel = (typeof NIVELES)[number];
 /** Las ocho apps, mas el Panel, Fogon, Ajustes y la vista aparte de la gestoria. */
 export const PERMISOS_DE_APP = [
   'app.panel',
-  'app.inventario',
+  'app.almacen',
   'app.escandallos',
   'app.carta',
   'app.calendario',
@@ -65,7 +65,7 @@ export const PERMISOS_DE_ACCION = [
   'accion.catalogo_maestro',
   'accion.contratos_marco',
   // M7 · mandar un pedido compromete dinero del local. Prepararlo y recibir lo
-  // que llega es de quien lleva Inventario; mandarlo, de quien tenga esto.
+  // que llega es de quien lleva Almacén; mandarlo, de quien tenga esto.
   'accion.enviar_pedidos',
 ] as const;
 
@@ -97,7 +97,7 @@ export function puedeEditar(permisos: PermisosResueltos, permiso: Permiso): bool
  * usa «Estook con cosas ocultas», usa una aplicacion pensada para el.
  */
 export const ORDEN_DE_LA_RUEDA = [
-  'app.inventario',
+  'app.almacen',
   'app.escandallos',
   'app.carta',
   'app.calendario',
@@ -211,16 +211,16 @@ export const LO_QUE_PIDE_EL_INDICADOR: Readonly<Record<Indicador, readonly Permi
   ventas: ['dato.ventas'],
   'ticket-medio': ['dato.ventas'],
   'food-cost': ['dato.ventas', 'dato.precio_de_compra'],
-  merma: ['app.inventario', 'dato.precio_de_compra'],
-  compras: ['app.inventario', 'dato.precio_de_compra'],
+  merma: ['app.almacen', 'dato.precio_de_compra'],
+  compras: ['app.almacen', 'dato.precio_de_compra'],
   // Las horas son de cada uno: las tiene cualquiera que entre.
   'mis-horas': [],
 
   // ── V · las cifras de cada app (mejora 2) ─────────────────────────────────
-  'valor-camara': ['app.inventario', 'dato.precio_de_compra'],
+  'valor-camara': ['app.almacen', 'dato.precio_de_compra'],
   // Cuántos productos, sin un euro: lo ve quien ve el inventario, igual que la
   // lista de atención de «Hoy».
-  'bajo-minimo': ['app.inventario'],
+  'bajo-minimo': ['app.almacen'],
   // Contar días no enseña dinero, pero la base solo deja leer los cierres con
   // `dato.ventas` (0029): pedir menos daría un cero que es mentira.
   cierres: ['dato.ventas'],
@@ -241,7 +241,7 @@ export const LO_QUE_PIDE_EL_OBJETIVO: Readonly<Record<QueSeJuzga, readonly Permi
   materia_prima: ['dato.ventas', 'dato.precio_de_compra'],
   personal: ['dato.ventas', 'app.equipo', 'dato.coste_de_personal'],
   coste_primo: ['dato.ventas', 'dato.precio_de_compra', 'app.equipo', 'dato.coste_de_personal'],
-  merma: ['app.inventario', 'dato.precio_de_compra'],
+  merma: ['app.almacen', 'dato.precio_de_compra'],
   ventas_semanales: ['dato.ventas'],
 };
 

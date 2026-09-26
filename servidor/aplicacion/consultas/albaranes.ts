@@ -8,7 +8,7 @@ import { elLocal } from './pedidos.ts';
 /**
  * Lo que ha llegado y lo que se ha cobrado (M7): albaranes y facturas.
  *
- * Los albaranes son de Inventario: los ve el cocinero que los recibió, **sin un
+ * Los albaranes son de Almacén: los ve el cocinero que los recibió, **sin un
  * importe**. Las facturas son dinero entero: las ve y las toca quien tiene
  * `dato.precio_de_compra`, y a quien no, ni le llegan.
  */
@@ -55,7 +55,7 @@ export interface SalidaMisAlbaranes {
 export const misAlbaranes = consulta<EntradaMisAlbaranes, SalidaMisAlbaranes>({
   nombre: 'mis_albaranes',
   entrada: entradaMisAlbaranes,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocal(contexto);
@@ -253,7 +253,7 @@ export interface SalidaUnAlbaran {
 export const unAlbaran = consulta<{ albaran_id: string }, SalidaUnAlbaran>({
   nombre: 'un_albaran',
   entrada: z.object({ albaran_id: z.string().uuid() }).strict(),
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocal(contexto);
@@ -304,7 +304,7 @@ export const unAlbaran = consulta<{ albaran_id: string }, SalidaUnAlbaran>({
     );
 
     const puede = await contexto.sql<{ puede: boolean }[]>`
-      select estook.puede_editar('app.inventario', ${localId}::uuid) as puede
+      select estook.puede_editar('app.almacen', ${localId}::uuid) as puede
     `;
 
     const base: AlbaranEnLista = {

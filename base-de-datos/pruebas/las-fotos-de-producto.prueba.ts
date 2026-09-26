@@ -203,7 +203,7 @@ describe('la foto de un producto', () => {
     ).toBe('no_existe');
     expect(fotosDe(deLaBarra)).toEqual([]);
 
-    // Y quien no lleva Inventario, ninguna: lo para la puerta antes de llegar.
+    // Y quien no lleva Almacén, ninguna: lo para la puerta antes de llegar.
     expect(
       elFallo(
         await api.ejecutar(sara, 'poner_foto_de_producto', {

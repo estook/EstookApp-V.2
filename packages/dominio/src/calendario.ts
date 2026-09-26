@@ -31,8 +31,8 @@ export const NOMBRE_DE_LA_CAPA: Readonly<Record<Capa, string>> = {
  * del catálogo de navegación, que es su único dueño.
  */
 export const APP_DE_LA_CAPA: Readonly<Record<Capa, string>> = {
-  entrega: 'inventario',
-  caducidad: 'inventario',
+  entrega: 'almacen',
+  caducidad: 'almacen',
   turno: 'equipo',
   appcc: 'servicio',
   mantenimiento: 'cuaderno',

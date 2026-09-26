@@ -40,7 +40,7 @@ export function Deshacer() {
 
   if (fallo !== null) {
     return enSuSitio(
-      <div className="fixed inset-x-e3 bottom-e3 z-50 mx-auto max-w-[34rem] sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
+      <div className="fixed inset-x-e3 bottom-[calc(var(--spacing-e3)-var(--desfase-abajo,0px))] z-50 mx-auto max-w-[34rem] sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
         <Aviso tono="mal" titulo={fallo.titulo} esNoticia alCerrar={olvidar}>
           {fallo.texto}
         </Aviso>
@@ -60,7 +60,7 @@ export function Deshacer() {
         'fixed inset-x-e3 z-50 mx-auto flex max-w-[34rem] items-center gap-e3',
         // Por encima de la barra de movil, y por encima de la barra del sistema
         // en un iPhone.
-        'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e2))]',
+        'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e2)-var(--desfase-abajo,0px))]',
         'sm:bottom-e4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2',
         'rounded-grande border border-charcoal bg-charcoal px-e3 py-e2 text-white shadow-s3',
         'anima-deshacer',

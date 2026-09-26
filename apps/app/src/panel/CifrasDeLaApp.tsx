@@ -14,7 +14,7 @@ import { usarElPeriodoDeLasCifras } from '../ganchos/usarElPeriodoDeLasCifras.ts
 /**
  * «Cómo va» · las cifras con flecha de cada app (mejoras antes de M8, V, punto 2).
  *
- * «Flechas y gráficas pequeñas también en Inventario, Servicio y Equipo.» Son las
+ * «Flechas y gráficas pequeñas también en Almacén, Servicio y Equipo.» Son las
  * tarjetas del Panel —la misma pieza, de `@estook/ui`— con las cifras de cada app,
  * y lo que decidió Richi el 23 de septiembre de 2026:
  *

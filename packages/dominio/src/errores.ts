@@ -265,7 +265,7 @@ export const ERRORES = {
   mas_de_lo_que_hay: error(
     'mas_de_lo_que_hay',
     'No se puede tirar más de lo que hay.',
-    'Pon lo que se tira de verdad. Si hay más de lo que dice Estook, apunta antes lo que ha llegado o haz un recuento.',
+    'Pon lo que se tira de verdad. Si hay más de lo que dice Estook, apunta antes lo que ha llegado o haz inventario.',
     422,
   ),
 

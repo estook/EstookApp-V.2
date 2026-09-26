@@ -101,12 +101,12 @@ import {
   pedirCodigoDeRegistro,
 } from './comandos/crear-cuenta.ts';
 import {
-  inventarioHoy,
+  almacenHoy,
   misMovimientos,
   misProductos,
   misProveedores,
   unProducto,
-} from './consultas/inventario.ts';
+} from './consultas/almacen.ts';
 import { catalogoDeReferencia, recetasDeReferencia } from './consultas/catalogo-de-referencia.ts';
 import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
@@ -115,6 +115,9 @@ import { unIndicador } from './consultas/indicador.ts';
 import { misObjetivos } from './consultas/objetivos.ts';
 import { loDeHoyConsulta } from './consultas/hoy.ts';
 import { laCarta } from './consultas/carta.ts';
+import { elTablon } from './consultas/tablon.ts';
+import { escribirEnElTablon, marcarNotaLeida, quitarNota } from './comandos/tablon.ts';
+import { publicarLaCarta, quitarLaCarta, subirPaginaDeLaCarta } from './comandos/carta.ts';
 import { adminLasCuentas, miSuscripcion } from './consultas/suscripcion.ts';
 import {
   abrirElPortal,
@@ -181,7 +184,7 @@ export const catalogo = {
     [catalogoDeReferencia.nombre]: catalogoDeReferencia,
     [recetasDeReferencia.nombre]: recetasDeReferencia,
     // M6 · el genero.
-    [inventarioHoy.nombre]: inventarioHoy,
+    [almacenHoy.nombre]: almacenHoy,
     [misProductos.nombre]: misProductos,
     [unProducto.nombre]: unProducto,
     [misProveedores.nombre]: misProveedores,
@@ -228,6 +231,8 @@ export const catalogo = {
     [loDeHoyConsulta.nombre]: loDeHoyConsulta,
     // O · la carta de cada local, sin sesión: lo que enseña el QR de la mesa.
     [laCarta.nombre]: laCarta,
+    // El repaso del 25-sep · el Tablón del local (0049).
+    [elTablon.nombre]: elTablon,
     [miSuscripcion.nombre]: miSuscripcion,
     [adminLasCuentas.nombre]: adminLasCuentas,
   } as Record<string, Consulta<never, unknown>>,
@@ -300,7 +305,7 @@ export const catalogo = {
     [entrarEnDemostracion.nombre]: entrarEnDemostracion,
     [salirDeLaDemostracion.nombre]: salirDeLaDemostracion,
 
-    // ── M6 · inventario ───────────────────────────────────────────────────
+    // ── M6 · el almacén ────────────────────────────────────────────────────
     //
     // Ninguno se llama «crear movimiento» ni «editar existencias»: «la
     // aplicacion no pregunta *que tabla quieres modificar*, pregunta *que
@@ -310,8 +315,8 @@ export const catalogo = {
     [cambiarProducto.nombre]: cambiarProducto,
     [desactivarProducto.nombre]: desactivarProducto,
     [reactivarProducto.nombre]: reactivarProducto,
-    // El precio exige `dato.precio_de_compra`, no `app.inventario`: un cocinero
-    // lleva Inventario entera y no ve lo que cuesta el genero.
+    // El precio exige `dato.precio_de_compra`, no `app.almacen`: un cocinero
+    // lleva Almacén entera y no ve lo que cuesta el genero.
     [ponerPrecio.nombre]: ponerPrecio,
     [apuntarEntrada.nombre]: apuntarEntrada,
     [apuntarSalida.nombre]: apuntarSalida,
@@ -381,5 +386,17 @@ export const catalogo = {
     [pedirCodigoDeRegistro.nombre]: pedirCodigoDeRegistro,
     [confirmarRegistro.nombre]: confirmarRegistro,
     [entrarConGoogle.nombre]: entrarConGoogle,
+
+    // ── El repaso del 25-sep · el Tablón (0049) ────────────────────────────
+    //
+    // El corcho de la cocina: escribe cualquiera del local, cada uno marca lo que
+    // ha leído, y quita la nota su autor o quien lleva al equipo.
+    [escribirEnElTablon.nombre]: escribirEnElTablon,
+    [marcarNotaLeida.nombre]: marcarNotaLeida,
+    [quitarNota.nombre]: quitarNota,
+    // Y la carta que el local ya tiene, subida: la enseña su QR hasta M10.
+    [subirPaginaDeLaCarta.nombre]: subirPaginaDeLaCarta,
+    [publicarLaCarta.nombre]: publicarLaCarta,
+    [quitarLaCarta.nombre]: quitarLaCarta,
   } as Record<string, Comando<never, unknown>>,
 };

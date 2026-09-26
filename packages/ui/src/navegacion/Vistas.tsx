@@ -10,7 +10,7 @@ import { acentoParaTexto } from '../color.ts';
  * Hasta M6, «Mes», «Semana» y «Dia» eran tres **destinos** de Calendario, y
  * gastaban tres de las cuatro posiciones de la barra de abajo. No son tres
  * sitios: son el mismo calendario con otro aumento. Lo mismo pasaba, al reves,
- * en Inventario: los filtros de la lista de productos —lo que esta bajo minimo,
+ * en Almacén: los filtros de la lista de productos —lo que esta bajo minimo,
  * lo que no tiene precio, lo desactivado— vivian en un interruptor suelto en
  * mitad de la pantalla y en dos casillas, cuando son la misma lista mirada de
  * otra forma.

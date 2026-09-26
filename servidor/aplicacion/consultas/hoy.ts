@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   TURNO_SOSPECHOSO_DESDE,
+  comoEstaLoCongelado,
   diaDeLaSemana,
   fechaOperativa,
   loDeHoy,
@@ -16,18 +17,19 @@ import { comoLista } from '../listas.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
 import { miFichaje } from './equipo.ts';
 import { laJornada } from './indicador.ts';
-import { inventarioHoy } from './inventario.ts';
+import { almacenHoy } from './almacen.ts';
 import { comprasDeHoy } from './pedidos.ts';
+import { elTablon } from './tablon.ts';
 
 /**
  * Lo de hoy · la zona de atención del Panel, ordenada por el servidor (entrega O,
  * mejora 8 · decisión 0047).
  *
  * **No cuenta nada por su cuenta.** Pregunta a las consultas de siempre —lo que
- * enseña Inventario · Resumen (`inventario_hoy`), las compras de hoy
+ * enseña Almacén · Resumen (`almacen_hoy`), las compras de hoy
  * (`compras_de_hoy`) y el fichaje de quien mira (`mi_fichaje`)— y el dominio
  * (`loDeHoy`) lo ordena. Así lo de hoy no puede decir «3 bajo mínimo» mientras
- * Inventario dice 4, que es la clase de fallo que Richi encontró el 23-sep.
+ * Almacén dice 4, que es la clase de fallo que Richi encontró el 23-sep.
  *
  * Cada trozo, **solo si quien pregunta puede verlo**, comprobado aquí con la misma
  * función que usa la puerta de cada consulta: a una camarera no le sale la caja,
@@ -61,7 +63,7 @@ export const loDeHoyConsulta = consulta<Record<string, never>, SalidaLoDeHoy>({
   async ejecutar(contexto) {
     const localId = elLocal(contexto);
     const puede = await loQuePuede(contexto, localId, [
-      'app.inventario',
+      'app.almacen',
       'dato.precio_de_compra',
       'dato.ventas',
     ]);
@@ -70,10 +72,10 @@ export const loDeHoyConsulta = consulta<Record<string, never>, SalidaLoDeHoy>({
     const hoy = fechaOperativa(await laJornada(contexto, localId));
 
     // ── Lo del género y las compras ──
-    if (puede.ver('app.inventario')) {
-      const inventario = await inventarioHoy.ejecutar(contexto, {});
-      // Lo congelado no caduca mientras siga en el congelador.
-      const lotes = inventario.caducan.filter((lote) => !lote.congelado);
+    if (puede.ver('app.almacen')) {
+      const almacen = await almacenHoy.ejecutar(contexto, {});
+      // Lo congelado no viene aquí: no caduca, se queda viejo, y va aparte (0049).
+      const lotes = almacen.caducan;
       const nombres = (quedan: (dias: number) => boolean) => [
         ...new Set(lotes.filter((lote) => quedan(lote.dias)).map((lote) => lote.producto)),
       ];
@@ -100,10 +102,26 @@ export const loDeHoyConsulta = consulta<Record<string, never>, SalidaLoDeHoy>({
           hoy: nombres((dias) => dias === 0),
           manana: nombres((dias) => dias === 1),
         },
-        agotados: inventario.atencion
+        congelados: {
+          pasados: [
+            ...new Set(
+              almacen.congelados
+                .filter((c) => comoEstaLoCongelado(c.dias) === 'se_ha_pasado')
+                .map((c) => c.producto),
+            ),
+          ],
+          pronto: [
+            ...new Set(
+              almacen.congelados
+                .filter((c) => comoEstaLoCongelado(c.dias) === 'pronto')
+                .map((c) => c.producto),
+            ),
+          ],
+        },
+        agotados: almacen.atencion
           .filter((p) => p.estado === 'agotado' || p.estado === 'negativo')
           .map((p) => p.nombre),
-        bajoMinimo: inventario.atencion.filter((p) => p.estado === 'bajo_minimo').length,
+        bajoMinimo: almacen.atencion.filter((p) => p.estado === 'bajo_minimo').length,
         llegaHoy: compras.llegan
           .filter((p) => !p.atrasado && p.llegaEl === compras.hoy)
           .map((p) => ({ pedidoId: p.pedidoId, proveedor: p.proveedor })),
@@ -135,6 +153,20 @@ export const loDeHoyConsulta = consulta<Record<string, never>, SalidaLoDeHoy>({
     // ── Mi turno ──
     const mio = await miFichaje.ejecutar(contexto, {});
     hay = { ...hay, miTurno: miTurno(mio) };
+
+    // ── El Tablón: lo que tiene hora hoy (repaso del 25-sep, 0049) ──
+    // «Reserva a las 17:00 de 20 personas» es de lo que tiene hora hoy. Las mismas
+    // notas que enseña el tablón, que es quien decide cuáles ve cada uno, y **solo
+    // las ya leídas**: la que no has leído está justo debajo, en el Tablón, con su
+    // punto, y salir dos veces seguidas era ruido. Leída, se pliega en el Tablón y
+    // se queda aquí como lo que tiene hora.
+    const tablon = await elTablon.ejecutar(contexto, {});
+    hay = {
+      ...hay,
+      notasConHora: tablon.notas
+        .filter((n) => n.dia === tablon.hoy && n.hora !== null && n.leida)
+        .map((n) => ({ notaId: n.id, hora: n.hora ?? '', texto: n.texto, autor: n.autor })),
+    };
 
     return { hoy, cosas: loDeHoy(hay) };
   },

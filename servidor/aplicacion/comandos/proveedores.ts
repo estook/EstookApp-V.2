@@ -174,7 +174,7 @@ export const crearProveedor = comando<
 >({
   nombre: 'crear_proveedor',
   entrada: entradaCrearProveedor,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);
@@ -276,7 +276,7 @@ export type EntradaCambiarProveedor = z.infer<typeof entradaCambiarProveedor>;
 export const cambiarProveedor = comando<EntradaCambiarProveedor, { proveedorId: string }>({
   nombre: 'cambiar_proveedor',
   entrada: entradaCambiarProveedor,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const organizacionId = laOrganizacionDeLaSesion(contexto);

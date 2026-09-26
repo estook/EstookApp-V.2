@@ -91,7 +91,7 @@ describe('mis_permisos · lo que la rueda ensena', () => {
   it('la gerente recibe las ocho apps de la rueda', async () => {
     const suyos = await permisosDe('rosa@ejemplo.estook.com', 'bar-centro');
     const deLaRueda = [
-      'app.inventario',
+      'app.almacen',
       'app.escandallos',
       'app.carta',
       'app.calendario',
@@ -168,6 +168,6 @@ describe('el recorte por local se nota', () => {
 
     expect(suyos['accion.cerrar_recuento']).toBeUndefined();
     // Y lo demas de su rol sigue estando.
-    expect(suyos['app.inventario']).toBe('ver_y_editar');
+    expect(suyos['app.almacen']).toBe('ver_y_editar');
   });
 });

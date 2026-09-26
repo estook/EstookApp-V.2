@@ -86,7 +86,7 @@ const DIAS_DE_LA_TIRA = 14;
 export const mermaDeHoy = consulta<Record<string, never>, SalidaMermaDeHoy>({
   nombre: 'merma_de_hoy',
   entrada: z.object({}).strict(),
-  // Con el permiso de **apuntar** merma, no con Inventario: el widget lo pone en
+  // Con el permiso de **apuntar** merma, no con Almacén: el widget lo pone en
   // el Panel un camarero, que no tiene la app y es quien rompe una copa. El
   // dinero sigue sin viajar a quien no ve precios.
   exige: 'accion.registrar_merma',
@@ -257,7 +257,7 @@ const POR_DEFECTO_DIAS = 30;
 export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
   nombre: 'mis_mermas',
   entrada: entradaMisMermas,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocal(contexto);
@@ -457,9 +457,9 @@ export interface ProductoParaMerma {
  *
  * ── Por qué no es `mis_productos` ──────────────────────────────────────────
  *
- * Porque `mis_productos` pide la app de Inventario, y **quien más mermas apunta no
+ * Porque `mis_productos` pide la app de Almacén, y **quien más mermas apunta no
  * la tiene**: el camarero. La matriz de M1 le da `accion.registrar_merma` y no le
- * da Inventario, y con razón —no lleva la cámara—. Así que buscaba el producto
+ * da Almacén, y con razón —no lleva la cámara—. Así que buscaba el producto
  * con una consulta que le decía que no.
  *
  * Esta pide el permiso de apuntar merma y devuelve **lo justo para elegir**: el
@@ -509,7 +509,7 @@ export const productosParaMerma = consulta<
          -- zona de cada uno dejaba a la camarera sin poder decir lo que se le
          -- había caído, que es justo para lo que se construyó esta pantalla.
          --
-         -- La zona acota **lo que cada uno gestiona** —la lista de Inventario y
+         -- La zona acota **lo que cada uno gestiona** —la lista de Almacén y
          -- la ficha—, no lo que puede romper (0038).
          and (
            ${texto} = ''

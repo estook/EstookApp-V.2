@@ -364,7 +364,7 @@ describe('retirar el acceso mata el PIN al instante', () => {
 
     // Tampoco los permisos, que es lo que de verdad protege.
     const [nivel] = await comoDuena<{ nivel: string }>(
-      `select estook.nivel_de_permiso($1, $2, 'app.inventario')::text as nivel`,
+      `select estook.nivel_de_permiso($1, $2, 'app.almacen')::text as nivel`,
       [marcos, local],
     );
     expect(nivel?.nivel).toBe('sin_acceso');

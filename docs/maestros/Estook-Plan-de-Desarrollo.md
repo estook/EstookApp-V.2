@@ -193,7 +193,7 @@ Y una pieza que **no es una superficie nueva**, sino un envoltorio de la segunda
 Porque separarlo obliga a duplicar exactamente lo que más caro cuesta mantener:
 
 - **La sesión y los permisos.** El camarero que ficha a las 12:00 y el que cobra a las 14:30 son la misma persona, con el mismo PIN y el mismo rol. Dos aplicaciones son dos autenticaciones y dos matrices de permisos que se desincronizan a la primera.
-- **Los datos.** La carta del TPV es la carta de M10. El plato que se vende es la ficha de M9. La venta mueve el inventario de M6. Separarlo crearía una segunda fuente de verdad, que es lo que el proyecto entero prohíbe.
+- **Los datos.** La carta del TPV es la carta de M10. El plato que se vende es la ficha de M9. La venta mueve el almacén de M6. Separarlo crearía una segunda fuente de verdad, que es lo que el proyecto entero prohíbe.
 - **El diseño.** Un botón nuevo tendría que hacerse dos veces.
 - **Y lo que se perdería:** que el jefe de cocina vea el margen del plato que acaba de salir sin cambiar de aplicación. Eso es el producto.
 
@@ -328,7 +328,7 @@ Las cifras siempre con `font-variant-numeric: tabular-nums`. Tres tamaños de le
 | App         | Icono Lucide       | Acento       |
 | ----------- | ------------------ | ------------ |
 | Panel       | `layout-dashboard` | `--charcoal` |
-| Inventario  | `package`          | `#C77700`    |
+| Almacén     | `package`          | `#C77700`    |
 | Escandallos | `calculator`       | `#1E8E5A`    |
 | Carta       | `book-open`        | `#B23A6E`    |
 | Calendario  | `calendar-days`    | `#2C6E9B`    |
@@ -380,7 +380,7 @@ La rueda se abre sobre fondo desenfocado con un sector por app, con su icono, su
 
 Hasta M6 cada app tenía una lista plana de «pestañas», y salió mal de tres maneras a la vez:
 
-- **Pestañas muertas.** Inventario gastaba una de sus cuatro posiciones en «Pedidos», que es M7 y no hacía nada, y otra en un «Más» que era el cajón donde vivía Proveedores. **Dos de cuatro no llevaban a ningún sitio**, en la barra de navegación principal de la app y en el aparato donde de verdad se usa Estook.
+- **Pestañas muertas.** Almacén (entonces «Inventario») gastaba una de sus cuatro posiciones en «Pedidos», que es M7 y no hacía nada, y otra en un «Más» que era el cajón donde vivía Proveedores. **Dos de cuatro no llevaban a ningún sitio**, en la barra de navegación principal de la app y en el aparato donde de verdad se usa Estook.
 - **Pestañas que eran la misma pantalla.** Calendario gastaba tres posiciones en «Mes», «Semana» y «Día», que no son tres sitios: son el mismo sitio con otro aumento.
 - **Y un cajón de sastre por app.** Un «Más» no responde a ninguna pregunta, así que nadie sabe qué hay dentro hasta que lo abre.
 
@@ -396,7 +396,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 | App         | Sus destinos                                |
 | ----------- | ------------------------------------------- |
-| Inventario  | Resumen · Productos · Movimientos · Compras |
+| Almacén     | Resumen · Productos · Movimientos · Compras |
 | Escandallos | Resumen · Fichas · Elaboraciones · Análisis |
 | Carta       | Carta · Menús · Análisis                    |
 | Calendario  | Calendario · Tareas · Turnos                |
@@ -407,20 +407,20 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 Y sus vistas, donde las hay:
 
-| Destino                  | Sus vistas                                                       |
-| ------------------------ | ---------------------------------------------------------------- |
-| Inventario · Productos   | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados      |
-| Inventario · Movimientos | Todo · Entradas · Salidas · Ventas · Mermas · Ajustes · Recuento |
-| Inventario · Compras     | Pedidos · Albaranes · Facturas · Proveedores · Precios           |
-| Escandallos · Fichas     | Todas · Bajo objetivo · Sin coste                                |
-| Carta · Carta            | Por secciones · Todos los platos · Agotados                      |
-| Carta · Análisis         | Matriz · Por canal · Histórico                                   |
-| Calendario · Calendario  | Mes · Semana · Día                                               |
-| Calendario · Tareas      | Pendientes · Periódicas · Hechas                                 |
-| Equipo · Personas        | Con acceso · Sin entrar todavía · Retirados                      |
-| Servicio · Jornada       | En marcha · Caja · Cierre                                        |
-| Servicio · Ventas        | Del turno · Del día · Por producto · Tickets y facturas          |
-| Cuaderno · Incidencias   | Abiertas · Cerradas                                              |
+| Destino                 | Sus vistas                                                         |
+| ----------------------- | ------------------------------------------------------------------ |
+| Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados        |
+| Almacén · Movimientos   | Todo · Entradas · Salidas · Ventas · Mermas · Ajustes · Inventario |
+| Almacén · Compras       | Pedidos · Albaranes · Facturas · Proveedores · Precios             |
+| Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                                  |
+| Carta · Carta           | Por secciones · Todos los platos · Agotados                        |
+| Carta · Análisis        | Matriz · Por canal · Histórico                                     |
+| Calendario · Calendario | Mes · Semana · Día                                                 |
+| Calendario · Tareas     | Pendientes · Periódicas · Hechas                                   |
+| Equipo · Personas       | Con acceso · Sin entrar todavía · Retirados                        |
+| Servicio · Jornada      | En marcha · Caja · Cierre                                          |
+| Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas            |
+| Cuaderno · Incidencias  | Abiertas · Cerradas                                                |
 
 **El catálogo de `packages/ui/src/apps.ts` es el único dueño de estas dos tablas**, y hay una prueba que las lee **de este documento** y las compara. Antes la prueba llevaba los valores copiados dentro, y por eso pudo estar en verde mientras el código decía que Negocio tenía «Reseñas» donde esta tabla decía «Pulse».
 
@@ -554,7 +554,7 @@ Una página por app, por tipo de local y por caso de uso, cada una con su títul
 
 Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Datos · Reglas críticas · Errores típicos · Terminado cuando · Pruebas._
 
-> **Cómo entra la Evolución 1.0 aquí.** No como módulos sueltos al final: cada módulo se construye **ya con su capa inteligente dentro**. Un Inventario plano al que después hay que añadirle la previsión es más caro que un Inventario que nace con ella. Los apartados marcados **«y su capa inteligente»** son lo que la evolución añade a cada uno.
+> **Cómo entra la Evolución 1.0 aquí.** No como módulos sueltos al final: cada módulo se construye **ya con su capa inteligente dentro**. Un Almacén plano al que después hay que añadirle la previsión es más caro que un Almacén que nace con ella. Los apartados marcados **«y su capa inteligente»** son lo que la evolución añade a cada uno.
 
 ## Fase 1 · Cimientos
 
@@ -608,7 +608,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ## Fase 2 · El valor de cocina
 
-### M6 · Inventario
+### M6 · Almacén
 
 **Entra.** Productos con formato, unidad de uso, factor, rendimiento, peso variable, código de barras, tipo impositivo, alérgenos y mínimo · libro de movimientos con lote · ajuste manual como movimiento · precios con vigencia y precio medio ponderado · entrada por todas las vías · lotes y caducidades · ficha completa.
 
@@ -620,7 +620,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M6½ · La capa de producto
 
-**No estaba en el plan, y se hizo entre M6 y M7**, porque M6 dejó Inventario construido dentro de una aplicación que todavía no se podía usar de verdad: sin destinos, sin un Panel que se guardara, sin forma de apuntar una merma ni de fichar, con permisos que existían desde M1 y ninguna pantalla que los usara.
+**No estaba en el plan, y se hizo entre M6 y M7**, porque M6 dejó el Almacén construido dentro de una aplicación que todavía no se podía usar de verdad: sin destinos, sin un Panel que se guardara, sin forma de apuntar una merma ni de fichar, con permisos que existían desde M1 y ninguna pantalla que los usara.
 
 **Entra.** Destinos y vistas en cada app ([0018](../decisiones/0018-destinos-y-vistas.md)) · el Panel de cada uno en el servidor ([0019](../decisiones/0019-el-panel-de-cada-uno-vive-en-el-servidor.md)), que avisa si no ha podido guardar · el catálogo de acciones ([0020](../decisiones/0020-un-catalogo-de-acciones.md)) · marca, dos temas y tamaño de letra ([0024](../decisiones/0024-el-color-del-local-pinta-la-app.md)) · **la merma con motivo y partida**, también desde la sala ([0026](../decisiones/0026-la-merma-tiene-motivo-y-partida.md)) · **fichar con la ubicación, sin bloquear nunca**, la ficha de cada persona con sus horas, lo que cobra en privado y su horario de siempre, y el Resumen de horas para quien lleva gente ([0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)) · **el cierre de caja a mano o con CSV**, la pregunta de cómo entran las ventas y Negocio › Ventas ([0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)) · **el alta de producto con lo que hay**, y el + y el − de cada producto ([0028](../decisiones/0028-el-alta-pregunta-cuanto-hay.md)) · la rueda con el Panel en el centro · los textos de toda la app, recortados.
 
@@ -640,17 +640,17 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Reglas críticas.** El albarán mueve stock; **la factura confirma el precio**. La recepción es idempotente. **Abrir una pantalla no llama a Google nunca**: se lee lo guardado, con su fecha.
 
-**Terminado cuando.** Un pedido recorre el ciclo, el inventario cuadra, el precio nuevo ya está repercutido en los escandallos, y una factura con tres albaranes y una diferencia sale conciliada con esa diferencia señalada. **Y además**: las entregas de la semana salen en el Panel; al elegir el local en el alta se guardan su ficha y su posición; y al cerrar el día la ficha y las reseñas se actualizan solas, con el contador de llamadas por debajo de su tope.
+**Terminado cuando.** Un pedido recorre el ciclo, el almacén cuadra, el precio nuevo ya está repercutido en los escandallos, y una factura con tres albaranes y una diferencia sale conciliada con esa diferencia señalada. **Y además**: las entregas de la semana salen en el Panel; al elegir el local en el alta se guardan su ficha y su posición; y al cerrar el día la ficha y las reseñas se actualizan solas, con el contador de llamadas por debajo de su tope.
 
 **Se entrega en dos veces** ([decisión 0032](../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)). **La primera**: las compras enteras —ficha del proveedor, pedidos, recepción, devoluciones, facturas y abonos conciliados, lo pactado y la comparativa— en cinco vistas del destino Compras, y el Calendario con sus entregas, sus caducidades y «Lo que viene». El precio nuevo queda repercutido en el coste de cada producto, que es lo que leerán los escandallos de M9. «PDF» es **imprimir**, con «Guardar como PDF»; el documento con membrete es M11. **La segunda**: el reloj y el local en Google, que esperan el acceso a Business Profile y la clave de Google Cloud.
 
 ### M8 · Inventario, mermas y desviación
 
-**Entra.** Recuento cíclico con lector · inventario valorado a precio medio ponderado · mermas en tres toques con motivo obligatorio, por voz y con foto · partida aparte para consumo de personal e invitaciones · desviación · calibración con estado «aprendiendo» hasta el tercer recuento · **FEFO** · stock mínimo calculado · **food cost real global** junto al teórico y su brecha · causa probable de la desviación · permiso separado para cerrar recuento.
+**Entra.** Inventario cíclico con lector · almacén valorado a precio medio ponderado · mermas en tres toques con motivo obligatorio, por voz y con foto · partida aparte para consumo de personal e invitaciones · desviación · calibración con estado «aprendiendo» hasta el tercer recuento · **FEFO** · stock mínimo calculado · **food cost real global** junto al teórico y su brecha · causa probable de la desviación · permiso separado para cerrar recuento.
 
 **Adelantado en M6½** ([decisión 0026](../decisiones/0026-la-merma-tiene-motivo-y-partida.md)): la merma en tres toques, con motivo de una lista cerrada y su partida aparte —pérdida, comida del personal, invitación—, desde el Panel, desde la lista de productos y por quien la rompe, camareros incluidos; y su listado con totales, CSV e impresión. **Queda para M8**: por voz y con foto (con M22), y todo lo demás de esta lista.
 
-**Terminado cuando.** Con dos recuentos, la desviación sale explicada producto a producto; y un producto que se sirve de más deja de saltar tras el tercer recuento.
+**Terminado cuando.** Con dos inventarios, la desviación sale explicada producto a producto; y un producto que se sirve de más deja de saltar tras el tercer inventario.
 
 ### M9 · Escandallos
 
@@ -659,6 +659,19 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 **Y su capa inteligente.** El bloque **«qué ha cambiado y por qué»**: cuánto ha subido el coste desde una fecha, qué ingrediente lo ha movido, a cuántos platos afecta una subida y cuál es el impacto máximo en puntos de margen.
 
 **Reglas críticas.** Escandallo por unidad de venta. Margen sobre base sin impuestos. **La ficha es dato estructurado, no texto.** Un plato sin ficha nunca bloquea nada. Los importes **no viajan al cliente** de un rol sin permiso de costes.
+
+**Un plato, tres vistas, un solo dueño de cada dato** (Richi, 25-sep · [decisión 0049](../decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)):
+
+| Vista                           | Qué dice                                                                   | Qué **no** guarda                                   |
+| ------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------- |
+| **Carta** (M10)                 | Lo que se vende y a cuánto: «Hamburguesa de buey · 14,90 €»                | Ni ingredientes ni costes                           |
+| **Ficha técnica** (M9)          | Cómo se prepara: carne 180 g, pan 1 ud, queso 5 g, salsa 20 g, y los pasos | Ni un precio de ingrediente                         |
+| **Escandallo** (M9, se calcula) | Cuánto cuesta hoy: coste, food cost, margen y beneficio                    | Nada escrito a mano: sale de la ficha y del Almacén |
+
+- **Los tres cuelgan del mismo plato por su identificador**, nunca por el nombre: renombrar el plato no lo separa de su ficha ni de su escandallo.
+- **«Añadir plato» en Escandallos** trae su ficha técnica con sus cantidades, y el coste de cada ingrediente sale **del Almacén**: el precio de compra por su formato, llevado a la unidad de uso y **con su aprovechamiento** —10 kg de carne a 60 € de los que quedan 8 kg utilizables son 7,50 €/kg reales—. Nadie calcula a mano el coste de un ingrediente; **se puede poner a mano** cuando no hay compra (una cesión, una muestra), y queda marcado como escrito a mano.
+- **Todo se recalcula solo y solo lo afectado** (el grafo de recálculo): cambia un precio de compra → los escandallos que lo llevan; cambia una cantidad de la ficha → su escandallo; cambia el precio de la carta → su margen y su food cost; un plato nuevo puede nacer con ficha y después con escandallo.
+- **Estook calcula; la IA solo propone** coincidencias —«"Queso cheddar" de la ficha parece "Cheddar lonchas" del Almacén»— y **las vinculaciones definitivas se hacen por identificador y las confirma una persona**. Lo que se puede contar no se le pregunta a un modelo: cuesta uso y se equivoca.
 
 **Terminado cuando.** Se monta una carta entera sin tocar la base a mano; un cocinero abre la ficha **sin ver ningún importe**; y al subir un ingrediente solo se recalcula lo afectado.
 
@@ -670,7 +683,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y le da el precio al cierre de caja.** Desde M6½, al apuntar un plato en el cierre el importe se propone con el de la última vez que se apuntó. Con la carta, sale del precio de su canal —sala, por defecto—, y lo de la última vez queda para lo que no esté en la carta. Los platos del cierre ya se guardan con el nombre normalizado para emparejarlos.
 
-**Terminado cuando.** El mismo plato tiene tres precios en tres canales y el análisis lo clasifica distinto en cada uno; y el informe de equilibrio detecta una carta descompensada sembrada a propósito.
+**Y la carta que ya tiene el local se lee** (0049). Desde el repaso del 25-sep, cada local puede **subir su carta** —el PDF o unas fotos— y es lo que enseña su QR. Con los platos, Estook **la lee y propone**: «**4 platos nuevos, 2 precios distintos, 1 que ya no está** · ¿actualizo tu carta?», con el resumen delante y nada cambiado hasta que alguien dice que sí. Un PDF con texto lo lee Estook sin IA; una foto o un PDF escaneado necesita leer imágenes (M22), y solo entonces se usa. **Las dos formas quedan siempre**: hacer la carta a mano en Estook, o subir la suya y que se lea.
+
+**Terminado cuando.** El mismo plato tiene tres precios en tres canales y el análisis lo clasifica distinto en cada uno; el informe de equilibrio detecta una carta descompensada sembrada a propósito; y una carta subida con dos precios cambiados propone exactamente esos dos cambios.
 
 ### M11 · Documentos y diseños
 
@@ -683,6 +698,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 ### M12 · Carta digital pública
 
 **Entra.** Página por local con su dirección y su QR en tres formatos · marca del local · precios del canal elegido · filtros por alérgeno y dieta · idiomas automáticos · agotados en vivo · datos de contacto y enlace a reseña · caché con invalidación por evento · SEO y datos estructurados · **cero cookies**.
+
+**Ya hecho antes:** la dirección y el QR definitivos (entrega O, [0047](../decisiones/0047-lo-que-se-ordena.md)) y **la carta subida** página a página (repaso del 25-sep, 0049). Cuando haya platos, el local elige qué enseña su QR: la carta de Estook, con filtros y agotados, o el diseño que subió.
 
 **Terminado cuando.** Se escanea el QR, la carta aparece en menos de un segundo en el idioma del móvil, y un plato marcado agotado desaparece en menos de treinta segundos.
 
@@ -773,9 +790,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Revo y Last.app (septiembre de 2026).** El acceso a sus API está solicitado: Revo por su formulario de integradores y Last.app escribiendo a su equipo de integraciones. **No se implementa ninguno hasta tener la aprobación, la documentación oficial y un entorno de pruebas**; mientras, salen como «próximamente». Last.app tiene un límite de peticiones estricto: se usa su webhook, y la sincronización por API va en tramos cortos, con espera al recibir un 429. Todo webhook de un TPV entra por una bandeja de entrada: se verifica la firma, se guarda en bruto, se responde en menos de 2 segundos y se procesa en la cola de M2.
 
-**Terminado cuando.** Un día de ventas real entra solo y el consumo mueve el inventario; y al conectar por primera vez, **la Carta aparece montada** con todos los artículos del TPV, sus precios y sus secciones, sin que nadie escriba un plato a mano.
+**Terminado cuando.** Un día de ventas real entra solo y el consumo mueve el almacén; y al conectar por primera vez, **la Carta aparece montada** con todos los artículos del TPV, sus precios y sus secciones, sin que nadie escriba un plato a mano.
 
-> **Aclaración que evita un error caro.** El TPV trae **artículos de venta, no ingredientes**. Sabe que se vendió una hamburguesa a 14,50 €; no sabe qué lleva dentro ni lo que costó. Conectar monta la Carta; el inventario y los escandallos los pone el restaurante, y eso es precisamente lo que aporta Estook.
+> **Aclaración que evita un error caro.** El TPV trae **artículos de venta, no ingredientes**. Sabe que se vendió una hamburguesa a 14,50 €; no sabe qué lleva dentro ni lo que costó. Conectar monta la Carta; el almacén y los escandallos los pone el restaurante, y eso es precisamente lo que aporta Estook.
 
 ### M19 · Estook Enlace · se entrega en dos partes
 
@@ -796,7 +813,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M20 · Ventas, emparejamiento y consumo
 
-**Entra.** Pantalla de ventas con **el origen y su fiabilidad siempre a la vista** · emparejamiento de artículos con propuesta por parecido y confirmación · explosión de menús y modificadores · caminos manuales explicados por marca y por sistema · foto del Z y total del día · consumo teórico descontando del inventario · lo no emparejado cuenta en dinero y no descuenta género, avisado.
+**Entra.** Pantalla de ventas con **el origen y su fiabilidad siempre a la vista** · emparejamiento de artículos con propuesta por parecido y confirmación · explosión de menús y modificadores · caminos manuales explicados por marca y por sistema · foto del Z y total del día · consumo teórico descontando del almacén · lo no emparejado cuenta en dinero y no descuenta género, avisado.
 
 **Reglas críticas.** Una jornada estimada **no entra en la desviación sin avisar**. El menú importado se explota a sus platos.
 
@@ -855,7 +872,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M20C · Cobro y caja
 
-**Objetivo.** Cerrar una mesa cobrada con su ticket legal, y que eso mueva caja, ventas, inventario y Negocio sin que nadie teclee nada más.
+**Objetivo.** Cerrar una mesa cobrada con su ticket legal, y que eso mueva caja, ventas, almacén y Negocio sin que nadie teclee nada más.
 
 **Entra.** Cobro en efectivo (entregado y cambio), con tarjeta en el datáfono del local (el camarero confirma) y mixto · dividir la cuenta por comensal, por platos o a partes iguales, con un ticket por cobro · invitaciones y descuentos con permiso y motivo · emisión por M20B y, si falla, la mesa sigue abierta · **impresión del ticket** por la cola de M20A, y envío por correo o por QR si el cliente lo pide · factura a petición del cliente desde su ticket · devoluciones por rectificativa · **caja como vista de Servicio · Jornada** y **tickets y facturas como vista de Servicio · Ventas** (B5), con apertura de caja, entradas y salidas con motivo, arqueo y descuadre · el cierre de caja de M6½ se rellena solo con origen «TPV de Estook» · evento `venta.cerrada` hacia M20.
 
@@ -863,7 +880,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Reglas críticas.** Nunca se cierra una mesa cobrada sin ticket o sin justificante provisional. Reabrir lo cobrado no existe: se rectifica. Los PDF —factura completa, ticket por correo— salen del servidor (regla 7); el ticket impreso no es un PDF. **La impresión no bloquea el cobro**: si falla, el ticket ya está emitido y se reimprime.
 
-**Terminado cuando.** Un servicio de prueba completo —diez mesas, una dividida, un pago mixto, una factura pedida y una devolución— cuadra al céntimo entre caja, tickets, ventas e inventario; y con internet cortado se cobra con justificante y al volver salen los tickets en orden. Reimprimir un ticket sale idéntico, marcado como copia, y no crea ningún registro nuevo.
+**Terminado cuando.** Un servicio de prueba completo —diez mesas, una dividida, un pago mixto, una factura pedida y una devolución— cuadra al céntimo entre caja, tickets, ventas y almacén; y con internet cortado se cobra con justificante y al volver salen los tickets en orden. Reimprimir un ticket sale idéntico, marcado como copia, y no crea ningún registro nuevo.
 
 ## Fase 5 · Inteligencia
 

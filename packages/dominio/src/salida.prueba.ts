@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MOTIVOS_DE_MERMA } from './merma.ts';
-import { TIPOS_DE_MOVIMIENTO } from './inventario.ts';
+import { TIPOS_DE_MOVIMIENTO } from './almacen.ts';
 import {
   FAMILIAS_DE_SALIDA,
   MOTIVOS_DE_SALIDA,

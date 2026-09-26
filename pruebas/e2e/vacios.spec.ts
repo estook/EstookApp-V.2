@@ -8,7 +8,7 @@ import { entrarEnLaApp, irA } from './en-la-app.ts';
  * se comprueba es lo que prometía el plan, en pantalla:
  *
  *   · **un dibujo y una sola acción**, que hace lo que dice;
- *   · **Inventario · Resumen, con la cámara vacía, enseña cómo empezar** y no
+ *   · **Almacén · Resumen, con la cámara vacía, enseña cómo empezar** y no
  *     «Cómo va»: cuatro cifras sin datos encima de lo único que sirve sobraban;
  *   · el vacío **de un filtro** no es el vacío de verdad: ofrece quitar el filtro;
  *   · y **los dibujos se cargan aparte**: llegan en su propio trozo, no en el
@@ -27,7 +27,7 @@ test('con la cámara vacía, el Resumen enseña cómo empezar, y el botón abre 
   const elTrozoDelDibujo = page.waitForResponse((r) => /\/Camara-[\w-]+\.js$/.test(r.url()));
 
   await entrarEnLaApp(page, VERA);
-  await irA(page, 'inventario/resumen');
+  await irA(page, 'almacen/resumen');
 
   await expect(page.getByText('Tu cámara está vacía')).toBeVisible();
   expect((await elTrozoDelDibujo).ok()).toBe(true);
@@ -42,14 +42,14 @@ test('con la cámara vacía, el Resumen enseña cómo empezar, y el botón abre 
   await expect(empezar).toHaveCount(1);
   await empezar.click();
   await expect(page.getByRole('dialog', { name: 'Un producto nuevo' })).toBeVisible();
-  await expect(page).toHaveURL(/#\/inventario\/productos/);
+  await expect(page).toHaveURL(/#\/almacen\/productos/);
 });
 
 test('Productos vacío enseña solo el vacío: un botón, y los ejemplos en texto', async ({
   page,
 }) => {
   await entrarEnLaApp(page, VERA);
-  await irA(page, 'inventario/productos/todo');
+  await irA(page, 'almacen/productos/todo');
 
   // Con la cámara vacía, solo el vacío: ni buscador, ni «0 productos», ni un
   // segundo botón naranja.
@@ -67,7 +67,7 @@ test('en Pedidos, el filtro vacío ofrece volver a los abiertos, y los abiertos,
   page,
 }) => {
   await entrarEnLaApp(page, VERA);
-  await irA(page, 'inventario/compras/pedidos');
+  await irA(page, 'almacen/compras/pedidos');
 
   await expect(page.getByText('No hay pedidos abiertos')).toBeVisible();
   await expect(page.locator('[data-dibujo="pedidos"] svg')).toBeVisible();
@@ -81,7 +81,7 @@ test('en Pedidos, el filtro vacío ofrece volver a los abiertos, y los abiertos,
 
 test('el buscador, sin nada parecido, ofrece borrar lo escrito', async ({ page }) => {
   await entrarEnLaApp(page, VERA);
-  await irA(page, 'inventario/resumen');
+  await irA(page, 'almacen/resumen');
 
   await page.keyboard.press('Control+k');
   const campo = page.getByLabel('Que quieres buscar');

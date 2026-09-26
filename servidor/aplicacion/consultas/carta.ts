@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SEGUNDOS_DEL_ENLACE_DE_LA_CARTA } from '../../infraestructura/almacen.ts';
 import { consulta, FalloDeAplicacion } from '../contrato.ts';
 
 /**
@@ -42,6 +43,11 @@ export interface LaCarta {
   readonly colorDeMarca: string | null;
   /** Firmado y caduco, como en la cabecera de la app. */
   readonly logo: string | null;
+  /**
+   * La carta que subió el local, página a página: enlaces firmados y caducos, en
+   * su orden (repaso del 25-sep, 0049). Vacía si no ha subido ninguna.
+   */
+  readonly paginas: readonly string[];
 }
 
 /** Una hora, como el logo de la cabecera: el enlace se pide cada vez que se abre. */
@@ -65,10 +71,11 @@ export const laCarta = consulta<EntradaLaCarta, LaCarta>({
         horario: unknown;
         color_de_marca: string | null;
         logo_clave: string | null;
+        carta_paginas: string[] | null;
       }[]
     >`
       select nombre, direccion, telefono, web, mapa, valoracion::text as valoracion,
-             resenas, horario, color_de_marca, logo_clave
+             resenas, horario, color_de_marca, logo_clave, carta_paginas
         from estook.la_carta_publica(${entrada.direccion})
     `;
 
@@ -79,6 +86,20 @@ export const laCarta = consulta<EntradaLaCarta, LaCarta>({
       fila.logo_clave === null || contexto.almacen === null
         ? null
         : await contexto.almacen.enlace(fila.logo_clave, LO_QUE_DURA_EL_ENLACE).catch(() => null);
+
+    // Las páginas, firmadas **de una tanda** (0046): una carta de seis páginas no
+    // son seis viajes al almacén. La que no se haya podido firmar no sale.
+    const claves = fila.carta_paginas ?? [];
+    const enlaces =
+      claves.length === 0 || contexto.almacen === null
+        ? new Map<string, string>()
+        : await contexto.almacen
+            .enlaces(claves, SEGUNDOS_DEL_ENLACE_DE_LA_CARTA)
+            .catch(() => new Map<string, string>());
+    const paginas = claves.flatMap((clave) => {
+      const enlace = enlaces.get(clave);
+      return enlace === undefined ? [] : [enlace];
+    });
 
     return {
       nombre: fila.nombre,
@@ -91,6 +112,7 @@ export const laCarta = consulta<EntradaLaCarta, LaCarta>({
       horario: lasLineasDelHorario(fila.horario),
       colorDeMarca: fila.color_de_marca,
       logo,
+      paginas,
     };
   },
 });

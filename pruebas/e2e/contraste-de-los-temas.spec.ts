@@ -30,12 +30,12 @@ test.skip(({ browserName }) => browserName !== 'chromium', 'El contraste se mide
 
 const PANTALLAS = [
   { quien: ROSA, direccion: '' },
-  { quien: ROSA, direccion: 'inventario/resumen' },
-  { quien: ROSA, direccion: 'inventario/productos/todo' },
-  { quien: ROSA, direccion: 'inventario/movimientos/todo' },
-  { quien: ROSA, direccion: 'inventario/movimientos/mermas' },
-  { quien: ROSA, direccion: 'inventario/compras/pedidos' },
-  { quien: ROSA, direccion: 'inventario/compras/proveedores' },
+  { quien: ROSA, direccion: 'almacen/resumen' },
+  { quien: ROSA, direccion: 'almacen/productos/todo' },
+  { quien: ROSA, direccion: 'almacen/movimientos/todo' },
+  { quien: ROSA, direccion: 'almacen/movimientos/mermas' },
+  { quien: ROSA, direccion: 'almacen/compras/pedidos' },
+  { quien: ROSA, direccion: 'almacen/compras/proveedores' },
   { quien: ROSA, direccion: 'servicio' },
   { quien: ROSA, direccion: 'negocio/ventas' },
   { quien: ROSA, direccion: 'equipo/resumen' },
@@ -43,8 +43,8 @@ const PANTALLAS = [
   { quien: ROSA, direccion: 'equipo/personas/con-acceso' },
   { quien: ROSA, direccion: 'calendario' },
   { quien: ROSA, direccion: 'ajustes/aparato' },
-  { quien: VERA, direccion: 'inventario/resumen' },
-  { quien: VERA, direccion: 'inventario/productos/todo' },
+  { quien: VERA, direccion: 'almacen/resumen' },
+  { quien: VERA, direccion: 'almacen/productos/todo' },
 ] as const;
 
 interface TextoQueNoSeLee {

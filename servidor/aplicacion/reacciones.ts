@@ -1,8 +1,13 @@
 import { deEstaPeticion } from '../eventos/bandeja.ts';
 import { esEvento, type TipoDeEvento } from '../eventos/catalogo.ts';
-import { publicarLaCaducidad, publicarLaEntrega, publicarLosRepartos } from './calendario.ts';
+import {
+  publicarLaCaducidad,
+  publicarLaEntrega,
+  publicarLoCongeladoDe,
+  publicarLosRepartos,
+} from './calendario.ts';
 import type { Contexto } from './contrato.ts';
-import { sembrarElInventario } from './inventario.ts';
+import { sembrarElAlmacen } from './almacen.ts';
 
 /**
  * Las reacciones · lo que un módulo hace cuando otro cambia algo (M6).
@@ -30,7 +35,7 @@ import { sembrarElInventario } from './inventario.ts';
  *
  * ── Por qué son síncronas, y en la misma transacción ─────────────────────────
  *
- * Porque un local sin categorías es un local roto: entras en Inventario y el
+ * Porque un local sin categorías es un local roto: entras en Almacén y el
  * desplegable está vacío, justo donde la Auditoría promete «nunca vacío: vienen
  * de serie». Si esto lo hiciera un proceso de fondo que pasa cada cinco minutos,
  * habría cinco minutos en los que el producto está mal, y además **hoy no hay
@@ -70,7 +75,7 @@ export interface Reaccion {
  *
  * Hace falta porque **quien crea un local no es quien va a trabajar en él**. Un
  * administrador de cuenta da de alta locales y su ficha dice «sin acceso a la
- * operación diaria»: no tiene Inventario. Sembrarle los ejemplos con su
+ * operación diaria»: no tiene Almacén. Sembrarle los ejemplos con su
  * identidad chocaría contra las políticas y tumbaría la creación entera del
  * local, que es un precio absurdo por unos datos de mentira.
  *
@@ -79,7 +84,7 @@ export interface Reaccion {
  */
 async function puedeConElGenero(contexto: Contexto, localId: string): Promise<boolean> {
   const filas = await contexto.sql<{ genero: boolean; precios: boolean }[]>`
-    select estook.puede_editar('app.inventario', ${localId}::uuid) as genero,
+    select estook.puede_editar('app.almacen', ${localId}::uuid) as genero,
            estook.puede_editar('dato.precio_de_compra', ${localId}::uuid) as precios
   `;
   const fila = filas[0];
@@ -90,7 +95,7 @@ async function sembrar(contexto: Contexto, evento: EventoOcurrido): Promise<void
   const { localId } = evento;
   if (localId === null) return;
 
-  await sembrarElInventario(contexto, localId, {
+  await sembrarElAlmacen(contexto, localId, {
     conEjemplos: await puedeConElGenero(contexto, localId),
   });
 }
@@ -119,12 +124,12 @@ function elDe(evento: EventoOcurrido, clave: string): string {
  */
 export const REACCIONES: readonly Reaccion[] = [
   {
-    nombre: 'M6 · sembrar el inventario de un local nuevo',
+    nombre: 'M6 · sembrar el almacén de un local nuevo',
     a: 'local.creado',
     reaccionar: sembrar,
   },
   {
-    nombre: 'M6 · sembrar el inventario al saber de qué tipo es el local',
+    nombre: 'M6 · sembrar el almacén al saber de qué tipo es el local',
     a: 'local.ficha_cambiada',
     leToca: (evento) => evento.datos['que'] === 'tipo',
     reaccionar: sembrar,
@@ -151,6 +156,14 @@ export const REACCIONES: readonly Reaccion[] = [
     a,
     reaccionar: (contexto, evento) => publicarLaCaducidad(contexto, elDe(evento, 'loteId')),
   })),
+  // Y si cambia lo que aguanta congelado un producto, cambia el día en que cumple
+  // cada uno de sus lotes congelados (repaso del 25-sep, 0049).
+  {
+    nombre: 'Lo congelado de un producto, en el Calendario',
+    a: 'producto.cambiado',
+    leToca: (evento) => evento.datos['cambiaLoCongelado'] === true,
+    reaccionar: (contexto, evento) => publicarLoCongeladoDe(contexto, elDe(evento, 'productoId')),
+  },
 ];
 
 /**

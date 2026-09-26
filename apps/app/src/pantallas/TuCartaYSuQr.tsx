@@ -18,8 +18,9 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * Ajustes · Tu local · Tu carta y su QR (entrega O, punto 20 · decisión 0047).
  *
  * **El QR definitivo**: se imprime una vez y no cambia nunca, ni al renombrar el
- * local. Hasta M12 enseña el nombre, la dirección, el teléfono y el horario de
- * Google; el día que haya carta, **el mismo QR ya impreso la enseña**.
+ * local. Enseña la carta que haya subido el local (repaso del 25-sep, 0049), su
+ * dirección, su teléfono y su horario de Google; el día que haya platos, **el mismo
+ * QR ya impreso los enseña**.
  *
  * En tres formas, como se piden en una imprenta y en un bar: SVG (se amplía sin
  * perder nada, para la imprenta), PNG (para quien no sepa abrir un SVG) y el cartel
@@ -77,8 +78,8 @@ export function TuCartaYSuQr() {
             <p className="break-all font-semibold">{direccion.replace('https://', '')}</p>
           </div>
           <p className="text-secundario text-texto-suave">
-            Hoy enseña tu nombre, dónde estás, tu teléfono y tu horario de Google. Cuando tengas la
-            carta en Estook, este mismo QR la enseñará, sin volver a imprimir nada.
+            Enseña tu carta —la que subas arriba—, dónde estás, tu teléfono y tu horario. Si cambias
+            la carta, este mismo QR enseña la nueva, sin volver a imprimir nada.
           </p>
 
           <div className="flex flex-wrap gap-e2">

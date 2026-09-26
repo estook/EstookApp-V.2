@@ -6,13 +6,13 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
 /**
  * Las cifras de cada app · V, punto 2 (0040).
  *
- * «Flechas y gráficas también en Inventario, Servicio y Equipo.» Seis cifras
+ * «Flechas y gráficas también en Almacén, Servicio y Equipo.» Seis cifras
  * nuevas, y **ninguna puede decir un número distinto del de la pantalla de la que
  * sale**: si «Valor de la cámara» dijera una cosa y «Hoy» otra, o las horas del
  * equipo no cuadraran con el Resumen, nadie se creería ninguna de las dos. Es lo
  * que se prueba aquí, contra la base y por la API, como lo pide la pantalla:
  *
- *   · el valor de la cámara y el bajo mínimo de hoy son los de Inventario · Hoy
+ *   · el valor de la cámara y el bajo mínimo de hoy son los de Almacén · Hoy
  *   · lo que se apunta hoy no cambia lo que había ayer
  *   · las horas y el coste del equipo son los del Resumen de Equipo
  *   · un retraso es pasar del margen del local, y el Resumen cuenta los mismos
@@ -80,7 +80,7 @@ async function unTurno(fecha: string, entra: string, horas: number) {
   );
 }
 
-// ── Inventario ───────────────────────────────────────────────────────────────
+// ── Almacén ───────────────────────────────────────────────────────────────
 
 describe('la cámara, como la cuenta «Hoy»', () => {
   let productoId: string;
@@ -117,22 +117,22 @@ describe('la cámara, como la cuenta «Hoy»', () => {
     const despues = await indicador(rosa, 'valor-camara');
     expect((despues.total ?? 0) - (antes.total ?? 0)).toBe(2_500);
     const hoy = losDatos<{ valorTotalCentimos: number }>(
-      await api.consultar(rosa, 'inventario_hoy', {}),
+      await api.consultar(rosa, 'almacen_hoy', {}),
     );
     expect(despues.total).toBe(hoy.valorTotalCentimos);
   });
 
-  it('**el valor de hoy es el mismo que calcula Inventario · Hoy**', async () => {
+  it('**el valor de hoy es el mismo que calcula Almacén · Hoy**', async () => {
     const hoy = losDatos<{ valorTotalCentimos: number }>(
-      await api.consultar(rosa, 'inventario_hoy', {}),
+      await api.consultar(rosa, 'almacen_hoy', {}),
     );
     const valor = await indicador(rosa, 'valor-camara');
     expect(valor.total).toBe(hoy.valorTotalCentimos);
     expect(valor.serie.at(-1)?.valor).toBe(hoy.valorTotalCentimos);
   });
 
-  it('**y el bajo mínimo de hoy es la lista de atención** de Inventario · Hoy', async () => {
-    const hoy = losDatos<{ atencion: unknown[] }>(await api.consultar(rosa, 'inventario_hoy', {}));
+  it('**y el bajo mínimo de hoy es la lista de atención** de Almacén · Hoy', async () => {
+    const hoy = losDatos<{ atencion: unknown[] }>(await api.consultar(rosa, 'almacen_hoy', {}));
     const bajo = await indicador(rosa, 'bajo-minimo');
     expect(bajo.total).toBe(hoy.atencion.length);
     // La lubina recién dada de alta, sin nada, está en los dos.

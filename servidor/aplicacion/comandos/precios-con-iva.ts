@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { centimos, ivaDeCompraPorDefecto, sinIva } from '@estook/dominio';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
-import { ponerUnPrecio } from '../inventario.ts';
+import { ponerUnPrecio } from '../almacen.ts';
 
 /**
  * Cómo escribe cada local sus precios de compra: con IVA o sin él (M7, repaso).

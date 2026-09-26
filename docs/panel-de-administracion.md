@@ -10,7 +10,7 @@ cómo se entra en los datos de un cliente.
 
 > Es **nuestra** herramienta, no la de los clientes. Sirve para saber quién usa
 > Estook, quién lo trajo, quién se está yendo y cuánto nos deja. **Nunca** para
-> tocar el inventario, las personas o las ventas de un restaurante.
+> tocar el almacén, las personas o las ventas de un restaurante.
 
 ---
 
@@ -254,7 +254,7 @@ mano». Cuando llegue Stripe, **Stripe es el único dueño** y el campo deja de 
 | Hoy                                                   | Cuando exista su módulo             |
 | ----------------------------------------------------- | ----------------------------------- |
 | Productos, proveedores, pedidos, albaranes, facturas  | Escandallos (M9)                    |
-| Mermas, recuentos, cierres de caja                    | Cartas (M10) · Documentos (M11)     |
+| Mermas, inventarios, cierres de caja                  | Cartas (M10) · Documentos (M11)     |
 | Personas con acceso, fichajes                         | Fogón: preguntas y propuestas (M22) |
 | Entradas por semana, **qué apps no ha abierto nunca** | Conector del TPV (M18)              |
 
@@ -445,7 +445,7 @@ borrado lo hace el reloj, que llega con la entrega R, y se comprueba en M27.
 
 Lo de Roles 4.8 se mantiene, y se precisa:
 
-- **No escribe en los datos del restaurante**: inventario, compras, personas, horarios,
+- **No escribe en los datos del restaurante**: almacén, compras, personas, horarios,
   ventas. **Lo comercial del cliente —su contrato, su plan, sus notas— sí es nuestro**,
   y eso es lo que el admin edita.
 - **No entra «como» el cliente.** El acceso a sus datos es el de Roles 4.3: pedido,

@@ -14,11 +14,11 @@ export const DONDE_SE_MIRA: Readonly<Record<Indicador, string | null>> = {
   ventas: '/servicio/jornada/cierre',
   'ticket-medio': '/servicio/jornada/cierre',
   'food-cost': '/servicio/jornada/cierre',
-  merma: '/inventario/movimientos/mermas',
-  compras: '/inventario/compras/albaranes',
+  merma: '/almacen/movimientos/mermas',
+  compras: '/almacen/compras/albaranes',
   'mis-horas': null,
-  'valor-camara': '/inventario/productos',
-  'bajo-minimo': '/inventario/productos/bajo-minimo',
+  'valor-camara': '/almacen/productos',
+  'bajo-minimo': '/almacen/productos/bajo-minimo',
   cierres: '/servicio/jornada/cierre',
   // Las tres de Equipo se miran persona a persona en el Resumen, que es donde
   // están sus horas, su coste y sus retrasos contados igual.

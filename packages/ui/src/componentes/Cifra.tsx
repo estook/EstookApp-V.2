@@ -28,7 +28,7 @@ export interface CifraProps {
   readonly antes?: number;
   readonly sentido?: SentidoDeLaComparacion;
   readonly objetivo?: string;
-  /** De donde sale y de cuando es. «TPV · ayer», «recuento del 3 de marzo». */
+  /** De donde sale y de cuando es. «TPV · ayer», «inventario del 3 de marzo». */
   readonly origen?: string;
   readonly icono?: ReactNode;
 }

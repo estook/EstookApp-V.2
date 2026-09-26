@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
-import { sembrarElInventario } from '../inventario.ts';
+import { sembrarElAlmacen } from '../almacen.ts';
 
 /**
  * Las categorías del local, y el botón de los ejemplos (M6).
@@ -14,7 +14,7 @@ import { sembrarElInventario } from '../inventario.ts';
 export const crearCategoria = comando<{ nombre: string }, { categoriaId: string; nombre: string }>({
   nombre: 'crear_categoria',
   entrada: z.object({ nombre: z.string().trim().min(1).max(120) }).strict(),
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);
@@ -80,14 +80,14 @@ export const crearCategoria = comando<{ nombre: string }, { categoriaId: string;
  *   · Los locales que ya existían antes de M6. La migración les puso sus
  *     categorías, y a propósito **no** les metió seis productos de mentira por
  *     detrás: aparecer una mañana con género que nadie ha pedido es lo contrario
- *     de «Estook no mete nada en tu inventario».
+ *     de «Estook no mete nada en tu almacén».
  *   · Aquel a quien los quitó y quiere volver a verlos.
  *
  * Y porque «todo estado vacío tiene una frase **y un botón**» (Auditoría, parte
- * 3). El de Inventario vacío es este: se ve cómo funciona sin escribir nada.
+ * 3). El de Almacén vacío es este: se ve cómo funciona sin escribir nada.
  *
  * Lo que no hace: meterlos si ya hay género. Eso lo comprueba
- * `sembrarElInventario`, que devuelve cero productos y no toca nada.
+ * `sembrarElAlmacen`, que devuelve cero productos y no toca nada.
  */
 export const ponerLosEjemplos = comando<
   Record<string, never>,
@@ -95,13 +95,13 @@ export const ponerLosEjemplos = comando<
 >({
   nombre: 'poner_los_ejemplos',
   entrada: z.object({}).strict(),
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto) {
     const localId = elLocalDeLaSesion(contexto);
     const organizacionId = laOrganizacionDeLaSesion(contexto);
 
-    const puesto = await sembrarElInventario(contexto, localId, { conEjemplos: true });
+    const puesto = await sembrarElAlmacen(contexto, localId, { conEjemplos: true });
 
     await contexto.sql`
       select estook.anotar(

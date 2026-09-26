@@ -4,7 +4,7 @@ import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 /**
  * V · punto 2 · «Cómo va»: las cifras con flecha de cada app.
  *
- * «Flechas y gráficas pequeñas también en Inventario, Servicio y Equipo.» Lo que
+ * «Flechas y gráficas pequeñas también en Almacén, Servicio y Equipo.» Lo que
  * decidió Richi el 23 de septiembre de 2026, y lo que se comprueba aquí:
  *
  *   · **en la primera pantalla de cada app**, debajo de lo urgente
@@ -22,7 +22,7 @@ const CLAVE = 'estook en desarrollo';
 
 /** Rosa lleva Bar Centro: ve todas las cifras, las de dinero también. */
 const ROSA = 'rosa@ejemplo.estook.com';
-/** Marcos cocina en Bar Centro: Inventario sí, y ni un precio. */
+/** Marcos cocina en Bar Centro: Almacén sí, y ni un precio. */
 const MARCOS = 'marcos@ejemplo.estook.com';
 
 const UNA_VEZ = 'Cambia un ajuste del local: en un solo navegador, de una en una (regla 18).';
@@ -46,7 +46,7 @@ async function entrar(page: Page, correo: string) {
 }
 
 /**
- * Un producto de Bar Centro, para que Inventario · Resumen tenga género que enseñar.
+ * Un producto de Bar Centro, para que Almacén · Resumen tenga género que enseñar.
  *
  * Con la cámara vacía «Resumen» enseña cómo empezar y no las cifras, que serían todo
  * ceros. Sin esto la prueba solo pasaba si otra, antes, había dado de alta algo:
@@ -83,13 +83,13 @@ function lasCifrasDe(page: Page, app: string) {
   return page.locator(`[data-cifras-de="${app}"]`);
 }
 
-test('Inventario abre con sus cuatro cifras arriba del todo, y lo urgente debajo', async ({
+test('Almacén abre con sus cuatro cifras arriba del todo, y lo urgente debajo', async ({
   page,
 }) => {
   await entrar(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
 
-  const fila = lasCifrasDe(page, 'inventario');
+  const fila = lasCifrasDe(page, 'almacen');
   await expect(fila.getByRole('heading', { name: 'Cómo va' })).toBeVisible({ timeout: 15_000 });
   for (const cifra of ['valor-camara', 'merma', 'compras', 'bajo-minimo']) {
     await expect(fila.locator(`[data-cifra="${cifra}"]`), cifra).toBeVisible();
@@ -108,8 +108,8 @@ test('Inventario abre con sus cuatro cifras arriba del todo, y lo urgente debajo
 
 test('la semana o el mes, y cada tarjeta lleva a su detalle', async ({ page }) => {
   await entrar(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
-  const fila = lasCifrasDe(page, 'inventario');
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
+  const fila = lasCifrasDe(page, 'almacen');
   await expect(fila).toBeVisible({ timeout: 15_000 });
 
   const mes = fila.getByRole('radio', { name: '30 días' });
@@ -119,20 +119,20 @@ test('la semana o el mes, y cada tarjeta lleva a su detalle', async ({ page }) =
   // Y se recuerda en el aparato: al volver, sigue en el mes.
   await recargarSinQueSeCaiga(page);
   await expect(
-    lasCifrasDe(page, 'inventario').getByRole('radio', { name: '30 días' }),
+    lasCifrasDe(page, 'almacen').getByRole('radio', { name: '30 días' }),
   ).toHaveAttribute('aria-checked', 'true', { timeout: 15_000 });
 
-  await lasCifrasDe(page, 'inventario')
+  await lasCifrasDe(page, 'almacen')
     .getByRole('button', { name: 'Ver bajo mínimo a detalle' })
     .click();
-  await expect(page).toHaveURL(/#\/inventario\/productos\/bajo-minimo/);
+  await expect(page).toHaveURL(/#\/almacen\/productos\/bajo-minimo/);
 });
 
 test('un cocinero ve lo que se acaba, y ni un euro', async ({ page }) => {
   await entrar(page, MARCOS);
-  await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
 
-  const fila = lasCifrasDe(page, 'inventario');
+  const fila = lasCifrasDe(page, 'almacen');
   await expect(fila.locator('[data-cifra="bajo-minimo"]')).toBeVisible({ timeout: 15_000 });
   // Las de dinero no se esconden: no se piden, porque el servidor no se las daría.
   for (const cifra of ['valor-camara', 'merma', 'compras']) {

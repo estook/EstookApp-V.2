@@ -19,7 +19,7 @@ import { comoLista } from '../listas.ts';
  *
  * ── La regla que ordena este fichero ────────────────────────────────────────
  *
- * La misma que ordena Inventario: **un rol sin costes no recibe ni un campo de
+ * La misma que ordena Almacén: **un rol sin costes no recibe ni un campo de
  * coste en ninguna respuesta**. Aquí el campo es lo que cobra una persona, y el
  * permiso es `dato.coste_de_personal`. No se esconde en la pantalla: **no se
  * envía**. Un jefe de cocina ve las horas de su equipo y no ve un solo euro, y eso

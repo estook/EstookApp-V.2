@@ -238,7 +238,7 @@ test('el + apunta lo que llega con su precio puesto, y el − pregunta por qué 
   });
 
   await entrar(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/inventario/productos/todo`);
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/productos/todo`);
   await page.getByLabel('Buscar en tu género').fill(nombre);
 
   // El + · entra género, con el precio de la lista ya escrito.

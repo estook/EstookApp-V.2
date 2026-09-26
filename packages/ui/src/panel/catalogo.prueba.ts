@@ -81,11 +81,9 @@ describe('el Panel de cada puesto (mejora 9)', () => {
       los.includes(permiso);
 
   it('el puesto sale de los permisos, no del nombre del rol', () => {
-    expect(elPuestoDe(con('dato.ventas', 'dato.coste_de_personal', 'app.inventario'))).toBe(
-      'gerente',
-    );
-    expect(elPuestoDe(con('dato.ventas', 'app.inventario'))).toBe('jefe');
-    expect(elPuestoDe(con('app.inventario', 'accion.fichar'))).toBe('cocina');
+    expect(elPuestoDe(con('dato.ventas', 'dato.coste_de_personal', 'app.almacen'))).toBe('gerente');
+    expect(elPuestoDe(con('dato.ventas', 'app.almacen'))).toBe('jefe');
+    expect(elPuestoDe(con('app.almacen', 'accion.fichar'))).toBe('cocina');
     expect(elPuestoDe(con('accion.fichar', 'accion.registrar_merma'))).toBe('sala');
   });
 
@@ -97,7 +95,7 @@ describe('el Panel de cada puesto (mejora 9)', () => {
 
   it('un cocinero arranca fichando, y sin un euro a la vista', () => {
     const cocinero = con(
-      'app.inventario',
+      'app.almacen',
       'accion.fichar',
       'accion.registrar_merma',
       'app.calendario',

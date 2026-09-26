@@ -10,7 +10,7 @@ import { publicar } from '../../eventos/bandeja.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { elProveedor } from '../compras.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
-import { ponerUnPrecio } from '../inventario.ts';
+import { ponerUnPrecio } from '../almacen.ts';
 import { comoLista } from '../listas.ts';
 
 /**

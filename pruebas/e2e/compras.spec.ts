@@ -477,7 +477,7 @@ test('desde la pantalla: se manda, sale en Hoy, y se recibe entero en dos toques
   const numero = creado.datos?.numero ?? 0;
 
   await entrar(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/inventario/compras/pedidos?pedido=${pedidoId}`);
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/compras/pedidos?pedido=${pedidoId}`);
 
   // ── Mandarlo: Estook no lo manda solo; se apunta cuando se ha mandado ─────
   const ficha = page.getByRole('dialog', { name: `Pedido ${numero} · ${nombre}` });
@@ -490,12 +490,12 @@ test('desde la pantalla: se manda, sale en Hoy, y se recibe entero en dos toques
   await expect(ficha.getByRole('button', { name: 'Recibir lo que ha llegado' })).toBeVisible();
 
   // ── Y sale en «Hoy», con su botón de recibir ──────────────────────────────
-  await abrirSinQueSeCaiga(page, `${APP}#/inventario/resumen`);
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
   await expect(page.getByRole('heading', { level: 2, name: 'Compras de hoy' })).toBeVisible();
   await expect(page.getByText(nombre).first()).toBeVisible();
 
   // ── Recibir: el botón de «Hoy» abre la recepción directamente ─────────────
-  await abrirSinQueSeCaiga(page, `${APP}#/inventario/compras/pedidos?pedido=${pedidoId}&recibir=1`);
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/compras/pedidos?pedido=${pedidoId}&recibir=1`);
   const recibir = page.getByRole('dialog', { name: `Recibir el pedido ${numero}` });
   await expect(recibir.getByRole('heading', { name: '¿Ha llegado entero?' })).toBeVisible();
   await recibir.getByRole('button', { name: 'Sí, ha llegado entero' }).click();
@@ -526,7 +526,7 @@ test('un cocinero ve su borrador sin un precio, y quién lo tiene que mandar', a
   await entrar(page, MARCOS);
   await abrirSinQueSeCaiga(
     page,
-    `${APP}#/inventario/compras/pedidos?pedido=${creado.datos?.pedidoId ?? ''}`,
+    `${APP}#/almacen/compras/pedidos?pedido=${creado.datos?.pedidoId ?? ''}`,
   );
 
   const ficha = page.getByRole('dialog', {
@@ -555,7 +555,7 @@ test('la factura dice si cuadra mientras se escribe', async ({ page, request }, 
 
   await entrar(page, ROSA);
   // «Apuntar una factura» es una acción del catálogo: una dirección que abre la hoja.
-  await abrirSinQueSeCaiga(page, `${APP}#/inventario/compras/facturas?hacer=nueva`);
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/compras/facturas?hacer=nueva`);
 
   const hoja = page.getByRole('dialog', { name: 'Apuntar una factura' });
   await hoja.getByLabel('¿De quién es?').selectOption({ label: nombre });

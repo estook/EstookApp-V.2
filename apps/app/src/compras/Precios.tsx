@@ -12,7 +12,7 @@ import {
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { comoDinero, comoSeLeeLaFecha } from '../inventario/contrato.ts';
+import { comoDinero, comoSeLeeLaFecha } from '../almacen/contrato.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
 import type { CompararPrecios } from './contrato.ts';
@@ -95,7 +95,7 @@ export function Precios() {
             <EstadoVacio
               compacto
               dibujo="precios"
-              acento="var(--color-app-inventario)"
+              acento="var(--color-app-almacen)"
               titulo="Todavía no hay nada que comparar"
               frase="Para comparar hace falta que dos proveedores te hayan puesto precio al mismo producto. Pon el de otro proveedor en la ficha del producto, en «Cambiar el precio»."
               sinAccionPorque="Se compara solo en cuanto hay dos precios del mismo producto."

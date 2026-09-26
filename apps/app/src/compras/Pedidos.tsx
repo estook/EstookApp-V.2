@@ -19,7 +19,7 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { comoDinero } from '../inventario/contrato.ts';
+import { comoDinero } from '../almacen/contrato.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
 import { Filtros } from './Comun.tsx';
@@ -52,7 +52,7 @@ type Filtro = 'abiertos' | 'recibidos' | 'cancelados' | 'todos';
  */
 export function Pedidos() {
   const { permisos } = usarSesion();
-  const puedeTocar = puedeEditar(permisos, 'app.inventario');
+  const puedeTocar = puedeEditar(permisos, 'app.almacen');
   const [parametros, ponerParametros] = useSearchParams();
   const pedido = usarAbiertoEnLaDireccion('pedido');
 
@@ -241,7 +241,7 @@ export function Pedidos() {
                   <EstadoVacio
                     compacto
                     dibujo="pedidos"
-                    acento="var(--color-app-inventario)"
+                    acento="var(--color-app-almacen)"
                     titulo={
                       filtro === 'abiertos'
                         ? 'No hay pedidos abiertos'
@@ -270,7 +270,7 @@ export function Pedidos() {
                   <EstadoVacio
                     compacto
                     dibujo={filtro === 'recibidos' ? 'albaranes' : 'todo-en-orden'}
-                    acento="var(--color-app-inventario)"
+                    acento="var(--color-app-almacen)"
                     titulo={
                       filtro === 'recibidos'
                         ? 'Todavía no ha llegado ningún pedido'
@@ -655,7 +655,7 @@ function NuevoPedido({
               <EstadoVacio
                 compacto
                 dibujo="todo-en-orden"
-                acento="var(--color-app-inventario)"
+                acento="var(--color-app-almacen)"
                 titulo="Ahora mismo no te falta nada suyo"
                 frase={
                   datos.sinNecesidad > 0

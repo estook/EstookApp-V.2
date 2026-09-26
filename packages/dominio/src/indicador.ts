@@ -23,7 +23,7 @@
  *
  * ── Y desde V, también en cada app ──────────────────────────────────────────
  *
- * «Flechas y gráficas pequeñas también en Inventario, Servicio y Equipo» (mejora 2).
+ * «Flechas y gráficas pequeñas también en Almacén, Servicio y Equipo» (mejora 2).
  * No se copió la tarjeta: **es la misma**, con las cifras de cada app, y por eso
  * se añadieron aquí las seis que faltaban —valor de la cámara, bajo mínimo,
  * cierres, horas del equipo, coste de personal y retrasos— con la misma forma que
@@ -32,7 +32,7 @@
 
 import { porcentajeDe } from './cierre.ts';
 import { cantidad, costeDeLinea, milesimas } from './coste.ts';
-import { comoEsta, urgenciaDe } from './inventario.ts';
+import { comoEsta, urgenciaDe } from './almacen.ts';
 
 export const INDICADORES = [
   'ventas',
@@ -171,14 +171,14 @@ export const COMO_ES_EL_INDICADOR: Readonly<Record<Indicador, ComoEsElIndicador>
     sinDatoEsCero: true,
   },
 
-  // ── Inventario ────────────────────────────────────────────────────────────
+  // ── Almacén ────────────────────────────────────────────────────────────
   'valor-camara': {
     nombre: 'Valor de la cámara',
     queEnsena: 'Lo que vale el género que tienes, y cómo ha ido cambiando',
     unidad: 'dinero',
     // Más género no es mejor ni peor: puede ser una buena compra o dinero parado.
     sentido: 'neutro',
-    // La misma cuenta que «Lo que hay en cámara» de Inventario · Hoy, que es su
+    // La misma cuenta que «Lo que hay en cámara» de Almacén · Hoy, que es su
     // dueña: una prueba compara las dos.
     deDonde: 'A precio medio, sin IVA; lo que entró sin coste, a su precio de hoy',
     periodo: 'foto',
@@ -252,7 +252,7 @@ export const COMO_ES_EL_INDICADOR: Readonly<Record<Indicador, ComoEsElIndicador>
 // ── Las cifras de cada app ──────────────────────────────────────────────────
 
 /** Las apps que enseñan sus cifras en su primera pantalla (mejora 2). */
-export type AppConCifras = 'inventario' | 'servicio' | 'equipo';
+export type AppConCifras = 'almacen' | 'servicio' | 'equipo';
 
 /**
  * Qué cifras enseña cada app, en su orden.
@@ -262,7 +262,7 @@ export type AppConCifras = 'inventario' | 'servicio' | 'equipo';
  * existe y es el Panel; dos sitios que hacen lo mismo acaban haciéndolo distinto.
  */
 export const LAS_CIFRAS_DE: Readonly<Record<AppConCifras, readonly Indicador[]>> = {
-  inventario: ['valor-camara', 'merma', 'compras', 'bajo-minimo'],
+  almacen: ['valor-camara', 'merma', 'compras', 'bajo-minimo'],
   servicio: ['ventas', 'ticket-medio', 'food-cost', 'cierres'],
   equipo: ['horas-equipo', 'coste-personal', 'retrasos'],
 };
@@ -401,7 +401,7 @@ export interface ProductoDeLaFoto {
   readonly minimo: number | null;
   /**
    * Su precio de hoy, en milésimas por unidad de uso. Es con lo que se cuenta lo
-   * que entró sin coste, igual que en «Lo que hay en cámara» de Inventario · Hoy.
+   * que entró sin coste, igual que en «Lo que hay en cámara» de Almacén · Hoy.
    */
   readonly precioDeHoy: number | null;
   /** Si entra en «bajo mínimo»: los de las zonas que ve quien pregunta (0038). */

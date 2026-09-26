@@ -5,7 +5,7 @@ import type { Rol } from './alcances.ts';
  *
  * ── Por qué hacía falta ─────────────────────────────────────────────────────
  *
- * Porque Inventario era **un solo montón**. Un cocinero buscando harina pasaba
+ * Porque Almacén era **un solo montón**. Un cocinero buscando harina pasaba
  * por las servilletas y el lavavajillas, y la lista de categorías —que es lo que
  * ordena la cámara— mezclaba «carnes» con «productos de limpieza». Un bar tiene
  * tres almacenes distintos y los lleva gente distinta; enseñarlos juntos es

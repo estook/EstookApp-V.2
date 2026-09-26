@@ -57,7 +57,7 @@ for (const ancho of [320, 375]) {
 
     await page.setViewportSize({ width: ancho, height: 740 });
     await entrarEnLaApp(page, ROSA);
-    await irA(page, 'inventario/productos/todo');
+    await irA(page, 'almacen/productos/todo');
     await page.getByLabel('Buscar en tu género').fill(nombre);
     const elNombre = page.getByText(nombre, { exact: true }).filter({ visible: true });
     await expect(elNombre).toBeVisible();
@@ -79,7 +79,7 @@ for (const ancho of [320, 375]) {
     // Y nada se sale por los lados: ni la página ni la barra de abajo, que a 320 px
     // cortaba «Apps» y «Compras».
     const seSale = await page.evaluate(() => {
-      const barra = document.querySelector('nav[aria-label="Inventario"]');
+      const barra = document.querySelector('nav[aria-label="Almacén"]');
       return {
         pagina: document.documentElement.scrollWidth - window.innerWidth,
         barra: barra === null ? 0 : barra.scrollWidth - barra.clientWidth,
@@ -91,9 +91,7 @@ for (const ancho of [320, 375]) {
     // los botones a partes iguales y dejaba «Movimien…» con sitio de sobra al lado.
     if (ancho >= 375) {
       const cortadas = await page.evaluate(() =>
-        Array.from(
-          document.querySelectorAll<HTMLElement>('nav[aria-label="Inventario"] button span'),
-        )
+        Array.from(document.querySelectorAll<HTMLElement>('nav[aria-label="Almacén"] button span'))
           .filter((texto) => texto.scrollWidth > texto.clientWidth)
           .map((texto) => texto.textContent),
       );
@@ -104,7 +102,7 @@ for (const ancho of [320, 375]) {
 
 test('si el servidor no contesta, la app lo dice y no pide entrar', async ({ page }) => {
   await entrarEnLaApp(page, ROSA);
-  await irA(page, 'inventario/productos/todo');
+  await irA(page, 'almacen/productos/todo');
 
   // El servidor, sin poder llegar a la base: lo que pasaba el 24-sep.
   await page.route('**/v1/consultas/quien_soy', (ruta) =>

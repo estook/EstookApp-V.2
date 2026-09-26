@@ -44,7 +44,7 @@ VENTAS DE ESTOOK ───┐
 VENTAS DEL TPV ─────┤
 VENTAS DE REPARTO ──┼──▶ × GRAMAJE ──▶ CONSUMO TEORICO
                     │                         │
-RECUENTO ───────────┼─────────────────────────┼──▶ DESVIACION
+INVENTARIO ─────────┼─────────────────────────┼──▶ DESVIACION
 ENTRADAS ───────────┤                         │
 MERMAS ─────────────┘─────────────────────────┘
 
@@ -57,7 +57,7 @@ VENTAS ────────────────────────�
 
 Para cada uno: **quién lo crea, quién lo consume, qué pasa si falta y qué pasa si cambia.**
 
-**PRECIO DE COMPRA.** _Lo crea:_ recepción de un pedido, foto de albarán, factura de proveedor o alta manual. _Lo consume:_ coste por unidad de uso · valor del inventario · gasto por proveedor · comparativa entre locales. _Si falta:_ el producto se usa igual, cuenta cero y **sale marcado en amarillo** en todas las fichas que lo llevan. Nunca bloquea. _Si cambia:_ abre vigencia nueva, la anterior queda en el histórico, y dispara el recálculo de todo lo que cuelga. **Trampa conocida:** el precio de la factura y el del albarán no siempre coinciden. **Manda la factura**, y el recálculo se aplica desde la fecha del albarán.
+**PRECIO DE COMPRA.** _Lo crea:_ recepción de un pedido, foto de albarán, factura de proveedor o alta manual. _Lo consume:_ coste por unidad de uso · valor del almacén · gasto por proveedor · comparativa entre locales. _Si falta:_ el producto se usa igual, cuenta cero y **sale marcado en amarillo** en todas las fichas que lo llevan. Nunca bloquea. _Si cambia:_ abre vigencia nueva, la anterior queda en el histórico, y dispara el recálculo de todo lo que cuelga. **Trampa conocida:** el precio de la factura y el del albarán no siempre coinciden. **Manda la factura**, y el recálculo se aplica desde la fecha del albarán.
 
 **FORMATO, FACTOR Y RENDIMIENTO.** _Los crea:_ el alta del producto, con propuesta del catálogo de referencia. _Los consume:_ el coste por unidad de uso, y con él todo lo demás. _Si faltan:_ se asume factor 1 y rendimiento 1, y el producto queda marcado como **«sin verificar»**, porque un rendimiento mal puesto es el error más caro del sistema. _Si cambian:_ recálculo de todos los platos que lo llevan, con aviso al jefe de cocina. **Trampa conocida:** confundir unidad de compra con unidad de uso es la primera causa de escandallos falsos. Por eso el alta obliga a decir las dos y enseña el resultado: «caja de 3 kg ÷ 3.000 g × 0,85 de rendimiento = 0,0039 €/g».
 
@@ -69,7 +69,7 @@ Para cada uno: **quién lo crea, quién lo consume, qué pasa si falta y qué pa
 
 **DOCUMENTO DE FACTURACIÓN** (ticket o factura). _Lo crea:_ solo el módulo de facturación (M20B), al cobrar o cuando el cliente pide factura, y solo cuando el proveedor de VeriFactu ha generado su registro. _Lo consume:_ la venta, que nace de él · la caja · Negocio · la gestoría · el cliente. _Si falta:_ no hay cobro cerrado; sin conexión se entrega un justificante provisional y el documento se emite al volver. _Si cambia:_ **no cambia nunca.** Se corrige con otro documento: rectificativa, canje o, si nunca debió existir, anulación. **Trampa conocida:** tratarlo como una venta más y dejar que un recálculo, un reproceso o un arreglo a mano lo toque. **La venta se puede reprocesar; el documento, jamás.**
 
-**RECUENTO.** _Lo crea:_ el inventario físico. _Lo consume:_ desviación · valoración del stock · calibración · food cost real. _Si falta:_ no hay desviación posible, solo teórico. Estook lo dice: «llevas 42 días sin recuento; lo que ves es teórico».
+**INVENTARIO.** _Lo crea:_ el recuento físico. _Lo consume:_ desviación · valoración del stock · calibración · food cost real. _Si falta:_ no hay desviación posible, solo teórico. Estook lo dice: «llevas 42 días sin recuento; lo que ves es teórico».
 
 **HORAS FICHADAS Y COSTE HORA.** _Las crea:_ el quiosco de fichaje; el coste, la ficha de la persona o el coste medio del puesto. _Lo consume:_ coste de personal · prime cost · productividad · planificado contra fichado. _Si falta el coste:_ se usa el medio del puesto y **se marca el dato como aproximado**.
 
@@ -79,18 +79,18 @@ Para cada uno: **quién lo crea, quién lo consume, qué pasa si falta y qué pa
 
 | App         | De dónde lee                                  | Qué produce para otras                                                            |
 | ----------- | --------------------------------------------- | --------------------------------------------------------------------------------- |
-| Inventario  | Nada. **Es el origen**                        | Coste por unidad de uso, stock, caducidades, precios, previsión de agotamiento    |
-| Escandallos | Inventario                                    | Coste del plato, alérgenos, nutrición, consumo por venta                          |
+| Almacén     | Nada. **Es el origen**                        | Coste por unidad de uso, stock, caducidades, precios, previsión de agotamiento    |
+| Escandallos | Almacén                                       | Coste del plato, alérgenos, nutrición, consumo por venta                          |
 | Carta       | Escandallos                                   | Platos publicados, agotados, precios por canal                                    |
-| Calendario  | Equipo, Inventario, Servicio, Cuaderno        | Turnos publicados, tareas, entregas                                               |
+| Calendario  | Equipo, Almacén, Servicio, Cuaderno           | Turnos publicados, tareas, entregas                                               |
 | Equipo      | Calendario                                    | Horas, coste de personal, quién sabe qué ficha                                    |
-| Servicio    | Escandallos, Carta, Inventario, conectores    | Jornadas, sala y cocina, cobros, tickets y facturas, consumo, APPCC, trazabilidad |
+| Servicio    | Escandallos, Carta, Almacén, conectores       | Jornadas, sala y cocina, cobros, tickets y facturas, consumo, APPCC, trazabilidad |
 | Negocio     | Todas                                         | Agregados, desviación, previsión, Pulse, informes                                 |
 | Cuaderno    | Calendario                                    | Incidencias, revisiones de equipos                                                |
 | **Alertas** | **Todas**                                     | **Nada. Es un sumidero, no una fuente**                                           |
 | **Fogón**   | **Todas, con los permisos de quien pregunta** | **Explicaciones y propuestas. Nunca datos nuevos**                                |
 
-> **Regla que evita el desastre: las flechas van en un solo sentido.** La Carta lee de Escandallos y nunca escribe en ella. Escandallos lee de Inventario y nunca escribe en él. Si alguna vez hace falta lo contrario, es una **operación explícita** —«dar de alta este ingrediente en Inventario»— y no un efecto lateral.
+> **Regla que evita el desastre: las flechas van en un solo sentido.** La Carta lee de Escandallos y nunca escribe en ella. Escandallos lee del Almacén y nunca escribe en él. Si alguna vez hace falta lo contrario, es una **operación explícita** —«dar de alta este ingrediente en Inventario»— y no un efecto lateral.
 >
 > Y dos reglas nuevas que la Evolución obliga a fijar: **el centro de alertas no crea datos**, solo lee y enlaza; y **Fogón tampoco**: propone, y quien guarda es una persona a través de un comando normal.
 
@@ -175,7 +175,7 @@ Se aplica **a partir de la fecha de entrada en vigor**. Nada de lo anterior se r
 ```
 ├─ entran los articulos como platos SIN ficha en Escandallos
 ├─ los que se parecen a algo existente se proponen para emparejar
-├─ NO se crea nada en Inventario: el TPV no sabe de ingredientes
+├─ NO se crea nada en el Almacén: el TPV no sabe de ingredientes
 ├─ entran las ventas de los ultimos 30 dias, marcadas como historicas
 ├─ NO se descuenta stock retroactivo, porque no habia fichas
 └─ el indicador de salud de datos se recalcula y baja: 96 platos, 0 fichas
@@ -340,7 +340,7 @@ Total, como se cobro, tickets, comensales y, si se quiere, los platos
 └─ Negocio › Ventas lo lee: facturado, ticket medio y food cost aproximado
 ```
 
-**NO se toca:** el inventario. **Descontar lo vendido es M20**, cuando haya fichas con que explotar cada plato.
+**NO se toca:** el almacén. **Descontar lo vendido es M20**, cuando haya fichas con que explotar cada plato.
 
 ## 2.24 Se le pone sueldo a alguien
 
@@ -394,7 +394,7 @@ El camarero manda la tanda
 └─ NO se toca el stock: descuenta al cerrarse la venta (2.29)
 ```
 
-**NO se toca:** el inventario, la caja ni nada fiscal. Una comanda no es una venta.
+**NO se toca:** el almacén, la caja ni nada fiscal. Una comanda no es una venta.
 
 ## 2.28 Se marca un plato listo
 
@@ -440,7 +440,7 @@ Desde su ticket → datos del cliente (nombre o razon social, NIF, domicilio)
 Rectificativa del ticket (R5), en la serie de rectificativas, con su registro
 ├─ caja: salida de dinero con motivo
 ├─ ventas: la linea queda devuelta
-└─ inventario: vuelve al libro solo si el genero vuelve (lo dice quien devuelve)
+└─ almacén: vuelve al libro solo si el genero vuelve (lo dice quien devuelve)
 ```
 
 **NO se toca:** el ticket original.
@@ -527,7 +527,7 @@ Una entidad sin máquina de estado escrita **acaba con estados imposibles**. Est
 | **Producto**                   | `activo → desactivado → activo`. Nunca borrado. Desactivar exige confirmar si está en fichas                                                                                                                                              |
 | **Pedido a proveedor**         | `borrador → enviado → recibido \| recibido con incidencias \| cancelado`. Desde recibido no se vuelve atrás: se corrige con un ajuste o con un abono                                                                                      |
 | **Ficha técnica**              | `borrador → publicada → versión nueva`. **Una versión publicada no se edita jamás**: se crea otra. `archivada` solo si el plato se retira                                                                                                 |
-| **Recuento**                   | `abierto → cerrado`. Cerrado no se edita. Corregir es un ajuste posterior con motivo                                                                                                                                                      |
+| **Inventario**                 | `abierto → cerrado`. Cerrado no se edita. Corregir es un ajuste posterior con motivo                                                                                                                                                      |
 | **Turno**                      | `borrador → publicado → modificado → cumplido \| no cubierto`. **Publicado es el punto sin retorno**: a partir de ahí, todo cambio avisa                                                                                                  |
 | **Jornada**                    | `abierta → cerrada → reabierta → cerrada`. Reabrir exige motivo y queda en auditoría                                                                                                                                                      |
 | **Fichaje**                    | `abierto → cerrado → corregido`. **Uno abierto por persona**. No se borra: se corrige con nombre y motivo, y la auditoría guarda el antes y el después                                                                                    |
@@ -560,7 +560,7 @@ Los fallos parciales son los que hunden la confianza, **porque el usuario no sab
 | El albarán trae un producto desconocido   | No se descarta                                           | «No conozco Aceite AOVE 5L. ¿Es tu aceite de oliva o es nuevo?»                     |
 | El TPV manda un artículo sin emparejar    | Entra la venta en dinero, no descuenta género            | Aviso en Servicio y contador en el Panel                                            |
 | El fichero del TPV cambia de formato      | Se guarda el original y no se procesa                    | «El fichero no tiene el formato de siempre. Lo he guardado.» Y aviso interno        |
-| El recuento se queda a medias             | Se conserva como abierto con lo contado                  | «Tienes un recuento a medias del martes, ¿sigues o lo descartas?»                   |
+| El inventario se queda a medias           | Se conserva como abierto con lo contado                  | «Tienes un inventario a medias del martes, ¿sigues o lo descartas?»                 |
 | Dos personas editan la misma ficha        | Gana quien guarda primero                                | Al segundo: qué ha cambiado y opción de fusionar. **Nunca se pisa en silencio**     |
 | Se agotan los créditos de Fogón           | Se pausa **solo** lo que llama al modelo                 | «Has usado tus 300 créditos. Los avisos y los cálculos siguen funcionando.»         |
 | Falla la generación de un PDF             | Se reintenta una vez y se guarda la receta               | «No he podido generarlo. Reintentar / avisar», sin perder la configuración          |
@@ -607,7 +607,7 @@ Veintidós puntos que, tal y como estaban escritos, habrían obligado a improvis
 
 **4 · La desviación no decía por qué.** Un número sin causa no sirve. **Decisión:** Estook propone la causa más probable con lo que ya sabe: consumo de personal sin registrar, error de escandallo, unidad de conteo distinta, recepción mal registrada, o diferencia entre albarán y factura. Con el enlace a comprobarlo.
 
-**5 · Quien compra podía valorar su propio inventario.** Es un conflicto de interés reconocido en el sector. **Decisión:** permiso separado para «cerrar recuento». No se obliga, se ofrece, y en cadena se puede exigir desde la organización.
+**5 · Quien compra podía valorar su propio inventario.** Es un conflicto de interés reconocido en el sector. **Decisión:** permiso separado para «cerrar inventario». No se obliga, se ofrece, y en cadena se puede exigir desde la organización.
 
 **6 · No estaba definido qué pasa con las ventas anteriores a tener fichas.** **Decisión:** entran como ventas en dinero, marcadas como históricas, y **no descuentan stock retroactivo**. Cuando existan fichas, se puede recalcular bajo petición explícita, nunca solo.
 
@@ -621,7 +621,7 @@ Veintidós puntos que, tal y como estaban escritos, habrían obligado a improvis
 
 **11 · Faltaba qué pasa al cambiar un plato de sección o de carta.** **Decisión:** el histórico de ventas del plato **no se rompe nunca** al moverlo. La clasificación se calcula sobre su sección actual, y el análisis dice desde cuándo está ahí.
 
-**12 · El indicador de salud de datos no tenía fórmula.** **Decisión:** cinco componentes con su peso: platos con ficha ponderados por sus ventas (35 %), productos con precio vigente (20 %), días con APPCC completo (15 %), ventas con origen fiable (15 %), recuento en los últimos 30 días (15 %). Y **se enseña siempre qué falta para subirlo, no solo la nota**.
+**12 · El indicador de salud de datos no tenía fórmula.** **Decisión:** cinco componentes con su peso: platos con ficha ponderados por sus ventas (35 %), productos con precio vigente (20 %), días con APPCC completo (15 %), ventas con origen fiable (15 %), inventario en los últimos 30 días (15 %). Y **se enseña siempre qué falta para subirlo, no solo la nota**.
 
 ## Los seis que trae la Evolución 1.0
 
@@ -635,7 +635,7 @@ Veintidós puntos que, tal y como estaban escritos, habrían obligado a improvis
 
 **17 · No estaba escrito qué pasa cuando Fogón propone algo y nadie lo mira.** **Decisión:** una propuesta de Fogón —horario, menú, precio, pedido, respuesta a reseña— **es siempre un borrador con caducidad**. Si nadie la aprueba, caduca y se registra que caducó. Nunca se aplica sola, y nunca se queda viva para siempre ensuciando la pantalla.
 
-**18 · Faltaba decir qué pasa si un componente de Pulse no tiene datos.** **Decisión:** el componente sin datos **no cuenta como cero**: se excluye y se reparte su peso entre los demás, y Pulse dice cuántos componentes está usando. Contar como cero castigaría a un local recién dado de alta por no tener aún un recuento, que es exactamente lo contrario de lo que se quiere.
+**18 · Faltaba decir qué pasa si un componente de Pulse no tiene datos.** **Decisión:** el componente sin datos **no cuenta como cero**: se excluye y se reparte su peso entre los demás, y Pulse dice cuántos componentes está usando. Contar como cero castigaría a un local recién dado de alta por no tener aún un inventario, que es exactamente lo contrario de lo que se quiere.
 
 ## Los cuatro que trae la versión 1.2
 
@@ -713,7 +713,7 @@ Al cerrar cada módulo se comprueban las que apliquen. **Cada línea es una prue
 
 ## Estados
 
-- No existe forma de editar un recuento cerrado, una jornada cerrada ni una ficha publicada.
+- No existe forma de editar un inventario cerrado, una jornada cerrada ni una ficha publicada.
 - Un APPCC fuera de rango sin acción correctiva impide cerrar.
 - **Toda transición registra quién, cuándo y desde dónde.**
 - Una alerta cerrada no revive sola.

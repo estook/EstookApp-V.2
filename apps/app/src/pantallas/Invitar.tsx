@@ -12,7 +12,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  */
 const ROLES_DE_LOCAL = [
   { valor: 'gerente', texto: 'Gerente · todo lo de su local' },
-  { valor: 'jefe_de_cocina', texto: 'Jefe de cocina · inventario, escandallos y APPCC' },
+  { valor: 'jefe_de_cocina', texto: 'Jefe de cocina · almacén, escandallos y APPCC' },
   { valor: 'jefe_de_sala', texto: 'Jefe de sala · cuadrante de sala y ventas del turno' },
   { valor: 'cocinero', texto: 'Cocinero · sus fichas y su turno. Ningún importe' },
   { valor: 'camarero', texto: 'Camarero · su turno, el menú y los alérgenos' },

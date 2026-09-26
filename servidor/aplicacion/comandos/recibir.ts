@@ -21,7 +21,7 @@ import {
 } from '../compras.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
-import { apuntar, elProductoBloqueado, ponerUnPrecio, type FichaBasica } from '../inventario.ts';
+import { apuntar, elProductoBloqueado, ponerUnPrecio, type FichaBasica } from '../almacen.ts';
 
 /**
  * Recibir lo que llega, y devolver lo que no vale (M7).
@@ -161,7 +161,7 @@ async function loPactado(
 export const recibirAlbaran = comando<EntradaRecibirAlbaran, SalidaRecibirAlbaran>({
   nombre: 'recibir_albaran',
   entrada: entradaRecibirAlbaran,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);
@@ -578,7 +578,7 @@ export type EntradaDevolverAlProveedor = z.infer<typeof entradaDevolverAlProveed
 export const devolverAlProveedor = comando<EntradaDevolverAlProveedor, { albaranId: string }>({
   nombre: 'devolver_al_proveedor',
   entrada: entradaDevolverAlProveedor,
-  exige: 'app.inventario',
+  exige: 'app.almacen',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);

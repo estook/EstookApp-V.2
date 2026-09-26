@@ -6,12 +6,12 @@
  * distinguirse entre si.
  *
  * El acento va en el **aro** y no en el relleno: con relleno, las iniciales en
- * blanco dan 3,5:1 sobre el acento de Inventario y 4,1 sobre el de Servicio, por
+ * blanco dan 3,5:1 sobre el acento de Almacén y 4,1 sobre el de Servicio, por
  * debajo del 4,5:1 que pide B8. Con el aro, las iniciales van en charcoal sobre
  * blanco (16:1) y el color sigue identificando a la persona igual de bien.
  */
 const COLORES = [
-  'var(--color-app-inventario)',
+  'var(--color-app-almacen)',
   'var(--color-app-escandallos)',
   'var(--color-app-carta)',
   'var(--color-app-calendario)',

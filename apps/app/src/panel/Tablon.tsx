@@ -19,7 +19,7 @@ import { CLAVE_DEL_TABLON, usarElTablon, type NotaDelTablon } from '../ganchos/u
  * ── Poco, y lo que importa ───────────────────────────────────────────────────
  *
  *   · **Sin notas, no está**, como «Hoy». Escribir se hace desde el «+».
- *   · Lo que no has leído, arriba y con su punto; lo leído, plegado en una línea.
+ *   · Lo que no has leído, arriba y con su punto, y lo tuyo; lo leído, plegado.
  *   · Quien la escribió ve quién la ha leído; quien lleva al equipo, además, quién
  *     falta. Los demás, solo su «Leído».
  *   · Con hora, sale también en «Hoy» y en el Calendario, y su botón trae aquí
@@ -36,9 +36,13 @@ export function Tablon({ alEscribir }: { readonly alEscribir: () => void }) {
   // «cargando» arriba del todo, igual que «Hoy».
   if (notas === undefined || notas.length === 0) return null;
 
-  const porLeer = notas.filter((n) => !n.leida);
-  const leidas = notas.filter((n) => n.leida);
-  // Con algo por leer, lo leído se pliega; sin nada, se ven las dos primeras.
+  // Lo que no has leído, y **lo tuyo**, que no se pliega nunca: quien escribe una
+  // nota la quiere ver, y ver quién la ha leído. Se plegaba como «leída» y se perdía
+  // en cuanto otro escribía algo (lo cazó Safari, 26-sep).
+  const porLeer = notas.filter((n) => !n.leida || n.esMia);
+  const sinLeer = notas.filter((n) => !n.leida).length;
+  const leidas = notas.filter((n) => n.leida && !n.esMia);
+  // Con algo a la vista, lo leído se pliega; sin nada, se ven las dos primeras.
   const lasLeidasQueSeVen = verLeidas ? leidas : porLeer.length > 0 ? [] : leidas.slice(0, 2);
   const plegadas = leidas.length - lasLeidasQueSeVen.length;
 
@@ -52,9 +56,9 @@ export function Tablon({ alEscribir }: { readonly alEscribir: () => void }) {
           <IconoTablon size={18} />
         </span>
         <h2 className="text-cuerpo font-semibold">Tablón</h2>
-        {porLeer.length > 0 && (
+        {sinLeer > 0 && (
           <span className="rounded-redondo bg-naranja-suave px-e2 py-[1px] text-etiqueta font-semibold text-texto">
-            {plural(porLeer.length, 'sin leer', 'sin leer')}
+            {plural(sinLeer, 'sin leer', 'sin leer')}
           </span>
         )}
         <button

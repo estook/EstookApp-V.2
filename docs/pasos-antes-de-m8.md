@@ -102,6 +102,21 @@ git pull
    - Un producto con algo congelado: en su ficha, **«Cumple 3 meses congelado el…»**, y en
      «Corregir la ficha», **Congelado aguanta**.
 
+### 3 · L · el lector (#73), después de la #72
+
+**Qué trae:** «Escanear» a la derecha de «Añadir producto», los lectores de mano, contar
+el inventario escaneando y marcar lo que llega al recibir. **Sin migración y sin
+desplegar la API**: todo es de la app.
+
+1. **Después de fusionar la #72**, en **Pull requests** → **«L · El lector»** (la #73):
+   GitHub la habrá movido sola a `main`. Las **tres comprobaciones en verde** → **Merge
+   pull request** → **Confirm merge**.
+2. **En el móvil**, en **Almacén → Productos → Escanear**: la primera vez pide permiso para
+   la cámara. Apunta al código de un producto que tengas dado de alta con su código: abre
+   su ficha. Con uno que no tengas: abre el alta con el código puesto y, si es de tienda,
+   el nombre que propone Open Food Facts.
+3. **Movimientos → Inventario → Escanear**: cada lectura suma uno.
+
 ---
 
 ## El Panel en el móvil (#70) · **hecho** (25-sep)

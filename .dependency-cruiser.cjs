@@ -127,7 +127,12 @@ module.exports = {
         // de pnpm y aterriza en `packages/...`, asi que dependency-cruiser no lo sabe
         // clasificar. Que la dependencia este declarada lo garantiza pnpm: sin
         // `workspace:*` en el package.json, el enlace no existe y no resolveria.
-        pathNot: '^(apps|packages|servidor)/',
+        //
+        // Y el WebAssembly del lector de códigos (entrega L, 25-sep): Vite lo sirve con
+        // `?url`, y dependency-cruiser no sabe resolver una consulta dentro del mapa de
+        // `exports` de `zxing-wasm`, que sí está declarado en `apps/app`. Es ese
+        // fichero y solo ese: cualquier otro sin declarar sigue saltando.
+        pathNot: '^(apps|packages|servidor)/|^zxing-wasm/reader/zxing_reader\\.wasm\\?url$',
       },
     },
   ],

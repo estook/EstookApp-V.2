@@ -45,7 +45,7 @@ y la enseña su QR (0049).
 | 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                       | Falta                              |
 | 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)    | Falta                              |
 | 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                       | Falta                              |
-| 10  | Escanear el código de barras             | **L**, adelantada        | Nada                                       | **Después del repaso del 25-sep**  |
+| 10  | Escanear el código de barras             | **L**, adelantada        | Nada                                       | **Hecha, en su rama** (#73)        |
 | 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                         | Espera a M22                       |
 | 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún    | **QR (#69) y carta subida (0049)** |
 
@@ -506,8 +506,29 @@ decir que no se ha mandado es peor que no guardar (regla 34).
 
 ### 10 · Escanear el código de barras
 
-**Qué hay ya:** el producto tiene `codigo_de_barras` desde M6, único por local, y el
-buscador ya lo encuentra. Falta la cámara.
+**Hecha el 25-sep, adelantada** (Richi: «"Escanear producto" a la derecha de "Añadir
+producto"»), en la rama `l-el-lector`, **sin migración**: el producto ya tenía
+`codigo_de_barras` desde M6 y el buscador ya lo encontraba.
+
+**Cómo ha quedado**, punto por punto de lo planeado:
+
+- **La cámara**: en Android y Chrome, el lector del propio navegador; en el iPhone,
+  ZXing en WebAssembly (`barcode-detector`), que se descarga solo al abrir el lector
+  (unos 460 KB) y **se sirve desde Estook**, no desde una CDN. La política de seguridad
+  deja compilar WebAssembly (`'wasm-unsafe-eval'`), y nada más.
+- **Los lectores de mano**, reconocidos solos por su velocidad (seis o más teclas a
+  menos de 45 ms y un Intro) cuando no se escribe en un campo: en Productos, en el
+  inventario y al recibir.
+- **Productos**: «Escanear» a la derecha de «Añadir producto». Un código de un producto
+  abre su ficha; uno nuevo abre el alta con él puesto y **la propuesta de Open Food
+  Facts** (solo códigos de tienda, tres segundos como mucho, y un toque para usarla).
+- **Inventario**: cada lectura suma uno; con un lector de mano, además, el cursor queda
+  en su casilla con el número marcado, así que lo que se teclee lo sustituye.
+- **Recibir**: «Escanear lo que llega» marca cada línea y dice cuántas van.
+- **Pita y vibra** distinto si el código no es de nada. **Y siempre se puede escribir el
+  código a mano** (sin cámara, sin permiso o con una etiqueta ilegible).
+
+Lo que se planeó:
 
 **Cómo se hace:**
 

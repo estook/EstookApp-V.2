@@ -25,7 +25,10 @@ import {
   Tarjeta,
   clases,
 } from '@estook/ui';
-import { IconoBuscar, IconoDocumento } from '@estook/iconos';
+import { IconoBuscar, IconoDocumento, IconoEscanear } from '@estook/iconos';
+import { Escaner } from '../lector/Escaner.tsx';
+import { pitar } from '../lector/pitar.ts';
+import { usarLectorDeMano } from '../ganchos/usarLectorDeMano.ts';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
@@ -89,6 +92,43 @@ export function Recuento() {
     limite: '200',
     incluir_ejemplos: 'false',
   });
+
+  /**
+   * El lector (entrega L): «escanear suma uno; escanear y teclear, pone la cantidad».
+   * Con la cámara, cada lectura suma uno y dice cuántos van. Con un lector de mano,
+   * suma uno y deja el cursor en su casilla con el número marcado: lo que se teclee
+   * después, lo sustituye. Pita y vibra distinto si el código no es de esta zona.
+   */
+  const [escaneando, setEscaneando] = useState(false);
+  const [ultimo, setUltimo] = useState<string | null>(null);
+
+  function sumarUno(codigo: string, conElCursor: boolean) {
+    const suyo = lista.data?.productos.find((p) => p.codigoDeBarras === codigo);
+    if (suyo === undefined) {
+      pitar(false);
+      setUltimo(`El ${codigo} no es de ningún producto de esta zona.`);
+      return;
+    }
+    pitar(true);
+    const antes = Number((contado[suyo.id] ?? '').replace(',', '.'));
+    const van = (Number.isFinite(antes) ? antes : 0) + 1;
+    setContado((todo) => ({ ...todo, [suyo.id]: String(van) }));
+    setUltimo(`${suyo.nombre} · ${conUnidadDeUso(van, suyo.unidadDeUso)}`);
+    if (conElCursor) {
+      window.setTimeout(() => {
+        const casilla = document.getElementById(`contado-${suyo.id}`);
+        if (casilla instanceof HTMLInputElement) {
+          casilla.scrollIntoView({ block: 'center' });
+          casilla.focus();
+          casilla.select();
+        }
+      }, 0);
+    }
+  }
+
+  usarLectorDeMano((codigo) => {
+    sumarUno(codigo, true);
+  }, puedeContar && !escaneando);
 
   if (!puedeContar) {
     return (
@@ -286,7 +326,36 @@ export function Recuento() {
             }}
           />
         </div>
+        <Boton
+          tono="secundario"
+          icono={<IconoEscanear size={18} />}
+          onClick={() => {
+            setUltimo(null);
+            setEscaneando(true);
+          }}
+        >
+          Escanear
+        </Boton>
       </div>
+
+      {escaneando && (
+        <Escaner
+          titulo="Contar escaneando"
+          seguido
+          ultimo={ultimo}
+          alLeer={(codigo) => {
+            sumarUno(codigo, false);
+          }}
+          alCerrar={() => {
+            setEscaneando(false);
+          }}
+        />
+      )}
+      {!escaneando && ultimo !== null && (
+        <p aria-live="polite" className="text-secundario text-texto-suave">
+          {ultimo}
+        </p>
+      )}
 
       {/* ── O se sube el fichero ───────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-e3 rounded-medio border border-borde bg-fondo p-e3">
@@ -509,6 +578,7 @@ function LineaDeRecuento({
 
       <span className="w-[9rem]">
         <Campo
+          id={`contado-${producto.id}`}
           etiqueta="Contado"
           tipo="numero"
           detras={producto.unidadDeUso}

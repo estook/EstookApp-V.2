@@ -11,6 +11,7 @@ import {
   IconoPersona,
   IconoQuitar,
   IconoReloj,
+  IconoEscanear,
   IconoReparto,
   IconoTablon,
   type Icono,
@@ -223,6 +224,17 @@ export const ACCIONES: readonly Accion[] = [
     icono: IconoDocumento,
     permiso: { cual: 'accion.cerrar_recuento', como: 'editar' },
     ir: '/almacen/movimientos/inventario',
+  },
+  {
+    // L · el lector (adelantada el 25-sep): desde el buscador y desde Fogón, a la
+    // cámara directamente. En Productos, el botón está al lado de «Añadir producto».
+    id: 'escanear-producto',
+    app: 'almacen',
+    nombre: 'Escanear un producto',
+    queHace: 'Leer su código de barras: abre su ficha, o su alta si es nuevo',
+    icono: IconoEscanear,
+    permiso: { cual: 'app.almacen', como: 'ver' },
+    ir: '/almacen/productos/todo?hacer=escanear',
   },
   {
     // El repaso del 25-sep · el Tablón (0049). Sin permiso: el corcho es de todo el

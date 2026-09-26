@@ -2689,6 +2689,21 @@ y carta), `congelado.prueba.ts` y `hoy.prueba.ts` del dominio, `anclaAbajo.prueb
 `sin-has.prueba.ts` y `direccionesViejas.prueba.ts`, y `el-repaso-del-25-sep.spec.ts` en
 pantalla. Lecciones 116 a 119.
 
+### Antes de M8 · L, el lector, adelantada
+
+_25 de septiembre de 2026._ Sin migración. Richi pidió «Escanear producto» junto a
+«Añadir producto» y eligió adelantar la entrega entera.
+
+- **La cámara**: el lector del navegador donde lo hay (Android, Chrome) y ZXing en
+  WebAssembly en el iPhone, descargado solo al abrir el lector y servido desde Estook. La
+  política de seguridad lleva `'wasm-unsafe-eval'`, que solo deja compilar WebAssembly.
+- **Los lectores de mano**, reconocidos por su velocidad, sin configurar nada.
+- **Productos** abre la ficha o el alta con el código y la propuesta de Open Food Facts;
+  **el inventario** suma uno por lectura; **recibir** marca la línea.
+
+Las pruebas: `codigos.prueba.ts` y `el-lector.spec.ts`. La cámara de verdad no se puede
+probar en un navegador de pruebas: la mira Richi en su móvil.
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

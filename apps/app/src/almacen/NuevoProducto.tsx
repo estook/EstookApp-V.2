@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   centimos,
@@ -27,7 +27,8 @@ import {
   clases,
   type UnidadQueSeElige,
 } from '@estook/ui';
-import { IconoBuscar } from '@estook/iconos';
+import { IconoBuscar, IconoEscanear } from '@estook/iconos';
+import { loQueDiceOpenFoodFacts, type LoQueDiceOpenFoodFacts } from '../lector/openFoodFacts.ts';
 import type { Centimos } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -87,6 +88,7 @@ export function NuevoProducto({
   puedeVerPrecios,
   preciosConIva,
   territorio,
+  codigo = null,
 }: {
   readonly abierta: boolean;
   readonly alCerrar: () => void;
@@ -98,6 +100,12 @@ export function NuevoProducto({
   readonly preciosConIva: boolean;
   /** De dónde sale el IVA que se propone: Canarias no paga IVA. */
   readonly territorio: string;
+  /**
+   * El código de barras que se acaba de leer y no es de ningún producto (entrega L).
+   * Con él, el alta va directa al formulario, lo guarda en el producto y enseña lo
+   * que propone Open Food Facts.
+   */
+  readonly codigo?: string | null;
 }) {
   const { cliente } = usarSesion();
 
@@ -133,6 +141,22 @@ export function NuevoProducto({
   const [zona, setZona] = useState<Zona>('cocina');
   const [proveedorId, setProveedorId] = useState('');
 
+  /** Lo que propone Open Food Facts para el código leído: una propuesta, no un dato. */
+  const [propuesta, setPropuesta] = useState<LoQueDiceOpenFoodFacts | null>(null);
+
+  // Con un código leído, directo al formulario, y la propuesta si llega a tiempo.
+  useEffect(() => {
+    if (!abierta || codigo === null) return;
+    setAMano(true);
+    let vigente = true;
+    void loQueDiceOpenFoodFacts(codigo).then((dice) => {
+      if (vigente) setPropuesta(dice);
+    });
+    return () => {
+      vigente = false;
+    };
+  }, [abierta, codigo]);
+
   const DESDE_CUANTAS_LETRAS = 2;
   const buscando = texto.trim().length >= DESDE_CUANTAS_LETRAS;
 
@@ -164,6 +188,7 @@ export function NuevoProducto({
     setCongelado(false);
     setCategoriaId('');
     setProveedorId('');
+    setPropuesta(null);
     setError(null);
   }
 
@@ -268,6 +293,7 @@ export function NuevoProducto({
       ...(minimoNumero === null ? {} : { minimo: minimoNumero }),
       ...(caducaEl === '' || !conCaducidad ? {} : { caduca_el: caducaEl }),
       ...(hayAlgo && congelado ? { congelado: true } : {}),
+      ...(codigo === null ? {} : { codigo_de_barras: codigo }),
     });
 
     setGuardando(false);
@@ -394,6 +420,40 @@ export function NuevoProducto({
                 Llega con su categoría, su tipo de impuesto y sus alérgenos puestos. Lo de abajo es
                 una propuesta: cámbialo si tú lo compras de otra forma.
               </Aviso>
+            )}
+
+            {/*
+              El código leído, y lo que propone Open Food Facts: un toque y es el
+              nombre. En hostelería muchos códigos son de distribuidor y no estarán:
+              entonces no sale nada y se escribe, como siempre.
+            */}
+            {codigo !== null && (
+              <div className="flex flex-col gap-e2 rounded-medio bg-fondo px-e3 py-e2">
+                <p className="flex items-center gap-e2 text-secundario text-texto-suave">
+                  <IconoEscanear size={16} />
+                  Código <span className="font-semibold text-texto">{codigo}</span>
+                </p>
+                {propuesta !== null && nombre.trim() !== propuesta.nombre && (
+                  <div className="flex flex-wrap items-center gap-e2">
+                    <p className="min-w-0 flex-1 text-secundario">
+                      Open Food Facts lo conoce:{' '}
+                      <strong>
+                        {[propuesta.nombre, propuesta.marca, propuesta.cantidad]
+                          .filter((t) => t !== null)
+                          .join(' · ')}
+                      </strong>
+                    </p>
+                    <Boton
+                      tono="secundario"
+                      onClick={() => {
+                        setNombre(propuesta.nombre);
+                      }}
+                    >
+                      Usar el nombre
+                    </Boton>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* 1 · Producto */}

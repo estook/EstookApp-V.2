@@ -91,7 +91,10 @@ export function politicaDeSeguridad({
 
   return [
     "default-src 'self'",
-    "script-src 'self'",
+    // `'wasm-unsafe-eval'` deja **compilar WebAssembly**, y nada más: no abre `eval`.
+    // Lo necesita el lector de códigos en el iPhone (entrega L), que lee con ZXing en
+    // WebAssembly porque Safari no trae lector propio. El fichero sale de Estook.
+    "script-src 'self' 'wasm-unsafe-eval'",
     "style-src 'self' 'unsafe-inline'",
     // `blob:` no es un adorno: al elegir un logo, la aplicacion lo carga con
     // `URL.createObjectURL` para medirlo y reducirlo antes de subirlo

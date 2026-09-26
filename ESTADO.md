@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 25 de septiembre de 2026, por la noche · **Antes de M8. La #70 y la #71 (E2), en producción; nadie ha pagado todavía. El repaso del 25-sep, en la #72 con la migración `0048`. Después, L (adelantada) y A2**
+Última actualización: 25 de septiembre de 2026, por la noche · **Antes de M8. La #70 y la #71 (E2), en producción; nadie ha pagado todavía. El repaso del 25-sep, en la #72 con la migración `0048`; L · el lector, en la #73, encima. Después, A2**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -24,7 +24,7 @@ _Producción leída el 25-sep por la noche, en solo lectura: migraciones, organi
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Terminados**   | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1** · **E1** · **V** · **el repaso del 23-sep** · **los arreglos del móvil** · **O** · **el Panel en el móvil** (#70) · **E2** (#71) |
 | **Por fusionar** | **El repaso del 25-sep** (#72), con la migración `0048` y la [decisión 0049](docs/decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md). Apartado 10                                   |
-| **Ahora**        | Después de la #72: **L · el lector**, adelantada (Richi, 25-sep), y **A2 · Clientes**, con sus tres respuestas ya dadas                                                                          |
+| **Ahora**        | **L · el lector**, adelantada, hecha en la #73 (encima de la #72, sin migración). Después, **A2 · Clientes**, con sus tres respuestas ya dadas                                                   |
 | **`main`**       | Todo fusionado hasta la **#71**                                                                                                                                                                  |
 | **Base**         | Supabase, **47 de 47** migraciones, igual que `main`. Con la #72 serán 48                                                                                                                        |
 | **API**          | Desplegada el 25-sep a las 17:49 con la #71: **50 consultas y 93 comandos**, y **el reloj latiendo** cada hora. Con la #72 serán 51 y 99                                                         |
@@ -50,7 +50,7 @@ _Producción leída el 25-sep por la noche, en solo lectura: migraciones, organi
 | —   | **El Panel en el móvil**         | ✓ en producción (#70)                                                         |
 | 3   | **E2 · El pago con Stripe**      | ✓ en producción (#71, migración `0047`). **Falta probar el pago**: apartado 2 |
 | —   | **El repaso del 25-sep**         | **En la #72** (migración `0048`, decisión 0049). Apartado 10                  |
-| 4   | **L · El lector**                | **Adelantada** (era la 8): va después de la #72 (Richi, 25-sep)               |
+| 4   | **L · El lector**                | **Hecha, en la #73** (adelantada; era la 8). Sin migración. Apartado 10       |
 | 5   | **A2 · Clientes**                | Después de L. Sus tres preguntas, contestadas (apartado 10)                   |
 | 6   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7. **El reloj ya lo montó E2**          |
 | 7   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                       |
@@ -111,7 +111,7 @@ latiendo** (25-sep) · **los siete puntos del repaso y las tres respuestas de A2
 4242`. Es lo único de E2 que no se puede comprobar desde aquí: pide crear una cuenta y
    pagar, y eso lo haces tú.
 2. **Fusionar la #72**, aplicar la `0048` y desplegar la API. Después, `bd:comprobar-api`
-   tiene que decir «51» y «99».
+   tiene que decir «51» y «99». **Y después, la #73** (L): sin migración ni despliegue.
 3. **Mirarla en el iPhone**, con la app instalada: la barra de abajo y «Hoy».
 
 **Para cobrar de verdad, más adelante:** la sociedad o el alta de autónomo; activar la
@@ -234,8 +234,9 @@ y presupuestos` (que lleva dentro las pruebas de pantalla) y `Migraciones revers
 **El peso inicial** (`pnpm tamano`, 25-sep, rama de la #72): `app` **314,0 KB**, `admin`
 **214,3 KB**, `web` 166,4 y `carta` 172,1; de cada uno, 106,1 KB son la tipografía. La
 referencia es 250 y **se mide, no bloquea**: manda el presupuesto de velocidad, que pasa
-en la prueba de pantalla. Compras, Recharts, `@dnd-kit` y **PDF.js** (solo al subir la
-carta en PDF) se cargan aparte.
+en la prueba de pantalla. Compras, Recharts, `@dnd-kit`, **PDF.js** (solo al subir la
+carta en PDF) y **el lector del iPhone** (solo al abrir la cámara) se cargan aparte. Con
+la #73, `app` pasa a **317,1 KB**.
 
 ---
 
@@ -337,7 +338,10 @@ Otras, sin fichero propio:
 - **Dependencias nuevas justificadas:** `@electric-sql/pglite`, solo de desarrollo; y
   `@dnd-kit` para arrastrar los widgets (0039), en su propio trozo; y **`pdfjs-dist`**
   para pasar a imágenes la carta que se sube en PDF (0049), que solo se descarga al
-  elegir un PDF. **Stripe va sin librería** (unas pocas llamadas `fetch`, como Resend y Google). Contraseñas, segundo
+  elegir un PDF; y **`barcode-detector`** con **`zxing-wasm`** para leer códigos en el
+  iPhone (entrega L), que Safari no sabe leer: se descarga solo al abrir el lector y **su
+  WebAssembly se sirve desde Estook**. Por eso la política de seguridad lleva
+  `'wasm-unsafe-eval'`, que deja compilar WebAssembly y no abre `eval`. **Stripe va sin librería** (unas pocas llamadas `fetch`, como Resend y Google). Contraseñas, segundo
   factor, tokens y la firma de los avisos de Stripe van con `crypto.subtle`.
 - **React Router se queda en la 6 por ahora**: sus dos avisos de seguridad no nos afectan.
 
@@ -459,6 +463,11 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   tasa `sin-has.prueba.ts`), y **lo pegado abajo lleva `--desfase-abajo`** y se aparta
   con el teclado (`anclaAbajo.ts`).
 - **Las semillas se cargan por orden alfabético**: su nombre es su turno (lección 118).
+- **El lector** (L): un código se busca por `codigo_de_barras` exacto; lo nuevo va al
+  alta con él puesto; Open Food Facts **solo propone**, y solo para códigos de tienda; y
+  un lector de mano se reconoce por su velocidad (`esDeUnLector`), fuera de los campos. La
+  única excepción de `.dependency-cruiser.cjs` para él es su fichero WebAssembly (`?url`),
+  que la herramienta no sabe resolver.
 
 ---
 
@@ -565,3 +574,13 @@ noche** con el reloj.
 **Terminado cuando:** Richi lo mira en su iPhone con la app instalada: «Hoy» a la
 primera, la barra abajo tras cerrar el teclado, su carta subida en el QR, y una nota del
 Tablón leída desde otra cuenta.
+
+### L · El lector (#73)
+
+**Hecha el 25-sep, adelantada**, en la rama `l-el-lector`, encima de la #72 y **sin
+migración** (el plan, punto por punto, en [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)):
+**«Escanear»** a la derecha de «Añadir producto» (abre la ficha, o el alta con el código
+puesto y el nombre que propone **Open Food Facts**); **los lectores de mano**, reconocidos
+solos; **el inventario** suma uno por lectura; **recibir** marca la línea; pita y vibra
+distinto; y siempre se puede escribir el código a mano. **Probado**: `codigos.prueba.ts` y
+**5** de pantalla (`el-lector.spec.ts`). **La cámara de verdad**, en el móvil de Richi.

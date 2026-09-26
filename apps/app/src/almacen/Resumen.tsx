@@ -753,7 +753,7 @@ function MermaDeLaJornada() {
         <EnlaceDeTarjeta
           etiqueta="Ver la merma a detalle"
           onClick={() => {
-            navegar('/almacen/movimientos/mermas');
+            navegar('/almacen/mermas');
           }}
         />
       }

@@ -391,3 +391,7 @@
      esperaba a que el Panel volviera a pedir sus datos antes de cerrar la hoja: con la red
      lenta se quedaba abierta sin decir nada. Guardado es guardado: se cierra, y lo de
      detrás se pone al día solo.
+122. **Lo que se esconde cuando está vacío no se echa en falta: no se sabe que existe.**
+     El Tablón, «Hoy» y cuatro tarjetas del Panel se escondían sin nada dentro. Parecía
+     limpio, y Richi, que lo había pedido, no encontraba el Tablón. Un sitio que dice «sin
+     avisos» enseña que existe y que está al día; uno que no sale, ni lo uno ni lo otro.

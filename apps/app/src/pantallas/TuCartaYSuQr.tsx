@@ -58,7 +58,7 @@ export function TuCartaYSuQr() {
   const nombre = `qr-${comoNombreDeFichero(local.direccionDeLaCarta)}`;
 
   return (
-    <Tarjeta titulo="Tu carta y su QR" origen="Imprímelo una vez: no cambia nunca">
+    <Tarjeta titulo="El QR de tu carta" origen="Imprímelo una vez: no cambia nunca">
       <div className="flex flex-col gap-e4 sm:flex-row sm:items-start">
         <div className="mx-auto w-[180px] shrink-0 rounded-medio border border-borde bg-white p-e2 sm:mx-0">
           {matriz === null ? (

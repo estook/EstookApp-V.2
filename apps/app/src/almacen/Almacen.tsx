@@ -13,7 +13,7 @@ import type { MisProductos } from './contrato.ts';
  * «El corazón. Lo que la app sabe que hay y lo que no. **Todas las demás leen de
  *  aquí**» (Manifiesto 12).
  *
- * ── Los cuatro destinos, y por qué son estos ─────────────────────────────────
+ * ── Los cinco destinos, y por qué son estos ──────────────────────────────────
  *
  * Hasta M6½ las pestañas eran `Hoy · Productos · Pedidos · Más`, y **dos de las
  * cuatro no llevaban a ningún sitio**: «Pedidos» es M7 y enseñaba un cartel, y
@@ -29,9 +29,10 @@ import type { MisProductos } from './contrato.ts';
  * | **Productos**   | ¿Qué hay en cámara, cuánto cuesta y cuánto dura?  |
  * | **Movimientos** | ¿Qué ha entrado, qué ha salido y quién lo apuntó? |
  * | **Compras**     | ¿Qué pido, qué ha llegado y a qué precio?         |
+ * | **Mermas**      | ¿Qué se ha tirado, cuánto ha costado y por qué?   |
  *
- * («Resumen» se llamaba «Hoy» hasta la entrega V, 0045; y las mermas son una
- * vista de Movimientos desde M6½.)
+ * («Resumen» se llamaba «Hoy» hasta la entrega V, 0045; y las mermas fueron una
+ * vista de Movimientos desde M6½ hasta el 26-sep, cuando salieron a la vista, 0051.)
  *
  * Y sobreviven a M7 y M8 sin volver a inventar un «Más»: los pedidos y las
  * facturas son **vistas de Compras**, y los recuentos y las mermas serán vistas
@@ -76,8 +77,8 @@ const Movimientos = lazy(async () => {
 /**
  * Las mermas, aparte del resto de Movimientos.
  *
- * Es una **vista** de Movimientos —la merma es una salida de género con motivo, no
- * otra app— pero la pantalla no se parece: lleva sus totales por partida, sus
+ * Es el quinto destino desde el 26-sep (antes, una vista de Movimientos): la merma
+ * es una salida de género con motivo, pero la pantalla no se parece: lleva sus totales por partida, sus
  * filtros y su exportación. Cargarla con el libro sería bajar todo eso para
  * quien solo quiere ver lo que entró ayer.
  */
@@ -131,12 +132,12 @@ export function Almacen({ destino, vista }: { readonly destino: string; readonly
     <>
       {destino === 'resumen' && <Resumen alAbrirProducto={setProductoAbierto} />}
       {destino === 'productos' && <Productos vista={vista} alAbrirProducto={setProductoAbierto} />}
-      {destino === 'movimientos' && vista !== 'mermas' && vista !== 'inventario' && (
+      {destino === 'movimientos' && vista !== 'inventario' && (
         <Suspense fallback={<Cargando que="el libro de movimientos" />}>
           <Movimientos vista={vista} alAbrirProducto={setProductoAbierto} />
         </Suspense>
       )}
-      {destino === 'movimientos' && vista === 'mermas' && (
+      {destino === 'mermas' && (
         <Suspense fallback={<Cargando que="las mermas" />}>
           <Mermas alAbrirProducto={setProductoAbierto} />
         </Suspense>

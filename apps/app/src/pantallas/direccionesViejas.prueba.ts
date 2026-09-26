@@ -16,6 +16,12 @@ describe('las direcciones de antes del 25-sep', () => {
     );
   });
 
+  it('y las mermas tienen su propio destino (26-sep), vengan de Almacén o de Inventario', () => {
+    expect(laDireccionDeAhora('/almacen/movimientos/mermas')).toBe('/almacen/mermas');
+    expect(laDireccionDeAhora('/inventario/movimientos/mermas')).toBe('/almacen/mermas');
+    expect(laDireccionDeAhora('/almacen/mermas')).toBeNull();
+  });
+
   it('lo que no es de antes no se toca', () => {
     expect(laDireccionDeAhora('/almacen/resumen')).toBeNull();
     expect(laDireccionDeAhora('/inventarios')).toBeNull();

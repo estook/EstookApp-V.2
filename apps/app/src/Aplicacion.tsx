@@ -254,6 +254,8 @@ function Puerta() {
           */}
           {/* Lo de antes del 25-sep: «Inventario» es ahora Almacén (0049). */}
           <Route path="inventario/*" element={<ALaDireccionDeAhora />} />
+          {/* Las mermas eran una vista de Movimientos: ahora, destino propio (26-sep). */}
+          <Route path="almacen/movimientos/mermas" element={<ALaDireccionDeAhora />} />
           <Route path=":app" element={<PantallaDeApp />} />
           <Route path=":app/:destino" element={<PantallaDeApp />} />
           <Route path=":app/:destino/:vista" element={<PantallaDeApp />} />

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { LETRAS_PARA_BUSCAR } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -62,7 +62,16 @@ function sesionNueva(): string {
   return crypto.randomUUID();
 }
 
-export function TuLocalEnGoogle() {
+export function TuLocalEnGoogle({
+  aMano,
+}: {
+  /**
+   * Marcar el punto a mano, **dentro de la misma tarjeta** (Richi, 26-sep: «dos cosas
+   * que tienen que ir juntas estaban separadas y confunden»). Recibe si hay que
+   * enseñarlo abierto: sin ninguna posición, es lo único que queda.
+   */
+  readonly aMano?: (abiertoDeEntrada: boolean) => ReactNode;
+} = {}) {
   const { cliente } = usarSesion();
   const cache = useQueryClient();
   const consulta = usarLectura<MiLocalEnGoogle>('mi_local_en_google');
@@ -165,10 +174,14 @@ export function TuLocalEnGoogle() {
     await cache.invalidateQueries({ queryKey: ['mi_local_en_google'] });
   }
 
-  if (consulta.isError) return null;
+  if (consulta.isError) {
+    return aMano === undefined ? null : (
+      <Tarjeta titulo="Dónde está tu local">{aMano(true)}</Tarjeta>
+    );
+  }
 
   return (
-    <Tarjeta titulo="Tu local en Google">
+    <Tarjeta titulo="Dónde está tu local">
       <span id="tu-local-en-google" />
       {datos === undefined ? (
         <Cargando que="tu local en Google" lineas={2} />
@@ -180,8 +193,8 @@ export function TuLocalEnGoogle() {
           </p>
           <p className="text-secundario text-texto-suave">
             Cuando lo esté, buscarás aquí tu local por su nombre y se guardarán su dirección, su
-            horario, su valoración y su ubicación para fichar. Mientras, marca el local desde el
-            propio local, en la tarjeta de abajo.
+            horario, su valoración y su ubicación para fichar. Mientras, márcalo a mano desde el
+            propio local, aquí debajo.
           </p>
         </div>
       ) : (
@@ -382,6 +395,9 @@ export function TuLocalEnGoogle() {
             cuesta.
           </p>
         </div>
+      )}
+      {aMano !== undefined && datos !== undefined && (
+        <div className="mt-e3 border-t border-borde pt-e3">{aMano(!datos.tienePosicion)}</div>
       )}
     </Tarjeta>
   );

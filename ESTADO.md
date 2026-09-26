@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 26 de septiembre de 2026, por la tarde · **Antes de M8. El repaso del 25-sep (#72, `0048`) y L · el lector (#73), en producción; nadie ha pagado todavía. A2 · los clientes en el admin, en la #74 con la migración `0049`. Después, R**
+Última actualización: 26 de septiembre de 2026, por la noche · **Antes de M8. A2 · los clientes en el admin (#74, `0049`), en producción; nadie ha pagado todavía. La auditoría del 26-sep, en la #75, sin migración. Después, R**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento.**
@@ -9,7 +9,7 @@
 > Lo demás vive en su sitio, y aquí solo se enlaza:
 >
 > - **Lo que hizo cada módulo**, con sus fallos: [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)
-> - **Lo aprendido fallando** (121 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
+> - **Lo aprendido fallando** (122 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](docs/reglas.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](docs/decisiones/)
 > - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)
@@ -18,20 +18,20 @@
 
 ## 1 · Dónde estamos
 
-_Producción leída el 26-sep por la tarde, en solo lectura: migraciones, organizaciones y suscripciones; los despliegues y GitHub de `main`, mirados por dentro._
+_Producción leída el 26-sep por la noche, en solo lectura: migraciones, organizaciones y suscripciones; los despliegues, el admin publicado y GitHub de `main`, mirados por dentro._
 
-|                  |                                                                                                                                                                                                                                                 |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminados**   | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1** · **E1** · **V** · **el repaso del 23-sep** · **los arreglos del móvil** · **O** · **el Panel en el móvil** (#70) · **E2** (#71) · **el repaso del 25-sep** (#72) · **L** (#73) |
-| **Por fusionar** | **A2 · los clientes en el admin** (#74), con la migración `0049` y la [decisión 0050](docs/decisiones/0050-los-clientes-en-el-admin.md). Apartado 11                                                                                            |
-| **Ahora**        | Que Richi fusione la #74, aplique la `0049` y despliegue la API. Después, **R · el reloj y los avisos**                                                                                                                                         |
-| **`main`**       | Todo fusionado hasta la **#73**, en verde y sin pruebas repetidas                                                                                                                                                                               |
-| **Base**         | Supabase, **48 de 48** migraciones, igual que `main` (la `0048`, el 26-sep a las 16:01). Con la #74 serán 49                                                                                                                                    |
-| **API**          | Desplegada el 26-sep a las 16:02 con la #72: **51 consultas y 99 comandos**, y **el reloj latiendo**. La #73 no tocaba la API. Con la #74 serán 52 y 111                                                                                        |
-| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`. Se publica solo al fusionar (la #73, el 26-sep a las 16:07)                                                                                                                                |
-| **Pruebas**      | En `main`: **1.326** unitarias y de base y **746** de pantalla, en verde y sin repetidas. En la #74, en local: **1.362** y **535** de pantalla (sin Safari)                                                                                     |
-| **Entrar**       | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                                                                 |
-| **Dirección**    | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                                                                    |
+|                  |                                                                                                                                                                                                                                                                |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminados**   | **M0** a **M6½** · **M7** (entregas 1, 1½, 1¾, 1⅞ y 4) · **A1** · **E1** · **V** · **el repaso del 23-sep** · **los arreglos del móvil** · **O** · **el Panel en el móvil** (#70) · **E2** (#71) · **el repaso del 25-sep** (#72) · **L** (#73) · **A2** (#74) |
+| **Por fusionar** | **La auditoría del 26-sep** (#75), sin migración ni cambios en la API, con la [decisión 0051](docs/decisiones/0051-la-auditoria-del-26-sep.md). Apartado 12                                                                                                    |
+| **Ahora**        | Que Richi fusione la #75. Después, **R · el reloj y los avisos**                                                                                                                                                                                               |
+| **`main`**       | Todo fusionado hasta la **#74**, en verde y sin pruebas repetidas                                                                                                                                                                                              |
+| **Base**         | Supabase, **49 de 49** migraciones, igual que `main` (la `0049`, el 26-sep a las 17:43). La #75 no lleva                                                                                                                                                       |
+| **API**          | Desplegada el 26-sep a las 17:43 con la #74: **52 consultas y 111 comandos**, y **el reloj latiendo**. La #75 no la toca                                                                                                                                       |
+| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/` (ya con Clientes). Se publica solo al fusionar (la #74, el 26-sep a las 17:23)                                                                                                                             |
+| **Pruebas**      | En `main`: **1.362** unitarias y de base y **765** de pantalla, en verde y sin repetidas. En la #75, en local: **1.364** y **544** de pantalla (sin Safari)                                                                                                    |
+| **Entrar**       | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                                                                                |
+| **Dirección**    | **Evolución 1.1**: de aplicación de gestión a sistema operativo del local, y **de no cobrar a cobrar** (el TPV es la Fase 4)                                                                                                                                   |
 
 > **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
 > 100 %** (Richi, 16-sep). Los planes: [`docs/mejoras-antes-de-m8.md`](docs/mejoras-antes-de-m8.md)
@@ -51,7 +51,8 @@ _Producción leída el 26-sep por la tarde, en solo lectura: migraciones, organi
 | 3   | **E2 · El pago con Stripe**      | ✓ en producción (#71, migración `0047`). **Falta probar el pago**: apartado 2 |
 | —   | **El repaso del 25-sep**         | ✓ en producción (#72, migración `0048`, decisión 0049)                        |
 | 4   | **L · El lector**                | ✓ en producción (#73; adelantada, era la 8)                                   |
-| 5   | **A2 · Clientes**                | **Hecha, en la #74** (migración `0049`, decisión 0050). Apartado 11           |
+| 5   | **A2 · Clientes**                | ✓ en producción (#74, migración `0049`, decisión 0050)                        |
+| —   | **La auditoría del 26-sep**      | **En la #75** (decisión 0051). Apartado 12                                    |
 | 6   | **R · El reloj y los avisos**    | Falta · lleva dentro la entrega 2 de M7. **El reloj ya lo montó E2**          |
 | 7   | **H · Horarios**                 | Falta · lleva dentro la entrega 3 de M7                                       |
 | 8   | **I · La app instalable**        | Falta                                                                         |
@@ -70,8 +71,7 @@ Para que nadie dé por hecho lo que solo está escrito:
   ya está creado). **Se cobra en modo prueba**; para cobrar de verdad hace falta la clave
   real y la cuenta de Stripe activada con los datos fiscales de quien factura
   (apartado 9).
-- **Del admin, la puerta** y, con la #74, **los clientes**; ni vendedores y códigos (A3)
-  ni ventas (A4).
+- **Del admin, la puerta y los clientes**; ni vendedores y códigos (A3) ni ventas (A4).
 - **No hay recuperar la contraseña por correo** (la da quien lleva el local).
 - **Lo que espera a su módulo**: los platos, sus fichas y sus escandallos (M9 y M10, con
   el diseño de Richi ya escrito en el Plan), leer fotos (M22), responder reseñas
@@ -102,13 +102,13 @@ datos del titular (#59) · **V entera** · **la #68, la #69 y la #70** · **la c
 Stripe** (24-sep) · **las siete respuestas de E2** · **`STRIPE_SECRET_KEY`** · **la #71
 fusionada, la `0047` aplicada, la API desplegada y `bd:comprobar-api` en OK con el reloj
 latiendo** (25-sep) · **los siete puntos del repaso y las tres respuestas de A2** (25-sep) ·
-**la #72 y la #73 fusionadas, la `0048` aplicada, la API desplegada y comprobada** (26-sep).
+**la #72, la #73 y la #74 fusionadas, la `0048` y la `0049` aplicadas, la API desplegada y comprobada** (26-sep).
 
 **Ahora, en este orden** (los pasos, uno a uno, en
 [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **Fusionar la #74**, aplicar la `0049` y desplegar la API. Después, `bd:comprobar-api`
-   tiene que decir «52» y «111».
+1. **Fusionar la #75** (la auditoría): sin migración ni despliegue de la API. Mirar el
+   Panel, Almacén → Mermas y Ajustes → Tu local.
 2. **Probar el pago en modo prueba**, con una cuenta nueva y la tarjeta `4242 4242 4242
 4242`. Es lo único de E2 que no se puede comprobar desde aquí: pide crear una cuenta y
    pagar, y eso lo haces tú.
@@ -321,6 +321,7 @@ En [`docs/decisiones/`](docs/decisiones/), una por fichero:
 | **0048** | El pago con Stripe: sin pago no hay app, siete días de gracia y todo en Ajustes          |
 | **0049** | Almacén e Inventario, lo congelado aparte, el Tablón y la carta subida                   |
 | **0050** | Los clientes en el admin: todo de Stripe, tres gestos y el correo con doble confirmación |
+| **0051** | La auditoría del 26-sep: nada se esconde por vacío, mermas a la vista, Google junto      |
 
 > **Ojo con los números:** las decisiones y las migraciones se numeran aparte. La
 > **decisión** 0048 es el pago y la monta la **migración** `0047`; la **decisión** 0049
@@ -479,14 +480,20 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita:
   correo nuevo**, que hay que pulsar; en la base, solo huellas.
 - **Una prueba no fija el día si la base apunta con `now()`**: cuenta desde hoy (lección
   120).
+- **Nada del Panel se esconde por vacío** (0051): cada tarjeta dice su vacío, «Hoy» es una
+  línea y el Tablón también. **Las mermas son el quinto destino de Almacén**
+  (`/almacen/mermas`; la dirección de antes lleva allí). **Google y el punto exacto van
+  juntos en Tu local**, y el marcado a mano manda. **Lo que no es de alguien lo devuelve
+  al Panel diciéndoselo.**
 
 ---
 
 ## 8 · El siguiente paso
 
-**Primero, la #74**: fusionar, aplicar la `0049`, desplegar la API y mirar Clientes en el
-admin. **Que Richi pruebe el pago** con la 4242 (lo único de E2 sin comprobar) y mire el
-iPhone. **Después, R · el reloj y los avisos**, la siguiente del orden.
+**Primero, la #75** (la auditoría, sin migración). **Que Richi pruebe el pago** con la
+4242 (lo único de E2 sin comprobar) y mire el iPhone. **Después, R · el reloj y los
+avisos**, la siguiente del orden: los avisos por correo y en pantalla que manda el reloj,
+con la entrega 2 de M7 dentro, y las mejoras 12, 13, 16 y 19.
 
 **Cómo se comprueba que no rompe lo de antes:** `.\estook.cmd verifica`,
 `.\estook.cmd prueba:e2e:completa` (que incluye la cobertura) y, tras desplegar,
@@ -600,7 +607,7 @@ distinto; y siempre se puede escribir el código a mano. **Probado**: `codigos.p
 
 ## 11 · A2, los clientes en el admin (#74)
 
-**Hecha el 26-sep** en la rama `a2-clientes`, con la migración `0049` y la
+**En producción desde el 26-sep** (#74), con la migración `0049` y la
 [decisión 0050](docs/decisiones/0050-los-clientes-en-el-admin.md), con las tres
 respuestas de Richi del 25-sep:
 
@@ -620,5 +627,30 @@ prueba** no tiene prueba de pantalla —la prueba nace de la oferta, que es una 
 Estook—: está en la deuda de la cobertura con su razón. **Sin CIF**: la organización no
 lo tiene todavía; se busca por nombre, código, correo y teléfono.
 
-**Terminado cuando:** con la #74 fusionada, la `0049` aplicada y la API desplegada, Richi
-abre Clientes en el admin, pulsa «Calcular ahora» y ve a `ikatz` de la casa.
+**Comprobado el 26-sep:** la `0049` aplicada, la API desplegada con 52 y 111, y el admin
+publicado con Clientes. **Falta que Richi lo mire**: Calcular ahora, e `ikatz` de la casa.
+
+---
+
+## 12 · La auditoría del 26-sep (#75)
+
+**Hecha el 26-sep** en la rama `auditoria-del-26-sep`, sin migración, con la
+[decisión 0051](docs/decisiones/0051-la-auditoria-del-26-sep.md). Los cuatro puntos de
+Richi y lo que salió al recorrer la app con los siete roles, en el ordenador y en el móvil:
+
+| Qué                               | Cómo queda                                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **1 · El Tablón no se veía**      | Se ve siempre: sin notas, «Sin avisos» y «Escribir». «Hoy», igual: «Todo en orden»                           |
+| **2 · Nada se esconde por vacío** | Cada tarjeta del Panel dice su vacío; se acabó «Sin nada ahora en…»                                          |
+| **3 · Google y el punto exacto**  | Juntos en **Tu local → Dónde está tu local**; el manual, plegado debajo y explicado. Conexiones, solo ventas |
+| **4 · Las mermas, a la vista**    | **Quinto destino de Almacén**, con la papelera. La dirección de antes lleva allí                             |
+| **La barra de arriba**            | Con ocho apps, los iconos ya no se encogen a un punto                                                        |
+| **La barra del móvil**            | Con cinco destinos, sin cortes: «Apps» sube a la cabecera; a 320 px, iconos y el activo con nombre           |
+| **Sin acceso**                    | Vuelve al Panel con «Esa pantalla no está entre tus apps»                                                    |
+| **Grupo Costa**                   | Sin «← ←», la lista de locales limpia y lo que llegará en una línea plegada                                  |
+| **Detalles**                      | «En línea» una vez, «Tu marca» sin punto, «El QR de tu carta», el buscador trae la app primero               |
+
+**Probado:** `la-auditoria-del-26-sep.spec.ts` (5 de pantalla), las del Panel y del buscador
+ajustadas, y el recorrido automático por roles sin errores de consola, llamadas fallidas,
+desbordes ni textos rotos. **Anotado sin arreglar**, con su razón en la 0051: algún hueco
+del mosaico del Panel y el «+» flotante del móvil, que tapa lo que quede debajo.

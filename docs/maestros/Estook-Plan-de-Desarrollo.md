@@ -210,7 +210,7 @@ La aplicación normal —el Panel, la rueda, las ocho apps— es lo que ya está
 - **Se sale** con un botón explícito, que en quiosco pide PIN.
 - **Un modo no es un destino ni gasta un nivel de profundidad.** Es otra puerta a la misma aplicación, con el mismo login y los mismos permisos.
 
-**Y el cobro no es un modo.** Se cobra cerrando una mesa dentro de Sala, y lo que se consulta vive donde le toca en la aplicación normal: **la caja es una vista de Servicio · Jornada** y **los tickets y facturas, una vista de Servicio · Ventas** (B5). Servicio ya tiene sus cuatro destinos y el máximo es cuatro: por eso Sala y Cocina son modos y no destinos.
+**Y el cobro no es un modo.** Se cobra cerrando una mesa dentro de Sala, y lo que se consulta vive donde le toca en la aplicación normal: **la caja es una vista de Servicio · Jornada** y **los tickets y facturas, una vista de Servicio · Ventas** (B5). Servicio ya tiene sus cuatro destinos, y un quinto apretaría la barra del móvil (el máximo es cinco): por eso Sala y Cocina son modos y no destinos.
 
 ### Qué aporta la cáscara nativa, y por qué no es obligatoria
 
@@ -386,7 +386,7 @@ Hasta M6 cada app tenía una lista plana de «pestañas», y salió mal de tres 
 
 Ahora hay dos niveles, y cada uno tiene un trabajo:
 
-> **Destino** · un sitio de la app que responde a **una pregunta**. Va en la barra de abajo en móvil y en el menú lateral en escritorio. Como mucho cuatro, y **solo entran los que existen de verdad**: un destino que todavía no se ha construido no ocupa posición, y se cuenta aparte diciendo en qué módulo llega.
+> **Destino** · un sitio de la app que responde a **una pregunta**. Va en la barra de abajo en móvil y en el menú lateral en escritorio. Como mucho **cinco** (eran cuatro; Almacén tiene cinco desde que las mermas salieron a la vista, 26-sep · decisión 0051: con cinco, en el móvil «Apps» pasa de la barra de abajo a la cabecera de la pantalla para que quepan sus nombres enteros), y **solo entran los que existen de verdad**: un destino que todavía no se ha construido no ocupa posición, y se cuenta aparte diciendo en qué módulo llega.
 >
 > **Vista** · la misma pantalla mirada de otra forma. Va en un control segmentado arriba, dentro del destino. Cambiar de vista **no es entrar en ningún sitio**: no gasta un nivel de profundidad, el título no cambia y el botón de volver sigue llevando al mismo sitio que antes de tocarla.
 
@@ -394,33 +394,33 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 > **Y por qué vista se entra a un destino: por la primera que esté construida.** No por la primera de la tabla. Las vistas se escriben aquí **en el orden en el que se entienden** —«En marcha · Caja · Cierre» es el orden de un día—, y ese orden casi nunca coincide con el orden en el que se construyen. Entrar por la primera de la lista dejaría la pantalla que de verdad funciona escondida detrás de un cartel de «todavía no», que es la pestaña muerta de arriba un piso más abajo. Una vista pendiente **sí se enseña** en el control segmentado, con su módulo: ahí no le quita el sitio a nada y contesta «¿y la caja, dónde está?» antes de que nadie la busque. Si ninguna está construida, se entra por la primera, porque la dirección tiene que seguir siendo copiable.
 
-| App         | Sus destinos                                |
-| ----------- | ------------------------------------------- |
-| Almacén     | Resumen · Productos · Movimientos · Compras |
-| Escandallos | Resumen · Fichas · Elaboraciones · Análisis |
-| Carta       | Carta · Menús · Análisis                    |
-| Calendario  | Calendario · Tareas · Turnos                |
-| Equipo      | Resumen · Personas · Horarios · Fichajes    |
-| Servicio    | Jornada · Ventas · Delivery · APPCC         |
-| Negocio     | Ventas · Pulse · Costes · Reseñas           |
-| Cuaderno    | Incidencias · Notas · Equipos               |
+| App         | Sus destinos                                         |
+| ----------- | ---------------------------------------------------- |
+| Almacén     | Resumen · Productos · Movimientos · Compras · Mermas |
+| Escandallos | Resumen · Fichas · Elaboraciones · Análisis          |
+| Carta       | Carta · Menús · Análisis                             |
+| Calendario  | Calendario · Tareas · Turnos                         |
+| Equipo      | Resumen · Personas · Horarios · Fichajes             |
+| Servicio    | Jornada · Ventas · Delivery · APPCC                  |
+| Negocio     | Ventas · Pulse · Costes · Reseñas                    |
+| Cuaderno    | Incidencias · Notas · Equipos                        |
 
 Y sus vistas, donde las hay:
 
-| Destino                 | Sus vistas                                                         |
-| ----------------------- | ------------------------------------------------------------------ |
-| Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados        |
-| Almacén · Movimientos   | Todo · Entradas · Salidas · Ventas · Mermas · Ajustes · Inventario |
-| Almacén · Compras       | Pedidos · Albaranes · Facturas · Proveedores · Precios             |
-| Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                                  |
-| Carta · Carta           | Por secciones · Todos los platos · Agotados                        |
-| Carta · Análisis        | Matriz · Por canal · Histórico                                     |
-| Calendario · Calendario | Mes · Semana · Día                                                 |
-| Calendario · Tareas     | Pendientes · Periódicas · Hechas                                   |
-| Equipo · Personas       | Con acceso · Sin entrar todavía · Retirados                        |
-| Servicio · Jornada      | En marcha · Caja · Cierre                                          |
-| Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas            |
-| Cuaderno · Incidencias  | Abiertas · Cerradas                                                |
+| Destino                 | Sus vistas                                                  |
+| ----------------------- | ----------------------------------------------------------- |
+| Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados |
+| Almacén · Movimientos   | Todo · Entradas · Salidas · Ventas · Ajustes · Inventario   |
+| Almacén · Compras       | Pedidos · Albaranes · Facturas · Proveedores · Precios      |
+| Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                           |
+| Carta · Carta           | Por secciones · Todos los platos · Agotados                 |
+| Carta · Análisis        | Matriz · Por canal · Histórico                              |
+| Calendario · Calendario | Mes · Semana · Día                                          |
+| Calendario · Tareas     | Pendientes · Periódicas · Hechas                            |
+| Equipo · Personas       | Con acceso · Sin entrar todavía · Retirados                 |
+| Servicio · Jornada      | En marcha · Caja · Cierre                                   |
+| Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas     |
+| Cuaderno · Incidencias  | Abiertas · Cerradas                                         |
 
 **El catálogo de `packages/ui/src/apps.ts` es el único dueño de estas dos tablas**, y hay una prueba que las lee **de este documento** y las compara. Antes la prueba llevaba los valores copiados dentro, y por eso pudo estar en verde mientras el código decía que Negocio tenía «Reseñas» donde esta tabla decía «Pulse».
 

@@ -236,7 +236,9 @@ function AppConDesplegable({
   const Icono = app.icono;
 
   return (
-    <div ref={caja} className="relative">
+    // `shrink-0`: con ocho apps la barra se desplaza a lo ancho; sin él, cada botón se
+    // encogía y los iconos se quedaban en un punto (auditoría del 26-sep).
+    <div ref={caja} className="relative shrink-0">
       <button
         type="button"
         aria-expanded={abierto}
@@ -246,16 +248,22 @@ function AppConDesplegable({
           setAbierto((antes) => !antes);
         }}
         className={clases(
-          'inline-flex min-h-toque items-center gap-e1 whitespace-nowrap rounded-medio px-e2',
+          // Menos relleno por debajo de 1536 px, para que las ocho apps quepan en
+          // 1280 sin encogerse (26-sep).
+          'inline-flex min-h-toque items-center gap-e1 whitespace-nowrap rounded-medio px-e1 2xl:px-e2',
           'text-secundario font-medium hover:bg-fondo',
           activa ? 'text-texto' : 'text-texto-suave',
         )}
       >
-        <span style={{ color: app.acento }}>
+        <span className="shrink-0" style={{ color: app.acento }}>
           <Icono size={18} />
         </span>
         {app.nombre}
-        <IconoFlechaAbajo size={14} />
+        {/* La flechita, solo en pantallas anchas: el botón abre su menú igual, y en
+            1280 px las ocho flechitas eran lo que no dejaba caber a «Cuaderno». */}
+        <span className="hidden shrink-0 2xl:inline">
+          <IconoFlechaAbajo size={14} />
+        </span>
       </button>
 
       {abierto &&

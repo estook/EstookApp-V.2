@@ -170,6 +170,24 @@ describe('el nombre se puntua; lo de al lado solo acompana', () => {
     expect(buscar('carta')[0]).toBe('Ir a Carta');
   });
 
+  it('empezar una palabra cuenta como empezar el nombre, y a igualdad gana el más corto', () => {
+    // Con cinco secciones de Almacén, «Ir a Almacén» se caía de los cinco primeros.
+    const nombres = [
+      'Almacén: Resumen',
+      'Almacén: Productos',
+      'Almacén: Movimientos',
+      'Almacén: Compras',
+      'Almacén: Mermas',
+      'Ir a Almacén',
+    ];
+    expect(filtrarPorParecido(nombres, 'alma', (n) => n)[0]).toBe('Ir a Almacén');
+    // Y lo que no empieza palabra va detrás de lo que sí.
+    expect(filtrarPorParecido(['Recalmar', 'Almacén'], 'alma', (n) => n)).toEqual([
+      'Almacén',
+      'Recalmar',
+    ]);
+  });
+
   it('una descripcion larga no cuela una accion que no viene a cuento', () => {
     expect(buscar('zzqwx')).toEqual([]);
   });

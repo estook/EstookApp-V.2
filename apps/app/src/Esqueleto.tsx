@@ -22,6 +22,7 @@ import { BuscadorUniversal } from './buscar/BuscadorUniversal.tsx';
 import { VentanaDeFogon } from './fogon/Fogon.tsx';
 import { BotonDeHacer, HojaDeHacer } from './acciones/BotonDeHacer.tsx';
 import { usarQueHacer } from './ganchos/usarQueHacer.ts';
+import { AbrirLaRueda } from './ganchos/usarLaRueda.ts';
 import { LoQueLlegaDespues, type LoQueFalta } from './pantallas/LoQueLlegaDespues.tsx';
 import { ContextoDelEsqueleto, type LoQueAbreElEsqueleto } from './ganchos/usarElEsqueleto.tsx';
 import { MiCuenta } from './pantallas/MiCuenta.tsx';
@@ -55,6 +56,9 @@ export function Esqueleto() {
   usarSigoAqui();
 
   const [ruedaAbierta, setRuedaAbierta] = useState(false);
+  const abrirLaRueda = useCallback(() => {
+    setRuedaAbierta(true);
+  }, []);
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
   const [loQueFalta, setLoQueFalta] = useState<LoQueFalta | null>(null);
   /**
@@ -187,7 +191,8 @@ export function Esqueleto() {
   // por eso el alcance viene del servidor en vez de deducirse aquí: si se
   // dedujera, la flecha podría salir donde la resolución no manda al consolidado.
   const tieneConjunto = (yo?.organizacion?.alcance ?? 'local') !== 'local' && susLocales.length > 1;
-  const enElConjunto = primero === 'cadena';
+  // Sin local, el Panel **es** el conjunto: la flecha volvía a la misma pantalla (26-sep).
+  const enElConjunto = primero === 'cadena' || yo?.local === null || yo?.local === undefined;
 
   const volverAlConjunto =
     tieneConjunto && !enElConjunto ? (
@@ -198,7 +203,8 @@ export function Esqueleto() {
         }}
         className="inline-flex min-h-toque items-center gap-e1 rounded-medio text-secundario text-texto-suave hover:text-texto"
       >
-        <IconoAtras size={16} />← {yo?.organizacion?.nombre}
+        <IconoAtras size={16} />
+        {yo.organizacion?.nombre}
       </button>
     ) : null;
 
@@ -373,7 +379,9 @@ export function Esqueleto() {
               avisarDelFallo(fallo, pathname);
             }}
           >
-            <Outlet />
+            <AbrirLaRueda.Provider value={abrirLaRueda}>
+              <Outlet />
+            </AbrirLaRueda.Provider>
           </SiAlgoFalla>
         </main>
 

@@ -39,8 +39,8 @@ test('se busca el local en Google, se elige y queda su ficha con lo gastado del 
   page,
 }) => {
   await entrar(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/conexiones`);
-  await expect(page.getByRole('heading', { level: 2, name: 'Tu local en Google' })).toBeVisible();
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
+  await expect(page.getByRole('heading', { level: 2, name: 'Dónde está tu local' })).toBeVisible();
 
   // O lo busca por primera vez, o ya estaba enlazado (el otro navegador corre a la
   // vez) y se vuelve a buscar: las dos llevan al mismo buscador.

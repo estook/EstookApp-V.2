@@ -1,5 +1,4 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
-import { enumerar } from '@estook/dominio';
 import { IconoAnadir, IconoHecho, IconoRejilla } from '@estook/iconos';
 import { clases } from '../clases.ts';
 import { Casilla, HuecoDeAnadir } from './Casilla.tsx';
@@ -25,8 +24,9 @@ import { usarMantenerPulsado } from '../ganchos/usarMantenerPulsado.ts';
  *   · **Arrastrar desde cualquier parte**, y los demás **se apartan con
  *     movimiento**. Antes saltaban de golpe al pasar el dedo, y no se sabía dónde
  *     iba a caer el widget hasta soltarlo.
- *   · **Lo vacío se aparta.** Un widget sin nada que decir no ocupa un cuadrado:
- *     sale nombrado en una línea debajo, y vuelve solo en cuanto hay algo.
+ *   · **Lo vacío se ve**, con lo que dice su vacío («Nada caduca esta semana»).
+ *     Hasta el 26-sep se apartaba a una línea de debajo; Richi prefirió verlo: «así
+ *     no se les pasa y revisan que está todo ok».
  *
  * ── El arrastre, con librería, y por qué ahora sí ───────────────────────────
  *
@@ -43,7 +43,7 @@ import { usarMantenerPulsado } from '../ganchos/usarMantenerPulsado.ts';
 const RejillaQueSeEdita = lazy(() => import('./RejillaQueSeEdita.tsx'));
 
 export function Rejilla(props: RejillaProps) {
-  const { puestos, editando, alEditar, alAnadir, guardando = false, nombreDe } = props;
+  const { editando, alEditar, alAnadir, guardando = false } = props;
   const [vacios, setVacios] = useState<ReadonlySet<string>>(() => new Set());
 
   const avisarDeVacio = useCallback((id: string, vacio: boolean) => {
@@ -72,8 +72,6 @@ export function Rejilla(props: RejillaProps) {
   const mantener = usarMantenerPulsado(() => {
     alEditar(true);
   }, !editando);
-
-  const apartados = puestos.filter((p) => vacios.has(p.id));
 
   return (
     <div className="flex flex-col gap-e3">
@@ -124,18 +122,6 @@ export function Rejilla(props: RejillaProps) {
         <div {...mantener} className="select-none [-webkit-touch-callout:none]">
           <RejillaQuieta {...props} vacios={vacios} avisarDeVacio={avisarDeVacio} />
         </div>
-      )}
-
-      {/*
-        Lo que se ha apartado, dicho. Un widget que desaparece sin explicación es
-        un widget que alguien cree haber perdido, y eso ya pasó en M7 con el
-        catálogo. Aquí se nombra y se dice que vuelve.
-      */}
-      {!editando && apartados.length > 0 && (
-        <p className="text-secundario text-texto-suave">
-          Sin nada ahora en {enumerar(apartados.map((p) => nombreDe(p.id)))}. Vuelven en cuanto haya
-          algo.
-        </p>
       )}
     </div>
   );

@@ -79,7 +79,7 @@ test('lo de hoy sale plegado en el móvil y abierto en el escritorio, y se abre 
   await expect(hoy.getByRole('listitem')).toHaveCount(1);
 });
 
-test('sin nada que atender, lo de hoy no aparece: ni la tarjeta ni un «nada urgente»', async ({
+test('sin nada que atender, lo de hoy lo dice en una línea: «todo en orden» (26-sep)', async ({
   page,
 }) => {
   // Lo de hoy lo contesta la prueba, con una sola cosa. Con lo de verdad no se puede:
@@ -114,10 +114,11 @@ test('sin nada que atender, lo de hoy no aparece: ni la tarjeta ni un «nada urg
   // Una sola cosa no se pliega: no hay nada que esconder.
   await expect(hoy.getByRole('button', { name: /^Hoy/ })).toHaveCount(0);
 
-  // Apartada la única, lo de hoy se va entero.
+  // Apartada la única, lo de hoy se queda en una línea que lo dice: escondido,
+  // nadie comprobaba que estaba todo en orden (Richi, 26-sep).
   await hoy.getByRole('button', { name: /^Recordarme/ }).click();
-  await expect(hoy).toHaveCount(0);
-  await expect(page.getByText('Nada urgente por hoy')).toHaveCount(0);
+  await expect(hoy.getByText('Todo en orden: nada urgente para hoy.')).toBeVisible();
+  await expect(hoy.getByRole('listitem')).toHaveCount(0);
 });
 
 test('el «+» se aparta al bajar y vuelve al subir, solo en el móvil', async ({ page }) => {

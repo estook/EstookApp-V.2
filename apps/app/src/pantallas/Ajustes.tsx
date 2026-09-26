@@ -6,6 +6,7 @@ import {
   IconoDinero,
   IconoBuscar,
   IconoColor,
+  IconoFlechaAbajo,
   IconoFlechaDerecha,
   IconoFlechaIzquierda,
   IconoLocal,
@@ -314,8 +315,12 @@ function LaSeccion({ id }: { readonly id: IdDeSeccion }) {
             <TuMarca />
           </Ancla>
           {llevaElLocal && (
-            <Ancla id="donde-esta-el-local">
-              <DondeEstaElLocal />
+            // Google y el punto exacto, juntos (26-sep): antes, uno en Conexiones y
+            // otro aquí, y no se sabía cuál mandaba.
+            <Ancla id="google">
+              <TuLocalEnGoogle
+                aMano={(abierto) => <DondeEstaElLocal abiertoDeEntrada={abierto} />}
+              />
             </Ancla>
           )}
           {llevaElLocal && (
@@ -349,9 +354,6 @@ function LaSeccion({ id }: { readonly id: IdDeSeccion }) {
         <>
           <Ancla id="tus-ventas">
             <ComoEntranTusVentas modo="ajustes" />
-          </Ancla>
-          <Ancla id="google">
-            <TuLocalEnGoogle />
           </Ancla>
         </>
       )}
@@ -544,7 +546,7 @@ function Idioma() {
  * Sin esto, los fichajes guardan su posición igual y no se comparan con nada. Se
  * puede poner cualquier día sin perder lo de antes.
  */
-function DondeEstaElLocal() {
+function DondeEstaElLocal({ abiertoDeEntrada }: { readonly abiertoDeEntrada: boolean }) {
   const { cliente } = usarSesion();
   const cache = useQueryClient();
   const [buscando, setBuscando] = useState(false);
@@ -604,10 +606,23 @@ function DondeEstaElLocal() {
 
   if (consulta.isError) return null;
 
+  // Dentro de «Dónde está tu local», debajo de Google: plegado si Google ya dio la
+  // posición, abierto si no hay ninguna (26-sep).
   return (
-    <Tarjeta titulo="Dónde está el local">
+    <details open={abiertoDeEntrada} className="group">
+      <summary className="flex min-h-toque cursor-pointer list-none items-center gap-e2 font-semibold [&::-webkit-details-marker]:hidden">
+        <IconoUbicacion size={18} />
+        Marcar a mano el punto exacto
+        <span className="ml-auto text-texto-suave transition-transform group-open:rotate-180">
+          <IconoFlechaAbajo size={16} />
+        </span>
+      </summary>
       {/* El ancla del aviso de Equipo · Hoy: «marca dónde está el local». */}
       <span id="donde-esta-el-local" />
+      <p className="pb-e2 text-secundario text-texto-suave">
+        Si la posición de Google no cae justo en tu puerta, o no usas Google, márcalo estando dentro
+        del local. La marcada a mano manda.
+      </p>
       <div className="flex flex-col gap-e3">
         {error !== null && (
           <Aviso tono="mal" titulo={error.quePasa}>
@@ -637,7 +652,8 @@ function DondeEstaElLocal() {
 
         <div className="flex flex-wrap items-end gap-e3">
           <Boton
-            tono={puesto ? 'secundario' : 'principal'}
+            // Secundario: el principal de la tarjeta es buscar el local en Google.
+            tono="secundario"
             icono={<IconoUbicacion size={18} />}
             cargando={buscando}
             textoCargando="Buscando dónde estás"
@@ -669,7 +685,7 @@ function DondeEstaElLocal() {
           )}
         </div>
       </div>
-    </Tarjeta>
+    </details>
   );
 }
 

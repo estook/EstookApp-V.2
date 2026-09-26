@@ -2,77 +2,44 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 26 de septiembre de 2026 por la tarde, leyendo la base, la
+> Comprobado en producción el 26 de septiembre de 2026 por la noche, leyendo la base, la
 > API y GitHub.
 >
-> | Qué                         | Cómo está                                                                   |
-> | --------------------------- | --------------------------------------------------------------------------- |
-> | Pull requests               | **Todas fusionadas hasta la #73**. Espera la #74, los clientes en el admin  |
-> | La base de datos            | **48 de 48** migraciones, igual que `main`                                  |
-> | La API                      | **Desplegada el 26-sep a las 16:02**, con la #72: 51 y 99, reloj latiendo   |
-> | A1 · la puerta del admin    | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
-> | E1 · crear cuenta y Google  | **Hecho**                                                                   |
-> | V, O y el Panel en el móvil | **Hechos y en producción** (#64 a #70)                                      |
-> | E2 · el pago con Stripe     | **En producción** (#71). **Falta que pruebes el pago**: nadie ha pagado aún |
-> | El repaso del 25-sep y L    | **En producción** (#72 con la `0048`, y #73)                                |
+> | Qué                          | Cómo está                                                                   |
+> | ---------------------------- | --------------------------------------------------------------------------- |
+> | Pull requests                | **Todas fusionadas hasta la #74**. Espera la #75, la auditoría del 26-sep   |
+> | La base de datos             | **49 de 49** migraciones, igual que `main`                                  |
+> | La API                       | **Desplegada el 26-sep a las 17:43**, con la #74: 52 y 111, reloj latiendo  |
+> | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
+> | E1 · crear cuenta y Google   | **Hecho**                                                                   |
+> | V, O y el Panel en el móvil  | **Hechos y en producción** (#64 a #70)                                      |
+> | E2 · el pago con Stripe      | **En producción** (#71). **Falta que pruebes el pago**: nadie ha pagado aún |
+> | El repaso del 25-sep, L y A2 | **En producción** (#72, #73 y #74)                                          |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · 26 de septiembre por la tarde
+## Lo que te toca ahora · 26 de septiembre por la noche
 
-### 1 · Los clientes en el admin (#74)
+### 1 · La auditoría del 26-sep (#75)
 
-**Qué trae:** en `estook.com/admin/`, **Clientes** en vez de Cuentas: la lista con
-pestañas, buscador, filtros, orden por columnas y exportar a Excel; la ficha de cada
-cliente (resumen, datos, personas, suscripción, uso, actividad y notas); los tres gestos
-con motivo (alargar la prueba, de la casa, cancelar al acabar) y «Abrir en Stripe»;
-cambiar el correo de acceso con doble confirmación; y la actividad de cada noche.
-Contado en la decisión 0050.
+**Qué trae:** el Tablón y «Hoy» se ven siempre en el Panel, y ninguna tarjeta se esconde
+por estar vacía; las **Mermas**, quinta sección de Almacén con su papelera; **Tu local →
+Dónde está tu local**, con Google y el punto exacto juntos; y los arreglos de la
+auditoría por roles (la barra de arriba, la del móvil, Grupo Costa, el buscador). Contado
+en la decisión 0051. **Sin migración y sin desplegar la API.**
 
-1. En **github.com** → **Pull requests** → **«A2 · Los clientes en el admin»** (la #74).
-   Abajo, las **tres comprobaciones en verde** → **Merge pull request** → **Confirm
-   merge**: sale en morado «merged».
-2. En PowerShell, en la carpeta del proyecto:
-
-```bash
-git checkout main
-```
-
-```bash
-git pull
-```
-
-3. **La migración.** Qué hace: crea la ficha comercial, las notas, la foto diaria del
-   uso y los cambios de correo, y las funciones con las que el admin lee a sus clientes.
-   No borra ni cambia nada de lo que hay.
-
-```bash
-.\estook.cmd bd:migrar
-```
-
-**Qué tiene que salir**, tal cual:
-
-```
-  aplicando 0049_los_clientes.sql ... hecho
-  1 migracion(es) aplicadas · 49 en total
-```
-
-**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
-
-4. **Desplegar la API**: **Actions** → **Desplegar la API** → **Run workflow**, rama
-   `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**.
-5. Comprueba:
-
-```bash
-.\estook.cmd bd:comprobar-api
-```
-
-**Qué tiene que decir:** «las 52» consultas y «los 111» comandos, y el reloj en OK.
-
-6. En **`estook.com/admin/`** (recarga la página): entras en **Clientes**. Pulsa
-   **Calcular ahora**: cada cliente sale con su actividad. Abre **ikatz**: «De la casa».
+1. En **github.com** → **Pull requests** → **«La auditoría del 26 de septiembre»** (la
+   #75). Abajo, las **tres comprobaciones en verde** → **Merge pull request** → **Confirm
+   merge**.
+2. Espera unos dos minutos a que se publique la web y **recarga** `estook.com/app/`.
+3. Mira:
+   - **Panel**: debajo del saludo, «Hoy · Todo en orden» (o lo de hoy) y el **Tablón**. Todas
+     tus tarjetas, también las vacías, cada una diciendo lo suyo.
+   - **Almacén**: en el menú, al final, **Mermas** con la papelera.
+   - **Ajustes → Tu local → Dónde está tu local**: el buscador de Google y, debajo,
+     «Marcar a mano el punto exacto». En **Conexiones**, solo las ventas.
 
 ### 2 · Probar el pago, en modo prueba
 
@@ -101,6 +68,14 @@ Ciérrala del todo y ábrela:
   abajo**.
 - **Almacén → Productos → Escanear**: la primera vez pide permiso para la cámara; un
   código que tengas dado de alta abre su ficha.
+
+---
+
+## A2 · Los clientes en el admin (#74) · **hecho** (26-sep)
+
+Fusionada, la `0049` aplicada a las 17:43 y la API desplegada con 52 consultas y 111
+comandos. En `estook.com/admin/`, **Clientes** en vez de Cuentas (decisión 0050). Falta
+que lo mires: **Calcular ahora**, y abrir **ikatz**, que sale «De la casa».
 
 ---
 

@@ -2728,6 +2728,27 @@ para cerrarse: ahora se cierra al guardar.
 Las pruebas: `clientes.prueba.ts` (dominio y admin), `los-clientes.prueba.ts` (la base,
 contra el Stripe de mentira) y `los-clientes.spec.ts` (la pantalla).
 
+### Antes de M8 · la auditoría del 26-sep
+
+_26 de septiembre de 2026._ Sin migración, [decisión
+0051](decisiones/0051-la-auditoria-del-26-sep.md). Richi no encontraba el Tablón en el Panel
+y pidió que nada se escondiera por vacío, juntar Google con el punto exacto del local y
+sacar las mermas a la vista; y una auditoría completa por roles.
+
+- **El recorrido**: los siete roles de ejemplo, en el ordenador y en el móvil, por todas
+  las pantallas, contando errores de consola, llamadas fallidas, desbordes y textos rotos.
+  No salió ninguno de esos; lo que salió fue **a ojo**, en las capturas.
+- **Lo que salió**: los iconos de la barra encogidos a un punto con ocho apps; «← ← Grupo
+  Costa»; seis botones naranjas pegados; cuatro carteles de lo que no existe; «en línea»
+  dos veces; y al hacer las mermas un destino, el buscador dejó de traer «Ir a Almacén»,
+  que lo cazó su prueba.
+- **Un falso fallo**: las capturas de página entera enseñaban el Panel medio vacío. Era la
+  animación de entrada cogida a medias por la captura; con las animaciones quietas, el
+  Panel estaba entero. Se comprobó antes de «arreglar» nada.
+
+Las pruebas: `la-auditoria-del-26-sep.spec.ts`, y las del Panel, del buscador y de las
+direcciones viejas ajustadas.
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

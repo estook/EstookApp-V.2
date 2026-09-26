@@ -257,7 +257,10 @@ function Fila({
               ? `Desde las ${comoSeLeeLaHora(quien.desde ?? '')} · ${comoSeLeeDonde(quien.metros, quien.enElLocal, null)}`
               : quien.entraHoyALas !== null
                 ? `Entra a las ${quien.entraHoyALas}`
-                : `${quien.rolNombre} · ${quien.enLinea ? 'en línea' : ultimaVez(quien.ultimoAccesoEn)}`}
+                : // «En línea» ya lo dice la etiqueta de al lado: no se repite (26-sep).
+                  quien.enLinea
+                  ? quien.rolNombre
+                  : `${quien.rolNombre} · ${ultimaVez(quien.ultimoAccesoEn)}`}
           </span>
         </span>
         {quien.dentro && (

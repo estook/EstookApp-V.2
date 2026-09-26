@@ -76,7 +76,18 @@ export function filtrarPorParecido<T>(
     .map((cosa) => {
       const nombre = sinAcentos(textoDe(cosa));
       if (nombre.includes(busca)) {
-        return { cosa, punto: 2 - nombre.indexOf(busca) / 1000 };
+        // Empezar **una palabra** cuenta como empezar el nombre: «alma» es tan de
+        // «Ir a Almacén» como de «Almacén: Mermas». Y a igualdad, el nombre más
+        // corto primero, que es el sitio y no uno de sus trozos (26-sep: con la
+        // quinta sección de Almacén, «Ir a Almacén» se caía de los cinco primeros).
+        const donde = nombre.indexOf(busca);
+        const alEmpezarPalabra = donde === 0 || /[^a-z0-9ñ]/.test(nombre.charAt(donde - 1));
+        return {
+          cosa,
+          punto: alEmpezarPalabra
+            ? 2 - nombre.length / 10_000_000
+            : 1.9 - donde / 100_000 - nombre.length / 10_000_000,
+        };
       }
 
       const punto = parecido(escrito, textoDe(cosa));

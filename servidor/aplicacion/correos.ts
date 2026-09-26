@@ -109,3 +109,53 @@ export function correoDeLaCuenta(para: string, correo: CorreoDeLaCuenta): Correo
     ]),
   };
 }
+
+// ── A2 · Cambiar el correo de acceso, con doble confirmación (0041) ─────────
+
+/** El enlace de la app para confirmar o parar el cambio: el token va tras la almohadilla. */
+export function enlaceDelCambioDeCorreo(que: 'confirmar' | 'parar', token: string): string {
+  return `https://estook.com/app/#/correo?${que}=${encodeURIComponent(token)}`;
+}
+
+/** Al correo **nuevo**: confirmarlo es lo que lo cambia. */
+export function correoParaConfirmarElNuevo(
+  para: string,
+  nombre: string,
+  enlace: string,
+): CorreoParaMandar {
+  const saludo = `Hola, ${nombre}:`;
+  const frase =
+    'Estook va a cambiar el correo con el que entras a este. Para que el cambio se haga, confírmalo desde aquí en las próximas 24 horas.';
+  return {
+    para,
+    asunto: 'Confirma tu nuevo correo de Estook',
+    texto: [saludo, '', frase, '', enlace, '', 'Si no lo has pedido tú, no hagas nada.'].join('\n'),
+    html: envolver([
+      escapar(saludo),
+      escapar(frase),
+      `<a href="${escapar(enlace)}" style="display:inline-block;background:#ff7a00;color:#1d2a2e;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px">Confirmar el correo</a>`,
+      'Si no lo has pedido tú, no hagas nada.',
+    ]),
+  };
+}
+
+/** Al correo **de ahora**: el aviso, y un enlace para pararlo si no ha sido quien entra. */
+export function correoDeAvisoAlDeAhora(
+  para: string,
+  nombre: string,
+  nuevo: string,
+  enlace: string,
+): CorreoParaMandar {
+  const saludo = `Hola, ${nombre}:`;
+  const frase = `Nos han pedido cambiar el correo con el que entras en Estook a ${nuevo}. Si lo has pedido tú, no hagas nada. Si no, páralo desde aquí: tu cuenta se queda como está.`;
+  return {
+    para,
+    asunto: 'Van a cambiar tu correo de Estook',
+    texto: [saludo, '', frase, '', enlace].join('\n'),
+    html: envolver([
+      escapar(saludo),
+      escapar(frase),
+      `<a href="${escapar(enlace)}" style="display:inline-block;background:#1d2a2e;color:#ffffff;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px">No he sido yo: pararlo</a>`,
+    ]),
+  };
+}

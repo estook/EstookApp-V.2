@@ -43,6 +43,10 @@ test.describe('la puerta del admin', () => {
     const nombre = `Prueba ${info.project.name}`;
 
     await entrarEnElAdmin(page);
+    await page
+      .getByRole('navigation', { name: 'Secciones del admin' })
+      .getByRole('button', { name: 'Administradores' })
+      .click();
 
     // ── Quién tiene acceso: al menos quien ha entrado ───────────────────────
     // La tabla se pinta dos veces —tabla en escritorio, tarjetas en móvil— y una

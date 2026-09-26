@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HashRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import {
@@ -21,6 +21,8 @@ import { usarLaVueltaDelPago } from './ganchos/usarLaVueltaDelPago.ts';
 import { laDireccionDeAhora } from './pantallas/direccionesViejas.ts';
 import { SinEntrar } from './sesion/SinEntrar.tsx';
 import { SinServidor } from './sesion/SinServidor.tsx';
+import { CambioDeCorreo } from './sesion/CambioDeCorreo.tsx';
+import { elEnlaceDelCorreo } from './sesion/enlaceDelCorreo.ts';
 import {
   CuentaParada,
   ElegirLocal,
@@ -106,6 +108,11 @@ export function Aplicacion() {
   // Lo pegado abajo, en el borde de la pantalla aunque el iPhone se líe con su
   // visor al cerrar el teclado (repaso del 25-sep, `anclaAbajo.ts`).
   usarAnclaAbajo();
+
+  // Los enlaces del cambio de correo (A2) van antes que todo: se abren desde el
+  // correo, haya quien haya dentro, y no preguntan quién eres.
+  const [enlaceDelCorreo] = useState(() => elEnlaceDelCorreo(window.location.hash));
+  if (enlaceDelCorreo !== null) return <CambioDeCorreo enlace={enlaceDelCorreo} />;
 
   return (
     <QueryClientProvider client={cache}>

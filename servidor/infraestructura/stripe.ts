@@ -109,6 +109,8 @@ export interface Pagos {
       readonly precio?: string;
       readonly cantidad?: number;
       readonly cancelarAlAcabar?: boolean;
+      /** Alargar la prueba hasta ese día (A2): sin cobrar nada por el cambio. */
+      readonly pruebaHasta?: Date;
     },
   ): Promise<SuscripcionDeStripe>;
 }
@@ -586,6 +588,12 @@ export function pagosDeStripe(
                 proration_behavior: 'create_prorations',
               }),
           cancel_at_period_end: cambios.cancelarAlAcabar,
+          ...(cambios.pruebaHasta === undefined
+            ? {}
+            : {
+                trial_end: Math.trunc(cambios.pruebaHasta.getTime() / 1000),
+                proration_behavior: 'none',
+              }),
           expand: ['default_payment_method'],
         }),
       );

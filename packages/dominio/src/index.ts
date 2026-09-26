@@ -558,3 +558,16 @@ export type {
   LaSuscripcion,
   LoQueSabeElReloj,
 } from './suscripcion.ts';
+
+// ── A2 · los clientes, vistos desde el admin (0041) ──────────────────────────
+export {
+  NOMBRE_DE_LA_ACTIVIDAD,
+  NOMBRE_DE_LA_PESTANA,
+  PRODUCTOS_PARA_ESTRENAR,
+  celdaDeCsv,
+  comoCsv,
+  cuotaAlMes,
+  estaEnLaPestana,
+  laActividad,
+} from './clientes.ts';
+export type { ActividadDeCliente, LoQueHaceUnCliente, PestanaDeClientes } from './clientes.ts';

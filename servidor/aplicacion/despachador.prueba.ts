@@ -304,6 +304,11 @@ describe('las puertas se cierran solas', () => {
         // Entrega O (0047) · la carta de un local: quien escanea el QR de la mesa
         // no ha entrado en ningún sitio. Solo devuelve lo que el local ya enseña.
         'la_carta',
+        // A2 (0049) · los dos enlaces del cambio de correo de acceso: confirmar el nuevo
+        // y pararlo desde el de ahora. Valen por el token del enlace, de un solo uso y
+        // con caducidad, y la base solo guarda su huella.
+        'confirmar_el_correo_nuevo',
+        'parar_el_cambio_de_correo',
       ].sort(),
     );
   });
@@ -355,8 +360,19 @@ describe('las puertas se cierran solas', () => {
         // 0042 · la oferta de prueba.
         'admin_oferta',
         'admin_cambiar_oferta',
-        // 0048 · quién ha pagado.
-        'admin_las_cuentas',
+        // A2 (0049) · los clientes: la lista, la ficha y lo que se hace con cada uno.
+        'admin_los_clientes',
+        'admin_un_cliente',
+        'admin_guardar_la_ficha_comercial',
+        'admin_cambiar_el_nombre',
+        'admin_escribir_una_nota',
+        'admin_fijar_una_nota',
+        'admin_alargar_la_prueba',
+        'admin_de_la_casa',
+        'admin_cancelar_al_acabar',
+        'admin_cambiar_el_correo',
+        'admin_exportar_los_clientes',
+        'admin_calcular_el_uso',
       ].sort(),
     );
 

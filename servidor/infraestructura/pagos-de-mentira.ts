@@ -196,6 +196,9 @@ export function pagosDeMentira(
         if (cambios.cantidad !== undefined) linea.quantity = cambios.cantidad;
       }
       if (cambios.cancelarAlAcabar !== undefined) s.cancel_at_period_end = cambios.cancelarAlAcabar;
+      if (cambios.pruebaHasta !== undefined) {
+        s.trial_end = Math.trunc(cambios.pruebaHasta.getTime() / 1000);
+      }
       // Después, por su cuenta, como Stripe: esto se llama dentro de un comando, y la
       // API de pruebas atiende de una en una. Esperar aquí al aviso sería esperarse a
       // sí mismo.

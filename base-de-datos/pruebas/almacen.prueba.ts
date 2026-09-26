@@ -639,6 +639,16 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // llaman el aviso de Stripe y el reloj, que no traen persona con la que pasar la
     // seguridad de las filas, y deja el historial. `las_cuentas` las lee todas, para
     // el reloj y para el admin, que tampoco son de una organización. Son treinta y seis.
+    //
+    // **Y la 0049 (A2, los clientes en el admin) añade ocho, a propósito.** El admin
+    // no es de ninguna organización, así que la seguridad de las filas no le enseña
+    // ningún cliente: `los_clientes`, `un_cliente`, `el_uso_de` y
+    // `lo_que_hacen_los_clientes` leen **lo justo** —nada de dentro del restaurante—
+    // y comprueban ellas mismas que quien pregunta es admin o el reloj
+    // (`es_admin_o_el_sistema`). `anotar_desde_el_admin` deja en la auditoría del
+    // cliente lo que el admin le hace; `renombrar_desde_el_admin` y
+    // `poner_de_la_casa` son los dos únicos cambios que el admin hace dentro de un
+    // cliente, y el segundo solo un admin total. Son cuarenta y cuatro.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -651,6 +661,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'a_quien_lleva',
       'abrir_demostracion',
       'abrir_sesion',
+      'anotar_desde_el_admin',
       'anotar_intento_de_contrasena',
       'anotar_intento_de_pin',
       'anotar_intento_de_registro',
@@ -661,10 +672,14 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'credencial_para_entrar',
       'dar_de_alta_persona',
       'direccion_libre_para_la_carta',
+      'el_uso_de',
+      'es_admin_o_el_sistema',
       'esta_en_linea',
       'la_carta_publica',
       'las_cuentas',
+      'lo_que_hacen_los_clientes',
       'locales_visibles',
+      'los_clientes',
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',
       'organizaciones_visibles',
@@ -675,12 +690,15 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'pin_del_quiosco',
       'pines_para_entrar',
       'poner_credencial',
+      'poner_de_la_casa',
       'reconocer_dispositivo',
       'registro_pendiente_de',
+      'renombrar_desde_el_admin',
       'sembrar_categorias',
       'sesion_activa',
       'suscripcion_al_crear_organizacion',
       'tiene_como_volver_a_entrar',
+      'un_cliente',
       'unir_identidad',
       'visto_por_ultima_vez',
       'zonas_que_ve',

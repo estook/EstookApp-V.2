@@ -118,7 +118,22 @@ import { laCarta } from './consultas/carta.ts';
 import { elTablon } from './consultas/tablon.ts';
 import { escribirEnElTablon, marcarNotaLeida, quitarNota } from './comandos/tablon.ts';
 import { publicarLaCarta, quitarLaCarta, subirPaginaDeLaCarta } from './comandos/carta.ts';
-import { adminLasCuentas, miSuscripcion } from './consultas/suscripcion.ts';
+import { miSuscripcion } from './consultas/suscripcion.ts';
+import { adminLosClientes, adminUnCliente } from './consultas/clientes.ts';
+import {
+  adminAlargarLaPrueba,
+  adminCalcularElUso,
+  adminCambiarElCorreo,
+  adminCambiarElNombre,
+  adminCancelarAlAcabar,
+  adminDeLaCasa,
+  adminEscribirUnaNota,
+  adminExportarLosClientes,
+  adminFijarUnaNota,
+  adminGuardarLaFichaComercial,
+  confirmarElCorreoNuevo,
+  pararElCambioDeCorreo,
+} from './comandos/clientes.ts';
 import {
   abrirElPortal,
   cambiarDePlan,
@@ -234,7 +249,9 @@ export const catalogo = {
     // El repaso del 25-sep · el Tablón del local (0049).
     [elTablon.nombre]: elTablon,
     [miSuscripcion.nombre]: miSuscripcion,
-    [adminLasCuentas.nombre]: adminLasCuentas,
+    // A2 · los clientes, en el admin (migración 0049): la lista y la ficha de cada uno.
+    [adminLosClientes.nombre]: adminLosClientes,
+    [adminUnCliente.nombre]: adminUnCliente,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -398,5 +415,23 @@ export const catalogo = {
     [subirPaginaDeLaCarta.nombre]: subirPaginaDeLaCarta,
     [publicarLaCarta.nombre]: publicarLaCarta,
     [quitarLaCarta.nombre]: quitarLaCarta,
+
+    // ── A2 · Los clientes, en el admin (migración 0049) ────────────────────
+    //
+    // Lo delicado pide motivo, y lo más delicado —el correo de acceso, exportar— el
+    // código otra vez. De la suscripción, tres gestos: el resto se hace en Stripe.
+    [adminGuardarLaFichaComercial.nombre]: adminGuardarLaFichaComercial,
+    [adminCambiarElNombre.nombre]: adminCambiarElNombre,
+    [adminEscribirUnaNota.nombre]: adminEscribirUnaNota,
+    [adminFijarUnaNota.nombre]: adminFijarUnaNota,
+    [adminAlargarLaPrueba.nombre]: adminAlargarLaPrueba,
+    [adminDeLaCasa.nombre]: adminDeLaCasa,
+    [adminCancelarAlAcabar.nombre]: adminCancelarAlAcabar,
+    [adminCambiarElCorreo.nombre]: adminCambiarElCorreo,
+    [adminExportarLosClientes.nombre]: adminExportarLosClientes,
+    [adminCalcularElUso.nombre]: adminCalcularElUso,
+    // Y los dos enlaces del correo, sin sesión: confirmar el nuevo o pararlo.
+    [confirmarElCorreoNuevo.nombre]: confirmarElCorreoNuevo,
+    [pararElCambioDeCorreo.nombre]: pararElCambioDeCorreo,
   } as Record<string, Comando<never, unknown>>,
 };

@@ -559,7 +559,9 @@ test('la factura dice si cuadra mientras se escribe', async ({ page, request }, 
 
   const hoja = page.getByRole('dialog', { name: 'Apuntar una factura' });
   await hoja.getByLabel('¿De quién es?').selectOption({ label: nombre });
-  await hoja.getByLabel('Número').fill(`F-${sufijo}`);
+  // La caja del número, y no «Albarán sin número»: esa casilla sale al elegir el
+  // proveedor, y según lo que tarde el navegador ya está o todavía no.
+  await hoja.getByRole('textbox', { name: /^Número/ }).fill(`F-${sufijo}`);
   await hoja.getByLabel('Fecha').fill(hoy);
   await hoja.getByLabel('Base, sin impuestos').fill('21,00');
 

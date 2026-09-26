@@ -46,7 +46,7 @@ git pull
    nada.
 
 ```bash
-.estook.cmd bd:migrar
+.\estook.cmd bd:migrar
 ```
 
 **Qué tiene que salir**, tal cual:
@@ -64,7 +64,7 @@ git pull
 5. Comprueba:
 
 ```bash
-.estook.cmd bd:comprobar-api
+.\estook.cmd bd:comprobar-api
 ```
 
 **Qué tiene que decir:** «las 56» consultas, «los 116» comandos y el reloj en OK.

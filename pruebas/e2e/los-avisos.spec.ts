@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 import { APP, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
 
 /**
@@ -158,21 +158,24 @@ test('Ajustes → Avisos: cada uno elige lo suyo, y solo ve lo que le puede lleg
   await expect(page.getByText('Desde cuánto avisa una subida de precio')).toHaveCount(0);
 
   const campana = page.getByRole('switch', { name: `${aviso}: en la campana` });
+  // Se toca lo que se ve —el interruptor pintado, que es su etiqueta—: en el Safari
+  // de la integración continua, un clic forzado en la casilla escondida no llega.
+  const tocar = () => campana.locator('xpath=..').click();
   await expect(campana).toBeChecked();
   // Se ve al momento, y se guarda por detrás: se espera a que llegue antes de recargar.
   const guardado = page.waitForResponse((r) => r.url().includes('/guardar_mis_avisos'));
-  await campana.click({ force: true });
+  await tocar();
   await expect(campana).not.toBeChecked();
   expect((await guardado).status()).toBe(200);
   // Sin campana no hay correo.
   await expect(page.getByRole('switch', { name: `${aviso}: también por correo` })).toBeDisabled();
 
   // Se ha guardado: sigue así al volver.
-  await page.reload();
+  await recargarSinQueSeCaiga(page);
   await expect(campana).not.toBeChecked({ timeout: 10_000 });
   // Y se deja como estaba, para las demás pruebas.
   const devuelto = page.waitForResponse((r) => r.url().includes('/guardar_mis_avisos'));
-  await campana.click({ force: true });
+  await tocar();
   await expect(campana).toBeChecked();
   expect((await devuelto).status()).toBe(200);
 });

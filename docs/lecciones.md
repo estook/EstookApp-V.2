@@ -403,3 +403,10 @@
      interruptor en pantalla y guarda por detrás; la prueba recargaba antes de que llegara
      al servidor, y una vez de cada tres el cambio se perdía. No era la base ni otra
      prueba a la vez: era no esperar. Antes de recargar, se espera a la respuesta.
+125. **Lo último que se toca también pasa por `verifica`, aunque sea un documento.** La #76
+     salió en rojo por dos cosas escritas después de la última pasada: la guía de Richi con
+     `.estook.cmd` sin la barra (la barra se la comió el guion que la escribió) y una
+     prueba que recargaba con `page.reload` en vez de `recargarSinQueSeCaiga`. Las dos
+     tenían su prueba, y las dos la habrían cazado en local. Y de paso: en el Safari de
+     la integración continua, un clic forzado en una casilla escondida no llega; se toca
+     lo que se ve.

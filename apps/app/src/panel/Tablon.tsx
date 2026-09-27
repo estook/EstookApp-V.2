@@ -7,6 +7,7 @@ import { ErrorEnCristiano, clases } from '@estook/ui';
 import { FalloDeLaApi } from '../datos/FalloDeLaApi.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CLAVE_DEL_TABLON, usarElTablon, type NotaDelTablon } from '../ganchos/usarElTablon.ts';
+import { CLAVE_DE_LA_CAMPANA, CLAVE_DE_MIS_AVISOS } from '../ganchos/usarLosAvisos.ts';
 
 /**
  * El Tablón · el corcho de la cocina, en el Panel (repaso del 25-sep · 0049).
@@ -136,6 +137,9 @@ function NotaEnElTablon({
   const alDia = async () => {
     await cache.invalidateQueries({ queryKey: CLAVE_DEL_TABLON });
     await cache.invalidateQueries({ queryKey: ['lo_de_hoy'] });
+    // Leída aquí, leída en la campana (0052).
+    await cache.invalidateQueries({ queryKey: CLAVE_DE_LA_CAMPANA });
+    await cache.invalidateQueries({ queryKey: CLAVE_DE_MIS_AVISOS });
   };
 
   const leer = useMutation({

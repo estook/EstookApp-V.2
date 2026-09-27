@@ -2,72 +2,99 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 26 de septiembre de 2026 por la noche, leyendo la base, la
+> Comprobado en producción el 27 de septiembre de 2026 de madrugada, leyendo la base, la
 > API y GitHub.
 >
 > | Qué                          | Cómo está                                                                   |
 > | ---------------------------- | --------------------------------------------------------------------------- |
-> | Pull requests                | **Todas fusionadas hasta la #74**. Espera la #75, la auditoría del 26-sep   |
+> | Pull requests                | **Todas fusionadas hasta la #75**. Espera la de R1, la campana              |
 > | La base de datos             | **49 de 49** migraciones, igual que `main`                                  |
 > | La API                       | **Desplegada el 26-sep a las 17:43**, con la #74: 52 y 111, reloj latiendo  |
 > | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
 > | E1 · crear cuenta y Google   | **Hecho**                                                                   |
 > | V, O y el Panel en el móvil  | **Hechos y en producción** (#64 a #70)                                      |
-> | E2 · el pago con Stripe      | **En producción** (#71). **Falta que pruebes el pago**: nadie ha pagado aún |
+> | E2 · el pago con Stripe      | **En producción** (#71). Pago de prueba hecho: Pizzeriacazzo, 26-sep        |
 > | El repaso del 25-sep, L y A2 | **En producción** (#72, #73 y #74)                                          |
+> | La auditoría del 26-sep      | **En producción** (#75)                                                     |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · 26 de septiembre por la noche
+## Lo que te toca ahora · R1, la campana y los avisos (27-sep)
 
-### 1 · La auditoría del 26-sep (#75)
+**Qué trae:** la **campana** de arriba avisa de verdad —lo que empieza o manda tu equipo,
+un albarán con incidencias, una merma cara, un proveedor que sube un precio, la carta
+nueva y las notas del Tablón—; **pedir ayuda con un pedido**; **Ajustes → Avisos**, con
+campana y correo para cada uno; y **el buscador se cierra** con su X o tocando fuera.
+Contado en la decisión 0052. **Con migración (`0050`) y con despliegue de la API.**
 
-**Qué trae:** el Tablón y «Hoy» se ven siempre en el Panel, y ninguna tarjeta se esconde
-por estar vacía; las **Mermas**, quinta sección de Almacén con su papelera; **Tu local →
-Dónde está tu local**, con Google y el punto exacto juntos; y los arreglos de la
-auditoría por roles (la barra de arriba, la del móvil, Grupo Costa, el buscador). Contado
-en la decisión 0051. **Sin migración y sin desplegar la API.**
+1. En **github.com** → **Pull requests** → **«R1 · La campana y los avisos»**. Abajo, las
+   **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
+2. En PowerShell, en la carpeta del proyecto, trae lo fusionado:
 
-1. En **github.com** → **Pull requests** → **«La auditoría del 26 de septiembre»** (la
-   #75). Abajo, las **tres comprobaciones en verde** → **Merge pull request** → **Confirm
-   merge**.
-2. Espera unos dos minutos a que se publique la web y **recarga** `estook.com/app/`.
-3. Mira:
-   - **Panel**: debajo del saludo, «Hoy · Todo en orden» (o lo de hoy) y el **Tablón**. Todas
-     tus tarjetas, también las vacías, cada una diciendo lo suyo.
-   - **Almacén**: en el menú, al final, **Mermas** con la papelera.
-   - **Ajustes → Tu local → Dónde está tu local**: el buscador de Google y, debajo,
-     «Marcar a mano el punto exacto». En **Conexiones**, solo las ventas.
+```bash
+git checkout main
+```
 
-### 2 · Probar el pago, en modo prueba
+```bash
+git pull
+```
 
-No se cobra nada de verdad. **Es lo único de E2 que no puedo probar yo**: pide crear una
-cuenta y pagar. En el móvil o en una ventana privada:
+3. **La migración.** Qué hace: crea la tabla de los avisos, la de lo que cada uno elige y
+   la de las invitaciones a un pedido, y el 5 % de las subidas en cada local. No borra
+   nada.
 
-1. `estook.com` → **Crear cuenta**, con un correo que no uses en Estook (por ejemplo,
-   `tucorreo+prueba@gmail.com`) y un negocio de prueba.
-2. Sale **«Elige tu plan»**: pulsa **«Elegir Esencial»**. Se abre la página de pago de
-   Stripe, con una franja de **«Entorno de prueba»** arriba.
-3. Tarjeta **`4242 4242 4242 4242`**, cualquier fecha futura, cualquier CVC, tu nombre y
-   una dirección → **Suscribirse**.
-4. Vuelves a Estook: **«Cargando tu pago»** un momento y **entras al alta**.
-5. Mira **Ajustes → Suscripción**: Esencial, 49,00 € al mes, «Visa ···· 4242».
-6. En **`estook.com/admin/`** → **Clientes**, pestaña **Pagando**: la cuenta nueva, con
-   su plan. En su ficha, **Suscripción → Abrir en Stripe** abre su cliente en Stripe.
+```bash
+.\estook.cmd bd:migrar
+```
 
-**Si en el paso 2 sale un error en vez de la página de Stripe, cópiamelo tal cual.**
+**Qué tiene que salir**, tal cual:
 
-### 3 · Mirarlo en el iPhone, con la app instalada
+```
+  aplicando 0050_los_avisos.sql ... hecho
+  1 migracion(es) aplicadas · 50 en total
+```
 
-Ciérrala del todo y ábrela:
+**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
 
-- **Hoy**, arriba del Panel: tiene que salir siempre que haya algo, a la primera.
-- Escribe algo en un campo, cierra el teclado y desliza: **la barra de abajo se queda
-  abajo**.
-- **Almacén → Productos → Escanear**: la primera vez pide permiso para la cámara; un
-  código que tengas dado de alta abre su ficha.
+4. **Desplegar la API**: **Actions** → a la izquierda, **Desplegar la API** → **Run
+   workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al
+   **círculo verde**.
+5. Comprueba:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 56» consultas, «los 116» comandos y el reloj en OK.
+
+6. **Míralo** (recarga la app antes):
+   - **La campana**, arriba a la derecha: al abrirla, «Todo al día».
+   - **Pide ayuda con un pedido**: Almacén → Compras → Pedidos → un pedido nuevo →
+     **«Pedir ayuda»** → elige a alguien de cocina → **«Pedírselo»**. A esa persona le
+     llega a la campana y al correo; al pulsar **«Listo»**, te llega a ti.
+   - **Ajustes → Avisos**: una fila por aviso con **Campana** y **Correo**, y abajo
+     **desde cuánto avisa una subida de precio** (5 %).
+   - **El buscador** (la lupa): la **X** lo cierra, y tocar fuera también.
+
+**Ojo, y es a propósito:** tú entras como **dirección**, y a dirección **no le llega de
+fábrica lo que hace el equipo** (el pedido empezado, el mandado, la merma cara): con
+varios locales serían decenas al día. Si lo quieres, enciéndelo en **Ajustes → Avisos**.
+Lo demás —la ayuda, las subidas, el Tablón, la carta— sí te llega.
+
+### Y en el iPhone, con la app instalada
+
+Ciérrala del todo y ábrela: **Hoy** a la primera, **la barra de abajo** en su sitio tras
+cerrar el teclado, **Escanear** en Almacén → Productos, y **la campana**.
+
+---
+
+## La auditoría del 26-sep (#75) · **hecho** (26-sep)
+
+Fusionada a las 22:07 y publicada sola: sin migración ni API. El Tablón y «Hoy» siempre a
+la vista, las Mermas en Almacén, y Google con el punto exacto en Tu local (decisión 0051).
+**El pago en modo prueba ya está hecho**: Pizzeriacazzo, el 26-sep a las 20:59.
 
 ---
 

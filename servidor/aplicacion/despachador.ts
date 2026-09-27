@@ -7,6 +7,7 @@ import { reaccionar } from './reacciones.ts';
 import { laFirmaEsDeStripe } from '../infraestructura/stripe.ts';
 import { aplicarElAviso, enNombreDelSistema, porQueNoPasaElPago } from './pago.ts';
 import { latir, type LoQueHizoElReloj } from './reloj.ts';
+import { dejoCorreos, mandarLosCorreosDeLosAvisos } from './avisos.ts';
 
 /**
  * El despachador (M2, con las puertas de M4).
@@ -298,7 +299,7 @@ export function crearDespachador(puertos: Puertos): Despachador {
         };
       }
 
-      return conFallosTraducidos(async () =>
+      const resultado = await conFallosTraducidos(async () =>
         puertos.enTransaccion(quien, async (contexto): Promise<Resultado> => {
           const cerrada = porQueNoPasa(elComando, contexto.sesion);
           if (cerrada) return { estado: 'fallo', codigo: cerrada };
@@ -373,6 +374,28 @@ export function crearDespachador(puertos: Puertos): Despachador {
           return { estado: 'ok', datos };
         }),
       );
+
+      // Los correos de los avisos que lo piden (0052), **con el comando ya guardado**:
+      // un correo que no sale no puede deshacer el pedido que lo provocó. Si falla,
+      // se queda pendiente y lo reintenta el reloj.
+      if (dejoCorreos(quien.correlacionId) && resultado.estado === 'ok') {
+        try {
+          await puertos.enTransaccion(
+            { tokenDeSesion: null, correlacionId: quien.correlacionId },
+            (contexto) => mandarLosCorreosDeLosAvisos(contexto),
+          );
+        } catch (fallo) {
+          console.error(
+            JSON.stringify({
+              nivel: 'error',
+              mensaje: 'los correos de los avisos no han salido',
+              correlacion_id: quien.correlacionId,
+              detalle: fallo instanceof Error ? fallo.message : String(fallo),
+            }),
+          );
+        }
+      }
+      return resultado;
     },
 
     async avisoDeStripe(quien, cuerpo, firma) {

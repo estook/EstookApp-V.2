@@ -198,7 +198,7 @@ export const elTablon = consulta<Record<string, never>, SalidaElTablon>({
 });
 
 /** Si una nota de cocina o de sala le toca a este puesto (como `zonas_que_ve`). */
-function laNotaLeToca(zona: 'cocina' | 'sala' | null, rol: string): boolean {
+export function laNotaLeToca(zona: 'cocina' | 'sala' | null, rol: string): boolean {
   if (zona === null) return true;
   if (rol === 'cocinero') return zona === 'cocina';
   if (rol === 'camarero') return zona === 'sala';

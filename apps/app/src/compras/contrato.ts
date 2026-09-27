@@ -619,4 +619,8 @@ export const LO_QUE_TOCAN_LAS_COMPRAS = [
   ['mis_movimientos'],
   // Las cifras con flecha: el valor de la cámara y las compras (V, punto 2).
   ['un_indicador'],
+  // Quién ayuda con un pedido, y la campana (0052): mandarlo o terminarlo avisa.
+  ['ayuda_con_el_pedido'],
+  ['cuantos_avisos'],
+  ['mis_avisos'],
 ] as const;

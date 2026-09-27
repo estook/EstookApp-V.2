@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   IconoAbrirFuera,
+  IconoAvisos,
   IconoDinero,
   IconoBuscar,
   IconoColor,
@@ -56,6 +57,7 @@ import { TusObjetivos } from './TusObjetivos.tsx';
 import { TuCartaYSuQr } from './TuCartaYSuQr.tsx';
 import { TuCartaSubida } from './TuCartaSubida.tsx';
 import { TuSuscripcion } from './TuSuscripcion.tsx';
+import { TusAvisos } from './TusAvisos.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
 import {
   ajustesQueVe,
@@ -266,6 +268,7 @@ export function Ajustes() {
 const ICONO: Readonly<Record<IdDeSeccion, Icono>> = {
   aparato: IconoColor,
   cuenta: IconoPersona,
+  avisos: IconoAvisos,
   local: IconoLocal,
   conexiones: IconoAbrirFuera,
   suscripcion: IconoDinero,
@@ -307,6 +310,12 @@ function LaSeccion({ id }: { readonly id: IdDeSeccion }) {
             </div>
           </Ancla>
         </>
+      )}
+
+      {id === 'avisos' && (
+        <Ancla id="mis-avisos">
+          <TusAvisos />
+        </Ancla>
       )}
 
       {id === 'local' && (

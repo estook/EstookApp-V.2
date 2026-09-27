@@ -2749,6 +2749,33 @@ sacar las mermas a la vista; y una auditoría completa por roles.
 Las pruebas: `la-auditoria-del-26-sep.spec.ts`, y las del Panel, del buscador y de las
 direcciones viejas ajustadas.
 
+### Antes de M8 · R1, la campana y los avisos
+
+_27 de septiembre de 2026._ Migración `0050`, [decisión
+0052](decisiones/0052-la-campana-y-los-avisos.md). La campana de arriba llevaba desde M3
+abriendo una hoja que decía «llegará». Richi contestó las siete preguntas de R y R se
+partió en dos: **R1**, la campana y lo que la llena; **R2**, el pedido sugerido, los
+informes y la nota de Google.
+
+- **Lo que llega**: el pedido empezado, el mandado, el albarán con incidencias y la merma
+  cara, a quien está por encima; la invitación a rellenar un pedido y su «Listo»; la
+  subida de precio (la mejora 13), a quien compra; la carta nueva y las notas del Tablón,
+  a quien le tocan. **Uno por cosa y persona.**
+- **Lo escribe el sistema**, en la misma transacción que lo provoca, y a quién le llega
+  lo contesta una sola función, solo al sistema. El correo sale con el comando ya
+  guardado, y lo que no sale lo reintenta el reloj.
+- **Ajustes → Avisos**: campana y correo por aviso, y el umbral de las subidas. Y el extra
+  de Richi: **el buscador se cierra con una X y tocando fuera**, también en el móvil.
+- **Lo que salió al hacerlo**: `enNombreDelSistema` no se podía anidar —la llamada de
+  dentro le apagaba el modo a la de fuera— (lección 123); el aviso del pedido mandado
+  llevaba el importe y le llega a un cocinero, que no ve precios: se quitó; y la prueba
+  de Ajustes recargaba antes de que el cambio llegara a guardarse (lección 124).
+
+Las pruebas: `avisos.prueba.ts` (el dominio), `los-avisos.prueba.ts` (la base: a quién,
+uno por cosa, la invitación con su correo, las subidas, el Tablón, las preferencias, que
+nadie toca los avisos de otro, y el reloj), `los-avisos.spec.ts` (la pantalla) y dos
+capturas nuevas, en claro y oscuro.
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

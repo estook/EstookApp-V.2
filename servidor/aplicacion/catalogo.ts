@@ -116,6 +116,19 @@ import { misObjetivos } from './consultas/objetivos.ts';
 import { loDeHoyConsulta } from './consultas/hoy.ts';
 import { laCarta } from './consultas/carta.ts';
 import { elTablon } from './consultas/tablon.ts';
+import {
+  ayudaConElPedido,
+  cuantosAvisos,
+  misAvisos,
+  misAvisosElegidos,
+} from './consultas/avisos.ts';
+import {
+  guardarLaSubidaQueAvisa,
+  guardarMisAvisos,
+  heTerminadoElPedido,
+  leerAvisos,
+  pedirAyudaConElPedido,
+} from './comandos/avisos.ts';
 import { escribirEnElTablon, marcarNotaLeida, quitarNota } from './comandos/tablon.ts';
 import { publicarLaCarta, quitarLaCarta, subirPaginaDeLaCarta } from './comandos/carta.ts';
 import { miSuscripcion } from './consultas/suscripcion.ts';
@@ -248,6 +261,12 @@ export const catalogo = {
     [laCarta.nombre]: laCarta,
     // El repaso del 25-sep · el Tablón del local (0049).
     [elTablon.nombre]: elTablon,
+    // ── R · la campana (0052): el número, la lista, lo que cada uno elige, y
+    // a quién se le puede pedir que rellene un pedido.
+    [cuantosAvisos.nombre]: cuantosAvisos,
+    [misAvisos.nombre]: misAvisos,
+    [misAvisosElegidos.nombre]: misAvisosElegidos,
+    [ayudaConElPedido.nombre]: ayudaConElPedido,
     [miSuscripcion.nombre]: miSuscripcion,
     // A2 · los clientes, en el admin (migración 0049): la lista y la ficha de cada uno.
     [adminLosClientes.nombre]: adminLosClientes,
@@ -415,6 +434,16 @@ export const catalogo = {
     [subirPaginaDeLaCarta.nombre]: subirPaginaDeLaCarta,
     [publicarLaCarta.nombre]: publicarLaCarta,
     [quitarLaCarta.nombre]: quitarLaCarta,
+
+    // ── R · la campana (0052) ──────────────────────────────────────────────
+    //
+    // Los avisos los escribe el sistema; de ellos, cada uno solo marca lo leído y
+    // elige qué le llega. Y pedir ayuda con un pedido, que es la entrega 2 de M7.
+    [leerAvisos.nombre]: leerAvisos,
+    [guardarMisAvisos.nombre]: guardarMisAvisos,
+    [guardarLaSubidaQueAvisa.nombre]: guardarLaSubidaQueAvisa,
+    [pedirAyudaConElPedido.nombre]: pedirAyudaConElPedido,
+    [heTerminadoElPedido.nombre]: heTerminadoElPedido,
 
     // ── A2 · Los clientes, en el admin (migración 0049) ────────────────────
     //

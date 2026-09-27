@@ -346,8 +346,10 @@ export async function ponerUnPrecio(
 ): Promise<PrecioPuesto | null> {
   // El que estaba vigente **de ese mismo proveedor**: dos proveedores tienen
   // dos precios vivos a la vez, que es lo que permite compararlos.
-  const vigentes = await contexto.sql<{ id: string; precio_centimos: string }[]>`
-    select id, precio_centimos::text as precio_centimos
+  const vigentes = await contexto.sql<
+    { id: string; precio_centimos: string; coste_milesimas: string }[]
+  >`
+    select id, precio_centimos::text as precio_centimos, coste_milesimas::text as coste_milesimas
       from estook.precio_de_producto
      where producto_id = ${precio.productoId}
        and hasta is null
@@ -431,6 +433,10 @@ export async function ponerUnPrecio(
       costeMilesimas: coste,
       variacion: cambio.variacion,
       origen: precio.origen,
+      // Para el aviso de subida (0052): se compara lo que cuesta la unidad de uso,
+      // no el formato, que puede haber cambiado de caja de 6 a caja de 12.
+      precioId,
+      costeAnteriorMilesimas: anterior === undefined ? null : Number(anterior.coste_milesimas),
     },
     correlacionId: contexto.correlacionId,
   });

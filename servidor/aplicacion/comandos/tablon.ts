@@ -3,6 +3,8 @@ import { masDias } from '@estook/dominio';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
 import { elLocalDelTablon, hoyEnElLocal } from '../consultas/tablon.ts';
+import { publicar } from '../../eventos/bandeja.ts';
+import { enNombreDelSistema } from '../pago.ts';
 
 /**
  * Escribir en el Tablón, marcar una nota leída y quitarla (repaso del 25-sep ·
@@ -87,6 +89,15 @@ export const escribirEnElTablon = comando<EntradaEscribirEnElTablon, { notaId: s
       )
     `;
 
+    // A la campana de a quien le toca (0052).
+    await publicar(contexto.sql, {
+      tipo: 'nota.escrita',
+      organizacionId,
+      localId,
+      datos: { notaId, dia, hora: entrada.hora ?? null, zona: entrada.zona ?? null, hoy },
+      correlacionId: contexto.correlacionId,
+    });
+
     return { notaId };
   },
 });
@@ -112,6 +123,12 @@ export const marcarNotaLeida = comando<EntradaDeUnaNota, { leida: true }>({
       insert into estook.nota_leida (nota_id, persona_id)
       values (${entrada.nota_id}, ${contexto.personaId})
       on conflict (nota_id, persona_id) do nothing
+    `;
+    // Leída en el Tablón, leída en la campana: es la misma nota (0052).
+    await contexto.sql`
+      update estook.aviso set leido_en = now()
+       where persona_id = ${contexto.personaId} and tipo = 'tablon.nota'
+         and clave = ${entrada.nota_id} and leido_en is null
     `;
     return { leida: true };
   },
@@ -143,6 +160,12 @@ export const quitarNota = comando<EntradaDeUnaNota, { quitada: true }>({
         null, null, null
       )
     `;
+    // Una nota quitada no se queda avisando en la campana de nadie (0052).
+    await enNombreDelSistema(contexto, async () => {
+      await contexto.sql`
+        delete from estook.aviso where tipo = 'tablon.nota' and clave = ${quitada.id}
+      `;
+    });
     return { quitada: true };
   },
 });

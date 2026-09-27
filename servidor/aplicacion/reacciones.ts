@@ -8,6 +8,16 @@ import {
 } from './calendario.ts';
 import type { Contexto } from './contrato.ts';
 import { sembrarElAlmacen } from './almacen.ts';
+import {
+  alCancelarElPedido,
+  avisarDeLaCarta,
+  avisarDeLaMerma,
+  avisarDeLaNota,
+  avisarDeLasIncidencias,
+  avisarDeLaSubida,
+  avisarDelPedidoEmpezado,
+  avisarDelPedidoMandado,
+} from './lo-que-avisa.ts';
 
 /**
  * Las reacciones · lo que un módulo hace cuando otro cambia algo (M6).
@@ -163,6 +173,51 @@ export const REACCIONES: readonly Reaccion[] = [
     a: 'producto.cambiado',
     leToca: (evento) => evento.datos['cambiaLoCongelado'] === true,
     reaccionar: (contexto, evento) => publicarLoCongeladoDe(contexto, elDe(evento, 'productoId')),
+  },
+
+  // ── R · los avisos, a la campana (0052) ─────────────────────────────────
+  //
+  // Cada una decide si avisa, a quién y qué dice, en `lo-que-avisa.ts`.
+  ...(['pedido.creado', 'pedido.tocado'] as const).map((a): Reaccion => ({
+    nombre: 'R · alguien empieza o rellena un pedido: a quien lo puede mandar',
+    a,
+    reaccionar: avisarDelPedidoEmpezado,
+  })),
+  {
+    nombre: 'R · un pedido mandado: a quien está por encima y a quien ayudó',
+    a: 'pedido.enviado',
+    reaccionar: avisarDelPedidoMandado,
+  },
+  {
+    nombre: 'R · un pedido cancelado: lo que avisaba de su borrador, resuelto',
+    a: 'pedido.cancelado',
+    reaccionar: alCancelarElPedido,
+  },
+  {
+    nombre: 'R · un albarán con incidencias: a quien lo reclama',
+    a: 'albaran.apuntado',
+    leToca: (evento) => evento.datos['conIncidencias'] === true,
+    reaccionar: avisarDeLasIncidencias,
+  },
+  {
+    nombre: 'R · un proveedor sube un precio: a quien compra',
+    a: 'precio.cambiado',
+    reaccionar: avisarDeLaSubida,
+  },
+  {
+    nombre: 'R · se tira algo caro: a quien está por encima',
+    a: 'merma.apuntada',
+    reaccionar: avisarDeLaMerma,
+  },
+  {
+    nombre: 'R · carta nueva: a quien ve la Carta',
+    a: 'carta.publicada',
+    reaccionar: avisarDeLaCarta,
+  },
+  {
+    nombre: 'R · una nota del Tablón: a quien le toca',
+    a: 'nota.escrita',
+    reaccionar: avisarDeLaNota,
   },
 ];
 

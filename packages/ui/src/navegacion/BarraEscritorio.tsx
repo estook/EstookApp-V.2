@@ -1,13 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  IconoAjustes,
-  IconoAvisos,
-  IconoBuscar,
-  IconoChat,
-  IconoFlechaAbajo,
-  IconoLocal,
-} from '@estook/iconos';
+import { IconoAjustes, IconoBuscar, IconoChat, IconoFlechaAbajo, IconoLocal } from '@estook/iconos';
+import { etiquetaDeLaCampana } from '@estook/dominio';
+import { LaCampana } from './LaCampana.tsx';
 import type { App } from '../apps.ts';
 import { destinosConstruidos, destinosQueLlegan } from '../apps.ts';
 import { clases } from '../clases.ts';
@@ -105,19 +100,8 @@ export function BarraEscritorio({
           <IconoBuscar size={20} />
         </Redondo>
 
-        <Redondo
-          etiqueta={avisos > 0 ? `Avisos: ${avisos} sin leer` : 'Avisos'}
-          alPulsar={alAbrirAvisos}
-        >
-          <span className="relative">
-            <IconoAvisos size={20} />
-            {avisos > 0 && (
-              <span
-                aria-hidden
-                className="absolute -right-[3px] -top-[3px] size-[8px] rounded-redondo bg-mal"
-              />
-            )}
-          </span>
+        <Redondo etiqueta={etiquetaDeLaCampana(avisos)} alPulsar={alAbrirAvisos}>
+          <LaCampana sinLeer={avisos} />
         </Redondo>
 
         <Redondo etiqueta="Chat del equipo" alPulsar={alAbrirChat}>

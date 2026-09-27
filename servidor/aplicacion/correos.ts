@@ -159,3 +159,47 @@ export function correoDeAvisoAlDeAhora(
     ]),
   };
 }
+
+// ── R · El correo de un aviso (0052) ────────────────────────────────────────
+
+export interface AvisoParaElCorreo {
+  readonly titulo: string;
+  readonly detalle: string | null;
+  /** A dónde lleva dentro de la app: `/almacen/compras/pedidos?pedido=…`. */
+  readonly ir: string | null;
+}
+
+/**
+ * Un aviso que alguien ha pedido recibir también por correo (0017, regla 1).
+ *
+ * Lo mismo que dice la campana, con un botón que lleva a resolverlo (regla 4: un
+ * aviso siempre dice qué hacer) y, abajo, **cómo dejar de recibirlo**, que es lo
+ * primero que busca quien recibe un correo que no esperaba.
+ */
+export function correoDeUnAviso(para: string, aviso: AvisoParaElCorreo): CorreoParaMandar {
+  const enlace = `https://estook.com/app/#${aviso.ir ?? '/'}`;
+  const ajustes = 'https://estook.com/app/#/ajustes/avisos';
+  const texto = [
+    'Hola:',
+    '',
+    aviso.titulo,
+    ...(aviso.detalle === null ? [] : [aviso.detalle]),
+    '',
+    `Míralo en Estook: ${enlace}`,
+    '',
+    `Te llega porque lo tienes encendido en Ajustes → Avisos: ${ajustes}`,
+  ].join('\n');
+
+  return {
+    para,
+    asunto: aviso.titulo,
+    texto,
+    html: envolver([
+      'Hola:',
+      `<strong>${escapar(aviso.titulo)}</strong>`,
+      ...(aviso.detalle === null ? [] : [escapar(aviso.detalle)]),
+      `<a href="${escapar(enlace)}" style="display:inline-block;background:#ff7a00;color:#1d2a2e;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px">Verlo en Estook</a>`,
+      `<span style="color:#6b7478;font-size:13px">Te llega porque lo tienes encendido en <a href="${ajustes}" style="color:#6b7478">Ajustes → Avisos</a>. Desde ahí lo apagas.</span>`,
+    ]),
+  };
+}

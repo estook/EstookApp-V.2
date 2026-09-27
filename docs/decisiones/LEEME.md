@@ -62,3 +62,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0049** | Almacén e Inventario, lo congelado aparte, el Tablón y la carta subida                                 |
 | **0050** | Los clientes en el admin: todo de Stripe, tres gestos con motivo y el correo con doble confirmación    |
 | **0051** | La auditoría del 26-sep: nada se esconde por vacío, las mermas a la vista y Google con el punto exacto |
+| **0052** | La campana y los avisos: lo que hace el equipo, a quien manda, uno por cosa                            |

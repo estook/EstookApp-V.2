@@ -25,6 +25,7 @@ import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
 import { Cuantos, Dato, EnlaceComoBoton } from './Comun.tsx';
 import { copiarTexto, imprimirTexto } from './utilidades.ts';
 import { ElegirProducto } from './ElegirProducto.tsx';
+import { AyudaConElPedido } from './AyudaConElPedido.tsx';
 import { Recibir } from './Recibir.tsx';
 import {
   CANALES,
@@ -209,6 +210,11 @@ export function FichaDePedido({
               setNoticia(null);
             }}
           />
+        )}
+
+        {/* ── Quién ayuda a rellenarlo (0052): arriba, que es lo urgente ─── */}
+        {pedido.estado === 'borrador' && (
+          <AyudaConElPedido pedidoId={pedido.id} hayCambiosSinGuardar={hayCambios} />
         )}
 
         {/* ── Cómo está ─────────────────────────────────────────────────── */}

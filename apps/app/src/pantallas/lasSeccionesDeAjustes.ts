@@ -19,7 +19,7 @@ import { sinAcentos } from '@estook/dominio';
  */
 
 export type IdDeSeccion =
-  'aparato' | 'cuenta' | 'local' | 'conexiones' | 'suscripcion' | 'organizacion';
+  'aparato' | 'cuenta' | 'avisos' | 'local' | 'conexiones' | 'suscripcion' | 'organizacion';
 
 export interface Seccion {
   readonly id: IdDeSeccion;
@@ -31,6 +31,8 @@ export interface Seccion {
 export const SECCIONES: readonly Seccion[] = [
   { id: 'aparato', nombre: 'Este aparato', queHay: 'Letra, tema y modo cocina' },
   { id: 'cuenta', nombre: 'Mi cuenta', queHay: 'Contraseña, PIN, doble factor e idioma' },
+  // Los avisos son de cada uno, como la cuenta: qué te llega y si también al correo (0052).
+  { id: 'avisos', nombre: 'Avisos', queHay: 'Qué te llega a la campana y al correo' },
   {
     id: 'local',
     nombre: 'Tu local',
@@ -86,6 +88,18 @@ export const AJUSTES: readonly Ajuste[] = [
     seccion: 'cuenta',
     nombre: 'Salir de este aparato',
     palabras: 'salir cerrar sesión desconectar',
+  },
+  {
+    id: 'mis-avisos',
+    seccion: 'avisos',
+    nombre: 'Qué avisos te llegan',
+    palabras: 'avisos notificaciones campana correo email alertas silenciar apagar',
+  },
+  {
+    id: 'subida-de-precio',
+    seccion: 'avisos',
+    nombre: 'Desde cuánto avisa una subida de precio',
+    palabras: 'precio subida alerta proveedor porcentaje sube caro',
   },
   { id: 'tu-marca', seccion: 'local', nombre: 'Logo y color', palabras: 'logo marca color imagen' },
   {
@@ -171,6 +185,8 @@ export function seccionesQueVe({
   const llevaElLocal = tieneLocal && puedeEditar(permisos, 'app.ajustes');
   return SECCIONES.filter((seccion) => {
     if (seccion.id === 'aparato' || seccion.id === 'cuenta') return true;
+    // Los avisos llegan a cualquiera que esté en un local: el Tablón es de todos.
+    if (seccion.id === 'avisos') return tieneLocal;
     // «Tu marca» la ve cualquiera con local, igual que antes.
     if (seccion.id === 'local') return tieneLocal;
     if (seccion.id === 'conexiones') return llevaElLocal;
@@ -198,6 +214,18 @@ export function llevaLosObjetivos(permisos: PermisosResueltos, tieneLocal: boole
   return tieneLocal && puedeEditar(permisos, 'accion.poner_objetivos');
 }
 
+/**
+ * Si alguien ve desde cuánto avisa una subida (0052): quien manda pedidos y lleva
+ * los ajustes del local, que es lo que piden el comando y la política del local.
+ */
+export function llevaLaSubida(permisos: PermisosResueltos, tieneLocal: boolean): boolean {
+  return (
+    tieneLocal &&
+    puedeEditar(permisos, 'accion.enviar_pedidos') &&
+    puedeEditar(permisos, 'app.ajustes')
+  );
+}
+
 /** Los ajustes que ve una persona: los de sus secciones. */
 export function ajustesQueVe(quien: QuienMira): readonly Ajuste[] {
   const suyas = new Set(seccionesQueVe(quien).map((s) => s.id));
@@ -206,6 +234,7 @@ export function ajustesQueVe(quien: QuienMira): readonly Ajuste[] {
     if (!suyas.has(ajuste.seccion)) return false;
     if (ajuste.id === 'precios-de-compra') return llevaLosPrecios(quien.permisos, quien.tieneLocal);
     if (ajuste.id === 'objetivos') return llevaLosObjetivos(quien.permisos, quien.tieneLocal);
+    if (ajuste.id === 'subida-de-precio') return llevaLaSubida(quien.permisos, quien.tieneLocal);
     if (ajuste.seccion === 'local' && ajuste.id !== 'tu-marca') return llevaElLocal;
     return true;
   });

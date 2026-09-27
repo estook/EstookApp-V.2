@@ -142,6 +142,10 @@ export const apuntarMerma = comando<EntradaApuntarMerma, SalidaApuntarMerma>({
         motivo: entrada.motivo,
         partida: partidaDe(entrada.motivo),
         valorCentimos: valor,
+        // Para el aviso de lo que se tira caro (0052): de qué es, en qué se mide y si es de ejemplo.
+        movimientoId: apuntado.movimientoId,
+        unidadDeUso: producto.unidadDeUso,
+        esEjemplo: producto.esEjemplo,
       },
       correlacionId: contexto.correlacionId,
     });

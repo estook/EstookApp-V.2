@@ -691,6 +691,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'pines_para_entrar',
       'poner_credencial',
       'poner_de_la_casa',
+      'quien_recibe',
       'reconocer_dispositivo',
       'registro_pendiente_de',
       'renombrar_desde_el_admin',

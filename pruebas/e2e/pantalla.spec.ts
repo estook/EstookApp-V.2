@@ -154,14 +154,21 @@ test.describe('la barra de escritorio', () => {
     }
   });
 
-  test('avisos, chat y Fogón dicen lo que son en vez de no hacer nada', async ({ page }) => {
+  test('la campana abre los avisos, y el chat dice lo que será', async ({ page }) => {
     // Los tres estaban puestos como `() => undefined`. Un botón mudo es de las
-    // cosas que más rápido rompen la confianza en una aplicación.
+    // cosas que más rápido rompen la confianza en una aplicación. Desde la entrega
+    // R (0052), la campana abre los avisos de verdad.
     await entrar(page);
 
-    await page.getByRole('banner').getByRole('button', { name: 'Avisos' }).click();
-    await expect(page.getByRole('heading', { name: 'Los avisos' })).toBeVisible();
-    await page.getByRole('button', { name: 'Entendido' }).click();
+    await page
+      .getByRole('banner')
+      .getByRole('button', { name: /^Avisos/ })
+      .click();
+    const campana = page.getByRole('dialog', { name: 'Avisos' });
+    await expect(campana).toBeVisible();
+    await expect(campana.getByRole('button', { name: 'Elegir qué me llega' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(campana).toBeHidden();
 
     await page.getByRole('banner').getByRole('button', { name: 'Chat del equipo' }).click();
     await expect(page.getByRole('heading', { name: 'El chat del equipo' })).toBeVisible();
@@ -272,13 +279,15 @@ test.describe('la barra de arriba en móvil', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
   });
 
-  test('los avisos y el chat dicen qué serán, en vez de no hacer nada', async ({ page }) => {
+  test('la campana abre los avisos, y el chat dice qué será', async ({ page }) => {
     await entrar(page);
     const barra = page.getByRole('banner');
 
     await barra.getByRole('button', { name: /^Avisos/ }).click();
-    await expect(page.getByRole('heading', { name: 'Los avisos' })).toBeVisible();
-    await page.getByRole('button', { name: 'Entendido' }).click();
+    const campana = page.getByRole('dialog', { name: 'Avisos' });
+    await expect(campana).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(campana).toBeHidden();
 
     await barra.getByRole('button', { name: 'Chat del equipo' }).click();
     await expect(page.getByRole('heading', { name: 'El chat del equipo' })).toBeVisible();

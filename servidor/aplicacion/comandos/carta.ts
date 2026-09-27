@@ -9,6 +9,7 @@ import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
 import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
 import { comoLista } from '../listas.ts';
+import { publicar } from '../../eventos/bandeja.ts';
 
 /**
  * La carta del local, subida (repaso del 25-sep · decisión 0049).
@@ -150,6 +151,15 @@ export const publicarLaCarta = comando<EntradaPublicarLaCarta, { paginas: number
         null
       )
     `;
+
+    // La sala tiene que saber que el QR enseña carta nueva (0052).
+    await publicar(contexto.sql, {
+      tipo: 'carta.publicada',
+      organizacionId,
+      localId,
+      datos: { paginas: entrada.paginas.length },
+      correlacionId: contexto.correlacionId,
+    });
 
     return { paginas: entrada.paginas.length };
   },

@@ -16,7 +16,7 @@
  * que la pantalla no ensene lo que no toca, no para vigilar la puerta.
  */
 
-import type { Indicador, QueSeJuzga } from '@estook/dominio';
+import type { Indicador, QueSeJuzga, TipoDeAviso } from '@estook/dominio';
 
 export const NIVELES = ['sin_acceso', 'ver', 'ver_y_editar'] as const;
 export type Nivel = (typeof NIVELES)[number];
@@ -250,4 +250,34 @@ export function puedeTenerElIndicador(
   indicador: Indicador,
 ): boolean {
   return LO_QUE_PIDE_EL_INDICADOR[indicador].every(tienePermiso);
+}
+
+/**
+ * Lo que hay que tener para que te llegue cada aviso (entrega R, 0052).
+ *
+ * Es el mínimo: además, lo que hace el equipo solo le llega a quien está por
+ * encima de quien lo hizo, y eso lo decide la base (`estook.quien_recibe`). Aquí se
+ * usa también para que Ajustes → Avisos enseñe solo los que te pueden llegar.
+ *
+ * El de la merma y el de la subida llevan un importe, así que piden ver precios de
+ * compra: sin él, el aviso colaría lo que la pantalla no enseña.
+ */
+export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso[]>> = {
+  'pedido.empezado': ['accion.enviar_pedidos'],
+  'pedido.mandado': ['app.almacen'],
+  'pedido.invitacion': ['app.almacen'],
+  'pedido.listo': ['accion.enviar_pedidos'],
+  'albaran.incidencias': ['accion.enviar_pedidos'],
+  'precio.subida': ['accion.enviar_pedidos', 'dato.precio_de_compra'],
+  'merma.grande': ['app.almacen', 'dato.precio_de_compra'],
+  'carta.publicada': ['app.carta'],
+  // El Tablón es de todo el equipo del local, como el corcho de la cocina.
+  'tablon.nota': [],
+};
+
+export function puedeRecibirElAviso(
+  tienePermiso: (permiso: Permiso) => boolean,
+  tipo: TipoDeAviso,
+): boolean {
+  return LO_QUE_PIDE_EL_AVISO[tipo].every(tienePermiso);
 }

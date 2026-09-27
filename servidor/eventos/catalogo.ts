@@ -117,6 +117,16 @@ export const EVENTOS = [
   //                         corregido y, en M8, la desviación del periodo, que es
   //                         para lo que se cuenta de verdad.
   'inventario.recontado',
+  // ── R · el reloj y los avisos (0052) ────────────────────────────────────
+  //
+  //   pedido.creado     a quien lo puede mandar le llega que alguien lo ha empezado
+  //   pedido.tocado     y si lo sigue rellenando otro, su nombre se suma al aviso
+  //   carta.publicada   la sala sabe que el QR enseña carta nueva
+  //   nota.escrita      la nota nueva del Tablón, en la campana de a quien le toca
+  'pedido.creado',
+  'pedido.tocado',
+  'carta.publicada',
+  'nota.escrita',
 ] as const;
 
 export type TipoDeEvento = (typeof EVENTOS)[number];

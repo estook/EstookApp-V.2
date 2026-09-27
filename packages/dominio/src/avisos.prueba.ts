@@ -11,6 +11,10 @@ import {
   laMermaAvisa,
   laPreferencia,
   laSubidaAvisa,
+  laNotaBaja,
+  avisoDeBajoMinimo,
+  avisoDeNotaDeGoogle,
+  avisoDeTocaPedir,
   numeroDeLaCampana,
   quienesEnUnaFrase,
   tramoDelAviso,
@@ -30,9 +34,27 @@ describe('los avisos', () => {
     expect(deFabrica('precio.subida', 100).enLaApp).toBe(true);
   });
 
-  it('de fábrica, al correo solo la invitación a rellenar un pedido, que suele ir con prisa', () => {
-    const conCorreo = TIPOS_DE_AVISO.filter((tipo) => deFabrica(tipo, 30).porCorreo);
-    expect(conCorreo).toEqual(['pedido.invitacion']);
+  it('de fábrica, al correo la invitación a un pedido y los informes de la semana y del mes', () => {
+    // La invitación suele ir con prisa; los informes, los eligió Richi (27-sep). El
+    // diario, no: un correo cada día acaba sin leerse. A quién le llegan lo decide
+    // aparte el permiso (`LO_QUE_PIDE_EL_AVISO`): los informes, a quien ve Negocio.
+    const conCorreo = TIPOS_DE_AVISO.filter((tipo) => deFabrica(tipo, 70).porCorreo);
+    expect(conCorreo).toEqual(['pedido.invitacion', 'informe.semana', 'informe.mes']);
+  });
+
+  it('lo bajo mínimo no llega de fábrica: ya sale en «Hoy»', () => {
+    expect(deFabrica('almacen.bajo_minimo', 70)).toEqual({ enLaApp: false, porCorreo: false });
+    // Encendido, llega, y por correo si se quiere.
+    expect(laPreferencia('almacen.bajo_minimo', 70, { enLaApp: true, porCorreo: true })).toEqual({
+      enLaApp: true,
+      porCorreo: true,
+    });
+  });
+
+  it('los informes y «mañana toca pedir» le llegan también a dirección: no son lo que hace el equipo', () => {
+    for (const tipo of ['pedido.toca', 'informe.dia', 'informe.semana', 'google.nota'] as const) {
+      expect(deFabrica(tipo, 100).enLaApp, tipo).toBe(true);
+    }
   });
 
   it('lo guardado manda, y el correo nunca va sin la campana', () => {
@@ -148,5 +170,40 @@ describe('los avisos', () => {
     expect(tramoDelAviso(dia('2026-09-26'), hoy)).toBe('Ayer');
     expect(tramoDelAviso(dia('2026-09-21'), hoy)).toBe('Esta semana');
     expect(tramoDelAviso(dia('2026-09-20'), hoy)).toBe('Antes');
+  });
+});
+
+describe('lo que avisa el reloj (R2 · 0053)', () => {
+  it('«mañana toca pedir», con cuándo llega y hasta qué hora', () => {
+    // Domingo 27: mañana lunes toca pedir para que llegue el martes.
+    expect(avisoDeTocaPedir('Frutas Pepe', dia('2026-09-29'), '20:00', dia('2026-09-27'))).toEqual({
+      titulo: 'Mañana toca pedir a Frutas Pepe',
+      detalle:
+        'Para que llegue el martes, pídelo antes de las 20:00. Tócalo y se prepara el pedido con lo que haya entonces.',
+    });
+    expect(avisoDeTocaPedir('Panadería', dia('2026-09-28'), null, dia('2026-09-27')).detalle).toBe(
+      'Para que llegue mañana. Tócalo y se prepara el pedido con lo que haya entonces.',
+    );
+  });
+
+  it('lo bajo mínimo, con sus nombres y, si son muchos, cuántos más', () => {
+    expect(avisoDeBajoMinimo(['leche', 'tomate', 'harina'])).toEqual({
+      titulo: '3 productos bajo mínimo',
+      detalle: 'Leche, tomate y harina.',
+    });
+    expect(avisoDeBajoMinimo(['a', 'b', 'c', 'd', 'e', 'f', 'g']).detalle).toBe(
+      'A, b, c, d, e y 2 más.',
+    );
+  });
+
+  it('la nota avisa solo si baja lo que enseña Google, con su decimal', () => {
+    expect(laNotaBaja(4.6, 4.5)).toBe(true);
+    expect(laNotaBaja(4.5, 4.5)).toBe(false);
+    expect(laNotaBaja(4.5, 4.6)).toBe(false);
+    expect(laNotaBaja(null, 4.2)).toBe(false);
+    expect(avisoDeNotaDeGoogle(4.6, 4.5, 210, 214)).toEqual({
+      titulo: 'Tu nota en Google baja de 4,6 a 4,5',
+      detalle: '4 reseñas nuevas desde la última vez. Míralas en Google.',
+    });
   });
 });

@@ -183,7 +183,6 @@ export const MODULOS: Readonly<Record<string, string>> = {
   M20C: 'M20C · Cobro y caja',
   M21: 'M21 · Negocio, analítica y Estook Pulse',
   M22: 'M22 · Fogón',
-  M23: 'M23 · Reseñas, competencia y chat',
   M29: 'M29 · Canales de reparto e integraciones',
 };
 
@@ -592,6 +591,17 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         vistas: [],
       },
       {
+        // **R2 (decisión 0053).** «Por correo al gerente: ventas, food cost, merma y
+        // horas.» Primero una pantalla, y el correo es su resumen: Tu día, Tu semana
+        // y Tu mes, cada uno cerrado y frente al de antes. Richi eligió que fuera una
+        // sección propia, y no dentro de Pulse, que no dice a nadie que ahí estén.
+        id: 'informes',
+        nombre: 'Informes',
+        icono: IconoDocumento,
+        queContesta: '¿Cómo fue ayer, la semana pasada y el mes pasado?',
+        vistas: vistas('Día', 'Semana', 'Mes'),
+      },
+      {
         // Estaba en la tabla de B5 desde el principio y **no estaba en el
         // codigo**: el catalogo ponia «Reseñas» en su sitio y la prueba que
         // deberia haberlo cazado llevaba los valores copiados a mano, asi que
@@ -612,12 +622,14 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         modulo: 'M21',
       },
       {
+        // **Con la nota en Google desde R2 (0053)**: la nota, sus reseñas y cómo ha
+        // ido, puesta al día cada tres días y al mirarla. Leer y contestar cada reseña
+        // espera a que Google apruebe Business Profile (M23), y la pantalla lo dice.
         id: 'resenas',
         nombre: 'Reseñas',
         icono: IconoCarta,
         queContesta: '¿Qué dicen de nosotros y qué hace la competencia?',
         vistas: [],
-        modulo: 'M23',
       },
     ],
   },

@@ -10,6 +10,9 @@ import {
   comoEsta,
   comoHaCambiado,
   consumoMedioDiario,
+  DIAS_PARA_REPARTIR_POR_SEMANA,
+  gastoEntre,
+  pesosDeLaSemana,
   diaDeAgotamiento,
   diasDeCobertura,
   previsionDeAgotamiento,
@@ -356,5 +359,44 @@ describe('cuanto ha cambiado un precio', () => {
 
   it('el mismo precio no cuenta como cambio', () => {
     expect(comoHaCambiado(500, 500).subeBaja).toBe('igual');
+  });
+});
+
+describe('lo que pesa cada día de la semana (R2 · 0053)', () => {
+  // El lunes 28 de septiembre de 2026: los catorce días de antes son dos semanas
+  // enteras, de lunes 14 a domingo 27.
+  const LUNES = fechaOperativa('2026-09-28');
+
+  it('con dos semanas, cada día pesa lo que gasta frente a la media', () => {
+    // Cada lunes 0, cada día entre semana 2 y cada sábado y domingo 4: la media de
+    // los catorce días es 32 ÷ 14.
+    const salidas = [0, 4, 4, 4, 4, 8, 8];
+    const pesos = pesosDeLaSemana(salidas, DIAS_PARA_REPARTIR_POR_SEMANA, LUNES);
+    const media = 32 / 14;
+    expect(pesos).toEqual([0, 2, 2, 2, 2, 4, 4].map((d) => Number((d / media).toFixed(4))));
+    // La semana suma siete: el gasto al día de la ficha no cambia.
+    expect((pesos ?? []).reduce((a, b) => a + b, 0)).toBeCloseTo(7, 2);
+  });
+
+  it('con menos de dos semanas no reparte: una semana es un dato por día', () => {
+    expect(pesosDeLaSemana([0, 4, 4, 4, 4, 8, 8], 13, LUNES)).toBeNull();
+  });
+
+  it('sin ninguna salida no hay nada que repartir', () => {
+    expect(pesosDeLaSemana([0, 0, 0, 0, 0, 0, 0], 28, LUNES)).toBeNull();
+  });
+
+  it('el gasto entre dos días suma el de cada uno por su peso', () => {
+    // Del viernes 2 de octubre al lunes 5: viernes, sábado y domingo.
+    const pesos = [0, 1, 1, 1, 1, 2, 2];
+    expect(gastoEntre(3, pesos, fechaOperativa('2026-10-02'), fechaOperativa('2026-10-05'))).toBe(
+      15,
+    );
+    // Sin pesos, días por lo de cada día.
+    expect(gastoEntre(3, null, fechaOperativa('2026-10-02'), fechaOperativa('2026-10-05'))).toBe(9);
+    // Hacia atrás o el mismo día, nada.
+    expect(gastoEntre(3, pesos, fechaOperativa('2026-10-05'), fechaOperativa('2026-10-02'))).toBe(
+      0,
+    );
   });
 });

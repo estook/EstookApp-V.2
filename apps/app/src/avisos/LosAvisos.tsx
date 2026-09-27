@@ -7,6 +7,8 @@ import {
   IconoBorrar,
   IconoCarta,
   IconoDinero,
+  IconoDocumento,
+  IconoReparto,
   IconoTablon,
   type Icono,
 } from '@estook/iconos';
@@ -36,6 +38,13 @@ const ICONO_DEL_AVISO: Readonly<Record<TipoDeAviso, Icono>> = {
   'precio.subida': IconoDinero,
   'carta.publicada': IconoCarta,
   'tablon.nota': IconoTablon,
+  // R2 (0053)
+  'pedido.toca': IconoReparto,
+  'almacen.bajo_minimo': IconoAtencion,
+  'informe.dia': IconoDocumento,
+  'informe.semana': IconoDocumento,
+  'informe.mes': IconoDocumento,
+  'google.nota': IconoCarta,
 };
 
 const TRAMOS: readonly TramoDeAvisos[] = ['Hoy', 'Ayer', 'Esta semana', 'Antes'];

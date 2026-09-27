@@ -2776,6 +2776,32 @@ uno por cosa, la invitación con su correo, las subidas, el Tablón, las prefere
 nadie toca los avisos de otro, y el reloj), `los-avisos.spec.ts` (la pantalla) y dos
 capturas nuevas, en claro y oscuro.
 
+### Antes de M8 · R2, el pedido sugerido, los informes y la nota en Google
+
+_27 de septiembre de 2026._ Migración `0051`, [decisión
+0053](decisiones/0053-el-pedido-los-informes-y-google.md). La segunda mitad de R: lo que
+el reloj avisa sin que nadie abra la app. Richi contestó cuatro preguntas más, las
+cuatro la recomendada.
+
+- **Mañana toca pedir** (mejora 12), la víspera, a quien manda los pedidos; al tocarlo
+  se prepara el pedido con lo que haya entonces. Y la cuenta de siempre, mejor: **el
+  gasto se reparte por días de la semana** con dos semanas de historia, y **lo pedido que
+  no ha llegado se descuenta**.
+- **Negocio → Informes** (mejora 16): Tu día, Tu semana y Tu mes, cerrados, con las cifras
+  de las tarjetas, sus flechas, tres frases y, en la semana, los objetivos. Por correo, de
+  fábrica, la semana y el mes, con su tabla de cifras. Lo bajo mínimo, si se enciende.
+- **La nota en Google** (mejora 19): cada tres días sola y al abrir Reseñas si tiene más
+  de uno; su evolución; el aviso si baja. **Negocio → Reseñas** deja de ser un cartel.
+- **Lo que salió al hacerlo**: a las ocho no hay sesión, y un informe no es igual para
+  todos: el reloj **se pone en el lugar de quien lo recibe**, con sus permisos, dentro de
+  un punto de guardado por local; y `enumerar` escribía «tomate e harina» (lección 126).
+
+Las pruebas: `informes.prueba.ts` y las nuevas de `compras`, `almacen` y `avisos` (el
+dominio), `el-pedido-los-informes-y-google.prueba.ts` (la base: el pedido con la semana y
+lo pedido, el reloj del lunes con sus avisos y su correo, lo que no se manda sin datos, la
+nota con su tope y una cuenta que no paga) y `el-pedido-los-informes-y-google.spec.ts`
+(la pantalla).
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

@@ -177,9 +177,13 @@ export function lugaresDeGoogle(
  * veces le han preguntado, que es lo que se comprueba: que el tope corta antes de
  * llegar a Google.
  */
-export function lugaresDeMentira(): LugaresDeGoogle & { readonly llamadas: { n: number } } {
+export function lugaresDeMentira(): LugaresDeGoogle & {
+  readonly llamadas: { n: number };
+  /** Cambia lo que contesta a partir de ahora: la nota que baja (R2 · 0053). */
+  cambiar(parte: Partial<Omit<FichaDeGoogle, 'id'>>): void;
+} {
   const llamadas = { n: 0 };
-  const ficha: FichaDeGoogle = {
+  let ficha: FichaDeGoogle = {
     id: 'lugar-de-prueba',
     nombre: 'Bar Centro',
     direccion: 'Calle Mayor 1, 20001 Donostia',
@@ -194,6 +198,9 @@ export function lugaresDeMentira(): LugaresDeGoogle & { readonly llamadas: { n: 
   };
   return {
     llamadas,
+    cambiar(parte) {
+      ficha = { ...ficha, ...parte };
+    },
     buscar() {
       llamadas.n += 1;
       return Promise.resolve([

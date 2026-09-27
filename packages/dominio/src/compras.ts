@@ -1,7 +1,7 @@
 import { costeDeLinea, costePorUnidadDeUso, cantidad, milesimas, type Milesimas } from './coste.ts';
 import { centimos, conSimbolo, porCantidad, type Centimos } from './dinero.ts';
 import { comoSeLlamaElDia } from './equipo.ts';
-import { DIAS_DE_COBERTURA_OBJETIVO, type Sugerencia } from './almacen.ts';
+import { DIAS_DE_COBERTURA_OBJETIVO, gastoEntre, type Sugerencia } from './almacen.ts';
 import { conUnidad, fechaEnLetra } from './textos.ts';
 import { diaDeLaSemana, diasEntre, masDias, type FechaOperativa } from './tiempo.ts';
 
@@ -136,6 +136,17 @@ export interface LoQueHay {
   /** Unidades de uso por formato: una caja de 10 kg son 10. */
   readonly factor: number;
   readonly unidadDeUso: string;
+  /**
+   * Cuánto pesa cada día de la semana en el gasto (`pesosDeLaSemana`), de lunes a
+   * domingo. Nulo o sin poner: todos los días igual, que es lo de antes de R2.
+   */
+  readonly pesos?: readonly number[] | null;
+  /**
+   * Lo que ya está pedido y mandado y todavía no ha llegado, en unidad de uso. Va a
+   * entrar antes de que se acabe lo que hay: pedirlo otra vez sería pedirlo dos
+   * veces (entrega R2 · decisión 0053).
+   */
+  readonly yaPedido?: number;
 }
 
 /** Una sugerencia en formatos enteros, además de en unidad de uso. */
@@ -173,11 +184,23 @@ function cifra(valor: number): string {
  *
  * Sin días de reparto del proveedor, se calcula para cinco días, que era la
  * sugerencia de M6, y el motivo lo dice para que alguien los ponga.
+ *
+ * ── Lo que añade R2 (decisión 0053) ─────────────────────────────────────────
+ *
+ * **Un viernes no gasta lo que un martes.** Con dos semanas de historia o más, el
+ * gasto de cada día se reparte por lo que suele gastar ese día de la semana
+ * (`pesos`): el pedido del jueves, que tiene que cubrir el fin de semana, pide más
+ * que el del lunes. Con menos, cada día igual, como antes.
+ *
+ * **Y lo que ya está pedido no se pide otra vez**: lo mandado que no ha llegado se
+ * resta de lo que falta, y el motivo lo dice.
  */
 export function cuantoPedir(que: LoQueHay, cuando: CuandoLlega | null): SugerenciaDeCompra | null {
   const factor = que.factor > 0 ? que.factor : 1;
   const consumo = que.consumoPorDia !== null && que.consumoPorDia > 0 ? que.consumoPorDia : null;
   const gasto = consumo === null ? '' : conUnidad(cantidad(consumo), que.unidadDeUso);
+  const pesos = que.pesos ?? null;
+  const yaPedido = que.yaPedido !== undefined && que.yaPedido > 0 ? que.yaPedido : 0;
 
   let falta: number;
   let motivo: string;
@@ -187,22 +210,36 @@ export function cuantoPedir(que: LoQueHay, cuando: CuandoLlega | null): Sugerenc
     const ciclo =
       cuando === null ? DIAS_DE_COBERTURA_OBJETIVO : diasEntre(cuando.llega, cuando.siguiente);
 
-    let objetivo = consumo * (hasta + ciclo) * (1 + MARGEN_DE_SEGURIDAD);
-    if (que.minimo !== null) objetivo = Math.max(objetivo, consumo * hasta + que.minimo);
-    falta = objetivo - que.existencias;
+    // Sin días de reparto no hay días concretos que repartir: cinco días de media.
+    const porLaSemana = cuando !== null && pesos !== null;
+    const hastaQueLlega = porLaSemana
+      ? gastoEntre(consumo, pesos, cuando.hoy, cuando.llega)
+      : consumo * hasta;
+    const hastaElSiguiente = porLaSemana
+      ? gastoEntre(consumo, pesos, cuando.hoy, cuando.siguiente)
+      : consumo * (hasta + ciclo);
+
+    let objetivo = hastaElSiguiente * (1 + MARGEN_DE_SEGURIDAD);
+    if (que.minimo !== null) objetivo = Math.max(objetivo, hastaQueLlega + que.minimo);
+    falta = objetivo - que.existencias - yaPedido;
 
     motivo =
       cuando === null
         ? `Para unos ${ciclo} días a ${gasto} al día, con un 20 % de margen. Con los días de reparto del proveedor lo calcularía hasta su reparto siguiente.`
-        : `Llega ${cuandoCae(cuando.llega, cuando.hoy)} y el reparto siguiente es ${cuandoCae(cuando.siguiente, cuando.hoy)}: ${hasta + ciclo} días a ${gasto} al día, con un 20 % de margen.`;
+        : porLaSemana
+          ? `Llega ${cuandoCae(cuando.llega, cuando.hoy)} y el reparto siguiente es ${cuandoCae(cuando.siguiente, cuando.hoy)}: en esos ${hasta + ciclo} días sueles gastar ${conUnidad(cantidad(Number(hastaElSiguiente.toFixed(3))), que.unidadDeUso)}, contando lo que se gasta cada día de la semana, con un 20 % de margen.`
+          : `Llega ${cuandoCae(cuando.llega, cuando.hoy)} y el reparto siguiente es ${cuandoCae(cuando.siguiente, cuando.hoy)}: ${hasta + ciclo} días a ${gasto} al día, con un 20 % de margen.`;
   } else if (que.minimo !== null && que.existencias < que.minimo) {
-    falta = que.minimo - que.existencias;
+    falta = que.minimo - que.existencias - yaPedido;
     motivo = `Hay menos del mínimo que pusiste (${conUnidad(cantidad(que.minimo), que.unidadDeUso)}) y todavía no sé a qué ritmo se gasta.`;
   } else {
     return null;
   }
 
   if (falta <= 0) return null;
+  if (yaPedido > 0) {
+    motivo += ` Ya hay ${conUnidad(cantidad(Number(yaPedido.toFixed(3))), que.unidadDeUso)} pedidos que no han llegado: están descontados.`;
+  }
 
   // `toFixed` antes de subir: 30 ÷ 10 en coma flotante puede dar 3,0000000004, y
   // eso son cuatro cajas en vez de tres.

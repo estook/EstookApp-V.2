@@ -17,7 +17,7 @@ import {
 import { LO_QUE_PIDE_EL_OBJETIVO, type Permiso } from '@estook/permisos';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
-import { loQuePuede } from '../lo-que-puede.ts';
+import { loQuePuede, type LoQuePuede } from '../lo-que-puede.ts';
 import { lasHorasDelEquipo, lasRetribuciones } from './equipo.ts';
 import { laJornada, losDias, type DelDia } from './indicador.ts';
 
@@ -87,14 +87,10 @@ export const misObjetivos = consulta<Record<string, never>, SalidaMisObjetivos>(
   async ejecutar(contexto) {
     const localId = elLocal(contexto);
 
-    const todos: Permiso[] = [
-      ...new Set([
-        ...LO_QUE_SE_JUZGA.flatMap((que) => LO_QUE_PIDE_EL_OBJETIVO[que]),
-        'accion.poner_objetivos' as const,
-      ]),
-    ];
-    const puede = await loQuePuede(contexto, localId, todos);
-    const visibles = LO_QUE_SE_JUZGA.filter((que) => puede.verTodos(LO_QUE_PIDE_EL_OBJETIVO[que]));
+    const puede = await loQuePuede(contexto, localId, [
+      ...LO_QUE_PIDE_EL_SEMAFORO,
+      'accion.poner_objetivos',
+    ]);
     const puedeCambiarlos = puede.editar('accion.poner_objetivos');
 
     const jornada = await laJornada(contexto, localId);
@@ -104,29 +100,7 @@ export const misObjetivos = consulta<Record<string, never>, SalidaMisObjetivos>(
     const deAntes = Array.from({ length: DIAS }, (_, i) => masDias(desde, -(DIAS - i)));
 
     const puestos = await losObjetivosPuestos(contexto, localId);
-    const vigente = (clave: ClaveDeObjetivo) => puestos.find((p) => p.clave === clave);
-    const objetivos: ObjetivosVigentes = {
-      materia_prima: vigente('materia_prima')?.valor ?? null,
-      personal: vigente('personal')?.valor ?? null,
-      // Sin la suya, la meta del sector: el semáforo de la merma no espera a nadie.
-      merma: vigente('merma')?.valor ?? MERMA_DE_PARTIDA,
-      ventas_semanales: vigente('ventas_semanales')?.importeCentimos ?? null,
-    };
-
-    const sabe =
-      visibles.length === 0
-        ? null
-        : await loQueSeSabe(contexto, localId, deAntes, deAhora, {
-            dinero: puede.verTodos(['dato.ventas']),
-            genero: puede.verTodos(LO_QUE_PIDE_EL_OBJETIVO.materia_prima),
-            personal: puede.verTodos(LO_QUE_PIDE_EL_OBJETIVO.personal),
-            merma: puede.verTodos(LO_QUE_PIDE_EL_OBJETIVO.merma),
-          });
-
-    const cifras =
-      sabe === null
-        ? []
-        : lasCifrasDelSemaforo(sabe, objetivos).filter((cifra) => visibles.includes(cifra.que));
+    const cifras = await lasCifrasQueVe(contexto, localId, puede, puestos, deAntes, deAhora);
 
     return {
       desde,
@@ -142,6 +116,63 @@ export const misObjetivos = consulta<Record<string, never>, SalidaMisObjetivos>(
     };
   },
 });
+
+// ── El semáforo de unos días cualesquiera ──────────────────────────────────
+
+/** Los permisos que miran las cifras del semáforo, todos juntos. */
+const LO_QUE_PIDE_EL_SEMAFORO: readonly Permiso[] = [
+  ...new Set(LO_QUE_SE_JUZGA.flatMap((que) => LO_QUE_PIDE_EL_OBJETIVO[que])),
+];
+
+/** Los objetivos puestos, como los quiere el dominio. */
+function losVigentes(puestos: readonly ObjetivoPuesto[]): ObjetivosVigentes {
+  const vigente = (clave: ClaveDeObjetivo) => puestos.find((p) => p.clave === clave);
+  return {
+    materia_prima: vigente('materia_prima')?.valor ?? null,
+    personal: vigente('personal')?.valor ?? null,
+    // Sin la suya, la meta del sector: el semáforo de la merma no espera a nadie.
+    merma: vigente('merma')?.valor ?? MERMA_DE_PARTIDA,
+    ventas_semanales: vigente('ventas_semanales')?.importeCentimos ?? null,
+  };
+}
+
+/** Las cifras del semáforo que esta persona puede ver, contadas para esos días. */
+async function lasCifrasQueVe(
+  contexto: Contexto,
+  localId: string,
+  puede: LoQuePuede,
+  puestos: readonly ObjetivoPuesto[],
+  deAntes: readonly string[],
+  deAhora: readonly string[],
+): Promise<readonly CifraDelSemaforo[]> {
+  const visibles = LO_QUE_SE_JUZGA.filter((que) => puede.verTodos(LO_QUE_PIDE_EL_OBJETIVO[que]));
+  if (visibles.length === 0) return [];
+  const sabe = await loQueSeSabe(contexto, localId, deAntes, deAhora, {
+    dinero: puede.verTodos(['dato.ventas']),
+    genero: puede.verTodos(LO_QUE_PIDE_EL_OBJETIVO.materia_prima),
+    personal: puede.verTodos(LO_QUE_PIDE_EL_OBJETIVO.personal),
+    merma: puede.verTodos(LO_QUE_PIDE_EL_OBJETIVO.merma),
+  });
+  return lasCifrasDelSemaforo(sabe, losVigentes(puestos)).filter((cifra) =>
+    visibles.includes(cifra.que),
+  );
+}
+
+/**
+ * El semáforo de una semana ya cerrada, para Tu semana (R2 · 0053). **Las mismas
+ * cuentas que el del Panel**, con los objetivos de hoy: una semana de lunes a
+ * domingo en vez de los últimos siete días.
+ */
+export async function elSemaforoDeLaSemana(
+  contexto: Contexto,
+  localId: string,
+  deAntes: readonly string[],
+  deAhora: readonly string[],
+): Promise<readonly CifraDelSemaforo[]> {
+  const puede = await loQuePuede(contexto, localId, LO_QUE_PIDE_EL_SEMAFORO);
+  const puestos = await losObjetivosPuestos(contexto, localId);
+  return lasCifrasQueVe(contexto, localId, puede, puestos, deAntes, deAhora);
+}
 
 // ── Lo que se lee ───────────────────────────────────────────────────────────
 

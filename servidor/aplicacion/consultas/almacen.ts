@@ -7,6 +7,7 @@ import {
   comoEsta,
   comoPrecioPorUnidad,
   consumoMedioDiario,
+  pesosDeLaSemana,
   cuandoCae,
   diasDeCobertura,
   fechaEnElLocal,
@@ -219,6 +220,10 @@ interface FilaDeProducto {
   coste_vigente: string | null;
   salidas: string | null;
   dias_con_datos: number;
+  // R2 · las salidas de los días enteros de la ventana, por día de la semana (de
+  // lunes a domingo), para repartir el gasto; y lo pedido que no ha llegado.
+  salidas_semana: number[] | null;
+  pedido_sin_llegar: string | null;
   // M7 · cómo reparte su proveedor principal, para que la sugerencia sepa qué día
   // llega lo que se pide y hasta cuándo tiene que durar.
   dias_de_reparto: number[] | null;
@@ -410,6 +415,37 @@ async function leerProductos(
                from estook.movimiento_de_stock m
               where m.producto_id = p.id
            ) as dias_con_datos,
+           -- R2 (0053) · Lo que sale cada día de la semana, en los días enteros de
+           -- la ventana: sin hoy, que va a medias. De lunes (1) a domingo (7).
+           (
+             select array_agg(coalesce(s.cuanto, 0)::float8 order by d.dia)
+               from generate_series(1, 7) as d(dia)
+               left join (
+                 select extract(isodow from m.fecha_operativa)::int as dia,
+                        sum(abs(m.cantidad)) as cuanto
+                   from estook.movimiento_de_stock m
+                  where m.producto_id = p.id
+                    and m.cantidad < 0
+                    and m.fecha_operativa >= ${desde}::date
+                    and m.fecha_operativa < ${hoy}::date
+                  group by 1
+               ) s on s.dia = d.dia
+           ) as salidas_semana,
+           -- Lo mandado que no ha llegado: va a entrar, y pedirlo otra vez sería
+           -- pedirlo dos veces. Lo que ya tenía que haber llegado no cuenta: si no
+           -- se ha recibido, no se sabe si vendrá, y mejor pedir que quedarse sin.
+           (
+             select sum(l.cantidad * l.factor)::text
+               from estook.pedido_de_compra pe
+               join estook.linea_de_pedido l on l.pedido_id = pe.id
+              where pe.local_id = p.local_id
+                and pe.estado = 'enviado'
+                and not pe.es_ejemplo
+                and l.producto_id = p.id
+                and (pe.llega_el >= ${hoy}::date
+                     or (pe.llega_el is null
+                         and pe.enviado_en >= ${contexto.ahora.toISOString()}::timestamptz - interval '7 days'))
+           ) as pedido_sin_llegar,
            pv.dias_de_reparto::int[] as dias_de_reparto,
            pv.plazo_de_entrega::int as plazo_de_entrega,
            to_char(pv.hora_limite, 'HH24:MI') as hora_limite,
@@ -573,6 +609,9 @@ function componer(
         minimo,
         factor: Number(fila.factor),
         unidadDeUso,
+        // R2 (0053): un viernes no gasta lo que un martes, y lo pedido no se pide dos veces.
+        pesos: pesosDeLaSemana(fila.salidas_semana ?? [], fila.dias_con_datos, hoy),
+        yaPedido: fila.pedido_sin_llegar === null ? 0 : Number(fila.pedido_sin_llegar),
       },
       cuandoLlegaria(fila, reloj),
     ),

@@ -1,5 +1,6 @@
 import {
   laPreferencia,
+  type CifraDelCorreo,
   type LoQueDiceUnAviso,
   type PreferenciaDeAviso,
   type TipoDeAviso,
@@ -49,6 +50,14 @@ export interface AvisoQueSeDa {
   /** Quien lo ha hecho, por su nombre. Nulo si lo hace Estook. */
   readonly quien: string | null;
   readonly como?: ComoSeAvisa;
+  /** Las cifras de un informe, para la tabla de su correo (R2 · 0053). */
+  readonly cifras?: readonly CifraDelCorreo[] | null;
+  /**
+   * **Lo que deja viejo** (R2): los avisos de la misma persona y tipo cuya cosa
+   * empieza así se quitan al llegar este. Tu día de hoy deja sin sentido el de
+   * ayer —el informe sigue en Negocio—, y la campana no se llena de treinta.
+   */
+  readonly sustituyeA?: string;
 }
 
 export interface QuienRecibe {
@@ -171,17 +180,24 @@ export async function avisar(
         await contexto.sql`
           insert into estook.aviso (
             organizacion_id, local_id, persona_id, tipo, clave, titulo, detalle, ir, quienes,
-            correo, correo_para
+            correo, correo_para, cifras
           )
           values (
             ${aviso.organizacionId}, ${aviso.localId}, ${quien.personaId}, ${aviso.tipo},
             ${aviso.clave}, ${dice.titulo}, ${dice.detalle}, ${aviso.ir},
             ${comoLista(quienes)}::text::text[], ${conCorreo ? 'pendiente' : 'no'},
-            ${conCorreo ? quien.correo : null}
+            ${conCorreo ? quien.correo : null}, ${lasCifras(aviso)}::text::jsonb
           )
           -- Dos a la vez sobre la misma cosa: el segundo no rompe lo que hacía.
           on conflict (persona_id, tipo, clave) do nothing
         `;
+        if (aviso.sustituyeA !== undefined) {
+          await contexto.sql`
+            delete from estook.aviso
+             where persona_id = ${quien.personaId} and tipo = ${aviso.tipo}
+               and clave like ${`${aviso.sustituyeA}%`} and clave <> ${aviso.clave}
+          `;
+        }
         if (conCorreo) conCorreoPendiente.add(contexto.correlacionId);
         nuevos += 1;
         continue;
@@ -212,7 +228,8 @@ export async function avisar(
            set quienes = ${comoLista(quienes)}::text::text[], titulo = ${dice.titulo},
                detalle = ${dice.detalle}, ir = ${aviso.ir}, leido_en = null,
                actualizado_en = now(), correo = ${conCorreo ? 'pendiente' : 'no'},
-               correo_para = ${conCorreo ? quien.correo : null}, correo_intentos = 0
+               correo_para = ${conCorreo ? quien.correo : null}, correo_intentos = 0,
+               cifras = ${lasCifras(aviso)}::text::jsonb
          where id = ${antes.id}
       `;
       if (conCorreo) conCorreoPendiente.add(contexto.correlacionId);
@@ -220,6 +237,33 @@ export async function avisar(
     }
 
     return nuevos;
+  });
+}
+
+/** Las cifras de un informe, como texto para la columna JSON (0029). */
+function lasCifras(aviso: AvisoQueSeDa): string | null {
+  return aviso.cifras === undefined || aviso.cifras === null ? null : JSON.stringify(aviso.cifras);
+}
+
+/**
+ * De quienes pueden recibir un aviso, **los que lo quieren** en la campana. Es lo
+ * que mira el reloj antes de contar nada (R2): un informe o una lista de lo que
+ * está bajo mínimo se cuentan a nombre de cada uno, y contarlos para quien los
+ * tiene apagados sería trabajo tirado.
+ */
+export async function losQueLoQuieren(
+  contexto: Contexto,
+  tipo: TipoDeAviso,
+  a: readonly QuienRecibe[],
+): Promise<readonly QuienRecibe[]> {
+  if (a.length === 0) return [];
+  return enNombreDelSistema(contexto, async () => {
+    const preferencias = await susPreferencias(
+      contexto,
+      tipo,
+      a.map((q) => q.personaId),
+    );
+    return a.filter((q) => laPreferencia(tipo, q.amplitud, preferencias.get(q.personaId)).enLaApp);
   });
 }
 
@@ -241,9 +285,16 @@ export async function mandarLosCorreosDeLosAvisos(contexto: Contexto): Promise<n
 
   return enNombreDelSistema(contexto, async () => {
     const pendientes = await contexto.sql<
-      { id: string; titulo: string; detalle: string | null; ir: string | null; para: string }[]
+      {
+        id: string;
+        titulo: string;
+        detalle: string | null;
+        ir: string | null;
+        para: string;
+        cifras: CifraDelCorreo[] | null;
+      }[]
     >`
-      select id, titulo, detalle, ir, correo_para as para
+      select id, titulo, detalle, ir, correo_para as para, cifras
         from estook.aviso
        where correo = 'pendiente' and correo_intentos < ${INTENTOS_DE_CORREO}
        order by creado_en
@@ -258,6 +309,7 @@ export async function mandarLosCorreosDeLosAvisos(contexto: Contexto): Promise<n
             titulo: aviso.titulo,
             detalle: aviso.detalle,
             ir: aviso.ir,
+            cifras: Array.isArray(aviso.cifras) ? aviso.cifras : null,
           }),
         );
         await contexto.sql`update estook.aviso set correo = 'mandado' where id = ${aviso.id}`;

@@ -1,28 +1,12 @@
-import {
-  COMO_ES_EL_INDICADOR,
-  centimos,
-  comoSeLeenLasHoras,
-  conSimbolo,
-  type Indicador,
-  type PeriodoDelIndicador,
-} from '@estook/dominio';
+import { laCifraEscrita, type Indicador } from '@estook/dominio';
 
-/** Cómo se escribe una cifra de cada unidad. `dias` es el largo del periodo. */
-export function comoSeEscribe(
-  indicador: Indicador,
-  valor: number,
-  dias?: PeriodoDelIndicador,
-): string {
-  switch (COMO_ES_EL_INDICADOR[indicador].unidad) {
-    case 'dinero':
-      return conSimbolo(centimos(Math.trunc(valor)));
-    case 'porcentaje':
-      return `${valor.toLocaleString('es-ES', { maximumFractionDigits: 1 })} %`;
-    case 'minutos':
-      return comoSeLeenLasHoras(valor);
-    case 'cuenta':
-      return valor.toLocaleString('es-ES', { maximumFractionDigits: 0 });
-    case 'dias':
-      return dias === undefined ? String(valor) : `${valor} de ${dias}`;
-  }
+/**
+ * Cómo se escribe una cifra de cada unidad. `dias` es el largo del periodo.
+ *
+ * La cuenta es del dominio (`laCifraEscrita`) desde R2: los informes escriben las
+ * mismas cifras en sus frases y en el correo, y dos dueños acabarían escribiendo
+ * «4.210 €» en un sitio y «4210,00 €» en otro (regla 6).
+ */
+export function comoSeEscribe(indicador: Indicador, valor: number, dias?: number): string {
+  return laCifraEscrita(indicador, valor, dias);
 }

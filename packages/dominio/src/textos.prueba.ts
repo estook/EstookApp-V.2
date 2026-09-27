@@ -31,6 +31,10 @@ describe('escribir en espanol de Espana', () => {
     // Pero NO ante el diptongo «hie-», que suena «ye»: es «agua y hielo».
     expect(enumerar(['agua', 'hielo'])).toBe('agua y hielo');
     expect(enumerar(['agua', 'hierbabuena'])).toBe('agua y hierbabuena');
+    // Ni ante una «h» que no suena «i» (R2, 27-sep: salía «tomate e harina»).
+    expect(enumerar(['tomate', 'harina'])).toBe('tomate y harina');
+    expect(enumerar(['pan', 'huevos'])).toBe('pan y huevos');
+    expect(enumerar(['sal', 'Hinojo'])).toBe('sal e Hinojo');
   });
 
   it('las fechas como se escriben aqui', () => {

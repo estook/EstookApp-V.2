@@ -155,12 +155,14 @@ import {
   reanudarLaSuscripcion,
   volverDelPago,
 } from './comandos/pago.ts';
-import { miLocalEnGoogle } from './consultas/local-en-google.ts';
+import { miLocalEnGoogle, miNotaEnGoogle } from './consultas/local-en-google.ts';
 import {
   actualizarMiFichaDeGoogle,
   buscarMiLocalEnGoogle,
   elegirMiLocalDeGoogle,
+  mirarMiNotaDeGoogle,
 } from './comandos/google.ts';
+import { miInforme } from './consultas/informes.ts';
 import { mermaDeHoy, misMermas, productosParaMerma } from './consultas/merma.ts';
 import {
   fichajesDeHoy,
@@ -267,6 +269,9 @@ export const catalogo = {
     [misAvisos.nombre]: misAvisos,
     [misAvisosElegidos.nombre]: misAvisosElegidos,
     [ayudaConElPedido.nombre]: ayudaConElPedido,
+    // ── R2 (0053): Tu día, Tu semana y Tu mes, y la nota en Google con su evolución.
+    [miInforme.nombre]: miInforme,
+    [miNotaEnGoogle.nombre]: miNotaEnGoogle,
     [miSuscripcion.nombre]: miSuscripcion,
     // A2 · los clientes, en el admin (migración 0049): la lista y la ficha de cada uno.
     [adminLosClientes.nombre]: adminLosClientes,
@@ -287,6 +292,8 @@ export const catalogo = {
     [buscarMiLocalEnGoogle.nombre]: buscarMiLocalEnGoogle,
     [elegirMiLocalDeGoogle.nombre]: elegirMiLocalDeGoogle,
     [actualizarMiFichaDeGoogle.nombre]: actualizarMiFichaDeGoogle,
+    // R2 (0053): la nota, al abrir Reseñas, si lleva más de un día sin mirarse.
+    [mirarMiNotaDeGoogle.nombre]: mirarMiNotaDeGoogle,
     // M4 · la sesion.
     [entrar.nombre]: entrar,
     [salir.nombre]: salir,

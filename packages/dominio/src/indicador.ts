@@ -33,6 +33,8 @@
 import { porcentajeDe } from './cierre.ts';
 import { cantidad, costeDeLinea, milesimas } from './coste.ts';
 import { comoEsta, urgenciaDe } from './almacen.ts';
+import { centimos, conSimbolo } from './dinero.ts';
+import { comoSeLeenLasHoras } from './equipo.ts';
 
 export const INDICADORES = [
   'ventas',
@@ -376,6 +378,31 @@ export function comoCambia(
         : !sube;
 
   return { sube, cuanto, en, bueno };
+}
+
+// ── Cómo se escribe una cifra ───────────────────────────────────────────────
+
+/**
+ * Una cifra escrita: «4.210,00 €», «31,2 %», «38 h 20 min», «5 de 7».
+ *
+ * Vive aquí desde R2 (0053) porque ya la usan dos: la tarjeta de la pantalla
+ * (`comoSeEscribe`, en `@estook/ui`, que la llama) y las frases y el correo de los
+ * informes, que se escriben en el servidor. `dias` es el largo del periodo, para
+ * lo que se cuenta en días.
+ */
+export function laCifraEscrita(indicador: Indicador, valor: number, dias?: number): string {
+  switch (COMO_ES_EL_INDICADOR[indicador].unidad) {
+    case 'dinero':
+      return conSimbolo(centimos(Math.trunc(valor)));
+    case 'porcentaje':
+      return `${valor.toLocaleString('es-ES', { maximumFractionDigits: 1 })} %`;
+    case 'minutos':
+      return comoSeLeenLasHoras(valor);
+    case 'cuenta':
+      return valor.toLocaleString('es-ES', { maximumFractionDigits: 0 });
+    case 'dias':
+      return dias === undefined ? String(valor) : `${String(valor)} de ${String(dias)}`;
+  }
 }
 
 // ── La foto de la cámara, día a día ─────────────────────────────────────────

@@ -111,3 +111,102 @@ export const miLocalEnGoogle = consulta<Record<string, never>, SalidaMiLocalEnGo
     };
   },
 });
+
+// ── La nota en Google, para Negocio → Reseñas (R2 · 0053) ───────────────────
+
+/** Cuántos días de evolución se enseñan: medio año. */
+const DIAS_DE_EVOLUCION = 180;
+
+export interface SalidaMiNotaEnGoogle {
+  /** Si el servidor tiene la clave de Google. */
+  readonly conectado: boolean;
+  /** Nulo si el local no está enlazado con Google. */
+  readonly nota: {
+    readonly nombre: string | null;
+    readonly valoracion: number | null;
+    readonly resenas: number | null;
+    /** El enlace a la ficha en Google Maps: ahí se leen y se contestan. */
+    readonly mapa: string | null;
+    readonly leidaEn: string;
+  } | null;
+  /** La nota de cada día que se leyó, de vieja a nueva. */
+  readonly evolucion: readonly {
+    readonly dia: string;
+    readonly valoracion: number;
+    readonly resenas: number | null;
+  }[];
+  /** Si quien mira puede enlazarlo, para ofrecérselo cuando no está. */
+  readonly puedeEnlazarlo: boolean;
+}
+
+/**
+ * La nota del local en Google y cómo ha ido: lo que enseña Negocio → Reseñas.
+ *
+ * **No llama a Google**, como la de Ajustes: lee lo guardado. Ponerla al día al
+ * mirarla, si lleva más de un día, lo hace la pantalla con `mirar_mi_nota_de_google`,
+ * que es un comando porque gasta del tope.
+ */
+export const miNotaEnGoogle = consulta<Record<string, never>, SalidaMiNotaEnGoogle>({
+  nombre: 'mi_nota_en_google',
+  entrada: z.object({}).strict(),
+  exige: 'app.negocio',
+
+  async ejecutar(contexto) {
+    const localId = contexto.sesion?.localId;
+    if (!localId) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Hay que estar dentro de un local para ver su nota en Google. Elige uno primero.',
+      });
+    }
+
+    const filas = await contexto.sql<
+      {
+        google_id: string | null;
+        google_nombre: string | null;
+        google_valoracion: string | null;
+        google_resenas: number | null;
+        google_mapa: string | null;
+        google_leido_en: string | null;
+        puede_enlazarlo: boolean;
+      }[]
+    >`
+      select google_id, google_nombre, google_valoracion::text as google_valoracion,
+             google_resenas, google_mapa,
+             to_char(google_leido_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as google_leido_en,
+             estook.puede_editar('app.ajustes', id) as puede_enlazarlo
+        from estook.local where id = ${localId}
+    `;
+    const fila = filas[0];
+    if (!fila) throw new FalloDeAplicacion('local_ajeno');
+
+    const evolucion = await contexto.sql<
+      { dia: string; valoracion: string; resenas: number | null }[]
+    >`
+      select to_char(dia, 'YYYY-MM-DD') as dia, valoracion::text as valoracion, resenas
+        from estook.nota_en_google
+       where local_id = ${localId}
+         and dia >= (${contexto.ahora.toISOString()}::timestamptz - make_interval(days => ${DIAS_DE_EVOLUCION}))::date
+       order by dia
+    `;
+
+    return {
+      conectado: contexto.google !== null,
+      nota:
+        fila.google_id === null || fila.google_leido_en === null
+          ? null
+          : {
+              nombre: fila.google_nombre,
+              valoracion: fila.google_valoracion === null ? null : Number(fila.google_valoracion),
+              resenas: fila.google_resenas,
+              mapa: fila.google_mapa,
+              leidaEn: fila.google_leido_en,
+            },
+      evolucion: evolucion.map((e) => ({
+        dia: e.dia,
+        valoracion: Number(e.valoracion),
+        resenas: e.resenas,
+      })),
+      puedeEnlazarlo: fila.puede_enlazarlo,
+    };
+  },
+});

@@ -410,3 +410,8 @@
      tenían su prueba, y las dos la habrían cazado en local. Y de paso: en el Safari de
      la integración continua, un clic forzado en una casilla escondida no llega; se toca
      lo que se ve.
+126. **Una regla de ortografía escrita con una letra de más se equivoca callada.** `enumerar`
+     cambiaba la «y» por «e» ante **cualquier** palabra con «h», y el aviso de lo bajo
+     mínimo decía «tomate e harina». La prueba tenía «hígado» y «hielo», los dos casos
+     difíciles, y ninguno de los fáciles. La «e» va solo ante el sonido «i» (`i-`, `hi-`,
+     no `hie-`), y la prueba lleva ahora «harina» y «huevos».

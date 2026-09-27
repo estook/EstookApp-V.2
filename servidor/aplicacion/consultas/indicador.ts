@@ -344,37 +344,51 @@ export const unIndicador = consulta<EntradaUnIndicador, SalidaUnIndicador>({
       jornada,
     };
 
-    let calculado: Calculado;
-    switch (indicador) {
-      case 'valor-camara':
-      case 'bajo-minimo':
-        calculado = await laCamara(contexto, localId, indicador, periodos);
-        break;
-      case 'horas-equipo':
-      case 'coste-personal':
-        calculado = await elEquipo(contexto, localId, indicador, periodos);
-        break;
-      case 'retrasos':
-        calculado = await losRetrasos(contexto, localId, periodos);
-        break;
-      default:
-        calculado = await porDias(contexto, localId, indicador, periodos);
-    }
-
+    const calculado = await calcularElIndicador(contexto, localId, indicador, periodos);
     return { indicador, dias, jornada, ...calculado };
   },
 });
 
 // ── Los caminos ─────────────────────────────────────────────────────────────
 
-/** Los días del periodo pedido y los del anterior, del mismo largo, de viejo a nuevo. */
-interface LosDosPeriodos {
+/**
+ * Los días del periodo pedido y los del anterior, de viejo a nuevo. `jornada` es
+ * el último día que se lee: hoy en las tarjetas, el último del periodo en un
+ * informe (R2 · 0053), que cuenta días que ya se cerraron.
+ */
+export interface LosDosPeriodos {
   readonly deAntes: readonly string[];
   readonly deAhora: readonly string[];
   readonly jornada: string;
 }
 
-type Calculado = Pick<SalidaUnIndicador, 'serie' | 'total' | 'anterior' | 'diasConDato'>;
+export type Calculado = Pick<SalidaUnIndicador, 'serie' | 'total' | 'anterior' | 'diasConDato'>;
+
+/**
+ * Una cifra contada para dos periodos cualesquiera. **Es la cuenta de las
+ * tarjetas**, y desde R2 también la de los informes: Tu semana y la tarjeta de
+ * ventas de siete días, mirando los mismos días, dicen lo mismo. No comprueba
+ * permisos: lo hace quien la llama (`un_indicador`, `mi_informe`).
+ */
+export async function calcularElIndicador(
+  contexto: Contexto,
+  localId: string,
+  indicador: Indicador,
+  periodos: LosDosPeriodos,
+): Promise<Calculado> {
+  switch (indicador) {
+    case 'valor-camara':
+    case 'bajo-minimo':
+      return laCamara(contexto, localId, indicador, periodos);
+    case 'horas-equipo':
+    case 'coste-personal':
+      return elEquipo(contexto, localId, indicador, periodos);
+    case 'retrasos':
+      return losRetrasos(contexto, localId, periodos);
+    default:
+      return porDias(contexto, localId, indicador, periodos);
+  }
+}
 
 /** Lo que sale de una tabla día a día: ventas, ticket, food cost, merma, compras, horas y cierres. */
 async function porDias(

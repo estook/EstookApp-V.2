@@ -192,6 +192,55 @@ describe('cuánto pedir', () => {
     expect(debe?.formatos).toBe(5);
   });
 
+  // ── R2 (0053) · un viernes no gasta lo que un martes ──────────────────────
+
+  it('con los pesos de la semana, el pedido del viernes cubre el fin de semana', () => {
+    // Un local que el sábado y el domingo gasta el doble, y el lunes cierra: de
+    // lunes a domingo pesan 0, 1, 1, 1, 1, 2, 2 (siete a la semana: la media no cambia).
+    const pesos = [0, 1, 1, 1, 1, 2, 2];
+    const cuando = {
+      hoy: VIERNES,
+      llega: fechaOperativa('2026-09-15'),
+      siguiente: fechaOperativa('2026-09-18'),
+    };
+    // Del viernes al jueves: 1 + 2 + 2 + 0 + 1 + 1 + 1 = 8 días de 3,1 kg = 24,8 kg,
+    // con el margen 29,76. Hay 4,2: faltan 25,56, que son seis cajas y no cinco.
+    const conSemana = cuantoPedir({ ...pollo, pesos }, cuando);
+    expect(conSemana?.formatos).toBe(6);
+    expect(conSemana?.motivo).toContain('sueles gastar 24,8 kg');
+    expect(conSemana?.motivo).toContain('cada día de la semana');
+    // Sin pesos, la cuenta de siempre.
+    expect(cuantoPedir(pollo, cuando)?.formatos).toBe(5);
+  });
+
+  it('sin días de reparto, los pesos no cambian nada: son cinco días de media', () => {
+    const pesos = [0, 1, 1, 1, 1, 2, 2];
+    expect(cuantoPedir({ ...pollo, pesos }, null)).toEqual(cuantoPedir(pollo, null));
+  });
+
+  it('lo que ya está pedido y no ha llegado no se pide otra vez, y se dice', () => {
+    const cuando = {
+      hoy: VIERNES,
+      llega: fechaOperativa('2026-09-15'),
+      siguiente: fechaOperativa('2026-09-18'),
+    };
+    // Faltaban 21,84 kg (cinco cajas); con 10 kg ya pedidos faltan 11,84: tres cajas.
+    const conPedido = cuantoPedir({ ...pollo, yaPedido: 10 }, cuando);
+    expect(conPedido?.formatos).toBe(3);
+    expect(conPedido?.motivo).toContain('Ya hay 10 kg pedidos que no han llegado');
+    // Con todo lo que hace falta ya pedido, no sugiere nada.
+    expect(cuantoPedir({ ...pollo, yaPedido: 30 }, cuando)).toBeNull();
+  });
+
+  it('bajo el mínimo y sin ritmo, lo pedido también cuenta', () => {
+    // Faltan 7,8 kg para el mínimo; con 5 pedidos, 2,8: una caja.
+    const sugerencia = cuantoPedir(
+      { ...pollo, consumoPorDia: null, minimo: 12, yaPedido: 5 },
+      null,
+    );
+    expect(sugerencia?.formatos).toBe(1);
+  });
+
   it('dice cómo se pide: cajas, o la cantidad si no hay formato', () => {
     expect(comoSePide(3, 'Caja 10 kg', 10, 'kg')).toBe('3 × Caja 10 kg');
     expect(comoSePide(2, null, 1, 'kg')).toBe('2 kg');

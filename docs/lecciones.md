@@ -410,3 +410,13 @@
      tenían su prueba, y las dos la habrían cazado en local. Y de paso: en el Safari de
      la integración continua, un clic forzado en una casilla escondida no llega; se toca
      lo que se ve.
+126. **Una regla de ortografía escrita con una letra de más se equivoca callada.** `enumerar`
+     cambiaba la «y» por «e» ante **cualquier** palabra con «h», y el aviso de lo bajo
+     mínimo decía «tomate e harina». La prueba tenía «hígado» y «hielo», los dos casos
+     difíciles, y ninguno de los fáciles. La «e» va solo ante el sonido «i» (`i-`, `hi-`,
+     no `hie-`), y la prueba lleva ahora «harina» y «huevos».
+127. **Una pantalla con captura de referencia que cambia a propósito sale en rojo en GitHub
+     la primera vez, y en Windows no se ve.** R2 añadió filas a Ajustes → Avisos, que tiene
+     su captura (0052), y las capturas solo se comparan en Linux: en local todo verde y en
+     GitHub cuatro rojas. Antes de subir se mira qué pantallas tocadas tienen captura
+     (`capturas.spec.ts`, `PANTALLAS`) y se avisa de que tocará `pnpm capturas:traer`.

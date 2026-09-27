@@ -273,6 +273,15 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   'carta.publicada': ['app.carta'],
   // El Tablón es de todo el equipo del local, como el corcho de la cocina.
   'tablon.nota': [],
+  // ── R2 (0053) ──
+  // «Mañana toca pedir», a quien lo manda: es quien prepara el pedido.
+  'pedido.toca': ['accion.enviar_pedidos'],
+  'almacen.bajo_minimo': ['app.almacen'],
+  // Los informes y la nota en Google son de Negocio: quien lleva el local.
+  'informe.dia': ['app.negocio'],
+  'informe.semana': ['app.negocio'],
+  'informe.mes': ['app.negocio'],
+  'google.nota': ['app.negocio'],
 };
 
 export function puedeRecibirElAviso(

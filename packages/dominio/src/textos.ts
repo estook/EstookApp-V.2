@@ -200,7 +200,7 @@ export function plural(cuantos: number, singular: string, plural_: string): stri
 
 /**
  * «pan, queso y tomate». Con la conjunción de verdad, no con una coma final.
- * Y con la «e» cuando toca: «agua e hielo».
+ * Y con la «e» cuando toca: «carne e hígado», pero «agua y hielo» y «tomate y harina».
  */
 export function enumerar(cosas: readonly string[]): string {
   if (cosas.length === 0) return '';
@@ -208,7 +208,8 @@ export function enumerar(cosas: readonly string[]): string {
 
   const ultima = cosas[cosas.length - 1] ?? '';
   const anteriores = cosas.slice(0, -1).join(', ');
-  const conjuncion = /^[iíhH]/.test(ultima) && !/^hi[aeo]/i.test(ultima) ? 'e' : 'y';
+  // Solo ante el sonido «i» (i-, hi-): «tomate y harina», no «tomate e harina».
+  const conjuncion = /^h?[ií]/i.test(ultima) && !/^hi[aeoáéó]/i.test(ultima) ? 'e' : 'y';
   return `${anteriores} ${conjuncion} ${ultima}`;
 }
 

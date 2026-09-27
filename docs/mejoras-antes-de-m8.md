@@ -24,31 +24,32 @@ enteras.** Cada una cambia a «En producción» cuando se fusiona y se despliega
 **La 10 (el lector) se adelanta** a después del repaso del 25-sep: Richi pidió «Escanear
 producto» junto a «Añadir producto» ([0049](decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)).
 Y **de la 20, la carta que ya tiene el local se puede subir** desde el repaso del 25-sep,
-y la enseña su QR (0049). **La 10 está en producción** desde el 26-sep (#73), y **la 13 va
-en R1**, la primera mitad de R ([0052](decisiones/0052-la-campana-y-los-avisos.md)).
+y la enseña su QR (0049). **La 10 está en producción** desde el 26-sep (#73), **la 13** desde
+el 27-sep con R1 (#76, [0052](decisiones/0052-la-campana-y-los-avisos.md)), y **la 12, la 16
+y el aviso de la 19** van en R2 ([0053](decisiones/0053-el-pedido-los-informes-y-google.md)).
 
-| #   | Mejora                                   | Entrega                  | Necesita de fuera                        | Cómo está                          |
-| --- | ---------------------------------------- | ------------------------ | ---------------------------------------- | ---------------------------------- |
-| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                     | **En producción** (#64)            |
-| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                     | **En producción** (#64)            |
-| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                     | **En producción** (#64)            |
-| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)          | **En producción** (#67)            |
-| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo  | **En producción** (#67)            |
-| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                     | **En producción** (#69)            |
-| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                     | **En producción** (#64)            |
-| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                     | **En producción** (#69)            |
-| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                     | **En producción** (#69)            |
-| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                     | **En producción** (#69)            |
-| 12  | Pedido sugerido                          | **R2**                   | Nada (el reloj es de Supabase, gratis)   | Falta                              |
-| 13  | Alertas de subida de precio              | **R1 · La campana**      | Nada                                     | **Hecha, en su pull request**      |
-| 16  | Informes diario, semanal y mensual       | **R2**                   | Nada: Resend ya está                     | Falta                              |
-| 19  | Reseñas: aviso de bajada y respuesta     | **R2** y después         | Places ya; **Business Profile** y **IA** | Falta                              |
-| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                     | Falta                              |
-| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)  | Falta                              |
-| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                     | Falta                              |
-| 10  | Escanear el código de barras             | **L**, adelantada        | Nada                                     | **En producción** (#73)            |
-| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                       | Espera a M22                       |
-| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún  | **QR (#69) y carta subida (0049)** |
+| #   | Mejora                                   | Entrega                  | Necesita de fuera                        | Cómo está                           |
+| --- | ---------------------------------------- | ------------------------ | ---------------------------------------- | ----------------------------------- |
+| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                     | **En producción** (#64)             |
+| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                     | **En producción** (#64)             |
+| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                     | **En producción** (#64)             |
+| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)          | **En producción** (#67)             |
+| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo  | **En producción** (#67)             |
+| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                     | **En producción** (#69)             |
+| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                     | **En producción** (#64)             |
+| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                     | **En producción** (#69)             |
+| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                     | **En producción** (#69)             |
+| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                     | **En producción** (#69)             |
+| 12  | Pedido sugerido                          | **R2**                   | Nada (el reloj es de Supabase, gratis)   | **Hecha, en su pull request**       |
+| 13  | Alertas de subida de precio              | **R1 · La campana**      | Nada                                     | **En producción** (#76)             |
+| 16  | Informes diario, semanal y mensual       | **R2**                   | Nada: Resend ya está                     | **Hecha, en su pull request**       |
+| 19  | Reseñas: aviso de bajada y respuesta     | **R2** y después         | Places ya; **Business Profile** y **IA** | **El aviso, en R2**; responder, M23 |
+| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                     | Falta                               |
+| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)  | Falta                               |
+| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                     | Falta                               |
+| 10  | Escanear el código de barras             | **L**, adelantada        | Nada                                     | **En producción** (#73)             |
+| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                       | Espera a M22                        |
+| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún  | **QR (#69) y carta subida (0049)**  |
 
 Tres de las veinte **no pueden quedar al 100 % antes de M8**, y conviene decirlo ya:
 
@@ -349,11 +350,13 @@ por semana**, y el semáforo lo pinta el Panel con `comoVa`, que ya está en el 
 
 ## R · El reloj y los avisos
 
-> **En dos entregas** (27-sep, [0052](decisiones/0052-la-campana-y-los-avisos.md)). **R1**, hecha:
-> la campana, los avisos a quien manda, pedir ayuda con un pedido (la entrega 2 de M7), las
-> subidas de precio (13), Ajustes → Avisos con campana y correo, y el buscador que se
-> cierra. **R2**, lo que falta: el pedido sugerido (12), los informes (16) y la nota de
-> Google (19), con lo que contestó Richi, que manda sobre lo de abajo donde lo cambia.
+> **En dos entregas** (27-sep). **R1**, en producción (#76,
+> [0052](decisiones/0052-la-campana-y-los-avisos.md)): la campana, los avisos a quien manda,
+> pedir ayuda con un pedido (la entrega 2 de M7), las subidas de precio (13), Ajustes →
+> Avisos con campana y correo, y el buscador que se cierra. **R2**, hecha
+> ([0053](decisiones/0053-el-pedido-los-informes-y-google.md)): mañana toca pedir y la cuenta
+> por días de la semana (12), Negocio → Informes con los correos (16) y la nota en Google
+> con Reseñas (19). **Lo que dicen las decisiones manda sobre lo de abajo donde lo cambia.**
 
 Estas cuatro necesitan que Estook **haga cosas sin que nadie abra la app**: mirar a
 las 7:00 qué pedido no ha llegado, mandar el informe el lunes. Eso es **el reloj**, la
@@ -595,14 +598,15 @@ antes de la siguiente. Antes de todo, **la #51** (Google a `main`).
 | 9     | **Admin · Vendedores y códigos** | Vendedores, códigos, `?ref=`, asignaciones                    | Necesita la ficha de clientes                                        |
 | 10    | **Admin · Ventas**               | El tablero de ventas                                          | Necesita el reloj (uso diario) y los vendedores                      |
 
-**Cómo va (27-sep):** **la auditoría del 26-sep** está en producción (#75), y **R1**, la
-primera mitad de la 5, en su pull request (migración `0050`, decisión 0052). La **1** está **fusionada y en producción** (#53), con Richi dentro del
+**Cómo va (27-sep):** **la auditoría del 26-sep** (#75) y **R1** (#76, migración `0050`)
+están en producción, y **R2**, la segunda mitad de la 5, en su pull request (migración
+`0051`, decisión 0053). La **1** está **fusionada y en producción** (#53), con Richi dentro del
 admin y su segundo factor montado. Su repaso (rescatar a un admin, la cabecera del
 móvil y una puerta de la API) también está en producción (#54). **La 2, V, está entera
 y en producción** (#64, #65, #67). **La 3, O, también** (#69), y **E2 · el pago con
 Stripe** (#71, 0048), **el repaso del 25-sep** (#72, 0049) y **L · el lector**,
 adelantada (#73), también. **La 4, A2 · Clientes, está hecha en la #74** (decisión 0050).
-La 5, **R**, va en dos: R1 hecha, R2 después.
+La 5, **R**, va en dos: R1 en producción y R2 en su pull request.
 
 **Qué esperan de fuera, y no frenan el orden:** **Resend** (el correo del informe y
 de los avisos), **Business Profile** (las respuestas a reseñas), **la clave de IA**
@@ -633,3 +637,10 @@ El 16 de septiembre de 2026, a las tres preguntas que dejaba este plan:
    productos bajos…—, **eligiendo en Ajustes** cuáles sí y cuáles no.
 6. **Ventas y «Tu semana»**, ya; el PDF, con Horarios.
 7. **Google, un punto medio**: cada tres días sola, y al mirarla si tiene más de uno.
+
+### El 27 de septiembre, a las preguntas de R2 ([0053](decisiones/0053-el-pedido-los-informes-y-google.md))
+
+1. **Informes, sección propia de Negocio**: Ventas · Informes · Pulse · Costes · Reseñas.
+2. **De fábrica**, los tres informes a la campana; al correo, **la semana y el mes**.
+3. **Tu día, frente al mismo día de la semana anterior**.
+4. **La nota en Google, en Negocio → Reseñas**, y ahí lleva su aviso.

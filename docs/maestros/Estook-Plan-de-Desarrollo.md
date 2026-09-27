@@ -402,7 +402,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | Calendario  | Calendario · Tareas · Turnos                         |
 | Equipo      | Resumen · Personas · Horarios · Fichajes             |
 | Servicio    | Jornada · Ventas · Delivery · APPCC                  |
-| Negocio     | Ventas · Pulse · Costes · Reseñas                    |
+| Negocio     | Ventas · Informes · Pulse · Costes · Reseñas         |
 | Cuaderno    | Incidencias · Notas · Equipos                        |
 
 Y sus vistas, donde las hay:
@@ -420,6 +420,7 @@ Y sus vistas, donde las hay:
 | Equipo · Personas       | Con acceso · Sin entrar todavía · Retirados                 |
 | Servicio · Jornada      | En marcha · Caja · Cierre                                   |
 | Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas     |
+| Negocio · Informes      | Día · Semana · Mes                                          |
 | Cuaderno · Incidencias  | Abiertas · Cerradas                                         |
 
 **El catálogo de `packages/ui/src/apps.ts` es el único dueño de estas dos tablas**, y hay una prueba que las lee **de este documento** y las compara. Antes la prueba llevaba los valores copiados dentro, y por eso pudo estar en verde mientras el código decía que Negocio tenía «Reseñas» donde esta tabla decía «Pulse».

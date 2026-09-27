@@ -2,6 +2,7 @@ import { conSimbolo, type Centimos } from './dinero.ts';
 import { comoPrecioPorUnidad, type Milesimas } from './coste.ts';
 import { comoPorcentaje, enumerar, fechaEnLetra, plural } from './textos.ts';
 import { diasEntre, type FechaOperativa } from './tiempo.ts';
+import { cuandoCae } from './compras.ts';
 
 /**
  * Los avisos · la campana (entrega R · decisión 0052).
@@ -36,6 +37,13 @@ export const TIPOS_DE_AVISO = [
   'precio.subida',
   'carta.publicada',
   'tablon.nota',
+  // ── R2 (decisión 0053) ──────────────────────────────────────────────────
+  'pedido.toca',
+  'almacen.bajo_minimo',
+  'informe.dia',
+  'informe.semana',
+  'informe.mes',
+  'google.nota',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -45,7 +53,7 @@ export function esTipoDeAviso(valor: unknown): valor is TipoDeAviso {
 }
 
 /** Cómo se agrupan en Ajustes → Avisos. */
-export type GrupoDeAvisos = 'Compras' | 'Almacén' | 'Carta' | 'Equipo';
+export type GrupoDeAvisos = 'Compras' | 'Almacén' | 'Carta' | 'Equipo' | 'Negocio';
 
 export interface ComoEsElAviso {
   /** Lo que se lee en Ajustes → Avisos: «Alguien empieza un pedido». */
@@ -62,6 +70,12 @@ export interface ComoEsElAviso {
   readonly deTuEquipo: boolean;
   /** Si sale también por correo sin que nadie lo toque. Casi nunca (0017, regla 1). */
   readonly correoDeFabrica: boolean;
+  /**
+   * Si llega a la campana sin que nadie lo toque. Casi todos sí; **lo que ya dice
+   * «Hoy» no** (R2): los productos bajo mínimo están en «Hoy» cada mañana, y en la
+   * campana serían lo mismo dos veces. Se enciende en Ajustes para tenerlo por correo.
+   */
+  readonly campanaDeFabrica?: boolean;
 }
 
 export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
@@ -128,10 +142,61 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     deTuEquipo: false,
     correoDeFabrica: false,
   },
+
+  // ── R2 (decisión 0053) ──────────────────────────────────────────────────
+  'pedido.toca': {
+    nombre: 'Mañana toca pedir',
+    explica: 'La víspera, a primera hora. Al tocarlo se prepara el pedido con lo que haya.',
+    grupo: 'Compras',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+  },
+  'almacen.bajo_minimo': {
+    nombre: 'Productos bajo mínimo',
+    explica: 'Cada mañana, si hay alguno. Ya sale en «Hoy»: enciéndelo para tenerlo por correo.',
+    grupo: 'Almacén',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    campanaDeFabrica: false,
+  },
+  'informe.dia': {
+    nombre: 'Tu día',
+    explica: 'Cada mañana, cómo fue ayer frente al mismo día de la semana anterior.',
+    grupo: 'Negocio',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+  },
+  'informe.semana': {
+    nombre: 'Tu semana',
+    explica: 'Los lunes, la semana de lunes a domingo frente a la anterior.',
+    grupo: 'Negocio',
+    deTuEquipo: false,
+    correoDeFabrica: true,
+  },
+  'informe.mes': {
+    nombre: 'Tu mes',
+    explica: 'El día 1, el mes que acaba frente al anterior.',
+    grupo: 'Negocio',
+    deTuEquipo: false,
+    correoDeFabrica: true,
+  },
+  'google.nota': {
+    nombre: 'Baja tu nota en Google',
+    explica: 'Se mira cada tres días, y al abrir Reseñas si lleva más de uno sin mirarse.',
+    grupo: 'Negocio',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+  },
 };
 
 /** El orden de los grupos en Ajustes: lo que más se usa, arriba. */
-export const GRUPOS_DE_AVISOS: readonly GrupoDeAvisos[] = ['Compras', 'Almacén', 'Carta', 'Equipo'];
+export const GRUPOS_DE_AVISOS: readonly GrupoDeAvisos[] = [
+  'Compras',
+  'Almacén',
+  'Carta',
+  'Equipo',
+  'Negocio',
+];
 
 /**
  * Desde qué puesto se lleva el negocio entero: dirección (100), administración de
@@ -148,7 +213,9 @@ export interface PreferenciaDeAviso {
 /** Cómo viene cada aviso para alguien con este puesto, si no ha tocado nada. */
 export function deFabrica(tipo: TipoDeAviso, amplitud: number): PreferenciaDeAviso {
   const como = COMO_ES_EL_AVISO[tipo];
-  const enLaApp = !(como.deTuEquipo && amplitud >= AMPLITUD_DE_QUIEN_LLEVA_EL_NEGOCIO);
+  const enLaApp =
+    (como.campanaDeFabrica ?? true) &&
+    !(como.deTuEquipo && amplitud >= AMPLITUD_DE_QUIEN_LLEVA_EL_NEGOCIO);
   return { enLaApp, porCorreo: enLaApp && como.correoDeFabrica };
 }
 
@@ -349,6 +416,75 @@ export function avisoDeNota(
     titulo: `${quien} en el Tablón, para ${cuando}${aLas}`,
     detalle: texto,
   };
+}
+
+// ── R2 · lo que avisa el reloj (decisión 0053) ───────────────────────────────
+
+/**
+ * «Mañana toca pedir a Frutas Pepe» · «Para que llegue el martes, pídelo antes de
+ * las 20:00. Tócalo y se prepara el pedido con lo que haya entonces.»
+ *
+ * El pedido **no se prepara ahora**: se prepara al tocarlo, con lo que haya en la
+ * cámara en ese momento (Richi, 27-sep). Un borrador hecho de madrugada estaría
+ * viejo a la hora de mandarlo, y nadie lo usaría.
+ */
+export function avisoDeTocaPedir(
+  proveedor: string,
+  llega: FechaOperativa,
+  pedirAntesDe: string | null,
+  hoy: FechaOperativa,
+): LoQueDiceUnAviso {
+  const antes = pedirAntesDe === null ? '' : `, pídelo antes de las ${pedirAntesDe}`;
+  return {
+    titulo: `Mañana toca pedir a ${proveedor}`,
+    detalle: `Para que llegue ${cuandoCae(llega, hoy)}${antes}. Tócalo y se prepara el pedido con lo que haya entonces.`,
+  };
+}
+
+/** Cuántos productos se nombran como mucho: más no cabe en una línea del móvil. */
+const PRODUCTOS_QUE_SE_NOMBRAN = 5;
+
+/** «3 productos bajo mínimo» · «Leche, tomate y harina.» */
+export function avisoDeBajoMinimo(productos: readonly string[]): LoQueDiceUnAviso {
+  const nombrados = productos.slice(0, PRODUCTOS_QUE_SE_NOMBRAN);
+  const quedan = productos.length - nombrados.length;
+  const lista =
+    quedan > 0 ? `${nombrados.join(', ')} y ${String(quedan)} más` : enumerar(nombrados);
+  return {
+    titulo: `${plural(productos.length, 'producto', 'productos')} bajo mínimo`,
+    detalle: `${lista.charAt(0).toUpperCase()}${lista.slice(1)}.`,
+  };
+}
+
+/**
+ * La nota en Google baja: «Tu nota en Google baja de 4,6 a 4,5».
+ *
+ * Solo cuando **baja** lo que enseña Google, con su decimal. Adivinar la nota de
+ * las reseñas nuevas a partir de dos medias redondeadas daría cifras inventadas: con
+ * trescientas reseñas, un redondeo son cinco estrellas arriba o abajo.
+ */
+export function avisoDeNotaDeGoogle(
+  antes: number,
+  ahora: number,
+  resenasAntes: number | null,
+  resenasAhora: number | null,
+): LoQueDiceUnAviso {
+  const nota = (n: number) => n.toFixed(1).replace('.', ',');
+  const nuevas =
+    resenasAntes !== null && resenasAhora !== null ? Math.max(0, resenasAhora - resenasAntes) : 0;
+  return {
+    titulo: `Tu nota en Google baja de ${nota(antes)} a ${nota(ahora)}`,
+    detalle:
+      nuevas > 0
+        ? `${plural(nuevas, 'reseña nueva', 'reseñas nuevas')} desde la última vez. Míralas en Google.`
+        : 'Míralas en Google para saber qué ha pasado.',
+  };
+}
+
+/** La nota solo avisa si baja lo que se ve: con un decimal, como la enseña Google. */
+export function laNotaBaja(antes: number | null, ahora: number | null): boolean {
+  if (antes === null || ahora === null) return false;
+  return Number(ahora.toFixed(1)) < Number(antes.toFixed(1));
 }
 
 // ── Cómo se enseñan ──────────────────────────────────────────────────────────

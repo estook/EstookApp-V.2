@@ -25,6 +25,8 @@ import { EquipoHoy } from '../equipo/EquipoHoy.tsx';
 import { ResumenDelEquipo } from '../equipo/ResumenDelEquipo.tsx';
 import { CierreDeCaja } from '../servicio/CierreDeCaja.tsx';
 import { Ventas } from '../servicio/Ventas.tsx';
+import { Informes } from '../negocio/Informes.tsx';
+import { Resenas } from '../negocio/Resenas.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAbrirLaRueda } from '../ganchos/usarLaRueda.ts';
 import { IconoRejilla } from '@estook/iconos';
@@ -250,6 +252,7 @@ function Dentro({
  *   Equipo · Hoy y Resumen                                M6½ · fichajes y horas
  *   Servicio · Jornada · Cierre                           M6½ · el cierre de caja
  *   Negocio · Ventas                                      M6½ · lo que entra
+ *   Negocio · Informes y Reseñas                          R2 · Tu día, semana y mes; la nota en Google
  *
  * El resto lleva su `TodaviaNo` con **el modulo del destino**, que sale del
  * catalogo de navegacion y no de una lista escrita aparte. Antes habia una tabla
@@ -282,6 +285,11 @@ function Contenido({
     return <CierreDeCaja />;
   }
   if (app.id === 'negocio' && destino.id === 'ventas') return <Ventas />;
+  // R2 (0053): Tu día, Tu semana y Tu mes, y la nota en Google.
+  if (app.id === 'negocio' && destino.id === 'informes') {
+    return <Informes vista={vista?.id ?? 'dia'} />;
+  }
+  if (app.id === 'negocio' && destino.id === 'resenas') return <Resenas />;
 
   /*
     Delivery tiene pantalla **aunque su destino lleve módulo**, y no es una

@@ -5,7 +5,7 @@ import {
   type Cantidad,
   type Milesimas,
 } from './coste.ts';
-import { masDias, type FechaOperativa } from './tiempo.ts';
+import { diaDeLaSemana, diasEntre, masDias, type FechaOperativa } from './tiempo.ts';
 
 /**
  * Motor de inventario (M6) · el libro de movimientos y la capa que predice.
@@ -282,6 +282,75 @@ export function consumoMedioDiario(
     diasMirados: diasConDatos,
     porque: null,
   };
+}
+
+/**
+ * Con menos historia que esta, el gasto no se reparte por días de la semana.
+ *
+ * Repartir el gasto de una sola semana por días es tener **un dato por día**: el
+ * sábado de la boda contaría como todos los sábados. Con dos semanas ya hay dos de
+ * cada, y con las cuatro de la ventana, cuatro (entrega R2 · decisión 0053).
+ */
+export const DIAS_PARA_REPARTIR_POR_SEMANA = 14;
+
+/**
+ * Cuánto pesa cada día de la semana en el gasto: 1 es un día normal, 1,6 un sábado
+ * que gasta un 60 % más que la media y 0 un lunes que el local cierra.
+ *
+ * `salidasPorDia` son las salidas de los últimos `diasConDatos` días **enteros**
+ * —sin hoy, que va a medias—, sumadas por día de la semana: la primera, las de los
+ * lunes; la séptima, las de los domingos. De cada día se saca su media, y el peso
+ * es esa media entre la de todos. Así el gasto al día que se enseña en la ficha no
+ * cambia: la semana suma lo mismo, y solo se reparte distinto.
+ *
+ * Nulo con menos de dos semanas de historia o sin ninguna salida: entonces se
+ * cuenta cada día igual, como siempre.
+ */
+export function pesosDeLaSemana(
+  salidasPorDia: readonly number[],
+  diasConDatos: number,
+  hoy: FechaOperativa,
+): readonly number[] | null {
+  const dias = Math.min(Math.trunc(diasConDatos), VENTANA_DE_CONSUMO);
+  if (dias < DIAS_PARA_REPARTIR_POR_SEMANA || salidasPorDia.length !== 7) return null;
+
+  // Cuántas veces sale cada día de la semana en los días mirados, de ayer hacia atrás.
+  const veces = [0, 0, 0, 0, 0, 0, 0];
+  for (let hace = 1; hace <= dias; hace++) {
+    const dia = diaDeLaSemana(masDias(hoy, -hace));
+    veces[dia - 1] = (veces[dia - 1] ?? 0) + 1;
+  }
+
+  // Un día sin salidas puede llegar como nulo desde la base: cuenta como cero.
+  const salidas = salidasPorDia.map((s) => (Number.isFinite(s) ? Math.abs(s) : 0));
+  const total = salidas.reduce((suma, s) => suma + s, 0);
+  if (total <= 0) return null;
+  const mediaDeTodos = total / dias;
+
+  return salidas.map((suyas, i) => {
+    const cuantas = veces[i] ?? 0;
+    return cuantas === 0 ? 1 : Number((suyas / cuantas / mediaDeTodos).toFixed(4));
+  });
+}
+
+/**
+ * Lo que se gasta de `desde` (entero) hasta `hasta` (sin contarlo), a `porDia` de
+ * media y repartido por los pesos de la semana si los hay.
+ */
+export function gastoEntre(
+  porDia: number,
+  pesos: readonly number[] | null,
+  desde: FechaOperativa,
+  hasta: FechaOperativa,
+): number {
+  const dias = diasEntre(desde, hasta);
+  if (dias <= 0) return 0;
+  if (pesos === null) return porDia * dias;
+  let gasto = 0;
+  for (let i = 0; i < dias; i++) {
+    gasto += porDia * (pesos[diaDeLaSemana(masDias(desde, i)) - 1] ?? 1);
+  }
+  return gasto;
 }
 
 /**

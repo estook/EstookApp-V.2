@@ -2,14 +2,15 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 27 de septiembre de 2026 de madrugada, leyendo la base, la
-> API y GitHub.
+> Comprobado en producción el 27 de septiembre de 2026 a mediodía, leyendo la base y la
+> API.
 >
 > | Qué                          | Cómo está                                                                   |
 > | ---------------------------- | --------------------------------------------------------------------------- |
-> | Pull requests                | **Todas fusionadas hasta la #75**. Espera la de R1, la campana              |
-> | La base de datos             | **49 de 49** migraciones, igual que `main`                                  |
-> | La API                       | **Desplegada el 26-sep a las 17:43**, con la #74: 52 y 111, reloj latiendo  |
+> | Pull requests                | **Todas fusionadas hasta la #76** (R1). Espera la de R2                     |
+> | La base de datos             | **50 de 50** migraciones, igual que `main`                                  |
+> | La API                       | **Desplegada con R1**: 56 y 116, reloj latiendo                             |
+> | R1 · la campana              | **En producción** (#76)                                                     |
 > | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
 > | E1 · crear cuenta y Google   | **Hecho**                                                                   |
 > | V, O y el Panel en el móvil  | **Hechos y en producción** (#64 a #70)                                      |
@@ -21,16 +22,19 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ---
 
-## Lo que te toca ahora · R1, la campana y los avisos (27-sep)
+## Lo que te toca ahora · R2, el pedido sugerido, los informes y Google (27-sep)
 
-**Qué trae:** la **campana** de arriba avisa de verdad —lo que empieza o manda tu equipo,
-un albarán con incidencias, una merma cara, un proveedor que sube un precio, la carta
-nueva y las notas del Tablón—; **pedir ayuda con un pedido**; **Ajustes → Avisos**, con
-campana y correo para cada uno; y **el buscador se cierra** con su X o tocando fuera.
-Contado en la decisión 0052. **Con migración (`0050`) y con despliegue de la API.**
+**Qué trae:** **«Mañana toca pedir a…»** la víspera de cada día de pedir, que al tocarlo
+prepara el pedido con lo que haya en ese momento (y la cuenta del pedido ya sabe que un
+viernes no gasta lo que un martes, y no vuelve a pedir lo que ya está mandado);
+**Negocio → Informes**, con **Tu día, Tu semana y Tu mes**; los correos de **la semana
+(los lunes) y el mes (el día 1)**; y **Negocio → Reseñas**, con tu nota en Google, que se
+pone al día sola cada tres días y avisa si baja. Contado en la decisión 0053. **Con
+migración (`0051`) y con despliegue de la API.**
 
-1. En **github.com** → **Pull requests** → **«R1 · La campana y los avisos»**. Abajo, las
-   **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
+1. En **github.com** → **Pull requests** → **«R2 · El pedido sugerido, los informes y la
+   nota en Google»**. Abajo, las **tres comprobaciones en verde** → **Merge pull request**
+   → **Confirm merge**.
 2. En PowerShell, en la carpeta del proyecto, trae lo fusionado:
 
 ```bash
@@ -41,9 +45,9 @@ git checkout main
 git pull
 ```
 
-3. **La migración.** Qué hace: crea la tabla de los avisos, la de lo que cada uno elige y
-   la de las invitaciones a un pedido, y el 5 % de las subidas en cada local. No borra
-   nada.
+3. **La migración.** Qué hace: admite los seis avisos nuevos, guarda las cifras del correo
+   de un informe y la nota de Google de cada día, y deja al reloj ver qué locales hay y
+   poner al día su ficha de Google. No borra nada.
 
 ```bash
 .\estook.cmd bd:migrar
@@ -52,8 +56,8 @@ git pull
 **Qué tiene que salir**, tal cual:
 
 ```
-  aplicando 0050_los_avisos.sql ... hecho
-  1 migracion(es) aplicadas · 50 en total
+  aplicando 0051_el_pedido_los_informes_y_google.sql ... hecho
+  1 migracion(es) aplicadas · 51 en total
 ```
 
 **Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
@@ -67,26 +71,35 @@ git pull
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** «las 56» consultas, «los 116» comandos y el reloj en OK.
+**Qué tiene que decir:** «las 58» consultas, «los 117» comandos y el reloj en OK.
 
 6. **Míralo** (recarga la app antes):
-   - **La campana**, arriba a la derecha: al abrirla, «Todo al día».
-   - **Pide ayuda con un pedido**: Almacén → Compras → Pedidos → un pedido nuevo →
-     **«Pedir ayuda»** → elige a alguien de cocina → **«Pedírselo»**. A esa persona le
-     llega a la campana y al correo; al pulsar **«Listo»**, te llega a ti.
-   - **Ajustes → Avisos**: una fila por aviso con **Campana** y **Correo**, y abajo
-     **desde cuánto avisa una subida de precio** (5 %).
-   - **El buscador** (la lupa): la **X** lo cierra, y tocar fuera también.
+   - **Negocio → Informes**: arriba, **Día · Semana · Mes**; con las flechas vas a días,
+     semanas o meses anteriores. Si un día no cerraste la caja, te lo dice.
+   - **Negocio → Reseñas**: tu nota en Google (★), cuántas reseñas y «Ver las reseñas en
+     Google».
+   - **Ajustes → Avisos**: al final, el grupo **Negocio** (Tu día, Tu semana, Tu mes y la
+     nota de Google). **Tu semana** y **Tu mes** llevan el correo encendido; si quieres
+     también **Tu día** por correo, enciéndelo ahí. **Productos bajo mínimo**, apagado: si
+     lo quieres por correo cada mañana, enciende las dos.
+   - **El lunes 28, a partir de las ocho**: en la campana, **Tu semana en** tu local (si esa
+     semana hay cajas cerradas o género apuntado), y el mismo informe en tu correo. Y si
+     mañana toca pedir a algún proveedor, «Mañana toca
+     pedir a…».
 
-**Ojo, y es a propósito:** tú entras como **dirección**, y a dirección **no le llega de
-fábrica lo que hace el equipo** (el pedido empezado, el mandado, la merma cara): con
-varios locales serían decenas al día. Si lo quieres, enciéndelo en **Ajustes → Avisos**.
-Lo demás —la ayuda, las subidas, el Tablón, la carta— sí te llega.
+**Recuerda:** eres **dirección**, así que lo que hace tu equipo no te llega de fábrica
+(R1). Los informes, «mañana toca pedir» y la nota de Google **sí**: no son lo que hace el
+equipo, son cosas que te tocan a ti.
 
-### Y en el iPhone, con la app instalada
+---
 
-Ciérrala del todo y ábrela: **Hoy** a la primera, **la barra de abajo** en su sitio tras
-cerrar el teclado, **Escanear** en Almacén → Productos, y **la campana**.
+## R1 · La campana y los avisos (#76) · **hecho** (27-sep)
+
+Fusionada, la `0050` aplicada y la API desplegada con 56 consultas y 116 comandos
+(comprobado el 27-sep a mediodía). La campana avisa de verdad, pedir ayuda con un pedido,
+Ajustes → Avisos con campana y correo, y el buscador que se cierra (decisión 0052). Falta
+que lo mires en el iPhone, con la app instalada: **Hoy**, la barra de abajo, **Escanear**
+y **la campana**.
 
 ---
 

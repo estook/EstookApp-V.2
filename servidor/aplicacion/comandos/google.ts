@@ -1,20 +1,17 @@
 import { z } from 'zod';
-import {
-  LETRAS_PARA_BUSCAR,
-  horaDeCorte,
-  jornadaDe,
-  mesDe,
-  topeDeGoogle,
-  type UsoDeGoogle,
-} from '@estook/dominio';
+import { LETRAS_PARA_BUSCAR } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
-import {
-  GoogleNoContesta,
-  type FichaDeGoogle,
-  type LugaresDeGoogle,
-} from '../../infraestructura/google.ts';
+import type { FichaDeGoogle, LugaresDeGoogle } from '../../infraestructura/google.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import {
+  HORAS_PARA_MIRARLA_OTRA_VEZ,
+  apuntarLaNota,
+  contar,
+  ponerAlDiaLaNota,
+  ponerLaFicha,
+  preguntarA,
+} from '../nota-de-google.ts';
 
 /**
  * El local en Google (M7, entrega 5 · decisiones 0030 y 0040).
@@ -25,9 +22,11 @@ import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
  *   buscar_mi_local_en_google     lo escrito → sugerencias de Google
  *   elegir_mi_local_de_google     una sugerencia → su ficha, guardada con su fecha
  *   actualizar_mi_ficha_de_google la ficha otra vez, como mucho una vez al día
+ *   mirar_mi_nota_de_google       la nota, al abrir Reseñas, si tiene más de un día (R2)
  *
  * ── El tope, antes de llamar ─────────────────────────────────────────────────
  *
+ * El contador vive en `nota-de-google.ts` desde R2, porque también lo usa el reloj.
  * Cada llamada **cuenta primero y llama después**, y la cuenta es una sola orden
  * que suma solo si queda sitio (`on conflict … where cuantas < tope`). Dos
  * pestañas a la vez no pueden pasarse del tope entre las dos. Si Google falla, la
@@ -47,56 +46,6 @@ function google(contexto: Contexto): LugaresDeGoogle {
     });
   }
   return contexto.google;
-}
-
-/** El mes del local, con su reloj y su hora de corte (regla 10). */
-async function elMes(contexto: Contexto, localId: string): Promise<string> {
-  const filas = await contexto.sql<{ zona_horaria: string; hora_de_corte: string }[]>`
-    select zona_horaria, to_char(hora_de_corte, 'HH24:MI') as hora_de_corte
-      from estook.local where id = ${localId}
-  `;
-  const fila = filas[0];
-  if (!fila) throw new FalloDeAplicacion('local_ajeno');
-  return mesDe(jornadaDe(contexto.ahora, fila.zona_horaria, horaDeCorte(fila.hora_de_corte)));
-}
-
-/**
- * Suma una al contador del mes, **solo si queda sitio**. Si no, corta con la
- * frase que dice cuánto y hasta cuándo.
- */
-async function contar(contexto: Contexto, localId: string, que: UsoDeGoogle): Promise<void> {
-  const mes = await elMes(contexto, localId);
-  const tope = topeDeGoogle(que);
-  const sumadas = await contexto.sql<{ cuantas: number }[]>`
-    insert into estook.uso_de_google (local_id, mes, que, cuantas)
-    values (${localId}, ${mes}::date, ${que}, 1)
-    on conflict (local_id, mes, que) do update
-       set cuantas = estook.uso_de_google.cuantas + 1
-     where estook.uso_de_google.cuantas < ${tope}
-    returning cuantas
-  `;
-  if (sumadas.length === 0) {
-    throw new FalloDeAplicacion('faltan_datos', {
-      porque:
-        que === 'ficha'
-          ? `Este mes ya se han pedido ${tope} fichas a Google para este local, que es el tope. Vuelve a haber el día 1.`
-          : `Este mes ya se han hecho ${tope} búsquedas en Google para este local, que es el tope. Vuelve a haber el día 1.`,
-    });
-  }
-}
-
-/** Lo que pasa si Google contesta mal, dicho para una persona. */
-async function preguntarA<T>(pregunta: () => Promise<T>): Promise<T> {
-  try {
-    return await pregunta();
-  } catch (fallo) {
-    if (fallo instanceof GoogleNoContesta || fallo instanceof TypeError) {
-      throw new FalloDeAplicacion('faltan_datos', {
-        porque: 'Google no ha contestado bien. No se ha guardado nada: prueba otra vez en un rato.',
-      });
-    }
-    throw fallo;
-  }
 }
 
 // ── Buscar ───────────────────────────────────────────────────────────────────
@@ -139,33 +88,40 @@ async function guardarLaFicha(
   const organizacionId = laOrganizacionDeLaSesion(contexto);
   const conPosicion = usarSuPosicion && ficha.latitud !== null && ficha.longitud !== null;
 
-  const antes = await contexto.sql<{ google_id: string | null; posicion_de: string | null }[]>`
-    select google_id, posicion_de from estook.local where id = ${localId}
+  const antes = await contexto.sql<
+    {
+      google_id: string | null;
+      posicion_de: string | null;
+      valoracion: string | null;
+      resenas: number | null;
+    }[]
+  >`
+    select google_id, posicion_de, google_valoracion::text as valoracion,
+           google_resenas as resenas
+      from estook.local where id = ${localId}
   `;
 
-  const cambiadas = await contexto.sql<{ id: string }[]>`
+  // Las columnas de Google, las mismas que pone el reloj (R2 · `ponerLaFicha`). Si
+  // la política no deja escribir, se dice: guardar en silencio es peor (regla 34).
+  if (!(await ponerLaFicha(contexto, localId, ficha))) throw new FalloDeAplicacion('sin_permiso');
+  await contexto.sql`
     update estook.local
-       set google_id = ${ficha.id},
-           google_nombre = ${ficha.nombre},
-           google_direccion = ${ficha.direccion},
-           google_telefono = ${ficha.telefono},
-           google_web = ${ficha.web},
-           google_mapa = ${ficha.mapa},
-           google_valoracion = ${ficha.valoracion}::numeric,
-           google_resenas = ${ficha.resenas}::int,
-           google_horario = ${ficha.horario === null ? null : JSON.stringify(ficha.horario)}::text::jsonb,
-           google_leido_en = ${contexto.ahora.toISOString()}::timestamptz,
-           -- Lo escrito a mano en el alta **no se pisa**: se rellena si está vacío.
+       set -- Lo escrito a mano en el alta **no se pisa**: se rellena si está vacío.
            direccion = coalesce(direccion, ${ficha.direccion}),
            telefono = coalesce(telefono, ${ficha.telefono}),
            latitud = case when ${conPosicion} then ${ficha.latitud}::numeric else latitud end,
            longitud = case when ${conPosicion} then ${ficha.longitud}::numeric else longitud end,
            posicion_de = case when ${conPosicion} then 'google' else posicion_de end
      where id = ${localId}
-    returning id::text as id
   `;
-  // Si la política no deja escribir, se dice: guardar en silencio es peor (regla 34).
-  if (cambiadas.length === 0) throw new FalloDeAplicacion('sin_permiso');
+
+  // La nota del día, y el aviso si ha bajado (R2 · 0053).
+  const deAntes = antes[0];
+  await apuntarLaNota(contexto, organizacionId, localId, ficha, {
+    googleId: deAntes?.google_id ?? null,
+    valoracion: deAntes?.valoracion == null ? null : Number(deAntes.valoracion),
+    resenas: deAntes?.resenas ?? null,
+  });
 
   await contexto.sql`
     select estook.anotar(
@@ -235,8 +191,8 @@ export const elegirMiLocalDeGoogle = comando<
  * Traer la ficha otra vez: el horario, la valoración o el teléfono cambian.
  *
  * **Como mucho una vez al día por local.** Si ya se trajo hoy, contesta sin llamar
- * a Google. La 0030 quiere que esto lo haga solo el reloj al cerrar la jornada;
- * mientras el reloj no exista (0016), es un botón, con el mismo límite.
+ * a Google. Desde R2 el reloj la pone al día cada tres días (0053); el botón
+ * sigue, para quien la quiera ya, con el mismo límite.
  */
 export const actualizarMiFichaDeGoogle = comando<Record<string, never>, { actualizada: boolean }>({
   nombre: 'actualizar_mi_ficha_de_google',
@@ -268,5 +224,39 @@ export const actualizarMiFichaDeGoogle = comando<Record<string, never>, { actual
     // La posición sigue a Google solo si ya venía de Google.
     await guardarLaFicha(contexto, localId, ficha, fila.posicion_de === 'google');
     return { actualizada: true };
+  },
+});
+
+// ── Mirar la nota (R2 · 0053) ────────────────────────────────────────────────
+
+/**
+ * Al abrir Negocio → Reseñas: **si la nota lleva más de un día sin mirarse**, se
+ * trae otra vez. Es la mitad del punto medio que pidió Richi; la otra mitad es el
+ * reloj, cada tres días.
+ *
+ * Lo pide quien ve Negocio, que no tiene por qué poder cambiar la ficha del local:
+ * por eso la ficha la pone el sistema (`ponerAlDiaLaNota`). Solo las cuentas que
+ * pagan o están en prueba: las demás no llegan hasta aquí, porque sin pagar no se
+ * entra (0048). Si no toca, o no hay sitio en el tope, contesta sin llamar.
+ */
+export const mirarMiNotaDeGoogle = comando<Record<string, never>, { actualizada: boolean }>({
+  nombre: 'mirar_mi_nota_de_google',
+  entrada: z.object({}).strict(),
+  exige: 'app.negocio',
+
+  async ejecutar(contexto) {
+    const localId = elLocalDeLaSesion(contexto);
+    const organizacionId = laOrganizacionDeLaSesion(contexto);
+    const filas = await contexto.sql<{ google_id: string | null; reciente: boolean }[]>`
+      select google_id,
+             coalesce(google_leido_en > ${contexto.ahora.toISOString()}::timestamptz
+                                        - make_interval(hours => ${HORAS_PARA_MIRARLA_OTRA_VEZ}), false) as reciente
+        from estook.local where id = ${localId}
+    `;
+    const fila = filas[0];
+    if (fila === undefined || fila.google_id === null || fila.reciente) {
+      return { actualizada: false };
+    }
+    return { actualizada: await ponerAlDiaLaNota(contexto, organizacionId, localId) };
   },
 });

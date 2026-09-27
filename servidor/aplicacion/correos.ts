@@ -1,4 +1,8 @@
-import { MINUTOS_DEL_CODIGO_DE_REGISTRO, type CorreoDeLaCuenta } from '@estook/dominio';
+import {
+  MINUTOS_DEL_CODIGO_DE_REGISTRO,
+  type CifraDelCorreo,
+  type CorreoDeLaCuenta,
+} from '@estook/dominio';
 import type { CorreoParaMandar } from '../infraestructura/correo.ts';
 
 /**
@@ -21,7 +25,14 @@ function escapar(texto: string): string {
 }
 
 function envolver(parrafos: readonly string[]): string {
-  const cuerpo = parrafos.map((p) => `<p style="margin:0 0 16px">${p}</p>`).join('');
+  // Una tabla no puede ir dentro de un párrafo: el programa de correo lo rompería.
+  const cuerpo = parrafos
+    .map((p) =>
+      p.startsWith('<table')
+        ? `<div style="margin:0 0 16px">${p}</div>`
+        : `<p style="margin:0 0 16px">${p}</p>`,
+    )
+    .join('');
   return [
     '<!doctype html><html lang="es"><body style="margin:0;padding:24px;background:#f5f3ef;',
     'font-family:Montserrat,Helvetica,Arial,sans-serif;color:#1d2a2e;font-size:16px;line-height:1.5">',
@@ -167,6 +178,34 @@ export interface AvisoParaElCorreo {
   readonly detalle: string | null;
   /** A dónde lleva dentro de la app: `/almacen/compras/pedidos?pedido=…`. */
   readonly ir: string | null;
+  /** Las cifras de un informe (R2 · 0053): van en una tabla, encima de las frases. */
+  readonly cifras?: readonly CifraDelCorreo[] | null;
+}
+
+/**
+ * La tabla de cifras de un informe, **con estilos en línea**: los programas de
+ * correo quitan las hojas de estilo. El color solo acompaña a la flecha, nunca la
+ * sustituye (B8): «+12 %» se lee igual sin él.
+ */
+function tablaDeCifras(cifras: readonly CifraDelCorreo[]): string {
+  const filas = cifras
+    .map((cifra) => {
+      const color =
+        cifra.bueno === true ? '#1f7a4d' : cifra.bueno === false ? '#b3261e' : '#6b7478';
+      const cambio =
+        cifra.cambio === null
+          ? ''
+          : `<span style="color:${color};font-size:13px;font-weight:600">${escapar(cifra.cambio)}</span>`;
+      return [
+        '<tr>',
+        `<td style="padding:8px 0;border-bottom:1px solid #ece9e3">${escapar(cifra.nombre)}</td>`,
+        `<td style="padding:8px 0;border-bottom:1px solid #ece9e3;text-align:right;font-weight:700;white-space:nowrap">${escapar(cifra.valor)}</td>`,
+        `<td style="padding:8px 0 8px 12px;border-bottom:1px solid #ece9e3;text-align:right;white-space:nowrap">${cambio}</td>`,
+        '</tr>',
+      ].join('');
+    })
+    .join('');
+  return `<table role="presentation" style="width:100%;border-collapse:collapse;font-size:15px">${filas}</table>`;
 }
 
 /**
@@ -179,10 +218,12 @@ export interface AvisoParaElCorreo {
 export function correoDeUnAviso(para: string, aviso: AvisoParaElCorreo): CorreoParaMandar {
   const enlace = `https://estook.com/app/#${aviso.ir ?? '/'}`;
   const ajustes = 'https://estook.com/app/#/ajustes/avisos';
+  const cifras = aviso.cifras ?? [];
   const texto = [
     'Hola:',
     '',
     aviso.titulo,
+    ...cifras.map((c) => `· ${c.nombre}: ${c.valor}${c.cambio === null ? '' : ` (${c.cambio})`}`),
     ...(aviso.detalle === null ? [] : [aviso.detalle]),
     '',
     `Míralo en Estook: ${enlace}`,
@@ -197,6 +238,7 @@ export function correoDeUnAviso(para: string, aviso: AvisoParaElCorreo): CorreoP
     html: envolver([
       'Hola:',
       `<strong>${escapar(aviso.titulo)}</strong>`,
+      ...(cifras.length === 0 ? [] : [tablaDeCifras(cifras)]),
       ...(aviso.detalle === null ? [] : [escapar(aviso.detalle)]),
       `<a href="${escapar(enlace)}" style="display:inline-block;background:#ff7a00;color:#1d2a2e;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px">Verlo en Estook</a>`,
       `<span style="color:#6b7478;font-size:13px">Te llega porque lo tienes encendido en <a href="${ajustes}" style="color:#6b7478">Ajustes → Avisos</a>. Desde ahí lo apagas.</span>`,

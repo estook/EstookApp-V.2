@@ -1,5 +1,6 @@
 import {
   DIAS_QUE_SE_GUARDA_UN_AVISO,
+  comoEstaLaCuenta,
   elCorreoDeHoy,
   elPlanPorLosLocales,
   laCuota,
@@ -11,6 +12,7 @@ import {
 } from '@estook/dominio';
 import { mandarLosCorreosDeLosAvisos } from './avisos.ts';
 import { hacerLaFotoDelUso } from './clientes.ts';
+import { loQueAvisaElReloj } from './lo-que-avisa-el-reloj.ts';
 import type { Contexto } from './contrato.ts';
 import { correoDeLaCuenta } from './correos.ts';
 import {
@@ -33,6 +35,9 @@ import {
  *   2 · Cuadrar los locales con Stripe, por si al crear uno no se pudo.
  *   3 · La foto del uso de cada cliente, para el admin.
  *   4 · Borrar los avisos de hace más de un mes (0052).
+ *   5 · Lo que avisa por su cuenta (R2 · 0053): mañana toca pedir, los informes, lo
+ *       que está bajo mínimo y la nota en Google (`lo-que-avisa-el-reloj.ts`). Sus
+ *       correos salen al acabar, en el mismo latido.
  *
  * Y **cada hora**, los correos de los avisos que no salieron al momento (0052).
  *
@@ -47,6 +52,10 @@ export interface LoQueHizoElReloj {
   readonly correos: number;
   readonly cuadrados: number;
   readonly fallos: number;
+  /** Los avisos que ha dejado lo del día (R2): mañana toca pedir, informes… */
+  readonly avisos: number;
+  /** Las notas de Google puestas al día (R2). */
+  readonly notas: number;
 }
 
 /** El secreto del reloj, comparado por su huella: la base no guarda el secreto. */
@@ -116,12 +125,27 @@ export async function latir(
 
     const hoy = hoyEnMadrid(contexto.ahora);
     if (fila.ultimo_diario === hoy || laHoraEnMadrid(contexto.ahora) < HORA_DEL_DIARIO) {
-      return { diario: false, correos: 0, cuadrados: 0, fallos: 0 };
+      return { diario: false, correos: 0, cuadrados: 0, fallos: 0, avisos: 0, notas: 0 };
     }
 
     const hecho = await elDiario(contexto, hoy);
     if (hecho.fallos === 0) {
       await contexto.sql`update plataforma.reloj set ultimo_diario = ${hoy}::date where unica`;
+    }
+
+    // Los correos de lo que acaba de avisar (los informes del lunes, sobre todo): no
+    // esperan a la hora siguiente.
+    try {
+      await mandarLosCorreosDeLosAvisos(contexto);
+    } catch (fallo) {
+      console.error(
+        JSON.stringify({
+          nivel: 'error',
+          mensaje: 'el reloj no ha podido mandar los correos de lo del día',
+          correlacion_id: contexto.correlacionId,
+          detalle: fallo instanceof Error ? fallo.message : String(fallo),
+        }),
+      );
     }
     return { diario: true, ...hecho };
   });
@@ -131,7 +155,7 @@ export async function latir(
 async function elDiario(
   contexto: Contexto,
   hoy: FechaOperativa,
-): Promise<{ correos: number; cuadrados: number; fallos: number }> {
+): Promise<{ correos: number; cuadrados: number; fallos: number; avisos: number; notas: number }> {
   const cuentas = await contexto.sql<Cuenta[]>`
     select organizacion_id, nombre, es_ejemplo, estado, plan, intervalo, locales_pagados,
            locales_activos, to_char(prueba_hasta, 'YYYY-MM-DD') as prueba_hasta,
@@ -143,23 +167,31 @@ async function elDiario(
   let cuadrados = 0;
   let fallos = 0;
 
+  // Las que pagan o están en prueba —y las de la casa—, para lo que avisa el reloj (R2).
+  const queSeAvisan: { organizacionId: string }[] = [];
+
   for (const cuenta of cuentas) {
     const plan = cuenta.plan as CodigoDePlan | null;
     const intervalo = (cuenta.intervalo ?? 'mes') as Intervalo;
+    const suscripcion = {
+      estado: cuenta.estado as EstadoDeSuscripcion,
+      plan,
+      pruebaHasta: cuenta.prueba_hasta as FechaOperativa | null,
+      impagoDesde: cuenta.impago_desde === null ? null : new Date(cuenta.impago_desde),
+      deLaCasa: cuenta.de_la_casa,
+      esEjemplo: cuenta.es_ejemplo,
+      conStripe: cuenta.stripe_suscripcion !== null,
+    };
+    const como = comoEstaLaCuenta(suscripcion, contexto.ahora, hoy).como;
+    if (!cuenta.es_ejemplo && (como === 'al_dia' || como === 'prueba')) {
+      queSeAvisan.push({ organizacionId: cuenta.organizacion_id });
+    }
 
     // 1 · El correo de hoy.
     const correo = elCorreoDeHoy(
       {
         nombre: cuenta.nombre,
-        suscripcion: {
-          estado: cuenta.estado as EstadoDeSuscripcion,
-          plan,
-          pruebaHasta: cuenta.prueba_hasta as FechaOperativa | null,
-          impagoDesde: cuenta.impago_desde === null ? null : new Date(cuenta.impago_desde),
-          deLaCasa: cuenta.de_la_casa,
-          esEjemplo: cuenta.es_ejemplo,
-          conStripe: cuenta.stripe_suscripcion !== null,
-        },
+        suscripcion,
         cuota: plan === null ? null : laCuota(plan, intervalo, cuenta.locales_pagados ?? 1),
       },
       contexto.ahora,
@@ -272,5 +304,10 @@ async function elDiario(
                             - make_interval(days => ${DIAS_QUE_SE_GUARDA_UN_AVISO})
   `;
 
-  return { correos, cuadrados, fallos };
+  // 5 · Lo que avisa el reloj (R2 · 0053), de las cuentas que pagan o están en
+  // prueba. Sus fallos se apuntan y no hacen repetir el día: no cobran ni escriben
+  // nada que no vuelva a salir mañana (`lo-que-avisa-el-reloj.ts`).
+  const avisado = await loQueAvisaElReloj(contexto, queSeAvisan);
+
+  return { correos, cuadrados, fallos, avisos: avisado.avisos, notas: avisado.notas };
 }

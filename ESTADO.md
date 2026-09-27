@@ -9,7 +9,7 @@
 > Lo demás vive en su sitio, y aquí solo se enlaza:
 >
 > - **Lo que hizo cada módulo**, con sus fallos: [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)
-> - **Lo aprendido fallando** (126 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
+> - **Lo aprendido fallando** (127 lecciones): [`docs/lecciones.md`](docs/lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](docs/reglas.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](docs/decisiones/)
 > - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)
@@ -735,6 +735,6 @@ lo pedido en la sugerencia, el reloj del lunes con «mañana toca pedir», Tu d�
 su correo, lo que no se manda sin datos, lo bajo mínimo encendido, la nota con su tope,
 su evolución y su aviso, y una cuenta que no paga), **31** nuevas del dominio (informes,
 compras, almacén, avisos y la «e» de `enumerar`, lección 126) y **3** de pantalla
-(`el-pedido-los-informes-y-google.spec.ts`). **Lo que no se puede probar aquí:** que el
+(`el-pedido-los-informes-y-google.spec.ts`), más las capturas de Ajustes → Avisos traídas de GitHub y miradas, en claro y oscuro (lección 127). **Lo que no se puede probar aquí:** que el
 correo llegue de verdad a un buzón, y el reloj de producción el lunes a las ocho — lo mira
 Richi.

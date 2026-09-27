@@ -415,3 +415,8 @@
      mínimo decía «tomate e harina». La prueba tenía «hígado» y «hielo», los dos casos
      difíciles, y ninguno de los fáciles. La «e» va solo ante el sonido «i» (`i-`, `hi-`,
      no `hie-`), y la prueba lleva ahora «harina» y «huevos».
+127. **Una pantalla con captura de referencia que cambia a propósito sale en rojo en GitHub
+     la primera vez, y en Windows no se ve.** R2 añadió filas a Ajustes → Avisos, que tiene
+     su captura (0052), y las capturas solo se comparan en Linux: en local todo verde y en
+     GitHub cuatro rojas. Antes de subir se mira qué pantallas tocadas tienen captura
+     (`capturas.spec.ts`, `PANTALLAS`) y se avisa de que tocará `pnpm capturas:traer`.

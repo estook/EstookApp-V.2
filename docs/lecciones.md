@@ -420,3 +420,13 @@
      su captura (0052), y las capturas solo se comparan en Linux: en local todo verde y en
      GitHub cuatro rojas. Antes de subir se mira qué pantallas tocadas tienen captura
      (`capturas.spec.ts`, `PANTALLAS`) y se avisa de que tocará `pnpm capturas:traer`.
+128. **Una prueba que cuenta desde hoy se pasa la semana entera antes de darla por buena.**
+     `el-pedido-los-informes-y-google.prueba.ts` pasó en GitHub el domingo 27-sep y falló el
+     martes 29 en el ordenador. Dos fallos, y ninguno de la app: los martes, un pedido de
+     otra prueba llegaba justo el día del reparto que mira el reloj, y el reloj entendía
+     —bien— que ya estaba pedido; y los lunes entre las 00:00 y la hora de corte, la
+     jornada del local todavía es la del domingo y la semana no está cerrada. Una sola
+     vuelta no lo ve nunca: `pnpm prueba:semana` pasa las pruebas en veintiséis días y
+     horas (mueve también el reloj de la base de las pruebas), y se usa al escribir o
+     tocar una prueba con fechas. Lo de la lección 120 sigue: contar desde hoy, y además,
+     comprobarlo toda la semana.

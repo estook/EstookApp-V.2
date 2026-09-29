@@ -51,6 +51,18 @@ Sin ellos, el flujo `Desplegar la API` se para y dice que faltan. Se lanza a man
 desde la pestana Actions, escribiendo «desplegar»: poner los datos de verdad al
 alcance de cualquiera con un navegador se hace mirando, no de paso.
 
+**Y desde el 30 de septiembre de 2026, los de la copia de seguridad** (decisión 0061,
+[`docs/copias-de-seguridad.md`](../docs/copias-de-seguridad.md)):
+
+| Nombre                    | Que es                                                                                                                           |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `URL_DE_LA_COPIA`         | La misma direccion de la base que `DATABASE_URL` en tu `.env.local` (la del agrupador, puerto 5432)                              |
+| `CLAVE_DE_LA_COPIA`       | Una contrasena larga solo para cifrar la copia. **Se guarda tambien en el gestor de contrasenas**: sin ella, la copia no se abre |
+| `CLAVE_DE_SERVICIO_COPIA` | Opcional: la clave de servicio, para copiar tambien los logos, las fotos y las cartas                                            |
+
+**Y cuando se publique en Cloudflare Pages** (antes del primer cliente de pago, 0061),
+dos mas: `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`. Ninguna otra clave se mueve.
+
 ## Secretos de Supabase · Project Settings → Edge Functions → Secrets
 
 Los que no pueden pisar el navegador jamas.

@@ -4,14 +4,14 @@
 >
 > Comprobado el 30 de septiembre de 2026, leyendo la base de producción.
 >
-> | Qué                          | Cómo está                                                                                     |
-> | ---------------------------- | --------------------------------------------------------------------------------------------- |
+> | Qué                          | Cómo está                                                                         |
+> | ---------------------------- | --------------------------------------------------------------------------------- |
 > | Pull requests                | **Fusionadas hasta la #77** (R2). Abiertas: la #79, la #78 y la #80, en ese orden |
-> | La base de datos             | **51 de 51** migraciones, igual que `main`                                                    |
-> | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                               |
-> | **Las copias de seguridad**  | **Ninguna todavía**: empiezan cuando pongas sus secretos (abajo)                              |
-> | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                   |
-> | E1, V, O, E2, L, A2, R1 y R2 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                                |
+> | La base de datos             | **51 de 51** migraciones, igual que `main`                                        |
+> | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                   |
+> | **Las copias de seguridad**  | **Ninguna todavía**: empiezan cuando pongas sus secretos (abajo)                  |
+> | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor       |
+> | E1, V, O, E2, L, A2, R1 y R2 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                    |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 

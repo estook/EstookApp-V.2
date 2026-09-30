@@ -24,17 +24,17 @@
 
 ## 1 · Dónde estamos · producción leída el 30-sep, en solo lectura
 
-|                  |                                                                                                                                                                                                           |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1 y R2, con sus repasos                                                                                           |
+|                  |                                                                                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1 y R2, con sus repasos                                                                                  |
 | **Por fusionar** | **#79** · la prueba de los martes y la copia de seguridad semanal → **#78** · los maestros y Estook TPV → **#80** · la auditoría profunda, los documentos. Ninguna lleva migración ni despliegue |
-| **Ahora**        | Que Richi fusione las tres, ponga los secretos de la copia y la lance una vez (apartado 2). Después, **H · Horarios**                                                                                     |
-| **`main`**       | Todo fusionado hasta la **#77** (R2, 27-sep)                                                                                                                                                              |
-| **Base**         | Supabase, **51 de 51** migraciones. 73 tablas, todas con seguridad por filas                                                                                                                              |
-| **API**          | Desplegada con R2: **58 consultas y 117 comandos**, y el reloj latiendo cada hora                                                                                                                         |
-| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                         |
-| **Pruebas**      | **1.450** unitarias y de base, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                             |
-| **Copias**       | **Ninguna hecha todavía.** La semanal está escrita en la #79 y empieza cuando Richi ponga sus secretos ([`docs/copias-de-seguridad.md`](docs/copias-de-seguridad.md))                                     |
+| **Ahora**        | Que Richi fusione las tres, ponga los secretos de la copia y la lance una vez (apartado 2). Después, **H · Horarios**                                                                            |
+| **`main`**       | Todo fusionado hasta la **#77** (R2, 27-sep)                                                                                                                                                     |
+| **Base**         | Supabase, **51 de 51** migraciones. 73 tablas, todas con seguridad por filas                                                                                                                     |
+| **API**          | Desplegada con R2: **58 consultas y 117 comandos**, y el reloj latiendo cada hora                                                                                                                |
+| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                |
+| **Pruebas**      | **1.450** unitarias y de base, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                    |
+| **Copias**       | **Ninguna hecha todavía.** La semanal está escrita en la #79 y empieza cuando Richi ponga sus secretos ([`docs/copias-de-seguridad.md`](docs/copias-de-seguridad.md))                            |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md))
 

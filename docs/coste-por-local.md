@@ -56,6 +56,16 @@
 | Pro con TPV · bar muy ocupado, todos sus créditos | 65,29 €         | 11,07 € | 1,85 €                      | 3,02 € | 29,59 €   | **45,53 €** | **19,76 € · 30 %** |
 | Cadena con TPV · por local, uso normal            | 57,02 €         | 2,88 €  | 1,85 €                      | 1,77 € | 5,59 €    | **12,09 €** | **44,94 € · 79 %** |
 
+### Y si Pro costara 99 €
+
+| Caso                                              | Ingreso sin IVA | IA      | Google, servidor y conector | Stripe | Verifacti | Coste total | Margen             |
+| ------------------------------------------------- | --------------- | ------- | --------------------------- | ------ | --------- | ----------- | ------------------ |
+| Pro sin TPV · uso normal                          | 81,82 €         | 2,88 €  | 1,85 €                      | 2,43 € | —         | **7,16 €**  | **74,66 € · 91 %** |
+| Pro sin TPV · gasta todos sus créditos            | 81,82 €         | 11,07 € | 1,85 €                      | 3,72 € | —         | **16,64 €** | **65,18 € · 80 %** |
+| Pro con TPV · restaurante de carta, uso normal    | 81,82 €         | 2,88 €  | 1,85 €                      | 2,43 € | 5,59 €    | **12,75 €** | **69,07 € · 84 %** |
+| Pro con TPV · bar de tapas, uso normal            | 81,82 €         | 2,88 €  | 1,85 €                      | 2,43 € | 14,59 €   | **21,75 €** | **60,07 € · 73 %** |
+| Pro con TPV · bar muy ocupado, todos sus créditos | 81,82 €         | 11,07 € | 1,85 €                      | 3,72 € | 29,59 €   | **46,23 €** | **35,59 € · 44 %** |
+
 ### Lo fijo de cada mes
 
 | Qué                                       | Al mes  | Desde cuándo                     | De dónde sale                                              |
@@ -102,7 +112,13 @@ Con 600,00 € fijos al mes, uso normal, sin TPV y **sin el IVA, que no es ingre
 5. **El punto de equilibrio estaba hecho con el IVA dentro.** Sin él, quince clientes siguen cubriendo gastos, pero por poco; con diez se pierden unos 230 € al mes.
 6. **Hoy Estook no gasta nada al mes**, porque todo va en planes gratuitos. **Para vender hacen falta unos 65 € al mes**, y con Estook TPV, unos 163 €. Con diez locales de pago eso ya es menos de un plan Esencial.
 
+## Y si Pro costara 99 €
+
+Richi lo propuso el 30-sep-2026, y la tabla de arriba hace la cuenta. **Cada local deja unos 16 € más al mes, y el caso malo pasa del 30 al 44 %.** La recomendación, con sus condiciones, está en la [decisión 0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md): sí, cuando Pro lleve Estook TPV dentro. **No está decidido**, y los planes de esta página siguen siendo los de hoy.
+
 ## Lo que no está en la cuenta
+
+- **La firma de la autorización ante Hacienda de un autónomo**: 2,90 € + IVA, una sola vez por cliente que cobre con Estook TPV (documentación de Verifacti, 30-sep-2026). A una sociedad no le cuesta: firma con su certificado.
 
 - **El asesor** fiscal y laboral: no hay presupuesto todavía. Va dentro de los 600 € fijos del punto de equilibrio, que son de DOCUMENTO y hay que rehacer cuando lo haya.
 - **El tiempo de soporte** y la puesta en marcha remota de Pro.

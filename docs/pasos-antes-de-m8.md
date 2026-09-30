@@ -6,7 +6,7 @@
 >
 > | Qué                          | Cómo está                                                                         |
 > | ---------------------------- | --------------------------------------------------------------------------------- |
-> | Pull requests                | **Fusionadas hasta la #79** (30-sep). Abierta: la #80, solo documentos            |
+> | Pull requests                | **Fusionadas hasta la #80** (30-sep). Abierta: la #81, solo documentos            |
 > | La base de datos             | **51 de 51** migraciones, igual que `main`                                        |
 > | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                   |
 > | **Las copias de seguridad**  | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
@@ -17,35 +17,55 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ---
 
-## Lo que te toca ahora · la auditoría profunda (30-sep)
+## Lo que te toca ahora · después de la auditoría (30-sep)
 
-**La #78 y la #79 ya están fusionadas** (30-sep). Queda una.
+**La #78, la #79 y la #80 ya están fusionadas.** Queda una pequeña, y dos respuestas.
 
-### 1 · Fusionar la #80
+### 1 · Traer lo nuevo a tu ordenador
 
-En **github.com** → **Pull requests** → **«La auditoría profunda: los documentos»**. Abajo,
-las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Sin
-migración y sin desplegar la API.**
+Si no encuentras un documento en tu carpeta es porque tu ordenador todavía no tiene lo
+último. En PowerShell, en la carpeta del proyecto:
 
-**Qué trae:** los maestros en su versión nueva, con un documento nuevo, la
-**Arquitectura**; la Evolución repartida entre los demás; `ESTADO.md` en 150 líneas; once
-decisiones (de la 0055 a la 0065); la carpeta `docs/legal/`; y
-[**lo que cuesta cada local**](coste-por-local.md), con la IA y todo.
+```bash
+git pull
+```
 
-### 2 · Buscar al asesor
+**Qué tiene que salir:** una lista de ficheros, o «Already up to date». Después, los
+documentos legales están en la carpeta `docs\legal`.
 
-Hace falta **uno fiscal** (VeriFactu y facturación) y **uno laboral y de protección de
-datos**; puede ser el mismo despacho. Se le pasa tal cual
-[`docs/legal/preguntas-al-asesor.md`](legal/preguntas-al-asesor.md): son 37 preguntas, y
-cada una dice qué depende de su respuesta. **Lo primero que tiene que revisar** es el
-contrato de encargado, porque va antes del primer cliente que pague.
+### 2 · Fusionar la #81
 
-### 3 · Lo que tiene fecha
+En **github.com** → **Pull requests** → **«Después de la auditoría: lo legal investigado,
+Verifacti y el chat»** → con las **tres comprobaciones en verde**, **Merge pull request**
+→ **Confirm merge**. **Sin migración y sin desplegar la API.**
+
+**Qué trae:** lo que dicen las fuentes oficiales sobre cada duda legal
+([`lo-investigado.md`](legal/lo-investigado.md)); lo que dice la API de Verifacti que
+mandaste; el chat contado entero; y la cuenta de Pro a 99 €.
+
+### 3 · Contestarme dos cosas, con un sí o un no
+
+1. **¿Adelantamos el chat?** Hoy está casi al final. Te recomiendo hacerlo justo después
+   de la app instalable (la que trae los avisos al móvil): Horarios → la app instalable →
+   **el chat** → y seguimos. Horarios no lo necesita para avisar: usa la campana y el
+   correo.
+2. **¿Pro a 99 €?** Te recomiendo que sí, **cuando lleve el TPV dentro**. Hasta entonces,
+   79 €, y quien entre antes se queda con ese precio. Esencial sigue en 49 € y Cadena
+   pasa a 89 €.
+
+### 4 · El asesor, más adelante
+
+**No hace falta para seguir construyendo.** Hará falta antes del primer cliente que
+pague, y está escrito qué tiene que revisar y cuándo al final de
+[`lo-investigado.md`](legal/lo-investigado.md).
+
+### 5 · Lo que tiene fecha
 
 - **La oferta de Verifacti caduca hacia el 19 de octubre**
-  ([`docs/el-precio-de-verifacti.md`](el-precio-de-verifacti.md)). Y falta preguntarles
-  **qué se paga con menos de diez NIF**: decide si el TPV se puede ofrecer desde el primer
-  cliente.
+  ([`docs/el-precio-de-verifacti.md`](el-precio-de-verifacti.md)). Su web deja contratar
+  desde un solo NIF, así que lo más probable es que **no haya mínimo de diez**. Si quieres
+  asegurarlo, el correo son dos líneas: «¿Cuánto cuesta al mes con 1, 3 y 5 NIF en
+  producción? ¿Hay algún mínimo?».
 
 ---
 

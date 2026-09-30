@@ -1,25 +1,25 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 30 de septiembre de 2026 · **Antes de M8. La auditoría profunda, hecha y aprobada. La #78 y la #79, fusionadas; queda la #80, solo documentos. Después, H · Horarios**
+Última actualización: 30 de septiembre de 2026 · **Antes de M8. La auditoría profunda, entera en `main` (#78, #79 y #80). Queda la #81, solo documentos. Dos respuestas de Richi, y H · Horarios**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento**, y **no pasa de 150 líneas**
 > ([0063](docs/decisiones/0063-una-fuente-por-tema.md)): lo que ya pasó vive en su sitio.
 >
-> | Para saber…                         | Se lee                                                                                  |
-> | ----------------------------------- | --------------------------------------------------------------------------------------- |
-> | Qué es Estook                       | [Manifiesto](docs/maestros/Estook-Manifiesto.md)                                        |
-> | Cómo está hecho, y qué no se toca   | [Arquitectura](docs/maestros/Estook-Arquitectura.md) (lo que no se toca, capítulo 17)   |
-> | Cómo se trabaja y en qué orden      | [Plan](docs/maestros/Estook-Plan-de-Desarrollo.md) · [el mapa](docs/MAPA-de-modulos.md) |
-> | Quién ve qué                        | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                 |
-> | Qué desencadena cada cambio         | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                      |
-> | Estook TPV y la facturación         | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**      |
-> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (65)                                     |
-> | Lo legal, y lo que espera al asesor | [`docs/legal/`](docs/legal/cumplimiento.md)                                             |
-> | Lo que cuesta cada local            | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                    |
-> | Lo que hizo cada entrega            | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                    |
-> | Lo aprendido fallando (128)         | [`docs/lecciones.md`](docs/lecciones.md)                                                |
-> | Los pasos de Richi                  | [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)                                |
+> | Para saber…                       | Se lee                                                                                       |
+> | --------------------------------- | -------------------------------------------------------------------------------------------- |
+> | Qué es Estook                     | [Manifiesto](docs/maestros/Estook-Manifiesto.md)                                             |
+> | Cómo está hecho, y qué no se toca | [Arquitectura](docs/maestros/Estook-Arquitectura.md) (lo que no se toca, capítulo 17)        |
+> | Cómo se trabaja y en qué orden    | [Plan](docs/maestros/Estook-Plan-de-Desarrollo.md) · [el mapa](docs/MAPA-de-modulos.md)      |
+> | Quién ve qué                      | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                      |
+> | Qué desencadena cada cambio       | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                           |
+> | Estook TPV y la facturación       | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**           |
+> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (66)                                          |
+> | Lo legal, y lo ya investigado     | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md) |
+> | Lo que cuesta cada local          | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                         |
+> | Lo que hizo cada entrega          | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                         |
+> | Lo aprendido fallando (128)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
+> | Los pasos de Richi                | [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)                                     |
 
 ---
 
@@ -28,9 +28,9 @@
 |                  |                                                                                                                                                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1 y R2, con sus repasos                                                                                                                |
-| **Por fusionar** | **#80** · la auditoría profunda: los documentos, el coste por local y la copia aplazada. Sin migración ni despliegue                                                                                                           |
-| **Ahora**        | Que Richi fusione la #80. Después, **H · Horarios**                                                                                                                                                                            |
-| **`main`**       | Todo fusionado hasta la **#79** (30-sep): R2, los maestros con Estook TPV y la prueba de los martes                                                                                                                            |
+| **Por fusionar** | **#81** · lo legal investigado sin asesor, la API de Verifacti, el chat dicho entero y la cuenta de Pro a 99 € ([0066](docs/decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)). Sin migración ni despliegue         |
+| **Ahora**        | Que Richi fusione la #81 y conteste dos cosas: el chat y el precio (apartado 2). Después, **H · Horarios**                                                                                                                     |
+| **`main`**       | Todo fusionado hasta la **#80** (30-sep): la auditoría profunda entera                                                                                                                                                         |
 | **Base**         | Supabase, **51 de 51** migraciones. 73 tablas, todas con seguridad por filas                                                                                                                                                   |
 | **API**          | Desplegada con R2: **58 consultas y 117 comandos**, y el reloj latiendo cada hora                                                                                                                                              |
 | **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                              |
@@ -69,25 +69,26 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Ahora, en este orden** (paso a paso en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **Fusionar la #80.**
-2. **Contratar al asesor** (fiscal, y laboral y de datos) y pasarle [`docs/legal/preguntas-al-asesor.md`](docs/legal/preguntas-al-asesor.md). Ya no espera al TPV.
-3. **Contestar lo del chat** (abajo, el 1): hace falta antes de H.
+1. **Fusionar la #81.**
+2. **Decir sí o no a dos recomendaciones** (abajo, «Sin decidir», 1 y 2): adelantar el chat y subir Pro a 99 €.
+3. **Un profesional, más adelante**: no hace falta hasta el primer cliente que pague. Qué tiene que mirar y cuándo, al final de [`lo-investigado.md`](docs/legal/lo-investigado.md).
 
 **Con fecha o con condición:**
 
-| Qué                                                                                                                    | Cuándo                                                                          |
-| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **La mudanza, todo junto**: Cloudflare Pages, Supabase Pro, **la copia semanal encendida** y el repositorio en privado | Antes del primer cliente que pague o de vender Estook TPV, lo que llegue antes  |
-| **El contrato de encargado**, revisado y en el alta                                                                    | Antes del primer cliente que pague                                              |
-| **La oferta de Verifacti**                                                                                             | **Caduca hacia el 19 de octubre** ([el precio](docs/el-precio-de-verifacti.md)) |
-| **La sociedad o el alta de autónomo**, y Stripe de verdad                                                              | Para cobrar de verdad                                                           |
-| **Las facturas de la cuota conformes a VeriFactu**                                                                     | 1-ene-2027 si es sociedad; 1-jul-2027 si es autónomo                            |
+| Qué                                                                                                                    | Cuándo                                                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **La mudanza, todo junto**: Cloudflare Pages, Supabase Pro, **la copia semanal encendida** y el repositorio en privado | Antes del primer cliente que pague o de vender Estook TPV, lo que llegue antes                                                                            |
+| **El contrato de encargado**, revisado y en el alta                                                                    | Antes del primer cliente que pague                                                                                                                        |
+| **La oferta de Verifacti**                                                                                             | **Caduca hacia el 19 de octubre**. Su web deja contratar desde 1 NIF: lo más probable es que no haya mínimo ([el precio](docs/el-precio-de-verifacti.md)) |
+| **La sociedad o el alta de autónomo**, y Stripe de verdad                                                              | Para cobrar de verdad                                                                                                                                     |
+| **Las facturas de la cuota conformes a VeriFactu**                                                                     | 1-ene-2027 si es sociedad; 1-jul-2027 si es autónomo                                                                                                      |
 
 **Sin decidir, y es de Richi:**
 
-1. **El chat de Estook**: ¿con Horarios o aparte? Mientras, el horario se comparte en PDF.
-2. **Fogón**: qué modelo es «el grande» y si 1.500 créditos son los de Pro. Con todos gastados, Pro puede costar 11 € de IA ([el coste](docs/coste-por-local.md)). Se decide en M22, con lo medido.
-3. **Para Estook TPV** (Anexo, «Lo que sigue pendiente de Richi»): en qué planes entra, el soporte en horario de servicio, si el camarero cobra por defecto y qué datáfono conectado va primero.
+1. **El chat: ¿se adelanta?** Está escrito entero (Manifiesto 23) y hoy toca en M23, casi al final. **Recomendado:** justo después de la app instalable: H → I → **el chat** → A3 → A4 → M8. Horarios no lo espera: avisa por la campana y el correo, con el PDF.
+2. **Pro a 99 €.** **Recomendado: sí, cuando lleve Estook TPV dentro**; hasta entonces 79 €, y quien entre antes se lo queda. Esencial sigue en 49 € y Cadena pasa a 89 €. Las cuentas, en [el coste](docs/coste-por-local.md).
+3. **Fogón**: qué modelo es «el grande» y cuántos créditos lleva Pro. Se decide en M22, con lo medido ([el coste](docs/coste-por-local.md)).
+4. **Para Estook TPV** (Anexo, «Lo que sigue pendiente de Richi»): el soporte en horario de servicio, si el camarero cobra por defecto y qué datáfono conectado va primero.
 
 **Cuando quiera:** las alertas de Dependabot, quitar «Automatically expose new tables» en Supabase y regenerar las claves de Google que pasaron por un chat.
 
@@ -97,7 +98,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 ## 3 · Lo que no se puede olvidar
 
-1. **Estook va a ser productor de un sistema de facturación.** Nada de facturación llega a producción sin las once condiciones del capítulo 9 del Anexo, y la primera es el asesor.
+1. **Estook va a ser productor de un sistema de facturación.** Nada de facturación llega a producción sin las once condiciones del capítulo 9 del Anexo, y la primera es **la revisión de un profesional por escrito**. Lo investigado sin asesor sirve para diseñar, no para firmar.
 2. **Un ticket o una factura emitidos no se tocan desde ningún sitio**: se corrigen con otro documento (regla 15 del Plan).
 3. **Estook nunca tiene el dinero del local**, ni es entidad de pago, ni cobra comisión por cobro.
 4. **No se inventa ni un campo ni un endpoint** de un servicio de fuera: primero su documentación oficial; hasta entonces, adaptador simulado. Y lo marcado **[VERIFICAR]** no se programa.
@@ -140,7 +141,7 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Fusionar las tres ramas** (apartado 2). **Después, H · Horarios**, que empieza por tres cosas escritas antes de programar: las preguntas a Richi que no estén contestadas, el motor de los PDF y la migración que hace opcional el correo de una persona.
+**Fusionar la #81 y las dos respuestas** (apartado 2). **Después, H · Horarios**, que empieza por tres cosas escritas antes de programar: las preguntas a Richi que no estén contestadas, el motor de los PDF y la migración que hace opcional el correo de una persona.
 
 **Lo que decidió la IA por su cuenta**, para que Richi lo sepa: partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
 

@@ -832,11 +832,11 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Lo que ya habrá hecho M7** ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)): la ficha del local desde Places, con su posición, y la cuenta de Business Profile conectada y leyendo reseñas, actualizado una vez al día al cerrar la jornada y con tope de gasto. **Aquí queda lo que se hace con las reseñas**: clasificarlas, la respuesta propuesta, el cruce con el cuadrante y la competencia.
 
-**Entra.** Enlace de la ficha del local autorizando con la cuenta de Google que la gestiona · reseñas por Google Business Profile, refrescadas cada 9 horas · conteo, clasificación por tema, media, evolución y detección de caídas **resueltos con consultas, sin llamar al modelo** · una sola llamada al modelo al día · cruce con el cuadrante y respuesta propuesta · competencia con recálculo cada 6 h sobre lo guardado y caché compartida por zona · chat con canales, directos, menciones, tarjetas de contexto, confirmación de lectura, buscador y silencio fuera de turno.
+**Entra.** Enlace de la ficha del local autorizando con la cuenta de Google que la gestiona · reseñas por Google Business Profile, refrescadas cada 9 horas · conteo, clasificación por tema, media, evolución y detección de caídas **resueltos con consultas, sin llamar al modelo** · una sola llamada al modelo al día · cruce con el cuadrante y respuesta propuesta · competencia con recálculo cada 6 h sobre lo guardado y caché compartida por zona · **el chat**, como lo cuenta el capítulo 23 del Manifiesto: el del equipo, los de área y los privados; entregado y leído; fotos, documentos y notas de voz; tarjetas de horario, ficha, plato y pedido; responder, reacciones, menciones y fijados; «confirmar que lo he leído»; traducción; buscador; y silencio fuera de turno.
 
 **Y su capa inteligente · chat conectado.** Lo que se escribe puede **ofrecerse** para convertirse en incidencia, agotado, aviso o tarea. **Con acción explícita, siempre: nada de efectos secundarios ocultos.**
 
-**Reglas críticas.** Estook **nunca responde una reseña por su cuenta**. El gerente ve todos los canales, **nunca los directos entre dos empleados**.
+**Reglas críticas.** Estook **nunca responde una reseña por su cuenta**. El gerente ve todos los canales, **nunca los privados de otras personas**. **Una tarjeta respeta los permisos de quien la recibe**, en el servidor. **El chat necesita los avisos al móvil** (entrega I): sin ellos no sirve.
 
 ### M24 · Cadena
 

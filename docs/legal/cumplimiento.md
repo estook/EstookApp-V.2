@@ -4,7 +4,8 @@
 > falta. Se revisa al cerrar cada módulo y cada vez que cambia una norma. **No es
 > asesoramiento jurídico**: lo que dice una norma va con su referencia; lo que es criterio
 > nuestro, marcado; y lo que tiene que decir un profesional está en
-> [`preguntas-al-asesor.md`](preguntas-al-asesor.md) y no se da por bueno antes
+> [`preguntas-al-asesor.md`](preguntas-al-asesor.md) —con lo que ya se ha podido buscar en
+> [`lo-investigado.md`](lo-investigado.md)— y no se da por bueno antes
 > ([decisión 0062](../decisiones/0062-lo-legal.md)).
 
 Las tres etiquetas de la auditoría:

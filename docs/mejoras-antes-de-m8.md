@@ -454,6 +454,10 @@ un enlace. Así:
 
 ## H · Horarios
 
+> **El plan entero de H** —lo decidido, las preguntas a Richi y el motor de los PDF— está
+> en [`h-horarios.md`](h-horarios.md) (30-sep, [0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)).
+> Y entre la I y los vendedores entra una entrega nueva, **C · El chat**.
+
 ### 18 · Cuadrante con coste en vivo y horas extra
 
 **Se pidió:** coste de personal en vivo y aviso de horas extra, adelantando M14.

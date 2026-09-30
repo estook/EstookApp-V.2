@@ -90,7 +90,8 @@ export interface Plan {
  *
  * **Los precios de verdad los cobra Stripe** (entrega 2): estos son los que se
  * enseñan, y una prueba comprueba que el anual sea diez meses. Si un día cambian,
- * se cambian aquí y en Stripe a la vez, con su decisión.
+ * se cambian aquí y se sube la versión de su precio en `suscripcion.ts`, con su
+ * decisión. Pro a 99 € y Cadena a 89 €, desde la 0067 (30-sep-2026).
  */
 export const PLANES: readonly Plan[] = [
   {
@@ -113,8 +114,8 @@ export const PLANES: readonly Plan[] = [
     codigo: 'pro',
     nombre: 'Pro',
     paraQuien: 'Para el local que factura de verdad y quiere que Estook trabaje solo.',
-    alMesPorLocal: 7_900,
-    alAnoPorLocal: 79_000,
+    alMesPorLocal: 9_900,
+    alAnoPorLocal: 99_000,
     localesDesde: 1,
     localesHasta: null,
     loQueLleva: [
@@ -129,8 +130,8 @@ export const PLANES: readonly Plan[] = [
     codigo: 'cadena',
     nombre: 'Cadena',
     paraQuien: 'Todo lo de Pro para grupos de 2 a 10 locales.',
-    alMesPorLocal: 6_900,
-    alAnoPorLocal: 69_000,
+    alMesPorLocal: 8_900,
+    alAnoPorLocal: 89_000,
     localesDesde: 2,
     localesHasta: 10,
     loQueLleva: [

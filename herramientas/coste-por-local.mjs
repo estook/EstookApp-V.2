@@ -31,16 +31,16 @@ const FIN = '<!-- coste:fin -->';
 /** SUPUESTO: un dólar, en euros. Prudente a propósito; se repasa con la factura real. */
 const EUROS_POR_DOLAR = 0.9;
 
-/** DOCUMENTO: los planes llevan el IVA dentro (Manifiesto 32). */
+/**
+ * DOCUMENTO: los planes llevan el IVA dentro (Manifiesto 32). Pro a 99 € y Cadena a
+ * 89 € desde el 30-sep-2026 (decisión 0067); antes, 79 € y 69 €.
+ */
 const IVA = 0.21;
 const PLANES = {
   esencial: { nombre: 'Esencial', conIva: 49, creditos: 300 },
-  pro: { nombre: 'Pro', conIva: 79, creditos: 1500 },
-  cadena: { nombre: 'Cadena (por local)', conIva: 69, creditos: 1500 },
+  pro: { nombre: 'Pro', conIva: 99, creditos: 1500 },
+  cadena: { nombre: 'Cadena (por local)', conIva: 89, creditos: 1500 },
 };
-
-/** La propuesta de Richi del 30-sep-2026: subir Pro a 99 €. Sin decidir; aquí solo se hace la cuenta. */
-const PRO_A_99 = 99;
 
 /** COMPROBADO el 30-sep-2026 · platform.claude.com/docs/en/about-claude/pricing · $ por millón de tokens. */
 const MODELOS = {
@@ -177,7 +177,8 @@ const fila = (celdas) => `| ${celdas.join(' | ')} |`;
 const tabla = (cabecera, filas) =>
   [fila(cabecera), fila(cabecera.map(() => '---')), ...filas.map(fila)].join('\n');
 
-function casos(pro = PLANES.pro, soloPro = false) {
+function casos() {
+  const pro = PLANES.pro;
   const lista = [];
   const caso = (nombre, plan, costeIa, tarjeta, tickets) => {
     const v = tickets === undefined ? 0 : verifacti(tickets, VERIFACTI.porNifConDiez);
@@ -227,7 +228,7 @@ function casos(pro = PLANES.pro, soloPro = false) {
     'normal',
     LOCALES_CON_TPV[0].ticketsAlDia,
   );
-  return soloPro ? lista.filter((l) => l[0].startsWith('Pro')) : lista;
+  return lista;
 }
 
 function fijos() {
@@ -293,22 +294,6 @@ function bloque() {
         'Margen',
       ],
       casos(),
-    ),
-    '',
-    '### Y si Pro costara 99 €',
-    '',
-    tabla(
-      [
-        'Caso',
-        'Ingreso sin IVA',
-        'IA',
-        'Google, servidor y conector',
-        'Stripe',
-        'Verifacti',
-        'Coste total',
-        'Margen',
-      ],
-      casos({ ...PLANES.pro, conIva: PRO_A_99 }, true),
     ),
     '',
     '### Lo fijo de cada mes',

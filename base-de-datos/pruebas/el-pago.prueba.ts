@@ -324,7 +324,8 @@ describe('la cuota sigue a los locales', () => {
     const antes = losDatos<{ conUnLocalMas: { plan: string; cuota: number } }>(
       await api.consultar(token, 'mi_suscripcion'),
     );
-    expect(antes.conUnLocalMas).toEqual({ plan: 'cadena', cuota: 13_800 });
+    // Dos locales en Cadena, a 89 € cada uno (0067).
+    expect(antes.conUnLocalMas).toEqual({ plan: 'cadena', cuota: 17_800 });
 
     losDatos(await api.ejecutar(token, 'crear_local', { nombre: 'Segundo local' }));
     expect(await suscripcionDe(para)).toMatchObject({ plan: 'cadena', locales_pagados: 2 });

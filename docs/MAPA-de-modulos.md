@@ -1,11 +1,12 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **«Antes de M8»**: las compras de M7 están entregadas, y quedan cuatro entregas antes de M8 —**H · Horarios**, **I · La app instalable**, **A3 · Vendedores** y **A4 · Ventas del admin**—, con su plan en [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md).
+Estás en **«Antes de M8»**: las compras de M7 están entregadas, y quedan cinco entregas antes de M8 —**H · Horarios**, **I · La app instalable**, **C · El chat**, **A3 · Vendedores** y **A4 · Ventas del admin**—, con su plan en [`h-horarios.md`](h-horarios.md), [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
 ```
-ANTES DE M8   H · Horarios  →  I · La app instalable  →  A3 · Vendedores  →  A4 · Ventas del admin
+ANTES DE M8   H · Horarios  →  I · La app instalable  →  C · El chat
+              →  A3 · Vendedores  →  A4 · Ventas del admin
 FASE 2        M8 → M9 → M10
 ESTOOK TPV    M16a · La jornada → M20 · Ventas y consumo → M19a · Estook Link
               → M20A · Sala y cocina → M20B · Facturación → M20C · Cobro y caja

@@ -447,7 +447,8 @@ Una página por app, por tipo de local y por caso de uso, cada una con su títul
 
 ```
 HECHO         M0 a M7, y M6½
-ANTES DE M8   H · Horarios  →  I · La app instalable  →  A3 · Vendedores  →  A4 · Ventas del admin
+ANTES DE M8   H · Horarios  →  I · La app instalable  →  C · El chat
+              →  A3 · Vendedores  →  A4 · Ventas del admin
 FASE 2        M8 → M9 → M10
 ESTOOK TPV    M16a · La jornada → M20 · Ventas y consumo → M19a · Estook Link
               → M20A · Sala y cocina → M20B · Facturación → M20C · Cobro y caja
@@ -455,7 +456,9 @@ DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → 
               → Fase 5 (M21 a M25) → Fase 6 (M26 a M28) → Fase 7 (M29 y M30)
 ```
 
-**Por qué el TPV va justo después de M10.** Los autónomos —la mayoría de los bares— tienen que usar un programa adaptado a VeriFactu desde el 1 de julio de 2027, y las sociedades desde el 1 de enero: en el primer semestre de 2027 mucha gente cambia de TPV, y hay que estar. Necesita la carta (M10), las fichas (M9) y el almacén (M6 a M8), y nada de lo que queda detrás. **H, I, A3 y A4** son las entregas de antes de M8 y su detalle está en [`docs/mejoras-antes-de-m8.md`](../mejoras-antes-de-m8.md).
+**El chat se adelanta** ([0067](../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): era parte de M23 y pasa a ser la entrega **C**, justo después de la app instalable, que es la que trae los avisos al móvil. M23 se queda con las reseñas y la competencia.
+
+**Por qué el TPV va justo después de M10.** Los autónomos —la mayoría de los bares— tienen que usar un programa adaptado a VeriFactu desde el 1 de julio de 2027, y las sociedades desde el 1 de enero: en el primer semestre de 2027 mucha gente cambia de TPV, y hay que estar. Necesita la carta (M10), las fichas (M9) y el almacén (M6 a M8), y nada de lo que queda detrás. **H, I, C, A3 y A4** son las entregas de antes de M8 y su detalle está en [`docs/mejoras-antes-de-m8.md`](../mejoras-antes-de-m8.md).
 
 Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Datos · Reglas críticas · Errores típicos · Terminado cuando · Pruebas._
 
@@ -829,6 +832,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 **Terminado cuando.** Da tres avisos útiles seguidos sin inventarse una cifra; un cocinero preguntando por márgenes recibe una negativa; **una inyección desde una reseña no cambia su comportamiento**; ninguna alerta llega sin su acción; y **el coste está medido**: cada llamada al modelo guarda sus tokens y lo que costó, cada acción de la tabla de créditos se mide con datos de verdad, el supuesto de [`coste-por-local.md`](../coste-por-local.md) se cambia por lo medido, y **gastar todos los créditos de Pro deja al menos un 60 %** ([0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). Si no lo deja, se ajusta la tabla de créditos o el modelo antes de encenderlo.
 
 ### M23 · Reseñas, competencia y chat
+
+> **El chat ya no espera a M23**: se construye antes de M8, en la entrega **C**, justo después de la app instalable ([0067](../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)). Lo que esta ficha dice del chat es lo que entra en C; aquí quedan las reseñas, la competencia y **el chat conectado** de la capa inteligente, que necesita a Fogón.
 
 **Lo que ya habrá hecho M7** ([decisión 0030](../decisiones/0030-el-local-se-situa-con-google.md)): la ficha del local desde Places, con su posición, y la cuenta de Business Profile conectada y leyendo reseñas, actualizado una vez al día al cerrar la jornada y con tope de gasto. **Aquí queda lo que se hace con las reseñas**: clasificarlas, la respuesta propuesta, el cruce con el cuadrante y la competencia.
 

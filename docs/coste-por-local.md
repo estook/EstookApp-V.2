@@ -18,7 +18,7 @@
 
 | Qué                           | Precio                                                                                                              | Etiqueta                                                                                                            |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Los planes**                | Esencial 49 €, Pro 79 €, Cadena 69 € por local, **con el IVA dentro**                                               | DOCUMENTO (Manifiesto 32). **El ingreso de verdad es sin IVA**: 40,50, 65,29 y 57,02 €                              |
+| **Los planes**                | Esencial 49 €, Pro 99 €, Cadena 89 € por local, **con el IVA dentro**                                               | DOCUMENTO (Manifiesto 32; Pro y Cadena, desde la 0067). **El ingreso de verdad es sin IVA**: 40,50, 81,82 y 73,55 € |
 | **Modelo económico**          | Claude Haiku 4.5: 1 $ por millón de tokens de entrada, 0,10 $ lo cacheado, 5 $ la salida                            | COMPROBADO ([precios de Anthropic](https://platform.claude.com/docs/en/about-claude/pricing))                       |
 | **Modelo grande**             | Claude Sonnet 5.5: 2 $, 0,20 $ y 10 $                                                                               | COMPROBADO. **Qué modelo es «el grande» no está decidido**: es de Richi, en M22                                     |
 | **El más caro que se usaría** | Claude Opus 5.5: 4 $, 0,20 $ y 20 $                                                                                 | COMPROBADO. Está en la tabla para ver el techo                                                                      |
@@ -49,22 +49,12 @@
 | ------------------------------------------------- | --------------- | ------- | --------------------------- | ------ | --------- | ----------- | ------------------ |
 | Esencial · uso normal                             | 40,50 €         | 0,44 €  | 1,85 €                      | 1,33 € | —         | **3,62 €**  | **36,88 € · 91 %** |
 | Esencial · gasta todos sus créditos               | 40,50 €         | 1,11 €  | 1,85 €                      | 1,97 € | —         | **4,92 €**  | **35,57 € · 88 %** |
-| Pro sin TPV · uso normal                          | 65,29 €         | 2,88 €  | 1,85 €                      | 1,99 € | —         | **6,72 €**  | **58,57 € · 90 %** |
-| Pro sin TPV · gasta todos sus créditos            | 65,29 €         | 11,07 € | 1,85 €                      | 3,02 € | —         | **15,94 €** | **49,35 € · 76 %** |
-| Pro con TPV · restaurante de carta, uso normal    | 65,29 €         | 2,88 €  | 1,85 €                      | 1,99 € | 5,59 €    | **12,31 €** | **52,98 € · 81 %** |
-| Pro con TPV · bar de tapas, uso normal            | 65,29 €         | 2,88 €  | 1,85 €                      | 1,99 € | 14,59 €   | **21,31 €** | **43,98 € · 67 %** |
-| Pro con TPV · bar muy ocupado, todos sus créditos | 65,29 €         | 11,07 € | 1,85 €                      | 3,02 € | 29,59 €   | **45,53 €** | **19,76 € · 30 %** |
-| Cadena con TPV · por local, uso normal            | 57,02 €         | 2,88 €  | 1,85 €                      | 1,77 € | 5,59 €    | **12,09 €** | **44,94 € · 79 %** |
-
-### Y si Pro costara 99 €
-
-| Caso                                              | Ingreso sin IVA | IA      | Google, servidor y conector | Stripe | Verifacti | Coste total | Margen             |
-| ------------------------------------------------- | --------------- | ------- | --------------------------- | ------ | --------- | ----------- | ------------------ |
 | Pro sin TPV · uso normal                          | 81,82 €         | 2,88 €  | 1,85 €                      | 2,43 € | —         | **7,16 €**  | **74,66 € · 91 %** |
 | Pro sin TPV · gasta todos sus créditos            | 81,82 €         | 11,07 € | 1,85 €                      | 3,72 € | —         | **16,64 €** | **65,18 € · 80 %** |
 | Pro con TPV · restaurante de carta, uso normal    | 81,82 €         | 2,88 €  | 1,85 €                      | 2,43 € | 5,59 €    | **12,75 €** | **69,07 € · 84 %** |
 | Pro con TPV · bar de tapas, uso normal            | 81,82 €         | 2,88 €  | 1,85 €                      | 2,43 € | 14,59 €   | **21,75 €** | **60,07 € · 73 %** |
 | Pro con TPV · bar muy ocupado, todos sus créditos | 81,82 €         | 11,07 € | 1,85 €                      | 3,72 € | 29,59 €   | **46,23 €** | **35,59 € · 44 %** |
+| Cadena con TPV · por local, uso normal            | 73,55 €         | 2,88 €  | 1,85 €                      | 2,21 € | 5,59 €    | **12,53 €** | **61,03 € · 83 %** |
 
 ### Lo fijo de cada mes
 
@@ -94,27 +84,27 @@
 
 Con 600,00 € fijos al mes, uso normal, sin TPV y **sin el IVA, que no es ingreso**:
 
-| Clientes                           | Ingreso sin IVA | Margen    | Resultado      |
-| ---------------------------------- | --------------- | --------- | -------------- |
-| 10 Esencial                        | 404,96 €        | 368,75 €  | **−231,25 €**  |
-| 15 mixtos (9 Esencial + 6 Pro)     | 756,20 €        | 683,31 €  | **+83,31 €**   |
-| 50 mixtos (30 Esencial + 20 Pro)   | 2520,66 €       | 2277,71 € | **+1677,71 €** |
-| 200 mixtos (120 Esencial + 80 Pro) | 10082,64 €      | 9110,85 € | **+8510,85 €** |
+| Clientes                           | Ingreso sin IVA | Margen     | Resultado      |
+| ---------------------------------- | --------------- | ---------- | -------------- |
+| 10 Esencial                        | 404,96 €        | 368,75 €   | **−231,25 €**  |
+| 15 mixtos (9 Esencial + 6 Pro)     | 855,37 €        | 779,85 €   | **+179,85 €**  |
+| 50 mixtos (30 Esencial + 20 Pro)   | 2851,24 €       | 2599,49 €  | **+1999,49 €** |
+| 200 mixtos (120 Esencial + 80 Pro) | 11404,96 €      | 10397,97 € | **+9797,97 €** |
 
 <!-- coste:fin -->
 
 ## Lo que dicen estas cuentas
 
-1. **Un local normal deja entre el 80 y el 90 %.** Esencial cuesta unos 3,60 € y Pro unos 6,70 €; con Estook TPV, unos 12 €. El precio está bien puesto.
-2. **El caso malo existe, y es Pro.** Un bar muy ocupado que cobra con Estook y gasta todos sus créditos deja un 30 %. No es una pérdida, pero son 20 € de 65. Lo mueven dos cosas: **los tickets** (Verifacti cobra 0,002 € cada uno por encima de 3.000 al mes) y **los créditos**.
+1. **Un local normal deja entre el 80 y el 90 %.** Esencial cuesta unos 3,60 € y Pro unos 7,20 €; con Estook TPV, unos 12,80 €.
+2. **El caso malo existe, y es Pro.** Un bar muy ocupado que cobra con Estook y gasta todos sus créditos deja un 44 %: unos 36 € de 82. Con Pro a 79 € dejaba un 30 %. Lo mueven dos cosas: **los tickets** (Verifacti cobra 0,002 € cada uno por encima de 3.000 al mes) y **los créditos**.
 3. **1.500 créditos con un modelo grande no son 1,33 €: son hasta 11 €**, y hasta 20 € si «el grande» fuera el más caro. Por eso **antes de encender Fogón se mide** lo que gasta cada acción y se ajusta la tabla de créditos, no al revés.
-4. **Stripe cuesta más de lo que estaba escrito**: entre 1,33 y 3 € por local, no 0,84 €.
-5. **El punto de equilibrio estaba hecho con el IVA dentro.** Sin él, quince clientes siguen cubriendo gastos, pero por poco; con diez se pierden unos 230 € al mes.
+4. **Stripe cuesta más de lo que estaba escrito**: entre 1,33 y 3,70 € por local, no 0,84 €.
+5. **El punto de equilibrio estaba hecho con el IVA dentro.** Sin él, quince clientes mixtos cubren gastos y dejan unos 180 €; con diez Esencial se pierden unos 230 € al mes.
 6. **Hoy Estook no gasta nada al mes**, porque todo va en planes gratuitos. **Para vender hacen falta unos 65 € al mes**, y con Estook TPV, unos 163 €. Con diez locales de pago eso ya es menos de un plan Esencial.
 
-## Y si Pro costara 99 €
+## Pro a 99 € y Cadena a 89 €, desde el 30 de septiembre
 
-Richi lo propuso el 30-sep-2026, y la tabla de arriba hace la cuenta. **Cada local deja unos 16 € más al mes, y el caso malo pasa del 30 al 44 %.** La recomendación, con sus condiciones, está en la [decisión 0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md): sí, cuando Pro lleve Estook TPV dentro. **No está decidido**, y los planes de esta página siguen siendo los de hoy.
+Lo decidió Richi el 30-sep-2026 ([decisión 0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): «desde ya; si no, no tenemos margen». **Cada local de Pro deja unos 16 € más al mes que a 79 €, y el caso malo pasa del 30 al 44 %.** Las tablas de arriba ya son con los precios nuevos.
 
 ## Lo que no está en la cuenta
 

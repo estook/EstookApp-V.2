@@ -145,7 +145,7 @@ test('Ajustes → Suscripción: el plan, la renovación, cancelar y seguir', asy
     .getByRole('button', { name: 'Cambiar' })
     .click();
   await expect(deNuevo).toContainText('Pro · mensual');
-  await expect(deNuevo).toContainText('79,00 €');
+  await expect(deNuevo).toContainText('99,00 €');
 });
 
 test('un cobro que falla: arriba, los días que quedan y que no se pierde nada', async ({

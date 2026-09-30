@@ -43,6 +43,11 @@ Y la letra pequeña, que es donde está lo que importa:
 
 ## 2 · La cuenta, con los planes que ya están escritos
 
+> **Esta cuenta es del 21 de septiembre, con Pro a 79 € y Cadena a 69 €.** Desde el 30-sep
+> son 99 € y 89 € ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)),
+> así que el margen de hoy es mayor. La cuenta vigente, con todo, está en
+> [`coste-por-local.md`](coste-por-local.md).
+
 Los planes del Manifiesto llevan **el IVA incluido**, y el coste de Verifacti es **sin
 IVA**. Para comparar peras con peras, todo lo de abajo va **sin IVA**:
 

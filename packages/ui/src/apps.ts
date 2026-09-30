@@ -170,10 +170,6 @@ export interface App {
  * pestanas de Negocio no fueran las de B5.
  */
 export const MODULOS: Readonly<Record<string, string>> = {
-  // Las entregas de antes de M8 (0061, 0067): no son fichas de modulo, son las
-  // letras del recuadro del orden del Plan. Horarios llega con H, antes que M14,
-  // y decir «M14» le prometia a quien mira la pantalla algo mucho mas lejano.
-  H: 'H · Horarios',
   M6: 'M6 · Almacén',
   M9: 'M9 · Escandallos',
   M10: 'M10 · Carta, menús y análisis',
@@ -411,11 +407,11 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         id: 'turnos',
         nombre: 'Turnos',
         icono: IconoEquipo,
-        queContesta: '¿Quién trabaja, cuándo, y cuánto cuesta ese cuadrante?',
+        queContesta: '¿Quién trabaja cada día, a qué hora y con quién?',
         vistas: [],
-        // El horario de la semana es el de Equipo › Horarios, y llega con H
-        // (0068), no con el Calendario entero.
-        modulo: 'H',
+        // **Construido en H2 (0069).** Es el mismo horario que Equipo › Horarios:
+        // aquí lo mira el equipo, que tiene Calendario y no Equipo. Quien lo monta
+        // lo monta desde cualquiera de los dos.
       },
     ],
   },
@@ -457,7 +453,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         icono: IconoCalendario,
         queContesta: '¿Cuál es el cuadrante, y cuadra con los contratos?',
         vistas: [],
-        modulo: 'H',
+        // **Construido en H2 (0069)**: montarlo en borrador, lo que cuesta, los avisos
+        // de descansos y horas, y publicarlo.
       },
       {
         // **Construido en M6½, y es el que pedia la lista con esta palabra:**

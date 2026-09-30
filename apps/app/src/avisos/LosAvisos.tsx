@@ -5,6 +5,7 @@ import {
   IconoAlmacen,
   IconoAtencion,
   IconoBorrar,
+  IconoCalendario,
   IconoCarta,
   IconoDinero,
   IconoDocumento,
@@ -48,6 +49,9 @@ const ICONO_DEL_AVISO: Readonly<Record<TipoDeAviso, Icono>> = {
   'google.nota': IconoCarta,
   // H1 (0068)
   'fichaje.corregido': IconoReloj,
+  // H2 (0069)
+  'horario.publicado': IconoCalendario,
+  'horario.cambiado': IconoCalendario,
 };
 
 const TRAMOS: readonly TramoDeAvisos[] = ['Hoy', 'Ayer', 'Esta semana', 'Antes'];

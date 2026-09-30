@@ -302,10 +302,10 @@ export const WIDGETS: readonly Widget[] = [
   {
     id: 'mi-turno',
     nombre: 'Mi turno',
-    queEnsena: 'Con quién trabajo hoy y qué me toca hacer',
+    queEnsena: 'Mi turno de hoy, con quién coincido, y mi semana',
     permiso: null,
     tamanos: ['chico', 'ancho'],
-    modulo: 'H',
+    // Construido en H2 (0069): hoy, con quién, y la semana en pequeño.
   },
   {
     id: 'platos-bajo-objetivo',
@@ -463,20 +463,24 @@ export const PANEL_DEL_PUESTO: Readonly<Record<Puesto, readonly WidgetPuesto[]>>
     { id: 'fichajes', tamano: 'ancho' },
     { id: 'calendario', tamano: 'ancho' },
   ],
-  // Fichar arriba a la izquierda, y lo que caduca, lo que falta y lo que llega.
+  // Fichar arriba a la izquierda, su turno de la semana (H2), y lo que caduca, lo
+  // que falta y lo que llega.
   cocina: [
     { id: 'fichar', tamano: 'chico' },
     { id: 'indicador-mis-horas-7', tamano: 'chico' },
+    { id: 'mi-turno', tamano: 'ancho' },
     { id: 'caducidades', tamano: 'ancho' },
     { id: 'bajo-minimo', tamano: 'ancho' },
     { id: 'merma', tamano: 'ancho' },
     { id: 'pedidos', tamano: 'ancho' },
     { id: 'calendario', tamano: 'ancho' },
   ],
-  // Fichar, sus horas, la merma que rompe una copa y lo que viene.
+  // Fichar, sus horas, su turno de la semana (H2), la merma que rompe una copa y lo
+  // que viene. «Ver tu turno y con quién lo haces» es lo que Roles le dibuja.
   sala: [
     { id: 'fichar', tamano: 'chico' },
     { id: 'indicador-mis-horas-7', tamano: 'chico' },
+    { id: 'mi-turno', tamano: 'ancho' },
     { id: 'merma', tamano: 'ancho' },
     { id: 'calendario', tamano: 'ancho' },
     { id: 'mis-apps', tamano: 'ancho' },
@@ -574,6 +578,8 @@ export const GRUPO_DEL_WIDGET: Readonly<Record<string, GrupoDeWidget>> = {
   merma: 'atajos',
   fichajes: 'equipo',
   personas: 'equipo',
+  // H2 (0069): el turno de uno es del equipo.
+  'mi-turno': 'equipo',
 };
 
 export interface GrupoDelCatalogo {

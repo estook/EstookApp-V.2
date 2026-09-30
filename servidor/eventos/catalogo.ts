@@ -127,6 +127,12 @@ export const EVENTOS = [
   'pedido.tocado',
   'carta.publicada',
   'nota.escrita',
+  // ── H2 · el horario (0069) ──────────────────────────────────────────────
+  //
+  //   horario.publicado   la semana ya es la de verdad: los avisos de «entras en
+  //                       cinco minutos», llegar tarde y el Calendario (M14) miran
+  //                       el horario publicado en vez del de siempre
+  'horario.publicado',
 ] as const;
 
 export type TipoDeEvento = (typeof EVENTOS)[number];

@@ -2845,6 +2845,36 @@ ficha en la pantalla del local; la app se pone al día sola al volver a ella y, 
 minuto, el Tablón, «Lo de hoy» y quién ha fichado (`datos/alDia.ts`, con
 `al-dia.spec.ts`); y el recado del alta que enseñaba «Ya está» (lección 130).
 
+### Antes de M8 · H2, el horario de la semana
+
+_1 de octubre de 2026._ Migración `0053`, [decisión 0069](decisiones/0069-el-horario.md).
+La segunda mitad de H, y con ella **H está entera**: quién trabaja el jueves que viene.
+
+- **Borrador y publicado en dos tablas**: `turno`, que solo ve quien monta el horario, y
+  `turno_publicado`, la copia que ve el equipo. Así se sigue tocando una semana publicada
+  sin que el equipo vea cada paso, y al volver a publicar se sabe a quién le cambia algo.
+- **Las cuentas en el dominio** (`horario.ts`): lo que dura un tramo (el de noche acaba al
+  día siguiente), los avisos (12 horas entre jornadas y pasarse de sus horas, en rojo;
+  más de 9 horas un día, sin día y medio de descanso o al 90 % de sus horas, en ámbar;
+  ninguno impide publicar), lo que cuesta, las ventas previstas y qué ha cambiado.
+- **Sin euros para quien no los ve**: las horas de contrato le llegan por
+  `horas_de_contrato`, la única función con privilegio nueva, sin los sueldos.
+- **Publicar avisa**: la primera vez a cada uno lo suyo; después, solo a quien le cambia.
+- **Lo ve todo el equipo**: Calendario › Turnos, `/horario` y «Mi turno» en el Panel de
+  la sala y la cocina. En PDF, el de la pared y el de cada uno.
+- **Manda el horario**: «entras en cinco minutos», quién entra hoy y los retrasos miran
+  lo publicado; y quien no tiene correo ve sus próximos días en el aparato del local.
+- **Lo que salió al mirarlo**: el coste salía a 0 € porque se buscaba el sueldo vigente
+  el lunes y se había puesto el jueves (ahora, el del domingo, como el Resumen); la
+  columna de horas se cortaba; y «Rellenar» no preguntaba antes de pisar lo copiado si
+  se pulsaba enseguida (la lección 130 otra vez).
+
+Las pruebas: `horario.prueba.ts` (el dominio), `el-horario.prueba.ts` (la base y la API:
+el equipo no ve el borrador, las ausencias, lo que se pisa, los avisos, el coste solo a
+quien lo ve, publicar y volver a publicar, el PDF y «entras en cinco minutos») y
+`el-horario.spec.ts` (la pantalla: montar, quitar, publicar, ver, el PDF, copiar y
+rellenar).
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

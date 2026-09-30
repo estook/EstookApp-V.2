@@ -47,6 +47,9 @@ export const TIPOS_DE_AVISO = [
   'google.nota',
   // ── H1 (decisión 0068) ──────────────────────────────────────────────────
   'fichaje.corregido',
+  // ── H2 (decisión 0069) ──────────────────────────────────────────────────
+  'horario.publicado',
+  'horario.cambiado',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -198,6 +201,26 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
   'fichaje.corregido': {
     nombre: 'Te corrigen un fichaje',
     explica: 'Con quién lo cambió y por qué. El de antes no se borra: lo ves en tus fichajes.',
+    grupo: 'Equipo',
+    deTuEquipo: false,
+    correoDeFabrica: true,
+  },
+
+  // ── H2 (decisión 0069) ──────────────────────────────────────────────────
+  //
+  // «Al publicar, a cada uno su aviso, en la campana y por correo. Al cambiar,
+  // solo al afectado, y dice qué» (0066). Por correo de fábrica los dos: el horario
+  // se mira para organizarse la semana, y no todo el mundo abre la app a diario.
+  'horario.publicado': {
+    nombre: 'Sale tu horario de la semana',
+    explica: 'Lo tuyo, día a día. El de todos está en el horario de la app.',
+    grupo: 'Equipo',
+    deTuEquipo: false,
+    correoDeFabrica: true,
+  },
+  'horario.cambiado': {
+    nombre: 'Te cambian el horario',
+    explica: 'Solo si te toca a ti, y dice qué día y cómo queda.',
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: true,

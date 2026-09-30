@@ -44,7 +44,7 @@ y el aviso de la 19** van en R2 ([0053](decisiones/0053-el-pedido-los-informes-y
 | 13  | Alertas de subida de precio              | **R1 · La campana**      | Nada                                     | **En producción** (#76)             |
 | 16  | Informes diario, semanal y mensual       | **R2**                   | Nada: Resend ya está                     | **Hecha, en su pull request**       |
 | 19  | Reseñas: aviso de bajada y respuesta     | **R2** y después         | Places ya; **Business Profile** y **IA** | **El aviso, en R2**; responder, M23 |
-| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                     | Falta                               |
+| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                     | **Hecha** en H2 (1-oct, 0069)       |
 | 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)  | Falta                               |
 | 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                     | Falta                               |
 | 10  | Escanear el código de barras             | **L**, adelantada        | Nada                                     | **En producción** (#73)             |
@@ -461,7 +461,8 @@ un enlace. Así:
 > **Richi contestó las seis el 30-sep** ([0068](decisiones/0068-las-respuestas-de-h.md)):
 > H va en dos. **H1 · Personas y fichajes**, hecha (la persona sin correo, la pausa, el
 > aparato del local, las correcciones con rastro, el registro para la Inspección y los
-> PDF). **H2 · El horario**, que es esta mejora 18 y la entrega 3 de M7, va después.
+> PDF). **H2 · El horario**, que es esta mejora 18 y la entrega 3 de M7, hecha el 1-oct
+> ([0069](decisiones/0069-el-horario.md)).
 
 ### 18 · Cuadrante con coste en vivo y horas extra
 

@@ -78,7 +78,7 @@ Son cosas pequeñas o que tienen una respuesta clara. Si alguna no te cuadra, d�
 
 ## Lo que lleva cada entrega
 
-| **H1 · Personas y fichajes** (hecha, 30-sep)                                                                  | **H2 · El horario**                                                                         |
+| **H1 · Personas y fichajes** (hecha, 30-sep)                                                                  | **H2 · El horario** (hecha, 1-oct)                                                          |
 | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | **La persona sin correo**: alta con nombre y PIN; ponerle el correo después                                   | El horario de la semana, en borrador y publicado, con turnos partidos y descansos previstos |
 | **El aparato del local para fichar**: una pantalla con teclado, cada uno su PIN                               | Libre, Vacaciones y Baja                                                                    |
@@ -145,8 +145,8 @@ el PDF llega al momento, para verlo, guardarlo o compartirlo
 
 ## Cómo va
 
-- **H1, hecha el 30-sep** (migración `0052`), en su pull request. Todo lo de su columna, con sus pruebas. Lo que queda de ella: **la prueba de verdad contra Cloudflare**, en cuanto Richi ponga los dos secretos. Hasta entonces, «Descargar en PDF» dice que no está encendido.
-- **H2, lo siguiente.** Salir en el cuadrante, avisar al publicar y el horario en PDF son de H2.
+- **H1, en producción desde el 30-sep** (#83, migración `0052`), con los PDF de Cloudflare encendidos por Richi.
+- **H2, hecha el 1-oct** (migración `0053`, [decisión 0069](decisiones/0069-el-horario.md)), en su pull request: toda su columna. Con ella, **H está entera**.
 
 ## Cómo se comprobará que H está terminado
 

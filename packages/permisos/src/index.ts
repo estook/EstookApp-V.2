@@ -285,6 +285,10 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   // ── H1 (0068) ──
   // Es del propio trabajador: le llega a él, sea quien sea, y a nadie más.
   'fichaje.corregido': [],
+  // ── H2 (0069) ──
+  // Su horario es suyo, como sus fichajes: le llega a cada uno el suyo.
+  'horario.publicado': [],
+  'horario.cambiado': [],
 };
 
 export function puedeRecibirElAviso(

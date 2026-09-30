@@ -336,13 +336,14 @@ describe('lo construido y lo que llega', () => {
     expect(destinosConstruidos(laApp('carta'))).toHaveLength(0);
   });
 
-  it('Equipo tiene Resumen, Personas y Fichajes construidos', () => {
+  it('Equipo tiene sus cuatro destinos construidos', () => {
     // Personas la trajo M4. Resumen y Fichajes, M6½: con los fichajes ya se puede
-    // contestar quién está y cuántas horas lleva cada uno. Horarios sigue en M14.
+    // contestar quién está y cuántas horas lleva cada uno. Y Horarios, H2 (0069).
     // (Hasta la entrega V se llamaban «Hoy» y «Resumen»: 0045.)
     expect(destinosConstruidos(laApp('equipo')).map((d) => d.id)).toEqual([
       'resumen',
       'personas',
+      'horarios',
       'fichajes',
     ]);
   });

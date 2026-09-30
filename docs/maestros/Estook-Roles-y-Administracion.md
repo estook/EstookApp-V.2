@@ -79,7 +79,7 @@ Buenos dias, Sara
 
 **Qué puede hacer:** fichar, consultar la carta y los alérgenos, marcar un plato agotado, apuntar una merma, escribir en el chat, dejar una incidencia y descargarse su horario. Ficha **con la ubicación**, que se pide y no bloquea; apunta la merma **sin ver lo que vale**; y en su ficha ve sus horas y sus fichajes.
 
-**El horario publicado lo ve entero**, el de todo el local, o solo el suyo si lo elige: quién trabaja cada día y a qué hora, **nunca lo que cuesta**. El borrador, no ([0068](../decisiones/0068-las-respuestas-de-h.md); llega con H2).
+**El horario publicado lo ve entero**, el de todo el local, o solo el suyo si lo elige: quién trabaja cada día y a qué hora, **nunca lo que cuesta**. El borrador, no ([0068](../decisiones/0068-las-respuestas-de-h.md), hecho en H2 · [0069](../decisiones/0069-el-horario.md)). Lo mira en Calendario › Turnos y en «Mi turno» del Panel.
 
 **Qué no ve, en ningún sitio:** costes, márgenes, precios de compra, ventas del local, datos de otras personas, el horario en borrador ni lo que cobran los demás. Lo suyo, sí: es suyo. **Con Estook TPV** ve el precio de venta de lo que sirve, el total de sus mesas y sus propios cobros del turno: sin eso no se puede cobrar. El total del local, no.
 

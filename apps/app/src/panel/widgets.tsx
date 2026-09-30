@@ -44,6 +44,8 @@ import { usarMisObjetivos } from '../ganchos/usarMisObjetivos.ts';
 import { ListaDelSemaforo } from '../objetivos/Semaforo.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { AL_DIA } from '../datos/alDia.ts';
+import { MiTurno } from '../horario/MiTurno.tsx';
+import { usarElHorarioDeEstaSemana } from '../ganchos/usarElHorario.ts';
 import { AccesosRapidos } from './AccesosRapidos.tsx';
 import { IndicadorWidget } from './Indicador.tsx';
 import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
@@ -160,6 +162,7 @@ function Cual({
   if (id === 'ultimos-movimientos') return <UltimosMovimientos tamano={tamano} />;
   if (id === 'pedidos') return <ComprasDeHoyWidget tamano={tamano} />;
   if (id === 'calendario') return <LoQueVieneWidget tamano={tamano} />;
+  if (id === 'mi-turno') return <MiTurnoWidget tamano={tamano} />;
   // Los indicadores son una familia: lo elegido va en el identificador (0039).
   if (id.startsWith('indicador-')) return <IndicadorWidget id={id} tamano={tamano} />;
   return null;
@@ -1334,6 +1337,22 @@ function ComprasDeHoyWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
  * Quién ve qué no lo decide el widget: lo decide la base. A un camarero no le
  * llega ninguna entrega, porque no lleva Almacén; le llegan sus avisos.
  */
+// ── Mi turno (H2 · 0069) ─────────────────────────────────────────────────────
+
+function MiTurnoWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
+  const consulta = usarElHorarioDeEstaSemana();
+  return (
+    <Caja
+      titulo="Mi turno"
+      ir="/horario"
+      leyendo={consulta}
+      {...(consulta.data?.publicado === true ? { origen: `Horario ${consulta.data.semana}` } : {})}
+    >
+      <MiTurno datos={consulta.data} tamano={tamano} />
+    </Caja>
+  );
+}
+
 function LoQueVieneWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const { permisos, yo } = usarSesion();
   const navegar = useNavigate();

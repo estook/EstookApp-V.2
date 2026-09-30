@@ -43,6 +43,7 @@ import { usarAlmacenHoy } from '../ganchos/usarAlmacenHoy.ts';
 import { usarMisObjetivos } from '../ganchos/usarMisObjetivos.ts';
 import { ListaDelSemaforo } from '../objetivos/Semaforo.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { AL_DIA } from '../datos/alDia.ts';
 import { AccesosRapidos } from './AccesosRapidos.tsx';
 import { IndicadorWidget } from './Indicador.tsx';
 import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
@@ -792,6 +793,7 @@ function QuienEstaTrabajandoWidget({ tamano }: { readonly tamano: TamanoDeWidget
       return respuesta.datos;
     },
     staleTime: 60_000,
+    ...AL_DIA,
   });
 
   const datos = consulta.data;
@@ -879,6 +881,7 @@ function PersonasWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
       return respuesta.datos;
     },
     staleTime: 60_000,
+    ...AL_DIA,
   });
 
   const gente = consulta.data?.gente ?? [];

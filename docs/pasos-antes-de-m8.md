@@ -2,22 +2,83 @@
 
 > ## Cómo está
 >
-> Comprobado el 30 de septiembre de 2026, leyendo la base de producción.
+> Comprobado el 30 de septiembre de 2026 por la noche, leyendo la base de producción.
 >
-> | Qué                          | Cómo está                                                                         |
-> | ---------------------------- | --------------------------------------------------------------------------------- |
-> | Pull requests                | **Fusionadas hasta la #82** (30-sep). Abierta: **H1 · Personas y fichajes**       |
-> | La base de datos             | **51 de 51** migraciones, igual que `main`                                        |
-> | La API                       | **Desplegada con la #82**: 58 y 117, reloj latiendo                               |
-> | **Las copias de seguridad**  | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
-> | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor       |
-> | E1, V, O, E2, L, A2, R1 y R2 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                    |
+> | Qué                             | Cómo está                                                                         |
+> | ------------------------------- | --------------------------------------------------------------------------------- |
+> | Pull requests                   | **Fusionadas hasta la #83** (30-sep). Abierta: **el repaso de H1**                |
+> | La base de datos                | **52 de 52** migraciones, igual que `main`                                        |
+> | La API                          | **Desplegada con H1**: 62 y 125, reloj latiendo                                   |
+> | Los PDF (Cloudflare)            | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep          |
+> | **Las copias de seguridad**     | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
+> | A1 · la puerta del admin        | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor       |
+> | E1, V, O, E2, L, A2, R1, R2, H1 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                    |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · H1, personas y fichajes (30-sep, noche)
+## Lo que te toca ahora · el repaso de H1 (30-sep, noche)
+
+**Qué trae**, de lo que viste con el primer PDF:
+
+- **El PDF se descarga siempre**, en el ordenador y en el móvil, y **debajo sale
+  «Compartir»** para mandarlo por WhatsApp o por correo. Antes, en tu Windows solo salía
+  compartir.
+- **El informe ya no lleva la nota del pie** («Contadas igual que en la app…»): se manda
+  a otros y confundía. Y «Sin dato» ya no se parte en dos líneas.
+- **Quien no tiene correo sabe dónde fichar**: al darle de alta, la hoja del PIN dice que
+  no entra en la app y que ficha en la pantalla de fichar del local; y en «Entrar», en la
+  pestaña del PIN, se lo dice también.
+- **La app se pone al día sola**: al volver a ella (desbloquear el móvil, cambiar de
+  pestaña) y, mientras la miras, cada minuto el Tablón, «Lo de hoy» y quién ha fichado.
+  Al segundo, como un chat, llega con el chat (entrega C).
+- **Un fallo que salió en las pruebas**: el recado «Invita a tu equipo» del Panel podía
+  enseñar «Ya está» en vez del paso si el servidor iba lento.
+
+### 1 · Fusionar
+
+En **github.com** → **Pull requests** → **«El repaso de H1»** → con las **tres
+comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
+
+### 2 · Desplegar la API
+
+Hace falta porque el PDF lo hace el servidor. **Sin migración.**
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe
+**`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después, en PowerShell:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 62» consultas y «los 125» comandos, igual que ahora.
+
+### 3 · Mirarlo
+
+Recarga la app (**Ctrl + F5** en el ordenador; en el móvil, ciérrala y ábrela):
+
+- **En el ordenador**, **Negocio → Informes → «Descargar en PDF»**: se guarda en
+  Descargas, y debajo sale «Descargado: …» con **Compartir** y **Bajarlo otra vez**. El
+  PDF, sin la nota del pie.
+- **En el móvil**, lo mismo: se descarga y **Compartir** abre WhatsApp y compañía.
+- **La app al día**: con el Panel abierto en el móvil, escribe una nota en el Tablón
+  desde el ordenador. En menos de un minuto sale en el móvil, sin tocar nada.
+
+---
+
+## H1 · Personas y fichajes (#83) · **hecho** (30-sep)
+
+Fusionada, migrada (`0052`), desplegada (62 y 125) y con Cloudflare puesto por ti el
+30-sep. Lo de abajo se queda como estaba, por si hay que repetirlo.
 
 **Qué trae** ([decisión 0068](decisiones/0068-las-respuestas-de-h.md)):
 

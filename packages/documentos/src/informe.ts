@@ -2,7 +2,6 @@ import {
   lasCifras,
   lasFrases,
   paginaDelDocumento,
-  unaNota,
   unaTabla,
   unTitulo,
   escapar,
@@ -65,7 +64,7 @@ export function documentoDelInforme(datos: DatosDelInforme): string {
             linea.valor,
             linea.objetivo ?? '—',
             {
-              html: `<span class="${linea.semaforo === 'verde' ? 'bien' : linea.semaforo === 'rojo' ? 'mal' : 'suave'}">${escapar(COMO_SE_DICE_EL_SEMAFORO[linea.semaforo])}</span>`,
+              html: `<span class="entero ${linea.semaforo === 'verde' ? 'bien' : linea.semaforo === 'rojo' ? 'mal' : 'suave'}">${escapar(COMO_SE_DICE_EL_SEMAFORO[linea.semaforo])}</span>`,
             },
           ]),
         )}`;
@@ -74,10 +73,10 @@ export function documentoDelInforme(datos: DatosDelInforme): string {
     lasFrases(datos.frases),
     unTitulo('Las cifras'),
     lasCifras(datos.cifras.map((c) => ({ ...c, frente: datos.comparado }))),
+    // Sin nota al pie (30-sep, Richi): el informe se manda a otros, y «lo que tu
+    // acceso no deja ver» confundía a quien lo recibe. Lo que no se ve en la app
+    // sigue sin salir aquí; no hace falta decirlo en el papel.
     semaforo,
-    unaNota(
-      'Contadas igual que en la app, con las cajas cerradas y el género apuntado. Lo que tu acceso no deja ver no sale en este documento.',
-    ),
   ].join('');
 
   return paginaDelDocumento({

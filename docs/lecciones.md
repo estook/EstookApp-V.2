@@ -430,3 +430,14 @@
      horas (mueve también el reloj de la base de las pruebas), y se usa al escribir o
      tocar una prueba con fechas. Lo de la lección 120 sigue: contar desde hoy, y además,
      comprobarlo toda la semana.
+129. **Compartir no es guardar, y los ordenadores también saben compartir.** El botón del
+     PDF compartía si el aparato sabía y solo descargaba si no, pensando en «móvil
+     comparte, ordenador descarga». En el Windows de Richi, Chrome sabe compartir, así que
+     solo salía la hoja de compartir y el PDF no se podía guardar. Ahora se descarga
+     siempre y «Compartir» sale al lado; la prueba finge un aparato que sabe compartir,
+     que es el caso que falló (30-sep).
+130. **Cambiar de pantalla antes de volver a preguntar enseña lo de antes.** El recado del
+     alta refrescaba la sesión, la app saltaba al alta, y el alta pintaba lo que tenía
+     guardado —«terminada», o sea «Ya está»— mientras volvía a preguntar. Con el servidor
+     cargado se quedaba ahí: dos rojos seguidos en la batería entera y ninguno suelto. Se
+     pregunta primero y se cambia de pantalla después (`TarjetasDelPanel.tsx`).

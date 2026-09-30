@@ -217,6 +217,18 @@ export function Entrar({
             un momento, desde Equipo.
           </p>
 
+          {/*
+            Quien se dio de alta sin correo (0057) no entra aquí: ficha en la pantalla
+            del local. Se dice en la pestaña del PIN, que es donde lo buscará (30-sep,
+            Richi: «si no, no saben cómo entrar»).
+          */}
+          {conPin && (
+            <p className="mt-e2 text-center text-secundario text-texto-suave">
+              ¿Te dieron de alta sin correo? Tú no entras aquí: ficha en la pantalla de fichar de tu
+              local, solo con tu PIN.
+            </p>
+          )}
+
           <div className="mt-e5 flex flex-col items-center gap-e2 border-t border-borde pt-e5">
             <p className="text-cuerpo">¿No tienes cuenta?</p>
             <Boton tono="secundario" ancho onClick={alCrearCuenta}>

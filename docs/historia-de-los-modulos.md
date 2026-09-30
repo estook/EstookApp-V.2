@@ -2838,6 +2838,13 @@ cifras y las páginas), las nuevas de `fichajes` y `almacen`, y
 `personas-y-fichajes.spec.ts` (la pantalla, en escritorio y en móvil). Y la de los
 errores del catálogo **volvió a fallar al añadir seis**, que es para lo que está.
 
+**El repaso de H1** (30-sep, noche), con lo que vio Richi al sacar su primer PDF de
+Cloudflare: el PDF se descarga siempre y además se comparte (lección 129); el informe,
+sin la nota del pie, que confundía a quien lo recibe; quien no tiene correo sabe que
+ficha en la pantalla del local; la app se pone al día sola al volver a ella y, cada
+minuto, el Tablón, «Lo de hoy» y quién ha fichado (`datos/alDia.ts`, con
+`al-dia.spec.ts`); y el recado del alta que enseñaba «Ya está» (lección 130).
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

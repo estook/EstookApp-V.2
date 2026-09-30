@@ -8,8 +8,14 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * El botón que trae un documento del servidor (H1 · decisión 0068).
  *
  * **El PDF lo hace el servidor**, nunca este navegador (regla 7): aquí solo se pide,
- * llega hecho en base64 y se entrega. En el móvil se abre la hoja de compartir —para
- * mandarlo por WhatsApp o guardarlo— y en el ordenador se descarga.
+ * llega hecho en base64 y se entrega.
+ *
+ * **Se descarga siempre, y además se puede compartir** (30-sep, Richi). La primera
+ * versión compartía si el aparato sabía y solo descargaba si no: en un ordenador con
+ * Windows, que también sabe compartir, no había forma de guardarlo. Ahora el primer
+ * toque lo descarga, y debajo sale «Compartir» para mandarlo por WhatsApp o por
+ * correo. Va en un segundo toque a propósito: el navegador solo deja abrir la hoja
+ * de compartir justo después de tocar algo, y el PDF tarda unos segundos en llegar.
  *
  * Si los PDF todavía no están encendidos, lo dice el servidor con su frase, y la
  * pantalla sigue igual: lo que se quería ver ya está delante.
@@ -28,31 +34,24 @@ function deBase64(base64: string, tipo: string): Blob {
   return new Blob([bytes], { type: tipo });
 }
 
-/** Compartir si el aparato sabe (el móvil), y si no, descargar. */
-async function entregar(documento: UnDocumento): Promise<void> {
-  const blob = deBase64(documento.base64, documento.tipo);
-  const fichero = new File([blob], documento.nombre, { type: documento.tipo });
-  const compartir = navigator as Navigator & {
-    canShare?: (datos: { files: File[] }) => boolean;
-  };
-  if (typeof compartir.canShare === 'function' && compartir.canShare({ files: [fichero] })) {
-    try {
-      await navigator.share({ files: [fichero], title: documento.nombre });
-      return;
-    } catch {
-      // Quien cierra la hoja de compartir no quiere nada: no se descarga detrás.
-      return;
-    }
-  }
+function descargar(fichero: File): void {
   const enlace = document.createElement('a');
-  enlace.href = URL.createObjectURL(blob);
-  enlace.download = documento.nombre;
+  enlace.href = URL.createObjectURL(fichero);
+  enlace.download = fichero.name;
   document.body.append(enlace);
   enlace.click();
   enlace.remove();
   setTimeout(() => {
     URL.revokeObjectURL(enlace.href);
   }, 10_000);
+}
+
+/** Si este aparato sabe mandar un fichero a otra app (el móvil, y algunos ordenadores). */
+function sabeCompartir(fichero: File): boolean {
+  const compartir = navigator as Navigator & {
+    canShare?: (datos: { files: File[] }) => boolean;
+  };
+  return typeof compartir.canShare === 'function' && compartir.canShare({ files: [fichero] });
 }
 
 export function BotonDelDocumento({
@@ -70,17 +69,31 @@ export function BotonDelDocumento({
   const { cliente } = usarSesion();
   const [pidiendo, setPidiendo] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
+  /** El último que llegó: se puede compartir o volver a bajar sin pedirlo otra vez. */
+  const [listo, setListo] = useState<File | null>(null);
 
   async function pedir() {
     setPidiendo(true);
     setError(null);
+    setListo(null);
     const respuesta = await cliente.consultar<UnDocumento>(consulta, parametros);
     setPidiendo(false);
     if (!respuesta.ok) {
       setError(respuesta.error);
       return;
     }
-    await entregar(respuesta.datos);
+    const { nombre, tipo, base64 } = respuesta.datos;
+    const fichero = new File([deBase64(base64, tipo)], nombre, { type: tipo });
+    descargar(fichero);
+    setListo(fichero);
+  }
+
+  async function compartir(fichero: File) {
+    try {
+      await navigator.share({ files: [fichero], title: fichero.name });
+    } catch {
+      // Quien cierra la hoja de compartir no quiere nada, y no es un error.
+    }
   }
 
   return (
@@ -98,6 +111,31 @@ export function BotonDelDocumento({
           {texto}
         </Boton>
       </div>
+      {listo !== null && (
+        <div className="flex flex-wrap items-center gap-e2">
+          <p role="status" className="text-secundario text-texto-suave">
+            Descargado: {listo.name}
+          </p>
+          {sabeCompartir(listo) && (
+            <Boton
+              tono="texto"
+              onClick={() => {
+                void compartir(listo);
+              }}
+            >
+              Compartir
+            </Boton>
+          )}
+          <Boton
+            tono="texto"
+            onClick={() => {
+              descargar(listo);
+            }}
+          >
+            Bajarlo otra vez
+          </Boton>
+        </div>
+      )}
       {error !== null && <ErrorEnCristiano error={error} />}
     </div>
   );

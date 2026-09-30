@@ -87,7 +87,10 @@ const cache = new QueryClient({
       // con mala cobertura es gastar bateria para nada.
       staleTime: 60_000,
       retry: 1,
-      refetchOnWindowFocus: false,
+      // Al volver a la app se pone al día lo que tenga más de ese minuto (30-sep,
+      // `datos/alDia.ts`). Antes no: quien dejaba el móvil y lo volvía a coger
+      // veía lo de hace una hora hasta cambiar de pantalla.
+      refetchOnWindowFocus: true,
     },
   },
 });

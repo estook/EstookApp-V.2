@@ -15,6 +15,7 @@ import {
 } from '@estook/ui';
 import { IconoEntrar, IconoEquipo, IconoReloj, IconoSalir } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { AL_DIA } from '../datos/alDia.ts';
 import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { FichaDePersona } from './FichaDePersona.tsx';
 import { usarFichar } from '../ganchos/usarFichar.ts';
@@ -63,6 +64,8 @@ export function EquipoHoy() {
       return respuesta.datos;
     },
     staleTime: 60_000,
+    // Quién entra y quién sale lo hacen otros: al día solo (`datos/alDia.ts`).
+    ...AL_DIA,
   });
 
   if (consulta.isPending) {

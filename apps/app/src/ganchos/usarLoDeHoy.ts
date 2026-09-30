@@ -1,5 +1,6 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { AL_DIA } from '../datos/alDia.ts';
 import type { LoDeHoy } from '../objetivos/contrato.ts';
 
 /**
@@ -13,6 +14,8 @@ export function usarLoDeHoy(): UseQueryResult<LoDeHoy> {
   return useQuery({
     queryKey: ['lo_de_hoy'],
     enabled: yo?.local !== null && yo?.local !== undefined,
+    // Un pedido que llega, una merma de otro: se pone al día solo (`datos/alDia.ts`).
+    ...AL_DIA,
     queryFn: async (): Promise<LoDeHoy> => {
       const respuesta = await cliente.consultar<LoDeHoy>('lo_de_hoy', {});
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);

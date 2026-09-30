@@ -84,7 +84,14 @@ function TerminaDeConfigurar({ alta }: { readonly alta: ElAltaDelLocal }) {
       });
       if (!respuesta.ok) throw new FalloDeLaApi(respuesta.error);
     },
-    onSuccess: () => refrescar(),
+    onSuccess: async () => {
+      // Primero el alta, **después** la sesión que lleva a ella (30-sep). El alta
+      // usa esta misma consulta, que aquí dice «terminada»: si se cambiaba de
+      // pantalla antes, enseñaba «Ya está» mientras volvía a preguntar, y con el
+      // servidor lento se quedaba ahí en vez de abrir el paso pedido.
+      await cache.invalidateQueries({ queryKey: ['el_alta'] });
+      await refrescar();
+    },
     onError: (fallo: FalloDeLaApi) => {
       setError(fallo.error);
     },

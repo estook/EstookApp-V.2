@@ -299,8 +299,10 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     // Se deja el alta terminada pero con el equipo sin responder, que es el
     // estado en el que el Panel enseña la tarjeta.
     //
-    // Cada paso se mira (30-sep): en la batería entera falló una vez con «Ya está»
-    // en vez del paso, y sin mirar las respuestas no se sabía si alguno no entró.
+    // Cada paso se mira (30-sep). En la batería entera, con el servidor cargado,
+    // salía «Ya está» en vez del paso: los tres entraban bien, y el fallo era de
+    // la pantalla, que cambiaba antes de volver a preguntar el alta
+    // (TarjetasDelPanel.tsx). Mirarlos es lo que lo dejó claro.
     const token = await tokenDe(request, PABLO);
     for (const [comando, data] of [
       ['retomar_el_alta', { paso: 'equipo' }],

@@ -196,8 +196,20 @@ function casos() {
   caso('Esencial · gasta todos sus créditos', PLANES.esencial, ia.esencial.tope, 'premium');
   caso('Pro sin TPV · uso normal', PLANES.pro, ia.pro.normal, 'normal');
   caso('Pro sin TPV · gasta todos sus créditos', PLANES.pro, ia.pro.tope, 'premium');
-  caso('Pro con TPV · restaurante de carta, uso normal', PLANES.pro, ia.pro.normal, 'normal', 60);
-  caso('Pro con TPV · bar de tapas, uso normal', PLANES.pro, ia.pro.normal, 'normal', 250);
+  caso(
+    'Pro con TPV · restaurante de carta, uso normal',
+    PLANES.pro,
+    ia.pro.normal,
+    'normal',
+    LOCALES_CON_TPV[0].ticketsAlDia,
+  );
+  caso(
+    'Pro con TPV · bar de tapas, uso normal',
+    PLANES.pro,
+    ia.pro.normal,
+    'normal',
+    LOCALES_CON_TPV[1].ticketsAlDia,
+  );
   caso(
     'Pro con TPV · bar muy ocupado, todos sus créditos',
     PLANES.pro,
@@ -205,7 +217,13 @@ function casos() {
     'premium',
     500,
   );
-  caso('Cadena con TPV · por local, uso normal', PLANES.cadena, ia.pro.normal, 'normal', 60);
+  caso(
+    'Cadena con TPV · por local, uso normal',
+    PLANES.cadena,
+    ia.pro.normal,
+    'normal',
+    LOCALES_CON_TPV[0].ticketsAlDia,
+  );
   return lista;
 }
 

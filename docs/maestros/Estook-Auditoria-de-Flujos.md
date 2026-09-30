@@ -1,7 +1,7 @@
 ---
 titulo: Auditoría de flujos, dependencias y efectos en cadena
 tipo: Documento de control
-fecha: Septiembre de 2026 · versión 1.2
+fecha: Septiembre de 2026 · versión 1.3
 nota: Qué dato alimenta a qué, qué desencadena cada cambio, de dónde salen las opciones y qué pasa cuando algo falla. Se pasa entero antes de cerrar cualquier módulo. Documentos hermanos: Evolución, Manifiesto, Plan de desarrollo, Roles y administración y el Anexo de TPV y facturación.
 ---
 
@@ -14,6 +14,8 @@ Las partes 1 a 5 son **referencia de construcción**. La parte 6 son los **halla
 **Qué cambia en la versión 1.1.** Recoge la Evolución de producto 1.0: entran los canales de reparto en el mapa de dependencias, cuatro efectos en cadena nuevos, la máquina de estado de una alerta y de un pedido externo, seis hallazgos nuevos (del 13 al 18) y las decisiones de improvisación que traen las integraciones.
 
 **Qué cambia en la versión 1.2.** Estook también cobra. Entran las ventas del TPV de Estook en el mapa, la ficha del **documento de facturación**, siete efectos en cadena (del 2.27 al 2.33), cuatro selectores, seis máquinas de estado, cinco fallos, cuatro hallazgos (del 19 al 22), siete decisiones y la lista de comprobación de **Facturación**.
+
+**Qué cambia en la versión 1.3** (27 de septiembre de 2026, [decisión 0054](../decisiones/0054-estook-tpv-y-uber-eats-comprobado.md)). El pedido de reparto entra en la cocina de Estook TPV cuando el local cobra con Estook (2.15); cobrar en efectivo abre el cajón (2.29); entra el **2.34**, cerrar la caja con el TPV; tres fallos nuevos; la lista de comprobación gana **Caja**; y se corrige una contradicción: **Canarias sí puede activar la facturación**, con IGIC ([0043](../decisiones/0043-hasta-donde-llega-la-facturacion.md)).
 
 ---
 
@@ -230,6 +232,8 @@ Y ya fuera del webhook:
 ├─ si el identificador ya existe, se descarta: es un reintento
 ├─ se transforma al modelo interno de pedidos
 ├─ se acepta o se rechaza ANTES del limite de la plataforma
+├─ si el local cobra con Estook: va a COCINA como cuenta de tipo «reparto»,
+│  por partidas, y NO pasa por el cobro de la sala (Anexo, 10.8)
 ├─ entra como venta con su canal y su comision
 ├─ se explotan sus fichas y se mueve el stock
 ├─ actualiza agregados, analitica y Pulse
@@ -238,7 +242,9 @@ Y ya fuera del webhook:
 
 **NO se toca:** el modelo de pedidos no se duplica. **Un pedido de reparto es una venta con canal, no una entidad nueva.**
 
-**La trampa que decide la arquitectura:** la plataforma exige aceptar o rechazar en un plazo corto —Uber Eats da 11 minutos y medio— o cancela el pedido sola. **El webhook no puede hacer el trabajo**: acusa recibo y encola.
+**La trampa que decide la arquitectura:** la plataforma exige aceptar o rechazar en un plazo corto —Uber Eats da 11 minutos y medio, y a los 90 segundos llama al local por teléfono— o cancela el pedido sola. **El webhook no puede hacer el trabajo**: acusa recibo y encola.
+
+**Y lo que sale hacia la plataforma**, si la carta del canal se sube desde Estook: **marcar un plato agotado lo agota también allí**, y pausar la tienda se hace desde Estook (Anexo, 10.8). **Hasta que el asesor diga quién factura un pedido de plataforma, no emite ticket de Estook.**
 
 ## 2.16 Se cierra una alerta
 
@@ -413,6 +419,7 @@ Cobrar → forma de pago (efectivo, datafono, mixto) y, si se divide, cada parte
 ├─ facturacion emite el ticket (F2): numero de su serie, registro y QR
 │   └─ sin conexion: justificante provisional y venta pendiente de ticket
 ├─ se imprime el ticket con su QR y la leyenda
+│   └─ con efectivo, el mismo trabajo de impresion abre el cajon
 ├─ la cuenta queda cobrada y la mesa libre
 ├─ la caja suma el cobro en su forma de pago
 ├─ evento venta.cerrada → M20 descuenta el genero con la ficha vigente ese dia
@@ -465,6 +472,21 @@ No responde: el proveedor reintenta. En el local no cambia nada y se sigue cobra
 Rechaza:     aviso al gerente con el motivo en cristiano y la correccion que toca
              └─ la correccion es otro documento; el rechazado conserva su numero
 ```
+
+## 2.34 Se cierra la caja con el TPV de Estook
+
+```
+Cerrar → se cuenta el efectivo por billetes y monedas, SIN ver lo esperado
+├─ se escribe el total del cierre del datafono (con el datafono conectado, solo)
+├─ se ensena la diferencia: la del efectivo y la de la tarjeta
+├─ informe Z: cobros por forma de pago, entradas y salidas, y cada
+│  apertura del cajon sin venta con quien y cuando
+├─ la sesion de caja se cierra; el descuadre se guarda y NO bloquea
+└─ el cierre de caja de Servicio se rellena solo, con origen «TPV de Estook»
+   └─ Negocio, «Tu dia» de mañana y Pulse lo leen de ahi
+```
+
+**NO se toca:** ningún ticket. **El Z no es un documento fiscal**: los tickets ya están en Hacienda uno a uno, y el Z es una consulta sobre la sesión de caja (Anexo, 7.3).
 
 ---
 
@@ -586,6 +608,9 @@ Los fallos parciales son los que hunden la confianza, **porque el usuario no sab
 | **Un plato no tiene partida asignada**    | **Sale en todas las pantallas de cocina**                | **Aparece en «platos sin partida», para arreglarlo. Nunca se pierde un plato**      |
 | **Se marca un plato listo por error**     | **Se puede deshacer dentro de un margen corto**          | **Botón de deshacer con su cuenta atrás. Después, lo desmarca un jefe**             |
 | **Cae la red entre sala y cocina**        | **La comanda se queda en el aparato y sube al volver**   | **En sala, avisado: «la cocina todavía no lo tiene». Con Enlace, el papel sí sale** |
+| **El datáfono conectado no responde**     | **Se cobra como con el del banco y queda marcado**       | **«El datáfono no contesta: cobra en el del banco y confirma aquí»**                |
+| **El cajón no se abre**                   | **El cobro ya está hecho; se anota**                     | **«No se ha podido abrir el cajón»: reintentar, o abrirlo con la llave**            |
+| **Otra aplicación gestiona ya la tienda** | **No se conecta el canal**                               | **Antes de empezar: quién la gestiona hoy y qué hay que cambiar en la plataforma**  |
 
 **Tres reglas de error, para todos:**
 
@@ -750,6 +775,8 @@ Al cerrar cada módulo se comprueban las que apliquen. **Cada línea es una prue
 - Si la API del canal cae, se encola y se reintenta sin perder nada.
 - Un pedido externo **no crea productos ni platos**.
 - Añadir un canal nuevo es escribir un adaptador, **no tocar el núcleo**.
+- Si otra aplicación gestiona ya los pedidos de la tienda, **se dice antes de conectar**, no al fallar.
+- Con el local cobrando con Estook, un pedido aceptado **sale en cocina por sus partidas y no pasa por el cobro**.
 
 ## Sala y cocina
 
@@ -773,7 +800,7 @@ Al cerrar cada módulo se comprueban las que apliquen. **Cada línea es una prue
 - Una mesa no se cierra cobrada sin ticket o sin justificante provisional.
 - El canje no toca el ticket ni el stock, y un ticket canjeado no se canjea dos veces.
 - Sin conexión, los tickets pendientes salen al volver en el orden de los cobros y marcados como incidencia.
-- Un local foral, en SII o de Canarias, Ceuta o Melilla no puede activar la facturación.
+- Un local foral, en SII, de Ceuta o de Melilla no puede activar la facturación, y la pantalla dice su motivo. **Uno de Canarias sí, con IGIC** (0043).
 - Las claves del proveedor no aparecen en el cliente, en los registros ni en los mensajes de error.
 - Reimprimir un ticket no genera ningún registro nuevo y sale marcado como copia.
 - La dirección de una impresora no aparece en el cliente ni en ningún registro.
@@ -781,3 +808,12 @@ Al cerrar cada módulo se comprueban las que apliquen. **Cada línea es una prue
 - **La misma comanda sale idéntica por tres marcas distintas de impresora**, una de ellas de impacto.
 - Con Estook Enlace instalado y sin internet, **la cocina sigue imprimiendo**.
 - El núcleo no conoce ninguna marca de impresora: solo deja trabajos en la cola.
+
+## Caja
+
+- Cobrar en efectivo **abre el cajón**; con tarjeta, no.
+- Abrir el cajón sin venta pide permiso y motivo, y sale en el X y en el Z con quién y cuándo.
+- El arqueo ciego **no enseña lo esperado** hasta haber contado.
+- Un cobro «con tarjeta» que no está en el total del datáfono sale como descuadre al cerrar.
+- El descuadre se guarda y **no bloquea** el cierre.
+- Un datáfono conectado que no responde **no para el cobro**.

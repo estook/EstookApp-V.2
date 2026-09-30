@@ -1,8 +1,8 @@
 ---
 titulo: Anexo · TPV y facturación
 tipo: Documento maestro de especificación
-fecha: Septiembre de 2026 · versión 1.0
-nota: Cómo Estook toma nota, cobra y emite tickets y facturas cumpliendo VeriFactu. Manda sobre los demás documentos en su tema. Se lee entero antes de tocar sala, cocina, cobro, caja o facturación.
+fecha: Septiembre de 2026 · versión 1.1
+nota: Cómo Estook toma nota, cobra y emite tickets y facturas cumpliendo VeriFactu, y cómo se ve y se usa Estook TPV en un día de servicio. Manda sobre los demás documentos en su tema. Se lee entero antes de tocar sala, cocina, cobro, caja o facturación.
 ---
 
 # Qué es este documento
@@ -12,6 +12,8 @@ Los cinco documentos maestros decían que Estook no cobra y no emite facturas. *
 Va dirigido a quien construya Estook, que será en su mayor parte una IA. Cubre los módulos **M20A (sala y cocina)**, **M20B (facturación VeriFactu)** y **M20C (cobro y caja)**.
 
 Documentos hermanos: **Evolución 1.1** (por qué y con qué riesgos), **Manifiesto** (qué es el producto), **Plan de desarrollo** (cómo se construye y las quince reglas), **Roles y administración** (quién puede qué, apartado 1.12) y **Auditoría de flujos** (efectos en cadena 2.27 a 2.33, estados, fallos y la lista de comprobación de Facturación).
+
+**Qué cambia en la versión 1.1** (27 de septiembre de 2026, [decisión 0054](../decisiones/0054-estook-tpv-y-uber-eats-comprobado.md)). Los capítulos 3 a 7 decían **qué hace** el TPV y **dónde se guarda**; faltaba **cómo se ve y cómo se usa** un día normal, que es lo que decide si un camarero lo quiere o lo odia. Eso es el **capítulo 10**: el nombre —**Estook TPV**—, tomar nota, el plano, cobrar, **el cajón y la caja**, **el datáfono**, los pedidos de reparto en la misma cocina y la puesta en marcha. El capítulo 7 gana lo que eso necesita guardar. No se quita nada de la versión 1.0.
 
 > **Lo marcado [VERIFICAR] no se programa hasta comprobarlo** contra la documentación oficial de la AEAT, la de Verifacti o el asesor fiscal, y lo comprobado se escribe en `ESTADO.md` con su fuente y su fecha. Es la regla 13 del Plan aplicada al sitio donde equivocarse sale más caro.
 
@@ -543,7 +545,7 @@ Una sección fija en **Ajustes › Legal › Declaración responsable del sistem
 
 ## 5.1 Cobrar
 
-- **Formas de pago:** efectivo (con entregado y cambio), tarjeta en el datáfono del local —el camarero confirma que se cobró— y mixto.
+- **Formas de pago:** efectivo (con entregado y cambio), tarjeta en el datáfono del local —el camarero confirma que se cobró— y mixto. **Con efectivo se abre el cajón solo**, y el datáfono puede estar conectado para no teclear el importe: cómo se ve y cómo funciona, en el capítulo 10.
 - **Propinas.** La de tarjeta la gestiona el datáfono y **Estook no la toca**. La de efectivo se puede apuntar como **entrada de caja con motivo «propina»**, que es lo que hace falta para que el arqueo cuadre y para repartirla al cierre. **La propina no va en el ticket ni se manda a Hacienda como parte de la venta** [VERIFICAR con el asesor].
 - **Dividir la cuenta:** por comensal, por platos o a partes iguales. **Cada cobro genera su propio ticket** con lo que paga esa persona.
 - **Invitaciones y descuentos:** con permiso y motivo (Roles 1.12). Una invitación descuenta género y cuenta como consumo interno, no como merma (regla del Manifiesto, capítulo 28).
@@ -571,7 +573,7 @@ Rectificativa R5 sobre el ticket, en la serie de rectificativas, con su registro
 
 ## 5.5 Caja
 
-**La caja es una vista de Servicio · Jornada**, donde ya vive el cierre. Apertura con fondo, entradas y salidas con motivo, arqueo con lo contado frente a lo esperado, y el descuadre guardado sin bloquear. El **cierre de caja de M6½ se rellena solo**, con origen «TPV de Estook» y su fiabilidad máxima.
+**La caja es una vista de Servicio · Jornada**, donde ya vive el cierre. Apertura con fondo, entradas y salidas con motivo, arqueo con lo contado frente a lo esperado, y el descuadre guardado sin bloquear. El **cierre de caja de M6½ se rellena solo**, con origen «TPV de Estook» y su fiabilidad máxima. El cajón, el informe X y el Z, el arqueo ciego y el cuadre del datáfono, en 10.6.
 
 ---
 
@@ -734,7 +736,7 @@ Orientativo: **manda el esquema real**. Todo lleva `local_id`, con RLS escrita c
 
 - `zonas_sala` — nombre, orden, canal por defecto (M10)
 - `mesas` — zona, nombre, plazas, posición en el plano
-- `cuentas` — **tipo** (`mesa`, `barra`, `para_llevar`), mesa si la tiene, **nombre o número de recogida** si es para llevar, estado, camarero **actual**, comensales, canal, apertura, cierre
+- `cuentas` — **tipo** (`mesa`, `barra`, `para_llevar`, `reparto`), mesa si la tiene, **nombre o número de recogida** si es para llevar o de reparto, estado, camarero **actual**, comensales, canal, apertura, cierre. **`reparto` solo lo crea el adaptador del canal** (M29) y lleva el identificador del pedido en la plataforma: es la comanda que va a cocina (10.8), no una tabla de pedidos aparte
 - `cuenta_alergenos` — cuenta, alérgeno, quién lo marcó y cuándo
 - `cuenta_lineas` — plato, cantidad, precio, tipo de IVA, extras y modificadores, nota, **comensal** (número o nulo), **tanda**, **partida** (copiada al mandar, no leída después), estado (`pedida`, `en cocina`, `lista`, `servida`, `quitada`), y autor y motivo si se quita
 - `cuenta_traspasos` — cuenta, de quién, a quién, cuándo, quién lo hizo
@@ -753,9 +755,11 @@ Orientativo: **manda el esquema real**. Todo lleva `local_id`, con RLS escrita c
 
 ## 7.3 Cobro y caja (esquema `public`)
 
-- `cobros` — cuenta, importe, forma de pago, entregado, cambio, **qué líneas o qué comensales paga**, `documento_id`, `justificante_id`
-- `caja_sesiones` — local, apertura con su fondo, arqueo, cierre, descuadre
-- `caja_movimientos` — sesión, tipo, importe, motivo, autor
+- `cobros` — cuenta, importe, forma de pago, entregado, cambio, **qué líneas o qué comensales paga**, `documento_id`, `justificante_id` y, si el datáfono está conectado (10.7), **la operación del proveedor y su estado**
+- `caja_sesiones` — local, **cajón** (la impresora que lo abre), apertura con su fondo, **si el arqueo es ciego**, arqueo, **el total que dio el datáfono al cerrar**, cierre, descuadre de efectivo y de tarjeta
+- `caja_movimientos` — sesión, tipo (entrada, salida, **apertura sin venta**), importe, motivo, autor
+
+**Los informes X y Z no se guardan**: son una consulta sobre la sesión de caja y sus cobros, como el contador del día de cocina (7.2).
 
 ## 7.4 Impresión (esquema `public`)
 
@@ -804,6 +808,11 @@ Cada promesa del producto, con el sitio donde se guarda. **Si alguna se queda si
 | Ticket con su QR y su estado         | `documentos` + `registros`                   |
 | Cobrar sin conexión                  | `justificantes_provisionales`                |
 | Corregir sin tocar lo emitido        | `sustituye_a` y `rectifica_a`                |
+| Abrir el cajón sin venta, con rastro | `caja_movimientos` (apertura sin venta)      |
+| Arqueo ciego y cuadre de la tarjeta  | `caja_sesiones`                              |
+| Informes X y Z                       | consulta, no se guarda                       |
+| Cobrar con el datáfono conectado     | la operación del proveedor en `cobros`       |
+| Pedido de reparto en la cocina       | `cuentas.tipo = reparto` y sus líneas        |
 
 ---
 
@@ -854,7 +863,7 @@ Todas automáticas, contra el entorno de pruebas. Cada una se rompe a propósito
 
 # 9 · Lo que tiene que estar antes de producción
 
-1. Todas las pruebas del capítulo 8 **y las del apartado 3.7**, en verde.
+1. Todas las pruebas del capítulo 8 **y las de los apartados 3.7 y 10.12**, en verde.
 2. Todos los **[VERIFICAR]** resueltos y escritos en `ESTADO.md`, con su fuente y su fecha.
 3. **Declaración responsable de Estook** redactada por el asesor y publicada dentro de la app.
 4. **Revisión escrita del asesor fiscal** sobre el planteamiento entero.
@@ -863,3 +872,222 @@ Todas automáticas, contra el entorno de pruebas. Cada una se rompe a propósito
 7. Vía de impresión decidida y probada con impresoras reales.
 
 **Hasta que las siete estén hechas, el módulo de facturación se queda desactivado.** Sala y cocina pueden estar en producción sin él: un comandero no factura.
+
+---
+
+# 10 · Estook TPV · cómo se ve y cómo se usa
+
+_Añadido en la versión 1.1 (27 de septiembre de 2026, [decisión 0054](../decisiones/0054-estook-tpv-y-uber-eats-comprobado.md)), después de mirar cómo lo hacen Last.app, Revo, Ágora, Glop, Square y Toast. De ellos se adoptan patrones, **no diseño, textos ni identidad** (Evolución, capítulo 14)._
+
+> **El listón de este capítulo.** Un camarero decide en el primer servicio si un TPV le sirve. Si para cobrar una caña hacen falta seis toques, vuelve a la libreta. Todo lo de aquí se mide en **toques y en segundos**, y se prueba (10.12).
+
+## 10.1 Dos nombres, una aplicación
+
+| Lo que ve el cliente | Para qué                                                 | Por dentro                                                        |
+| -------------------- | -------------------------------------------------------- | ----------------------------------------------------------------- |
+| **Estook**           | Gestionar: almacén, escandallos, carta, equipo, Negocio… | `apps/app`, la de siempre                                         |
+| **Estook TPV**       | El servicio: tomar nota, cocina, cobrar, la caja         | Los modos **Sala** y **Cocina** de la misma `apps/app` (Plan, A5) |
+
+**Estook TPV es el nombre que se enseña** —en la web, en el terminal, en la puesta en marcha—, **no una segunda aplicación**: separarla duplicaría la sesión, los permisos, los datos y el diseño, y eso ya está descartado por escrito (Plan, A5). Un terminal del local (3.4) enciende directamente en Estook TPV; un móvil personal abre Estook y entra al TPV con un botón.
+
+**Lo que eso le da al local:** el mismo PIN, los mismos permisos y los mismos datos. Lo que se cobra a las 14:31 está en Negocio a las 14:31, y el género ya ha salido del almacén. **No hay exportar, ni CSV, ni emparejar, ni sincronizar**: es la razón por la que un local que cobra con Estook trabaja menos que uno que conecta su TPV (Evolución, capítulo 19).
+
+## 10.2 Un día, de principio a fin
+
+```
+08:30  El terminal enciende en su funcion (Sala, Barra o Cocina)
+       └─ quien abre entra con su PIN y ABRE CAJA: cuenta el fondo
+          (se propone el que quedo ayer) y el cajon se abre para meterlo
+13:00  Servicio: mesas, barra y para llevar. Los pedidos de reparto
+       entran en la misma cocina (10.8)
+       └─ con efectivo se abre el cajon; con tarjeta, el datafono
+16:00  Cambio de turno: cada camarero traspasa sus mesas (3.1)
+       y mira su informe X
+00:30  CIERRE: arqueo ciego, total del datafono e informe Z
+       └─ la caja se cierra y el cierre de caja de Servicio se rellena solo
+Y en Estook, al momento: ventas por plato y por hora, el genero
+descontado, los tiempos de cocina, Negocio y el «Tu dia» de mañana
+```
+
+**Cada cobro emite su ticket, lo pida el cliente o no.** Es la factura simplificada, y VeriFactu la registra en Hacienda en ese momento (capítulo 4). Lo que el cliente elige es **cómo se lo lleva** —en papel, por correo o en un QR en pantalla—, no si existe (10.5).
+
+## 10.3 Tomar nota
+
+La tablet apaisada es la referencia:
+
+```
+┌───────────────────────────────┬──────────────────────────────────────────┐
+│ MESA 12 · 4 pax · Ana         │ Entrantes  Principales  Postres  Bebidas │
+│ ! Alergia: frutos secos       │ [ Buscar ]                               │
+│                               │ ┌────────┐┌────────┐┌────────┐┌────────┐ │
+│ TANDA 1                       │ │Croqueta││Bravas  ││Ensalada││Pulpo   │ │
+│ (1) 2 Croquetas       14,00   │ │        ││        ││        ││Quedan 3│ │
+│ (2) 1 Ensalada         9,50   │ └────────┘└────────┘└────────┘└────────┘ │
+│ TANDA 2                       │ ┌────────┐┌────────┐┌────────┐┌────────┐ │
+│ (1) 1 Entrecot · al punto 24  │ │Entrecot││Merluza ││Risotto ││AGOTADO │ │
+│                               │ └────────┘└────────┘└────────┘└────────┘ │
+│ Total               47,50 €   │                                          │
+│ [Mandar] [Cuenta] [Cobrar]    │                                          │
+└───────────────────────────────┴──────────────────────────────────────────┘
+```
+
+- **A la derecha, la carta del canal de esa mesa** (M10): sus secciones arriba y los platos en botones grandes, con el color de su sección y su foto si la tiene. **Primero lo que más se vende a esa hora**, después el resto. El buscador tolera erratas (3.1).
+- **Un toque añade uno.** Si el plato tiene **opciones obligatorias** —«¿al punto?», «¿qué guarnición?»— se abre una hoja pequeña, y **no se puede mandar sin contestarlas**: es lo que evita que el cocinero salga a preguntar. Los extras, en la misma hoja, con su precio.
+- **Toque largo** sobre una línea: nota libre, comensal, tanda, quitar.
+- **A la izquierda, la cuenta, por tandas**, cada línea con su comensal si se asignó. Arriba, la mesa: nombre, comensales, camarero y **el aviso de alergia con icono y texto**.
+- **Abajo, siempre a la vista: Mandar** (lo nuevo va a cocina), **Cuenta** (la precuenta, 3.5) **y Cobrar** (10.5).
+- **El menú del día** pide sus pasos uno detrás de otro —primero, segundo, postre, bebida— y cada elección va a cocina como su plato (M10).
+- **Agotado** sale en gris y no se puede tocar; con pocas raciones, **«Quedan 3»**, calculado con el escandallo y el stock (3.1).
+
+**La vara de medir: una comanda de cuatro platos en diez toques o menos, desde el plano.**
+
+**En el móvil del camarero** —el comandero— es la misma pantalla en una columna: las secciones arriba, los platos en cuadrícula, y la cuenta en una hoja que sube desde abajo con el total y **Mandar** siempre a mano. Se usa con una mano. No es otra aplicación.
+
+**En la barra**, arriba del todo y siempre: **«Venta rápida»**. Se pide y se cobra sin abrir nada (3.1).
+
+## 10.4 El plano
+
+- **Las zonas en pestañas** (Salón · Terraza · Barra) y las mesas donde están de verdad.
+- **Cada mesa dice, sin abrirla:** su estado con color e icono (3.1), cuánto lleva abierta, sus comensales, su total y las iniciales de su camarero. «Pidió la cuenta» destaca sobre todo lo demás.
+- **«Mis mesas»**, un filtro que en el móvil del camarero viene puesto.
+- **El plano se dibuja arrastrando** en Ajustes › Sala, empezando por una plantilla del tipo de local. Se hace con `@dnd-kit`, que ya está en el proyecto por el Panel ([0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)): **ninguna dependencia nueva**.
+- **Lo que cambia en un aparato se ve en los demás en menos de 2 segundos**, lo mismo que marchar (3.7).
+
+## 10.5 Cobrar
+
+```
+┌──────────────── COBRAR · MESA 12 ────────────────┐
+│                     47,50 €                      │
+│    [ Efectivo ]   [ Tarjeta ]   [ Dividir ]      │
+│                                                  │
+│  Entregado:  [Exacto] [50] [20] [10] [5]         │
+│              o escribirlo                        │
+│  CAMBIO                                 2,50 €   │
+│                                                  │
+│  El ticket:  [ Imprimir ]  [ Correo ]  [ QR ]    │
+└──────────────────────────────────────────────────┘
+```
+
+- **El total es lo más grande de la pantalla.**
+- **Efectivo:** botones de billete para no teclear —el importe exacto y los billetes que lo cubren— y **el cambio en grande**. Al confirmar se emite el ticket y **se abre el cajón** (10.6).
+- **Tarjeta:** 10.7. **Mixto:** se pone lo que va en efectivo y el resto va a tarjeta.
+- **Dividir:** por comensal, por platos o a partes iguales (5.1). Cada parte es su cobro y su ticket, y la mesa se libera con la última.
+- **Invitar o descontar**, desde la cuenta, con permiso y motivo (Roles 1.12).
+- **El ticket, como lo quiera el cliente:** impreso, por correo, o en un QR en pantalla que se lleva en el móvil. El documento es el mismo y **ya está emitido antes de elegir** (6.7). **[VERIFICAR con el asesor que el correo y el QR en pantalla valen como entrega de la factura simplificada.]**
+- **«Pedir factura»** está en la misma pantalla del ticket recién emitido (el canje F3, 5.3): no hay que ir a buscarlo después.
+- **Si algo falla, la mesa sigue abierta** y se dice qué pasa en cristiano (4.9).
+
+## 10.6 El cajón y la caja
+
+**Estook no toca el dinero**: el efectivo lo guarda el cajón del local. Lo que hace Estook es **abrirlo cuando toca y apuntar por qué**.
+
+- **Cómo se abre.** El cajón va enchufado a la impresora de tickets, que es lo normal, y se abre con una orden de la propia impresora. Por eso **abrir el cajón es una línea más del formato intermedio** de impresión (6.5): el ticket de un cobro en efectivo la lleva —o el justificante, si no hay conexión (4.11)—, y la ejecuta el agente que tenga el local —Enlace, la app o la impresora que pregunta sola—. **[VERIFICAR que las impresoras que preguntan solas aceptan la orden del cajón en sus modelos actuales.]**
+- **Se abre solo** al cobrar en efectivo (o la parte en efectivo de un mixto), al abrir caja y en cada entrada o salida de caja.
+- **Abrir el cajón sin venta** —cambiar un billete— se puede, **con permiso, motivo y rastro**, y cada apertura sale en el informe X y en el Z con quién y cuándo. Es la vía clásica por la que se escapa dinero de una caja, y los buenos TPV lo controlan así.
+- **Una caja por cajón.** Con uno, una caja; con dos —barra y comedor—, dos, cada una con su fondo y su arqueo.
+- **Informe X**: cómo va la caja sin cerrarla, para el cambio de turno. **Informe Z**: el cierre. Son los nombres que usa cualquier hostelero, y **ninguno de los dos es un documento fiscal**: los tickets ya están en Hacienda uno a uno.
+- **Arqueo ciego, de fábrica.** Al cerrar se cuenta por billetes y monedas **sin ver lo que debería haber**, y solo después se enseña la diferencia: contar sabiendo el número invita a cuadrarlo. El gerente lo puede apagar en su local.
+- **La tarjeta también se cuadra.** Al cerrar se escribe el total que da el cierre del datáfono, y Estook lo compara con lo cobrado con tarjeta. Un cobro marcado «con tarjeta» que no pasó por el datáfono sale ese mismo día, y no a fin de mes. Con el datáfono conectado (10.7), se hace solo.
+- **El descuadre se guarda y no bloquea el cierre** (5.5). El Z rellena el cierre de caja de Servicio con origen «TPV de Estook».
+- **Más adelante, por adaptador:** los cajones que cuentan solos (Cashlogy, CashDro, Glory), que cobran, dan el cambio y cierran sin descuadre. **[VERIFICAR cómo se integra cada uno cuando haya un cliente que lo tenga.]**
+
+## 10.7 El datáfono
+
+Dos niveles, y **en los dos el dinero va de la tarjeta del cliente a la cuenta del local**: Estook solo sabe el importe y si salió aprobado.
+
+|                     | Nivel 1 · sin conectar                                                                | Nivel 2 · conectado                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Qué es              | El datáfono del banco, el de siempre                                                  | Un datáfono que habla con Estook por internet                                            |
+| Cómo se cobra       | El camarero teclea el importe en el datáfono y confirma «Cobrado» en Estook           | Estook manda el importe; el cliente pasa la tarjeta; vuelve «aprobado» o «denegado» solo |
+| Lo que puede fallar | Teclear mal, o marcar cobrado lo que no pasó. **Lo caza el cuadre del cierre** (10.6) | Nada de eso: no se teclea                                                                |
+| Propina en tarjeta  | La lleva el datáfono; Estook no la toca                                               | Vuelve con la operación y se apunta aparte **[VERIFICAR con el asesor, 5.1]**            |
+| Cuándo              | **Desde el primer día (M20C), para cualquier local**                                  | **Después de M20C**, local a local                                                       |
+
+**El nivel 1 no se quita nunca**: el datáfono del banco es lo que tiene casi todo local en España, y el TPV no puede exigir cambiarlo.
+
+**El nivel 2, comprobado el 27 de septiembre de 2026.** Estos existen y tienen documentación pública; **ninguno se ha probado todavía**:
+
+- **Stripe Terminal**, con su integración «dirigida por el servidor»: Estook habla con la API de Stripe y Stripe con el lector, sin tocar la red del local. Disponible en España con lectores inteligentes (S700, WisePOS E). [Documentación](https://docs.stripe.com/terminal/payments/setup-reader).
+- **Viva.com**, con su Cloud Terminal API: el TPV manda la orden de cobro al datáfono por internet. Muy extendido en la hostelería española, y cobra también con el móvil. [Documentación](https://developer.viva.com/apis-for-point-of-sale/card-terminals-devices/rest-api/).
+- **SumUp**, con su Cloud API y el lector Solo, a cualquier distancia, con lector virtual y cuenta de pruebas. [Documentación](https://developer.sumup.com/terminal-payments/cloud-api).
+- **Los datáfonos de banco (Redsys)**: **[VERIFICAR]**. Su integración suele ser local y distinta en cada banco. Se estudia cuando un cliente lo pida.
+
+**Cómo se construye:** detrás de un adaptador, `ProveedorDatafono`, igual que la facturación (4.2), con cobrar, consultar, anular y devolver una operación. **La cuenta del datáfono es del local**, a su nombre con ese proveedor: Estook no guarda tarjetas, no recibe fondos y **no pasa a ser pasarela de pago** (Evolución, capítulo 19). **Cuál va primero** se decide al llegar a M20C con los precios delante (decisión 0054). Y ningún campo ni llamada se escribe sin leer antes su documentación oficial de ese día.
+
+**Si el datáfono conectado no responde**, se cobra como en el nivel 1 y queda marcado. **Nunca se para un cobro.**
+
+## 10.8 Los pedidos de reparto, en la misma cocina
+
+_Cuando el local tiene un canal conectado (M29) **y** cobra con Estook._ Es lo que hacen los mejores: una sola pantalla para todo, y **ninguna tablet de cada plataforma encima de la barra**.
+
+```
+La plataforma avisa (webhook) → Estook trae el pedido (M29)
+├─ suena en Estook TPV y en Servicio · Delivery: «Uber Eats · 3 platos · Laura»
+├─ se acepta con su tiempo de preparacion (o solo, si el local lo enciende)
+├─ va a COCINA como una comanda mas, por partidas, con la etiqueta del
+│  canal y el nombre de recogida (cuenta de tipo «reparto», 7.1)
+├─ cocina lo marca listo → se le dice a la plataforma, si su API lo permite
+└─ NO pasa por el cobro de la sala: el cliente ya pago a la plataforma
+   └─ entra en Ventas con su canal y su comision (M20) y mueve el almacen
+```
+
+Y tres cosas que un TPV sin almacén no puede hacer:
+
+1. **Lo agotado en Estook se agota en la plataforma**, y vuelve cuando se desmarca.
+2. **Pausar la tienda** en la plataforma desde Estook cuando la cocina no da abasto, y volver a abrirla.
+3. **La carta del canal** (M10) es la que se publica en la plataforma: un precio, un sitio.
+
+**Antes de construirlo** (Evolución, 11.1): la 1 y la 3 exigen que la carta se suba **desde Estook** por la API de menús de la plataforma, y **solo una aplicación por tienda puede aceptar pedidos** —la que Uber llama _order manager_—: si el local ya usa otro integrador, Estook no puede serlo a la vez. **[VERIFICAR con el asesor quién factura un pedido de plataforma]** —el restaurante, o la plataforma en su nombre—. **Hasta saberlo, un pedido de reparto no emite ticket de Estook**, y el límite de la simplificada ya se guarda por canal (4.6).
+
+## 10.9 Sin internet, lo que se ve
+
+Arriba del TPV, siempre con icono y texto, nunca solo con color:
+
+| Estado                      | Qué pasa                                              | Qué ve la sala                                                                    |
+| --------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Todo bien                   | —                                                     | Nada                                                                              |
+| **Hacienda no responde**    | Se emite normal y el envío espera (4.10)              | Nada. Al gerente, un aviso si pasa de una hora                                    |
+| **Sin conexión con Estook** | Se toma nota y se cobra con justificante (3.6 y 4.11) | Una franja ámbar: «Sin conexión. Se sigue trabajando; la cocina aún no lo recibe» |
+
+Y al volver, **una vez**: «Conexión recuperada · 3 tickets emitidos».
+
+## 10.10 Por qué es mejor, dicho en concreto
+
+Lo que ninguno de los investigados tiene junto, porque ninguno tiene detrás el almacén, los escandallos y la carta:
+
+| Estook TPV                                                                         | Un TPV normal                                      |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------- |
+| La cocina ve **el plato**: ficha, fotos, pasos y alérgenos (3.2)                   | Un texto                                           |
+| **Avisa de la alergia** antes de mandar (3.1)                                      | No sabe qué lleva un plato                         |
+| **«Quedan 3»** antes de agotarse (3.1)                                             | Se entera cuando ya no hay                         |
+| Cada venta **descuenta el género y mueve el margen** al momento                    | Exportar, importar y emparejar                     |
+| Los pedidos de reparto, **en la misma cocina**, y el agotado llega a la plataforma | Otra tablet por plataforma, o un integrador aparte |
+| **Tarjeta y efectivo cuadrados el mismo día** (10.6)                               | Se ve a fin de mes                                 |
+| El tiempo real de cada plato vuelve a su ficha y al cuadrante (3.3)                | Se queda en la pantalla                            |
+| Fogón explica el día, y **nunca toca un ticket** (4.12)                            | —                                                  |
+| Todo en la misma aplicación, con el mismo PIN                                      | Dos programas y dos accesos                        |
+
+## 10.11 Ponerlo en marcha
+
+Que un local que viene de otro TPV **no tenga que reescribir nada**:
+
+1. **La carta.** Si ya está en Estook (M10), ya está. Si viene de otro TPV, se importa su catálogo de artículos con el mismo lector de M18 y se empareja con las fichas.
+2. **El plano**, desde la plantilla del tipo de local, ajustándolo con el dedo.
+3. **Los terminales** (3.4) y **las impresoras**, con su botón de imprimir prueba (6.5). El cajón se prueba desde ahí.
+4. **La caja:** el fondo de siempre.
+5. **La facturación:** los cinco pasos de 4.3. Hasta el último, **el botón de cobrar sale bloqueado diciendo qué falta**.
+6. **Practicar, en el local de ejemplo**, nunca en el de verdad. **No hay «modo formación» en producción** (4.12): una venta de mentira en el local real es justo lo que persigue la ley antifraude.
+
+**Qué hace falta, sin atar marca:** una tablet de 10 pulgadas o más para la sala, o los móviles de los camareros · una pantalla en cocina, que puede ser una tablet · una impresora térmica de 80 mm ESC/POS por red **con el cajón enchufado a ella** · Estook Enlace en un PC o un mini PC si la cocina quiere papel (6.4) · el datáfono del banco · y un router con 4G de respaldo (4.11).
+
+## 10.12 Lo que hay que probar, además de 3.7 y del capítulo 8
+
+- Una comanda de cuatro platos, **en diez toques o menos** desde el plano.
+- Un plato con una opción obligatoria **no se manda** sin contestarla.
+- Cobrar en efectivo **abre el cajón**; con tarjeta, no.
+- **Abrir el cajón sin venta** pide permiso y motivo, y sale en el X y en el Z con quién y cuándo.
+- **El arqueo ciego** no enseña lo esperado hasta haber contado.
+- Un cobro «con tarjeta» que no está en el total del datáfono **sale como descuadre** al cerrar.
+- Lo que cambia en un aparato se ve en otro en menos de 2 segundos.
+- Con un canal conectado, **un pedido aceptado sale en cocina por sus partidas y no pasa por el cobro**.
+- Un datáfono conectado que no responde **no para el cobro**: se cobra como en el nivel 1 y queda marcado.

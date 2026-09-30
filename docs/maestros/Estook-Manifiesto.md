@@ -1,7 +1,7 @@
 ---
 titulo: Manifiesto
 tipo: Documento maestro de producto
-fecha: Septiembre de 2026 · versión 1.2
+fecha: Septiembre de 2026 · versión 1.3
 nota: Qué es Estook, para quién, cómo se comporta hasta el último detalle, qué cuesta y cuánto se cobra. Un Panel y ocho apps, cada una una app de verdad. Documentos hermanos: Evolución, Plan de desarrollo, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
 ---
 
@@ -14,6 +14,8 @@ Marca: charcoal `#111C1F` · naranja `#FF7A00` · blanco · negro. Claim: «Tu c
 **Qué cambia en la versión 1.1.** Recoge la Evolución de producto 1.0: Estook pasa de ser una aplicación de gestión a ser el sistema operativo del restaurante. Los capítulos afectados son el 1, el 6, el 7 nuevo (Pulse), el 20 (Fogón), el 21 nuevo (alertas), el 24 nuevo (integraciones) y el 33 (negocio y mercado). Todo lo demás sigue palabra por palabra, y eso también es una decisión.
 
 **Qué cambia en la versión 1.2.** Estook también cobra: el local elige entre su TPV conectado o el TPV de Estook, con tickets y facturas que cumplen VeriFactu. Cambian los capítulos 1, 2, 4, 8, 9, 17, 24, 26, 29, 30, 32, 33, 34 y 35. Por qué y con qué riesgos, en la Evolución (capítulo 19); cómo se construye, en el **Anexo TPV y facturación**.
+
+**Qué cambia en la versión 1.3** (27 de septiembre de 2026, [decisión 0054](../decisiones/0054-estook-tpv-y-uber-eats-comprobado.md)). El TPV tiene nombre, **Estook TPV**, y el capítulo 17 cuenta el cajón, el datáfono y el cierre con arqueo ciego; los pedidos de reparto entran en su cocina (capítulos 17 y 24); y en Integraciones, los pagos son **datáfonos del local**, no la suscripción de Estook (capítulo 24).
 
 Documentos hermanos: **Evolución**, que dice hacia dónde va y en qué orden y se lee antes que este; **Plan de desarrollo**, que dice cómo se construye; **Roles, vistas, auditorías y administración**, que dice qué ve exactamente cada persona; **Auditoría de flujos**, que dice qué desencadena cada cambio; y el **Anexo de TPV y facturación**, que manda en todo lo que toque sala, cocina, cobro, caja o facturación.
 
@@ -938,7 +940,9 @@ _Su navegación: Jornada · Ventas · Delivery · APPCC_ — y **el cierre es un
 
 ## Sala, cocina y cobro · el TPV de Estook
 
-_Desde la versión 1.2, para el local que cobra con Estook. La especificación completa está en el Anexo TPV y facturación._
+_Desde la versión 1.2, para el local que cobra con Estook. La especificación completa está en el Anexo TPV y facturación, y cómo se ve y cómo se usa, en su capítulo 10._
+
+**Para el cliente se llama Estook TPV** (versión 1.3): Estook es donde gestiona, y Estook TPV, el servicio. **Es la misma aplicación**, con el mismo PIN y los mismos datos al momento: lo que se cobra a las 14:31 está en Negocio a las 14:31, sin subir un CSV ni emparejar nada.
 
 **Sala.** El plano de mesas por zonas, con su estado de un vistazo. Y **tres formas de vender, porque no todo es una mesa**: mesa, barra —se pide y se cobra en el mismo gesto— y para llevar.
 
@@ -956,9 +960,11 @@ Se abre una mesa con sus comensales, se toma nota con la carta de su canal, y **
 
 **Precuenta.** Se imprime o se enseña cuando la mesa pide la cuenta. Dice «PRECUENTA · No válido como factura» y no lleva número de factura ni QR.
 
-**Cobro.** Efectivo, tarjeta en el datáfono del local o las dos cosas. La cuenta se divide por comensal, por platos o a partes iguales, y **cada cobro sale con su ticket**, con el QR tributario y la leyenda VERI*FACTU. Si el ticket no se puede emitir, la mesa no se cierra. Sin internet, justificante provisional y el ticket al volver.
+**Cobro.** Efectivo, tarjeta en el datáfono del local o las dos cosas. La cuenta se divide por comensal, por platos o a partes iguales, y **cada cobro sale con su ticket**, con el QR tributario y la leyenda VERI*FACTU, **lo pida el cliente o no**: lo que elige es llevárselo en papel, por correo o en un QR. Si el ticket no se puede emitir, la mesa no se cierra. Sin internet, justificante provisional y el ticket al volver.
 
-**Caja.** Apertura con fondo, entradas y salidas con motivo, y arqueo con su descuadre. **El cierre de caja se rellena solo**, con origen «TPV de Estook».
+**El dinero no pasa por Estook.** El efectivo va al cajón, que **se abre solo al cobrar en efectivo**; la tarjeta, al datáfono del banco. Y más adelante, **el datáfono conectado**: el importe viaja solo y vuelve «aprobado», sin teclear. En los dos casos el dinero va a la cuenta del local.
+
+**Caja.** Apertura con fondo, entradas y salidas con motivo, y arqueo con su descuadre. **Abrir el cajón sin venta se puede, con motivo, y queda apuntado.** El cierre es el **informe Z**, con **arqueo ciego** —se cuenta sin ver lo que debería haber— y **el total del datáfono cuadrado con lo cobrado con tarjeta**. **El cierre de caja se rellena solo**, con origen «TPV de Estook».
 
 **Tickets y facturas.** Todos los emitidos, con su estado ante Hacienda. Si un cliente pide factura, se hace desde su ticket en un toque (el ticket se canjea, no se borra). Una devolución es una rectificativa, nunca una edición.
 
@@ -992,6 +998,8 @@ Los pedidos que entran por los canales de reparto: qué está entrando ahora, de
 Vive aquí y no en Carta porque lo que se mira en esta pantalla son los pedidos de hoy, que es la pregunta de Servicio. Lo que se publica en cada canal y a qué precio es de Carta, y ahí está: «Carta · Análisis · Por canal». Un plato puede valer distinto en la carta de sala y en la de reparto, con la comisión por medio, así que **el margen de delivery se mira aparte**; pero una venta de reparto descuenta género del libro de movimientos igual que la del TPV, así que **el almacén no se entera de por dónde entró**.
 
 **La pantalla existe desde M6½ y no tiene botón de conectar.** Nombra los canales y dice qué va a entrar por ahí; la integración de verdad es **M29**, con lo que exige Uber Eats —cuenta de desarrollador, aprobación y el plazo de once minutos y medio para aceptar— escrito en la Evolución, capítulo 11.1. Un botón que abriera un cartel sería el fallo que este proyecto persigue desde M4 en el sitio donde más caro sale: el que hace pensar que el dinero ya está entrando solo.
+
+**Y si el local cobra con Estook**, el pedido de reparto no se queda en esta pantalla: **entra en la misma cocina** que las mesas, por partidas, y —si la carta del canal se publica desde Estook— lo agotado en Estook se agota en la plataforma. Ninguna tablet de cada plataforma encima de la barra (Anexo, 10.8).
 
 ## APPCC
 
@@ -1213,13 +1221,15 @@ TPV
   ○ Last.app     Conectar
   ○ Revo         Conectar
 
-CONTABILIDAD          DELIVERY           PAGOS      OTROS
-  Holded                Glovo              Stripe     Google
-  Sage                  Uber Eats
-  Contasol              Just Eat
+CONTABILIDAD          DELIVERY           DATAFONOS         OTROS
+  Holded                Glovo              Stripe Terminal   Google
+  Sage                  Uber Eats          Viva.com
+  Contasol              Just Eat           SumUp
 ```
 
 > **No se enseña una integración que no existe como conectable real.** Tres estados y ninguno miente: **disponible**, **próximamente**, **manual**.
+
+**Los datáfonos son del local** (Anexo, 10.7): conectarlos ahorra teclear el importe, y el dinero va a su cuenta. **No es la suscripción de Estook**, que también se paga con Stripe pero es otra cosa y vive en Ajustes › Suscripción.
 
 ## Los canales de reparto
 
@@ -1241,7 +1251,7 @@ Los pedidos alimentan ventas, almacén, escandallos, carta, analítica, rentabil
 
 Y siempre que la API lo permita, Estook gestiona desde su interfaz el ciclo del pedido: aceptar, rechazar, cancelar o marcar como preparado.
 
-> **El canal de reparto es externo:** Estook agrega y analiza sus pedidos, y no pasan por el cobro de la sala. El detalle técnico de cada integración está en el documento de Evolución.
+> **El canal de reparto es externo:** Estook agrega y analiza sus pedidos, y no pasan por el cobro de la sala. Si el local cobra con Estook, **sí entran en su cocina** (Anexo, 10.8). El detalle técnico de cada integración está en el documento de Evolución.
 
 ---
 

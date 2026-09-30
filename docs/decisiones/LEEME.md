@@ -64,3 +64,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0051** | La auditoría del 26-sep: nada se esconde por vacío, las mermas a la vista y Google con el punto exacto |
 | **0052** | La campana y los avisos: lo que hace el equipo, a quien manda, uno por cosa                            |
 | **0053** | El pedido sugerido, los informes y la nota en Google: al tocar, a nombre de quien lo recibe            |
+| **0054** | Estook TPV: cómo se ve y cómo se usa, el cajón y el datáfono; y Uber Eats comprobado otra vez          |

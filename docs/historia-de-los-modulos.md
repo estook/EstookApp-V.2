@@ -961,7 +961,8 @@ Está escrito además donde se lee: **B5 y la ficha de M22 del Plan**.
 
 - **Sigue sin poder darse por terminado** (regla 11): falta aplicar la `0024`,
   desplegar la API y volver a mirarlo en el teléfono con todo puesto. Los pasos
-  están en `docs/pasos-para-cerrar-m6.md`.
+  estaban en `docs/pasos-para-cerrar-m6.md`, retirado el 27-sep-2026 con los
+  demás pasos ya hechos (0054); sigue en el historial de git.
 - **El widget «Tu equipo» no dice quién está fichado ni cuántas horas lleva.**
   Eso son los fichajes, M15, y hasta entonces no hay de dónde sacarlo.
 - **El atajo al TPV cuando esté conectado** es M18: hoy la tarjeta solo se puede

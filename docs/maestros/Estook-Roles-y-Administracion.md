@@ -1,7 +1,7 @@
 ---
 titulo: Roles, vistas, auditorías y administración
 tipo: Documento maestro de comportamiento por rol
-fecha: Septiembre de 2026 · versión 1.2
+fecha: Septiembre de 2026 · versión 1.3
 nota: Qué ve exactamente cada rol pantalla por pantalla, qué le llega a cada uno del centro de alertas, cómo navega el area manager entre sus locales, las auditorías completas y el panel interno. Documentos hermanos: Evolución, Manifiesto, Plan de desarrollo, Auditoría de flujos y el Anexo de TPV y facturación.
 ---
 
@@ -17,6 +17,8 @@ Aquí está el detalle que, sin escribir, se acaba improvisando:
 **Qué cambia en la versión 1.1.** Recoge la Evolución de producto 1.0: cada rol tiene ahora su **zona de atención** en el Panel y su reparto de alertas, se dice quién ve **Estook Pulse**, las auditorías **detectan solas** lo que el resto de Estook ya sabe, y el panel interno vigila también las integraciones.
 
 **Qué cambia en la versión 1.2.** Estook también cobra (Evolución, capítulo 19). Entra el apartado **1.12**, con quién puede tomar nota, cobrar, facturar, rectificar y llevar la caja; se tocan el camarero, el cocinero y la gestoría; y el panel interno no puede tocar nada de facturación (4.8).
+
+**Qué cambia en la versión 1.3** (27 de septiembre de 2026, [decisión 0054](../decisiones/0054-estook-tpv-y-uber-eats-comprobado.md)). El apartado 1.12 gana cinco filas: **abrir el cajón sin venta**, **ver el informe X**, **aceptar o rechazar un pedido de reparto**, **pausar la tienda en la plataforma** y **conectar un datáfono o un canal**. Son lo que trae el capítulo 10 del Anexo.
 
 ---
 
@@ -188,6 +190,11 @@ _Desde la versión 1.2, solo en locales que cobran con Estook. Es la propuesta p
 | Rectificar o devolver                             | No                                                 | No             | Sí, con motivo      | Area manager, dirección                                    |
 | Anular un documento que nunca debió existir       | No                                                 | No             | Sí, con motivo      | Dirección                                                  |
 | Abrir caja, entradas y salidas, arqueo            | No                                                 | Sí             | Sí                  |                                                            |
+| **Abrir el cajón sin venta**                      | No                                                 | Sí, con motivo | Sí, con motivo      |                                                            |
+| **Ver el informe X** de la caja                   | Lo suyo del turno                                  | Sí             | Sí                  |                                                            |
+| **Aceptar o rechazar un pedido de reparto**       | Sí, si el local lo permite                         | Sí             | Sí                  | Jefe de cocina                                             |
+| **Pausar la tienda** en una plataforma de reparto | No                                                 | Sí             | Sí                  | Jefe de cocina: es quien sabe si la cocina da abasto       |
+| **Conectar un datáfono o un canal de reparto**    | No                                                 | No             | Sí                  | Dirección, administrador de cuenta                         |
 | Alta de facturación y series                      | No                                                 | No             | Sí                  | Dirección, administrador de cuenta                         |
 | Ver tickets y facturas                            | Los suyos del turno                                | Los del local  | Todos los del local | Gestoría, en lectura                                       |
 
@@ -196,6 +203,8 @@ _Desde la versión 1.2, solo en locales que cobran con Estook. Es la propuesta p
 **Con qué modo abre cada uno.** El camarero y el jefe de sala entran directamente en **Sala**; el cocinero y el jefe de cocina, en **Cocina**; el gerente, en el **Panel** de siempre. Se sale del modo con un botón, y en quiosco pide PIN. Cada uno puede cambiarlo para sí mismo, salvo que el local lo tenga fijado.
 
 **Cocina:** el cocinero ve la pantalla de cocina sin importes; el jefe de cocina, además, ordena prioridades.
+
+**La caja:** el arqueo es **ciego de fábrica** y solo el gerente lo apaga en su local. Cada apertura del cajón sin venta sale en el informe X y en el Z **con quién y cuándo**, y eso no lo apaga nadie (Anexo, 10.6).
 
 **Fogón**, con cualquier rol, puede explicar un ticket o una factura, pero **nunca emite, anula ni corrige** ninguno, ni lo ofrece como acción de un toque.
 

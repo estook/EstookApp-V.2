@@ -1,7 +1,7 @@
 ---
-titulo: Evolución de producto 1.1
+titulo: Evolución de producto 1.2
 tipo: Documento de dirección
-fecha: Septiembre de 2026 · versión 1.1
+fecha: Septiembre de 2026 · versión 1.2
 nota: De aplicación de gestión a sistema operativo del restaurante, y de no cobrar a cobrar. Qué cambia, qué no se toca, qué dice el mercado y en qué orden se construye. Se lee antes que los otros cinco.
 ---
 
@@ -23,6 +23,8 @@ Se escribe aparte, y no repartido por los demás, por una razón práctica: quie
 | **Anexo · TPV y facturación** | Cómo se cobra y se factura cumpliendo VeriFactu | Antes de tocar sala, cocina, cobro, caja o facturación |
 
 Regla de precedencia, para cuando dos documentos parezcan decir cosas distintas: **manda el más específico**. Si este documento dice «el Panel prioriza alertas» y el Manifiesto describe el catálogo de widgets, no hay contradicción: el catálogo sigue, y encima se prioriza. Si de verdad hay contradicción, se para y se pregunta (regla 13).
+
+> **Versión 1.2 · 27 de septiembre de 2026.** No cambia el rumbo: lo confirma. Richi volvió a mandar su visión del producto punto por punto, y **ya estaba toda escrita aquí**; lo que cambia es lo que se había quedado corto o mal. **Uber Eats, comprobado otra vez contra su documentación oficial** (11.1): cómo autoriza el restaurante, qué avisos manda de verdad —uno estaba mal descrito— y que solo una aplicación por tienda puede aceptar pedidos. **El TPV tiene nombre, Estook TPV**, y el Anexo gana su capítulo 10: cómo se ve y cómo se usa, con el cajón, el datáfono y los pedidos de reparto en la misma cocina. Y en el capítulo 11, los pagos son **datáfonos**, no la suscripción de Estook. El punto por punto, con lo que hay construido de cada cosa, está en [`docs/la-evolucion-punto-por-punto.md`](../la-evolucion-punto-por-punto.md); el porqué, en la [decisión 0054](../decisiones/0054-estook-tpv-y-uber-eats-comprobado.md).
 
 > **Versión 1.1 · lo primero que hay que saber.** Cambia una frontera que los cinco documentos daban por fija: **Estook también cobra.** El local elige entre seguir con su TPV conectado o usar el TPV de Estook —sala, cocina, cobro, tickets y facturas cumpliendo VeriFactu—. Todo está en el **capítulo 19** y en el **Anexo TPV y facturación**. Donde cualquier documento diga que Estook no es un TPV, no cobra o no emite facturas, **manda el capítulo 19**.
 
@@ -481,41 +483,67 @@ TPV
   ○ Last.app     Conectar
   ○ Revo         Conectar
 
-CONTABILIDAD          DELIVERY           PAGOS      OTROS
-  Holded                Glovo              Stripe     Google
-  Sage                  Uber Eats
-  Contasol              Just Eat
+CONTABILIDAD          DELIVERY           DATAFONOS         OTROS
+  Holded                Glovo              Stripe Terminal   Google
+  Sage                  Uber Eats          Viva.com
+  Contasol              Just Eat           SumUp
 ```
 
-> **No se enseña una integración que no existe como conectable real.** Tres estados y ninguno miente: **disponible**, **próximamente**, **manual**.
+> **No se enseña una integración que no existe como conectable real.** Tres estados y ninguno miente: **disponible**, **próximamente**, **manual**. Hoy (septiembre de 2026) lo único conectado de verdad es Google, con Places desde M7; la sección de Integraciones llega con M29, y cada conexión del dibujo sale como «próximamente» hasta que su módulo la construya.
+
+**Los pagos de esta sección son datáfonos del local** (Anexo, 10.7): el importe viaja al datáfono y vuelve «aprobado», y el dinero va a la cuenta del local. **No es Stripe como suscripción de Estook**, que es otra cosa y vive en Ajustes › Suscripción ([0048](../decisiones/0048-el-pago-con-stripe.md)).
 
 ## 11.1 · Uber Eats
 
-Investigado en septiembre de 2026 sobre la documentación oficial. Lo que sigue es lo que la API **ofrece de verdad**, no lo que sería cómodo suponer.
+Investigado en septiembre de 2026 sobre la documentación oficial, y **comprobado otra vez el 27 de septiembre de 2026** (versión 1.2), que corrigió tres cosas: el aviso `orders.release` estaba mal descrito, faltaba cómo autoriza el restaurante, y faltaba que solo una aplicación por tienda puede aceptar pedidos. Lo que sigue es lo que la API **ofrece de verdad**, no lo que sería cómodo suponer. Las fuentes, al final del apartado.
 
-**Cómo se entra.** APIs REST con JSON, autenticadas por OAuth 2.0 con credenciales de cliente que se emiten desde el portal de desarrollador de Uber. Hace falta cuenta de desarrollador, empezar en entorno de pruebas, firmar un acuerdo de licencia y de confidencialidad, y **obtener aprobación de un responsable de Uber Eats**. No es una API abierta: se solicita.
+**Cómo se entra.** APIs REST con JSON. Hace falta cuenta de desarrollador, empezar en el entorno de pruebas, firmar su acuerdo y **la aprobación por escrito de Uber**: no es una API abierta, se solicita.
 
-**Los eventos que llegan.** Uber avisa por webhook, y cada petición lleva una cabecera `X-Uber-Signature` que hay que verificar antes de hacer nada con ella.
+**Dos autorizaciones distintas, y las dos hacen falta:**
 
-| Evento                              | Qué significa                              |
-| ----------------------------------- | ------------------------------------------ |
-| `orders.notification`               | Hay un pedido nuevo                        |
-| `orders.release`                    | Ha cambiado el estado de un pedido         |
-| `order.fulfillment_issues.resolved` | El cliente ha aceptado un cambio propuesto |
+| Qué                                  | Cómo                                                                        | Alcance (_scope_)                                                                                                                                              |
+| ------------------------------------ | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **El restaurante autoriza a Estook** | OAuth 2.0 con código de autorización: el dueño entra en Uber y dice «sí»    | `eats.pos_provisioning`                                                                                                                                        |
+| **Estook trabaja con sus tiendas**   | OAuth 2.0 con credenciales de cliente; el token dura 30 días y se reutiliza | `eats.order` (aceptar, rechazar, cancelar), `eats.store` (tienda y carta), `eats.store.status.write` (abrir y pausar), `eats.store.orders.read`, `eats.report` |
 
-**El detalle que decide la arquitectura.** Al recibir el webhook hay que devolver un `200` con cuerpo vacío para acusar recibo, y **después llamar explícitamente a aceptar o rechazar el pedido en menos de 11 minutos y medio**. Pasado ese tiempo, Uber lo cancela solo.
+**Dar de alta una tienda.** Con la autorización del dueño, Estook lista sus tiendas, **empareja cada una con su local por la dirección** —no por un nombre, que puede repetirse— y activa la integración en esa tienda (`POST /eats/stores/{store_id}/pos_data`). Uber confirma con el aviso `store.provisioned`; al quitarla, `store.deprovisioned`. Cada tienda de Uber tiene su `store_id`, y **cada local de Estook guarda el suyo**.
 
-Eso significa que **el webhook no puede hacer el trabajo**: acusa recibo, encola, y otro proceso trae el pedido completo y responde. Encaja exactamente con la bandeja de salida y la cola de trabajos que ya existen en M2.
+> **La regla que decide si se puede conectar.** Para aceptar o rechazar pedidos hay que ser **el _order manager_ de esa tienda**: la aplicación nombrada para gestionar sus pedidos. **Hay una por tienda.** Si el local ya gestiona Uber Eats con otro TPV o con un integrador, Estook no puede aceptar a la vez: o pasa a serlo Estook, o no se conecta. La pantalla de conexión lo tiene que decir antes de empezar, no después de fallar.
 
-**Los endpoints que se usan.**
+**Los avisos que llegan.** Uber avisa por webhook, y cada petición lleva la cabecera `X-Uber-Signature`: **una firma HMAC-SHA256 del cuerpo, con el secreto del cliente como clave, en hexadecimal y en minúsculas**. Se comprueba antes de hacer nada.
 
-| Endpoint                                        | Para qué                 |
-| ----------------------------------------------- | ------------------------ |
-| `GET /eats/order/{order_id}`                    | Traer el pedido completo |
-| `POST /eats/orders/{order_id}/accept_pos_order` | Aceptar                  |
-| `POST /eats/orders/{order_id}/deny_pos_order`   | Rechazar                 |
-| `POST /eats/orders/{order_id}/cancel`           | Cancelar                 |
-| `PATCH /eats/orders/{order_id}/cart`            | Corregir el carrito      |
+| Aviso                                       | Qué significa                                                                                                                                          |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `orders.notification`                       | Hay un pedido nuevo                                                                                                                                    |
+| `orders.cancel`                             | Se ha cancelado un pedido                                                                                                                              |
+| `orders.scheduled.notification`             | Hay un pedido programado, si la tienda los tiene                                                                                                       |
+| `orders.release`                            | **El repartidor ha llegado cerca**, si la tienda tiene la salida rápida encendida. **No es un cambio de estado cualquiera**, como decía la versión 1.1 |
+| `order.fulfillment_issues.resolved`         | El cliente ha contestado a un cambio propuesto (un plato que falta)                                                                                    |
+| `store.provisioned` · `store.deprovisioned` | Se ha dado o quitado el acceso a una tienda                                                                                                            |
+| `store.status.changed`                      | La tienda se ha abierto o pausado                                                                                                                      |
+
+**Si Estook no contesta, Uber reintenta**: a los 10 segundos y después con espera creciente, hasta siete veces. **Un aviso puede llegar dos veces**, y por eso la idempotencia por identificador no es opcional.
+
+**El detalle que decide la arquitectura.** Al recibir el aviso hay que devolver un `200` con cuerpo vacío, y **después aceptar o rechazar el pedido explícitamente en menos de 11 minutos y medio**; pasado ese tiempo, Uber lo cancela solo. **Y a los 90 segundos sin respuesta, Uber llama por teléfono al restaurante.** O sea: la aceptación tiene que salir en segundos, no en minutos.
+
+Eso significa que **el webhook no puede hacer el trabajo**: acusa recibo, encola, y otro proceso trae el pedido completo y responde. Encaja exactamente con la bandeja de salida y la cola de trabajos que ya existen desde M2.
+
+**Lo que se usa del pedido y de la tienda.**
+
+| Para qué                             | Qué ofrece Uber                                                                                                   |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Traer el pedido completo             | `GET /eats/order/{order_id}`: platos, opciones, notas del cliente, instrucciones de entrega, tiempos, importes    |
+| Aceptar, con la hora a la que estará | `POST /eats/orders/{order_id}/accept_pos_order`, con `pickup_time` y nuestra referencia (`external_reference_id`) |
+| Rechazar                             | `POST /eats/orders/{order_id}/deny_pos_order`                                                                     |
+| Cancelar                             | `POST /eats/orders/{order_id}/cancel`                                                                             |
+| Corregir el carrito                  | `PATCH /eats/orders/{order_id}/cart`                                                                              |
+| **Subir la carta del canal**         | `PUT /eats/stores/{store_id}/menus` · **sustituye la carta entera**                                               |
+| **Agotar o recuperar un plato**      | `POST /eats/stores/{store_id}/menus/items/{item_id}` · **solo si la carta se subió por la API**                   |
+| **Abrir o pausar la tienda**         | Con `eats.store.status.write`, sin tocar el horario                                                               |
+
+> **[VERIFICAR al llegar a M29, con la cuenta aprobada.]** La referencia de Uber llama «versión anterior» a los endpoints de pedidos de arriba y tiene desde 2023 un **conjunto nuevo de la API de pedidos**; **no publica fecha de retirada** de los anteriores y avisa de cualquier cambio incompatible con 90 días. Antes de escribir una línea se decide cuál se usa, leyendo la referencia de ese día. **Y el esquema del pedido —impuestos, promociones, comisión— se lee entero de la referencia**, no de este resumen.
+
+**Antes de abrirlo a todos los locales.** Uber hace una **verificación de punta a punta** de la integración antes de dar acceso de producción, y pide empezar por **un local piloto que mantenga un 98 % de pedidos entrados bien durante al menos tres días**, avisando a su responsable de cuenta una semana antes. Y hay que decírselo al local: **deja de teclear los pedidos de la tablet de Uber en su TPV**.
 
 **La arquitectura:**
 
@@ -539,7 +567,8 @@ Ventas · Almacén · Escandallos · Carta · Analitica · Fogon
 - Idempotencia por identificador de pedido, porque un webhook se reintenta.
 - Auditoría, registro de eventos, reintentos y recuperación tras pérdida de conexión.
 - Estook puede aceptar, rechazar, cancelar o marcar como preparado **desde su interfaz**, siempre que la API lo permita.
-- **Esto no convierte a Estook en un TPV.** Uber Eats es un canal externo; Estook agrega y analiza.
+- **Uber Eats es un canal externo**: el cliente le paga a Uber, y su pedido **no pasa por el cobro de la sala**. Si el local cobra con Estook, **sí entra en su cocina** como una comanda más, y lo agotado en Estook se agota en Uber (Anexo, 10.8).
+- **Quién factura un pedido de plataforma** —el restaurante, o la plataforma en su nombre— **lo dice el asesor** antes de que un pedido de reparto emita nada (Anexo, 4.6 y 10.8).
 
 **Y el modelo común**, porque Uber Eats no va a ser el único:
 
@@ -554,6 +583,10 @@ TPV ───────────┘
 ```
 
 Cada proveedor tiene su adaptador; todos transforman a los modelos internos.
+
+**Glovo y Just Eat, comprobado el 27 de septiembre de 2026:** los dos tienen una API oficial para que un TPV reciba sus pedidos —la **Partners API** de Glovo y **JET Connect** de Just Eat Takeaway—, con avisos por webhook y el acceso dado por la plataforma. Qué exige cada uno en España, qué alcances da y cómo se certifica **se investiga igual que Uber Eats antes de su adaptador**: que existan no dice nada de lo que dejan hacer.
+
+**Fuentes (leídas el 27-sep-2026):** [autenticación y alcances](https://developer.uber.com/docs/eats/guides/authentication) · [avisos y su firma](https://developer.uber.com/docs/eats/guides/webhooks) · [alta de tiendas](https://developer.uber.com/docs/eats/guides/integration-activation-flows) · [pedidos](https://developer.uber.com/docs/eats/guides/order-integration) · [aceptar un pedido](https://developer.uber.com/docs/eats/references/api/v1/post-eats-order-orderid-acceptposorder) · [carta](https://developer.uber.com/docs/eats/guides/menu-integration) · [salir a producción](https://developer.uber.com/docs/eats/guides/going-live) · [cambios de la API](https://developer.uber.com/docs/eats/api-change-log) · [Glovo Partners API](https://api-docs.glovoapp.com/partners/index.html) · [JET Connect](https://developers.just-eat.com/documentation/jet-connect/pos-integration-flow).
 
 > **Regla dura para cualquier integración.** No se implementa un endpoint, un permiso, un dato ni una capacidad basándose en suposiciones. Primero se lee la documentación oficial vigente, y solo se usa lo que de verdad está disponible para la integración aprobada.
 
@@ -665,21 +698,21 @@ Y la pila técnica —React, TypeScript, Hono, PostgreSQL sobre Supabase, TanSta
 
 No se construye todo de golpe. Este es el orden, y **cada prioridad dice sobre qué módulo del Plan cae**, para que no haya que inventarse dónde va cada cosa.
 
-| #   | Qué                                                                                             | Dónde vive                        | Depende de   |
-| --- | ----------------------------------------------------------------------------------------------- | --------------------------------- | ------------ |
-| 1   | **Rediseño del Panel**: alertas, tareas, métricas, estado del negocio, acciones rápidas y Fogón | M3 ampliado + Panel de M21        | —            |
-| 2   | **Fogón transversal** en las ocho apps                                                          | M22                               | 1            |
-| 3   | **Almacén predictivo**                                                                          | M6 y M8 ampliados                 | —            |
-| 4   | **Escandallos con análisis de margen**                                                          | M9 ampliado                       | 3            |
-| 5   | **Carta inteligente**                                                                           | M10 ampliado                      | 4            |
-| 6   | **Horarios inteligentes**                                                                       | M14 y M13 ampliados               | 2            |
-| 7   | **Estook Pulse**                                                                                | M21                               | 3, 4, 5      |
-| 8   | **Sistema de integraciones**: TPV, Uber Eats, Glovo, Just Eat, contabilidad, ERP, pagos         | M18-M20 ampliados, y módulo nuevo | —            |
-| 9   | **API pública**                                                                                 | Módulo nuevo                      | 8            |
-| 10  | **Cadenas, auditorías y automatización avanzadas**                                              | M24 ampliado                      | 7            |
-| 11  | **TPV de Estook y facturación VeriFactu**: sala, cocina, cobro, caja, tickets y facturas        | M20A, M20B y M20C (Fase 4)        | M9, M10, M16 |
+| #   | Qué                                                                                             | Dónde vive                 | Depende de   |
+| --- | ----------------------------------------------------------------------------------------------- | -------------------------- | ------------ |
+| 1   | **Rediseño del Panel**: alertas, tareas, métricas, estado del negocio, acciones rápidas y Fogón | M3 ampliado + Panel de M21 | —            |
+| 2   | **Fogón transversal** en las ocho apps                                                          | M22                        | 1            |
+| 3   | **Almacén predictivo**                                                                          | M6 y M8 ampliados          | —            |
+| 4   | **Escandallos con análisis de margen**                                                          | M9 ampliado                | 3            |
+| 5   | **Carta inteligente**                                                                           | M10 ampliado               | 4            |
+| 6   | **Horarios inteligentes**                                                                       | M14 y M13 ampliados        | 2            |
+| 7   | **Estook Pulse**                                                                                | M21                        | 3, 4, 5      |
+| 8   | **Sistema de integraciones**: TPV, Uber Eats, Glovo, Just Eat, contabilidad, ERP, datáfonos     | M18-M20 ampliados, y M29   | —            |
+| 9   | **API pública**                                                                                 | M30                        | 8            |
+| 10  | **Cadenas, auditorías y automatización avanzadas**                                              | M24 ampliado               | 7            |
+| 11  | **TPV de Estook y facturación VeriFactu**: sala, cocina, cobro, caja, tickets y facturas        | M20A, M20B y M20C (Fase 4) | M9, M10, M16 |
 
-**Lo que esto significa para el trabajo actual.** M5 (onboarding) sigue siendo el módulo siguiente y **no cambia de sitio**: la evolución no reordena los cimientos. Lo que cambia es que a partir de M6 cada módulo se construye ya con su capa inteligente dentro, en vez de construirlo plano y volver después.
+**Lo que esto significa para el trabajo actual.** La evolución **no reordena los módulos**: cada prioridad cae dentro del suyo, y desde M6 cada módulo se construye ya con su capa inteligente dentro, en vez de construirlo plano y volver después. Por eso lo primero de esta tabla —el Panel— ya ha ido llegando por partes (el Panel de cada puesto, «Hoy», la campana), y lo siguiente no es «rediseñar el Panel» sino lo que diga `ESTADO.md`. Qué hay ya de cada prioridad y qué falta, punto por punto, en [`docs/la-evolucion-punto-por-punto.md`](../la-evolucion-punto-por-punto.md).
 
 > **Ninguna integración se da por disponible hasta verificar sus requisitos y capacidades reales.** Es la lección del capítulo 11.1 y aplica a las diez.
 
@@ -750,6 +783,14 @@ Estook tiene **tres formas de que entren las ventas**, y el local elige:
 
 **Descartado:** usar Estook solo para tomar nota y cobrar en otro TPV. El camarero tendría que meter cada plato dos veces, y un hostelero quiere menos trabajo, no más.
 
+## Estook TPV, el nombre · versión 1.2
+
+Richi lo dijo así el 27 de septiembre de 2026: **Estook no es «un TPV más» porque va a ser el mejor**, no porque no cobre. Hace lo que hace cualquier TPV de restaurante —comandas, cocina, cobro, caja, tickets y facturas legales— **sin actuar nunca de banco**: el efectivo va al cajón y la tarjeta al datáfono, y Estook registra la venta.
+
+Para el cliente son dos cosas con nombre propio: **Estook**, donde se gestiona y adonde llegan los datos, y **Estook TPV**, para el servicio. Por dentro son **la misma aplicación** (Plan, A5): el mismo PIN, los mismos permisos y los mismos datos, al momento. Cómo se ve y cómo se usa, en el **capítulo 10 del Anexo**.
+
+Y la comodidad es el argumento: con Estook TPV no hay CSV que subir ni conexión que emparejar. **Conectar el TPV que ya se tiene y apuntar a mano siguen siendo opciones**, para quien no quiera cambiar.
+
 ## Por qué
 
 - **El dato perfecto, en el momento.** Cada plato vendido, con sus extras, su mesa, su camarero y su hora, nace dentro de Estook. Sin emparejar artículos, sin esperar a un conector, sin depender de que un TPV nos dé acceso (Revo y Last.app exigen solicitud y aprobación).
@@ -765,7 +806,7 @@ Estook tiene **tres formas de que entren las ventas**, y el local elige:
 
 ## Qué no cambia
 
-- **Estook nunca toca el dinero.** No es pasarela de pago, no guarda datos de tarjeta.
+- **Estook nunca toca el dinero.** No es pasarela de pago, no guarda datos de tarjeta. **Tampoco con el datáfono conectado** (Anexo, 10.7): Estook manda el importe y recibe «aprobado»; el dinero va a la cuenta del local.
 - Toda la lista del capítulo 15.
 - Las integraciones con TPV siguen siendo producto: quien quiera seguir con el suyo tiene la misma atención.
 - **Fogón no emite, no anula y no corrige nada de facturación. Nunca.** Puede explicar un ticket; no puede tocarlo.
@@ -795,11 +836,12 @@ La operativa se puede reprocesar y corregir. Un documento emitido **no se edita 
 
 Por la regla 13, **lo que dependa de ellas no se construye hasta que estén escritas**.
 
-**Solo quedan tres, y las tres son de negocio, no de arquitectura.** Lo técnico ya está decidido en el Plan (A5) y en el Anexo.
+**Quedan cuatro, y las cuatro son de negocio, no de arquitectura.** Lo técnico ya está decidido en el Plan (A5) y en el Anexo.
 
 1. **En qué planes entra el TPV.** Propuesta: incluido en Pro y en Cadena; en Esencial no, porque Esencial es gestión a mano. Se decide con el precio real del proveedor de VeriFactu delante.
 2. **Soporte en horario de servicio** para quien cobra con Estook: horario y canal. Se decide antes de vender el primer TPV.
 3. **Si el camarero cobra por defecto.** Propuesta: sí, y el gerente lo apaga por local.
+4. **Qué datáfono conectado va primero** (Anexo, 10.7): Stripe Terminal, Viva.com o SumUp. Se decide al llegar a M20C, con sus precios y comisiones delante. Hasta entonces, el datáfono del banco sin conectar vale para todos.
 
 **Y lo que ya está decidido, para que no se vuelva a abrir:**
 

@@ -1,7 +1,7 @@
 ---
 titulo: Plan de desarrollo
 tipo: Documento de construcción
-fecha: Septiembre de 2026 · versión 1.2
+fecha: Septiembre de 2026 · versión 1.3
 nota: Reglas de trabajo, sistema de diseño, web pública y 31 módulos, más M6½ y los tres del TPV (M20A, M20B y M20C), en orden. Escrito para que no haga falta inventar nada. Documentos hermanos - Evolución, Manifiesto, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
 ---
 
@@ -12,6 +12,8 @@ Este documento va dirigido a quien construya Estook, que será en su mayor parte
 **Qué cambia en la versión 1.1.** Recoge la Evolución de producto 1.0. Los cambios están en A1 (la regla 14), en B7 (el tamaño deja de bloquear), en la parte D (cada módulo lleva ahora su capa inteligente, y hay dos módulos nuevos) y en E3. Lo demás sigue igual.
 
 **Qué cambia en la versión 1.2.** Estook también cobra (Evolución, capítulo 19). Cambian A1 (regla 15), A3 y A4 (dos piezas nuevas), M5, **la Fase 4, que se reordena y gana M20A, M20B y M20C**, M18, M20, M26, M27, M28, M29 y E3. La especificación completa del TPV y de la facturación está en el **Anexo TPV y facturación**, que manda en su tema.
+
+**Qué cambia en la versión 1.3** (27 de septiembre de 2026, [decisión 0054](../decisiones/0054-estook-tpv-y-uber-eats-comprobado.md)). El TPV se llama **Estook TPV** y sigue siendo la misma aplicación (A5). M20A y M20C ganan cómo se ven y cómo se usan —el capítulo 10 del Anexo—: el cajón, los informes X y Z, el arqueo ciego y el datáfono. M29 se corrige con Uber Eats comprobado otra vez, y sus pedidos entran en la cocina de Estook TPV. Y se arreglan dos contradicciones: **Canarias sí factura, con IGIC** (M20B, [0043](../decisiones/0043-hasta-donde-llega-la-facturacion.md)), y **la impresión de Enlace es M19a**, antes de M20A (A5).
 
 Documentos hermanos: **Evolución**, que se lee antes que este; el **Manifiesto**, que dice qué es el producto; **Roles, vistas, auditorías y administración**, que dice qué ve cada persona; la **Auditoría de flujos**, que es el documento de control obligatorio antes de cerrar cualquier módulo; y el **Anexo de TPV y facturación**, que manda en sala, cocina, cobro, caja y facturación.
 
@@ -180,13 +182,15 @@ Esta sección existe porque es la pregunta que más veces se vuelve a hacer, y p
 | **La aplicación** | `apps/app` → `estook.com/app`     | El Panel, las ocho apps **y el TPV**                                                                | En construcción. **Hasta dónde llega lo dice `ESTADO.md`, no este documento** |
 | **Carta digital** | `apps/carta`                      | La carta pública con QR, sin login                                                                  | M12                                                                           |
 | **Panel interno** | `apps/admin` → `estook.com/admin` | Nuestro, para administrar clientes                                                                  | En construcción (`ESTADO.md`)                                                 |
-| **Estook Enlace** | `enlace/`                         | Programa que se instala en el local: trae las ventas del TPV externo **y habla con las impresoras** | M19, y su parte de impresión en M20A                                          |
+| **Estook Enlace** | `enlace/`                         | Programa que se instala en el local: trae las ventas del TPV externo **y habla con las impresoras** | M19: la impresión (M19a) antes de M20A, y el TPV externo (M19b) al final      |
 
 Y una pieza que **no es una superficie nueva**, sino un envoltorio de la segunda:
 
 |                   | Dónde vive   | Qué es                                                                                                    |
 | ----------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
 | **App de Estook** | `apps/movil` | La misma `apps/app`, empaquetada con Capacitor para Play y App Store. **No tiene ni una pantalla propia** |
+
+**El cliente lo ve como dos cosas, y es una** (versión 1.3). **Estook** es donde se gestiona; **Estook TPV** es el servicio —tomar nota, cocina, cobrar y la caja—. Es un nombre, no una aplicación: son los modos Sala y Cocina de `apps/app`, y un terminal del local enciende directamente en ellos (Anexo, 3.4 y 10.1).
 
 ### Por qué el TPV va dentro de la aplicación y no aparte
 
@@ -842,6 +846,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Los modos Sala y Cocina** según B5, con su entrada desde el Panel y su salida con PIN en quiosco, y `apps/movil`, la cáscara de Capacitor que carga `apps/app` (A5).
 - **Sala:** plano de mesas por zonas · **tres caminos de venta: mesa, barra y para llevar** · tomar nota con la carta del canal (M10), extras, modificadores y notas · **asignar líneas a comensales**, porque sin eso no se puede dividir la cuenta después · **aviso de alergia de la mesa** con los alérgenos de M9 · tandas y **marchar** —a mano, al retirar la anterior o por tiempo— · quitar una línea ya mandada con motivo, permiso y **aviso a cocina** · mover, juntar, dividir y **traspasar una mesa a otro camarero**, que es el cambio de turno · agotado desde la comanda, con aviso previo calculado con el stock real.
 - **Cocina:** **enrutado por partida**, con cada pantalla configurada y los platos sin partida saliendo en todas y en una lista de fallos · **pantalla de pase** · tiempos en tres tramos con los minutos que pone el local · marcar listo, **deshacer dentro de un margen** · aviso sonoro distinto para alergia y prioridad · **contador del día por plato** · **la ficha técnica de M9 en modo cocina desde cualquier plato** · **sin un solo importe**, tampoco en la respuesta del servidor.
+- **Cómo se ve y cómo se usa** (capítulo 10 del Anexo): la pantalla de tomar nota con lo más vendido a esa hora primero, **opciones obligatorias que no dejan mandar sin contestarlas**, menú del día paso a paso y **una comanda de cuatro platos en diez toques o menos** · el comandero en el móvil del camarero, con la misma pantalla en una columna · «Venta rápida» en barra · el plano con «Mis mesas», dibujado arrastrando con `@dnd-kit` (ya en el proyecto) · lo que cambia en un aparato, en los demás en menos de 2 segundos.
 - **Lo que la cocina devuelve:** tiempo real por plato y partida hacia M9 y M21, agotados hacia M7, devoluciones hacia la merma de M8.
 - **Precuenta** con «PRECUENTA · No válido como factura», sin serie ni QR.
 - **Cola de impresión** con su formato intermedio propio y los tres agentes que la consumen, con Ajustes › Impresoras y su botón de imprimir prueba (capítulo 6 del Anexo).
@@ -861,7 +866,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Objetivo.** Que Estook emita tickets y facturas legales, con su registro enviado a Hacienda, sin que nada del resto de la app pueda tocarlos.
 
-**Entra** (el detalle, en el Anexo TPV y facturación). Esquema `facturacion` aislado y solo de inserción · adaptador `ProveedorFacturacion` con Verifacti · **alta de facturación del local**: datos del titular, régimen, series, alta del NIF en Verifacti y firma de la autorización de representación, con el cobro bloqueado hasta completarla · ticket (F2), factura (F1), canje (F3), rectificativas (R5 para el ticket; R1 a R4 según diga el asesor), abono y anulación restringida · numeración correlativa por serie y rectificativas en serie propia · QR y leyenda · webhooks del proveedor con su idempotencia · estado de cada registro y pantalla de registros con error · justificante provisional sin conexión y emisión posterior con incidencia · declaración responsable visible en la app · bloqueo para régimen foral, SII y, de momento, Canarias, Ceuta y Melilla.
+**Entra** (el detalle, en el Anexo TPV y facturación). Esquema `facturacion` aislado y solo de inserción · adaptador `ProveedorFacturacion` con Verifacti · **alta de facturación del local**: datos del titular, régimen, series, alta del NIF en Verifacti y firma de la autorización de representación, con el cobro bloqueado hasta completarla · ticket (F2), factura (F1), canje (F3), rectificativas (R5 para el ticket; R1 a R4 según diga el asesor), abono y anulación restringida · numeración correlativa por serie y rectificativas en serie propia · QR y leyenda · webhooks del proveedor con su idempotencia · estado de cada registro y pantalla de registros con error · justificante provisional sin conexión y emisión posterior con incidencia · declaración responsable visible en la app · **Canarias factura con IGIC** · bloqueo para régimen foral y SII, que la ley deja fuera, y de momento para Ceuta y Melilla, cada uno con su motivo verdadero ([0043](../decisiones/0043-hasta-donde-llega-la-facturacion.md), Anexo 1.4).
 
 **No entra.** La sala y el cobro (M20A y M20C). Calcular la huella o encadenar registros: lo hace el proveedor.
 
@@ -877,11 +882,15 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Entra.** Cobro en efectivo (entregado y cambio), con tarjeta en el datáfono del local (el camarero confirma) y mixto · dividir la cuenta por comensal, por platos o a partes iguales, con un ticket por cobro · invitaciones y descuentos con permiso y motivo · emisión por M20B y, si falla, la mesa sigue abierta · **impresión del ticket** por la cola de M20A, y envío por correo o por QR si el cliente lo pide · factura a petición del cliente desde su ticket · devoluciones por rectificativa · **caja como vista de Servicio · Jornada** y **tickets y facturas como vista de Servicio · Ventas** (B5), con apertura de caja, entradas y salidas con motivo, arqueo y descuadre · el cierre de caja de M6½ se rellena solo con origen «TPV de Estook» · evento `venta.cerrada` hacia M20.
 
+**Y cómo se ve y cómo se usa** (capítulo 10 del Anexo): la pantalla de cobrar con el total en grande, los billetes para no teclear y el cambio a la vista · el ticket impreso, por correo o en un QR, y «Pedir factura» en la misma pantalla · **el cajón**, que se abre solo con efectivo como una línea más del formato de impresión, y **abrirlo sin venta con permiso, motivo y rastro** · **informe X** sin cerrar e **informe Z** al cerrar, que son consultas y no documentos fiscales · **arqueo ciego de fábrica** · **el cuadre de la tarjeta**: el total del cierre del datáfono frente a lo cobrado con tarjeta · el datáfono del banco **sin conectar**, que vale para todos.
+
+**Después de M20C, local a local: el datáfono conectado** (Anexo, 10.7), detrás de `ProveedorDatafono`, con el importe que viaja solo y vuelve «aprobado». La cuenta es del local y el dinero no pasa por Estook. Cuál va primero —Stripe Terminal, Viva.com o SumUp— lo decide Richi con los precios delante (Evolución, 19).
+
 **Depende de.** M20A, M20B, M16 y M6½.
 
 **Reglas críticas.** Nunca se cierra una mesa cobrada sin ticket o sin justificante provisional. Reabrir lo cobrado no existe: se rectifica. Los PDF —factura completa, ticket por correo— salen del servidor (regla 7); el ticket impreso no es un PDF. **La impresión no bloquea el cobro**: si falla, el ticket ya está emitido y se reimprime.
 
-**Terminado cuando.** Un servicio de prueba completo —diez mesas, una dividida, un pago mixto, una factura pedida y una devolución— cuadra al céntimo entre caja, tickets, ventas y almacén; y con internet cortado se cobra con justificante y al volver salen los tickets en orden. Reimprimir un ticket sale idéntico, marcado como copia, y no crea ningún registro nuevo.
+**Terminado cuando.** Un servicio de prueba completo —diez mesas, una dividida, un pago mixto, una factura pedida y una devolución— cuadra al céntimo entre caja, tickets, ventas y almacén; y con internet cortado se cobra con justificante y al volver salen los tickets en orden. Reimprimir un ticket sale idéntico, marcado como copia, y no crea ningún registro nuevo. **Y pasan las pruebas del apartado 10.12 del Anexo**: el cajón se abre solo con efectivo, abrirlo sin venta sale en el X y en el Z, el arqueo ciego no enseña lo esperado antes de contar, y un cobro con tarjeta que no pasó por el datáfono sale como descuadre.
 
 ## Fase 5 · Inteligencia
 
@@ -973,17 +982,21 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Objetivo.** Que un pedido de una plataforma de reparto entre en Estook por el mismo sitio que una venta del TPV, y alimente lo mismo.
 
-**Entra.** Sección de **Integraciones** con sus tres estados honestos (disponible, próximamente, manual) · marco de adaptadores de canal con interfaz común · **Uber Eats** como primera implementación: OAuth 2.0 con credenciales de cliente, verificación de la firma `X-Uber-Signature`, webhooks `orders.notification`, `orders.release` y `order.fulfillment_issues.resolved`, y el ciclo del pedido con `accept_pos_order`, `deny_pos_order`, `cancel` y `cart` · gestión del pedido desde la interfaz de Estook · idempotencia por identificador de pedido · registro de eventos, reintentos y recuperación tras corte.
+**Entra.** Sección de **Integraciones** con sus tres estados honestos (disponible, próximamente, manual) · marco de adaptadores de canal con interfaz común · **Uber Eats** como primera implementación, con lo comprobado el 27-sep-2026 en la Evolución, 11.1: **el restaurante autoriza a Estook** con OAuth de código de autorización (`eats.pos_provisioning`), se **empareja cada tienda con su local por la dirección** y se activa la integración en ella, y Estook trabaja con credenciales de cliente y sus alcances · verificación de la firma `X-Uber-Signature` (HMAC-SHA256 del cuerpo) · los avisos de pedido nuevo, cancelado y programado, de tienda dada de alta o de baja y de tienda abierta o pausada · aceptar, rechazar, cancelar y corregir el carrito · gestión del pedido desde la interfaz de Estook · idempotencia por identificador de pedido · registro de eventos, reintentos y recuperación tras corte.
 
-**Regla crítica de arquitectura.** El webhook **acusa recibo y encola**; no hace el trabajo. Uber exige aceptar o rechazar en menos de 11 minutos y medio o cancela el pedido solo, así que la respuesta la da un trabajo que trae el pedido completo por API. Encaja con la bandeja de salida y la cola de M2.
+**Y si el local cobra con Estook** (Anexo, 10.8): el pedido aceptado **entra en la cocina de Estook TPV** como una cuenta de tipo `reparto`, por partidas, sin pasar por el cobro · **lo agotado en Estook se agota en Uber** y **la tienda se pausa desde Estook**, las dos cosas solo si la carta del canal se sube desde Estook por su API de menús.
+
+**Regla crítica de arquitectura.** El webhook **acusa recibo y encola**; no hace el trabajo. Uber exige aceptar o rechazar en menos de 11 minutos y medio o cancela el pedido solo —y **a los 90 segundos llama por teléfono al local**—, así que la respuesta la da un trabajo que trae el pedido completo por API, en segundos. Encaja con la bandeja de salida y la cola de M2.
 
 **Regla crítica de datos.** Los pedidos se transforman **al modelo interno de Estook**. Crear una estructura paralela sería una segunda fuente de verdad.
 
-**Qué NO entra.** Meter los pedidos de reparto en la sala o en el cobro. El canal de reparto es externo; Estook agrega y analiza.
+**Regla crítica de conexión.** **Solo una aplicación por tienda puede aceptar pedidos** (el _order manager_ de Uber). Si el local ya los gestiona con otro TPV o integrador, la pantalla de conexión lo dice antes de empezar.
+
+**Qué NO entra.** Meter los pedidos de reparto en el cobro de la sala: el cliente ya pagó a la plataforma. Ni emitir un ticket de Estook por un pedido de reparto hasta que el asesor diga quién lo factura (Anexo, 10.8).
 
 **Antes de escribir una línea.** Se investiga la documentación oficial vigente: proceso de alta y aprobación, OAuth y autorización del restaurante, permisos y alcances, identificación de tiendas, APIs de pedidos, datos que devuelve cada pedido, webhooks y eventos, tiempos para aceptar o rechazar, sincronización de estados, impuestos, descuentos y totales, límites de la API, requisitos técnicos y comerciales, y entorno de pruebas y certificación. **No se implementa nada basándose en suposiciones.**
 
-**Terminado cuando.** Un pedido real entra por webhook, se acepta desde Estook, actualiza ventas y consumo, y **reenviar el mismo webhook no lo duplica**. Y añadir un segundo canal es escribir un adaptador, no tocar el núcleo.
+**Terminado cuando.** Un pedido real entra por webhook, se acepta desde Estook, actualiza ventas y consumo, y **reenviar el mismo webhook no lo duplica**. Uber da el acceso de producción tras su verificación de punta a punta, y **el local piloto mantiene un 98 % de pedidos entrados bien durante tres días**, que es lo que pide Uber antes de abrirlo a más locales. Y añadir un segundo canal es escribir un adaptador, no tocar el núcleo.
 
 ### M30 · API pública
 

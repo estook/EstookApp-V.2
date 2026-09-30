@@ -114,4 +114,4 @@ Son **seis**, y viven en [`docs/maestros/`](docs/maestros/). El PDF sale con
 6. **Anexo · TPV y facturacion** · como se cobra y se factura. **Manda** en todo lo que
    toque sala, cocina, cobro, caja o facturacion.
 
-Las versiones anteriores se guardan en [`docs/antiguos/maestros/`](docs/antiguos/maestros/).
+Las versiones anteriores están en el historial de git (`git log -- docs/maestros`), no en copias sueltas: una copia vieja a mano es una regla vieja que alguien puede seguir ([decisión 0054](docs/decisiones/0054-estook-tpv-y-uber-eats-comprobado.md)).

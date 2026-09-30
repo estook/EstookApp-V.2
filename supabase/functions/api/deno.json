@@ -1,5 +1,6 @@
 {
   "imports": {
+    "@estook/documentos": "../../../packages/documentos/src/index.ts",
     "@estook/dominio": "../../../packages/dominio/src/index.ts",
     "@estook/permisos": "../../../packages/permisos/src/index.ts",
     "@estook/utiles": "../../../packages/utiles/src/index.ts",

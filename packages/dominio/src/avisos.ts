@@ -1,8 +1,9 @@
 import { conSimbolo, type Centimos } from './dinero.ts';
 import { comoPrecioPorUnidad, type Milesimas } from './coste.ts';
 import { comoPorcentaje, enumerar, fechaEnLetra, plural } from './textos.ts';
-import { diasEntre, type FechaOperativa } from './tiempo.ts';
+import { diaDeLaSemana, diasEntre, type FechaOperativa } from './tiempo.ts';
 import { cuandoCae } from './compras.ts';
+import { comoSeLlamaElDia } from './equipo.ts';
 
 /**
  * Los avisos · la campana (entrega R · decisión 0052).
@@ -44,6 +45,8 @@ export const TIPOS_DE_AVISO = [
   'informe.semana',
   'informe.mes',
   'google.nota',
+  // ── H1 (decisión 0068) ──────────────────────────────────────────────────
+  'fichaje.corregido',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -186,6 +189,18 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Negocio',
     deTuEquipo: false,
     correoDeFabrica: false,
+  },
+
+  // ── H1 (decisión 0068) ──────────────────────────────────────────────────
+  //
+  // «El trabajador ve cualquier cambio en lo suyo y recibe un aviso» (0062). Por
+  // correo también, de fábrica: es su registro horario y puede no abrir la app en días.
+  'fichaje.corregido': {
+    nombre: 'Te corrigen un fichaje',
+    explica: 'Con quién lo cambió y por qué. El de antes no se borra: lo ves en tus fichajes.',
+    grupo: 'Equipo',
+    deTuEquipo: false,
+    correoDeFabrica: true,
   },
 };
 
@@ -478,6 +493,26 @@ export function avisoDeNotaDeGoogle(
       nuevas > 0
         ? `${plural(nuevas, 'reseña nueva', 'reseñas nuevas')} desde la última vez. Míralas en Google.`
         : 'Míralas en Google para saber qué ha pasado.',
+  };
+}
+
+// ── H1 · lo que avisa un fichaje (decisión 0068) ─────────────────────────────
+
+/**
+ * «Carla ha corregido tu fichaje del viernes 25 de septiembre» · «Motivo: se fue
+ * sin fichar la salida. El de antes sigue a la vista en tus fichajes.»
+ */
+export function avisoDeFichajeCorregido(
+  quien: string,
+  dia: FechaOperativa | string,
+  motivo: string,
+): LoQueDiceUnAviso {
+  const fecha = dia as FechaOperativa;
+  // «viernes 25 de septiembre»: el año sobra, es de hace unos días.
+  const sinAnio = fechaEnLetra(fecha).replace(/ de \d{4}$/, '');
+  return {
+    titulo: `${quien} ha corregido tu fichaje del ${comoSeLlamaElDia(diaDeLaSemana(fecha))} ${sinAnio}`,
+    detalle: `Motivo: ${motivo.charAt(0).toLowerCase()}${motivo.slice(1)}${/[.!?]$/.test(motivo) ? '' : '.'} El de antes sigue a la vista en tus fichajes.`,
   };
 }
 

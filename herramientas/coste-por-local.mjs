@@ -100,6 +100,12 @@ const FIJOS = [
     desde: 'vender',
     nota: 'plan gratuito: 500 publicaciones al mes',
   },
+  {
+    que: 'Cloudflare Browser Run (los PDF)',
+    dolares: 0,
+    desde: 'vender',
+    nota: 'gratuito: 10 minutos al día, unos 400 PDF; pasado eso, Workers Paid a 5 $ (0068)',
+  },
   { que: 'Dominio estook.com', euros: 1.5, desde: 'vender', nota: 'SUPUESTO: unos 18 € al año' },
   {
     que: 'GitHub con el repositorio privado',

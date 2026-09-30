@@ -49,6 +49,8 @@ import { AjustesDeOrganizacion } from './AjustesDeOrganizacion.tsx';
 import { MiAcceso } from './MiAcceso.tsx';
 import { TuLocalEnGoogle } from './TuLocalEnGoogle.tsx';
 import { CuandoEsLlegarTarde } from './CuandoEsLlegarTarde.tsx';
+import { LasPausas } from './LasPausas.tsx';
+import { ElAparatoParaFichar } from './ElAparatoParaFichar.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
 import { preguntarDondeEstoy } from '../ganchos/usarFichar.ts';
@@ -335,6 +337,17 @@ function LaSeccion({ id }: { readonly id: IdDeSeccion }) {
           {llevaElLocal && (
             <Ancla id="llegar-tarde">
               <CuandoEsLlegarTarde />
+            </Ancla>
+          )}
+          {/* H1 (0068): la pausa de descanso y el aparato del local para fichar. */}
+          {llevaElLocal && (
+            <Ancla id="pausas">
+              <LasPausas />
+            </Ancla>
+          )}
+          {llevaElLocal && (
+            <Ancla id="aparato-para-fichar">
+              <ElAparatoParaFichar />
             </Ancla>
           )}
           {llevaLosObjetivos(permisos, tieneLocal) && (

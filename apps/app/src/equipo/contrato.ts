@@ -42,6 +42,13 @@ export interface MiFichaje {
   /** Los minutos de margen antes de contar un retraso (0040). */
   readonly margenDeRetrasoMinutos: number;
   readonly puedoFichar: boolean;
+  /**
+   * La pausa de descanso (0068). Opcionales: la web se publica al fusionar y la API
+   * se despliega después, y en ese rato la respuesta todavía no los trae.
+   */
+  readonly pausasEnUso?: boolean;
+  readonly pausaCuentaComoTrabajo?: boolean;
+  readonly enPausaDesde?: string | null;
 }
 
 export interface QuienEstaTrabajando {
@@ -115,6 +122,22 @@ export interface FichajeDeLaFicha {
   readonly sinUbicacion: string | null;
   readonly corregidoPor: string | null;
   readonly motivoDeLaCorreccion: string | null;
+  /** H1 (0068). Opcionales por lo mismo que las pausas de `MiFichaje`. */
+  readonly aparato?: string | null;
+  readonly pausas?: readonly { readonly empezoEn: string; readonly acaboEn: string | null }[];
+  readonly correcciones?: readonly CorreccionDeUnFichaje[];
+}
+
+/** Una corrección, con lo de antes y lo de después: el original no se borra (0062). */
+export interface CorreccionDeUnFichaje {
+  readonly numero: number;
+  readonly entroAntes: string;
+  readonly salioAntes: string | null;
+  readonly entroDespues: string;
+  readonly salioDespues: string | null;
+  readonly motivo: string;
+  readonly quien: string | null;
+  readonly cuando: string;
 }
 
 /** Una página del historial de fichajes de una persona: el «Ver todos» de su ficha. */
@@ -128,7 +151,11 @@ export interface UnaPersona {
   readonly personaId: string;
   readonly nombre: string;
   readonly apellidos: string | null;
-  readonly correo?: string;
+  /** Nulo: no tiene correo (0057). Sin la propiedad: quien mira no ve los datos. */
+  readonly correo?: string | null;
+  /** H1 (0057, 0068). Opcionales mientras la API no esté desplegada. */
+  readonly sinCorreo?: boolean;
+  readonly puedePonerCorreo?: boolean;
   readonly rolNombre: string;
   readonly rol: string;
   readonly estado: 'dentro' | 'sin_estrenar' | 'fuera';
@@ -215,7 +242,14 @@ export function comoSeLeeDonde(
   metros: number | null,
   enElLocal: boolean | null,
   sinUbicacion: string | null,
+  aparato?: string | null,
 ): string {
+  // En el aparato del local no se pide: está en el local (0068).
+  if (sinUbicacion === 'aparato_del_local') {
+    return aparato === null || aparato === undefined || aparato === 'el aparato del local'
+      ? 'En el aparato del local'
+      : `En «${aparato}», el aparato del local`;
+  }
   if (sinUbicacion !== null) return POR_QUE_SIN_UBICACION[sinUbicacion] ?? 'Sin ubicación';
   if (metros === null) return 'El local no tiene su posición puesta';
   if (metros < 25) return 'En el local';

@@ -36,7 +36,7 @@ export const SECCIONES: readonly Seccion[] = [
   {
     id: 'local',
     nombre: 'Tu local',
-    queHay: 'Marca, dónde está y Google, objetivos, tu carta y precios',
+    queHay: 'Marca, dónde está, fichar, objetivos, tu carta y precios',
   },
   { id: 'conexiones', nombre: 'Conexiones', queHay: 'Cómo entran tus ventas' },
   // La suscripción, a mano de quien la paga (Richi, 25-sep · 0048).
@@ -113,6 +113,19 @@ export const AJUSTES: readonly Ajuste[] = [
     seccion: 'local',
     nombre: 'Cuándo es llegar tarde',
     palabras: 'retraso tarde margen minutos fichaje',
+  },
+  // H1 (0068): la pausa de descanso y el aparato del local para fichar.
+  {
+    id: 'pausas',
+    seccion: 'local',
+    nombre: 'Las pausas de descanso',
+    palabras: 'pausa descanso bocadillo convenio cuenta trabajo fichar horas',
+  },
+  {
+    id: 'aparato-para-fichar',
+    seccion: 'local',
+    nombre: 'El aparato para fichar',
+    palabras: 'aparato tablet quiosco terminal fichar pin sin correo entrada ordenador',
   },
   {
     id: 'objetivos',

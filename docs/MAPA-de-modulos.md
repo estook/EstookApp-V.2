@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **«Antes de M8»**: las compras de M7 están entregadas, y quedan cinco entregas antes de M8 —**H · Horarios**, **I · La app instalable**, **C · El chat**, **A3 · Vendedores** y **A4 · Ventas del admin**—, con su plan en [`h-horarios.md`](h-horarios.md), [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+Estás en **«Antes de M8»**: las compras de M7 están entregadas, y quedan cinco entregas antes de M8 —**H · Horarios** (H1 hecha, falta H2), **I · La app instalable**, **C · El chat**, **A3 · Vendedores** y **A4 · Ventas del admin**—, con su plan en [`h-horarios.md`](h-horarios.md), [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -192,7 +192,8 @@ Lo que ya existe a medias y el módulo que lo acaba. Vivía en `ESTADO.md` hasta
 
 | Qué                                                       | Dónde se termina | Qué hay ya                                                     |
 | --------------------------------------------------------- | ---------------- | -------------------------------------------------------------- |
-| El PDF de los informes                                    | **H · Horarios** | Tu día, Tu semana y Tu mes, en pantalla y por correo (R2)      |
+| El horario en PDF, para la pared y para cada uno          | **H2**           | El motor de los PDF y sus plantillas (H1, 0068)                |
+| Unir dos personas que resultan ser la misma               | **M13**          | Poner el correo a quien no lo tenía, que no une (H1)           |
 | Business Profile: leer y contestar reseñas                | Con accesos      | La nota en Google con su evolución, en Negocio → Reseñas (R2)  |
 | Calendario, avisos con roles y turnos                     | **M14**          | La tabla, su seguridad por roles y «Lo que viene»              |
 | Recalcular platos con lo que corrigió la factura          | **M9**           | Lo cobrado, en cada línea del albarán con fecha                |
@@ -202,7 +203,7 @@ Lo que ya existe a medias y el módulo que lo acaba. Vivía en `ESTADO.md` hasta
 | Avisos de fichar por push, y que fuera de turno no suene  | **Mejoras · I**  | La campana (R1) y el horario de siempre, que el widget ya dice |
 | Recuento, desviación y calibración del aprovechamiento    | **M8**           | La merma con motivo; albaranes con incidencias; el recuento    |
 | Descontar lo vendido del inventario                       | **M20**          | El cierre guarda los platos con el nombre normalizado          |
-| Los terminales del local                                  | **M20A**         | Cómo se dan de alta, en el Anexo 3.4                           |
+| Los terminales del local                                  | **M20A**         | `estook.terminal`, hoy solo para fichar (H1); Anexo 3.4        |
 | El vendedor de cada cliente y el código con que llegó     | **A3**           | La ficha de cada cliente (A2)                                  |
 | El tablero de ventas                                      | **A4**           | La foto diaria del uso de cada cliente (A2)                    |
 | Leer los platos de la carta subida y proponer los cambios | **M10**          | La carta subida y enseñada por su QR (0049)                    |

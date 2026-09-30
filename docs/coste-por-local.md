@@ -58,16 +58,17 @@
 
 ### Lo fijo de cada mes
 
-| Qué                                       | Al mes  | Desde cuándo                     | De dónde sale                                              |
-| ----------------------------------------- | ------- | -------------------------------- | ---------------------------------------------------------- |
-| Supabase Pro                              | 22,50 € | Antes del primer cliente de pago | supabase.com/pricing · copia diaria de 7 días              |
-| Resend Pro                                | 18,00 € | Antes del primer cliente de pago | resend.com/pricing · el gratuito da 100 correos al día     |
-| Sentry Team                               | 23,40 € | Antes del primer cliente de pago | sentry.io/pricing · el gratuito es para una sola persona   |
-| Cloudflare Pages                          | 0,00 €  | Antes del primer cliente de pago | plan gratuito: 500 publicaciones al mes                    |
-| Dominio estook.com                        | 1,50 €  | Antes del primer cliente de pago | SUPUESTO: unos 18 € al año                                 |
-| GitHub con el repositorio privado         | 0,00 €  | Antes del primer cliente de pago | 2.000 minutos al mes incluidos; después, 0,006 $ el minuto |
-| Recuperación a un punto exacto (Supabase) | 90,00 € | Con Estook TPV                   | supabase.com/pricing · 7 días                              |
-| Cuenta de desarrollador de Apple          | 7,42 €  | Con Estook TPV                   | 99 $ al año; solo si se publica la cáscara del iPad        |
+| Qué                                       | Al mes  | Desde cuándo                     | De dónde sale                                                                    |
+| ----------------------------------------- | ------- | -------------------------------- | -------------------------------------------------------------------------------- |
+| Supabase Pro                              | 22,50 € | Antes del primer cliente de pago | supabase.com/pricing · copia diaria de 7 días                                    |
+| Resend Pro                                | 18,00 € | Antes del primer cliente de pago | resend.com/pricing · el gratuito da 100 correos al día                           |
+| Sentry Team                               | 23,40 € | Antes del primer cliente de pago | sentry.io/pricing · el gratuito es para una sola persona                         |
+| Cloudflare Pages                          | 0,00 €  | Antes del primer cliente de pago | plan gratuito: 500 publicaciones al mes                                          |
+| Cloudflare Browser Run (los PDF)          | 0,00 €  | Antes del primer cliente de pago | gratuito: 10 minutos al día, unos 400 PDF; pasado eso, Workers Paid a 5 $ (0068) |
+| Dominio estook.com                        | 1,50 €  | Antes del primer cliente de pago | SUPUESTO: unos 18 € al año                                                       |
+| GitHub con el repositorio privado         | 0,00 €  | Antes del primer cliente de pago | 2.000 minutos al mes incluidos; después, 0,006 $ el minuto                       |
+| Recuperación a un punto exacto (Supabase) | 90,00 € | Con Estook TPV                   | supabase.com/pricing · 7 días                                                    |
+| Cuenta de desarrollador de Apple          | 7,42 €  | Con Estook TPV                   | 99 $ al año; solo si se publica la cáscara del iPad                              |
 
 **Para poder vender: 65,40 € al mes. Con Estook TPV: 162,83 € al mes.** Hoy, con todo en planes gratuitos, cero.
 

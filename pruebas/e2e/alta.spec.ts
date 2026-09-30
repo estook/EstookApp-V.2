@@ -298,19 +298,24 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
   }) => {
     // Se deja el alta terminada pero con el equipo sin responder, que es el
     // estado en el que el Panel enseña la tarjeta.
+    //
+    // Cada paso se mira (30-sep): en la batería entera falló una vez con «Ya está»
+    // en vez del paso, y sin mirar las respuestas no se sabía si alguno no entró.
     const token = await tokenDe(request, PABLO);
-    await request.post(`${API}/v1/comandos/retomar_el_alta`, {
-      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado-a-${Date.now()}` },
-      data: { paso: 'equipo' },
-    });
-    await request.post(`${API}/v1/comandos/saltar_paso_del_alta`, {
-      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado-b-${Date.now()}` },
-      data: { paso: 'equipo' },
-    });
-    await request.post(`${API}/v1/comandos/terminar_el_alta`, {
-      headers: { authorization: `Bearer ${token}`, 'x-idempotencia': `recado-c-${Date.now()}` },
-      data: {},
-    });
+    for (const [comando, data] of [
+      ['retomar_el_alta', { paso: 'equipo' }],
+      ['saltar_paso_del_alta', { paso: 'equipo' }],
+      ['terminar_el_alta', {}],
+    ] as const) {
+      const respuesta = await request.post(`${API}/v1/comandos/${comando}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          'x-idempotencia': `recado-${comando}-${Date.now()}`,
+        },
+        data,
+      });
+      expect(respuesta.status(), `${comando}: ${await respuesta.text()}`).toBe(200);
+    }
 
     await entrar(page, PABLO);
 

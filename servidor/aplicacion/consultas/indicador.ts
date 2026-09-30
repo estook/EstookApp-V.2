@@ -259,7 +259,7 @@ export async function losDias(
       // de la persona, no del local. El turno abierto cuenta hasta ahora.
       filas = await sql<Fila[]>`
         select to_char(f.fecha_operativa, 'YYYY-MM-DD') as fecha,
-               floor(sum(extract(epoch from (coalesce(f.salio_en, ${contexto.ahora.toISOString()}::timestamptz) - f.entro_en)) / 60))::text as arriba,
+               floor(sum(estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60))::text as arriba,
                null::text as abajo
           from estook.fichaje f
          where f.persona_id = ${personaId}

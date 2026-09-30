@@ -41,3 +41,6 @@ docs/maestros/pdf/*.html
 pruebas/e2e/capturas/win32/
 pruebas/e2e/capturas/darwin/
 pruebas/e2e/capturas-nuevas/
+
+# Los documentos de muestra de `pnpm documentos:muestra` (0068): se miran, no se suben.
+.muestras/

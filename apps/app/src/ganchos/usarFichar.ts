@@ -174,6 +174,9 @@ export interface Fichar {
   readonly acabaDe: { readonly entro: boolean; readonly metros: number | null } | null;
   readonly entrar: () => void;
   readonly salir: () => void;
+  /** La pausa de descanso (0068): no pide la ubicación, cuelga del turno. */
+  readonly empezarPausa: () => void;
+  readonly volverDeLaPausa: () => void;
   readonly olvidarElAviso: () => void;
 }
 
@@ -196,6 +199,22 @@ export function usarFichar(): Fichar {
     // dejaría el contador parado mientras alguien lo mira.
     staleTime: 60_000,
   });
+
+  const pausa = useCallback(
+    async (que: 'empezar_pausa' | 'acabar_pausa') => {
+      setError(null);
+      setPaso('apuntando');
+      const respuesta = await cliente.ejecutar(que, {});
+      setPaso('quieto');
+      if (!respuesta.ok) {
+        setError(respuesta.error);
+        return;
+      }
+      await cache.invalidateQueries({ queryKey: ['mi_fichaje'] });
+      await cache.invalidateQueries({ queryKey: ['fichajes_de_hoy'] });
+    },
+    [cliente, cache],
+  );
 
   const fichar = useCallback(
     async (que: 'fichar_entrada' | 'fichar_salida') => {
@@ -244,6 +263,12 @@ export function usarFichar(): Fichar {
     },
     salir: () => {
       void fichar('fichar_salida');
+    },
+    empezarPausa: () => {
+      void pausa('empezar_pausa');
+    },
+    volverDeLaPausa: () => {
+      void pausa('acabar_pausa');
     },
     olvidarElAviso: () => {
       setAcabaDe(null);

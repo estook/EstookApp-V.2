@@ -48,6 +48,7 @@ import { lugaresDeMentira } from '../../servidor/infraestructura/google.ts';
 import { correoEnMemoria } from '../../servidor/infraestructura/correo.ts';
 import { identidadDeMentira } from '../../servidor/infraestructura/identidad-de-google.ts';
 import { pagosDeMentira } from '../../servidor/infraestructura/pagos-de-mentira.ts';
+import { pdfDeMentira } from '../../servidor/infraestructura/pdf.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { sembrarAcceso } from '../semillas/acceso.ts';
@@ -181,6 +182,10 @@ const google = lugaresDeMentira();
 const correo = correoEnMemoria();
 const identidadDeGoogle = identidadDeMentira();
 
+// 0068 · los PDF, con un motor de mentira: no llama a Cloudflare, y guarda las páginas
+// que le mandan. Para ver cómo queda un documento de verdad, `pnpm documentos:muestra`.
+const pdf = pdfDeMentira();
+
 /**
  * El Stripe de mentira (0048): guarda en memoria y avisa firmado, por el mismo
  * camino que Stripe. Su página de pago es `/api/pruebas/stripe/pagar`, más abajo.
@@ -244,6 +249,7 @@ async function unaTransaccion(quien, hacer) {
       correo,
       identidadDeGoogle,
       pagos,
+      pdf,
       correlacionId: quien.correlacionId,
       desde: quien.desde ?? null,
       ahora: new Date(Date.now()),

@@ -82,6 +82,8 @@ Los que no pueden pisar el navegador jamas.
 | `DATABASE_URL`               | La cadena del **agrupador** (M4); la API entra por el modo transaccion sola |
 | `ORIGENES_PERMITIDOS`        | Origenes de mas, si alguno hace falta (M4)                                  |
 | `ENTORNO`                    | `produccion` (M4)                                                           |
+| `CLOUDFLARE_ACCOUNT_ID`      | La cuenta de Cloudflare, para los PDF (0068). No es secreta, pero va aquí   |
+| `CLOUDFLARE_PDF_TOKEN`       | La clave de Cloudflare **solo con «Browser Rendering - Edit»** (0068)       |
 
 ### Las que faltan, cuál usa ya el código y dónde van
 
@@ -97,6 +99,9 @@ ponerla.
 | **Entrar con Google**       | `GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET`      | Secretos de Supabase                     | **Sí** · entrar y crear cuenta (0042)        |
 | **Stripe** (el pago)        | `STRIPE_SECRET_KEY` (de prueba, empieza por `sk_test_`)      | Secretos de Supabase · **puesta 25-sep** | **Sí** · E2, desde que se despliegue (0048)  |
 | **IA** (Fogón)              | `AI_API_KEY`, `AI_MODELO_RAPIDO`, `AI_MODELO_ANALISIS`       | Secretos de Supabase                     | No · M22, con modelo y tope elegidos (0023)  |
+| **Los PDF** (Cloudflare)    | `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_PDF_TOKEN`             | Secretos de Supabase                     | **Sí** · los informes y el registro (0068)   |
+
+**Los PDF (0068)** los hace Cloudflare Browser Run. La clave de los PDF es **una aparte**, con un solo permiso («Browser Rendering - Edit»): si se escapa, solo sirve para imprimir páginas, no para tocar la cuenta. No es la misma que `CLOUDFLARE_API_TOKEN`, la de publicar la web en la mudanza, que va en GitHub. Sin las dos de aquí, pedir un PDF dice que todavía no están encendidos y todo lo demás funciona.
 
 **Entrar con Google (0042)** usa el cliente de OAuth «Estook»: el identificador es público (lo enseña la pantalla de entrar) y **el secreto solo lo tiene la API**, que canjea el código. Sin los dos, el botón de Google no sale. Las direcciones de vuelta son `https://estook.com/app/` y `https://www.estook.com/app/`, y están escritas también en el código (`VUELTAS_DE_GOOGLE`). Sin `RESEND_API_KEY`, crear cuenta con correo dice que se abre pronto. Los pasos, en [`docs/pasos-antes-de-m8.md`](../docs/pasos-antes-de-m8.md), «E1».
 

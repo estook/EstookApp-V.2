@@ -58,7 +58,7 @@ const FICHAS: Readonly<Record<LoQueFalta, Ficha>> = {
       'Silencio fuera de turno: a nadie le suena el teléfono en su día libre.',
       'Y lo que se escribe se puede convertir en incidencia, agotado o tarea, siempre pulsando tú.',
     ],
-    cuando: 'Llega con el módulo 23.',
+    cuando: 'Llega con la entrega C, antes de M8: justo después de la app instalable.',
     mientrasTanto: 'Las notas y las incidencias del día se apuntan en el Cuaderno.',
   },
 };

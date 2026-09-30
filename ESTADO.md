@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 30 de septiembre de 2026 · **Antes de M8. Todo fusionado hasta la #81. En la #82: Pro a 99 €, el chat adelantado y el plan de H · Horarios, que espera seis respuestas de Richi**
+Última actualización: 30 de septiembre de 2026 · **Antes de M8. Todo fusionado hasta la #82 y en producción. H1 · Personas y fichajes, hecha y en su pull request**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento**, y **no pasa de 150 líneas**
@@ -14,7 +14,7 @@
 > | Quién ve qué                      | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                      |
 > | Qué desencadena cada cambio       | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                           |
 > | Estook TPV y la facturación       | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**           |
-> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (67)                                          |
+> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (68)                                          |
 > | Lo legal, y lo ya investigado     | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md) |
 > | Lo que cuesta cada local          | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                         |
 > | Lo que hizo cada entrega          | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                         |
@@ -25,17 +25,17 @@
 
 ## 1 · Dónde estamos · producción leída el 30-sep, en solo lectura
 
-|                  |                                                                                                                                                                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1 y R2, con sus repasos                                                                                                                |
-| **Por fusionar** | **#82** · Pro a 99 € y Cadena a 89 €, el chat adelantado y el plan de H ([0067](docs/decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)). Sin migración; **con despliegue de la API**, por los precios             |
-| **Ahora**        | Que Richi fusione la #82, despliegue la API y conteste **las seis preguntas de H** ([`docs/h-horarios.md`](docs/h-horarios.md)). Después se programa **H · Horarios**                                                          |
-| **`main`**       | Todo fusionado hasta la **#81** (30-sep): la auditoría profunda y lo legal investigado. **En producción Pro sigue a 79 €** hasta fusionar y desplegar la #82                                                                   |
-| **Base**         | Supabase, **51 de 51** migraciones. 73 tablas, todas con seguridad por filas                                                                                                                                                   |
-| **API**          | Desplegada con R2: **58 consultas y 117 comandos**, y el reloj latiendo cada hora                                                                                                                                              |
-| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                              |
-| **Pruebas**      | **1.450** unitarias y de base, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                                                  |
-| **Copias**       | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día |
+|                  |                                                                                                                                                                                                                                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1 y R2, con sus repasos                                                                                                                                                                            |
+| **Por fusionar** | **H1 · Personas y fichajes** ([0068](docs/decisiones/0068-las-respuestas-de-h.md)): la persona sin correo, la pausa, el aparato del local para fichar, las correcciones con su rastro, «Mis fichajes», el registro para la Inspección y los PDF. **Migración 0052 y despliegue de la API** |
+| **Ahora**        | Que Richi fusione H1, migre, despliegue y **abra su cuenta gratuita de Cloudflare** para los PDF. Después, **H2 · El horario**                                                                                                                                                             |
+| **`main`**       | Todo fusionado hasta la **#82** (30-sep): Pro a 99 € y Cadena a 89 €, ya en producción                                                                                                                                                                                                     |
+| **Base**         | Supabase, **51 de 51** migraciones (con H1, 52). 73 tablas, todas con seguridad por filas (con H1, 76)                                                                                                                                                                                     |
+| **API**          | Desplegada con la #82: **58 consultas y 117 comandos**, comprobada el 30-sep. Con H1 serán **62 y 125**                                                                                                                                                                                    |
+| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                                                          |
+| **Pruebas**      | **1.485** unitarias y de base con H1, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                                                                                                       |
+| **Copias**       | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                                                             |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md), y el chat adelantado en la [0067](docs/decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md))
 
@@ -46,13 +46,16 @@ ESTOOK TPV    M16a · La jornada → M20 → M19a · Estook Link → M20A → M2
 DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b → Fases 5, 6 y 7
 ```
 
-**H lleva dentro**: la entrega 3 de M7, el cuadrante con el coste en vivo, las horas extra, el PDF de los informes, **la persona sin correo** ([0057](docs/decisiones/0057-quien-es-quien-en-el-tpv.md)) y **los fichajes listos para el registro horario digital** ([0062](docs/decisiones/0062-lo-legal.md)). **Su plan, con lo decidido, las preguntas y el motor de los PDF probado, está en [`docs/h-horarios.md`](docs/h-horarios.md).** De H no hay todavía ni una línea de código.
+**H va en dos entregas** ([0068](docs/decisiones/0068-las-respuestas-de-h.md), plan en [`docs/h-horarios.md`](docs/h-horarios.md)). **H1**, hecha: la persona sin correo ([0057](docs/decisiones/0057-quien-es-quien-en-el-tpv.md)), los fichajes listos para el registro horario digital ([0062](docs/decisiones/0062-lo-legal.md)) y los PDF. **H2**, por hacer: el cuadrante con el coste en vivo, libres y vacaciones, las horas extra, el horario que ve todo el equipo y la entrega 3 de M7.
+
+**Los PDF** los imprime **Cloudflare Browser Run**: gratis hasta unos 400 al día. **Sin la cuenta de Richi, el botón «Descargar en PDF» dice que aún no está encendido**; la prueba de verdad contra Cloudflare se hace en cuanto estén sus dos secretos. La hoja de cálculo del registro no depende de nada.
 
 ### Lo que todavía NO está en la app
 
 Para que nadie dé por hecho lo que solo está escrito:
 
 - **Estook TPV, Estook Link, la facturación, Fogón, los escandallos, la carta por platos, el APPCC y el chat**: escritos, sin construir. Cada uno dice su módulo en el Plan.
+- **El horario nuevo** (el cuadrante, libres, vacaciones y horas extra) llega con H2. **Unir dos personas** que resulten ser la misma, con M13.
 - **Nada funciona sin conexión.** No hay service worker: llega con la entrega I.
 - **Nadie ha pagado de verdad.** Un pago en modo prueba (Pizzeriacazzo, 26-sep).
 - **Nada se borra solo**: los plazos de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md) los aplicará M27. **Ni hay exportación completa del negocio.**
@@ -69,9 +72,9 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Ahora, en este orden** (paso a paso en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **Fusionar la #82 y desplegar la API.** Sin migración.
-2. **Contestar las seis preguntas de H**, con sí o no ([`docs/h-horarios.md`](docs/h-horarios.md)).
-3. **Si dice sí al motor de los PDF:** crear una cuenta gratuita de Cloudflare y poner dos secretos. Los pasos se le dan entonces.
+1. **Fusionar H1, migrar (0052) y desplegar la API.**
+2. **Crear la cuenta gratuita de Cloudflare y poner sus dos secretos** en Supabase, y probar «Descargar en PDF».
+3. **Mirar en el móvil**: la pausa, «Mis fichajes», una persona sin correo, el registro y el aparato para fichar en una tableta.
 4. **Un profesional, más adelante**: no hace falta hasta el primer cliente que pague. Qué tiene que mirar y cuándo, al final de [`lo-investigado.md`](docs/legal/lo-investigado.md).
 
 **Con fecha o con condición:**
@@ -86,11 +89,10 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Sin decidir, y es de Richi:**
 
-1. **Las seis preguntas de H**, cada una con su recomendación: partir H en dos entregas, el aparato del local para fichar, el botón de pausa, marcar libre y vacaciones, que el equipo vea el horario de su zona, y el motor de los PDF con Cloudflare.
-2. **Fogón**: qué modelo es «el grande» y cuántos créditos lleva Pro. Se decide en M22, con lo medido ([el coste](docs/coste-por-local.md)).
-3. **Para Estook TPV** (Anexo, «Lo que sigue pendiente de Richi»): el soporte en horario de servicio, si el camarero cobra por defecto, qué datáfono conectado va primero, y el tope de tickets dentro del precio.
+1. **Fogón**: qué modelo es «el grande» y cuántos créditos lleva Pro. Se decide en M22, con lo medido ([el coste](docs/coste-por-local.md)).
+2. **Para Estook TPV** (Anexo, «Lo que sigue pendiente de Richi»): el soporte en horario de servicio, si el camarero cobra por defecto, qué datáfono conectado va primero, y el tope de tickets dentro del precio.
 
-**Decidido el 30-sep** (0067): **el chat se adelanta** a después de la app instalable, y **Pro a 99 € y Cadena a 89 € desde ya**. Hasta que exista Estook TPV, Pro queda por encima de su comparable (unos 82 €).
+**Decidido el 30-sep** (0067 y 0068): **el chat se adelanta** a después de la app instalable; **Pro a 99 € y Cadena a 89 €**, ya en producción; y **las seis de H**: dos entregas, el aparato del local, la pausa (también en horario partido), libres y vacaciones, el equipo ve el horario publicado de todos (sin euros) y los PDF con Cloudflare. **Mandar el horario al chat** llega con C. **Todo en Cloudflare, no**: en la mudanza se va la web; la base, la API y los ficheros siguen en Supabase.
 
 **Cuando quiera:** las alertas de Dependabot, quitar «Automatically expose new tables» en Supabase y regenerar las claves de Google que pasaron por un chat.
 
@@ -143,8 +145,8 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Fusionar la #82, desplegar la API y las seis respuestas** (apartado 2). **Después se programa H**, y lo primero es **la prueba de verdad del motor de los PDF contra Cloudflare**: la hecha hasta ahora es con el Chromium de un ordenador, que es el mismo motor pero no el mismo servicio.
+**Fusionar H1, migrar, desplegar y la cuenta de Cloudflare** (apartado 2). Con los secretos puestos, **la prueba de verdad de los PDF contra Cloudflare**: la hecha hasta ahora es con el Chromium de un ordenador, que es el mismo motor pero no el mismo servicio. **Después, H2 · El horario.**
 
-**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
+**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); que abrir el aparato para fichar cierre la sesión de quien lo abre; que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla); partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
 
 **Lo que ESTADO llevaba hasta hoy** —las decisiones una a una, lo de cada entrega de E2 a R2 y la lista larga de lo que no se toca— está entero en [`docs/historia/ESTADO-hasta-el-30-sep-2026.md`](docs/historia/ESTADO-hasta-el-30-sep-2026.md), y lo que queda preparado para cada módulo, en [el mapa](docs/MAPA-de-modulos.md).

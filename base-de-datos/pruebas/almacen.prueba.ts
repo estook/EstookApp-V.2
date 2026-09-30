@@ -649,6 +649,12 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // cliente lo que el admin le hace; `renombrar_desde_el_admin` y
     // `poner_de_la_casa` son los dos únicos cambios que el admin hace dentro de un
     // cliente, y el segundo solo un admin total. Son cuarenta y cuatro.
+    //
+    // **Y la 0052 (H1) añade dos, a propósito: el aparato del local para fichar.**
+    // Quien teclea su PIN allí todavía no es nadie, como al entrar (0018):
+    // `terminal_por_llave` dice de qué local es una llave viva, sin un dato de
+    // nadie, y `anotar_intento_en_terminal` cuenta los PIN fallados para parar el
+    // aparato. Son cuarenta y seis.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -665,6 +671,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'anotar_intento_de_contrasena',
       'anotar_intento_de_pin',
       'anotar_intento_de_registro',
+      'anotar_intento_en_terminal',
       'cambiar_la_suscripcion',
       'cerrar_demostracion',
       'cerrar_sesiones_de',
@@ -698,6 +705,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'sembrar_categorias',
       'sesion_activa',
       'suscripcion_al_crear_organizacion',
+      'terminal_por_llave',
       'tiene_como_volver_a_entrar',
       'un_cliente',
       'unir_identidad',

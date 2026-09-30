@@ -36,7 +36,12 @@ import { exigirQueNoDeMasDeLoQueTiene } from '../jerarquia.ts';
  */
 export const entradaInvitar = z
   .object({
-    correo: z.string().trim().toLowerCase().email().max(320),
+    /**
+     * **Opcional desde la 0052** (decisión 0057): un extra o un friegaplatos se da de
+     * alta con su nombre y su PIN. Sin correo solo entra en el aparato del local, así
+     * que su rol tiene que ser de un local.
+     */
+    correo: z.string().trim().toLowerCase().email().max(320).optional(),
     nombre: z.string().trim().min(1).max(120),
     apellidos: z.string().trim().max(160).optional(),
     rol: z.enum(ROLES),
@@ -88,6 +93,18 @@ export const invitarPersona = comando<EntradaInvitar, SalidaInvitar>({
       });
     }
 
+    // ── Sin correo, solo en un local (0057) ──────────────────────────────────
+    //
+    // Quien no tiene correo entra únicamente en el aparato del local, con el PIN de
+    // ese local. Un rol de área o de organización no tendría dónde entrar.
+    if (entrada.correo === undefined && alcance !== 'local') {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['correo'],
+        porque:
+          'Sin correo solo se entra en el aparato del local, con el PIN de ese local: su puesto tiene que ser de un local.',
+      });
+    }
+
     // ── Un rol que no esté por encima del tuyo ───────────────────────────────
     //
     // Un gerente no nombra a un área manager ni a dirección (M7, repaso ·
@@ -96,16 +113,22 @@ export const invitarPersona = comando<EntradaInvitar, SalidaInvitar>({
     await exigirQueNoDeMasDeLoQueTiene(sql, entrada.organizacion_id, sesion.personaId, entrada.rol);
 
     // ── ¿Existe ya ese correo? ───────────────────────────────────────────────
-    const encontrada = await sql<{ persona_id: string; activa: boolean }[]>`
-      select * from estook.persona_por_correo(${entrada.correo})
-    `;
+    //
+    // Sin correo no hay nada que buscar: es siempre una persona nueva. Dos personas
+    // sin correo no son la misma aunque se llamen igual.
+    const encontrada =
+      entrada.correo === undefined
+        ? []
+        : await sql<{ persona_id: string; activa: boolean }[]>`
+            select * from estook.persona_por_correo(${entrada.correo})
+          `;
     const yaExistia = encontrada.length > 0;
     let personaId = encontrada[0]?.persona_id;
 
     if (personaId === undefined) {
       const creadas = await sql<{ id: string }[]>`
         select estook.dar_de_alta_persona(
-          ${entrada.correo}, ${entrada.nombre}, ${entrada.apellidos ?? null}
+          ${entrada.correo ?? null}, ${entrada.nombre}, ${entrada.apellidos ?? null}
         ) as id
       `;
       personaId = creadas[0]?.id;
@@ -149,7 +172,7 @@ export const invitarPersona = comando<EntradaInvitar, SalidaInvitar>({
       select estook.anotar(
         ${entrada.organizacion_id}::uuid, 'invitar', 'persona', ${personaId},
         ${entrada.local_id ?? null}::uuid, null,
-        ${JSON.stringify({ rol: entrada.rol, alcance, ya_existia: yaExistia })}::text::jsonb,
+        ${JSON.stringify({ rol: entrada.rol, alcance, ya_existia: yaExistia, sin_correo: entrada.correo === undefined })}::text::jsonb,
         null
       )
     `;
@@ -165,5 +188,71 @@ export const invitarPersona = comando<EntradaInvitar, SalidaInvitar>({
     }
 
     return { personaId, yaExistia, pin, localId: entrada.local_id ?? null };
+  },
+});
+
+// ── Ponerle el correo a quien no lo tenía (0057) ─────────────────────────────
+
+export const entradaPonerCorreo = z
+  .object({
+    persona_id: z.string().uuid(),
+    correo: z.string().trim().toLowerCase().email().max(320),
+  })
+  .strict();
+
+export type EntradaPonerCorreo = z.infer<typeof entradaPonerCorreo>;
+
+/**
+ * «Si un día da su correo, se le añade y sigue siendo la misma persona, con su
+ * historia» (0057).
+ *
+ * **Si ese correo ya es de otra persona de Estook, no se unen solas**: se dice y no
+ * se toca nada. Unir dos personas con todos sus fichajes y su historia es trabajo
+ * de M13, con confirmación; aquí solo se le pone el correo a quien no tenía.
+ *
+ * Se mira con `persona_por_correo`, que dice si existe y nada más: quien lo pone no
+ * tiene por qué saber dónde trabaja esa otra persona.
+ */
+export const ponerCorreo = comando<EntradaPonerCorreo, { personaId: string }>({
+  nombre: 'poner_correo',
+  entrada: entradaPonerCorreo,
+  exige: 'accion.invitar_personas',
+
+  async ejecutar(contexto, entrada) {
+    const { sql } = contexto;
+    if (contexto.sesion === null) throw new FalloDeAplicacion('sin_sesion');
+
+    const otra = await sql<{ persona_id: string }[]>`
+      select persona_id from estook.persona_por_correo(${entrada.correo})
+    `;
+    if (otra.length > 0 && otra[0]?.persona_id !== entrada.persona_id) {
+      throw new FalloDeAplicacion('correo_de_otra_persona');
+    }
+
+    // Solo a quien no tenía: cambiar el correo de alguien es cambiar cómo entra, y
+    // eso lo hace cada uno desde su cuenta. La política `persona_la_edita_quien_da_acceso`
+    // (0019) decide además si esa persona es de un local donde puedes dar acceso.
+    const puestas = await sql<{ id: string }[]>`
+      update estook.persona set correo = ${entrada.correo}
+       where id = ${entrada.persona_id} and correo is null
+      returning id::text as id
+    `;
+    if (puestas.length === 0) {
+      throw new FalloDeAplicacion('no_existe', {
+        porque: 'Esa persona ya tiene correo, o no es de un local donde puedas dar acceso.',
+      });
+    }
+
+    const organizacionId = contexto.sesion.organizacionId;
+    if (organizacionId !== null) {
+      await sql`
+        select estook.anotar(
+          ${organizacionId}::uuid, 'cambiar', 'persona', ${entrada.persona_id},
+          ${contexto.sesion.localId}::uuid, ${JSON.stringify({ correo: null })}::text::jsonb,
+          ${JSON.stringify({ correo: 'puesto' })}::text::jsonb, 'Se le pone el correo que no tenía'
+        )
+      `;
+    }
+    return { personaId: entrada.persona_id };
   },
 });

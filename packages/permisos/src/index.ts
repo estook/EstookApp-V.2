@@ -282,6 +282,9 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   'informe.semana': ['app.negocio'],
   'informe.mes': ['app.negocio'],
   'google.nota': ['app.negocio'],
+  // ── H1 (0068) ──
+  // Es del propio trabajador: le llega a él, sea quien sea, y a nadie más.
+  'fichaje.corregido': [],
 };
 
 export function puedeRecibirElAviso(

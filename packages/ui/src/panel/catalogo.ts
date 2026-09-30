@@ -305,7 +305,7 @@ export const WIDGETS: readonly Widget[] = [
     queEnsena: 'Con quién trabajo hoy y qué me toca hacer',
     permiso: null,
     tamanos: ['chico', 'ancho'],
-    modulo: 'M14',
+    modulo: 'H',
   },
   {
     id: 'platos-bajo-objetivo',

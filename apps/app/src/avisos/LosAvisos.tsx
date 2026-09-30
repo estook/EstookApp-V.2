@@ -9,6 +9,7 @@ import {
   IconoDinero,
   IconoDocumento,
   IconoReparto,
+  IconoReloj,
   IconoTablon,
   type Icono,
 } from '@estook/iconos';
@@ -45,6 +46,8 @@ const ICONO_DEL_AVISO: Readonly<Record<TipoDeAviso, Icono>> = {
   'informe.semana': IconoDocumento,
   'informe.mes': IconoDocumento,
   'google.nota': IconoCarta,
+  // H1 (0068)
+  'fichaje.corregido': IconoReloj,
 };
 
 const TRAMOS: readonly TramoDeAvisos[] = ['Hoy', 'Ayer', 'Esta semana', 'Antes'];

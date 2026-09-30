@@ -16,6 +16,7 @@ import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Panel } from './panel/Panel.tsx';
 import { PantallaDeApp } from './pantallas/PantallaDeApp.tsx';
 import { VistaDeCadena } from './pantallas/VistaDeCadena.tsx';
+import { MisFichajes } from './equipo/MisFichajes.tsx';
 import { ElegirPlan } from './sesion/ElegirPlan.tsx';
 import { usarLaVueltaDelPago } from './ganchos/usarLaVueltaDelPago.ts';
 import { laDireccionDeAhora } from './pantallas/direccionesViejas.ts';
@@ -23,6 +24,8 @@ import { SinEntrar } from './sesion/SinEntrar.tsx';
 import { SinServidor } from './sesion/SinServidor.tsx';
 import { CambioDeCorreo } from './sesion/CambioDeCorreo.tsx';
 import { elEnlaceDelCorreo } from './sesion/enlaceDelCorreo.ts';
+import { esLaPantallaDelAparato } from './aparato/llaveDelAparato.ts';
+import { PantallaDelAparato } from './aparato/PantallaDelAparato.tsx';
 import {
   CuentaParada,
   ElegirLocal,
@@ -112,7 +115,11 @@ export function Aplicacion() {
   // Los enlaces del cambio de correo (A2) van antes que todo: se abren desde el
   // correo, haya quien haya dentro, y no preguntan quién eres.
   const [enlaceDelCorreo] = useState(() => elEnlaceDelCorreo(window.location.hash));
+  // El aparato del local para fichar (0068), también antes que todo: **no es
+  // nadie**, y no tiene que pasar por la puerta de quien entra.
+  const [esElAparato] = useState(() => esLaPantallaDelAparato(window.location.hash));
   if (enlaceDelCorreo !== null) return <CambioDeCorreo enlace={enlaceDelCorreo} />;
+  if (esElAparato) return <PantallaDelAparato />;
 
   return (
     <QueryClientProvider client={cache}>
@@ -242,6 +249,8 @@ function Puerta() {
           <Route path="cadena" element={<VistaDeCadena />} />
           <Route path="ajustes" element={<Ajustes />} />
           <Route path="ajustes/:seccion" element={<Ajustes />} />
+          {/* Lo suyo, para cualquiera: tenga o no la app Equipo (0068). */}
+          <Route path="mis-fichajes" element={<MisFichajes />} />
           {/*
             App -> destino -> vista.
 

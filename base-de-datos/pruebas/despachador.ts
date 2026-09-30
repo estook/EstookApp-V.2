@@ -12,6 +12,7 @@ import type { CorreoSaliente } from '../../servidor/infraestructura/correo.ts';
 import type { IdentidadDeGoogle } from '../../servidor/infraestructura/identidad-de-google.ts';
 import type { AlmacenDeFicheros } from '../../servidor/infraestructura/almacen.ts';
 import type { Pagos } from '../../servidor/infraestructura/stripe.ts';
+import type { MotorDePdf } from '../../servidor/infraestructura/pdf.ts';
 
 /**
  * El despachador de verdad, contra la base efímera de las pruebas (M7).
@@ -82,6 +83,8 @@ export function montarLaApi(
     readonly almacen?: AlmacenDeFicheros | null;
     /** El pago (0048): sin decir nada, no hay (como en la API sin clave de Stripe). */
     readonly pagos?: Pagos | null;
+    /** El motor de los PDF (0068): sin decir nada, no hay (como en la API sin Cloudflare). */
+    readonly pdf?: MotorDePdf | null;
     /** La hora que ve la API, para probar lo que depende de los días que pasan. */
     readonly ahora?: () => Date;
   } = {},
@@ -149,6 +152,7 @@ export function montarLaApi(
             correo: opciones.correo ?? null,
             identidadDeGoogle: opciones.identidadDeGoogle ?? null,
             pagos: opciones.pagos ?? null,
+            pdf: opciones.pdf ?? null,
             correlacionId: quien.correlacionId,
             desde: quien.desde ?? null,
             ahora: opciones.ahora?.() ?? new Date(Date.now()),

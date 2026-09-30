@@ -334,6 +334,56 @@ export const ponerDondeEstaElLocal = comando<
   },
 });
 
+// ── Las pausas de descanso (H1 · 0068) ───────────────────────────────────────
+
+export const entradaGuardarLasPausas = z
+  .object({
+    en_uso: z.boolean(),
+    cuenta_como_trabajo: z.boolean(),
+  })
+  .strict();
+
+export type EntradaGuardarLasPausas = z.infer<typeof entradaGuardarLasPausas>;
+
+/**
+ * Si en el local se ficha la pausa, y si cuenta como trabajo.
+ *
+ * **Si cuenta lo dice el convenio de cada local**, no Estook: de fábrica no cuenta,
+ * que es lo que dice la ley cuando el convenio no dice otra cosa (Estatuto de los
+ * Trabajadores, art. 34.4). Cambiarlo cambia también lo de antes, como el margen de
+ * retraso: las horas no se guardan hechas, se cuentan al mirar
+ * (`estook.segundos_trabajados`).
+ */
+export const guardarLasPausas = comando<
+  EntradaGuardarLasPausas,
+  { enUso: boolean; cuentaComoTrabajo: boolean }
+>({
+  nombre: 'guardar_las_pausas',
+  entrada: entradaGuardarLasPausas,
+  exige: 'app.ajustes',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeLaSesion(contexto);
+    const filas = await contexto.sql<{ en_uso: boolean; cuenta: boolean }[]>`
+      update estook.local
+         set pausas_en_uso = ${entrada.en_uso},
+             pausa_cuenta_como_trabajo = ${entrada.cuenta_como_trabajo}
+       where id = ${localId}
+      returning pausas_en_uso as en_uso, pausa_cuenta_como_trabajo as cuenta
+    `;
+    const fila = filas[0];
+    if (!fila) throw new FalloDeAplicacion('sin_permiso');
+
+    await contexto.sql`
+      select estook.anotar(
+        ${laOrganizacionDeLaSesion(contexto)}::uuid, 'cambiar', 'local', ${localId}, ${localId}::uuid,
+        null, ${JSON.stringify({ pausas_en_uso: fila.en_uso, pausa_cuenta_como_trabajo: fila.cuenta })}::text::jsonb, null
+      )
+    `;
+    return { enUso: fila.en_uso, cuentaComoTrabajo: fila.cuenta };
+  },
+});
+
 // ── Cuándo es llegar tarde ───────────────────────────────────────────────────
 
 export const entradaGuardarMargenDeRetraso = z

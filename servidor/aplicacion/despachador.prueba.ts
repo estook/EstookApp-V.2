@@ -77,6 +77,7 @@ function bancoDePruebas(sesion: Contexto['sesion'] = SESION_NORMAL) {
         correo: null,
         identidadDeGoogle: null,
         pagos: null,
+        pdf: null,
         correlacionId: quien.correlacionId,
         desde: null,
         ahora: new Date(Date.UTC(2026, 8, 1)),
@@ -309,6 +310,12 @@ describe('las puertas se cierran solas', () => {
         // con caducidad, y la base solo guarda su huella.
         'confirmar_el_correo_nuevo',
         'parar_el_cambio_de_correo',
+        // H1 (0068) · el aparato del local para fichar: no es nadie. Valen por su
+        // llave, de la que la base solo guarda la huella, y el PIN de quien teclea.
+        // Solo dicen de qué local es y fichan: no abren nada más.
+        'el_aparato_para_fichar',
+        'quien_ficha_aqui',
+        'fichar_aqui',
       ].sort(),
     );
   });
@@ -564,6 +571,8 @@ describe('los secretos no se guardan para repetirlos', () => {
         // 0042 · el token de quien acaba de crear su cuenta o entra con Google.
         'confirmar_registro',
         'entrar_con_google',
+        // H1 (0068) · la llave del aparato del local para fichar, una sola vez.
+        'poner_aparato_para_fichar',
       ].sort(),
     );
   });
@@ -578,7 +587,12 @@ describe('los secretos no se guardan para repetirlos', () => {
       .sort();
 
     // 23-sep-2026 · el «sigo aquí» de la app abierta: uno por minuto y aparato.
-    expect(sinRecordar).toEqual(['sigo_aqui']);
+    //
+    // H1 (0068) · lo que se teclea en el aparato del local. **No es que dé igual
+    // cuántas veces llegue**: es que lo protege el estado de la persona —entrar dos
+    // veces dice «ya estás dentro»—, y recordar la respuesta guardaría la entrada con
+    // su PIN acertado en una tabla. Y los PIN fallados se tienen que contar siempre.
+    expect(sinRecordar).toEqual(['fichar_aqui', 'quien_ficha_aqui', 'sigo_aqui']);
   });
 
   it('y de esos no se guarda ni se consulta la respuesta', async () => {
@@ -596,6 +610,7 @@ describe('los secretos no se guardan para repetirlos', () => {
           correo: null,
           identidadDeGoogle: null,
           pagos: null,
+          pdf: null,
           correlacionId: quien.correlacionId,
           desde: null,
           ahora: new Date(Date.UTC(2026, 8, 1)),

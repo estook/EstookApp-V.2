@@ -46,15 +46,16 @@ Estook trata datos personales **por cuenta del cliente y solo para darle el serv
 
 El cliente **autoriza de forma general** a Estook a apoyarse en estos proveedores, que quedan obligados a lo mismo que Estook. **Estook avisa de cualquier alta o cambio con [30] días**, y el cliente puede oponerse; si no hay acuerdo, puede darse de baja sin coste.
 
-| Proveedor     | Para qué                                                             | Dónde trata los datos       |
-| ------------- | -------------------------------------------------------------------- | --------------------------- |
-| **Supabase**  | La base de datos, los ficheros y el servidor                         | Unión Europea (Irlanda)     |
-| **Resend**    | Enviar los correos del servicio                                      | [COMPROBAR país y garantía] |
-| **Stripe**    | El pago de la suscripción a Estook                                   | [COMPROBAR país y garantía] |
-| **Sentry**    | El registro de errores de la aplicación                              | [COMPROBAR país y garantía] |
-| **Google**    | Entrar con Google, y la ficha y las reseñas del local                | [COMPROBAR país y garantía] |
-| **GitHub**    | Publicar la web y la aplicación, mientras no se mude                 | [COMPROBAR país y garantía] |
-| **Verifacti** | Registrar los tickets y facturas en la AEAT, si cobra con Estook TPV | [COMPROBAR país y garantía] |
+| Proveedor      | Para qué                                                                                                | Dónde trata los datos       |
+| -------------- | ------------------------------------------------------------------------------------------------------- | --------------------------- |
+| **Supabase**   | La base de datos, los ficheros y el servidor                                                            | Unión Europea (Irlanda)     |
+| **Resend**     | Enviar los correos del servicio                                                                         | [COMPROBAR país y garantía] |
+| **Stripe**     | El pago de la suscripción a Estook                                                                      | [COMPROBAR país y garantía] |
+| **Sentry**     | El registro de errores de la aplicación                                                                 | [COMPROBAR país y garantía] |
+| **Google**     | Entrar con Google, y la ficha y las reseñas del local                                                   | [COMPROBAR país y garantía] |
+| **GitHub**     | Publicar la web y la aplicación, mientras no se mude                                                    | [COMPROBAR país y garantía] |
+| **Verifacti**  | Registrar los tickets y facturas en la AEAT, si cobra con Estook TPV                                    | [COMPROBAR país y garantía] |
+| **Cloudflare** | Convertir en PDF los documentos que se piden (informes, registro de jornada); **no guarda nada** (0068) | [COMPROBAR país y garantía] |
 
 Cuando Fogón exista, el proveedor del modelo de inteligencia artificial se añadirá aquí antes de encenderlo.
 

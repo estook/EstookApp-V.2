@@ -24,16 +24,16 @@
 
 Por cuenta de **cada cliente**, que es el responsable. Sus datos de contacto son los de su cuenta.
 
-| Categoría de tratamiento        | Qué se hace                                                                                | De quién                           |
-| ------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------- |
-| **Equipo y permisos**           | Alta de cada persona, su rol y su acceso con contraseña o PIN                              | El equipo del local                |
-| **Horarios y fichajes**         | El cuadrante, fichar con la hora del servidor y, si el local lo usa, la distancia al local | El equipo del local                |
-| **Lo que cobra cada uno**       | Coste por hora o al mes, visible solo con su permiso                                       | El equipo del local                |
-| **Compras y proveedores**       | Pedidos, albaranes y facturas, con sus personas de contacto                                | Los contactos de sus proveedores   |
-| **Ventas y cobro** (Estook TPV) | Quién tomó nota y quién cobró; y el nombre, NIF y domicilio de quien pide factura          | El equipo y los clientes del local |
-| **Reseñas**                     | Leer y analizar las reseñas públicas de la ficha de Google del local                       | Quien escribió la reseña           |
-| **Registro de auditoría**       | Quién hizo qué y cuándo                                                                    | El equipo del local                |
-| **Chat, notas e incidencias**   | Lo que el equipo se escribe                                                                | El equipo del local                |
+| Categoría de tratamiento        | Qué se hace                                                                                                                                                                      | De quién                           |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| **Equipo y permisos**           | Alta de cada persona, su rol y su acceso con contraseña o PIN                                                                                                                    | El equipo del local                |
+| **Horarios y fichajes**         | El cuadrante; fichar y las pausas, desde el móvil o el aparato del local, con la hora del servidor; las correcciones con su motivo; y, si el local lo usa, la distancia al local | El equipo del local                |
+| **Lo que cobra cada uno**       | Coste por hora o al mes, visible solo con su permiso                                                                                                                             | El equipo del local                |
+| **Compras y proveedores**       | Pedidos, albaranes y facturas, con sus personas de contacto                                                                                                                      | Los contactos de sus proveedores   |
+| **Ventas y cobro** (Estook TPV) | Quién tomó nota y quién cobró; y el nombre, NIF y domicilio de quien pide factura                                                                                                | El equipo y los clientes del local |
+| **Reseñas**                     | Leer y analizar las reseñas públicas de la ficha de Google del local                                                                                                             | Quien escribió la reseña           |
+| **Registro de auditoría**       | Quién hizo qué y cuándo                                                                                                                                                          | El equipo del local                |
+| **Chat, notas e incidencias**   | Lo que el equipo se escribe                                                                                                                                                      | El equipo del local                |
 
 **Transferencias fuera de la Unión Europea y subencargados:** los de la cláusula 4 del [contrato de encargado](contrato-de-encargado.md).
 

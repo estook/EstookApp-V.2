@@ -35,7 +35,7 @@ import {
   superarDobleFactor,
 } from './comandos/doble-factor.ts';
 import { entrar } from './comandos/entrar.ts';
-import { invitarPersona } from './comandos/invitar-persona.ts';
+import { invitarPersona, ponerCorreo } from './comandos/invitar-persona.ts';
 import { cambiarMiClave, ponerClaveA, regenerarPin } from './comandos/mi-acceso.ts';
 import { reactivarPersona } from './comandos/reactivar-persona.ts';
 import { retirarAcceso } from './comandos/retirar-acceso.ts';
@@ -49,9 +49,25 @@ import {
   cerrarRecuento,
 } from './comandos/movimientos.ts';
 import { apuntarMerma } from './comandos/merma.ts';
-import { corregirFichaje, ficharEntrada, ficharSalida } from './comandos/fichar.ts';
+import {
+  acabarPausa,
+  corregirFichaje,
+  empezarPausa,
+  ficharEntrada,
+  ficharSalida,
+} from './comandos/fichar.ts';
+import {
+  aparatosParaFichar,
+  elAparatoParaFichar,
+  ficharAqui,
+  ponerAparatoParaFichar,
+  quienFichaAqui,
+  quitarAparatoParaFichar,
+} from './comandos/aparato-para-fichar.ts';
+import { registroDeJornada } from './consultas/registro-de-jornada.ts';
 import {
   ponerDondeEstaElLocal,
+  guardarLasPausas,
   guardarMargenDeRetraso,
   ponerHorarioHabitual,
   ponerRetribucion,
@@ -162,7 +178,7 @@ import {
   elegirMiLocalDeGoogle,
   mirarMiNotaDeGoogle,
 } from './comandos/google.ts';
-import { miInforme } from './consultas/informes.ts';
+import { miInforme, miInformeEnPdf } from './consultas/informes.ts';
 import { mermaDeHoy, misMermas, productosParaMerma } from './consultas/merma.ts';
 import {
   fichajesDeHoy,
@@ -276,6 +292,13 @@ export const catalogo = {
     // A2 · los clientes, en el admin (migración 0049): la lista y la ficha de cada uno.
     [adminLosClientes.nombre]: adminLosClientes,
     [adminUnCliente.nombre]: adminUnCliente,
+    // ── H1 (0068): los PDF, el registro para la Inspección y el aparato para fichar.
+    // `el_aparato_para_fichar` va **sin sesión**: la lee el aparato del local, que
+    // no es nadie, con su llave.
+    [miInformeEnPdf.nombre]: miInformeEnPdf,
+    [registroDeJornada.nombre]: registroDeJornada,
+    [aparatosParaFichar.nombre]: aparatosParaFichar,
+    [elAparatoParaFichar.nombre]: elAparatoParaFichar,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -469,5 +492,19 @@ export const catalogo = {
     // Y los dos enlaces del correo, sin sesión: confirmar el nuevo o pararlo.
     [confirmarElCorreoNuevo.nombre]: confirmarElCorreoNuevo,
     [pararElCambioDeCorreo.nombre]: pararElCambioDeCorreo,
+
+    // ── H1 · Personas y fichajes (0068) ────────────────────────────────────
+    //
+    // La pausa de descanso, el correo de quien no lo tenía, y el aparato del local:
+    // ponerlo y quitarlo desde Ajustes, y **usarlo sin sesión de nadie**, con su
+    // llave y el PIN de quien teclea. Solo ficha.
+    [empezarPausa.nombre]: empezarPausa,
+    [acabarPausa.nombre]: acabarPausa,
+    [guardarLasPausas.nombre]: guardarLasPausas,
+    [ponerCorreo.nombre]: ponerCorreo,
+    [ponerAparatoParaFichar.nombre]: ponerAparatoParaFichar,
+    [quitarAparatoParaFichar.nombre]: quitarAparatoParaFichar,
+    [quienFichaAqui.nombre]: quienFichaAqui,
+    [ficharAqui.nombre]: ficharAqui,
   } as Record<string, Comando<never, unknown>>,
 };

@@ -662,9 +662,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Terminado cuando.** Se ficha en menos de tres segundos con un toque; un fichaje hecho lejos del local sale señalado con sus metros; fichar desde un aparato no registrado, en un local que lo exige, devuelve `403`; y la comparativa sale cuadrada.
 
-### M16 · Servicio, APPCC y trazabilidad · en dos partes
+### M16 · Servicio, APPCC y trazabilidad
 
-**M16a va delante del TPV y M16b se queda aquí** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)): lo que el TPV necesita de este módulo es la jornada, no el APPCC.
+**Se entrega en dos partes: M16a va delante del TPV y M16b se queda aquí** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)): lo que el TPV necesita de este módulo es la jornada, no el APPCC.
 
 **M16a · La jornada.** Apertura automática de jornada · **fecha operativa en el servidor**, incluida la noche del cambio de hora · panel en vivo · cierre del día en cuatro pasos y sesenta segundos · reapertura con motivo. **Terminado cuando** un cierre real se completa en menos de sesenta segundos, y la jornada de la noche del cambio de hora dura lo que tiene que durar, probada con `pnpm prueba:semana`.
 

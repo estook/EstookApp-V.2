@@ -75,7 +75,7 @@ Modo quiosco en un aparato del local, comparativa de lo planificado contra lo fi
 
 > **Aquí hay ley.** Registrar la jornada es obligatorio desde 2019 y ya se sanciona. Y hay un Real Decreto de registro horario digital **en tramitación, todavía no publicado en el BOE**, cuyo borrador exige inmutabilidad, credencial individual, nada de biometría, pausas, clasificación de horas, cuatro años de conservación y acceso de la Inspección. Estook ya cumple la mitad por diseño; el resto entra en este módulo.
 
-### M16 · Servicio, APPCC y trazabilidad · en dos partes
+### M16 · Servicio, APPCC y trazabilidad
 
 **M16a · La jornada**, que va delante del TPV: su fecha operativa decidida por el servidor y el cierre del día en sesenta segundos. **M16b · APPCC y trazabilidad**, que se queda aquí: el APPCC con acción correctiva obligatoria y la trazabilidad de lote.
 

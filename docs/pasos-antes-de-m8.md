@@ -6,7 +6,7 @@
 >
 > | Qué                          | Cómo está                                                                                     |
 > | ---------------------------- | --------------------------------------------------------------------------------------------- |
-> | Pull requests                | **Fusionadas hasta la #77** (R2). Abiertas: la #79, la #78 y la de la auditoría, en ese orden |
+> | Pull requests                | **Fusionadas hasta la #77** (R2). Abiertas: la #79, la #78 y la #80, en ese orden |
 > | La base de datos             | **51 de 51** migraciones, igual que `main`                                                    |
 > | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                               |
 > | **Las copias de seguridad**  | **Ninguna todavía**: empiezan cuando pongas sus secretos (abajo)                              |
@@ -72,7 +72,7 @@ en [`docs/copias-de-seguridad.md`](copias-de-seguridad.md).
 
 **«La visión del 27-sep y Estook TPV detallado»**, como la del paso 1. Solo documentos.
 
-### 5 · Fusionar la de los documentos de la auditoría
+### 5 · Fusionar la #80, la de los documentos de la auditoría
 
 **«La auditoría profunda: los documentos»**, igual que las otras dos, y **la última de las
 tres**: lleva dentro las otras dos. Solo documentos, sin migración ni despliegue.

@@ -27,7 +27,7 @@
 |                  |                                                                                                                                                                                                           |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1 y R2, con sus repasos                                                                                           |
-| **Por fusionar** | **#79** · la prueba de los martes y la copia de seguridad semanal → **#78** · los maestros y Estook TPV → **la auditoría profunda** (rama `la-auditoria-profunda`). Ninguna lleva migración ni despliegue |
+| **Por fusionar** | **#79** · la prueba de los martes y la copia de seguridad semanal → **#78** · los maestros y Estook TPV → **#80** · la auditoría profunda, los documentos. Ninguna lleva migración ni despliegue |
 | **Ahora**        | Que Richi fusione las tres, ponga los secretos de la copia y la lance una vez (apartado 2). Después, **H · Horarios**                                                                                     |
 | **`main`**       | Todo fusionado hasta la **#77** (R2, 27-sep)                                                                                                                                                              |
 | **Base**         | Supabase, **51 de 51** migraciones. 73 tablas, todas con seguridad por filas                                                                                                                              |
@@ -70,7 +70,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 1. **Fusionar la #79.**
 2. **Poner los secretos de la copia** en GitHub (`URL_DE_LA_COPIA`, `CLAVE_DE_LA_COPIA` y `CLAVE_DE_SERVICIO_COPIA`) y **lanzar «Copia de seguridad» una vez**. Tiene que salir en verde: es la primera vez que corre contra la base de verdad.
-3. **Fusionar la #78**, y después **la de la auditoría profunda**.
+3. **Fusionar la #78**, y después **la #80**, la de la auditoría profunda.
 4. **Contratar al asesor** (fiscal, y laboral y de datos) y pasarle [`docs/legal/preguntas-al-asesor.md`](docs/legal/preguntas-al-asesor.md). Ya no espera al TPV.
 5. **Contestar lo del chat** (abajo, el 1): hace falta antes de H.
 

@@ -249,11 +249,27 @@ describe('los modulos que se nombran en pantalla', () => {
     }
   }
 
+  /**
+   * Y las entregas de antes de M8 (0061, 0067), que no tienen ficha: son las letras
+   * del recuadro del orden, `H · Horarios  →  I · La app instalable  →  …`. Se leen
+   * de ahi, igual que las fichas, para que una pantalla no diga «llega con H» de
+   * algo que el Plan ya no pone en H.
+   */
+  const bloque = /ANTES DE M8([\s\S]*?)FASE 2/.exec(PLAN)?.[1] ?? '';
+  for (const encaja of bloque.matchAll(/([A-Z]\d?) · ([^→\n]+?)\s*(?=→|\n)/g)) {
+    const [, letra, nombre] = encaja;
+    if (letra !== undefined && nombre !== undefined) delPlan.set(letra, `${letra} · ${nombre}`);
+  }
+
   it('el Plan tiene sus treinta y cuatro fichas de modulo', () => {
     // De M0 a M30, mas M20A, M20B y M20C. Si esto se cae, es que el Plan ha
     // cambiado de forma y hay que mirarlo antes de creerse el resto de esta
     // descripcion.
-    expect(delPlan.size).toBe(34);
+    expect([...delPlan.keys()].filter((k) => /^M\d/.test(k))).toHaveLength(34);
+  });
+
+  it('y las cinco entregas de antes de M8, en su orden', () => {
+    expect([...delPlan.keys()].filter((k) => !/^M\d/.test(k))).toEqual(['H', 'I', 'C', 'A3', 'A4']);
   });
 
   it('cada modulo del catalogo se llama como en el Plan', () => {

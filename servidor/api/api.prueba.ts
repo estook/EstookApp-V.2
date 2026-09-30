@@ -57,6 +57,7 @@ function puertosDeMentira() {
         correo: null,
         identidadDeGoogle: null,
         pagos: null,
+        pdf: null,
         correlacionId: quien.correlacionId,
         desde: null,
         ahora: new Date(Date.UTC(2026, 8, 1, 12, 0, 0)),

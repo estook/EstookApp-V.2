@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { DIAS_DE_LA_SEMANA, comoSeLlamaElDia, type Centimos } from '@estook/dominio';
 import {
   Aviso,
@@ -15,21 +15,19 @@ import {
   Hoja,
   PanelLateral,
   Selector,
-  clases,
 } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import {
   comoDinero,
-  comoSeLeeDonde,
   comoSeLeeLaHora,
   comoSeLeenMinutos,
   ultimaVez,
   type FichajeDeLaFicha,
-  type FichajesDeUnaPersona,
   type TramoDelHorario,
   type UnaPersona,
 } from './contrato.ts';
+import { HistorialDeFichajes, ListaDeFichajes } from './ListaDeFichajes.tsx';
 
 /**
  * La ficha de una persona (M6½).
@@ -62,7 +60,7 @@ export function FichaDePersona({
 }) {
   const { cliente } = usarSesion();
   const cache = useQueryClient();
-  const [cambiando, setCambiando] = useState<'retribucion' | 'horario' | null>(null);
+  const [cambiando, setCambiando] = useState<'retribucion' | 'horario' | 'correo' | null>(null);
   const [corrigiendo, setCorrigiendo] = useState<FichajeDeLaFicha | null>(null);
   // De quién está abierto el historial entero. Se guarda la persona y no un sí o
   // un no para que, al abrir la ficha de otra, se vuelva a empezar por su ficha.
@@ -154,7 +152,7 @@ export function FichaDePersona({
               <p className="truncate text-cuerpo font-semibold">{nombreEntero}</p>
               <p className="text-secundario text-texto-suave">
                 {datos.retribucion?.puesto ?? datos.rolNombre}
-                {datos.correo === undefined ? '' : ` · ${datos.correo}`}
+                {datos.correo === undefined || datos.correo === null ? '' : ` · ${datos.correo}`}
               </p>
               <p className="mt-e1 flex flex-wrap items-center gap-e2 text-secundario">
                 {datos.enLinea ? (
@@ -168,6 +166,35 @@ export function FichaDePersona({
               </p>
             </div>
           </section>
+
+          {/*
+            **Sin correo** (0057): entra solo en el aparato del local, con su PIN. Se
+            dice aquí porque decide dónde ficha y cómo se le avisa, y quien puede dar
+            acceso le puede poner el correo el día que lo dé.
+          */}
+          {datos.sinCorreo === true && (
+            <Aviso
+              tono="info"
+              titulo="Sin correo"
+              {...(datos.puedePonerCorreo === true
+                ? {
+                    accion: (
+                      <Boton
+                        tono="secundario"
+                        onClick={() => {
+                          setCambiando('correo');
+                        }}
+                      >
+                        Poner su correo
+                      </Boton>
+                    ),
+                  }
+                : {})}
+            >
+              Ficha con su PIN en el aparato del local. No puede entrar desde un móvil suyo, y los
+              avisos no le llegan: su horario se le da en papel.
+            </Aviso>
+          )}
 
           {/* ── Sus horas ───────────────────────────────────────────────── */}
           <section className="grid grid-cols-2 gap-e3 rounded-medio border border-borde p-e3">
@@ -319,6 +346,19 @@ export function FichaDePersona({
         />
       )}
 
+      {datos !== undefined && cambiando === 'correo' && (
+        <PonerSuCorreo
+          persona={datos}
+          alCerrar={() => {
+            setCambiando(null);
+          }}
+          alHecho={() => {
+            void refrescar('Correo puesto');
+          }}
+          alFallar={setError}
+        />
+      )}
+
       {datos !== undefined && cambiando === 'horario' && (
         <CambiarHorario
           persona={datos}
@@ -346,203 +386,6 @@ export function FichaDePersona({
       )}
     </PanelLateral>
   );
-}
-
-// ── Los fichajes ─────────────────────────────────────────────────────────────
-
-/** Una lista de fichajes, con su «Corregir» a quien puede. La usan la ficha y el historial. */
-function ListaDeFichajes({
-  fichajes,
-  puedeCorregir,
-  alCorregir,
-}: {
-  readonly fichajes: readonly FichajeDeLaFicha[];
-  readonly puedeCorregir: boolean;
-  readonly alCorregir: (fichaje: FichajeDeLaFicha) => void;
-}) {
-  return (
-    <ul className="flex flex-col">
-      {fichajes.map((fichaje) => (
-        <li
-          key={fichaje.fichajeId}
-          className="flex flex-wrap items-center justify-between gap-e2 border-b border-borde py-e2 last:border-0"
-        >
-          <span className="min-w-0">
-            <span className="block text-cuerpo">
-              {fichaje.fecha} · {comoSeLeeLaHora(fichaje.entroEn)}–
-              {fichaje.salioEn === null ? 'sin salir' : comoSeLeeLaHora(fichaje.salioEn)}
-              {fichaje.minutos === null ? '' : ` · ${comoSeLeenMinutos(fichaje.minutos)}`}
-            </span>
-            <span
-              className={clases(
-                'block text-secundario',
-                fichaje.enElLocal === false || fichaje.sinUbicacion !== null
-                  ? 'text-atencion'
-                  : 'text-texto-suave',
-              )}
-            >
-              {comoSeLeeDonde(fichaje.metros, fichaje.enElLocal, fichaje.sinUbicacion)}
-              {fichaje.corregidoPor === null
-                ? ''
-                : ` · corregido por ${fichaje.corregidoPor}: «${fichaje.motivoDeLaCorreccion ?? ''}»`}
-            </span>
-          </span>
-          {puedeCorregir && (
-            <Boton
-              tono="texto"
-              onClick={() => {
-                alCorregir(fichaje);
-              }}
-            >
-              Corregir
-            </Boton>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/** Cuántos fichajes trae cada vez el historial. */
-const FICHAJES_POR_PAGINA = 50;
-
-/**
- * Todos los fichajes de una persona, del último hacia atrás (23-sep-2026).
- *
- * La ficha enseña los tres últimos; esto es su «Ver todos». Se abre **dentro del
- * mismo panel**, en lugar de una hoja encima, porque desde aquí también se corrige,
- * y corregir ya abre su propia hoja: tres capas una encima de otra en un móvil no se
- * entienden. Va por páginas de cincuenta y agrupado por meses, que es como se busca
- * un fichaje: «el del martes de la semana pasada», «los de agosto».
- */
-function HistorialDeFichajes({
-  personaId,
-  puedeCorregir,
-  alCorregir,
-  alVolver,
-  error,
-  noticia,
-  alCerrarLaNoticia,
-}: {
-  readonly personaId: string;
-  readonly puedeCorregir: boolean;
-  readonly alCorregir: (fichaje: FichajeDeLaFicha) => void;
-  readonly alVolver: () => void;
-  readonly error: ErrorDeLaApi | null;
-  readonly noticia: string | null;
-  readonly alCerrarLaNoticia: () => void;
-}) {
-  const { cliente } = usarSesion();
-  const historial = useInfiniteQuery({
-    queryKey: ['fichajes_de_una_persona', personaId],
-    initialPageParam: 0,
-    queryFn: async ({ pageParam }): Promise<FichajesDeUnaPersona> => {
-      const respuesta = await cliente.consultar<FichajesDeUnaPersona>('fichajes_de_una_persona', {
-        persona_id: personaId,
-        limite: String(FICHAJES_POR_PAGINA),
-        salto: String(pageParam),
-      });
-      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
-    },
-    getNextPageParam: (ultima, paginas) =>
-      ultima.hayMas
-        ? paginas.reduce((suma, pagina) => suma + pagina.fichajes.length, 0)
-        : undefined,
-  });
-
-  const paginas = historial.data?.pages ?? [];
-  const fichajes = paginas.flatMap((pagina) => pagina.fichajes);
-  const cuantos = paginas[0]?.cuantos ?? 0;
-  const porMeses = agruparPorMeses(fichajes);
-
-  return (
-    <div className="flex flex-col gap-e4">
-      <div>
-        <Boton tono="texto" onClick={alVolver}>
-          ‹ Volver a la ficha
-        </Boton>
-      </div>
-
-      {error !== null && <ErrorEnCristiano error={error} />}
-      {noticia !== null && (
-        <Aviso tono="bien" titulo={noticia} esNoticia alCerrar={alCerrarLaNoticia}>
-          Queda guardado con tu nombre.
-        </Aviso>
-      )}
-
-      {historial.isPending && <Cargando que="los fichajes" />}
-
-      {historial.isError && (
-        <Aviso tono="mal" titulo="No he podido leer los fichajes">
-          <Boton
-            tono="texto"
-            onClick={() => {
-              void historial.refetch();
-            }}
-          >
-            Volver a intentarlo
-          </Boton>
-        </Aviso>
-      )}
-
-      {historial.isSuccess && (
-        <>
-          <p className="text-secundario text-texto-suave">
-            {cuantos === 1 ? 'Un fichaje' : `${cuantos.toLocaleString('es-ES')} fichajes`}, del
-            último hacia atrás.
-          </p>
-
-          {porMeses.map(({ mes, deEseMes }) => (
-            <section key={mes} className="flex flex-col gap-e1">
-              <h3 className="text-etiqueta font-semibold uppercase tracking-wide text-texto-suave">
-                {mes}
-              </h3>
-              <ListaDeFichajes
-                fichajes={deEseMes}
-                puedeCorregir={puedeCorregir}
-                alCorregir={alCorregir}
-              />
-            </section>
-          ))}
-
-          {historial.hasNextPage && (
-            <div>
-              <Boton
-                tono="texto"
-                cargando={historial.isFetchingNextPage}
-                textoCargando="Cargando"
-                onClick={() => {
-                  void historial.fetchNextPage();
-                }}
-              >
-                Ver más fichajes
-              </Boton>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-/** «septiembre de 2026» → sus fichajes, en el orden en que llegan. */
-function agruparPorMeses(
-  fichajes: readonly FichajeDeLaFicha[],
-): { mes: string; deEseMes: FichajeDeLaFicha[] }[] {
-  const grupos: { mes: string; deEseMes: FichajeDeLaFicha[] }[] = [];
-  for (const fichaje of fichajes) {
-    // La fecha operativa es un día, sin hora: se lee a mediodía para que ningún
-    // huso la pase al mes de al lado.
-    const mes = new Date(`${fichaje.fecha}T12:00:00`).toLocaleDateString('es-ES', {
-      month: 'long',
-      year: 'numeric',
-    });
-    const ultimo = grupos.at(-1);
-    if (ultimo?.mes === mes) ultimo.deEseMes.push(fichaje);
-    else grupos.push({ mes, deEseMes: [fichaje] });
-  }
-  return grupos;
 }
 
 // ── Lo que cobra ─────────────────────────────────────────────────────────────
@@ -663,6 +506,86 @@ function CambiarRetribucion({
         <p className="text-secundario text-texto-suave">
           Vale desde hoy. Lo de antes se queda como estaba: una subida no cambia lo que costó el mes
           pasado.
+        </p>
+      </div>
+    </Hoja>
+  );
+}
+
+// ── Ponerle el correo a quien no lo tenía (0057) ─────────────────────────────
+
+/**
+ * «Si un día da su correo, se le añade y sigue siendo la misma persona, con su
+ * historia.» Si ese correo ya es de otra persona de Estook, **no se unen**: el
+ * servidor lo dice y no toca nada.
+ */
+function PonerSuCorreo({
+  persona,
+  alCerrar,
+  alHecho,
+  alFallar,
+}: {
+  readonly persona: UnaPersona;
+  readonly alCerrar: () => void;
+  readonly alHecho: () => void;
+  readonly alFallar: (error: ErrorDeLaApi) => void;
+}) {
+  const { cliente } = usarSesion();
+  const [correo, setCorreo] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const listo = /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(correo.trim()) && !guardando;
+
+  async function guardar() {
+    setGuardando(true);
+    const respuesta = await cliente.ejecutar('poner_correo', {
+      persona_id: persona.personaId,
+      correo: correo.trim(),
+    });
+    setGuardando(false);
+    if (!respuesta.ok) {
+      alFallar(respuesta.error);
+      alCerrar();
+      return;
+    }
+    alHecho();
+  }
+
+  return (
+    <Hoja
+      abierta
+      alCerrar={alCerrar}
+      titulo={`El correo de ${persona.nombre}`}
+      pie={
+        <Botones>
+          <Boton tono="texto" onClick={alCerrar}>
+            Dejarlo
+          </Boton>
+          <Boton
+            tono="principal"
+            disabled={!listo}
+            cargando={guardando}
+            textoCargando="Guardando"
+            onClick={() => {
+              void guardar();
+            }}
+          >
+            Guardar
+          </Boton>
+        </Botones>
+      }
+    >
+      <div className="flex flex-col gap-e3">
+        <Campo
+          etiqueta="Su correo"
+          tipo="correo"
+          value={correo}
+          onChange={(e) => {
+            setCorreo(e.currentTarget.value);
+          }}
+        />
+        <p className="text-secundario text-texto-suave">
+          Sigue siendo la misma persona, con sus fichajes. Desde ese momento puede entrar también
+          desde su móvil, con su correo y su PIN.
         </p>
       </div>
     </Hoja>

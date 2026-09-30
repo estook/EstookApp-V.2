@@ -6,9 +6,9 @@
 >
 > | Qué                          | Cómo está                                                                         |
 > | ---------------------------- | --------------------------------------------------------------------------------- |
-> | Pull requests                | **Fusionadas hasta la #81** (30-sep). Abierta: la #82, Pro a 99 € y el plan de H  |
+> | Pull requests                | **Fusionadas hasta la #82** (30-sep). Abierta: **H1 · Personas y fichajes**       |
 > | La base de datos             | **51 de 51** migraciones, igual que `main`                                        |
-> | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                   |
+> | La API                       | **Desplegada con la #82**: 58 y 117, reloj latiendo                               |
 > | **Las copias de seguridad**  | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
 > | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor       |
 > | E1, V, O, E2, L, A2, R1 y R2 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                    |
@@ -17,30 +17,39 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ---
 
-## Lo que te toca ahora · Pro a 99 €, el chat y el plan de H (30-sep, tarde)
+## Lo que te toca ahora · H1, personas y fichajes (30-sep, noche)
 
-**La #81 ya está fusionada.** Con tus dos respuestas he hecho la **#82**: Pro a 99 € y
-Cadena a 89 € desde ya, el chat adelantado a después de la app instalable, y el plan de
-Horarios con sus preguntas ([decisión 0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)).
+**Qué trae** ([decisión 0068](decisiones/0068-las-respuestas-de-h.md)):
 
-### 1 · Fusionar la #82
+- **La persona sin correo**: al invitar, la casilla «No tiene correo, o no lo quiere
+  dar». Ficha solo con su PIN, en el aparato del local. Si un día lo da, en su ficha,
+  **«Poner su correo»**.
+- **La pausa de descanso**: dentro del turno, «Empezar pausa» y «Volver». Se enciende en
+  **Ajustes → Tu local → Las pausas de descanso**. De fábrica **no cuenta como trabajo**,
+  que es lo que dice la ley si el convenio no dice otra cosa.
+- **El aparato del local para fichar**: una tableta en la puerta donde cada uno teclea su
+  PIN y ficha. No entra en nada más.
+- **Las correcciones**: si un encargado cambia un fichaje, se guarda lo que había, lo
+  nuevo, quién y por qué, y **a la persona le llega un aviso**.
+- **«Mis fichajes»**: cada uno ve los suyos, con las pausas y las correcciones.
+- **El registro de jornada para la Inspección**: en **Equipo → Fichajes**, de unas fechas
+  a otras, en hoja de cálculo o en PDF.
+- **Los PDF**: tu informe de la semana y el registro, con el aspecto de Estook.
 
-En **github.com** → **Pull requests** → **«Pro a 99 €, el chat adelantado y el plan de
-H»** → con las **tres comprobaciones en verde**, **Merge pull request** → **Confirm
-merge**. Tiene que salir en morado «merged». **Si alguna sale en rojo, para y avísame.**
+Son **cinco pasos**: fusionar, migrar, desplegar, **Cloudflare** y mirarlo.
 
-**Sin migración.** Hasta que no la fusiones y despliegues, en `estook.com` Pro sigue a 79 €.
+### 1 · Fusionar
 
-### 2 · Desplegar la API
+En **github.com** → **Pull requests** → **«H1 · Personas y fichajes»** → con las **tres
+comprobaciones en verde**, **Merge pull request** → **Confirm merge**. Tiene que salir en
+morado «merged». **Si alguna sale en rojo, para y avísame.**
 
-Hace falta porque el precio que se cobra lo decide el servidor.
+### 2 · Aplicar la migración
 
-**Actions** → a la izquierda, **Desplegar la API** → **Run workflow**, rama `main`,
-escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**.
+**Qué hace:** deja a una persona sin correo, crea el aparato para fichar, las pausas y el
+rastro de las correcciones. **No borra ni cambia nada de lo que hay.**
 
-### 3 · Traerlo a tu ordenador y comprobar
-
-En PowerShell, en la carpeta del proyecto:
+En PowerShell, en la carpeta del proyecto, trae lo fusionado:
 
 ```bash
 git checkout main
@@ -50,38 +59,115 @@ git checkout main
 git pull
 ```
 
+Y la migración:
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0052_las_personas_y_los_fichajes.sql ... hecho
+  1 migracion(es) aplicadas · 52 en total
+```
+
+Si dice «la base de datos ya estaba al dia», el `git pull` no ha bajado lo fusionado:
+repítelo. **Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+### 3 · Desplegar la API
+
+**Actions** → a la izquierda, **Desplegar la API** → **Run workflow**, rama `main`,
+escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
+
 ```bash
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** «las 58» consultas y «los 117» comandos, igual que ahora.
+**Qué tiene que decir:** «las 62» consultas y «los 125» comandos.
 
-### 4 · Mirarlo
+### 4 · Cloudflare, para los PDF
 
-Recarga `estook.com/app/` (**Ctrl + F5**) y entra con una cuenta de prueba que no haya
-pagado —`burger-king`, que pide elegir plan al entrar—, no con la tuya, que es de la casa.
-En **«Elige tu plan»**, **Pro tiene que poner 99 €** al mes (990 € al año) y Esencial
-seguir en 49 €. Cadena, que sale a quien tiene dos locales o más, son 89 € por local.
+**Qué es:** Cloudflare es quien convierte en PDF el informe y el registro. **Es gratis**
+hasta unos 400 PDF al día, y **no pide tarjeta**. No guarda nada: recibe la página, la
+devuelve en PDF y la olvida. Sin este paso **todo funciona igual**, solo que «Descargar en
+PDF» dice que todavía no está encendido.
 
-**No tienes que tocar nada en Stripe.** El precio nuevo lo crea el código la primera vez
-que alguien elija Pro o Cadena.
+**4.1 · La cuenta.** En **dash.cloudflare.com/sign-up**, con el correo de Estook
+(`estookapp@gmail.com`) y una contraseña nueva de tu gestor de contraseñas. Confirma el
+correo que te llega. Si te ofrece un plan, el **Free**; si te pide un dominio,
+**sáltatelo**: no hace falta ninguno.
 
-### 5 · Contestarme las seis preguntas de Horarios
+**4.2 · El número de la cuenta.** Dentro, en la página de inicio (**Account home**), en
+los tres puntos junto al nombre de la cuenta: **«Copy account ID»**. Son 32 letras y
+números. No es secreto, pero tampoco hace falta que me lo pases.
 
-Están en [`docs/h-horarios.md`](h-horarios.md), cada una explicada y con lo que te
-recomiendo. Con un sí o un no me vale:
+**4.3 · La clave, solo para imprimir.** Arriba a la derecha, el muñeco → **My Profile** →
+**API Tokens** → **Create Token** → abajo del todo, **Custom token → Get started**:
 
-1. ¿Partimos H en dos entregas?
-2. ¿Un aparato del local para fichar con PIN, ya en H?
-3. ¿Un botón de pausa al fichar?
-4. ¿Marcar «Libre», «Vacaciones» y «Baja» en el horario?
-5. ¿El equipo ve el horario entero de su zona, una vez publicado?
-6. ¿El motor de los PDF con Cloudflare?
+- **Token name:** `Estook · los PDF`
+- **Permissions:** tres desplegables → **Account** · **Browser Rendering** · **Edit**.
+  **Solo esa línea**, ninguna más.
+- **Account Resources:** **Include** · tu cuenta.
+- Lo demás, como está → **Continue to summary** → **Create Token**.
 
-Y abre [`docs/h-horarios-muestra.pdf`](h-horarios-muestra.pdf): es un horario de ejemplo
-hecho con el motor que te recomiendo, para que veas cómo queda.
+**Qué tiene que salir:** una clave larga, **que se enseña una sola vez**. Cópiala y no
+cierres la página hasta acabar el 4.4. **No me la pegues en el chat.**
 
-### 6 · Lo que tiene fecha
+**4.4 · Los dos secretos en Supabase.** supabase.com/dashboard → tu proyecto → **Edge
+Functions** → **Secrets** → **Add new secret**, uno a uno → **Save**:
+
+| Nombre                  | Valor                              |
+| ----------------------- | ---------------------------------- |
+| `CLOUDFLARE_ACCOUNT_ID` | El número de la cuenta del 4.2     |
+| `CLOUDFLARE_PDF_TOKEN`  | La clave del 4.3, **sin espacios** |
+
+**Por qué una clave aparte:** la de publicar la web, en la mudanza, será otra. Esta solo
+sirve para imprimir: si se escapa, nadie puede tocar tu cuenta con ella.
+
+**4.5 · Probarlo.** Espera dos minutos. En `estook.com/app/` (**Ctrl + F5**):
+**Negocio → Informes → «Descargar en PDF»**. En el móvil se abre para compartir; en el
+ordenador, se descarga. **Qué tiene que salir:** tu semana, con el nombre de tu local, las
+cifras y el pie con la fecha. **Avísame cuando lo hayas probado**, salga bien o no: es la
+primera vez contra Cloudflare de verdad.
+
+**Si dice que todavía no está encendido**, falta un secreto o un nombre no está escrito
+igual. **Si dice que no se ha podido hacer**, dime la hora: lo miro en los registros.
+
+### 5 · Mirarlo en el móvil y en una tableta
+
+Recarga la app antes (en el móvil, ciérrala y ábrela otra vez).
+
+- **La pausa:** **Ajustes → Tu local → Las pausas de descanso** → marca **«Se ficha la
+  pausa»**. Ficha la entrada: sale **«Empezar pausa»**; tócalo y después **«Volver»**.
+- **Mis fichajes:** en **Equipo → Resumen**, el enlace **«Mis fichajes»**: el de hoy, con
+  su pausa.
+- **Una persona sin correo:** **Equipo → Personas → Invitar** → marca **«No tiene correo, o no lo
+  quiere dar»** → su nombre y qué hace → **Invitar**. Sale **su PIN**, una sola vez:
+  apúntalo. En su ficha pone «Sin correo».
+- **El aparato para fichar**, en una tableta o en otro móvil: entra con tu cuenta →
+  **Ajustes → Tu local → El aparato para fichar** → **Usar este aparato para fichar** →
+  ponle nombre («Tablet de la entrada») → **Ponerlo** → **Abrir la pantalla de fichar**.
+  **Tu sesión se cierra en ese aparato**, a propósito: así nadie entra en lo tuyo desde la
+  tableta de la puerta. Sale el teclado: teclea el PIN de la persona sin correo y ficha. A
+  los 20 segundos vuelve al teclado solo.
+- **Quitar el aparato**, si lo pierdes: desde tu móvil, en ese mismo sitio de Ajustes,
+  **Quitarlo**. Deja de fichar al momento.
+- **El registro:** **Equipo → Fichajes → Registro de jornada para la Inspección** → **En
+  hoja de cálculo**: se abre en Excel con una fila por turno, sus pausas y sus
+  correcciones.
+
+Si algo no se ve como te digo, hazle una captura y me la pasas.
+
+---
+
+## Pro a 99 €, el chat y el plan de H (#82) · **hecho** (30-sep)
+
+Fusionada, y la API desplegada y comprobada (58 y 117) el 30-sep. Lo que trae, en la
+[decisión 0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md); tus seis
+respuestas de H, en la [0068](decisiones/0068-las-respuestas-de-h.md).
+
+### Lo que tiene fecha
 
 - **La oferta de Verifacti caduca hacia el 19 de octubre**
   ([`docs/el-precio-de-verifacti.md`](el-precio-de-verifacti.md)). Su web deja contratar

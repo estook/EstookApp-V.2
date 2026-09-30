@@ -457,6 +457,11 @@ un enlace. Así:
 > **El plan entero de H** —lo decidido, las preguntas a Richi y el motor de los PDF— está
 > en [`h-horarios.md`](h-horarios.md) (30-sep, [0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)).
 > Y entre la I y los vendedores entra una entrega nueva, **C · El chat**.
+>
+> **Richi contestó las seis el 30-sep** ([0068](decisiones/0068-las-respuestas-de-h.md)):
+> H va en dos. **H1 · Personas y fichajes**, hecha (la persona sin correo, la pausa, el
+> aparato del local, las correcciones con rastro, el registro para la Inspección y los
+> PDF). **H2 · El horario**, que es esta mejora 18 y la entrega 3 de M7, va después.
 
 ### 18 · Cuadrante con coste en vivo y horas extra
 

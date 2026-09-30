@@ -8,6 +8,7 @@
     "tipos": "tsc --noEmit"
   },
   "dependencies": {
+    "@estook/documentos": "workspace:*",
     "@estook/dominio": "workspace:*",
     "@estook/permisos": "workspace:*",
     "@estook/utiles": "workspace:*",

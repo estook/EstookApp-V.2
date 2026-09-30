@@ -574,25 +574,88 @@ describe('un turno olvidado se cierra corrigiéndolo', () => {
       [puerto, asesoria],
     );
 
-    // Sin corregir, una salida sin posición y sin porqué no entra.
+    // Sin corregir, la salida de otra persona no se pone (0052): es tocar sus horas.
     await expect(
       comoDuena(
         `update estook.fichaje set salio_en = now() - interval '12 hours'
           where persona_id = $1 and salio_en is null`,
         [asesoria],
       ),
-    ).rejects.toThrow(/fichaje_salida_dice_donde/);
+    ).rejects.toThrow(/solo se cambian corrigiéndolo/);
+
+    // Y contándola como corrección pero sin porqué de la salida, tampoco: la
+    // restricción de la 0027 sigue pidiendo nombre y motivo.
+    await expect(
+      comoDuena(
+        `update estook.fichaje
+            set salio_en = now() - interval '12 hours', correcciones = correcciones + 1
+          where persona_id = $1 and salio_en is null`,
+        [asesoria],
+      ),
+    ).rejects.toThrow(/nombre y motivo|fichaje_salida_dice_donde/);
 
     // Con nombre y motivo, sí.
     const cerrados = await comoDuena<{ id: string }>(
       `update estook.fichaje
           set salio_en = now() - interval '12 hours',
               corregido_por = $2, corregido_en = now(),
-              motivo_de_la_correccion = 'Se fue sin fichar la salida'
+              motivo_de_la_correccion = 'Se fue sin fichar la salida',
+              correcciones = correcciones + 1
         where persona_id = $1 and salio_en is null
        returning id::text as id`,
       [asesoria, luis],
     );
     expect(cerrados).toHaveLength(1);
+  });
+
+  it('y la corrección queda aparte, con lo de antes y lo de después, y no se toca', async () => {
+    // La 0062: «la corrección es un registro nuevo que no borra el original, y los
+    // dos se ven». La escribe la base, no el comando: no hay camino que la rodee.
+    const asesoria = await base.personaPorCorreo('asesoria@ejemplo.estook.com');
+    const [fila] = await comoDuena<{
+      numero: number;
+      salio_antes: string | null;
+      salio_despues: string | null;
+      motivo: string;
+    }>(
+      `select numero, salio_antes::text, salio_despues::text, motivo
+         from estook.correccion_de_fichaje where persona_id = $1 order by id desc limit 1`,
+      [asesoria],
+    );
+    expect(fila?.numero).toBe(1);
+    expect(fila?.salio_antes).toBeNull();
+    expect(fila?.salio_despues).not.toBeNull();
+    expect(fila?.motivo).toBe('Se fue sin fichar la salida');
+
+    // Ni cambiarla, ni borrarla, ni vaciar la tabla. Ni siendo la dueña.
+    await expect(
+      comoDuena(`update estook.correccion_de_fichaje set motivo = 'otro' where persona_id = $1`, [
+        asesoria,
+      ]),
+    ).rejects.toThrow(/no se cambia ni se borra/);
+    await expect(
+      comoDuena(`delete from estook.correccion_de_fichaje where persona_id = $1`, [asesoria]),
+    ).rejects.toThrow(/no se cambia ni se borra/);
+    await expect(comoDuena(`truncate estook.correccion_de_fichaje`)).rejects.toThrow(
+      /no se cambia ni se borra/,
+    );
+  });
+
+  it('cerrar tu propio turno no es corregir nada', async () => {
+    const sara = await base.personaPorCorreo(SARA);
+    const centro = await base.localPorCodigo('bar-centro');
+    await como(
+      SARA,
+      `insert into estook.fichaje (local_id, persona_id, fecha_operativa, entro_en, entro_sin_donde)
+       values ($1, $2, current_date, now() - interval '1 hour', 'la_nego')`,
+      [centro, sara],
+    );
+    const cerrados = await como<{ correcciones: number }>(
+      SARA,
+      `update estook.fichaje set salio_en = now(), salio_sin_donde = 'la_nego'
+        where persona_id = $1 and salio_en is null returning correcciones`,
+      [sara],
+    );
+    expect(cerrados).toEqual([{ correcciones: 0 }]);
   });
 });

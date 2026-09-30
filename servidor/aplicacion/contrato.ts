@@ -5,6 +5,7 @@ import type { AlmacenDeFicheros } from '../infraestructura/almacen.ts';
 import type { CorreoSaliente } from '../infraestructura/correo.ts';
 import type { LugaresDeGoogle } from '../infraestructura/google.ts';
 import type { IdentidadDeGoogle } from '../infraestructura/identidad-de-google.ts';
+import type { MotorDePdf } from '../infraestructura/pdf.ts';
 import type { Pagos } from '../infraestructura/stripe.ts';
 import type { SesionViva, Sql } from '../infraestructura/postgres.ts';
 
@@ -64,6 +65,11 @@ export interface Contexto {
    * **dice que el pago no está abierto** en vez de romperse.
    */
   readonly pagos: Pagos | null;
+  /**
+   * El motor de los PDF (0068). Nulo sin las claves de Cloudflare, y entonces pedir
+   * un PDF **dice que todavía no están encendidos** en vez de romperse.
+   */
+  readonly pdf: MotorDePdf | null;
   /**
    * Desde qué dirección llega la petición, tal como la ve la API, o nulo (0041).
    *

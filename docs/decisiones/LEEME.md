@@ -78,3 +78,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0065** | El coste por local, con su prueba final; y la copia de seguridad, aplazada hasta la mudanza              |
 | **0066** | Sin asesor por ahora: lo legal se investiga en las fuentes; la API de Verifacti; y el chat, dicho entero |
 | **0067** | Pro a 99 € y Cadena a 89 € desde ya, el chat se adelanta, y H empieza por su plan                        |
+| **0068** | Las respuestas de H: dos entregas, el aparato del local, la pausa, el horario de todos y los PDF         |

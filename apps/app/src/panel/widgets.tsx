@@ -47,6 +47,7 @@ import { AccesosRapidos } from './AccesosRapidos.tsx';
 import { IndicadorWidget } from './Indicador.tsx';
 import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
 import { usarFichar } from '../ganchos/usarFichar.ts';
+import { BotonDePausa } from '../equipo/BotonDePausa.tsx';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import {
@@ -667,8 +668,15 @@ function FicharDesdeElPanel({ tamano }: { readonly tamano: TamanoDeWidget }) {
 
   return (
     <Caja
-      titulo={dentro ? 'Estás dentro' : 'Fichar'}
+      titulo={
+        dentro
+          ? mio.enPausaDesde !== null && mio.enPausaDesde !== undefined
+            ? 'En tu pausa'
+            : 'Estás dentro'
+          : 'Fichar'
+      }
       origen={abierto !== null ? `Desde las ${comoSeLeeLaHora(abierto.entroEn)}` : `Hoy: ${deHoy}`}
+      ir="/mis-fichajes"
     >
       <div className="flex h-full flex-col justify-between gap-e3">
         <div>
@@ -705,6 +713,8 @@ function FicharDesdeElPanel({ tamano }: { readonly tamano: TamanoDeWidget }) {
         </div>
 
         <div className="flex flex-col gap-e2">
+          {/* La pausa de descanso, dentro del turno (0068). */}
+          <BotonDePausa fichar={fichar} corto={tamano === 'chico'} />
           <Boton
             tono={dentro ? 'secundario' : 'principal'}
             ancho

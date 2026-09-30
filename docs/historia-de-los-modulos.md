@@ -2803,6 +2803,41 @@ lo pedido, el reloj del lunes con sus avisos y su correo, lo que no se manda sin
 nota con su tope y una cuenta que no paga) y `el-pedido-los-informes-y-google.spec.ts`
 (la pantalla).
 
+### Antes de M8 · H1, personas y fichajes
+
+_30 de septiembre de 2026._ Migración `0052`, [decisión
+0068](decisiones/0068-las-respuestas-de-h.md). Richi contestó las seis preguntas de H,
+todas con la recomendada, y H se partió en dos. Esta es la primera: **quién es cada uno
+y cómo ficha**, preparada para el registro horario digital (0062).
+
+- **La persona sin correo** (0057): se invita con una casilla, solo para puestos de un
+  local, y ficha con su PIN en el aparato del local. Si un día da su correo, se le pone
+  en su ficha; si ese correo ya es de otra persona, **no se unen** (eso es M13).
+- **La pausa de descanso**: se enciende por local; de fábrica **no cuenta como trabajo**
+  (Estatuto, art. 34.4, si el convenio calla). Las horas no se guardan hechas: se cuentan
+  al mirar con `estook.segundos_trabajados`, y cambiar la regla recuenta también lo de
+  antes. El horario partido no es una pausa: son dos turnos.
+- **El aparato del local para fichar**: una tableta con su llave (se guarda solo su
+  huella), **sin sesión de nadie**; cada uno teclea su PIN. Tras diez fallos seguidos se
+  para cinco minutos; quitarlo lo deja sin valer al momento. Abrirlo cierra la sesión de quien lo
+  pone.
+- **Las correcciones con rastro**: cada cambio de un fichaje guarda lo de antes, lo
+  nuevo, quién y por qué, en una tabla que no admite ni cambiar ni borrar; a la persona
+  le llega un aviso. Y **«Mis fichajes»**, para que cada uno vea los suyos.
+- **El registro de jornada para la Inspección**, de unas fechas a otras (hasta un año),
+  en hoja de cálculo o en PDF con la huella de la hoja.
+- **Los PDF**: plantillas en `packages/documentos`, con la letra de la casa dentro, y
+  **Cloudflare Browser Run** que las imprime (gratis hasta unos 400 al día). En local se
+  ven con `pnpm documentos:muestra`. Sin las claves de Cloudflare, el botón lo dice y lo
+  demás funciona.
+
+Las pruebas: `personas-y-fichajes.prueba.ts` (la base: la persona sin correo, la llave y
+el PIN del aparato, la pausa que cuenta o no, la corrección que exige su rastro, el
+registro y sus permisos), `documentos.prueba.ts` (las plantillas: lo que se escapa, las
+cifras y las páginas), las nuevas de `fichajes` y `almacen`, y
+`personas-y-fichajes.spec.ts` (la pantalla, en escritorio y en móvil). Y la de los
+errores del catálogo **volvió a fallar al añadir seis**, que es para lo que está.
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

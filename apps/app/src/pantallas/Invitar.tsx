@@ -31,6 +31,8 @@ export function Invitar({
   const sePuedenDar = new Set(yo?.rolesQuePuedoDar ?? []);
   const roles = ROLES_DE_LOCAL.filter((r) => sePuedenDar.has(r.valor));
   const [correo, setCorreo] = useState('');
+  // Sin correo (0057): un extra, un friegaplatos. Ficha con su PIN en el aparato del local.
+  const [sinCorreo, setSinCorreo] = useState(false);
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
   const [rol, setRol] = useState<string>(
@@ -49,7 +51,7 @@ export function Invitar({
     const respuesta = await cliente.ejecutar<{ pin: string | null; yaExistia: boolean }>(
       'invitar_persona',
       {
-        correo,
+        ...(sinCorreo ? {} : { correo }),
         nombre,
         ...(apellidos === '' ? {} : { apellidos }),
         rol,
@@ -79,16 +81,42 @@ export function Invitar({
         }}
         className="flex flex-col gap-e4"
       >
-        <Campo
-          etiqueta="Su correo"
-          tipo="correo"
-          ayuda="Si ya trabaja en otro local de Estook, se le añade el acceso: nunca se duplica la persona."
-          value={correo}
-          onChange={(evento) => {
-            setCorreo(evento.target.value);
-          }}
-          obligatorio
-        />
+        {!sinCorreo && (
+          <Campo
+            etiqueta="Su correo"
+            tipo="correo"
+            ayuda="Si ya trabaja en otro local de Estook, se le añade el acceso: nunca se duplica la persona."
+            value={correo}
+            onChange={(evento) => {
+              setCorreo(evento.target.value);
+            }}
+            obligatorio
+          />
+        )}
+
+        {/*
+          Sin correo (0057). Va como casilla y no escondido: un extra que no da su
+          correo es lo normal en hostelería, y quien da de alta tiene que saber que
+          se puede. Solo para puestos de este local: sin correo se entra únicamente
+          en el aparato del local, con el PIN de aquí.
+        */}
+        <label className="flex min-h-toque items-start gap-e2 text-cuerpo">
+          <input
+            type="checkbox"
+            checked={sinCorreo}
+            onChange={(evento) => {
+              setSinCorreo(evento.currentTarget.checked);
+            }}
+            className="mt-[3px] size-[20px] shrink-0 accent-[var(--color-naranja)]"
+          />
+          <span>
+            No tiene correo, o no lo quiere dar
+            <span className="block text-secundario text-texto-suave">
+              Ficha con su PIN en el aparato del local. No podrá entrar desde un móvil suyo; si un
+              día da su correo, se le pone en su ficha.
+            </span>
+          </span>
+        </label>
 
         <Campo
           etiqueta="Su nombre"

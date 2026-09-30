@@ -2,7 +2,7 @@
   "name": "estook",
   "version": "0.0.0",
   "private": true,
-  "description": "Estook · la gestion de tu restaurante en una sola aplicacion",
+  "description": "Estook Â· la gestion de tu restaurante en una sola aplicacion",
   "packageManager": "pnpm@9.15.0",
   "engines": {
     "node": ">=22.0.0",
@@ -43,6 +43,8 @@
     "textos": "node --experimental-strip-types herramientas/revisa-textos.mjs",
     "grafo": "node herramientas/revisa-el-grafo-de-deno.mjs",
     "maestros": "node herramientas/documentos-maestros.mjs",
+    "documentos:letra": "node herramientas/documentos-letra.mjs",
+    "documentos:muestra": "node --experimental-strip-types herramientas/documentos-de-muestra.mjs",
     "coste": "node herramientas/coste-por-local.mjs",
     "coste:escribir": "node herramientas/coste-por-local.mjs --escribir",
     "coste:comprobar": "node herramientas/coste-por-local.mjs --comprobar",

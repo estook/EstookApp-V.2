@@ -8,6 +8,7 @@ import {
   atrasDe,
   elPeriodoDelInforme,
   fechaOperativa,
+  lasCifrasDelCorreo,
   lasTresFrases,
   losDiasEntre,
   masDias,
@@ -19,8 +20,10 @@ import {
   type PeriodoDelInforme,
   type TipoDeInforme,
 } from '@estook/dominio';
+import { documentoDelInforme } from '@estook/documentos';
 import { LO_QUE_PIDE_EL_INDICADOR, type Permiso } from '@estook/permisos';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { hacerElPdf, hechoEl, laMarcaDelLocal, type UnPdf } from '../documentos.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
 import { calcularElIndicador, laJornada, type DiaDelIndicador } from './indicador.ts';
 import { elSemaforoDeLaSemana } from './objetivos.ts';
@@ -159,17 +162,85 @@ export const miInforme = consulta<EntradaMiInforme, ElInforme>({
   exige: 'app.negocio',
 
   async ejecutar(contexto, entrada) {
-    const localId = contexto.sesion?.localId;
-    if (!localId) {
-      throw new FalloDeAplicacion('faltan_datos', {
-        porque: 'Hay que estar dentro de un local para ver sus informes. Elige uno primero.',
-      });
-    }
     return elInforme(
       contexto,
-      localId,
+      elLocalDelInforme(contexto),
       entrada.tipo,
       entrada.del === undefined ? null : fechaOperativa(entrada.del),
     );
   },
 });
+
+function elLocalDelInforme(contexto: Contexto): string {
+  const localId = contexto.sesion?.localId;
+  if (!localId) {
+    throw new FalloDeAplicacion('faltan_datos', {
+      porque: 'Hay que estar dentro de un local para ver sus informes. Elige uno primero.',
+    });
+  }
+  return localId;
+}
+
+// ── El informe en PDF (H1 · 0068) ───────────────────────────────────────────
+
+/**
+ * El mismo informe de la pantalla, en PDF: lo pidió Richi para los informes (27-sep,
+ * «ventas y Tu semana ya; el PDF, con Horarios»). **Las mismas cifras**, contadas por
+ * `elInforme` a nombre de quien lo pide: lo que no ve en la app no sale en el papel.
+ */
+export const miInformeEnPdf = consulta<EntradaMiInforme, UnPdf>({
+  nombre: 'mi_informe_en_pdf',
+  entrada: entradaMiInforme,
+  exige: 'app.negocio',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelInforme(contexto);
+    // Se mira antes de contar nada: sin motor, contar el informe sería trabajo tirado.
+    if (contexto.pdf === null) throw new FalloDeAplicacion('pdf_sin_encender');
+
+    const informe = await elInforme(
+      contexto,
+      localId,
+      entrada.tipo,
+      entrada.del === undefined ? null : fechaOperativa(entrada.del),
+    );
+    const marca = await laMarcaDelLocal(contexto, localId);
+
+    const html = documentoDelInforme({
+      marca,
+      titulo: informe.titulo,
+      periodo: informe.periodo.nombre,
+      comparado: informe.periodo.comparado,
+      hechoEl: hechoEl(contexto.ahora, marca.zonaHoraria),
+      cifras: lasCifrasDelCorreo(informe.cifras, informe.periodo),
+      frases: [informe.frases.mejor, informe.frases.peor, informe.frases.mirar].filter(
+        (f): f is string => f !== null,
+      ),
+      semaforo:
+        informe.semaforo === null
+          ? null
+          : informe.semaforo.map((c) => ({
+              nombre: c.nombre,
+              valor: c.valorEnTexto,
+              objetivo: c.objetivoEnTexto,
+              semaforo: c.semaforo,
+              porque: c.porque.length === 0 ? null : c.porque.join(' '),
+            })),
+    });
+
+    return hacerElPdf(contexto, html, {
+      nombre: `${nombreDeFichero(informe.titulo)}-${informe.periodo.desde}.pdf`,
+      pie: `${informe.titulo} · ${marca.nombreDelLocal} · ${informe.periodo.nombre}`,
+    });
+  },
+});
+
+/** «Tu semana» → «tu-semana», para el nombre del fichero. */
+export function nombreDeFichero(texto: string): string {
+  return texto
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}

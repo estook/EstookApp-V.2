@@ -141,6 +141,12 @@ export interface MiFichaje {
   /** Los minutos de margen antes de contar un retraso (0040). Se cambian en Ajustes. */
   readonly margenDeRetrasoMinutos: number;
   readonly puedoFichar: boolean;
+  /** Si en este local se ficha la pausa de descanso (0068). */
+  readonly pausasEnUso: boolean;
+  /** Y si cuenta como trabajo. Se cambia en Ajustes → Tu local. */
+  readonly pausaCuentaComoTrabajo: boolean;
+  /** La pausa en la que estoy ahora, si estoy en una. */
+  readonly enPausaDesde: string | null;
 }
 
 export const miFichaje = consulta<Record<string, never>, MiFichaje>({
@@ -169,7 +175,7 @@ export const miFichaje = consulta<Record<string, never>, MiFichaje>({
       select f.id::text as id,
              to_char(f.entro_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as entro_en,
              l.nombre as local, f.local_id::text as local_id,
-             floor(extract(epoch from (${contexto.ahora.toISOString()}::timestamptz - f.entro_en)) / 60)::int as minutos,
+             floor(estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60)::int as minutos,
              f.entro_metros as metros
         from estook.fichaje f
         join estook.local l on l.id = f.local_id
@@ -183,11 +189,11 @@ export const miFichaje = consulta<Record<string, never>, MiFichaje>({
       select
         coalesce(sum(
           case when f.fecha_operativa = ${reloj.jornada}::date
-               then extract(epoch from (coalesce(f.salio_en, ${contexto.ahora.toISOString()}::timestamptz) - f.entro_en)) / 60
+               then estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60
                else 0 end
         ), 0)::int as de_hoy,
         coalesce(sum(
-          extract(epoch from (coalesce(f.salio_en, ${contexto.ahora.toISOString()}::timestamptz) - f.entro_en)) / 60
+          estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60
         ), 0)::int as de_la_semana
         from estook.fichaje f
        where f.persona_id = ${contexto.personaId}
@@ -209,7 +215,19 @@ export const miFichaje = consulta<Record<string, never>, MiFichaje>({
 
     const abierto = abiertos[0];
 
+    const pausa = await contexto.sql<{ en_uso: boolean; cuenta: boolean; desde: string | null }[]>`
+      select l.pausas_en_uso as en_uso, l.pausa_cuenta_como_trabajo as cuenta,
+             (select to_char(p.empezo_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+                from estook.pausa p
+               where p.persona_id = ${contexto.personaId} and p.acabo_en is null) as desde
+        from estook.local l
+       where l.id = ${localId}
+    `;
+
     return {
+      pausasEnUso: pausa[0]?.en_uso ?? true,
+      pausaCuentaComoTrabajo: pausa[0]?.cuenta ?? false,
+      enPausaDesde: pausa[0]?.desde ?? null,
       abierto:
         abierto === undefined
           ? null
@@ -327,7 +345,7 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
       select e.id::text as persona_id, e.nombre, e.apellidos, e.rol_nombre,
              to_char(a.entro_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as desde,
              case when a.entro_en is null then null
-                  else floor(extract(epoch from (${contexto.ahora.toISOString()}::timestamptz - a.entro_en)) / 60)::int
+                  else floor(a.segundos / 60)::int
              end as minutos,
              a.entro_metros as metros,
              coalesce(h.minutos, 0)::int as minutos_de_hoy,
@@ -337,16 +355,16 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
              to_char(ho.entra, 'HH24:MI') as entra_hoy
         from equipo e
         left join lateral (
-          select f.entro_en, f.entro_metros
+          select f.entro_en, f.entro_metros,
+                 -- Lo trabajado, sin las pausas si no cuentan (0052).
+                 estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) as segundos
             from estook.fichaje f
            where f.persona_id = e.id and f.salio_en is null
            limit 1
         ) a on true
         left join lateral (
           select sum(
-            extract(epoch from (
-              coalesce(f.salio_en, ${contexto.ahora.toISOString()}::timestamptz) - f.entro_en
-            )) / 60
+            estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60
           ) as minutos
             from estook.fichaje f
            where f.persona_id = e.id
@@ -544,9 +562,7 @@ export const resumenDelEquipo = consulta<EntradaResumenDelEquipo, SalidaResumenD
         from equipo e
         left join lateral (
           select sum(
-                   extract(epoch from (
-                     coalesce(f.salio_en, ${contexto.ahora.toISOString()}::timestamptz) - f.entro_en
-                   )) / 60
+                   estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60
                  ) as minutos,
                  count(*) as turnos,
                  count(*) filter (where f.salio_en is null) as sin_cerrar,
@@ -807,9 +823,7 @@ export async function lasHorasDelEquipo(
     select f.persona_id::text as persona_id,
            to_char(f.fecha_operativa, 'YYYY-MM-DD') as fecha,
            -- El turno abierto cuenta hasta ahora, como en el Resumen.
-           sum(extract(epoch from (
-             coalesce(f.salio_en, ${contexto.ahora.toISOString()}::timestamptz) - f.entro_en
-           )))::text as segundos
+           sum(estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz))::text as segundos
       from estook.fichaje f
       join equipo e on e.id = f.persona_id
      where f.local_id = ${localId}
@@ -885,6 +899,97 @@ export interface FichajeDeUnaPersona {
   readonly sinUbicacion: string | null;
   readonly corregidoPor: string | null;
   readonly motivoDeLaCorreccion: string | null;
+  /** El aparato del local donde se fichó (0068), o nulo si fue desde el suyo. */
+  readonly aparato: string | null;
+  /** Sus pausas de descanso, de la primera a la última (0052). */
+  readonly pausas: readonly { readonly empezoEn: string; readonly acaboEn: string | null }[];
+  /**
+   * Cada corrección, con lo de antes y lo de después (0062): **el original no se
+   * borra**, y lo ve también el trabajador.
+   */
+  readonly correcciones: readonly CorreccionDeUnFichaje[];
+}
+
+export interface CorreccionDeUnFichaje {
+  readonly numero: number;
+  readonly entroAntes: string;
+  readonly salioAntes: string | null;
+  readonly entroDespues: string;
+  readonly salioDespues: string | null;
+  readonly motivo: string;
+  readonly quien: string | null;
+  readonly cuando: string;
+}
+
+/** Las pausas y las correcciones de unos fichajes, de una vez (no una consulta por fila). */
+async function loDeDentro(
+  contexto: Contexto,
+  ids: readonly string[],
+): Promise<{
+  pausas: ReadonlyMap<string, { empezoEn: string; acaboEn: string | null }[]>;
+  correcciones: ReadonlyMap<string, CorreccionDeUnFichaje[]>;
+}> {
+  const pausas = new Map<string, { empezoEn: string; acaboEn: string | null }[]>();
+  const correcciones = new Map<string, CorreccionDeUnFichaje[]>();
+  if (ids.length === 0) return { pausas, correcciones };
+
+  const filasDePausa = await contexto.sql<
+    { fichaje_id: string; empezo_en: string; acabo_en: string | null }[]
+  >`
+    select fichaje_id::text as fichaje_id,
+           to_char(empezo_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as empezo_en,
+           to_char(acabo_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as acabo_en
+      from estook.pausa
+     where fichaje_id = any (${comoLista(ids)}::text::bigint[])
+     order by empezo_en
+  `;
+  for (const p of filasDePausa) {
+    const lista = pausas.get(p.fichaje_id) ?? [];
+    lista.push({ empezoEn: p.empezo_en, acaboEn: p.acabo_en });
+    pausas.set(p.fichaje_id, lista);
+  }
+
+  const filasDeCorreccion = await contexto.sql<
+    {
+      fichaje_id: string;
+      numero: number;
+      entro_antes: string;
+      salio_antes: string | null;
+      entro_despues: string;
+      salio_despues: string | null;
+      motivo: string;
+      quien: string | null;
+      cuando: string;
+    }[]
+  >`
+    select c.fichaje_id::text as fichaje_id, c.numero,
+           to_char(c.entro_antes, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as entro_antes,
+           to_char(c.salio_antes, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as salio_antes,
+           to_char(c.entro_despues, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as entro_despues,
+           to_char(c.salio_despues, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as salio_despues,
+           c.motivo, p.nombre as quien,
+           to_char(c.corregido_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cuando
+      from estook.correccion_de_fichaje c
+      left join estook.persona p on p.id = c.corregido_por
+     where c.fichaje_id = any (${comoLista(ids)}::text::bigint[])
+     order by c.numero
+  `;
+  for (const c of filasDeCorreccion) {
+    const lista = correcciones.get(c.fichaje_id) ?? [];
+    lista.push({
+      numero: c.numero,
+      entroAntes: c.entro_antes,
+      salioAntes: c.salio_antes,
+      entroDespues: c.entro_despues,
+      salioDespues: c.salio_despues,
+      motivo: c.motivo,
+      quien: c.quien,
+      cuando: c.cuando,
+    });
+    correcciones.set(c.fichaje_id, lista);
+  }
+
+  return { pausas, correcciones };
 }
 
 /**
@@ -914,6 +1019,7 @@ async function leerFichajes(
       sin_donde: string | null;
       corregido_por: string | null;
       motivo: string | null;
+      aparato: string | null;
       total: number;
     }[]
   >`
@@ -922,16 +1028,20 @@ async function leerFichajes(
            to_char(f.entro_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as entro_en,
            to_char(f.salio_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as salio_en,
            case when f.salio_en is null then null
-                else floor(extract(epoch from (f.salio_en - f.entro_en)) / 60)::int end as minutos,
+                else floor(estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60)::int end as minutos,
            f.entro_metros as metros,
            l.radio_de_fichaje_metros as radio,
            f.entro_sin_donde as sin_donde,
            c.nombre as corregido_por,
            f.motivo_de_la_correccion as motivo,
+           t.nombre as aparato,
            count(*) over ()::int as total
       from estook.fichaje f
       join estook.local l on l.id = f.local_id
       left join estook.persona c on c.id = f.corregido_por
+      -- El nombre del aparato solo sale si quien mira puede ver los aparatos de
+      -- Ajustes; si no, sale nulo y se dice «en el aparato del local».
+      left join estook.terminal t on t.id = f.terminal_id
      where f.persona_id = ${personaId}
      order by f.entro_en desc, f.id
      limit ${limite} offset ${salto}
@@ -947,6 +1057,11 @@ async function leerFichajes(
     cuantos = cuenta?.total ?? 0;
   }
 
+  const dentro = await loDeDentro(
+    contexto,
+    filas.map((f) => f.id),
+  );
+
   return {
     cuantos,
     fichajes: filas.map((f) => ({
@@ -960,6 +1075,9 @@ async function leerFichajes(
       sinUbicacion: f.sin_donde,
       corregidoPor: f.corregido_por,
       motivoDeLaCorreccion: f.motivo,
+      aparato: f.sin_donde === 'aparato_del_local' ? (f.aparato ?? 'el aparato del local') : null,
+      pausas: dentro.pausas.get(f.id) ?? [],
+      correcciones: dentro.correcciones.get(f.id) ?? [],
     })),
   };
 }
@@ -1023,7 +1141,15 @@ export interface SalidaUnaPersona {
   readonly personaId: string;
   readonly nombre: string;
   readonly apellidos: string | null;
-  readonly correo?: string;
+  /** Solo a quien ve los datos del equipo. Nulo: no tiene correo (0057). */
+  readonly correo?: string | null;
+  /**
+   * **No tiene correo** (0057): entra solo en el aparato del local, con su PIN. Esto
+   * lo ve cualquiera que vea su ficha, porque decide cómo se le avisa y dónde ficha.
+   */
+  readonly sinCorreo: boolean;
+  /** Si quien mira puede ponerle el correo: quien puede dar acceso en este local. */
+  readonly puedePonerCorreo: boolean;
   readonly rolNombre: string;
   readonly rol: string;
   readonly estado: 'dentro' | 'sin_estrenar' | 'fuera';
@@ -1069,10 +1195,13 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
     const reloj = await elReloj(contexto, localId);
     const esMia = entrada.persona_id === contexto.personaId;
 
-    const permisos = await contexto.sql<{ costes: boolean; equipo: boolean; datos: boolean }[]>`
+    const permisos = await contexto.sql<
+      { costes: boolean; equipo: boolean; datos: boolean; invitar: boolean }[]
+    >`
       select estook.puede_ver('dato.coste_de_personal', ${localId}::uuid) as costes,
              estook.puede_editar('app.equipo', ${localId}::uuid) as equipo,
-             estook.puede_ver('dato.datos_del_equipo', ${localId}::uuid) as datos
+             estook.puede_ver('dato.datos_del_equipo', ${localId}::uuid) as datos,
+             estook.puede_editar('accion.invitar_personas', ${localId}::uuid) as invitar
     `;
     const puedeVerCostes = permisos[0]?.costes === true || esMia;
     const puedeEditar = permisos[0]?.equipo === true;
@@ -1083,7 +1212,7 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
         id: string;
         nombre: string;
         apellidos: string | null;
-        correo: string;
+        correo: string | null;
         rol: string;
         rol_nombre: string;
         amplitud: number;
@@ -1131,16 +1260,16 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
       select
         coalesce(sum(
           case when f.fecha_operativa >= ${lunes}::date
-               then extract(epoch from (coalesce(f.salio_en, ${contexto.ahora.toISOString()}::timestamptz) - f.entro_en)) / 60
+               then estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60
                else 0 end
         ), 0)::int as de_la_semana,
         coalesce(sum(
-          extract(epoch from (coalesce(f.salio_en, ${contexto.ahora.toISOString()}::timestamptz) - f.entro_en)) / 60
+          estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60
         ), 0)::int as del_mes,
         max(case when f.salio_en is null
                  then to_char(f.entro_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') end) as abierto,
         max(case when f.salio_en is null
-                 then floor(extract(epoch from (${contexto.ahora.toISOString()}::timestamptz - f.entro_en)) / 60)::int
+                 then floor(estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60)::int
             end) as minutos
         from estook.fichaje f
        where f.persona_id = ${entrada.persona_id}
@@ -1215,6 +1344,8 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
       nombre: quien.nombre,
       apellidos: quien.apellidos,
       ...(veLosDatos ? { correo: quien.correo } : {}),
+      sinCorreo: quien.correo === null,
+      puedePonerCorreo: quien.correo === null && permisos[0]?.invitar === true && !esMia,
       rol: quien.rol,
       rolNombre: quien.rol_nombre,
       estado: !quien.vigente

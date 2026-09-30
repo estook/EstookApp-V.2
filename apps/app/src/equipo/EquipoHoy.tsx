@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { BotonDePausa } from './BotonDePausa.tsx';
 import { puedeEditar } from '@estook/permisos';
 import {
   Aviso,
@@ -95,27 +96,35 @@ export function EquipoHoy() {
             <p className="text-cuerpo font-semibold">
               {mio.abierto === null
                 ? 'No estás fichado'
-                : `Dentro desde las ${comoSeLeeLaHora(mio.abierto.entroEn)}`}
+                : mio.enPausaDesde !== null && mio.enPausaDesde !== undefined
+                  ? `En tu pausa desde las ${comoSeLeeLaHora(mio.enPausaDesde)}`
+                  : `Dentro desde las ${comoSeLeeLaHora(mio.abierto.entroEn)}`}
             </p>
             <p className="text-secundario text-texto-suave">
               Hoy llevas {comoSeLeenMinutos(mio.minutosDeHoy)} · esta semana{' '}
-              {comoSeLeenMinutos(mio.minutosDeLaSemana)}
+              {comoSeLeenMinutos(mio.minutosDeLaSemana)} ·{' '}
+              <Link to="/mis-fichajes" className="underline underline-offset-2">
+                Mis fichajes
+              </Link>
             </p>
             {fichar.error !== null && (
               <p className="text-secundario text-mal">{fichar.error.quePasa}</p>
             )}
           </div>
-          <Boton
-            tono={mio.abierto === null ? 'principal' : 'secundario'}
-            icono={mio.abierto === null ? <IconoEntrar size={18} /> : <IconoSalir size={18} />}
-            cargando={fichar.fichando}
-            textoCargando={
-              fichar.paso === 'buscando_ubicacion' ? 'Buscando dónde estás' : 'Apuntando'
-            }
-            onClick={mio.abierto === null ? fichar.entrar : fichar.salir}
-          >
-            {mio.abierto === null ? 'Fichar la entrada' : 'Fichar la salida'}
-          </Boton>
+          <div className="flex flex-wrap gap-e2">
+            <BotonDePausa fichar={fichar} />
+            <Boton
+              tono={mio.abierto === null ? 'principal' : 'secundario'}
+              icono={mio.abierto === null ? <IconoEntrar size={18} /> : <IconoSalir size={18} />}
+              cargando={fichar.fichando}
+              textoCargando={
+                fichar.paso === 'buscando_ubicacion' ? 'Buscando dónde estás' : 'Apuntando'
+              }
+              onClick={mio.abierto === null ? fichar.entrar : fichar.salir}
+            >
+              {mio.abierto === null ? 'Fichar la entrada' : 'Fichar la salida'}
+            </Boton>
+          </div>
         </section>
       )}
 

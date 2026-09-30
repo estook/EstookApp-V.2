@@ -23,6 +23,7 @@ import {
 } from '@estook/ui';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { ListaDelSemaforo } from '../objetivos/Semaforo.tsx';
+import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
 import type { CifraDelInforme, ElInforme } from './contrato.ts';
 
 /**
@@ -125,6 +126,16 @@ export function Informes({ vista }: { readonly vista: string }) {
         >
           <span className="hidden sm:inline">Siguiente</span>
         </Boton>
+      </div>
+
+      {/* El mismo informe, en PDF con tu logo (0068): lo hace el servidor. */}
+      <div className="flex justify-center">
+        <BotonDelDocumento
+          consulta={'mi_informe_en_pdf'}
+          parametros={{ tipo, ...(del === null ? {} : { del }) }}
+          texto="Descargar en PDF"
+          tono="texto"
+        />
       </div>
 
       {!conDatos ? (

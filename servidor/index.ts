@@ -6,6 +6,7 @@ import { lugaresDeGoogle } from './infraestructura/google.ts';
 import { identidadDeGoogle } from './infraestructura/identidad-de-google.ts';
 import { anotar, recordar } from './infraestructura/idempotencia.ts';
 import { enTransaccion } from './infraestructura/postgres.ts';
+import { pdfDeCloudflare } from './infraestructura/pdf.ts';
 import { pagosDeStripe } from './infraestructura/stripe.ts';
 
 /**
@@ -49,6 +50,9 @@ const identidad = identidadDeGoogle();
 */
 const pagos = pagosDeStripe();
 
+/** Los PDF (0068): Cloudflare con sus dos claves. Nulo sin ellas: se dice, no se rompe. */
+const pdf = pdfDeCloudflare();
+
 const puertos: Puertos = {
   enTransaccion: (quien, hacer) =>
     enTransaccion(quien, (sql, sesion) =>
@@ -63,6 +67,7 @@ const puertos: Puertos = {
         correo,
         identidadDeGoogle: identidad,
         pagos,
+        pdf,
         correlacionId: quien.correlacionId,
         desde: quien.desde ?? null,
         // El instante lo pone el servidor, nunca el navegador (regla 10).

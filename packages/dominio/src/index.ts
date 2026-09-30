@@ -594,6 +594,7 @@ export {
   avisoDeMerma,
   avisoDeNota,
   avisoDeNotaDeGoogle,
+  avisoDeFichajeCorregido,
   avisoDePedidoEmpezado,
   avisoDePedidoListo,
   avisoDePedidoMandado,

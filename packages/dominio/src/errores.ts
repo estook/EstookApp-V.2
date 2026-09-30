@@ -235,6 +235,54 @@ export const ERRORES = {
     { texto: 'Reintentar', accion: 'reintentar' },
   ),
 
+  // ── El aparato del local para fichar (H1 · 0068) ───────────────────────────
+  //
+  // El mismo texto para un PIN que no existe y para uno de otro local: el aparato
+  // no dice de quién es un PIN que no es de aquí.
+  pin_desconocido: error(
+    'pin_desconocido',
+    'Ese PIN no es de nadie de este local.',
+    'Vuelve a teclearlo. Si no te acuerdas, quien lleva el local te da uno nuevo en un momento.',
+    401,
+  ),
+
+  aparato_parado: error(
+    'aparato_parado',
+    'Se han fallado muchos PIN seguidos, así que el aparato está parado cinco minutos.',
+    'Espera un poco y vuelve a teclear el tuyo. Si tienes prisa, ficha desde tu móvil.',
+    429,
+  ),
+
+  aparato_retirado: error(
+    'aparato_retirado',
+    'Este aparato ya no está puesto para fichar.',
+    'Quien lleva el local puede volver a ponerlo desde Ajustes → Tu local.',
+    401,
+  ),
+
+  correo_de_otra_persona: error(
+    'correo_de_otra_persona',
+    'Ese correo ya es de otra persona de Estook.',
+    'No se ha cambiado nada. Si es la misma persona, se unirán más adelante (M13); mientras, sigue sin correo y entra con su PIN en el aparato del local.',
+    409,
+  ),
+
+  // ── Los PDF (0068) ─────────────────────────────────────────────────────────
+  pdf_sin_encender: error(
+    'pdf_sin_encender',
+    'Los PDF todavía no están encendidos.',
+    'Todo lo demás funciona igual, y lo que querías está en la pantalla. En cuanto se enciendan, este botón lo descarga.',
+    503,
+  ),
+
+  pdf_no_disponible: error(
+    'pdf_no_disponible',
+    'No hemos podido hacer el PDF ahora.',
+    'No se ha perdido nada. Espera unos segundos y vuelve a pedirlo.',
+    502,
+    { texto: 'Reintentar', accion: 'reintentar' },
+  ),
+
   // ── Cosas que ya han pasado ────────────────────────────────────────────────
   ya_hecho: error(
     'ya_hecho',

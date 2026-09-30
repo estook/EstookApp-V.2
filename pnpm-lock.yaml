@@ -416,6 +416,9 @@ importers:
 
   servidor:
     dependencies:
+      '@estook/documentos':
+        specifier: workspace:*
+        version: link:../packages/documentos
       '@estook/dominio':
         specifier: workspace:*
         version: link:../packages/dominio

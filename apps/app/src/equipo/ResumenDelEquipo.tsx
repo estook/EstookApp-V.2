@@ -15,6 +15,7 @@ import {
 } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { FichaDePersona } from './FichaDePersona.tsx';
+import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
 import { usarPersonaAbierta } from '../ganchos/usarPersonaAbierta.ts';
 import {
   comoDinero,
@@ -276,8 +277,76 @@ export function ResumenDelEquipo() {
         />
       </Tarjeta>
 
+      <RegistroParaLaInspeccion />
+
       <FichaDePersona personaId={persona.abierta} alCerrar={persona.cerrar} />
     </div>
+  );
+}
+
+/** «2026-09»: el mes, para elegirlo. Los tres últimos, que es lo que se pide. */
+function losUltimosMeses(): { valor: string; texto: string; desde: string; hasta: string }[] {
+  // Solo para ofrecer los meses: qué días entran lo cuenta el servidor.
+  const hoy = new Date(Date.now());
+  return [0, 1, 2].map((atras) => {
+    const primero = new Date(hoy.getFullYear(), hoy.getMonth() - atras, 1);
+    const ultimo = new Date(hoy.getFullYear(), hoy.getMonth() - atras + 1, 0);
+    const dia = (d: Date) =>
+      `${String(d.getFullYear())}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const nombre = primero.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    return {
+      valor: dia(primero),
+      texto: nombre.charAt(0).toUpperCase() + nombre.slice(1),
+      desde: dia(primero),
+      hasta: dia(ultimo),
+    };
+  });
+}
+
+/**
+ * El registro de jornada para la Inspección (0062, 0068): del mes que se elija, en
+ * PDF y en hoja de cálculo, con la huella de la hoja en el PDF. Cada fichaje, sus
+ * pausas, desde dónde se hizo y cada corrección con lo de antes.
+ */
+function RegistroParaLaInspeccion() {
+  const meses = losUltimosMeses();
+  const [mes, setMes] = useState(meses[0]?.valor ?? '');
+  const elegido = meses.find((m) => m.valor === mes) ?? meses[0];
+  if (elegido === undefined) return null;
+  const parametros = { desde: elegido.desde, hasta: elegido.hasta };
+
+  return (
+    <Tarjeta titulo="Registro de jornada para la Inspección">
+      <div className="flex flex-col gap-e3">
+        <p className="text-secundario text-texto-suave">
+          Cada fichaje del mes, con sus pausas, desde dónde se hizo y lo corregido con lo de antes.
+          La ley pide guardarlo cuatro años y enseñarlo si lo piden la Inspección, el trabajador o
+          sus representantes.
+        </p>
+        <div className="max-w-[16rem]">
+          <Selector
+            etiqueta="Mes"
+            opciones={meses.map((m) => ({ valor: m.valor, texto: m.texto }))}
+            value={mes}
+            onChange={(e) => {
+              setMes(e.currentTarget.value);
+            }}
+          />
+        </div>
+        <div className="flex flex-wrap gap-e3">
+          <BotonDelDocumento
+            consulta={'registro_de_jornada'}
+            parametros={{ ...parametros, formato: 'pdf' }}
+            texto="En PDF"
+          />
+          <BotonDelDocumento
+            consulta={'registro_de_jornada'}
+            parametros={{ ...parametros, formato: 'hoja' }}
+            texto="En hoja de cálculo"
+          />
+        </div>
+      </div>
+    </Tarjeta>
   );
 }
 

@@ -19,6 +19,7 @@
     "formato:arreglar": "prettier --write .",
     "dependencias": "depcruise apps packages servidor --config .dependency-cruiser.cjs",
     "prueba": "vitest run",
+    "prueba:semana": "node herramientas/la-semana-entera.mjs",
     "prueba:e2e": "playwright test",
     "tamano": "node herramientas/presupuesto-tamano.mjs",
     "publicacion": "node herramientas/comprueba-publicacion.mjs",

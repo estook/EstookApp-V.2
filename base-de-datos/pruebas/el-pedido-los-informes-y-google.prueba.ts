@@ -201,11 +201,16 @@ describe('el pedido sugerido', () => {
         lineas: [{ producto_id: tomate, cantidad: 3 }],
       }),
     );
+    // Llega **dentro de tres días**, y no mañana, por la prueba del reloj de más abajo
+    // (lección 128): el reloj late el lunes de esta semana y mira el reparto del
+    // miércoles. Con «mañana», los martes este pedido llegaba justo ese miércoles, el
+    // reloj entendía —bien— que ya estaba pedido, y «mañana toca pedir» no salía. Con
+    // tres días cae como pronto el jueves, sea el día que sea.
     losDatos(
       await api.ejecutar(rosa, 'enviar_pedido', {
         pedido_id: pedidoId,
         canal: 'telefono',
-        llega_el: masDias(HOY, 1),
+        llega_el: masDias(HOY, 3),
       }),
     );
 
@@ -267,10 +272,19 @@ describe('el reloj, el lunes a las ocho', () => {
   });
 
   it('la semana del informe es la misma que enseña Negocio → Informes', async () => {
+    // Se mira **el lunes a las ocho**, como el reloj, y no a la hora de verdad
+    // (lección 128): un lunes entre las 00:00 y la hora de corte el local sigue en la
+    // jornada del domingo, la semana todavía no está cerrada y Negocio enseña la de
+    // antes. Es lo correcto en la app; la prueba no podía depender de a qué hora pasa.
     const informe = losDatos<{
       periodo: { desde: string; hasta: string };
       cifras: { indicador: string; total: number | null; anterior: number | null }[];
-    }>(await api.consultar(rosa, 'mi_informe', { tipo: 'semana', del: masDias(LUNES, -3) }));
+    }>(
+      await apiEl(`${LUNES}T07:10:00Z`).consultar(rosa, 'mi_informe', {
+        tipo: 'semana',
+        del: masDias(LUNES, -3),
+      }),
+    );
     expect(informe.periodo).toMatchObject({
       desde: masDias(LUNES, -7),
       hasta: masDias(LUNES, -1),

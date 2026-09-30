@@ -17,13 +17,13 @@ Se acepta al crear la cuenta, junto con las condiciones del servicio, y forma pa
 
 Estook trata datos personales **por cuenta del cliente y solo para darle el servicio**: la aplicación de gestión, Estook TPV, la carta digital y el soporte.
 
-| Qué                         | Detalle                                                                                                                                                                                 |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **De quién son los datos**  | El equipo del cliente; las personas de contacto de sus proveedores; y sus clientes, cuando piden factura o dejan una reseña pública                                                     |
-| **Qué datos**               | Nombre, correo y teléfono; puesto, contrato, horario y lo que cobra; fichajes con su hora y, si el local lo usa, la distancia al local al fichar; lo que cada uno hace en la aplicación; y nombre, NIF y domicilio de quien pide factura |
-| **Datos que no se tratan**  | Ni huella ni reconocimiento facial. Ningún dato de salud: los alérgenos son de los platos, y el aviso de alergia de una mesa no se asocia a una persona                                  |
-| **Para qué**                | Llevar el negocio: almacén, compras, escandallos, carta, horarios, fichajes, ventas, cobro, facturación y los informes                                                                  |
-| **Cuánto dura**             | Lo que dure la cuenta, más los plazos de [`conservacion-de-datos.md`](conservacion-de-datos.md)                                                                                         |
+| Qué                        | Detalle                                                                                                                                                                                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **De quién son los datos** | El equipo del cliente; las personas de contacto de sus proveedores; y sus clientes, cuando piden factura o dejan una reseña pública                                                                                                      |
+| **Qué datos**              | Nombre, correo y teléfono; puesto, contrato, horario y lo que cobra; fichajes con su hora y, si el local lo usa, la distancia al local al fichar; lo que cada uno hace en la aplicación; y nombre, NIF y domicilio de quien pide factura |
+| **Datos que no se tratan** | Ni huella ni reconocimiento facial. Ningún dato de salud: los alérgenos son de los platos, y el aviso de alergia de una mesa no se asocia a una persona                                                                                  |
+| **Para qué**               | Llevar el negocio: almacén, compras, escandallos, carta, horarios, fichajes, ventas, cobro, facturación y los informes                                                                                                                   |
+| **Cuánto dura**            | Lo que dure la cuenta, más los plazos de [`conservacion-de-datos.md`](conservacion-de-datos.md)                                                                                                                                          |
 
 ## 2 · Lo que se compromete a hacer Estook
 
@@ -46,15 +46,15 @@ Estook trata datos personales **por cuenta del cliente y solo para darle el serv
 
 El cliente **autoriza de forma general** a Estook a apoyarse en estos proveedores, que quedan obligados a lo mismo que Estook. **Estook avisa de cualquier alta o cambio con [30] días**, y el cliente puede oponerse; si no hay acuerdo, puede darse de baja sin coste.
 
-| Proveedor     | Para qué                                                      | Dónde trata los datos                  |
-| ------------- | ------------------------------------------------------------- | -------------------------------------- |
-| **Supabase**  | La base de datos, los ficheros y el servidor                  | Unión Europea (Irlanda)                |
-| **Resend**    | Enviar los correos del servicio                               | [COMPROBAR país y garantía]            |
-| **Stripe**    | El pago de la suscripción a Estook                            | [COMPROBAR país y garantía]            |
-| **Sentry**    | El registro de errores de la aplicación                       | [COMPROBAR país y garantía]            |
-| **Google**    | Entrar con Google, y la ficha y las reseñas del local         | [COMPROBAR país y garantía]            |
-| **GitHub**    | Publicar la web y la aplicación, mientras no se mude          | [COMPROBAR país y garantía]            |
-| **Verifacti** | Registrar los tickets y facturas en la AEAT, si cobra con Estook TPV | [COMPROBAR país y garantía]     |
+| Proveedor     | Para qué                                                             | Dónde trata los datos       |
+| ------------- | -------------------------------------------------------------------- | --------------------------- |
+| **Supabase**  | La base de datos, los ficheros y el servidor                         | Unión Europea (Irlanda)     |
+| **Resend**    | Enviar los correos del servicio                                      | [COMPROBAR país y garantía] |
+| **Stripe**    | El pago de la suscripción a Estook                                   | [COMPROBAR país y garantía] |
+| **Sentry**    | El registro de errores de la aplicación                              | [COMPROBAR país y garantía] |
+| **Google**    | Entrar con Google, y la ficha y las reseñas del local                | [COMPROBAR país y garantía] |
+| **GitHub**    | Publicar la web y la aplicación, mientras no se mude                 | [COMPROBAR país y garantía] |
+| **Verifacti** | Registrar los tickets y facturas en la AEAT, si cobra con Estook TPV | [COMPROBAR país y garantía] |
 
 Cuando Fogón exista, el proveedor del modelo de inteligencia artificial se añadirá aquí antes de encenderlo.
 

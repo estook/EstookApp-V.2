@@ -65,3 +65,13 @@ alguien se preguntara «por que esta hecho asi».
 | **0052** | La campana y los avisos: lo que hace el equipo, a quien manda, uno por cosa                            |
 | **0053** | El pedido sugerido, los informes y la nota en Google: al tocar, a nombre de quien lo recibe            |
 | **0054** | Estook TPV: cómo se ve y cómo se usa, el cajón y el datáfono; y Uber Eats comprobado otra vez          |
+| **0055** | La auditoría profunda, y lo que Richi aprobó                                                           |
+| **0056** | Estook TPV con su propia puerta, y Estook Link, el centro del local                                    |
+| **0057** | Quién es quién en el TPV: la persona sin correo, el terminal, el operador y la aprobación con PIN      |
+| **0058** | El cobro, sus pagos y la caja; la bolsa del camarero; la venta nace al cobrar                          |
+| **0059** | Emitir un documento fiscal: con estados, fuera de la transacción y sin registrar dos veces             |
+| **0060** | La empresa fiscal: organización, empresa y local                                                       |
+| **0061** | El orden nuevo y la infraestructura: el TPV tras M10, las copias, Cloudflare y las claves              |
+| **0062** | Lo legal: el contrato de encargado, la conservación, los fichajes, los alérgenos y la IA               |
+| **0063** | Los documentos: una fuente por tema                                                                    |
+| **0064** | Las gráficas contestan una pregunta, y se ven mejor sin engañar                                        |

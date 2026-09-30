@@ -28,11 +28,11 @@ ORGANIZACIÓN        el cliente de Estook: quien contrata y paga la cuota
     └── LOCAL
 ```
 
-| Pieza              | Lo suyo                                                                                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Organización**   | Nombre, plan, suscripción. **Quién paga la cuota** puede ser cualquiera de sus empresas (sus datos van a Stripe)                                 |
+| Pieza              | Lo suyo                                                                                                                                                                                                                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Organización**   | Nombre, plan, suscripción. **Quién paga la cuota** puede ser cualquiera de sus empresas (sus datos van a Stripe)                                                                                                                                                                        |
 | **Empresa fiscal** | Razón social o nombre y apellidos, **NIF**, nombre comercial, **domicilio fiscal completo**, contacto, datos registrales si los hay, **si está en el SII**, **si su domicilio es foral**, la representación ante Hacienda (quién firmó y cuándo) y **su titular o representante legal** |
-| **Local**          | Su nombre comercial, **la dirección del establecimiento**, zona horaria, **territorio** (ya existe), series, terminales, cajas e impresoras     |
+| **Local**          | Su nombre comercial, **la dirección del establecimiento**, zona horaria, **territorio** (ya existe), series, terminales, cajas e impresoras                                                                                                                                             |
 
 - **Lo que hereda el local de su empresa**, sin volver a escribirlo: NIF, razón social,
   domicilio fiscal, SII y foral.

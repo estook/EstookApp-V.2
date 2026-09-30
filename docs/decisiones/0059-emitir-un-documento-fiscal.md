@@ -65,10 +65,10 @@ ENVIANDO    se llama a Verifacti FUERA de la transacción,
 
 ### 2 · Sin conexión: lo que dice la ley y lo que hace Estook
 
-| Qué pasa                                    | Qué dice la AEAT                  | Qué hace Estook en la primera versión                                               |
-| ------------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------- |
-| Hacienda no responde                        | Se factura y se envía después     | Igual: Verifacti guarda y reintenta. En sala no se nota                             |
-| Verifacti no responde o no hay internet     | Se sigue facturando               | **Justificante provisional**, y el ticket se emite al volver, en orden, con la incidencia |
+| Qué pasa                                | Qué dice la AEAT              | Qué hace Estook en la primera versión                                                     |
+| --------------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------- |
+| Hacienda no responde                    | Se factura y se envía después | Igual: Verifacti guarda y reintenta. En sala no se nota                                   |
+| Verifacti no responde o no hay internet | Se sigue facturando           | **Justificante provisional**, y el ticket se emite al volver, en orden, con la incidencia |
 
 - **El justificante** lleva lo mismo que el ticket, dice claramente que no es una
   factura, **y un código para descargar el ticket** en cuanto se emita, desde el móvil.

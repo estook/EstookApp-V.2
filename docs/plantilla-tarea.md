@@ -6,17 +6,17 @@ Ninguna tarea se pide ni se acepta sin estos ocho apartados (A2 del Plan).
 CONTEXTO    que modulo, que existe ya, que documentos leer
 OBJETIVO    que tiene que funcionar al terminar, en una frase
 FICHEROS    los que puede tocar. Los demas son intocables
-REGLAS      las trece de docs/reglas.md, mas las del modulo
+REGLAS      las quince de A1 del Plan, mas las del modulo
 NO HACER    las tentaciones concretas de esta tarea
 PRUEBAS     que pruebas escribe y que cubren
 ACEPTACION  la lista del modulo, punto por punto
 ENTREGA     rama, formato del commit, que documentar
 ```
 
-## Limites de tamano
+## Limites
 
 - Ninguna tarea toca mas de un modulo.
-- Ningun fichero pasa de 300 lineas sin justificarlo.
+- Un fichero hace una cosa: se parte cuando hace dos, no al llegar a un numero de lineas (0063).
 - Toda funcion publica lleva su tipo y su prueba.
 - Al terminar, se dice con honestidad que queda pendiente.
 

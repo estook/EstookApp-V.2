@@ -50,12 +50,12 @@ DESPUÉS       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 →
 **No es estrictamente necesario pagar Pro hoy** si hay copias de verdad mientras tanto.
 Así queda:
 
-| Cuándo                               | Qué                                                                                                                                                                                                  |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cuándo                                | Qué                                                                                                                                                                                                                                                           |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Ya** (rama de la prueba del martes) | Una copia **semanal, cifrada y fuera de Supabase**, hecha por GitHub cada lunes de madrugada, que **se restaura sola en una base de prueba** en el mismo paso: una copia que no se ha restaurado no es una copia. Y la de los ficheros (logos, fotos, cartas) |
-| **En unas semanas**                  | **Supabase Pro**: copia diaria de siete días, sin pausas, registros de más días. La semanal sigue                                                                                                   |
-| **Como muy tarde**                   | **Antes del primer cliente que pague de verdad.** Es la condición, no una fecha                                                                                                                       |
-| **Con el TPV en marcha**             | La recuperación a un punto exacto en el tiempo (un añadido de Pro): con tickets, perder un día no vale                                                                                              |
+| **En unas semanas**                   | **Supabase Pro**: copia diaria de siete días, sin pausas, registros de más días. La semanal sigue                                                                                                                                                             |
+| **Como muy tarde**                    | **Antes del primer cliente que pague de verdad.** Es la condición, no una fecha                                                                                                                                                                               |
+| **Con el TPV en marcha**              | La recuperación a un punto exacto en el tiempo (un añadido de Pro): con tickets, perder un día no vale                                                                                                                                                        |
 
 La copia necesita dos secretos en GitHub, y los pone Richi (sus pasos, en
 `docs/pasos-antes-de-m8.md`): **`URL_DE_LA_COPIA`**, la misma dirección de la base que
@@ -74,18 +74,18 @@ no permiten un SaaS de pago
 **Y lo que Richi preguntó: qué pasa con las claves, las funciones y la API.** Casi nada
 se mueve, porque Cloudflare solo sustituye al escaparate:
 
-| Pieza                                          | Dónde vive hoy                        | Con Cloudflare                                                                       |
-| ---------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------ |
-| El código, los pull request y las pruebas      | GitHub                                | **GitHub, igual.** Se sigue trabajando exactamente igual                             |
-| La web, la app, la carta y el admin (páginas)  | GitHub Pages                          | **Cloudflare Pages**                                                                  |
-| La API                                         | Supabase Edge Functions               | **Igual**                                                                             |
-| La base y los ficheros                         | Supabase                              | **Igual**                                                                             |
-| Los secretos del servidor (Stripe, Resend, Google, la base…) | Supabase → Edge Functions → Secrets | **Igual. No se toca ni uno**                                                          |
-| Las variables públicas `VITE_…`                | GitHub → Variables                    | **Igual**: GitHub sigue construyendo y le entrega a Cloudflare lo construido           |
-| Los secretos de desplegar la API               | GitHub → Secrets                      | **Igual**                                                                             |
-| La dirección `estook.com`                      | DNS en Hostinger → GitHub             | DNS en Hostinger → Cloudflare. Es el único cambio que se nota, y se prepara con vuelta atrás |
-| Entrar con Google, Stripe, los enlaces de los correos | Apuntan a `estook.com`          | **Igual**: el dominio no cambia                                                        |
-| **Nuevo**                                      | —                                     | Dos secretos en GitHub: `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`              |
+| Pieza                                                        | Dónde vive hoy                      | Con Cloudflare                                                                               |
+| ------------------------------------------------------------ | ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| El código, los pull request y las pruebas                    | GitHub                              | **GitHub, igual.** Se sigue trabajando exactamente igual                                     |
+| La web, la app, la carta y el admin (páginas)                | GitHub Pages                        | **Cloudflare Pages**                                                                         |
+| La API                                                       | Supabase Edge Functions             | **Igual**                                                                                    |
+| La base y los ficheros                                       | Supabase                            | **Igual**                                                                                    |
+| Los secretos del servidor (Stripe, Resend, Google, la base…) | Supabase → Edge Functions → Secrets | **Igual. No se toca ni uno**                                                                 |
+| Las variables públicas `VITE_…`                              | GitHub → Variables                  | **Igual**: GitHub sigue construyendo y le entrega a Cloudflare lo construido                 |
+| Los secretos de desplegar la API                             | GitHub → Secrets                    | **Igual**                                                                                    |
+| La dirección `estook.com`                                    | DNS en Hostinger → GitHub           | DNS en Hostinger → Cloudflare. Es el único cambio que se nota, y se prepara con vuelta atrás |
+| Entrar con Google, Stripe, los enlaces de los correos        | Apuntan a `estook.com`              | **Igual**: el dominio no cambia                                                              |
+| **Nuevo**                                                    | —                                   | Dos secretos en GitHub: `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`                     |
 
 **Lo que se gana ese día:** cabeceras de seguridad de verdad (hoy la app se podría meter
 dentro de otra web para engañar a alguien), direcciones sin «#», y **una vista previa de
@@ -119,10 +119,10 @@ PDF nunca se hace en el navegador**.
 
 ## 6 · Lo técnico que se adelanta
 
-| Qué                                   | Por qué                                                                                                                                  | Cuándo                         |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| **La API junto a la base**            | Supabase ejecuta la función en la región más cercana al usuario y recomienda la de la base si hay varias consultas ([documentación](https://supabase.com/docs/guides/functions/regional-invocation)). Se mide, se fija Irlanda y se vuelve a medir | Con la siguiente entrega       |
-| **Errores del servidor a Sentry**     | Hoy solo avisan los del navegador. Y en el admin, buscar lo que pasó por su hilo                                                          | Con la siguiente entrega       |
-| **El reloj por tandas**               | Hoy un latido recorre todas las cuentas; con cientos de locales no cabe en el tiempo de una función. Se reparte en la cola de trabajos  | Antes de M20                   |
-| **El trabajador de la cola**          | Para que una venta no espere a recalcular costes e informes: lo que no puede quedar a medias, en la misma transacción; lo demás, detrás | Antes de M20                   |
-| **La exportación completa**           | La prometen las condiciones: «lo que escribes es tuyo y puedes exportarlo»                                                                | Antes del primer cliente de pago |
+| Qué                               | Por qué                                                                                                                                                                                                                                            | Cuándo                           |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| **La API junto a la base**        | Supabase ejecuta la función en la región más cercana al usuario y recomienda la de la base si hay varias consultas ([documentación](https://supabase.com/docs/guides/functions/regional-invocation)). Se mide, se fija Irlanda y se vuelve a medir | Con la siguiente entrega         |
+| **Errores del servidor a Sentry** | Hoy solo avisan los del navegador. Y en el admin, buscar lo que pasó por su hilo                                                                                                                                                                   | Con la siguiente entrega         |
+| **El reloj por tandas**           | Hoy un latido recorre todas las cuentas; con cientos de locales no cabe en el tiempo de una función. Se reparte en la cola de trabajos                                                                                                             | Antes de M20                     |
+| **El trabajador de la cola**      | Para que una venta no espere a recalcular costes e informes: lo que no puede quedar a medias, en la misma transacción; lo demás, detrás                                                                                                            | Antes de M20                     |
+| **La exportación completa**       | La prometen las condiciones: «lo que escribes es tuyo y puedes exportarlo»                                                                                                                                                                         | Antes del primer cliente de pago |

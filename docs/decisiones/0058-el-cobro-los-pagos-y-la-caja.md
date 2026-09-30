@@ -50,12 +50,12 @@ CUENTA   lo que pide la mesa (o la barra, o el para llevar, o el reparto)
 
 ### 2 · El turno de caja y la bolsa del camarero
 
-| Pieza                  | Qué es                                                                                      |
-| ---------------------- | ------------------------------------------------------------------------------------------- |
-| **Cajón**              | El cajón físico, enchufado a una impresora. Varios terminales pueden usar el mismo           |
+| Pieza                  | Qué es                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------- |
+| **Cajón**              | El cajón físico, enchufado a una impresora. Varios terminales pueden usar el mismo                |
 | **Turno de caja**      | Apertura con su fondo contado → movimientos → arqueo ciego → cierre (el Z). Uno abierto por cajón |
-| **Bolsa del camarero** | Un turno de caja de una persona, sin cajón: lo que lleva encima. Se liquida en un cajón      |
-| **Cierre del día**     | La suma de los Z del día. Es lo que rellena el cierre de caja de Servicio                    |
+| **Bolsa del camarero** | Un turno de caja de una persona, sin cajón: lo que lleva encima. Se liquida en un cajón           |
+| **Cierre del día**     | La suma de los Z del día. Es lo que rellena el cierre de caja de Servicio                         |
 
 - **El local elige**: caja central (de fábrica), bolsa del camarero, o las dos según la
   persona. Es lo que contestó Richi.

@@ -9,9 +9,6 @@ nota: Reglas de trabajo, sistema de diseño, web pública y 31 módulos, más M6
 
 Este documento va dirigido a quien construya Estook, que será en su mayor parte una IA. Está escrito para que **no haga falta inventar nada**: cada decisión que se podría improvisar ya está tomada aquí.
 
-
-
-
 **La versión 1.4** (30 de septiembre de 2026) recoge la auditoría profunda ([decisión 0055](../decisiones/0055-la-auditoria-profunda.md)): **el orden nuevo**, con Estook TPV justo después de M10 ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)); la pila, el repositorio y las superficies **se van a la Arquitectura**, que es su sitio ([0063](../decisiones/0063-una-fuente-por-tema.md)); y entran las gráficas (B9). Lo que cambió en cada versión, en el [registro de cambios](CAMBIOS.md).
 
 Documentos hermanos: el **Manifiesto**, que dice qué es el producto y se lee antes que este; la **Arquitectura**, que dice cómo está hecho; **Roles, vistas, auditorías y administración**, que dice qué ve cada persona; la **Auditoría de flujos**, que es el documento de control obligatorio antes de cerrar cualquier módulo; y el **Anexo de TPV y facturación**, que manda en sala, cocina, cobro, caja y facturación.
@@ -372,15 +369,15 @@ Contraste mínimo 4,5:1 en texto y 3:1 en iconos con significado · **medido en 
 
 **Cada gráfica contesta una pregunta**, y nace con ella en un catálogo de `packages/ui`, como los widgets. Una gráfica que no contesta nada no entra ([0064](../decisiones/0064-las-graficas-contestan-una-pregunta.md)).
 
-| La pregunta                                      | La gráfica                                                            | Dónde                   |
-| ------------------------------------------------ | --------------------------------------------------------------------- | ----------------------- |
+| La pregunta                                      | La gráfica                                                             | Dónde                   |
+| ------------------------------------------------ | ---------------------------------------------------------------------- | ----------------------- |
 | ¿Voy mejor que la semana pasada?                 | Línea del periodo, el anterior en gris detrás y la diferencia al final | Ventas, Informes, Panel |
-| ¿A qué hora se me llena?                         | Mapa de calor día × hora                                              | Negocio, el cuadrante   |
-| ¿Qué platos me dan dinero y cuáles solo trabajo? | Matriz de popularidad y margen                                        | Carta (M10)             |
-| ¿Dónde se va el margen?                          | Cascada: ventas → género → personal → mermas → margen                 | Negocio, Pulse          |
-| ¿Llego al objetivo?                              | Barra contra la línea del objetivo, con lo que falta                  | Panel, Informes         |
-| ¿Qué 20 % me hace el 80 %?                       | Pareto de productos o de proveedores                                  | Almacén, Compras        |
-| ¿Cuánto me cuesta el personal para lo que vendo? | Ventas por hora trabajada, por franja                                 | Negocio                 |
+| ¿A qué hora se me llena?                         | Mapa de calor día × hora                                               | Negocio, el cuadrante   |
+| ¿Qué platos me dan dinero y cuáles solo trabajo? | Matriz de popularidad y margen                                         | Carta (M10)             |
+| ¿Dónde se va el margen?                          | Cascada: ventas → género → personal → mermas → margen                  | Negocio, Pulse          |
+| ¿Llego al objetivo?                              | Barra contra la línea del objetivo, con lo que falta                   | Panel, Informes         |
+| ¿Qué 20 % me hace el 80 %?                       | Pareto de productos o de proveedores                                   | Almacén, Compras        |
+| ¿Cuánto me cuesta el personal para lo que vendo? | Ventas por hora trabajada, por franja                                  | Negocio                 |
 
 **Las reglas.** El rojo es solo para lo malo: una serie normal va con el acento de su app · siempre dice con qué se compara —el periodo anterior, el objetivo o la media— · unidades en el eje y el periodo debajo · se toca y dice el valor, en móvil y en escritorio · una tabla escondida con los mismos datos para los lectores de pantalla · igual de bien en claro y en oscuro, medido.
 
@@ -647,17 +644,17 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y la ley de registro horario, que afecta a esto directamente.** Registrar la jornada es obligatorio en España desde mayo de 2019, y la Inspección ya sanciona los registros que considera poco fiables. Además hay un **Real Decreto de registro horario digital en tramitación** —a septiembre de 2026 **no está publicado en el BOE**, así que todavía no obliga— cuyo borrador exige cosas muy concretas. Estook ya cumple varias por diseño, y las que faltan se construyen aquí porque hacerlo después es rehacer:
 
-| Lo que exige el borrador                               | Cómo está Estook                                                                  |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| Registro solo digital, con sellado de hora automático  | **Ya:** la hora la pone el servidor                                               |
+| Lo que exige el borrador                               | Cómo está Estook                                                                                                                                                                             |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Registro solo digital, con sellado de hora automático  | **Ya:** la hora la pone el servidor                                                                                                                                                          |
 | Toda corrección con quién, cuándo y por qué, inmutable | **A medias.** Hoy la corrección cambia el fichaje y deja el rastro en la auditoría. **Entra en H:** la corrección es un registro nuevo que no toca el original, y el trabajador recibe aviso |
-| Credencial individual e intransferible                 | **Ya:** PIN por persona                                                           |
-| Sin huella ni reconocimiento facial                    | **Ya, y es regla dura del módulo**                                                |
-| El trabajador ve sus propios registros al momento      | **Ya:** cada uno ve lo suyo                                                       |
-| **Registrar también las pausas**                       | **Falta.** Entra aquí: pausa y vuelta, como un tramo más del turno                |
-| **Distinguir horas ordinarias de extraordinarias**     | **Falta.** Se calcula contra el contrato de M13 y se marca                        |
-| **Conservar cuatro años** con integridad               | Escrito en [`conservacion-de-datos.md`](../legal/conservacion-de-datos.md); lo aplica el trabajo nocturno de M27 |
-| **Acceso de la Inspección a los datos**                | **Falta.** Exportación completa del periodo, firmada y con su fecha, desde Equipo |
+| Credencial individual e intransferible                 | **Ya:** PIN por persona                                                                                                                                                                      |
+| Sin huella ni reconocimiento facial                    | **Ya, y es regla dura del módulo**                                                                                                                                                           |
+| El trabajador ve sus propios registros al momento      | **Ya:** cada uno ve lo suyo                                                                                                                                                                  |
+| **Registrar también las pausas**                       | **Falta.** Entra aquí: pausa y vuelta, como un tramo más del turno                                                                                                                           |
+| **Distinguir horas ordinarias de extraordinarias**     | **Falta.** Se calcula contra el contrato de M13 y se marca                                                                                                                                   |
+| **Conservar cuatro años** con integridad               | Escrito en [`conservacion-de-datos.md`](../legal/conservacion-de-datos.md); lo aplica el trabajo nocturno de M27                                                                             |
+| **Acceso de la Inspección a los datos**                | **Falta.** Exportación completa del periodo, firmada y con su fecha, desde Equipo                                                                                                            |
 
 > **[VERIFICAR] cuando el Real Decreto se publique en el BOE:** el formato exacto de la exportación para la Inspección y si exige una API. Hasta entonces se hace la exportación y no se inventa ningún protocolo. Es la misma regla que con VeriFactu.
 

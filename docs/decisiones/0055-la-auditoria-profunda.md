@@ -32,37 +32,37 @@ contradecían en doce.
 
 **El plan entero, aprobado.** Con estos matices, que mandan:
 
-| Punto                                             | Respuesta                                                                                                                                                                            |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| P0-5 · Salir de GitHub Pages                      | **Sí, pero al final**: «ahora es fácil en GitHub por los pull request; al acabar el último módulo lo movemos a Cloudflare, si se puede». Condición en la [0061](0061-el-orden-y-la-infraestructura.md) |
-| P2-1 · Gráficas                                   | Sí, «con un mejor diseño, más 3D y más bonito que las que tenemos» ([0064](0064-las-graficas-contestan-una-pregunta.md))                                                             |
-| P2-8 · La regla de las 300 líneas                 | «Si es una regla tonta, quítala, y que sea lo más óptimo posible» ([0063](0063-una-fuente-por-tema.md))                                                                             |
-| P3-2 · Datáfono conectado, pago en mesa, Bizum    | Sí, «sin meternos en cosas que no podemos»: Estook nunca guarda dinero ni pasa a ser entidad de pago ([0058](0058-el-cobro-los-pagos-y-la-caja.md))                                  |
-| 1 · Supabase Pro                                  | **En unas semanas**, «si no es estrictamente necesario». Mientras, la copia semanal gratuita ([0061](0061-el-orden-y-la-infraestructura.md))                                         |
-| 2 · Adelantar Estook TPV                          | **Justo después de M10** ([0061](0061-el-orden-y-la-infraestructura.md))                                                                                                            |
-| 3 · Estook TPV con su puerta                      | **Sí, puerta propia** ([0056](0056-estook-tpv-su-puerta-y-estook-link.md))                                                                                                          |
-| 4 · Trabajadores sin correo                       | **Sí**: nombre y PIN bastan ([0057](0057-quien-es-quien-en-el-tpv.md))                                                                                                              |
-| 5 · Cómo se cobra en sala                         | **Las dos formas**: caja central y bolsa del camarero, a elegir por local ([0058](0058-el-cobro-los-pagos-y-la-caja.md))                                                            |
-| 6 · El programa del local                         | **Estook Link** ([0056](0056-estook-tpv-su-puerta-y-estook-link.md))                                                                                                                |
-| 7 · Cloudflare Pages                              | **Sí, al final**, y preguntó qué pasa con las claves (respondido en la [0061](0061-el-orden-y-la-infraestructura.md))                                                               |
-| 8 · La #78                                        | Primero se arregla la prueba del día, después se fusiona la #78, y lo nuevo va en otra rama                                                                                           |
+| Punto                                          | Respuesta                                                                                                                                                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| P0-5 · Salir de GitHub Pages                   | **Sí, pero al final**: «ahora es fácil en GitHub por los pull request; al acabar el último módulo lo movemos a Cloudflare, si se puede». Condición en la [0061](0061-el-orden-y-la-infraestructura.md) |
+| P2-1 · Gráficas                                | Sí, «con un mejor diseño, más 3D y más bonito que las que tenemos» ([0064](0064-las-graficas-contestan-una-pregunta.md))                                                                               |
+| P2-8 · La regla de las 300 líneas              | «Si es una regla tonta, quítala, y que sea lo más óptimo posible» ([0063](0063-una-fuente-por-tema.md))                                                                                                |
+| P3-2 · Datáfono conectado, pago en mesa, Bizum | Sí, «sin meternos en cosas que no podemos»: Estook nunca guarda dinero ni pasa a ser entidad de pago ([0058](0058-el-cobro-los-pagos-y-la-caja.md))                                                    |
+| 1 · Supabase Pro                               | **En unas semanas**, «si no es estrictamente necesario». Mientras, la copia semanal gratuita ([0061](0061-el-orden-y-la-infraestructura.md))                                                           |
+| 2 · Adelantar Estook TPV                       | **Justo después de M10** ([0061](0061-el-orden-y-la-infraestructura.md))                                                                                                                               |
+| 3 · Estook TPV con su puerta                   | **Sí, puerta propia** ([0056](0056-estook-tpv-su-puerta-y-estook-link.md))                                                                                                                             |
+| 4 · Trabajadores sin correo                    | **Sí**: nombre y PIN bastan ([0057](0057-quien-es-quien-en-el-tpv.md))                                                                                                                                 |
+| 5 · Cómo se cobra en sala                      | **Las dos formas**: caja central y bolsa del camarero, a elegir por local ([0058](0058-el-cobro-los-pagos-y-la-caja.md))                                                                               |
+| 6 · El programa del local                      | **Estook Link** ([0056](0056-estook-tpv-su-puerta-y-estook-link.md))                                                                                                                                   |
+| 7 · Cloudflare Pages                           | **Sí, al final**, y preguntó qué pasa con las claves (respondido en la [0061](0061-el-orden-y-la-infraestructura.md))                                                                                  |
+| 8 · La #78                                     | Primero se arregla la prueba del día, después se fusiona la #78, y lo nuevo va en otra rama                                                                                                            |
 
 Y un encargo para todo: **«que sea una estructura profesional, que cumpla todo
 legalmente y que no dejemos nada en el aire»**.
 
 ## Lo que se decide, por temas
 
-| Decisión                                                 | Qué                                                                                                         |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| [0056](0056-estook-tpv-su-puerta-y-estook-link.md)       | Estook TPV con su propia puerta (`apps/tpv`); Estook Link, el centro del local; qué funciona sin conexión   |
-| [0057](0057-quien-es-quien-en-el-tpv.md)                 | Quién es quién: la persona sin correo, el terminal, el operador, el bloqueo y la aprobación con PIN          |
-| [0058](0058-el-cobro-los-pagos-y-la-caja.md)             | El cobro, sus pagos y la caja; la bolsa del camarero; el cierre del día; la venta nace al cobrar            |
-| [0059](0059-emitir-un-documento-fiscal.md)               | Emitir un ticket o una factura: con estados y clave de idempotencia; qué dice la AEAT sin conexión          |
-| [0060](0060-la-empresa-fiscal.md)                        | La empresa fiscal: organización → empresa → local                                                            |
-| [0061](0061-el-orden-y-la-infraestructura.md)            | El orden nuevo (el TPV tras M10), las copias, Cloudflare al final, las claves y el repositorio público        |
-| [0062](0062-lo-legal.md)                                 | Lo legal: contrato de encargado, conservación, fichajes, alérgenos, IA y lo que va al asesor                 |
-| [0063](0063-una-fuente-por-tema.md)                      | Los documentos: una fuente por tema, la Evolución fundida, la Arquitectura nueva, ESTADO corto                |
-| [0064](0064-las-graficas-contestan-una-pregunta.md)      | Las gráficas: cada una contesta una pregunta, y con profundidad sin engañar                                  |
+| Decisión                                            | Qué                                                                                                       |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| [0056](0056-estook-tpv-su-puerta-y-estook-link.md)  | Estook TPV con su propia puerta (`apps/tpv`); Estook Link, el centro del local; qué funciona sin conexión |
+| [0057](0057-quien-es-quien-en-el-tpv.md)            | Quién es quién: la persona sin correo, el terminal, el operador, el bloqueo y la aprobación con PIN       |
+| [0058](0058-el-cobro-los-pagos-y-la-caja.md)        | El cobro, sus pagos y la caja; la bolsa del camarero; el cierre del día; la venta nace al cobrar          |
+| [0059](0059-emitir-un-documento-fiscal.md)          | Emitir un ticket o una factura: con estados y clave de idempotencia; qué dice la AEAT sin conexión        |
+| [0060](0060-la-empresa-fiscal.md)                   | La empresa fiscal: organización → empresa → local                                                         |
+| [0061](0061-el-orden-y-la-infraestructura.md)       | El orden nuevo (el TPV tras M10), las copias, Cloudflare al final, las claves y el repositorio público    |
+| [0062](0062-lo-legal.md)                            | Lo legal: contrato de encargado, conservación, fichajes, alérgenos, IA y lo que va al asesor              |
+| [0063](0063-una-fuente-por-tema.md)                 | Los documentos: una fuente por tema, la Evolución fundida, la Arquitectura nueva, ESTADO corto            |
+| [0064](0064-las-graficas-contestan-una-pregunta.md) | Las gráficas: cada una contesta una pregunta, y con profundidad sin engañar                               |
 
 ## Un hallazgo del 30-sep que no estaba en el informe
 

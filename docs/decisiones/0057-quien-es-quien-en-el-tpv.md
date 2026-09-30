@@ -42,11 +42,11 @@ Richi contestó: **sí a los trabajadores sin correo**, con nombre y PIN.
 
 ### 2 · El terminal y su operador
 
-| Pieza         | Qué es                                                                                      |
-| ------------- | ------------------------------------------------------------------------------------------- |
-| **Terminal**  | El aparato del local: nombre, función (sala, barra, cocina, pase o fichar) y su propia sesión, revocable |
-| **Operador**  | La persona que lo usa ahora. Entra tecleando **solo su PIN**, sin correo                     |
-| **Turno del operador** | Desde que entra hasta que se bloquea o entra otro. Todo lo que hace queda a su nombre |
+| Pieza                  | Qué es                                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Terminal**           | El aparato del local: nombre, función (sala, barra, cocina, pase o fichar) y su propia sesión, revocable |
+| **Operador**           | La persona que lo usa ahora. Entra tecleando **solo su PIN**, sin correo                                 |
+| **Turno del operador** | Desde que entra hasta que se bloquea o entra otro. Todo lo que hace queda a su nombre                    |
 
 - **Solo el PIN, porque el terminal ya sabe de qué local es.** La sal del PIN es del
   local y el PIN es único dentro de él (migración `0018`): se encuentra a la persona con un solo
@@ -71,11 +71,11 @@ Hasta ahora cada operación declaraba **un** permiso (`exige`). El TPV pide tres
 más, y se construyen **una vez, en el despachador**, declaradas en cada operación igual
 que hoy `exige`:
 
-| Qué             | Cómo se declara                                    | Ejemplo                                                     |
-| --------------- | -------------------------------------------------- | ----------------------------------------------------------- |
-| **Aprobación**  | «esto lo aprueba alguien con tal permiso»          | Quitar un plato ya en cocina: lo pide el camarero, aprueba un jefe con su PIN |
-| **Límite**      | «hasta tanto sin aprobación»                       | Descuento hasta un 10 % el jefe de sala; más, el gerente    |
-| **Solo lo mío** | «solo sobre lo que es tuyo»                        | El camarero ve sus tickets y su informe X del turno         |
+| Qué             | Cómo se declara                           | Ejemplo                                                                       |
+| --------------- | ----------------------------------------- | ----------------------------------------------------------------------------- |
+| **Aprobación**  | «esto lo aprueba alguien con tal permiso» | Quitar un plato ya en cocina: lo pide el camarero, aprueba un jefe con su PIN |
+| **Límite**      | «hasta tanto sin aprobación»              | Descuento hasta un 10 % el jefe de sala; más, el gerente                      |
+| **Solo lo mío** | «solo sobre lo que es tuyo»               | El camarero ve sus tickets y su informe X del turno                           |
 
 - **Una aprobación sirve para una cosa, una vez**, y caduca en dos minutos. Queda quién
   lo pidió, quién lo aprobó, qué, con qué motivo y desde qué terminal.

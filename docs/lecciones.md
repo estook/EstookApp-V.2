@@ -2,8 +2,8 @@
 
 > Lo que se aprendió fallando, en orden. Vivía en el apartado 5 de `ESTADO.md` hasta el
 > 23 de septiembre de 2026, y se sacó aquí para que el estado se lea en cinco minutos:
-> **aquí no se ha quitado nada**. Las trece reglas que no se discuten están en
-> [`reglas.md`](reglas.md); esto es lo que las completa.
+> **aquí no se ha quitado nada**. Las quince reglas que no se discuten están en el
+> [Plan de desarrollo](maestros/Estook-Plan-de-Desarrollo.md), parte A1; esto es lo que las completa.
 >
 > **Una lección que se puede convertir en prueba, se convierte** (la 9). Estas son las
 > que todavía hay que tener en la cabeza, o las que explican por qué existe una prueba.

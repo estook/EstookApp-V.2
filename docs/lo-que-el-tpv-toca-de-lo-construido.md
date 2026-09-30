@@ -1,5 +1,14 @@
 # Lo que el TPV toca de lo ya construido
 
+> **Al día el 30 de septiembre de 2026.** La auditoría profunda repasó esta lista contra
+> el esquema y cambió tres cosas de fondo: **Estook TPV tiene su propia puerta**
+> (`apps/tpv`, [0056](decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)), **va justo
+> después de M10** y no en la Fase 4 ([0061](decisiones/0061-el-orden-y-la-infraestructura.md)),
+> y **la persona puede no tener correo** ([0057](decisiones/0057-quien-es-quien-en-el-tpv.md)).
+> El modelo que manda es el del Anexo, capítulo 7, y el de la
+> [Arquitectura](maestros/Estook-Arquitectura.md), capítulo 5. Lo de abajo se conserva
+> como se escribió el 20-sep: vale como lista de lo que hay que ampliar, no como diseño.
+
 **Escrito el 20 de septiembre de 2026**, repasando el esquema y el código de verdad
 contra la Evolución 1.1 y el [Anexo · TPV y facturación](maestros/Estook-Anexo-TPV-y-Facturacion.md).
 

@@ -20,15 +20,15 @@ Richi pidió, al aprobarlo, «un mejor diseño, más 3D y más bonito que las qu
 Un catálogo de gráficas, como el de widgets (`packages/ui`), donde **cada una nace con
 su pregunta**. Si una gráfica no contesta nada, no entra.
 
-| La pregunta                                          | La gráfica                                                                           | Dónde                         |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------- |
-| ¿Voy mejor que la semana pasada?                     | Línea de este periodo, el anterior en gris detrás, y la diferencia al final           | Ventas, Informes, Panel       |
-| ¿A qué hora se me llena?                             | Mapa de calor día × hora                                                              | Negocio, el cuadrante (H)     |
-| ¿Qué platos me dan dinero y cuáles solo trabajo?     | Matriz de popularidad y margen: estrellas, caballos, rompecabezas y perros            | Carta (M10)                   |
-| ¿Dónde se va el margen?                              | Cascada: ventas → género → personal → mermas → margen                                 | Negocio, Pulse                |
-| ¿Llego al objetivo?                                  | Barra contra la línea del objetivo, con lo que falta                                  | Panel, Informes               |
-| ¿Qué 20 % me hace el 80 %?                           | Pareto de productos o de proveedores                                                  | Almacén, Compras              |
-| ¿Cuánto me cuesta el personal para lo que vendo?     | Ventas por hora trabajada, por franja                                                 | Negocio (con H y el TPV)      |
+| La pregunta                                      | La gráfica                                                                  | Dónde                     |
+| ------------------------------------------------ | --------------------------------------------------------------------------- | ------------------------- |
+| ¿Voy mejor que la semana pasada?                 | Línea de este periodo, el anterior en gris detrás, y la diferencia al final | Ventas, Informes, Panel   |
+| ¿A qué hora se me llena?                         | Mapa de calor día × hora                                                    | Negocio, el cuadrante (H) |
+| ¿Qué platos me dan dinero y cuáles solo trabajo? | Matriz de popularidad y margen: estrellas, caballos, rompecabezas y perros  | Carta (M10)               |
+| ¿Dónde se va el margen?                          | Cascada: ventas → género → personal → mermas → margen                       | Negocio, Pulse            |
+| ¿Llego al objetivo?                              | Barra contra la línea del objetivo, con lo que falta                        | Panel, Informes           |
+| ¿Qué 20 % me hace el 80 %?                       | Pareto de productos o de proveedores                                        | Almacén, Compras          |
+| ¿Cuánto me cuesta el personal para lo que vendo? | Ventas por hora trabajada, por franja                                       | Negocio (con H y el TPV)  |
 
 ### 2 · Las reglas
 

@@ -85,7 +85,8 @@ continua bloquea la fusion si se incumple.
 
 ## Antes de escribir una linea
 
-- [Las trece reglas](docs/reglas.md)
+- [Las quince reglas](docs/maestros/Estook-Plan-de-Desarrollo.md), en la parte A1 del Plan
+- [Cómo está hecho](docs/maestros/Estook-Arquitectura.md)
 - [La plantilla de tarea](docs/plantilla-tarea.md)
 - [Los entornos y las banderas](docs/entornos.md)
 - [Las decisiones tomadas](docs/decisiones/)

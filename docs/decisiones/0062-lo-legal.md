@@ -22,14 +22,14 @@ profesional.
 
 ### 1 · Una carpeta, una fuente de verdad
 
-| Documento                                                                     | Qué es                                                                                   |
-| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| [`cumplimiento.md`](../legal/cumplimiento.md)                                 | **El mapa**: cada obligación, su norma, cómo está Estook y qué falta. Se mantiene vivo   |
-| [`preguntas-al-asesor.md`](../legal/preguntas-al-asesor.md)                   | Todo lo que espera a un profesional, en un solo sitio, con lo que depende de cada respuesta |
-| [`contrato-de-encargado.md`](../legal/contrato-de-encargado.md)               | Borrador del contrato del RGPD entre cada cliente y Estook                               |
-| [`conservacion-de-datos.md`](../legal/conservacion-de-datos.md)               | Cuánto se guarda cada dato, por qué, y qué pasa al darse de baja                          |
-| [`registro-de-actividades.md`](../legal/registro-de-actividades.md)           | El registro de actividades de tratamiento de Estook                                       |
-| [`informacion-para-el-equipo.md`](../legal/informacion-para-el-equipo.md)     | El texto que el local da a su equipo sobre fichajes, ubicación y PIN                      |
+| Documento                                                                 | Qué es                                                                                      |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| [`cumplimiento.md`](../legal/cumplimiento.md)                             | **El mapa**: cada obligación, su norma, cómo está Estook y qué falta. Se mantiene vivo      |
+| [`preguntas-al-asesor.md`](../legal/preguntas-al-asesor.md)               | Todo lo que espera a un profesional, en un solo sitio, con lo que depende de cada respuesta |
+| [`contrato-de-encargado.md`](../legal/contrato-de-encargado.md)           | Borrador del contrato del RGPD entre cada cliente y Estook                                  |
+| [`conservacion-de-datos.md`](../legal/conservacion-de-datos.md)           | Cuánto se guarda cada dato, por qué, y qué pasa al darse de baja                            |
+| [`registro-de-actividades.md`](../legal/registro-de-actividades.md)       | El registro de actividades de tratamiento de Estook                                         |
+| [`informacion-para-el-equipo.md`](../legal/informacion-para-el-equipo.md) | El texto que el local da a su equipo sobre fichajes, ubicación y PIN                        |
 
 ### 2 · El contrato de encargado del tratamiento
 
@@ -103,8 +103,7 @@ RD 126/2015). Estook los calcula de las fichas y avisa en sala. Por eso:
 La lista de preguntas estaba repartida por `ESTADO.md`, el Anexo y las decisiones.
 Ahora está entera en [`preguntas-al-asesor.md`](../legal/preguntas-al-asesor.md). **Hay
 que contratar al asesor fiscal y laboral ahora**, no al llegar al TPV: el contrato de
-encargado va antes del primer cliente de pago, y el TPV llega en el primer semestre de
-2027.
+encargado va antes del primer cliente de pago, y el TPV llega en el primer semestre de 2027.
 
 ## Lo que no se decide aquí
 

@@ -47,16 +47,16 @@ y hay que saber cuál.
 
 ## Las superficies
 
-| Superficie        | Dónde vive                           | Qué es                                                                                                  | Estado                    |
-| ----------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------- |
-| **Web**           | `apps/web` → `estook.com`            | Vender y contratar, y lo legal                                                                          | En producción             |
-| **Estook**        | `apps/app` → `estook.com/app/`       | La gestión: el Panel y las ocho apps. Con conexión                                                       | En producción             |
-| **Estook TPV**    | `apps/tpv` → `estook.com/tpv/`       | El servicio: sala, barra, cocina, cobro y caja. **Funciona sin conexión** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)) | M20A                      |
-| **Carta digital** | `apps/carta` → `estook.com/carta/…`  | La carta pública con su QR, sin login                                                                   | En producción (la subida) |
-| **Panel interno** | `apps/admin` → `estook.com/admin/`   | Nuestro, para llevar a los clientes                                                                     | En producción             |
-| **La cáscara**    | `apps/movil`                         | Estook TPV envuelto con Capacitor, **opcional**: iPad, y el food truck sin Link. Ni una pantalla propia   | M20A                      |
-| **Estook Link**   | `link/`                              | El programa del local: centro sin internet, impresoras, cajón y el conector de un TPV ajeno              | M19a y M19b               |
-| **La API**        | `servidor/` → Supabase Edge Functions | Toda la lógica, detrás del despachador                                                                  | En producción             |
+| Superficie        | Dónde vive                            | Qué es                                                                                                                                       | Estado                    |
+| ----------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| **Web**           | `apps/web` → `estook.com`             | Vender y contratar, y lo legal                                                                                                               | En producción             |
+| **Estook**        | `apps/app` → `estook.com/app/`        | La gestión: el Panel y las ocho apps. Con conexión                                                                                           | En producción             |
+| **Estook TPV**    | `apps/tpv` → `estook.com/tpv/`        | El servicio: sala, barra, cocina, cobro y caja. **Funciona sin conexión** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)) | M20A                      |
+| **Carta digital** | `apps/carta` → `estook.com/carta/…`   | La carta pública con su QR, sin login                                                                                                        | En producción (la subida) |
+| **Panel interno** | `apps/admin` → `estook.com/admin/`    | Nuestro, para llevar a los clientes                                                                                                          | En producción             |
+| **La cáscara**    | `apps/movil`                          | Estook TPV envuelto con Capacitor, **opcional**: iPad, y el food truck sin Link. Ni una pantalla propia                                      | M20A                      |
+| **Estook Link**   | `link/`                               | El programa del local: centro sin internet, impresoras, cajón y el conector de un TPV ajeno                                                  | M19a y M19b               |
+| **La API**        | `servidor/` → Supabase Edge Functions | Toda la lógica, detrás del despachador                                                                                                       | En producción             |
 
 **Una sola base de código, en web.** Estook TPV es otra puerta del mismo código: comparte
 la API, la base, el login, el PIN, los permisos y los paquetes. **No duplica ni una regla,
@@ -71,32 +71,32 @@ para Windows; y una aplicación de TPV con su propio repositorio, su base o su l
 
 # 2 · La pila, cerrada
 
-| Capa                        | Tecnología                                                                  | Por qué, y dónde está decidido                                               |
-| --------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Repositorio                 | Monorepo con pnpm y Turborepo                                               | Todas las puertas comparten dominio, tipos y diseño                          |
-| Aplicaciones                | React 18, Vite 6 y TypeScript estricto                                      | Terreno conocido y rápido en móvil                                           |
-| Estilos                     | Tailwind 4 con las fichas de B1 del Plan                                    | Sin CSS suelto                                                               |
-| Datos en pantalla           | TanStack Query 5                                                            | Caché, reintentos, invalidar por evento                                      |
-| Enrutado                    | React Router 6, con almohadilla mientras se publique en GitHub Pages         | [0008](../decisiones/0008-enrutado-con-almohadilla.md)                       |
-| Gráficas                    | Recharts, cargado aparte                                                    | [0064](../decisiones/0064-las-graficas-contestan-una-pregunta.md)            |
-| Arrastrar                   | `@dnd-kit`, cargado aparte                                                  | [0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)               |
-| Instalable y sin conexión   | Un _service worker_ por puerta: Estook en la entrega I, Estook TPV en M20A  | Hoy **solo hay manifiesto**; no hay _service worker_                         |
-| Base de datos               | PostgreSQL 17 en Supabase, en la Unión Europea (Irlanda)                     | Relacional, seguridad por filas, extensiones                                  |
-| API                         | Hono sobre Supabase Edge Functions (Deno)                                   | [0002](../decisiones/0002-runtime-de-la-api.md)                              |
-| Entrar                      | Sesiones propias, PIN y Google; segundo factor propio                       | [0010](../decisiones/0010-el-login-es-nuestro.md), [0042](../decisiones/0042-registro-abierto-google-y-la-oferta.md) |
-| Trabajos                    | Cola en tabla, y `pg_cron` que llama a la API cada hora                     | [0016](../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)          |
-| Documentos PDF              | Siempre en el servidor. **El motor se decide al empezar H**                 | [0061](../decisiones/0061-el-orden-y-la-infraestructura.md): un Chromium no cabe en una Edge Function |
-| IA                          | Detrás de una interfaz propia, `ProveedorIA`                                | M22 · [0023](../decisiones/0023-fogon-nunca-arma-su-contexto-en-el-navegador.md) |
-| Estook Link                 | Rust, servicio firmado para Windows, Linux y macOS                          | M19a                                                                         |
-| La cuota de Estook          | Stripe, sin librería                                                        | [0048](../decisiones/0048-el-pago-con-stripe.md)                             |
-| Facturación                 | Verifacti detrás de `ProveedorFacturacion`                                  | M20B · Anexo 4                                                               |
-| Datáfonos conectados        | Detrás de `ProveedorDatafono`                                               | Después de M20C · Anexo 10.7                                                 |
-| Impresión                   | Cola en el servidor y Estook Link hablando ESC/POS                          | M19a · Anexo 6                                                               |
-| Correo                      | Resend, con el dominio `estook.com` verificado                              | [0017](../decisiones/0017-como-avisa-estook.md)                              |
-| Errores                     | Sentry, en la región de la UE                                               | Hoy solo el navegador; el servidor, [0061](../decisiones/0061-el-orden-y-la-infraestructura.md) |
-| Publicación de las páginas  | GitHub Pages hoy; **Cloudflare Pages antes del primer cliente de pago**     | [0061](../decisiones/0061-el-orden-y-la-infraestructura.md)                  |
-| Pruebas                     | Vitest, PGlite (un Postgres en memoria) y Playwright                        | [0011](../decisiones/0011-la-api-en-las-pruebas.md)                          |
-| Integración continua        | GitHub Actions                                                              | Tres comprobaciones obligatorias para fusionar                               |
+| Capa                       | Tecnología                                                                 | Por qué, y dónde está decidido                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Repositorio                | Monorepo con pnpm y Turborepo                                              | Todas las puertas comparten dominio, tipos y diseño                                                                  |
+| Aplicaciones               | React 18, Vite 6 y TypeScript estricto                                     | Terreno conocido y rápido en móvil                                                                                   |
+| Estilos                    | Tailwind 4 con las fichas de B1 del Plan                                   | Sin CSS suelto                                                                                                       |
+| Datos en pantalla          | TanStack Query 5                                                           | Caché, reintentos, invalidar por evento                                                                              |
+| Enrutado                   | React Router 6, con almohadilla mientras se publique en GitHub Pages       | [0008](../decisiones/0008-enrutado-con-almohadilla.md)                                                               |
+| Gráficas                   | Recharts, cargado aparte                                                   | [0064](../decisiones/0064-las-graficas-contestan-una-pregunta.md)                                                    |
+| Arrastrar                  | `@dnd-kit`, cargado aparte                                                 | [0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)                                                        |
+| Instalable y sin conexión  | Un _service worker_ por puerta: Estook en la entrega I, Estook TPV en M20A | Hoy **solo hay manifiesto**; no hay _service worker_                                                                 |
+| Base de datos              | PostgreSQL 17 en Supabase, en la Unión Europea (Irlanda)                   | Relacional, seguridad por filas, extensiones                                                                         |
+| API                        | Hono sobre Supabase Edge Functions (Deno)                                  | [0002](../decisiones/0002-runtime-de-la-api.md)                                                                      |
+| Entrar                     | Sesiones propias, PIN y Google; segundo factor propio                      | [0010](../decisiones/0010-el-login-es-nuestro.md), [0042](../decisiones/0042-registro-abierto-google-y-la-oferta.md) |
+| Trabajos                   | Cola en tabla, y `pg_cron` que llama a la API cada hora                    | [0016](../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)                                                  |
+| Documentos PDF             | Siempre en el servidor. **El motor se decide al empezar H**                | [0061](../decisiones/0061-el-orden-y-la-infraestructura.md): un Chromium no cabe en una Edge Function                |
+| IA                         | Detrás de una interfaz propia, `ProveedorIA`                               | M22 · [0023](../decisiones/0023-fogon-nunca-arma-su-contexto-en-el-navegador.md)                                     |
+| Estook Link                | Rust, servicio firmado para Windows, Linux y macOS                         | M19a                                                                                                                 |
+| La cuota de Estook         | Stripe, sin librería                                                       | [0048](../decisiones/0048-el-pago-con-stripe.md)                                                                     |
+| Facturación                | Verifacti detrás de `ProveedorFacturacion`                                 | M20B · Anexo 4                                                                                                       |
+| Datáfonos conectados       | Detrás de `ProveedorDatafono`                                              | Después de M20C · Anexo 10.7                                                                                         |
+| Impresión                  | Cola en el servidor y Estook Link hablando ESC/POS                         | M19a · Anexo 6                                                                                                       |
+| Correo                     | Resend, con el dominio `estook.com` verificado                             | [0017](../decisiones/0017-como-avisa-estook.md)                                                                      |
+| Errores                    | Sentry, en la región de la UE                                              | Hoy solo el navegador; el servidor, [0061](../decisiones/0061-el-orden-y-la-infraestructura.md)                      |
+| Publicación de las páginas | GitHub Pages hoy; **Cloudflare Pages antes del primer cliente de pago**    | [0061](../decisiones/0061-el-orden-y-la-infraestructura.md)                                                          |
+| Pruebas                    | Vitest, PGlite (un Postgres en memoria) y Playwright                       | [0011](../decisiones/0011-la-api-en-las-pruebas.md)                                                                  |
+| Integración continua       | GitHub Actions                                                             | Tres comprobaciones obligatorias para fusionar                                                                       |
 
 **Descartado a propósito:** Next.js, Flutter, jsPDF, las librerías de componentes
 pesadas, y **cualquier dependencia nueva que no se justifique por escrito**. Que el
@@ -206,26 +206,26 @@ navegador ── cliente-api ──►  API (servidor/api)          transporte y
 Seis cosas que se tienden a mezclar, y no se mezclan: **persona, usuario, empleado,
 aparato, terminal y caja**.
 
-| Pieza                    | Qué es                                                                                           | Cómo se relaciona                                                         | Hoy                          |
-| ------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- | ---------------------------- |
-| **Organización**         | El cliente de Estook: quien contrata y paga la cuota                                             | Tiene empresas, áreas y locales                                           | Existe                       |
-| **Empresa fiscal**       | El obligado tributario: NIF, razón social, domicilio fiscal, SII, foral, titular y representación | De una organización; tiene locales ([0060](../decisiones/0060-la-empresa-fiscal.md)) | Primera necesidad o M20B |
-| **Área**                 | Agrupación opcional de locales                                                                   | De una organización                                                       | Existe                       |
-| **Local**                | El establecimiento: dirección, zona horaria, hora de corte, territorio, series                    | De una organización (y de una empresa)                                    | Existe                       |
-| **Persona**              | Alguien, **con o sin correo**                                                                    | Tiene membresías y un PIN por local                                       | Existe; el correo, opcional con H |
-| **Membresía**            | Persona + alcance + rol, con vigencia                                                            | Da los permisos de la matriz, recortados por local                         | Existe                       |
-| **Aparato personal**     | El móvil o el PC de alguien                                                                      | Su sesión es de la persona: 30 días, revocable                            | Existe                       |
-| **Terminal**             | Aparato **del local** con su función: sala, barra, cocina, pase o fichar                          | Emparejado por código o QR; su sesión es del aparato, revocable           | M20A                         |
-| **Operador**             | Quien usa el terminal ahora, entrado con su PIN                                                   | Todo lo que hace queda a su nombre; se bloquea solo                       | M20A                         |
-| **Aprobación**           | Un encargado autoriza algo con su PIN                                                             | Una cosa, una vez, dos minutos; queda quién pidió y quién aprobó          | M20A                         |
-| **Cajón y turno de caja** | El cajón físico, y su apertura → arqueo → cierre (el Z)                                          | Un turno abierto por cajón; varios terminales pueden compartirlo          | M20C                         |
-| **Bolsa del camarero**   | El efectivo que lleva encima quien cobra en la mesa                                              | Un turno de caja de una persona; se liquida en un cajón                   | M20C                         |
-| **Cuenta**               | El pedido: mesa, barra, para llevar o reparto                                                    | Tiene líneas con comensal, tanda, partida, precio e impuesto congelados   | M20A                         |
-| **Cobro**                | Lo que se cobra de una vez                                                                       | Un documento fiscal y uno o varios pagos                                  | M20C                         |
-| **Pago**                 | Cómo se pagó: efectivo, tarjeta, Bizum del banco…                                                | El efectivo mueve su turno de caja o su bolsa                             | M20C                         |
-| **Venta**                | Lo que mueve el almacén y cuenta en Negocio                                                      | **Nace al cobrar**, una por cobro                                         | M20                          |
-| **Documento fiscal**     | Ticket, factura, canje o rectificativa                                                           | Acompaña al cobro; vive en `facturacion` con su registro y sus envíos     | M20B                         |
-| **Cierre del día**       | La suma de los Z del día                                                                          | Rellena el cierre de caja de Servicio (uno por jornada, como ya es)       | Existe (a mano o con CSV)    |
+| Pieza                     | Qué es                                                                                            | Cómo se relaciona                                                                    | Hoy                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------- |
+| **Organización**          | El cliente de Estook: quien contrata y paga la cuota                                              | Tiene empresas, áreas y locales                                                      | Existe                            |
+| **Empresa fiscal**        | El obligado tributario: NIF, razón social, domicilio fiscal, SII, foral, titular y representación | De una organización; tiene locales ([0060](../decisiones/0060-la-empresa-fiscal.md)) | Primera necesidad o M20B          |
+| **Área**                  | Agrupación opcional de locales                                                                    | De una organización                                                                  | Existe                            |
+| **Local**                 | El establecimiento: dirección, zona horaria, hora de corte, territorio, series                    | De una organización (y de una empresa)                                               | Existe                            |
+| **Persona**               | Alguien, **con o sin correo**                                                                     | Tiene membresías y un PIN por local                                                  | Existe; el correo, opcional con H |
+| **Membresía**             | Persona + alcance + rol, con vigencia                                                             | Da los permisos de la matriz, recortados por local                                   | Existe                            |
+| **Aparato personal**      | El móvil o el PC de alguien                                                                       | Su sesión es de la persona: 30 días, revocable                                       | Existe                            |
+| **Terminal**              | Aparato **del local** con su función: sala, barra, cocina, pase o fichar                          | Emparejado por código o QR; su sesión es del aparato, revocable                      | M20A                              |
+| **Operador**              | Quien usa el terminal ahora, entrado con su PIN                                                   | Todo lo que hace queda a su nombre; se bloquea solo                                  | M20A                              |
+| **Aprobación**            | Un encargado autoriza algo con su PIN                                                             | Una cosa, una vez, dos minutos; queda quién pidió y quién aprobó                     | M20A                              |
+| **Cajón y turno de caja** | El cajón físico, y su apertura → arqueo → cierre (el Z)                                           | Un turno abierto por cajón; varios terminales pueden compartirlo                     | M20C                              |
+| **Bolsa del camarero**    | El efectivo que lleva encima quien cobra en la mesa                                               | Un turno de caja de una persona; se liquida en un cajón                              | M20C                              |
+| **Cuenta**                | El pedido: mesa, barra, para llevar o reparto                                                     | Tiene líneas con comensal, tanda, partida, precio e impuesto congelados              | M20A                              |
+| **Cobro**                 | Lo que se cobra de una vez                                                                        | Un documento fiscal y uno o varios pagos                                             | M20C                              |
+| **Pago**                  | Cómo se pagó: efectivo, tarjeta, Bizum del banco…                                                 | El efectivo mueve su turno de caja o su bolsa                                        | M20C                              |
+| **Venta**                 | Lo que mueve el almacén y cuenta en Negocio                                                       | **Nace al cobrar**, una por cobro                                                    | M20                               |
+| **Documento fiscal**      | Ticket, factura, canje o rectificativa                                                            | Acompaña al cobro; vive en `facturacion` con su registro y sus envíos                | M20B                              |
+| **Cierre del día**        | La suma de los Z del día                                                                          | Rellena el cierre de caja de Servicio (uno por jornada, como ya es)                  | Existe (a mano o con CSV)         |
 
 **La pregunta, contestada en orden:** quién es la persona → qué puede, su membresía en
 ese local → dónde, el local del terminal → desde qué, el terminal → qué sesión, la del
@@ -235,18 +235,18 @@ terminal y el turno del operador → con qué caja, el turno del cajón o su bol
 
 # 6 · Los aparatos
 
-| Aparato                                 | Cómo trabaja con Estook                                                                                 |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| PC con Windows táctil (el TPV de barra)  | Estook TPV instalado desde Edge o Chrome, a pantalla completa, y Estook Link en el mismo PC             |
-| Tablet Android                          | Estook TPV instalado desde Chrome, o la cáscara                                                         |
-| iPad                                    | **La cáscara**: Safari no deja hablar con la red del local                                             |
-| Móvil del camarero                      | El comandero: Estook TPV en una columna, desde su propia sesión                                         |
-| Pantalla de cocina y de pase            | Estook TPV en su función de cocina, en quiosco; sin internet recibe por Link                            |
-| Impresora de cocina y de tickets        | Cualquiera ESC/POS, por Link (o las que preguntan solas a la nube)                                      |
-| Cajón                                   | Enchufado a la impresora de tickets: se abre con una línea del ticket                                   |
-| Datáfono                                | El del banco, sin conectar (se cuadra al cierre); o uno conectado por internet, a nombre del local      |
-| Lector de códigos, llave de camarero, teclado de cocina | Escriben como un teclado: el navegador ya los lee (el lector, desde la entrega L)    |
-| Balanza                                 | Por el puerto serie desde Chrome o Edge, o por Link                                                     |
+| Aparato                                                 | Cómo trabaja con Estook                                                                            |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| PC con Windows táctil (el TPV de barra)                 | Estook TPV instalado desde Edge o Chrome, a pantalla completa, y Estook Link en el mismo PC        |
+| Tablet Android                                          | Estook TPV instalado desde Chrome, o la cáscara                                                    |
+| iPad                                                    | **La cáscara**: Safari no deja hablar con la red del local                                         |
+| Móvil del camarero                                      | El comandero: Estook TPV en una columna, desde su propia sesión                                    |
+| Pantalla de cocina y de pase                            | Estook TPV en su función de cocina, en quiosco; sin internet recibe por Link                       |
+| Impresora de cocina y de tickets                        | Cualquiera ESC/POS, por Link (o las que preguntan solas a la nube)                                 |
+| Cajón                                                   | Enchufado a la impresora de tickets: se abre con una línea del ticket                              |
+| Datáfono                                                | El del banco, sin conectar (se cuadra al cierre); o uno conectado por internet, a nombre del local |
+| Lector de códigos, llave de camarero, teclado de cocina | Escriben como un teclado: el navegador ya los lee (el lector, desde la entrega L)                  |
+| Balanza                                                 | Por el puerto serie desde Chrome o Edge, o por Link                                                |
 
 **Cómo se identifica cada uno:** el terminal, por su emparejamiento con el local (un
 código de un solo uso) y su sesión propia; el aparato personal, por una huella opaca que
@@ -258,17 +258,17 @@ guarda el navegador, nunca por datos del aparato físico.
 
 ## Qué funciona
 
-| Lo que pasa                                   | Con Link en el local                                                              | Sin Link                                                                          |
-| --------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Hay internet, pero cae Estook                 | Se toma nota, cocina recibe, se imprime y se cobra con justificante. Todo sube al volver | Cada terminal guarda su cola; la sala ve en grande que cocina no recibe; justificante |
-| Hay Estook, pero cae internet del local       | Igual que arriba                                                                  | Igual que arriba                                                                  |
-| Hay wifi sin internet                         | Igual: la red del local funciona                                                  | Igual que arriba                                                                  |
-| No hay wifi                                   | Cada aparato solo, con su cola                                                    | Cada aparato solo; papel                                                          |
-| Un solo terminal pierde la conexión           | Los demás siguen; el suyo sube al volver                                          | Igual                                                                             |
-| Se cae en mitad de un cobro                   | El cobro lleva su clave: al volver, o está hecho o se hace una vez                 | Igual. El datáfono del banco no depende de Estook                                 |
-| Se cae después de mandar una comanda          | La comanda nace con su identificador en el aparato: reintentar no la duplica       | Igual                                                                             |
-| Se cae mientras imprime                       | Cada trabajo tiene su identificador y la impresora confirma: no sale dos veces     | —                                                                                 |
-| Vuelve internet                               | Sube en orden, y los tickets pendientes se emiten con la incidencia                | Igual                                                                             |
+| Lo que pasa                             | Con Link en el local                                                                     | Sin Link                                                                              |
+| --------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Hay internet, pero cae Estook           | Se toma nota, cocina recibe, se imprime y se cobra con justificante. Todo sube al volver | Cada terminal guarda su cola; la sala ve en grande que cocina no recibe; justificante |
+| Hay Estook, pero cae internet del local | Igual que arriba                                                                         | Igual que arriba                                                                      |
+| Hay wifi sin internet                   | Igual: la red del local funciona                                                         | Igual que arriba                                                                      |
+| No hay wifi                             | Cada aparato solo, con su cola                                                           | Cada aparato solo; papel                                                              |
+| Un solo terminal pierde la conexión     | Los demás siguen; el suyo sube al volver                                                 | Igual                                                                                 |
+| Se cae en mitad de un cobro             | El cobro lleva su clave: al volver, o está hecho o se hace una vez                       | Igual. El datáfono del banco no depende de Estook                                     |
+| Se cae después de mandar una comanda    | La comanda nace con su identificador en el aparato: reintentar no la duplica             | Igual                                                                                 |
+| Se cae mientras imprime                 | Cada trabajo tiene su identificador y la impresora confirma: no sale dos veces           | —                                                                                     |
+| Vuelve internet                         | Sube en orden, y los tickets pendientes se emiten con la incidencia                      | Igual                                                                                 |
 
 **Funciona sin conexión:** tomar nota, mandar y marchar, marcar listo, la precuenta,
 cobrar en efectivo o con el datáfono del banco (con justificante), abrir el cajón, el
@@ -331,13 +331,13 @@ Verifacti en su servidor. Que lo genere Link en el local es futuro
 cerrado y el otro reacciona ([0014](../decisiones/0014-las-reacciones-entre-modulos.md)).
 Todas las reacciones se leen en un sitio, `servidor/aplicacion/reacciones.ts`.
 
-| Cadena                                            | En el momento, en la misma transacción       | Después, por la cola (trabajador, antes de M20)                 |
-| ------------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------- |
-| Venta → almacén → costes → Negocio → Fogón        | La venta y sus salidas del almacén           | Costes del día, cifras, informes, lo que lee Fogón              |
-| Compra → almacén → costes → escandallo            | La entrada del género y su precio            | Recalcular los platos afectados y avisar si baja el margen      |
-| Fichaje → equipo → horarios → Negocio             | El fichaje                                   | Horas, coste de personal, ventas por hora trabajada             |
-| Producto → carta → Estook TPV → cocina            | Publicar la carta crea una versión           | Los terminales la reciben en tiempo real                        |
-| Cobro → caja → ventas → Negocio                   | El cobro, sus pagos, el movimiento de caja y la venta | El documento fiscal si no había conexión, cifras, informes |
+| Cadena                                     | En el momento, en la misma transacción                | Después, por la cola (trabajador, antes de M20)            |
+| ------------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------------- |
+| Venta → almacén → costes → Negocio → Fogón | La venta y sus salidas del almacén                    | Costes del día, cifras, informes, lo que lee Fogón         |
+| Compra → almacén → costes → escandallo     | La entrada del género y su precio                     | Recalcular los platos afectados y avisar si baja el margen |
+| Fichaje → equipo → horarios → Negocio      | El fichaje                                            | Horas, coste de personal, ventas por hora trabajada        |
+| Producto → carta → Estook TPV → cocina     | Publicar la carta crea una versión                    | Los terminales la reciben en tiempo real                   |
+| Cobro → caja → ventas → Negocio            | El cobro, sus pagos, el movimiento de caja y la venta | El documento fiscal si no había conexión, cifras, informes |
 
 **Lo que no puede quedar a medias va en la misma transacción; lo demás, detrás.** Una
 venta no espera a que se recalculen los costes de toda la carta.
@@ -351,22 +351,21 @@ venta no espera a que se recalculen los costes de toda la carta.
 > oficial vigente, y solo se usa lo que de verdad está disponible. Cada servicio vive
 > detrás de su adaptador: cambiarlo es cambiar el adaptador.
 
-| Servicio                 | Para qué                                               | Cómo se entra                                   | Estado                                         |
-| ------------------------ | ------------------------------------------------------ | ----------------------------------------------- | ---------------------------------------------- |
-| **Supabase**             | Base, API, ficheros, reloj                             | Proyecto en la UE                               | En producción, **plan gratuito** (Pro en semanas) |
-| **Resend**               | Los correos                                            | Clave en los secretos de Supabase               | En producción                                  |
-| **Stripe**               | La cuota de Estook                                     | Clave de prueba; la real al cobrar de verdad     | En producción en modo prueba                   |
-| **Google Places**        | Situar el local y la nota en Google                    | Clave con tope por local, contado antes de llamar | En producción                                 |
-| **Entrar con Google**    | Crear cuenta y entrar                                  | Cliente OAuth «Estook»                          | En producción                                  |
-| **Google Business Profile** | Leer y contestar reseñas                            | OAuth del dueño y acceso aprobado por Google    | Esperando a Google                             |
-| **Sentry**               | Los errores                                            | DSN público (solo manda errores)                | En producción (navegador)                      |
-| **GitHub**               | Código, pull request, pruebas y hoy la publicación     | —                                               | En producción                                  |
-| **Cloudflare Pages**     | La publicación de las páginas                          | Dos secretos en GitHub                          | Antes del primer cliente de pago               |
-| **Verifacti**            | El registro VeriFactu de tickets y facturas            | Una clave por NIF y entorno, en el Vault        | M20B · Anexo 4                                 |
-| **Datáfonos conectados** | Cobrar con tarjeta sin teclear                         | La cuenta del local con su proveedor            | Después de M20C · Anexo 10.7                   |
-| **Uber Eats, Glovo, Just Eat** | Los pedidos de reparto                           | Acceso aprobado por cada plataforma             | M29 · abajo                                    |
-| **Proveedor de IA**      | Fogón                                                  | Clave en los secretos de Supabase               | M22                                            |
-
+| Servicio                       | Para qué                                           | Cómo se entra                                     | Estado                                            |
+| ------------------------------ | -------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- |
+| **Supabase**                   | Base, API, ficheros, reloj                         | Proyecto en la UE                                 | En producción, **plan gratuito** (Pro en semanas) |
+| **Resend**                     | Los correos                                        | Clave en los secretos de Supabase                 | En producción                                     |
+| **Stripe**                     | La cuota de Estook                                 | Clave de prueba; la real al cobrar de verdad      | En producción en modo prueba                      |
+| **Google Places**              | Situar el local y la nota en Google                | Clave con tope por local, contado antes de llamar | En producción                                     |
+| **Entrar con Google**          | Crear cuenta y entrar                              | Cliente OAuth «Estook»                            | En producción                                     |
+| **Google Business Profile**    | Leer y contestar reseñas                           | OAuth del dueño y acceso aprobado por Google      | Esperando a Google                                |
+| **Sentry**                     | Los errores                                        | DSN público (solo manda errores)                  | En producción (navegador)                         |
+| **GitHub**                     | Código, pull request, pruebas y hoy la publicación | —                                                 | En producción                                     |
+| **Cloudflare Pages**           | La publicación de las páginas                      | Dos secretos en GitHub                            | Antes del primer cliente de pago                  |
+| **Verifacti**                  | El registro VeriFactu de tickets y facturas        | Una clave por NIF y entorno, en el Vault          | M20B · Anexo 4                                    |
+| **Datáfonos conectados**       | Cobrar con tarjeta sin teclear                     | La cuenta del local con su proveedor              | Después de M20C · Anexo 10.7                      |
+| **Uber Eats, Glovo, Just Eat** | Los pedidos de reparto                             | Acceso aprobado por cada plataforma               | M29 · abajo                                       |
+| **Proveedor de IA**            | Fogón                                              | Clave en los secretos de Supabase                 | M22                                               |
 
 ## Los pedidos de reparto · lo comprobado de Uber Eats
 
@@ -387,15 +386,15 @@ Investigado en septiembre de 2026 sobre la documentación oficial, y **comprobad
 
 **Los avisos que llegan.** Uber avisa por webhook, y cada petición lleva la cabecera `X-Uber-Signature`: **una firma HMAC-SHA256 del cuerpo, con el secreto del cliente como clave, en hexadecimal y en minúsculas**. Se comprueba antes de hacer nada.
 
-| Aviso                                       | Qué significa                                                                                                                                          |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `orders.notification`                       | Hay un pedido nuevo                                                                                                                                    |
-| `orders.cancel`                             | Se ha cancelado un pedido                                                                                                                              |
-| `orders.scheduled.notification`             | Hay un pedido programado, si la tienda los tiene                                                                                                       |
+| Aviso                                       | Qué significa                                                                                                                                               |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `orders.notification`                       | Hay un pedido nuevo                                                                                                                                         |
+| `orders.cancel`                             | Se ha cancelado un pedido                                                                                                                                   |
+| `orders.scheduled.notification`             | Hay un pedido programado, si la tienda los tiene                                                                                                            |
 | `orders.release`                            | **El repartidor ha llegado cerca**, si la tienda tiene la salida rápida encendida. **No es un cambio de estado cualquiera**, como se decía antes del 27-sep |
-| `order.fulfillment_issues.resolved`         | El cliente ha contestado a un cambio propuesto (un plato que falta)                                                                                    |
-| `store.provisioned` · `store.deprovisioned` | Se ha dado o quitado el acceso a una tienda                                                                                                            |
-| `store.status.changed`                      | La tienda se ha abierto o pausado                                                                                                                      |
+| `order.fulfillment_issues.resolved`         | El cliente ha contestado a un cambio propuesto (un plato que falta)                                                                                         |
+| `store.provisioned` · `store.deprovisioned` | Se ha dado o quitado el acceso a una tienda                                                                                                                 |
+| `store.status.changed`                      | La tienda se ha abierto o pausado                                                                                                                           |
 
 **Si Estook no contesta, Uber reintenta**: a los 10 segundos y después con espera creciente, hasta siete veces. **Un aviso puede llegar dos veces**, y por eso la idempotencia por identificador no es opcional.
 
@@ -463,7 +462,6 @@ Cada proveedor tiene su adaptador; todos transforman a los modelos internos.
 
 **Fuentes (leídas el 27-sep-2026):** [autenticación y alcances](https://developer.uber.com/docs/eats/guides/authentication) · [avisos y su firma](https://developer.uber.com/docs/eats/guides/webhooks) · [alta de tiendas](https://developer.uber.com/docs/eats/guides/integration-activation-flows) · [pedidos](https://developer.uber.com/docs/eats/guides/order-integration) · [aceptar un pedido](https://developer.uber.com/docs/eats/references/api/v1/post-eats-order-orderid-acceptposorder) · [carta](https://developer.uber.com/docs/eats/guides/menu-integration) · [salir a producción](https://developer.uber.com/docs/eats/guides/going-live) · [cambios de la API](https://developer.uber.com/docs/eats/api-change-log) · [Glovo Partners API](https://api-docs.glovoapp.com/partners/index.html) · [JET Connect](https://developers.just-eat.com/documentation/jet-connect/pos-integration-flow).
 
-
 ---
 
 # 11 · Las claves: dónde vive cada una
@@ -472,13 +470,13 @@ Cada proveedor tiene su adaptador; todos transforman a los modelos internos.
 exacto, dónde se pone y qué la usa— está en [`config/claves.md`](../../config/claves.md).
 En corto:
 
-| Dónde vive                                   | Qué hay                                                                                        | Lo ve el navegador |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------ |
-| **GitHub → Variables**                       | Lo público que va dentro de las páginas: la dirección de Supabase y de la API, la clave publicable, el DSN de Sentry | Sí, y no pasa nada |
-| **GitHub → Secrets**                         | Desplegar la API; y, con la copia, la dirección de la base y la contraseña de la copia          | No                 |
-| **Supabase → Edge Functions → Secrets**      | Todo lo del servidor: la base, Stripe, Resend, Google, la clave de servicio, la IA             | No, jamás          |
-| **Supabase → Vault**                         | El secreto del reloj (lo genera la migración `0047`); y las claves de Verifacti, una por NIF (M20B) | No, jamás     |
-| **El ordenador de Richi** (`.env.local`)     | La dirección de la base y la clave de servicio, para las herramientas                           | No                 |
+| Dónde vive                               | Qué hay                                                                                                              | Lo ve el navegador |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| **GitHub → Variables**                   | Lo público que va dentro de las páginas: la dirección de Supabase y de la API, la clave publicable, el DSN de Sentry | Sí, y no pasa nada |
+| **GitHub → Secrets**                     | Desplegar la API; y, con la copia, la dirección de la base y la contraseña de la copia                               | No                 |
+| **Supabase → Edge Functions → Secrets**  | Todo lo del servidor: la base, Stripe, Resend, Google, la clave de servicio, la IA                                   | No, jamás          |
+| **Supabase → Vault**                     | El secreto del reloj (lo genera la migración `0047`); y las claves de Verifacti, una por NIF (M20B)                  | No, jamás          |
+| **El ordenador de Richi** (`.env.local`) | La dirección de la base y la clave de servicio, para las herramientas                                                | No                 |
 
 **Si una clave se filtra**, se regenera en su panel de origen y se cambia donde vive. No
 se toca código. **Mudarse a Cloudflare no mueve ninguna**: solo añade dos secretos en
@@ -488,16 +486,16 @@ GitHub para publicar ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md
 
 # 12 · Desplegar, y volver atrás
 
-| Qué                       | Cómo                                                                                                         |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **Las páginas**           | Se publican solas al fusionar en `main` (flujo «Publicar»)                                                   |
+| Qué                       | Cómo                                                                                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Las páginas**           | Se publican solas al fusionar en `main` (flujo «Publicar»)                                                                                                    |
 | **La base**               | **Primero fusionar, después migrar, después desplegar.** Las migraciones son numeradas, reversibles y se comprueban en GitHub; una aplicada no se edita nunca |
-| **La API**                | Flujo «Desplegar la API», a mano, escribiendo «desplegar». No deja pasar si la base va por detrás del código |
-| **Comprobar**             | `.\estook.cmd bd:comprobar-api` lee la base de verdad: migraciones, consultas y comandos, y el reloj          |
-| **Volver atrás: páginas** | Volver a publicar el commit anterior                                                                          |
-| **Volver atrás: la API**  | Volver a desplegar la versión anterior                                                                        |
-| **Volver atrás: la base** | `.\estook.cmd bd:revertir` deshace la última migración; con datos nuevos, **solo con la copia delante**        |
-| **Estook TPV**            | Las actualizaciones de los terminales las decide el local (8); una versión incompatible se avisa antes       |
+| **La API**                | Flujo «Desplegar la API», a mano, escribiendo «desplegar». No deja pasar si la base va por detrás del código                                                  |
+| **Comprobar**             | `.\estook.cmd bd:comprobar-api` lee la base de verdad: migraciones, consultas y comandos, y el reloj                                                          |
+| **Volver atrás: páginas** | Volver a publicar el commit anterior                                                                                                                          |
+| **Volver atrás: la API**  | Volver a desplegar la versión anterior                                                                                                                        |
+| **Volver atrás: la base** | `.\estook.cmd bd:revertir` deshace la última migración; con datos nuevos, **solo con la copia delante**                                                       |
+| **Estook TPV**            | Las actualizaciones de los terminales las decide el local (8); una versión incompatible se avisa antes                                                        |
 
 **`main` está protegida**: nada entra sin pull request y sin las tres comprobaciones
 (Calidad, Construcción y presupuestos, Migraciones reversibles).
@@ -506,13 +504,13 @@ GitHub para publicar ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md
 
 # 13 · Copias de seguridad y recuperación
 
-| Qué                                               | Estado                                                                                                     |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Copia semanal de la base, cifrada, fuera de Supabase** | GitHub, cada lunes de madrugada. **Se restaura sola en una base de prueba en el mismo paso**: una copia que no se ha restaurado no es una copia |
-| **Copia de los ficheros** (logos, fotos, cartas)  | En el mismo flujo, si está puesta su clave                                                                 |
-| **Copia diaria de siete días**                    | Con Supabase Pro, en unas semanas y **antes del primer cliente de pago** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)) |
-| **Recuperación a un punto exacto en el tiempo**   | Con el TPV en marcha: con tickets, perder un día no vale                                                   |
-| **Cómo se restaura**                              | Paso a paso en [`docs/copias-de-seguridad.md`](../copias-de-seguridad.md), con lo que no va en la copia (el secreto del reloj en el Vault, los secretos de las funciones) |
+| Qué                                                      | Estado                                                                                                                                                                    |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Copia semanal de la base, cifrada, fuera de Supabase** | GitHub, cada lunes de madrugada. **Se restaura sola en una base de prueba en el mismo paso**: una copia que no se ha restaurado no es una copia                           |
+| **Copia de los ficheros** (logos, fotos, cartas)         | En el mismo flujo, si está puesta su clave                                                                                                                                |
+| **Copia diaria de siete días**                           | Con Supabase Pro, en unas semanas y **antes del primer cliente de pago** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md))                                    |
+| **Recuperación a un punto exacto en el tiempo**          | Con el TPV en marcha: con tickets, perder un día no vale                                                                                                                  |
+| **Cómo se restaura**                                     | Paso a paso en [`docs/copias-de-seguridad.md`](../copias-de-seguridad.md), con lo que no va en la copia (el secreto del reloj en el Vault, los secretos de las funciones) |
 
 ---
 
@@ -537,11 +535,11 @@ GitHub para publicar ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md
 carta digital en 4G, 1 s. **Y en Estook TPV**, marchar a cocina se ve en la pantalla de
 cocina en menos de 2 segundos.
 
-| Locales    | Qué aguanta                                              | Qué se rompe si no se hace nada                                                          | Qué se hace                                                  |
-| ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **1–10**   | Todo                                                     | Sin copias, un fallo es para siempre                                                     | Copias, ya; Pro en semanas                                   |
-| **100**    | La API, la base, la seguridad por filas, el agrupador    | El reloj de una pasada; los errores del servidor sin ver; el Panel de un año sin agregados | Reloj por tandas, Sentry del servidor, región, agregados (M21) |
-| **1.000**  | El diseño: datos por local e idempotencia                | Las conexiones en tiempo real de miles de terminales y pantallas; el tamaño de la auditoría | Comprobar los límites del plan antes de M20A; partir por meses |
+| Locales   | Qué aguanta                                           | Qué se rompe si no se hace nada                                                             | Qué se hace                                                    |
+| --------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **1–10**  | Todo                                                  | Sin copias, un fallo es para siempre                                                        | Copias, ya; Pro en semanas                                     |
+| **100**   | La API, la base, la seguridad por filas, el agrupador | El reloj de una pasada; los errores del servidor sin ver; el Panel de un año sin agregados  | Reloj por tandas, Sentry del servidor, región, agregados (M21) |
+| **1.000** | El diseño: datos por local e idempotencia             | Las conexiones en tiempo real de miles de terminales y pantallas; el tamaño de la auditoría | Comprobar los límites del plan antes de M20A; partir por meses |
 
 **La API se ejecuta junto a la base.** Supabase la lanza en la región más cercana al
 usuario; como cada petición consulta varias veces la base, se fija la de la base y se
@@ -755,4 +753,3 @@ Cerrado y probado. Ampliar es normal; reescribir, no, sin decisión escrita.
 - **La nota en Google** (0053): cada tres días y al mirarla si tiene más de uno, todo por
   `contar` (que vive en `nota-de-google.ts`); cada lectura deja su día en
   `estook.nota_en_google`, y solo el sistema la escribe.
-

@@ -53,14 +53,14 @@ su documento («Estook gestiona, TPV opera, Link conecta, Fogón entiende»).
 
 El programa que se instala en el local se llama **Estook Link**, y hace de centro:
 
-| Trabajo                        | Qué hace                                                                                    |
-| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| Trabajo                        | Qué hace                                                                                           |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- |
 | **Relevo sin internet**        | Recibe las comandas de los terminales por la red del local y las reparte a las pantallas de cocina |
-| **Impresión**                  | Habla ESC/POS con cualquier impresora, por red, USB o Bluetooth, y abre el cajón            |
-| **Cola**                       | Guarda en orden todo lo que no ha podido subir, y lo sube al volver internet                |
-| **PIN sin conexión**           | Comprueba el PIN de quien entra en un terminal cuando no hay nube (0057)                    |
-| **Reloj**                      | Da a los terminales una hora fiable cuando no hay nube                                      |
-| **Conector de un TPV externo** | Vigila la carpeta del TPV de otro fabricante (M19b), para quien no cobra con Estook          |
+| **Impresión**                  | Habla ESC/POS con cualquier impresora, por red, USB o Bluetooth, y abre el cajón                   |
+| **Cola**                       | Guarda en orden todo lo que no ha podido subir, y lo sube al volver internet                       |
+| **PIN sin conexión**           | Comprueba el PIN de quien entra en un terminal cuando no hay nube (0057)                           |
+| **Reloj**                      | Da a los terminales una hora fiable cuando no hay nube                                             |
+| **Conector de un TPV externo** | Vigila la carpeta del TPV de otro fabricante (M19b), para quien no cobra con Estook                |
 
 - **Escucha solo en la red del local, y solo a terminales emparejados.** Nunca abre un
   puerto hacia internet: hacia fuera sigue saliendo él, cifrado.
@@ -84,13 +84,13 @@ terminales del local siguen viéndose entre sí.
 
 ### 3 · Qué funciona sin conexión
 
-| Funciona                                                                                           | No funciona (todavía)                                                                     |
-| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Tomar nota, mandar y marchar, marcar listo, precuenta                                              | Emitir el ticket: se entrega un justificante y el ticket sale al volver (0059)            |
-| Cobrar en efectivo o con el datáfono del banco, con justificante                                   | La factura a petición, las rectificativas y las anulaciones                               |
-| Abrir el cajón, el informe X                                                                       | Cambiar la carta o los precios, dar de alta a alguien                                     |
-| Imprimir comandas y justificantes (con Link)                                                       | El datáfono conectado y los pedidos de reparto                                            |
-| Fichar y apuntar mermas (la cola del aparato)                                                      | El informe Z definitivo, que espera a que todo haya subido                                |
+| Funciona                                                         | No funciona (todavía)                                                          |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Tomar nota, mandar y marchar, marcar listo, precuenta            | Emitir el ticket: se entrega un justificante y el ticket sale al volver (0059) |
+| Cobrar en efectivo o con el datáfono del banco, con justificante | La factura a petición, las rectificativas y las anulaciones                    |
+| Abrir el cajón, el informe X                                     | Cambiar la carta o los precios, dar de alta a alguien                          |
+| Imprimir comandas y justificantes (con Link)                     | El datáfono conectado y los pedidos de reparto                                 |
+| Fichar y apuntar mermas (la cola del aparato)                    | El informe Z definitivo, que espera a que todo haya subido                     |
 
 **Lo que lo hace posible:** identificadores creados en el aparato (reintentar no
 duplica), la cola del aparato con sus estados, la idempotencia de la API (ya existe),

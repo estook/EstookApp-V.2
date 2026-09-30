@@ -41,10 +41,10 @@ Con una captura basta. Lo que ayuda de verdad es decir **qué estabas haciendo**
 - Ni el historial de lo hecho: está en `ESTADO.md` y en
   [`historia-de-los-modulos.md`](historia-de-los-modulos.md).
 - Ni las reglas de trabajo: están en el
-  [Plan de desarrollo](maestros/Estook-Plan-de-Desarrollo.md), parte A1, en
-  [`reglas.md`](reglas.md) y, con su porqué, en [`lecciones.md`](lecciones.md).
+  [Plan de desarrollo](maestros/Estook-Plan-de-Desarrollo.md), parte A1, y, con su
+  porqué, en [`lecciones.md`](lecciones.md).
 - Ni por qué algo está hecho así: está en [`decisiones/`](decisiones/).
-- Ni los documentos maestros: `ESTADO.md` los enlaza en su apartado 3.
+- Ni los documentos maestros: `ESTADO.md` los enlaza arriba del todo.
 
 ---
 
@@ -55,7 +55,7 @@ Están en el Plan y se repiten aquí porque son las que más se notan cuando fal
 1. **`ESTADO.md` se lee al empezar y se escribe al terminar.** Si dice algo que no es
    cierto, eso es un fallo y se arregla antes de seguir.
 2. **Una entrega, una rama, un pull request.** Y no se fusiona sin que Richi lo mire
-   en el TPV y en el móvil.
+   en el ordenador y en el móvil.
 3. **Si aparece una decisión de producto que no está escrita, se para y se pregunta.**
    No se inventa.
 

@@ -19,15 +19,15 @@ Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (có
 
 ## Lo que está decidido y no se reabre
 
-|                                                   | Decisión                                                                                                            |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| ¿Web o nativo?                                    | **Web, una sola base de código.** La cáscara nativa es opcional (iPad y food truck sin Link)                        |
-| ¿Una aplicación aparte para el TPV?               | **Una puerta propia del mismo código**, `apps/tpv`: mismos datos, permisos, PIN y diseño ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)) |
-| ¿Estook toca el dinero?                           | **Nunca.** El efectivo va al cajón y la tarjeta al datáfono del local. Estook apunta ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md)) |
-| ¿Quién hace la parte técnica de VeriFactu?        | **Verifacti**, detrás de un adaptador. Estook responde de su parte (1.5)                                            |
-| ¿Qué impresoras?                                  | **Cualquiera ESC/POS**, por Estook Link. Ninguna marca en el núcleo (capítulo 6)                                    |
-| ¿Sin internet?                                    | **Se sigue trabajando** con Estook Link en el local; el ticket, con justificante y al volver (3.6 y 4.11)           |
-| ¿Un «modo formación»?                             | **No existe en producción.** Se practica en el local de ejemplo (4.12)                                              |
+|                                            | Decisión                                                                                                                                                    |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ¿Web o nativo?                             | **Web, una sola base de código.** La cáscara nativa es opcional (iPad y food truck sin Link)                                                                |
+| ¿Una aplicación aparte para el TPV?        | **Una puerta propia del mismo código**, `apps/tpv`: mismos datos, permisos, PIN y diseño ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)) |
+| ¿Estook toca el dinero?                    | **Nunca.** El efectivo va al cajón y la tarjeta al datáfono del local. Estook apunta ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md))           |
+| ¿Quién hace la parte técnica de VeriFactu? | **Verifacti**, detrás de un adaptador. Estook responde de su parte (1.5)                                                                                    |
+| ¿Qué impresoras?                           | **Cualquiera ESC/POS**, por Estook Link. Ninguna marca en el núcleo (capítulo 6)                                                                            |
+| ¿Sin internet?                             | **Se sigue trabajando** con Estook Link en el local; el ticket, con justificante y al volver (3.6 y 4.11)                                                   |
+| ¿Un «modo formación»?                      | **No existe en producción.** Se practica en el local de ejemplo (4.12)                                                                                      |
 
 ## Lo que sigue pendiente de Richi, y no frena nada hasta la Fase 4
 
@@ -356,15 +356,15 @@ La versión 1.1 prometía que la cocina seguía imprimiendo sin internet con una
 
 ## 4.1 El proveedor: Verifacti
 
-| Qué                  | Cómo                                                                                     |
-| -------------------- | ---------------------------------------------------------------------------------------- |
-| Formato              | API REST, JSON                                                                           |
-| Autenticación        | `Authorization: Bearer <API Key>`, **una clave por NIF y por entorno**                   |
-| Entornos             | La URL no cambia. **La clave decide**: `vf_test_…` es pruebas, `vf_prod_…` es producción |
-| QR                   | Llega en la respuesta inmediata, en imagen Base64                                        |
-| Huella y cadena      | **Las hace el proveedor.** Estook no calcula ninguna cadena                              |
-| Envío a la AEAT      | Lo hace el proveedor con su certificado, en el minuto siguiente                          |
-| Respuesta de la AEAT | Por webhook (preferido) o consultando el estado del registro                             |
+| Qué                  | Cómo                                                                                                                                                     |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Formato              | API REST, JSON                                                                                                                                           |
+| Autenticación        | `Authorization: Bearer <API Key>`, **una clave por NIF y por entorno**                                                                                   |
+| Entornos             | La URL no cambia. **La clave decide**: `vf_test_…` es pruebas, `vf_prod_…` es producción                                                                 |
+| QR                   | Llega en la respuesta inmediata, en imagen Base64                                                                                                        |
+| Huella y cadena      | **Las hace el proveedor.** Estook no calcula ninguna cadena                                                                                              |
+| Envío a la AEAT      | Lo hace el proveedor con su certificado, en el minuto siguiente                                                                                          |
+| Respuesta de la AEAT | Por webhook (preferido) o consultando el estado del registro                                                                                             |
 | Idempotencia         | **Cabecera `Idempotency-Key` en `/verifactu/create`**: 409 si ya se está procesando, 422 si el cuerpo no cuadra con la clave (comprobado el 29-sep-2026) |
 
 > **[VERIFICAR en M20B]** los avisos por webhook: el 29-sep no aparecían en la documentación pública de Verifacti. Hasta confirmarlos con ellos, el estado se consulta (`/verifactu/status`) y el webhook es un añadido, nunca la única vía.
@@ -650,12 +650,12 @@ Rectificativa R5 sobre el ticket, en la serie de rectificativas, con su registro
 
 ## 5.5 Caja
 
-| Pieza                  | Qué es                                                                                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Cajón**              | El cajón físico, enchufado a una impresora. Varios terminales pueden usar el mismo                      |
-| **Turno de caja**      | Apertura con su fondo contado → entradas y salidas con motivo → arqueo ciego → cierre, que es **su Z**. Uno abierto por cajón |
+| Pieza                  | Qué es                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Cajón**              | El cajón físico, enchufado a una impresora. Varios terminales pueden usar el mismo                                                                           |
+| **Turno de caja**      | Apertura con su fondo contado → entradas y salidas con motivo → arqueo ciego → cierre, que es **su Z**. Uno abierto por cajón                                |
 | **Bolsa del camarero** | Un turno de caja de una persona, sin cajón: lo que cobra en la mesa y lleva encima. **Se liquida en un cajón** al acabar, con arqueo ciego de lo que entrega |
-| **Cierre del día**     | **La suma de los Z del día.** Es lo que rellena el cierre de caja de Servicio (M6½), con origen «Estook TPV» y su fiabilidad máxima |
+| **Cierre del día**     | **La suma de los Z del día.** Es lo que rellena el cierre de caja de Servicio (M6½), con origen «Estook TPV» y su fiabilidad máxima                          |
 
 - **El local elige cómo se cobra**: caja central (de fábrica), bolsa del camarero, o las dos según la persona (Richi, 29-sep).
 - **El cierre de caja de Servicio sigue siendo uno por día** (`cierre_uno_por_jornada`, migración `0029`), y ahora eso es lo correcto: es el cierre del día, no el de un cajón. No cambia ni una tabla de lo construido.
@@ -758,13 +758,13 @@ Y el **ticket por correo o por QR**, que el cliente se lleva en el móvil.
 
 La puesta en marcha pregunta qué tiene, no qué le vendemos:
 
-| Lo que tiene el local        | Lo que se le pone                                                   |
-| ---------------------------- | ------------------------------------------------------------------- |
-| Ya tiene impresoras y un PC  | **Estook Link.** No compra nada                                   |
+| Lo que tiene el local        | Lo que se le pone                                                     |
+| ---------------------------- | --------------------------------------------------------------------- |
+| Ya tiene impresoras y un PC  | **Estook Link.** No compra nada                                       |
 | Ya tiene impresoras, sin PC  | Estook Link en una Raspberry (~50 €), o la cáscara en una tablet fija |
-| No tiene nada y abre de cero | Pantalla de cocina, y una impresora que pregunta sola para la caja  |
-| Food truck, barra pequeña    | La cáscara en la tablet, imprimiendo directamente                   |
-| Varios locales               | Estook Link en cada uno, gestionados desde el panel de cadena     |
+| No tiene nada y abre de cero | Pantalla de cocina, y una impresora que pregunta sola para la caja    |
+| Food truck, barra pequeña    | La cáscara en la tablet, imprimiendo directamente                     |
+| Varios locales               | Estook Link en cada uno, gestionados desde el panel de cadena         |
 
 **Ningún local se queda fuera**, y en la web pública no se promete una marca: se dice «funciona con tu impresora».
 
@@ -893,40 +893,40 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 
 Cada promesa del producto, con el sitio donde se guarda. **Si alguna se queda sin fila, el modelo está mal.**
 
-| Lo que promete el producto              | Dónde vive                                                     |
-| --------------------------------------- | -------------------------------------------------------------- |
-| Entrar solo con el PIN en un terminal   | `terminal` + `turno_del_operador`                              |
-| Un trabajador sin correo                | `persona` con correo opcional                                  |
-| Que un encargado apruebe con su PIN     | `aprobacion`                                                   |
-| Dividir la cuenta por comensal          | `linea_de_cuenta.comensal` + `cobro` (qué paga)                |
-| Pagar una parte en efectivo y otra con tarjeta | varios `pago` del mismo `cobro`                         |
-| La bolsa del camarero                   | `turno_de_caja` de una persona + `liquidacion_de_bolsa`        |
-| Vender en barra sin abrir mesa          | `cuenta.tipo`                                                  |
-| Para llevar con nombre de recogida      | `cuenta.tipo` y su nombre                                      |
-| Aviso de alergia de la mesa             | `alergeno_de_la_cuenta`                                        |
-| Mandar por tandas y marchar             | `linea_de_cuenta.tanda` + `tanda`                              |
-| Cada partida ve lo suyo                 | `linea_de_cuenta.partida` + `pantalla_de_cocina`               |
-| Pantalla de pase                        | `pantalla_de_cocina.es_pase`                                   |
-| Semáforo con los minutos del local      | `tiempo_objetivo`                                              |
-| Deshacer un plato marcado               | los tiempos y el autor de `linea_de_cuenta`                    |
-| Contador del día y «Quedan N»           | consultas, no se guardan                                       |
-| Traspasar una mesa de camarero          | `cuenta.camarero` + `traspaso_de_cuenta`                       |
-| Tiempo real de cocina hacia la ficha    | los tiempos de `linea_de_cuenta`                               |
-| Trabajar sin conexión sin duplicar      | identificadores nacidos en el aparato + idempotencia           |
-| Imprimir en cualquier impresora         | `impresora.agente` + formato intermedio                        |
-| Reimprimir idéntico                     | `trabajo_de_impresion.contenido` congelado                     |
-| Un reintento no duplica                 | identificador único del trabajo                                |
-| Ticket con su QR y su estado            | `documento` + `registro` + `envio`                             |
-| Una respuesta perdida no duplica        | la clave de idempotencia del `documento`                       |
-| Cobrar sin conexión                     | `justificante`                                                 |
-| Corregir sin tocar lo emitido           | `sustituye_a` y `rectifica_a`                                  |
-| Demostrar lo emitido sin el proveedor   | `xml_del_registro`                                             |
-| Abrir el cajón sin venta, con rastro    | `movimiento_de_caja` (apertura sin venta) + `aprobacion`       |
-| Arqueo ciego y cuadre de la tarjeta     | `turno_de_caja`                                                |
-| Informes X y Z, y el cierre del día     | consultas, no se guardan; el cierre rellena `cierre_de_caja`   |
-| Cobrar con el datáfono conectado        | la operación del proveedor en `pago`                           |
-| Pedido de reparto en la cocina          | `cuenta.tipo = reparto` y sus líneas                           |
-| Varias empresas en una cuenta           | `empresa` + `local.empresa_id`                                 |
+| Lo que promete el producto                     | Dónde vive                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------ |
+| Entrar solo con el PIN en un terminal          | `terminal` + `turno_del_operador`                            |
+| Un trabajador sin correo                       | `persona` con correo opcional                                |
+| Que un encargado apruebe con su PIN            | `aprobacion`                                                 |
+| Dividir la cuenta por comensal                 | `linea_de_cuenta.comensal` + `cobro` (qué paga)              |
+| Pagar una parte en efectivo y otra con tarjeta | varios `pago` del mismo `cobro`                              |
+| La bolsa del camarero                          | `turno_de_caja` de una persona + `liquidacion_de_bolsa`      |
+| Vender en barra sin abrir mesa                 | `cuenta.tipo`                                                |
+| Para llevar con nombre de recogida             | `cuenta.tipo` y su nombre                                    |
+| Aviso de alergia de la mesa                    | `alergeno_de_la_cuenta`                                      |
+| Mandar por tandas y marchar                    | `linea_de_cuenta.tanda` + `tanda`                            |
+| Cada partida ve lo suyo                        | `linea_de_cuenta.partida` + `pantalla_de_cocina`             |
+| Pantalla de pase                               | `pantalla_de_cocina.es_pase`                                 |
+| Semáforo con los minutos del local             | `tiempo_objetivo`                                            |
+| Deshacer un plato marcado                      | los tiempos y el autor de `linea_de_cuenta`                  |
+| Contador del día y «Quedan N»                  | consultas, no se guardan                                     |
+| Traspasar una mesa de camarero                 | `cuenta.camarero` + `traspaso_de_cuenta`                     |
+| Tiempo real de cocina hacia la ficha           | los tiempos de `linea_de_cuenta`                             |
+| Trabajar sin conexión sin duplicar             | identificadores nacidos en el aparato + idempotencia         |
+| Imprimir en cualquier impresora                | `impresora.agente` + formato intermedio                      |
+| Reimprimir idéntico                            | `trabajo_de_impresion.contenido` congelado                   |
+| Un reintento no duplica                        | identificador único del trabajo                              |
+| Ticket con su QR y su estado                   | `documento` + `registro` + `envio`                           |
+| Una respuesta perdida no duplica               | la clave de idempotencia del `documento`                     |
+| Cobrar sin conexión                            | `justificante`                                               |
+| Corregir sin tocar lo emitido                  | `sustituye_a` y `rectifica_a`                                |
+| Demostrar lo emitido sin el proveedor          | `xml_del_registro`                                           |
+| Abrir el cajón sin venta, con rastro           | `movimiento_de_caja` (apertura sin venta) + `aprobacion`     |
+| Arqueo ciego y cuadre de la tarjeta            | `turno_de_caja`                                              |
+| Informes X y Z, y el cierre del día            | consultas, no se guardan; el cierre rellena `cierre_de_caja` |
+| Cobrar con el datáfono conectado               | la operación del proveedor en `pago`                         |
+| Pedido de reparto en la cocina                 | `cuenta.tipo = reparto` y sus líneas                         |
+| Varias empresas en una cuenta                  | `empresa` + `local.empresa_id`                               |
 
 ---
 
@@ -1006,9 +1006,9 @@ _Añadido en la versión 1.1 (27 de septiembre de 2026, [decisión 0054](../deci
 
 ## 10.1 Dos nombres, una aplicación
 
-| Lo que ve el cliente | Para qué                                                 | Por dentro                                                                  |
-| -------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------- |
-| **Estook**           | Gestionar: almacén, escandallos, carta, equipo, Negocio… | `apps/app`, la de siempre, con conexión                                     |
+| Lo que ve el cliente | Para qué                                                 | Por dentro                                                                   |
+| -------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **Estook**           | Gestionar: almacén, escandallos, carta, equipo, Negocio… | `apps/app`, la de siempre, con conexión                                      |
 | **Estook TPV**       | El servicio: tomar nota, cocina, cobrar, la caja         | `apps/tpv`, **su propia puerta del mismo código**, que funciona sin conexión |
 
 **Estook TPV es una puerta propia, no otra aplicación de producto** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)): comparte la API, la base, el login, el PIN, los permisos y el diseño, así que **no duplica nada**; y gana lo que un TPV necesita —instalarse aparte con su icono, arrancar en la función del terminal, trabajar sin conexión y actualizarse cuando lo decide el local—. Un terminal del local (3.4) enciende directamente en Estook TPV; un móvil personal abre Estook y entra al TPV con un botón, sin volver a entrar.
@@ -1174,12 +1174,12 @@ Y tres cosas que un TPV sin almacén no puede hacer:
 
 Arriba del TPV, siempre con icono y texto, nunca solo con color:
 
-| Estado                      | Qué pasa                                              | Qué ve la sala                                                                    |
-| --------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Todo bien                                 | —                                                                 | Nada                                                                              |
-| **Hacienda no responde**                  | Se emite normal y el envío espera (4.10)                          | Nada. Al gerente, un aviso si pasa de una hora                                    |
-| **Sin conexión con Estook, con Link**     | Se toma nota, **la cocina recibe**, se imprime y se cobra con justificante (3.6 y 4.11) | Una franja discreta: «Sin internet. Todo sigue funcionando en el local»           |
-| **Sin conexión con Estook, sin Link**     | Se toma nota y se cobra con justificante; la cocina no recibe     | Una franja ámbar: «Sin conexión. Se sigue trabajando; **la cocina aún no lo recibe**» |
+| Estado                                | Qué pasa                                                                                | Qué ve la sala                                                                        |
+| ------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Todo bien                             | —                                                                                       | Nada                                                                                  |
+| **Hacienda no responde**              | Se emite normal y el envío espera (4.10)                                                | Nada. Al gerente, un aviso si pasa de una hora                                        |
+| **Sin conexión con Estook, con Link** | Se toma nota, **la cocina recibe**, se imprime y se cobra con justificante (3.6 y 4.11) | Una franja discreta: «Sin internet. Todo sigue funcionando en el local»               |
+| **Sin conexión con Estook, sin Link** | Se toma nota y se cobra con justificante; la cocina no recibe                           | Una franja ámbar: «Sin conexión. Se sigue trabajando; **la cocina aún no lo recibe**» |
 
 Y al volver, **una vez**: «Conexión recuperada · 3 tickets emitidos».
 
@@ -1197,8 +1197,8 @@ Lo que ninguno de los investigados tiene junto, porque ninguno tiene detrás el 
 | **Tarjeta y efectivo cuadrados el mismo día** (10.6)                               | Se ve a fin de mes                                 |
 | El tiempo real de cada plato vuelve a su ficha y al cuadrante (3.3)                | Se queda en la pantalla                            |
 | Fogón explica el día, y **nunca toca un ticket** (4.12)                            | —                                                  |
-| **Sin internet, la sala y la cocina siguen hablándose** por Estook Link (3.6)       | Solo la cocina recibe, o nada                      |
-| **Fichar y entrar al TPV con el mismo PIN**, y el TPV solo para quien ha fichado    | Dos sistemas que no se conocen                     |
+| **Sin internet, la sala y la cocina siguen hablándose** por Estook Link (3.6)      | Solo la cocina recibe, o nada                      |
+| **Fichar y entrar al TPV con el mismo PIN**, y el TPV solo para quien ha fichado   | Dos sistemas que no se conocen                     |
 | Todo en la misma cuenta, con el mismo PIN                                          | Dos programas y dos accesos                        |
 
 ## 10.11 Ponerlo en marcha
@@ -1234,18 +1234,18 @@ Que un local que viene de otro TPV **no tenga que reescribir nada**:
 
 La vara de 10.3 —cuatro platos en diez toques— no basta: un camarero decide en el primer servicio. Estos son los objetivos, y se prueban (10.12).
 
-| Lo que se hace                        | Objetivo                          |
-| ------------------------------------- | --------------------------------- |
-| Abrir una mesa                        | 1 toque                           |
-| Añadir un plato                       | 1 toque                           |
-| Contestar una opción obligatoria      | 1 toque por pregunta              |
-| Mandar a cocina                       | 1 toque                           |
-| Otra ronda                            | 2 toques                          |
-| Mover una mesa                        | 3 toques                          |
-| Dividir la cuenta                     | De 3 a 5 toques                   |
-| Cobrar una caña en barra, exacto      | 3 toques, con el ticket impreso   |
-| Imprimir el ticket                    | 0: sale solo                      |
-| Quitar una línea                      | 2 toques y el motivo              |
-| Cambiar de camarero                   | Su PIN, en menos de un segundo    |
-| Abrir la caja                         | 3 toques, con el fondo propuesto  |
-| Cerrar la caja                        | Lo que se tarde en contar          |
+| Lo que se hace                   | Objetivo                         |
+| -------------------------------- | -------------------------------- |
+| Abrir una mesa                   | 1 toque                          |
+| Añadir un plato                  | 1 toque                          |
+| Contestar una opción obligatoria | 1 toque por pregunta             |
+| Mandar a cocina                  | 1 toque                          |
+| Otra ronda                       | 2 toques                         |
+| Mover una mesa                   | 3 toques                         |
+| Dividir la cuenta                | De 3 a 5 toques                  |
+| Cobrar una caña en barra, exacto | 3 toques, con el ticket impreso  |
+| Imprimir el ticket               | 0: sale solo                     |
+| Quitar una línea                 | 2 toques y el motivo             |
+| Cambiar de camarero              | Su PIN, en menos de un segundo   |
+| Abrir la caja                    | 3 toques, con el fondo propuesto |
+| Cerrar la caja                   | Lo que se tarde en contar        |

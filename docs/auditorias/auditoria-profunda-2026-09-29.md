@@ -29,19 +29,19 @@ Lo he seguido como guía, no al pie de la letra, como me pediste. He respetado s
 
 «Gastos», «Horarios», «Fichajes», «APPCC» o «Configuración» no son apps: viven dentro de las ocho. Lo he traducido así.
 
-| En tu documento | En Estook |
-| --- | --- |
-| Inventario, compras, proveedores, productos | **Almacén** (Resumen, Productos, Movimientos, Compras, Mermas) |
-| Escandallos | **Escandallos** (M9) |
-| Carta | **Carta** (M10) y carta digital (M12) |
-| Horarios | **Calendario** (cuadrante, M14) · la entrega H |
-| Equipo, fichajes | **Equipo** (M13, M15; fichar ya existe) |
-| APPCC, documentación | **Servicio** (APPCC, M16) · documentos (M11) |
-| Gastos, analítica, negocio | **Negocio** (Ventas, Informes, Pulse, Costes, Reseñas) |
-| Cuaderno | **Cuaderno** (M17) |
-| Configuración | **Ajustes** |
-| Estook TPV | Los modos **Sala** y **Cocina** (Fase 4, Anexo) |
-| Estook Link | En los documentos se llama **Estook Enlace**: hay que elegir uno (decisión 6) |
+| En tu documento                             | En Estook                                                                     |
+| ------------------------------------------- | ----------------------------------------------------------------------------- |
+| Inventario, compras, proveedores, productos | **Almacén** (Resumen, Productos, Movimientos, Compras, Mermas)                |
+| Escandallos                                 | **Escandallos** (M9)                                                          |
+| Carta                                       | **Carta** (M10) y carta digital (M12)                                         |
+| Horarios                                    | **Calendario** (cuadrante, M14) · la entrega H                                |
+| Equipo, fichajes                            | **Equipo** (M13, M15; fichar ya existe)                                       |
+| APPCC, documentación                        | **Servicio** (APPCC, M16) · documentos (M11)                                  |
+| Gastos, analítica, negocio                  | **Negocio** (Ventas, Informes, Pulse, Costes, Reseñas)                        |
+| Cuaderno                                    | **Cuaderno** (M17)                                                            |
+| Configuración                               | **Ajustes**                                                                   |
+| Estook TPV                                  | Los modos **Sala** y **Cocina** (Fase 4, Anexo)                               |
+| Estook Link                                 | En los documentos se llama **Estook Enlace**: hay que elegir uno (decisión 6) |
 
 ### 2 · Parte de cero en el TPV, y el TPV ya está muy pensado
 
@@ -400,15 +400,15 @@ Hoy: tarjetas de cifra con flecha y objetivo (bien) y tres gráficas de barras s
 
 _Medio_
 
-| La pregunta | La gráfica | Dónde |
-| --- | --- | --- |
-| ¿Voy mejor que la semana pasada? | Línea de este periodo y el anterior en gris, con la diferencia al final | Ventas, Informes |
-| ¿A qué hora se me llena? | Mapa de calor día × hora (ventas o tickets) | Negocio, cuadrante (H) |
-| ¿Qué platos me dan dinero y cuáles solo trabajo? | Matriz de popularidad y margen (ingeniería de menú: estrellas, caballos, rompecabezas y perros) | Carta (M10) |
-| ¿Dónde se va el margen? | Cascada: ventas → género → personal → mermas → margen | Negocio, Pulse |
-| ¿Llego al objetivo? | Barra contra la línea del objetivo, con lo que falta | Panel, Informes |
-| ¿Qué 20 % me hace el 80 %? | Pareto de productos o proveedores | Almacén, Compras |
-| ¿Cuánto me cuesta el personal para lo que vendo? | Ventas por hora trabajada, por franja | Negocio (con H y el TPV) |
+| La pregunta                                      | La gráfica                                                                                      | Dónde                    |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------ |
+| ¿Voy mejor que la semana pasada?                 | Línea de este periodo y el anterior en gris, con la diferencia al final                         | Ventas, Informes         |
+| ¿A qué hora se me llena?                         | Mapa de calor día × hora (ventas o tickets)                                                     | Negocio, cuadrante (H)   |
+| ¿Qué platos me dan dinero y cuáles solo trabajo? | Matriz de popularidad y margen (ingeniería de menú: estrellas, caballos, rompecabezas y perros) | Carta (M10)              |
+| ¿Dónde se va el margen?                          | Cascada: ventas → género → personal → mermas → margen                                           | Negocio, Pulse           |
+| ¿Llego al objetivo?                              | Barra contra la línea del objetivo, con lo que falta                                            | Panel, Informes          |
+| ¿Qué 20 % me hace el 80 %?                       | Pareto de productos o proveedores                                                               | Almacén, Compras         |
+| ¿Cuánto me cuesta el personal para lo que vendo? | Ventas por hora trabajada, por franja                                                           | Negocio (con H y el TPV) |
 
 **Reglas:** rojo solo para lo malo (la muestra del sistema de diseño pinta el margen en rojo); siempre el periodo comparable; unidades en el eje; el detalle al tocar; y una tabla escondida para lectores de pantalla. **Cuándo:** antes de M21, y pasar Informes y Ventas.
 
@@ -418,7 +418,7 @@ El catálogo cerrado y la matriz en la base están muy bien. Al contrato de cada
 
 _Medio_
 
-1) **Aprobación** de otro con su PIN. 2) **Límites**: «descuento hasta un 10 %; más, un encargado». 3) **Solo lo mío** (el camarero ve sus tickets del turno, Roles 1.12). Una sola pieza en el despachador, declarada en cada operación igual que hoy `exige`, y la pantalla lo lee del mismo sitio. Toast lo hace así: permisos por puesto y aprobación con el código del encargado ([su guía de permisos](https://support.toasttab.com/en/article/Access-Permissions-Reference)). **Cuándo:** diseñarlo antes de M20A.
+1. **Aprobación** de otro con su PIN. 2) **Límites**: «descuento hasta un 10 %; más, un encargado». 3) **Solo lo mío** (el camarero ve sus tickets del turno, Roles 1.12). Una sola pieza en el despachador, declarada en cada operación igual que hoy `exige`, y la pantalla lo lee del mismo sitio. Toast lo hace así: permisos por puesto y aprobación con el código del encargado ([su guía de permisos](https://support.toasttab.com/en/article/Access-Permissions-Reference)). **Cuándo:** diseñarlo antes de M20A.
 
 ### D6 · Lo que le falta a cómo se usa Estook TPV
 
@@ -593,16 +593,16 @@ Funciona, está probado y cambiarlo sería perder calidad para hacerlo «diferen
 
 Separo lo que está en su documentación (con enlace) de mi opinión. Hay patrones que copiar y cosas que no.
 
-| Producto | Lo que hace bien (documentado) | Lo que deja (opinión) | Qué aprender | Qué no copiar |
-| --- | --- | --- | --- | --- |
-| **Toast** EE. UU. | Un aparato del local hace de centro sin internet y las pantallas de cocina siguen recibiendo ([doc.](https://doc.toasttab.com/doc/platformguide/platformOfflineModeLocalSync.html)). Aun así, sin internet un TPV no ve las comandas de otro, solo cocina. Permisos por puesto y aprobación con el código del encargado; limitar permisos al puesto fichado ([doc.](https://support.toasttab.com/en/article/Limit-POS-Permissions-to-the-Clocked-in-Job)). | Obliga a su hardware y vive de la comisión de los pagos. | El centro del local, la aprobación del encargado, fichar = TPV. | Atar el hardware; cobrar por transacción. |
-| **Lightspeed Restaurant** | Sin internet sigue mandando a cocina e imprimiendo y sincroniza al volver ([doc.](https://k-series-support.lightspeedhq.com/hc/en-us/articles/4403006478107-How-printing-works)). | Solo iPad; inventario ligero. | Un modo sin conexión completo. | Depender de un solo tipo de aparato. |
-| **Square** | Empezar en minutos, cuota baja. | Back-office de cocina flojo. | La sencillez del alta. | El modelo de comisión. |
-| **Revo XEF** España | Sin internet y sin «iPad Host»: venta directa, mesas abiertas solo para mirar, sin número de pedido ni impresión; con Host, sigue todo ([doc.](https://support.revo.works/es/articles/13)). | Solo iPad; integraciones por solicitud. | Decir claro qué funciona sin red y qué no. | Depender de un iPad concreto como servidor. |
-| **Last.app** España | Más de 250 integraciones; se conecta con Gstock y Apicbase. | Back-office por terceros. | Las integraciones como producto (ya está en la Evolución). | — |
-| **Ágora · Glop** España | Windows con base local: funcionan sin internet por diseño. | Aspecto antiguo, nube a medias. | Su red de distribuidores que instala y atiende en el local. | La base en un solo PC. |
-| **Food&Service** España | Nube, licencias ilimitadas, soporte 365 días por teléfono y WhatsApp, Bizum, KDS, carta QR, VeriFactu. Exige internet siempre ([su web](https://foodyservice.com/en/pos)). | Sin modo sin conexión; inventario básico. | Licencias ilimitadas y soporte cercano. | Depender del todo de internet. |
-| **Gstock · Apicbase** | Back-office de cocina y compras. | Esconden el precio. | — | Esconder el precio. |
+| Producto                  | Lo que hace bien (documentado)                                                                                                                                                                                                                                                                                                                                                                                                                             | Lo que deja (opinión)                                    | Qué aprender                                                    | Qué no copiar                               |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------- |
+| **Toast** EE. UU.         | Un aparato del local hace de centro sin internet y las pantallas de cocina siguen recibiendo ([doc.](https://doc.toasttab.com/doc/platformguide/platformOfflineModeLocalSync.html)). Aun así, sin internet un TPV no ve las comandas de otro, solo cocina. Permisos por puesto y aprobación con el código del encargado; limitar permisos al puesto fichado ([doc.](https://support.toasttab.com/en/article/Limit-POS-Permissions-to-the-Clocked-in-Job)). | Obliga a su hardware y vive de la comisión de los pagos. | El centro del local, la aprobación del encargado, fichar = TPV. | Atar el hardware; cobrar por transacción.   |
+| **Lightspeed Restaurant** | Sin internet sigue mandando a cocina e imprimiendo y sincroniza al volver ([doc.](https://k-series-support.lightspeedhq.com/hc/en-us/articles/4403006478107-How-printing-works)).                                                                                                                                                                                                                                                                          | Solo iPad; inventario ligero.                            | Un modo sin conexión completo.                                  | Depender de un solo tipo de aparato.        |
+| **Square**                | Empezar en minutos, cuota baja.                                                                                                                                                                                                                                                                                                                                                                                                                            | Back-office de cocina flojo.                             | La sencillez del alta.                                          | El modelo de comisión.                      |
+| **Revo XEF** España       | Sin internet y sin «iPad Host»: venta directa, mesas abiertas solo para mirar, sin número de pedido ni impresión; con Host, sigue todo ([doc.](https://support.revo.works/es/articles/13)).                                                                                                                                                                                                                                                                | Solo iPad; integraciones por solicitud.                  | Decir claro qué funciona sin red y qué no.                      | Depender de un iPad concreto como servidor. |
+| **Last.app** España       | Más de 250 integraciones; se conecta con Gstock y Apicbase.                                                                                                                                                                                                                                                                                                                                                                                                | Back-office por terceros.                                | Las integraciones como producto (ya está en la Evolución).      | —                                           |
+| **Ágora · Glop** España   | Windows con base local: funcionan sin internet por diseño.                                                                                                                                                                                                                                                                                                                                                                                                 | Aspecto antiguo, nube a medias.                          | Su red de distribuidores que instala y atiende en el local.     | La base en un solo PC.                      |
+| **Food&Service** España   | Nube, licencias ilimitadas, soporte 365 días por teléfono y WhatsApp, Bizum, KDS, carta QR, VeriFactu. Exige internet siempre ([su web](https://foodyservice.com/en/pos)).                                                                                                                                                                                                                                                                                 | Sin modo sin conexión; inventario básico.                | Licencias ilimitadas y soporte cercano.                         | Depender del todo de internet.              |
+| **Gstock · Apicbase**     | Back-office de cocina y compras.                                                                                                                                                                                                                                                                                                                                                                                                                           | Esconden el precio.                                      | —                                                               | Esconder el precio.                         |
 
     Mejor que ellosLa cocina ve el plato (ficha, alérgenos), «Quedan N» con el escandallo, cada venta mueve el almacén al momento, fichar y TPV con el mismo PIN, cualquier impresora, precio público.
     Peor que ellos, hoyAún no cobra; no funciona sin conexión; no hay soporte en horario de servicio ni quien instale; no hay reservas ni pagos integrados.
@@ -631,62 +631,62 @@ Cómo queda Estook con las mejoras. No es rehacer: es añadir las piezas del TPV
 
 Lo que pide tu documento: que usuario, empleado, dispositivo, terminal, sesión y caja no sean la misma cosa.
 
-| Pieza | Qué es | Cómo se relaciona | Hoy |
-| --- | --- | --- | --- |
-| **Organización** | El cliente de Estook: quien contrata y paga la cuota | Tiene una o varias empresas y uno o varios locales | Existe |
-| **Empresa fiscal** | El obligado tributario: NIF, razón social, domicilio fiscal, SII sí o no, representación firmada | De una organización; tiene uno o varios locales | Falta (K) |
-| **Local** | El establecimiento: dirección, zona horaria, territorio (IVA o IGIC), series | De una empresa; tiene terminales, cajones, impresoras, zonas y mesas | Existe, sin empresa |
-| **Persona** | Alguien, con o sin correo | Tiene membresías (rol + alcance) y un PIN por local | Exige correo (C1) |
-| **Membresía y rol** | Qué puede hacer y dónde | Permisos de la matriz, recortados por local | Existe |
-| **Aparato personal** | El móvil o el PC de alguien | Su sesión es de la persona (30 días, revocable) | Existe |
-| **Terminal del local** | Tablet, PC táctil o pantalla de cocina del restaurante, con una función (sala, barra, cocina, pase) | Emparejado con el local por código o QR; su sesión es del aparato, revocable | Decidido, sin construir |
-| **Operador** | Quién usa el terminal ahora | Entra con su PIN; se bloquea por inactividad o al mandar; lo que hace queda a su nombre | Falta (C2) |
-| **Aprobación** | Un encargado autoriza algo con su PIN | Queda quién pidió, quién aprobó, qué y cuándo | Falta (D5) |
-| **Cajón y turno de caja** | El cajón físico, y su apertura → arqueo → cierre | Un turno abierto por cajón; varios terminales pueden usar el mismo cajón | Documentado |
-| **Bolsa del camarero** | El efectivo que lleva encima quien cobra en la mesa | Se liquida en un cajón al acabar el turno | Falta (C3) |
-| **Cuenta** | El pedido: mesa, barra, para llevar o reparto | Tiene líneas (comensal, tanda, partida, modificadores) | Documentado |
-| **Cobro → pagos** | Lo que se cobra (un documento) y cómo se paga (uno o varios pagos) | Los pagos en efectivo mueven su caja o su bolsa | Por corregir (C3) |
-| **Venta** | El hecho operativo que mueve el almacén | Nace al cobrar; una por cobro | Por corregir (C4) |
-| **Documento fiscal** | Ticket, factura, canje, rectificativa | Acompaña al cobro; vive en `facturacion`, con su registro y sus envíos | Documentado (B3) |
+| Pieza                     | Qué es                                                                                              | Cómo se relaciona                                                                       | Hoy                     |
+| ------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------- |
+| **Organización**          | El cliente de Estook: quien contrata y paga la cuota                                                | Tiene una o varias empresas y uno o varios locales                                      | Existe                  |
+| **Empresa fiscal**        | El obligado tributario: NIF, razón social, domicilio fiscal, SII sí o no, representación firmada    | De una organización; tiene uno o varios locales                                         | Falta (K)               |
+| **Local**                 | El establecimiento: dirección, zona horaria, territorio (IVA o IGIC), series                        | De una empresa; tiene terminales, cajones, impresoras, zonas y mesas                    | Existe, sin empresa     |
+| **Persona**               | Alguien, con o sin correo                                                                           | Tiene membresías (rol + alcance) y un PIN por local                                     | Exige correo (C1)       |
+| **Membresía y rol**       | Qué puede hacer y dónde                                                                             | Permisos de la matriz, recortados por local                                             | Existe                  |
+| **Aparato personal**      | El móvil o el PC de alguien                                                                         | Su sesión es de la persona (30 días, revocable)                                         | Existe                  |
+| **Terminal del local**    | Tablet, PC táctil o pantalla de cocina del restaurante, con una función (sala, barra, cocina, pase) | Emparejado con el local por código o QR; su sesión es del aparato, revocable            | Decidido, sin construir |
+| **Operador**              | Quién usa el terminal ahora                                                                         | Entra con su PIN; se bloquea por inactividad o al mandar; lo que hace queda a su nombre | Falta (C2)              |
+| **Aprobación**            | Un encargado autoriza algo con su PIN                                                               | Queda quién pidió, quién aprobó, qué y cuándo                                           | Falta (D5)              |
+| **Cajón y turno de caja** | El cajón físico, y su apertura → arqueo → cierre                                                    | Un turno abierto por cajón; varios terminales pueden usar el mismo cajón                | Documentado             |
+| **Bolsa del camarero**    | El efectivo que lleva encima quien cobra en la mesa                                                 | Se liquida en un cajón al acabar el turno                                               | Falta (C3)              |
+| **Cuenta**                | El pedido: mesa, barra, para llevar o reparto                                                       | Tiene líneas (comensal, tanda, partida, modificadores)                                  | Documentado             |
+| **Cobro → pagos**         | Lo que se cobra (un documento) y cómo se paga (uno o varios pagos)                                  | Los pagos en efectivo mueven su caja o su bolsa                                         | Por corregir (C3)       |
+| **Venta**                 | El hecho operativo que mueve el almacén                                                             | Nace al cobrar; una por cobro                                                           | Por corregir (C4)       |
+| **Documento fiscal**      | Ticket, factura, canje, rectificativa                                                               | Acompaña al cobro; vive en `facturacion`, con su registro y sus envíos                  | Documentado (B3)        |
 
-  La pregunta de tu documento, contestada en orden: quién es la persona → qué puede lo dice su membresía en ese local → dónde es el local del terminal → desde qué es el terminal → qué sesión es la del terminal más el turno del operador → con qué caja es el turno del cajón o su bolsa.
+La pregunta de tu documento, contestada en orden: quién es la persona → qué puede lo dice su membresía en ese local → dónde es el local del terminal → desde qué es el terminal → qué sesión es la del terminal más el turno del operador → con qué caja es el turno del cajón o su bolsa.
 
 ### Qué pasa si un camarero intenta…
 
-| Acción | Qué pasa |
-| --- | --- |
-| Descontar o invitar | Sale «Lo aprueba un encargado»: su PIN en la misma pantalla, con motivo. Queda quién pidió y quién aprobó |
-| Quitar un plato ya en cocina | Igual, y cocina lo ve tachado con aviso |
-| Devolver o rectificar | No puede; solo gerente o dirección, con motivo |
-| Abrir o cerrar caja, abrir el cajón sin venta | No, salvo que el local se lo dé; con el cajón sin venta siempre queda en el X y el Z |
-| Cambiar un precio | No existe en el TPV: el precio es de la carta. Un artículo libre pide permiso |
-| Ver ventas del local o costes | El servidor no se los manda. Ve lo suyo del turno |
-| Salir del TPV a la gestión | Solo con el PIN de alguien que pueda |
+| Acción                                        | Qué pasa                                                                                                  |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Descontar o invitar                           | Sale «Lo aprueba un encargado»: su PIN en la misma pantalla, con motivo. Queda quién pidió y quién aprobó |
+| Quitar un plato ya en cocina                  | Igual, y cocina lo ve tachado con aviso                                                                   |
+| Devolver o rectificar                         | No puede; solo gerente o dirección, con motivo                                                            |
+| Abrir o cerrar caja, abrir el cajón sin venta | No, salvo que el local se lo dé; con el cajón sin venta siempre queda en el X y el Z                      |
+| Cambiar un precio                             | No existe en el TPV: el precio es de la carta. Un artículo libre pide permiso                             |
+| Ver ventas del local o costes                 | El servidor no se los manda. Ve lo suyo del turno                                                         |
+| Salir del TPV a la gestión                    | Solo con el PIN de alguien que pueda                                                                      |
 
 ### Dónde vive cada cosa
 
-| Sitio | Qué vive ahí | Qué no vive nunca ahí |
-| --- | --- | --- |
-| **Nube** | La verdad: carta, precios, IVA, permisos, cuentas, ventas, caja, facturas, cola de impresión, analítica, Fogón | — |
-| **Navegador (PWA)** | Las pantallas, una copia de trabajo (carta, plano, mesas abiertas), la cola de lo que falta por mandar, el bloqueo por inactividad | Huellas de PIN, claves, lo único de algo |
-| **Cáscara nativa (Capacitor)** | Imprimir directo sin Enlace (food truck), quiosco, pantalla encendida, sonido en segundo plano; el iPad | Pantallas propias |
-| **Estook Enlace** | El relevo entre aparatos sin internet, la impresión, el cajón, la cola local, la comprobación de PIN sin red, la balanza | Decisiones de negocio: solo transporta |
-| **El terminal** | Nada que no sea una copia | Datos que solo estén en él: si se rompe, no se pierde nada |
+| Sitio                          | Qué vive ahí                                                                                                                       | Qué no vive nunca ahí                                      |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **Nube**                       | La verdad: carta, precios, IVA, permisos, cuentas, ventas, caja, facturas, cola de impresión, analítica, Fogón                     | —                                                          |
+| **Navegador (PWA)**            | Las pantallas, una copia de trabajo (carta, plano, mesas abiertas), la cola de lo que falta por mandar, el bloqueo por inactividad | Huellas de PIN, claves, lo único de algo                   |
+| **Cáscara nativa (Capacitor)** | Imprimir directo sin Enlace (food truck), quiosco, pantalla encendida, sonido en segundo plano; el iPad                            | Pantallas propias                                          |
+| **Estook Enlace**              | El relevo entre aparatos sin internet, la impresión, el cajón, la cola local, la comprobación de PIN sin red, la balanza           | Decisiones de negocio: solo transporta                     |
+| **El terminal**                | Nada que no sea una copia                                                                                                          | Datos que solo estén en él: si se rompe, no se pierde nada |
 
 ### Los aparatos
 
-| Aparato | Cómo funciona con Estook |
-| --- | --- |
-| PC Windows táctil (TPV de barra) | Estook TPV instalado desde Edge o Chrome, a pantalla completa, y Enlace en el mismo PC |
-| Tablet Android | Estook TPV instalado desde Chrome; o la cáscara |
-| iPad | La cáscara (Safari no deja hablar con la red del local) |
-| Móvil del camarero | El comandero: Estook TPV en una columna |
-| Pantalla de cocina | Tablet o pantalla con Estook TPV en modo cocina, en quiosco; recibe por Enlace si no hay internet |
-| Impresora de cocina y de tickets | Cualquier ESC/POS, por Enlace; o las que preguntan solas a la nube |
-| Cajón | Enchufado a la impresora de tickets; se abre con una línea del ticket |
-| Datáfono | El del banco (se teclea y se cuadra al cierre) o uno conectado por internet |
-| Lector de códigos, llave de camarero, teclado de cocina | Escriben como un teclado: el navegador ya los lee |
-| Balanza | Por el puerto serie desde Chrome o Edge, o por Enlace (futuro) |
+| Aparato                                                 | Cómo funciona con Estook                                                                          |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| PC Windows táctil (TPV de barra)                        | Estook TPV instalado desde Edge o Chrome, a pantalla completa, y Enlace en el mismo PC            |
+| Tablet Android                                          | Estook TPV instalado desde Chrome; o la cáscara                                                   |
+| iPad                                                    | La cáscara (Safari no deja hablar con la red del local)                                           |
+| Móvil del camarero                                      | El comandero: Estook TPV en una columna                                                           |
+| Pantalla de cocina                                      | Tablet o pantalla con Estook TPV en modo cocina, en quiosco; recibe por Enlace si no hay internet |
+| Impresora de cocina y de tickets                        | Cualquier ESC/POS, por Enlace; o las que preguntan solas a la nube                                |
+| Cajón                                                   | Enchufado a la impresora de tickets; se abre con una línea del ticket                             |
+| Datáfono                                                | El del banco (se teclea y se cuadra al cierre) o uno conectado por internet                       |
+| Lector de códigos, llave de camarero, teclado de cocina | Escriben como un teclado: el navegador ya los lee                                                 |
+| Balanza                                                 | Por el puerto serie desde Chrome o Edge, o por Enlace (futuro)                                    |
 
 ### Estook TPV instalado en Windows
 
@@ -708,47 +708,47 @@ Lo que pide tu documento: que usuario, empleado, dispositivo, terminal, sesión 
 
 ### Sin conexión: qué funciona
 
-| Lo que pasa | Con Enlace en el local | Sin Enlace |
-| --- | --- | --- |
-| Hay internet, pero cae Estook (el servidor) | Se toma nota, cocina recibe, imprime, se cobra con justificante. Todo sube al volver | Se toma nota en cada aparato; cocina no recibe (aviso claro en sala); se cobra con justificante |
-| Hay Estook, pero cae internet del local | Igual que arriba | Igual que arriba |
-| Hay wifi sin internet | Igual: la red del local funciona | Igual que arriba |
-| No hay wifi | Cada aparato solo; lo pendiente se guarda | Cada aparato solo; papel |
-| Un solo terminal pierde conexión | Los demás siguen; el suyo sube al volver | Igual |
-| Se cae durante un cobro | El cobro lleva su clave: al volver, o está hecho o se hace una vez. El datáfono del banco no depende de Estook |  |
-| Se cae después de mandar una comanda | La comanda nace con su identificador en el aparato: reintentar no la duplica |  |
-| Se cae mientras imprime | Cada trabajo tiene su identificador y la impresora confirma: no sale dos veces |  |
-| Vuelve internet | Sube en orden, se emiten los tickets pendientes marcados como incidencia, y la sala lo ve una vez: «Conexión recuperada · 3 tickets emitidos» |  |
+| Lo que pasa                                 | Con Enlace en el local                                                                                                                        | Sin Enlace                                                                                      |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Hay internet, pero cae Estook (el servidor) | Se toma nota, cocina recibe, imprime, se cobra con justificante. Todo sube al volver                                                          | Se toma nota en cada aparato; cocina no recibe (aviso claro en sala); se cobra con justificante |
+| Hay Estook, pero cae internet del local     | Igual que arriba                                                                                                                              | Igual que arriba                                                                                |
+| Hay wifi sin internet                       | Igual: la red del local funciona                                                                                                              | Igual que arriba                                                                                |
+| No hay wifi                                 | Cada aparato solo; lo pendiente se guarda                                                                                                     | Cada aparato solo; papel                                                                        |
+| Un solo terminal pierde conexión            | Los demás siguen; el suyo sube al volver                                                                                                      | Igual                                                                                           |
+| Se cae durante un cobro                     | El cobro lleva su clave: al volver, o está hecho o se hace una vez. El datáfono del banco no depende de Estook                                |                                                                                                 |
+| Se cae después de mandar una comanda        | La comanda nace con su identificador en el aparato: reintentar no la duplica                                                                  |                                                                                                 |
+| Se cae mientras imprime                     | Cada trabajo tiene su identificador y la impresora confirma: no sale dos veces                                                                |                                                                                                 |
+| Vuelve internet                             | Sube en orden, se emiten los tickets pendientes marcados como incidencia, y la sala lo ve una vez: «Conexión recuperada · 3 tickets emitidos» |                                                                                                 |
 
 **Funciona sin conexión:** tomar nota, mandar y marchar, marcar listo, precuenta, cobrar en efectivo o con el datáfono del banco (con justificante), abrir el cajón, el informe X, fichar y apuntar mermas. **No funciona:** emitir el ticket (en la primera versión), la factura a petición, las rectificativas, cambiar la carta o los precios, dar de alta a alguien, el datáfono conectado y los pedidos de reparto. **Lo que hace falta:** identificadores creados en el aparato, la cola del aparato con sus estados, la idempotencia (ya existe), reglas de conflicto (a una mesa se le añaden líneas, nunca se sobreescriben; los cambios de estado llevan versión), la hora del servidor estimada (ya diseñada en la mejora 15) y Enlace.
 
 ### Caja y dinero
 
-| Concepto | Qué es |
-| --- | --- |
-| Cajón (caja física) | El cajón portamonedas, enchufado a una impresora |
-| Terminal | La pantalla que cobra; tiene un cajón por defecto |
-| Turno de caja | Apertura con fondo → movimientos → arqueo → cierre. Uno abierto por cajón |
-| Bolsa del camarero | Un turno de caja de una persona, sin cajón; se liquida en un cajón |
-| Entradas y salidas | Movimientos con motivo y autor; la apertura sin venta es uno más |
-| Efectivo esperado | Fondo + cobrado en efectivo + entradas − salidas − devoluciones en efectivo |
-| Contado | Arqueo ciego, por billetes y monedas |
-| Diferencia | Contado − esperado. Se guarda y no bloquea |
-| Tarjeta | Total del cierre del datáfono frente a lo cobrado con tarjeta |
-| Informe X / Z | Consultas del turno, no documentos fiscales. El Z cierra el turno |
-| Cierre del día | La suma de los Z del día: rellena el cierre de caja de Servicio |
+| Concepto            | Qué es                                                                      |
+| ------------------- | --------------------------------------------------------------------------- |
+| Cajón (caja física) | El cajón portamonedas, enchufado a una impresora                            |
+| Terminal            | La pantalla que cobra; tiene un cajón por defecto                           |
+| Turno de caja       | Apertura con fondo → movimientos → arqueo → cierre. Uno abierto por cajón   |
+| Bolsa del camarero  | Un turno de caja de una persona, sin cajón; se liquida en un cajón          |
+| Entradas y salidas  | Movimientos con motivo y autor; la apertura sin venta es uno más            |
+| Efectivo esperado   | Fondo + cobrado en efectivo + entradas − salidas − devoluciones en efectivo |
+| Contado             | Arqueo ciego, por billetes y monedas                                        |
+| Diferencia          | Contado − esperado. Se guarda y no bloquea                                  |
+| Tarjeta             | Total del cierre del datáfono frente a lo cobrado con tarjeta               |
+| Informe X / Z       | Consultas del turno, no documentos fiscales. El Z cierra el turno           |
+| Cierre del día      | La suma de los Z del día: rellena el cierre de caja de Servicio             |
 
 Quién puede qué sigue la tabla 1.12 de Roles, con dos añadidos: **la bolsa** la liquida quien lleva la caja, y **retirar dinero** es una salida con motivo que pide jefe de sala o gerente. Con dos TPV, los dos pueden usar el mismo cajón y el mismo turno; con dos cajones, dos turnos. Cada pago en efectivo va al turno del cajón que se abrió o a la bolsa de quien cobró.
 
 ### Cómo se hablan los módulos
 
-| Cadena | En el momento, en la misma transacción | Después, por la cola |
-| --- | --- | --- |
-| Venta → almacén → costes → Negocio → Fogón | La venta y sus salidas del almacén | Costes del día, cifras, informes, lo que lee Fogón |
-| Compra → almacén → costes → escandallo | La entrada del género y su precio | Recalcular platos afectados y avisar si baja el margen |
-| Fichaje → equipo → horarios → Negocio | El fichaje | Horas, coste de personal, ventas por hora trabajada |
-| Producto → carta → TPV → cocina | Cambiar la carta publica una versión | Los terminales la reciben por tiempo real |
-| TPV → caja → ventas → Negocio | Cobro, pagos, movimiento de caja y venta | El documento fiscal (si no hay red), cifras, informes |
+| Cadena                                     | En el momento, en la misma transacción   | Después, por la cola                                   |
+| ------------------------------------------ | ---------------------------------------- | ------------------------------------------------------ |
+| Venta → almacén → costes → Negocio → Fogón | La venta y sus salidas del almacén       | Costes del día, cifras, informes, lo que lee Fogón     |
+| Compra → almacén → costes → escandallo     | La entrada del género y su precio        | Recalcular platos afectados y avisar si baja el margen |
+| Fichaje → equipo → horarios → Negocio      | El fichaje                               | Horas, coste de personal, ventas por hora trabajada    |
+| Producto → carta → TPV → cocina            | Cambiar la carta publica una versión     | Los terminales la reciben por tiempo real              |
+| TPV → caja → ventas → Negocio              | Cobro, pagos, movimiento de caja y venta | El documento fiscal (si no hay red), cifras, informes  |
 
 Regla: un módulo nunca escribe en las tablas de otro; publica un evento (ya existe el catálogo cerrado y la bandeja de salida) y el otro reacciona. Lo que no puede quedar a medias va en la misma transacción; lo demás, por la cola, con el trabajador de D3.
 
@@ -758,74 +758,74 @@ La base ya es la buena: Fogón no arma nada en el navegador, lo arma el servidor
 
 ### Los documentos: una fuente por tema
 
-| Tema | Fuente única | Los demás |
-| --- | --- | --- |
-| Dónde estamos | `ESTADO.md`, 150 líneas como mucho | La historia, en `historia-de-los-modulos.md` |
-| Qué es el producto | Manifiesto (con lo que hoy es la Evolución: visión y mercado) | Enlazan |
-| Arquitectura | Un documento nuevo: capas, el modelo de esta sección, aparatos, sin conexión, comunicación, despliegue, copias | Plan A3–A5 y Anexo 2–3.4 pasan a enlazarlo |
-| Estook TPV y facturación | El Anexo, y solo el Anexo | Un párrafo y un enlace en cada maestro |
-| Quién ve qué | Roles | — |
-| Qué desencadena cada cambio | Auditoría de flujos | — |
-| Cómo se trabaja y en qué orden | Plan (reglas, módulos, terminado) | El sistema de diseño (B1–B8) puede ir aparte |
-| Por qué está hecho así | `docs/decisiones/` | — |
-| Lo que cambió en cada versión | Un solo registro de cambios de los maestros | Se quita de la cabecera de cada uno |
-| Tus pasos | Uno por entrega, que se archiva al acabar | — |
+| Tema                           | Fuente única                                                                                                   | Los demás                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Dónde estamos                  | `ESTADO.md`, 150 líneas como mucho                                                                             | La historia, en `historia-de-los-modulos.md` |
+| Qué es el producto             | Manifiesto (con lo que hoy es la Evolución: visión y mercado)                                                  | Enlazan                                      |
+| Arquitectura                   | Un documento nuevo: capas, el modelo de esta sección, aparatos, sin conexión, comunicación, despliegue, copias | Plan A3–A5 y Anexo 2–3.4 pasan a enlazarlo   |
+| Estook TPV y facturación       | El Anexo, y solo el Anexo                                                                                      | Un párrafo y un enlace en cada maestro       |
+| Quién ve qué                   | Roles                                                                                                          | —                                            |
+| Qué desencadena cada cambio    | Auditoría de flujos                                                                                            | —                                            |
+| Cómo se trabaja y en qué orden | Plan (reglas, módulos, terminado)                                                                              | El sistema de diseño (B1–B8) puede ir aparte |
+| Por qué está hecho así         | `docs/decisiones/`                                                                                             | —                                            |
+| Lo que cambió en cada versión  | Un solo registro de cambios de los maestros                                                                    | Se quita de la cabecera de cada uno          |
+| Tus pasos                      | Uno por entrega, que se archiva al acabar                                                                      | —                                            |
 
 ### Velocidad: toques objetivo
 
-| Estook TPV | Objetivo | Estook | Objetivo |
-| --- | --- | --- | --- |
-| Abrir mesa | 1 toque | Dar de alta un producto | escanear + 2 |
-| Añadir un plato | 1 toque | Preparar un pedido | 1 toque (R2) |
-| Opción obligatoria | +1 por pregunta | Apuntar una merma | 3 toques |
-| Mandar a cocina | 1 toque | Consultar lo que hay | buscador, 150 ms |
-| Repetir ronda | 2 toques | Fichar | 1 toque |
-| Mover mesa | 3 toques | Ver mi horario | 0 (en el Panel) |
-| Dividir la cuenta | 3–5 toques | Abrir un aviso | 1 toque |
-| Cobrar una caña en barra, exacto | 3 toques | Hacer un escandallo | M9 |
-| Imprimir el ticket | 0 (solo) |  |  |
-| Anular una línea | 2 + motivo |  |  |
-| Cambiar de camarero | su PIN, < 1 s |  |  |
-| Abrir caja | 3 toques |  |  |
+| Estook TPV                       | Objetivo        | Estook                  | Objetivo         |
+| -------------------------------- | --------------- | ----------------------- | ---------------- |
+| Abrir mesa                       | 1 toque         | Dar de alta un producto | escanear + 2     |
+| Añadir un plato                  | 1 toque         | Preparar un pedido      | 1 toque (R2)     |
+| Opción obligatoria               | +1 por pregunta | Apuntar una merma       | 3 toques         |
+| Mandar a cocina                  | 1 toque         | Consultar lo que hay    | buscador, 150 ms |
+| Repetir ronda                    | 2 toques        | Fichar                  | 1 toque          |
+| Mover mesa                       | 3 toques        | Ver mi horario          | 0 (en el Panel)  |
+| Dividir la cuenta                | 3–5 toques      | Abrir un aviso          | 1 toque          |
+| Cobrar una caña en barra, exacto | 3 toques        | Hacer un escandallo     | M9               |
+| Imprimir el ticket               | 0 (solo)        |                         |                  |
+| Anular una línea                 | 2 + motivo      |                         |                  |
+| Cambiar de camarero              | su PIN, < 1 s   |                         |                  |
+| Abrir caja                       | 3 toques        |                         |                  |
 
 ### Con 1, 10, 100 y 1.000 restaurantes
 
-|  | Qué aguanta | Qué se rompe | Qué hacer ya |
-| --- | --- | --- | --- |
-| 1–10 | Todo | Sin copias, un fallo es definitivo (B1) | Copias y plan Pro |
-| 100 | API, base, seguridad por filas, agrupador en modo transacción | El reloj de una pasada (D3); errores sin ver (D2); el Panel con un año de datos si no hay agregados | Cola de trabajos, Sentry del servidor, región |
-| 1.000 | El diseño (datos por local, idempotencia) | Conexiones de tiempo real de miles de terminales y pantallas; tamaño de la auditoría; coste de Verifacti por NIF | Comprobar los límites de tiempo real del plan antes de M20A; particionar por mes (E6) |
+|       | Qué aguanta                                                   | Qué se rompe                                                                                                     | Qué hacer ya                                                                          |
+| ----- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1–10  | Todo                                                          | Sin copias, un fallo es definitivo (B1)                                                                          | Copias y plan Pro                                                                     |
+| 100   | API, base, seguridad por filas, agrupador en modo transacción | El reloj de una pasada (D3); errores sin ver (D2); el Panel con un año de datos si no hay agregados              | Cola de trabajos, Sentry del servidor, región                                         |
+| 1.000 | El diseño (datos por local, idempotencia)                     | Conexiones de tiempo real de miles de terminales y pantallas; tamaño de la auditoría; coste de Verifacti por NIF | Comprobar los límites de tiempo real del plan antes de M20A; particionar por mes (E6) |
 
 ### Casos extremos
 
-| Caso | ¿Lo soporta? | Cómo |
-| --- | --- | --- |
-| Dos personas cambian lo mismo | Sí | Versión en cada fila: gana quien guarda primero y al otro se le enseña |
-| Dos TPV tocan la misma mesa | Por diseñar | Añadir líneas nunca choca; los cambios de estado llevan versión |
-| Dos cobran la misma cuenta | Por diseñar | El segundo recibe «ya está cobrada» |
-| Una petición llega dos veces | Sí | Clave de idempotencia en todos los comandos |
-| Falla después de ejecutarse | Sí / por corregir | Sí en Estook; en Verifacti, B3 |
-| Se cierra el navegador a medias | Sí | Cada comando es todo o nada; la cola del aparato, por construir |
-| Se reinicia Windows o se apaga el TPV | Por construir | El terminal vuelve a su función; lo pendiente, en la cola y en Enlace |
-| Se pierde la impresora o la pantalla de cocina | Documentado | Cola con reintento y aviso; falta la impresora de respaldo de la pantalla |
-| Cae un proveedor externo o va lento | Sí | Cada uno detrás de su puerto; Verifacti con justificante |
-| Un aviso de webhook llega dos veces o nunca | Sí | Stripe una vez por aviso y re-lectura; Verifacti con repaso diario (documentado) |
-| Pierde permisos con la sesión abierta | Sí | Cada petición lo mira en la base |
-| Se da de baja a un empleado con histórico | Sí | Nada se borra: se desactiva |
-| Cambia un precio, un escandallo o el IVA tras vender | Sí | Precio, coste y regla fiscal congelados en la línea |
-| Migración a medias | Sí | Transaccionales y reversibles, comprobadas en GitHub |
-| Restaurar una copia | No | No hay copias (B1) |
-| Versión defectuosa y volver atrás | Parcial | Web y API se vuelven a publicar; la base se revierte con riesgo; el TPV, con actualizaciones controladas |
-| Se rompe un PC y se cambia | Por construir | Revocar y emparejar otro en un minuto; lo pendiente del roto, en Enlace |
+| Caso                                                 | ¿Lo soporta?      | Cómo                                                                                                     |
+| ---------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------- |
+| Dos personas cambian lo mismo                        | Sí                | Versión en cada fila: gana quien guarda primero y al otro se le enseña                                   |
+| Dos TPV tocan la misma mesa                          | Por diseñar       | Añadir líneas nunca choca; los cambios de estado llevan versión                                          |
+| Dos cobran la misma cuenta                           | Por diseñar       | El segundo recibe «ya está cobrada»                                                                      |
+| Una petición llega dos veces                         | Sí                | Clave de idempotencia en todos los comandos                                                              |
+| Falla después de ejecutarse                          | Sí / por corregir | Sí en Estook; en Verifacti, B3                                                                           |
+| Se cierra el navegador a medias                      | Sí                | Cada comando es todo o nada; la cola del aparato, por construir                                          |
+| Se reinicia Windows o se apaga el TPV                | Por construir     | El terminal vuelve a su función; lo pendiente, en la cola y en Enlace                                    |
+| Se pierde la impresora o la pantalla de cocina       | Documentado       | Cola con reintento y aviso; falta la impresora de respaldo de la pantalla                                |
+| Cae un proveedor externo o va lento                  | Sí                | Cada uno detrás de su puerto; Verifacti con justificante                                                 |
+| Un aviso de webhook llega dos veces o nunca          | Sí                | Stripe una vez por aviso y re-lectura; Verifacti con repaso diario (documentado)                         |
+| Pierde permisos con la sesión abierta                | Sí                | Cada petición lo mira en la base                                                                         |
+| Se da de baja a un empleado con histórico            | Sí                | Nada se borra: se desactiva                                                                              |
+| Cambia un precio, un escandallo o el IVA tras vender | Sí                | Precio, coste y regla fiscal congelados en la línea                                                      |
+| Migración a medias                                   | Sí                | Transaccionales y reversibles, comprobadas en GitHub                                                     |
+| Restaurar una copia                                  | No                | No hay copias (B1)                                                                                       |
+| Versión defectuosa y volver atrás                    | Parcial           | Web y API se vuelven a publicar; la base se revierte con riesgo; el TPV, con actualizaciones controladas |
+| Se rompe un PC y se cambia                           | Por construir     | Revocar y emparejar otro en un minuto; lo pendiente del roto, en Enlace                                  |
 
 ### Un día en un restaurante, de principio a fin
 
-| Momento | Lo que hay hoy | Lo que falta |
-| --- | --- | --- |
-| **Antes de abrir**: encender, entrar, abrir caja, ver avisos, stock y reservas | «Hoy», la campana, el Tablón, el pedido sugerido, fichar | Terminal que enciende en su función; abrir caja; reservas (E4) |
-| **Servicio**: mesa, comanda, cocina, marchar, cobrar, imprimir | Nada (Fase 4) | Todo el TPV, con B2, B3, C2, C3, C4 y D6 resueltos en el diseño |
-| **Incidencia**: cae internet, se apaga un TPV, se pierde una impresora | Nada | Enlace como centro del local (B2) |
-| **Al cerrar**: mesas, arqueo, pagos, ventas, stock, jornada, informes | Cierre de caja a mano o con CSV, informes, mermas, fichajes | Z y cierre del día (C3), exportación de fichajes (C9) |
+| Momento                                                                        | Lo que hay hoy                                              | Lo que falta                                                    |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------------- | --------------------------------------------------------------- |
+| **Antes de abrir**: encender, entrar, abrir caja, ver avisos, stock y reservas | «Hoy», la campana, el Tablón, el pedido sugerido, fichar    | Terminal que enciende en su función; abrir caja; reservas (E4)  |
+| **Servicio**: mesa, comanda, cocina, marchar, cobrar, imprimir                 | Nada (Fase 4)                                               | Todo el TPV, con B2, B3, C2, C3, C4 y D6 resueltos en el diseño |
+| **Incidencia**: cae internet, se apaga un TPV, se pierde una impresora         | Nada                                                        | Enlace como centro del local (B2)                               |
+| **Al cerrar**: mesas, arqueo, pagos, ventas, stock, jornada, informes          | Cierre de caja a mano o con CSV, informes, mermas, fichajes | Z y cierre del día (C3), exportación de fichajes (C9)           |
 
 Con los cambios de este informe, el recorrido completo encaja sin contradicciones: nada de lo construido se rehace.
 
@@ -833,29 +833,29 @@ Con los cambios de este informe, el recorrido completo encaja sin contradiccione
 
 No certifica que Estook cumpla: dice qué hay que revisar y qué construir para llevarlo al asesor. Cada fila lleva su fuente y su etiqueta.
 
-| Requisito | Norma | Aplica a Estook | Estado | Riesgo | Cambio | Prioridad | Validación |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Sistema de facturación conforme (SIF, VERI*FACTU) | [RD 1007/2023](https://www.boe.es/buscar/act.php?id=BOE-A-2023-24840) · [Orden HAC/1177/2024](https://www.boe.es/buscar/act.php?id=BOE-A-2024-22138) | Cuando emita tickets | No emite (correcto) | Alto si se vende sin cumplir | M20B + declaración responsable | Antes de vender el TPV | NORMA ASESOR |
-| Fechas: sociedades 1-ene-2027, resto 1-jul-2027; fabricantes, ya | RDL 15/2025 · [nota de la AEAT](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/nota-informativa-ampliacion-plazo-adaptacion-facturacion.html) | A los clientes del TPV y a la cuota de Estook | Anotado | Medio | Ninguno | — | NORMA |
-| Contenido de la factura simplificada; límite de 3.000 € en hostelería | [RD 1619/2012](https://www.boe.es/buscar/act.php?id=BOE-A-2012-14696), arts. 4 y 7 | Ticket | Bien en el Anexo 4.6 | Bajo | Límite del reparto (400 € o 3.000 €) | M20B | ASESOR (reparto) |
-| Numeración correlativa sin huecos | RD 1619/2012, art. 6 | Series | Documentado con fallo | Alto | B3 | Ahora (documento) | TÉCNICA |
-| Rectificativas (R5, R1/R4, S o I), canje F3, anulación | Orden HAC/1177/2024 · FAQ AEAT | Devoluciones y facturas a petición | Documentado | Medio | Ninguno | M20B | ASESOR |
-| Integridad e inalterabilidad; prohibido el software de doble uso | LGT, art. 29.2.j y 201 bis (Ley 11/2021) | Todo lo fiscal y los informes | Bien diseñado | Alto si se relaja | Añadir bloqueo de `truncate`; anulaciones en el Z | M20B | NORMA |
-| Seguir facturando si cae internet | [FAQ de la AEAT](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/sistemas-verifactu.html) | Cobro sin conexión | Documentado con error (C5) | Alto | Reescribir; justificante al asesor; E1 | Ahora (documento) | NORMA ASESOR |
-| Conservar facturas y documentación | LGT (4 años) · [Código de Comercio, art. 30](https://www.boe.es/buscar/act.php?id=BOE-A-1885-6627) (6 años) | Facturas, compras, cierres | El Anexo dice 4 | Medio | 6 años por defecto | Ahora (documento) | ASESOR |
-| Declaración responsable dentro del programa | Orden HAC/1177/2024, art. 15 | Ajustes › Legal | Documentado | Alto si falta | Ninguno | M20B | NORMA |
-| Tipos de IVA e IGIC; propinas; pedido de plataforma; ticket por correo o QR | LIVA · Ley del IGIC | Carta, cobro, reparto | Pendientes del asesor | Medio | Ninguno hasta la respuesta | Antes de M20B | ASESOR |
-| Contrato de encargado del tratamiento | [RGPD](https://eur-lex.europa.eu/eli/reg/2016/679/oj), art. 28 | Datos del equipo de cada local | No existe (C8) | Alto | Redactarlo y aceptarlo al crear cuenta | Antes del primer cliente de pago | NORMA ASESOR |
-| Conservación y supresión | RGPD, art. 5.1.e | Todo | Contradictorio (C8) | Medio | Tabla de conservación | P0 | ASESOR |
-| Registro de actividades de tratamiento | RGPD, art. 30 | Estook como responsable y como encargado | No existe | Bajo | Un documento | P1 | NORMA |
-| Geolocalización al fichar: informar antes | [LOPDGDD](https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673), art. 90 | Fichar | Solo al fichar (bien); falta el texto para el local | Medio | Plantilla de información al trabajador | P1 | NORMA |
-| Registro de jornada: diario, 4 años, accesible | ET, art. 34.9 · RD digital en trámite | Fichajes | Parcial (C9) | Alto si sale el RD | C9 | Con H | NORMA RD |
-| Seguridad y poder restaurar | RGPD, art. 32 | Todo | Seguridad bien; copias no (B1) | Crítico | B1 | Ahora | NORMA |
-| Aviso legal y cookies | LSSI-CE | La web | Bien (solo técnicas) | Bajo | Añadir Google Places a la lista de proveedores | P2 | NORMA |
-| Alérgenos | Reglamento UE 1169/2011 · [RD 126/2015](https://www.boe.es/buscar/act.php?id=BOE-A-2015-2293) | Fichas, carta digital, aviso en sala | Parcial (D11) | Medio | Origen, versión y condiciones | Antes de M12 | ASESOR |
-| Inteligencia artificial | Reglamento UE 2024/1689 y Omnibus · ET, art. 64.4.d | Fogón | Documentado | Medio | D12 | Antes de M22 | ASESOR |
-| No ser entidad de pago | RDL 19/2018 (servicios de pago) | Cobro y datáfono | Bien: el dinero nunca pasa por Estook | Bajo | Mantenerlo en el datáfono conectado | — | TÉCNICA |
-| Accesibilidad | Ley 11/2023 | La web pública | Contraste probado | Bajo (microempresa) | Ninguno ahora | — | ASESOR |
+| Requisito                                                                   | Norma                                                                                                                                                                                     | Aplica a Estook                               | Estado                                              | Riesgo                       | Cambio                                            | Prioridad                        | Validación       |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------- | ---------------------------- | ------------------------------------------------- | -------------------------------- | ---------------- |
+| Sistema de facturación conforme (SIF, VERI*FACTU)                           | [RD 1007/2023](https://www.boe.es/buscar/act.php?id=BOE-A-2023-24840) · [Orden HAC/1177/2024](https://www.boe.es/buscar/act.php?id=BOE-A-2024-22138)                                      | Cuando emita tickets                          | No emite (correcto)                                 | Alto si se vende sin cumplir | M20B + declaración responsable                    | Antes de vender el TPV           | NORMA ASESOR     |
+| Fechas: sociedades 1-ene-2027, resto 1-jul-2027; fabricantes, ya            | RDL 15/2025 · [nota de la AEAT](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/nota-informativa-ampliacion-plazo-adaptacion-facturacion.html) | A los clientes del TPV y a la cuota de Estook | Anotado                                             | Medio                        | Ninguno                                           | —                                | NORMA            |
+| Contenido de la factura simplificada; límite de 3.000 € en hostelería       | [RD 1619/2012](https://www.boe.es/buscar/act.php?id=BOE-A-2012-14696), arts. 4 y 7                                                                                                        | Ticket                                        | Bien en el Anexo 4.6                                | Bajo                         | Límite del reparto (400 € o 3.000 €)              | M20B                             | ASESOR (reparto) |
+| Numeración correlativa sin huecos                                           | RD 1619/2012, art. 6                                                                                                                                                                      | Series                                        | Documentado con fallo                               | Alto                         | B3                                                | Ahora (documento)                | TÉCNICA          |
+| Rectificativas (R5, R1/R4, S o I), canje F3, anulación                      | Orden HAC/1177/2024 · FAQ AEAT                                                                                                                                                            | Devoluciones y facturas a petición            | Documentado                                         | Medio                        | Ninguno                                           | M20B                             | ASESOR           |
+| Integridad e inalterabilidad; prohibido el software de doble uso            | LGT, art. 29.2.j y 201 bis (Ley 11/2021)                                                                                                                                                  | Todo lo fiscal y los informes                 | Bien diseñado                                       | Alto si se relaja            | Añadir bloqueo de `truncate`; anulaciones en el Z | M20B                             | NORMA            |
+| Seguir facturando si cae internet                                           | [FAQ de la AEAT](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/sistemas-verifactu.html)                                 | Cobro sin conexión                            | Documentado con error (C5)                          | Alto                         | Reescribir; justificante al asesor; E1            | Ahora (documento)                | NORMA ASESOR     |
+| Conservar facturas y documentación                                          | LGT (4 años) · [Código de Comercio, art. 30](https://www.boe.es/buscar/act.php?id=BOE-A-1885-6627) (6 años)                                                                               | Facturas, compras, cierres                    | El Anexo dice 4                                     | Medio                        | 6 años por defecto                                | Ahora (documento)                | ASESOR           |
+| Declaración responsable dentro del programa                                 | Orden HAC/1177/2024, art. 15                                                                                                                                                              | Ajustes › Legal                               | Documentado                                         | Alto si falta                | Ninguno                                           | M20B                             | NORMA            |
+| Tipos de IVA e IGIC; propinas; pedido de plataforma; ticket por correo o QR | LIVA · Ley del IGIC                                                                                                                                                                       | Carta, cobro, reparto                         | Pendientes del asesor                               | Medio                        | Ninguno hasta la respuesta                        | Antes de M20B                    | ASESOR           |
+| Contrato de encargado del tratamiento                                       | [RGPD](https://eur-lex.europa.eu/eli/reg/2016/679/oj), art. 28                                                                                                                            | Datos del equipo de cada local                | No existe (C8)                                      | Alto                         | Redactarlo y aceptarlo al crear cuenta            | Antes del primer cliente de pago | NORMA ASESOR     |
+| Conservación y supresión                                                    | RGPD, art. 5.1.e                                                                                                                                                                          | Todo                                          | Contradictorio (C8)                                 | Medio                        | Tabla de conservación                             | P0                               | ASESOR           |
+| Registro de actividades de tratamiento                                      | RGPD, art. 30                                                                                                                                                                             | Estook como responsable y como encargado      | No existe                                           | Bajo                         | Un documento                                      | P1                               | NORMA            |
+| Geolocalización al fichar: informar antes                                   | [LOPDGDD](https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673), art. 90                                                                                                                 | Fichar                                        | Solo al fichar (bien); falta el texto para el local | Medio                        | Plantilla de información al trabajador            | P1                               | NORMA            |
+| Registro de jornada: diario, 4 años, accesible                              | ET, art. 34.9 · RD digital en trámite                                                                                                                                                     | Fichajes                                      | Parcial (C9)                                        | Alto si sale el RD           | C9                                                | Con H                            | NORMA RD         |
+| Seguridad y poder restaurar                                                 | RGPD, art. 32                                                                                                                                                                             | Todo                                          | Seguridad bien; copias no (B1)                      | Crítico                      | B1                                                | Ahora                            | NORMA            |
+| Aviso legal y cookies                                                       | LSSI-CE                                                                                                                                                                                   | La web                                        | Bien (solo técnicas)                                | Bajo                         | Añadir Google Places a la lista de proveedores    | P2                               | NORMA            |
+| Alérgenos                                                                   | Reglamento UE 1169/2011 · [RD 126/2015](https://www.boe.es/buscar/act.php?id=BOE-A-2015-2293)                                                                                             | Fichas, carta digital, aviso en sala          | Parcial (D11)                                       | Medio                        | Origen, versión y condiciones                     | Antes de M12                     | ASESOR           |
+| Inteligencia artificial                                                     | Reglamento UE 2024/1689 y Omnibus · ET, art. 64.4.d                                                                                                                                       | Fogón                                         | Documentado                                         | Medio                        | D12                                               | Antes de M22                     | ASESOR           |
+| No ser entidad de pago                                                      | RDL 19/2018 (servicios de pago)                                                                                                                                                           | Cobro y datáfono                              | Bien: el dinero nunca pasa por Estook               | Bajo                         | Mantenerlo en el datáfono conectado               | —                                | TÉCNICA          |
+| Accesibilidad                                                               | Ley 11/2023                                                                                                                                                                               | La web pública                                | Contraste probado                                   | Bajo (microempresa)          | Ninguno ahora                                     | —                                | ASESOR           |
 
 «Norma» = confirmado en la fuente oficial citada. «Técnica» = mi interpretación técnica. «Asesor» = pendiente de validación profesional.
 
@@ -863,11 +863,11 @@ No certifica que Estook cumpla: dice qué hay que revisar y qué construir para 
 
 ### La empresa, el local y quién paga
 
-| Pieza | Datos | Qué hereda el local |
-| --- | --- | --- |
-| **Empresa fiscal** (obligado) | Razón social o nombre y apellidos, NIF, nombre comercial, domicilio fiscal completo, teléfono, correo, web, datos registrales si los hay, **si está en el SII**, **si su domicilio es foral**, la representación ante Hacienda con quién firmó y cuándo, y el titular o representante legal | NIF, razón social, domicilio fiscal, SII y foral: se heredan y no se repiten |
-| **Local** (establecimiento) | Nombre comercial del local, dirección del establecimiento, código postal, municipio, provincia, país, zona horaria, **territorio** (ya existe: IVA o IGIC se decide por dónde se vende), series, terminales, cajas, impresoras | Lo suyo es suyo: un local en Tenerife de una empresa de Madrid factura con IGIC |
-| **Quién paga Estook** | Los datos de facturación de la cuota, en Stripe | Puede ser otra empresa de la organización |
+| Pieza                         | Datos                                                                                                                                                                                                                                                                                       | Qué hereda el local                                                             |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **Empresa fiscal** (obligado) | Razón social o nombre y apellidos, NIF, nombre comercial, domicilio fiscal completo, teléfono, correo, web, datos registrales si los hay, **si está en el SII**, **si su domicilio es foral**, la representación ante Hacienda con quién firmó y cuándo, y el titular o representante legal | NIF, razón social, domicilio fiscal, SII y foral: se heredan y no se repiten    |
+| **Local** (establecimiento)   | Nombre comercial del local, dirección del establecimiento, código postal, municipio, provincia, país, zona horaria, **territorio** (ya existe: IVA o IGIC se decide por dónde se vende), series, terminales, cajas, impresoras                                                              | Lo suyo es suyo: un local en Tenerife de una empresa de Madrid factura con IGIC |
+| **Quién paga Estook**         | Los datos de facturación de la cuota, en Stripe                                                                                                                                                                                                                                             | Puede ser otra empresa de la organización                                       |
 
 Así caben **Empresa A → Madrid y Barcelona** y **Empresa B → Valencia** en una misma organización, cada local con sus series, terminales, cajas, empleados e impresoras. Hoy la organización ni tiene CIF: el modelo nuevo lo arregla también para la cuota.
 
@@ -877,27 +877,27 @@ Así caben **Empresa A → Madrid y Barcelona** y **Empresa B → Valencia** en 
 
 El patrón es el adecuado y ya está en el Anexo: cambiar de proveedor es cambiar el adaptador. Lo que añado es qué guardar para **no depender nunca de que Verifacti siga existiendo**.
 
-| Qué se guarda en Estook | Por qué |
-| --- | --- |
-| El documento entero, congelado: líneas, desglose por tipo y clave de régimen, importes, destinatario, serie, número, fechas | Reimprimir y demostrar lo emitido sin nadie más |
-| Su estado: preparado, enviando, registrado, pendiente por incidencia, aceptado con errores, rechazado | Saber siempre en qué punto está (B3) |
-| La clave de idempotencia (el id del documento) | Reintentar sin duplicar |
-| Lo que devuelve Verifacti: su identificador, el QR, la huella | El QR en papel y el enlace con su registro |
-| Cada envío: fecha, respuesta, código | Explicar qué pasó a soporte y a un inspector |
-| Los XML de petición y respuesta (`/verifactu/downloadXML`) | Evidencia propia: Verifacti borra los datos 30 días después de cancelar |
-| Los avisos recibidos por webhook, con su identificador | Que el mismo aviso dos veces no cambie nada |
+| Qué se guarda en Estook                                                                                                     | Por qué                                                                 |
+| --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| El documento entero, congelado: líneas, desglose por tipo y clave de régimen, importes, destinatario, serie, número, fechas | Reimprimir y demostrar lo emitido sin nadie más                         |
+| Su estado: preparado, enviando, registrado, pendiente por incidencia, aceptado con errores, rechazado                       | Saber siempre en qué punto está (B3)                                    |
+| La clave de idempotencia (el id del documento)                                                                              | Reintentar sin duplicar                                                 |
+| Lo que devuelve Verifacti: su identificador, el QR, la huella                                                               | El QR en papel y el enlace con su registro                              |
+| Cada envío: fecha, respuesta, código                                                                                        | Explicar qué pasó a soporte y a un inspector                            |
+| Los XML de petición y respuesta (`/verifactu/downloadXML`)                                                                  | Evidencia propia: Verifacti borra los datos 30 días después de cancelar |
+| Los avisos recibidos por webhook, con su identificador                                                                      | Que el mismo aviso dos veces no cambie nada                             |
 
-| La integración con Verifacti | Lo que sabemos | Estado |
-| --- | --- | --- |
-| Autenticación | Clave por NIF y entorno; `vf_test_` pruebas, `vf_prod_` producción; la dirección no cambia | Comprobado el 20-sep (Anexo 4.1) |
-| Identificar al cliente | Por NIF, dado de alta por su API de gestión | Documentado |
-| Autorización | Modelo de representación que firma el titular | Documentado |
-| Datos enviados | Serie, número, fechas, tipo, destinatario, desglose, incidencia | Revalidar en M20B |
-| Idempotencia | `Idempotency-Key` en `create` (409 si se está procesando, 422 si el cuerpo no cuadra) | Comprobado hoy · el Anexo no lo usaba |
-| Estado y reintento | `/verifactu/status`, `list`, `export`, `downloadXML` | Comprobado hoy |
-| Webhooks | El Anexo los describe; hoy no los he encontrado en su documentación pública | REVALIDAR |
-| Precio con menos de diez NIF, acuerdo de nivel de servicio, contrato de subencargado | No publicado | PREGUNTARLES |
-| Registros generados fuera (para E1) | No aparece | PREGUNTARLES |
+| La integración con Verifacti                                                         | Lo que sabemos                                                                             | Estado                                |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------- |
+| Autenticación                                                                        | Clave por NIF y entorno; `vf_test_` pruebas, `vf_prod_` producción; la dirección no cambia | Comprobado el 20-sep (Anexo 4.1)      |
+| Identificar al cliente                                                               | Por NIF, dado de alta por su API de gestión                                                | Documentado                           |
+| Autorización                                                                         | Modelo de representación que firma el titular                                              | Documentado                           |
+| Datos enviados                                                                       | Serie, número, fechas, tipo, destinatario, desglose, incidencia                            | Revalidar en M20B                     |
+| Idempotencia                                                                         | `Idempotency-Key` en `create` (409 si se está procesando, 422 si el cuerpo no cuadra)      | Comprobado hoy · el Anexo no lo usaba |
+| Estado y reintento                                                                   | `/verifactu/status`, `list`, `export`, `downloadXML`                                       | Comprobado hoy                        |
+| Webhooks                                                                             | El Anexo los describe; hoy no los he encontrado en su documentación pública                | REVALIDAR                             |
+| Precio con menos de diez NIF, acuerdo de nivel de servicio, contrato de subencargado | No publicado                                                                               | PREGUNTARLES                          |
+| Registros generados fuera (para E1)                                                  | No aparece                                                                                 | PREGUNTARLES                          |
 
 **Lo que sigue siendo de Estook aunque use Verifacti:** llamar a tiempo y con datos correctos, numerar sin huecos, poner el QR, publicar su declaración responsable, guardar sus documentos y no permitir nunca editar lo emitido. Que un proveedor diga «compatible con VeriFactu» no hace que Estook cumpla.
 
@@ -905,49 +905,49 @@ El patrón es el adecuado y ya está en el Anexo: cambiar de proveedor es cambia
 
 Hay cosas importantes que no se habían pedido revisar y que conviene mirar antes de seguir.
 
-|  | Qué he visto | Por qué importa | Prioridad | Cuándo |
-| --- | --- | --- | --- | --- |
-| L1 | No hay copias de seguridad (B1) | Se puede perder todo sin vuelta atrás | Crítico | Ahora |
-| L2 | GitHub Pages prohíbe un SaaS comercial (C6) | Pueden desactivar la web con clientes dentro | Alto | Antes de cobrar |
-| L3 | La AEAT permite seguir facturando sin internet (C5) | Cambia el diseño del TPV y puede ser nuestra ventaja (E1) | Alto | Documentos, ya |
-| L4 | Una prueba depende del día de la semana (C7) | `main` puede salir en rojo sin haber roto nada | Alto | Ahora |
-| L5 | La ventana de mercado de 2027 | Los autónomos (la mayoría de bares) tienen que usar software adaptado desde el 1-jul-2027: muchos cambiarán de TPV en el primer semestre de 2027. Con el orden actual, Estook TPV llega después de M17 | Alto | Decisión 2 |
-| L6 | El soporte en horario de servicio y quién instala | Un TPV que falla un sábado a las 22:00 necesita a alguien al teléfono. Ágora y Glop tienen distribuidores; Food&Service, soporte 365 días | Alto | Antes de vender el TPV |
-| L7 | La API lejos de la base (D1) | Latencia en cada pantalla | Medio | P1 |
-| L8 | La ley de IA y Fogón (D12) | Los horarios por IA son de alto riesgo desde dic-2027 | Medio | Antes de M22 |
-| L9 | Alérgenos: la responsabilidad (D11) | Un error puede tener consecuencias graves para un cliente | Medio | Antes de M12 |
-| L10 | Seis años de conservación, no cuatro (C8) | Código de Comercio, art. 30 | Medio | Documentos, ya |
-| L11 | Las capturas no miran las palabras (D13) | Un cambio de texto no lo caza nadie | Bajo | P2 |
+|     | Qué he visto                                        | Por qué importa                                                                                                                                                                                        | Prioridad | Cuándo                 |
+| --- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---------------------- |
+| L1  | No hay copias de seguridad (B1)                     | Se puede perder todo sin vuelta atrás                                                                                                                                                                  | Crítico   | Ahora                  |
+| L2  | GitHub Pages prohíbe un SaaS comercial (C6)         | Pueden desactivar la web con clientes dentro                                                                                                                                                           | Alto      | Antes de cobrar        |
+| L3  | La AEAT permite seguir facturando sin internet (C5) | Cambia el diseño del TPV y puede ser nuestra ventaja (E1)                                                                                                                                              | Alto      | Documentos, ya         |
+| L4  | Una prueba depende del día de la semana (C7)        | `main` puede salir en rojo sin haber roto nada                                                                                                                                                         | Alto      | Ahora                  |
+| L5  | La ventana de mercado de 2027                       | Los autónomos (la mayoría de bares) tienen que usar software adaptado desde el 1-jul-2027: muchos cambiarán de TPV en el primer semestre de 2027. Con el orden actual, Estook TPV llega después de M17 | Alto      | Decisión 2             |
+| L6  | El soporte en horario de servicio y quién instala   | Un TPV que falla un sábado a las 22:00 necesita a alguien al teléfono. Ágora y Glop tienen distribuidores; Food&Service, soporte 365 días                                                              | Alto      | Antes de vender el TPV |
+| L7  | La API lejos de la base (D1)                        | Latencia en cada pantalla                                                                                                                                                                              | Medio     | P1                     |
+| L8  | La ley de IA y Fogón (D12)                          | Los horarios por IA son de alto riesgo desde dic-2027                                                                                                                                                  | Medio     | Antes de M22           |
+| L9  | Alérgenos: la responsabilidad (D11)                 | Un error puede tener consecuencias graves para un cliente                                                                                                                                              | Medio     | Antes de M12           |
+| L10 | Seis años de conservación, no cuatro (C8)           | Código de Comercio, art. 30                                                                                                                                                                            | Medio     | Documentos, ya         |
+| L11 | Las capturas no miran las palabras (D13)            | Un cambio de texto no lo caza nadie                                                                                                                                                                    | Bajo      | P2                     |
 
 ## Tu documento, punto por punto
 
-| # | Punto | Estado | En corto | Dónde |
-| --- | --- | --- | --- | --- |
-| 1 | Arquitectura general | Implementado | Capas claras y vigiladas por máquina. Sin dependencias circulares. Falta la pieza del local para el TPV | A, H |
-| 2 | Estook y Estook TPV | Documentado | Comparten datos y permisos sin duplicar. Propuesta: puerta propia | C11 |
-| 3 | Modelo de datos | Parcial | Existen organización, local, persona, membresía, rol, permiso, producto, proveedor, compra, movimiento, cierre, fichaje y auditoría. Faltan empresa fiscal, terminal, mesa, cuenta, cobro, pago, caja, impresora, venta; la persona exige correo | H · modelo, C1 |
-| 4 | Acceso, PIN y sesiones | Implementado (personas) · Parcial (TPV) | Contraseña, PIN, Google, segundo factor y sesiones revocables, bien. Falta operador, aprobación y PIN sin correo | C2 |
-| 5 | Dispositivos y hardware | Parcial | Aparato personal y lector de códigos, hechos. Terminales, impresoras, cajón y datáfono, documentados | H · aparatos |
-| 6 | PWA y Windows | Parcial | Manifiesto sí, service worker no; orientación vertical fija | D10, H |
-| 7 | Sin conexión | No existe | El diseño tiene un hueco | B2, H |
-| 8 | Caja y dinero | Parcial | Cierre diario a mano o con CSV, hecho. Turnos, arqueo y cajón con huecos | C3, H · caja |
-| 9 | Diseño y experiencia | Implementado | Sistema de diseño sólido, oscuro medido, vacíos que invitan. Detalles en D13–D15 | A, D |
-| 10 | Paneles y gráficas | Parcial | Tarjetas con flecha y objetivo, bien; gráficas sin comparar | D4 |
-| 11 | Velocidad de uso | Parcial | La app se mide en las pruebas; el TPV solo tiene una vara | H · velocidad |
-| 12 | Código demasiado grande | — | 97 ficheros grandes; no es urgente | D14 |
-| 13 | Pantalla frente a reglas | Implementado | Reglas en el dominio, la base y el despachador. Bien | A |
-| 14 | Permisos y seguridad | Implementado | Muy bien; crecerá con aprobación y límites | A, D5 |
-| 15 | Comunicación entre módulos | Implementado | Reacciones en la misma transacción y bandeja de salida; falta el trabajador | D3, H |
-| 16 | Impresión, cocina y Enlace | Documentado | Bien pensado salvo sin internet | B2, H |
-| 17 | Rendimiento | Implementado (cliente) | Carga aparte y velocidad medida; en el servidor, región y reloj | D1, D3 |
-| 18 | Documentación | Implementado · redundante | Mucha y trazable, repetida y contradictoria | C10, H · documentos |
-| 19 | Comparativa | — | — | G |
-| 20 | Fogón | Documentado | La arquitectura lo permite; necesita las mismas cifras y agregados | H · Fogón |
-| 21 | Un día en el restaurante | — | Encaja con los cambios | H · día |
-| 22 | Principios | Respetados | No se rehace nada | — |
-| 23 | Legal | — | — | J |
-| 24 | Identidad fiscal y VeriFactu | Parcial | Falta la empresa fiscal; el flujo de emisión, a corregir | K, B3 |
-| 25 | Auditoría abierta | — | — | L |
+| #   | Punto                        | Estado                                  | En corto                                                                                                                                                                                                                                         | Dónde               |
+| --- | ---------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
+| 1   | Arquitectura general         | Implementado                            | Capas claras y vigiladas por máquina. Sin dependencias circulares. Falta la pieza del local para el TPV                                                                                                                                          | A, H                |
+| 2   | Estook y Estook TPV          | Documentado                             | Comparten datos y permisos sin duplicar. Propuesta: puerta propia                                                                                                                                                                                | C11                 |
+| 3   | Modelo de datos              | Parcial                                 | Existen organización, local, persona, membresía, rol, permiso, producto, proveedor, compra, movimiento, cierre, fichaje y auditoría. Faltan empresa fiscal, terminal, mesa, cuenta, cobro, pago, caja, impresora, venta; la persona exige correo | H · modelo, C1      |
+| 4   | Acceso, PIN y sesiones       | Implementado (personas) · Parcial (TPV) | Contraseña, PIN, Google, segundo factor y sesiones revocables, bien. Falta operador, aprobación y PIN sin correo                                                                                                                                 | C2                  |
+| 5   | Dispositivos y hardware      | Parcial                                 | Aparato personal y lector de códigos, hechos. Terminales, impresoras, cajón y datáfono, documentados                                                                                                                                             | H · aparatos        |
+| 6   | PWA y Windows                | Parcial                                 | Manifiesto sí, service worker no; orientación vertical fija                                                                                                                                                                                      | D10, H              |
+| 7   | Sin conexión                 | No existe                               | El diseño tiene un hueco                                                                                                                                                                                                                         | B2, H               |
+| 8   | Caja y dinero                | Parcial                                 | Cierre diario a mano o con CSV, hecho. Turnos, arqueo y cajón con huecos                                                                                                                                                                         | C3, H · caja        |
+| 9   | Diseño y experiencia         | Implementado                            | Sistema de diseño sólido, oscuro medido, vacíos que invitan. Detalles en D13–D15                                                                                                                                                                 | A, D                |
+| 10  | Paneles y gráficas           | Parcial                                 | Tarjetas con flecha y objetivo, bien; gráficas sin comparar                                                                                                                                                                                      | D4                  |
+| 11  | Velocidad de uso             | Parcial                                 | La app se mide en las pruebas; el TPV solo tiene una vara                                                                                                                                                                                        | H · velocidad       |
+| 12  | Código demasiado grande      | —                                       | 97 ficheros grandes; no es urgente                                                                                                                                                                                                               | D14                 |
+| 13  | Pantalla frente a reglas     | Implementado                            | Reglas en el dominio, la base y el despachador. Bien                                                                                                                                                                                             | A                   |
+| 14  | Permisos y seguridad         | Implementado                            | Muy bien; crecerá con aprobación y límites                                                                                                                                                                                                       | A, D5               |
+| 15  | Comunicación entre módulos   | Implementado                            | Reacciones en la misma transacción y bandeja de salida; falta el trabajador                                                                                                                                                                      | D3, H               |
+| 16  | Impresión, cocina y Enlace   | Documentado                             | Bien pensado salvo sin internet                                                                                                                                                                                                                  | B2, H               |
+| 17  | Rendimiento                  | Implementado (cliente)                  | Carga aparte y velocidad medida; en el servidor, región y reloj                                                                                                                                                                                  | D1, D3              |
+| 18  | Documentación                | Implementado · redundante               | Mucha y trazable, repetida y contradictoria                                                                                                                                                                                                      | C10, H · documentos |
+| 19  | Comparativa                  | —                                       | —                                                                                                                                                                                                                                                | G                   |
+| 20  | Fogón                        | Documentado                             | La arquitectura lo permite; necesita las mismas cifras y agregados                                                                                                                                                                               | H · Fogón           |
+| 21  | Un día en el restaurante     | —                                       | Encaja con los cambios                                                                                                                                                                                                                           | H · día             |
+| 22  | Principios                   | Respetados                              | No se rehace nada                                                                                                                                                                                                                                | —                   |
+| 23  | Legal                        | —                                       | —                                                                                                                                                                                                                                                | J                   |
+| 24  | Identidad fiscal y VeriFactu | Parcial                                 | Falta la empresa fiscal; el flujo de emisión, a corregir                                                                                                                                                                                         | K, B3               |
+| 25  | Auditoría abierta            | —                                       | —                                                                                                                                                                                                                                                | L                   |
 
 ## El plan, y lo que contestó Richi
 
@@ -955,60 +955,59 @@ Richi lo aprobó entero el 29 de septiembre por la noche. Donde añadió algo, v
 
 ### P0 · Imprescindible antes de seguir con H
 
-| Punto | Qué | Quién | Cuándo | Richi |
-| --- | --- | --- | --- | --- |
-| **P0-1** | **Copias de seguridad de verdad.** Supabase a Pro, volcado semanal fuera de Supabase, copia de los ficheros y un simulacro de restauración. (ver B1) | Tú pagas Pro; yo monto el resto | Esta semana | Sí |
-| **P0-2** | **Arreglar la prueba que depende del día, y el reloj de la base.** Una rama pequeña. Después se puede fusionar la #78 sin rojo. (ver C7) | Yo | Lo primero | Sí |
-| **P0-3** | **Corregir los documentos del TPV con lo encontrado.** Enlace como centro del local, emisión con estados y clave de idempotencia, cobro y pagos separados, bolsa del camarero, cierre del día, la venta al cobrar, «Quedan N» con lo comprometido, lo que dice la AEAT sin conexión, seis años de conservación, el esquema estook. Solo documentos. (ver B2 B3 C3 C4 C5) | Yo | Esta semana | Sí |
-| **P0-4** | **Personas sin correo, decidido y escrito.** Se construye al empezar H, porque el cuadrante tiene que incluir a todos. (ver C1) | Tú decides; yo lo escribo | Antes de H | Sí |
-| **P0-5** | **Salir de GitHub Pages a Cloudflare Pages.** Cabeceras de seguridad, direcciones sin #, y vista previa de cada pull request en tu móvil. (ver C6) | Yo, con tu ayuda en el DNS | Antes del primer cliente de pago | Sí, **pero al final**: «ahora es fácil en GitHub por los pull request; al acabar el último módulo lo movemos a Cloudflare, si se puede» |
-| **P0-6** | **Contrato de encargado del tratamiento y tabla de conservación.** Borrador mío, revisión del asesor, aceptado al crear la cuenta. (ver C8) | Yo redacto; el asesor revisa | Antes del primer cliente de pago | Sí |
+| Punto    | Qué                                                                                                                                                                                                                                                                                                                                                                      | Quién                           | Cuándo                           | Richi                                                                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **P0-1** | **Copias de seguridad de verdad.** Supabase a Pro, volcado semanal fuera de Supabase, copia de los ficheros y un simulacro de restauración. (ver B1)                                                                                                                                                                                                                     | Tú pagas Pro; yo monto el resto | Esta semana                      | Sí                                                                                                                                      |
+| **P0-2** | **Arreglar la prueba que depende del día, y el reloj de la base.** Una rama pequeña. Después se puede fusionar la #78 sin rojo. (ver C7)                                                                                                                                                                                                                                 | Yo                              | Lo primero                       | Sí                                                                                                                                      |
+| **P0-3** | **Corregir los documentos del TPV con lo encontrado.** Enlace como centro del local, emisión con estados y clave de idempotencia, cobro y pagos separados, bolsa del camarero, cierre del día, la venta al cobrar, «Quedan N» con lo comprometido, lo que dice la AEAT sin conexión, seis años de conservación, el esquema estook. Solo documentos. (ver B2 B3 C3 C4 C5) | Yo                              | Esta semana                      | Sí                                                                                                                                      |
+| **P0-4** | **Personas sin correo, decidido y escrito.** Se construye al empezar H, porque el cuadrante tiene que incluir a todos. (ver C1)                                                                                                                                                                                                                                          | Tú decides; yo lo escribo       | Antes de H                       | Sí                                                                                                                                      |
+| **P0-5** | **Salir de GitHub Pages a Cloudflare Pages.** Cabeceras de seguridad, direcciones sin #, y vista previa de cada pull request en tu móvil. (ver C6)                                                                                                                                                                                                                       | Yo, con tu ayuda en el DNS      | Antes del primer cliente de pago | Sí, **pero al final**: «ahora es fácil en GitHub por los pull request; al acabar el último módulo lo movemos a Cloudflare, si se puede» |
+| **P0-6** | **Contrato de encargado del tratamiento y tabla de conservación.** Borrador mío, revisión del asesor, aceptado al crear la cuenta. (ver C8)                                                                                                                                                                                                                              | Yo redacto; el asesor revisa    | Antes del primer cliente de pago | Sí                                                                                                                                      |
 
 ### P1 · Importante, el próximo mes
 
-| Punto | Qué | Quién | Cuándo | Richi |
-| --- | --- | --- | --- | --- |
-| **P1-1** | **La API junto a la base.** Medir, fijar Irlanda, volver a medir. (ver D1) | Yo | Con la siguiente entrega | Sí |
-| **P1-2** | **Errores del servidor a Sentry y buscador por hilo en el admin.** Para poder contestar «¿qué le ha pasado a este cliente?». (ver D2) | Yo | Con la siguiente entrega | Sí |
-| **P1-3** | **La app instalable (I), adelantada.** Service worker, actualización controlada, cola sin conexión para fichar y mermas, manifiesto sin orientación fija. (ver D10) | Yo | Después de H | Sí |
-| **P1-4** | **Fichajes listos para el registro horario digital.** Correcciones que no borran, el trabajador ve y recibe aviso de cambios, exportación para la Inspección. (ver C9) | Yo | Con H | Sí |
-| **P1-5** | **Ordenar los documentos: una fuente por tema.** ESTADO de 150 líneas, documento de Arquitectura con el modelo, el TPV solo en el Anexo, registro de cambios único. (ver C10) | Yo | Después de P0-3 | Sí |
-| **P1-6** | **Exportación completa del negocio.** Lo que prometen las condiciones, y la base de la baja. (ver D9) | Yo | Antes del primer cliente de pago | Sí |
-| **P1-7** | **El reloj por tandas y el trabajador de la cola.** Para que aguante cientos de locales y las ventas no esperen. (ver D3) | Yo | Antes de M20 | Sí |
+| Punto    | Qué                                                                                                                                                                           | Quién | Cuándo                           | Richi |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | -------------------------------- | ----- |
+| **P1-1** | **La API junto a la base.** Medir, fijar Irlanda, volver a medir. (ver D1)                                                                                                    | Yo    | Con la siguiente entrega         | Sí    |
+| **P1-2** | **Errores del servidor a Sentry y buscador por hilo en el admin.** Para poder contestar «¿qué le ha pasado a este cliente?». (ver D2)                                         | Yo    | Con la siguiente entrega         | Sí    |
+| **P1-3** | **La app instalable (I), adelantada.** Service worker, actualización controlada, cola sin conexión para fichar y mermas, manifiesto sin orientación fija. (ver D10)           | Yo    | Después de H                     | Sí    |
+| **P1-4** | **Fichajes listos para el registro horario digital.** Correcciones que no borran, el trabajador ve y recibe aviso de cambios, exportación para la Inspección. (ver C9)        | Yo    | Con H                            | Sí    |
+| **P1-5** | **Ordenar los documentos: una fuente por tema.** ESTADO de 150 líneas, documento de Arquitectura con el modelo, el TPV solo en el Anexo, registro de cambios único. (ver C10) | Yo    | Después de P0-3                  | Sí    |
+| **P1-6** | **Exportación completa del negocio.** Lo que prometen las condiciones, y la base de la baja. (ver D9)                                                                         | Yo    | Antes del primer cliente de pago | Sí    |
+| **P1-7** | **El reloj por tandas y el trabajador de la cola.** Para que aguante cientos de locales y las ventas no esperen. (ver D3)                                                     | Yo    | Antes de M20                     | Sí    |
 
 ### P2 · Recomendable
 
-| Punto | Qué | Quién | Cuándo | Richi |
-| --- | --- | --- | --- | --- |
-| **P2-1** | **Gráficas que contestan una pregunta.** Catálogo de gráficas, rojo solo para lo malo, periodo comparable. (ver D4) | Yo | Antes de M21 | Sí, «con un mejor diseño, más 3D y más bonito que las que tenemos» |
-| **P2-2** | **Permisos con aprobación, límites y «lo mío».** Una pieza en el despachador para todo Estook. (ver D5) | Yo | Diseño antes de M20A | Sí |
-| **P2-3** | **Ampliar cómo se usa Estook TPV.** Repetir ronda, artículo libre, a peso, modificadores con escandallo, fichar = TPV, bloqueo, llave, pantalla del cliente, el Z completo. (ver D6) | Yo lo escribo; tú lo miras | Antes de M20A | Sí |
-| **P2-4** | **La empresa fiscal en el modelo.** Organización → empresa → local. (ver D7, K) | Yo | Diseño ya; construir con la primera necesidad | Sí |
-| **P2-5** | **Quitar los borrados en cascada en lo que la ley obliga a guardar.** Y bloquear truncate en la auditoría. (ver D8) | Yo | Con cualquier migración | Sí |
-| **P2-6** | **Alérgenos y Fogón: lo legal.** Origen y versión de los alérgenos; decir que Fogón es IA; horarios que propone y decide una persona. (ver D11 D12) | Yo; el asesor revisa | Antes de M12 y M22 | Sí |
-| **P2-7** | **Capturas de pantalla fiables.** Regenerar, comparar por zonas, borrar las 32 viejas. (ver D13) | Yo | Con la siguiente pantalla | Sí |
-| **P2-8** | **Partir componentes grandes al tocarlos.** Y reescribir la regla del tamaño. (ver D14) | Yo | Siempre | Sí: «si es una regla tonta, quítala, y que sea lo más óptimo posible» |
+| Punto    | Qué                                                                                                                                                                                  | Quién                      | Cuándo                                        | Richi                                                                 |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| **P2-1** | **Gráficas que contestan una pregunta.** Catálogo de gráficas, rojo solo para lo malo, periodo comparable. (ver D4)                                                                  | Yo                         | Antes de M21                                  | Sí, «con un mejor diseño, más 3D y más bonito que las que tenemos»    |
+| **P2-2** | **Permisos con aprobación, límites y «lo mío».** Una pieza en el despachador para todo Estook. (ver D5)                                                                              | Yo                         | Diseño antes de M20A                          | Sí                                                                    |
+| **P2-3** | **Ampliar cómo se usa Estook TPV.** Repetir ronda, artículo libre, a peso, modificadores con escandallo, fichar = TPV, bloqueo, llave, pantalla del cliente, el Z completo. (ver D6) | Yo lo escribo; tú lo miras | Antes de M20A                                 | Sí                                                                    |
+| **P2-4** | **La empresa fiscal en el modelo.** Organización → empresa → local. (ver D7, K)                                                                                                      | Yo                         | Diseño ya; construir con la primera necesidad | Sí                                                                    |
+| **P2-5** | **Quitar los borrados en cascada en lo que la ley obliga a guardar.** Y bloquear truncate en la auditoría. (ver D8)                                                                  | Yo                         | Con cualquier migración                       | Sí                                                                    |
+| **P2-6** | **Alérgenos y Fogón: lo legal.** Origen y versión de los alérgenos; decir que Fogón es IA; horarios que propone y decide una persona. (ver D11 D12)                                  | Yo; el asesor revisa       | Antes de M12 y M22                            | Sí                                                                    |
+| **P2-7** | **Capturas de pantalla fiables.** Regenerar, comparar por zonas, borrar las 32 viejas. (ver D13)                                                                                     | Yo                         | Con la siguiente pantalla                     | Sí                                                                    |
+| **P2-8** | **Partir componentes grandes al tocarlos.** Y reescribir la regla del tamaño. (ver D14)                                                                                              | Yo                         | Siempre                                       | Sí: «si es una regla tonta, quítala, y que sea lo más óptimo posible» |
 
 ### P3 · Futuro
 
-| Punto | Qué | Quién | Cuándo | Richi |
-| --- | --- | --- | --- | --- |
-| **P3-1** | **Facturar sin internet desde el local.** Tras el asesor y la documentación de la AEAT. (ver E1) | — | Después de M20B | Sí |
-| **P3-2** | **Datáfono conectado, pago en mesa, Bizum.** Siempre con la cuenta del local. (ver E2) | — | Después de M20C | Sí, «sin meternos en cosas que no podemos» |
-| **P3-3** | **Pantalla de cliente, balanza, llave, cajones inteligentes.**  (ver E3) | — | Con clientes que lo pidan | Sí |
-| **P3-4** | **Reservas por integración y pedir desde la mesa.**  (ver E4 E5) | — | Fase 5–7 | Sí |
-| **P3-5** | **Particionar y agregar cuando crezca.**  (ver E6) | — | Con 100+ locales | Sí |
+| Punto    | Qué                                                                                              | Quién | Cuándo                    | Richi                                      |
+| -------- | ------------------------------------------------------------------------------------------------ | ----- | ------------------------- | ------------------------------------------ |
+| **P3-1** | **Facturar sin internet desde el local.** Tras el asesor y la documentación de la AEAT. (ver E1) | —     | Después de M20B           | Sí                                         |
+| **P3-2** | **Datáfono conectado, pago en mesa, Bizum.** Siempre con la cuenta del local. (ver E2)           | —     | Después de M20C           | Sí, «sin meternos en cosas que no podemos» |
+| **P3-3** | **Pantalla de cliente, balanza, llave, cajones inteligentes.** (ver E3)                          | —     | Con clientes que lo pidan | Sí                                         |
+| **P3-4** | **Reservas por integración y pedir desde la mesa.** (ver E4 E5)                                  | —     | Fase 5–7                  | Sí                                         |
+| **P3-5** | **Particionar y agregar cuando crezca.** (ver E6)                                                | —     | Con 100+ locales          | Sí                                         |
 
 ## Las ocho preguntas, y sus respuestas
 
-| Pregunta | Lo que contestó Richi |
-| --- | --- |
-| **1 · ¿Pasamos Supabase a Pro ya, por las copias de seguridad?** Hoy, si algo se borra por error, no hay vuelta atrás. Pro cuesta unos 25 $ al mes y guarda una copia de cada día de la última semana. | **En unas semanas**, «si no es estrictamente necesario». Mientras, la copia semanal |
-| **2 · ¿Adelantamos Estook TPV?** Los autónomos, que son la mayoría de bares, tienen que usar un programa adaptado a VeriFactu desde el 1 de julio de 2027. En el primer semestre de 2027 mucha gente va a cambiar de TPV. Con el orden de hoy, el TPV llega después de M17. | **Justo después de M10** |
-| **3 · ¿Estook TPV con su propia puerta?** Mismo login, mismo PIN, mismos datos y mismo diseño. La diferencia: se instala aparte como «Estook TPV» con su icono, arranca a pantalla completa, funciona sin conexión y se actualiza cuando tú digas, nunca en mitad del servicio. | **Sí, puerta propia** |
-| **4 · ¿Trabajadores sin correo?** Hoy, para fichar hay que tener correo. Un extra o un friegaplatos sin correo no puede. | **Sí**: nombre y PIN bastan |
-| **5 · ¿Cómo se cobra en sala?** En muchos restaurantes el camarero cobra en la mesa, lleva el efectivo encima y lo liquida al final del turno. En otros, todo va a una caja. | **Las dos formas**, a elegir por local |
-| **6 · ¿Cómo se llama el programa que se instala en el local?** Los documentos dicen «Estook Enlace»; tu documento, «Estook Link». Tiene que ser uno. | **Estook Link** |
-| **7 · ¿Publicamos la web y la app en Cloudflare Pages?** GitHub Pages no permite un SaaS de pago. Cloudflare es gratis, tiene servidores en Madrid y te daría una vista previa de cada cambio en el móvil antes de fusionar. | **Sí, al final** |
-| **8 · ¿Qué hacemos con la #78?** Es correcta y está en verde. Pero si se fusiona hoy, la prueba del día puede poner main en rojo. | **Arreglar la prueba, fusionar la #78 y lo nuevo en otra rama** |
-
+| Pregunta                                                                                                                                                                                                                                                                        | Lo que contestó Richi                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **1 · ¿Pasamos Supabase a Pro ya, por las copias de seguridad?** Hoy, si algo se borra por error, no hay vuelta atrás. Pro cuesta unos 25 $ al mes y guarda una copia de cada día de la última semana.                                                                          | **En unas semanas**, «si no es estrictamente necesario». Mientras, la copia semanal |
+| **2 · ¿Adelantamos Estook TPV?** Los autónomos, que son la mayoría de bares, tienen que usar un programa adaptado a VeriFactu desde el 1 de julio de 2027. En el primer semestre de 2027 mucha gente va a cambiar de TPV. Con el orden de hoy, el TPV llega después de M17.     | **Justo después de M10**                                                            |
+| **3 · ¿Estook TPV con su propia puerta?** Mismo login, mismo PIN, mismos datos y mismo diseño. La diferencia: se instala aparte como «Estook TPV» con su icono, arranca a pantalla completa, funciona sin conexión y se actualiza cuando tú digas, nunca en mitad del servicio. | **Sí, puerta propia**                                                               |
+| **4 · ¿Trabajadores sin correo?** Hoy, para fichar hay que tener correo. Un extra o un friegaplatos sin correo no puede.                                                                                                                                                        | **Sí**: nombre y PIN bastan                                                         |
+| **5 · ¿Cómo se cobra en sala?** En muchos restaurantes el camarero cobra en la mesa, lleva el efectivo encima y lo liquida al final del turno. En otros, todo va a una caja.                                                                                                    | **Las dos formas**, a elegir por local                                              |
+| **6 · ¿Cómo se llama el programa que se instala en el local?** Los documentos dicen «Estook Enlace»; tu documento, «Estook Link». Tiene que ser uno.                                                                                                                            | **Estook Link**                                                                     |
+| **7 · ¿Publicamos la web y la app en Cloudflare Pages?** GitHub Pages no permite un SaaS de pago. Cloudflare es gratis, tiene servidores en Madrid y te daría una vista previa de cada cambio en el móvil antes de fusionar.                                                    | **Sí, al final**                                                                    |
+| **8 · ¿Qué hacemos con la #78?** Es correcta y está en verde. Pero si se fusiona hoy, la prueba del día puede poner main en rojo.                                                                                                                                               | **Arreglar la prueba, fusionar la #78 y lo nuevo en otra rama**                     |

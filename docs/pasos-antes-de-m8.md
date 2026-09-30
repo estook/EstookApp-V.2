@@ -692,7 +692,7 @@ Abre `estook.com/app/` y **recarga con Ctrl + F5** para que no te enseñe la ver
 - **Modo cocina:** Ajustes → Este aparato. Ponlo en la tablet de la cocina.
 - **Entrar:** sal de tu cuenta y entra en la **app** con `estookapp@gmail.com`. Tiene que
   decir «Esta cuenta no tiene ningún negocio en Estook» **sin pedirte el código**. Luego
-  entra con la tuya (`belicar1905@gmail.com`) como siempre.
+  entra con la tuya como siempre.
 
 Si algo no se ve como te digo, hazle una captura y me la pasas.
 
@@ -1033,13 +1033,13 @@ dedo. En tu fila, «El tuyo: te lo quita otro admin».
 
 ### 4 · Santi, cuando entre por primera vez
 
-`santidearmijo58@gmail.com` ya tiene acceso total y **ya tenía cuenta en Estook**, así
+Santi ya tiene acceso total y **ya tenía cuenta en Estook**, así
 que entra con **su contraseña de siempre**. Al entrar le pedirá montar el segundo
 factor con su móvil y apuntar sus códigos de respaldo (el paso 5 de arriba, desde el 3).
 Si no se acuerda de la contraseña:
 
 ```bash
-.\estook.cmd bd:dar-admin santidearmijo58@gmail.com --nueva-clave
+.\estook.cmd bd:dar-admin su@correo.com --nueva-clave
 ```
 
 **Qué sale:** una contraseña de cinco palabras. Dásela en mano o por teléfono, **nunca

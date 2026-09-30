@@ -28,21 +28,21 @@ Fogón, las alertas, el chat, la API y el mercado estaban escritos en los dos.
 
 ### 1 · Cada tema vive en un solo sitio
 
-| Tema                                       | Su sitio                                                        | Los demás                                  |
-| ------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------ |
-| **Dónde estamos**                          | `ESTADO.md`, **150 líneas como mucho**                          | Enlazan                                    |
-| **Qué es el producto**, y hacia dónde va    | **Manifiesto** (con lo que era la Evolución: visión y mercado)  | Enlazan                                    |
-| **Cómo está hecho**                         | **Arquitectura** (nueva): capas, el modelo, aparatos, sin conexión, servicios externos, claves, despliegue, copias, escala y lo que no se toca | Plan A3–A5 y Anexo 2 y 3.4 pasan a enlazarla |
-| **Estook TPV y la facturación**            | El **Anexo**, y solo el Anexo                                   | Un párrafo y un enlace                     |
-| **Quién ve qué**                           | **Roles**                                                       | —                                          |
-| **Qué desencadena cada cambio**            | **Auditoría de flujos**                                         | —                                          |
-| **Cómo se trabaja, el diseño y el orden**  | **Plan** (con las reglas, que dejan `docs/reglas.md`)           | —                                          |
-| **Por qué está hecho así**                 | `docs/decisiones/`                                              | —                                          |
-| **Lo legal**                               | `docs/legal/`                                                   | —                                          |
-| **Lo que cambió en cada versión**          | `docs/maestros/CAMBIOS.md`                                      | Sale de la cabecera de cada maestro        |
-| **Lo que hizo cada entrega**               | `docs/historia-de-los-modulos.md`                               | Sale de `ESTADO.md`                         |
-| **Lo aprendido fallando**                  | `docs/lecciones.md`                                             | —                                          |
-| **Los pasos de Richi**                     | `docs/pasos-antes-de-m8.md`, uno por entrega                    | —                                          |
+| Tema                                      | Su sitio                                                                                                                                       | Los demás                                    |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **Dónde estamos**                         | `ESTADO.md`, **150 líneas como mucho**                                                                                                         | Enlazan                                      |
+| **Qué es el producto**, y hacia dónde va  | **Manifiesto** (con lo que era la Evolución: visión y mercado)                                                                                 | Enlazan                                      |
+| **Cómo está hecho**                       | **Arquitectura** (nueva): capas, el modelo, aparatos, sin conexión, servicios externos, claves, despliegue, copias, escala y lo que no se toca | Plan A3–A5 y Anexo 2 y 3.4 pasan a enlazarla |
+| **Estook TPV y la facturación**           | El **Anexo**, y solo el Anexo                                                                                                                  | Un párrafo y un enlace                       |
+| **Quién ve qué**                          | **Roles**                                                                                                                                      | —                                            |
+| **Qué desencadena cada cambio**           | **Auditoría de flujos**                                                                                                                        | —                                            |
+| **Cómo se trabaja, el diseño y el orden** | **Plan** (con las reglas, que dejan `docs/reglas.md`)                                                                                          | —                                            |
+| **Por qué está hecho así**                | `docs/decisiones/`                                                                                                                             | —                                            |
+| **Lo legal**                              | `docs/legal/`                                                                                                                                  | —                                            |
+| **Lo que cambió en cada versión**         | `docs/maestros/CAMBIOS.md`                                                                                                                     | Sale de la cabecera de cada maestro          |
+| **Lo que hizo cada entrega**              | `docs/historia-de-los-modulos.md`                                                                                                              | Sale de `ESTADO.md`                          |
+| **Lo aprendido fallando**                 | `docs/lecciones.md`                                                                                                                            | —                                            |
+| **Los pasos de Richi**                    | `docs/pasos-antes-de-m8.md`, uno por entrega                                                                                                   | —                                            |
 
 **Siguen siendo seis maestros**: el Manifiesto, la Arquitectura, el Plan, Roles, la
 Auditoría de flujos y el Anexo. **La Evolución deja de serlo**: su fichero se queda con

@@ -14,8 +14,6 @@ Aquí está el detalle que, sin escribir, se acaba improvisando:
 - **Las auditorías de local, enteras:** plantillas, visita, informe y seguimiento.
 - **Nuestro panel de administración**, sección por sección.
 
-
-
 **La versión 1.4** (30 de septiembre de 2026) recoge la auditoría profunda ([decisión 0055](../decisiones/0055-la-auditoria-profunda.md)): en el apartado 1.12 entran **el terminal y su operador**, **la aprobación con el PIN de un superior**, **los límites por rol**, **la bolsa del camarero** y **el titular de la empresa fiscal**. Lo que cambió en cada versión, en el [registro de cambios](CAMBIOS.md).
 
 ---
@@ -171,42 +169,42 @@ Los publica quien puede editar el Calendario —gerente, jefes—, y **elige qu�
 
 _Solo en locales que cobran con Estook TPV. Es la propuesta por defecto: el gerente la ajusta por rol dentro de lo que permite M1, y **la decide la base de datos**, no la pantalla._
 
-| Acción                                            | Camarero                                           | Jefe de sala   | Gerente             | Otros                                                      |
-| ------------------------------------------------- | -------------------------------------------------- | -------------- | ------------------- | ---------------------------------------------------------- |
-| Tomar nota y mandar a cocina                      | Sí                                                 | Sí             | Sí                  | Area manager, dirección                                    |
-| **Marcar un plato agotado**                       | Sí                                                 | Sí             | Sí                  | **Cocinero y jefe de cocina: son los primeros en saberlo** |
-| Quitar un plato **antes** de mandarlo             | Sí                                                 | Sí             | Sí                  |                                                            |
-| Quitar un plato **ya en cocina**                  | Lo pide; lo aprueba un jefe con su PIN             | Sí, con motivo | Sí, con motivo      |                                                            |
-| **Marchar** la siguiente tanda                    | Sí                                                 | Sí             | Sí                  | Jefe de cocina                                             |
-| **Traspasar una mesa** a otro camarero            | La suya                                            | Cualquiera     | Cualquiera          |                                                            |
-| **Marcar un plato listo** en cocina               | No                                                 | No             | Sí                  | Cocinero y jefe de cocina                                  |
-| **Deshacer** un plato marcado, pasado el margen   | No                                                 | No             | Sí                  | Jefe de cocina                                             |
-| Configurar **partidas y pantallas** de cocina     | No                                                 | No             | Sí                  | Jefe de cocina                                             |
-| Invitar o descontar                               | No: lo pide, y lo aprueba un jefe con su PIN | **Hasta su límite**, con motivo | Sí, con motivo      |                                                            |
-| Cobrar                                            | Sí, si el local lo permite (encendido por defecto) | Sí             | Sí                  |                                                            |
-| Factura a petición del cliente (canje del ticket) | No                                                 | Sí             | Sí                  |                                                            |
-| Rectificar o devolver                             | No                                                 | No             | Sí, con motivo      | Area manager, dirección                                    |
-| Anular un documento que nunca debió existir       | No                                                 | No             | Sí, con motivo      | Dirección                                                  |
-| Abrir caja, entradas y salidas, arqueo            | No                                                 | Sí             | Sí                  |                                                            |
-| **Llevar su bolsa** y liquidarla (si el local la usa) | La suya                                        | La suya, y recibe las de los demás | Sí |                                                            |
-| **Abrir el cajón sin venta**                      | No                                                 | Sí, con motivo | Sí, con motivo      |                                                            |
-| **Ver el informe X** de la caja                   | Lo suyo del turno                                  | Sí             | Sí                  |                                                            |
-| **Aceptar o rechazar un pedido de reparto**       | Sí, si el local lo permite                         | Sí             | Sí                  | Jefe de cocina                                             |
-| **Pausar la tienda** en una plataforma de reparto | No                                                 | Sí             | Sí                  | Jefe de cocina: es quien sabe si la cocina da abasto       |
-| **Conectar un datáfono o un canal de reparto**    | No                                                 | No             | Sí                  | Dirección, administrador de cuenta                         |
-| Alta de facturación y series                      | No                                                 | No             | Sí                  | Dirección, administrador de cuenta                         |
-| **Dar de alta un terminal** del local, o revocarlo | No                                                 | No             | Sí                  | Dirección, administrador de cuenta                         |
-| Ver tickets y facturas                            | Los suyos del turno                                | Los del local  | Todos los del local | Gestoría, en lectura                                       |
+| Acción                                                | Camarero                                           | Jefe de sala                       | Gerente             | Otros                                                      |
+| ----------------------------------------------------- | -------------------------------------------------- | ---------------------------------- | ------------------- | ---------------------------------------------------------- |
+| Tomar nota y mandar a cocina                          | Sí                                                 | Sí                                 | Sí                  | Area manager, dirección                                    |
+| **Marcar un plato agotado**                           | Sí                                                 | Sí                                 | Sí                  | **Cocinero y jefe de cocina: son los primeros en saberlo** |
+| Quitar un plato **antes** de mandarlo                 | Sí                                                 | Sí                                 | Sí                  |                                                            |
+| Quitar un plato **ya en cocina**                      | Lo pide; lo aprueba un jefe con su PIN             | Sí, con motivo                     | Sí, con motivo      |                                                            |
+| **Marchar** la siguiente tanda                        | Sí                                                 | Sí                                 | Sí                  | Jefe de cocina                                             |
+| **Traspasar una mesa** a otro camarero                | La suya                                            | Cualquiera                         | Cualquiera          |                                                            |
+| **Marcar un plato listo** en cocina                   | No                                                 | No                                 | Sí                  | Cocinero y jefe de cocina                                  |
+| **Deshacer** un plato marcado, pasado el margen       | No                                                 | No                                 | Sí                  | Jefe de cocina                                             |
+| Configurar **partidas y pantallas** de cocina         | No                                                 | No                                 | Sí                  | Jefe de cocina                                             |
+| Invitar o descontar                                   | No: lo pide, y lo aprueba un jefe con su PIN       | **Hasta su límite**, con motivo    | Sí, con motivo      |                                                            |
+| Cobrar                                                | Sí, si el local lo permite (encendido por defecto) | Sí                                 | Sí                  |                                                            |
+| Factura a petición del cliente (canje del ticket)     | No                                                 | Sí                                 | Sí                  |                                                            |
+| Rectificar o devolver                                 | No                                                 | No                                 | Sí, con motivo      | Area manager, dirección                                    |
+| Anular un documento que nunca debió existir           | No                                                 | No                                 | Sí, con motivo      | Dirección                                                  |
+| Abrir caja, entradas y salidas, arqueo                | No                                                 | Sí                                 | Sí                  |                                                            |
+| **Llevar su bolsa** y liquidarla (si el local la usa) | La suya                                            | La suya, y recibe las de los demás | Sí                  |                                                            |
+| **Abrir el cajón sin venta**                          | No                                                 | Sí, con motivo                     | Sí, con motivo      |                                                            |
+| **Ver el informe X** de la caja                       | Lo suyo del turno                                  | Sí                                 | Sí                  |                                                            |
+| **Aceptar o rechazar un pedido de reparto**           | Sí, si el local lo permite                         | Sí                                 | Sí                  | Jefe de cocina                                             |
+| **Pausar la tienda** en una plataforma de reparto     | No                                                 | Sí                                 | Sí                  | Jefe de cocina: es quien sabe si la cocina da abasto       |
+| **Conectar un datáfono o un canal de reparto**        | No                                                 | No                                 | Sí                  | Dirección, administrador de cuenta                         |
+| Alta de facturación y series                          | No                                                 | No                                 | Sí                  | Dirección, administrador de cuenta                         |
+| **Dar de alta un terminal** del local, o revocarlo    | No                                                 | No                                 | Sí                  | Dirección, administrador de cuenta                         |
+| Ver tickets y facturas                                | Los suyos del turno                                | Los del local                      | Todos los del local | Gestoría, en lectura                                       |
 
 **La autorización ante Hacienda** para que los registros se envíen en nombre del negocio **solo la da el titular de la empresa fiscal o su representante legal** ([0060](../decisiones/0060-la-empresa-fiscal.md)). Estook guarda quién la dio y cuándo, y no deja darla a nadie más aunque tenga el rol de gerente.
 
 **Tres piezas que valen para toda la tabla** ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)), y que se cumplen en el servidor y en la base, no en la pantalla:
 
-| Pieza           | Qué es                                                                                                                              |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Pieza           | Qué es                                                                                                                                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Aprobación**  | Donde pone «lo pide; lo aprueba un jefe con su PIN»: el jefe teclea su PIN en el mismo terminal. Vale para una cosa, una vez, y caduca en dos minutos. Queda quién lo pidió, quién lo aprobó, qué, por qué y desde qué terminal |
-| **Límite**      | Hasta cuánto puede un rol sin aprobación. De fábrica, el jefe de sala descuenta o invita hasta un 10 % de la cuenta; más, lo aprueba el gerente. El local lo cambia |
-| **Solo lo mío** | El camarero ve **sus** tickets, **su** informe X y **su** bolsa. Lo decide la base                                                    |
+| **Límite**      | Hasta cuánto puede un rol sin aprobación. De fábrica, el jefe de sala descuenta o invita hasta un 10 % de la cuenta; más, lo aprueba el gerente. El local lo cambia                                                             |
+| **Solo lo mío** | El camarero ve **sus** tickets, **su** informe X y **su** bolsa. Lo decide la base                                                                                                                                              |
 
 **El terminal y quién lo usa.** Un terminal del local —la tablet de la barra, la pantalla de cocina— se da de alta una vez y enciende en su función. **Entra quien teclea su PIN, sin correo**, y todo lo que hace queda a su nombre hasta que el terminal se bloquea o entra otro. Se bloquea solo tras un minuto sin tocar y, si el local quiere, al mandar o al cobrar. El local puede pedir que **solo quien está fichado use el TPV** (apagado de fábrica). **Una persona sin correo** entra así y solo así: en los terminales de su local.
 

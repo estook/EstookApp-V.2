@@ -111,7 +111,8 @@ mkdirSync(DESTINO, { recursive: true });
 
 const soloEste = process.argv[2];
 const ficheros = readdirSync(FUENTE)
-  .filter((f) => f.endsWith('.md'))
+  // Solo los maestros: el registro de cambios vive al lado y no es un PDF.
+  .filter((f) => f.startsWith('Estook-') && f.endsWith('.md'))
   .filter((f) => !soloEste || f.includes(soloEste))
   .sort();
 

@@ -1,0 +1,149 @@
+name: Copia de seguridad
+
+# La copia semanal de la base y de los ficheros (auditoría profunda · decisión 0061).
+#
+# ── Por qué existe ───────────────────────────────────────────────────────────
+#
+# Supabase, en su plan gratuito, **no guarda ninguna copia**. Hasta pasar a Pro, esta
+# es la única; y con Pro sigue, porque la de Supabase vive en Supabase y esta no.
+#
+# ── Qué hace, cada lunes de madrugada ────────────────────────────────────────
+#
+#   1. Vuelca la base (`estook` y `plataforma`) con `pg_dump`.
+#   2. **La restaura en una base de prueba, aquí mismo, y cuenta lo que hay.** Una
+#      copia que no se ha restaurado no es una copia: es un fichero.
+#   3. Copia los ficheros del almacén (logos, fotos, cartas), si está su clave.
+#   4. Cifra todo con la contraseña de la copia y lo guarda noventa días en GitHub.
+#
+# El repositorio es público: **nada sale sin cifrar**. Sin la contraseña, lo guardado
+# no se puede abrir; por eso Richi la guarda también en su gestor de contraseñas.
+#
+# ── Los secretos ─────────────────────────────────────────────────────────────
+#
+# GitHub → Settings → Secrets and variables → Actions → **Secrets**:
+#
+#   URL_DE_LA_COPIA           la misma dirección de la base que DATABASE_URL en
+#                             .env.local (la del agrupador, puerto 5432)
+#   CLAVE_DE_LA_COPIA         una contraseña larga, solo para esto
+#   CLAVE_DE_SERVICIO_COPIA   opcional: la clave de servicio, para los ficheros
+#
+# Cómo se restaura, paso a paso, en docs/copias-de-seguridad.md.
+
+on:
+  schedule:
+    # Lunes a las 03:23 UTC: de madrugada en España, lejos del reloj de Estook (:07).
+    - cron: '23 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: copia-de-seguridad
+  cancel-in-progress: false
+
+jobs:
+  copiar:
+    name: Copiar, restaurar y cifrar
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      URL_DE_LA_COPIA: ${{ secrets.URL_DE_LA_COPIA }}
+      CLAVE_DE_LA_COPIA: ${{ secrets.CLAVE_DE_LA_COPIA }}
+      CLAVE_DE_SERVICIO: ${{ secrets.CLAVE_DE_SERVICIO_COPIA }}
+      SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+    services:
+      restaurar:
+        # La misma versión que la de Supabase (17). Solo vive lo que dura este trabajo.
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: prueba
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - name: Los secretos están
+        run: |
+          if [ -z "$URL_DE_LA_COPIA" ] || [ -z "$CLAVE_DE_LA_COPIA" ]; then
+            echo "::error::Faltan URL_DE_LA_COPIA o CLAVE_DE_LA_COPIA en los secretos de GitHub. Sin ellos no hay copia (docs/copias-de-seguridad.md)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Volcar la base
+        run: |
+          set -euo pipefail
+          mkdir -p copia
+          docker run --rm postgres:17 \
+            pg_dump "$URL_DE_LA_COPIA" --format=custom --no-owner --no-privileges \
+              --schema=estook --schema=plataforma > copia/base.dump
+          test -s copia/base.dump
+          echo "La base, volcada: $(du -h copia/base.dump | cut -f1)"
+
+      - name: Restaurarla en una base de prueba y contar
+        run: |
+          set -euo pipefail
+          # Lo que la copia no lleva y la base de Supabase ya tiene: la extensión del
+          # buscador, que allí vive en `public`.
+          docker run --rm --network host -e PGPASSWORD=prueba postgres:17 \
+            psql -h localhost -p 5433 -U postgres -v ON_ERROR_STOP=1 \
+              -c 'create extension if not exists pg_trgm with schema public'
+          docker run --rm --network host -e PGPASSWORD=prueba -v "$PWD/copia:/copia" postgres:17 \
+            pg_restore -h localhost -p 5433 -U postgres -d postgres \
+              --no-owner --no-privileges --exit-on-error /copia/base.dump
+          docker run --rm --network host -e PGPASSWORD=prueba postgres:17 \
+            psql -h localhost -p 5433 -U postgres -v ON_ERROR_STOP=1 -At -c "
+              select 'migraciones aplicadas: ' || count(*) || ', la última la ' || max(numero)
+                from estook.migracion
+              union all
+              select 'organizaciones: ' || count(*) from estook.organizacion
+              union all
+              select 'locales: ' || count(*) from estook.local
+              union all
+              select 'personas: ' || count(*) from estook.persona
+              union all
+              select 'movimientos del almacén: ' || count(*) from estook.movimiento_de_stock" | tee copia/lo-que-hay.txt
+          # Sin organizaciones, la copia no vale: algo se ha volcado mal.
+          grep -q '^organizaciones: [1-9]' copia/lo-que-hay.txt
+          {
+            echo '### La copia se ha restaurado bien'
+            echo
+            sed 's/^/- /' copia/lo-que-hay.txt
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Copiar los ficheros del almacén
+        if: env.CLAVE_DE_SERVICIO != ''
+        run: |
+          set -euo pipefail
+          node herramientas/copia-de-los-ficheros.mjs copia/ficheros | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Sin la clave de los ficheros
+        if: env.CLAVE_DE_SERVICIO == ''
+        run: |
+          echo "::warning::No está CLAVE_DE_SERVICIO_COPIA. Se copia la base, pero no los logos, las fotos ni las cartas."
+
+      - name: Cifrar
+        run: |
+          set -euo pipefail
+          tar -czf copia.tar.gz -C copia .
+          openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
+            -pass env:CLAVE_DE_LA_COPIA -in copia.tar.gz -out "estook-$(date -u +%F).tar.gz.cifrado"
+          rm -rf copia copia.tar.gz
+          ls -lh estook-*.tar.gz.cifrado
+
+      - name: Guardar la copia cifrada
+        uses: actions/upload-artifact@v6
+        with:
+          name: copia-de-seguridad
+          path: estook-*.tar.gz.cifrado
+          retention-days: 90
+          if-no-files-found: error

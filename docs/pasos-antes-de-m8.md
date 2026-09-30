@@ -2,94 +2,86 @@
 
 > ## Cómo está
 >
-> Comprobado en producción el 27 de septiembre de 2026 a mediodía, leyendo la base y la
-> API.
+> Comprobado el 30 de septiembre de 2026, leyendo la base de producción.
 >
-> | Qué                          | Cómo está                                                                   |
-> | ---------------------------- | --------------------------------------------------------------------------- |
-> | Pull requests                | **Todas fusionadas hasta la #76** (R1). Espera la de R2                     |
-> | La base de datos             | **50 de 50** migraciones, igual que `main`                                  |
-> | La API                       | **Desplegada con R1**: 56 y 116, reloj latiendo                             |
-> | R1 · la campana              | **En producción** (#76)                                                     |
-> | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor |
-> | E1 · crear cuenta y Google   | **Hecho**                                                                   |
-> | V, O y el Panel en el móvil  | **Hechos y en producción** (#64 a #70)                                      |
-> | E2 · el pago con Stripe      | **En producción** (#71). Pago de prueba hecho: Pizzeriacazzo, 26-sep        |
-> | El repaso del 25-sep, L y A2 | **En producción** (#72, #73 y #74)                                          |
-> | La auditoría del 26-sep      | **En producción** (#75)                                                     |
+> | Qué                          | Cómo está                                                                             |
+> | ---------------------------- | ------------------------------------------------------------------------------------- |
+> | Pull requests                | **Fusionadas hasta la #77** (R2). Abiertas: la #78 (documentos) y las de la auditoría |
+> | La base de datos             | **51 de 51** migraciones, igual que `main`                                            |
+> | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                       |
+> | **Las copias de seguridad**  | **Ninguna todavía**: empiezan cuando pongas sus secretos (abajo)                      |
+> | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor           |
+> | E1, V, O, E2, L, A2, R1 y R2 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                        |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · R2, el pedido sugerido, los informes y Google (27-sep)
+## Lo que te toca ahora · la auditoría profunda (30-sep)
 
-**Qué trae:** **«Mañana toca pedir a…»** la víspera de cada día de pedir, que al tocarlo
-prepara el pedido con lo que haya en ese momento (y la cuenta del pedido ya sabe que un
-viernes no gasta lo que un martes, y no vuelve a pedir lo que ya está mandado);
-**Negocio → Informes**, con **Tu día, Tu semana y Tu mes**; los correos de **la semana
-(los lunes) y el mes (el día 1)**; y **Negocio → Reseñas**, con tu nota en Google, que se
-pone al día sola cada tres días y avisa si baja. Contado en la decisión 0053. **Con
-migración (`0051`) y con despliegue de la API.**
+**Qué trae:** lo primero de la auditoría que aprobaste. La prueba que fallaba según el día
+(solo los martes, y los lunes de madrugada), arreglada y comprobada en veintiséis días y
+horas distintos; y **la copia de seguridad semanal**, cifrada y fuera de Supabase, que se
+restaura sola en una base de prueba para demostrar que vale. **Sin migración y sin
+desplegar la API.**
 
-1. En **github.com** → **Pull requests** → **«R2 · El pedido sugerido, los informes y la
-   nota en Google»**. Abajo, las **tres comprobaciones en verde** → **Merge pull request**
-   → **Confirm merge**.
-2. En PowerShell, en la carpeta del proyecto, trae lo fusionado:
+### 1 · Fusionar la rama de la prueba y la copia
 
-```bash
-git checkout main
-```
+En **github.com** → **Pull requests** → **«La prueba de los martes y la copia de seguridad
+semanal»**. Abajo, las **tres comprobaciones en verde** → **Merge pull request** →
+**Confirm merge**.
 
-```bash
-git pull
-```
+### 2 · Poner los secretos de la copia
 
-3. **La migración.** Qué hace: admite los seis avisos nuevos, guarda las cifras del correo
-   de un informe y la nota de Google de cada día, y deja al reloj ver qué locales hay y
-   poner al día su ficha de Google. No borra nada.
+Son tres, y van en **GitHub**, no en Supabase: **Settings** (arriba, en el repositorio) →
+a la izquierda **Secrets and variables** → **Actions** → pestaña **Secrets** → botón
+**New repository secret**. Para cada uno, el nombre **tal cual** y su valor:
 
-```bash
-.\estook.cmd bd:migrar
-```
+| Nombre                    | Qué valor                                                                                                                                                               |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `URL_DE_LA_COPIA`         | La línea `DATABASE_URL=` de tu `.env.local`, **lo que va después del `=`**                                                                                              |
+| `CLAVE_DE_LA_COPIA`       | **Una contraseña nueva y larga**, de 30 caracteres o más, que te genere tu gestor de contraseñas. **Guárdala allí también**: sin ella, la copia no se puede abrir nunca |
+| `CLAVE_DE_SERVICIO_COPIA` | La línea `CLAVE_DE_SERVICIO=` de tu `.env.local`. Es para copiar también los logos y las fotos                                                                          |
 
-**Qué tiene que salir**, tal cual:
-
-```
-  aplicando 0051_el_pedido_los_informes_y_google.sql ... hecho
-  1 migracion(es) aplicadas · 51 en total
-```
-
-**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
-
-4. **Desplegar la API**: **Actions** → a la izquierda, **Desplegar la API** → **Run
-   workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al
-   **círculo verde**.
-5. Comprueba:
+Para ver tu `.env.local`, en PowerShell, en la carpeta del proyecto:
 
 ```bash
-.\estook.cmd bd:comprobar-api
+notepad .env.local
 ```
 
-**Qué tiene que decir:** «las 58» consultas, «los 117» comandos y el reloj en OK.
+Copia solo el valor, sin el nombre ni el `=`, y cierra el Bloc de notas sin guardar.
+**No me pegues ninguno de los tres en el chat.**
 
-6. **Míralo** (recarga la app antes):
-   - **Negocio → Informes**: arriba, **Día · Semana · Mes**; con las flechas vas a días,
-     semanas o meses anteriores. Si un día no cerraste la caja, te lo dice.
-   - **Negocio → Reseñas**: tu nota en Google (★), cuántas reseñas y «Ver las reseñas en
-     Google».
-   - **Ajustes → Avisos**: al final, el grupo **Negocio** (Tu día, Tu semana, Tu mes y la
-     nota de Google). **Tu semana** y **Tu mes** llevan el correo encendido; si quieres
-     también **Tu día** por correo, enciéndelo ahí. **Productos bajo mínimo**, apagado: si
-     lo quieres por correo cada mañana, enciende las dos.
-   - **El lunes 28, a partir de las ocho**: en la campana, **Tu semana en** tu local (si esa
-     semana hay cajas cerradas o género apuntado), y el mismo informe en tu correo. Y si
-     mañana toca pedir a algún proveedor, «Mañana toca
-     pedir a…».
+### 3 · Hacer la primera copia, a mano
 
-**Recuerda:** eres **dirección**, así que lo que hace tu equipo no te llega de fábrica
-(R1). Los informes, «mañana toca pedir» y la nota de Google **sí**: no son lo que hace el
-equipo, son cosas que te tocan a ti.
+**Actions** → a la izquierda **Copia de seguridad** → **Run workflow** → rama `main` →
+**Run workflow**. Tarda unos minutos.
+
+**Qué tiene que salir:** el **círculo verde**. Entra en la vuelta y, en el resumen, verás
+**«La copia se ha restaurado bien»** con cuántas migraciones, organizaciones, locales,
+personas y movimientos tenía. Abajo, en **Artifacts**, «copia-de-seguridad»: es la copia,
+cifrada.
+
+**Si sale en rojo, no lo repitas: dime en qué paso se ha parado.** Si pone «Faltan
+URL_DE_LA_COPIA o CLAVE_DE_LA_COPIA», es que un nombre no está escrito igual.
+
+A partir de ahí se hace sola **cada lunes de madrugada**. Cómo se restaura, paso a paso,
+en [`docs/copias-de-seguridad.md`](copias-de-seguridad.md).
+
+### 4 · Fusionar la #78
+
+**«La visión del 27-sep y Estook TPV detallado»**, como la del paso 1. Solo documentos.
+
+### 5 · Fusionar la de los documentos de la auditoría
+
+Cuando la abra, igual. Solo documentos: los seis maestros al día con lo que aprobaste.
+
+---
+
+## R2 · El pedido sugerido, los informes y Google (#77) · **hecho** (27-sep)
+
+Fusionada, migrada (`0051`), desplegada y comprobada (58 y 117) el 27-sep. Lo que trae, en
+la [decisión 0053](decisiones/0053-el-pedido-los-informes-y-google.md).
 
 ---
 

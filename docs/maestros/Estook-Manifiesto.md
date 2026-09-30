@@ -1213,7 +1213,7 @@ _Reglas que no se negocian: ninguna tabla se desborda, la cabecera se repite al 
 
 # 23 · Chat del equipo
 
-Arriba, junto a la campana. **Es la forma oficial de hablar del trabajo**, y por eso queda registrado. Un chat normal, como los que todo el mundo ya usa, pero que sabe de qué local se habla ([0066](../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)).
+Arriba, junto a la campana. **Es la forma oficial de hablar del trabajo**, y por eso queda registrado. Un chat normal, como los que todo el mundo ya usa, pero que sabe de qué local se habla ([0066](../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)). **Se construye antes de M8**, justo después de la app instalable, que es la que le da los avisos al móvil ([0067](../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)).
 
 **Dónde se habla.**
 
@@ -1474,9 +1474,9 @@ Estook no toca dinero. Si el local cobra con Estook, sus tickets y facturas pasa
 | Local                                        | Le cuesta a Estook | Deja |
 | -------------------------------------------- | ------------------ | ---- |
 | Esencial, uso normal                         | ≈ 3,60 €           | 91 % |
-| Pro sin TPV, uso normal                      | ≈ 6,70 €           | 90 % |
-| Pro con Estook TPV, restaurante de carta     | ≈ 12,30 €          | 81 % |
-| Pro con Estook TPV, bar muy ocupado y a tope | ≈ 45,50 €          | 30 % |
+| Pro sin TPV, uso normal                      | ≈ 7,20 €           | 91 % |
+| Pro con Estook TPV, restaurante de carta     | ≈ 12,80 €          | 84 % |
+| Pro con Estook TPV, bar muy ocupado y a tope | ≈ 46,20 €          | 44 % |
 
 **Lo fijo:** hoy, nada; para vender, unos 65 € al mes; con Estook TPV, unos 163 €. **La IA es un supuesto hasta que Fogón exista**, y es lo que más mueve la cuenta.
 
@@ -1496,11 +1496,11 @@ Las ventas y el catálogo entran **por fichero**, con la guía de exportación d
 
 _Lo que cuesta y lo que deja, en [`coste-por-local.md`](../coste-por-local.md)._
 
-### ESTOOK PRO · 79 € por local y mes
+### ESTOOK PRO · 99 € por local y mes
 
 Para el local que factura de verdad y quiere que Estook trabaje solo. Todo lo de Esencial, y además:
 
-- **Cobro con Estook**: sala, cocina, caja y tickets y facturas cumpliendo VeriFactu. _Las cuentas salen con el precio del proveedor delante —el margen aguanta entre el 81 % y el 44 % según cuántos tickets haga el local—, y **falta una respuesta suya: qué se paga con menos de diez NIF** ([`el-precio-de-verifacti.md`](../el-precio-de-verifacti.md)). Hasta entonces, propuesta._
+- **Cobro con Estook**: sala, cocina, caja y tickets y facturas cumpliendo VeriFactu. _Las cuentas salen con el precio del proveedor delante —el margen aguanta entre el 84 % y el 44 % según cuántos tickets haga el local—, y **falta una respuesta suya: qué se paga con menos de diez NIF** ([`el-precio-de-verifacti.md`](../el-precio-de-verifacti.md)). Hasta entonces, propuesta._
 - **Conexión automática con el TPV**, sincronizando cada 15 minutos y al cierre.
 - **Canales de reparto conectados**, con su comisión descontada.
 - **Fogón Pro**: 1.500 créditos al mes, con el modelo grande. Análisis del cierre cada noche, resumen semanal, propuestas de menú, de precios y de cuadrante.
@@ -1513,17 +1513,19 @@ Para el local que factura de verdad y quiere que Estook trabaje solo. Todo lo de
 
 _Lo que cuesta y lo que deja, con TPV y sin él, en [`coste-por-local.md`](../coste-por-local.md)._
 
-### ESTOOK CADENA · 69 € por local y mes · de 2 a 10 locales
+### ESTOOK CADENA · 89 € por local y mes · de 2 a 10 locales
 
 Todo lo de Pro en cada local, y encima la capa que solo necesita un grupo: panel de cadena con gestión por excepción · catálogo maestro con sus tres políticas · áreas y area managers sin límite · auditorías comparadas · informes de grupo · **bolsa común de 1.500 créditos por local** · una sola factura con desglose por local.
 
-_4 locales: 276 €/mes. Lo que cuesta cada uno, en [`coste-por-local.md`](../coste-por-local.md)._
+_4 locales: 356 €/mes. Lo que cuesta cada uno, en [`coste-por-local.md`](../coste-por-local.md)._
 
 **A partir de 11 locales** no hay precio en la web: formulario corto y presupuesto, porque a ese tamaño entran integración con su ERP, informes propios, formación y responsable asignado. Punto de partida orientativo: **desde 59 € por local**.
 
 **PAUSA · 12 € por local y mes.** Para chiringuitos que cierran en invierno o locales en reforma. Solo lectura, datos conservados y exportables.
 
-**Anual:** dos meses gratis pagando por adelantado. Esencial 490 € · Pro 790 € · Cadena 690 € por local.
+**Anual:** dos meses gratis pagando por adelantado. Esencial 490 € · Pro 990 € · Cadena 890 € por local.
+
+**Pro subió de 79 a 99 € y Cadena de 69 a 89 € el 30 de septiembre de 2026** ([0067](../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)), antes de que nadie pagase de verdad. Esencial y Pausa no cambian.
 
 ## Los créditos de Fogón
 
@@ -1573,8 +1575,8 @@ _Investigado en septiembre de 2026._
 | Yurest · Cuiner     | desde 40 €                         | TPV o personal, alcance corto                              |
 | **Estook Esencial** | **49 €**                           | Gestión completa con IA                                    |
 | ia.rest             | 59 €/local                         | TPV con IA                                                 |
-| **Estook Pro**      | **79 €**                           | Todo automatizado con IA potente                           |
 | Gstock ONE          | ~82 € · **no publica precio**      | El comparable directo, sin carta, calendario ni auditorías |
+| **Estook Pro**      | **99 €**                           | Todo automatizado con IA potente, y con Estook TPV dentro  |
 | Gstock Premium      | ~124 € · **no publica precio**     | Informes y analítica de proveedores                        |
 | Apicbase            | ~160-249 € · **no publica precio** | Internacional, para grupos y cocinas centrales             |
 | MarketMan           | ~220 € / local                     | Internacional                                              |
@@ -1584,7 +1586,7 @@ _Investigado en septiembre de 2026._
 
 **1 · Los dos competidores directos esconden el precio.** Gstock manda a «solicitar tarifas»; Apicbase tampoco publica. Para un bar de veinte mesas, pedir presupuesto es una barrera. **Nosotros publicamos el precio, y eso cuesta cero construirlo.**
 
-**2 · Somos entre tres y cinco veces más baratos que el comparable internacional**, con un margen del 90 %. No hay que bajar el precio: hay que **decir el del comparable**, porque nos favorece.
+**2 · Somos bastante más baratos que el comparable internacional**, con un margen del 90 %: Esencial, entre tres y cinco veces; Pro, a 99 €, alrededor de la mitad, y con el TPV dentro. No hay que bajar el precio: hay que **decir el del comparable**, porque nos favorece. **Lo que cambia con Pro a 99 €** es que queda por encima de Gstock ONE (~82 €): mientras Estook TPV no esté, Pro se defiende por lo que hace de más, no por el precio.
 
 **3 · Last.app se integra con Apicbase y con Gstock.** Un TPV moderno quiere un back-office conectado, no construirlo. De ahí salen dos decisiones: **la API pública sube de prioridad**, y en la web dejamos de hablar de los TPV como rivales. Con el TPV propio competimos con ellos en una parte del mercado: se dice con respeto y sin atacar a nadie.
 

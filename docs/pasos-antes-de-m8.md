@@ -6,7 +6,7 @@
 >
 > | Qué                          | Cómo está                                                                         |
 > | ---------------------------- | --------------------------------------------------------------------------------- |
-> | Pull requests                | **Fusionadas hasta la #80** (30-sep). Abierta: la #81, solo documentos            |
+> | Pull requests                | **Fusionadas hasta la #81** (30-sep). Abierta: la #82, Pro a 99 € y el plan de H  |
 > | La base de datos             | **51 de 51** migraciones, igual que `main`                                        |
 > | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                   |
 > | **Las copias de seguridad**  | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
@@ -17,49 +17,71 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ---
 
-## Lo que te toca ahora · después de la auditoría (30-sep)
+## Lo que te toca ahora · Pro a 99 €, el chat y el plan de H (30-sep, tarde)
 
-**La #78, la #79 y la #80 ya están fusionadas.** Queda una pequeña, y dos respuestas.
+**La #81 ya está fusionada.** Con tus dos respuestas he hecho la **#82**: Pro a 99 € y
+Cadena a 89 € desde ya, el chat adelantado a después de la app instalable, y el plan de
+Horarios con sus preguntas ([decisión 0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)).
 
-### 1 · Traer lo nuevo a tu ordenador
+### 1 · Fusionar la #82
 
-Si no encuentras un documento en tu carpeta es porque tu ordenador todavía no tiene lo
-último. En PowerShell, en la carpeta del proyecto:
+En **github.com** → **Pull requests** → **«Pro a 99 €, el chat adelantado y el plan de
+H»** → con las **tres comprobaciones en verde**, **Merge pull request** → **Confirm
+merge**. Tiene que salir en morado «merged». **Si alguna sale en rojo, para y avísame.**
+
+**Sin migración.** Hasta que no la fusiones y despliegues, en `estook.com` Pro sigue a 79 €.
+
+### 2 · Desplegar la API
+
+Hace falta porque el precio que se cobra lo decide el servidor.
+
+**Actions** → a la izquierda, **Desplegar la API** → **Run workflow**, rama `main`,
+escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**.
+
+### 3 · Traerlo a tu ordenador y comprobar
+
+En PowerShell, en la carpeta del proyecto:
+
+```bash
+git checkout main
+```
 
 ```bash
 git pull
 ```
 
-**Qué tiene que salir:** una lista de ficheros, o «Already up to date». Después, los
-documentos legales están en la carpeta `docs\legal`.
+```bash
+.\estook.cmd bd:comprobar-api
+```
 
-### 2 · Fusionar la #81
+**Qué tiene que decir:** «las 58» consultas y «los 117» comandos, igual que ahora.
 
-En **github.com** → **Pull requests** → **«Después de la auditoría: lo legal investigado,
-Verifacti y el chat»** → con las **tres comprobaciones en verde**, **Merge pull request**
-→ **Confirm merge**. **Sin migración y sin desplegar la API.**
+### 4 · Mirarlo
 
-**Qué trae:** lo que dicen las fuentes oficiales sobre cada duda legal
-([`lo-investigado.md`](legal/lo-investigado.md)); lo que dice la API de Verifacti que
-mandaste; el chat contado entero; y la cuenta de Pro a 99 €.
+Recarga `estook.com/app/` (**Ctrl + F5**) y entra con una cuenta de prueba que no haya
+pagado —`burger-king`, que pide elegir plan al entrar—, no con la tuya, que es de la casa.
+En **«Elige tu plan»**, **Pro tiene que poner 99 €** al mes (990 € al año) y Esencial
+seguir en 49 €. Cadena, que sale a quien tiene dos locales o más, son 89 € por local.
 
-### 3 · Contestarme dos cosas, con un sí o un no
+**No tienes que tocar nada en Stripe.** El precio nuevo lo crea el código la primera vez
+que alguien elija Pro o Cadena.
 
-1. **¿Adelantamos el chat?** Hoy está casi al final. Te recomiendo hacerlo justo después
-   de la app instalable (la que trae los avisos al móvil): Horarios → la app instalable →
-   **el chat** → y seguimos. Horarios no lo necesita para avisar: usa la campana y el
-   correo.
-2. **¿Pro a 99 €?** Te recomiendo que sí, **cuando lleve el TPV dentro**. Hasta entonces,
-   79 €, y quien entre antes se queda con ese precio. Esencial sigue en 49 € y Cadena
-   pasa a 89 €.
+### 5 · Contestarme las seis preguntas de Horarios
 
-### 4 · El asesor, más adelante
+Están en [`docs/h-horarios.md`](h-horarios.md), cada una explicada y con lo que te
+recomiendo. Con un sí o un no me vale:
 
-**No hace falta para seguir construyendo.** Hará falta antes del primer cliente que
-pague, y está escrito qué tiene que revisar y cuándo al final de
-[`lo-investigado.md`](legal/lo-investigado.md).
+1. ¿Partimos H en dos entregas?
+2. ¿Un aparato del local para fichar con PIN, ya en H?
+3. ¿Un botón de pausa al fichar?
+4. ¿Marcar «Libre», «Vacaciones» y «Baja» en el horario?
+5. ¿El equipo ve el horario entero de su zona, una vez publicado?
+6. ¿El motor de los PDF con Cloudflare?
 
-### 5 · Lo que tiene fecha
+Y abre [`docs/h-horarios-muestra.pdf`](h-horarios-muestra.pdf): es un horario de ejemplo
+hecho con el motor que te recomiendo, para que veas cómo queda.
+
+### 6 · Lo que tiene fecha
 
 - **La oferta de Verifacti caduca hacia el 19 de octubre**
   ([`docs/el-precio-de-verifacti.md`](el-precio-de-verifacti.md)). Su web deja contratar

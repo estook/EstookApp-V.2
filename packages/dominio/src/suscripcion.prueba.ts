@@ -108,16 +108,20 @@ describe('el plan por los locales', () => {
 
   it('la cuota es por local, y crecer nunca sube el precio de cada uno', () => {
     expect(laCuota('esencial', 'mes', 1)).toBe(4_900);
-    expect(laCuota('cadena', 'mes', 3)).toBe(20_700);
-    expect(laCuota('pro', 'ano', 1)).toBe(79_000);
+    expect(laCuota('cadena', 'mes', 3)).toBe(26_700);
+    expect(laCuota('pro', 'ano', 1)).toBe(99_000);
     expect(laCuota('pausa', 'ano', 1)).toBeNull();
     // Dos locales en Pro se cobran como Cadena: menos que dos Pro.
     const conDos = laCuota(elPlanPorLosLocales('pro', 2), 'mes', 2) ?? 0;
     expect(conDos).toBeLessThan(2 * (laCuota('pro', 'mes', 1) ?? 0));
   });
 
-  it('cada precio tiene su nombre en Stripe', () => {
-    expect(claveDelPrecio('pro', 'ano')).toBe('estook-pro-ano-v1');
+  it('cada precio tiene su nombre en Stripe, y el que cambia de importe cambia de versión', () => {
+    // Pro y Cadena subieron (0067): precio nuevo. Esencial y Pausa siguen en el suyo.
+    expect(claveDelPrecio('pro', 'ano')).toBe('estook-pro-ano-v2');
+    expect(claveDelPrecio('cadena', 'mes')).toBe('estook-cadena-mes-v2');
+    expect(claveDelPrecio('esencial', 'mes')).toBe('estook-esencial-mes-v1');
+    expect(claveDelPrecio('pausa', 'mes')).toBe('estook-pausa-mes-v1');
   });
 });
 

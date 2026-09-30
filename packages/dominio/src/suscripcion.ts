@@ -110,7 +110,7 @@ export function dejaMirar(como: ComoEstaLaCuenta): boolean {
  * El plan que toca por los locales que hay.
  *
  * **Pro con dos locales o más pasa a Cadena**, que es Pro para grupos y más barato
- * por local (69 € frente a 79 €): nadie paga más por crecer. Y al revés, Cadena con
+ * por local (89 € frente a 99 €): nadie paga más por crecer. Y al revés, Cadena con
  * un local vuelve a Pro. Esencial y Pausa no dependen de los locales.
  */
 export function elPlanPorLosLocales(plan: CodigoDePlan, locales: number): CodigoDePlan {
@@ -119,9 +119,22 @@ export function elPlanPorLosLocales(plan: CodigoDePlan, locales: number): Codigo
   return plan;
 }
 
-/** El nombre del precio en Stripe. Con `v1`: un precio de Stripe no se cambia, se sustituye. */
+/**
+ * Por qué versión va el precio de cada plan. **Un precio de Stripe no se cambia, se
+ * sustituye**: subir un plan es subirle aquí la versión, y el catálogo crea el precio
+ * nuevo la primera vez que hace falta. Pro y Cadena van por la 2 desde la decisión
+ * 0067 (99 € y 89 €); quien ya pagaba con la 1 sigue con ella hasta que cambie de plan.
+ */
+const VERSION_DEL_PRECIO: Readonly<Record<CodigoDePlan, number>> = {
+  esencial: 1,
+  pro: 2,
+  cadena: 2,
+  pausa: 1,
+};
+
+/** El nombre del precio en Stripe (`estook-pro-mes-v2`). */
 export function claveDelPrecio(plan: CodigoDePlan, intervalo: Intervalo): string {
-  return `estook-${plan}-${intervalo}-v1`;
+  return `estook-${plan}-${intervalo}-v${String(VERSION_DEL_PRECIO[plan])}`;
 }
 
 /** Lo que se paga por periodo, en céntimos. Nulo si ese plan no tiene ese intervalo. */

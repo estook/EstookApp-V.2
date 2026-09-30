@@ -4,14 +4,14 @@
 >
 > Comprobado el 30 de septiembre de 2026, leyendo la base de producción.
 >
-> | Qué                          | Cómo está                                                                             |
-> | ---------------------------- | ------------------------------------------------------------------------------------- |
-> | Pull requests                | **Fusionadas hasta la #77** (R2). Abiertas: la #78 (documentos) y las de la auditoría |
-> | La base de datos             | **51 de 51** migraciones, igual que `main`                                            |
-> | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                       |
-> | **Las copias de seguridad**  | **Ninguna todavía**: empiezan cuando pongas sus secretos (abajo)                      |
-> | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor           |
-> | E1, V, O, E2, L, A2, R1 y R2 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                        |
+> | Qué                          | Cómo está                                                                                     |
+> | ---------------------------- | --------------------------------------------------------------------------------------------- |
+> | Pull requests                | **Fusionadas hasta la #77** (R2). Abiertas: la #79, la #78 y la de la auditoría, en ese orden |
+> | La base de datos             | **51 de 51** migraciones, igual que `main`                                                    |
+> | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                               |
+> | **Las copias de seguridad**  | **Ninguna todavía**: empiezan cuando pongas sus secretos (abajo)                              |
+> | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                   |
+> | E1, V, O, E2, L, A2, R1 y R2 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                                |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -74,7 +74,26 @@ en [`docs/copias-de-seguridad.md`](copias-de-seguridad.md).
 
 ### 5 · Fusionar la de los documentos de la auditoría
 
-Cuando la abra, igual. Solo documentos: los seis maestros al día con lo que aprobaste.
+**«La auditoría profunda: los documentos»**, igual que las otras dos, y **la última de las
+tres**: lleva dentro las otras dos. Solo documentos, sin migración ni despliegue.
+
+**Qué trae:** los maestros en su versión nueva, con un documento nuevo, la
+**Arquitectura**; la Evolución repartida entre los demás; `ESTADO.md` en 150 líneas; diez
+decisiones (de la 0055 a la 0064); y la carpeta `docs/legal/`.
+
+### 6 · Buscar al asesor
+
+Hace falta **uno fiscal** (VeriFactu y facturación) y **uno laboral y de protección de
+datos**; puede ser el mismo despacho. Se le pasa tal cual
+[`docs/legal/preguntas-al-asesor.md`](legal/preguntas-al-asesor.md): son 37 preguntas, y
+cada una dice qué depende de su respuesta. **Lo primero que tiene que revisar** es el
+contrato de encargado, porque va antes del primer cliente que pague.
+
+### 7 · Lo que tiene fecha
+
+- **La oferta de Verifacti caduca hacia el 19 de octubre**
+  ([`docs/el-precio-de-verifacti.md`](el-precio-de-verifacti.md)).
+- **Supabase Pro**, cuando puedas; como muy tarde, antes del primer cliente que pague.
 
 ---
 

@@ -1213,15 +1213,29 @@ _Reglas que no se negocian: ninguna tabla se desborda, la cabecera se repite al 
 
 # 23 · Chat del equipo
 
-Arriba, junto a la campana. Es la forma oficial de hablar del trabajo, y por eso queda registrado.
+Arriba, junto a la campana. **Es la forma oficial de hablar del trabajo**, y por eso queda registrado. Un chat normal, como los que todo el mundo ya usa, pero que sabe de qué local se habla ([0066](../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)).
 
-Canales por área y directos · menciones que avisan al móvil · fotos y adjuntos con enlace firmado · **tarjetas de contexto**: se comparte un plato, un pedido, una ficha o un aviso y llega como tarjeta enlazada · confirmación de lectura en los mensajes importantes · mensaje fijado como comunicación oficial · buscador · silencio fuera del turno.
+**Dónde se habla.**
+
+- **El chat del equipo**, arriba del todo: todo el local.
+- **Un canal por área** —sala, cocina, barra—, que cada uno ve según su rol.
+- **Privados**, entre dos personas o en un grupo pequeño, que abre cualquiera.
+
+**Qué se puede mandar.** Texto, fotos, documentos y **notas de voz**, que en una cocina es lo que de verdad se usa · **tarjetas**: un horario, una ficha técnica, un plato, un pedido o un aviso se comparten y llegan como una tarjeta que se abre en su sitio, con los permisos de quien la recibe —a un cocinero le llega la ficha, no su coste—.
+
+**Lo que tiene un chat de hoy.** **Entregado y leído**, con sus marcas; en un grupo, quién lo ha leído y quién no · responder a un mensaje concreto · reacciones · menciones, que avisan al móvil · mensajes fijados arriba, como comunicación oficial · buscador · **cada uno lo lee en su idioma**, con la traducción debajo del original.
+
+**Lo que lo hace oficial.**
+
+- **«Confirmar que lo he leído»**: quien manda algo importante —un cambio de horario, una norma de alérgenos— puede pedirlo, y ve quién ha confirmado y quién falta. Es la diferencia con un grupo de mensajería cualquiera.
+- **Silencio fuera del turno.** A nadie le suena el trabajo fuera de su horario salvo que él lo encienda: es su derecho a desconectar, y es ley. El mensaje le espera.
+- **Quien se va, sale solo.** Al retirarle el acceso deja de leer y de escribir, y lo que dijo se queda. No hay que echar a nadie de ningún grupo.
 
 **Conectado al contexto.** Un jefe de cocina escribe «se ha terminado el pulpo». Estook puede ofrecer convertirlo en una incidencia, en un agotado, en un aviso a sala o en una tarea.
 
 > **Con acción explícita, siempre.** Escribir un mensaje no marca un plato como agotado. Se ofrece, y alguien pulsa. **Nada de efectos secundarios ocultos.**
 
-**Reglas:** cada uno ve los canales de su rol y sus directos. El gerente ve todos los canales del local, **nunca los directos entre dos empleados**. Al retirar el acceso, la persona deja de escribir y su historial se queda.
+**Reglas:** cada uno ve los canales de su rol y sus privados. El gerente ve todos los canales del local, **nunca los privados de otras personas, tampoco el dueño**. El equipo de Estook no lee ninguno. Los ficheros van con enlace firmado y caduco, como el resto.
 
 ---
 

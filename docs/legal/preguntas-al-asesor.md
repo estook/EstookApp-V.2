@@ -6,8 +6,12 @@
 > de la respuesta**, para que se vea qué frena y qué no. Las respuestas se apuntan aquí,
 > con su fecha y quién las dio, **por escrito**.
 >
-> **Hay que contratarlo ya**, no al llegar al TPV: el contrato de encargado va antes del
-> primer cliente de pago.
+> **El 30-sep-2026 Richi decidió seguir sin asesor por ahora**
+> ([0066](../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)). Lo que se ha
+> podido contestar leyendo las fuentes oficiales está en
+> [`lo-investigado.md`](lo-investigado.md), pregunta por pregunta. **Lo que ahí sale como
+> pendiente sigue necesitando a un profesional**, y dice cuándo: lo primero, antes del
+> primer cliente que pague.
 
 ## A · Fiscal · VeriFactu y facturación
 

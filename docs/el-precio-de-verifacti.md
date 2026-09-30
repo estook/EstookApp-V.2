@@ -90,6 +90,8 @@ exista.
 
 ## 3 · Lo que la propuesta NO dice, y hay que preguntar
 
+> **Al día el 30-sep-2026** ([0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)). Su web pública dice «desde 2,9 € por NIF al mes», deja elegir **de 1 a 100 NIF** y no habla de ningún mínimo; y la documentación de su API confirma que se paga **por NIF activo en producción**. **Lo más probable es que no haya mínimo de diez.** Lo que sigue sin saberse es el precio exacto de uno a nueve: lo enseña su calculadora o un correo. Y un coste nuevo: **2,90 € + IVA por cada firma en línea** de la autorización de un autónomo, una vez por cliente.
+
 **La tabla empieza en 10 NIF.** Los primeros clientes de Estook no van a ser diez: van
 a ser uno, dos, tres. Y eso cambia la respuesta entera:
 

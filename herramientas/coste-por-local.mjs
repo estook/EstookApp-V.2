@@ -39,6 +39,9 @@ const PLANES = {
   cadena: { nombre: 'Cadena (por local)', conIva: 69, creditos: 1500 },
 };
 
+/** La propuesta de Richi del 30-sep-2026: subir Pro a 99 €. Sin decidir; aquí solo se hace la cuenta. */
+const PRO_A_99 = 99;
+
 /** COMPROBADO el 30-sep-2026 · platform.claude.com/docs/en/about-claude/pricing · $ por millón de tokens. */
 const MODELOS = {
   economico: { nombre: 'Claude Haiku 4.5', entrada: 1, cache: 0.1, salida: 5 },
@@ -174,7 +177,7 @@ const fila = (celdas) => `| ${celdas.join(' | ')} |`;
 const tabla = (cabecera, filas) =>
   [fila(cabecera), fila(cabecera.map(() => '---')), ...filas.map(fila)].join('\n');
 
-function casos() {
+function casos(pro = PLANES.pro, soloPro = false) {
   const lista = [];
   const caso = (nombre, plan, costeIa, tarjeta, tickets) => {
     const v = tickets === undefined ? 0 : verifacti(tickets, VERIFACTI.porNifConDiez);
@@ -194,25 +197,25 @@ function casos() {
   };
   caso('Esencial · uso normal', PLANES.esencial, ia.esencial.normal, 'normal');
   caso('Esencial · gasta todos sus créditos', PLANES.esencial, ia.esencial.tope, 'premium');
-  caso('Pro sin TPV · uso normal', PLANES.pro, ia.pro.normal, 'normal');
-  caso('Pro sin TPV · gasta todos sus créditos', PLANES.pro, ia.pro.tope, 'premium');
+  caso('Pro sin TPV · uso normal', pro, ia.pro.normal, 'normal');
+  caso('Pro sin TPV · gasta todos sus créditos', pro, ia.pro.tope, 'premium');
   caso(
     'Pro con TPV · restaurante de carta, uso normal',
-    PLANES.pro,
+    pro,
     ia.pro.normal,
     'normal',
     LOCALES_CON_TPV[0].ticketsAlDia,
   );
   caso(
     'Pro con TPV · bar de tapas, uso normal',
-    PLANES.pro,
+    pro,
     ia.pro.normal,
     'normal',
     LOCALES_CON_TPV[1].ticketsAlDia,
   );
   caso(
     'Pro con TPV · bar muy ocupado, todos sus créditos',
-    PLANES.pro,
+    pro,
     ia.pro.tope,
     'premium',
     LOCALES_CON_TPV[2].ticketsAlDia,
@@ -224,7 +227,7 @@ function casos() {
     'normal',
     LOCALES_CON_TPV[0].ticketsAlDia,
   );
-  return lista;
+  return soloPro ? lista.filter((l) => l[0].startsWith('Pro')) : lista;
 }
 
 function fijos() {
@@ -290,6 +293,22 @@ function bloque() {
         'Margen',
       ],
       casos(),
+    ),
+    '',
+    '### Y si Pro costara 99 €',
+    '',
+    tabla(
+      [
+        'Caso',
+        'Ingreso sin IVA',
+        'IA',
+        'Google, servidor y conector',
+        'Stripe',
+        'Verifacti',
+        'Coste total',
+        'Margen',
+      ],
+      casos({ ...PLANES.pro, conIva: PRO_A_99 }, true),
     ),
     '',
     '### Lo fijo de cada mes',

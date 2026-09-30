@@ -215,7 +215,7 @@ function casos() {
     PLANES.pro,
     ia.pro.tope,
     'premium',
-    500,
+    LOCALES_CON_TPV[2].ticketsAlDia,
   );
   caso(
     'Cadena con TPV · por local, uso normal',

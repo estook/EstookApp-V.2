@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 30 de septiembre de 2026 · **Antes de M8. La auditoría profunda, hecha y aprobada: los documentos ordenados y tres pull requests por fusionar. Después, H · Horarios**
+Última actualización: 30 de septiembre de 2026 · **Antes de M8. La auditoría profunda, hecha y aprobada. La #78 y la #79, fusionadas; queda la #80, solo documentos. Después, H · Horarios**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento**, y **no pasa de 150 líneas**
@@ -14,8 +14,9 @@
 > | Quién ve qué                        | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                 |
 > | Qué desencadena cada cambio         | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                      |
 > | Estook TPV y la facturación         | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**      |
-> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (64)                                     |
+> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (65)                                     |
 > | Lo legal, y lo que espera al asesor | [`docs/legal/`](docs/legal/cumplimiento.md)                                             |
+> | Lo que cuesta cada local            | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                    |
 > | Lo que hizo cada entrega            | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                    |
 > | Lo aprendido fallando (128)         | [`docs/lecciones.md`](docs/lecciones.md)                                                |
 > | Los pasos de Richi                  | [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)                                |
@@ -24,17 +25,17 @@
 
 ## 1 · Dónde estamos · producción leída el 30-sep, en solo lectura
 
-|                  |                                                                                                                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1 y R2, con sus repasos                                                                                  |
-| **Por fusionar** | **#79** · la prueba de los martes y la copia de seguridad semanal → **#78** · los maestros y Estook TPV → **#80** · la auditoría profunda, los documentos. Ninguna lleva migración ni despliegue |
-| **Ahora**        | Que Richi fusione las tres, ponga los secretos de la copia y la lance una vez (apartado 2). Después, **H · Horarios**                                                                            |
-| **`main`**       | Todo fusionado hasta la **#77** (R2, 27-sep)                                                                                                                                                     |
-| **Base**         | Supabase, **51 de 51** migraciones. 73 tablas, todas con seguridad por filas                                                                                                                     |
-| **API**          | Desplegada con R2: **58 consultas y 117 comandos**, y el reloj latiendo cada hora                                                                                                                |
-| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                |
-| **Pruebas**      | **1.450** unitarias y de base, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                    |
-| **Copias**       | **Ninguna hecha todavía.** La semanal está escrita en la #79 y empieza cuando Richi ponga sus secretos ([`docs/copias-de-seguridad.md`](docs/copias-de-seguridad.md))                            |
+|                  |                                                                                                                                                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1 y R2, con sus repasos                                                                                                                |
+| **Por fusionar** | **#80** · la auditoría profunda: los documentos, el coste por local y la copia aplazada. Sin migración ni despliegue                                                                                                           |
+| **Ahora**        | Que Richi fusione la #80. Después, **H · Horarios**                                                                                                                                                                            |
+| **`main`**       | Todo fusionado hasta la **#79** (30-sep): R2, los maestros con Estook TPV y la prueba de los martes                                                                                                                            |
+| **Base**         | Supabase, **51 de 51** migraciones. 73 tablas, todas con seguridad por filas                                                                                                                                                   |
+| **API**          | Desplegada con R2: **58 consultas y 117 comandos**, y el reloj latiendo cada hora                                                                                                                                              |
+| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                              |
+| **Pruebas**      | **1.450** unitarias y de base, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                                                  |
+| **Copias**       | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md))
 
@@ -68,27 +69,24 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Ahora, en este orden** (paso a paso en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **Fusionar la #79.**
-2. **Poner los secretos de la copia** en GitHub (`URL_DE_LA_COPIA`, `CLAVE_DE_LA_COPIA` y `CLAVE_DE_SERVICIO_COPIA`) y **lanzar «Copia de seguridad» una vez**. Tiene que salir en verde: es la primera vez que corre contra la base de verdad.
-3. **Fusionar la #78**, y después **la #80**, la de la auditoría profunda.
-4. **Contratar al asesor** (fiscal, y laboral y de datos) y pasarle [`docs/legal/preguntas-al-asesor.md`](docs/legal/preguntas-al-asesor.md). Ya no espera al TPV.
-5. **Contestar lo del chat** (abajo, el 1): hace falta antes de H.
+1. **Fusionar la #80.**
+2. **Contratar al asesor** (fiscal, y laboral y de datos) y pasarle [`docs/legal/preguntas-al-asesor.md`](docs/legal/preguntas-al-asesor.md). Ya no espera al TPV.
+3. **Contestar lo del chat** (abajo, el 1): hace falta antes de H.
 
 **Con fecha o con condición:**
 
-| Qué                                                       | Cuándo                                                                          |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **Supabase Pro** (copia diaria)                           | En unas semanas; **como muy tarde, antes del primer cliente que pague**         |
-| **Cloudflare Pages y el repositorio en privado**          | Antes del primer cliente que pague o de vender Estook TPV, lo que llegue antes  |
-| **El contrato de encargado**, revisado y en el alta       | Antes del primer cliente que pague                                              |
-| **La oferta de Verifacti**                                | **Caduca hacia el 19 de octubre** ([el precio](docs/el-precio-de-verifacti.md)) |
-| **La sociedad o el alta de autónomo**, y Stripe de verdad | Para cobrar de verdad                                                           |
-| **Las facturas de la cuota conformes a VeriFactu**        | 1-ene-2027 si es sociedad; 1-jul-2027 si es autónomo                            |
+| Qué                                                                                                                    | Cuándo                                                                          |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **La mudanza, todo junto**: Cloudflare Pages, Supabase Pro, **la copia semanal encendida** y el repositorio en privado | Antes del primer cliente que pague o de vender Estook TPV, lo que llegue antes  |
+| **El contrato de encargado**, revisado y en el alta                                                                    | Antes del primer cliente que pague                                              |
+| **La oferta de Verifacti**                                                                                             | **Caduca hacia el 19 de octubre** ([el precio](docs/el-precio-de-verifacti.md)) |
+| **La sociedad o el alta de autónomo**, y Stripe de verdad                                                              | Para cobrar de verdad                                                           |
+| **Las facturas de la cuota conformes a VeriFactu**                                                                     | 1-ene-2027 si es sociedad; 1-jul-2027 si es autónomo                            |
 
 **Sin decidir, y es de Richi:**
 
 1. **El chat de Estook**: ¿con Horarios o aparte? Mientras, el horario se comparte en PDF.
-2. **Si Fogón habla antes de M22**: falta elegir modelo, presupuesto por local y caché.
+2. **Fogón**: qué modelo es «el grande» y si 1.500 créditos son los de Pro. Con todos gastados, Pro puede costar 11 € de IA ([el coste](docs/coste-por-local.md)). Se decide en M22, con lo medido.
 3. **Para Estook TPV** (Anexo, «Lo que sigue pendiente de Richi»): en qué planes entra, el soporte en horario de servicio, si el camarero cobra por defecto y qué datáfono conectado va primero.
 
 **Cuando quiera:** las alertas de Dependabot, quitar «Automatically expose new tables» en Supabase y regenerar las claves de Google que pasaron por un chat.
@@ -115,7 +113,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 Dónde vive cada pieza, cada servicio y cada clave: [Arquitectura](docs/maestros/Estook-Arquitectura.md), capítulos 10 a 13, y [`config/claves.md`](config/claves.md). Lo que cambia y conviene tener a mano:
 
 - **Base:** Supabase `efgtzujwjztihyiwgpwg`, Irlanda, **plan gratuito**. `.\estook.cmd bd:comprobar` la lee; `bd:comprobar-api`, la API.
-- **GitHub:** `main` protegida, con tres comprobaciones obligatorias —`Calidad`, `Construccion y presupuestos` y `Migraciones reversibles`—. **Nunca añadir `Construir` ni `Publicar`.** Y el flujo nuevo, `Copia de seguridad`, los lunes de madrugada.
+- **GitHub:** `main` protegida, con tres comprobaciones obligatorias —`Calidad`, `Construccion y presupuestos` y `Migraciones reversibles`—. **Nunca añadir `Construir` ni `Publicar`.** El flujo `Copia de seguridad` corre los lunes y, sin secretos, solo deja un aviso.
 - **El peso inicial** (26-sep): `app` 317,8 KB y `admin` 222,5. Se mide y no bloquea; manda la velocidad.
 - **El 19 de octubre** GitHub pasa `ubuntu-latest` a Ubuntu 26: mirar la integración continua ese día.
 
@@ -144,6 +142,6 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 **Fusionar las tres ramas** (apartado 2). **Después, H · Horarios**, que empieza por tres cosas escritas antes de programar: las preguntas a Richi que no estén contestadas, el motor de los PDF y la migración que hace opcional el correo de una persona.
 
-**Lo que decidió la IA por su cuenta en la auditoría**, para que Richi lo sepa: partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; poner como condición de Cloudflare «antes del primer cliente de pago»; el 10 % de límite de descuento del jefe de sala, de fábrica; y los plazos de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md) marcados entre corchetes, que son propuestas para el asesor.
+**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
 
 **Lo que ESTADO llevaba hasta hoy** —las decisiones una a una, lo de cada entrega de E2 a R2 y la lista larga de lo que no se toca— está entero en [`docs/historia/ESTADO-hasta-el-30-sep-2026.md`](docs/historia/ESTADO-hasta-el-30-sep-2026.md), y lo que queda preparado para cada módulo, en [el mapa](docs/MAPA-de-modulos.md).

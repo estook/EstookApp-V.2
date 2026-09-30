@@ -826,7 +826,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Reglas críticas de optimización, que son también de coste.** Los números los calcula la base de datos, **nunca el modelo**. Las reglas de aviso van en código. El contexto va cacheado y se parchea. Cada tarea a su modelo. Lo pesado, en lote nocturno. Respuestas frecuentes cacheadas. Imágenes reducidas. **Fogón pide el dato concreto, jamás una tabla entera.** Nada se guarda sin aprobación. **El texto que viene de fuera se trata como dato, jamás como instrucción.**
 
-**Terminado cuando.** Da tres avisos útiles seguidos sin inventarse una cifra; un cocinero preguntando por márgenes recibe una negativa; **una inyección desde una reseña no cambia su comportamiento**; ninguna alerta llega sin su acción; y el coste por local se queda por debajo de 50 céntimos medidos.
+**Terminado cuando.** Da tres avisos útiles seguidos sin inventarse una cifra; un cocinero preguntando por márgenes recibe una negativa; **una inyección desde una reseña no cambia su comportamiento**; ninguna alerta llega sin su acción; y **el coste está medido**: cada llamada al modelo guarda sus tokens y lo que costó, cada acción de la tabla de créditos se mide con datos de verdad, el supuesto de [`coste-por-local.md`](../coste-por-local.md) se cambia por lo medido, y **gastar todos los créditos de Pro deja al menos un 60 %** ([0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). Si no lo deja, se ajusta la tabla de créditos o el modelo antes de encenderlo.
 
 ### M23 · Reseñas, competencia y chat
 
@@ -876,9 +876,11 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y algo que la construcción de M4 enseñó.** Aquí se cierra el hueco de los procesos de fondo: **la bandeja de salida, la cola de trabajos y la limpieza de caducados necesitan quién los ejecute.** Una API que atiende y se apaga no tiene reloj. La decisión —`pg_cron` dentro de Supabase, o una función con programador— se escribe antes de M8, no aquí, pero aquí se comprueba que funciona bajo carga.
 
+**Y la prueba final del coste por local** ([0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). Un mes de un local de ejemplo cargado como uno de verdad —sus ventas, sus tickets, sus correos y su Fogón—, con la factura real de cada proveedor al lado. **El coste medido por local no se separa más de un 20 % de [`coste-por-local.md`](../coste-por-local.md)**; si se separa, se corrige la tabla o el precio antes de vender.
+
 ### M28 · Piloto real
 
-**Entra.** Tres locales reales durante un mes, uno con Ágora, otro con Glop y, si M20C está terminado y la facturación aprobada por el asesor, uno cobrando con Estook · acompañamiento en la instalación y la primera semana · **registro de cada fricción y cada llamada** · medición de activación, salud de datos y coste real · corrección con prioridad sobre cualquier función nueva · entrevista de salida.
+**Entra.** Tres locales reales durante un mes, uno con Ágora, otro con Glop y, si M20C está terminado y la facturación aprobada por el asesor, uno cobrando con Estook · acompañamiento en la instalación y la primera semana · **registro de cada fricción y cada llamada** · medición de activación, salud de datos y **coste real por local, día a día, en el panel interno** · corrección con prioridad sobre cualquier función nueva · entrevista de salida.
 
 **Regla crítica.** **No se abre ninguna función nueva mientras haya fricción del piloto sin resolver.**
 
@@ -946,7 +948,8 @@ Código en su rama con commits legibles · migraciones numeradas y reversibles �
 7. **M29 y M30 van al final, y no es un descuido.** Una integración sobre un dominio a medio cerrar se rehace entera.
 8. **No se lanza sin M28.** Un mes con tres locales reales vale más que seis meses de suposiciones.
 9. **La facturación no se enciende en producción** sin las once condiciones del capítulo 9 del Anexo; las tres primeras: todas las pruebas en verde contra el entorno de pruebas, la declaración responsable publicada en la app y la revisión del asesor fiscal por escrito.
-10. **Antes del primer cliente que pague de verdad:** Supabase Pro con su copia diaria, la mudanza a Cloudflare Pages, el repositorio en privado y el contrato de encargado publicado ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md), [0062](../decisiones/0062-lo-legal.md)).
+10. **Antes del primer cliente que pague de verdad:** Supabase Pro con su copia diaria, **la copia semanal encendida**, la mudanza a Cloudflare Pages, el repositorio en privado y el contrato de encargado publicado ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md), [0062](../decisiones/0062-lo-legal.md), [0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)).
+11. **Fogón no se enciende sin su coste medido**, ni se vende sin la prueba final del coste por local (M22 y M27).
 
 > **Documento de control obligatorio.** Antes de cerrar cualquier módulo se pasa la lista de la **Auditoría de flujos, dependencias y efectos en cadena**, que define el mapa de dependencias de datos, los efectos en cascada de cada cambio, de dónde salen las opciones de cada desplegable, las máquinas de estado y el comportamiento ante fallos parciales.
 

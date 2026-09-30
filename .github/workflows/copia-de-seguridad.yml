@@ -43,8 +43,37 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # La copia está **aplazada** hasta la mudanza de alojamiento (decisión 0065). Mientras
+  # no estén los secretos, el lunes no hace nada y lo dice, en vez de salir en rojo cada
+  # semana; lanzada a mano sin secretos sí falla, porque entonces alguien la esperaba.
+  secretos:
+    name: ¿Están los secretos?
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      estan: ${{ steps.mirar.outputs.estan }}
+    env:
+      URL_DE_LA_COPIA: ${{ secrets.URL_DE_LA_COPIA }}
+      CLAVE_DE_LA_COPIA: ${{ secrets.CLAVE_DE_LA_COPIA }}
+    steps:
+      - id: mirar
+        run: |
+          if [ -n "$URL_DE_LA_COPIA" ] && [ -n "$CLAVE_DE_LA_COPIA" ]; then
+            echo "estan=si" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "::error::Faltan URL_DE_LA_COPIA o CLAVE_DE_LA_COPIA en los secretos de GitHub. Sin ellos no hay copia (docs/copias-de-seguridad.md)."
+            exit 1
+          else
+            echo "estan=no" >> "$GITHUB_OUTPUT"
+            echo "::warning::NO HAY COPIA DE SEGURIDAD. Está aplazada hasta poner sus secretos (docs/copias-de-seguridad.md)."
+            echo "## No hay copia de seguridad" >> "$GITHUB_STEP_SUMMARY"
+            echo "Está aplazada: faltan sus secretos. Cómo encenderla, en \`docs/copias-de-seguridad.md\`." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   copiar:
     name: Copiar, restaurar y cifrar
+    needs: secretos
+    if: needs.secretos.outputs.estan == 'si'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -66,13 +95,6 @@ jobs:
           --health-timeout 5s
           --health-retries 20
     steps:
-      - name: Los secretos están
-        run: |
-          if [ -z "$URL_DE_LA_COPIA" ] || [ -z "$CLAVE_DE_LA_COPIA" ]; then
-            echo "::error::Faltan URL_DE_LA_COPIA o CLAVE_DE_LA_COPIA en los secretos de GitHub. Sin ellos no hay copia (docs/copias-de-seguridad.md)."
-            exit 1
-          fi
-
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v6

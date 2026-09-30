@@ -75,3 +75,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0062** | Lo legal: el contrato de encargado, la conservación, los fichajes, los alérgenos y la IA               |
 | **0063** | Los documentos: una fuente por tema                                                                    |
 | **0064** | Las gráficas contestan una pregunta, y se ven mejor sin engañar                                        |
+| **0065** | El coste por local, con su prueba final; y la copia de seguridad, aplazada hasta la mudanza            |

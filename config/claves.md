@@ -51,7 +51,7 @@ Sin ellos, el flujo `Desplegar la API` se para y dice que faltan. Se lanza a man
 desde la pestana Actions, escribiendo «desplegar»: poner los datos de verdad al
 alcance de cualquiera con un navegador se hace mirando, no de paso.
 
-**Y desde el 30 de septiembre de 2026, los de la copia de seguridad** (decisión 0061,
+**Y los de la copia de seguridad, cuando se encienda** (aplazada hasta la mudanza, decisión 0065;
 [`docs/copias-de-seguridad.md`](../docs/copias-de-seguridad.md)):
 
 | Nombre                    | Que es                                                                                                                           |

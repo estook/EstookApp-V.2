@@ -1,5 +1,10 @@
 # El precio de Verifacti, y qué decide
 
+> **El «coste base» de este papel (4,02 y 7,10 €) se rehízo el 30-sep-2026**, contando
+> Stripe entero y la IA con sus supuestos: la cuenta que vale es
+> [`coste-por-local.md`](coste-por-local.md). Los precios de Verifacti de aquí siguen
+> siendo los buenos.
+
 **Escrito el 21 de septiembre de 2026**, con la propuesta de Verifacti delante.
 
 > **Para qué existe este papel.** La Evolución 1.1, capítulo 19, deja tres decisiones

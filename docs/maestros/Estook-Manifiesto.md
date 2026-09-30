@@ -1127,7 +1127,7 @@ Cada llamada al modelo cuesta dinero y tarda. La aplicación está construida pa
 8. **Las imágenes se reducen antes de enviarse.**
 9. **Se pide lo justo.** Fogón nunca recibe una tabla entera: pide el dato concreto.
 
-_Resultado medido: un local de uso normal se queda por debajo de un euro y medio de coste de IA al mes, con Fogón contestando en dos segundos._
+_El objetivo: que un local de uso normal se quede por debajo de un euro y medio de IA al mes, con Fogón contestando en dos segundos. **Es un objetivo, no una medida**: se mide al construir Fogón, y la cuenta de hoy, con sus supuestos, está en [`coste-por-local.md`](../coste-por-local.md)._
 
 ## Lo que nunca puede hacer
 
@@ -1455,14 +1455,16 @@ Estook no toca dinero. Si el local cobra con Estook, sus tickets y facturas pasa
 
 ## Lo que cuesta servir a un local
 
-| Concepto                           | € / local / mes |
-| ---------------------------------- | --------------- |
-| Inteligencia artificial            | 1,33            |
-| Google Places (con caché por zona) | 0,90            |
-| Infraestructura                    | 0,55            |
-| Conector (mantenimiento repartido) | 0,40            |
-| Pasarela de pago                   | 0,84            |
-| **Total**                          | **≈ 4,02 €**    |
+**La cuenta entera, con de dónde sale cada precio, está en [`docs/coste-por-local.md`](../coste-por-local.md)**, y es la única: sus tablas salen de un fichero y se comprueban solas ([0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). En corto, sin IVA:
+
+| Local                                        | Le cuesta a Estook | Deja |
+| -------------------------------------------- | ------------------ | ---- |
+| Esencial, uso normal                         | ≈ 3,60 €           | 91 % |
+| Pro sin TPV, uso normal                      | ≈ 6,70 €           | 90 % |
+| Pro con Estook TPV, restaurante de carta     | ≈ 12,30 €          | 81 % |
+| Pro con Estook TPV, bar muy ocupado y a tope | ≈ 45,50 €          | 30 % |
+
+**Lo fijo:** hoy, nada; para vender, unos 65 € al mes; con Estook TPV, unos 163 €. **La IA es un supuesto hasta que Fogón exista**, y es lo que más mueve la cuenta.
 
 > **Coste añadido si el local cobra con Estook.** El proveedor de VeriFactu (Verifacti) cobra **por NIF activo en producción**, no por local ni por aparato, y el precio baja con el volumen: **de 5,59 € por NIF con diez, a 3,71 € con cincuenta**, sin IVA. Incluye **3.000 facturas al mes por NIF**, y a partir de ahí 0,002 € cada una, que es lo que de verdad mueve el coste: un bar de tapas hace el triple de tickets que un restaurante de carta facturando lo mismo. Las cuentas, con los tres casos y lo que queda por preguntar, en [`docs/el-precio-de-verifacti.md`](../el-precio-de-verifacti.md). _Propuesta recibida el 21 de septiembre de 2026._
 
@@ -1478,7 +1480,7 @@ Las ocho apps completas · carta digital con QR · documentos sin límite · aud
 
 Las ventas y el catálogo entran **por fichero**, con la guía de exportación de su TPV.
 
-_Coste para nosotros ≈ 3,90 € · Margen 45,10 € · 92 %_
+_Lo que cuesta y lo que deja, en [`coste-por-local.md`](../coste-por-local.md)._
 
 ### ESTOOK PRO · 79 € por local y mes
 
@@ -1495,13 +1497,13 @@ Para el local que factura de verdad y quiere que Estook trabaje solo. Todo lo de
 - Auditorías completas con plantillas propias.
 - Soporte prioritario y puesta en marcha remota incluida.
 
-_Coste para nosotros ≈ 7,10 € · Margen 71,90 € · 91 %_
+_Lo que cuesta y lo que deja, con TPV y sin él, en [`coste-por-local.md`](../coste-por-local.md)._
 
 ### ESTOOK CADENA · 69 € por local y mes · de 2 a 10 locales
 
 Todo lo de Pro en cada local, y encima la capa que solo necesita un grupo: panel de cadena con gestión por excepción · catálogo maestro con sus tres políticas · áreas y area managers sin límite · auditorías comparadas · informes de grupo · **bolsa común de 1.500 créditos por local** · una sola factura con desglose por local.
 
-_4 locales: 276 €/mes · coste ≈ 28,40 € · margen 247,60 € · 90 %_
+_4 locales: 276 €/mes. Lo que cuesta cada uno, en [`coste-por-local.md`](../coste-por-local.md)._
 
 **A partir de 11 locales** no hay precio en la web: formulario corto y presupuesto, porque a ese tamaño entran integración con su ERP, informes propios, formación y responsable asignado. Punto de partida orientativo: **desde 59 € por local**.
 
@@ -1591,16 +1593,9 @@ Así lo decidió Richi con E2 ([0048](../decisiones/0048-el-pago-con-stripe.md))
 
 ## Punto de equilibrio
 
-_Costes fijos estimados: 600 €/mes._
+_Con 600 € fijos al mes, y contando el ingreso **sin IVA**. La tabla, en [`coste-por-local.md`](../coste-por-local.md)._
 
-| Clientes                         | Ingreso  | Margen bruto | Resultado |
-| -------------------------------- | -------- | ------------ | --------- |
-| 10 Esencial                      | 490 €    | 451 €        | −149 €    |
-| 15 mixtos (9 Esencial + 6 Pro)   | 915 €    | 838 €        | +238 €    |
-| 50 mixtos (30 Esencial + 20 Pro) | 3.050 €  | 2.795 €      | +2.195 €  |
-| 200 mixtos                       | 12.200 € | 11.180 €     | +10.580 € |
-
-**Con quince locales de pago, el proyecto se sostiene solo. Con cincuenta, es un sueldo. Con doscientos, es una empresa.**
+**Con quince locales de pago, el proyecto cubre gastos, por poco. Con cincuenta, es un sueldo. Con doscientos, es una empresa.**
 
 ## Los frenos
 
@@ -1612,25 +1607,25 @@ Topes técnicos en el código: Google Places 0,10 €/día con corte duro · cor
 
 # 34 · Riesgos
 
-| Riesgo                                                      | Cómo se cubre                                                                                                                                                                                                                                                           |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Un TPV cambia su formato y rompe el conector                | Link guarda el fichero original, avisa y deja el camino manual                                                                                                                                                                                                          |
-| Un fabricante de TPV no quiere que nos conectemos           | Por eso Link lee carpetas y no bases de datos. Y por eso hay tres vías                                                                                                                                                                                                  |
-| El cliente no consigue las credenciales de su TPV           | Se las pedimos nosotros por él en la puesta en marcha                                                                                                                                                                                                                   |
-| Una plataforma de reparto cambia su API o revoca el acceso  | Cada canal es un adaptador aparte. Si cae, el resto sigue                                                                                                                                                                                                               |
-| Un cliente ve datos de otro                                 | Aislamiento en tres capas y prueba automática permanente                                                                                                                                                                                                                |
-| Fogón dice una cifra inventada                              | Los números los calcula la base. Pruebas de regresión sobre respuestas                                                                                                                                                                                                  |
-| El proveedor de IA sube precios o cierra                    | La IA vive detrás de una interfaz propia: cambiar de modelo es cambiar un adaptador                                                                                                                                                                                     |
-| Google cambia condiciones de Places                         | Reseñas y Competencia están aisladas. Si caen, el resto va igual                                                                                                                                                                                                        |
-| Se pierde la base de datos                                  | **Copia semanal cifrada fuera de Supabase, restaurada sola cada vez** (desde el 30-sep-2026). Copia diaria con Supabase Pro antes del primer cliente de pago, y recuperación a un punto exacto con el TPV ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)) |
-| El proyecto se vuelve inmantenible                          | Arquitectura escrita antes de programar y pruebas obligatorias por módulo                                                                                                                                                                                               |
-| Un TPV deja de querer integrarse porque ahora competimos    | Integración solo por API oficial o por fichero. Link lee carpetas                                                                                                                                                                                                       |
-| Un ticket o una factura salen mal ante Hacienda             | Facturación aislada, proveedor especializado, entorno de pruebas y revisión del asesor antes de producción                                                                                                                                                              |
-| Se cae internet en el local                                 | Estook Link mantiene la sala, la cocina y la impresión. Justificante provisional y el ticket al volver. Router 4G recomendado en el alta                                                                                                                                |
-| Un TPV caído en pleno servicio                              | Soporte en horario de servicio antes de vender el primer TPV, y el latido de cada terminal a la vista de soporte                                                                                                                                                        |
-| Una respuesta perdida deja un ticket a medias ante Hacienda | El documento se prepara y se numera antes, y se manda con una clave que impide registrarlo dos veces (Anexo 4.9)                                                                                                                                                        |
-| El repositorio es público y enseña el plan de negocio       | Pasa a privado en la mudanza a Cloudflare; los datos personales ya no se escriben en los documentos                                                                                                                                                                     |
-| El proveedor de VeriFactu cae o cierra                      | Vive detrás de una interfaz propia. Sus caídas de Hacienda las cubre su cola                                                                                                                                                                                            |
+| Riesgo                                                      | Cómo se cubre                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Un TPV cambia su formato y rompe el conector                | Link guarda el fichero original, avisa y deja el camino manual                                                                                                                                                                                                                                            |
+| Un fabricante de TPV no quiere que nos conectemos           | Por eso Link lee carpetas y no bases de datos. Y por eso hay tres vías                                                                                                                                                                                                                                    |
+| El cliente no consigue las credenciales de su TPV           | Se las pedimos nosotros por él en la puesta en marcha                                                                                                                                                                                                                                                     |
+| Una plataforma de reparto cambia su API o revoca el acceso  | Cada canal es un adaptador aparte. Si cae, el resto sigue                                                                                                                                                                                                                                                 |
+| Un cliente ve datos de otro                                 | Aislamiento en tres capas y prueba automática permanente                                                                                                                                                                                                                                                  |
+| Fogón dice una cifra inventada                              | Los números los calcula la base. Pruebas de regresión sobre respuestas                                                                                                                                                                                                                                    |
+| El proveedor de IA sube precios o cierra                    | La IA vive detrás de una interfaz propia: cambiar de modelo es cambiar un adaptador                                                                                                                                                                                                                       |
+| Google cambia condiciones de Places                         | Reseñas y Competencia están aisladas. Si caen, el resto va igual                                                                                                                                                                                                                                          |
+| Se pierde la base de datos                                  | **Hoy no hay ninguna copia**: la semanal, cifrada y fuera de Supabase, está escrita y aplazada hasta la mudanza ([0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). Antes del primer cliente de pago: esa, y la diaria de Supabase Pro. Con el TPV, la recuperación a un punto exacto |
+| El proyecto se vuelve inmantenible                          | Arquitectura escrita antes de programar y pruebas obligatorias por módulo                                                                                                                                                                                                                                 |
+| Un TPV deja de querer integrarse porque ahora competimos    | Integración solo por API oficial o por fichero. Link lee carpetas                                                                                                                                                                                                                                         |
+| Un ticket o una factura salen mal ante Hacienda             | Facturación aislada, proveedor especializado, entorno de pruebas y revisión del asesor antes de producción                                                                                                                                                                                                |
+| Se cae internet en el local                                 | Estook Link mantiene la sala, la cocina y la impresión. Justificante provisional y el ticket al volver. Router 4G recomendado en el alta                                                                                                                                                                  |
+| Un TPV caído en pleno servicio                              | Soporte en horario de servicio antes de vender el primer TPV, y el latido de cada terminal a la vista de soporte                                                                                                                                                                                          |
+| Una respuesta perdida deja un ticket a medias ante Hacienda | El documento se prepara y se numera antes, y se manda con una clave que impide registrarlo dos veces (Anexo 4.9)                                                                                                                                                                                          |
+| El repositorio es público y enseña el plan de negocio       | Pasa a privado en la mudanza a Cloudflare; los datos personales ya no se escriben en los documentos                                                                                                                                                                                                       |
+| El proveedor de VeriFactu cae o cierra                      | Vive detrás de una interfaz propia. Sus caídas de Hacienda las cubre su cola                                                                                                                                                                                                                              |
 
 ---
 

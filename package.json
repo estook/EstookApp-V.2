@@ -35,7 +35,7 @@
     "bd:cuenta-de-verdad": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/cuenta-de-verdad.mjs",
     "bd:dar-admin": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/dar-admin.mjs",
     "almacen:preparar": "node --experimental-strip-types --env-file-if-exists=.env.local herramientas/prepara-el-almacen.mjs",
-    "verifica": "pnpm tipos && pnpm lint && pnpm formato && pnpm dependencias && pnpm textos && pnpm grafo && pnpm prueba",
+    "verifica": "pnpm tipos && pnpm lint && pnpm formato && pnpm dependencias && pnpm textos && pnpm grafo && pnpm coste:comprobar && pnpm prueba",
     "api:pruebas": "node --experimental-strip-types base-de-datos/herramientas/api-de-pruebas.mjs",
     "prueba:e2e:completa": "node herramientas/construye-para-e2e.mjs",
     "cobertura": "node --experimental-strip-types herramientas/cobertura-del-catalogo.mjs",
@@ -43,6 +43,9 @@
     "textos": "node --experimental-strip-types herramientas/revisa-textos.mjs",
     "grafo": "node herramientas/revisa-el-grafo-de-deno.mjs",
     "maestros": "node herramientas/documentos-maestros.mjs",
+    "coste": "node herramientas/coste-por-local.mjs",
+    "coste:escribir": "node herramientas/coste-por-local.mjs --escribir",
+    "coste:comprobar": "node herramientas/coste-por-local.mjs --comprobar",
     "bd:mi-negocio": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/mi-negocio.mjs"
   },
   "devDependencies": {

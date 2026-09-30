@@ -504,13 +504,13 @@ GitHub para publicar ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md
 
 # 13 · Copias de seguridad y recuperación
 
-| Qué                                                      | Estado                                                                                                                                                                    |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Copia semanal de la base, cifrada, fuera de Supabase** | GitHub, cada lunes de madrugada. **Se restaura sola en una base de prueba en el mismo paso**: una copia que no se ha restaurado no es una copia                           |
-| **Copia de los ficheros** (logos, fotos, cartas)         | En el mismo flujo, si está puesta su clave                                                                                                                                |
-| **Copia diaria de siete días**                           | Con Supabase Pro, en unas semanas y **antes del primer cliente de pago** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md))                                    |
-| **Recuperación a un punto exacto en el tiempo**          | Con el TPV en marcha: con tickets, perder un día no vale                                                                                                                  |
-| **Cómo se restaura**                                     | Paso a paso en [`docs/copias-de-seguridad.md`](../copias-de-seguridad.md), con lo que no va en la copia (el secreto del reloj en el Vault, los secretos de las funciones) |
+| Qué                                                      | Estado                                                                                                                                                                                                                                                                          |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Copia semanal de la base, cifrada, fuera de Supabase** | **Escrita y aplazada** hasta la mudanza de alojamiento ([0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)): **hoy no hay ninguna copia**. Cuando se encienda: GitHub, cada lunes de madrugada, y **se restaura sola en una base de prueba en el mismo paso** |
+| **Copia de los ficheros** (logos, fotos, cartas)         | En el mismo flujo, si está puesta su clave. Aplazada con él                                                                                                                                                                                                                     |
+| **Copia diaria de siete días**                           | Con Supabase Pro, en la misma mudanza y **antes del primer cliente de pago** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md))                                                                                                                                      |
+| **Recuperación a un punto exacto en el tiempo**          | Con el TPV en marcha: con tickets, perder un día no vale                                                                                                                                                                                                                        |
+| **Cómo se restaura**                                     | Paso a paso en [`docs/copias-de-seguridad.md`](../copias-de-seguridad.md), con lo que no va en la copia (el secreto del reloj en el Vault, los secretos de las funciones)                                                                                                       |
 
 ---
 

@@ -1,8 +1,8 @@
 ---
 titulo: Manifiesto
 tipo: Documento maestro de producto
-fecha: Septiembre de 2026 · versión 1.3
-nota: Qué es Estook, para quién, cómo se comporta hasta el último detalle, qué cuesta y cuánto se cobra. Un Panel y ocho apps, cada una una app de verdad. Documentos hermanos: Evolución, Plan de desarrollo, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
+fecha: Septiembre de 2026 · versión 1.4
+nota: Qué es Estook, para quién, cómo se comporta hasta el último detalle, qué cuesta y cuánto se cobra. Un Panel y ocho apps, cada una una app de verdad. Documentos hermanos: Arquitectura, Plan de desarrollo, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
 ---
 
 # Qué es este documento
@@ -11,13 +11,20 @@ Este documento define qué es Estook, para quién, cómo se comporta hasta el ú
 
 Marca: charcoal `#111C1F` · naranja `#FF7A00` · blanco · negro. Claim: «Tu cocina, bajo control.»
 
-**Qué cambia en la versión 1.1.** Recoge la Evolución de producto 1.0: Estook pasa de ser una aplicación de gestión a ser el sistema operativo del restaurante. Los capítulos afectados son el 1, el 6, el 7 nuevo (Pulse), el 20 (Fogón), el 21 nuevo (alertas), el 24 nuevo (integraciones) y el 33 (negocio y mercado). Todo lo demás sigue palabra por palabra, y eso también es una decisión.
+**La versión 1.4** (30 de septiembre de 2026) recoge la auditoría profunda ([decisión 0055](../decisiones/0055-la-auditoria-profunda.md)) y **lo que era la Evolución**, que deja de ser un documento aparte ([0063](../decisiones/0063-una-fuente-por-tema.md)): su visión y su mercado ya estaban aquí casi palabra por palabra. Lo que cambió en cada versión, en el [registro de cambios](CAMBIOS.md).
 
-**Qué cambia en la versión 1.2.** Estook también cobra: el local elige entre su TPV conectado o el TPV de Estook, con tickets y facturas que cumplen VeriFactu. Cambian los capítulos 1, 2, 4, 8, 9, 17, 24, 26, 29, 30, 32, 33, 34 y 35. Por qué y con qué riesgos, en la Evolución (capítulo 19); cómo se construye, en el **Anexo TPV y facturación**.
+## Cómo se leen los seis documentos
 
-**Qué cambia en la versión 1.3** (27 de septiembre de 2026, [decisión 0054](../decisiones/0054-estook-tpv-y-uber-eats-comprobado.md)). El TPV tiene nombre, **Estook TPV**, y el capítulo 17 cuenta el cajón, el datáfono y el cierre con arqueo ciego; los pedidos de reparto entran en su cocina (capítulos 17 y 24); y en Integraciones, los pagos son **datáfonos del local**, no la suscripción de Estook (capítulo 24).
+| Documento                     | Qué responde                                     | Cuándo se lee                                          |
+| ----------------------------- | ------------------------------------------------ | ------------------------------------------------------ |
+| **Manifiesto** (este)         | Qué es el producto, para quién y cuánto cuesta   | Primero, y antes de diseñar una pantalla               |
+| **Arquitectura**              | Cómo está hecho                                  | Antes de tocar el servidor, el modelo o un aparato     |
+| **Plan de desarrollo**        | Cómo se trabaja, el diseño y en qué orden        | Antes de escribir código                               |
+| **Roles y administración**    | Qué ve exactamente cada persona                  | Antes de tocar permisos                                |
+| **Auditoría de flujos**       | Qué desencadena cada cambio                      | Antes de cerrar un módulo                              |
+| **Anexo · TPV y facturación** | Cómo se cobra y se factura, y cómo es Estook TPV | Antes de tocar sala, cocina, cobro, caja o facturación |
 
-Documentos hermanos: **Evolución**, que dice hacia dónde va y en qué orden y se lee antes que este; **Plan de desarrollo**, que dice cómo se construye; **Roles, vistas, auditorías y administración**, que dice qué ve exactamente cada persona; **Auditoría de flujos**, que dice qué desencadena cada cambio; y el **Anexo de TPV y facturación**, que manda en todo lo que toque sala, cocina, cobro, caja o facturación.
+**Cada tema vive en un solo sitio** y los demás enlazan. **Manda el más específico**; si dos se contradicen de verdad, se para y se pregunta (regla 13 del Plan). Y dónde estamos hoy no lo dice ningún maestro: lo dice `ESTADO.md`.
 
 ---
 
@@ -25,7 +32,9 @@ Documentos hermanos: **Evolución**, que dice hacia dónde va y en qué orden y 
 
 Estook es **el sistema operativo del restaurante**: la aplicación donde vive todo lo que pasa en el local —la sala y el cobro si el local lo quiere, el género, los costes, la carta, el equipo, el calendario, el control sanitario, los documentos y las decisiones— con todas las piezas conectadas entre sí y una capa de inteligencia que las lee todas.
 
-Cobrar lo puede seguir haciendo su TPV, conectado a Estook, o lo puede hacer Estook con su propio TPV: sala, cocina, cobro y tickets en el mismo sistema, cumpliendo VeriFactu. Lo que ningún TPV hace bien es todo lo demás, y ahí es donde está el dinero que se escapa.
+Cobrar lo puede hacer Estook con **Estook TPV** —sala, cocina, cobro y tickets en el mismo sistema, cumpliendo VeriFactu—, o lo puede seguir haciendo su TPV, conectado a Estook. Lo que ningún TPV hace bien es todo lo demás, y ahí es donde está el dinero que se escapa.
+
+> **Estook gestiona. Estook TPV opera. Estook Link conecta. Fogón entiende.**
 
 ```
                         ESTOOK
@@ -51,23 +60,23 @@ Cobrar lo puede seguir haciendo su TPV, conectado a Estook, o lo puede hacer Est
               TPV · ERP · DELIVERY · etc.
 ```
 
-## Las cinco superficies
+## Las superficies
 
-| Superficie          | Quién entra                    | Qué es                                                                                               |
-| ------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| Estook (app web)    | El restaurante y su equipo     | La aplicación completa: el Panel, sus ocho apps y, si el local lo usa, el TPV (sala, cocina y cobro) |
-| Estook Enlace       | Se instala una vez en el local | Trae las ventas del TPV **y hace de puente con las impresoras**                                      |
-| App de Estook       | Tablets y móviles del local    | La misma aplicación, empaquetada. No es un producto aparte: es un envoltorio, y es opcional          |
-| Carta digital       | El cliente del restaurante     | La carta pública con QR, sin login                                                                   |
-| Web y panel interno | Cualquiera / nosotros          | Vender, contratar y administrar                                                                      |
+| Lo que ve el cliente    | Quién entra                    | Qué es                                                                                           |
+| ----------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------ |
+| **Estook**              | El restaurante y su equipo     | La gestión: el Panel y sus ocho apps                                                             |
+| **Estook TPV**          | La sala, la barra y la cocina  | El servicio: tomar nota, cocina, cobrar y la caja. Se instala aparte y **funciona sin conexión** |
+| **Estook Link**         | Se instala una vez en el local | El centro del local: impresoras, cajón, la cocina sin internet, y las ventas de un TPV ajeno     |
+| **Carta digital**       | El cliente del restaurante     | La carta pública con QR, sin login                                                               |
+| **Web y panel interno** | Cualquiera / nosotros          | Vender, contratar y administrar                                                                  |
 
-> **Una sola base de código, en web.** No hay una aplicación aparte para el TPV. Lo que cambia entre la barra, la cocina y el despacho es **el modo de pantalla**, no la aplicación: misma sesión, mismos permisos, mismos datos. Está decidido y razonado en A5 del Plan.
+> **Una sola base de código, en web.** Estook TPV es **otra puerta del mismo código**, no otra aplicación: la misma cuenta, el mismo PIN, los mismos permisos y los mismos datos al momento. Dónde vive cada pieza y por qué, en la [Arquitectura](Estook-Arquitectura.md), capítulo 1 ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)).
 
-**Lo que Estook hace:** controlar el género y las compras, calcular el coste real de cada plato, montar y analizar la carta, organizar el calendario del local, cuadrar el equipo y sus horas, llevar el APPCC, tomar nota, mandar a cocina, cobrar y emitir tickets y facturas con VeriFactu si el local usa el TPV de Estook —o leer las ventas de su TPV si sigue con el suyo— para cerrar el círculo, agregar los canales de reparto, generar documentos profesionales y explicarlo todo con Fogón.
+**Lo que Estook hace:** controlar el género y las compras, calcular el coste real de cada plato, montar y analizar la carta, organizar el calendario del local, cuadrar el equipo y sus horas, llevar el APPCC, tomar nota, mandar a cocina, cobrar y emitir tickets y facturas con VeriFactu si el local usa Estook TPV —o leer las ventas de su TPV si sigue con el suyo— para cerrar el círculo, agregar los canales de reparto, generar documentos profesionales y explicarlo todo con Fogón.
 
 **Lo que Estook no hace, y es una decisión firme:** tocar el dinero —ni pasarela de pago ni datos de tarjeta: la tarjeta la cobra el datáfono del banco del local—, hacer nóminas, llevar reservas o guardar datos de clientes finales más allá de los que exige una factura que el propio cliente pide.
 
-> **La frontera se movió en la versión 1.2** (Evolución, capítulo 19). Antes, Estook no cobraba. Ahora el local elige entre su TPV conectado o el de Estook. Lo que no se mueve es que **Estook nunca tiene el dinero en la mano**, y que la facturación vive aislada del resto y cumple VeriFactu al pie de la letra.
+> **Estook cobra desde la versión 1.2.** El local elige entre tres formas de que entren sus ventas: **cobrar con Estook TPV**, que es la principal; **conectar su TPV**; o **apuntarlo a mano**. Lo que no se mueve es que **Estook nunca tiene el dinero en la mano**, y que la facturación vive aislada del resto y cumple VeriFactu al pie de la letra. Todo lo del cobro, en el **Anexo TPV y facturación**.
 
 ## Lo que nos hace distintos
 
@@ -93,11 +102,19 @@ Fogon recomienda la accion
 El gerente decide  ·  Estook registra el cambio
 ```
 
+## Cómo sabremos que ha salido bien
+
+El usuario no debe sentir que Estook es «otro programa de gestión». Debe poder decir: **«Estook sabe cómo está funcionando mi restaurante.»**
+
+```
+DATOS  →  INFORMACION  →  ANALISIS  →  PREDICCION  →  RECOMENDACION  →  ACCION
+```
+
 ---
 
-# 2 · El conector · Estook Enlace
+# 2 · El conector · Estook Link
 
-> **Si el local cobra con el TPV de Estook, este capítulo no le afecta:** las ventas ya nacen dentro. El conector es para quien sigue con su TPV.
+> **Si el local cobra con Estook TPV, este capítulo no le afecta:** las ventas ya nacen dentro. El conector es para quien sigue con su TPV. **Estook Link hace además otro trabajo, para quien sí cobra con Estook**: es el centro del local —impresoras, cajón y la cocina sin internet—, y eso está en el Anexo, capítulo 6, y en la [Arquitectura](Estook-Arquitectura.md), capítulo 7.
 
 ## Cómo está el terreno
 
@@ -127,7 +144,7 @@ Ajustes → Tus ventas → Lo trae mi TPV → [ Conectar ]
                   │
     ┌─────────────┼─────────────┐
     ▼             ▼             ▼
-VIA 1 · NUBE  VIA 2 · ENLACE  VIA 3 · A MANO
+VIA 1 · NUBE  VIA 2 · LINK    VIA 3 · A MANO
 API oficial   programa que    CSV, foto del Z
 autorizas     se instala una  o total del dia
 y ya          vez en el PC
@@ -135,15 +152,15 @@ y ya          vez en el PC
 
 **Vía 1 · Conexión por la nube (la preferida).** El cliente autoriza, o pega las credenciales que su proveedor le da. Sin instalar nada. Es la vía de Last.app, Revo, Camarero10, Qamarero, HIOPOS y también de Ágora y Glop cuando tienen la API contratada.
 
-**Vía 2 · Estook Enlace.** Un programa pequeño para Windows, para los locales cuyo TPV vive en el PC y no expone API. Y aquí está la decisión importante de diseño:
+**Vía 2 · Estook Link.** Un programa pequeño para Windows, para los locales cuyo TPV vive en el PC y no expone API. Y aquí está la decisión importante de diseño:
 
-> **Estook Enlace no entra en la base de datos del TPV. Vigila una carpeta.**
+> **Estook Link no entra en la base de datos del TPV. Vigila una carpeta.**
 
-Casi todos los TPV de Windows saben dejar sus informes de cierre en una carpeta, programados a una hora. Enlace vigila esa carpeta, y cuando aparece un fichero nuevo lo lee, lo interpreta y lo sube. Nada más.
+Casi todos los TPV de Windows saben dejar sus informes de cierre en una carpeta, programados a una hora. Link vigila esa carpeta, y cuando aparece un fichero nuevo lo lee, lo interpreta y lo sube. Nada más.
 
 Esto lo cambia todo: no toca nada que no sea suyo, no depende de la estructura interna de nadie, no se rompe cuando el TPV actualiza, y no hay problema de licencia. Es sencillo, es legal y es aburrido, que es exactamente lo que tiene que ser un conector.
 
-Cómo funciona Enlace:
+Cómo funciona Link:
 
 - **Solo lectura.** No escribe en ningún sitio.
 - **No abre puertos.** Él llama a Estook; nadie puede llamarle a él.
@@ -217,7 +234,7 @@ Una persona tiene una o varias membresías, y cada una es `persona + alcance + r
 3. **Los documentos son salidas, nunca entradas.**
 4. **El cliente pide operaciones, no cambios de tablas.**
 5. **El stock es un libro de movimientos.** Los ajustes a mano también son movimientos, con autor y motivo.
-6. **Nada se borra.** Se desactiva, se archiva o se anula, dejando rastro.
+6. **Nada se borra por error ni para esconder algo.** Se desactiva, se archiva o se anula, dejando rastro. Y se borra cuando lo dice la política de conservación, que es la ley ([0062](../decisiones/0062-lo-legal.md)).
 7. **La seguridad se hace en el servidor.** La interfaz esconde, no protege.
 8. **Un local jamás ve los datos de otro.**
 9. **Toda operación es idempotente.** Importar dos veces el mismo día no descuenta el género dos veces.
@@ -230,7 +247,7 @@ Una persona tiene una o varias membresías, y cada una es `persona + alcance + r
 16. **Cada dato nuevo hace más inteligente al resto de Estook.** Nada entra aislado: antes de construir algo se dice qué otras partes tienen que enterarse cuando cambie.
 17. **La facturación es intocable.** Un ticket o una factura emitidos no se editan ni se borran jamás, ni desde la app ni desde nuestro panel: se corrigen con otro documento. Viven aparte, y solo los escribe su propio módulo.
 
-> **La excepción al principio 12, dicha en voz alta.** Emitir un ticket exige conexión: la ley no permite dar una factura sin haber generado antes su registro. Sin internet se sigue tomando nota y cobrando, y se entrega un **justificante provisional** que dice claramente que no es una factura; al volver la conexión se emiten los tickets pendientes, en orden. El detalle, en el Anexo TPV y facturación.
+> **El principio 12, en Estook TPV.** Sin internet se sigue tomando nota, la cocina sigue recibiendo (con Estook Link) y se sigue cobrando. Lo único que espera es **el ticket**: se entrega un **justificante provisional**, que dice claramente que no es una factura, y el ticket se emite al volver la conexión. **No es que la ley lo impida** —la AEAT dice que un corte no interrumpe la facturación—: es que el registro lo genera nuestro proveedor en su servidor. El detalle, y el camino para facturar también sin internet, en el Anexo 4.11 ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)).
 
 ---
 
@@ -244,8 +261,8 @@ Una persona tiene una o varias membresías, y cada una es `persona + alcance + r
                         │
   ┌──────┬──────┬──────┼──────┬──────┬──────┬──────┐
   ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼
-INVEN- ESCAN- CARTA CALEN- EQUIPO SERVI- NEGO-  CUA-
-TARIO  DALLOS       DARIO         CIO    CIO   DERNO
+ALMA-  ESCAN- CARTA CALEN- EQUIPO SERVI- NEGO-  CUA-
+CEN    DALLOS       DARIO         CIO    CIO   DERNO
 ```
 
 | App         | Qué resuelve                                 | Su pregunta                                   |
@@ -292,8 +309,8 @@ La rueda se abre sobre fondo desenfocado, con un sector por app, su icono, su co
 Dentro de una app, en móvil, la barra de abajo pasa a ser la de esa app, con sus **destinos** —los sitios que contestan una pregunta— y nada más:
 
 ```
-ALMACÉN      │ Hoy │ Productos │ Movimientos │ Compras │
-ESCANDALLOS  │ Hoy │ Fichas    │ Elaboraciones │ Analisis │
+ALMACÉN      │ Resumen │ Productos │ Movimientos │ Compras │ Mermas │
+ESCANDALLOS  │ Resumen │ Fichas │ Elaboraciones │ Analisis │
 CALENDARIO   │ Calendario │ Tareas │ Turnos │
 ```
 
@@ -318,7 +335,7 @@ En tableta, por debajo de 1.024 px se comporta como el móvil, y por encima como
 
 El Panel no es una app: es el sitio donde se entra, se mira y se organiza. Y es distinto para cada persona.
 
-**Lo que cambia con la Evolución 1.0:** deja de ser un tablero de información y pasa a ser un centro de control. La diferencia cabe en una pregunta: no «¿cómo va todo?», sino **«¿qué necesita mi atención ahora?»**.
+**No es un tablero de información: es un centro de control.** La diferencia cabe en una pregunta: no «¿cómo va todo?», sino **«¿qué necesita mi atención ahora?»**.
 
 ## La zona de atención
 
@@ -518,7 +535,7 @@ Glop entrega las claves de conexion a peticion del titular.
 [ Tengo las claves ]   [ Prefiero el fichero ]
 ```
 
-**3 · La vía que le toque.** Con credenciales, se pega y se prueba en el momento. Sin ellas, se instala Enlace en una sesión remota de veinte minutos que hacemos nosotros. Y si nada encaja, el fichero.
+**3 · La vía que le toque.** Con credenciales, se pega y se prueba en el momento. Sin ellas, se instala Link en una sesión remota de veinte minutos que hacemos nosotros. Y si nada encaja, el fichero.
 
 **4 · Comprobación.** Se trae un día de prueba y se enseña qué ha entrado: «He leído 148 artículos y las ventas de ayer: 1.284 €, 96 tickets.» **Hasta que no se ve un dato real, la conexión no se da por buena.**
 
@@ -612,7 +629,7 @@ Así una franquicia bloquea la receta del plato estrella y deja libre la carta d
 
 El corazón. Lo que la app sabe que hay y lo que no. Todas las demás leen de aquí.
 
-_Su navegación: Hoy · Productos · Proveedores · Pedidos · Inventario · Mermas_
+_Su navegación: Resumen · Productos · Movimientos · Compras · Mermas_ (manda la tabla B5 del Plan)
 
 ## Hoy
 
@@ -689,7 +706,7 @@ _Habla con: Escandallos (le da el coste), Servicio (le descuenta el consumo), Ca
 
 Aquí se calcula toda la carta, plato a plato. Es la app que convierte Estook en una herramienta de dinero y no de papeleo.
 
-_Su navegación: Hoy · Fichas · Elaboraciones · Análisis · Aprendizaje_
+_Su navegación: Resumen · Fichas · Elaboraciones · Análisis_
 
 ## La ficha técnica, en dos caras
 
@@ -782,7 +799,7 @@ _Habla con: Almacén (le pide el coste), Carta (le da coste y margen), Servicio 
 
 Aquí se compone lo que va impreso y lo que ve el cliente. **Los platos y sus costes viven en Escandallos; la Carta los coloca.** La Carta lee y nunca escribe.
 
-_Su navegación: Carta · Menús · Análisis · Diseños · Carta digital_
+_Su navegación: Carta · Menús · Análisis_
 
 ## Montar la carta
 
@@ -837,7 +854,7 @@ La **carta digital** es la página pública del local con su QR en tres formatos
 
 Todo lo que pasa en el local, en un sitio. **No es un calendario de turnos: es el calendario del negocio.**
 
-_Su navegación: Mes · Semana · Día · Turnos · Tareas_
+_Su navegación: Calendario · Tareas · Turnos_
 
 | Qué vive aquí |                                                               |
 | ------------- | ------------------------------------------------------------- |
@@ -897,11 +914,13 @@ HORARIO PROPUESTO
 
 Quién trabaja, con qué condiciones, cuántas horas y cuánto cuesta.
 
-_Su navegación: Hoy · Personas · Fichajes · Ausencias · Documentos_
+_Su navegación: Resumen · Personas · Horarios · Fichajes_
 
 ## Personas
 
-Ficha con rol, alcance, contacto, contrato y sus documentos. Alta por invitación con **PIN generado y mostrado en pantalla** para darlo en mano. Retirar acceso mata el PIN al instante, deja los turnos futuros sin cubrir con aviso y **conserva la persona**, porque sigue en lo que firmó. Quien se va y vuelve se reactiva con todo.
+Ficha con rol, alcance, contacto, contrato y sus documentos. Alta por invitación con **PIN generado y mostrado en pantalla** para darlo en mano. Retirar acceso mata el PIN al instante, deja los turnos futuros sin cubrir con aviso y **conserva la persona**, porque sigue en lo que hizo. Quien se va y vuelve se reactiva con todo.
+
+**Y sin correo también** ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)): a un extra, a un ayudante o a quien no quiera dar su correo se le da de alta con su nombre y su PIN. Ficha, sale en el cuadrante y entra en los terminales del local; lo que no puede es entrar desde un móvil propio, que pide algo suyo.
 
 El **coste por hora** vive aquí, con vigencia y con permiso propio. Y para quien no quiera meter sueldos, la alternativa por defecto: **coste medio por puesto**, que da un porcentaje de personal correcto sin datos individuales.
 
@@ -922,7 +941,7 @@ Se ficha **en un toque**, desde el Panel o desde Equipo › Resumen: «Fichar la
 
 **Cada uno ve lo suyo. Quien lleva a otros, lo de los suyos**: el jefe de cocina, la cocina; el jefe de sala, la sala; el gerente y quien está por encima, todos. Lo decide la base de datos, no la pantalla ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)).
 
-**El registro no se borra.** Se corrige —la salida que alguien olvidó, una entrada mal puesta— **con nombre y motivo**, y el antes y el después quedan en la auditoría. Se conserva cuatro años.
+**El registro no se borra.** Se corrige —la salida que alguien olvidó, una entrada mal puesta— **con nombre y motivo**, y **la corrección es un registro nuevo que no borra el original**: los dos se ven. **El trabajador ve cualquier cambio en lo suyo y recibe un aviso.** Se conserva cuatro años, y se exporta entero para la Inspección ([0062](../decisiones/0062-lo-legal.md)).
 
 **Resumen**, para quien lleva gente: las horas de cada uno en la semana, el mes o los últimos treinta días, **frente a su contrato**, con las extra y los turnos de más de doce horas señalados; y el coste, si se tiene permiso para verlo. Y el número que casi nadie enseña, cuando haya cuadrante (M14): **lo planificado contra lo fichado**. «Planificaste 32 horas y se ficharon 38», con su desglose y el coste de la diferencia.
 
@@ -938,11 +957,11 @@ El día a día: abrir, controlar y cerrar.
 
 _Su navegación: Jornada · Ventas · Delivery · APPCC_ — y **el cierre es una vista de la jornada**, que es lo que es: el final de la jornada, no otro sitio ([decisión 0022](../decisiones/0022-el-reparto-tiene-sitio-antes-que-conexion.md)).
 
-## Sala, cocina y cobro · el TPV de Estook
+## Sala, cocina y cobro · Estook TPV
 
-_Desde la versión 1.2, para el local que cobra con Estook. La especificación completa está en el Anexo TPV y facturación, y cómo se ve y cómo se usa, en su capítulo 10._
+_Para el local que cobra con Estook. **Aquí va el resumen: la especificación entera, y lo único que manda, es el Anexo TPV y facturación.**_
 
-**Para el cliente se llama Estook TPV** (versión 1.3): Estook es donde gestiona, y Estook TPV, el servicio. **Es la misma aplicación**, con el mismo PIN y los mismos datos al momento: lo que se cobra a las 14:31 está en Negocio a las 14:31, sin subir un CSV ni emparejar nada.
+**Para el cliente se llama Estook TPV**: Estook es donde gestiona, y Estook TPV, el servicio. **Es la misma cuenta**, con el mismo PIN y los mismos datos al momento: lo que se cobra a las 14:31 está en Negocio a las 14:31, sin subir un CSV ni emparejar nada. Se instala aparte, con su icono, y **sigue funcionando sin internet**.
 
 **Sala.** El plano de mesas por zonas, con su estado de un vistazo. Y **tres formas de vender, porque no todo es una mesa**: mesa, barra —se pide y se cobra en el mismo gesto— y para llevar.
 
@@ -964,11 +983,11 @@ Se abre una mesa con sus comensales, se toma nota con la carta de su canal, y **
 
 **El dinero no pasa por Estook.** El efectivo va al cajón, que **se abre solo al cobrar en efectivo**; la tarjeta, al datáfono del banco. Y más adelante, **el datáfono conectado**: el importe viaja solo y vuelve «aprobado», sin teclear. En los dos casos el dinero va a la cuenta del local.
 
-**Caja.** Apertura con fondo, entradas y salidas con motivo, y arqueo con su descuadre. **Abrir el cajón sin venta se puede, con motivo, y queda apuntado.** El cierre es el **informe Z**, con **arqueo ciego** —se cuenta sin ver lo que debería haber— y **el total del datáfono cuadrado con lo cobrado con tarjeta**. **El cierre de caja se rellena solo**, con origen «TPV de Estook».
+**Caja.** Apertura con fondo, entradas y salidas con motivo, y arqueo con su descuadre. **Abrir el cajón sin venta se puede, con motivo, y queda apuntado.** El local elige **caja central o la bolsa de cada camarero**, que la liquida al acabar. El cierre de cada caja es el **informe Z**, con **arqueo ciego** —se cuenta sin ver lo que debería haber— y **el total del datáfono cuadrado con lo cobrado con tarjeta**. **El cierre del día suma las cajas y se rellena solo**, con origen «Estook TPV».
 
 **Tickets y facturas.** Todos los emitidos, con su estado ante Hacienda. Si un cliente pide factura, se hace desde su ticket en un toque (el ticket se canjea, no se borra). Una devolución es una rectificativa, nunca una edición.
 
-**Dónde vive.** **Sala y Cocina son modos de pantalla**, no destinos: una disposición completa para un aparato que hace una sola cosa durante el servicio. Se entra desde el Panel, o directamente al abrir sesión si el rol lo tiene por defecto. Lo que sí se consulta vive dentro de Servicio: **la caja es una vista de Jornada** y **los tickets y facturas, una vista de Ventas**. El detalle, en B5 del Plan.
+**Dónde vive.** En **Estook TPV**, su propia puerta: un terminal del local enciende directamente en su función —sala, barra, cocina o pase— y entra quien teclea su PIN. Lo que se consulta vive dentro de Servicio, en Estook: **la caja es una vista de Jornada** y **los tickets y facturas, una vista de Ventas**.
 
 ## Jornada
 
@@ -978,7 +997,7 @@ Se abre sola con el primer fichaje o la primera venta importada. Fija la **fecha
 
 | Origen                     | Fiabilidad | Qué permite                                                        |
 | -------------------------- | ---------- | ------------------------------------------------------------------ |
-| TPV de Estook              | Máxima     | Todo, en el momento: cada plato, sus extras, mesa, camarero y hora |
+| Estook TPV                 | Máxima     | Todo, en el momento: cada plato, sus extras, mesa, camarero y hora |
 | Conexión con el TPV        | Alta       | Todo: consumo real, desviación, análisis de carta                  |
 | Canal de reparto conectado | Alta       | Todo, con su comisión descontada                                   |
 | CSV del TPV                | Alta       | Todo, con un minuto de trabajo                                     |
@@ -997,13 +1016,13 @@ Los pedidos que entran por los canales de reparto: qué está entrando ahora, de
 
 Vive aquí y no en Carta porque lo que se mira en esta pantalla son los pedidos de hoy, que es la pregunta de Servicio. Lo que se publica en cada canal y a qué precio es de Carta, y ahí está: «Carta · Análisis · Por canal». Un plato puede valer distinto en la carta de sala y en la de reparto, con la comisión por medio, así que **el margen de delivery se mira aparte**; pero una venta de reparto descuenta género del libro de movimientos igual que la del TPV, así que **el almacén no se entera de por dónde entró**.
 
-**La pantalla existe desde M6½ y no tiene botón de conectar.** Nombra los canales y dice qué va a entrar por ahí; la integración de verdad es **M29**, con lo que exige Uber Eats —cuenta de desarrollador, aprobación y el plazo de once minutos y medio para aceptar— escrito en la Evolución, capítulo 11.1. Un botón que abriera un cartel sería el fallo que este proyecto persigue desde M4 en el sitio donde más caro sale: el que hace pensar que el dinero ya está entrando solo.
+**La pantalla existe desde M6½ y no tiene botón de conectar.** Nombra los canales y dice qué va a entrar por ahí; la integración de verdad es **M29**, con lo que exige Uber Eats —cuenta de desarrollador, aprobación y el plazo de once minutos y medio para aceptar— escrito en la Arquitectura, capítulo 10. Un botón que abriera un cartel sería el fallo que este proyecto persigue desde M4 en el sitio donde más caro sale: el que hace pensar que el dinero ya está entrando solo.
 
 **Y si el local cobra con Estook**, el pedido de reparto no se queda en esta pantalla: **entra en la misma cocina** que las mesas, por partidas, y —si la carta del canal se publica desde Estook— lo agotado en Estook se agota en la plataforma. Ninguna tablet de cada plataforma encima de la barra (Anexo, 10.8).
 
 ## APPCC
 
-El plan lo monta el gerente o el jefe de cocina, con plantillas por tipo de local. El equipo lo rellena en dos toques y firma con PIN. **Fuera de rango no se puede seguir sin registrar la acción correctiva.** Un punto sin registrar sale `NO REGISTRADO` en rojo, y no se puede registrar en el pasado.
+El plan lo monta el gerente o el jefe de cocina, con plantillas por tipo de local. El equipo lo rellena en dos toques y queda a su nombre con su PIN. **Fuera de rango no se puede seguir sin registrar la acción correctiva.** Un punto sin registrar sale `NO REGISTRADO` en rojo, y no se puede registrar en el pasado.
 
 Y la **trazabilidad de lote**: de un lote concreto, en qué elaboraciones entró y qué días se sirvió. Es la pregunta exacta que hace una inspección.
 
@@ -1012,7 +1031,7 @@ Y la **trazabilidad de lote**: de un lote concreto, en qué elaboraciones entró
 1. De dónde salen las ventas de hoy (la app propone la mejor fuente).
 2. Mermas, por voz, por botones o ninguna.
 3. El APPCC que falte.
-4. Repaso y firma con PIN.
+4. Repaso, y queda a nombre de quien cierra, con su PIN.
 
 Al cerrar se calcula el consumo teórico, se descuenta del almacén, se guarda la jornada con su origen y fiabilidad, y se dispara el análisis nocturno de Fogón. **Reabrir exige motivo escrito y queda en auditoría.**
 
@@ -1024,7 +1043,7 @@ Al cerrar se calcula el consumo teórico, se descuenta del almacén, se guarda l
 
 Cómo va, por qué, y qué hacer.
 
-_Su navegación: Resumen · Pulse · Costes · Reseñas · Competencia · Exportar_
+_Su navegación: Ventas · Informes · Pulse · Costes · Reseñas_
 
 ## Resumen
 
@@ -1108,7 +1127,7 @@ Cada llamada al modelo cuesta dinero y tarda. La aplicación está construida pa
 8. **Las imágenes se reducen antes de enviarse.**
 9. **Se pide lo justo.** Fogón nunca recibe una tabla entera: pide el dato concreto.
 
-_Resultado medido: un local de uso normal se queda por debajo de un euro y medio de coste de IA al mes, con Fogón contestando en dos segundos._
+_El objetivo: que un local de uso normal se quede por debajo de un euro y medio de IA al mes, con Fogón contestando en dos segundos. **Es un objetivo, no una medida**: se mide al construir Fogón, y la cuenta de hoy, con sus supuestos, está en [`coste-por-local.md`](../coste-por-local.md)._
 
 ## Lo que nunca puede hacer
 
@@ -1170,7 +1189,7 @@ Un hostelero que consigue en un botón el cuadrante para la pared, la carta boni
 - Previsualización real antes de generar, y tres acciones: enviar por correo o WhatsApp, imprimir, descargar.
 - Dos versiones de cada uno: una completa y una sobria.
 - Todos con el logo, el color, la dirección y el CIF del local, **jamás con los nuestros**.
-- **Se guarda la receta, no el fichero:** regenerarlo dentro de un año da el mismo documento. Salvo los legales, que se conservan cinco años.
+- **Se guarda la receta, no el fichero:** regenerarlo dentro de un año da el mismo documento. Salvo los legales, que se guardan lo que diga su plazo ([`conservacion-de-datos.md`](../legal/conservacion-de-datos.md)).
 - Cada uno diseñado a medida de su contenido. Nada de una plantilla genérica para todo.
 
 **Documentos inteligentes.** Cuando alguien sube un documento, Fogón lo lee y propone:
@@ -1208,7 +1227,7 @@ Canales por área y directos · menciones que avisan al móvil · fotos y adjunt
 
 # 24 · Integraciones
 
-La filosofía no cambia: **API oficial cuando existe, Estook Enlace para Windows, importación manual como último recurso**, con sincronización, idempotencia y estado de conexión a la vista.
+La filosofía no cambia: **API oficial cuando existe, Estook Link para Windows, importación manual como último recurso**, con sincronización, idempotencia y estado de conexión a la vista.
 
 Lo que se añade es una sección propia, con estados honestos:
 
@@ -1251,7 +1270,7 @@ Los pedidos alimentan ventas, almacén, escandallos, carta, analítica, rentabil
 
 Y siempre que la API lo permita, Estook gestiona desde su interfaz el ciclo del pedido: aceptar, rechazar, cancelar o marcar como preparado.
 
-> **El canal de reparto es externo:** Estook agrega y analiza sus pedidos, y no pasan por el cobro de la sala. Si el local cobra con Estook, **sí entran en su cocina** (Anexo, 10.8). El detalle técnico de cada integración está en el documento de Evolución.
+> **El canal de reparto es externo:** Estook agrega y analiza sus pedidos, y no pasan por el cobro de la sala. Si el local cobra con Estook, **sí entran en su cocina** (Anexo, 10.8). El detalle técnico de cada integración está en la [Arquitectura](Estook-Arquitectura.md), capítulo 10.
 
 ---
 
@@ -1284,6 +1303,10 @@ Apps (encender y apagar partes, con el aviso concreto de qué pasa; se ocultan, 
 ---
 
 # 27 · Interfaz y experiencia
+
+## De dónde se copia y de dónde no
+
+De los buenos SaaS verticales y de los mejores TPV se adoptan **patrones**: navegación muy clara, agrupación por flujos de trabajo, menos ruido, acciones principales visibles, interfaces distintas según el rol, enseñar solo lo disponible y estados muy claros. **No se copia diseño, código, textos ni identidad.**
 
 ## Lo que no se negocia
 
@@ -1335,6 +1358,10 @@ Cada pantalla responde a: **¿dónde estoy? ¿qué puedo hacer? ¿qué necesita 
 
 Un indicador con lo que le falta al local para que Estook funcione bien: cuántos platos tienen ficha, cuántos productos tienen precio, cuántos días llevan el APPCC completo, cuántas ventas tienen origen fiable. Convierte una tarea aburrida en un número que sube.
 
+## Las gráficas
+
+**Cada gráfica contesta una pregunta** —«¿voy mejor que la semana pasada?», «¿a qué hora se me llena?»— y siempre dice con qué se compara. Con profundidad y bien acabadas, pero **sin perspectiva que deforme las cifras**: una gráfica de Estook puede ser bonita; no puede mentir. El catálogo y sus reglas, en B9 del Plan ([0064](../decisiones/0064-las-graficas-contestan-una-pregunta.md)).
+
 ---
 
 # 28 · Reglas de lógica
@@ -1350,7 +1377,7 @@ Detalles pequeños que, mal resueltos, hacen que un hostelero abandone en la pri
 - **Si sube el IVA, decides tú.** Estook enseña las dos cifras y aplica lo que digas.
 - **La misma persona en dos empresas entra con un solo correo.** Invitar a un correo que ya existe añade una membresía, **nunca duplica la persona**.
 - Si alguien tiene dos roles sobre el mismo local, **gana el más amplio**.
-- **El PIN identifica, no firma.** Lo que tiene consecuencia queda con nombre y hora.
+- **Lo que se hace con PIN queda a nombre de esa persona, con la hora y el aparato.** No es una firma electrónica: es identificarse en un aparato del local ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)).
 - **La cocina no tiene ordenador.** Las fichas se leen en tablet, y donde no hay tablet se imprimen con QR a la versión viva.
 - **Un producto en uso no se borra:** se desactiva y sigue en el histórico.
 
@@ -1358,31 +1385,31 @@ Detalles pequeños que, mal resueltos, hacen que un hostelero abandone en la pri
 
 # 29 · Casos límite
 
-| Situación                                              | Qué hace la app                                                                                                                                                                    |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Se cae el wifi en cocina                               | Fichajes, APPCC y mermas se guardan en el móvil y suben al recuperar señal                                                                                                         |
-| El PC del local está apagado                           | Enlace sube lo pendiente al arrancar. No se pierde una venta                                                                                                                       |
-| El TPV cambia de versión y rompe el fichero            | Enlace avisa, guarda el original y se ofrece el camino manual                                                                                                                      |
-| Llegan ventas de un día ya cerrado                     | Entran en su jornada por fecha de servicio y avisan del ajuste                                                                                                                     |
-| Artículo del TPV sin emparejar                         | Cuenta en dinero, no descuenta género, y sale avisado                                                                                                                              |
-| Dos personas editan la misma ficha                     | Gana quien guarda primero; al segundo se le enseña qué cambió                                                                                                                      |
-| El producto cambia de formato                          | Precio nuevo con su formato; se compara por unidad de uso                                                                                                                          |
-| Pescado a peso variable                                | Se pide en piezas y entra en kilos reales; el coste va por peso real                                                                                                               |
-| Se vende un plato sin ficha                            | Cuenta en dinero, no descuenta género, sale en «sin ficha»                                                                                                                         |
-| Registrar una temperatura de hace tres días            | No se puede. Lo anterior queda `NO REGISTRADO`                                                                                                                                     |
-| Un local del grupo se queda sin gerente                | El area manager asume su Panel: ya lo tenía por alcance                                                                                                                            |
-| Se cambia una receta maestra que un local había tocado | Los obligatorios se actualizan; los desviados reciben aviso                                                                                                                        |
-| Se vende o se cierra un local del grupo                | Se archiva: deja de facturar, queda en lectura, se excluye de las medias                                                                                                           |
-| Un pedido de reparto llega dos veces por webhook       | Se descarta el duplicado por identificador de pedido                                                                                                                               |
-| Impago                                                 | Solo lectura a los 7 días, archivo a los 60. **Nunca se borran datos**                                                                                                             |
-| Baja voluntaria                                        | Exportación completa en un clic y 60 días de lectura                                                                                                                               |
-| Se agota el presupuesto de IA                          | Se aplaza lo automático y se abarata el modelo. **Lo que el usuario pide se responde siempre**                                                                                     |
-| Se cae internet en pleno servicio (TPV de Estook)      | Se sigue tomando nota en el aparato. Al cobrar sale un justificante provisional, que no es factura; al volver, los tickets pendientes se emiten en orden, marcados como incidencia |
-| Hacienda no responde                                   | Se cobra y se emite con normalidad; los registros esperan en cola y se envían solos                                                                                                |
-| Un cliente pide factura con su NIF                     | Factura completa que sustituye a su ticket (canje). El ticket original sigue intacto                                                                                               |
-| Se devuelve un plato ya cobrado                        | Rectificativa del ticket, nunca editarlo. El género vuelve al libro solo si vuelve de verdad                                                                                       |
-| Hacienda rechaza un registro                           | Aviso al gerente con el motivo en cristiano y la corrección que toca. El original no se toca                                                                                       |
-| La impresora se queda sin papel o sin red              | Se avisa en sala y en el Panel, y los trabajos esperan en cola hasta que vuelva. Con Estook Enlace instalado, **la cocina sigue imprimiendo aunque se caiga internet**             |
+| Situación                                              | Qué hace la app                                                                                                                                                                       |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Se cae el wifi en cocina                               | Fichajes, APPCC y mermas se guardan en el móvil y suben al recuperar señal (entrega I)                                                                                                |
+| El PC del local está apagado                           | Link sube lo pendiente al arrancar. No se pierde una venta                                                                                                                            |
+| El TPV cambia de versión y rompe el fichero            | Link avisa, guarda el original y se ofrece el camino manual                                                                                                                           |
+| Llegan ventas de un día ya cerrado                     | Entran en su jornada por fecha de servicio y avisan del ajuste                                                                                                                        |
+| Artículo del TPV sin emparejar                         | Cuenta en dinero, no descuenta género, y sale avisado                                                                                                                                 |
+| Dos personas editan la misma ficha                     | Gana quien guarda primero; al segundo se le enseña qué cambió                                                                                                                         |
+| El producto cambia de formato                          | Precio nuevo con su formato; se compara por unidad de uso                                                                                                                             |
+| Pescado a peso variable                                | Se pide en piezas y entra en kilos reales; el coste va por peso real                                                                                                                  |
+| Se vende un plato sin ficha                            | Cuenta en dinero, no descuenta género, sale en «sin ficha»                                                                                                                            |
+| Registrar una temperatura de hace tres días            | No se puede. Lo anterior queda `NO REGISTRADO`                                                                                                                                        |
+| Un local del grupo se queda sin gerente                | El area manager asume su Panel: ya lo tenía por alcance                                                                                                                               |
+| Se cambia una receta maestra que un local había tocado | Los obligatorios se actualizan; los desviados reciben aviso                                                                                                                           |
+| Se vende o se cierra un local del grupo                | Se archiva: deja de facturar, queda en lectura, se excluye de las medias                                                                                                              |
+| Un pedido de reparto llega dos veces por webhook       | Se descarta el duplicado por identificador de pedido                                                                                                                                  |
+| Impago                                                 | Solo lectura a los 7 días, archivo a los 60. **Nunca se borran datos**                                                                                                                |
+| Baja voluntaria                                        | Exportación completa en un clic y 60 días de lectura                                                                                                                                  |
+| Se agota el presupuesto de IA                          | Se aplaza lo automático y se abarata el modelo. **Lo que el usuario pide se responde siempre**                                                                                        |
+| Se cae internet en pleno servicio (Estook TPV)         | Con Estook Link, la sala y la cocina siguen como si nada. Al cobrar sale un justificante provisional, que no es factura; al volver, los tickets se emiten en orden, con la incidencia |
+| Hacienda no responde                                   | Se cobra y se emite con normalidad; los registros esperan en cola y se envían solos                                                                                                   |
+| Un cliente pide factura con su NIF                     | Factura completa que sustituye a su ticket (canje). El ticket original sigue intacto                                                                                                  |
+| Se devuelve un plato ya cobrado                        | Rectificativa del ticket, nunca editarlo. El género vuelve al libro solo si vuelve de verdad                                                                                          |
+| Hacienda rechaza un registro                           | Aviso al gerente con el motivo en cristiano y la corrección que toca. El original no se toca                                                                                          |
+| La impresora se queda sin papel o sin red              | Se avisa en sala y en el Panel, y los trabajos esperan en cola hasta que vuelva. Con Estook Link, **la cocina sigue recibiendo e imprimiendo aunque se caiga internet**               |
 
 ---
 
@@ -1410,13 +1437,13 @@ Después de entrar, en este orden: se comprueba el estado de la suscripción →
 
 **Cambiar de local no cierra la sesión:** cambia el contexto, y el color y el logo de la cabecera, para que nadie apunte una merma en el local equivocado.
 
-**Se paga al empezar, y la prueba es una oferta.** Quien crea su cuenta monta su negocio y elige plan. **Cuando hay campaña**, se enciende desde el admin una prueba gratis —12 días, sin tarjeta— y las cuentas creadas mientras está encendida entran con ella; la web lo anuncia sola. Lo que evita el abuso no es la tarjeta: es el freno y el límite (decisión 0042).
+**Se paga al empezar, y la prueba es una oferta.** Quien crea su cuenta monta su negocio y elige plan. **Cuando hay campaña**, se enciende desde el admin una prueba gratis de 12 días y las cuentas creadas mientras está encendida entran con ella; la web lo anuncia sola. **La prueba pide tarjeta**: ese día no se cobra nada, el primer cobro es al acabar, se avisa por correo siete días antes y cancelando antes no se paga ([0048](../decisiones/0048-el-pago-con-stripe.md)).
 
 Durante la prueba: 10 preguntas a Fogón y 3 documentos al día, 5 albaranes por foto en total, una consulta de competencia, reseñas en solo lectura y sin acceso para la gestoría. **La conexión con el TPV sí entra en la prueba**, porque es justo lo que hay que demostrar. Los avisos de Fogón siguen funcionando, que son los que enganchan y cuestan cero.
 
 > **El cobro con Estook no entra en la prueba, y no es tacañería.** Cobrar exige dar de alta el NIF del negocio en producción ante el proveedor de VeriFactu y firmar su autorización ante Hacienda: es un trámite real con un coste real, y no se hace para doce días. Durante la prueba, **la sala y la cocina funcionan enteras** —se toma nota, sale en cocina, se ve la precuenta—, que es lo que hay que demostrar; el botón de cobrar se abre al contratar, con el alta de facturación. La pantalla lo dice así, sin letra pequeña.
 
-Al acabar la prueba sin contratar: **solo lectura, con todo exportable**. A los 60 días, archivo. **Nada se borra nunca**, y pagar lo devuelve todo tal cual.
+Al acabar la prueba sin contratar: **solo lectura, con todo exportable**. A los 60 días, archivo. **Nada se borra mientras dure su plazo**, y pagar lo devuelve todo tal cual; cuánto se guarda cada cosa después, en [`conservacion-de-datos.md`](../legal/conservacion-de-datos.md).
 
 **Seguridad:** contraseñas con hash moderno, PIN único por local con bloqueo a los cinco intentos, doble factor exigible desde la organización, límites de peticiones, enlaces de fichero firmados y caducos, y auditoría de todo lo que toca dinero, permisos o registros legales. **Nunca vemos ni guardamos datos de tarjeta.**
 
@@ -1428,14 +1455,16 @@ Estook no toca dinero. Si el local cobra con Estook, sus tickets y facturas pasa
 
 ## Lo que cuesta servir a un local
 
-| Concepto                           | € / local / mes |
-| ---------------------------------- | --------------- |
-| Inteligencia artificial            | 1,33            |
-| Google Places (con caché por zona) | 0,90            |
-| Infraestructura                    | 0,55            |
-| Conector (mantenimiento repartido) | 0,40            |
-| Pasarela de pago                   | 0,84            |
-| **Total**                          | **≈ 4,02 €**    |
+**La cuenta entera, con de dónde sale cada precio, está en [`docs/coste-por-local.md`](../coste-por-local.md)**, y es la única: sus tablas salen de un fichero y se comprueban solas ([0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). En corto, sin IVA:
+
+| Local                                        | Le cuesta a Estook | Deja |
+| -------------------------------------------- | ------------------ | ---- |
+| Esencial, uso normal                         | ≈ 3,60 €           | 91 % |
+| Pro sin TPV, uso normal                      | ≈ 6,70 €           | 90 % |
+| Pro con Estook TPV, restaurante de carta     | ≈ 12,30 €          | 81 % |
+| Pro con Estook TPV, bar muy ocupado y a tope | ≈ 45,50 €          | 30 % |
+
+**Lo fijo:** hoy, nada; para vender, unos 65 € al mes; con Estook TPV, unos 163 €. **La IA es un supuesto hasta que Fogón exista**, y es lo que más mueve la cuenta.
 
 > **Coste añadido si el local cobra con Estook.** El proveedor de VeriFactu (Verifacti) cobra **por NIF activo en producción**, no por local ni por aparato, y el precio baja con el volumen: **de 5,59 € por NIF con diez, a 3,71 € con cincuenta**, sin IVA. Incluye **3.000 facturas al mes por NIF**, y a partir de ahí 0,002 € cada una, que es lo que de verdad mueve el coste: un bar de tapas hace el triple de tickets que un restaurante de carta facturando lo mismo. Las cuentas, con los tres casos y lo que queda por preguntar, en [`docs/el-precio-de-verifacti.md`](../el-precio-de-verifacti.md). _Propuesta recibida el 21 de septiembre de 2026._
 
@@ -1451,7 +1480,7 @@ Las ocho apps completas · carta digital con QR · documentos sin límite · aud
 
 Las ventas y el catálogo entran **por fichero**, con la guía de exportación de su TPV.
 
-_Coste para nosotros ≈ 3,90 € · Margen 45,10 € · 92 %_
+_Lo que cuesta y lo que deja, en [`coste-por-local.md`](../coste-por-local.md)._
 
 ### ESTOOK PRO · 79 € por local y mes
 
@@ -1468,13 +1497,13 @@ Para el local que factura de verdad y quiere que Estook trabaje solo. Todo lo de
 - Auditorías completas con plantillas propias.
 - Soporte prioritario y puesta en marcha remota incluida.
 
-_Coste para nosotros ≈ 7,10 € · Margen 71,90 € · 91 %_
+_Lo que cuesta y lo que deja, con TPV y sin él, en [`coste-por-local.md`](../coste-por-local.md)._
 
 ### ESTOOK CADENA · 69 € por local y mes · de 2 a 10 locales
 
 Todo lo de Pro en cada local, y encima la capa que solo necesita un grupo: panel de cadena con gestión por excepción · catálogo maestro con sus tres políticas · áreas y area managers sin límite · auditorías comparadas · informes de grupo · **bolsa común de 1.500 créditos por local** · una sola factura con desglose por local.
 
-_4 locales: 276 €/mes · coste ≈ 28,40 € · margen 247,60 € · 90 %_
+_4 locales: 276 €/mes. Lo que cuesta cada uno, en [`coste-por-local.md`](../coste-por-local.md)._
 
 **A partir de 11 locales** no hay precio en la web: formulario corto y presupuesto, porque a ese tamaño entran integración con su ERP, informes propios, formación y responsable asignado. Punto de partida orientativo: **desde 59 € por local**.
 
@@ -1554,28 +1583,19 @@ _Investigado en septiembre de 2026._
 ## Cuando un pago falla
 
 ```
-dia 0   rechazado → correo y aviso en la app. Nada se bloquea
-dia 1   reintento automatico
-dia 3   reintento + correo + aviso mas visible
-dia 5   reintento
-dia 7   SOLO LECTURA. Se puede mirar, exportar y sacar documentos
-dia 60  cuenta archivada, datos conservados 12 meses
+dias 1-7  se sigue trabajando, con un aviso arriba que dice los dias que quedan
+          y que no se pierde nada, y un correo cada dia
+dia 8     SOLO LECTURA. Se puede mirar, exportar y sacar documentos
+dia 60    cuenta archivada
 ```
 
-**Nada se borra en ningún momento**, y pagar lo devuelve todo tal cual.
+Así lo decidió Richi con E2 ([0048](../decisiones/0048-el-pago-con-stripe.md)). **Nada se borra mientras dure su plazo**, y pagar lo devuelve todo tal cual.
 
 ## Punto de equilibrio
 
-_Costes fijos estimados: 600 €/mes._
+_Con 600 € fijos al mes, y contando el ingreso **sin IVA**. La tabla, en [`coste-por-local.md`](../coste-por-local.md)._
 
-| Clientes                         | Ingreso  | Margen bruto | Resultado |
-| -------------------------------- | -------- | ------------ | --------- |
-| 10 Esencial                      | 490 €    | 451 €        | −149 €    |
-| 15 mixtos (9 Esencial + 6 Pro)   | 915 €    | 838 €        | +238 €    |
-| 50 mixtos (30 Esencial + 20 Pro) | 3.050 €  | 2.795 €      | +2.195 €  |
-| 200 mixtos                       | 12.200 € | 11.180 €     | +10.580 € |
-
-**Con quince locales de pago, el proyecto se sostiene solo. Con cincuenta, es un sueldo. Con doscientos, es una empresa.**
+**Con quince locales de pago, el proyecto cubre gastos, por poco. Con cincuenta, es un sueldo. Con doscientos, es una empresa.**
 
 ## Los frenos
 
@@ -1587,27 +1607,30 @@ Topes técnicos en el código: Google Places 0,10 €/día con corte duro · cor
 
 # 34 · Riesgos
 
-| Riesgo                                                     | Cómo se cubre                                                                                              |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Un TPV cambia su formato y rompe el conector               | Enlace guarda el fichero original, avisa y deja el camino manual                                           |
-| Un fabricante de TPV no quiere que nos conectemos          | Por eso Enlace lee carpetas y no bases de datos. Y por eso hay tres vías                                   |
-| El cliente no consigue las credenciales de su TPV          | Se las pedimos nosotros por él en la puesta en marcha                                                      |
-| Una plataforma de reparto cambia su API o revoca el acceso | Cada canal es un adaptador aparte. Si cae, el resto sigue                                                  |
-| Un cliente ve datos de otro                                | Aislamiento en tres capas y prueba automática permanente                                                   |
-| Fogón dice una cifra inventada                             | Los números los calcula la base. Pruebas de regresión sobre respuestas                                     |
-| El proveedor de IA sube precios o cierra                   | La IA vive detrás de una interfaz propia: cambiar de modelo es cambiar un adaptador                        |
-| Google cambia condiciones de Places                        | Reseñas y Competencia están aisladas. Si caen, el resto va igual                                           |
-| Se pierde la base de datos                                 | Copia diaria con 30 días y prueba de restauración trimestral                                               |
-| El proyecto se vuelve inmantenible                         | Arquitectura escrita antes de programar y pruebas obligatorias por módulo                                  |
-| Un TPV deja de querer integrarse porque ahora competimos   | Integración solo por API oficial o por fichero. Enlace lee carpetas                                        |
-| Un ticket o una factura salen mal ante Hacienda            | Facturación aislada, proveedor especializado, entorno de pruebas y revisión del asesor antes de producción |
-| Se cae internet en el local                                | Justificante provisional y emisión al volver. Router 4G recomendado en el alta                             |
-| El proveedor de VeriFactu cae o cierra                     | Vive detrás de una interfaz propia. Sus caídas de Hacienda las cubre su cola                               |
+| Riesgo                                                      | Cómo se cubre                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Un TPV cambia su formato y rompe el conector                | Link guarda el fichero original, avisa y deja el camino manual                                                                                                                                                                                                                                            |
+| Un fabricante de TPV no quiere que nos conectemos           | Por eso Link lee carpetas y no bases de datos. Y por eso hay tres vías                                                                                                                                                                                                                                    |
+| El cliente no consigue las credenciales de su TPV           | Se las pedimos nosotros por él en la puesta en marcha                                                                                                                                                                                                                                                     |
+| Una plataforma de reparto cambia su API o revoca el acceso  | Cada canal es un adaptador aparte. Si cae, el resto sigue                                                                                                                                                                                                                                                 |
+| Un cliente ve datos de otro                                 | Aislamiento en tres capas y prueba automática permanente                                                                                                                                                                                                                                                  |
+| Fogón dice una cifra inventada                              | Los números los calcula la base. Pruebas de regresión sobre respuestas                                                                                                                                                                                                                                    |
+| El proveedor de IA sube precios o cierra                    | La IA vive detrás de una interfaz propia: cambiar de modelo es cambiar un adaptador                                                                                                                                                                                                                       |
+| Google cambia condiciones de Places                         | Reseñas y Competencia están aisladas. Si caen, el resto va igual                                                                                                                                                                                                                                          |
+| Se pierde la base de datos                                  | **Hoy no hay ninguna copia**: la semanal, cifrada y fuera de Supabase, está escrita y aplazada hasta la mudanza ([0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). Antes del primer cliente de pago: esa, y la diaria de Supabase Pro. Con el TPV, la recuperación a un punto exacto |
+| El proyecto se vuelve inmantenible                          | Arquitectura escrita antes de programar y pruebas obligatorias por módulo                                                                                                                                                                                                                                 |
+| Un TPV deja de querer integrarse porque ahora competimos    | Integración solo por API oficial o por fichero. Link lee carpetas                                                                                                                                                                                                                                         |
+| Un ticket o una factura salen mal ante Hacienda             | Facturación aislada, proveedor especializado, entorno de pruebas y revisión del asesor antes de producción                                                                                                                                                                                                |
+| Se cae internet en el local                                 | Estook Link mantiene la sala, la cocina y la impresión. Justificante provisional y el ticket al volver. Router 4G recomendado en el alta                                                                                                                                                                  |
+| Un TPV caído en pleno servicio                              | Soporte en horario de servicio antes de vender el primer TPV, y el latido de cada terminal a la vista de soporte                                                                                                                                                                                          |
+| Una respuesta perdida deja un ticket a medias ante Hacienda | El documento se prepara y se numera antes, y se manda con una clave que impide registrarlo dos veces (Anexo 4.9)                                                                                                                                                                                          |
+| El repositorio es público y enseña el plan de negocio       | Pasa a privado en la mudanza a Cloudflare; los datos personales ya no se escriben en los documentos                                                                                                                                                                                                       |
+| El proveedor de VeriFactu cae o cierra                      | Vive detrás de una interfaz propia. Sus caídas de Hacienda las cubre su cola                                                                                                                                                                                                                              |
 
 ---
 
 # 35 · Lo que Estook no hace
 
-No toca el dinero: no es pasarela de pago ni guarda datos de tarjeta. No gestiona reservas. **No obliga a cambiar de TPV**: se conecta al tuyo o te da el suyo. No hace nóminas ni contratos. No lleva la contabilidad. No guarda datos personales de clientes finales, salvo los que exige una factura que el cliente pide. No responde reseñas por su cuenta: las escribe para que las mandes tú. Y Fogón no ejecuta nada crítico por su cuenta, **y nunca emite, anula ni corrige un ticket o una factura**.
+No toca el dinero: no es pasarela de pago ni guarda datos de tarjeta. No gestiona reservas: cuando toque, las leerá del sistema de reservas que ya use el local. **No obliga a cambiar de TPV**: se conecta al tuyo o te da el suyo. No hace nóminas ni contratos. No lleva la contabilidad. No guarda datos personales de clientes finales, salvo los que exige una factura que el cliente pide. No responde reseñas por su cuenta: las escribe para que las mandes tú. Y Fogón no ejecuta nada crítico por su cuenta, **y nunca emite, anula ni corrige un ticket o una factura**.
 
 Y no promete adivinar el futuro. **Enseña lo que pasa, con la fuente al lado, y propone lo que haría un buen jefe de cocina con esos datos delante.**

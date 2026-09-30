@@ -4,14 +4,14 @@
 >
 > Comprobado el 30 de septiembre de 2026, leyendo la base de producción.
 >
-> | Qué                          | Cómo está                                                                             |
-> | ---------------------------- | ------------------------------------------------------------------------------------- |
-> | Pull requests                | **Fusionadas hasta la #77** (R2). Abiertas: la #78 (documentos) y las de la auditoría |
-> | La base de datos             | **51 de 51** migraciones, igual que `main`                                            |
-> | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                       |
-> | **Las copias de seguridad**  | **Ninguna todavía**: empiezan cuando pongas sus secretos (abajo)                      |
-> | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor           |
-> | E1, V, O, E2, L, A2, R1 y R2 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                        |
+> | Qué                          | Cómo está                                                                         |
+> | ---------------------------- | --------------------------------------------------------------------------------- |
+> | Pull requests                | **Fusionadas hasta la #79** (30-sep). Abierta: la #80, solo documentos            |
+> | La base de datos             | **51 de 51** migraciones, igual que `main`                                        |
+> | La API                       | **Desplegada con R2**: 58 y 117, reloj latiendo                                   |
+> | **Las copias de seguridad**  | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
+> | A1 · la puerta del admin     | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor       |
+> | E1, V, O, E2, L, A2, R1 y R2 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                    |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -19,19 +19,55 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## Lo que te toca ahora · la auditoría profunda (30-sep)
 
-**Qué trae:** lo primero de la auditoría que aprobaste. La prueba que fallaba según el día
-(solo los martes, y los lunes de madrugada), arreglada y comprobada en veintiséis días y
-horas distintos; y **la copia de seguridad semanal**, cifrada y fuera de Supabase, que se
-restaura sola en una base de prueba para demostrar que vale. **Sin migración y sin
-desplegar la API.**
+**La #78 y la #79 ya están fusionadas** (30-sep). Queda una.
 
-### 1 · Fusionar la rama de la prueba y la copia
+### 1 · Fusionar la #80
 
-En **github.com** → **Pull requests** → **«La prueba de los martes y la copia de seguridad
-semanal»**. Abajo, las **tres comprobaciones en verde** → **Merge pull request** →
-**Confirm merge**.
+En **github.com** → **Pull requests** → **«La auditoría profunda: los documentos»**. Abajo,
+las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Sin
+migración y sin desplegar la API.**
 
-### 2 · Poner los secretos de la copia
+**Qué trae:** los maestros en su versión nueva, con un documento nuevo, la
+**Arquitectura**; la Evolución repartida entre los demás; `ESTADO.md` en 150 líneas; once
+decisiones (de la 0055 a la 0065); la carpeta `docs/legal/`; y
+[**lo que cuesta cada local**](coste-por-local.md), con la IA y todo.
+
+### 2 · Buscar al asesor
+
+Hace falta **uno fiscal** (VeriFactu y facturación) y **uno laboral y de protección de
+datos**; puede ser el mismo despacho. Se le pasa tal cual
+[`docs/legal/preguntas-al-asesor.md`](legal/preguntas-al-asesor.md): son 37 preguntas, y
+cada una dice qué depende de su respuesta. **Lo primero que tiene que revisar** es el
+contrato de encargado, porque va antes del primer cliente que pague.
+
+### 3 · Lo que tiene fecha
+
+- **La oferta de Verifacti caduca hacia el 19 de octubre**
+  ([`docs/el-precio-de-verifacti.md`](el-precio-de-verifacti.md)). Y falta preguntarles
+  **qué se paga con menos de diez NIF**: decide si el TPV se puede ofrecer desde el primer
+  cliente.
+
+---
+
+## La mudanza · cuando toque, todo junto
+
+**Decidido el 30-sep** ([0065](decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)):
+la copia de seguridad, Supabase Pro, Cloudflare y el repositorio en privado se hacen **a
+la vez**, antes del primer cliente que pague de verdad o de vender Estook TPV. Los pasos de
+Cloudflare y del repositorio se escriben cuando llegue el día; los de la copia ya están
+aquí, porque **no cuestan nada y se pueden hacer cualquier día**.
+
+> **Mientras tanto no hay ninguna copia de la base.** Si algo se borra por error, no hay
+> vuelta atrás. Dentro está tu negocio, `ikatz`. Encenderla son cinco minutos y no
+> necesita Supabase Pro.
+
+### 1 · Pasar Supabase a Pro
+
+En **supabase.com**, en la facturación de tu organización, cambiar el plan a **Pro** (25 $
+al mes). Trae la copia diaria de los últimos siete días. El sitio exacto de cada botón te
+lo digo ese día, mirándolo contigo.
+
+### 2 · Poner los secretos de la copia semanal
 
 Son tres, y van en **GitHub**, no en Supabase: **Settings** (arriba, en el repositorio) →
 a la izquierda **Secrets and variables** → **Actions** → pestaña **Secrets** → botón
@@ -68,13 +104,10 @@ URL_DE_LA_COPIA o CLAVE_DE_LA_COPIA», es que un nombre no está escrito igual.
 A partir de ahí se hace sola **cada lunes de madrugada**. Cómo se restaura, paso a paso,
 en [`docs/copias-de-seguridad.md`](copias-de-seguridad.md).
 
-### 4 · Fusionar la #78
+### 4 · Cloudflare Pages y el repositorio en privado
 
-**«La visión del 27-sep y Estook TPV detallado»**, como la del paso 1. Solo documentos.
-
-### 5 · Fusionar la de los documentos de la auditoría
-
-Cuando la abra, igual. Solo documentos: los seis maestros al día con lo que aprobaste.
+Se escriben el día de la mudanza. Lo que cambia y lo que no —las claves se quedan donde
+están— está en la [decisión 0061](decisiones/0061-el-orden-y-la-infraestructura.md).
 
 ---
 
@@ -692,7 +725,7 @@ Abre `estook.com/app/` y **recarga con Ctrl + F5** para que no te enseñe la ver
 - **Modo cocina:** Ajustes → Este aparato. Ponlo en la tablet de la cocina.
 - **Entrar:** sal de tu cuenta y entra en la **app** con `estookapp@gmail.com`. Tiene que
   decir «Esta cuenta no tiene ningún negocio en Estook» **sin pedirte el código**. Luego
-  entra con la tuya (`belicar1905@gmail.com`) como siempre.
+  entra con la tuya como siempre.
 
 Si algo no se ve como te digo, hazle una captura y me la pasas.
 
@@ -1033,13 +1066,13 @@ dedo. En tu fila, «El tuyo: te lo quita otro admin».
 
 ### 4 · Santi, cuando entre por primera vez
 
-`santidearmijo58@gmail.com` ya tiene acceso total y **ya tenía cuenta en Estook**, así
+Santi ya tiene acceso total y **ya tenía cuenta en Estook**, así
 que entra con **su contraseña de siempre**. Al entrar le pedirá montar el segundo
 factor con su móvil y apuntar sus códigos de respaldo (el paso 5 de arriba, desde el 3).
 Si no se acuerda de la contraseña:
 
 ```bash
-.\estook.cmd bd:dar-admin santidearmijo58@gmail.com --nueva-clave
+.\estook.cmd bd:dar-admin su@correo.com --nueva-clave
 ```
 
 **Qué sale:** una contraseña de cinco palabras. Dásela en mano o por teléfono, **nunca

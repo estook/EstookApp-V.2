@@ -1,5 +1,10 @@
 # La evolución, punto por punto
 
+> **Desde el 30 de septiembre de 2026 la Evolución no es un documento aparte**
+> ([decisión 0063](decisiones/0063-una-fuente-por-tema.md)). Donde esta tabla dice
+> «Evolución 7» o «Evolución 11.1», [su índice](maestros/Estook-Evolucion.md) dice dónde
+> vive hoy ese capítulo. Lo demás sigue valiendo.
+
 **Para qué existe este papel.** El 27 de septiembre de 2026 Richi mandó su visión del
 producto en veintidós puntos —«Estook = gestión + datos conectados + automatización +
 inteligencia con Fogón»— para ordenar lo que viene. **Casi todo ya estaba escrito** en
@@ -69,7 +74,7 @@ Plan ponía la impresión de Enlace en dos sitios distintos.
 | 17   | **Interfaz**                      | Evolución 14 · Plan B · [0045](decisiones/0045-el-aspecto-y-el-orden.md)                                                                                          | ✓ El sistema de diseño, dos temas, el mosaico, poco texto (V, O y los repasos)                                                                                       | Seguir igual en cada módulo                                                                                                       |
 | 18   | **«¿Qué quieres hacer?»**         | Evolución 14 · Manifiesto, principio 14                                                                                                                           | ✓ Es como se escriben los textos de la app                                                                                                                           | Seguir igual                                                                                                                      |
 | 19   | **Datos y arquitectura**          | Evolución 15 · Plan A1 y A3                                                                                                                                       | ✓ Todo lo de la lista, construido y probado                                                                                                                          | Nada: **no se toca**                                                                                                              |
-| 20   | **La regla sobre cambios**        | Evolución 17 · [`reglas.md`](reglas.md)                                                                                                                           | ✓ Es como se trabaja                                                                                                                                                 | —                                                                                                                                 |
+| 20   | **La regla sobre cambios**        | Evolución 17 · Plan, A1                                                                                                                                           | ✓ Es como se trabaja                                                                                                                                                 | —                                                                                                                                 |
 | 21   | **El orden**                      | Evolución 16                                                                                                                                                      | ✓ Cada prioridad, con el módulo en que cae                                                                                                                           | —                                                                                                                                 |
 | 22   | **El resultado y la regla final** | Evolución 17 y 18                                                                                                                                                 | ✓ Las quince preguntas antes de construir                                                                                                                            | —                                                                                                                                 |
 
@@ -89,15 +94,15 @@ tarjeta al datáfono, y Estook registra la venta.
 carta, sin fichas y sin servicio no existe. Los conectores de otros TPV (M18 y M19b) van
 al final de la fase, y los canales de reparto, en la 7:
 
-| Orden | Módulo                        | Qué deja                                                     | Necesita antes         |
-| ----- | ----------------------------- | ------------------------------------------------------------ | ---------------------- |
-| 1     | **M20** · Ventas y consumo    | Un solo motor de consumo para todas las vías                 | M6½                    |
-| 2     | **M19a** · Enlace e impresión | Imprimir en cualquier impresora, con las tablets apagadas    | —                      |
-| 3     | **M20A** · Sala y cocina      | Tomar nota, cocina por partidas, el pase. Sin cobrar         | M9, M10, M16 y M19a    |
-| 4     | **M20B** · Facturación        | Tickets y facturas con Verifacti                             | **El asesor fiscal**   |
-| 5     | **M20C** · Cobro y caja       | Cobrar, el cajón, X y Z, arqueo ciego, el datáfono del banco | M20A y M20B            |
-| 6     | **Datáfono conectado**        | El importe viaja solo, local a local                         | M20C y **Richi elige** |
-| 7     | **M29** · Canales (Fase 7)    | Uber Eats, y sus pedidos en la cocina de Estook TPV          | La aprobación de Uber  |
+| Orden | Módulo                     | Qué deja                                                     | Necesita antes         |
+| ----- | -------------------------- | ------------------------------------------------------------ | ---------------------- |
+| 1     | **M20** · Ventas y consumo | Un solo motor de consumo para todas las vías                 | M6½                    |
+| 2     | **M19a** · Estook Link     | Imprimir en cualquier impresora, con las tablets apagadas    | —                      |
+| 3     | **M20A** · Sala y cocina   | Tomar nota, cocina por partidas, el pase. Sin cobrar         | M9, M10, M16 y M19a    |
+| 4     | **M20B** · Facturación     | Tickets y facturas con Verifacti                             | **El asesor fiscal**   |
+| 5     | **M20C** · Cobro y caja    | Cobrar, el cajón, X y Z, arqueo ciego, el datáfono del banco | M20A y M20B            |
+| 6     | **Datáfono conectado**     | El importe viaja solo, local a local                         | M20C y **Richi elige** |
+| 7     | **M29** · Canales (Fase 7) | Uber Eats, y sus pedidos en la cocina de Estook TPV          | La aprobación de Uber  |
 
 **Lo que espera fuera del código**, y sin esto M20B no va a producción: las respuestas
 del asesor fiscal (en `ESTADO.md`, apartado 2, y dos nuevas: **quién factura un pedido

@@ -5,6 +5,14 @@
 [0061](decisiones/0061-el-orden-y-la-infraestructura.md)). Hasta ese día **no había
 ninguna copia**: el plan gratuito de Supabase no las hace.
 
+> **Aplazada por Richi el 30 de septiembre de 2026**
+> ([decisión 0065](decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)): se
+> enciende en la mudanza de alojamiento, con Supabase Pro. **Hasta entonces no hay
+> ninguna copia.** El flujo está en el repositorio y no hace nada mientras falten sus
+> secretos: cada lunes deja un aviso. **No cuesta dinero ni necesita Supabase Pro**, así
+> que se puede encender cualquier día: son los pasos 2 y 3 de «La mudanza» en
+> [`pasos-antes-de-m8.md`](pasos-antes-de-m8.md).
+
 ## Qué se copia, y dónde queda
 
 | Qué                                     | Cómo                                                                              | Dónde queda                                                                           |

@@ -24,7 +24,7 @@ Condiciones.
 - **Iniciar sesión** → `estook.com/app/`. Google, contraseña o PIN, y «¿No tienes cuenta?».
 
 **La oferta:** si está encendida en **admin → Oferta**, la portada dice «Prueba N días
-gratis, sin tarjeta» y el botón pasa a «Empezar la prueba». Lo pregunta a la API
+gratis» (la prueba pide tarjeta, 0048) y el botón pasa a «Empezar la prueba». Lo pregunta a la API
 (`como_se_entra`) al abrir; si la API no contesta, **no se anuncia nada** y la portada
 se pinta igual.
 

@@ -619,7 +619,7 @@ construir algo y no enchufarlo a nada. En cuanto se escribió encontró cinco.
 #### Cómo se comprueba que M6 está terminado
 
 Su criterio, punto por punto, es
-[`pruebas/e2e/inventario.spec.ts`](../pruebas/e2e/inventario.spec.ts):
+[`pruebas/e2e/inventario.spec.ts`](../pruebas/e2e/almacen.spec.ts):
 
 | Criterio del Plan                                      | Cómo se comprueba                                                                           |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
@@ -2261,7 +2261,7 @@ con lo que Richi pidió el 23 de septiembre mirando la app en su TPV:
 el código del segundo factor y después decía «no está asociada a ningún negocio».
 Parecía que las cuentas se mezclaban. **No se mezclaba nada**, comprobado en la base: el
 segundo factor es de la persona, y solo lo tienen `estookapp@gmail.com` y Santi, que
-son los del admin; `belicar1905@gmail.com` no lo tiene, y ninguna cuenta ve nada de otro
+son los del admin; la cuenta de Richi no lo tiene, y ninguna cuenta ve nada de otro
 negocio. Lo que estaba mal era el orden. Ahora **una cuenta sin negocio se para antes
 del código**, sin abrir sesión, con el error `sin_negocio` que manda al admin; y la
 pantalla del código **dice de qué cuenta es**, porque la sesión a medias se quedaba en
@@ -2989,7 +2989,7 @@ empiece por `/`, `./` o `../` hay que declararla en un mapa de importaciones.
 Había un camino entero —el que de verdad llega al cliente— que no comprobaba
 nadie hasta el momento de desplegar. Ahora:
 
-- El mapa está en [`supabase/functions/api/deno.json`](supabase/functions/api/deno.json),
+- El mapa está en [`supabase/functions/api/deno.json`](../supabase/functions/api/deno.json),
   con los nuestros apuntando al fuente y los de fuera con versión exacta.
 - `pnpm grafo` lo recorre entero desde la misma entrada que usa Supabase, y está
   en `verifica` y en la integración continua.
@@ -3041,7 +3041,7 @@ en otro sitio.
 
 No es que falte: es que **una ventana ya abierta se queda con el PATH que había
 cuando se abrió**. Se cierra la ventana y se abre otra. Y si aun así no, en la
-raíz hay [`estook.cmd`](estook.cmd), que lo busca donde de verdad está:
+raíz hay [`estook.cmd`](../estook.cmd), que lo busca donde de verdad está:
 `.\estook.cmd bd:migrar`.
 
 ### El repaso de después de desplegar

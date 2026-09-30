@@ -59,6 +59,11 @@ jobs:
       - name: Textos de pantalla
         run: pnpm textos
 
+      # Las tablas de docs/coste-por-local.md salen de un fichero con los precios. Si
+      # alguien cambia un precio o un plan y no repasa el documento, esto lo para.
+      - name: El coste por local cuadra con sus cuentas
+        run: pnpm coste:comprobar
+
       # ── El camino que nadie comprobaba ──────────────────────────────────────
       #
       # El primer despliegue de verdad de M4 se cayo con las 532 pruebas en

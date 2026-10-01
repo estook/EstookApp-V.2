@@ -4,21 +4,49 @@
 >
 > Comprobado el 1 de octubre de 2026, leyendo la base de producción.
 >
-> | Qué                             | Cómo está                                                                         |
-> | ------------------------------- | --------------------------------------------------------------------------------- |
-> | Pull requests                   | **Fusionadas hasta la #84** (1-oct). Abierta: **#85 · H2 · El horario**           |
-> | La base de datos                | **52 de 52** migraciones, igual que `main`                                        |
-> | La API                          | **Desplegada con H1**: 62 y 125, reloj latiendo                                   |
-> | Los PDF (Cloudflare)            | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep          |
-> | **Las copias de seguridad**     | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
-> | A1 · la puerta del admin        | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor       |
-> | E1, V, O, E2, L, A2, R1, R2, H1 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                    |
+> | Qué                            | Cómo está                                                                                       |
+> | ------------------------------ | ----------------------------------------------------------------------------------------------- |
+> | Pull requests                  | **Fusionadas hasta la #85** (1-oct): H entera. Abierta: **I · La app instalable**, solo el plan |
+> | La base de datos               | **53 de 53** migraciones, igual que `main`                                                      |
+> | La API                         | **Desplegada con H2**: 65 y 130, reloj latiendo                                                 |
+> | Los PDF (Cloudflare)           | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                        |
+> | **Las copias de seguridad**    | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día               |
+> | A1 · la puerta del admin       | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                     |
+> | E1, V, O, E2, L, A2, R1, R2, H | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                                  |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · el repaso de H1 y H2, el horario (1-oct)
+## Lo que te toca ahora · las seis preguntas de I (1-oct)
+
+**I · La app instalable** es lo siguiente: Estook en la pantalla de inicio del móvil,
+fichar y apuntar mermas sin señal, y los avisos al móvil. **Todavía no hay código**: antes
+hacen falta tus respuestas.
+
+### 1 · Leer el plan y contestar
+
+El plan está en [`i-la-app-instalable.md`](i-la-app-instalable.md), en la rama
+`i-la-app-instalable` (en GitHub, en su pull request, pestaña **Files changed**). Lo que
+importa está en **«Las preguntas para Richi»**: **seis, de sí o no**, cada una con mi
+recomendación y el porqué. **Contéstame en el chat**, por ejemplo «1 sí, 2 sí, 3 no…».
+
+Debajo están **lo que cuesta** (nada) y **lo que hay que saber del iPhone**.
+
+### 2 · No fusiones todavía ese pull request
+
+Va a crecer con el código de I1. Te diré cuándo fusionarlo.
+
+### 3 · Si no lo has hecho ya, mirar H2 en IKATZ
+
+Lo de «Mirarlo», justo debajo: montar y publicar una semana de verdad.
+
+---
+
+## H2 · El horario (#85) · **hecho** (1-oct)
+
+**Fusionada, migrada (0053) y desplegada.** Comprobado el 1-oct leyendo producción: 53
+migraciones, y la API con sus 65 consultas y 130 comandos.
 
 **La #84 (el repaso de H1) ya está fusionada** (1-oct, 02:25). Queda **H2 · El horario**
 (la #85). **Una sola migración y un solo despliegue, al final**, que sirven para las dos.

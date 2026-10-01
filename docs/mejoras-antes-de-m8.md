@@ -483,6 +483,9 @@ app entera. No se hace aparte: sería montar el cuadrante dos veces.
 
 ## I · La app instalable
 
+**El plan, lo que cuesta, lo del iPhone y las seis preguntas** (1-oct): en
+[`i-la-app-instalable.md`](i-la-app-instalable.md).
+
 Push y sin conexión comparten la misma pieza: **un _service worker_**, que hoy no
 existe. Con él, Estook se instala en el móvil como una app. Se hacen juntas.
 

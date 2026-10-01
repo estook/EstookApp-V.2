@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 1 de octubre de 2026 · **Antes de M8. H1 en producción (#83). El repaso de H1 fusionado (#84). En su pull request, H2 · El horario (#85), que cierra H**
+Última actualización: 1 de octubre de 2026 · **Antes de M8. H · Horarios entera y en producción (#83, #84, #85). Empieza I · La app instalable: el plan y seis preguntas para Richi**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento**, y **no pasa de 150 líneas**
@@ -23,19 +23,18 @@
 
 ---
 
-## 1 · Dónde estamos · producción leída el 30-sep, en solo lectura
+## 1 · Dónde estamos · producción leída el 1-oct, en solo lectura
 
-|                  |                                                                                                                                                                                                                                                                                                                              |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2 y **H1**, con sus repasos                                                                                                                                                                                                      |
-| **Por fusionar** | **#85 · H2 · El horario** ([0069](docs/decisiones/0069-el-horario.md)): la semana en borrador y publicada, libres, vacaciones y bajas, lo que cuesta, los avisos de descansos y horas, publicar avisando solo a quien le toca, el PDF y «Mi turno». **Migración 0053 y despliegue de la API**, que sirve también para la #84 |
-| **Ahora**        | Que Richi fusione la #85, migre y despliegue. **Con H2, H · Horarios queda entera**; lo siguiente es **I · La app instalable**                                                                                                                                                                                               |
-| **`main`**       | Todo fusionado hasta la **#84** (1-oct): H1 en producción con Cloudflare puesto por Richi, y su repaso **fusionado pero sin desplegar** (se despliega con H2)                                                                                                                                                                |
-| **Base**         | Supabase, **52 de 52** migraciones (con H2, 53). 76 tablas, todas con seguridad por filas (con H2, 79)                                                                                                                                                                                                                       |
-| **API**          | Desplegada con H1: **62 consultas y 125 comandos**, comprobada el 30-sep por la noche. Con H2 serán **65 y 130**                                                                                                                                                                                                             |
-| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                                                                                            |
-| **Pruebas**      | **1.527** unitarias y de base con H2, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                                                                                                                                         |
-| **Copias**       | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                                                                                               |
+|               |                                                                                                                                                                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminado** | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2 y **H · Horarios entera** (H1 y H2), con sus repasos                                                                                                |
+| **En curso**  | **I · La app instalable**, en la rama `i-la-app-instalable`: el plan, lo que cuesta (nada), lo del iPhone y **seis preguntas de sí o no** en [`i-la-app-instalable.md`](docs/i-la-app-instalable.md). **Sin código hasta que Richi las conteste** |
+| **`main`**    | Todo fusionado hasta la **#85** (1-oct): H entera, migrada y desplegada                                                                                                                                                                           |
+| **Base**      | Supabase, **53 de 53** migraciones. 79 tablas, todas con seguridad por filas                                                                                                                                                                      |
+| **API**       | Desplegada con H2: **65 consultas y 130 comandos**, comprobada el 1-oct                                                                                                                                                                           |
+| **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                 |
+| **Pruebas**   | **1.527** unitarias y de base con H2, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                                                              |
+| **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                    |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md), y el chat adelantado en la [0067](docs/decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md))
 
@@ -46,7 +45,9 @@ ESTOOK TPV    M16a · La jornada → M20 → M19a · Estook Link → M20A → M2
 DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b → Fases 5, 6 y 7
 ```
 
-**H va en dos entregas** ([0068](docs/decisiones/0068-las-respuestas-de-h.md), plan en [`docs/h-horarios.md`](docs/h-horarios.md)). **H1**, en producción: la persona sin correo ([0057](docs/decisiones/0057-quien-es-quien-en-el-tpv.md)), los fichajes listos para el registro horario digital ([0062](docs/decisiones/0062-lo-legal.md)) y los PDF. **H2**, en su pull request: el horario de la semana, con lo que cuesta, los avisos de descansos y horas, y publicado para todo el equipo ([0069](docs/decisiones/0069-el-horario.md)). Era también la mejora 18 y la entrega 3 de M7.
+**H, entera en producción** ([0068](docs/decisiones/0068-las-respuestas-de-h.md), plan en [`docs/h-horarios.md`](docs/h-horarios.md)): la persona sin correo ([0057](docs/decisiones/0057-quien-es-quien-en-el-tpv.md)), los fichajes listos para el registro horario digital ([0062](docs/decisiones/0062-lo-legal.md)), los PDF y el horario de la semana, publicado para todo el equipo ([0069](docs/decisiones/0069-el-horario.md)).
+
+**I, la siguiente** ([`docs/i-la-app-instalable.md`](docs/i-la-app-instalable.md)): instalar Estook en el móvil, fichar y apuntar mermas sin señal, y los avisos al móvil. Propongo dos entregas, **I1 · En el móvil y sin conexión** e **I2 · Los avisos al móvil**. **No suma dinero** y no hace falta cuenta de Apple ni de Google.
 
 **Los PDF** los imprime **Cloudflare Browser Run**, gratis hasta unos 400 al día, con la cuenta de Richi desde el 30-sep. La hoja de cálculo del registro no depende de nada.
 
@@ -60,7 +61,7 @@ Para que nadie dé por hecho lo que solo está escrito:
 - **Nadie ha pagado de verdad.** Un pago en modo prueba (Pizzeriacazzo, 26-sep).
 - **Nada se borra solo**: los plazos de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md) los aplicará M27. **Ni hay exportación completa del negocio.**
 - **Los textos legales de la web y los de `docs/legal/` son borradores**, sin revisar por un asesor.
-- **De las veinte mejoras, quince** con H2; del admin, la puerta y los clientes (faltan A3 y A4); ni avisos al móvil, ni recuperar la contraseña por correo.
+- **De las veinte mejoras, quince**, con H entera; del admin, la puerta y los clientes (faltan A3 y A4); ni avisos al móvil, ni recuperar la contraseña por correo.
 
 ### Lo que hay en producción
 
@@ -72,8 +73,8 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Ahora, en este orden** (paso a paso en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **Fusionar la #85, migrar (0053) y desplegar la API**, que lleva también el repaso de H1.
-2. **Montar y publicar una semana de verdad** en IKATZ, mirar el aviso y «Mi turno» en el móvil de alguien del equipo, y que «Descargar en PDF» lo guarda y ofrece «Compartir».
+1. **Contestar las seis preguntas de I** (sí o no), en [`i-la-app-instalable.md`](docs/i-la-app-instalable.md).
+2. **Si no lo has hecho ya, montar y publicar una semana de verdad** en IKATZ, mirar el aviso y «Mi turno» en el móvil de alguien del equipo, y que «Descargar en PDF» lo guarda y ofrece «Compartir».
 3. **Un profesional, más adelante**: no hace falta hasta el primer cliente que pague. Qué tiene que mirar y cuándo, al final de [`lo-investigado.md`](docs/legal/lo-investigado.md).
 
 **Con fecha o con condición:**
@@ -142,7 +143,7 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Fusionar la #85, migrar y desplegar** (apartado 2), y que Richi monte una semana de verdad. **Después, I · La app instalable**: que la app se pueda poner en la pantalla de inicio, funcione sin conexión lo justo y mande avisos al móvil.
+**Con las respuestas de Richi, I1 · En el móvil y sin conexión**, en esta misma rama y su pull request: instalar Estook, fichar y apuntar mermas sin señal. **Después, I2 · Los avisos al móvil**, que le pedirá a Richi dos secretos en Supabase.
 
 **Lo que decidió la IA por su cuenta**, para que Richi lo sepa: subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); que abrir el aparato para fichar cierre la sesión de quien lo abre; que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla); los seis de «Lo que decidí al construirlo» de la [0069](docs/decisiones/0069-el-horario.md), como que el correo del horario lleve lo suyo escrito y no un PDF; partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
 

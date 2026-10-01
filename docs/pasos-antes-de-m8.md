@@ -45,9 +45,13 @@ Una migración (la **0054**), un despliegue y **dos secretos que haces tú**, un
 
 ### 1 · Fusionar la #86
 
-En **github.com** → **Pull requests** → **«I · La app instalable»**. Ya no pone «work in
-progress»: con las **tres comprobaciones en verde** → **Merge pull request** →
-**Confirm merge**. **Si alguna sale en rojo, para y avísame.**
+En **github.com** → **Pull requests** → **«I · La app instalable»** → abajo del todo,
+en el recuadro de las comprobaciones, tienen que salir **las tres con ✓ verde**
+(«Calidad», «Construccion y presupuestos» y «Migraciones reversibles») y el botón
+**Merge pull request** en verde. Púlsalo → **Confirm merge**.
+
+**Si alguna sale con ✗ roja, con «cancelled» o el botón está gris, no fuerces nada: para y
+avísame.** «Cancelled» quiere decir que GitHub la cortó por tiempo, no que la app esté mal.
 
 ### 2 · Aplicar la migración
 
@@ -79,19 +83,46 @@ git pull
 
 ### 3 · Hacer las dos claves de los avisos al móvil
 
-En la misma ventana de PowerShell:
+**Qué son:** dos claves que firman los avisos que Estook manda a los móviles, para que
+Google y Apple sepan que vienen de Estook. Se hacen **una sola vez**, en tu ordenador. **No
+cuestan nada** y **no hace falta ninguna cuenta**. La pública puede verla cualquiera; **la
+privada es secreta**: no me la pegues en el chat ni la guardes en ningún documento.
+
+**3.1 · Sacarlas.** En la misma ventana de PowerShell del paso 2 (en la carpeta del
+proyecto):
 
 ```bash
 .\estook.cmd movil:claves
 ```
 
-**Qué tiene que salir:** `VAPID_CLAVE_PUBLICA` y `VAPID_CLAVE_PRIVADA`, cada una con un
-valor largo de letras y números. **No me las pegues en el chat.**
+**Qué tiene que salir** (con otras letras):
 
-En **supabase.com** → tu proyecto → **Edge Functions** → **Secrets** → **Add new
-secret**, **dos veces**: el nombre exacto y el valor que te ha salido. **Save.** Después
-cierra la ventana de PowerShell: las claves no se guardan en ningún otro sitio, y no hace
-falta (si un día se pierden, se hacen otras y cada móvil vuelve a decir que sí solo).
+```
+  Nombre:  VAPID_CLAVE_PUBLICA
+  Valor:   BKx3…   (unas 87 letras y números)
+
+  Nombre:  VAPID_CLAVE_PRIVADA
+  Valor:   q9Zt…   (unas 43 letras y números)
+```
+
+**No cierres esa ventana** hasta acabar el 3.2: las claves solo están ahí.
+
+**3.2 · Ponerlas en Supabase**, una y después la otra:
+
+1. Entra en **supabase.com** → tu proyecto (el de Estook).
+2. En el menú de la izquierda, **Edge Functions** → arriba, la pestaña **Secrets**.
+3. Pulsa **Add new secret**. En **Name** escribe exactamente `VAPID_CLAVE_PUBLICA`.
+4. En **Value** pega su valor: en PowerShell, selecciona con el ratón solo el valor (sin
+   espacios delante ni detrás) y pulsa **Ctrl + C**; en Supabase, **Ctrl + V**.
+5. **Save.** Tiene que salir en la lista, con su nombre.
+6. Repite del 3 al 5 con `VAPID_CLAVE_PRIVADA` y su valor.
+
+Cuando estén las dos en la lista, **cierra la ventana de PowerShell**. No hace falta
+guardarlas en ningún otro sitio: si un día se pierden, se hacen otras y cada móvil vuelve a
+decir que sí solo.
+
+**Si te equivocas** (un espacio de más, el nombre mal escrito): bórrala en la misma lista
+y vuelve a hacerla. En el paso 4, `bd:comprobar-api` te dirá si están bien.
 
 ### 4 · Desplegar la API
 

@@ -4,21 +4,165 @@
 >
 > Comprobado el 1 de octubre de 2026, leyendo la base de producción.
 >
-> | Qué                             | Cómo está                                                                         |
-> | ------------------------------- | --------------------------------------------------------------------------------- |
-> | Pull requests                   | **Fusionadas hasta la #84** (1-oct). Abierta: **#85 · H2 · El horario**           |
-> | La base de datos                | **52 de 52** migraciones, igual que `main`                                        |
-> | La API                          | **Desplegada con H1**: 62 y 125, reloj latiendo                                   |
-> | Los PDF (Cloudflare)            | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep          |
-> | **Las copias de seguridad**     | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
-> | A1 · la puerta del admin        | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor       |
-> | E1, V, O, E2, L, A2, R1, R2, H1 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                    |
+> | Qué                            | Cómo está                                                                                        |
+> | ------------------------------ | ------------------------------------------------------------------------------------------------ |
+> | Pull requests                  | **Fusionadas hasta la #85** (1-oct): H entera. Abierta: **la #86, I · La app instalable**, lista |
+> | La base de datos               | **53 de 53** migraciones, igual que `main`                                                       |
+> | La API                         | **Desplegada con H2**: 65 y 130, reloj latiendo                                                  |
+> | Los PDF (Cloudflare)           | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                         |
+> | **Las copias de seguridad**    | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día                |
+> | A1 · la puerta del admin       | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                      |
+> | E1, V, O, E2, L, A2, R1, R2, H | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                                   |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · el repaso de H1 y H2, el horario (1-oct)
+## Lo que te toca ahora · I · La app instalable (#86, 1-oct)
+
+**Construida, en una sola entrega**, con tus respuestas ([decisión 0070](decisiones/0070-la-app-instalable.md)).
+Una migración (la **0054**), un despliegue y **dos secretos que haces tú**, una sola vez.
+
+**Qué trae:**
+
+- **Estook en la pantalla de inicio**: en el Panel del móvil sale una vez «Pon Estook
+  en tu pantalla de inicio». En Android, con un botón; en iPhone, con el dibujo de
+  **Compartir → Añadir a pantalla de inicio**. Al mantener pulsado el icono: «Fichar» y
+  «Apuntar una merma».
+- **Sin señal**: Estook abre y enseña lo último que viste, con **«Sin conexión · lo de
+  las 10:42»** arriba. **Fichar y apuntar mermas se guardan y salen solos** al volver, con
+  la hora del servidor. Arriba pone cuántos hay **sin mandar**. Con más de doce horas sin
+  señal, el fichaje sale **«por revisar»** en Equipo → Resumen.
+- **El aparato del local sin wifi**: sigue dejando fichar con el PIN, que se guarda
+  cifrado y se comprueba al volver. Si un PIN no era de nadie, te llega un aviso y lo
+  apuntas a mano desde la ficha de la persona (**«Apuntar un fichaje que falta»**).
+- **Los avisos al móvil**, aunque Estook esté cerrada: en **Ajustes → Avisos**, «Este
+  móvil», **«Cuándo suena el móvil»** (solo en mi turno, o siempre menos en mis horas de
+  silencio, a elegir) y la columna **Móvil**. Avisos nuevos: **entras en cinco minutos**,
+  **algo caduca**, **un pedido no ha llegado** (si el proveedor tiene puesto «suele llegar
+  hacia las…») y **un fichaje sin conexión no se pudo apuntar**. Si el móvil no lo
+  recibe, sale por correo; y el icono lleva el número de los sin leer.
+
+### 1 · Fusionar la #86
+
+En **github.com** → **Pull requests** → **«I · La app instalable»** → abajo del todo,
+en el recuadro de las comprobaciones, tienen que salir **las tres con ✓ verde**
+(«Calidad», «Construccion y presupuestos» y «Migraciones reversibles») y el botón
+**Merge pull request** en verde. Púlsalo → **Confirm merge**.
+
+**Si alguna sale con ✗ roja, con «cancelled» o el botón está gris, no fuerces nada: para y
+avísame.** «Cancelled» quiere decir que GitHub la cortó por tiempo, no que la app esté mal.
+
+### 2 · Aplicar la migración
+
+**Qué hace:** las tablas de los móviles y de lo programado, «cuándo suena» de cada
+persona, «suele llegar hacia las…» del proveedor, la llave del aparato del local, y el
+latido de cada minuto. **No cambia nada de lo que hay.** En PowerShell, en la carpeta del
+proyecto:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0054_la_app_instalable.sql ... hecho
+  1 migracion(es) aplicadas · 54 en total
+```
+
+**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+### 3 · Hacer las dos claves de los avisos al móvil
+
+**Qué son:** dos claves que firman los avisos que Estook manda a los móviles, para que
+Google y Apple sepan que vienen de Estook. Se hacen **una sola vez**, en tu ordenador. **No
+cuestan nada** y **no hace falta ninguna cuenta**. La pública puede verla cualquiera; **la
+privada es secreta**: no me la pegues en el chat ni la guardes en ningún documento.
+
+**3.1 · Sacarlas.** En la misma ventana de PowerShell del paso 2 (en la carpeta del
+proyecto):
+
+```bash
+.\estook.cmd movil:claves
+```
+
+**Qué tiene que salir** (con otras letras):
+
+```
+  Nombre:  VAPID_CLAVE_PUBLICA
+  Valor:   BKx3…   (unas 87 letras y números)
+
+  Nombre:  VAPID_CLAVE_PRIVADA
+  Valor:   q9Zt…   (unas 43 letras y números)
+```
+
+**No cierres esa ventana** hasta acabar el 3.2: las claves solo están ahí.
+
+**3.2 · Ponerlas en Supabase**, una y después la otra:
+
+1. Entra en **supabase.com** → tu proyecto (el de Estook).
+2. En el menú de la izquierda, **Edge Functions** → arriba, la pestaña **Secrets**.
+3. Pulsa **Add new secret**. En **Name** escribe exactamente `VAPID_CLAVE_PUBLICA`.
+4. En **Value** pega su valor: en PowerShell, selecciona con el ratón solo el valor (sin
+   espacios delante ni detrás) y pulsa **Ctrl + C**; en Supabase, **Ctrl + V**.
+5. **Save.** Tiene que salir en la lista, con su nombre.
+6. Repite del 3 al 5 con `VAPID_CLAVE_PRIVADA` y su valor.
+
+Cuando estén las dos en la lista, **cierra la ventana de PowerShell**. No hace falta
+guardarlas en ningún otro sitio: si un día se pierden, se hacen otras y cada móvil vuelve a
+decir que sí solo.
+
+**Si te equivocas** (un espacio de más, el nombre mal escrito): bórrala en la misma lista
+y vuelve a hacerla. En el paso 4, `bd:comprobar-api` te dirá si están bien.
+
+### 4 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe
+**`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 66» consultas, «los 137» comandos, **«y tiene encendidos los
+avisos al móvil»**, **«y conoce /tareas/movil»** y **«y el de los avisos al móvil, cada
+minuto»**, todo en OK. Si sale «faltan VAPID_CLAVE_PUBLICA y VAPID_CLAVE_PRIVADA», el
+paso 3 no se guardó: repítelo y vuelve a desplegar.
+
+### 5 · Probarlo en el móvil
+
+La web se publica sola al fusionar (unos minutos). En el móvil, abre **estook.com/app/**:
+
+- **Instalar**: en el Panel sale la tarjeta. En Android, «Instalar»; en iPhone, Safari →
+  **Compartir → Añadir a pantalla de inicio**, y **abre Estook desde el icono** (la
+  primera vez hay que entrar otra vez: es como otro navegador).
+- **Los avisos**: ficha la entrada y sale «¿Te avisamos en el móvil?» → **«Sí,
+  avisadme»** → **Permitir**. O en **Ajustes → Avisos → «Recibir en este móvil»**. Después,
+  **«Probar»**: tiene que sonar en unos segundos.
+- **Sin señal**: pon el **modo avión**, abre Estook, ficha y apunta una merma. Arriba:
+  «Sin conexión» y «2 sin mandar». Quita el modo avión: en unos segundos desaparece, y en
+  **Mis fichajes** está, marcado «sin conexión».
+- **El aparato del local**: ábrelo **una vez con wifi** después de desplegar (se prepara solo para fichar sin conexión). Después, quítale el wifi, teclea tu PIN y ficha: sale «Entrada guardada. Se apunta sola al volver la conexión». Vuelve a poner el wifi: en Equipo → Resumen aparece el fichaje.
+
+**En iPhone**, los avisos solo llegan con Estook en la pantalla de inicio y con iOS 16.4
+o posterior. Si alguien dijo «No permitir», se cambia en **Ajustes del iPhone →
+Notificaciones → Estook**. Si algo no se ve como te digo, hazle una captura y me la pasas.
+
+---
+
+## H2 · El horario (#85) · **hecho** (1-oct)
+
+**Fusionada, migrada (0053) y desplegada.** Comprobado el 1-oct leyendo producción: 53
+migraciones, y la API con sus 65 consultas y 130 comandos.
 
 **La #84 (el repaso de H1) ya está fusionada** (1-oct, 02:25). Queda **H2 · El horario**
 (la #85). **Una sola migración y un solo despliegue, al final**, que sirven para las dos.

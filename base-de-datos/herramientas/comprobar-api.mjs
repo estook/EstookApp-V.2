@@ -1102,13 +1102,36 @@ try {
       }
     };
 
-    const salud = await fetch(`${raiz}/salud`)
-      .then((r) => r.ok)
-      .catch(() => false);
+    const enPie = await fetch(`${raiz}/salud`)
+      .then(async (r) => (r.ok ? ((await r.json())?.datos ?? {}) : null))
+      .catch(() => null);
+    const salud = enPie !== null;
 
     comprobar('la API desplegada responde', salud);
 
     if (salud) {
+      // Los avisos al móvil (0070): sin sus dos claves, todo llega a la campana y
+      // al correo, pero ningún móvil suena. `/salud` dice sí o no, nunca la clave.
+      comprobar(
+        'y tiene encendidos los avisos al móvil',
+        enPie.movil === true,
+        enPie.movil === true
+          ? ''
+          : enPie.movil === false
+            ? 'faltan VAPID_CLAVE_PUBLICA y VAPID_CLAVE_PRIVADA en los secretos de Supabase'
+            : 'va por detrás del código: despliégala',
+      );
+      // El camino por el que `pg_cron` la llama cada minuto. Sin el secreto del
+      // reloj tiene que decir «sin permiso»: si dice «no existe», va por detrás.
+      const tarea = await fetch(`${raiz}/tareas/movil`, { method: 'POST', body: '{}' })
+        .then(async (r) => (await r.json())?.error?.codigo ?? 'la_conoce')
+        .catch(() => 'no_contesta');
+      comprobar(
+        'y conoce /tareas/movil, cerrada sin el secreto del reloj',
+        tarea === 'sin_permiso',
+        tarea === 'sin_permiso' ? '' : `contesta «${tarea}»`,
+      );
+
       // Todas las consultas del catalogo, que es la lista de verdad y no una
       // copia: si manana se anade una y no se despliega, esto lo dice solo.
       const suyas = Object.keys(catalogoDeOperaciones.consultas);
@@ -1177,14 +1200,20 @@ try {
   // porque faltan avisos» (0016, punto 4). Se lee de la base como su dueña: la
   // tabla solo la ve «el sistema», y esta herramienta no se hace pasar por él.
   const [reloj] = await conexion`
-    select programado, ultimo_latido, ultimo_diario::text as ultimo_diario,
+    select programado, to_jsonb(r) -> 'movil_programado' as movil_programado,
+           ultimo_latido, ultimo_diario::text as ultimo_diario,
            now() - ultimo_latido < interval '2 hours' as reciente
-      from plataforma.reloj where unica
+      from plataforma.reloj r where unica
   `.catch(() => []);
   if (reloj === undefined) {
     comprobar('el reloj existe', false, 'falta la 0047');
   } else {
     comprobar('pg_cron lo tiene programado', reloj.programado === true);
+    comprobar(
+      'y el de los avisos al móvil, cada minuto (0070)',
+      reloj.movil_programado === true,
+      reloj.movil_programado === undefined ? 'falta la 0054' : '',
+    );
     comprobar(
       'y ha latido en las dos últimas horas',
       reloj.reciente === true,

@@ -23,6 +23,20 @@ export const CABECERA_IDEMPOTENCIA = 'x-idempotencia';
  */
 export const CABECERA_AUTORIZACION = 'authorization';
 
+/**
+ * **Lo hecho sin conexión** (0070): cuántos milisegundos hace que se hizo, según el
+ * móvil que lo tuvo guardado sin señal. Va en una cabecera y no en el cuerpo a
+ * propósito: el cuerpo es lo que se hizo, y con la clave de idempotencia se compara
+ * igual en cada reintento; cuánto hace cambia en cada uno.
+ */
+export const CABECERA_HECHO_HACE = 'x-hecho-hace';
+
+/** Lo que dice la cabecera, si es un número entero de milisegundos. Nulo si no. */
+export function hechoHace(valor: string | undefined): number | null {
+  if (valor === undefined || !/^[0-9]{1,12}$/.test(valor.trim())) return null;
+  return Number(valor.trim());
+}
+
 /** Se pone en la respuesta cuando el comando ya se habia hecho antes. */
 export const CABECERA_REPETIDA = 'x-repetida';
 

@@ -78,6 +78,7 @@ function bancoDePruebas(sesion: Contexto['sesion'] = SESION_NORMAL) {
         identidadDeGoogle: null,
         pagos: null,
         pdf: null,
+        movil: null,
         correlacionId: quien.correlacionId,
         desde: null,
         ahora: new Date(Date.UTC(2026, 8, 1)),
@@ -316,6 +317,9 @@ describe('las puertas se cierran solas', () => {
         'el_aparato_para_fichar',
         'quien_ficha_aqui',
         'fichar_aqui',
+        // I (0070) · prepararlo para cuando se caiga el wifi: con la misma llave, y
+        // solo devuelve la pública con la que el aparato cifra el PIN.
+        'preparar_el_aparato_sin_conexion',
       ].sort(),
     );
   });
@@ -417,6 +421,9 @@ describe('las puertas se cierran solas', () => {
         'sigo_aqui',
         // Lo que es de la persona.
         'mi_acceso',
+        // I (0070) · al salir se quita el móvil, para que no le lleguen los avisos de
+        // nadie: salir tiene que poder hacerse siempre, también sin pagar.
+        'quitar_este_movil',
         'cambiar_mi_clave',
         'activar_doble_factor',
         'confirmar_doble_factor',
@@ -592,7 +599,16 @@ describe('los secretos no se guardan para repetirlos', () => {
     // cuántas veces llegue**: es que lo protege el estado de la persona —entrar dos
     // veces dice «ya estás dentro»—, y recordar la respuesta guardaría la entrada con
     // su PIN acertado en una tabla. Y los PIN fallados se tienen que contar siempre.
-    expect(sinRecordar).toEqual(['fichar_aqui', 'quien_ficha_aqui', 'sigo_aqui']);
+    //
+    // I (0070) · preparar el aparato sin conexión devuelve siempre la misma pública, y
+    // probar el móvil no cambia nada: repetirlos ya es lo mismo.
+    expect(sinRecordar).toEqual([
+      'fichar_aqui',
+      'preparar_el_aparato_sin_conexion',
+      'probar_mi_movil',
+      'quien_ficha_aqui',
+      'sigo_aqui',
+    ]);
   });
 
   it('y de esos no se guarda ni se consulta la respuesta', async () => {
@@ -611,6 +627,7 @@ describe('los secretos no se guardan para repetirlos', () => {
           identidadDeGoogle: null,
           pagos: null,
           pdf: null,
+          movil: null,
           correlacionId: quien.correlacionId,
           desde: null,
           ahora: new Date(Date.UTC(2026, 8, 1)),

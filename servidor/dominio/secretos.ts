@@ -254,3 +254,82 @@ export function porQueNoValeLaClave(clave: string): string | null {
   }
   return null;
 }
+
+// ── El PIN tecleado sin conexión (I · 0070) ─────────────────────────────────
+
+/**
+ * La llave de cifrado de un aparato del local: RSA-OAEP de 2048 bits con SHA-256.
+ *
+ * Sin conexión el PIN no se puede comprobar, así que el aparato lo guarda **cifrado
+ * con la pública**, y solo Estook, con la privada, lo puede leer al volver la señal.
+ * En la tablet no queda ningún PIN legible. Las dos van en base64url: la pública en
+ * SPKI, que es lo que importa el navegador, y la privada en PKCS#8.
+ */
+export async function llavesDelAparato(): Promise<{ publica: string; privada: string }> {
+  const par = await crypto.subtle.generateKey(
+    {
+      name: 'RSA-OAEP',
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: 'SHA-256',
+    },
+    true,
+    ['encrypt', 'decrypt'],
+  );
+  const publica = new Uint8Array(await crypto.subtle.exportKey('spki', par.publicKey));
+  const privada = new Uint8Array(await crypto.subtle.exportKey('pkcs8', par.privateKey));
+  return { publica: aBase64UrlDeBytes(publica), privada: aBase64UrlDeBytes(privada) };
+}
+
+/** Lo que va cifrado: el PIN y un número de un solo uso, para que no se pueda repetir. */
+export interface PinCifrado {
+  readonly pin: string;
+  readonly numero: string;
+}
+
+/**
+ * Lee lo que cifró el aparato. **Nulo si no se puede leer** —otra llave, un cifrado
+ * tocado o algo que no tiene la forma—: quien llama lo trata como un PIN que no vale.
+ */
+export async function descifrarElPin(privada: string, cifrado: string): Promise<PinCifrado | null> {
+  try {
+    const llave = await crypto.subtle.importKey(
+      'pkcs8',
+      copiaDeBytes(deBase64UrlABytes(privada)),
+      { name: 'RSA-OAEP', hash: 'SHA-256' },
+      false,
+      ['decrypt'],
+    );
+    const claro = await crypto.subtle.decrypt(
+      { name: 'RSA-OAEP' },
+      llave,
+      copiaDeBytes(deBase64UrlABytes(cifrado)),
+    );
+    const leido = JSON.parse(new TextDecoder().decode(claro)) as { pin?: unknown; n?: unknown };
+    if (typeof leido.pin !== 'string' || typeof leido.n !== 'string') return null;
+    if (!/^[0-9a-f]{32}$/.test(leido.n)) return null;
+    return { pin: leido.pin, numero: leido.n };
+  } catch {
+    return null;
+  }
+}
+
+function aBase64UrlDeBytes(bytes: Uint8Array): string {
+  let binario = '';
+  for (const b of bytes) binario += String.fromCharCode(b);
+  return btoa(binario).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function deBase64UrlABytes(texto: string): Uint8Array {
+  const normal = texto.replace(/-/g, '+').replace(/_/g, '/');
+  const binario = atob(normal + '='.repeat((4 - (normal.length % 4)) % 4));
+  const bytes = new Uint8Array(binario.length);
+  for (let i = 0; i < binario.length; i += 1) bytes[i] = binario.charCodeAt(i);
+  return bytes;
+}
+
+function copiaDeBytes(bytes: Uint8Array): ArrayBuffer {
+  const copia = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(copia).set(bytes);
+  return copia;
+}

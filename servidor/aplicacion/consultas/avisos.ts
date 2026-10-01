@@ -122,6 +122,8 @@ export interface AvisoElegible {
   readonly grupo: string;
   readonly enLaApp: boolean;
   readonly porCorreo: boolean;
+  /** Que suene en el móvil (0070). */
+  readonly alMovil: boolean;
 }
 
 export interface SalidaMisAvisosElegidos {
@@ -132,6 +134,8 @@ export interface SalidaMisAvisosElegidos {
   readonly hayCorreo: boolean;
   /** Desde cuánto avisa una subida, si quien mira lo puede cambiar; si no, nulo. */
   readonly subidaQueAvisa: number | null;
+  /** Si los avisos al móvil están encendidos en Estook (sus claves VAPID puestas). */
+  readonly hayMovil: boolean;
 }
 
 /**
@@ -158,9 +162,9 @@ export const misAvisosElegidos = consulta<Record<string, never>, SalidaMisAvisos
       organizacionId === null ? 0 : await suAmplitud(contexto.sql, organizacionId, personaId);
 
     const guardadas = await contexto.sql<
-      { tipo: TipoDeAviso; en_la_app: boolean; por_correo: boolean }[]
+      { tipo: TipoDeAviso; en_la_app: boolean; por_correo: boolean; al_movil: boolean | null }[]
     >`
-      select tipo, en_la_app, por_correo from estook.preferencia_de_aviso
+      select tipo, en_la_app, por_correo, al_movil from estook.preferencia_de_aviso
        where persona_id = ${personaId}
     `;
     const deCadaTipo = new Map(guardadas.map((g) => [g.tipo, g] as const));
@@ -174,7 +178,11 @@ export const misAvisosElegidos = consulta<Record<string, never>, SalidaMisAvisos
         amplitud,
         guardada === undefined
           ? null
-          : { enLaApp: guardada.en_la_app, porCorreo: guardada.por_correo },
+          : {
+              enLaApp: guardada.en_la_app,
+              porCorreo: guardada.por_correo,
+              ...(guardada.al_movil === null ? {} : { alMovil: guardada.al_movil }),
+            },
       );
       const como = COMO_ES_EL_AVISO[tipo];
       return {
@@ -184,6 +192,7 @@ export const misAvisosElegidos = consulta<Record<string, never>, SalidaMisAvisos
         grupo: como.grupo,
         enLaApp: vale.enLaApp,
         porCorreo: vale.porCorreo,
+        alMovil: vale.alMovil,
       };
     });
 
@@ -209,6 +218,7 @@ export const misAvisosElegidos = consulta<Record<string, never>, SalidaMisAvisos
       correo: yo[0]?.correo ?? null,
       hayCorreo: contexto.correo !== null,
       subidaQueAvisa,
+      hayMovil: contexto.movil !== null,
     };
   },
 });

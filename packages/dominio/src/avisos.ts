@@ -50,6 +50,11 @@ export const TIPOS_DE_AVISO = [
   // ── H2 (decisión 0069) ──────────────────────────────────────────────────
   'horario.publicado',
   'horario.cambiado',
+  // ── I (decisión 0070) ───────────────────────────────────────────────────
+  'turno.entras',
+  'lote.caduca',
+  'pedido.no_llega',
+  'fichaje.sin_apuntar',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -77,6 +82,14 @@ export interface ComoEsElAviso {
   /** Si sale también por correo sin que nadie lo toque. Casi nunca (0017, regla 1). */
   readonly correoDeFabrica: boolean;
   /**
+   * Si suena en el móvil sin que nadie lo toque (I · 0070). **Solo lo que pide hacer
+   * algo ya**: entrar a tu turno, gastar lo que caduca, un pedido que no llega, que te
+   * pidan ayuda, tu horario y tus fichajes. Lo demás se queda en la campana, y cada uno
+   * lo enciende si quiere. Y lo que suena en el móvil **no sale también por correo**
+   * (0017): el correo es para quien no tiene el móvil puesto.
+   */
+  readonly movilDeFabrica: boolean;
+  /**
    * Si llega a la campana sin que nadie lo toque. Casi todos sí; **lo que ya dice
    * «Hoy» no** (R2): los productos bajo mínimo están en «Hoy» cada mañana, y en la
    * campana serían lo mismo dos veces. Se enciende en Ajustes para tenerlo por correo.
@@ -91,6 +104,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Compras',
     deTuEquipo: true,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
   'pedido.mandado': {
     nombre: 'Se manda un pedido',
@@ -98,13 +112,15 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Compras',
     deTuEquipo: true,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
   'pedido.invitacion': {
     nombre: 'Te piden que rellenes un pedido',
-    explica: 'Suele ser con prisa: por eso sale también por correo.',
+    explica: 'Suele ser con prisa: te llega al momento, al móvil y al correo.',
     grupo: 'Compras',
     deTuEquipo: false,
     correoDeFabrica: true,
+    movilDeFabrica: true,
   },
   'pedido.listo': {
     nombre: 'Terminan un pedido que pediste rellenar',
@@ -112,6 +128,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Compras',
     deTuEquipo: false,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
   'albaran.incidencias': {
     nombre: 'Un albarán llega con incidencias',
@@ -119,6 +136,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Compras',
     deTuEquipo: false,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
   'precio.subida': {
     nombre: 'Un proveedor sube un precio',
@@ -126,6 +144,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Compras',
     deTuEquipo: false,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
   'merma.grande': {
     nombre: 'Se tira algo caro',
@@ -133,6 +152,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Almacén',
     deTuEquipo: true,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
   'carta.publicada': {
     nombre: 'Hay carta nueva',
@@ -140,6 +160,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Carta',
     deTuEquipo: false,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
   'tablon.nota': {
     nombre: 'Una nota nueva en el Tablón',
@@ -147,6 +168,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
 
   // ── R2 (decisión 0053) ──────────────────────────────────────────────────
@@ -156,6 +178,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Compras',
     deTuEquipo: false,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
   'almacen.bajo_minimo': {
     nombre: 'Productos bajo mínimo',
@@ -163,6 +186,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Almacén',
     deTuEquipo: false,
     correoDeFabrica: false,
+    movilDeFabrica: false,
     campanaDeFabrica: false,
   },
   'informe.dia': {
@@ -171,6 +195,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Negocio',
     deTuEquipo: false,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
   'informe.semana': {
     nombre: 'Tu semana',
@@ -178,6 +203,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Negocio',
     deTuEquipo: false,
     correoDeFabrica: true,
+    movilDeFabrica: false,
   },
   'informe.mes': {
     nombre: 'Tu mes',
@@ -185,6 +211,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Negocio',
     deTuEquipo: false,
     correoDeFabrica: true,
+    movilDeFabrica: false,
   },
   'google.nota': {
     nombre: 'Baja tu nota en Google',
@@ -192,6 +219,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Negocio',
     deTuEquipo: false,
     correoDeFabrica: false,
+    movilDeFabrica: false,
   },
 
   // ── H1 (decisión 0068) ──────────────────────────────────────────────────
@@ -204,6 +232,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: true,
+    movilDeFabrica: true,
   },
 
   // ── H2 (decisión 0069) ──────────────────────────────────────────────────
@@ -217,6 +246,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: true,
+    movilDeFabrica: true,
   },
   'horario.cambiado': {
     nombre: 'Te cambian el horario',
@@ -224,6 +254,46 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: true,
+    movilDeFabrica: true,
+  },
+
+  // ── I (decisión 0070) ───────────────────────────────────────────────────
+  //
+  // Los cuatro que trae la app instalable. **Por correo, ninguno**: o llegan en el
+  // momento o no sirven («entras en cinco minutos» a las once de la noche, no).
+  'turno.entras': {
+    nombre: 'Entras en cinco minutos',
+    explica: 'Antes de cada turno, si no has fichado. Mira el horario publicado o el de siempre.',
+    grupo: 'Equipo',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: true,
+  },
+  'lote.caduca': {
+    nombre: 'Algo caduca',
+    explica: 'La víspera a las 18:00 y el mismo día por la mañana, para gastarlo antes.',
+    grupo: 'Almacén',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: true,
+  },
+  'pedido.no_llega': {
+    nombre: 'Un pedido no ha llegado',
+    explica:
+      'Media hora después de cuando suele llegar, si el proveedor lo tiene puesto en su ficha.',
+    grupo: 'Compras',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: true,
+  },
+  'fichaje.sin_apuntar': {
+    nombre: 'Un fichaje sin conexión no se ha podido apuntar',
+    explica:
+      'Del aparato del local, al volver la conexión: por ejemplo, un PIN que no era de nadie.',
+    grupo: 'Equipo',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: true,
   },
 };
 
@@ -246,6 +316,8 @@ export const AMPLITUD_DE_QUIEN_LLEVA_EL_NEGOCIO = 80;
 export interface PreferenciaDeAviso {
   readonly enLaApp: boolean;
   readonly porCorreo: boolean;
+  /** Que suene en el móvil (I · 0070). Como el correo, nunca sin la campana. */
+  readonly alMovil: boolean;
 }
 
 /** Cómo viene cada aviso para alguien con este puesto, si no ha tocado nada. */
@@ -254,7 +326,11 @@ export function deFabrica(tipo: TipoDeAviso, amplitud: number): PreferenciaDeAvi
   const enLaApp =
     (como.campanaDeFabrica ?? true) &&
     !(como.deTuEquipo && amplitud >= AMPLITUD_DE_QUIEN_LLEVA_EL_NEGOCIO);
-  return { enLaApp, porCorreo: enLaApp && como.correoDeFabrica };
+  return {
+    enLaApp,
+    porCorreo: enLaApp && como.correoDeFabrica,
+    alMovil: enLaApp && como.movilDeFabrica,
+  };
 }
 
 /**
@@ -262,6 +338,7 @@ export function deFabrica(tipo: TipoDeAviso, amplitud: number): PreferenciaDeAvi
  *
  * **El correo nunca sin la campana**: un aviso que llega al correo y no está en la
  * app no se puede marcar como hecho en ningún sitio. Apagar la app apaga el correo.
+ * Y el móvil, igual (I · 0070): tocar el aviso del móvil abre la campana.
  */
 export function laPreferencia(
   tipo: TipoDeAviso,
@@ -271,7 +348,8 @@ export function laPreferencia(
   const fabrica = deFabrica(tipo, amplitud);
   const enLaApp = guardada?.enLaApp ?? fabrica.enLaApp;
   const porCorreo = guardada?.porCorreo ?? fabrica.porCorreo;
-  return { enLaApp, porCorreo: enLaApp && porCorreo };
+  const alMovil = guardada?.alMovil ?? fabrica.alMovil;
+  return { enLaApp, porCorreo: enLaApp && porCorreo, alMovil: enLaApp && alMovil };
 }
 
 // ── Cuándo avisa ─────────────────────────────────────────────────────────────
@@ -536,6 +614,122 @@ export function avisoDeFichajeCorregido(
   return {
     titulo: `${quien} ha corregido tu fichaje del ${comoSeLlamaElDia(diaDeLaSemana(fecha))} ${sinAnio}`,
     detalle: `Motivo: ${motivo.charAt(0).toLowerCase()}${motivo.slice(1)}${/[.!?]$/.test(motivo) ? '' : '.'} El de antes sigue a la vista en tus fichajes.`,
+  };
+}
+
+// ── I · lo que avisa el móvil (decisión 0070) ────────────────────────────────
+
+/**
+ * «Entras en 5 minutos» · «A las 10:00 en Bar Centro. Tócalo para fichar.»
+ *
+ * Los minutos se cuentan al escribirlo, no se ponen fijos: si el aviso sale un
+ * minuto tarde, dice cuatro, que es la verdad.
+ */
+export function avisoDeEntrasEnUnRato(
+  minutos: number,
+  hora: string,
+  local: string,
+): LoQueDiceUnAviso {
+  return {
+    titulo: minutos <= 0 ? 'Entras ahora' : `Entras en ${plural(minutos, 'minuto', 'minutos')}`,
+    detalle: `A las ${hora} en ${local}. Tócalo para fichar.`,
+  };
+}
+
+/**
+ * «Mañana caducan 3 lotes» · «Leche, nata y tomate. Gástalo primero.» El de hoy deja
+ * viejo al de la víspera (`sustituyeA`).
+ */
+export function avisoDeCaducidad(
+  cuando: 'hoy' | 'manana',
+  productos: readonly string[],
+): LoQueDiceUnAviso {
+  const n = productos.length;
+  const cuantos = n === 1 ? 'caduca un lote' : `caducan ${String(n)} lotes`;
+  const unicos = [...new Set(productos)];
+  const nombrados = unicos.slice(0, PRODUCTOS_QUE_SE_NOMBRAN);
+  const quedan = unicos.length - nombrados.length;
+  const lista =
+    quedan > 0 ? `${nombrados.join(', ')} y ${String(quedan)} más` : enumerar(nombrados);
+  const queHacer = cuando === 'hoy' ? 'Gástalo hoy o apúntalo como merma.' : 'Gástalo primero.';
+  return {
+    titulo: cuando === 'hoy' ? `Hoy ${cuantos}` : `Mañana ${cuantos}`,
+    detalle: `${lista.charAt(0).toUpperCase()}${lista.slice(1)}. ${queHacer}`,
+  };
+}
+
+/**
+ * «El pedido 12 a Frutas Pepe no ha llegado» · «Suele llegar hacia las 10:00. Llama
+ * al proveedor, o recíbelo cuando llegue.»
+ */
+export function avisoDePedidoQueNoLlega(
+  proveedor: string,
+  numero: number,
+  sueleLlegar: string,
+): LoQueDiceUnAviso {
+  return {
+    titulo: `El pedido ${String(numero)} a ${proveedor} no ha llegado`,
+    detalle: `Suele llegar hacia las ${sueleLlegar}. Llama al proveedor, o recíbelo cuando llegue.`,
+  };
+}
+
+/** Por qué un fichaje del aparato, hecho sin conexión, no se ha apuntado al volver. */
+export type PorQueNoSeApunto = 'pin' | 'ya_estaba' | 'no_estaba' | 'otro';
+
+const POR_QUE_NO_SE_APUNTO: Readonly<Record<PorQueNoSeApunto, string>> = {
+  pin: 'el PIN no era de nadie del local',
+  ya_estaba: 'esa persona ya estaba fichada',
+  no_estaba: 'esa persona no estaba fichada',
+  otro: 'Estook no lo ha podido apuntar',
+};
+
+export type LoQueSeFicha = 'entrada' | 'pausa' | 'vuelta' | 'salida';
+
+const LO_QUE_SE_FICHA: Readonly<Record<LoQueSeFicha, string>> = {
+  entrada: 'Una entrada',
+  pausa: 'Una pausa',
+  vuelta: 'Una vuelta de la pausa',
+  salida: 'Una salida',
+};
+
+/**
+ * «Un fichaje sin conexión no se ha podido apuntar» · «Una entrada en Tablet barra, el
+ * martes 6 a las 09:02: el PIN no era de nadie del local. Pregunta quién fue y
+ * apúntaselo en su ficha.»
+ */
+export function avisoDeFichajeSinApuntar(
+  que: LoQueSeFicha,
+  aparato: string,
+  cuando: string,
+  porque: PorQueNoSeApunto,
+  quien: string | null,
+): LoQueDiceUnAviso {
+  const queHacer =
+    porque === 'pin'
+      ? 'Pregunta quién fue y apúntaselo en su ficha.'
+      : `Mira la ficha de ${quien ?? 'esa persona'} por si hay que corregir algo.`;
+  const dequien = quien === null ? '' : ` de ${quien}`;
+  return {
+    titulo: 'Un fichaje sin conexión no se ha podido apuntar',
+    detalle: `${LO_QUE_SE_FICHA[que]}${dequien} en ${aparato}, ${cuando}: ${POR_QUE_NO_SE_APUNTO[porque]}. ${queHacer}`,
+  };
+}
+
+/**
+ * «Carla ha apuntado un fichaje tuyo del martes 6 de octubre» · «Motivo: fichó en la
+ * tablet sin conexión con otro PIN. Lo ves en tus fichajes.» (0070). Es un cambio en
+ * lo suyo, como una corrección, y le llega igual (0062).
+ */
+export function avisoDeFichajeApuntado(
+  quien: string,
+  dia: FechaOperativa | string,
+  motivo: string,
+): LoQueDiceUnAviso {
+  const fecha = dia as FechaOperativa;
+  const sinAnio = fechaEnLetra(fecha).replace(/ de \d{4}$/, '');
+  return {
+    titulo: `${quien} ha apuntado un fichaje tuyo del ${comoSeLlamaElDia(diaDeLaSemana(fecha))} ${sinAnio}`,
+    detalle: `Motivo: ${motivo.charAt(0).toLowerCase()}${motivo.slice(1)}${/[.!?]$/.test(motivo) ? '' : '.'} Lo ves en tus fichajes.`,
   };
 }
 

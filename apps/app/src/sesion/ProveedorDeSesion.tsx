@@ -1,8 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { usarDeshacer } from '@estook/ui';
+import { Boton, Botones, Hoja, usarDeshacer } from '@estook/ui';
 import { crearClienteDeLaApp, guardarToken, hayApi, leerToken } from '../datos/cliente.ts';
+import { dejarDeRecibir } from '../sinConexion/avisosAlMovil.ts';
+import {
+  guardarAlCambiar,
+  olvidarLoGuardado,
+  recuperarLoGuardado,
+} from '../sinConexion/cacheGuardada.ts';
+import { loPendienteDe, mandarLoPendiente, tirarLoDe } from '../sinConexion/cola.ts';
+import { hayRed, laApiContesta, marcarSinRed } from '../sinConexion/red.ts';
 import { ContextoDeSesion, type QuienSoy, type Sesion } from './Sesion.tsx';
+
+/** Lo que se espera a `quien_soy` antes de mirar si hay red de verdad (0070). */
+const SIN_CONTESTAR_MS = 4_000;
 
 /**
  * Quien ha entrado, y cómo se mantiene al día (M4). Lo que se sabe, y por qué sale
@@ -31,9 +42,13 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
     setHayToken(false);
     // Se tira la cache entera, no solo `quien_soy`: dentro puede haber datos del
     // local de quien acaba de salir, y no tienen por que estar cuando entre otra
-    // persona en la misma tablet.
+    // persona en la misma tablet. **Y lo guardado en el móvil también** (0070).
     cache.clear();
+    void olvidarLoGuardado();
   }, [cache]);
+
+  // Lo último que se ha visto, guardado en el móvil para mirarlo sin señal (0070).
+  useEffect(() => guardarAlCambiar(cache, leerToken), [cache]);
 
   const consulta = useQuery({
     queryKey: ['quien_soy'],
@@ -62,6 +77,40 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
     },
   });
 
+  // **El servidor no contesta porque no hay conexión** (0070): en vez de «no llego
+  // al servidor», lo último que se vio, con el aviso de arriba. Una vez por apertura.
+  // También **en pausa**: sin red, la consulta ni sale y espera; sin datos, eso no es
+  // «no has entrado» (lo cazó una prueba con una wifi sin internet, 1-oct).
+  const enPausaSinDatos = consulta.fetchStatus === 'paused' && consulta.data === undefined;
+  const sinConexion =
+    enPausaSinDatos || (consulta.isError && consulta.error.message === 'sin_conexion');
+  const recuperado = useRef(false);
+  useEffect(() => {
+    if (!sinConexion || recuperado.current) return;
+    recuperado.current = true;
+    void recuperarLoGuardado(cache, leerToken(), 'sin_conexion');
+  }, [sinConexion, cache]);
+
+  // **Una señal colgada** (0070): el móvil cree que tiene red, pero nada contesta, y
+  // la petición tarda minutos en fallar. Si en cuatro segundos no ha contestado y
+  // `/salud` tampoco, es «sin conexión»: lo último que se vio, con su aviso, como hace
+  // el trabajador de servicio con las pantallas. Si la API sí está, se sigue esperando.
+  const esperando = consulta.isPending && consulta.fetchStatus === 'fetching';
+  useEffect(() => {
+    if (!esperando || recuperado.current) return;
+    const tope = setTimeout(() => {
+      void laApiContesta().then(async (contesta) => {
+        if (contesta || recuperado.current) return;
+        marcarSinRed();
+        recuperado.current = true;
+        await recuperarLoGuardado(cache, leerToken(), 'sin_conexion');
+      });
+    }, SIN_CONTESTAR_MS);
+    return () => {
+      clearTimeout(tope);
+    };
+  }, [esperando, cache]);
+
   const { refetch } = consulta;
   const volverAProbar = useCallback(() => {
     void refetch();
@@ -76,23 +125,50 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
     [cache],
   );
 
-  const salir = useCallback(async () => {
-    // Se avisa al servidor para que cierre la fila, y **luego** se borra el
-    // token pase lo que pase. Si el aviso fallara y no se borrara, quien pulsa
-    // «salir» se quedaria dentro, que es lo peor que puede hacer un boton de
-    // salir. La sesion del servidor caduca sola de todas formas.
-    //
-    // Este `finally` tapo un fallo durante un tiempo: `salir` no admitia
-    // demostraciones y devolvia 403, la pantalla se olvidaba del token igual, y
-    // por eso nadie noto que **la sesion seguia viva en el servidor**. Un
-    // remiendo que funciona esconde el agujero que hay debajo. Ya no: `salir`
-    // borra la visita, y ademas hay un boton propio en la barra de demostracion.
-    try {
-      await cliente.ejecutar('salir', {});
-    } finally {
-      olvidarToken.current();
+  /**
+   * **Salir con cosas sin mandar** (0070): lo hecho sin señal es de quien sale, y si se
+   * va se pierde. Antes de salir se intenta mandar; si sigue sin salir, se pregunta,
+   * con el número delante. Y al salir, **este móvil deja de recibir sus avisos**: si
+   * entra otra persona en él, no le llegan los del anterior.
+   */
+  const [sinMandarAlSalir, setSinMandarAlSalir] = useState<number | null>(null);
+  const personaId = consulta.data?.personaId ?? null;
+
+  const salirDeVerdad = useCallback(
+    async (tirarLoPendiente: boolean) => {
+      setSinMandarAlSalir(null);
+      if (tirarLoPendiente && personaId !== null) await tirarLoDe(personaId);
+      try {
+        await dejarDeRecibir(cliente);
+      } catch {
+        // Si no se puede quitar ahora, se quita al entrar otra persona en este móvil.
+      }
+      // Se avisa al servidor para que cierre la fila, y **luego** se borra el
+      // token pase lo que pase: si el aviso fallara y no se borrara, quien pulsa
+      // «salir» se quedaría dentro. La sesión del servidor caduca sola de todas formas.
+      try {
+        await cliente.ejecutar('salir', {});
+      } finally {
+        olvidarToken.current();
+      }
+    },
+    [cliente, personaId],
+  );
+
+  const salirConCuidado = useCallback(async () => {
+    if (personaId !== null) {
+      if (hayRed()) await mandarLoPendiente(cliente, personaId);
+      const quedan = loPendienteDe(personaId).length;
+      if (quedan > 0) {
+        setSinMandarAlSalir(quedan);
+        return;
+      }
     }
-  }, [cliente]);
+    await salirDeVerdad(false);
+  }, [cliente, personaId, salirDeVerdad]);
+
+  // Lo de siempre, con cuidado (0070): ver `salirConCuidado`.
+  const salir = salirConCuidado;
 
   const refrescar = useCallback(async () => {
     await cache.invalidateQueries({ queryKey: ['quien_soy'] });
@@ -187,7 +263,8 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
       yo: consulta.data ?? null,
       permisos: consulta.data?.permisos ?? {},
       cargando: hayApi && hayToken && consulta.isLoading,
-      sinServidor: hayApi && hayToken && consulta.isError && consulta.data === undefined,
+      sinServidor:
+        hayApi && hayToken && consulta.data === undefined && (consulta.isError || enPausaSinDatos),
       probandoOtraVez: consulta.isFetching,
       volverAProbar,
       hayApi,
@@ -202,6 +279,7 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
       consulta.isLoading,
       consulta.isError,
       consulta.isFetching,
+      enPausaSinDatos,
       volverAProbar,
       hayToken,
       cliente,
@@ -212,5 +290,45 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
     ],
   );
 
-  return <ContextoDeSesion.Provider value={valor}>{children}</ContextoDeSesion.Provider>;
+  return (
+    <ContextoDeSesion.Provider value={valor}>
+      {children}
+      <Hoja
+        abierta={sinMandarAlSalir !== null}
+        alCerrar={() => {
+          setSinMandarAlSalir(null);
+        }}
+        titulo={
+          sinMandarAlSalir === 1
+            ? 'Tienes una cosa sin mandar'
+            : `Tienes ${String(sinMandarAlSalir ?? 0)} cosas sin mandar`
+        }
+        pie={
+          <Botones>
+            <Boton
+              tono="texto"
+              onClick={() => {
+                setSinMandarAlSalir(null);
+              }}
+            >
+              Esperar a tener señal
+            </Boton>
+            <Boton
+              tono="peligro"
+              onClick={() => {
+                void salirDeVerdad(true);
+              }}
+            >
+              Salir y perderlo
+            </Boton>
+          </Botones>
+        }
+      >
+        <p className="text-cuerpo">
+          Lo hiciste sin señal y todavía no ha llegado a Estook. Si sales ahora, se pierde: con
+          señal sale solo en unos segundos.
+        </p>
+      </Hoja>
+    </ContextoDeSesion.Provider>
+  );
 }

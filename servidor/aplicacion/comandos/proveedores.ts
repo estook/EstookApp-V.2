@@ -46,6 +46,8 @@ const ficha = {
   dias_de_reparto: z.array(z.number().int().min(1).max(7)).max(7).optional(),
   plazo_de_entrega: z.number().int().min(0).max(30).optional(),
   hora_limite: hora.nullable().optional(),
+  /** Hacia qué hora suele llegar su reparto (0070). En blanco, no avisa si no llega. */
+  suele_llegar_a: hora.nullable().optional(),
   pedido_minimo_centimos: z.number().int().min(0).max(100_000_000).nullable().optional(),
   portes_centimos: z.number().int().min(0).max(10_000_000).nullable().optional(),
   forma_de_pago: z.enum(FORMAS_DE_PAGO).nullable().optional(),
@@ -68,6 +70,7 @@ interface FichaGuardada {
   dias_de_reparto: number[];
   plazo_de_entrega: number;
   hora_limite: string | null;
+  suele_llegar_a: string | null;
   pedido_minimo_centimos: number | null;
   portes_centimos: number | null;
   forma_de_pago: string | null;
@@ -85,6 +88,7 @@ const VACIA: FichaGuardada = {
   dias_de_reparto: [],
   plazo_de_entrega: 1,
   hora_limite: null,
+  suele_llegar_a: null,
   pedido_minimo_centimos: null,
   portes_centimos: null,
   forma_de_pago: null,
@@ -130,6 +134,8 @@ function mezclar(entrada: Ficha, antes: FichaGuardada): FichaGuardada {
     dias_de_reparto: dias,
     plazo_de_entrega: entrada.plazo_de_entrega ?? antes.plazo_de_entrega,
     hora_limite: entrada.hora_limite === undefined ? antes.hora_limite : entrada.hora_limite,
+    suele_llegar_a:
+      entrada.suele_llegar_a === undefined ? antes.suele_llegar_a : entrada.suele_llegar_a,
     pedido_minimo_centimos:
       entrada.pedido_minimo_centimos === undefined
         ? antes.pedido_minimo_centimos
@@ -215,14 +221,14 @@ export const crearProveedor = comando<
     const creados = await contexto.sql<{ id: string }[]>`
       insert into estook.proveedor (
         local_id, nombre, notas, cif, contacto, telefono, whatsapp, correo, web,
-        como_se_pide, dias_de_reparto, plazo_de_entrega, hora_limite,
+        como_se_pide, dias_de_reparto, plazo_de_entrega, hora_limite, suele_llegar_a,
         pedido_minimo_centimos, portes_centimos, forma_de_pago, dias_de_pago
       )
       values (
         ${localId}, ${entrada.nombre}, ${entrada.notas ?? null}, ${f.cif}, ${f.contacto},
         ${f.telefono}, ${f.whatsapp}, ${f.correo}, ${f.web},
         ${f.como_se_pide}::estook.canal_de_pedido, ${comoLista(f.dias_de_reparto)}::text::smallint[],
-        ${f.plazo_de_entrega}, ${f.hora_limite}::time,
+        ${f.plazo_de_entrega}, ${f.hora_limite}::time, ${f.suele_llegar_a}::time,
         ${f.pedido_minimo_centimos}, ${f.portes_centimos},
         ${f.forma_de_pago}::estook.forma_de_pago, ${f.dias_de_pago}
       )
@@ -288,6 +294,7 @@ export const cambiarProveedor = comando<EntradaCambiarProveedor, { proveedorId: 
              como_se_pide::text as como_se_pide, dias_de_reparto::int[] as dias_de_reparto,
              plazo_de_entrega::int as plazo_de_entrega,
              to_char(hora_limite, 'HH24:MI') as hora_limite,
+             to_char(suele_llegar_a, 'HH24:MI') as suele_llegar_a,
              pedido_minimo_centimos::int as pedido_minimo_centimos,
              portes_centimos::int as portes_centimos,
              forma_de_pago::text as forma_de_pago, dias_de_pago::int as dias_de_pago
@@ -319,6 +326,7 @@ export const cambiarProveedor = comando<EntradaCambiarProveedor, { proveedorId: 
              dias_de_reparto = ${comoLista(f.dias_de_reparto)}::text::smallint[],
              plazo_de_entrega = ${f.plazo_de_entrega},
              hora_limite = ${f.hora_limite}::time,
+             suele_llegar_a = ${f.suele_llegar_a}::time,
              pedido_minimo_centimos = ${f.pedido_minimo_centimos},
              portes_centimos = ${f.portes_centimos},
              forma_de_pago = ${f.forma_de_pago}::estook.forma_de_pago,

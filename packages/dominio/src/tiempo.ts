@@ -136,6 +136,31 @@ export function horaEnElLocal(instante: Date, zonaHoraria: string): string {
 }
 
 /**
+ * El instante en que en el local es esa fecha a esa hora, «HH:MM» (I · 0070).
+ *
+ * Es la vuelta de `horaEnElLocal`: «a las 08:00 del martes en Madrid» como instante,
+ * para saber cuándo acaban las horas de silencio de alguien. Se ajusta dos veces con
+ * lo que dice `Intl`, que conoce los cambios de hora: la primera vez se mira como si
+ * el local estuviera en hora universal, y se corrige por lo que se ha desviado.
+ *
+ * Una hora que **no existe** ese día (las 02:30 del último domingo de marzo, que se
+ * salta) cae después del salto, y una que existe dos veces, en una de las dos: para
+ * las horas de silencio, media hora arriba o abajo dos noches al año da igual.
+ */
+export function instanteEnElLocal(fecha: FechaOperativa, hora: string, zonaHoraria: string): Date {
+  const [anio, mes, dia] = fecha.split('-').map(Number) as [number, number, number];
+  const [h, m] = hora.split(':').map(Number) as [number, number];
+  const comoSiFueraUtc = Date.UTC(anio, mes - 1, dia, h, m);
+  let instante = comoSiFueraUtc;
+  for (let vuelta = 0; vuelta < 2; vuelta += 1) {
+    const visto = relojDelLocal(new Date(instante), zonaHoraria);
+    instante +=
+      comoSiFueraUtc - Date.UTC(visto.anio, visto.mes - 1, visto.dia, visto.hora, visto.minuto);
+  }
+  return new Date(instante);
+}
+
+/**
  * El día de la semana de una fecha, del 1 (lunes) al 7 (domingo) (M7).
  *
  * Es el `isodow` de Postgres, que es como se guardan los días de reparto de un

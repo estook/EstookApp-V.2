@@ -3,6 +3,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwind from '@tailwindcss/vite';
 import { laPoliticaDeSeguridad } from '../../herramientas/politica-de-seguridad.ts';
+import { elTrabajadorDeServicio } from '../../herramientas/trabajador-de-servicio.ts';
 
 /**
  * Estook · app
@@ -35,6 +36,9 @@ export default defineConfig(({ mode }) => {
         direccionDeLaApi: variables['VITE_API_URL'] ?? '',
         enDesarrollo: mode !== 'production',
       }),
+      // El trabajador de servicio (0070): Estook sin señal y los avisos al móvil. Solo
+      // al construir: en desarrollo, guardar el código haría ver lo de ayer.
+      elTrabajadorDeServicio(),
     ],
     build: {
       outDir: 'dist',

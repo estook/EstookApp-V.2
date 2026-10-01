@@ -71,7 +71,17 @@ export default defineConfig({
   // segunda vuelta, la que pasa: de cada prueba repetida de Safari quedaba el rastro
   // de cuando salió bien, y ni uno de cuando falló. Así se graba la primera y solo
   // se guarda si falla; y el informe se sube aunque la vuelta acabe en verde.
-  use: { trace: enCI ? 'retain-on-first-failure' : 'on-first-retry' },
+  use: {
+    trace: enCI ? 'retain-on-first-failure' : 'on-first-retry',
+    /*
+      **El trabajador de servicio, apagado de fábrica** (I · 0070). Con él encendido,
+      lo que pide la app pasa por él, y Playwright no puede cortar ni cambiar esas
+      peticiones (`page.route`): la prueba que corta un trozo de la app para ver que
+      se dice bien dejaría de cortar nada. Lo enciende solo la prueba que lo prueba
+      (`la-app-instalable.spec.ts`).
+    */
+    serviceWorkers: 'block',
+  },
 
   snapshotPathTemplate: '{testDir}/capturas/{platform}/{arg}-{projectName}{ext}',
   ignoreSnapshots: !conCapturas,

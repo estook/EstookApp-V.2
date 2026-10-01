@@ -58,6 +58,7 @@ export {
   jornadaDe,
   fechaEnElLocal,
   horaEnElLocal,
+  instanteEnElLocal,
   diaDeLaSemana,
   masDias,
   diasEntre,
@@ -594,7 +595,12 @@ export {
   avisoDeMerma,
   avisoDeNota,
   avisoDeNotaDeGoogle,
+  avisoDeCaducidad,
+  avisoDeEntrasEnUnRato,
+  avisoDeFichajeApuntado,
   avisoDeFichajeCorregido,
+  avisoDeFichajeSinApuntar,
+  avisoDePedidoQueNoLlega,
   avisoDePedidoEmpezado,
   avisoDePedidoListo,
   avisoDePedidoMandado,
@@ -617,11 +623,32 @@ export type {
   ComoEsElAviso,
   GrupoDeAvisos,
   LoQueDiceUnAviso,
+  LoQueSeFicha,
+  PorQueNoSeApunto,
   OtroProveedorMasBarato,
   PreferenciaDeAviso,
   TipoDeAviso,
   TramoDeAvisos,
 } from './avisos.ts';
+
+// ── I · el móvil: cuándo suena y lo hecho sin conexión (0070) ─────────────────
+export {
+  DIAS_QUE_ESPERA_UN_AVISO,
+  MINUTOS_ANTES_DE_ENTRAR,
+  MODOS_DE_SONAR,
+  SILENCIO_DE_FABRICA,
+  SIN_CONEXION_COMO_MUCHO_MS,
+  SIN_CONEXION_SE_REVISA_MS,
+  cuandoPuedeSonar,
+  esCuandoSuena,
+  estaEnSilencio,
+  laHoraDeLoHecho,
+  resumenParaElMovil,
+  seAceptaLoHecho,
+  seRevisaElFichaje,
+  suModo,
+} from './movil.ts';
+export type { ComoLeSuena, CuandoSuena, TurnoQueSeMira } from './movil.ts';
 
 // ── R2 · los informes: Tu día, Tu semana y Tu mes (0053) ─────────────────────
 export {

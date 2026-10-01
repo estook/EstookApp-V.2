@@ -260,6 +260,21 @@ export const ERRORES = {
     401,
   ),
 
+  // ── I · la app instalable (0070) ──────────────────────────────────────────
+  hecho_hace_demasiado: error(
+    'hecho_hace_demasiado',
+    'Esto se hizo sin conexión hace más de una semana, y Estook ya no lo apunta solo.',
+    'Pídele a quien lleva el equipo que lo apunte a mano, con su motivo.',
+    422,
+  ),
+
+  movil_sin_encender: error(
+    'movil_sin_encender',
+    'Los avisos al móvil todavía no están encendidos en Estook.',
+    'Mientras tanto, todo llega a la campana y, lo importante, también al correo.',
+    503,
+  ),
+
   correo_de_otra_persona: error(
     'correo_de_otra_persona',
     'Ese correo ya es de otra persona de Estook.',

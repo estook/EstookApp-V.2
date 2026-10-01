@@ -60,7 +60,9 @@ export function FichaDePersona({
 }) {
   const { cliente } = usarSesion();
   const cache = useQueryClient();
-  const [cambiando, setCambiando] = useState<'retribucion' | 'horario' | 'correo' | null>(null);
+  const [cambiando, setCambiando] = useState<
+    'retribucion' | 'horario' | 'correo' | 'fichaje_que_falta' | null
+  >(null);
   const [corrigiendo, setCorrigiendo] = useState<FichajeDeLaFicha | null>(null);
   // De quién está abierto el historial entero. Se guarda la persona y no un sí o
   // un no para que, al abrir la ficha de otra, se vuelva a empezar por su ficha.
@@ -327,6 +329,20 @@ export function FichaDePersona({
             )}
           </section>
 
+          {/* El fichaje que falta (0070): se olvidó de fichar, o el aparato no pudo apuntarlo. */}
+          {datos.puedeEditar && (
+            <div>
+              <Boton
+                tono="texto"
+                onClick={() => {
+                  setCambiando('fichaje_que_falta');
+                }}
+              >
+                Apuntar un fichaje que falta
+              </Boton>
+            </div>
+          )}
+
           <p className="text-secundario text-texto-suave">
             En Estook desde el {datos.desde}. {datos.rolNombre}.
           </p>
@@ -367,6 +383,20 @@ export function FichaDePersona({
           }}
           alHecho={() => {
             void refrescar('Horario guardado');
+          }}
+          alFallar={setError}
+        />
+      )}
+
+      {datos !== undefined && cambiando === 'fichaje_que_falta' && (
+        <ApuntarFichajeQueFalta
+          personaId={datos.personaId}
+          nombre={datos.nombre}
+          alCerrar={() => {
+            setCambiando(null);
+          }}
+          alHecho={() => {
+            void refrescar('Fichaje apuntado');
           }}
           alFallar={setError}
         />
@@ -818,6 +848,138 @@ function CorregirFichaje({
           etiqueta="Por qué"
           obligatorio
           ayuda="Queda escrito con tu nombre. «Se fue a las 17:00 y no fichó»."
+          value={motivo}
+          onChange={(e) => {
+            setMotivo(e.currentTarget.value);
+          }}
+        />
+      </div>
+    </Hoja>
+  );
+}
+
+// ── Apuntar un fichaje que falta ─────────────────────────────────────────────
+
+/**
+ * «2026-10-06» de hoy, en la hora de quien mira. **Solo para proponer el día** en el
+ * formulario: que no sea del futuro y a qué jornada va lo decide el servidor (regla 10).
+ */
+function hoyEnFecha(): string {
+  const hoy = new Date(Date.now());
+  return `${String(hoy.getFullYear())}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+}
+
+/**
+ * **Apuntar un fichaje que falta** (0070): quien lleva el equipo, con su nombre y su
+ * motivo. Para quien se olvidó de fichar, o para lo que el aparato del local no pudo
+ * apuntar al volver la conexión. Como una corrección: queda escrito, a la persona le
+ * llega su aviso y no se puede apuntar encima de otro suyo.
+ */
+function ApuntarFichajeQueFalta({
+  personaId,
+  nombre,
+  alCerrar,
+  alHecho,
+  alFallar,
+}: {
+  readonly personaId: string;
+  readonly nombre: string;
+  readonly alCerrar: () => void;
+  readonly alHecho: () => void;
+  readonly alFallar: (error: ErrorDeLaApi) => void;
+}) {
+  const { cliente } = usarSesion();
+  const [dia, setDia] = useState(hoyEnFecha);
+  const [entra, setEntra] = useState('');
+  const [sale, setSale] = useState('');
+  const [motivo, setMotivo] = useState('');
+  const [guardando, setGuardando] = useState(false);
+
+  const listo = dia !== '' && entra !== '' && motivo.trim().length >= 3 && !guardando;
+
+  async function guardar() {
+    setGuardando(true);
+    const entroEn = conHora(`${dia}T12:00:00`, entra);
+    // Una salida antes que la entrada es del día siguiente: el turno de noche.
+    let salioEn: string | null = null;
+    if (sale !== '') {
+      const candidata = new Date(conHora(`${dia}T12:00:00`, sale));
+      if (candidata.getTime() < new Date(entroEn).getTime()) {
+        candidata.setDate(candidata.getDate() + 1);
+      }
+      salioEn = candidata.toISOString();
+    }
+    const respuesta = await cliente.ejecutar('apuntar_fichaje_que_falta', {
+      persona_id: personaId,
+      entro_en: entroEn,
+      salio_en: salioEn,
+      motivo: motivo.trim(),
+    });
+    setGuardando(false);
+    if (!respuesta.ok) {
+      alFallar(respuesta.error);
+      alCerrar();
+      return;
+    }
+    alHecho();
+  }
+
+  return (
+    <Hoja
+      abierta
+      alCerrar={alCerrar}
+      titulo={`Apuntar un fichaje de ${nombre}`}
+      pie={
+        <Botones>
+          <Boton tono="texto" onClick={alCerrar}>
+            Dejarlo
+          </Boton>
+          <Boton
+            tono="principal"
+            disabled={!listo}
+            cargando={guardando}
+            textoCargando="Apuntando"
+            onClick={() => {
+              void guardar();
+            }}
+          >
+            Apuntar
+          </Boton>
+        </Botones>
+      }
+    >
+      <div className="flex flex-col gap-e3">
+        <Campo
+          etiqueta="Qué día"
+          tipo="fecha"
+          value={dia}
+          onChange={(e) => {
+            setDia(e.currentTarget.value);
+          }}
+        />
+        <div className="grid grid-cols-2 gap-e3">
+          <Campo
+            etiqueta="Entró"
+            tipo="hora"
+            value={entra}
+            onChange={(e) => {
+              setEntra(e.currentTarget.value);
+            }}
+          />
+          <Campo
+            etiqueta="Salió"
+            tipo="hora"
+            value={sale}
+            ayuda="En blanco si sigue dentro."
+            onChange={(e) => {
+              setSale(e.currentTarget.value);
+            }}
+          />
+        </div>
+        <Campo
+          etiqueta="Por qué"
+          obligatorio
+          ayuda="Queda escrito con tu nombre, y a la persona le llega. «Fichó en la tablet sin conexión con otro PIN»."
           value={motivo}
           onChange={(e) => {
             setMotivo(e.currentTarget.value);

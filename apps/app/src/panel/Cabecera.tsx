@@ -39,6 +39,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  */
 export function CabeceraDelPanel() {
   const { yo } = usarSesion();
+  const [logoRoto, setLogoRoto] = useState<string | null>(null);
   const [abierta, setAbierta] = useState(false);
 
   const local = yo?.local ?? null;
@@ -96,10 +97,18 @@ export function CabeceraDelPanel() {
             aria-hidden
             className="grid size-[44px] shrink-0 place-items-center overflow-hidden rounded-medio border border-borde bg-fondo"
           >
-            {local?.logo == null ? (
+            {/* Sin señal, el logo (que viene de internet) no llega: se ve el de Estook (0070). */}
+            {local?.logo == null || local.logo === logoRoto ? (
               <Logo alto={16} />
             ) : (
-              <img src={local.logo} alt="" className="max-h-[34px] max-w-[34px] object-contain" />
+              <img
+                src={local.logo}
+                alt=""
+                onError={() => {
+                  setLogoRoto(local.logo);
+                }}
+                className="max-h-[34px] max-w-[34px] object-contain"
+              />
             )}
           </span>
 

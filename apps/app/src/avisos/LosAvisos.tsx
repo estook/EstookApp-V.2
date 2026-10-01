@@ -52,6 +52,11 @@ const ICONO_DEL_AVISO: Readonly<Record<TipoDeAviso, Icono>> = {
   // H2 (0069)
   'horario.publicado': IconoCalendario,
   'horario.cambiado': IconoCalendario,
+  // I (0070)
+  'turno.entras': IconoReloj,
+  'lote.caduca': IconoAtencion,
+  'pedido.no_llega': IconoReparto,
+  'fichaje.sin_apuntar': IconoReloj,
 };
 
 const TRAMOS: readonly TramoDeAvisos[] = ['Hoy', 'Ayer', 'Esta semana', 'Antes'];

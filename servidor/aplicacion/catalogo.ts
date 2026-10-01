@@ -51,16 +51,26 @@ import {
 import { apuntarMerma } from './comandos/merma.ts';
 import {
   acabarPausa,
+  apuntarFichajeQueFalta,
   corregirFichaje,
+  darPorBuenoElFichaje,
   empezarPausa,
   ficharEntrada,
   ficharSalida,
 } from './comandos/fichar.ts';
 import {
+  guardarCuandoSuena,
+  miMovil,
+  ponerEsteMovil,
+  probarMiMovil,
+  quitarEsteMovil,
+} from './comandos/movil.ts';
+import {
   aparatosParaFichar,
   elAparatoParaFichar,
   ficharAqui,
   ponerAparatoParaFichar,
+  prepararElAparatoSinConexion,
   quienFichaAqui,
   quitarAparatoParaFichar,
 } from './comandos/aparato-para-fichar.ts';
@@ -311,6 +321,8 @@ export const catalogo = {
     [elHorario.nombre]: elHorario,
     [elHorarioEnBorrador.nombre]: elHorarioEnBorrador,
     [elHorarioEnPdf.nombre]: elHorarioEnPdf,
+    // I · La app instalable (0070): el móvil de cada uno y cuándo suena.
+    [miMovil.nombre]: miMovil,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -528,5 +540,18 @@ export const catalogo = {
     [copiarLaSemanaAnterior.nombre]: copiarLaSemanaAnterior,
     [rellenarConElDeSiempre.nombre]: rellenarConElDeSiempre,
     [publicarElHorario.nombre]: publicarElHorario,
+
+    // ── I · La app instalable (0070) ───────────────────────────────────────
+    //
+    // El móvil de cada uno: ponerlo, quitarlo, probarlo y cuándo suena. Lo fichado
+    // sin conexión que hay que revisar, el fichaje que falta y el aparato del local
+    // preparado para cuando se caiga el wifi.
+    [ponerEsteMovil.nombre]: ponerEsteMovil,
+    [quitarEsteMovil.nombre]: quitarEsteMovil,
+    [probarMiMovil.nombre]: probarMiMovil,
+    [guardarCuandoSuena.nombre]: guardarCuandoSuena,
+    [darPorBuenoElFichaje.nombre]: darPorBuenoElFichaje,
+    [apuntarFichajeQueFalta.nombre]: apuntarFichajeQueFalta,
+    [prepararElAparatoSinConexion.nombre]: prepararElAparatoSinConexion,
   } as Record<string, Comando<never, unknown>>,
 };

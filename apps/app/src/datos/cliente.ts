@@ -1,5 +1,6 @@
 import { crearCliente, type ClienteApi } from '@estook/cliente-api';
 import type { Registro } from '@estook/utiles';
+import { pedirMirandoLaRed } from '../sinConexion/red.ts';
 
 /**
  * El cliente de la API, configurado una vez (M3, con la sesion de M4).
@@ -77,6 +78,8 @@ export function crearClienteDeLaApp(opciones: {
     // entrar y al salir. Con un valor fijo, la primera consulta despues de entrar
     // seguiria yendo sin el.
     token: leerToken,
+    // Lo que pasa de verdad con la red: si no sale, sin señal (0070).
+    pedir: pedirMirandoLaRed,
     ...(opciones.registro ? { registro: opciones.registro } : {}),
     ...(opciones.alCaducarLaSesion ? { alCaducarLaSesion: opciones.alCaducarLaSesion } : {}),
   });

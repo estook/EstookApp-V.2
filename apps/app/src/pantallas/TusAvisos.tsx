@@ -4,6 +4,8 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { GRUPOS_DE_AVISOS, type TipoDeAviso } from '@estook/dominio';
 import { Cargando, ErrorEnCristiano, Interruptor, Tarjeta, clases } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { CuandoSuenaElMovil, EsteMovil } from './EsteMovil.tsx';
+import { usarMiMovil } from '../ganchos/usarMiMovil.ts';
 
 /**
  * Ajustes → Avisos (entrega R · decisión 0052).
@@ -16,6 +18,10 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * Surte efecto al tocar, sin «Guardar» (es un interruptor). Apagar la campana
  * apaga el correo: un aviso que solo está en el correo no se da por visto en
  * ningún sitio.
+ *
+ * Desde I (0070), **una tercera columna, «Móvil»**, y arriba, este móvil y cuándo
+ * suena. Lo que suena en el móvil no llega también por correo: el correo queda de
+ * repuesto, por si el móvil no lo recibe.
  */
 interface AvisoElegible {
   readonly tipo: TipoDeAviso;
@@ -24,6 +30,7 @@ interface AvisoElegible {
   readonly grupo: string;
   readonly enLaApp: boolean;
   readonly porCorreo: boolean;
+  readonly alMovil: boolean;
 }
 
 interface MisAvisosElegidos {
@@ -31,6 +38,8 @@ interface MisAvisosElegidos {
   readonly correo: string | null;
   readonly hayCorreo: boolean;
   readonly subidaQueAvisa: number | null;
+  /** Si los avisos al móvil están encendidos en Estook. Sin ellos, no hay columna. */
+  readonly hayMovil: boolean;
 }
 
 const CLAVE = ['mis_avisos_elegidos'] as const;
@@ -52,8 +61,16 @@ export function TusAvisos() {
     },
   });
   const datos = consulta.data;
+  const miMovil = usarMiMovil();
+  const conMovil = datos?.hayMovil === true;
+  const columnas = conMovil ? 'grid-cols-[1fr_52px_52px_52px]' : 'grid-cols-[1fr_56px_56px]';
 
-  async function guardar(tipo: TipoDeAviso, enLaApp: boolean, porCorreo: boolean) {
+  async function guardar(
+    tipo: TipoDeAviso,
+    enLaApp: boolean,
+    porCorreo: boolean,
+    alMovil?: boolean,
+  ) {
     setError(null);
     const antes = cache.getQueryData<MisAvisosElegidos>(CLAVE);
     // Al momento en pantalla; si no se guarda, vuelve a como estaba.
@@ -61,7 +78,14 @@ export function TusAvisos() {
       cache.setQueryData<MisAvisosElegidos>(CLAVE, {
         ...antes,
         avisos: antes.avisos.map((a) =>
-          a.tipo === tipo ? { ...a, enLaApp, porCorreo: enLaApp && porCorreo } : a,
+          a.tipo === tipo
+            ? {
+                ...a,
+                enLaApp,
+                porCorreo: enLaApp && porCorreo,
+                alMovil: enLaApp && (alMovil ?? a.alMovil),
+              }
+            : a,
         ),
       });
     }
@@ -69,6 +93,7 @@ export function TusAvisos() {
       tipo,
       en_la_app: enLaApp,
       por_correo: porCorreo,
+      ...(alMovil === undefined ? {} : { al_movil: alMovil }),
     });
     if (!respuesta.ok) {
       setError(respuesta.error);
@@ -99,6 +124,10 @@ export function TusAvisos() {
 
   return (
     <div className="flex flex-col gap-e4">
+      {/* Este móvil y cuándo suena (0070): lo primero, que es lo que se viene a mirar. */}
+      <EsteMovil datos={miMovil.data} />
+      {conMovil && <CuandoSuenaElMovil datos={miMovil.data} />}
+
       <Tarjeta
         titulo="Qué te llega"
         {...(dondeVaElCorreo === null ? {} : { origen: dondeVaElCorreo })}
@@ -112,10 +141,14 @@ export function TusAvisos() {
             {/* Las dos columnas, rotuladas una vez. */}
             <div
               aria-hidden
-              className="grid grid-cols-[1fr_56px_56px] items-end gap-e2 text-etiqueta font-semibold text-texto-suave"
+              className={clases(
+                'grid items-end gap-e2 text-etiqueta font-semibold text-texto-suave',
+                columnas,
+              )}
             >
               <span />
               <span className="text-center">Campana</span>
+              {conMovil && <span className="text-center">Móvil</span>}
               <span className="text-center">Correo</span>
             </div>
 
@@ -129,7 +162,7 @@ export function TusAvisos() {
                     {delGrupo.map((aviso) => (
                       <li
                         key={aviso.tipo}
-                        className="grid grid-cols-[1fr_56px_56px] items-center gap-e2 py-e3"
+                        className={clases('grid items-center gap-e2 py-e3', columnas)}
                       >
                         <span className="min-w-0">
                           <span className="block text-cuerpo">{aviso.nombre}</span>
@@ -147,6 +180,24 @@ export function TusAvisos() {
                             }}
                           />
                         </span>
+                        {conMovil && (
+                          <span
+                            className={clases(
+                              'flex justify-center',
+                              !aviso.enLaApp && 'opacity-40',
+                            )}
+                          >
+                            <Interruptor
+                              etiquetaOculta
+                              etiqueta={`${aviso.nombre}: en el móvil`}
+                              puesto={aviso.alMovil}
+                              disabled={!aviso.enLaApp}
+                              alCambiar={(puesto) => {
+                                void guardar(aviso.tipo, aviso.enLaApp, aviso.porCorreo, puesto);
+                              }}
+                            />
+                          </span>
+                        )}
                         <span
                           className={clases('flex justify-center', !aviso.enLaApp && 'opacity-40')}
                         >

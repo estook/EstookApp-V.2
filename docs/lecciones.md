@@ -441,3 +441,37 @@
      guardado —«terminada», o sea «Ya está»— mientras volvía a preguntar. Con el servidor
      cargado se quedaba ahí: dos rojos seguidos en la batería entera y ninguno suelto. Se
      pregunta primero y se cambia de pantalla después (`TarjetasDelPanel.tsx`).
+131. **Guardar «lo último que se vio» se suma, no se pisa.** Al abrir con mala señal, los
+     primeros segundos la app todavía no tiene nada leído, y guardar entonces borraba lo
+     bueno de la vez anterior: sin señal salía el Panel vacío. Lo cazó una captura, no una
+     prueba. Ahora se guarda sumando a lo que había y, como mucho, cada dos segundos
+     (`cacheGuardada.ts`, I · 0070).
+132. **Un fallo de red no es «sin conexión».** Con una sola petición fallida la app se daba
+     por desconectada entera. Ahora lo dice el navegador o una pregunta a `/salud`: sin
+     las dos cosas, es un fallo de esa petición y se dice como tal (`red.ts`). Y al revés:
+     **una señal colgada no falla**, se queda esperando minutos. Si `quien_soy` no contesta
+     en cuatro segundos y `/salud` tampoco en tres, es «sin conexión» y se enseña lo
+     guardado; se vio con «Cargando tu sesión» fijo en la prueba de la señal mala.
+133. **Lo guardado se enseña solo sin señal.** Recuperarlo siempre al abrir enseñaba un
+     momento lo de antes —el Panel viejo, el local que ya no era— aunque hubiera red. Se
+     recupera al abrir sin red, o cuando el servidor no contesta por falta de conexión.
+134. **Una consulta en pausa sin datos no es «sin entrar».** Sin red y sin nada guardado,
+     la sesión parecía cerrada y salía la pantalla de entrar. «Sin servidor» incluye ahora
+     la pausa sin datos, y se espera a la vuelta (`ProveedorDeSesion.tsx`).
+135. **Salir no espera al trabajador de servicio.** Cerrar sesión pedía el registro del
+     trabajador «cuando esté listo», y en un navegador sin él tardaba cinco segundos en
+     salir. Se pregunta si hay uno y, si no, se sigue. Y lo que viene de internet (el logo
+     del local) no está sin señal: se pinta lo de repuesto, nunca una imagen rota.
+136. **Un tope que ya se roza no avisa: corta.** «Construccion y presupuestos» tenía 25
+     minutos y en una vuelta buena gastaba 22. Con las pruebas de I y un día en que GitHub
+     tardó 19 minutos en bajar los navegadores, se canceló a medias, sin un solo rojo de la
+     app, y Richi se encontró un pull request que no podía fusionar sin saber por qué. El
+     trabajo pasa a 40 minutos y bajar los navegadores tiene su tope de 10 (1-oct). Cuando
+     una vuelta buena pase de los 30, se mira antes de que vuelva a cortar.
+137. **Lo que el navegador corta al cambiar de página no es «sin red».** Cada petición
+     cortada lanzaba al momento una pregunta a `/salud`, que también se cortaba, y Safari
+     apunta esos cortes como «access control checks»: en WebKit, la prueba de las ocho
+     apps salía en rojo y en Chrome no. Ahora se espera un instante, se pregunta una sola
+     vez aunque fallen varias, y nada si la página se está yendo o la app canceló la
+     petición (`red.ts`). WebKit no arranca en el Windows de trabajo: lo de Safari solo lo
+     ve GitHub, así que se lee entero su rojo antes de suponer nada.

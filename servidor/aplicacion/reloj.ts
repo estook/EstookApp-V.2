@@ -10,6 +10,13 @@ import {
   type FechaOperativa,
   type Intervalo,
 } from '@estook/dominio';
+import {
+  hacerLoProgramado,
+  limpiarLoDelMovil,
+  mandarLoDelMovil,
+  programarLoDelMovil,
+  type LoQueHizoElMovil,
+} from './al-movil.ts';
 import { mandarLosCorreosDeLosAvisos } from './avisos.ts';
 import { hacerLaFotoDelUso } from './clientes.ts';
 import { loQueAvisaElReloj } from './lo-que-avisa-el-reloj.ts';
@@ -39,7 +46,12 @@ import {
  *       que está bajo mínimo y la nota en Google (`lo-que-avisa-el-reloj.ts`). Sus
  *       correos salen al acabar, en el mismo latido.
  *
- * Y **cada hora**, los correos de los avisos que no salieron al momento (0052).
+ * Y **cada hora**, los correos de los avisos que no salieron al momento (0052), y lo
+ * del móvil (0070): apuntar lo que toca en la hora siguiente —«entras en cinco
+ * minutos», lo que caduca, el pedido que no llega— y reintentar lo que no salió.
+ *
+ * **Y cada minuto, solo si hace falta**, el latido del móvil (`latidoDelMovil`): la
+ * base mira si hay algo que mandar y solo entonces llama (0054).
  *
  * Si algo falla a medias, el día no se da por hecho y el latido de la hora siguiente
  * lo vuelve a intentar; lo que ya salió no se repite.
@@ -56,6 +68,8 @@ export interface LoQueHizoElReloj {
   readonly avisos: number;
   /** Las notas de Google puestas al día (R2). */
   readonly notas: number;
+  /** Lo que se ha apuntado para mandar al móvil en la hora siguiente (0070). */
+  readonly programados: number;
 }
 
 /** El secreto del reloj, comparado por su huella: la base no guarda el secreto. */
@@ -72,6 +86,57 @@ function laHoraEnMadrid(ahora: Date): number {
       hour12: false,
     }).format(ahora),
   );
+}
+
+/**
+ * **A quién se le avisa**: a las cuentas que pagan o están en prueba, y a las de la
+ * casa. Ni a los ejemplos ni a quien está en impago o en solo lectura (R2).
+ */
+function seLeAvisa(cuenta: Cuenta, ahora: Date, hoy: FechaOperativa): boolean {
+  const como = comoEstaLaCuenta(
+    {
+      estado: cuenta.estado as EstadoDeSuscripcion,
+      plan: cuenta.plan as CodigoDePlan | null,
+      pruebaHasta: cuenta.prueba_hasta as FechaOperativa | null,
+      impagoDesde: cuenta.impago_desde === null ? null : new Date(cuenta.impago_desde),
+      deLaCasa: cuenta.de_la_casa,
+      esEjemplo: cuenta.es_ejemplo,
+      conStripe: cuenta.stripe_suscripcion !== null,
+    },
+    ahora,
+    hoy,
+  ).como;
+  return !cuenta.es_ejemplo && (como === 'al_dia' || como === 'prueba');
+}
+
+async function lasCuentas(contexto: Contexto): Promise<Cuenta[]> {
+  return contexto.sql<Cuenta[]>`
+    select organizacion_id, nombre, es_ejemplo, estado, plan, intervalo, locales_pagados,
+           locales_activos, to_char(prueba_hasta, 'YYYY-MM-DD') as prueba_hasta,
+           impago_desde::text as impago_desde, de_la_casa, stripe_modo, stripe_suscripcion, correos
+      from estook.las_cuentas()
+  `;
+}
+
+/** Algo del reloj que falla se apunta y no para lo demás. */
+async function sinPararElReloj<T>(
+  contexto: Contexto,
+  que: string,
+  hacer: () => Promise<T>,
+): Promise<T | null> {
+  try {
+    return await hacer();
+  } catch (fallo) {
+    console.error(
+      JSON.stringify({
+        nivel: 'error',
+        mensaje: `el reloj no ha podido ${que}`,
+        correlacion_id: contexto.correlacionId,
+        detalle: fallo instanceof Error ? fallo.message : String(fallo),
+      }),
+    );
+    return null;
+  }
 }
 
 interface Cuenta {
@@ -124,8 +189,32 @@ export async function latir(
     }
 
     const hoy = hoyEnMadrid(contexto.ahora);
+
+    // Cada hora, lo del móvil (0070): lo que toca en la hora siguiente, lo que no salió y
+    // la limpieza. Sin claves VAPID se apunta igual: lo que avisa llega a la campana.
+    const cuentas = await lasCuentas(contexto);
+    const programados =
+      (await sinPararElReloj(contexto, 'apuntar lo del móvil', () =>
+        programarLoDelMovil(
+          contexto,
+          cuentas
+            .filter((c) => seLeAvisa(c, contexto.ahora, hoy))
+            .map((c) => ({ organizacionId: c.organizacion_id })),
+        ),
+      )) ?? 0;
+    await sinPararElReloj(contexto, 'limpiar lo del móvil', () => limpiarLoDelMovil(contexto));
+    await sinPararElReloj(contexto, 'mandar lo del móvil', () => mandarLoDelMovil(contexto));
+
     if (fila.ultimo_diario === hoy || laHoraEnMadrid(contexto.ahora) < HORA_DEL_DIARIO) {
-      return { diario: false, correos: 0, cuadrados: 0, fallos: 0, avisos: 0, notas: 0 };
+      return {
+        diario: false,
+        correos: 0,
+        cuadrados: 0,
+        fallos: 0,
+        avisos: 0,
+        notas: 0,
+        programados,
+      };
     }
 
     const hecho = await elDiario(contexto, hoy);
@@ -147,7 +236,43 @@ export async function latir(
         }),
       );
     }
-    return { diario: true, ...hecho };
+    return { diario: true, ...hecho, programados };
+  });
+}
+
+/**
+ * **El latido del móvil** (0070): `pg_cron` lo llama, con el mismo secreto que el de
+ * cada hora, **solo el minuto en que hay algo que mandar** (lo mira la base, 0054).
+ * Hace lo programado que ya toca, manda lo que espera y, si algo no llegó al móvil,
+ * su correo. Nulo si el secreto no vale.
+ */
+export async function latidoDelMovil(
+  contexto: Contexto,
+  secreto: string | null,
+): Promise<LoQueHizoElMovil | null> {
+  if (secreto === null || secreto === '') return null;
+  const huella = await huellaDe(secreto);
+
+  return enNombreDelSistema(contexto, async () => {
+    const reloj = await contexto.sql<{ unica: boolean }[]>`
+      select unica from plataforma.reloj where unica and huella = ${huella}
+    `;
+    if (reloj[0] === undefined) return null;
+
+    const hechos =
+      (await sinPararElReloj(contexto, 'hacer lo programado del móvil', () =>
+        hacerLoProgramado(contexto),
+      )) ?? 0;
+    const mandado = (await sinPararElReloj(contexto, 'mandar lo del móvil', () =>
+      mandarLoDelMovil(contexto),
+    )) ?? { mandados: 0, esperan: 0, alCorreo: 0 };
+    // Lo que no llegó al móvil y lo quería por correo, sale ahora, no dentro de una hora.
+    if (mandado.alCorreo > 0) {
+      await sinPararElReloj(contexto, 'mandar los correos de repuesto', () =>
+        mandarLosCorreosDeLosAvisos(contexto),
+      );
+    }
+    return { ...mandado, programados: 0, hechos };
   });
 }
 
@@ -156,12 +281,7 @@ async function elDiario(
   contexto: Contexto,
   hoy: FechaOperativa,
 ): Promise<{ correos: number; cuadrados: number; fallos: number; avisos: number; notas: number }> {
-  const cuentas = await contexto.sql<Cuenta[]>`
-    select organizacion_id, nombre, es_ejemplo, estado, plan, intervalo, locales_pagados,
-           locales_activos, to_char(prueba_hasta, 'YYYY-MM-DD') as prueba_hasta,
-           impago_desde::text as impago_desde, de_la_casa, stripe_modo, stripe_suscripcion, correos
-      from estook.las_cuentas()
-  `;
+  const cuentas = await lasCuentas(contexto);
 
   let correos = 0;
   let cuadrados = 0;
@@ -182,8 +302,7 @@ async function elDiario(
       esEjemplo: cuenta.es_ejemplo,
       conStripe: cuenta.stripe_suscripcion !== null,
     };
-    const como = comoEstaLaCuenta(suscripcion, contexto.ahora, hoy).como;
-    if (!cuenta.es_ejemplo && (como === 'al_dia' || como === 'prueba')) {
+    if (seLeAvisa(cuenta, contexto.ahora, hoy)) {
       queSeAvisan.push({ organizacionId: cuenta.organizacion_id });
     }
 

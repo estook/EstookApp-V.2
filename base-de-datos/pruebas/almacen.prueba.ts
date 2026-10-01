@@ -659,7 +659,13 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // **Y la 0053 (H2) añade una: `horas_de_contrato`.** Quien monta el horario
     // tiene que saber quién se pasa de sus horas aunque no vea lo que cobra, y las
     // horas viven en la retribución, que está cerrada. Devuelve **solo las horas**,
-    // y solo a quien puede publicar el horario de ese local. Son cuarenta y siete.
+    // y solo a quien puede publicar el horario de ese local.
+    //
+    // **Y la 0054 (I) añade tres, para el reloj del móvil**, que avisa sin nadie
+    // delante: `como_le_suena` (si está fichado y si tiene horario), `turnos_de` (sus
+    // tramos, publicados o de siempre) y `pedidos_por_llegar` (qué pedido mandado tiene
+    // que llegar y a qué hora). Las tres **solo contestan al sistema**, como
+    // `quien_recibe`. Son cincuenta y una.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -680,6 +686,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'cambiar_la_suscripcion',
       'cerrar_demostracion',
       'cerrar_sesiones_de',
+      'como_le_suena',
       'crear_cuenta_con_negocio',
       'credencial_para_entrar',
       'dar_de_alta_persona',
@@ -696,6 +703,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',
       'organizaciones_visibles',
+      'pedidos_por_llegar',
       'pedir_codigo_de_registro',
       'persona_por_correo',
       'persona_por_identidad',
@@ -713,6 +721,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'suscripcion_al_crear_organizacion',
       'terminal_por_llave',
       'tiene_como_volver_a_entrar',
+      'turnos_de',
       'un_cliente',
       'unir_identidad',
       'visto_por_ultima_vez',

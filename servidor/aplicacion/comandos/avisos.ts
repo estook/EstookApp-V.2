@@ -18,7 +18,7 @@ import { irAlPedido } from '../lo-que-avisa.ts';
  * La campana, y pedir ayuda con un pedido (entrega R · decisión 0052).
  *
  *   leer_avisos                    marcar leídos unos, o todos
- *   guardar_mis_avisos             Ajustes → Avisos: la campana y el correo, de uno en uno
+ *   guardar_mis_avisos             Ajustes → Avisos: la campana, el correo y el móvil, de uno en uno
  *   guardar_la_subida_que_avisa    desde qué tanto por cien avisa una subida de precio
  *   pedir_ayuda_con_el_pedido      quien manda pedidos invita a alguien del almacén
  *   he_terminado_el_pedido         y ese alguien avisa de que ya está
@@ -60,12 +60,14 @@ export const entradaGuardarMisAvisos = z
     tipo: z.enum(TIPOS_DE_AVISO as unknown as [TipoDeAviso, ...TipoDeAviso[]]),
     en_la_app: z.boolean(),
     por_correo: z.boolean(),
+    /** Sin mandarlo, lo que hubiera (o el de fábrica): quien no toca el móvil no lo cambia. */
+    al_movil: z.boolean().optional(),
   })
   .strict();
 
 export const guardarMisAvisos = comando<
   z.infer<typeof entradaGuardarMisAvisos>,
-  { enLaApp: boolean; porCorreo: boolean }
+  { enLaApp: boolean; porCorreo: boolean; alMovil: boolean | null }
 >({
   nombre: 'guardar_mis_avisos',
   entrada: entradaGuardarMisAvisos,
@@ -74,14 +76,26 @@ export const guardarMisAvisos = comando<
     // Sin la campana no hay correo: se guarda coherente en vez de fallar, que es lo
     // que haría la pantalla al apagar la campana con el correo encendido.
     const porCorreo = entrada.en_la_app && entrada.por_correo;
-    await contexto.sql`
-      insert into estook.preferencia_de_aviso (persona_id, tipo, en_la_app, por_correo)
-      values (${contexto.personaId}, ${entrada.tipo}, ${entrada.en_la_app}, ${porCorreo})
+    // El móvil, igual: sin campana no hay móvil (0070). Sin mandarlo, se deja como estaba.
+    const alMovil = !entrada.en_la_app
+      ? false
+      : entrada.al_movil === undefined
+        ? null
+        : entrada.al_movil;
+    const guardadas = await contexto.sql<{ al_movil: boolean | null }[]>`
+      insert into estook.preferencia_de_aviso (persona_id, tipo, en_la_app, por_correo, al_movil)
+      values (${contexto.personaId}, ${entrada.tipo}, ${entrada.en_la_app}, ${porCorreo}, ${alMovil})
       on conflict (persona_id, tipo) do update
         set en_la_app = excluded.en_la_app, por_correo = excluded.por_correo,
+            al_movil = case
+              when not excluded.en_la_app then false
+              when ${entrada.al_movil === undefined} then estook.preferencia_de_aviso.al_movil
+              else excluded.al_movil
+            end,
             actualizado_en = now()
+      returning al_movil
     `;
-    return { enLaApp: entrada.en_la_app, porCorreo };
+    return { enLaApp: entrada.en_la_app, porCorreo, alMovil: guardadas[0]?.al_movil ?? null };
   },
 });
 

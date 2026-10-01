@@ -9,10 +9,22 @@ import {
   sePuedeTirar,
   type MotivoDeMerma,
 } from '@estook/dominio';
-import { Aviso, Boton, Botones, Campo, Cargando, ErrorEnCristiano, Hoja, clases } from '@estook/ui';
+import {
+  Aviso,
+  Boton,
+  Botones,
+  Campo,
+  Cargando,
+  ErrorEnCristiano,
+  Hoja,
+  clases,
+  filtrarPorParecido,
+} from '@estook/ui';
 import { IconoBuscar } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { hacerOGuardar } from '../sinConexion/cola.ts';
+import { usarHayRed } from '../ganchos/usarLaRed.ts';
 import { conUnidadDeUso, type ProductoParaMerma, type ProductosParaMerma } from './contrato.ts';
 
 /**
@@ -50,8 +62,9 @@ export function ApuntarMerma({
   readonly productoDeEntrada?: ProductoParaMerma | null;
   readonly alApuntar?: () => void;
 }) {
-  const { cliente } = usarSesion();
+  const { cliente, yo } = usarSesion();
   const cache = useQueryClient();
+  const conRed = usarHayRed();
 
   const [texto, setTexto] = useState('');
   const [elegido, setElegido] = useState<ProductoParaMerma | null>(productoDeEntrada);
@@ -67,9 +80,33 @@ export function ApuntarMerma({
 
   // `productos_para_merma` y no `mis_productos`: esa pide Almacén, y quien
   // más mermas apunta —el camarero— no lo tiene.
-  const lista = useQuery({
+  /**
+   * **Todo el género, en el móvil** (0070): se trae con señal al abrir la hoja, se
+   * guarda con lo demás, y sin señal se busca aquí. Así una merma se apunta en la
+   * cámara sin cobertura igual que en la barra.
+   */
+  const todos = useQuery({
+    queryKey: ['productos_para_merma', 'todos'],
+    enabled: abierta && conRed,
+    staleTime: 10 * 60_000,
+    queryFn: async (): Promise<ProductosParaMerma> => {
+      const respuesta = await cliente.consultar<ProductosParaMerma>('productos_para_merma', {
+        todos: 'si',
+      });
+      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
+      return respuesta.datos;
+    },
+  });
+  const sinSenal: ProductosParaMerma | undefined =
+    conRed || todos.data === undefined
+      ? undefined
+      : {
+          productos: filtrarPorParecido(todos.data.productos, texto, (p) => p.nombre).slice(0, 10),
+        };
+
+  const enLaRed = useQuery({
     queryKey: ['productos_para_merma', texto],
-    enabled: abierta && elegido === null && buscando,
+    enabled: abierta && elegido === null && buscando && conRed,
     queryFn: async (): Promise<ProductosParaMerma> => {
       const respuesta = await cliente.consultar<ProductosParaMerma>('productos_para_merma', {
         texto: texto.trim(),
@@ -78,6 +115,10 @@ export function ApuntarMerma({
       return respuesta.datos;
     },
   });
+
+  const lista = sinSenal ?? enLaRed.data;
+  // Sin señal y sin la lista guardada, no hay dónde buscar: se dice, no se carga para siempre.
+  const cargandoLaLista = conRed && enLaRed.isPending;
 
   function limpiar() {
     setTexto('');
@@ -112,21 +153,30 @@ export function ApuntarMerma({
     setError(null);
     setGuardando(true);
 
-    const respuesta = await cliente.ejecutar<{ cantidad: number }>('apuntar_merma', {
-      producto_id: elegido.id,
-      cuanto: cuantoNumero,
-      motivo,
-      ...(detalle.trim() === '' ? {} : { detalle: detalle.trim() }),
-    });
+    const loQueSeTira = `${conUnidadDeUso(cuantoNumero, elegido.unidadDeUso)} de ${elegido.nombre}`;
+    // **Sin señal se guarda** y sale sola al volver, con la jornada de ahora (0070).
+    const hechoAhora = await hacerOGuardar<{ cantidad: number }>(
+      cliente,
+      'apuntar_merma',
+      {
+        producto_id: elegido.id,
+        cuanto: cuantoNumero,
+        motivo,
+        ...(detalle.trim() === '' ? {} : { detalle: detalle.trim() }),
+      },
+      { de: yo?.personaId ?? '', que: `Merma · ${loQueSeTira}` },
+    );
 
     setGuardando(false);
-    if (!respuesta.ok) {
-      setError(respuesta.error);
+    if (hechoAhora.tipo === 'error') {
+      setError(hechoAhora.error);
       return;
     }
 
     setHecho(
-      `${conUnidadDeUso(cuantoNumero, elegido.unidadDeUso)} de ${elegido.nombre}, apuntado.`,
+      hechoAhora.tipo === 'guardado'
+        ? `${loQueSeTira}, guardado sin señal: sale solo al volver.`
+        : `${loQueSeTira}, apuntado.`,
     );
 
     // Lo que cambia con una merma: lo que hay en cámara, la merma del día, el
@@ -175,7 +225,11 @@ export function ApuntarMerma({
       <div className="flex flex-col gap-e4">
         {error !== null && <ErrorEnCristiano error={error} />}
         {hecho !== null && (
-          <Aviso tono="bien" titulo="Apuntado" esNoticia>
+          <Aviso
+            tono={hecho.includes('sin señal') ? 'atencion' : 'bien'}
+            titulo={hecho.includes('sin señal') ? 'Guardado sin señal' : 'Apuntado'}
+            esNoticia
+          >
             {hecho} Si se ha ido más cosa, sigue aquí mismo.
           </Aviso>
         )}
@@ -198,11 +252,16 @@ export function ApuntarMerma({
               <p className="text-secundario text-texto-suave">
                 Con dos letras empiezo a buscar en tu género.
               </p>
-            ) : lista.isPending ? (
+            ) : cargandoLaLista ? (
               <Cargando que="tu género" />
+            ) : !conRed && todos.data === undefined ? (
+              <p className="text-secundario text-texto-suave">
+                Sin señal no tengo tu género guardado todavía: ábrelo una vez con señal y ya podrás
+                apuntar mermas sin ella.
+              </p>
             ) : (
               <ul className="flex flex-col gap-e1">
-                {(lista.data?.productos ?? []).map((producto) => (
+                {(lista?.productos ?? []).map((producto) => (
                   <li key={producto.id}>
                     <button
                       type="button"
@@ -222,7 +281,7 @@ export function ApuntarMerma({
                     </button>
                   </li>
                 ))}
-                {(lista.data?.productos ?? []).length === 0 && (
+                {(lista?.productos ?? []).length === 0 && (
                   <li className="text-secundario text-texto-suave">
                     Nada con eso. Prueba con menos letras.
                   </li>

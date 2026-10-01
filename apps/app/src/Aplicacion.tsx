@@ -1,5 +1,5 @@
 import { Suspense, lazy, useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { HashRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import {
   Cargando,
@@ -11,6 +11,7 @@ import {
   usarTamanoDeLetra,
   usarTema,
 } from '@estook/ui';
+import { cacheDeLaApp } from './datos/cacheDeLaApp.ts';
 import { Esqueleto } from './Esqueleto.tsx';
 import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Panel } from './panel/Panel.tsx';
@@ -80,21 +81,8 @@ const ElAlta = lazy(async () => {
  * la barra. Y navegar justo despues de hacer algo es cuando uno se da cuenta de
  * que no queria hacerlo.
  */
-const cache = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // Un minuto: lo que dice el servidor sobre permisos y busquedas no cambia
-      // cada segundo, y reintentar cada vez que se abre una pantalla en un movil
-      // con mala cobertura es gastar bateria para nada.
-      staleTime: 60_000,
-      retry: 1,
-      // Al volver a la app se pone al día lo que tenga más de ese minuto (30-sep,
-      // `datos/alDia.ts`). Antes no: quien dejaba el móvil y lo volvía a coger
-      // veía lo de hace una hora hasta cambiar de pantalla.
-      refetchOnWindowFocus: true,
-    },
-  },
-});
+// La caché, en `datos/cacheDeLaApp.ts` desde I (0070): se recupera antes de pintar.
+const cache = cacheDeLaApp;
 
 export function Aplicacion() {
   // El tema, lo primero de todo y **fuera de la sesión**: la pantalla de entrar

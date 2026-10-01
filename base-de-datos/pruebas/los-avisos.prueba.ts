@@ -502,7 +502,8 @@ describe('lo que cada uno elige', () => {
         por_correo: true,
       }),
     );
-    expect(guardado).toEqual({ enLaApp: false, porCorreo: false });
+    // Sin decir nada del móvil, se queda como estaba; sin campana, apagado (0070).
+    expect(guardado).toEqual({ enLaApp: false, porCorreo: false, alMovil: false });
 
     await leerTodo(marcos);
     await leerTodo(sara);

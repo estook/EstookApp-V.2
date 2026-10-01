@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   TIPOS_DE_AVISO,
+  avisoDeCaducidad,
+  avisoDeEntrasEnUnRato,
   avisoDeFichajeCorregido,
+  avisoDeFichajeSinApuntar,
+  avisoDePedidoQueNoLlega,
   avisoDeNota,
   avisoDePedidoEmpezado,
   avisoDePedidoListo,
@@ -62,11 +66,16 @@ describe('los avisos', () => {
   });
 
   it('lo bajo mínimo no llega de fábrica: ya sale en «Hoy»', () => {
-    expect(deFabrica('almacen.bajo_minimo', 70)).toEqual({ enLaApp: false, porCorreo: false });
+    expect(deFabrica('almacen.bajo_minimo', 70)).toEqual({
+      enLaApp: false,
+      porCorreo: false,
+      alMovil: false,
+    });
     // Encendido, llega, y por correo si se quiere.
     expect(laPreferencia('almacen.bajo_minimo', 70, { enLaApp: true, porCorreo: true })).toEqual({
       enLaApp: true,
       porCorreo: true,
+      alMovil: false,
     });
   });
 
@@ -80,16 +89,23 @@ describe('los avisos', () => {
     expect(laPreferencia('pedido.empezado', 100, { enLaApp: true })).toEqual({
       enLaApp: true,
       porCorreo: false,
+      alMovil: false,
     });
     expect(laPreferencia('pedido.invitacion', 30, { enLaApp: false })).toEqual({
       enLaApp: false,
       porCorreo: false,
+      alMovil: false,
     });
     expect(laPreferencia('merma.grande', 70, { porCorreo: true })).toEqual({
       enLaApp: true,
       porCorreo: true,
+      alMovil: false,
     });
-    expect(laPreferencia('merma.grande', 70, null)).toEqual({ enLaApp: true, porCorreo: false });
+    expect(laPreferencia('merma.grande', 70, null)).toEqual({
+      enLaApp: true,
+      porCorreo: false,
+      alMovil: false,
+    });
   });
 
   it('una merma avisa desde 20 €', () => {
@@ -224,5 +240,52 @@ describe('lo que avisa el reloj (R2 · 0053)', () => {
       titulo: 'Tu nota en Google baja de 4,6 a 4,5',
       detalle: '4 reseñas nuevas desde la última vez. Míralas en Google.',
     });
+  });
+});
+
+describe('los avisos al móvil (I · 0070)', () => {
+  it('de fábrica suena en el móvil solo lo que pide hacer algo ya', () => {
+    const alMovil = TIPOS_DE_AVISO.filter((tipo) => deFabrica(tipo, 70).alMovil);
+    expect(alMovil).toEqual([
+      'pedido.invitacion',
+      'fichaje.corregido',
+      'horario.publicado',
+      'horario.cambiado',
+      'turno.entras',
+      'lote.caduca',
+      'pedido.no_llega',
+      'fichaje.sin_apuntar',
+    ]);
+  });
+
+  it('sin campana no hay móvil, igual que no hay correo', () => {
+    expect(laPreferencia('turno.entras', 30, { enLaApp: false, alMovil: true }).alMovil).toBe(
+      false,
+    );
+    expect(laPreferencia('tablon.nota', 30, { alMovil: true }).alMovil).toBe(true);
+    expect(laPreferencia('turno.entras', 30, { alMovil: false }).alMovil).toBe(false);
+  });
+
+  it('lo que dicen los cuatro nuevos', () => {
+    expect(avisoDeEntrasEnUnRato(5, '10:00', 'Bar Centro')).toEqual({
+      titulo: 'Entras en 5 minutos',
+      detalle: 'A las 10:00 en Bar Centro. Tócalo para fichar.',
+    });
+    expect(avisoDeEntrasEnUnRato(0, '10:00', 'Bar Centro').titulo).toBe('Entras ahora');
+    expect(avisoDeCaducidad('manana', ['leche', 'nata', 'leche'])).toEqual({
+      titulo: 'Mañana caducan 3 lotes',
+      detalle: 'Leche y nata. Gástalo primero.',
+    });
+    expect(avisoDeCaducidad('hoy', ['pulpo']).titulo).toBe('Hoy caduca un lote');
+    expect(avisoDePedidoQueNoLlega('Frutas Pepe', 12, '10:00')).toEqual({
+      titulo: 'El pedido 12 a Frutas Pepe no ha llegado',
+      detalle: 'Suele llegar hacia las 10:00. Llama al proveedor, o recíbelo cuando llegue.',
+    });
+    expect(
+      avisoDeFichajeSinApuntar('entrada', 'Tablet barra', 'el martes 6 a las 09:02', 'pin', null)
+        .detalle,
+    ).toBe(
+      'Una entrada en Tablet barra, el martes 6 a las 09:02: el PIN no era de nadie del local. Pregunta quién fue y apúntaselo en su ficha.',
+    );
   });
 });

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  avisoDeFichajeSinApuntar,
   comoSeLeeElDia,
   comoSeLlamaElDia,
   dejaEscribir,
@@ -8,12 +9,18 @@ import {
   fechaOperativa,
   horaDeCorte,
   jornadaDe,
+  horaEnElLocal,
+  fechaEnElLocal,
+  laHoraDeLoHecho,
+  type PorQueNoSeApunto,
   type TipoDeTurno,
 } from '@estook/dominio';
 import {
   derivarConSalDelLocal,
+  descifrarElPin,
   esPinConForma,
   huellaDeToken,
+  llavesDelAparato,
   tokenNuevo,
 } from '../../dominio/secretos.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
@@ -24,7 +31,8 @@ import {
   falloQueSeGuarda,
   type Contexto,
 } from '../contrato.ts';
-import { comoEstaAhora, laSuscripcionDe } from '../pago.ts';
+import { avisar, quienesPuedenRecibir } from '../avisos.ts';
+import { comoEstaAhora, enNombreDelSistema, laSuscripcionDe } from '../pago.ts';
 import { abrirElTurno, acabarLaPausa, cerrarElTurno, empezarLaPausa } from './fichar.ts';
 
 /**
@@ -270,6 +278,21 @@ export interface ElAparatoPorDentro {
   readonly nombre: string;
   readonly local: string;
   readonly pausasEnUso: boolean;
+  /**
+   * Con la que cifra el PIN tecleado sin conexión (0070). Nula hasta que se prepara
+   * (`preparar_el_aparato_sin_conexion`), que lo hace el propio aparato al encenderse.
+   */
+  readonly clavePublica: string | null;
+}
+
+/** La pública de un aparato, si ya la tiene. La lee el sistema: no hay sesión. */
+async function suClavePublica(contexto: Contexto, terminalId: string): Promise<string | null> {
+  return enNombreDelSistema(contexto, async () => {
+    const filas = await contexto.sql<{ clave_publica: string | null }[]>`
+      select clave_publica from estook.terminal where id = ${terminalId}
+    `;
+    return filas[0]?.clave_publica ?? null;
+  });
 }
 
 /** Lo que enseña el aparato arriba: su nombre y su local. Si ya no vale, lo dice. */
@@ -285,7 +308,45 @@ export const elAparatoParaFichar = consulta<{ llave: string }, ElAparatoPorDentr
       nombre: aparato.nombre,
       local: aparato.nombreDelLocal,
       pausasEnUso: aparato.pausasEnUso,
+      clavePublica: await suClavePublica(contexto, aparato.terminalId),
     };
+  },
+});
+
+/**
+ * **Prepararlo para cuando se caiga el wifi** (0070): la primera vez, Estook le hace
+ * su llave de cifrado y le da la pública. La privada se queda en Estook, donde solo la
+ * lee el sistema. Lo pide el propio aparato al encenderse, si todavía no la tiene.
+ */
+export const prepararElAparatoSinConexion = comando<{ llave: string }, { clavePublica: string }>({
+  nombre: 'preparar_el_aparato_sin_conexion',
+  entrada: z.object({ llave }).strict(),
+  sinSesion: true,
+  // Repetirlo devuelve la misma pública: no hace falta recordar nada.
+  sinRecordar: true,
+
+  async ejecutar(contexto, entrada) {
+    const aparato = await elAparato(contexto, entrada.llave);
+    const ya = await suClavePublica(contexto, aparato.terminalId);
+    if (ya !== null) return { clavePublica: ya };
+
+    const { publica, privada } = await llavesDelAparato();
+    return enNombreDelSistema(contexto, async () => {
+      // Dos a la vez: se queda la primera, y la segunda devuelve esa.
+      const puestas = await contexto.sql<{ id: string }[]>`
+        update estook.terminal set clave_publica = ${publica}
+         where id = ${aparato.terminalId} and clave_publica is null
+        returning id::text as id
+      `;
+      if (puestas.length === 0) {
+        return { clavePublica: (await suClavePublica(contexto, aparato.terminalId)) ?? publica };
+      }
+      await contexto.sql`
+        insert into estook.clave_del_terminal (terminal_id, privada)
+        values (${aparato.terminalId}, ${privada})
+      `;
+      return { clavePublica: publica };
+    });
   },
 });
 
@@ -435,19 +496,165 @@ export const quienFichaAqui = comando<z.infer<typeof entradaQuienFichaAqui>, Qui
 export const entradaFicharAqui = z
   .object({
     llave,
-    pin: z.string().trim().min(1).max(12),
+    pin: z.string().trim().min(1).max(12).optional(),
+    /**
+     * Sin conexión (0070): el PIN cifrado con la pública del aparato, con su número de
+     * un solo uso dentro. En la tablet no queda ningún PIN legible.
+     */
+    pin_cifrado: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{300,400}$/, 'No tiene la forma de un PIN cifrado.')
+      .optional(),
     que: z.enum(['entrada', 'pausa', 'vuelta', 'salida']),
   })
-  .strict();
+  .strict()
+  .refine((e) => (e.pin === undefined) !== (e.pin_cifrado === undefined), {
+    message: 'Hace falta el PIN o el PIN cifrado, y solo uno de los dos.',
+  });
+
+/**
+ * Lo que contesta un fichaje que se hizo sin conexión (0070). Nadie lo está mirando
+ * —quien fichó ya se fue—, así que no hace falta su nombre: basta con saber si se
+ * apuntó. Si no, a quien lleva el equipo ya le ha llegado el porqué.
+ */
+export type FichajeSinConexion =
+  { readonly apuntado: true } | { readonly apuntado: false; readonly porque: PorQueNoSeApunto };
+
+/** Lo que no se pudo apuntar, a quien lleva el equipo: en la campana y en el móvil. */
+async function avisarDeLoQueNoSeApunto(
+  contexto: Contexto,
+  aparato: ElAparato,
+  que: 'entrada' | 'pausa' | 'vuelta' | 'salida',
+  porque: PorQueNoSeApunto,
+  personaId: string | null,
+  numero: string,
+): Promise<void> {
+  const cuando = laHoraDeLoHecho(contexto.ahora, contexto.hechoHaceMs ?? 0);
+  const datos = await enNombreDelSistema(contexto, async () => {
+    const filas = await contexto.sql<{ zona_horaria: string; nombre: string | null }[]>`
+      select l.zona_horaria,
+             (select p.nombre from estook.persona p where p.id = ${personaId}::uuid) as nombre
+        from estook.local l where l.id = ${aparato.localId}
+    `;
+    return filas[0];
+  });
+  const zona = datos?.zona_horaria ?? 'Europe/Madrid';
+  const dia = fechaEnElLocal(cuando, zona);
+  const enLetra = `el ${comoSeLlamaElDia(diaDeLaSemana(dia))} ${String(Number(dia.slice(8)))} a las ${horaEnElLocal(cuando, zona)}`;
+  await avisar(
+    contexto,
+    {
+      tipo: 'fichaje.sin_apuntar',
+      organizacionId: aparato.organizacionId,
+      localId: aparato.localId,
+      clave: `sin_apuntar:${numero}`,
+      texto: () =>
+        avisoDeFichajeSinApuntar(que, aparato.nombre, enLetra, porque, datos?.nombre ?? null),
+      ir: '/equipo/personas',
+      quien: null,
+    },
+    await quienesPuedenRecibir(contexto, aparato.localId, 'fichaje.sin_apuntar'),
+  );
+}
+
+/** El fichaje de dentro, como desde el móvil: lo comparten el de ahora y el de sin conexión. */
+async function ficharEnElAparato(
+  contexto: Contexto,
+  aparato: ElAparato,
+  personaId: string,
+  que: 'entrada' | 'pausa' | 'vuelta' | 'salida',
+): Promise<void> {
+  await laCuentaDejaFichar(contexto, aparato);
+  await puedeFicharAqui(contexto, aparato.localId);
+  const desde = { desde: 'aparato' as const, terminalId: aparato.terminalId };
+  if (que === 'entrada') {
+    await abrirElTurno(contexto, personaId, aparato.organizacionId, aparato.localId, desde, null);
+  } else if (que === 'salida') {
+    await cerrarElTurno(contexto, personaId, aparato.organizacionId, desde, null);
+  } else if (que === 'pausa') {
+    await empezarLaPausa(contexto, personaId, aparato.terminalId);
+  } else {
+    await acabarLaPausa(contexto, personaId);
+  }
+}
+
+/**
+ * **Lo que se fichó en el aparato sin conexión**, al volver la señal (0070). El PIN se
+ * comprueba ahora, con los mismos frenos de siempre (diez fallos paran el aparato). Si
+ * no se puede apuntar —un PIN que no es de nadie, o entrar estando ya dentro—, no se
+ * pierde en silencio: le llega a quien lleva el equipo, que lo apunta a mano.
+ */
+async function loQueSeFichoSinConexion(
+  contexto: Contexto,
+  aparato: ElAparato,
+  cifrado: string,
+  que: 'entrada' | 'pausa' | 'vuelta' | 'salida',
+): Promise<FichajeSinConexion> {
+  const privada = await enNombreDelSistema(contexto, async () => {
+    const filas = await contexto.sql<{ privada: string }[]>`
+      select privada from estook.clave_del_terminal where terminal_id = ${aparato.terminalId}
+    `;
+    return filas[0]?.privada ?? null;
+  });
+  const leido = privada === null ? null : await descifrarElPin(privada, cifrado);
+  if (leido === null) {
+    // No se puede leer: no es de este aparato. Nadie puede saber de quién era.
+    throw new FalloDeAplicacion('pin_desconocido');
+  }
+
+  // **Un cifrado vale una vez.** Si ya se usó, esto ya se apuntó (se perdió la respuesta).
+  const nuevo = await enNombreDelSistema(
+    contexto,
+    () =>
+      contexto.sql<{ numero: string }[]>`
+      insert into estook.cifrado_usado (terminal_id, numero)
+      values (${aparato.terminalId}, ${leido.numero})
+      on conflict do nothing
+      returning numero
+    `,
+  );
+  if (nuevo.length === 0) return { apuntado: true };
+
+  let personaId: string;
+  try {
+    personaId = await quienEsElPin(contexto, aparato, leido.pin);
+  } catch (fallo) {
+    if (fallo instanceof FalloDeAplicacion && fallo.codigo === 'pin_desconocido') {
+      await avisarDeLoQueNoSeApunto(contexto, aparato, que, 'pin', null, leido.numero);
+      return { apuntado: false, porque: 'pin' };
+    }
+    throw fallo;
+  }
+
+  try {
+    await ficharEnElAparato(contexto, aparato, personaId, que);
+  } catch (fallo) {
+    if (!(fallo instanceof FalloDeAplicacion)) throw fallo;
+    const porque: PorQueNoSeApunto =
+      fallo.codigo === 'ya_hecho'
+        ? 'ya_estaba'
+        : fallo.codigo === 'no_existe'
+          ? 'no_estaba'
+          : 'otro';
+    await avisarDeLoQueNoSeApunto(contexto, aparato, que, porque, personaId, leido.numero);
+    return { apuntado: false, porque };
+  }
+  return { apuntado: true };
+}
 
 /**
  * Fichar en el aparato. **Lo mismo que desde el móvil** (`fichar.ts`), con la
  * identidad de quien teclea y el aparato apuntado; sin pedir la ubicación.
  */
-export const ficharAqui = comando<z.infer<typeof entradaFicharAqui>, QuienFichaAqui>({
+export const ficharAqui = comando<
+  z.infer<typeof entradaFicharAqui>,
+  QuienFichaAqui | FichajeSinConexion
+>({
   nombre: 'fichar_aqui',
   entrada: entradaFicharAqui,
   sinSesion: true,
+  // Sin wifi se guarda en el aparato, con el PIN cifrado, y se manda al volver (0070).
+  sinConexion: true,
   // Repetirlo no hace dos cosas: entrar dos veces dice «ya estás fichado» y salir
   // dos veces, «no estás fichado». El estado de la persona es la protección, y
   // recordar la respuesta guardaría su PIN acertado en una tabla.
@@ -455,20 +662,20 @@ export const ficharAqui = comando<z.infer<typeof entradaFicharAqui>, QuienFichaA
 
   async ejecutar(contexto, entrada) {
     const aparato = await elAparato(contexto, entrada.llave);
-    const personaId = await quienEsElPin(contexto, aparato, entrada.pin);
-    await laCuentaDejaFichar(contexto, aparato);
-    await puedeFicharAqui(contexto, aparato.localId);
 
-    const desde = { desde: 'aparato' as const, terminalId: aparato.terminalId };
-    if (entrada.que === 'entrada') {
-      await abrirElTurno(contexto, personaId, aparato.organizacionId, aparato.localId, desde, null);
-    } else if (entrada.que === 'salida') {
-      await cerrarElTurno(contexto, personaId, aparato.organizacionId, desde, null);
-    } else if (entrada.que === 'pausa') {
-      await empezarLaPausa(contexto, personaId, aparato.terminalId);
-    } else {
-      await acabarLaPausa(contexto, personaId);
+    // Sin conexión, el PIN llega cifrado; con conexión, tal cual. Y uno cifrado solo se
+    // acepta como lo que es: algo que se hizo sin señal y se manda después.
+    if (entrada.pin_cifrado !== undefined) {
+      if (contexto.hechoHaceMs === undefined || contexto.hechoHaceMs === null) {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: 'Un PIN cifrado es de algo que se fichó sin conexión, y eso dice cuánto hace.',
+        });
+      }
+      return loQueSeFichoSinConexion(contexto, aparato, entrada.pin_cifrado, entrada.que);
     }
+
+    const personaId = await quienEsElPin(contexto, aparato, entrada.pin ?? '');
+    await ficharEnElAparato(contexto, aparato, personaId, entrada.que);
     return comoEsta(contexto, personaId, aparato.localId);
   },
 });

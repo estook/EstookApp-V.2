@@ -13,6 +13,7 @@ import type { IdentidadDeGoogle } from '../../servidor/infraestructura/identidad
 import type { AlmacenDeFicheros } from '../../servidor/infraestructura/almacen.ts';
 import type { Pagos } from '../../servidor/infraestructura/stripe.ts';
 import type { MotorDePdf } from '../../servidor/infraestructura/pdf.ts';
+import type { MovilSaliente } from '../../servidor/infraestructura/movil.ts';
 
 /**
  * El despachador de verdad, contra la base efímera de las pruebas (M7).
@@ -46,6 +47,8 @@ export interface ApiDePrueba {
     nombre: string,
     entrada: unknown,
     clave?: string,
+    /** Lo hecho sin conexión (0070): cuántos milisegundos hace, como lo manda el móvil. */
+    opciones?: { readonly hechoHaceMs?: number | null },
   ): Promise<Resultado>;
   /** Como `ejecutar`, llegando desde una dirección: para los límites por dirección. */
   ejecutarDesde(
@@ -85,6 +88,8 @@ export function montarLaApi(
     readonly pagos?: Pagos | null;
     /** El motor de los PDF (0068): sin decir nada, no hay (como en la API sin Cloudflare). */
     readonly pdf?: MotorDePdf | null;
+    /** Los avisos al móvil (0070): sin decir nada, no hay (como en la API sin claves VAPID). */
+    readonly movil?: MovilSaliente | null;
     /** La hora que ve la API, para probar lo que depende de los días que pasan. */
     readonly ahora?: () => Date;
   } = {},
@@ -153,6 +158,7 @@ export function montarLaApi(
             identidadDeGoogle: opciones.identidadDeGoogle ?? null,
             pagos: opciones.pagos ?? null,
             pdf: opciones.pdf ?? null,
+            movil: opciones.movil ?? null,
             correlacionId: quien.correlacionId,
             desde: quien.desde ?? null,
             ahora: opciones.ahora?.() ?? new Date(Date.now()),
@@ -212,8 +218,8 @@ export function montarLaApi(
     consultar: (token, nombre, entrada = {}) =>
       despachador.consultar(quien(token), nombre, entrada),
 
-    ejecutar: (token, nombre, entrada, clave = crypto.randomUUID()) =>
-      despachador.ejecutar(quien(token), nombre, entrada, clave),
+    ejecutar: (token, nombre, entrada, clave = crypto.randomUUID(), opciones = {}) =>
+      despachador.ejecutar(quien(token), nombre, entrada, clave, opciones),
 
     ejecutarDesde: (desde, token, nombre, entrada) =>
       despachador.ejecutar({ ...quien(token), desde }, nombre, entrada, crypto.randomUUID()),

@@ -6,6 +6,7 @@ import { lugaresDeGoogle } from './infraestructura/google.ts';
 import { identidadDeGoogle } from './infraestructura/identidad-de-google.ts';
 import { anotar, recordar } from './infraestructura/idempotencia.ts';
 import { enTransaccion } from './infraestructura/postgres.ts';
+import { movilConVapid } from './infraestructura/movil.ts';
 import { pdfDeCloudflare } from './infraestructura/pdf.ts';
 import { pagosDeStripe } from './infraestructura/stripe.ts';
 
@@ -53,7 +54,11 @@ const pagos = pagosDeStripe();
 /** Los PDF (0068): Cloudflare con sus dos claves. Nulo sin ellas: se dice, no se rompe. */
 const pdf = pdfDeCloudflare();
 
+/** Los avisos al móvil (0070): con sus dos claves VAPID. Nulo sin ellas: se dice, no se rompe. */
+const movil = movilConVapid();
+
 const puertos: Puertos = {
+  movilEncendido: movil !== null,
   enTransaccion: (quien, hacer) =>
     enTransaccion(quien, (sql, sesion) =>
       hacer({
@@ -68,6 +73,7 @@ const puertos: Puertos = {
         identidadDeGoogle: identidad,
         pagos,
         pdf,
+        movil,
         correlacionId: quien.correlacionId,
         desde: quien.desde ?? null,
         // El instante lo pone el servidor, nunca el navegador (regla 10).

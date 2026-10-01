@@ -56,6 +56,8 @@ export interface FichaDelProveedor {
   readonly dias: readonly number[];
   readonly plazo: number;
   readonly horaLimite: string | null;
+  /** Hacia qué hora suele llegar su reparto (0070), o nulo. */
+  readonly sueleLlegarA: string | null;
   readonly minimoCentimos: number | null;
   readonly portesCentimos: number | null;
   readonly diasDePago: number | null;
@@ -81,6 +83,7 @@ export async function elProveedor(
       dias: number[];
       plazo: number;
       hora_limite: string | null;
+      suele_llegar_a: string | null;
       minimo: string | null;
       portes: string | null;
       dias_de_pago: number | null;
@@ -90,6 +93,7 @@ export async function elProveedor(
            como_se_pide::text as como_se_pide,
            dias_de_reparto::int[] as dias, plazo_de_entrega::int as plazo,
            to_char(hora_limite, 'HH24:MI') as hora_limite,
+           to_char(suele_llegar_a, 'HH24:MI') as suele_llegar_a,
            pedido_minimo_centimos::text as minimo, portes_centimos::text as portes,
            dias_de_pago::int as dias_de_pago
       from estook.proveedor
@@ -117,6 +121,7 @@ export async function elProveedor(
     dias: fila.dias,
     plazo: fila.plazo,
     horaLimite: fila.hora_limite,
+    sueleLlegarA: fila.suele_llegar_a,
     minimoCentimos: fila.minimo === null ? null : Number(fila.minimo),
     portesCentimos: fila.portes === null ? null : Number(fila.portes),
     diasDePago: fila.dias_de_pago,

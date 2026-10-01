@@ -466,11 +466,20 @@ export interface ProductoParaMerma {
  * nombre, la unidad y cuánto queda. Ni un precio, ni un proveedor, ni un coste.
  */
 export const productosParaMerma = consulta<
-  { texto?: string | undefined },
+  { texto?: string | undefined; todos?: 'si' | undefined },
   { readonly productos: readonly ProductoParaMerma[] }
 >({
   nombre: 'productos_para_merma',
-  entrada: z.object({ texto: z.string().trim().max(120).optional() }).strict(),
+  entrada: z
+    .object({
+      texto: z.string().trim().max(120).optional(),
+      /**
+       * **Todos, para tenerlos en el móvil** (0070): sin señal se busca en esta lista,
+       * guardada la última vez que hubo red. Lo justo para elegir, como siempre.
+       */
+      todos: z.literal('si').optional(),
+    })
+    .strict(),
   exige: 'accion.registrar_merma',
 
   async ejecutar(contexto, entrada) {
@@ -518,7 +527,7 @@ export const productosParaMerma = consulta<
            or p.codigo_de_barras = ${texto}
          )
        order by p.nombre
-       limit 10
+       limit ${entrada.todos === 'si' ? 2000 : 10}
     `;
 
     return {

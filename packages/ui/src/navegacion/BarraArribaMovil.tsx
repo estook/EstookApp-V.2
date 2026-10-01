@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { IconoBuscar, IconoChat, IconoLocal } from '@estook/iconos';
 import { etiquetaDeLaCampana } from '@estook/dominio';
 import { LaCampana } from './LaCampana.tsx';
@@ -155,19 +155,22 @@ function DondeEstas({
   readonly locales: BarraArribaMovilProps['locales'];
   readonly alCambiar: (id: string) => void;
 }) {
+  // El logo que no llegó (sin señal): se guarda cuál, para que otro local o un logo nuevo sí se intente.
+  const [logoRoto, setLogoRoto] = useState<string | null>(null);
   if (local === null) {
     return <span className="min-w-0 flex-1 text-secundario text-texto-suave">Sin local</span>;
   }
 
   const color = local.colorDeMarca;
   const conColor = color !== null;
+  const sinLogo = local.logo === null || local.logo === logoRoto;
 
   const marca = (
     <span
       className="inline-flex shrink-0 items-center rounded-redondo p-[3px]"
       style={color === null ? undefined : { backgroundColor: color }}
     >
-      {local.logo === null ? (
+      {sinLogo ? (
         <span
           className={clases(
             'inline-flex size-6 items-center justify-center rounded-redondo',
@@ -180,6 +183,10 @@ function DondeEstas({
         <img
           src={local.logo}
           alt=""
+          // Sin señal no llega (viene de internet): el icono del local en su lugar (0070).
+          onError={() => {
+            setLogoRoto(local.logo);
+          }}
           className="size-6 rounded-redondo bg-superficie object-contain"
         />
       )}

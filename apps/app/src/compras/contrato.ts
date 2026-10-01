@@ -471,6 +471,8 @@ export interface FichaDelProveedor {
   readonly diasDeReparto: readonly number[];
   readonly plazoDeEntrega: number;
   readonly horaLimite: string | null;
+  /** Hacia qué hora suele llegar su reparto (0070). Opcional: la web va antes que la API. */
+  readonly sueleLlegarA?: string | null;
   readonly comoSeLePide: string | null;
   readonly formaDePago: FormaDePago | null;
   readonly diasDePago: number | null;

@@ -59,6 +59,18 @@ let vigilando: ReturnType<typeof setInterval> | null = null;
 /** A dónde se pregunta si hay red: `/salud` de la API. Nulo hasta que se sabe. */
 let laSalud: string | null = null;
 
+/**
+ * `/salud` con un número distinto cada vez, para que nada guarde la respuesta.
+ *
+ * **No con `cache: 'no-store'`**: Safari, con eso, añade por su cuenta `Cache-Control`
+ * y `Pragma`, la petición deja de ser simple, pregunta antes por CORS y la API no las
+ * admite. En el iPhone, `/salud` no contestaba nunca y la app se creía sin red con red
+ * (lo cazó la integración continua en WebKit, 1-oct; en Chrome no pasa).
+ */
+function sinGuardar(salud: string): string {
+  return `${salud}?r=${String(Date.now())}`;
+}
+
 /** Lo que se espera a que `/salud` conteste antes de darlo por «sin conexión». */
 const CONTESTA_EN_MS = 3_000;
 
@@ -74,7 +86,7 @@ export async function laApiContesta(): Promise<boolean> {
     corte.abort();
   }, CONTESTA_EN_MS);
   try {
-    const respuesta = await fetch(laSalud, { cache: 'no-store', signal: corte.signal });
+    const respuesta = await fetch(sinGuardar(laSalud), { signal: corte.signal });
     return respuesta.ok;
   } catch {
     return false;
@@ -109,7 +121,7 @@ export function vigilarLaVuelta(direccionDeLaApi: string): void {
   laSalud = salud;
   const mirar = () => {
     if (conRed) return;
-    void fetch(salud, { cache: 'no-store' }).then(
+    void fetch(sinGuardar(salud)).then(
       (respuesta) => {
         if (respuesta.ok) marcarConRed();
       },

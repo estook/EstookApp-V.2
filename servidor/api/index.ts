@@ -197,15 +197,20 @@ export function crearApi(despachador: Despachador) {
     return respuestaDeError('fallo_nuestro', correlacionId);
   });
 
+  // Nunca guardada: dice si la API está en pie ahora, no hace un rato (0070).
   api.get('/salud', (c) =>
-    c.json({
-      datos: {
-        estado: 'en pie',
-        version: VERSION_ACTUAL,
-        // Si los avisos al móvil están encendidos (0070): sí o no, nunca la clave.
-        movil: despachador.movilEncendido,
+    c.json(
+      {
+        datos: {
+          estado: 'en pie',
+          version: VERSION_ACTUAL,
+          // Si los avisos al móvil están encendidos (0070): sí o no, nunca la clave.
+          movil: despachador.movilEncendido,
+        },
       },
-    }),
+      200,
+      { 'cache-control': 'no-store' },
+    ),
   );
 
   api.get('/v:version{[0-9]+}/consultas/:nombre', async (c) => {

@@ -143,7 +143,7 @@ self.addEventListener('install', (evento) => {
         LO_DE_ARRANCAR.map(async (ruta) => {
           try {
             const respuesta = await fetch(new Request(aqui(ruta), { cache: 'reload' }));
-            if (respuesta.ok) await cache.put(aqui(ruta), respuesta);
+            if (respuesta.ok) await cache.put(aqui(ruta), await sinRedireccion(respuesta));
           } catch (fallo) {
             // Un fichero que no llega no deja la app sin trabajador: se guarda al usarse.
           }
@@ -207,8 +207,21 @@ async function laPagina(peticion) {
     return deLaRed;
   } catch (fallo) {
     const cache = await caches.open(CACHE);
-    return (await cache.match(aqui('./'))) || (await cache.match(aqui('index.html'))) || Response.error();
+    const guardada = (await cache.match(aqui('./'))) || (await cache.match(aqui('index.html')));
+    return guardada ? await sinRedireccion(guardada) : Response.error();
   }
+}
+
+// Safari no acepta, para abrir una pantalla, una respuesta que llegó tras una
+// redirección («Response served by service worker has redirections»); Chrome sí. Se
+// rehace la misma, limpia: sin esto, en el iPhone Estook no abría sin señal (0070).
+async function sinRedireccion(respuesta) {
+  if (!respuesta.redirected) return respuesta;
+  return new Response(await respuesta.blob(), {
+    status: respuesta.status,
+    statusText: respuesta.statusText,
+    headers: respuesta.headers,
+  });
 }
 
 async function loGuardadoPrimero(peticion) {

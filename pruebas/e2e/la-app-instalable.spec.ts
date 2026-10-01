@@ -207,6 +207,13 @@ test('el aparato del local sin wifi: el PIN se guarda cifrado y se apunta al vol
 
 test.describe('con el trabajador de servicio', () => {
   test.use({ serviceWorkers: 'allow' });
+  // En el WebKit de Playwright (Linux), recargar sin red con el trabajador puesto
+  // acaba en «WebKit encountered an internal error» antes de llegar a la app (1-oct).
+  // En Chrome se prueba aquí; en un iPhone de verdad, en el paso 5 de Richi.
+  test.skip(
+    ({ browserName }) => browserName === 'webkit',
+    'Playwright no recarga sin red en WebKit con el trabajador de servicio',
+  );
 
   test('sin señal, Estook abre y enseña lo último que se vio', async ({ page, context }, info) => {
     test.slow();

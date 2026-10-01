@@ -462,3 +462,9 @@
      trabajador «cuando esté listo», y en un navegador sin él tardaba cinco segundos en
      salir. Se pregunta si hay uno y, si no, se sigue. Y lo que viene de internet (el logo
      del local) no está sin señal: se pinta lo de repuesto, nunca una imagen rota.
+136. **Un tope que ya se roza no avisa: corta.** «Construccion y presupuestos» tenía 25
+     minutos y en una vuelta buena gastaba 22. Con las pruebas de I y un día en que GitHub
+     tardó 19 minutos en bajar los navegadores, se canceló a medias, sin un solo rojo de la
+     app, y Richi se encontró un pull request que no podía fusionar sin saber por qué. El
+     trabajo pasa a 40 minutos y bajar los navegadores tiene su tope de 10 (1-oct). Cuando
+     una vuelta buena pase de los 30, se mira antes de que vuelva a cortar.

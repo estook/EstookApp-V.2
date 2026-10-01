@@ -33,6 +33,16 @@ export {
   type FilaDelRegistro,
   type TotalDelRegistro,
 } from './registro-de-jornada.ts';
+export {
+  documentoDeMiHorario,
+  documentoDelHorario,
+  type DatosDeMiHorario,
+  type DatosDelHorario,
+  type DiaDeMiHorario,
+  type DiaDelHorario,
+  type FilaDelHorario,
+  type GrupoDelHorario,
+} from './horario.ts';
 export { MONTSERRAT_WOFF2_BASE64 } from './letra.ts';
 
 export const PAQUETE = '@estook/documentos' as const;

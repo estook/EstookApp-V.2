@@ -17,6 +17,7 @@ import { Panel } from './panel/Panel.tsx';
 import { PantallaDeApp } from './pantallas/PantallaDeApp.tsx';
 import { VistaDeCadena } from './pantallas/VistaDeCadena.tsx';
 import { MisFichajes } from './equipo/MisFichajes.tsx';
+import { ElHorario } from './horario/ElHorario.tsx';
 import { ElegirPlan } from './sesion/ElegirPlan.tsx';
 import { usarLaVueltaDelPago } from './ganchos/usarLaVueltaDelPago.ts';
 import { laDireccionDeAhora } from './pantallas/direccionesViejas.ts';
@@ -254,6 +255,8 @@ function Puerta() {
           <Route path="ajustes/:seccion" element={<Ajustes />} />
           {/* Lo suyo, para cualquiera: tenga o no la app Equipo (0068). */}
           <Route path="mis-fichajes" element={<MisFichajes />} />
+          {/* El horario de la semana (0069): a donde lleva el aviso y «Mi turno». */}
+          <Route path="horario" element={<ElHorario />} />
           {/*
             App -> destino -> vista.
 

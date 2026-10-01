@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **«Antes de M8»**: las compras de M7 están entregadas, y quedan cinco entregas antes de M8 —**H · Horarios** (H1 hecha, falta H2), **I · La app instalable**, **C · El chat**, **A3 · Vendedores** y **A4 · Ventas del admin**—, con su plan en [`h-horarios.md`](h-horarios.md), [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+Estás en **«Antes de M8»**: las compras de M7 están entregadas, y quedan cinco entregas antes de M8 —**H · Horarios** (H1 en producción, H2 en su pull request), **I · La app instalable**, **C · El chat**, **A3 · Vendedores** y **A4 · Ventas del admin**—, con su plan en [`h-horarios.md`](h-horarios.md), [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -192,7 +192,6 @@ Lo que ya existe a medias y el módulo que lo acaba. Vivía en `ESTADO.md` hasta
 
 | Qué                                                       | Dónde se termina | Qué hay ya                                                     |
 | --------------------------------------------------------- | ---------------- | -------------------------------------------------------------- |
-| El horario en PDF, para la pared y para cada uno          | **H2**           | El motor de los PDF y sus plantillas (H1, 0068)                |
 | Unir dos personas que resultan ser la misma               | **M13**          | Poner el correo a quien no lo tenía, que no une (H1)           |
 | Business Profile: leer y contestar reseñas                | Con accesos      | La nota en Google con su evolución, en Negocio → Reseñas (R2)  |
 | Calendario, avisos con roles y turnos                     | **M14**          | La tabla, su seguridad por roles y «Lo que viene»              |

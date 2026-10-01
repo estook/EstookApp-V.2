@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 30 de septiembre de 2026 · **Antes de M8. H1 · Personas y fichajes en producción (#83), con los PDF encendidos. En su pull request, el repaso de H1; en curso, H2 · El horario**
+Última actualización: 1 de octubre de 2026 · **Antes de M8. H1 en producción (#83). El repaso de H1 fusionado (#84). En su pull request, H2 · El horario (#85), que cierra H**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento**, y **no pasa de 150 líneas**
@@ -14,7 +14,7 @@
 > | Quién ve qué                      | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                      |
 > | Qué desencadena cada cambio       | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                           |
 > | Estook TPV y la facturación       | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**           |
-> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (68)                                          |
+> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (69)                                          |
 > | Lo legal, y lo ya investigado     | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md) |
 > | Lo que cuesta cada local          | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                         |
 > | Lo que hizo cada entrega          | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                         |
@@ -25,17 +25,17 @@
 
 ## 1 · Dónde estamos · producción leída el 30-sep, en solo lectura
 
-|                  |                                                                                                                                                                                                                                                                 |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2 y **H1**, con sus repasos                                                                                                                                         |
-| **Por fusionar** | **El repaso de H1**: el PDF se descarga y además se comparte, el informe sin la nota del pie, dónde ficha quien no tiene correo, la app que se pone al día sola, y el recado del alta. **Sin migración; con despliegue de la API** (el PDF lo hace el servidor) |
-| **Ahora**        | **H2 · El horario** ([`docs/h-horarios.md`](docs/h-horarios.md)): el cuadrante de la semana, libres y vacaciones, el coste y las horas extra, publicar y el horario en PDF                                                                                      |
-| **`main`**       | Todo fusionado hasta la **#83** (30-sep): H1, migrada, desplegada y con Cloudflare puesto por Richi; su primer PDF de verdad, el 30-sep a las 22:54                                                                                                             |
-| **Base**         | Supabase, **52 de 52** migraciones. 76 tablas, todas con seguridad por filas                                                                                                                                                                                    |
-| **API**          | Desplegada con H1: **62 consultas y 125 comandos**, comprobada el 30-sep por la noche                                                                                                                                                                           |
-| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                               |
-| **Pruebas**      | **1.485** unitarias y de base con H1, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                                                                            |
-| **Copias**       | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                                  |
+|                  |                                                                                                                                                                                                                                                                                                                              |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminado**    | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2 y **H1**, con sus repasos                                                                                                                                                                                                      |
+| **Por fusionar** | **#85 · H2 · El horario** ([0069](docs/decisiones/0069-el-horario.md)): la semana en borrador y publicada, libres, vacaciones y bajas, lo que cuesta, los avisos de descansos y horas, publicar avisando solo a quien le toca, el PDF y «Mi turno». **Migración 0053 y despliegue de la API**, que sirve también para la #84 |
+| **Ahora**        | Que Richi fusione la #85, migre y despliegue. **Con H2, H · Horarios queda entera**; lo siguiente es **I · La app instalable**                                                                                                                                                                                               |
+| **`main`**       | Todo fusionado hasta la **#84** (1-oct): H1 en producción con Cloudflare puesto por Richi, y su repaso **fusionado pero sin desplegar** (se despliega con H2)                                                                                                                                                                |
+| **Base**         | Supabase, **52 de 52** migraciones (con H2, 53). 76 tablas, todas con seguridad por filas (con H2, 79)                                                                                                                                                                                                                       |
+| **API**          | Desplegada con H1: **62 consultas y 125 comandos**, comprobada el 30-sep por la noche. Con H2 serán **65 y 130**                                                                                                                                                                                                             |
+| **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                                                                                            |
+| **Pruebas**      | **1.527** unitarias y de base con H2, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                                                                                                                                         |
+| **Copias**       | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                                                                                               |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md), y el chat adelantado en la [0067](docs/decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md))
 
@@ -46,7 +46,7 @@ ESTOOK TPV    M16a · La jornada → M20 → M19a · Estook Link → M20A → M2
 DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b → Fases 5, 6 y 7
 ```
 
-**H va en dos entregas** ([0068](docs/decisiones/0068-las-respuestas-de-h.md), plan en [`docs/h-horarios.md`](docs/h-horarios.md)). **H1**, en producción: la persona sin correo ([0057](docs/decisiones/0057-quien-es-quien-en-el-tpv.md)), los fichajes listos para el registro horario digital ([0062](docs/decisiones/0062-lo-legal.md)) y los PDF. **H2**, por hacer: el cuadrante con el coste en vivo, libres y vacaciones, las horas extra, el horario que ve todo el equipo y la entrega 3 de M7.
+**H va en dos entregas** ([0068](docs/decisiones/0068-las-respuestas-de-h.md), plan en [`docs/h-horarios.md`](docs/h-horarios.md)). **H1**, en producción: la persona sin correo ([0057](docs/decisiones/0057-quien-es-quien-en-el-tpv.md)), los fichajes listos para el registro horario digital ([0062](docs/decisiones/0062-lo-legal.md)) y los PDF. **H2**, en su pull request: el horario de la semana, con lo que cuesta, los avisos de descansos y horas, y publicado para todo el equipo ([0069](docs/decisiones/0069-el-horario.md)). Era también la mejora 18 y la entrega 3 de M7.
 
 **Los PDF** los imprime **Cloudflare Browser Run**, gratis hasta unos 400 al día, con la cuenta de Richi desde el 30-sep. La hoja de cálculo del registro no depende de nada.
 
@@ -55,12 +55,12 @@ DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → 
 Para que nadie dé por hecho lo que solo está escrito:
 
 - **Estook TPV, Estook Link, la facturación, Fogón, los escandallos, la carta por platos, el APPCC y el chat**: escritos, sin construir. Cada uno dice su módulo en el Plan.
-- **El horario nuevo** (el cuadrante, libres, vacaciones y horas extra) llega con H2. **Unir dos personas** que resulten ser la misma, con M13.
+- **Del horario, lo que no entra en H**: que Fogón lo proponga (M22), cambiar turnos entre compañeros y vacaciones con saldo (M13), las vistas de mes y día (M14), y mandarlo al chat (C). **Unir dos personas** que resulten ser la misma, con M13.
 - **Nada funciona sin conexión.** No hay service worker: llega con la entrega I.
 - **Nadie ha pagado de verdad.** Un pago en modo prueba (Pizzeriacazzo, 26-sep).
 - **Nada se borra solo**: los plazos de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md) los aplicará M27. **Ni hay exportación completa del negocio.**
 - **Los textos legales de la web y los de `docs/legal/` son borradores**, sin revisar por un asesor.
-- **De las veinte mejoras, catorce**; del admin, la puerta y los clientes (faltan A3 y A4); ni avisos al móvil, ni recuperar la contraseña por correo.
+- **De las veinte mejoras, quince** con H2; del admin, la puerta y los clientes (faltan A3 y A4); ni avisos al móvil, ni recuperar la contraseña por correo.
 
 ### Lo que hay en producción
 
@@ -72,8 +72,8 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Ahora, en este orden** (paso a paso en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **Fusionar el repaso de H1 y desplegar la API.** Sin migración.
-2. **Mirar en el ordenador** que «Descargar en PDF» lo guarda y ofrece «Compartir», y en el móvil que la app se pone al día sola.
+1. **Fusionar la #85, migrar (0053) y desplegar la API**, que lleva también el repaso de H1.
+2. **Montar y publicar una semana de verdad** en IKATZ, mirar el aviso y «Mi turno» en el móvil de alguien del equipo, y que «Descargar en PDF» lo guarda y ofrece «Compartir».
 3. **Un profesional, más adelante**: no hace falta hasta el primer cliente que pague. Qué tiene que mirar y cuándo, al final de [`lo-investigado.md`](docs/legal/lo-investigado.md).
 
 **Con fecha o con condición:**
@@ -93,9 +93,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Decidido el 30-sep** (0067 y 0068): **el chat se adelanta** a después de la app instalable; **Pro a 99 € y Cadena a 89 €**, ya en producción; y **las seis de H**: dos entregas, el aparato del local, la pausa (también en horario partido), libres y vacaciones, el equipo ve el horario publicado de todos (sin euros) y los PDF con Cloudflare. **Mandar el horario al chat** llega con C. **Todo en Cloudflare, no**: en la mudanza se va la web; la base, la API y los ficheros siguen en Supabase.
 
-**Cuando quiera:** las alertas de Dependabot, quitar «Automatically expose new tables» en Supabase y regenerar las claves de Google que pasaron por un chat.
-
-**Las claves nunca por el chat**: se ponen como secretos y se dice solo el nombre ([`config/claves.md`](config/claves.md)). **Y no se toca jamás el borrado permanente de un NIF en Verifacti.**
+**Cuando quiera:** las alertas de Dependabot, quitar «Automatically expose new tables» en Supabase y regenerar las claves de Google que pasaron por un chat. **Las claves nunca por el chat**: se ponen como secretos y se dice solo el nombre ([`config/claves.md`](config/claves.md)). **Y no se toca jamás el borrado permanente de un NIF en Verifacti.**
 
 ---
 
@@ -144,8 +142,8 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Fusionar el repaso de H1 y desplegar** (apartado 2), y **H2 · El horario**, que ya está en marcha. Los PDF contra Cloudflare de verdad ya funcionan: Richi sacó su semana el 30-sep.
+**Fusionar la #85, migrar y desplegar** (apartado 2), y que Richi monte una semana de verdad. **Después, I · La app instalable**: que la app se pueda poner en la pantalla de inicio, funcione sin conexión lo justo y mande avisos al móvil.
 
-**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); que abrir el aparato para fichar cierre la sesión de quien lo abre; que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla); partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
+**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); que abrir el aparato para fichar cierre la sesión de quien lo abre; que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla); los seis de «Lo que decidí al construirlo» de la [0069](docs/decisiones/0069-el-horario.md), como que el correo del horario lleve lo suyo escrito y no un PDF; partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
 
 **Lo que ESTADO llevaba hasta hoy** —las decisiones una a una, lo de cada entrega de E2 a R2 y la lista larga de lo que no se toca— está entero en [`docs/historia/ESTADO-hasta-el-30-sep-2026.md`](docs/historia/ESTADO-hasta-el-30-sep-2026.md), y lo que queda preparado para cada módulo, en [el mapa](docs/MAPA-de-modulos.md).

@@ -1,5 +1,15 @@
 import { z } from 'zod';
-import { dejaEscribir, horaDeCorte, jornadaDe } from '@estook/dominio';
+import {
+  comoSeLeeElDia,
+  comoSeLlamaElDia,
+  dejaEscribir,
+  diaDeLaSemana,
+  diasEntre,
+  fechaOperativa,
+  horaDeCorte,
+  jornadaDe,
+  type TipoDeTurno,
+} from '@estook/dominio';
 import {
   derivarConSalDelLocal,
   esPinConForma,
@@ -289,6 +299,62 @@ export interface QuienFichaAqui {
   /** Lo que lleva hoy, sin las pausas si no cuentan. */
   readonly minutosDeHoy: number;
   readonly pausasEnUso: boolean;
+  /**
+   * Lo suyo de los próximos siete días, del horario publicado (H2 · 0069). Quien no
+   * tiene correo no ve la app: su horario lo ve aquí, al teclear su PIN.
+   */
+  readonly proximos: readonly { readonly cuando: string; readonly que: string }[];
+}
+
+/** Lo suyo publicado de hoy a seis días vista, día a día. */
+async function susProximosDias(
+  contexto: Contexto,
+  personaId: string,
+  localId: string,
+  hoy: string,
+): Promise<QuienFichaAqui['proximos']> {
+  const filas = await contexto.sql<
+    {
+      dia: string;
+      tipo: TipoDeTurno;
+      entra: string | null;
+      sale: string | null;
+      descanso: number;
+    }[]
+  >`
+    select to_char(tp.dia, 'YYYY-MM-DD') as dia, tp.tipo::text as tipo,
+           to_char(tp.entra, 'HH24:MI') as entra, to_char(tp.sale, 'HH24:MI') as sale,
+           tp.descanso_minutos as descanso
+      from estook.turno_publicado tp
+     where tp.persona_id = ${personaId} and tp.local_id = ${localId}
+       and tp.dia between ${hoy}::date and ${hoy}::date + 6
+     order by tp.dia, tp.entra nulls first
+  `;
+  const dias = [...new Set(filas.map((f) => f.dia))];
+  return dias.map((dia) => {
+    const faltan = diasEntre(fechaOperativa(hoy), fechaOperativa(dia));
+    const nombre = comoSeLlamaElDia(diaDeLaSemana(fechaOperativa(dia)));
+    return {
+      cuando:
+        faltan === 0
+          ? 'Hoy'
+          : faltan === 1
+            ? 'Mañana'
+            : `${nombre.charAt(0).toUpperCase()}${nombre.slice(1)} ${String(Number(dia.slice(8)))}`,
+      que: comoSeLeeElDia(
+        filas
+          .filter((f) => f.dia === dia)
+          .map((f) => ({
+            personaId,
+            dia: f.dia,
+            tipo: f.tipo,
+            entra: f.entra,
+            sale: f.sale,
+            descansoMinutos: f.descanso,
+          })),
+      ),
+    };
+  });
 }
 
 export const entradaQuienFichaAqui = z
@@ -343,6 +409,7 @@ async function comoEsta(
     desde: fila.pausa_desde ?? fila.dentro_desde,
     minutosDeHoy: fila.minutos,
     pausasEnUso: fila.pausas,
+    proximos: await susProximosDias(contexto, personaId, localId, jornada),
   };
 }
 

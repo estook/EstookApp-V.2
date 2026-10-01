@@ -104,7 +104,9 @@ test('«Fichar» desde cualquier sitio abre el «+» con fichar arriba', async (
   await entrarComoLuis(page);
   await irA(page, '?hacer=fichar');
   const hoja = page.getByRole('dialog', { name: 'Qué quieres hacer' });
-  await expect(hoja.getByRole('region', { name: 'Fichar' })).toBeVisible();
+  // Fichar sale cuando llega `mi_fichaje`, que desde H2 mira también el horario
+  // publicado. Con la batería entera a la vez, en el móvil tardó más de 5 s (1-oct).
+  await expect(hoja.getByRole('region', { name: 'Fichar' })).toBeVisible({ timeout: 15_000 });
   await expect(hoja.getByRole('button', { name: /Fichar la (entrada|salida)/ })).toBeVisible();
 });
 

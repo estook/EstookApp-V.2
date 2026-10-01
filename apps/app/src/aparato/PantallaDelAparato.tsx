@@ -35,6 +35,8 @@ interface Quien {
   readonly desde: string | null;
   readonly minutosDeHoy: number;
   readonly pausasEnUso: boolean;
+  /** Lo suyo de los próximos días, del horario publicado (H2 · 0069). */
+  readonly proximos?: readonly { readonly cuando: string; readonly que: string }[];
 }
 
 /** Lo que tarda en volver al teclado si nadie toca nada. */
@@ -333,6 +335,28 @@ export function PantallaDelAparato() {
                 No soy yo
               </Boton>
             </div>
+            {/*
+              Su horario, que quien no tiene correo no ve en ninguna otra parte
+              (h-horarios, punto 9): lo suyo de los próximos días, al teclear su PIN.
+            */}
+            {quien.proximos !== undefined && quien.proximos.length > 0 && (
+              <section aria-label="Tus próximos días" className="w-full">
+                <h2 className="pb-e2 text-center text-etiqueta font-semibold uppercase tracking-wide text-texto-suave">
+                  Tus próximos días
+                </h2>
+                <ul className="flex flex-col divide-y divide-borde rounded-medio border border-borde bg-superficie">
+                  {quien.proximos.map((p) => (
+                    <li
+                      key={p.cuando}
+                      className="flex items-center justify-between gap-e3 px-e4 py-e2"
+                    >
+                      <span className="font-medium">{p.cuando}</span>
+                      <span className="text-right tabular-nums text-texto-suave">{p.que}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
         )}
       </main>

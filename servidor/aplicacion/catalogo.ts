@@ -65,6 +65,14 @@ import {
   quitarAparatoParaFichar,
 } from './comandos/aparato-para-fichar.ts';
 import { registroDeJornada } from './consultas/registro-de-jornada.ts';
+import { elHorario, elHorarioEnBorrador, elHorarioEnPdf } from './consultas/horario.ts';
+import {
+  copiarLaSemanaAnterior,
+  ponerTramo,
+  publicarElHorario,
+  quitarTramo,
+  rellenarConElDeSiempre,
+} from './comandos/horario.ts';
 import {
   ponerDondeEstaElLocal,
   guardarLasPausas,
@@ -299,6 +307,10 @@ export const catalogo = {
     [registroDeJornada.nombre]: registroDeJornada,
     [aparatosParaFichar.nombre]: aparatosParaFichar,
     [elAparatoParaFichar.nombre]: elAparatoParaFichar,
+    // ── H2 (0069): el horario publicado, el borrador de quien lo monta y en PDF.
+    [elHorario.nombre]: elHorario,
+    [elHorarioEnBorrador.nombre]: elHorarioEnBorrador,
+    [elHorarioEnPdf.nombre]: elHorarioEnPdf,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -506,5 +518,15 @@ export const catalogo = {
     [quitarAparatoParaFichar.nombre]: quitarAparatoParaFichar,
     [quienFichaAqui.nombre]: quienFichaAqui,
     [ficharAqui.nombre]: ficharAqui,
+
+    // ── H2 · El horario (0069) ─────────────────────────────────────────────
+    //
+    // Montarlo en borrador, para no empezar de cero, y publicarlo: a cada uno lo
+    // suyo la primera vez, y después solo a quien le cambia algo.
+    [ponerTramo.nombre]: ponerTramo,
+    [quitarTramo.nombre]: quitarTramo,
+    [copiarLaSemanaAnterior.nombre]: copiarLaSemanaAnterior,
+    [rellenarConElDeSiempre.nombre]: rellenarConElDeSiempre,
+    [publicarElHorario.nombre]: publicarElHorario,
   } as Record<string, Comando<never, unknown>>,
 };

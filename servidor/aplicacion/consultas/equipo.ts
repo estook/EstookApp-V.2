@@ -213,6 +213,25 @@ export const miFichaje = consulta<Record<string, never>, MiFichaje>({
        order by dia_de_la_semana, entra
     `;
 
+    // **Cuando hay horario publicado, manda el horario** (H2 · 0069, h-horarios
+    // punto 8): «entras en cinco minutos» mira lo publicado de esta semana. Sin él,
+    // el de siempre, como hasta ahora. Un día libre en lo publicado es un día sin
+    // entrada, aunque el de siempre diga otra cosa.
+    const publicada = await laSemanaPublicada(contexto, localId, lunes);
+    const elHorario = publicada
+      ? await contexto.sql<{ dia: number; entra: string; sale: string }[]>`
+          select extract(isodow from tp.dia)::int as dia,
+                 to_char(tp.entra, 'HH24:MI') as entra,
+                 to_char(tp.sale, 'HH24:MI') as sale
+            from estook.turno_publicado tp
+           where tp.persona_id = ${contexto.personaId}
+             and tp.local_id = ${localId}
+             and tp.tipo = 'trabajo'
+             and tp.dia between ${lunes}::date and ${lunes}::date + 6
+           order by tp.dia, tp.entra
+        `
+      : horario;
+
     const abierto = abiertos[0];
 
     const pausa = await contexto.sql<{ en_uso: boolean; cuenta: boolean; desde: string | null }[]>`
@@ -244,7 +263,7 @@ export const miFichaje = consulta<Record<string, never>, MiFichaje>({
       jornada: reloj.jornada,
       horaDelLocal: reloj.ahora,
       diaDeLaSemana: reloj.diaDeLaSemana,
-      horario,
+      horario: elHorario,
       elLocalSabeDondeEsta: reloj.latitud !== null && reloj.longitud !== null,
       radioMetros: reloj.radio,
       margenDeRetrasoMinutos: reloj.margenDeRetraso,
@@ -252,6 +271,21 @@ export const miFichaje = consulta<Record<string, never>, MiFichaje>({
     };
   },
 });
+
+/** Si la semana de ese lunes tiene horario publicado en el local (H2 · 0069). */
+async function laSemanaPublicada(
+  contexto: Contexto,
+  localId: string,
+  lunes: string,
+): Promise<boolean> {
+  const filas = await contexto.sql<{ publicada: boolean }[]>`
+    select exists (
+      select 1 from estook.semana_de_horario s
+       where s.local_id = ${localId} and s.lunes = ${lunes}::date and s.publicada_en is not null
+    ) as publicada
+  `;
+  return filas[0]?.publicada === true;
+}
 
 // ── Quién está trabajando ahora ──────────────────────────────────────────────
 
@@ -298,6 +332,12 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
     if (!contexto.personaId) throw new FalloDeAplicacion('sin_sesion');
     const localId = elLocal(contexto);
     const reloj = await elReloj(contexto, localId);
+    // A qué hora entra hoy cada uno: lo publicado si la semana lo está (0069).
+    const publicada = await laSemanaPublicada(
+      contexto,
+      localId,
+      masDias(fechaOperativa(reloj.jornada), -(reloj.diaDeLaSemana - 1)),
+    );
 
     const filas = await contexto.sql<
       {
@@ -352,7 +392,7 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
              estook.visto_por_ultima_vez(e.id) as ultimo_acceso_en,
              -- Con la app abierta y a la vista, no «con una sesión sin cerrar» (0042).
              estook.esta_en_linea(e.id) as en_linea,
-             to_char(ho.entra, 'HH24:MI') as entra_hoy
+             to_char(case when ${publicada} then hp.entra else ho.entra end, 'HH24:MI') as entra_hoy
         from equipo e
         left join lateral (
           select f.entro_en, f.entro_metros,
@@ -382,6 +422,16 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
            order by hh.entra
            limit 1
         ) ho on true
+        left join lateral (
+          select tp.entra
+            from estook.turno_publicado tp
+           where tp.persona_id = e.id
+             and tp.local_id = ${localId}
+             and tp.dia = ${reloj.jornada}::date
+             and tp.tipo = 'trabajo'
+           order by tp.entra
+           limit 1
+        ) hp on true
        order by (a.entro_en is null), e.nombre
     `;
 
@@ -737,6 +787,13 @@ export async function lasEntradasDelHorario(
       select d::date as fecha
         from generate_series(${desde}::date, ${hasta}::date, interval '1 day') d
     ),
+    -- Los días de semanas con horario publicado: ahí manda lo publicado (0069).
+    publicadas as (
+      select s.lunes
+        from estook.semana_de_horario s
+       where s.local_id = ${localId}::uuid and s.publicada_en is not null
+         and s.lunes >= ${desde}::date - 7 and s.lunes <= ${hasta}::date
+    ),
     entradas as (
       select e.id as persona_id, dd.fecha,
              (
@@ -752,6 +809,22 @@ export async function lasEntradasDelHorario(
          and hh.dia_de_la_semana = extract(isodow from dd.fecha)::int
          and hh.desde <= dd.fecha
          and (hh.hasta is null or hh.hasta >= dd.fecha)
+       where not exists (
+         select 1 from publicadas pu where dd.fecha between pu.lunes and pu.lunes + 6
+       )
+      union all
+      -- Lo publicado: el día del tramo es el día en que empieza. Si empieza antes de
+      -- la hora de corte, es de la jornada de antes, como en el de siempre.
+      select e.id as persona_id,
+             (case when tp.entra >= l.hora_de_corte then tp.dia else tp.dia - 1 end) as fecha,
+             (tp.dia + tp.entra) at time zone l.zona_horaria as instante
+        from equipo e
+        join estook.local l on l.id = ${localId}::uuid
+        join estook.turno_publicado tp
+          on tp.persona_id = e.id and tp.local_id = l.id and tp.tipo = 'trabajo'
+        join publicadas pu on tp.dia between pu.lunes and pu.lunes + 6
+       where (case when tp.entra >= l.hora_de_corte then tp.dia else tp.dia - 1 end)
+             between ${desde}::date and ${hasta}::date
     )
     select en.persona_id::text as persona_id,
            to_char(en.fecha, 'YYYY-MM-DD') as fecha,

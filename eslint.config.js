@@ -18,6 +18,10 @@ export default tseslint.config(
       // linter no sabe analizarlo. Son cuatro lineas que solo enchufan la API ya
       // probada a su servidor; lo que hay que revisar de ellas se revisa leyendo.
       'supabase/functions/**',
+      // Las copias de trabajo que abre Claude Code para una tarea aparte viven en
+      // `.claude/worktrees/`: son el repositorio entero otra vez, y el linter las
+      // leía como si fueran código de aquí (30-sep, 27.000 «errores» de golpe).
+      '.claude/**',
     ],
   },
 

@@ -31,7 +31,8 @@ const LAS_OCHO = [
   { id: 'almacen', nombre: 'Almacén', entra: 'Resumen' },
   { id: 'escandallos', nombre: 'Escandallos', entra: 'Resumen' },
   { id: 'carta', nombre: 'Carta', entra: 'Carta' },
-  { id: 'calendario', nombre: 'Calendario', entra: 'Calendario' },
+  // H2 (0069): con el Calendario entero en M14, entra en Turnos, que es lo construido.
+  { id: 'calendario', nombre: 'Calendario', entra: 'Turnos' },
   { id: 'equipo', nombre: 'Equipo', entra: 'Resumen' },
   { id: 'servicio', nombre: 'Servicio', entra: 'Jornada' },
   { id: 'negocio', nombre: 'Negocio', entra: 'Ventas' },
@@ -46,7 +47,7 @@ const LAS_OCHO = [
  * añada su línea, que es exactamente cuando hay que mirar si lo que enseña la
  * pantalla vacía sigue siendo verdad.
  */
-const APPS_CON_CONTENIDO = ['almacen', 'equipo', 'servicio', 'negocio'];
+const APPS_CON_CONTENIDO = ['almacen', 'calendario', 'equipo', 'servicio', 'negocio'];
 
 /**
  * Abre una pantalla y **espera a que la aplicacion este viva**.

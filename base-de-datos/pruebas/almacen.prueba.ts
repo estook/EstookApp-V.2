@@ -655,6 +655,11 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // `terminal_por_llave` dice de qué local es una llave viva, sin un dato de
     // nadie, y `anotar_intento_en_terminal` cuenta los PIN fallados para parar el
     // aparato. Son cuarenta y seis.
+    //
+    // **Y la 0053 (H2) añade una: `horas_de_contrato`.** Quien monta el horario
+    // tiene que saber quién se pasa de sus horas aunque no vea lo que cobra, y las
+    // horas viven en la retribución, que está cerrada. Devuelve **solo las horas**,
+    // y solo a quien puede publicar el horario de ese local. Son cuarenta y siete.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -682,6 +687,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'el_uso_de',
       'es_admin_o_el_sistema',
       'esta_en_linea',
+      'horas_de_contrato',
       'la_carta_publica',
       'las_cuentas',
       'lo_que_hacen_los_clientes',

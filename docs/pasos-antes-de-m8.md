@@ -2,11 +2,11 @@
 
 > ## Cómo está
 >
-> Comprobado el 30 de septiembre de 2026 por la noche, leyendo la base de producción.
+> Comprobado el 1 de octubre de 2026, leyendo la base de producción.
 >
 > | Qué                             | Cómo está                                                                         |
 > | ------------------------------- | --------------------------------------------------------------------------------- |
-> | Pull requests                   | **Fusionadas hasta la #83** (30-sep). Abierta: **el repaso de H1**                |
+> | Pull requests                   | **Fusionadas hasta la #84** (1-oct). Abierta: **#85 · H2 · El horario**           |
 > | La base de datos                | **52 de 52** migraciones, igual que `main`                                        |
 > | La API                          | **Desplegada con H1**: 62 y 125, reloj latiendo                                   |
 > | Los PDF (Cloudflare)            | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep          |
@@ -18,35 +18,56 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ---
 
-## Lo que te toca ahora · el repaso de H1 (30-sep, noche)
+## Lo que te toca ahora · el repaso de H1 y H2, el horario (1-oct)
 
-**Qué trae**, de lo que viste con el primer PDF:
+**La #84 (el repaso de H1) ya está fusionada** (1-oct, 02:25). Queda **H2 · El horario**
+(la #85). **Una sola migración y un solo despliegue, al final**, que sirven para las dos.
 
-- **El PDF se descarga siempre**, en el ordenador y en el móvil, y **debajo sale
-  «Compartir»** para mandarlo por WhatsApp o por correo. Antes, en tu Windows solo salía
-  compartir.
-- **El informe ya no lleva la nota del pie** («Contadas igual que en la app…»): se manda
-  a otros y confundía. Y «Sin dato» ya no se parte en dos líneas.
-- **Quien no tiene correo sabe dónde fichar**: al darle de alta, la hoja del PIN dice que
-  no entra en la app y que ficha en la pantalla de fichar del local; y en «Entrar», en la
-  pestaña del PIN, se lo dice también.
-- **La app se pone al día sola**: al volver a ella (desbloquear el móvil, cambiar de
-  pestaña) y, mientras la miras, cada minuto el Tablón, «Lo de hoy» y quién ha fichado.
-  Al segundo, como un chat, llega con el chat (entrega C).
-- **Un fallo que salió en las pruebas**: el recado «Invita a tu equipo» del Panel podía
-  enseñar «Ya está» en vez del paso si el servidor iba lento.
+**Qué trae el repaso de H1**, de lo que viste con el primer PDF:
 
-### 1 · Fusionar
+- **El PDF se descarga siempre** y debajo sale **«Compartir»**. Antes, en tu Windows solo
+  salía compartir.
+- **El informe sin la nota del pie**, que confundía a quien lo recibe.
+- **Quien no tiene correo sabe dónde fichar**: se lo dice la hoja de su PIN y la
+  pestaña del PIN de «Entrar».
+- **La app se pone al día sola**: al volver a ella y, mientras la miras, cada minuto el
+  Tablón, «Lo de hoy» y quién ha fichado. Al segundo, con el chat (entrega C).
 
-En **github.com** → **Pull requests** → **«El repaso de H1»** → con las **tres
-comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
+**Qué trae H2 · El horario** ([decisión 0069](decisiones/0069-el-horario.md)):
 
-### 2 · Desplegar la API
+- **El horario de la semana**, en **Equipo → Horarios**. Tocas la casilla de una persona
+  y un día, y le pones un tramo (entra, sale y su descanso), otro si es horario partido,
+  o **Libre, Vacaciones o Baja**. Un tramo que sale antes de entrar acaba al día
+  siguiente: 20:00 a 02:00 son seis horas.
+- **Arriba, cómo va la semana**: las horas, **lo que cuesta** y qué parte es de lo que
+  se espera vender (solo si ves los sueldos; un jefe de cocina ve horas, ni un euro), y
+  **lo que hay que mirar**: menos de 12 horas entre jornadas o pasarse de sus horas, en
+  rojo; más de 9 horas un día o sin día y medio de descanso, en ámbar. **Avisan, no
+  impiden.**
+- **Para no empezar de cero**: «Copiar la semana anterior» y «Rellenar con el de
+  siempre».
+- **Publicar**: hasta entonces el equipo no ve nada. La primera vez, a cada uno le llega
+  lo suyo en la campana y por correo. **Si luego cambias algo y vuelves a publicar, solo
+  le llega a quien le cambia**, y le dice qué día y cómo queda.
+- **Lo ve todo el equipo**, sin euros: en **Calendario → Turnos**, el de todos o «Solo el
+  mío», y se toca un turno para ver con quién coincide. En el Panel de la sala y la
+  cocina sale **«Mi turno»**: hoy, con quién, y la semana en pequeño.
+- **En PDF**: el de la pared y el de cada uno.
+- **Manda el horario**: con la semana publicada, «entras en cinco minutos» y los retrasos
+  miran lo publicado y no el horario de siempre. Y quien no tiene correo ve sus próximos
+  días al teclear su PIN en el aparato del local.
 
-Hace falta porque el PDF lo hace el servidor. **Sin migración.**
+### 1 · Fusionar la #85
 
-**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe
-**`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después, en PowerShell:
+En **github.com** → **Pull requests** → **«H2 · El horario»** → con las **tres
+comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
+
+**Si alguna sale en rojo, para y avísame.**
+
+### 2 · Aplicar la migración
+
+**Qué hace:** crea las semanas del horario, sus tramos y lo publicado. **No cambia nada
+de lo que hay.** En PowerShell, en la carpeta del proyecto:
 
 ```bash
 git checkout main
@@ -57,21 +78,44 @@ git pull
 ```
 
 ```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0053_el_horario.sql ... hecho
+  1 migracion(es) aplicadas · 53 en total
+```
+
+**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+### 3 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe
+**`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
+
+```bash
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** «las 62» consultas y «los 125» comandos, igual que ahora.
+**Qué tiene que decir:** «las 65» consultas y «los 130» comandos.
 
-### 3 · Mirarlo
+### 4 · Mirarlo
 
-Recarga la app (**Ctrl + F5** en el ordenador; en el móvil, ciérrala y ábrela):
+Recarga la app (**Ctrl + F5** en el ordenador; en el móvil, ciérrala y ábrela).
 
-- **En el ordenador**, **Negocio → Informes → «Descargar en PDF»**: se guarda en
-  Descargas, y debajo sale «Descargado: …» con **Compartir** y **Bajarlo otra vez**. El
-  PDF, sin la nota del pie.
-- **En el móvil**, lo mismo: se descarga y **Compartir** abre WhatsApp y compañía.
+- **Monta la semana que viene** en **Equipo → Horarios**: pon a dos personas, una con
+  horario partido. Mira arriba las horas y lo que cuesta, y abre «Lo que hay que mirar».
+- **Publícala.** En el móvil de alguien del equipo (o entrando con su cuenta): le llega
+  el aviso con lo suyo, y lo ve en **Calendario → Turnos** y en «Mi turno» del Panel.
+- **Cambia un tramo y vuelve a publicar**: el aviso le llega solo a esa persona.
+- **El PDF**: «El de la pared, en PDF» en «Lo que ve el equipo». Y en **Negocio →
+  Informes → «Descargar en PDF»**, que ahora se guarda y ofrece «Compartir».
 - **La app al día**: con el Panel abierto en el móvil, escribe una nota en el Tablón
-  desde el ordenador. En menos de un minuto sale en el móvil, sin tocar nada.
+  desde el ordenador. En menos de un minuto sale sola.
+
+Si algo no se ve como te digo, hazle una captura y me la pasas.
 
 ---
 

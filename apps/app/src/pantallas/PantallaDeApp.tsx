@@ -23,6 +23,7 @@ import { Delivery } from '../servicio/Delivery.tsx';
 import { Almacen } from '../almacen/Almacen.tsx';
 import { EquipoHoy } from '../equipo/EquipoHoy.tsx';
 import { ResumenDelEquipo } from '../equipo/ResumenDelEquipo.tsx';
+import { ElHorario } from '../horario/ElHorario.tsx';
 import { CierreDeCaja } from '../servicio/CierreDeCaja.tsx';
 import { Ventas } from '../servicio/Ventas.tsx';
 import { Informes } from '../negocio/Informes.tsx';
@@ -278,6 +279,10 @@ function Contenido({
   }
   if (app.id === 'equipo' && destino.id === 'resumen') return <EquipoHoy />;
   if (app.id === 'equipo' && destino.id === 'fichajes') return <ResumenDelEquipo />;
+  // H2 (0069): el mismo horario en Equipo, para quien lo monta, y en Calendario,
+  // que es donde lo mira el equipo.
+  if (app.id === 'equipo' && destino.id === 'horarios') return <ElHorario conTitulo={false} />;
+  if (app.id === 'calendario' && destino.id === 'turnos') return <ElHorario conTitulo={false} />;
 
   // El cierre es una **vista** de la jornada: el resto de la jornada —«En
   // marcha»— sigue siendo M16 y cae abajo, a su cartel.

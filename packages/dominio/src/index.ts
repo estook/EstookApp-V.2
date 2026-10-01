@@ -647,3 +647,36 @@ export type {
   PeriodoDelInforme,
   TipoDeInforme,
 } from './informes.ts';
+
+// ── H2 · el horario de la semana (decisión 0069) ─────────────────────────────
+export {
+  CERCA_DE_SUS_HORAS,
+  COMO_SE_DICE_LA_AUSENCIA,
+  DESCANSO_ENTRE_JORNADAS_MINUTOS,
+  DESCANSO_SEMANAL_MINUTOS,
+  HORAS_SI_NO_HAY_CONTRATO,
+  JORNADA_MAXIMA_MINUTOS,
+  TIPOS_DE_TURNO,
+  avisoDeHorarioCambiado,
+  avisoDeHorarioPublicado,
+  avisosDelHorario,
+  comoSeLeeElDia,
+  costeDelHorario,
+  laSemanaEnLetra,
+  loQueHaCambiado,
+  losDiasDeLaSemana,
+  lunesDe,
+  minutosDeTrabajo,
+  minutosDelTramo,
+  parteDePersonal,
+  ventasPrevistas,
+} from './horario.ts';
+export type {
+  AvisoDelHorario,
+  CambioDeUnaPersona,
+  CosteDelHorario,
+  QueAvisa,
+  TipoDeTurno,
+  TurnoDelHorario,
+  VentaDeUnDia,
+} from './horario.ts';

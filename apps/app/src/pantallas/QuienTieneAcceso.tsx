@@ -122,6 +122,8 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
     nombre: string;
     pin: string | null;
     yaExistia: boolean;
+    /** Sin correo (0057): su PIN es para la pantalla de fichar, no para entrar. */
+    sinCorreo?: boolean;
   } | null>(null);
 
   // «Esconder un boton no protege nada» (principio 7): esto no es la protección,
@@ -412,6 +414,13 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
               <p className="my-e4 text-center font-mono text-[2.5rem] tracking-[0.2em] text-texto">
                 {recienInvitada.pin}
               </p>
+              {recienInvitada.sinCorreo === true && (
+                <p className="mb-e4 text-secundario text-texto-suave">
+                  Como no tiene correo, <strong>no entra en la app</strong>: ficha en la pantalla de
+                  fichar del local, tecleando este PIN. Si un día da su correo, se le pone en su
+                  ficha y ya puede entrar desde su móvil.
+                </p>
+              )}
             </>
           )}
 

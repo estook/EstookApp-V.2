@@ -23,7 +23,12 @@ export function Invitar({
   alHecho,
 }: {
   alCerrar: () => void;
-  alHecho: (quien: { nombre: string; pin: string | null; yaExistia: boolean }) => void;
+  alHecho: (quien: {
+    nombre: string;
+    pin: string | null;
+    yaExistia: boolean;
+    sinCorreo: boolean;
+  }) => void;
 }) {
   const { cliente, yo } = usarSesion();
   // Solo los que se pueden dar: los que quedan por debajo del rol de quien invita
@@ -70,6 +75,7 @@ export function Invitar({
       nombre,
       pin: respuesta.datos.pin,
       yaExistia: respuesta.datos.yaExistia,
+      sinCorreo,
     });
   }
 

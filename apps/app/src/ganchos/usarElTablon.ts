@@ -1,5 +1,6 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { AL_DIA } from '../datos/alDia.ts';
 
 /**
  * El Tablón del local (repaso del 25-sep · decisión 0049): las notas del equipo de
@@ -35,6 +36,8 @@ export function usarElTablon(): UseQueryResult<ElTablon> {
   return useQuery({
     queryKey: CLAVE_DEL_TABLON,
     enabled: yo?.local !== null && yo?.local !== undefined,
+    // Lo escriben otros: se pone al día solo mientras se mira (`datos/alDia.ts`).
+    ...AL_DIA,
     queryFn: async (): Promise<ElTablon> => {
       const respuesta = await cliente.consultar<ElTablon>('el_tablon', {});
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);

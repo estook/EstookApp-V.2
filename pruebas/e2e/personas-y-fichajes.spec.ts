@@ -104,6 +104,8 @@ test('sin correo, y fichando con su PIN en el aparato del local', async ({ page 
   await expect(hojaDelPin).toBeVisible();
   const pin = /\d{6}/.exec((await hojaDelPin.textContent()) ?? '')?.[0] ?? '';
   expect(pin).toMatch(/^\d{6}$/);
+  // Y dice dónde se usa ese PIN: sin correo no se entra en la app (30-sep).
+  await expect(hojaDelPin).toContainText('no entra en la app');
   await hojaDelPin.getByRole('button', { name: 'Hecho' }).click();
 
   // ── 2 · Poner este aparato para fichar, en Ajustes ─────────────────────────
@@ -265,9 +267,22 @@ test('el registro para la Inspección, las pausas en Ajustes y el informe en PDF
     expect(cuerpo.datos.huella).toMatch(/^[0-9a-f]{64}$/);
   }
 
-  // Tu semana, en PDF.
+  // Tu semana, en PDF, en un aparato **que sabe compartir**, como el Windows de
+  // Richi: el navegador de las pruebas no sabe, y así se prueba el caso que falló.
+  await page.addInitScript(() => {
+    Object.assign(navigator, {
+      canShare: () => true,
+      share: () => Promise.resolve(),
+    });
+  });
   await abrirSinQueSeCaiga(page, `${APP}#/negocio/informes/semana`);
   const llega = page.waitForResponse((r) => r.url().includes('/consultas/mi_informe_en_pdf'));
+  // **Se descarga de verdad**, también donde se sabe compartir (30-sep): antes, en
+  // un Windows que comparte, solo salía la hoja de compartir y no se podía guardar.
+  const baja = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Descargar en PDF' }).click();
   expect((await llega).status()).toBe(200);
+  expect((await baja).suggestedFilename()).toMatch(/\.pdf$/);
+  await expect(page.getByRole('status').filter({ hasText: 'Descargado' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Compartir' })).toBeVisible();
 });

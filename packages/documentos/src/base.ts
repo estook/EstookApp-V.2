@@ -127,6 +127,7 @@ export function paginaDelDocumento(doc: Documento): string {
   .tenue { color: ${TENUE}; }
   .bien { color: ${BIEN}; font-weight: 600; }
   .mal { color: ${MAL}; font-weight: 600; }
+  .entero { white-space: nowrap; }
   table { width: 100%; border-collapse: separate; border-spacing: 0; }
   thead { display: table-header-group; }
   tr { break-inside: avoid; }

@@ -98,7 +98,10 @@ jobs:
     # octubre de 2026—, las 32 capturas saldrian en rojo sin que la aplicacion haya
     # cambiado en nada. Se sube a mano, y con las capturas rehechas en el mismo cambio.
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    # 40 y no 25 (1-oct, entrega I): en una vuelta buena ya se iban 22 minutos, 19 de
+    # ellos las pruebas de pantalla, y un tropiezo de GitHub al bajar los navegadores
+    # (19 minutos esa vez) la dejaba cortada a medias, sin decir nada de la app.
+    timeout-minutes: 40
     env:
       # M4: desde que hay login, las pruebas de extremo a extremo necesitan una
       # API a la que entrar, y Vite hornea esta direccion **al construir**. Se
@@ -128,7 +131,10 @@ jobs:
       - name: Las rutas apuntan a donde se publica
         run: pnpm publicacion
 
+      # Con su propio tope: si GitHub se atasca bajándolos, falla aquí y lo dice,
+      # en vez de comerse el tiempo de las pruebas.
       - name: Instalar navegadores
+        timeout-minutes: 10
         run: pnpm exec playwright install --with-deps chromium webkit
 
       # Playwright levanta la API de pruebas (Postgres efimero, migraciones y

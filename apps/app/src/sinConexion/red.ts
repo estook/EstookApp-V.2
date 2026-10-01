@@ -62,10 +62,10 @@ let laSalud: string | null = null;
 /**
  * `/salud` con un número distinto cada vez, para que nada guarde la respuesta.
  *
- * **No con `cache: 'no-store'`**: Safari, con eso, añade por su cuenta `Cache-Control`
- * y `Pragma`, la petición deja de ser simple, pregunta antes por CORS y la API no las
- * admite. En el iPhone, `/salud` no contestaba nunca y la app se creía sin red con red
- * (lo cazó la integración continua en WebKit, 1-oct; en Chrome no pasa).
+ * **No con `cache: 'no-store'`**: Safari puede añadir con eso, por su cuenta,
+ * `Cache-Control` y `Pragma`, y a otro sitio una petición con cabeceras de más pregunta
+ * antes por CORS, que la API no las admite. Así es una petición simple, sin sorpresas;
+ * y `/salud` contesta que no se guarde (0070).
  */
 function sinGuardar(salud: string): string {
   return `${salud}?r=${String(Date.now())}`;
@@ -103,9 +103,36 @@ export async function laApiContesta(): Promise<boolean> {
  * contesta, hay red.
  */
 function comprobarLaRed(): void {
-  void laApiContesta().then((contesta) => {
-    if (contesta) marcarConRed();
-    else marcarSinRed();
+  // **Una sola pregunta a la vez, y un instante después.** Al cambiar de página, el
+  // navegador corta lo que estaba pidiendo; sin esperar, cada corte lanzaba su pregunta
+  // a `/salud`, que también se cortaba, y Safari lo apuntaba como un error (lo cazó la
+  // integración continua en WebKit, 1-oct). Si la página se va, esto ya no sale.
+  if (comprobando || saliendo) return;
+  comprobando = true;
+  setTimeout(() => {
+    if (saliendo) {
+      comprobando = false;
+      return;
+    }
+    void laApiContesta().then((contesta) => {
+      comprobando = false;
+      if (contesta) marcarConRed();
+      else marcarSinRed();
+    });
+  }, ANTES_DE_COMPROBAR_MS);
+}
+
+/** Lo que se espera antes de preguntar si hay red, tras una petición que no salió. */
+const ANTES_DE_COMPROBAR_MS = 300;
+let comprobando = false;
+/** La página se está cerrando o cambiando: lo que falle ahora no dice nada de la red. */
+let saliendo = false;
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', () => {
+    saliendo = true;
+  });
+  window.addEventListener('pageshow', () => {
+    saliendo = false;
   });
 }
 
@@ -142,6 +169,8 @@ export const pedirMirandoLaRed: typeof fetch = async (...argumentos) => {
     marcarConRed();
     return respuesta;
   } catch (fallo) {
+    // Cancelada por la propia app (se cerró la pantalla que la pidió): no dice nada de la red.
+    if (fallo instanceof DOMException && fallo.name === 'AbortError') throw fallo;
     // Sin señal del todo, el navegador ya lo sabe; si no, se comprueba antes de decirlo.
     if (typeof navigator !== 'undefined' && !navigator.onLine) marcarSinRed();
     else comprobarLaRed();

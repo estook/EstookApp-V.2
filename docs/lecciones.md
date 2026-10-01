@@ -468,3 +468,10 @@
      app, y Richi se encontró un pull request que no podía fusionar sin saber por qué. El
      trabajo pasa a 40 minutos y bajar los navegadores tiene su tope de 10 (1-oct). Cuando
      una vuelta buena pase de los 30, se mira antes de que vuelva a cortar.
+137. **Lo que el navegador corta al cambiar de página no es «sin red».** Cada petición
+     cortada lanzaba al momento una pregunta a `/salud`, que también se cortaba, y Safari
+     apunta esos cortes como «access control checks»: en WebKit, la prueba de las ocho
+     apps salía en rojo y en Chrome no. Ahora se espera un instante, se pregunta una sola
+     vez aunque fallen varias, y nada si la página se está yendo o la app canceló la
+     petición (`red.ts`). WebKit no arranca en el Windows de trabajo: lo de Safari solo lo
+     ve GitHub, así que se lee entero su rojo antes de suponer nada.

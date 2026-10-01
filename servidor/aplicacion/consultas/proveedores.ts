@@ -67,6 +67,8 @@ export interface SalidaUnProveedor {
     readonly diasDeReparto: readonly number[];
     readonly plazoDeEntrega: number;
     readonly horaLimite: string | null;
+    /** Hacia qué hora suele llegar su reparto (0070), o nulo. */
+    readonly sueleLlegarA: string | null;
     readonly comoSeLePide: string | null;
     readonly formaDePago: string | null;
     readonly diasDePago: number | null;
@@ -248,6 +250,7 @@ export const unProveedor = consulta<{ proveedor_id: string }, SalidaUnProveedor>
         diasDeReparto: ficha.dias,
         plazoDeEntrega: ficha.plazo,
         horaLimite: ficha.horaLimite,
+        sueleLlegarA: ficha.sueleLlegarA,
         comoSeLePide: ficha.dias.length === 0 ? null : comoSeLePide(ficha.plazo, ficha.horaLimite),
         formaDePago: f?.forma_de_pago ?? null,
         diasDePago: ficha.diasDePago,

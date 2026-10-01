@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { MOTIVOS_DE_MERMA, partidaDe, sePuedeTirar, valorDeLaMerma } from '@estook/dominio';
+import {
+  MOTIVOS_DE_MERMA,
+  laHoraDeLoHecho,
+  partidaDe,
+  sePuedeTirar,
+  valorDeLaMerma,
+} from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
@@ -77,6 +83,9 @@ export interface SalidaApuntarMerma {
 export const apuntarMerma = comando<EntradaApuntarMerma, SalidaApuntarMerma>({
   nombre: 'apuntar_merma',
   entrada: entradaApuntarMerma,
+  // Se puede apuntar sin señal y mandarla al volver: la jornada la decide el servidor
+  // con la hora en que se tiró, no con la de mandarla (0070, mejora 15).
+  sinConexion: true,
   exige: 'accion.registrar_merma',
 
   async ejecutar(contexto, entrada) {
@@ -106,6 +115,9 @@ export const apuntarMerma = comando<EntradaApuntarMerma, SalidaApuntarMerma>({
       motivoDeMerma: entrada.motivo,
       origen: 'a_mano',
       esEjemplo: producto.esEjemplo,
+      ...(contexto.hechoHaceMs === undefined || contexto.hechoHaceMs === null
+        ? {}
+        : { cuando: laHoraDeLoHecho(contexto.ahora, contexto.hechoHaceMs) }),
     });
 
     const puedePrecios = await contexto.sql<{ puede: boolean }[]>`

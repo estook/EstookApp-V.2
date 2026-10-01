@@ -2875,6 +2875,36 @@ quien lo ve, publicar y volver a publicar, el PDF y «entras en cinco minutos»)
 `el-horario.spec.ts` (la pantalla: montar, quitar, publicar, ver, el PDF, copiar y
 rellenar).
 
+### Antes de M8 · I, la app instalable
+
+_1 de octubre de 2026._ Migración `0054`, [decisión 0070](decisiones/0070-la-app-instalable.md).
+Las mejoras 14 y 15, en una entrega: Estook en la pantalla de inicio, sin señal y con
+avisos al móvil.
+
+- **Un trabajador de servicio escrito a mano** (`herramientas/trabajador-de-servicio.ts`),
+  generado al construir con los nombres de esa versión: guarda lo de arrancar, la red
+  primero para las pantallas (con cuatro segundos de espera) y lo de `/assets/` desde
+  lo guardado. Recibe los avisos, pone el número en el icono y abre donde toca.
+- **La cola de lo hecho sin señal**, en IndexedDB y con la misma clave de idempotencia:
+  solo los comandos que declaran `sinConexion`. El móvil manda `x-hecho-hace` y el
+  servidor resta: hasta siete días, y con más de doce horas, «por revisar».
+- **El aparato del local sin wifi**: RSA-OAEP por aparato, la privada en una tabla que
+  solo lee el sistema, y un número de un solo uso por cifrado.
+- **Web Push sin librerías** (`infraestructura/movil.ts`): RFC 8291 y 8292 con
+  `crypto.subtle`, solo hacia los servicios de Google, Apple, Mozilla y Microsoft.
+- **Cuándo suena**, por persona; lo que llega en silencio sale en uno al acabar; el
+  correo de repuesto si el móvil no lo recibe; y `pg_cron` mira cada minuto dentro de la
+  base y solo llama a la API si hay algo que mandar.
+- **Lo que salió al mirarlo** (lecciones 131 a 135): lo guardado se pisaba con vacío, un
+  fallo suelto marcaba toda la app sin red, se enseñaba lo viejo con red, la pausa sin
+  datos parecía la sesión cerrada, salir esperaba cinco segundos al trabajador, y sin
+  señal el logo salía roto. Y en el ordenador, la tarjeta se llama «Este ordenador».
+
+Las pruebas: `movil.prueba.ts` (el dominio y el cifrado, byte a byte con la RFC),
+`la-app-instalable.prueba.ts` (la base y la API: la cola, el aparato, cuándo suena, lo
+programado y el correo de repuesto) y `la-app-instalable.spec.ts` (la pantalla: sin
+señal, el aparato, Ajustes → Avisos y el trabajador de servicio de verdad).
+
 ### Cambio de rumbo · Estook también cobra
 
 _20 de septiembre de 2026. La dirección está en la Evolución 1.1, capítulo 19._

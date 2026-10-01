@@ -5,6 +5,7 @@ import type { AlmacenDeFicheros } from '../infraestructura/almacen.ts';
 import type { CorreoSaliente } from '../infraestructura/correo.ts';
 import type { LugaresDeGoogle } from '../infraestructura/google.ts';
 import type { IdentidadDeGoogle } from '../infraestructura/identidad-de-google.ts';
+import type { MovilSaliente } from '../infraestructura/movil.ts';
 import type { MotorDePdf } from '../infraestructura/pdf.ts';
 import type { Pagos } from '../infraestructura/stripe.ts';
 import type { SesionViva, Sql } from '../infraestructura/postgres.ts';
@@ -70,6 +71,19 @@ export interface Contexto {
    * un PDF **dice que todavía no están encendidos** en vez de romperse.
    */
   readonly pdf: MotorDePdf | null;
+  /**
+   * Los avisos al móvil (0070). Nulo sin las claves VAPID, y entonces Ajustes dice que
+   * todavía no están encendidos: todo sigue llegando a la campana y al correo.
+   */
+  readonly movil: MovilSaliente | null;
+  /**
+   * **Lo hecho sin conexión** (0070): cuántos milisegundos hace que se hizo, según el
+   * móvil, que lo ha tenido guardado hasta volver la señal. Nulo, o sin poner, si se
+   * hace ahora. Solo llega a los comandos que lo declaran (`sinConexion`), y la hora
+   * la cuenta el servidor con su reloj (`laHoraDeLoHecho`): el móvil no dice qué hora
+   * es, dice cuánto hace.
+   */
+  readonly hechoHaceMs?: number | null;
   /**
    * Desde qué dirección llega la petición, tal como la ve la API, o nulo (0041).
    *
@@ -168,6 +182,13 @@ export interface Puertas {
    * recuerda siempre.
    */
   readonly sinRecordar?: true;
+  /**
+   * **Se puede haber hecho sin conexión** (I · 0070): el móvil lo guardó sin señal y
+   * lo manda al volver, diciendo cuánto hace. Solo fichar, la pausa y apuntar una
+   * merma (mejora 15). Lo que no lo declara y llega con «hecho hace» se rechaza: un
+   * pedido mandado ayer a las nueve no es un pedido de ayer a las nueve.
+   */
+  readonly sinConexion?: true;
   /**
    * Se puede llamar con la sesion a medias, esperando el segundo factor. Solo lo
    * que hace falta para terminarlo o para irse.

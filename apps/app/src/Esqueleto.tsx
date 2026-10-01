@@ -32,6 +32,8 @@ import { AvisoDeLaCuenta } from './pago/AvisoDeLaCuenta.tsx';
 import { LosAvisos } from './avisos/LosAvisos.tsx';
 import { usarLaCampana } from './ganchos/usarLosAvisos.ts';
 import { avisarDelFallo } from '@estook/utiles/observabilidad';
+import { LoDeLaRed } from './sinConexion/LoDeLaRed.tsx';
+import { usarElNumeroDelIcono, usarLoDeLaRed } from './ganchos/usarLoDeLaRed.ts';
 
 /**
  * El esqueleto · Parte B5 del Plan.
@@ -94,6 +96,13 @@ export function Esqueleto() {
   usarQueHacer('fichar', () => {
     setHaciendo(true);
   });
+  // Un aviso del móvil que junta varios lleva aquí: a la campana (0070).
+  usarQueHacer('avisos', () => {
+    setAvisosAbiertos(true);
+  });
+  // Sin señal y lo hecho sin ella; y el número del icono, el de la campana (0070).
+  usarLoDeLaRed();
+  usarElNumeroDelIcono(sinLeer);
 
   const misApps = useMemo(
     () =>
@@ -374,6 +383,8 @@ export function Esqueleto() {
         */}
         <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+56px+var(--spacing-e3)*2)] pt-e4 lg:px-e5 lg:pb-[calc(56px+var(--spacing-e5)+var(--spacing-e4))] 2xl:max-w-[92rem]">
           {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
+          {/* Sin conexión, y lo hecho sin ella (0070): arriba, en cada pantalla. */}
+          <LoDeLaRed />
           {/* Un cobro fallido o solo lectura (0048): arriba de todo, en cada pantalla. */}
           <div className="mb-e3 empty:hidden">
             <AvisoDeLaCuenta enAjustesDeSuscripcion={pathname.startsWith('/ajustes/suscripcion')} />

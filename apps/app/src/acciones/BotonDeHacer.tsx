@@ -4,7 +4,7 @@ import { IconoAnadir, IconoAdelante, IconoEntrar, IconoSalir } from '@estook/ico
 import { Boton, Hoja, IconoDeFogon, PanelLateral, clases, usarEsEscritorio } from '@estook/ui';
 import { comoSeLeeLaHora, comoSeLeenMinutos } from '../equipo/contrato.ts';
 import { usarContextoDeFogon } from '../ganchos/usarContextoDeFogon.ts';
-import { usarFichar } from '../ganchos/usarFichar.ts';
+import { loQueDiceElFichaje, usarFichar } from '../ganchos/usarFichar.ts';
 import { usarHacer } from '../ganchos/usarHacer.ts';
 import { usarMisAtajos } from '../ganchos/usarMisAtajos.ts';
 import { usarSeEscondeAlBajar } from '../ganchos/usarSeEscondeAlBajar.ts';
@@ -239,9 +239,14 @@ function FicharAqui() {
       </Boton>
       {fichar.error !== null && <p className="text-secundario text-mal">{fichar.error.quePasa}</p>}
       {fichar.acabaDe !== null && fichar.error === null && (
-        <p aria-live="polite" className="text-secundario text-bien">
-          {fichar.acabaDe.entro ? 'Entrada apuntada' : 'Salida apuntada'}
-          {fichar.acabaDe.metros === null ? '' : `, a ${fichar.acabaDe.metros} m del local`}.
+        <p
+          aria-live="polite"
+          className={clases(
+            'text-secundario',
+            loQueDiceElFichaje(fichar.acabaDe).guardado ? 'text-atencion' : 'text-bien',
+          )}
+        >
+          {loQueDiceElFichaje(fichar.acabaDe).texto}
         </p>
       )}
     </section>

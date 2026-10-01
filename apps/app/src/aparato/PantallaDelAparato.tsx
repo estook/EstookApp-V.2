@@ -2,7 +2,16 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { crearCliente, type ErrorDeLaApi } from '@estook/cliente-api';
 import { Boton, Cargando, clases } from '@estook/ui';
 import { DIRECCION_DE_LA_API } from '../datos/cliente.ts';
+import { guardarParaDespues, mandarLoPendiente } from '../sinConexion/cola.ts';
+import { usarHayRed, usarLoPendiente } from '../ganchos/usarLaRed.ts';
+import { hayRed, pedirMirandoLaRed } from '../sinConexion/red.ts';
 import { guardarLaLlave, leerLaLlave } from './llaveDelAparato.ts';
+import {
+  cifrarElPin,
+  guardarLoDelAparato,
+  leerLoDelAparato,
+  type LoDelAparato,
+} from './sinConexion.ts';
 
 /**
  * La pantalla del aparato del local para fichar (H1 · decisión 0068).
@@ -18,16 +27,24 @@ import { guardarLaLlave, leerLaLlave } from './llaveDelAparato.ts';
  * las manos mojadas no se desliza ni se mantiene pulsado. Y **se vuelve sola al
  * teclado** a los veinte segundos, para que el siguiente no fiche con el PIN del de
  * antes a la vista.
+ *
+ * ── Sin wifi, se sigue fichando (I · 0070) ─────────────────────────────────
+ *
+ * El PIN no se puede comprobar sin conexión, así que el aparato no dice de quién es:
+ * enseña los cuatro botones, **guarda lo tecleado cifrado** (`sinConexion.ts`) y lo
+ * manda al volver la señal, con la hora a la que se hizo. Lo que entonces no se puede
+ * apuntar —un PIN equivocado— le llega a quien lleva el equipo, que lo apunta a mano.
  */
 
 type Estado = 'fuera' | 'dentro' | 'en_pausa';
 type Que = 'entrada' | 'pausa' | 'vuelta' | 'salida';
 
-interface ElAparato {
-  readonly nombre: string;
-  readonly local: string;
-  readonly pausasEnUso: boolean;
-}
+type ElAparato = LoDelAparato;
+
+/** Lo que tiene sin mandar el aparato: lo de todos los que ficharon en él. */
+const DE_EL_APARATO = 'aparato';
+/** Cada cuánto se reintenta mandar lo guardado, mientras lo haya. */
+const REINTENTAR_MS = 30_000;
 
 interface Quien {
   readonly nombre: string;
@@ -52,6 +69,13 @@ const LO_QUE_SE_DICE: Readonly<Record<Que, string>> = {
   salida: 'Salida apuntada',
 };
 
+const LO_QUE_SE_GUARDA: Readonly<Record<Que, string>> = {
+  entrada: 'Entrada',
+  pausa: 'Pausa',
+  vuelta: 'Vuelta de la pausa',
+  salida: 'Salida',
+};
+
 function hora(iso: string | null): string {
   if (iso === null) return '';
   return new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
@@ -65,12 +89,23 @@ function enHoras(minutos: number): string {
 
 export function PantallaDelAparato() {
   // Sin token: aquí no ha entrado nadie. La llave va en cada petición.
-  const cliente = useMemo(() => crearCliente({ base: DIRECCION_DE_LA_API, token: null }), []);
+  const cliente = useMemo(
+    () => crearCliente({ base: DIRECCION_DE_LA_API, token: null, pedir: pedirMirandoLaRed }),
+    [],
+  );
   const [llave, setLlave] = useState(() => leerLaLlave());
-  const [aparato, setAparato] = useState<ElAparato | null>(null);
+  // Lo que recuerda de sí mismo, para arrancar sin wifi (0070).
+  const [aparato, setAparato] = useState<ElAparato | null>(() =>
+    leerLaLlave() === null ? null : leerLoDelAparato(),
+  );
   const [pin, setPin] = useState('');
   const [quien, setQuien] = useState<Quien | null>(null);
-  const [hecho, setHecho] = useState<{ que: Que; nombre: string } | null>(null);
+  /** Sin wifi, con un PIN tecleado: los cuatro botones, sin saber de quién es (0070). */
+  const [sinSenal, setSinSenal] = useState(false);
+  const [hecho, setHecho] = useState<{ que: Que; nombre: string | null } | null>(null);
+  const conRed = usarHayRed();
+  const { pendientes } = usarLoPendiente(DE_EL_APARATO);
+  const hayPendientes = pendientes.length > 0;
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [ocupado, setOcupado] = useState(false);
   // El reloj de la pantalla: **solo se pinta**, no decide nada. La hora del fichaje
@@ -94,20 +129,47 @@ export function PantallaDelAparato() {
         llave: llave.llave,
       });
       if (respuesta.ok) {
-        setAparato(respuesta.datos);
+        let datos = respuesta.datos;
+        // La primera vez, se prepara para cuando se caiga el wifi (0070).
+        if (datos.clavePublica === null) {
+          const preparado = await cliente.ejecutar<{ clavePublica: string }>(
+            'preparar_el_aparato_sin_conexion',
+            { llave: llave.llave },
+          );
+          if (preparado.ok) datos = { ...datos, clavePublica: preparado.datos.clavePublica };
+        }
+        setAparato(datos);
+        guardarLoDelAparato(datos);
         return;
       }
       if (respuesta.error.codigo === 'aparato_retirado') {
         guardarLaLlave(null);
+        guardarLoDelAparato(null);
         setLlave(null);
       }
+      // Sin wifi, con lo que recuerda: no hace falta decir nada más que «sin conexión».
+      if (respuesta.error.codigo === 'sin_conexion' && leerLoDelAparato() !== null) return;
       setError(respuesta.error);
     })();
   }, [cliente, llave]);
 
+  // Lo guardado sin wifi sale solo al volver, y mientras haya, cada poco (0070).
+  useEffect(() => {
+    if (!conRed) return;
+    void mandarLoPendiente(cliente, DE_EL_APARATO);
+    if (!hayPendientes) return;
+    const cada = setInterval(() => {
+      if (hayRed()) void mandarLoPendiente(cliente, DE_EL_APARATO);
+    }, REINTENTAR_MS);
+    return () => {
+      clearInterval(cada);
+    };
+  }, [cliente, conRed, hayPendientes]);
+
   function aEmpezar() {
     setPin('');
     setQuien(null);
+    setSinSenal(false);
     setError(null);
     if (tiempo.current !== null) clearTimeout(tiempo.current);
   }
@@ -119,6 +181,12 @@ export function PantallaDelAparato() {
 
   async function quienSoy(elPin: string) {
     if (llave === null) return;
+    // Sin wifi no se pregunta: se enseñan los cuatro botones (0070).
+    if (!hayRed()) {
+      setSinSenal(true);
+      dentroDeUnRato(VUELVE_SOLA_MS, aEmpezar);
+      return;
+    }
     setOcupado(true);
     setError(null);
     const respuesta = await cliente.ejecutar<Quien>('quien_ficha_aqui', {
@@ -126,6 +194,11 @@ export function PantallaDelAparato() {
       pin: elPin,
     });
     setOcupado(false);
+    if (!respuesta.ok && respuesta.error.codigo === 'sin_conexion') {
+      setSinSenal(true);
+      dentroDeUnRato(VUELVE_SOLA_MS, aEmpezar);
+      return;
+    }
     if (!respuesta.ok) {
       setError(respuesta.error);
       setPin('');
@@ -152,6 +225,38 @@ export function PantallaDelAparato() {
     setHecho({ que, nombre: respuesta.datos.nombre });
     setPin('');
     setQuien(null);
+    dentroDeUnRato(CONFIRMACION_MS, () => {
+      setHecho(null);
+    });
+  }
+
+  /** Sin wifi: se guarda cifrado y se comprueba al volver (0070). */
+  async function ficharSinSenal(que: Que) {
+    if (llave === null || aparato === null) return;
+    if (aparato.clavePublica === null) {
+      setError({
+        codigo: 'sin_conexion',
+        quePasa: 'Este aparato todavía no está preparado para fichar sin conexión.',
+        queSePuedeHacer:
+          'Se prepara solo la próxima vez que tenga wifi. Mientras, ficha desde tu móvil o avísale al encargado.',
+        boton: null,
+      });
+      return;
+    }
+    setOcupado(true);
+    try {
+      const pinCifrado = await cifrarElPin(aparato.clavePublica, pin);
+      await guardarParaDespues(
+        'fichar_aqui',
+        { llave: llave.llave, pin_cifrado: pinCifrado, que },
+        { de: DE_EL_APARATO, que: LO_QUE_SE_GUARDA[que] },
+      );
+    } finally {
+      setOcupado(false);
+    }
+    setHecho({ que, nombre: null });
+    setPin('');
+    setSinSenal(false);
     dentroDeUnRato(CONFIRMACION_MS, () => {
       setHecho(null);
     });
@@ -187,6 +292,7 @@ export function PantallaDelAparato() {
   }
 
   if (aparato === null) {
+    // Sin wifi y sin haber arrancado nunca con él: no sabe de qué local es.
     return (
       <Marco>
         {error === null ? (
@@ -207,17 +313,33 @@ export function PantallaDelAparato() {
           <p className="text-titulo font-semibold">{aparato.local}</p>
           <p className="text-secundario text-texto-suave">{aparato.nombre}</p>
         </div>
-        <p className="text-titulo font-semibold tabular-nums" aria-label="Hora">
-          {new Date(reloj).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-        </p>
+        <div className="text-right">
+          <p className="text-titulo font-semibold tabular-nums" aria-label="Hora">
+            {new Date(reloj).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+          </p>
+          {(!conRed || hayPendientes) && (
+            <p role="status" className="text-secundario font-medium text-atencion">
+              {conRed ? '' : 'Sin conexión'}
+              {!conRed && hayPendientes ? ' · ' : ''}
+              {hayPendientes
+                ? `${String(pendientes.length)} ${pendientes.length === 1 ? 'fichaje' : 'fichajes'} por mandar`
+                : ''}
+            </p>
+          )}
+        </div>
       </header>
 
       <main className="flex w-full max-w-md flex-1 flex-col items-center justify-center gap-e5">
-        {hecho !== null && (
-          <p role="status" className="text-center text-titulo font-semibold text-bien">
-            {LO_QUE_SE_DICE[hecho.que]}, {hecho.nombre}.
-          </p>
-        )}
+        {hecho !== null &&
+          (hecho.nombre === null ? (
+            <p role="status" className="text-center text-titulo font-semibold text-atencion">
+              {LO_QUE_SE_GUARDA[hecho.que]} guardada. Se apunta sola al volver la conexión.
+            </p>
+          ) : (
+            <p role="status" className="text-center text-titulo font-semibold text-bien">
+              {LO_QUE_SE_DICE[hecho.que]}, {hecho.nombre}.
+            </p>
+          ))}
 
         {error !== null && (
           <p role="alert" className="text-center text-cuerpo text-mal">
@@ -225,7 +347,52 @@ export function PantallaDelAparato() {
           </p>
         )}
 
-        {quien === null ? (
+        {sinSenal ? (
+          <div className="flex w-full flex-col items-center gap-e4">
+            <p className="text-center text-titulo font-semibold">Sin conexión</p>
+            <p className="text-center text-cuerpo text-texto-suave">
+              Elige qué fichas. Se guarda y se comprueba tu PIN cuando vuelva la conexión, con la
+              hora de ahora.
+            </p>
+            <div className="flex w-full flex-col gap-e3">
+              <BotonGrande
+                tono="principal"
+                disabled={ocupado}
+                onClick={() => void ficharSinSenal('entrada')}
+              >
+                Fichar la entrada
+              </BotonGrande>
+              {aparato.pausasEnUso && (
+                <div className="grid grid-cols-2 gap-e3">
+                  <BotonGrande
+                    tono="secundario"
+                    disabled={ocupado}
+                    onClick={() => void ficharSinSenal('pausa')}
+                  >
+                    Empezar pausa
+                  </BotonGrande>
+                  <BotonGrande
+                    tono="secundario"
+                    disabled={ocupado}
+                    onClick={() => void ficharSinSenal('vuelta')}
+                  >
+                    Volver
+                  </BotonGrande>
+                </div>
+              )}
+              <BotonGrande
+                tono="secundario"
+                disabled={ocupado}
+                onClick={() => void ficharSinSenal('salida')}
+              >
+                Fichar la salida
+              </BotonGrande>
+              <Boton tono="texto" onClick={aEmpezar}>
+                Me he equivocado de PIN
+              </Boton>
+            </div>
+          </div>
+        ) : quien === null ? (
           <>
             <p className="text-center text-cuerpo">Teclea tu PIN para fichar</p>
             <div

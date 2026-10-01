@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
+import { hacerOGuardar } from '../sinConexion/cola.ts';
 
 /**
  * Fichar, con la ubicación (M6½).
@@ -170,8 +171,15 @@ export interface Fichar {
   /** Qué está pasando, para decirlo en el botón: «Buscando dónde estás…». */
   readonly paso: 'quieto' | 'buscando_ubicacion' | 'apuntando';
   readonly error: ErrorDeLaApi | null;
-  /** El último fichaje, para poder decir «fichado a las 09:12, en el local». */
-  readonly acabaDe: { readonly entro: boolean; readonly metros: number | null } | null;
+  /**
+   * El último fichaje, para poder decir «fichado a las 09:12, en el local». Con
+   * `guardado`, se hizo sin señal: está en el móvil y sale solo al volver (0070).
+   */
+  readonly acabaDe: {
+    readonly entro: boolean;
+    readonly metros: number | null;
+    readonly guardado?: boolean;
+  } | null;
   readonly entrar: () => void;
   readonly salir: () => void;
   /** La pausa de descanso (0068): no pide la ubicación, cuelga del turno. */
@@ -180,8 +188,38 @@ export interface Fichar {
   readonly olvidarElAviso: () => void;
 }
 
+/**
+ * **Lo que se ve al fichar sin señal** (0070): lo mismo que si hubiera salido, para que
+ * nadie toque dos veces «Fichar la entrada». Cuando llega a Estook, lo que diga el
+ * servidor manda.
+ */
+function comoQuedaSinSenal(
+  mio: MiFichaje | undefined,
+  que: 'fichar_entrada' | 'fichar_salida' | 'empezar_pausa' | 'acabar_pausa',
+): MiFichaje | undefined {
+  if (mio === undefined) return mio;
+  // Solo para pintarlo mientras no llega: la hora de verdad la pone el servidor (regla 10).
+  const ahora = new Date(Date.now()).toISOString();
+  if (que === 'fichar_entrada') {
+    return {
+      ...mio,
+      abierto: {
+        fichajeId: 'sin-mandar',
+        entroEn: ahora,
+        local: mio.abierto?.local ?? '',
+        localId: mio.abierto?.localId ?? '',
+        minutos: 0,
+        metros: null,
+      },
+    };
+  }
+  if (que === 'fichar_salida') return { ...mio, abierto: null, enPausaDesde: null };
+  if (que === 'empezar_pausa') return { ...mio, enPausaDesde: ahora };
+  return { ...mio, enPausaDesde: null };
+}
+
 export function usarFichar(): Fichar {
-  const { cliente } = usarSesion();
+  const { cliente, yo } = usarSesion();
   const cache = useQueryClient();
   const [paso, setPaso] = useState<Fichar['paso']>('quieto');
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
@@ -204,16 +242,29 @@ export function usarFichar(): Fichar {
     async (que: 'empezar_pausa' | 'acabar_pausa') => {
       setError(null);
       setPaso('apuntando');
-      const respuesta = await cliente.ejecutar(que, {});
+      // Sin señal se guarda y sale sola al volver (0070).
+      const hecho = await hacerOGuardar(
+        cliente,
+        que,
+        {},
+        {
+          de: yo?.personaId ?? '',
+          que: que === 'empezar_pausa' ? 'Empezar la pausa' : 'Volver de la pausa',
+        },
+      );
       setPaso('quieto');
-      if (!respuesta.ok) {
-        setError(respuesta.error);
+      if (hecho.tipo === 'error') {
+        setError(hecho.error);
+        return;
+      }
+      if (hecho.tipo === 'guardado') {
+        cache.setQueryData<MiFichaje>(['mi_fichaje'], (mio) => comoQuedaSinSenal(mio, que));
         return;
       }
       await cache.invalidateQueries({ queryKey: ['mi_fichaje'] });
       await cache.invalidateQueries({ queryKey: ['fichajes_de_hoy'] });
     },
-    [cliente, cache],
+    [cliente, cache, yo?.personaId],
   );
 
   const fichar = useCallback(
@@ -223,18 +274,27 @@ export function usarFichar(): Fichar {
       const donde = await preguntarDondeEstoy();
 
       setPaso('apuntando');
-      const respuesta = await cliente.ejecutar<{
-        metros: number | null;
-        enElLocal: boolean | null;
-      }>(que, donde);
+      // **Sin señal se guarda** (0070, mejora 15): la ubicación sí se tiene (el GPS
+      // no necesita datos), y la hora la pone el servidor al volver.
+      const hecho = await hacerOGuardar<{ metros: number | null; enElLocal: boolean | null }>(
+        cliente,
+        que,
+        donde,
+        { de: yo?.personaId ?? '', que: que === 'fichar_entrada' ? 'Entrada' : 'Salida' },
+      );
       setPaso('quieto');
 
-      if (!respuesta.ok) {
-        setError(respuesta.error);
+      if (hecho.tipo === 'error') {
+        setError(hecho.error);
+        return;
+      }
+      if (hecho.tipo === 'guardado') {
+        setAcabaDe({ entro: que === 'fichar_entrada', metros: null, guardado: true });
+        cache.setQueryData<MiFichaje>(['mi_fichaje'], (mio) => comoQuedaSinSenal(mio, que));
         return;
       }
 
-      setAcabaDe({ entro: que === 'fichar_entrada', metros: respuesta.datos.metros });
+      setAcabaDe({ entro: que === 'fichar_entrada', metros: hecho.datos.metros });
       // Lo que cambia con un fichaje: lo mío, quién está trabajando y el resumen
       // del equipo. Las tres se piden desde sitios distintos, así que se invalidan
       // aquí y no en cada pantalla.
@@ -244,7 +304,7 @@ export function usarFichar(): Fichar {
       await cache.invalidateQueries({ queryKey: ['un_indicador'] });
       await cache.invalidateQueries({ queryKey: ['una_persona'] });
     },
-    [cliente, cache],
+    [cliente, cache, yo?.personaId],
   );
 
   return {
@@ -274,4 +334,22 @@ export function usarFichar(): Fichar {
       setAcabaDe(null);
     },
   };
+}
+
+/**
+ * Lo que se dice al acabar de fichar, igual en el Panel y en el «+»: apuntado, a
+ * cuántos metros, o **guardado sin señal**, que sale solo al volver (0070).
+ */
+export function loQueDiceElFichaje(acabaDe: NonNullable<Fichar['acabaDe']>): {
+  readonly texto: string;
+  readonly guardado: boolean;
+} {
+  if (acabaDe.guardado === true) {
+    return {
+      texto: `${acabaDe.entro ? 'Entrada' : 'Salida'} guardada sin señal: sale sola al volver.`,
+      guardado: true,
+    };
+  }
+  const metros = acabaDe.metros === null ? '' : `, a ${String(acabaDe.metros)} m del local`;
+  return { texto: `${acabaDe.entro ? 'Entrada' : 'Salida'} apuntada${metros}.`, guardado: false };
 }

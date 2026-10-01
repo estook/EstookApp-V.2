@@ -1,6 +1,6 @@
 # I · La app instalable · el plan
 
-**Escrito el 1 de octubre de 2026**, con H entera en producción. Dice qué es I, qué está ya decidido, lo que decido yo, **las seis preguntas para Richi**, lo que cuesta y lo que hay que saber del iPhone. Las mejoras de las que sale son la **14** y la **15** de [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md).
+**Escrito el 1 de octubre de 2026**, con H entera en producción, y **construido el mismo día** con las respuestas de Richi ([0070](decisiones/0070-la-app-instalable.md), migración `0054`). Dice qué es I, qué estaba decidido, lo que decidí yo, lo que contestó Richi, lo que cuesta y lo que hay que saber del iPhone. Las mejoras de las que sale son la **14** y la **15** de [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md).
 
 ## Qué es I, en llano
 
@@ -10,7 +10,7 @@ Hoy Estook se abre en el navegador del móvil y, si se añade a la pantalla de i
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | **En la pantalla de inicio** | Estook se instala como una app más, con su icono. En Android, con un botón; en iPhone, con dos toques        |
 | **Sin conexión**             | Fichar y apuntar mermas sin señal: se guarda en el móvil y se manda solo al volver, con la hora del servidor |
-| **Los avisos al móvil**      | Lo que no puede esperar suena en el móvil, aunque Estook esté cerrada, y solo cuando estás de turno          |
+| **Los avisos al móvil**      | Lo que no puede esperar suena en el móvil, aunque Estook esté cerrada, y cuando tú eliges                    |
 
 ## Lo que ya está decidido, y no se vuelve a preguntar
 
@@ -21,7 +21,7 @@ Hoy Estook se abre en el navegador del móvil y, si se añade a la pantalla de i
 | **El permiso se pide cuando tiene sentido**, nunca al entrar                                                          | Mejora 14                                                |
 | Tres avisos nuevos: **lo que caduca**, **«entras en 5 minutos»** y **el pedido que no ha llegado**                    | Mejora 14                                                |
 | **Lo que suena en el móvil no llega también por correo**                                                              | 0017                                                     |
-| **Fuera de turno no suena nada**, y cada uno elige qué le llega y tiene **horas de silencio**                         | 0017 (regla 3) y mejora 14                               |
+| **Cada uno elige qué le llega y cuándo suena**: en su turno, o fuera de sus **horas de silencio**                     | 0017 (regla 3), mejora 14 y Richi (pregunta 4)           |
 | Sin conexión, **solo fichar y apuntar mermas**                                                                        | Mejora 15                                                |
 | **La hora la pone el servidor**, nunca el móvil; el fichaje sale **«hecho sin conexión»** y con más de 12 h se revisa | Regla 10 del Plan y mejora 15                            |
 | La app dice **cuántas cosas tiene sin mandar**: guardar sin decirlo es peor que no guardar                            | Mejora 15 (regla 34)                                     |
@@ -44,21 +44,19 @@ Si alguna no te cuadra, dímelo y se cambia.
 9. **El reloj solo despierta a la API cuando hay algo que mandar.** «Entras en 5 minutos» necesita mirar cada minuto, y hoy el reloj late cada hora. Mirar cada minuto se hace dentro de la base, que es gratis; la API solo se llama si alguien tiene que recibir algo.
 10. **Lo de la semana siguiente**: «entras en 5 minutos» del domingo por la noche mirará el horario de la semana que empieza (lo que la [0069](decisiones/0069-el-horario.md) dejó para aquí).
 
-## Las preguntas para Richi
+## Las respuestas de Richi (1-oct)
 
-Cada una se contesta con **sí** o **no**. Va primero mi recomendación y por qué.
+Contestó las seis el mismo día, pidiendo **«lo mejor para la empresa y el restaurante, lo más lógico y menos enrevesado, que se sienta pulido y profesional»**. Cada respuesta, y lo que hice con ella, está en la [0070](decisiones/0070-la-app-instalable.md). En corto:
 
-**1 · ¿I en dos entregas, como H?** Recomiendo **sí**. **I1 · En el móvil y sin conexión** (instalar, fichar y mermas sin señal). **I2 · Los avisos al móvil** (el permiso, los tres avisos nuevos, la columna «Móvil», las horas de silencio). I1 se puede usar antes y no te pide nada; I2 necesita que pongas dos claves en Supabase.
-
-**2 · Sin señal, ¿la app enseña lo último que viste?** Recomiendo **sí**. Solo para mirar, con un aviso arriba: «Sin conexión · lo de las 10:42». En la cámara o en un sótano sin cobertura se puede mirar el horario, «Mi turno» o cuánto queda de algo. Se borra al cerrar sesión. Si dices que no, sin señal solo se ve fichar y mermas.
-
-**3 · El aparato del local para fichar, si se cae el wifi: ¿que siga dejando fichar?** Recomiendo **sí**. Es donde fichan los que no tienen correo, y el registro horario es obligatorio. El PIN no se puede comprobar sin conexión (no sale del servidor), así que el aparato dice «guardado; se comprueba al volver la conexión». Si el PIN estaba mal, ese fichaje no cuenta y lo ve quien lleva el equipo. Lo malo: sin conexión no funciona el freno de los diez PIN fallados. Si dices que no, el aparato dice «sin conexión, ficha en tu móvil o avisa al encargado».
-
-**4 · Quien no sale en el horario (gerencia, dirección), ¿usa horas de silencio, de fábrica de 23:00 a 8:00?** Recomiendo **sí**. «Fuera de turno no suena nada» está claro para quien tiene horario publicado. Quien no lo tiene no tiene turno, así que necesita sus horas de silencio, y cada uno las cambia en Ajustes. Nada se pierde: lo que llega en silencio está en la campana.
-
-**5 · El pedido que no ha llegado: ¿añadimos al proveedor «suele llegar hacia las…»?** Recomiendo **sí**. Hoy el pedido sabe **el día** en que llega, no la hora, y el aviso es «media hora después de cuando suele llegar». Es un campo opcional en la ficha del proveedor; si no se rellena, el aviso sale a las 12:00. Le llega a quien lo mandó y a quien recibe la mercancía, si está de turno.
-
-**6 · ¿Te vale esta lista de lo que suena en el móvil de fábrica?** Recomiendo **sí**. Solo lo que pide hacer algo ya: **entras en 5 minutos**, **lo que caduca** (la víspera a las 18:00 a quien esté de turno, y a primera hora), **el pedido que no ha llegado**, **te piden ayuda con un pedido**, **tu horario se ha publicado o ha cambiado** y **han corregido tu fichaje**. Lo demás (informes, carta nueva, notas del Tablón, pedidos empezados…) se queda en la campana, y cada uno lo enciende si quiere. Y, como dice la 0017, **lo que suena en el móvil ya no va también por correo**; los informes siguen por correo.
+| #   | La pregunta                          | Quedó así                                                                                                           |
+| --- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| 1   | ¿Dos entregas?                       | **Una**: una migración, un despliegue y dos secretos, una sola vez                                                  |
+| 2   | ¿Lo último que viste, sin señal?     | **Sí**, solo para mirar, con «Sin conexión · lo de las 10:42» arriba                                                |
+| 3   | ¿El aparato del local sin wifi?      | **Sí**, con el PIN **cifrado**: en la tablet no queda ninguno legible                                               |
+| 4   | ¿Horas de silencio?                  | **Cada uno elige** en Ajustes: «solo en mi turno» o «siempre, menos en mis horas de silencio», y a qué horas        |
+| 5   | ¿«Suele llegar hacia las…»?          | **Sí, opcional**; en blanco no avisa                                                                                |
+| 6   | ¿Lo que suena de fábrica?            | La lista propuesta, **todo personalizable**, y que nada se quede sin ver: si el móvil no lo recibe, sale por correo |
+| 7   | Extra: imprimir tickets en la cocina | Ya pensado: es **Estook Link** (M19a), no I                                                                         |
 
 ## Lo que cuesta
 
@@ -72,7 +70,7 @@ Cada una se contesta con **sí** o **no**. Va primero mi recomendación y por qu
 | Correo (Resend)                           | **Baja**: lo que suene en el móvil deja de salir por correo                                                                                        |
 | El trocito que se queda en el móvil       | Unos KB. No se usa ninguna librería de fuera: se hace a mano, pequeño y rápido                                                                     |
 
-**Lo único que hace falta de Richi** son **dos secretos en Supabase** para I2 (`VAPID_CLAVE_PUBLICA` y `VAPID_CLAVE_PRIVADA`), que se generan con un comando en su ordenador y **no pasan por el chat**. Los pasos, en [`pasos-antes-de-m8.md`](pasos-antes-de-m8.md) cuando toque.
+**Lo único que hace falta de Richi** son **dos secretos en Supabase** (`VAPID_CLAVE_PUBLICA` y `VAPID_CLAVE_PRIVADA`), que se generan con `.\estook.cmd movil:claves` en su ordenador y **no pasan por el chat**. Los pasos, en [`pasos-antes-de-m8.md`](pasos-antes-de-m8.md).
 
 ## Lo que hay que saber del iPhone
 
@@ -86,16 +84,16 @@ Cada una se contesta con **sí** o **no**. Va primero mi recomendación y por qu
 
 **Y una cosa para la mudanza** (de GitHub Pages a Cloudflare): los avisos y lo instalado van atados a la dirección **`estook.com/app/`**. Mientras no cambie, la mudanza no se nota en los móviles. Si cambiara, cada uno tendría que instalar Estook de nuevo.
 
-## Lo que lleva cada entrega
+## Lo que lleva (en una sola entrega)
 
-| **I1 · En el móvil y sin conexión**                                                             | **I2 · Los avisos al móvil**                                                            |
+| **En el móvil y sin conexión**                                                                  | **Los avisos al móvil**                                                                 |
 | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | El _service worker_: Estook abre sin señal, y se pone al día sola al publicar una versión nueva | El permiso, en el momento justo, y «Recibir en este móvil» en Ajustes                   |
 | Instalar: el botón en Android y los dos toques en iPhone                                        | La columna **Móvil** en Ajustes → Avisos, y las horas de silencio                       |
-| Fichar sin conexión, con la hora del servidor y «hecho sin conexión»                            | Que nada suene fuera de turno                                                           |
+| Fichar sin conexión, con la hora del servidor y «hecho sin conexión»                            | Cuándo suena: en tu turno, o fuera de tus horas de silencio                             |
 | Apuntar mermas sin conexión                                                                     | Los tres avisos nuevos: lo que caduca, entras en 5 minutos, el pedido que no ha llegado |
 | «2 sin mandar» arriba, y qué pasa al cerrar sesión con cosas pendientes                         | El número en el icono, y el correo que deja de salir cuando ya suena en el móvil        |
-| Según la pregunta 2, mirar lo último sin señal; según la 3, el aparato del local sin wifi       | Según la pregunta 5, «suele llegar hacia las…» en el proveedor                          |
+| Mirar lo último sin señal, y el aparato del local sin wifi                                      | «Suele llegar hacia las…» en el proveedor                                               |
 
 ## Lo que no entra en I
 
@@ -106,6 +104,6 @@ El chat y que lo que cambia se vea al segundo (C) · hacer pedidos, inventarios 
 - En un Android, Estook se instala con un botón; en un iPhone, con los dos toques que enseña la app.
 - Con el móvil en modo avión se ficha y se apunta una merma; arriba pone «2 sin mandar»; al volver la señal se mandan solas, **una vez cada una**, y el fichaje lleva la hora del servidor y «hecho sin conexión».
 - Un móvil con la hora cambiada a mano no cambia la hora del fichaje.
-- Con Estook cerrada, «entras en 5 minutos» suena en un Android y en un iPhone instalado, y no suena a quien no tiene turno.
+- Con Estook cerrada, «entras en 5 minutos» suena en un Android y en un iPhone instalado, y nada suena en las horas de silencio de cada uno.
 - Lo que suena en el móvil no llega también por correo.
 - Las pruebas con fechas pasan la semana entera (`pnpm prueba:semana`).

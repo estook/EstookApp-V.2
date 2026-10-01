@@ -1,4 +1,4 @@
-import type { CodigoDeError } from '@estook/dominio';
+import { seAceptaLoHecho, type CodigoDeError } from '@estook/dominio';
 import type { Permiso } from '@estook/permisos';
 import type { SesionViva } from '../infraestructura/postgres.ts';
 import { FalloDeAplicacion, type Contexto, type Puertas } from './contrato.ts';
@@ -6,8 +6,11 @@ import { catalogo } from './catalogo.ts';
 import { reaccionar } from './reacciones.ts';
 import { laFirmaEsDeStripe } from '../infraestructura/stripe.ts';
 import { aplicarElAviso, enNombreDelSistema, porQueNoPasaElPago } from './pago.ts';
-import { latir, type LoQueHizoElReloj } from './reloj.ts';
-import { dejoCorreos, mandarLosCorreosDeLosAvisos } from './avisos.ts';
+import { latidoDelMovil, latir, type LoQueHizoElReloj } from './reloj.ts';
+import { dejoCorreos, dejoMoviles, mandarLosCorreosDeLosAvisos } from './avisos.ts';
+import { mandarLoDelMovil, type LoQueHizoElMovil } from './al-movil.ts';
+
+export type { LoQueHizoElMovil } from './al-movil.ts';
 
 /**
  * El despachador (M2, con las puertas de M4).
@@ -75,6 +78,9 @@ export interface Puertos {
     entrada: unknown,
     respuesta: unknown,
   ): Promise<void>;
+
+  /** Si las claves de los avisos al móvil están puestas (0070). Sin decirlo, no. */
+  readonly movilEncendido?: boolean;
 }
 
 export type Resultado =
@@ -94,6 +100,8 @@ export interface Despachador {
     nombre: string,
     entrada: unknown,
     claveDeIdempotencia: string,
+    /** Lo hecho sin conexión (0070): cuántos milisegundos hace, según el móvil. */
+    opciones?: { readonly hechoHaceMs?: number | null },
   ): Promise<Resultado>;
   /**
    * Un aviso de Stripe, tal como llega: el cuerpo sin tocar (la firma es del cuerpo
@@ -102,6 +110,16 @@ export interface Despachador {
   avisoDeStripe(quien: QuienLlama, cuerpo: string, firma: string | null): Promise<AvisoRecibido>;
   /** El latido del reloj (0016, 0048), con el secreto que manda `pg_cron`. */
   latir(quien: QuienLlama, secreto: string | null): Promise<LoQueHizoElReloj | null>;
+  /**
+   * El latido del móvil (0070): `pg_cron` lo llama, con el mismo secreto, el minuto
+   * en que hay algo que mandar al móvil.
+   */
+  alMovil(quien: QuienLlama, secreto: string | null): Promise<LoQueHizoElMovil | null>;
+  /**
+   * Si las claves de los avisos al móvil están puestas (0070). Lo dice `/salud` para
+   * que `bd:comprobar-api` salga en rojo si se olvidaron: no enseña ninguna clave.
+   */
+  readonly movilEncendido: boolean;
 }
 
 /** Lo que se hizo con un aviso de Stripe. Nulo si la firma no era de Stripe. */
@@ -225,6 +243,8 @@ async function porQueNoPasaElAdmin(
 
 export function crearDespachador(puertos: Puertos): Despachador {
   return {
+    movilEncendido: puertos.movilEncendido === true,
+
     async consultar(quien, nombre, entrada) {
       const laConsulta = catalogo.consultas[nombre];
       if (!laConsulta) return { estado: 'fallo', codigo: 'no_existe' };
@@ -275,7 +295,7 @@ export function crearDespachador(puertos: Puertos): Despachador {
       );
     },
 
-    async ejecutar(quien, nombre, entrada, claveDeIdempotencia) {
+    async ejecutar(quien, nombre, entrada, claveDeIdempotencia, opciones = {}) {
       const elComando = catalogo.comandos[nombre];
       if (!elComando) return { estado: 'fallo', codigo: 'no_existe' };
 
@@ -290,6 +310,22 @@ export function crearDespachador(puertos: Puertos): Despachador {
         };
       }
 
+      // **Lo hecho sin conexión** (0070): solo lo que lo declara, y de hace una semana
+      // como mucho. Lo demás que llegue diciendo «hecho hace» no se acepta: un pedido
+      // mandado ayer no es un pedido de ayer.
+      const hechoHaceMs = opciones.hechoHaceMs ?? null;
+      if (hechoHaceMs !== null) {
+        if (!elComando.sinConexion) {
+          return {
+            estado: 'fallo',
+            codigo: 'faltan_datos',
+            detalle: { porque: 'Esto no se puede hacer sin conexión: hazlo cuando tengas señal.' },
+          };
+        }
+        if (!seAceptaLoHecho(hechoHaceMs))
+          return { estado: 'fallo', codigo: 'hecho_hace_demasiado' };
+      }
+
       const validada = elComando.entrada.safeParse(entrada);
       if (!validada.success) {
         return {
@@ -300,7 +336,9 @@ export function crearDespachador(puertos: Puertos): Despachador {
       }
 
       const resultado = await conFallosTraducidos(async () =>
-        puertos.enTransaccion(quien, async (contexto): Promise<Resultado> => {
+        puertos.enTransaccion(quien, async (laDeVerdad): Promise<Resultado> => {
+          const contexto: Contexto =
+            hechoHaceMs === null ? laDeVerdad : { ...laDeVerdad, hechoHaceMs };
           const cerrada = porQueNoPasa(elComando, contexto.sesion);
           if (cerrada) return { estado: 'fallo', codigo: cerrada };
 
@@ -375,10 +413,33 @@ export function crearDespachador(puertos: Puertos): Despachador {
         }),
       );
 
+      // Lo del móvil (0070), igual que el correo: **con el comando ya guardado**, y
+      // antes que los correos, porque lo que el móvil no recibe sale por correo.
+      let correoDeRepuesto = false;
+      if (dejoMoviles(quien.correlacionId) && resultado.estado === 'ok') {
+        try {
+          const hecho = await puertos.enTransaccion(
+            { tokenDeSesion: null, correlacionId: quien.correlacionId },
+            (contexto) => enNombreDelSistema(contexto, () => mandarLoDelMovil(contexto)),
+          );
+          correoDeRepuesto = hecho.alCorreo > 0;
+        } catch (fallo) {
+          console.error(
+            JSON.stringify({
+              nivel: 'error',
+              mensaje: 'los avisos al móvil no han salido',
+              correlacion_id: quien.correlacionId,
+              detalle: fallo instanceof Error ? fallo.message : String(fallo),
+            }),
+          );
+        }
+      }
+
       // Los correos de los avisos que lo piden (0052), **con el comando ya guardado**:
       // un correo que no sale no puede deshacer el pedido que lo provocó. Si falla,
       // se queda pendiente y lo reintenta el reloj.
-      if (dejoCorreos(quien.correlacionId) && resultado.estado === 'ok') {
+      const conCorreos = dejoCorreos(quien.correlacionId);
+      if ((conCorreos || correoDeRepuesto) && resultado.estado === 'ok') {
         try {
           await puertos.enTransaccion(
             { tokenDeSesion: null, correlacionId: quien.correlacionId },
@@ -424,6 +485,10 @@ export function crearDespachador(puertos: Puertos): Despachador {
 
     async latir(quien, secreto) {
       return puertos.enTransaccion(quien, (contexto) => latir(contexto, secreto));
+    },
+
+    async alMovil(quien, secreto): Promise<LoQueHizoElMovil | null> {
+      return puertos.enTransaccion(quien, (contexto) => latidoDelMovil(contexto, secreto));
     },
   };
 }

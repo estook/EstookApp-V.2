@@ -129,15 +129,40 @@ async function susPreferencias(
 ): Promise<ReadonlyMap<string, Partial<PreferenciaDeAviso>>> {
   if (personas.length === 0) return new Map();
   const filas = await contexto.sql<
-    { persona_id: string; en_la_app: boolean; por_correo: boolean }[]
+    { persona_id: string; en_la_app: boolean; por_correo: boolean; al_movil: boolean | null }[]
   >`
-    select persona_id, en_la_app, por_correo
+    select persona_id, en_la_app, por_correo, al_movil
       from estook.preferencia_de_aviso
      where tipo = ${tipo} and persona_id = any (${comoLista(personas)}::text::uuid[])
   `;
   return new Map(
-    filas.map((f) => [f.persona_id, { enLaApp: f.en_la_app, porCorreo: f.por_correo }] as const),
+    filas.map(
+      (f) =>
+        [
+          f.persona_id,
+          {
+            enLaApp: f.en_la_app,
+            porCorreo: f.por_correo,
+            // Nulo es «de fábrica»: no se pone, y manda lo que diga el dominio.
+            ...(f.al_movil === null ? {} : { alMovil: f.al_movil }),
+          },
+        ] as const,
+    ),
   );
+}
+
+/**
+ * Quiénes de esta lista tienen **algún móvil puesto** para recibir avisos (0070). Sin
+ * el puerto del móvil encendido, nadie: entonces todo va como antes, a la campana y
+ * al correo.
+ */
+async function conMovil(contexto: Contexto, personas: readonly string[]): Promise<Set<string>> {
+  if (contexto.movil === null || personas.length === 0) return new Set();
+  const filas = await contexto.sql<{ persona_id: string }[]>`
+    select distinct persona_id from estook.movil_suscrito
+     where persona_id = any (${comoLista(personas)}::text::uuid[])
+  `;
+  return new Set(filas.map((f) => f.persona_id));
 }
 
 /**
@@ -161,12 +186,21 @@ export async function avisar(
       aviso.tipo,
       destinatarios.map((q) => q.personaId),
     );
+    const moviles = await conMovil(
+      contexto,
+      destinatarios.map((q) => q.personaId),
+    );
     let nuevos = 0;
 
     for (const quien of destinatarios) {
       const quiere = laPreferencia(aviso.tipo, quien.amplitud, preferencias.get(quien.personaId));
       if (!quiere.enLaApp) continue;
-      const conCorreo = quiere.porCorreo && quien.correo !== null && quien.correo !== '';
+      const quiereCorreo = quiere.porCorreo && quien.correo !== null && quien.correo !== '';
+      // **Lo que suena en el móvil no sale también por correo** (0017, 0070). El correo
+      // se queda de repuesto: si el móvil no lo recibe, sale (`correo_si_no_llega`).
+      const alMovil = quiere.alMovil && moviles.has(quien.personaId);
+      const conCorreo = quiereCorreo && !alMovil;
+      const ahora = contexto.ahora.toISOString();
 
       const yaEstaba = await contexto.sql<{ id: string; quienes: string[] }[]>`
         select id, quienes from estook.aviso
@@ -180,13 +214,15 @@ export async function avisar(
         await contexto.sql`
           insert into estook.aviso (
             organizacion_id, local_id, persona_id, tipo, clave, titulo, detalle, ir, quienes,
-            correo, correo_para, cifras
+            correo, correo_para, cifras, movil, movil_desde, correo_si_no_llega
           )
           values (
             ${aviso.organizacionId}, ${aviso.localId}, ${quien.personaId}, ${aviso.tipo},
             ${aviso.clave}, ${dice.titulo}, ${dice.detalle}, ${aviso.ir},
             ${comoLista(quienes)}::text::text[], ${conCorreo ? 'pendiente' : 'no'},
-            ${conCorreo ? quien.correo : null}, ${lasCifras(aviso)}::text::jsonb
+            ${quiereCorreo ? quien.correo : null}, ${lasCifras(aviso)}::text::jsonb,
+            ${alMovil ? 'pendiente' : 'no'}, ${alMovil ? ahora : null},
+            ${quiereCorreo && alMovil}
           )
           -- Dos a la vez sobre la misma cosa: el segundo no rompe lo que hacía.
           on conflict (persona_id, tipo, clave) do nothing
@@ -199,6 +235,7 @@ export async function avisar(
           `;
         }
         if (conCorreo) conCorreoPendiente.add(contexto.correlacionId);
+        if (alMovil) conMovilPendiente.add(contexto.correlacionId);
         nuevos += 1;
         continue;
       }
@@ -228,11 +265,14 @@ export async function avisar(
            set quienes = ${comoLista(quienes)}::text::text[], titulo = ${dice.titulo},
                detalle = ${dice.detalle}, ir = ${aviso.ir}, leido_en = null,
                actualizado_en = now(), correo = ${conCorreo ? 'pendiente' : 'no'},
-               correo_para = ${conCorreo ? quien.correo : null}, correo_intentos = 0,
-               cifras = ${lasCifras(aviso)}::text::jsonb
+               correo_para = ${quiereCorreo ? quien.correo : null}, correo_intentos = 0,
+               cifras = ${lasCifras(aviso)}::text::jsonb,
+               movil = ${alMovil ? 'pendiente' : 'no'}, movil_desde = ${alMovil ? ahora : null},
+               movil_intentos = 0, correo_si_no_llega = ${quiereCorreo && alMovil}
          where id = ${antes.id}
       `;
       if (conCorreo) conCorreoPendiente.add(contexto.correlacionId);
+      if (alMovil) conMovilPendiente.add(contexto.correlacionId);
       nuevos += 1;
     }
 
@@ -345,4 +385,12 @@ const conCorreoPendiente = new Set<string>();
 /** Si esta petición dejó correo. Pregunta y olvida, se haya guardado o no. */
 export function dejoCorreos(correlacionId: string): boolean {
   return conCorreoPendiente.delete(correlacionId);
+}
+
+/** Lo mismo con el móvil (0070): abrir la transacción de mandarlo solo si hace falta. */
+const conMovilPendiente = new Set<string>();
+
+/** Si esta petición dejó algo para el móvil. Pregunta y olvida. */
+export function dejoMoviles(correlacionId: string): boolean {
+  return conMovilPendiente.delete(correlacionId);
 }

@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 1 de octubre de 2026 · **Antes de M8. H · Horarios entera y en producción (#83, #84, #85). Empieza I · La app instalable: el plan y seis preguntas para Richi**
+Última actualización: 1 de octubre de 2026 · **Antes de M8. H · Horarios entera y en producción (#83, #84, #85). I · La app instalable, construida en una entrega y lista para fusionar (#86)**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento**, y **no pasa de 150 líneas**
@@ -14,27 +14,27 @@
 > | Quién ve qué                      | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                      |
 > | Qué desencadena cada cambio       | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                           |
 > | Estook TPV y la facturación       | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**           |
-> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (69)                                          |
+> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (70)                                          |
 > | Lo legal, y lo ya investigado     | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md) |
 > | Lo que cuesta cada local          | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                         |
 > | Lo que hizo cada entrega          | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                         |
-> | Lo aprendido fallando (130)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
+> | Lo aprendido fallando (135)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
 > | Los pasos de Richi                | [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)                                     |
 
 ---
 
 ## 1 · Dónde estamos · producción leída el 1-oct, en solo lectura
 
-|               |                                                                                                                                                                                                                                                   |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminado** | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2 y **H · Horarios entera** (H1 y H2), con sus repasos                                                                                                |
-| **En curso**  | **I · La app instalable**, en la rama `i-la-app-instalable`: el plan, lo que cuesta (nada), lo del iPhone y **seis preguntas de sí o no** en [`i-la-app-instalable.md`](docs/i-la-app-instalable.md). **Sin código hasta que Richi las conteste** |
-| **`main`**    | Todo fusionado hasta la **#85** (1-oct): H entera, migrada y desplegada                                                                                                                                                                           |
-| **Base**      | Supabase, **53 de 53** migraciones. 79 tablas, todas con seguridad por filas                                                                                                                                                                      |
-| **API**       | Desplegada con H2: **65 consultas y 130 comandos**, comprobada el 1-oct                                                                                                                                                                           |
-| **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                 |
-| **Pruebas**   | **1.527** unitarias y de base con H2, en verde en veintiséis días y horas distintos (`pnpm prueba:semana`), y la batería de pantalla                                                                                                              |
-| **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                    |
+|               |                                                                                                                                                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminado** | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2 y **H · Horarios entera** (H1 y H2), con sus repasos                                                                                |
+| **En curso**  | **I · La app instalable**, en la **#86**: construida con las respuestas de Richi ([0070](docs/decisiones/0070-la-app-instalable.md)), con la migración **0054**. **Sin fusionar, migrar ni desplegar**: es lo que le toca a Richi |
+| **`main`**    | Todo fusionado hasta la **#85** (1-oct): H entera, migrada y desplegada                                                                                                                                                           |
+| **Base**      | Supabase, **53 de 53** migraciones. 79 tablas, todas con seguridad por filas                                                                                                                                                      |
+| **API**       | Desplegada con H2: **65 consultas y 130 comandos**, comprobada el 1-oct. Con I serán **66 y 137**                                                                                                                                 |
+| **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                 |
+| **Pruebas**   | **1.570** unitarias y de base con I, en verde; las de I y los avisos, en los veintiséis momentos de `pnpm prueba:semana`; y la batería de pantalla                                                                                |
+| **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día    |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md), y el chat adelantado en la [0067](docs/decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md))
 
@@ -47,7 +47,7 @@ DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → 
 
 **H, entera en producción** ([0068](docs/decisiones/0068-las-respuestas-de-h.md), plan en [`docs/h-horarios.md`](docs/h-horarios.md)): la persona sin correo ([0057](docs/decisiones/0057-quien-es-quien-en-el-tpv.md)), los fichajes listos para el registro horario digital ([0062](docs/decisiones/0062-lo-legal.md)), los PDF y el horario de la semana, publicado para todo el equipo ([0069](docs/decisiones/0069-el-horario.md)).
 
-**I, la siguiente** ([`docs/i-la-app-instalable.md`](docs/i-la-app-instalable.md)): instalar Estook en el móvil, fichar y apuntar mermas sin señal, y los avisos al móvil. Propongo dos entregas, **I1 · En el móvil y sin conexión** e **I2 · Los avisos al móvil**. **No suma dinero** y no hace falta cuenta de Apple ni de Google.
+**I, construida** ([0070](docs/decisiones/0070-la-app-instalable.md), plan en [`docs/i-la-app-instalable.md`](docs/i-la-app-instalable.md)): Estook en la pantalla de inicio, **fichar y apuntar mermas sin señal** (también en el aparato del local, con el PIN cifrado), lo último que se vio sin conexión, y **los avisos al móvil**, que cada uno elige qué y cuándo. **No suma dinero** y no hace falta cuenta de Apple ni de Google; sí **dos secretos VAPID** que pone Richi.
 
 **Los PDF** los imprime **Cloudflare Browser Run**, gratis hasta unos 400 al día, con la cuenta de Richi desde el 30-sep. La hoja de cálculo del registro no depende de nada.
 
@@ -57,11 +57,11 @@ Para que nadie dé por hecho lo que solo está escrito:
 
 - **Estook TPV, Estook Link, la facturación, Fogón, los escandallos, la carta por platos, el APPCC y el chat**: escritos, sin construir. Cada uno dice su módulo en el Plan.
 - **Del horario, lo que no entra en H**: que Fogón lo proponga (M22), cambiar turnos entre compañeros y vacaciones con saldo (M13), las vistas de mes y día (M14), y mandarlo al chat (C). **Unir dos personas** que resulten ser la misma, con M13.
-- **Nada funciona sin conexión.** No hay service worker: llega con la entrega I.
+- **Sin conexión, solo fichar y apuntar mermas**: pedidos, inventarios y recibir mercancía necesitan señal. Y I **no está en producción** hasta que Richi fusione, migre, ponga los dos secretos y despliegue.
 - **Nadie ha pagado de verdad.** Un pago en modo prueba (Pizzeriacazzo, 26-sep).
 - **Nada se borra solo**: los plazos de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md) los aplicará M27. **Ni hay exportación completa del negocio.**
 - **Los textos legales de la web y los de `docs/legal/` son borradores**, sin revisar por un asesor.
-- **De las veinte mejoras, quince**, con H entera; del admin, la puerta y los clientes (faltan A3 y A4); ni avisos al móvil, ni recuperar la contraseña por correo.
+- **De las veinte mejoras, quince en producción** y dos más con I (la 14 y la 15) en cuanto se despliegue; del admin, la puerta y los clientes (faltan A3 y A4); ni recuperar la contraseña por correo.
 
 ### Lo que hay en producción
 
@@ -73,8 +73,8 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Ahora, en este orden** (paso a paso en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **Contestar las seis preguntas de I** (sí o no), en [`i-la-app-instalable.md`](docs/i-la-app-instalable.md).
-2. **Si no lo has hecho ya, montar y publicar una semana de verdad** en IKATZ, mirar el aviso y «Mi turno» en el móvil de alguien del equipo, y que «Descargar en PDF» lo guarda y ofrece «Compartir».
+1. **I, en este orden**: fusionar la #86, `.\estook.cmd bd:migrar` (la 0054), `.\estook.cmd movil:claves` y sus **dos secretos en Supabase** (sin pasar por el chat), desplegar la API, `bd:comprobar-api` (66 y 137, y el móvil encendido), y **probarlo en un Android y en un iPhone**.
+2. **Si no lo has hecho ya, montar y publicar una semana de verdad** en IKATZ, y mirar «Mi turno» en el móvil de alguien del equipo.
 3. **Un profesional, más adelante**: no hace falta hasta el primer cliente que pague. Qué tiene que mirar y cuándo, al final de [`lo-investigado.md`](docs/legal/lo-investigado.md).
 
 **Con fecha o con condición:**
@@ -92,7 +92,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 1. **Fogón**: qué modelo es «el grande» y cuántos créditos lleva Pro. Se decide en M22, con lo medido ([el coste](docs/coste-por-local.md)).
 2. **Para Estook TPV** (Anexo, «Lo que sigue pendiente de Richi»): el soporte en horario de servicio, si el camarero cobra por defecto, qué datáfono conectado va primero, y el tope de tickets dentro del precio.
 
-**Decidido el 30-sep** (0067 y 0068): **el chat se adelanta** a después de la app instalable; **Pro a 99 € y Cadena a 89 €**, ya en producción; y **las seis de H**: dos entregas, el aparato del local, la pausa (también en horario partido), libres y vacaciones, el equipo ve el horario publicado de todos (sin euros) y los PDF con Cloudflare. **Mandar el horario al chat** llega con C. **Todo en Cloudflare, no**: en la mudanza se va la web; la base, la API y los ficheros siguen en Supabase.
+**Decidido el 1-oct** (0070): **I en una entrega**; lo último que se vio, sin señal; el aparato del local sin wifi; **cada uno elige cuándo suena el móvil** (en su turno, o fuera de sus horas de silencio); «suele llegar hacia las…» opcional; y **que ningún aviso se quede sin ver**. **Imprimir en la cocina** ya estaba: es Estook Link (M19a). **Y el 30-sep** (0067 y 0068): **el chat se adelanta** a después de la app instalable; **Pro a 99 € y Cadena a 89 €**, ya en producción; y **las seis de H**: dos entregas, el aparato del local, la pausa (también en horario partido), libres y vacaciones, el equipo ve el horario publicado de todos (sin euros) y los PDF con Cloudflare. **Mandar el horario al chat** llega con C. **Todo en Cloudflare, no**: en la mudanza se va la web; la base, la API y los ficheros siguen en Supabase.
 
 **Cuando quiera:** las alertas de Dependabot, quitar «Automatically expose new tables» en Supabase y regenerar las claves de Google que pasaron por un chat. **Las claves nunca por el chat**: se ponen como secretos y se dice solo el nombre ([`config/claves.md`](config/claves.md)). **Y no se toca jamás el borrado permanente de un NIF en Verifacti.**
 
@@ -143,8 +143,8 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Con las respuestas de Richi, I1 · En el móvil y sin conexión**, en esta misma rama y su pull request: instalar Estook, fichar y apuntar mermas sin señal. **Después, I2 · Los avisos al móvil**, que le pedirá a Richi dos secretos en Supabase.
+**Con I en producción y probada en el móvil, C · El chat**: su plan y sus preguntas, en una rama nueva. Lo que cambia al segundo, que I dejó fuera, llega con él.
 
-**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); que abrir el aparato para fichar cierre la sesión de quien lo abre; que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla); los seis de «Lo que decidí al construirlo» de la [0069](docs/decisiones/0069-el-horario.md), como que el correo del horario lleve lo suyo escrito y no un PDF; partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
+**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: los once de «Lo que decidí al construirlo» de la [0070](docs/decisiones/0070-la-app-instalable.md), como que en blanco el pedido no avise o que un 403 no borre el móvil; subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); que abrir el aparato para fichar cierre la sesión de quien lo abre; que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla); los seis de «Lo que decidí al construirlo» de la [0069](docs/decisiones/0069-el-horario.md), como que el correo del horario lleve lo suyo escrito y no un PDF; partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
 
 **Lo que ESTADO llevaba hasta hoy** —las decisiones una a una, lo de cada entrega de E2 a R2 y la lista larga de lo que no se toca— está entero en [`docs/historia/ESTADO-hasta-el-30-sep-2026.md`](docs/historia/ESTADO-hasta-el-30-sep-2026.md), y lo que queda preparado para cada módulo, en [el mapa](docs/MAPA-de-modulos.md).

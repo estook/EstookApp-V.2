@@ -1,12 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { Link, useNavigate } from 'react-router-dom';
 import { BotonDePausa } from './BotonDePausa.tsx';
 import { puedeEditar } from '@estook/permisos';
+import { cuandoCae, type FechaOperativa } from '@estook/dominio';
 import {
   Aviso,
   Avatar,
   Boton,
   Cargando,
+  ErrorEnCristiano,
   EstadoVacio,
   Etiqueta,
   Mosaico,
@@ -27,6 +31,7 @@ import {
   comoSeLeeLaHora,
   comoSeLeenMinutos,
   ultimaVez,
+  type FichajePorRevisar,
   type FichajesDeHoy,
   type QuienEstaTrabajando,
 } from './contrato.ts';
@@ -138,6 +143,17 @@ export function EquipoHoy() {
         persona a persona, en Fichajes.
       */}
       <CifrasDeLaApp app="equipo" />
+
+      {/* Lo fichado con más de doce horas sin señal, por revisar (0070). */}
+      {(datos.porRevisar ?? []).length > 0 && (
+        <PorRevisar
+          fichajes={datos.porRevisar ?? []}
+          hoy={datos.jornada as FechaOperativa}
+          alAbrir={(id) => {
+            persona.abrir(id);
+          }}
+        />
+      )}
 
       {mio !== undefined && !mio.elLocalSabeDondeEsta && puedeMarcarElLocal && (
         <Aviso
@@ -283,4 +299,85 @@ function Fila({
       </button>
     </li>
   );
+}
+
+/**
+ * **Hechos sin conexión, por revisar** (0070, mejora 15): con más de doce horas sin
+ * señal, la hora la contó Estook con lo que dijo el móvil. Quien lleva el equipo lo
+ * mira: si está bien, «Está bien»; si no, lo corrige en la ficha de esa persona.
+ */
+function PorRevisar({
+  fichajes,
+  hoy,
+  alAbrir,
+}: {
+  readonly fichajes: readonly FichajePorRevisar[];
+  readonly hoy: FechaOperativa;
+  readonly alAbrir: (personaId: string) => void;
+}) {
+  const { cliente } = usarSesion();
+  const cache = useQueryClient();
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+
+  async function estaBien(fichajeId: string) {
+    setError(null);
+    const respuesta = await cliente.ejecutar('dar_por_bueno_el_fichaje', { fichaje_id: fichajeId });
+    if (!respuesta.ok) setError(respuesta.error);
+    await cache.invalidateQueries({ queryKey: ['fichajes_de_hoy'] });
+  }
+
+  return (
+    <Tarjeta
+      titulo={
+        fichajes.length === 1
+          ? '1 fichaje sin conexión, por revisar'
+          : `${String(fichajes.length)} fichajes sin conexión, por revisar`
+      }
+      origen="Más de doce horas sin señal: la hora la contó Estook"
+      icono={<IconoReloj size={18} />}
+      acento="var(--color-atencion)"
+      pegado
+    >
+      {error !== null && (
+        <div className="px-e4 pb-e2 @min-[22rem]:px-e5">
+          <ErrorEnCristiano error={error} />
+        </div>
+      )}
+      <ul>
+        {fichajes.map((f) => (
+          <li
+            key={f.fichajeId}
+            className="flex flex-wrap items-center justify-between gap-e2 border-b border-borde px-e4 py-e2 last:border-b-0 @min-[22rem]:px-e5"
+          >
+            <span className="min-w-0">
+              <span className="block text-cuerpo font-medium">{f.nombre}</span>
+              <span className="block text-secundario text-texto-suave">
+                {/* «Ayer · 21:00–03:00», no «2026-09-30» (repaso con capturas, 1-oct). */}
+                {primeraEnMayuscula(cuandoCae(f.fecha as FechaOperativa, hoy))} ·{' '}
+                {comoSeLeeLaHora(f.entroEn)}–
+                {f.salioEn === null ? 'sin salir' : comoSeLeeLaHora(f.salioEn)}
+              </span>
+            </span>
+            <span className="flex gap-e2">
+              <Boton
+                tono="texto"
+                onClick={() => {
+                  alAbrir(f.personaId);
+                }}
+              >
+                Abrir su ficha
+              </Boton>
+              <Boton tono="secundario" onClick={() => void estaBien(f.fichajeId)}>
+                Está bien
+              </Boton>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </Tarjeta>
+  );
+}
+
+function primeraEnMayuscula(texto: string): string {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }

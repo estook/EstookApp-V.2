@@ -4,9 +4,11 @@ import type { Despachador, Resultado } from '../aplicacion/index.ts';
 import {
   CABECERA_AUTORIZACION,
   CABECERA_DIRECCION,
+  CABECERA_HECHO_HACE,
   CABECERA_IDEMPOTENCIA,
   CABECERA_REPETIDA,
   direccionDeLaPeticion,
+  hechoHace,
   tokenDeLaCabecera,
 } from './cabeceras.ts';
 import { respuestaConDatos, respuestaDeError } from './respuestas.ts';
@@ -92,6 +94,7 @@ function cabecerasDeCors(origen: string): Record<string, string> {
       'content-type',
       CABECERA_IDEMPOTENCIA,
       CABECERA_CORRELACION,
+      CABECERA_HECHO_HACE,
     ].join(', '),
     'access-control-allow-methods': 'GET, POST, OPTIONS',
     // Para que el cliente pueda leer de vuelta su hilo y saber si el comando se
@@ -194,7 +197,16 @@ export function crearApi(despachador: Despachador) {
     return respuestaDeError('fallo_nuestro', correlacionId);
   });
 
-  api.get('/salud', (c) => c.json({ datos: { estado: 'en pie', version: VERSION_ACTUAL } }));
+  api.get('/salud', (c) =>
+    c.json({
+      datos: {
+        estado: 'en pie',
+        version: VERSION_ACTUAL,
+        // Si los avisos al móvil están encendidos (0070): sí o no, nunca la clave.
+        movil: despachador.movilEncendido,
+      },
+    }),
+  );
 
   api.get('/v:version{[0-9]+}/consultas/:nombre', async (c) => {
     const correlacionId = c.get('correlacionId');
@@ -232,6 +244,7 @@ export function crearApi(despachador: Despachador) {
       c.req.param('nombre'),
       cuerpo,
       c.req.header(CABECERA_IDEMPOTENCIA) ?? '',
+      { hechoHaceMs: hechoHace(c.req.header(CABECERA_HECHO_HACE)) },
     );
 
     return traducir(resultado, correlacionId);
@@ -273,6 +286,18 @@ export function crearApi(despachador: Despachador) {
   api.post('/tareas/latir', async (c) => {
     const correlacionId = c.get('correlacionId');
     const hecho = await despachador.latir(
+      quienLlama(undefined, correlacionId, c.req.header(CABECERA_DIRECCION)),
+      c.req.header('x-reloj') ?? null,
+    );
+    if (hecho === null) return respuestaDeError('sin_permiso', correlacionId);
+    return respuestaConDatos(hecho, correlacionId, 200, {});
+  });
+
+  // El latido del móvil (0070): `pg_cron` lo llama, con el mismo secreto, el minuto en
+  // que la base ve algo que mandar al móvil (0054).
+  api.post('/tareas/movil', async (c) => {
+    const correlacionId = c.get('correlacionId');
+    const hecho = await despachador.alMovil(
       quienLlama(undefined, correlacionId, c.req.header(CABECERA_DIRECCION)),
       c.req.header('x-reloj') ?? null,
     );

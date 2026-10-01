@@ -194,8 +194,11 @@ function comoPng(cv) {
  *
  * `fondo` sirve para el icono de iPhone, que no admite transparencia: iOS la
  * rellena de negro por su cuenta y el simbolo charcoal desapareceria.
+ *
+ * `monocromo` pinta todo el simbolo de un color sobre transparente: es la insignia
+ * de los avisos (0070), que Android pone en la barra de arriba y solo mira la silueta.
  */
-async function dibujar(lado, { margen = 0.16, fondo = null } = {}) {
+async function dibujar(lado, { margen = 0.16, fondo = null, monocromo = null } = {}) {
   const { rects, cola } = await geometria();
   const cv = lienzo(lado);
 
@@ -214,10 +217,10 @@ async function dibujar(lado, { margen = 0.16, fondo = null } = {}) {
   const aLienzo = (dentro) => (x, y) => dentro((x - offsetX) / escala, (y - offsetY) / escala);
 
   const formas = [
-    ...rects.map((r) => ({ dentro: aLienzo(enRect(r)), color: r.color })),
+    ...rects.map((r) => ({ dentro: aLienzo(enRect(r)), color: monocromo ?? r.color })),
     {
       dentro: aLienzo(enTriangulo([cola.x1, cola.y], [cola.x2, cola.y], [cola.px, cola.py])),
-      color: CHARCOAL,
+      color: monocromo ?? CHARCOAL,
     },
   ];
 
@@ -240,10 +243,13 @@ const QUE_HACE_FALTA = [
   // para poder recortarlos en redondo sin que se vea el hueco.
   { nombre: 'pwa-192.png', lado: 192, fondo: [0xfa, 0xfa, 0xf8], margen: 0.16 },
   { nombre: 'pwa-512.png', lado: 512, fondo: [0xfa, 0xfa, 0xf8], margen: 0.16 },
+  // La insignia de los avisos al móvil (0070): blanca y sin fondo. Android la pone
+  // en la barra de arriba y solo mira la silueta; con color, sale un cuadrado.
+  { nombre: 'insignia-96.png', lado: 96, fondo: null, margen: 0.1, monocromo: [0xff, 0xff, 0xff] },
 ];
 
-for (const { nombre, lado, fondo, margen } of QUE_HACE_FALTA) {
-  const png = await dibujar(lado, { margen, fondo });
+for (const { nombre, lado, fondo, margen, monocromo = null } of QUE_HACE_FALTA) {
+  const png = await dibujar(lado, { margen, fondo, monocromo });
   await writeFile(join(MARCA, nombre), png);
   console.log(`  ${nombre.padEnd(22)} ${lado}x${lado} · ${(png.length / 1024).toFixed(1)} KB`);
 }

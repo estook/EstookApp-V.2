@@ -27,6 +27,7 @@ import { EscribirEnElTablon } from './EscribirEnElTablon.tsx';
 import { ElegirIndicador } from './ElegirIndicador.tsx';
 import { Widget } from './widgets.tsx';
 import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
+import { EstookEnTuMovil } from '../sinConexion/EstookEnTuMovil.tsx';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
 
@@ -150,6 +151,10 @@ export function Panel() {
               setEscribiendo(true);
             }}
           />
+        </div>
+        {/* Estook en tu móvil (0070): instalarla y sus avisos, una vez cada cosa. */}
+        <div className="empty:hidden lg:col-span-2">
+          <EstookEnTuMovil />
         </div>
         <TarjetasDelPanel />
         {/* Lo que falta es una línea, y va de lado a lado. */}

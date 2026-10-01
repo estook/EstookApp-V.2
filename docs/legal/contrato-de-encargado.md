@@ -57,6 +57,8 @@ El cliente **autoriza de forma general** a Estook a apoyarse en estos proveedore
 | **Verifacti**  | Registrar los tickets y facturas en la AEAT, si cobra con Estook TPV                                    | [COMPROBAR país y garantía] |
 | **Cloudflare** | Convertir en PDF los documentos que se piden (informes, registro de jornada); **no guarda nada** (0068) | [COMPROBAR país y garantía] |
 
+**Los avisos al móvil** (0070) pasan por el servicio de avisos del navegador de cada persona (Google, Apple, Mozilla o Microsoft), que solo los entrega: **van cifrados de punta a punta** con la clave de ese navegador y el servicio no puede leerlos. No se contrata con ellos ni reciben más que el aviso cifrado; los elige el navegador de quien dice «sí». [COMPROBAR con el asesor si cuentan como subencargados o como simple conducto.]
+
 Cuando Fogón exista, el proveedor del modelo de inteligencia artificial se añadirá aquí antes de encenderlo.
 
 ## 5 · Fuera de la Unión Europea

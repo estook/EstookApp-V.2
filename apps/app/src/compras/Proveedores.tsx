@@ -708,6 +708,7 @@ function EditarProveedor({
   const [dias, setDias] = useState<number[]>([...(ficha?.diasDeReparto ?? [])]);
   const [plazo, setPlazo] = useState(ficha?.plazoDeEntrega ?? 1);
   const [horaLimite, setHoraLimite] = useState(ficha?.horaLimite ?? '');
+  const [sueleLlegar, setSueleLlegar] = useState(ficha?.sueleLlegarA ?? '');
   const [minimo, setMinimo] = useState<number | null>(ficha?.pedidoMinimoCentimos ?? null);
   const [portes, setPortes] = useState<number | null>(ficha?.portesCentimos ?? null);
   const [formaDePago, setFormaDePago] = useState<FormaDePago | ''>(ficha?.formaDePago ?? '');
@@ -738,6 +739,7 @@ function EditarProveedor({
       dias_de_reparto: dias,
       plazo_de_entrega: plazo,
       hora_limite: horaLimite === '' ? null : horaLimite,
+      suele_llegar_a: sueleLlegar === '' ? null : sueleLlegar,
       forma_de_pago: formaDePago === '' ? null : formaDePago,
       dias_de_pago:
         diasDePagoEscritos !== null && Number.isInteger(diasDePagoEscritos)
@@ -899,6 +901,16 @@ function EditarProveedor({
               {comoSeLePide(plazo, horaLimite === '' ? null : horaLimite)}
             </p>
           )}
+          {/* Si lo dice, avisa media hora después si un pedido no ha llegado (0070). */}
+          <Campo
+            etiqueta="Suele llegar hacia las"
+            tipo="hora"
+            ayuda="Si lo pones, te avisamos si un pedido no ha llegado media hora después. Si no, déjalo en blanco."
+            value={sueleLlegar}
+            onChange={(e) => {
+              setSueleLlegar(e.currentTarget.value);
+            }}
+          />
         </section>
 
         <section className="flex flex-col gap-e3">

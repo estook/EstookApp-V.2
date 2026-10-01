@@ -97,14 +97,28 @@ export interface OpcionesDelCliente {
   readonly alCaducarLaSesion?: () => void;
 }
 
+export interface OpcionesDeUnComando {
+  /** La misma en cada reintento: es lo que hace que no se haga dos veces. */
+  readonly claveDeIdempotencia?: string;
+  /**
+   * **Lo hecho sin conexión** (0070): cuántos milisegundos hace que se hizo, medido
+   * con el reloj de este aparato entre que se hizo y que se manda. La hora la pone el
+   * servidor con el suyo; de este solo cuenta la diferencia.
+   */
+  readonly hechoHaceMs?: number;
+}
+
 export interface ClienteApi {
   consultar<T>(nombre: string, parametros?: Record<string, string>): Promise<Respuesta<T>>;
   ejecutar<T>(
     nombre: string,
     entrada: unknown,
-    opciones?: { claveDeIdempotencia?: string },
+    opciones?: OpcionesDeUnComando,
   ): Promise<Respuesta<T>>;
 }
+
+/** La cabecera de lo hecho sin conexión: la lee `servidor/api/cabeceras.ts`. */
+export const CABECERA_HECHO_HACE = 'x-hecho-hace';
 
 /**
  * Cuando la peticion no llega ni a salir.
@@ -186,15 +200,17 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
       return llamar<T>('GET', `/consultas/${nombre}${query ? `?${query}` : ''}`, undefined, {});
     },
 
-    ejecutar<T>(
-      nombre: string,
-      entrada: unknown,
-      opcionesDeLlamada: { claveDeIdempotencia?: string } = {},
-    ) {
+    ejecutar<T>(nombre: string, entrada: unknown, opcionesDeLlamada: OpcionesDeUnComando = {}) {
       // Si no se pasa clave, se pone una. Un comando SIEMPRE lleva la suya: es lo
       // que hace que reintentar no duplique nada.
       const clave = opcionesDeLlamada.claveDeIdempotencia ?? nuevaCorrelacionId();
-      return llamar<T>('POST', `/comandos/${nombre}`, entrada, { 'x-idempotencia': clave });
+      const hace = opcionesDeLlamada.hechoHaceMs;
+      return llamar<T>('POST', `/comandos/${nombre}`, entrada, {
+        'x-idempotencia': clave,
+        ...(hace === undefined
+          ? {}
+          : { [CABECERA_HECHO_HACE]: String(Math.max(0, Math.trunc(hace))) }),
+      });
     },
   };
 }

@@ -67,7 +67,21 @@ export function ListaDeFichajes({
                   fichaje.aparato ?? null,
                 )}
                 {pausas === null ? '' : ` · pausa de ${comoSeLeenMinutos(pausas)}`}
+                {/* Sin señal (0070): la hora la contó Estook al volver la conexión. */}
+                {fichaje.sinConexion?.entrada === true || fichaje.sinConexion?.salida === true
+                  ? ' · sin conexión'
+                  : ''}
               </span>
+              {fichaje.porRevisar === true && (
+                <span className="block text-secundario font-medium text-atencion">
+                  Por revisar: más de doce horas sin señal
+                </span>
+              )}
+              {fichaje.aMano !== null && fichaje.aMano !== undefined && (
+                <span className="block text-secundario text-texto-suave">
+                  Apuntado a mano por {fichaje.aMano.quien ?? 'alguien'}: «{fichaje.aMano.motivo}»
+                </span>
+              )}
               {correcciones.length > 0 ? (
                 correcciones.map((c) => <LaCorreccion key={c.numero} correccion={c} />)
               ) : fichaje.corregidoPor === null ? null : (

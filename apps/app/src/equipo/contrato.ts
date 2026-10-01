@@ -68,12 +68,24 @@ export interface QuienEstaTrabajando {
   readonly turnoSospechoso: boolean;
 }
 
+/** Un fichaje hecho con más de doce horas sin señal, por revisar (0070). */
+export interface FichajePorRevisar {
+  readonly fichajeId: string;
+  readonly personaId: string;
+  readonly nombre: string;
+  readonly fecha: string;
+  readonly entroEn: string;
+  readonly salioEn: string | null;
+}
+
 export interface FichajesDeHoy {
   readonly gente: readonly QuienEstaTrabajando[];
   readonly jornada: string;
   readonly horaDelLocal: string;
   readonly dentro: number;
   readonly fuera: number;
+  /** I (0070). Opcional: la web se publica antes que la API. */
+  readonly porRevisar?: readonly FichajePorRevisar[];
 }
 
 export interface FilaDelResumen {
@@ -126,6 +138,10 @@ export interface FichajeDeLaFicha {
   readonly aparato?: string | null;
   readonly pausas?: readonly { readonly empezoEn: string; readonly acaboEn: string | null }[];
   readonly correcciones?: readonly CorreccionDeUnFichaje[];
+  /** I (0070): hecho sin señal, por revisar, o apuntado a mano porque faltaba. */
+  readonly sinConexion?: { readonly entrada: boolean; readonly salida: boolean };
+  readonly porRevisar?: boolean;
+  readonly aMano?: { readonly quien: string | null; readonly motivo: string } | null;
 }
 
 /** Una corrección, con lo de antes y lo de después: el original no se borra (0062). */
@@ -235,6 +251,8 @@ export const POR_QUE_SIN_UBICACION: Readonly<Record<string, string>> = {
   la_nego: 'No dio permiso de ubicación',
   sin_senal: 'Sin señal de GPS',
   no_la_da_el_aparato: 'El aparato no sabe dar la ubicación',
+  // I (0070): lo apuntó quien lleva el equipo, porque faltaba.
+  a_mano: 'Apuntado a mano',
 };
 
 /** Cómo se dice a cuántos metros del local se fichó. */

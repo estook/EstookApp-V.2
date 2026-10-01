@@ -48,6 +48,7 @@
     "coste": "node herramientas/coste-por-local.mjs",
     "coste:escribir": "node herramientas/coste-por-local.mjs --escribir",
     "coste:comprobar": "node herramientas/coste-por-local.mjs --comprobar",
+    "movil:claves": "node herramientas/claves-del-movil.mjs",
     "bd:mi-negocio": "node --experimental-strip-types --env-file-if-exists=.env.local base-de-datos/herramientas/mi-negocio.mjs"
   },
   "devDependencies": {

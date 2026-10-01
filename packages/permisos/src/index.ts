@@ -289,6 +289,14 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   // Su horario es suyo, como sus fichajes: le llega a cada uno el suyo.
   'horario.publicado': [],
   'horario.cambiado': [],
+  // ── I (0070) ──
+  // «Entras en cinco minutos», a quien ficha: es su turno.
+  'turno.entras': ['accion.fichar'],
+  // Lo que caduca y el pedido que no llega, a quien lleva el almacén y recibe.
+  'lote.caduca': ['app.almacen'],
+  'pedido.no_llega': ['app.almacen'],
+  // Un fichaje del aparato que no se ha podido apuntar, a quien lleva el equipo.
+  'fichaje.sin_apuntar': ['app.equipo'],
 };
 
 export function puedeRecibirElAviso(

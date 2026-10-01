@@ -67,7 +67,7 @@ interface LocalDelReloj {
  * Hace algo en su propio punto de guardado: si falla, lo deshace —también quién
  * era cada uno (`comoSiFuera`)— y contesta nulo en vez de romper el reloj.
  */
-async function aparte<T>(
+export async function aparte<T>(
   contexto: Contexto,
   que: string,
   hacer: () => Promise<T>,
@@ -99,7 +99,7 @@ async function aparte<T>(
  * Va siempre dentro de \`aparte\`: si falla, el punto de guardado devuelve la
  * identidad de antes; si no falla, se devuelve aquí.
  */
-async function comoSiFuera<T>(
+export async function comoSiFuera<T>(
   contexto: Contexto,
   quien: { readonly personaId: string; readonly organizacionId: string; readonly localId: string },
   hacer: (suyo: Contexto) => Promise<T>,

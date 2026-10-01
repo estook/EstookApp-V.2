@@ -49,7 +49,7 @@ import { usarElHorarioDeEstaSemana } from '../ganchos/usarElHorario.ts';
 import { AccesosRapidos } from './AccesosRapidos.tsx';
 import { IndicadorWidget } from './Indicador.tsx';
 import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
-import { usarFichar } from '../ganchos/usarFichar.ts';
+import { loQueDiceElFichaje, usarFichar } from '../ganchos/usarFichar.ts';
 import { BotonDePausa } from '../equipo/BotonDePausa.tsx';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
@@ -709,9 +709,14 @@ function FicharDesdeElPanel({ tamano }: { readonly tamano: TamanoDeWidget }) {
           )}
 
           {fichar.acabaDe !== null && fichar.error === null && (
-            <p aria-live="polite" className="mt-e2 text-secundario text-bien">
-              {fichar.acabaDe.entro ? 'Entrada apuntada' : 'Salida apuntada'}
-              {fichar.acabaDe.metros === null ? '' : `, a ${fichar.acabaDe.metros} m del local`}.
+            <p
+              aria-live="polite"
+              className={clases(
+                'mt-e2 text-secundario',
+                loQueDiceElFichaje(fichar.acabaDe).guardado ? 'text-atencion' : 'text-bien',
+              )}
+            >
+              {loQueDiceElFichaje(fichar.acabaDe).texto}
             </p>
           )}
         </div>

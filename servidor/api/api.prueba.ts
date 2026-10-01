@@ -58,6 +58,7 @@ function puertosDeMentira() {
         identidadDeGoogle: null,
         pagos: null,
         pdf: null,
+        movil: null,
         correlacionId: quien.correlacionId,
         desde: null,
         ahora: new Date(Date.UTC(2026, 8, 1, 12, 0, 0)),
@@ -118,8 +119,15 @@ describe('la salud', () => {
   it('dice que esta en pie y con que version', async () => {
     const { app } = api();
     const cuerpo = await cuerpoDe(await api().app.request('/api/salud'));
-    expect(cuerpo.datos).toEqual({ estado: 'en pie', version: VERSION_ACTUAL });
+    expect(cuerpo.datos).toEqual({ estado: 'en pie', version: VERSION_ACTUAL, movil: false });
     expect(app).toBeDefined();
+  });
+
+  it('dice si los avisos al móvil están encendidos, sin enseñar ninguna clave (0070)', async () => {
+    const { puertos } = puertosDeMentira();
+    const app = crearApi(crearDespachador({ ...puertos, movilEncendido: true }));
+    const cuerpo = await cuerpoDe(await app.request('/api/salud'));
+    expect(cuerpo.datos).toEqual({ estado: 'en pie', version: VERSION_ACTUAL, movil: true });
   });
 });
 

@@ -441,3 +441,24 @@
      guardado —«terminada», o sea «Ya está»— mientras volvía a preguntar. Con el servidor
      cargado se quedaba ahí: dos rojos seguidos en la batería entera y ninguno suelto. Se
      pregunta primero y se cambia de pantalla después (`TarjetasDelPanel.tsx`).
+131. **Guardar «lo último que se vio» se suma, no se pisa.** Al abrir con mala señal, los
+     primeros segundos la app todavía no tiene nada leído, y guardar entonces borraba lo
+     bueno de la vez anterior: sin señal salía el Panel vacío. Lo cazó una captura, no una
+     prueba. Ahora se guarda sumando a lo que había y, como mucho, cada dos segundos
+     (`cacheGuardada.ts`, I · 0070).
+132. **Un fallo de red no es «sin conexión».** Con una sola petición fallida la app se daba
+     por desconectada entera. Ahora lo dice el navegador o una pregunta a `/salud`: sin
+     las dos cosas, es un fallo de esa petición y se dice como tal (`red.ts`). Y al revés:
+     **una señal colgada no falla**, se queda esperando minutos. Si `quien_soy` no contesta
+     en cuatro segundos y `/salud` tampoco en tres, es «sin conexión» y se enseña lo
+     guardado; se vio con «Cargando tu sesión» fijo en la prueba de la señal mala.
+133. **Lo guardado se enseña solo sin señal.** Recuperarlo siempre al abrir enseñaba un
+     momento lo de antes —el Panel viejo, el local que ya no era— aunque hubiera red. Se
+     recupera al abrir sin red, o cuando el servidor no contesta por falta de conexión.
+134. **Una consulta en pausa sin datos no es «sin entrar».** Sin red y sin nada guardado,
+     la sesión parecía cerrada y salía la pantalla de entrar. «Sin servidor» incluye ahora
+     la pausa sin datos, y se espera a la vuelta (`ProveedorDeSesion.tsx`).
+135. **Salir no espera al trabajador de servicio.** Cerrar sesión pedía el registro del
+     trabajador «cuando esté listo», y en un navegador sin él tardaba cinco segundos en
+     salir. Se pregunta si hay uno y, si no, se sigue. Y lo que viene de internet (el logo
+     del local) no está sin señal: se pinta lo de repuesto, nunca una imagen rota.

@@ -80,3 +80,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0067** | Pro a 99 € y Cadena a 89 € desde ya, el chat se adelanta, y H empieza por su plan                        |
 | **0068** | Las respuestas de H: dos entregas, el aparato del local, la pausa, el horario de todos y los PDF         |
 | **0069** | H2 · el horario de la semana: borrador y publicado, avisos que no impiden y a quién se avisa             |
+| **0070** | I · la app instalable: en la pantalla de inicio, sin conexión y con avisos al móvil                      |

@@ -45,8 +45,8 @@ y el aviso de la 19** van en R2 ([0053](decisiones/0053-el-pedido-los-informes-y
 | 16  | Informes diario, semanal y mensual       | **R2**                   | Nada: Resend ya está                     | **Hecha, en su pull request**       |
 | 19  | Reseñas: aviso de bajada y respuesta     | **R2** y después         | Places ya; **Business Profile** y **IA** | **El aviso, en R2**; responder, M23 |
 | 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                     | **Hecha** en H2 (1-oct, 0069)       |
-| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)  | Falta                               |
-| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                     | Falta                               |
+| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)  | **Hecha, en la #86** (1-oct, 0070)  |
+| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                     | **Hecha, en la #86** (1-oct, 0070)  |
 | 10  | Escanear el código de barras             | **L**, adelantada        | Nada                                     | **En producción** (#73)             |
 | 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                       | Espera a M22                        |
 | 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún  | **QR (#69) y carta subida (0049)**  |
@@ -484,7 +484,8 @@ app entera. No se hace aparte: sería montar el cuadrante dos veces.
 ## I · La app instalable
 
 **El plan, lo que cuesta, lo del iPhone y las seis preguntas** (1-oct): en
-[`i-la-app-instalable.md`](i-la-app-instalable.md).
+[`i-la-app-instalable.md`](i-la-app-instalable.md). **Construida el mismo día, en una
+entrega**, con las respuestas de Richi: [decisión 0070](decisiones/0070-la-app-instalable.md).
 
 Push y sin conexión comparten la misma pieza: **un _service worker_**, que hoy no
 existe. Con él, Estook se instala en el móvil como una app. Se hacen juntas.

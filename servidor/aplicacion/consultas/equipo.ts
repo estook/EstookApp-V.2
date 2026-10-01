@@ -312,12 +312,24 @@ export interface QuienEstaTrabajando {
   readonly turnoSospechoso: boolean;
 }
 
+/** Un fichaje hecho con más de doce horas sin señal, que nadie ha revisado (0070). */
+export interface FichajePorRevisar {
+  readonly fichajeId: string;
+  readonly personaId: string;
+  readonly nombre: string;
+  readonly fecha: string;
+  readonly entroEn: string;
+  readonly salioEn: string | null;
+}
+
 export interface SalidaFichajesDeHoy {
   readonly gente: readonly QuienEstaTrabajando[];
   readonly jornada: string;
   readonly horaDelLocal: string;
   readonly dentro: number;
   readonly fuera: number;
+  /** Lo que hay que revisar de lo fichado sin conexión, de la gente que llevas (0070). */
+  readonly porRevisar: readonly FichajePorRevisar[];
 }
 
 /** Cuánto tiene que llevar abierto un turno para ser sospechoso. Doce horas. */
@@ -452,12 +464,43 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
       turnoSospechoso: (f.minutos ?? 0) > SOSPECHOSO_DESDE_MINUTOS,
     }));
 
+    // Lo fichado sin conexión que hay que revisar: lo ve quien ve esos fichajes (las
+    // políticas de la 0027), del más viejo al más nuevo.
+    const porRevisar = await contexto.sql<
+      {
+        fichaje_id: string;
+        persona_id: string;
+        nombre: string;
+        fecha: string;
+        entro_en: string;
+        salio_en: string | null;
+      }[]
+    >`
+      select f.id::text as fichaje_id, f.persona_id::text as persona_id, p.nombre,
+             to_char(f.fecha_operativa, 'YYYY-MM-DD') as fecha,
+             to_char(f.entro_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as entro_en,
+             to_char(f.salio_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as salio_en
+        from estook.fichaje f
+        join estook.persona p on p.id = f.persona_id
+       where f.local_id = ${localId} and f.por_revisar
+       order by f.entro_en
+       limit 20
+    `;
+
     return {
       gente,
       jornada: reloj.jornada,
       horaDelLocal: reloj.ahora,
       dentro: gente.filter((quien) => quien.dentro).length,
       fuera: gente.filter((quien) => !quien.dentro).length,
+      porRevisar: porRevisar.map((f) => ({
+        fichajeId: f.fichaje_id,
+        personaId: f.persona_id,
+        nombre: f.nombre,
+        fecha: f.fecha,
+        entroEn: f.entro_en,
+        salioEn: f.salio_en,
+      })),
     };
   },
 });
@@ -974,6 +1017,15 @@ export interface FichajeDeUnaPersona {
   readonly motivoDeLaCorreccion: string | null;
   /** El aparato del local donde se fichó (0068), o nulo si fue desde el suyo. */
   readonly aparato: string | null;
+  /**
+   * **Sin conexión** (0070): la entrada o la salida se ficharon sin señal y se mandaron
+   * después; la hora la contó el servidor. `porRevisar`, si fue con más de doce horas
+   * sin señal y nadie lo ha mirado todavía.
+   */
+  readonly sinConexion: { readonly entrada: boolean; readonly salida: boolean };
+  readonly porRevisar: boolean;
+  /** Si lo apuntó a mano quien lleva el equipo, porque faltaba (0070): quién y por qué. */
+  readonly aMano: { readonly quien: string | null; readonly motivo: string } | null;
   /** Sus pausas de descanso, de la primera a la última (0052). */
   readonly pausas: readonly { readonly empezoEn: string; readonly acaboEn: string | null }[];
   /**
@@ -1093,6 +1145,11 @@ async function leerFichajes(
       corregido_por: string | null;
       motivo: string | null;
       aparato: string | null;
+      entro_sin_conexion: boolean;
+      salio_sin_conexion: boolean;
+      por_revisar: boolean;
+      a_mano_por: string | null;
+      motivo_a_mano: string | null;
       total: number;
     }[]
   >`
@@ -1108,10 +1165,13 @@ async function leerFichajes(
            c.nombre as corregido_por,
            f.motivo_de_la_correccion as motivo,
            t.nombre as aparato,
+           f.entro_sin_conexion, f.salio_sin_conexion, f.por_revisar,
+           m.nombre as a_mano_por, f.motivo_a_mano,
            count(*) over ()::int as total
       from estook.fichaje f
       join estook.local l on l.id = f.local_id
       left join estook.persona c on c.id = f.corregido_por
+      left join estook.persona m on m.id = f.apuntado_por
       -- El nombre del aparato solo sale si quien mira puede ver los aparatos de
       -- Ajustes; si no, sale nulo y se dice «en el aparato del local».
       left join estook.terminal t on t.id = f.terminal_id
@@ -1149,6 +1209,9 @@ async function leerFichajes(
       corregidoPor: f.corregido_por,
       motivoDeLaCorreccion: f.motivo,
       aparato: f.sin_donde === 'aparato_del_local' ? (f.aparato ?? 'el aparato del local') : null,
+      sinConexion: { entrada: f.entro_sin_conexion, salida: f.salio_sin_conexion },
+      porRevisar: f.por_revisar,
+      aMano: f.motivo_a_mano === null ? null : { quien: f.a_mano_por, motivo: f.motivo_a_mano },
       pausas: dentro.pausas.get(f.id) ?? [],
       correcciones: dentro.correcciones.get(f.id) ?? [],
     })),

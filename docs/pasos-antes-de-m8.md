@@ -6,7 +6,7 @@
 >
 > | Qué                             | Cómo está                                                                         |
 > | ------------------------------- | --------------------------------------------------------------------------------- |
-> | Pull requests                   | **Fusionadas hasta la #83** (30-sep). Abiertas: **#84** y **H2 · El horario**     |
+> | Pull requests                   | **Fusionadas hasta la #84** (1-oct). Abierta: **#85 · H2 · El horario**           |
 > | La base de datos                | **52 de 52** migraciones, igual que `main`                                        |
 > | La API                          | **Desplegada con H1**: 62 y 125, reloj latiendo                                   |
 > | Los PDF (Cloudflare)            | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep          |
@@ -20,9 +20,8 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## Lo que te toca ahora · el repaso de H1 y H2, el horario (1-oct)
 
-Son **dos pull requests seguidos**, y se fusionan en este orden: primero **el repaso de
-H1** (la #84) y después **H2 · El horario**, que lleva dentro los cambios del repaso.
-**Una sola migración y un solo despliegue, al final.**
+**La #84 (el repaso de H1) ya está fusionada** (1-oct, 02:25). Queda **H2 · El horario**
+(la #85). **Una sola migración y un solo despliegue, al final**, que sirven para las dos.
 
 **Qué trae el repaso de H1**, de lo que viste con el primer PDF:
 
@@ -58,14 +57,10 @@ H1** (la #84) y después **H2 · El horario**, que lleva dentro los cambios del 
   miran lo publicado y no el horario de siempre. Y quien no tiene correo ve sus próximos
   días al teclear su PIN en el aparato del local.
 
-### 1 · Fusionar las dos, en orden
+### 1 · Fusionar la #85
 
-En **github.com** → **Pull requests**:
-
-1. **«El repaso de H1»** (la #84) → con las **tres comprobaciones en verde**, **Merge
-   pull request** → **Confirm merge**.
-2. **«H2 · El horario»** → espera a que vuelva a tener las tres en verde → **Merge pull
-   request** → **Confirm merge**.
+En **github.com** → **Pull requests** → **«H2 · El horario»** → con las **tres
+comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
 
 **Si alguna sale en rojo, para y avísame.**
 

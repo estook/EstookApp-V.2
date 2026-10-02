@@ -132,9 +132,11 @@ jobs:
         run: pnpm publicacion
 
       # Con su propio tope: si GitHub se atasca bajándolos, falla aquí y lo dice,
-      # en vez de comerse el tiempo de las pruebas.
+      # en vez de comerse el tiempo de las pruebas. 15 y no 10 (lección 139): el 2-oct
+      # el espejo de Ubuntu iba a 200 KB/s y lo cortó sin llegar a probar nada; con los
+      # 21 de una vuelta buena siguen cabiendo en los 40 del trabajo.
       - name: Instalar navegadores
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: pnpm exec playwright install --with-deps chromium webkit
 
       # Playwright levanta la API de pruebas (Postgres efimero, migraciones y

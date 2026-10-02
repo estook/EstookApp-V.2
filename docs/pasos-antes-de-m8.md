@@ -2,26 +2,47 @@
 
 > ## Cómo está
 >
-> Comprobado el 1 de octubre de 2026, leyendo la base de producción.
+> Comprobado el 2 de octubre de 2026, leyendo la base de producción.
 >
-> | Qué                            | Cómo está                                                                                        |
-> | ------------------------------ | ------------------------------------------------------------------------------------------------ |
-> | Pull requests                  | **Fusionadas hasta la #85** (1-oct): H entera. Abierta: **la #86, I · La app instalable**, lista |
-> | La base de datos               | **53 de 53** migraciones, igual que `main`                                                       |
-> | La API                         | **Desplegada con H2**: 65 y 130, reloj latiendo                                                  |
-> | Los PDF (Cloudflare)           | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                         |
-> | **Las copias de seguridad**    | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día                |
-> | A1 · la puerta del admin       | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                      |
-> | E1, V, O, E2, L, A2, R1, R2, H | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                                   |
+> | Qué                               | Cómo está                                                                                      |
+> | --------------------------------- | ---------------------------------------------------------------------------------------------- |
+> | Pull requests                     | **Fusionadas hasta la #86** (1-oct): I · La app instalable                                     |
+> | La base de datos                  | **54 de 54** migraciones, igual que `main`                                                     |
+> | La API                            | **Desplegada con I**: 66 y 137, los avisos al móvil encendidos y el reloj latiendo cada minuto |
+> | Los PDF (Cloudflare)              | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                       |
+> | **Las copias de seguridad**       | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día              |
+> | A1 · la puerta del admin          | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                    |
+> | E1, V, O, E2, L, A2, R1, R2, H, I | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                                 |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · I · La app instalable (#86, 1-oct)
+## Lo que te toca ahora · C · El chat, contestar seis preguntas (2-oct)
+
+**Todavía no hay nada que fusionar, migrar ni desplegar del chat**: primero el plan.
+
+1. **Abre el plan.** En GitHub, en la pestaña **Pull requests**, entra en **«C · El chat:
+   el plan…»** → **Files changed** → `docs/c-el-chat.md`, o en tu ordenador, después de
+   fusionarla, en `docs/c-el-chat.md`.
+2. **Lee «Qué es C, en llano»** y **«Lo que decido yo»**: si algo no te cuadra, dímelo y se
+   cambia.
+3. **Contesta las seis preguntas del final** con un **sí** o un **no** a cada número (por
+   ejemplo: «1 sí, 2 sí, 3 no…»). Cada una lleva mi recomendación y por qué.
+
+Con tus respuestas se escribe la decisión y se construye. **No cuesta nada al mes** y no
+hace falta ninguna clave nueva.
+
+---
+
+## I · La app instalable (#86) · **hecho** (1-oct)
+
+**Fusionada, migrada (0054), con los dos secretos puestos, desplegada e instalada por ti.**
+Comprobado el 2-oct leyendo producción: 54 migraciones, la API con 66 y 137, los avisos al
+móvil encendidos, `/tareas/movil` y el latido de cada minuto.
 
 **Construida, en una sola entrega**, con tus respuestas ([decisión 0070](decisiones/0070-la-app-instalable.md)).
-Una migración (la **0054**), un despliegue y **dos secretos que haces tú**, una sola vez.
+Una migración (la **0054**), un despliegue y **dos secretos que hiciste tú**, una sola vez.
 
 **Qué trae:**
 

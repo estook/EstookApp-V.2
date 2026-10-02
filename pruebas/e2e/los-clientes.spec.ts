@@ -74,9 +74,16 @@ async function pagar(request: APIRequestContext, token: string) {
   expect(volver.status(), await volver.text()).toBe(200);
 }
 
-/** Buscar a un cliente y abrir su ficha. La tabla se pinta dos veces: se pulsa la que se ve. */
+/**
+ * Buscar a un cliente y abrir su ficha. La tabla se pinta dos veces: se pulsa la que se ve.
+ *
+ * Se espera a «1 cliente» antes de pulsar (lección 138): el buscador pregunta al servidor
+ * 300 ms después de dejar de escribir y, mientras, la lista sigue con todos. Pulsar entonces
+ * acertaba en la fila, que al llegar la respuesta subía arriba, y el toque caía en el hueco.
+ */
 async function abrirLaFicha(page: Page, nombre: string) {
   await page.getByLabel('Buscar').fill(nombre);
+  await expect(page.getByRole('heading', { name: '1 cliente', exact: true })).toBeVisible();
   await page
     .getByRole('button', { name: `Abrir ${nombre}` })
     .filter({ visible: true })

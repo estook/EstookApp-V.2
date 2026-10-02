@@ -475,3 +475,14 @@
      vez aunque fallen varias, y nada si la página se está yendo o la app canceló la
      petición (`red.ts`). WebKit no arranca en el Windows de trabajo: lo de Safari solo lo
      ve GitHub, así que se lee entero su rojo antes de suponer nada.
+138. **Una lista que se filtra en el servidor se mueve después de escribir.** El buscador
+     de Clientes del admin pregunta 300 ms después de dejar de escribir y, mientras, sigue
+     enseñando a todos. La prueba pulsaba la fila del cliente en ese momento; al llegar la
+     respuesta la fila subía arriba y el toque caía en el hueco. En Safari salió una vez
+     repetida («flaky») el 2-oct. Ahora se espera a «1 cliente» antes de pulsar
+     (`los-clientes.spec.ts`): lo mismo que hace una persona, mirar antes de tocar.
+139. **El tope de los navegadores, con margen de verdad.** Los 10 minutos de la lección 136
+     se quedaron cortos al día siguiente: el espejo de Ubuntu de GitHub iba a 200 KB/s y
+     cortó la vuelta sin probar nada. Pasa a 15; con los 21 de una vuelta buena, el trabajo
+     sigue cabiendo en sus 40. Un rojo en «Instalar navegadores» no es de la app: se
+     relanza ese trabajo y se mira si se repite.

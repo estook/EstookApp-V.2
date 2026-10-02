@@ -86,28 +86,40 @@ Si alguna no te cuadra, dímelo y se cambia.
 
 Cada una con mi recomendación y por qué. **Basta con contestar «sí» o «no»** a cada número.
 
-**1 · ¿Lo hacemos en dos entregas?**
+### 1 · ¿Lo hacemos en dos entregas?
+
 **C1 · Hablar**: canales, privados, texto, fotos, documentos, notas de voz, responder, reacciones, menciones, leído, al segundo, el móvil y el buscador. **C2 · Lo oficial**: fijados, «Confirmar que lo he leído», las tarjetas y mandar el horario al chat.
+
 **Recomiendo que sí.** El chat es el doble de grande que I. Con C1 el equipo ya puede dejar el WhatsApp del local, y lo que veáis al usarlo una semana mejora C2. Cada entrega es una migración y un despliegue.
 
-**2 · ¿Dejamos la traducción para cuando llegue Fogón (M22)?**
+### 2 · ¿Dejamos la traducción para cuando llegue Fogón (M22)?
+
 Es que quien escribe en rumano se lea en castellano debajo, y al revés.
+
 **Recomiendo que sí.** Cuesta dinero por cada mensaje traducido, y el servicio que mejor lo hace (DeepL) acaba de cambiar sus planes y precios. Con Fogón ya habrá un modelo pagado y medido que traduce, y sale más barato que pagar otro servicio solo para esto. Mientras, el chat se queda en **cero euros**.
 
-**3 · ¿Los canales «Todo el equipo», «Cocina» y «Sala» se crean solos, y el gerente puede crear más?**
+### 3 · ¿Los canales «Todo el equipo», «Cocina» y «Sala» se crean solos, y el gerente puede crear más?
+
 Por ejemplo «Barra» o «Encargados», eligiendo quién entra.
+
 **Recomiendo que sí.** El primer día ya está montado sin tocar nada, y cada local añade lo suyo. Hoy no hay rol de barra, así que «Barra» lo crea quien lo necesite.
 
-**4 · ¿En «Todo el equipo» escribe todo el mundo?**
+### 4 · ¿En «Todo el equipo» escribe todo el mundo?
+
 La otra opción es que sea un tablón donde solo escriben los encargados.
+
 **Recomiendo que sí, que escriban todos.** Es el sitio natural para «¿alguien me cambia el sábado?». Lo oficial se distingue de otra forma: **fijar** un mensaje y pedir **«Confirmar que lo he leído»** solo lo pueden hacer quien lleva el equipo (gerente, jefes, dirección).
 
-**5 · Al publicar el horario, ¿que venga marcada la casilla «Mandarlo a Todo el equipo», pidiendo «Confirmar que lo he visto»?**
+### 5 · Al publicar el horario, ¿que venga marcada la casilla «Mandarlo a Todo el equipo», pidiendo «Confirmar que lo he visto»?
+
 Que lo manden gerente y jefes ya lo dijiste en H; esto es solo si viene marcada de fábrica. Se puede desmarcar.
+
 **Recomiendo que sí.** Así nadie se olvida de mandarlo, y ves de un vistazo quién no se ha enterado del horario nuevo. El aviso personal («tu horario está publicado») y el correo con el PDF siguen como cada uno los tenga en Ajustes → Avisos; el móvil no suena dos veces por lo mismo.
 
-**6 · ¿«Leído» se ve siempre, sin que nadie pueda ocultarlo?**
+### 6 · ¿«Leído» se ve siempre, sin que nadie pueda ocultarlo?
+
 En WhatsApp se puede apagar; aquí la idea es que no.
+
 **Recomiendo que sí.** En un chat de trabajo es lo que da valor: saber que el turno de mañana se ha enterado. Y no choca con la desconexión: fuera de su turno a nadie le suena, y leer o no es cosa suya; el que manda solo ve si lo ha leído, no le obliga a contestar.
 
 ## Cómo se comprobará que C está terminado

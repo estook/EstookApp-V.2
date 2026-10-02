@@ -63,11 +63,9 @@ Si alguna no te cuadra, dímelo y se cambia.
 
 **Nada más al mes**, hoy ni con la mudanza. Todo cabe en lo que ya se paga o en lo gratuito, mirado en [supabase.com/pricing](https://supabase.com/pricing) y en [sus límites](https://supabase.com/docs/guides/realtime/limits) el 2-oct:
 
-| Qué                                | Gratis hoy                                                  | Con Supabase Pro (la mudanza) | Cuánto usa el chat                                                                                     |
-| ---------------------------------- | ----------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------ |
-| **Al segundo** (Supabase Realtime) | 200 móviles abiertos a la vez · 2 millones de toques al mes | 500 a la vez · 5 millones     | Solo cuenta la app **abierta y a la vista**. A ojo, un local de 15 personas, unos 30.000 toques al mes |
-| **Fotos, documentos y voz**        | 1 GB, compartido con logos y fotos de producto              | 100 GB                        | A ojo, con las fotos reducidas, unos 50 MB al mes por local con mucho uso                              |
-| **Los avisos al móvil**            | Gratis (claves propias, I)                                  | Gratis                        | —                                                                                                      |
+- **Al segundo** (Supabase Realtime): gratis hasta **200 móviles abiertos a la vez** y 2 millones de toques al mes; con Pro, 500 y 5 millones. Solo cuenta la app **abierta y a la vista**. A ojo, un local de 15 personas gasta unos 30.000 toques al mes.
+- **Fotos, documentos y voz**: gratis hasta **1 GB**, compartido con los logos y las fotos de producto; con Pro, 100 GB. A ojo, con las fotos reducidas, unos 50 MB al mes por local con mucho uso.
+- **Los avisos al móvil**: gratis, con las claves propias de I.
 
 **Cuándo empezaría a costar**: con más de **500 móviles abiertos a la vez** (unos 10 $ al mes por cada mil más), o con muchos locales mandando fotos; con Pro, cada GB de más son 2 céntimos. Lejos.
 

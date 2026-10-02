@@ -16,7 +16,7 @@ El panel de administración va en su propio documento:
 
 ## Resumen en una tabla
 
-**Once de las veinte están en producción**, y el QR de la 20: la 1, 2, 3 y 7 desde el 23 de
+**Diecisiete de las veinte están en producción** (2-oct), y el QR de la 20. Las primeras: la 1, 2, 3 y 7 desde el 23 de
 septiembre de 2026 (#64), la 4 y la 5 desde el 24 (#67,
 [0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)), y la 6, 8, 9, 17 y el QR de
 la 20 desde el 25 (#69, [0047](decisiones/0047-lo-que-se-ordena.md)). **V y O están
@@ -26,30 +26,30 @@ producto» junto a «Añadir producto» ([0049](decisiones/0049-almacen-inventar
 Y **de la 20, la carta que ya tiene el local se puede subir** desde el repaso del 25-sep,
 y la enseña su QR (0049). **La 10 está en producción** desde el 26-sep (#73), **la 13** desde
 el 27-sep con R1 (#76, [0052](decisiones/0052-la-campana-y-los-avisos.md)), y **la 12, la 16
-y el aviso de la 19** van en R2 ([0053](decisiones/0053-el-pedido-los-informes-y-google.md)).
+y el aviso de la 19** desde el 27-sep con R2 (#77, [0053](decisiones/0053-el-pedido-los-informes-y-google.md)); **la 18** desde el 1-oct con H2 (#85), y **la 14 y la 15** desde el 1-oct con I (#86, [0070](decisiones/0070-la-app-instalable.md)).
 
-| #   | Mejora                                   | Entrega                  | Necesita de fuera                        | Cómo está                           |
-| --- | ---------------------------------------- | ------------------------ | ---------------------------------------- | ----------------------------------- |
-| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                     | **En producción** (#64)             |
-| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                     | **En producción** (#64)             |
-| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                     | **En producción** (#64)             |
-| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)          | **En producción** (#67)             |
-| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo  | **En producción** (#67)             |
-| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                     | **En producción** (#69)             |
-| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                     | **En producción** (#64)             |
-| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                     | **En producción** (#69)             |
-| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                     | **En producción** (#69)             |
-| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                     | **En producción** (#69)             |
-| 12  | Pedido sugerido                          | **R2**                   | Nada (el reloj es de Supabase, gratis)   | **Hecha, en su pull request**       |
-| 13  | Alertas de subida de precio              | **R1 · La campana**      | Nada                                     | **En producción** (#76)             |
-| 16  | Informes diario, semanal y mensual       | **R2**                   | Nada: Resend ya está                     | **Hecha, en su pull request**       |
-| 19  | Reseñas: aviso de bajada y respuesta     | **R2** y después         | Places ya; **Business Profile** y **IA** | **El aviso, en R2**; responder, M23 |
-| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                     | **Hecha** en H2 (1-oct, 0069)       |
-| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)  | **Hecha, en la #86** (1-oct, 0070)  |
-| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                     | **Hecha, en la #86** (1-oct, 0070)  |
-| 10  | Escanear el código de barras             | **L**, adelantada        | Nada                                     | **En producción** (#73)             |
-| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                       | Espera a M22                        |
-| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún  | **QR (#69) y carta subida (0049)**  |
+| #   | Mejora                                   | Entrega                  | Necesita de fuera                        | Cómo está                                         |
+| --- | ---------------------------------------- | ------------------------ | ---------------------------------------- | ------------------------------------------------- |
+| 1   | Modo cocina: grande, contraste, guantes  | **V · Lo que se ve**     | Nada                                     | **En producción** (#64)                           |
+| 2   | Flechas y gráficas en todas las apps     | **V**                    | Nada                                     | **En producción** (#64)                           |
+| 3   | Cada app abre con su Resumen             | **V**                    | Nada                                     | **En producción** (#64)                           |
+| 4   | Estados vacíos con dibujo y primer paso  | **V**                    | Nada (los dibujos, los hacemos)          | **En producción** (#67)                           |
+| 5   | Tema oscuro repasado y fotos de producto | **V**                    | Nada: las fotos van al almacén del logo  | **En producción** (#67)                           |
+| 6   | Barra de acciones abajo en el móvil      | **O · Lo que se ordena** | Nada                                     | **En producción** (#69)                           |
+| 7   | Ajustes en secciones y con buscador      | **V** (era de O)         | Nada                                     | **En producción** (#64)                           |
+| 8   | Un «Hoy» único, por urgencia             | **O**                    | Nada                                     | **En producción** (#69)                           |
+| 9   | Paneles de fábrica por rol               | **O**                    | Nada                                     | **En producción** (#69)                           |
+| 17  | Objetivos con semáforo en el Panel       | **O**                    | Nada                                     | **En producción** (#69)                           |
+| 12  | Pedido sugerido                          | **R2**                   | Nada (el reloj es de Supabase, gratis)   | **En producción** (#77)                           |
+| 13  | Alertas de subida de precio              | **R1 · La campana**      | Nada                                     | **En producción** (#76)                           |
+| 16  | Informes diario, semanal y mensual       | **R2**                   | Nada: Resend ya está                     | **En producción** (#77)                           |
+| 19  | Reseñas: aviso de bajada y respuesta     | **R2** y después         | Places ya; **Business Profile** y **IA** | **El aviso, en producción** (#77); responder, M23 |
+| 18  | Coste de personal en vivo y horas extra  | **H · Horarios**         | Nada                                     | **En producción** (#85)                           |
+| 14  | Notificaciones push                      | **I · Instalable**       | Nada (las claves de push las generamos)  | **En producción** (#86)                           |
+| 15  | Sin conexión: fichar y mermas            | **I**                    | Nada                                     | **En producción** (#86)                           |
+| 10  | Escanear el código de barras             | **L**, adelantada        | Nada                                     | **En producción** (#73)                           |
+| 11  | Leer albarán y Z con una foto            | **M22**                  | **La clave de IA**                       | Espera a M22                                      |
+| 20  | Carta digital con QR                     | **M12**, con el QR ya    | **M9 y M10**: los platos no existen aún  | **QR (#69) y carta subida (0049)**                |
 
 Tres de las veinte **no pueden quedar al 100 % antes de M8**, y conviene decirlo ya:
 
@@ -523,6 +523,16 @@ decide el servidor y un móvil puede tener la hora mal. La solución:
 
 Mientras tanto, la app dice **cuántas cosas tiene pendientes de mandar**. Guardar sin
 decir que no se ha mandado es peor que no guardar (regla 34).
+
+---
+
+## C · El chat
+
+**El plan** (2-oct): en [`c-el-chat.md`](c-el-chat.md). Qué es, lo ya decidido, lo que
+decido yo, lo que cuesta (nada al mes) y **seis preguntas de sí o no** para Richi. No es
+una de las veinte mejoras: entró el 30-sep, al adelantar el chat de M23
+([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)). Trae también lo
+que I dejó fuera, **que lo que cambia se vea al segundo**.
 
 ---
 

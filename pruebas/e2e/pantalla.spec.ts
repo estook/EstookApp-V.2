@@ -385,7 +385,17 @@ test.describe('las tarjetas del Panel', () => {
  */
 async function abrirFogon(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Qué quieres hacer' }).click();
-  await page.getByRole('button', { name: /Pregúntale a Fogón/ }).click();
+  // **Con la hoja quieta** (lección 142). El 3-oct el toque llegó mientras la hoja
+  // del «+» aún subía, se perdió, y Fogón no se abrió: la prueba buscaba su frase
+  // en la ventana cerrada y la daba por «oculta». Una persona toca con la hoja ya
+  // arriba; la prueba, en milésimas.
+  const menu = page.getByRole('dialog', { name: 'Qué quieres hacer' });
+  await expect(menu).toBeVisible();
+  await menu.evaluate((hoja) =>
+    Promise.all(hoja.getAnimations({ subtree: true }).map((a) => a.finished)),
+  );
+  await menu.getByRole('button', { name: /Pregúntale a Fogón/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Fogón' })).toBeVisible();
 }
 test.describe('Fogón', () => {
   test.describe('en el móvil', () => {
@@ -429,8 +439,9 @@ test.describe('Fogón', () => {
       await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
       await abrirFogon(page);
-      await expect(page.getByText('Fogón sabe que estás en')).toContainText('Almacén');
-      await expect(page.getByText(/Dictarle una merma/)).toBeVisible();
+      const fogon = page.getByRole('dialog', { name: 'Fogón' });
+      await expect(fogon.getByText('Fogón sabe que estás en')).toContainText('Almacén');
+      await expect(fogon.getByText(/Dictarle una merma/)).toBeVisible();
     });
 
     test('dice dónde estás en una línea, sin cifras que nadie pidió', async ({ page }) => {

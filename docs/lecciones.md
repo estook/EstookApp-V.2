@@ -498,3 +498,8 @@
      corte), desde el 3, y los dos cayeron en el 29. Rojo en `main` sin un fallo de la app.
      Los días van ahora de dos en dos (1, 3 y 5): si la jornada cambia a mitad de vuelta,
      cada uno se mueve uno y no alcanza al siguiente.
+142. **Una hoja que sube no recibe el toque hasta que para.** La prueba de Fogón pulsaba
+     «Pregúntale a Fogón» en cuanto el menú del «+» aparecía; una vez en GitHub el toque
+     llegó con la hoja aún subiendo, se perdió, y la frase de Fogón estaba en su ventana
+     cerrada: «oculta». Ahora se espera a que acabe la animación y a que la ventana de
+     Fogón esté a la vista antes de mirar dentro (`pantalla.spec.ts`).

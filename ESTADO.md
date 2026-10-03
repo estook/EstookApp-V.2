@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 3 de octubre de 2026 · **Antes de M8. El repaso del 3-oct (el atún, anular y el logo), en su pull request. C · El chat, contestado: lo siguiente es C1**
+Última actualización: 3 de octubre de 2026 · **Antes de M8. El repaso del 3-oct (el atún, anular y el logo), fusionado (#88): falta migrar y desplegar. C · El chat, contestado: lo siguiente es C1**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento**, y **no pasa de 150 líneas**
@@ -18,23 +18,23 @@
 > | Lo legal, y lo ya investigado     | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md) |
 > | Lo que cuesta cada local          | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                         |
 > | Lo que hizo cada entrega          | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                         |
-> | Lo aprendido fallando (140)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
+> | Lo aprendido fallando (141)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
 > | Los pasos de Richi                | [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)                                     |
 
 ---
 
 ## 1 · Dónde estamos · producción leída el 2-oct, en solo lectura
 
-|               |                                                                                                                                                                                                                                                            |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Terminado** | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2, **H · Horarios** (H1 y H2) e **I · La app instalable**, con sus repasos                                                                                     |
-| **En curso**  | **El repaso del 3-oct** ([0072](docs/decisiones/0072-el-repaso-del-3-oct.md)), con la migración **0055**: sin fusionar, migrar ni desplegar. Después, **C1 · Hablar**: Richi dijo sí a las seis de C ([0071](docs/decisiones/0071-las-respuestas-de-c.md)) |
-| **`main`**    | Todo fusionado hasta la **#87** (2-oct): el plan de C. I, migrada, desplegada e instalada por Richi                                                                                                                                                        |
-| **Base**      | Supabase, **54 de 54** migraciones. 84 tablas, todas con seguridad por filas. Con el repaso, 55                                                                                                                                                            |
-| **API**       | Desplegada con I: **66 consultas y 137 comandos**, comprobada el 2-oct. Con el repaso serán **66 y 138**                                                                                                                                                   |
-| **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                          |
-| **Pruebas**   | **1.580** unitarias y de base con el repaso, en verde; las de I y los avisos, en los veintiséis momentos de `pnpm prueba:semana`; y la batería de pantalla                                                                                                 |
-| **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                             |
+|               |                                                                                                                                                                                                                                                                                                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminado** | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2, **H · Horarios** (H1 y H2) e **I · La app instalable**, con sus repasos                                                                                                                                                                                        |
+| **En curso**  | **El repaso del 3-oct** ([0072](docs/decisiones/0072-el-repaso-del-3-oct.md)), con la migración **0055**: fusionado (#88) el 3-oct; **falta migrar y desplegar** (leído en producción: 54 migraciones, y la API no conoce `anular_movimiento`). Después, **C1 · Hablar**: Richi dijo sí a las seis de C ([0071](docs/decisiones/0071-las-respuestas-de-c.md)) |
+| **`main`**    | Todo fusionado hasta la **#88** (3-oct): el repaso del 3-oct. I, migrada, desplegada e instalada por Richi                                                                                                                                                                                                                                                    |
+| **Base**      | Supabase, **54 de 54** migraciones. 84 tablas, todas con seguridad por filas. Con el repaso, 55                                                                                                                                                                                                                                                               |
+| **API**       | Desplegada con I: **66 consultas y 137 comandos**, comprobada el 2-oct. Con el repaso serán **66 y 138**                                                                                                                                                                                                                                                      |
+| **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                                                                                                                             |
+| **Pruebas**   | **1.580** unitarias y de base con el repaso, en verde; las de I y los avisos, en los veintiséis momentos de `pnpm prueba:semana`; y la batería de pantalla                                                                                                                                                                                                    |
+| **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                                                                                                                                |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md), y el chat adelantado en la [0067](docs/decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md))
 
@@ -73,7 +73,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Ahora, en este orden** (paso a paso en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **El repaso del 3-oct**: fusionar, `.\estook.cmd bd:migrar` (la 0055), desplegar la API y `bd:comprobar-api` (66 y 138). Después, **anular la venta del atún** en IKATZ y mirar los otros tres en negativo.
+1. **El repaso del 3-oct** (ya fusionado): `.\estook.cmd bd:migrar` (la 0055), desplegar la API y `bd:comprobar-api` (66 y 138). Después, **anular la venta del atún** en IKATZ y mirar los otros tres en negativo.
 2. **Si no lo has hecho ya, montar y publicar una semana de verdad** en IKATZ, y mirar «Mi turno» en el móvil de alguien del equipo.
 
 **Con fecha o con condición:**

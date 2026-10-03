@@ -492,3 +492,9 @@
      cuatro semanas. Ahora sacar más de lo que hay se confirma, y anular apunta la línea
      contraria: las cuentas leen `movimiento_que_cuenta`, que deja fuera las dos
      (`anular-un-movimiento.prueba.ts`, 0072). Una suma nueva sobre el libro lee esa vista.
+141. **Una vuelta puede cruzar el cambio de día.** La prueba de cerrar la caja usaba un
+     día por navegador, seguidos (3, 4 y 5 atrás). La vuelta del 3-oct empezó a las 02:51
+     de Madrid: escritorio contó desde el día 2 y el móvil, pasadas las 03:00 (la hora de
+     corte), desde el 3, y los dos cayeron en el 29. Rojo en `main` sin un fallo de la app.
+     Los días van ahora de dos en dos (1, 3 y 5): si la jornada cambia a mitad de vuelta,
+     cada uno se mueve uno y no alcanza al siguiente.

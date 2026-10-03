@@ -343,6 +343,9 @@ export function Esqueleto() {
           alCambiarDeLocal={(id) => {
             void cambiarDeLocal(id);
           }}
+          alIrAlPanel={() => {
+            navegar('/');
+          }}
           persona={yo?.nombre ?? ''}
           alBuscar={() => {
             setBuscadorAbierto(true);

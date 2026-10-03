@@ -285,6 +285,28 @@ test('el + apunta lo que llega con su precio puesto, y el − pregunta por qué 
   await expect(sale).toHaveCount(0);
   await expect(loQueSeVe(page, '10 kg')).toBeVisible({ timeout: 15_000 });
 
+  // ── Más de lo que hay, solo confirmándolo (3-oct) ─────────────────────────
+  //
+  // Santi sacó 2.000 kg de atún donde había 6,6 y nada le preguntó. Ahora dice
+  // cuánto hay, en cuánto quedaría, y no deja apuntar sin confirmarlo.
+  await page.locator(`[aria-label="Ha salido ${nombre}"] >> visible=true`).click();
+  await sale.getByLabel(/^Cuánto/).fill('2000');
+  await expect(sale.getByText(/^Sale más de lo que hay/)).toBeVisible();
+  await expect(sale.getByRole('button', { name: 'Apuntar la salida' })).toBeDisabled();
+  await sale.getByText('Sí, ha salido eso').click();
+  await expect(sale.getByRole('switch', { name: 'Sí, ha salido eso' })).toBeChecked();
+  await expect(sale.getByRole('button', { name: 'Apuntar la salida' })).toBeEnabled();
+  // Cambiar el número pide confirmarlo otra vez.
+  await sale.getByLabel(/^Cuánto/).fill('3000');
+  await expect(sale.getByRole('button', { name: 'Apuntar la salida' })).toBeDisabled();
+  // Y una merma no se confirma: nunca se tira más de lo que hay (23-sep).
+  await sale.getByRole('radio', { name: 'Ha caducado' }).click();
+  await expect(sale.getByText(/^No se puede tirar más de lo que hay/)).toBeVisible();
+  await expect(sale.getByRole('switch', { name: 'Sí, ha salido eso' })).toHaveCount(0);
+  await expect(sale.getByRole('button', { name: 'Apuntar la salida' })).toBeDisabled();
+  await sale.getByRole('button', { name: 'Dejarlo' }).click();
+  await expect(sale).toHaveCount(0);
+
   const rosa = await tokenDe(request, ROSA);
   const mermas = await consultar<{ mermas: { producto: string; motivo: string }[] }>(
     request,

@@ -4,12 +4,14 @@ import {
   comoHaCambiado,
   costePorUnidadDeUso,
   centimos,
+  diasEntre,
   jornadaDe,
   horaDeCorte,
   milesimas,
   siguienteEstado,
   type CambioDePrecio,
   type EstadoDelStock,
+  type FechaOperativa,
   type TipoDeMovimiento,
 } from '@estook/dominio';
 import { publicar } from '../eventos/bandeja.ts';
@@ -263,6 +265,46 @@ export async function apuntar(
   if (movimientoId === undefined) throw new FalloDeAplicacion('sin_permiso');
 
   return { movimientoId, antes, despues, fechaOperativa: fecha };
+}
+
+// ── Anular lo mal tecleado (3-oct, 0055) ────────────────────────────────────
+
+/** Lo que se puede anular: lo apuntado a mano, y no lo que ya dice «lo que hay». */
+export const SE_PUEDEN_ANULAR = ['entrada', 'salida', 'venta', 'merma'] as const;
+
+export type TipoQueSeAnula = (typeof SE_PUEDEN_ANULAR)[number];
+
+/** Hasta cuántos días atrás. Más allá, lo de ese mes ya se ha leído y contado. */
+export const DIAS_PARA_ANULAR = 31;
+
+/**
+ * Por qué no se puede anular una línea del libro, o nulo si se puede. La usan el
+ * comando y la consulta del libro, que enseña «Anular» solo donde sirve.
+ */
+export function porQueNoSeAnula(
+  m: {
+    readonly tipo: string;
+    readonly origen: string | null;
+    readonly loteId: string | null;
+    readonly fechaOperativa: string;
+    readonly esAnulacion: boolean;
+    readonly yaAnulado: boolean;
+  },
+  hoy: string,
+): string | null {
+  if (m.esAnulacion) return 'Esa línea ya es una anulación.';
+  if (m.yaAnulado) return 'Ya está anulado.';
+  if (!(SE_PUEDEN_ANULAR as readonly string[]).includes(m.tipo)) {
+    return 'Lo que hay se corrige con «¿No cuadra?», no anulando un ajuste o un recuento.';
+  }
+  if (m.origen !== 'a_mano' && m.origen !== 'alta') {
+    return 'Lo que llegó con un albarán o una factura se corrige en Compras.';
+  }
+  if (m.loteId !== null) return 'Lo que entró con lote se retira desde el lote.';
+  if (diasEntre(m.fechaOperativa as FechaOperativa, hoy as FechaOperativa) > DIAS_PARA_ANULAR) {
+    return `Solo se anula lo de los últimos ${String(DIAS_PARA_ANULAR)} días.`;
+  }
+  return null;
 }
 
 // ── El coste por unidad de uso, en un solo sitio ─────────────────────────────

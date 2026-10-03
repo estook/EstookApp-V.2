@@ -26,6 +26,7 @@ import {
   type SugerenciaDeCompra,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { porQueNoSeAnula } from '../almacen.ts';
 import { SEGUNDOS_DEL_ENLACE_DE_LA_FOTO } from '../../infraestructura/almacen.ts';
 
 /**
@@ -398,7 +399,7 @@ async function leerProductos(
            pr.coste_milesimas::text as coste_vigente,
            (
              select coalesce(sum(abs(m.cantidad)), 0)::text
-               from estook.movimiento_de_stock m
+               from estook.movimiento_que_cuenta m
               where m.producto_id = p.id
                 and m.cantidad < 0
                 and m.fecha_operativa >= ${desde}::date
@@ -423,7 +424,7 @@ async function leerProductos(
                left join (
                  select extract(isodow from m.fecha_operativa)::int as dia,
                         sum(abs(m.cantidad)) as cuanto
-                   from estook.movimiento_de_stock m
+                   from estook.movimiento_que_cuenta m
                   where m.producto_id = p.id
                     and m.cantidad < 0
                     and m.fecha_operativa >= ${desde}::date
@@ -525,6 +526,10 @@ function loQueValeLoQueHay(
   costeMedio: number | null,
   costeVigente: number | null,
 ): { readonly valor: number | null; readonly estimado: boolean } {
+  // **En negativo no hay nada, y nada no vale dinero negativo** (3-oct). El atún de
+  // IKATZ, a −1.993 kg por una salida mal tecleada, «valía» −51.800 €. El total de
+  // la cámara ya dejaba fuera lo negativo; la ficha y la lista, no.
+  if (cantidad < 0) return { valor: 0, estimado: false };
   const sinCoste = costeMedio === null || costeMedio === 0;
   const coste = sinCoste && cantidad > 0 && costeVigente !== null ? costeVigente : costeMedio;
   if (coste === null) return { valor: null, estimado: false };
@@ -1039,6 +1044,43 @@ export interface MovimientoEnFicha {
   readonly quien: string | null;
   readonly lote: string | null;
   readonly costeMilesimas?: number | null;
+  /** Lo de anular (3-oct, 0055). */
+  readonly anulado: boolean;
+  readonly esAnulacion: boolean;
+  readonly sePuedeAnular: boolean;
+}
+
+/**
+ * Si una línea del libro está anulada, si es la que anula y si se puede anular.
+ * La regla es la del comando (`porQueNoSeAnula`): el botón sale donde sirve.
+ */
+function loDeAnular(
+  f: {
+    readonly tipo: string;
+    readonly origen: string | null;
+    readonly lote_id: string | null;
+    readonly fecha_operativa: string;
+    readonly anula: string | null;
+    readonly anulado: boolean;
+  },
+  hoy: string,
+): { readonly anulado: boolean; readonly esAnulacion: boolean; readonly sePuedeAnular: boolean } {
+  return {
+    anulado: f.anulado,
+    esAnulacion: f.anula !== null,
+    sePuedeAnular:
+      porQueNoSeAnula(
+        {
+          tipo: f.tipo,
+          origen: f.origen,
+          loteId: f.lote_id,
+          fechaOperativa: f.fecha_operativa,
+          esAnulacion: f.anula !== null,
+          yaAnulado: f.anulado,
+        },
+        hoy,
+      ) === null,
+  };
 }
 
 export interface LoteEnFicha {
@@ -1172,6 +1214,10 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
         ocurrido_en: string;
         quien: string | null;
         lote: string | null;
+        origen: string | null;
+        lote_id: string | null;
+        anula: string | null;
+        anulado: boolean;
       }[]
     >`
       select m.id::text as id, m.tipo::text as tipo,
@@ -1182,7 +1228,13 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
              to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha_operativa,
              to_char(m.ocurrido_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ocurrido_en,
              pe.nombre as quien,
-             l.codigo as lote
+             l.codigo as lote,
+             m.origen, m.lote_id::text as lote_id,
+             m.referencia ->> 'anula' as anula,
+             exists (
+               select 1 from estook.movimiento_de_stock a
+                where a.referencia ? 'anula' and a.referencia ->> 'anula' = m.id::text
+             ) as anulado
         from estook.movimiento_de_stock m
         left join estook.persona pe on pe.id = m.persona_id
         left join estook.lote l on l.id = m.lote_id
@@ -1257,6 +1309,7 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
           quien: m.quien,
           lote: m.lote,
           costeMilesimas: m.coste_milesimas === null ? null : Number(m.coste_milesimas),
+          ...loDeAnular(m, hoy),
         };
         // Igual que arriba: el campo se quita, no se vacía.
         return conPrecios ? linea : sinLosCamposDeDinero(linea, ['costeMilesimas']);
@@ -1660,6 +1713,10 @@ export interface MovimientoDelLibro {
   readonly esEjemplo: boolean;
   /** Lo que costo, si quien mira puede ver dinero. Si no, no viaja. */
   readonly costeMilesimas?: number | null;
+  /** Lo de anular (3-oct, 0055). */
+  readonly anulado: boolean;
+  readonly esAnulacion: boolean;
+  readonly sePuedeAnular: boolean;
 }
 
 export const entradaMovimientos = z
@@ -1754,6 +1811,10 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
         quien: string | null;
         lote: string | null;
         es_ejemplo: boolean;
+        origen: string | null;
+        lote_id: string | null;
+        anula: string | null;
+        anulado: boolean;
       }[]
     >`
       select m.id::text as id, m.tipo::text as tipo,
@@ -1767,7 +1828,13 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
              to_char(m.ocurrido_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ocurrido_en,
              pe.nombre as quien,
              l.codigo as lote,
-             p.es_ejemplo as es_ejemplo
+             p.es_ejemplo as es_ejemplo,
+             m.origen, m.lote_id::text as lote_id,
+             m.referencia ->> 'anula' as anula,
+             exists (
+               select 1 from estook.movimiento_de_stock a
+                where a.referencia ? 'anula' and a.referencia ->> 'anula' = m.id::text
+             ) as anulado
         from estook.movimiento_de_stock m
         join estook.producto p on p.id = m.producto_id
         left join estook.persona pe on pe.id = m.persona_id
@@ -1809,6 +1876,7 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
           quien: f.quien,
           lote: f.lote,
           esEjemplo: f.es_ejemplo,
+          ...loDeAnular(f, hoy),
         };
         // El coste **no se esconde: no se manda**. Es la regla que ordena este
         // fichero entero, y un cocinero tiene esta pantalla igual que las demas.

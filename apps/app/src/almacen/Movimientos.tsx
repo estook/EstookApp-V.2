@@ -17,6 +17,7 @@ import {
   NadaConEso,
   Selector,
   Tarjeta,
+  clases,
 } from '@estook/ui';
 import { IconoBuscar } from '@estook/iconos';
 import { usarLectura } from '../ganchos/usarLectura.ts';
@@ -296,10 +297,19 @@ function Linea({
         <span className="text-cuerpo font-medium">{movimiento.producto}</span>
         {movimiento.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
         <span className="text-secundario text-texto-suave">{comoSeLlama}</span>
+        {/* Lo anulado sigue aquí, tachado, y deja de contar (3-oct, 0055). Se anula
+            desde la ficha del producto, que es lo que abre esta línea. */}
+        {movimiento.anulado === true && <Etiqueta>Anulado</Etiqueta>}
+        {movimiento.esAnulacion === true && <Etiqueta>Anula</Etiqueta>}
       </span>
 
       <span className="flex flex-wrap items-baseline gap-e3 text-secundario">
-        <span className={suma ? 'text-bien' : 'text-mal'}>
+        <span
+          className={clases(
+            suma ? 'text-bien' : 'text-mal',
+            movimiento.anulado === true && 'line-through',
+          )}
+        >
           {suma ? '+' : '−'}
           {conUnidadDeUso(Math.abs(movimiento.cantidad), movimiento.unidadDeUso)}
         </span>

@@ -6,7 +6,7 @@
 >
 > | Qué                               | Cómo está                                                                                      |
 > | --------------------------------- | ---------------------------------------------------------------------------------------------- |
-> | Pull requests                     | **Fusionadas hasta la #86** (1-oct): I · La app instalable                                     |
+> | Pull requests                     | **Fusionadas hasta la #87** (2-oct): el plan de C. Abierta: **el repaso del 3-oct**            |
 > | La base de datos                  | **54 de 54** migraciones, igual que `main`                                                     |
 > | La API                            | **Desplegada con I**: 66 y 137, los avisos al móvil encendidos y el reloj latiendo cada minuto |
 > | Los PDF (Cloudflare)              | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                       |
@@ -18,20 +18,96 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ---
 
-## Lo que te toca ahora · C · El chat, contestar seis preguntas (2-oct)
+## Lo que te toca ahora · el repaso del 3-oct (el atún, anular y el logo)
 
-**Todavía no hay nada que fusionar, migrar ni desplegar del chat**: primero el plan.
+Los tres fallos que viste ([decisión 0072](decisiones/0072-el-repaso-del-3-oct.md)). Una
+migración (la **0055**) y un despliegue.
 
-1. **Abre el plan.** En GitHub, en la pestaña **Pull requests**, entra en **«C · El chat:
-   el plan…»** → **Files changed** → `docs/c-el-chat.md`, o en tu ordenador, después de
-   fusionarla, en `docs/c-el-chat.md`.
-2. **Lee «Qué es C, en llano»** y **«Lo que decido yo»**: si algo no te cuadra, dímelo y se
-   cambia.
-3. **Contesta las seis preguntas del final** con un **sí** o un **no** a cada número (por
-   ejemplo: «1 sí, 2 sí, 3 no…»). Cada una lleva mi recomendación y por qué.
+**Qué trae:**
 
-Con tus respuestas se escribe la decisión y se construye. **No cuesta nada al mes** y no
-hace falta ninguna clave nueva.
+- **Sacar más de lo que hay se confirma.** En «Ha salido género», si sale más de lo que
+  consta, dice cuánto hay y en cuánto quedaría, y no deja apuntar sin **«Sí, ha salido
+  eso»**. Es lo que le pasó a Santi: eligió «por Kilo» y escribió 2000.
+- **Anular un movimiento mal tecleado**, desde la ficha del producto → **Últimos
+  movimientos** → **«Anular»**, con el porqué. No borra: queda tachado, y deja de contar en
+  lo vendido, en lo que se gasta y en el pedido sugerido.
+- **En negativo vale 0 €**, no −51.800 €.
+- **Lo agotado ya no dice «se agota hoy a las 14:30».**
+- **En el móvil, el logo y el nombre del local llevan al Panel.**
+
+### 1 · Fusionar
+
+En **github.com** → **Pull requests** → **«El repaso del 3-oct…»** → con las **tres
+comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
+
+**Si alguna sale en rojo, para y avísame.**
+
+### 2 · Aplicar la migración
+
+**Qué hace:** deja anular un movimiento y que lo anulado no cuente. **No cambia nada de lo
+que hay.** En PowerShell, en la carpeta del proyecto:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0055_anular_un_movimiento.sql ... hecho
+  1 migracion(es) aplicadas · 55 en total
+```
+
+**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+### 3 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe
+**`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 66» consultas y «los 138» comandos.
+
+### 4 · Arreglar el atún, en la app
+
+Recarga la app (**Ctrl + F5** en el ordenador; en el móvil, ciérrala y ábrela).
+
+1. **Almacén → Productos → Atún en aceite.** Abajo, en **Últimos movimientos**, la venta
+   del **30-sep** de **−2.000.000 g** lleva **«Anular»**.
+2. Púlsalo, escribe el porqué («era una prueba de Santi») y **Anular**.
+3. **Qué debe salir:** «Anulado. Quedan 6602 g…», la venta **tachada** con
+   «Anulado» y una línea nueva con «Anula».
+4. **Los otros tres en negativo**: **Chuletón de vaca gallega** (−79), **leche semi
+   desnatada** (−12) y **Fanta Naranja** (−144). Si fueron pruebas, anúlalas igual; si no,
+   pulsa la cifra de lo que hay → **«¿No cuadra?»** y pon lo que hay de verdad.
+
+### 5 · Mirar lo demás
+
+- **El logo**: en el móvil, entra en cualquier app y toca el logo o el nombre del local,
+  arriba a la izquierda: vuelve al **Panel**.
+- **Agotado**: un producto a 0 en **Bajo mínimo** dice «No queda nada», sin «se agota hoy».
+- **Sacar de más**: en un producto cualquiera, **−** y escribe más de lo que hay: sale el
+  aviso en naranja y el botón no se activa hasta **«Sí, ha salido eso»**. Pulsa
+  **Dejarlo**.
+
+---
+
+## C · El chat, el plan (#87) · **contestado** (3-oct)
+
+**Sí a las seis** ([decisión 0071](decisiones/0071-las-respuestas-de-c.md)). En la 5, la
+casilla de mandar el horario al chat viene marcada **y se puede desmarcar**. Lo siguiente es
+**C1 · Hablar**, después de este repaso.
 
 ---
 

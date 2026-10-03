@@ -108,7 +108,7 @@ export const mermaDeHoy = consulta<Record<string, never>, SalidaMermaDeHoy>({
       select to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha,
              count(*)::int as cuantas,
              sum(round(abs(m.cantidad) * m.coste_medio_despues / 1000))::text as valor
-        from estook.movimiento_de_stock m
+        from estook.movimiento_que_cuenta m
         join estook.producto p on p.id = m.producto_id
        where m.local_id = ${localId}
          and m.tipo = 'merma'
@@ -122,7 +122,7 @@ export const mermaDeHoy = consulta<Record<string, never>, SalidaMermaDeHoy>({
     const peor = await contexto.sql<{ producto: string; valor: string | null }[]>`
       select p.nombre as producto,
              round(abs(m.cantidad) * m.coste_medio_despues / 1000)::text as valor
-        from estook.movimiento_de_stock m
+        from estook.movimiento_que_cuenta m
         join estook.producto p on p.id = m.producto_id
        where m.local_id = ${localId}
          and m.tipo = 'merma'
@@ -302,7 +302,7 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
              pe.nombre as quien,
              c.nombre as categoria,
              round(abs(m.cantidad) * m.coste_medio_despues / 1000)::text as valor
-        from estook.movimiento_de_stock m
+        from estook.movimiento_que_cuenta m
         join estook.producto p on p.id = m.producto_id
         left join estook.categoria_de_producto c on c.id = p.categoria_id
         left join estook.persona pe on pe.id = m.persona_id
@@ -337,7 +337,7 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
              m.motivo_de_merma::text as motivo,
              count(*)::int as cuantas,
              sum(round(abs(m.cantidad) * m.coste_medio_despues / 1000))::text as valor
-        from estook.movimiento_de_stock m
+        from estook.movimiento_que_cuenta m
         join estook.producto p on p.id = m.producto_id
        where m.local_id = ${localId}
          and m.tipo = 'merma'
@@ -353,7 +353,7 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
       select p.id::text as producto_id, p.nombre as producto,
              count(*)::int as cuantas,
              sum(round(abs(m.cantidad) * m.coste_medio_despues / 1000))::text as valor
-        from estook.movimiento_de_stock m
+        from estook.movimiento_que_cuenta m
         join estook.producto p on p.id = m.producto_id
        where m.local_id = ${localId}
          and m.tipo = 'merma'

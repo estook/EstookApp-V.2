@@ -191,7 +191,7 @@ export async function losDias(
         select to_char(c.fecha_operativa, 'YYYY-MM-DD') as fecha,
                coalesce((
                  select sum(round(abs(m.cantidad) * m.coste_medio_despues / 1000))
-                   from estook.movimiento_de_stock m
+                   from estook.movimiento_que_cuenta m
                    join estook.producto pr on pr.id = m.producto_id
                   where m.local_id = c.local_id
                     and m.fecha_operativa = c.fecha_operativa
@@ -210,7 +210,7 @@ export async function losDias(
         select to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha,
                sum(round(abs(m.cantidad) * m.coste_medio_despues / 1000))::text as arriba,
                null::text as abajo
-          from estook.movimiento_de_stock m
+          from estook.movimiento_que_cuenta m
           join estook.producto p on p.id = m.producto_id
          where m.local_id = ${localId}
            and m.tipo = 'merma'
@@ -228,7 +228,7 @@ export async function losDias(
         select to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha,
                sum(round(m.cantidad * coalesce(nullif(m.coste_milesimas, 0), m.coste_medio_despues) / 1000))::text as arriba,
                null::text as abajo
-          from estook.movimiento_de_stock m
+          from estook.movimiento_que_cuenta m
           join estook.producto p on p.id = m.producto_id
          where m.local_id = ${localId}
            and m.tipo = 'entrada'

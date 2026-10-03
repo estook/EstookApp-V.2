@@ -259,6 +259,15 @@ describe('la prevision de agotamiento', () => {
     expect(cuando?.toISOString()).toBe('2026-09-04T18:24:00.000Z');
   });
 
+  it('lo que ya no queda no «se agota»: está agotado (3-oct)', () => {
+    // Con cero o en negativo devolvía «ahora», y la pantalla decía «se agota hoy a
+    // las 14:30» de algo que ya se había acabado.
+    const ahora = new Date('2026-09-03T10:00:00Z');
+    expect(previsionDeAgotamiento(0, 3.1, ahora)).toBeNull();
+    expect(previsionDeAgotamiento(-12, 3.1, ahora)).toBeNull();
+    expect(previsionDeAgotamiento(0.5, 3.1, ahora)).not.toBeNull();
+  });
+
   it('con quince dias de cobertura acierta el dia quince, no el catorce', () => {
     const consumo = consumoMedioDiario(salidasEstables(28, 2), masDias(hoy, -28), hoy, 28);
     expect(consumo.porDia).toBe(2);

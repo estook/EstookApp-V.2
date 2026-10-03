@@ -6,7 +6,7 @@
 >
 > | Qué                               | Cómo está                                                                                      |
 > | --------------------------------- | ---------------------------------------------------------------------------------------------- |
-> | Pull requests                     | **Fusionadas hasta la #87** (2-oct): el plan de C. Abierta: **el repaso del 3-oct**            |
+> | Pull requests                     | **Fusionadas hasta la #88** (3-oct): el repaso del 3-oct, **sin migrar ni desplegar**          |
 > | La base de datos                  | **54 de 54** migraciones, igual que `main`                                                     |
 > | La API                            | **Desplegada con I**: 66 y 137, los avisos al móvil encendidos y el reloj latiendo cada minuto |
 > | Los PDF (Cloudflare)              | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                       |
@@ -35,12 +35,12 @@ migración (la **0055**) y un despliegue.
 - **Lo agotado ya no dice «se agota hoy a las 14:30».**
 - **En el móvil, el logo y el nombre del local llevan al Panel.**
 
-### 1 · Fusionar
+### 1 · Fusionar · **hecho** (3-oct, #88)
 
-En **github.com** → **Pull requests** → **«El repaso del 3-oct…»** → con las **tres
-comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
-
-**Si alguna sale en rojo, para y avísame.**
+La vuelta de `main` de después salió en rojo por una prueba que cruzó las 03:00 —el
+cambio de día del local— a mitad de vuelta, no por la app (lección 141). Lo arregla la
+rama `la-caja-y-el-cambio-de-dia`: fusiónala también, con sus tres comprobaciones en
+verde. **No hace falta esperarla para migrar y desplegar.**
 
 ### 2 · Aplicar la migración
 

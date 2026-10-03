@@ -341,10 +341,16 @@ test('se cierra la caja a mano, y el día sale en Negocio › Ventas', async ({
   // navegadores cerrando la misma se corregirían el uno al otro. Y se cuenta
   // hacia atrás desde **la jornada que dice el servidor**, no desde el reloj de
   // esta máquina: a las dos de la madrugada no son el mismo día (regla 10).
+  //
+  // **Y de dos en dos, no seguidos** (lección 141). La vuelta del 3-oct empezó a las
+  // 02:51 de Madrid: escritorio contó desde el día 2 (3 atrás, el 29) y el móvil,
+  // pasadas las 03:00, desde el 3 (4 atrás, también el 29). Encontró esa caja ya
+  // cerrada, sin nada que rellenar. Con un hueco de dos, aunque la jornada cambie a
+  // mitad de vuelta, cada navegador cae en su par de días y no se pisan.
   const atras =
-    ({ escritorio: 3, 'movil-pequeno': 4, 'movil-safari': 5 } as Record<string, number>)[
+    ({ escritorio: 1, 'movil-pequeno': 3, 'movil-safari': 5 } as Record<string, number>)[
       info.project.name
-    ] ?? 6;
+    ] ?? 7;
   const rosa = await tokenDe(request, ROSA);
   const cierres = await consultar<{ jornada: string }>(request, rosa, 'mis_cierres');
   const jornada = Date.parse(`${cierres.datos?.jornada ?? ''}T12:00:00Z`);

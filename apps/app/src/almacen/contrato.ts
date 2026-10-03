@@ -154,6 +154,13 @@ export interface MovimientoEnFicha {
   readonly quien: string | null;
   readonly lote: string | null;
   readonly costeMilesimas?: number | null;
+  /**
+   * Lo de anular (3-oct, 0055). Una línea anulada sigue en el libro, tachada; la que
+   * la anula también, y las dos dejan de contar. Opcional: una API sin desplegar no lo trae.
+   */
+  readonly anulado?: boolean;
+  readonly esAnulacion?: boolean;
+  readonly sePuedeAnular?: boolean;
 }
 
 export interface LoteEnFicha {
@@ -301,6 +308,9 @@ export function comoDinero(valor: number | null | undefined): string {
  */
 export function cuandoSeAgota(iso: string | null, diasDeCobertura: number | null): string | null {
   if (iso === null) return null;
+  // Cero días es que ya no queda: eso es «agotado», que lo dice su etiqueta, no
+  // «se agota hoy a las 14:30» (Richi, 3-oct).
+  if (diasDeCobertura !== null && diasDeCobertura <= 0) return null;
 
   const cuando = new Date(iso);
   const hora = cuando.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
@@ -363,6 +373,13 @@ export interface MovimientoDelLibro {
   readonly lote: string | null;
   readonly esEjemplo: boolean;
   readonly costeMilesimas?: number | null;
+  /**
+   * Lo de anular (3-oct, 0055). Una línea anulada sigue en el libro, tachada; la que
+   * la anula también, y las dos dejan de contar. Opcional: una API sin desplegar no lo trae.
+   */
+  readonly anulado?: boolean;
+  readonly esAnulacion?: boolean;
+  readonly sePuedeAnular?: boolean;
 }
 
 export interface MisMovimientos {

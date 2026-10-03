@@ -307,7 +307,7 @@ async function loQueMas(
 ): Promise<{ readonly nombre: string; readonly centimos: number } | null> {
   const filas = await contexto.sql<{ nombre: string; centimos: string }[]>`
     select p.nombre, sum(round(abs(m.cantidad) * m.coste_medio_despues / 1000))::text as centimos
-      from estook.movimiento_de_stock m
+      from estook.movimiento_que_cuenta m
       join estook.producto p on p.id = m.producto_id
      where m.local_id = ${localId}
        and m.fecha_operativa = any(${comoLista(fechas)}::text::date[])

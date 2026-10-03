@@ -346,6 +346,23 @@ export const ERRORES = {
     404,
   ),
 
+  // ── El almacén (3-oct) ─────────────────────────────────────────────────────
+  // Santi sacó 2.000 kg de atún donde había 6,6 y nada le preguntó: el stock en
+  // negativo se permite (Manifiesto 28), pero no sin que alguien lo confirme.
+  no_consta_tanto: error(
+    'no_consta_tanto',
+    'Sale más de lo que consta en cámara.',
+    'Revisa la cantidad y la unidad. Si de verdad ha salido eso, confírmalo y quedará en negativo.',
+    409,
+  ),
+
+  no_se_puede_anular: error(
+    'no_se_puede_anular',
+    'Ese movimiento no se puede anular.',
+    'Si está mal lo que hay, corrígelo con «¿No cuadra?». Lo que llegó con un albarán se corrige en Compras.',
+    409,
+  ),
+
   // ── Fiscalidad ─────────────────────────────────────────────────────────────
   fiscal_sin_regla: error(
     'fiscal_sin_regla',

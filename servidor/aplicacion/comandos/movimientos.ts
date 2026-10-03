@@ -20,7 +20,9 @@ import {
   costeDeUso,
   elProductoBloqueado,
   loQueHay,
+  porQueNoSeAnula,
   type FichaBasica,
+  type TipoQueSeAnula,
 } from '../almacen.ts';
 
 /**
@@ -246,6 +248,12 @@ export const entradaApuntarSalida = z
      */
     por_que: z.enum(PORQUES_QUE_NO_SON_MERMA).optional(),
     motivo: z.string().trim().max(400).nullable().optional(),
+    /**
+     * Sí, sale más de lo que consta (3-oct). El stock en negativo se permite
+     * (Manifiesto 28), pero **no sin que nadie lo confirme**: sin esto, sacar más de
+     * lo que hay devuelve `no_consta_tanto` con lo que hay, y la pantalla pregunta.
+     */
+    aunque_no_conste: z.boolean().optional(),
   })
   .strict();
 
@@ -293,6 +301,23 @@ export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
     const nota = entrada.motivo ?? null;
     const motivo = nota === null || nota === '' ? queEs.nombre : `${queEs.nombre} · ${nota}`;
 
+    // ── Más de lo que consta, solo si alguien lo confirma (3-oct) ──────────
+    //
+    // Santi sacó 2.000 kg de atún donde había 6,6: tenía elegido «por kilo» y
+    // escribió 2000. Nada lo frenó, y las dos toneladas entraron en lo vendido, en
+    // lo que se gasta al día y en el pedido sugerido. No se bloquea —si ha salido,
+    // ha salido—, pero se pregunta.
+    if (entrada.aunque_no_conste !== true) {
+      const hay = await loQueHay(contexto, producto.id);
+      if (cuanto > Math.max(hay.cantidad, 0)) {
+        throw new FalloDeAplicacion('no_consta_tanto', {
+          hay: hay.cantidad,
+          sale: cuanto,
+          unidadDeUso: producto.unidadDeUso,
+        });
+      }
+    }
+
     const apuntado = await apuntar(contexto, producto, {
       tipo: queEs.tipo,
       cantidad: -cuanto,
@@ -307,6 +332,138 @@ export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
         ${apuntado.movimientoId}, ${producto.localId}::uuid, null,
         ${JSON.stringify({ tipo: queEs.tipo, cantidad: -cuanto, producto: producto.nombre, porQue })}::text::jsonb,
         ${motivo}
+      )
+    `;
+
+    return {
+      movimientoId: apuntado.movimientoId,
+      cantidad: apuntado.despues.cantidad,
+      costeMilesimas: apuntado.despues.coste,
+      unidadDeUso: producto.unidadDeUso,
+      fechaOperativa: apuntado.fechaOperativa,
+    };
+  },
+});
+
+// ── Anular un movimiento mal tecleado ───────────────────────────────────────
+
+export const entradaAnularMovimiento = z
+  .object({
+    movimiento_id: z.string().regex(/^\d+$/),
+    motivo: z.string().trim().min(1).max(400),
+  })
+  .strict();
+
+export type EntradaAnularMovimiento = z.infer<typeof entradaAnularMovimiento>;
+
+const MESES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+] as const;
+
+/**
+ * Anular un movimiento mal tecleado (repaso del 3-oct · migración 0055).
+ *
+ * **No borra nada.** El libro solo se añade (regla 8), así que se apunta una línea
+ * más, del mismo tipo y con la cantidad al revés, que dice a cuál anula. Lo que hay
+ * en cámara vuelve a su sitio por el camino de siempre, y lo que cuenta —lo
+ * vendido, lo gastado, las mermas, las compras— deja fuera las dos líneas
+ * (`movimiento_que_cuenta`). Con «¿No cuadra?» lo que hay se arreglaba, pero las
+ * dos toneladas de atún seguían «vendidas» cuatro semanas en cada cuenta.
+ *
+ * Solo lo apuntado a mano o al dar de alta el producto, sin lote, de los últimos
+ * treinta y un días, y una vez. Lo que llegó con un albarán o una factura se
+ * corrige en Compras, y un ajuste o un recuento se corrigen con otro.
+ */
+export const anularMovimiento = comando<EntradaAnularMovimiento, SalidaDeMovimiento>({
+  nombre: 'anular_movimiento',
+  entrada: entradaAnularMovimiento,
+  exige: 'app.almacen',
+
+  async ejecutar(contexto, entrada) {
+    const filas = await contexto.sql<
+      {
+        producto_id: string;
+        tipo: string;
+        cantidad: string;
+        origen: string | null;
+        lote_id: string | null;
+        motivo_de_merma: string | null;
+        fecha_operativa: string;
+        anula: string | null;
+      }[]
+    >`
+      select m.producto_id::text as producto_id, m.tipo::text as tipo,
+             m.cantidad::text as cantidad, m.origen, m.lote_id::text as lote_id,
+             m.motivo_de_merma::text as motivo_de_merma,
+             to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha_operativa,
+             m.referencia ->> 'anula' as anula
+        from estook.movimiento_de_stock m
+       where m.id = ${entrada.movimiento_id}::bigint
+         and m.local_id = ${elLocalDeLaSesion(contexto)}::uuid
+    `;
+    const original = filas[0];
+    if (!original) {
+      throw new FalloDeAplicacion('no_existe', {
+        porque: 'Ese movimiento no está, o no es de este local.',
+      });
+    }
+
+    // Con el producto bloqueado: dos toques seguidos no anulan dos veces. El
+    // índice único de la 0055 lo para también en la base.
+    const producto = await elProductoBloqueado(contexto, original.producto_id);
+    const yaAnulado = await contexto.sql<{ id: string }[]>`
+      select id::text as id from estook.movimiento_de_stock
+       where referencia ? 'anula' and referencia ->> 'anula' = ${entrada.movimiento_id}
+    `;
+
+    const hoy = jornadaDe(contexto.ahora, producto.zonaHoraria, horaDeCorte(producto.horaDeCorte));
+    const porque = porQueNoSeAnula(
+      {
+        tipo: original.tipo,
+        origen: original.origen,
+        loteId: original.lote_id,
+        fechaOperativa: original.fecha_operativa,
+        esAnulacion: original.anula !== null,
+        yaAnulado: yaAnulado.length > 0,
+      },
+      hoy,
+    );
+    if (porque !== null) throw new FalloDeAplicacion('no_se_puede_anular', { porque });
+
+    // La fecha, como se lee: «el 30 de septiembre», no «2026-09-30» (lo cazó la captura).
+    const [, mes, dia] = original.fecha_operativa.split('-').map(Number) as [
+      number,
+      number,
+      number,
+    ];
+    const motivo = `Anula lo apuntado el ${String(dia)} de ${MESES[mes - 1] ?? ''} · ${entrada.motivo}`;
+    const apuntado = await apuntar(contexto, producto, {
+      tipo: original.tipo as TipoQueSeAnula,
+      cantidad: -Number(original.cantidad),
+      motivo,
+      motivoDeMerma: original.motivo_de_merma,
+      origen: 'a_mano',
+      referencia: { anula: entrada.movimiento_id },
+      esEjemplo: producto.esEjemplo,
+    });
+
+    await contexto.sql`
+      select estook.anotar(
+        ${laOrganizacionDeLaSesion(contexto)}::uuid, 'crear', 'movimiento_de_stock',
+        ${apuntado.movimientoId}, ${producto.localId}::uuid, null,
+        ${JSON.stringify({ tipo: original.tipo, anula: entrada.movimiento_id, cantidad: -Number(original.cantidad), producto: producto.nombre })}::text::jsonb,
+        ${entrada.motivo}
       )
     `;
 

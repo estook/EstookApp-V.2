@@ -486,3 +486,9 @@
      cortó la vuelta sin probar nada. Pasa a 15; con los 21 de una vuelta buena, el trabajo
      sigue cabiendo en sus 40. Un rojo en «Instalar navegadores» no es de la app: se
      relanza ese trabajo y se mira si se repite.
+140. **Un libro que solo se añade necesita una forma de anular.** Santi sacó 2.000 kg de
+     atún donde había 6,6 (eligió «por kilo» y escribió 2000) y nada le preguntó. «¿No
+     cuadra?» devolvía lo que hay, pero las dos toneladas seguían vendidas en cada cuenta
+     cuatro semanas. Ahora sacar más de lo que hay se confirma, y anular apunta la línea
+     contraria: las cuentas leen `movimiento_que_cuenta`, que deja fuera las dos
+     (`anular-un-movimiento.prueba.ts`, 0072). Una suma nueva sobre el libro lee esa vista.

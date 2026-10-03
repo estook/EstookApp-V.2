@@ -1,6 +1,6 @@
 # C · El chat · el plan
 
-**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **No se programa nada hasta que conteste.**
+**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)).
 
 De dónde sale: el capítulo 23 del [Manifiesto](maestros/Estook-Manifiesto.md), lo que pidió Richi el 30-sep ([0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)), el adelanto a después de I ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)) y lo que I dejó para aquí ([0070](decisiones/0070-la-app-instalable.md)).
 
@@ -83,6 +83,8 @@ Si alguna no te cuadra, dímelo y se cambia.
 - **Exportar una conversación** y el borrado por plazos (M27).
 
 ## Las seis preguntas
+
+> **Contestadas el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). En la 5, la casilla viene marcada **y se puede desmarcar**.
 
 Cada una con mi recomendación y por qué. **Basta con contestar «sí» o «no»** a cada número.
 

@@ -47,6 +47,7 @@ import { ElegirZona } from './ElegirZona.tsx';
 import { Congelar, QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
 import { HistoricoDePrecios } from './HistoricoDePrecios.tsx';
 import { FotoDeLaFicha } from './FotoDeLaFicha.tsx';
+import { AnularMovimiento } from './AnularMovimiento.tsx';
 import { IconoAnadir, IconoQuitar } from '@estook/iconos';
 import {
   COMO_SE_LLAMA_EL_MOVIMIENTO,
@@ -58,6 +59,7 @@ import {
   cuandoSeAgota,
   type CategoriaDelLocal,
   type ProductoEnLista,
+  type MovimientoEnFicha,
   type ProveedorDelLocal,
   type UnProducto,
 } from './contrato.ts';
@@ -101,6 +103,7 @@ export function FichaDeProducto({
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [noticia, setNoticia] = useState<string | null>(null);
   const [todosLosMovimientos, setTodosLosMovimientos] = useState(false);
+  const [anulando, setAnulando] = useState<MovimientoEnFicha | null>(null);
   const [quitandoLote, setQuitandoLote] = useState<LoteQueSeQuita | null>(null);
   /** Congelando: un lote, o una parte nueva (`lote: null`). */
   const [congelando, setCongelando] = useState<{
@@ -127,6 +130,7 @@ export function FichaDeProducto({
     await cache.invalidateQueries({ queryKey: ['mis_productos'] });
     await cache.invalidateQueries({ queryKey: ['almacen_hoy'] });
     await cache.invalidateQueries({ queryKey: ['un_indicador'] });
+    await cache.invalidateQueries({ queryKey: ['mis_movimientos'] });
   }
 
   const datos = consulta.data;
@@ -490,12 +494,17 @@ export function FichaDeProducto({
                         className="flex items-baseline justify-between gap-e3 border-b border-borde py-e2 last:border-0"
                       >
                         <span className="min-w-0">
-                          <span className="block">
-                            {COMO_SE_LLAMA_EL_MOVIMIENTO[movimiento.tipo] ?? movimiento.tipo}{' '}
-                            <strong>
-                              {movimiento.cantidad > 0 ? '+' : ''}
-                              {conUnidadDeUso(movimiento.cantidad, datos.producto.unidadDeUso)}
-                            </strong>
+                          <span className="flex flex-wrap items-baseline gap-x-e2">
+                            {/* Lo anulado sigue en el libro, tachado, y deja de contar (3-oct). */}
+                            <span className={movimiento.anulado === true ? 'line-through' : ''}>
+                              {COMO_SE_LLAMA_EL_MOVIMIENTO[movimiento.tipo] ?? movimiento.tipo}{' '}
+                              <strong>
+                                {movimiento.cantidad > 0 ? '+' : ''}
+                                {conUnidadDeUso(movimiento.cantidad, datos.producto.unidadDeUso)}
+                              </strong>
+                            </span>
+                            {movimiento.anulado === true && <Etiqueta>Anulado</Etiqueta>}
+                            {movimiento.esAnulacion === true && <Etiqueta>Anula</Etiqueta>}
                           </span>
                           {movimiento.motivo !== null && (
                             <span className="block truncate text-etiqueta text-texto-suave">
@@ -503,9 +512,21 @@ export function FichaDeProducto({
                             </span>
                           )}
                         </span>
-                        <span className="shrink-0 text-right text-etiqueta text-texto-suave">
-                          {comoSeLeeLaFecha(movimiento.fechaOperativa)}
-                          {movimiento.quien === null ? '' : ` · ${movimiento.quien}`}
+                        <span className="flex shrink-0 flex-col items-end text-right text-etiqueta text-texto-suave">
+                          <span>
+                            {comoSeLeeLaFecha(movimiento.fechaOperativa)}
+                            {movimiento.quien === null ? '' : ` · ${movimiento.quien}`}
+                          </span>
+                          {puedeTocar && movimiento.sePuedeAnular === true && (
+                            <Boton
+                              tono="texto"
+                              onClick={() => {
+                                setAnulando(movimiento);
+                              }}
+                            >
+                              Anular
+                            </Boton>
+                          )}
                         </span>
                       </li>
                     ),
@@ -722,6 +743,21 @@ export function FichaDeProducto({
 
       {datos !== undefined && (
         <>
+          {anulando !== null && (
+            <AnularMovimiento
+              movimiento={anulando}
+              unidadDeUso={datos.producto.unidadDeUso}
+              alCerrar={() => {
+                setAnulando(null);
+              }}
+              alHecho={async (frase) => {
+                await refrescar();
+                setAnulando(null);
+                setNoticia(frase);
+              }}
+            />
+          )}
+
           {quitandoLote !== null && (
             <QuitarLote
               lote={quitandoLote}

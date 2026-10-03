@@ -426,6 +426,18 @@ test.describe('la rueda de apps', () => {
     await expect(page).toHaveURL(new RegExp('#/$'));
   });
 
+  test('el logo y el nombre del local, arriba, también llevan al Panel', async ({ page }) => {
+    // Richi, 3-oct: «si das click arriba al logo o al nombre del restaurante, te
+    // lleva al panel; es más rápido para el móvil». En el ordenador ya lo hacía el
+    // logo de Estook.
+    await comoGerente(page);
+    await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    await page.getByRole('button', { name: /^Volver al Panel/ }).click();
+    await expect(page).toHaveURL(new RegExp('#/$'));
+  });
+
   test('no tiene botón de cerrar: se cierra pulsando fuera', async ({ page }) => {
     // «Quitar el botón de cerrar de abajo, que se cierre pulsando fuera.» El
     // botón quitaba sitio justo donde va el pulgar, y la rueda está ahora ahí.

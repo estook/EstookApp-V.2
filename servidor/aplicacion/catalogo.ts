@@ -45,6 +45,7 @@ import { crearCategoria, ponerLosEjemplos } from './comandos/categorias.ts';
 import {
   apuntarEntrada,
   apuntarSalida,
+  anularMovimiento,
   ajustarStock,
   cerrarRecuento,
 } from './comandos/movimientos.ts';
@@ -410,6 +411,8 @@ export const catalogo = {
     [ponerPrecio.nombre]: ponerPrecio,
     [apuntarEntrada.nombre]: apuntarEntrada,
     [apuntarSalida.nombre]: apuntarSalida,
+    // Anular lo mal tecleado (3-oct, 0055): una línea más, nunca un borrado.
+    [anularMovimiento.nombre]: anularMovimiento,
     [ajustarStock.nombre]: ajustarStock,
     // `accion.cerrar_recuento` estaba en la matriz desde M1 y no tenia donde
     // usarse: siete modulos con la promesa rota (M7, las apps conectadas).

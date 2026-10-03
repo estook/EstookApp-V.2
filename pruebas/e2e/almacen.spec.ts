@@ -725,10 +725,21 @@ test('el stock negativo se permite, y sale marcado', async ({ request }) => {
     como: 'unidades_de_uso',
   });
 
+  // Se permite, **confirmándolo** (3-oct): sin confirmar, el servidor dice cuánto
+  // hay y no apunta nada. Santi sacó 2.000 kg de atún donde había 6,6 sin que
+  // nada le preguntara.
+  const sinConfirmar = await ejecutar(request, token, 'apuntar_salida', {
+    producto_id: productoId,
+    cuanto: 5,
+    como: 'unidades_de_uso',
+  });
+  expect(sinConfirmar.estado).toBe(409);
+
   const salida = await ejecutar<{ cantidad: number }>(request, token, 'apuntar_salida', {
     producto_id: productoId,
     cuanto: 5,
     como: 'unidades_de_uso',
+    aunque_no_conste: true,
   });
 
   expect(salida.estado).toBe(200);
@@ -1811,4 +1822,47 @@ test('si un trozo de la app no llega, se dice y las barras siguen', async ({ pag
   await abrirSinQueSeCaiga(page, `${APP}#/almacen/resumen`);
   await expect(page.getByRole('heading', { level: 1, name: 'Resumen' })).toBeVisible();
   await expect(page.getByText('Esta pantalla no ha terminado de cargar')).toHaveCount(0);
+});
+
+// ── Lo mal tecleado se anula (repaso del 3-oct · 0055) ────────────────────────
+
+test('una salida mal tecleada se anula desde la ficha, y queda tachada', async ({
+  page,
+  request,
+}) => {
+  // Santi sacó 2.000 kg de atún donde había 6,6, y no había forma de deshacerlo:
+  // «¿No cuadra?» arreglaba lo que hay, pero las dos toneladas seguían vendidas.
+  const token = await tokenDe(request, ROSA);
+  const nombre = `Atún mal tecleado ${Date.now()}`;
+  const creado = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
+    nombre,
+    factor: 1,
+    unidad_de_uso: 'kg',
+    cantidad_inicial: 6.6,
+  });
+  const productoId = creado.datos?.productoId ?? '';
+  const salida = await ejecutar(request, token, 'apuntar_salida', {
+    producto_id: productoId,
+    cuanto: 2000,
+    por_que: 'vendido',
+    aunque_no_conste: true,
+  });
+  expect(salida.estado).toBe(200);
+
+  await entrar(page, ROSA);
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/productos/todo?producto=${productoId}`);
+  const ficha = page.getByRole('dialog', { name: nombre });
+  await expect(ficha).toBeVisible({ timeout: 15_000 });
+
+  await ficha.getByRole('button', { name: 'Anular' }).first().click();
+  const hoja = page.getByRole('dialog', { name: 'Anular este movimiento' });
+  await expect(hoja.getByRole('button', { name: 'Anular', exact: true })).toBeDisabled();
+  await hoja.getByLabel(/^Por qué/).fill('Me equivoqué de unidad');
+  await hoja.getByRole('button', { name: 'Anular', exact: true }).click();
+  await expect(hoja).toHaveCount(0);
+
+  // Lo que hay vuelve, y el libro no pierde nada: la venta, tachada, y la que la anula.
+  await expect(ficha.getByText(/^Anulado\. Quedan 6,6 kg/)).toBeVisible({ timeout: 15_000 });
+  await expect(ficha.getByText('Anulado', { exact: true })).toBeVisible();
+  await expect(ficha.getByText('Anula', { exact: true })).toBeVisible();
 });

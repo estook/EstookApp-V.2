@@ -70,6 +70,11 @@ export interface BarraArribaMovilProps {
   } | null;
   readonly locales: readonly { readonly id: string; readonly nombre: string }[];
   readonly alCambiarDeLocal: (id: string) => void;
+  /**
+   * El logo y el nombre del local llevan al Panel (Richi, 3-oct): «es más rápido para
+   * el móvil». Es lo que hace el logo de Estook en la barra del ordenador.
+   */
+  readonly alIrAlPanel: () => void;
   readonly persona: string;
   readonly avisos?: number;
   readonly alBuscar: () => void;
@@ -83,6 +88,7 @@ export function BarraArribaMovil({
   local,
   locales,
   alCambiarDeLocal,
+  alIrAlPanel,
   persona,
   avisos = 0,
   alBuscar,
@@ -101,7 +107,12 @@ export function BarraArribaMovil({
         'h-[calc(var(--alto-barra-movil)+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] lg:hidden no-imprimir',
       )}
     >
-      <DondeEstas local={local} locales={locales} alCambiar={alCambiarDeLocal} />
+      <DondeEstas
+        local={local}
+        locales={locales}
+        alCambiar={alCambiarDeLocal}
+        alIrAlPanel={alIrAlPanel}
+      />
 
       {/*
         En modo cocina cada botón mide 64 px, y cinco más su separación son 368: en
@@ -145,15 +156,20 @@ export function BarraArribaMovil({
  *
  * Con un solo local se ensena y ya: un desplegable de un elemento es una promesa
  * vacia, y es la misma regla que sigue la barra de escritorio.
+ *
+ * **Y lleva al Panel** (3-oct): con un local, el logo y el nombre juntos; con varios,
+ * el logo, porque el nombre es el selector para cambiar de local.
  */
 function DondeEstas({
   local,
   locales,
   alCambiar,
+  alIrAlPanel,
 }: {
   readonly local: BarraArribaMovilProps['local'];
   readonly locales: BarraArribaMovilProps['locales'];
   readonly alCambiar: (id: string) => void;
+  readonly alIrAlPanel: () => void;
 }) {
   // El logo que no llegó (sin señal): se guarda cuál, para que otro local o un logo nuevo sí se intente.
   const [logoRoto, setLogoRoto] = useState<string | null>(null);
@@ -195,19 +211,30 @@ function DondeEstas({
 
   if (locales.length <= 1) {
     return (
-      <span className="flex min-w-0 flex-1 items-center gap-e1">
+      <button
+        type="button"
+        onClick={alIrAlPanel}
+        aria-label={`Volver al Panel · ${local.nombre}`}
+        className="flex min-h-toque min-w-0 flex-1 items-center gap-e1 rounded-medio text-left"
+      >
         {marca}
         <span className="min-w-0 truncate text-secundario font-medium text-texto">
           {local.nombre}
         </span>
-      </span>
+      </button>
     );
   }
 
   return (
-    <label className="flex min-w-0 flex-1 items-center gap-e1">
-      {marca}
-      <span className="sr-only">Dónde estás</span>
+    <div className="flex min-w-0 flex-1 items-center gap-e1">
+      <button
+        type="button"
+        onClick={alIrAlPanel}
+        aria-label="Volver al Panel"
+        className="grid min-h-toque shrink-0 place-items-center rounded-medio"
+      >
+        {marca}
+      </button>
       <select
         aria-label="Dónde estás"
         value={local.id}
@@ -222,7 +249,7 @@ function DondeEstas({
           </option>
         ))}
       </select>
-    </label>
+    </div>
   );
 }
 

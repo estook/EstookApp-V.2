@@ -132,10 +132,27 @@ function ElFormulario({
   const [caduca, setCaduca] = useState('');
   const [porQue, setPorQue] = useState<MotivoDeSalida>('gastado');
   const [guardando, setGuardando] = useState(false);
+  /** Lo que hay según el servidor, si al apuntar resultó que la lista iba atrasada. */
+  const [hayDeVerdad, setHayDeVerdad] = useState<number | null>(null);
+  /** La cantidad que se ha confirmado: cambiar el número pide confirmar otra vez. */
+  const [confirmadoPara, setConfirmadoPara] = useState<number | null>(null);
 
   const numero = Number(cuanto.replace(',', '.'));
   const hayNumero = cuanto.trim() !== '' && Number.isFinite(numero);
   const enUnidadesDeUso = como === 'formatos' ? numero * producto.factor : numero;
+  const hayAhora = hayDeVerdad ?? producto.cantidad;
+
+  // ── Más de lo que consta, solo confirmándolo (3-oct) ──────────────────────
+  //
+  // Santi sacó 2.000 kg de atún donde había 6,6: tenía elegido «por kilo» y
+  // escribió 2000. El negativo se permite (Manifiesto 28), pero no de un descuido:
+  // se dice cuánto hay y en cuánto quedará, y hay que confirmarlo.
+  const pasaDeLoQueHay =
+    que === 'salida' && hayNumero && numero > 0 && enUnidadesDeUso > Math.max(hayAhora, 0);
+  // Una merma, no: nunca se tira más de lo que hay (23-sep, `mas_de_lo_que_hay`), así
+  // que no se ofrece confirmarlo, se dice que no se puede.
+  const esUnaMerma = que === 'salida' && esMerma(porQue);
+  const confirmado = !esUnaMerma && confirmadoPara === enUnidadesDeUso;
   const puedeTocarPrecios = puedeEditar(permisos, 'dato.precio_de_compra');
   const precioDistinto = precio !== null && deLaLista !== null && precio !== deLaLista;
   const queEsEstaSalida = QUE_ES_CADA_SALIDA[porQue];
@@ -144,6 +161,7 @@ function ElFormulario({
     hayNumero &&
     (que === 'ajuste' ? numero >= 0 && nota.trim() !== '' : numero > 0) &&
     (que !== 'salida' || !queEsEstaSalida.pideNota || nota.trim() !== '') &&
+    (!pasaDeLoQueHay || confirmado) &&
     !guardando;
 
   async function guardar() {
@@ -200,6 +218,7 @@ function ElFormulario({
               // catálogo: aquí solo viaja la nota, que es lo que ha escrito una
               // persona.
               ...(nota.trim() === '' ? {} : { motivo: nota.trim() }),
+              ...(pasaDeLoQueHay && confirmado ? { aunque_no_conste: true } : {}),
             };
 
     const respuesta = await cliente.ejecutar<{
@@ -210,6 +229,12 @@ function ElFormulario({
 
     if (!respuesta.ok) {
       setGuardando(false);
+      // La lista iba atrasada y hay menos de lo que creía esta hoja: se dice aquí
+      // mismo, con lo que hay de verdad, para confirmarlo o corregir el número.
+      if (respuesta.error.codigo === 'no_consta_tanto') {
+        setHayDeVerdad(Number(respuesta.error.detalle?.hay ?? 0));
+        return;
+      }
       alFallar(respuesta.error);
       return;
     }
@@ -280,7 +305,7 @@ function ElFormulario({
     >
       <div className="flex flex-col gap-e3">
         <p className="text-secundario text-texto-suave">
-          Ahora hay {conUnidadDeUso(producto.cantidad, producto.unidadDeUso)}.
+          Ahora hay {conUnidadDeUso(hayAhora, producto.unidadDeUso)}.
         </p>
 
         {que === 'ajuste' ? (
@@ -411,6 +436,36 @@ function ElFormulario({
                 setCuanto(e.currentTarget.value);
               }}
             />
+
+            {pasaDeLoQueHay && esUnaMerma && (
+              <Aviso
+                tono="mal"
+                titulo={`No se puede tirar más de lo que hay: ${conUnidadDeUso(hayAhora, producto.unidadDeUso)}`}
+              >
+                Mira la cantidad y si es por envase o por {producto.unidadDeUso}. Si hay más, apunta
+                antes lo que ha llegado.
+              </Aviso>
+            )}
+            {pasaDeLoQueHay && !esUnaMerma && (
+              <>
+                <Aviso
+                  tono="atencion"
+                  titulo={`Sale más de lo que hay: ${conUnidadDeUso(hayAhora, producto.unidadDeUso)}`}
+                >
+                  Con {conUnidadDeUso(enUnidadesDeUso, producto.unidadDeUso)}, quedaría en{' '}
+                  {conUnidadDeUso(hayAhora - enUnidadesDeUso, producto.unidadDeUso)}. Mira la
+                  cantidad y si es por envase o por {producto.unidadDeUso}.
+                </Aviso>
+                <Interruptor
+                  etiqueta="Sí, ha salido eso"
+                  ayuda="Quedará en negativo hasta que entre género o se cuadre."
+                  puesto={confirmado}
+                  alCambiar={(puesto) => {
+                    setConfirmadoPara(puesto ? enUnidadesDeUso : null);
+                  }}
+                />
+              </>
+            )}
 
             {/* ── Lo vendido, y dónde se cuenta ──────────────────────────── */}
             {/*

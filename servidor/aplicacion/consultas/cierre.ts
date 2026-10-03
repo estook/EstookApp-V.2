@@ -176,7 +176,7 @@ export const misCierres = consulta<EntradaMisCierres, SalidaMisCierres>({
              -- food cost.
              (
                select sum(round(abs(m.cantidad) * m.coste_medio_despues / 1000))::text
-                 from estook.movimiento_de_stock m
+                 from estook.movimiento_que_cuenta m
                  join estook.producto pr on pr.id = m.producto_id
                 where m.local_id = c.local_id
                   and m.fecha_operativa = c.fecha_operativa
@@ -372,7 +372,7 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
     // calcula abajo, con `precioDe`.
     const vendido = await contexto.sql<{ concepto: string; unidades: string }[]>`
       select p.nombre as concepto, sum(abs(m.cantidad))::text as unidades
-        from estook.movimiento_de_stock m
+        from estook.movimiento_que_cuenta m
         join estook.producto p on p.id = m.producto_id
        where m.local_id = ${localId}
          and m.fecha_operativa = ${fecha}::date

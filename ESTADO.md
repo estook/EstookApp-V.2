@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 2 de octubre de 2026 · **Antes de M8. I · La app instalable, en producción (#86). C · El chat, con su plan escrito y seis preguntas para Richi**
+Última actualización: 3 de octubre de 2026 · **Antes de M8. El repaso del 3-oct (el atún, anular y el logo), en su pull request. C · El chat, contestado: lo siguiente es C1**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento**, y **no pasa de 150 líneas**
@@ -14,27 +14,27 @@
 > | Quién ve qué                      | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                      |
 > | Qué desencadena cada cambio       | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                           |
 > | Estook TPV y la facturación       | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**           |
-> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (70)                                          |
+> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (72)                                          |
 > | Lo legal, y lo ya investigado     | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md) |
 > | Lo que cuesta cada local          | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                         |
 > | Lo que hizo cada entrega          | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                         |
-> | Lo aprendido fallando (139)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
+> | Lo aprendido fallando (140)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
 > | Los pasos de Richi                | [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)                                     |
 
 ---
 
 ## 1 · Dónde estamos · producción leída el 2-oct, en solo lectura
 
-|               |                                                                                                                                                                                                                                |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Terminado** | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2, **H · Horarios** (H1 y H2) e **I · La app instalable**, con sus repasos                                                         |
-| **En curso**  | **C · El chat**: el plan, en [`docs/c-el-chat.md`](docs/c-el-chat.md), con **seis preguntas de sí o no** para Richi. **Sin programar** hasta que conteste                                                                      |
-| **`main`**    | Todo fusionado hasta la **#86** (1-oct): I, migrada, desplegada e instalada por Richi                                                                                                                                          |
-| **Base**      | Supabase, **54 de 54** migraciones. 84 tablas, todas con seguridad por filas                                                                                                                                                   |
-| **API**       | Desplegada con I: **66 consultas y 137 comandos**, los avisos al móvil encendidos y el latido de cada minuto, comprobada el 2-oct                                                                                              |
-| **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                              |
-| **Pruebas**   | **1.570** unitarias y de base con I, en verde; las de I y los avisos, en los veintiséis momentos de `pnpm prueba:semana`; y la batería de pantalla                                                                             |
-| **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día |
+|               |                                                                                                                                                                                                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Terminado** | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2, **H · Horarios** (H1 y H2) e **I · La app instalable**, con sus repasos                                                                                     |
+| **En curso**  | **El repaso del 3-oct** ([0072](docs/decisiones/0072-el-repaso-del-3-oct.md)), con la migración **0055**: sin fusionar, migrar ni desplegar. Después, **C1 · Hablar**: Richi dijo sí a las seis de C ([0071](docs/decisiones/0071-las-respuestas-de-c.md)) |
+| **`main`**    | Todo fusionado hasta la **#87** (2-oct): el plan de C. I, migrada, desplegada e instalada por Richi                                                                                                                                                        |
+| **Base**      | Supabase, **54 de 54** migraciones. 84 tablas, todas con seguridad por filas. Con el repaso, 55                                                                                                                                                            |
+| **API**       | Desplegada con I: **66 consultas y 137 comandos**, comprobada el 2-oct. Con el repaso serán **66 y 138**                                                                                                                                                   |
+| **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                          |
+| **Pruebas**   | **1.580** unitarias y de base con el repaso, en verde; las de I y los avisos, en los veintiséis momentos de `pnpm prueba:semana`; y la batería de pantalla                                                                                                 |
+| **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                             |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md), y el chat adelantado en la [0067](docs/decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md))
 
@@ -73,7 +73,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Ahora, en este orden** (paso a paso en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **Contestar las seis preguntas de C**, al final de [`docs/c-el-chat.md`](docs/c-el-chat.md): basta un sí o un no a cada número.
+1. **El repaso del 3-oct**: fusionar, `.\estook.cmd bd:migrar` (la 0055), desplegar la API y `bd:comprobar-api` (66 y 138). Después, **anular la venta del atún** en IKATZ y mirar los otros tres en negativo.
 2. **Si no lo has hecho ya, montar y publicar una semana de verdad** en IKATZ, y mirar «Mi turno» en el móvil de alguien del equipo.
 
 **Con fecha o con condición:**
@@ -142,8 +142,8 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Con las seis respuestas de Richi, C · El chat**, en su rama: la decisión con lo que conteste, la migración y la API. Lo que cambia al segundo, que I dejó fuera, llega con él.
+**Con el repaso del 3-oct en producción, C1 · Hablar**, en su rama, con las respuestas de la [0071](docs/decisiones/0071-las-respuestas-de-c.md). Lo que cambia al segundo, que I dejó fuera, llega con él.
 
-**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: los dieciséis de «Lo que decido yo» de [`c-el-chat.md`](docs/c-el-chat.md), como que el aviso de «hay algo nuevo» no lleve el mensaje dentro; los once de «Lo que decidí al construirlo» de la [0070](docs/decisiones/0070-la-app-instalable.md), como que en blanco el pedido no avise o que un 403 no borre el móvil; subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); que abrir el aparato para fichar cierre la sesión de quien lo abre; que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla); los seis de «Lo que decidí al construirlo» de la [0069](docs/decisiones/0069-el-horario.md), como que el correo del horario lleve lo suyo escrito y no un PDF; partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
+**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: los cuatro de «Lo que decidí al construirlo» de la [0072](docs/decisiones/0072-el-repaso-del-3-oct.md), como que una merma no se confirme (no puede pasar de lo que hay) y que solo se anule lo de 31 días; los dieciséis de «Lo que decido yo» de [`c-el-chat.md`](docs/c-el-chat.md), como que el aviso de «hay algo nuevo» no lleve el mensaje dentro; los once de «Lo que decidí al construirlo» de la [0070](docs/decisiones/0070-la-app-instalable.md), como que en blanco el pedido no avise o que un 403 no borre el móvil; subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); que abrir el aparato para fichar cierre la sesión de quien lo abre; que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla); los seis de «Lo que decidí al construirlo» de la [0069](docs/decisiones/0069-el-horario.md), como que el correo del horario lleve lo suyo escrito y no un PDF; partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
 
 **Lo que ESTADO llevaba hasta hoy** —las decisiones una a una, lo de cada entrega de E2 a R2 y la lista larga de lo que no se toca— está entero en [`docs/historia/ESTADO-hasta-el-30-sep-2026.md`](docs/historia/ESTADO-hasta-el-30-sep-2026.md), y lo que queda preparado para cada módulo, en [el mapa](docs/MAPA-de-modulos.md).

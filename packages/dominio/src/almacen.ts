@@ -382,12 +382,17 @@ export function diasDeCobertura(existencias: number, consumoPorDia: number | nul
  * sale igual de bien de las dos maneras. La hora se enseña porque a las nueve de
  * la mañana no es lo mismo que te digan «hoy» que «hoy a las 20:30»: con la
  * segunda te da tiempo a pedir.
+ *
+ * **Lo que ya no queda no «se agota»: está agotado** (Richi, 3-oct). Con cero o en
+ * negativo devolvía «ahora», y la pantalla decía «se agota hoy a las 14:30» de algo
+ * que ya se había acabado. La etiqueta del estado ya lo dice.
  */
 export function previsionDeAgotamiento(
   existencias: number,
   consumoPorDia: number | null,
   ahora: Date,
 ): Date | null {
+  if (existencias <= 0) return null;
   const dias = diasDeCobertura(existencias, consumoPorDia);
   if (dias === null) return null;
   return new Date(ahora.getTime() + dias * 24 * 60 * 60 * 1000);

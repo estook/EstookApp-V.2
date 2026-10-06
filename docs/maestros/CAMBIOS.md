@@ -5,7 +5,9 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
-**El mismo día, después** ([0066](../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)), sin cambiar de versión: el **Manifiesto** cuenta el chat entero (23); el **Anexo** recoge lo que dice la API de NIF de Verifacti —los webhooks, la firma de la autorización, que desactivar un NIF borra sus registros a los 30 días y que el País Vasco se puede abrir más adelante— (1.4, 4.1, 4.3, 4.9 y 4.13); y el **Plan** lo refleja en M23.
+**El 7 de octubre** ([0075](../decisiones/0075-las-respuestas-de-c2.md)), sin cambiar de versión: el **Manifiesto** deja un solo canal hecho, «Todo el equipo», y los demás los crean el gerente y los jefes; y **el chat no traduce** (23). El **Plan** lo refleja en M23.
+
+**El 30 de septiembre, después de la 1.4** ([0066](../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)), sin cambiar de versión: el **Manifiesto** cuenta el chat entero (23); el **Anexo** recoge lo que dice la API de NIF de Verifacti —los webhooks, la firma de la autorización, que desactivar un NIF borra sus registros a los 30 días y que el País Vasco se puede abrir más adelante— (1.4, 4.1, 4.3, 4.9 y 4.13); y el **Plan** lo refleja en M23.
 
 **Y por la tarde** ([0067](../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)), también sin cambiar de versión: el **Manifiesto** pone **Pro a 99 € y Cadena a 89 €** (32 y 33) y dice que el chat se construye antes de M8 (23); y el **Plan** mete la entrega **C · El chat** entre la app instalable y los vendedores (D y M23).
 

@@ -18,7 +18,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ---
 
-## Lo que te toca ahora · el repaso de C1 (#91) y las preguntas de C2
+## Lo que te toca ahora · el repaso de C1 (#91)
 
 Lo que viste el 6-oct probando el chat con Santiago ([decisión 0074](decisiones/0074-el-repaso-de-c1.md), en la #91). **Sin migración**; **sí hay que desplegar la API** (lo del móvil).
 
@@ -60,9 +60,9 @@ Cierra Estook y ábrela otra vez (la web se publica sola al fusionar, en unos mi
 4. **Una nota de voz**: sale «Nota de voz · 0:05» sin rueda; al darle, la barra avanza.
 5. **Arriba de la lista del chat**, si estás en tus horas de silencio, sale «Hasta las 08:00 no te suena · Cambiar».
 
-### 4 · Contestar las preguntas de C2
+### 4 · Las preguntas de C2 · **contestadas** (7-oct)
 
-Al final de [`docs/c-el-chat.md`](c-el-chat.md), **cinco preguntas de sí o no** con mi recomendación. Basta con «1 sí, 2 sí…». Hasta entonces no programo C2.
+Tus respuestas, y las tres de C que cambiaste (solo «Todo el equipo» de fábrica, el chat no traduce nunca, el horario como aviso con un sí o no), en la [decisión 0075](decisiones/0075-las-respuestas-de-c2.md). C2 la construyo yo y te llega en su pull request.
 
 ---
 

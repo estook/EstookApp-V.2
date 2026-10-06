@@ -503,3 +503,20 @@
      llegó con la hoja aún subiendo, se perdió, y la frase de Fogón estaba en su ventana
      cerrada: «oculta». Ahora se espera a que acabe la animación y a que la ventana de
      Fogón esté a la vista antes de mirar dentro (`pantalla.spec.ts`).
+143. **Pedir la fila nueva obliga a poder verla.** Insertar con `on conflict` o con
+     `returning` hace que Postgres compruebe la política de **leer** sobre la fila recién
+     puesta. La de los canales mira la tabla para saber quién los ve, y ahí la fila todavía
+     no está: «abrir el chat» salía «sin permiso». Los canales de fábrica se crean como
+     sistema y los nuevos llevan su identificador puesto antes, sin `returning` (0073).
+144. **Una hora que se compara con la del servidor se guarda con la del servidor.** Lo que
+     espera al móvil del chat guardaba su hora con `now()` de la base, y se comparaba con
+     la del servidor: con la hora fija de las pruebas parecía de hace días y se tiraba sin
+     sonar. Ahora se guarda `contexto.ahora`, como pide la regla 10 (`el-chat.prueba.ts`).
+145. **El cursor se coloca al pintar, no un fotograma después.** Al elegir a alguien con
+     «@», el cursor se ponía detrás del nombre en el fotograma siguiente; lo tecleado
+     deprisa justo entonces caía delante y la primera letra acababa al final («í, a las
+     nueve…s»). Ahora va en `useLayoutEffect`. Lo cazó repetir la prueba (`--repeat-each`).
+146. **Escribir da por leído lo de antes, y eso pisa a las pruebas que van a la vez.**
+     Las tres vueltas escriben en el mismo «Todo el equipo»: el mensaje de Marcos de una
+     marcaba como leída la respuesta de Rosa de otra. Lo que depende de quién ha leído qué
+     se prueba en un canal propio de la vuelta (`el-chat.spec.ts`).

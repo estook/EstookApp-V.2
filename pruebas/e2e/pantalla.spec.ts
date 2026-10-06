@@ -170,8 +170,13 @@ test.describe('la barra de escritorio', () => {
     await page.keyboard.press('Escape');
     await expect(campana).toBeHidden();
 
-    await page.getByRole('banner').getByRole('button', { name: 'Chat del equipo' }).click();
-    await expect(page.getByRole('heading', { name: 'El chat del equipo' })).toBeVisible();
+    // Desde C1 (0073), el chat es de verdad: abre la lista de conversaciones.
+    await page
+      .getByRole('banner')
+      .getByRole('button', { name: /^Chat del equipo/ })
+      .click();
+    await expect(page.getByRole('heading', { name: 'Chat', level: 1 })).toBeVisible();
+    await expect(page).toHaveURL(new RegExp('#/chat$'));
   });
 
   test('la fila de la derecha son seis, y el avatar abre tu cuenta', async ({ page }) => {
@@ -279,7 +284,7 @@ test.describe('la barra de arriba en móvil', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
   });
 
-  test('la campana abre los avisos, y el chat dice qué será', async ({ page }) => {
+  test('la campana abre los avisos, y el chat abre el chat', async ({ page }) => {
     await entrar(page);
     const barra = page.getByRole('banner');
 
@@ -289,8 +294,9 @@ test.describe('la barra de arriba en móvil', () => {
     await page.keyboard.press('Escape');
     await expect(campana).toBeHidden();
 
-    await barra.getByRole('button', { name: 'Chat del equipo' }).click();
-    await expect(page.getByRole('heading', { name: 'El chat del equipo' })).toBeVisible();
+    // Desde C1 (0073), el chat es de verdad: abre la lista de conversaciones.
+    await barra.getByRole('button', { name: /^Chat del equipo/ }).click();
+    await expect(page.getByRole('heading', { name: 'Chat', level: 1 })).toBeVisible();
   });
 });
 

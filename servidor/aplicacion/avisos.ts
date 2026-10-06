@@ -6,6 +6,7 @@ import {
   type TipoDeAviso,
 } from '@estook/dominio';
 import { LO_QUE_PIDE_EL_AVISO } from '@estook/permisos';
+import { tocarLaCampana } from './al-segundo.ts';
 import type { Contexto } from './contrato.ts';
 import { correoDeUnAviso } from './correos.ts';
 import { suAmplitud } from './jerarquia.ts';
@@ -276,6 +277,14 @@ export async function avisar(
       nuevos += 1;
     }
 
+    // Al segundo, la campana de quien tiene algo nuevo (0073): sin esperar al minuto.
+    if (nuevos > 0) {
+      await tocarLaCampana(
+        contexto,
+        destinatarios.map((q) => q.personaId),
+      );
+    }
+
     return nuevos;
   });
 }
@@ -393,4 +402,12 @@ const conMovilPendiente = new Set<string>();
 /** Si esta petición dejó algo para el móvil. Pregunta y olvida. */
 export function dejoMoviles(correlacionId: string): boolean {
   return conMovilPendiente.delete(correlacionId);
+}
+
+/**
+ * El chat también deja cosas para el móvil (C1 · 0073), sin pasar por la campana: se
+ * apunta igual, para que el despachador abra la transacción de mandarlo.
+ */
+export function dejarAlgoParaElMovil(correlacionId: string): void {
+  conMovilPendiente.add(correlacionId);
 }

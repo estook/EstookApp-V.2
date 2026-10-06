@@ -6,6 +6,7 @@ import type { CorreoSaliente } from '../infraestructura/correo.ts';
 import type { LugaresDeGoogle } from '../infraestructura/google.ts';
 import type { IdentidadDeGoogle } from '../infraestructura/identidad-de-google.ts';
 import type { MovilSaliente } from '../infraestructura/movil.ts';
+import type { AlSegundo } from '../infraestructura/al-segundo.ts';
 import type { MotorDePdf } from '../infraestructura/pdf.ts';
 import type { Pagos } from '../infraestructura/stripe.ts';
 import type { SesionViva, Sql } from '../infraestructura/postgres.ts';
@@ -76,6 +77,12 @@ export interface Contexto {
    * todavía no están encendidos: todo sigue llegando a la campana y al correo.
    */
   readonly movil: MovilSaliente | null;
+  /**
+   * El toque «hay algo nuevo» del chat, al segundo (C1 · 0073). Nulo sin las
+   * credenciales de Supabase, y entonces la app pregunta cada poco: nada se pierde.
+   * Opcional para que lo que no es el chat no tenga que saber que existe.
+   */
+  readonly alSegundo?: AlSegundo | null;
   /**
    * **Lo hecho sin conexión** (0070): cuántos milisegundos hace que se hizo, según el
    * móvil, que lo ha tenido guardado hasta volver la señal. Nulo, o sin poner, si se

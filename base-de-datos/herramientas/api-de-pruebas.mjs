@@ -50,6 +50,7 @@ import { identidadDeMentira } from '../../servidor/infraestructura/identidad-de-
 import { pagosDeMentira } from '../../servidor/infraestructura/pagos-de-mentira.ts';
 import { pdfDeMentira } from '../../servidor/infraestructura/pdf.ts';
 import { movilDeMentira } from '../../servidor/infraestructura/movil.ts';
+import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { sembrarAcceso } from '../semillas/acceso.ts';
@@ -190,6 +191,9 @@ const pdf = pdfDeMentira();
 // 0070 · los avisos al móvil, de mentira: guarda lo que se manda y no sale a internet.
 const movil = movilDeMentira();
 
+// 0073 · lo que llega al segundo en el chat, de mentira: guarda los toques.
+const alSegundo = alSegundoDeMentira();
+
 /**
  * El Stripe de mentira (0048): guarda en memoria y avisa firmado, por el mismo
  * camino que Stripe. Su página de pago es `/api/pruebas/stripe/pagar`, más abajo.
@@ -255,6 +259,7 @@ async function unaTransaccion(quien, hacer) {
       pagos,
       pdf,
       movil,
+      alSegundo,
       correlacionId: quien.correlacionId,
       desde: quien.desde ?? null,
       ahora: new Date(Date.now()),

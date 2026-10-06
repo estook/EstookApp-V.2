@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
-import { IconoBuscar, IconoChat, IconoLocal } from '@estook/iconos';
-import { etiquetaDeLaCampana } from '@estook/dominio';
-import { LaCampana } from './LaCampana.tsx';
+import { IconoBuscar, IconoLocal } from '@estook/iconos';
+import { etiquetaDeLaCampana, etiquetaDelChat } from '@estook/dominio';
+import { ElBocadillo, LaCampana } from './LaCampana.tsx';
 import { clases } from '../clases.ts';
 import { Avatar } from '../componentes/Tarjeta.tsx';
 
@@ -80,6 +80,8 @@ export interface BarraArribaMovilProps {
   readonly alBuscar: () => void;
   readonly alAbrirAvisos: () => void;
   readonly alAbrirChat: () => void;
+  /** Los mensajes del chat sin leer (C1 · 0073), para el número de su botón. */
+  readonly chatSinLeer?: number;
   /** Tu cuenta: ajustes, mi acceso, cambiar de local y salir. */
   readonly alAbrirMiCuenta: () => void;
 }
@@ -94,6 +96,7 @@ export function BarraArribaMovil({
   alBuscar,
   alAbrirAvisos,
   alAbrirChat,
+  chatSinLeer = 0,
   alAbrirMiCuenta,
 }: BarraArribaMovilProps) {
   return (
@@ -118,13 +121,14 @@ export function BarraArribaMovil({
         En modo cocina cada botón mide 64 px, y cinco más su separación son 368: en
         un móvil de 320 no caben, y el último —tu cuenta— quedaba cortado (lo cazó la
         prueba del modo cocina en el iPhone SE). Así que, **solo con el modo puesto
-        y por debajo de 440 px**, se recoge el Chat, que hoy solo dice lo que será, y
+        y por debajo de 440 px**, se recoge el Buscar —antes era el Chat, que solo decía lo
+        que sería; desde C1 (0073) es de verdad y una cocina lo usa con las manos ocupadas—, y
         los que quedan van juntos: cada uno ya es un blanco de 64 px y no necesita
         los 12 de separación. **La campana no se recoge nunca** (entrega R, 0052):
         desde que avisa de verdad, un aviso no se puede esconder.
       */}
       <div className="flex shrink-0 items-center gap-0 in-[[data-cocina=si]]:max-[440px]:[&>button]:ms-0">
-        <Redondo etiqueta="Buscar en todo" alPulsar={alBuscar}>
+        <Redondo etiqueta="Buscar en todo" alPulsar={alBuscar} recogibleEnCocina>
           <IconoBuscar size={20} />
         </Redondo>
 
@@ -132,8 +136,8 @@ export function BarraArribaMovil({
           <LaCampana sinLeer={avisos} />
         </Redondo>
 
-        <Redondo etiqueta="Chat del equipo" alPulsar={alAbrirChat} recogibleEnCocina>
-          <IconoChat size={20} />
+        <Redondo etiqueta={etiquetaDelChat(chatSinLeer)} alPulsar={alAbrirChat}>
+          <ElBocadillo sinLeer={chatSinLeer} />
         </Redondo>
 
         {/* Fogón ya no va aquí (23-sep): está en su burbuja, a un dedo. */}

@@ -159,3 +159,25 @@ function pesa(dataUrl: string): number {
 function soloElContenido(dataUrl: string): string {
   return dataUrl.slice(dataUrl.indexOf(',') + 1);
 }
+
+/**
+ * Una foto para mandar por el chat (C1 · 0073): más grande que la de un producto, para
+ * que un albarán o una etiqueta se lean, y reducida igual en el móvil antes de subir
+ * (0071, lo que decido yo, 12). Sin miniatura: el chat la pinta a su tamaño.
+ */
+export async function reducirParaElChat(
+  fichero: File,
+): Promise<{ readonly tipo: 'image/webp' | 'image/jpeg'; readonly contenido: string }> {
+  const imagen = await cargar(fichero);
+  const tipo = sabeEscribirWebp() ? 'image/webp' : 'image/jpeg';
+  const medidas = loQueCabe(imagen.naturalWidth, imagen.naturalHeight, 1600);
+  const grande = lienzo(medidas.ancho, medidas.alto);
+  grande.pincel.drawImage(imagen, 0, 0, medidas.ancho, medidas.alto);
+  let foto = grande.lienzo.toDataURL(tipo, 0.82);
+  for (const calidad of [0.72, 0.62, 0.52]) {
+    if (pesa(foto) <= 400 * 1024) break;
+    foto = grande.lienzo.toDataURL(tipo, calidad);
+  }
+  if (pesa(foto) > 1500 * 1024) throw new Error('Esa foto no cabe ni reducida.');
+  return { tipo, contenido: soloElContenido(foto) };
+}

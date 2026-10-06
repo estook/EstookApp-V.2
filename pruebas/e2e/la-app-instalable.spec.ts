@@ -304,3 +304,67 @@ test('Ajustes → Avisos: este móvil, la columna «Móvil» y cuándo suena', a
   );
   expect(movil.cuandoSuena).toMatchObject({ modo: 'fuera_del_silencio', deFabrica: false });
 });
+
+/**
+ * Lo que la pantalla solo hace con un móvil de verdad o con un fichaje raro: que la API
+ * contesta. Las reglas, una a una, en `base-de-datos/pruebas/la-app-instalable.prueba.ts`.
+ */
+test('revisar un fichaje, apuntar uno que falta y el móvil, contra la API', async ({
+  page,
+}, info) => {
+  const HORA = 60 * 60 * 1000;
+  const lucia = await alguienNuevo(page.request, `${info.project.name}-revisar`, true);
+  const suyo = lucia.token ?? '';
+
+  // Con más de doce horas sin señal, el fichaje queda por revisar; Rosa lo da por bueno.
+  const entrada = await page.request.post(`${API}/v1/comandos/fichar_entrada`, {
+    headers: {
+      authorization: `Bearer ${suyo}`,
+      'x-idempotencia': `entrada-${Date.now()}-${Math.random()}`,
+      'x-hecho-hace': String(13 * HORA),
+    },
+    data: { sin_donde: 'sin_senal' },
+  });
+  expect(entrada.status(), await entrada.text()).toBe(200);
+  await ejecutar(page.request, suyo, 'fichar_salida', { sin_donde: 'sin_senal' });
+  const antes = await consultar<{ fichajes: { fichajeId: string; porRevisar: boolean }[] }>(
+    page.request,
+    lucia.rosa,
+    'fichajes_de_una_persona',
+    { persona_id: lucia.personaId },
+  );
+  const porRevisar = antes.fichajes.find((f) => f.porRevisar);
+  expect(porRevisar).toBeDefined();
+  await ejecutar(page.request, lucia.rosa, 'dar_por_bueno_el_fichaje', {
+    fichaje_id: porRevisar?.fichajeId,
+  });
+
+  // Uno que se le olvidó hace tres días, apuntado a mano con su porqué.
+  const dia = new Date(Date.now() - 3 * 24 * HORA);
+  dia.setUTCHours(8, 0, 0, 0);
+  const hecho = await ejecutar<{ minutos: number }>(
+    page.request,
+    lucia.rosa,
+    'apuntar_fichaje_que_falta',
+    {
+      persona_id: lucia.personaId,
+      entro_en: dia.toISOString(),
+      salio_en: new Date(dia.getTime() + 4 * HORA).toISOString(),
+      motivo: 'Fichó en la tablet sin conexión con otro PIN',
+    },
+  );
+  expect(hecho.minutos).toBe(240);
+
+  // El móvil: se pone, se prueba (con el de mentira) y se quita.
+  const direccion = `https://fcm.googleapis.com/fcm/send/e2e-${info.project.name}-${Date.now()}`;
+  await ejecutar(page.request, suyo, 'poner_este_movil', {
+    direccion,
+    p256dh: `B${'A'.repeat(86)}`,
+    auth: 'A'.repeat(22),
+    aparato: 'Android · Chrome',
+  });
+  await ejecutar(page.request, suyo, 'probar_mi_movil', {});
+  await ejecutar(page.request, suyo, 'quitar_este_movil', { direccion });
+  const despues = await consultar<{ moviles: unknown[] }>(page.request, suyo, 'mi_movil');
+  expect(despues.moviles).toEqual([]);
+});

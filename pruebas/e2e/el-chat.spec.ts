@@ -1,0 +1,209 @@
+import { expect, test, type APIRequestContext } from '@playwright/test';
+import { recargarSinQueSeCaiga } from './abrir.ts';
+import { API, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
+
+/**
+ * C1 · el chat del equipo, desde la pantalla (decisiones 0071 y 0073).
+ *
+ * Lo que tiene que funcionar con el dedo: abrir el chat desde la barra de arriba,
+ * escribir en «Todo el equipo», responder, reaccionar, que a otro le salga sin leer, y
+ * que un privado no lo vea quien lleva el local. Las reglas de quién ve qué, una a una,
+ * están en `base-de-datos/pruebas/el-chat.prueba.ts`; aquí, que la pantalla las cumple.
+ *
+ * Cada vuelta escribe un texto suyo (navegador y hora): la base de pruebas es la misma
+ * para los tres navegadores, que corren a la vez.
+ */
+
+const ROSA = 'rosa@ejemplo.estook.com'; // gerente de Bar Centro
+const MARCOS = 'marcos@ejemplo.estook.com'; // cocinero de Bar Centro
+const SARA = 'sara@ejemplo.estook.com'; // camarera de Bar Centro
+
+async function losCanales(
+  request: APIRequestContext,
+  token: string,
+): Promise<{ id: string; tipo: string; nombre: string; sinLeer: number }[]> {
+  await ejecutarEnLaApi(request, token, 'abrir_el_chat', {});
+  const respuesta = await request.get(`${API}/v1/consultas/mis_canales`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  const cuerpo = (await respuesta.json()) as {
+    datos: { canales: { id: string; tipo: string; nombre: string; sinLeer: number }[] };
+  };
+  return cuerpo.datos.canales;
+}
+
+test('se escribe en «Todo el equipo», se responde y se reacciona', async ({
+  page,
+  request,
+}, info) => {
+  const marca = `${info.project.name}-${String(Date.now())}`;
+  const marcos = await tokenDe(request, MARCOS);
+  const equipo = (await losCanales(request, marcos)).find((c) => c.tipo === 'equipo');
+  await ejecutarEnLaApi(request, marcos, 'escribir_en_el_chat', {
+    canal_id: equipo?.id,
+    texto: `¿Viene el pescado a las nueve? ${marca}`,
+  });
+
+  await entrarEnLaApp(page, ROSA);
+  await page
+    .getByRole('banner')
+    .getByRole('button', { name: /^Chat del equipo/ })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await expect(page.getByRole('heading', { name: 'Chat', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: /^Todo el equipo/ }).click();
+
+  const conversacion = page.getByRole('region', { name: 'Conversación' });
+  await expect(conversacion.getByText(`¿Viene el pescado a las nueve? ${marca}`)).toBeVisible();
+
+  // Responder a Marcos y nombrarle con «@».
+  const suyo = conversacion.getByRole('listitem').filter({ hasText: marca }).last();
+  await suyo.getByRole('button', { name: 'Opciones del mensaje' }).click();
+  await page.getByRole('button', { name: 'Responder' }).click();
+  await expect(conversacion.getByText('Respondiendo a Marcos')).toBeVisible();
+  const caja = conversacion.getByRole('textbox', { name: 'Escribe un mensaje' });
+  await caja.fill('@Mar');
+  await conversacion
+    .getByRole('list', { name: 'A quién nombrar' })
+    .getByRole('button', { name: 'Marcos' })
+    .click();
+  await caja.pressSequentially(`sí, a las nueve ${marca}`);
+  await conversacion.getByRole('button', { name: 'Mandar' }).click();
+
+  const mio = conversacion.getByRole('listitem').filter({ hasText: `sí, a las nueve ${marca}` });
+  await expect(mio).toBeVisible();
+  await expect(mio.getByText('@Marcos')).toBeVisible();
+  // La respuesta lleva dentro a qué responde.
+  await expect(mio.getByText(`¿Viene el pescado a las nueve? ${marca}`)).toBeVisible();
+
+  // Reaccionar al de Marcos con 👍, y se ve debajo.
+  await suyo.getByRole('button', { name: 'Opciones del mensaje' }).click();
+  await page.getByRole('button', { name: 'Reaccionar con 👍' }).click();
+  await expect(suyo.getByRole('button', { name: /^👍 1/ })).toBeVisible();
+  // Lo que le sale sin leer a Marcos, en la tercera: aquí escriben las tres vueltas a la
+  // vez, y escribir da por leído lo de antes.
+});
+
+test('un privado lo abre cualquiera, y quien lleva el local no lo ve', async ({
+  page,
+  request,
+}, info) => {
+  const marca = `${info.project.name}-${String(Date.now())}`;
+  await entrarEnLaApp(page, SARA);
+  await irA(page, 'chat');
+  await page.getByRole('button', { name: 'Nueva' }).click();
+  const hoja = page.getByRole('dialog', { name: 'Conversación nueva' });
+  await hoja.getByRole('checkbox', { name: 'Marcos' }).check();
+  await hoja.getByRole('button', { name: 'Empezar' }).click();
+
+  const conversacion = page.getByRole('region', { name: 'Conversación' });
+  await expect(conversacion.getByRole('heading', { name: 'Marcos', level: 2 })).toBeVisible();
+  await conversacion
+    .getByRole('textbox', { name: 'Escribe un mensaje' })
+    .fill(`¿Me cambias el domingo? ${marca}`);
+  await conversacion.getByRole('button', { name: 'Mandar' }).click();
+  await expect(conversacion.getByText(`¿Me cambias el domingo? ${marca}`)).toBeVisible();
+
+  // Rosa, que lleva el local, no lo ve en su lista ni buscándolo.
+  const rosa = await tokenDe(request, ROSA);
+  const suyos = await losCanales(request, rosa);
+  expect(suyos.some((c) => c.tipo === 'privado' && c.nombre.includes('Sara'))).toBe(false);
+  const buscado = await request.get(
+    `${API}/v1/consultas/buscar_en_el_chat?texto=${encodeURIComponent(marca)}`,
+    { headers: { authorization: `Bearer ${rosa}` } },
+  );
+  const encontrados = ((await buscado.json()) as { datos: { encontrados: unknown[] } }).datos
+    .encontrados;
+  expect(encontrados).toEqual([]);
+});
+
+test('un canal nuevo: se corrige, se borra, se retira, se silencia, se añade gente y se sale', async ({
+  page,
+  request,
+}, info) => {
+  const marca = `${info.project.name}-${String(Date.now())}`;
+  const nombre = `Barra ${marca.slice(-6)}`;
+  await entrarEnLaApp(page, ROSA);
+  await irA(page, 'chat');
+
+  // Rosa, que lleva el local, crea «Barra» con Marcos dentro.
+  await page.getByRole('button', { name: 'Nueva' }).click();
+  const hoja = page.getByRole('dialog', { name: /^(Conversación nueva|Canal nuevo)$/ });
+  await hoja.getByRole('radio', { name: /^Canal/ }).click();
+  await hoja.getByLabel('Nombre del canal').fill(nombre);
+  await hoja.getByRole('checkbox', { name: 'Marcos' }).check();
+  await hoja.getByRole('button', { name: 'Crear el canal' }).click();
+
+  const conversacion = page.getByRole('region', { name: 'Conversación' });
+  await expect(conversacion.getByRole('heading', { name: nombre, level: 2 })).toBeVisible();
+  const canalId = /#\/chat\/([0-9a-f-]{36})$/.exec(page.url())?.[1] ?? '';
+  expect(canalId).not.toBe('');
+
+  // Lo suyo: lo escribe, lo corrige (sale «editado») y lo borra para todos.
+  const caja = conversacion.getByRole('textbox', { name: 'Escribe un mensaje' });
+  await caja.fill(`Hay que pedir hielo ${marca}`);
+  await conversacion.getByRole('button', { name: 'Mandar' }).click();
+  const suyo = conversacion.getByRole('listitem').filter({ hasText: `hielo ${marca}` });
+  await expect(suyo).toBeVisible();
+
+  // A Marcos le sale sin leer, en su lista.
+  const marcos = await tokenDe(request, MARCOS);
+  const enSuLista = (await losCanales(request, marcos)).find((c) => c.id === canalId);
+  expect(enSuLista?.sinLeer).toBe(1);
+
+  await suyo.getByRole('button', { name: 'Opciones del mensaje' }).click();
+  await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+  await expect(caja).toHaveValue(`Hay que pedir hielo ${marca}`);
+  await caja.fill(`Hay que pedir hielo y limones ${marca}`);
+  await conversacion.getByRole('button', { name: 'Guardar la corrección' }).click();
+  const corregido = conversacion
+    .getByRole('listitem')
+    .filter({ hasText: `hielo y limones ${marca}` });
+  await expect(corregido.getByText('editado')).toBeVisible();
+
+  await corregido.getByRole('button', { name: 'Opciones del mensaje' }).click();
+  await page.getByRole('button', { name: 'Borrar para todos' }).click();
+  await page.getByRole('button', { name: 'Borrar', exact: true }).click();
+  await expect(conversacion.getByText(`hielo y limones ${marca}`)).toHaveCount(0);
+  await expect(conversacion.getByText('Se eliminó este mensaje').first()).toBeVisible();
+
+  // Lo de Marcos, Rosa lo retira con su porqué.
+  await ejecutarEnLaApi(request, marcos, 'escribir_en_el_chat', {
+    canal_id: canalId,
+    texto: `Esto no va aquí ${marca}`,
+  });
+  // Aquí no hay toque al segundo (la API de pruebas lo da de mentira): se recarga.
+  await recargarSinQueSeCaiga(page);
+  const deMarcos = conversacion.getByRole('listitem').filter({ hasText: `no va aquí ${marca}` });
+  await expect(deMarcos).toBeVisible();
+  await deMarcos.getByRole('button', { name: 'Opciones del mensaje' }).click();
+  await page.getByRole('button', { name: 'Retirar del canal' }).click();
+  const retirar = page.getByRole('dialog', { name: 'Retirar el mensaje' });
+  await retirar.getByLabel('Por qué').fill('No es de la barra');
+  await retirar.getByRole('button', { name: 'Retirar', exact: true }).click();
+  await expect(retirar).toHaveCount(0);
+  await expect(conversacion.getByText(`no va aquí ${marca}`)).toHaveCount(0);
+  await expect(
+    conversacion.getByText('Retirado por quien lleva el local', { exact: true }),
+  ).toBeVisible();
+
+  // Silenciarlo y meter a Sara, desde las opciones de la conversación.
+  await conversacion.getByRole('button', { name: 'Opciones de la conversación' }).click();
+  const opciones = page.getByRole('dialog', { name: nombre });
+  const silenciar = opciones.getByRole('switch', { name: 'Silenciar' });
+  const silenciado = page.waitForResponse((r) => r.url().includes('/silenciar_canal'));
+  await silenciar.locator('xpath=..').click();
+  expect((await silenciado).status()).toBe(200);
+  await expect(silenciar).toBeChecked();
+  await opciones.getByRole('button', { name: 'Añadir gente' }).click();
+  const anadir = page.getByRole('dialog', { name: `Añadir a ${nombre}` });
+  await anadir.getByRole('checkbox', { name: 'Sara' }).check();
+  await anadir.getByRole('button', { name: 'Añadir', exact: true }).click();
+  await expect(anadir).toHaveCount(0);
+  await expect(conversacion.getByText('3 personas')).toBeVisible();
+
+  // Y Marcos se sale: deja de verlo en su lista.
+  await ejecutarEnLaApi(request, marcos, 'salir_del_canal', { canal_id: canalId });
+  expect((await losCanales(request, marcos)).some((c) => c.id === canalId)).toBe(false);
+});

@@ -2,23 +2,94 @@
 
 > ## Cómo está
 >
-> Comprobado el 2 de octubre de 2026, leyendo la base de producción.
+> Comprobado el 6 de octubre de 2026, leyendo la base de producción.
 >
-> | Qué                               | Cómo está                                                                                      |
-> | --------------------------------- | ---------------------------------------------------------------------------------------------- |
-> | Pull requests                     | **Fusionadas hasta la #88** (3-oct): el repaso del 3-oct, **sin migrar ni desplegar**          |
-> | La base de datos                  | **54 de 54** migraciones, igual que `main`                                                     |
-> | La API                            | **Desplegada con I**: 66 y 137, los avisos al móvil encendidos y el reloj latiendo cada minuto |
-> | Los PDF (Cloudflare)              | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                       |
-> | **Las copias de seguridad**       | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día              |
-> | A1 · la puerta del admin          | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                    |
-> | E1, V, O, E2, L, A2, R1, R2, H, I | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                                 |
+> | Qué                               | Cómo está                                                                                  |
+> | --------------------------------- | ------------------------------------------------------------------------------------------ |
+> | Pull requests                     | **Fusionadas hasta la #89** (3-oct). Abierta: **C1 · Hablar**, el chat                     |
+> | La base de datos                  | **55 de 55** migraciones, igual que `main`                                                 |
+> | La API                            | **Desplegada con el repaso**: 66 y 138, los avisos al móvil encendidos y el reloj latiendo |
+> | Los PDF (Cloudflare)              | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                   |
+> | **Las copias de seguridad**       | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día          |
+> | A1 · la puerta del admin          | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                |
+> | E1, V, O, E2, L, A2, R1, R2, H, I | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                             |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · el repaso del 3-oct (el atún, anular y el logo)
+## Lo que te toca ahora · C1 · Hablar, el chat del equipo
+
+El chat de verdad ([decisión 0073](decisiones/0073-c1-hablar.md)), con tus seis respuestas
+(0071). Una migración (la **0056**) y un despliegue. **Ninguna clave nueva**: usa las del
+almacén que ya están puestas.
+
+**Qué trae:** arriba, el bocadillo del chat con su número. Dentro: «Todo el equipo»,
+«Cocina» y «Sala», que salen solos; **canales** que creas tú («Barra», «Encargados») y
+**privados** que abre cualquiera y que **nadie más ve, ni tú**. Texto, **fotos**,
+**documentos** y **notas de voz**; responder, reaccionar, **@nombrar**, corregir 15 minutos,
+borrar, y retirar de un canal. **Leído** siempre a la vista. **Al segundo** con la app
+abierta, y **en el móvil** con la app cerrada, en tu turno o fuera de tus horas de silencio.
+
+### 1 · Fusionar
+
+En **github.com** → **Pull requests** → **«C1 · Hablar…»** → con las **tres comprobaciones
+en verde** → **Merge pull request** → **Confirm merge**.
+
+### 2 · Aplicar la migración
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0056_el_chat.sql ... hecho
+  1 migracion(es) aplicadas · 56 en total
+```
+
+### 3 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`**
+→ **Run workflow**. Espera al **círculo verde**. Después:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 70» consultas y «los 151» comandos.
+
+### 4 · Probarlo con dos personas
+
+La web se publica sola al fusionar. Con **dos móviles** (mejor un Android y un iPhone) y
+**dos personas de IKATZ**:
+
+1. Los dos: recargad Estook (en el móvil, cerradla y abridla). Arriba sale el **bocadillo**.
+2. Uno escribe en **Todo el equipo**. En el otro, con el chat abierto, **sale en uno o dos
+   segundos**, sin recargar.
+3. Mandad una **foto**, un **PDF** y una **nota de voz** (el micrófono, a la derecha). La
+   nota de un móvil **se tiene que oír en el otro**.
+4. Con la app **cerrada** en uno, escribe desde el otro: **le suena el móvil** (si está en
+   su turno, o fuera de sus horas de silencio).
+5. Abre un **privado** entre dos camareros: tú, como gerente, **no lo ves** en tu lista.
+
+Si algo no sale como aquí, hazle una captura y me la pasas.
+
+---
+
+## El repaso del 3-oct (el atún, anular y el logo) · **hecho**
+
+Fusionado (#88 y #89), migrado (0055) y desplegado (66 y 138), comprobado en producción el
+3-oct. La venta del atún ya la anulaste tú desde su ficha.
 
 Los tres fallos que viste ([decisión 0072](decisiones/0072-el-repaso-del-3-oct.md)). Una
 migración (la **0055**) y un despliegue.
@@ -106,8 +177,8 @@ Recarga la app (**Ctrl + F5** en el ordenador; en el móvil, ciérrala y ábrela
 ## C · El chat, el plan (#87) · **contestado** (3-oct)
 
 **Sí a las seis** ([decisión 0071](decisiones/0071-las-respuestas-de-c.md)). En la 5, la
-casilla de mandar el horario al chat viene marcada **y se puede desmarcar**. Lo siguiente es
-**C1 · Hablar**, después de este repaso.
+casilla de mandar el horario al chat viene marcada **y se puede desmarcar**. **C1 · Hablar**
+está arriba; después viene **C2 · Lo oficial**.
 
 ---
 

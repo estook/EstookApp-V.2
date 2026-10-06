@@ -666,6 +666,10 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // tramos, publicados o de siempre) y `pedidos_por_llegar` (qué pedido mandado tiene
     // que llegar y a qué hora). Las tres **solo contestan al sistema**, como
     // `quien_recibe`. Son cincuenta y una.
+    //
+    // **Y la 0056 (C1) añade dos, para el chat**: `puede_ver_el_canal`, la única regla
+    // de quién ve cada canal (mira las membresías de otros), y `quien_ve_el_canal`, que
+    // contesta a quien ve ese canal y al sistema. Son cincuenta y tres.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -712,7 +716,9 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'pines_para_entrar',
       'poner_credencial',
       'poner_de_la_casa',
+      'puede_ver_el_canal',
       'quien_recibe',
+      'quien_ve_el_canal',
       'reconocer_dispositivo',
       'registro_pendiente_de',
       'renombrar_desde_el_admin',

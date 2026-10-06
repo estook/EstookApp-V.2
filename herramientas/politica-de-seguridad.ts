@@ -63,6 +63,11 @@ export interface ComplementoDeVite {
 export interface OpcionesDeLaPolitica {
   /** `VITE_API_URL`, tal cual. Vacia si no hay. */
   readonly direccionDeLaApi: string;
+  /**
+   * `VITE_SUPABASE_URL`, tal cual (C1 · 0073). Con ella, la app se conecta en vivo al
+   * chat por `wss:` a **ese** proyecto y a ningún otro. Vacía si no hay.
+   */
+  readonly direccionDeSupabase?: string | undefined;
   readonly enDesarrollo: boolean;
 }
 
@@ -78,9 +83,11 @@ export function origenDe(direccion: string | undefined): string | null {
 
 export function politicaDeSeguridad({
   direccionDeLaApi,
+  direccionDeSupabase,
   enDesarrollo,
 }: OpcionesDeLaPolitica): string {
   const origen = origenDe(direccionDeLaApi);
+  const supabase = origenDe(direccionDeSupabase);
 
   const conecta: string[] = ["'self'", 'https:'];
   // Solo si no es `https:`, que ya esta puesto. En desarrollo la API de pruebas
@@ -88,6 +95,11 @@ export function politicaDeSeguridad({
   if (origen !== null && !origen.startsWith('https:')) conecta.push(origen);
   // Y el canal de recarga en caliente de Vite, que es un websocket.
   if (enDesarrollo) conecta.push('ws://localhost:*', 'http://localhost:*');
+  // Lo que llega al segundo en el chat (0073): un websocket a nuestro Supabase, solo a
+  // ese. `https:` no cubre `wss:`.
+  if (supabase !== null && supabase.startsWith('https://')) {
+    conecta.push(supabase.replace(/^https:/, 'wss:'));
+  }
 
   return [
     "default-src 'self'",
@@ -103,6 +115,9 @@ export function politicaDeSeguridad({
     // el navegador lo bloquea en silencio. Lo cazo la prueba del alta.
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
+    // Las notas de voz del chat (0073): las grabadas, en `blob:` antes de mandarlas, y
+    // las de los demás, del almacén con enlace firmado (`https:`).
+    "media-src 'self' blob: https:",
     `connect-src ${conecta.join(' ')}`,
     "object-src 'none'",
     "base-uri 'self'",
@@ -113,6 +128,7 @@ export function politicaDeSeguridad({
 /** El complemento de Vite que la mete en el HTML de las cuatro aplicaciones. */
 export function laPoliticaDeSeguridad({
   direccionDeLaApi,
+  direccionDeSupabase,
   enDesarrollo,
 }: OpcionesDeLaPolitica): ComplementoDeVite {
   return {
@@ -123,7 +139,7 @@ export function laPoliticaDeSeguridad({
           tag: 'meta',
           attrs: {
             'http-equiv': 'Content-Security-Policy',
-            content: politicaDeSeguridad({ direccionDeLaApi, enDesarrollo }),
+            content: politicaDeSeguridad({ direccionDeLaApi, direccionDeSupabase, enDesarrollo }),
           },
           injectTo: 'head-prepend',
         },

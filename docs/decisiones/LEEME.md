@@ -83,3 +83,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0070** | I · la app instalable: en la pantalla de inicio, sin conexión y con avisos al móvil                                    |
 | **0071** | Las respuestas de C: dos entregas, sin traducción, canales solos, todos escriben, el horario al chat y «leído» siempre |
 | **0072** | El repaso del 3-oct: sacar más de lo que hay se confirma, lo mal tecleado se anula y el logo lleva al Panel            |
+| **0073** | C1 · Hablar: el chat del equipo, al segundo y en el móvil                                                              |

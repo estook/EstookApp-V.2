@@ -1,4 +1,4 @@
-import { IconoAvisos } from '@estook/iconos';
+import { IconoAvisos, IconoChat } from '@estook/iconos';
 import { numeroDeLaCampana } from '@estook/dominio';
 
 /**
@@ -14,6 +14,27 @@ export function LaCampana({ sinLeer }: { readonly sinLeer: number }) {
   return (
     <span className="relative">
       <IconoAvisos size={20} />
+      {numero !== null && (
+        <span
+          aria-hidden
+          className="absolute -right-[9px] -top-[7px] h-[18px] min-w-[18px] rounded-redondo bg-mal px-[4px] text-center text-[11px] font-bold leading-[18px] text-superficie"
+        >
+          {numero}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/**
+ * El botón del chat de las dos barras de arriba (C1 · 0073): el bocadillo y, encima,
+ * **cuántos mensajes hay sin leer**, como la campana y con el mismo dibujo.
+ */
+export function ElBocadillo({ sinLeer }: { readonly sinLeer: number }) {
+  const numero = numeroDeLaCampana(sinLeer);
+  return (
+    <span className="relative">
+      <IconoChat size={20} />
       {numero !== null && (
         <span
           aria-hidden

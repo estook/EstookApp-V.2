@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  FIJADOS_POR_CANAL,
   LO_QUE_SE_ADJUNTA,
   PERSONAS_EN_UN_PRIVADO,
   REACCIONES,
@@ -9,20 +10,25 @@ import {
   TOPE_DEL_MENSAJE,
   TOPE_DEL_NOMBRE_DEL_CANAL,
   aQuienSeNombra,
+  fechaOperativa,
   sePuedeCorregir,
   type TipoDeAdjunto,
 } from '@estook/dominio';
+import { programarLosRecordatorios } from '../al-movil.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import {
   apuntarParaElMovil,
   asegurarLosCanales,
   elLocalDelChat,
+  llevaCanales,
   tocarElCanal,
   yaNoHaceFaltaElMovil,
 } from '../chat.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
+import { laSemana, unLunes } from '../horario.ts';
 import { comoLista } from '../listas.ts';
+import { loQuePuede } from '../lo-que-puede.ts';
 import { enNombreDelSistema } from '../pago.ts';
 
 /**
@@ -68,13 +74,16 @@ interface MensajeTomado {
   borrado_en: Date | null;
   adjunto_clave: string | null;
   texto: string | null;
+  pide_confirmar: boolean;
+  fijado: boolean;
 }
 
 /** Un mensaje que se ve, tomado para cambiarlo. */
 async function elMensaje(contexto: Contexto, mensajeId: string): Promise<MensajeTomado> {
   const filas = await contexto.sql<MensajeTomado[]>`
     select m.id::text as id, m.canal_id, m.local_id, m.autor_id, c.tipo::text as tipo,
-           m.creado_en, m.borrado_en, m.adjunto_clave, m.texto
+           m.creado_en, m.borrado_en, m.adjunto_clave, m.texto, m.pide_confirmar,
+           m.fijado_en is not null as fijado
       from estook.mensaje m
       join estook.canal c on c.id = m.canal_id
      where m.id = ${mensajeId}::bigint
@@ -112,6 +121,27 @@ async function sonDelLocal(
     throw new FalloDeAplicacion('faltan_datos', {
       campos: ['personas'],
       porque: 'Solo se puede hablar con gente de este local.',
+    });
+  }
+}
+
+/** Que quien manda la tarjeta vea lo que manda, en ese local. La política decide. */
+async function laTarjetaSeVe(
+  contexto: Contexto,
+  localId: string,
+  tarjeta: { readonly tipo: 'pedido' | 'producto'; readonly id: string },
+): Promise<void> {
+  const filas =
+    tarjeta.tipo === 'pedido'
+      ? await contexto.sql<{ id: string }[]>`
+          select id from estook.pedido_de_compra where id = ${tarjeta.id} and local_id = ${localId}
+        `
+      : await contexto.sql<{ id: string }[]>`
+          select id from estook.producto where id = ${tarjeta.id} and local_id = ${localId}
+        `;
+  if (filas.length === 0) {
+    throw new FalloDeAplicacion('no_existe', {
+      porque: 'Eso no está, o no es de lo que puedes ver.',
     });
   }
 }
@@ -179,9 +209,16 @@ export const entradaEscribirEnElChat = z
       .optional(),
     responde_a: unMensaje.optional(),
     adjunto: unAdjunto.optional(),
+    /** Pedir «Confirmar que lo he leído» (C2 · 0075): quien lleva el equipo, no en privados. */
+    pide_confirmar: z.boolean().optional(),
+    /** Un pedido o un producto, como tarjeta que se abre en su sitio (C2 · 0075). */
+    tarjeta: z
+      .object({ tipo: z.enum(['pedido', 'producto']), id: z.string().uuid() })
+      .strict()
+      .optional(),
   })
   .strict()
-  .refine((e) => (e.texto ?? '') !== '' || e.adjunto !== undefined, {
+  .refine((e) => (e.texto ?? '') !== '' || e.adjunto !== undefined || e.tarjeta !== undefined, {
     message: 'Escribe algo o adjunta un fichero.',
     path: ['texto'],
   });
@@ -269,8 +306,23 @@ export const escribirEnElChat = comando<EntradaEscribirEnElChat, { mensajeId: st
       }
     }
 
+    const pideConfirmar = entrada.pide_confirmar === true;
+    if (pideConfirmar) {
+      if (canal.tipo === 'privado') {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: 'En un privado no se pide confirmar: ya ves quién lo ha leído.',
+        });
+      }
+      if (!(await llevaCanales(contexto, canal.local_id))) {
+        throw new FalloDeAplicacion('sin_permiso', {
+          porque: 'Pedir que confirmen es de quien lleva el equipo: el gerente y los jefes.',
+        });
+      }
+    }
+    if (entrada.tarjeta !== undefined) await laTarjetaSeVe(contexto, canal.local_id, entrada.tarjeta);
+
     const texto = entrada.texto === undefined || entrada.texto === '' ? null : entrada.texto;
-    const personas = texto === null ? [] : await quienVe(contexto, canal.id);
+    const personas = texto === null && !pideConfirmar ? [] : await quienVe(contexto, canal.id);
     const mencionados =
       texto === null ? [] : aQuienSeNombra(texto, personas).filter((p) => p !== personaId);
 
@@ -283,7 +335,7 @@ export const escribirEnElChat = comando<EntradaEscribirEnElChat, { mensajeId: st
       insert into estook.mensaje (
         canal_id, local_id, autor_id, texto, responde_a,
         adjunto_clave, adjunto_tipo, adjunto_nombre, adjunto_mime, adjunto_bytes, adjunto_segundos,
-        menciones, creado_en
+        menciones, creado_en, tarjeta, pide_confirmar
       )
       values (
         ${canal.id}, ${canal.local_id}, ${personaId}, ${texto},
@@ -291,12 +343,34 @@ export const escribirEnElChat = comando<EntradaEscribirEnElChat, { mensajeId: st
         ${adjunto?.clave ?? null}, ${adjunto?.tipo ?? null}, ${adjunto?.nombre ?? null},
         ${adjunto?.mime ?? null}, ${adjunto?.bytes ?? null}, ${adjunto?.segundos ?? null},
         ${comoLista(mencionados)}::text::uuid[],
-        ${contexto.ahora.toISOString()}::timestamptz
+        ${contexto.ahora.toISOString()}::timestamptz,
+        ${entrada.tarjeta === undefined ? null : JSON.stringify(entrada.tarjeta)}::text::jsonb,
+        ${pideConfirmar}
       )
       returning id::text as id
     `;
     const mensajeId = puestos[0]?.id;
     if (mensajeId === undefined) throw new FalloDeAplicacion('sin_permiso');
+
+    // Quién tiene que confirmar: quien ve el canal ahora, menos quien lo pide. Lo apunta
+    // el sistema, con su recordatorio al empezar el siguiente turno de cada uno.
+    if (pideConfirmar) {
+      const tienen = personas.map((p) => p.id).filter((p) => p !== personaId);
+      await enNombreDelSistema(contexto, async () => {
+        for (const persona of tienen) {
+          await contexto.sql`
+            insert into estook.confirmacion_del_mensaje (mensaje_id, persona_id)
+            values (${mensajeId}::bigint, ${persona})
+            on conflict do nothing
+          `;
+        }
+        await programarLosRecordatorios(contexto, {
+          localId: canal.local_id,
+          mensajeId,
+          personas: tienen,
+        });
+      });
+    }
 
     // Lo propio está leído: el número de sin leer no cuenta lo que uno escribe.
     await contexto.sql`

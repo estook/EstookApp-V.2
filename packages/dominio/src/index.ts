@@ -598,6 +598,7 @@ export {
   avisoDeCaducidad,
   avisoDeEntrasEnUnRato,
   avisoDeFichajeApuntado,
+  avisoDeConfirmar,
   avisoDeFichajeCorregido,
   avisoDeFichajeSinApuntar,
   avisoDePedidoQueNoLlega,
@@ -641,6 +642,7 @@ export {
   SIN_CONEXION_COMO_MUCHO_MS,
   SIN_CONEXION_SE_REVISA_MS,
   cuandoPuedeSonar,
+  cuandoSeRecuerda,
   esCuandoSuena,
   estaEnSilencio,
   laHoraDeLoHecho,
@@ -712,6 +714,7 @@ export type {
 // ── C1 · el chat del equipo (0071, 0073) ─────────────────────────────────────
 export {
   CANALES_DE_FABRICA,
+  FIJADOS_POR_CANAL,
   LO_QUE_SE_ADJUNTA,
   MINUTOS_PARA_CORREGIR,
   NOMBRE_DEL_CANAL_DE_FABRICA,
@@ -720,11 +723,13 @@ export {
   SEGUNDOS_DE_VOZ,
   TIPOS_DE_ADJUNTO,
   TIPOS_DE_CANAL,
+  TIPOS_DE_TARJETA,
   TOPE_DEL_ADJUNTO,
   TOPE_DEL_MENSAJE,
   TOPE_DEL_NOMBRE_DEL_CANAL,
   aQuienSeNombra,
   avisoDelChatEnElMovil,
+  correoDelChat,
   duracionEnLetra,
   enUnaLinea,
   esCanalDeFabrica,
@@ -741,4 +746,5 @@ export type {
   Reaccion,
   TipoDeAdjunto,
   TipoDeCanal,
+  TipoDeTarjeta,
 } from './chat.ts';

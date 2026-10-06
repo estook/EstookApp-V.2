@@ -84,3 +84,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0071** | Las respuestas de C: dos entregas, sin traducción, canales solos, todos escriben, el horario al chat y «leído» siempre |
 | **0072** | El repaso del 3-oct: sacar más de lo que hay se confirma, lo mal tecleado se anula y el logo lleva al Panel            |
 | **0073** | C1 · Hablar: el chat del equipo, al segundo y en el móvil                                                              |
+| **0074** | El repaso de C1: el mensaje al momento, el chat con el teclado, las notas de voz y el móvil que no se pierde           |

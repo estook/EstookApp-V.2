@@ -1,4 +1,5 @@
 import {
+  DIAS_QUE_ESPERA_UN_AVISO,
   MINUTOS_ANTES_DE_ENTRAR,
   SILENCIO_DE_FABRICA,
   TIPOS_DE_CANAL,
@@ -406,11 +407,17 @@ export async function mandarLoDelMovil(contexto: Contexto): Promise<{
 
 // ── 1 bis · Lo del chat (C1 · 0073) ──────────────────────────────────────────
 
-/**
- * Cuánto sirve en el móvil un aviso del chat. Pasado eso, si todavía no ha podido
- * sonar, ya no suena: el mensaje sigue en el chat, con su número en el icono.
- */
+/** Cuánto lo guarda el servicio de avisos si el móvil está apagado cuando suena. */
 const LO_QUE_VALE_EL_CHAT = 12 * HORA;
+
+/**
+ * Cuánto espera lo del chat a poder sonar: **hasta su próximo turno**, o hasta que
+ * acaben sus horas de silencio, si no lo ha leído antes (leerlo lo quita). Lo mismo que
+ * los avisos, una semana, para que unos días libres no lo tiren. Antes eran 12 horas y
+ * lo de la víspera de un día libre se perdía sin sonar nunca (6-oct, lección 148).
+ * Pasado eso, sigue en el chat con su número en el icono.
+ */
+const LO_QUE_ESPERA_EL_CHAT = DIAS_QUE_ESPERA_UN_AVISO * 24 * HORA;
 
 interface ChatPendiente {
   readonly persona_id: string;
@@ -512,7 +519,7 @@ async function mandarElChatAlMovil(
       suyos.reduce((n, p) => n + p.cuantos, 0);
 
     for (const p of suyos) {
-      const vale = Date.parse(p.creado_en) + LO_QUE_VALE_EL_CHAT;
+      const vale = Date.parse(p.creado_en) + LO_QUE_ESPERA_EL_CHAT;
       if (cuando === null || cuando.getTime() > vale) {
         await quitar(p);
         continue;

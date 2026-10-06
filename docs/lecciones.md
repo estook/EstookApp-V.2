@@ -520,3 +520,21 @@
      Las tres vueltas escriben en el mismo «Todo el equipo»: el mensaje de Marcos de una
      marcaba como leída la respuesta de Rosa de otra. Lo que depende de quién ha leído qué
      se prueba en un canal propio de la vuelta (`el-chat.spec.ts`).
+147. **Borrar con `where` también obliga a poder leer la fila.** Leer un canal tenía que
+     quitar lo que esperaba al móvil, y lo borraba con la sesión de quien lee; esa tabla
+     solo la lee el sistema, así que el borrado no encontraba nada y no fallaba. A Richi le
+     iba a sonar a las 8:00 lo que había leído a medianoche. Ahora se borra como sistema,
+     con la persona de la sesión (`el-chat.prueba.ts`, 0074).
+148. **Lo que espera a su hora no puede caducar antes de que llegue.** Lo del chat que no
+     podía sonar se tiraba a las 12 horas; quien no tenía turno hasta pasado mañana no se
+     enteraba nunca. Espera lo mismo que los avisos, una semana, y leerlo lo quita
+     (`el-chat.prueba.ts`, 0074).
+149. **Una nota grabada en WebM no dice cuánto dura.** El reproductor del navegador se
+     quedaba con la rueda de «cargando» y «--:--» hasta pulsar play, porque busca la
+     duración dentro del fichero y la grabadora no la escribe. La duración ya se sabe al
+     grabar: el reproductor es nuestro y la enseña sin esperar (`NotaDeVoz.tsx`, 0074).
+150. **Con el teclado abierto, lo que llena la pantalla se mide con el visor visible.** El
+     chat iba entre las dos barras de la página entera; el teclado del iPhone no encoge la
+     página, la empuja, y el chat subía con ella con un hueco encima del teclado. Ahora,
+     con teclado, ocupa justo lo que se ve; y mientras está abierto la página de debajo no
+     se desplaza ni se estira (`conElTeclado.ts`, 0074).

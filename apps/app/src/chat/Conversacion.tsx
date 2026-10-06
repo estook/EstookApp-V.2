@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   PERSONAS_EN_UN_PRIVADO,
   REACCIONES,
-  duracionEnLetra,
   esCanalDeFabrica,
   pesoEnLetra,
   type EstadoDeMiMensaje,
@@ -26,11 +25,15 @@ import {
   IconoHecho,
   IconoLeido,
   IconoMas,
+  IconoReloj,
   IconoSilenciado,
 } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { Escribir } from './Escribir.tsx';
+import { NotaDeVoz } from './NotaDeVoz.tsx';
+import { olvidar, reintentar, type PorMandar } from './porMandar.ts';
+import { usarPorMandar } from '../ganchos/usarPorMandar.ts';
 import { usarUnCanal } from '../ganchos/usarElChat.ts';
 import {
   CLAVE_DE_MIS_CANALES,
@@ -68,6 +71,19 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
   const ultima: UnCanal | undefined = paginas[0];
   const mensajes = [...paginas].reverse().flatMap((p) => p.mensajes);
   const ultimoId = mensajes.at(-1)?.id ?? null;
+
+  // Lo escrito que todavía no está en la lista: sale ya, con su reloj. En cuanto la
+  // lista lo trae, se olvida el de la cola, en el mismo pintado: nunca sale dos veces.
+  const porMandar = usarPorMandar(canalId);
+  const enLaLista = new Set(mensajes.map((m) => m.id));
+  const esperando = porMandar.filter((p) => p.mensajeId === null || !enLaLista.has(p.mensajeId));
+  const llegadas = porMandar
+    .filter((p) => p.mensajeId !== null && enLaLista.has(p.mensajeId))
+    .map((p) => p.clave)
+    .join(',');
+  useEffect(() => {
+    if (llegadas !== '') olvidar(llegadas.split(','));
+  }, [llegadas]);
 
   // La raya de «sin leer», con lo que había leído **al abrir**: si se moviera con cada
   // lectura, desaparecería en cuanto se ve, que es justo cuando hace falta.
@@ -109,7 +125,7 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
   useLayoutEffect(() => {
     const caja = lista.current;
     if (caja !== null && abajo.current) caja.scrollTop = caja.scrollHeight;
-  }, [ultimoId, mensajes.length]);
+  }, [ultimoId, mensajes.length, esperando.length]);
 
   async function refrescar() {
     await cache.invalidateQueries({ queryKey: claveDeUnCanal(canalId) });
@@ -208,7 +224,7 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
           const caja = e.currentTarget;
           abajo.current = caja.scrollHeight - caja.scrollTop - caja.clientHeight < 80;
         }}
-        className="min-h-0 flex-1 overflow-y-auto px-e3 py-e3"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-e3 py-e3"
       >
         {consulta.hasNextPage && (
           <div className="mb-e3 flex justify-center">
@@ -225,7 +241,7 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
             </Boton>
           </div>
         )}
-        {mensajes.length === 0 && (
+        {mensajes.length === 0 && esperando.length === 0 && (
           <p className="py-e6 text-center text-secundario text-texto-suave">
             {esCanalDeFabrica(canal.tipo)
               ? `Aquí habla ${canal.tipo === 'equipo' ? 'todo el equipo' : `la ${canal.nombre.toLowerCase()}`}. Di algo.`
@@ -274,6 +290,27 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
               </Fragment>
             );
           })}
+          {esperando.map((p, i) => {
+            // La raya del día, como la tendrá al llegar: si no, el mensaje salta.
+            const antes = i === 0 ? mensajes.at(-1)?.en : esperando[i - 1]?.en;
+            const otroDia =
+              antes === undefined ||
+              new Date(antes).toDateString() !== new Date(p.en).toDateString();
+            return (
+              <Fragment key={p.clave}>
+                {otroDia && (
+                  <li className="my-e2 flex justify-center">
+                    <span className="rounded-redondo bg-superficie px-e3 py-[2px] text-etiqueta text-texto-suave shadow-s1">
+                      {diaEnLaConversacion(p.en, ahora)}
+                    </span>
+                  </li>
+                )}
+                <li>
+                  <BurbujaPorMandar porMandar={p} personas={personas} />
+                </li>
+              </Fragment>
+            );
+          })}
         </ol>
       </div>
 
@@ -288,11 +325,10 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
         personas={personas}
         respondiendo={respondiendo}
         corrigiendo={corrigiendo}
-        alTerminar={async () => {
+        alTerminar={() => {
           setRespondiendo(null);
           setCorrigiendo(null);
           abajo.current = true;
-          await refrescar();
         }}
         alQuitarRespuesta={() => {
           setRespondiendo(null);
@@ -477,18 +513,7 @@ function Adjunto({ mensaje }: { readonly mensaje: MensajeDelCanal }) {
     );
   }
   if (adjunto.tipo === 'voz') {
-    return (
-      <div className="flex flex-col gap-e1">
-        <audio controls preload="none" src={adjunto.enlace} className="h-10 w-64 max-w-full">
-          <a href={adjunto.enlace}>Oír la nota de voz</a>
-        </audio>
-        {adjunto.segundos !== null && (
-          <span className="text-etiqueta text-texto-suave">
-            Nota de voz · {duracionEnLetra(adjunto.segundos)}
-          </span>
-        )}
-      </div>
-    );
+    return <NotaDeVoz enlace={adjunto.enlace} segundos={adjunto.segundos} mia={mensaje.esMio} />;
   }
   return (
     <a
@@ -609,6 +634,124 @@ function Burbuja({
           <IconoMas size={18} />
         </button>
       )}
+    </div>
+  );
+}
+
+/**
+ * Lo propio que todavía va de camino: igual que una burbuja mía, con un reloj en vez
+ * del ✓. Sin red lo dice y espera; si el servidor no lo acepta, sale en rojo con
+ * «Reintentar» y «Quitar», sin perder lo escrito.
+ */
+function BurbujaPorMandar({
+  porMandar,
+  personas,
+}: {
+  readonly porMandar: PorMandar;
+  readonly personas: readonly PersonaDelCanal[];
+}) {
+  const { adjunto, texto, respondeA, estado, error } = porMandar;
+  const dato = adjunto === null ? null : `data:${adjunto.mime};base64,${adjunto.contenido}`;
+  // La nota, en `blob:`: la política de seguridad no deja oír audio en `data:`.
+  const [voz, setVoz] = useState<string | null>(null);
+  useEffect(() => {
+    if (adjunto?.tipo !== 'voz') return undefined;
+    const bytes = Uint8Array.from(atob(adjunto.contenido), (c) => c.charCodeAt(0));
+    const enlace = URL.createObjectURL(new Blob([bytes], { type: adjunto.mime }));
+    setVoz(enlace);
+    return () => {
+      URL.revokeObjectURL(enlace);
+    };
+  }, [adjunto]);
+  return (
+    <div className="flex flex-row-reverse items-end gap-e2">
+      <div className="flex max-w-[85%] flex-col items-end gap-e1 sm:max-w-[70%]">
+        <div
+          className={clases(
+            'flex flex-col gap-e1 rounded-grande rounded-br-chico bg-naranja-suave px-e3 py-e2 shadow-s1',
+            estado === 'fallo' && 'ring-2 ring-mal',
+          )}
+        >
+          {respondeA !== null && (
+            <span className="block rounded-chico border-l-4 border-naranja bg-fondo px-e2 py-e1">
+              <span className="block text-etiqueta font-semibold">{respondeA.autor}</span>
+              <span className="line-clamp-2 text-etiqueta text-texto-suave">{respondeA.vista}</span>
+            </span>
+          )}
+          {adjunto !== null && dato !== null && adjunto.tipo === 'foto' && (
+            <img
+              src={dato}
+              alt={texto ?? 'Foto'}
+              className="max-h-72 w-full max-w-72 rounded-medio bg-fondo object-cover"
+            />
+          )}
+          {adjunto !== null && voz !== null && adjunto.tipo === 'voz' && (
+            <NotaDeVoz enlace={voz} segundos={adjunto.segundos ?? null} mia />
+          )}
+          {adjunto !== null && adjunto.tipo === 'documento' && (
+            <span className="flex min-h-toque items-center gap-e2 rounded-medio border border-borde bg-superficie px-e3 py-e2">
+              <span className="text-texto-suave">
+                <IconoDocumento size={20} />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-secundario font-medium">{adjunto.nombre}</span>
+                <span className="block text-etiqueta text-texto-suave">
+                  {pesoEnLetra(adjunto.bytes)}
+                </span>
+              </span>
+            </span>
+          )}
+          {texto !== null && (
+            <p className="whitespace-pre-wrap break-words text-cuerpo">
+              <ConNombres texto={texto} personas={personas} />
+            </p>
+          )}
+          <span className="flex items-center justify-end gap-e1 text-etiqueta text-texto-tenue">
+            <span>{horaDelMensaje(porMandar.en)}</span>
+            {estado === 'fallo' ? (
+              <span className="font-medium text-mal">No se ha mandado</span>
+            ) : (
+              <span
+                role="status"
+                aria-label={estado === 'sin_red' ? 'Sin conexión: se manda al volver' : 'Mandando'}
+                className="flex items-center gap-[2px]"
+              >
+                <IconoReloj size={14} />
+                {estado === 'sin_red' && <span>Sin conexión</span>}
+              </span>
+            )}
+          </span>
+        </div>
+        {estado === 'fallo' && (
+          <div className="flex flex-col items-end gap-e1">
+            {error !== null && (
+              <p className="max-w-72 text-right text-etiqueta text-texto-suave">
+                {error.quePasa} {error.queSePuedeHacer}
+              </p>
+            )}
+            <span className="flex gap-e2">
+              <Boton
+                tono="texto"
+                onClick={() => {
+                  olvidar([porMandar.clave]);
+                }}
+              >
+                Quitar
+              </Boton>
+              <Boton
+                tono="secundario"
+                onClick={() => {
+                  reintentar(porMandar.clave);
+                }}
+              >
+                Reintentar
+              </Boton>
+            </span>
+          </div>
+        )}
+      </div>
+      {/* El hueco de las opciones, para que no baile al llegar. */}
+      <span aria-hidden className="size-toque shrink-0" />
     </div>
   );
 }

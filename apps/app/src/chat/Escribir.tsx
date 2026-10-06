@@ -1,11 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   LO_QUE_SE_ADJUNTA,
   TOPE_DEL_ADJUNTO,
   TOPE_DEL_MENSAJE,
   duracionEnLetra,
   pesoEnLetra,
-  type TipoDeAdjunto,
 } from '@estook/dominio';
 import { Avatar, ErrorEnCristiano, clases } from '@estook/ui';
 import {
@@ -20,7 +20,13 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { reducirParaElChat } from '../almacen/reducirFoto.ts';
 import { aBase64, empezarAGrabar, sabeGrabar, type Grabacion } from './grabarVoz.ts';
-import type { MensajeDelCanal, PersonaDelCanal } from './contrato.ts';
+import { mandarCuandoSePueda, type AdjuntoPorMandar } from './porMandar.ts';
+import {
+  CLAVE_DE_MIS_CANALES,
+  claveDeUnCanal,
+  type MensajeDelCanal,
+  type PersonaDelCanal,
+} from './contrato.ts';
 
 /**
  * Escribir en el chat (C1 · 0073).
@@ -32,14 +38,7 @@ import type { MensajeDelCanal, PersonaDelCanal } from './contrato.ts';
  * manda con el botón, como en cualquier chat.
  */
 
-interface AdjuntoListo {
-  readonly tipo: TipoDeAdjunto;
-  readonly mime: string;
-  readonly nombre: string;
-  readonly contenido: string;
-  readonly bytes: number;
-  readonly segundos?: number;
-}
+type AdjuntoListo = AdjuntoPorMandar;
 
 /** Lo que se acepta al adjuntar: fotos, PDF, Word y Excel. */
 const SE_ADJUNTA =
@@ -62,11 +61,12 @@ export function Escribir({
   readonly personas: readonly PersonaDelCanal[];
   readonly respondiendo: MensajeDelCanal | null;
   readonly corrigiendo: MensajeDelCanal | null;
-  readonly alTerminar: () => Promise<void>;
+  readonly alTerminar: () => void;
   readonly alQuitarRespuesta: () => void;
   readonly alDejarDeCorregir: () => void;
 }) {
   const { cliente, yo } = usarSesion();
+  const cache = useQueryClient();
   const [texto, setTexto] = useState('');
   const [adjunto, setAdjunto] = useState<AdjuntoListo | null>(null);
   const [mandando, setMandando] = useState(false);
@@ -197,6 +197,11 @@ export function Escribir({
     }
   }
 
+  async function refrescar() {
+    await cache.invalidateQueries({ queryKey: claveDeUnCanal(canalId) });
+    await cache.invalidateQueries({ queryKey: CLAVE_DE_MIS_CANALES });
+  }
+
   async function mandar(conAdjunto: AdjuntoListo | null = adjunto) {
     const limpio = texto.trim();
     if ((limpio === '' && conAdjunto === null) || mandando) return;
@@ -204,38 +209,75 @@ export function Escribir({
       setAviso(`Como mucho, ${String(TOPE_DEL_MENSAJE)} letras.`);
       return;
     }
-    setMandando(true);
     setError(null);
     setAviso(null);
-    const respuesta =
-      corrigiendo !== null
-        ? await cliente.ejecutar('corregir_mensaje', { mensaje_id: corrigiendo.id, texto: limpio })
-        : await cliente.ejecutar('escribir_en_el_chat', {
-            canal_id: canalId,
-            ...(limpio === '' ? {} : { texto: limpio }),
-            ...(respondiendo === null ? {} : { responde_a: respondiendo.id }),
-            ...(conAdjunto === null
-              ? {}
-              : {
-                  adjunto: {
-                    tipo: conAdjunto.tipo,
-                    mime: conAdjunto.mime,
-                    contenido: conAdjunto.contenido,
-                    ...(conAdjunto.tipo === 'documento' ? { nombre: conAdjunto.nombre } : {}),
-                    ...(conAdjunto.segundos === undefined ? {} : { segundos: conAdjunto.segundos }),
-                  },
-                }),
-          });
-    setMandando(false);
-    if (!respuesta.ok) {
-      setError(respuesta.error);
+
+    // Corregir se espera: cambia algo que ya está, y si no se puede hay que saberlo.
+    if (corrigiendo !== null) {
+      setMandando(true);
+      const respuesta = await cliente.ejecutar('corregir_mensaje', {
+        mensaje_id: corrigiendo.id,
+        texto: limpio,
+      });
+      setMandando(false);
+      if (!respuesta.ok) {
+        setError(respuesta.error);
+        return;
+      }
+      setTexto('');
+      alTerminar();
+      await refrescar();
       return;
     }
+
+    // Lo nuevo sale ya en la conversación y se manda por detrás (`porMandar.ts`).
+    const entrada = {
+      canal_id: canalId,
+      ...(limpio === '' ? {} : { texto: limpio }),
+      ...(respondiendo === null ? {} : { responde_a: respondiendo.id }),
+      ...(conAdjunto === null
+        ? {}
+        : {
+            adjunto: {
+              tipo: conAdjunto.tipo,
+              mime: conAdjunto.mime,
+              contenido: conAdjunto.contenido,
+              ...(conAdjunto.tipo === 'documento' ? { nombre: conAdjunto.nombre } : {}),
+              ...(conAdjunto.segundos === undefined ? {} : { segundos: conAdjunto.segundos }),
+            },
+          }),
+    };
+    mandarCuandoSePueda(
+      {
+        clave: crypto.randomUUID(),
+        canalId,
+        texto: limpio === '' ? null : limpio,
+        adjunto: conAdjunto,
+        respondeA:
+          respondiendo === null
+            ? null
+            : {
+                id: respondiendo.id,
+                autor: respondiendo.autor,
+                vista:
+                  respondiendo.texto ??
+                  (respondiendo.adjunto?.tipo === 'voz' ? 'Nota de voz' : 'Fichero'),
+              },
+        en: new Date(Date.now()).toISOString(),
+        estado: 'mandando',
+        error: null,
+        mensajeId: null,
+      },
+      (clave) =>
+        cliente.ejecutar<{ mensajeId: string }>('escribir_en_el_chat', entrada, {
+          claveDeIdempotencia: clave,
+        }),
+      refrescar,
+    );
     setTexto('');
     setAdjunto(null);
     setNombrando(null);
-    await alTerminar();
-    caja.current?.focus();
+    alTerminar();
   }
 
   async function empezarVoz() {
@@ -277,7 +319,7 @@ export function Escribir({
   const conMicrofono = !hayAlgo && corrigiendo === null && sabeGrabar();
 
   return (
-    <div className="border-t border-borde bg-superficie px-e2 pb-[max(var(--spacing-e2),env(safe-area-inset-bottom))] pt-e2 lg:pb-e3">
+    <div className="border-t border-borde bg-superficie px-e2 pb-[max(var(--spacing-e2),env(safe-area-inset-bottom))] pt-e2 max-lg:[[data-teclado]_&]:pb-e2 lg:pb-e3">
       {error !== null && (
         <div className="pb-e2">
           <ErrorEnCristiano error={error} />
@@ -472,6 +514,11 @@ export function Escribir({
               type="button"
               aria-label={corrigiendo !== null ? 'Guardar la corrección' : 'Mandar'}
               disabled={!hayAlgo || mandando}
+              // Que la caja no pierda el foco: si no, en el móvil el teclado se cierra
+              // y se vuelve a abrir con cada mensaje, y la pantalla da un salto.
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
               onClick={() => {
                 void mandar();
               }}

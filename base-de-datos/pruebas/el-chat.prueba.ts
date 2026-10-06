@@ -395,4 +395,39 @@ describe('el móvil', () => {
     );
     expect(rows[0]?.cuantos).toBe(1);
   });
+
+  // Lección 147: con la sesión de quien lee, el borrado no veía la fila y no quitaba
+  // nada. A Richi le iba a sonar a las 8:00 lo que había leído a medianoche.
+  it('leer el canal quita lo que esperaba: no suena lo ya leído', async () => {
+    const equipo = await elDe(marcos, 'equipo');
+    const ultimo = (await losMensajes(marcos, equipo)).at(-1);
+    losDatos(await api.ejecutar(marcos, 'leer_el_canal', { canal_id: equipo, hasta: ultimo?.id }));
+    const { rows } = await base.bd.query<{ cuantos: number }>(
+      'select count(*)::int as cuantos from estook.chat_al_movil',
+    );
+    expect(rows[0]?.cuantos).toBe(0);
+  });
+
+  // Lección 148: lo que no podía sonar en doce horas se tiraba sin sonar nunca. Espera a
+  // que pueda (aquí, a las 14:00 del día siguiente, dieciocho horas después).
+  it('si su silencio es largo, espera a que acabe y no se tira', async () => {
+    losDatos(
+      await api.ejecutar(marcos, 'guardar_cuando_suena', {
+        modo: 'fuera_del_silencio',
+        desde: '20:00',
+        hasta: '14:00',
+      }),
+    );
+    ahora = new Date('2026-10-05T18:30:00Z'); // 20:30 en Madrid
+    const equipo = await elDe(rosa, 'equipo');
+    const antes = movil.mandados.length;
+    await escribir(rosa, equipo, 'Mañana hay inventario a las cuatro');
+    expect(movil.mandados.length).toBe(antes);
+    const { rows } = await base.bd.query<{ cuantos: number; movil_desde: string }>(
+      `select count(*)::int as cuantos, max(movil_desde)::text as movil_desde
+         from estook.chat_al_movil`,
+    );
+    expect(rows[0]?.cuantos).toBe(1);
+    expect(new Date(rows[0]?.movil_desde ?? '').toISOString()).toBe('2026-10-06T12:00:00.000Z');
+  });
 });

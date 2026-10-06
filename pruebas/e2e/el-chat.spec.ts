@@ -85,6 +85,48 @@ test('se escribe en «Todo el equipo», se responde y se reacciona', async ({
   // vez, y escribir da por leído lo de antes.
 });
 
+// Repaso de C1 (6-oct): «tarda en enviarse y resulta raro; mejor que salga de golpe y se
+// envíe cuando pueda». Con el servidor parado a propósito, el mensaje ya está, con su
+// reloj, y la caja vacía; al contestar, el reloj se va y salen sus opciones. Y mientras el
+// chat está abierto, la página de debajo no se mueve.
+test('lo escrito sale al momento, con su reloj, y se manda por detrás', async ({ page }, info) => {
+  const marca = `${info.project.name}-${String(Date.now())}`;
+  await entrarEnLaApp(page, SARA);
+  await irA(page, 'chat');
+  await page.getByRole('button', { name: /^Todo el equipo/ }).click();
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).toBe(
+    'hidden',
+  );
+
+  let soltar: () => void = () => undefined;
+  const parado = new Promise<void>((resolver) => {
+    soltar = resolver;
+  });
+  await page.route('**/comandos/escribir_en_el_chat', async (ruta) => {
+    await parado;
+    await ruta.continue();
+  });
+
+  const conversacion = page.getByRole('region', { name: 'Conversación' });
+  const caja = conversacion.getByRole('textbox', { name: 'Escribe un mensaje' });
+  await caja.fill(`Ya estoy en la puerta ${marca}`);
+  await conversacion.getByRole('button', { name: 'Mandar' }).click();
+  const mio = conversacion.getByRole('listitem').filter({ hasText: `en la puerta ${marca}` });
+  await expect(mio.getByRole('status', { name: 'Mandando' })).toBeVisible();
+  await expect(caja).toHaveValue('');
+
+  soltar();
+  await expect(mio.getByRole('button', { name: 'Opciones del mensaje' })).toBeVisible();
+  await expect(mio.getByRole('status', { name: 'Mandando' })).toHaveCount(0);
+  await expect(conversacion.getByText(`Ya estoy en la puerta ${marca}`)).toHaveCount(1);
+
+  // Fuera del chat, la página vuelve a desplazarse.
+  await irA(page, '');
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).not.toBe(
+    'hidden',
+  );
+});
+
 test('un privado lo abre cualquiera, y quien lleva el local no lo ve', async ({
   page,
   request,
@@ -145,7 +187,8 @@ test('un canal nuevo: se corrige, se borra, se retira, se silencia, se añade ge
   await caja.fill(`Hay que pedir hielo ${marca}`);
   await conversacion.getByRole('button', { name: 'Mandar' }).click();
   const suyo = conversacion.getByRole('listitem').filter({ hasText: `hielo ${marca}` });
-  await expect(suyo).toBeVisible();
+  // Sale al momento; las opciones, cuando ya ha llegado al servidor.
+  await expect(suyo.getByRole('button', { name: 'Opciones del mensaje' })).toBeVisible();
 
   // A Marcos le sale sin leer, en su lista.
   const marcos = await tokenDe(request, MARCOS);

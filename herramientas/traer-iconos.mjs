@@ -153,6 +153,18 @@ const ICONOS = {
   'scan-barcode': 'Escanear',
   pin: 'Tablon',
   upload: 'Subir',
+  // C1 · el chat (0073): mandar, grabar una nota de voz, adjuntar, responder, silenciar
+  // un canal, oír y parar una nota, y poner una reacción.
+  'send-horizontal': 'Enviar',
+  mic: 'Microfono',
+  paperclip: 'Adjuntar',
+  reply: 'Responder',
+  'bell-off': 'Silenciado',
+  play: 'Reproducir',
+  pause: 'Pausa',
+  square: 'Detener',
+  'smile-plus': 'Reaccionar',
+  'check-check': 'Leido',
 };
 
 async function traer(nombre) {

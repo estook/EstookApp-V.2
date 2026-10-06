@@ -17,6 +17,7 @@
     "@estook/permisos": "workspace:*",
     "@estook/ui": "workspace:*",
     "@estook/utiles": "workspace:*",
+    "@supabase/realtime-js": "^2.117.2",
     "@tanstack/react-query": "^5",
     "barcode-detector": "^3",
     "pdfjs-dist": "^5",

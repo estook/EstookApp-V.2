@@ -534,6 +534,14 @@ una de las veinte mejoras: entró el 30-sep, al adelantar el chat de M23
 ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)). Trae también lo
 que I dejó fuera, **que lo que cambia se vea al segundo**.
 
+**Las respuestas** (3-oct): sí a las seis
+([0071](decisiones/0071-las-respuestas-de-c.md)).
+
+**C1 · Hablar** (6-oct): construida, con la migración `0056`
+([0073](decisiones/0073-c1-hablar.md)). Los tres canales de fábrica, canales y privados,
+texto, fotos, documentos y notas de voz, leído a la vista, al segundo y en el móvil. Falta
+**C2 · Lo oficial**.
+
 ---
 
 ## L · El lector

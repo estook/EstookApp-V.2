@@ -9,6 +9,7 @@ import { aplicarElAviso, enNombreDelSistema, porQueNoPasaElPago } from './pago.t
 import { latidoDelMovil, latir, type LoQueHizoElReloj } from './reloj.ts';
 import { dejoCorreos, dejoMoviles, mandarLosCorreosDeLosAvisos } from './avisos.ts';
 import { mandarLoDelMovil, type LoQueHizoElMovil } from './al-movil.ts';
+import { darLosToques } from './al-segundo.ts';
 
 export type { LoQueHizoElMovil } from './al-movil.ts';
 
@@ -412,6 +413,10 @@ export function crearDespachador(puertos: Puertos): Despachador {
           return { estado: 'ok', datos };
         }),
       );
+
+      // El toque al segundo del chat (0073), **con el comando ya guardado**: avisar antes
+      // sería avisar de algo que todavía no se puede leer. Nunca lanza.
+      await darLosToques(quien.correlacionId);
 
       // Lo del móvil (0070), igual que el correo: **con el comando ya guardado**, y
       // antes que los correos, porque lo que el móvil no recibe sale por correo.

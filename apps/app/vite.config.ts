@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => {
       // herramientas/politica-de-seguridad.mjs, que es su unico dueno.
       laPoliticaDeSeguridad({
         direccionDeLaApi: variables['VITE_API_URL'] ?? '',
+        direccionDeSupabase: variables['VITE_SUPABASE_URL'] ?? '',
         enDesarrollo: mode !== 'production',
       }),
       // El trabajador de servicio (0070): Estook sin señal y los avisos al móvil. Solo

@@ -580,6 +580,8 @@ describe('los secretos no se guardan para repetirlos', () => {
         'entrar_con_google',
         // H1 (0068) · la llave del aparato del local para fichar, una sola vez.
         'poner_aparato_para_fichar',
+        // C1 (0073) · el tema secreto por el que llega el toque al segundo del chat.
+        'abrir_el_chat',
       ].sort(),
     );
   });
@@ -602,12 +604,17 @@ describe('los secretos no se guardan para repetirlos', () => {
     //
     // I (0070) · preparar el aparato sin conexión devuelve siempre la misma pública, y
     // probar el móvil no cambia nada: repetirlos ya es lo mismo.
+    //
+    // C1 (0073) · «leído» y «entregado» del chat: apuntan hasta dónde, con el mayor de
+    // los dos, así que llegar dos veces es lo mismo. Y llegan a cada rato.
     expect(sinRecordar).toEqual([
       'fichar_aqui',
+      'leer_el_canal',
       'preparar_el_aparato_sin_conexion',
       'probar_mi_movil',
       'quien_ficha_aqui',
       'sigo_aqui',
+      'ya_me_ha_llegado',
     ]);
   });
 

@@ -23,6 +23,12 @@ export const IconoAvisos = crearIcono(
   '<path d="M10.268 21a2 2 0 0 0 3.464 0" /><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />',
 );
 
+/** Lucide `bell-off` */
+export const IconoSilenciado = crearIcono(
+  'bell-off',
+  '<path d="M10.268 21a2 2 0 0 0 3.464 0" /><path d="M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742" /><path d="m2 2 20 20" /><path d="M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05" />',
+);
+
 /** Lucide `bike` */
 export const IconoReparto = crearIcono(
   'bike',
@@ -61,6 +67,12 @@ export const IconoCamara = crearIcono(
 
 /** Lucide `check` */
 export const IconoHecho = crearIcono('check', '<path d="M20 6 9 17l-5-5" />');
+
+/** Lucide `check-check` */
+export const IconoLeido = crearIcono(
+  'check-check',
+  '<path d="M18 6 7 17l-5-5" /><path d="m22 10-7.5 7.5L13 16" />',
+);
 
 /** Lucide `chevron-down` */
 export const IconoFlechaAbajo = crearIcono('chevron-down', '<path d="m6 9 6 6 6-6" />');
@@ -218,6 +230,12 @@ export const IconoChat = crearIcono(
   '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />',
 );
 
+/** Lucide `mic` */
+export const IconoMicrofono = crearIcono(
+  'mic',
+  '<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" x2="12" y1="19" y2="22" />',
+);
+
 /** Lucide `minus` */
 export const IconoQuitar = crearIcono('minus', '<path d="M5 12h14" />');
 
@@ -242,6 +260,18 @@ export const IconoColor = crearIcono(
   '<circle cx="13.5" cy="6.5" r=".5" /><circle cx="17.5" cy="10.5" r=".5" /><circle cx="8.5" cy="7.5" r=".5" /><circle cx="6.5" cy="12.5" r=".5" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />',
 );
 
+/** Lucide `paperclip` */
+export const IconoAdjuntar = crearIcono(
+  'paperclip',
+  '<path d="M13.234 20.252 21 12.3" /><path d="m16 6-8.414 8.586a2 2 0 0 0 0 2.828 2 2 0 0 0 2.828 0l8.414-8.586a4 4 0 0 0 0-5.656 4 4 0 0 0-5.656 0l-8.415 8.585a6 6 0 1 0 8.486 8.486" />',
+);
+
+/** Lucide `pause` */
+export const IconoPausa = crearIcono(
+  'pause',
+  '<rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" />',
+);
+
 /** Lucide `pencil` */
 export const IconoEditar = crearIcono(
   'pencil',
@@ -254,8 +284,17 @@ export const IconoTablon = crearIcono(
   '<path d="M12 17v5" /><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />',
 );
 
+/** Lucide `play` */
+export const IconoReproducir = crearIcono('play', '<polygon points="6 3 20 12 6 21 6 3" />');
+
 /** Lucide `plus` */
 export const IconoAnadir = crearIcono('plus', '<path d="M5 12h14" /><path d="M12 5v14" />');
+
+/** Lucide `reply` */
+export const IconoResponder = crearIcono(
+  'reply',
+  '<polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" />',
+);
 
 /** Lucide `rotate-ccw` */
 export const IconoReintentar = crearIcono(
@@ -275,6 +314,12 @@ export const IconoBuscar = crearIcono(
   '<circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />',
 );
 
+/** Lucide `send-horizontal` */
+export const IconoEnviar = crearIcono(
+  'send-horizontal',
+  '<path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z" /><path d="M6 12h16" />',
+);
+
 /** Lucide `settings` */
 export const IconoAjustes = crearIcono(
   'settings',
@@ -287,10 +332,22 @@ export const IconoFiltros = crearIcono(
   '<line x1="21" x2="14" y1="4" y2="4" /><line x1="10" x2="3" y1="4" y2="4" /><line x1="21" x2="12" y1="12" y2="12" /><line x1="8" x2="3" y1="12" y2="12" /><line x1="21" x2="16" y1="20" y2="20" /><line x1="12" x2="3" y1="20" y2="20" /><line x1="14" x2="14" y1="2" y2="6" /><line x1="8" x2="8" y1="10" y2="14" /><line x1="16" x2="16" y1="18" y2="22" />',
 );
 
+/** Lucide `smile-plus` */
+export const IconoReaccionar = crearIcono(
+  'smile-plus',
+  '<path d="M22 11v1a10 10 0 1 1-9-10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" x2="9.01" y1="9" y2="9" /><line x1="15" x2="15.01" y1="9" y2="9" /><path d="M16 5h6" /><path d="M19 2v6" />',
+);
+
 /** Lucide `snowflake` */
 export const IconoCongelado = crearIcono(
   'snowflake',
   '<path d="m10 20-1.25-2.5L6 18" /><path d="M10 4 8.75 6.5 6 6" /><path d="m14 20 1.25-2.5L18 18" /><path d="m14 4 1.25 2.5L18 6" /><path d="m17 21-3-6h-4" /><path d="m17 3-3 6 1.5 3" /><path d="M2 12h6.5L10 9" /><path d="m20 10-1.5 2 1.5 2" /><path d="M22 12h-6.5L14 15" /><path d="m4 10 1.5 2L4 14" /><path d="m7 21 3-6-1.5-3" /><path d="m7 3 3 6h4" />',
+);
+
+/** Lucide `square` */
+export const IconoDetener = crearIcono(
+  'square',
+  '<rect width="18" height="18" x="3" y="3" rx="2" />',
 );
 
 /** Lucide `sun` */

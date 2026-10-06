@@ -611,6 +611,7 @@ export {
   deFabrica,
   esTipoDeAviso,
   etiquetaDeLaCampana,
+  etiquetaDelChat,
   laMermaAvisa,
   laNotaBaja,
   laPreferencia,
@@ -707,3 +708,37 @@ export type {
   TurnoDelHorario,
   VentaDeUnDia,
 } from './horario.ts';
+
+// ── C1 · el chat del equipo (0071, 0073) ─────────────────────────────────────
+export {
+  CANALES_DE_FABRICA,
+  LO_QUE_SE_ADJUNTA,
+  MINUTOS_PARA_CORREGIR,
+  NOMBRE_DEL_CANAL_DE_FABRICA,
+  PERSONAS_EN_UN_PRIVADO,
+  REACCIONES,
+  SEGUNDOS_DE_VOZ,
+  TIPOS_DE_ADJUNTO,
+  TIPOS_DE_CANAL,
+  TOPE_DEL_ADJUNTO,
+  TOPE_DEL_MENSAJE,
+  TOPE_DEL_NOMBRE_DEL_CANAL,
+  aQuienSeNombra,
+  avisoDelChatEnElMovil,
+  duracionEnLetra,
+  enUnaLinea,
+  esCanalDeFabrica,
+  esReaccion,
+  estadoDeMiMensaje,
+  nombreDelCanal,
+  pesoEnLetra,
+  sePuedeCorregir,
+  vistaPrevia,
+} from './chat.ts';
+export type {
+  CanalDeFabrica,
+  EstadoDeMiMensaje,
+  Reaccion,
+  TipoDeAdjunto,
+  TipoDeCanal,
+} from './chat.ts';

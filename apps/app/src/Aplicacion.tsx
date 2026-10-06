@@ -1,4 +1,5 @@
 import { Suspense, lazy, useState } from 'react';
+import { ProveedorDelChat } from './chat/ProveedorDelChat.tsx';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { HashRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import {
@@ -54,6 +55,26 @@ const ElAlta = lazy(async () => {
   const modulo = await import('./alta/ElAlta.tsx');
   return { default: modulo.ElAlta };
 });
+
+/** El chat (C1 · 0073): se descarga al abrirlo, no al entrar en la app. */
+const ElChat = lazy(async () => {
+  const modulo = await import('./chat/ElChat.tsx');
+  return { default: modulo.ElChat };
+});
+
+function ConElChat() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-e4">
+          <Cargando que="el chat" />
+        </div>
+      }
+    >
+      <ElChat />
+    </Suspense>
+  );
+}
 
 /**
  * La aplicacion entera (M3, con la puerta de M4).
@@ -228,24 +249,28 @@ function Puerta() {
   }
 
   return (
-    <HashRouter>
-      <Routes>
-        <Route element={<Esqueleto />}>
-          <Route
-            index
-            // «Un area manager no entra en un local: entra en su conjunto»
-            // (Roles, 2.1). Con alcance de cadena, la pantalla de inicio no es el
-            // Panel de un local: es el consolidado.
-            element={yo.destino === 'vista_de_cadena' ? <VistaDeCadena /> : <Panel />}
-          />
-          <Route path="cadena" element={<VistaDeCadena />} />
-          <Route path="ajustes" element={<Ajustes />} />
-          <Route path="ajustes/:seccion" element={<Ajustes />} />
-          {/* Lo suyo, para cualquiera: tenga o no la app Equipo (0068). */}
-          <Route path="mis-fichajes" element={<MisFichajes />} />
-          {/* El horario de la semana (0069): a donde lleva el aviso y «Mi turno». */}
-          <Route path="horario" element={<ElHorario />} />
-          {/*
+    <ProveedorDelChat>
+      <HashRouter>
+        <Routes>
+          <Route element={<Esqueleto />}>
+            <Route
+              index
+              // «Un area manager no entra en un local: entra en su conjunto»
+              // (Roles, 2.1). Con alcance de cadena, la pantalla de inicio no es el
+              // Panel de un local: es el consolidado.
+              element={yo.destino === 'vista_de_cadena' ? <VistaDeCadena /> : <Panel />}
+            />
+            <Route path="cadena" element={<VistaDeCadena />} />
+            <Route path="ajustes" element={<Ajustes />} />
+            <Route path="ajustes/:seccion" element={<Ajustes />} />
+            {/* Lo suyo, para cualquiera: tenga o no la app Equipo (0068). */}
+            <Route path="mis-fichajes" element={<MisFichajes />} />
+            {/* El horario de la semana (0069): a donde lleva el aviso y «Mi turno». */}
+            <Route path="horario" element={<ElHorario />} />
+            {/* El chat del equipo (C1 · 0073): la lista y cada conversación. */}
+            <Route path="chat" element={<ConElChat />} />
+            <Route path="chat/:canal" element={<ConElChat />} />
+            {/*
             App -> destino -> vista.
 
             Siguen siendo **tres niveles** de los de B5 (app -> pantalla ->
@@ -255,17 +280,18 @@ function Puerta() {
             devuelva a la vista de antes. La ficha sigue abriendose encima, en
             panel lateral, sin cambiar de direccion.
           */}
-          {/* Lo de antes del 25-sep: «Inventario» es ahora Almacén (0049). */}
-          <Route path="inventario/*" element={<ALaDireccionDeAhora />} />
-          {/* Las mermas eran una vista de Movimientos: ahora, destino propio (26-sep). */}
-          <Route path="almacen/movimientos/mermas" element={<ALaDireccionDeAhora />} />
-          <Route path=":app" element={<PantallaDeApp />} />
-          <Route path=":app/:destino" element={<PantallaDeApp />} />
-          <Route path=":app/:destino/:vista" element={<PantallaDeApp />} />
-          <Route path="*" element={<NoEstaAqui />} />
-        </Route>
-      </Routes>
-    </HashRouter>
+            {/* Lo de antes del 25-sep: «Inventario» es ahora Almacén (0049). */}
+            <Route path="inventario/*" element={<ALaDireccionDeAhora />} />
+            {/* Las mermas eran una vista de Movimientos: ahora, destino propio (26-sep). */}
+            <Route path="almacen/movimientos/mermas" element={<ALaDireccionDeAhora />} />
+            <Route path=":app" element={<PantallaDeApp />} />
+            <Route path=":app/:destino" element={<PantallaDeApp />} />
+            <Route path=":app/:destino/:vista" element={<PantallaDeApp />} />
+            <Route path="*" element={<NoEstaAqui />} />
+          </Route>
+        </Routes>
+      </HashRouter>
+    </ProveedorDelChat>
   );
 }
 

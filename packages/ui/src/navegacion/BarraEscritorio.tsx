@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { IconoAjustes, IconoBuscar, IconoChat, IconoFlechaAbajo, IconoLocal } from '@estook/iconos';
-import { etiquetaDeLaCampana } from '@estook/dominio';
-import { LaCampana } from './LaCampana.tsx';
+import { IconoAjustes, IconoBuscar, IconoFlechaAbajo, IconoLocal } from '@estook/iconos';
+import { etiquetaDeLaCampana, etiquetaDelChat } from '@estook/dominio';
+import { ElBocadillo, LaCampana } from './LaCampana.tsx';
 import type { App } from '../apps.ts';
 import { destinosConstruidos, destinosQueLlegan } from '../apps.ts';
 import { clases } from '../clases.ts';
@@ -47,6 +47,8 @@ export interface BarraEscritorioProps {
    */
   readonly alAbrirAvisos: () => void;
   readonly alAbrirChat: () => void;
+  /** Los mensajes del chat sin leer (C1 · 0073), para el número de su botón. */
+  readonly chatSinLeer?: number;
 }
 
 export function BarraEscritorio({
@@ -64,6 +66,7 @@ export function BarraEscritorio({
   avisos = 0,
   alAbrirAvisos,
   alAbrirChat,
+  chatSinLeer = 0,
 }: BarraEscritorioProps) {
   return (
     <header className="sticky top-0 z-40 hidden h-[--alto-barra-escritorio] items-center gap-e3 border-b border-borde bg-superficie px-e4 lg:flex no-imprimir">
@@ -104,8 +107,8 @@ export function BarraEscritorio({
           <LaCampana sinLeer={avisos} />
         </Redondo>
 
-        <Redondo etiqueta="Chat del equipo" alPulsar={alAbrirChat}>
-          <IconoChat size={20} />
+        <Redondo etiqueta={etiquetaDelChat(chatSinLeer)} alPulsar={alAbrirChat}>
+          <ElBocadillo sinLeer={chatSinLeer} />
         </Redondo>
 
         {/* Fogón ya no va aquí (23-sep): está en su burbuja de abajo a la derecha

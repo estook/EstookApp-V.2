@@ -7,6 +7,7 @@ import { identidadDeGoogle } from './infraestructura/identidad-de-google.ts';
 import { anotar, recordar } from './infraestructura/idempotencia.ts';
 import { enTransaccion } from './infraestructura/postgres.ts';
 import { movilConVapid } from './infraestructura/movil.ts';
+import { alSegundoDeSupabase } from './infraestructura/al-segundo.ts';
 import { pdfDeCloudflare } from './infraestructura/pdf.ts';
 import { pagosDeStripe } from './infraestructura/stripe.ts';
 
@@ -57,6 +58,9 @@ const pdf = pdfDeCloudflare();
 /** Los avisos al móvil (0070): con sus dos claves VAPID. Nulo sin ellas: se dice, no se rompe. */
 const movil = movilConVapid();
 
+/** Lo que llega al segundo en el chat (0073), con las credenciales del almacén. Nulo sin ellas. */
+const alSegundo = alSegundoDeSupabase();
+
 const puertos: Puertos = {
   movilEncendido: movil !== null,
   enTransaccion: (quien, hacer) =>
@@ -74,6 +78,7 @@ const puertos: Puertos = {
         pagos,
         pdf,
         movil,
+        alSegundo,
         correlacionId: quien.correlacionId,
         desde: quien.desde ?? null,
         // El instante lo pone el servidor, nunca el navegador (regla 10).

@@ -1,6 +1,10 @@
 import {
   MINUTOS_ANTES_DE_ENTRAR,
   SILENCIO_DE_FABRICA,
+  TIPOS_DE_CANAL,
+  avisoDelChatEnElMovil,
+  nombreDelCanal,
+  vistaPrevia,
   avisoDeCaducidad,
   avisoDeEntrasEnUnRato,
   avisoDePedidoQueNoLlega,
@@ -13,6 +17,8 @@ import {
   resumenParaElMovil,
   suModo,
   type CuandoSuena,
+  type TipoDeAdjunto,
+  type TipoDeCanal,
   type TipoDeAviso,
   type TurnoQueSeMira,
 } from '@estook/dominio';
@@ -175,7 +181,7 @@ function etiquetaDe(aviso: AvisoPendiente): string {
  * Manda al móvil lo que espera y ya puede sonar. **Ya dentro del sistema**, y fuera de
  * la transacción del cambio que lo provocó: un móvil que no contesta no deshace nada.
  */
-export async function mandarLoDelMovil(contexto: Contexto): Promise<{
+async function mandarLosAvisosAlMovil(contexto: Contexto): Promise<{
   mandados: number;
   esperan: number;
   alCorreo: number;
@@ -377,6 +383,235 @@ export async function mandarLoDelMovil(contexto: Contexto): Promise<{
     }
   }
   return hecho;
+}
+
+/**
+ * Manda al móvil lo que espera y ya puede sonar: los avisos de la campana y lo del chat
+ * (C1 · 0073). **Ya dentro del sistema**, y fuera de la transacción del cambio que lo
+ * provocó: un móvil que no contesta no deshace nada.
+ */
+export async function mandarLoDelMovil(contexto: Contexto): Promise<{
+  mandados: number;
+  esperan: number;
+  alCorreo: number;
+}> {
+  const avisos = await mandarLosAvisosAlMovil(contexto);
+  const chat = await mandarElChatAlMovil(contexto);
+  return {
+    mandados: avisos.mandados + chat.mandados,
+    esperan: avisos.esperan + chat.esperan,
+    alCorreo: avisos.alCorreo,
+  };
+}
+
+// ── 1 bis · Lo del chat (C1 · 0073) ──────────────────────────────────────────
+
+/**
+ * Cuánto sirve en el móvil un aviso del chat. Pasado eso, si todavía no ha podido
+ * sonar, ya no suena: el mensaje sigue en el chat, con su número en el icono.
+ */
+const LO_QUE_VALE_EL_CHAT = 12 * HORA;
+
+interface ChatPendiente {
+  readonly persona_id: string;
+  readonly canal_id: string;
+  readonly cuantos: number;
+  readonly le_mencionan: boolean;
+  readonly intentos: number;
+  readonly creado_en: string;
+  readonly tipo: string;
+  readonly nombre: string | null;
+  readonly zona_horaria: string;
+  readonly autor_id: string | null;
+  readonly texto: string | null;
+  readonly adjunto_tipo: TipoDeAdjunto | null;
+  readonly adjunto_nombre: string | null;
+  readonly adjunto_segundos: number | null;
+  readonly borrado: boolean;
+}
+
+/**
+ * Lo del chat que espera al móvil (0071, 7): uno por canal y persona, con lo que se ha
+ * juntado. Las mismas reglas que los avisos —en su turno, o fuera de sus horas de
+ * silencio— y **nunca por correo**: lo que no puede sonar mientras sirva, se queda en el
+ * chat, que es su sitio.
+ */
+async function mandarElChatAlMovil(
+  contexto: Contexto,
+): Promise<{ mandados: number; esperan: number }> {
+  const movil = contexto.movil;
+  const ahora = contexto.ahora;
+  const hecho = { mandados: 0, esperan: 0 };
+
+  if (movil === null) {
+    await contexto.sql`delete from estook.chat_al_movil where movil_desde <= ${ahora.toISOString()}::timestamptz`;
+    return hecho;
+  }
+
+  const pendientes = await contexto.sql<ChatPendiente[]>`
+    select c.persona_id, c.canal_id, c.cuantos, c.le_mencionan, c.intentos,
+           to_char(c.creado_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as creado_en,
+           can.tipo::text as tipo, can.nombre, coalesce(l.zona_horaria, 'Europe/Madrid') as zona_horaria,
+           m.autor_id::text as autor_id, m.texto, m.adjunto_tipo, m.adjunto_nombre, m.adjunto_segundos,
+           m.borrado_en is not null as borrado
+      from estook.chat_al_movil c
+      join estook.canal can on can.id = c.canal_id
+      join estook.local l on l.id = can.local_id
+      left join estook.mensaje m on m.id = c.ultimo_id
+     where c.movil_desde <= ${ahora.toISOString()}::timestamptz
+     order by c.persona_id, c.creado_en
+     limit ${DE_UNA_VEZ}
+       for update of c skip locked
+  `;
+  if (pendientes.length === 0) return hecho;
+
+  async function quitar(p: ChatPendiente): Promise<void> {
+    await contexto.sql`
+      delete from estook.chat_al_movil where persona_id = ${p.persona_id} and canal_id = ${p.canal_id}
+    `;
+  }
+
+  const personas = [...new Set(pendientes.map((p) => p.persona_id))];
+  const lista = comoLista(personas);
+  const moviles = await contexto.sql<SuMovil[]>`
+    select id, persona_id, direccion, p256dh, auth
+      from estook.movil_suscrito where persona_id = any (${lista}::text::uuid[])
+  `;
+  const sinLeer = await contexto.sql<{ persona_id: string; cuantos: number }[]>`
+    select persona_id, count(*)::int as cuantos from estook.aviso
+     where leido_en is null and persona_id = any (${lista}::text::uuid[])
+     group by persona_id
+  `;
+  const relojes = await susRelojes(contexto, personas);
+
+  for (const persona of personas) {
+    const suyos = pendientes.filter((p) => p.persona_id === persona);
+    const susMoviles = moviles.filter((m) => m.persona_id === persona);
+    if (susMoviles.length === 0) {
+      for (const p of suyos) await quitar(p);
+      continue;
+    }
+
+    const reloj = relojes.get(persona);
+    const zona = suyos[0]?.zona_horaria ?? 'Europe/Madrid';
+    const cuando =
+      reloj === undefined
+        ? ahora
+        : cuandoPuedeSonar(ahora, {
+            modo: reloj.modo,
+            silencioDesde: reloj.desde,
+            silencioHasta: reloj.hasta,
+            zonaHoraria: zona,
+            turnos: reloj.turnos,
+            fichadoAhora: reloj.fichado,
+          });
+
+    // El número del icono: la campana más lo que espera del chat.
+    const numero =
+      (sinLeer.find((s) => s.persona_id === persona)?.cuantos ?? 0) +
+      suyos.reduce((n, p) => n + p.cuantos, 0);
+
+    for (const p of suyos) {
+      const vale = Date.parse(p.creado_en) + LO_QUE_VALE_EL_CHAT;
+      if (cuando === null || cuando.getTime() > vale) {
+        await quitar(p);
+        continue;
+      }
+      if (cuando.getTime() > ahora.getTime()) {
+        await contexto.sql`
+          update estook.chat_al_movil set movil_desde = ${cuando.toISOString()}::timestamptz
+           where persona_id = ${p.persona_id} and canal_id = ${p.canal_id}
+        `;
+        hecho.esperan += 1;
+        continue;
+      }
+
+      // Los nombres, de la función del chat: contesta al sistema, y la tabla de personas
+      // solo enseña a quien comparte local, que aquí no hay nadie.
+      const gente = await contexto.sql<{ id: string; nombre: string }[]>`
+        select persona_id::text as id, nombre from estook.quien_ve_el_canal(${p.canal_id}::uuid)
+         order by nombre
+      `;
+      const otros =
+        p.tipo === 'privado' ? gente.filter((g) => g.id !== persona).map((g) => g.nombre) : [];
+      const autor = gente.find((g) => g.id === p.autor_id)?.nombre ?? 'Alguien';
+      const tipo = esTipoDeCanal(p.tipo) ? p.tipo : 'canal';
+      const dice = avisoDelChatEnElMovil({
+        canal: nombreDelCanal({ tipo, nombre: p.nombre, otros }),
+        esPrivadoDeDos: tipo === 'privado' && otros.length === 1 && p.nombre === null,
+        cuantos: p.cuantos,
+        autor,
+        ultimo: vistaPrevia({
+          texto: p.texto,
+          adjuntoTipo: p.adjunto_tipo,
+          adjuntoNombre: p.adjunto_nombre,
+          adjuntoSegundos: p.adjunto_segundos,
+          borrado: p.borrado,
+        }),
+        teMencionan: p.le_mencionan,
+      });
+
+      const resultados = await Promise.all(
+        susMoviles.map(async (m) => ({
+          movil: m,
+          como: await movil
+            .mandar(
+              m,
+              {
+                titulo: dice.titulo,
+                detalle: dice.detalle,
+                ir: `/chat/${p.canal_id}`,
+                etiqueta: `chat:${p.canal_id}`,
+                sinLeer: numero,
+              },
+              { urgente: false, segundosQueVale: Math.trunc(LO_QUE_VALE_EL_CHAT / 1000) },
+            )
+            .catch(() => 'fallo' as const),
+        })),
+      );
+
+      for (const r of resultados) {
+        if (r.como === 'ya_no_existe') {
+          await contexto.sql`delete from estook.movil_suscrito where id = ${r.movil.id}`;
+        } else if (r.como === 'entregado') {
+          await contexto.sql`
+            update estook.movil_suscrito set fallos = 0, ultimo_uso_en = now() where id = ${r.movil.id}
+          `;
+        } else {
+          await contexto.sql`
+            delete from estook.movil_suscrito
+             where id = ${r.movil.id} and fallos + 1 >= ${FALLOS_PARA_OLVIDARLO}
+          `;
+          await contexto.sql`
+            update estook.movil_suscrito set fallos = fallos + 1 where id = ${r.movil.id}
+          `;
+        }
+      }
+
+      if (
+        resultados.some((r) => r.como === 'entregado') ||
+        resultados.every((r) => r.como === 'ya_no_existe')
+      ) {
+        await quitar(p);
+        if (resultados.some((r) => r.como === 'entregado')) hecho.mandados += 1;
+      } else if (p.intentos + 1 >= INTENTOS) {
+        await quitar(p);
+      } else {
+        await contexto.sql`
+          update estook.chat_al_movil
+             set intentos = intentos + 1,
+                 movil_desde = ${new Date(ahora.getTime() + (p.intentos + 1) * 2 * MINUTO).toISOString()}::timestamptz
+           where persona_id = ${p.persona_id} and canal_id = ${p.canal_id}
+        `;
+        hecho.esperan += 1;
+      }
+    }
+  }
+  return hecho;
+}
+
+function esTipoDeCanal(tipo: string): tipo is TipoDeCanal {
+  return (TIPOS_DE_CANAL as readonly string[]).includes(tipo);
 }
 
 // ── 2 · Apuntar lo que toca a una hora ───────────────────────────────────────

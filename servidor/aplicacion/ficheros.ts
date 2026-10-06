@@ -53,5 +53,26 @@ export function esDeVerdadDeEseTipo(bytes: Uint8Array, tipo: string): boolean {
     const webp = bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
     return bytes.length > 12 && riff && webp;
   }
+  // Lo del chat (C1 · 0073): documentos y notas de voz.
+  if (tipo === 'application/pdf') return bytes.length > 4 && empieza(0x25, 0x50, 0x44, 0x46);
+  // Word y Excel son un ZIP por dentro: empiezan por `PK\x03\x04`.
+  if (
+    tipo === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    tipo === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ) {
+    return bytes.length > 4 && empieza(0x50, 0x4b, 0x03, 0x04);
+  }
+  if (tipo === 'audio/webm') return bytes.length > 4 && empieza(0x1a, 0x45, 0xdf, 0xa3);
+  if (tipo === 'audio/ogg') return bytes.length > 4 && empieza(0x4f, 0x67, 0x67, 0x53);
+  // MP4 (la voz del iPhone): `ftyp` a partir del cuarto byte.
+  if (tipo === 'audio/mp4') {
+    return (
+      bytes.length > 8 &&
+      bytes[4] === 0x66 &&
+      bytes[5] === 0x74 &&
+      bytes[6] === 0x79 &&
+      bytes[7] === 0x70
+    );
+  }
   return false;
 }

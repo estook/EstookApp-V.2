@@ -151,6 +151,7 @@ import { misObjetivos } from './consultas/objetivos.ts';
 import { loDeHoyConsulta } from './consultas/hoy.ts';
 import { laCarta } from './consultas/carta.ts';
 import { elTablon } from './consultas/tablon.ts';
+import { buscarEnElChat, genteDelChat, misCanales, unCanal } from './consultas/chat.ts';
 import {
   ayudaConElPedido,
   cuantosAvisos,
@@ -165,6 +166,21 @@ import {
   pedirAyudaConElPedido,
 } from './comandos/avisos.ts';
 import { escribirEnElTablon, marcarNotaLeida, quitarNota } from './comandos/tablon.ts';
+import {
+  abrirElChat,
+  abrirPrivado,
+  anadirAlCanal,
+  borrarMensaje,
+  corregirMensaje,
+  crearCanal,
+  escribirEnElChat,
+  leerElCanal,
+  reaccionar,
+  retirarMensaje,
+  salirDelCanal,
+  silenciarCanal,
+  yaMeHaLlegado,
+} from './comandos/chat.ts';
 import { publicarLaCarta, quitarLaCarta, subirPaginaDeLaCarta } from './comandos/carta.ts';
 import { miSuscripcion } from './consultas/suscripcion.ts';
 import { adminLosClientes, adminUnCliente } from './consultas/clientes.ts';
@@ -298,6 +314,12 @@ export const catalogo = {
     [laCarta.nombre]: laCarta,
     // El repaso del 25-sep · el Tablón del local (0049).
     [elTablon.nombre]: elTablon,
+    // C1 · el chat del equipo (0073): sin permiso del catálogo, como el Tablón. Quién
+    // ve cada canal lo deciden las políticas de la 0056.
+    [misCanales.nombre]: misCanales,
+    [unCanal.nombre]: unCanal,
+    [genteDelChat.nombre]: genteDelChat,
+    [buscarEnElChat.nombre]: buscarEnElChat,
     // ── R · la campana (0052): el número, la lista, lo que cada uno elige, y
     // a quién se le puede pedir que rellene un pedido.
     [cuantosAvisos.nombre]: cuantosAvisos,
@@ -485,6 +507,20 @@ export const catalogo = {
     // El corcho de la cocina: escribe cualquiera del local, cada uno marca lo que
     // ha leído, y quita la nota su autor o quien lleva al equipo.
     [escribirEnElTablon.nombre]: escribirEnElTablon,
+    // C1 · el chat del equipo (0073).
+    [abrirElChat.nombre]: abrirElChat,
+    [escribirEnElChat.nombre]: escribirEnElChat,
+    [corregirMensaje.nombre]: corregirMensaje,
+    [borrarMensaje.nombre]: borrarMensaje,
+    [retirarMensaje.nombre]: retirarMensaje,
+    [reaccionar.nombre]: reaccionar,
+    [leerElCanal.nombre]: leerElCanal,
+    [yaMeHaLlegado.nombre]: yaMeHaLlegado,
+    [silenciarCanal.nombre]: silenciarCanal,
+    [crearCanal.nombre]: crearCanal,
+    [abrirPrivado.nombre]: abrirPrivado,
+    [anadirAlCanal.nombre]: anadirAlCanal,
+    [salirDelCanal.nombre]: salirDelCanal,
     [marcarNotaLeida.nombre]: marcarNotaLeida,
     [quitarNota.nombre]: quitarNota,
     // Y la carta que el local ya tiene, subida: la enseña su QR hasta M10.

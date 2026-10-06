@@ -23,7 +23,6 @@ import { VentanaDeFogon } from './fogon/Fogon.tsx';
 import { BotonDeHacer, HojaDeHacer } from './acciones/BotonDeHacer.tsx';
 import { usarQueHacer } from './ganchos/usarQueHacer.ts';
 import { AbrirLaRueda } from './ganchos/usarLaRueda.ts';
-import { LoQueLlegaDespues, type LoQueFalta } from './pantallas/LoQueLlegaDespues.tsx';
 import { ContextoDelEsqueleto, type LoQueAbreElEsqueleto } from './ganchos/usarElEsqueleto.tsx';
 import { MiCuenta } from './pantallas/MiCuenta.tsx';
 import { usarSesion } from './sesion/Sesion.tsx';
@@ -31,6 +30,7 @@ import { usarSigoAqui } from './ganchos/usarSigoAqui.ts';
 import { AvisoDeLaCuenta } from './pago/AvisoDeLaCuenta.tsx';
 import { LosAvisos } from './avisos/LosAvisos.tsx';
 import { usarLaCampana } from './ganchos/usarLosAvisos.ts';
+import { usarElChatVivo } from './ganchos/usarElChat.ts';
 import { avisarDelFallo } from '@estook/utiles/observabilidad';
 import { LoDeLaRed } from './sinConexion/LoDeLaRed.tsx';
 import { usarElNumeroDelIcono, usarLoDeLaRed } from './ganchos/usarLoDeLaRed.ts';
@@ -64,7 +64,6 @@ export function Esqueleto() {
     setRuedaAbierta(true);
   }, []);
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
-  const [loQueFalta, setLoQueFalta] = useState<LoQueFalta | null>(null);
   /**
    * Tu cuenta, la hoja de detras del avatar.
    *
@@ -92,6 +91,8 @@ export function Esqueleto() {
    * vista, y la lista, al abrirla.
    */
   const sinLeer = usarLaCampana();
+  // El chat (C1 · 0073): lo que no se ha leído, para el número de su botón.
+  const chat = usarElChatVivo();
   const [avisosAbiertos, setAvisosAbiertos] = useState(false);
   usarQueHacer('fichar', () => {
     setHaciendo(true);
@@ -100,9 +101,10 @@ export function Esqueleto() {
   usarQueHacer('avisos', () => {
     setAvisosAbiertos(true);
   });
-  // Sin señal y lo hecho sin ella; y el número del icono, el de la campana (0070).
+  // Sin señal y lo hecho sin ella; y el número del icono: la campana (0070) y, desde
+  // C1 (0073), también lo que no se ha leído del chat, igual que el aviso del móvil.
   usarLoDeLaRed();
-  usarElNumeroDelIcono(sinLeer);
+  usarElNumeroDelIcono(sinLeer + chat.sinLeer);
 
   const misApps = useMemo(
     () =>
@@ -317,8 +319,9 @@ export function Esqueleto() {
             setAvisosAbiertos(true);
           }}
           alAbrirChat={() => {
-            setLoQueFalta('chat');
+            navegar('/chat');
           }}
+          chatSinLeer={chat.sinLeer}
         />
 
         {/*
@@ -355,8 +358,9 @@ export function Esqueleto() {
             setAvisosAbiertos(true);
           }}
           alAbrirChat={() => {
-            setLoQueFalta('chat');
+            navegar('/chat');
           }}
+          chatSinLeer={chat.sinLeer}
           alAbrirMiCuenta={() => {
             setMiCuentaAbierta(true);
           }}
@@ -464,11 +468,14 @@ export function Esqueleto() {
         donde estaba la burbuja de Fogón. Fogón va dentro, arriba y en su banner, y
         en escritorio también `Ctrl+J`. La ventana de Fogón sabe en qué pantalla estás.
       */}
-        <BotonDeHacer
-          alPulsar={() => {
-            setHaciendo(true);
-          }}
-        />
+        {/* Dentro del chat no: taparía el botón de mandar, que va en el mismo sitio. */}
+        {primero !== 'chat' && (
+          <BotonDeHacer
+            alPulsar={() => {
+              setHaciendo(true);
+            }}
+          />
+        )}
 
         <HojaDeHacer
           abierta={haciendo}
@@ -491,13 +498,6 @@ export function Esqueleto() {
           abierta={avisosAbiertos}
           alCerrar={() => {
             setAvisosAbiertos(false);
-          }}
-        />
-
-        <LoQueLlegaDespues
-          que={loQueFalta}
-          alCerrar={() => {
-            setLoQueFalta(null);
           }}
         />
 

@@ -752,6 +752,11 @@ export function etiquetaDeLaCampana(sinLeer: number): string {
   return sinLeer <= 0 ? 'Avisos' : `Avisos: ${String(sinLeer)} sin leer`;
 }
 
+/** Lo que dice el botón del chat a quien no lo ve: «Chat del equipo: 3 sin leer» (0073). */
+export function etiquetaDelChat(sinLeer: number): string {
+  return sinLeer <= 0 ? 'Chat del equipo' : `Chat del equipo: ${String(sinLeer)} sin leer`;
+}
+
 export type TramoDeAvisos = 'Hoy' | 'Ayer' | 'Esta semana' | 'Antes';
 
 /** En qué tramo va un aviso, por el día en que llegó contado en el local. */

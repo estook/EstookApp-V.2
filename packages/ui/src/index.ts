@@ -169,7 +169,7 @@ export type { RejillaProps } from './panel/rejilla.ts';
 export { usarQueEstaVacio } from './ganchos/usarQueEstaVacio.ts';
 export { usarSinNadaDentro } from './ganchos/usarSinNadaDentro.ts';
 export { usarAnclaAbajo } from './ganchos/usarAnclaAbajo.ts';
-export { comoQuedaAbajo } from './navegacion/anclaAbajo.ts';
+export { ALTO_DE_UN_TECLADO, comoQuedaAbajo, type Visor } from './navegacion/anclaAbajo.ts';
 
 export { MenuLateral } from './navegacion/MenuLateral.tsx';
 export type { MenuLateralProps } from './navegacion/MenuLateral.tsx';

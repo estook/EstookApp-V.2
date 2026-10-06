@@ -12,6 +12,19 @@
   display: none;
 }
 
+/*
+ * El chat abierto (repaso de C1, 6-oct · `chat/conElTeclado.ts`).
+ *
+ * La página de debajo no se desplaza ni se estira: en el iPhone, deslizar sobre la
+ * cabecera de la conversación estiraba la página entera y la barra de arriba se
+ * descolgaba encima de los mensajes. Solo se desplazan la lista y la conversación.
+ */
+html[data-chat],
+html[data-chat] body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 @media print {
   body.imprimiendo-el-cartel > :not([data-cartel]) {
     display: none !important;

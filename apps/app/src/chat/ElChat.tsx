@@ -27,6 +27,8 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarQueEspere } from '../ganchos/usarQueEspere.ts';
 import { Conversacion } from './Conversacion.tsx';
+import { usarElChatConElTeclado } from '../ganchos/usarElChatConElTeclado.ts';
+import { SiTeSuena } from './SiTeSuena.tsx';
 import { usarMisCanales } from '../ganchos/usarElChat.ts';
 import {
   CLAVE_DE_MIS_CANALES,
@@ -47,14 +49,26 @@ import {
 export function ElChat() {
   const { canal } = useParams<{ canal?: string }>();
   const canalId = canal ?? null;
+  // Con el teclado abierto, justo lo que se ve; sin él, entre las dos barras. Y la
+  // página de debajo, quieta (repaso de C1, `conElTeclado.ts`).
+  const conTeclado = usarElChatConElTeclado();
 
   return (
     <div
       className={clases(
-        'fixed inset-x-0 z-20 flex bg-fondo',
-        'top-[calc(var(--alto-barra-movil)+env(safe-area-inset-top))] bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom))]',
-        'lg:top-[var(--alto-barra-escritorio)] lg:bottom-0',
+        'fixed inset-x-0 flex bg-fondo',
+        conTeclado === null &&
+          'z-20 top-[calc(var(--alto-barra-movil)+env(safe-area-inset-top))] bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)-var(--desfase-abajo,0px))]',
+        conTeclado === null && 'lg:top-[var(--alto-barra-escritorio)] lg:bottom-0',
+        // Por encima de la barra de arriba, que el iPhone ha subido fuera de la vista, y
+        // con el hueco de la hora y la batería.
+        conTeclado !== null && 'z-40 pt-[env(safe-area-inset-top)]',
       )}
+      style={
+        conTeclado === null
+          ? undefined
+          : { top: `${String(conTeclado.arriba)}px`, height: `${String(conTeclado.alto)}px` }
+      }
     >
       <section
         aria-label="Conversaciones"
@@ -129,8 +143,9 @@ function ListaDeCanales({ canalAbierto }: { readonly canalAbierto: string | null
           />
         </label>
       </div>
+      <SiTeSuena />
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
         {buscado.length >= 2 ? (
           <LoEncontrado
             texto={buscado}

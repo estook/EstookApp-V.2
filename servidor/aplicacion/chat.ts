@@ -100,10 +100,21 @@ export async function apuntarParaElMovil(
   if (apuntados.length > 0) dejarAlgoParaElMovil(contexto.correlacionId);
 }
 
-/** Lo que esperaba al móvil de un canal, fuera: quien lo lee ya no tiene que oírlo. */
+/**
+ * Lo que esperaba al móvil de un canal, fuera: quien lo lee ya no tiene que oírlo.
+ *
+ * **Como sistema**, con la persona de la sesión: borrar con `where` obliga a poder
+ * **leer** la fila, y lo que espera al móvil solo lo lee el sistema. Con la sesión de
+ * quien lee no borraba nada, y a Richi le iba a sonar a las 8:00 lo que ya había leído
+ * a medianoche (lo vio el 6-oct, lección 147).
+ */
 export async function yaNoHaceFaltaElMovil(contexto: Contexto, canalId: string): Promise<void> {
-  await contexto.sql`
-    delete from estook.chat_al_movil
-     where persona_id = ${contexto.personaId} and canal_id = ${canalId}
-  `;
+  const personaId = contexto.personaId;
+  if (personaId === null) return;
+  await enNombreDelSistema(contexto, async () => {
+    await contexto.sql`
+      delete from estook.chat_al_movil
+       where persona_id = ${personaId} and canal_id = ${canalId}
+    `;
+  });
 }

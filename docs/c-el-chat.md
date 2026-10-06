@@ -1,6 +1,6 @@
 # C · El chat · el plan
 
-**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). **C1 · Hablar, construida el 6-oct** ([0073](decisiones/0073-c1-hablar.md), migración `0056`); falta C2 · Lo oficial.
+**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). **C1 · Hablar, en producción desde el 6-oct** ([0073](decisiones/0073-c1-hablar.md), migración `0056`), con su repaso en la #91. **El plan de C2 · Lo oficial, con cinco preguntas, está al final.**
 
 De dónde sale: el capítulo 23 del [Manifiesto](maestros/Estook-Manifiesto.md), lo que pidió Richi el 30-sep ([0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)), el adelanto a después de I ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)) y lo que I dejó para aquí ([0070](decisiones/0070-la-app-instalable.md)).
 
@@ -132,3 +132,61 @@ En WhatsApp se puede apagar; aquí la idea es que no.
 - Quien pierde el acceso deja de ver el chat al momento, y sus mensajes siguen.
 - Una tarjeta de pedido abierta por un cocinero no enseña lo que él no puede ver.
 - Todo en la batería de pantalla y en `pnpm prueba:semana` (el silencio depende de la hora), y **mirado en el móvil**.
+
+---
+
+## C2 · Lo oficial · el plan
+
+**Escrito el 7 de octubre de 2026**, con C1 en producción y probado por Richi y Santiago. **No se programa hasta que Richi conteste.**
+
+### Qué es C2, en llano
+
+Lo que distingue el chat de Estook de un grupo de WhatsApp: **lo importante no se pierde entre los mensajes, y se sabe quién se ha enterado.**
+
+| Pieza                           | Qué es                                                                                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Fijados**                     | Un mensaje que se queda arriba del canal, siempre a la vista: «Esta semana no hay pescado los lunes»                                              |
+| **«Confirmar que lo he leído»** | Quien lo manda lo pide; cada uno tiene su botón, y quien lo pidió ve **«5 de 8 · faltan Ana, Luis y Marta»**                                      |
+| **Las tarjetas**                | Un horario, un pedido o un producto mandados al chat, que se abren en su sitio y **con los permisos de quien la abre**: a un cocinero, sin costes |
+| **El horario al chat**          | Al publicar la semana, la casilla «Mandarlo a Todo el equipo», marcada y que se puede desmarcar, pidiendo «Confirmar que lo he visto» (0071, 5)   |
+
+### Lo que ya está decidido
+
+- **Fijar y pedir «Confirmar que lo he leído» es de quien lleva el equipo**: gerente, jefes y dirección (0071, 4).
+- **Lo que pidió confirmación no se borra ni se corrige**: se manda otro (arriba, 10).
+- **Las tarjetas que entran**: el horario (la de H2), un pedido y un producto. «Compartir» gana **«Al chat»**, al lado de WhatsApp y el correo (arriba, 15).
+- **Cero euros al mes** y **una migración**, la `0057`.
+
+### Lo que decido yo, para que lo sepas
+
+1. **Confirmar cuenta a quien estaba en el canal cuando se mandó.** Quien entra después no sale como «falta».
+2. **El botón va dentro del mensaje**, grande, y una vez pulsado dice «Confirmado · 10:42». No se puede deshacer.
+3. **Lo fijado sale arriba del canal en una franja**, y tocándola se va al mensaje. Quitarlo de fijado no lo borra.
+4. **Una tarjeta abierta por alguien sin permiso** dice «Esto no es de lo que puedes ver», y nada más: ni el nombre del proveedor ni el precio.
+5. **Mandar el horario al chat no hace sonar el móvil dos veces**: quien ya recibe el aviso de «tu horario está publicado» no recibe otro del chat por lo mismo.
+
+### Las cinco preguntas
+
+**Basta con contestar «sí» o «no»** a cada número. Cada una con mi recomendación.
+
+#### 1 · ¿C2 en una sola entrega?
+
+**Recomiendo que sí.** Las cuatro piezas son pequeñas y se apoyan unas en otras (el horario al chat es una tarjeta que pide confirmar). Una migración y un despliegue.
+
+#### 2 · ¿Hasta tres mensajes fijados por canal?
+
+**Recomiendo que sí**, como WhatsApp. Con más de tres, la franja de arriba se come la conversación y nadie los lee. Para fijar uno más, se quita otro.
+
+#### 3 · ¿Lo fijado en «Todo el equipo» sale también en el Tablón del Panel?
+
+**Recomiendo que sí.** Así lo oficial se ve **sin abrir el chat**, que es donde mira cada uno al llegar. El Tablón sigue sirviendo para las notas rápidas de siempre.
+
+#### 4 · ¿A quien no ha confirmado se le recuerda una vez, al empezar su siguiente turno?
+
+**Recomiendo que sí.** Un solo recordatorio, en su turno (nunca fuera: es la desconexión, 0066). Quien lo pidió no tiene que ir persiguiendo a nadie; y si sigue faltando, lo ve en la lista.
+
+#### 5 · ¿Un correo a quien no tiene los avisos del móvil puestos, con sus privados y menciones sin leer?
+
+Es lo que pediste en el repaso de C1 («avisar en el móvil o en el correo»). Hoy el chat **nunca** va por correo (arriba, 8).
+
+**Recomiendo que sí, con tres límites**: solo a quien **no** tiene el móvil puesto (al que lo tiene ya le suena), solo **privados y lo que le nombra** (no todo lo de los canales), y **uno al día como mucho, al empezar su turno**. Así no se llena el buzón y nadie se queda sin enterarse.

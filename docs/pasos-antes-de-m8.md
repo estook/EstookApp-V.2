@@ -2,23 +2,73 @@
 
 > ## Cómo está
 >
-> Comprobado el 6 de octubre de 2026, leyendo la base de producción.
+> Comprobado el 6 de octubre de 2026 por la noche, leyendo la base de producción.
 >
-> | Qué                               | Cómo está                                                                                  |
-> | --------------------------------- | ------------------------------------------------------------------------------------------ |
-> | Pull requests                     | **Fusionadas hasta la #89** (3-oct). Abierta: **C1 · Hablar**, el chat                     |
-> | La base de datos                  | **55 de 55** migraciones, igual que `main`                                                 |
-> | La API                            | **Desplegada con el repaso**: 66 y 138, los avisos al móvil encendidos y el reloj latiendo |
-> | Los PDF (Cloudflare)              | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                   |
-> | **Las copias de seguridad**       | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día          |
-> | A1 · la puerta del admin          | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                |
-> | E1, V, O, E2, L, A2, R1, R2, H, I | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                             |
+> | Qué                                   | Cómo está                                                                           |
+> | ------------------------------------- | ----------------------------------------------------------------------------------- |
+> | Pull requests                         | **Fusionadas hasta la #90** (6-oct). Abierta: **la #91**, el repaso de C1           |
+> | La base de datos                      | **56 de 56** migraciones, igual que `main`                                          |
+> | La API                                | **Desplegada con C1**: 70 y 151, los avisos al móvil encendidos y el reloj latiendo |
+> | Los PDF (Cloudflare)                  | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep            |
+> | **Las copias de seguridad**           | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día   |
+> | A1 · la puerta del admin              | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor         |
+> | E1, V, O, E2, L, A2, R1, R2, H, I, C1 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                      |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · C1 · Hablar, el chat del equipo
+## Lo que te toca ahora · el repaso de C1 (#91) y las preguntas de C2
+
+Lo que viste el 6-oct probando el chat con Santiago ([decisión 0074](decisiones/0074-el-repaso-de-c1.md), en la #91). **Sin migración**; **sí hay que desplegar la API** (lo del móvil).
+
+**Qué trae:** el mensaje **sale al momento** con un reloj y se manda por detrás; **con el teclado**, el chat ocupa justo lo que se ve; **deslizar ya no descuelga** la barra de arriba; las **notas de voz sin «cargando»**, con su duración; y del móvil, **leer ya quita lo pendiente** y **lo de fuera de tu turno espera** a tu turno en vez de perderse.
+
+**Por qué no te sonaba:** el aviso funcionaba, pero a ti te pilló en tus **horas de silencio** (de 23:00 a 08:00) y a Santiago **fuera de su turno**. Es lo que tiene puesto cada uno en **Ajustes → Avisos → «Cuándo suena el móvil»**. Ahora el chat te lo dice arriba de la lista.
+
+**Ojo, mañana a las 8:00** te puede sonar «Prueba 1 · 7 mensajes nuevos»: son los de anoche, que el fallo de antes no quitó al leerlos. Es la última vez, y de paso demuestra que el aviso llega.
+
+### 1 · Fusionar
+
+En **github.com** → **Pull requests** → **«El repaso de C1…»** (la #91) → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+
+### 2 · Desplegar la API
+
+**No hay migración.** **Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después, en PowerShell, en la carpeta del proyecto:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 70» consultas y «los 151» comandos, igual que ahora.
+
+### 3 · Probarlo en el iPhone
+
+Cierra Estook y ábrela otra vez (la web se publica sola al fusionar, en unos minutos).
+
+1. **Escribe un mensaje**: sale **al momento** con un relojito, que en un segundo pasa a ✓.
+2. **Con el teclado abierto**: la cabecera de la conversación arriba, la caja **pegada al teclado**, sin hueco.
+3. **Desliza** sobre la cabecera y por la conversación: la barra de arriba **no se mueve**.
+4. **Una nota de voz**: sale «Nota de voz · 0:05» sin rueda; al darle, la barra avanza.
+5. **Arriba de la lista del chat**, si estás en tus horas de silencio, sale «Hasta las 08:00 no te suena · Cambiar».
+
+### 4 · Contestar las preguntas de C2
+
+Al final de [`docs/c-el-chat.md`](c-el-chat.md), **cinco preguntas de sí o no** con mi recomendación. Basta con «1 sí, 2 sí…». Hasta entonces no programo C2.
+
+---
+
+## C1 · Hablar, el chat del equipo (#90) · **hecho** (6-oct)
+
+**Fusionada, migrada (0056) y desplegada (70 y 151)**, comprobado en producción el 6-oct por la noche. Probado por Richi y Santiago entre dos móviles: lo que salió está arriba.
 
 El chat de verdad ([decisión 0073](decisiones/0073-c1-hablar.md)), con tus seis respuestas
 (0071). Una migración (la **0056**) y un despliegue. **Ninguna clave nueva**: usa las del

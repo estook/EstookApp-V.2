@@ -106,6 +106,12 @@ test('se monta, se publica, lo ve el equipo y sale en PDF', async ({ page }, inf
   await expect(page.getByText('Publicado. Le ha llegado el aviso a 1 persona.')).toBeVisible();
   await expect(page.getByText('Publicada', { exact: true })).toBeVisible();
 
+  // C2 (0075): al publicar, «¿Avisar en Todo el equipo?» Sí o no.
+  const alChat = page.getByRole('dialog', { name: '¿Avisar en «Todo el equipo»?' });
+  await alChat.getByRole('button', { name: 'Sí, avisar' }).click();
+  await expect(alChat).toHaveCount(0);
+  await expect(page.getByText('Publicado, y avisado en «Todo el equipo».')).toBeVisible();
+
   const sara = await tokenDe(page.request, SARA);
   const loQueVe = await consultar<{ publicado: boolean; turnos: { entra: string }[] }>(
     page.request,

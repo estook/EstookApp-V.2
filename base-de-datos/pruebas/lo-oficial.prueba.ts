@@ -340,10 +340,10 @@ describe('las tarjetas', () => {
       tarjeta: { tipo: 'producto', id: producto?.id },
     });
     const visto = await unMensaje(rosa, equipo, id);
-    expect(visto.tarjeta).toEqual({
+    expect(visto.tarjeta).toMatchObject({
       tipo: 'producto',
       id: producto?.id,
-      producto: expect.objectContaining({ nombre: producto?.nombre }),
+      producto: { nombre: producto?.nombre },
     });
     const lista = (await susCanales(rosa)).find((c) => c.id === equipo);
     expect(lista?.ultimo?.vista).toBe('Un producto');

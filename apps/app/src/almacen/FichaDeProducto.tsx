@@ -38,6 +38,7 @@ import {
 import type { Centimos } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { AlChat } from '../chat/AlChat.tsx';
 import { usarVolverALeerElProducto } from '../ganchos/usarVolverALeerElProducto.ts';
 import { SelectorDeCategoria } from './SelectorDeCategoria.tsx';
 import { MoverGenero, type QueSeMueve } from './MoverGenero.tsx';
@@ -378,6 +379,11 @@ export function FichaDeProducto({
               </Boton>
             </Botones>
           )}
+
+          {/* Mandarlo al chat como tarjeta (C2 · 0075): «se ha acabado esto». */}
+          <div>
+            <AlChat tarjeta={{ tipo: 'producto', id: datos.producto.id }} />
+          </div>
 
           {/* ── 3 · Lo que cuesta ─────────────────────────────────────── */}
 

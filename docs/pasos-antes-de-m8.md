@@ -2,39 +2,42 @@
 
 > ## Cómo está
 >
-> Comprobado el 6 de octubre de 2026 por la noche, leyendo la base de producción.
+> Comprobado el 7 de octubre de 2026 por la mañana, leyendo la base de producción.
 >
-> | Qué                                   | Cómo está                                                                           |
-> | ------------------------------------- | ----------------------------------------------------------------------------------- |
-> | Pull requests                         | **Fusionadas hasta la #90** (6-oct). Abierta: **la #91**, el repaso de C1           |
-> | La base de datos                      | **56 de 56** migraciones, igual que `main`                                          |
-> | La API                                | **Desplegada con C1**: 70 y 151, los avisos al móvil encendidos y el reloj latiendo |
-> | Los PDF (Cloudflare)                  | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep            |
-> | **Las copias de seguridad**           | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día   |
-> | A1 · la puerta del admin              | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor         |
-> | E1, V, O, E2, L, A2, R1, R2, H, I, C1 | **En producción**. Pago de prueba hecho: Pizzeriacazzo, 26-sep                      |
+> | Qué                                   | Cómo está                                                                                   |
+> | ------------------------------------- | ------------------------------------------------------------------------------------------- |
+> | Pull requests                         | **Fusionadas hasta la #92** (7-oct). Abierta: **C2 · Lo oficial**                           |
+> | La base de datos                      | **56 de 56** migraciones, igual que `main`                                                  |
+> | La API                                | **Desplegada con el repaso de C1** (7-oct, 01:20): 70 y 151, los avisos al móvil y el reloj |
+> | Los PDF (Cloudflare)                  | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                    |
+> | **Las copias de seguridad**           | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día           |
+> | A1 · la puerta del admin              | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                 |
+> | E1, V, O, E2, L, A2, R1, R2, H, I, C1 | **En producción**, C1 con su repaso. Pago de prueba hecho: Pizzeriacazzo, 26-sep            |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · el repaso de C1 (#91)
+## Lo que te toca ahora · C2 · Lo oficial
 
-Lo que viste el 6-oct probando el chat con Santiago ([decisión 0074](decisiones/0074-el-repaso-de-c1.md), en la #91). **Sin migración**; **sí hay que desplegar la API** (lo del móvil).
+Tus respuestas del 7-oct, construidas ([decisión 0075](decisiones/0075-las-respuestas-de-c2.md)). **Una migración** (la **0057**) y **un despliegue**. Ninguna clave nueva.
 
-**Qué trae:** el mensaje **sale al momento** con un reloj y se manda por detrás; **con el teclado**, el chat ocupa justo lo que se ve; **deslizar ya no descuelga** la barra de arriba; las **notas de voz sin «cargando»**, con su duración; y del móvil, **leer ya quita lo pendiente** y **lo de fuera de tu turno espera** a tu turno en vez de perderse.
+**Qué trae:**
 
-**Por qué no te sonaba:** el aviso funcionaba, pero a ti te pilló en tus **horas de silencio** (de 23:00 a 08:00) y a Santiago **fuera de su turno**. Es lo que tiene puesto cada uno en **Ajustes → Avisos → «Cuándo suena el móvil»**. Ahora el chat te lo dice arriba de la lista.
-
-**Ojo, mañana a las 8:00** te puede sonar «Prueba 1 · 7 mensajes nuevos»: son los de anoche, que el fallo de antes no quitó al leerlos. Es la última vez, y de paso demuestra que el aviso llega.
+- **De fábrica, solo «Todo el equipo».** «Cocina» y «Sala» se quitan (en IKATZ estaban vacías). Los demás canales los crean **el gerente y los jefes**, con su nombre; quien lo creó y el gerente lo **renombran** o lo **borran** desde los tres puntos de la conversación.
+- **Fijar arriba**, hasta tres por canal: tres puntos del mensaje → **«Fijar arriba»**. Sale una franja naranja bajo el nombre del canal.
+- **«Confirmar que lo he leído»**: al escribir, el gerente y los jefes ven **«Pedir que confirmen que lo han leído»**. A los demás les sale un botón grande; tú ves **«3 de 8 lo han confirmado»** y, tocándolo, quién falta. A quien falta le llega **un recordatorio al empezar su siguiente turno**. Lo que pide confirmar no se corrige ni se borra.
+- **«Al chat»** en la ficha de un producto y en la de un pedido: sale en la conversación como **tarjeta**, que se abre en su ficha y **con los permisos de quien la abre**.
+- **El horario**: al publicar la semana, **«¿Avisar en Todo el equipo?» Sí o No**. Sale un aviso con «Ver el horario». No suena en el móvil.
+- **El correo del chat**: a quien **no** tiene los avisos del móvil puestos, sus **privados y lo que le nombra**, sin leer, en **un correo al día como mucho**, sin el texto de los mensajes.
 
 ### 1 · Fusionar
 
-En **github.com** → **Pull requests** → **«El repaso de C1…»** (la #91) → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+En **github.com** → **Pull requests** → **«C2 · Lo oficial…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
 
-### 2 · Desplegar la API
+### 2 · Aplicar la migración
 
-**No hay migración.** **Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después, en PowerShell, en la carpeta del proyecto:
+**Qué hace:** quita «Cocina» y «Sala» (vacías), deja crear canales a los jefes, y añade fijados, confirmar, tarjetas, el recordatorio y el correo del chat. **No borra ningún mensaje.** En PowerShell, en la carpeta del proyecto:
 
 ```bash
 git checkout main
@@ -45,24 +48,46 @@ git pull
 ```
 
 ```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0057_lo_oficial.sql ... hecho
+  1 migracion(es) aplicadas · 57 en total
+```
+
+**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+### 3 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
+
+```bash
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** «las 70» consultas y «los 151» comandos, igual que ahora.
+**Qué tiene que decir:** «las 70» consultas y «los 156» comandos.
 
-### 3 · Probarlo en el iPhone
+### 4 · Probarlo con alguien del equipo
 
 Cierra Estook y ábrela otra vez (la web se publica sola al fusionar, en unos minutos).
 
-1. **Escribe un mensaje**: sale **al momento** con un relojito, que en un segundo pasa a ✓.
-2. **Con el teclado abierto**: la cabecera de la conversación arriba, la caja **pegada al teclado**, sin hueco.
-3. **Desliza** sobre la cabecera y por la conversación: la barra de arriba **no se mueve**.
-4. **Una nota de voz**: sale «Nota de voz · 0:05» sin rueda; al darle, la barra avanza.
-5. **Arriba de la lista del chat**, si estás en tus horas de silencio, sale «Hasta las 08:00 no te suena · Cambiar».
+1. **El chat**: arriba solo **«Todo el equipo»** y lo que hayáis creado («Prueba 1»).
+2. **Un canal**: **Nueva → Canal**, llámalo «Cocina» y mete a quien quieras. Después, en sus tres puntos, **«Cambiar el nombre»**.
+3. **Confirmar**: escribe algo, pulsa **«Pedir que confirmen que lo han leído»** y manda. En el móvil del otro sale el botón grande; al pulsarlo, a ti te pasa a **«1 de 1 lo han confirmado»**.
+4. **Fijar**: tres puntos de ese mensaje → **«Fijar arriba»**: la franja naranja.
+5. **Al chat**: **Almacén → Productos**, abre uno → **«Al chat»** → elige la conversación → **Mandar** → **Abrir el chat**: sale la tarjeta, y al tocarla, su ficha.
+6. **El horario**: publica una semana y contesta **«Sí, avisar»**: en «Todo el equipo» sale «Horario publicado».
 
-### 4 · Las preguntas de C2 · **contestadas** (7-oct)
+Si algo no sale como aquí, hazle una captura y me la pasas.
 
-Tus respuestas, y las tres de C que cambiaste (solo «Todo el equipo» de fábrica, el chat no traduce nunca, el horario como aviso con un sí o no), en la [decisión 0075](decisiones/0075-las-respuestas-de-c2.md). C2 la construyo yo y te llega en su pull request.
+---
+
+## El repaso de C1 (#91) y las respuestas de C2 (#92) · **hecho** (7-oct)
+
+Fusionadas las dos y la API desplegada (7-oct, 01:20). Comprobado en producción: 56 migraciones y 70 y 151. Lo que traía el repaso, en la [decisión 0074](decisiones/0074-el-repaso-de-c1.md); tus respuestas, en la [0075](decisiones/0075-las-respuestas-de-c2.md).
 
 ---
 

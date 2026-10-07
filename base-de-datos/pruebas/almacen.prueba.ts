@@ -670,6 +670,11 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // **Y la 0056 (C1) añade dos, para el chat**: `puede_ver_el_canal`, la única regla
     // de quién ve cada canal (mira las membresías de otros), y `quien_ve_el_canal`, que
     // contesta a quien ve ese canal y al sistema. Son cincuenta y tres.
+    //
+    // **Y la 0057 (C2) añade una**: `a_quien_escribir`, el nombre y el correo de unas
+    // personas **solo al sistema**, para el correo del chat y el recordatorio de
+    // confirmar: como sistema, la tabla de personas no enseña nada (lección 151). Son
+    // cincuenta y cuatro.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -679,6 +684,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     ).map((f) => f.proname);
 
     expect(nombres).toEqual([
+      'a_quien_escribir',
       'a_quien_lleva',
       'abrir_demostracion',
       'abrir_sesion',

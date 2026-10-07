@@ -300,6 +300,6 @@ describe('el recordatorio de confirmar (C2 · 0075)', () => {
       detalle: 'El lunes no hay pescado. Tócalo para leerlo y confirmarlo.',
     });
     const largo = 'Muy largo '.repeat(30);
-    expect(avisoDeConfirmar('Rosa', 'Cocina', largo).detalle.length).toBeLessThan(200);
+    expect(avisoDeConfirmar('Rosa', 'Cocina', largo).detalle?.length ?? 0).toBeLessThan(200);
   });
 });

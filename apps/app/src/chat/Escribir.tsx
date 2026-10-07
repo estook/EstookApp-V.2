@@ -14,6 +14,7 @@ import {
   IconoCerrar,
   IconoDocumento,
   IconoEnviar,
+  IconoHecho,
   IconoMicrofono,
 } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -56,6 +57,7 @@ export function Escribir({
   alTerminar,
   alQuitarRespuesta,
   alDejarDeCorregir,
+  puedePedirConfirmar = false,
 }: {
   readonly canalId: string;
   readonly personas: readonly PersonaDelCanal[];
@@ -64,12 +66,15 @@ export function Escribir({
   readonly alTerminar: () => void;
   readonly alQuitarRespuesta: () => void;
   readonly alDejarDeCorregir: () => void;
+  /** El gerente y los jefes, fuera de los privados (C2 · 0075). */
+  readonly puedePedirConfirmar?: boolean;
 }) {
   const { cliente, yo } = usarSesion();
   const cache = useQueryClient();
   const [texto, setTexto] = useState('');
   const [adjunto, setAdjunto] = useState<AdjuntoListo | null>(null);
   const [mandando, setMandando] = useState(false);
+  const [pedirConfirmar, setPedirConfirmar] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [grabando, setGrabando] = useState<{ grabacion: Grabacion; desde: number } | null>(null);
@@ -246,7 +251,9 @@ export function Escribir({
               ...(conAdjunto.segundos === undefined ? {} : { segundos: conAdjunto.segundos }),
             },
           }),
+      ...(pedirConfirmar && puedePedirConfirmar ? { pide_confirmar: true } : {}),
     };
+    setPedirConfirmar(false);
     mandarCuandoSePueda(
       {
         clave: crypto.randomUUID(),
@@ -326,6 +333,31 @@ export function Escribir({
         </div>
       )}
       {aviso !== null && <p className="px-e2 pb-e2 text-secundario text-mal">{aviso}</p>}
+
+      {/* Lo oficial (C2 · 0075): solo aparece al escribir, y solo a quien lleva el equipo. */}
+      {puedePedirConfirmar && corrigiendo === null && hayAlgo && (
+        <div className="mb-e2 flex px-e1">
+          <button
+            type="button"
+            aria-pressed={pedirConfirmar}
+            onMouseDown={(e) => {
+              e.preventDefault();
+            }}
+            onClick={() => {
+              setPedirConfirmar((antes) => !antes);
+            }}
+            className={clases(
+              'flex min-h-9 items-center gap-e1 rounded-redondo border px-e3 text-etiqueta font-medium',
+              pedirConfirmar
+                ? 'border-naranja bg-naranja-suave text-texto'
+                : 'border-borde text-texto-suave hover:bg-fondo',
+            )}
+          >
+            {pedirConfirmar && <IconoHecho size={14} />}
+            Pedir que confirmen que lo han leído
+          </button>
+        </div>
+      )}
 
       {(respondiendo !== null || corrigiendo !== null) && (
         <div className="mb-e2 flex items-center gap-e2 rounded-medio border-l-4 border-naranja bg-fondo px-e3 py-e1">

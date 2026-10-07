@@ -167,7 +167,7 @@ function ListaDeCanales({ canalAbierto }: { readonly canalAbierto: string | null
             <EstadoVacio
               dibujo="equipo"
               titulo="Todavía no hay chat aquí"
-              frase="En cuanto alguien del local lo abra, salen «Todo el equipo», «Cocina» y «Sala»."
+              frase="En cuanto alguien del local lo abra, sale «Todo el equipo». Los demás canales los crean el gerente y los jefes."
             />
           </div>
         ) : (

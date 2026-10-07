@@ -49,13 +49,19 @@ export async function asegurarLosCanales(contexto: Contexto, localId: string): P
 // ── Lo que suena en el móvil ─────────────────────────────────────────────────
 
 /**
- * Lo que tiene que sonar en el móvil por un mensaje nuevo (0071, 7).
+ * Lo que tiene que sonar en el móvil por un mensaje nuevo (0071, 7), o salir en el
+ * correo del chat (C2 · 0075).
  *
- * A quién: a quien ve el canal menos quien escribe, **con móvil apuntado**. En los
- * canales, salvo a quien lo tiene silenciado, **a menos que le nombren**. Los privados
- * no se silencian. Se suma a lo que ya esperaba de ese canal: tres mensajes son un
- * aviso, no tres. Cuándo suena —en su turno, o fuera de sus horas de silencio— lo
- * decide al mandarlo `al-movil.ts`, igual que los avisos de la campana.
+ * A quién: a quien ve el canal menos quien escribe.
+ *
+ *   · **Con móvil puesto**: en los canales, salvo a quien lo tiene silenciado, **a
+ *     menos que le nombren**. Los privados no se silencian.
+ *   · **Sin móvil**: solo **los privados y lo que le nombra**, marcado para el correo
+ *     (`por_correo`), que sale uno al día como mucho.
+ *
+ * Se suma a lo que ya esperaba de ese canal: tres mensajes son un aviso, no tres.
+ * Cuándo suena —en su turno, o fuera de sus horas de silencio— lo decide al mandarlo
+ * `al-movil.ts`, igual que los avisos de la campana.
  */
 export async function apuntarParaElMovil(
   contexto: Contexto,
@@ -67,37 +73,62 @@ export async function apuntarParaElMovil(
     readonly mencionados: readonly string[];
   },
 ): Promise<void> {
-  if (contexto.movil === null) return;
+  // Sin el puerto del móvil encendido, nadie tiene móvil: solo queda el correo.
+  const hayMovil = contexto.movil !== null;
+  const mencionados = comoLista(datos.mencionados);
   const apuntados = await enNombreDelSistema(
     contexto,
     () =>
       contexto.sql<{ persona_id: string }[]>`
-      insert into estook.chat_al_movil (
-        persona_id, canal_id, ultimo_id, le_mencionan, movil_desde, creado_en
+      with quien as (
+        select q.persona_id,
+               ${hayMovil} and exists (
+                 select 1 from estook.movil_suscrito m where m.persona_id = q.persona_id
+               ) as con_movil,
+               q.persona_id = any (${mencionados}::text::uuid[]) as le_nombran
+          from estook.quien_ve_el_canal(${datos.canalId}::uuid) q
+         where q.persona_id <> ${datos.autorId}::uuid
       )
-      select q.persona_id, ${datos.canalId}::uuid, ${datos.mensajeId}::bigint,
-             q.persona_id = any (${comoLista(datos.mencionados)}::text::uuid[]),
-             ${contexto.ahora.toISOString()}::timestamptz, ${contexto.ahora.toISOString()}::timestamptz
-        from estook.quien_ve_el_canal(${datos.canalId}::uuid) q
-       where q.persona_id <> ${datos.autorId}::uuid
-         and exists (select 1 from estook.movil_suscrito m where m.persona_id = q.persona_id)
-         and (
-           ${datos.tipo} = 'privado'
-           or q.persona_id = any (${comoLista(datos.mencionados)}::text::uuid[])
-           or not exists (
-             select 1 from estook.lectura_del_canal l
-              where l.canal_id = ${datos.canalId}::uuid and l.persona_id = q.persona_id
-                and l.silenciado
-           )
-         )
+      insert into estook.chat_al_movil (
+        persona_id, canal_id, ultimo_id, le_mencionan, movil_desde, creado_en, por_correo
+      )
+      select quien.persona_id, ${datos.canalId}::uuid, ${datos.mensajeId}::bigint, quien.le_nombran,
+             ${contexto.ahora.toISOString()}::timestamptz, ${contexto.ahora.toISOString()}::timestamptz,
+             not quien.con_movil
+        from quien
+       where (
+               quien.con_movil
+               and (
+                 ${datos.tipo} = 'privado'
+                 or quien.le_nombran
+                 or not exists (
+                   select 1 from estook.lectura_del_canal l
+                    where l.canal_id = ${datos.canalId}::uuid and l.persona_id = quien.persona_id
+                      and l.silenciado
+                 )
+               )
+             )
+          or (not quien.con_movil and (${datos.tipo} = 'privado' or quien.le_nombran))
       on conflict (persona_id, canal_id) do update
          set cuantos = estook.chat_al_movil.cuantos + 1,
              ultimo_id = excluded.ultimo_id,
-             le_mencionan = estook.chat_al_movil.le_mencionan or excluded.le_mencionan
+             le_mencionan = estook.chat_al_movil.le_mencionan or excluded.le_mencionan,
+             por_correo = excluded.por_correo
       returning persona_id
     `,
   );
   if (apuntados.length > 0) dejarAlgoParaElMovil(contexto.correlacionId);
+}
+
+/**
+ * Quien crea canales, fija y pide confirmar en un local (C2 · 0075): quien ve Equipo
+ * y el chat. La regla es de la base (`estook.lleva_canales`); aquí solo se pregunta.
+ */
+export async function llevaCanales(contexto: Contexto, localId: string): Promise<boolean> {
+  const filas = await contexto.sql<{ lleva: boolean }[]>`
+    select estook.lleva_canales(${localId}::uuid) as lleva
+  `;
+  return filas[0]?.lleva === true;
 }
 
 /**

@@ -101,8 +101,11 @@ afterAll(async () => {
   await base.cerrar();
 });
 
-describe('los canales de fábrica', () => {
-  it('se crean solos al abrir el chat, una sola vez', async () => {
+/** «Cocina», que desde C2 la crea el gerente con quien quiere dentro (0075). */
+let cocina: string;
+
+describe('los canales', () => {
+  it('de fábrica solo sale «Todo el equipo», una sola vez (0075)', async () => {
     const tema = losDatos<{ tema: string }>(await api.ejecutar(rosa, 'abrir_el_chat', {})).tema;
     expect(tema.length).toBeGreaterThanOrEqual(48);
     // Abrirlo otra vez no duplica nada, y el tema es el mismo.
@@ -113,16 +116,19 @@ describe('los canales de fábrica', () => {
     losDatos(await api.ejecutar(sara, 'abrir_el_chat', {}));
 
     const deRosa = await susCanales(rosa);
-    expect(deRosa.map((c) => c.nombre)).toEqual(['Todo el equipo', 'Cocina', 'Sala']);
+    expect(deRosa.map((c) => c.nombre)).toEqual(['Todo el equipo']);
   });
 
-  it('cada uno ve los de su rol: la cocina no ve Sala, ni la sala Cocina', async () => {
-    expect((await susCanales(marcos)).map((c) => c.tipo)).toEqual(['equipo', 'cocina']);
-    expect((await susCanales(sara)).map((c) => c.tipo)).toEqual(['equipo', 'sala']);
+  it('el gerente crea «Cocina» con Marcos dentro, y la sala no la ve', async () => {
+    const idDeMarcos = await suPersona(MARCOS);
+    cocina = losDatos<{ canalId: string }>(
+      await api.ejecutar(rosa, 'crear_canal', { nombre: 'Cocina', personas: [idDeMarcos] }),
+    ).canalId;
+    expect((await susCanales(marcos)).map((c) => c.nombre)).toEqual(['Todo el equipo', 'Cocina']);
+    expect((await susCanales(sara)).map((c) => c.tipo)).toEqual(['equipo']);
   });
 
   it('y lo de Cocina no se lee desde la sala, ni preguntando por el canal', async () => {
-    const cocina = await elDe(rosa, 'cocina');
     expect(elFallo(await api.consultar(sara, 'un_canal', { canal_id: cocina }))).toBe('no_existe');
     expect(
       elFallo(await api.ejecutar(sara, 'escribir_en_el_chat', { canal_id: cocina, texto: 'Hola' })),
@@ -132,13 +138,12 @@ describe('los canales de fábrica', () => {
 
 describe('escribir', () => {
   it('nombrar a alguien se cuenta, y quien escribe no tiene nada sin leer', async () => {
-    const cocina = await elDe(marcos, 'cocina');
     alSegundo.toques.length = 0;
     await escribir(marcos, cocina, '@Rosa se ha acabado el pulpo');
 
-    const deRosa = (await susCanales(rosa)).find((c) => c.tipo === 'cocina');
+    const deRosa = (await susCanales(rosa)).find((c) => c.id === cocina);
     expect(deRosa).toMatchObject({ sinLeer: 1, teNombran: true });
-    expect((await susCanales(marcos)).find((c) => c.tipo === 'cocina')?.sinLeer).toBe(0);
+    expect((await susCanales(marcos)).find((c) => c.id === cocina)?.sinLeer).toBe(0);
     const [mensaje] = await losMensajes(rosa, cocina);
     expect(mensaje?.meNombran).toBe(true);
   });
@@ -158,18 +163,16 @@ describe('escribir', () => {
   });
 
   it('leer el canal lo deja a cero, y a quien escribió le sale leído', async () => {
-    const cocina = await elDe(rosa, 'cocina');
     const [mensaje] = await losMensajes(rosa, cocina);
     losDatos(
       await api.ejecutar(rosa, 'leer_el_canal', { canal_id: cocina, hasta: mensaje?.id ?? '0' }),
     );
-    expect((await susCanales(rosa)).find((c) => c.tipo === 'cocina')?.sinLeer).toBe(0);
+    expect((await susCanales(rosa)).find((c) => c.id === cocina)?.sinLeer).toBe(0);
     const [suyo] = await losMensajes(marcos, cocina);
     expect(suyo?.estado).toEqual({ como: 'leido', todos: true });
   });
 
   it('las reacciones se ponen y se quitan con el mismo toque', async () => {
-    const cocina = await elDe(rosa, 'cocina');
     const [mensaje] = await losMensajes(rosa, cocina);
     const id = mensaje?.id ?? '0';
     losDatos(await api.ejecutar(rosa, 'reaccionar', { mensaje_id: id, emoji: '👍' }));
@@ -357,7 +360,6 @@ describe('el móvil', () => {
       }),
     );
     const antes = movil.mandados.length;
-    const cocina = await elDe(rosa, 'cocina');
     await escribir(rosa, cocina, 'Mañana viene el pescado a las nueve');
 
     const mandado = movil.mandados.at(-1);
@@ -375,7 +377,6 @@ describe('el móvil', () => {
   });
 
   it('silenciado, no suena; salvo que le nombren', async () => {
-    const cocina = await elDe(marcos, 'cocina');
     losDatos(await api.ejecutar(marcos, 'silenciar_canal', { canal_id: cocina, silenciado: true }));
     const antes = movil.mandados.length;
     await escribir(rosa, cocina, 'Recordad limpiar la plancha');

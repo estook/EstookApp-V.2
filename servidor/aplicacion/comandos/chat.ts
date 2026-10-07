@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  FIJADOS_POR_CANAL,
   LO_QUE_SE_ADJUNTA,
   PERSONAS_EN_UN_PRIVADO,
   REACCIONES,
@@ -9,20 +10,25 @@ import {
   TOPE_DEL_MENSAJE,
   TOPE_DEL_NOMBRE_DEL_CANAL,
   aQuienSeNombra,
+  fechaOperativa,
   sePuedeCorregir,
   type TipoDeAdjunto,
 } from '@estook/dominio';
+import { programarLosRecordatorios } from '../al-movil.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import {
   apuntarParaElMovil,
   asegurarLosCanales,
   elLocalDelChat,
+  llevaCanales,
   tocarElCanal,
   yaNoHaceFaltaElMovil,
 } from '../chat.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
+import { laSemana, unLunes } from '../horario.ts';
 import { comoLista } from '../listas.ts';
+import { loQuePuede } from '../lo-que-puede.ts';
 import { enNombreDelSistema } from '../pago.ts';
 
 /**
@@ -68,13 +74,16 @@ interface MensajeTomado {
   borrado_en: Date | null;
   adjunto_clave: string | null;
   texto: string | null;
+  pide_confirmar: boolean;
+  fijado: boolean;
 }
 
 /** Un mensaje que se ve, tomado para cambiarlo. */
 async function elMensaje(contexto: Contexto, mensajeId: string): Promise<MensajeTomado> {
   const filas = await contexto.sql<MensajeTomado[]>`
     select m.id::text as id, m.canal_id, m.local_id, m.autor_id, c.tipo::text as tipo,
-           m.creado_en, m.borrado_en, m.adjunto_clave, m.texto
+           m.creado_en, m.borrado_en, m.adjunto_clave, m.texto, m.pide_confirmar,
+           m.fijado_en is not null as fijado
       from estook.mensaje m
       join estook.canal c on c.id = m.canal_id
      where m.id = ${mensajeId}::bigint
@@ -112,6 +121,27 @@ async function sonDelLocal(
     throw new FalloDeAplicacion('faltan_datos', {
       campos: ['personas'],
       porque: 'Solo se puede hablar con gente de este local.',
+    });
+  }
+}
+
+/** Que quien manda la tarjeta vea lo que manda, en ese local. La política decide. */
+async function laTarjetaSeVe(
+  contexto: Contexto,
+  localId: string,
+  tarjeta: { readonly tipo: 'pedido' | 'producto'; readonly id: string },
+): Promise<void> {
+  const filas =
+    tarjeta.tipo === 'pedido'
+      ? await contexto.sql<{ id: string }[]>`
+          select id from estook.pedido_de_compra where id = ${tarjeta.id} and local_id = ${localId}
+        `
+      : await contexto.sql<{ id: string }[]>`
+          select id from estook.producto where id = ${tarjeta.id} and local_id = ${localId}
+        `;
+  if (filas.length === 0) {
+    throw new FalloDeAplicacion('no_existe', {
+      porque: 'Eso no está, o no es de lo que puedes ver.',
     });
   }
 }
@@ -179,9 +209,16 @@ export const entradaEscribirEnElChat = z
       .optional(),
     responde_a: unMensaje.optional(),
     adjunto: unAdjunto.optional(),
+    /** Pedir «Confirmar que lo he leído» (C2 · 0075): quien lleva el equipo, no en privados. */
+    pide_confirmar: z.boolean().optional(),
+    /** Un pedido o un producto, como tarjeta que se abre en su sitio (C2 · 0075). */
+    tarjeta: z
+      .object({ tipo: z.enum(['pedido', 'producto']), id: z.string().uuid() })
+      .strict()
+      .optional(),
   })
   .strict()
-  .refine((e) => (e.texto ?? '') !== '' || e.adjunto !== undefined, {
+  .refine((e) => (e.texto ?? '') !== '' || e.adjunto !== undefined || e.tarjeta !== undefined, {
     message: 'Escribe algo o adjunta un fichero.',
     path: ['texto'],
   });
@@ -269,8 +306,24 @@ export const escribirEnElChat = comando<EntradaEscribirEnElChat, { mensajeId: st
       }
     }
 
+    const pideConfirmar = entrada.pide_confirmar === true;
+    if (pideConfirmar) {
+      if (canal.tipo === 'privado') {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: 'En un privado no se pide confirmar: ya ves quién lo ha leído.',
+        });
+      }
+      if (!(await llevaCanales(contexto, canal.local_id))) {
+        throw new FalloDeAplicacion('sin_permiso', {
+          porque: 'Pedir que confirmen es de quien lleva el equipo: el gerente y los jefes.',
+        });
+      }
+    }
+    if (entrada.tarjeta !== undefined)
+      await laTarjetaSeVe(contexto, canal.local_id, entrada.tarjeta);
+
     const texto = entrada.texto === undefined || entrada.texto === '' ? null : entrada.texto;
-    const personas = texto === null ? [] : await quienVe(contexto, canal.id);
+    const personas = texto === null && !pideConfirmar ? [] : await quienVe(contexto, canal.id);
     const mencionados =
       texto === null ? [] : aQuienSeNombra(texto, personas).filter((p) => p !== personaId);
 
@@ -283,7 +336,7 @@ export const escribirEnElChat = comando<EntradaEscribirEnElChat, { mensajeId: st
       insert into estook.mensaje (
         canal_id, local_id, autor_id, texto, responde_a,
         adjunto_clave, adjunto_tipo, adjunto_nombre, adjunto_mime, adjunto_bytes, adjunto_segundos,
-        menciones, creado_en
+        menciones, creado_en, tarjeta, pide_confirmar
       )
       values (
         ${canal.id}, ${canal.local_id}, ${personaId}, ${texto},
@@ -291,12 +344,34 @@ export const escribirEnElChat = comando<EntradaEscribirEnElChat, { mensajeId: st
         ${adjunto?.clave ?? null}, ${adjunto?.tipo ?? null}, ${adjunto?.nombre ?? null},
         ${adjunto?.mime ?? null}, ${adjunto?.bytes ?? null}, ${adjunto?.segundos ?? null},
         ${comoLista(mencionados)}::text::uuid[],
-        ${contexto.ahora.toISOString()}::timestamptz
+        ${contexto.ahora.toISOString()}::timestamptz,
+        ${entrada.tarjeta === undefined ? null : JSON.stringify(entrada.tarjeta)}::text::jsonb,
+        ${pideConfirmar}
       )
       returning id::text as id
     `;
     const mensajeId = puestos[0]?.id;
     if (mensajeId === undefined) throw new FalloDeAplicacion('sin_permiso');
+
+    // Quién tiene que confirmar: quien ve el canal ahora, menos quien lo pide. Lo apunta
+    // el sistema, con su recordatorio al empezar el siguiente turno de cada uno.
+    if (pideConfirmar) {
+      const tienen = personas.map((p) => p.id).filter((p) => p !== personaId);
+      await enNombreDelSistema(contexto, async () => {
+        for (const persona of tienen) {
+          await contexto.sql`
+            insert into estook.confirmacion_del_mensaje (mensaje_id, persona_id)
+            values (${mensajeId}::bigint, ${persona})
+            on conflict do nothing
+          `;
+        }
+        await programarLosRecordatorios(contexto, {
+          localId: canal.local_id,
+          mensajeId,
+          personas: tienen,
+        });
+      });
+    }
 
     // Lo propio está leído: el número de sin leer no cuenta lo que uno escribe.
     await contexto.sql`
@@ -348,6 +423,11 @@ export const corregirMensaje = comando<EntradaCorregirMensaje, { corregido: true
         porque: 'Solo se corrige lo que escribiste tú, mientras sigue ahí.',
       });
     }
+    if (mensaje.pide_confirmar) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Lo que pide confirmar no se corrige: manda otro mensaje con lo bueno.',
+      });
+    }
     if (!sePuedeCorregir(new Date(mensaje.creado_en), contexto.ahora)) {
       throw new FalloDeAplicacion('faltan_datos', {
         porque: 'Pasados quince minutos ya no se corrige: bórralo y escribe otro.',
@@ -375,7 +455,8 @@ async function vaciarElMensaje(
   await contexto.sql`
     update estook.mensaje
        set texto = null, adjunto_clave = null, adjunto_tipo = null, adjunto_nombre = null,
-           adjunto_mime = null, adjunto_bytes = null, adjunto_segundos = null,
+           adjunto_mime = null, adjunto_bytes = null, adjunto_segundos = null, tarjeta = null,
+           fijado_en = null, fijado_por = null,
            menciones = '{}', borrado_en = ${contexto.ahora.toISOString()}::timestamptz,
            retirado_por = ${retiradoPor}
      where id = ${mensaje.id}::bigint
@@ -402,6 +483,11 @@ export const borrarMensaje = comando<EntradaDeUnMensaje, { borrado: true }>({
       throw new FalloDeAplicacion('sin_permiso', { porque: 'Solo se borra lo que escribiste tú.' });
     }
     if (mensaje.borrado_en !== null) return { borrado: true };
+    if (mensaje.pide_confirmar) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Lo que pide confirmar no se borra: si algo cambia, manda otro mensaje.',
+      });
+    }
     await vaciarElMensaje(contexto, mensaje, null);
     await tocarElCanal(contexto, mensaje.canal_id);
     return { borrado: true };
@@ -605,19 +691,24 @@ export const entradaCrearCanal = z
 export type EntradaCrearCanal = z.infer<typeof entradaCrearCanal>;
 
 /**
- * Un canal nuevo («Barra», «Encargados»), con quién entra: quien lleva el local
- * (0071, pregunta 3). Quien lleva el local los ve todos, esté o no dentro.
+ * Un canal nuevo («Cocina», «Barra», «Encargados»), con su nombre y quién entra: **el
+ * gerente y los jefes** (0075, 3), que es quien ve Equipo y el chat. Quien lleva el
+ * local los ve todos, esté o no dentro.
  */
 export const crearCanal = comando<EntradaCrearCanal, { canalId: string }>({
   nombre: 'crear_canal',
   entrada: entradaCrearCanal,
-  exige: 'app.equipo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelChat(contexto);
     const personaId = contexto.personaId;
     if (personaId === null) throw new FalloDeAplicacion('sin_permiso');
     await asegurarLosCanales(contexto, localId);
+    if (!(await llevaCanales(contexto, localId))) {
+      throw new FalloDeAplicacion('sin_permiso', {
+        porque: 'Los canales los crean el gerente y los jefes. Tú puedes abrir un privado.',
+      });
+    }
     const personas = [...new Set([personaId, ...entrada.personas])];
     await sonDelLocal(contexto, localId, personas);
 
@@ -778,5 +869,270 @@ export const salirDelCanal = comando<EntradaDeUnCanal, { fuera: true }>({
     `;
     await yaNoHaceFaltaElMovil(contexto, canal.id);
     return { fuera: true };
+  },
+});
+
+// ── Renombrar y borrar un canal (C2 · 0075) ──────────────────────────────────
+
+/**
+ * Si quien pregunta lleva ese canal: quien lo creó, y quien edita Equipo (el gerente,
+ * dirección). «Todo el equipo» y los privados no se renombran ni se borran. La misma
+ * regla que la política `canal_cambio` de la 0057, dicha aquí en cristiano.
+ */
+async function llevaElCanal(
+  contexto: Contexto,
+  canal: { tipo: string; local_id: string; creado_por: string | null },
+): Promise<void> {
+  if (canal.tipo !== 'canal') {
+    throw new FalloDeAplicacion('faltan_datos', {
+      porque:
+        canal.tipo === 'equipo'
+          ? '«Todo el equipo» es de todo el local: no se renombra ni se borra.'
+          : 'Un privado no se renombra ni se borra: se sale de él.',
+    });
+  }
+  if (canal.creado_por === contexto.personaId) return;
+  const puede = await loQuePuede(contexto, canal.local_id, ['app.equipo']);
+  if (!puede.editar('app.equipo')) {
+    throw new FalloDeAplicacion('sin_permiso', {
+      porque: 'Lo cambia quien creó el canal, o el gerente.',
+    });
+  }
+}
+
+export const entradaRenombrarCanal = z
+  .object({
+    canal_id: unCanal,
+    nombre: z
+      .string()
+      .trim()
+      .min(1, 'Ponle nombre.')
+      .max(TOPE_DEL_NOMBRE_DEL_CANAL, `Como mucho, ${String(TOPE_DEL_NOMBRE_DEL_CANAL)} letras.`),
+  })
+  .strict();
+
+export type EntradaRenombrarCanal = z.infer<typeof entradaRenombrarCanal>;
+
+/** Cambiarle el nombre a un canal creado («Barra» pasa a «Barra y terraza»). */
+export const renombrarCanal = comando<EntradaRenombrarCanal, { nombre: string }>({
+  nombre: 'renombrar_canal',
+  entrada: entradaRenombrarCanal,
+
+  async ejecutar(contexto, entrada) {
+    const canal = await elCanal(contexto, entrada.canal_id);
+    await llevaElCanal(contexto, canal);
+    const cambiados = await contexto.sql<{ id: string }[]>`
+      update estook.canal set nombre = ${entrada.nombre}
+       where id = ${canal.id}
+      returning id
+    `;
+    if (cambiados.length === 0) throw new FalloDeAplicacion('sin_permiso');
+    await contexto.sql`
+      select estook.anotar(
+        ${laOrganizacionDeLaSesion(contexto)}::uuid, 'modificar', 'canal', ${canal.id},
+        ${canal.local_id}::uuid, null, ${JSON.stringify({ nombre: entrada.nombre })}::text::jsonb, null
+      )
+    `;
+    await tocarElCanal(contexto, canal.id);
+    return { nombre: entrada.nombre };
+  },
+});
+
+/**
+ * Borrar un canal creado: **se archiva** (0075, lo que decido yo, 3). Deja de verse y
+ * de sonar, y lo que se dijo se queda guardado, como todo lo del chat.
+ */
+export const borrarCanal = comando<EntradaDeUnCanal, { borrado: true }>({
+  nombre: 'borrar_canal',
+  entrada: entradaDeUnCanal,
+
+  async ejecutar(contexto, entrada) {
+    const canal = await elCanal(contexto, entrada.canal_id);
+    await llevaElCanal(contexto, canal);
+    // Antes de archivarlo: después ya no lo ve nadie, tampoco para avisar del cambio.
+    await tocarElCanal(contexto, canal.id);
+    // Sin `returning`: archivado deja de verse, y pedir la fila de vuelta fallaría.
+    await contexto.sql`
+      update estook.canal set archivado_en = ${contexto.ahora.toISOString()}::timestamptz
+       where id = ${canal.id}
+    `;
+    // Lo que esperaba al móvil o al correo de ese canal, fuera.
+    await enNombreDelSistema(contexto, async () => {
+      await contexto.sql`delete from estook.chat_al_movil where canal_id = ${canal.id}`;
+    });
+    await contexto.sql`
+      select estook.anotar(
+        ${laOrganizacionDeLaSesion(contexto)}::uuid, 'borrar', 'canal', ${canal.id},
+        ${canal.local_id}::uuid, null, null, null
+      )
+    `;
+    return { borrado: true };
+  },
+});
+
+// ── Fijar y confirmar (C2 · 0075) ────────────────────────────────────────────
+
+export const entradaFijarMensaje = z
+  .object({ mensaje_id: unMensaje, fijado: z.boolean() })
+  .strict();
+
+export type EntradaFijarMensaje = z.infer<typeof entradaFijarMensaje>;
+
+/**
+ * Fijar un mensaje arriba del canal, o quitarlo: quien lleva el equipo, **hasta tres por
+ * canal** (0075, 2) y nunca en un privado. Quitarlo de fijado no lo borra. Lo escribe el
+ * sistema: fijar el mensaje de otro no es corregirlo, y la política solo deja tocar lo
+ * propio.
+ */
+export const fijarMensaje = comando<EntradaFijarMensaje, { fijado: boolean }>({
+  nombre: 'fijar_mensaje',
+  entrada: entradaFijarMensaje,
+
+  async ejecutar(contexto, entrada) {
+    const mensaje = await elMensaje(contexto, entrada.mensaje_id);
+    if (mensaje.tipo === 'privado') {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'En un privado no se fija nada: es una conversación, no un tablón.',
+      });
+    }
+    if (!(await llevaCanales(contexto, mensaje.local_id))) {
+      throw new FalloDeAplicacion('sin_permiso', {
+        porque: 'Fijan los mensajes el gerente y los jefes.',
+      });
+    }
+    if (mensaje.borrado_en !== null) {
+      throw new FalloDeAplicacion('no_existe', { porque: 'Ese mensaje ya no está.' });
+    }
+    if (entrada.fijado === mensaje.fijado) return { fijado: entrada.fijado };
+    if (entrada.fijado) {
+      const fijados = await contexto.sql<{ cuantos: number }[]>`
+        select count(*)::int as cuantos from estook.mensaje
+         where canal_id = ${mensaje.canal_id} and fijado_en is not null
+      `;
+      if ((fijados[0]?.cuantos ?? 0) >= FIJADOS_POR_CANAL) {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: `Como mucho, ${String(FIJADOS_POR_CANAL)} fijados por canal: quita uno antes.`,
+        });
+      }
+    }
+    await enNombreDelSistema(contexto, async () => {
+      await contexto.sql`
+        update estook.mensaje
+           set fijado_en = ${entrada.fijado ? contexto.ahora.toISOString() : null}::timestamptz,
+               fijado_por = ${entrada.fijado ? contexto.personaId : null}
+         where id = ${mensaje.id}::bigint
+      `;
+    });
+    await tocarElCanal(contexto, mensaje.canal_id);
+    return { fijado: entrada.fijado };
+  },
+});
+
+/**
+ * «Confirmar que lo he leído» (0075): lo hace cada uno con lo suyo, y no se deshace. Quita
+ * el recordatorio que tuviera en la campana. Confirmar dos veces no hace nada más.
+ */
+export const confirmarMensaje = comando<EntradaDeUnMensaje, { confirmado: true }>({
+  nombre: 'confirmar_mensaje',
+  entrada: entradaDeUnMensaje,
+
+  async ejecutar(contexto, entrada) {
+    const mensaje = await elMensaje(contexto, entrada.mensaje_id);
+    const suya = await contexto.sql<{ confirmado: boolean }[]>`
+      select confirmado_en is not null as confirmado from estook.confirmacion_del_mensaje
+       where mensaje_id = ${mensaje.id}::bigint and persona_id = ${contexto.personaId}
+    `;
+    const fila = suya[0];
+    if (fila === undefined) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Este mensaje no te pide que lo confirmes.',
+      });
+    }
+    if (fila.confirmado) return { confirmado: true };
+    await contexto.sql`
+      update estook.confirmacion_del_mensaje
+         set confirmado_en = ${contexto.ahora.toISOString()}::timestamptz
+       where mensaje_id = ${mensaje.id}::bigint and persona_id = ${contexto.personaId}
+    `;
+    // Confirmar es también haberlo leído.
+    await contexto.sql`
+      insert into estook.lectura_del_canal (canal_id, persona_id, entregado_hasta, leido_hasta)
+      values (${mensaje.canal_id}, ${contexto.personaId}, ${mensaje.id}::bigint, ${mensaje.id}::bigint)
+      on conflict (canal_id, persona_id) do update
+         set entregado_hasta = greatest(estook.lectura_del_canal.entregado_hasta, excluded.entregado_hasta),
+             leido_hasta = greatest(estook.lectura_del_canal.leido_hasta, excluded.leido_hasta),
+             actualizado_en = now()
+    `;
+    const personaId = contexto.personaId;
+    await enNombreDelSistema(contexto, async () => {
+      await contexto.sql`
+        delete from estook.aviso
+         where persona_id = ${personaId} and tipo = 'chat.confirmar' and clave = ${mensaje.id}
+      `;
+    });
+    await tocarElCanal(contexto, mensaje.canal_id);
+    return { confirmado: true };
+  },
+});
+
+// ── El horario, avisado en el chat (C2 · 0075) ───────────────────────────────
+
+export const entradaAvisarDelHorario = z.object({ lunes: unLunes }).strict();
+export type EntradaAvisarDelHorario = z.infer<typeof entradaAvisarDelHorario>;
+
+/**
+ * Al publicar la semana, «¿Avisar en Todo el equipo?» Sí (0075, 5 de C): un aviso con
+ * «Ver el horario». **No hace sonar el móvil**: a cada uno ya le llega «tu horario está
+ * publicado». Y no pide confirmar: «leído» ya dice quién lo ha visto. Lo hace quien
+ * publica el horario, y solo de una semana publicada.
+ */
+export const avisarDelHorario = comando<EntradaAvisarDelHorario, { mensajeId: string }>({
+  nombre: 'avisar_del_horario',
+  entrada: entradaAvisarDelHorario,
+  exige: 'accion.publicar_cuadrante',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelChat(contexto);
+    const personaId = contexto.personaId;
+    if (personaId === null) throw new FalloDeAplicacion('sin_permiso');
+    const lunes = fechaOperativa(entrada.lunes);
+    const semana = await laSemana(contexto, localId, lunes);
+    if (semana === null || semana.publicadaEn === null) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Esa semana no está publicada: publícala antes de avisar.',
+      });
+    }
+    await asegurarLosCanales(contexto, localId);
+    const equipo = await contexto.sql<{ id: string }[]>`
+      select id from estook.canal
+       where local_id = ${localId} and tipo = 'equipo' and archivado_en is null
+    `;
+    const canalId = equipo[0]?.id;
+    if (canalId === undefined) {
+      throw new FalloDeAplicacion('no_existe', {
+        porque: 'Este local todavía no tiene chat. Ábrelo una vez y vuelve a probar.',
+      });
+    }
+    const puestos = await contexto.sql<{ id: string }[]>`
+      insert into estook.mensaje (canal_id, local_id, autor_id, tarjeta, creado_en)
+      values (
+        ${canalId}, ${localId}, ${personaId},
+        ${JSON.stringify({ tipo: 'horario', id: lunes })}::text::jsonb,
+        ${contexto.ahora.toISOString()}::timestamptz
+      )
+      returning id::text as id
+    `;
+    const mensajeId = puestos[0]?.id;
+    if (mensajeId === undefined) throw new FalloDeAplicacion('sin_permiso');
+    await contexto.sql`
+      insert into estook.lectura_del_canal (canal_id, persona_id, entregado_hasta, leido_hasta)
+      values (${canalId}, ${personaId}, ${mensajeId}::bigint, ${mensajeId}::bigint)
+      on conflict (canal_id, persona_id) do update
+         set entregado_hasta = greatest(estook.lectura_del_canal.entregado_hasta, excluded.entregado_hasta),
+             leido_hasta = greatest(estook.lectura_del_canal.leido_hasta, excluded.leido_hasta),
+             actualizado_en = now()
+    `;
+    await tocarElCanal(contexto, canalId);
+    return { mensajeId };
   },
 });

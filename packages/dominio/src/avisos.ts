@@ -55,6 +55,8 @@ export const TIPOS_DE_AVISO = [
   'lote.caduca',
   'pedido.no_llega',
   'fichaje.sin_apuntar',
+  // ── C2 (decisión 0075) ──────────────────────────────────────────────────
+  'chat.confirmar',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -293,6 +295,20 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: false,
+    movilDeFabrica: true,
+  },
+
+  // ── C2 (decisión 0075) ──────────────────────────────────────────────────
+  //
+  // Lo oficial del chat: quien lo pidió quiere saber que te has enterado. Una vez, al
+  // empezar tu siguiente turno. Por correo de fábrica, que solo sale si no te suena
+  // el móvil (0017): así se entera también quien no tiene el móvil puesto.
+  'chat.confirmar': {
+    nombre: 'Te falta confirmar algo del chat',
+    explica: 'Una vez, al empezar tu siguiente turno, si todavía no lo has confirmado.',
+    grupo: 'Equipo',
+    deTuEquipo: false,
+    correoDeFabrica: true,
     movilDeFabrica: true,
   },
 };
@@ -730,6 +746,20 @@ export function avisoDeFichajeApuntado(
   return {
     titulo: `${quien} ha apuntado un fichaje tuyo del ${comoSeLlamaElDia(diaDeLaSemana(fecha))} ${sinAnio}`,
     detalle: `Motivo: ${motivo.charAt(0).toLowerCase()}${motivo.slice(1)}${/[.!?]$/.test(motivo) ? '' : '.'} Lo ves en tus fichajes.`,
+  };
+}
+
+/**
+ * «Te falta confirmar un mensaje de Rosa en Todo el equipo» · «Esta semana no hay
+ * pescado los lunes. Tócalo para leerlo y confirmarlo.» (C2 · 0075)
+ */
+export function avisoDeConfirmar(quien: string, canal: string, vista: string): LoQueDiceUnAviso {
+  const limpio = vista.replace(/\s+/g, ' ').trim();
+  const corto = limpio.length > 140 ? `${limpio.slice(0, 140).trimEnd()}…` : limpio;
+  const punto = /[.!?…]$/.test(corto) ? '' : '.';
+  return {
+    titulo: `Te falta confirmar un mensaje de ${quien} en ${canal}`,
+    detalle: `${corto}${punto} Tócalo para leerlo y confirmarlo.`,
   };
 }
 

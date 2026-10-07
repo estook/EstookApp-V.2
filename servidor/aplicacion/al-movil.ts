@@ -4,6 +4,9 @@ import {
   SILENCIO_DE_FABRICA,
   TIPOS_DE_CANAL,
   avisoDelChatEnElMovil,
+  avisoDeConfirmar,
+  correoDelChat,
+  cuandoSeRecuerda,
   nombreDelCanal,
   vistaPrevia,
   avisoDeCaducidad,
@@ -20,6 +23,7 @@ import {
   type CuandoSuena,
   type TipoDeAdjunto,
   type TipoDeCanal,
+  type TipoDeTarjeta,
   type TipoDeAviso,
   type TurnoQueSeMira,
 } from '@estook/dominio';
@@ -27,6 +31,7 @@ import type { LoQueVaAlMovil, SuscripcionDeMovil } from '../infraestructura/movi
 import { avisar, losQueLoQuieren, quienesPuedenRecibir, type QuienRecibe } from './avisos.ts';
 import { almacenHoy } from './consultas/almacen.ts';
 import type { Contexto } from './contrato.ts';
+import { correoDelChatParaMandar } from './correos.ts';
 import { comoLista } from './listas.ts';
 import { irAlPedido } from './lo-que-avisa.ts';
 import { aparte, comoSiFuera } from './lo-que-avisa-el-reloj.ts';
@@ -434,14 +439,165 @@ interface ChatPendiente {
   readonly adjunto_tipo: TipoDeAdjunto | null;
   readonly adjunto_nombre: string | null;
   readonly adjunto_segundos: number | null;
+  readonly tarjeta: TipoDeTarjeta | null;
   readonly borrado: boolean;
+  readonly por_correo: boolean;
+}
+
+/** Cuándo puede sonar el móvil de alguien, o salirle el correo: lo mismo (0070). */
+function cuandoPuede(ahora: Date, reloj: SuReloj | undefined, zonaHoraria: string): Date | null {
+  if (reloj === undefined) return ahora;
+  return cuandoPuedeSonar(ahora, {
+    modo: reloj.modo,
+    silencioDesde: reloj.desde,
+    silencioHasta: reloj.hasta,
+    zonaHoraria,
+    turnos: reloj.turnos,
+    fichadoAhora: reloj.fichado,
+  });
+}
+
+/** El nombre del canal como lo lee quien recibe el aviso: un privado, por los otros. */
+async function elCanalParaQuien(
+  contexto: Contexto,
+  p: ChatPendiente,
+): Promise<{ canal: string; autor: string; otros: readonly string[] }> {
+  // Los nombres, de la función del chat: contesta al sistema, y la tabla de personas
+  // solo enseña a quien comparte local, que aquí no hay nadie.
+  const gente = await contexto.sql<{ id: string; nombre: string }[]>`
+    select persona_id::text as id, nombre from estook.quien_ve_el_canal(${p.canal_id}::uuid)
+     order by nombre
+  `;
+  const otros =
+    p.tipo === 'privado' ? gente.filter((g) => g.id !== p.persona_id).map((g) => g.nombre) : [];
+  const tipo = esTipoDeCanal(p.tipo) ? p.tipo : 'canal';
+  return {
+    canal: nombreDelCanal({ tipo, nombre: p.nombre, otros }),
+    autor: gente.find((g) => g.id === p.autor_id)?.nombre ?? 'Alguien',
+    otros,
+  };
+}
+
+/** Entre dos correos del chat a la misma persona, como poco: uno al día (0075). */
+const ENTRE_CORREOS_DEL_CHAT = 20 * HORA;
+
+/**
+ * El correo del chat (C2 · 0075): a quien no tiene el móvil puesto, **sus privados y
+ * lo que le nombra**, sin leer, en un correo **al día como mucho**, cuando le puede
+ * sonar (en su turno, o fuera de sus horas de silencio: el correo tampoco salta la
+ * desconexión). Leerlo en el chat lo quita antes de que salga.
+ */
+async function mandarElCorreoDelChat(
+  contexto: Contexto,
+  pendientes: readonly ChatPendiente[],
+  relojes: ReadonlyMap<string, SuReloj>,
+): Promise<{ mandados: number; esperan: number }> {
+  const hecho = { mandados: 0, esperan: 0 };
+  if (pendientes.length === 0) return hecho;
+  const ahora = contexto.ahora;
+  const correo = contexto.correo;
+
+  async function quitar(p: ChatPendiente): Promise<void> {
+    await contexto.sql`
+      delete from estook.chat_al_movil where persona_id = ${p.persona_id} and canal_id = ${p.canal_id}
+    `;
+  }
+  if (correo === null) {
+    for (const p of pendientes) await quitar(p);
+    return hecho;
+  }
+
+  const personas = [...new Set(pendientes.map((p) => p.persona_id))];
+  // El correo, de la función que se lo da al sistema: la tabla de personas no se lo enseña.
+  const datos = await contexto.sql<
+    { id: string; correo: string | null; mandado_en: Date | null }[]
+  >`
+    select q.persona_id::text as id, q.correo, c.mandado_en
+      from estook.a_quien_escribir(${comoLista(personas)}::text::uuid[]) q
+      left join estook.correo_del_chat c on c.persona_id = q.persona_id
+  `;
+
+  for (const persona of personas) {
+    const suyos = pendientes.filter((p) => p.persona_id === persona);
+    const suyo = datos.find((d) => d.id === persona);
+    if (suyo?.correo === null || suyo?.correo === undefined || suyo.correo === '') {
+      for (const p of suyos) await quitar(p);
+      continue;
+    }
+
+    const cuando = cuandoPuede(
+      ahora,
+      relojes.get(persona),
+      suyos[0]?.zona_horaria ?? 'Europe/Madrid',
+    );
+    const otraVez =
+      suyo.mandado_en === null
+        ? null
+        : new Date(new Date(suyo.mandado_en).getTime() + ENTRE_CORREOS_DEL_CHAT);
+    const desde =
+      cuando === null
+        ? null
+        : otraVez !== null && otraVez.getTime() > cuando.getTime()
+          ? otraVez
+          : cuando;
+
+    const quedan: ChatPendiente[] = [];
+    for (const p of suyos) {
+      const vale = Date.parse(p.creado_en) + LO_QUE_ESPERA_EL_CHAT;
+      if (desde === null || desde.getTime() > vale) await quitar(p);
+      else quedan.push(p);
+    }
+    if (quedan.length === 0 || desde === null) continue;
+    if (desde.getTime() > ahora.getTime()) {
+      for (const p of quedan) {
+        await contexto.sql`
+          update estook.chat_al_movil set movil_desde = ${desde.toISOString()}::timestamptz
+           where persona_id = ${p.persona_id} and canal_id = ${p.canal_id}
+        `;
+      }
+      hecho.esperan += quedan.length;
+      continue;
+    }
+
+    const lineas = [];
+    for (const p of quedan) {
+      const { canal } = await elCanalParaQuien(contexto, p);
+      lineas.push({ canal, cuantos: p.cuantos, teNombran: p.le_mencionan });
+    }
+    try {
+      await correo.mandar(correoDelChatParaMandar(suyo.correo, correoDelChat(lineas)));
+      await contexto.sql`
+        insert into estook.correo_del_chat (persona_id, mandado_en)
+        values (${persona}, ${ahora.toISOString()}::timestamptz)
+        on conflict (persona_id) do update set mandado_en = excluded.mandado_en
+      `;
+      for (const p of quedan) await quitar(p);
+      hecho.mandados += 1;
+    } catch {
+      // Pasajero: se reintenta, cada vez un poco más tarde; al quinto, se deja.
+      for (const p of quedan) {
+        if (p.intentos + 1 >= INTENTOS) {
+          await quitar(p);
+          continue;
+        }
+        await contexto.sql`
+          update estook.chat_al_movil
+             set intentos = intentos + 1,
+                 movil_desde = ${new Date(ahora.getTime() + (p.intentos + 1) * 2 * MINUTO).toISOString()}::timestamptz
+           where persona_id = ${p.persona_id} and canal_id = ${p.canal_id}
+        `;
+      }
+      hecho.esperan += quedan.length;
+    }
+  }
+  return hecho;
 }
 
 /**
  * Lo del chat que espera al móvil (0071, 7): uno por canal y persona, con lo que se ha
  * juntado. Las mismas reglas que los avisos —en su turno, o fuera de sus horas de
- * silencio— y **nunca por correo**: lo que no puede sonar mientras sirva, se queda en el
- * chat, que es su sitio.
+ * silencio—. Lo que no puede sonar mientras sirva, se queda en el chat, que es su sitio.
+ * Lo de quien no tiene móvil va al correo del chat (C2 · 0075).
  */
 async function mandarElChatAlMovil(
   contexto: Contexto,
@@ -450,17 +606,20 @@ async function mandarElChatAlMovil(
   const ahora = contexto.ahora;
   const hecho = { mandados: 0, esperan: 0 };
 
+  // Sin el puerto encendido, lo que era para el móvil no va a salir. Lo del correo, sí.
   if (movil === null) {
-    await contexto.sql`delete from estook.chat_al_movil where movil_desde <= ${ahora.toISOString()}::timestamptz`;
-    return hecho;
+    await contexto.sql`
+      delete from estook.chat_al_movil
+       where not por_correo and movil_desde <= ${ahora.toISOString()}::timestamptz
+    `;
   }
 
   const pendientes = await contexto.sql<ChatPendiente[]>`
-    select c.persona_id, c.canal_id, c.cuantos, c.le_mencionan, c.intentos,
+    select c.persona_id, c.canal_id, c.cuantos, c.le_mencionan, c.intentos, c.por_correo,
            to_char(c.creado_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as creado_en,
            can.tipo::text as tipo, can.nombre, coalesce(l.zona_horaria, 'Europe/Madrid') as zona_horaria,
            m.autor_id::text as autor_id, m.texto, m.adjunto_tipo, m.adjunto_nombre, m.adjunto_segundos,
-           m.borrado_en is not null as borrado
+           m.tarjeta ->> 'tipo' as tarjeta, m.borrado_en is not null as borrado
       from estook.chat_al_movil c
       join estook.canal can on can.id = c.canal_id
       join estook.local l on l.id = can.local_id
@@ -479,7 +638,20 @@ async function mandarElChatAlMovil(
   }
 
   const personas = [...new Set(pendientes.map((p) => p.persona_id))];
-  const lista = comoLista(personas);
+  const relojes = await susRelojes(contexto, personas);
+
+  const delCorreo = await mandarElCorreoDelChat(
+    contexto,
+    pendientes.filter((p) => p.por_correo),
+    relojes,
+  );
+  hecho.mandados += delCorreo.mandados;
+  hecho.esperan += delCorreo.esperan;
+
+  const alMovil = pendientes.filter((p) => !p.por_correo);
+  if (movil === null || alMovil.length === 0) return hecho;
+  const deEllos = [...new Set(alMovil.map((p) => p.persona_id))];
+  const lista = comoLista(deEllos);
   const moviles = await contexto.sql<SuMovil[]>`
     select id, persona_id, direccion, p256dh, auth
       from estook.movil_suscrito where persona_id = any (${lista}::text::uuid[])
@@ -489,29 +661,20 @@ async function mandarElChatAlMovil(
      where leido_en is null and persona_id = any (${lista}::text::uuid[])
      group by persona_id
   `;
-  const relojes = await susRelojes(contexto, personas);
 
-  for (const persona of personas) {
-    const suyos = pendientes.filter((p) => p.persona_id === persona);
+  for (const persona of deEllos) {
+    const suyos = alMovil.filter((p) => p.persona_id === persona);
     const susMoviles = moviles.filter((m) => m.persona_id === persona);
     if (susMoviles.length === 0) {
       for (const p of suyos) await quitar(p);
       continue;
     }
 
-    const reloj = relojes.get(persona);
-    const zona = suyos[0]?.zona_horaria ?? 'Europe/Madrid';
-    const cuando =
-      reloj === undefined
-        ? ahora
-        : cuandoPuedeSonar(ahora, {
-            modo: reloj.modo,
-            silencioDesde: reloj.desde,
-            silencioHasta: reloj.hasta,
-            zonaHoraria: zona,
-            turnos: reloj.turnos,
-            fichadoAhora: reloj.fichado,
-          });
+    const cuando = cuandoPuede(
+      ahora,
+      relojes.get(persona),
+      suyos[0]?.zona_horaria ?? 'Europe/Madrid',
+    );
 
     // El número del icono: la campana más lo que espera del chat.
     const numero =
@@ -533,19 +696,10 @@ async function mandarElChatAlMovil(
         continue;
       }
 
-      // Los nombres, de la función del chat: contesta al sistema, y la tabla de personas
-      // solo enseña a quien comparte local, que aquí no hay nadie.
-      const gente = await contexto.sql<{ id: string; nombre: string }[]>`
-        select persona_id::text as id, nombre from estook.quien_ve_el_canal(${p.canal_id}::uuid)
-         order by nombre
-      `;
-      const otros =
-        p.tipo === 'privado' ? gente.filter((g) => g.id !== persona).map((g) => g.nombre) : [];
-      const autor = gente.find((g) => g.id === p.autor_id)?.nombre ?? 'Alguien';
-      const tipo = esTipoDeCanal(p.tipo) ? p.tipo : 'canal';
+      const { canal, autor, otros } = await elCanalParaQuien(contexto, p);
       const dice = avisoDelChatEnElMovil({
-        canal: nombreDelCanal({ tipo, nombre: p.nombre, otros }),
-        esPrivadoDeDos: tipo === 'privado' && otros.length === 1 && p.nombre === null,
+        canal,
+        esPrivadoDeDos: p.tipo === 'privado' && otros.length === 1 && p.nombre === null,
         cuantos: p.cuantos,
         autor,
         ultimo: vistaPrevia({
@@ -554,6 +708,7 @@ async function mandarElChatAlMovil(
           adjuntoNombre: p.adjunto_nombre,
           adjuntoSegundos: p.adjunto_segundos,
           borrado: p.borrado,
+          tarjeta: p.tarjeta,
         }),
         teMencionan: p.le_mencionan,
       });
@@ -733,11 +888,57 @@ export async function programarLoDelMovil(
 
 // ── 3 · Hacerlo cuando llega su hora ─────────────────────────────────────────
 
+/**
+ * El recordatorio de confirmar (C2 · 0075): a cada uno que tiene que confirmar, **al
+ * empezar su siguiente turno** (`cuandoSeRecuerda`). Se apunta al mandar el mensaje, ya
+ * dentro del sistema; al llegar su hora se mira si todavía falta.
+ */
+export async function programarLosRecordatorios(
+  contexto: Contexto,
+  datos: {
+    readonly localId: string;
+    readonly mensajeId: string;
+    readonly personas: readonly string[];
+  },
+): Promise<number> {
+  if (datos.personas.length === 0) return 0;
+  const relojes = await susRelojes(contexto, datos.personas);
+  const zona = await contexto.sql<{ zona_horaria: string }[]>`
+    select zona_horaria from estook.local where id = ${datos.localId}
+  `;
+  const zonaHoraria = zona[0]?.zona_horaria ?? 'Europe/Madrid';
+  let apuntados = 0;
+  for (const persona of datos.personas) {
+    const reloj = relojes.get(persona);
+    if (reloj === undefined) continue;
+    const cuando = cuandoSeRecuerda(contexto.ahora, {
+      modo: reloj.modo,
+      silencioDesde: reloj.desde,
+      silencioHasta: reloj.hasta,
+      zonaHoraria,
+      turnos: reloj.turnos,
+      fichadoAhora: reloj.fichado,
+    });
+    if (cuando === null) continue;
+    const filas = await contexto.sql<{ id: string }[]>`
+      insert into estook.al_movil_programado (local_id, persona_id, tipo, clave, cuando)
+      values (
+        ${datos.localId}, ${persona}, 'chat.confirmar', ${`${datos.mensajeId}:${persona}`},
+        ${cuando.toISOString()}::timestamptz
+      )
+      on conflict (tipo, clave) do nothing
+      returning id::text as id
+    `;
+    apuntados += filas.length;
+  }
+  return apuntados;
+}
+
 interface Programado {
   readonly id: string;
   readonly local_id: string;
   readonly persona_id: string | null;
-  readonly tipo: 'turno.entras' | 'lote.caduca' | 'pedido.no_llega';
+  readonly tipo: 'turno.entras' | 'lote.caduca' | 'pedido.no_llega' | 'chat.confirmar';
   readonly clave: string;
   readonly cuando: Date;
   readonly organizacion_id: string;
@@ -860,6 +1061,69 @@ async function elPedidoQueNoLlega(contexto: Contexto, p: Programado): Promise<nu
   );
 }
 
+async function recordarQueConfirme(contexto: Contexto, p: Programado): Promise<number> {
+  if (p.persona_id === null) return 0;
+  const mensajeId = p.clave.split(':')[0] ?? '';
+  // ¿Le sigue faltando, el mensaje sigue ahí y sigue viendo el canal? Si no, nada.
+  const falta = await contexto.sql<
+    {
+      canal_id: string;
+      tipo: string;
+      nombre: string | null;
+      autor_id: string | null;
+      texto: string | null;
+      adjunto_tipo: TipoDeAdjunto | null;
+      adjunto_nombre: string | null;
+      adjunto_segundos: number | null;
+      tarjeta: TipoDeTarjeta | null;
+    }[]
+  >`
+    select c.id::text as canal_id, c.tipo::text as tipo, c.nombre, m.autor_id::text as autor_id,
+           m.texto, m.adjunto_tipo, m.adjunto_nombre, m.adjunto_segundos,
+           m.tarjeta ->> 'tipo' as tarjeta
+      from estook.confirmacion_del_mensaje cm
+      join estook.mensaje m on m.id = cm.mensaje_id
+      join estook.canal c on c.id = m.canal_id
+     where cm.mensaje_id = ${mensajeId}::bigint and cm.persona_id = ${p.persona_id}
+       and cm.confirmado_en is null and m.borrado_en is null and c.archivado_en is null
+       and estook.puede_ver_el_canal(c.id, ${p.persona_id}::uuid)
+  `;
+  const mensaje = falta[0];
+  if (mensaje === undefined) return 0;
+  const autor =
+    mensaje.autor_id === null
+      ? []
+      : await contexto.sql<{ nombre: string }[]>`
+          select nombre from estook.a_quien_escribir(${comoLista([mensaje.autor_id])}::text::uuid[])
+        `;
+  const tipo = esTipoDeCanal(mensaje.tipo) ? mensaje.tipo : 'canal';
+  const canal = nombreDelCanal({ tipo, nombre: mensaje.nombre, otros: [] });
+  const vista = vistaPrevia({
+    texto: mensaje.texto,
+    adjuntoTipo: mensaje.adjunto_tipo,
+    adjuntoNombre: mensaje.adjunto_nombre,
+    adjuntoSegundos: mensaje.adjunto_segundos,
+    borrado: false,
+    tarjeta: mensaje.tarjeta,
+  });
+  const quien = (await aQuien(contexto, p.local_id, 'chat.confirmar')).filter(
+    (q) => q.personaId === p.persona_id,
+  );
+  return avisar(
+    contexto,
+    {
+      tipo: 'chat.confirmar',
+      organizacionId: p.organizacion_id,
+      localId: p.local_id,
+      clave: mensajeId,
+      texto: () => avisoDeConfirmar(autor[0]?.nombre ?? 'alguien', canal, vista),
+      ir: `/chat/${mensaje.canal_id}`,
+      quien: null,
+    },
+    quien,
+  );
+}
+
 /** Cada minuto: lo apuntado cuya hora ha llegado. Ya dentro del sistema. */
 export async function hacerLoProgramado(contexto: Contexto): Promise<number> {
   const tocan = await contexto.sql<Programado[]>`
@@ -885,7 +1149,9 @@ export async function hacerLoProgramado(contexto: Contexto): Promise<number> {
           ? () => entrasEnUnRato(contexto, programado)
           : p.tipo === 'lote.caduca'
             ? () => loQueCaduca(contexto, programado)
-            : () => elPedidoQueNoLlega(contexto, programado);
+            : p.tipo === 'chat.confirmar'
+              ? () => recordarQueConfirme(contexto, programado)
+              : () => elPedidoQueNoLlega(contexto, programado);
       const hecho = await aparte(contexto, `avisar al móvil (${p.tipo})`, hacer);
       if (hecho !== null) hechos += hecho;
     }

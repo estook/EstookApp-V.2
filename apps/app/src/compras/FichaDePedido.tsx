@@ -26,6 +26,7 @@ import { Cuantos, Dato, EnlaceComoBoton } from './Comun.tsx';
 import { copiarTexto, imprimirTexto } from './utilidades.ts';
 import { ElegirProducto } from './ElegirProducto.tsx';
 import { AyudaConElPedido } from './AyudaConElPedido.tsx';
+import { AlChat } from '../chat/AlChat.tsx';
 import { Recibir } from './Recibir.tsx';
 import {
   CANALES,
@@ -224,6 +225,9 @@ export function FichaDePedido({
               {NOMBRE_DEL_ESTADO_DEL_PEDIDO[pedido.estado]}
             </Etiqueta>
             {pedido.origen === 'sugerencia' && <Etiqueta tono="info">Sugerido por Estook</Etiqueta>}
+            <span className="ml-auto">
+              <AlChat tarjeta={{ tipo: 'pedido', id: pedido.id }} />
+            </span>
           </div>
 
           <dl className="flex flex-col">

@@ -215,6 +215,40 @@ function tablaDeCifras(cifras: readonly CifraDelCorreo[]): string {
  * aviso siempre dice qué hacer) y, abajo, **cómo dejar de recibirlo**, que es lo
  * primero que busca quien recibe un correo que no esperaba.
  */
+/**
+ * El correo del chat (C2 · 0075): a quien no tiene el móvil puesto, sus privados y lo
+ * que le nombra, sin leer, uno al día como mucho. **Sin el texto de los mensajes**, y
+ * abajo cómo cambiarlo: poner el móvil, y entonces le suena ahí en vez de esto.
+ */
+export function correoDelChatParaMandar(
+  para: string,
+  dice: { readonly titulo: string; readonly detalle: string },
+): CorreoParaMandar {
+  const enlace = 'https://estook.com/app/#/chat';
+  const ajustes = 'https://estook.com/app/#/ajustes/avisos';
+  return {
+    para,
+    asunto: dice.titulo,
+    texto: [
+      'Hola:',
+      '',
+      dice.titulo,
+      dice.detalle,
+      '',
+      `Ábrelo en Estook: ${enlace}`,
+      '',
+      `Te llega porque no tienes los avisos del móvil puestos. Si los pones, te suena en el móvil y deja de llegarte esto: ${ajustes}`,
+    ].join('\n'),
+    html: envolver([
+      'Hola:',
+      `<strong>${escapar(dice.titulo)}</strong>`,
+      escapar(dice.detalle),
+      `<a href="${enlace}" style="display:inline-block;background:#ff7a00;color:#1d2a2e;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px">Abrir el chat</a>`,
+      `<span style="color:#6b7478;font-size:13px">Te llega porque no tienes los avisos del móvil puestos. Si los pones en <a href="${ajustes}" style="color:#6b7478">Ajustes → Avisos</a>, te suena en el móvil y deja de llegarte esto.</span>`,
+    ]),
+  };
+}
+
 export function correoDeUnAviso(para: string, aviso: AvisoParaElCorreo): CorreoParaMandar {
   const enlace = `https://estook.com/app/#${aviso.ir ?? '/'}`;
   const ajustes = 'https://estook.com/app/#/ajustes/avisos';

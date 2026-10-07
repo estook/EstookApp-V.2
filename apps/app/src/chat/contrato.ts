@@ -46,6 +46,41 @@ export interface ReaccionDelMensaje {
   readonly quien: readonly string[];
 }
 
+/** Una tarjeta, leída con los permisos de quien mira: nula dentro si no la puede ver. */
+export type TarjetaDelMensaje =
+  | {
+      readonly tipo: 'pedido';
+      readonly id: string;
+      readonly pedido: {
+        readonly numero: number;
+        readonly proveedor: string;
+        readonly estado: string;
+        readonly llegaEl: string | null;
+      } | null;
+    }
+  | {
+      readonly tipo: 'producto';
+      readonly id: string;
+      readonly producto: { readonly nombre: string; readonly formato: string | null } | null;
+    }
+  | { readonly tipo: 'horario'; readonly lunes: string };
+
+/** «Confirmar que lo he leído» (C2 · 0075). */
+export interface ConfirmarElMensaje {
+  readonly cuantos: number;
+  readonly de: number;
+  readonly mio: 'falta' | 'hecho' | null;
+  /** Quién falta: a quien lo pidió y a quien lleva el equipo. */
+  readonly faltan: readonly string[] | null;
+}
+
+export interface FijadoDelCanal {
+  readonly id: string;
+  readonly autor: string;
+  readonly vista: string;
+  readonly en: string;
+}
+
 export interface MensajeDelCanal {
   readonly id: string;
   readonly autorId: string | null;
@@ -65,7 +100,11 @@ export interface MensajeDelCanal {
   readonly reacciones: readonly ReaccionDelMensaje[];
   readonly meNombran: boolean;
   readonly sePuedeCorregir: boolean;
+  readonly sePuedeBorrar: boolean;
   readonly estado: EstadoDeMiMensaje | null;
+  readonly tarjeta: TarjetaDelMensaje | null;
+  readonly fijado: boolean;
+  readonly confirmar: ConfirmarElMensaje | null;
 }
 
 export interface PersonaDelCanal {
@@ -88,7 +127,12 @@ export interface UnCanal {
     readonly silenciado: boolean;
     readonly sePuedeSalir: boolean;
     readonly puedeRetirar: boolean;
+    /** El gerente y los jefes, nunca en un privado (C2 · 0075). */
+    readonly puedeFijar: boolean;
+    /** Renombrarlo y borrarlo: quien lo creó y el gerente, en los canales creados. */
+    readonly puedeGestionar: boolean;
   };
+  readonly fijados: readonly FijadoDelCanal[];
   readonly personas: readonly PersonaDelCanal[];
   readonly lecturas: readonly LecturaDeOtro[];
   readonly mensajes: readonly MensajeDelCanal[];

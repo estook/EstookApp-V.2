@@ -1,6 +1,6 @@
 # C · El chat · el plan
 
-**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). **C1 · Hablar, en producción desde el 6-oct** ([0073](decisiones/0073-c1-hablar.md), migración `0056`), con su repaso en la #91. **El plan de C2 · Lo oficial, con cinco preguntas, está al final.**
+**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). **C1 · Hablar, en producción desde el 6-oct** ([0073](decisiones/0073-c1-hablar.md), migración `0056`), con su repaso (#91). **C2 · Lo oficial, contestado y construido el 7-oct** (0075, migración `0057`): el plan, al final.
 
 De dónde sale: el capítulo 23 del [Manifiesto](maestros/Estook-Manifiesto.md), lo que pidió Richi el 30-sep ([0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)), el adelanto a después de I ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)) y lo que I dejó para aquí ([0070](decisiones/0070-la-app-instalable.md)).
 
@@ -148,7 +148,7 @@ En WhatsApp se puede apagar; aquí la idea es que no.
 | **«Confirmar que lo he leído»** | Quien lleva el equipo lo pide; cada uno tiene su botón, y quien lo pidió ve **«5 de 8 · faltan Ana, Luis y Marta»**. A quien falta, **un recordatorio al empezar su siguiente turno** |
 | **Las tarjetas**                | Un pedido o un producto mandados al chat, que se abren en su sitio **con los permisos de quien la abre**: a un cocinero, sin costes                                                   |
 | **El horario al chat**          | Al publicar la semana: **«¿Avisar en Todo el equipo?» Sí o No.** Sale un aviso con «Ver el horario», que lleva al horario. Nada más                                                   |
-| **El correo**                   | A quien **no** tiene los avisos del móvil puestos: sus **privados y lo que le nombra**, sin leer, en **un correo al día como mucho, al empezar su turno**                             |
+| **El correo**                   | A quien **no** tiene los avisos del móvil puestos: sus **privados y lo que le nombra**, sin leer, en **un correo al día como mucho, en su turno o al empezar el siguiente**           |
 
 **Sin traducción, nunca**: el chat no traduce de ninguna manera (0075). **Cero euros al mes** y **una migración**, la `0057`.
 

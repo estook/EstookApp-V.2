@@ -461,6 +461,7 @@ function MontarElHorario({
   const [haciendo, setHaciendo] = useState<string | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
+  const [preguntarElChat, setAvisarEnElChat] = useState(false);
 
   const clave = ['el_horario_en_borrador', semana ?? 'esta'];
   const consulta = useQuery({
@@ -537,6 +538,21 @@ function MontarElHorario({
         ? `Publicado. ${salida.avisados === 1 ? 'Le ha llegado el aviso a 1 persona' : `Les ha llegado el aviso a ${String(salida.avisados ?? 0)} personas`}.`
         : `${String(salida.puestos ?? 0)} ${salida.puestos === 1 ? 'tramo puesto' : 'tramos puestos'}. Revísalos antes de publicar.`,
     );
+    // «Al acabar el horario, que aparezca: ¿quieres enviarlo al chat para avisar?» (0075).
+    if (que === 'publicar') setAvisarEnElChat(true);
+  }
+
+  async function avisarEnElChat() {
+    setHaciendo('avisar');
+    setError(null);
+    const respuesta = await cliente.ejecutar('avisar_del_horario', { lunes: datos.lunes });
+    setHaciendo(null);
+    setAvisarEnElChat(false);
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    setHecho('Publicado, y avisado en «Todo el equipo».');
   }
 
   const persona =
@@ -826,6 +842,44 @@ function MontarElHorario({
                 }}
               >
                 Todavía no
+              </Boton>
+            </Botones>
+          </div>
+        </Hoja>
+      )}
+
+      {/* «¿Quieres enviarlo al chat para avisar? Sí o no. Es más fácil» (Richi, 0075). */}
+      {preguntarElChat && (
+        <Hoja
+          abierta
+          titulo="¿Avisar en «Todo el equipo»?"
+          alCerrar={() => {
+            setAvisarEnElChat(false);
+          }}
+        >
+          <div className="flex flex-col gap-e4">
+            <p className="text-secundario text-texto-suave">
+              Sale un aviso con «Ver el horario». No suena en el móvil: a cada uno ya le ha llegado
+              lo suyo.
+            </p>
+            <Botones>
+              <Boton
+                tono="principal"
+                cargando={haciendo === 'avisar'}
+                textoCargando="Avisando"
+                onClick={() => {
+                  void avisarEnElChat();
+                }}
+              >
+                Sí, avisar
+              </Boton>
+              <Boton
+                tono="texto"
+                onClick={() => {
+                  setAvisarEnElChat(false);
+                }}
+              >
+                No
               </Boton>
             </Botones>
           </div>

@@ -7,6 +7,7 @@ import {
   IconoBorrar,
   IconoCalendario,
   IconoCarta,
+  IconoChat,
   IconoDinero,
   IconoDocumento,
   IconoReparto,
@@ -57,6 +58,8 @@ const ICONO_DEL_AVISO: Readonly<Record<TipoDeAviso, Icono>> = {
   'lote.caduca': IconoAtencion,
   'pedido.no_llega': IconoReparto,
   'fichaje.sin_apuntar': IconoReloj,
+  // C2 (0075)
+  'chat.confirmar': IconoChat,
 };
 
 const TRAMOS: readonly TramoDeAvisos[] = ['Hoy', 'Ayer', 'Esta semana', 'Antes'];

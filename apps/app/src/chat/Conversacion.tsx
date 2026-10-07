@@ -27,11 +27,13 @@ import {
   IconoMas,
   IconoReloj,
   IconoSilenciado,
+  IconoTablon,
 } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { Escribir } from './Escribir.tsx';
 import { NotaDeVoz } from './NotaDeVoz.tsx';
+import { TarjetaDelChat } from './Tarjeta.tsx';
 import { olvidar, reintentar, type PorMandar } from './porMandar.ts';
 import { usarPorMandar } from '../ganchos/usarPorMandar.ts';
 import { usarUnCanal } from '../ganchos/usarElChat.ts';
@@ -40,6 +42,8 @@ import {
   claveDeUnCanal,
   diaEnLaConversacion,
   horaDelMensaje,
+  type ConfirmarElMensaje,
+  type FijadoDelCanal,
   type LecturaDeOtro,
   type MensajeDelCanal,
   type PersonaDelCanal,
@@ -65,6 +69,8 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
   const [delCanal, setDelCanal] = useState(false);
   const [leidoPor, setLeidoPor] = useState<MensajeDelCanal | null>(null);
   const [retirando, setRetirando] = useState<MensajeDelCanal | null>(null);
+  const [fijadosAbiertos, setFijadosAbiertos] = useState(false);
+  const [quienFalta, setQuienFalta] = useState<MensajeDelCanal | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
   const paginas = consulta.data?.pages ?? [];
@@ -218,6 +224,32 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
         </button>
       </header>
 
+      {/* Lo fijado, arriba y siempre a la vista (C2 · 0075). Tocándolo se ven todos. */}
+      {ultima.fijados.length > 0 && (
+        <button
+          type="button"
+          aria-label={`Fijados: ${String(ultima.fijados.length)}`}
+          onClick={() => {
+            setFijadosAbiertos(true);
+          }}
+          className="flex min-h-toque w-full items-center gap-e2 border-b border-borde bg-naranja-suave px-e3 py-e1 text-left"
+        >
+          <span className="shrink-0 text-naranja">
+            <IconoTablon size={18} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-secundario font-medium">
+              {ultima.fijados.at(-1)?.vista}
+            </span>
+            {ultima.fijados.length > 1 && (
+              <span className="block text-etiqueta text-texto-suave">
+                y {ultima.fijados.length - 1} más fijado{ultima.fijados.length > 2 ? 's' : ''}
+              </span>
+            )}
+          </span>
+        </button>
+      )}
+
       <div
         ref={lista}
         onScroll={(e) => {
@@ -244,7 +276,7 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
         {mensajes.length === 0 && esperando.length === 0 && (
           <p className="py-e6 text-center text-secundario text-texto-suave">
             {esCanalDeFabrica(canal.tipo)
-              ? `Aquí habla ${canal.tipo === 'equipo' ? 'todo el equipo' : `la ${canal.nombre.toLowerCase()}`}. Di algo.`
+              ? 'Aquí habla todo el equipo. Di algo.'
               : 'Todavía no se ha dicho nada.'}
           </p>
         )}
@@ -285,6 +317,12 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
                     alVerLeido={() => {
                       setLeidoPor(mensaje);
                     }}
+                    alConfirmar={() => {
+                      void hacer('confirmar_mensaje', { mensaje_id: mensaje.id });
+                    }}
+                    alVerQuienFalta={() => {
+                      setQuienFalta(mensaje);
+                    }}
                   />
                 </li>
               </Fragment>
@@ -323,6 +361,7 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
       <Escribir
         canalId={canalId}
         personas={personas}
+        puedePedirConfirmar={canal.puedeFijar}
         respondiendo={respondiendo}
         corrigiendo={corrigiendo}
         alTerminar={() => {
@@ -342,8 +381,13 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
         <OpcionesDelMensaje
           mensaje={opciones}
           puedeRetirar={canal.puedeRetirar}
+          puedeFijar={canal.puedeFijar}
           enGrupo={!privadoDeDos}
           alCerrar={() => {
+            setOpciones(null);
+          }}
+          alFijar={() => {
+            void hacer('fijar_mensaje', { mensaje_id: opciones.id, fijado: !opciones.fijado });
             setOpciones(null);
           }}
           alResponder={() => {
@@ -413,9 +457,114 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
           alAnadir={(elegidas) =>
             hacer('anadir_al_canal', { canal_id: canalId, personas: elegidas })
           }
+          alRenombrar={(nombre) => hacer('renombrar_canal', { canal_id: canalId, nombre })}
+          alBorrar={async () => {
+            const hecho = await hacer('borrar_canal', { canal_id: canalId });
+            if (hecho) navegar('/chat');
+          }}
+        />
+      )}
+
+      {fijadosAbiertos && (
+        <LosFijados
+          fijados={ultima.fijados}
+          puedeQuitar={canal.puedeFijar}
+          alCerrar={() => {
+            setFijadosAbiertos(false);
+          }}
+          alQuitar={(id) => {
+            void hacer('fijar_mensaje', { mensaje_id: id, fijado: false });
+          }}
+        />
+      )}
+
+      {quienFalta !== null && quienFalta.confirmar !== null && (
+        <QuienHaConfirmado
+          confirmar={quienFalta.confirmar}
+          alCerrar={() => {
+            setQuienFalta(null);
+          }}
         />
       )}
     </>
+  );
+}
+
+// ── Lo oficial (C2 · 0075) ───────────────────────────────────────────────────
+
+function LosFijados({
+  fijados,
+  puedeQuitar,
+  alCerrar,
+  alQuitar,
+}: {
+  readonly fijados: readonly FijadoDelCanal[];
+  readonly puedeQuitar: boolean;
+  readonly alCerrar: () => void;
+  readonly alQuitar: (id: string) => void;
+}) {
+  return (
+    <Hoja abierta alCerrar={alCerrar} titulo="Fijados">
+      {fijados.length === 0 ? (
+        <p className="text-secundario text-texto-suave">Ya no queda nada fijado.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-borde">
+          {fijados.map((f) => (
+            <li key={f.id} className="flex items-start gap-e3 py-e2">
+              <span className="min-w-0 flex-1">
+                <span className="block text-etiqueta font-semibold">{f.autor}</span>
+                <span className="block whitespace-pre-wrap break-words text-cuerpo">{f.vista}</span>
+              </span>
+              {puedeQuitar && (
+                <Boton
+                  tono="texto"
+                  onClick={() => {
+                    alQuitar(f.id);
+                  }}
+                >
+                  Quitar
+                </Boton>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Hoja>
+  );
+}
+
+function QuienHaConfirmado({
+  confirmar,
+  alCerrar,
+}: {
+  readonly confirmar: ConfirmarElMensaje;
+  readonly alCerrar: () => void;
+}) {
+  const faltan = confirmar.faltan ?? [];
+  return (
+    <Hoja abierta alCerrar={alCerrar} titulo="Quién lo ha confirmado">
+      <div className="flex flex-col gap-e3">
+        <p className="text-cuerpo">
+          {confirmar.cuantos} de {confirmar.de} lo han confirmado.
+        </p>
+        {faltan.length > 0 && (
+          <div className="flex flex-col gap-e1">
+            <p className="text-secundario font-medium text-texto-suave">Faltan · {faltan.length}</p>
+            <ul className="flex flex-col">
+              {faltan.map((nombre) => (
+                <li key={nombre} className="flex min-h-toque items-center gap-e3">
+                  <Avatar nombre={nombre} tamano={28} />
+                  <span className="text-cuerpo">{nombre}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-etiqueta text-texto-tenue">
+              A quien falta le llega un recordatorio al empezar su siguiente turno.
+            </p>
+          </div>
+        )}
+      </div>
+    </Hoja>
   );
 }
 
@@ -542,6 +691,8 @@ function Burbuja({
   alOpciones,
   alReaccionar,
   alVerLeido,
+  alConfirmar,
+  alVerQuienFalta,
 }: {
   readonly mensaje: MensajeDelCanal;
   readonly personas: readonly PersonaDelCanal[];
@@ -549,8 +700,11 @@ function Burbuja({
   readonly alOpciones: () => void;
   readonly alReaccionar: (emoji: string) => void;
   readonly alVerLeido: () => void;
+  readonly alConfirmar: () => void;
+  readonly alVerQuienFalta: () => void;
 }) {
   const mio = mensaje.esMio;
+  const confirmar = mensaje.confirmar;
   return (
     <div className={clases('group flex items-end gap-e2', mio ? 'flex-row-reverse' : 'flex-row')}>
       {!mio && (
@@ -568,8 +722,21 @@ function Burbuja({
             mensaje.meNombran && !mio && 'ring-2 ring-naranja',
           )}
         >
-          {conAutor && (
-            <span className="text-etiqueta font-semibold text-texto">{mensaje.autor}</span>
+          {(conAutor || mensaje.fijado || confirmar !== null) && (
+            <span className="flex flex-wrap items-center gap-e2">
+              {conAutor && (
+                <span className="text-etiqueta font-semibold text-texto">{mensaje.autor}</span>
+              )}
+              {mensaje.fijado && (
+                <span className="flex items-center gap-[2px] text-etiqueta font-medium text-naranja">
+                  <IconoTablon size={12} />
+                  Fijado
+                </span>
+              )}
+              {confirmar !== null && (
+                <span className="text-etiqueta font-medium text-naranja">Pide confirmar</span>
+              )}
+            </span>
           )}
           {mensaje.respondeA !== null && (
             <span className="block rounded-chico border-l-4 border-naranja bg-fondo px-e2 py-e1">
@@ -586,10 +753,39 @@ function Burbuja({
           ) : (
             <>
               <Adjunto mensaje={mensaje} />
+              {mensaje.tarjeta !== null && <TarjetaDelChat tarjeta={mensaje.tarjeta} />}
               {mensaje.texto !== null && (
                 <p className="whitespace-pre-wrap break-words text-cuerpo">
                   <ConNombres texto={mensaje.texto} personas={personas} />
                 </p>
+              )}
+              {confirmar !== null && (
+                <span className="flex flex-col gap-e1 pt-e1">
+                  {confirmar.mio === 'falta' && (
+                    <Boton tono="principal" onClick={alConfirmar}>
+                      Confirmar que lo he leído
+                    </Boton>
+                  )}
+                  {confirmar.mio === 'hecho' && (
+                    <span className="flex items-center gap-e1 text-secundario font-medium text-bien">
+                      <IconoHecho size={16} />
+                      Confirmado
+                    </span>
+                  )}
+                  {confirmar.faltan !== null ? (
+                    <button
+                      type="button"
+                      onClick={alVerQuienFalta}
+                      className="text-left text-etiqueta text-texto-suave underline-offset-2 hover:underline"
+                    >
+                      {confirmar.cuantos} de {confirmar.de} lo han confirmado
+                    </button>
+                  ) : (
+                    <span className="text-etiqueta text-texto-suave">
+                      {confirmar.cuantos} de {confirmar.de} lo han confirmado
+                    </span>
+                  )}
+                </span>
               )}
             </>
           )}
@@ -769,9 +965,13 @@ function OpcionesDelMensaje({
   alBorrar,
   alRetirar,
   alVerLeido,
+  puedeFijar,
+  alFijar,
 }: {
   readonly mensaje: MensajeDelCanal;
   readonly puedeRetirar: boolean;
+  readonly puedeFijar: boolean;
+  readonly alFijar: () => void;
   readonly enGrupo: boolean;
   readonly alCerrar: () => void;
   readonly alResponder: () => void;
@@ -826,12 +1026,17 @@ function OpcionesDelMensaje({
               Quién lo ha leído
             </button>
           )}
+          {puedeFijar && (
+            <button type="button" className={fila} onClick={alFijar}>
+              {mensaje.fijado ? 'Quitar de fijados' : 'Fijar arriba'}
+            </button>
+          )}
           {mensaje.sePuedeCorregir && (
             <button type="button" className={fila} onClick={alCorregir}>
               Corregir
             </button>
           )}
-          {mensaje.esMio &&
+          {mensaje.sePuedeBorrar &&
             (seguro ? (
               <div className="flex flex-wrap items-center gap-e2 px-e3 py-e2">
                 <span className="text-secundario text-texto-suave">
@@ -966,18 +1171,24 @@ function OpcionesDelCanal({
   alSilenciar,
   alSalir,
   alAnadir,
+  alRenombrar,
+  alBorrar,
 }: {
   readonly datos: UnCanal;
   readonly alCerrar: () => void;
   readonly alSilenciar: (silenciado: boolean) => Promise<void>;
   readonly alSalir: () => Promise<void>;
   readonly alAnadir: (personas: readonly string[]) => Promise<boolean>;
+  readonly alRenombrar: (nombre: string) => Promise<boolean>;
+  readonly alBorrar: () => Promise<void>;
 }) {
   const { canal, personas } = datos;
   const [seguro, setSeguro] = useState(false);
   const [anadiendo, setAnadiendo] = useState(false);
-  // Meter gente: en un privado, quien ya está dentro; en un canal, quien lleva el local.
-  const puedeAnadir = canal.tipo === 'privado' || (canal.tipo === 'canal' && canal.puedeRetirar);
+  const [nombre, setNombre] = useState<string | null>(null);
+  const [borrando, setBorrando] = useState(false);
+  // Meter gente: en un privado, quien ya está dentro; en un canal, quien lo lleva.
+  const puedeAnadir = canal.tipo === 'privado' || canal.puedeGestionar;
 
   if (anadiendo) {
     return (
@@ -1064,6 +1275,73 @@ function OpcionesDelCanal({
               </Boton>
             </div>
           ))}
+        {/* Renombrar y borrar: quien creó el canal y el gerente (C2 · 0075). */}
+        {canal.puedeGestionar && (
+          <div className="flex flex-col gap-e3 border-t border-borde pt-e3">
+            {nombre === null ? (
+              <div>
+                <Boton
+                  tono="secundario"
+                  onClick={() => {
+                    setNombre(canal.nombre);
+                  }}
+                >
+                  Cambiar el nombre
+                </Boton>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-end gap-e2">
+                <div className="min-w-0 flex-1">
+                  <Campo
+                    etiqueta="Nombre del canal"
+                    maxLength={40}
+                    value={nombre}
+                    onChange={(e) => {
+                      setNombre(e.currentTarget.value);
+                    }}
+                  />
+                </div>
+                <Boton
+                  tono="principal"
+                  disabled={nombre.trim() === ''}
+                  onClick={() => {
+                    void alRenombrar(nombre.trim()).then((hecho) => {
+                      if (hecho) setNombre(null);
+                    });
+                  }}
+                >
+                  Guardar
+                </Boton>
+              </div>
+            )}
+            {borrando ? (
+              <div className="flex flex-wrap items-center gap-e2">
+                <span className="text-secundario text-texto-suave">
+                  Deja de verse y de sonar. Lo dicho se guarda.
+                </span>
+                <Boton
+                  tono="peligro"
+                  onClick={() => {
+                    void alBorrar();
+                  }}
+                >
+                  Borrar el canal
+                </Boton>
+              </div>
+            ) : (
+              <div>
+                <Boton
+                  tono="texto"
+                  onClick={() => {
+                    setBorrando(true);
+                  }}
+                >
+                  Borrar el canal
+                </Boton>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </Hoja>
   );

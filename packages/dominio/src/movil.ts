@@ -129,6 +129,32 @@ export function cuandoPuedeSonar(ahora: Date, como: ComoLeSuena): Date | null {
   return new Date(proximo);
 }
 
+/**
+ * **Cuándo se le recuerda a alguien que le falta confirmar** un mensaje (C2 · 0075):
+ * una vez, al empezar su siguiente turno.
+ *
+ *   · En su turno: al empezar **el primer turno que empieza después** de que se
+ *     mandara. Si estaba trabajando, el de la próxima vez: ya lo tuvo delante.
+ *   · Fuera del silencio (quien no tiene horario): cuando acaba su próximo silencio,
+ *     que es cuando empieza su día. Sin silencio, al día siguiente a la misma hora.
+ *   · Nulo si en una semana no le toca: entonces no se le recuerda, y quien lo pidió
+ *     lo ve en la lista de quién falta.
+ */
+export function cuandoSeRecuerda(enviado: Date, como: ComoLeSuena): Date | null {
+  const tope = enviado.getTime() + DIAS_QUE_ESPERA_UN_AVISO * 24 * 60 * MINUTO;
+  if (como.modo === 'en_mi_turno') {
+    const siguiente = como.turnos
+      .map((t) => t.empieza.getTime())
+      .filter((t) => t > enviado.getTime())
+      .sort((a, b) => a - b)[0];
+    return siguiente === undefined || siguiente > tope ? null : new Date(siguiente);
+  }
+  if (minutosDelDia(como.silencioDesde) === minutosDelDia(como.silencioHasta)) {
+    return new Date(enviado.getTime() + 24 * 60 * MINUTO);
+  }
+  return cuandoAcabaElSilencio(enviado, como.silencioHasta, como.zonaHoraria);
+}
+
 // ── 2 · Lo hecho sin conexión ────────────────────────────────────────────────
 
 /**

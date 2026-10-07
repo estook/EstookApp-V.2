@@ -7,18 +7,20 @@
  * no se decide en dos sitios.
  */
 
-/** Los tipos de canal. Los tres primeros se crean solos con el local. */
+/**
+ * Los tipos de canal. «cocina» y «sala» siguen en la base, pero ya no se usan: desde
+ * C2 solo «Todo el equipo» viene hecho, y los demás los crean el gerente y los jefes
+ * (0075). Los que tenían mensajes pasaron a canal normal con su nombre (0057).
+ */
 export const TIPOS_DE_CANAL = ['equipo', 'cocina', 'sala', 'canal', 'privado'] as const;
 export type TipoDeCanal = (typeof TIPOS_DE_CANAL)[number];
 
-/** Los de fábrica, en el orden en que salen arriba de la lista. */
-export const CANALES_DE_FABRICA = ['equipo', 'cocina', 'sala'] as const;
+/** El de fábrica: solo «Todo el equipo», que no se borra ni se renombra (0075). */
+export const CANALES_DE_FABRICA = ['equipo'] as const;
 export type CanalDeFabrica = (typeof CANALES_DE_FABRICA)[number];
 
 export const NOMBRE_DEL_CANAL_DE_FABRICA: Readonly<Record<CanalDeFabrica, string>> = {
   equipo: 'Todo el equipo',
-  cocina: 'Cocina',
-  sala: 'Sala',
 };
 
 export function esCanalDeFabrica(tipo: string): tipo is CanalDeFabrica {
@@ -53,6 +55,16 @@ export const TOPE_DEL_NOMBRE_DEL_CANAL = 40;
 
 /** Cuánta gente cabe en un privado, contándote (0071, lo que decido yo, 3). */
 export const PERSONAS_EN_UN_PRIVADO = 12;
+
+/** Cuántos mensajes se fijan en un canal: más, y la franja se come la conversación (0075). */
+export const FIJADOS_POR_CANAL = 3;
+
+/**
+ * Lo que se manda como tarjeta (0075): un pedido o un producto, que se abren en su
+ * sitio con los permisos de quien los mira, y el aviso del horario publicado.
+ */
+export const TIPOS_DE_TARJETA = ['pedido', 'producto', 'horario'] as const;
+export type TipoDeTarjeta = (typeof TIPOS_DE_TARJETA)[number];
 
 /** Hasta cuándo se corrige lo escrito: después, se borra y se escribe otro (0071, 10). */
 export const MINUTOS_PARA_CORREGIR = 15;
@@ -131,9 +143,15 @@ export function vistaPrevia(mensaje: {
   readonly adjuntoNombre: string | null;
   readonly adjuntoSegundos: number | null;
   readonly borrado: boolean;
+  /** La tarjeta, si lo es (C2): «Un pedido», «Un producto», «El horario». */
+  readonly tarjeta?: TipoDeTarjeta | null;
 }): string {
   if (mensaje.borrado) return 'Se eliminó este mensaje';
   const texto = mensaje.texto?.replace(/\s+/g, ' ').trim() ?? '';
+  if (mensaje.tarjeta === 'horario') return 'El horario de la semana está publicado';
+  if (mensaje.tarjeta === 'pedido') return texto === '' ? 'Un pedido' : `Un pedido · ${texto}`;
+  if (mensaje.tarjeta === 'producto')
+    return texto === '' ? 'Un producto' : `Un producto · ${texto}`;
   if (mensaje.adjuntoTipo === 'foto') return texto === '' ? 'Foto' : `Foto · ${texto}`;
   if (mensaje.adjuntoTipo === 'voz') {
     return `Nota de voz${mensaje.adjuntoSegundos === null ? '' : ` · ${duracionEnLetra(mensaje.adjuntoSegundos)}`}`;
@@ -199,6 +217,33 @@ export function avisoDelChatEnElMovil(datos: {
   }
   const cuantos = `${String(datos.cuantos)} mensajes nuevos`;
   return { titulo, detalle: datos.teMencionan ? `${cuantos}, y te nombran` : cuantos };
+}
+
+/**
+ * El correo del chat (C2 · 0075), para quien no tiene el móvil puesto: sus privados y
+ * lo que le nombra, sin leer, **uno al día como mucho**. Sin el texto de los mensajes:
+ * un correo se queda en el buzón, y lo que se dice en un privado no sale de Estook.
+ *
+ * «Tienes 3 mensajes sin leer en el chat» · «Marcos: 2. Todo el equipo: 1, y te nombra.»
+ */
+export function correoDelChat(
+  lineas: readonly {
+    readonly canal: string;
+    readonly cuantos: number;
+    readonly teNombran: boolean;
+  }[],
+): { readonly titulo: string; readonly detalle: string } {
+  const total = lineas.reduce((n, l) => n + l.cuantos, 0);
+  const cada = lineas
+    .map((l) => `${l.canal}: ${String(l.cuantos)}${l.teNombran ? ', y te nombran' : ''}`)
+    .join('. ');
+  return {
+    titulo:
+      total === 1
+        ? 'Tienes un mensaje sin leer en el chat'
+        : `Tienes ${String(total)} mensajes sin leer en el chat`,
+    detalle: `${cada}. Ábrelo en Estook para leerlos.`,
+  };
 }
 
 /**

@@ -297,6 +297,8 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   'pedido.no_llega': ['app.almacen'],
   // Un fichaje del aparato que no se ha podido apuntar, a quien lleva el equipo.
   'fichaje.sin_apuntar': ['app.equipo'],
+  // Lo que te falta confirmar del chat es tuyo, como tu horario (C2 · 0075).
+  'chat.confirmar': [],
 };
 
 export function puedeRecibirElAviso(

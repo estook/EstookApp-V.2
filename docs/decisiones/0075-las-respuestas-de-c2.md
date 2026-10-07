@@ -1,7 +1,7 @@
 # 0075 · Las respuestas de C2, y tres de C que cambian: solo «Todo el equipo» de fábrica, el chat no traduce nunca y el horario es un aviso
 
 **Fecha:** 7 de octubre de 2026
-**Estado:** decidido por Richi. C2 · Lo oficial se construye con esto.
+**Estado:** decidido por Richi y **construido el 7-oct**, con la migración `0057` (lo que decidí al construirlo, al final).
 **Cambia:** las respuestas 2, 3 y 5 de la [0071](0071-las-respuestas-de-c.md); lo que construyó C1 de «Cocina» y «Sala» ([0073](0073-c1-hablar.md)); el plan de [`c-el-chat.md`](../c-el-chat.md); y el capítulo 23 del [Manifiesto](../maestros/Estook-Manifiesto.md) y la línea del chat del [Plan](../maestros/Estook-Plan-de-Desarrollo.md), que decían «un canal por área» y «traducción».
 
 ## Lo que contestó Richi
@@ -40,3 +40,14 @@ Es más sencillo y hace lo mismo. Una casilla marcada de fábrica se manda sin p
 | **El correo**         | Solo a quien **no** tiene los avisos del móvil; solo **privados y lo que le nombra**; **uno al día como mucho, al empezar su turno**                           |
 
 El detalle de C2, con lo que decido yo, en [`c-el-chat.md`](../c-el-chat.md), al final.
+
+## Lo que decidí al construirlo, y por qué
+
+1. **El recordatorio de confirmar es un aviso de la campana** («Te falta confirmar algo del chat», en Ajustes → Avisos), y no un mensaje más del chat: es lo oficial pendiente, que es lo que guarda la campana. Suena en el móvil con tus reglas, y si no tienes el móvil puesto, sale por correo. Confirmar lo quita.
+2. **«Al empezar su siguiente turno»** es el primer turno que empieza después de mandarse; quien no tiene horario, cuando acaba su silencio (las 08:00 de fábrica). Si en una semana no le toca, no se le recuerda: quien lo pidió ve quién falta.
+3. **El correo del chat sale en su turno, o al empezar el siguiente**, uno cada 20 horas como mucho, **sin el texto de los mensajes** («Marcos: 2. Todo el equipo: 1, y te nombran»): un correo se queda en el buzón, y lo de un privado no sale de Estook. Abajo dice cómo dejar de recibirlo: poner los avisos del móvil.
+4. **Como sistema no se leen ni el nombre ni el correo de nadie** (lo cierra la base, a propósito). Para el correo y para el recordatorio hay una función que se los da solo al sistema, como la de los avisos (lección 151).
+5. **Fijar el mensaje de otro lo escribe el sistema**, después de comprobar que quien fija lleva el equipo: la base solo deja a cada uno tocar lo suyo.
+6. **Borrar un canal lo archiva**, y antes avisa al segundo a quien lo tiene abierto. Renombrarlo y borrarlo, quien lo creó y el gerente (quien edita Equipo).
+7. **«Al chat»** está en la ficha del producto y en la del pedido: eliges la conversación y, si quieres, una línea. La tarjeta se abre en su ficha.
+8. **Al publicar el horario y contestar «Sí, avisar»**, el aviso va a «Todo el equipo» a nombre de quien publica, con la semana; no apunta nada para el móvil.

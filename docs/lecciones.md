@@ -538,3 +538,8 @@
      página, la empuja, y el chat subía con ella con un hueco encima del teclado. Ahora,
      con teclado, ocupa justo lo que se ve; y mientras está abierto la página de debajo no
      se desplaza ni se estira (`conElTeclado.ts`, 0074).
+151. **Como sistema, la tabla de personas no enseña nada.** El correo del chat buscaba el
+     correo de cada uno en `estook.persona` dentro del sistema, no encontraba a nadie y
+     tiraba lo que esperaba sin mandarlo; el recordatorio decía «un mensaje de alguien».
+     Lo que el sistema necesita de una persona se lo da una función que solo le contesta
+     a él (`estook.a_quien_escribir`, como `quien_recibe`). Lo cazó `lo-oficial.prueba.ts`.

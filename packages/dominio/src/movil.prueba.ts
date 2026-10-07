@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   SIN_CONEXION_COMO_MUCHO_MS,
   cuandoPuedeSonar,
+  cuandoSeRecuerda,
   estaEnSilencio,
   laHoraDeLoHecho,
   resumenParaElMovil,
@@ -122,5 +123,40 @@ describe('lo que dice el móvil cuando se juntan varios', () => {
       detalle: 'Hoy caducan 2 lotes · Te cambian el horario · y 1 más',
     });
     expect(resumenParaElMovil(['A', 'B'])).toEqual({ titulo: 'Tienes 2 avisos', detalle: 'A · B' });
+  });
+});
+
+describe('cuándo se recuerda confirmar (C2 · 0075)', () => {
+  it('con turno: al empezar el primer turno que empieza después de mandarlo', () => {
+    // Mandado a las 10:00: el siguiente turno empieza a las 12:00.
+    expect(cuandoSeRecuerda(martes('10:00'), conTurno)?.toISOString()).toBe(
+      martes('12:00').toISOString(),
+    );
+    // Mandado en mitad del turno de las 12:00: ya lo tuvo delante, el de las 20:00.
+    expect(cuandoSeRecuerda(martes('13:00'), conTurno)?.toISOString()).toBe(
+      martes('20:00').toISOString(),
+    );
+    // Sin más turnos en la semana, no se recuerda.
+    expect(cuandoSeRecuerda(miercoles('01:00'), conTurno)).toBeNull();
+  });
+
+  it('sin horario: cuando acaba su próximo silencio, que es cuando empieza su día', () => {
+    const sinHorario: ComoLeSuena = { ...conTurno, modo: 'fuera_del_silencio', turnos: [] };
+    expect(cuandoSeRecuerda(martes('10:00'), sinHorario)?.toISOString()).toBe(
+      miercoles('08:00').toISOString(),
+    );
+    // Mandado de madrugada, en su silencio: esa misma mañana.
+    expect(cuandoSeRecuerda(miercoles('02:00'), sinHorario)?.toISOString()).toBe(
+      miercoles('08:00').toISOString(),
+    );
+    // Sin silencio: al día siguiente a la misma hora.
+    const sinSilencio: ComoLeSuena = {
+      ...sinHorario,
+      silencioDesde: '00:00',
+      silencioHasta: '00:00',
+    };
+    expect(cuandoSeRecuerda(martes('10:00'), sinSilencio)?.toISOString()).toBe(
+      miercoles('10:00').toISOString(),
+    );
   });
 });

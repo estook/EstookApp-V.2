@@ -1,6 +1,6 @@
 # C · El chat · el plan
 
-**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). **C1 · Hablar, en producción desde el 6-oct** ([0073](decisiones/0073-c1-hablar.md), migración `0056`), con su repaso (#91). **C2 · Lo oficial, contestado y construido el 7-oct** (0075, migración `0057`): el plan, al final.
+**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). **C1 · Hablar, en producción desde el 6-oct** ([0073](decisiones/0073-c1-hablar.md), migración `0056`), con su repaso (#91). **C2 · Lo oficial, contestado, construido y en producción el 7-oct** (#93, 0075, migración `0057`): el plan, al final.
 
 De dónde sale: el capítulo 23 del [Manifiesto](maestros/Estook-Manifiesto.md), lo que pidió Richi el 30-sep ([0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)), el adelanto a después de I ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)) y lo que I dejó para aquí ([0070](decisiones/0070-la-app-instalable.md)).
 

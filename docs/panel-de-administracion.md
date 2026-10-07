@@ -16,29 +16,30 @@ cómo se entra en los datos de un cliente.
 
 ## Cómo va · qué hay y qué falta
 
-**En `estook.com/admin/` están la puerta (A1) y los clientes (A2, [decisión
-0050](decisiones/0050-los-clientes-en-el-admin.md), en su PR).** Vendedores y códigos, y
-ventas, **todavía no**: son A3 y A4, en el orden de
-[`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md). Actualizado el 26 de septiembre de 2026.
+**En `estook.com/admin/` están la puerta (A1), los clientes (A2, [decisión
+0050](decisiones/0050-los-clientes-en-el-admin.md)) y la oferta de prueba (E1), en
+producción.** Vendedores y códigos, y ventas, **todavía no**: son A3 y A4. **El plan de A3,
+con sus preguntas, está en [`a3-vendedores.md`](a3-vendedores.md)**, y manda sobre el
+capítulo 3 donde los dos hablan de lo mismo. Actualizado el 7 de octubre de 2026.
 
-| Qué                                                                                         | Cómo está                                                        |
-| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Entrar con contraseña y segundo factor obligatorio, sesión de 8 h                           | **Hecho y en producción** (A1, #53)                              |
-| Sesión del admin y de la app separadas; el acceso se mira en cada petición                  | **Hecho y en producción**                                        |
-| Administradores: dar acceso total y quitarlo, con el código otra vez                        | **Hecho y en producción**                                        |
-| Auditoría del admin: quién, qué, cuándo, motivo y dirección IP                              | **Hecho y en producción** (el aparato se guarda, no se enseña)   |
-| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | **Hecho y en producción** (rescatar llegó con el repaso, #54)    |
-| El catálogo del sistema de diseño detrás de la puerta                                       | **Hecho y en producción**                                        |
-| **Niveles** comercial, soporte y vendedor                                                   | Existen en la base; **no se pueden dar** hasta A3 y M26          |
-| **Clientes**: lista, filtros, búsqueda, CSV, ficha, contrato, actividad, notas, editar      | **Hecho en A2** (en su PR). Sin CIF: la organización no lo tiene |
-| Copiar a la auditoría del cliente lo que el admin haga sobre él                             | **Hecho en A2**                                                  |
-| **Vendedores y códigos**: `?ref=`, llegadas, asignaciones, panel del vendedor               | **Falta · A3**                                                   |
-| **Ventas**: tablero y gráficas                                                              | **Falta · A4**. La foto diaria del uso ya la hace A2             |
-| Borrar solas las IP de más de dos años                                                      | **Falta** · necesita el reloj (R); se cierra en M27              |
-| Cambiar el correo de acceso de un cliente con doble confirmación                            | **Hecho en A2**                                                  |
-| Suscripciones: ver todo de Stripe y tres gestos (alargar, de la casa, cancelar al acabar)   | **Hecho en A2**. Comisiones y liquidaciones, con A3              |
-| Entrar a los datos de un cliente con su permiso (Roles 4.3), costes, integraciones, soporte | **M26**                                                          |
-| `admin.estook.com` en vez de `estook.com/admin/`                                            | **M27**, si cambia el alojamiento                                |
+| Qué                                                                                         | Cómo está                                                      |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Entrar con contraseña y segundo factor obligatorio, sesión de 8 h                           | **Hecho y en producción** (A1, #53)                            |
+| Sesión del admin y de la app separadas; el acceso se mira en cada petición                  | **Hecho y en producción**                                      |
+| Administradores: dar acceso total y quitarlo, con el código otra vez                        | **Hecho y en producción**                                      |
+| Auditoría del admin: quién, qué, cuándo, motivo y dirección IP                              | **Hecho y en producción** (el aparato se guarda, no se enseña) |
+| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | **Hecho y en producción** (rescatar llegó con el repaso, #54)  |
+| El catálogo del sistema de diseño detrás de la puerta                                       | **Hecho y en producción**                                      |
+| **Niveles** comercial, soporte y vendedor                                                   | Existen en la base; **no se pueden dar** hasta A3 y M26        |
+| **Clientes**: lista, filtros, búsqueda, CSV, ficha, contrato, actividad, notas, editar      | **Hecho en A2** (#74). Sin CIF: la organización no lo tiene    |
+| Copiar a la auditoría del cliente lo que el admin haga sobre él                             | **Hecho en A2**                                                |
+| **Vendedores y códigos**: `?ref=`, llegadas, asignaciones, panel del vendedor               | **Falta · A3**                                                 |
+| **Ventas**: tablero y gráficas                                                              | **Falta · A4**. La foto diaria del uso ya la hace A2           |
+| Borrar solas las IP de más de dos años                                                      | **Falta** · necesita el reloj (R); se cierra en M27            |
+| Cambiar el correo de acceso de un cliente con doble confirmación                            | **Hecho en A2**                                                |
+| Suscripciones: ver todo de Stripe y tres gestos (alargar, de la casa, cancelar al acabar)   | **Hecho en A2**. Comisiones y liquidaciones, con A3            |
+| Entrar a los datos de un cliente con su permiso (Roles 4.3), costes, integraciones, soporte | **M26**                                                        |
+| `admin.estook.com` en vez de `estook.com/admin/`                                            | **M27**, si cambia el alojamiento                              |
 
 ---
 
@@ -333,8 +334,9 @@ Restaurante Madrid
 5. **Manda el primero**: si llegó por el enlace de Juan y luego escribe el de Pedro,
    se queda Juan, salvo que un admin lo corrija con motivo.
 
-**Hasta M26 no hay registro abierto** (las cuentas se crean con un comando), así que
-mientras tanto **el admin pone el código al dar de alta** a un cliente, y queda igual.
+> **Precisado el 7-oct** ([`a3-vendedores.md`](a3-vendedores.md)): **el registro está
+> abierto desde E1**, así que el código llega solo con el alta. Y el paso 2 está en la
+> pregunta 1 de ese plan: guardar el código en el navegador pide permiso (LSSI 22.2).
 
 ### La ficha del vendedor
 
@@ -367,8 +369,9 @@ pone nunca un modelo**.
 - **Se genera por cada cobro**, en céntimos (regla 9), con la regla vigente ese día.
 - **Una devolución** crea una comisión negativa en la siguiente liquidación.
 - **Liquidación mensual**: pendiente → aprobada (por un admin total) → pagada.
-- **Hasta M26 no hay cobros**, así que las comisiones **se enseñan como previstas**,
-  con la cuota acordada, y lo dicen.
+- **Precisado el 7-oct**: Stripe está montado desde E2 (en modo prueba), así que la
+  comisión sale **de cada cobro de verdad**, sin IVA. Mientras Stripe esté en modo
+  prueba, va marcada «de prueba» y no se liquida ([`a3-vendedores.md`](a3-vendedores.md)).
 
 ---
 
@@ -463,7 +466,7 @@ Lo de Roles 4.8 se mantiene, y se precisa:
 | **A2 · Clientes**             | Lista con filtros y búsqueda en servidor, CSV, ficha con Resumen, Datos, Cuenta, Uso y Notas; contrato con historial; editar con motivo                                        | Se encuentra a `ikatz` por su CIF, se le cambia el plan con motivo y ese cambio sale en la auditoría del admin **y en la del cliente**                                          |
 | **A3 · Vendedores y códigos** | Vendedores, códigos, `?ref=` en la web, llegadas, asignaciones con historial, ficha de rendimiento, panel del vendedor                                                         | Un cliente llega con `JUAN26`, se reasigna a Pedro y vuelve a Juan: la ficha dice que lo captó Juan y lo lleva Juan, con las tres fechas                                        |
 | **A4 · Ventas**               | La foto diaria del uso (con el reloj), la actividad calculada, el tablero y sus gráficas                                                                                       | Las cifras del tablero cuadran con una consulta a mano sobre la base, y un cliente de ejemplo no cambia ninguna                                                                 |
-| **Con M26**                   | Stripe como dueño del plan y los cobros, comisiones reales y liquidaciones, cambio de correo con Resend, acceso autorizado (Roles 4.3), costes e integraciones (Roles 4.5–4.7) | Lo de M26 en el Plan                                                                                                                                                            |
+| **Con M26**                   | Stripe como dueño del plan y los cobros (las comisiones, adelantadas a A3), cambio de correo con Resend, acceso autorizado (Roles 4.3), costes e integraciones (Roles 4.5–4.7) | Lo de M26 en el Plan                                                                                                                                                            |
 
 **A1 no espera a nada.** A2 tampoco. A3 necesita el registro para el `?ref=` completo,
 pero funciona antes poniendo el código a mano. A4 necesita el reloj de la entrega R de

@@ -2,23 +2,49 @@
 
 > ## Cómo está
 >
-> Comprobado el 7 de octubre de 2026 por la mañana, leyendo la base de producción.
+> Comprobado el 7 de octubre de 2026 por la tarde, leyendo la base de producción.
 >
-> | Qué                                   | Cómo está                                                                                   |
-> | ------------------------------------- | ------------------------------------------------------------------------------------------- |
-> | Pull requests                         | **Fusionadas hasta la #92** (7-oct). Abierta: **C2 · Lo oficial**                           |
-> | La base de datos                      | **56 de 56** migraciones, igual que `main`                                                  |
-> | La API                                | **Desplegada con el repaso de C1** (7-oct, 01:20): 70 y 151, los avisos al móvil y el reloj |
-> | Los PDF (Cloudflare)                  | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep                    |
-> | **Las copias de seguridad**           | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día           |
-> | A1 · la puerta del admin              | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor                 |
-> | E1, V, O, E2, L, A2, R1, R2, H, I, C1 | **En producción**, C1 con su repaso. Pago de prueba hecho: Pizzeriacazzo, 26-sep            |
+> | Qué                                  | Cómo está                                                                            |
+> | ------------------------------------ | ------------------------------------------------------------------------------------ |
+> | Pull requests                        | **Fusionadas hasta la #93** (C2, 7-oct). Abierta: **el plan de A3**, solo documentos |
+> | La base de datos                     | **57 de 57** migraciones, igual que `main`                                           |
+> | La API                               | **Desplegada con C2**: 70 y 156, los avisos al móvil y el reloj latiendo             |
+> | Los PDF (Cloudflare)                 | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep             |
+> | **Las copias de seguridad**          | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día    |
+> | A1 · la puerta del admin             | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor          |
+> | E1, V, O, E2, L, A2, R1, R2, H, I, C | **En producción**, el chat entero. Pago de prueba hecho: Pizzeriacazzo, 26-sep       |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · C2 · Lo oficial
+## Lo que te toca ahora · el plan de A3 · Vendedores
+
+**Solo documentos**: ni migración ni despliegue. Es el plan de los vendedores, sus códigos y sus comisiones, en [`a3-vendedores.md`](a3-vendedores.md).
+
+### 1 · Leerlo y contestar
+
+Ábrelo en GitHub (en el pull request, **Files changed** → `docs/a3-vendedores.md` → los tres puntos → **View file**). Lo importante está en **«Las seis preguntas»**: cada una lleva mi recomendación y el porqué. **Contéstame en el chat con un «sí» o un «no» a cada número**, por ejemplo «1 sí, 2 sí, 3 no…». Si algo de **«Lo que decido yo»** no te cuadra, dímelo con su número.
+
+### 2 · Fusionar
+
+En **github.com** → **Pull requests** → **«A3 · Vendedores, el plan…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. Después, en PowerShell, en la carpeta del proyecto:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+**Qué tiene que salir:** «Fast-forward» y la lista de ficheros, entre ellos `docs/a3-vendedores.md`. **Si alguna comprobación sale en rojo o «cancelled», para y avísame.**
+
+---
+
+## C2 · Lo oficial (#93) · **en producción** (7-oct)
+
+**Fusionada, migrada (0057) y desplegada**: comprobado el 7-oct por la tarde leyendo producción, 57 migraciones y la API con 70 y 156. **Lo único que queda es el paso 4, probarlo con alguien del equipo**, si no lo has hecho ya. Lo de abajo se queda como estaba.
 
 Tus respuestas del 7-oct, construidas ([decisión 0075](decisiones/0075-las-respuestas-de-c2.md)). **Una migración** (la **0057**) y **un despliegue**. Ninguna clave nueva.
 

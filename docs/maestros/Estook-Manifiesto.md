@@ -1218,12 +1218,12 @@ Arriba, junto a la campana. **Es la forma oficial de hablar del trabajo**, y por
 **Dónde se habla.**
 
 - **El chat del equipo**, arriba del todo: todo el local.
-- **Un canal por área** —sala, cocina, barra—, que cada uno ve según su rol.
+- **Los canales que crean el gerente y los jefes** —«Cocina», «Barra», «Encargados»—, con su nombre y quién entra. «Todo el equipo» es el único que viene hecho, y no se borra (0075).
 - **Privados**, entre dos personas o en un grupo pequeño, que abre cualquiera.
 
 **Qué se puede mandar.** Texto, fotos, documentos y **notas de voz**, que en una cocina es lo que de verdad se usa · **tarjetas**: un horario, una ficha técnica, un plato, un pedido o un aviso se comparten y llegan como una tarjeta que se abre en su sitio, con los permisos de quien la recibe —a un cocinero le llega la ficha, no su coste—.
 
-**Lo que tiene un chat de hoy.** **Entregado y leído**, con sus marcas; en un grupo, quién lo ha leído y quién no · responder a un mensaje concreto · reacciones · menciones, que avisan al móvil · mensajes fijados arriba, como comunicación oficial · buscador · **cada uno lo lee en su idioma**, con la traducción debajo del original.
+**Lo que tiene un chat de hoy.** **Entregado y leído**, con sus marcas; en un grupo, quién lo ha leído y quién no · responder a un mensaje concreto · reacciones · menciones, que avisan al móvil · mensajes fijados arriba, como comunicación oficial · buscador. **El chat no traduce** (0075).
 
 **Lo que lo hace oficial.**
 

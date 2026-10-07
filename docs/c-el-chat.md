@@ -1,6 +1,6 @@
 # C · El chat · el plan
 
-**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). **C1 · Hablar, construida el 6-oct** ([0073](decisiones/0073-c1-hablar.md), migración `0056`); falta C2 · Lo oficial.
+**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). **C1 · Hablar, en producción desde el 6-oct** ([0073](decisiones/0073-c1-hablar.md), migración `0056`), con su repaso en la #91. **El plan de C2 · Lo oficial, con cinco preguntas, está al final.**
 
 De dónde sale: el capítulo 23 del [Manifiesto](maestros/Estook-Manifiesto.md), lo que pidió Richi el 30-sep ([0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)), el adelanto a después de I ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)) y lo que I dejó para aquí ([0070](decisiones/0070-la-app-instalable.md)).
 
@@ -132,3 +132,32 @@ En WhatsApp se puede apagar; aquí la idea es que no.
 - Quien pierde el acceso deja de ver el chat al momento, y sus mensajes siguen.
 - Una tarjeta de pedido abierta por un cocinero no enseña lo que él no puede ver.
 - Todo en la batería de pantalla y en `pnpm prueba:semana` (el silencio depende de la hora), y **mirado en el móvil**.
+
+---
+
+## C2 · Lo oficial · el plan, contestado
+
+**Escrito el 7 de octubre de 2026**, con C1 en producción y probado por Richi y Santiago. **Richi contestó el mismo día**: las cinco de C2 y, de paso, **cambió tres de las seis de C** ([0075](decisiones/0075-las-respuestas-de-c2.md)). Manda lo de aquí abajo; lo de arriba que choque, lo cambia la 0075.
+
+### Qué entra en C2, en una sola entrega
+
+| Pieza                           | Cómo queda                                                                                                                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Los canales**                 | **De fábrica, solo «Todo el equipo»**, que no se borra. Los demás los crean **el gerente y los jefes**, con su nombre y quién entra, y se pueden renombrar y borrar                   |
+| **Fijados**                     | **Hasta tres por canal**, en una franja arriba. **Solo en el chat**: no salen en el Tablón del Panel                                                                                  |
+| **«Confirmar que lo he leído»** | Quien lleva el equipo lo pide; cada uno tiene su botón, y quien lo pidió ve **«5 de 8 · faltan Ana, Luis y Marta»**. A quien falta, **un recordatorio al empezar su siguiente turno** |
+| **Las tarjetas**                | Un pedido o un producto mandados al chat, que se abren en su sitio **con los permisos de quien la abre**: a un cocinero, sin costes                                                   |
+| **El horario al chat**          | Al publicar la semana: **«¿Avisar en Todo el equipo?» Sí o No.** Sale un aviso con «Ver el horario», que lleva al horario. Nada más                                                   |
+| **El correo**                   | A quien **no** tiene los avisos del móvil puestos: sus **privados y lo que le nombra**, sin leer, en **un correo al día como mucho, al empezar su turno**                             |
+
+**Sin traducción, nunca**: el chat no traduce de ninguna manera (0075). **Cero euros al mes** y **una migración**, la `0057`.
+
+### Lo que decido yo, para que lo sepas
+
+1. **«Cocina» y «Sala» se quitan donde ya estaban.** Solo existen en IKATZ y están vacías (leído el 7-oct). Si en algún local tuvieran mensajes, se quedarían como canales normales, con su nombre, y no se perdería nada.
+2. **Crear canales, fijar y pedir confirmar es de quien ve Equipo**: gerente, jefes de sala y de cocina, dirección, area manager y RRHH de la cadena; la gestoría no, que no ve el chat. Es la misma regla que escribir en el Tablón. **Renombrar, cambiar quién entra o borrar un canal**, quien lo creó, y el gerente y dirección siempre.
+3. **Borrar un canal lo archiva**: deja de verse y de sonar, y sus mensajes se quedan guardados, como todo lo que se dice en el chat (16). «Todo el equipo» no se puede borrar ni renombrar.
+4. **Confirmar cuenta a quien estaba en el canal cuando se mandó.** Quien entra después no sale como «falta». El botón dice «Confirmado · 10:42» y no se deshace.
+5. **El aviso del horario no hace sonar el móvil**: a cada uno ya le llega «tu horario está publicado». Y no pide confirmar: **«leído» ya dice quién lo ha visto**.
+6. **Una tarjeta abierta por alguien sin permiso** dice «Esto no es de lo que puedes ver», y nada más.
+7. **En los privados no se fija ni se pide confirmar**: entre dos o un grupo pequeño no hace falta.

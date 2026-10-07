@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   aQuienSeNombra,
   avisoDelChatEnElMovil,
+  correoDelChat,
   duracionEnLetra,
   enUnaLinea,
   estadoDeMiMensaje,
@@ -14,7 +15,8 @@ import {
 describe('el nombre de un canal', () => {
   it('los de fábrica, por su tipo', () => {
     expect(nombreDelCanal({ tipo: 'equipo', nombre: null, otros: [] })).toBe('Todo el equipo');
-    expect(nombreDelCanal({ tipo: 'cocina', nombre: 'Lo que sea', otros: [] })).toBe('Cocina');
+    // «Cocina» y «Sala» ya no vienen hechas (0075): si quedara alguna, va por su nombre.
+    expect(nombreDelCanal({ tipo: 'canal', nombre: 'Cocina', otros: [] })).toBe('Cocina');
   });
 
   it('un privado de dos, por la otra persona; uno de grupo sin nombre, por quién está', () => {
@@ -152,5 +154,40 @@ describe('lo que dice el móvil', () => {
         teMencionan: true,
       }),
     ).toEqual({ titulo: 'Cocina', detalle: '3 mensajes nuevos, y te nombran' });
+  });
+});
+
+describe('lo oficial (C2 · 0075)', () => {
+  it('una tarjeta se dice por lo que es, nunca por lo que trae dentro', () => {
+    const base = {
+      texto: null,
+      adjuntoTipo: null,
+      adjuntoNombre: null,
+      adjuntoSegundos: null,
+      borrado: false,
+    } as const;
+    expect(vistaPrevia({ ...base, tarjeta: 'producto' })).toBe('Un producto');
+    expect(vistaPrevia({ ...base, tarjeta: 'pedido', texto: 'Mirad esto' })).toBe(
+      'Un pedido · Mirad esto',
+    );
+    expect(vistaPrevia({ ...base, tarjeta: 'horario' })).toBe(
+      'El horario de la semana está publicado',
+    );
+  });
+
+  it('el correo del chat cuenta, sin el texto de ningún mensaje', () => {
+    expect(correoDelChat([{ canal: 'Marcos', cuantos: 1, teNombran: false }])).toEqual({
+      titulo: 'Tienes un mensaje sin leer en el chat',
+      detalle: 'Marcos: 1. Ábrelo en Estook para leerlos.',
+    });
+    expect(
+      correoDelChat([
+        { canal: 'Marcos', cuantos: 2, teNombran: false },
+        { canal: 'Todo el equipo', cuantos: 1, teNombran: true },
+      ]),
+    ).toEqual({
+      titulo: 'Tienes 3 mensajes sin leer en el chat',
+      detalle: 'Marcos: 2. Todo el equipo: 1, y te nombran. Ábrelo en Estook para leerlos.',
+    });
   });
 });

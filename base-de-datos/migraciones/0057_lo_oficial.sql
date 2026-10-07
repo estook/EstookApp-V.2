@@ -234,6 +234,27 @@ create table estook.correo_del_chat (
 comment on table estook.correo_del_chat is
   'Cuándo salió el último correo del chat de cada uno: uno al día como mucho (0075).';
 
+-- El nombre y el correo de unas personas, **solo al sistema**: como sistema, la tabla de
+-- personas no enseña nada (lo cierra su política), y el correo del chat y el
+-- recordatorio necesitan a quién escribir y quién lo pidió. Como `quien_recibe`.
+create function estook.a_quien_escribir(p_personas uuid[])
+returns table (persona_id uuid, nombre text, correo text)
+language sql
+stable
+security definer
+set search_path = estook, pg_catalog, pg_temp
+as $$
+  select p.id, p.nombre, p.correo
+    from estook.persona p
+   where estook.es_el_sistema() and p.id = any (p_personas)
+$$;
+
+comment on function estook.a_quien_escribir(uuid[]) is
+  'El nombre y el correo de unas personas, solo al sistema: para el correo del chat y el recordatorio de confirmar (0075).';
+
+revoke all on function estook.a_quien_escribir(uuid[]) from public;
+grant execute on function estook.a_quien_escribir(uuid[]) to estook_api;
+
 alter table estook.correo_del_chat enable row level security;
 
 create policy correo_del_chat_el_sistema on estook.correo_del_chat

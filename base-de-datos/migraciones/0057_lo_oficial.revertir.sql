@@ -5,6 +5,7 @@
 -- último correo del chat. «Cocina» y «Sala» no vuelven solas: las crea otra vez la app
 -- de C1 al abrir el chat.
 
+drop function if exists estook.a_quien_escribir(uuid[]);
 drop table if exists estook.correo_del_chat;
 alter table estook.chat_al_movil drop column if exists por_correo;
 

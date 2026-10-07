@@ -150,7 +150,8 @@ export function vistaPrevia(mensaje: {
   const texto = mensaje.texto?.replace(/\s+/g, ' ').trim() ?? '';
   if (mensaje.tarjeta === 'horario') return 'El horario de la semana está publicado';
   if (mensaje.tarjeta === 'pedido') return texto === '' ? 'Un pedido' : `Un pedido · ${texto}`;
-  if (mensaje.tarjeta === 'producto') return texto === '' ? 'Un producto' : `Un producto · ${texto}`;
+  if (mensaje.tarjeta === 'producto')
+    return texto === '' ? 'Un producto' : `Un producto · ${texto}`;
   if (mensaje.adjuntoTipo === 'foto') return texto === '' ? 'Foto' : `Foto · ${texto}`;
   if (mensaje.adjuntoTipo === 'voz') {
     return `Nota de voz${mensaje.adjuntoSegundos === null ? '' : ` · ${duracionEnLetra(mensaje.adjuntoSegundos)}`}`;
@@ -226,7 +227,11 @@ export function avisoDelChatEnElMovil(datos: {
  * «Tienes 3 mensajes sin leer en el chat» · «Marcos: 2. Todo el equipo: 1, y te nombra.»
  */
 export function correoDelChat(
-  lineas: readonly { readonly canal: string; readonly cuantos: number; readonly teNombran: boolean }[],
+  lineas: readonly {
+    readonly canal: string;
+    readonly cuantos: number;
+    readonly teNombran: boolean;
+  }[],
 ): { readonly titulo: string; readonly detalle: string } {
   const total = lineas.reduce((n, l) => n + l.cuantos, 0);
   const cada = lineas

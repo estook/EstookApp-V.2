@@ -8,8 +8,9 @@ import {
   type EstadoDeMiMensaje,
   type TipoDeAdjunto,
   type TipoDeCanal,
+  type TipoDeTarjeta,
 } from '@estook/dominio';
-import { elLocalDelChat } from '../chat.ts';
+import { elLocalDelChat, llevaCanales } from '../chat.ts';
 import { consulta, FalloDeAplicacion } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
@@ -53,7 +54,7 @@ export interface SalidaMisCanales {
   readonly canales: readonly CanalEnLista[];
   /** Todo lo que no ha leído, para el número del icono. */
   readonly sinLeer: number;
-  /** Si puede crear canales: quien lleva el local (0071, pregunta 3). */
+  /** Si puede crear canales: el gerente y los jefes (0075, 3). */
   readonly puedeCrearCanales: boolean;
   /** Si ya están los de fábrica. Si no, la app abre el chat para que se creen. */
   readonly abierto: boolean;
@@ -65,7 +66,7 @@ export const misCanales = consulta<Record<string, never>, SalidaMisCanales>({
 
   async ejecutar(contexto) {
     const localId = elLocalDelChat(contexto);
-    const puede = await loQuePuede(contexto, localId, ['app.equipo']);
+    const lleva = await llevaCanales(contexto, localId);
 
     const filas = await contexto.sql<
       {
@@ -80,6 +81,7 @@ export const misCanales = consulta<Record<string, never>, SalidaMisCanales>({
         ultimo_adjunto_tipo: TipoDeAdjunto | null;
         ultimo_adjunto_nombre: string | null;
         ultimo_adjunto_segundos: number | null;
+        ultimo_tarjeta: TipoDeTarjeta | null;
         ultimo_borrado: boolean | null;
         ultimo_en: string | null;
         sin_leer: number;
@@ -96,6 +98,7 @@ export const misCanales = consulta<Record<string, never>, SalidaMisCanales>({
              u.id::text as ultimo_id, up.nombre as ultimo_autor, u.autor_id::text as ultimo_autor_id,
              u.texto as ultimo_texto, u.adjunto_tipo as ultimo_adjunto_tipo,
              u.adjunto_nombre as ultimo_adjunto_nombre, u.adjunto_segundos as ultimo_adjunto_segundos,
+             u.tarjeta ->> 'tipo' as ultimo_tarjeta,
              u.borrado_en is not null as ultimo_borrado,
              to_char(u.creado_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ultimo_en,
              (select count(*)::int from estook.mensaje m
@@ -116,8 +119,7 @@ export const misCanales = consulta<Record<string, never>, SalidaMisCanales>({
        where c.local_id = ${localId} and c.archivado_en is null
     `;
 
-    const orden = (tipo: TipoDeCanal) =>
-      tipo === 'equipo' ? 0 : tipo === 'cocina' ? 1 : tipo === 'sala' ? 2 : 3;
+    const orden = (tipo: TipoDeCanal) => (tipo === 'equipo' ? 0 : 1);
     const canales: CanalEnLista[] = filas
       .map((f) => {
         const otros = f.otros ?? [];
@@ -139,6 +141,7 @@ export const misCanales = consulta<Record<string, never>, SalidaMisCanales>({
                     adjuntoNombre: f.ultimo_adjunto_nombre,
                     adjuntoSegundos: f.ultimo_adjunto_segundos,
                     borrado: f.ultimo_borrado === true,
+                    tarjeta: f.ultimo_tarjeta,
                   }),
                   en: f.ultimo_en,
                 },
@@ -157,7 +160,7 @@ export const misCanales = consulta<Record<string, never>, SalidaMisCanales>({
     return {
       canales,
       sinLeer: canales.reduce((n, c) => n + c.sinLeer, 0),
-      puedeCrearCanales: puede.editar('app.equipo'),
+      puedeCrearCanales: lleva,
       abierto: filas.some((f) => f.tipo === 'equipo'),
     };
   },
@@ -182,6 +185,45 @@ export interface ReaccionDelMensaje {
   readonly quien: readonly string[];
 }
 
+/**
+ * Una tarjeta, leída **con los permisos de quien la mira** (0075): lo que no puede ver
+ * llega a nulo, y la app dice «Esto no es de lo que puedes ver», sin más.
+ */
+export type TarjetaDelMensaje =
+  | {
+      readonly tipo: 'pedido';
+      readonly id: string;
+      readonly pedido: {
+        readonly numero: number;
+        readonly proveedor: string;
+        readonly estado: string;
+        readonly llegaEl: string | null;
+      } | null;
+    }
+  | {
+      readonly tipo: 'producto';
+      readonly id: string;
+      readonly producto: { readonly nombre: string; readonly formato: string | null } | null;
+    }
+  | { readonly tipo: 'horario'; readonly lunes: string };
+
+/** «Confirmar que lo he leído» (0075): cuántos, y si me toca a mí. */
+export interface ConfirmarElMensaje {
+  readonly cuantos: number;
+  readonly de: number;
+  /** Lo mío: me falta, ya lo hice, o no me lo pide (lo escribí yo, o entré después). */
+  readonly mio: 'falta' | 'hecho' | null;
+  /** Quién falta: a quien lo pidió y a quien lleva el equipo. Nulo a los demás. */
+  readonly faltan: readonly string[] | null;
+}
+
+export interface FijadoDelCanal {
+  readonly id: string;
+  readonly autor: string;
+  readonly vista: string;
+  readonly en: string;
+}
+
 export interface MensajeDelCanal {
   readonly id: string;
   readonly autorId: string | null;
@@ -203,8 +245,13 @@ export interface MensajeDelCanal {
   /** Si le nombran a quien mira. */
   readonly meNombran: boolean;
   readonly sePuedeCorregir: boolean;
+  /** Lo propio se borra, salvo lo que pide confirmar (0075). */
+  readonly sePuedeBorrar: boolean;
   /** Solo en lo propio: enviado, entregado o leído (0071, pregunta 6). */
   readonly estado: EstadoDeMiMensaje | null;
+  readonly tarjeta: TarjetaDelMensaje | null;
+  readonly fijado: boolean;
+  readonly confirmar: ConfirmarElMensaje | null;
 }
 
 export interface PersonaDelCanal {
@@ -229,7 +276,13 @@ export interface SalidaUnCanal {
     readonly sePuedeSalir: boolean;
     /** Si quien mira puede retirar mensajes: quien lleva el local, y nunca en un privado. */
     readonly puedeRetirar: boolean;
+    /** Si fija y pide confirmar: el gerente y los jefes, nunca en un privado (0075). */
+    readonly puedeFijar: boolean;
+    /** Si lo renombra y lo borra: en los creados, quien lo creó y el gerente (0075). */
+    readonly puedeGestionar: boolean;
   };
+  /** Lo fijado arriba, de lo más viejo a lo más nuevo. Aunque no esté en esta página. */
+  readonly fijados: readonly FijadoDelCanal[];
   /** Quien ve el canal, para nombrar y para saber quién ha leído. */
   readonly personas: readonly PersonaDelCanal[];
   /** Hasta dónde ha leído cada uno de los demás. «Leído» no se oculta (0071, 6). */
@@ -238,6 +291,51 @@ export interface SalidaUnCanal {
   readonly hayMas: boolean;
   /** El último que ya había leído quien mira, para la raya de «sin leer». */
   readonly leidoHasta: string;
+}
+
+/** La tarjeta guardada, venga como objeto o como texto, o nula si no se entiende. */
+function laTarjeta(
+  guardada: { tipo?: string; id?: string } | string | null,
+): { tipo: 'pedido' | 'producto' | 'horario'; id: string } | null {
+  const valor = typeof guardada === 'string' ? (JSON.parse(guardada) as unknown) : guardada;
+  if (valor === null || typeof valor !== 'object') return null;
+  const { tipo, id } = valor as { tipo?: unknown; id?: unknown };
+  if (typeof id !== 'string') return null;
+  if (tipo === 'pedido' || tipo === 'producto' || tipo === 'horario') return { tipo, id };
+  return null;
+}
+
+/** La tarjeta como la ve quien mira: con lo que su sesión ha podido leer, o nula. */
+function laTarjetaVista(
+  tarjeta: { tipo: 'pedido' | 'producto' | 'horario'; id: string } | null,
+  pedidos: readonly {
+    id: string;
+    numero: number;
+    proveedor: string;
+    estado: string;
+    llega_el: string | null;
+  }[],
+  productos: readonly { id: string; nombre: string; formato: string | null }[],
+): TarjetaDelMensaje | null {
+  if (tarjeta === null) return null;
+  if (tarjeta.tipo === 'horario') return { tipo: 'horario', lunes: tarjeta.id };
+  if (tarjeta.tipo === 'pedido') {
+    const p = pedidos.find((x) => x.id === tarjeta.id);
+    return {
+      tipo: 'pedido',
+      id: tarjeta.id,
+      pedido:
+        p === undefined
+          ? null
+          : { numero: p.numero, proveedor: p.proveedor, estado: p.estado, llegaEl: p.llega_el },
+    };
+  }
+  const p = productos.find((x) => x.id === tarjeta.id);
+  return {
+    tipo: 'producto',
+    id: tarjeta.id,
+    producto: p === undefined ? null : { nombre: p.nombre, formato: p.formato },
+  };
 }
 
 export const entradaUnCanal = z
@@ -257,9 +355,15 @@ export const unCanal = consulta<EntradaUnCanal, SalidaUnCanal>({
   async ejecutar(contexto, entrada) {
     const yo = contexto.personaId;
     const canales = await contexto.sql<
-      { id: string; tipo: TipoDeCanal; nombre: string | null; local_id: string }[]
+      {
+        id: string;
+        tipo: TipoDeCanal;
+        nombre: string | null;
+        local_id: string;
+        creado_por: string | null;
+      }[]
     >`
-      select id, tipo::text as tipo, nombre, local_id
+      select id, tipo::text as tipo, nombre, local_id, creado_por::text as creado_por
         from estook.canal where id = ${entrada.canal_id} and archivado_en is null
     `;
     const canal = canales[0];
@@ -322,6 +426,9 @@ export const unCanal = consulta<EntradaUnCanal, SalidaUnCanal>({
         adjunto_bytes: number | null;
         adjunto_segundos: number | null;
         me_nombran: boolean;
+        tarjeta: { tipo?: string; id?: string } | null;
+        pide_confirmar: boolean;
+        fijado: boolean;
       }[]
     >`
       select m.id::text as id, m.autor_id::text as autor_id, p.nombre as autor, m.texto,
@@ -334,7 +441,8 @@ export const unCanal = consulta<EntradaUnCanal, SalidaUnCanal>({
              r.adjunto_segundos as r_adjunto_segundos, r.borrado_en is not null as r_borrado,
              m.adjunto_clave, m.adjunto_tipo, m.adjunto_nombre, m.adjunto_mime,
              m.adjunto_bytes, m.adjunto_segundos,
-             ${yo}::uuid = any (m.menciones) as me_nombran
+             ${yo}::uuid = any (m.menciones) as me_nombran,
+             m.tarjeta, m.pide_confirmar, m.fijado_en is not null as fijado
         from estook.mensaje m
         left join estook.persona p on p.id = m.autor_id
         left join estook.mensaje r on r.id = m.responde_a
@@ -369,6 +477,76 @@ export const unCanal = consulta<EntradaUnCanal, SalidaUnCanal>({
         : await contexto.almacen.enlaces(claves, SEGUNDOS_DEL_ENLACE);
 
     const puede = await loQuePuede(contexto, canal.local_id, ['app.equipo']);
+    const lleva = canal.tipo !== 'privado' && (await llevaCanales(contexto, canal.local_id));
+
+    // Las tarjetas, con la sesión de quien mira: lo que no ve, no sale (0075).
+    const tarjetas = deEstaVez.map((f) => ({ id: f.id, tarjeta: laTarjeta(f.tarjeta) }));
+    const deTipo = (tipo: string) =>
+      tarjetas.flatMap((t) => (t.tarjeta?.tipo === tipo ? [t.tarjeta.id] : []));
+    const pedidos =
+      deTipo('pedido').length === 0
+        ? []
+        : await contexto.sql<
+            {
+              id: string;
+              numero: number;
+              proveedor: string;
+              estado: string;
+              llega_el: string | null;
+            }[]
+          >`
+            select p.id::text as id, p.numero, pr.nombre as proveedor, p.estado::text as estado,
+                   to_char(p.llega_el, 'YYYY-MM-DD') as llega_el
+              from estook.pedido_de_compra p
+              join estook.proveedor pr on pr.id = p.proveedor_id
+             where p.id = any (${comoLista(deTipo('pedido'))}::text::uuid[])
+          `;
+    const productos =
+      deTipo('producto').length === 0
+        ? []
+        : await contexto.sql<{ id: string; nombre: string; formato: string | null }[]>`
+            select id::text as id, nombre, formato from estook.producto
+             where id = any (${comoLista(deTipo('producto'))}::text::uuid[])
+          `;
+
+    // Quién tiene que confirmar cada uno, y quién lo ha hecho.
+    const conConfirmar = deEstaVez.filter((f) => f.pide_confirmar).map((f) => f.id);
+    const confirmaciones =
+      conConfirmar.length === 0
+        ? []
+        : await contexto.sql<
+            { mensaje_id: string; persona_id: string; hecho: boolean; nombre: string | null }[]
+          >`
+            select c.mensaje_id::text as mensaje_id, c.persona_id::text as persona_id,
+                   c.confirmado_en is not null as hecho, p.nombre
+              from estook.confirmacion_del_mensaje c
+              left join estook.persona p on p.id = c.persona_id
+             where c.mensaje_id = any (${comoLista(conConfirmar)}::text::bigint[])
+             order by p.nombre
+          `;
+
+    // Lo fijado, aunque sea más viejo que lo que llega en esta página.
+    const fijados = await contexto.sql<
+      {
+        id: string;
+        autor: string | null;
+        texto: string | null;
+        adjunto_tipo: TipoDeAdjunto | null;
+        adjunto_nombre: string | null;
+        adjunto_segundos: number | null;
+        tarjeta: TipoDeTarjeta | null;
+        en: string;
+      }[]
+    >`
+      select m.id::text as id, p.nombre as autor, m.texto, m.adjunto_tipo, m.adjunto_nombre,
+             m.adjunto_segundos, m.tarjeta ->> 'tipo' as tarjeta,
+             to_char(m.creado_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as en
+        from estook.mensaje m
+        left join estook.persona p on p.id = m.autor_id
+       where m.canal_id = ${canal.id} and m.fijado_en is not null and m.borrado_en is null
+       order by m.fijado_en
+    `;
+
     const lecturasParaElEstado = lecturasDeOtros.map((l) => ({
       entregadoHasta: Number(l.entregadoHasta),
       leidoHasta: Number(l.leidoHasta),
@@ -425,9 +603,35 @@ export const unCanal = consulta<EntradaUnCanal, SalidaUnCanal>({
         sePuedeCorregir:
           esMio &&
           !f.borrado &&
+          !f.pide_confirmar &&
           f.texto !== null &&
           sePuedeCorregir(new Date(f.creado_en), contexto.ahora),
+        sePuedeBorrar: esMio && !f.borrado && !f.pide_confirmar,
         estado: esMio && !f.borrado ? estadoDeMiMensaje(Number(f.id), lecturasParaElEstado) : null,
+        tarjeta: f.borrado
+          ? null
+          : laTarjetaVista(
+              tarjetas.find((t) => t.id === f.id)?.tarjeta ?? null,
+              pedidos,
+              productos,
+            ),
+        fijado: f.fijado,
+        confirmar:
+          !f.pide_confirmar || f.borrado
+            ? null
+            : (() => {
+                const suyas = confirmaciones.filter((c) => c.mensaje_id === f.id);
+                const mia = suyas.find((c) => c.persona_id === yo);
+                return {
+                  cuantos: suyas.filter((c) => c.hecho).length,
+                  de: suyas.length,
+                  mio: mia === undefined ? null : mia.hecho ? 'hecho' : 'falta',
+                  faltan:
+                    esMio || lleva
+                      ? suyas.filter((c) => !c.hecho).map((c) => c.nombre ?? 'Alguien')
+                      : null,
+                };
+              })(),
       };
     });
 
@@ -441,7 +645,23 @@ export const unCanal = consulta<EntradaUnCanal, SalidaUnCanal>({
         silenciado: mia?.silenciado ?? false,
         sePuedeSalir: canal.tipo === 'canal' || canal.tipo === 'privado',
         puedeRetirar: canal.tipo !== 'privado' && puede.editar('app.equipo'),
+        puedeFijar: lleva,
+        puedeGestionar:
+          canal.tipo === 'canal' && (canal.creado_por === yo || puede.editar('app.equipo')),
       },
+      fijados: fijados.map((f) => ({
+        id: f.id,
+        autor: f.autor ?? 'Alguien',
+        vista: vistaPrevia({
+          texto: f.texto,
+          adjuntoTipo: f.adjunto_tipo,
+          adjuntoNombre: f.adjunto_nombre,
+          adjuntoSegundos: f.adjunto_segundos,
+          borrado: false,
+          tarjeta: f.tarjeta,
+        }),
+        en: f.en,
+      })),
       personas,
       lecturas: lecturasDeOtros,
       mensajes,

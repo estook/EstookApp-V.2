@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  avisoDeConfirmar,
   TIPOS_DE_AVISO,
   avisoDeCaducidad,
   avisoDeEntrasEnUnRato,
@@ -54,6 +55,7 @@ describe('los avisos', () => {
       'fichaje.corregido',
       'horario.publicado',
       'horario.cambiado',
+      'chat.confirmar',
     ]);
   });
 
@@ -255,6 +257,7 @@ describe('los avisos al móvil (I · 0070)', () => {
       'lote.caduca',
       'pedido.no_llega',
       'fichaje.sin_apuntar',
+      'chat.confirmar',
     ]);
   });
 
@@ -287,5 +290,16 @@ describe('los avisos al móvil (I · 0070)', () => {
     ).toBe(
       'Una entrada en Tablet barra, el martes 6 a las 09:02: el PIN no era de nadie del local. Pregunta quién fue y apúntaselo en su ficha.',
     );
+  });
+});
+
+describe('el recordatorio de confirmar (C2 · 0075)', () => {
+  it('dice quién lo pidió, dónde, y una línea del mensaje', () => {
+    expect(avisoDeConfirmar('Rosa', 'Todo el equipo', 'El lunes no hay pescado')).toEqual({
+      titulo: 'Te falta confirmar un mensaje de Rosa en Todo el equipo',
+      detalle: 'El lunes no hay pescado. Tócalo para leerlo y confirmarlo.',
+    });
+    const largo = 'Muy largo '.repeat(30);
+    expect(avisoDeConfirmar('Rosa', 'Cocina', largo).detalle.length).toBeLessThan(200);
   });
 });

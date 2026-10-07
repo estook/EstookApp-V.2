@@ -445,11 +445,7 @@ interface ChatPendiente {
 }
 
 /** Cuándo puede sonar el móvil de alguien, o salirle el correo: lo mismo (0070). */
-function cuandoPuede(
-  ahora: Date,
-  reloj: SuReloj | undefined,
-  zonaHoraria: string,
-): Date | null {
+function cuandoPuede(ahora: Date, reloj: SuReloj | undefined, zonaHoraria: string): Date | null {
   if (reloj === undefined) return ahora;
   return cuandoPuedeSonar(ahora, {
     modo: reloj.modo,
@@ -512,13 +508,13 @@ async function mandarElCorreoDelChat(
   }
 
   const personas = [...new Set(pendientes.map((p) => p.persona_id))];
+  // El correo, de la función que se lo da al sistema: la tabla de personas no se lo enseña.
   const datos = await contexto.sql<
     { id: string; correo: string | null; mandado_en: Date | null }[]
   >`
-    select p.id::text as id, p.correo, c.mandado_en
-      from estook.persona p
-      left join estook.correo_del_chat c on c.persona_id = p.id
-     where p.id = any (${comoLista(personas)}::text::uuid[])
+    select q.persona_id::text as id, q.correo, c.mandado_en
+      from estook.a_quien_escribir(${comoLista(personas)}::text::uuid[]) q
+      left join estook.correo_del_chat c on c.persona_id = q.persona_id
   `;
 
   for (const persona of personas) {
@@ -529,7 +525,11 @@ async function mandarElCorreoDelChat(
       continue;
     }
 
-    const cuando = cuandoPuede(ahora, relojes.get(persona), suyos[0]?.zona_horaria ?? 'Europe/Madrid');
+    const cuando = cuandoPuede(
+      ahora,
+      relojes.get(persona),
+      suyos[0]?.zona_horaria ?? 'Europe/Madrid',
+    );
     const otraVez =
       suyo.mandado_en === null
         ? null
@@ -1070,7 +1070,7 @@ async function recordarQueConfirme(contexto: Contexto, p: Programado): Promise<n
       canal_id: string;
       tipo: string;
       nombre: string | null;
-      autor: string | null;
+      autor_id: string | null;
       texto: string | null;
       adjunto_tipo: TipoDeAdjunto | null;
       adjunto_nombre: string | null;
@@ -1078,18 +1078,24 @@ async function recordarQueConfirme(contexto: Contexto, p: Programado): Promise<n
       tarjeta: TipoDeTarjeta | null;
     }[]
   >`
-    select c.id::text as canal_id, c.tipo::text as tipo, c.nombre, a.nombre as autor, m.texto,
-           m.adjunto_tipo, m.adjunto_nombre, m.adjunto_segundos, m.tarjeta ->> 'tipo' as tarjeta
+    select c.id::text as canal_id, c.tipo::text as tipo, c.nombre, m.autor_id::text as autor_id,
+           m.texto, m.adjunto_tipo, m.adjunto_nombre, m.adjunto_segundos,
+           m.tarjeta ->> 'tipo' as tarjeta
       from estook.confirmacion_del_mensaje cm
       join estook.mensaje m on m.id = cm.mensaje_id
       join estook.canal c on c.id = m.canal_id
-      left join estook.persona a on a.id = m.autor_id
      where cm.mensaje_id = ${mensajeId}::bigint and cm.persona_id = ${p.persona_id}
        and cm.confirmado_en is null and m.borrado_en is null and c.archivado_en is null
        and estook.puede_ver_el_canal(c.id, ${p.persona_id}::uuid)
   `;
   const mensaje = falta[0];
   if (mensaje === undefined) return 0;
+  const autor =
+    mensaje.autor_id === null
+      ? []
+      : await contexto.sql<{ nombre: string }[]>`
+          select nombre from estook.a_quien_escribir(${comoLista([mensaje.autor_id])}::text::uuid[])
+        `;
   const tipo = esTipoDeCanal(mensaje.tipo) ? mensaje.tipo : 'canal';
   const canal = nombreDelCanal({ tipo, nombre: mensaje.nombre, otros: [] });
   const vista = vistaPrevia({
@@ -1110,7 +1116,7 @@ async function recordarQueConfirme(contexto: Contexto, p: Programado): Promise<n
       organizacionId: p.organizacion_id,
       localId: p.local_id,
       clave: mensajeId,
-      texto: () => avisoDeConfirmar(mensaje.autor ?? 'alguien', canal, vista),
+      texto: () => avisoDeConfirmar(autor[0]?.nombre ?? 'alguien', canal, vista),
       ir: `/chat/${mensaje.canal_id}`,
       quien: null,
     },

@@ -2,23 +2,39 @@
 
 > ## Cómo está
 >
-> Comprobado el 7 de octubre de 2026 por la tarde, leyendo la base de producción.
+> Comprobado el 8 de octubre de 2026 a mediodía, leyendo la base de producción.
 >
 > | Qué                                  | Cómo está                                                                         |
 > | ------------------------------------ | --------------------------------------------------------------------------------- |
-> | Pull requests                        | **Fusionadas hasta la #93** (C2, 7-oct). Abierta: **A3 · Vendedores** (#94)       |
-> | La base de datos                     | **57 de 57** migraciones, igual que `main`                                        |
-> | La API                               | **Desplegada con C2**: 70 y 156, los avisos al móvil y el reloj latiendo          |
+> | Pull requests                        | **Fusionadas hasta la #94** (A3, 8-oct). Abierta: **A4 · Ventas, el plan**        |
+> | La base de datos                     | **58 de 58** migraciones, igual que `main`                                        |
+> | La API                               | **Desplegada con A3**: 73 y 162, los avisos al móvil y el reloj latiendo          |
 > | Los PDF (Cloudflare)                 | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep          |
 > | **Las copias de seguridad**          | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
 > | A1 · la puerta del admin             | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor       |
 > | E1, V, O, E2, L, A2, R1, R2, H, I, C | **En producción**, el chat entero. Pago de prueba hecho: Pizzeriacazzo, 26-sep    |
+> | A3 · Vendedores                      | **En producción** (8-oct). Falta acabar de probarlo: el paso 4 de abajo           |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · A3 · Vendedores
+## Lo que te toca ahora · A4 · Ventas, el plan
+
+**Solo contestar.** El plan está en [`a4-ventas.md`](a4-ventas.md): qué es el tablero de ventas, lo que decido yo y **cuatro preguntas**, cada una con su ejemplo y lo que pasa con cada opción. **Basta con la letra de cada una** (por ejemplo, «1A, 2A, 3A, 4A»).
+
+1. **El dinero, ¿con IVA o sin IVA?**
+2. **¿Guardamos lo cobrado de verdad, además de la cuota?**
+3. **¿Contamos cuánta gente abre la web, y por dónde llega?**
+4. **¿Un correo con las cifras, para no tener que abrir el admin?**
+
+**No fusiones todavía su pull request**: con tus respuestas, A4 se construye en la misma rama, y entonces van juntos tus pasos de siempre (fusionar, migrar la 0059, desplegar y mirarlo).
+
+---
+
+## A3 · Vendedores (#94) · **en producción** (8-oct)
+
+**Fusionada, migrada (0058) y desplegada**: comprobado el 8-oct a mediodía leyendo producción, 58 migraciones y la API con 73 y 162. En la base ya están **tu vendedor y su código** (con un 10 %), y **ninguna cuenta ha llegado todavía por un enlace**: **queda el paso 4**. **Hazlo con un vendedor «Prueba» aparte, no con el tuyo**: una cuenta que llega por un código se queda para siempre como traída por ese vendedor, y no quieres una de prueba en tus cifras. Al acabar, el paso 6 da de baja a «Prueba», no a ti. Lo de abajo se queda como estaba.
 
 Tus respuestas del 7-oct, construidas ([decisión 0076](decisiones/0076-a3-los-vendedores.md)). **Una migración** (la **0058**) y **un despliegue**. Ninguna clave nueva, y **en Stripe no hay que tocar nada**: el cupón de cada descuento y el aviso nuevo de «la prueba acaba» los pide el código solo, la primera vez que alguien abra la página de pago.
 

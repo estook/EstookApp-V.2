@@ -8,6 +8,7 @@ import {
   jornadaDe,
   horaDeCorte,
   milesimas,
+  repartirPorFefo,
   siguienteEstado,
   type CambioDePrecio,
   type EstadoDelStock,
@@ -264,7 +265,143 @@ export async function apuntar(
   const movimientoId = insertados[0]?.id;
   if (movimientoId === undefined) throw new FalloDeAplicacion('sin_permiso');
 
+  // ── Los lotes se gastan solos (M8 · 0078) ──────────────────────────────────
+  //
+  // Aquí y no en cada comando, por lo mismo que el libro: todo lo que saca género
+  // pasa por aquí, y así la merma de la camarera, la venta, el inventario y la
+  // salida a mano gastan del lote que antes caduca sin que ninguno lo tenga que
+  // recordar. Y lo que devuelve una anulación, vuelve a sus lotes.
+  const anula = apunte.referencia?.['anula'];
+  if (apunte.cantidad < 0) {
+    await gastarDeLosLotes(
+      contexto,
+      producto,
+      movimientoId,
+      -apunte.cantidad,
+      apunte.loteId ?? null,
+    );
+  } else if (typeof anula === 'string') {
+    await devolverALosLotes(contexto, producto, anula);
+  }
+
   return { movimientoId, antes, despues, fechaOperativa: fecha };
+}
+
+// ── Los lotes, por FEFO (M8 · 0078) ─────────────────────────────────────────
+
+/** Avisa de que un lote ha cambiado, para que su caducidad se mueva en el Calendario. */
+async function elLoteHaCambiado(
+  contexto: Contexto,
+  producto: FichaBasica,
+  loteId: string,
+  como: string,
+): Promise<void> {
+  const organizaciones = await contexto.sql<{ organizacion_id: string }[]>`
+    select organizacion_id from estook.local where id = ${producto.localId}
+  `;
+  const organizacionId = organizaciones[0]?.organizacion_id;
+  if (organizacionId === undefined) return;
+  await publicar(contexto.sql, {
+    tipo: 'lote.retirado',
+    organizacionId,
+    localId: producto.localId,
+    datos: { loteId, productoId: producto.id, como },
+    correlacionId: contexto.correlacionId,
+  });
+}
+
+/**
+ * Gasta lo que sale de los lotes del producto: del que se nombra, si se nombra uno
+ * (tirar un lote caducado), y si no, **primero del que antes caduca**
+ * (`repartirPorFefo`). El lote que se acaba se retira solo —«se acabó»— y deja de
+ * avisar, que es lo que hasta hoy había que hacer a mano con «Ya no está».
+ *
+ * Solo los lotes que saben lo que les queda: de uno que no lo sabe no se gasta nada,
+ * como hasta hoy.
+ */
+async function gastarDeLosLotes(
+  contexto: Contexto,
+  producto: FichaBasica,
+  movimientoId: string,
+  cuanto: number,
+  loteId: string | null,
+): Promise<void> {
+  const filas = await contexto.sql<
+    {
+      id: string;
+      queda: string;
+      caduca_el: string | null;
+      recibido_el: string;
+      congelado_el: string | null;
+    }[]
+  >`
+    select id, queda::text as queda,
+           to_char(caduca_el, 'YYYY-MM-DD') as caduca_el,
+           to_char(recibido_el, 'YYYY-MM-DD') as recibido_el,
+           to_char(congelado_el, 'YYYY-MM-DD') as congelado_el
+      from estook.lote
+     where producto_id = ${producto.id}
+       and retirado_en is null
+       and queda > 0
+       and (${loteId}::uuid is null or id = ${loteId}::uuid)
+  `;
+  if (filas.length === 0) return;
+
+  const gastos = repartirPorFefo(
+    filas.map((f) => ({
+      id: f.id,
+      queda: Number(f.queda),
+      caducaEl: f.caduca_el as FechaOperativa | null,
+      recibidoEl: f.recibido_el as FechaOperativa,
+      congeladoEl: f.congelado_el as FechaOperativa | null,
+    })),
+    cuanto,
+  );
+
+  for (const gasto of gastos) {
+    await contexto.sql`
+      update estook.lote
+         set queda = greatest(queda - ${gasto.cuanto}::numeric, 0),
+             retirado_en = case when ${gasto.loAcaba} then ${contexto.ahora.toISOString()}::timestamptz end,
+             como_se_retiro = case when ${gasto.loAcaba} then 'se_acabo' end
+       where id = ${gasto.loteId}
+    `;
+    await contexto.sql`
+      insert into estook.salida_de_lote (movimiento_id, lote_id, local_id, cantidad, lo_acabo)
+      values (${movimientoId}::bigint, ${gasto.loteId}, ${producto.localId}, ${gasto.cuanto}, ${gasto.loAcaba})
+    `;
+    if (gasto.loAcaba) await elLoteHaCambiado(contexto, producto, gasto.loteId, 'se_acabo');
+  }
+}
+
+/**
+ * Lo que se anula vuelve a los lotes de los que salió, y el que se había acabado
+ * por eso vuelve a estar. Un lote que alguien quitó a mano no vuelve: eso lo decidió
+ * una persona.
+ */
+async function devolverALosLotes(
+  contexto: Contexto,
+  producto: FichaBasica,
+  anulado: string,
+): Promise<void> {
+  const salidas = await contexto.sql<{ lote_id: string; cantidad: string; lo_acabo: boolean }[]>`
+    select lote_id, cantidad::text as cantidad, lo_acabo
+      from estook.salida_de_lote where movimiento_id = ${anulado}::bigint
+  `;
+  for (const salida of salidas) {
+    const vuelve = await contexto.sql<{ id: string }[]>`
+      update estook.lote
+         set queda = coalesce(queda, 0) + ${salida.cantidad}::numeric,
+             retirado_en = case when como_se_retiro = 'se_acabo' then null else retirado_en end,
+             retirado_por = case when como_se_retiro = 'se_acabo' then null else retirado_por end,
+             como_se_retiro = case when como_se_retiro = 'se_acabo' then null else como_se_retiro end
+       where id = ${salida.lote_id}
+      returning id
+    `;
+    if (salida.lo_acabo && vuelve.length > 0) {
+      await elLoteHaCambiado(contexto, producto, salida.lote_id, 'vuelve');
+    }
+  }
 }
 
 // ── Anular lo mal tecleado (3-oct, 0055) ────────────────────────────────────

@@ -247,7 +247,9 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // forma, asi que son vistas y no destinos.
         // «Congelados» (M7, repaso): lo que hay en la cámara de congelados, para
         // tenerlo en mente sin abrir la puerta.
-        vistas: vistas('Todo', 'Bajo mínimo', 'Sin precio', 'Congelados', 'Desactivados'),
+        // «Valor» (M8 · 0078): lo que vale el almacén en cualquier fecha, para quien ve
+        // precios. La misma lista, mirada en dinero y en un día.
+        vistas: vistas('Todo', 'Bajo mínimo', 'Sin precio', 'Congelados', 'Desactivados', 'Valor'),
       },
       {
         id: 'movimientos',

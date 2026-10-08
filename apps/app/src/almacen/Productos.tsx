@@ -41,6 +41,7 @@ import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { NuevoProducto } from './NuevoProducto.tsx';
 import { MoverGenero, type QueSeMueve } from './MoverGenero.tsx';
+import { AvisoDeMinimos } from './MinimosPropuestos.tsx';
 import {
   TONO_DEL_ESTADO,
   comoDinero,
@@ -401,6 +402,8 @@ export function Productos({
 
   return (
     <div className="flex flex-col gap-e4">
+      {/* Los mínimos que propone Estook (M8 · 0078, 3A): donde se mira lo que falta. */}
+      {vista === 'bajo-minimo' && <AvisoDeMinimos />}
       {/*
         «Al crear el primer producto de verdad, Estook lo pregunta» (Manifiesto 8).
         No se borra nada solo: se ofrece, y decide una persona.

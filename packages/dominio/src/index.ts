@@ -473,6 +473,32 @@ export type {
   LoQueTraeElRecuento,
 } from './recuento.ts';
 
+// ── M8 · contar el almacén (0078) ────────────────────────────────────────────
+export {
+  DIAS_PARA_VOLVER_A_CONTAR_LO_CARO,
+  DIAS_PARA_VOLVER_A_CONTAR_LO_DEMAS,
+  ESTADOS_DEL_INVENTARIO,
+  NOMBRE_DEL_ESTADO_DEL_INVENTARIO,
+  PARTE_DEL_VALOR_QUE_SE_CUENTA_CADA_SEMANA,
+  cuantoTocaContar,
+  diferenciaDeLoContado,
+  loContadoEnUnidades,
+  mayorHuecoEntreRepartos,
+  minimoCalculado,
+  queTocaContar,
+  repartirPorFefo,
+  valeLaPenaProponer,
+} from './inventario.ts';
+export type {
+  EstadoDelInventario,
+  GastoDeUnLote,
+  LoQueTocaContar,
+  LoteQueSeGasta,
+  MinimoCalculado,
+  PorQueTocaContar,
+  ProductoQueSeCuenta,
+} from './inventario.ts';
+
 // ── El repaso del 25-sep · lo congelado va aparte (0049) ─────────────────────
 export {
   AVISO_DE_LO_CONGELADO_EN_DIAS,
@@ -642,6 +668,9 @@ export {
   SUBIDA_QUE_AVISA_MINIMA,
   TIPOS_DE_AVISO,
   avisoDeBajoMinimo,
+  avisoDeInventarioContado,
+  avisoDeRecontar,
+  avisoDeTocaContar,
   avisoDeCarta,
   avisoDeIncidencias,
   avisoDeInvitacion,

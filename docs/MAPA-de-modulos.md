@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **«Antes de M8»**: las compras de M7 están entregadas; **H · Horarios**, **I · La app instalable**, **C · El chat** y **A3 · Vendedores**, en producción; y queda una entrega antes de M8, **A4 · Ventas del admin**, construida y en su pull request ([`a4-ventas.md`](a4-ventas.md), [0077](decisiones/0077-a4-las-ventas.md)), dentro de [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+Estás en **M8 · Inventario, mermas y desviación** ([su plan](m8-inventario-mermas-y-desviacion.md), [0078](decisiones/0078-las-respuestas-de-m8.md)): contestado, y **la primera entrega construida** en su pull request; queda la segunda. **«Antes de M8» está entero en producción** desde el 8-oct, con **A4 · Ventas del admin** la última ([`a4-ventas.md`](a4-ventas.md), [0077](decisiones/0077-a4-las-ventas.md)); lo que fue, en [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -41,6 +41,8 @@ Ficha del proveedor con sus días de reparto y su pedido mínimo, el ciclo `borr
 ### M8 · Inventario, mermas y desviación
 
 Inventario cíclico, almacén valorado, mermas en tres toques, consumo de personal como partida aparte, y **la desviación**: lo que dice el escandallo frente a lo que falta de verdad. Ahí está el dinero que se escapa, y es de lo que más vende.
+
+**Contestado el 8-oct** ([0078](decisiones/0078-las-respuestas-de-m8.md)): la desviación de los platos, la calibración y el food cost teórico **pasan a M9**, que es donde se sabe qué lleva cada plato. M8 se entrega en dos veces: contar y cerrar en dos pasos, el valor, FEFO y el mínimo; y después lo gastado, el food cost real y la desviación de lo que se vende tal cual.
 
 ### M9 · Escandallos
 
@@ -190,25 +192,24 @@ Que un TPV o un ERP puedan leer y escribir con permiso del cliente. Va al final 
 
 Lo que ya existe a medias y el módulo que lo acaba. Vivía en `ESTADO.md` hasta el 30-sep-2026.
 
-| Qué                                                       | Dónde se termina | Qué hay ya                                                     |
-| --------------------------------------------------------- | ---------------- | -------------------------------------------------------------- |
-| Unir dos personas que resultan ser la misma               | **M13**          | Poner el correo a quien no lo tenía, que no une (H1)           |
-| Business Profile: leer y contestar reseñas                | Con accesos      | La nota en Google con su evolución, en Negocio → Reseñas (R2)  |
-| Calendario, avisos con roles y turnos                     | **M14**          | La tabla, su seguridad por roles y «Lo que viene»              |
-| Recalcular platos con lo que corrigió la factura          | **M9**           | Lo cobrado, en cada línea del albarán con fecha                |
-| El pedido en PDF con el logo                              | **M11**          | «Imprimir», sin membrete                                       |
-| El precio pactado para toda una cadena                    | **M24**          | Lo pactado por local                                           |
-| Leer el albarán de una foto                               | **M22**          | La recepción línea a línea                                     |
-| Avisos de fichar por push, y que fuera de turno no suene  | **Mejoras · I**  | La campana (R1) y el horario de siempre, que el widget ya dice |
-| Recuento, desviación y calibración del aprovechamiento    | **M8**           | La merma con motivo; albaranes con incidencias; el recuento    |
-| Descontar lo vendido del inventario                       | **M20**          | El cierre guarda los platos con el nombre normalizado          |
-| Los terminales del local                                  | **M20A**         | `estook.terminal`, hoy solo para fichar (H1); Anexo 3.4        |
-| El vendedor de cada cliente y el código con que llegó     | **A3**           | La ficha de cada cliente (A2)                                  |
-| El tablero de ventas                                      | **A4**           | La foto diaria del uso de cada cliente (A2)                    |
-| Leer los platos de la carta subida y proponer los cambios | **M10**          | La carta subida y enseñada por su QR (0049)                    |
-| Plato, ficha técnica y escandallo unidos por su id        | **M9**           | El diseño de Richi, escrito en el Plan (0049)                  |
-| La historia del Tablón, por días                          | **M17**          | El Tablón, con sus notas guardadas (0049)                      |
-| Cerrar un local (y que la cuota baje)                     | Sin fecha        | La cuota ya sube sola al abrir uno                             |
+| Qué                                                        | Dónde se termina | Qué hay ya                                                     |
+| ---------------------------------------------------------- | ---------------- | -------------------------------------------------------------- |
+| Unir dos personas que resultan ser la misma                | **M13**          | Poner el correo a quien no lo tenía, que no une (H1)           |
+| Business Profile: leer y contestar reseñas                 | Con accesos      | La nota en Google con su evolución, en Negocio → Reseñas (R2)  |
+| Calendario, avisos con roles y turnos                      | **M14**          | La tabla, su seguridad por roles y «Lo que viene»              |
+| Recalcular platos con lo que corrigió la factura           | **M9**           | Lo cobrado, en cada línea del albarán con fecha                |
+| El pedido en PDF con el logo                               | **M11**          | «Imprimir», sin membrete                                       |
+| El precio pactado para toda una cadena                     | **M24**          | Lo pactado por local                                           |
+| Leer el albarán de una foto                                | **M22**          | La recepción línea a línea                                     |
+| Avisos de fichar por push, y que fuera de turno no suene   | **Mejoras · I**  | La campana (R1) y el horario de siempre, que el widget ya dice |
+| Lo gastado de verdad, food cost real y desviación          | **M8**, la 2.ª   | Contar en dos pasos, el valor en una fecha y FEFO (0078)       |
+| Desviación de los platos y calibración del aprovechamiento | **M9**           | Lo contado con su hora, y la pantalla que deja M8 (0078)       |
+| Descontar lo vendido del inventario                        | **M20**          | El cierre guarda los platos con el nombre normalizado          |
+| Los terminales del local                                   | **M20A**         | `estook.terminal`, hoy solo para fichar (H1); Anexo 3.4        |
+| Leer los platos de la carta subida y proponer los cambios  | **M10**          | La carta subida y enseñada por su QR (0049)                    |
+| Plato, ficha técnica y escandallo unidos por su id         | **M9**           | El diseño de Richi, escrito en el Plan (0049)                  |
+| La historia del Tablón, por días                           | **M17**          | El Tablón, con sus notas guardadas (0049)                      |
+| Cerrar un local (y que la cuota baje)                      | Sin fecha        | La cuota ya sube sola al abrir uno                             |
 
 **Sin prisa, de código:** volver a `BrowserRouter` ahora que hay dominio
 ([0008](decisiones/0008-enrutado-con-almohadilla.md)); pasar Pedidos, Albaranes y

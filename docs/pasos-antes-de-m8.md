@@ -2,24 +2,30 @@
 
 > ## Cómo está
 >
-> Comprobado el 8 de octubre de 2026 a mediodía, leyendo la base de producción.
+> **«Antes de M8» está cerrado. Lo de ahora, en [`pasos-de-m8.md`](pasos-de-m8.md).** Aquí se
+> quedan los pasos de cada entrega, para lo que falte por probar.
+>
+> Comprobado el 8 de octubre de 2026 a las 21:40, leyendo la base de producción.
 >
 > | Qué                                  | Cómo está                                                                         |
 > | ------------------------------------ | --------------------------------------------------------------------------------- |
-> | Pull requests                        | **Fusionadas hasta la #94** (A3, 8-oct). Abierta: **A4 · Ventas** (#95)           |
-> | La base de datos                     | **58 de 58** migraciones, igual que `main`                                        |
-> | La API                               | **Desplegada con A3**: 73 y 162, los avisos al móvil y el reloj latiendo          |
+> | Pull requests                        | **Fusionadas hasta la #95** (A4, 8-oct)                                           |
+> | La base de datos                     | **59 de 59** migraciones, igual que `main`                                        |
+> | La API                               | **Desplegada con A4**: 74 y 163, los avisos al móvil y el reloj latiendo          |
 > | Los PDF (Cloudflare)                 | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep          |
 > | **Las copias de seguridad**          | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
 > | A1 · la puerta del admin             | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor       |
 > | E1, V, O, E2, L, A2, R1, R2, H, I, C | **En producción**, el chat entero. Pago de prueba hecho: Pizzeriacazzo, 26-sep    |
 > | A3 · Vendedores                      | **En producción** (8-oct). Falta acabar de probarlo: el paso 4 de abajo           |
+> | A4 · Ventas                          | **En producción** (8-oct). Lo de Stripe, desde el 9-oct; el correo, el 12-oct     |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · A4 · Ventas (#95)
+## A4 · Ventas (#95) · **en producción** (8-oct)
+
+**Fusionada, migrada (0059) y desplegada**: comprobado el 8-oct por la noche leyendo producción, 59 migraciones y la API con 74 y 163. **Queda mirarlo, el paso 4**: lo de Stripe, desde la mañana del 9-oct, y el correo, el lunes 12. Lo de abajo se queda como estaba.
 
 Tus respuestas del 8-oct —**1A sin IVA, 2A lo cobrado, 3B solo las visitas de los vendedores, 4A el correo de los lunes**—, construidas ([decisión 0077](decisiones/0077-a4-las-ventas.md)). **Una migración** (la **0059**) y **un despliegue**. Ninguna clave nueva, y **en Stripe no hay que tocar nada**: el aviso nuevo de las devoluciones lo pide el código solo, la primera mañana.
 

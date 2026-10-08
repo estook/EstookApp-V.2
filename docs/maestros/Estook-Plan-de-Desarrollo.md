@@ -276,21 +276,21 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 Y sus vistas, donde las hay:
 
-| Destino                 | Sus vistas                                                  |
-| ----------------------- | ----------------------------------------------------------- |
-| Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados |
-| Almacén · Movimientos   | Todo · Entradas · Salidas · Ventas · Ajustes · Inventario   |
-| Almacén · Compras       | Pedidos · Albaranes · Facturas · Proveedores · Precios      |
-| Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                           |
-| Carta · Carta           | Por secciones · Todos los platos · Agotados                 |
-| Carta · Análisis        | Matriz · Por canal · Histórico                              |
-| Calendario · Calendario | Mes · Semana · Día                                          |
-| Calendario · Tareas     | Pendientes · Periódicas · Hechas                            |
-| Equipo · Personas       | Con acceso · Sin entrar todavía · Retirados                 |
-| Servicio · Jornada      | En marcha · Caja · Cierre                                   |
-| Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas     |
-| Negocio · Informes      | Día · Semana · Mes                                          |
-| Cuaderno · Incidencias  | Abiertas · Cerradas                                         |
+| Destino                 | Sus vistas                                                          |
+| ----------------------- | ------------------------------------------------------------------- |
+| Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
+| Almacén · Movimientos   | Todo · Entradas · Salidas · Ventas · Ajustes · Inventario           |
+| Almacén · Compras       | Pedidos · Albaranes · Facturas · Proveedores · Precios              |
+| Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                                   |
+| Carta · Carta           | Por secciones · Todos los platos · Agotados                         |
+| Carta · Análisis        | Matriz · Por canal · Histórico                                      |
+| Calendario · Calendario | Mes · Semana · Día                                                  |
+| Calendario · Tareas     | Pendientes · Periódicas · Hechas                                    |
+| Equipo · Personas       | Con acceso · Sin entrar todavía · Retirados                         |
+| Servicio · Jornada      | En marcha · Caja · Cierre                                           |
+| Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas             |
+| Negocio · Informes      | Día · Semana · Mes                                                  |
+| Cuaderno · Incidencias  | Abiertas · Cerradas                                                 |
 
 **El catálogo de `packages/ui/src/apps.ts` es el único dueño de estas dos tablas**, y hay una prueba que las lee **de este documento** y las compara. Antes la prueba llevaba los valores copiados dentro, y por eso pudo estar en verde mientras el código decía que Negocio tenía «Reseñas» donde esta tabla decía «Pulse».
 
@@ -554,17 +554,23 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M8 · Inventario, mermas y desviación
 
-**Entra.** Inventario cíclico con lector · almacén valorado a precio medio ponderado · mermas en tres toques con motivo obligatorio, por voz y con foto · partida aparte para consumo de personal e invitaciones · desviación · calibración con estado «aprendiendo» hasta el tercer recuento · **FEFO** · stock mínimo calculado · **food cost real global** junto al teórico y su brecha · causa probable de la desviación · permiso separado para cerrar recuento.
+**Entra.** Inventario cíclico con lector · **contar y cerrar, dos pasos**: cuenta quien lleve el almacén y cierra quien tiene el permiso, con lo contado comparado con lo que había **a la hora de contar** · almacén valorado a precio medio ponderado, en cualquier fecha · mermas en tres toques con motivo obligatorio, y con foto si se quiere · partida aparte para consumo de personal e invitaciones · **lo gastado de verdad** entre dos inventarios · **food cost real global** · desviación de lo que se vende tal cual · causa probable de la desviación · **FEFO** · stock mínimo calculado, que se propone y se acepta · permiso separado para cerrar recuento.
 
-**Adelantado en M6½** ([decisión 0026](../decisiones/0026-la-merma-tiene-motivo-y-partida.md)): la merma en tres toques, con motivo de una lista cerrada y su partida aparte —pérdida, comida del personal, invitación—, desde el Panel, desde la lista de productos y por quien la rompe, camareros incluidos; y su listado con totales, CSV e impresión. **Queda para M8**: por voz y con foto (con M22), y todo lo demás de esta lista.
+**Adelantado en M6½** ([decisión 0026](../decisiones/0026-la-merma-tiene-motivo-y-partida.md)): la merma en tres toques, con motivo de una lista cerrada y su partida aparte —pérdida, comida del personal, invitación—, desde el Panel, desde la lista de productos y por quien la rompe, camareros incluidos; y su listado con totales, CSV e impresión. **Queda para M8**: con foto, y todo lo demás de esta lista. **Por voz, con M22.**
 
-**Terminado cuando.** Con dos inventarios, la desviación sale explicada producto a producto; y un producto que se sirve de más deja de saltar tras el tercer inventario.
+**Pasa a M9** ([decisión 0078](../decisiones/0078-las-respuestas-de-m8.md)): **la desviación de los platos, la calibración y el food cost teórico**. Las tres necesitan saber qué lleva cada plato, y eso es la ficha técnica. M8 deja la pantalla hecha para que se enciendan con ella.
+
+**Se entrega en dos veces** (0078). La primera: contar en dos pasos, «toca contar», la hoja impresa, el valor del almacén en cualquier fecha, FEFO y el mínimo calculado. La segunda: lo gastado de verdad, el food cost real, la desviación de lo que se vende tal cual con su causa, y la foto de la merma.
+
+**Terminado cuando.** Con dos inventarios, lo gastado y el food cost real cuadran con una cuenta a mano; una bebida que sale de la cámara más de lo que vende la caja sale en la desviación con su causa; un albarán que entra entre que se cuenta y se cierra no se pierde; y un lote que se gasta deja de avisar sin tocarlo.
 
 ### M9 · Escandallos
 
 **Entra.** Elaboraciones anidables con detección de ciclos · ficha en dos caras · extras y sustituciones · versionado con comparador · escalado de gramajes · **modo cocina** a pantalla completa, sin importes y en el idioma del cocinero · modo aprendizaje · valor nutricional y alérgenos calculados · hoja de producción del día · borrador de ficha propuesto por Fogón · indicador de cobertura de fichas · grafo de recálculo · ficha impresa con QR a la versión viva.
 
 **Y su capa inteligente.** El bloque **«qué ha cambiado y por qué»**: cuánto ha subido el coste desde una fecha, qué ingrediente lo ha movido, a cuántos platos afecta una subida y cuál es el impacto máximo en puntos de margen.
+
+**Y lo que le pasó M8** ([decisión 0078](../decisiones/0078-las-respuestas-de-m8.md)): **la desviación de los platos** —lo que se debía gastar según lo vendido y sus fichas, frente a lo gastado de verdad—, **la calibración** con estado «aprendiendo» hasta el tercer inventario, y **el food cost teórico** junto al real, con su brecha. En la pantalla de desviación que dejó M8.
 
 **Reglas críticas.** Escandallo por unidad de venta. Margen sobre base sin impuestos. **La ficha es dato estructurado, no texto.** Un plato sin ficha nunca bloquea nada. Los importes **no viajan al cliente** de un rol sin permiso de costes.
 
@@ -581,7 +587,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Todo se recalcula solo y solo lo afectado** (el grafo de recálculo): cambia un precio de compra → los escandallos que lo llevan; cambia una cantidad de la ficha → su escandallo; cambia el precio de la carta → su margen y su food cost; un plato nuevo puede nacer con ficha y después con escandallo.
 - **Estook calcula; la IA solo propone** coincidencias —«"Queso cheddar" de la ficha parece "Cheddar lonchas" del Almacén»— y **las vinculaciones definitivas se hacen por identificador y las confirma una persona**. Lo que se puede contar no se le pregunta a un modelo: cuesta uso y se equivoca.
 
-**Terminado cuando.** Se monta una carta entera sin tocar la base a mano; un cocinero abre la ficha **sin ver ningún importe**; y al subir un ingrediente solo se recalcula lo afectado.
+**Terminado cuando.** Se monta una carta entera sin tocar la base a mano; un cocinero abre la ficha **sin ver ningún importe**; al subir un ingrediente solo se recalcula lo afectado; y, con dos inventarios, la desviación de los platos sale explicada producto a producto, y un producto que se sirve de más deja de saltar tras el tercero.
 
 ### M10 · Carta, menús y análisis
 

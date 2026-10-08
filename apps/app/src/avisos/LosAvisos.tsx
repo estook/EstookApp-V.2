@@ -60,6 +60,10 @@ const ICONO_DEL_AVISO: Readonly<Record<TipoDeAviso, Icono>> = {
   'fichaje.sin_apuntar': IconoReloj,
   // C2 (0075)
   'chat.confirmar': IconoChat,
+  // M8 (0078)
+  'inventario.toca': IconoAlmacen,
+  'inventario.contado': IconoAlmacen,
+  'inventario.recontar': IconoAlmacen,
 };
 
 const TRAMOS: readonly TramoDeAvisos[] = ['Hoy', 'Ayer', 'Esta semana', 'Antes'];

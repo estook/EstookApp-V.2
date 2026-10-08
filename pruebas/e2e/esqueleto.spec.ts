@@ -75,6 +75,10 @@ const CLAVE = 'estook en desarrollo';
 
 async function entrar(page: Page, correo: string) {
   await abrirSinQueSeCaiga(page, APP);
+  // Antes de recargar, que no quede nada pidiéndose: recargar con `como_se_entra` en
+  // camino lo corta, y Safari apunta ese corte como un error de la página («access
+  // control checks», lección 137). Lo provocaba la prueba, no la app (9-oct).
+  await page.waitForLoadState('networkidle');
 
   // Si venia una sesion de otra prueba, se tira: cada prueba entra limpia.
   await page.evaluate(() => {

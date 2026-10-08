@@ -11,8 +11,8 @@ import {
   jornadaDe,
   type MotivoDeSalida,
 } from '@estook/dominio';
-import { comoLista } from '../listas.ts';
 import { publicar } from '../../eventos/bandeja.ts';
+import { cerrarElInventario, guardarLoContado, type Cerrado } from '../inventario.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import {
@@ -167,11 +167,13 @@ export const apuntarEntrada = comando<EntradaApuntarEntrada, SalidaDeMovimiento>
       (entrada.caduca_el !== null && entrada.caduca_el !== undefined);
 
     if (traeLote) {
+      // Con lo que trae: es lo que le queda, y lo que se gasta primero si caduca antes
+      // (FEFO, M8 · 0078).
       const lotes = await contexto.sql<{ id: string }[]>`
-        insert into estook.lote (local_id, producto_id, codigo, caduca_el, recibido_el, es_ejemplo)
+        insert into estook.lote (local_id, producto_id, codigo, caduca_el, recibido_el, es_ejemplo, cantidad)
         values (
           ${producto.localId}, ${producto.id}, ${entrada.lote ?? null},
-          ${entrada.caduca_el ?? null}::date, current_date, ${producto.esEjemplo}
+          ${entrada.caduca_el ?? null}::date, current_date, ${producto.esEjemplo}, ${cuanto}
         )
         returning id
       `;
@@ -583,24 +585,6 @@ export const ajustarStock = comando<EntradaAjustarStock, SalidaAjustarStock>({
 
 // ── El recuento · «hemos hecho inventario, esto es lo que hay» ───────────────
 
-/**
- * La jornada de hoy en el local, que no es la fecha del calendario (regla 10).
- *
- * Lo mismo que hace el cierre de caja en su fichero. Se escribe otra vez aquí y no
- * se importa de allí a propósito: un comando de inventario no depende de uno de
- * servicio, y son cinco líneas que lo único que hacen es preguntarle al motor de
- * tiempo, que sí es el único dueño de la cuenta.
- */
-async function laJornadaDeEsteLocal(contexto: Contexto, localId: string): Promise<string> {
-  const filas = await contexto.sql<{ zona_horaria: string; hora_de_corte: string }[]>`
-    select zona_horaria, to_char(hora_de_corte, 'HH24:MI') as hora_de_corte
-      from estook.local where id = ${localId}
-  `;
-  const fila = filas[0];
-  if (!fila) throw new FalloDeAplicacion('local_ajeno');
-  return jornadaDe(contexto.ahora, fila.zona_horaria, horaDeCorte(fila.hora_de_corte));
-}
-
 export const entradaCerrarRecuento = z
   .object({
     /**
@@ -615,6 +599,9 @@ export const entradaCerrarRecuento = z
             producto_id: z.string().uuid(),
             /** Lo que hay **de verdad**, no la diferencia. Cero vale. */
             hay: z.number().min(0).max(10_000_000),
+            /** Si se contó en cajas y sueltas, cómo (M8 · 0078). Solo para leerlo. */
+            formatos: z.number().min(0).max(1_000_000).nullable().optional(),
+            sueltas: z.number().min(0).max(10_000_000).nullable().optional(),
           })
           .strict(),
       )
@@ -630,23 +617,11 @@ export const entradaCerrarRecuento = z
 
 export type EntradaCerrarRecuento = z.infer<typeof entradaCerrarRecuento>;
 
-export interface SalidaCerrarRecuento {
-  readonly fechaOperativa: string;
-  /** Cuántos productos se han tocado de verdad: los que no cuadraban. */
-  readonly corregidos: number;
-  /** Cuántos ya cuadraban. No se apunta nada de ellos: un cero no es un movimiento. */
-  readonly yaCuadraban: number;
-  /** Cuántos se han puesto a cero por no estar en la lista. */
-  readonly vaciados: number;
-  /** Lo que más bailaba, para poder mirarlo. Los diez primeros. */
-  readonly loQueMasBaila: readonly {
-    readonly productoId: string;
-    readonly producto: string;
-    readonly decia: number;
-    readonly hay: number;
-    readonly unidadDeUso: string;
-  }[];
-}
+/**
+ * Lo que dice un inventario cerrado: cuántos se corrigieron, cuántos ya cuadraban,
+ * cuántos se vaciaron y los diez que más bailaban (`../inventario.ts`).
+ */
+export type SalidaCerrarRecuento = Cerrado & { readonly inventarioId: string };
 
 /**
  * Cerrar un recuento.
@@ -679,131 +654,26 @@ export const cerrarRecuento = comando<EntradaCerrarRecuento, SalidaCerrarRecuent
   exige: 'accion.cerrar_recuento',
 
   async ejecutar(contexto, entrada) {
-    const localId = elLocalDeLaSesion(contexto);
-    const organizacionId = laOrganizacionDeLaSesion(contexto);
-    const loQueFalta = entrada.lo_que_falta ?? 'dejarlo';
-
-    const baila: {
-      productoId: string;
-      producto: string;
-      decia: number;
-      hay: number;
-      unidadDeUso: string;
-    }[] = [];
-    let corregidos = 0;
-    let yaCuadraban = 0;
-
-    // De una en una y en orden, que es como se apunta en un libro. El candado de
-    // `apuntar` es por producto (`pg_advisory_xact_lock`), así que dos personas
-    // contando a la vez no se pisan.
-    for (const linea of entrada.lineas) {
-      const producto = await elProductoBloqueado(contexto, linea.producto_id);
-      if (producto.localId !== localId) {
-        throw new FalloDeAplicacion('local_ajeno', {
-          porque: `«${producto.nombre}» no es de este local.`,
-        });
-      }
-
-      const hayAhora = await loQueHay(contexto, producto.id);
-      const diferencia = ajusteHasta(cantidad(hayAhora.cantidad), cantidad(linea.hay));
-
-      if (diferencia === null) {
-        yaCuadraban += 1;
-        continue;
-      }
-
-      await apuntar(contexto, producto, {
-        tipo: 'recuento',
-        cantidad: diferencia,
-        motivo: entrada.notas ?? 'Inventario',
-        origen: 'a_mano',
-        esEjemplo: producto.esEjemplo,
-      });
-
-      corregidos += 1;
-      baila.push({
-        productoId: producto.id,
-        producto: producto.nombre,
-        decia: hayAhora.cantidad,
-        hay: linea.hay,
-        unidadDeUso: producto.unidadDeUso,
-      });
-    }
-
-    // ── Y lo que no se ha contado, si se ha pedido vaciarlo ─────────────────
-    let vaciados = 0;
-    if (loQueFalta === 'a_cero') {
-      const contados = entrada.lineas.map((l) => l.producto_id);
-      const sobrantes = await contexto.sql<{ id: string }[]>`
-        select p.id::text as id
-          from estook.producto p
-          join estook.existencias e on e.producto_id = p.id
-         where p.local_id = ${localId}
-           and p.activo
-           and not p.es_ejemplo
-           and e.cantidad <> 0
-           and (${entrada.zona ?? null}::text is null
-                or p.zona::text = ${entrada.zona ?? null}::text)
-           and not (p.id = any (${comoLista(contados)}::text::uuid[]))
-         limit 500
-      `;
-
-      for (const fila of sobrantes) {
-        const producto = await elProductoBloqueado(contexto, fila.id);
-        const hayAhora = await loQueHay(contexto, producto.id);
-        const diferencia = ajusteHasta(cantidad(hayAhora.cantidad), cantidad(0));
-        if (diferencia === null) continue;
-
-        await apuntar(contexto, producto, {
-          tipo: 'recuento',
-          cantidad: diferencia,
-          motivo: 'Inventario · no estaba en lo contado',
-          origen: 'a_mano',
-          esEjemplo: producto.esEjemplo,
-        });
-        vaciados += 1;
-      }
-    }
-
-    const fechaOperativa = await laJornadaDeEsteLocal(contexto, localId);
-
-    await contexto.sql`
-      select estook.anotar(
-        ${organizacionId}::uuid, 'crear', 'recuento', ${contexto.correlacionId},
-        ${localId}::uuid, null,
-        ${JSON.stringify({ contados: entrada.lineas.length, corregidos, vaciados, zona: entrada.zona ?? null })}::text::jsonb,
-        ${entrada.notas ?? null}
-      )
-    `;
-
-    // Lo que escucha esto: la previsión de cada producto corregido, el valor de la
-    // cámara y —cuando llegue M8— la desviación del periodo, que es para lo que
-    // se cuenta de verdad.
-    await publicar(contexto.sql, {
-      tipo: 'inventario.recontado',
-      organizacionId,
-      localId,
-      datos: {
-        fechaOperativa,
-        contados: entrada.lineas.length,
-        corregidos,
-        vaciados,
-        zona: entrada.zona ?? null,
-      },
-      correlacionId: contexto.correlacionId,
+    // ── Contar y cerrar a la vez (M8 · 0078) ───────────────────────────────
+    //
+    // Quien puede cerrar puede hacerlo de una vez, como hasta hoy. Por debajo son los
+    // mismos dos pasos que cuando cuenta otro: se guarda lo contado con la foto del
+    // libro y se cierra al momento. Así hay una sola forma de cerrar, y el
+    // inventario queda con quién lo contó, cuándo y qué.
+    const { inventarioId } = await guardarLoContado(contexto, {
+      zona: entrada.zona ?? null,
+      lineas: entrada.lineas.map((l) => ({
+        productoId: l.producto_id,
+        hay: l.hay,
+        formatos: l.formatos ?? null,
+        sueltas: l.sueltas ?? null,
+      })),
+      notas: entrada.notas ?? null,
     });
-
-    return {
-      fechaOperativa,
-      corregidos,
-      yaCuadraban,
-      vaciados,
-      // Los diez que más bailan, de mayor a menor. Es lo que se mira después de
-      // contar: no los cien que cuadraban, los cinco que no.
-      loQueMasBaila: baila
-        .slice()
-        .sort((a, b) => Math.abs(b.hay - b.decia) - Math.abs(a.hay - a.decia))
-        .slice(0, 10),
-    };
+    const cerrado = await cerrarElInventario(contexto, inventarioId, {
+      loQueFalta: entrada.lo_que_falta ?? 'dejarlo',
+      notas: entrada.notas ?? null,
+    });
+    return { ...cerrado, inventarioId };
   },
 });

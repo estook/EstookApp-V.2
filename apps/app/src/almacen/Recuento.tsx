@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   NOMBRE_DE_LA_ZONA,
   NOMBRE_DE_LO_QUE_FALTA,
@@ -6,6 +7,7 @@ import {
   QUE_HAGO_CON_LO_QUE_FALTA,
   ZONAS,
   leerUnCsvDeRecuento,
+  loContadoEnUnidades,
   type QueHagoConLoQueFalta,
   type Zona,
 } from '@estook/dominio';
@@ -35,57 +37,71 @@ import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { conUnidadDeUso, type MisProductos, type ProductoEnLista } from './contrato.ts';
+import {
+  imprimirLaHoja,
+  nombreDelEnvase,
+  numeroEscrito,
+  seCuentaEnCajas,
+  type Cerrado,
+  type LoEscrito,
+} from './contratoDelInventario.ts';
 
 /**
- * El recuento · «hemos contado la cámara, esto es lo que hay» (M7).
+ * Contar · «hemos contado la cámara, esto es lo que hay» (M7, y M8 · 0078).
  *
- * ── Lo que pidió Richi, y lo que significa ──────────────────────────────────
+ * ── Contar y cerrar, dos pasos (2A) ─────────────────────────────────────────
  *
- * «Que se pueda subir foto o archivo del inventario que hayan hecho para
- * actualizar todo. Es una opción que **cambia** todo el inventario, no suma: ya
- * han hecho el inventario y es el total que tienen.»
+ * Cuenta quien lleve el almacén —el cocinero también— y **manda lo contado**; lo
+ * cierra quien tiene «Cerrar un inventario». Quien puede cerrar cuenta y cierra de
+ * una vez, como siempre. Y como lo hacen los programas de inventario serios:
  *
- * Eso es un recuento, y es la operación que le faltaba a Almacén desde M6. El
- * permiso —`accion.cerrar_recuento`— estaba en la matriz desde M1 **sin ninguna
- * pantalla detrás**: siete módulos con la promesa rota.
- *
- * ── Las tres decisiones de esta pantalla ────────────────────────────────────
- *
- *   1. **No se rellena con lo que dice el libro.** Salen en blanco, y debajo, en
- *      pequeño, lo que decía. Poner la cifra de antes dentro de la casilla es
- *      pedirle a alguien que confirme un número mirándolo, y entonces el recuento
- *      no cuenta nada: solo confirma lo que ya había.
- *   2. **Una zona cada vez.** Se cuenta la cámara un día y la barra otro, que es
- *      como se hace de verdad, y además así ninguna vuelta pasa de doscientos
- *      productos.
- *   3. **Lo que no se cuenta no se toca**, salvo que se diga a propósito. Y
- *      entonces se avisa de cuántos se van a vaciar antes de tocar nada.
+ *   1. **Se cuenta a ciegas.** Quien no cierra no ve lo que dice el libro: un número
+ *      a la vista se confirma sin mirar, y entonces el inventario no cuenta nada.
+ *      Quien cierra sí lo ve, en pequeño y debajo, con la diferencia al momento.
+ *   2. **Como está en la estantería**: «2 cajas y 3 sueltas», y Estook hace la cuenta.
+ *   3. **Lo contado se guarda en el móvil** mientras se cuenta: en la cámara sin
+ *      señal, o si se cierra la app, no se pierde. Para mandar sí hace falta señal.
+ *   4. **Una zona cada vez**, y lo que no se cuenta no se toca, salvo que quien
+ *      cierra lo diga a propósito.
  */
-export function Recuento() {
-  const { cliente, permisos } = usarSesion();
-  const [zona, setZona] = useState<Zona | ''>('cocina');
+export function Recuento({
+  soloEstos = null,
+  alVolver,
+}: {
+  /** Los de «Toca contar»: solo se enseñan estos. */
+  readonly soloEstos?: readonly string[] | null;
+  readonly alVolver?: () => void;
+}) {
+  const { cliente, permisos, yo } = usarSesion();
+  const cache = useQueryClient();
+  const [zona, setZona] = useState<Zona | ''>(soloEstos === null ? 'cocina' : '');
   const [texto, setTexto] = useState('');
-  const [contado, setContado] = useState<Record<string, string>>({});
+  const borrador = `estook:inventario:${yo?.local?.id ?? 'sin-local'}:${soloEstos === null ? zona || 'todo' : 'toca'}`;
+  const [contado, setContado] = useState<Record<string, LoEscrito>>(() => leerElBorrador(borrador));
   const [loQueFalta, setLoQueFalta] = useState<QueHagoConLoQueFalta>('dejarlo');
   const [confirmando, setConfirmando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [noEntendidas, setNoEntendidas] = useState<readonly number[]>([]);
-  const [hecho, setHecho] = useState<{
-    corregidos: number;
-    yaCuadraban: number;
-    vaciados: number;
-    loQueMasBaila: readonly {
-      productoId: string;
-      producto: string;
-      decia: number;
-      hay: number;
-      unidadDeUso: string;
-    }[];
-  } | null>(null);
+  const [hecho, setHecho] = useState<Cerrado | null>(null);
+  const [mandado, setMandado] = useState<{ contados: number; avisados: number } | null>(null);
 
-  const puedeContar = puedeEditar(permisos, 'accion.cerrar_recuento');
+  const puedeContar = puedeEditar(permisos, 'app.almacen');
+  const puedeCerrar = puedeEditar(permisos, 'accion.cerrar_recuento');
   const alta = usarAccion('nuevo-producto');
+
+  // Lo contado, al móvil, cada vez que cambia: si se va la señal no se pierde nada.
+  useEffect(() => {
+    guardarElBorrador(borrador, contado);
+  }, [borrador, contado]);
+
+  /** Otra zona, con lo que se hubiera quedado contado de ella en el móvil. */
+  function aOtraZona(nueva: Zona | '') {
+    setZona(nueva);
+    setContado(
+      leerElBorrador(`estook:inventario:${yo?.local?.id ?? 'sin-local'}:${nueva || 'todo'}`),
+    );
+  }
 
   const lista = usarLectura<MisProductos>('mis_productos', {
     ...(zona === '' ? {} : { zona }),
@@ -96,8 +112,8 @@ export function Recuento() {
   /**
    * El lector (entrega L): «escanear suma uno; escanear y teclear, pone la cantidad».
    * Con la cámara, cada lectura suma uno y dice cuántos van. Con un lector de mano,
-   * suma uno y deja el cursor en su casilla con el número marcado: lo que se teclee
-   * después, lo sustituye. Pita y vibra distinto si el código no es de esta zona.
+   * suma uno y deja el cursor en su casilla con el número marcado. En lo que se
+   * cuenta en cajas, lo leído son sueltas.
    */
   const [escaneando, setEscaneando] = useState(false);
   const [ultimo, setUltimo] = useState<string | null>(null);
@@ -110,13 +126,14 @@ export function Recuento() {
       return;
     }
     pitar(true);
-    const antes = Number((contado[suyo.id] ?? '').replace(',', '.'));
-    const van = (Number.isFinite(antes) ? antes : 0) + 1;
-    setContado((todo) => ({ ...todo, [suyo.id]: String(van) }));
+    const campo = seCuentaEnCajas(suyo) ? 'sueltas' : 'hay';
+    const antes = numeroEscrito(contado[suyo.id]?.[campo]) ?? 0;
+    const van = antes + 1;
+    setContado((todo) => ({ ...todo, [suyo.id]: { ...todo[suyo.id], [campo]: String(van) } }));
     setUltimo(`${suyo.nombre} · ${conUnidadDeUso(van, suyo.unidadDeUso)}`);
     if (conElCursor) {
       window.setTimeout(() => {
-        const casilla = document.getElementById(`contado-${suyo.id}`);
+        const casilla = document.getElementById(`contado-${suyo.id}-${campo}`);
         if (casilla instanceof HTMLInputElement) {
           casilla.scrollIntoView({ block: 'center' });
           casilla.focus();
@@ -137,8 +154,8 @@ export function Recuento() {
           compacto
           dibujo="candado"
           titulo="Esto no lo llevas tú"
-          frase="Contar la cámara y corregir lo que dice el libro lo hace quien responde de lo que falta."
-          sinAccionPorque="Tu acceso permite mirar y apuntar, no cerrar un inventario."
+          frase="Contar la cámara lo hace quien lleva el almacén."
+          sinAccionPorque="Tu acceso no incluye el almacén."
         />
       </Tarjeta>
     );
@@ -155,84 +172,125 @@ export function Recuento() {
     );
   }
 
+  const deLaLista =
+    soloEstos === null ? datos.productos : datos.productos.filter((p) => soloEstos.includes(p.id));
   const buscado = texto.trim().toLowerCase();
-  const productos = datos.productos.filter(
+  const productos = deLaLista.filter(
     (p) => buscado === '' || p.nombre.toLowerCase().includes(buscado),
   );
 
-  const lineas = Object.entries(contado)
-    .map(([productoId, escrito]) => ({ productoId, hay: Number(escrito.replace(',', '.')) }))
-    .filter((l) => l.hay >= 0 && Number.isFinite(l.hay) && contado[l.productoId]?.trim() !== '');
+  const lineas = deLaLista.flatMap((p) => {
+    const hay = cuantoHay(p, contado[p.id]);
+    if (hay === null) return [];
+    const escrito = contado[p.id];
+    return [
+      {
+        producto: p,
+        hay,
+        formatos: seCuentaEnCajas(p) ? numeroEscrito(escrito?.formatos) : null,
+        sueltas: seCuentaEnCajas(p) ? numeroEscrito(escrito?.sueltas) : null,
+      },
+    ];
+  });
 
-  /** Los que se han contado y no cuadran con lo que decía el libro. */
-  const queNoCuadran = lineas.filter((l) => {
-    const suyo = datos.productos.find((p) => p.id === l.productoId);
-    return suyo !== undefined && suyo.cantidad !== l.hay;
-  }).length;
+  /** Los contados que no cuadran: solo lo sabe quien puede ver el libro. */
+  const queNoCuadran = lineas.filter((l) => l.producto.cantidad !== l.hay).length;
 
-  /** Cuántos se vaciarían, si se ha pedido vaciar lo no contado. */
   const seVaciarian =
-    loQueFalta === 'a_cero'
-      ? datos.productos.filter(
-          (p) => p.cantidad !== 0 && !lineas.some((l) => l.productoId === p.id),
-        ).length
+    puedeCerrar && loQueFalta === 'a_cero'
+      ? deLaLista.filter((p) => p.cantidad !== 0 && !lineas.some((l) => l.producto.id === p.id))
+          .length
       : 0;
 
   function leerElFichero(fichero: File, deEstos: readonly ProductoEnLista[]) {
     setError(null);
-    void fichero.text().then((texto) => {
-      const leido = leerUnCsvDeRecuento(texto);
-      const puesto: Record<string, string> = { ...contado };
-
-      for (const linea of leido.lineas) {
-        // Se empareja por nombre sin acentos o por código de barras, que es lo
-        // que trae cualquier hoja de cálculo. Lo que no encaja con ningún
-        // producto **se dice**, no se traga.
+    void fichero.text().then((leido) => {
+      const lo = leerUnCsvDeRecuento(leido);
+      const puesto: Record<string, LoEscrito> = { ...contado };
+      for (const linea of lo.lineas) {
+        // Se empareja por nombre o por código de barras; lo que no encaja se dice.
         const suyo = deEstos.find(
           (p) =>
             p.nombre.toLowerCase() === linea.cual.toLowerCase() || p.codigoDeBarras === linea.cual,
         );
         if (suyo === undefined) continue;
-        puesto[suyo.id] = String(linea.hay);
+        puesto[suyo.id] = { hay: String(linea.hay) };
       }
-
       setContado(puesto);
-      setNoEntendidas(leido.noEntendidas.map((n) => n.fila));
+      setNoEntendidas(lo.noEntendidas.map((n) => n.fila));
     });
   }
 
-  async function cerrar() {
+  async function terminar() {
     setGuardando(true);
     setError(null);
+    const lineasQueSeMandan = lineas.map((l) => ({
+      producto_id: l.producto.id,
+      hay: l.hay,
+      ...(l.formatos === null && l.sueltas === null
+        ? {}
+        : { formatos: l.formatos ?? 0, sueltas: l.sueltas ?? 0 }),
+    }));
 
-    const respuesta = await cliente.ejecutar<{
-      corregidos: number;
-      yaCuadraban: number;
-      vaciados: number;
-      loQueMasBaila: readonly {
-        productoId: string;
-        producto: string;
-        decia: number;
-        hay: number;
-        unidadDeUso: string;
-      }[];
-    }>('cerrar_recuento', {
-      lineas: lineas.map((l) => ({ producto_id: l.productoId, hay: l.hay })),
-      lo_que_falta: loQueFalta,
-      ...(zona === '' ? {} : { zona }),
-    });
-
-    setGuardando(false);
-    setConfirmando(false);
-
-    if (!respuesta.ok) {
-      setError(respuesta.error);
-      return;
+    if (puedeCerrar) {
+      const respuesta = await cliente.ejecutar<Cerrado>('cerrar_recuento', {
+        lineas: lineasQueSeMandan,
+        lo_que_falta: loQueFalta,
+        ...(zona === '' ? {} : { zona }),
+      });
+      setGuardando(false);
+      setConfirmando(false);
+      if (!respuesta.ok) {
+        setError(respuesta.error);
+        return;
+      }
+      setHecho(respuesta.datos);
+    } else {
+      const respuesta = await cliente.ejecutar<{ contados: number; avisados: number }>(
+        'enviar_lo_contado',
+        { lineas: lineasQueSeMandan, ...(zona === '' ? {} : { zona }) },
+      );
+      setGuardando(false);
+      if (!respuesta.ok) {
+        setError(respuesta.error);
+        return;
+      }
+      setMandado(respuesta.datos);
     }
 
-    setHecho(respuesta.datos);
     setContado({});
-    await lista.refetch();
+    await cache.invalidateQueries({ queryKey: ['el_inventario'] });
+    await cache.invalidateQueries({ queryKey: ['mis_productos'] });
+    await cache.invalidateQueries({ queryKey: ['almacen_hoy'] });
+  }
+
+  if (mandado !== null) {
+    return (
+      <div className="flex flex-col gap-e4">
+        <Aviso tono="bien" titulo="Mandado" esNoticia>
+          {mandado.contados === 1
+            ? '1 producto contado'
+            : `${String(mandado.contados)} productos contados`}
+          . Lo cierra quien lleva el inventario
+          {mandado.avisados > 0 ? ': ya le ha llegado el aviso.' : '.'}
+        </Aviso>
+        <Botones>
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              setMandado(null);
+            }}
+          >
+            Contar otra zona
+          </Boton>
+          {alVolver !== undefined && (
+            <Boton tono="texto" onClick={alVolver}>
+              Volver
+            </Boton>
+          )}
+        </Botones>
+      </div>
+    );
   }
 
   if (hecho !== null) {
@@ -241,8 +299,9 @@ export function Recuento() {
         <Aviso tono="bien" titulo="Inventario cerrado" esNoticia>
           {hecho.corregidos === 0
             ? 'Cuadraba todo: no ha hecho falta corregir nada.'
-            : `${hecho.corregidos} ${hecho.corregidos === 1 ? 'producto corregido' : 'productos corregidos'}, ${hecho.yaCuadraban} que ya cuadraban.`}
-          {hecho.vaciados > 0 && ` Y ${hecho.vaciados} puestos a cero por no estar en lo contado.`}
+            : `${String(hecho.corregidos)} ${hecho.corregidos === 1 ? 'producto corregido' : 'productos corregidos'}, ${String(hecho.yaCuadraban)} que ya cuadraban.`}
+          {hecho.vaciados > 0 &&
+            ` Y ${String(hecho.vaciados)} puestos a cero por no estar en lo contado.`}
         </Aviso>
 
         {hecho.loQueMasBaila.length > 0 && (
@@ -276,7 +335,7 @@ export function Recuento() {
           </Tarjeta>
         )}
 
-        <div>
+        <Botones>
           <Boton
             tono="secundario"
             onClick={() => {
@@ -285,7 +344,12 @@ export function Recuento() {
           >
             Contar otra zona
           </Boton>
-        </div>
+          {alVolver !== undefined && (
+            <Boton tono="texto" onClick={alVolver}>
+              Volver
+            </Boton>
+          )}
+        </Botones>
       </div>
     );
   }
@@ -294,31 +358,24 @@ export function Recuento() {
     <div className="flex flex-col gap-e4">
       {error !== null && <ErrorEnCristiano error={error} />}
 
-      <Aviso tono="info" titulo="Esto cambia lo que hay, no lo suma">
-        Escribe lo que has contado de verdad y cada producto pasará a valer eso. La diferencia con
-        lo que decía el libro queda apuntada con tu nombre, que es la cifra que dice cuánto se va
-        sin apuntarse.
-      </Aviso>
-
       {/* ── Qué se cuenta ──────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-end gap-e3">
-        <div className="min-w-[12rem]">
-          <Selector
-            etiqueta="Qué estás contando"
-            ayuda="Una zona cada vez: se cuenta la cámara un día y la barra otro."
-            opciones={ZONAS.map((z) => ({ valor: z, texto: NOMBRE_DE_LA_ZONA[z] }))}
-            sinElegir="Todo"
-            value={zona}
-            onChange={(e) => {
-              setZona(e.currentTarget.value as Zona | '');
-              setContado({});
-            }}
-          />
-        </div>
-        <div className="min-w-[14rem] flex-1 max-w-[22rem]">
+        {soloEstos === null && (
+          <div className="min-w-[12rem]">
+            <Selector
+              etiqueta="Qué estás contando"
+              opciones={ZONAS.map((z) => ({ valor: z, texto: NOMBRE_DE_LA_ZONA[z] }))}
+              sinElegir="Todo"
+              value={zona}
+              onChange={(e) => {
+                aOtraZona(e.currentTarget.value as Zona | '');
+              }}
+            />
+          </div>
+        )}
+        <div className="min-w-[14rem] max-w-[22rem] flex-1">
           <Campo
             etiqueta="Buscar"
-            ayuda="Para ir al que estás contando sin bajar la lista."
             value={texto}
             delante={<IconoBuscar size={16} />}
             onChange={(e) => {
@@ -336,6 +393,25 @@ export function Recuento() {
         >
           Escanear
         </Boton>
+        <Boton
+          tono="texto"
+          icono={<IconoDocumento size={18} />}
+          onClick={() => {
+            imprimirLaHoja(
+              soloEstos === null
+                ? `Inventario · ${zona === '' ? 'todo' : NOMBRE_DE_LA_ZONA[zona].toLowerCase()}`
+                : 'Inventario · lo que toca contar',
+              deLaLista,
+            );
+          }}
+        >
+          Imprimir la hoja
+        </Boton>
+        {alVolver !== undefined && (
+          <Boton tono="texto" onClick={alVolver}>
+            Volver
+          </Boton>
+        )}
       </div>
 
       {escaneando && (
@@ -357,45 +433,22 @@ export function Recuento() {
         </p>
       )}
 
-      {/* ── O se sube el fichero ───────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-e3 rounded-medio border border-borde bg-fondo p-e3">
-        <span aria-hidden className="text-texto-tenue">
-          <IconoDocumento size={20} />
-        </span>
-        <p className="min-w-0 flex-1 text-secundario text-texto-suave">
-          <strong className="text-texto">¿Lo tienes en un fichero?</strong> Dos columnas: el
-          producto y cuánto hay. Se emparejan por nombre o por código de barras.
-        </p>
-        <label className="inline-flex min-h-toque cursor-pointer items-center rounded-medio border border-borde-fuerte bg-superficie px-e3 text-secundario font-medium hover:bg-fondo">
-          Subir el fichero
-          <input
-            type="file"
-            accept=".csv,.tsv,.txt,text/csv"
-            className="sr-only"
-            onChange={(e) => {
-              const fichero = e.currentTarget.files?.[0];
-              if (fichero !== undefined) leerElFichero(fichero, datos.productos);
-            }}
-          />
-        </label>
-        {/* Leer el recuento de una foto llega con Fogón (M22); el botón apagado que
-            había aquí se quitó en la entrega V (0045). */}
-      </div>
-
       {noEntendidas.length > 0 && (
         <Aviso tono="atencion" titulo="Hay filas que no he entendido">
           Las filas {noEntendidas.join(', ')} del fichero no traían un producto y una cantidad. El
-          resto está abajo: repásalo antes de cerrar.
+          resto está abajo: repásalo antes de terminar.
         </Aviso>
       )}
 
       {/* ── La lista ───────────────────────────────────────────────────── */}
       <Tarjeta
-        titulo={`${productos.length} ${productos.length === 1 ? 'producto' : 'productos'}`}
+        titulo={`${String(productos.length)} ${productos.length === 1 ? 'producto' : 'productos'}`}
         origen={
           lineas.length === 0
-            ? 'Escribe lo que has contado. Lo que dejes en blanco no se toca'
-            : `Llevas ${lineas.length} contados, ${queNoCuadran} que no cuadran`
+            ? 'Escribe lo que hay. Lo que dejes en blanco no se toca'
+            : puedeCerrar
+              ? `Llevas ${String(lineas.length)} contados, ${String(queNoCuadran)} que no cuadran`
+              : `Llevas ${String(lineas.length)} contados. Se guardan en el móvil hasta que los mandes`
         }
       >
         {productos.length === 0 ? (
@@ -409,8 +462,6 @@ export function Recuento() {
               }}
             />
           ) : zona !== '' ? (
-            // Una zona sin género —la limpieza, en un local que no la lleva— no es
-            // una cámara vacía: lo que resuelve es mirar las demás.
             <EstadoVacio
               compacto
               dibujo="buscar"
@@ -420,7 +471,7 @@ export function Recuento() {
                 <Boton
                   tono="secundario"
                   onClick={() => {
-                    setZona('');
+                    aOtraZona('');
                   }}
                 >
                   Contar todas las zonas
@@ -445,149 +496,236 @@ export function Recuento() {
               <LineaDeRecuento
                 key={p.id}
                 producto={p}
-                escrito={contado[p.id] ?? ''}
-                alEscribir={(valor) => {
-                  setContado((antes) => ({ ...antes, [p.id]: valor }));
+                escrito={contado[p.id] ?? {}}
+                aCiegas={!puedeCerrar}
+                alEscribir={(campo, valor) => {
+                  setContado((antes) => ({ ...antes, [p.id]: { ...antes[p.id], [campo]: valor } }));
                 }}
               />
             ))}
           </ul>
         )}
 
-        {datos.hayMas && (
+        {datos.hayMas && soloEstos === null && (
           <p className="mt-e3 text-secundario text-texto-suave">
-            Hay más de doscientos en esta zona. Cuenta estos y cierra; al volver saldrán los que
+            Hay más de doscientos en esta zona. Cuenta estos y termina; al volver saldrán los que
             falten.
           </p>
         )}
       </Tarjeta>
 
-      {/* ── Y lo que no se ha contado ──────────────────────────────────── */}
-      <Tarjeta titulo="Lo que no hayas contado">
-        <div
-          role="radiogroup"
-          aria-label="Lo que no hayas contado"
-          className="grid gap-e2 sm:grid-cols-2"
-        >
-          {QUE_HAGO_CON_LO_QUE_FALTA.map((cual) => {
-            const puesto = cual === loQueFalta;
-            return (
-              <button
-                key={cual}
-                type="button"
-                role="radio"
-                aria-checked={puesto}
-                onClick={() => {
-                  setLoQueFalta(cual);
-                }}
-                className={clases(
-                  'flex min-h-toque flex-col items-start gap-e1 rounded-medio border px-e3 py-e2 text-left transition-colors duration-rapido',
-                  puesto
-                    ? 'border-naranja bg-naranja-suave'
-                    : 'border-borde-fuerte bg-superficie hover:bg-fondo',
-                )}
-              >
-                <span className="text-cuerpo font-medium">{NOMBRE_DE_LO_QUE_FALTA[cual]}</span>
-                <span className="text-etiqueta text-texto-suave">{QUE_ES_LO_QUE_FALTA[cual]}</span>
-              </button>
-            );
-          })}
-        </div>
+      {/* ── O se sube el fichero ───────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-e3 rounded-medio border border-borde bg-fondo p-e3">
+        <p className="min-w-0 flex-1 text-secundario text-texto-suave">
+          <strong className="text-texto">¿Lo tienes en un fichero?</strong> Dos columnas: el
+          producto y cuánto hay.
+        </p>
+        <label className="inline-flex min-h-toque cursor-pointer items-center rounded-medio border border-borde-fuerte bg-superficie px-e3 text-secundario font-medium hover:bg-fondo">
+          Subir el fichero
+          <input
+            type="file"
+            accept=".csv,.tsv,.txt,text/csv"
+            className="sr-only"
+            onChange={(e) => {
+              const fichero = e.currentTarget.files?.[0];
+              if (fichero !== undefined) leerElFichero(fichero, deLaLista);
+            }}
+          />
+        </label>
+      </div>
 
-        {seVaciarian > 0 && (
-          <Aviso tono="atencion" titulo={`Se van a poner a cero ${seVaciarian}`}>
-            Son los productos {zona === '' ? '' : `de ${NOMBRE_DE_LA_ZONA[zona].toLowerCase()} `}
-            que tienen algo apuntado y que no has contado. Si solo has contado una parte, deja «
-            {NOMBRE_DE_LO_QUE_FALTA.dejarlo}».
-          </Aviso>
-        )}
-      </Tarjeta>
+      {/* ── Y lo que no se ha contado: solo quien cierra decide vaciarlo ── */}
+      {puedeCerrar && soloEstos === null && (
+        <Tarjeta titulo="Lo que no hayas contado">
+          <div
+            role="radiogroup"
+            aria-label="Lo que no hayas contado"
+            className="grid gap-e2 sm:grid-cols-2"
+          >
+            {QUE_HAGO_CON_LO_QUE_FALTA.map((cual) => {
+              const puesto = cual === loQueFalta;
+              return (
+                <button
+                  key={cual}
+                  type="button"
+                  role="radio"
+                  aria-checked={puesto}
+                  onClick={() => {
+                    setLoQueFalta(cual);
+                  }}
+                  className={clases(
+                    'flex min-h-toque flex-col items-start gap-e1 rounded-medio border px-e3 py-e2 text-left transition-colors duration-rapido',
+                    puesto
+                      ? 'border-naranja bg-naranja-suave'
+                      : 'border-borde-fuerte bg-superficie hover:bg-fondo',
+                  )}
+                >
+                  <span className="text-cuerpo font-medium">{NOMBRE_DE_LO_QUE_FALTA[cual]}</span>
+                  <span className="text-etiqueta text-texto-suave">
+                    {QUE_ES_LO_QUE_FALTA[cual]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {seVaciarian > 0 && (
+            <Aviso tono="atencion" titulo={`Se van a poner a cero ${String(seVaciarian)}`}>
+              Son los productos {zona === '' ? '' : `de ${NOMBRE_DE_LA_ZONA[zona].toLowerCase()} `}
+              que tienen algo apuntado y que no has contado. Si solo has contado una parte, deja «
+              {NOMBRE_DE_LO_QUE_FALTA.dejarlo}».
+            </Aviso>
+          )}
+        </Tarjeta>
+      )}
 
       <Botones>
         <Boton
           tono="principal"
           disabled={lineas.length === 0 || guardando}
           cargando={guardando}
-          textoCargando="Cerrando"
+          textoCargando={puedeCerrar ? 'Cerrando' : 'Mandando'}
           onClick={() => {
-            // Vaciar productos es de lo poco que no se deshace con un botón: son
-            // N movimientos en el libro. Se confirma enseñando cuántos.
+            // Vaciar productos es de lo poco que no se deshace con un botón: se
+            // confirma enseñando cuántos.
             if (seVaciarian > 0 && !confirmando) {
               setConfirmando(true);
               return;
             }
-            void cerrar();
+            void terminar();
           }}
         >
-          {/*
-            «Sí, cerrar» **solo cuando se ha preguntado algo**, que es cuando se
-            van a vaciar productos. Al revés —que es como salió primero— el botón
-            normal contesta que sí a una pregunta que nadie ha hecho.
-          */}
-          {confirmando ? 'Sí, cerrar el inventario' : 'Cerrar el inventario'}
+          {!puedeCerrar
+            ? 'Mandar lo contado'
+            : confirmando
+              ? 'Sí, cerrar el inventario'
+              : 'Cerrar el inventario'}
         </Boton>
       </Botones>
     </div>
   );
 }
 
+/** Lo que hay de un producto según lo escrito, en su unidad de uso. Nulo: sin contar. */
+function cuantoHay(producto: ProductoEnLista, escrito: LoEscrito | undefined): number | null {
+  if (escrito === undefined) return null;
+  if (seCuentaEnCajas(producto)) {
+    return loContadoEnUnidades(
+      numeroEscrito(escrito.formatos),
+      numeroEscrito(escrito.sueltas),
+      producto.factor,
+    );
+  }
+  return numeroEscrito(escrito.hay);
+}
+
+/** Lo contado que se quedó en el móvil, si lo hay. Nunca rompe: sin almacén, vacío. */
+function leerElBorrador(clave: string): Record<string, LoEscrito> {
+  try {
+    const guardado = window.localStorage.getItem(clave);
+    if (guardado === null) return {};
+    const leido: unknown = JSON.parse(guardado);
+    return typeof leido === 'object' && leido !== null ? (leido as Record<string, LoEscrito>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function guardarElBorrador(clave: string, contado: Record<string, LoEscrito>): void {
+  try {
+    if (Object.keys(contado).length === 0) window.localStorage.removeItem(clave);
+    else window.localStorage.setItem(clave, JSON.stringify(contado));
+  } catch {
+    // Sin almacén en el navegador se cuenta igual: solo no se guarda.
+  }
+}
+
 /**
- * Una línea: el producto, lo que decía el libro y la casilla de lo contado.
+ * Una línea: el producto y lo contado, en una casilla o en cajas y sueltas.
  *
- * Lo que decía va **debajo y en pequeño**, nunca dentro de la casilla: una cifra
- * puesta de antemano se confirma sin mirar, y entonces el recuento no cuenta nada.
- * Cuando lo escrito no cuadra, se dice la diferencia al momento —es el dato que
- * se viene a buscar— y en su color, con su signo delante para que se lea también
- * en blanco y negro.
+ * Quien cierra ve debajo, en pequeño, lo que decía el libro y la diferencia al
+ * momento; quien no cierra cuenta **a ciegas** (0078). Nunca va dentro de la casilla:
+ * una cifra puesta de antemano se confirma sin mirar.
  */
 function LineaDeRecuento({
   producto,
   escrito,
+  aCiegas,
   alEscribir,
 }: {
   readonly producto: ProductoEnLista;
-  readonly escrito: string;
-  readonly alEscribir: (valor: string) => void;
+  readonly escrito: LoEscrito;
+  readonly aCiegas: boolean;
+  readonly alEscribir: (campo: keyof LoEscrito, valor: string) => void;
 }) {
-  const numero = Number(escrito.replace(',', '.'));
-  const hayNumero = escrito.trim() !== '' && Number.isFinite(numero) && numero >= 0;
-  const diferencia = hayNumero ? numero - producto.cantidad : null;
+  const hay = cuantoHay(producto, escrito);
+  const diferencia = hay === null || aCiegas ? null : hay - producto.cantidad;
+  const enCajas = seCuentaEnCajas(producto);
 
   return (
     <li className="flex flex-wrap items-center gap-e3 py-e2">
-      {/* La foto, o su inicial: contando la cámara, se reconoce antes que se lee. */}
       <FotoDeProducto
         nombre={producto.nombre}
         categoria={producto.categoria}
         enlace={producto.miniatura}
       />
-      <span className="min-w-[10rem] flex-1">
+      <span className="min-w-[9rem] flex-1">
         <span className="block font-medium">{producto.nombre}</span>
         <span className="block text-etiqueta text-texto-tenue">
-          El libro dice {conUnidadDeUso(producto.cantidad, producto.unidadDeUso)}
-          {producto.formato === null ? '' : ` · ${producto.formato}`}
+          {aCiegas
+            ? (producto.formato ?? producto.unidadDeUso)
+            : `El libro dice ${conUnidadDeUso(producto.cantidad, producto.unidadDeUso)}${producto.formato === null ? '' : ` · ${producto.formato}`}`}
+          {enCajas && hay !== null && ` · ${conUnidadDeUso(hay, producto.unidadDeUso)}`}
         </span>
       </span>
 
-      {diferencia !== null && diferencia !== 0 && (
+      {diferencia !== null && Math.abs(diferencia) > 0.00001 && (
         <Etiqueta tono={diferencia < 0 ? 'mal' : 'bien'}>
           {diferencia > 0 ? '+' : '−'}
           {conUnidadDeUso(Math.abs(diferencia), producto.unidadDeUso)}
         </Etiqueta>
       )}
 
-      <span className="w-[9rem]">
-        <Campo
-          id={`contado-${producto.id}`}
-          etiqueta="Contado"
-          tipo="numero"
-          detras={producto.unidadDeUso}
-          value={escrito}
-          onChange={(e) => {
-            alEscribir(e.currentTarget.value);
-          }}
-        />
-      </span>
+      {enCajas ? (
+        <span className="flex gap-e2">
+          <span className="w-[6.5rem]">
+            <Campo
+              id={`contado-${producto.id}-formatos`}
+              etiqueta={nombreDelEnvase(producto.formato)}
+              tipo="numero"
+              value={escrito.formatos ?? ''}
+              onChange={(e) => {
+                alEscribir('formatos', e.currentTarget.value);
+              }}
+            />
+          </span>
+          <span className="w-[6.5rem]">
+            <Campo
+              id={`contado-${producto.id}-sueltas`}
+              etiqueta="Sueltas"
+              tipo="numero"
+              detras={producto.unidadDeUso}
+              value={escrito.sueltas ?? ''}
+              onChange={(e) => {
+                alEscribir('sueltas', e.currentTarget.value);
+              }}
+            />
+          </span>
+        </span>
+      ) : (
+        <span className="w-[9rem]">
+          <Campo
+            id={`contado-${producto.id}-hay`}
+            etiqueta="Contado"
+            tipo="numero"
+            detras={producto.unidadDeUso}
+            value={escrito.hay ?? ''}
+            onChange={(e) => {
+              alEscribir('hay', e.currentTarget.value);
+            }}
+          />
+        </span>
+      )}
     </li>
   );
 }

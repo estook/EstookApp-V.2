@@ -128,10 +128,13 @@ test('contando el inventario, cada lectura suma uno y deja el cursor en su casil
 
   await entrarEnLaApp(page, ROSA);
   await abrirSinQueSeCaiga(page, `${APP}#/almacen/movimientos/inventario`);
+  // Desde M8 el inventario abre su entrada —lo que toca, lo que espera a cerrarse— y
+  // contar es un botón (0078).
+  await page.getByRole('button', { name: 'Contar una zona' }).click();
   await expect(page.getByRole('button', { name: 'Escanear' })).toBeVisible();
 
   await leerConUnLector(page, codigo);
-  const casilla = page.locator(`#contado-${productoId}`);
+  const casilla = page.locator(`#contado-${productoId}-hay`);
   await expect(casilla).toHaveValue('1');
   await leerConUnLector(page, codigo);
   await expect(casilla).toHaveValue('2');

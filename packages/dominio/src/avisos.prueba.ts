@@ -19,6 +19,9 @@ import {
   laSubidaAvisa,
   laNotaBaja,
   avisoDeBajoMinimo,
+  avisoDeInventarioContado,
+  avisoDeRecontar,
+  avisoDeTocaContar,
   avisoDeNotaDeGoogle,
   avisoDeTocaPedir,
   numeroDeLaCampana,
@@ -233,6 +236,25 @@ describe('lo que avisa el reloj (R2 · 0053)', () => {
     );
   });
 
+  it('los de inventario (M8 · 0078): toca contar, alguien ha contado y vuelve a contarlo', () => {
+    expect(avisoDeTocaContar(['pulpo', 'solomillo'], 'Los que más valen.')).toEqual({
+      titulo: 'Toca contar 2 productos',
+      detalle: 'Pulpo y solomillo. Los que más valen.',
+    });
+    expect(avisoDeInventarioContado(['Marcos'], 'Cocina', 42, 3)).toEqual({
+      titulo: 'Marcos ha contado cocina',
+      detalle: '42 productos, 3 no cuadran. Míralo y ciérralo.',
+    });
+    expect(avisoDeInventarioContado([], null, 1, 0).titulo).toBe('Alguien ha contado el almacén');
+    expect(avisoDeInventarioContado(['Ana'], 'Sala', 1, 0).detalle).toBe(
+      '1 producto, y cuadra todo. Míralo y ciérralo.',
+    );
+    expect(avisoDeRecontar(['Pulpo'], 'Luis')).toEqual({
+      titulo: 'Vuelve a contar 1 producto',
+      detalle: 'Pulpo. Te lo pide Luis.',
+    });
+  });
+
   it('la nota avisa solo si baja lo que enseña Google, con su decimal', () => {
     expect(laNotaBaja(4.6, 4.5)).toBe(true);
     expect(laNotaBaja(4.5, 4.5)).toBe(false);
@@ -258,6 +280,8 @@ describe('los avisos al móvil (I · 0070)', () => {
       'pedido.no_llega',
       'fichaje.sin_apuntar',
       'chat.confirmar',
+      // M8 (0078): que vuelvas a contar algo, mientras sigues en la cámara.
+      'inventario.recontar',
     ]);
   });
 

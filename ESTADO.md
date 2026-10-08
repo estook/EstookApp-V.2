@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 7 de octubre de 2026 · **Antes de M8. C1 · Hablar y su repaso, en producción; C2 · Lo oficial, construido y en su pull request**
+Última actualización: 8 de octubre de 2026 · **Antes de M8. C · El chat, en producción; A3 · Vendedores, construido y en su pull request**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último.
 > **Nunca puede afirmar algo que no sea cierto en ese momento**, y **no pasa de 150 líneas**
@@ -14,26 +14,26 @@
 > | Quién ve qué                      | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                      |
 > | Qué desencadena cada cambio       | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                           |
 > | Estook TPV y la facturación       | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**           |
-> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (75)                                          |
+> | Por qué está hecho así            | [`docs/decisiones/`](docs/decisiones/LEEME.md) (76)                                          |
 > | Lo legal, y lo ya investigado     | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md) |
 > | Lo que cuesta cada local          | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                         |
 > | Lo que hizo cada entrega          | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                         |
-> | Lo aprendido fallando (151)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
+> | Lo aprendido fallando (154)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
 > | Los pasos de Richi                | [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)                                     |
 
 ---
 
-## 1 · Dónde estamos · producción leída el 7-oct, en solo lectura
+## 1 · Dónde estamos · producción leída el 7-oct por la tarde, en solo lectura
 
 |               |                                                                                                                                                                                                                                |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Terminado** | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2, **H · Horarios**, **I · La app instalable**, con sus repasos, el repaso del 3-oct y **C1 · Hablar** con su repaso               |
-| **En curso**  | **C2 · Lo oficial** ([0075](docs/decisiones/0075-las-respuestas-de-c2.md)), con la migración **0057**: construido y en su pull request. **Sin fusionar, migrar ni desplegar**. Después, **A3 · Vendedores**                    |
-| **`main`**    | Todo fusionado hasta la **#92** (7-oct): el repaso de C1, desplegado, y las respuestas de C2                                                                                                                                   |
-| **Base**      | Supabase, **56 de 56** migraciones. 91 tablas, todas con seguridad por filas. Con C2, 57 y 93                                                                                                                                  |
-| **API**       | Desplegada con el repaso de C1: **70 consultas y 151 comandos**, los avisos al móvil encendidos y el reloj latiendo. Con C2, 70 y **156**                                                                                      |
+| **Terminado** | **M0** a **M6½** · **M7** (las compras) · y de «antes de M8»: A1, E1, V, O, E2, L, A2, R1, R2, **H · Horarios**, **I · La app instalable**, con sus repasos, el repaso del 3-oct y **C · El chat** (C1, su repaso y C2)        |
+| **En curso**  | **A3 · Vendedores** ([0076](docs/decisiones/0076-a3-los-vendedores.md)), con la migración **0058**: construido y en su pull request (#94). **Sin fusionar, migrar ni desplegar**. Después, **A4**                              |
+| **`main`**    | Todo fusionado hasta la **#93** (7-oct): C2 · Lo oficial                                                                                                                                                                       |
+| **Base**      | Supabase, **57 de 57** migraciones (C2 aplicada). **93 tablas**, todas con seguridad por filas. Con A3, 58 y 96                                                                                                                |
+| **API**       | Desplegada con C2: **70 consultas y 156 comandos**, los avisos al móvil encendidos y el reloj latiendo (leído el 7-oct, 14:07). Con A3, **73 y 162**                                                                           |
 | **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                              |
-| **Pruebas**   | **1.644** unitarias y de base con C2, en verde; **602** de pantalla en local (y Safari en GitHub); las de fechas, en `pnpm prueba:semana`                                                                                      |
+| **Pruebas**   | **1.678** unitarias y de base con A3, en verde; **610** de pantalla en local (y Safari en GitHub); las de fechas, en `pnpm prueba:semana`                                                                                      |
 | **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md), y el chat adelantado en la [0067](docs/decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md))
@@ -49,22 +49,20 @@ DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → 
 
 **I, en producción e instalada por Richi** ([0070](docs/decisiones/0070-la-app-instalable.md), plan en [`docs/i-la-app-instalable.md`](docs/i-la-app-instalable.md)): Estook en la pantalla de inicio, **fichar y apuntar mermas sin señal** (también en el aparato del local, con el PIN cifrado), lo último que se vio sin conexión, y **los avisos al móvil**, que cada uno elige qué y cuándo. **No suma dinero** y no hace falta cuenta de Apple ni de Google; los **dos secretos VAPID** los puso Richi.
 
-**C1 · Hablar, en producción** desde el 6-oct ([0073](docs/decisiones/0073-c1-hablar.md), plan en [`docs/c-el-chat.md`](docs/c-el-chat.md)), **con su repaso** (#91, [0074](docs/decisiones/0074-el-repaso-de-c1.md)): canales y privados (que ni el dueño ve); texto, fotos, documentos y notas de voz; leído siempre a la vista; el mensaje sale al momento; **al segundo** y **en el móvil**, en tu turno. **Cero euros al mes.**
+**C1 · Hablar, en producción** desde el 6-oct ([0073](docs/decisiones/0073-c1-hablar.md), plan en [`docs/c-el-chat.md`](docs/c-el-chat.md)), **con su repaso** (#91, [0074](docs/decisiones/0074-el-repaso-de-c1.md)): canales y privados (que ni el dueño ve); texto, fotos, documentos y notas de voz; leído siempre a la vista; el mensaje sale al momento; **al segundo** y **en el móvil**, en tu turno. **Cero euros al mes.** Y **C2 · Lo oficial**, desde el 7-oct ([0075](docs/decisiones/0075-las-respuestas-de-c2.md)): de fábrica solo «Todo el equipo» («Cocina» y «Sala» se quitan: estaban vacías), los canales los crean **el gerente y los jefes** y se renombran y borran; **tres fijados** por canal; **«Confirmar que lo he leído»** con quién falta y un recordatorio al empezar su siguiente turno; **«Al chat»** en productos y pedidos; al publicar el horario, **«¿Avisar en Todo el equipo?»**; y **el correo del chat** a quien no tiene móvil. **El chat no traduce, nunca.**
 
-**C2 · Lo oficial, construido** ([0075](docs/decisiones/0075-las-respuestas-de-c2.md)): de fábrica solo «Todo el equipo» («Cocina» y «Sala» se quitan: estaban vacías), los canales los crean **el gerente y los jefes** y se renombran y borran; **tres fijados** por canal; **«Confirmar que lo he leído»** con quién falta y un recordatorio al empezar su siguiente turno; **«Al chat»** en productos y pedidos; al publicar el horario, **«¿Avisar en Todo el equipo?»**; y **el correo del chat** a quien no tiene móvil. **El chat no traduce, nunca.**
+**A3 · Vendedores, construido** ([0076](docs/decisiones/0076-a3-los-vendedores.md), plan en [`a3-vendedores.md`](docs/a3-vendedores.md)): el vendedor es **una ficha del admin y no entra en Estook**; sus códigos, con **enlace y QR**; quien llega por el enlace ve el descuento y se registra **con el código ya escrito** (si no, la casilla); cada cliente dice **con quién y por dónde llegó**; cada código puede dar **un descuento del primer cobro mensual**; y las **cifras de cada vendedor**. **Las comisiones se pactan fuera.** El código **no se guarda en el navegador**: no hace falta aviso de cookies.
 
-### Lo que todavía NO está en la app
-
-Para que nadie dé por hecho lo que solo está escrito:
+### Lo que todavía NO está en la app (para que nadie dé por hecho lo que solo está escrito)
 
 - **Estook TPV, Estook Link, la facturación, Fogón, los escandallos, la carta por platos y el APPCC**: escritos, sin construir. Cada uno dice su módulo en el Plan.
-- **C2 no está en producción** hasta que Richi fusione, migre (0057) y despliegue. **El chat no traduce, nunca**; llamadas, un canal de toda la cadena y hablar con el proveedor, tampoco.
+- **Del chat**, llamadas, un canal de toda la cadena y hablar con el proveedor. **Del admin**, A3 sin fusionar y el tablero de ventas (A4).
 - **Del horario, lo que no entra en H**: que Fogón lo proponga (M22), cambiar turnos entre compañeros y vacaciones con saldo (M13) y las vistas de mes y día (M14). **Unir dos personas** que resulten ser la misma, con M13.
 - **Sin conexión, solo fichar y apuntar mermas**: pedidos, inventarios y recibir mercancía necesitan señal.
 - **Nadie ha pagado de verdad.** Un pago en modo prueba (Pizzeriacazzo, 26-sep).
 - **Nada se borra solo**: los plazos de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md) los aplicará M27. **Ni hay exportación completa del negocio.**
 - **Los textos legales de la web y los de `docs/legal/` son borradores**, sin revisar por un asesor.
-- **De las veinte mejoras, diecisiete en producción** (con I, la 14 y la 15); del admin, la puerta y los clientes (faltan A3 y A4); ni recuperar la contraseña por correo.
+- **De las veinte mejoras, diecisiete en producción** (con I, la 14 y la 15); del admin, la puerta y los clientes; ni recuperar la contraseña por correo.
 
 ### Lo que hay en producción
 
@@ -76,8 +74,9 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa)
 
 **Ahora, en este orden** (paso a paso en [`docs/pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)):
 
-1. **C2 · Lo oficial**: fusionar, `.\estook.cmd bd:migrar` (la 0057), desplegar la API, `bd:comprobar-api` (70 y 156) y **probarlo con alguien del equipo**: confirmar, fijar, «Al chat» y el aviso del horario.
-2. **Si no lo has hecho ya, montar y publicar una semana de verdad** en IKATZ, y mirar «Mi turno» en el móvil de alguien del equipo.
+1. **A3 · Vendedores** (#94): fusionar, `.\estook.cmd bd:migrar` (la 0058), desplegar la API, `bd:comprobar-api` (73 y 162) y **probarlo**: un vendedor, su código con descuento, y crear una cuenta de prueba entrando por su enlace.
+2. **Si no lo has hecho ya, probar C2 con alguien del equipo**: confirmar, fijar, «Al chat» y el aviso del horario (los pasos, en [`pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)).
+3. **Si no lo has hecho ya, montar y publicar una semana de verdad** en IKATZ, y mirar «Mi turno» en el móvil de alguien del equipo.
 
 **Con fecha o con condición:**
 
@@ -143,8 +142,8 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Con C2 en producción y probado, A3 · Vendedores** (los vendedores, sus códigos, `?ref=` en la web y de dónde llega cada cliente; [`panel-de-administracion.md`](docs/panel-de-administracion.md)), **empezando por su plan con preguntas de sí o no**. Después, A4 · Ventas del admin, y M8.
+**Con A3 en producción y probado, A4 · Ventas del admin** (el tablero y sus gráficas; [`panel-de-administracion.md`](docs/panel-de-administracion.md), capítulo 4), **empezando por su plan con preguntas explicadas**. Después, M8.
 
-**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: los siete de «Lo que decido yo» de C2, al final de [`c-el-chat.md`](docs/c-el-chat.md), como quitar «Cocina» y «Sala» porque estaban vacías, y los ocho de «Lo que decidí al construirlo» de la 0075, como que el recordatorio de confirmar sea un aviso de la campana y que el correo del chat no lleve el texto de los mensajes; los seis de «Lo que decidí al construirlo» de la [0074](docs/decisiones/0074-el-repaso-de-c1.md), como que sin red no salga ninguno hasta que salga el primero; los nueve de «Lo que decidí al construirlo» de la [0073](docs/decisiones/0073-c1-hablar.md), como que el toque al segundo vaya por un canal público con nombre secreto y sin el mensaje, o que en el modo cocina estrecho se recoja el buscador y no el chat; los cuatro de «Lo que decidí al construirlo» de la [0072](docs/decisiones/0072-el-repaso-del-3-oct.md), como que una merma no se confirme (no puede pasar de lo que hay) y que solo se anule lo de 31 días; los dieciséis de «Lo que decido yo» de [`c-el-chat.md`](docs/c-el-chat.md), como que el aviso de «hay algo nuevo» no lleve el mensaje dentro; los once de «Lo que decidí al construirlo» de la [0070](docs/decisiones/0070-la-app-instalable.md), como que en blanco el pedido no avise o que un 403 no borre el móvil; subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); que abrir el aparato para fichar cierre la sesión de quien lo abre; que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla); los seis de «Lo que decidí al construirlo» de la [0069](docs/decisiones/0069-el-horario.md), como que el correo del horario lleve lo suyo escrito y no un PDF; partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
+**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: los diez de «Lo que decido yo» de [`a3-vendedores.md`](docs/a3-vendedores.md) y los ocho de «Lo que decidí al construirlo» de la [0076](docs/decisiones/0076-a3-los-vendedores.md), como que el descuento no se cambie una vez puesto, que solo valga en el pago mensual o que con prueba se ponga al acabarla; los siete de «Lo que decido yo» de C2, al final de [`c-el-chat.md`](docs/c-el-chat.md), como quitar «Cocina» y «Sala» porque estaban vacías, y los ocho de «Lo que decidí al construirlo» de la 0075, como que el recordatorio de confirmar sea un aviso de la campana y que el correo del chat no lleve el texto de los mensajes; los seis de «Lo que decidí al construirlo» de la [0074](docs/decisiones/0074-el-repaso-de-c1.md), como que sin red no salga ninguno hasta que salga el primero; los nueve de «Lo que decidí al construirlo» de la [0073](docs/decisiones/0073-c1-hablar.md), como que el toque al segundo vaya por un canal público con nombre secreto y sin el mensaje, o que en el modo cocina estrecho se recoja el buscador y no el chat; los cuatro de «Lo que decidí al construirlo» de la [0072](docs/decisiones/0072-el-repaso-del-3-oct.md), como que una merma no se confirme (no puede pasar de lo que hay) y que solo se anule lo de 31 días; los dieciséis de «Lo que decido yo» de [`c-el-chat.md`](docs/c-el-chat.md), como que el aviso de «hay algo nuevo» no lleve el mensaje dentro; los once de «Lo que decidí al construirlo» de la [0070](docs/decisiones/0070-la-app-instalable.md), como que en blanco el pedido no avise o que un 403 no borre el móvil; subir Cadena a 89 € junto con Pro; los once puntos de «Lo que decido yo» de [`h-horarios.md`](docs/h-horarios.md); que abrir el aparato para fichar cierre la sesión de quien lo abre; que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla); los seis de «Lo que decidí al construirlo» de la [0069](docs/decisiones/0069-el-horario.md), como que el correo del horario lleve lo suyo escrito y no un PDF; partir M16 en dos; guardar el texto de la Evolución en `docs/historia/` en vez de borrarlo; el 10 % de límite de descuento del jefe de sala, de fábrica; los plazos entre corchetes de [`conservacion-de-datos.md`](docs/legal/conservacion-de-datos.md); y, del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
 
 **Lo que ESTADO llevaba hasta hoy** —las decisiones una a una, lo de cada entrega de E2 a R2 y la lista larga de lo que no se toca— está entero en [`docs/historia/ESTADO-hasta-el-30-sep-2026.md`](docs/historia/ESTADO-hasta-el-30-sep-2026.md), y lo que queda preparado para cada módulo, en [el mapa](docs/MAPA-de-modulos.md).

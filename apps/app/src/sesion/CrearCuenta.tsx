@@ -1,7 +1,12 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Aviso, Boton, Campo, ErrorEnCristiano, clases } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
-import { LARGO_MINIMO_DE_CLAVE, SEGUNDOS_ENTRE_CODIGOS } from '@estook/dominio';
+import {
+  LARGO_MINIMO_DE_CLAVE,
+  SEGUNDOS_ENTRE_CODIGOS,
+  elDescuentoEnPalabras,
+  type LlegadaDelEnlace,
+} from '@estook/dominio';
 import { elAparato } from '../datos/cliente.ts';
 import {
   BotonDeGoogle,
@@ -33,14 +38,25 @@ import { usarSesion } from './Sesion.tsx';
  */
 export function CrearCuenta({
   como,
+  llegada = {},
   alEntrar,
   avisoDeGoogle,
 }: {
   readonly como: ComoSeEntra | undefined;
+  /** Lo que trae el enlace por el que se llega: el código de vendedor, sobre todo (A3). */
+  readonly llegada?: LlegadaDelEnlace;
   readonly alEntrar: () => void;
   readonly avisoDeGoogle: ReactNode;
 }) {
   const { cliente, entrar } = usarSesion();
+
+  const [codigoDeVendedor, setCodigoDeVendedor] = useState(llegada.codigo ?? '');
+  // Lo que va con la cuenta: lo del enlace, con el código que haya en la casilla, que
+  // es el que manda (lo pudo cambiar o borrar).
+  const lasMarcas = sinElCodigo(llegada);
+  const conLaLlegada: LlegadaDelEnlace =
+    codigoDeVendedor.trim() === '' ? lasMarcas : { ...lasMarcas, codigo: codigoDeVendedor.trim() };
+  const hayLlegada = Object.keys(conLaLlegada).length > 0;
 
   const [negocio, setNegocio] = useState('');
   const [acepta, setAcepta] = useState(false);
@@ -73,6 +89,7 @@ export function CrearCuenta({
         intencion: 'crear',
         negocio: negocio.trim(),
         aceptaCondiciones: true,
+        ...(hayLlegada ? { llegada: conLaLlegada } : {}),
       });
     } catch {
       setYendoAGoogle(false);
@@ -126,6 +143,7 @@ export function CrearCuenta({
             correo: codigoPedido,
             codigo,
             ...(aparato === null ? {} : { aparato }),
+            ...(hayLlegada ? { llegada: conLaLlegada } : {}),
           });
           if (!respuesta.ok) return respuesta.error;
           await entrar(respuesta.datos.token);
@@ -175,6 +193,12 @@ export function CrearCuenta({
               }}
               ayuda="Como lo conocen tus clientes. Luego se puede cambiar."
               obligatorio
+            />
+
+            <CodigoDeVendedor
+              valor={codigoDeVendedor}
+              delEnlace={llegada.codigo !== undefined}
+              alCambiar={setCodigoDeVendedor}
             />
 
             <label className="flex items-start gap-e3 text-secundario">
@@ -306,6 +330,98 @@ export function CrearCuenta({
         </Boton>
       </div>
     </MarcoDeLaPuerta>
+  );
+}
+
+// ── El código de vendedor (A3 · 0076) ────────────────────────────────────────
+
+/** Lo que trae el enlace, sin el código: el que vale es el de la casilla. */
+function sinElCodigo({ codigo: _, ...marcas }: LlegadaDelEnlace): LlegadaDelEnlace {
+  return marcas;
+}
+
+/**
+ * La casilla del código de vendedor. **Plegada** en «¿Tienes un código de
+ * vendedor?», salvo que se llegue por su enlace: entonces, abierta y escrita. Se
+ * comprueba al dejar de escribir y dice lo que da; **un código que no vale no frena
+ * nada**: la cuenta se crea igual, sin él.
+ */
+function CodigoDeVendedor({
+  valor,
+  delEnlace,
+  alCambiar,
+}: {
+  readonly valor: string;
+  readonly delEnlace: boolean;
+  readonly alCambiar: (valor: string) => void;
+}) {
+  const { cliente } = usarSesion();
+  const [abierta, setAbierta] = useState(delEnlace);
+  const [como, setComo] = useState<
+    { readonly vale: true; readonly descuento: number } | { readonly vale: false } | null
+  >(null);
+
+  useEffect(() => {
+    const escrito = valor.trim();
+    setComo(null);
+    if (escrito === '') return;
+    let vivo = true;
+    // Al dejar de escribir, no en cada letra: cada comprobación va al servidor.
+    const espera = window.setTimeout(() => {
+      void cliente
+        .consultar<{ codigo: string; descuento: number }>('el_codigo_de_vendedor', {
+          codigo: escrito,
+        })
+        .then((respuesta) => {
+          if (!vivo) return;
+          setComo(
+            respuesta.ok ? { vale: true, descuento: respuesta.datos.descuento } : { vale: false },
+          );
+        });
+    }, 400);
+    return () => {
+      vivo = false;
+      window.clearTimeout(espera);
+    };
+  }, [valor, cliente]);
+
+  if (!abierta) {
+    return (
+      <div>
+        <Boton
+          tono="texto"
+          onClick={() => {
+            setAbierta(true);
+          }}
+        >
+          ¿Tienes un código de vendedor?
+        </Boton>
+      </div>
+    );
+  }
+
+  const descuento = como?.vale === true ? elDescuentoEnPalabras(como.descuento) : null;
+  return (
+    <Campo
+      etiqueta="Código de vendedor"
+      name="codigo_de_vendedor"
+      value={valor}
+      autoComplete="off"
+      autoCapitalize="characters"
+      onChange={(evento) => {
+        alCambiar(evento.target.value);
+      }}
+      {...(como?.vale === false
+        ? { error: 'Ese código no existe o ya no vale. Puedes crear la cuenta sin él.' }
+        : {
+            ayuda:
+              como?.vale === true
+                ? descuento === null
+                  ? 'Código correcto.'
+                  : `Código correcto: ${descuento.charAt(0).toLowerCase()}${descuento.slice(1)}.`
+                : 'Si te lo ha dado alguien de Estook. Es opcional.',
+          })}
+    />
   );
 }
 

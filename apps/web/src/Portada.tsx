@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { crearCliente } from '@estook/cliente-api';
+import { conLaLlegada, elDescuentoEnPalabras } from '@estook/dominio';
+import { laLlegadaDeAqui } from './laLlegada.ts';
 import { A_CREAR_CUENTA, A_ENTRAR, Marco } from './Marco.tsx';
 
 /**
@@ -38,29 +40,49 @@ const LO_QUE_HACE = [
 ] as const;
 
 export function Portada() {
+  const [llegada] = useState(laLlegadaDeAqui);
   // La oferta, si la API contesta. Sin API o sin respuesta, no se anuncia nada: la
   // portada no espera a nadie para pintarse.
   const [oferta, setOferta] = useState<Oferta | null>(null);
+  // Y si se llega con el código de un vendedor (A3), lo que da, si vale.
+  const [codigo, setCodigo] = useState<{ codigo: string; descuento: number } | null>(null);
   useEffect(() => {
     if (API === '') return;
     let vivo = true;
-    void crearCliente({ base: API })
-      .consultar<{ oferta: Oferta }>('como_se_entra')
-      .then((respuesta) => {
-        if (vivo && respuesta.ok) setOferta(respuesta.datos.oferta);
-      });
+    const api = crearCliente({ base: API });
+    void api.consultar<{ oferta: Oferta }>('como_se_entra').then((respuesta) => {
+      if (vivo && respuesta.ok) setOferta(respuesta.datos.oferta);
+    });
+    if (llegada.codigo !== undefined) {
+      void api
+        .consultar<{ codigo: string; descuento: number }>('el_codigo_de_vendedor', {
+          codigo: llegada.codigo,
+        })
+        .then((respuesta) => {
+          if (vivo && respuesta.ok) setCodigo(respuesta.datos);
+        });
+    }
     return () => {
       vivo = false;
     };
-  }, []);
+  }, [llegada.codigo]);
+
+  const descuento = codigo === null ? null : elDescuentoEnPalabras(codigo.descuento);
+  const aCrearCuenta = conLaLlegada(A_CREAR_CUENTA, llegada);
 
   return (
     <Marco>
       <main>
         <section className="mx-auto flex max-w-[48rem] flex-col items-center px-e4 py-e7 text-center">
-          {oferta?.activa === true && (
-            <p className="mb-e4 inline-flex rounded-redondo bg-naranja-suave px-e3 py-e1 text-secundario font-medium text-texto">
-              Prueba {oferta.dias} días gratis
+          {(oferta?.activa === true || descuento !== null) && (
+            <p className="mb-e4 inline-flex flex-wrap justify-center gap-x-e2 rounded-redondo bg-naranja-suave px-e3 py-e1 text-secundario font-medium text-texto">
+              {oferta?.activa === true && <span>Prueba {oferta.dias} días gratis</span>}
+              {descuento !== null && codigo !== null && (
+                <span>
+                  {oferta?.activa === true ? '· ' : ''}Con {codigo.codigo}:{' '}
+                  {descuento.charAt(0).toLowerCase() + descuento.slice(1)}
+                </span>
+              )}
             </p>
           )}
           <h1 className="text-[clamp(2rem,6vw,3.25rem)] font-semibold leading-tight">
@@ -72,13 +94,13 @@ export function Portada() {
           </p>
           <div className="mt-e6 flex w-full flex-col gap-e3 sm:w-auto sm:flex-row">
             <a
-              href={A_CREAR_CUENTA}
+              href={aCrearCuenta}
               className="inline-flex min-h-toque items-center justify-center rounded-medio bg-naranja px-e5 text-cuerpo font-semibold text-sobre-naranja hover:brightness-95"
             >
               {oferta?.activa === true ? 'Empezar la prueba' : 'Crear cuenta'}
             </a>
             <a
-              href={A_ENTRAR}
+              href={conLaLlegada(A_ENTRAR, llegada)}
               className="inline-flex min-h-toque items-center justify-center rounded-medio border border-borde-fuerte bg-superficie px-e5 text-cuerpo font-medium text-texto hover:bg-fondo"
             >
               Iniciar sesión

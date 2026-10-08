@@ -1,4 +1,8 @@
-import { NOMBRE_DE_LA_ACTIVIDAD, type ActividadDeCliente } from '@estook/dominio';
+import {
+  NOMBRE_DE_LA_ACTIVIDAD,
+  type ActividadDeCliente,
+  type OrigenDeLlegada,
+} from '@estook/dominio';
 
 /**
  * Lo que la API del admin dice de los clientes (A2 · 0041), como lo pinta la
@@ -35,6 +39,13 @@ export interface ClienteEnLista {
   readonly tarjeta: string | null;
   readonly conStripe: boolean;
   readonly stripe: { readonly cliente: string; readonly prueba: boolean } | null;
+  /** Con qué vendedor vino (A3), y con qué código. */
+  readonly vendedor: {
+    readonly id: string;
+    readonly nombre: string;
+    readonly codigo: string;
+  } | null;
+  readonly origen: OrigenDeLlegada;
 }
 
 export type Pestana = 'todos' | 'prueba' | 'pagando' | 'se_van' | 'baja';
@@ -117,6 +128,16 @@ export interface FichaDeCliente {
     readonly como: 'pendiente' | 'confirmado' | 'parado' | 'caducado';
   }[];
   readonly alertas: readonly string[];
+  readonly llegada: {
+    readonly fuente: string | null;
+    readonly medio: string | null;
+    readonly campana: string | null;
+    readonly web: string | null;
+    readonly descuento: number | null;
+    readonly descuentoPuestoEn: string | null;
+    readonly puestoPor: string | null;
+    readonly puestoEn: string | null;
+  } | null;
 }
 
 type Tono = 'bien' | 'info' | 'mal' | 'atencion' | 'neutro' | 'marca';

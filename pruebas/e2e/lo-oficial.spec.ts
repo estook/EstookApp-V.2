@@ -100,6 +100,11 @@ test('pedir que confirmen, fijarlo arriba, renombrar el canal y borrarlo', async
   ).toBeVisible();
 
   await page.getByRole('dialog').getByRole('button', { name: 'Borrar el canal' }).click();
+  // El segundo «Borrar el canal» es otro botón, el de confirmar: se espera a que salga.
+  // Sin esto, con la máquina cargada, el segundo toque caía en el primero otra vez.
+  await expect(
+    page.getByRole('dialog').getByText('Deja de verse y de sonar. Lo dicho se guarda.'),
+  ).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: 'Borrar el canal' }).click();
   await expect(page).toHaveURL(/#\/chat$/);
   await expect(page.getByRole('button', { name: new RegExp(`^${nombre} bis`) })).toHaveCount(0);

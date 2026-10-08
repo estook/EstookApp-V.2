@@ -9,7 +9,7 @@ import {
 } from '@estook/dominio';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { consulta, FalloDeAplicacion } from '../contrato.ts';
-import { comoEstaAhora, laSuscripcionDe } from '../pago.ts';
+import { comoEstaAhora, elDescuentoDe, laSuscripcionDe } from '../pago.ts';
 
 /**
  * La suscripción de tu organización (entrega E2 · decisión 0048): lo que enseñan
@@ -41,6 +41,11 @@ export interface MiSuscripcion {
   readonly pagoAbierto: boolean;
   /** Lo que pasará con un local más: el plan y la cuota nuevos. */
   readonly conUnLocalMas: { readonly plan: CodigoDePlan; readonly cuota: number | null } | null;
+  /**
+   * El descuento del primer mes del código con que llegó (A3 · 0076), mientras no se
+   * haya cobrado ese primer mes: antes de pagar, o en la prueba. Solo en el mensual.
+   */
+  readonly descuento: { readonly codigo: string; readonly porcentaje: number } | null;
 }
 
 export const miSuscripcion = consulta<Record<string, never>, MiSuscripcion>({
@@ -64,6 +69,10 @@ export const miSuscripcion = consulta<Record<string, never>, MiSuscripcion>({
       fila.plan === null || fila.plan === 'pausa' || fila.deLaCasa
         ? null
         : elPlanPorLosLocales(fila.plan, fila.localesActivos + 1);
+    const todaviaSinCobrar =
+      !fila.deLaCasa &&
+      (fila.stripeSuscripcion === null || (ahora.como === 'prueba' && fila.intervalo !== 'ano'));
+    const descuento = todaviaSinCobrar ? await elDescuentoDe(contexto, organizacionId) : null;
 
     return {
       como: ahora.como,
@@ -86,6 +95,8 @@ export const miSuscripcion = consulta<Record<string, never>, MiSuscripcion>({
         siguiente === null
           ? null
           : { plan: siguiente, cuota: laCuota(siguiente, intervalo, fila.localesActivos + 1) },
+      descuento:
+        descuento === null ? null : { codigo: descuento.codigo, porcentaje: descuento.porcentaje },
     };
   },
 });

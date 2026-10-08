@@ -320,6 +320,9 @@ describe('las puertas se cierran solas', () => {
         // I (0070) · prepararlo para cuando se caiga el wifi: con la misma llave, y
         // solo devuelve la pública con la que el aparato cifra el PIN.
         'preparar_el_aparato_sin_conexion',
+        // A3 (0076) · si un código de vendedor vale, para la casilla de crear cuenta, que
+        // todavía no es nadie. Solo dice el código y su descuento, no de quién es.
+        'el_codigo_de_vendedor',
       ].sort(),
     );
   });
@@ -384,6 +387,16 @@ describe('las puertas se cierran solas', () => {
         'admin_cambiar_el_correo',
         'admin_exportar_los_clientes',
         'admin_calcular_el_uso',
+        // A3 (0058) · los vendedores: la lista, la ficha, sus códigos y con quién vino
+        // cada cliente.
+        'admin_los_vendedores',
+        'admin_un_vendedor',
+        'admin_crear_vendedor',
+        'admin_cambiar_el_vendedor',
+        'admin_dar_de_baja_al_vendedor',
+        'admin_crear_un_codigo',
+        'admin_cerrar_un_codigo',
+        'admin_poner_el_vendedor',
       ].sort(),
     );
 

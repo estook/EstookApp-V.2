@@ -1,5 +1,5 @@
 /**
- * El QR de la carta, en sus tres formas (entrega O, punto 20 · decisión 0047).
+ * El QR de la carta, en sus tres formas (entrega O, punto 20 · decisión 0047), y desde A3\n * el de cada código de vendedor (0076): vive aquí para que lo usen la app y el admin.
  *
  * La librería (`uqr`, MIT, sin dependencias) **solo da la matriz**: los cuadros
  * negros y blancos. El dibujo lo hace esto, así que el QR sale igual en pantalla, en

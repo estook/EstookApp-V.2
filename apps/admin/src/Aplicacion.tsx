@@ -8,6 +8,7 @@ import { Administradores } from './pantallas/Administradores.tsx';
 import { Auditoria } from './pantallas/Auditoria.tsx';
 import { OfertaDePrueba } from './pantallas/Oferta.tsx';
 import { Clientes } from './pantallas/Clientes.tsx';
+import { Vendedores } from './pantallas/Vendedores.tsx';
 import {
   Entrar,
   EscribirElCodigo,
@@ -23,8 +24,8 @@ import { usarSesion } from './sesion/Sesion.tsx';
  * Hasta la 0041 esto era el catálogo del sistema de diseño, suelto y a la vista de
  * cualquiera. Ahora **todo va detrás de la puerta**: el catálogo es una sección
  * más, al lado de quién tiene acceso y de lo que se ha hecho. Los clientes llegaron
- * con A2 y son lo primero que se ve; los vendedores y las ventas llegan con A3 y A4
- * (`docs/panel-de-administracion.md`).
+ * con A2 y son lo primero que se ve; los vendedores, con A3 (0076); las ventas llegan
+ * con A4 (`docs/panel-de-administracion.md`).
  *
  * El proveedor de deshacer está aquí y no dentro de una pantalla porque la barra
  * vive en la raíz: si estuviera dentro, navegar se la llevaría.
@@ -76,6 +77,7 @@ function LaPuerta(props: AplicacionProps) {
 
 const SECCIONES = [
   { id: 'clientes', nombre: 'Clientes' },
+  { id: 'vendedores', nombre: 'Vendedores' },
   { id: 'administradores', nombre: 'Administradores' },
   { id: 'oferta', nombre: 'Oferta' },
   { id: 'auditoria', nombre: 'Auditoría' },
@@ -97,7 +99,7 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
       */}
       <div className="border-b border-borde bg-superficie pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-[64rem] flex-wrap items-center gap-x-e4 px-e4 pt-e3 md:flex-nowrap md:py-e3">
-          <div className="flex items-center gap-e2">
+          <div className="flex shrink-0 items-center gap-e2">
             <Logo alto={24} />
             <span className="text-etiqueta font-medium uppercase tracking-wide text-texto-suave">
               Admin
@@ -109,7 +111,9 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
             className={[
               'order-last -mx-e4 flex w-[calc(100%+var(--spacing-e4)*2)] gap-e1 overflow-x-auto px-e4 py-e2',
               '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-              'md:order-none md:mx-0 md:w-auto md:overflow-visible md:p-0',
+              // En el ordenador, la tira se desliza también si no cabe: con seis secciones
+              // (A3 añadió Vendedores), a 1280 px se montaba sobre la marca y la sesión.
+              'md:order-none md:mx-0 md:w-auto md:min-w-0 md:flex-1 md:p-0',
             ].join(' ')}
           >
             {SECCIONES.map((s) => (
@@ -132,14 +136,16 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-e3">
-            {yo !== null && (
-              <span className="hidden text-secundario text-texto-suave sm:inline">
-                {yo.nombre} · sesión hasta las {soloLaHora(yo.caducaEn)}
-              </span>
-            )}
+          <div className="ml-auto flex shrink-0 items-center gap-e3">
+            {/*
+              Quién y hasta cuándo, al pasar por «Salir»: con seis secciones (A3) la línea
+              no cabía, y «Sistema de diseño» se quedaba fuera de la vista.
+            */}
             <Boton
               tono="texto"
+              {...(yo === null
+                ? {}
+                : { title: `${yo.nombre} · sesión hasta las ${soloLaHora(yo.caducaEn)}` })}
               onClick={() => {
                 void salir();
               }}
@@ -156,6 +162,8 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
         <main className="mx-auto max-w-[64rem] px-e4 py-e5">
           {seccion === 'clientes' ? (
             <Clientes />
+          ) : seccion === 'vendedores' ? (
+            <Vendedores />
           ) : seccion === 'administradores' ? (
             <Administradores />
           ) : seccion === 'oferta' ? (

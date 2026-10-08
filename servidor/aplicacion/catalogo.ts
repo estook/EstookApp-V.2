@@ -132,6 +132,7 @@ import {
 import {
   comoSeEntra,
   confirmarRegistro,
+  elCodigoDeVendedor,
   entrarConGoogle,
   pedirCodigoDeRegistro,
 } from './comandos/crear-cuenta.ts';
@@ -189,6 +190,15 @@ import {
 import { publicarLaCarta, quitarLaCarta, subirPaginaDeLaCarta } from './comandos/carta.ts';
 import { miSuscripcion } from './consultas/suscripcion.ts';
 import { adminLosClientes, adminUnCliente } from './consultas/clientes.ts';
+import { adminLosVendedores, adminUnVendedor } from './consultas/vendedores.ts';
+import {
+  adminCambiarElVendedor,
+  adminCerrarUnCodigo,
+  adminCrearUnCodigo,
+  adminCrearVendedor,
+  adminDarDeBajaAlVendedor,
+  adminPonerElVendedor,
+} from './comandos/vendedores.ts';
 import {
   adminAlargarLaPrueba,
   adminCalcularElUso,
@@ -256,6 +266,8 @@ export const catalogo = {
     [ofertaEnElAdmin.nombre]: ofertaEnElAdmin,
     // 0042 · lo que la pantalla de entrar necesita saber antes de que haya nadie.
     [comoSeEntra.nombre]: comoSeEntra,
+    // A3 (0076) · si un código de vendedor vale, para la casilla de crear cuenta.
+    [elCodigoDeVendedor.nombre]: elCodigoDeVendedor,
     [misLocales.nombre]: misLocales,
     [unLocal.nombre]: unLocal,
     // M3 · lo que necesitan el esqueleto y el buscador universal.
@@ -338,6 +350,9 @@ export const catalogo = {
     // A2 · los clientes, en el admin (migración 0049): la lista y la ficha de cada uno.
     [adminLosClientes.nombre]: adminLosClientes,
     [adminUnCliente.nombre]: adminUnCliente,
+    // A3 · los vendedores (migración 0058): la lista con sus cifras y la ficha de cada uno.
+    [adminLosVendedores.nombre]: adminLosVendedores,
+    [adminUnVendedor.nombre]: adminUnVendedor,
     // ── H1 (0068): los PDF, el registro para la Inspección y el aparato para fichar.
     // `el_aparato_para_fichar` va **sin sesión**: la lee el aparato del local, que
     // no es nadie, con su llave.
@@ -567,6 +582,17 @@ export const catalogo = {
     // Y los dos enlaces del correo, sin sesión: confirmar el nuevo o pararlo.
     [confirmarElCorreoNuevo.nombre]: confirmarElCorreoNuevo,
     [pararElCambioDeCorreo.nombre]: pararElCambioDeCorreo,
+
+    // ── A3 · Los vendedores (migración 0058) ──────────────────────────────
+    //
+    // Una ficha nuestra, sus códigos y con quién vino cada cliente. Lo que cierra
+    // algo pide motivo. Nada va a la auditoría del cliente: lo comercial es nuestro.
+    [adminCrearVendedor.nombre]: adminCrearVendedor,
+    [adminCambiarElVendedor.nombre]: adminCambiarElVendedor,
+    [adminDarDeBajaAlVendedor.nombre]: adminDarDeBajaAlVendedor,
+    [adminCrearUnCodigo.nombre]: adminCrearUnCodigo,
+    [adminCerrarUnCodigo.nombre]: adminCerrarUnCodigo,
+    [adminPonerElVendedor.nombre]: adminPonerElVendedor,
 
     // ── H1 · Personas y fichajes (0068) ────────────────────────────────────
     //

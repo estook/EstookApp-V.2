@@ -86,3 +86,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0073** | C1 · Hablar: el chat del equipo, al segundo y en el móvil                                                              |
 | **0074** | El repaso de C1: el mensaje al momento, el chat con el teclado, las notas de voz y el móvil que no se pierde           |
 | **0075** | Las respuestas de C2: solo «Todo el equipo» de fábrica, el chat no traduce nunca y el horario es un aviso              |
+| **0076** | A3 · los vendedores: traen el cliente y nada más, sin comisiones en Estook, con un descuento del primer mes            |

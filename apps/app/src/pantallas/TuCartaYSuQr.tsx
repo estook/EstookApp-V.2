@@ -11,18 +11,18 @@ import {
   elSvgDelQr,
   laMatriz,
   type MatrizDelQr,
-} from '../qr/elQr.ts';
+} from '@estook/ui/qr';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
- * Ajustes · Tu local · Tu carta y su QR (entrega O, punto 20 · decisión 0047).
+ * Ajustes Â· Tu local Â· Tu carta y su QR (entrega O, punto 20 Â· decisiÃ³n 0047).
  *
  * **El QR definitivo**: se imprime una vez y no cambia nunca, ni al renombrar el
- * local. Enseña la carta que haya subido el local (repaso del 25-sep, 0049), su
- * dirección, su teléfono y su horario de Google; el día que haya platos, **el mismo
- * QR ya impreso los enseña**.
+ * local. EnseÃ±a la carta que haya subido el local (repaso del 25-sep, 0049), su
+ * direcciÃ³n, su telÃ©fono y su horario de Google; el dÃ­a que haya platos, **el mismo
+ * QR ya impreso los enseÃ±a**.
  *
- * En tres formas, como se piden en una imprenta y en un bar: SVG (se amplía sin
+ * En tres formas, como se piden en una imprenta y en un bar: SVG (se amplÃ­a sin
  * perder nada, para la imprenta), PNG (para quien no sepa abrir un SVG) y el cartel
  * para imprimir en casa, con el nombre del local y lo que hay que hacer.
  */
@@ -58,7 +58,7 @@ export function TuCartaYSuQr() {
   const nombre = `qr-${comoNombreDeFichero(local.direccionDeLaCarta)}`;
 
   return (
-    <Tarjeta titulo="El QR de tu carta" origen="Imprímelo una vez: no cambia nunca">
+    <Tarjeta titulo="El QR de tu carta" origen="ImprÃ­melo una vez: no cambia nunca">
       <div className="flex flex-col gap-e4 sm:flex-row sm:items-start">
         <div className="mx-auto w-[180px] shrink-0 rounded-medio border border-borde bg-white p-e2 sm:mx-0">
           {matriz === null ? (
@@ -78,8 +78,8 @@ export function TuCartaYSuQr() {
             <p className="break-all font-semibold">{direccion.replace('https://', '')}</p>
           </div>
           <p className="text-secundario text-texto-suave">
-            Enseña tu carta —la que subas arriba—, dónde estás, tu teléfono y tu horario. Si cambias
-            la carta, este mismo QR enseña la nueva, sin volver a imprimir nada.
+            EnseÃ±a tu carta â€”la que subas arribaâ€”, dÃ³nde estÃ¡s, tu telÃ©fono y tu horario. Si
+            cambias la carta, este mismo QR enseÃ±a la nueva, sin volver a imprimir nada.
           </p>
 
           <div className="flex flex-wrap gap-e2">
@@ -134,7 +134,7 @@ export function TuCartaYSuQr() {
                   });
               }}
             >
-              {copiada ? 'Dirección copiada' : 'Copiar la dirección'}
+              {copiada ? 'DirecciÃ³n copiada' : 'Copiar la direcciÃ³n'}
             </Boton>
           </div>
         </div>
@@ -151,7 +151,7 @@ export function TuCartaYSuQr() {
             <div className="w-[110mm]">
               <DibujoDelQr matriz={matriz} etiqueta={`QR de la carta de ${local.nombre}`} />
             </div>
-            <p className="text-[20pt]">Escanea con la cámara del móvil</p>
+            <p className="text-[20pt]">Escanea con la cÃ¡mara del mÃ³vil</p>
             <p className="text-[12pt] text-[#555]">{direccion.replace('https://', '')}</p>
           </div>,
           document.body,

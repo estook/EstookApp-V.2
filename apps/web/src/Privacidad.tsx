@@ -24,6 +24,12 @@ export function Privacidad() {
             productos, proveedores, pedidos, inventarios, horarios, cierres de caja.
           </li>
           <li>
+            <strong>Cómo nos conociste:</strong> al crear la cuenta, el código de vendedor si lo
+            pones, las marcas de campaña del enlace por el que llegaste y el nombre de la web de la
+            que venías (por ejemplo, «google.es»), nunca la dirección entera. Viaja en el enlace y
+            no se guarda en tu navegador.
+          </li>
+          <li>
             <strong>Técnicos:</strong> el aparato y el navegador desde el que entras, la dirección
             IP y la hora, para cuidar la seguridad de tu cuenta y para que veas tus sesiones
             abiertas; y los errores de la aplicación, para arreglarlos.
@@ -39,6 +45,10 @@ export function Privacidad() {
           <li>
             Protegerla —limitar intentos, avisar de entradas nuevas, registrar quién hace qué— y
             arreglar fallos: es nuestro interés legítimo en que Estook sea seguro.
+          </li>
+          <li>
+            Saber qué vendedor o qué campaña te trajo, para aplicarte su descuento y saber qué nos
+            funciona: es nuestro interés legítimo en llevar nuestro negocio.
           </li>
           <li>Cumplir obligaciones legales, como las fiscales cuando haya facturas.</li>
         </Lista>

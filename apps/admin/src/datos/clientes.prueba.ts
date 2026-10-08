@@ -38,6 +38,8 @@ const UNO: ClienteEnLista = {
   tarjeta: null,
   conStripe: true,
   stripe: { cliente: 'cus_123', prueba: true },
+  vendedor: null,
+  origen: 'directo',
 };
 
 describe('el contrato, en una etiqueta', () => {

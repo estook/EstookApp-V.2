@@ -7,7 +7,10 @@ import {
   VUELTAS_DE_GOOGLE,
   codigoDeRegistro,
   comoCodigo,
+  comoCodigoDeVendedor,
+  elNombreDeLaWeb,
   esCodigoDeRegistro,
+  porDondeLlego,
   type OfertaDePrueba,
 } from '@estook/dominio';
 import { comprobar, derivar, porQueNoValeLaClave } from '../../dominio/secretos.ts';
@@ -78,6 +81,58 @@ export const comoSeEntra = consulta<Record<string, never>, ComoSeEntra>({
       conCorreo: contexto.correo !== null,
       oferta: await laOferta(contexto),
     };
+  },
+});
+
+// ── El código de vendedor y por dónde llega (A3 · 0076) ──────────────────────
+
+/**
+ * Lo que trae el enlace por el que se llega a crear cuenta: el código de vendedor,
+ * las marcas de campaña y **solo el nombre** de la web de la que se venía. Viaja con
+ * el registro, en la URL, y no se guarda en el navegador (0076, tres).
+ */
+export const laLlegada = z
+  .object({
+    codigo: z.string().trim().max(40).optional(),
+    fuente: z.string().trim().max(100).optional(),
+    medio: z.string().trim().max(100).optional(),
+    campana: z.string().trim().max(100).optional(),
+    web: z.string().trim().max(253).optional(),
+  })
+  .strict();
+
+export type LaLlegada = z.infer<typeof laLlegada>;
+
+export interface LoQueDaElCodigo {
+  readonly codigo: string;
+  /** El tanto por ciento del primer mes. Cero: el código vale, sin descuento. */
+  readonly descuento: number;
+}
+
+/**
+ * Si un código de vendedor vale, para la casilla de crear cuenta, **antes de que haya
+ * nadie**. Solo dice el código y su descuento: ni de qué vendedor es, ni su campaña.
+ */
+export const elCodigoDeVendedor = consulta<{ codigo: string }, LoQueDaElCodigo>({
+  nombre: 'el_codigo_de_vendedor',
+  entrada: z.object({ codigo: z.string().trim().min(1).max(40) }).strict(),
+  sinSesion: true,
+
+  async ejecutar(contexto, entrada) {
+    const codigo = comoCodigoDeVendedor(entrada.codigo);
+    const filas =
+      codigo === null
+        ? []
+        : await contexto.sql<{ codigo: string; descuento: number }[]>`
+            select codigo, descuento from plataforma.lo_que_da_el_codigo(${codigo})
+          `;
+    const fila = filas[0];
+    if (fila === undefined) {
+      throw new FalloDeAplicacion('no_existe', {
+        porque: 'Ese código no existe o ya no vale. Puedes crear la cuenta sin él.',
+      });
+    }
+    return { codigo: fila.codigo, descuento: fila.descuento };
   },
 });
 
@@ -205,6 +260,7 @@ export const entradaConfirmarRegistro = z
     correo: z.string().trim().toLowerCase().email().max(320),
     codigo: z.string().trim().min(1).max(12),
     aparato: elAparato.optional(),
+    llegada: laLlegada.optional(),
   })
   .strict();
 
@@ -255,6 +311,7 @@ export const confirmarRegistro = comando<EntradaConfirmarRegistro, SalidaEntrar>
       google: null,
       entroCon: 'contrasena',
       aparato: entrada.aparato,
+      llegada: entrada.llegada,
     });
   },
 });
@@ -272,6 +329,7 @@ export const entradaEntrarConGoogle = z
     negocio: z.string().trim().min(2).max(120).optional(),
     aceptaCondiciones: z.literal(true).optional(),
     aparato: elAparato.optional(),
+    llegada: laLlegada.optional(),
   })
   .strict();
 
@@ -385,6 +443,7 @@ export const entrarConGoogle = comando<EntradaEntrarConGoogle, SalidaEntrar>({
       google: persona.sujeto,
       entroCon: 'google',
       aparato: entrada.aparato,
+      llegada: entrada.llegada,
     });
   },
 });
@@ -402,6 +461,8 @@ interface CuentaNueva {
   readonly google: string | null;
   readonly entroCon: 'contrasena' | 'google';
   readonly aparato: z.infer<typeof elAparato> | undefined;
+  /** El código de vendedor y por dónde llegó (A3), si lo trae. */
+  readonly llegada: LaLlegada | undefined;
 }
 
 /**
@@ -448,6 +509,18 @@ async function crearLaCuentaYEntrar(
   const fila = creada[0];
   if (fila === undefined) throw new FalloDeAplicacion('fallo_nuestro');
 
+  // Con qué código de vendedor y por dónde llegó (0076), **en esta misma transacción**:
+  // la base solo lo deja apuntar mientras se crea la organización. Un código que no
+  // vale no para nada: la cuenta se crea igual, sin él.
+  const marcas = cuenta.llegada ?? {};
+  const [apuntada] = await contexto.sql<{ codigo: string | null }[]>`
+    select plataforma.apuntar_la_llegada(
+      ${fila.organizacion_id}::uuid, ${comoCodigoDeVendedor(marcas.codigo)},
+      ${porDondeLlego(marcas)}, ${marcas.fuente ?? null}, ${marcas.medio ?? null},
+      ${marcas.campana ?? null}, ${elNombreDeLaWeb(marcas.web)}
+    ) as codigo
+  `;
+
   if (oferta.activa) {
     await cambiarLaSuscripcion(
       contexto,
@@ -466,6 +539,7 @@ async function crearLaCuentaYEntrar(
       ${JSON.stringify({
         con: cuenta.entroCon,
         oferta: oferta.activa ? oferta.dias : null,
+        codigo: apuntada?.codigo ?? null,
       })}::text::jsonb,
       null
     )

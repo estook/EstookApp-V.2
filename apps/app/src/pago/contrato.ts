@@ -28,4 +28,6 @@ export interface MiSuscripcion {
   readonly conStripe: boolean;
   readonly pagoAbierto: boolean;
   readonly conUnLocalMas: { readonly plan: CodigoDePlan; readonly cuota: number | null } | null;
+  /** El descuento del primer mes del código con que llegó (A3), si todavía no se ha cobrado. */
+  readonly descuento: { readonly codigo: string; readonly porcentaje: number } | null;
 }

@@ -18,28 +18,28 @@ cómo se entra en los datos de un cliente.
 
 **En `estook.com/admin/` están la puerta (A1), los clientes (A2, [decisión
 0050](decisiones/0050-los-clientes-en-el-admin.md)) y la oferta de prueba (E1), en
-producción.** Vendedores y códigos, y ventas, **todavía no**: son A3 y A4. **El plan de A3,
-con sus preguntas, está en [`a3-vendedores.md`](a3-vendedores.md)**, y manda sobre el
-capítulo 3 donde los dos hablan de lo mismo. Actualizado el 7 de octubre de 2026.
+producción.** **Los vendedores (A3) están construidos en su pull request**
+([0076](decisiones/0076-a3-los-vendedores.md), plan en [`a3-vendedores.md`](a3-vendedores.md));
+las ventas, **todavía no**: son A4. Actualizado el 8 de octubre de 2026.
 
-| Qué                                                                                         | Cómo está                                                      |
-| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| Entrar con contraseña y segundo factor obligatorio, sesión de 8 h                           | **Hecho y en producción** (A1, #53)                            |
-| Sesión del admin y de la app separadas; el acceso se mira en cada petición                  | **Hecho y en producción**                                      |
-| Administradores: dar acceso total y quitarlo, con el código otra vez                        | **Hecho y en producción**                                      |
-| Auditoría del admin: quién, qué, cuándo, motivo y dirección IP                              | **Hecho y en producción** (el aparato se guarda, no se enseña) |
-| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | **Hecho y en producción** (rescatar llegó con el repaso, #54)  |
-| El catálogo del sistema de diseño detrás de la puerta                                       | **Hecho y en producción**                                      |
-| **Niveles** comercial, soporte y vendedor                                                   | Existen en la base; **no se pueden dar** hasta A3 y M26        |
-| **Clientes**: lista, filtros, búsqueda, CSV, ficha, contrato, actividad, notas, editar      | **Hecho en A2** (#74). Sin CIF: la organización no lo tiene    |
-| Copiar a la auditoría del cliente lo que el admin haga sobre él                             | **Hecho en A2**                                                |
-| **Vendedores y códigos**: `?ref=`, llegadas, asignaciones, panel del vendedor               | **Falta · A3**                                                 |
-| **Ventas**: tablero y gráficas                                                              | **Falta · A4**. La foto diaria del uso ya la hace A2           |
-| Borrar solas las IP de más de dos años                                                      | **Falta** · necesita el reloj (R); se cierra en M27            |
-| Cambiar el correo de acceso de un cliente con doble confirmación                            | **Hecho en A2**                                                |
-| Suscripciones: ver todo de Stripe y tres gestos (alargar, de la casa, cancelar al acabar)   | **Hecho en A2**. Comisiones y liquidaciones, con A3            |
-| Entrar a los datos de un cliente con su permiso (Roles 4.3), costes, integraciones, soporte | **M26**                                                        |
-| `admin.estook.com` en vez de `estook.com/admin/`                                            | **M27**, si cambia el alojamiento                              |
+| Qué                                                                                         | Cómo está                                                             |
+| ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Entrar con contraseña y segundo factor obligatorio, sesión de 8 h                           | **Hecho y en producción** (A1, #53)                                   |
+| Sesión del admin y de la app separadas; el acceso se mira en cada petición                  | **Hecho y en producción**                                             |
+| Administradores: dar acceso total y quitarlo, con el código otra vez                        | **Hecho y en producción**                                             |
+| Auditoría del admin: quién, qué, cuándo, motivo y dirección IP                              | **Hecho y en producción** (el aparato se guarda, no se enseña)        |
+| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | **Hecho y en producción** (rescatar llegó con el repaso, #54)         |
+| El catálogo del sistema de diseño detrás de la puerta                                       | **Hecho y en producción**                                             |
+| **Niveles** comercial, soporte y vendedor                                                   | Existen en la base; **no se pueden dar**. Vendedor, descartado (0076) |
+| **Clientes**: lista, filtros, búsqueda, CSV, ficha, contrato, actividad, notas, editar      | **Hecho en A2** (#74). Sin CIF: la organización no lo tiene           |
+| Copiar a la auditoría del cliente lo que el admin haga sobre él                             | **Hecho en A2**                                                       |
+| **Vendedores y códigos**: enlace, QR, `?ref=`, llegadas, descuento del primer mes, cifras   | **Hecho en A3**, en su PR (0058). Sin panel ni comisiones (0076)      |
+| **Ventas**: tablero y gráficas                                                              | **Falta · A4**. La foto diaria del uso ya la hace A2                  |
+| Borrar solas las IP de más de dos años                                                      | **Falta** · necesita el reloj (R); se cierra en M27                   |
+| Cambiar el correo de acceso de un cliente con doble confirmación                            | **Hecho en A2**                                                       |
+| Suscripciones: ver todo de Stripe y tres gestos (alargar, de la casa, cancelar al acabar)   | **Hecho en A2**. Las comisiones se pactan fuera (0076)                |
+| Entrar a los datos de un cliente con su permiso (Roles 4.3), costes, integraciones, soporte | **M26**                                                               |
+| `admin.estook.com` en vez de `estook.com/admin/`                                            | **M27**, si cambia el alojamiento                                     |
 
 ---
 
@@ -47,19 +47,19 @@ capítulo 3 donde los dos hablan de lo mismo. Actualizado el 7 de octubre de 202
 
 La propuesta era buena y casi todo entra. Estos son los cambios, uno por uno:
 
-| Se propuso                                                          | Se hace                                                                                                   | Por qué                                                                                                                                                                                |
-| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Una tabla `customers` con nombre, email, CIF, teléfono…             | **El cliente es la organización que ya existe.** El admin guarda solo lo comercial                        | El nombre y el CIF ya viven en la organización y los edita el cliente. Copiarlos daría dos valores distintos a los tres meses (regla 16: un dato con dos dueños acaba con dos valores) |
-| Un estado: activo, inactivo, suspendido, pendiente, cancelado       | **Dos cosas separadas: el contrato** (lo que ha pagado) **y la actividad** (lo que usa)                   | «Inactivo» mezclaba dos preguntas. Un cliente puede pagar y no entrar —el que se va a ir— o entrar y no pagar —el de prueba—. Con un solo estado, los dos son «activo»                 |
-| `deactivated_at`, `subscription_cancelled_at`… en columnas          | **Un historial de cambios de estado**, con fecha, quién y por qué                                         | Cinco columnas guardan la última vez; el historial guarda todas. «Se dio de baja, volvió y se volvió a ir» no cabe en una columna                                                      |
-| `original_seller_id` y `current_seller_id` en el cliente            | **Salen del historial**: quién lo captó es el código con que llegó; quién lo lleva, la asignación abierta | Dos columnas más el historial son tres sitios para lo mismo. El historial solo, con un índice que impide dos asignaciones abiertas, no se puede desincronizar                          |
-| Un código por vendedor                                              | **Varios códigos por vendedor**, cada uno con su campaña                                                  | «JUAN26» y «JUAN-FERIA» dicen de dónde vino cada cliente, y un código se puede cerrar sin cerrar al vendedor                                                                           |
-| Conversión = activos / captados (72 %)                              | **Dos cifras distintas: conversión y retención**                                                          | 31 de 43 siguen activos es **retención**. **Conversión** es cuántos de los que llegaron con el código acabaron pagando. Llamar igual a las dos hace que ninguna sirva                  |
-| Comisiones sobre la facturación                                     | **Sobre lo cobrado**, con reglas con vigencia y liquidación mensual                                       | Una factura que no se cobra no genera comisión. Y si se devuelve, se descuenta en la siguiente liquidación                                                                             |
-| Una fila de auditoría por campo                                     | **Una fila por acción**, con el antes y el después de todos los campos y el motivo                        | Cambiar la dirección toca cuatro campos: son un cambio, no cuatro. La pantalla lo enseña campo a campo igual                                                                           |
-| El administrador edita el email del cliente                         | **El correo con el que se entra se cambia con doble confirmación**, nunca de un plumazo                   | Cambiar el correo de acceso es **quedarse con la cuenta**. Es la forma más habitual de robarla, y tiene que costar más que un campo                                                    |
-| «Uso de Estook»: productos, escandallos, cartas, documentos, Fogón… | **Solo lo que existe.** Escandallos, cartas, documentos y Fogón aparecen con su módulo                    | Un «0 escandallos» cuando no se pueden crear dice que el cliente no los usa, y es mentira (regla 28)                                                                                   |
-| Métricas calculadas al abrir                                        | **Una foto diaria del uso**, que el reloj deja hecha de madrugada                                         | Contar productos, pedidos y mermas de mil clientes cada vez que se abre la lista tumba la base. La ficha de **un** cliente sí puede contar en directo                                  |
+| Se propuso                                                          | Se hace                                                                                 | Por qué                                                                                                                                                                                |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Una tabla `customers` con nombre, email, CIF, teléfono…             | **El cliente es la organización que ya existe.** El admin guarda solo lo comercial      | El nombre y el CIF ya viven en la organización y los edita el cliente. Copiarlos daría dos valores distintos a los tres meses (regla 16: un dato con dos dueños acaba con dos valores) |
+| Un estado: activo, inactivo, suspendido, pendiente, cancelado       | **Dos cosas separadas: el contrato** (lo que ha pagado) **y la actividad** (lo que usa) | «Inactivo» mezclaba dos preguntas. Un cliente puede pagar y no entrar —el que se va a ir— o entrar y no pagar —el de prueba—. Con un solo estado, los dos son «activo»                 |
+| `deactivated_at`, `subscription_cancelled_at`… en columnas          | **Un historial de cambios de estado**, con fecha, quién y por qué                       | Cinco columnas guardan la última vez; el historial guarda todas. «Se dio de baja, volvió y se volvió a ir» no cabe en una columna                                                      |
+| `original_seller_id` y `current_seller_id` en el cliente            | **Quién lo trajo es el código con que llegó.** Nadie «lleva» al cliente (0076)          | El vendedor solo trae el cliente. Una sola fila, la llegada, que cambia un admin con motivo                                                                                            |
+| Un código por vendedor                                              | **Varios códigos por vendedor**, cada uno con su campaña                                | «JUAN26» y «JUAN-FERIA» dicen de dónde vino cada cliente, y un código se puede cerrar sin cerrar al vendedor                                                                           |
+| Conversión = activos / captados (72 %)                              | **Dos cifras distintas: conversión y retención**                                        | 31 de 43 siguen activos es **retención**. **Conversión** es cuántos de los que llegaron con el código acabaron pagando. Llamar igual a las dos hace que ninguna sirva                  |
+| Comisiones sobre la facturación                                     | **Se pactan fuera de Estook** (Richi, 7-oct · 0076)                                     | Estook enseña las cifras de cada vendedor; lo que se le paga, y cómo, lo decidís vosotros                                                                                              |
+| Una fila de auditoría por campo                                     | **Una fila por acción**, con el antes y el después de todos los campos y el motivo      | Cambiar la dirección toca cuatro campos: son un cambio, no cuatro. La pantalla lo enseña campo a campo igual                                                                           |
+| El administrador edita el email del cliente                         | **El correo con el que se entra se cambia con doble confirmación**, nunca de un plumazo | Cambiar el correo de acceso es **quedarse con la cuenta**. Es la forma más habitual de robarla, y tiene que costar más que un campo                                                    |
+| «Uso de Estook»: productos, escandallos, cartas, documentos, Fogón… | **Solo lo que existe.** Escandallos, cartas, documentos y Fogón aparecen con su módulo  | Un «0 escandallos» cuando no se pueden crear dice que el cliente no los usa, y es mentira (regla 28)                                                                                   |
+| Métricas calculadas al abrir                                        | **Una foto diaria del uso**, que el reloj deja hecha de madrugada                       | Contar productos, pedidos y mermas de mil clientes cada vez que se abre la lista tumba la base. La ficha de **un** cliente sí puede contar en directo                                  |
 
 Y lo que se añade porque la propuesta no lo cubría:
 
@@ -155,12 +155,12 @@ los otros sería dar un acceso que no abre nada.
 | Nivel         | Qué hace                                                           | Cuándo se estrena |
 | ------------- | ------------------------------------------------------------------ | ----------------- |
 | **Total**     | Todo, incluido dar y quitar admins                                 | **Ya**            |
-| **Comercial** | Clientes y vendedores, sin exportar ni ver cobros                  | Con vendedores    |
+| **Comercial** | Clientes y vendedores, sin exportar ni ver cobros                  | Cuando haga falta |
 | **Soporte**   | Ver clientes y su uso; notas; pedir acceso a los datos (Roles 4.3) | M26               |
-| **Vendedor**  | **Solo su panel**: sus clientes, sus códigos y sus comisiones      | Con vendedores    |
+| **Vendedor**  | ~~Solo su panel~~                                                  | **Descartado**    |
 
-El vendedor entra con su cuenta y **ve lo suyo, nada más**: es el «panel del vendedor»
-de la propuesta, y se lo da el mismo sistema.
+**Los vendedores no entran en Estook** (Richi, 7-oct · [0076](decisiones/0076-a3-los-vendedores.md)):
+el nivel Vendedor sigue en la base y no se da nunca.
 
 ---
 
@@ -293,87 +293,48 @@ con otra nota. Se pueden fijar arriba.
 
 ## 3 · Vendedores y códigos
 
+> **Construido en A3** ([decisión 0076](decisiones/0076-a3-los-vendedores.md), migración
+> `0058`). Richi lo simplificó el 7-oct: **el vendedor solo trae el cliente**, no entra en
+> Estook, y **las comisiones se pactan fuera**. Lo que se escribió aquí el 16-sep —panel
+> del vendedor, asignaciones, comisiones y liquidaciones— se descartó.
+
 ### El modelo
 
 ```
-vendedor ──1:N──▶ código ──1:N──▶ llegada (el cliente que vino con él)
-    │                                    │
-    └──1:N──▶ asignación ◀───────────────┘  (quién lleva al cliente, con fechas)
-                  │
-    regla de comisión (con vigencia) ──▶ comisión por cobro ──▶ liquidación
+vendedor ──1:N──▶ código ──1:N──▶ llegada (el cliente que vino con él, y por dónde)
 ```
 
-- **El vendedor**: nombre, correo, teléfono, estado, alta, baja, notas. Puede tener
-  **cuenta para entrar a su panel** (nivel Vendedor), o no.
+- **El vendedor**: nombre, teléfono, correo y notas. Se da de baja, no se borra.
 - **El código**: `JUAN26`. **Único para siempre**, sin distinguir mayúsculas; un código
-  cerrado **no se reutiliza**, o un cliente de 2026 acabaría atribuido a otro en 2028.
-  Tiene campaña y fechas de validez.
-- **La llegada**: el cliente, el código, cuándo, y el origen con sus marcas de campaña.
-  **Es inmutable**: es quién lo captó, y eso no cambia aunque cambie quién lo lleva.
-- **La asignación**: vendedor, cliente, desde, hasta, motivo y quién la hizo. **Solo
-  una abierta por cliente**, y eso lo impide la base de datos, no el cuidado.
-
-Así, el ejemplo de la propuesta sale solo:
-
-```
-Restaurante Madrid
-  Captado por Juan (JUAN26) · 12/05
-  Llevado por:  Juan   12/05 → 18/07   (alta)
-                Pedro  18/07 → 01/09   Juan de vacaciones
-                Juan   01/09 → hoy     vuelta
-```
+  cerrado **no se reutiliza**. Tiene su campaña y **su descuento del primer mes**, que no
+  cambia. Se cierra, y cerrado no se abre.
+- **La llegada**: con qué código vino el cliente y **por dónde** (vendedor, anuncios,
+  buscadores, otra web o directo), con las marcas de campaña del enlace y solo el nombre
+  de la web de la que venía. La apunta la base **en la misma transacción que crea la
+  cuenta**; después, solo la cambia un admin, con motivo.
 
 ### Cómo llega un código
 
-1. Alguien entra en `estook.com/?ref=JUAN26`.
-2. La web **guarda el código en el propio navegador 60 días**, sin cookies de
-   terceros, con las marcas de campaña (`utm_source` y compañía) si las hay.
-3. **Al registrarse**, el código viaja con el alta y se crea la llegada.
-4. El formulario de registro **también deja escribirlo**, para quien lo recibe por
-   WhatsApp y no pincha el enlace.
-5. **Manda el primero**: si llegó por el enlace de Juan y luego escribe el de Pedro,
-   se queda Juan, salvo que un admin lo corrija con motivo.
+1. El vendedor reparte su enlace, `estook.com/?ref=JUAN26`, o su **QR**.
+2. La portada enseña el descuento y **pasa el código a cada enlace** de la web. **No se
+   guarda en el navegador**: pediría un aviso de cookies (0076, tres).
+3. En «Crear cuenta» el código sale **ya escrito**; sin enlace, la casilla «¿Tienes un
+   código de vendedor?» deja escribirlo. Uno que no vale se avisa y no frena nada.
+4. **Manda el del registro**. Si el cliente se olvidó, lo pone un admin con motivo.
 
-> **Precisado el 7-oct** ([`a3-vendedores.md`](a3-vendedores.md)): **el registro está
-> abierto desde E1**, así que el código llega solo con el alta. Y el paso 2 está en la
-> pregunta 1 de ese plan: guardar el código en el navegador pide permiso (LSSI 22.2).
+### El descuento
+
+Un tanto por ciento del **primer cobro mensual** (el anual ya lleva dos meses gratis).
+Sin prueba, va en la página de pago de Stripe; con prueba, **se pone cuando Stripe avisa de
+que la prueba acaba**, para que caiga en el primer cobro de verdad. Los días de prueba
+siguen siendo los de la oferta del admin.
 
 ### La ficha del vendedor
 
-**Datos**: los de arriba y sus códigos con cuántos clientes trajo cada uno.
-
-**Rendimiento**, en el periodo elegido (este mes, trimestre, año, todo):
-
-| Cifra                        | Qué es exactamente                                           |
-| ---------------------------- | ------------------------------------------------------------ |
-| **Captados**                 | Llegadas con sus códigos                                     |
-| **Conversión**               | De los captados, cuántos **pasaron a pagar**                 |
-| **Retención a 90 días**      | De los que pagaron, cuántos **siguen pagando** a los 90 días |
-| **Activos · bajando · baja** | Los que lleva hoy, por contrato y actividad                  |
-| **Cuota mensual que lleva**  | La suma de las cuotas de sus clientes activos (el MRR)       |
-| **Cobrado**                  | Lo cobrado de sus clientes en el periodo                     |
-| **Comisiones**               | Pendientes, aprobadas y pagadas                              |
-| **Últimos captados**         | Los diez últimos, con su estado                              |
-
-**Captados y llevados no se mezclan**: Juan captó 43 y lleva 38, porque cinco se
-reasignaron. Las dos cifras tienen su sitio.
-
-**Todo lo calcula el servidor**, con una consulta que se puede comprobar. Una IA podrá
-leerlo después («los de Juan aguantan más los primeros 90 días»), pero **la cifra no la
-pone nunca un modelo**.
-
-### Comisiones
-
-- **Una regla con vigencia** por vendedor, o la general: porcentaje sobre lo cobrado,
-  durante cuántos meses desde el alta, y a quién va (quien captó o quien lleva).
-- **Se genera por cada cobro**, en céntimos (regla 9), con la regla vigente ese día.
-- **Una devolución** crea una comisión negativa en la siguiente liquidación.
-- **Liquidación mensual**: pendiente → aprobada (por un admin total) → pagada.
-- **Precisado el 7-oct**: Stripe está montado desde E2 (en modo prueba), así que la
-  comisión sale **de cada cobro de verdad**, sin IVA. Mientras Stripe esté en modo
-  prueba, va marcada «de prueba» y no se liquida ([`a3-vendedores.md`](a3-vendedores.md)).
-
----
+Sus códigos con su enlace y su QR, y **sus cifras**, con la misma cuenta que la lista de
+Clientes: traídos (y este mes), pagan, en prueba, se están yendo, sin pagar, lo usan,
+dormidos, lo que dejan al mes y cuánto llevan de media. Y la lista de sus clientes. **Todo
+lo calcula el servidor**; los de ejemplo no cuentan.
 
 ## 4 · Ventas
 
@@ -390,7 +351,7 @@ De baja           276
                                  VENDEDORES
 DINERO                           Activos         12
 Cuota mensual  18.420 €  ▲ 4 %   Captados       391
-Cobrado mes    17.960 €          Comisiones   2.763 €
+Cobrado mes    17.960 €          Dejan al mes 9.840 €
 Pérdida de clientes  2,1 %/mes
 ```
 
@@ -460,17 +421,16 @@ Lo de Roles 4.8 se mantiene, y se precisa:
 
 ## 7 · Lo que se construye, en entregas
 
-| Entrega                       | Qué entra                                                                                                                                                                      | Terminado cuando                                                                                                                                                                |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **A1 · La puerta**            | Los admins en la base, `bd:dar-admin`, entrar en `/admin/` con segundo factor y 8 h, añadir y quitar admins, la auditoría, el catálogo dentro                                  | `estookapp@gmail.com` entra, monta el segundo factor y añade a otro; una persona sin permiso llama a la API del admin a pelo y recibe `403`; quitar al último admin total falla |
-| **A2 · Clientes**             | Lista con filtros y búsqueda en servidor, CSV, ficha con Resumen, Datos, Cuenta, Uso y Notas; contrato con historial; editar con motivo                                        | Se encuentra a `ikatz` por su CIF, se le cambia el plan con motivo y ese cambio sale en la auditoría del admin **y en la del cliente**                                          |
-| **A3 · Vendedores y códigos** | Vendedores, códigos, `?ref=` en la web, llegadas, asignaciones con historial, ficha de rendimiento, panel del vendedor                                                         | Un cliente llega con `JUAN26`, se reasigna a Pedro y vuelve a Juan: la ficha dice que lo captó Juan y lo lleva Juan, con las tres fechas                                        |
-| **A4 · Ventas**               | La foto diaria del uso (con el reloj), la actividad calculada, el tablero y sus gráficas                                                                                       | Las cifras del tablero cuadran con una consulta a mano sobre la base, y un cliente de ejemplo no cambia ninguna                                                                 |
-| **Con M26**                   | Stripe como dueño del plan y los cobros (las comisiones, adelantadas a A3), cambio de correo con Resend, acceso autorizado (Roles 4.3), costes e integraciones (Roles 4.5–4.7) | Lo de M26 en el Plan                                                                                                                                                            |
+| Entrega                       | Qué entra                                                                                                                                            | Terminado cuando                                                                                                                                                                |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A1 · La puerta**            | Los admins en la base, `bd:dar-admin`, entrar en `/admin/` con segundo factor y 8 h, añadir y quitar admins, la auditoría, el catálogo dentro        | `estookapp@gmail.com` entra, monta el segundo factor y añade a otro; una persona sin permiso llama a la API del admin a pelo y recibe `403`; quitar al último admin total falla |
+| **A2 · Clientes**             | Lista con filtros y búsqueda en servidor, CSV, ficha con Resumen, Datos, Cuenta, Uso y Notas; contrato con historial; editar con motivo              | Se encuentra a `ikatz` por su CIF, se le cambia el plan con motivo y ese cambio sale en la auditoría del admin **y en la del cliente**                                          |
+| **A3 · Vendedores y códigos** | Vendedores, códigos con enlace, QR y descuento del primer mes, `?ref=` en la web, la casilla del registro, llegadas y cifras de cada vendedor (0076) | Un cliente llega por `?ref=JUAN26`, ve su descuento y se registra con el código ya escrito; el admin ve que vino con Juan, y el descuento cae en su primer cobro mensual        |
+| **A4 · Ventas**               | La foto diaria del uso (con el reloj), la actividad calculada, el tablero y sus gráficas                                                             | Las cifras del tablero cuadran con una consulta a mano sobre la base, y un cliente de ejemplo no cambia ninguna                                                                 |
+| **Con M26**                   | Stripe como dueño del plan y los cobros, cambio de correo con Resend, acceso autorizado (Roles 4.3), costes e integraciones (Roles 4.5–4.7)          | Lo de M26 en el Plan                                                                                                                                                            |
 
-**A1 no espera a nada.** A2 tampoco. A3 necesita el registro para el `?ref=` completo,
-pero funciona antes poniendo el código a mano. A4 necesita el reloj de la entrega R de
-las mejoras.
+**A1 no espera a nada.** A2 tampoco. A3 usa el registro abierto de E1 y el pago de E2. A4
+necesita el reloj de la entrega R de las mejoras.
 
 ---
 

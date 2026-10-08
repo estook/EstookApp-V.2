@@ -73,12 +73,17 @@ describe('el esquema plataforma', () => {
     expect(sinRls.map((f) => f.relname)).toEqual([]);
   });
 
-  it('sus funciones con privilegio son exactamente seis, y no las ejecuta cualquiera', async () => {
+  it('sus funciones con privilegio son exactamente ocho, y no las ejecuta cualquiera', async () => {
     // Las mismas razones que las de `estook`, contadas aparte: si un día son
     // cuatro, que sea a propósito. La tercera es de la 0042: `oferta_vigente`, que
     // la pantalla de crear cuenta lee antes de que haya sesión. Y la 0049 (A2) añade
     // las tres del cambio del correo de acceso: pedirlo —solo un admin total, y lo
     // comprueba ella—, y confirmarlo o pararlo desde el enlace, que no trae sesión.
+    //
+    // **Y la 0058 (A3) añade dos**, por lo mismo que `oferta_vigente`: quien crea su
+    // cuenta todavía no es nadie. `lo_que_da_el_codigo` dice si un código de vendedor
+    // vale y su descuento —no de quién es—, y `apuntar_la_llegada` apunta con quién
+    // vino **solo en la transacción que crea la organización**, y una vez.
     const definer = await comoDuena<{ proname: string; publico: boolean }>(
       `select p.proname, has_function_privilege('public', p.oid, 'execute') as publico
          from pg_proc p
@@ -86,8 +91,10 @@ describe('el esquema plataforma', () => {
         order by p.proname`,
     );
     expect(definer.map((f) => f.proname)).toEqual([
+      'apuntar_la_llegada',
       'confirmar_cambio_de_correo',
       'dar_acceso',
+      'lo_que_da_el_codigo',
       'nivel_de',
       'oferta_vigente',
       'parar_cambio_de_correo',

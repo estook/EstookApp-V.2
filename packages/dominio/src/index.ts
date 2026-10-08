@@ -577,6 +577,29 @@ export {
 } from './clientes.ts';
 export type { ActividadDeCliente, LoQueHaceUnCliente, PestanaDeClientes } from './clientes.ts';
 
+// ── A3 · los vendedores (0076) ───────────────────────────────────────────────
+export {
+  DESCUENTO_MAXIMO,
+  FORMA_DEL_CODIGO_DE_VENDEDOR,
+  NOMBRE_DEL_ORIGEN,
+  comoCodigoDeVendedor,
+  conLaLlegada,
+  elDescuentoEnPalabras,
+  elEnlaceDelCodigo,
+  elNombreDeLaWeb,
+  esDescuentoValido,
+  laLlegadaDelEnlace,
+  lasCifrasDelVendedor,
+  porDondeLlego,
+} from './vendedores.ts';
+export type {
+  CifrasDeUnVendedor,
+  ClienteDeUnVendedor,
+  LlegadaDelEnlace,
+  MarcasDeLaLlegada,
+  OrigenDeLlegada,
+} from './vendedores.ts';
+
 // ── R · los avisos, la campana (0052) ────────────────────────────────────────
 export {
   AMPLITUD_DE_QUIEN_LLEVA_EL_NEGOCIO,

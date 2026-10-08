@@ -15,12 +15,14 @@ import {
 } from '@estook/dominio';
 import { variable } from '@estook/utiles';
 import {
+  AVISOS_QUE_SE_PIDEN,
   StripeNoContesta,
   type CatalogoDeStripe,
   type PrecioQueHaceFalta,
   type SuscripcionDeStripe,
 } from '../infraestructura/stripe.ts';
 import { FalloDeAplicacion, type Contexto, type Puertas } from './contrato.ts';
+import { comoLista } from './listas.ts';
 
 /**
  * El pago (entrega E2 · decisión 0048): la puerta, el catálogo de Stripe y lo que
@@ -280,20 +282,25 @@ export async function elCatalogo(contexto: Contexto): Promise<CatalogoDeStripe> 
         portal: string | null;
         aviso: string | null;
         aviso_secreto: string | null;
+        avisos: string[];
       }[]
     >`
-      select precios, iva, portal, aviso, aviso_secreto from plataforma.stripe where modo = ${pagos.modo}
+      select precios, iva, portal, aviso, aviso_secreto, avisos from plataforma.stripe
+       where modo = ${pagos.modo}
       for update
     `;
     const hay = filas[0];
     const preciosQueHacenFalta = losPreciosDeEstook();
+    // Los avisos pedidos, también (0076): si el código pide uno más, se vuelve a
+    // preparar, y preparar le cambia los avisos al de Stripe sin hacer otro.
     const completo =
       hay !== undefined &&
       hay.iva !== null &&
       hay.portal !== null &&
       hay.aviso !== null &&
       hay.aviso_secreto !== null &&
-      preciosQueHacenFalta.every((p) => hay.precios[p.clave] !== undefined);
+      preciosQueHacenFalta.every((p) => hay.precios[p.clave] !== undefined) &&
+      AVISOS_QUE_SE_PIDEN.every((uno) => hay.avisos.includes(uno));
     if (completo) {
       return {
         precios: hay.precios,
@@ -320,16 +327,108 @@ export async function elCatalogo(contexto: Contexto): Promise<CatalogoDeStripe> 
       ),
     );
     await contexto.sql`
-      insert into plataforma.stripe (modo, precios, iva, portal, aviso, aviso_secreto, preparado_en)
+      insert into plataforma.stripe (
+        modo, precios, iva, portal, aviso, aviso_secreto, avisos, preparado_en
+      )
       values (${pagos.modo}, ${JSON.stringify(catalogo.precios)}::text::jsonb, ${catalogo.iva},
-              ${catalogo.portal}, ${catalogo.aviso}, ${catalogo.avisoSecreto}, now())
+              ${catalogo.portal}, ${catalogo.aviso}, ${catalogo.avisoSecreto},
+              ${comoLista([...AVISOS_QUE_SE_PIDEN])}::text::text[], now())
       on conflict (modo) do update
          set precios = excluded.precios, iva = excluded.iva, portal = excluded.portal,
              aviso = excluded.aviso, aviso_secreto = excluded.aviso_secreto,
-             preparado_en = excluded.preparado_en
+             avisos = excluded.avisos, preparado_en = excluded.preparado_en
     `;
     return catalogo;
   });
+}
+
+// ── El descuento del primer mes (A3 · 0076) ──────────────────────────────────
+
+/**
+ * El cupón de Stripe de un tanto por ciento: el guardado, o se crea y se guarda. Uno
+ * por tanto por ciento y modo, para todos los códigos que den lo mismo.
+ */
+export async function elCuponDe(contexto: Contexto, porcentaje: number): Promise<string> {
+  const pagos = losPagos(contexto);
+  // La fila de este modo tiene que existir para guardar el cupón en ella.
+  await elCatalogo(contexto);
+  return enNombreDelSistema(contexto, async () => {
+    const filas = await contexto.sql<{ cupon: string | null }[]>`
+      select cupones ->> ${String(porcentaje)} as cupon from plataforma.stripe
+       where modo = ${pagos.modo}
+    `;
+    const guardado = filas[0]?.cupon ?? null;
+    if (guardado !== null) return guardado;
+    const cupon = await conStripe(contexto, () => pagos.prepararElCupon(porcentaje));
+    await contexto.sql`
+      update plataforma.stripe
+         set cupones = cupones || jsonb_build_object(${String(porcentaje)}::text, ${cupon}::text)
+       where modo = ${pagos.modo}
+    `;
+    return cupon;
+  });
+}
+
+export interface DescuentoDeLaLlegada {
+  /** El código con que llegó. */
+  readonly codigo: string;
+  /** El tanto por ciento del primer cobro mensual. */
+  readonly porcentaje: number;
+  /** Si ya se puso en Stripe, al acabar la prueba. */
+  readonly puestoEn: string | null;
+}
+
+/**
+ * El descuento del código con que llegó una organización, si lo hay. **Aunque el
+ * código se haya cerrado después**: lo prometido a quien se registró con él se
+ * cumple (0076). Lo lee el sistema: quien paga no ve nada de los vendedores.
+ */
+export async function elDescuentoDe(
+  contexto: Contexto,
+  organizacionId: string,
+): Promise<DescuentoDeLaLlegada | null> {
+  return enNombreDelSistema(contexto, async () => {
+    const filas = await contexto.sql<
+      { codigo: string; descuento: number; puesto_en: string | null }[]
+    >`
+      select c.codigo, c.descuento, l.descuento_puesto_en::text as puesto_en
+        from plataforma.llegada l
+        join plataforma.codigo_de_vendedor c on c.id = l.codigo_id
+       where l.organizacion_id = ${organizacionId} and c.descuento > 0
+    `;
+    const fila = filas[0];
+    return fila === undefined
+      ? null
+      : { codigo: fila.codigo, porcentaje: fila.descuento, puestoEn: fila.puesto_en };
+  });
+}
+
+/**
+ * Con prueba, el descuento se pone **cuando Stripe avisa de que la prueba acaba**:
+ * así cae en el primer cobro de verdad y no en la factura de cero euros del principio,
+ * que se lo gastaría. Una sola vez, y solo en el pago mensual: alargar la prueba
+ * después no lo pone dos veces.
+ */
+async function ponerElDescuentoAlAcabarLaPrueba(
+  contexto: Contexto,
+  organizacionId: string,
+  suscripcion: SuscripcionDeStripe,
+): Promise<boolean> {
+  if (suscripcion.estadoDeStripe !== 'trialing') return false;
+  if (delNombreDelPrecio(suscripcion.clave)?.intervalo !== 'mes') return false;
+  const descuento = await elDescuentoDe(contexto, organizacionId);
+  if (descuento === null || descuento.puestoEn !== null) return false;
+
+  const pagos = losPagos(contexto);
+  const cupon = await elCuponDe(contexto, descuento.porcentaje);
+  await conStripe(contexto, () =>
+    pagos.cambiarSuscripcion(suscripcion.id, { linea: suscripcion.linea, cupon }),
+  );
+  await contexto.sql`
+    update plataforma.llegada set descuento_puesto_en = now()
+     where organizacion_id = ${organizacionId}
+  `;
+  return true;
 }
 
 // ── Lo que dice Stripe, guardado ─────────────────────────────────────────────
@@ -446,6 +545,9 @@ export async function aplicarElAviso(
       'stripe',
       evento.type,
     );
+    if (evento.type === 'customer.subscription.trial_will_end') {
+      await ponerElDescuentoAlAcabarLaPrueba(contexto, organizacionId, suscripcion);
+    }
     return 'aplicado';
   });
 }

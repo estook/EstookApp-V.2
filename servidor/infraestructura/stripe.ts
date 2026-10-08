@@ -67,6 +67,11 @@ export interface DatosDelPago {
   readonly cancelar: string;
   /** El texto junto al botón de pagar: la renovación y cómo cancelar. */
   readonly aviso: string;
+  /**
+   * El cupón del descuento del primer mes, si va **en esta página** (0076): solo sin
+   * prueba. Con prueba se pone al acabarla, en el primer cobro de verdad.
+   */
+  readonly cupon: string | null;
 }
 
 export interface DireccionesDeEstook {
@@ -86,6 +91,11 @@ export interface Pagos {
     en: DireccionesDeEstook,
     precios: readonly PrecioQueHaceFalta[],
   ): Promise<CatalogoDeStripe>;
+  /**
+   * El cupón de un descuento del primer mes (0076): uno por tanto por ciento, que se
+   * busca por su identificador fijo y se crea si no está. Se puede llamar siempre.
+   */
+  prepararElCupon(porcentaje: number): Promise<string>;
   crearCliente(datos: {
     readonly correo: string;
     readonly nombre: string;
@@ -111,6 +121,8 @@ export interface Pagos {
       readonly cancelarAlAcabar?: boolean;
       /** Alargar la prueba hasta ese día (A2): sin cobrar nada por el cambio. */
       readonly pruebaHasta?: Date;
+      /** El cupón del primer mes, para el siguiente cobro (A3). */
+      readonly cupon?: string;
     },
   ): Promise<SuscripcionDeStripe>;
 }
@@ -238,7 +250,12 @@ export async function firmarComoStripe(
 
 // ── Lo que se crea en Stripe ─────────────────────────────────────────────────
 
-/** Los avisos que se piden a Stripe: los que cambian el estado de una cuenta. */
+/**
+ * Los avisos que se piden a Stripe: los que cambian el estado de una cuenta, y desde
+ * A3 (0076) el de **la prueba que acaba**, que es cuando se pone el descuento del
+ * primer mes. Stripe lo manda tres días antes de que acabe (o en el momento, si la
+ * prueba es más corta). Cambiar esta lista hace que se le vuelva a pedir a Stripe.
+ */
 export const AVISOS_QUE_SE_PIDEN = [
   'checkout.session.completed',
   'customer.subscription.created',
@@ -246,9 +263,15 @@ export const AVISOS_QUE_SE_PIDEN = [
   'customer.subscription.deleted',
   'customer.subscription.paused',
   'customer.subscription.resumed',
+  'customer.subscription.trial_will_end',
   'invoice.paid',
   'invoice.payment_failed',
 ] as const;
+
+/** El identificador fijo del cupón de un tanto por ciento: así se encuentra otra vez. */
+export function elCuponDelPorcentaje(porcentaje: number): string {
+  return `estook-primer-mes-${String(porcentaje)}`;
+}
 
 /** Cada plan, su producto; cada precio, su nombre. Los importes, del dominio (`PLANES`). */
 export interface PrecioQueHaceFalta {
@@ -458,15 +481,24 @@ export function pagosDeStripe(
     url: string,
   ): Promise<{ aviso: string; avisoSecreto: string }> {
     if (hay.aviso !== undefined && hay.avisoSecreto !== undefined) {
-      const sigue = await pedir<{ id: string; url: string }>(
+      const sigue = await pedir<{ id: string; url: string; enabled_events?: string[] }>(
         'GET',
         `/webhook_endpoints/${hay.aviso}`,
       ).catch((fallo: unknown) => {
         if (fallo instanceof StripeNoContesta && fallo.estado === 404) return null;
         throw fallo;
       });
-      if (sigue !== null && sigue.url === url)
+      if (sigue !== null && sigue.url === url) {
+        // El mismo aviso, con el secreto que ya se tiene: si le faltan avisos que el
+        // código pide ahora (A3 pidió uno más), se le cambian, sin hacer otro.
+        const tiene = new Set(sigue.enabled_events ?? []);
+        if (!AVISOS_QUE_SE_PIDEN.every((uno) => tiene.has(uno))) {
+          await pedir('POST', `/webhook_endpoints/${hay.aviso}`, {
+            enabled_events: [...AVISOS_QUE_SE_PIDEN],
+          });
+        }
         return { aviso: hay.aviso, avisoSecreto: hay.avisoSecreto };
+      }
     }
     // El secreto solo lo da al crearlo: uno que ya exista sin su secreto no sirve, y
     // se sustituye.
@@ -506,6 +538,34 @@ export function pagosDeStripe(
       return { precios, iva, portal, ...aviso };
     },
 
+    async prepararElCupon(porcentaje) {
+      const id = elCuponDelPorcentaje(porcentaje);
+      const hay = await pedir<{ id: string }>('GET', `/coupons/${id}`).catch((fallo: unknown) => {
+        if (fallo instanceof StripeNoContesta && fallo.estado === 404) return null;
+        throw fallo;
+      });
+      if (hay !== null) return hay.id;
+      // `once`: solo el primer cobro que lo encuentre puesto (0076). Por eso, con
+      // prueba, se pone al acabarla y no al pagar: la factura de cero euros de la
+      // prueba se lo gastaría.
+      const creado = await pedir<{ id: string }>(
+        'POST',
+        '/coupons',
+        {
+          id,
+          percent_off: porcentaje,
+          duration: 'once',
+          name:
+            porcentaje >= 100
+              ? 'Primer mes gratis'
+              : `Primer mes · ${String(porcentaje)} % de descuento`,
+          metadata: { estook: id },
+        },
+        `cupon-${id}`,
+      );
+      return creado.id;
+    },
+
     async crearCliente({ correo, nombre, organizacionId }) {
       const creado = await pedir<{ id: string }>(
         'POST',
@@ -542,7 +602,11 @@ export function pagosDeStripe(
         billing_address_collection: 'required',
         tax_id_collection: { enabled: true },
         customer_update: { address: 'auto', name: 'auto' },
-        allow_promotion_codes: true,
+        // Con el descuento de un código ya puesto, no se ofrece escribir otro: Stripe
+        // no deja las dos cosas a la vez en la misma página.
+        ...(d.cupon === null
+          ? { allow_promotion_codes: true }
+          : { discounts: [{ coupon: d.cupon }] }),
         success_url: d.exito,
         cancel_url: d.cancelar,
         custom_text: { submit: { message: d.aviso } },
@@ -594,6 +658,7 @@ export function pagosDeStripe(
                 trial_end: Math.trunc(cambios.pruebaHasta.getTime() / 1000),
                 proration_behavior: 'none',
               }),
+          ...(cambios.cupon === undefined ? {} : { discounts: [{ coupon: cambios.cupon }] }),
           expand: ['default_payment_method'],
         }),
       );

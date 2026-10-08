@@ -11,6 +11,7 @@
     "tipos": "tsc --noEmit"
   },
   "dependencies": {
+    "@estook/dominio": "workspace:*",
     "@estook/ui": "workspace:*",
     "@estook/iconos": "workspace:*",
     "@estook/utiles": "workspace:*",

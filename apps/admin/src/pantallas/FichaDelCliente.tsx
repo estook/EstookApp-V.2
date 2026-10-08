@@ -18,7 +18,13 @@ import {
 } from '@estook/ui';
 import { IconoAbrirFuera, IconoAtencion } from '@estook/iconos';
 import { FalloDeLaApi, type ErrorDeLaApi } from '@estook/cliente-api';
-import { centimos, conSimbolo, planPorCodigo } from '@estook/dominio';
+import {
+  centimos,
+  conSimbolo,
+  elDescuentoEnPalabras,
+  NOMBRE_DEL_ORIGEN,
+  planPorCodigo,
+} from '@estook/dominio';
 import { fechaYHora } from '../datos/cliente.ts';
 import {
   cuandoEntro,
@@ -62,6 +68,7 @@ type Gesto =
   | { readonly que: 'alargar' }
   | { readonly que: 'casa' }
   | { readonly que: 'cancelar' }
+  | { readonly que: 'vendedor' }
   | { readonly que: 'correo'; readonly personaId: string; readonly nombre: string };
 
 export function FichaDelCliente({
@@ -212,6 +219,12 @@ function Bloque({
   );
 }
 
+/** «Con Juan · JUAN26», o por dónde llegó: «Buscadores», «Directo». */
+function comoVino(c: FichaDeCliente['cliente']): string {
+  if (c.vendedor !== null) return `Con ${c.vendedor.nombre} · ${c.vendedor.codigo}`;
+  return NOMBRE_DEL_ORIGEN[c.origen];
+}
+
 function planYCuota(ficha: FichaDeCliente): string {
   const c = ficha.cliente;
   if (c.deLaCasa) return 'De la casa: no paga';
@@ -236,6 +249,7 @@ function Resumen({ ficha }: { readonly ficha: FichaDeCliente }) {
           <Dato que="Locales">{c.locales}</Dato>
           <Dato que="Tipo">{NOMBRE_DEL_TIPO[c.tipo]}</Dato>
           <Dato que="Dirige">{c.correos.length === 0 ? '—' : c.correos.join(', ')}</Dato>
+          <Dato que="Vino">{comoVino(c)}</Dato>
         </dl>
       </Bloque>
       <Bloque titulo="Lo último">
@@ -320,6 +334,8 @@ function Datos({
         </dl>
       </Bloque>
 
+      <ComoLlego ficha={ficha} alGesto={alGesto} />
+
       <Bloque titulo={ficha.locales.length === 1 ? 'Su local' : 'Sus locales'}>
         <ul className="flex flex-col divide-y divide-borde">
           {ficha.locales.map((l) => (
@@ -338,6 +354,59 @@ function Datos({
         </ul>
       </Bloque>
     </div>
+  );
+}
+
+/**
+ * Cómo llegó (A3 · 0076): con qué vendedor y código, por dónde, con qué campaña y su
+ * descuento. Lo cambia un admin con motivo; **es nuestro**, el cliente no lo ve.
+ */
+function ComoLlego({
+  ficha,
+  alGesto,
+}: {
+  readonly ficha: FichaDeCliente;
+  readonly alGesto: (gesto: Gesto) => void;
+}) {
+  const c = ficha.cliente;
+  const l = ficha.llegada;
+  const campana =
+    l === null ? '' : [l.fuente, l.medio, l.campana].filter((x) => x !== null).join(' · ');
+  const descuento = l?.descuento == null ? null : elDescuentoEnPalabras(l.descuento);
+  return (
+    <Bloque
+      titulo="Cómo llegó"
+      accion={
+        <Boton
+          tono="texto"
+          onClick={() => {
+            alGesto({ que: 'vendedor' });
+          }}
+        >
+          {c.vendedor === null ? 'Poner el vendedor' : 'Cambiar el vendedor'}
+        </Boton>
+      }
+    >
+      <dl className="divide-y divide-borde">
+        <Dato que="Vendedor">
+          {c.vendedor === null ? '—' : `${c.vendedor.nombre} · ${c.vendedor.codigo}`}
+        </Dato>
+        <Dato que="Por dónde">{NOMBRE_DEL_ORIGEN[c.origen]}</Dato>
+        {campana !== '' && <Dato que="Campaña">{campana}</Dato>}
+        {l?.web != null && <Dato que="Venía de">{l.web}</Dato>}
+        {descuento !== null && (
+          <Dato que="Descuento">
+            {descuento}
+            {l?.descuentoPuestoEn != null ? ' · puesto en Stripe' : ''}
+          </Dato>
+        )}
+      </dl>
+      {l?.puestoPor != null && l.puestoEn !== null && (
+        <p className="pb-e1 text-etiqueta text-texto-suave">
+          El vendedor lo puso {l.puestoPor} el {fechaCorta(l.puestoEn)}.
+        </p>
+      )}
+    </Bloque>
   );
 }
 
@@ -605,6 +674,7 @@ const LO_QUE_HIZO: Readonly<Record<string, string>> = {
   cancelar_al_acabar: 'Canceló al acabar el periodo',
   reanudar: 'Deshizo la cancelación',
   pedir_cambio_de_correo: 'Pidió cambiar un correo de acceso',
+  poner_el_vendedor: 'Cambió con qué vendedor vino',
 };
 
 function Actividad({ ficha }: { readonly ficha: FichaDeCliente }) {
@@ -746,6 +816,7 @@ const TITULO_DEL_GESTO: Readonly<Record<Gesto['que'], string>> = {
   casa: 'De la casa',
   cancelar: 'Cancelar al acabar',
   correo: 'Cambiar el correo de acceso',
+  vendedor: 'Con qué vendedor vino',
 };
 
 /**
@@ -770,6 +841,7 @@ function HojaDelGesto({
   const [dias, setDias] = useState('7');
   const [correo, setCorreo] = useState('');
   const [codigo, setCodigo] = useState('');
+  const [codigoDeVendedor, setCodigoDeVendedor] = useState(c.vendedor?.codigo ?? '');
   const [contacto, setContacto] = useState({
     responsable: ficha.ficha.responsable ?? '',
     telefono: ficha.ficha.telefono ?? '',
@@ -816,13 +888,19 @@ function HojaDelGesto({
                     cancelar: !c.cancelaAlAcabar,
                     motivo,
                   })
-                : await cliente.ejecutar('admin_cambiar_el_correo', {
-                    organizacion_id: id,
-                    persona_id: gesto.personaId,
-                    correo_nuevo: correo,
-                    motivo,
-                    codigo,
-                  });
+                : gesto.que === 'vendedor'
+                  ? await cliente.ejecutar('admin_poner_el_vendedor', {
+                      organizacion_id: id,
+                      codigo: codigoDeVendedor.trim() === '' ? null : codigoDeVendedor.trim(),
+                      motivo,
+                    })
+                  : await cliente.ejecutar('admin_cambiar_el_correo', {
+                      organizacion_id: id,
+                      persona_id: gesto.personaId,
+                      correo_nuevo: correo,
+                      motivo,
+                      codigo,
+                    });
     setEnviando(false);
     setCodigo('');
     if (!respuesta.ok) {
@@ -950,6 +1028,19 @@ function HojaDelGesto({
               ? 'Stripe le volverá a cobrar al acabar el periodo, como antes.'
               : `Sigue trabajando hasta el ${c.periodoHasta === null ? 'final del periodo' : fechaCorta(c.periodoHasta)}, y Stripe ya no le cobra más.`}
           </p>
+        )}
+
+        {gesto.que === 'vendedor' && (
+          <Campo
+            etiqueta="El código del vendedor"
+            name="codigo_de_vendedor"
+            value={codigoDeVendedor}
+            placeholder="JUAN26"
+            ayuda="Vacío, se queda sin vendedor. Si todavía no ha pagado su primer mes, le llega el descuento del código."
+            onChange={(evento) => {
+              setCodigoDeVendedor(evento.target.value);
+            }}
+          />
         )}
 
         {gesto.que === 'correo' && (

@@ -543,3 +543,18 @@
      tiraba lo que esperaba sin mandarlo; el recordatorio decía «un mensaje de alguien».
      Lo que el sistema necesita de una persona se lo da una función que solo le contesta
      a él (`estook.a_quien_escribir`, como `quien_recibe`). Lo cazó `lo-oficial.prueba.ts`.
+152. **Unas cifras que cambian por fuera no se reutilizan de la memoria de la pantalla.**
+     La tarjeta de un vendedor decía «0 traídos» con su cliente ya registrado: el admin
+     guardaba lo leído 30 segundos, y quien se registra no avisa al admin. Las cifras de
+     los vendedores se leen otra vez al entrar (`Vendedores.tsx`, A3). Lo cazó
+     `los-vendedores.spec.ts`.
+153. **El Stripe de mentira tiene que mandar lo que manda el de verdad.** Su aviso de «la
+     prueba acaba» no decía `object: 'subscription'`, y la API no sabía de qué suscripción
+     hablaba: no pasaba nada y nada fallaba. Ahora lo dice. Los de «la suscripción ha
+     cambiado» del simulador siguen sin decirlo, y en las pruebas no se aplican: el comando
+     que los provoca ya guarda lo mismo (`pagos-de-mentira.ts`, A3).
+154. **Un cupón de «una vez» se lo gasta la primera factura, aunque sea de cero euros.** Con
+     prueba, Stripe hace una factura de 0 € al empezar; un descuento puesto al pagar se
+     gastaría ahí. El del primer mes se pone cuando Stripe avisa de que la prueba acaba
+     (`customer.subscription.trial_will_end`), y una sola vez (`los-vendedores.prueba.ts`,
+     0076).

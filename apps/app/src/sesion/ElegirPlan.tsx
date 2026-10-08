@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Aviso, Boton, Cargando, ErrorEnCristiano, Etiqueta, clases } from '@estook/ui';
-import { PLANES, centimos, conSimbolo, type Plan } from '@estook/dominio';
+import { PLANES, centimos, conSimbolo, elDescuentoEnPalabras, type Plan } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { FalloDeLaApi } from '../datos/FalloDeLaApi.ts';
 import { usarMiSuscripcion } from '../ganchos/usarMiSuscripcion.ts';
@@ -89,6 +89,22 @@ export function ElegirPlan() {
           : 'Elige tu plan y pon tu tarjeta. Hoy no se cobra nada.'
       }
     >
+      {datos?.descuento != null && (
+        <div className="mb-e4">
+          {/* El código con que llegó (A3 · 0076): solo en el pago mensual. */}
+          <Aviso
+            tono={anual ? 'info' : 'bien'}
+            titulo={`Con ${datos.descuento.codigo}: ${(elDescuentoEnPalabras(datos.descuento.porcentaje) ?? '').toLowerCase()}`}
+          >
+            {anual
+              ? 'El descuento es para el pago mensual: el anual ya lleva dos meses gratis.'
+              : diasDePrueba === null
+                ? 'Se aplica en el pago de hoy.'
+                : 'Se aplica en tu primer cobro, al acabar la prueba.'}
+          </Aviso>
+        </div>
+      )}
+
       {cancelado && (
         <div className="mb-e4">
           <Aviso tono="info" titulo="No se ha cobrado nada">

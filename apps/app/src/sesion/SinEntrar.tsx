@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { laLlegadaDelEnlace } from '@estook/dominio';
 import { Aviso, Cargando, ErrorEnCristiano } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { elAparato } from '../datos/cliente.ts';
@@ -36,6 +37,9 @@ export function SinEntrar() {
   const { cliente, entrar } = usarSesion();
   const [crear, setCrear] = useState(quiereCrear);
   const como = usarLectura<ComoSeEntra>('como_se_entra');
+  // El código del vendedor y por dónde llegó (A3 · 0076): viaja en la dirección desde
+  // la portada, y no se guarda en el navegador.
+  const [llegada] = useState(() => laLlegadaDelEnlace(window.location.search, document.referrer));
 
   // La vuelta se lee **una vez**: el código es de un solo uso, y React monta dos
   // veces en desarrollo.
@@ -74,6 +78,7 @@ export function SinEntrar() {
         intencion: datos.intencion,
         ...(datos.negocio === undefined ? {} : { negocio: datos.negocio }),
         ...(datos.aceptaCondiciones === undefined ? {} : { aceptaCondiciones: true }),
+        ...(datos.llegada === undefined ? {} : { llegada: datos.llegada }),
         ...(aparato === null ? {} : { aparato }),
       });
 
@@ -123,6 +128,7 @@ export function SinEntrar() {
   return crear ? (
     <CrearCuenta
       como={como.data}
+      llegada={llegada}
       avisoDeGoogle={aviso}
       alEntrar={() => {
         setFalloDeGoogle(null);

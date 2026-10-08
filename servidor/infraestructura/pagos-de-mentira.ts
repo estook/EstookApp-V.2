@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await -- hace de Stripe, que contesta por la red: el puerto es asíncrono aunque aquí la respuesta esté en memoria */
 import {
+  elCuponDelPorcentaje,
   firmarComoStripe,
   traducirSuscripcion,
   type CatalogoDeStripe,
@@ -41,6 +42,8 @@ interface SuscripcionGuardada {
   cancel_at_period_end: boolean;
   cancel_at: null;
   default_payment_method: { card: { brand: string; last4: string } };
+  /** El cupón puesto, como los `discounts` de Stripe: se gasta en el primer cobro. */
+  cupon: string | null;
 }
 
 export interface PagosDeMentira extends Pagos {
@@ -50,8 +53,15 @@ export interface PagosDeMentira extends Pagos {
   pagar(sesion: string): Promise<string>;
   /** Un cobro que falla, como cuando caduca la tarjeta. */
   fallarElCobro(organizacionId: string): Promise<void>;
-  /** Y uno que entra. */
-  cobrar(organizacionId: string): Promise<void>;
+  /** Y uno que entra. Devuelve el cupón que se gastó en él, si había. */
+  cobrar(organizacionId: string): Promise<string | null>;
+  /** Lo que Stripe avisa tres días antes de que acabe una prueba (A3). */
+  avisarDeQueAcabaLaPrueba(organizacionId: string): Promise<void>;
+  /** Los cupones creados, y el que lleva puesto la suscripción de una organización. */
+  readonly cupones: ReadonlySet<string>;
+  elCuponDe(organizacionId: string): string | null;
+  /** El cupón con que se abrió una página de pago. */
+  elCuponDelPago(sesion: string): string | null;
 }
 
 export function pagosDeMentira(
@@ -60,6 +70,7 @@ export function pagosDeMentira(
 ): PagosDeMentira {
   const sesiones = new Map<string, DatosDelPago>();
   const suscripciones = new Map<string, SuscripcionGuardada>();
+  const cupones = new Set<string>();
   let entregar: (cuerpo: string, firma: string) => Promise<unknown> = async () => undefined;
   let numero = 0;
   const nuevo = (prefijo: string) => {
@@ -103,6 +114,22 @@ export function pagosDeMentira(
       };
     },
 
+    async prepararElCupon(porcentaje) {
+      const id = elCuponDelPorcentaje(porcentaje);
+      cupones.add(id);
+      return id;
+    },
+
+    cupones,
+
+    elCuponDe(organizacionId) {
+      return deLaOrganizacion(organizacionId).cupon;
+    },
+
+    elCuponDelPago(sesion) {
+      return sesiones.get(sesion)?.cupon ?? null;
+    },
+
     async crearCliente() {
       return nuevo('cus');
     },
@@ -140,6 +167,8 @@ export function pagosDeMentira(
         cancel_at_period_end: false,
         cancel_at: null,
         default_payment_method: { card: { brand: 'visa', last4: '4242' } },
+        // Sin prueba, el cupón de la página se gasta en el primer cobro, que es ya.
+        cupon: conPrueba ? null : datos.cupon,
       };
       suscripciones.set(suscripcion.id, suscripcion);
       await avisar('checkout.session.completed', {
@@ -166,7 +195,21 @@ export function pagosDeMentira(
       const s = deLaOrganizacion(organizacionId);
       s.status = 'active';
       s.trial_end = null;
+      // Un cupón `once` se gasta en el primer cobro que lo encuentra puesto.
+      const gastado = s.cupon;
+      s.cupon = null;
       await avisar('invoice.paid', { object: 'invoice', subscription: s.id, customer: s.customer });
+      return gastado;
+    },
+
+    async avisarDeQueAcabaLaPrueba(organizacionId) {
+      const s = deLaOrganizacion(organizacionId);
+      // Como lo manda Stripe: el objeto dice que es una suscripción, que es como la
+      // API sabe de cuál habla el aviso (`laSuscripcionDelAviso`).
+      await avisar('customer.subscription.trial_will_end', {
+        ...structuredClone(s),
+        object: 'subscription',
+      });
     },
 
     async leerSuscripcion(id) {
@@ -199,6 +242,7 @@ export function pagosDeMentira(
       if (cambios.pruebaHasta !== undefined) {
         s.trial_end = Math.trunc(cambios.pruebaHasta.getTime() / 1000);
       }
+      if (cambios.cupon !== undefined) s.cupon = cambios.cupon;
       // Después, por su cuenta, como Stripe: esto se llama dentro de un comando, y la
       // API de pruebas atiende de una en una. Esperar aquí al aviso sería esperarse a
       // sí mismo.

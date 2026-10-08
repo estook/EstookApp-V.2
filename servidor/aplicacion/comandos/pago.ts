@@ -13,6 +13,8 @@ import {
   cambiarLaSuscripcion,
   conStripe,
   elCatalogo,
+  elCuponDe,
+  elDescuentoDe,
   laAppPublica,
   laSuscripcionDe,
   losPagos,
@@ -29,13 +31,21 @@ import {
 
 const PLANES_QUE_SE_ELIGEN = ['esencial', 'pro', 'cadena', 'pausa'] as const;
 
-/** El texto junto al botón de pagar de Stripe: la renovación y cómo cancelar (0048, ocho). */
-function elAvisoDelPago(diasDePrueba: number | null): string {
+/**
+ * El texto junto al botón de pagar de Stripe: la renovación y cómo cancelar (0048,
+ * ocho). Con prueba y un descuento de código, se dice que el descuento va en el primer
+ * cobro: la página de Stripe no puede enseñarlo, porque se pone al acabar la prueba.
+ */
+function elAvisoDelPago(diasDePrueba: number | null, descuentoAlAcabar: number | null): string {
   const renovacion =
     'La suscripción se renueva sola al final de cada periodo, al precio de tu plan con el IVA incluido. La cancelas cuando quieras en Estook, en Ajustes → Suscripción, y sigue hasta el final de lo pagado.';
+  const conDescuento =
+    descuentoAlAcabar === null
+      ? ''
+      : ` Con tu código, ese primer cobro lleva un ${String(descuentoAlAcabar)} % de descuento.`;
   return diasDePrueba === null
     ? renovacion
-    : `Hoy no se cobra nada: tu prueba dura ${String(diasDePrueba)} días y el primer cobro es al acabar. Si cancelas antes, no se te cobra nada. ${renovacion}`;
+    : `Hoy no se cobra nada: tu prueba dura ${String(diasDePrueba)} días y el primer cobro es al acabar.${conDescuento} Si cancelas antes, no se te cobra nada. ${renovacion}`;
 }
 
 async function laMia(
@@ -125,6 +135,16 @@ export const empezarAPagar = comando<z.infer<typeof entradaEmpezarAPagar>, { url
 
     const primeraVez = fila.stripeSuscripcion === null;
     const diasDePrueba = primeraVez ? fila.diasDePrueba : null;
+    // El descuento del código con que llegó (0076): la primera vez y en el pago
+    // mensual. Sin prueba, va en esta página; con prueba, se pone al acabarla.
+    const descuento =
+      primeraVez && entrada.intervalo === 'mes'
+        ? await elDescuentoDe(contexto, organizacionId)
+        : null;
+    const cupon =
+      descuento !== null && diasDePrueba === null
+        ? await elCuponDe(contexto, descuento.porcentaje)
+        : null;
     const app = laAppPublica();
     const pago = await conStripe(contexto, () =>
       pagos.crearPago({
@@ -136,7 +156,11 @@ export const empezarAPagar = comando<z.infer<typeof entradaEmpezarAPagar>, { url
         iva: catalogo.iva,
         exito: `${app}?pago=hecho&sesion={CHECKOUT_SESSION_ID}`,
         cancelar: `${app}?pago=cancelado`,
-        aviso: elAvisoDelPago(diasDePrueba),
+        aviso: elAvisoDelPago(
+          diasDePrueba,
+          descuento !== null && diasDePrueba !== null ? descuento.porcentaje : null,
+        ),
+        cupon,
       }),
     );
     return { url: pago.url };

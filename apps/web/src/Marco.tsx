@@ -1,5 +1,7 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Logo } from '@estook/ui';
+import { conLaLlegada } from '@estook/dominio';
+import { laLlegadaDeAqui } from './laLlegada.ts';
 
 /**
  * El marco de la web pública (0042): la marca y los dos accesos arriba, el pie con
@@ -20,22 +22,26 @@ export function Marco({
   /** Desde una subpágina (`privacidad/`), la raíz está un nivel arriba. */
   readonly raiz?: string;
 }) {
+  // El código del vendedor y lo demás del enlace pasan a cada enlace de la web, para
+  // que llegue a crear cuenta aunque se mire antes la privacidad (A3 · 0076).
+  const [llegada] = useState(laLlegadaDeAqui);
+  const a = (destino: string) => conLaLlegada(destino, llegada);
   return (
     <div className="flex min-h-dvh flex-col bg-fondo">
       <header className="border-b border-borde bg-superficie">
         <div className="mx-auto flex max-w-[64rem] items-center justify-between gap-e3 px-e4 py-e3">
-          <a href={raiz} aria-label="Estook, la portada">
+          <a href={a(raiz)} aria-label="Estook, la portada">
             <Logo alto={28} />
           </a>
           <nav aria-label="Acceso" className="flex items-center gap-e2">
             <a
-              href={`${raiz}${A_ENTRAR}`}
+              href={a(`${raiz}${A_ENTRAR}`)}
               className="inline-flex min-h-toque items-center rounded-medio px-e3 text-cuerpo text-texto hover:bg-fondo"
             >
               Iniciar sesión
             </a>
             <a
-              href={`${raiz}${A_CREAR_CUENTA}`}
+              href={a(`${raiz}${A_CREAR_CUENTA}`)}
               className="hidden min-h-toque items-center rounded-medio bg-naranja px-e4 text-cuerpo font-medium text-sobre-naranja hover:brightness-95 sm:inline-flex"
             >
               Crear cuenta
@@ -50,10 +56,10 @@ export function Marco({
         <div className="mx-auto flex max-w-[64rem] flex-wrap items-center justify-between gap-e3 px-e4 py-e4 text-secundario text-texto-suave">
           <span>Estook · tu cocina, bajo control</span>
           <nav aria-label="Legal" className="flex gap-e4">
-            <a href={`${raiz}privacidad/`} className="hover:text-texto">
+            <a href={a(`${raiz}privacidad/`)} className="hover:text-texto">
               Privacidad
             </a>
-            <a href={`${raiz}condiciones/`} className="hover:text-texto">
+            <a href={a(`${raiz}condiciones/`)} className="hover:text-texto">
               Condiciones
             </a>
           </nav>

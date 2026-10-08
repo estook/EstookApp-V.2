@@ -4,31 +4,40 @@
 >
 > Comprobado el 7 de octubre de 2026 por la tarde, leyendo la base de producción.
 >
-> | Qué                                  | Cómo está                                                                            |
-> | ------------------------------------ | ------------------------------------------------------------------------------------ |
-> | Pull requests                        | **Fusionadas hasta la #93** (C2, 7-oct). Abierta: **el plan de A3**, solo documentos |
-> | La base de datos                     | **57 de 57** migraciones, igual que `main`                                           |
-> | La API                               | **Desplegada con C2**: 70 y 156, los avisos al móvil y el reloj latiendo             |
-> | Los PDF (Cloudflare)                 | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep             |
-> | **Las copias de seguridad**          | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día    |
-> | A1 · la puerta del admin             | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor          |
-> | E1, V, O, E2, L, A2, R1, R2, H, I, C | **En producción**, el chat entero. Pago de prueba hecho: Pizzeriacazzo, 26-sep       |
+> | Qué                                  | Cómo está                                                                         |
+> | ------------------------------------ | --------------------------------------------------------------------------------- |
+> | Pull requests                        | **Fusionadas hasta la #93** (C2, 7-oct). Abierta: **A3 · Vendedores** (#94)       |
+> | La base de datos                     | **57 de 57** migraciones, igual que `main`                                        |
+> | La API                               | **Desplegada con C2**: 70 y 156, los avisos al móvil y el reloj latiendo          |
+> | Los PDF (Cloudflare)                 | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep          |
+> | **Las copias de seguridad**          | **Ninguna**: aplazadas hasta la mudanza (abajo). Se pueden encender cualquier día |
+> | A1 · la puerta del admin             | **Hecho**: `estookapp@gmail.com` y Santi dentro, los dos con segundo factor       |
+> | E1, V, O, E2, L, A2, R1, R2, H, I, C | **En producción**, el chat entero. Pago de prueba hecho: Pizzeriacazzo, 26-sep    |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · el plan de A3 · Vendedores
+## Lo que te toca ahora · A3 · Vendedores
 
-**Solo documentos**: ni migración ni despliegue. Es el plan de los vendedores, sus códigos y sus comisiones, en [`a3-vendedores.md`](a3-vendedores.md).
+Tus respuestas del 7-oct, construidas ([decisión 0076](decisiones/0076-a3-los-vendedores.md)). **Una migración** (la **0058**) y **un despliegue**. Ninguna clave nueva, y **en Stripe no hay que tocar nada**: el cupón de cada descuento y el aviso nuevo de «la prueba acaba» los pide el código solo, la primera vez que alguien abra la página de pago.
 
-### 1 · Leerlo y contestar
+**Qué trae:**
 
-Ábrelo en GitHub (en el pull request, **Files changed** → `docs/a3-vendedores.md` → los tres puntos → **View file**). Lo importante está en **«Las seis preguntas»**: cada una lleva mi recomendación y el porqué. **Contéstame en el chat con un «sí» o un «no» a cada número**, por ejemplo «1 sí, 2 sí, 3 no…». Si algo de **«Lo que decido yo»** no te cuadra, dímelo con su número.
+- **Vendedores**, una pestaña nueva del admin. Cada vendedor es **una ficha nuestra**: no entra en Estook.
+- **Sus códigos** (`JUAN26`), cada uno con su campaña, **su enlace** (`estook.com/?ref=JUAN26`), **su QR** para un folleto y, si quieres, **un descuento del primer mes**. Un código no se repite nunca y su descuento no se cambia: para otro, otro código.
+- **Quien llega por el enlace** ve en la portada «Con JUAN26: 50 % el primer mes», y en «Crear cuenta» **el código ya escrito**. Sin enlace, la casilla «¿Tienes un código de vendedor?».
+- **El descuento** va en el primer cobro mensual: sin prueba, en la página de pago; con prueba, al acabarla. En el anual, no.
+- **En Clientes**, cada ficha dice **con quién y por dónde llegó** (Datos → «Cómo llegó»), y la lista se filtra por vendedor. Si alguien se olvidó del código, **«Poner el vendedor»**, con motivo.
+- **Las cifras de cada vendedor**: traídos, pagan, en prueba, se van, lo usan, dormidos, lo que dejan al mes y cuánto llevan.
 
-### 2 · Fusionar
+### 1 · Fusionar
 
-En **github.com** → **Pull requests** → **«A3 · Vendedores, el plan…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. Después, en PowerShell, en la carpeta del proyecto:
+En **github.com** → **Pull requests** → **«A3 · Vendedores…»** (la #94) → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+
+### 2 · Aplicar la migración
+
+**Qué hace:** crea los vendedores, sus códigos y con quién llega cada cliente nuevo. **No cambia nada de lo que hay.** En PowerShell, en la carpeta del proyecto:
 
 ```bash
 git checkout main
@@ -38,7 +47,41 @@ git checkout main
 git pull
 ```
 
-**Qué tiene que salir:** «Fast-forward» y la lista de ficheros, entre ellos `docs/a3-vendedores.md`. **Si alguna comprobación sale en rojo o «cancelled», para y avísame.**
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0058_los_vendedores.sql ... hecho
+  1 migracion(es) aplicadas · 58 en total
+```
+
+**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+### 3 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 73» consultas y «los 162» comandos.
+
+### 4 · Probarlo
+
+La web se publica sola al fusionar, en unos minutos.
+
+1. **Un vendedor:** en `estook.com/admin/` → **Vendedores** → **Nuevo vendedor**. Si es solo para probar, llámalo «Prueba»; luego lo das de baja (no se borra).
+2. **Su código:** en su ficha → **Nuevo código** → por ejemplo `PRUEBA1`, descuento **50 %** → **Crear el código**. Pulsa **«El QR»**: sale el QR y lo puedes bajar.
+3. **Entrar por su enlace:** **«Copiar el enlace»** y pégalo en una **ventana privada**. En la portada tiene que salir **«Con PRUEBA1: 50 % el primer mes»**. Pulsa **Crear cuenta**: el código sale **ya escrito** y debajo, «Código correcto».
+4. **Crear la cuenta** con un correo que no uses en Estook (por ejemplo `tucorreo+vendedor@gmail.com`). Al elegir plan sale **«Con PRUEBA1: 50 % el primer mes»**.
+5. **En el admin**, **Clientes** → busca `PRUEBA1` → su ficha dice **«Con Prueba · PRUEBA1»**. Y en **Vendedores**, Prueba ya tiene **1 traído**.
+6. Cuando acabes: en la ficha de Prueba, **Dar de baja**. Su código se cierra.
+
+Si algo no sale como aquí, hazle una captura y me la pasas.
 
 ---
 

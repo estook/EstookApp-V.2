@@ -10,6 +10,7 @@ import {
   type EstadoDeSuscripcion,
   type FechaOperativa,
   type Intervalo,
+  type OrigenDeLlegada,
   type PestanaDeClientes,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -61,6 +62,14 @@ export interface ClienteEnLista {
   readonly conStripe: boolean;
   /** Para «Abrir en Stripe»: el cliente de Stripe y si es del modo de prueba. */
   readonly stripe: { readonly cliente: string; readonly prueba: boolean } | null;
+  /** Con qué vendedor vino (A3 · 0076), y con qué código. Nulo: sin vendedor. */
+  readonly vendedor: {
+    readonly id: string;
+    readonly nombre: string;
+    readonly codigo: string;
+  } | null;
+  /** Por dónde llegó. `sin_saber`: antes de A3. */
+  readonly origen: OrigenDeLlegada;
 }
 
 interface FilaDeCliente {
@@ -111,8 +120,24 @@ export async function losClientes(contexto: Contexto): Promise<{
   const fichas = await contexto.sql<{ organizacion_id: string; tipo: string | null }[]>`
     select organizacion_id, tipo from plataforma.ficha_comercial
   `;
+  // Con quién y por dónde llegó cada uno (A3 · 0076).
+  const llegadas = await contexto.sql<
+    {
+      organizacion_id: string;
+      origen: string;
+      codigo: string | null;
+      vendedor_id: string | null;
+      vendedor: string | null;
+    }[]
+  >`
+    select l.organizacion_id, l.origen, c.codigo, v.id as vendedor_id, v.nombre as vendedor
+      from plataforma.llegada l
+      left join plataforma.codigo_de_vendedor c on c.id = l.codigo_id
+      left join plataforma.vendedor v on v.id = c.vendedor_id
+  `;
   const actividadDe = new Map(fotos.map((f) => [f.organizacion_id, f.actividad]));
   const tipoDe = new Map(fichas.map((f) => [f.organizacion_id, f.tipo]));
+  const llegadaDe = new Map(llegadas.map((l) => [l.organizacion_id, l]));
   const foto = fotos.reduce<string | null>(
     (ultima, f) => (ultima === null || f.dia > ultima ? f.dia : ultima),
     null,
@@ -142,6 +167,11 @@ export async function losClientes(contexto: Contexto): Promise<{
     const ultimo = f.ultimo_acceso === null ? null : new Date(f.ultimo_acceso);
     const tipoPuesto = tipoDe.get(f.organizacion_id) ?? null;
     const cuota = plan === null || f.de_la_casa ? null : laCuota(plan, intervalo, locales);
+    const llegada = llegadaDe.get(f.organizacion_id);
+    const vendedor =
+      llegada?.vendedor_id == null || llegada.codigo === null || llegada.vendedor === null
+        ? null
+        : { id: llegada.vendedor_id, nombre: llegada.vendedor, codigo: llegada.codigo };
     return {
       organizacionId: f.organizacion_id,
       codigo: f.codigo,
@@ -175,14 +205,20 @@ export async function losClientes(contexto: Contexto): Promise<{
         f.stripe_cliente === null
           ? null
           : { cliente: f.stripe_cliente, prueba: f.stripe_modo !== 'real' },
-      buscable: f.buscable,
+      vendedor,
+      origen: (llegada?.origen ?? 'sin_saber') as OrigenDeLlegada,
+      // Se le busca también por el vendedor y su código: «los de JUAN26».
+      buscable:
+        vendedor === null
+          ? f.buscable
+          : `${f.buscable} ${comoSeBusca(`${vendedor.nombre} ${vendedor.codigo}`)}`,
     };
   });
   return { clientes, foto };
 }
 
 /** Lo buscable es para buscar en el servidor: no sale. */
-function sinLoBuscable({
+export function sinLoBuscable({
   buscable: _,
   ...cliente
 }: ClienteEnLista & { buscable: string }): ClienteEnLista {
@@ -214,6 +250,8 @@ export const entradaLosClientes = z
     alta: z.enum(['30', '90', 'antes']).optional(),
     /** Por tramos: la última vez que entró alguien de su gente. */
     acceso: z.enum(['hoy', '7', '30', 'mas', 'nunca']).optional(),
+    /** Con qué vendedor vino (A3), o «ninguno». */
+    vendedor: z.union([z.string().uuid(), z.literal('ninguno')]).optional(),
     orden: z.enum(ORDENES).optional(),
     sentido: z.enum(['asc', 'desc']).optional(),
     desde: z.coerce.number().int().min(0).max(100_000).optional(),
@@ -271,7 +309,9 @@ export function losQueCaben(
       (e.plan === undefined || (e.plan === 'sin_plan' ? c.plan === null : c.plan === e.plan)) &&
       (e.tipo === undefined || c.tipo === e.tipo) &&
       (e.alta === undefined || enElTramoDeAlta(e.alta, c.diasDeCliente)) &&
-      (e.acceso === undefined || enElTramoDeAcceso(e.acceso, c.diasSinEntrar)),
+      (e.acceso === undefined || enElTramoDeAcceso(e.acceso, c.diasSinEntrar)) &&
+      (e.vendedor === undefined ||
+        (e.vendedor === 'ninguno' ? c.vendedor === null : c.vendedor?.id === e.vendedor)),
   );
 }
 
@@ -435,6 +475,20 @@ export interface FichaDeCliente {
   } | null;
   /** Lo que hay que saber en diez segundos, en frases cortas. */
   readonly alertas: readonly string[];
+  /**
+   * Cómo llegó (A3 · 0076): las marcas del enlace, el descuento de su código y si el
+   * vendedor lo puso a mano un admin. Nulo: llegó antes de A3 y nadie lo ha puesto.
+   */
+  readonly llegada: {
+    readonly fuente: string | null;
+    readonly medio: string | null;
+    readonly campana: string | null;
+    readonly web: string | null;
+    readonly descuento: number | null;
+    readonly descuentoPuestoEn: string | null;
+    readonly puestoPor: string | null;
+    readonly puestoEn: string | null;
+  } | null;
 }
 
 export const adminUnCliente = consulta<{ organizacion_id: string }, FichaDeCliente>({
@@ -514,6 +568,27 @@ export const adminUnCliente = consulta<{ organizacion_id: string }, FichaDeClien
        where n.organizacion_id = ${id}
        order by n.fijada desc, n.creada_en desc limit 100
     `;
+    const llegadas = await contexto.sql<
+      {
+        fuente: string | null;
+        medio: string | null;
+        campana: string | null;
+        web: string | null;
+        descuento: number | null;
+        descuento_puesto_en: string | null;
+        puesto_por: string | null;
+        puesto_en: string | null;
+      }[]
+    >`
+      select l.fuente, l.medio, l.campana, l.web, c.descuento,
+             l.descuento_puesto_en::text as descuento_puesto_en,
+             p.nombre as puesto_por, l.puesto_en::text as puesto_en
+        from plataforma.llegada l
+        left join plataforma.codigo_de_vendedor c on c.id = l.codigo_id
+        left join estook.persona p on p.id = l.puesto_por
+       where l.organizacion_id = ${id}
+    `;
+    const llegada = llegadas[0];
     const personas = dentro?.datos.personas ?? [];
     const idsDeSuGente = personas.map((p) => p.id);
     const cambios =
@@ -575,6 +650,20 @@ export const adminUnCliente = consulta<{ organizacion_id: string }, FichaDeClien
               : 'pendiente',
       })),
       alertas,
+      llegada:
+        llegada === undefined
+          ? null
+          : {
+              fuente: llegada.fuente,
+              medio: llegada.medio,
+              campana: llegada.campana,
+              web: llegada.web,
+              descuento:
+                llegada.descuento === null || llegada.descuento === 0 ? null : llegada.descuento,
+              descuentoPuestoEn: llegada.descuento_puesto_en,
+              puestoPor: llegada.puesto_por,
+              puestoEn: llegada.puesto_en,
+            },
     };
   },
 });

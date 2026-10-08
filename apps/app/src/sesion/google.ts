@@ -12,6 +12,8 @@
  * que la política de seguridad no se abre (ver `identidad-de-google.ts`).
  */
 
+import type { LlegadaDelEnlace } from '@estook/dominio';
+
 const DONDE_SE_GUARDA = 'estook.google';
 
 export type IntencionConGoogle = 'entrar' | 'crear';
@@ -23,6 +25,8 @@ interface LoGuardado {
   readonly intencion: IntencionConGoogle;
   readonly negocio?: string;
   readonly aceptaCondiciones?: true;
+  /** El código de vendedor y por dónde llegó (A3): lo que se escribió para crear la cuenta. */
+  readonly llegada?: LlegadaDelEnlace;
 }
 
 export type VueltaDeGoogle =
@@ -33,6 +37,7 @@ export type VueltaDeGoogle =
       readonly intencion: IntencionConGoogle;
       readonly negocio?: string;
       readonly aceptaCondiciones?: true;
+      readonly llegada?: LlegadaDelEnlace;
     }
   | { readonly fallo: string };
 
@@ -56,6 +61,7 @@ export async function irAGoogle(
     readonly intencion: IntencionConGoogle;
     readonly negocio?: string;
     readonly aceptaCondiciones?: true;
+    readonly llegada?: LlegadaDelEnlace;
   },
 ): Promise<void> {
   const verificador = base64Url(crypto.getRandomValues(new Uint8Array(32)));
@@ -136,5 +142,6 @@ export function laVueltaDeGoogle(): VueltaDeGoogle | null {
     intencion: guardado.intencion,
     ...(guardado.negocio === undefined ? {} : { negocio: guardado.negocio }),
     ...(guardado.aceptaCondiciones === undefined ? {} : { aceptaCondiciones: true as const }),
+    ...(guardado.llegada === undefined ? {} : { llegada: guardado.llegada }),
   };
 }

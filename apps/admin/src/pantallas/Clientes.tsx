@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Boton,
   Botones,
@@ -27,6 +27,7 @@ import {
   type LaLista,
   type Pestana,
 } from '../datos/clientes.ts';
+import type { LosVendedores } from '../datos/vendedores.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { FichaDelCliente } from './FichaDelCliente.tsx';
 
@@ -58,6 +59,8 @@ interface Filtros {
   readonly tipo: string;
   readonly alta: string;
   readonly acceso: string;
+  /** Con qué vendedor vino (A3): su identificador, o «ninguno». */
+  readonly vendedor: string;
 }
 
 const SIN_FILTROS: Filtros = {
@@ -67,10 +70,14 @@ const SIN_FILTROS: Filtros = {
   tipo: '',
   alta: '',
   acceso: '',
+  vendedor: '',
 };
 
 const OPCIONES: Readonly<
-  Record<keyof Filtros, { etiqueta: string; opciones: readonly { valor: string; texto: string }[] }>
+  Record<
+    Exclude<keyof Filtros, 'vendedor'>,
+    { etiqueta: string; opciones: readonly { valor: string; texto: string }[] }
+  >
 > = {
   contrato: {
     etiqueta: 'Contrato',
@@ -193,6 +200,17 @@ export function Clientes() {
     getNextPageParam: (ultima, todas) =>
       ultima.hayMas ? todas.reduce((n, p) => n + p.clientes.length, 0) : undefined,
     placeholderData: (antes) => antes,
+  });
+
+  // Los vendedores, para filtrar por ellos (A3). La misma consulta que su pestaña.
+  const vendedores = useQuery({
+    queryKey: ['admin_los_vendedores'],
+    queryFn: async () => {
+      const respuesta = await cliente.consultar<LosVendedores>('admin_los_vendedores');
+      if (!respuesta.ok) throw new FalloDeLaApi(respuesta.error);
+      return respuesta.datos;
+    },
+    enabled: verFiltros,
   });
 
   const primera = consulta.data?.pages[0];
@@ -379,7 +397,7 @@ export function Clientes() {
 
         {verFiltros && (
           <div className="grid grid-cols-1 gap-e3 rounded-grande bg-superficie p-e4 shadow-s1 sm:grid-cols-2 lg:grid-cols-3">
-            {(Object.keys(OPCIONES) as (keyof Filtros)[]).map((clave) => (
+            {(Object.keys(OPCIONES) as (keyof typeof OPCIONES)[]).map((clave) => (
               <Selector
                 key={clave}
                 etiqueta={OPCIONES[clave].etiqueta}
@@ -392,6 +410,22 @@ export function Clientes() {
                 }}
               />
             ))}
+            <Selector
+              etiqueta="Vendedor"
+              sinElegir="Todos"
+              opciones={[
+                { valor: 'ninguno', texto: 'Sin vendedor' },
+                ...(vendedores.data?.vendedores ?? []).map((v) => ({
+                  valor: v.id,
+                  texto: v.nombre,
+                })),
+              ]}
+              value={filtros.vendedor}
+              onChange={(evento) => {
+                const valor = evento.target.value;
+                setFiltros((antes) => ({ ...antes, vendedor: valor }));
+              }}
+            />
             <div className="md:hidden">
               <Selector
                 etiqueta="Ordenar"

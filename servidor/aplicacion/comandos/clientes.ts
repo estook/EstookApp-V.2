@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { comoCsv, masDias, NOMBRE_DE_LA_ACTIVIDAD, type FechaOperativa } from '@estook/dominio';
+import {
+  comoCsv,
+  masDias,
+  NOMBRE_DE_LA_ACTIVIDAD,
+  NOMBRE_DEL_ORIGEN,
+  type FechaOperativa,
+} from '@estook/dominio';
 import { huellaDeToken, tokenNuevo } from '../../dominio/secretos.ts';
 import { anotarEnElAdmin, comprobarMiCodigo } from '../admin.ts';
 import { hacerLaFotoDelUso } from '../clientes.ts';
@@ -573,6 +579,8 @@ export const adminExportarLosClientes = comando<
         'Cuota al mes (€)',
         'Locales',
         'Correos',
+        'Vendedor',
+        'Por dónde llegó',
       ],
       lista.map((c) => [
         c.nombre,
@@ -585,6 +593,8 @@ export const adminExportarLosClientes = comando<
         c.cuotaAlMes === null ? '' : (c.cuotaAlMes / 100).toFixed(2).replace('.', ','),
         c.locales,
         c.correos.join(' '),
+        c.vendedor === null ? '' : `${c.vendedor.nombre} (${c.vendedor.codigo})`,
+        NOMBRE_DEL_ORIGEN[c.origen],
       ]),
     );
     await anotarEnElAdmin(contexto, {

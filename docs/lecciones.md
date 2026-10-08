@@ -567,3 +567,13 @@
      guardar los datos, y su cuenta es de solo lectura, que es lo que compra; la lista de
      Clientes la metía en «Sin pagar» y no contaba su cuota. Ahora «En Pausa» va en
      Pagando, en Clientes, en Vendedores y en Ventas (`estaEnPausa`, 0077).
+157. **Una comilla invertida en un comentario SQL rompe la plantilla que lo lleva.** Un
+     comentario dentro de `contexto.sql` llevaba la palabra «set» entre comillas
+     invertidas: la comilla cerró la plantilla de JavaScript y el servidor dejó de
+     compilar. Los comentarios de dentro de una consulta van sin ellas (`productos.ts`,
+     0078). Lo cazó `pnpm tipos`.
+158. **Cerrar un inventario tarde no puede comerse lo que entró después de contarlo.**
+     Contado a las 7 y cerrado a las 11, la diferencia es con lo que decía el libro a las 7
+     (`decia`, `hasta_movimiento`), y se suma a lo que haya al cerrar. Comparando con lo de
+     las 11, el albarán de las 9 desaparecía. Lo prueba `contar-el-almacen.prueba.ts`, que
+     sale en rojo con la comparación de antes (0078).

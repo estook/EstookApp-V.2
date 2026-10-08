@@ -65,6 +65,12 @@ export interface ProductoEnLista {
     readonly cuanto: number;
     readonly motivo: string;
   } | null;
+  /**
+   * El mínimo calculado (M8 · 0078): si lo rehace Estook cada lunes, y cuánto saldría
+   * y por qué. Opcionales: una API sin desplegar no los trae.
+   */
+  readonly minimoCalculado?: boolean;
+  readonly minimoQueCalcula?: { readonly minimo: number; readonly porque: string } | null;
 
   // ── M7, repaso ─────────────────────────────────────────────────────────────
   /** Si tiene algo en el congelador. */

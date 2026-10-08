@@ -94,9 +94,18 @@ const Mermas = lazy(async () => {
  * trae consigo: la lista entera con una casilla por producto y el lector del
  * fichero. Bajarla con el libro sería pagarla trescientas veces para usarla una.
  */
-const Recuento = lazy(async () => {
-  const modulo = await import('./Recuento.tsx');
-  return { default: modulo.Recuento };
+const Inventario = lazy(async () => {
+  const modulo = await import('./Inventario.tsx');
+  return { default: modulo.Inventario };
+});
+
+/**
+ * El valor del almacén en cualquier fecha (M8 · 0078): una vista de Productos que
+ * solo abre quien ve precios, así que no se baja con la lista.
+ */
+const ValorDelAlmacen = lazy(async () => {
+  const modulo = await import('./ValorDelAlmacen.tsx');
+  return { default: modulo.ValorDelAlmacen };
 });
 
 /**
@@ -131,7 +140,14 @@ export function Almacen({ destino, vista }: { readonly destino: string; readonly
   return (
     <>
       {destino === 'resumen' && <Resumen alAbrirProducto={setProductoAbierto} />}
-      {destino === 'productos' && <Productos vista={vista} alAbrirProducto={setProductoAbierto} />}
+      {destino === 'productos' && vista !== 'valor' && (
+        <Productos vista={vista} alAbrirProducto={setProductoAbierto} />
+      )}
+      {destino === 'productos' && vista === 'valor' && (
+        <Suspense fallback={<Cargando que="lo que vale tu almacén" />}>
+          <ValorDelAlmacen alAbrirProducto={setProductoAbierto} />
+        </Suspense>
+      )}
       {destino === 'movimientos' && vista !== 'inventario' && (
         <Suspense fallback={<Cargando que="el libro de movimientos" />}>
           <Movimientos vista={vista} alAbrirProducto={setProductoAbierto} />
@@ -143,8 +159,8 @@ export function Almacen({ destino, vista }: { readonly destino: string; readonly
         </Suspense>
       )}
       {destino === 'movimientos' && vista === 'inventario' && (
-        <Suspense fallback={<Cargando que="tu género" />}>
-          <Recuento />
+        <Suspense fallback={<Cargando que="el inventario" />}>
+          <Inventario />
         </Suspense>
       )}
       {destino === 'compras' && (

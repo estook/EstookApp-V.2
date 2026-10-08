@@ -49,6 +49,7 @@ import { Congelar, QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
 import { HistoricoDePrecios } from './HistoricoDePrecios.tsx';
 import { FotoDeLaFicha } from './FotoDeLaFicha.tsx';
 import { AnularMovimiento } from './AnularMovimiento.tsx';
+import { PropuestaDeMinimo } from './MinimosPropuestos.tsx';
 import { IconoAnadir, IconoQuitar } from '@estook/iconos';
 import {
   COMO_SE_LLAMA_EL_MOVIMIENTO,
@@ -297,8 +298,16 @@ export function FichaDeProducto({
               {datos.producto.minimo !== null && (
                 <Par que="Mínimo">
                   {conUnidadDeUso(datos.producto.minimo, datos.producto.unidadDeUso)}
+                  {datos.producto.minimoCalculado === true && (
+                    <span className="font-normal text-texto-suave">
+                      {' '}
+                      · lo rehace Estook cada lunes
+                    </span>
+                  )}
                 </Par>
               )}
+              {/* El que propone Estook (M8 · 0078, 3A), si se separa del que hay. */}
+              <PropuestaDeMinimo producto={datos.producto} />
               {/* Solo con algo congelado: es lo que decide su aviso (0049). */}
               {datos.producto.congelado && (
                 <Par que="Congelado aguanta">

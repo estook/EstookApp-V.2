@@ -57,6 +57,10 @@ export const TIPOS_DE_AVISO = [
   'fichaje.sin_apuntar',
   // ── C2 (decisión 0075) ──────────────────────────────────────────────────
   'chat.confirmar',
+  // ── M8 (decisión 0078) ──────────────────────────────────────────────────
+  'inventario.toca',
+  'inventario.contado',
+  'inventario.recontar',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -309,6 +313,36 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: true,
+    movilDeFabrica: true,
+  },
+
+  // ── M8 (decisión 0078) ──────────────────────────────────────────────────
+  //
+  // Contar y cerrar son dos pasos (2A): quien cierra se entera de que hay algo
+  // contado, y quien contó, de que le piden que lo vuelva a contar. Y los lunes,
+  // lo que toca contar, a quien responde del inventario.
+  'inventario.toca': {
+    nombre: 'Toca contar',
+    explica: 'Los lunes: lo que más vale cada semana, y lo demás una vez al mes.',
+    grupo: 'Almacén',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: false,
+  },
+  'inventario.contado': {
+    nombre: 'Alguien manda lo que ha contado',
+    explica: 'Para que lo mires y lo cierres. Dice cuántos no cuadran.',
+    grupo: 'Almacén',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: false,
+  },
+  'inventario.recontar': {
+    nombre: 'Te piden que vuelvas a contar algo',
+    explica: 'Quien cierra el inventario quiere que lo mires otra vez.',
+    grupo: 'Almacén',
+    deTuEquipo: false,
+    correoDeFabrica: false,
     movilDeFabrica: true,
   },
 };
@@ -585,6 +619,49 @@ export function avisoDeBajoMinimo(productos: readonly string[]): LoQueDiceUnAvis
   return {
     titulo: `${plural(productos.length, 'producto', 'productos')} bajo mínimo`,
     detalle: `${lista.charAt(0).toUpperCase()}${lista.slice(1)}.`,
+  };
+}
+
+/** Una lista corta de nombres: «Pulpo, merluza y 3 más». */
+function listaCorta(productos: readonly string[]): string {
+  const nombrados = productos.slice(0, PRODUCTOS_QUE_SE_NOMBRAN);
+  const quedan = productos.length - nombrados.length;
+  return quedan > 0 ? `${nombrados.join(', ')} y ${String(quedan)} más` : enumerar(nombrados);
+}
+
+/** «Toca contar 12 productos» · «Pulpo, solomillo, aceite… Los que más valen.» (M8 · 0078). */
+export function avisoDeTocaContar(productos: readonly string[], frase: string): LoQueDiceUnAviso {
+  const lista = listaCorta(productos);
+  return {
+    titulo: `Toca contar ${plural(productos.length, 'producto', 'productos')}`,
+    detalle: `${lista.charAt(0).toUpperCase()}${lista.slice(1)}. ${frase}`,
+  };
+}
+
+/** «Marcos ha contado cocina: 3 no cuadran» (M8 · 0078). */
+export function avisoDeInventarioContado(
+  quienes: readonly string[],
+  zona: string | null,
+  contados: number,
+  noCuadran: number,
+): LoQueDiceUnAviso {
+  const quien = quienes.length === 0 ? 'Alguien' : enumerar(quienes);
+  const que = zona === null ? 'el almacén' : zona.toLowerCase();
+  return {
+    titulo: `${quien} ha contado ${que}`,
+    detalle: `${plural(contados, 'producto', 'productos')}${noCuadran === 0 ? ', y cuadra todo' : `, ${String(noCuadran)} no ${noCuadran === 1 ? 'cuadra' : 'cuadran'}`}. Míralo y ciérralo.`,
+  };
+}
+
+/** «Vuelve a contar 2 productos» · «Pulpo y merluza.» (M8 · 0078). */
+export function avisoDeRecontar(
+  productos: readonly string[],
+  quien: string | null,
+): LoQueDiceUnAviso {
+  const lista = listaCorta(productos);
+  return {
+    titulo: `Vuelve a contar ${plural(productos.length, 'producto', 'productos')}`,
+    detalle: `${lista.charAt(0).toUpperCase()}${lista.slice(1)}.${quien === null ? '' : ` Te lo pide ${quien}.`}`,
   };
 }
 

@@ -15,6 +15,7 @@ import {
   ivaDeCompraPorDefecto,
   masDias,
   milesimas as enMilesimas,
+  minimoCalculado,
   cuantoPedir,
   previsionDeAgotamiento,
   proximoReparto,
@@ -23,6 +24,7 @@ import {
   type Consumo,
   type EstadoDeExistencias,
   type FechaOperativa,
+  type MinimoCalculado,
   type SugerenciaDeCompra,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -103,6 +105,13 @@ export interface ProductoEnLista {
   readonly seAgotaEn: string | null;
   /** Cuánto pedir en cajas enteras y por qué, contando con el reparto (M7). */
   readonly sugerencia: SugerenciaDeCompra | null;
+  /** Si su mínimo lo rehace Estook cada lunes (M8 · 0078). */
+  readonly minimoCalculado: boolean;
+  /**
+   * El mínimo que saldría con lo que se gasta y el reparto de su proveedor, y por qué
+   * (M8 · 0078). Nulo si todavía no se sabe a qué ritmo se gasta.
+   */
+  readonly minimoQueCalcula: MinimoCalculado | null;
 
   // ── M7, repaso · lo que vio Richi ──────────────────────────────────────────
   /** Si tiene algo en el congelador: un lote congelado que no se ha quitado. */
@@ -169,7 +178,7 @@ function sinPrecios(producto: ProductoEnLista): ProductoEnLista {
   return sinLosCamposDeDinero(producto, LO_QUE_ES_DINERO);
 }
 
-async function puedeVerPrecios(contexto: Contexto, localId: string): Promise<boolean> {
+export async function puedeVerPrecios(contexto: Contexto, localId: string): Promise<boolean> {
   const filas = await contexto.sql<{ puede: boolean }[]>`
     select estook.puede_ver('dato.precio_de_compra', ${localId}::uuid) as puede
   `;
@@ -215,6 +224,7 @@ interface FilaDeProducto {
   categoria_fiscal: string;
   notas: string | null;
   minimo: string | null;
+  minimo_calculado: boolean;
   cantidad: string | null;
   coste_medio: string | null;
   precio_centimos: string | null;
@@ -393,6 +403,7 @@ async function leerProductos(
            p.sin_verificar, p.peso_variable, p.es_ejemplo, p.activo,
            pv.nombre as proveedor, p.codigo_de_barras,
            p.minimo::text as minimo,
+           p.minimo_calculado,
            e.cantidad::text as cantidad,
            e.coste_milesimas::text as coste_medio,
            pr.precio_centimos::text as precio_centimos,
@@ -521,7 +532,7 @@ function cuandoLlegaria(fila: FilaDeProducto, reloj: RelojDelLocal) {
  * precio de hoy**, y se marca como estimado para que la pantalla lo diga. En
  * cuanto entre género con su precio, el medio deja de ser cero y manda él.
  */
-function loQueValeLoQueHay(
+export function loQueValeLoQueHay(
   cantidad: number,
   costeMedio: number | null,
   costeVigente: number | null,
@@ -620,6 +631,10 @@ function componer(
       },
       cuandoLlegaria(fila, reloj),
     ),
+    // El mínimo que saldría (3A · 0078): lo que se gasta × el mayor hueco entre
+    // repartos, con margen. La misma cuenta para la propuesta y para el lunes.
+    minimoCalculado: fila.minimo_calculado,
+    minimoQueCalcula: minimoCalculado(consumo.porDia, fila.dias_de_reparto, unidadDeUso),
 
     congelado: fila.congelado,
     congeladoCuanto: fila.congelado_cuanto === null ? null : Number(fila.congelado_cuanto),

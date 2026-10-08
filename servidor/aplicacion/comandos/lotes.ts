@@ -254,7 +254,9 @@ export const congelar = comando<EntradaCongelar, { loteId: string }>({
       const congelados = await contexto.sql<{ id: string; ya: boolean }[]>`
         update estook.lote
            set congelado_el = coalesce(congelado_el, ${hoy}::date),
-               cantidad = coalesce(${entrada.cuanto ?? null}::numeric, cantidad)
+               cantidad = coalesce(${entrada.cuanto ?? null}::numeric, cantidad),
+               -- Lo que se congela es lo que le queda (M8 · 0078): de ahí se gasta.
+               queda = coalesce(${entrada.cuanto ?? null}::numeric, queda)
          where id = ${entrada.lote_id}
            and producto_id = ${entrada.producto_id}
            and retirado_en is null

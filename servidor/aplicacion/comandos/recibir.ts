@@ -394,9 +394,9 @@ export const recibirAlbaran = comando<EntradaRecibirAlbaran, SalidaRecibirAlbara
 
       if (p.recibida.cantidadDeUso > 0 && ((lote !== null && lote !== '') || caduca !== null)) {
         const lotes = await contexto.sql<{ id: string }[]>`
-          insert into estook.lote (local_id, producto_id, codigo, caduca_el, recibido_el, es_ejemplo)
+          insert into estook.lote (local_id, producto_id, codigo, caduca_el, recibido_el, es_ejemplo, cantidad)
           values (${localId}, ${p.producto.id}, ${lote === '' ? null : lote}, ${caduca}::date,
-                  current_date, ${p.producto.esEjemplo})
+                  current_date, ${p.producto.esEjemplo}, ${p.recibida.cantidadDeUso})
           returning id
         `;
         loteId = lotes[0]?.id ?? null;

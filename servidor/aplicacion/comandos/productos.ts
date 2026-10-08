@@ -365,12 +365,12 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
       if (conFecha || entrada.congelado === true) {
         const lotes = await contexto.sql<{ id: string }[]>`
           insert into estook.lote (
-            local_id, producto_id, caduca_el, recibido_el, congelado_el, es_ejemplo
+            local_id, producto_id, caduca_el, recibido_el, congelado_el, es_ejemplo, cantidad
           )
           values (
             ${localId}, ${productoId}, ${entrada.caduca_el ?? null}::date, ${hoy}::date,
             case when ${entrada.congelado === true} then ${hoy}::date end,
-            false
+            false, ${entrada.cantidad_inicial ?? null}
           )
           returning id
         `;
@@ -659,6 +659,11 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
              sin_verificar    = case when ${sinVerificarNuevo === null}
                                      then sin_verificar
                                      else ${sinVerificarNuevo ?? false} end,
+             -- El mínimo cambiado a mano deja de rehacerlo Estook (M8 · 0078): lo
+             -- que pone una persona no lo pisa el reloj del lunes. En el set, la
+             -- columna de la derecha es la de antes.
+             minimo_calculado = case when minimo is distinct from ${entrada.minimo}::numeric
+                                     then false else minimo_calculado end,
              actualizado_en   = now()
        where id = ${entrada.producto_id}
       returning id

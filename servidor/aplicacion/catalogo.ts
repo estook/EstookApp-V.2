@@ -51,6 +51,20 @@ import {
 } from './comandos/movimientos.ts';
 import { apuntarMerma } from './comandos/merma.ts';
 import {
+  cerrarInventario,
+  descartarInventario,
+  enviarLoContado,
+  pedirQueLoRecuenten,
+  recontar,
+  usarElMinimoCalculado,
+} from './comandos/inventario.ts';
+import {
+  elInventario,
+  minimosPropuestos,
+  unInventario,
+  valorDelAlmacen,
+} from './consultas/inventario.ts';
+import {
   acabarPausa,
   apuntarFichajeQueFalta,
   corregirFichaje,
@@ -291,6 +305,12 @@ export const catalogo = {
     // M6½ · el libro de movimientos, que se guardaba y no se podia leer entero,
     //        y el Panel que cada uno se monta.
     [misMovimientos.nombre]: misMovimientos,
+    // M8 · contar el almacén (0078): lo que toca, lo mandado, el valor en una fecha y
+    // los mínimos que propone Estook.
+    [elInventario.nombre]: elInventario,
+    [unInventario.nombre]: unInventario,
+    [valorDelAlmacen.nombre]: valorDelAlmacen,
+    [minimosPropuestos.nombre]: minimosPropuestos,
     [miPanel.nombre]: miPanel,
     // M6½ · la merma, que el libro sabia guardar y no habia forma de apuntar.
     [mermaDeHoy.nombre]: mermaDeHoy,
@@ -463,6 +483,13 @@ export const catalogo = {
     // `accion.cerrar_recuento` estaba en la matriz desde M1 y no tenia donde
     // usarse: siete modulos con la promesa rota (M7, las apps conectadas).
     [cerrarRecuento.nombre]: cerrarRecuento,
+    // M8 · contar y cerrar, dos pasos (0078, 2A); y el mínimo que propone Estook (3A).
+    [enviarLoContado.nombre]: enviarLoContado,
+    [cerrarInventario.nombre]: cerrarInventario,
+    [pedirQueLoRecuenten.nombre]: pedirQueLoRecuenten,
+    [recontar.nombre]: recontar,
+    [descartarInventario.nombre]: descartarInventario,
+    [usarElMinimoCalculado.nombre]: usarElMinimoCalculado,
     [crearProveedor.nombre]: crearProveedor,
     [cambiarProveedor.nombre]: cambiarProveedor,
     [crearCategoria.nombre]: crearCategoria,

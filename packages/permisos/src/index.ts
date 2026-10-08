@@ -299,6 +299,12 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   'fichaje.sin_apuntar': ['app.equipo'],
   // Lo que te falta confirmar del chat es tuyo, como tu horario (C2 · 0075).
   'chat.confirmar': [],
+  // ── M8 (0078) ──
+  // Lo que toca contar y lo que alguien ha contado, a quien cierra el inventario.
+  'inventario.toca': ['accion.cerrar_recuento'],
+  'inventario.contado': ['accion.cerrar_recuento'],
+  // Que lo vuelvas a contar, a quien lo contó: lleva el almacén.
+  'inventario.recontar': ['app.almacen'],
 };
 
 export function puedeRecibirElAviso(

@@ -1,7 +1,9 @@
 import {
   TITULO_DEL_INFORME,
   avisoDeBajoMinimo,
+  avisoDeTocaContar,
   avisoDeTocaPedir,
+  cuantoTocaContar,
   diaDeLaSemana,
   fechaEnElLocal,
   hayDatos,
@@ -14,7 +16,8 @@ import {
 } from '@estook/dominio';
 import { avisar, losQueLoQuieren, quienesPuedenRecibir, type QuienRecibe } from './avisos.ts';
 import { elProveedor, elRelojDelLocal, suProximoReparto } from './compras.ts';
-import { almacenHoy } from './consultas/almacen.ts';
+import { almacenHoy, productosActivos } from './consultas/almacen.ts';
+import { loQueTocaContar } from './inventario.ts';
 import { elInforme } from './consultas/informes.ts';
 import type { Contexto } from './contrato.ts';
 import { DIAS_ENTRE_LECTURAS, ponerAlDiaLaNota } from './nota-de-google.ts';
@@ -299,6 +302,76 @@ async function loQueEstaBajoMinimo(contexto: Contexto, local: LocalDelReloj): Pr
   return avisos;
 }
 
+// ── 4 · Los lunes, lo que toca contar y los mínimos (M8 · 0078) ─────────────
+
+/** Si hoy es lunes en el local: lo de inventario va una vez por semana. */
+function esLunes(contexto: Contexto, local: LocalDelReloj): FechaOperativa | null {
+  const hoy = fechaEnElLocal(contexto.ahora, local.zonaHoraria);
+  return diaDeLaSemana(hoy) === 1 ? hoy : null;
+}
+
+async function loQueTocaContarElLunes(contexto: Contexto, local: LocalDelReloj): Promise<number> {
+  const hoy = esLunes(contexto, local);
+  if (hoy === null) return 0;
+  let avisos = 0;
+  for (const quien of await aQuien(contexto, local.id, 'inventario.toca')) {
+    // Lo que toca, tal cual lo vería: con sus zonas (0038).
+    const { productos } = await comoSiFuera(
+      contexto,
+      { personaId: quien.personaId, organizacionId: local.organizacionId, localId: local.id },
+      (suyo) => loQueTocaContar(suyo, local.id),
+    );
+    if (productos.length === 0) continue;
+    avisos += await avisar(
+      contexto,
+      {
+        tipo: 'inventario.toca',
+        organizacionId: local.organizacionId,
+        localId: local.id,
+        clave: `${local.id}:${hoy}`,
+        sustituyeA: `${local.id}:`,
+        texto: () =>
+          avisoDeTocaContar(
+            productos.map((p) => p.nombre),
+            cuantoTocaContar(productos),
+          ),
+        ir: '/almacen/movimientos/inventario',
+        quien: null,
+      },
+      [quien],
+    );
+  }
+  return avisos;
+}
+
+/**
+ * Rehace el mínimo de los productos que lo dejaron en manos de Estook (3A): lo que se
+ * gasta × el mayor hueco entre repartos, con margen. Lo hace a nombre de quien cierra
+ * el inventario, con sus permisos; sin nadie así en el local, no se toca nada.
+ */
+async function rehacerLosMinimos(contexto: Contexto, local: LocalDelReloj): Promise<number> {
+  if (esLunes(contexto, local) === null) return 0;
+  const quien = (await quienesPuedenRecibir(contexto, local.id, 'inventario.toca'))[0];
+  if (quien === undefined) return 0;
+  await comoSiFuera(
+    contexto,
+    { personaId: quien.personaId, organizacionId: local.organizacionId, localId: local.id },
+    async (suyo) => {
+      for (const producto of await productosActivos(suyo, local.id)) {
+        const calculado = producto.minimoQueCalcula;
+        if (!producto.minimoCalculado || calculado === null) continue;
+        if (calculado.minimo === producto.minimo) continue;
+        await suyo.sql`
+          update estook.producto set minimo = ${calculado.minimo}, actualizado_en = now()
+           where id = ${producto.id} and minimo_calculado
+        `;
+      }
+    },
+  );
+  // No avisa: el mínimo nuevo se ve en su ficha, con su porqué.
+  return 0;
+}
+
 // ── Todo junto ───────────────────────────────────────────────────────────────
 
 /** Las cuentas a las que se les avisa: las que pagan o están en prueba, sin los ejemplos. */
@@ -350,6 +423,8 @@ export async function loQueAvisaElReloj(
       ['avisar de los pedidos de mañana', () => losPedidosDeManana(contexto, local)],
       ['hacer los informes', () => losInformes(contexto, local)],
       ['avisar de lo que está bajo mínimo', () => loQueEstaBajoMinimo(contexto, local)],
+      ['avisar de lo que toca contar', () => loQueTocaContarElLunes(contexto, local)],
+      ['rehacer los mínimos', () => rehacerLosMinimos(contexto, local)],
     ];
     for (const [que, hacer] of pasos) {
       const hecho = await aparte(contexto, `${que} de ${local.nombre}`, hacer);

@@ -4,39 +4,87 @@
 >
 > Comprobado el 8 de octubre de 2026 a las 21:40, leyendo la base de producción.
 >
-> | Qué                         | Cómo está                                                                      |
-> | --------------------------- | ------------------------------------------------------------------------------ |
-> | Pull requests               | **Fusionadas hasta la #95** (A4, 8-oct). Abierta: **el plan de M8**            |
-> | La base de datos            | **59 de 59** migraciones, igual que `main`. 101 tablas                         |
-> | La API                      | **Desplegada con A4**: 74 y 163, los avisos al móvil y el reloj latiendo       |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día      |
-> | «Antes de M8»               | **Entero en producción**. Quedan pruebas tuyas: abajo, «Lo que queda de antes» |
-> | M8                          | **Su plan, con cuatro preguntas para ti**. Nada construido todavía             |
+> | Qué                         | Cómo está                                                                                    |
+> | --------------------------- | -------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #95** (A4, 8-oct). Abierta: **M8, el plan y la primera entrega** (#96) |
+> | La base de datos            | **59 de 59** migraciones, igual que `main`. 101 tablas                                       |
+> | La API                      | **Desplegada con A4**: 74 y 163, los avisos al móvil y el reloj latiendo                     |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                    |
+> | «Antes de M8»               | **Entero en producción**. Quedan pruebas tuyas: abajo, «Lo que queda de antes»               |
+> | M8                          | **Contestado (1A 2A 3A 4A) y la primera entrega construida**, sin fusionar                   |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · M8, el plan
+## Lo que te toca ahora · M8, la primera entrega (#96)
 
-**Qué es:** saber cuánto género se va sin que nadie lo apunte, y cuánto dinero es. Contar a menudo sin que cueste, el valor del almacén, lo gastado de verdad, el food cost real y la desviación con su causa. Todo, en [`m8-inventario-mermas-y-desviacion.md`](m8-inventario-mermas-y-desviacion.md).
+Tus respuestas del 8-oct, construidas ([decisión 0078](decisiones/0078-las-respuestas-de-m8.md)). **Una migración** (la **0060**) y **un despliegue**. Ninguna clave nueva.
 
-### 1 · Leer el plan y contestar
+**Qué trae:**
 
-En **github.com** → **Pull requests** → **«M8 · el plan…»** → pestaña **Files changed** → `docs/m8-inventario-mermas-y-desviacion.md` → los tres puntos de arriba a la derecha → **View file**. Las preguntas están al final.
+- **Contar y cerrar, dos pasos.** Cuenta quien lleva el almacén —el cocinero también— **sin ver lo que dice el libro**, y lo manda. Lo cierras tú (o el jefe de cocina), viendo **lo que más baila primero y en euros**.
+- **Lo contado se compara con lo que había al contarlo**: si entra un albarán entre que se cuenta y se cierra, no se pierde.
+- **Se cuenta como está en la estantería**: «2 cajas y 3 sueltas». Y lo contado **se guarda en el móvil** mientras se cuenta.
+- **«Que lo vuelvan a contar»** una línea que baila, y **descartar** lo contado con su porqué.
+- **«Toca contar»**: cada semana lo que más vale, lo demás una vez al mes. **Los lunes, en la campana.** Y **«Imprimir la hoja»**, sin las cifras del libro.
+- **El valor del almacén en cualquier fecha**: Productos → **Valor**.
+- **Los lotes se gastan solos**, primero el que antes caduca; el que se acaba deja de avisar.
+- **El mínimo que propone Estook**: en «Bajo mínimo» y en la ficha, con su porqué. El que aceptas lo rehace cada lunes.
 
-**Cómo contestar:** en el chat, **la letra de cada una**, por ejemplo `1A 2A 3A 4A`. Si alguna de «Lo que decido yo» no te cuadra, dime su número.
+### 1 · Fusionar
 
-| Pregunta                                        | Lo que recomiendo                                                |
-| ----------------------------------------------- | ---------------------------------------------------------------- |
-| **1 · La desviación de los platos necesita M9** | **A**: M8 ya con todo lo demás y la barra; los platos, con M9    |
-| **2 · Quién cuenta y quién cierra**             | **A**: cuenta el cocinero también; cierra quien tiene el permiso |
-| **3 · El mínimo, calculado**                    | **A**: Estook lo propone y tú aceptas                            |
-| **4 · La merma con foto**                       | **A**: si quieres, nunca obligatoria                             |
+En **github.com** → **Pull requests** → **«M8 · …»** (la #96) → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
 
-### 2 · Fusionar el plan
+### 2 · Aplicar la migración
 
-Son **solo documentos**: no hay migración ni despliegue. En la pull request, con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+**Qué hace:** crea dónde guardar lo contado, de qué lote sale cada salida y qué mínimos rehace Estook. **No cambia lo que hay en el almacén.** Los lotes que ya tienes empiezan con lo que trajeron: **el primer inventario lo ajusta**. En PowerShell, en la carpeta del proyecto:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0060_contar_el_almacen.sql ... hecho
+  1 migracion(es) aplicadas · 60 en total
+```
+
+**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+### 3 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 78» consultas y «los 169» comandos.
+
+### 4 · Probarlo, con alguien de cocina
+
+La web se publica sola al fusionar, en unos minutos. En la app (**Ctrl + F5**; en el móvil, ciérrala y ábrela):
+
+1. **Tú**: **Almacén → Movimientos → Inventario**. Sale **«Toca contar»** con tus productos, los que más valen en naranja. Pulsa **«Contar una zona»** → **«Imprimir la hoja»**: sale la hoja **sin cifras**.
+2. **Un cocinero, en su móvil**: lo mismo, **«Contar una zona»**, cuenta tres o cuatro cosas —**no ve lo que dice el libro**— y **«Mandar lo contado»**. Sale **«Mandado»**.
+3. **Tú**: en la campana, **«… ha contado cocina»**. Tócalo: lo que más baila arriba, con lo que decía el libro y **en euros**. Marca uno **«Que lo vuelvan a contar»** → **«Que vuelvan a contar este»**.
+4. **El cocinero**: le llega **«Vuelve a contar 1 producto»**. Lo recuenta y **«Mandar lo recontado»**.
+5. **Tú**: **«Cerrar el inventario»** → **«Inventario cerrado»**.
+6. **Productos → Valor**: lo que vale hoy tu almacén; cambia **«El día»** a uno de la semana pasada y sale lo que valía entonces.
+7. **Productos → Bajo mínimo**: si sale **«Estook propone el mínimo de…»**, **Revisar** y **Usar** uno. Si no sale, es que todavía no hay una semana de salidas con las que calcularlo.
+8. **El lunes 12-oct**, en la campana: **«Toca contar…»**.
+
+Si algo no sale como aquí, hazle una captura y me la pasas.
 
 ---
 

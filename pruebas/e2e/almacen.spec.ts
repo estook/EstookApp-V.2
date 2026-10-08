@@ -1734,9 +1734,8 @@ test('el recuento cambia lo que hay y dice cuánto bailaba', async ({ page, requ
   await entrar(page, ROSA);
   await irAAlmacen(page, 'movimientos', 'inventario');
 
-  await expect(page.getByText('Esto cambia lo que hay, no lo suma')).toBeVisible({
-    timeout: 15_000,
-  });
+  // Desde M8, la entrada del inventario; contar es un botón (0078).
+  await page.getByRole('button', { name: 'Contar una zona' }).click({ timeout: 15_000 });
 
   // Se busca el que se está contando y se escribe lo contado. Lo que decía el
   // libro sale debajo, **nunca dentro de la casilla**: una cifra puesta de

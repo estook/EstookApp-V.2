@@ -1,6 +1,13 @@
 # M8 · Inventario, mermas y desviación · el plan
 
-**Escrito el 8 de octubre de 2026**, con A4 en producción y «antes de M8» cerrado (leído en la base ese día a las 21:40, en solo lectura: 59 migraciones, 101 tablas, la API con 74 y 163). Dice qué es M8, lo que ya hay, lo que falta, lo que decido yo, lo que cuesta, lo que no entra y **cuatro preguntas** para Richi, cada una explicada.
+**Escrito el 8 de octubre de 2026**, con A4 en producción y «antes de M8» cerrado (leído en la base ese día a las 21:40, en solo lectura: 59 migraciones, 101 tablas, la API con 74 y 163). **Contestado por Richi ese mismo día —las cuatro, A—** ([0078](decisiones/0078-las-respuestas-de-m8.md)), y **la primera entrega, construida** con la migración `0060`. Lo que cambió al construirla, al final de la 0078.
+
+| Pregunta                                        | Queda así                                                                                                                 |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **1 · La desviación de los platos necesita M9** | **A**: M8 con todo lo demás y lo vendido tal cual; los platos, la calibración y el food cost teórico, con M9              |
+| **2 · Quién cuenta y quién cierra**             | **A**, «como lo hagan los mejores»: a ciegas, con el libro de la hora de contar, en cajas y sueltas, y «que lo recuenten» |
+| **3 · El mínimo, calculado**                    | **A**: Estook lo propone, se acepta y lo rehace cada lunes; cambiarlo a mano lo apaga                                     |
+| **4 · La merma con foto**                       | **A**: si quieres, nunca obligatoria. En la segunda entrega                                                               |
 
 De dónde sale: M8 en la parte D del [Plan](maestros/Estook-Plan-de-Desarrollo.md), «Inventario y Mermas» en el capítulo 12 del [Manifiesto](maestros/Estook-Manifiesto.md), y los hallazgos 2, 3 y 4 de la [Auditoría de flujos](maestros/Estook-Auditoria-de-Flujos.md).
 
@@ -45,7 +52,7 @@ Comprobado en producción el 8-oct:
 
 ## Lo que decido yo, para que lo sepas
 
-Si alguna no te cuadra, dímelo y se cambia.
+Si alguna no te cuadra, dímelo y se cambia. **Tres se precisaron al construir** —la 1 (sin elegir el día ni salir en «Hoy»), la 2 (el valor, vista de Productos) y la 10 (lo que sobra no crea lote)—: en la [0078](decisiones/0078-las-respuestas-de-m8.md).
 
 1. **«Toca contar», los lunes** (se cambia el día en Ajustes): en «Hoy» del Panel y en la campana de quien cierra inventarios. **Elige por lo que se gasta**, no por lo que hay: un producto caro que no se mueve no se escapa. Mientras no hay datos, por lo que vale en cámara.
 2. **Dónde vive**: «Toca contar», «Inventario» y «Desviación», en Movimientos, donde ya está hacer inventario; el valor del almacén y el food cost, en el Resumen. Almacén ya tiene cinco destinos, que es el tope.
@@ -71,9 +78,9 @@ Si alguna no te cuadra, dímelo y se cambia.
 - **Los documentos con membrete** (inventario valorado, informe de desviación, etiquetas de cámara): M11. Hasta entonces, «Imprimir».
 - **El inventario de toda una cadena**, comparado entre locales: M24.
 
-## Las cuatro preguntas
+## Las cuatro preguntas, como se hicieron
 
-Cada una dice de qué va, un ejemplo, las opciones y lo que pasa con cada una. **Basta con contestar la letra.**
+Se quedan como se le hicieron a Richi, para que se entienda por qué se eligió lo que se eligió. Las respuestas, arriba.
 
 ### 1 · La desviación de los platos necesita sus fichas, que son M9. ¿Qué hacemos?
 

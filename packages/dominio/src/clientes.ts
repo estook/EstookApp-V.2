@@ -78,6 +78,9 @@ export const NOMBRE_DE_LA_PESTANA: Readonly<Record<PestanaDeClientes, string>> =
  *     bajando—, y los que tienen un cobro fallido o han pedido cancelar. Es la señal
  *     que pedía Richi: «lleva pagando tres meses y apenas lo usa».
  *   · **Sin pagar**: los que no han pagado nunca o están en solo lectura.
+ *   · **Pausa paga** (A4 · 0077): 12 € al mes por guardar sus datos. Su cuenta está en
+ *     solo lectura, que es lo que compra, y aun así está en **Pagando**, no en «Sin
+ *     pagar». Hasta A4 caía en «Sin pagar», y su cuota no se contaba.
  */
 export function estaEnLaPestana(
   pestana: PestanaDeClientes,
@@ -85,15 +88,18 @@ export function estaEnLaPestana(
     readonly como: ComoEstaLaCuenta;
     readonly actividad: ActividadDeCliente | null;
     readonly cancelaAlAcabar: boolean;
+    /** En el plan Pausa y al día con el cobro (A4). Sin decirlo, no. */
+    readonly enPausa?: boolean;
   },
 ): boolean {
+  const enPausa = cliente.enPausa === true;
   switch (pestana) {
     case 'todos':
       return true;
     case 'prueba':
       return cliente.como === 'prueba';
     case 'pagando':
-      return cliente.como === 'al_dia';
+      return cliente.como === 'al_dia' || enPausa;
     case 'se_van':
       return (
         cliente.como === 'impago' ||
@@ -103,8 +109,32 @@ export function estaEnLaPestana(
             cliente.actividad === 'bajando'))
       );
     case 'baja':
-      return cliente.como === 'sin_pagar' || cliente.como === 'solo_lectura';
+      return !enPausa && (cliente.como === 'sin_pagar' || cliente.como === 'solo_lectura');
   }
+}
+
+/**
+ * **Si es de los que pagan** (A4 · 0077): al día, en Pausa o con un cobro fallido que
+ * todavía no ha pasado a solo lectura. Es lo que cuenta para la cuota y para saber
+ * quién se ha ido: un cobro fallido no es una baja hasta que pasan sus siete días.
+ */
+export function esDeLosQuePagan(cliente: {
+  readonly como: ComoEstaLaCuenta;
+  readonly enPausa?: boolean;
+}): boolean {
+  return cliente.como === 'al_dia' || cliente.como === 'impago' || cliente.enPausa === true;
+}
+
+/**
+ * Si una suscripción es la del plan Pausa **pagada**: activa y en Pausa. Su cuenta está
+ * en solo lectura (`comoEstaLaCuenta`), que es lo que compra; pero paga.
+ */
+export function estaEnPausa(s: {
+  readonly estado: string;
+  readonly plan: string | null;
+  readonly deLaCasa: boolean;
+}): boolean {
+  return !s.deLaCasa && s.estado === 'activa' && s.plan === 'pausa';
 }
 
 /** Una celda de CSV: entre comillas si hace falta, y sin fórmulas que abra Excel. */

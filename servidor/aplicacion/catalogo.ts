@@ -191,6 +191,8 @@ import { publicarLaCarta, quitarLaCarta, subirPaginaDeLaCarta } from './comandos
 import { miSuscripcion } from './consultas/suscripcion.ts';
 import { adminLosClientes, adminUnCliente } from './consultas/clientes.ts';
 import { adminLosVendedores, adminUnVendedor } from './consultas/vendedores.ts';
+import { adminLasVentas } from './consultas/ventas.ts';
+import { contarLaVisita } from './comandos/visitas.ts';
 import {
   adminCambiarElVendedor,
   adminCerrarUnCodigo,
@@ -353,6 +355,8 @@ export const catalogo = {
     // A3 · los vendedores (migración 0058): la lista con sus cifras y la ficha de cada uno.
     [adminLosVendedores.nombre]: adminLosVendedores,
     [adminUnVendedor.nombre]: adminUnVendedor,
+    // A4 · las ventas (migración 0059): el tablero, contado en el servidor.
+    [adminLasVentas.nombre]: adminLasVentas,
     // ── H1 (0068): los PDF, el registro para la Inspección y el aparato para fichar.
     // `el_aparato_para_fichar` va **sin sesión**: la lee el aparato del local, que
     // no es nadie, con su llave.
@@ -593,6 +597,12 @@ export const catalogo = {
     [adminCrearUnCodigo.nombre]: adminCrearUnCodigo,
     [adminCerrarUnCodigo.nombre]: adminCerrarUnCodigo,
     [adminPonerElVendedor.nombre]: adminPonerElVendedor,
+
+    // ── A4 · Las ventas (migración 0059) ───────────────────────────────────
+    //
+    // La portada cuenta cada vez que se abre el enlace de un vendedor, **sin sesión**:
+    // quien llega no es nadie. Solo suma uno a ese código ese día (3B).
+    [contarLaVisita.nombre]: contarLaVisita,
 
     // ── H1 · Personas y fichajes (0068) ────────────────────────────────────
     //

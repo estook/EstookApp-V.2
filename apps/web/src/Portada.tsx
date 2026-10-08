@@ -54,6 +54,9 @@ export function Portada() {
       if (vivo && respuesta.ok) setOferta(respuesta.datos.oferta);
     });
     if (llegada.codigo !== undefined) {
+      // Una visita más a ese enlace (A4 · 0077, 3B): solo un número por código y día.
+      // Ni quién, ni nada en el navegador. No se espera la respuesta.
+      void api.ejecutar('contar_la_visita', { codigo: llegada.codigo });
       void api
         .consultar<{ codigo: string; descuento: number }>('el_codigo_de_vendedor', {
           codigo: llegada.codigo,

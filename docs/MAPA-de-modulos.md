@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **«Antes de M8»**: las compras de M7 están entregadas, **H · Horarios** e **I · La app instalable** están en producción, y quedan tres entregas antes de M8 —**C · El chat** (su plan, en [`c-el-chat.md`](c-el-chat.md); **C1 · Hablar** en producción y **C2 · Lo oficial** construida), **A3 · Vendedores** y **A4 · Ventas del admin**—, con su plan en [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+Estás en **«Antes de M8»**: las compras de M7 están entregadas; **H · Horarios**, **I · La app instalable**, **C · El chat** y **A3 · Vendedores**, en producción; y queda una entrega antes de M8, **A4 · Ventas del admin**, construida y en su pull request ([`a4-ventas.md`](a4-ventas.md), [0077](decisiones/0077-a4-las-ventas.md)), dentro de [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 

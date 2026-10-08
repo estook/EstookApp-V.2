@@ -2,7 +2,9 @@ import { z } from 'zod';
 import {
   comoEstaLaCuenta,
   cuotaAlMes,
+  esDeLosQuePagan,
   estaEnLaPestana,
+  estaEnPausa,
   laCuota,
   type ActividadDeCliente,
   type CodigoDePlan,
@@ -54,12 +56,16 @@ export interface ClienteEnLista {
   readonly tipo: 'independiente' | 'grupo' | 'cadena';
   readonly correos: readonly string[];
   readonly cancelaAlAcabar: boolean;
+  /** En el plan Pausa y pagándolo (A4 · 0077): está en «Pagando», no en «Sin pagar». */
+  readonly enPausa: boolean;
   readonly deLaCasa: boolean;
   readonly pruebaHasta: string | null;
   readonly periodoHasta: string | null;
   readonly impagoDesde: string | null;
   readonly tarjeta: string | null;
   readonly conStripe: boolean;
+  /** El modo de Stripe de su suscripción (A4): lo de otro modo no cuenta en las ventas. */
+  readonly modo: 'prueba' | 'real' | null;
   /** Para «Abrir en Stripe»: el cliente de Stripe y si es del modo de prueba. */
   readonly stripe: { readonly cliente: string; readonly prueba: boolean } | null;
   /** Con qué vendedor vino (A3 · 0076), y con qué código. Nulo: sin vendedor. */
@@ -98,6 +104,13 @@ interface FilaDeCliente {
 }
 
 const DIA_MS = 86_400_000;
+
+/** El modo de Stripe que guarda la base, a lo que entiende el admin (A4). */
+function elModoDeStripe(modo: string | null): ClienteEnLista['modo'] {
+  if (modo === 'real') return 'real';
+  if (modo === 'prueba') return 'prueba';
+  return null;
+}
 
 /** Todos los clientes, ya contados: el contrato por el dominio, la actividad de la foto. */
 export async function losClientes(contexto: Contexto): Promise<{
@@ -138,6 +151,11 @@ export async function losClientes(contexto: Contexto): Promise<{
   const actividadDe = new Map(fotos.map((f) => [f.organizacion_id, f.actividad]));
   const tipoDe = new Map(fichas.map((f) => [f.organizacion_id, f.tipo]));
   const llegadaDe = new Map(llegadas.map((l) => [l.organizacion_id, l]));
+  // Lo que Stripe le cobra de verdad (A4 · 0077): el precio con el que se apuntó.
+  const deStripe = await contexto.sql<{ organizacion_id: string; importe: number; modo: string }[]>`
+    select organizacion_id, importe, modo from plataforma.cuota_de_stripe
+  `;
+  const importeDe = new Map(deStripe.map((c) => [c.organizacion_id, c]));
   const foto = fotos.reduce<string | null>(
     (ultima, f) => (ultima === null || f.dia > ultima ? f.dia : ultima),
     null,
@@ -166,7 +184,13 @@ export async function losClientes(contexto: Contexto): Promise<{
     const alta = new Date(f.alta);
     const ultimo = f.ultimo_acceso === null ? null : new Date(f.ultimo_acceso);
     const tipoPuesto = tipoDe.get(f.organizacion_id) ?? null;
-    const cuota = plan === null || f.de_la_casa ? null : laCuota(plan, intervalo, locales);
+    const suStripe = importeDe.get(f.organizacion_id);
+    const cuota =
+      plan === null || f.de_la_casa
+        ? null
+        : suStripe !== undefined && suStripe.modo === f.stripe_modo
+          ? suStripe.importe
+          : laCuota(plan, intervalo, locales);
     const llegada = llegadaDe.get(f.organizacion_id);
     const vendedor =
       llegada?.vendedor_id == null || llegada.codigo === null || llegada.vendedor === null
@@ -177,7 +201,8 @@ export async function losClientes(contexto: Contexto): Promise<{
       codigo: f.codigo,
       nombre: f.nombre,
       esEjemplo: f.es_ejemplo,
-      alta: alta.toISOString().slice(0, 10),
+      // El día de alta en Madrid (A4): un alta a las 00:30 es de ese día, no del anterior.
+      alta: hoyEnMadrid(alta),
       diasDeCliente: Math.max(0, Math.trunc((ahora - alta.getTime()) / DIA_MS)),
       como: cuenta.como,
       diasQuedan: cuenta.diasQuedan,
@@ -195,12 +220,14 @@ export async function losClientes(contexto: Contexto): Promise<{
         (f.locales_activos > 1 ? 'grupo' : 'independiente')) as ClienteEnLista['tipo'],
       correos: f.correos,
       cancelaAlAcabar: f.cancela_al_acabar,
+      enPausa: estaEnPausa({ estado: f.estado, plan: f.plan, deLaCasa: f.de_la_casa }),
       deLaCasa: f.de_la_casa,
       pruebaHasta: f.prueba_hasta,
       periodoHasta: f.periodo_hasta === null ? null : new Date(f.periodo_hasta).toISOString(),
       impagoDesde: f.impago_desde === null ? null : new Date(f.impago_desde).toISOString(),
       tarjeta: f.tarjeta,
       conStripe: f.stripe_suscripcion !== null,
+      modo: elModoDeStripe(f.stripe_modo),
       stripe:
         f.stripe_cliente === null
           ? null
@@ -335,9 +362,7 @@ function enElTramoDeAcceso(
 
 /** Lo que se cobra: los que pagan de verdad, sin ejemplos ni los de la casa. */
 function loQueSeCobra(clientes: readonly ClienteEnLista[]): SalidaLosClientes['cobro'] {
-  const pagan = clientes.filter(
-    (c) => !c.esEjemplo && !c.deLaCasa && (c.como === 'al_dia' || c.como === 'impago'),
-  );
+  const pagan = clientes.filter((c) => !c.esEjemplo && !c.deLaCasa && esDeLosQuePagan(c));
   const cuanto = (intervalo: 'mes' | 'ano') =>
     pagan
       .filter((c) => (c.intervalo ?? 'mes') === intervalo)

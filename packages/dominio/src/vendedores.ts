@@ -1,5 +1,5 @@
 import { DIRECCION_DE_ESTOOK } from './carta.ts';
-import { estaEnLaPestana, type ActividadDeCliente } from './clientes.ts';
+import { esDeLosQuePagan, estaEnLaPestana, type ActividadDeCliente } from './clientes.ts';
 import type { ComoEstaLaCuenta } from './suscripcion.ts';
 
 /**
@@ -201,6 +201,8 @@ export interface ClienteDeUnVendedor {
   readonly como: ComoEstaLaCuenta;
   readonly actividad: ActividadDeCliente | null;
   readonly cancelaAlAcabar: boolean;
+  /** En el plan Pausa y pagándolo (A4 · 0077): cuenta como que paga. */
+  readonly enPausa?: boolean;
   readonly deLaCasa: boolean;
   readonly esEjemplo: boolean;
   /** Lo que deja al mes, en céntimos. Nulo sin plan o de la casa. */
@@ -249,7 +251,7 @@ export function lasCifrasDelVendedor(
     loUsan: suyos.filter((c) => c.actividad === 'activo').length,
     dormidos: suyos.filter((c) => c.actividad === 'dormido').length,
     alMes: suyos
-      .filter((c) => !c.deLaCasa && (c.como === 'al_dia' || c.como === 'impago'))
+      .filter((c) => !c.deLaCasa && esDeLosQuePagan(c))
       .reduce((suma, c) => suma + (c.cuotaAlMes ?? 0), 0),
     diasDeMedia:
       suyos.length === 0

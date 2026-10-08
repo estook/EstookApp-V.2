@@ -73,7 +73,7 @@ describe('el esquema plataforma', () => {
     expect(sinRls.map((f) => f.relname)).toEqual([]);
   });
 
-  it('sus funciones con privilegio son exactamente ocho, y no las ejecuta cualquiera', async () => {
+  it('sus funciones con privilegio son exactamente once, y no las ejecuta cualquiera', async () => {
     // Las mismas razones que las de `estook`, contadas aparte: si un día son
     // cuatro, que sea a propósito. La tercera es de la 0042: `oferta_vigente`, que
     // la pantalla de crear cuenta lee antes de que haya sesión. Y la 0049 (A2) añade
@@ -84,6 +84,12 @@ describe('el esquema plataforma', () => {
     // cuenta todavía no es nadie. `lo_que_da_el_codigo` dice si un código de vendedor
     // vale y su descuento —no de quién es—, y `apuntar_la_llegada` apunta con quién
     // vino **solo en la transacción que crea la organización**, y una vez.
+    //
+    // **Y la 0059 (A4) añade tres**: `contar_la_visita`, que suma una visita al enlace
+    // de un código que vale —quien llega no es nadie— y no dice nada más;
+    // `apuntar_la_cuota_de_stripe`, que la llama el pago al leer la suscripción, como
+    // `cambiar_la_suscripcion`; y `los_correos_de_los_admins`, para el correo del lunes,
+    // que solo lee el admin o el reloj, y lo comprueba ella.
     const definer = await comoDuena<{ proname: string; publico: boolean }>(
       `select p.proname, has_function_privilege('public', p.oid, 'execute') as publico
          from pg_proc p
@@ -91,10 +97,13 @@ describe('el esquema plataforma', () => {
         order by p.proname`,
     );
     expect(definer.map((f) => f.proname)).toEqual([
+      'apuntar_la_cuota_de_stripe',
       'apuntar_la_llegada',
       'confirmar_cambio_de_correo',
+      'contar_la_visita',
       'dar_acceso',
       'lo_que_da_el_codigo',
+      'los_correos_de_los_admins',
       'nivel_de',
       'oferta_vigente',
       'parar_cambio_de_correo',

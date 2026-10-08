@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/require-await -- hace de Stripe, que contesta por la red: el puerto es asíncrono aunque aquí la respuesta esté en memoria */
+import { centimos, porFraccion, sinIva } from '@estook/dominio';
 import {
   elCuponDelPorcentaje,
   firmarComoStripe,
+  traducirCobro,
   traducirSuscripcion,
   type CatalogoDeStripe,
   type DatosDelPago,
@@ -34,7 +36,7 @@ interface SuscripcionGuardada {
     data: {
       id: string;
       quantity: number;
-      price: { id: string; lookup_key: string };
+      price: { id: string; lookup_key: string; unit_amount: number | null };
       current_period_end: number;
     }[];
   };
@@ -55,6 +57,11 @@ export interface PagosDeMentira extends Pagos {
   fallarElCobro(organizacionId: string): Promise<void>;
   /** Y uno que entra. Devuelve el cupón que se gastó en él, si había. */
   cobrar(organizacionId: string): Promise<string | null>;
+  /**
+   * Devolver parte o todo de lo último cobrado a una organización (A4): Stripe avisa con
+   * el cargo y lo devuelto **en total** hasta ahora.
+   */
+  devolver(organizacionId: string, centimos: number): Promise<void>;
   /** Lo que Stripe avisa tres días antes de que acabe una prueba (A3). */
   avisarDeQueAcabaLaPrueba(organizacionId: string): Promise<void>;
   /** Los cupones creados, y el que lleva puesto la suscripción de una organización. */
@@ -71,6 +78,15 @@ export function pagosDeMentira(
   const sesiones = new Map<string, DatosDelPago>();
   const suscripciones = new Map<string, SuscripcionGuardada>();
   const cupones = new Set<string>();
+  // El importe de cada precio, como lo creó el catálogo: lo que dice `unit_amount`.
+  const importes = new Map<string, number>();
+  // Las facturas cobradas, con su cargo y lo devuelto de él.
+  const facturas: {
+    factura: Record<string, unknown>;
+    organizacionId: string;
+    cargo: string;
+    devuelto: number;
+  }[] = [];
   let entregar: (cuerpo: string, firma: string) => Promise<unknown> = async () => undefined;
   let numero = 0;
   const nuevo = (prefijo: string) => {
@@ -105,6 +121,7 @@ export function pagosDeMentira(
     },
 
     async prepararCatalogo(hay, _en, precios): Promise<CatalogoDeStripe> {
+      for (const p of precios) importes.set(`price_${p.clave}`, p.centimos);
       return {
         precios: Object.fromEntries(precios.map((p) => [p.clave, `price_${p.clave}`])),
         iva: hay?.iva ?? 'txr_iva_de_mentira',
@@ -158,7 +175,11 @@ export function pagosDeMentira(
             {
               id: nuevo('si'),
               quantity: datos.cantidad,
-              price: { id: datos.precio, lookup_key: clavePorPrecio(datos.precio) },
+              price: {
+                id: datos.precio,
+                lookup_key: clavePorPrecio(datos.precio),
+                unit_amount: importes.get(datos.precio) ?? null,
+              },
               current_period_end: ahoraS() + (conPrueba ? datos.diasDePrueba : 30) * 86_400,
             },
           ],
@@ -198,8 +219,54 @@ export function pagosDeMentira(
       // Un cupón `once` se gasta en el primer cobro que lo encuentra puesto.
       const gastado = s.cupon;
       s.cupon = null;
-      await avisar('invoice.paid', { object: 'invoice', subscription: s.id, customer: s.customer });
+      // La factura, con lo que dice la de Stripe (A4): el precio por los locales, el
+      // descuento del cupón y el IVA dentro, separado como lo separa Stripe.
+      const linea = s.items.data[0];
+      const bruto = (linea?.price.unit_amount ?? 0) * (linea?.quantity ?? 1);
+      const porcentaje = Number(/(\d+)$/.exec(gastado ?? '')?.[1] ?? 0);
+      const total = porFraccion(centimos(bruto), (100 - porcentaje) / 100);
+      const factura = {
+        id: nuevo('in'),
+        object: 'invoice',
+        subscription: s.id,
+        customer: s.customer,
+        amount_paid: total,
+        total,
+        total_excluding_tax: sinIva(total, 0.21),
+        billing_reason: facturas.some((x) => x.organizacionId === organizacionId)
+          ? 'subscription_cycle'
+          : 'subscription_create',
+        status_transitions: { paid_at: ahoraS() },
+        created: ahoraS(),
+      };
+      if (total > 0) {
+        facturas.push({ factura, organizacionId, cargo: nuevo('ch'), devuelto: 0 });
+      }
+      await avisar('invoice.paid', factura);
       return gastado;
+    },
+
+    async devolver(organizacionId, centimos) {
+      const suya = facturas.filter((x) => x.organizacionId === organizacionId).at(-1);
+      if (suya === undefined)
+        throw new Error(`Esa organización no tiene cobros de mentira: ${organizacionId}`);
+      suya.devuelto += centimos;
+      await avisar('charge.refunded', {
+        id: suya.cargo,
+        object: 'charge',
+        customer: suya.factura['customer'],
+        amount: suya.factura['amount_paid'],
+        amount_refunded: suya.devuelto,
+        refunded: suya.devuelto >= Number(suya.factura['amount_paid']),
+        livemode: false,
+      });
+    },
+
+    async losCobros() {
+      return facturas
+        .map((x) => traducirCobro(x.factura))
+        .filter((c): c is NonNullable<typeof c> => c !== null)
+        .reverse();
     },
 
     async avisarDeQueAcabaLaPrueba(organizacionId) {
@@ -235,7 +302,11 @@ export function pagosDeMentira(
       const linea = s.items.data[0];
       if (linea !== undefined) {
         if (cambios.precio !== undefined)
-          linea.price = { id: cambios.precio, lookup_key: clavePorPrecio(cambios.precio) };
+          linea.price = {
+            id: cambios.precio,
+            lookup_key: clavePorPrecio(cambios.precio),
+            unit_amount: importes.get(cambios.precio) ?? null,
+          };
         if (cambios.cantidad !== undefined) linea.quantity = cambios.cantidad;
       }
       if (cambios.cancelarAlAcabar !== undefined) s.cancel_at_period_end = cambios.cancelarAlAcabar;

@@ -447,7 +447,9 @@ function FilaDeCodigo({
         >
           {c.codigo}
         </span>
-        <span className="text-secundario text-texto-suave">{clientes(c.traidos)}</span>
+        <span className="text-secundario text-texto-suave">
+          {clientes(c.traidos)} · {c.visitas === 1 ? '1 visita' : `${String(c.visitas)} visitas`}
+        </span>
       </span>
       <span className="text-secundario text-texto-suave">
         {[

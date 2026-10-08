@@ -150,10 +150,15 @@ const ORDENES: readonly { readonly valor: string; readonly texto: string }[] = [
   { valor: 'actividad:asc', texto: 'Actividad: los dormidos arriba' },
 ];
 
-export function Clientes() {
+export function Clientes({
+  pestanaInicial = 'todos',
+}: {
+  /** Con la que se abre: tocar «Se están yendo» en Ventas abre esa (A4). */
+  readonly pestanaInicial?: Pestana;
+} = {}) {
   const { cliente, yo } = usarSesion();
   const cache = useQueryClient();
-  const [pestana, setPestana] = useState<Pestana>('todos');
+  const [pestana, setPestana] = useState<Pestana>(pestanaInicial);
   const [escrito, setEscrito] = useState('');
   const [buscar, setBuscar] = useState('');
   const [filtros, setFiltros] = useState<Filtros>(SIN_FILTROS);

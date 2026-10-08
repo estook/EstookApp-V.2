@@ -24,6 +24,8 @@ export interface CodigoDeUnVendedor {
   readonly enlace: string;
   /** Cuántos clientes de verdad han llegado con él. */
   readonly traidos: number;
+  /** Cuántas veces se ha abierto su enlace (A4 · 0077, 3B), desde siempre. */
+  readonly visitas: number;
 }
 
 export interface VendedorEnLista {
@@ -72,6 +74,7 @@ function lasCifras(clientes: readonly ClienteEnLista[], hoy: string): CifrasDeUn
       como: c.como,
       actividad: c.actividad,
       cancelaAlAcabar: c.cancelaAlAcabar,
+      enPausa: c.enPausa,
       deLaCasa: c.deLaCasa,
       esEjemplo: c.esEjemplo,
       cuotaAlMes: c.cuotaAlMes,
@@ -99,6 +102,11 @@ async function losVendedores(contexto: Contexto): Promise<{
   `;
   const { clientes } = await losClientes(contexto);
   const hoy = hoyEnMadrid(contexto.ahora);
+  // Las veces que se ha abierto cada enlace (A4 · 0077, 3B).
+  const visitas = await contexto.sql<{ codigo_id: string; visitas: number }[]>`
+    select codigo_id, sum(visitas)::integer as visitas from plataforma.visita_del_codigo group by codigo_id
+  `;
+  const visitasDe = new Map(visitas.map((v) => [v.codigo_id, v.visitas]));
 
   const vendedores = filas.map((v) => {
     const suyos = susClientes(clientes, v.id);
@@ -121,6 +129,7 @@ async function losVendedores(contexto: Contexto): Promise<{
           cerradoEn: c.cerrado_en,
           enlace: elEnlaceDelCodigo(c.codigo),
           traidos: suyos.filter((x) => x.vendedor?.codigo === c.codigo).length,
+          visitas: visitasDe.get(c.id) ?? 0,
         })),
       cifras: lasCifras(suyos, hoy),
     };

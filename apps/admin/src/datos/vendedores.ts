@@ -15,6 +15,8 @@ export interface CodigoDeUnVendedor {
   readonly cerradoEn: string | null;
   readonly enlace: string;
   readonly traidos: number;
+  /** Cuántas veces se ha abierto su enlace o su QR (A4 · 0077). */
+  readonly visitas: number;
 }
 
 export interface VendedorEnLista {

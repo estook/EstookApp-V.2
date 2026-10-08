@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **«Antes de M8»**: las compras de M7 están entregadas; **H · Horarios**, **I · La app instalable**, **C · El chat** y **A3 · Vendedores**, en producción; y queda una entrega antes de M8, **A4 · Ventas del admin**, construida y en su pull request ([`a4-ventas.md`](a4-ventas.md), [0077](decisiones/0077-a4-las-ventas.md)), dentro de [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+Estás en **M8 · Inventario, mermas y desviación**, en su plan ([`m8-inventario-mermas-y-desviacion.md`](m8-inventario-mermas-y-desviacion.md)), con cuatro preguntas para Richi. **«Antes de M8» está entero en producción** desde el 8-oct, con **A4 · Ventas del admin** la última ([`a4-ventas.md`](a4-ventas.md), [0077](decisiones/0077-a4-las-ventas.md)); lo que fue, en [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -41,6 +41,8 @@ Ficha del proveedor con sus días de reparto y su pedido mínimo, el ciclo `borr
 ### M8 · Inventario, mermas y desviación
 
 Inventario cíclico, almacén valorado, mermas en tres toques, consumo de personal como partida aparte, y **la desviación**: lo que dice el escandallo frente a lo que falta de verdad. Ahí está el dinero que se escapa, y es de lo que más vende.
+
+**Su plan, con cuatro preguntas para Richi**: [`m8-inventario-mermas-y-desviacion.md`](m8-inventario-mermas-y-desviacion.md). La primera es qué hacer con la desviación de los platos, que necesita las fichas de M9.
 
 ### M9 · Escandallos
 
@@ -203,8 +205,6 @@ Lo que ya existe a medias y el módulo que lo acaba. Vivía en `ESTADO.md` hasta
 | Recuento, desviación y calibración del aprovechamiento    | **M8**           | La merma con motivo; albaranes con incidencias; el recuento    |
 | Descontar lo vendido del inventario                       | **M20**          | El cierre guarda los platos con el nombre normalizado          |
 | Los terminales del local                                  | **M20A**         | `estook.terminal`, hoy solo para fichar (H1); Anexo 3.4        |
-| El vendedor de cada cliente y el código con que llegó     | **A3**           | La ficha de cada cliente (A2)                                  |
-| El tablero de ventas                                      | **A4**           | La foto diaria del uso de cada cliente (A2)                    |
 | Leer los platos de la carta subida y proponer los cambios | **M10**          | La carta subida y enseñada por su QR (0049)                    |
 | Plato, ficha técnica y escandallo unidos por su id        | **M9**           | El diseño de Richi, escrito en el Plan (0049)                  |
 | La historia del Tablón, por días                          | **M17**          | El Tablón, con sus notas guardadas (0049)                      |

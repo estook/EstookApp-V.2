@@ -45,6 +45,11 @@ export interface SuscripcionDeStripe {
   /** El nombre del precio (`estook-pro-mes-v1`), de donde salen el plan y el intervalo. */
   readonly clave: string | null;
   readonly cantidad: number;
+  /**
+   * Lo que se cobra cada vez, en céntimos y con el IVA: el precio por los locales, **sin
+   * descuentos** (A4 · 0077). Nulo si Stripe no lo dice.
+   */
+  readonly importe: number | null;
   /** «2026-10-07», en hora de Madrid. */
   readonly pruebaHasta: string | null;
   /** Cuándo acaba el periodo pagado, o la prueba. */
@@ -112,6 +117,11 @@ export interface Pagos {
     readonly cliente: string | null;
     readonly organizacionId: string | null;
   }>;
+  /**
+   * Las facturas cobradas, de la más nueva a la más vieja (A4 · 0077). Sirve una vez,
+   * para traer lo cobrado antes de A4: desde entonces cada cobro llega en su aviso.
+   */
+  losCobros(): Promise<readonly CobroDeStripe[]>;
   cambiarSuscripcion(
     id: string,
     cambios: {
@@ -266,6 +276,8 @@ export const AVISOS_QUE_SE_PIDEN = [
   'customer.subscription.trial_will_end',
   'invoice.paid',
   'invoice.payment_failed',
+  // A4 (0077): lo devuelto, que se resta de lo cobrado.
+  'charge.refunded',
 ] as const;
 
 /** El identificador fijo del cupón de un tanto por ciento: así se encuentra otra vez. */
@@ -329,6 +341,10 @@ export function traducirSuscripcion(s: Record<string, unknown>): SuscripcionDeSt
     linea: typeof linea['id'] === 'string' ? linea['id'] : '',
     clave: (precio['lookup_key'] as string | null | undefined) ?? null,
     cantidad: Number(linea['quantity'] ?? 1),
+    importe:
+      typeof precio['unit_amount'] === 'number'
+        ? precio['unit_amount'] * Number(linea['quantity'] ?? 1)
+        : null,
     pruebaHasta:
       estado === 'trialing' && typeof finDePrueba === 'number' ? fechaDeMadrid(finDePrueba) : null,
     periodoHasta: finDelPeriodo === null ? null : new Date(finDelPeriodo * 1000).toISOString(),
@@ -340,6 +356,74 @@ export function traducirSuscripcion(s: Record<string, unknown>): SuscripcionDeSt
         ? `${laMarca(tarjeta.brand)} ···· ${tarjeta.last4}`
         : null,
   };
+}
+
+// ── Lo cobrado y lo devuelto (A4 · 0077) ─────────────────────────────────────
+
+/**
+ * Una factura cobrada, con sus cifras tal cual. Lo que es sin IVA de lo pagado lo
+ * cuenta la aplicación con el motor de dinero (regla 9), no aquí.
+ */
+export interface CobroDeStripe {
+  /** La factura (`in_…`). */
+  readonly id: string;
+  readonly cliente: string;
+  /** Lo pagado, con el IVA, en céntimos: `amount_paid`. */
+  readonly importe: number;
+  /** La factura entera, con el IVA (`total`) y sin él (`total_excluding_tax`). */
+  readonly total: number;
+  readonly totalSinIva: number;
+  readonly cobradoEn: string;
+  /** `billing_reason`: el alta, el periodo nuevo o un cambio de plan. */
+  readonly motivo: string | null;
+}
+
+/**
+ * Una factura de Stripe, a lo que se apunta. Nula si no se cobró nada: la factura de
+ * cero euros con que empieza una prueba no es un cobro.
+ *
+ * Campos de la referencia de la API de Stripe (el objeto Invoice): `amount_paid`,
+ * `total`, `total_excluding_tax`, `status_transitions.paid_at`, `customer`,
+ * `billing_reason` y `created`.
+ */
+export function traducirCobro(f: Record<string, unknown>): CobroDeStripe | null {
+  const pagado = typeof f['amount_paid'] === 'number' ? f['amount_paid'] : 0;
+  if (pagado <= 0 || typeof f['id'] !== 'string') return null;
+  const total = typeof f['total'] === 'number' ? f['total'] : pagado;
+  const totalSinIva =
+    typeof f['total_excluding_tax'] === 'number' ? f['total_excluding_tax'] : total;
+  const transiciones = (f['status_transitions'] ?? {}) as { paid_at?: unknown };
+  const cuando =
+    typeof transiciones.paid_at === 'number'
+      ? transiciones.paid_at
+      : typeof f['created'] === 'number'
+        ? f['created']
+        : null;
+  const cliente = f['customer'];
+  const expandido =
+    typeof cliente === 'object' && cliente !== null ? (cliente as { id?: unknown }).id : null;
+  return {
+    id: f['id'],
+    cliente: typeof cliente === 'string' ? cliente : typeof expandido === 'string' ? expandido : '',
+    importe: pagado,
+    total,
+    totalSinIva,
+    cobradoEn: new Date((cuando ?? 0) * 1000).toISOString(),
+    motivo: typeof f['billing_reason'] === 'string' ? f['billing_reason'] : null,
+  };
+}
+
+/**
+ * Lo devuelto de un cargo, **en total**: `amount_refunded` es lo devuelto hasta ahora
+ * (el objeto Charge del aviso `charge.refunded`). Lo de cada vez lo cuenta quien lo
+ * apunta, restando lo que ya tenía.
+ */
+export function traducirDevolucion(
+  c: Record<string, unknown>,
+): { readonly cargo: string; readonly cliente: string; readonly devuelto: number } | null {
+  if (typeof c['id'] !== 'string' || typeof c['customer'] !== 'string') return null;
+  const devuelto = typeof c['amount_refunded'] === 'number' ? c['amount_refunded'] : 0;
+  return { cargo: c['id'], cliente: c['customer'], devuelto };
 }
 
 /**
@@ -640,6 +724,28 @@ export function pagosDeStripe(
         cliente: (sesion['customer'] as string | null) ?? null,
         organizacionId: (sesion['client_reference_id'] as string | null) ?? null,
       };
+    },
+
+    async losCobros() {
+      // De cien en cien, con `starting_after` (la paginación de la referencia de Stripe),
+      // y con un tope: cincuenta páginas son cinco mil facturas, años de Estook.
+      const cobros: CobroDeStripe[] = [];
+      let despues: string | undefined;
+      for (let pagina = 0; pagina < 50; pagina += 1) {
+        const lista = await pedir<{ data: Record<string, unknown>[]; has_more: boolean }>(
+          'GET',
+          '/invoices',
+          { status: 'paid', limit: 100, starting_after: despues },
+        );
+        for (const factura of lista.data) {
+          const cobro = traducirCobro(factura);
+          if (cobro !== null) cobros.push(cobro);
+        }
+        const ultima = lista.data.at(-1)?.['id'];
+        if (!lista.has_more || typeof ultima !== 'string') break;
+        despues = ultima;
+      }
+      return cobros;
     },
 
     async cambiarSuscripcion(id, cambios) {

@@ -323,6 +323,9 @@ describe('las puertas se cierran solas', () => {
         // A3 (0076) · si un código de vendedor vale, para la casilla de crear cuenta, que
         // todavía no es nadie. Solo dice el código y su descuento, no de quién es.
         'el_codigo_de_vendedor',
+        // A4 (0077) · la portada cuenta que se ha abierto el enlace de un vendedor. Solo
+        // suma uno a ese código ese día: ni quién, ni desde dónde, ni devuelve nada más.
+        'contar_la_visita',
       ].sort(),
     );
   });
@@ -397,6 +400,8 @@ describe('las puertas se cierran solas', () => {
         'admin_crear_un_codigo',
         'admin_cerrar_un_codigo',
         'admin_poner_el_vendedor',
+        // A4 (0059) · el tablero de ventas.
+        'admin_las_ventas',
       ].sort(),
     );
 

@@ -1,10 +1,13 @@
 import {
   PLANES,
+  centimos,
   claveDelPrecio,
+  porFraccion,
   comoEstaLaCuenta,
   dejaEscribir,
   dejaMirar,
   elEstadoDeStripe,
+  laCuotaSinIva,
   type CodigoDePlan,
   type CodigoDeError,
   type EstadoDeSuscripcion,
@@ -17,7 +20,10 @@ import { variable } from '@estook/utiles';
 import {
   AVISOS_QUE_SE_PIDEN,
   StripeNoContesta,
+  traducirCobro,
+  traducirDevolucion,
   type CatalogoDeStripe,
+  type CobroDeStripe,
   type PrecioQueHaceFalta,
   type SuscripcionDeStripe,
 } from '../infraestructura/stripe.ts';
@@ -474,6 +480,83 @@ export async function aplicarLoDeStripe(
       ${organizacionId}::uuid, ${JSON.stringify(cambios)}::text::jsonb, ${quien}, ${porque}
     )
   `;
+  // Y lo que le cobra de verdad, con el precio con el que se apuntó (A4 · 0077): quien
+  // entró en Pro a 79 € sigue pagando 79 €, aunque hoy cueste 99 €.
+  if (s.importe !== null) {
+    await contexto.sql`
+      select plataforma.apuntar_la_cuota_de_stripe(${organizacionId}::uuid, ${s.importe}::integer, ${modo})
+    `;
+  }
+}
+
+// ── Lo cobrado y lo devuelto (A4 · 0077) ─────────────────────────────────────
+
+/** De quién es un cliente de Stripe. Nulo si no es de nadie que conozcamos. */
+async function laOrganizacionDelCliente(
+  contexto: Contexto,
+  cliente: string,
+): Promise<string | null> {
+  const filas = await contexto.sql<{ organizacion_id: string }[]>`
+    select organizacion_id from estook.los_clientes() where stripe_cliente = ${cliente} limit 1
+  `;
+  return filas[0]?.organizacion_id ?? null;
+}
+
+/**
+ * Lo que es sin IVA de lo cobrado, como lo dice la factura. Lo normal es que se pague
+ * entera; si no (un saldo a favor que pagó una parte), la parte que le toca.
+ */
+export function loCobradoSinIva(cobro: CobroDeStripe): number {
+  const sinIva =
+    cobro.total === cobro.importe || cobro.total <= 0
+      ? cobro.totalSinIva
+      : porFraccion(centimos(cobro.totalSinIva), cobro.importe / cobro.total);
+  return Math.min(Math.max(0, sinIva), cobro.importe);
+}
+
+/**
+ * Apunta un cobro, **una vez** (la factura es la clave). Ya dentro del sistema.
+ * Devuelve si era nuevo.
+ */
+export async function apuntarElCobro(
+  contexto: Contexto,
+  cobro: CobroDeStripe,
+  modo: 'prueba' | 'real',
+): Promise<boolean> {
+  const organizacionId = await laOrganizacionDelCliente(contexto, cobro.cliente);
+  if (organizacionId === null) return false;
+  const nuevo = await contexto.sql<{ id: string }[]>`
+    insert into plataforma.cobro (id, organizacion_id, modo, cobrado_en, importe, sin_iva, motivo)
+    values (${cobro.id}, ${organizacionId}::uuid, ${modo}, ${cobro.cobradoEn}::timestamptz,
+            ${cobro.importe}, ${loCobradoSinIva(cobro)}, ${cobro.motivo})
+    on conflict (id) do nothing
+    returning id
+  `;
+  return nuevo.length > 0;
+}
+
+/**
+ * Apunta lo devuelto de un cargo **desde la última vez**: Stripe dice lo devuelto en
+ * total, y aquí se resta lo que ya estaba. Repetir el aviso no suma nada.
+ */
+export async function apuntarLaDevolucion(
+  contexto: Contexto,
+  devolucion: { readonly cargo: string; readonly cliente: string; readonly devuelto: number },
+  modo: 'prueba' | 'real',
+): Promise<boolean> {
+  const organizacionId = await laOrganizacionDelCliente(contexto, devolucion.cliente);
+  if (organizacionId === null) return false;
+  const [ya] = await contexto.sql<{ suma: number }[]>`
+    select coalesce(sum(importe), 0)::integer as suma from plataforma.devolucion where cargo = ${devolucion.cargo}
+  `;
+  const ahora = devolucion.devuelto - (ya?.suma ?? 0);
+  if (ahora <= 0) return false;
+  await contexto.sql`
+    insert into plataforma.devolucion (cargo, organizacion_id, modo, devuelto_en, importe, sin_iva)
+    values (${devolucion.cargo}, ${organizacionId}::uuid, ${modo}, ${contexto.ahora.toISOString()}::timestamptz,
+            ${ahora}, ${laCuotaSinIva(ahora)})
+  `;
+  return true;
 }
 
 /** Cambia la suscripción con lo que diga el código (no Stripe): el cliente nuevo, los días de prueba. */
@@ -525,6 +608,21 @@ export async function aplicarElAviso(
       returning id
     `;
     if (nuevo.length === 0) return 'repetido';
+
+    // Lo devuelto (A4 · 0077) no habla de ninguna suscripción: es de un cargo.
+    if (evento.type === 'charge.refunded') {
+      const devolucion = traducirDevolucion(evento.data.object);
+      if (devolucion === null) return 'sin_organizacion';
+      return (await apuntarLaDevolucion(contexto, devolucion, pagos.modo))
+        ? 'aplicado'
+        : 'sin_organizacion';
+    }
+    // Lo cobrado (A4 · 0077), con lo que dice la factura firmada; y después, como
+    // siempre, el estado de la suscripción leído de Stripe.
+    if (evento.type === 'invoice.paid') {
+      const cobro = traducirCobro(evento.data.object);
+      if (cobro !== null) await apuntarElCobro(contexto, cobro, pagos.modo);
+    }
 
     const id = laSuscripcionDelAviso(evento.data.object);
     if (id === null) return 'sin_suscripcion';

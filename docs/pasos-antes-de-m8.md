@@ -6,7 +6,7 @@
 >
 > | Qué                                  | Cómo está                                                                         |
 > | ------------------------------------ | --------------------------------------------------------------------------------- |
-> | Pull requests                        | **Fusionadas hasta la #94** (A3, 8-oct). Abierta: **A4 · Ventas, el plan**        |
+> | Pull requests                        | **Fusionadas hasta la #94** (A3, 8-oct). Abierta: **A4 · Ventas** (#95)           |
 > | La base de datos                     | **58 de 58** migraciones, igual que `main`                                        |
 > | La API                               | **Desplegada con A3**: 73 y 162, los avisos al móvil y el reloj latiendo          |
 > | Los PDF (Cloudflare)                 | **Encendidos**: los dos secretos puestos por Richi, primer PDF el 30-sep          |
@@ -19,16 +19,70 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ---
 
-## Lo que te toca ahora · A4 · Ventas, el plan
+## Lo que te toca ahora · A4 · Ventas (#95)
 
-**Solo contestar.** El plan está en [`a4-ventas.md`](a4-ventas.md): qué es el tablero de ventas, lo que decido yo y **cuatro preguntas**, cada una con su ejemplo y lo que pasa con cada opción. **Basta con la letra de cada una** (por ejemplo, «1A, 2A, 3A, 4A»).
+Tus respuestas del 8-oct —**1A sin IVA, 2A lo cobrado, 3B solo las visitas de los vendedores, 4A el correo de los lunes**—, construidas ([decisión 0077](decisiones/0077-a4-las-ventas.md)). **Una migración** (la **0059**) y **un despliegue**. Ninguna clave nueva, y **en Stripe no hay que tocar nada**: el aviso nuevo de las devoluciones lo pide el código solo, la primera mañana.
 
-1. **El dinero, ¿con IVA o sin IVA?**
-2. **¿Guardamos lo cobrado de verdad, además de la cuota?**
-3. **¿Contamos cuánta gente abre la web, y por dónde llega?**
-4. **¿Un correo con las cifras, para no tener que abrir el admin?**
+**Qué trae:**
 
-**No fusiones todavía su pull request**: con tus respuestas, A4 se construye en la misma rama, y entonces van juntos tus pasos de siempre (fusionar, migrar la 0059, desplegar y mirarlo).
+- **Ventas**, una pestaña nueva del admin, al lado de Clientes: doce cifras **sin IVA** y siete gráficas, cada una con su pregunta. Arriba, 7 días, este mes, este trimestre o este año. **Tocar una cifra abre Clientes** en esa pestaña.
+- **Lo cobrado de verdad**, factura a factura, con las devoluciones restadas. Lo de antes de hoy lo trae el reloj **la primera mañana**.
+- **Las visitas de los enlaces de vendedor**: cuántas veces se abre cada código, sin saber quién. En el embudo y en la ficha de cada vendedor.
+- **Un correo cada lunes** a ti y a Santi, con la semana y quién se está yendo.
+- Y dos arreglos que salieron al construirlo: **Pausa paga** (en Clientes sale «En Pausa», en Pagando), y **la cuota es la que Stripe cobra de verdad**: Pizzeriacazzo entró en Pro a 79 €.
+
+### 1 · Fusionar
+
+En **github.com** → **Pull requests** → **«A4 · Ventas…»** (la #95) → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+
+### 2 · Aplicar la migración
+
+**Qué hace:** crea donde guardar lo cobrado, las visitas y el correo del lunes, y que la foto de cada noche diga cómo está cada cuenta. **No cambia nada de lo que hay.** En PowerShell, en la carpeta del proyecto:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que salir**, tal cual:
+
+```
+  aplicando 0059_las_ventas.sql ... hecho
+  1 migracion(es) aplicadas · 59 en total
+```
+
+**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
+
+### 3 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** «las 74» consultas y «los 163» comandos.
+
+### 4 · Probarlo
+
+La web se publica sola al fusionar, en unos minutos. En `estook.com/admin/` (**Ctrl + F5**):
+
+1. **Ventas**, arriba al lado de Clientes. Sale la franja **«Stripe está en modo prueba»**, las cifras y las gráficas. **Pagando: 1** (Pizzeriacazzo).
+2. **Entra al mes**: hoy dirá **81,82 €** (Pro a 99 €, sin IVA). **Desde mañana a las 8 debería decir 65,29 €**, que son los 79 € con que se apuntó: esa mañana el reloj le pregunta a Stripe lo que le cobra de verdad. Si sigue en 81,82 €, avísame. Pasa el ratón por la cifra: sale con IVA.
+3. **Este año**: en **Cobrado** sale su primer cobro, del 26-sep (también desde mañana).
+4. **Bajas, Pérdida y Retención** salen con un guion: **empiezan a contar con la foto de esta noche**, y lo dice.
+5. **Las visitas**: si haces el paso 4 de A3 de abajo (el vendedor «Prueba»), al abrir su enlace en la ventana privada **ya cuenta una visita**: en Vendedores, su código dice «1 visita», y en Ventas, «Abren un enlace».
+6. Toca **«Sin pagar»**: te lleva a Clientes, en esa pestaña.
+7. **El lunes 12 de octubre, a partir de las 8**, te llega el correo **«Estook, la semana: …»** (a ti y a Santi).
+
+Si algo no sale como aquí, hazle una captura y me la pasas.
 
 ---
 

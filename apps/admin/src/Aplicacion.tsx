@@ -9,6 +9,7 @@ import { Auditoria } from './pantallas/Auditoria.tsx';
 import { OfertaDePrueba } from './pantallas/Oferta.tsx';
 import { Clientes } from './pantallas/Clientes.tsx';
 import { Vendedores } from './pantallas/Vendedores.tsx';
+import { Ventas, type PestanaQueSeAbre } from './pantallas/Ventas.tsx';
 import {
   Entrar,
   EscribirElCodigo,
@@ -24,8 +25,8 @@ import { usarSesion } from './sesion/Sesion.tsx';
  * Hasta la 0041 esto era el catálogo del sistema de diseño, suelto y a la vista de
  * cualquiera. Ahora **todo va detrás de la puerta**: el catálogo es una sección
  * más, al lado de quién tiene acceso y de lo que se ha hecho. Los clientes llegaron
- * con A2 y son lo primero que se ve; los vendedores, con A3 (0076); las ventas llegan
- * con A4 (`docs/panel-de-administracion.md`).
+ * con A2 y son lo primero que se ve; los vendedores, con A3 (0076); las ventas, con A4
+ * (0077), al lado de los clientes.
  *
  * El proveedor de deshacer está aquí y no dentro de una pantalla porque la barra
  * vive en la raíz: si estuviera dentro, navegar se la llevaría.
@@ -77,6 +78,7 @@ function LaPuerta(props: AplicacionProps) {
 
 const SECCIONES = [
   { id: 'clientes', nombre: 'Clientes' },
+  { id: 'ventas', nombre: 'Ventas' },
   { id: 'vendedores', nombre: 'Vendedores' },
   { id: 'administradores', nombre: 'Administradores' },
   { id: 'oferta', nombre: 'Oferta' },
@@ -89,6 +91,12 @@ type Seccion = (typeof SECCIONES)[number]['id'];
 function Dentro({ entorno, sesionId }: AplicacionProps) {
   const { yo, salir } = usarSesion();
   const [seccion, setSeccion] = useState<Seccion>('clientes');
+  // La pestaña con que se abre Clientes, y una vuelta para que se abra de nuevo con
+  // ella aunque ya estuviera montada (A4: tocar una cifra de Ventas).
+  const [deClientes, setDeClientes] = useState<{
+    pestana: PestanaQueSeAbre | 'todos';
+    vez: number;
+  }>({ pestana: 'todos', vez: 0 });
 
   return (
     <div className="min-h-dvh bg-fondo">
@@ -161,7 +169,14 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
       ) : (
         <main className="mx-auto max-w-[64rem] px-e4 py-e5">
           {seccion === 'clientes' ? (
-            <Clientes />
+            <Clientes key={deClientes.vez} pestanaInicial={deClientes.pestana} />
+          ) : seccion === 'ventas' ? (
+            <Ventas
+              alVerClientes={(pestana) => {
+                setDeClientes((antes) => ({ pestana, vez: antes.vez + 1 }));
+                setSeccion('clientes');
+              }}
+            />
           ) : seccion === 'vendedores' ? (
             <Vendedores />
           ) : seccion === 'administradores' ? (

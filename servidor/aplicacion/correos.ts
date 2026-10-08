@@ -249,6 +249,50 @@ export function correoDelChatParaMandar(
   };
 }
 
+/**
+ * El correo de cada lunes con las cifras de la semana, a cada admin (A4 · 0077, 4A).
+ * Las cifras y las frases las escribe el dominio (`elCorreoDeLaSemana`); aquí se
+ * pintan, con un botón al admin, donde está todo lo demás.
+ */
+export function correoDeVentasParaMandar(
+  para: string,
+  nombre: string,
+  semana: {
+    readonly asunto: string;
+    readonly cifras: readonly CifraDelCorreo[];
+    readonly frases: readonly string[];
+  },
+): CorreoParaMandar {
+  const enlace = 'https://estook.com/admin/';
+  const saludo = `Hola, ${nombre}:`;
+  return {
+    para,
+    asunto: semana.asunto,
+    texto: [
+      saludo,
+      '',
+      'Así ha ido la semana de lunes a domingo:',
+      ...semana.cifras.map(
+        (c) => `· ${c.nombre}: ${c.valor}${c.cambio === null ? '' : ` (${c.cambio})`}`,
+      ),
+      '',
+      ...semana.frases,
+      '',
+      `Todo, en el admin: ${enlace}`,
+      '',
+      'Te llega porque eres administrador de Estook.',
+    ].join('\n'),
+    html: envolver([
+      escapar(saludo),
+      'Así ha ido la semana de lunes a domingo:',
+      tablaDeCifras(semana.cifras),
+      ...semana.frases.map(escapar),
+      `<a href="${enlace}" style="display:inline-block;background:#ff7a00;color:#1d2a2e;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px">Abrir el admin</a>`,
+      '<span style="color:#6b7478;font-size:13px">Te llega porque eres administrador de Estook.</span>',
+    ]),
+  };
+}
+
 export function correoDeUnAviso(para: string, aviso: AvisoParaElCorreo): CorreoParaMandar {
   const enlace = `https://estook.com/app/#${aviso.ir ?? '/'}`;
   const ajustes = 'https://estook.com/app/#/ajustes/avisos';

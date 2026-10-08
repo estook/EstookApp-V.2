@@ -18,28 +18,28 @@ cómo se entra en los datos de un cliente.
 
 **En `estook.com/admin/` están la puerta (A1), los clientes (A2, [decisión
 0050](decisiones/0050-los-clientes-en-el-admin.md)), la oferta de prueba (E1) y los
-vendedores (A3, [0076](decisiones/0076-a3-los-vendedores.md)), en producción.** Las
-ventas, **todavía no**: son A4, con su plan y cuatro preguntas en
-[`a4-ventas.md`](a4-ventas.md). Actualizado el 8 de octubre de 2026.
+vendedores (A3, [0076](decisiones/0076-a3-los-vendedores.md)), en producción.** **Las
+ventas (A4) están construidas en su pull request** ([0077](decisiones/0077-a4-las-ventas.md),
+plan en [`a4-ventas.md`](a4-ventas.md)). Actualizado el 8 de octubre de 2026.
 
-| Qué                                                                                         | Cómo está                                                                                        |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Entrar con contraseña y segundo factor obligatorio, sesión de 8 h                           | **Hecho y en producción** (A1, #53)                                                              |
-| Sesión del admin y de la app separadas; el acceso se mira en cada petición                  | **Hecho y en producción**                                                                        |
-| Administradores: dar acceso total y quitarlo, con el código otra vez                        | **Hecho y en producción**                                                                        |
-| Auditoría del admin: quién, qué, cuándo, motivo y dirección IP                              | **Hecho y en producción** (el aparato se guarda, no se enseña)                                   |
-| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | **Hecho y en producción** (rescatar llegó con el repaso, #54)                                    |
-| El catálogo del sistema de diseño detrás de la puerta                                       | **Hecho y en producción**                                                                        |
-| **Niveles** comercial, soporte y vendedor                                                   | Existen en la base; **no se pueden dar**. Vendedor, descartado (0076)                            |
-| **Clientes**: lista, filtros, búsqueda, CSV, ficha, contrato, actividad, notas, editar      | **Hecho en A2** (#74). Sin CIF: la organización no lo tiene                                      |
-| Copiar a la auditoría del cliente lo que el admin haga sobre él                             | **Hecho en A2**                                                                                  |
-| **Vendedores y códigos**: enlace, QR, `?ref=`, llegadas, descuento del primer mes, cifras   | **Hecho en A3** y en producción (0058). Sin panel ni comisiones (0076)                           |
-| **Ventas**: tablero y gráficas                                                              | **Falta · A4**: su plan, en [`a4-ventas.md`](a4-ventas.md). La foto diaria del uso ya la hace A2 |
-| Borrar solas las IP de más de dos años                                                      | **Falta** · necesita el reloj (R); se cierra en M27                                              |
-| Cambiar el correo de acceso de un cliente con doble confirmación                            | **Hecho en A2**                                                                                  |
-| Suscripciones: ver todo de Stripe y tres gestos (alargar, de la casa, cancelar al acabar)   | **Hecho en A2**. Las comisiones se pactan fuera (0076)                                           |
-| Entrar a los datos de un cliente con su permiso (Roles 4.3), costes, integraciones, soporte | **M26**                                                                                          |
-| `admin.estook.com` en vez de `estook.com/admin/`                                            | **M27**, si cambia el alojamiento                                                                |
+| Qué                                                                                         | Cómo está                                                                                       |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Entrar con contraseña y segundo factor obligatorio, sesión de 8 h                           | **Hecho y en producción** (A1, #53)                                                             |
+| Sesión del admin y de la app separadas; el acceso se mira en cada petición                  | **Hecho y en producción**                                                                       |
+| Administradores: dar acceso total y quitarlo, con el código otra vez                        | **Hecho y en producción**                                                                       |
+| Auditoría del admin: quién, qué, cuándo, motivo y dirección IP                              | **Hecho y en producción** (el aparato se guarda, no se enseña)                                  |
+| `bd:dar-admin`: dar el primer acceso, y rescatar (clave nueva, segundo factor)              | **Hecho y en producción** (rescatar llegó con el repaso, #54)                                   |
+| El catálogo del sistema de diseño detrás de la puerta                                       | **Hecho y en producción**                                                                       |
+| **Niveles** comercial, soporte y vendedor                                                   | Existen en la base; **no se pueden dar**. Vendedor, descartado (0076)                           |
+| **Clientes**: lista, filtros, búsqueda, CSV, ficha, contrato, actividad, notas, editar      | **Hecho en A2** (#74). Sin CIF: la organización no lo tiene                                     |
+| Copiar a la auditoría del cliente lo que el admin haga sobre él                             | **Hecho en A2**                                                                                 |
+| **Vendedores y códigos**: enlace, QR, `?ref=`, llegadas, descuento del primer mes, cifras   | **Hecho en A3** y en producción (0058). Sin panel ni comisiones (0076)                          |
+| **Ventas**: tablero y gráficas                                                              | **Hecho en A4**, en su PR (0059): sin IVA, lo cobrado, las visitas y el correo del lunes (0077) |
+| Borrar solas las IP de más de dos años                                                      | **Falta** · necesita el reloj (R); se cierra en M27                                             |
+| Cambiar el correo de acceso de un cliente con doble confirmación                            | **Hecho en A2**                                                                                 |
+| Suscripciones: ver todo de Stripe y tres gestos (alargar, de la casa, cancelar al acabar)   | **Hecho en A2**. Las comisiones se pactan fuera (0076)                                          |
+| Entrar a los datos de un cliente con su permiso (Roles 4.3), costes, integraciones, soporte | **M26**                                                                                         |
+| `admin.estook.com` en vez de `estook.com/admin/`                                            | **M27**, si cambia el alojamiento                                                               |
 
 ---
 
@@ -337,6 +337,13 @@ dormidos, lo que dejan al mes y cuánto llevan de media. Y la lista de sus clien
 lo calcula el servidor**; los de ejemplo no cuentan.
 
 ## 4 · Ventas
+
+> **Construido en A4** ([decisión 0077](decisiones/0077-a4-las-ventas.md), migración
+> `0059`), con las respuestas de Richi del 8-oct: **el dinero sin IVA**, **lo cobrado de
+> verdad además de la cuota**, **las visitas solo de los enlaces de vendedor** y **un
+> correo cada lunes** a los admins. El periodo es 7 días, este mes, este trimestre o este
+> año, frente al mismo trozo del anterior; «hoy» no entró. Lo de abajo es el boceto del
+> 16-sep: las cifras y las gráficas de verdad, en [`a4-ventas.md`](a4-ventas.md).
 
 El tablero, **con el periodo arriba** (hoy, 7 días, mes, trimestre, año) y cada cifra
 con su flecha frente al periodo anterior:

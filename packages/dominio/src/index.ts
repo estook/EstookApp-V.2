@@ -572,7 +572,9 @@ export {
   celdaDeCsv,
   comoCsv,
   cuotaAlMes,
+  esDeLosQuePagan,
   estaEnLaPestana,
+  estaEnPausa,
   laActividad,
 } from './clientes.ts';
 export type { ActividadDeCliente, LoQueHaceUnCliente, PestanaDeClientes } from './clientes.ts';
@@ -599,6 +601,34 @@ export type {
   MarcasDeLaLlegada,
   OrigenDeLlegada,
 } from './vendedores.ts';
+
+// ── A4 · las ventas (0077) ───────────────────────────────────────────────────
+export {
+  CONTRA_QUE,
+  IVA_DE_LA_CUOTA,
+  NOMBRE_DEL_PERIODO,
+  PAGANDO_PARA_UN_PORCENTAJE,
+  PERIODOS_DE_VENTAS,
+  cuentaEnVentas,
+  elCorreoDeLaSemana,
+  elLunes,
+  elTableroDeVentas,
+  laCuotaSinIva,
+  losTramos,
+} from './ventas.ts';
+export type {
+  ApunteDeDinero,
+  Cifra,
+  CifraDeDinero,
+  ClienteDeVentas,
+  FotoDeVentas,
+  LoQueHayParaLasVentas,
+  ModoDeCobro,
+  PeriodoDeVentas,
+  TableroDeVentas,
+  Tramo,
+  VisitasDeUnDia,
+} from './ventas.ts';
 
 // ── R · los avisos, la campana (0052) ────────────────────────────────────────
 export {

@@ -27,7 +27,8 @@ export function Privacidad() {
             <strong>Cómo nos conociste:</strong> al crear la cuenta, el código de vendedor si lo
             pones, las marcas de campaña del enlace por el que llegaste y el nombre de la web de la
             que venías (por ejemplo, «google.es»), nunca la dirección entera. Viaja en el enlace y
-            no se guarda en tu navegador.
+            no se guarda en tu navegador. Si llegas por el enlace de un vendedor, sumamos una visita
+            a su código ese día: solo el número, sin saber quién eres ni desde dónde.
           </li>
           <li>
             <strong>Técnicos:</strong> el aparato y el navegador desde el que entras, la dirección

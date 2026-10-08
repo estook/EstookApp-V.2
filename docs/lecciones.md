@@ -558,3 +558,12 @@
      gastaría ahí. El del primer mes se pone cuando Stripe avisa de que la prueba acaba
      (`customer.subscription.trial_will_end`), y una sola vez (`los-vendedores.prueba.ts`,
      0076).
+155. **«Lo mismo del año pasado» se cuenta por el calendario, no por días.** El tablero de
+     ventas comparaba el trozo del periodo anterior sumando los días que van del actual:
+     el 29 de febrero de 2028 se comparaba con el 1 de marzo de 2027. Ahora es el mismo
+     día unos meses antes, o el último del mes si no lo tiene (`losTramos`, 0077). Lo
+     cazó `ventas.prueba.ts` antes de llegar a ninguna pantalla.
+156. **Una cuenta en solo lectura puede estar pagando.** El plan Pausa cobra 12 € por
+     guardar los datos, y su cuenta es de solo lectura, que es lo que compra; la lista de
+     Clientes la metía en «Sin pagar» y no contaba su cuota. Ahora «En Pausa» va en
+     Pagando, en Clientes, en Vendedores y en Ventas (`estaEnPausa`, 0077).

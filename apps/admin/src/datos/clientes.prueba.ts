@@ -31,6 +31,7 @@ const UNO: ClienteEnLista = {
   tipo: 'independiente',
   correos: [],
   cancelaAlAcabar: false,
+  enPausa: false,
   deLaCasa: false,
   pruebaHasta: null,
   periodoHasta: null,
@@ -50,6 +51,12 @@ describe('el contrato, en una etiqueta', () => {
     expect(elContrato({ ...UNO, cancelaAlAcabar: true })).toEqual({
       texto: 'Se va al acabar',
       tono: 'atencion',
+    });
+  });
+  it('Pausa paga: «En Pausa», no «Solo lectura» ni «Sin pagar» (A4)', () => {
+    expect(elContrato({ ...UNO, como: 'solo_lectura', enPausa: true })).toEqual({
+      texto: 'En Pausa',
+      tono: 'info',
     });
   });
   it('la prueba dice los días que le quedan', () => {

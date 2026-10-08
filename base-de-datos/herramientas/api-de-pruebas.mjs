@@ -363,6 +363,9 @@ const servidor = createServer((peticion, respuesta) => {
         if (organizacion === null) throw new Error('Nadie lleva una cuenta con ese correo.');
         if (que === 'fallar') await pagos.fallarElCobro(organizacion);
         else if (que === 'cobrar') await pagos.cobrar(organizacion);
+        // A4 (0077) · devolver parte de lo último cobrado.
+        else if (que === 'devolver')
+          await pagos.devolver(organizacion, Number(pedido.searchParams.get('centimos') ?? 0));
         else throw new Error(`No sé hacer «${que}».`);
         return { a: null };
       })();

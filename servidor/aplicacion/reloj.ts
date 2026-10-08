@@ -19,6 +19,7 @@ import {
 } from './al-movil.ts';
 import { mandarLosCorreosDeLosAvisos } from './avisos.ts';
 import { hacerLaFotoDelUso } from './clientes.ts';
+import { mandarElCorreoDelLunes, traerLoCobradoDeAntes } from './ventas.ts';
 import { loQueAvisaElReloj } from './lo-que-avisa-el-reloj.ts';
 import type { Contexto } from './contrato.ts';
 import { correoDeLaCuenta } from './correos.ts';
@@ -40,7 +41,9 @@ import {
  *   1 · El correo de cada cuenta que le toque: el de cada día de impago, el de solo
  *       lectura y el de fin de prueba. Cada uno una vez (`plataforma.correo_de_la_cuenta`).
  *   2 · Cuadrar los locales con Stripe, por si al crear uno no se pudo.
- *   3 · La foto del uso de cada cliente, para el admin.
+ *   3 · La foto del uso de cada cliente, para el admin; desde A4, con su cuenta y su
+ *       cuota. Y lo de las ventas (0077): lo cobrado de antes, una vez, y el correo
+ *       del lunes a los admins.
  *   4 · Borrar los avisos de hace más de un mes (0052).
  *   5 · Lo que avisa por su cuenta (R2 · 0053): mañana toca pedir, los informes, lo
  *       que está bajo mínimo y la nota en Google (`lo-que-avisa-el-reloj.ts`). Sus
@@ -410,6 +413,26 @@ async function elDiario(
       JSON.stringify({
         nivel: 'error',
         mensaje: 'no se ha podido hacer la foto del uso de los clientes',
+        correlacion_id: contexto.correlacionId,
+        detalle: fallo instanceof Error ? fallo.message : String(fallo),
+      }),
+    );
+  }
+
+  // 3½ · Las ventas (A4 · 0077): lo cobrado de antes de A4, una vez, y el correo del
+  // lunes a los admins. Traer lo de antes no hace repetir el día: si Stripe no
+  // contesta, sigue sin apuntarse y se intenta mañana. El correo sí: no se ha mandado.
+  await sinPararElReloj(contexto, 'traer lo cobrado de antes', () =>
+    traerLoCobradoDeAntes(contexto),
+  );
+  try {
+    await mandarElCorreoDelLunes(contexto, hoy);
+  } catch (fallo) {
+    fallos += 1;
+    console.error(
+      JSON.stringify({
+        nivel: 'error',
+        mensaje: 'el correo de ventas del lunes no ha salido',
         correlacion_id: contexto.correlacionId,
         detalle: fallo instanceof Error ? fallo.message : String(fallo),
       }),

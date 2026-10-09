@@ -20,6 +20,7 @@ import {
   laNotaBaja,
   avisoDeBajoMinimo,
   avisoDeInventarioContado,
+  avisoDeLoQueFalta,
   avisoDeRecontar,
   avisoDeTocaContar,
   avisoDeNotaDeGoogle,
@@ -28,6 +29,7 @@ import {
   quienesEnUnaFrase,
   tramoDelAviso,
 } from './avisos.ts';
+import { centimos } from './dinero.ts';
 import { fechaOperativa } from './tiempo.ts';
 
 const dia = fechaOperativa;
@@ -252,6 +254,13 @@ describe('lo que avisa el reloj (R2 · 0053)', () => {
     expect(avisoDeRecontar(['Pulpo'], 'Luis')).toEqual({
       titulo: 'Vuelve a contar 1 producto',
       detalle: 'Pulpo. Te lo pide Luis.',
+    });
+  });
+
+  it('lo que falta al cerrar (M8 · 0079): en euros, con la parte de lo gastado', () => {
+    expect(avisoDeLoQueFalta(centimos(6_400), 0.05, ['pulpo', 'gambas'])).toEqual({
+      titulo: 'Al cerrar el inventario faltan 64,00 €',
+      detalle: 'Un 5 % de lo gastado: pulpo y gambas. Mira la desviación.',
     });
   });
 

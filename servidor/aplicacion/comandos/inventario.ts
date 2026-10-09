@@ -19,6 +19,7 @@ import {
   type Cerrado,
 } from '../inventario.ts';
 import { productosActivos } from '../consultas/almacen.ts';
+import { avisarSiFalta } from '../desviacion.ts';
 
 /**
  * Contar y cerrar, en dos pasos (M8 · decisión 0078, 2A).
@@ -167,6 +168,12 @@ export const cerrarInventario = comando<EntradaCerrarInventario, SalidaCerrarInv
     const cerrado = await cerrarElInventario(contexto, entrada.inventario_id, {
       loQueFalta: entrada.lo_que_falta ?? 'dejarlo',
       notas: entrada.notas ?? null,
+    });
+    // Si falta más del 3 % de lo que se vende tal cual, a quien responde (0079).
+    await avisarSiFalta(contexto, {
+      localId: elLocalDeLaSesion(contexto),
+      organizacionId: laOrganizacionDeLaSesion(contexto),
+      inventarioId: entrada.inventario_id,
     });
     return { ...cerrado, inventarioId: entrada.inventario_id };
   },

@@ -389,11 +389,87 @@ export interface SalidaValorDelAlmacen {
 }
 
 /**
- * Cuánto dinero había en cámara al acabar un día, a precio medio ponderado.
+ * Lo que había de cada producto al acabar un día, y lo que valía.
  *
  * Sale del libro: cada línea guarda cómo quedó la cámara tras ella (0023), así que lo
  * que había un día es la última línea de cada producto hasta ese día. **No se
- * recalcula nada**: se lee. Lo de hoy cuadra con «lo que vale la cámara» del Resumen.
+ * recalcula nada**: se lee. Lo usan «Valor» y el food cost real (0079), y por eso es
+ * una sola función: el «había» y el «queda» del food cost son esta misma cifra.
+ */
+export async function losProductosValorados(
+  contexto: Contexto,
+  localId: string,
+  fecha: string,
+  zona: string | null,
+  /**
+   * O hasta una línea del libro, en vez de hasta un día: lo que había justo al cerrar
+   * un inventario (el food cost entre dos inventarios, 0079). Con esto, `fecha` no se mira.
+   */
+  hastaMovimiento: string | null = null,
+): Promise<ProductoValorado[]> {
+  const filas = await contexto.sql<
+    {
+      id: string;
+      nombre: string;
+      zona: string;
+      categoria: string | null;
+      unidad_de_uso: string;
+      cantidad: string;
+      coste: string;
+      coste_vigente: string | null;
+    }[]
+  >`
+    select p.id::text as id, p.nombre, p.zona::text as zona, c.nombre as categoria,
+           p.unidad_de_uso::text as unidad_de_uso,
+           u.cantidad_despues::text as cantidad, u.coste_medio_despues::text as coste,
+           case when u.coste_medio_despues = 0
+                then (estook.precio_vigente(p.id)).coste_milesimas::text end as coste_vigente
+      from estook.producto p
+      left join estook.categoria_de_producto c on c.id = p.categoria_id
+      join lateral (
+        select m.cantidad_despues, m.coste_medio_despues
+          from estook.movimiento_de_stock m
+         where m.producto_id = p.id
+           and (case when ${hastaMovimiento}::bigint is null
+                     then m.fecha_operativa <= ${fecha}::date
+                     else m.id <= ${hastaMovimiento}::bigint end)
+         order by m.id desc
+         limit 1
+      ) u on true
+     where p.local_id = ${localId}
+       and p.activo
+       and not p.es_ejemplo
+       and u.cantidad_despues > 0
+       and (${zona}::text is null or p.zona::text = ${zona}::text)
+       and p.zona = any ((select estook.zonas_que_ve(${localId}::uuid))::estook.zona_del_producto[])
+     order by p.nombre
+  `;
+
+  return filas.map((f) => {
+    const cantidad = Number(f.cantidad);
+    const coste = Number(f.coste);
+    const valorado = loQueValeLoQueHay(
+      cantidad,
+      coste,
+      f.coste_vigente === null ? null : Number(f.coste_vigente),
+    );
+    return {
+      id: f.id,
+      nombre: f.nombre,
+      zona: f.zona,
+      categoria: f.categoria,
+      unidadDeUso: f.unidad_de_uso,
+      cantidad,
+      costeMilesimas: coste === 0 ? null : coste,
+      valorCentimos: valorado.valor,
+      valorEsEstimado: valorado.estimado,
+    };
+  });
+}
+
+/**
+ * Cuánto dinero había en cámara al acabar un día, a precio medio ponderado. Lo de
+ * hoy cuadra con «lo que vale la cámara» del Resumen.
  */
 export const valorDelAlmacen = consulta<EntradaValorDelAlmacen, SalidaValorDelAlmacen>({
   nombre: 'valor_del_almacen',
@@ -411,61 +487,7 @@ export const valorDelAlmacen = consulta<EntradaValorDelAlmacen, SalidaValorDelAl
       });
     }
 
-    const filas = await contexto.sql<
-      {
-        id: string;
-        nombre: string;
-        zona: string;
-        categoria: string | null;
-        unidad_de_uso: string;
-        cantidad: string;
-        coste: string;
-        coste_vigente: string | null;
-      }[]
-    >`
-      select p.id::text as id, p.nombre, p.zona::text as zona, c.nombre as categoria,
-             p.unidad_de_uso::text as unidad_de_uso,
-             u.cantidad_despues::text as cantidad, u.coste_medio_despues::text as coste,
-             case when u.coste_medio_despues = 0
-                  then (estook.precio_vigente(p.id)).coste_milesimas::text end as coste_vigente
-        from estook.producto p
-        left join estook.categoria_de_producto c on c.id = p.categoria_id
-        join lateral (
-          select m.cantidad_despues, m.coste_medio_despues
-            from estook.movimiento_de_stock m
-           where m.producto_id = p.id and m.fecha_operativa <= ${fecha}::date
-           order by m.id desc
-           limit 1
-        ) u on true
-       where p.local_id = ${localId}
-         and p.activo
-         and not p.es_ejemplo
-         and u.cantidad_despues > 0
-         and (${entrada.zona ?? null}::text is null or p.zona::text = ${entrada.zona ?? null}::text)
-         and p.zona = any ((select estook.zonas_que_ve(${localId}::uuid))::estook.zona_del_producto[])
-       order by p.nombre
-    `;
-
-    const productos: ProductoValorado[] = filas.map((f) => {
-      const cantidad = Number(f.cantidad);
-      const coste = Number(f.coste);
-      const valorado = loQueValeLoQueHay(
-        cantidad,
-        coste,
-        f.coste_vigente === null ? null : Number(f.coste_vigente),
-      );
-      return {
-        id: f.id,
-        nombre: f.nombre,
-        zona: f.zona,
-        categoria: f.categoria,
-        unidadDeUso: f.unidad_de_uso,
-        cantidad,
-        costeMilesimas: coste === 0 ? null : coste,
-        valorCentimos: valorado.valor,
-        valorEsEstimado: valorado.estimado,
-      };
-    });
+    const productos = await losProductosValorados(contexto, localId, fecha, entrada.zona ?? null);
 
     const porZona = new Map<string, number>();
     const porCategoria = new Map<string | null, { valor: number; cuantos: number }>();

@@ -461,6 +461,8 @@ export interface LineaDeMerma {
   readonly quien: string | null;
   readonly categoria: string | null;
   readonly valorCentimos?: number | null;
+  /** La foto de lo que se tiró, si se hizo (M8 · 0079): un enlace que caduca. */
+  readonly foto?: string | null;
 }
 
 export interface TotalPorPartida {

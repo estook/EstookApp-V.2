@@ -1,6 +1,6 @@
 # M8 · Inventario, mermas y desviación · el plan
 
-**Escrito el 8 de octubre de 2026**, con A4 en producción y «antes de M8» cerrado (leído en la base ese día a las 21:40, en solo lectura: 59 migraciones, 101 tablas, la API con 74 y 163). **Contestado por Richi ese mismo día —las cuatro, A—** ([0078](decisiones/0078-las-respuestas-de-m8.md)), y **la primera entrega, construida** con la migración `0060`. Lo que cambió al construirla, al final de la 0078.
+**Escrito el 8 de octubre de 2026**, con A4 en producción y «antes de M8» cerrado (leído en la base ese día a las 21:40, en solo lectura: 59 migraciones, 101 tablas, la API con 74 y 163). **Contestado por Richi ese mismo día —las cuatro, A—** ([0078](decisiones/0078-las-respuestas-de-m8.md)), y **la primera entrega, en producción** con la migración `0060` (lo que cambió al construirla, al final de la 0078). **La segunda, construida el 9-oct** con la `0061`: lo que decidí al construirla, en la [0079](decisiones/0079-lo-gastado-y-la-desviacion.md).
 
 | Pregunta                                        | Queda así                                                                                                                 |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |

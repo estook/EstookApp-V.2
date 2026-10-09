@@ -24,7 +24,13 @@ import {
   Tarjeta,
   type Columna,
 } from '@estook/ui';
-import { IconoAnadir, IconoBuscar, IconoDescargar, IconoDocumento } from '@estook/iconos';
+import {
+  IconoAnadir,
+  IconoBuscar,
+  IconoCamara,
+  IconoDescargar,
+  IconoDocumento,
+} from '@estook/iconos';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { ApuntarMerma } from './ApuntarMerma.tsx';
 import {
@@ -133,6 +139,20 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
           <span>{m.producto}</span>
           {m.detalle !== null && m.detalle.trim() !== '' && (
             <span className="text-secundario text-texto-tenue">«{m.detalle.trim()}»</span>
+          )}
+          {/* La foto, si se hizo (0079): la prueba de lo que se tiró. */}
+          {m.foto !== null && m.foto !== undefined && (
+            <a
+              href={m.foto}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-toque items-center gap-e1 text-secundario font-medium text-naranja underline-offset-2 hover:underline"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <IconoCamara size={14} /> Ver la foto
+            </a>
           )}
         </span>
       ),

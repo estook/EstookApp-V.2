@@ -2,43 +2,42 @@
 
 > ## Cómo está
 >
-> Comprobado el 8 de octubre de 2026 a las 21:40, leyendo la base de producción.
+> Comprobado el 9 de octubre de 2026 por la mañana, leyendo la base de producción.
 >
-> | Qué                         | Cómo está                                                                                    |
-> | --------------------------- | -------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #95** (A4, 8-oct). Abierta: **M8, el plan y la primera entrega** (#96) |
-> | La base de datos            | **59 de 59** migraciones, igual que `main`. 101 tablas                                       |
-> | La API                      | **Desplegada con A4**: 74 y 163, los avisos al móvil y el reloj latiendo                     |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                    |
-> | «Antes de M8»               | **Entero en producción**. Quedan pruebas tuyas: abajo, «Lo que queda de antes»               |
-> | M8                          | **Contestado (1A 2A 3A 4A) y la primera entrega construida**, sin fusionar                   |
+> | Qué                         | Cómo está                                                                                      |
+> | --------------------------- | ---------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #96** (M8, la primera entrega). Abierta: **M8, la segunda entrega**      |
+> | La base de datos            | **60 de 60** migraciones, igual que `main`. 104 tablas                                         |
+> | La API                      | **Desplegada con la primera entrega de M8**: 78 y 169, los avisos al móvil y el reloj latiendo |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                      |
+> | M8                          | **La primera entrega en producción**; **la segunda construida**, sin fusionar                  |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · M8, la primera entrega (#96)
+## Lo que te toca ahora · M8, la segunda entrega
 
-Tus respuestas del 8-oct, construidas ([decisión 0078](decisiones/0078-las-respuestas-de-m8.md)). **Una migración** (la **0060**) y **un despliegue**. Ninguna clave nueva.
+Lo que pediste el 9-oct, construido ([decisión 0079](decisiones/0079-lo-gastado-y-la-desviacion.md)). **Una migración** (la **0061**) y **un despliegue**. Ninguna clave nueva, y nada que preparar para las fotos.
 
-**Qué trae:**
+**Qué trae** (todo en **Almacén → Movimientos → Desviación**, para quien cierra inventarios):
 
-- **Contar y cerrar, dos pasos.** Cuenta quien lleva el almacén —el cocinero también— **sin ver lo que dice el libro**, y lo manda. Lo cierras tú (o el jefe de cocina), viendo **lo que más baila primero y en euros**.
-- **Lo contado se compara con lo que había al contarlo**: si entra un albarán entre que se cuenta y se cierra, no se pierde.
-- **Se cuenta como está en la estantería**: «2 cajas y 3 sueltas». Y lo contado **se guarda en el móvil** mientras se cuenta.
-- **«Que lo vuelvan a contar»** una línea que baila, y **descartar** lo contado con su porqué.
-- **«Toca contar»**: cada semana lo que más vale, lo demás una vez al mes. **Los lunes, en la campana.** Y **«Imprimir la hoja»**, sin las cifras del libro.
-- **El valor del almacén en cualquier fecha**: Productos → **Valor**.
-- **Los lotes se gastan solos**, primero el que antes caduca; el que se acaba deja de avisar.
-- **El mínimo que propone Estook**: en «Bajo mínimo» y en la ficha, con su porqué. El que aceptas lo rehace cada lunes.
+- **El food cost real**: lo que se fue en género de cada 100 € vendidos **sin IVA**, entre los dos últimos inventarios o en un mes, frente a **tu objetivo de materia prima**. Si faltan días de caja, lo dice.
+- **Lo que se vende tal cual**: lo que salió de la cámara frente a lo que vendió la caja —«Faltan 16 ud · 9,60 €»— con **su causa más probable** y un botón para comprobarla.
+- **Emparejar la caja**: «Coca-Cola» de la caja es tu «Coca-Cola 33 cl». Se dice una vez; Estook propone el producto que se le parece.
+- **Lo gastado de verdad** de cada producto contado dos veces: había, entró, queda y gastado, en euros.
+- **Un aviso** en la campana al cerrar un inventario si lo que falta pasa del 3 %.
+- **La foto de la merma**, si quieres: «Añadir una foto» al apuntarla, y «Ver la foto» en Mermas.
+
+**Lo que no trae, a propósito:** «lo que falta» de lo que se cocina (el pulpo, la merluza). Sin la ficha del plato no se sabe cuánto debía gastarse; de eso ves lo gastado de verdad, y su desviación llega con M9.
 
 ### 1 · Fusionar
 
-En **github.com** → **Pull requests** → **«M8 · …»** (la #96) → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+En **github.com** → **Pull requests** → **«M8 · lo gastado de verdad…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
 
 ### 2 · Aplicar la migración
 
-**Qué hace:** crea dónde guardar lo contado, de qué lote sale cada salida y qué mínimos rehace Estook. **No cambia lo que hay en el almacén.** Los lotes que ya tienes empiezan con lo que trajeron: **el primer inventario lo ajusta**. En PowerShell, en la carpeta del proyecto:
+**Qué hace:** crea dónde guardar qué producto es cada línea de la caja y la foto de cada merma, y el aviso nuevo. **No cambia nada de lo que ya hay.** En PowerShell, en la carpeta del proyecto:
 
 ```bash
 git checkout main
@@ -55,8 +54,8 @@ git pull
 **Qué tiene que salir**, tal cual:
 
 ```
-  aplicando 0060_contar_el_almacen.sql ... hecho
-  1 migracion(es) aplicadas · 60 en total
+  aplicando 0061_lo_gastado_y_la_desviacion.sql ... hecho
+  1 migracion(es) aplicadas · 61 en total
 ```
 
 **Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
@@ -69,41 +68,34 @@ git pull
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** «las 78» consultas y «los 169» comandos.
+**Qué tiene que decir:** «las 80» consultas y «los 171» comandos.
 
-### 4 · Probarlo, con alguien de cocina
+### 4 · Probarlo
 
 La web se publica sola al fusionar, en unos minutos. En la app (**Ctrl + F5**; en el móvil, ciérrala y ábrela):
 
-1. **Tú**: **Almacén → Movimientos → Inventario**. Sale **«Toca contar»** con tus productos, los que más valen en naranja. Pulsa **«Contar una zona»** → **«Imprimir la hoja»**: sale la hoja **sin cifras**.
-2. **Un cocinero, en su móvil**: lo mismo, **«Contar una zona»**, cuenta tres o cuatro cosas —**no ve lo que dice el libro**— y **«Mandar lo contado»**. Sale **«Mandado»**.
-3. **Tú**: en la campana, **«… ha contado cocina»**. Tócalo: lo que más baila arriba, con lo que decía el libro y **en euros**. Marca uno **«Que lo vuelvan a contar»** → **«Que vuelvan a contar este»**.
-4. **El cocinero**: le llega **«Vuelve a contar 1 producto»**. Lo recuenta y **«Mandar lo recontado»**.
-5. **Tú**: **«Cerrar el inventario»** → **«Inventario cerrado»**.
-6. **Productos → Valor**: lo que vale hoy tu almacén; cambia **«El día»** a uno de la semana pasada y sale lo que valía entonces.
-7. **Productos → Bajo mínimo**: si sale **«Estook propone el mínimo de…»**, **Revisar** y **Usar** uno. Si no sale, es que todavía no hay una semana de salidas con las que calcularlo.
-8. **El lunes 12-oct**, en la campana: **«Toca contar…»**.
+1. **Almacén → Movimientos → Desviación**. Arriba, **Food cost real**: con el periodo «Un mes» sale el de octubre; despliega **«Cómo sale»** y mira que «Había», «Compraste» y «Queda» te suenan.
+2. Más abajo, **«En la caja, sin decir qué es»**: las líneas de tus cierres de caja. Si vendes refrescos o botellas tal cual, pulsa **«¿Es …?»** → **«Es este producto»**. Si una línea es un plato o el menú, **«No es de almacén»**.
+3. **Lo gastado de verdad**: sale de lo que hayas contado **dos veces**. Si solo has contado una, lo dice: «con el segundo inventario sale». Haz el segundo (Inventario → Contar una zona) y vuelve.
+4. Con un producto emparejado y contado dos veces, en **«Lo que se vende tal cual»** sale si cuadra o **«Faltan …»**; toca la etiqueta de la causa y el botón **«Mirar …»**.
+5. **Una merma con foto**: apunta una (producto, cuánto, por qué) → **«Añadir una foto»** → haz la foto → **Apuntar**. Sale «apuntado con su foto». En **Almacén → Mermas**, en esa línea, **«Ver la foto»**.
 
 Si algo no sale como aquí, hazle una captura y me la pasas.
 
 ---
 
+## Lo que queda de la primera entrega · probarla con alguien de cocina
+
+En producción desde el 9-oct (#96, 0060, 78 y 169). Si solo la has mirado por encima, lo que vale la pena probar con un cocinero:
+
+1. **Él, en su móvil**: Almacén → Movimientos → Inventario → **«Contar una zona»**, cuenta tres o cuatro cosas —**no ve lo que dice el libro**— y **«Mandar lo contado»**.
+2. **Tú**: en la campana, **«… ha contado cocina»**; marca uno **«Que lo vuelvan a contar»**; él lo recuenta; y **«Cerrar el inventario»**.
+3. **Productos → Valor**: cambia **«El día»** a uno de la semana pasada.
+4. **El lunes 12-oct**, en la campana: **«Toca contar…»**.
+
 ## Lo que queda de antes de M8
 
-### A4 · Ventas · mirarlo
-
-Fusionada, migrada (0059) y desplegada (74 y 163): comprobado el 8-oct por la noche. Lo que solo se puede ver **desde mañana**:
-
-1. **El 9-oct, después de las 8**, en `estook.com/admin/` → **Ventas** (**Ctrl + F5**): **Entra al mes** dice **65,29 €** (los 79 € con que se apuntó Pizzeriacazzo, sin IVA). Si sigue en 81,82 €, avísame.
-2. **Este año** → **Cobrado**: sale su primer cobro, del 26-sep.
-3. **El lunes 12-oct, a partir de las 8**, te llega el correo **«Estook, la semana: …»** (a ti y a Santi).
-
-El resto de cómo probarlo, en el paso 4 de A4 de [`pasos-antes-de-m8.md`](pasos-antes-de-m8.md).
-
-### A3 y C2 · probarlos, si no lo has hecho ya
-
-- **A3**: con un vendedor «Prueba» aparte, crear una cuenta entrando por su enlace y verla en Clientes. En la base, **ningún cliente ha llegado todavía por un enlace**. Paso 4 de A3 en [`pasos-antes-de-m8.md`](pasos-antes-de-m8.md).
-- **C2**: confirmar, fijar, «Al chat» y el aviso del horario, con alguien del equipo. Paso 4 de C2, en el mismo sitio.
+- **A4**: en `estook.com/admin/` → **Ventas** (**Ctrl + F5**), **Entra al mes** dice **65,29 €** y, en **Este año → Cobrado**, el cobro de Pizzeriacazzo del 26-sep; y el lunes 12-oct, a partir de las 8, el correo **«Estook, la semana: …»** (a ti y a Santi). Lo demás de A4, en el paso 4 de [`pasos-antes-de-m8.md`](pasos-antes-de-m8.md).
+- **A3**: con un vendedor «Prueba» aparte, crear una cuenta entrando por su enlace y verla en Clientes.
+- **C2**: confirmar, fijar, «Al chat» y el aviso del horario, con alguien del equipo.
 - **El horario**: montar y publicar una semana de verdad en IKATZ, y mirar «Mi turno» en el móvil de alguien del equipo.
-
-Si algo no sale como aquí, hazle una captura y me la pasas.

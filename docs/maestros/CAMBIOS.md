@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 9 de octubre** ([0079](../decisiones/0079-lo-gastado-y-la-desviacion.md)), sin cambiar de versión: el **Plan** gana la vista «Desviación» en Almacén · Movimientos (B5).
+
 **El 8 de octubre** ([0078](../decisiones/0078-las-respuestas-de-m8.md)), sin cambiar de versión: el **Plan** pasa a M9 la desviación de los platos, la calibración y el food cost teórico, que necesitan las fichas; M8 cuenta y cierra en dos pasos, se entrega en dos veces y cambia su «Terminado cuando»; y Productos gana la vista «Valor» (B5).
 
 **El 7 de octubre** ([0075](../decisiones/0075-las-respuestas-de-c2.md)), sin cambiar de versión: el **Manifiesto** deja un solo canal hecho, «Todo el equipo», y los demás los crean el gerente y los jefes; y **el chat no traduce** (23). El **Plan** lo refleja en M23.

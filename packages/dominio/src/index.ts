@@ -499,6 +499,30 @@ export type {
   ProductoQueSeCuenta,
 } from './inventario.ts';
 
+// ── M8 · lo gastado de verdad y la desviación (0079) ─────────────────────────
+export {
+  CAUSAS,
+  COMO_ES_LA_CAUSA,
+  HORAS_TRAS_EL_CORTE_QUE_SON_ANTES_DE_ABRIR,
+  LO_QUE_CUADRA,
+  PARTE_QUE_AVISA,
+  causaProbable,
+  cuadra,
+  faltaComoParaAvisar,
+  foodCostReal,
+  jornadasEntre,
+  loGastado,
+  loQueVale,
+  primeraJornadaTrasContar,
+} from './desviacion.ts';
+export type {
+  Causa,
+  CausaProbable,
+  CuentaDelFoodCost,
+  FoodCostReal,
+  LoQueSeSabeDeLaDesviacion,
+} from './desviacion.ts';
+
 // ── El repaso del 25-sep · lo congelado va aparte (0049) ─────────────────────
 export {
   AVISO_DE_LO_CONGELADO_EN_DIAS,
@@ -669,6 +693,7 @@ export {
   TIPOS_DE_AVISO,
   avisoDeBajoMinimo,
   avisoDeInventarioContado,
+  avisoDeLoQueFalta,
   avisoDeRecontar,
   avisoDeTocaContar,
   avisoDeCarta,

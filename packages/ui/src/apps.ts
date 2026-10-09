@@ -270,7 +270,18 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // contado. Es una vista de Movimientos y no una app: «los recuentos y las
         // mermas seran vistas de Movimientos», escrito desde M6.
         // Las mermas salieron de aquí el 26-sep a su propio destino, abajo.
-        vistas: vistas('Todo', 'Entradas', 'Salidas', 'Ventas', 'Ajustes', 'Inventario'),
+        // «Desviación» (M8 · 0079): lo gastado de verdad entre dos inventarios, el food
+        // cost real y lo que falta de lo que se vende tal cual. Es leer el libro entre
+        // dos recuentos, así que vive al lado de «Inventario».
+        vistas: vistas(
+          'Todo',
+          'Entradas',
+          'Salidas',
+          'Ventas',
+          'Ajustes',
+          'Inventario',
+          'Desviación',
+        ),
       },
       {
         id: 'compras',

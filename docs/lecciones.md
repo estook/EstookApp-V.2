@@ -577,3 +577,13 @@
      (`decia`, `hasta_movimiento`), y se suma a lo que haya al cerrar. Comparando con lo de
      las 11, el albarán de las 9 desaparecía. Lo prueba `contar-el-almacen.prueba.ts`, que
      sale en rojo con la comparación de antes (0078).
+159. **Un inventario que se cuenta por la mañana no se puede medir por días.** El food cost
+     entre dos inventarios contados un lunes temprano salía de 33,20 € donde se habían
+     gastado 489,80: el ajuste del segundo caía el lunes, fuera del periodo, y el del
+     primero, dentro. Entre dos inventarios se mide **por posición en el libro** (justo al
+     cerrar cada uno); por meses, por días. Lo prueba `lo-gastado-y-la-desviacion.prueba.ts`,
+     que sale en rojo midiendo por días (0079).
+160. **Comparar lo gastado con lo apuntado es acusar a la cocina.** Casi nadie apunta lo que
+     cocina, así que «lo que falta» de un ingrediente era todo lo gastado, y la brecha del
+     food cost contra lo apuntado salía siempre «fuga». La desviación con causa es solo de
+     lo que se vende tal cual, contra la caja; lo cocinado espera a sus fichas (M9, 0079).

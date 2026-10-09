@@ -109,6 +109,15 @@ const ValorDelAlmacen = lazy(async () => {
 });
 
 /**
+ * La desviación (M8 · 0079): lo gastado de verdad, el food cost real y lo que falta de
+ * lo que se vende tal cual. La abre quien cierra inventarios, pocas veces: aparte.
+ */
+const Desviacion = lazy(async () => {
+  const modulo = await import('./Desviacion.tsx');
+  return { default: modulo.Desviacion };
+});
+
+/**
  * Compras (M7), aparte de todo lo demás.
  *
  * Son cinco vistas con sus fichas —pedidos, recibir, albaranes, facturas,
@@ -148,7 +157,7 @@ export function Almacen({ destino, vista }: { readonly destino: string; readonly
           <ValorDelAlmacen alAbrirProducto={setProductoAbierto} />
         </Suspense>
       )}
-      {destino === 'movimientos' && vista !== 'inventario' && (
+      {destino === 'movimientos' && vista !== 'inventario' && vista !== 'desviacion' && (
         <Suspense fallback={<Cargando que="el libro de movimientos" />}>
           <Movimientos vista={vista} alAbrirProducto={setProductoAbierto} />
         </Suspense>
@@ -161,6 +170,11 @@ export function Almacen({ destino, vista }: { readonly destino: string; readonly
       {destino === 'movimientos' && vista === 'inventario' && (
         <Suspense fallback={<Cargando que="el inventario" />}>
           <Inventario />
+        </Suspense>
+      )}
+      {destino === 'movimientos' && vista === 'desviacion' && (
+        <Suspense fallback={<Cargando que="lo gastado de verdad" />}>
+          <Desviacion />
         </Suspense>
       )}
       {destino === 'compras' && (

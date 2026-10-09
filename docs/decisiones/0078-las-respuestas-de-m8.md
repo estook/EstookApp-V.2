@@ -1,7 +1,7 @@
 # 0078 · Las respuestas de M8: los platos esperan a sus fichas, contar y cerrar son dos pasos, el mínimo se propone y la foto de la merma es si quieres
 
 **Fecha:** 8 de octubre de 2026
-**Estado:** decidido por Richi. **La primera entrega, construida el 8-oct** con la migración `0060` (lo que decidí al construirla, al final). La segunda, pendiente.
+**Estado:** decidido por Richi. **La primera entrega, en producción** (migración `0060`; lo que decidí al construirla, al final). **La segunda, construida el 9-oct** con la `0061`: [0079](0079-lo-gastado-y-la-desviacion.md).
 **Cambia:** M8 y M9 en el [Plan](../maestros/Estook-Plan-de-Desarrollo.md), y sus vistas (B5): Productos gana «Valor». El plan, en [`m8-inventario-mermas-y-desviacion.md`](../m8-inventario-mermas-y-desviacion.md).
 
 ## Lo que contestó Richi

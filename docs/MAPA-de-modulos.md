@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **M8 · Inventario, mermas y desviación** ([su plan](m8-inventario-mermas-y-desviacion.md), [0078](decisiones/0078-las-respuestas-de-m8.md)): contestado, y **la primera entrega construida** en su pull request; queda la segunda. **«Antes de M8» está entero en producción** desde el 8-oct, con **A4 · Ventas del admin** la última ([`a4-ventas.md`](a4-ventas.md), [0077](decisiones/0077-a4-las-ventas.md)); lo que fue, en [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+Estás en **M8 · Inventario, mermas y desviación** ([su plan](m8-inventario-mermas-y-desviacion.md), [0078](decisiones/0078-las-respuestas-de-m8.md)): contestado; **la primera entrega en producción** y **la segunda construida** en su pull request ([0079](decisiones/0079-lo-gastado-y-la-desviacion.md)). **«Antes de M8» está entero en producción** desde el 8-oct, con **A4 · Ventas del admin** la última ([`a4-ventas.md`](a4-ventas.md), [0077](decisiones/0077-a4-las-ventas.md)); lo que fue, en [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -43,6 +43,8 @@ Ficha del proveedor con sus días de reparto y su pedido mínimo, el ciclo `borr
 Inventario cíclico, almacén valorado, mermas en tres toques, consumo de personal como partida aparte, y **la desviación**: lo que dice el escandallo frente a lo que falta de verdad. Ahí está el dinero que se escapa, y es de lo que más vende.
 
 **Contestado el 8-oct** ([0078](decisiones/0078-las-respuestas-de-m8.md)): la desviación de los platos, la calibración y el food cost teórico **pasan a M9**, que es donde se sabe qué lleva cada plato. M8 se entrega en dos veces: contar y cerrar en dos pasos, el valor, FEFO y el mínimo; y después lo gastado, el food cost real y la desviación de lo que se vende tal cual.
+
+**La segunda entrega, construida el 9-oct** ([0079](decisiones/0079-lo-gastado-y-la-desviacion.md)): Movimientos → Desviación, con el food cost real frente al objetivo, lo que falta de lo vendido tal cual con su causa, emparejar la caja y lo gastado de verdad; y la foto de la merma. Lo que se cocina tiene lo gastado, y su desviación llega con las fichas (M9).
 
 ### M9 · Escandallos
 

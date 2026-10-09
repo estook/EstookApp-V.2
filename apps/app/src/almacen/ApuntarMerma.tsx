@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   MOTIVOS_DE_MERMA,
@@ -20,12 +20,13 @@ import {
   clases,
   filtrarPorParecido,
 } from '@estook/ui';
-import { IconoBuscar } from '@estook/iconos';
+import { IconoBuscar, IconoCamara } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { hacerOGuardar } from '../sinConexion/cola.ts';
 import { usarHayRed } from '../ganchos/usarLaRed.ts';
 import { conUnidadDeUso, type ProductoParaMerma, type ProductosParaMerma } from './contrato.ts';
+import { reducirFoto, type FotoReducida } from './reducirFoto.ts';
 
 /**
  * Apuntar una merma · la hoja que se abre en mitad de un servicio (M6½).
@@ -74,6 +75,10 @@ export function ApuntarMerma({
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
+  // La foto, si se quiere (M8 · 0078, 4A): un cuarto toque que se puede saltar.
+  const [foto, setFoto] = useState<FotoReducida | null>(null);
+  const [reduciendo, setReduciendo] = useState(false);
+  const elFichero = useRef<HTMLInputElement>(null);
 
   const DESDE_CUANTAS_LETRAS = 2;
   const buscando = texto.trim().length >= DESDE_CUANTAS_LETRAS;
@@ -128,6 +133,7 @@ export function ApuntarMerma({
     setDetalle('');
     setError(null);
     setHecho(null);
+    setFoto(null);
   }
 
   function cerrar() {
@@ -155,7 +161,7 @@ export function ApuntarMerma({
 
     const loQueSeTira = `${conUnidadDeUso(cuantoNumero, elegido.unidadDeUso)} de ${elegido.nombre}`;
     // **Sin señal se guarda** y sale sola al volver, con la jornada de ahora (0070).
-    const hechoAhora = await hacerOGuardar<{ cantidad: number }>(
+    const hechoAhora = await hacerOGuardar<{ cantidad: number; movimientoId: string }>(
       cliente,
       'apuntar_merma',
       {
@@ -167,16 +173,32 @@ export function ApuntarMerma({
       { de: yo?.personaId ?? '', que: `Merma · ${loQueSeTira}` },
     );
 
-    setGuardando(false);
     if (hechoAhora.tipo === 'error') {
+      setGuardando(false);
       setError(hechoAhora.error);
       return;
     }
 
+    // La foto va después, por su lado: la merma ya está apuntada, y si la foto no
+    // sube, se dice y la merma se queda. Sin señal, la merma sale sola y sin foto.
+    let sinFoto = '';
+    if (foto !== null && hechoAhora.tipo === 'hecho') {
+      const puesta = await cliente.ejecutar('poner_foto_de_merma', {
+        movimiento_id: hechoAhora.datos.movimientoId,
+        tipo: foto.tipo,
+        foto: foto.foto,
+      });
+      if (!puesta.ok) sinFoto = ' La foto no se ha podido subir.';
+    } else if (foto !== null) {
+      sinFoto = ' Sin señal, va sin la foto.';
+    }
+    setGuardando(false);
+    setFoto(null);
+
     setHecho(
       hechoAhora.tipo === 'guardado'
-        ? `${loQueSeTira}, guardado sin señal: sale solo al volver.`
-        : `${loQueSeTira}, apuntado.`,
+        ? `${loQueSeTira}, guardado sin señal: sale solo al volver.${sinFoto}`
+        : `${loQueSeTira}, apuntado${foto !== null && sinFoto === '' ? ' con su foto' : ''}.${sinFoto}`,
     );
 
     // Lo que cambia con una merma: lo que hay en cámara, la merma del día, el
@@ -392,16 +414,76 @@ export function ApuntarMerma({
               />
             )}
 
-            {motivo !== 'otro' && detalle === '' && (
-              <Boton
-                tono="texto"
-                onClick={() => {
-                  setDetalle(' ');
+            <div className="flex flex-wrap items-center gap-e2">
+              {motivo !== 'otro' && detalle === '' && (
+                <Boton
+                  tono="texto"
+                  onClick={() => {
+                    setDetalle(' ');
+                  }}
+                >
+                  Añadir una nota
+                </Boton>
+              )}
+
+              {/* ── 4 · La foto, si quieres (4A) ─────────────────────────────── */}
+              {conRed &&
+                (foto === null ? (
+                  <Boton
+                    tono="texto"
+                    icono={<IconoCamara size={18} />}
+                    cargando={reduciendo}
+                    textoCargando="Preparando la foto"
+                    onClick={() => {
+                      elFichero.current?.click();
+                    }}
+                  >
+                    Añadir una foto
+                  </Boton>
+                ) : (
+                  <span className="flex items-center gap-e2">
+                    <img
+                      src={`data:${foto.tipo};base64,${foto.miniatura}`}
+                      alt="La foto de lo que se tira"
+                      className="size-12 rounded-medio object-cover"
+                    />
+                    <Boton
+                      tono="texto"
+                      onClick={() => {
+                        setFoto(null);
+                      }}
+                    >
+                      Quitar la foto
+                    </Boton>
+                  </span>
+                ))}
+              <input
+                ref={elFichero}
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                aria-label="Elegir la foto de la merma"
+                onChange={(evento) => {
+                  const fichero = evento.currentTarget.files?.[0];
+                  evento.currentTarget.value = '';
+                  if (fichero === undefined) return;
+                  setReduciendo(true);
+                  void reducirFoto(fichero)
+                    .then(setFoto)
+                    .catch(() => {
+                      setError({
+                        codigo: 'faltan_datos',
+                        quePasa: 'No hemos podido leer esa foto.',
+                        queSePuedeHacer: 'Prueba a hacerla otra vez, o apunta la merma sin ella.',
+                        boton: null,
+                      });
+                    })
+                    .finally(() => {
+                      setReduciendo(false);
+                    });
                 }}
-              >
-                Añadir una nota
-              </Boton>
-            )}
+              />
+            </div>
           </>
         )}
       </div>

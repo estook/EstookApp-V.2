@@ -8,6 +8,7 @@ import {
   mediaPorDia,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { SEGUNDOS_DEL_ENLACE_DE_LA_FOTO } from '../../infraestructura/almacen.ts';
 
 /**
  * La merma, para verla y para exportarla (M6½).
@@ -192,6 +193,8 @@ export interface LineaDeMerma {
   readonly quien: string | null;
   readonly categoria: string | null;
   readonly valorCentimos?: number | null;
+  /** La foto de lo que se tiró, si se hizo (0079): un enlace que caduca. */
+  readonly foto: string | null;
 }
 
 export interface SalidaMisMermas {
@@ -289,6 +292,7 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
         quien: string | null;
         categoria: string | null;
         valor: string | null;
+        foto: string | null;
       }[]
     >`
       select m.id::text as id, p.id::text as producto_id, p.nombre as producto,
@@ -301,11 +305,13 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
              to_char(m.ocurrido_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ocurrido_en,
              pe.nombre as quien,
              c.nombre as categoria,
-             round(abs(m.cantidad) * m.coste_medio_despues / 1000)::text as valor
+             round(abs(m.cantidad) * m.coste_medio_despues / 1000)::text as valor,
+             fm.clave as foto
         from estook.movimiento_que_cuenta m
         join estook.producto p on p.id = m.producto_id
         left join estook.categoria_de_producto c on c.id = p.categoria_id
         left join estook.persona pe on pe.id = m.persona_id
+        left join estook.foto_de_merma fm on fm.movimiento_id = m.id
        where m.local_id = ${localId}
          and m.tipo = 'merma'
          and not p.es_ejemplo
@@ -367,6 +373,21 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
 
     const hayMas = filas.length > limite;
 
+    // Las fotos de la página, firmadas **de una tanda** (como las de producto, entrega
+    // V). Si el almacén no está o no contesta, la lista sale igual, sin el botón.
+    const claves = filas
+      .slice(0, limite)
+      .map((f) => f.foto)
+      .filter((clave): clave is string => clave !== null);
+    let fotos: ReadonlyMap<string, string> = new Map();
+    if (claves.length > 0 && contexto.almacen !== null) {
+      try {
+        fotos = await contexto.almacen.enlaces(claves, SEGUNDOS_DEL_ENLACE_DE_LA_FOTO);
+      } catch {
+        fotos = new Map();
+      }
+    }
+
     /**
      * Juntar los totales por lo que diga `clave`.
      *
@@ -422,6 +443,7 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
         quien: f.quien,
         categoria: f.categoria,
         ...(conPrecios ? { valorCentimos: Number(f.valor ?? 0) } : {}),
+        foto: f.foto === null ? null : (fotos.get(f.foto) ?? null),
       })),
       hayMas,
       desde,

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { GRUPOS_DE_AVISOS, type TipoDeAviso } from '@estook/dominio';
-import { Cargando, ErrorEnCristiano, Interruptor, Tarjeta, clases } from '@estook/ui';
+import { Cargando, ConMasInfo, ErrorEnCristiano, Interruptor, Tarjeta, clases } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CuandoSuenaElMovil, EsteMovil } from './EsteMovil.tsx';
 import { usarMiMovil } from '../ganchos/usarMiMovil.ts';
@@ -164,12 +164,18 @@ export function TusAvisos() {
                         key={aviso.tipo}
                         className={clases('grid items-center gap-e2 py-e3', columnas)}
                       >
-                        <span className="min-w-0">
+                        {/*
+                          El porqué, plegado en la «i» (auditoría del 9-oct): con
+                          treinta avisos y su línea debajo, en el móvil eran doce
+                          pantallas de scroll para elegir tres interruptores.
+                        */}
+                        <ConMasInfo
+                          className="min-w-0"
+                          info={aviso.explica}
+                          queExplica={`Qué es «${aviso.nombre}»`}
+                        >
                           <span className="block text-cuerpo">{aviso.nombre}</span>
-                          <span className="block text-etiqueta text-texto-suave">
-                            {aviso.explica}
-                          </span>
-                        </span>
+                        </ConMasInfo>
                         <span className="flex justify-center">
                           <Interruptor
                             etiquetaOculta

@@ -224,10 +224,18 @@ describe('pedir ayuda con un pedido', () => {
     expect(elFallo(intento)).toBe('sin_permiso');
   });
 
-  it('al invitado le llega a la campana y al correo, al momento', async () => {
+  it('al invitado le llega a la campana al momento, y por correo solo si lo encendió (0081)', async () => {
     const [deMarcos] = await comoDuena<{ id: string }>(
       `select id from estook.persona where correo = $1`,
       [MARCOS],
+    );
+    // De fábrica ya no va por correo (repaso del 9-oct): Marcos lo enciende.
+    losDatos(
+      await api.ejecutar(marcos, 'guardar_mis_avisos', {
+        tipo: 'pedido.invitacion',
+        en_la_app: true,
+        por_correo: true,
+      }),
     );
     const antes = correo.mandados.length;
     losDatos(

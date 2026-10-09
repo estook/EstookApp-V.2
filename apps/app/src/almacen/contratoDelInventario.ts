@@ -175,6 +175,36 @@ export function numeroEscrito(escrito: string | undefined): number | null {
   return Number.isFinite(numero) && numero >= 0 ? numero : null;
 }
 
+/**
+ * Lo escrito al escanear, junto con lo que ya se llevaba (repaso del 9-oct, punto 1).
+ *
+ * Escanear ya no suma uno: pregunta cuántos hay. Si ese producto ya estaba contado
+ * —la misma leche en dos estanterías—, **se suma** a lo de antes, casilla a casilla;
+ * con `sumar` apagado, lo nuevo sustituye a lo de antes. Lo que se deja en blanco no
+ * borra lo que había.
+ */
+export function juntarLoContado(
+  antes: LoEscrito | undefined,
+  nuevo: LoEscrito,
+  sumar: boolean,
+): LoEscrito {
+  const casilla = (campo: keyof LoEscrito): string | undefined => {
+    const escrito = numeroEscrito(nuevo[campo]);
+    const tenia = numeroEscrito(antes?.[campo]);
+    if (escrito === null) return sumar ? antes?.[campo] : undefined;
+    if (!sumar || tenia === null) return String(escrito);
+    return String(Number((tenia + escrito).toFixed(4)));
+  };
+  const hay = casilla('hay');
+  const formatos = casilla('formatos');
+  const sueltas = casilla('sueltas');
+  return {
+    ...(hay === undefined ? {} : { hay }),
+    ...(formatos === undefined ? {} : { formatos }),
+    ...(sueltas === undefined ? {} : { sueltas }),
+  };
+}
+
 /** «Caja 6 ud» → «Caja», para la casilla: lo que se cuenta son cajas. */
 export function nombreDelEnvase(formato: string | null): string {
   if (formato === null) return 'Cajas';

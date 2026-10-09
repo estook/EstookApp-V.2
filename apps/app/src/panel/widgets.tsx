@@ -618,7 +618,7 @@ function MisApps({ tamano }: { readonly tamano: TamanoDeWidget }) {
  * Lo que **sí se puede hacer hoy, y se hace**, es lo que no necesita nada de eso:
  * si tu turno empieza dentro de media hora y no has fichado, el widget te lo dice
  * en cuanto abres la aplicación. No suena, no llega al bolsillo, y no promete que
- * lo haga. El horario de siempre de cada uno se pone en su ficha.
+ * lo haga. El horario es el publicado en Horarios (0081).
  */
 function FicharDesdeElPanel({ tamano }: { readonly tamano: TamanoDeWidget }) {
   const fichar = usarFichar();

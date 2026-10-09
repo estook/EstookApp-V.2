@@ -228,6 +228,14 @@ describe('el reloj, el lunes a las ocho', () => {
   let antesDelCorreo = 0;
 
   beforeAll(async () => {
+    // Tu semana, por correo: de fábrica ya no (0081); Rosa lo enciende.
+    losDatos(
+      await api.ejecutar(rosa, 'guardar_mis_avisos', {
+        tipo: 'informe.semana',
+        en_la_app: true,
+        por_correo: true,
+      }),
+    );
     antesDelCorreo = correo.mandados.length;
     expect(await latirEl(LUNES)).toMatchObject({ diario: true });
   });
@@ -255,7 +263,7 @@ describe('el reloj, el lunes a las ocho', () => {
     expect(await deTipo(marcos, 'informe.dia')).toEqual([]);
   });
 
-  it('Tu semana, el lunes, también por correo, con su tabla de cifras', async () => {
+  it('Tu semana, el lunes, y por correo si se enciende, con su tabla de cifras', async () => {
     const [semana] = await deTipo(rosa, 'informe.semana');
     expect(semana?.titulo).toMatch(/^Tu semana en Bar Centro: del /);
     // 3.700 € frente a 2.100 €: lo mejor son las ventas. Y faltan cuatro cajas.

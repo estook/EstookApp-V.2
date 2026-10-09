@@ -9,7 +9,7 @@ import type { MiFichaje } from '../equipo/contrato.ts';
 /**
  * Cuándo es llegar tarde (V, punto 2 · 0040).
  *
- * Equipo cuenta los retrasos frente al horario de siempre de cada uno, y «tarde»
+ * Equipo cuenta los retrasos frente al horario publicado (0081), y «tarde»
  * necesita un margen: nadie llama retraso a fichar a las 9:01. **Cinco minutos de
  * fábrica, y cada local lo cambia**, lo decidió Richi el 23 de septiembre de 2026.
  *

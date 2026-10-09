@@ -602,3 +602,17 @@
      sin avisar: la caja de escribir se quedaba debajo del teclado. La barra de abajo ya
      volvía a mirar a los 50, 150 y 300 ms desde el 25-sep; el chat no. Lo que se arregla
      en un sitio se busca en los demás que hacen lo mismo (0080).
+164. **Un dato con dos sitios donde escribirse acaba con dos valores.** El horario vivía en
+     la ficha de cada persona («el de siempre») y en Horarios, y la app usaba uno u otro
+     según la semana estuviera publicada: Richi vio que no concordaban y no sabía cuál
+     mandaba. Ahora solo cuenta el publicado; el otro no se puede ni poner (0081). Es la
+     regla 6 aplicada a una pantalla, no solo al código.
+165. **«Sin cerrar» no es «trabajando ahora».** La columna «A revisar» y «Para mirar»
+     contaban como fichaje raro el turno abierto de quien estaba en la cocina en ese
+     momento. Lo raro es olvidarse de salir: abierto hace más de doce horas, como ya decía
+     el aviso de turno sospechoso. Lo prueba `las-incidencias.prueba.ts` (0081).
+166. **Una ventana fija deja fuera lo que más importa.** El fichaje de una entrada se buscaba
+     en las tres horas de alrededor: quien llegaba cuatro horas tarde no salía ni como
+     retraso ni como falta, justo el caso que hay que ver. Ahora se busca hasta que acaba el
+     tramo, y la falta es un tramo acabado sin ningún fichaje que se cruce con él. Lo
+     prueba `las-incidencias.prueba.ts`, que sale en rojo con la ventana de antes (0081).

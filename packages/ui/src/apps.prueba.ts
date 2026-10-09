@@ -336,7 +336,7 @@ describe('lo construido y lo que llega', () => {
     expect(destinosConstruidos(laApp('carta'))).toHaveLength(0);
   });
 
-  it('Equipo tiene sus cuatro destinos construidos', () => {
+  it('Equipo tiene sus cinco destinos construidos', () => {
     // Personas la trajo M4. Resumen y Fichajes, M6½: con los fichajes ya se puede
     // contestar quién está y cuántas horas lleva cada uno. Y Horarios, H2 (0069).
     // (Hasta la entrega V se llamaban «Hoy» y «Resumen»: 0045.)
@@ -345,6 +345,8 @@ describe('lo construido y lo que llega', () => {
       'personas',
       'horarios',
       'fichajes',
+      // Y el quinto, Incidencias, el repaso del 9-oct (0081).
+      'incidencias',
     ]);
   });
 

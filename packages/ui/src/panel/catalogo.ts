@@ -337,6 +337,9 @@ export function widgetPorId(id: string): Widget | undefined {
   return WIDGETS.find((widget) => widget.id === id) ?? widgetDelIndicador(id);
 }
 
+/** Las unidades de lo que se cuenta: en grande no dicen más que en ancho. */
+const SE_CUENTA: readonly string[] = ['cuenta', 'dias'];
+
 /**
  * Un indicador puesto en el Panel, como widget (0039).
  *
@@ -348,6 +351,12 @@ export function widgetPorId(id: string): Widget | undefined {
  * Es el único widget que admite los tres tamaños, y no por descuido: una cifra
  * con su flecha cabe en un cuadrado, con su línea en uno ancho y con la línea
  * grande y sus días en uno grande.
+ *
+ * **Salvo lo que se cuenta** (repaso del 9-oct, punto 4): «no tiene sentido que
+ * "Retrasos" se pueda hacer grande, solo muestra un número». Lo que se cuenta —los
+ * retrasos, los productos bajo mínimo, los días con la caja cerrada— son números
+ * pequeños y unas barras cortas: en grande ocupan el doble y no dicen nada más. Se
+ * quedan en chico y ancho; uno ya puesto en grande se pinta en el primero que admite.
  */
 function widgetDelIndicador(id: string): Widget | undefined {
   const leido = leerIdDelIndicador(id);
@@ -359,7 +368,9 @@ function widgetDelIndicador(id: string): Widget | undefined {
     queEnsena: COMO_ES_EL_INDICADOR[leido.indicador].queEnsena,
     permiso: pide[0] ?? null,
     ...(pide[1] === undefined ? {} : { yTambien: pide[1] }),
-    tamanos: ['ancho', 'chico', 'grande'],
+    tamanos: SE_CUENTA.includes(COMO_ES_EL_INDICADOR[leido.indicador].unidad)
+      ? ['ancho', 'chico']
+      : ['ancho', 'chico', 'grande'],
   };
 }
 

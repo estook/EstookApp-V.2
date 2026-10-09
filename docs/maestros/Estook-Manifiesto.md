@@ -906,7 +906,7 @@ HORARIO PROPUESTO
 
 > **Nunca se publica automáticamente.** El cuadrante propuesto nace en borrador, y publicar es un acto de una persona.
 
-**Lo que ya tiene para empezar, desde M6½:** el **horario de siempre** de cada persona —qué días entra y a qué hora— y **sus horas de verdad**, fichadas, frente a las de su contrato, con las extra de cada uno. Es lo primero que un cuadrante necesita saber, y lo que Fogón leerá para proponerlo. Del mismo horario salen los avisos: **«mañana entras a las 9»** la víspera y **«entras en 5 minutos: ficha ya»** al llegar. Hoy el widget de Fichar ya lo dice al abrir el Panel; mandarlo al móvil sin abrir la app es M25.
+**Lo que ya tiene para empezar:** el **horario publicado** de cada semana —quién entra, qué día y a qué hora; desde el 9-oct, el único ([0081](../decisiones/0081-un-solo-horario-y-las-incidencias.md))— y **sus horas de verdad**, fichadas, frente a las de su contrato, con las extra de cada uno. Es lo primero que un cuadrante necesita saber, y lo que Fogón leerá para proponerlo. Del mismo horario salen los avisos: **«mañana entras a las 9»** la víspera y **«entras en 5 minutos: ficha ya»** al llegar. Hoy el widget de Fichar ya lo dice al abrir el Panel; mandarlo al móvil sin abrir la app es M25.
 
 ---
 
@@ -924,7 +924,7 @@ Ficha con rol, alcance, contacto, contrato y sus documentos. Alta por invitació
 
 El **coste por hora** vive aquí, con vigencia y con permiso propio. Y para quien no quiera meter sueldos, la alternativa por defecto: **coste medio por puesto**, que da un porcentaje de personal correcto sin datos individuales.
 
-**La ficha de cada persona** se abre desde donde aparezca su nombre —la lista del equipo, el widget de Personas, Equipo › Resumen— y enseña: su puesto, si está **en línea** o **cuándo entró por última vez**, sus horas de hoy, de la semana y del mes, sus últimos fichajes y su horario de siempre.
+**La ficha de cada persona** se abre desde donde aparezca su nombre —la lista del equipo, el widget de Personas, Equipo › Resumen— y enseña: su puesto, si está **en línea** o **cuándo entró por última vez**, sus horas de hoy, de la semana y del mes, sus últimos fichajes y **sus incidencias** —si faltó o llegó tarde a su turno publicado— con «Ver más» (0081).
 
 **Lo que cobra, aparte y privado.** Por hora, o al mes con sus horas de contrato —y entonces Estook lo reparte: `sueldo ÷ (horas semanales × 52 ÷ 12)`—. **Cada uno ve lo suyo.** El de los demás lo ve y lo pone solo quien tiene el permiso de coste de personal, **nunca hacia arriba** —un gerente no ve ni pone lo que cobra quien está por encima de él— y **nadie se pone el suyo**. A quien no tiene ese permiso el dato no le llega: no se esconde, no se envía.
 

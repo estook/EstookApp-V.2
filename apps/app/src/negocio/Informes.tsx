@@ -128,15 +128,20 @@ export function Informes({ vista }: { readonly vista: string }) {
         </Boton>
       </div>
 
-      {/* El mismo informe, en PDF con tu logo (0068): lo hace el servidor. */}
-      <div className="flex justify-center">
-        <BotonDelDocumento
-          consulta={'mi_informe_en_pdf'}
-          parametros={{ tipo, ...(del === null ? {} : { del }) }}
-          texto="Descargar en PDF"
-          tono="texto"
-        />
-      </div>
+      {/*
+        El mismo informe, en PDF con tu logo (0068): lo hace el servidor. Sin datos no
+        se ofrece: un PDF vacío no le sirve a nadie (auditoría del 9-oct).
+      */}
+      {conDatos && (
+        <div className="flex justify-center">
+          <BotonDelDocumento
+            consulta={'mi_informe_en_pdf'}
+            parametros={{ tipo, ...(del === null ? {} : { del }) }}
+            texto="Descargar en PDF"
+            tono="texto"
+          />
+        </div>
+      )}
 
       {!conDatos ? (
         <Tarjeta acento={ACENTO}>

@@ -6,13 +6,13 @@ import {
   horaDeCorte,
   jornadaDe,
   lasFotosDeLaCamara,
-  llegoTarde,
   loQueCuesta,
   masDias,
   minutosDeSegundos,
   porcentajeDe,
   ticketMedio,
   esPeriodoDelIndicador,
+  cuentaEnLaCifra,
   type Indicador,
   type LineaDelLibro,
   type PeriodoDelIndicador,
@@ -22,7 +22,13 @@ import {
 import { LO_QUE_PIDE_EL_INDICADOR } from '@estook/permisos';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
-import { lasEntradasDelHorario, lasHorasDelEquipo, lasRetribuciones } from './equipo.ts';
+import {
+  esUnRetrasoQueCuenta,
+  lasEntradasDelHorario,
+  lasHorasDelEquipo,
+  lasRetribuciones,
+} from './equipo.ts';
+import { lasIncidencias } from './incidencias.ts';
 
 /**
  * Un indicador del Panel, con su línea de días (M7, decisión 0039).
@@ -49,6 +55,7 @@ import { lasEntradasDelHorario, lasHorasDelEquipo, lasRetribuciones } from './eq
  *   horas-equipo    fichajes de quien llevas           app.equipo
  *   coste-personal  esas horas por su salario          app.equipo + coste de personal
  *   retrasos        fichajes frente al horario         app.equipo
+ *   incidencias     faltas y fichajes por revisar      app.equipo  (repaso del 9-oct)
  *
  * Todas menos los cierres **no se cuentan por su cuenta**: la cámara se
  * reconstruye como la cuenta «Hoy» de Almacén, y las del equipo como el Resumen
@@ -136,7 +143,7 @@ export async function laJornada(contexto: Contexto, localId: string): Promise<st
  */
 export type PorDias = Exclude<
   Indicador,
-  'valor-camara' | 'bajo-minimo' | 'horas-equipo' | 'coste-personal' | 'retrasos'
+  'valor-camara' | 'bajo-minimo' | 'horas-equipo' | 'coste-personal' | 'retrasos' | 'incidencias'
 >;
 
 /** Lo de un día: el numerador y, si es un cociente, el denominador. */
@@ -385,6 +392,8 @@ export async function calcularElIndicador(
       return elEquipo(contexto, localId, indicador, periodos);
     case 'retrasos':
       return losRetrasos(contexto, localId, periodos);
+    case 'incidencias':
+      return lasIncidenciasDelPeriodo(contexto, localId, periodos);
     default:
       return porDias(contexto, localId, indicador, periodos);
   }
@@ -602,7 +611,8 @@ async function elEquipo(
 }
 
 /**
- * Los retrasos: las entradas del horario de siempre que se ficharon tarde.
+ * Los retrasos: las entradas del horario publicado que se ficharon tarde, sin las
+ * justificadas (0081).
  *
  * Con la pieza que usa el Resumen (`lasEntradasDelHorario`) y la regla del dominio
  * (`llegoTarde`): lo que aquí es un retraso, allí también. **Un día en el que nadie
@@ -623,7 +633,7 @@ async function losRetrasos(
 
   const tardeDe = new Map<string, number>();
   for (const entrada of entradas) {
-    const tarde = entrada.minutosTarde !== null && llegoTarde(entrada.minutosTarde, margen);
+    const tarde = esUnRetrasoQueCuenta(entrada, margen);
     tardeDe.set(entrada.fecha, (tardeDe.get(entrada.fecha) ?? 0) + (tarde ? 1 : 0));
   }
 
@@ -643,6 +653,53 @@ async function losRetrasos(
   const antes = delPeriodo(deAntes);
   return {
     serie: deAhora.map((fecha) => ({ fecha, valor: tardeDe.get(fecha) ?? null })),
+    total: ahora.total,
+    anterior: antes.total,
+    diasConDato: ahora.conDato,
+  };
+}
+
+/**
+ * Las incidencias (repaso del 9-oct, 0081): las faltas sin justificar y los fichajes
+ * por revisar, día a día, con la misma pieza que Equipo → Incidencias
+ * (`lasIncidencias`). **Un día tiene dato** si alguien tenía turno publicado o fichó:
+ * un día sin nada no es un día sin incidencias, es un día sin nada que mirar.
+ */
+async function lasIncidenciasDelPeriodo(
+  contexto: Contexto,
+  localId: string,
+  { deAntes, deAhora, jornada }: LosDosPeriodos,
+): Promise<Calculado> {
+  const desde = deAntes[0] ?? jornada;
+  const { incidencias, conTurno } = await lasIncidencias(contexto, localId, desde, jornada);
+  const horas = await lasHorasDelEquipo(contexto, localId, desde, jornada);
+
+  const conAlgo = new Set<string>([...conTurno, ...horas.map((h) => h.fecha)]);
+  const cuantasDe = new Map<string, number>();
+  for (const i of incidencias) {
+    if (!cuentaEnLaCifra(i.tipo, i.justificacion !== null)) continue;
+    conAlgo.add(i.fecha);
+    cuantasDe.set(i.fecha, (cuantasDe.get(i.fecha) ?? 0) + 1);
+  }
+
+  const delPeriodo = (fechas: readonly string[]) => {
+    let total = 0;
+    let conDato = 0;
+    for (const fecha of fechas) {
+      if (!conAlgo.has(fecha)) continue;
+      conDato += 1;
+      total += cuantasDe.get(fecha) ?? 0;
+    }
+    return { total: conDato === 0 ? null : total, conDato };
+  };
+
+  const ahora = delPeriodo(deAhora);
+  const antes = delPeriodo(deAntes);
+  return {
+    serie: deAhora.map((fecha) => ({
+      fecha,
+      valor: conAlgo.has(fecha) ? (cuantasDe.get(fecha) ?? 0) : null,
+    })),
     total: ahora.total,
     anterior: antes.total,
     diasConDato: ahora.conDato,

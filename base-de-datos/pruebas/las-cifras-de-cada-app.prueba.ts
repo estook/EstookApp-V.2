@@ -16,7 +16,7 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  *   · lo que se apunta hoy no cambia lo que había ayer
  *   · las horas y el coste del equipo son los del Resumen de Equipo
  *   · un retraso es pasar del margen del local, y el Resumen cuenta los mismos
- *   · sin horario puesto no hay retrasos «cero»: no se sabe
+ *   · sin horario publicado no hay retrasos «cero»: no se sabe (0081)
  *   · el margen lo cambia quien lleva el local, y nadie más
  *   · cada uno ve lo suyo
  */
@@ -62,6 +62,33 @@ async function comoDuena<T>(consulta: string, parametros: unknown[] = []): Promi
 
 async function indicador(token: string, cual: string, dias = '7'): Promise<Indicador> {
   return losDatos<Indicador>(await api.consultar(token, 'un_indicador', { indicador: cual, dias }));
+}
+
+/**
+ * Un tramo publicado en Horarios (0081: el horario es el publicado, y nada más). La
+ * semana se publica si no lo estaba; el tramo es de `trabajo`.
+ */
+async function unTramoPublicado(
+  local: string,
+  persona: string,
+  dia: string,
+  entra: string,
+  sale: string,
+): Promise<void> {
+  await comoDuena(
+    `with s as (
+       insert into estook.semana_de_horario (organizacion_id, local_id, lunes, publicada_en, veces_publicada)
+       select l.organizacion_id, l.id, $3::date - (extract(isodow from $3::date)::int - 1), now(), 1
+         from estook.local l where l.id = $1
+       on conflict (local_id, lunes) do update
+          set publicada_en = coalesce(estook.semana_de_horario.publicada_en, now()),
+              veces_publicada = greatest(estook.semana_de_horario.veces_publicada, 1)
+       returning id
+     )
+     insert into estook.turno_publicado (semana_id, local_id, persona_id, dia, tipo, entra, sale)
+     select s.id, $1, $2, $3::date, 'trabajo', $4::time, $5::time from s`,
+    [local, persona, dia, entra, sale],
+  );
 }
 
 /** Un turno cerrado de Marcos en Bar Centro, a la hora del local ese día. */
@@ -288,7 +315,7 @@ describe('los retrasos (0040)', () => {
     hoy = (await indicador(rosa, 'retrasos')).jornada as FechaOperativa;
   });
 
-  it('sin horario de siempre puesto, **no hay retrasos «cero»: no se sabe**', async () => {
+  it('sin horario publicado, **no hay retrasos «cero»: no se sabe**', async () => {
     const retrasos = await indicador(rosa, 'retrasos');
     expect(retrasos.total).toBeNull();
     expect(retrasos.serie.every((d) => d.valor === null)).toBe(true);
@@ -300,11 +327,7 @@ describe('los retrasos (0040)', () => {
     const tarde = masDias(hoy, -4);
     const aTiempo = masDias(hoy, -5);
     for (const fecha of [tarde, aTiempo]) {
-      await comoDuena(
-        `insert into estook.horario_habitual (local_id, persona_id, dia_de_la_semana, entra, sale, desde)
-         values ($1, $2, extract(isodow from $3::date)::int, '11:00', '16:00', $3::date - 60)`,
-        [centro, marcosId, fecha],
-      );
+      await unTramoPublicado(centro, marcosId, fecha, '11:00', '16:00');
     }
     await unTurno(tarde, '11:12', 5);
     await unTurno(aTiempo, '11:03', 5);

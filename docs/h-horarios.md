@@ -39,12 +39,12 @@ Son cosas pequeñas o que tienen una respuesta clara. Si alguna no te cuadra, d�
 
 1. **La semana va de lunes a domingo.**
 2. **Turnos partidos**: una persona puede tener dos o más tramos en un día.
-3. **Para no empezar de cero**: «Copiar la semana anterior» y «Rellenar con el horario de siempre».
+3. **Para no empezar de cero**: «Copiar la semana anterior» y «Rellenar con el horario de siempre». (Desde el 9-oct solo la primera: el horario de siempre se quitó, [0081](decisiones/0081-un-solo-horario-y-las-incidencias.md).)
 4. **Los avisos avisan, no impiden.** Menos de 12 horas entre dos turnos, más de 9 horas en un día, una semana sin día y medio seguido de descanso, o pasarse de las horas de contrato: salen en ámbar o en rojo, y se puede publicar igual. Quien manda es quien lleva el local.
 5. **Ámbar desde el 90 %** de las horas de contrato; **rojo** al pasarlas. Quien no tiene horas de contrato puestas se compara con 40.
 6. **Las ventas previstas** de un día son la media de ese mismo día de la semana en las cuatro últimas semanas. Con menos de dos semanas de cajas, dice «todavía no se sabe», no un cero.
 7. **Una hora extra cuesta lo mismo que una normal** mientras nadie diga otra cosa. Quien no tiene sueldo puesto no suma, y arriba se dice cuántas personas faltan.
-8. **Cuando hay cuadrante publicado, manda el cuadrante**: «entras en 5 minutos» y «llegar tarde» se miden contra él. Sin cuadrante, contra el horario de siempre, como hoy.
+8. **Cuando hay cuadrante publicado, manda el cuadrante**: «entras en 5 minutos» y «llegar tarde» se miden contra él. Sin cuadrante, contra el horario de siempre, como hoy. (Desde el 9-oct, **solo contra lo publicado**: [0081](decisiones/0081-un-solo-horario-y-las-incidencias.md).)
 9. **Quien no tiene correo** ve sus próximos turnos al teclear su PIN en el aparato del local, y su horario se le puede imprimir.
 10. **Si alguien sin correo da un día su correo**, se le añade y sigue siendo la misma persona. Si ese correo ya es de otra persona de Estook, **no se unen**: se avisa y no se toca nada. Unir dos personas en una, con toda su historia, llega con M13.
 11. **La exportación para la Inspección** es un PDF y una hoja de cálculo del periodo que se elija, con cada fichaje, cada corrección con su motivo, las pausas, y la fecha y una huella del fichero para que se vea si alguien lo ha tocado. Cuando se publique el Real Decreto, se ajusta a lo que pida.

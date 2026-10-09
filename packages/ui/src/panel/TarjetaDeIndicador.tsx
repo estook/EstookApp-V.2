@@ -79,8 +79,9 @@ function sinDatos(indicador: Indicador, dias: PeriodoDelIndicador): string {
     case 'food-cost':
       return `Sin cajas cerradas en estos ${dias} días.`;
     case 'retrasos':
-      // No es «ningún retraso»: es que no había hora de entrada con la que comparar.
-      return 'Nadie tenía hora de entrada: pon el horario de siempre en la ficha de cada uno.';
+    case 'incidencias':
+      // No es «ninguno»: es que no había hora de entrada con la que comparar (0081).
+      return 'Sin horario publicado.';
     default:
       return 'Todavía no hay datos en este periodo.';
   }

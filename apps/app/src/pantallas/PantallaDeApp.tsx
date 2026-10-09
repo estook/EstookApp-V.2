@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
 import {
@@ -23,6 +24,7 @@ import { Delivery } from '../servicio/Delivery.tsx';
 import { Almacen } from '../almacen/Almacen.tsx';
 import { EquipoHoy } from '../equipo/EquipoHoy.tsx';
 import { ResumenDelEquipo } from '../equipo/ResumenDelEquipo.tsx';
+import { Incidencias } from '../equipo/Incidencias.tsx';
 import { ElHorario } from '../horario/ElHorario.tsx';
 import { CierreDeCaja } from '../servicio/CierreDeCaja.tsx';
 import { Ventas } from '../servicio/Ventas.tsx';
@@ -30,6 +32,7 @@ import { Informes } from '../negocio/Informes.tsx';
 import { Resenas } from '../negocio/Resenas.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAbrirLaRueda } from '../ganchos/usarLaRueda.ts';
+import { LasVistasVacias } from '../ganchos/usarLasVistasVacias.ts';
 import { IconoRejilla } from '@estook/iconos';
 
 /**
@@ -162,6 +165,9 @@ function Dentro({
   readonly alIrAVista: (id: string) => void;
 }) {
   const abrirLaRueda = usarAbrirLaRueda();
+  // Las vistas vacías que pide esconder la pantalla de dentro (repaso del 9-oct).
+  const [vacias, setVacias] = useState<readonly string[]>([]);
+  const lasVistas = destino.vistas.filter((v) => v.id === vista?.id || !vacias.includes(v.id));
   return (
     <div className={clases('flex w-full flex-col gap-e4', ANCHO[app.forma])}>
       <header className="flex flex-col gap-e2">
@@ -219,7 +225,7 @@ function Dentro({
         {vista !== undefined && (
           <div className="max-w-full lg:max-w-[36rem]">
             <Vistas
-              vistas={destino.vistas}
+              vistas={lasVistas}
               activa={vista.id}
               acento={app.acento}
               de={destino.nombre}
@@ -235,7 +241,9 @@ function Dentro({
         <MenuLateral app={app} destinoActivo={destino.id} alIrADestino={alIrADestino} />
 
         <div className="min-w-0 flex-1">
-          <Contenido app={app} destino={destino} vista={vista} />
+          <LasVistasVacias.Provider value={setVacias}>
+            <Contenido app={app} destino={destino} vista={vista} />
+          </LasVistasVacias.Provider>
         </div>
       </div>
     </div>
@@ -251,6 +259,7 @@ function Dentro({
  *   Almacén · Compras entera                           M7 · pedidos, albaranes, facturas y precios
  *   Equipo · Personas                                     M4 · dar acceso y quitarlo
  *   Equipo · Hoy y Resumen                                M6½ · fichajes y horas
+ *   Equipo · Incidencias                                  repaso del 9-oct · 0081
  *   Servicio · Jornada · Cierre                           M6½ · el cierre de caja
  *   Negocio · Ventas                                      M6½ · lo que entra
  *   Negocio · Informes y Reseñas                          R2 · Tu día, semana y mes; la nota en Google
@@ -279,6 +288,10 @@ function Contenido({
   }
   if (app.id === 'equipo' && destino.id === 'resumen') return <EquipoHoy />;
   if (app.id === 'equipo' && destino.id === 'fichajes') return <ResumenDelEquipo />;
+  // El repaso del 9-oct (0081): las faltas, los retrasos y los fichajes raros.
+  if (app.id === 'equipo' && destino.id === 'incidencias') {
+    return <Incidencias vista={vista?.id ?? 'todas'} />;
+  }
   // H2 (0069): el mismo horario en Equipo, para quien lo monta, y en Calendario,
   // que es donde lo mira el equipo.
   if (app.id === 'equipo' && destino.id === 'horarios') return <ElHorario conTitulo={false} />;

@@ -2,31 +2,31 @@
 
 > ## Cómo está
 >
-> Comprobado el 9 de octubre de 2026 por la tarde, leyendo la base de producción.
+> Comprobado el 9 de octubre de 2026 por la noche, leyendo la base de producción.
 >
-> | Qué                         | Cómo está                                                                                      |
-> | --------------------------- | ---------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #97** (M8, la segunda entrega). Abierta: **el repaso del 9-oct**         |
-> | La base de datos            | **61 de 61** migraciones, igual que `main`. 106 tablas                                         |
-> | La API                      | **Desplegada con la segunda entrega de M8**: 80 y 171, los avisos al móvil y el reloj latiendo |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                      |
-> | M8                          | **Las dos entregas en producción**; el repaso del 9-oct, sin fusionar                          |
+> | Qué                         | Cómo está                                                                                         |
+> | --------------------------- | ------------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #98** (el repaso del 9-oct). Abierta: **un solo horario y las incidencias** |
+> | La base de datos            | **61 de 61** migraciones, igual que `main`. 106 tablas                                            |
+> | La API                      | **Desplegada con el repaso del 9-oct** (17:36 UTC): 80 y 171                                      |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                         |
+> | M8                          | **Las dos entregas y su repaso en producción**                                                    |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · el repaso del 9-oct
+## Lo que te toca ahora · un solo horario y las incidencias
 
-Lo que viste tras la segunda entrega, arreglado, y **la A de la desviación** ([decisión 0080](decisiones/0080-el-repaso-del-9-oct.md)). **Sin migración.** Sí hay que **desplegar la API**: el arreglo de las flechas del informe y el del food cost viven en el servidor.
+Los cinco puntos que pediste y la auditoría ([decisión 0081](decisiones/0081-un-solo-horario-y-las-incidencias.md), [el informe](auditorias/auditoria-2026-10-09.md)). **Esta vez sí hay migración** (`0062`) **y hay que desplegar la API**. El orden importa: **fusionar, migrar y después desplegar**.
 
 ### 1 · Fusionar
 
-En **github.com** → **Pull requests** → **«El repaso del 9-oct…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+En **github.com** → **Pull requests** → **«Un solo horario y las incidencias…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
 
-### 2 · Desplegar la API
+### 2 · Migrar la base
 
-**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después, en PowerShell, en la carpeta del proyecto:
+En PowerShell, en la carpeta del proyecto, uno por uno:
 
 ```bash
 git checkout main
@@ -37,22 +37,44 @@ git pull
 ```
 
 ```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que decir:** que aplica la **0062 · las incidencias** y que la base va por la **62**.
+
+### 3 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
+
+```bash
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** «las 80» consultas y «los 171» comandos, como ahora.
+**Qué tiene que decir:** **«las 81» consultas** (una más: las incidencias) y **«los 171» comandos** (se van los dos del horario de siempre y llegan justificar y quitar la justificación).
 
-### 3 · Probarlo
+### 4 · Publicar la semana en Horarios (importante)
+
+Desde hoy **el único horario es el de Horarios**. El «horario de siempre» de cada ficha **deja de contar**: en IKATZ había 22 tramos y en Pizzeriacazzo 10. Sin semana publicada **no hay retrasos, ni faltas, ni «entras en cinco minutos»**. En IKATZ: **Equipo → Horarios** → «Copiar la semana anterior» o ponerla → **Publicar**. Y dile a Santi que haga lo mismo en Pizzeriacazzo.
+
+### 5 · Probarlo
 
 La web se publica sola al fusionar, en unos minutos. En la app (**Ctrl + F5**; en el móvil, ciérrala y ábrela):
 
-1. **Compras → Pedidos → nuevo pedido**, elige Estrella de Galicia: cada producto en **una línea** (nombre, precio y cantidad) con una **«i»** pequeña a la derecha. Tócala: sale la cuenta («Para unos 5 días a 0,29 l al día…»).
-2. **Almacén → Movimientos**: arriba, solo **Historial · Inventario · Consumo**. En Historial, la fila **Todo · Entradas · Salidas · Ventas · Ajustes** filtra la lista.
-3. **Negocio → Informes → Día**: «Anterior» va **un día** atrás y «Siguiente», un día adelante.
-4. **El chat en el iPhone**: abre una conversación y toca la caja de escribir. Tiene que quedarse **justo encima del teclado**, con la cabecera arriba y los últimos mensajes pegados a la caja. **Esto solo se puede probar en tu iPhone**: si no queda así, una captura.
-5. **Consumo → Food cost real → Un mes → octubre**: solo el food cost real y lo gastado de verdad, sin la lista de «¿Es …?» de la caja. Y en vez de «−27,96 € en género» sale **«No cuadra: queda más de lo que había y entró»**, con «Ver el historial».
+1. **Inventario**: Almacén → Movimientos → Inventario → **«Contar una zona»** → **Escanear** un producto. Tiene que salir **«¿Cuántos hay?»** con su medida (cajas y sueltas, kilos o unidades). Escribe una cifra y **Guardar**. Escanea el mismo otra vez: dice **«Llevabas…»** y deja **Sumar** o **Sustituir**.
+2. **Equipo → Incidencias** (la quinta pestaña): con la semana publicada, quien tenía turno y no fichó sale como **«No vino»**. Pulsa **Justificar** → un motivo → **Justificar**: queda «Justificada» y deja de contar. **Quitar la justificación** la devuelve.
+3. **Equipo → Resumen**: **cuatro cifras** (Horas, Coste, Retrasos e **Incidencias**). Tocar Retrasos o Incidencias abre Incidencias.
+4. **Equipo → Fichajes → Para mirar**: «X fichajes que revisar» y «X retrasos» son **botones** que llevan a Incidencias.
+5. **La ficha de una persona**: ya no hay «Su horario»; en su sitio, **«Incidencias»** con las últimas y **«Ver más»**.
+6. **Equipo → Horarios**: ya no está «Rellenar con el de siempre».
+7. **Almacén → Productos**: «Sin precio», «Congelados» y «Desactivados» **solo salen si tienen algo**.
+8. **Panel → Editar**: la cifra de **Retrasos** ya no se puede poner en grande.
+9. **Ajustes → Avisos**: por correo, de fábrica, **solo «Tu mes» y «Te corrigen un fichaje»**; cada explicación en su **«i»**. Ojo: **Santi tiene dieciséis tipos encendidos por correo a mano** (lo eligió él, y se respeta); si no los quiere, se apagan en su Ajustes → Avisos.
 
 Si algo no sale como aquí, hazle una captura y me la pasas.
+
+### Lo que queda del repaso del 9-oct
+
+En producción desde el 9-oct (#98). **El chat en tu iPhone**: abre una conversación y toca la caja de escribir; tiene que quedarse **justo encima del teclado**. Solo se puede probar ahí.
 
 ### Lo que queda de la segunda entrega
 

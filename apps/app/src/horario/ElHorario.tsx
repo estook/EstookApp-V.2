@@ -457,7 +457,7 @@ function MontarElHorario({
   const { cliente } = usarSesion();
   const cache = useQueryClient();
   const [abierto, setAbierto] = useState<{ personaId: string; fecha: string } | null>(null);
-  const [preguntando, setPreguntando] = useState<'copiar' | 'rellenar' | 'publicar' | null>(null);
+  const [preguntando, setPreguntando] = useState<'copiar' | 'publicar' | null>(null);
   const [haciendo, setHaciendo] = useState<string | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
@@ -498,10 +498,7 @@ function MontarElHorario({
   const rojos = datos.avisos.filter((a) => a.nivel === 'rojo').length;
   const salen = new Set(datos.turnos.map((t) => t.personaId)).size;
 
-  async function hacer(
-    que: 'copiar' | 'rellenar' | 'publicar',
-    reemplazar: boolean,
-  ): Promise<void> {
+  async function hacer(que: 'copiar' | 'publicar', reemplazar: boolean): Promise<void> {
     setHaciendo(que);
     setError(null);
     setHecho(null);
@@ -511,15 +508,9 @@ function MontarElHorario({
             lunes: datos.lunes,
             reemplazar,
           })
-        : que === 'rellenar'
-          ? await cliente.ejecutar<{ puestos: number }>('rellenar_con_el_de_siempre', {
-              lunes: datos.lunes,
-              reemplazar,
-            })
-          : await cliente.ejecutar<{ primeraVez: boolean; avisados: number }>(
-              'publicar_el_horario',
-              { lunes: datos.lunes },
-            );
+        : await cliente.ejecutar<{ primeraVez: boolean; avisados: number }>('publicar_el_horario', {
+            lunes: datos.lunes,
+          });
     if (!respuesta.ok) {
       setHaciendo(null);
       setPreguntando(null);
@@ -528,7 +519,7 @@ function MontarElHorario({
     }
     // **Primero se vuelve a leer, después se dice que está hecho** (lección 130):
     // si el aviso salía antes, quien tocaba enseguida otro botón lo hacía con la
-    // semana de antes delante, y «Rellenar» no preguntaba antes de pisar lo copiado.
+    // semana de antes delante, y no se preguntaba antes de pisar lo copiado.
     await alCambiar();
     setHaciendo(null);
     setPreguntando(null);
@@ -638,17 +629,6 @@ function MontarElHorario({
         >
           Copiar la semana anterior
         </Boton>
-        <Boton
-          tono="texto"
-          cargando={haciendo === 'rellenar'}
-          textoCargando="Rellenando"
-          onClick={() => {
-            if (hayAlgo) setPreguntando('rellenar');
-            else void hacer('rellenar', false);
-          }}
-        >
-          Rellenar con el de siempre
-        </Boton>
       </Botones>
 
       {error !== null && <ErrorEnCristiano error={error} />}
@@ -735,23 +715,17 @@ function MontarElHorario({
         />
       )}
 
-      {(preguntando === 'copiar' || preguntando === 'rellenar') && (
+      {preguntando === 'copiar' && (
         <Hoja
           abierta
-          titulo={
-            preguntando === 'copiar' ? 'Copiar la semana anterior' : 'Rellenar con el de siempre'
-          }
+          titulo="Copiar la semana anterior"
           alCerrar={() => {
             setPreguntando(null);
           }}
         >
           <div className="flex flex-col gap-e4">
             <p>
-              Esta semana ya tiene cosas puestas. Se quitan y se ponen{' '}
-              {preguntando === 'copiar'
-                ? 'las de la semana anterior'
-                : 'las del horario de siempre de cada uno'}
-              .
+              Esta semana ya tiene cosas puestas. Se quitan y se ponen las de la semana anterior.
             </p>
             <Botones>
               <Boton

@@ -328,35 +328,32 @@ describe('para no empezar de cero', () => {
     ).toBe('faltan_datos');
   });
 
-  it('rellenar con el de siempre usa el horario habitual de cada uno', async () => {
-    const [centro] = await comoDuena<{ id: string }>(
-      "select id from estook.local where codigo = 'bar-centro'",
-    );
-    await comoDuena(
-      `insert into estook.horario_habitual (local_id, persona_id, dia_de_la_semana, entra, sale, desde)
-       values ($1, $2, 1, '09:00', '15:00', '2026-01-01'), ($1, $2, 2, '09:00', '15:00', '2026-01-01')`,
-      [centro?.id, saraId],
-    );
-    const puestos = losDatos<{ puestos: number }>(
-      await api.ejecutar(rosa, 'rellenar_con_el_de_siempre', {
-        lunes: SIGUIENTE,
-        reemplazar: true,
-      }),
-    );
-    expect(puestos.puestos).toBe(2);
-    const siguiente = await elBorrador(rosa, SIGUIENTE);
+  it('el horario de siempre ya no rellena nada: el horario es el de Horarios (0081)', async () => {
+    // Richi, 9-oct: «hay dos horarios y no concuerdan; que la app haga caso al de
+    // Horarios, que es el oficial». Ni el comando de rellenar ni el de ponerlo existen.
     expect(
-      siguiente.turnos.map((t) => `${t.dia} ${t.personaId === saraId ? 'Sara' : '?'}`),
-    ).toEqual(['2026-10-12 Sara', '2026-10-13 Sara']);
+      elFallo(
+        await api.ejecutar(rosa, 'rellenar_con_el_de_siempre', {
+          lunes: SIGUIENTE,
+          reemplazar: true,
+        }),
+      ),
+    ).toBe('no_existe');
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'poner_horario_habitual', { persona_id: saraId, tramos: [] }),
+      ),
+    ).toBe('no_existe');
   });
 
   it('quitar un tramo lo quita del borrador', async () => {
-    const [primero] = (await elBorrador(rosa, SIGUIENTE)).turnos;
+    const antes = (await elBorrador(rosa, SIGUIENTE)).turnos;
+    const [primero] = antes;
     expect(
       losDatos<{ quitado: boolean }>(
         await api.ejecutar(rosa, 'quitar_tramo', { turno_id: primero?.id }),
       ).quitado,
     ).toBe(true);
-    expect((await elBorrador(rosa, SIGUIENTE)).turnos).toHaveLength(1);
+    expect((await elBorrador(rosa, SIGUIENTE)).turnos).toHaveLength(antes.length - 1);
   });
 });

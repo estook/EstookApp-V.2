@@ -1,4 +1,4 @@
-import { comoSeLeenLasHoras, conSimbolo, centimos } from '@estook/dominio';
+import { comoSeLeenLasHoras, conSimbolo, centimos, type TipoDeIncidencia } from '@estook/dominio';
 
 /**
  * Lo que Equipo recibe del servidor (M6½).
@@ -36,6 +36,7 @@ export interface MiFichaje {
   /** La hora del local, «HH:MM». La decide el servidor (regla 10). */
   readonly horaDelLocal: string;
   readonly diaDeLaSemana: number;
+  /** Mis tramos de esta semana, de lo publicado en Horarios. Vacío sin publicar (0081). */
   readonly horario: readonly TramoDelHorario[];
   readonly elLocalSabeDondeEsta: boolean;
   readonly radioMetros: number;
@@ -102,7 +103,8 @@ export interface FilaDelResumen {
   readonly horasSemanales: number | null;
   readonly frenteAlContrato: number | null;
   /**
-   * Veces que llegó tarde frente a su horario de siempre. Nulo sin horario (0040).
+   * Veces que llegó tarde frente al horario publicado, sin las justificadas. Nulo sin
+   * horario publicado (0040, 0081).
    * Opcional porque la web se publica sola al fusionar y la API se despliega
    * después: en ese rato la respuesta todavía no lo trae, y no se pinta.
    */
@@ -182,7 +184,6 @@ export interface UnaPersona {
   readonly minutosDelTurno: number | null;
   readonly minutosDeLaSemana: number;
   readonly minutosDelMes: number;
-  readonly horario: readonly TramoDelHorario[];
   readonly ultimosFichajes: readonly FichajeDeLaFicha[];
   /** Cuántos tiene en total: si pasan de los tres de la ficha, sale «Ver todos». */
   readonly cuantosFichajes: number;
@@ -203,6 +204,42 @@ export interface UnaPersona {
 // ── Cómo se enseña cada cosa ─────────────────────────────────────────────────
 
 /** «6 h 12 min». Lo compone el motor del dominio, que es su único dueño. */
+/** Por qué no vino o llegó tarde, y quién lo dijo (repaso del 9-oct · 0081). */
+export interface Justificacion {
+  readonly motivo: string;
+  readonly nota: string | null;
+  readonly puestaPor: string | null;
+  readonly puestaEn: string;
+}
+
+/** Una incidencia, como la devuelve la consulta de las incidencias. */
+export interface UnaIncidencia {
+  readonly id: string;
+  readonly tipo: TipoDeIncidencia;
+  readonly personaId: string;
+  readonly nombre: string;
+  readonly apellidos: string | null;
+  readonly fecha: string;
+  readonly cuando: string;
+  readonly entra: string | null;
+  readonly sale: string | null;
+  readonly minutosTarde: number | null;
+  readonly fichoA: string | null;
+  readonly metros: number | null;
+  readonly fichajeId: string | null;
+  readonly justificacion: Justificacion | null;
+}
+
+export interface LasIncidencias {
+  readonly desde: string;
+  readonly hasta: string;
+  readonly margenDeRetraso: number;
+  readonly incidencias: readonly UnaIncidencia[];
+  readonly sinJustificar: number;
+  readonly hayHorarioPublicado: boolean;
+  readonly puedeJustificar: boolean;
+}
+
 export function comoSeLeenMinutos(minutos: number): string {
   return comoSeLeenLasHoras(minutos);
 }

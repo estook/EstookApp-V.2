@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { DIAS_DE_LA_SEMANA, comoSeLlamaElDia, type Centimos } from '@estook/dominio';
+import { type Centimos } from '@estook/dominio';
+
 import {
   Aviso,
   Avatar,
@@ -24,10 +25,19 @@ import {
   comoSeLeenMinutos,
   ultimaVez,
   type FichajeDeLaFicha,
-  type TramoDelHorario,
   type UnaPersona,
 } from './contrato.ts';
 import { HistorialDeFichajes, ListaDeFichajes } from './ListaDeFichajes.tsx';
+import { IncidenciasDeUnaPersona } from './ListaDeIncidencias.tsx';
+
+/** «9 de octubre de 2026»: una fecha que se lee, no «2026-10-09» (auditoría del 9-oct). */
+function fechaEnLetra(fecha: string): string {
+  return new Date(`${fecha}T12:00:00Z`).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
 
 /**
  * La ficha de una persona (M6½).
@@ -60,9 +70,9 @@ export function FichaDePersona({
 }) {
   const { cliente } = usarSesion();
   const cache = useQueryClient();
-  const [cambiando, setCambiando] = useState<
-    'retribucion' | 'horario' | 'correo' | 'fichaje_que_falta' | null
-  >(null);
+  const [cambiando, setCambiando] = useState<'retribucion' | 'correo' | 'fichaje_que_falta' | null>(
+    null,
+  );
   const [corrigiendo, setCorrigiendo] = useState<FichajeDeLaFicha | null>(null);
   // De quién está abierto el historial entero. Se guarda la persona y no un sí o
   // un no para que, al abrir la ficha de otra, se vuelva a empezar por su ficha.
@@ -161,7 +171,10 @@ export function FichaDePersona({
                   <Etiqueta tono="bien">en línea</Etiqueta>
                 ) : (
                   <span className="text-texto-suave">
-                    Última vez: {ultimaVez(datos.ultimoAccesoEn)}
+                    {/* «Última vez: Nunca ha entrado» se leía mal (auditoría del 9-oct). */}
+                    {datos.ultimoAccesoEn === null
+                      ? 'Nunca ha entrado'
+                      : `Última vez: ${ultimaVez(datos.ultimoAccesoEn).toLowerCase()}`}
                   </span>
                 )}
                 {datos.estado === 'fuera' && <Etiqueta>acceso retirado</Etiqueta>}
@@ -256,7 +269,7 @@ export function FichaDePersona({
                     {datos.retribucion.horasSemanales === null
                       ? ''
                       : ` · ${datos.retribucion.horasSemanales.toLocaleString('es-ES')} h a la semana`}
-                    {` · desde el ${datos.retribucion.desde}`}
+                    {` · desde el ${fechaEnLetra(datos.retribucion.desde)}`}
                   </span>
                 </p>
               )}
@@ -266,42 +279,12 @@ export function FichaDePersona({
             </section>
           )}
 
-          {/* ── Su horario de siempre ──────────────────────────────────── */}
-          <section className="flex flex-col gap-e2">
-            <div className="flex flex-wrap items-center justify-between gap-e2">
-              <h3 className="text-seccion font-semibold">Su horario</h3>
-              {datos.puedeEditar && (
-                <Boton
-                  tono="texto"
-                  onClick={() => {
-                    setCambiando('horario');
-                  }}
-                >
-                  {datos.horario.length === 0 ? 'Ponerlo' : 'Cambiarlo'}
-                </Boton>
-              )}
-            </div>
-            {datos.horario.length === 0 ? (
-              <p className="text-secundario text-texto-suave">
-                Sin horario fijo. Con uno puesto, Estook le recuerda que fiche al abrir la
-                aplicación.
-              </p>
-            ) : (
-              <ul className="grid grid-cols-2 gap-e1 text-secundario sm:grid-cols-3">
-                {datos.horario.map((tramo) => (
-                  <li
-                    key={`${tramo.dia}-${tramo.entra}`}
-                    className="rounded-medio bg-fondo px-e2 py-e1"
-                  >
-                    <span className="font-medium capitalize">{comoSeLlamaElDia(tramo.dia)}</span>{' '}
-                    <span className="text-texto-suave">
-                      {tramo.entra}–{tramo.sale}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          {/*
+            ── Sus incidencias ──────────────────────────────────────────────
+            Donde estaba «Su horario» (repaso del 9-oct, 0081): el horario es el de
+            Horarios, y aquí va lo que hay que mirar de esta persona.
+          */}
+          <IncidenciasDeUnaPersona personaId={datos.personaId} />
 
           {/* ── Sus fichajes · los tres últimos, y el resto en «Ver todos» ─── */}
           <section className="flex flex-col gap-e2">
@@ -344,7 +327,7 @@ export function FichaDePersona({
           )}
 
           <p className="text-secundario text-texto-suave">
-            En Estook desde el {datos.desde}. {datos.rolNombre}.
+            En Estook desde el {fechaEnLetra(datos.desde)}. {datos.rolNombre}.
           </p>
         </div>
       )}
@@ -370,19 +353,6 @@ export function FichaDePersona({
           }}
           alHecho={() => {
             void refrescar('Correo puesto');
-          }}
-          alFallar={setError}
-        />
-      )}
-
-      {datos !== undefined && cambiando === 'horario' && (
-        <CambiarHorario
-          persona={datos}
-          alCerrar={() => {
-            setCambiando(null);
-          }}
-          alHecho={() => {
-            void refrescar('Horario guardado');
           }}
           alFallar={setError}
         />
@@ -617,127 +587,6 @@ function PonerSuCorreo({
           Sigue siendo la misma persona, con sus fichajes. Desde ese momento puede entrar también
           desde su móvil, con su correo y su PIN.
         </p>
-      </div>
-    </Hoja>
-  );
-}
-
-// ── El horario de siempre ────────────────────────────────────────────────────
-
-interface FilaDelHorario {
-  readonly trabaja: boolean;
-  readonly entra: string;
-  readonly sale: string;
-}
-
-function CambiarHorario({
-  persona,
-  alCerrar,
-  alHecho,
-  alFallar,
-}: {
-  readonly persona: UnaPersona;
-  readonly alCerrar: () => void;
-  readonly alHecho: () => void;
-  readonly alFallar: (error: ErrorDeLaApi) => void;
-}) {
-  const { cliente } = usarSesion();
-  const [semana, setSemana] = useState<readonly FilaDelHorario[]>(() =>
-    DIAS_DE_LA_SEMANA.map((_, indice) => {
-      const suyo: TramoDelHorario | undefined = persona.horario.find(
-        (tramo) => tramo.dia === indice + 1,
-      );
-      return suyo === undefined
-        ? { trabaja: false, entra: '09:00', sale: '17:00' }
-        : { trabaja: true, entra: suyo.entra, sale: suyo.sale };
-    }),
-  );
-  const [guardando, setGuardando] = useState(false);
-
-  function cambiar(indice: number, cambio: Partial<FilaDelHorario>) {
-    setSemana((antes) => antes.map((fila, i) => (i === indice ? { ...fila, ...cambio } : fila)));
-  }
-
-  async function guardar() {
-    setGuardando(true);
-    const respuesta = await cliente.ejecutar('poner_horario_habitual', {
-      persona_id: persona.personaId,
-      tramos: semana.flatMap((fila, indice) =>
-        fila.trabaja ? [{ dia: indice + 1, entra: fila.entra, sale: fila.sale }] : [],
-      ),
-    });
-    setGuardando(false);
-    if (!respuesta.ok) {
-      alFallar(respuesta.error);
-      alCerrar();
-      return;
-    }
-    alHecho();
-  }
-
-  return (
-    <Hoja
-      abierta
-      alCerrar={alCerrar}
-      titulo={`El horario de ${persona.nombre}`}
-      pie={
-        <Botones>
-          <Boton tono="texto" onClick={alCerrar}>
-            Dejarlo
-          </Boton>
-          <Boton
-            tono="principal"
-            cargando={guardando}
-            textoCargando="Guardando"
-            onClick={() => {
-              void guardar();
-            }}
-          >
-            Guardar
-          </Boton>
-        </Botones>
-      }
-    >
-      <div className="flex flex-col gap-e2">
-        <p className="text-secundario text-texto-suave">
-          El de siempre. Si sale más tarde de lo que entra, es un turno de noche.
-        </p>
-        {semana.map((fila, indice) => (
-          <div
-            key={DIAS_DE_LA_SEMANA[indice]}
-            className="grid grid-cols-[7rem_1fr_1fr] items-end gap-e2 border-b border-borde pb-e2 last:border-0"
-          >
-            <label className="flex min-h-toque items-center gap-e2 text-cuerpo capitalize">
-              <input
-                type="checkbox"
-                checked={fila.trabaja}
-                onChange={(e) => {
-                  cambiar(indice, { trabaja: e.currentTarget.checked });
-                }}
-                className="size-[20px] accent-[var(--color-naranja)]"
-              />
-              {DIAS_DE_LA_SEMANA[indice]}
-            </label>
-            <Campo
-              etiqueta="Entra"
-              tipo="hora"
-              disabled={!fila.trabaja}
-              value={fila.entra}
-              onChange={(e) => {
-                cambiar(indice, { entra: e.currentTarget.value });
-              }}
-            />
-            <Campo
-              etiqueta="Sale"
-              tipo="hora"
-              disabled={!fila.trabaja}
-              value={fila.sale}
-              onChange={(e) => {
-                cambiar(indice, { sale: e.currentTarget.value });
-              }}
-            />
-          </div>
-        ))}
       </div>
     </Hoja>
   );

@@ -487,6 +487,18 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         queContesta: '¿Cuántas horas lleva cada uno, quién se pasa y cuánto cuesta?',
         vistas: [],
       },
+      {
+        // **El repaso del 9-oct (0081).** «Si un trabajador no ficha y no está
+        // justificado, no hay sitio donde lo muestre»; y «4 fichajes que revisar» y
+        // «8 retrasos» salían en «Para mirar» sin poder llegar a ninguno. Aquí está
+        // cada uno, con lo que se puede hacer: justificar una falta o un retraso, o
+        // abrir el fichaje. Es el quinto destino, el tope, como en Almacén.
+        id: 'incidencias',
+        nombre: 'Incidencias',
+        icono: IconoAtencion,
+        queContesta: '¿Quién no vino, quién llegó tarde y qué fichaje hay que mirar?',
+        vistas: vistas('Todas', 'Faltas', 'Retrasos', 'Fichajes'),
+      },
     ],
   },
 

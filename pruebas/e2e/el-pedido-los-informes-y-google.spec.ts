@@ -111,7 +111,7 @@ test('Negocio → Reseñas: la nota en Google, sus reseñas y el enlace para lee
   await expect(page.getByText('¿Y contestarlas desde aquí?')).toBeVisible();
 });
 
-test('Ajustes → Avisos: los informes, con el correo de la semana y del mes de fábrica', async ({
+test('Ajustes → Avisos: los informes, con el correo de Tu mes de fábrica y el de la semana apagado (0081)', async ({
   page,
 }) => {
   await entrarEnLaApp(page, ROSA);
@@ -121,9 +121,11 @@ test('Ajustes → Avisos: los informes, con el correo de la semana y del mes de 
   await expect(negocio.getByText('Tu semana', { exact: true })).toBeVisible();
   await expect(negocio.getByText('Tu mes', { exact: true })).toBeVisible();
   await expect(negocio.getByRole('switch', { name: 'Tu semana: en la campana' })).toBeChecked();
+  // Repaso del 9-oct (0081): por correo de fábrica, solo Tu mes.
   await expect(
     negocio.getByRole('switch', { name: 'Tu semana: también por correo' }),
-  ).toBeChecked();
+  ).not.toBeChecked();
+  await expect(negocio.getByRole('switch', { name: 'Tu mes: también por correo' })).toBeChecked();
   await expect(
     negocio.getByRole('switch', { name: 'Tu día: también por correo' }),
   ).not.toBeChecked();

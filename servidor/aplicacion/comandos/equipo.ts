@@ -1,13 +1,14 @@
 import { z } from 'zod';
 import { laOrganizacionDeLaSesion, elLocalDeLaSesion } from '../alta.ts';
+import { MOTIVOS_DE_JUSTIFICACION, laJustificacionPideNota } from '@estook/dominio';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
 
 /**
  * La ficha de cada persona (M6½, anticipando M15).
  *
- * Dos cosas que hasta hoy no tenían dónde guardarse y sin las cuales el perfil de
- * un trabajador es una tarjeta con un nombre: **lo que cobra** y **a qué hora
- * entra normalmente**.
+ * Lo que hasta M6½ no tenía dónde guardarse y sin lo cual el perfil de un trabajador
+ * es una tarjeta con un nombre: **lo que cobra**. (A qué hora entra lo dice Horarios
+ * desde el 9-oct, 0081; aquí se justifica cuando no viene.)
  *
  * ── Lo que cobra: quién puede ponerlo ───────────────────────────────────────
  *
@@ -186,69 +187,147 @@ export const ponerRetribucion = comando<
   },
 });
 
-// ── El horario de siempre ────────────────────────────────────────────────────
+// ── Justificar una falta o un retraso (repaso del 9-oct · 0081) ──────────────
+//
+// El horario de siempre vivía aquí (`poner_horario_habitual`) hasta el 9-oct: «hay
+// dos horarios, y no concuerdan; que la app haga caso al de Horarios, que es el
+// oficial». Ahora el horario se pone solo en Horarios, y aquí se dice **por qué**
+// alguien no vino a su turno o llegó tarde.
 
-const unTramo = z
-  .object({
-    dia: z.number().int().min(1).max(7),
-    entra: z.string().regex(/^\d{2}:\d{2}$/, 'Una hora se escribe así: 09:00.'),
-    sale: z.string().regex(/^\d{2}:\d{2}$/, 'Una hora se escribe así: 17:00.'),
-  })
-  .strict();
-
-export const entradaPonerHorarioHabitual = z
+export const entradaJustificarIncidencia = z
   .object({
     persona_id: z.string().uuid(),
-    /** La semana entera, de golpe. Vacío quiere decir «no tiene horario fijo». */
-    tramos: z.array(unTramo).max(21),
+    tipo: z.enum(['falta', 'retraso']),
+    /** Cuándo empezaba el tramo publicado: es lo que lo reconoce. */
+    empieza: z.string().datetime(),
+    motivo: z.enum(MOTIVOS_DE_JUSTIFICACION),
+    nota: z.string().trim().max(200).optional(),
   })
-  .strict();
+  .strict()
+  .refine((e) => !laJustificacionPideNota(e.motivo) || (e.nota ?? '').length >= 3, {
+    message: 'Con «Otro motivo», di cuál.',
+    path: ['nota'],
+  });
 
-export type EntradaPonerHorarioHabitual = z.infer<typeof entradaPonerHorarioHabitual>;
+export type EntradaJustificarIncidencia = z.infer<typeof entradaJustificarIncidencia>;
 
 /**
- * El horario de siempre de una persona.
+ * Justificar: quien lleva al equipo dice por qué alguien no vino a un tramo
+ * publicado, o llegó tarde. Deja de contar en Incidencias, en el Resumen y en las
+ * cifras, y se queda a la vista, con su nombre, en la lista.
  *
- * ── Lo que es, y sobre todo lo que no ───────────────────────────────────────
- *
- * **No es el cuadrante.** El cuadrante es M14: quién trabaja el jueves 19, con sus
- * cambios, sus sustituciones y su coste antes de publicarlo. Esto es «entra a las
- * nueve de lunes a viernes», que es lo único que hace falta para poder avisar de
- * que toca fichar. Cuando llegue M14, manda el cuadrante y esto queda como el
- * valor por defecto del que parte.
- *
- * Se manda **la semana entera** y se reemplaza, en vez de tramo a tramo. Es una
- * pantalla de siete filas que se rellena de una vez, y hacerlo con tres comandos
- * —añadir, cambiar, quitar— obligaría a la pantalla a llevar la cuenta de qué ha
- * cambiado, que es de donde salen los estados a medias.
+ * Se comprueba que **el tramo existe**: una justificación de un tramo que nunca se
+ * publicó sería una nota suelta que no explica nada. Quién puede justificar a quién
+ * —quien lleva Equipo, a la gente que lleva, y nunca a sí mismo— lo dice la política
+ * de la 0062.
  */
-export const ponerHorarioHabitual = comando<EntradaPonerHorarioHabitual, { tramos: number }>({
-  nombre: 'poner_horario_habitual',
-  entrada: entradaPonerHorarioHabitual,
+export const justificarIncidencia = comando<
+  EntradaJustificarIncidencia,
+  { justificacionId: string }
+>({
+  nombre: 'justificar_incidencia',
+  entrada: entradaJustificarIncidencia,
   exige: 'app.equipo',
 
   async ejecutar(contexto, entrada) {
     if (!contexto.personaId) throw new FalloDeAplicacion('sin_sesion');
     const localId = elLocalDeLaSesion(contexto);
-
-    await contexto.sql`
-      delete from estook.horario_habitual
-       where persona_id = ${entrada.persona_id} and local_id = ${localId}
-    `;
-
-    for (const tramo of entrada.tramos) {
-      await contexto.sql`
-        insert into estook.horario_habitual (
-          local_id, persona_id, dia_de_la_semana, entra, sale, creado_por
-        )
-        values (
-          ${localId}, ${entrada.persona_id}, ${tramo.dia},
-          ${tramo.entra}::time, ${tramo.sale}::time, ${contexto.personaId}
-        )
-      `;
+    if (entrada.persona_id === contexto.personaId) {
+      throw new FalloDeAplicacion('sin_permiso', {
+        porque: 'Lo tuyo lo justifica quien te lleva.',
+      });
     }
 
-    return { tramos: entrada.tramos.length };
+    const tramos = await contexto.sql<{ fecha: string }[]>`
+      select to_char(
+               case when tp.entra >= l.hora_de_corte then tp.dia else tp.dia - 1 end,
+               'YYYY-MM-DD'
+             ) as fecha
+        from estook.turno_publicado tp
+        join estook.local l on l.id = tp.local_id
+       where tp.local_id = ${localId}
+         and tp.persona_id = ${entrada.persona_id}
+         and tp.tipo = 'trabajo'
+         and (tp.dia + tp.entra) at time zone l.zona_horaria = ${entrada.empieza}::timestamptz
+       limit 1
+    `;
+    const tramo = tramos[0];
+    if (!tramo) {
+      throw new FalloDeAplicacion('no_existe', {
+        porque: 'Ese turno no está publicado en Horarios.',
+      });
+    }
+
+    const puestas = await contexto.sql<{ id: string }[]>`
+      insert into estook.justificacion (
+        local_id, persona_id, tipo, empieza, fecha, motivo, nota, puesta_por
+      )
+      values (
+        ${localId}, ${entrada.persona_id}, ${entrada.tipo}, ${entrada.empieza}::timestamptz,
+        ${tramo.fecha}::date, ${entrada.motivo}::estook.motivo_de_justificacion,
+        ${entrada.nota === undefined || entrada.nota === '' ? null : entrada.nota},
+        ${contexto.personaId}
+      )
+      on conflict (persona_id, local_id, tipo, empieza) do nothing
+      returning id::text as id
+    `;
+    const puesta = puestas[0];
+    if (!puesta) {
+      throw new FalloDeAplicacion('ya_hecho', { porque: 'Ya estaba justificado.' });
+    }
+
+    await contexto.sql`
+      select estook.anotar(
+        ${laOrganizacionDeLaSesion(contexto)}::uuid, 'crear', 'justificacion',
+        ${puesta.id}, ${localId}::uuid, null,
+        ${JSON.stringify({ tipo: entrada.tipo, empieza: entrada.empieza, motivo: entrada.motivo })}::text::jsonb,
+        'Justificada'
+      )
+    `;
+    return { justificacionId: puesta.id };
+  },
+});
+
+export const entradaQuitarJustificacion = z
+  .object({
+    persona_id: z.string().uuid(),
+    tipo: z.enum(['falta', 'retraso']),
+    empieza: z.string().datetime(),
+  })
+  .strict();
+
+export type EntradaQuitarJustificacion = z.infer<typeof entradaQuitarJustificacion>;
+
+/** Quitarla, si se puso por error: vuelve a contar. Queda anotado quién y cuándo. */
+export const quitarJustificacion = comando<EntradaQuitarJustificacion, { quitada: boolean }>({
+  nombre: 'quitar_justificacion',
+  entrada: entradaQuitarJustificacion,
+  exige: 'app.equipo',
+
+  async ejecutar(contexto, entrada) {
+    if (!contexto.personaId) throw new FalloDeAplicacion('sin_sesion');
+    const localId = elLocalDeLaSesion(contexto);
+    const quitadas = await contexto.sql<{ id: string; motivo: string }[]>`
+      delete from estook.justificacion
+       where local_id = ${localId} and persona_id = ${entrada.persona_id}
+         and tipo = ${entrada.tipo} and empieza = ${entrada.empieza}::timestamptz
+      returning id::text as id, motivo::text as motivo
+    `;
+    const quitada = quitadas[0];
+    if (!quitada) {
+      throw new FalloDeAplicacion('no_existe', {
+        porque: 'No estaba justificado, o no es de nadie que lleves.',
+      });
+    }
+    await contexto.sql`
+      select estook.anotar(
+        ${laOrganizacionDeLaSesion(contexto)}::uuid, 'borrar', 'justificacion',
+        ${quitada.id}, ${localId}::uuid,
+        ${JSON.stringify({ tipo: entrada.tipo, empieza: entrada.empieza, motivo: quitada.motivo })}::text::jsonb,
+        null, 'Justificación quitada'
+      )
+    `;
+    return { quitada: true };
   },
 });
 

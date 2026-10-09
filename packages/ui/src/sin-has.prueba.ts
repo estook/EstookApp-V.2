@@ -41,5 +41,7 @@ describe('sin :has(:empty)', () => {
       .filter(({ texto }) => /:has\([^)]*:empty/.test(sinComentarios(texto)))
       .map(({ ruta }) => relative(RAIZ, ruta).replaceAll('\\', '/'));
     expect(conHas).toEqual([]);
-  });
+    // Lee todo el código de las apps y los paquetes: con la máquina ocupada (las de
+    // pantalla a la vez) pasaba de los cinco segundos de fábrica (9-oct).
+  }, 30_000);
 });

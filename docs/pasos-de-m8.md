@@ -4,13 +4,13 @@
 >
 > Comprobado el 9 de octubre de 2026 por la mañana, leyendo la base de producción.
 >
-> | Qué                         | Cómo está                                                                                      |
-> | --------------------------- | ---------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #96** (M8, la primera entrega). Abierta: **M8, la segunda entrega**      |
-> | La base de datos            | **60 de 60** migraciones, igual que `main`. 104 tablas                                         |
-> | La API                      | **Desplegada con la primera entrega de M8**: 78 y 169, los avisos al móvil y el reloj latiendo |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                      |
-> | M8                          | **La primera entrega en producción**; **la segunda construida**, sin fusionar                  |
+> | Qué                         | Cómo está                                                                                       |
+> | --------------------------- | ----------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #96** (M8, la primera entrega). Abierta: **M8, la segunda entrega** (#97) |
+> | La base de datos            | **60 de 60** migraciones, igual que `main`. 104 tablas                                          |
+> | La API                      | **Desplegada con la primera entrega de M8**: 78 y 169, los avisos al móvil y el reloj latiendo  |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                       |
+> | M8                          | **La primera entrega en producción**; **la segunda construida**, sin fusionar                   |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -33,7 +33,7 @@ Lo que pediste el 9-oct, construido ([decisión 0079](decisiones/0079-lo-gastado
 
 ### 1 · Fusionar
 
-En **github.com** → **Pull requests** → **«M8 · lo gastado de verdad…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+En **github.com** → **Pull requests** → **«M8 · lo gastado de verdad…»** (la #97) → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
 
 ### 2 · Aplicar la migración
 

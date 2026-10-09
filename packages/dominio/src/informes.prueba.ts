@@ -4,6 +4,7 @@ import {
   elPeriodoDelInforme,
   hayDatos,
   lasCifrasDelCorreo,
+  lasFlechasDelInforme,
   lasFrasesJuntas,
   lasTresFrases,
   losDiasEntre,
@@ -88,6 +89,38 @@ describe('el periodo de cada informe', () => {
     // Hoy o después es el último cerrado, nunca uno que va por la mitad.
     expect(atrasDe('semana', LUNES, LUNES)).toBe(0);
     expect(atrasDe('dia', LUNES, dia('2026-10-10'))).toBe(0);
+  });
+
+  it('las flechas van un periodo atrás y uno adelante, también en Tu día (Richi, 9-oct)', () => {
+    // Antes, en Tu día, «Anterior» saltaba al mismo día de la semana anterior —el que
+    // se compara— y «Siguiente» avanzaba uno: un viaje de ida de siete y de vuelta de uno.
+    expect(lasFlechasDelInforme('dia', LUNES, 0)).toEqual({
+      anteriorDel: '2026-09-26',
+      siguienteDel: null,
+    });
+    expect(lasFlechasDelInforme('dia', LUNES, 1)).toEqual({
+      anteriorDel: '2026-09-25',
+      siguienteDel: '2026-09-27',
+    });
+    expect(lasFlechasDelInforme('semana', LUNES, 1)).toEqual({
+      anteriorDel: '2026-09-07',
+      siguienteDel: '2026-09-21',
+    });
+    expect(lasFlechasDelInforme('mes', LUNES, 1)).toEqual({
+      anteriorDel: '2026-06-01',
+      siguienteDel: '2026-08-01',
+    });
+    // Ida y vuelta: atrás y luego adelante deja donde se estaba, en los tres.
+    for (const tipo of ['dia', 'semana', 'mes'] as const) {
+      const ida = lasFlechasDelInforme(tipo, LUNES, 3).anteriorDel;
+      expect(ida).not.toBeNull();
+      const atras = atrasDe(tipo, LUNES, ida ?? LUNES);
+      expect(atras).toBe(4);
+      const vuelta = lasFlechasDelInforme(tipo, LUNES, atras).siguienteDel;
+      expect(atrasDe(tipo, LUNES, vuelta ?? LUNES)).toBe(3);
+    }
+    // Y al fondo, sin flecha de atrás.
+    expect(lasFlechasDelInforme('mes', LUNES, 12).anteriorDel).toBeNull();
   });
 
   it('los días de un tramo, los dos extremos dentro', () => {

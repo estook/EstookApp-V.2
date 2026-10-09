@@ -22,6 +22,18 @@ describe('las direcciones de antes del 25-sep', () => {
     expect(laDireccionDeAhora('/almacen/mermas')).toBeNull();
   });
 
+  it('y las cinco pestañas del libro son ahora Historial, con su filtro (9-oct)', () => {
+    expect(laDireccionDeAhora('/almacen/movimientos/todo')).toBe('/almacen/movimientos/historial');
+    expect(laDireccionDeAhora('/almacen/movimientos/entradas')).toBe(
+      '/almacen/movimientos/historial?tipo=entradas',
+    );
+    expect(laDireccionDeAhora('/inventario/movimientos/ajustes')).toBe(
+      '/almacen/movimientos/historial?tipo=ajustes',
+    );
+    expect(laDireccionDeAhora('/almacen/movimientos/historial')).toBeNull();
+    expect(laDireccionDeAhora('/almacen/movimientos/inventario')).toBeNull();
+  });
+
   it('lo que no es de antes no se toca', () => {
     expect(laDireccionDeAhora('/almacen/resumen')).toBeNull();
     expect(laDireccionDeAhora('/inventarios')).toBeNull();

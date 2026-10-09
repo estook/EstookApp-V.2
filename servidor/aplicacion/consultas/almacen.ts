@@ -1855,7 +1855,10 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
         left join estook.persona pe on pe.id = m.persona_id
         left join estook.lote l on l.id = m.lote_id
        where p.local_id = ${localId}
-         and (${entrada.tipo ?? null}::text is null or m.tipo::text = ${entrada.tipo ?? null})
+         -- «Ajustes» lleva también lo que corrigió un inventario (9-oct): los dos son
+         -- «el libro decía una cosa y había otra».
+         and (${entrada.tipo ?? null}::text is null or m.tipo::text = ${entrada.tipo ?? null}
+              or (${entrada.tipo ?? null}::text = 'ajuste' and m.tipo = 'recuento'))
          and (${entrada.producto_id ?? null}::uuid is null
               or m.producto_id = ${entrada.producto_id ?? null}::uuid)
          and (${entrada.desde ?? null}::date is null

@@ -214,6 +214,28 @@ export function elPeriodoDelInforme(
   };
 }
 
+/**
+ * A qué día llevan las flechas de un informe: un día de dentro del periodo anterior
+ * y del siguiente, o nulo si no se puede ir más allá.
+ *
+ * **No es `antesDesde`.** Ese es el periodo con el que se compara, y en el informe
+ * del día es el mismo día **de la semana anterior** (un sábado frente a otro
+ * sábado). Con él, la flecha de atrás saltaba una semana y la de delante avanzaba
+ * un día (Richi, 9-oct). Atrás es el periodo de antes, sea cual sea el que se
+ * compara.
+ */
+export function lasFlechasDelInforme(
+  tipo: TipoDeInforme,
+  hoy: FechaOperativa,
+  atras: number,
+): { readonly anteriorDel: FechaOperativa | null; readonly siguienteDel: FechaOperativa | null } {
+  return {
+    anteriorDel:
+      atras >= HACIA_ATRAS_MAXIMO[tipo] ? null : elPeriodoDelInforme(tipo, hoy, atras + 1).desde,
+    siguienteDel: atras <= 0 ? null : elPeriodoDelInforme(tipo, hoy, atras - 1).desde,
+  };
+}
+
 /** Los días de un tramo, los dos extremos dentro, de viejo a nuevo. */
 export function losDiasEntre(desde: FechaOperativa, hasta: FechaOperativa): FechaOperativa[] {
   const cuantos = diasEntre(desde, hasta);

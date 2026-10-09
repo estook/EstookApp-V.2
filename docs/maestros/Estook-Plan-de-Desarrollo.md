@@ -276,21 +276,23 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 Y sus vistas, donde las hay:
 
-| Destino                 | Sus vistas                                                             |
-| ----------------------- | ---------------------------------------------------------------------- |
-| Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor    |
-| Almacén · Movimientos   | Todo · Entradas · Salidas · Ventas · Ajustes · Inventario · Desviación |
-| Almacén · Compras       | Pedidos · Albaranes · Facturas · Proveedores · Precios                 |
-| Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                                      |
-| Carta · Carta           | Por secciones · Todos los platos · Agotados                            |
-| Carta · Análisis        | Matriz · Por canal · Histórico                                         |
-| Calendario · Calendario | Mes · Semana · Día                                                     |
-| Calendario · Tareas     | Pendientes · Periódicas · Hechas                                       |
-| Equipo · Personas       | Con acceso · Sin entrar todavía · Retirados                            |
-| Servicio · Jornada      | En marcha · Caja · Cierre                                              |
-| Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas                |
-| Negocio · Informes      | Día · Semana · Mes                                                     |
-| Cuaderno · Incidencias  | Abiertas · Cerradas                                                    |
+| Destino                 | Sus vistas                                                          |
+| ----------------------- | ------------------------------------------------------------------- |
+| Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
+| Almacén · Movimientos   | Historial · Inventario · Desviación                                 |
+| Almacén · Compras       | Pedidos · Albaranes · Facturas · Proveedores · Precios              |
+| Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                                   |
+| Carta · Carta           | Por secciones · Todos los platos · Agotados                         |
+| Carta · Análisis        | Matriz · Por canal · Histórico                                      |
+| Calendario · Calendario | Mes · Semana · Día                                                  |
+| Calendario · Tareas     | Pendientes · Periódicas · Hechas                                    |
+| Equipo · Personas       | Con acceso · Sin entrar todavía · Retirados                         |
+| Servicio · Jornada      | En marcha · Caja · Cierre                                           |
+| Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas             |
+| Negocio · Informes      | Día · Semana · Mes                                                  |
+| Cuaderno · Incidencias  | Abiertas · Cerradas                                                 |
+
+En **Historial**, lo que entra, sale, se vende o se ajusta es un filtro de la misma lista y no una vista: hasta el 9-oct eran cinco pestañas y una sola pantalla (Richi: «son demasiadas y abruman»).
 
 **El catálogo de `packages/ui/src/apps.ts` es el único dueño de estas dos tablas**, y hay una prueba que las lee **de este documento** y las compara. Antes la prueba llevaba los valores copiados dentro, y por eso pudo estar en verde mientras el código decía que Negocio tenía «Reseñas» donde esta tabla decía «Pulse».
 

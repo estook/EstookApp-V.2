@@ -159,7 +159,7 @@ export function Almacen({ destino, vista }: { readonly destino: string; readonly
       )}
       {destino === 'movimientos' && vista !== 'inventario' && vista !== 'desviacion' && (
         <Suspense fallback={<Cargando que="el libro de movimientos" />}>
-          <Movimientos vista={vista} alAbrirProducto={setProductoAbierto} />
+          <Movimientos alAbrirProducto={setProductoAbierto} />
         </Suspense>
       )}
       {destino === 'mermas' && (

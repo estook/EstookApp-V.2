@@ -6,6 +6,7 @@ import {
   Boton,
   Botones,
   Cargando,
+  ConMasInfo,
   ErrorEnCristiano,
   EstadoVacio,
   Etiqueta,
@@ -619,11 +620,17 @@ function NuevoPedido({
 
         {datos !== undefined && (
           <>
+            {/*
+              Lo esencial a la vista y el porqué en la «i» (Richi, 9-oct: «hay muchísimo
+              texto y abruma»). Aquí había un aviso azul de cuatro renglones.
+            */}
             {reparto === null ? (
-              <Aviso tono="info" titulo="No sé qué días reparte">
-                Sin días de reparto, la sugerencia cuenta cinco días de consumo. Pónselos en su
-                ficha y te dirá qué día tienes que pedir y hasta qué hora.
-              </Aviso>
+              <ConMasInfo
+                queExplica="Por qué cinco días"
+                info="Sin sus días de reparto, cuento cinco días de consumo. Pónselos en su ficha y te diré qué día pedir y hasta qué hora."
+              >
+                <p className="text-secundario text-texto-suave">No sé qué días reparte.</p>
+              </ConMasInfo>
             ) : (
               <p className="text-cuerpo">
                 Si lo pides {reparto.pedirCuando}
@@ -646,9 +653,7 @@ function NuevoPedido({
                     Abrir el borrador
                   </Boton>
                 }
-              >
-                Mejor seguir con ese que empezar otro: así no se le manda lo mismo dos veces.
-              </Aviso>
+              />
             )}
 
             {datos.lineas.length === 0 ? (
@@ -668,47 +673,52 @@ function NuevoPedido({
               <section className="flex flex-col gap-e2">
                 <h3 className="text-seccion font-semibold">Lo que le pediría</h3>
                 <ul className="flex flex-col rounded-medio border border-borde">
+                  {/* Una línea por producto: qué, cuánto y lo que cuesta. La cuenta, en la «i». */}
                   {datos.lineas.map((l) => (
                     <li
                       key={l.productoId}
-                      className="flex flex-col gap-e1 border-b border-borde p-e3 last:border-0"
+                      className="border-b border-borde px-e3 py-e2 last:border-0"
                     >
-                      <span className="flex items-baseline justify-between gap-e3">
-                        <span className="text-cuerpo font-medium">{l.producto}</span>
-                        <span className="shrink-0 text-cuerpo font-semibold">{l.comoSePide}</span>
-                      </span>
-                      <span className="text-secundario text-texto-suave">
-                        {l.sugerencia.motivo}
-                      </span>
-                      {l.importeCentimos !== undefined && l.importeCentimos !== null && (
-                        <span className="text-secundario text-texto-suave tabular-nums">
-                          {comoDinero(l.importeCentimos)}
+                      <ConMasInfo
+                        queExplica={`Por qué ${l.comoSePide} de ${l.producto}`}
+                        info={l.sugerencia.motivo}
+                      >
+                        {/* El nombre entero arriba: en el móvil, al lado de la cantidad, se
+                            cortaba en «Lo…», y es lo primero que se lee. */}
+                        <span className="block text-cuerpo font-medium">{l.producto}</span>
+                        <span className="flex flex-wrap items-baseline gap-x-e2">
+                          <span className="text-cuerpo font-semibold">{l.comoSePide}</span>
+                          {l.importeCentimos !== undefined && l.importeCentimos !== null && (
+                            <span className="text-secundario text-texto-suave tabular-nums">
+                              {comoDinero(l.importeCentimos)}
+                            </span>
+                          )}
                         </span>
-                      )}
+                      </ConMasInfo>
                     </li>
                   ))}
                 </ul>
-                {datos.sinNecesidad > 0 && (
-                  <p className="text-secundario text-texto-suave">
-                    Lo demás que le compras ({datos.sinNecesidad}) llega bien a su siguiente
-                    reparto.
-                  </p>
-                )}
                 {datos.totalCentimos !== undefined && (
-                  <p className="text-cuerpo">
-                    Serían unos{' '}
-                    <strong className="tabular-nums">{comoDinero(datos.totalCentimos)}</strong> sin
-                    impuestos.
-                  </p>
+                  <ConMasInfo
+                    queExplica="Qué más hay que saber"
+                    info={
+                      datos.sinNecesidad > 0
+                        ? `Lo demás que le compras (${String(datos.sinNecesidad)}) aguanta hasta su siguiente reparto. Es un borrador: lo cambias antes de mandarlo.`
+                        : 'Es un borrador: lo cambias antes de mandarlo.'
+                    }
+                  >
+                    <p className="text-cuerpo">
+                      Unos{' '}
+                      <strong className="tabular-nums">{comoDinero(datos.totalCentimos)}</strong>{' '}
+                      sin impuestos
+                    </p>
+                  </ConMasInfo>
                 )}
-                {datos.minimo !== undefined && datos.minimo !== null && (
-                  <Aviso tono={datos.minimo.llega ? 'bien' : 'atencion'} titulo="El pedido mínimo">
+                {datos.minimo !== undefined && datos.minimo !== null && !datos.minimo.llega && (
+                  <Aviso tono="atencion" titulo="No llega al pedido mínimo">
                     {datos.minimo.frase}
                   </Aviso>
                 )}
-                <p className="text-etiqueta text-texto-tenue">
-                  Es un borrador: después se cambia lo que haga falta antes de mandarlo.
-                </p>
               </section>
             )}
           </>

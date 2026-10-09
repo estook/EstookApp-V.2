@@ -1,7 +1,6 @@
 import { DIAS_DE_COBERTURA_OBJETIVO } from './almacen.ts';
 import { MARGEN_DE_SEGURIDAD } from './compras.ts';
-import { cantidad } from './coste.ts';
-import { conUnidad, plural } from './textos.ts';
+import { conUnidadAproximada, plural } from './textos.ts';
 import { diasEntre, type FechaOperativa } from './tiempo.ts';
 
 /**
@@ -239,7 +238,7 @@ export function minimoCalculado(
   const hueco = mayorHuecoEntreRepartos(diasDeReparto ?? []);
   const dias = hueco ?? DIAS_DE_COBERTURA_OBJETIVO;
   const minimo = haciaArriba(consumoPorDia * dias * (1 + MARGEN_DE_SEGURIDAD), unidad);
-  const gasto = conUnidad(cantidad(Number(consumoPorDia.toFixed(3))), unidad);
+  const gasto = conUnidadAproximada(consumoPorDia, unidad);
   return {
     minimo,
     porque:

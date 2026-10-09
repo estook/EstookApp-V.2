@@ -131,6 +131,7 @@ export {
   fechaEnLetra,
   fechaCorta,
   conUnidad,
+  conUnidadAproximada,
   comoPorcentaje,
   haceCuanto,
 } from './textos.ts';
@@ -771,6 +772,7 @@ export {
   esTipoDeInforme,
   hayDatos,
   lasCifrasDelCorreo,
+  lasFlechasDelInforme,
   lasFrasesJuntas,
   lasTresFrases,
   losDiasEntre,

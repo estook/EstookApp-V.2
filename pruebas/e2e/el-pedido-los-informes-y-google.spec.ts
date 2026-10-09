@@ -18,18 +18,26 @@ import { ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
 const ROSA = 'rosa@ejemplo.estook.com';
 const UN_DIA = 86_400_000;
 
-/** Un lunes de hace unos trescientos días, y el de la semana anterior. */
-function losLunes(): { lunes: string; antes: string; enLetra: string; antesEnLetra: string } {
+/** Un lunes de hace unos trescientos días, el de la semana anterior y el domingo de antes. */
+function losLunes(): {
+  lunes: string;
+  antes: string;
+  domingo: string;
+  enLetra: string;
+  domingoEnLetra: string;
+} {
   const hace = new Date(Date.now() - 300 * UN_DIA);
   const lunes = new Date(hace.getTime() - ((hace.getUTCDay() + 6) % 7) * UN_DIA);
   const antes = new Date(lunes.getTime() - 7 * UN_DIA);
+  const domingo = new Date(lunes.getTime() - UN_DIA);
   const enLetra = (d: Date) =>
     d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', timeZone: 'UTC' });
   return {
     lunes: lunes.toISOString().slice(0, 10),
     antes: antes.toISOString().slice(0, 10),
+    domingo: domingo.toISOString().slice(0, 10),
     enLetra: enLetra(lunes),
-    antesEnLetra: enLetra(antes),
+    domingoEnLetra: enLetra(domingo),
   };
 }
 
@@ -38,7 +46,7 @@ test('Negocio → Informes: Tu día frente al mismo día de la semana anterior, 
   request,
 }) => {
   const rosa = await tokenDe(request, ROSA);
-  const { lunes, antes, enLetra, antesEnLetra } = losLunes();
+  const { lunes, antes, domingo, enLetra, domingoEnLetra } = losLunes();
   for (const [fecha, total] of [
     [lunes, 123_400],
     [antes, 100_000],
@@ -62,11 +70,14 @@ test('Negocio → Informes: Tu día frente al mismo día de la semana anterior, 
   // La tarjeta de las ventas, con su flecha: la misma cifra que la frase.
   await expect(page.getByText('1.234,00 €', { exact: true })).toBeVisible();
 
-  // Hacia atrás: el lunes de antes, y ya se puede volver.
+  // Hacia atrás, **un día**: el domingo de antes, no el lunes con el que se compara
+  // (Richi, 9-oct: atrás saltaba una semana y adelante, un día). Y adelante, de vuelta.
   await page.getByRole('button', { name: 'El periodo anterior' }).click();
-  await expect(page.getByText(`El lunes ${antesEnLetra}`, { exact: true })).toBeVisible();
-  await expect(page).toHaveURL(new RegExp(`del=${antes}`));
-  await expect(page.getByRole('button', { name: 'El periodo siguiente' })).toBeEnabled();
+  await expect(page.getByText(`El domingo ${domingoEnLetra}`, { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`del=${domingo}`));
+  await page.getByRole('button', { name: 'El periodo siguiente' }).click();
+  await expect(page.getByText(`El lunes ${enLetra}`, { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`del=${lunes}`));
 
   // Y las tres vistas, Día, Semana y Mes.
   await page.getByRole('tab', { name: 'Semana' }).click();

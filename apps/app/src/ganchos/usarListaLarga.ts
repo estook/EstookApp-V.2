@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -34,11 +34,18 @@ export function usarListaLarga<T extends { readonly hayMas: boolean }>(
   parametros: Readonly<Record<string, string>>,
   /** Cuántas por página. Lo que el servidor acepta como mucho son 200. */
   porPagina = 50,
+  /** Falso mientras falte algo para preguntar bien (la jornada de hoy): sin viajes de más. */
+  activa = true,
 ) {
   const { cliente } = usarSesion();
 
   return useInfiniteQuery({
     queryKey: [nombre, parametros, porPagina],
+    enabled: activa,
+    // Al cambiar de filtro o de tramo, lo de antes se queda hasta que llega lo nuevo
+    // (9-oct): sin esto, cada toque en «Entradas» vaciaba la pantalla entera, con sus
+    // botones, y la volvía a pintar.
+    placeholderData: keepPreviousData,
     initialPageParam: 0,
     queryFn: async ({ pageParam }): Promise<T> => {
       const respuesta = await cliente.consultar<T>(nombre, {

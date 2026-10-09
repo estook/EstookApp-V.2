@@ -108,6 +108,7 @@ const TONO_DEL_SEMAFORO = {
 } as const;
 
 function FoodCostReal() {
+  const navegar = useNavigate();
   const [periodo, setPeriodo] = useState<'' | 'inventarios' | 'mes'>('');
   const [mes, setMes] = useState('');
   const lectura = usarLectura<ElFoodCostReal>('el_food_cost_real', {
@@ -162,13 +163,38 @@ function FoodCostReal() {
           </Aviso>
         ) : (
           <>
+            {/*
+              ── Un gasto en negativo no es un gasto (9-oct) ─────────────────────
+              En IKATZ salía «−27,96 € en género»: queda más de lo que había y entró. No
+              es que se gastara menos que nada: es que algo entró sin apuntarse, o que
+              se corrigió este mes un error del anterior (unas ventas de septiembre
+              anuladas en octubre). Se dice eso, y no se da un porcentaje que no existe.
+            */}
+            {f.consumoRealCentimos < 0 && (
+              <Aviso
+                tono="atencion"
+                titulo="No cuadra: queda más de lo que había y entró"
+                accion={
+                  <Boton
+                    tono="secundario"
+                    onClick={() => {
+                      navegar('/almacen/movimientos/historial');
+                    }}
+                  >
+                    Ver el historial
+                  </Boton>
+                }
+              >
+                Suele ser una entrada sin apuntar, o un error de otro mes corregido en este.
+              </Aviso>
+            )}
             <div className="flex flex-wrap items-baseline gap-e3">
-              {f.real !== null && (
+              {f.real !== null && f.consumoRealCentimos >= 0 && (
                 <p className="text-titulo font-semibold tabular-nums">
                   {`${f.real.toFixed(1).replace('.', ',')} %`}
                 </p>
               )}
-              {f.real !== null && (
+              {f.real !== null && f.consumoRealCentimos >= 0 && (
                 <Etiqueta tono={TONO_DEL_SEMAFORO[f.semaforo]}>
                   {NOMBRE_DEL_SEMAFORO[f.semaforo]}
                   {f.objetivo === null ? '' : ` · objetivo ${comoSeDiceElTipo(f.objetivo)}`}
@@ -178,7 +204,7 @@ function FoodCostReal() {
                 Del {diaCorto(f.desde)} al {diaCorto(f.hasta)}
               </span>
             </div>
-            <p className="text-secundario">
+            <p className={f.consumoRealCentimos < 0 ? 'hidden' : 'text-secundario'}>
               {f.ventasSinImpuestoCentimos === null
                 ? `${comoDinero(f.consumoRealCentimos)} en género. Sin ventas en la caja, todavía no hay porcentaje.`
                 : `${comoDinero(f.consumoRealCentimos)} en género, de ${comoDinero(f.ventasSinImpuestoCentimos)} vendidos sin IVA.`}

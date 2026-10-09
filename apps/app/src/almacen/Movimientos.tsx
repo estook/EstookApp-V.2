@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   NOMBRE_DEL_TRAMO,
   TRAMOS_QUE_SE_MIRAN,
@@ -60,12 +60,29 @@ import {
  * Cada linea lleva lo que hace falta para cuadrar y nada mas: que paso, de que
  * producto, cuanto, **cuanto quedo despues** —que es el saldo congelado que
  * guarda cada linea— y quien lo apunto.
+ *
+ * ── Una pestaña, y el tipo como filtro (Richi, 9-oct) ────────────────────────
+ *
+ * Movimientos tenía siete pestañas —Todo, Entradas, Salidas, Ventas, Ajustes,
+ * Inventario y Desviación— y «son demasiadas, rallan y abruman». Las cinco primeras
+ * no eran cinco sitios: eran **el mismo libro con otro filtro**. Ahora son una,
+ * **Historial**, con el tipo en una fila de botones pequeños arriba; y en la barra
+ * quedan tres pestañas, que sí son tres cosas distintas.
  */
+
+/** Los filtros del historial: el `id` va en la dirección y el `tipo`, al servidor. */
+const FILTROS = [
+  { id: 'todo', nombre: 'Todo', tipo: undefined },
+  { id: 'entradas', nombre: 'Entradas', tipo: 'entrada' },
+  { id: 'salidas', nombre: 'Salidas', tipo: 'salida' },
+  { id: 'ventas', nombre: 'Ventas', tipo: 'venta' },
+  // Lo corregido a mano y lo que corrigió un inventario, juntos: el servidor los suma.
+  { id: 'ajustes', nombre: 'Ajustes', tipo: 'ajuste' },
+] as const;
+
 export function Movimientos({
-  vista,
   alAbrirProducto,
 }: {
-  readonly vista: string;
   readonly alAbrirProducto: (id: string) => void;
 }) {
   const navegar = useNavigate();
@@ -82,9 +99,18 @@ export function Movimientos({
    */
   const buscado = usarQueEspere(texto, 300);
 
-  // La vista es el tipo: `todo` no filtra, y los otros van tal cual al servidor,
-  // que los valida contra su lista cerrada.
-  const tipo = vista === 'todo' || vista === '' ? undefined : vista.replace(/s$/, '');
+  // El filtro va en la dirección (`?tipo=entradas`), para que se pueda compartir y el
+  // botón de atrás lo respete. «Todo» no filtra; los otros van al servidor en
+  // singular, que los valida contra su lista cerrada.
+  const [parametros, ponerParametros] = useSearchParams();
+  const filtro = FILTROS.find((f) => f.id === parametros.get('tipo')) ?? FILTROS[0];
+  const tipo = filtro.tipo;
+  function filtrar(id: string) {
+    const nuevos = new URLSearchParams(parametros);
+    if (id === 'todo') nuevos.delete('tipo');
+    else nuevos.set('tipo', id);
+    ponerParametros(nuevos, { replace: true });
+  }
 
   // La jornada de hoy la dice el servidor, nunca el navegador (regla 10). El
   // primer viaje la trae, y con ella se calcula desde cuándo se mira.
@@ -98,6 +124,8 @@ export function Movimientos({
       ...(hoy === null ? {} : { desde: desdeCuandoMira(tramo, hoy as FechaOperativa) }),
     },
     50,
+    // Sin la jornada no se sabe desde cuándo mirar: se espera, y no se pide dos veces.
+    hoy !== null,
   );
 
   if (consulta.isPending || hoy === null) {
@@ -132,11 +160,37 @@ export function Movimientos({
         intentar corregir algo— y no antes, ocupando la primera pantalla del
         móvil.
       */}
+      {/* En una fila que se desliza en el móvil: cinco botones no caben a 360 px. */}
+      <div
+        className="-mx-e1 flex gap-e1 overflow-x-auto px-e1 [scrollbar-width:none]"
+        role="group"
+        aria-label="Qué movimientos"
+      >
+        {FILTROS.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            aria-pressed={filtro.id === f.id}
+            onClick={() => {
+              filtrar(f.id);
+            }}
+            className={clases(
+              'min-h-toque shrink-0 rounded-redondo px-e3 text-secundario',
+              filtro.id === f.id
+                ? 'bg-naranja-suave font-medium text-texto'
+                : 'bg-fondo text-texto-suave hover:text-texto',
+            )}
+          >
+            {f.nombre}
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-wrap items-end gap-e3">
         <div className="min-w-[14rem] flex-1 max-w-[24rem]">
           <Campo
             etiqueta="Buscar en el libro"
-            ayuda="Por producto, por quién lo apuntó, por el motivo o por el lote."
+            placeholder="Producto, persona, motivo o lote"
             value={texto}
             delante={<IconoBuscar size={16} />}
             onChange={(e) => {

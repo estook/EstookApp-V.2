@@ -132,6 +132,20 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
     const caja = lista.current;
     if (caja !== null && abajo.current) caja.scrollTop = caja.scrollHeight;
   }, [ultimoId, mensajes.length, esperando.length]);
+  // Y cuando la conversación encoge —el teclado que sube—, lo último sigue pegado a la
+  // caja de escribir, como en cualquier chat, si se estaba abajo (9-oct).
+  useEffect(() => {
+    const caja = lista.current;
+    if (caja === null || typeof ResizeObserver === 'undefined') return;
+    const vigia = new ResizeObserver(() => {
+      if (abajo.current) caja.scrollTop = caja.scrollHeight;
+    });
+    vigia.observe(caja);
+    return () => {
+      vigia.disconnect();
+    };
+    // La lista no está mientras carga: se engancha cuando aparece.
+  }, [consulta.isPending]);
 
   async function refrescar() {
     await cache.invalidateQueries({ queryKey: claveDeUnCanal(canalId) });

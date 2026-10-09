@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import {
-  HACIA_ATRAS_MAXIMO,
   LAS_CIFRAS_DEL_INFORME,
   NOMBRE_DE_LO_QUE_SE_JUZGA,
   TIPOS_DE_INFORME,
@@ -8,10 +7,10 @@ import {
   atrasDe,
   elPeriodoDelInforme,
   fechaOperativa,
+  lasFlechasDelInforme,
   lasCifrasDelCorreo,
   lasTresFrases,
   losDiasEntre,
-  masDias,
   type CifraDelInforme,
   type CifraDelSemaforo,
   type FechaOperativa,
@@ -128,8 +127,8 @@ export async function elInforme(
     tipo,
     titulo: TITULO_DEL_INFORME[tipo],
     periodo,
-    anteriorDel: atras >= HACIA_ATRAS_MAXIMO[tipo] ? null : periodo.antesDesde,
-    siguienteDel: atras === 0 ? null : masDias(periodo.hasta, 1),
+    // Las flechas llevan al periodo de antes y al de después, no al que se compara.
+    ...lasFlechasDelInforme(tipo, hoy, atras),
     cifras,
     frases: lasTresFrases(cifras, periodo, {
       fueraDeObjetivo: semaforo === null ? [] : fueraDeObjetivo(semaforo),

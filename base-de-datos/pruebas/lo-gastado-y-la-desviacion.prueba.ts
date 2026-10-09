@@ -548,3 +548,39 @@ describe('la foto de la merma', () => {
     ).toBe('faltan_datos');
   });
 });
+
+// ── Una anulación cuenta como lo que anula (9-oct) ───────────────────────────
+
+describe('una anulación en el food cost', () => {
+  it('el traspaso anulado deja el consumo como estaba', async () => {
+    // La anulación de una salida «A otro local» se apunta con su propio motivo («Anula lo
+    // apuntado el…»), y el food cost la contaba como consumo: diez Coca-Colas que se
+    // llevó otro local, y que al final no se llevó, salían gastadas aquí.
+    const delMes = async () =>
+      losDatos<FoodCost & { traspasosCentimos: number }>(
+        await api.consultar(rosa, 'el_food_cost_real', { periodo: 'mes', mes: HOY.slice(0, 7) }),
+      );
+    const antes = await delMes();
+
+    const traspaso = losDatos<{ movimientoId: string }>(
+      await api.ejecutar(rosa, 'apuntar_salida', {
+        producto_id: coca,
+        cuanto: 10,
+        por_que: 'traspaso',
+      }),
+    ).movimientoId;
+    const conElTraspaso = await delMes();
+    expect(conElTraspaso.traspasosCentimos - antes.traspasosCentimos).toBe(600);
+    expect(conElTraspaso.consumoRealCentimos).toBe(antes.consumoRealCentimos);
+
+    losDatos(
+      await api.ejecutar(rosa, 'anular_movimiento', {
+        movimiento_id: traspaso,
+        motivo: 'Al final no se lo llevaron',
+      }),
+    );
+    const anulado = await delMes();
+    expect(anulado.traspasosCentimos).toBe(antes.traspasosCentimos);
+    expect(anulado.consumoRealCentimos).toBe(antes.consumoRealCentimos);
+  });
+});

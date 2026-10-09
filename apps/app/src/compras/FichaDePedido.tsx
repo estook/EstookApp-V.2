@@ -434,11 +434,16 @@ export function FichaDePedido({
               .
             </p>
           )}
-          {datos.minimo !== undefined && datos.minimo !== null && !hayCambios && abierto && (
-            <Aviso tono={datos.minimo.llega ? 'bien' : 'atencion'} titulo="El pedido mínimo">
-              {datos.minimo.frase}
-            </Aviso>
-          )}
+          {/* Solo si no llega: un aviso verde de «sí llega» es texto que no hace falta (9-oct). */}
+          {datos.minimo !== undefined &&
+            datos.minimo !== null &&
+            !datos.minimo.llega &&
+            !hayCambios &&
+            abierto && (
+              <Aviso tono="atencion" titulo="No llega al pedido mínimo">
+                {datos.minimo.frase}
+              </Aviso>
+            )}
         </section>
 
         {/* ── Cuándo, y lo que se le dice ─────────────────────────────────── */}
@@ -460,7 +465,7 @@ export function FichaDePedido({
             />
             <Campo
               etiqueta="Lo que quieras decirle"
-              ayuda="Sale al final del pedido: «que el pescado venga limpio», «dejadlo en la puerta de atrás»."
+              ayuda="Sale al final del pedido."
               value={actual.notas}
               onChange={(e) => {
                 const valor = e.currentTarget.value;
@@ -657,8 +662,7 @@ function Mandar({
   if (!datos.puedeEnviar) {
     return pedido.estado === 'borrador' ? (
       <Aviso tono="info" titulo="Queda en borrador">
-        Lo manda quien puede mandar pedidos —el jefe de cocina, quien lleva el local—: le sale en
-        Compras como borrador por mandar. Si corre prisa, díselo.
+        Lo manda quien puede mandar pedidos: le sale en Compras. Si corre prisa, díselo.
       </Aviso>
     ) : null;
   }

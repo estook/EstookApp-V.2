@@ -587,3 +587,18 @@
      cocina, así que «lo que falta» de un ingrediente era todo lo gastado, y la brecha del
      food cost contra lo apuntado salía siempre «fuga». La desviación con causa es solo de
      lo que se vende tal cual, contra la caja; lo cocinado espera a sus fichas (M9, 0079).
+161. **Con lo que se compara no es lo de antes.** En Tu día, la flecha de atrás llevaba al
+     periodo con el que se compara —el mismo día de la semana anterior— y la de delante
+     avanzaba uno: ida de siete días y vuelta de uno (Richi, 9-oct). En la semana y el mes
+     coincidían por casualidad, y por eso no se vio. Las flechas salen ahora de
+     `lasFlechasDelInforme`, con su prueba de ida y vuelta en los tres (0080).
+162. **Una anulación es lo que anula, no lo que dice su motivo.** El food cost reconocía un
+     traspaso por su motivo («A otro local…»), y su anulación se apunta con otro («Anula lo
+     apuntado el…»): diez Coca-Colas que al final no se llevó nadie salían gastadas. Ahora
+     cada anulación se lee con el origen y el motivo del movimiento que anula. Lo prueba
+     `lo-gastado-y-la-desviacion.prueba.ts`, que sale en rojo sin el arreglo (0080).
+163. **El teclado del iPhone se mide más de una vez.** El chat leía el visor una vez por
+     aviso, y WebKit avisa a mitad de la animación del teclado y corrige después, a veces
+     sin avisar: la caja de escribir se quedaba debajo del teclado. La barra de abajo ya
+     volvía a mirar a los 50, 150 y 300 ms desde el 25-sep; el chat no. Lo que se arregla
+     en un sitio se busca en los demás que hacen lo mismo (0080).

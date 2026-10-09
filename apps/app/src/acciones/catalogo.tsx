@@ -136,7 +136,7 @@ export const ACCIONES: readonly Accion[] = [
     queHace: 'Todo lo que ha entrado y salido, por día y con quién lo apuntó',
     icono: IconoDocumento,
     permiso: { cual: 'app.almacen', como: 'ver' },
-    ir: '/almacen/movimientos/todo',
+    ir: '/almacen/movimientos/historial',
   },
   {
     id: 'nuevo-proveedor',

@@ -261,11 +261,12 @@ export async function loGastadoDeVerdad(
       join lateral (
         select
           coalesce(sum(m.cantidad) filter (
-            where m.tipo = 'entrada' or (m.tipo = 'salida' and m.origen = 'devolucion')
+            where m.tipo = 'entrada'
+               or (m.tipo = 'salida' and coalesce(o.origen, m.origen) = 'devolucion')
           ), 0) as entro,
           coalesce(-sum(m.cantidad) filter (
             where m.tipo in ('salida', 'venta', 'consumo', 'merma')
-              and coalesce(m.origen, '') <> 'devolucion'
+              and coalesce(o.origen, m.origen, '') <> 'devolucion'
           ), 0) as apuntado,
           coalesce(-sum(m.cantidad) filter (where m.tipo = 'venta'), 0) as venta_camara,
           coalesce(-sum(m.cantidad) filter (where m.tipo = 'merma'), 0) as mermas,
@@ -273,6 +274,9 @@ export async function loGastadoDeVerdad(
             where m.tipo = 'entrada' and m.cantidad > 0 and m.origen = 'a_mano'
           ) as entradas_a_mano
           from estook.movimiento_de_stock m
+          -- Una anulación cuenta como lo que anula: la de una devolución es devolución
+          -- (9-oct). Su origen es «a_mano», y sin esto se perdía por el camino.
+          left join estook.movimiento_de_stock o on o.id = (m.referencia ->> 'anula')::bigint
          where m.producto_id = p.id
            and m.id > c1.hasta_movimiento and m.id <= c2.hasta_movimiento
       ) f on true
@@ -596,15 +600,18 @@ export async function laCuentaDelFoodCost(
                    nullif(m.coste_medio_despues, 0), v.coste, 0) / 1000.0))
         filter (where m.tipo = 'entrada'), 0)::text as compras,
       coalesce(sum(round(-m.cantidad * coalesce(nullif(m.coste_medio_despues, 0), v.coste, 0) / 1000.0))
-        filter (where m.tipo = 'salida' and m.origen = 'devolucion'), 0)::text as devoluciones,
+        filter (where m.tipo = 'salida' and coalesce(o.origen, m.origen) = 'devolucion'), 0)::text as devoluciones,
       coalesce(sum(round(-m.cantidad * coalesce(nullif(m.coste_medio_despues, 0), v.coste, 0) / 1000.0))
-        filter (where m.tipo = 'salida' and coalesce(m.origen, '') <> 'devolucion'
-                  and m.motivo like ${QUE_ES_CADA_SALIDA.traspaso.nombre} || '%'), 0)::text as traspasos,
+        filter (where m.tipo = 'salida' and coalesce(o.origen, m.origen, '') <> 'devolucion'
+                  and coalesce(o.motivo, m.motivo) like ${QUE_ES_CADA_SALIDA.traspaso.nombre} || '%'), 0)::text as traspasos,
       coalesce(sum(round(-m.cantidad * coalesce(nullif(m.coste_medio_despues, 0), v.coste, 0) / 1000.0))
         filter (where m.tipo = 'merma'
                   and estook.partida_de_la_merma(m.motivo_de_merma) <> 'perdida'), 0)::text as aparte
       from estook.movimiento_de_stock m
       join estook.producto p on p.id = m.producto_id
+      -- Una anulación cuenta como lo que anula (9-oct): la de un traspaso empieza por
+      -- «Anula lo apuntado…» y la de una devolución es «a_mano», y las dos se perdían.
+      left join estook.movimiento_de_stock o on o.id = (m.referencia ->> 'anula')::bigint
       left join lateral (select (estook.precio_vigente(p.id)).coste_milesimas as coste) v on true
      where m.local_id = ${localId}
        and (case when ${hastaId}::bigint is null

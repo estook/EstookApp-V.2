@@ -109,12 +109,12 @@ const ValorDelAlmacen = lazy(async () => {
 });
 
 /**
- * La desviación (M8 · 0079): lo gastado de verdad, el food cost real y lo que falta de
- * lo que se vende tal cual. La abre quien cierra inventarios, pocas veces: aparte.
+ * El consumo (M8 · 0079, «Desviación» hasta el 9-oct): el food cost real y lo gastado
+ * de verdad. La abre quien cierra inventarios, pocas veces: aparte.
  */
-const Desviacion = lazy(async () => {
-  const modulo = await import('./Desviacion.tsx');
-  return { default: modulo.Desviacion };
+const Consumo = lazy(async () => {
+  const modulo = await import('./Consumo.tsx');
+  return { default: modulo.Consumo };
 });
 
 /**
@@ -157,9 +157,9 @@ export function Almacen({ destino, vista }: { readonly destino: string; readonly
           <ValorDelAlmacen alAbrirProducto={setProductoAbierto} />
         </Suspense>
       )}
-      {destino === 'movimientos' && vista !== 'inventario' && vista !== 'desviacion' && (
+      {destino === 'movimientos' && vista !== 'inventario' && vista !== 'consumo' && (
         <Suspense fallback={<Cargando que="el libro de movimientos" />}>
-          <Movimientos vista={vista} alAbrirProducto={setProductoAbierto} />
+          <Movimientos alAbrirProducto={setProductoAbierto} />
         </Suspense>
       )}
       {destino === 'mermas' && (
@@ -172,9 +172,9 @@ export function Almacen({ destino, vista }: { readonly destino: string; readonly
           <Inventario />
         </Suspense>
       )}
-      {destino === 'movimientos' && vista === 'desviacion' && (
+      {destino === 'movimientos' && vista === 'consumo' && (
         <Suspense fallback={<Cargando que="lo gastado de verdad" />}>
-          <Desviacion />
+          <Consumo />
         </Suspense>
       )}
       {destino === 'compras' && (

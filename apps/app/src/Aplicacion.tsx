@@ -284,6 +284,14 @@ function Puerta() {
             <Route path="inventario/*" element={<ALaDireccionDeAhora />} />
             {/* Las mermas eran una vista de Movimientos: ahora, destino propio (26-sep). */}
             <Route path="almacen/movimientos/mermas" element={<ALaDireccionDeAhora />} />
+            {/* Las cinco pestañas del libro son ahora Historial, con su filtro, y «Desviación» es «Consumo» (9-oct). */}
+            {['todo', 'entradas', 'salidas', 'ventas', 'ajustes', 'desviacion'].map((viejo) => (
+              <Route
+                key={viejo}
+                path={`almacen/movimientos/${viejo}`}
+                element={<ALaDireccionDeAhora />}
+              />
+            ))}
             <Route path=":app" element={<PantallaDeApp />} />
             <Route path=":app/:destino" element={<PantallaDeApp />} />
             <Route path=":app/:destino/:vista" element={<PantallaDeApp />} />
@@ -298,7 +306,10 @@ function Puerta() {
 /** Una dirección de antes del 25-sep, llevada a la de ahora sin dejar rastro en el historial. */
 function ALaDireccionDeAhora() {
   const { pathname, search } = useLocation();
-  return <Navigate replace to={`${laDireccionDeAhora(pathname) ?? '/'}${search}`} />;
+  const ahora = laDireccionDeAhora(pathname) ?? '/';
+  // Si la nueva ya lleva su `?` (el filtro del historial), lo de antes se le suma con `&`.
+  const resto = search === '' ? '' : ahora.includes('?') ? `&${search.slice(1)}` : search;
+  return <Navigate replace to={`${ahora}${resto}`} />;
 }
 
 /**

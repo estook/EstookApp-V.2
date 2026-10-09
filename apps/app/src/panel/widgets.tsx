@@ -1460,7 +1460,7 @@ function UltimosMovimientos({ tamano }: { readonly tamano: TamanoDeWidget }) {
       leyendo={consulta}
       titulo="Lo último apuntado"
       origen="Del libro de movimientos"
-      ir="/almacen/movimientos/todo"
+      ir="/almacen/movimientos/historial"
     >
       {lineas.length === 0 ? (
         <p className="text-secundario text-texto-suave">

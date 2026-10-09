@@ -273,15 +273,13 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // «Desviación» (M8 · 0079): lo gastado de verdad entre dos inventarios, el food
         // cost real y lo que falta de lo que se vende tal cual. Es leer el libro entre
         // dos recuentos, así que vive al lado de «Inventario».
-        vistas: vistas(
-          'Todo',
-          'Entradas',
-          'Salidas',
-          'Ventas',
-          'Ajustes',
-          'Inventario',
-          'Desviación',
-        ),
+        // **Historial** desde el 9-oct: Todo, Entradas, Salidas, Ventas y Ajustes eran
+        // cinco pestañas y una sola pantalla, el libro con otro filtro. Richi: «son
+        // demasiadas, rallan y abruman». Ahora el tipo es un filtro dentro de Historial,
+        // y aquí quedan tres cosas distintas.
+        // Y **Consumo** desde el 9-oct, que era «Desviación» (Richi eligió la A, 0080):
+        // el food cost real y lo gastado de verdad. Emparejar la caja, hasta Estook TPV.
+        vistas: vistas('Historial', 'Inventario', 'Consumo'),
       },
       {
         id: 'compras',

@@ -2,7 +2,7 @@ import { costeDeLinea, costePorUnidadDeUso, cantidad, milesimas, type Milesimas 
 import { centimos, conSimbolo, porCantidad, type Centimos } from './dinero.ts';
 import { comoSeLlamaElDia } from './equipo.ts';
 import { DIAS_DE_COBERTURA_OBJETIVO, gastoEntre, type Sugerencia } from './almacen.ts';
-import { conUnidad, fechaEnLetra } from './textos.ts';
+import { conUnidad, conUnidadAproximada, fechaEnLetra } from './textos.ts';
 import { diaDeLaSemana, diasEntre, masDias, type FechaOperativa } from './tiempo.ts';
 
 /**
@@ -198,7 +198,7 @@ function cifra(valor: number): string {
 export function cuantoPedir(que: LoQueHay, cuando: CuandoLlega | null): SugerenciaDeCompra | null {
   const factor = que.factor > 0 ? que.factor : 1;
   const consumo = que.consumoPorDia !== null && que.consumoPorDia > 0 ? que.consumoPorDia : null;
-  const gasto = consumo === null ? '' : conUnidad(cantidad(consumo), que.unidadDeUso);
+  const gasto = consumo === null ? '' : conUnidadAproximada(consumo, que.unidadDeUso);
   const pesos = que.pesos ?? null;
   const yaPedido = que.yaPedido !== undefined && que.yaPedido > 0 ? que.yaPedido : 0;
 
@@ -225,7 +225,7 @@ export function cuantoPedir(que: LoQueHay, cuando: CuandoLlega | null): Sugerenc
 
     motivo =
       cuando === null
-        ? `Para unos ${ciclo} días a ${gasto} al día, con un 20 % de margen. Con los días de reparto del proveedor lo calcularía hasta su reparto siguiente.`
+        ? `Para unos ${ciclo} días a ${gasto} al día, con un 20 % de margen. Con sus días de reparto, lo calcularía hasta el siguiente.`
         : porLaSemana
           ? `Llega ${cuandoCae(cuando.llega, cuando.hoy)} y el reparto siguiente es ${cuandoCae(cuando.siguiente, cuando.hoy)}: en esos ${hasta + ciclo} días sueles gastar ${conUnidad(cantidad(Number(hastaElSiguiente.toFixed(3))), que.unidadDeUso)}, contando lo que se gasta cada día de la semana, con un 20 % de margen.`
           : `Llega ${cuandoCae(cuando.llega, cuando.hoy)} y el reparto siguiente es ${cuandoCae(cuando.siguiente, cuando.hoy)}: ${hasta + ciclo} días a ${gasto} al día, con un 20 % de margen.`;

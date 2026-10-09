@@ -90,3 +90,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0077** | A4 · las ventas: el tablero sin IVA, lo cobrado de verdad, las visitas de los enlaces de vendedor y el correo del lunes                 |
 | **0078** | Las respuestas de M8: los platos esperan a sus fichas, contar y cerrar son dos pasos, el mínimo se propone y la foto es si quieres      |
 | **0079** | M8, la segunda entrega: lo gastado de verdad, el food cost real con la caja, la desviación de lo vendido tal cual y la foto de la merma |
+| **0080** | El repaso del 9-oct: menos texto al pedir, Movimientos en tres pestañas, las flechas del informe, el chat con el teclado y dos cuentas  |

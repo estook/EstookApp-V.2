@@ -66,6 +66,10 @@ const NO_LAS_LLAMA_NADIE: Readonly<Record<string, string>> = {
   // «`recetas_de_referencia` no la consume nadie todavía, y se deja a propósito».
   recetas_de_referencia: 'La consume M9, que es quien copia una receta a una ficha técnica',
 
+  // Emparejar una línea de la caja con su producto (M8, 0079). Richi eligió la A el
+  // 9-oct (0080): no se enseña hasta que la caja traiga las ventas sola, con Estook TPV.
+  emparejar_concepto: 'Vuelve a una pantalla con Estook TPV (0080)',
+
   // ── Las tres que esta prueba encontró en cuanto se escribió ────────────────
   //
   // Son de M2 y M3, y **M4 las dejó sin trabajo sin que nadie se diera cuenta**:

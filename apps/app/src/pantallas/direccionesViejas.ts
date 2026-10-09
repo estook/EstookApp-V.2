@@ -14,6 +14,20 @@
 export function laDireccionDeAhora(ruta: string): string | null {
   // Las mermas, de vista de Movimientos a destino propio de Almacén (26-sep).
   if (/^\/(?:almacen|inventario)\/movimientos\/mermas\/?$/.test(ruta)) return '/almacen/mermas';
+  // «Desviación» es «Consumo» desde el 9-oct (0080).
+  if (/^\/(?:almacen|inventario)\/movimientos\/desviacion\/?$/.test(ruta)) {
+    return '/almacen/movimientos/consumo';
+  }
+  // Todo, Entradas, Salidas, Ventas y Ajustes, de cinco pestañas a una, Historial,
+  // con el tipo de filtro (9-oct).
+  const delLibro =
+    /^\/(?:almacen|inventario)\/movimientos\/(todo|entradas|salidas|ventas|ajustes)\/?$/.exec(ruta);
+  if (delLibro !== null) {
+    const filtro = delLibro[1] ?? 'todo';
+    return filtro === 'todo'
+      ? '/almacen/movimientos/historial'
+      : `/almacen/movimientos/historial?tipo=${filtro}`;
+  }
   const vieja = /^\/inventario(\/.*)?$/.exec(ruta);
   if (vieja === null) return null;
   const resto = (vieja[1] ?? '').replace(

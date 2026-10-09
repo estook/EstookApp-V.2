@@ -102,6 +102,7 @@ export { Grafica } from './componentes/Grafica.tsx';
 export type { GraficaProps, SerieDeGrafica, FormaDeGrafica } from './componentes/Grafica.tsx';
 
 export { Aviso, ErrorEnCristiano } from './componentes/Aviso.tsx';
+export { ConMasInfo } from './componentes/ConMasInfo.tsx';
 export type { AvisoProps, TonoDeAviso, ErrorDeLaApi } from './componentes/Aviso.tsx';
 
 export { EstadoVacio, NadaConEso, TodaviaNo } from './componentes/EstadoVacio.tsx';

@@ -240,6 +240,19 @@ export function fechaCorta(fecha: FechaOperativa): string {
   return `${dia}/${mes}/${anio}`;
 }
 
+/**
+ * Un ritmo de gasto como se dice en voz alta: «0,29 l al día», no «0,2857 l».
+ *
+ * Es una media, y cuatro decimales de una media no dicen nada más que dos (Richi, 9-oct,
+ * con el pedido nuevo: «hay muchísimo texto y abruma»). Por debajo de 1, dos decimales;
+ * hasta 10, uno; y de ahí arriba, entero. Solo para leer: la cuenta va con el número
+ * entero.
+ */
+export function conUnidadAproximada(valor: number, unidad: string): string {
+  const decimales = Math.abs(valor) < 1 ? 2 : Math.abs(valor) < 10 ? 1 : 0;
+  return conUnidad(Number(valor.toFixed(decimales)) as Cantidad, unidad);
+}
+
 /** Cantidades con su unidad, sin decimales que sobren: «1,5 kg», «250 g». */
 export function conUnidad(cuanto: Cantidad, unidad: string): string {
   const limpio = Number(cuanto)

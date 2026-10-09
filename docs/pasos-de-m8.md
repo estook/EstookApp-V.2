@@ -2,42 +2,31 @@
 
 > ## Cómo está
 >
-> Comprobado el 9 de octubre de 2026 por la mañana, leyendo la base de producción.
+> Comprobado el 9 de octubre de 2026 por la tarde, leyendo la base de producción.
 >
-> | Qué                         | Cómo está                                                                                       |
-> | --------------------------- | ----------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #96** (M8, la primera entrega). Abierta: **M8, la segunda entrega** (#97) |
-> | La base de datos            | **60 de 60** migraciones, igual que `main`. 104 tablas                                          |
-> | La API                      | **Desplegada con la primera entrega de M8**: 78 y 169, los avisos al móvil y el reloj latiendo  |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                       |
-> | M8                          | **La primera entrega en producción**; **la segunda construida**, sin fusionar                   |
+> | Qué                         | Cómo está                                                                                      |
+> | --------------------------- | ---------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #97** (M8, la segunda entrega). Abierta: **el repaso del 9-oct**         |
+> | La base de datos            | **61 de 61** migraciones, igual que `main`. 106 tablas                                         |
+> | La API                      | **Desplegada con la segunda entrega de M8**: 80 y 171, los avisos al móvil y el reloj latiendo |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                      |
+> | M8                          | **Las dos entregas en producción**; el repaso del 9-oct, sin fusionar                          |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · M8, la segunda entrega
+## Lo que te toca ahora · el repaso del 9-oct
 
-Lo que pediste el 9-oct, construido ([decisión 0079](decisiones/0079-lo-gastado-y-la-desviacion.md)). **Una migración** (la **0061**) y **un despliegue**. Ninguna clave nueva, y nada que preparar para las fotos.
-
-**Qué trae** (todo en **Almacén → Movimientos → Desviación**, para quien cierra inventarios):
-
-- **El food cost real**: lo que se fue en género de cada 100 € vendidos **sin IVA**, entre los dos últimos inventarios o en un mes, frente a **tu objetivo de materia prima**. Si faltan días de caja, lo dice.
-- **Lo que se vende tal cual**: lo que salió de la cámara frente a lo que vendió la caja —«Faltan 16 ud · 9,60 €»— con **su causa más probable** y un botón para comprobarla.
-- **Emparejar la caja**: «Coca-Cola» de la caja es tu «Coca-Cola 33 cl». Se dice una vez; Estook propone el producto que se le parece.
-- **Lo gastado de verdad** de cada producto contado dos veces: había, entró, queda y gastado, en euros.
-- **Un aviso** en la campana al cerrar un inventario si lo que falta pasa del 3 %.
-- **La foto de la merma**, si quieres: «Añadir una foto» al apuntarla, y «Ver la foto» en Mermas.
-
-**Lo que no trae, a propósito:** «lo que falta» de lo que se cocina (el pulpo, la merluza). Sin la ficha del plato no se sabe cuánto debía gastarse; de eso ves lo gastado de verdad, y su desviación llega con M9.
+Lo que viste tras la segunda entrega, arreglado, y **la A de la desviación** ([decisión 0080](decisiones/0080-el-repaso-del-9-oct.md)). **Sin migración.** Sí hay que **desplegar la API**: el arreglo de las flechas del informe y el del food cost viven en el servidor.
 
 ### 1 · Fusionar
 
-En **github.com** → **Pull requests** → **«M8 · lo gastado de verdad…»** (la #97) → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+En **github.com** → **Pull requests** → **«El repaso del 9-oct…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
 
-### 2 · Aplicar la migración
+### 2 · Desplegar la API
 
-**Qué hace:** crea dónde guardar qué producto es cada línea de la caja y la foto de cada merma, y el aviso nuevo. **No cambia nada de lo que ya hay.** En PowerShell, en la carpeta del proyecto:
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después, en PowerShell, en la carpeta del proyecto:
 
 ```bash
 git checkout main
@@ -48,39 +37,26 @@ git pull
 ```
 
 ```bash
-.\estook.cmd bd:migrar
-```
-
-**Qué tiene que salir**, tal cual:
-
-```
-  aplicando 0061_lo_gastado_y_la_desviacion.sql ... hecho
-  1 migracion(es) aplicadas · 61 en total
-```
-
-**Si sale un error en rojo, no lo repitas: cópiamelo tal cual.**
-
-### 3 · Desplegar la API
-
-**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
-
-```bash
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** «las 80» consultas y «los 171» comandos.
+**Qué tiene que decir:** «las 80» consultas y «los 171» comandos, como ahora.
 
-### 4 · Probarlo
+### 3 · Probarlo
 
 La web se publica sola al fusionar, en unos minutos. En la app (**Ctrl + F5**; en el móvil, ciérrala y ábrela):
 
-1. **Almacén → Movimientos → Desviación**. Arriba, **Food cost real**: con el periodo «Un mes» sale el de octubre; despliega **«Cómo sale»** y mira que «Había», «Compraste» y «Queda» te suenan.
-2. Más abajo, **«En la caja, sin decir qué es»**: las líneas de tus cierres de caja. Si vendes refrescos o botellas tal cual, pulsa **«¿Es …?»** → **«Es este producto»**. Si una línea es un plato o el menú, **«No es de almacén»**.
-3. **Lo gastado de verdad**: sale de lo que hayas contado **dos veces**. Si solo has contado una, lo dice: «con el segundo inventario sale». Haz el segundo (Inventario → Contar una zona) y vuelve.
-4. Con un producto emparejado y contado dos veces, en **«Lo que se vende tal cual»** sale si cuadra o **«Faltan …»**; toca la etiqueta de la causa y el botón **«Mirar …»**.
-5. **Una merma con foto**: apunta una (producto, cuánto, por qué) → **«Añadir una foto»** → haz la foto → **Apuntar**. Sale «apuntado con su foto». En **Almacén → Mermas**, en esa línea, **«Ver la foto»**.
+1. **Compras → Pedidos → nuevo pedido**, elige Estrella de Galicia: cada producto en **una línea** (nombre, precio y cantidad) con una **«i»** pequeña a la derecha. Tócala: sale la cuenta («Para unos 5 días a 0,29 l al día…»).
+2. **Almacén → Movimientos**: arriba, solo **Historial · Inventario · Consumo**. En Historial, la fila **Todo · Entradas · Salidas · Ventas · Ajustes** filtra la lista.
+3. **Negocio → Informes → Día**: «Anterior» va **un día** atrás y «Siguiente», un día adelante.
+4. **El chat en el iPhone**: abre una conversación y toca la caja de escribir. Tiene que quedarse **justo encima del teclado**, con la cabecera arriba y los últimos mensajes pegados a la caja. **Esto solo se puede probar en tu iPhone**: si no queda así, una captura.
+5. **Consumo → Food cost real → Un mes → octubre**: solo el food cost real y lo gastado de verdad, sin la lista de «¿Es …?» de la caja. Y en vez de «−27,96 € en género» sale **«No cuadra: queda más de lo que había y entró»**, con «Ver el historial».
 
 Si algo no sale como aquí, hazle una captura y me la pasas.
+
+### Lo que queda de la segunda entrega
+
+En producción desde el 9-oct (#97, 0061, 80 y 171). **En IKATZ todavía no se ha cerrado ningún inventario**, y lo gastado de verdad y la desviación salen de contar **dos veces**: haz uno (Movimientos → Inventario → «Contar una zona» → cerrar) y otro dentro de unos días.
 
 ---
 

@@ -175,7 +175,10 @@ jobs:
     timeout-minutes: 10
     services:
       postgres:
-        image: postgres:17
+        # La imagen oficial de Postgres, servida desde la copia pública de AWS y no
+        # desde Docker Hub: Docker Hub limita las descargas sin cuenta, y el 9-oct la
+        # comprobación cayó por «toomanyrequests» sin haber probado nada.
+        image: public.ecr.aws/docker/library/postgres:17
         env:
           POSTGRES_PASSWORD: pruebas
           POSTGRES_DB: estook

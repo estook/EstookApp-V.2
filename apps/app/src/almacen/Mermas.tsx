@@ -146,7 +146,7 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
               href={m.foto}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex min-h-toque items-center gap-e1 text-secundario font-medium text-naranja underline-offset-2 hover:underline"
+              className="inline-flex min-h-toque items-center gap-e1 text-secundario font-medium text-texto underline underline-offset-2"
               onClick={(e) => {
                 e.stopPropagation();
               }}

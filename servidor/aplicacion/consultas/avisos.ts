@@ -170,7 +170,10 @@ export const misAvisosElegidos = consulta<Record<string, never>, SalidaMisAvisos
     const deCadaTipo = new Map(guardadas.map((g) => [g.tipo, g] as const));
 
     const avisos = TIPOS_DE_AVISO.filter(
-      (tipo) => puede !== null && puede.verTodos(LO_QUE_PIDE_EL_AVISO[tipo]),
+      (tipo) =>
+        puede !== null &&
+        puede.verTodos(LO_QUE_PIDE_EL_AVISO[tipo]) &&
+        COMO_ES_EL_AVISO[tipo].enEspera !== true,
     ).map((tipo): AvisoElegible => {
       const guardada = deCadaTipo.get(tipo);
       const vale = laPreferencia(

@@ -1,51 +1,53 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { COMO_ES_LA_CAUSA, comoPorcentaje, comoSeDiceElTipo, cuadra } from '@estook/dominio';
+import { comoPorcentaje, comoSeDiceElTipo } from '@estook/dominio';
 import { puedeEditar, puedeVer } from '@estook/permisos';
 import {
   Aviso,
   Boton,
-  Botones,
-  Campo,
   Cargando,
-  ErrorEnCristiano,
   EstadoVacio,
   Etiqueta,
-  Hoja,
   Selector,
   Tabla,
   Tarjeta,
   type Columna,
 } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { usarEmparejar } from '../ganchos/usarEmparejar.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { comoDinero, conUnidadDeUso } from './contrato.ts';
 import {
-  DONDE_SE_MIRA,
   diaCorto,
   type ElFoodCostReal,
   type LaDesviacion,
-  type LineaPorEmparejar,
   type ProductoGastado,
 } from './contratoDeLaDesviacion.ts';
 
 /**
- * Almacén · Movimientos · Desviación (M8 · decisión 0079, la segunda entrega).
+ * Almacén · Movimientos · Consumo (M8 · 0079; desde el 9-oct, 0080).
  *
- * Tres respuestas, de arriba abajo, y lo esencial a la vista:
+ * Dos respuestas, de arriba abajo:
  *
  *   · **El food cost real**: de cada 100 € que se venden sin IVA, cuántos se van en
  *     género. Entre los dos últimos inventarios o en un mes, frente a tu objetivo.
- *   · **Lo que se vende tal cual**: lo que sale de la cámara frente a lo que dice la
- *     caja, en unidades y en euros, con su causa más probable y dónde comprobarla.
- *     Y las líneas de la caja por emparejar: se dice una vez qué producto es cada una.
  *   · **Lo gastado de verdad**, de cada producto contado dos veces.
  *
- * Lo que se cocina **no tiene desviación hasta M9**: sin su ficha no se sabe cuánto
- * debía gastarse. De eso se ve lo gastado de verdad, que ya vale.
+ * ── Por qué ya no hay «Lo que se vende tal cual» (Richi eligió la A, 9-oct) ──────
+ *
+ * Esto se llamaba «Desviación» y comparaba lo que salía de la cámara con lo que
+ * vendía la caja, emparejando a mano cada línea de la caja con su producto. Richi:
+ * «es ambiguo y liante para los hosteleros». Tenía razón por tres lados: pedía
+ * emparejar también el chuletón y el atún, que van en varios platos; solo sirve si
+ * la caja dice qué se vendió línea a línea, y hoy eso es teclearlo al cerrar; y
+ * suma trabajo a quien no lo va a hacer.
+ *
+ * Así que aquí queda **lo que sale sin trabajo de más**: es la cuenta del consumo
+ * que hace cualquier gestoría (existencias iniciales + compras − existencias
+ * finales). El servidor sigue sabiendo emparejar (`emparejar_concepto`, la tabla
+ * `concepto_de_caja`): vuelve a la pantalla cuando la caja traiga las ventas sola,
+ * con Estook TPV. Y la desviación de los platos, con sus fichas (M9).
  */
-export function Desviacion() {
+export function Consumo() {
   const { permisos } = usarSesion();
   const cierra = puedeEditar(permisos, 'accion.cerrar_recuento');
   const conDinero =
@@ -54,12 +56,12 @@ export function Desviacion() {
 
   if (!cierra) {
     return (
-      <Tarjeta titulo="Desviación">
+      <Tarjeta titulo="Consumo">
         <EstadoVacio
           compacto
           dibujo="candado"
           titulo="Esto no lo llevas tú"
-          frase="La desviación la ve quien cierra los inventarios."
+          frase="El consumo lo ve quien cierra los inventarios."
           sinAccionPorque="Tu acceso no incluye cerrar inventarios."
         />
       </Tarjeta>
@@ -76,16 +78,9 @@ export function Desviacion() {
     );
   }
 
-  const talCual = datos.productos.filter((p) => p.talCual !== null);
-
   return (
     <div className="flex flex-col gap-e4">
       {conDinero && <FoodCostReal />}
-
-      {datos.puedeVerVentas && (
-        <LoQueSeVendeTalCual productos={talCual} porEmparejar={datos.porEmparejar} datos={datos} />
-      )}
-
       <LoGastado datos={datos} />
     </div>
   );
@@ -275,263 +270,6 @@ function losUltimosMeses(hoy: string): { valor: string; texto: string }[] {
 
 function diasEnLetra(cuantos: number): string {
   return cuantos === 1 ? '1 día' : `${String(cuantos)} días`;
-}
-
-// ── Lo que se vende tal cual ────────────────────────────────────────────────
-
-function LoQueSeVendeTalCual({
-  productos,
-  porEmparejar,
-  datos,
-}: {
-  readonly productos: readonly ProductoGastado[];
-  readonly porEmparejar: readonly LineaPorEmparejar[];
-  readonly datos: LaDesviacion;
-}) {
-  const navegar = useNavigate();
-  const [emparejando, setEmparejando] = useState<LineaPorEmparejar | null>(null);
-
-  return (
-    <Tarjeta titulo="Lo que se vende tal cual" origen="Lo que sale de la cámara frente a la caja">
-      <div className="flex flex-col gap-e3">
-        {productos.length === 0 ? (
-          <p className="text-secundario text-texto-suave">
-            {datos.emparejados.some((e) => e.productoId !== null)
-              ? 'Lo emparejado aún no se ha contado dos veces: con el segundo inventario, sale aquí.'
-              : 'Empareja abajo lo que vende tu caja tal cual —una Coca-Cola, una botella— y aquí sale lo que falta.'}
-          </p>
-        ) : (
-          <ul className="flex flex-col divide-y divide-borde">
-            {productos.map((p) => {
-              const t = p.talCual;
-              if (t === null) return null;
-              const bien = cuadra(t.desviacion, p.gastado);
-              return (
-                <li key={p.id} className="flex flex-col gap-e2 py-e3">
-                  <div className="flex flex-wrap items-baseline justify-between gap-e2">
-                    <span className="font-medium">{p.nombre}</span>
-                    <span className="tabular-nums">
-                      {bien ? (
-                        <Etiqueta tono="bien">Cuadra</Etiqueta>
-                      ) : (
-                        <strong>
-                          {t.desviacion > 0 ? 'Faltan ' : 'Sobran '}
-                          {conUnidadDeUso(Math.abs(t.desviacion), p.unidadDeUso)}
-                          {t.desviacionCentimos === undefined || t.desviacionCentimos === null
-                            ? ''
-                            : ` · ${comoDinero(Math.abs(t.desviacionCentimos))}`}
-                        </strong>
-                      )}
-                    </span>
-                  </div>
-                  <p className="text-secundario text-texto-suave">
-                    {t.ventasDesde > t.ventasHasta
-                      ? `Salieron ${conUnidadDeUso(p.gastado, p.unidadDeUso)}, y entre los dos conteos no cae ningún día de caja.`
-                      : `Salieron ${conUnidadDeUso(p.gastado, p.unidadDeUso)}; la caja vendió ${conUnidadDeUso(t.vendido, p.unidadDeUso)} del ${diaCorto(t.ventasDesde)} al ${diaCorto(t.ventasHasta)}.`}
-                  </p>
-                  {t.causa !== null && (
-                    <details className="text-secundario">
-                      <summary className="cursor-pointer">
-                        <Etiqueta tono={t.desviacion > 0 ? 'atencion' : 'info'}>
-                          {COMO_ES_LA_CAUSA[t.causa.causa].nombre}
-                        </Etiqueta>
-                      </summary>
-                      <p className="mt-e2 text-texto-suave">{t.causa.porque}</p>
-                      <Boton
-                        tono="texto"
-                        onClick={() => {
-                          const donde = DONDE_SE_MIRA[t.causa?.causa ?? 'sin_apuntar'];
-                          if (donde.startsWith('#')) {
-                            document.querySelector(donde)?.scrollIntoView({ behavior: 'smooth' });
-                          } else {
-                            navegar(donde);
-                          }
-                        }}
-                      >
-                        Mirar {COMO_ES_LA_CAUSA[t.causa.causa].seMira}
-                      </Boton>
-                    </details>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-
-        <div id="por-emparejar" className="flex flex-col gap-e2">
-          {porEmparejar.length > 0 && (
-            <>
-              <p className="font-medium">En la caja, sin decir qué es</p>
-              <ul className="flex flex-col divide-y divide-borde">
-                {porEmparejar.slice(0, 12).map((l) => (
-                  <li
-                    key={l.concepto}
-                    className="flex flex-wrap items-center justify-between gap-e2 py-e2"
-                  >
-                    <span>
-                      {l.concepto}{' '}
-                      <span className="text-etiqueta text-texto-tenue">
-                        · {conUnidadDeUso(l.unidades, 'ud')} en {diasEnLetra(l.dias)}
-                      </span>
-                    </span>
-                    <Boton
-                      tono="secundario"
-                      onClick={() => {
-                        setEmparejando(l);
-                      }}
-                    >
-                      {l.propuesto === null ? 'Emparejar' : `¿Es ${l.propuesto.nombre}?`}
-                    </Boton>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          {datos.emparejados.length > 0 && <LosEmparejados datos={datos} />}
-        </div>
-      </div>
-
-      <Emparejar
-        porDecir={emparejando}
-        alCerrar={() => {
-          setEmparejando(null);
-        }}
-      />
-    </Tarjeta>
-  );
-}
-
-function Emparejar({
-  porDecir,
-  alCerrar,
-}: {
-  readonly porDecir: LineaPorEmparejar | null;
-  readonly alCerrar: () => void;
-}) {
-  const productos = usarLectura<{
-    productos: readonly { id: string; nombre: string; unidadDeUso: string }[];
-  }>('mis_productos', {}, porDecir !== null);
-  const [elegido, setElegido] = useState('');
-  const [porVenta, setPorVenta] = useState('1');
-  const { hacer, error, haciendo } = usarEmparejar();
-
-  const productoId = elegido === '' ? (porDecir?.propuesto?.id ?? '') : elegido;
-  const unidad = productos.data?.productos.find((p) => p.id === productoId)?.unidadDeUso ?? 'ud';
-  const cuanto = Number(porVenta.replace(',', '.'));
-
-  return (
-    <Hoja
-      abierta={porDecir !== null}
-      alCerrar={() => {
-        setElegido('');
-        setPorVenta('1');
-        alCerrar();
-      }}
-      titulo={porDecir === null ? 'Emparejar' : `«${porDecir.concepto}» de la caja`}
-      pie={
-        <Botones>
-          <Boton
-            tono="principal"
-            disabled={productoId === '' || !(cuanto > 0) || haciendo !== null}
-            cargando={haciendo === 'emparejar'}
-            textoCargando="Emparejando"
-            onClick={() => {
-              if (porDecir === null) return;
-              void hacer('emparejar', {
-                concepto: porDecir.concepto,
-                producto_id: productoId,
-                por_venta: cuanto,
-              }).then((hecho) => {
-                if (hecho) alCerrar();
-              });
-            }}
-          >
-            Es este producto
-          </Boton>
-          <Boton
-            tono="texto"
-            disabled={haciendo !== null}
-            cargando={haciendo === 'ignorar'}
-            textoCargando="Apartando"
-            onClick={() => {
-              if (porDecir === null) return;
-              void hacer('ignorar', { concepto: porDecir.concepto, ignorar: true }).then(
-                (hecho) => {
-                  if (hecho) alCerrar();
-                },
-              );
-            }}
-          >
-            No es de almacén
-          </Boton>
-        </Botones>
-      }
-    >
-      <div className="flex flex-col gap-e3">
-        <p className="text-secundario text-texto-suave">
-          Se dice una vez: desde ahora, lo que venda la caja con este nombre cuenta como gastado de
-          ese producto.
-        </p>
-        {error !== null && <ErrorEnCristiano error={error} />}
-        <Selector
-          etiqueta="Qué producto es"
-          sinElegir="Elige uno"
-          opciones={(productos.data?.productos ?? []).map((p) => ({
-            valor: p.id,
-            texto: p.nombre,
-          }))}
-          value={productoId}
-          onChange={(e) => {
-            setElegido(e.currentTarget.value);
-          }}
-        />
-        <Campo
-          etiqueta={`Cuánto gasta cada venta, en ${unidad}`}
-          inputMode="decimal"
-          value={porVenta}
-          onChange={(e) => {
-            setPorVenta(e.currentTarget.value);
-          }}
-          ayuda="Una botella es 1. Una caña de un barril en litros, 0,2."
-        />
-      </div>
-    </Hoja>
-  );
-}
-
-function LosEmparejados({ datos }: { readonly datos: LaDesviacion }) {
-  const { hacer, error, haciendo } = usarEmparejar();
-  return (
-    <details className="text-secundario">
-      <summary className="cursor-pointer text-texto-suave">
-        Ya dicho ({datos.emparejados.length})
-      </summary>
-      {error !== null && <ErrorEnCristiano error={error} />}
-      <ul className="mt-e2 flex flex-col divide-y divide-borde">
-        {datos.emparejados.map((e) => (
-          <li key={e.concepto} className="flex flex-wrap items-center justify-between gap-e2 py-e2">
-            <span>
-              {e.concepto} →{' '}
-              {e.producto === null
-                ? 'no es de almacén'
-                : `${e.producto}${e.porVenta === 1 ? '' : ` (${conUnidadDeUso(e.porVenta, e.unidadDeUso ?? 'ud')} cada una)`}`}
-            </span>
-            <Boton
-              tono="texto"
-              cargando={haciendo === e.concepto}
-              textoCargando="Quitando"
-              disabled={haciendo !== null}
-              onClick={() => {
-                void hacer(e.concepto, { concepto: e.concepto, quitar: true });
-              }}
-            >
-              Quitar
-            </Boton>
-          </li>
-        ))}
-      </ul>
-    </details>
-  );
 }
 
 // ── Lo gastado de verdad ────────────────────────────────────────────────────

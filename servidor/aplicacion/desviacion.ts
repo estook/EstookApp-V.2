@@ -782,7 +782,7 @@ export async function avisarSiFalta(
       localId: datos.localId,
       clave: datos.inventarioId,
       texto: () => avisoDeLoQueFalta(centimos(falta.faltaCentimos), parte, falta.productos),
-      ir: '/almacen/movimientos/desviacion',
+      ir: '/almacen/movimientos/consumo',
       quien: null,
     },
     await quienesPuedenRecibir(contexto, datos.localId, 'inventario.falta'),

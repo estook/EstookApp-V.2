@@ -30,6 +30,9 @@ describe('las direcciones de antes del 25-sep', () => {
     expect(laDireccionDeAhora('/inventario/movimientos/ajustes')).toBe(
       '/almacen/movimientos/historial?tipo=ajustes',
     );
+    expect(laDireccionDeAhora('/almacen/movimientos/desviacion')).toBe(
+      '/almacen/movimientos/consumo',
+    );
     expect(laDireccionDeAhora('/almacen/movimientos/historial')).toBeNull();
     expect(laDireccionDeAhora('/almacen/movimientos/inventario')).toBeNull();
   });

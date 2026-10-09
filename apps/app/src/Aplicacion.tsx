@@ -284,8 +284,8 @@ function Puerta() {
             <Route path="inventario/*" element={<ALaDireccionDeAhora />} />
             {/* Las mermas eran una vista de Movimientos: ahora, destino propio (26-sep). */}
             <Route path="almacen/movimientos/mermas" element={<ALaDireccionDeAhora />} />
-            {/* Las cinco pestañas del libro son ahora Historial, con su filtro (9-oct). */}
-            {['todo', 'entradas', 'salidas', 'ventas', 'ajustes'].map((viejo) => (
+            {/* Las cinco pestañas del libro son ahora Historial, con su filtro, y «Desviación» es «Consumo» (9-oct). */}
+            {['todo', 'entradas', 'salidas', 'ventas', 'ajustes', 'desviacion'].map((viejo) => (
               <Route
                 key={viejo}
                 path={`almacen/movimientos/${viejo}`}

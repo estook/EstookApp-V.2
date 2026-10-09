@@ -18,7 +18,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## Lo que te toca ahora · el repaso del 9-oct
 
-Lo que viste tras la segunda entrega, arreglado ([decisión 0080](decisiones/0080-el-repaso-del-9-oct.md)). **Sin migración.** Sí hay que **desplegar la API**: el arreglo de las flechas del informe y el del food cost viven en el servidor.
+Lo que viste tras la segunda entrega, arreglado, y **la A de la desviación** ([decisión 0080](decisiones/0080-el-repaso-del-9-oct.md)). **Sin migración.** Sí hay que **desplegar la API**: el arreglo de las flechas del informe y el del food cost viven en el servidor.
 
 ### 1 · Fusionar
 
@@ -47,10 +47,10 @@ git pull
 La web se publica sola al fusionar, en unos minutos. En la app (**Ctrl + F5**; en el móvil, ciérrala y ábrela):
 
 1. **Compras → Pedidos → nuevo pedido**, elige Estrella de Galicia: cada producto en **una línea** (nombre, precio y cantidad) con una **«i»** pequeña a la derecha. Tócala: sale la cuenta («Para unos 5 días a 0,29 l al día…»).
-2. **Almacén → Movimientos**: arriba, solo **Historial · Inventario · Desviación**. En Historial, la fila **Todo · Entradas · Salidas · Ventas · Ajustes** filtra la lista.
+2. **Almacén → Movimientos**: arriba, solo **Historial · Inventario · Consumo**. En Historial, la fila **Todo · Entradas · Salidas · Ventas · Ajustes** filtra la lista.
 3. **Negocio → Informes → Día**: «Anterior» va **un día** atrás y «Siguiente», un día adelante.
 4. **El chat en el iPhone**: abre una conversación y toca la caja de escribir. Tiene que quedarse **justo encima del teclado**, con la cabecera arriba y los últimos mensajes pegados a la caja. **Esto solo se puede probar en tu iPhone**: si no queda así, una captura.
-5. **Desviación → Food cost real → Un mes → octubre**: en vez de «−27,96 € en género» sale **«No cuadra: queda más de lo que había y entró»**, con «Ver el historial».
+5. **Consumo → Food cost real → Un mes → octubre**: solo el food cost real y lo gastado de verdad, sin la lista de «¿Es …?» de la caja. Y en vez de «−27,96 € en género» sale **«No cuadra: queda más de lo que había y entró»**, con «Ver el historial».
 
 Si algo no sale como aquí, hazle una captura y me la pasas.
 

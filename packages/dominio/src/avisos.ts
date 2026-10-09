@@ -103,6 +103,11 @@ export interface ComoEsElAviso {
    * campana serían lo mismo dos veces. Se enciende en Ajustes para tenerlo por correo.
    */
   readonly campanaDeFabrica?: boolean;
+  /**
+   * Guardado: existe y funciona, pero **no sale en Ajustes** porque hoy no puede saltar.
+   * «Lo que todavía no existe no se enseña» (0045). Vuelve a salir quitándolo.
+   */
+  readonly enEspera?: true;
 }
 
 export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
@@ -352,8 +357,13 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
   //
   // Al cerrar un inventario, solo si lo que falta sin explicar pasa del 3 % de lo
   // gastado (0078, «lo que decido yo» 9). Lo de menos se ve en la desviación.
+  //
+  // **En espera desde el 9-oct** (0080, Richi eligió la A): solo salta con lo emparejado
+  // con la caja, y emparejar no se enseña hasta que la caja traiga las ventas sola
+  // (Estook TPV). Un interruptor que no puede encender nada no va en Ajustes.
   'inventario.falta': {
     nombre: 'Al cerrar un inventario falta género',
+    enEspera: true,
     explica: 'Solo si lo que falta sin explicar pasa del 3 % de lo gastado.',
     grupo: 'Almacén',
     deTuEquipo: false,

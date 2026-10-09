@@ -460,7 +460,7 @@ describe('el aviso al cerrar un inventario', () => {
       expect.objectContaining({
         titulo: 'Al cerrar el inventario faltan 6,00 €',
         detalle: 'Un 40 % de lo gastado: Coca-Cola 33 cl. Mira la desviación.',
-        ir: '/almacen/movimientos/desviacion',
+        ir: '/almacen/movimientos/consumo',
       }),
     ]);
   });

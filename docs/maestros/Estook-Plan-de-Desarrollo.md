@@ -279,7 +279,7 @@ Y sus vistas, donde las hay:
 | Destino                 | Sus vistas                                                          |
 | ----------------------- | ------------------------------------------------------------------- |
 | Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
-| Almacén · Movimientos   | Historial · Inventario · Desviación                                 |
+| Almacén · Movimientos   | Historial · Inventario · Consumo                                    |
 | Almacén · Compras       | Pedidos · Albaranes · Facturas · Proveedores · Precios              |
 | Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                                   |
 | Carta · Carta           | Por secciones · Todos los platos · Agotados                         |
@@ -564,7 +564,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Se entrega en dos veces** (0078). La primera: contar en dos pasos, «toca contar», la hoja impresa, el valor del almacén en cualquier fecha, FEFO y el mínimo calculado. La segunda: lo gastado de verdad, el food cost real, la desviación de lo que se vende tal cual con su causa, y la foto de la merma.
 
-**Terminado cuando.** Con dos inventarios, lo gastado y el food cost real cuadran con una cuenta a mano; una bebida que sale de la cámara más de lo que vende la caja sale en la desviación con su causa; un albarán que entra entre que se cuenta y se cierra no se pierde; y un lote que se gasta deja de avisar sin tocarlo.
+**En la pantalla, desde el 9-oct, solo lo que no da trabajo de más** ([decisión 0080](../decisiones/0080-el-repaso-del-9-oct.md), Richi eligió la A): la vista se llama **Consumo** y lleva el food cost real y lo gastado de verdad. La desviación de lo que se vende tal cual y emparejar la caja **siguen en el servidor y no se enseñan** hasta que la caja traiga las ventas sola, con Estook TPV: pedían emparejar a mano cada línea de la caja, también lo que va en varios platos.
+
+**Terminado cuando.** Con dos inventarios, lo gastado y el food cost real cuadran con una cuenta a mano; una bebida que sale de la cámara más de lo que vende la caja sale en la desviación con su causa (probado en el servidor); un albarán que entra entre que se cuenta y se cierra no se pierde; y un lote que se gasta deja de avisar sin tocarlo.
 
 ### M9 · Escandallos
 
@@ -572,7 +574,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y su capa inteligente.** El bloque **«qué ha cambiado y por qué»**: cuánto ha subido el coste desde una fecha, qué ingrediente lo ha movido, a cuántos platos afecta una subida y cuál es el impacto máximo en puntos de margen.
 
-**Y lo que le pasó M8** ([decisión 0078](../decisiones/0078-las-respuestas-de-m8.md)): **la desviación de los platos** —lo que se debía gastar según lo vendido y sus fichas, frente a lo gastado de verdad—, **la calibración** con estado «aprendiendo» hasta el tercer inventario, y **el food cost teórico** junto al real, con su brecha. En la pantalla de desviación que dejó M8.
+**Y lo que le pasó M8** ([decisión 0078](../decisiones/0078-las-respuestas-de-m8.md)): **la desviación de los platos** —lo que se debía gastar según lo vendido y sus fichas, frente a lo gastado de verdad—, **la calibración** con estado «aprendiendo» hasta el tercer inventario, y **el food cost teórico** junto al real, con su brecha. En la pantalla de Consumo que dejó M8.
 
 **Reglas críticas.** Escandallo por unidad de venta. Margen sobre base sin impuestos. **La ficha es dato estructurado, no texto.** Un plato sin ficha nunca bloquea nada. Los importes **no viajan al cliente** de un rol sin permiso de costes.
 

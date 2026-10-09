@@ -277,7 +277,9 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // cinco pestañas y una sola pantalla, el libro con otro filtro. Richi: «son
         // demasiadas, rallan y abruman». Ahora el tipo es un filtro dentro de Historial,
         // y aquí quedan tres cosas distintas.
-        vistas: vistas('Historial', 'Inventario', 'Desviación'),
+        // Y **Consumo** desde el 9-oct, que era «Desviación» (Richi eligió la A, 0080):
+        // el food cost real y lo gastado de verdad. Emparejar la caja, hasta Estook TPV.
+        vistas: vistas('Historial', 'Inventario', 'Consumo'),
       },
       {
         id: 'compras',

@@ -14,6 +14,10 @@
 export function laDireccionDeAhora(ruta: string): string | null {
   // Las mermas, de vista de Movimientos a destino propio de Almacén (26-sep).
   if (/^\/(?:almacen|inventario)\/movimientos\/mermas\/?$/.test(ruta)) return '/almacen/mermas';
+  // «Desviación» es «Consumo» desde el 9-oct (0080).
+  if (/^\/(?:almacen|inventario)\/movimientos\/desviacion\/?$/.test(ruta)) {
+    return '/almacen/movimientos/consumo';
+  }
   // Todo, Entradas, Salidas, Ventas y Ajustes, de cinco pestañas a una, Historial,
   // con el tipo de filtro (9-oct).
   const delLibro =

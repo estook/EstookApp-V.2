@@ -1,13 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { APP, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
-import { abrirSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 
 /**
  * M8, la segunda entrega (decisión 0079), desde la pantalla.
  *
- *   · Movimientos → Desviación: el food cost real, lo gastado de verdad entre dos
- *     inventarios y, de lo que se vende tal cual, lo que falta con su causa
- *   · emparejar una línea de la caja con su producto, desde la propia pantalla
+ *   · Movimientos → Consumo («Desviación» hasta el 9-oct, 0080): el food cost real y lo
+ *     gastado de verdad entre dos inventarios; y emparejar la caja ya no se enseña
  *   · la merma con su foto, que la camarera hace con el móvil, y que se ve en la lista
  *
  * Las cuentas —lo gastado y el food cost frente a una cuenta a mano, las ventanas de
@@ -41,7 +40,7 @@ async function unaFoto(page: Page): Promise<Buffer> {
   return Buffer.from(base64, 'base64');
 }
 
-test('la desviación: lo gastado de verdad, el food cost y emparejar la caja', async ({
+test('el consumo: el food cost real y lo gastado de verdad, sin emparejar la caja', async ({
   page,
 }, info) => {
   test.setTimeout(120_000);
@@ -80,7 +79,9 @@ test('la desviación: lo gastado de verdad, el food cost y emparejar la caja', a
   });
 
   await entrarEnLaApp(page, ROSA);
+  // La dirección de antes lleva a la de ahora.
   await irA(page, 'almacen/movimientos/desviacion');
+  await expect(page).toHaveURL(/movimientos\/consumo/);
 
   // El food cost real, con su porqué plegado.
   await expect(page.getByRole('heading', { name: 'Food cost real' })).toBeVisible();
@@ -91,24 +92,17 @@ test('la desviación: lo gastado de verdad, el food cost y emparejar la caja', a
   await expect(tabla.getByText(producto).first()).toBeVisible();
   await expect(tabla.getByText('10 ud').first()).toBeVisible();
 
-  // En la caja sin decir qué es: se propone el producto, y se empareja en dos toques.
-  await page.getByRole('button', { name: `¿Es ${producto}?` }).click();
-  const hoja = page.getByRole('dialog', { name: `«${producto}» de la caja` });
-  await expect(hoja).toBeVisible();
-  await hoja.getByRole('button', { name: 'Es este producto' }).click();
-  await expect(hoja).toBeHidden();
-
-  // Ya se vende tal cual: faltan 8 (10 gastadas, 2 rotas apuntadas), con su causa.
-  const suya = page
-    .getByRole('listitem')
-    .filter({ hasText: producto })
-    .filter({ hasText: 'Faltan' });
-  await expect(suya.getByText('Faltan 8 ud · 4,80 €')).toBeVisible();
-  await suya.getByText('Salidas sin apuntar').click();
-  await expect(
-    suya.getByText(/comida del personal, invitaciones o roturas sin apuntar/),
-  ).toBeVisible();
-  await expect(suya.getByRole('button', { name: 'Mirar las mermas' })).toBeVisible();
+  // Emparejar la caja no se enseña (Richi eligió la A): ni la lista ni lo tal cual. Y aun
+  // emparejado por la API —que se guarda vivo para Estook TPV—, la pantalla no lo enseña.
+  await ejecutarEnLaApi(page.request, rosa, 'emparejar_concepto', {
+    concepto: producto,
+    producto_id: productoId,
+    por_venta: 1,
+  });
+  await recargarSinQueSeCaiga(page);
+  await expect(page.getByRole('heading', { name: 'Food cost real' })).toBeVisible();
+  await expect(page.getByText('Lo que se vende tal cual')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: `¿Es ${producto}?` })).toHaveCount(0);
 });
 
 test('la merma con su foto: la hace la camarera, y se ve en la lista', async ({

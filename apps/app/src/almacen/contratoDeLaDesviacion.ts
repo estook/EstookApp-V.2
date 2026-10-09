@@ -84,16 +84,6 @@ export interface ElFoodCostReal {
   readonly soloSusZonas: boolean;
 }
 
-/** Dónde se comprueba cada causa: «con el enlace a comprobarlo» (hallazgo 4). */
-export const DONDE_SE_MIRA: Readonly<Record<Causa, string>> = {
-  unidad_de_conteo: '/almacen/movimientos/inventario',
-  faltan_dias_de_caja: '/servicio/jornada/cierre',
-  otro_nombre_en_la_caja: '#por-emparejar',
-  recepcion: '/almacen/compras/albaranes',
-  entrada_sin_apuntar: '/almacen/compras/albaranes',
-  sin_apuntar: '/almacen/mermas',
-};
-
 /** «1 oct», de un instante o de una fecha operativa. */
 export function diaCorto(cuando: string): string {
   const fecha = cuando.length === 10 ? new Date(`${cuando}T12:00:00Z`) : new Date(cuando);

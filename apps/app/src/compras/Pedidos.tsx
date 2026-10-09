@@ -311,7 +311,7 @@ export function Pedidos() {
             </div>
           )}
 
-          {datos?.puedeVerPrecios === true && (
+          {datos?.puedeVerPrecios === true && datos.pedidos.length > 0 && (
             <p className="text-etiqueta text-texto-tenue">
               Importes sin impuestos, a lo pactado o a lo último que te cobró. Con * hay productos
               sin precio que no suman.

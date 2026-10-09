@@ -87,7 +87,13 @@ export interface ComoEsElAviso {
    * quien lo quiera.
    */
   readonly deTuEquipo: boolean;
-  /** Si sale también por correo sin que nadie lo toque. Casi nunca (0017, regla 1). */
+  /**
+   * Si sale también por correo sin que nadie lo toque. **Casi nunca** (0017, regla 1),
+   * y desde el 9-oct, solo dos (decisión 0081): «avisos por correo de fábrica
+   * apagados, solo al móvil; si no, petamos el buzón, y Resend cobra por correo».
+   * Quedan **Tu mes**, que es uno al mes, y **te corrigen un fichaje**, que es tu
+   * registro horario y pasa poco. Cada uno enciende en Ajustes los que quiera.
+   */
   readonly correoDeFabrica: boolean;
   /**
    * Si suena en el móvil sin que nadie lo toque (I · 0070). **Solo lo que pide hacer
@@ -129,10 +135,10 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
   },
   'pedido.invitacion': {
     nombre: 'Te piden que rellenes un pedido',
-    explica: 'Suele ser con prisa: te llega al momento, al móvil y al correo.',
+    explica: 'Suele ser con prisa: te llega al momento, al móvil.',
     grupo: 'Compras',
     deTuEquipo: false,
-    correoDeFabrica: true,
+    correoDeFabrica: false,
     movilDeFabrica: true,
   },
   'pedido.listo': {
@@ -215,7 +221,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     explica: 'Los lunes, la semana de lunes a domingo frente a la anterior.',
     grupo: 'Negocio',
     deTuEquipo: false,
-    correoDeFabrica: true,
+    correoDeFabrica: false,
     movilDeFabrica: false,
   },
   'informe.mes': {
@@ -251,14 +257,15 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
   // ── H2 (decisión 0069) ──────────────────────────────────────────────────
   //
   // «Al publicar, a cada uno su aviso, en la campana y por correo. Al cambiar,
-  // solo al afectado, y dice qué» (0066). Por correo de fábrica los dos: el horario
-  // se mira para organizarse la semana, y no todo el mundo abre la app a diario.
+  // solo al afectado, y dice qué» (0066). Al móvil los dos; **por correo ya no de
+  // fábrica** (0081): un correo por persona cada semana era lo que más llenaba el
+  // buzón. Quien no tiene el móvil puesto lo ve en la campana y en «Mi turno».
   'horario.publicado': {
     nombre: 'Sale tu horario de la semana',
     explica: 'Lo tuyo, día a día. El de todos está en el horario de la app.',
     grupo: 'Equipo',
     deTuEquipo: false,
-    correoDeFabrica: true,
+    correoDeFabrica: false,
     movilDeFabrica: true,
   },
   'horario.cambiado': {
@@ -266,7 +273,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     explica: 'Solo si te toca a ti, y dice qué día y cómo queda.',
     grupo: 'Equipo',
     deTuEquipo: false,
-    correoDeFabrica: true,
+    correoDeFabrica: false,
     movilDeFabrica: true,
   },
 
@@ -276,7 +283,7 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
   // momento o no sirven («entras en cinco minutos» a las once de la noche, no).
   'turno.entras': {
     nombre: 'Entras en cinco minutos',
-    explica: 'Antes de cada turno, si no has fichado. Mira el horario publicado o el de siempre.',
+    explica: 'Antes de cada turno publicado, si no has fichado.',
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: false,
@@ -312,14 +319,14 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
   // ── C2 (decisión 0075) ──────────────────────────────────────────────────
   //
   // Lo oficial del chat: quien lo pidió quiere saber que te has enterado. Una vez, al
-  // empezar tu siguiente turno. Por correo de fábrica, que solo sale si no te suena
-  // el móvil (0017): así se entera también quien no tiene el móvil puesto.
+  // empezar tu siguiente turno, en la campana y al móvil. Por correo ya no de fábrica
+  // (0081): lo enciende quien lo quiera.
   'chat.confirmar': {
     nombre: 'Te falta confirmar algo del chat',
     explica: 'Una vez, al empezar tu siguiente turno, si todavía no lo has confirmado.',
     grupo: 'Equipo',
     deTuEquipo: false,
-    correoDeFabrica: true,
+    correoDeFabrica: false,
     movilDeFabrica: true,
   },
 

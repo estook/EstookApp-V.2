@@ -403,7 +403,7 @@ test('quien lleva el local ve quién está dentro y las horas; un cocinero no ll
 
 const UNA_VEZ = 'Habla con la API a pelo: basta con correrla en un proyecto.';
 
-test('el sueldo y el horario los pone quien lleva a esa persona, y nadie más', async ({
+test('el sueldo lo pone quien lleva a esa persona, y nadie más; el horario, solo en Horarios', async ({
   request,
 }, info) => {
   test.skip(info.project.name !== 'escritorio', UNA_VEZ);
@@ -421,21 +421,21 @@ test('el sueldo y el horario los pone quien lleva a esa persona, y nadie más', 
   });
   expect(sueldo.estado).toBe(200);
 
-  // La semana de siempre, de lunes a viernes. Es de donde saldrán los avisos de
-  // «mañana entras a las nueve» y el cuadrante de Fogón.
+  // El horario de siempre de la ficha se fue el 9-oct (0081): el horario es el de
+  // Horarios. El comando ya no existe, y la ficha no trae ninguno.
   const horario = await ejecutar(request, rosa, 'poner_horario_habitual', {
     persona_id: marcosId,
-    tramos: [1, 2, 3, 4, 5].map((dia) => ({ dia, entra: '09:00', sale: '17:00' })),
+    tramos: [],
   });
-  expect(horario.estado).toBe(200);
+  expect(horario.estado).not.toBe(200);
 
-  const ficha = await consultar<{ horario: unknown[]; retribucion?: unknown }>(
+  const ficha = await consultar<{ horario?: unknown[]; retribucion?: unknown }>(
     request,
     rosa,
     'una_persona',
     { persona_id: marcosId },
   );
-  expect(ficha.datos?.horario).toHaveLength(5);
+  expect(ficha.datos?.horario).toBeUndefined();
   expect(JSON.stringify(ficha.datos?.retribucion)).toContain('por_hora');
 
   // Él no se pone el sueldo.
@@ -451,14 +451,10 @@ test('el sueldo y el horario los pone quien lleva a esa persona, y nadie más', 
 
   // Su ficha sí la ve, **y lo que cobra él también**: es suyo. Lo de los demás
   // es lo que no le llega.
-  const suya = await consultar<{ horario: unknown[]; retribucion?: unknown }>(
-    request,
-    marcos,
-    'una_persona',
-    { persona_id: marcosId },
-  );
+  const suya = await consultar<{ retribucion?: unknown }>(request, marcos, 'una_persona', {
+    persona_id: marcosId,
+  });
   expect(suya.estado).toBe(200);
-  expect(suya.datos?.horario).toHaveLength(5);
   expect(JSON.stringify(suya.datos?.retribucion)).toContain('por_hora');
 
   // Y la ficha de Rosa, no: un cocinero no lleva a nadie más que a sí mismo.

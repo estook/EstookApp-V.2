@@ -9,7 +9,7 @@ import { APP, ejecutarEnLaApi, entrarEnLaApp, tokenDe } from './en-la-app.ts';
  *   · En Productos, un código de un producto abre su ficha; uno nuevo abre el alta
  *     con él puesto y el nombre que propone Open Food Facts.
  *   · Los lectores de mano escriben como un teclado, y se reconocen solos.
- *   · Contando el inventario, cada lectura suma uno.
+ *   · Contando el inventario, cada lectura pregunta cuántos hay (repaso del 9-oct).
  *   · Recibiendo un pedido, cada lectura marca su línea.
  *   · Sin cámara o sin permiso, el código se escribe a mano.
  *
@@ -119,12 +119,15 @@ test('sin cámara, el lector deja escribir el código a mano', async ({ page }) 
   await expect(page.getByRole('dialog', { name: nombre })).toBeVisible();
 });
 
-test('contando el inventario, cada lectura suma uno y deja el cursor en su casilla', async ({
+test('contando el inventario, cada lectura pregunta cuántos hay, y se suma o se sustituye', async ({
   page,
 }) => {
   const codigo = unCodigo();
   const nombre = `Agua del lector ${codigo.slice(-5)}`;
   const { productoId } = await unProductoConCodigo(page, nombre, codigo);
+  const otro = unCodigo();
+  const otroNombre = `Zumo del lector ${otro.slice(-5)}`;
+  const { productoId: otroId } = await unProductoConCodigo(page, otroNombre, otro);
 
   await entrarEnLaApp(page, ROSA);
   await abrirSinQueSeCaiga(page, `${APP}#/almacen/movimientos/inventario`);
@@ -133,12 +136,41 @@ test('contando el inventario, cada lectura suma uno y deja el cursor en su casil
   await page.getByRole('button', { name: 'Contar una zona' }).click();
   await expect(page.getByRole('button', { name: 'Escanear' })).toBeVisible();
 
+  // Repaso del 9-oct: escanear ya no suma uno; pregunta cuántos hay.
   await leerConUnLector(page, codigo);
+  const pregunta = page.getByRole('form', { name: `Cuántos hay de ${nombre}` });
+  await expect(pregunta).toBeVisible();
+  await pregunta.getByLabel('¿Cuántos hay?').fill('240');
+  await pregunta.getByRole('button', { name: /^Guardar/ }).click();
   const casilla = page.locator(`#contado-${productoId}-hay`);
-  await expect(casilla).toHaveValue('1');
+  await expect(casilla).toHaveValue('240');
+
+  // Lo mismo en otra estantería: se suma a lo que llevaba.
   await leerConUnLector(page, codigo);
-  await expect(casilla).toHaveValue('2');
-  await expect(page.getByText(`${nombre} · 2 ud`)).toBeVisible();
+  await expect(pregunta.getByText('Llevabas 240 ud')).toBeVisible();
+  await pregunta.getByLabel('¿Cuántos hay?').fill('10');
+  await pregunta.getByRole('button', { name: 'Guardar · 250 ud' }).click();
+  await expect(casilla).toHaveValue('250');
+
+  // Y si se recuenta, se sustituye.
+  await leerConUnLector(page, codigo);
+  await pregunta.getByRole('radio', { name: 'Sustituir' }).click();
+  await pregunta.getByLabel('¿Cuántos hay?').fill('248');
+  await pregunta.getByRole('button', { name: 'Guardar · 248 ud' }).click();
+  await expect(casilla).toHaveValue('248');
+  await expect(page.getByText(`${nombre} · 248 ud`)).toBeVisible();
+
+  // Un lector de mano escribe donde está el cursor: el código de otro producto en la
+  // casilla no es una cantidad, es la siguiente lectura.
+  await leerConUnLector(page, codigo);
+  await pregunta.getByLabel('¿Cuántos hay?').fill(otro);
+  await pregunta.getByLabel('¿Cuántos hay?').press('Enter');
+  const laOtra = page.getByRole('form', { name: `Cuántos hay de ${otroNombre}` });
+  await expect(laOtra).toBeVisible();
+  await laOtra.getByLabel('¿Cuántos hay?').fill('6');
+  await laOtra.getByLabel('¿Cuántos hay?').press('Enter');
+  await expect(page.locator(`#contado-${otroId}-hay`)).toHaveValue('6');
+  await expect(casilla).toHaveValue('248');
 });
 
 test('recibiendo un pedido, cada lectura marca su línea', async ({ page }, info) => {

@@ -50,6 +50,8 @@ export const INDICADORES = [
   'horas-equipo',
   'coste-personal',
   'retrasos',
+  // ── El repaso del 9-oct (0081) ────────────────────────────────────────────
+  'incidencias',
 ] as const;
 
 export type Indicador = (typeof INDICADORES)[number];
@@ -239,14 +241,32 @@ export const COMO_ES_EL_INDICADOR: Readonly<Record<Indicador, ComoEsElIndicador>
   },
   retrasos: {
     nombre: 'Retrasos',
-    queEnsena: 'Las entradas que llegan tarde frente al horario de siempre',
+    queEnsena: 'Las entradas que llegan tarde frente al horario publicado',
     unidad: 'cuenta',
     sentido: 'baja_es_bueno',
-    deDonde: 'Fichajes frente al horario de siempre de cada uno',
+    // Desde el 9-oct, solo el publicado en Horarios, y sin los justificados (0081).
+    deDonde: 'Fichajes frente al horario publicado',
     periodo: 'suma',
     grafica: 'barras',
     // Un día en el que nadie tenía que entrar no tiene retrasos «cero»: no se
     // sabe. Si no, un equipo sin horarios puestos saldría perfecto.
+    sinDatoEsCero: false,
+  },
+  /**
+   * «Si un trabajador no ficha y no está justificado, no hay sitio donde lo muestre»
+   * (Richi, 9-oct · 0081). Las faltas sin justificar y los fichajes por revisar; los
+   * retrasos tienen su cifra al lado, y contarlos aquí sería decirlo dos veces.
+   */
+  incidencias: {
+    nombre: 'Incidencias',
+    queEnsena: 'Faltas sin justificar y fichajes que hay que revisar',
+    unidad: 'cuenta',
+    sentido: 'baja_es_bueno',
+    deDonde: 'Horario publicado y fichajes de quien llevas',
+    periodo: 'suma',
+    grafica: 'barras',
+    // Como los retrasos: un día sin nadie con turno ni fichajes no es un día «sin
+    // incidencias», es un día sin nada que mirar.
     sinDatoEsCero: false,
   },
 };
@@ -266,7 +286,8 @@ export type AppConCifras = 'almacen' | 'servicio' | 'equipo';
 export const LAS_CIFRAS_DE: Readonly<Record<AppConCifras, readonly Indicador[]>> = {
   almacen: ['valor-camara', 'merma', 'compras', 'bajo-minimo'],
   servicio: ['ventas', 'ticket-medio', 'food-cost', 'cierres'],
-  equipo: ['horas-equipo', 'coste-personal', 'retrasos'],
+  // «Horas del equipo, coste de personal, retrasos y la nueva, incidencias» (9-oct).
+  equipo: ['horas-equipo', 'coste-personal', 'retrasos', 'incidencias'],
 };
 
 export function esIndicador(valor: unknown): valor is Indicador {

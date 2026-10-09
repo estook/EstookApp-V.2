@@ -153,23 +153,32 @@ test('Servicio enseña sus cifras debajo del cierre del día', async ({ page }) 
   await expect(fila.getByRole('button', { name: /a detalle/ })).toHaveCount(0);
 });
 
-test('Equipo enseña horas, coste y retrasos, y lleva a Fichajes', async ({ page }) => {
+test('Equipo enseña horas, coste, retrasos e incidencias, y cada una lleva a su detalle', async ({
+  page,
+}) => {
   await entrar(page, ROSA);
   await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen`);
 
   const fila = lasCifrasDe(page, 'equipo');
   await expect(fila.getByRole('heading', { name: 'Cómo va' })).toBeVisible({ timeout: 15_000 });
-  for (const cifra of ['horas-equipo', 'coste-personal', 'retrasos']) {
+  for (const cifra of ['horas-equipo', 'coste-personal', 'retrasos', 'incidencias']) {
     await expect(fila.locator(`[data-cifra="${cifra}"]`), cifra).toBeVisible();
   }
 
+  // Los retrasos, uno a uno, en Incidencias (repaso del 9-oct, 0081): antes llevaban
+  // a Fichajes, donde solo se veía cuántos.
   await fila.getByRole('button', { name: 'Ver retrasos a detalle' }).click();
+  await expect(page).toHaveURL(/#\/equipo\/incidencias\/retrasos/);
+  await expect(page.getByRole('tab', { name: 'Retrasos', selected: true })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  // Y las horas, persona a persona, en Fichajes.
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen`);
+  await lasCifrasDe(page, 'equipo')
+    .getByRole('button', { name: 'Ver horas del equipo a detalle' })
+    .click();
   await expect(page).toHaveURL(/#\/equipo\/fichajes/);
-  // Fichajes cuenta los retrasos persona a persona. La tabla se pinta dos
-  // veces, una por ancho: se busca la que se ve (regla 68).
-  await expect(
-    page.getByText('Retrasos', { exact: true }).filter({ visible: true }).first(),
-  ).toBeVisible({ timeout: 15_000 });
 });
 
 test('cuándo es llegar tarde lo cambia quien lleva el local', async ({ page }, info) => {

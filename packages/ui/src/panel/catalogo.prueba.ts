@@ -54,6 +54,16 @@ describe('los indicadores, como widgets (0039)', () => {
     expect(widget?.tamanos).toEqual(['ancho', 'chico', 'grande']);
   });
 
+  it('lo que solo se cuenta no se hace grande: no dice más (repaso del 9-oct)', () => {
+    expect(widgetPorId('indicador-retrasos-7')?.tamanos).toEqual(['ancho', 'chico']);
+    expect(widgetPorId('indicador-bajo-minimo-30')?.tamanos).toEqual(['ancho', 'chico']);
+    expect(widgetPorId('indicador-cierres-7')?.tamanos).toEqual(['ancho', 'chico']);
+    // Y el que ya estaba puesto en grande se pinta en el primero que admite.
+    expect(
+      loQueSePuedePintar([{ id: 'indicador-retrasos-7', tamano: 'grande' }], () => true),
+    ).toEqual([{ id: 'indicador-retrasos-7', tamano: 'ancho' }]);
+  });
+
   it('el food cost pide ver las ventas **y** los costes', () => {
     const soloVentas = (permiso: Permiso) => permiso === 'dato.ventas';
     expect(

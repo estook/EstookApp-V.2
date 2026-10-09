@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { Aviso, Boton, Campo, Hoja } from '@estook/ui';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Aviso, Boton, Campo, Hoja, clases } from '@estook/ui';
 import { crearDetector } from './detector.ts';
 import { limpiarElCodigo } from './codigos.ts';
 
@@ -8,7 +8,7 @@ import { limpiarElCodigo } from './codigos.ts';
  *
  * Una hoja con la cámara de atrás a todo el ancho y un recuadro donde poner el
  * código. Lee sola —no hay que pulsar nada— y **quien lo usa decide qué pasa**:
- * abrir el producto, darlo de alta, sumar uno al inventario o marcar la línea del
+ * abrir el producto, darlo de alta, preguntar cuántos hay en el inventario o marcar la línea del
  * albarán. Con `seguido`, sigue abierta después de cada lectura, que es como se
  * cuenta una estantería.
  *
@@ -24,12 +24,23 @@ export interface EscanerProps {
   readonly seguido?: boolean;
   /** Lo último que ha pasado, dicho debajo de la cámara: «Leche entera · 3». */
   readonly ultimo?: string | null;
+  /**
+   * Lo que se pregunta tras leer (el inventario: «¿cuántos hay?»). Mientras está, la
+   * cámara **no lee** y se esconde, sin apagarse: al guardar sigue al momento, sin
+   * volver a pedir la cámara.
+   */
+  readonly pregunta?: ReactNode;
 }
 
 /** Cada cuánto se mira la imagen: cuatro veces por segundo lee de sobra y no calienta el móvil. */
 const CADA_MS = 250;
 /** El mismo código seguido no cuenta dos veces si llega antes de esto. */
 const MISMO_CODIGO_MS = 1500;
+/**
+ * Tras contestar la pregunta, el mismo código espera más: la caja que se acaba de
+ * contar sigue delante de la cámara, y no es otra lectura.
+ */
+const MISMO_CODIGO_TRAS_PREGUNTAR_MS = 3000;
 
 type ComoVa = 'abriendo' | 'leyendo' | 'sin-camara' | 'sin-permiso';
 
@@ -39,12 +50,19 @@ export function Escaner({
   alCerrar,
   seguido = false,
   ultimo = null,
+  pregunta,
 }: EscanerProps) {
   const video = useRef<HTMLVideoElement>(null);
   const [como, setComo] = useState<ComoVa>('abriendo');
   const [escrito, setEscrito] = useState('');
   const alLeerAhora = useRef(alLeer);
   alLeerAhora.current = alLeer;
+  const preguntando = pregunta !== undefined && pregunta !== null;
+  const pausada = useRef(preguntando);
+  // Al dejar de preguntar, cuándo fue: el mismo código espera un poco más.
+  const reanudadaEn = useRef(0);
+  if (pausada.current && !preguntando) reanudadaEn.current = Date.now();
+  pausada.current = preguntando;
 
   useEffect(() => {
     // Se lee con una función: leído a pelo, TypeScript lo daría por verdadero dentro
@@ -89,10 +107,21 @@ export function Escaner({
 
       const mirar = async () => {
         if (!sigueVivo() || video.current === null) return;
+        if (pausada.current) {
+          if (sigueVivo()) reloj = window.setTimeout(() => void mirar(), CADA_MS);
+          return;
+        }
         const codigo = await detector.leer(video.current).catch(() => null);
         const limpio = codigo === null ? null : limpiarElCodigo(codigo);
         const ahora = Date.now();
-        if (limpio !== null && (limpio !== ultimoCodigo || ahora - ultimaVez > MISMO_CODIGO_MS)) {
+        const espera =
+          ahora - reanudadaEn.current < MISMO_CODIGO_TRAS_PREGUNTAR_MS
+            ? MISMO_CODIGO_TRAS_PREGUNTAR_MS
+            : MISMO_CODIGO_MS;
+        if (
+          limpio !== null &&
+          (limpio !== ultimoCodigo || ahora - Math.max(ultimaVez, reanudadaEn.current) > espera)
+        ) {
           ultimoCodigo = limpio;
           ultimaVez = ahora;
           alLeerAhora.current(limpio);
@@ -116,8 +145,16 @@ export function Escaner({
   return (
     <Hoja abierta alCerrar={alCerrar} titulo={titulo}>
       <div className="flex flex-col gap-e3">
+        {pregunta}
         {(como === 'abriendo' || como === 'leyendo') && (
-          <div className="relative overflow-hidden rounded-grande bg-charcoal">
+          <div
+            className={clases(
+              'relative overflow-hidden rounded-grande bg-charcoal',
+              // Fuera de la vista y no quitada: quitarla, o esconderla del todo, la pararía en
+              // el iPhone, y al volver habría que pedir otra vez la cámara.
+              preguntando && 'sr-only',
+            )}
+          >
             <video
               ref={video}
               muted
@@ -149,7 +186,7 @@ export function Escaner({
           </Aviso>
         )}
 
-        {ultimo !== null && (
+        {ultimo !== null && !preguntando && (
           <p
             aria-live="polite"
             className="rounded-medio bg-fondo px-e3 py-e2 text-cuerpo font-medium"
@@ -159,7 +196,7 @@ export function Escaner({
         )}
 
         <form
-          className="flex items-end gap-e2"
+          className={clases('flex items-end gap-e2', preguntando && 'hidden')}
           onSubmit={(e) => {
             e.preventDefault();
             if (aMano === null) return;

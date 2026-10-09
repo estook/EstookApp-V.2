@@ -263,16 +263,16 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 > **Y por qué vista se entra a un destino: por la primera que esté construida.** No por la primera de la tabla. Las vistas se escriben aquí **en el orden en el que se entienden** —«En marcha · Caja · Cierre» es el orden de un día—, y ese orden casi nunca coincide con el orden en el que se construyen. Entrar por la primera de la lista dejaría la pantalla que de verdad funciona escondida detrás de un cartel de «todavía no», que es la pestaña muerta de arriba un piso más abajo. Una vista pendiente **sí se enseña** en el control segmentado, con su módulo: ahí no le quita el sitio a nada y contesta «¿y la caja, dónde está?» antes de que nadie la busque. Si ninguna está construida, se entra por la primera, porque la dirección tiene que seguir siendo copiable.
 
-| App         | Sus destinos                                         |
-| ----------- | ---------------------------------------------------- |
-| Almacén     | Resumen · Productos · Movimientos · Compras · Mermas |
-| Escandallos | Resumen · Fichas · Elaboraciones · Análisis          |
-| Carta       | Carta · Menús · Análisis                             |
-| Calendario  | Calendario · Tareas · Turnos                         |
-| Equipo      | Resumen · Personas · Horarios · Fichajes             |
-| Servicio    | Jornada · Ventas · Delivery · APPCC                  |
-| Negocio     | Ventas · Informes · Pulse · Costes · Reseñas         |
-| Cuaderno    | Incidencias · Notas · Equipos                        |
+| App         | Sus destinos                                           |
+| ----------- | ------------------------------------------------------ |
+| Almacén     | Resumen · Productos · Movimientos · Compras · Mermas   |
+| Escandallos | Resumen · Fichas · Elaboraciones · Análisis            |
+| Carta       | Carta · Menús · Análisis                               |
+| Calendario  | Calendario · Tareas · Turnos                           |
+| Equipo      | Resumen · Personas · Horarios · Fichajes · Incidencias |
+| Servicio    | Jornada · Ventas · Delivery · APPCC                    |
+| Negocio     | Ventas · Informes · Pulse · Costes · Reseñas           |
+| Cuaderno    | Incidencias · Notas · Equipos                          |
 
 Y sus vistas, donde las hay:
 
@@ -287,10 +287,13 @@ Y sus vistas, donde las hay:
 | Calendario · Calendario | Mes · Semana · Día                                                  |
 | Calendario · Tareas     | Pendientes · Periódicas · Hechas                                    |
 | Equipo · Personas       | Con acceso · Sin entrar todavía · Retirados                         |
+| Equipo · Incidencias    | Todas · Faltas · Retrasos · Fichajes                                |
 | Servicio · Jornada      | En marcha · Caja · Cierre                                           |
 | Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas             |
 | Negocio · Informes      | Día · Semana · Mes                                                  |
 | Cuaderno · Incidencias  | Abiertas · Cerradas                                                 |
+
+En **Equipo · Incidencias** (repaso del 9-oct, [0081](../decisiones/0081-un-solo-horario-y-las-incidencias.md)) está lo que hay que mirar del registro horario: quién no vino a su turno publicado, quién llegó tarde y los fichajes raros, con lo que se puede hacer con cada uno.
 
 En **Historial**, lo que entra, sale, se vende o se ajusta es un filtro de la misma lista y no una vista: hasta el 9-oct eran cinco pestañas y una sola pantalla (Richi: «son demasiadas y abruman»).
 
@@ -643,7 +646,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Regla crítica.** **Nunca se publica automáticamente.** La propuesta nace en borrador.
 
-**La base ya está desde M6½**: el horario de siempre de cada persona y sus horas fichadas frente a su contrato, en Equipo › Resumen. Es lo primero que tiene que leer el generador de horarios.
+**La base ya está**: las horas fichadas de cada persona frente a su contrato, en Equipo › Fichajes, y **el horario publicado** de cada semana (H2), que desde el 9-oct es **el único** ([0081](../decisiones/0081-un-solo-horario-y-las-incidencias.md)): el «horario de siempre» de la ficha dejó de contar, y sus filas esperan aquí a que se decida qué hacer con ellas. Y **Equipo › Incidencias**, con las faltas y los retrasos frente a lo publicado y su justificación. Es lo primero que tiene que leer el generador de horarios.
 
 **Y lo que pinta ya lo publican otros** ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)): desde M7, las entregas y las caducidades están en la tabla de eventos. M14 **pinta**, no va a buscar: añade los turnos, **los avisos de quien lleva el local con los roles que los ven** —filtrados por la base, no por la pantalla—, las capas con el color de su app y sus filtros, y «solo lo mío». Todo lo necesario, y nada de más.
 
@@ -865,7 +868,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Entra.** Ajustes completos, incluido Organización, la conexión del TPV e **Integraciones** · apps con interruptores y el aviso de qué pasa al apagar cada una · motor de notificaciones con tres niveles, agrupación, acción y archivo de 90 días · push con tokens por dispositivo y escalado por otro canal si no se entrega · correo con el logo del local · WhatsApp para lo que sale fuera · **regla de no duplicar canal**.
 
-**Los avisos del horario, que M6½ deja preparados.** «Mañana entras a las 9» la víspera y «entras en 5 minutos: ficha ya» al llegar, por push. Salen del horario de siempre de cada persona (M6½) y, cuando exista, del cuadrante publicado (M14). Hoy el widget de Fichar ya lo dice al abrir el Panel; lo que falta es mandarlo sin que nadie abra la app.
+**Los avisos del horario, que M6½ deja preparados.** «Mañana entras a las 9» la víspera y «entras en 5 minutos: ficha ya» al llegar, por push. Salen del horario publicado en Horarios (H2; el único desde la [0081](../decisiones/0081-un-solo-horario-y-las-incidencias.md)). Hoy el widget de Fichar ya lo dice al abrir el Panel; lo que falta es mandarlo sin que nadie abra la app.
 
 ## Fase 6 · Negocio y producción
 

@@ -228,6 +228,7 @@ export const LO_QUE_PIDE_EL_INDICADOR: Readonly<Record<Indicador, readonly Permi
   'horas-equipo': ['app.equipo'],
   'coste-personal': ['app.equipo', 'dato.coste_de_personal'],
   retrasos: ['app.equipo'],
+  incidencias: ['app.equipo'],
 };
 
 /**

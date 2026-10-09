@@ -275,6 +275,20 @@ test('el registro para la Inspección, las pausas en Ajustes y el informe en PDF
       share: () => Promise.resolve(),
     });
   });
+  // Con algo que contar: sin datos el PDF ya no se ofrece (auditoría del 9-oct). Una
+  // caja de hace siete días cae siempre en la semana pasada; si ya estaba, da igual.
+  const rosa = await tokenDe(page.request, ROSA);
+  await page.request.post(`${API}/v1/comandos/cerrar_la_caja`, {
+    headers: {
+      authorization: `Bearer ${rosa}`,
+      'x-idempotencia': `pdf-${String(Date.now())}-${String(Math.random())}`,
+    },
+    data: {
+      fecha: new Date(Date.now() - 7 * 86_400_000).toISOString().slice(0, 10),
+      total_centimos: 80_000,
+      tickets: 20,
+    },
+  });
   await abrirSinQueSeCaiga(page, `${APP}#/negocio/informes/semana`);
   const llega = page.waitForResponse((r) => r.url().includes('/consultas/mi_informe_en_pdf'));
   // **Se descarga de verdad**, también donde se sabe compartir (30-sep): antes, en

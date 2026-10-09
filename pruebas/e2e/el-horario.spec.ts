@@ -7,8 +7,8 @@ import { API, APP, ejecutarEnLaApi, entrarEnLaApp, tokenDe } from './en-la-app.t
  *
  *   1 · La gerente monta un tramo a Sara, pone otro y lo quita, publica, y lo ve
  *       como lo ve el equipo; Sara lo tiene en la campana, y sale en PDF.
- *   2 · Para no empezar de cero: copiar la semana anterior y rellenar con el
- *       horario de siempre, que pregunta antes de pisar lo que hay.
+ *   2 · Para no empezar de cero: copiar la semana anterior, que pregunta antes de
+ *       pisar lo que hay. (Rellenar con el horario de siempre se fue el 9-oct: 0081.)
  *
  * **Cada vuelta usa una semana suya**, lejos en el futuro: los navegadores corren a
  * la vez contra la misma base, y una semana compartida haría que uno publicara lo
@@ -143,7 +143,7 @@ test('se monta, se publica, lo ve el equipo y sale en PDF', async ({ page }, inf
   expect((await baja).suggestedFilename()).toBe(`horario-${lunes}.pdf`);
 });
 
-test('para no empezar de cero: copiar la semana anterior y el horario de siempre', async ({
+test('para no empezar de cero: copiar la semana anterior, y preguntar antes de pisar', async ({
   page,
 }, info) => {
   test.slow();
@@ -154,8 +154,7 @@ test('para no empezar de cero: copiar la semana anterior y el horario de siempre
   const marcosId = (await consultar<{ personaId: string }>(page.request, marcos, 'quien_soy', {}))
     .personaId;
 
-  // La semana de antes, con algo; y el horario de siempre de Marcos, el mismo que
-  // pone `el-dia-a-dia.spec.ts`, para no cambiarle nada a nadie.
+  // La semana de antes, con algo.
   await ejecutarEnLaApi(page.request, rosa, 'poner_tramo', {
     lunes: antes,
     persona_id: marcosId,
@@ -163,10 +162,6 @@ test('para no empezar de cero: copiar la semana anterior y el horario de siempre
     tipo: 'trabajo',
     entra: '10:00',
     sale: '14:00',
-  });
-  await ejecutarEnLaApi(page.request, rosa, 'poner_horario_habitual', {
-    persona_id: marcosId,
-    tramos: [1, 2, 3, 4, 5].map((dia) => ({ dia, entra: '09:00', sale: '17:00' })),
   });
 
   await entrarEnLaApp(page, ROSA);
@@ -176,12 +171,14 @@ test('para no empezar de cero: copiar la semana anterior y el horario de siempre
   await page.getByRole('button', { name: 'Copiar la semana anterior' }).click();
   await expect(page.getByText('1 tramo puesto. Revísalos antes de publicar.')).toBeVisible();
 
-  // Ya tiene algo: rellenar pregunta antes de pisarlo.
-  await page.getByRole('button', { name: 'Rellenar con el de siempre' }).click();
-  const pregunta = page.getByRole('dialog', { name: 'Rellenar con el de siempre' });
+  // Ya tiene algo: copiar otra vez pregunta antes de pisarlo.
+  await page.getByRole('button', { name: 'Copiar la semana anterior' }).click();
+  const pregunta = page.getByRole('dialog', { name: 'Copiar la semana anterior' });
   await expect(pregunta).toContainText('ya tiene cosas puestas');
   await pregunta.getByRole('button', { name: 'Cambiarlas' }).click();
-  await expect(page.getByText(/\d+ tramos puestos\. Revísalos antes de publicar\./)).toBeVisible();
+  await expect(page.getByText('1 tramo puesto. Revísalos antes de publicar.')).toBeVisible();
+  // Y ya no hay «Rellenar con el de siempre»: el horario es el de aquí (0081).
+  await expect(page.getByRole('button', { name: 'Rellenar con el de siempre' })).toHaveCount(0);
 
   const borrador = await consultar<{ turnos: { personaId: string; entra: string }[] }>(
     page.request,
@@ -190,6 +187,6 @@ test('para no empezar de cero: copiar la semana anterior y el horario de siempre
     { lunes },
   );
   const deMarcos = borrador.turnos.filter((t) => t.personaId === marcosId);
-  expect(deMarcos).toHaveLength(5);
-  expect(new Set(deMarcos.map((t) => t.entra))).toEqual(new Set(['09:00']));
+  expect(deMarcos).toHaveLength(1);
+  expect(deMarcos[0]?.entra).toBe('10:00');
 });

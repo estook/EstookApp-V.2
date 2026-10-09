@@ -20,11 +20,13 @@ export const DONDE_SE_MIRA: Readonly<Record<Indicador, string | null>> = {
   'valor-camara': '/almacen/productos',
   'bajo-minimo': '/almacen/productos/bajo-minimo',
   cierres: '/servicio/jornada/cierre',
-  // Las tres de Equipo se miran persona a persona en el Resumen, que es donde
-  // están sus horas, su coste y sus retrasos contados igual.
+  // Las horas y el coste se miran persona a persona en el Resumen. Los retrasos y
+  // las incidencias, una a una en Incidencias (repaso del 9-oct, 0081): «al pulsarlo
+  // te abre la pestaña de esa info».
   'horas-equipo': '/equipo/fichajes',
   'coste-personal': '/equipo/fichajes',
-  retrasos: '/equipo/fichajes',
+  retrasos: '/equipo/incidencias/retrasos',
+  incidencias: '/equipo/incidencias',
 };
 
 /**

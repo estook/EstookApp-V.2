@@ -285,61 +285,6 @@ export const copiarLaSemanaAnterior = comando<EntradaDeRelleno, { puestos: numbe
   },
 });
 
-/**
- * «Rellenar con el horario de siempre» (h-horarios, punto 3): el horario habitual
- * de cada uno (0027), el vigente cada día. Quien no tiene ninguno se queda en blanco.
- */
-export const rellenarConElDeSiempre = comando<EntradaDeRelleno, { puestos: number }>({
-  nombre: 'rellenar_con_el_de_siempre',
-  entrada: entradaDeRelleno,
-  exige: 'accion.publicar_cuadrante',
-
-  async ejecutar(contexto, entrada) {
-    if (!contexto.personaId) throw new FalloDeAplicacion('sin_sesion');
-    const localId = elLocalDelHorario(contexto);
-    const organizacionId = laOrganizacionDeLaSesion(contexto);
-    const lunes = fechaOperativa(entrada.lunes);
-    const equipo = (await elEquipoDelHorario(contexto, localId)).map((p) => p.personaId);
-
-    const deSiempre = await contexto.sql<
-      { persona_id: string; dia: string; entra: string; sale: string }[]
-    >`
-      select hh.persona_id::text as persona_id, to_char(d::date, 'YYYY-MM-DD') as dia,
-             to_char(hh.entra, 'HH24:MI') as entra, to_char(hh.sale, 'HH24:MI') as sale
-        from generate_series(${lunes}::date, ${lunes}::date + 6, interval '1 day') d
-        join estook.horario_habitual hh
-          on hh.local_id = ${localId}::uuid
-         and hh.dia_de_la_semana = extract(isodow from d)::int
-         and hh.desde <= d::date
-         and (hh.hasta is null or hh.hasta >= d::date)
-       where hh.persona_id = any (${comoLista(equipo)}::text::uuid[])
-         and hh.entra <> hh.sale
-       order by d, hh.entra
-    `;
-    if (deSiempre.length === 0) {
-      throw new FalloDeAplicacion('faltan_datos', {
-        porque:
-          'Nadie del equipo tiene puesto su horario de siempre. Se pone en la ficha de cada persona.',
-      });
-    }
-
-    const semanaId = await laSemanaParaMontar(contexto, localId, organizacionId, lunes);
-    await vaciarSiSePuede(contexto, semanaId, entrada.reemplazar === true);
-
-    for (const h of deSiempre) {
-      await contexto.sql`
-        insert into estook.turno (semana_id, local_id, persona_id, dia, tipo, entra, sale, creado_por)
-        values (
-          ${semanaId}::uuid, ${localId}, ${h.persona_id}, ${h.dia}::date, 'trabajo',
-          ${h.entra}::time, ${h.sale}::time, ${contexto.personaId}
-        )
-      `;
-    }
-    await apuntarQueCambia(contexto, semanaId);
-    return { puestos: deSiempre.length };
-  },
-});
-
 // ── Publicar ─────────────────────────────────────────────────────────────────
 
 export interface Publicado {

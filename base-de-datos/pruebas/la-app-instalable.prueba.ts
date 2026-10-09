@@ -602,9 +602,18 @@ describe('los avisos al móvil', () => {
         direccion: 'https://fcm.googleapis.com/fcm/send/el-de-marcos',
       }),
     );
+    // El tramo publicado en Horarios: desde el 9-oct es el único horario (0081).
     await comoDuena(
-      `insert into estook.horario_habitual (local_id, persona_id, dia_de_la_semana, entra, sale, desde)
-       values ($1, $2, 2, '12:00', '16:00', '2026-01-01')`,
+      `with s as (
+         insert into estook.semana_de_horario (organizacion_id, local_id, lunes, publicada_en, veces_publicada)
+         select l.organizacion_id, l.id, '2026-10-05', now(), 1 from estook.local l where l.id = $1
+         on conflict (local_id, lunes) do update
+            set publicada_en = coalesce(estook.semana_de_horario.publicada_en, now()),
+                veces_publicada = greatest(estook.semana_de_horario.veces_publicada, 1)
+         returning id
+       )
+       insert into estook.turno_publicado (semana_id, local_id, persona_id, dia, tipo, entra, sale)
+       select s.id, $1, $2, '2026-10-06', 'trabajo', '12:00', '16:00' from s`,
       [centro, marcosId],
     );
     // A las 11:30 de Madrid late el reloj de cada hora y lo apunta para las 11:55.

@@ -22,6 +22,7 @@ import {
   EstadoVacio,
   Etiqueta,
   FotoDeProducto,
+  Hoja,
   NadaConEso,
   Selector,
   Tarjeta,
@@ -36,6 +37,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
+import { CuantosHay } from './CuantosHay.tsx';
 import { conUnidadDeUso, type MisProductos, type ProductoEnLista } from './contrato.ts';
 import {
   imprimirLaHoja,
@@ -110,15 +112,16 @@ export function Recuento({
   });
 
   /**
-   * El lector (entrega L): «escanear suma uno; escanear y teclear, pone la cantidad».
-   * Con la cámara, cada lectura suma uno y dice cuántos van. Con un lector de mano,
-   * suma uno y deja el cursor en su casilla con el número marcado. En lo que se
-   * cuenta en cajas, lo leído son sueltas.
+   * El lector (entrega L, y el repaso del 9-oct): **escanear dice qué es, y pregunta
+   * cuántos hay** —en cajas y sueltas, en kilos o en unidades, lo que diga su ficha—.
+   * Antes cada lectura sumaba uno, y mil latas eran mil lecturas. Con la cámara, la
+   * pregunta sale encima y la cámara espera; con un lector de mano, en una hoja.
    */
   const [escaneando, setEscaneando] = useState(false);
   const [ultimo, setUltimo] = useState<string | null>(null);
+  const [preguntando, setPreguntando] = useState<ProductoEnLista | null>(null);
 
-  function sumarUno(codigo: string, conElCursor: boolean) {
+  function alEscanear(codigo: string) {
     const suyo = lista.data?.productos.find((p) => p.codigoDeBarras === codigo);
     if (suyo === undefined) {
       pitar(false);
@@ -126,26 +129,21 @@ export function Recuento({
       return;
     }
     pitar(true);
-    const campo = seCuentaEnCajas(suyo) ? 'sueltas' : 'hay';
-    const antes = numeroEscrito(contado[suyo.id]?.[campo]) ?? 0;
-    const van = antes + 1;
-    setContado((todo) => ({ ...todo, [suyo.id]: { ...todo[suyo.id], [campo]: String(van) } }));
-    setUltimo(`${suyo.nombre} · ${conUnidadDeUso(van, suyo.unidadDeUso)}`);
-    if (conElCursor) {
-      window.setTimeout(() => {
-        const casilla = document.getElementById(`contado-${suyo.id}-${campo}`);
-        if (casilla instanceof HTMLInputElement) {
-          casilla.scrollIntoView({ block: 'center' });
-          casilla.focus();
-          casilla.select();
-        }
-      }, 0);
-    }
+    setPreguntando(suyo);
   }
 
-  usarLectorDeMano((codigo) => {
-    sumarUno(codigo, true);
-  }, puedeContar && !escaneando);
+  function guardarLoEscaneado(producto: ProductoEnLista, escrito: LoEscrito) {
+    setContado((todo) => ({ ...todo, [producto.id]: escrito }));
+    const hay = cuantoHay(producto, escrito);
+    setUltimo(
+      hay === null
+        ? producto.nombre
+        : `${producto.nombre} · ${conUnidadDeUso(hay, producto.unidadDeUso)}`,
+    );
+    setPreguntando(null);
+  }
+
+  usarLectorDeMano(alEscanear, puedeContar && !escaneando && preguntando === null);
 
   if (!puedeContar) {
     return (
@@ -419,13 +417,50 @@ export function Recuento({
           titulo="Contar escaneando"
           seguido
           ultimo={ultimo}
-          alLeer={(codigo) => {
-            sumarUno(codigo, false);
-          }}
+          alLeer={alEscanear}
           alCerrar={() => {
             setEscaneando(false);
+            setPreguntando(null);
           }}
+          pregunta={
+            preguntando === null ? null : (
+              <CuantosHay
+                key={preguntando.id}
+                producto={preguntando}
+                llevabas={contado[preguntando.id]}
+                alGuardar={(escrito) => {
+                  guardarLoEscaneado(preguntando, escrito);
+                }}
+                alCancelar={() => {
+                  setPreguntando(null);
+                }}
+                alLeerOtro={alEscanear}
+              />
+            )
+          }
         />
+      )}
+      {!escaneando && preguntando !== null && (
+        <Hoja
+          abierta
+          titulo="Contar"
+          alCerrar={() => {
+            setPreguntando(null);
+          }}
+        >
+          <CuantosHay
+            key={preguntando.id}
+            producto={preguntando}
+            llevabas={contado[preguntando.id]}
+            alGuardar={(escrito) => {
+              guardarLoEscaneado(preguntando, escrito);
+            }}
+            alCancelar={() => {
+              setPreguntando(null);
+            }}
+            alLeerOtro={alEscanear}
+          />
+        </Hoja>
       )}
       {!escaneando && ultimo !== null && (
         <p aria-live="polite" className="text-secundario text-texto-suave">
@@ -514,94 +549,105 @@ export function Recuento({
         )}
       </Tarjeta>
 
-      {/* ── O se sube el fichero ───────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-e3 rounded-medio border border-borde bg-fondo p-e3">
-        <p className="min-w-0 flex-1 text-secundario text-texto-suave">
-          <strong className="text-texto">¿Lo tienes en un fichero?</strong> Dos columnas: el
-          producto y cuánto hay.
-        </p>
-        <label className="inline-flex min-h-toque cursor-pointer items-center rounded-medio border border-borde-fuerte bg-superficie px-e3 text-secundario font-medium hover:bg-fondo">
-          Subir el fichero
-          <input
-            type="file"
-            accept=".csv,.tsv,.txt,text/csv"
-            className="sr-only"
-            onChange={(e) => {
-              const fichero = e.currentTarget.files?.[0];
-              if (fichero !== undefined) leerElFichero(fichero, deLaLista);
-            }}
-          />
-        </label>
-      </div>
-
-      {/* ── Y lo que no se ha contado: solo quien cierra decide vaciarlo ── */}
-      {puedeCerrar && soloEstos === null && (
-        <Tarjeta titulo="Lo que no hayas contado">
-          <div
-            role="radiogroup"
-            aria-label="Lo que no hayas contado"
-            className="grid gap-e2 sm:grid-cols-2"
-          >
-            {QUE_HAGO_CON_LO_QUE_FALTA.map((cual) => {
-              const puesto = cual === loQueFalta;
-              return (
-                <button
-                  key={cual}
-                  type="button"
-                  role="radio"
-                  aria-checked={puesto}
-                  onClick={() => {
-                    setLoQueFalta(cual);
-                  }}
-                  className={clases(
-                    'flex min-h-toque flex-col items-start gap-e1 rounded-medio border px-e3 py-e2 text-left transition-colors duration-rapido',
-                    puesto
-                      ? 'border-naranja bg-naranja-suave'
-                      : 'border-borde-fuerte bg-superficie hover:bg-fondo',
-                  )}
-                >
-                  <span className="text-cuerpo font-medium">{NOMBRE_DE_LO_QUE_FALTA[cual]}</span>
-                  <span className="text-etiqueta text-texto-suave">
-                    {QUE_ES_LO_QUE_FALTA[cual]}
-                  </span>
-                </button>
-              );
-            })}
+      {/*
+        Sin nada que contar en esta zona, lo de abajo —el fichero, qué hacer con lo no
+        contado y el botón apagado— solo es ruido (auditoría del 9-oct).
+      */}
+      {deLaLista.length > 0 && (
+        <>
+          {/* ── O se sube el fichero ───────────────────────────────────────── */}
+          <div className="flex flex-wrap items-center gap-e3 rounded-medio border border-borde bg-fondo p-e3">
+            <p className="min-w-0 flex-1 text-secundario text-texto-suave">
+              <strong className="text-texto">¿Lo tienes en un fichero?</strong> Dos columnas: el
+              producto y cuánto hay.
+            </p>
+            <label className="inline-flex min-h-toque cursor-pointer items-center rounded-medio border border-borde-fuerte bg-superficie px-e3 text-secundario font-medium hover:bg-fondo">
+              Subir el fichero
+              <input
+                type="file"
+                accept=".csv,.tsv,.txt,text/csv"
+                className="sr-only"
+                onChange={(e) => {
+                  const fichero = e.currentTarget.files?.[0];
+                  if (fichero !== undefined) leerElFichero(fichero, deLaLista);
+                }}
+              />
+            </label>
           </div>
 
-          {seVaciarian > 0 && (
-            <Aviso tono="atencion" titulo={`Se van a poner a cero ${String(seVaciarian)}`}>
-              Son los productos {zona === '' ? '' : `de ${NOMBRE_DE_LA_ZONA[zona].toLowerCase()} `}
-              que tienen algo apuntado y que no has contado. Si solo has contado una parte, deja «
-              {NOMBRE_DE_LO_QUE_FALTA.dejarlo}».
-            </Aviso>
-          )}
-        </Tarjeta>
-      )}
+          {/* ── Y lo que no se ha contado: solo quien cierra decide vaciarlo ── */}
+          {puedeCerrar && soloEstos === null && (
+            <Tarjeta titulo="Lo que no hayas contado">
+              <div
+                role="radiogroup"
+                aria-label="Lo que no hayas contado"
+                className="grid gap-e2 sm:grid-cols-2"
+              >
+                {QUE_HAGO_CON_LO_QUE_FALTA.map((cual) => {
+                  const puesto = cual === loQueFalta;
+                  return (
+                    <button
+                      key={cual}
+                      type="button"
+                      role="radio"
+                      aria-checked={puesto}
+                      onClick={() => {
+                        setLoQueFalta(cual);
+                      }}
+                      className={clases(
+                        'flex min-h-toque flex-col items-start gap-e1 rounded-medio border px-e3 py-e2 text-left transition-colors duration-rapido',
+                        puesto
+                          ? 'border-naranja bg-naranja-suave'
+                          : 'border-borde-fuerte bg-superficie hover:bg-fondo',
+                      )}
+                    >
+                      <span className="text-cuerpo font-medium">
+                        {NOMBRE_DE_LO_QUE_FALTA[cual]}
+                      </span>
+                      <span className="text-etiqueta text-texto-suave">
+                        {QUE_ES_LO_QUE_FALTA[cual]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
 
-      <Botones>
-        <Boton
-          tono="principal"
-          disabled={lineas.length === 0 || guardando}
-          cargando={guardando}
-          textoCargando={puedeCerrar ? 'Cerrando' : 'Mandando'}
-          onClick={() => {
-            // Vaciar productos es de lo poco que no se deshace con un botón: se
-            // confirma enseñando cuántos.
-            if (seVaciarian > 0 && !confirmando) {
-              setConfirmando(true);
-              return;
-            }
-            void terminar();
-          }}
-        >
-          {!puedeCerrar
-            ? 'Mandar lo contado'
-            : confirmando
-              ? 'Sí, cerrar el inventario'
-              : 'Cerrar el inventario'}
-        </Boton>
-      </Botones>
+              {seVaciarian > 0 && (
+                <Aviso tono="atencion" titulo={`Se van a poner a cero ${String(seVaciarian)}`}>
+                  Son los productos{' '}
+                  {zona === '' ? '' : `de ${NOMBRE_DE_LA_ZONA[zona].toLowerCase()} `}
+                  que tienen algo apuntado y que no has contado. Si solo has contado una parte, deja
+                  «{NOMBRE_DE_LO_QUE_FALTA.dejarlo}».
+                </Aviso>
+              )}
+            </Tarjeta>
+          )}
+
+          <Botones>
+            <Boton
+              tono="principal"
+              disabled={lineas.length === 0 || guardando}
+              cargando={guardando}
+              textoCargando={puedeCerrar ? 'Cerrando' : 'Mandando'}
+              onClick={() => {
+                // Vaciar productos es de lo poco que no se deshace con un botón: se
+                // confirma enseñando cuántos.
+                if (seVaciarian > 0 && !confirmando) {
+                  setConfirmando(true);
+                  return;
+                }
+                void terminar();
+              }}
+            >
+              {!puedeCerrar
+                ? 'Mandar lo contado'
+                : confirmando
+                  ? 'Sí, cerrar el inventario'
+                  : 'Cerrar el inventario'}
+            </Boton>
+          </Botones>
+        </>
+      )}
     </div>
   );
 }

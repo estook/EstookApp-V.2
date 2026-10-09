@@ -84,7 +84,7 @@ jobs:
     services:
       restaurar:
         # La misma versión que la de Supabase (17). Solo vive lo que dura este trabajo.
-        image: postgres:17
+        image: public.ecr.aws/docker/library/postgres:17
         env:
           POSTGRES_PASSWORD: prueba
         ports:
@@ -105,7 +105,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p copia
-          docker run --rm postgres:17 \
+          docker run --rm public.ecr.aws/docker/library/postgres:17 \
             pg_dump "$URL_DE_LA_COPIA" --format=custom --no-owner --no-privileges \
               --schema=estook --schema=plataforma > copia/base.dump
           test -s copia/base.dump
@@ -116,13 +116,13 @@ jobs:
           set -euo pipefail
           # Lo que la copia no lleva y la base de Supabase ya tiene: la extensión del
           # buscador, que allí vive en `public`.
-          docker run --rm --network host -e PGPASSWORD=prueba postgres:17 \
+          docker run --rm --network host -e PGPASSWORD=prueba public.ecr.aws/docker/library/postgres:17 \
             psql -h localhost -p 5433 -U postgres -v ON_ERROR_STOP=1 \
               -c 'create extension if not exists pg_trgm with schema public'
-          docker run --rm --network host -e PGPASSWORD=prueba -v "$PWD/copia:/copia" postgres:17 \
+          docker run --rm --network host -e PGPASSWORD=prueba -v "$PWD/copia:/copia" public.ecr.aws/docker/library/postgres:17 \
             pg_restore -h localhost -p 5433 -U postgres -d postgres \
               --no-owner --no-privileges --exit-on-error /copia/base.dump
-          docker run --rm --network host -e PGPASSWORD=prueba postgres:17 \
+          docker run --rm --network host -e PGPASSWORD=prueba public.ecr.aws/docker/library/postgres:17 \
             psql -h localhost -p 5433 -U postgres -v ON_ERROR_STOP=1 -At -c "
               select 'migraciones aplicadas: ' || count(*) || ', la última la ' || max(numero)
                 from estook.migracion

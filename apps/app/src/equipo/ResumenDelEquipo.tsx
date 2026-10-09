@@ -11,8 +11,10 @@ import {
   Selector,
   Tabla,
   Tarjeta,
+  clases,
   type Columna,
 } from '@estook/ui';
+import { IconoFlechaDerecha } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { FichaDePersona } from './FichaDePersona.tsx';
 import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
@@ -88,8 +90,11 @@ export function ResumenDelEquipo() {
   const llegaronTarde = datos.filas.reduce((total, f) => total + (f.retrasos ?? 0), 0);
   // Sin nadie con horario, «ningún retraso» sería decir que todos llegan a su hora.
   const conHorario = datos.filas.some((f) => (f.retrasos ?? null) !== null);
-  const porRevisar = datos.filas.filter(
-    (f) => f.sinCerrar > 0 || f.fueraDelLocal > 0 || f.sinUbicacion > 0,
+  // Los fichajes que revisar, contados uno a uno (no las personas): es lo que sale en
+  // Incidencias → Fichajes, y las dos cifras tienen que coincidir (repaso del 9-oct).
+  const fichajesRaros = datos.filas.reduce(
+    (total, f) => total + f.sinCerrar + f.fueraDelLocal + f.sinUbicacion,
+    0,
   );
 
   const columnas: Columna<FilaDelResumen>[] = [
@@ -126,8 +131,8 @@ export function ResumenDelEquipo() {
     },
     { clave: 'turnos', titulo: 'Turnos', numerica: true, celda: (f) => String(f.turnos) },
     {
-      // Frente a su horario de siempre, con el margen del local (0040). Una raya
-      // sin horario puesto: sin hora de entrada no se llega ni tarde ni a tiempo.
+      // Frente al horario publicado, con el margen del local (0040, 0081). Una raya
+      // sin horario publicado: sin hora de entrada no se llega ni tarde ni a tiempo.
       clave: 'retrasos',
       titulo: 'Retrasos',
       numerica: true,
@@ -196,7 +201,7 @@ export function ResumenDelEquipo() {
             etiqueta="En total"
             valor={datos.minutosTotales}
             formato={(v) => comoSeLeenMinutos(v)}
-            origen={`Del ${datos.desde} al ${datos.hasta}`}
+            origen={`Del ${fechaCorta(datos.desde)} al ${fechaCorta(datos.hasta)}`}
           />
         </Tarjeta>
         {datos.puedeVerCostes && (
@@ -209,27 +214,65 @@ export function ResumenDelEquipo() {
             />
           </Tarjeta>
         )}
-        <Tarjeta titulo="Para mirar">
-          <p className="text-cuerpo">
-            {sePasan.length === 0
-              ? 'Nadie se pasa de su contrato.'
-              : `${sePasan.length} ${sePasan.length === 1 ? 'se pasa' : 'se pasan'} de su contrato.`}
-          </p>
-          <p className="text-secundario text-texto-suave">
-            {porRevisar.length === 0
-              ? 'Ningún fichaje raro.'
-              : `${porRevisar.length} con fichajes que revisar.`}
-          </p>
-          {/* Sin margen en la respuesta es la API de antes: no se dice nada. */}
-          {datos.margenDeRetraso !== undefined && (
-            <p className="text-secundario text-texto-suave">
-              {!conHorario
-                ? 'Sin horarios de siempre puestos: no hay retrasos que contar.'
-                : llegaronTarde === 0
-                  ? `Ningún retraso de más de ${datos.margenDeRetraso} min.`
-                  : `${llegaronTarde} ${llegaronTarde === 1 ? 'retraso' : 'retrasos'} de más de ${datos.margenDeRetraso} min.`}
-            </p>
-          )}
+        {/*
+          «Para mirar» · cada línea lleva a lo suyo (repaso del 9-oct, 2b): «aparecen 4
+          fichajes que revisar y 8 retrasos, pero no se puede acceder a esa info».
+          Ahora los fichajes y los retrasos abren Incidencias, filtrada; y quien se
+          pasa de su contrato está en la tabla de abajo, ordenada por horas.
+        */}
+        <Tarjeta titulo="Para mirar" pegado>
+          <ul className="flex flex-col divide-y divide-borde">
+            <LineaParaMirar
+              hay={sePasan.length > 0}
+              texto={
+                sePasan.length === 0
+                  ? 'Nadie se pasa de su contrato'
+                  : `${sePasan.length} ${sePasan.length === 1 ? 'se pasa' : 'se pasan'} de su contrato`
+              }
+              {...(sePasan.length === 1 && sePasan[0] !== undefined
+                ? {
+                    alPulsar: () => {
+                      persona.abrir(sePasan[0]?.personaId ?? '');
+                    },
+                  }
+                : {})}
+            />
+            <LineaParaMirar
+              hay={fichajesRaros > 0}
+              texto={
+                fichajesRaros === 0
+                  ? 'Ningún fichaje raro'
+                  : `${fichajesRaros} ${fichajesRaros === 1 ? 'fichaje que revisar' : 'fichajes que revisar'}`
+              }
+              {...(fichajesRaros > 0
+                ? {
+                    alPulsar: () => {
+                      navegar('/equipo/incidencias/fichajes');
+                    },
+                  }
+                : {})}
+            />
+            {/* Sin margen en la respuesta es la API de antes: no se dice nada. */}
+            {datos.margenDeRetraso !== undefined && (
+              <LineaParaMirar
+                hay={conHorario && llegaronTarde > 0}
+                texto={
+                  !conHorario
+                    ? 'Sin horario publicado: no hay retrasos que contar'
+                    : llegaronTarde === 0
+                      ? `Ningún retraso de más de ${datos.margenDeRetraso} min`
+                      : `${llegaronTarde} ${llegaronTarde === 1 ? 'retraso' : 'retrasos'} de más de ${datos.margenDeRetraso} min`
+                }
+                {...(conHorario && llegaronTarde > 0
+                  ? {
+                      alPulsar: () => {
+                        navegar('/equipo/incidencias/retrasos');
+                      },
+                    }
+                  : {})}
+              />
+            )}
+          </ul>
         </Tarjeta>
       </div>
 
@@ -350,9 +393,56 @@ function RegistroParaLaInspeccion() {
   );
 }
 
+/**
+ * Una línea de «Para mirar»: con algo que mirar, un botón que lleva a ello, con su
+ * flecha; sin nada, texto apagado. Un botón que no lleva a ningún sitio no se pinta.
+ */
+function LineaParaMirar({
+  hay,
+  texto,
+  alPulsar,
+}: {
+  readonly hay: boolean;
+  readonly texto: string;
+  readonly alPulsar?: () => void;
+}) {
+  if (alPulsar === undefined) {
+    return (
+      <li
+        className={clases(
+          'flex min-h-toque items-center px-e4 py-e2 text-secundario',
+          hay ? 'font-medium text-atencion' : 'text-texto-suave',
+        )}
+      >
+        {texto}
+      </li>
+    );
+  }
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={alPulsar}
+        className="flex min-h-toque w-full items-center justify-between gap-e2 px-e4 py-e2 text-left text-secundario font-medium text-atencion hover:bg-fondo"
+      >
+        {texto}
+        <IconoFlechaDerecha size={16} aria-hidden />
+      </button>
+    </li>
+  );
+}
+
 /** De más, en su sitio o de menos, con una hora de margen: nadie ficha al minuto. */
 function tonoFrenteAlContrato(minutos: number): 'atencion' | 'neutro' | 'bien' {
   if (minutos > 60) return 'atencion';
   if (minutos < -60) return 'neutro';
   return 'bien';
+}
+
+/** «10 sept»: la fecha del periodo, para leerla (auditoría del 9-oct; antes, «2026-09-10»). */
+function fechaCorta(fecha: string): string {
+  return new Date(`${fecha}T12:00:00Z`).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short',
+  });
 }

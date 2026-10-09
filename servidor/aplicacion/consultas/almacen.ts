@@ -833,6 +833,16 @@ export interface SalidaMisProductos {
   readonly ivaQuitadoEn: string | null;
   /** Dónde está a efectos fiscales: de ahí sale el IVA que se propone al dar de alta. */
   readonly territorio: string;
+  /**
+   * Cuántos hay en las vistas que se esconden vacías (repaso del 9-oct, punto 3): «Sin
+   * precio», «Congelados» y «Desactivados» no ocupan sitio arriba si no tienen nada.
+   * Con lo mismo que filtra cada vista, y en las zonas que ve quien mira.
+   */
+  readonly cuantosEnLasVistas: {
+    readonly sinPrecio: number;
+    readonly congelados: number;
+    readonly desactivados: number;
+  };
 }
 
 /**
@@ -990,6 +1000,31 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
        where p.local_id = ${localId}
     `;
 
+    // Lo que hay en las vistas que se esconden vacías. «Sin precio» es no tener
+    // ninguno vigente, que es lo que mira su filtro (precio_vigente) sin calcularlo.
+    const enLasVistas = await contexto.sql<
+      { sin_precio: number; congelados: number; desactivados: number }[]
+    >`
+      select count(*) filter (
+               where p.activo and not exists (
+                 select 1 from estook.precio_de_producto pp
+                  where pp.producto_id = p.id and pp.hasta is null
+               )
+             )::int as sin_precio,
+             count(*) filter (
+               where p.activo and exists (
+                 select 1 from estook.lote lo
+                  where lo.producto_id = p.id
+                    and lo.congelado_el is not null and lo.retirado_en is null
+               )
+             )::int as congelados,
+             count(*) filter (where not p.activo)::int as desactivados
+        from estook.producto p
+       where p.local_id = ${localId}
+         and (${entrada.incluir_ejemplos !== false} or not p.es_ejemplo)
+         and p.zona = any ((select estook.zonas_que_ve(${localId}::uuid))::estook.zona_del_producto[])
+    `;
+
     // El valor de la cámara **sin los ejemplos**: «no cuenta para nada: ni
     // avisos, ni análisis, ni salud de los datos, ni informes» (Manifiesto 8).
     const valor = conPrecios ? await elValorDeLaCamara(contexto, localId) : null;
@@ -1013,6 +1048,11 @@ export const misProductos = consulta<EntradaMisProductos, SalidaMisProductos>({
       preciosConIva: precios.conIva,
       ivaQuitadoEn: precios.ivaQuitadoEn,
       territorio: precios.territorio,
+      cuantosEnLasVistas: {
+        sinPrecio: enLasVistas[0]?.sin_precio ?? 0,
+        congelados: enLasVistas[0]?.congelados ?? 0,
+        desactivados: enLasVistas[0]?.desactivados ?? 0,
+      },
     };
   },
 });

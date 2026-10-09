@@ -288,6 +288,7 @@ const CON_SU_ARTICULO: Readonly<Record<Indicador, string>> = {
   'horas-equipo': 'las horas del equipo',
   'coste-personal': 'el coste de personal',
   retrasos: 'los retrasos',
+  incidencias: 'las incidencias',
 };
 
 /**

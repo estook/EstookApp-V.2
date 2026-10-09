@@ -45,23 +45,13 @@ describe('los avisos', () => {
     expect(deFabrica('precio.subida', 100).enLaApp).toBe(true);
   });
 
-  it('de fábrica, al correo la invitación a un pedido, los informes de la semana y del mes, un fichaje corregido y el horario', () => {
-    // La invitación suele ir con prisa; los informes, los eligió Richi (27-sep). El
-    // diario, no: un correo cada día acaba sin leerse. A quién le llegan lo decide
-    // aparte el permiso (`LO_QUE_PIDE_EL_AVISO`): los informes, a quien ve Negocio.
-    // Y el fichaje corregido (0068): es el registro horario de quien lo recibe, y
-    // puede no abrir la app en días. Y el horario, al publicarse y al cambiar (0066,
-    // 0069): se mira para organizarse la semana.
+  it('de fábrica, al correo solo Tu mes y un fichaje corregido (0081)', () => {
+    // Richi, 9-oct: «avisos por correo de fábrica apagados, solo al móvil; si no,
+    // petamos el buzón y Resend cobra». Quedan dos: Tu mes, uno al mes, y el fichaje
+    // corregido (0068), que es el registro horario de quien lo recibe y pasa poco.
+    // Lo demás llega a la campana y, lo que pide hacer algo ya, al móvil.
     const conCorreo = TIPOS_DE_AVISO.filter((tipo) => deFabrica(tipo, 70).porCorreo);
-    expect(conCorreo).toEqual([
-      'pedido.invitacion',
-      'informe.semana',
-      'informe.mes',
-      'fichaje.corregido',
-      'horario.publicado',
-      'horario.cambiado',
-      'chat.confirmar',
-    ]);
+    expect(conCorreo).toEqual(['informe.mes', 'fichaje.corregido']);
   });
 
   it('el aviso de un fichaje corregido dice quién, qué día y por qué, y que el de antes sigue', () => {

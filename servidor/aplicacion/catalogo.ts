@@ -98,15 +98,16 @@ import {
   ponerTramo,
   publicarElHorario,
   quitarTramo,
-  rellenarConElDeSiempre,
 } from './comandos/horario.ts';
 import {
   ponerDondeEstaElLocal,
   guardarLasPausas,
   guardarMargenDeRetraso,
-  ponerHorarioHabitual,
+  justificarIncidencia,
   ponerRetribucion,
+  quitarJustificacion,
 } from './comandos/equipo.ts';
+import { lasIncidenciasDelEquipo } from './consultas/incidencias.ts';
 import { cerrarLaCaja, elegirComoSeCierra } from './comandos/cierre.ts';
 import { ponerPrecio } from './comandos/precios.ts';
 import {
@@ -329,6 +330,9 @@ export const catalogo = {
     [resumenDelEquipo.nombre]: resumenDelEquipo,
     [unaPersona.nombre]: unaPersona,
     [fichajesDeUnaPersona.nombre]: fichajesDeUnaPersona,
+    // El repaso del 9-oct (0081): las faltas, los retrasos y los fichajes raros, cada
+    //        uno con lo que se puede hacer.
+    [lasIncidenciasDelEquipo.nombre]: lasIncidenciasDelEquipo,
     // M6½ · lo que entra. Sin esto Estook sabia lo que cuesta el genero y no
     //        lo que se factura, que es la mitad del negocio.
     [misCierres.nombre]: misCierres,
@@ -517,7 +521,9 @@ export const catalogo = {
     // La retribucion exige `dato.coste_de_personal`, no `app.equipo`: un jefe de
     // cocina lleva a su equipo y no ve lo que cobra.
     [ponerRetribucion.nombre]: ponerRetribucion,
-    [ponerHorarioHabitual.nombre]: ponerHorarioHabitual,
+    // El repaso del 9-oct (0081): el horario de siempre se fue; se justifica la falta.
+    [justificarIncidencia.nombre]: justificarIncidencia,
+    [quitarJustificacion.nombre]: quitarJustificacion,
     [ponerDondeEstaElLocal.nombre]: ponerDondeEstaElLocal,
     [guardarMargenDeRetraso.nombre]: guardarMargenDeRetraso,
     [elegirComoSeCierra.nombre]: elegirComoSeCierra,
@@ -662,7 +668,6 @@ export const catalogo = {
     [ponerTramo.nombre]: ponerTramo,
     [quitarTramo.nombre]: quitarTramo,
     [copiarLaSemanaAnterior.nombre]: copiarLaSemanaAnterior,
-    [rellenarConElDeSiempre.nombre]: rellenarConElDeSiempre,
     [publicarElHorario.nombre]: publicarElHorario,
 
     // ── I · La app instalable (0070) ───────────────────────────────────────

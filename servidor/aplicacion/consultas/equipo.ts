@@ -51,7 +51,7 @@ interface RelojDelLocal {
   readonly margenDeRetraso: number;
 }
 
-async function elReloj(contexto: Contexto, localId: string): Promise<RelojDelLocal> {
+export async function elReloj(contexto: Contexto, localId: string): Promise<RelojDelLocal> {
   const filas = await contexto.sql<
     {
       zona_horaria: string;
@@ -133,7 +133,10 @@ export interface MiFichaje {
   /** La hora del local, «HH:MM». La decide el servidor (regla 10). */
   readonly horaDelLocal: string;
   readonly diaDeLaSemana: number;
-  /** Mi horario de siempre, entero. Vacío si no tengo ninguno puesto. */
+  /**
+   * Mis tramos de esta semana, de lo publicado en Horarios. Vacío si la semana no
+   * está publicada: el horario de siempre ya no cuenta (0081).
+   */
   readonly horario: readonly TramoDelHorario[];
   /** Si el local tiene marcado dónde está: de eso depende poder decir «a X m». */
   readonly elLocalSabeDondeEsta: boolean;
@@ -201,22 +204,8 @@ export const miFichaje = consulta<Record<string, never>, MiFichaje>({
          and f.fecha_operativa <= ${reloj.jornada}::date
     `;
 
-    const horario = await contexto.sql<{ dia: number; entra: string; sale: string }[]>`
-      select dia_de_la_semana as dia,
-             to_char(entra, 'HH24:MI') as entra,
-             to_char(sale, 'HH24:MI') as sale
-        from estook.horario_habitual
-       where persona_id = ${contexto.personaId}
-         and local_id = ${localId}
-         and desde <= current_date
-         and (hasta is null or hasta >= current_date)
-       order by dia_de_la_semana, entra
-    `;
-
-    // **Cuando hay horario publicado, manda el horario** (H2 · 0069, h-horarios
-    // punto 8): «entras en cinco minutos» mira lo publicado de esta semana. Sin él,
-    // el de siempre, como hasta ahora. Un día libre en lo publicado es un día sin
-    // entrada, aunque el de siempre diga otra cosa.
+    // **El horario es el publicado** (0069, y desde el 9-oct, el único: 0081). Sin
+    // semana publicada no hay tramos, y «entras en cinco minutos» no sale.
     const publicada = await laSemanaPublicada(contexto, localId, lunes);
     const elHorario = publicada
       ? await contexto.sql<{ dia: number; entra: string; sale: string }[]>`
@@ -230,7 +219,7 @@ export const miFichaje = consulta<Record<string, never>, MiFichaje>({
              and tp.dia between ${lunes}::date and ${lunes}::date + 6
            order by tp.dia, tp.entra
         `
-      : horario;
+      : [];
 
     const abierto = abiertos[0];
 
@@ -306,7 +295,7 @@ export interface QuienEstaTrabajando {
   readonly ultimoAccesoEn: string | null;
   /** Si tiene sesión viva ahora mismo: eso es «en línea», y es otra cosa. */
   readonly enLinea: boolean;
-  /** Su horario de hoy, si tiene puesto uno. */
+  /** A qué hora entra hoy, de lo publicado en Horarios (0081). */
   readonly entraHoyALas: string | null;
   /** Si el turno lleva demasiado abierto: casi siempre es que se olvidó salir. */
   readonly turnoSospechoso: boolean;
@@ -344,12 +333,8 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
     if (!contexto.personaId) throw new FalloDeAplicacion('sin_sesion');
     const localId = elLocal(contexto);
     const reloj = await elReloj(contexto, localId);
-    // A qué hora entra hoy cada uno: lo publicado si la semana lo está (0069).
-    const publicada = await laSemanaPublicada(
-      contexto,
-      localId,
-      masDias(fechaOperativa(reloj.jornada), -(reloj.diaDeLaSemana - 1)),
-    );
+    // A qué hora entra hoy cada uno: lo publicado en Horarios (0069, 0081). En
+    // `turno_publicado` solo hay semanas publicadas: no hace falta preguntarlo.
 
     const filas = await contexto.sql<
       {
@@ -404,7 +389,7 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
              estook.visto_por_ultima_vez(e.id) as ultimo_acceso_en,
              -- Con la app abierta y a la vista, no «con una sesión sin cerrar» (0042).
              estook.esta_en_linea(e.id) as en_linea,
-             to_char(case when ${publicada} then hp.entra else ho.entra end, 'HH24:MI') as entra_hoy
+             to_char(hp.entra, 'HH24:MI') as entra_hoy
         from equipo e
         left join lateral (
           select f.entro_en, f.entro_metros,
@@ -423,17 +408,6 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
              and f.local_id = ${localId}
              and f.fecha_operativa = ${reloj.jornada}::date
         ) h on true
-        left join lateral (
-          select hh.entra
-            from estook.horario_habitual hh
-           where hh.persona_id = e.id
-             and hh.local_id = ${localId}
-             and hh.dia_de_la_semana = ${reloj.diaDeLaSemana}
-             and hh.desde <= current_date
-             and (hh.hasta is null or hh.hasta >= current_date)
-           order by hh.entra
-           limit 1
-        ) ho on true
         left join lateral (
           select tp.entra
             from estook.turno_publicado tp
@@ -658,7 +632,12 @@ export const resumenDelEquipo = consulta<EntradaResumenDelEquipo, SalidaResumenD
                    estook.segundos_trabajados(f, ${contexto.ahora.toISOString()}::timestamptz) / 60
                  ) as minutos,
                  count(*) as turnos,
-                 count(*) filter (where f.salio_en is null) as sin_cerrar,
+                 -- Sin cerrar es **olvidarse de salir**: abierto hace más de doce horas.
+                 -- Quien está trabajando ahora no es algo que revisar (repaso del 9-oct).
+                 count(*) filter (
+                   where f.salio_en is null
+                     and f.entro_en < ${contexto.ahora.toISOString()}::timestamptz - interval '12 hours'
+                 ) as sin_cerrar,
                  count(*) filter (where f.corregido_por is not null) as corregidos,
                  count(*) filter (
                    where f.entro_metros is not null and f.entro_metros > ${reloj.radio}
@@ -698,8 +677,7 @@ export const resumenDelEquipo = consulta<EntradaResumenDelEquipo, SalidaResumenD
     const retrasosDe = new Map<string, number>();
     for (const entrada of entradas) {
       const antes = retrasosDe.get(entrada.personaId) ?? 0;
-      const tarde = entrada.minutosTarde !== null && llegoTarde(entrada.minutosTarde, margen);
-      retrasosDe.set(entrada.personaId, antes + (tarde ? 1 : 0));
+      retrasosDe.set(entrada.personaId, antes + (esUnRetrasoQueCuenta(entrada, margen) ? 1 : 0));
     }
 
     let costeTotal = 0;
@@ -757,38 +735,71 @@ export const resumenDelEquipo = consulta<EntradaResumenDelEquipo, SalidaResumenD
 // equipo`—, y una prueba contra la base compara los totales
 // (`las-cifras-de-cada-app.prueba.ts`).
 
-/** Una entrada del horario de siempre que ya ha llegado su hora. */
+/** Un tramo de trabajo publicado en Horarios cuya hora de entrada ya ha pasado. */
 export interface EntradaDelHorario {
   readonly personaId: string;
   /** La jornada a la que pertenece. */
   readonly fecha: string;
+  /** Cuándo empieza y cuándo acaba el tramo, en ISO. */
+  readonly empieza: string;
+  readonly acaba: string;
+  /** El tramo como se publicó, «10:00» y «16:00», en el reloj del local. */
+  readonly entra: string;
+  readonly sale: string;
   /**
-   * Minutos enteros entre la hora de entrada y el fichaje más cercano a ella:
-   * positivo si tarde, negativo si antes. **Nulo si no se fichó** en las tres
-   * horas de alrededor, que no es un retraso: es una ausencia, y eso es de
-   * Horarios (entrega H), con el cuadrante.
+   * Minutos enteros entre la hora de entrada y el fichaje de esa entrada: positivo
+   * si tarde, negativo si antes. **Nulo si no fichó la entrada en el tramo** (ni en
+   * las tres horas de antes).
    */
   readonly minutosTarde: number | null;
+  /** «09:58»: a qué hora fichó esa entrada, en el reloj del local. */
+  readonly fichoA: string | null;
+  /**
+   * Si estuvo trabajando en algún momento del tramo: un fichaje que se cruza con él.
+   * Un tramo que ya acabó sin ninguno es **una falta** (0081).
+   */
+  readonly vino: boolean;
+  /** Si el tramo ya acabó: antes de eso, no haber fichado no es faltar todavía. */
+  readonly acabado: boolean;
+  /** Lo que haya dicho quien lleva al equipo: justificada, no cuenta. */
+  readonly faltaJustificada: Justificacion | null;
+  readonly retrasoJustificado: Justificacion | null;
+}
+
+/** Por qué no vino o llegó tarde, y quién lo dijo (0081). */
+export interface Justificacion {
+  readonly motivo: string;
+  readonly nota: string | null;
+  readonly puestaPor: string | null;
+  readonly puestaEn: string;
 }
 
 /**
- * Las entradas del horario de siempre de la gente que llevas, con cuándo fichó
- * cada uno, y el margen del local (0040).
+ * Las entradas del horario publicado de la gente que llevas, con cuándo fichó cada
+ * uno, y el margen del local (0040, 0069 y, desde el 9-oct, **solo lo publicado**:
+ * 0081).
  *
  * ── Cuál es la hora de entrada de un día ────────────────────────────────────
  *
- * La del `horario_habitual` de esa persona en este local, **vigente ese día** y
- * del día de la semana **de la jornada**, no del reloj: quien entra a las 00:30
- * de la noche del viernes al sábado, en un bar que corta a las 05:00, entra en la
- * jornada del viernes. Una hora de entrada anterior a la hora de corte es, por
- * eso, del día siguiente del calendario.
+ * La de cada tramo de trabajo publicado en Horarios. El día del tramo es el día en
+ * que empieza; si empieza antes de la hora de corte, es **de la jornada de antes**:
+ * quien entra a las 00:30 de la noche del viernes al sábado, en un bar que corta a
+ * las 05:00, entra en la jornada del viernes.
  *
  * ── Qué fichaje es el de esa entrada ────────────────────────────────────────
  *
- * **El más cercano** a esa hora, en las tres horas de antes o de después. Así
- * una jornada partida —entra a las 12:00 y a las 20:00— casa cada entrada con su
- * fichaje, y volver del descanso a las 16:30 no cuenta como llegar cuatro horas y
- * media tarde a las 12:00.
+ * **El más cercano** a esa hora, desde tres horas antes hasta que acaba el tramo.
+ * Así una jornada partida —entra a las 12:00 y a las 20:00— casa cada entrada con
+ * su fichaje, y volver del descanso a las 16:30 no cuenta como llegar cuatro horas y
+ * media tarde a las 12:00. Y quien llega a las 14:00 a un tramo de 10:00 a 18:00
+ * llega **cuatro horas tarde**: antes, con una ventana de tres horas, no contaba ni
+ * como retraso ni como nada.
+ *
+ * ── Cuándo es una falta ─────────────────────────────────────────────────────
+ *
+ * Un tramo **que ya ha acabado** y en el que no hay ningún fichaje que se cruce con
+ * él. Basta con haber estado dentro un rato: quien fichó a las 9:00 de un turno que
+ * empezaba a las 12:00 y siguió no ha faltado al de las 12:00.
  *
  * Solo las entradas **cuya hora ya ha pasado**: a las 8:00 no se sabe si quien
  * entra a las 9:00 llegará tarde.
@@ -798,6 +809,7 @@ export async function lasEntradasDelHorario(
   localId: string,
   desde: string,
   hasta: string,
+  soloDe: string | null = null,
 ): Promise<{ readonly margen: number; readonly entradas: readonly EntradaDelHorario[] }> {
   const locales = await contexto.sql<{ margen: number }[]>`
     select margen_de_retraso_minutos as margen from estook.local where id = ${localId}
@@ -805,8 +817,28 @@ export async function lasEntradasDelHorario(
   const local = locales[0];
   if (!local) throw new FalloDeAplicacion('local_ajeno');
 
+  const ahora = contexto.ahora.toISOString();
   const filas = await contexto.sql<
-    { persona_id: string; fecha: string; minutos_tarde: number | null }[]
+    {
+      persona_id: string;
+      fecha: string;
+      empieza: string;
+      acaba: string;
+      entra: string;
+      sale: string;
+      minutos_tarde: number | null;
+      ficho_a: string | null;
+      vino: boolean;
+      acabado: boolean;
+      falta_motivo: string | null;
+      falta_nota: string | null;
+      falta_por: string | null;
+      falta_en: string | null;
+      retraso_motivo: string | null;
+      retraso_nota: string | null;
+      retraso_por: string | null;
+      retraso_en: string | null;
+    }[]
   >`
     with equipo as (
       -- La misma gente que el Resumen: con acceso a este local, activa y que llevas.
@@ -824,43 +856,24 @@ export async function lasEntradasDelHorario(
          and p.activa
          and (m.revocada_en is null or m.revocada_en > now())
          and p.id in (select q.persona_id from estook.a_quien_lleva(${localId}::uuid) q)
+         and (${soloDe}::uuid is null or p.id = ${soloDe}::uuid)
        order by p.id, r.amplitud desc
     ),
-    dias as (
-      select d::date as fecha
-        from generate_series(${desde}::date, ${hasta}::date, interval '1 day') d
-    ),
-    -- Los días de semanas con horario publicado: ahí manda lo publicado (0069).
     publicadas as (
       select s.lunes
         from estook.semana_de_horario s
        where s.local_id = ${localId}::uuid and s.publicada_en is not null
-         and s.lunes >= ${desde}::date - 7 and s.lunes <= ${hasta}::date
+         and s.lunes >= ${desde}::date - 7 and s.lunes <= ${hasta}::date + 1
     ),
     entradas as (
-      select e.id as persona_id, dd.fecha,
-             (
-               (case when hh.entra >= l.hora_de_corte then dd.fecha else dd.fecha + 1 end)
-               + hh.entra
-             ) at time zone l.zona_horaria as instante
-        from equipo e
-        join estook.local l on l.id = ${localId}::uuid
-        join dias dd on true
-        join estook.horario_habitual hh
-          on hh.persona_id = e.id
-         and hh.local_id = l.id
-         and hh.dia_de_la_semana = extract(isodow from dd.fecha)::int
-         and hh.desde <= dd.fecha
-         and (hh.hasta is null or hh.hasta >= dd.fecha)
-       where not exists (
-         select 1 from publicadas pu where dd.fecha between pu.lunes and pu.lunes + 6
-       )
-      union all
-      -- Lo publicado: el día del tramo es el día en que empieza. Si empieza antes de
-      -- la hora de corte, es de la jornada de antes, como en el de siempre.
-      select e.id as persona_id,
+      select e.id as persona_id, l.zona_horaria,
              (case when tp.entra >= l.hora_de_corte then tp.dia else tp.dia - 1 end) as fecha,
-             (tp.dia + tp.entra) at time zone l.zona_horaria as instante
+             (tp.dia + tp.entra) at time zone l.zona_horaria as instante,
+             (tp.dia + tp.entra
+               + (case when tp.sale > tp.entra then tp.sale - tp.entra
+                       else tp.sale - tp.entra + interval '24 hours' end)
+             ) at time zone l.zona_horaria as acaba,
+             tp.entra, tp.sale
         from equipo e
         join estook.local l on l.id = ${localId}::uuid
         join estook.turno_publicado tp
@@ -871,30 +884,94 @@ export async function lasEntradasDelHorario(
     )
     select en.persona_id::text as persona_id,
            to_char(en.fecha, 'YYYY-MM-DD') as fecha,
-           floor(extract(epoch from (f.entro_en - en.instante)) / 60)::int as minutos_tarde
+           to_char(en.instante at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as empieza,
+           to_char(en.acaba at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as acaba,
+           to_char(en.entra, 'HH24:MI') as entra,
+           to_char(en.sale, 'HH24:MI') as sale,
+           floor(extract(epoch from (f.entro_en - en.instante)) / 60)::int as minutos_tarde,
+           to_char(f.entro_en at time zone en.zona_horaria, 'HH24:MI') as ficho_a,
+           exists (
+             select 1 from estook.fichaje fx
+              where fx.persona_id = en.persona_id and fx.local_id = ${localId}
+                and fx.entro_en < en.acaba
+                and coalesce(fx.salio_en, ${ahora}::timestamptz) > en.instante
+           ) as vino,
+           en.acaba <= ${ahora}::timestamptz as acabado,
+           jf.motivo::text as falta_motivo, jf.nota as falta_nota, pf.nombre as falta_por,
+           to_char(jf.puesta_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as falta_en,
+           jr.motivo::text as retraso_motivo, jr.nota as retraso_nota, pr.nombre as retraso_por,
+           to_char(jr.puesta_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as retraso_en
       from entradas en
       left join lateral (
         select fi.entro_en
           from estook.fichaje fi
          where fi.persona_id = en.persona_id
            and fi.local_id = ${localId}
-           and fi.entro_en between en.instante - interval '3 hours'
-                               and en.instante + interval '3 hours'
+           and fi.entro_en >= en.instante - interval '3 hours'
+           and fi.entro_en < en.acaba
          order by abs(extract(epoch from (fi.entro_en - en.instante)))
          limit 1
       ) f on true
-     where en.instante <= ${contexto.ahora.toISOString()}::timestamptz
-     order by en.fecha, en.persona_id
+      left join estook.justificacion jf
+        on jf.persona_id = en.persona_id and jf.local_id = ${localId}
+       and jf.tipo = 'falta' and jf.empieza = en.instante
+      left join estook.persona pf on pf.id = jf.puesta_por
+      left join estook.justificacion jr
+        on jr.persona_id = en.persona_id and jr.local_id = ${localId}
+       and jr.tipo = 'retraso' and jr.empieza = en.instante
+      left join estook.persona pr on pr.id = jr.puesta_por
+     where en.instante <= ${ahora}::timestamptz
+     order by en.fecha, en.persona_id, en.instante
   `;
+
+  const justificacion = (
+    motivo: string | null,
+    nota: string | null,
+    por: string | null,
+    en: string | null,
+  ): Justificacion | null =>
+    motivo === null || en === null ? null : { motivo, nota, puestaPor: por, puestaEn: en };
 
   return {
     margen: local.margen,
     entradas: filas.map((f) => ({
       personaId: f.persona_id,
       fecha: f.fecha,
+      empieza: f.empieza,
+      acaba: f.acaba,
+      entra: f.entra,
+      sale: f.sale,
       minutosTarde: f.minutos_tarde,
+      fichoA: f.ficho_a,
+      vino: f.vino,
+      acabado: f.acabado,
+      faltaJustificada: justificacion(f.falta_motivo, f.falta_nota, f.falta_por, f.falta_en),
+      retrasoJustificado: justificacion(
+        f.retraso_motivo,
+        f.retraso_nota,
+        f.retraso_por,
+        f.retraso_en,
+      ),
     })),
   };
+}
+
+/**
+ * Si una entrada es un retraso **que cuenta**: tarde pasado el margen, y sin
+ * justificar. La usan el Resumen, la cifra de Retrasos e Incidencias: lo que en uno
+ * es un retraso, en los otros también.
+ */
+export function esUnRetrasoQueCuenta(entrada: EntradaDelHorario, margen: number): boolean {
+  return (
+    entrada.minutosTarde !== null &&
+    llegoTarde(entrada.minutosTarde, margen) &&
+    entrada.retrasoJustificado === null
+  );
+}
+
+/** Si una entrada es una falta: el tramo acabó y no estuvo en él (justificada o no). */
+export function esUnaFalta(entrada: EntradaDelHorario): boolean {
+  return entrada.acabado && !entrada.vino;
 }
 
 /** Los segundos que ha fichado cada persona que llevas, cada día, en este local. */
@@ -1299,7 +1376,6 @@ export interface SalidaUnaPersona {
   readonly minutosDeLaSemana: number;
   readonly minutosDelMes: number;
 
-  readonly horario: readonly TramoDelHorario[];
   /** Los tres últimos. El resto, en `fichajes_de_una_persona`. */
   readonly ultimosFichajes: readonly FichajeDeUnaPersona[];
   /** Cuántos tiene en total, los que quien mira puede ver: para el «Ver todos». */
@@ -1415,18 +1491,6 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
 
     const fichajes = await leerFichajes(contexto, entrada.persona_id, FICHAJES_EN_LA_FICHA, 0);
 
-    const horario = await contexto.sql<{ dia: number; entra: string; sale: string }[]>`
-      select dia_de_la_semana as dia,
-             to_char(entra, 'HH24:MI') as entra,
-             to_char(sale, 'HH24:MI') as sale
-        from estook.horario_habitual
-       where persona_id = ${entrada.persona_id}
-         and local_id = ${localId}
-         and desde <= current_date
-         and (hasta is null or hasta >= current_date)
-       order by dia_de_la_semana, entra
-    `;
-
     // La retribución: las políticas de la 0027 ya deciden si vuelve algo. Si esta
     // persona no puede verla, la consulta devuelve cero filas y aquí no hay nada
     // que esconder — que es exactamente como tiene que ser.
@@ -1498,7 +1562,6 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
       minutosDeLaSemana: horas[0]?.de_la_semana ?? 0,
       minutosDelMes: delMes,
 
-      horario,
       ultimosFichajes: fichajes.fichajes,
       cuantosFichajes: fichajes.cuantos,
 

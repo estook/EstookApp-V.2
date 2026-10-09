@@ -305,6 +305,33 @@ export {
 
 export type { Minutos, FormaDeRetribucion, Retribucion } from './equipo.ts';
 
+// ── El repaso del 9-oct · las incidencias del equipo (0081) ─────────────────
+export {
+  TIPOS_DE_INCIDENCIA,
+  NOMBRE_DEL_TIPO_DE_INCIDENCIA,
+  GRUPOS_DE_INCIDENCIAS,
+  NOMBRE_DEL_GRUPO_DE_INCIDENCIAS,
+  MOTIVOS_DE_JUSTIFICACION,
+  NOMBRE_DEL_MOTIVO,
+  esTipoDeIncidencia,
+  esGrupoDeIncidencias,
+  grupoDeLaIncidencia,
+  seJustifica,
+  laJustificacionPideNota,
+  loQuePaso,
+  cuantoTarde,
+  comoSeLeenLosMetros,
+  cuantasPorGrupo,
+  cuentaEnLaCifra,
+} from './incidencias.ts';
+
+export type {
+  TipoDeIncidencia,
+  GrupoDeIncidencias,
+  MotivoDeJustificacion,
+  LoQuePaso,
+} from './incidencias.ts';
+
 // ── M6½ · merma · el motivo manda, y la partida sale del motivo ──────────────
 //
 // «La comida del personal no es merma, ni las invitaciones: van con motivo propio

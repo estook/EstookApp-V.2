@@ -131,6 +131,12 @@ export interface MisProductos {
   readonly ivaQuitadoEn: string | null;
   /** Dónde está a efectos fiscales: de ahí sale el IVA que se propone al dar de alta. */
   readonly territorio: string;
+  /** Lo que hay en las vistas que se esconden vacías (repaso del 9-oct). */
+  readonly cuantosEnLasVistas?: {
+    readonly sinPrecio: number;
+    readonly congelados: number;
+    readonly desactivados: number;
+  };
 }
 
 export interface PrecioEnFicha {

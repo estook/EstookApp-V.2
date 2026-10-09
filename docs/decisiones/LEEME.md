@@ -9,83 +9,84 @@ alguien se preguntara «por que esta hecho asi».
 
 ## Las que hay
 
-| Num      | Que                                                                                                                                |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **0001** | GitHub Pages en vez de Netlify                                                                                                     |
-| **0002** | La API en Hono sobre Supabase Edge Functions                                                                                       |
-| **0003** | M0 crea el esqueleto minimo de alcances                                                                                            |
-| **0004** | El presupuesto de velocidad de B7, reconstruido                                                                                    |
-| **0005** | Como se conecta la API: `set local role` dentro de la transaccion                                                                  |
-| **0006** | El motor fiscal: sin regla, no se inventa un tipo                                                                                  |
-| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta                                                                  |
-| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages                                                                  |
-| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`                                                                   |
-| **0010** | El login es nuestro, no de Supabase Auth                                                                                           |
-| **0011** | Las pruebas de extremo a extremo levantan la API de verdad                                                                         |
-| **0012** | El producto nace en M6, y M5 le deja el diccionario                                                                                |
-| **0013** | Google Places se aplaza a M23                                                                                                      |
-| **0014** | Un modulo reacciona a otro en la misma transaccion                                                                                 |
-| **0015** | Fogon es una burbuja que va contigo, no una pestana por app                                                                        |
-| **0016** | El reloj es pg_cron llamando a nuestra API, no GitHub Actions                                                                      |
-| **0017** | Como avisa Estook: pantalla, correo con Resend y push                                                                              |
-| **0018** | Cada app tiene destinos, y cada destino sus vistas                                                                                 |
-| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato                                                                    |
-| **0020** | Un catalogo de acciones, y una accion es una direccion                                                                             |
-| **0021** | El producto se mide en una unidad; los gramajes son de la ficha                                                                    |
-| **0022** | El reparto tiene sitio antes que conexion; Uber Eats el primero                                                                    |
-| **0023** | Fogon nunca arma su contexto en el navegador                                                                                       |
-| **0024** | El color del local pinta la app, y hay dos temas                                                                                   |
-| **0025** | Fichar pide donde, y no bloquea nunca                                                                                              |
-| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe                                                                        |
-| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo                                                                    |
-| **0028** | El alta de producto pregunta cuanto hay, no cuanto se aprovecha                                                                    |
-| **0029** | Lo que va a una columna JSON viaja como texto                                                                                      |
-| **0030** | El local se situa con Google, al final de M7, con tope de gasto                                                                    |
-| **0031** | El Calendario recoge lo de todos los modulos, con quien lo ve                                                                      |
-| **0032** | Las compras: Estook no manda, el albaran mueve y la factura confirma                                                               |
-| **0033** | Los precios de compra se guardan sin IVA, y se escriben como venga el papel                                                        |
-| **0034** | Nadie gestiona el acceso de su igual: lo hace quien esta por encima                                                                |
-| **0035** | El alta pregunta como se compra, y la cuenta la hace el dominio                                                                    |
-| **0036** | La direccion es estook.com, y la sabe el codigo                                                                                    |
-| **0037** | Lo que sale de camara dice si se vendio; el dinero lo cuenta la caja                                                               |
-| **0038** | Cada producto es de una zona, y cada uno trabaja con la suya                                                                       |
-| **0039** | El Panel se monta como un movil, y cada uno se pone sus cifras                                                                     |
-| **0040** | El local se busca en Google, con el tope contado antes de llamar                                                                   |
-| **0041** | El panel de administracion: el cliente es la organizacion                                                                          |
-| **0042** | Registro abierto con correo o Google, y se paga al empezar salvo oferta                                                            |
-| **0043** | Canarias entra con IGIC; Ceuta y Melilla esperan; foral y SII, fuera por ley                                                       |
-| **0044** | Las cifras de cada app: la misma tarjeta, las mismas cuentas, y cuándo es llegar tarde                                             |
-| **0045** | El aspecto y el orden: Resumen, mosaico y Ajustes por secciones                                                                    |
-| **0046** | Los vacíos invitan a empezar, el oscuro se mide y se fotografía, y cada producto tiene su foto                                     |
-| **0047** | Lo que se ordena: el «+», lo de hoy, el Panel de cada puesto, los objetivos y el QR                                                |
-| **0048** | El pago con Stripe: sin pago no hay app, siete días de gracia y todo en Ajustes                                                    |
-| **0049** | Almacén e Inventario, lo congelado aparte, el Tablón y la carta subida                                                             |
-| **0050** | Los clientes en el admin: todo de Stripe, tres gestos con motivo y el correo con doble confirmación                                |
-| **0051** | La auditoría del 26-sep: nada se esconde por vacío, las mermas a la vista y Google con el punto exacto                             |
-| **0052** | La campana y los avisos: lo que hace el equipo, a quien manda, uno por cosa                                                        |
-| **0053** | El pedido sugerido, los informes y la nota en Google: al tocar, a nombre de quien lo recibe                                        |
-| **0054** | Estook TPV: cómo se ve y cómo se usa, el cajón y el datáfono; y Uber Eats comprobado otra vez                                      |
-| **0055** | La auditoría profunda, y lo que Richi aprobó                                                                                       |
-| **0056** | Estook TPV con su propia puerta, y Estook Link, el centro del local                                                                |
-| **0057** | Quién es quién en el TPV: la persona sin correo, el terminal, el operador y la aprobación con PIN                                  |
-| **0058** | El cobro, sus pagos y la caja; la bolsa del camarero; la venta nace al cobrar                                                      |
-| **0059** | Emitir un documento fiscal: con estados, fuera de la transacción y sin registrar dos veces                                         |
-| **0060** | La empresa fiscal: organización, empresa y local                                                                                   |
-| **0061** | El orden nuevo y la infraestructura: el TPV tras M10, las copias, Cloudflare y las claves                                          |
-| **0062** | Lo legal: el contrato de encargado, la conservación, los fichajes, los alérgenos y la IA                                           |
-| **0063** | Los documentos: una fuente por tema                                                                                                |
-| **0064** | Las gráficas contestan una pregunta, y se ven mejor sin engañar                                                                    |
-| **0065** | El coste por local, con su prueba final; y la copia de seguridad, aplazada hasta la mudanza                                        |
-| **0066** | Sin asesor por ahora: lo legal se investiga en las fuentes; la API de Verifacti; y el chat, dicho entero                           |
-| **0067** | Pro a 99 € y Cadena a 89 € desde ya, el chat se adelanta, y H empieza por su plan                                                  |
-| **0068** | Las respuestas de H: dos entregas, el aparato del local, la pausa, el horario de todos y los PDF                                   |
-| **0069** | H2 · el horario de la semana: borrador y publicado, avisos que no impiden y a quién se avisa                                       |
-| **0070** | I · la app instalable: en la pantalla de inicio, sin conexión y con avisos al móvil                                                |
-| **0071** | Las respuestas de C: dos entregas, sin traducción, canales solos, todos escriben, el horario al chat y «leído» siempre             |
-| **0072** | El repaso del 3-oct: sacar más de lo que hay se confirma, lo mal tecleado se anula y el logo lleva al Panel                        |
-| **0073** | C1 · Hablar: el chat del equipo, al segundo y en el móvil                                                                          |
-| **0074** | El repaso de C1: el mensaje al momento, el chat con el teclado, las notas de voz y el móvil que no se pierde                       |
-| **0075** | Las respuestas de C2: solo «Todo el equipo» de fábrica, el chat no traduce nunca y el horario es un aviso                          |
-| **0076** | A3 · los vendedores: traen el cliente y nada más, sin comisiones en Estook, con un descuento del primer mes                        |
-| **0077** | A4 · las ventas: el tablero sin IVA, lo cobrado de verdad, las visitas de los enlaces de vendedor y el correo del lunes            |
-| **0078** | Las respuestas de M8: los platos esperan a sus fichas, contar y cerrar son dos pasos, el mínimo se propone y la foto es si quieres |
+| Num      | Que                                                                                                                                     |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **0001** | GitHub Pages en vez de Netlify                                                                                                          |
+| **0002** | La API en Hono sobre Supabase Edge Functions                                                                                            |
+| **0003** | M0 crea el esqueleto minimo de alcances                                                                                                 |
+| **0004** | El presupuesto de velocidad de B7, reconstruido                                                                                         |
+| **0005** | Como se conecta la API: `set local role` dentro de la transaccion                                                                       |
+| **0006** | El motor fiscal: sin regla, no se inventa un tipo                                                                                       |
+| **0007** | El movimiento en CSS: no se instala `Motion` hasta que haga falta                                                                       |
+| **0008** | El enrutado con almohadilla, mientras se publique en GitHub Pages                                                                       |
+| **0009** | El buscador quita los acentos con `translate`, no con `unaccent`                                                                        |
+| **0010** | El login es nuestro, no de Supabase Auth                                                                                                |
+| **0011** | Las pruebas de extremo a extremo levantan la API de verdad                                                                              |
+| **0012** | El producto nace en M6, y M5 le deja el diccionario                                                                                     |
+| **0013** | Google Places se aplaza a M23                                                                                                           |
+| **0014** | Un modulo reacciona a otro en la misma transaccion                                                                                      |
+| **0015** | Fogon es una burbuja que va contigo, no una pestana por app                                                                             |
+| **0016** | El reloj es pg_cron llamando a nuestra API, no GitHub Actions                                                                           |
+| **0017** | Como avisa Estook: pantalla, correo con Resend y push                                                                                   |
+| **0018** | Cada app tiene destinos, y cada destino sus vistas                                                                                      |
+| **0019** | El Panel de cada uno vive en el servidor, por persona y aparato                                                                         |
+| **0020** | Un catalogo de acciones, y una accion es una direccion                                                                                  |
+| **0021** | El producto se mide en una unidad; los gramajes son de la ficha                                                                         |
+| **0022** | El reparto tiene sitio antes que conexion; Uber Eats el primero                                                                         |
+| **0023** | Fogon nunca arma su contexto en el navegador                                                                                            |
+| **0024** | El color del local pinta la app, y hay dos temas                                                                                        |
+| **0025** | Fichar pide donde, y no bloquea nunca                                                                                                   |
+| **0026** | La merma tiene motivo y partida, y la apunta quien la rompe                                                                             |
+| **0027** | La caja se cierra sin TPV, y los dos caminos acaban en el mismo                                                                         |
+| **0028** | El alta de producto pregunta cuanto hay, no cuanto se aprovecha                                                                         |
+| **0029** | Lo que va a una columna JSON viaja como texto                                                                                           |
+| **0030** | El local se situa con Google, al final de M7, con tope de gasto                                                                         |
+| **0031** | El Calendario recoge lo de todos los modulos, con quien lo ve                                                                           |
+| **0032** | Las compras: Estook no manda, el albaran mueve y la factura confirma                                                                    |
+| **0033** | Los precios de compra se guardan sin IVA, y se escriben como venga el papel                                                             |
+| **0034** | Nadie gestiona el acceso de su igual: lo hace quien esta por encima                                                                     |
+| **0035** | El alta pregunta como se compra, y la cuenta la hace el dominio                                                                         |
+| **0036** | La direccion es estook.com, y la sabe el codigo                                                                                         |
+| **0037** | Lo que sale de camara dice si se vendio; el dinero lo cuenta la caja                                                                    |
+| **0038** | Cada producto es de una zona, y cada uno trabaja con la suya                                                                            |
+| **0039** | El Panel se monta como un movil, y cada uno se pone sus cifras                                                                          |
+| **0040** | El local se busca en Google, con el tope contado antes de llamar                                                                        |
+| **0041** | El panel de administracion: el cliente es la organizacion                                                                               |
+| **0042** | Registro abierto con correo o Google, y se paga al empezar salvo oferta                                                                 |
+| **0043** | Canarias entra con IGIC; Ceuta y Melilla esperan; foral y SII, fuera por ley                                                            |
+| **0044** | Las cifras de cada app: la misma tarjeta, las mismas cuentas, y cuándo es llegar tarde                                                  |
+| **0045** | El aspecto y el orden: Resumen, mosaico y Ajustes por secciones                                                                         |
+| **0046** | Los vacíos invitan a empezar, el oscuro se mide y se fotografía, y cada producto tiene su foto                                          |
+| **0047** | Lo que se ordena: el «+», lo de hoy, el Panel de cada puesto, los objetivos y el QR                                                     |
+| **0048** | El pago con Stripe: sin pago no hay app, siete días de gracia y todo en Ajustes                                                         |
+| **0049** | Almacén e Inventario, lo congelado aparte, el Tablón y la carta subida                                                                  |
+| **0050** | Los clientes en el admin: todo de Stripe, tres gestos con motivo y el correo con doble confirmación                                     |
+| **0051** | La auditoría del 26-sep: nada se esconde por vacío, las mermas a la vista y Google con el punto exacto                                  |
+| **0052** | La campana y los avisos: lo que hace el equipo, a quien manda, uno por cosa                                                             |
+| **0053** | El pedido sugerido, los informes y la nota en Google: al tocar, a nombre de quien lo recibe                                             |
+| **0054** | Estook TPV: cómo se ve y cómo se usa, el cajón y el datáfono; y Uber Eats comprobado otra vez                                           |
+| **0055** | La auditoría profunda, y lo que Richi aprobó                                                                                            |
+| **0056** | Estook TPV con su propia puerta, y Estook Link, el centro del local                                                                     |
+| **0057** | Quién es quién en el TPV: la persona sin correo, el terminal, el operador y la aprobación con PIN                                       |
+| **0058** | El cobro, sus pagos y la caja; la bolsa del camarero; la venta nace al cobrar                                                           |
+| **0059** | Emitir un documento fiscal: con estados, fuera de la transacción y sin registrar dos veces                                              |
+| **0060** | La empresa fiscal: organización, empresa y local                                                                                        |
+| **0061** | El orden nuevo y la infraestructura: el TPV tras M10, las copias, Cloudflare y las claves                                               |
+| **0062** | Lo legal: el contrato de encargado, la conservación, los fichajes, los alérgenos y la IA                                                |
+| **0063** | Los documentos: una fuente por tema                                                                                                     |
+| **0064** | Las gráficas contestan una pregunta, y se ven mejor sin engañar                                                                         |
+| **0065** | El coste por local, con su prueba final; y la copia de seguridad, aplazada hasta la mudanza                                             |
+| **0066** | Sin asesor por ahora: lo legal se investiga en las fuentes; la API de Verifacti; y el chat, dicho entero                                |
+| **0067** | Pro a 99 € y Cadena a 89 € desde ya, el chat se adelanta, y H empieza por su plan                                                       |
+| **0068** | Las respuestas de H: dos entregas, el aparato del local, la pausa, el horario de todos y los PDF                                        |
+| **0069** | H2 · el horario de la semana: borrador y publicado, avisos que no impiden y a quién se avisa                                            |
+| **0070** | I · la app instalable: en la pantalla de inicio, sin conexión y con avisos al móvil                                                     |
+| **0071** | Las respuestas de C: dos entregas, sin traducción, canales solos, todos escriben, el horario al chat y «leído» siempre                  |
+| **0072** | El repaso del 3-oct: sacar más de lo que hay se confirma, lo mal tecleado se anula y el logo lleva al Panel                             |
+| **0073** | C1 · Hablar: el chat del equipo, al segundo y en el móvil                                                                               |
+| **0074** | El repaso de C1: el mensaje al momento, el chat con el teclado, las notas de voz y el móvil que no se pierde                            |
+| **0075** | Las respuestas de C2: solo «Todo el equipo» de fábrica, el chat no traduce nunca y el horario es un aviso                               |
+| **0076** | A3 · los vendedores: traen el cliente y nada más, sin comisiones en Estook, con un descuento del primer mes                             |
+| **0077** | A4 · las ventas: el tablero sin IVA, lo cobrado de verdad, las visitas de los enlaces de vendedor y el correo del lunes                 |
+| **0078** | Las respuestas de M8: los platos esperan a sus fichas, contar y cerrar son dos pasos, el mínimo se propone y la foto es si quieres      |
+| **0079** | M8, la segunda entrega: lo gastado de verdad, el food cost real con la caja, la desviación de lo vendido tal cual y la foto de la merma |

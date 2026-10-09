@@ -61,6 +61,8 @@ export const TIPOS_DE_AVISO = [
   'inventario.toca',
   'inventario.contado',
   'inventario.recontar',
+  // ── M8, la segunda entrega (decisión 0079) ──────────────────────────────
+  'inventario.falta',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -344,6 +346,19 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     deTuEquipo: false,
     correoDeFabrica: false,
     movilDeFabrica: true,
+  },
+
+  // ── M8, la segunda entrega (decisión 0079) ──────────────────────────────
+  //
+  // Al cerrar un inventario, solo si lo que falta sin explicar pasa del 3 % de lo
+  // gastado (0078, «lo que decido yo» 9). Lo de menos se ve en la desviación.
+  'inventario.falta': {
+    nombre: 'Al cerrar un inventario falta género',
+    explica: 'Solo si lo que falta sin explicar pasa del 3 % de lo gastado.',
+    grupo: 'Almacén',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: false,
   },
 };
 
@@ -650,6 +665,22 @@ export function avisoDeInventarioContado(
   return {
     titulo: `${quien} ha contado ${que}`,
     detalle: `${plural(contados, 'producto', 'productos')}${noCuadran === 0 ? ', y cuadra todo' : `, ${String(noCuadran)} no ${noCuadran === 1 ? 'cuadra' : 'cuadran'}`}. Míralo y ciérralo.`,
+  };
+}
+
+/**
+ * «Al cerrar el inventario faltan 64,00 €» · «Un 5 % de lo gastado: pulpo y gambas.
+ * Mira la desviación.» (M8 · 0079). Solo le llega a quien ve precios de compra.
+ */
+export function avisoDeLoQueFalta(
+  falta: Centimos,
+  parte: number,
+  productos: readonly string[],
+): LoQueDiceUnAviso {
+  const lista = listaCorta(productos);
+  return {
+    titulo: `Al cerrar el inventario faltan ${conSimbolo(falta)}`,
+    detalle: `Un ${comoPorcentaje(parte)} de lo gastado${lista === '' ? '' : `: ${lista}`}. Mira la desviación.`,
   };
 }
 

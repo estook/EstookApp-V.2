@@ -13,6 +13,7 @@ import {
 } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { cerrarElInventario, guardarLoContado, type Cerrado } from '../inventario.ts';
+import { avisarSiFalta } from '../desviacion.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import {
@@ -673,6 +674,11 @@ export const cerrarRecuento = comando<EntradaCerrarRecuento, SalidaCerrarRecuent
     const cerrado = await cerrarElInventario(contexto, inventarioId, {
       loQueFalta: entrada.lo_que_falta ?? 'dejarlo',
       notas: entrada.notas ?? null,
+    });
+    await avisarSiFalta(contexto, {
+      localId: elLocalDeLaSesion(contexto),
+      organizacionId: laOrganizacionDeLaSesion(contexto),
+      inventarioId,
     });
     return { ...cerrado, inventarioId };
   },

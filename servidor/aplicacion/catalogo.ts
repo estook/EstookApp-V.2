@@ -49,7 +49,9 @@ import {
   ajustarStock,
   cerrarRecuento,
 } from './comandos/movimientos.ts';
-import { apuntarMerma } from './comandos/merma.ts';
+import { apuntarMerma, ponerFotoDeMerma } from './comandos/merma.ts';
+import { emparejarConcepto } from './comandos/desviacion.ts';
+import { elFoodCostReal, laDesviacion } from './consultas/desviacion.ts';
 import {
   cerrarInventario,
   descartarInventario,
@@ -311,6 +313,10 @@ export const catalogo = {
     [unInventario.nombre]: unInventario,
     [valorDelAlmacen.nombre]: valorDelAlmacen,
     [minimosPropuestos.nombre]: minimosPropuestos,
+    // M8, la segunda entrega (0079): lo gastado de verdad, la desviación de lo que se
+    // vende tal cual y el food cost real.
+    [laDesviacion.nombre]: laDesviacion,
+    [elFoodCostReal.nombre]: elFoodCostReal,
     [miPanel.nombre]: miPanel,
     // M6½ · la merma, que el libro sabia guardar y no habia forma de apuntar.
     [mermaDeHoy.nombre]: mermaDeHoy,
@@ -490,6 +496,10 @@ export const catalogo = {
     [recontar.nombre]: recontar,
     [descartarInventario.nombre]: descartarInventario,
     [usarElMinimoCalculado.nombre]: usarElMinimoCalculado,
+    // M8, la segunda entrega (0079): qué producto es cada línea de la caja, y la foto
+    // de la merma (4A).
+    [emparejarConcepto.nombre]: emparejarConcepto,
+    [ponerFotoDeMerma.nombre]: ponerFotoDeMerma,
     [crearProveedor.nombre]: crearProveedor,
     [cambiarProveedor.nombre]: cambiarProveedor,
     [crearCategoria.nombre]: crearCategoria,

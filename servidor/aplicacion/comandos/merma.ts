@@ -7,9 +7,15 @@ import {
   valorDeLaMerma,
 } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
-import { laOrganizacionDeLaSesion } from '../alta.ts';
+import {
+  TIPOS_DE_FOTO,
+  TOPE_DE_LA_FOTO,
+  claveDeLaFotoDeMerma,
+} from '../../infraestructura/almacen.ts';
+import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
 import { apuntar, elProductoBloqueado, loQueHay } from '../almacen.ts';
+import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
 
 /**
  * Apuntar una merma (M6½).
@@ -170,5 +176,121 @@ export const apuntarMerma = comando<EntradaApuntarMerma, SalidaApuntarMerma>({
       partida: partidaDe(entrada.motivo),
       ...(conPrecios ? { valorCentimos: valor } : {}),
     };
+  },
+});
+
+// ── La foto de la merma, si se quiere (M8 · 0078, 4A · 0079) ─────────────────
+
+export const entradaPonerFotoDeMerma = z
+  .object({
+    /** La merma, como la devuelve `apuntar_merma`. */
+    movimiento_id: z.string().regex(/^\d{1,18}$/, 'Esa merma no existe.'),
+    tipo: z.string().refine((t) => t in TIPOS_DE_FOTO, {
+      message: 'Solo se admiten fotos en WebP o JPG.',
+    }),
+    /** La foto de 800 px, reducida en el móvil, en base64 y sin el prefijo `data:`. */
+    foto: z
+      .string()
+      .min(1)
+      .max(Math.ceil((TOPE_DE_LA_FOTO * 4) / 3) + 1024),
+  })
+  .strict();
+
+export type EntradaPonerFotoDeMerma = z.infer<typeof entradaPonerFotoDeMerma>;
+
+/**
+ * Poner la foto de lo que se tiró.
+ *
+ * **Un cuarto toque que se puede saltar** (4A): la merma ya está apuntada cuando
+ * llega esto —también sin señal—, y la foto va después, por su lado. Si la foto
+ * falla, la merma sigue apuntada: «una merma sin foto vale más que una sin apuntar».
+ *
+ * La pone quien apuntó la merma, o quien lleva el Almacén; **una vez**: es la prueba
+ * de lo que se tiró —para reclamar al proveedor o para que el gerente lo vea—, y una
+ * prueba que se cambia no prueba nada.
+ */
+export const ponerFotoDeMerma = comando<
+  EntradaPonerFotoDeMerma,
+  { readonly movimientoId: string; readonly puesta: boolean }
+>({
+  nombre: 'poner_foto_de_merma',
+  entrada: entradaPonerFotoDeMerma,
+  exige: 'accion.registrar_merma',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeLaSesion(contexto);
+    const almacen = contexto.almacen;
+    if (almacen === null) {
+      throw new FalloDeAplicacion('fallo_nuestro', {
+        porque: 'Todavía no hay dónde guardar las fotos. La merma está apuntada igual.',
+      });
+    }
+
+    const mermas = await contexto.sql<
+      { persona_id: string | null; tiene_foto: boolean; lleva_almacen: boolean }[]
+    >`
+      select m.persona_id::text as persona_id,
+             exists (select 1 from estook.foto_de_merma f where f.movimiento_id = m.id) as tiene_foto,
+             estook.puede_editar('app.almacen', m.local_id) as lleva_almacen
+        from estook.movimiento_de_stock m
+       where m.id = ${entrada.movimiento_id}::bigint
+         and m.local_id = ${localId}
+         and m.tipo = 'merma'
+    `;
+    const merma = mermas[0];
+    if (merma === undefined || (merma.persona_id !== contexto.personaId && !merma.lleva_almacen)) {
+      throw new FalloDeAplicacion('no_existe', {
+        porque: 'Esa merma no está en este local, o no la apuntaste tú.',
+      });
+    }
+    if (merma.tiene_foto) {
+      throw new FalloDeAplicacion('ya_hecho', {
+        porque: 'Esa merma ya tiene su foto, y no se cambia: es la prueba de lo que se tiró.',
+      });
+    }
+
+    const foto = decodificar(entrada.foto, 'foto');
+    if (foto.byteLength > TOPE_DE_LA_FOTO) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['foto'],
+        porque: `Esa foto pesa demasiado aun reducida. El tope son ${Math.trunc(TOPE_DE_LA_FOTO / 1024)} KB: prueba con otra.`,
+      });
+    }
+    if (!esDeVerdadDeEseTipo(foto, entrada.tipo)) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['foto'],
+        porque: 'Eso no es una foto que se pueda guardar. Prueba a hacerla otra vez.',
+      });
+    }
+
+    const clave = claveDeLaFotoDeMerma(
+      localId,
+      entrada.movimiento_id,
+      TIPOS_DE_FOTO[entrada.tipo] ?? 'jpg',
+      contexto.ahora,
+    );
+    await almacen.guardar(clave, foto, entrada.tipo);
+
+    // La fila, después de subir: al revés, la lista enseñaría una foto que no existe.
+    // Y si dos la ponen a la vez, la segunda choca con la clave y se borra su fichero.
+    try {
+      await contexto.sql`
+        insert into estook.foto_de_merma (movimiento_id, local_id, clave, puesta_por)
+        values (${entrada.movimiento_id}::bigint, ${localId}, ${clave}, ${contexto.personaId})
+      `;
+    } catch (fallo) {
+      await almacen.borrar(clave);
+      throw fallo;
+    }
+
+    await contexto.sql`
+      select estook.anotar(
+        ${laOrganizacionDeLaSesion(contexto)}::uuid, 'crear', 'foto_de_merma',
+        ${entrada.movimiento_id}, ${localId}::uuid, null,
+        ${JSON.stringify({ foto: 'puesta' })}::text::jsonb, null
+      )
+    `;
+
+    return { movimientoId: entrada.movimiento_id, puesta: true };
   },
 });

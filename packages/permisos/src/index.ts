@@ -305,6 +305,9 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   'inventario.contado': ['accion.cerrar_recuento'],
   // Que lo vuelvas a contar, a quien lo contó: lleva el almacén.
   'inventario.recontar': ['app.almacen'],
+  // ── M8, la segunda entrega (0079) ──
+  // Lo que falta al cerrar va en euros: a quien cierra y ve precios de compra.
+  'inventario.falta': ['accion.cerrar_recuento', 'dato.precio_de_compra'],
 };
 
 export function puedeRecibirElAviso(

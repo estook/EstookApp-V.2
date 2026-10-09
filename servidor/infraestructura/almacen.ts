@@ -121,6 +121,19 @@ export function claveDeLaFoto(
   return `${CUBO_DE_LAS_FOTOS}/${localId}/${productoId}/${cual}-${ahora.getTime()}.${extension}`;
 }
 
+/**
+ * La clave de la foto de una merma (M8 · 0079): en el mismo cubo que las de producto,
+ * que ya existe, bajo `mermas/`. Lleva el movimiento, que es de lo que es prueba.
+ */
+export function claveDeLaFotoDeMerma(
+  localId: string,
+  movimientoId: string,
+  extension: string,
+  ahora: Date,
+): string {
+  return `${CUBO_DE_LAS_FOTOS}/${localId}/mermas/${movimientoId}-${ahora.getTime()}.${extension}`;
+}
+
 // ── La carta del local, subida (repaso del 25-sep, 0049) ───────────────────
 
 /** El cubo de las cartas. Lo crea la migración 0048, privado como los demás. */

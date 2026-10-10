@@ -292,11 +292,28 @@ describe('un lote que caduca se quita, y deja de avisar', () => {
   });
 
   it('«se ha gastado» no mueve nada: lo que salió ya salió', async () => {
+    const queso = losDatos<{ productoId: string }>(
+      await api.ejecutar(rosa, 'crear_producto', {
+        nombre: 'Queso fresco de prueba',
+        unidad_de_uso: 'ud',
+        cantidad_inicial: 3,
+        caduca_el: masDias(hoy, 2),
+      }),
+    ).productoId;
+    const ficha = losDatos<{ lotes: { id: string }[] }>(
+      await api.consultar(rosa, 'un_producto', { producto_id: queso }),
+    );
+    await api.ejecutar(rosa, 'quitar_lote', { lote_id: ficha.lotes[0]?.id, como: 'gastado' });
+    expect(await loQueHay(queso)).toBe(3);
+  });
+
+  it('a lo congelado no se le da por gastado: se descongela o se tira (repaso del 10-oct)', async () => {
     const otro = losDatos<{ loteId: string }>(
       await api.ejecutar(rosa, 'congelar', { producto_id: burrata }),
     ).loteId;
-    await api.ejecutar(rosa, 'quitar_lote', { lote_id: otro, como: 'gastado' });
-    expect(await loQueHay(burrata)).toBe(6);
+    expect(
+      elFallo(await api.ejecutar(rosa, 'quitar_lote', { lote_id: otro, como: 'gastado' })),
+    ).toBe('faltan_datos');
   });
 
   it('tirar sin decir cuánto no se puede', async () => {
@@ -355,6 +372,63 @@ describe('congelar', () => {
       [carne],
     );
     expect(rows.map((r) => r.titulo)).toContain('Carne picada de prueba cumple 3 meses congelado');
+  });
+
+  it('descongelar lo vuelve a fresco, con la caducidad que se pone, y su aviso pasa a «caduca» (repaso del 10-oct)', async () => {
+    const ficha = losDatos<{ lotes: { id: string; congeladoEl: string | null }[] }>(
+      await api.consultar(rosa, 'un_producto', { producto_id: carne }),
+    );
+    const lote = ficha.lotes.find((l) => l.congeladoEl !== null)?.id ?? '';
+    const antes = await loQueHay(carne);
+
+    // Más de una semana no: lo descongelado se gasta pronto.
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'descongelar', {
+          lote_id: lote,
+          caduca_el: masDias(laJornada, 8),
+        }),
+      ),
+    ).toBe('faltan_datos');
+
+    await api.ejecutar(rosa, 'descongelar', { lote_id: lote, caduca_el: masDias(laJornada, 1) });
+    const despues = losDatos<{
+      lotes: { id: string; congeladoEl: string | null; caducaEl: string }[];
+    }>(await api.consultar(rosa, 'un_producto', { producto_id: carne }));
+    const suyo = despues.lotes.find((l) => l.id === lote);
+    expect(suyo?.congeladoEl).toBeNull();
+    expect(suyo?.caducaEl).toBe(masDias(laJornada, 1));
+    // No mueve nada: sigue en el local.
+    expect(await loQueHay(carne)).toBe(antes);
+
+    const { rows } = await base.bd.query<{ titulo: string }>(
+      `select titulo from estook.evento_de_calendario where origen = 'lote' and origen_id = $1`,
+      [lote],
+    );
+    expect(rows.map((r) => r.titulo)).toEqual(['Caduca Carne picada de prueba']);
+
+    // Y dos veces no: ya no está congelado.
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'descongelar', {
+          lote_id: lote,
+          caduca_el: masDias(laJornada, 1),
+        }),
+      ),
+    ).toBe('ya_hecho');
+  });
+
+  it('tirar lo congelado queda en el libro como merma, «del congelador» (repaso del 10-oct)', async () => {
+    const lote = losDatos<{ loteId: string }>(
+      await api.ejecutar(rosa, 'congelar', { producto_id: carne, cuanto: 1 }),
+    ).loteId;
+    await api.ejecutar(rosa, 'quitar_lote', { lote_id: lote, como: 'tirado', cuanto: 1 });
+    const [merma] = await comoDuena<{ motivo: string; tipo: string }>(
+      `select motivo, tipo::text as tipo from estook.movimiento_de_stock
+        where producto_id = $1 and lote_id = $2`,
+      [carne, lote],
+    );
+    expect(merma).toEqual({ motivo: 'Del congelador', tipo: 'merma' });
   });
 
   it('se puede dar de alta ya congelado', async () => {

@@ -45,12 +45,12 @@ import { MoverGenero, type QueSeMueve } from './MoverGenero.tsx';
 import { CampoPrecioDeCompra } from './CampoPrecioDeCompra.tsx';
 import { ComoLoCompras } from './ComoLoCompras.tsx';
 import { ElegirZona } from './ElegirZona.tsx';
-import { Congelar, QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
+import { Congelar, QuitarLote, comoEstaCongelado, type LoteQueSeQuita } from './Lotes.tsx';
 import { HistoricoDePrecios } from './HistoricoDePrecios.tsx';
 import { FotoDeLaFicha } from './FotoDeLaFicha.tsx';
 import { AnularMovimiento } from './AnularMovimiento.tsx';
 import { PropuestaDeMinimo } from './MinimosPropuestos.tsx';
-import { IconoAnadir, IconoQuitar } from '@estook/iconos';
+import { IconoAnadir, IconoCongelado, IconoQuitar } from '@estook/iconos';
 import {
   COMO_SE_LLAMA_EL_MOVIMIENTO,
   NOMBRE_DE_LA_CATEGORIA_FISCAL,
@@ -594,12 +594,14 @@ export function FichaDeProducto({
               ) : (
                 <ul className="flex flex-col">
                   {datos.lotes.map((lote) => {
-                    // Lo congelado no caduca: se queda viejo (0049). Su línea dice
-                    // cuándo cumple lo que aguanta, y en rojo si ya lo ha cumplido.
-                    const congelado = lote.congeladoEl !== null;
-                    const caducado = congelado
-                      ? lote.diasParaCumplir !== null && lote.diasParaCumplir <= 0
-                      : lote.diasParaCaducar !== null && lote.diasParaCaducar < 0;
+                    // Lo congelado no caduca: se queda viejo (0049). Mientras está en
+                    // el congelador **no se enseña su caducidad**, sino «Congelado el X ·
+                    // aguanta hasta Y» (repaso del 10-oct), en rojo si ya se ha pasado.
+                    const congeladoEl = lote.congeladoEl;
+                    const caducado =
+                      congeladoEl !== null
+                        ? lote.diasParaCumplir !== null && lote.diasParaCumplir <= 0
+                        : lote.diasParaCaducar !== null && lote.diasParaCaducar < 0;
                     return (
                       <li
                         key={lote.id}
@@ -607,9 +609,14 @@ export function FichaDeProducto({
                       >
                         <span className="min-w-0">
                           <span className="flex flex-wrap items-center gap-e2">
+                            {congeladoEl !== null && (
+                              <span aria-hidden className="text-info">
+                                <IconoCongelado size={16} />
+                              </span>
+                            )}
                             <span className={caducado ? 'text-mal' : undefined}>
-                              {congelado && lote.cumpleCongeladoEl !== null
-                                ? `${caducado ? 'Cumplió' : 'Cumple'} ${plural(datos.producto.congeladoAguantaMeses, 'mes', 'meses')} congelado el ${comoSeLeeLaFecha(lote.cumpleCongeladoEl)}`
+                              {congeladoEl !== null
+                                ? comoEstaCongelado(congeladoEl, lote.cumpleCongeladoEl)
                                 : lote.caducaEl === null
                                   ? 'Sin fecha de caducidad'
                                   : `${caducado ? 'Caducó' : 'Caduca'} el ${comoSeLeeLaFecha(lote.caducaEl)}`}
@@ -618,11 +625,6 @@ export function FichaDeProducto({
                               <span className="font-semibold">
                                 {conUnidadDeUso(lote.cantidad, datos.producto.unidadDeUso)}
                               </span>
-                            )}
-                            {lote.congeladoEl !== null && (
-                              <Etiqueta tono="info">
-                                congelado el {comoSeLeeLaFecha(lote.congeladoEl)}
-                              </Etiqueta>
                             )}
                           </span>
                           <span className="block text-etiqueta text-texto-suave">
@@ -654,10 +656,15 @@ export function FichaDeProducto({
                                   codigo: lote.codigo,
                                   caducaEl: lote.caducaEl,
                                   unidadDeUso: datos.producto.unidadDeUso,
+                                  congelado:
+                                    congeladoEl === null
+                                      ? null
+                                      : { el: congeladoEl, aguantaHasta: lote.cumpleCongeladoEl },
+                                  cantidad: lote.cantidad,
                                 });
                               }}
                             >
-                              Quitar
+                              {congeladoEl === null ? 'Quitar' : 'Sacar'}
                             </Boton>
                           </span>
                         )}

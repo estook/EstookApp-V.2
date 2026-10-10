@@ -161,11 +161,13 @@ export const REACCIONES: readonly Reaccion[] = [
   // Crear, congelar y quitar un lote pasan por la misma función: mira cómo está
   // el lote ahora y deja su caducidad igual —la pone, le dice «congelado» o la
   // quita—.
-  ...(['lote.creado', 'lote.congelado', 'lote.retirado'] as const).map((a): Reaccion => ({
-    nombre: 'M6 · la caducidad de un lote, en el Calendario',
-    a,
-    reaccionar: (contexto, evento) => publicarLaCaducidad(contexto, elDe(evento, 'loteId')),
-  })),
+  ...(['lote.creado', 'lote.congelado', 'lote.retirado', 'lote.descongelado'] as const).map(
+    (a): Reaccion => ({
+      nombre: 'M6 · la caducidad de un lote, en el Calendario',
+      a,
+      reaccionar: (contexto, evento) => publicarLaCaducidad(contexto, elDe(evento, 'loteId')),
+    }),
+  ),
   // Y si cambia lo que aguanta congelado un producto, cambia el día en que cumple
   // cada uno de sus lotes congelados (repaso del 25-sep, 0049).
   {

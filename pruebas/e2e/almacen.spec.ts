@@ -1417,7 +1417,49 @@ test('lo congelado se ve: su vista «Congelados» y la fecha en su ficha', async
   await irAAlmacen(page, 'productos', 'congelados');
   await expect(loQueSeVe(page, nombre)).toBeVisible();
   await pulsarLoQueSeVe(page, nombre);
-  await expect(page.getByText(/^congelado el /).first()).toBeVisible();
+  // Mientras está congelado no se enseña su caducidad (repaso del 10-oct).
+  const ficha = page.getByRole('dialog', { name: nombre });
+  await expect(ficha.getByText(/^Congelado el .+ · aguanta hasta el /)).toBeVisible();
+
+  // ── Sacarlo: solo «Descongelar» o «Tirar» (repaso del 10-oct) ──────────────
+  await ficha.getByRole('button', { name: 'Sacar', exact: true }).click();
+  const sacar = page.getByRole('dialog', { name: `Sacar ${nombre} del congelador` });
+  const opciones = sacar.getByRole('radiogroup', { name: 'Qué se hace con él' }).getByRole('radio');
+  await expect(opciones).toHaveText([/^Descongelar/, /^Tirar/]);
+  await sacar.getByRole('radio', { name: /^Descongelar/ }).click();
+  // Se propone mañana, y se puede cambiar.
+  await expect(sacar.getByRole('button', { name: 'Mañana', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await sacar.getByRole('button', { name: 'Pasado mañana' }).click();
+  await sacar.getByRole('button', { name: 'Descongelarlo' }).click();
+  await expect(sacar).toBeHidden();
+  await expect(ficha.getByText(/^Caduca el /)).toBeVisible();
+  await expect(ficha.getByText(/^Congelado el /)).toHaveCount(0);
+
+  // ── Y lo que se tira queda en el libro ─────────────────────────────────────
+  const otro = await ejecutar<{ loteId: string }>(request, token, 'congelar', {
+    producto_id: productoId,
+    cuanto: 1,
+  });
+  expect(otro.estado).toBe(200);
+  await recargarSinQueSeCaiga(page);
+  await page
+    .getByRole('dialog', { name: nombre })
+    .getByRole('button', { name: 'Sacar', exact: true })
+    .click();
+  await sacar.getByRole('radio', { name: /^Tirar/ }).click();
+  await expect(sacar.getByLabel('Cuánto se tira')).toHaveValue('1');
+  await sacar.getByRole('button', { name: 'Tirarlo' }).click();
+  await expect(sacar).toBeHidden();
+  const despues = await consultar<{ movimientos: { tipo: string; motivo: string | null }[] }>(
+    request,
+    token,
+    'un_producto',
+    { producto_id: productoId },
+  );
+  expect(despues.datos?.movimientos.some((m) => m.tipo === 'merma')).toBe(true);
 });
 
 /**

@@ -554,10 +554,13 @@ export type {
 // ── El repaso del 25-sep · lo congelado va aparte (0049) ─────────────────────
 export {
   AVISO_DE_LO_CONGELADO_EN_DIAS,
+  DIAS_COMO_MUCHO_DESCONGELADO,
+  DIAS_PARA_GASTAR_LO_DESCONGELADO,
   MESES_CONGELADO_DE_FABRICA,
   MESES_CONGELADO_MAXIMO,
   MESES_CONGELADO_MINIMO,
   comoEstaLoCongelado,
+  sePuedeDescongelarHasta,
   tituloDeLoCongelado,
 } from './congelado.ts';
 

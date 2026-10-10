@@ -1,5 +1,7 @@
 import {
+  COMO_ES_EL_AVISO,
   laPreferencia,
+  puedeIrPorCorreo,
   type CifraDelCorreo,
   type LoQueDiceUnAviso,
   type PreferenciaDeAviso,
@@ -194,9 +196,15 @@ export async function avisar(
     let nuevos = 0;
 
     for (const quien of destinatarios) {
-      const quiere = laPreferencia(aviso.tipo, quien.amplitud, preferencias.get(quien.personaId));
+      const guardada = preferencias.get(quien.personaId);
+      const quiere = laPreferencia(aviso.tipo, quien.amplitud, guardada);
       if (!quiere.enLaApp) continue;
-      const quiereCorreo = quiere.porCorreo && quien.correo !== null && quien.correo !== '';
+      // Lo que pide, o el correo de repuesto del horario (repaso del 10-oct): sin el
+      // móvil puesto, el horario llega por correo; con él, solo si el móvil no lo recibe.
+      const quiereCorreo =
+        puedeIrPorCorreo(aviso.tipo, quiere, guardada) &&
+        quien.correo !== null &&
+        quien.correo !== '';
       // **Lo que suena en el móvil no sale también por correo** (0017, 0070). El correo
       // se queda de repuesto: si el móvil no lo recibe, sale (`correo_si_no_llega`).
       const alMovil = quiere.alMovil && moviles.has(quien.personaId);
@@ -341,9 +349,10 @@ export async function mandarLosCorreosDeLosAvisos(contexto: Contexto): Promise<n
         ir: string | null;
         para: string;
         cifras: CifraDelCorreo[] | null;
+        tipo: TipoDeAviso;
       }[]
     >`
-      select id, titulo, detalle, ir, correo_para as para, cifras
+      select id, titulo, detalle, ir, correo_para as para, cifras, tipo
         from estook.aviso
        where correo = 'pendiente' and correo_intentos < ${INTENTOS_DE_CORREO}
        order by creado_en
@@ -359,6 +368,8 @@ export async function mandarLosCorreosDeLosAvisos(contexto: Contexto): Promise<n
             detalle: aviso.detalle,
             ir: aviso.ir,
             cifras: Array.isArray(aviso.cifras) ? aviso.cifras : null,
+            // El horario puede llegar por correo sin que nadie lo encendiera (10-oct).
+            deRepuesto: COMO_ES_EL_AVISO[aviso.tipo].correoDeRepuesto === true,
           }),
         );
         await contexto.sql`update estook.aviso set correo = 'mandado' where id = ${aviso.id}`;

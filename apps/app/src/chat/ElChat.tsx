@@ -65,7 +65,9 @@ export function ElChat() {
         conTeclado === null && 'lg:top-[var(--alto-barra-escritorio)] lg:bottom-0',
         // Por encima de la barra de arriba, que el iPhone ha subido fuera de la vista, y
         // con el hueco de la hora y la batería.
-        conTeclado !== null && 'z-40 pt-[env(safe-area-inset-top)]',
+        // Y por encima de la barra de abajo (z-40), que escribiendo sin teclado en
+        // pantalla —uno físico— seguiría tapando la caja; debajo del «deshacer» (z-50).
+        conTeclado !== null && 'z-[45] pt-[env(safe-area-inset-top)]',
       )}
       style={
         conTeclado === null

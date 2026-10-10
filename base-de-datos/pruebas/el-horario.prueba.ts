@@ -219,6 +219,8 @@ describe('publicar', () => {
     );
     expect(hecho.primeraVez).toBe(true);
     expect(hecho.avisados).toBe(2);
+    // Y por dónde: sin móviles puestos, los dos por correo (repaso del 10-oct).
+    expect(hecho).toMatchObject({ alMovil: 0, porCorreo: 2, soloEnLaApp: 0 });
 
     const avisos = await comoDuena<{ persona_id: string; titulo: string; detalle: string }>(
       "select persona_id, titulo, detalle from estook.aviso where tipo = 'horario.publicado'",
@@ -228,6 +230,15 @@ describe('publicar', () => {
     expect(suyo?.detalle).toBe(
       'Viernes 19:00–02:00 (30 min de descanso), sábado libre, domingo vacaciones.',
     );
+  });
+
+  it('sin el móvil puesto, el horario llega por correo, y se dice por dónde (repaso del 10-oct)', async () => {
+    // En esta base nadie tiene el móvil puesto: el horario no puede quedarse solo en la
+    // campana, que no se ve sin abrir Estook. Lo de Richi: a tres de cuatro, nada.
+    const porCorreo = await comoDuena<{ persona_id: string; correo: string }>(
+      "select persona_id, correo from estook.aviso where tipo = 'horario.publicado'",
+    );
+    expect(porCorreo.map((a) => a.correo)).toEqual(['pendiente', 'pendiente']);
   });
 
   it('publicado, lo ve todo el equipo: el de todos, sin euros', async () => {
@@ -266,7 +277,7 @@ describe('publicar', () => {
     const hecho = losDatos<{ primeraVez: boolean; avisados: number }>(
       await api.ejecutar(rosa, 'publicar_el_horario', { lunes: LUNES }),
     );
-    expect(hecho).toEqual({ primeraVez: false, avisados: 1 });
+    expect(hecho).toMatchObject({ primeraVez: false, avisados: 1 });
     const cambiados = await comoDuena<{ persona_id: string; detalle: string }>(
       "select persona_id, detalle from estook.aviso where tipo = 'horario.cambiado'",
     );

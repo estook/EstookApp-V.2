@@ -362,7 +362,7 @@ describe('las tarjetas', () => {
 describe('el horario, avisado en el chat', () => {
   const SIGUIENTE = '2026-10-12';
 
-  it('solo de una semana publicada, y no hace sonar el móvil', async () => {
+  it('solo de una semana publicada, y suena a quien no le ha llegado su horario (repaso del 10-oct)', async () => {
     expect(elFallo(await api.ejecutar(rosa, 'avisar_del_horario', { lunes: SIGUIENTE }))).toBe(
       'faltan_datos',
     );
@@ -387,11 +387,17 @@ describe('el horario, avisado en el chat', () => {
       tipo: 'horario',
       lunes: SIGUIENTE,
     });
-    const [esperando] = await comoDuena<{ cuantos: number }>(
-      'select count(*)::int as cuantos from estook.chat_al_movil where ultimo_id = $1',
+    // «Le doy a sí, avisar, y nada»: ahora suena. A Sara, que no tiene turno esa semana
+    // y no había recibido nada; a Marcos no, que ya tiene lo suyo.
+    const esperando = await comoDuena<{ persona_id: string; le_mencionan: boolean }>(
+      'select persona_id::text as persona_id, le_mencionan from estook.chat_al_movil where ultimo_id = $1',
       [mensajeId],
     );
-    expect(esperando?.cuantos).toBe(0);
+    const aQuien = esperando.map((e) => e.persona_id);
+    expect(aQuien).toContain(saraId);
+    expect(aQuien).not.toContain(marcosId);
+    // Y no dice «te nombran», que no es verdad.
+    expect(esperando.every((e) => !e.le_mencionan)).toBe(true);
   });
 });
 

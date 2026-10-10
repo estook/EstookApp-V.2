@@ -103,11 +103,15 @@ test('se monta, se publica, lo ve el equipo y sale en PDF', async ({ page }, inf
   const confirmar = page.getByRole('dialog', { name: 'Publicar la semana' });
   await expect(confirmar).toContainText('le llega lo suyo');
   await confirmar.getByRole('button', { name: 'Publicar', exact: true }).click();
-  await expect(page.getByText('Publicado. Le ha llegado el aviso a 1 persona.')).toBeVisible();
+  // Dice por dónde le llega (repaso del 10-oct): al móvil si lo tiene, si no por correo.
+  await expect(
+    page.getByText(/^Publicado\. Le llega a 1 persona (en el móvil|por correo)\.$/),
+  ).toBeVisible();
   await expect(page.getByText('Publicada', { exact: true })).toBeVisible();
 
   // C2 (0075): al publicar, «¿Avisar en Todo el equipo?» Sí o no.
   const alChat = page.getByRole('dialog', { name: '¿Avisar en «Todo el equipo»?' });
+  await expect(alChat).toContainText('suena a todo el equipo');
   await alChat.getByRole('button', { name: 'Sí, avisar' }).click();
   await expect(alChat).toHaveCount(0);
   await expect(page.getByText('Publicado, y avisado en «Todo el equipo».')).toBeVisible();

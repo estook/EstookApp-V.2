@@ -104,6 +104,12 @@ export interface ComoEsElAviso {
    */
   readonly movilDeFabrica: boolean;
   /**
+   * **Lo que tiene que llegar aunque no tengas el móvil puesto** (repaso del 10-oct):
+   * el horario. Sin correo de fábrica, pero si no tienes Estook en el móvil —o el
+   * móvil no lo recibe— sale por correo, salvo que lo hayas apagado tú en Ajustes.
+   */
+  readonly correoDeRepuesto?: true;
+  /**
    * Si llega a la campana sin que nadie lo toque. Casi todos sí; **lo que ya dice
    * «Hoy» no** (R2): los productos bajo mínimo están en «Hoy» cada mañana, y en la
    * campana serían lo mismo dos veces. Se enciende en Ajustes para tenerlo por correo.
@@ -259,22 +265,30 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
   // «Al publicar, a cada uno su aviso, en la campana y por correo. Al cambiar,
   // solo al afectado, y dice qué» (0066). Al móvil los dos; **por correo ya no de
   // fábrica** (0081): un correo por persona cada semana era lo que más llenaba el
-  // buzón. Quien no tiene el móvil puesto lo ve en la campana y en «Mi turno».
+  // buzón.
+  //
+  // **Pero el horario tiene que llegar** (repaso del 10-oct). Richi publicó la semana,
+  // dijo «sí, avisar», y a tres de cuatro no les llegó nada: no tenían Estook en el
+  // móvil y el correo estaba apagado. Así que el horario lleva **correo de repuesto**:
+  // a quien no tiene el móvil puesto, o si el móvil no lo recibe, le llega por correo.
+  // A quien sí lo tiene, solo el móvil, como siempre.
   'horario.publicado': {
     nombre: 'Sale tu horario de la semana',
-    explica: 'Lo tuyo, día a día. El de todos está en el horario de la app.',
+    explica: 'Lo tuyo, día a día. Si no tienes Estook en el móvil, te llega por correo.',
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: false,
     movilDeFabrica: true,
+    correoDeRepuesto: true,
   },
   'horario.cambiado': {
     nombre: 'Te cambian el horario',
-    explica: 'Solo si te toca a ti, y dice qué día y cómo queda.',
+    explica: 'Solo si te toca a ti, y dice qué día y cómo queda. Sin móvil, por correo.',
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: false,
     movilDeFabrica: true,
+    correoDeRepuesto: true,
   },
 
   // ── I (decisión 0070) ───────────────────────────────────────────────────
@@ -432,6 +446,22 @@ export function laPreferencia(
   const porCorreo = guardada?.porCorreo ?? fabrica.porCorreo;
   const alMovil = guardada?.alMovil ?? fabrica.alMovil;
   return { enLaApp, porCorreo: enLaApp && porCorreo, alMovil: enLaApp && alMovil };
+}
+
+/**
+ * Si este aviso puede salir por correo (repaso del 10-oct): porque lo quiere, o porque
+ * es de los que tienen **correo de repuesto** y no lo ha apagado él. Si sale de verdad
+ * o solo si el móvil no lo recibe lo decide quien avisa: lo que suena en el móvil no
+ * sale también por correo (0017).
+ */
+export function puedeIrPorCorreo(
+  tipo: TipoDeAviso,
+  quiere: PreferenciaDeAviso,
+  guardada: Partial<PreferenciaDeAviso> | null | undefined,
+): boolean {
+  if (!quiere.enLaApp) return false;
+  if (quiere.porCorreo) return true;
+  return COMO_ES_EL_AVISO[tipo].correoDeRepuesto === true && guardada?.porCorreo !== false;
 }
 
 // ── Cuándo avisa ─────────────────────────────────────────────────────────────

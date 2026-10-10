@@ -29,7 +29,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
 import { HojaDelDia } from './HojaDelDia.tsx';
 import { LaSemana, MiSemana } from './LaSemana.tsx';
-import { conQuienCoincide, loDelDia } from './cuentas.ts';
+import { conQuienCoincide, fraseDeLoPublicado, loDelDia, type LoPublicado } from './cuentas.ts';
 import {
   nombreCorto,
   type ElBorrador,
@@ -509,7 +509,7 @@ function MontarElHorario({
             lunes: datos.lunes,
             reemplazar,
           })
-        : await cliente.ejecutar<{ primeraVez: boolean; avisados: number }>('publicar_el_horario', {
+        : await cliente.ejecutar<LoPublicado>('publicar_el_horario', {
             lunes: datos.lunes,
           });
     if (!respuesta.ok) {
@@ -524,10 +524,17 @@ function MontarElHorario({
     await alCambiar();
     setHaciendo(null);
     setPreguntando(null);
-    const salida = respuesta.datos as { puestos?: number; avisados?: number };
+    const salida = respuesta.datos as { puestos?: number } & Partial<LoPublicado>;
     setHecho(
       que === 'publicar'
-        ? `Publicado. ${salida.avisados === 1 ? 'Le ha llegado el aviso a 1 persona' : `Les ha llegado el aviso a ${String(salida.avisados ?? 0)} personas`}.`
+        ? // Por dónde le llega a cada uno, no solo cuántos (repaso del 10-oct).
+          fraseDeLoPublicado({
+            primeraVez: salida.primeraVez ?? false,
+            avisados: salida.avisados ?? 0,
+            ...(salida.alMovil === undefined ? {} : { alMovil: salida.alMovil }),
+            ...(salida.porCorreo === undefined ? {} : { porCorreo: salida.porCorreo }),
+            ...(salida.soloEnLaApp === undefined ? {} : { soloEnLaApp: salida.soloEnLaApp }),
+          })
         : `${String(salida.puestos ?? 0)} ${salida.puestos === 1 ? 'tramo puesto' : 'tramos puestos'}. Revísalos antes de publicar.`,
     );
     // «Al acabar el horario, que aparezca: ¿quieres enviarlo al chat para avisar?» (0075).
@@ -834,8 +841,8 @@ function MontarElHorario({
         >
           <div className="flex flex-col gap-e4">
             <p className="text-secundario text-texto-suave">
-              Sale un aviso con «Ver el horario». No suena en el móvil: a cada uno ya le ha llegado
-              lo suyo.
+              Sale en el chat con «Ver el horario» y suena a todo el equipo, menos a quien ya le ha
+              llegado lo suyo.
             </p>
             <Botones>
               <Boton

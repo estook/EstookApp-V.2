@@ -754,6 +754,7 @@ export {
   laMermaAvisa,
   laNotaBaja,
   laPreferencia,
+  puedeIrPorCorreo,
   laSubidaAvisa,
   numeroDeLaCampana,
   quienesEnUnaFrase,

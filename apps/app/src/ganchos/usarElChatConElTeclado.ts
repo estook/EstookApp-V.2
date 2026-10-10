@@ -37,15 +37,18 @@ export function usarElChatConElTeclado(caja: RefObject<HTMLElement | null>): Don
       };
     }
 
-    const escribiendo = () => {
-      const foco = document.activeElement;
-      return (
-        foco instanceof HTMLElement &&
-        caja.current?.contains(foco) === true &&
-        (foco instanceof HTMLTextAreaElement ||
-          (foco instanceof HTMLInputElement && ['text', 'search'].includes(foco.type)))
-      );
-    };
+    const esUnCampoDelChat = (elemento: EventTarget | Element | null) =>
+      elemento instanceof HTMLElement &&
+      caja.current?.contains(elemento) === true &&
+      (elemento instanceof HTMLTextAreaElement ||
+        (elemento instanceof HTMLInputElement && ['text', 'search'].includes(elemento.type)));
+    const enUnCampo = () => esUnCampoDelChat(document.activeElement);
+    // Al salir del campo **no se suelta enseguida**: el foco se va al apretar el dedo y
+    // el toque acaba al levantarlo; si el chat se movía entre las dos cosas, el toque
+    // caía en otro sitio y no pasaba nada (el botón de opciones de un mensaje, en las
+    // pruebas). Un respiro de 400 ms, y luego ya a su sitio.
+    let soltadoEn = Number.NEGATIVE_INFINITY;
+    const escribiendo = () => enUnCampo() || performance.now() - soltadoEn < 400;
 
     let ultimo = '';
     const mirar = () => {
@@ -76,18 +79,23 @@ export function usarElChatConElTeclado(caja: RefObject<HTMLElement | null>): Don
       else mirar();
     };
 
+    const alSoltar = (evento: FocusEvent) => {
+      if (esUnCampoDelChat(evento.target)) soltadoEn = performance.now();
+      mirarUnRato();
+    };
+
     mirar();
     visor.addEventListener('resize', mirarUnRato);
     visor.addEventListener('scroll', mirarUnRato);
     window.addEventListener('focusin', mirarUnRato);
-    window.addEventListener('focusout', mirarUnRato);
+    window.addEventListener('focusout', alSoltar);
     movil.addEventListener('change', mirar);
     return () => {
       raiz.removeAttribute('data-chat');
       visor.removeEventListener('resize', mirarUnRato);
       visor.removeEventListener('scroll', mirarUnRato);
       window.removeEventListener('focusin', mirarUnRato);
-      window.removeEventListener('focusout', mirarUnRato);
+      window.removeEventListener('focusout', alSoltar);
       movil.removeEventListener('change', mirar);
       if (fotograma !== 0) window.cancelAnimationFrame(fotograma);
     };

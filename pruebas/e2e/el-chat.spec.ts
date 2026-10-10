@@ -250,3 +250,73 @@ test('un canal nuevo: se corrige, se borra, se retira, se silencia, se añade ge
   await ejecutarEnLaApi(request, marcos, 'salir_del_canal', { canal_id: canalId });
   expect((await losCanales(request, marcos)).some((c) => c.id === canalId)).toBe(false);
 });
+
+/**
+ * El chat con el teclado del iPhone (10-oct). «Al tocar la caja de escribir, el iPhone
+ * sube la página entera y la caja queda tapada por la barra de flechas y el teclado.»
+ *
+ * Un navegador de pruebas no tiene teclado en pantalla: se finge lo que mide el iPhone
+ * con el teclado abierto. Lo visible empieza 200 px más abajo (el iPhone ha subido la
+ * página) y mide 300 menos, y **`innerHeight` encoge con él**, que es lo que hace el
+ * iPhone y lo que dejaba el chat entre las dos barras, fuera de la vista. Lo que tiene
+ * que pasar: la cabecera de la conversación arriba de lo visible y la caja de escribir
+ * pegada abajo, encima del teclado, como en WhatsApp.
+ */
+test('con el teclado del iPhone, la cabecera arriba y la caja justo encima del teclado', async ({
+  page,
+}) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 1024, 'El teclado en pantalla es del móvil.');
+  await entrarEnLaApp(page, ROSA);
+  await irA(page, 'chat');
+  await page.getByRole('button', { name: /^Todo el equipo/ }).click();
+  const conversacion = page.getByRole('region', { name: 'Conversación' });
+  const caja = conversacion.getByRole('textbox', { name: 'Escribe un mensaje' });
+  await expect(caja).toBeVisible();
+
+  const alto = page.viewportSize()?.height ?? 0;
+  const arriba = 200;
+  const visible = alto - 300;
+  await page.evaluate(
+    ([desde, cuanto]) => {
+      const visor = window.visualViewport;
+      if (!visor) throw new Error('Sin visualViewport');
+      Object.defineProperty(visor, 'offsetTop', { configurable: true, get: () => desde });
+      Object.defineProperty(visor, 'height', { configurable: true, get: () => cuanto });
+      // Lo del iPhone: innerHeight sigue a lo visible, no a la página.
+      Object.defineProperty(window, 'innerHeight', { configurable: true, get: () => cuanto });
+    },
+    [arriba, visible] as const,
+  );
+  await caja.click();
+
+  const cabecera = conversacion.getByRole('heading', { level: 2 }).first();
+  await expect
+    .poll(async () => {
+      const deLaCaja = await caja.boundingBox();
+      const deLaCabecera = await cabecera.boundingBox();
+      if (deLaCaja === null || deLaCabecera === null) return 'sin medir';
+      const cajaAbajo = Math.round(deLaCaja.y + deLaCaja.height);
+      const cabeceraArriba = Math.round(deLaCabecera.y);
+      return cajaAbajo <= arriba + visible &&
+        cajaAbajo > arriba + visible - 90 &&
+        cabeceraArriba >= arriba
+        ? 'en su sitio'
+        : `caja abajo en ${String(cajaAbajo)}, cabecera en ${String(cabeceraArriba)}`;
+    })
+    .toBe('en su sitio');
+
+  // Y al soltar la caja (el teclado se va), vuelve entre las dos barras.
+  await page.evaluate(
+    ([cuanto]) => {
+      const visor = window.visualViewport;
+      if (!visor) throw new Error('Sin visualViewport');
+      Object.defineProperty(visor, 'offsetTop', { configurable: true, get: () => 0 });
+      Object.defineProperty(visor, 'height', { configurable: true, get: () => cuanto });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, get: () => cuanto });
+      (document.activeElement as HTMLElement | null)?.blur();
+      visor.dispatchEvent(new Event('resize'));
+    },
+    [alto] as const,
+  );
+  await expect(page.locator('[data-chat-con-teclado]')).toHaveCount(0);
+});

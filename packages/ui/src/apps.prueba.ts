@@ -14,6 +14,7 @@ import {
   dondeEntraEnElDestino,
   rutaDe,
   vistasConstruidas,
+  vistasQueSeEnsenan,
 } from './apps.ts';
 import { WIDGETS } from './panel/catalogo.ts';
 
@@ -454,5 +455,20 @@ describe('la rueda se reparte entre las que el rol tiene', () => {
 
   it('quien no tiene ninguna app no ve ninguna, y eso no revienta', () => {
     expect(appsVisibles(con('app.panel'))).toEqual([]);
+  });
+});
+
+describe('las vistas que solo salen si tienen algo (repaso del 10-oct)', () => {
+  const productos = APPS.find((a) => a.id === 'almacen')?.destinos.find((d) => d.id === 'productos');
+  const ids = (conAlgo: readonly string[], activa = 'todo') =>
+    productos === undefined ? [] : vistasQueSeEnsenan(productos, activa, conAlgo).map((v) => v.id);
+
+  it('mientras no se sabe, no sale ninguna de las tres: así no parpadean al entrar', () => {
+    expect(ids([])).toEqual(['todo', 'bajo-minimo', 'valor']);
+  });
+
+  it('salen las que tienen algo, y la que se está mirando aunque esté vacía', () => {
+    expect(ids(['congelados'])).toEqual(['todo', 'bajo-minimo', 'congelados', 'valor']);
+    expect(ids([], 'desactivados')).toEqual(['todo', 'bajo-minimo', 'desactivados', 'valor']);
   });
 });

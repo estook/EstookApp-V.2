@@ -104,6 +104,12 @@ export interface Vista {
    * informacion; una vista que promete algo y no lo hace, no.
    */
   readonly modulo?: string;
+  /**
+   * Solo sale si tiene algo (repaso del 9-oct y del 10-oct): «Sin precio», «Congelados» y
+   * «Desactivados» vacías son opciones que no sirven y hacen la fila larga. **Mientras
+   * no se sabe, no sale**: si saliera y luego se fuera, parpadea al entrar.
+   */
+  readonly soloSiTieneAlgo?: true;
 }
 
 export interface Destino {
@@ -207,6 +213,11 @@ function comoRuta(nombre: string): string {
  * `vistas('Todo', 'Bajo mínimo')` da los identificadores hechos. Con un modulo
  * detras, `vistas(['Mes', 'M14'])`, la vista queda apuntada como pendiente.
  */
+/** Marca las vistas que solo salen si tienen algo. */
+function soloSiTienenAlgo(lista: readonly Vista[], ids: readonly string[]): readonly Vista[] {
+  return lista.map((v) => (ids.includes(v.id) ? { ...v, soloSiTieneAlgo: true } : v));
+}
+
 function vistas(...nombres: readonly (string | readonly [string, string])[]): readonly Vista[] {
   return nombres.map((nombre) =>
     typeof nombre === 'string'
@@ -249,7 +260,11 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // tenerlo en mente sin abrir la puerta.
         // «Valor» (M8 · 0078): lo que vale el almacén en cualquier fecha, para quien ve
         // precios. La misma lista, mirada en dinero y en un día.
-        vistas: vistas('Todo', 'Bajo mínimo', 'Sin precio', 'Congelados', 'Desactivados', 'Valor'),
+        // Y las tres de en medio, solo si tienen algo (repaso del 9-oct y del 10-oct).
+        vistas: soloSiTienenAlgo(
+          vistas('Todo', 'Bajo mínimo', 'Sin precio', 'Congelados', 'Desactivados', 'Valor'),
+          ['sin-precio', 'congelados', 'desactivados'],
+        ),
       },
       {
         id: 'movimientos',
@@ -776,6 +791,22 @@ export function vistasConstruidas(destino: Destino): readonly Vista[] {
  * destino entero sera entonces un cartel y la direccion tiene que seguir siendo
  * copiable y compartible.
  */
+/**
+ * Las vistas que se enseñan arriba (repaso del 10-oct): las de siempre, y de las que
+ * solo salen si tienen algo, las que lo tienen (`conAlgo`, que lo dice la pantalla de
+ * dentro) **y la que se está mirando**, que no desaparece debajo de quien la mira.
+ * Mientras no se sabe, `conAlgo` va vacío y no salen: así no parpadean al entrar.
+ */
+export function vistasQueSeEnsenan(
+  destino: Destino,
+  activa: string | undefined,
+  conAlgo: readonly string[],
+): readonly Vista[] {
+  return destino.vistas.filter(
+    (v) => v.soloSiTieneAlgo !== true || v.id === activa || conAlgo.includes(v.id),
+  );
+}
+
 export function dondeEntraEnElDestino(destino: Destino): Vista | undefined {
   return vistasConstruidas(destino)[0] ?? destino.vistas[0];
 }

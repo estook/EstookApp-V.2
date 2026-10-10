@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PERSONAS_EN_UN_PRIVADO } from '@estook/dominio';
@@ -51,10 +51,13 @@ export function ElChat() {
   const canalId = canal ?? null;
   // Con el teclado abierto, justo lo que se ve; sin él, entre las dos barras. Y la
   // página de debajo, quieta (repaso de C1, `conElTeclado.ts`).
-  const conTeclado = usarElChatConElTeclado();
+  const caja = useRef<HTMLDivElement>(null);
+  const conTeclado = usarElChatConElTeclado(caja);
 
   return (
     <div
+      ref={caja}
+      data-chat-con-teclado={conTeclado === null ? undefined : ''}
       className={clases(
         'fixed inset-x-0 flex bg-fondo',
         conTeclado === null &&

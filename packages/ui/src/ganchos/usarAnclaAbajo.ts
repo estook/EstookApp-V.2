@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { comoQuedaAbajo } from '../navegacion/anclaAbajo.ts';
+import { altoDeLaPagina, comoQuedaAbajo } from '../navegacion/anclaAbajo.ts';
 
 /**
  * Mantiene lo pegado abajo en el borde de la pantalla aunque el iPhone se líe con
@@ -28,7 +28,8 @@ export function usarAnclaAbajo(): void {
     const mirar = () => {
       const { desfase, teclado } = comoQuedaAbajo(
         { offsetTop: visor.offsetTop, height: visor.height, scale: visor.scale },
-        window.innerHeight,
+        // No `innerHeight` a secas: en el iPhone encoge con el teclado (10-oct).
+        altoDeLaPagina(window),
       );
       const ahora = `${String(desfase)}|${String(teclado)}`;
       if (ahora === ultimo) return;

@@ -136,3 +136,50 @@ test('en Productos, las vistas vacías no ocupan sitio', async ({ page }) => {
   await abrirSinQueSeCaiga(page, `${APP}#/almacen/productos/desactivados`);
   await expect(page.getByRole('tab', { name: 'Desactivados', selected: true })).toBeVisible();
 });
+
+/**
+ * Lo que vio Richi el 10-oct: «al pulsar "Valor" vuelven a salir "Sin precio",
+ * "Congelados" y "Desactivados" aunque estén vacías», y «al entrar en Almacén aparecen
+ * por un milisegundo y desaparecen». Rosa no tiene nada desactivado.
+ */
+test('en Productos, las vistas vacías no vuelven en «Valor» ni parpadean al entrar', async ({
+  page,
+}) => {
+  const rosa = await tokenDe(page.request, ROSA);
+  const lo = await consultar<{ cuantosEnLasVistas: { desactivados: number } }>(
+    page.request,
+    rosa,
+    'mis_productos',
+    {},
+  );
+  expect(lo.cuantosEnLasVistas.desactivados, 'Bar Centro no tiene nada desactivado').toBe(0);
+  const desactivados = page.getByRole('tab', { name: 'Desactivados' });
+
+  await entrarEnLaApp(page, ROSA);
+  // Mientras no llega lo que hay en cada vista, ninguna de las tres sale: se retrasa
+  // la respuesta para ver ese rato, que en un móvil con poca señal es largo.
+  let soltar: () => void = () => undefined;
+  const retenida = new Promise<void>((resolver) => {
+    soltar = resolver;
+  });
+  await page.route('**/v1/consultas/mis_productos*', async (ruta) => {
+    await retenida;
+    // Si la página ya no la espera (se ha ido), no hay nada que soltar.
+    await ruta.continue().catch(() => undefined);
+  });
+  await abrirSinQueSeCaiga(page, `${APP}#/almacen/productos/todo`);
+  await expect(page.getByRole('tab', { name: 'Todo', selected: true })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Valor' })).toBeVisible();
+  await expect(desactivados).toHaveCount(0);
+  const llegada = page.waitForResponse('**/v1/consultas/mis_productos*');
+  soltar();
+  await llegada;
+  await expect(page.getByRole('heading', { name: 'Productos', level: 1 })).toBeVisible();
+  await expect(desactivados).toHaveCount(0);
+
+  // Y en «Valor», tampoco.
+  await page.getByRole('tab', { name: 'Valor' }).click();
+  await expect(page.getByRole('tab', { name: 'Valor', selected: true })).toBeVisible();
+  await expect(page.getByText('Lo que vale hoy tu almacén')).toBeVisible();
+  await expect(desactivados).toHaveCount(0);
+});

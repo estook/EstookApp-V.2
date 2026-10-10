@@ -15,6 +15,7 @@ import {
   destinoPorId,
   dondeEntraEnElDestino,
   rutaDe,
+  vistasQueSeEnsenan,
   type App,
   type Destino,
   type Vista,
@@ -32,7 +33,7 @@ import { Informes } from '../negocio/Informes.tsx';
 import { Resenas } from '../negocio/Resenas.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAbrirLaRueda } from '../ganchos/usarLaRueda.ts';
-import { LasVistasVacias } from '../ganchos/usarLasVistasVacias.ts';
+import { LasVistasConAlgo } from '../ganchos/usarLasVistasConAlgo.ts';
 import { IconoRejilla } from '@estook/iconos';
 
 /**
@@ -165,9 +166,10 @@ function Dentro({
   readonly alIrAVista: (id: string) => void;
 }) {
   const abrirLaRueda = usarAbrirLaRueda();
-  // Las vistas vacías que pide esconder la pantalla de dentro (repaso del 9-oct).
-  const [vacias, setVacias] = useState<readonly string[]>([]);
-  const lasVistas = destino.vistas.filter((v) => v.id === vista?.id || !vacias.includes(v.id));
+  // Las vistas que solo salen si tienen algo: cuáles lo tienen lo dice la pantalla de
+  // dentro, y mientras no lo dice no sale ninguna (repaso del 9-oct y del 10-oct).
+  const [conAlgo, setConAlgo] = useState<readonly string[]>([]);
+  const lasVistas = vistasQueSeEnsenan(destino, vista?.id, conAlgo);
   return (
     <div className={clases('flex w-full flex-col gap-e4', ANCHO[app.forma])}>
       <header className="flex flex-col gap-e2">
@@ -241,9 +243,9 @@ function Dentro({
         <MenuLateral app={app} destinoActivo={destino.id} alIrADestino={alIrADestino} />
 
         <div className="min-w-0 flex-1">
-          <LasVistasVacias.Provider value={setVacias}>
+          <LasVistasConAlgo.Provider value={setConAlgo}>
             <Contenido app={app} destino={destino} vista={vista} />
-          </LasVistasVacias.Provider>
+          </LasVistasConAlgo.Provider>
         </div>
       </div>
     </div>

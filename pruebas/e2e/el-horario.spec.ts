@@ -190,3 +190,34 @@ test('para no empezar de cero: copiar la semana anterior, y preguntar antes de p
   expect(deMarcos).toHaveLength(1);
   expect(deMarcos[0]?.entra).toBe('10:00');
 });
+
+/**
+ * Horarios en un solo sitio (repaso del 10-oct · 0082). «Quitar Horarios de Equipo y
+ * dejarlo solo en Calendario → Turnos ("Montarlo" solo para quien puede publicar).
+ * Equipo se queda en Resumen · Personas · Fichajes · Incidencias, con un acceso
+ * "Horario de la semana →" en el Resumen. Todos los "Ir a Horarios" llevan a
+ * Calendario.»
+ */
+test('el horario vive en Calendario › Turnos, y Equipo lleva a él', async ({ page }) => {
+  await entrarEnLaApp(page, ROSA);
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen`);
+  await expect(page.getByRole('heading', { name: 'Resumen', level: 1 })).toBeVisible();
+  // Equipo ya no tiene «Horarios», ni en el menú de al lado ni en la barra de abajo.
+  await expect(page.getByRole('navigation').getByText('Horarios', { exact: true })).toHaveCount(0);
+
+  await page.getByRole('link', { name: 'Horario de la semana' }).click();
+  await expect(page).toHaveURL(/#\/calendario\/turnos/);
+  await expect(page.getByRole('heading', { name: 'Turnos', level: 1 })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Montarlo' })).toBeVisible();
+
+  // Una dirección guardada de antes lleva al mismo sitio, con su semana.
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/horarios?semana=2026-10-05`);
+  await expect(page).toHaveURL(/#\/calendario\/turnos\?semana=2026-10-05/);
+});
+
+test('quien no publica el horario lo ve en Turnos, sin «Montarlo»', async ({ page }) => {
+  await entrarEnLaApp(page, SARA);
+  await abrirSinQueSeCaiga(page, `${APP}#/calendario/turnos`);
+  await expect(page.getByRole('heading', { name: 'Turnos', level: 1 })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Montarlo' })).toHaveCount(0);
+});

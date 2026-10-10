@@ -435,9 +435,10 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         icono: IconoEquipo,
         queContesta: '¿Quién trabaja cada día, a qué hora y con quién?',
         vistas: [],
-        // **Construido en H2 (0069).** Es el mismo horario que Equipo › Horarios:
-        // aquí lo mira el equipo, que tiene Calendario y no Equipo. Quien lo monta
-        // lo monta desde cualquiera de los dos.
+        // **Construido en H2 (0069), y el único sitio del horario desde el repaso
+        // del 10-oct (0082).** Lo ve todo el equipo, y quien puede publicarlo tiene
+        // además «Montarlo». Hasta entonces estaba también en Equipo › Horarios, y
+        // eran dos sitios para lo mismo: «horarios en un solo sitio» (Richi).
       },
     ],
   },
@@ -473,15 +474,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         queContesta: '¿Quién tiene acceso, con qué rol, y quién no ha entrado?',
         vistas: vistas('Con acceso', 'Sin entrar todavía', 'Retirados'),
       },
-      {
-        id: 'horarios',
-        nombre: 'Horarios',
-        icono: IconoCalendario,
-        queContesta: '¿Cuál es el cuadrante, y cuadra con los contratos?',
-        vistas: [],
-        // **Construido en H2 (0069)**: montarlo en borrador, lo que cuesta, los avisos
-        // de descansos y horas, y publicarlo.
-      },
+      // Aquí estaba **Horarios** (H2 · 0069). Desde el repaso del 10-oct (0082) el
+      // horario vive solo en Calendario › Turnos, y el Resumen lleva a él.
       {
         // **Construido en M6½, y es el que pedia la lista con esta palabra:**
         // «en Equipo anadir pestana Resumen». Las horas de cada uno frente a su

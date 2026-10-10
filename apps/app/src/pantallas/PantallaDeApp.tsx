@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
 import {
   MenuLateral,
@@ -68,6 +68,7 @@ import { IconoRejilla } from '@estook/iconos';
 export function PantallaDeApp() {
   const { app: idDeLaApp, destino: idDelDestino, vista: idDeLaVista } = useParams();
   const navegar = useNavigate();
+  const location = useLocation();
   const { permisos } = usarSesion();
 
   const app = idDeLaApp === undefined ? undefined : appPorId(idDeLaApp);
@@ -78,6 +79,10 @@ export function PantallaDeApp() {
   const laTiene = app !== undefined && appsVisibles(permisos).includes(app.permiso);
   // Y al volver al Panel **se dice** (26-sep): volver sin explicación parecía un fallo.
   if (!laTiene) return <Navigate to="/" replace state={{ sinAcceso: true }} />;
+
+  // Lo que se mudó: una dirección guardada lleva a donde está ahora, con su semana.
+  const mudado = SE_MUDO[`${app.id}/${idDelDestino ?? ''}`];
+  if (mudado !== undefined) return <Navigate to={`${mudado}${location.search}`} replace />;
 
   const destino = idDelDestino === undefined ? undefined : destinoPorId(app, idDelDestino);
 
@@ -132,6 +137,14 @@ export function PantallaDeApp() {
     />
   );
 }
+
+/**
+ * Los destinos que se fueron a otra app. Equipo › Horarios está en Calendario › Turnos
+ * desde el repaso del 10-oct (0082): «horarios en un solo sitio».
+ */
+const SE_MUDO: Readonly<Record<string, string>> = {
+  'equipo/horarios': '/calendario/turnos',
+};
 
 /**
  * El ancho de la pantalla segun la forma de la app.
@@ -294,9 +307,8 @@ function Contenido({
   if (app.id === 'equipo' && destino.id === 'incidencias') {
     return <Incidencias vista={vista?.id ?? 'todas'} />;
   }
-  // H2 (0069): el mismo horario en Equipo, para quien lo monta, y en Calendario,
-  // que es donde lo mira el equipo.
-  if (app.id === 'equipo' && destino.id === 'horarios') return <ElHorario conTitulo={false} />;
+  // H2 (0069): el horario, en un solo sitio desde el repaso del 10-oct (0082). Lo ve
+  // todo el equipo, y quien lo publica tiene además «Montarlo».
   if (app.id === 'calendario' && destino.id === 'turnos') return <ElHorario conTitulo={false} />;
 
   // El cierre es una **vista** de la jornada: el resto de la jornada —«En

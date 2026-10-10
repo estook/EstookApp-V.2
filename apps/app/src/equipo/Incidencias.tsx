@@ -12,6 +12,7 @@ import { usarPersonaAbierta } from '../ganchos/usarPersonaAbierta.ts';
 import { FichaDePersona } from './FichaDePersona.tsx';
 import type { LasIncidencias, UnaIncidencia } from './contrato.ts';
 import { Justificar, ListaPorDias } from './ListaDeIncidencias.tsx';
+import { DONDE_ESTA_EL_HORARIO } from '../horario/contrato.ts';
 
 /**
  * Equipo → Incidencias (repaso del 9-oct, decisión 0081).
@@ -119,10 +120,10 @@ export function Incidencias({ vista }: { readonly vista: string }) {
             <Boton
               tono="secundario"
               onClick={() => {
-                navegar('/equipo/horarios');
+                navegar(DONDE_ESTA_EL_HORARIO);
               }}
             >
-              Ir a Horarios
+              Ir al horario
             </Boton>
           }
         >
@@ -159,10 +160,10 @@ export function Incidencias({ vista }: { readonly vista: string }) {
                     <Boton
                       tono="secundario"
                       onClick={() => {
-                        navegar('/equipo/horarios');
+                        navegar(DONDE_ESTA_EL_HORARIO);
                       }}
                     >
-                      Ir a Horarios
+                      Ir al horario
                     </Boton>
                   ),
                 })}

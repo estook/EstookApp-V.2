@@ -50,7 +50,8 @@ import {
  *     publicar. La primera vez a cada uno le llega lo suyo; después, solo a quien le
  *     cambia algo.
  *
- * Se llega desde Equipo › Horarios, desde Calendario › Turnos, desde «Mi turno» del
+ * Vive en Calendario › Turnos, el único sitio del horario desde el repaso del 10-oct
+ * (0082). Se llega también desde el Resumen de Equipo, desde «Mi turno» del
  * Panel y desde el aviso de la campana (`/horario?semana=…`).
  */
 export function ElHorario({

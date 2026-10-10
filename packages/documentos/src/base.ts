@@ -39,6 +39,11 @@ export interface Documento {
   readonly cuerpo: string;
   /** Apaisado para tablas anchas (el horario de la semana). */
   readonly apaisado?: boolean;
+  /**
+   * Lo propio de un documento, encima de lo de todos (el horario de la pared). Es
+   * nuestro, nunca algo que venga de fuera: aquí no se escapa nada.
+   */
+  readonly estilo?: string;
 }
 
 /** El naranja de Estook, para quien no ha elegido color. */
@@ -147,7 +152,9 @@ export function paginaDelDocumento(doc: Documento): string {
            background: ${FONDO}; color: ${SUAVE}; }
   .aviso { background: ${FONDO}; border-radius: 10px; padding: 9px 11px; margin-top: 14px; font-size: 8pt;
            color: ${SUAVE}; break-inside: avoid; }
+  .color { color: ${color}; }
   .huella { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 7pt; word-break: break-all; }
+${doc.estilo ?? ''}
 </style>
 </head>
 <body>

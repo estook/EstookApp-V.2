@@ -357,3 +357,33 @@ describe('para no empezar de cero', () => {
     expect((await elBorrador(rosa, SIGUIENTE)).turnos).toHaveLength(antes.length - 1);
   });
 });
+
+describe('el horario, en un solo sitio (repaso del 10-oct · 0082)', () => {
+  it('quien puede publicar el horario tiene Calendario, que es donde vive ahora', async () => {
+    // Equipo › Horarios se fue a Calendario › Turnos: un rol que publica sin Calendario
+    // se quedaría sin sitio donde montarlo.
+    const sinCalendario = await comoDuena<{ rol: string }>(
+      `select p.rol from estook.permiso_de_rol p
+        where p.permiso = 'accion.publicar_cuadrante'
+          and not exists (
+            select 1 from estook.permiso_de_rol c
+             where c.rol = p.rol and c.permiso = 'app.calendario'
+          )`,
+    );
+    expect(sinCalendario).toEqual([]);
+  });
+});
+
+describe('el horario en papel (repaso del 10-oct · 0082)', () => {
+  it('los puestos que salen debajo de cada nombre llevan sus tildes', async () => {
+    const roles = await comoDuena<{ codigo: string; nombre: string }>(
+      `select codigo, nombre from estook.rol
+        where codigo in ('direccion', 'gestoria', 'area_manager') order by codigo`,
+    );
+    expect(roles.map((r) => r.nombre)).toEqual([
+      'Área manager',
+      'Dirección o propietario',
+      'Gestoría',
+    ]);
+  });
+});

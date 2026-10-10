@@ -5,6 +5,7 @@ import {
   COLOR_DE_ESTOOK,
   MONTSERRAT_WOFF2_BASE64,
   colorSeguro,
+  documentoDelHorario,
   documentoDelInforme,
   documentoDelRegistro,
   escapar,
@@ -114,5 +115,67 @@ describe('el registro de jornada', () => {
     expect(pagina).toContain('a'.repeat(64));
     expect(pagina).toContain('A4 landscape');
     expect(pagina).toContain('no cuentan');
+  });
+});
+
+describe('el horario de la pared (repaso del 10-oct)', () => {
+  const dia = (horas: string, descanso: string | null = null) => ({
+    tramos: [{ horas, descanso }],
+    ausencia: null,
+  });
+  const libre = { tramos: [], ausencia: 'Libre' };
+  const datos = {
+    marca: MARCA,
+    semana: 'del 5 al 11 de octubre',
+    hechoEl: 'Hecho el 10 de octubre',
+    dias: ['Lun 5', 'Mar 6', 'Mié 7', 'Jue 8', 'Vie 9', 'Sáb 10', 'Dom 11'],
+    grupos: [
+      {
+        nombre: 'Cocina',
+        filas: [
+          {
+            persona: 'Antonio P.',
+            puesto: 'Jefe de cocina',
+            horas: '19 h',
+            dias: [dia('12:00–18:30', 'Descanso 30 min'), libre, libre, libre, libre, libre, libre],
+          },
+        ],
+      },
+      {
+        nombre: 'El resto del equipo',
+        filas: [
+          {
+            persona: 'Alejandro S.',
+            puesto: 'Gerente',
+            horas: '5 h',
+            dias: [libre, libre, libre, dia('12:30–17:30'), libre, libre, libre],
+          },
+        ],
+      },
+    ],
+    publicado: 'Publicado el 10 de octubre por Ricardo',
+  };
+
+  it('es una sola tabla para todos los grupos, con las columnas fijas: los días caen unos debajo de otros', () => {
+    const html = documentoDelHorario(datos);
+    expect(html.match(/<table/g)).toHaveLength(1);
+    expect(html).toContain('<colgroup>');
+    expect(html).toContain('<tr class="grupo"><th colspan="9" class="color">Cocina</th></tr>');
+    expect(html).toContain(
+      '<tr class="grupo"><th colspan="9" class="color">El resto del equipo</th></tr>',
+    );
+  });
+
+  it('el descanso va en pequeño debajo de las horas, no en la misma línea', () => {
+    const html = documentoDelHorario(datos);
+    expect(html).toContain('<span class="entero">12:00–18:30</span><small>Descanso 30 min</small>');
+    expect(html).not.toContain('(30 min de descanso)');
+  });
+
+  it('lo de la medianoche solo se dice si algún tramo la cruza', () => {
+    expect(documentoDelHorario(datos)).not.toContain('termina al día siguiente');
+    expect(documentoDelHorario({ ...datos, cruzaLaMedianoche: true })).toContain(
+      'Un tramo que acaba antes de empezar termina al día siguiente.',
+    );
   });
 });

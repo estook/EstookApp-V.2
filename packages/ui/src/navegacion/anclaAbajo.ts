@@ -61,3 +61,19 @@ export function comoQuedaAbajo(visor: Visor, altoDeMaquetacion: number): ComoQue
   // con teclado la barra se aparta, y sin él no hay nada que compensar.
   return { desfase: sobra > 0 ? sobra : 0, teclado };
 }
+
+/**
+ * El alto de la página **sin teclado** (10-oct): lo que se compara con el visible para
+ * saber si hay un teclado abierto.
+ *
+ * No vale `window.innerHeight` a secas: en el iPhone **encoge con el teclado** (sigue al
+ * visor visible, no a la página), y entonces la resta sale casi cero y nadie ve el
+ * teclado. El alto del documento (`documentElement.clientHeight`) es el de la página y
+ * no se mueve. Se toma el mayor de los dos: en Android y en el ordenador son el mismo.
+ */
+export function altoDeLaPagina(ventana: {
+  readonly innerHeight: number;
+  readonly document: { readonly documentElement: { readonly clientHeight: number } };
+}): number {
+  return Math.max(ventana.innerHeight, ventana.document.documentElement.clientHeight);
+}

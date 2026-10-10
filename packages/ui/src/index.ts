@@ -31,6 +31,7 @@ export {
   dondeEntraEnElDestino,
   rutaDe,
   vistasConstruidas,
+  vistasQueSeEnsenan,
 } from './apps.ts';
 export type { App, Destino, Vista, FormaDeApp } from './apps.ts';
 
@@ -170,7 +171,12 @@ export type { RejillaProps } from './panel/rejilla.ts';
 export { usarQueEstaVacio } from './ganchos/usarQueEstaVacio.ts';
 export { usarSinNadaDentro } from './ganchos/usarSinNadaDentro.ts';
 export { usarAnclaAbajo } from './ganchos/usarAnclaAbajo.ts';
-export { ALTO_DE_UN_TECLADO, comoQuedaAbajo, type Visor } from './navegacion/anclaAbajo.ts';
+export {
+  ALTO_DE_UN_TECLADO,
+  altoDeLaPagina,
+  comoQuedaAbajo,
+  type Visor,
+} from './navegacion/anclaAbajo.ts';
 
 export { MenuLateral } from './navegacion/MenuLateral.tsx';
 export type { MenuLateralProps } from './navegacion/MenuLateral.tsx';

@@ -86,6 +86,7 @@ Los que no pueden pisar el navegador jamas.
 | `CLOUDFLARE_PDF_TOKEN`       | La clave de Cloudflare **solo con «Browser Rendering - Edit»** (0068)       |
 | `VAPID_CLAVE_PUBLICA`        | Los avisos al móvil (0070). La hace `.\estook.cmd movil:claves`             |
 | `VAPID_CLAVE_PRIVADA`        | Su pareja. **Secreta**: ni al chat ni a ningún documento (0070)             |
+| `SENTRY_DSN`                 | Los fallos de la API, a Sentry: el DSN del proyecto `estook-api` (0082)     |
 
 ### Las que faltan, cuál usa ya el código y dónde van
 
@@ -103,6 +104,7 @@ ponerla.
 | **IA** (Fogón)              | `AI_API_KEY`, `AI_MODELO_RAPIDO`, `AI_MODELO_ANALISIS`       | Secretos de Supabase                     | No · M22, con modelo y tope elegidos (0023)  |
 | **Los PDF** (Cloudflare)    | `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_PDF_TOKEN`             | Secretos de Supabase                     | **Sí** · los informes y el registro (0068)   |
 | **Los avisos al móvil**     | `VAPID_CLAVE_PUBLICA` y `VAPID_CLAVE_PRIVADA` (sin cuenta)   | Secretos de Supabase                     | **Sí** · I, desde que se despliegue (0070)   |
+| **Sentry de la API**        | `SENTRY_DSN` (un proyecto `estook-api`, plataforma Deno)     | Secretos de Supabase                     | **Sí** · desde que se despliegue (0082)      |
 
 **Los PDF (0068)** los hace Cloudflare Browser Run. La clave de los PDF es **una aparte**, con un solo permiso («Browser Rendering - Edit»): si se escapa, solo sirve para imprimir páginas, no para tocar la cuenta. No es la misma que `CLOUDFLARE_API_TOKEN`, la de publicar la web en la mudanza, que va en GitHub. Sin las dos de aquí, pedir un PDF dice que todavía no están encendidos y todo lo demás funciona.
 

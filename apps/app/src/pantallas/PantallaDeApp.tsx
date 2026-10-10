@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
 import {
   MenuLateral,
@@ -15,6 +15,7 @@ import {
   destinoPorId,
   dondeEntraEnElDestino,
   rutaDe,
+  vistasQueSeEnsenan,
   type App,
   type Destino,
   type Vista,
@@ -32,7 +33,7 @@ import { Informes } from '../negocio/Informes.tsx';
 import { Resenas } from '../negocio/Resenas.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAbrirLaRueda } from '../ganchos/usarLaRueda.ts';
-import { LasVistasVacias } from '../ganchos/usarLasVistasVacias.ts';
+import { LasVistasConAlgo } from '../ganchos/usarLasVistasConAlgo.ts';
 import { IconoRejilla } from '@estook/iconos';
 
 /**
@@ -67,6 +68,7 @@ import { IconoRejilla } from '@estook/iconos';
 export function PantallaDeApp() {
   const { app: idDeLaApp, destino: idDelDestino, vista: idDeLaVista } = useParams();
   const navegar = useNavigate();
+  const location = useLocation();
   const { permisos } = usarSesion();
 
   const app = idDeLaApp === undefined ? undefined : appPorId(idDeLaApp);
@@ -77,6 +79,10 @@ export function PantallaDeApp() {
   const laTiene = app !== undefined && appsVisibles(permisos).includes(app.permiso);
   // Y al volver al Panel **se dice** (26-sep): volver sin explicación parecía un fallo.
   if (!laTiene) return <Navigate to="/" replace state={{ sinAcceso: true }} />;
+
+  // Lo que se mudó: una dirección guardada lleva a donde está ahora, con su semana.
+  const mudado = SE_MUDO[`${app.id}/${idDelDestino ?? ''}`];
+  if (mudado !== undefined) return <Navigate to={`${mudado}${location.search}`} replace />;
 
   const destino = idDelDestino === undefined ? undefined : destinoPorId(app, idDelDestino);
 
@@ -133,6 +139,14 @@ export function PantallaDeApp() {
 }
 
 /**
+ * Los destinos que se fueron a otra app. Equipo › Horarios está en Calendario › Turnos
+ * desde el repaso del 10-oct (0082): «horarios en un solo sitio».
+ */
+const SE_MUDO: Readonly<Record<string, string>> = {
+  'equipo/horarios': '/calendario/turnos',
+};
+
+/**
  * El ancho de la pantalla segun la forma de la app.
  *
  * No es decoracion: es lo que hace que la misma aplicacion se sienta ocho.
@@ -165,9 +179,10 @@ function Dentro({
   readonly alIrAVista: (id: string) => void;
 }) {
   const abrirLaRueda = usarAbrirLaRueda();
-  // Las vistas vacías que pide esconder la pantalla de dentro (repaso del 9-oct).
-  const [vacias, setVacias] = useState<readonly string[]>([]);
-  const lasVistas = destino.vistas.filter((v) => v.id === vista?.id || !vacias.includes(v.id));
+  // Las vistas que solo salen si tienen algo: cuáles lo tienen lo dice la pantalla de
+  // dentro, y mientras no lo dice no sale ninguna (repaso del 9-oct y del 10-oct).
+  const [conAlgo, setConAlgo] = useState<readonly string[]>([]);
+  const lasVistas = vistasQueSeEnsenan(destino, vista?.id, conAlgo);
   return (
     <div className={clases('flex w-full flex-col gap-e4', ANCHO[app.forma])}>
       <header className="flex flex-col gap-e2">
@@ -241,9 +256,9 @@ function Dentro({
         <MenuLateral app={app} destinoActivo={destino.id} alIrADestino={alIrADestino} />
 
         <div className="min-w-0 flex-1">
-          <LasVistasVacias.Provider value={setVacias}>
+          <LasVistasConAlgo.Provider value={setConAlgo}>
             <Contenido app={app} destino={destino} vista={vista} />
-          </LasVistasVacias.Provider>
+          </LasVistasConAlgo.Provider>
         </div>
       </div>
     </div>
@@ -292,9 +307,8 @@ function Contenido({
   if (app.id === 'equipo' && destino.id === 'incidencias') {
     return <Incidencias vista={vista?.id ?? 'todas'} />;
   }
-  // H2 (0069): el mismo horario en Equipo, para quien lo monta, y en Calendario,
-  // que es donde lo mira el equipo.
-  if (app.id === 'equipo' && destino.id === 'horarios') return <ElHorario conTitulo={false} />;
+  // H2 (0069): el horario, en un solo sitio desde el repaso del 10-oct (0082). Lo ve
+  // todo el equipo, y quien lo publica tiene además «Montarlo».
   if (app.id === 'calendario' && destino.id === 'turnos') return <ElHorario conTitulo={false} />;
 
   // El cierre es una **vista** de la jornada: el resto de la jornada —«En

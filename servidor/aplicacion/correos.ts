@@ -180,6 +180,11 @@ export interface AvisoParaElCorreo {
   readonly ir: string | null;
   /** Las cifras de un informe (R2 · 0053): van en una tabla, encima de las frases. */
   readonly cifras?: readonly CifraDelCorreo[] | null;
+  /**
+   * Si es un correo de repuesto (repaso del 10-oct): el horario, que llega por correo a
+   * quien no tiene Estook en el móvil aunque no lo encendiera. El pie lo dice así.
+   */
+  readonly deRepuesto?: boolean;
 }
 
 /**
@@ -306,7 +311,9 @@ export function correoDeUnAviso(para: string, aviso: AvisoParaElCorreo): CorreoP
     '',
     `Míralo en Estook: ${enlace}`,
     '',
-    `Te llega porque lo tienes encendido en Ajustes → Avisos: ${ajustes}`,
+    aviso.deRepuesto === true
+      ? `Te llega por correo porque no te ha llegado en el móvil. Se cambia en Ajustes → Avisos: ${ajustes}`
+      : `Te llega porque lo tienes encendido en Ajustes → Avisos: ${ajustes}`,
   ].join('\n');
 
   return {
@@ -319,7 +326,9 @@ export function correoDeUnAviso(para: string, aviso: AvisoParaElCorreo): CorreoP
       ...(cifras.length === 0 ? [] : [tablaDeCifras(cifras)]),
       ...(aviso.detalle === null ? [] : [escapar(aviso.detalle)]),
       `<a href="${escapar(enlace)}" style="display:inline-block;background:#ff7a00;color:#1d2a2e;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px">Verlo en Estook</a>`,
-      `<span style="color:#6b7478;font-size:13px">Te llega porque lo tienes encendido en <a href="${ajustes}" style="color:#6b7478">Ajustes → Avisos</a>. Desde ahí lo apagas.</span>`,
+      aviso.deRepuesto === true
+        ? `<span style="color:#6b7478;font-size:13px">Te llega por correo porque no te ha llegado en el móvil. Se cambia en <a href="${ajustes}" style="color:#6b7478">Ajustes → Avisos</a>.</span>`
+        : `<span style="color:#6b7478;font-size:13px">Te llega porque lo tienes encendido en <a href="${ajustes}" style="color:#6b7478">Ajustes → Avisos</a>. Desde ahí lo apagas.</span>`,
     ]),
   };
 }

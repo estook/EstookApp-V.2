@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { crearApi, NUESTROS_ORIGENES } from './index.ts';
-import { crearDespachador, type Contexto, type Puertos } from '../aplicacion/index.ts';
+import {
+  crearDespachador,
+  ponerElAvisadorDeFallos,
+  type Contexto,
+  type Puertos,
+} from '../aplicacion/index.ts';
 import { CABECERA_IDEMPOTENCIA, tokenDeLaCabecera } from './cabeceras.ts';
 import { porQueNoSeAtiende, versionSoportada, VERSION_ACTUAL } from './version.ts';
 
@@ -119,7 +124,12 @@ describe('la salud', () => {
   it('dice que esta en pie y con que version', async () => {
     const { app } = api();
     const cuerpo = await cuerpoDe(await api().app.request('/api/salud'));
-    expect(cuerpo.datos).toEqual({ estado: 'en pie', version: VERSION_ACTUAL, movil: false });
+    expect(cuerpo.datos).toEqual({
+      estado: 'en pie',
+      version: VERSION_ACTUAL,
+      movil: false,
+      sentry: false,
+    });
     expect(app).toBeDefined();
   });
 
@@ -127,7 +137,45 @@ describe('la salud', () => {
     const { puertos } = puertosDeMentira();
     const app = crearApi(crearDespachador({ ...puertos, movilEncendido: true }));
     const cuerpo = await cuerpoDe(await app.request('/api/salud'));
-    expect(cuerpo.datos).toEqual({ estado: 'en pie', version: VERSION_ACTUAL, movil: true });
+    expect(cuerpo.datos).toEqual({
+      estado: 'en pie',
+      version: VERSION_ACTUAL,
+      movil: true,
+      sentry: false,
+    });
+  });
+
+  it('dice si sus fallos llegan a Sentry, sin enseñar el DSN (repaso del 10-oct · 0082)', async () => {
+    ponerElAvisadorDeFallos({ avisar: () => Promise.resolve() });
+    try {
+      const cuerpo = await cuerpoDe(await api().app.request('/api/salud'));
+      expect(cuerpo.datos).toMatchObject({ sentry: true });
+    } finally {
+      ponerElAvisadorDeFallos(null);
+    }
+  });
+
+  it('un fallo no previsto llega a quien avisa, con su hilo, y a quien llama le sale en cristiano', async () => {
+    const avisados: { mensaje: string; correlacionId: string | null }[] = [];
+    ponerElAvisadorDeFallos({
+      avisar: (_fallo, datos) => {
+        avisados.push(datos);
+        return Promise.resolve();
+      },
+    });
+    try {
+      const app = crearApi(crearDespachador(puertosDeMentira().puertos));
+      app.get('/romper', () => {
+        throw new Error('se ha roto');
+      });
+      const respuesta = await app.request('/api/romper');
+      expect((await cuerpoDe(respuesta)).error?.codigo).toBe('fallo_nuestro');
+      expect(avisados).toHaveLength(1);
+      expect(avisados[0]?.mensaje).toBe('fallo no previsto en la API');
+      expect(avisados[0]?.correlacionId).toEqual(expect.any(String));
+    } finally {
+      ponerElAvisadorDeFallos(null);
+    }
   });
 });
 

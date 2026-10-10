@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import {
   avisosDelHorario,
-  comoSeLeeElDia,
   comoSeLeenLasHoras,
   costeDelHorario,
   fechaOperativa,
@@ -360,11 +359,16 @@ function elDiaEnPapel(turnos: readonly TurnoLeido[]): DiaDelHorario {
   if (ausencia !== undefined && ausencia.tipo !== 'trabajo') {
     return { tramos: [], ausencia: COMO_SE_DICE_LA_AUSENCIA[ausencia.tipo] };
   }
+  // Las horas y el descanso, por separado: en papel el descanso va en pequeño debajo
+  // (repaso del 10-oct). Por orden de entrada.
   return {
     tramos: turnos
-      .filter((t) => t.tipo === 'trabajo')
-      .map((t) => comoSeLeeElDia([t]))
-      .sort(),
+      .filter((t) => t.tipo === 'trabajo' && t.entra !== null && t.sale !== null)
+      .sort((a, b) => (a.entra ?? '').localeCompare(b.entra ?? ''))
+      .map((t) => ({
+        horas: `${t.entra ?? ''}–${t.sale ?? ''}`,
+        descanso: t.descansoMinutos > 0 ? `Descanso ${String(t.descansoMinutos)} min` : null,
+      })),
     ausencia: null,
   };
 }
@@ -460,6 +464,10 @@ export const elHorarioEnPdf = consulta<z.infer<typeof entradaDelPdf>, UnPdf>({
       dias: dias.map((d) => d.corto),
       grupos,
       publicado,
+      // Un tramo que sale antes de entrar acaba al día siguiente: solo entonces se dice.
+      cruzaLaMedianoche: turnos.some(
+        (t) => t.tipo === 'trabajo' && t.entra !== null && t.sale !== null && t.sale < t.entra,
+      ),
     });
     return hacerElPdf(contexto, html, {
       nombre: `horario-${lunes}.pdf`,

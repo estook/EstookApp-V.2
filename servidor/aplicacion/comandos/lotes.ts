@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { horaDeCorte, jornadaDe, partidaDe, sePuedeTirar, valorDeLaMerma } from '@estook/dominio';
+import {
+  horaDeCorte,
+  jornadaDe,
+  partidaDe,
+  sePuedeDescongelarHasta,
+  sePuedeTirar,
+  valorDeLaMerma,
+} from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
@@ -26,6 +33,13 @@ import { apuntar, elProductoBloqueado, loQueHay } from '../almacen.ts';
  *   **Se ha tirado**   es una **merma**, con motivo «caducado», y sale de cámara
  *                      por `apuntar` como cualquier otra. Sin eso, el food cost
  *                      del mes no sabría que se tiró.
+ *
+ * ── Lo congelado, solo se descongela o se tira (repaso del 10-oct) ─────────
+ *
+ * «Al sacar algo del congelador, solo dos opciones: "Descongelar" o "Tirar".» Y
+ * «que todo lo que sale quede en el libro». «Se ha gastado» no apunta nada en el
+ * libro, así que a un lote congelado no se le deja: o vuelve a fresco con su
+ * caducidad corta (`descongelar`, abajo), o se tira y sale como merma.
  */
 
 export const entradaQuitarLote = z
@@ -65,9 +79,11 @@ export const quitarLote = comando<EntradaQuitarLote, SalidaQuitarLote>({
         producto_id: string;
         codigo: string | null;
         retirado: boolean;
+        congelado: boolean;
       }[]
     >`
-      select id, local_id, producto_id, codigo, retirado_en is not null as retirado
+      select id, local_id, producto_id, codigo, retirado_en is not null as retirado,
+             congelado_el is not null as congelado
         from estook.lote where id = ${entrada.lote_id}
     `;
     const lote = filas[0];
@@ -78,6 +94,11 @@ export const quitarLote = comando<EntradaQuitarLote, SalidaQuitarLote>({
     }
     if (lote.retirado) {
       throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese lote ya está quitado.' });
+    }
+    if (lote.congelado && entrada.como === 'gastado') {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Lo congelado se descongela o se tira: así todo lo que sale queda en el libro.',
+      });
     }
 
     // El candado del producto, como en cualquier cosa que toca su cámara: dos
@@ -101,7 +122,13 @@ export const quitarLote = comando<EntradaQuitarLote, SalidaQuitarLote>({
       const apuntado = await apuntar(contexto, producto, {
         tipo: 'merma',
         cantidad: -cuanto,
-        motivo: lote.codigo === null ? 'Caducado' : `Lote ${lote.codigo}, caducado`,
+        motivo: lote.congelado
+          ? lote.codigo === null
+            ? 'Del congelador'
+            : `Lote ${lote.codigo}, del congelador`
+          : lote.codigo === null
+            ? 'Caducado'
+            : `Lote ${lote.codigo}, caducado`,
         motivoDeMerma: 'caducado',
         loteId: lote.id,
         origen: 'a_mano',
@@ -302,5 +329,107 @@ export const congelar = comando<EntradaCongelar, { loteId: string }>({
     });
 
     return { loteId };
+  },
+});
+
+// ── Descongelar (repaso del 10-oct) ──────────────────────────────────────────
+
+export const entradaDescongelar = z
+  .object({
+    lote_id: z.string().uuid(),
+    /** Hasta cuándo se puede gastar ya descongelado: de hoy a una semana. */
+    caduca_el: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'La fecha se escribe así: 2026-10-11.'),
+  })
+  .strict();
+
+export type EntradaDescongelar = z.infer<typeof entradaDescongelar>;
+
+/**
+ * Sacar del congelador para gastarlo: **vuelve a fresco**, con una caducidad corta.
+ *
+ * «"Descongelar" vuelve a fresco con una caducidad corta propuesta, uno o dos días,
+ * que se puede cambiar» (Richi, 10-oct). **No mueve nada**, como congelar: el género
+ * sigue en el local, solo cambia dónde está y hasta cuándo dura. Lo que pasa a decir
+ * es «caduca el…», y como lo que antes caduca es lo primero que se gasta (M8 · 0078),
+ * lo descongelado sale lo primero. Su aviso del Calendario cambia con él.
+ *
+ * Cuándo se congeló no se pierde: queda en el registro de cambios, con quién lo sacó.
+ */
+export const descongelar = comando<EntradaDescongelar, { loteId: string; caducaEl: string }>({
+  nombre: 'descongelar',
+  entrada: entradaDescongelar,
+  exige: 'app.almacen',
+
+  async ejecutar(contexto, entrada) {
+    const organizacionId = laOrganizacionDeLaSesion(contexto);
+
+    const filas = await contexto.sql<
+      {
+        id: string;
+        local_id: string;
+        producto_id: string;
+        producto: string;
+        congelado_el: string | null;
+        retirado: boolean;
+        zona_horaria: string;
+        hora_de_corte: string;
+      }[]
+    >`
+      select lo.id, lo.local_id, lo.producto_id, p.nombre as producto,
+             to_char(lo.congelado_el, 'YYYY-MM-DD') as congelado_el,
+             lo.retirado_en is not null as retirado,
+             l.zona_horaria, to_char(l.hora_de_corte, 'HH24:MI') as hora_de_corte
+        from estook.lote lo
+        join estook.producto p on p.id = lo.producto_id
+        join estook.local l on l.id = lo.local_id
+       where lo.id = ${entrada.lote_id}
+    `;
+    const lote = filas[0];
+    if (!lote) {
+      throw new FalloDeAplicacion('no_existe', {
+        porque: 'Ese lote no está, o no es de un local que puedas ver.',
+      });
+    }
+    if (lote.retirado) {
+      throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese lote ya está quitado.' });
+    }
+    if (lote.congelado_el === null) {
+      throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese lote no está congelado.' });
+    }
+
+    // «Hoy» lo dice el local, con su hora de corte, nunca `current_date` (regla 10).
+    const hoy = jornadaDe(contexto.ahora, lote.zona_horaria, horaDeCorte(lote.hora_de_corte));
+    if (!sePuedeDescongelarHasta(hoy, entrada.caduca_el)) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Lo descongelado se gasta pronto: pon una fecha de hoy a una semana.',
+        campos: ['caduca_el'],
+      });
+    }
+
+    await contexto.sql`
+      update estook.lote
+         set congelado_el = null, caduca_el = ${entrada.caduca_el}::date
+       where id = ${lote.id}
+    `;
+
+    await contexto.sql`
+      select estook.anotar(
+        ${organizacionId}::uuid, 'cambiar', 'lote', ${lote.id}, ${lote.local_id}::uuid,
+        ${JSON.stringify({ congelado_el: lote.congelado_el })}::text::jsonb,
+        ${JSON.stringify({ descongelado: true, caduca_el: entrada.caduca_el, producto: lote.producto })}::text::jsonb,
+        null
+      )
+    `;
+
+    // Su aviso del Calendario pasa de «cumple tantos meses congelado» a «caduca».
+    await publicar(contexto.sql, {
+      tipo: 'lote.descongelado',
+      organizacionId,
+      localId: lote.local_id,
+      datos: { loteId: lote.id, productoId: lote.producto_id },
+      correlacionId: contexto.correlacionId,
+    });
+
+    return { loteId: lote.id, caducaEl: entrada.caduca_el };
   },
 });

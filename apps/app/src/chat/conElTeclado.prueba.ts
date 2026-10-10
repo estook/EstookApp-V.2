@@ -33,4 +33,19 @@ describe('el chat con el teclado', () => {
   it('con zoom de dos dedos no se toca nada', () => {
     expect(dondeVaElChat({ offsetTop: 120, height: 400, scale: 2 }, 844)).toBeNull();
   });
+
+  it('escribiendo en el chat va a lo visible aunque no se vea el teclado (10-oct)', () => {
+    // El iPhone de Richi: innerHeight encoge con el teclado y la resta sale cero. Sin
+    // este seguro el chat se quedaba entre las dos barras, fuera de la vista.
+    expect(dondeVaElChat({ offsetTop: 250, height: 508, scale: 1 }, 508, true)).toEqual({
+      arriba: 250,
+      alto: 508,
+    });
+    // Sin escribir y sin teclado a la vista, manda el CSS.
+    expect(dondeVaElChat({ offsetTop: 0, height: 844, scale: 1 }, 844, false)).toBeNull();
+  });
+
+  it('escribiendo, con zoom de dos dedos tampoco se toca nada', () => {
+    expect(dondeVaElChat({ offsetTop: 120, height: 400, scale: 2 }, 844, true)).toBeNull();
+  });
 });

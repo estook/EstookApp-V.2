@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { comoQuedaAbajo } from './anclaAbajo.ts';
+import { altoDeLaPagina, comoQuedaAbajo } from './anclaAbajo.ts';
 
 /**
  * Lo que va pegado abajo en el iPhone (repaso del 25-sep). Las cifras son las de un
@@ -41,5 +41,23 @@ describe('comoQuedaAbajo', () => {
 
   it('los medios píxeles no mueven la barra', () => {
     expect(comoQuedaAbajo({ offsetTop: 0.3, height: 844, scale: 1 }, 844).desfase).toBe(0);
+  });
+});
+
+describe('altoDeLaPagina (10-oct)', () => {
+  it('en el iPhone, innerHeight encoge con el teclado: manda el alto del documento', () => {
+    // Lo del móvil de Richi: con el teclado, innerHeight dice lo mismo que el visible.
+    const ventana = { innerHeight: 508, document: { documentElement: { clientHeight: 844 } } };
+    expect(altoDeLaPagina(ventana)).toBe(844);
+    // Y con eso sí se ve el teclado.
+    expect(
+      comoQuedaAbajo({ offsetTop: 250, height: 508, scale: 1 }, altoDeLaPagina(ventana)).teclado,
+    ).toBe(true);
+  });
+
+  it('sin teclado, los dos dicen lo mismo', () => {
+    expect(
+      altoDeLaPagina({ innerHeight: 844, document: { documentElement: { clientHeight: 844 } } }),
+    ).toBe(844);
   });
 });

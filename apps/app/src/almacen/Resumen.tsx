@@ -268,6 +268,7 @@ export function Resumen({ alAbrirProducto }: { readonly alAbrirProducto: (id: st
                             : ` · ${conUnidadDeUso(lote.cuanto, lote.unidadDeUso)}`}
                         </span>
                       </button>
+                      {/* Se saca del congelador: descongelar o tirar (repaso del 10-oct). */}
                       {puedeTocar && (
                         <Boton
                           tono={lote.dias <= 0 ? 'principal' : 'secundario'}
@@ -278,10 +279,12 @@ export function Resumen({ alAbrirProducto }: { readonly alAbrirProducto: (id: st
                               codigo: null,
                               caducaEl: null,
                               unidadDeUso: lote.unidadDeUso,
+                              congelado: { el: lote.congeladoEl, aguantaHasta: lote.cumpleEl },
+                              cantidad: lote.cuanto,
                             });
                           }}
                         >
-                          Quitar
+                          Sacar
                         </Boton>
                       )}
                     </li>

@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { Boton, Botones, Campo, ErrorEnCristiano, Hoja, clases } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
-import { plural } from '@estook/dominio';
+import {
+  DIAS_COMO_MUCHO_DESCONGELADO,
+  DIAS_PARA_GASTAR_LO_DESCONGELADO,
+  fechaEnElLocal,
+  masDias,
+  plural,
+} from '@estook/dominio';
 import { IconoCongelado } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarRefrescarLotes } from '../ganchos/usarRefrescarLotes.ts';
-import { comoSeLeeLaFecha, conUnidadDeUso } from './contrato.ts';
+import { comoEstaCongelado, comoSeLeeLaFecha, conUnidadDeUso } from './contrato.ts';
 
 /**
  * Quitar un lote y congelar (M7, repaso).
@@ -21,6 +27,13 @@ export interface LoteQueSeQuita {
   readonly codigo: string | null;
   readonly caducaEl: string | null;
   readonly unidadDeUso: string;
+  /**
+   * Si está congelado, cuándo se congeló y hasta cuándo aguanta (repaso del 10-oct):
+   * entonces no se «quita», **se saca del congelador**, y solo se descongela o se tira.
+   */
+  readonly congelado?: { readonly el: string; readonly aguantaHasta: string | null } | null;
+  /** Lo que lleva el lote, para proponerlo al tirarlo. Nulo: no se sabe. */
+  readonly cantidad?: number | null;
 }
 
 /**
@@ -31,6 +44,29 @@ export interface LoteQueSeQuita {
  * lo que el food cost del mes tiene que saber.
  */
 export function QuitarLote({
+  lote,
+  alCerrar,
+  alHecho,
+}: {
+  readonly lote: LoteQueSeQuita;
+  readonly alCerrar: () => void;
+  readonly alHecho: (frase: string) => void;
+}) {
+  // Lo congelado no se quita: se saca del congelador (repaso del 10-oct).
+  if (lote.congelado != null) {
+    return (
+      <SacarDelCongelador
+        lote={lote}
+        congelado={lote.congelado}
+        alCerrar={alCerrar}
+        alHecho={alHecho}
+      />
+    );
+  }
+  return <QuitarLoFresco lote={lote} alCerrar={alCerrar} alHecho={alHecho} />;
+}
+
+function QuitarLoFresco({
   lote,
   alCerrar,
   alHecho,
@@ -141,6 +177,190 @@ export function QuitarLote({
           </button>
         </div>
         {como === 'tirado' && (
+          <Campo
+            etiqueta="Cuánto se tira"
+            tipo="numero"
+            obligatorio
+            autoFocus
+            detras={lote.unidadDeUso}
+            value={cuanto}
+            onChange={(e) => {
+              setCuanto(e.currentTarget.value);
+            }}
+          />
+        )}
+      </div>
+    </Hoja>
+  );
+}
+
+/**
+ * Sacar del congelador · «Descongelar» o «Tirar», y nada más (repaso del 10-oct).
+ *
+ * «Al sacar algo del congelador, solo dos opciones: "Descongelar" (vuelve a fresco con
+ * una caducidad corta propuesta, uno o dos días, que se puede cambiar) o "Tirar" (se
+ * apunta como merma). Quitar "vendido".» Y «que todo lo que sale quede en el libro»:
+ * descongelado sigue en el local, con su «caduca el…»; tirado sale como merma. «Se ha
+ * gastado», que no apuntaba nada, no está (el servidor tampoco lo deja).
+ */
+function SacarDelCongelador({
+  lote,
+  congelado,
+  alCerrar,
+  alHecho,
+}: {
+  readonly lote: LoteQueSeQuita;
+  readonly congelado: { readonly el: string; readonly aguantaHasta: string | null };
+  readonly alCerrar: () => void;
+  readonly alHecho: (frase: string) => void;
+}) {
+  const { cliente } = usarSesion();
+  const refrescar = usarRefrescarLotes();
+  // Hoy, en el reloj de quien lo saca: el servidor lo vuelve a mirar con el del local.
+  const hoy = fechaEnElLocal(
+    new Date(Date.now()),
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+  );
+  const [como, setComo] = useState<'descongelar' | 'tirar' | null>(null);
+  const [caduca, setCaduca] = useState<string>(masDias(hoy, DIAS_PARA_GASTAR_LO_DESCONGELADO));
+  const [cuanto, setCuanto] = useState(lote.cantidad == null ? '' : String(lote.cantidad));
+  const [haciendo, setHaciendo] = useState(false);
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+
+  const cuantoEscrito = Number(cuanto.replace(',', '.'));
+  const listo =
+    (como === 'descongelar' && caduca !== '') || (como === 'tirar' && cuantoEscrito > 0);
+
+  async function hacer() {
+    if (como === null) return;
+    setHaciendo(true);
+    setError(null);
+    const respuesta =
+      como === 'descongelar'
+        ? await cliente.ejecutar('descongelar', { lote_id: lote.id, caduca_el: caduca })
+        : await cliente.ejecutar('quitar_lote', {
+            lote_id: lote.id,
+            como: 'tirado',
+            cuanto: cuantoEscrito,
+          });
+    setHaciendo(false);
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    await refrescar();
+    alHecho(
+      como === 'descongelar'
+        ? `${lote.producto}, descongelado. Caduca el ${comoSeLeeLaFecha(caduca)}.`
+        : `${lote.producto}: lo tirado queda en el libro como merma.`,
+    );
+  }
+
+  const opcion = (puesta: boolean) =>
+    clases(
+      'flex min-h-toque-cocina w-full flex-col items-start gap-e1 rounded-medio border p-e3 text-left',
+      puesta
+        ? 'border-naranja bg-naranja-suave'
+        : 'border-borde-fuerte bg-superficie hover:bg-fondo',
+    );
+  const dias = (n: number) => masDias(hoy, n);
+
+  return (
+    <Hoja
+      abierta
+      alCerrar={alCerrar}
+      titulo={`Sacar ${lote.producto} del congelador`}
+      pie={
+        <Botones>
+          <Boton tono="texto" onClick={alCerrar}>
+            Dejarlo
+          </Boton>
+          <Boton
+            tono="principal"
+            disabled={!listo}
+            cargando={haciendo}
+            textoCargando={como === 'tirar' ? 'Apuntando' : 'Descongelando'}
+            onClick={() => {
+              void hacer();
+            }}
+          >
+            {como === 'tirar' ? 'Tirarlo' : 'Descongelarlo'}
+          </Boton>
+        </Botones>
+      }
+    >
+      <div className="flex flex-col gap-e3">
+        {error !== null && <ErrorEnCristiano error={error} />}
+        <p className="text-secundario text-texto-suave">
+          {comoEstaCongelado(congelado.el, congelado.aguantaHasta)}
+          {lote.cantidad == null ? '' : ` · ${conUnidadDeUso(lote.cantidad, lote.unidadDeUso)}`}
+        </p>
+        <div role="radiogroup" aria-label="Qué se hace con él" className="flex flex-col gap-e2">
+          <button
+            type="button"
+            role="radio"
+            aria-checked={como === 'descongelar'}
+            onClick={() => {
+              setComo('descongelar');
+            }}
+            className={opcion(como === 'descongelar')}
+          >
+            <span className="flex items-center gap-e2 text-cuerpo font-semibold">
+              <IconoCongelado size={18} />
+              Descongelar
+            </span>
+            <span className="text-secundario text-texto-suave">
+              Vuelve a fresco, para gastarlo pronto.
+            </span>
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={como === 'tirar'}
+            onClick={() => {
+              setComo('tirar');
+            }}
+            className={opcion(como === 'tirar')}
+          >
+            <span className="text-cuerpo font-semibold">Tirar</span>
+            <span className="text-secundario text-texto-suave">Se apunta como merma.</span>
+          </button>
+        </div>
+        {como === 'descongelar' && (
+          <div className="flex flex-col gap-e2">
+            <div role="group" aria-label="Hasta cuándo" className="flex flex-wrap gap-e2">
+              {(
+                [
+                  [dias(1), 'Mañana'],
+                  [dias(2), 'Pasado mañana'],
+                ] as const
+              ).map(([fecha, texto]) => (
+                <Boton
+                  key={fecha}
+                  tono={caduca === fecha ? 'principal' : 'secundario'}
+                  aria-pressed={caduca === fecha}
+                  onClick={() => {
+                    setCaduca(fecha);
+                  }}
+                >
+                  {texto}
+                </Boton>
+              ))}
+            </div>
+            <Campo
+              etiqueta="Caduca el"
+              tipo="fecha"
+              obligatorio
+              min={hoy}
+              max={dias(DIAS_COMO_MUCHO_DESCONGELADO)}
+              value={caduca}
+              onChange={(e) => {
+                setCaduca(e.currentTarget.value);
+              }}
+            />
+          </div>
+        )}
+        {como === 'tirar' && (
           <Campo
             etiqueta="Cuánto se tira"
             tipo="numero"

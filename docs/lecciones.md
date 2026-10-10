@@ -616,3 +616,17 @@
      retraso ni como falta, justo el caso que hay que ver. Ahora se busca hasta que acaba el
      tramo, y la falta es un tramo acabado sin ningún fichaje que se cruce con él. Lo
      prueba `las-incidencias.prueba.ts`, que sale en rojo con la ventana de antes (0081).
+167. **En el iPhone, `window.innerHeight` encoge con el teclado.** Para saber si había
+     teclado se comparaba el alto visible con él, la resta salía casi cero y el chat nunca
+     se recolocaba: dos repasos «arreglándolo» sin tocar la causa. El alto de la página se
+     mide con el del documento (`altoDeLaPagina`), y escribiendo en el chat va a lo visible
+     pase lo que pase. La prueba de pantalla finge también que `innerHeight` encoge, y sin
+     eso salía en verde con el fallo puesto (0082).
+168. **Mover algo al perder el foco se come el toque.** El foco se va al apretar el dedo y
+     el toque acaba al levantarlo: si el chat se recolocaba entre las dos cosas, el botón
+     de opciones de un mensaje no hacía nada. Lo cazaron las pruebas del chat en el móvil,
+     no la nueva; al soltar la caja se espera 400 ms (0082).
+169. **«Avisado» no es «le ha llegado».** Al publicar el horario la pantalla decía «les ha
+     llegado el aviso a 4 personas», y a tres solo les llegó a la campana, que no ven sin
+     abrir Estook: no tenían el móvil puesto y el correo estaba apagado. Antes de dar por
+     bueno un aviso se mira **por dónde** llega, en producción, y la pantalla lo dice (0082).

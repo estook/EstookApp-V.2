@@ -121,7 +121,7 @@ import { cambiarPedido, cancelarPedido, crearPedido, enviarPedido } from './coma
 import { devolverAlProveedor, recibirAlbaran } from './comandos/recibir.ts';
 import { conciliarFactura, registrarFactura } from './comandos/facturas.ts';
 import { dejarDePactar, pactarPrecio } from './comandos/pactado.ts';
-import { congelar, quitarLote } from './comandos/lotes.ts';
+import { congelar, descongelar, quitarLote } from './comandos/lotes.ts';
 import { guardarPreciosConIva, quitarIvaALosPrecios } from './comandos/precios-con-iva.ts';
 import { comprasDeHoy, misPedidos, sugerenciaDePedido, unPedido } from './consultas/pedidos.ts';
 import {
@@ -552,6 +552,8 @@ export const catalogo = {
     // `apuntar`—, congelar, y cómo escribe cada local sus precios de compra.
     [quitarLote.nombre]: quitarLote,
     [congelar.nombre]: congelar,
+    // El repaso del 10-oct: lo congelado se saca descongelándolo o tirándolo.
+    [descongelar.nombre]: descongelar,
     [guardarPreciosConIva.nombre]: guardarPreciosConIva,
     [quitarIvaALosPrecios.nombre]: quitarIvaALosPrecios,
 

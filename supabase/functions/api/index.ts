@@ -59,7 +59,9 @@ const dsn = Deno.env.get('SENTRY_DSN');
 if (dsn !== undefined && dsn.trim() !== '') {
   const entorno = Deno.env.get('ENTORNO') ?? 'produccion';
   ponerElAvisadorDeFallos(conectarSentry(Sentry, { dsn: dsn.trim(), entorno, version: VERSION }));
-  console.log(JSON.stringify({ nivel: 'info', mensaje: `Sentry encendido: ${entorno}, api@${VERSION}` }));
+  console.log(
+    JSON.stringify({ nivel: 'info', mensaje: `Sentry encendido: ${entorno}, api@${VERSION}` }),
+  );
 }
 
 Deno.serve(api.fetch);

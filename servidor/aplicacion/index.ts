@@ -10,3 +10,9 @@ export { crearDespachador } from './despachador.ts';
 export type { Despachador, Puertos, QuienLlama, Resultado } from './despachador.ts';
 export { FalloDeAplicacion, comando, consulta } from './contrato.ts';
 export type { Comando, Consulta, Contexto } from './contrato.ts';
+// Los fallos, por una sola puerta (repaso del 10-oct · 0082): la API los apunta por aquí.
+export {
+  apuntarUnFallo,
+  hayAvisadorDeFallos,
+  ponerElAvisadorDeFallos,
+} from '../infraestructura/fallos.ts';

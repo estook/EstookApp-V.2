@@ -59,7 +59,8 @@ export const DIAS_COMO_MUCHO_DESCONGELADO = 7;
 /** Si la caducidad que se pone al descongelar vale: de hoy a una semana. */
 export function sePuedeDescongelarHasta(hoy: string, caducaEl: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(caducaEl)) return false;
-  const dias = Math.round(
+  // Días enteros entre dos fechas en UTC: la resta es exacta, no hay nada que redondear.
+  const dias = Math.trunc(
     (Date.parse(`${caducaEl}T00:00:00Z`) - Date.parse(`${hoy}T00:00:00Z`)) / 86_400_000,
   );
   return dias >= 0 && dias <= DIAS_COMO_MUCHO_DESCONGELADO;

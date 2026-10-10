@@ -295,8 +295,8 @@ test('con el teclado del iPhone, la cabecera arriba y la caja justo encima del t
       const deLaCaja = await caja.boundingBox();
       const deLaCabecera = await cabecera.boundingBox();
       if (deLaCaja === null || deLaCabecera === null) return 'sin medir';
-      const cajaAbajo = Math.round(deLaCaja.y + deLaCaja.height);
-      const cabeceraArriba = Math.round(deLaCabecera.y);
+      const cajaAbajo = Math.trunc(deLaCaja.y + deLaCaja.height);
+      const cabeceraArriba = Math.trunc(deLaCabecera.y);
       return cajaAbajo <= arriba + visible &&
         cajaAbajo > arriba + visible - 90 &&
         cabeceraArriba >= arriba

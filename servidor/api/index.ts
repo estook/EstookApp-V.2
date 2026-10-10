@@ -1,6 +1,11 @@
 import { Hono } from 'hono';
 import { CABECERA_CORRELACION, correlacionIdDeEntrada, variable } from '@estook/utiles';
-import type { Despachador, Resultado } from '../aplicacion/index.ts';
+import {
+  apuntarUnFallo,
+  hayAvisadorDeFallos,
+  type Despachador,
+  type Resultado,
+} from '../aplicacion/index.ts';
 import {
   CABECERA_AUTORIZACION,
   CABECERA_DIRECCION,
@@ -13,7 +18,6 @@ import {
 } from './cabeceras.ts';
 import { respuestaConDatos, respuestaDeError } from './respuestas.ts';
 import { VERSION_ACTUAL, porQueNoSeAtiende, versionSoportada } from './version.ts';
-import { apuntarUnFallo, hayAvisadorDeFallos } from '../infraestructura/fallos.ts';
 
 /**
  * La API (M2).

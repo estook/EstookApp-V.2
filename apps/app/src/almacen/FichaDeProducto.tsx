@@ -45,7 +45,7 @@ import { MoverGenero, type QueSeMueve } from './MoverGenero.tsx';
 import { CampoPrecioDeCompra } from './CampoPrecioDeCompra.tsx';
 import { ComoLoCompras } from './ComoLoCompras.tsx';
 import { ElegirZona } from './ElegirZona.tsx';
-import { Congelar, QuitarLote, comoEstaCongelado, type LoteQueSeQuita } from './Lotes.tsx';
+import { Congelar, QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
 import { HistoricoDePrecios } from './HistoricoDePrecios.tsx';
 import { FotoDeLaFicha } from './FotoDeLaFicha.tsx';
 import { AnularMovimiento } from './AnularMovimiento.tsx';
@@ -56,6 +56,7 @@ import {
   NOMBRE_DE_LA_CATEGORIA_FISCAL,
   TONO_DEL_ESTADO,
   comoDinero,
+  comoEstaCongelado,
   comoSeLeeLaFecha,
   conUnidadDeUso,
   cuandoSeAgota,

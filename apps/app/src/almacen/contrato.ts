@@ -509,6 +509,13 @@ export function comoSeLeeLaFecha(fecha: string): string {
   });
 }
 
+/** «Congelado el 3 oct · aguanta hasta el 3 ene»: lo que se dice de un lote congelado. */
+export function comoEstaCongelado(el: string, aguantaHasta: string | null): string {
+  return aguantaHasta === null
+    ? `Congelado el ${comoSeLeeLaFecha(el)}`
+    : `Congelado el ${comoSeLeeLaFecha(el)} · aguanta hasta el ${comoSeLeeLaFecha(aguantaHasta)}`;
+}
+
 /** Lo justo para elegir qué se ha ido: sin un precio. Es de `productos_para_merma`. */
 export interface ProductoParaMerma {
   readonly id: string;

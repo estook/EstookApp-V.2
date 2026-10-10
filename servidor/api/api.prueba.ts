@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { crearApi, NUESTROS_ORIGENES } from './index.ts';
-import { crearDespachador, type Contexto, type Puertos } from '../aplicacion/index.ts';
+import {
+  crearDespachador,
+  ponerElAvisadorDeFallos,
+  type Contexto,
+  type Puertos,
+} from '../aplicacion/index.ts';
 import { CABECERA_IDEMPOTENCIA, tokenDeLaCabecera } from './cabeceras.ts';
 import { porQueNoSeAtiende, versionSoportada, VERSION_ACTUAL } from './version.ts';
-import { ponerElAvisadorDeFallos } from '../infraestructura/fallos.ts';
 
 /**
  * M2 · la API entera, de punta a punta.

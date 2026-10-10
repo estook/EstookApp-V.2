@@ -11,7 +11,7 @@ import {
 import { IconoCongelado } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarRefrescarLotes } from '../ganchos/usarRefrescarLotes.ts';
-import { comoSeLeeLaFecha, conUnidadDeUso } from './contrato.ts';
+import { comoEstaCongelado, comoSeLeeLaFecha, conUnidadDeUso } from './contrato.ts';
 
 /**
  * Quitar un lote y congelar (M7, repaso).
@@ -34,13 +34,6 @@ export interface LoteQueSeQuita {
   readonly congelado?: { readonly el: string; readonly aguantaHasta: string | null } | null;
   /** Lo que lleva el lote, para proponerlo al tirarlo. Nulo: no se sabe. */
   readonly cantidad?: number | null;
-}
-
-/** «Congelado el 3 oct · aguanta hasta el 3 ene»: lo que se dice de un lote congelado. */
-export function comoEstaCongelado(el: string, aguantaHasta: string | null): string {
-  return aguantaHasta === null
-    ? `Congelado el ${comoSeLeeLaFecha(el)}`
-    : `Congelado el ${comoSeLeeLaFecha(el)} · aguanta hasta el ${comoSeLeeLaFecha(aguantaHasta)}`;
 }
 
 /**

@@ -28,6 +28,8 @@ name: Desplegar la API
 #                         La API entra sola por el 6543, el modo transaccion: el de
 #                         sesion solo admite 15 clientes (laPuertaDeLaApi, 24-sep).
 #   ENTORNO               produccion
+#   SENTRY_DSN            el del proyecto `estook-api` de Sentry (repaso del 10-oct,
+#                         0082). Sin el, la API no manda sus fallos a ningun sitio.
 #
 # `ORIGENES_PERMITIDOS` ya **no hace falta** para lo nuestro: estook.com y
 # www.estook.com los lleva el codigo (0036). Se deja para anadir algun origen
@@ -120,6 +122,11 @@ jobs:
           TOKEN_DE_SUPABASE: ${{ secrets.TOKEN_DE_SUPABASE }}
           PROYECTO_DE_SUPABASE: ${{ secrets.PROYECTO_DE_SUPABASE }}
         run: node herramientas/la-base-va-al-dia.mjs
+
+      # Que version se despliega (repaso del 10-oct, 0082): el commit, que es lo que
+      # Sentry pone en cada fallo como «api@<commit>». En el repositorio dice «local».
+      - name: Apuntar la version
+        run: echo "export const VERSION = '${GITHUB_SHA::12}';" > supabase/functions/api/version.ts
 
       - name: Desplegar la funcion
         env:

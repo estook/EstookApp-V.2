@@ -1,4 +1,5 @@
 import { variable } from '@estook/utiles';
+import { apuntarUnFallo } from './fallos.ts';
 
 /**
  * El correo que sale de Estook (0017, encendido en la 0042).
@@ -144,13 +145,11 @@ function remitente(): string {
   const porque = porQueNoValeElRemitente(puesto);
   if (porque === null) return puesto;
 
-  console.error(
-    JSON.stringify({
-      nivel: 'error',
-      mensaje: 'CORREO_REMITENTE no vale, se usa el de siempre',
-      detalle: porque,
-    }),
-  );
+  // Al arrancar: no hay petición que esperar, así que el aviso sale por detrás.
+  void apuntarUnFallo(new Error(porque), {
+    mensaje: 'CORREO_REMITENTE no vale, se usa el de siempre',
+    correlacionId: null,
+  });
   return porDefecto;
 }
 

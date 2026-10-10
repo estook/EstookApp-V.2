@@ -14,6 +14,7 @@ import { correoDeUnAviso } from './correos.ts';
 import { suAmplitud } from './jerarquia.ts';
 import { comoLista } from './listas.ts';
 import { enNombreDelSistema } from './pago.ts';
+import { apuntarUnFallo } from '../infraestructura/fallos.ts';
 
 /**
  * Los avisos · quién recibe cada uno y cómo se escribe (entrega R · decisión 0052).
@@ -381,14 +382,10 @@ export async function mandarLosCorreosDeLosAvisos(contexto: Contexto): Promise<n
                  correo = case when correo_intentos + 1 >= ${INTENTOS_DE_CORREO} then 'no' else 'pendiente' end
            where id = ${aviso.id}
         `;
-        console.error(
-          JSON.stringify({
-            nivel: 'error',
-            mensaje: 'el correo de un aviso no ha salido',
-            correlacion_id: contexto.correlacionId,
-            detalle: fallo instanceof Error ? fallo.message : String(fallo),
-          }),
-        );
+        await apuntarUnFallo(fallo, {
+          mensaje: 'el correo de un aviso no ha salido',
+          correlacionId: contexto.correlacionId,
+        });
       }
     }
     return mandados;

@@ -21,6 +21,8 @@
  *   DATABASE_URL          la cadena del agrupador de sesion, no la directa
  *   ORIGENES_PERMITIDOS   de donde se puede llamar, separados por comas
  *   ENTORNO               `produccion`
+ *   SENTRY_DSN            el de Sentry, para que los fallos de la API lleguen allí
+ *                         (repaso del 10-oct · 0082). Sin él, no se manda nada.
  *
  * `DATABASE_URL` tiene que ir por el **agrupador de sesion** (`pooler`), como en
  * las herramientas: la conexion directa de los proyectos nuevos solo funciona por
@@ -45,6 +47,19 @@
  * Tambien lo despliega solo el flujo `desplegar-api.yml` cuando estan sus dos
  * secretos declarados en GitHub.
  */
+import * as Sentry from '@sentry/deno';
 import { api } from '../../../servidor/index.ts';
+import { ponerElAvisadorDeFallos } from '../../../servidor/infraestructura/fallos.ts';
+import { conectarSentry } from '../../../servidor/infraestructura/sentry.ts';
+import { VERSION } from './version.ts';
+
+// Los fallos de la API, a Sentry (repaso del 10-oct · 0082). Lo que se manda y lo que
+// se quita está en `servidor/infraestructura/sentry.ts`; aquí solo se enchufa.
+const dsn = Deno.env.get('SENTRY_DSN');
+if (dsn !== undefined && dsn.trim() !== '') {
+  const entorno = Deno.env.get('ENTORNO') ?? 'produccion';
+  ponerElAvisadorDeFallos(conectarSentry(Sentry, { dsn: dsn.trim(), entorno, version: VERSION }));
+  console.log(JSON.stringify({ nivel: 'info', mensaje: `Sentry encendido: ${entorno}, api@${VERSION}` }));
+}
 
 Deno.serve(api.fetch);

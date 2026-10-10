@@ -1121,6 +1121,16 @@ try {
             ? 'faltan VAPID_CLAVE_PUBLICA y VAPID_CLAVE_PRIVADA en los secretos de Supabase'
             : 'va por detrás del código: despliégala',
       );
+      // Los fallos de la API, a Sentry (repaso del 10-oct · 0082). Sí o no, nunca el DSN.
+      comprobar(
+        'y manda sus fallos a Sentry',
+        enPie.sentry === true,
+        enPie.sentry === true
+          ? ''
+          : enPie.sentry === false
+            ? 'falta SENTRY_DSN en los secretos de Supabase'
+            : 'va por detrás del código: despliégala',
+      );
       // El camino por el que `pg_cron` la llama cada minuto. Sin el secreto del
       // reloj tiene que decir «sin permiso»: si dice «no existe», va por detrás.
       const tarea = await fetch(`${raiz}/tareas/movil`, { method: 'POST', body: '{}' })

@@ -22,6 +22,7 @@ import { elInforme } from './consultas/informes.ts';
 import type { Contexto } from './contrato.ts';
 import { DIAS_ENTRE_LECTURAS, ponerAlDiaLaNota } from './nota-de-google.ts';
 import { comoLista } from './listas.ts';
+import { apuntarUnFallo } from '../infraestructura/fallos.ts';
 
 /**
  * Lo que avisa el reloj cada mañana (entrega R2 · decisión 0053).
@@ -83,14 +84,10 @@ export async function aparte<T>(
   } catch (fallo) {
     await contexto.sql`rollback to savepoint lo_que_avisa_el_reloj`;
     await contexto.sql`release savepoint lo_que_avisa_el_reloj`;
-    console.error(
-      JSON.stringify({
-        nivel: 'error',
-        mensaje: `el reloj no ha podido ${que}`,
-        correlacion_id: contexto.correlacionId,
-        detalle: fallo instanceof Error ? fallo.message : String(fallo),
-      }),
-    );
+    await apuntarUnFallo(fallo, {
+      mensaje: `el reloj no ha podido ${que}`,
+      correlacionId: contexto.correlacionId,
+    });
     return null;
   }
 }

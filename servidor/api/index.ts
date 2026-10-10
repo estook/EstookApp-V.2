@@ -13,6 +13,7 @@ import {
 } from './cabeceras.ts';
 import { respuestaConDatos, respuestaDeError } from './respuestas.ts';
 import { VERSION_ACTUAL, porQueNoSeAtiende, versionSoportada } from './version.ts';
+import { apuntarUnFallo, hayAvisadorDeFallos } from '../infraestructura/fallos.ts';
 
 /**
  * La API (M2).
@@ -184,16 +185,12 @@ export function crearApi(despachador: Despachador) {
    * dentro se registra el fallo entero, que es donde tiene que estar: quien
    * atiende un aviso de Sentry necesita la traza, y quien está en la cocina no.
    */
-  api.onError((fallo, c) => {
+  api.onError(async (fallo, c) => {
     const correlacionId = c.get('correlacionId');
-    console.error(
-      JSON.stringify({
-        nivel: 'error',
-        mensaje: 'fallo no previsto en la API',
-        correlacion_id: correlacionId,
-        detalle: fallo instanceof Error ? fallo.message : String(fallo),
-      }),
-    );
+    await apuntarUnFallo(fallo, {
+      mensaje: 'fallo no previsto en la API',
+      correlacionId,
+    });
     return respuestaDeError('fallo_nuestro', correlacionId);
   });
 
@@ -206,6 +203,8 @@ export function crearApi(despachador: Despachador) {
           version: VERSION_ACTUAL,
           // Si los avisos al móvil están encendidos (0070): sí o no, nunca la clave.
           movil: despachador.movilEncendido,
+          // Si sus fallos llegan a Sentry (repaso del 10-oct · 0082): sí o no.
+          sentry: hayAvisadorDeFallos(),
         },
       },
       200,

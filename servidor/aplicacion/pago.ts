@@ -29,6 +29,7 @@ import {
 } from '../infraestructura/stripe.ts';
 import { FalloDeAplicacion, type Contexto, type Puertas } from './contrato.ts';
 import { comoLista } from './listas.ts';
+import { apuntarUnFallo } from '../infraestructura/fallos.ts';
 
 /**
  * El pago (entrega E2 · decisión 0048): la puerta, el catálogo de Stripe y lo que
@@ -259,15 +260,11 @@ export async function conStripe<T>(contexto: Contexto, hacer: () => Promise<T>):
     return await hacer();
   } catch (fallo) {
     if (fallo instanceof StripeNoContesta) {
-      console.error(
-        JSON.stringify({
-          nivel: 'error',
-          mensaje: 'Stripe no ha contestado bien',
-          correlacion_id: contexto.correlacionId,
-          estado: fallo.estado,
-          detalle: fallo.motivo,
-        }),
-      );
+      await apuntarUnFallo(new Error(fallo.motivo), {
+        mensaje: 'Stripe no ha contestado bien',
+        correlacionId: contexto.correlacionId,
+        extra: { estado: fallo.estado },
+      });
       throw new FalloDeAplicacion('pago_no_disponible');
     }
     throw fallo;

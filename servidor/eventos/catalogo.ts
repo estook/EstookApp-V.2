@@ -110,6 +110,10 @@ export const EVENTOS = [
   //   lote.retirado        se gastó o se tiró: su caducidad se va del Calendario
   'lote.congelado',
   'lote.retirado',
+  // ── El repaso del 10-oct ─────────────────────────────────────────────────
+  //
+  //   lote.descongelado    vuelve a fresco: su aviso pasa a «caduca»
+  'lote.descongelado',
   // ── M7 · las apps conectadas ────────────────────────────────────────────
   //
   //   inventario.recontado  se ha contado la cámara a mano y el libro se ha

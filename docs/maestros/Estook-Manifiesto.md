@@ -914,7 +914,7 @@ HORARIO PROPUESTO
 
 Quién trabaja, con qué condiciones, cuántas horas y cuánto cuesta.
 
-_Su navegación: Resumen · Personas · Horarios · Fichajes_
+_Su navegación: Resumen · Personas · Fichajes · Incidencias. El horario de la semana vive en Calendario › Turnos, y el Resumen lleva a él ([0082](../decisiones/0082-el-repaso-antes-de-m9.md))._
 
 ## Personas
 

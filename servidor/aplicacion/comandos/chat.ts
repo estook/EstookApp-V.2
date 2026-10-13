@@ -1132,6 +1132,29 @@ export const avisarDelHorario = comando<EntradaAvisarDelHorario, { mensajeId: st
              leido_hasta = greatest(estook.lectura_del_canal.leido_hasta, excluded.leido_hasta),
              actualizado_en = now()
     `;
+
+    // **Y suena** (repaso del 10-oct): «le doy a sí, avisar, y nada». Hasta hoy este
+    // mensaje no sonaba en ningún móvil, porque a cada uno «ya le había llegado lo
+    // suyo»; pero a quien no tiene turno, o no le cambia nada, no le había llegado
+    // nada. Ahora les llega a todos los del canal **menos a quien ya le ha llegado su
+    // horario de esta publicación**, que no lo oye dos veces.
+    const yaAvisados = await enNombreDelSistema(
+      contexto,
+      () => contexto.sql<{ persona_id: string }[]>`
+        select distinct persona_id from estook.aviso
+         where tipo in ('horario.publicado', 'horario.cambiado')
+           and clave = ${`horario:${semana.id}`}
+           and actualizado_en >= ${semana.publicadaEn}::timestamptz
+      `,
+    );
+    await apuntarParaElMovil(contexto, {
+      canalId,
+      tipo: 'equipo',
+      mensajeId,
+      autorId: personaId,
+      mencionados: [],
+      aTodosMenos: yaAvisados.map((f) => f.persona_id),
+    });
     await tocarElCanal(contexto, canalId);
     return { mensajeId };
   },

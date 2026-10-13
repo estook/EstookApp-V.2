@@ -263,16 +263,16 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 > **Y por qué vista se entra a un destino: por la primera que esté construida.** No por la primera de la tabla. Las vistas se escriben aquí **en el orden en el que se entienden** —«En marcha · Caja · Cierre» es el orden de un día—, y ese orden casi nunca coincide con el orden en el que se construyen. Entrar por la primera de la lista dejaría la pantalla que de verdad funciona escondida detrás de un cartel de «todavía no», que es la pestaña muerta de arriba un piso más abajo. Una vista pendiente **sí se enseña** en el control segmentado, con su módulo: ahí no le quita el sitio a nada y contesta «¿y la caja, dónde está?» antes de que nadie la busque. Si ninguna está construida, se entra por la primera, porque la dirección tiene que seguir siendo copiable.
 
-| App         | Sus destinos                                           |
-| ----------- | ------------------------------------------------------ |
-| Almacén     | Resumen · Productos · Movimientos · Compras · Mermas   |
-| Escandallos | Resumen · Fichas · Elaboraciones · Análisis            |
-| Carta       | Carta · Menús · Análisis                               |
-| Calendario  | Calendario · Tareas · Turnos                           |
-| Equipo      | Resumen · Personas · Horarios · Fichajes · Incidencias |
-| Servicio    | Jornada · Ventas · Delivery · APPCC                    |
-| Negocio     | Ventas · Informes · Pulse · Costes · Reseñas           |
-| Cuaderno    | Incidencias · Notas · Equipos                          |
+| App         | Sus destinos                                         |
+| ----------- | ---------------------------------------------------- |
+| Almacén     | Resumen · Productos · Movimientos · Compras · Mermas |
+| Escandallos | Resumen · Fichas · Elaboraciones · Análisis          |
+| Carta       | Carta · Menús · Análisis                             |
+| Calendario  | Calendario · Tareas · Turnos                         |
+| Equipo      | Resumen · Personas · Fichajes · Incidencias          |
+| Servicio    | Jornada · Ventas · Delivery · APPCC                  |
+| Negocio     | Ventas · Informes · Pulse · Costes · Reseñas         |
+| Cuaderno    | Incidencias · Notas · Equipos                        |
 
 Y sus vistas, donde las hay:
 
@@ -292,6 +292,8 @@ Y sus vistas, donde las hay:
 | Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas             |
 | Negocio · Informes      | Día · Semana · Mes                                                  |
 | Cuaderno · Incidencias  | Abiertas · Cerradas                                                 |
+
+**El horario vive en un solo sitio: Calendario · Turnos** (repaso del 10-oct, [0082](../decisiones/0082-el-repaso-antes-de-m9.md)). Lo ve todo el equipo, y quien puede publicarlo tiene además «Montarlo». Equipo ya no tiene «Horarios»: su Resumen lleva a él con «Horario de la semana →».
 
 En **Equipo · Incidencias** (repaso del 9-oct, [0081](../decisiones/0081-un-solo-horario-y-las-incidencias.md)) está lo que hay que mirar del registro horario: quién no vino a su turno publicado, quién llegó tarde y los fichajes raros, con lo que se puede hacer con cada uno.
 

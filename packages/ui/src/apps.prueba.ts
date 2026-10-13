@@ -14,6 +14,7 @@ import {
   dondeEntraEnElDestino,
   rutaDe,
   vistasConstruidas,
+  vistasQueSeEnsenan,
 } from './apps.ts';
 import { WIDGETS } from './panel/catalogo.ts';
 
@@ -336,14 +337,14 @@ describe('lo construido y lo que llega', () => {
     expect(destinosConstruidos(laApp('carta'))).toHaveLength(0);
   });
 
-  it('Equipo tiene sus cinco destinos construidos', () => {
+  it('Equipo tiene sus cuatro destinos construidos, y el horario no es uno de ellos', () => {
     // Personas la trajo M4. Resumen y Fichajes, M6½: con los fichajes ya se puede
-    // contestar quién está y cuántas horas lleva cada uno. Y Horarios, H2 (0069).
+    // contestar quién está y cuántas horas lleva cada uno. Horarios lo trajo H2 (0069)
+    // y se fue a Calendario › Turnos con el repaso del 10-oct (0082): un solo sitio.
     // (Hasta la entrega V se llamaban «Hoy» y «Resumen»: 0045.)
     expect(destinosConstruidos(laApp('equipo')).map((d) => d.id)).toEqual([
       'resumen',
       'personas',
-      'horarios',
       'fichajes',
       // Y el quinto, Incidencias, el repaso del 9-oct (0081).
       'incidencias',
@@ -454,5 +455,22 @@ describe('la rueda se reparte entre las que el rol tiene', () => {
 
   it('quien no tiene ninguna app no ve ninguna, y eso no revienta', () => {
     expect(appsVisibles(con('app.panel'))).toEqual([]);
+  });
+});
+
+describe('las vistas que solo salen si tienen algo (repaso del 10-oct)', () => {
+  const productos = APPS.find((a) => a.id === 'almacen')?.destinos.find(
+    (d) => d.id === 'productos',
+  );
+  const ids = (conAlgo: readonly string[], activa = 'todo') =>
+    productos === undefined ? [] : vistasQueSeEnsenan(productos, activa, conAlgo).map((v) => v.id);
+
+  it('mientras no se sabe, no sale ninguna de las tres: así no parpadean al entrar', () => {
+    expect(ids([])).toEqual(['todo', 'bajo-minimo', 'valor']);
+  });
+
+  it('salen las que tienen algo, y la que se está mirando aunque esté vacía', () => {
+    expect(ids(['congelados'])).toEqual(['todo', 'bajo-minimo', 'congelados', 'valor']);
+    expect(ids([], 'desactivados')).toEqual(['todo', 'bajo-minimo', 'desactivados', 'valor']);
   });
 });

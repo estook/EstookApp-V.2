@@ -103,11 +103,15 @@ test('se monta, se publica, lo ve el equipo y sale en PDF', async ({ page }, inf
   const confirmar = page.getByRole('dialog', { name: 'Publicar la semana' });
   await expect(confirmar).toContainText('le llega lo suyo');
   await confirmar.getByRole('button', { name: 'Publicar', exact: true }).click();
-  await expect(page.getByText('Publicado. Le ha llegado el aviso a 1 persona.')).toBeVisible();
+  // Dice por dónde le llega (repaso del 10-oct): al móvil si lo tiene, si no por correo.
+  await expect(
+    page.getByText(/^Publicado\. Le llega a 1 persona (en el móvil|por correo)\.$/),
+  ).toBeVisible();
   await expect(page.getByText('Publicada', { exact: true })).toBeVisible();
 
   // C2 (0075): al publicar, «¿Avisar en Todo el equipo?» Sí o no.
   const alChat = page.getByRole('dialog', { name: '¿Avisar en «Todo el equipo»?' });
+  await expect(alChat).toContainText('suena a todo el equipo');
   await alChat.getByRole('button', { name: 'Sí, avisar' }).click();
   await expect(alChat).toHaveCount(0);
   await expect(page.getByText('Publicado, y avisado en «Todo el equipo».')).toBeVisible();
@@ -189,4 +193,35 @@ test('para no empezar de cero: copiar la semana anterior, y preguntar antes de p
   const deMarcos = borrador.turnos.filter((t) => t.personaId === marcosId);
   expect(deMarcos).toHaveLength(1);
   expect(deMarcos[0]?.entra).toBe('10:00');
+});
+
+/**
+ * Horarios en un solo sitio (repaso del 10-oct · 0082). «Quitar Horarios de Equipo y
+ * dejarlo solo en Calendario → Turnos ("Montarlo" solo para quien puede publicar).
+ * Equipo se queda en Resumen · Personas · Fichajes · Incidencias, con un acceso
+ * "Horario de la semana →" en el Resumen. Todos los "Ir a Horarios" llevan a
+ * Calendario.»
+ */
+test('el horario vive en Calendario › Turnos, y Equipo lleva a él', async ({ page }) => {
+  await entrarEnLaApp(page, ROSA);
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen`);
+  await expect(page.getByRole('heading', { name: 'Resumen', level: 1 })).toBeVisible();
+  // Equipo ya no tiene «Horarios», ni en el menú de al lado ni en la barra de abajo.
+  await expect(page.getByRole('navigation').getByText('Horarios', { exact: true })).toHaveCount(0);
+
+  await page.getByRole('link', { name: 'Horario de la semana' }).click();
+  await expect(page).toHaveURL(/#\/calendario\/turnos/);
+  await expect(page.getByRole('heading', { name: 'Turnos', level: 1 })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Montarlo' })).toBeVisible();
+
+  // Una dirección guardada de antes lleva al mismo sitio, con su semana.
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/horarios?semana=2026-10-05`);
+  await expect(page).toHaveURL(/#\/calendario\/turnos\?semana=2026-10-05/);
+});
+
+test('quien no publica el horario lo ve en Turnos, sin «Montarlo»', async ({ page }) => {
+  await entrarEnLaApp(page, SARA);
+  await abrirSinQueSeCaiga(page, `${APP}#/calendario/turnos`);
+  await expect(page.getByRole('heading', { name: 'Turnos', level: 1 })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Montarlo' })).toHaveCount(0);
 });

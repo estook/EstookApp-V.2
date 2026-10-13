@@ -30,6 +30,7 @@ import {
   enNombreDelSistema,
   hoyEnMadrid,
 } from './pago.ts';
+import { apuntarUnFallo } from '../infraestructura/fallos.ts';
 
 /**
  * El reloj (0016, montado en la 0048).
@@ -130,14 +131,10 @@ async function sinPararElReloj<T>(
   try {
     return await hacer();
   } catch (fallo) {
-    console.error(
-      JSON.stringify({
-        nivel: 'error',
-        mensaje: `el reloj no ha podido ${que}`,
-        correlacion_id: contexto.correlacionId,
-        detalle: fallo instanceof Error ? fallo.message : String(fallo),
-      }),
-    );
+    await apuntarUnFallo(fallo, {
+      mensaje: `el reloj no ha podido ${que}`,
+      correlacionId: contexto.correlacionId,
+    });
     return null;
   }
 }
@@ -181,14 +178,10 @@ export async function latir(
     try {
       await mandarLosCorreosDeLosAvisos(contexto);
     } catch (fallo) {
-      console.error(
-        JSON.stringify({
-          nivel: 'error',
-          mensaje: 'el reloj no ha podido mandar los correos de los avisos',
-          correlacion_id: contexto.correlacionId,
-          detalle: fallo instanceof Error ? fallo.message : String(fallo),
-        }),
-      );
+      await apuntarUnFallo(fallo, {
+        mensaje: 'el reloj no ha podido mandar los correos de los avisos',
+        correlacionId: contexto.correlacionId,
+      });
     }
 
     const hoy = hoyEnMadrid(contexto.ahora);
@@ -230,14 +223,10 @@ export async function latir(
     try {
       await mandarLosCorreosDeLosAvisos(contexto);
     } catch (fallo) {
-      console.error(
-        JSON.stringify({
-          nivel: 'error',
-          mensaje: 'el reloj no ha podido mandar los correos de lo del día',
-          correlacion_id: contexto.correlacionId,
-          detalle: fallo instanceof Error ? fallo.message : String(fallo),
-        }),
-      );
+      await apuntarUnFallo(fallo, {
+        mensaje: 'el reloj no ha podido mandar los correos de lo del día',
+        correlacionId: contexto.correlacionId,
+      });
     }
     return { diario: true, ...hecho, programados };
   });
@@ -339,14 +328,10 @@ async function elDiario(
             delete from plataforma.correo_de_la_cuenta
              where organizacion_id = ${cuenta.organizacion_id} and tipo = ${correo.tipo} and clave = ${correo.clave}
           `;
-          console.error(
-            JSON.stringify({
-              nivel: 'error',
-              mensaje: 'el correo de la cuenta no ha salido',
-              correlacion_id: contexto.correlacionId,
-              detalle: fallo instanceof Error ? fallo.message : String(fallo),
-            }),
-          );
+          await apuntarUnFallo(fallo, {
+            mensaje: 'el correo de la cuenta no ha salido',
+            correlacionId: contexto.correlacionId,
+          });
         }
       }
     }
@@ -390,14 +375,10 @@ async function elDiario(
         cuadrados += 1;
       } catch (fallo) {
         fallos += 1;
-        console.error(
-          JSON.stringify({
-            nivel: 'error',
-            mensaje: 'no se han podido cuadrar los locales con Stripe',
-            correlacion_id: contexto.correlacionId,
-            detalle: fallo instanceof Error ? fallo.message : String(fallo),
-          }),
-        );
+        await apuntarUnFallo(fallo, {
+          mensaje: 'no se han podido cuadrar los locales con Stripe',
+          correlacionId: contexto.correlacionId,
+        });
       }
     }
   }
@@ -409,14 +390,10 @@ async function elDiario(
     await hacerLaFotoDelUso(contexto, hoy);
   } catch (fallo) {
     fallos += 1;
-    console.error(
-      JSON.stringify({
-        nivel: 'error',
-        mensaje: 'no se ha podido hacer la foto del uso de los clientes',
-        correlacion_id: contexto.correlacionId,
-        detalle: fallo instanceof Error ? fallo.message : String(fallo),
-      }),
-    );
+    await apuntarUnFallo(fallo, {
+      mensaje: 'no se ha podido hacer la foto del uso de los clientes',
+      correlacionId: contexto.correlacionId,
+    });
   }
 
   // 3½ · Las ventas (A4 · 0077): lo cobrado de antes de A4, una vez, y el correo del
@@ -429,14 +406,10 @@ async function elDiario(
     await mandarElCorreoDelLunes(contexto, hoy);
   } catch (fallo) {
     fallos += 1;
-    console.error(
-      JSON.stringify({
-        nivel: 'error',
-        mensaje: 'el correo de ventas del lunes no ha salido',
-        correlacion_id: contexto.correlacionId,
-        detalle: fallo instanceof Error ? fallo.message : String(fallo),
-      }),
-    );
+    await apuntarUnFallo(fallo, {
+      mensaje: 'el correo de ventas del lunes no ha salido',
+      correlacionId: contexto.correlacionId,
+    });
   }
 
   // 4 · Los avisos de hace más de un mes: ya no avisan de nada (0052).

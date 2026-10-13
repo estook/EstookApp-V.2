@@ -14,6 +14,7 @@ import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { avisar, quienesPuedenRecibir } from '../avisos.ts';
 import { comoLista } from '../listas.ts';
+import { enNombreDelSistema } from '../pago.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import {
   apuntarQueCambia,
@@ -292,6 +293,13 @@ export interface Publicado {
   readonly primeraVez: boolean;
   /** A cuántas personas les ha llegado algo. */
   readonly avisados: number;
+  /**
+   * Por dónde (repaso del 10-oct): «le doy a sí, avisar, y nada». Se dice cuántos lo
+   * tienen en el móvil, cuántos por correo y cuántos solo lo verán al entrar.
+   */
+  readonly alMovil: number;
+  readonly porCorreo: number;
+  readonly soloEnLaApp: number;
 }
 
 /**
@@ -366,7 +374,30 @@ export const publicarElHorario = comando<{ lunes: string }, Publicado>({
           borrador,
         );
 
-    return { primeraVez, avisados };
+    // Por dónde le llega a cada uno lo que se acaba de avisar: los avisos de esta semana
+    // tocados ahora. Los avisos son de cada uno: los cuenta el sistema.
+    const porDonde = await enNombreDelSistema(
+      contexto,
+      () => contexto.sql<{ al_movil: number; por_correo: number; solo_en_la_app: number }[]>`
+        select count(*) filter (where movil = 'pendiente')::int as al_movil,
+               count(*) filter (where movil <> 'pendiente' and correo = 'pendiente')::int
+                 as por_correo,
+               count(*) filter (where movil <> 'pendiente' and correo <> 'pendiente')::int
+                 as solo_en_la_app
+          from estook.aviso
+         where tipo in ('horario.publicado', 'horario.cambiado')
+           and clave = ${`horario:${semana.id}`}
+           and actualizado_en = now()
+      `,
+    );
+
+    return {
+      primeraVez,
+      avisados,
+      alMovil: porDonde[0]?.al_movil ?? 0,
+      porCorreo: porDonde[0]?.por_correo ?? 0,
+      soloEnLaApp: porDonde[0]?.solo_en_la_app ?? 0,
+    };
   },
 });
 

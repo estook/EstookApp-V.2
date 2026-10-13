@@ -36,7 +36,6 @@ import {
 import { Escaner } from '../lector/Escaner.tsx';
 import { pitar } from '../lector/pitar.ts';
 import { usarLectorDeMano } from '../ganchos/usarLectorDeMano.ts';
-import { usarEsconderLasVistasVacias } from '../ganchos/usarLasVistasVacias.ts';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -224,18 +223,6 @@ export function Productos({
       return respuesta.datos;
     },
   });
-
-  // «Sin precio», «Congelados» y «Desactivados», solo si tienen algo (repaso del 9-oct).
-  const enLasVistas = consulta.data?.cuantosEnLasVistas;
-  usarEsconderLasVistasVacias(
-    enLasVistas === undefined
-      ? null
-      : [
-          ...(enLasVistas.sinPrecio === 0 ? ['sin-precio'] : []),
-          ...(enLasVistas.congelados === 0 ? ['congelados'] : []),
-          ...(enLasVistas.desactivados === 0 ? ['desactivados'] : []),
-        ],
-  );
 
   async function refrescar() {
     await cache.invalidateQueries({ queryKey: ['mis_productos'] });

@@ -71,10 +71,18 @@ export async function apuntarParaElMovil(
     readonly mensajeId: string;
     readonly autorId: string;
     readonly mencionados: readonly string[];
+    /**
+     * El aviso del horario (repaso del 10-oct): **les toca a todos**, como si les
+     * nombraran —suena aunque tengan el canal silenciado, y por correo a quien no tiene
+     * móvil—, menos a quien ya le ha llegado su horario, que no lo oye dos veces.
+     */
+    readonly aTodosMenos?: readonly string[];
   },
 ): Promise<void> {
   // Sin el puerto del móvil encendido, nadie tiene móvil: solo queda el correo.
   const hayMovil = contexto.movil !== null;
+  const aTodos = datos.aTodosMenos !== undefined;
+  const fuera = comoLista(datos.aTodosMenos ?? []);
   const mencionados = comoLista(datos.mencionados);
   const apuntados = await enNombreDelSistema(
     contexto,
@@ -85,9 +93,12 @@ export async function apuntarParaElMovil(
                ${hayMovil} and exists (
                  select 1 from estook.movil_suscrito m where m.persona_id = q.persona_id
                ) as con_movil,
-               q.persona_id = any (${mencionados}::text::uuid[]) as le_nombran
+               q.persona_id = any (${mencionados}::text::uuid[]) as le_nombran,
+               -- Lo que les toca a todos (el horario): suena como si les nombraran.
+               ${aTodos} or q.persona_id = any (${mencionados}::text::uuid[]) as importa
           from estook.quien_ve_el_canal(${datos.canalId}::uuid) q
          where q.persona_id <> ${datos.autorId}::uuid
+           and not q.persona_id = any (${fuera}::text::uuid[])
       )
       insert into estook.chat_al_movil (
         persona_id, canal_id, ultimo_id, le_mencionan, movil_desde, creado_en, por_correo
@@ -100,7 +111,7 @@ export async function apuntarParaElMovil(
                quien.con_movil
                and (
                  ${datos.tipo} = 'privado'
-                 or quien.le_nombran
+                 or quien.importa
                  or not exists (
                    select 1 from estook.lectura_del_canal l
                     where l.canal_id = ${datos.canalId}::uuid and l.persona_id = quien.persona_id
@@ -108,7 +119,7 @@ export async function apuntarParaElMovil(
                  )
                )
              )
-          or (not quien.con_movil and (${datos.tipo} = 'privado' or quien.le_nombran))
+          or (not quien.con_movil and (${datos.tipo} = 'privado' or quien.importa))
       on conflict (persona_id, canal_id) do update
          set cuantos = estook.chat_al_movil.cuantos + 1,
              ultimo_id = excluded.ultimo_id,

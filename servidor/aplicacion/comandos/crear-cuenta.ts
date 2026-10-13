@@ -26,6 +26,7 @@ import {
 } from '../contrato.ts';
 import { cambiarLaSuscripcion } from '../pago.ts';
 import { abrirLaSesion, elAparato, type SalidaEntrar } from './entrar.ts';
+import { apuntarUnFallo } from '../../infraestructura/fallos.ts';
 
 /**
  * Crear cuenta, y entrar con Google (0042).
@@ -229,15 +230,11 @@ export const pedirCodigoDeRegistro = comando<
            pasajero, y ahí reintentar es la respuesta correcta.
       */
       const esDeConfiguracion = fallo instanceof CorreoNoSale && fallo.esDeConfiguracion;
-      console.error(
-        JSON.stringify({
-          nivel: 'error',
-          mensaje: 'el correo del código de registro no ha salido',
-          correlacion_id: contexto.correlacionId,
-          de_configuracion: esDeConfiguracion,
-          detalle: fallo instanceof Error ? fallo.message : String(fallo),
-        }),
-      );
+      await apuntarUnFallo(fallo, {
+        mensaje: 'el correo del código de registro no ha salido',
+        correlacionId: contexto.correlacionId,
+        extra: { de_configuracion: esDeConfiguracion },
+      });
 
       if (esDeConfiguracion) {
         throw new FalloDeAplicacion('todavia_no_disponible', {

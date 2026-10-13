@@ -102,3 +102,10 @@ export const COMO_SE_LLAMA_LA_ZONA: Readonly<Record<Zona, string>> = {
   cocina: 'Cocina',
   otros: 'El resto del equipo',
 };
+
+/**
+ * Dónde está el horario de la semana: **un solo sitio**, Calendario › Turnos (repaso
+ * del 10-oct · 0082). Todo lo que lleva al horario lleva aquí; Equipo ya no tiene
+ * «Horarios».
+ */
+export const DONDE_ESTA_EL_HORARIO = '/calendario/turnos';

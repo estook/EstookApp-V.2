@@ -10,6 +10,7 @@ import { latidoDelMovil, latir, type LoQueHizoElReloj } from './reloj.ts';
 import { dejoCorreos, dejoMoviles, mandarLosCorreosDeLosAvisos } from './avisos.ts';
 import { mandarLoDelMovil, type LoQueHizoElMovil } from './al-movil.ts';
 import { darLosToques } from './al-segundo.ts';
+import { apuntarUnFallo } from '../infraestructura/fallos.ts';
 
 export type { LoQueHizoElMovil } from './al-movil.ts';
 
@@ -429,14 +430,10 @@ export function crearDespachador(puertos: Puertos): Despachador {
           );
           correoDeRepuesto = hecho.alCorreo > 0;
         } catch (fallo) {
-          console.error(
-            JSON.stringify({
-              nivel: 'error',
-              mensaje: 'los avisos al móvil no han salido',
-              correlacion_id: quien.correlacionId,
-              detalle: fallo instanceof Error ? fallo.message : String(fallo),
-            }),
-          );
+          await apuntarUnFallo(fallo, {
+            mensaje: 'los avisos al móvil no han salido',
+            correlacionId: quien.correlacionId,
+          });
         }
       }
 
@@ -451,14 +448,10 @@ export function crearDespachador(puertos: Puertos): Despachador {
             (contexto) => mandarLosCorreosDeLosAvisos(contexto),
           );
         } catch (fallo) {
-          console.error(
-            JSON.stringify({
-              nivel: 'error',
-              mensaje: 'los correos de los avisos no han salido',
-              correlacion_id: quien.correlacionId,
-              detalle: fallo instanceof Error ? fallo.message : String(fallo),
-            }),
-          );
+          await apuntarUnFallo(fallo, {
+            mensaje: 'los correos de los avisos no han salido',
+            correlacionId: quien.correlacionId,
+          });
         }
       }
       return resultado;

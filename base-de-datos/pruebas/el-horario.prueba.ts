@@ -219,6 +219,8 @@ describe('publicar', () => {
     );
     expect(hecho.primeraVez).toBe(true);
     expect(hecho.avisados).toBe(2);
+    // Y por dónde: sin móviles puestos, los dos por correo (repaso del 10-oct).
+    expect(hecho).toMatchObject({ alMovil: 0, porCorreo: 2, soloEnLaApp: 0 });
 
     const avisos = await comoDuena<{ persona_id: string; titulo: string; detalle: string }>(
       "select persona_id, titulo, detalle from estook.aviso where tipo = 'horario.publicado'",
@@ -228,6 +230,15 @@ describe('publicar', () => {
     expect(suyo?.detalle).toBe(
       'Viernes 19:00–02:00 (30 min de descanso), sábado libre, domingo vacaciones.',
     );
+  });
+
+  it('sin el móvil puesto, el horario llega por correo, y se dice por dónde (repaso del 10-oct)', async () => {
+    // En esta base nadie tiene el móvil puesto: el horario no puede quedarse solo en la
+    // campana, que no se ve sin abrir Estook. Lo de Richi: a tres de cuatro, nada.
+    const porCorreo = await comoDuena<{ persona_id: string; correo: string }>(
+      "select persona_id, correo from estook.aviso where tipo = 'horario.publicado'",
+    );
+    expect(porCorreo.map((a) => a.correo)).toEqual(['pendiente', 'pendiente']);
   });
 
   it('publicado, lo ve todo el equipo: el de todos, sin euros', async () => {
@@ -266,7 +277,7 @@ describe('publicar', () => {
     const hecho = losDatos<{ primeraVez: boolean; avisados: number }>(
       await api.ejecutar(rosa, 'publicar_el_horario', { lunes: LUNES }),
     );
-    expect(hecho).toEqual({ primeraVez: false, avisados: 1 });
+    expect(hecho).toMatchObject({ primeraVez: false, avisados: 1 });
     const cambiados = await comoDuena<{ persona_id: string; detalle: string }>(
       "select persona_id, detalle from estook.aviso where tipo = 'horario.cambiado'",
     );
@@ -355,5 +366,35 @@ describe('para no empezar de cero', () => {
       ).quitado,
     ).toBe(true);
     expect((await elBorrador(rosa, SIGUIENTE)).turnos).toHaveLength(antes.length - 1);
+  });
+});
+
+describe('el horario, en un solo sitio (repaso del 10-oct · 0082)', () => {
+  it('quien puede publicar el horario tiene Calendario, que es donde vive ahora', async () => {
+    // Equipo › Horarios se fue a Calendario › Turnos: un rol que publica sin Calendario
+    // se quedaría sin sitio donde montarlo.
+    const sinCalendario = await comoDuena<{ rol: string }>(
+      `select p.rol from estook.permiso_de_rol p
+        where p.permiso = 'accion.publicar_cuadrante'
+          and not exists (
+            select 1 from estook.permiso_de_rol c
+             where c.rol = p.rol and c.permiso = 'app.calendario'
+          )`,
+    );
+    expect(sinCalendario).toEqual([]);
+  });
+});
+
+describe('el horario en papel (repaso del 10-oct · 0082)', () => {
+  it('los puestos que salen debajo de cada nombre llevan sus tildes', async () => {
+    const roles = await comoDuena<{ codigo: string; nombre: string }>(
+      `select codigo, nombre from estook.rol
+        where codigo in ('direccion', 'gestoria', 'area_manager') order by codigo`,
+    );
+    expect(roles.map((r) => r.nombre)).toEqual([
+      'Área manager',
+      'Dirección o propietario',
+      'Gestoría',
+    ]);
   });
 });

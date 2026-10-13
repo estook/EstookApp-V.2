@@ -1,6 +1,7 @@
 import { pieDelDocumento, type MarcaDelDocumento } from '@estook/documentos';
 import { MotorNoContesta } from '../infraestructura/pdf.ts';
 import { FalloDeAplicacion, type Contexto } from './contrato.ts';
+import { apuntarUnFallo } from '../infraestructura/fallos.ts';
 
 /**
  * Hacer un PDF (H1 · decisión 0068).
@@ -97,16 +98,14 @@ export async function hacerElPdf(
     return { nombre: opciones.nombre, tipo: 'application/pdf', base64: enBase64(bytes) };
   } catch (fallo) {
     // Lo que contestó el motor va al registro, nunca a la pantalla.
-    console.error(
-      JSON.stringify({
-        nivel: 'error',
-        mensaje: 'el PDF no ha salido',
-        correlacion_id: contexto.correlacionId,
+    await apuntarUnFallo(fallo, {
+      mensaje: 'el PDF no ha salido',
+      correlacionId: contexto.correlacionId,
+      extra: {
         motor: contexto.pdf.quien,
         estado: fallo instanceof MotorNoContesta ? fallo.estado : null,
-        detalle: fallo instanceof Error ? fallo.message : String(fallo),
-      }),
-    );
+      },
+    });
     throw new FalloDeAplicacion('pdf_no_disponible');
   }
 }

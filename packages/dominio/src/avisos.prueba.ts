@@ -16,6 +16,7 @@ import {
   deFabrica,
   laMermaAvisa,
   laPreferencia,
+  puedeIrPorCorreo,
   laSubidaAvisa,
   laNotaBaja,
   avisoDeBajoMinimo,
@@ -324,5 +325,38 @@ describe('el recordatorio de confirmar (C2 · 0075)', () => {
     });
     const largo = 'Muy largo '.repeat(30);
     expect(avisoDeConfirmar('Rosa', 'Cocina', largo).detalle?.length ?? 0).toBeLessThan(200);
+  });
+});
+
+describe('el horario llega aunque no tengas el móvil puesto (repaso del 10-oct)', () => {
+  const deFabricaPara = (tipo: Parameters<typeof laPreferencia>[0]) =>
+    laPreferencia(tipo, 30, undefined);
+
+  it('el horario tiene correo de repuesto, sin ser correo de fábrica', () => {
+    expect(deFabricaPara('horario.publicado').porCorreo).toBe(false);
+    expect(
+      puedeIrPorCorreo('horario.publicado', deFabricaPara('horario.publicado'), undefined),
+    ).toBe(true);
+    expect(puedeIrPorCorreo('horario.cambiado', deFabricaPara('horario.cambiado'), undefined)).toBe(
+      true,
+    );
+  });
+
+  it('si lo ha apagado él, no', () => {
+    const guardada = { enLaApp: true, porCorreo: false };
+    expect(
+      puedeIrPorCorreo(
+        'horario.publicado',
+        laPreferencia('horario.publicado', 30, guardada),
+        guardada,
+      ),
+    ).toBe(false);
+  });
+
+  it('lo demás sigue como dijo la 0081: sin correo si no lo pide', () => {
+    expect(puedeIrPorCorreo('lote.caduca', deFabricaPara('lote.caduca'), undefined)).toBe(false);
+    expect(
+      puedeIrPorCorreo('informe.mes', laPreferencia('informe.mes', 70, undefined), undefined),
+    ).toBe(true);
   });
 });

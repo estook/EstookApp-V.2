@@ -30,6 +30,24 @@ import { ALTO_DE_UN_TECLADO, type Visor } from '@estook/ui';
  *     en `estilos.css`): sin desplazarse ni estirarse. Solo se desplazan la lista y la
  *     conversación, y al llegar a su borde no arrastran nada.
  *
+ * ── Y por qué no bastó con eso (10-oct) ──────────────────────────────────────
+ *
+ * Richi, con el iPhone, después del repaso del 9-oct: «al tocar la caja de escribir,
+ * el iPhone sube la página entera y la caja queda tapada por la barra de flechas y el
+ * teclado». Lo de arriba solo se hacía **si se veía el teclado**, y el teclado se veía
+ * comparando el alto visible con `window.innerHeight`. En el iPhone ese número **también
+ * encoge** con el teclado (sigue al visor visible, no a la página): la resta salía casi
+ * cero, el chat creía que no había teclado y se quedaba entre las dos barras de la
+ * página, que el iPhone había subido fuera de la vista. Por eso, en su captura, asomaba
+ * un mensaje debajo de la hora y no se veían ni la cabecera ni la caja.
+ *
+ * Dos seguros, y basta uno para que funcione:
+ *
+ *   · **El alto de la página se mide con lo que no encoge** (`altoDeLaPagina`, en
+ *     `@estook/ui`): el mayor de `innerHeight` y el alto del documento.
+ *   · **Escribiendo en el chat, el chat va siempre a lo visible**, se vea o no el
+ *     teclado: la cabecera arriba y la caja pegada encima del teclado, como WhatsApp.
+ *
  * La cuenta es aritmética pura, para probarla sin un iPhone (`conElTeclado.prueba.ts`).
  */
 
@@ -41,12 +59,18 @@ export interface DondeVaElChat {
 }
 
 /**
- * Dónde va el chat con el teclado abierto; nulo sin teclado (entonces manda el CSS:
- * entre la barra de arriba y la de abajo). Con zoom de dos dedos no se toca nada.
+ * Dónde va el chat: nulo si manda el CSS (entre la barra de arriba y la de abajo). Va a
+ * lo visible con el teclado abierto **o mientras se escribe en él**. Con zoom de dos
+ * dedos no se toca nada.
  */
-export function dondeVaElChat(visor: Visor, altoDeMaquetacion: number): DondeVaElChat | null {
+export function dondeVaElChat(
+  visor: Visor,
+  altoDeMaquetacion: number,
+  escribiendo = false,
+): DondeVaElChat | null {
   if (Math.abs(visor.scale - 1) > 0.01) return null;
-  if (altoDeMaquetacion - visor.height <= ALTO_DE_UN_TECLADO) return null;
+  const teclado = altoDeMaquetacion - visor.height > ALTO_DE_UN_TECLADO;
+  if (!teclado && !escribiendo) return null;
   // Con `Math.trunc`: son píxeles, y la regla 9 guarda el redondeo para el dinero.
   return { arriba: Math.max(0, Math.trunc(visor.offsetTop)), alto: Math.trunc(visor.height) };
 }

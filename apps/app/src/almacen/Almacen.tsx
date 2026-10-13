@@ -5,6 +5,7 @@ import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { Resumen } from './Resumen.tsx';
 import { Productos } from './Productos.tsx';
+import { usarLasVistasConAlgo } from '../ganchos/usarLasVistasConAlgo.ts';
 import type { MisProductos } from './contrato.ts';
 
 /**
@@ -145,6 +146,19 @@ export function Almacen({ destino, vista }: { readonly destino: string; readonly
       return respuesta.datos;
     },
   });
+
+  // «Sin precio», «Congelados» y «Desactivados», solo si tienen algo. Lo dice esta
+  // pantalla y no la lista, que se desmonta al pasar a «Valor» (repaso del 10-oct).
+  const enLasVistas = contexto.data?.cuantosEnLasVistas;
+  usarLasVistasConAlgo(
+    destino !== 'productos' || enLasVistas === undefined
+      ? null
+      : [
+          ...(enLasVistas.sinPrecio > 0 ? ['sin-precio'] : []),
+          ...(enLasVistas.congelados > 0 ? ['congelados'] : []),
+          ...(enLasVistas.desactivados > 0 ? ['desactivados'] : []),
+        ],
+  );
 
   return (
     <>

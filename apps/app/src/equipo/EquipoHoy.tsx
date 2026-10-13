@@ -17,7 +17,15 @@ import {
   Tarjeta,
   clases,
 } from '@estook/ui';
-import { IconoEntrar, IconoEquipo, IconoReloj, IconoSalir } from '@estook/iconos';
+import {
+  IconoCalendario,
+  IconoEntrar,
+  IconoEquipo,
+  IconoFlechaDerecha,
+  IconoReloj,
+  IconoSalir,
+} from '@estook/iconos';
+import { DONDE_ESTA_EL_HORARIO } from '../horario/contrato.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { AL_DIA } from '../datos/alDia.ts';
 import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
@@ -143,6 +151,23 @@ export function EquipoHoy() {
         persona a persona, en Fichajes.
       */}
       <CifrasDeLaApp app="equipo" />
+
+      {/*
+        El horario vive en un solo sitio, Calendario › Turnos (repaso del 10-oct, 0082):
+        desde aquí, a un toque.
+      */}
+      <Link
+        to={DONDE_ESTA_EL_HORARIO}
+        className="flex min-h-toque items-center gap-e3 rounded-mayor border border-borde bg-superficie px-e4 py-e3 text-cuerpo font-medium [box-shadow:var(--sombra-tarjeta)] hover:bg-fondo sm:px-e5"
+      >
+        <span aria-hidden className="text-[var(--color-app-calendario)]">
+          <IconoCalendario size={20} />
+        </span>
+        <span className="min-w-0 flex-1">Horario de la semana</span>
+        <span aria-hidden className="text-texto-suave">
+          <IconoFlechaDerecha size={18} />
+        </span>
+      </Link>
 
       {/* Lo fichado con más de doce horas sin señal, por revisar (0070). */}
       {(datos.porRevisar ?? []).length > 0 && (

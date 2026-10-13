@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from 'react';
-import { IconoBuscar, IconoLocal } from '@estook/iconos';
+import type { ReactNode } from 'react';
+import { IconoBuscar } from '@estook/iconos';
 import { etiquetaDeLaCampana, etiquetaDelChat } from '@estook/dominio';
 import { ElBocadillo, LaCampana } from './LaCampana.tsx';
 import { clases } from '../clases.ts';
 import { Avatar } from '../componentes/Tarjeta.tsx';
+import { LogoDelLocal } from './LogoDelLocal.tsx';
 
 /**
  * La barra de arriba, en movil.
@@ -105,7 +106,7 @@ export function BarraArribaMovil({
         // La zona segura del teléfono (23-sep): con la app instalada, la página se pinta
         // debajo del reloj y de la muesca del iPhone, así que la barra deja ese
         // hueco arriba y a los lados, con su fondo detrás.
-        'sticky top-0 z-30 flex items-center gap-e1 border-b border-borde bg-superficie',
+        'sticky top-0 z-30 flex items-center gap-e1 border-b border-borde/70 bg-fondo/85 backdrop-blur-xl backdrop-saturate-150',
         'pl-[max(var(--spacing-e2),env(safe-area-inset-left))] pr-[max(var(--spacing-e2),env(safe-area-inset-right))]',
         'h-[calc(var(--alto-barra-movil)+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] lg:hidden no-imprimir',
       )}
@@ -175,42 +176,14 @@ function DondeEstas({
   readonly alCambiar: (id: string) => void;
   readonly alIrAlPanel: () => void;
 }) {
-  // El logo que no llegó (sin señal): se guarda cuál, para que otro local o un logo nuevo sí se intente.
-  const [logoRoto, setLogoRoto] = useState<string | null>(null);
   if (local === null) {
     return <span className="min-w-0 flex-1 text-secundario text-texto-suave">Sin local</span>;
   }
 
-  const color = local.colorDeMarca;
-  const conColor = color !== null;
-  const sinLogo = local.logo === null || local.logo === logoRoto;
-
+  // El logo **tal cual lo subieron**, más grande y sin el círculo de su color (la
+  // experiencia, 0083): un logo apaisado ya no se queda en un sello de 24 px.
   const marca = (
-    <span
-      className="inline-flex shrink-0 items-center rounded-redondo p-[3px]"
-      style={color === null ? undefined : { backgroundColor: color }}
-    >
-      {sinLogo ? (
-        <span
-          className={clases(
-            'inline-flex size-6 items-center justify-center rounded-redondo',
-            conColor ? 'text-superficie' : 'text-texto-suave',
-          )}
-        >
-          <IconoLocal size={16} />
-        </span>
-      ) : (
-        <img
-          src={local.logo}
-          alt=""
-          // Sin señal no llega (viene de internet): el icono del local en su lugar (0070).
-          onError={() => {
-            setLogoRoto(local.logo);
-          }}
-          className="size-6 rounded-redondo bg-superficie object-contain"
-        />
-      )}
-    </span>
+    <LogoDelLocal nombre={local.nombre} logo={local.logo} colorDeMarca={local.colorDeMarca} alto={32} />
   );
 
   if (locales.length <= 1) {
@@ -219,10 +192,10 @@ function DondeEstas({
         type="button"
         onClick={alIrAlPanel}
         aria-label={`Volver al Panel · ${local.nombre}`}
-        className="flex min-h-toque min-w-0 flex-1 items-center gap-e1 rounded-medio text-left"
+        className="flex min-h-toque min-w-0 flex-1 items-center gap-e2 rounded-medio text-left"
       >
         {marca}
-        <span className="min-w-0 truncate text-secundario font-medium text-texto">
+        <span className="min-w-0 truncate text-cuerpo font-semibold text-texto">
           {local.nombre}
         </span>
       </button>

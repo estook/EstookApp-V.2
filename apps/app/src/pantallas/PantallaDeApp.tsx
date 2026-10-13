@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
 import {
-  MenuLateral,
   acentoParaTexto,
   destinosConstruidos,
-  Migas,
   Tarjeta,
   TodaviaNo,
   Vistas,
@@ -119,12 +117,6 @@ export function PantallaDeApp() {
       app={app}
       destino={destino}
       vista={vista}
-      alVolver={() => {
-        navegar('/');
-      }}
-      alIrADestino={(otro) => {
-        navegar(rutaDe(app, otro));
-      }}
       alIrAVista={(id) => {
         navegar(
           rutaDe(
@@ -154,10 +146,12 @@ const SE_MUDO: Readonly<Record<string, string>> = {
  * de que la lista no se coma los 1.400 px de un monitor.
  */
 const ANCHO: Readonly<Record<App['forma'], string>> = {
-  panel: 'max-w-[76rem]',
-  lista: 'max-w-[76rem]',
-  // El calendario **no lleva tope**: su rejilla es el contenido, y una semana
-  // apretada en 76 rem con siete columnas deja las celdas sin sitio para nada.
+  // Desde la experiencia (0083) la lista y el panel llenan lo que deja el menú de
+  // la izquierda: el tope lo pone el esqueleto, solo para pantallas enormes. Lo que
+  // no se estira es lo que se lee de corrido.
+  panel: '',
+  lista: '',
+  // El calendario **no lleva tope**: su rejilla es el contenido.
   calendario: 'max-w-none',
   // Se lee y se escribe: una columna de medida legible, como cualquier documento.
   cuaderno: 'max-w-[48rem]',
@@ -167,15 +161,11 @@ function Dentro({
   app,
   destino,
   vista,
-  alVolver,
-  alIrADestino,
   alIrAVista,
 }: {
   readonly app: App;
   readonly destino: Destino;
   readonly vista: Vista | undefined;
-  readonly alVolver: () => void;
-  readonly alIrADestino: (destino: Destino) => void;
   readonly alIrAVista: (id: string) => void;
 }) {
   const abrirLaRueda = usarAbrirLaRueda();
@@ -184,16 +174,35 @@ function Dentro({
   const [conAlgo, setConAlgo] = useState<readonly string[]>([]);
   const lasVistas = vistasQueSeEnsenan(destino, vista?.id, conAlgo);
   return (
-    <div className={clases('flex w-full flex-col gap-e4', ANCHO[app.forma])}>
-      <header className="flex flex-col gap-e2">
-        {/*
-          Las migas llevan **dos pasos y no tres**: Panel y la app. La vista no
-          entra porque no es un sitio, y el destino ya se ve resaltado en el menu
-          lateral y en la barra de abajo. Antes ponia «Panel · Almacén ·
-          Productos», que dice tres veces donde estas y ninguna vez como salir.
-        */}
-        <div className="flex items-center justify-between gap-e2">
-          <Migas camino={[{ nombre: 'Panel', ir: alVolver }, { nombre: app.nombre }]} />
+    <div className={clases('flex w-full flex-col gap-e4 lg:gap-e5', ANCHO[app.forma])}>
+      {/*
+        La cabecera, en corto (la experiencia, 0083): el icono de la app, su nombre
+        pequeño y **el destino**, que es donde estás de verdad. La pregunta que
+        contesta cada destino ya no va debajo («poco texto»): está al pasar por
+        encima de su nombre en el menú. Y las migas tampoco: en el ordenador lo dice
+        la barra de arriba y en el móvil se vuelve con el logo del local.
+      */}
+      <header className="flex flex-col gap-e3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-center gap-e3">
+          <span
+            aria-hidden
+            className="grid size-11 shrink-0 place-items-center rounded-grande text-white"
+            style={{
+              background: `linear-gradient(140deg, color-mix(in srgb, ${app.acento} 92%, white), color-mix(in srgb, ${app.acento} 72%, black))`,
+              boxShadow: `0 10px 24px -12px ${app.acento}`,
+            }}
+          >
+            <app.icono size={22} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-etiqueta font-semibold text-texto-tenue">{app.nombre}</p>
+            <h1
+              title={destino.queContesta}
+              className="truncate text-pantalla font-bold tracking-[-0.02em]"
+            >
+              {destino.nombre}
+            </h1>
+          </div>
           {/*
             En el móvil, con cinco destinos, «Apps» no cabe en la barra de abajo y se
             muda aquí (26-sep, 0051): sigue a un toque, y la rueda resalta esta app.
@@ -212,33 +221,8 @@ function Dentro({
           )}
         </div>
 
-        <div className="flex items-center gap-e3">
-          {/* El icono de la app en su pastilla, como el de cada tarjeta (0045). */}
-          <span
-            aria-hidden
-            className="grid size-12 shrink-0 place-items-center rounded-grande"
-            style={{
-              color: app.acento,
-              background: `color-mix(in srgb, ${app.acento} 14%, transparent)`,
-            }}
-          >
-            <app.icono size={26} />
-          </span>
-          <div className="min-w-0">
-            {/*
-              El titulo es **el destino**, no la app. Es donde estas de verdad, y
-              es lo que hace que la pantalla de Movimientos no se llame igual que
-              la de Productos. El nombre de la app va encima, pequeno, que es
-              donde se lee sin robarle sitio.
-            */}
-            <p className="text-secundario font-medium text-texto-suave">{app.nombre}</p>
-            <h1 className="text-pantalla font-semibold tracking-[-0.015em]">{destino.nombre}</h1>
-            <p className="text-secundario text-texto-suave">{destino.queContesta}</p>
-          </div>
-        </div>
-
         {vista !== undefined && (
-          <div className="max-w-full lg:max-w-[36rem]">
+          <div className="max-w-full lg:max-w-[40rem]">
             <Vistas
               vistas={lasVistas}
               activa={vista.id}
@@ -250,41 +234,15 @@ function Dentro({
         )}
       </header>
 
-      <div className="flex gap-e5">
-        {/* El menu lateral de B5, que solo existe en escritorio: en movil su
-            trabajo lo hace la barra de abajo. */}
-        <MenuLateral app={app} destinoActivo={destino.id} alIrADestino={alIrADestino} />
-
-        <div className="min-w-0 flex-1">
-          <LasVistasConAlgo.Provider value={setConAlgo}>
-            <Contenido app={app} destino={destino} vista={vista} />
-          </LasVistasConAlgo.Provider>
-        </div>
+      <div className="min-w-0">
+        <LasVistasConAlgo.Provider value={setConAlgo}>
+          <Contenido app={app} destino={destino} vista={vista} />
+        </LasVistasConAlgo.Provider>
       </div>
     </div>
   );
 }
 
-/**
- * Lo que hay dentro de cada destino.
- *
- * Lo que ya funciona de verdad, y de que modulo es cada cosa:
- *
- *   Almacén · Hoy, Productos, Movimientos, Compras     M6 · con Mermas en M6½
- *   Almacén · Compras entera                           M7 · pedidos, albaranes, facturas y precios
- *   Equipo · Personas                                     M4 · dar acceso y quitarlo
- *   Equipo · Hoy y Resumen                                M6½ · fichajes y horas
- *   Equipo · Incidencias                                  repaso del 9-oct · 0081
- *   Servicio · Jornada · Cierre                           M6½ · el cierre de caja
- *   Negocio · Ventas                                      M6½ · lo que entra
- *   Negocio · Informes y Reseñas                          R2 · Tu día, semana y mes; la nota en Google
- *
- * El resto lleva su `TodaviaNo` con **el modulo del destino**, que sale del
- * catalogo de navegacion y no de una lista escrita aparte. Antes habia una tabla
- * suelta en este fichero, y en el Panel otra, y las dos con numeros distintos: el
- * Panel decia que Negocio era M17 —que es Cuaderno— y que el TPV era M13 —que es
- * Equipo—. Un dato con dos duenos acaba con dos valores (regla 6).
- */
 function Contenido({
   app,
   destino,

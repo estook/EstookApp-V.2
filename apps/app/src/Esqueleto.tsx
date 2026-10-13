@@ -1,12 +1,14 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
 import { IconoAtras } from '@estook/iconos';
 import {
+  ANCHO_DEL_MENU,
   BarraArribaMovil,
   BarraDeApp,
-  BarraEscritorio,
+  BarraDeArribaDelOrdenador,
   BarraMovil,
+  MenuDelOrdenador,
   Deshacer,
   RuedaDeApps,
   SiAlgoFalla,
@@ -51,6 +53,19 @@ import { usarElNumeroDelIcono, usarLoDeLaRed } from './ganchos/usarLoDeLaRed.ts'
  * vez aqui, con `appsVisibles()`, para que no haya dos listas que puedan
  * discrepar.
  */
+const DONDE_SE_GUARDA_EL_MENU = 'estook.menu';
+
+function leerElMenu(): boolean {
+  try {
+    const guardado = window.localStorage.getItem(DONDE_SE_GUARDA_EL_MENU);
+    if (guardado === 'abierto') return true;
+    if (guardado === 'plegado') return false;
+  } catch {
+    /* sin almacenamiento, se decide por el ancho */
+  }
+  return window.innerWidth >= 1280;
+}
+
 export function Esqueleto() {
   const navegar = useNavigate();
   const { pathname } = useLocation();
@@ -58,6 +73,20 @@ export function Esqueleto() {
   const { sePuedeDeshacer } = usarDeshacer();
   // Mientras se vea la app, cuenta como «en línea» para su equipo (0042).
   usarSigoAqui();
+
+  /**
+   * El menú del ordenador, abierto o plegado (la experiencia, 0083). Se recuerda en
+   * el aparato; la primera vez, abierto si la pantalla es ancha y plegado en una de
+   * portátil, donde cada centímetro es para el trabajo.
+   */
+  const [menuAbierto, setMenuAbierto] = useState(leerElMenu);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(DONDE_SE_GUARDA_EL_MENU, menuAbierto ? 'abierto' : 'plegado');
+    } catch {
+      /* en navegación privada no se recuerda, y no pasa nada */
+    }
+  }, [menuAbierto]);
 
   const [ruedaAbierta, setRuedaAbierta] = useState(false);
   const abrirLaRueda = useCallback(() => {
@@ -121,6 +150,34 @@ export function Esqueleto() {
   const appActiva = misApps.find((app) => app.id === primero) ?? null;
   const enPanel = primero === '';
   const enAjustes = primero === 'ajustes';
+
+  // Lo de la izquierda de la barra de arriba del ordenador: dónde estás, en corto.
+  // En el Panel, el local: el saludo ya está en la pantalla.
+  const destinoDeAhora =
+    appActiva === null
+      ? undefined
+      : segundo === ''
+        ? dondeEntra(appActiva)
+        : destinoPorId(appActiva, segundo);
+  const dondeEstoy = enPanel ? (
+    (yo?.local?.nombre ?? null)
+  ) : appActiva !== null ? (
+    <span className="flex items-center gap-e2">
+      <span>{appActiva.nombre}</span>
+      {destinoDeAhora !== undefined && (
+        <>
+          <span aria-hidden className="text-texto-tenue">
+            /
+          </span>
+          <span className="font-medium text-texto">{destinoDeAhora.nombre}</span>
+        </>
+      )}
+    </span>
+  ) : enAjustes ? (
+    'Ajustes'
+  ) : primero === 'chat' ? (
+    'Chat'
+  ) : null;
 
   const irAApp = useCallback(
     (app: App, destinoId?: string) => {
@@ -284,10 +341,16 @@ export function Esqueleto() {
   return (
     <ContextoDelEsqueleto.Provider value={loQueAbre}>
       <div className="min-h-dvh bg-fondo">
-        {laDemostracion}
-        <BarraEscritorio
+        <MenuDelOrdenador
           apps={misApps}
           appActiva={appActiva?.id ?? null}
+          destinoActivo={
+            appActiva === null ? null : segundo === '' ? (dondeEntra(appActiva)?.id ?? null) : segundo
+          }
+          enPanel={enPanel}
+          enAjustes={enAjustes}
+          abierto={menuAbierto}
+          alCambiarAbierto={setMenuAbierto}
           alIrAApp={irAApp}
           alIrAlPanel={() => {
             navegar('/');
@@ -298,30 +361,54 @@ export function Esqueleto() {
           alAbrirMiCuenta={() => {
             setMiCuentaAbierta(true);
           }}
-          alBuscar={() => {
-            setBuscadorAbierto(true);
-          }}
           local={
             yo?.local
               ? {
+                  id: yo.local.id,
                   nombre: yo.local.nombre,
-                  organizacion: yo.organizacion?.nombre ?? '',
+                  logo: yo.local.logo,
+                  colorDeMarca: yo.local.colorDeMarca,
                 }
               : null
           }
+          organizacion={yo?.organizacion?.nombre ?? ''}
           locales={susLocales}
           alCambiarDeLocal={(id) => {
             void cambiarDeLocal(id);
           }}
           persona={yo?.nombre ?? ''}
+        />
+
+        {/*
+          Todo lo de la derecha del menú se aparta lo que mide el menú, y se anima con
+          él. En el móvil no hay menú y no se aparta nada.
+        */}
+        <div
+          className="transition-[padding] duration-[--normal] ease-curva lg:pl-[var(--ancho-del-menu)]"
+          style={
+            {
+              '--ancho-del-menu': menuAbierto ? ANCHO_DEL_MENU.abierto : ANCHO_DEL_MENU.plegado,
+            } as CSSProperties
+          }
+        >
+        {laDemostracion}
+        <BarraDeArribaDelOrdenador
+          izquierda={dondeEstoy}
+          alBuscar={() => {
+            setBuscadorAbierto(true);
+          }}
           avisos={sinLeer}
           alAbrirAvisos={() => {
             setAvisosAbiertos(true);
           }}
+          chatSinLeer={chat.sinLeer}
           alAbrirChat={() => {
             navegar('/chat');
           }}
-          chatSinLeer={chat.sinLeer}
+          persona={yo?.nombre ?? ''}
+          alAbrirMiCuenta={() => {
+            setMiCuentaAbierta(true);
+          }}
         />
 
         {/*
@@ -388,7 +475,7 @@ export function Esqueleto() {
           (56 px y su margen), para que al llegar al final nada quede debajo de ella.
           En escritorio no hay barra de abajo, pero desde el 23-sep sí hay burbuja.
         */}
-        <main className="mx-auto w-full max-w-[76rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+56px+var(--spacing-e3)*2)] pt-e4 lg:px-e5 lg:pb-[calc(56px+var(--spacing-e5)+var(--spacing-e4))] 2xl:max-w-[92rem]">
+        <main className="mx-auto w-full max-w-[112rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+56px+var(--spacing-e3)*2)] pt-e4 lg:px-e6 lg:pb-[calc(56px+var(--spacing-e5)+var(--spacing-e4))] lg:pt-e5">
           {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
           {/* Sin conexión, y lo hecho sin ella (0070): arriba, en cada pantalla. */}
           <LoDeLaRed />
@@ -412,6 +499,7 @@ export function Esqueleto() {
             </AbrirLaRueda.Provider>
           </SiAlgoFalla>
         </main>
+        </div>
 
         {appActiva === null ? (
           <BarraMovil

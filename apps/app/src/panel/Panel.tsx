@@ -8,14 +8,13 @@ import {
   Hoja,
   Rejilla,
   acentoDelWidget,
-  clases,
-  cuandoLlega,
+  appDelWidget,
+  appPorPermiso,
   elCatalogoParaAnadir,
-  losQueLlegan,
   usarSinNadaDentro,
   widgetPorId,
 } from '@estook/ui';
-import { IconoAnadir } from '@estook/iconos';
+import { IconoAnadir, IconoRejilla } from '@estook/iconos';
 import { puedeVer, type Permiso } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { TarjetasDelPanel } from '../pantallas/TarjetasDelPanel.tsx';
@@ -24,7 +23,6 @@ import { LoQueFalta } from './LoQueFalta.tsx';
 import { LoDeHoy } from './LoDeHoy.tsx';
 import { Tablon } from './Tablon.tsx';
 import { EscribirEnElTablon } from './EscribirEnElTablon.tsx';
-import { ElegirIndicador } from './ElegirIndicador.tsx';
 import { Widget } from './widgets.tsx';
 import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
 import { EstookEnTuMovil } from '../sinConexion/EstookEnTuMovil.tsx';
@@ -220,7 +218,8 @@ export function Panel() {
           alSoltar={mio.guardarYa}
           alQuitar={mio.quitar}
           alCambiarTamano={mio.cambiarTamano}
-          tamanosDe={(id) => widgetPorId(id)?.tamanos ?? ['ancho']}
+          // Un solo tamaño por widget (0083): no hay nada que elegir al editar.
+          tamanosDe={(id) => [widgetPorId(id)?.tamano ?? 'ancho']}
           nombreDe={(id) => widgetPorId(id)?.nombre ?? id}
           alAnadir={() => {
             setAnadiendo(true);
@@ -317,35 +316,37 @@ function AnadirWidget({
     puestos.map((p) => ({ id: p.id, tamano: 'ancho' as const })),
     tienePermiso,
   );
-  const llegan = losQueLlegan(tienePermiso);
 
   return (
     <Hoja abierta={abierta} alCerrar={alCerrar} titulo="Añadir al panel">
-      <div className="flex flex-col gap-e4">
-        {/* Lo nuevo, arriba: «añadir los nuestros» (0039). */}
-        <ElegirIndicador puestos={puestos} tienePermiso={tienePermiso} alAnadir={alAnadir} />
-
+      <div className="flex flex-col gap-e5 pt-e3">
         {grupos.map((grupo) => (
           <section key={grupo.grupo} aria-label={grupo.nombre}>
-            <p className="text-secundario font-medium text-texto-suave">{grupo.nombre}</p>
+            <p className="text-etiqueta font-semibold text-texto-tenue">{grupo.nombre}</p>
             <ul className="mt-e2 grid gap-e2 sm:grid-cols-2">
               {grupo.widgets.map(({ widget, puesto }) => {
-                const acento = acentoDelWidget(widget.id);
-                // El filo del color de su app: se lee de qué es sin leer el título.
-                const filo =
-                  acento === undefined
-                    ? undefined
-                    : { borderLeftColor: acento, borderLeftWidth: '3px' };
+                const acento = acentoDelWidget(widget.id) ?? 'var(--color-naranja)';
+                const deLaApp = appDelWidget(widget.id);
+                const Icono = deLaApp === undefined ? undefined : appPorPermiso(deLaApp)?.icono;
+                const icono = (
+                  <span
+                    aria-hidden
+                    className="grid size-9 shrink-0 place-items-center rounded-medio text-white"
+                    style={{
+                      background: `linear-gradient(140deg, color-mix(in srgb, ${acento} 92%, white), color-mix(in srgb, ${acento} 70%, black))`,
+                    }}
+                  >
+                    {Icono === undefined ? <IconoRejilla size={16} /> : <Icono size={16} />}
+                  </span>
+                );
                 return (
                   <li key={widget.id}>
                     {puesto ? (
-                      <div
-                        style={filo}
-                        className="flex min-h-toque items-start gap-e2 rounded-medio border border-borde bg-fondo p-e3"
-                      >
+                      <div className="flex min-h-[64px] items-center gap-e3 rounded-grande border border-borde bg-fondo/60 p-e3">
+                        {icono}
                         <span className="min-w-0 flex-1">
                           <span className="flex flex-wrap items-center gap-e2">
-                            <span className="text-cuerpo font-medium">{widget.nombre}</span>
+                            <span className="text-cuerpo font-semibold">{widget.nombre}</span>
                             <Etiqueta tono="bien">En tu panel</Etiqueta>
                           </span>
                           <span className="block text-secundario text-texto-suave">
@@ -364,14 +365,14 @@ function AnadirWidget({
                     ) : (
                       <button
                         type="button"
-                        style={filo}
                         onClick={() => {
                           alAnadir(widget.id);
                         }}
-                        className="flex h-full w-full min-h-toque items-start gap-e2 rounded-medio border border-borde bg-superficie p-e3 text-left hover:bg-fondo"
+                        className="flex h-full min-h-[64px] w-full items-center gap-e3 rounded-grande border border-borde bg-superficie p-e3 text-left transition-[border-color,box-shadow] duration-[--rapido] hover:border-borde-fuerte hover:[box-shadow:var(--sombra-tarjeta)]"
                       >
+                        {icono}
                         <span className="min-w-0 flex-1">
-                          <span className="block text-cuerpo font-medium">{widget.nombre}</span>
+                          <span className="block text-cuerpo font-semibold">{widget.nombre}</span>
                           <span className="block text-secundario text-texto-suave">
                             {widget.queEnsena}
                           </span>
@@ -387,53 +388,6 @@ function AnadirWidget({
             </ul>
           </section>
         ))}
-
-        {puestos.some((p) => p.id.startsWith('indicador-')) && (
-          <section aria-label="Tus cifras puestas">
-            <p className="text-secundario font-medium text-texto-suave">Tus cifras puestas</p>
-            <ul className="mt-e2 grid gap-e2 sm:grid-cols-2">
-              {puestos
-                .filter((p) => p.id.startsWith('indicador-'))
-                .map((p) => (
-                  <li
-                    key={p.id}
-                    className="flex min-h-toque items-center gap-e2 rounded-medio border border-borde bg-fondo px-e3 py-e2"
-                  >
-                    <span className="min-w-0 flex-1 text-cuerpo font-medium">
-                      {widgetPorId(p.id)?.nombre ?? p.id}
-                    </span>
-                    <Boton
-                      tono="texto"
-                      onClick={() => {
-                        alQuitar(p.id);
-                      }}
-                    >
-                      Quitar
-                    </Boton>
-                  </li>
-                ))}
-            </ul>
-          </section>
-        )}
-
-        {llegan.length > 0 && (
-          <section>
-            <p className="text-secundario font-medium text-texto-suave">Llegan después</p>
-            <ul className="mt-e2 flex flex-col gap-e2">
-              {llegan.map((widget) => (
-                <li key={widget.id} className={clases('rounded-medio bg-fondo p-e3')}>
-                  <p className="flex flex-wrap items-center gap-e2">
-                    <span className="text-cuerpo text-texto-suave">{widget.nombre}</span>
-                    <span className="text-etiqueta font-medium text-texto-tenue">
-                      {cuandoLlega(widget) ?? ''}
-                    </span>
-                  </p>
-                  <p className="text-secundario text-texto-tenue">{widget.queEnsena}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
 
         {/* Nada se pierde: el de fábrica vuelve entero con un toque. */}
         <div className="flex flex-wrap items-center gap-e2 border-t border-borde pt-e3">

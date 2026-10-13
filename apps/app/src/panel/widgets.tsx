@@ -1,44 +1,34 @@
-import { createContext, useContext, useState } from 'react';
-import { nombreEn } from '../datos/nombreEn.ts';
+import { useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import {
   AVISAR_ANTES_DE_ENTRAR,
   NOMBRE_DE_LA_CAPA,
-  NOMBRE_DE_LA_ZONA,
-  ZONAS,
-  type Zona,
   NOMBRE_DEL_ESTADO,
-  NOMBRE_DEL_ORIGEN_DEL_CIERRE,
-  comoCambia,
-  masDias,
   minutosHasta,
-  porcentajeDe,
-  type FechaOperativa,
+  type CifraDelSemaforo,
 } from '@estook/dominio';
-import { appsVisibles, puedeEditar, puedeVer } from '@estook/permisos';
+import { appsVisibles, puedeVer } from '@estook/permisos';
 import {
+  Anillo,
   Avatar,
   Boton,
   Cargando,
-  Cifra,
   EstadoVacio,
   Etiqueta,
-  Proporcion,
-  Tarjeta,
-  Tira,
-  Variacion,
-  EnlaceDeTarjeta,
-  acentoDelWidget,
-  appDelWidget,
+  GraficaViva,
+  Hoja,
+  Medidor,
   appPorPermiso,
   clases,
   rutaDe,
-  type App,
   usarQueEstaVacio,
+  widgetPorId,
+  type App,
+  type EstadoDelMedidor,
   type TamanoDeWidget,
 } from '@estook/ui';
-import { IconoAnadir, IconoBorrar, IconoEntrar, IconoSalir, IconoUbicacion } from '@estook/iconos';
-import { useNavigate } from 'react-router-dom';
+import { IconoAnadir, IconoEntrar, IconoReloj, IconoSalir } from '@estook/iconos';
 import { usarAlmacenHoy } from '../ganchos/usarAlmacenHoy.ts';
 import { usarMisObjetivos } from '../ganchos/usarMisObjetivos.ts';
 import { ListaDelSemaforo } from '../objetivos/Semaforo.tsx';
@@ -47,80 +37,37 @@ import { AL_DIA } from '../datos/alDia.ts';
 import { MiTurno } from '../horario/MiTurno.tsx';
 import { usarElHorarioDeEstaSemana } from '../ganchos/usarElHorario.ts';
 import { AccesosRapidos } from './AccesosRapidos.tsx';
-import { IndicadorWidget } from './Indicador.tsx';
 import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
 import { loQueDiceElFichaje, usarFichar } from '../ganchos/usarFichar.ts';
 import { BotonDePausa } from '../equipo/BotonDePausa.tsx';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
-import {
-  comoSeLeeLaHora,
-  comoSeLeenMinutos,
-  ultimaVez,
-  type FichajesDeHoy,
-} from '../equipo/contrato.ts';
+import { comoSeLeeLaHora, comoSeLeenMinutos, type FichajesDeHoy } from '../equipo/contrato.ts';
 import type { MisCierres } from '../servicio/contrato.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { ComprasDeHoy, LoQueViene } from '../compras/contrato.ts';
 import {
   TONO_DEL_ESTADO,
-  comoDinero,
-  comoSeLeeElDia,
   comoSeLeeLaFecha,
   conUnidadDeUso,
   cuandoSeAgota,
   type MermaDeHoy,
-  type MisMovimientos,
 } from '../almacen/contrato.ts';
+import { CifraDelWidget, CifraPequena } from './CifraDelWidget.tsx';
+import { Marco, QuienSePinta, Tranquilo } from './Marco.tsx';
 
 /**
- * Los widgets del Panel, uno por uno.
+ * Los widgets del Panel (Manifiesto 6; rehechos en la experiencia, 0083).
  *
- * ── Una consulta para todos, y no una por widget ─────────────────────────────
+ * «Que cada widget tenga su diseño, no todos igual, que sean útiles, bonitos y
+ * personalizados entre sí.» Cada uno lleva el marco común (`Marco`) y **su propio
+ * dibujo** dentro: la jornada es un anillo, las ventas un área que se toca, los
+ * objetivos unos medidores, lo bajo mínimo unas barras de nivel, lo que caduca unos
+ * días con su color, el equipo sus caras.
  *
- * Cuatro de los widgets de Almacén —caducidades, bajo mínimo, sin precio y el
- * valor de la cámara— salen de **la misma** consulta, `almacen_hoy`. Si cada uno
- * la pidiera por su cuenta serían cuatro viajes para pintar una pantalla, y el
- * presupuesto de velocidad de B7 da un segundo para el Panel entero.
- *
- * La resuelve TanStack Query sola: los cuatro llaman a `usarAlmacenHoy()`, que usa la
- * misma `queryKey`, así que el primero pide y los otros tres leen de la caché. No
- * hay que coordinar nada, y **quitar un widget del Panel deja de pedir su parte**
- * sin que nadie tenga que acordarse.
- *
- * ── Y ninguno se inventa una cifra ───────────────────────────────────────────
- *
- * Es la regla que este proyecto ya había escrito y roto en el mismo sitio: la
- * tarjeta «Ventas de hoy» pintaba **«Facturado · 0,00 €»** en la tipografía más
- * grande de la pantalla con el TPV sin conectar, mientras el widget de «Tu equipo»
- * decía, a dos tarjetas de distancia, que «poner un cero en gris sería inventarse
- * una cifra». Ahora un widget cuyo dato no existe **no está en el catálogo como
- * disponible**: sale en la lista de los que llegan, con su módulo.
+ * Lo que no hacen: sumar. Cada número llega hecho del servidor (regla 10) y es el
+ * mismo que en su app.
  */
-
-/**
- * Un widget, sea el que sea.
- *
- * Devuelve `null` cuando no sabe pintar ese identificador, y eso es a propósito:
- * un Panel guardado hace meses puede nombrar un widget que ya no existe, y lo
- * correcto es que ese hueco no aparezca en vez de que la pantalla se caiga.
- */
-/**
- * Quién se está pintando ahora mismo.
- *
- * ── Por qué un contexto y no un parámetro ────────────────────────────────────
- *
- * Porque lo que `Caja` necesita saber —de qué app es este widget, para pintar su
- * acento— **ya lo sabe `Widget`**, y pasarlo a mano obligaría a tocar las nueve
- * llamadas y a acordarse de la décima el día que se añada un widget nuevo. Un
- * widget que se olvidara de pasarlo saldría en blanco y nadie lo notaría hasta
- * verlo.
- *
- * Con el contexto, el acento sale solo del catálogo: un widget nuevo lo trae
- * puesto por declarar de qué app es, que es lo que ya declara.
- */
-const QuienSePinta = createContext<string | null>(null);
-
 export function Widget({
   id,
   tamano,
@@ -146,827 +93,399 @@ function Cual({
   readonly tamano: TamanoDeWidget;
   readonly editando: boolean;
 }) {
-  if (id === 'acciones-rapidas') return <AccesosRapidos tamano={tamano} editando={editando} />;
-  if (id === 'caducidades') return <Caducidades tamano={tamano} />;
-  if (id === 'bajo-minimo') return <BajoMinimo tamano={tamano} />;
-  if (id === 'sin-precio') return <SinPrecio tamano={tamano} />;
-  if (id === 'valor-de-la-camara') return <ValorDeLaCamara />;
-  if (id === 'cuanto-genero') return <CuantoGenero tamano={tamano} />;
-  if (id === 'mis-apps') return <MisApps tamano={tamano} />;
-  if (id === 'fichar') return <FicharDesdeElPanel tamano={tamano} />;
-  if (id === 'fichajes') return <QuienEstaTrabajandoWidget tamano={tamano} />;
-  if (id === 'personas') return <PersonasWidget tamano={tamano} />;
-  if (id === 'merma') return <MermaWidget tamano={tamano} />;
-  if (id === 'ventas-de-hoy') return <VentasDeHoyWidget />;
-  if (id === 'objetivos') return <ObjetivosWidget tamano={tamano} />;
-  if (id === 'ultimos-movimientos') return <UltimosMovimientos tamano={tamano} />;
-  if (id === 'pedidos') return <ComprasDeHoyWidget tamano={tamano} />;
-  if (id === 'calendario') return <LoQueVieneWidget tamano={tamano} />;
-  if (id === 'mi-turno') return <MiTurnoWidget tamano={tamano} />;
-  // Los indicadores son una familia: lo elegido va en el identificador (0039).
-  if (id.startsWith('indicador-')) return <IndicadorWidget id={id} tamano={tamano} />;
-  return null;
-}
-
-/** El envoltorio común: alto completo y el título pulsable si lleva a algún sitio. */
-function Caja({
-  titulo,
-  icono,
-  origen,
-  ir,
-  leyendo,
-  children,
-}: {
-  readonly titulo: string;
-  /**
-   * Un icono propio, cuando el de su app no dice lo que es: la merma lleva la
-   * papelera, como su destino en Almacén (26-sep), y no la caja de Almacén.
-   */
-  readonly icono?: React.ReactNode;
-  readonly origen?: string;
-  readonly ir?: string;
-  /**
-   * La lectura de la que vive el widget (entrega V, 23-sep). Si ha fallado, la caja
-   * lo dice y deja volver a intentarlo, **en vez de enseñar lo de dentro**: sin esto,
-   * un widget que no podía leer decía «nada caduca esta semana» o se quedaba
-   * cargando para siempre, y quien lo mira se lo cree.
-   */
-  readonly leyendo?: { readonly isError: boolean; readonly refetch: () => unknown };
-  readonly children: React.ReactNode;
-}) {
-  const navegar = useNavigate();
-  const quien = useContext(QuienSePinta);
-  const acento = quien === null ? undefined : acentoDelWidget(quien);
-  // El icono de su app, en la pastilla de la cabecera (0045): dice de dónde es el
-  // widget sin la línea de color de arriba, que era lo que lo hacía viejo.
-  const deLaApp = quien === null ? undefined : appDelWidget(quien);
-  const IconoDeLaApp = deLaApp === undefined ? undefined : appPorPermiso(deLaApp)?.icono;
-
-  return (
-    <div className="h-full [&>section]:h-full [&>section]:flex [&>section]:flex-col">
-      <Tarjeta
-        titulo={titulo}
-        {...(acento === undefined ? {} : { acento })}
-        {...(icono !== undefined
-          ? { icono }
-          : IconoDeLaApp === undefined
-            ? {}
-            : { icono: <IconoDeLaApp size={18} /> })}
-        {...(origen === undefined || leyendo?.isError === true ? {} : { origen })}
-        {...(ir === undefined
-          ? {}
-          : {
-              accion: (
-                <EnlaceDeTarjeta
-                  etiqueta={`Ver ${titulo.charAt(0).toLowerCase()}${titulo.slice(1)}`}
-                  onClick={() => {
-                    navegar(ir);
-                  }}
-                />
-              ),
-            })}
-      >
-        <div className="min-h-0 flex-1">
-          {leyendo?.isError === true ? (
-            <div className="flex flex-col items-start gap-e3">
-              <p className="text-secundario text-texto-suave">
-                No he podido leerlo. Vuelve a intentarlo dentro de un momento.
-              </p>
-              <Boton
-                tono="secundario"
-                onClick={() => {
-                  void leyendo.refetch();
-                }}
-              >
-                Volver a intentarlo
-              </Boton>
-            </div>
-          ) : (
-            children
-          )}
-        </div>
-      </Tarjeta>
-    </div>
-  );
-}
-
-// ── Lo que caduca ────────────────────────────────────────────────────────────
-
-function Caducidades({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarAlmacenHoy();
-  const navegar = useNavigate();
-  const caducan = consulta.data?.caducan ?? [];
-  const cuantos = tamano === 'grande' ? 6 : 3;
-  // Si no caduca nada, se aparta del Panel y lo dice la línea de debajo (0039).
-  usarQueEstaVacio(consulta.data === undefined ? undefined : caducan.length === 0);
-
-  return (
-    <Caja
-      leyendo={consulta}
-      titulo="Caduca esta semana"
-      origen="Lotes con fecha · próximos 7 días"
-      ir="/almacen/resumen"
-    >
-      {caducan.length === 0 ? (
-        <p className="text-secundario text-texto-suave">Nada caduca en los próximos siete días.</p>
-      ) : (
-        <ul className="flex flex-col gap-e1">
-          {caducan.slice(0, cuantos).map((lote) => (
-            <li key={lote.loteId}>
-              {/* A su producto, que es donde se quita o se congela el lote. */}
-              <button
-                type="button"
-                onClick={() => {
-                  navegar(`/almacen/productos/todo?producto=${lote.productoId}`);
-                }}
-                className="flex w-full items-center gap-e2 rounded-medio px-e1 py-e1 text-left hover:bg-fondo"
-              >
-                <span className="min-w-0 flex-1 truncate text-cuerpo">{lote.producto}</span>
-                <Etiqueta tono={lote.dias <= 1 ? 'mal' : 'atencion'}>
-                  {/* Lo que caduca hoy todavía no ha caducado: «hoy», como dice lo de hoy. */}
-                  {lote.dias < 0
-                    ? 'caducado'
-                    : lote.dias === 0
-                      ? 'hoy'
-                      : lote.dias === 1
-                        ? 'mañana'
-                        : `${lote.dias} d`}
-                </Etiqueta>
-              </button>
-            </li>
-          ))}
-          {caducan.length > cuantos && (
-            <li className="px-e1 text-secundario text-texto-suave">
-              y {caducan.length - cuantos} más
-            </li>
-          )}
-        </ul>
-      )}
-    </Caja>
-  );
-}
-
-// ── Lo que está bajo mínimo ──────────────────────────────────────────────────
-
-function BajoMinimo({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarAlmacenHoy();
-  const navegar = useNavigate();
-  const atencion = consulta.data?.atencion ?? [];
-  const cuantos = tamano === 'grande' ? 6 : 3;
-  usarQueEstaVacio(consulta.data === undefined ? undefined : atencion.length === 0);
-
-  return (
-    <Caja
-      leyendo={consulta}
-      titulo="Bajo mínimo"
-      origen="De tu almacén, ahora mismo"
-      ir="/almacen/productos/bajo-minimo"
-    >
-      {atencion.length === 0 ? (
-        <p className="text-secundario text-texto-suave">
-          Ningún producto está por debajo de su mínimo.
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-e2">
-          {atencion.slice(0, cuantos).map((producto) => {
-            const agota = cuandoSeAgota(producto.seAgotaEn, producto.diasDeCobertura);
-            return (
-              <li key={producto.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    navegar('/almacen/productos/bajo-minimo');
-                  }}
-                  className="w-full rounded-medio px-e1 py-e1 text-left hover:bg-fondo"
-                >
-                  <span className="flex items-center gap-e2">
-                    <span className="min-w-0 flex-1 truncate text-cuerpo">{producto.nombre}</span>
-                    <Etiqueta tono={TONO_DEL_ESTADO[producto.estado]}>
-                      {NOMBRE_DEL_ESTADO[producto.estado]}
-                    </Etiqueta>
-                  </span>
-                  <span className="block text-secundario text-texto-suave">
-                    Quedan {conUnidadDeUso(producto.cantidad, producto.unidadDeUso)}
-                    {producto.minimo === null
-                      ? ''
-                      : ` de ${conUnidadDeUso(producto.minimo, producto.unidadDeUso)} de mínimo`}
-                    {agota === null ? '' : ` · se agota ${agota}`}
-                  </span>
-
-                  {/*
-                    Cuánto queda respecto del mínimo, de un vistazo.
-
-                    «Bajo mínimo» es una lista de nombres, y todos los nombres
-                    pesan lo mismo: al que le queda la mitad y al que no le queda
-                    nada salen iguales, y lo que hay que saber es **por cuál
-                    empezar**. La barra lo dice sin leer.
-
-                    Se pinta solo si hay mínimo puesto: sin él, «bajo mínimo» no
-                    es una proporción de nada y una barra sería un adorno.
-                  */}
-                  {producto.minimo !== null && producto.minimo > 0 && (
-                    <span className="mt-e1 block">
-                      <Proporcion
-                        soloLaBarra
-                        // eslint-disable-next-line no-restricted-syntax -- un porcentaje para leerlo, no dinero
-                        titulo={`${producto.nombre}: queda el ${Math.round((producto.cantidad / producto.minimo) * 100)} % de su mínimo`}
-                        trozos={[
-                          {
-                            que: 'lo que queda',
-                            cuantos: Math.max(0, Math.min(producto.cantidad, producto.minimo)),
-                            tono: TONO_DEL_ESTADO[producto.estado] === 'mal' ? 'mal' : 'atencion',
-                          },
-                          {
-                            que: 'lo que falta',
-                            cuantos: Math.max(0, producto.minimo - producto.cantidad),
-                            tono: 'neutro',
-                          },
-                        ]}
-                      />
-                    </span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-          {atencion.length > cuantos && (
-            <li className="px-e1 text-secundario text-texto-suave">
-              y {atencion.length - cuantos} más
-            </li>
-          )}
-        </ul>
-      )}
-    </Caja>
-  );
-}
-
-// ── Los que no tienen precio ─────────────────────────────────────────────────
-
-function SinPrecio({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarAlmacenHoy();
-  const hoy = consulta.data;
-  const sinPrecio = hoy?.sinPrecio ?? [];
-  usarQueEstaVacio(hoy === undefined ? undefined : sinPrecio.length === 0);
-
-  return (
-    <Caja
-      leyendo={consulta}
-      titulo="Sin precio"
-      origen="Cuentan cero en el valor de la cámara"
-      ir="/almacen/productos/sin-precio"
-    >
-      <Cifra
-        etiqueta="Productos"
-        valor={sinPrecio.length}
-        formato={(v) => `${v}`}
-        origen={
-          hoy === undefined
-            ? 'Leyendo…'
-            : sinPrecio.length === 0
-              ? 'Todos tienen precio'
-              : `De ${hoy.cuantosProductos}`
-        }
-      />
-      {tamano !== 'chico' && sinPrecio.length > 0 && (
-        <p className="mt-e2 text-secundario text-texto-suave">
-          {sinPrecio
-            .slice(0, 4)
-            .map((p) => p.nombre)
-            .join(', ')}
-          {sinPrecio.length > 4 ? '…' : ''}
-        </p>
-      )}
-    </Caja>
-  );
-}
-
-// ── Lo que vale la cámara ────────────────────────────────────────────────────
-
-function ValorDeLaCamara() {
-  const consulta = usarAlmacenHoy();
-  const hoy = consulta.data;
-
-  // «Un rol sin costes no recibe ni un campo de coste»: si el servidor no ha
-  // mandado dinero, el widget lo dice en vez de pintar un cero.
-  if (hoy !== undefined && !hoy.puedeVerPrecios) {
-    return (
-      <Caja leyendo={consulta} titulo="Valor de la cámara">
-        <p className="text-secundario text-texto-suave">
-          Tu acceso no incluye los costes del género.
-        </p>
-      </Caja>
-    );
+  const widget = widgetPorId(id);
+  if (widget === undefined) return null;
+  switch (widget.id) {
+    case 'fichar':
+      return <TuJornada />;
+    case 'ventas':
+      return <VentasWidget />;
+    case 'objetivos':
+      return <ObjetivosWidget />;
+    case 'merma':
+      return <MermaWidget />;
+    case 'food-cost':
+    case 'valor-de-la-camara':
+    case 'gasto-en-compras':
+    case 'mis-horas':
+      return widget.indicador === undefined ? null : (
+        <CifraDelWidget id={widget.id} titulo={widget.nombre} indicador={widget.indicador} />
+      );
+    case 'bajo-minimo':
+      return <BajoMinimo />;
+    case 'caducidades':
+      return <Caducidades />;
+    case 'pedidos':
+      return <ComprasDeHoyWidget />;
+    case 'calendario':
+      return <LoQueVieneWidget />;
+    case 'fichajes':
+      return <EquipoAhora />;
+    case 'mi-turno':
+      return <MiTurnoWidget tamano={tamano} />;
+    case 'mis-apps':
+      return <MisApps />;
+    case 'acciones-rapidas':
+      return <AccesosRapidos tamano={tamano} editando={editando} />;
+    default:
+      return null;
   }
-
-  return (
-    <Caja
-      leyendo={consulta}
-      titulo="Valor de la cámara"
-      origen="A precio medio; lo que entró sin coste, a su precio de hoy"
-      ir="/almacen/resumen"
-    >
-      <Cifra
-        etiqueta="El género que hay"
-        valor={hoy?.valorTotalCentimos ?? 0}
-        formato={(v) => comoDinero(v)}
-        origen={hoy === undefined ? 'Leyendo…' : 'Sin contar los ejemplos'}
-      />
-    </Caja>
-  );
 }
 
-/** El color de cada zona en la barra. Tres tonos que ya existen, no tres nuevos. */
-const TONO_DE_LA_ZONA: Readonly<Record<Zona, 'marca' | 'info' | 'neutro'>> = {
-  cocina: 'marca',
-  sala: 'info',
-  limpieza: 'neutro',
-};
+// ── Tu jornada · un anillo con tus horas de hoy ──────────────────────────────
 
-function CuantoGenero({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarAlmacenHoy();
-  const hoy = consulta.data;
-
-  return (
-    <Caja leyendo={consulta} titulo="Tu género" ir="/almacen/productos/todo">
-      <Cifra
-        etiqueta="Productos de alta"
-        valor={hoy?.cuantosProductos ?? 0}
-        formato={(v) => `${v}`}
-        origen={
-          hoy === undefined
-            ? 'Leyendo…'
-            : hoy.ejemplos > 0
-              ? `${hoy.ejemplos} son de ejemplo`
-              : 'Todos de verdad'
-        }
-      />
-
-      {/*
-        Y cómo se reparte: cocina, sala y limpieza. Un número suelto no dice nada
-        —«312 productos», ¿y qué?— y tres que suman ese número cuentan cómo es
-        este local de un vistazo. Es el mismo dato que ya trae la consulta para el
-        filtro de Productos, así que no cuesta un viaje más.
-      */}
-      {tamano !== 'chico' && (hoy?.porZona.length ?? 0) > 1 && (
-        <div className="mt-e3">
-          <Proporcion
-            titulo="Cómo se reparte tu género"
-            trozos={ZONAS.flatMap((zona) => {
-              const cuantos = hoy?.porZona.find((z) => z.zona === zona)?.cuantos ?? 0;
-              return cuantos === 0
-                ? []
-                : [
-                    {
-                      que: NOMBRE_DE_LA_ZONA[zona],
-                      cuantos,
-                      tono: TONO_DE_LA_ZONA[zona],
-                    },
-                  ];
-            })}
-          />
-        </div>
-      )}
-
-      {/*
-        Y cuántos de esos llevan precio, en una barra.
-
-        No es adorno: **un producto sin precio cuenta cero en el valor de la
-        cámara**, así que la cifra de arriba y la de «Valor de la cámara» solo
-        cuadran cuando esta barra está entera. Verlo de lejos y sin leer es lo que
-        hace que alguien lo arregle.
-
-        Los dos trozos no se solapan —o tiene precio o no lo tiene—, que es lo que
-        hace que una barra sea honesta. Un producto puede estar a la vez bajo
-        mínimo y sin precio, así que **esas dos no se pueden apilar**.
-      */}
-      {hoy !== undefined && hoy.cuantosProductos > 0 && (
-        <div className="mt-e3">
-          <Proporcion
-            titulo="Cuántos de tus productos llevan precio"
-            trozos={[
-              {
-                que: 'con precio',
-                cuantos: hoy.cuantosProductos - hoy.sinPrecio.length,
-                tono: 'bien',
-              },
-              { que: 'sin precio', cuantos: hoy.sinPrecio.length, tono: 'atencion' },
-            ]}
-          />
-        </div>
-      )}
-    </Caja>
-  );
+/** Los minutos de un tramo «09:00»–«17:30». Si cruza la medianoche, se suma el día. */
+function minutosDelTramo(entra: string, sale: string): number {
+  const [he, me] = entra.split(':').map(Number);
+  const [hs, ms] = sale.split(':').map(Number);
+  const desde = (he ?? 0) * 60 + (me ?? 0);
+  const hasta = (hs ?? 0) * 60 + (ms ?? 0);
+  return hasta > desde ? hasta - desde : hasta + 24 * 60 - desde;
 }
 
-// ── Tus apps ─────────────────────────────────────────────────────────────────
-
-function MisApps({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const { permisos } = usarSesion();
-  const navegar = useNavigate();
-
-  const misApps = appsVisibles(permisos)
-    .map((permiso) => appPorPermiso(permiso))
-    .filter((app): app is App => app !== undefined);
-
-  return (
-    <Caja titulo="Tus apps">
-      <ul
-        className={clases(
-          'grid gap-e1',
-          tamano === 'grande' ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2',
-        )}
-      >
-        {misApps.map((app) => (
-          <li key={app.id}>
-            <button
-              type="button"
-              onClick={() => {
-                navegar(rutaDe(app));
-              }}
-              className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
-            >
-              <span className="shrink-0" style={{ color: app.acento }}>
-                <app.icono size={18} />
-              </span>
-              <span className="min-w-0 flex-1 truncate text-cuerpo">{app.nombre}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </Caja>
-  );
-}
-
-// ── Fichar, desde el Panel ───────────────────────────────────────────────────
-
-/**
- * Fichar · entrar y salir del turno.
- *
- * ── Por qué vive aquí y no dentro de Equipo ─────────────────────────────────
- *
- * Porque un cocinero **no tiene la app Equipo**: la matriz de M1 no se la da, y
- * con razón. Si fichar viviera solo dentro de Equipo, la mitad de la plantilla no
- * podría fichar, que es justo la mitad que ficha.
- *
- * ── Y el aviso, que es lo que pedía la lista ────────────────────────────────
- *
- * «Avisar según el horario a la gente: mañana entras a las…, o entras en 5
- * minutos, ficha ya.» Eso entero son notificaciones, y las notificaciones son M25
- * —correo con Resend y push con su trabajador de servicio— con el reloj de la
- * decisión 0016 detrás.
- *
- * Lo que **sí se puede hacer hoy, y se hace**, es lo que no necesita nada de eso:
- * si tu turno empieza dentro de media hora y no has fichado, el widget te lo dice
- * en cuanto abres la aplicación. No suena, no llega al bolsillo, y no promete que
- * lo haga. El horario es el publicado en Horarios (0081).
- */
-function FicharDesdeElPanel({ tamano }: { readonly tamano: TamanoDeWidget }) {
+function TuJornada() {
   const fichar = usarFichar();
   const mio = fichar.mio;
 
   if (fichar.cargando) {
     return (
-      <Caja titulo="Fichar">
+      <Marco titulo="Tu jornada" icono={<IconoReloj size={16} />}>
         <Cargando que="tu turno" lineas={2} />
-      </Caja>
+      </Marco>
     );
   }
 
-  // Un fallo al leer **no es** «no puedes fichar»: se dice lo que ha pasado y se
-  // puede volver a intentar (entrega V, 23-sep).
   if (fichar.noSeHaPodidoLeer) {
     return (
-      <Caja titulo="Fichar">
-        <p className="text-secundario text-texto-suave">
-          No he podido leer tu fichaje. Vuelve a intentarlo dentro de un momento.
-        </p>
+      <Marco titulo="Tu jornada" icono={<IconoReloj size={16} />}>
+        <Tranquilo>No he podido leer tu fichaje.</Tranquilo>
         <div className="mt-e3">
           <Boton tono="secundario" onClick={fichar.volverALeer}>
             Volver a intentarlo
           </Boton>
         </div>
-      </Caja>
+      </Marco>
     );
   }
 
   if (mio === undefined || !mio.puedoFichar) {
     return (
-      <Caja titulo="Fichar">
-        <p className="text-secundario text-texto-suave">
-          Tu acceso no incluye fichar. Las horas las lleva quien tenga ese permiso.
-        </p>
-      </Caja>
+      <Marco titulo="Tu jornada" icono={<IconoReloj size={16} />}>
+        <Tranquilo>Tu acceso no incluye fichar.</Tranquilo>
+      </Marco>
     );
   }
 
   const abierto = mio.abierto;
   const dentro = abierto !== null;
-  const deHoy = comoSeLeenMinutos(mio.minutosDeHoy);
-
-  // Su turno de hoy, si tiene horario puesto. Es de lo que cuelga el aviso.
+  const enPausa = dentro && mio.enPausaDesde !== null && mio.enPausaDesde !== undefined;
   const deHoyEnElHorario = mio.horario.filter((tramo) => tramo.dia === mio.diaDeLaSemana);
   const entraHoy = deHoyEnElHorario[0]?.entra ?? null;
   const faltan = entraHoy === null ? null : minutosHasta(mio.horaDelLocal, entraHoy);
   const tocaFichar =
     !dentro && faltan !== null && faltan <= AVISAR_ANTES_DE_ENTRAR && faltan > -240;
+  // El anillo se llena con lo que llevas frente a tu turno de hoy; sin turno, frente
+  // a ocho horas, que es una jornada.
+  const delTurno = deHoyEnElHorario.reduce((suma, t) => suma + minutosDelTramo(t.entra, t.sale), 0);
+  const parte = mio.minutosDeHoy / (delTurno > 0 ? delTurno : 8 * 60);
+  const color = enPausa
+    ? 'var(--color-atencion)'
+    : dentro
+      ? 'var(--color-bien)'
+      : 'var(--color-app-equipo)';
 
   return (
-    <Caja
-      titulo={
-        dentro
-          ? mio.enPausaDesde !== null && mio.enPausaDesde !== undefined
-            ? 'En tu pausa'
-            : 'Estás dentro'
-          : 'Fichar'
-      }
-      origen={abierto !== null ? `Desde las ${comoSeLeeLaHora(abierto.entroEn)}` : `Hoy: ${deHoy}`}
+    <Marco
+      titulo={enPausa ? 'En tu pausa' : dentro ? 'Estás dentro' : 'Tu jornada'}
+      icono={<IconoReloj size={16} />}
       ir="/mis-fichajes"
     >
-      <div className="flex h-full flex-col justify-between gap-e3">
-        <div>
-          {abierto !== null ? (
-            <p className="text-titulo font-semibold tabular-nums">
-              {comoSeLeenMinutos(abierto.minutos)}
-            </p>
-          ) : tocaFichar ? (
-            <p className="text-cuerpo font-medium text-atencion">
-              {faltan > 0
-                ? `Entras en ${faltan} min. Ficha ya.`
-                : `Entrabas a las ${entraHoy ?? ''}. Todavía no has fichado.`}
-            </p>
-          ) : (
-            <p className="text-secundario text-texto-suave">
-              {mio.minutosDeHoy > 0
-                ? `Hoy llevas ${deHoy}. Esta semana, ${comoSeLeenMinutos(mio.minutosDeLaSemana)}.`
-                : entraHoy === null
-                  ? 'No has fichado hoy.'
-                  : `Hoy entras a las ${entraHoy}.`}
-            </p>
-          )}
-
-          {fichar.error !== null && (
-            <p className="mt-e2 text-secundario text-mal">{fichar.error.quePasa}</p>
-          )}
-
-          {fichar.acabaDe !== null && fichar.error === null && (
-            <p
-              aria-live="polite"
-              className={clases(
-                'mt-e2 text-secundario',
-                loQueDiceElFichaje(fichar.acabaDe).guardado ? 'text-atencion' : 'text-bien',
-              )}
-            >
-              {loQueDiceElFichaje(fichar.acabaDe).texto}
-            </p>
-          )}
+      <div className="flex h-full flex-col gap-e3">
+        <div className="flex items-center gap-e3">
+          <Anillo
+            parte={parte}
+            color={color}
+            tamano={76}
+            grosor={8}
+            titulo={`Llevas ${comoSeLeenMinutos(mio.minutosDeHoy)} hoy`}
+          >
+            <span className="text-secundario font-bold leading-tight">
+              {comoSeLeenMinutos(mio.minutosDeHoy)}
+            </span>
+          </Anillo>
+          <div className="min-w-0 flex-1">
+            {dentro ? (
+              <>
+                <p className="text-secundario text-texto-suave">Desde las</p>
+                <p className="text-seccion font-bold">{comoSeLeeLaHora(abierto.entroEn)}</p>
+              </>
+            ) : tocaFichar ? (
+              <p className="text-secundario font-semibold text-atencion">
+                {faltan > 0 ? `Entras en ${faltan} min` : `Entrabas a las ${entraHoy ?? ''}`}
+              </p>
+            ) : (
+              <p className="text-secundario text-texto-suave">
+                {entraHoy === null ? 'No has fichado hoy.' : `Hoy entras a las ${entraHoy}.`}
+              </p>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-col gap-e2">
+        {fichar.error !== null && <p className="text-secundario text-mal">{fichar.error.quePasa}</p>}
+        {fichar.acabaDe !== null && fichar.error === null && (
+          <p
+            aria-live="polite"
+            className={clases(
+              'text-secundario',
+              loQueDiceElFichaje(fichar.acabaDe).guardado ? 'text-atencion' : 'text-bien',
+            )}
+          >
+            {loQueDiceElFichaje(fichar.acabaDe).texto}
+          </p>
+        )}
+
+        <div className="mt-auto flex flex-col gap-e2">
           {/* La pausa de descanso, dentro del turno (0068). */}
-          <BotonDePausa fichar={fichar} corto={tamano === 'chico'} />
+          <BotonDePausa fichar={fichar} corto />
           <Boton
             tono={dentro ? 'secundario' : 'principal'}
             ancho
             icono={dentro ? <IconoSalir size={18} /> : <IconoEntrar size={18} />}
             cargando={fichar.fichando}
-            textoCargando={
-              fichar.paso === 'buscando_ubicacion' ? 'Buscando dónde estás' : 'Apuntando'
-            }
+            textoCargando={fichar.paso === 'buscando_ubicacion' ? 'Buscando dónde estás' : 'Apuntando'}
             onClick={dentro ? fichar.salir : fichar.entrar}
-            // En la casilla pequeña del móvil «Fichar la entrada» partía en dos líneas
-            // (25-sep). Ahí se ve «Entrada», que la tarjeta ya se llama «Fichar», y un
-            // lector de pantalla oye la frase entera, que contiene lo que se ve (WCAG 2.5.3).
             aria-label={dentro ? 'Fichar la salida' : 'Fichar la entrada'}
           >
-            {tamano === 'chico'
-              ? dentro
-                ? 'Salida'
-                : 'Entrada'
-              : dentro
-                ? 'Fichar la salida'
-                : 'Fichar la entrada'}
+            {dentro ? 'Salida' : 'Entrada'}
           </Boton>
+        </div>
+      </div>
+    </Marco>
+  );
+}
 
-          {/*
-            Que se va a pedir la ubicación, dicho **antes** de pulsar. Un permiso
-            del navegador que salta de golpe se deniega por reflejo, y una vez
-            denegado no se vuelve a preguntar: se queda denegado para siempre en
-            ese aparato. Decirlo antes es la diferencia entre que la gente lo
-            acepte o que todos los fichajes salgan sin ubicación.
-          */}
-          {tamano !== 'chico' && (
-            <p className="flex items-start gap-e2 text-etiqueta text-texto-tenue">
-              <span aria-hidden className="mt-[1px] shrink-0">
-                <IconoUbicacion size={14} />
-              </span>
-              <span>
-                Se te pedirá la ubicación al fichar.{' '}
-                {mio.elLocalSabeDondeEsta
-                  ? `Queda apuntado a cuántos metros del local estabas.`
-                  : 'Tu local todavía no tiene su posición puesta, así que se guarda sin comparar.'}{' '}
-                Si el móvil no la da, se ficha igual.
-              </span>
+// ── Ventas · el área que se toca, y la caja si no está cerrada ───────────────
+
+function VentasWidget() {
+  return (
+    <CifraDelWidget
+      id="ventas"
+      titulo="Ventas"
+      indicador="ventas"
+      ancho
+      sinDatos={<SinCajaCerrada />}
+      enElDetalle={(dias) => (
+        <div className="grid gap-e3 sm:grid-cols-3">
+          <CifraPequena indicador="ticket-medio" dias={dias} />
+          <CifraPequena indicador="cierres" dias={dias} />
+          <CifraPequena indicador="food-cost" dias={dias} />
+        </div>
+      )}
+    />
+  );
+}
+
+/** Sin cajas cerradas: lo dice, y deja cerrarla a quien puede. */
+function SinCajaCerrada() {
+  const { cliente, permisos, yo } = usarSesion();
+  const navegar = useNavigate();
+  const consulta = useQuery({
+    queryKey: ['mis_cierres', 'panel'],
+    enabled: puedeVer(permisos, 'dato.ventas') && yo?.local !== null && yo?.local !== undefined,
+    queryFn: async (): Promise<MisCierres> => {
+      const respuesta = await cliente.consultar<MisCierres>('mis_cierres', { dias: '8' });
+      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
+      return respuesta.datos;
+    },
+  });
+  const datos = consulta.data;
+  return (
+    <div className="flex flex-col items-start gap-e3">
+      <Tranquilo>
+        {datos?.comoSeCierra === 'sin_decidir'
+          ? 'Todavía no has elegido cómo entran tus ventas.'
+          : datos?.comoSeCierra === 'tpv'
+            ? 'Tu TPV traerá las ventas. Hasta entonces, se apuntan al cerrar.'
+            : 'Sin cajas cerradas en estos días.'}
+      </Tranquilo>
+      {datos?.puedeCerrar === true && (
+        <Boton
+          tono="principal"
+          onClick={() => {
+            navegar('/servicio/jornada/cierre');
+          }}
+        >
+          Cerrar la caja
+        </Boton>
+      )}
+    </div>
+  );
+}
+
+// ── Objetivos · medidores, como en un salpicadero ────────────────────────────
+
+const ESTADO_DEL_SEMAFORO: Readonly<Record<CifraDelSemaforo['semaforo'], EstadoDelMedidor>> = {
+  verde: 'bien',
+  ambar: 'atencion',
+  rojo: 'mal',
+  sin_dato: 'neutro',
+};
+
+const LO_QUE_DICE: Readonly<Record<CifraDelSemaforo['semaforo'], string>> = {
+  verde: 'En objetivo',
+  ambar: 'Cerca del límite',
+  rojo: 'Fuera',
+  sin_dato: 'Sin datos',
+};
+
+/** «10,4 mil €»: dentro de un medidor no caben «10.398,80 €». */
+const EN_CORTO = new Intl.NumberFormat('es-ES', {
+  style: 'currency',
+  currency: 'EUR',
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+/** Hasta dónde llega el medidor: un poco más allá del objetivo o del valor. */
+function elTope(cifra: CifraDelSemaforo): number {
+  const esPorcentaje = cifra.que !== 'ventas_semanales';
+  const objetivo = cifra.objetivo === null ? null : esPorcentaje ? cifra.objetivo * 100 : cifra.objetivo;
+  const valor = cifra.valor ?? 0;
+  return Math.max(objetivo === null ? 0 : objetivo * 1.5, valor * 1.15, esPorcentaje ? 10 : 1);
+}
+
+function ObjetivosWidget() {
+  const consulta = usarMisObjetivos();
+  const datos = consulta.data;
+  const [abierto, setAbierto] = useState(false);
+  const conDato = (datos?.cifras ?? []).filter((c) => c.semaforo !== 'sin_dato');
+  const sinDato = (datos?.cifras ?? []).filter((c) => c.semaforo === 'sin_dato');
+
+  return (
+    <Marco
+      titulo="Objetivos"
+      leyendo={consulta}
+      alAmpliar={() => {
+        setAbierto(true);
+      }}
+    >
+      {datos === undefined ? (
+        <Cargando que="tus objetivos" lineas={3} />
+      ) : datos.cifras.length === 0 ? (
+        <Tranquilo>Tu acceso no incluye las cifras de los objetivos.</Tranquilo>
+      ) : conDato.length === 0 ? (
+        <div className="flex flex-col items-start gap-e3">
+          <Tranquilo>
+            Todavía no hay datos de esta semana. Salen al cerrar la caja y con tus objetivos
+            puestos.
+          </Tranquilo>
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              setAbierto(true);
+            }}
+          >
+            Ver qué falta
+          </Boton>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-e2">
+          <div className="flex flex-wrap justify-around gap-e3">
+            {conDato.slice(0, 4).map((cifra) => (
+              <Medidor
+                key={cifra.que}
+                nombre={cifra.nombre}
+                valor={cifra.valor}
+                tope={elTope(cifra)}
+                objetivo={
+                  cifra.objetivo === null
+                    ? null
+                    : cifra.que === 'ventas_semanales'
+                      ? cifra.objetivo
+                      : cifra.objetivo * 100
+                }
+                texto={
+                  cifra.que === 'ventas_semanales' && cifra.valor !== null
+                    ? EN_CORTO.format(cifra.valor / 100)
+                    : cifra.valorEnTexto
+                }
+                estado={ESTADO_DEL_SEMAFORO[cifra.semaforo]}
+                queDice={LO_QUE_DICE[cifra.semaforo]}
+                tamano={118}
+              />
+            ))}
+          </div>
+          {sinDato.length > 0 && (
+            <p className="text-etiqueta text-texto-tenue">
+              Sin datos: {sinDato.map((c) => c.nombre).join(', ')}.
             </p>
           )}
         </div>
-      </div>
-    </Caja>
+      )}
+
+      <Hoja
+        abierta={abierto}
+        alCerrar={() => {
+          setAbierto(false);
+        }}
+        titulo="Tus objetivos, esta semana"
+      >
+        {abierto && datos !== undefined && (
+          <div className="pt-e3">
+            <ListaDelSemaforo cifras={datos.cifras} />
+          </div>
+        )}
+      </Hoja>
+    </Marco>
   );
 }
 
-// ── Quién está trabajando ────────────────────────────────────────────────────
+// ── Merma · barras por día, y el botón de apuntar ────────────────────────────
 
-/**
- * ── Por qué esto no es «Tu equipo» ─────────────────────────────────────────
- *
- * Había un widget que enseñaba la plantilla entera en pastillas y ocupaba media
- * pantalla de un TPV para contestar algo que no se pregunta a diario: quién tiene
- * acceso. Para eso se entra en Equipo.
- *
- * Esto contesta la pregunta de las siete de la tarde: **quién ha fichado y quién
- * no**. Y ya no dice «los fichajes llegan en M15», que es lo que decía cada
- * mañana desde M5.
- */
-function QuienEstaTrabajandoWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const { cliente, permisos, yo } = usarSesion();
-  const invitar = usarAccion('invitar');
-  const cuantos = tamano === 'grande' ? 8 : 4;
-
-  const consulta = useQuery({
-    queryKey: ['fichajes_de_hoy'],
-    enabled: puedeVer(permisos, 'app.equipo') && yo?.local !== null && yo?.local !== undefined,
-    queryFn: async (): Promise<FichajesDeHoy> => {
-      const respuesta = await cliente.consultar<FichajesDeHoy>('fichajes_de_hoy');
-      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
-    },
-    staleTime: 60_000,
-    ...AL_DIA,
-  });
-
-  const datos = consulta.data;
-  const dentro = (datos?.gente ?? []).filter((quien) => quien.dentro);
-  const fuera = (datos?.gente ?? []).filter((quien) => !quien.dentro);
-
-  return (
-    <Caja
-      leyendo={consulta}
-      titulo={dentro.length === 1 ? '1 persona dentro' : `${dentro.length} personas dentro`}
-      origen={`Fichajes de hoy · son las ${datos?.horaDelLocal ?? '--:--'} en el local`}
-      ir="/equipo/resumen"
-    >
-      {datos === undefined ? (
-        <Cargando que="los fichajes" lineas={3} />
-      ) : datos.gente.length === 0 ? (
-        <EstadoVacio
-          compacto
-          dibujo="equipo"
-          acento="var(--color-app-equipo)"
-          titulo="Todavía no hay equipo"
-          frase="Cuando alguien más tenga acceso a este local, aquí verás quién ha fichado."
-          {...(invitar === null
-            ? { sinAccionPorque: 'Da los accesos quien lleva el local.' }
-            : { accion: <BotonDeAccion accion={invitar} texto="Dar acceso a alguien" /> })}
-        />
-      ) : dentro.length === 0 ? (
-        <p className="text-secundario text-texto-suave">
-          Nadie ha fichado todavía.{' '}
-          {fuera.filter((quien) => quien.entraHoyALas !== null).length > 0
-            ? `${fuera.filter((quien) => quien.entraHoyALas !== null).length} tienen turno hoy.`
-            : ''}
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-e1">
-          {dentro.slice(0, cuantos).map((quien) => (
-            <li key={quien.personaId} className="flex items-center gap-e2">
-              <span className="min-w-0 flex-1 truncate text-cuerpo">{quien.nombre}</span>
-              <span className="shrink-0 text-secundario tabular-nums text-texto-suave">
-                {comoSeLeenMinutos(quien.minutos ?? 0)}
-              </span>
-              {quien.turnoSospechoso && <Etiqueta tono="atencion">revisar</Etiqueta>}
-            </li>
-          ))}
-          {dentro.length > cuantos && (
-            <li className="text-secundario text-texto-suave">y {dentro.length - cuantos} más</li>
-          )}
-        </ul>
-      )}
-
-      {datos !== undefined && fuera.length > 0 && dentro.length > 0 && (
-        <p className="mt-e2 text-secundario text-texto-suave">
-          {fuera.length === 1 ? '1 persona no ha fichado' : `${fuera.length} no han fichado`}.
-        </p>
-      )}
-    </Caja>
-  );
-}
-
-// ── Personas ─────────────────────────────────────────────────────────────────
-
-/**
- * Quién hay, quién está en línea y cuándo se le vio.
- *
- * ── «En línea» y «ha fichado» no son lo mismo ──────────────────────────────
- *
- * Y mezclarlos era lo que hacía el widget de antes. Estar en línea es tener la
- * aplicación abierta —puede ser desde casa—; haber fichado es estar trabajando.
- * Un jefe de cocina necesita lo segundo y quien lleva el local necesita lo primero
- * para saber si a alguien le falla el acceso. Son dos widgets porque son dos
- * preguntas.
- */
-function PersonasWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const { cliente, permisos, yo } = usarSesion();
-  const invitar = usarAccion('invitar');
-  const navegar = useNavigate();
-  const cuantos = tamano === 'grande' ? 10 : 5;
-
-  const consulta = useQuery({
-    queryKey: ['fichajes_de_hoy'],
-    enabled: puedeVer(permisos, 'app.equipo') && yo?.local !== null && yo?.local !== undefined,
-    queryFn: async (): Promise<FichajesDeHoy> => {
-      const respuesta = await cliente.consultar<FichajesDeHoy>('fichajes_de_hoy');
-      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
-    },
-    staleTime: 60_000,
-    ...AL_DIA,
-  });
-
-  const gente = consulta.data?.gente ?? [];
-  const enLinea = gente.filter((quien) => quien.enLinea).length;
-
-  return (
-    <Caja
-      leyendo={consulta}
-      titulo={gente.length === 1 ? '1 persona' : `${gente.length} personas`}
-      origen={enLinea === 0 ? 'Nadie en línea ahora' : `${enLinea} en línea ahora`}
-      ir="/equipo/personas/con-acceso"
-    >
-      {consulta.data === undefined ? (
-        <Cargando que="tu equipo" lineas={3} />
-      ) : gente.length === 0 ? (
-        <EstadoVacio
-          compacto
-          dibujo="equipo"
-          acento="var(--color-app-equipo)"
-          titulo="Llevas el local solo"
-          frase="Cuando des acceso a alguien, aquí verás quién es y cuándo se le vio por última vez."
-          {...(invitar === null
-            ? { sinAccionPorque: 'Da los accesos quien lleva el local.' }
-            : { accion: <BotonDeAccion accion={invitar} texto="Dar acceso a alguien" /> })}
-        />
-      ) : (
-        <ul className="flex flex-col gap-e1">
-          {gente.slice(0, cuantos).map((quien) => (
-            <li key={quien.personaId}>
-              {/* Al nombre se pulsa y se abre su ficha. Es lo que pedía la lista:
-                  el nombre y la cara son enlaces a la persona, desde donde estén. */}
-              <button
-                type="button"
-                onClick={() => {
-                  navegar(`/equipo/personas/con-acceso?persona=${quien.personaId}`);
-                }}
-                className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
-              >
-                <Avatar nombre={`${quien.nombre} ${quien.apellidos ?? ''}`.trim()} tamano={24} />
-                <span className="min-w-0 flex-1 truncate text-cuerpo">{quien.nombre}</span>
-                <span className="shrink-0 text-secundario text-texto-suave">
-                  {/* Color **y** palabra, nunca solo color (B8). */}
-                  {quien.enLinea ? 'En línea' : ultimaVez(quien.ultimoAccesoEn)}
-                </span>
-              </button>
-            </li>
-          ))}
-          {gente.length > cuantos && (
-            <li className="px-e1 text-secundario text-texto-suave">
-              y {gente.length - cuantos} más
-            </li>
-          )}
-        </ul>
-      )}
-    </Caja>
-  );
-}
-
-// ── La merma del día ─────────────────────────────────────────────────────────
-
-/**
- * Lo que se ha ido hoy sin venderse, con su tira de los días de antes.
- *
- * ── Por qué esto es un widget y no una pantalla más ────────────────────────
- *
- * Porque la merma se apunta **en mitad de un servicio**, con una mano ocupada, y
- * lo que no está a un toque no se apunta. Y una merma que no se apunta es food
- * cost que aparece a fin de mes sin explicación.
- *
- * La tira de catorce días está porque una cifra sola no dice nada: doce euros de
- * merma es mucho o poco según lo de siempre, y eso es exactamente lo que una tira
- * de barras contesta sin leer un número.
- */
-function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const { cliente, permisos, yo } = usarSesion();
+function MermaWidget() {
+  const { permisos } = usarSesion();
   const [apuntando, setApuntando] = useState(false);
+  const conEuros = puedeVer(permisos, 'dato.precio_de_compra') && puedeVer(permisos, 'app.almacen');
+  const apuntar = (
+    <>
+      <Boton
+        tono="principal"
+        ancho
+        icono={<IconoAnadir size={18} />}
+        onClick={() => {
+          setApuntando(true);
+        }}
+      >
+        <span className="@max-[17rem]:hidden">Apuntar merma</span>
+        <span className="@min-[17rem]:hidden">Apuntar</span>
+      </Boton>
+      {/* La hoja vive aquí: se abre desde el widget y desde Mermas, y es la misma. */}
+      <ApuntarMerma
+        abierta={apuntando}
+        alCerrar={() => {
+          setApuntando(false);
+        }}
+      />
+    </>
+  );
 
+  if (conEuros) {
+    return (
+      <CifraDelWidget
+        id="merma"
+        titulo="Merma"
+        indicador="merma"
+        forma="barras"
+        abajo={<div className="mt-auto pt-e1">{apuntar}</div>}
+      />
+    );
+  }
+  return <MermaSinEuros apuntar={apuntar} />;
+}
+
+/** La merma de quien no ve precios: cuántos apuntes, sin un euro. */
+function MermaSinEuros({ apuntar }: { readonly apuntar: ReactNode }) {
+  const { cliente, permisos, yo } = usarSesion();
   const consulta = useQuery({
     queryKey: ['merma_de_hoy'],
     enabled:
@@ -977,437 +496,328 @@ function MermaWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
       return respuesta.datos;
     },
   });
-
   const datos = consulta.data;
-  const conPrecios = datos?.puedeVerPrecios === true;
 
   return (
-    <Caja
-      leyendo={consulta}
-      titulo="Merma de hoy"
-      icono={<IconoBorrar size={18} />}
-      origen={
-        conPrecios && datos.mediaCentimos !== null && datos.mediaCentimos !== undefined
-          ? `La media de estos catorce días es ${comoDinero(datos.mediaCentimos)}`
-          : 'Lo que ha salido de cámara sin venderse'
-      }
-      // «Ver» solo a quien tiene Almacén: a un camarero le llevaría a una
-      // pantalla que no puede abrir.
-      {...(puedeVer(permisos, 'app.almacen') ? { ir: '/almacen/mermas' } : {})}
-    >
+    <Marco titulo="Merma" leyendo={consulta}>
       {datos === undefined ? (
         <Cargando que="la merma" lineas={2} />
       ) : (
-        <div className="flex h-full flex-col justify-between gap-e3">
+        <div className="flex h-full flex-col gap-e3">
           <div>
-            {conPrecios ? (
-              <Cifra
-                etiqueta="Hoy"
-                valor={datos.deHoy.valorCentimos ?? 0}
-                formato={(v) => comoDinero(v)}
-                origen={
-                  datos.deHoy.cuantas === 0
-                    ? 'Nada apuntado hoy'
-                    : `${datos.deHoy.cuantas} ${datos.deHoy.cuantas === 1 ? 'apunte' : 'apuntes'}`
-                }
-              />
-            ) : (
-              <Cifra
-                etiqueta="Hoy"
-                valor={datos.deHoy.cuantas}
-                formato={(v) => String(v)}
-                origen={datos.deHoy.cuantas === 1 ? 'apunte' : 'apuntes'}
-              />
-            )}
-
-            {datos.deHoy.loPeor !== null && (
-              <p className="mt-e1 text-secundario text-texto-suave">
-                Lo más caro: {datos.deHoy.loPeor.producto}
-                {conPrecios ? ` · ${comoDinero(datos.deHoy.loPeor.valorCentimos)}` : ''}
-              </p>
-            )}
-
-            {tamano !== 'ancho' || datos.dias.length > 0 ? (
-              <div className="mt-e3">
-                <Tira
-                  titulo="Merma de los últimos catorce días"
-                  puntos={datos.dias.map((dia) => ({
-                    valor: conPrecios ? (dia.valorCentimos ?? 0) : dia.cuantas,
-                    cuando: comoSeLeeLaFecha(dia.fecha),
-                  }))}
-                  formato={(v) => (conPrecios ? comoDinero(v) : String(v))}
-                  color="var(--color-app-almacen)"
-                  alto={tamano === 'grande' ? 56 : 36}
-                />
-              </div>
-            ) : null}
-          </div>
-
-          {datos.puedeApuntar && (
-            <div className="flex flex-wrap gap-e2">
-              <Boton
-                tono="principal"
-                icono={<IconoAnadir size={18} />}
-                onClick={() => {
-                  setApuntando(true);
-                }}
-              >
-                Apuntar
-              </Boton>
-              {/*
-                Aquí iba «Con una foto · M22», apagado. Se quitó en la entrega V
-                (0045): un botón que no se puede pulsar en mitad de lo que se usa
-                cada día es ruido. Leer la foto llega con Fogón, en M22, y entonces
-                sí tendrá su botón.
-              */}
-            </div>
-          )}
-
-          {/* La hoja vive aquí y no en la rejilla: se abre desde el widget y desde
-              la pantalla de mermas, y es el mismo formulario en los dos sitios. */}
-          <ApuntarMerma
-            abierta={apuntando}
-            alCerrar={() => {
-              setApuntando(false);
-            }}
-          />
-        </div>
-      )}
-    </Caja>
-  );
-}
-
-// ── Las ventas de hoy ────────────────────────────────────────────────────────
-
-/**
- * Los objetivos, con su semáforo (entrega O, mejora 17 · 0047).
- *
- * Lo que se sale primero, y lo que no tiene datos junto en una línea con lo que hay
- * que hacer para tenerlos. En ancho, tres filas; en grande, todas. Cada una abre su
- * porqué con un toque.
- */
-function ObjetivosWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarMisObjetivos();
-  const datos = consulta.data;
-
-  if (datos === undefined) {
-    return (
-      <Caja titulo="Objetivos" leyendo={consulta}>
-        <Cargando que="tus objetivos" lineas={3} />
-      </Caja>
-    );
-  }
-
-  return (
-    <Caja
-      titulo="Objetivos"
-      origen="Estos siete días"
-      ir="/ajustes/local#objetivos"
-      leyendo={consulta}
-    >
-      {datos.cifras.length === 0 ? (
-        <p className="text-secundario text-texto-suave">
-          Tu acceso no incluye las cifras de los objetivos.
-        </p>
-      ) : (
-        <ListaDelSemaforo cifras={datos.cifras} {...(tamano === 'grande' ? {} : { cuantas: 3 })} />
-      )}
-    </Caja>
-  );
-}
-
-/**
- * Lo que ha entrado hoy.
- *
- * ── Esta tarjeta llevaba desde M5 diciendo que llegaba en M20 ──────────────
- *
- * Y decía la verdad mientras la cifra tenía que venir del TPV. El problema es que
- * **media hostelería no va a conectar un TPV nunca**: un bar con una caja de
- * veinte años y un papel de Z no tiene API, así que el widget habría seguido
- * apagado para ellos para siempre.
- *
- * Desde M6½ la cifra sale del cierre de caja, que se apunta a mano, se sube de un
- * CSV o se saca de una foto del Z. Cuando llegue el conector de M20, lo que traiga
- * se guarda en la misma tabla y este widget no se entera de que ha cambiado nada.
- *
- * Y si no hay cierre, **no pinta un cero**: dice que falta cerrar y lleva ahí. «Un
- * cero en gris sería inventarse una cifra», y ese fallo ya estuvo en esta misma
- * tarjeta.
- */
-function VentasDeHoyWidget() {
-  const { cliente, permisos, yo } = usarSesion();
-  const navegar = useNavigate();
-
-  const consulta = useQuery({
-    queryKey: ['mis_cierres', 'panel'],
-    enabled: puedeVer(permisos, 'dato.ventas') && yo?.local !== null && yo?.local !== undefined,
-    queryFn: async (): Promise<MisCierres> => {
-      const respuesta = await cliente.consultar<MisCierres>('mis_cierres', { dias: '8' });
-      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
-    },
-  });
-
-  const datos = consulta.data;
-  const deHoy = datos?.cierres.find((cierre) => cierre.fecha === datos.jornada) ?? null;
-  // El mismo día de la semana pasada, que es con lo que se compara un día en
-  // hostelería: un martes no se parece a un sábado.
-  const deLaSemanaPasada =
-    datos === undefined
-      ? null
-      : (datos.cierres.find(
-          (cierre) => cierre.fecha === masDias(datos.jornada as FechaOperativa, -7),
-        ) ?? null);
-  const cambio =
-    deHoy === null || deLaSemanaPasada === null
-      ? null
-      : comoCambia('ventas', deHoy.totalCentimos, deLaSemanaPasada.totalCentimos);
-  // El food cost del día lo cuenta el dominio, que es su único dueño (regla 6).
-  const foodCostDeHoy =
-    deHoy === null ? null : porcentajeDe(deHoy.consumoCentimos ?? 0, deHoy.totalCentimos);
-
-  return (
-    <Caja
-      leyendo={consulta}
-      titulo="Ventas de hoy"
-      origen={
-        deHoy === null
-          ? 'Sin cerrar todavía'
-          : nombreEn(NOMBRE_DEL_ORIGEN_DEL_CIERRE, deHoy.origen, 'Del cierre de caja')
-      }
-      ir="/servicio/jornada/cierre"
-    >
-      {datos === undefined ? (
-        <Cargando que="las ventas" lineas={2} />
-      ) : deHoy === null ? (
-        <div className="flex h-full flex-col justify-between gap-e3">
-          <p className="text-secundario text-texto-suave">
-            {datos.comoSeCierra === 'sin_decidir'
-              ? 'Todavía no has elegido cómo entran tus ventas.'
-              : datos.comoSeCierra === 'tpv'
-                ? 'Tu TPV traerá las ventas cuando esté conectado. Hasta entonces se pueden apuntar a mano.'
-                : 'La caja de hoy no está cerrada.'}
-          </p>
-          {datos.puedeCerrar && (
-            <div>
-              <Boton
-                tono="principal"
-                onClick={() => {
-                  navegar('/servicio/jornada/cierre');
-                }}
-              >
-                Cerrar la caja
-              </Boton>
-            </div>
-          )}
-        </div>
-      ) : (
-        <>
-          {cambio !== null && (
-            <div className="mb-e1">
-              <Variacion
-                sube={cambio.sube}
-                cuanto={cambio.cuanto}
-                bueno={cambio.bueno}
-                frenteA="frente al mismo día de la semana pasada"
-              />
-            </div>
-          )}
-          <Cifra
-            etiqueta="Facturado"
-            valor={deHoy.totalCentimos}
-            formato={(v) => comoDinero(v)}
-            origen={
-              deHoy.tickets === null
-                ? 'Con IVA, tal cual la caja'
-                : `${deHoy.tickets} ${deHoy.tickets === 1 ? 'ticket' : 'tickets'}`
-            }
-          />
-          {datos.puedeVerCostes && deHoy.consumoCentimos !== null && (
-            <p className="mt-e2 text-secundario text-texto-suave">
-              Género gastado hoy: {comoDinero(deHoy.consumoCentimos)}
-              {foodCostDeHoy === null ? '' : ` · ${foodCostDeHoy.toLocaleString('es-ES')} %`}
+            <p className="text-[calc(30px*var(--escala))] font-bold leading-none">
+              {datos.deHoy.cuantas}
             </p>
+            <p className="mt-e1 text-secundario text-texto-suave">
+              {datos.deHoy.cuantas === 1 ? 'apunte hoy' : 'apuntes hoy'}
+            </p>
+          </div>
+          {datos.dias.length > 0 && (
+            <GraficaViva
+              titulo="Apuntes de merma de los últimos días"
+              puntos={datos.dias.map((dia) => ({
+                etiqueta: comoSeLeeLaFecha(dia.fecha),
+                valor: dia.cuantas,
+              }))}
+              forma="barras"
+              color="var(--color-app-almacen)"
+              formato={(v) => `${v} ${v === 1 ? 'apunte' : 'apuntes'}`}
+              alto={52}
+              resaltarElUltimo
+            />
           )}
-        </>
+          {datos.puedeApuntar && <div className="mt-auto">{apuntar}</div>}
+        </div>
       )}
-    </Caja>
+    </Marco>
   );
 }
 
-// ── Las compras de hoy (M7) ──────────────────────────────────────────────────
+// ── Bajo mínimo · barras de nivel ────────────────────────────────────────────
 
-/**
- * A quién toca pedir hoy, lo que llega y lo que espera a mandarse.
- *
- * «El bajo mínimo sabe qué día reparte tu proveedor. Avisar el jueves de un
- * pescado que llega los martes no sirve de nada» (Manifiesto 28). Esto es ese
- * aviso **el día que sirve**, cada línea con su botón: pedir abre el pedido con
- * lo sugerido, y recibir abre la recepción directamente.
- */
-function ComprasDeHoyWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
+function BajoMinimo() {
+  const consulta = usarAlmacenHoy();
+  const navegar = useNavigate();
+  const atencion = consulta.data?.atencion ?? [];
+  usarQueEstaVacio(consulta.data === undefined ? undefined : atencion.length === 0);
+
+  return (
+    <Marco
+      titulo="Bajo mínimo"
+      leyendo={consulta}
+      ir="/almacen/productos/bajo-minimo"
+      derecha={atencion.length > 0 ? <Contador>{atencion.length}</Contador> : undefined}
+    >
+      {consulta.data === undefined ? (
+        <Cargando que="el almacén" lineas={3} />
+      ) : atencion.length === 0 ? (
+        <Tranquilo>Todo por encima de su mínimo.</Tranquilo>
+      ) : (
+        <ul className="flex flex-col gap-e1">
+          {atencion.slice(0, 4).map((producto) => {
+            const agota = cuandoSeAgota(producto.seAgotaEn, producto.diasDeCobertura);
+            const tono = TONO_DEL_ESTADO[producto.estado] === 'mal' ? 'mal' : 'atencion';
+            const parte =
+              producto.minimo === null || producto.minimo <= 0
+                ? null
+                : Math.max(0, Math.min(1, producto.cantidad / producto.minimo));
+            return (
+              <li key={producto.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navegar(`/almacen/productos/bajo-minimo?producto=${producto.id}`);
+                  }}
+                  className="-mx-e2 flex w-[calc(100%+var(--spacing-e2)*2)] flex-col gap-[6px] rounded-medio px-e2 py-e2 text-left transition-colors duration-[--rapido] hover:bg-fondo"
+                >
+                  <span className="flex items-baseline gap-e2">
+                    <span className="min-w-0 flex-1 truncate text-cuerpo font-medium">
+                      {producto.nombre}
+                    </span>
+                    <span className="shrink-0 text-secundario tabular-nums text-texto-suave">
+                      {conUnidadDeUso(producto.cantidad, producto.unidadDeUso)}
+                      {producto.minimo === null
+                        ? ''
+                        : ` / ${conUnidadDeUso(producto.minimo, producto.unidadDeUso)}`}
+                    </span>
+                  </span>
+                  {parte !== null && (
+                    <span
+                      aria-hidden
+                      className="block h-[6px] w-full overflow-hidden rounded-redondo bg-fondo"
+                    >
+                      <span
+                        className={clases(
+                          'block h-full rounded-redondo transition-[width] duration-[--lento] ease-curva',
+                          tono === 'mal' ? 'bg-mal' : 'bg-atencion',
+                        )}
+                        style={{ width: `${Math.max(4, parte * 100)}%` }}
+                      />
+                    </span>
+                  )}
+                  <span className="text-etiqueta text-texto-tenue">
+                    {NOMBRE_DEL_ESTADO[producto.estado]}
+                    {agota === null ? '' : ` · se agota ${agota}`}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+          {atencion.length > 4 && (
+            <li className="pt-e1 text-secundario text-texto-suave">y {atencion.length - 4} más</li>
+          )}
+        </ul>
+      )}
+    </Marco>
+  );
+}
+
+// ── Caduca pronto · cada lote con su día ─────────────────────────────────────
+
+function Caducidades() {
+  const consulta = usarAlmacenHoy();
+  const navegar = useNavigate();
+  const caducan = consulta.data?.caducan ?? [];
+  usarQueEstaVacio(consulta.data === undefined ? undefined : caducan.length === 0);
+
+  return (
+    <Marco
+      titulo="Caduca pronto"
+      leyendo={consulta}
+      ir="/almacen/resumen"
+      derecha={caducan.length > 0 ? <Contador>{caducan.length}</Contador> : undefined}
+    >
+      {consulta.data === undefined ? (
+        <Cargando que="las caducidades" lineas={3} />
+      ) : caducan.length === 0 ? (
+        <Tranquilo>Nada caduca en los próximos siete días.</Tranquilo>
+      ) : (
+        <ul className="grid gap-e2 @min-[26rem]:grid-cols-2">
+          {caducan.slice(0, 6).map((lote) => {
+            const urgente = lote.dias <= 1;
+            return (
+              <li key={lote.loteId}>
+                {/* A su producto, que es donde se quita o se congela el lote. */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    navegar(`/almacen/productos/todo?producto=${lote.productoId}`);
+                  }}
+                  className="flex w-full items-center gap-e3 rounded-grande border border-borde bg-fondo/40 p-e2 text-left transition-colors duration-[--rapido] hover:border-borde-fuerte"
+                >
+                  <span
+                    className={clases(
+                      'grid size-11 shrink-0 place-items-center rounded-medio text-center leading-none',
+                      urgente ? 'bg-mal-suave text-mal' : 'bg-atencion-suave text-atencion',
+                    )}
+                  >
+                    {/* Lo que caduca hoy todavía no ha caducado: «hoy», como dice lo de hoy. */}
+                    {lote.dias < 0 ? (
+                      <span className="text-etiqueta font-bold">Ya</span>
+                    ) : lote.dias === 0 ? (
+                      <span className="text-etiqueta font-bold">Hoy</span>
+                    ) : (
+                      <span>
+                        <span className="block text-seccion font-bold">{lote.dias}</span>
+                        <span className="block text-[10px] font-semibold">
+                          {lote.dias === 1 ? 'día' : 'días'}
+                        </span>
+                      </span>
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-secundario font-medium">
+                    {lote.producto}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+          {caducan.length > 6 && (
+            <li className="self-center text-secundario text-texto-suave">
+              y {caducan.length - 6} más
+            </li>
+          )}
+        </ul>
+      )}
+    </Marco>
+  );
+}
+
+// ── Compras de hoy · a quién pedir y qué llega ───────────────────────────────
+
+function ComprasDeHoyWidget() {
   const { permisos, yo } = usarSesion();
   const navegar = useNavigate();
-  const puedeTocar = puedeEditar(permisos, 'app.almacen');
-  const cuantos = tamano === 'grande' ? 6 : 3;
-
   const consulta = usarLectura<ComprasDeHoy>(
     'compras_de_hoy',
     {},
     puedeVer(permisos, 'app.almacen') && yo?.local !== null && yo?.local !== undefined,
   );
-
   const datos = consulta.data;
   const tocaPedir = (datos?.tocaPedir ?? []).filter((t) => !t.yaPedido);
+  const llegan = datos?.llegan ?? [];
   const borradores = datos?.borradores.length ?? 0;
   usarQueEstaVacio(
-    datos === undefined
-      ? undefined
-      : tocaPedir.length === 0 && datos.llegan.length === 0 && borradores === 0,
+    datos === undefined ? undefined : tocaPedir.length === 0 && llegan.length === 0 && borradores === 0,
   );
 
   return (
-    <Caja
-      leyendo={consulta}
-      titulo="Compras de hoy"
-      origen={
-        borradores === 0
-          ? 'Lo que llega y a quién toca pedir'
-          : `${borradores === 1 ? '1 borrador' : `${borradores} borradores`} sin mandar`
-      }
-      ir="/almacen/compras/pedidos"
-    >
+    <Marco titulo="Compras de hoy" leyendo={consulta} ir="/almacen/compras/pedidos">
       {datos === undefined ? (
         <Cargando que="las compras" lineas={2} />
-      ) : tocaPedir.length === 0 && datos.llegan.length === 0 ? (
-        <p className="text-secundario text-texto-suave">
+      ) : tocaPedir.length === 0 && llegan.length === 0 ? (
+        <Tranquilo>
           Hoy no llega nada y no toca pedirle a nadie.
-        </p>
+          {borradores > 0 &&
+            ` ${borradores === 1 ? 'Tienes 1 pedido' : `Tienes ${borradores} pedidos`} sin mandar.`}
+        </Tranquilo>
       ) : (
-        <ul className="flex flex-col gap-e1">
-          {tocaPedir.slice(0, cuantos).map((t) => (
-            <li key={t.proveedorId}>
-              <button
-                type="button"
-                onClick={() => {
-                  navegar(
-                    t.borradorId === null
-                      ? `/almacen/compras/pedidos?pedir=${t.proveedorId}`
-                      : `/almacen/compras/pedidos?pedido=${t.borradorId}`,
-                  );
-                }}
-                className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
-              >
-                <span className="min-w-0 flex-1 truncate text-cuerpo">Pedir a {t.proveedor}</span>
-                <Etiqueta tono="atencion">
-                  {t.pedirAntesDe === null ? 'hoy' : `antes de las ${t.pedirAntesDe}`}
-                </Etiqueta>
-              </button>
-            </li>
-          ))}
-          {datos.llegan.slice(0, cuantos).map((l) => (
-            <li key={l.pedidoId}>
-              <button
-                type="button"
-                onClick={() => {
-                  navegar(
-                    `/almacen/compras/pedidos?pedido=${l.pedidoId}${puedeTocar ? '&recibir=1' : ''}`,
-                  );
-                }}
-                className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
-              >
-                <span className="min-w-0 flex-1 truncate text-cuerpo">Llega {l.proveedor}</span>
-                <Etiqueta tono={l.atrasado ? 'mal' : 'info'}>
-                  {l.atrasado ? 'no ha llegado' : l.llegaCuando}
-                </Etiqueta>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="grid gap-e4 @min-[26rem]:grid-cols-2">
+          {tocaPedir.length > 0 && (
+            <Columna titulo="Toca pedir">
+              {tocaPedir.slice(0, 3).map((t) => (
+                <FilaConCara
+                  key={t.proveedorId}
+                  nombre={t.proveedor}
+                  etiqueta={
+                    <Etiqueta tono="atencion">
+                      {t.pedirAntesDe === null ? 'hoy' : `antes de las ${t.pedirAntesDe}`}
+                    </Etiqueta>
+                  }
+                  alPulsar={() => {
+                    navegar(
+                      t.borradorId === null
+                        ? `/almacen/compras/pedidos?pedir=${t.proveedorId}`
+                        : `/almacen/compras/pedidos?pedido=${t.borradorId}`,
+                    );
+                  }}
+                />
+              ))}
+            </Columna>
+          )}
+          {llegan.length > 0 && (
+            <Columna titulo="Llega">
+              {llegan.slice(0, 3).map((l) => (
+                <FilaConCara
+                  key={l.pedidoId}
+                  nombre={l.proveedor}
+                  etiqueta={
+                    <Etiqueta tono={l.atrasado ? 'mal' : 'info'}>
+                      {l.atrasado ? 'no ha llegado' : l.llegaCuando}
+                    </Etiqueta>
+                  }
+                  alPulsar={() => {
+                    navegar(`/almacen/compras/pedidos?pedido=${l.pedidoId}&recibir=1`);
+                  }}
+                />
+              ))}
+            </Columna>
+          )}
+        </div>
       )}
-    </Caja>
+    </Marco>
   );
 }
 
-// ── Lo que viene (M7): hoy y mañana, del Calendario de todos ─────────────────
+// ── Lo que viene · una línea del tiempo de hoy y mañana ──────────────────────
 
-/**
- * Hoy y mañana, de la tabla del Calendario (decisión 0031).
- *
- * «Los módulos publican; el Calendario pinta.» M7 publica las entregas de los
- * pedidos, los repartos de cada proveedor y las caducidades de los lotes, y esto
- * es lo primero que las pinta. El Calendario entero —mes, semana, turnos y
- * tareas— es M14, y leerá la misma tabla.
- *
- * Quién ve qué no lo decide el widget: lo decide la base. A un camarero no le
- * llega ninguna entrega, porque no lleva Almacén; le llegan sus avisos.
- */
-// ── Mi turno (H2 · 0069) ─────────────────────────────────────────────────────
+const COLOR_DE_LA_CAPA: Readonly<Record<string, string>> = {
+  entrega: 'var(--color-app-almacen)',
+  caducidad: 'var(--color-mal)',
+  turno: 'var(--color-app-equipo)',
+  appcc: 'var(--color-app-servicio)',
+  mantenimiento: 'var(--color-app-cuaderno)',
+  aviso: 'var(--color-info)',
+};
 
-function MiTurnoWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
-  const consulta = usarElHorarioDeEstaSemana();
-  return (
-    <Caja
-      titulo="Mi turno"
-      ir="/horario"
-      leyendo={consulta}
-      {...(consulta.data?.publicado === true ? { origen: `Horario ${consulta.data.semana}` } : {})}
-    >
-      <MiTurno datos={consulta.data} tamano={tamano} />
-    </Caja>
-  );
-}
-
-function LoQueVieneWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
+function LoQueVieneWidget() {
   const { permisos, yo } = usarSesion();
   const navegar = useNavigate();
-  const cuantos = tamano === 'grande' ? 8 : 4;
-
   const consulta = usarLectura<LoQueViene>(
     'lo_que_viene',
     {},
     puedeVer(permisos, 'app.calendario') && yo?.local !== null && yo?.local !== undefined,
   );
-
   const dias = consulta.data?.dias ?? [];
   const nada = dias.every((dia) => dia.ocurrencias.length === 0);
   usarQueEstaVacio(consulta.data === undefined ? undefined : nada);
 
   return (
-    <Caja
-      leyendo={consulta}
-      titulo="Lo que viene"
-      origen="Hoy y mañana · entregas, repartos, caducidades y avisos"
-    >
+    <Marco titulo="Lo que viene" leyendo={consulta} ir="/calendario">
       {consulta.data === undefined ? (
         <Cargando que="lo que viene" lineas={3} />
       ) : nada ? (
-        <p className="text-secundario text-texto-suave">Nada apuntado para hoy ni para mañana.</p>
+        <Tranquilo>Nada apuntado para hoy ni para mañana.</Tranquilo>
       ) : (
-        <div className="flex flex-col gap-e2">
+        <div className="grid gap-e4 @min-[26rem]:grid-cols-2">
           {dias.map((dia) =>
             dia.ocurrencias.length === 0 ? null : (
               <div key={dia.fecha}>
-                <p className="text-secundario font-medium text-texto-suave">{dia.cuando}</p>
-                <ul className="flex flex-col">
-                  {dia.ocurrencias.slice(0, cuantos).map((o) => (
-                    <li key={`${o.id}-${dia.fecha}`}>
+                <p className="mb-e2 text-etiqueta font-semibold text-texto-tenue">{dia.cuando}</p>
+                <ol className="relative flex flex-col border-l border-borde pl-e3">
+                  {dia.ocurrencias.slice(0, 4).map((o) => (
+                    <li key={`${o.id}-${dia.fecha}`} className="relative">
+                      <span
+                        aria-hidden
+                        className="absolute -left-[calc(var(--spacing-e3)+4.5px)] top-[14px] size-2 rounded-redondo ring-2 ring-superficie"
+                        style={{ background: COLOR_DE_LA_CAPA[o.capa] ?? 'var(--color-texto-tenue)' }}
+                      />
                       <button
                         type="button"
                         disabled={o.ir === null}
                         onClick={() => {
                           if (o.ir !== null) navegar(o.ir);
                         }}
-                        className="flex w-full min-h-toque items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo disabled:cursor-default disabled:hover:bg-transparent"
+                        className="flex min-h-[36px] w-full items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo disabled:cursor-default disabled:hover:bg-transparent"
                       >
                         {o.desde !== null && (
-                          <span className="shrink-0 text-secundario tabular-nums text-texto-suave">
+                          <span className="shrink-0 text-etiqueta font-semibold tabular-nums text-texto-suave">
                             {o.desde}
                           </span>
                         )}
                         <span
                           className={clases(
-                            'min-w-0 flex-1 truncate text-cuerpo',
+                            'min-w-0 flex-1 truncate text-secundario',
                             o.hecho && 'text-texto-suave line-through',
                           )}
                         >
@@ -1420,73 +830,209 @@ function LoQueVieneWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
                       </button>
                     </li>
                   ))}
-                  {dia.ocurrencias.length > cuantos && (
-                    <li className="px-e1 text-secundario text-texto-suave">
-                      y {dia.ocurrencias.length - cuantos} más
+                  {dia.ocurrencias.length > 4 && (
+                    <li className="px-e1 pt-e1 text-etiqueta text-texto-suave">
+                      y {dia.ocurrencias.length - 4} más
                     </li>
                   )}
-                </ul>
+                </ol>
               </div>
             ),
           )}
         </div>
       )}
-    </Caja>
+    </Marco>
   );
 }
 
-// ── Lo último apuntado ───────────────────────────────────────────────────────
+// ── Equipo ahora · las caras de quien está dentro ────────────────────────────
 
-function UltimosMovimientos({ tamano }: { readonly tamano: TamanoDeWidget }) {
+function EquipoAhora() {
   const { cliente, permisos, yo } = usarSesion();
-  const cuantos = tamano === 'grande' ? 8 : 4;
+  const invitar = usarAccion('invitar');
+  const navegar = useNavigate();
 
   const consulta = useQuery({
-    queryKey: ['mis_movimientos', 'panel'],
-    enabled: puedeVer(permisos, 'app.almacen') && yo?.local !== null && yo?.local !== undefined,
-    queryFn: async (): Promise<MisMovimientos> => {
-      const respuesta = await cliente.consultar<MisMovimientos>('mis_movimientos', { limite: '8' });
+    queryKey: ['fichajes_de_hoy'],
+    enabled: puedeVer(permisos, 'app.equipo') && yo?.local !== null && yo?.local !== undefined,
+    queryFn: async (): Promise<FichajesDeHoy> => {
+      const respuesta = await cliente.consultar<FichajesDeHoy>('fichajes_de_hoy');
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
       return respuesta.datos;
     },
+    staleTime: 60_000,
+    ...AL_DIA,
   });
 
   const datos = consulta.data;
-  const lineas = datos?.movimientos ?? [];
-  usarQueEstaVacio(datos === undefined ? undefined : lineas.length === 0);
+  const gente = datos?.gente ?? [];
+  const dentro = gente.filter((quien) => quien.dentro);
+  const conTurno = gente.filter((quien) => !quien.dentro && quien.entraHoyALas !== null);
 
   return (
-    <Caja
+    <Marco
+      titulo="Equipo ahora"
       leyendo={consulta}
-      titulo="Lo último apuntado"
-      origen="Del libro de movimientos"
-      ir="/almacen/movimientos/historial"
+      ir="/equipo/resumen"
+      {...(datos === undefined ? {} : { derecha: <Contador>{datos.horaDelLocal}</Contador> })}
     >
-      {lineas.length === 0 ? (
-        <p className="text-secundario text-texto-suave">
-          Todavía no se ha apuntado ninguna entrada ni salida.
-        </p>
+      {datos === undefined ? (
+        <Cargando que="los fichajes" lineas={3} />
+      ) : gente.length === 0 ? (
+        <EstadoVacio
+          compacto
+          dibujo="equipo"
+          acento="var(--color-app-equipo)"
+          titulo="Todavía no hay equipo"
+          frase="Cuando alguien más tenga acceso, aquí verás quién ha fichado."
+          {...(invitar === null
+            ? { sinAccionPorque: 'Da los accesos quien lleva el local.' }
+            : { accion: <BotonDeAccion accion={invitar} texto="Dar acceso a alguien" /> })}
+        />
       ) : (
-        <ul className="flex flex-col gap-e1">
-          {lineas.slice(0, cuantos).map((m) => (
-            <li key={m.id} className="flex items-baseline gap-e2">
-              <span className="min-w-0 flex-1 truncate text-cuerpo">{m.producto}</span>
-              <span
-                className={clases(
-                  'shrink-0 text-secundario',
-                  m.cantidad > 0 ? 'text-bien' : 'text-mal',
-                )}
-              >
-                {m.cantidad > 0 ? '+' : '−'}
-                {conUnidadDeUso(Math.abs(m.cantidad), m.unidadDeUso)}
-              </span>
-              <span className="shrink-0 text-secundario text-texto-tenue">
-                {datos === undefined ? '' : comoSeLeeElDia(m.fechaOperativa, datos.hoy)}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-col gap-e3">
+          <div className="flex items-center gap-e3">
+            <p className="text-[calc(30px*var(--escala))] font-bold leading-none">{dentro.length}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-secundario font-semibold">
+                {dentro.length === 1 ? 'persona dentro' : 'personas dentro'}
+              </p>
+              <p className="text-etiqueta text-texto-tenue">
+                {conTurno.length === 0
+                  ? `de ${gente.length} en el equipo`
+                  : `${conTurno.length} con turno hoy sin fichar`}
+              </p>
+            </div>
+            {/* Las caras, unas encima de otras. */}
+            <div className="flex -space-x-2">
+              {dentro.slice(0, 5).map((quien) => (
+                <span key={quien.personaId} className="rounded-[11px] ring-2 ring-superficie">
+                  <Avatar nombre={`${quien.nombre} ${quien.apellidos ?? ''}`.trim()} tamano={32} />
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {dentro.length > 0 && (
+            <ul className="flex flex-col">
+              {dentro.slice(0, 4).map((quien) => (
+                <li key={quien.personaId}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navegar(`/equipo/personas/con-acceso?persona=${quien.personaId}`);
+                    }}
+                    className="flex min-h-[40px] w-full items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
+                  >
+                    <span aria-hidden className="size-2 shrink-0 rounded-redondo bg-bien" />
+                    <span className="min-w-0 flex-1 truncate text-secundario font-medium">
+                      {quien.nombre}
+                    </span>
+                    <span className="shrink-0 text-etiqueta text-texto-tenue">{quien.rolNombre}</span>
+                    <span className="w-16 shrink-0 text-right text-secundario tabular-nums text-texto-suave">
+                      {comoSeLeenMinutos(quien.minutos ?? 0)}
+                    </span>
+                    {quien.turnoSospechoso && <Etiqueta tono="atencion">revisar</Etiqueta>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
-    </Caja>
+    </Marco>
   );
 }
+
+// ── Mi turno, tus apps ───────────────────────────────────────────────────────
+
+function MiTurnoWidget({ tamano }: { readonly tamano: TamanoDeWidget }) {
+  const consulta = usarElHorarioDeEstaSemana();
+  return (
+    <Marco titulo="Mi turno" ir="/horario" leyendo={consulta}>
+      <MiTurno datos={consulta.data} tamano={tamano} />
+    </Marco>
+  );
+}
+
+function MisApps() {
+  const { permisos } = usarSesion();
+  const navegar = useNavigate();
+  const misApps = appsVisibles(permisos)
+    .map((permiso) => appPorPermiso(permiso))
+    .filter((app): app is App => app !== undefined);
+
+  return (
+    <Marco titulo="Tus apps">
+      <ul className="grid grid-cols-3 gap-e2 @min-[26rem]:grid-cols-4">
+        {misApps.map((app) => (
+          <li key={app.id}>
+            <button
+              type="button"
+              onClick={() => {
+                navegar(rutaDe(app));
+              }}
+              className="flex w-full flex-col items-center gap-e1 rounded-grande p-e2 text-center transition-colors duration-[--rapido] hover:bg-fondo"
+            >
+              <span
+                aria-hidden
+                className="grid size-11 place-items-center rounded-grande text-white"
+                style={{
+                  background: `linear-gradient(140deg, color-mix(in srgb, ${app.acento} 92%, white), color-mix(in srgb, ${app.acento} 70%, black))`,
+                  boxShadow: `0 8px 18px -10px ${app.acento}`,
+                }}
+              >
+                <app.icono size={20} />
+              </span>
+              <span className="w-full truncate text-etiqueta font-semibold">{app.nombre}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Marco>
+  );
+}
+
+// ── Piezas ───────────────────────────────────────────────────────────────────
+
+function Contador({ children }: { readonly children: ReactNode }) {
+  return (
+    <span className="shrink-0 rounded-redondo bg-fondo px-e2 py-[2px] text-etiqueta font-semibold tabular-nums text-texto-suave">
+      {children}
+    </span>
+  );
+}
+
+function Columna({ titulo, children }: { readonly titulo: string; readonly children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-e1">
+      <p className="text-etiqueta font-semibold text-texto-tenue">{titulo}</p>
+      <ul className="flex flex-col">{children}</ul>
+    </div>
+  );
+}
+
+function FilaConCara({
+  nombre,
+  etiqueta,
+  alPulsar,
+}: {
+  readonly nombre: string;
+  readonly etiqueta: ReactNode;
+  readonly alPulsar: () => void;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={alPulsar}
+        className="flex min-h-[44px] w-full items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
+      >
+        <Avatar nombre={nombre} tamano={30} />
+        <span className="min-w-0 flex-1 truncate text-secundario font-medium">{nombre}</span>
+        {etiqueta}
+      </button>
+    </li>
+  );
+}
+

@@ -75,5 +75,13 @@ export const COMO_SE_LLAMA_EL_TAMANO: Readonly<Record<TamanoDeWidget, string>> =
  * Las filas son de cuatro píxeles y cada casilla dice cuántas ocupa, medido. Con
  * el flujo denso, eso coloca cada widget debajo del más corto: el Panel se
  * encaja como un iPad y no por filas del alto del más alto.
+ *
+ * ── Las columnas, por lo que mide el Panel y no la pantalla (0083) ──────────
+ *
+ * Con el menú a la izquierda, lo que importa es el ancho que le queda al Panel, que
+ * cambia al plegar el menú. Así que se pregunta al contenedor (`@container`, que lo
+ * pone `Rejilla`): dos columnas en el móvil, tres desde 46 rem y **cuatro como
+ * mucho**, que es lo que deja cada widget del ancho de una tarjeta de verdad. Antes
+ * eran seis en una pantalla grande, y una gráfica en un sexto de monitor es una raya.
  */
-export const CLASES_DE_LA_REJILLA = `${CLASES_DEL_MOSAICO} grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6`;
+export const CLASES_DE_LA_REJILLA = `${CLASES_DEL_MOSAICO} grid-cols-2 @min-[46rem]:grid-cols-3 @min-[68rem]:grid-cols-4 @min-[46rem]:gap-x-e4`;

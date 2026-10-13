@@ -43,12 +43,14 @@ export interface LogoProps {
   /** El alto en píxeles. El ancho lo pone la proporción. */
   readonly alto?: number;
   readonly className?: string;
+  /** Siempre el de fondo oscuro: dentro del menú lateral, que es oscuro en los dos temas. */
+  readonly enOscuro?: boolean;
 }
 
-export function Logo({ alto = 26, className }: LogoProps) {
+export function Logo({ alto = 26, className, enOscuro: siempre = false }: LogoProps) {
   // El logotipo es charcoal: sobre el tema oscuro hay que darle la vuelta, o no
   // se ve. Es lo primero que aparecio al mirar el modo oscuro de verdad.
-  const enOscuro = usarSeVeOscuro();
+  const enOscuro = usarSeVeOscuro() || siempre;
 
   return (
     <img

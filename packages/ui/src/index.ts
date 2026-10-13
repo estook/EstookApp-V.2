@@ -101,6 +101,17 @@ export type { CifraProps, SentidoDeLaComparacion } from './componentes/Cifra.tsx
 
 export { Grafica } from './componentes/Grafica.tsx';
 export type { GraficaProps, SerieDeGrafica, FormaDeGrafica } from './componentes/Grafica.tsx';
+// Las gráficas vivas, el medidor y el anillo (la experiencia, 0083).
+export { GraficaViva } from './componentes/graficas/GraficaViva.tsx';
+export type {
+  GraficaVivaProps,
+  PuntoDeGrafica,
+  FormaDeLaGraficaViva,
+} from './componentes/graficas/tipos.ts';
+export { Medidor } from './componentes/graficas/Medidor.tsx';
+export type { MedidorProps, EstadoDelMedidor } from './componentes/graficas/Medidor.tsx';
+export { Anillo } from './componentes/graficas/Anillo.tsx';
+export type { AnilloProps } from './componentes/graficas/Anillo.tsx';
 
 export { Aviso, ErrorEnCristiano } from './componentes/Aviso.tsx';
 export { ConMasInfo } from './componentes/ConMasInfo.tsx';
@@ -135,8 +146,12 @@ export type { BarraMovilProps, BarraDeAppProps } from './navegacion/BarraMovil.t
 export { BarraArribaMovil } from './navegacion/BarraArribaMovil.tsx';
 export type { BarraArribaMovilProps } from './navegacion/BarraArribaMovil.tsx';
 
-export { BarraEscritorio } from './navegacion/BarraEscritorio.tsx';
-export type { BarraEscritorioProps } from './navegacion/BarraEscritorio.tsx';
+export { MenuDelOrdenador, ANCHO_DEL_MENU } from './navegacion/MenuDelOrdenador.tsx';
+export type { MenuDelOrdenadorProps } from './navegacion/MenuDelOrdenador.tsx';
+export { BarraDeArribaDelOrdenador } from './navegacion/BarraDeArribaDelOrdenador.tsx';
+export type { BarraDeArribaDelOrdenadorProps } from './navegacion/BarraDeArribaDelOrdenador.tsx';
+export { LogoDelLocal } from './navegacion/LogoDelLocal.tsx';
+export type { LogoDelLocalProps } from './navegacion/LogoDelLocal.tsx';
 
 export { RuedaDeApps } from './navegacion/RuedaDeApps.tsx';
 export type { RuedaDeAppsProps } from './navegacion/RuedaDeApps.tsx';
@@ -149,17 +164,16 @@ export {
   elPuestoDe,
   elPanelDeFabrica,
   WIDGETS,
-  cuandoLlega,
   loQueSePuedeAnadir,
   elCatalogoParaAnadir,
   GRUPO_DEL_WIDGET,
   NOMBRE_DEL_GRUPO,
   loQueSePuedePintar,
-  losQueLlegan,
   acentoDelWidget,
   appDelWidget,
   widgetPorId,
-  losIndicadoresQueSePuedenTener,
+  idDeAhora,
+  MUDANZAS,
 } from './panel/catalogo.ts';
 export type { TamanoDeWidget, Widget, WidgetPuesto, Puesto } from './panel/catalogo.ts';
 
@@ -178,8 +192,6 @@ export {
   type Visor,
 } from './navegacion/anclaAbajo.ts';
 
-export { MenuLateral } from './navegacion/MenuLateral.tsx';
-export type { MenuLateralProps } from './navegacion/MenuLateral.tsx';
 
 export { Vistas } from './navegacion/Vistas.tsx';
 export type { VistasProps } from './navegacion/Vistas.tsx';

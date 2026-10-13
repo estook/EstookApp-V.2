@@ -16,7 +16,6 @@ import {
   vistasConstruidas,
   vistasQueSeEnsenan,
 } from './apps.ts';
-import { WIDGETS } from './panel/catalogo.ts';
 
 /**
  * M3 · las ocho apps (Partes B3 y B5 del Plan).
@@ -295,9 +294,6 @@ describe('los modulos que se nombran en pantalla', () => {
         if (vista.modulo !== undefined) nombrados.add(vista.modulo);
       }
     }
-  }
-  for (const widget of WIDGETS) {
-    if (widget.modulo !== undefined) nombrados.add(widget.modulo);
   }
   // M6 no lo nombra nada, porque es el que esta construido, y se queda a
   // proposito: lo nombran las pantallas de Almacén.

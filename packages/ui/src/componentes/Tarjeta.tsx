@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { clases } from '../clases.ts';
 import { colorDe, inicialesDe } from './iniciales.ts';
 
@@ -68,7 +68,7 @@ export function Tarjeta({
         // `@container`: la tarjeta se adapta a **su** ancho, no al de la pantalla.
         // Un widget pequeño del Panel en un monitor es tan estrecho como uno en un
         // móvil, y es ahí donde el título partía en tres líneas.
-        '@container relative overflow-hidden rounded-mayor border border-borde bg-superficie',
+        '@container relative overflow-hidden rounded-mayor border border-borde bg-superficie [background-image:var(--relleno-tarjeta)]',
         '[box-shadow:var(--sombra-tarjeta)]',
       )}
     >
@@ -239,30 +239,60 @@ export function Etiqueta({ tono = 'neutro', icono, children }: EtiquetaProps) {
 /**
  * El avatar.
  *
- * Sin foto, las iniciales. Nunca una silueta gris: dos iniciales identifican a
- * alguien de un vistazo y una silueta no. Las iniciales y el color del aro salen
- * del nombre, en `iniciales.ts`.
+ * Con foto, la foto; sin ella, las iniciales. Nunca una silueta gris: dos
+ * iniciales identifican a alguien de un vistazo y una silueta no. Las iniciales y
+ * el color salen del nombre, en `iniciales.ts`.
+ *
+ * **Cuadrado con las esquinas redondeadas** desde la experiencia (0083), y no un
+ * círculo: «lo hace más moderno». La esquina es un tercio del lado, la de un icono
+ * de app del móvil, así que crece con el avatar y nunca acaba siendo un círculo
+ * ni un cuadrado. Y relleno de su color, con las iniciales en blanco: el aro fino
+ * de antes se perdía en el oscuro.
  */
 export interface AvatarProps {
   readonly nombre: string;
   readonly tamano?: number;
+  /** La dirección firmada de su foto, si tiene. Si no carga, vuelven las iniciales. */
+  readonly foto?: string | null;
 }
 
-export function Avatar({ nombre, tamano = 32 }: AvatarProps) {
+export function Avatar({ nombre, tamano = 32, foto = null }: AvatarProps) {
+  const [rota, setRota] = useState<string | null>(null);
+  const color = colorDe(nombre);
+  const conFoto = foto !== null && foto !== '' && foto !== rota;
   return (
     <span
       // El nombre entero, para quien no ve las iniciales.
       role="img"
       aria-label={nombre}
-      className="inline-flex shrink-0 items-center justify-center rounded-redondo bg-superficie text-texto font-semibold"
+      className="relative inline-flex shrink-0 items-center justify-center overflow-hidden font-semibold text-white"
       style={{
         width: tamano,
         height: tamano,
-        boxShadow: `inset 0 0 0 2px ${colorDe(nombre)}`,
-        fontSize: Math.trunc(tamano * 0.4),
+        borderRadius: Math.trunc(tamano * 0.32),
+        background: conFoto
+          ? 'var(--color-fondo)'
+          : `linear-gradient(140deg, color-mix(in srgb, ${color} 88%, white), color-mix(in srgb, ${color} 72%, black))`,
+        boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.14)',
+        fontSize: Math.trunc(tamano * 0.38),
+        letterSpacing: '0.01em',
       }}
     >
-      <span aria-hidden>{inicialesDe(nombre)}</span>
+      {conFoto ? (
+        <img
+          src={foto}
+          alt=""
+          loading="lazy"
+          onError={() => {
+            setRota(foto);
+          }}
+          className="size-full object-cover"
+        />
+      ) : (
+        <span aria-hidden className="[text-shadow:0_1px_1px_rgba(0,0,0,0.25)]">
+          {inicialesDe(nombre)}
+        </span>
+      )}
     </span>
   );
 }

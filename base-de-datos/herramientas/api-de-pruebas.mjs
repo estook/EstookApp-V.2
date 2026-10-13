@@ -83,6 +83,13 @@ for (const sql of await ficheros(
 }
 for (const sql of await ficheros('semillas', (f) => f.endsWith('.sql'))) await bd.exec(sql);
 
+// Un mes de caja y de horas en Bar Centro, **solo si se pide**, para mirar las
+// gráficas (0083). Ninguna prueba lo pide: dan por hecho un Bar Centro sin historia.
+if (process.env['CON_HISTORIA'] === '1') {
+  await bd.exec(await readFile(join(RAIZ, 'herramientas', 'historia-de-ejemplo.sql'), 'utf8'));
+  console.log('Con la historia de ejemplo: un mes de caja y de horas en Bar Centro');
+}
+
 const acceso = await sembrarAcceso(
   async (consulta, parametros) => ({ rows: (await bd.query(consulta, parametros)).rows }),
   // PGlite otra vez: la base entera muere al parar el servidor.

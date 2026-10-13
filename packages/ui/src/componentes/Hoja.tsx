@@ -24,6 +24,8 @@ interface Comunes {
   readonly children: ReactNode;
   /** Los botones de abajo. Van con `Botones`, para que queden como manda B4. */
   readonly pie?: ReactNode;
+  /** Más ancha en el ordenador: la del detalle de una gráfica (la experiencia, 0083). */
+  readonly amplia?: boolean;
 }
 
 function useDialogo(abierta: boolean, alCerrar: () => void) {
@@ -93,7 +95,7 @@ const DIALOGO =
  * formulario —40rem, lo que se lee sin mover los ojos— y la altura que pida lo
  * de dentro. Fuera de ella, todo cierra, igual que el 8 % de arriba en el movil.
  */
-export function Hoja({ abierta, alCerrar, titulo, children, pie }: Comunes) {
+export function Hoja({ abierta, alCerrar, titulo, children, pie, amplia = false }: Comunes) {
   const dialogo = useDialogo(abierta, alCerrar);
 
   return (
@@ -122,7 +124,8 @@ export function Hoja({ abierta, alCerrar, titulo, children, pie }: Comunes) {
         <div
           className={clases(
             'relative flex h-[92%] flex-col bg-superficie rounded-t-mayor shadow-s3',
-            'md:h-auto md:max-h-[85vh] md:w-full md:max-w-[40rem] md:rounded-mayor',
+            'md:h-auto md:max-h-[85vh] md:w-full md:rounded-mayor',
+            amplia ? 'md:max-w-[58rem]' : 'md:max-w-[40rem]',
             'anima-sube',
           )}
         >

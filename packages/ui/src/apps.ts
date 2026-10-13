@@ -136,6 +136,12 @@ export interface Destino {
    * lo que si funciona.
    */
   readonly modulo?: string;
+  /**
+   * Construido, pero **no va en la barra ni en el menú**: se llega desde otra
+   * pantalla y desde el buscador (la experiencia, 0083: Movimientos, desde el
+   * Resumen de Almacén). Su dirección sigue valiendo.
+   */
+  readonly fueraDeLaBarra?: true;
 }
 
 export interface App {
@@ -188,7 +194,6 @@ export const MODULOS: Readonly<Record<string, string>> = {
   // lee la pantalla un modulo que llega antes de lo que llega de verdad.
   M20C: 'M20C · Cobro y caja',
   M21: 'M21 · Negocio, analítica y Estook Pulse',
-  M22: 'M22 · Fogón',
   M29: 'M29 · Canales de reparto e integraciones',
 };
 
@@ -267,54 +272,45 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         ),
       },
       {
-        id: 'movimientos',
-        nombre: 'Movimientos',
-        icono: IconoDocumento,
-        // «El stock es un libro de movimientos» (regla 8) y hasta hoy **el libro
-        // no se podia leer**: sus lineas solo salian dentro de la ficha de un
-        // producto, de una en una. Un libro que solo se lee por paginas sueltas
-        // no sirve para lo que sirve un libro, que es cuadrar.
-        queContesta: '¿Qué ha entrado, qué ha salido y quién lo apuntó?',
-        // «Los recuentos y las mermas seran vistas de Movimientos», y esto es la
-        // primera de las dos cumpliendose: la merma es una salida de genero con
-        // motivo, no una app aparte.
-        // Y «Ventas» desde el repaso de M7: el género que sale de la cámara y se
-        // cobra tal cual —media barra de un bar— dejo de ser una salida con una
-        // nota y tiene su propia linea en el libro (0037).
-        // Y «Recuento», que es contar la camara a mano y corregir el libro con lo
-        // contado. Es una vista de Movimientos y no una app: «los recuentos y las
-        // mermas seran vistas de Movimientos», escrito desde M6.
-        // Las mermas salieron de aquí el 26-sep a su propio destino, abajo.
-        // «Desviación» (M8 · 0079): lo gastado de verdad entre dos inventarios, el food
-        // cost real y lo que falta de lo que se vende tal cual. Es leer el libro entre
-        // dos recuentos, así que vive al lado de «Inventario».
-        // **Historial** desde el 9-oct: Todo, Entradas, Salidas, Ventas y Ajustes eran
-        // cinco pestañas y una sola pantalla, el libro con otro filtro. Richi: «son
-        // demasiadas, rallan y abruman». Ahora el tipo es un filtro dentro de Historial,
-        // y aquí quedan tres cosas distintas.
-        // Y **Consumo** desde el 9-oct, que era «Desviación» (Richi eligió la A, 0080):
-        // el food cost real y lo gastado de verdad. Emparejar la caja, hasta Estook TPV.
-        vistas: vistas('Historial', 'Inventario', 'Consumo'),
-      },
-      {
         id: 'compras',
         nombre: 'Compras',
         icono: IconoOrganizacion,
         queContesta: '¿Qué pido, qué ha llegado y a qué precio?',
-        // M7 · construidas las cinco. **Pedidos va primero** porque es lo que se
-        // hace cada día —a quién toca pedir y qué llega—; Proveedores, que en M6
-        // era todo lo que había aquí, se toca al darlos de alta y poco más.
-        vistas: vistas('Pedidos', 'Albaranes', 'Facturas', 'Proveedores', 'Precios'),
+        // M7 construyó cinco: Pedidos, Albaranes, Facturas, Proveedores y Precios.
+        // **Tres desde la experiencia (0083)**, en el orden del día: se pide, llega y
+        // se paga; y a quién. Richi: «hay demasiadas y no tiene sentido el orden,
+        // nadie acabaría aprendiendo a manejar todo». Lo que ha llegado (los
+        // albaranes) es «Llegado» dentro de Pedidos, que es donde acaba un pedido;
+        // los precios van con los proveedores, que son los que los ponen. Las
+        // direcciones de antes (`/compras/albaranes`, `/compras/precios`) llevan aquí.
+        vistas: vistas('Pedidos', 'Facturas', 'Proveedores'),
       },
       {
         // **Las mermas, a la vista** (Richi, 26-sep: «las mermas son importantes y
-        // están algo escondidas»). Eran una vista de Movimientos; ahora son el
-        // quinto destino, con su papelera. `/almacen/movimientos/mermas` lleva aquí.
+        // están algo escondidas»). Eran una vista de Movimientos; ahora son un
+        // destino, con su papelera. `/almacen/movimientos/mermas` lleva aquí.
         id: 'mermas',
         nombre: 'Mermas',
         icono: IconoBorrar,
         queContesta: '¿Qué se ha tirado, cuánto ha costado y por qué?',
         vistas: [],
+      },
+      {
+        id: 'movimientos',
+        nombre: 'Movimientos',
+        icono: IconoDocumento,
+        // «El stock es un libro de movimientos» (regla 8): aquí se lee el libro, se
+        // cuenta la cámara (Inventario) y se mira lo gastado de verdad (Consumo).
+        queContesta: '¿Qué ha entrado, qué ha salido y quién lo apuntó?',
+        // **Fuera de la barra desde la experiencia (0083)**: «es necesario, pero es un
+        // lío; tal vez interese quitarlo de la página y poner un botón largo de revisar
+        // movimientos debajo de las gráficas». Se llega por ese botón del Resumen, por
+        // «Hacer inventario» de Productos y por el buscador, y su dirección sigue
+        // valiendo. Y en el orden que pidió: **Inventario** primero, que es lo que se
+        // hace; el Historial y el Consumo, después. (Historial juntó el 9-oct cinco
+        // pestañas del libro en una; Consumo era «Desviación», 0080.)
+        vistas: vistas('Inventario', 'Historial', 'Consumo'),
+        fueraDeLaBarra: true,
       },
     ],
   },
@@ -738,6 +734,13 @@ export function appPorPermiso(permiso: PermisoDeApp): App | undefined {
  * pantalla de «lo que llega», y no le quita el hueco a lo que si funciona.
  */
 export function destinosConstruidos(app: App): readonly Destino[] {
+  return app.destinos.filter(
+    (destino) => destino.modulo === undefined && destino.fueraDeLaBarra !== true,
+  );
+}
+
+/** Todos los que se pueden abrir, también los que no van en la barra: para el buscador. */
+export function destinosQueSeAbren(app: App): readonly Destino[] {
   return app.destinos.filter((destino) => destino.modulo === undefined);
 }
 

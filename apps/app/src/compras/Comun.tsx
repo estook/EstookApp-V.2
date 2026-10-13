@@ -49,15 +49,21 @@ export function Filtros<T extends string>({
               alElegir(opcion.valor);
             }}
             className={clases(
-              'inline-flex min-h-toque items-center gap-e2 rounded-redondo border px-e3 text-secundario font-medium',
+              // Como las pastillas de Productos (0083): la elegida, rellena.
+              'inline-flex h-10 items-center gap-e2 rounded-redondo border px-e4 text-secundario font-medium transition-colors duration-[--rapido]',
               esta
-                ? 'border-naranja bg-naranja-suave text-texto'
-                : 'border-borde-fuerte bg-superficie text-texto-suave hover:bg-fondo',
+                ? 'border-transparent bg-texto text-superficie'
+                : 'border-borde bg-superficie text-texto-suave hover:border-borde-fuerte hover:text-texto',
             )}
           >
             {opcion.texto}
             {opcion.cuantos !== undefined && opcion.cuantos > 0 && (
-              <span className="rounded-redondo bg-superficie px-e2 text-etiqueta text-texto">
+              <span
+                className={clases(
+                  'text-etiqueta font-semibold tabular-nums',
+                  esta ? 'text-superficie/70' : 'text-texto-tenue',
+                )}
+              >
                 {opcion.cuantos}
               </span>
             )}

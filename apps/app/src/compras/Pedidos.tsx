@@ -24,6 +24,7 @@ import { comoDinero } from '../almacen/contrato.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarCompras } from '../ganchos/usarRefrescarCompras.ts';
 import { Filtros } from './Comun.tsx';
+import { Albaranes } from './Albaranes.tsx';
 import { Recibir } from './Recibir.tsx';
 import {
   NOMBRE_DEL_CANAL,
@@ -37,7 +38,12 @@ import {
   type SugerenciaDePedido,
 } from './contrato.ts';
 
-type Filtro = 'abiertos' | 'recibidos' | 'cancelados' | 'todos';
+/**
+ * Qué se mira (la experiencia, 0083): lo abierto, **lo que ha llegado** (los
+ * albaranes, que eran una pestaña aparte) y lo cancelado. Un pedido acaba llegando:
+ * verlo aquí, junto a los suyos, es lo que hace que Compras se entienda.
+ */
+type Filtro = 'abiertos' | 'llegado' | 'cancelados';
 
 /**
  * Compras · Pedidos (M7).
@@ -57,7 +63,10 @@ export function Pedidos() {
   const [parametros, ponerParametros] = useSearchParams();
   const pedido = usarAbiertoEnLaDireccion('pedido');
 
-  const [filtro, setFiltro] = useState<Filtro>('abiertos');
+  // `?ver=llegado`: lo que antes era `/compras/albaranes` lleva aquí con esto.
+  const [filtro, setFiltro] = useState<Filtro>(() =>
+    parametros.get('ver') === 'llegado' ? 'llegado' : 'abiertos',
+  );
   const [limite, setLimite] = useState(50);
   /** A quién se le está haciendo un pedido nuevo. Vacío: todavía no se ha elegido. */
   const [nuevoPara, setNuevoPara] = useState<string | null>(null);
@@ -86,7 +95,11 @@ export function Pedidos() {
   }, [pedirA]);
 
   const hoy = usarLectura<ComprasDeHoy>('compras_de_hoy');
-  const lista = usarLectura<MisPedidos>('mis_pedidos', { vista: filtro, limite: String(limite) });
+  const lista = usarLectura<MisPedidos>(
+    'mis_pedidos',
+    { vista: filtro === 'llegado' ? 'recibidos' : filtro, limite: String(limite) },
+    filtro !== 'llegado',
+  );
 
   /** Abre el pedido y, a la vez, lo que ha llegado: un toque menos en la puerta. */
   function recibirElPedido(pedidoId: string) {
@@ -134,8 +147,29 @@ export function Pedidos() {
         </div>
       )}
 
+      <Filtros
+        titulo="Qué pedidos ver"
+        puesto={filtro}
+        alElegir={(valor) => {
+          setFiltro(valor);
+          setLimite(50);
+        }}
+        opciones={[
+          {
+            valor: 'abiertos',
+            texto: 'Abiertos',
+            cuantos: (cuantos?.enviados ?? 0) + (cuantos?.borradores ?? 0),
+          },
+          { valor: 'llegado', texto: 'Llegado' },
+          { valor: 'cancelados', texto: 'Cancelados' },
+        ]}
+      />
+
+      {filtro === 'llegado' ? (
+        <Albaranes />
+      ) : (
       <Tarjeta
-        titulo="Tus pedidos"
+        titulo={filtro === 'cancelados' ? 'Pedidos cancelados' : 'Tus pedidos'}
         origen={
           datos === undefined
             ? 'Leyendo…'
@@ -143,24 +177,6 @@ export function Pedidos() {
         }
       >
         <div className="flex flex-col gap-e3">
-          <Filtros
-            titulo="Qué pedidos ver"
-            puesto={filtro}
-            alElegir={(valor) => {
-              setFiltro(valor);
-              setLimite(50);
-            }}
-            opciones={[
-              {
-                valor: 'abiertos',
-                texto: 'Abiertos',
-                cuantos: (cuantos?.enviados ?? 0) + (cuantos?.borradores ?? 0),
-              },
-              { valor: 'recibidos', texto: 'Recibidos' },
-              { valor: 'cancelados', texto: 'Cancelados' },
-              { valor: 'todos', texto: 'Todos' },
-            ]}
-          />
 
           {lista.isPending ? (
             <Cargando que="tus pedidos" lineas={3} />
@@ -238,16 +254,12 @@ export function Pedidos() {
                   : []),
               ]}
               cuandoNoHay={
-                filtro === 'abiertos' || filtro === 'todos' ? (
+                filtro === 'abiertos' ? (
                   <EstadoVacio
                     compacto
                     dibujo="pedidos"
                     acento="var(--color-app-almacen)"
-                    titulo={
-                      filtro === 'abiertos'
-                        ? 'No hay pedidos abiertos'
-                        : 'Todavía no has hecho ningún pedido'
-                    }
+                    titulo="No hay pedidos abiertos"
                     frase="Un pedido empieza con lo que Estook sugiere: lo que no llega al siguiente reparto, en cajas enteras."
                     {...(puedeTocar
                       ? {
@@ -266,22 +278,14 @@ export function Pedidos() {
                       : { sinAccionPorque: 'Tu acceso permite mirar los pedidos, no hacerlos.' })}
                   />
                 ) : (
-                  // Recibidos o cancelados sin nada: se ofrece volver a los abiertos,
-                  // que es donde se trabaja (entrega V, punto 4).
+                  // Cancelados sin nada: se ofrece volver a los abiertos, que es donde
+                  // se trabaja (entrega V, punto 4).
                   <EstadoVacio
                     compacto
-                    dibujo={filtro === 'recibidos' ? 'albaranes' : 'todo-en-orden'}
+                    dibujo="todo-en-orden"
                     acento="var(--color-app-almacen)"
-                    titulo={
-                      filtro === 'recibidos'
-                        ? 'Todavía no ha llegado ningún pedido'
-                        : 'Ningún pedido cancelado'
-                    }
-                    frase={
-                      filtro === 'recibidos'
-                        ? 'Cuando recibas uno, sale aquí con lo que llegó y lo que no.'
-                        : 'Lo que se cancela sale aquí, con quién lo canceló.'
-                    }
+                    titulo="Ningún pedido cancelado"
+                    frase="Lo que se cancela sale aquí, con quién lo canceló."
                     accion={
                       <Boton
                         tono="secundario"
@@ -319,6 +323,7 @@ export function Pedidos() {
           )}
         </div>
       </Tarjeta>
+      )}
 
       {nuevoPara !== null && (
         <NuevoPedido

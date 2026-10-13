@@ -140,13 +140,14 @@
     --color-borde: #55666b;
     --color-borde-fuerte: #9aa6a9;
 
-    --color-mal: #f28f84; /* 7,05:1 en lo peor: sobre su fondo suave */
-    --color-info: #70b4e0; /* 7,11:1 */
+    --color-mal: #f59e94; /* 7,1:1 en lo peor: sobre la superficie grafito (0083) */
+    --color-info: #7abbe5; /* 7,1:1 sobre el grafito */
     --color-sobre-naranja: #000000;
 
-    --color-app-carta: #e791b4; /* 7,10:1 */
-    --color-app-equipo: #b2a0eb; /* 7,12:1 */
-    --color-app-negocio: #f28f84; /* 7,05:1 */
+    --color-app-calendario: #7abbe5; /* 7,1:1 sobre el grafito (0083) */
+    --color-app-carta: #eb9ebf; /* 7,1:1 sobre el grafito */
+    --color-app-equipo: #bba9ee; /* 7,1:1 sobre el grafito */
+    --color-app-negocio: #f59e94; /* 7,1:1 sobre el grafito */
   }
 
   /*
@@ -187,13 +188,14 @@
       --color-borde: #55666b;
       --color-borde-fuerte: #9aa6a9;
 
-      --color-mal: #f28f84;
-      --color-info: #70b4e0;
+      --color-mal: #f59e94;
+      --color-info: #7abbe5;
       --color-sobre-naranja: #000000;
 
-      --color-app-carta: #e791b4;
-      --color-app-equipo: #b2a0eb;
-      --color-app-negocio: #f28f84;
+      --color-app-calendario: #7abbe5;
+      --color-app-carta: #eb9ebf;
+      --color-app-equipo: #bba9ee;
+      --color-app-negocio: #f59e94;
     }
   }
 

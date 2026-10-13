@@ -265,7 +265,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 | App         | Sus destinos                                         |
 | ----------- | ---------------------------------------------------- |
-| Almacén     | Resumen · Productos · Movimientos · Compras · Mermas |
+| Almacén     | Resumen · Productos · Compras · Mermas · Movimientos |
 | Escandallos | Resumen · Fichas · Elaboraciones · Análisis          |
 | Carta       | Carta · Menús · Análisis                             |
 | Calendario  | Calendario · Tareas · Turnos                         |
@@ -279,8 +279,8 @@ Y sus vistas, donde las hay:
 | Destino                 | Sus vistas                                                          |
 | ----------------------- | ------------------------------------------------------------------- |
 | Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
-| Almacén · Movimientos   | Historial · Inventario · Consumo                                    |
-| Almacén · Compras       | Pedidos · Albaranes · Facturas · Proveedores · Precios              |
+| Almacén · Movimientos   | Inventario · Historial · Consumo                                    |
+| Almacén · Compras       | Pedidos · Facturas · Proveedores                                    |
 | Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                                   |
 | Carta · Carta           | Por secciones · Todos los platos · Agotados                         |
 | Carta · Análisis        | Matriz · Por canal · Histórico                                      |
@@ -292,6 +292,10 @@ Y sus vistas, donde las hay:
 | Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas             |
 | Negocio · Informes      | Día · Semana · Mes                                                  |
 | Cuaderno · Incidencias  | Abiertas · Cerradas                                                 |
+
+**Movimientos no va en la barra** (la experiencia, [0083](../decisiones/0083-la-experiencia.md)): es un destino construido y con su dirección, pero se llega por «Revisar movimientos», debajo de las cifras del Resumen de Almacén, por «Hacer inventario» de Productos y por el buscador. Así Almacén cabe en cuatro en la barra de abajo del móvil. Y **Compras son tres** en el orden del día —se pide, llega y se paga; y a quién—: lo que ha llegado (los albaranes) es «Llegado» dentro de Pedidos, y los precios van con los proveedores.
+
+**En el ordenador, la navegación es un menú a la izquierda** (0083) que se pliega: plegado, el logo del local y el icono de cada app, con sus destinos al pulsarla; abierto, el logo de Estook, el local y cada app con sus destinos colgando. Sustituye a la barra de arriba con las ocho apps y al menú lateral de dentro de cada app. Las apps que todavía no tienen nada construido van juntas en «Próximamente».
 
 **El horario vive en un solo sitio: Calendario · Turnos** (repaso del 10-oct, [0082](../decisiones/0082-el-repaso-antes-de-m9.md)). Lo ve todo el equipo, y quien puede publicarlo tiene además «Montarlo». Equipo ya no tiene «Horarios»: su Resumen lleva a él con «Horario de la semana →».
 

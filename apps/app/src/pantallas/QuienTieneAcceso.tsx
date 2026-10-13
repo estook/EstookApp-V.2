@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { puedeEditar } from '@estook/permisos';
 // El mismo generador que usa `bd:cuenta-de-verdad`: una lista de palabras
@@ -11,13 +11,11 @@ import {
   Botones,
   Cargando,
   EstadoVacio,
-  Etiqueta,
   ErrorEnCristiano,
   Hoja,
-  Tabla,
   Tarjeta,
   TodaviaNo,
-  type Columna,
+  clases,
 } from '@estook/ui';
 import { IconoFlechaAbajo } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -71,6 +69,8 @@ interface Acceso {
   readonly enLinea: boolean;
   /** Si está por debajo de quien mira: a un igual no se le toca el acceso (M7, repaso). */
   readonly puedoGestionar: boolean;
+  /** Su foto, firmada, si tiene (la experiencia, 0083). */
+  readonly foto?: string | null;
 }
 
 /** Cómo está alguien, en palabras y con su color. Nunca solo color (B8). */
@@ -218,68 +218,34 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
 
   const accesos = consulta.data ?? [];
 
-  const columnas: readonly Columna<Acceso>[] = [
-    {
-      clave: 'nombre',
-      titulo: 'Persona',
-      principal: true,
-      celda: (a: Acceso) => {
-        const nombre = `${a.nombre} ${a.apellidos ?? ''}`.trim();
-        return (
-          <span className="flex min-w-0 items-center gap-e2">
-            <Avatar nombre={nombre} tamano={28} />
-            <span className="truncate">{nombre}</span>
-          </span>
-        );
-      },
-    },
-    { clave: 'rolNombre', titulo: 'Rol', celda: (a: Acceso) => a.rolNombre },
-    {
-      clave: 'estado',
-      titulo: 'Última vez',
-      celda: (a: Acceso) => {
-        const como = comoEsta(a);
-        return como.tono === 'neutro' && a.estado !== 'fuera' ? (
-          <span className="text-secundario text-texto-suave">{como.texto}</span>
-        ) : (
-          <Etiqueta tono={como.tono}>{como.texto}</Etiqueta>
-        );
-      },
-    },
-    {
-      clave: 'acciones',
-      titulo: 'Acceso',
-      celda: (a: Acceso) =>
-        !puedeInvitar ? null : !a.puedoGestionar && a.personaId !== yo?.personaId ? (
-          // «Que los gerentes, o gente del mismo nivel, no se puedan echar entre
-          // ellos.» No se enseña un botón que va a decir que no: se dice quién.
-          <span className="text-secundario text-texto-suave">Lo lleva quien está por encima</span>
-        ) : a.estado === 'fuera' ? (
-          <Boton
-            onClick={(evento) => {
-              evento.stopPropagation();
-              void reactivar(a);
-            }}
-          >
-            Reactivar
-          </Boton>
-        ) : (
-          // Un botón, y dentro las tres cosas. El `stopPropagation` es lo que
-          // evita que abrirlo abra también la ficha de la persona: la fila entera
-          // se pulsa, y este va dentro.
-          <Boton
-            tono="secundario"
-            icono={<IconoFlechaAbajo size={16} />}
-            onClick={(evento) => {
-              evento.stopPropagation();
-              setGestionando(a);
-            }}
-          >
-            Acceso
-          </Boton>
-        ),
-    },
-  ];
+  /**
+   * El botón de la derecha de cada persona: «Acceso», «Reactivar» o quién lo lleva.
+   * Fuera de la fila que se pulsa, para que abrirlo no abra también su ficha.
+   */
+  const accionDe = (a: Acceso) =>
+    !puedeInvitar ? null : !a.puedoGestionar && a.personaId !== yo?.personaId ? (
+      // «Que los gerentes, o gente del mismo nivel, no se puedan echar entre ellos.»
+      // No se enseña un botón que va a decir que no.
+      <span className="hidden text-etiqueta text-texto-tenue sm:inline">Lo lleva quien está por encima</span>
+    ) : a.estado === 'fuera' ? (
+      <BotonPequeno
+        alPulsar={() => {
+          void reactivar(a);
+        }}
+      >
+        Reactivar
+      </BotonPequeno>
+    ) : (
+      // Un botón, y dentro las tres cosas: el PIN, la contraseña y retirar.
+      <BotonPequeno
+        alPulsar={() => {
+          setGestionando(a);
+        }}
+        conFlecha
+      >
+        Acceso
+      </BotonPequeno>
+    );
 
   const sinEstrenar = accesos.filter((a) => a.estado === 'sin_estrenar').length;
   const deLaVista = ESTADOS_DE_LA_VISTA[vista];
@@ -315,14 +281,22 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
         }
         pegado
       >
-        <Tabla
+        {/*
+          ── La lista, como en el «después» de Richi (la experiencia, 0083) ──────
+
+          Antes era una tabla de cuatro columnas en el ordenador y, en el móvil, una
+          tarjeta por persona con «Rol», «Última vez» y «Acceso» en tres líneas: cuatro
+          personas ya no cabían en la pantalla. Ahora cada persona es **una línea**: su
+          cara, su nombre y, debajo, cómo está y su puesto («En línea / Dirección»); a
+          la derecha, su botón. Se pulsa la línea y se abre su ficha.
+        */}
+        <ListaDePersonas
           titulo="Quién tiene acceso"
-          columnas={columnas}
-          filas={alaVista}
-          claveDe={(a) => a.membresiaId}
-          alPulsar={(a) => {
+          personas={alaVista}
+          alAbrir={(a) => {
             persona.abrir(a.personaId);
           }}
+          accionDe={accionDe}
           cuandoNoHay={
             vista === 'sin-entrar-todavia' ? (
               <EstadoVacio
@@ -560,4 +534,89 @@ function comoSeCuentaElEquipo(cuantos: number, vista: string): string {
   if (vista === 'sin-entrar-todavia') return `${cuantos} ${cosa} sin entrar todavía`;
   if (vista === 'retirados') return `${cuantos} ${cosa} con el acceso retirado`;
   return `${cuantos} ${cosa} con acceso`;
+}
+
+/** Las personas, una por línea, con su cara, cómo están y su puesto. */
+function ListaDePersonas({
+  titulo,
+  personas,
+  alAbrir,
+  accionDe,
+  cuandoNoHay,
+}: {
+  readonly titulo: string;
+  readonly personas: readonly Acceso[];
+  readonly alAbrir: (acceso: Acceso) => void;
+  readonly accionDe: (acceso: Acceso) => ReactNode;
+  readonly cuandoNoHay: ReactNode;
+}) {
+  if (personas.length === 0) return <div className="px-e4 pb-e4">{cuandoNoHay}</div>;
+  return (
+    <ul aria-label={titulo} className="flex flex-col px-e2 pb-e2 @min-[22rem]:px-e3">
+      {personas.map((a) => {
+        const nombre = `${a.nombre} ${a.apellidos ?? ''}`.trim();
+        const como = comoEsta(a);
+        return (
+          <li
+            key={a.membresiaId}
+            className="flex items-center gap-e3 border-t border-borde/70 py-e2 first:border-t-0"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                alAbrir(a);
+              }}
+              className="flex min-h-[56px] min-w-0 flex-1 items-center gap-e3 rounded-grande px-e2 text-left transition-colors duration-[--rapido] hover:bg-fondo"
+            >
+              <Avatar nombre={nombre} tamano={44} foto={a.foto ?? null} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-cuerpo font-semibold">{nombre}</span>
+                <span className="flex min-w-0 items-center gap-e1 text-secundario text-texto-suave">
+                  {como.tono === 'bien' && (
+                    <span aria-hidden className="size-2 shrink-0 rounded-redondo bg-bien" />
+                  )}
+                  <span
+                    className={clases(
+                      'shrink-0',
+                      como.tono === 'bien' && 'font-medium text-bien',
+                      como.tono === 'atencion' && 'font-medium text-atencion',
+                    )}
+                  >
+                    {como.texto}
+                  </span>
+                  <span aria-hidden className="text-texto-tenue">
+                    /
+                  </span>
+                  <span className="truncate">{a.rolNombre}</span>
+                </span>
+              </span>
+            </button>
+            <div className="shrink-0 pr-e1">{accionDe(a)}</div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** El botón pequeño y redondeado de la derecha de cada persona. */
+function BotonPequeno({
+  alPulsar,
+  conFlecha = false,
+  children,
+}: {
+  readonly alPulsar: () => void;
+  readonly conFlecha?: boolean;
+  readonly children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={alPulsar}
+      className="inline-flex h-10 items-center gap-e1 rounded-medio border border-borde-fuerte/70 bg-superficie px-e3 text-secundario font-medium transition-colors duration-[--rapido] hover:border-borde-fuerte hover:bg-fondo"
+    >
+      {children}
+      {conFlecha && <IconoFlechaAbajo size={15} />}
+    </button>
+  );
 }

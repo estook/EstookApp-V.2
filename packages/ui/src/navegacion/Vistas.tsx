@@ -1,6 +1,5 @@
 import type { Vista } from '../apps.ts';
 import { clases } from '../clases.ts';
-import { acentoParaTexto } from '../color.ts';
 
 /**
  * Las vistas de un destino · el control segmentado.
@@ -36,13 +35,14 @@ import { acentoParaTexto } from '../color.ts';
 export interface VistasProps {
   readonly vistas: readonly Vista[];
   readonly activa: string;
-  readonly acento: string;
+  /** El acento de su app. Desde 0083 la elegida va en el color del texto, en las ocho igual. */
+  readonly acento?: string;
   readonly alElegir: (id: string) => void;
   /** Para el lector de pantalla: «Vistas de Productos». */
   readonly de: string;
 }
 
-export function Vistas({ vistas, activa, acento, alElegir, de }: VistasProps) {
+export function Vistas({ vistas, activa, alElegir, de }: VistasProps) {
   if (vistas.length === 0) return null;
 
   return (
@@ -50,7 +50,10 @@ export function Vistas({ vistas, activa, acento, alElegir, de }: VistasProps) {
       role="tablist"
       aria-label={`Vistas de ${de}`}
       className={clases(
-        'flex min-w-0 items-center gap-e1 overflow-x-auto rounded-medio bg-fondo p-[3px]',
+        // Un carril redondo con la elegida como una pastilla que sobresale (0083), el
+        // mismo control que el periodo de las cifras.
+        'inline-flex max-w-full min-w-0 items-center gap-[2px] overflow-x-auto rounded-redondo bg-superficie p-[4px]',
+        'shadow-[inset_0_0_0_1px_var(--color-borde)]',
         // La barra de desplazamiento dentro de un control de cuatro pastillas es
         // ruido; el gesto sigue funcionando con el dedo y con la rueda.
         '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
@@ -72,17 +75,16 @@ export function Vistas({ vistas, activa, acento, alElegir, de }: VistasProps) {
               alElegir(vista.id);
             }}
             className={clases(
-              'inline-flex min-h-[36px] shrink-0 items-center gap-e1 whitespace-nowrap rounded-chico px-e3',
+              'inline-flex min-h-[38px] shrink-0 items-center gap-e1 whitespace-nowrap rounded-redondo px-e4',
               'text-secundario font-medium transition-colors duration-[--rapido]',
               esActiva
-                ? 'bg-superficie text-texto shadow-s1'
+                ? 'bg-texto font-semibold text-superficie shadow-s2'
                 : falta
                   ? 'cursor-not-allowed text-texto-tenue'
                   : 'text-texto-suave hover:text-texto',
             )}
             // El nombre de la elegida, en el acento **para texto**: el acento a secas no
             // llega a 4,5:1 en claro (entrega V, lo midió la prueba del contraste).
-            {...(esActiva ? { style: { color: acentoParaTexto(acento) } } : {})}
           >
             {vista.nombre}
             {falta && (

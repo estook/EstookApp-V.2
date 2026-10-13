@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   NOMBRE_CORTO_DEL_AVISO,
@@ -13,14 +13,12 @@ import { puedeEditar } from '@estook/permisos';
 import {
   Aviso,
   Boton,
-  Campo,
   Cargando,
   ErrorEnCristiano,
   EstadoVacio,
   NadaConEso,
   Etiqueta,
   FotoDeProducto,
-  Selector,
   Tabla,
   Tarjeta,
   clases,
@@ -31,6 +29,7 @@ import {
   IconoBuscar,
   IconoDocumento,
   IconoEscanear,
+  IconoFlechaAbajo,
   IconoQuitar,
 } from '@estook/iconos';
 import { Escaner } from '../lector/Escaner.tsx';
@@ -474,113 +473,150 @@ export function Productos({
         </Tarjeta>
       ) : (
         <>
-          {/* Una sola fila de filtros, y el botón principal al final de ella. Antes
-          eran cuatro controles en tres alturas. */}
-          <div className="flex flex-wrap items-end gap-e3">
-            <div className="min-w-[14rem] flex-1">
-              <Campo
-                etiqueta="Buscar en tu género"
-                ayuda="Vale con erratas, sin acentos y con el código de barras."
-                value={texto}
-                delante={<IconoBuscar size={16} />}
-                onChange={(e) => {
-                  setTexto(e.currentTarget.value);
-                }}
-              />
+          {/*
+            ── La barra, en una línea y sin etiquetas (la experiencia, 0083) ──────
+
+            «Se ve feísimo, está muy mal presentado.» Eran tres campos con su
+            etiqueta encima, una frase de ayuda debajo del buscador y cuatro botones
+            sueltos en dos alturas. Ahora: **el buscador redondo con el escáner
+            dentro**, los almacenes como pastillas que se tocan («Cocina 12»), la
+            categoría en una pastilla con su desplegable y, al final, inventario y
+            añadir. En el móvil, el buscador arriba y las pastillas debajo, que se
+            deslizan de lado si no caben.
+
+            De dónde es y la categoría siguen siendo lo mismo de antes: primero el
+            almacén —cocina, sala o limpieza— y la categoría es el índice **de ese
+            almacén**; en limpieza no hay categoría (son quince cosas y no llevan árbol).
+          */}
+          <div className="flex flex-col gap-e3">
+            <div className="flex flex-wrap items-center gap-e2">
+              <label className="relative flex h-12 min-w-[16rem] flex-1 items-center gap-e2 rounded-redondo border border-borde bg-superficie pl-e4 pr-e1 transition-[border-color,box-shadow] duration-[--rapido] focus-within:border-borde-fuerte focus-within:[box-shadow:var(--sombra-tarjeta)]">
+                <span aria-hidden className="shrink-0 text-texto-tenue">
+                  <IconoBuscar size={18} />
+                </span>
+                <input
+                  type="search"
+                  aria-label="Buscar en tu género"
+                  placeholder="Buscar un producto o su código…"
+                  value={texto}
+                  onChange={(e) => {
+                    setTexto(e.currentTarget.value);
+                  }}
+                  className="h-full min-w-0 flex-1 bg-transparent text-cuerpo outline-none placeholder:text-texto-tenue"
+                />
+                {/*
+                  El escáner, dentro del buscador: el lector abre la ficha del
+                  producto, o su alta si el código es nuevo.
+                */}
+                <button
+                  type="button"
+                  aria-label="Escanear"
+                  title="Escanear un código de barras"
+                  onClick={() => {
+                    setEscaneando(true);
+                  }}
+                  className="grid size-10 shrink-0 place-items-center rounded-redondo text-texto-suave transition-colors duration-[--rapido] hover:bg-fondo hover:text-texto"
+                >
+                  <IconoEscanear size={18} />
+                </button>
+              </label>
+
+              <div className="flex items-center gap-e2">
+                {/*
+                  «Hacer inventario» al lado de «Añadir producto»: es la otra cosa que
+                  se hace desde aquí con la lista delante. La vista vive en Movimientos
+                  —un inventario es un movimiento— y se llega con un enlace.
+                */}
+                {puedeContar && (
+                  <Boton
+                    tono="secundario"
+                    icono={<IconoDocumento size={18} />}
+                    onClick={alRecuento}
+                    aria-label="Hacer inventario"
+                  >
+                    {/* En el móvil, en corto: partido en dos líneas se leía mal. */}
+                    <span className="sm:hidden">Inventario</span>
+                    <span className="hidden sm:inline">Hacer inventario</span>
+                  </Boton>
+                )}
+                {puedeTocar && (
+                  <Boton
+                    tono="principal"
+                    icono={<IconoAnadir size={18} />}
+                    onClick={() => {
+                      setCreando(true);
+                    }}
+                    aria-label="Añadir producto"
+                  >
+                    <span className="sm:hidden">Añadir</span>
+                    <span className="hidden sm:inline">Añadir producto</span>
+                  </Boton>
+                )}
+              </div>
             </div>
 
-            {/*
-          ── De dónde es, al lado de la categoría ────────────────────────────
-
-          «Ahora la categoría es del total de productos que hay, pero vamos a
-          cambiar esto.» Y se cambia entero: primero se elige el almacén —cocina,
-          sala o limpieza— y la categoría pasa a ser el índice **de ese almacén**,
-          con sus cuentas ya hechas sobre él.
-
-          Y en limpieza el desplegable de categoría **no se esconde: no está**.
-          Son quince cosas y no llevan árbol; un control apagado obliga a mirarlo
-          para descubrir que no sirve.
-        */}
-            <div className="min-w-[12rem]">
-              <Selector
-                etiqueta="De dónde"
-                opciones={ZONAS.filter((z) => cuantosDeLaZona(datos, z) > 0 || z === zona).map(
-                  (z) => ({
-                    valor: z,
-                    texto: `${NOMBRE_DE_LA_ZONA[z]} (${cuantosDeLaZona(datos, z)})`,
-                  }),
-                )}
-                sinElegir="Todo"
-                cuandoNoHay="Todavía no tienes género"
-                value={zona}
-                onChange={(e) => {
-                  const elegida = e.currentTarget.value as Zona | '';
-                  setZona(elegida);
-                  // Al cambiar de almacén, la categoría de antes deja de significar
-                  // nada: «Carnes» no existe en sala. Se suelta en vez de dejarla
-                  // puesta filtrando a cero.
+            <div
+              role="group"
+              aria-label="De dónde es"
+              className="-mx-e3 flex items-center gap-e2 overflow-x-auto px-e3 pb-e1 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden"
+            >
+              <Pastilla
+                puesta={zona === ''}
+                alPulsar={() => {
+                  setZona('');
                   setCategoriaId('');
                 }}
-              />
-            </div>
-
-            {hayCategorias && (
-              <div className="min-w-[12rem]">
-                <Selector
-                  etiqueta="Categoría"
-                  opciones={datos.categorias
-                    .filter((c) => c.cuantos > 0 || c.id === categoriaId)
-                    .map((c) => ({
-                      valor: c.id,
-                      texto: `${c.nombre} (${c.cuantos})`,
-                    }))}
-                  sinElegir="Todas"
-                  cuandoNoHay="Aquí todavía no hay categorías"
-                  value={categoriaId}
-                  onChange={(e) => {
-                    setCategoriaId(e.currentTarget.value);
-                  }}
-                />
-              </div>
-            )}
-
-            {/*
-          «Hacer inventario» al lado de «Añadir producto»: es la otra cosa que se
-          hace desde esta pantalla con la lista delante, y es donde se busca. La
-          vista vive en Movimientos —un inventario es un movimiento— y se llega con
-          un enlace, no duplicando la pantalla.
-        */}
-            {puedeContar && (
-              <Boton tono="secundario" icono={<IconoDocumento size={18} />} onClick={alRecuento}>
-                Hacer inventario
-              </Boton>
-            )}
-
-            {puedeTocar && (
-              <Boton
-                tono="principal"
-                icono={<IconoAnadir size={18} />}
-                onClick={() => {
-                  setCreando(true);
-                }}
               >
-                Añadir producto
-              </Boton>
-            )}
+                Todo
+              </Pastilla>
+              {ZONAS.filter((z) => cuantosDeLaZona(datos, z) > 0 || z === zona).map((z) => (
+                <Pastilla
+                  key={z}
+                  puesta={zona === z}
+                  cuantos={cuantosDeLaZona(datos, z)}
+                  alPulsar={() => {
+                    // Al cambiar de almacén, la categoría de antes deja de significar
+                    // nada: «Carnes» no existe en sala. Se suelta.
+                    setZona(z);
+                    setCategoriaId('');
+                  }}
+                >
+                  {NOMBRE_DE_LA_ZONA[z]}
+                </Pastilla>
+              ))}
 
-            {/*
-              A la derecha de «Añadir producto», como pidió Richi (25-sep): el lector
-              abre la ficha del producto, o su alta si el código es nuevo.
-            */}
-            <Boton
-              tono="secundario"
-              icono={<IconoEscanear size={18} />}
-              onClick={() => {
-                setEscaneando(true);
-              }}
-            >
-              Escanear
-            </Boton>
+              {hayCategorias && (
+                <label
+                  className={clases(
+                    'relative inline-flex h-10 shrink-0 items-center rounded-redondo border pl-e3 pr-e2 text-secundario font-medium',
+                    categoriaId === ''
+                      ? 'border-borde bg-superficie text-texto-suave'
+                      : 'border-transparent bg-texto text-superficie',
+                  )}
+                >
+                  <span className="sr-only">Categoría</span>
+                  <select
+                    value={categoriaId}
+                    onChange={(e) => {
+                      setCategoriaId(e.currentTarget.value);
+                    }}
+                    className="h-full cursor-pointer appearance-none bg-transparent pr-e5 outline-none"
+                  >
+                    <option value="">Todas las categorías</option>
+                    {datos.categorias
+                      .filter((c) => c.cuantos > 0 || c.id === categoriaId)
+                      .map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.nombre} ({c.cuantos})
+                        </option>
+                      ))}
+                  </select>
+                  <span aria-hidden className="pointer-events-none absolute right-e2">
+                    <IconoFlechaAbajo size={14} />
+                  </span>
+                </label>
+              )}
+            </div>
           </div>
 
           {noEsDeNada !== null && (
@@ -978,6 +1014,45 @@ function BotonDeApuntar({
       )}
     >
       {entra ? <IconoAnadir size={20} /> : <IconoQuitar size={20} />}
+    </button>
+  );
+}
+
+/** Un almacén del filtro: una pastilla que se toca, con cuántos tiene. */
+function Pastilla({
+  puesta,
+  cuantos,
+  alPulsar,
+  children,
+}: {
+  readonly puesta: boolean;
+  readonly cuantos?: number;
+  readonly alPulsar: () => void;
+  readonly children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={puesta}
+      onClick={alPulsar}
+      className={clases(
+        'inline-flex h-10 shrink-0 items-center gap-e2 rounded-redondo border px-e4 text-secundario font-medium transition-colors duration-[--rapido]',
+        puesta
+          ? 'border-transparent bg-texto text-superficie'
+          : 'border-borde bg-superficie text-texto-suave hover:border-borde-fuerte hover:text-texto',
+      )}
+    >
+      {children}
+      {cuantos !== undefined && (
+        <span
+          className={clases(
+            'text-etiqueta font-semibold tabular-nums',
+            puesta ? 'text-superficie/70' : 'text-texto-tenue',
+          )}
+        >
+          {cuantos}
+        </span>
+      )}
     </button>
   );
 }

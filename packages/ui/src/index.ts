@@ -26,6 +26,7 @@ export {
   comoSeLlamaElModulo,
   destinoPorId,
   destinosConstruidos,
+  destinosQueSeAbren,
   destinosQueLlegan,
   dondeEntra,
   dondeEntraEnElDestino,

@@ -9,8 +9,7 @@ import { clases } from '../clases.ts';
 import { Cargando } from '../componentes/Cargando.tsx';
 import { comoDeGrande } from '../componentes/comoDeGrande.ts';
 import { Tarjeta } from '../componentes/Tarjeta.tsx';
-import { Tendencia } from '../componentes/Tendencia.tsx';
-import { Tira } from '../componentes/Tira.tsx';
+import { GraficaViva } from '../componentes/graficas/GraficaViva.tsx';
 import { Variacion } from '../componentes/Variacion.tsx';
 import type { TamanoDeWidget } from './catalogo.ts';
 import { comoSeEscribe } from './comoSeEscribe.ts';
@@ -174,25 +173,29 @@ export function TarjetaDeIndicador({
             <p className="text-etiqueta text-texto-suave">Sin periodo anterior</p>
           )}
 
-          {como.grafica === 'barras' ? (
-            <Tira
-              titulo={nombreDelIndicador(indicador, dias)}
-              puntos={datos.serie.map((dia) => ({
-                valor: dia.valor ?? 0,
-                cuando: comoSeLeeElDia(dia.fecha),
-              }))}
-              formato={(v) => comoSeEscribe(indicador, v)}
-              color={acento}
-              alto={tamano === 'grande' ? 120 : tamano === 'ancho' ? 52 : 32}
-            />
+          {/*
+            La gráfica viva (0083): la misma de los widgets del Panel, que se toca y
+            dice cada día. Todo a cero no se dibuja: una raya en el suelo no cuenta nada.
+          */}
+          {datos.serie.every((d) => (d.valor ?? 0) === 0) ? (
+            <p className="text-etiqueta text-texto-suave">Nada en estos {dias} días.</p>
           ) : (
-            <Tendencia
-              valores={datos.serie.map((d) => d.valor)}
-              titulo={nombreDelIndicador(indicador, dias)}
-              color={acento}
-              alto={tamano === 'grande' ? 120 : tamano === 'ancho' ? 52 : 32}
-              formato={(v) => comoSeEscribe(indicador, v)}
-            />
+            // Encima del botón que cubre la tarjeta: si no, el dedo no llega a la
+            // gráfica y no dice cada día. Tocarla lleva igual al detalle.
+            <div className="relative z-10" onClick={alVer}>
+              <GraficaViva
+                titulo={nombreDelIndicador(indicador, dias)}
+                puntos={datos.serie.map((dia) => ({
+                  etiqueta: comoSeLeeElDia(dia.fecha),
+                  valor: dia.valor,
+                }))}
+                forma={como.grafica === 'barras' ? 'barras' : 'area'}
+                color={acento}
+                formato={(v) => comoSeEscribe(indicador, v)}
+                alto={tamano === 'grande' ? 120 : tamano === 'ancho' ? 64 : 44}
+                resaltarElUltimo
+              />
+            </div>
           )}
 
           {tamano === 'grande' && (
@@ -228,7 +231,7 @@ export function TarjetaDeIndicador({
         aria-label={`Ver ${como.nombre.toLowerCase()} a detalle`}
         // Sin fondo: iría encima de la cifra y la taparía. Al pasar por encima se
         // marca el borde, y el anillo del foco lo pone `base.css` para todos.
-        className="absolute inset-0 rounded-grande border border-transparent hover:border-borde-fuerte"
+        className="absolute inset-0 rounded-mayor border border-transparent transition-colors duration-[--rapido] hover:border-borde-fuerte"
       />
     </div>
   );

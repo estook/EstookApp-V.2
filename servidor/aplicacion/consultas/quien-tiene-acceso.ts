@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 import { consulta, FalloDeAplicacion } from '../contrato.ts';
 import { estaPorEncima, suAmplitud } from '../jerarquia.ts';
 
@@ -45,6 +46,8 @@ export interface QuienTieneAcceso {
    * antes decía «dentro» a quien entró una vez hace tres meses.
    */
   readonly enLinea: boolean;
+  /** Su foto, firmada, si tiene (0083). */
+  readonly foto: string | null;
   /**
    * Si quien mira puede tocar el acceso de esta persona: está por encima de ella
    * (M7, repaso · `jerarquia.ts`). A un igual no se le retira ni se le cambia la
@@ -57,7 +60,8 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
   nombre: 'quien_tiene_acceso',
   entrada: z.object({ local_id: z.string().uuid() }).strict(),
 
-  async ejecutar({ sql, personaId }, entrada) {
+  async ejecutar(contexto, entrada) {
+    const { sql, personaId } = contexto;
     if (!personaId) throw new FalloDeAplicacion('sin_sesion');
 
     // Primero, que el local sea suyo. Se pregunta a las politicas y no se
@@ -94,6 +98,7 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
         amplitud_del_rol: number;
         su_amplitud: number | null;
         organizacion_id: string;
+        foto_clave: string | null;
       }[]
     >`
       select p.id as persona_id,
@@ -107,7 +112,7 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
                  and m2.revocada_en is null
                  and (m2.hasta is null or m2.hasta >= current_date)) as su_amplitud,
              m.id as membresia_id,
-             p.nombre, p.apellidos, p.correo,
+             p.nombre, p.apellidos, p.correo, p.foto_clave,
              m.rol, r.nombre as rol_nombre,
              m.alcance::text as alcance,
              m.desde, m.hasta,
@@ -144,6 +149,12 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
     const organizacionId = filas[0]?.organizacion_id;
     const mia = organizacionId === undefined ? 0 : await suAmplitud(sql, organizacionId, personaId);
 
+    // Las caras (0083), de una tanda y para unas horas.
+    const firmadas = await firmarLasFotos(
+      contexto,
+      filas.map((f) => f.foto_clave),
+    );
+
     return filas.map((f) => {
       // Contra el rol más alto que tenga vivo y, si está fuera, contra el rol que
       // se le devolvería: a un gerente retirado no lo reactiva otro gerente.
@@ -171,6 +182,7 @@ export const quienTieneAcceso = consulta<{ local_id: string }, QuienTieneAcceso[
         ultimoAccesoEn: f.ultimo_acceso_en?.toISOString() ?? null,
         enLinea: f.vigente && f.en_linea,
         puedoGestionar,
+        foto: laFirmada(firmadas, f.foto_clave),
       };
     });
   },

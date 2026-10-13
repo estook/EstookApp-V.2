@@ -292,6 +292,9 @@ function Puerta() {
                 element={<ALaDireccionDeAhora />}
               />
             ))}
+            {/* Compras en tres (0083): albaranes y precios llevan a su sitio nuevo. */}
+            <Route path="almacen/compras/albaranes" element={<ALaDireccionDeAhora />} />
+            <Route path="almacen/compras/precios" element={<ALaDireccionDeAhora />} />
             <Route path=":app" element={<PantallaDeApp />} />
             <Route path=":app/:destino" element={<PantallaDeApp />} />
             <Route path=":app/:destino/:vista" element={<PantallaDeApp />} />

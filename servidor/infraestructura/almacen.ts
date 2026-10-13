@@ -134,6 +134,18 @@ export function claveDeLaFotoDeMerma(
   return `${CUBO_DE_LAS_FOTOS}/${localId}/mermas/${movimientoId}-${ahora.getTime()}.${extension}`;
 }
 
+/**
+ * La foto de una persona (la experiencia, 0083): en el mismo cubo, bajo `personas/`,
+ * con su marca de tiempo por lo mismo que las demás. Es una cara de 320 px, recortada
+ * en cuadrado en el teléfono: unos 20 KB.
+ */
+export function claveDeLaCara(personaId: string, extension: string, ahora: Date): string {
+  return `${CUBO_DE_LAS_FOTOS}/personas/${personaId}/cara-${ahora.getTime()}.${extension}`;
+}
+
+/** Lo más grande que se acepta como cara, ya reducida. */
+export const TOPE_DE_LA_CARA = 80 * 1024;
+
 // ── La carta del local, subida (repaso del 25-sep, 0049) ───────────────────
 
 /** El cubo de las cartas. Lo crea la migración 0048, privado como los demás. */

@@ -33,7 +33,7 @@
 | **Base**      | Supabase, **62 de 62** migraciones; la 0063 espera en la pull request (solo tres nombres de rol). **107 tablas**, todas con seguridad por filas (leído el 10-oct)                                                                   |
 | **API**       | Desplegada con la #99 (9-oct, 22:36 UTC): **81 consultas y 171 comandos**, los avisos al móvil encendidos y el reloj latiendo. Con la 0082 serán **81 y 172**, con Sentry                                                           |
 | **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                   |
-| **Pruebas**   | **1.843** unitarias y de base, en verde; **639** de pantalla en local (escritorio y móvil, 9-oct por la noche): 616 en verde, 16 saltadas y 7 de carga que pasan al repetirlas solas                                                |
+| **Pruebas**   | **1.877** unitarias y de base, en verde; **920** de pantalla en GitHub (escritorio, móvil y Safari, 10-oct): en verde, 61 saltadas y **ninguna flaky**. En local, a la vez, 2 de carga pasan solas                       |
 | **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día      |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md), y el chat adelantado en la [0067](docs/decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md))

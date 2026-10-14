@@ -894,9 +894,9 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await comoGerente(page);
     await panelDeFabrica(page);
 
-    // Los widgets de fabrica de su puesto (entrega O), con su titulo y su origen.
+    // Los widgets de fabrica de su puesto (entrega O; seis desde 0084), con su titulo.
     await expect(page.getByRole('heading', { level: 2, name: 'Objetivos' })).toBeVisible();
-    await seVe(page, 'bajo-minimo', 'Bajo mínimo');
+    await seVe(page, 'merma', 'Merma');
 
     // Se anade uno que no estaba. `panelDeFabrica` deja el Panel sin el, asi que
     // el catalogo lo ofrece siempre, corra esta prueba antes o despues que otras.
@@ -921,8 +921,9 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await comoGerente(page);
     await panelDeFabrica(page);
 
-    await seVe(page, 'bajo-minimo', 'Bajo mínimo');
-    await seVe(page, 'caducidades', 'Caduca pronto');
+    // Los de género que trae de fábrica desde las bases firmes (0084), que son seis.
+    await seVe(page, 'merma', 'Merma');
+    await seVe(page, 'valor-de-la-camara', 'Valor de la cámara');
 
     // «Cada número lleva de dónde sale y de qué periodo es» (Evolución 1.0). Desde la
     // experiencia (0083) no va debajo de cada widget —poco texto—, sino en su detalle,
@@ -941,10 +942,10 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
     await page.getByRole('button', { name: 'Editar' }).click();
     await page
-      .getByRole('button', { name: /^Quitar Caduca pronto del panel$/ })
+      .getByRole('button', { name: /^Quitar Merma del panel$/ })
       .first()
       .click();
-    await expect(enElPanel(page, 'caducidades')).toHaveCount(0);
+    await expect(enElPanel(page, 'merma')).toHaveCount(0);
 
     // Sin pulsar «Listo»: se espera a que deje de poner «guardando…» y se recarga.
     //
@@ -955,7 +956,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await yaEstaGuardado(page);
     await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
-    await expect(enElPanel(page, 'caducidades')).toHaveCount(0);
+    await expect(enElPanel(page, 'merma')).toHaveCount(0);
   });
 
   test('y sigue ahí al irse a otra pantalla y volver', async ({ page }) => {
@@ -966,7 +967,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
     await page.getByRole('button', { name: 'Editar' }).click();
     await page
-      .getByRole('button', { name: /^Quitar Bajo mínimo del panel$/ })
+      .getByRole('button', { name: /^Quitar Equipo ahora del panel$/ })
       .first()
       .click();
 
@@ -978,7 +979,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
     await abrir(page, '/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
-    await expect(enElPanel(page, 'bajo-minimo')).toHaveCount(0);
+    await expect(enElPanel(page, 'fichajes')).toHaveCount(0);
   });
 
   test('y el segundo cambio se guarda igual que el primero', async ({ page }) => {
@@ -989,11 +990,11 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
     await page.getByRole('button', { name: 'Editar' }).click();
     await page
-      .getByRole('button', { name: /^Quitar Caduca pronto del panel$/ })
+      .getByRole('button', { name: /^Quitar Merma del panel$/ })
       .first()
       .click();
     await page
-      .getByRole('button', { name: /^Quitar Bajo mínimo del panel$/ })
+      .getByRole('button', { name: /^Quitar Equipo ahora del panel$/ })
       .first()
       .click();
     await page.getByRole('button', { name: 'Listo' }).click();
@@ -1006,8 +1007,8 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
 
-    await expect(enElPanel(page, 'caducidades')).toHaveCount(0);
-    await expect(enElPanel(page, 'bajo-minimo')).toHaveCount(0);
+    await expect(enElPanel(page, 'merma')).toHaveCount(0);
+    await expect(enElPanel(page, 'fichajes')).toHaveCount(0);
     await expect(page.getByText('Lo cambiaste en otro aparato')).toHaveCount(0);
   });
 
@@ -1124,7 +1125,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     expect(guardado.indexOf('objetivos')).toBeLessThan(guardado.indexOf('ventas'));
   });
 
-  test('cada widget lleva su periodo dentro, y se recuerda al recargar', async ({ page }) => {
+  test('cada widget lleva su periodo dentro, y se recuerda en la cuenta', async ({ page }) => {
     // «No pongas 7-30 días para elegir el widget, sino que el propio widget tenga esa
     // opción» (la experiencia, 0083). Antes se elegía al añadirlo, y salían dos «Mis
     // horas» distintas en el catálogo.
@@ -1140,13 +1141,30 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     // Las horas propias nunca están vacías: cero horas es un dato.
     const horas = enElPanel(page, 'mis-horas');
     await expect(horas.getByRole('heading', { level: 2, name: 'Mis horas' })).toBeVisible();
+    // Primero 7 y luego 30, para que haya cambio aunque otra vuelta lo dejara en 30, y se
+    // espera a que la cuenta conteste: se manda sin esperar, y recargar antes lo cortaría.
+    await horas.getByRole('radio', { name: '7 días' }).click();
+    const enLaCuenta = page.waitForResponse(
+      (r) =>
+        r.url().includes('poner_el_periodo_del_widget') &&
+        (r.request().postData() ?? '').includes('"dias":30'),
+    );
     await horas.getByRole('radio', { name: '30 días' }).click();
+    expect((await enLaCuenta).ok()).toBe(true);
     await expect(horas.getByRole('radio', { name: '30 días' })).toHaveAttribute(
       'aria-checked',
       'true',
     );
 
-    // Al recargar sigue en 30 días: se recuerda en el aparato.
+    // Al recargar sigue en 30 días, **y sin lo que guarda el aparato también**: desde
+    // las bases firmes (0084, migración 0066) se guarda en la cuenta, para que el móvil
+    // y el ordenador lo recuerden igual. Se borra lo del navegador y se recarga.
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem('estook.periodo.mis-horas')))
+      .toBe('30');
+    await page.evaluate(() => {
+      window.localStorage.removeItem('estook.periodo.mis-horas');
+    });
     await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
     await expect(

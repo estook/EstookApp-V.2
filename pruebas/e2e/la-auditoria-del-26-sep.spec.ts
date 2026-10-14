@@ -45,7 +45,8 @@ test('Google y el punto exacto van juntos en Tu local, y Conexiones es solo de v
   page,
 }) => {
   await entrarEnLaApp(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
+  // En su hoja desde las bases firmes (0084).
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#google`);
   await expect(page.getByRole('heading', { level: 2, name: 'Dónde está tu local' })).toBeVisible();
   await expect(page.getByText('Marcar a mano el punto exacto')).toBeVisible();
 

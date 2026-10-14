@@ -19,6 +19,7 @@ import {
   Hoja,
   clases,
   filtrarPorParecido,
+  FotoDeProducto,
 } from '@estook/ui';
 import { IconoBuscar, IconoCamara } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -290,9 +291,15 @@ export function ApuntarMerma({
                       onClick={() => {
                         setElegido(producto);
                       }}
-                      className="flex w-full min-h-toque items-center justify-between gap-e2 rounded-medio border border-borde px-e3 py-e2 text-left hover:bg-fondo"
+                      className="flex w-full min-h-toque items-center gap-e3 rounded-medio border border-borde px-e3 py-e2 text-left hover:bg-fondo"
                     >
-                      <span className="min-w-0">
+                      <FotoDeProducto
+                        nombre={producto.nombre}
+                        categoria={null}
+                        enlace={producto.miniatura ?? null}
+                        lado={36}
+                      />
+                      <span className="min-w-0 flex-1">
                         <span className="block truncate text-cuerpo font-medium">
                           {producto.nombre}
                         </span>

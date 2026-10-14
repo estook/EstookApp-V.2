@@ -39,7 +39,8 @@ test('se busca el local en Google, se elige y queda su ficha con lo gastado del 
   page,
 }) => {
   await entrar(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
+  // En su hoja desde las bases firmes (0084).
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#google`);
   await expect(page.getByRole('heading', { level: 2, name: 'Dónde está tu local' })).toBeVisible();
 
   // O lo busca por primera vez, o ya estaba enlazado (el otro navegador corre a la

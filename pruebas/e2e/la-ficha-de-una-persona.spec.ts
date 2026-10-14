@@ -131,7 +131,12 @@ test('la ficha enseña tres fichajes, y «Ver todos» abre el historial y vuelve
   await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen?persona=${personaId}`);
 
   const ficha = page.getByRole('dialog', { name: 'Lucía De la Ficha' });
-  await expect(ficha.getByRole('heading', { name: 'Sus fichajes' })).toBeVisible();
+  // Quince segundos, como la ficha de producto (almacen.spec): con las tres pasadas a la
+  // vez, la API de pruebas —una sola conexión— tarda a veces más de cinco en darla. Sola
+  // tarda menos de tres (14-oct).
+  await expect(ficha.getByRole('heading', { name: 'Sus fichajes' })).toBeVisible({
+    timeout: 15_000,
+  });
   // Tres, no cuatro: el resto está detrás del botón.
   await expect(ficha.getByRole('button', { name: 'Corregir' })).toHaveCount(3);
 

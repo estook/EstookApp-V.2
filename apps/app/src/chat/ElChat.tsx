@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PERSONAS_EN_UN_PRIVADO } from '@estook/dominio';
 import {
-  Avatar,
   Boton,
   Botones,
   CAJA,
@@ -37,6 +36,7 @@ import {
   type EncontradoEnElChat,
   type PersonaDelCanal,
 } from './contrato.ts';
+import { CaraDe } from '../caras/CaraDe.tsx';
 
 /**
  * El chat del equipo (C1 · decisiones 0071 y 0073).
@@ -236,7 +236,7 @@ function DibujoDelCanal({ canal }: { readonly canal: CanalEnLista }) {
     );
   }
   if (canal.tipo === 'privado' && canal.otros.length === 1) {
-    return <Avatar nombre={canal.otros[0] ?? canal.nombre} tamano={40} />;
+    return <CaraDe nombre={canal.otros[0] ?? canal.nombre} tamano={40} />;
   }
   return (
     <span className={clases(redondo, 'bg-fondo text-texto-suave')}>
@@ -564,7 +564,7 @@ function NuevaConversacion({
                         cambiar(p.id);
                       }}
                     />
-                    <Avatar nombre={p.nombre} tamano={32} />
+                    <CaraDe nombre={p.nombre} personaId={p.id} tamano={32} />
                     <span className="text-cuerpo">{p.nombre}</span>
                   </label>
                 </li>

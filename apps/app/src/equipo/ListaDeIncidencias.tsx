@@ -13,7 +13,6 @@ import {
 } from '@estook/dominio';
 import {
   Aviso,
-  Avatar,
   Boton,
   Botones,
   Campo,
@@ -24,9 +23,11 @@ import {
   clases,
 } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
+import { IconoFlechaDerecha } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { LasIncidencias, UnaIncidencia } from './contrato.ts';
+import { CaraDe } from '../caras/CaraDe.tsx';
 
 /**
  * Las piezas de las incidencias (repaso del 9-oct, 0081) que comparten la pantalla de
@@ -151,85 +152,101 @@ function FilaDeIncidencia({
     alHecho(frase);
   }
 
+  // Lo que se puede hacer con ella. Va **a la derecha, en la misma fila** (Richi, 14-oct:
+  // «el botón sale abajo y hace más anchas las secciones»): cada incidencia, una línea.
+  // Solo si no cabe (un móvil estrecho con un nombre largo) baja debajo, sin romperse.
+  const acciones =
+    puedeJustificar && !esMia ? (
+      <>
+        {seJustifica(i.tipo) && !justificada && (
+          <Boton
+            tono="secundario"
+            tamano="s"
+            onClick={() => {
+              alJustificar(i);
+            }}
+          >
+            Justificar
+          </Boton>
+        )}
+        {seJustifica(i.tipo) && justificada && (
+          <Boton
+            tono="texto"
+            tamano="s"
+            cargando={haciendo}
+            textoCargando="Quitando"
+            onClick={() => {
+              void hacer(
+                'quitar_justificacion',
+                { persona_id: i.personaId, tipo: i.tipo, empieza: i.cuando },
+                'Justificación quitada',
+              );
+            }}
+          >
+            Quitar la justificación
+          </Boton>
+        )}
+        {i.tipo === 'sin_conexion' && i.fichajeId !== null && (
+          <Boton
+            tono="secundario"
+            tamano="s"
+            cargando={haciendo}
+            textoCargando="Guardando"
+            onClick={() => {
+              void hacer(
+                'dar_por_bueno_el_fichaje',
+                { fichaje_id: i.fichajeId },
+                'Fichaje dado por bueno',
+              );
+            }}
+          >
+            Está bien
+          </Boton>
+        )}
+        {/* Abrir sus fichajes, en una flecha: es ir a otro sitio, no hacer nada aquí. */}
+        {!seJustifica(i.tipo) && alAbrir !== undefined && (
+          <button
+            type="button"
+            onClick={() => {
+              alAbrir(i);
+            }}
+            aria-label={`Abrir los fichajes de ${nombre}`}
+            title="Abrir sus fichajes"
+            className="grid size-toque place-items-center rounded-medio text-texto-suave hover:bg-fondo hover:text-texto"
+          >
+            <IconoFlechaDerecha size={18} />
+          </button>
+        )}
+      </>
+    ) : null;
+
   return (
-    <li className={clases('flex flex-col gap-e2 px-e4 py-e3', justificada && 'opacity-70')}>
-      <div className="flex items-start gap-e3">
-        {!sinNombre && <Avatar nombre={nombre} tamano={36} />}
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-e2 gap-y-e1">
-            {!sinNombre && <span className="truncate font-medium">{nombre}</span>}
-            <Etiqueta tono={justificada ? 'neutro' : TONO_DEL_TIPO[i.tipo]}>
-              {NOMBRE_DEL_TIPO_DE_INCIDENCIA[i.tipo]}
-            </Etiqueta>
-            {justificada && <Etiqueta tono="bien">Justificada</Etiqueta>}
+    <li className={clases('flex flex-col gap-e2 px-e4 py-e3', justificada && 'opacity-80')}>
+      <div className="flex flex-wrap items-center gap-x-e3 gap-y-e2">
+        <div className="flex min-w-[12rem] flex-1 items-start gap-e3">
+          {!sinNombre && <CaraDe nombre={nombre} personaId={i.personaId} tamano={36} />}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-x-e2 gap-y-e1">
+              {!sinNombre && <span className="truncate font-medium">{nombre}</span>}
+              <Etiqueta tono={justificada ? 'neutro' : TONO_DEL_TIPO[i.tipo]}>
+                {NOMBRE_DEL_TIPO_DE_INCIDENCIA[i.tipo]}
+              </Etiqueta>
+              {justificada && <Etiqueta tono="bien">Justificada</Etiqueta>}
+            </div>
+            <p className="text-secundario text-texto-suave">
+              {loQuePaso(i)}
+              {i.justificacion !== null
+                ? ` · ${nombreDelMotivo(i.justificacion.motivo)}${i.justificacion.nota === null ? '' : `: ${i.justificacion.nota}`}${i.justificacion.puestaPor === null ? '' : ` (${i.justificacion.puestaPor})`}`
+                : ''}
+            </p>
           </div>
-          <p className="text-secundario text-texto-suave">
-            {loQuePaso(i)}
-            {i.justificacion !== null
-              ? ` · ${nombreDelMotivo(i.justificacion.motivo)}${i.justificacion.nota === null ? '' : `: ${i.justificacion.nota}`}${i.justificacion.puestaPor === null ? '' : ` (${i.justificacion.puestaPor})`}`
-              : ''}
-          </p>
         </div>
+        {acciones !== null && (
+          <div className="ml-auto flex shrink-0 flex-wrap justify-end gap-e2">{acciones}</div>
+        )}
       </div>
 
       {error !== null && <ErrorEnCristiano error={error} />}
-
-      {puedeJustificar && !esMia && (
-        <div className="flex flex-wrap gap-e2 pl-0 sm:pl-[calc(36px+var(--spacing-e3))]">
-          {seJustifica(i.tipo) && !justificada && (
-            <Boton
-              tono="secundario"
-              onClick={() => {
-                alJustificar(i);
-              }}
-            >
-              Justificar
-            </Boton>
-          )}
-          {seJustifica(i.tipo) && justificada && (
-            <Boton
-              tono="texto"
-              cargando={haciendo}
-              textoCargando="Quitando"
-              onClick={() => {
-                void hacer(
-                  'quitar_justificacion',
-                  { persona_id: i.personaId, tipo: i.tipo, empieza: i.cuando },
-                  'Justificación quitada',
-                );
-              }}
-            >
-              Quitar la justificación
-            </Boton>
-          )}
-          {i.tipo === 'sin_conexion' && i.fichajeId !== null && (
-            <Boton
-              tono="secundario"
-              cargando={haciendo}
-              textoCargando="Guardando"
-              onClick={() => {
-                void hacer(
-                  'dar_por_bueno_el_fichaje',
-                  { fichaje_id: i.fichajeId },
-                  'Fichaje dado por bueno',
-                );
-              }}
-            >
-              Está bien
-            </Boton>
-          )}
-          {!seJustifica(i.tipo) && alAbrir !== undefined && (
-            <Boton
-              tono="texto"
-              onClick={() => {
-                alAbrir(i);
-              }}
-            >
-              Abrir sus fichajes
-            </Boton>
-          )}
-        </div>
-      )}
     </li>
   );
 }

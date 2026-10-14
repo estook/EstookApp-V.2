@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
 import {
+  EstrellaDeLasApps,
   acentoParaTexto,
   destinosConstruidos,
   Tarjeta,
@@ -18,21 +19,23 @@ import {
   type Destino,
   type Vista,
 } from '@estook/ui';
-import { QuienTieneAcceso } from './QuienTieneAcceso.tsx';
-import { Delivery } from '../servicio/Delivery.tsx';
-import { Almacen } from '../almacen/Almacen.tsx';
-import { EquipoHoy } from '../equipo/EquipoHoy.tsx';
-import { ResumenDelEquipo } from '../equipo/ResumenDelEquipo.tsx';
-import { Incidencias } from '../equipo/Incidencias.tsx';
-import { ElHorario } from '../horario/ElHorario.tsx';
-import { CierreDeCaja } from '../servicio/CierreDeCaja.tsx';
-import { Ventas } from '../servicio/Ventas.tsx';
-import { Informes } from '../negocio/Informes.tsx';
-import { Resenas } from '../negocio/Resenas.tsx';
+// Cada pantalla, aparte del paquete inicial y precargada en segundo plano (0084).
+import {
+  Almacen,
+  CierreDeCaja,
+  Delivery,
+  ElHorario,
+  EquipoHoy,
+  Incidencias,
+  Informes,
+  QuienTieneAcceso,
+  Resenas,
+  ResumenDelEquipo,
+  Ventas,
+} from './lasPantallas.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAbrirLaRueda } from '../ganchos/usarLaRueda.ts';
 import { LasVistasConAlgo } from '../ganchos/usarLasVistasConAlgo.ts';
-import { IconoRejilla } from '@estook/iconos';
 
 /**
  * La pantalla de una app · Parte B5 del Plan.
@@ -215,7 +218,7 @@ function Dentro({
               className="inline-flex min-h-toque shrink-0 items-center gap-e1 rounded-medio px-e2 text-secundario font-semibold lg:hidden"
               style={{ color: acentoParaTexto(app.acento) }}
             >
-              <IconoRejilla size={18} />
+              <EstrellaDeLasApps size={16} />
               Apps
             </button>
           )}

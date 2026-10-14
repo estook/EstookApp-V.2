@@ -203,8 +203,9 @@ test('la carta se sube en Ajustes, se ve antes de publicarla, y la enseña su QR
   page,
 }) => {
   await entrarEnLaApp(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
-  const tarjeta = page.locator('#tu-carta');
+  // Tu carta, en su hoja desde las bases firmes (0084).
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#tu-carta`);
+  const tarjeta = page.getByRole('dialog', { name: 'Tu carta' });
   await tarjeta.getByLabel('Elegir el PDF o las fotos de tu carta').setInputFiles({
     name: 'carta.png',
     mimeType: 'image/png',
@@ -254,8 +255,9 @@ async function unaPagina(page: Page): Promise<Buffer> {
 
 test('una carta en PDF se pasa a páginas en el navegador, una por hoja', async ({ page }) => {
   await entrarEnLaApp(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
-  const tarjeta = page.locator('#tu-carta');
+  // Tu carta, en su hoja desde las bases firmes (0084).
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#tu-carta`);
+  const tarjeta = page.getByRole('dialog', { name: 'Tu carta' });
   await tarjeta.getByLabel('Elegir el PDF o las fotos de tu carta').setInputFiles({
     name: 'carta.pdf',
     mimeType: 'application/pdf',

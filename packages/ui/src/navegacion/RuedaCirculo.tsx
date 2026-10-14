@@ -1,5 +1,5 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
-import { IconoPanel } from '@estook/iconos';
+import { IconoInicio } from '@estook/iconos';
 import { seEstaUsandoElTeclado } from './modalidad.ts';
 import type { App } from '../apps.ts';
 import { clases } from '../clases.ts';
@@ -201,7 +201,7 @@ export function RuedaCirculo({
         {arrastrando && seHaMovido && señalada >= 0 ? (
           apps[señalada]?.nombre
         ) : (
-          <IconoPanel size={36} />
+          <IconoInicio size={34} />
         )}
       </button>
     </div>

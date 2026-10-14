@@ -184,7 +184,8 @@ test('Equipo enseña horas, coste, retrasos e incidencias, y cada una lleva a su
 test('cuándo es llegar tarde lo cambia quien lleva el local', async ({ page }, info) => {
   test.skip(info.project.name !== 'escritorio', UNA_VEZ);
   await entrar(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
+  // En su hoja desde las bases firmes (0084).
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#llegar-tarde`);
 
   const margen = page.getByLabel('Cuenta como retraso');
   await expect(margen).toHaveValue('5', { timeout: 15_000 });

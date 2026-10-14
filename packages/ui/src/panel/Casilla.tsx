@@ -8,13 +8,8 @@ import {
 import { IconoAnadir, IconoFlechaAbajo, IconoFlechaArriba, IconoQuitar } from '@estook/iconos';
 import { clases } from '../clases.ts';
 import { AvisoDeVacio } from './vacio.ts';
-import {
-  FILA_DEL_MOSAICO,
-  HUECO_DEL_MOSAICO,
-  usarFilasDelMosaico,
-} from '../ganchos/usarFilasDelMosaico.ts';
 import type { TamanoDeWidget } from './catalogo.ts';
-import { CLASES_DEL_TAMANO, COMO_SE_LLAMA_EL_TAMANO } from './rejilla.ts';
+import { COMO_SE_LLAMA_EL_TAMANO } from './rejilla.ts';
 
 /**
  * Una casilla de la rejilla del Panel: el sitio de un widget (M7, 0039).
@@ -30,6 +25,8 @@ export interface CasillaProps extends HTMLAttributes<HTMLDivElement> {
   readonly nombre: string;
   readonly tamano: TamanoDeWidget;
   readonly tamanos: readonly TamanoDeWidget[];
+  /** Las columnas que ocupa en su fila, ya repartidas (`colocarEnFilas`, 0084). */
+  readonly columnas: number;
   readonly indice: number;
   readonly editando: boolean;
   /** Si el widget ha dicho que no tiene nada. Fuera de edición, no se ve. */
@@ -69,6 +66,7 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
     nombre,
     tamano,
     tamanos,
+    columnas,
     indice,
     editando,
     vacio,
@@ -92,16 +90,18 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
     },
     [avisarDeVacio, id],
   );
-  // Lo que ocupa en alto lo dice lo que hay dentro (el mosaico, 0045).
-  const { medir, estilo: filas } = usarFilasDelMosaico<HTMLDivElement>();
-
   return (
     <div
       ref={ref}
       data-widget={id}
-      style={{ ...filas, ...estilo, animationDelay: `${Math.min(indice, 12) * 35}ms` }}
+      // Sus columnas, ya repartidas para que la fila quede llena (0084). El alto lo
+      // pone la fila: todas las de una fila miden lo mismo, sin escalones.
+      style={{
+        gridColumn: `span ${String(columnas)} / span ${String(columnas)}`,
+        ...estilo,
+        animationDelay: `${Math.min(indice, 12) * 35}ms`,
+      }}
       className={clases(
-        CLASES_DEL_TAMANO[tamano],
         'relative min-w-0 anima-entra',
         // Lo vacío **se ve**, con lo que dice su vacío: apartado, nadie comprobaba
         // que estaba todo en orden (Richi, 26-sep). En edición lleva «Vacío ahora».
@@ -109,14 +109,10 @@ export const Casilla = forwardRef<HTMLDivElement, CasillaProps>(function Casilla
       )}
       {...resto}
     >
-      {/*
-        Lo que se mide es esto, y no la casilla: la casilla se estira hasta sus
-        filas, que son unos píxeles más que la tarjeta. Los controles van aquí
-        dentro para quedarse pegados a la tarjeta y no al hueco de debajo.
-      */}
-      <div ref={medir} className="relative">
+      {/* Los controles van aquí dentro, pegados a la tarjeta. */}
+      <div className="relative h-full">
         <div
-          className={clases(editando && !hueco && 'anima-tiembla', hueco && 'opacity-30')}
+          className={clases('h-full', editando && !hueco && 'anima-tiembla', hueco && 'opacity-30')}
           // Cada uno con su desfase, como en el iPhone: si tiemblan todos a la vez
           // parece que se mueve la pantalla, no los widgets.
           style={editando ? { animationDelay: `${(indice % 4) * -70}ms` } : undefined}
@@ -290,17 +286,14 @@ function ControlesDeEdicion({
 
 /** El hueco de añadir, dentro de la rejilla y no en un menú escondido. */
 export function HuecoDeAnadir({ alAnadir }: { readonly alAnadir: () => void }) {
-  // No tiene contenido que medir: mide lo que medía una casilla pequeña antes del
-  // mosaico, 152 px, más su hueco.
-  const filas = Math.ceil((ALTO_DEL_HUECO + HUECO_DEL_MOSAICO) / FILA_DEL_MOSAICO);
   return (
-    <div className="col-span-1" style={{ gridRowEnd: `span ${filas}` }}>
+    <div className="col-span-1">
       <button
         type="button"
         onClick={alAnadir}
-        style={{ height: ALTO_DEL_HUECO }}
+        style={{ minHeight: ALTO_DEL_HUECO }}
         className={clases(
-          'flex w-full flex-col items-center justify-center gap-e1',
+          'flex h-full w-full flex-col items-center justify-center gap-e1',
           'rounded-mayor border-2 border-dashed border-borde-fuerte text-texto-suave',
           'hover:border-naranja hover:text-texto',
         )}

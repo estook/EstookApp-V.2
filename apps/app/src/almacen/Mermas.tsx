@@ -23,6 +23,7 @@ import {
   Tabla,
   Tarjeta,
   type Columna,
+  FotoDeProducto,
 } from '@estook/ui';
 import {
   IconoAnadir,
@@ -135,25 +136,34 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
       titulo: 'Producto',
       principal: true,
       celda: (m) => (
-        <span className="flex min-w-0 flex-col">
-          <span>{m.producto}</span>
-          {m.detalle !== null && m.detalle.trim() !== '' && (
-            <span className="text-secundario text-texto-tenue">«{m.detalle.trim()}»</span>
-          )}
-          {/* La foto, si se hizo (0079): la prueba de lo que se tiró. */}
-          {m.foto !== null && m.foto !== undefined && (
-            <a
-              href={m.foto}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex min-h-toque items-center gap-e1 text-secundario font-medium text-texto underline underline-offset-2"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
-              <IconoCamara size={14} /> Ver la foto
-            </a>
-          )}
+        <span className="flex min-w-0 items-start gap-e3">
+          {/* La foto del producto (0084): se reconoce antes una cara que un nombre. */}
+          <FotoDeProducto
+            nombre={m.producto}
+            categoria={m.categoria}
+            enlace={m.miniatura ?? null}
+            lado={36}
+          />
+          <span className="flex min-w-0 flex-col">
+            <span>{m.producto}</span>
+            {m.detalle !== null && m.detalle.trim() !== '' && (
+              <span className="text-secundario text-texto-tenue">«{m.detalle.trim()}»</span>
+            )}
+            {/* La foto, si se hizo (0079): la prueba de lo que se tiró. */}
+            {m.foto !== null && m.foto !== undefined && (
+              <a
+                href={m.foto}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-toque items-center gap-e1 text-secundario font-medium text-texto underline underline-offset-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <IconoCamara size={14} /> Ver la foto
+              </a>
+            )}
+          </span>
         </span>
       ),
     },

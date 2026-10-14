@@ -9,6 +9,7 @@ import {
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { SEGUNDOS_DEL_ENLACE_DE_LA_FOTO } from '../../infraestructura/almacen.ts';
+import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 
 /**
  * La merma, para verla y para exportarla (M6½).
@@ -195,6 +196,11 @@ export interface LineaDeMerma {
   readonly valorCentimos?: number | null;
   /** La foto de lo que se tiró, si se hizo (0079): un enlace que caduca. */
   readonly foto: string | null;
+  /**
+   * La foto del producto, en miniatura (0084): «la foto del producto en la merma».
+   * Se reconoce antes una cara que un nombre. Nula si no tiene.
+   */
+  readonly miniatura?: string | null;
 }
 
 export interface SalidaMisMermas {
@@ -293,6 +299,7 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
         categoria: string | null;
         valor: string | null;
         foto: string | null;
+        miniatura: string | null;
       }[]
     >`
       select m.id::text as id, p.id::text as producto_id, p.nombre as producto,
@@ -306,7 +313,8 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
              pe.nombre as quien,
              c.nombre as categoria,
              round(abs(m.cantidad) * m.coste_medio_despues / 1000)::text as valor,
-             fm.clave as foto
+             fm.clave as foto,
+             p.miniatura_clave as miniatura
         from estook.movimiento_que_cuenta m
         join estook.producto p on p.id = m.producto_id
         left join estook.categoria_de_producto c on c.id = p.categoria_id
@@ -375,10 +383,15 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
 
     // Las fotos de la página, firmadas **de una tanda** (como las de producto, entrega
     // V). Si el almacén no está o no contesta, la lista sale igual, sin el botón.
-    const claves = filas
-      .slice(0, limite)
-      .map((f) => f.foto)
-      .filter((clave): clave is string => clave !== null);
+    // Con las miniaturas de cada producto en la misma tanda (0084).
+    const claves = [
+      ...new Set(
+        filas
+          .slice(0, limite)
+          .flatMap((f) => [f.foto, f.miniatura])
+          .filter((clave): clave is string => clave !== null),
+      ),
+    ];
     let fotos: ReadonlyMap<string, string> = new Map();
     if (claves.length > 0 && contexto.almacen !== null) {
       try {
@@ -444,6 +457,7 @@ export const misMermas = consulta<EntradaMisMermas, SalidaMisMermas>({
         categoria: f.categoria,
         ...(conPrecios ? { valorCentimos: Number(f.valor ?? 0) } : {}),
         foto: f.foto === null ? null : (fotos.get(f.foto) ?? null),
+        miniatura: f.miniatura === null ? null : (fotos.get(f.miniatura) ?? null),
       })),
       hayMas,
       desde,
@@ -472,6 +486,8 @@ export interface ProductoParaMerma {
   readonly nombre: string;
   readonly unidadDeUso: string;
   readonly cantidad: number;
+  /** Su foto en miniatura al buscar (0084); la lista entera para sin señal no la lleva. */
+  readonly miniatura?: string | null;
 }
 
 /**
@@ -514,10 +530,11 @@ export const productosParaMerma = consulta<
         nombre: string;
         unidad_de_uso: string;
         cantidad: string | null;
+        miniatura: string | null;
       }[]
     >`
       select p.id::text as id, p.nombre, p.unidad_de_uso::text as unidad_de_uso,
-             e.cantidad::text as cantidad
+             e.cantidad::text as cantidad, p.miniatura_clave as miniatura
         from estook.producto p
         left join estook.existencias e on e.producto_id = p.id
        where p.local_id = ${localId}
@@ -552,12 +569,23 @@ export const productosParaMerma = consulta<
        limit ${entrada.todos === 'si' ? 2000 : 10}
     `;
 
+    // Las miniaturas, solo al buscar (diez como mucho, de una tanda): la lista entera
+    // que se guarda para sin señal no las lleva, que serían dos mil firmas.
+    const miniaturas =
+      entrada.todos === 'si'
+        ? new Map<string, string>()
+        : await firmarLasFotos(
+            contexto,
+            filas.map((f) => f.miniatura),
+          );
+
     return {
       productos: filas.map((f) => ({
         id: f.id,
         nombre: f.nombre,
         unidadDeUso: f.unidad_de_uso,
         cantidad: f.cantidad === null ? 0 : Number(f.cantidad),
+        ...(entrada.todos === 'si' ? {} : { miniatura: laFirmada(miniaturas, f.miniatura) }),
       })),
     };
   },

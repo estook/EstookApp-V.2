@@ -53,6 +53,11 @@ const ICONOS = {
   'trending-up': 'Negocio',
   'notebook-pen': 'Cuaderno',
   flame: 'Fogon',
+  // El Panel es el inicio, y desde las bases firmes (0084) lleva la casa: el
+  // `layout-dashboard` se queda para el «Resumen» de cada app, y el ✦ para «Apps».
+  // Con el mismo dibujo para el Panel y para cada Resumen, «Apps» y «Resumen»
+  // parecían cambiados (Richi, 14-oct).
+  house: 'Inicio',
 
   // ── La barra y la cabecera ─────────────────────────────────────────────────
   settings: 'Ajustes',

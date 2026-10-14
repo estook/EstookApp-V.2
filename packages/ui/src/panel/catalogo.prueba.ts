@@ -170,6 +170,12 @@ describe('el Panel de cada puesto (mejora 9)', () => {
     expect(suyo).not.toContain('food-cost');
   });
 
+  it('de fábrica, seis como mucho: el resto se añade cuando haga falta (0084)', () => {
+    for (const [puesto, widgets] of Object.entries(PANEL_DEL_PUESTO)) {
+      expect(widgets.length, puesto).toBeLessThanOrEqual(6);
+    }
+  });
+
   it('todos los que fichan arrancan con el reloj arriba a la izquierda', () => {
     for (const widgets of Object.values(PANEL_DEL_PUESTO)) {
       expect(widgets[0]?.id).toBe('fichar');

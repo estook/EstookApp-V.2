@@ -5,6 +5,10 @@ import {
 import { cambiarDeContexto } from './comandos/cambiar-de-contexto.ts';
 import { cambiarMiIdioma } from './comandos/cambiar-mi-idioma.ts';
 import { guardarMiPanel } from './comandos/guardar-mi-panel.ts';
+import {
+  ponerElPeriodoDelWidget,
+  yaHeVistoElRecorrido,
+} from './comandos/lo-que-recuerda-tu-cuenta.ts';
 import { cerrarSesion } from './comandos/cerrar-sesion.ts';
 import { entrarEnDemostracion, salirDeLaDemostracion } from './comandos/demostracion.ts';
 import { quitarLosEjemplos } from './comandos/ejemplos.ts';
@@ -165,6 +169,7 @@ import { catalogoDeReferencia, recetasDeReferencia } from './consultas/catalogo-
 import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
 import { miPanel } from './consultas/mi-panel.ts';
+import { lasCaras } from './consultas/las-caras.ts';
 import { unIndicador } from './consultas/indicador.ts';
 import { misObjetivos } from './consultas/objetivos.ts';
 import { loDeHoyConsulta } from './consultas/hoy.ts';
@@ -320,6 +325,8 @@ export const catalogo = {
     [laDesviacion.nombre]: laDesviacion,
     [elFoodCostReal.nombre]: elFoodCostReal,
     [miPanel.nombre]: miPanel,
+    // Las caras del equipo, firmadas de una vez para toda la app (0084).
+    [lasCaras.nombre]: lasCaras,
     // M6½ · la merma, que el libro sabia guardar y no habia forma de apuntar.
     [mermaDeHoy.nombre]: mermaDeHoy,
     [misMermas.nombre]: misMermas,
@@ -413,6 +420,9 @@ export const catalogo = {
     [cambiarMiIdioma.nombre]: cambiarMiIdioma,
     // M6½ · como tiene cada uno montado su Panel, por aparato.
     [guardarMiPanel.nombre]: guardarMiPanel,
+    // Lo que recuerda tu cuenta en todos tus aparatos (0084 · 0066).
+    [ponerElPeriodoDelWidget.nombre]: ponerElPeriodoDelWidget,
+    [yaHeVistoElRecorrido.nombre]: yaHeVistoElRecorrido,
     // M7 · el local en Google (0040): buscarlo, elegirlo y traer su ficha otra vez.
     [buscarMiLocalEnGoogle.nombre]: buscarMiLocalEnGoogle,
     [elegirMiLocalDeGoogle.nombre]: elegirMiLocalDeGoogle,

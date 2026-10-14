@@ -14,12 +14,10 @@ import {
 } from '@estook/ui';
 import { cacheDeLaApp } from './datos/cacheDeLaApp.ts';
 import { Esqueleto } from './Esqueleto.tsx';
-import { Ajustes } from './pantallas/Ajustes.tsx';
 import { Panel } from './panel/Panel.tsx';
 import { PantallaDeApp } from './pantallas/PantallaDeApp.tsx';
-import { VistaDeCadena } from './pantallas/VistaDeCadena.tsx';
-import { MisFichajes } from './equipo/MisFichajes.tsx';
-import { ElHorario } from './horario/ElHorario.tsx';
+// Las pantallas, aparte del paquete inicial (0084): se traen al entrar o en segundo plano.
+import { Ajustes, ElHorario, MisFichajes, VistaDeCadena } from './pantallas/lasPantallas.ts';
 import { ElegirPlan } from './sesion/ElegirPlan.tsx';
 import { usarLaVueltaDelPago } from './ganchos/usarLaVueltaDelPago.ts';
 import { laDireccionDeAhora } from './pantallas/direccionesViejas.ts';

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { inicialesDe } from '../componentes/iniciales.ts';
+import { enlaceEstable } from '../componentes/enlaceEstable.ts';
 
 /**
  * El logo del local, **tal cual lo subieron** (la experiencia, 0083).
@@ -24,12 +25,14 @@ export interface LogoDelLocalProps {
 
 export function LogoDelLocal({
   nombre,
-  logo,
+  logo: firmado,
   colorDeMarca = null,
   alto = 36,
   cuadrado = false,
 }: LogoDelLocalProps) {
   const [roto, setRoto] = useState<string | null>(null);
+  // El mismo logo, el mismo enlace, aunque llegue con otra firma (0084).
+  const logo = enlaceEstable(firmado);
   const conLogo = logo !== null && logo !== '' && logo !== roto;
 
   if (conLogo) {

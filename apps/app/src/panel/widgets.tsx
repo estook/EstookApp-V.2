@@ -56,6 +56,7 @@ import {
 import { CifraDelWidget, CifraPequena } from './CifraDelWidget.tsx';
 import { Marco, Tranquilo } from './Marco.tsx';
 import { QuienSePinta } from './quienSePinta.ts';
+import { CaraDe } from '../caras/CaraDe.tsx';
 
 /**
  * Los widgets del Panel (Manifiesto 6; rehechos en la experiencia, 0083).
@@ -1051,7 +1052,7 @@ function FilaConCara({
         onClick={alPulsar}
         className="flex min-h-[44px] w-full items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
       >
-        <Avatar nombre={nombre} tamano={30} />
+        <CaraDe nombre={nombre} tamano={30} />
         <span className="min-w-0 flex-1 truncate text-secundario font-medium">{nombre}</span>
         {etiqueta}
       </button>

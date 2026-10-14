@@ -5,7 +5,7 @@ import {
   IconoCambiar,
   IconoDesplegar,
   IconoFlechaDerecha,
-  IconoPanel,
+  IconoInicio,
   IconoPlegar,
 } from '@estook/iconos';
 import type { App, Destino } from '../apps.ts';
@@ -99,6 +99,7 @@ export function MenuDelOrdenador({
     <aside
       aria-label="Menú"
       data-menu={abierto ? 'abierto' : 'plegado'}
+      data-recorrido="menu"
       style={{ width: abierto ? ANCHO_DEL_MENU.abierto : ANCHO_DEL_MENU.plegado }}
       className={clases(
         'zona-oscura fixed inset-y-0 left-0 z-40 hidden flex-col lg:flex no-imprimir',
@@ -134,24 +135,40 @@ export function MenuDelOrdenador({
             </BotonDelMenu>
           </>
         ) : (
+          /*
+            Plegado, **el logo del local despliega el menú** (Richi, 14-oct): el botón
+            de desplegar estaba abajo del todo y costaba encontrarlo. Al pasar por
+            encima, el logo deja ver el icono de desplegar, como en las apps de ahora;
+            el Panel tiene su propia fila justo debajo.
+          */
           <button
             type="button"
-            onClick={alIrAlPanel}
-            aria-label={local === null ? 'Ir al Panel' : `Ir al Panel · ${local.nombre}`}
-            title={local?.nombre}
-            className="grid size-12 place-items-center rounded-grande hover:bg-white/[0.06]"
+            onClick={() => {
+              alCambiarAbierto(true);
+            }}
+            aria-label="Desplegar el menú"
+            title={local === null ? 'Desplegar el menú' : `${local.nombre} · desplegar el menú`}
+            className="group/logo relative grid size-12 place-items-center rounded-grande hover:bg-white/[0.06]"
           >
-            {local === null ? (
-              <IconoPanel size={20} />
-            ) : (
-              <LogoDelLocal
-                nombre={local.nombre}
-                logo={local.logo}
-                colorDeMarca={local.colorDeMarca}
-                alto={38}
-                cuadrado
-              />
-            )}
+            <span className="transition-opacity duration-[--rapido] group-hover/logo:opacity-0 group-focus-visible/logo:opacity-0">
+              {local === null ? (
+                <IconoInicio size={20} />
+              ) : (
+                <LogoDelLocal
+                  nombre={local.nombre}
+                  logo={local.logo}
+                  colorDeMarca={local.colorDeMarca}
+                  alto={38}
+                  cuadrado
+                />
+              )}
+            </span>
+            <span
+              aria-hidden
+              className="absolute inset-0 grid place-items-center text-texto opacity-0 transition-opacity duration-[--rapido] group-hover/logo:opacity-100 group-focus-visible/logo:opacity-100"
+            >
+              <IconoDesplegar size={20} />
+            </span>
           </button>
         )}
       </div>
@@ -180,7 +197,7 @@ export function MenuDelOrdenador({
           abierto={abierto}
           etiqueta="Panel"
           activa={enPanel}
-          icono={<IconoPanel size={18} />}
+          icono={<IconoInicio size={18} />}
           acento="var(--color-naranja)"
           alPulsar={alIrAlPanel}
         />
@@ -215,16 +232,6 @@ export function MenuDelOrdenador({
           acento="var(--color-texto-suave)"
           alPulsar={alIrAAjustes}
         />
-        {!abierto && (
-          <BotonDelMenu
-            etiqueta="Desplegar el menú"
-            alPulsar={() => {
-              alCambiarAbierto(true);
-            }}
-          >
-            <IconoDesplegar size={18} />
-          </BotonDelMenu>
-        )}
 
         <button
           type="button"
@@ -380,11 +387,12 @@ function AppDelMenu({
   readonly alIr: (app: App, destino?: string) => void;
 }) {
   const destinos = destinosConstruidos(app);
-  // Desplegada la activa; las demás, cuando se tocan. Al cambiar de app, la nueva
-  // se despliega sola y la de antes se queda como estaba.
+  // Desplegada la activa, y **solo la activa** (0084): al cambiar de app, la nueva se
+  // despliega y la de antes se pliega. Antes se quedaba abierta cada app por la que se
+  // pasaba, y a la tercera el menú era una lista larga que había que desplazar.
   const [desplegada, setDesplegada] = useState(activa);
   useEffect(() => {
-    if (activa) setDesplegada(true);
+    setDesplegada(activa);
   }, [activa]);
 
   if (!abierto) {

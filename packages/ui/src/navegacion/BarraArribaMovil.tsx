@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { usarHaBajado } from '../ganchos/usarHaBajado.ts';
 import { IconoBuscar } from '@estook/iconos';
 import { etiquetaDeLaCampana, etiquetaDelChat } from '@estook/dominio';
 import { ElBocadillo, LaCampana } from './LaCampana.tsx';
@@ -87,6 +88,11 @@ export interface BarraArribaMovilProps {
   readonly chatSinLeer?: number;
   /** Tu cuenta: ajustes, mi acceso, cambiar de local y salir. */
   readonly alAbrirMiCuenta: () => void;
+  /**
+   * En el Panel, el logo ya está grande en el saludo (0084). Arriba no se repite:
+   * aparece al bajar, cuando el saludo ya no se ve.
+   */
+  readonly enPanel?: boolean;
 }
 
 export function BarraArribaMovil({
@@ -102,7 +108,12 @@ export function BarraArribaMovil({
   alAbrirChat,
   chatSinLeer = 0,
   alAbrirMiCuenta,
+  enPanel = false,
 }: BarraArribaMovilProps) {
+  // «En el dashboard salen dos logos en el móvil y queda raro» (Richi, 14-oct). En el
+  // Panel el local se dice en el saludo, con su logo grande; aquí arriba entra al
+  // bajar, como el título de las apps del teléfono.
+  const conElLocal = usarHaBajado(enPanel);
   return (
     <header
       className={clases(
@@ -119,6 +130,7 @@ export function BarraArribaMovil({
         locales={locales}
         alCambiar={alCambiarDeLocal}
         alIrAlPanel={alIrAlPanel}
+        aLaVista={conElLocal}
       />
 
       {/*
@@ -132,7 +144,7 @@ export function BarraArribaMovil({
         desde que avisa de verdad, un aviso no se puede esconder.
       */}
       <div className="flex shrink-0 items-center gap-0 in-[[data-cocina=si]]:max-[440px]:[&>button]:ms-0">
-        <Redondo etiqueta="Buscar en todo" alPulsar={alBuscar} recogibleEnCocina>
+        <Redondo etiqueta="Buscar en todo" alPulsar={alBuscar} recogibleEnCocina recorrido="buscar">
           <IconoBuscar size={20} />
         </Redondo>
 
@@ -173,12 +185,23 @@ function DondeEstas({
   locales,
   alCambiar,
   alIrAlPanel,
+  aLaVista,
 }: {
   readonly local: BarraArribaMovilProps['local'];
   readonly locales: BarraArribaMovilProps['locales'];
   readonly alCambiar: (id: string) => void;
   readonly alIrAlPanel: () => void;
+  /**
+   * Si se ve el logo. Con un local, todo (logo y nombre) entra y sale a la vez; con
+   * varios, el selector se queda siempre, que cambiar de local no se esconde.
+   */
+  readonly aLaVista: boolean;
 }) {
+  const entraYSale = clases(
+    'transition-[opacity,transform] duration-[--normal] ease-curva',
+    !aLaVista && 'pointer-events-none -translate-y-1 opacity-0',
+  );
+
   if (local === null) {
     return <span className="min-w-0 flex-1 text-secundario text-texto-suave">Sin local</span>;
   }
@@ -200,7 +223,12 @@ function DondeEstas({
         type="button"
         onClick={alIrAlPanel}
         aria-label={`Volver al Panel · ${local.nombre}`}
-        className="flex min-h-toque min-w-0 flex-1 items-center gap-e2 rounded-medio text-left"
+        aria-hidden={aLaVista ? undefined : true}
+        tabIndex={aLaVista ? undefined : -1}
+        className={clases(
+          'flex min-h-toque min-w-0 flex-1 items-center gap-e2 rounded-medio text-left',
+          entraYSale,
+        )}
       >
         {marca}
         <span className="min-w-0 truncate text-cuerpo font-semibold text-texto">
@@ -216,7 +244,13 @@ function DondeEstas({
         type="button"
         onClick={alIrAlPanel}
         aria-label="Volver al Panel"
-        className="grid min-h-toque shrink-0 place-items-center rounded-medio"
+        aria-hidden={aLaVista ? undefined : true}
+        tabIndex={aLaVista ? undefined : -1}
+        className={clases(
+          'grid min-h-toque shrink-0 place-items-center rounded-medio',
+          entraYSale,
+          !aLaVista && 'w-0 overflow-hidden',
+        )}
       >
         {marca}
       </button>
@@ -243,18 +277,22 @@ function Redondo({
   alPulsar,
   children,
   recogibleEnCocina = false,
+  recorrido,
 }: {
   readonly etiqueta: string;
   readonly alPulsar: () => void;
   readonly children: ReactNode;
   /** Si se recoge en modo cocina cuando la pantalla no da para cinco botones de 64. */
   readonly recogibleEnCocina?: boolean;
+  /** Lo que enseña el recorrido de la primera vez aquí (0084). */
+  readonly recorrido?: string;
 }) {
   return (
     <button
       type="button"
       onClick={alPulsar}
       aria-label={etiqueta}
+      data-recorrido={recorrido}
       className={clases(
         'grid size-toque place-items-center rounded-medio text-texto-suave',
         recogibleEnCocina && 'in-[[data-cocina=si]]:max-[440px]:hidden',

@@ -44,6 +44,7 @@ export function BotonDeHacer({ alPulsar }: { readonly alPulsar: () => void }) {
       type="button"
       onClick={alPulsar}
       aria-label="Qué quieres hacer"
+      data-recorrido="hacer"
       data-escondido={escondido || undefined}
       className={clases(
         'fixed right-e3 z-30 grid size-[56px] place-items-center no-imprimir lg:right-e5',

@@ -7,7 +7,7 @@ import {
   duracionEnLetra,
   pesoEnLetra,
 } from '@estook/dominio';
-import { Avatar, ErrorEnCristiano, clases } from '@estook/ui';
+import { ErrorEnCristiano, clases } from '@estook/ui';
 import {
   IconoAdjuntar,
   IconoBorrar,
@@ -28,6 +28,7 @@ import {
   type MensajeDelCanal,
   type PersonaDelCanal,
 } from './contrato.ts';
+import { CaraDe } from '../caras/CaraDe.tsx';
 
 /**
  * Escribir en el chat (C1 · 0073).
@@ -441,7 +442,7 @@ export function Escribir({
                 }}
                 className="flex min-h-toque w-full items-center gap-e2 px-e3 text-left hover:bg-fondo"
               >
-                <Avatar nombre={p.nombre} tamano={24} />
+                <CaraDe nombre={p.nombre} personaId={p.id} tamano={24} />
                 <span className="text-cuerpo">{p.nombre}</span>
               </button>
             </li>

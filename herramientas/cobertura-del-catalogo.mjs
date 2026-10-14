@@ -140,7 +140,12 @@ if (soloMal.length > 0) {
  * contesta «no existe» en vez de reventar. Sin esta lista, esa prueba haría que
  * la cobertura saliera en rojo por hacer bien su trabajo.
  */
-const A_PROPOSITO = ['consulta:no_existe_esta_consulta'];
+const A_PROPOSITO = [
+  'consulta:no_existe_esta_consulta',
+  // `el-dia-a-dia.spec.ts` comprueba que el horario de siempre ya no se puede poner
+  // desde la ficha (0081): llamarlo y que diga que no **es** la prueba.
+  'comando:poner_horario_habitual',
+];
 
 // Y lo que sobra en el cuaderno: una operación que se llama y no está en el
 // catálogo es una ruta fantasma, o un nombre mal escrito en una prueba.

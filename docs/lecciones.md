@@ -652,3 +652,18 @@
      recargaba la página para traerlo y se llevaba la hoja de fichar a mitad de fichar. En
      local pasaba porque el trozo ya estaba descargado: lo cazó GitHub, más lento. Lo que se
      usa sin señal no depende de lo que se trae aparte (`GraficaViva`, 0083).
+175. **Una búsqueda que encuentra no es una búsqueda que funciona.** La prueba del buscador
+     preguntaba a la API y estaba en verde desde M6; en la pantalla, cada resultado llevaba
+     al Panel («los destinos los traen los módulos», y nadie volvió). Richi: «no funciona
+     nunca». La prueba de algo que se elige tiene que **elegirlo** y mirar dónde acaba
+     (0084).
+176. **Un mosaico medido encaja tarjetas iguales, no tamaños mezclados.** Con pequeños y
+     anchos, el flujo denso dejaba medias filas en blanco y escalones; se veía «descolocado».
+     Con dos tamaños, filas completas que se llenan solas (0084).
+177. **Un enlace firmado es otra imagen para el navegador.** Cada respuesta de la API trae
+     una firma nueva para la misma foto, así que el logo y las caras se descargaban otra vez
+     cada vez que la app se ponía al día. Se reutiliza el enlace mientras vale (0084).
+178. **Lo que pesa al abrir se mide al abrir.** El paquete inicial pasó de 318 a 364 KB sin
+     que nadie lo viera: se mide y no bloquea (B7). Al tocar la forma de la app se mira
+     `pnpm tamano` antes y después, y cada pantalla nueva entra en `lasPantallas.ts`, aparte
+     (0084).

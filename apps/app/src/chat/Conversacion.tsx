@@ -9,7 +9,6 @@ import {
   type EstadoDeMiMensaje,
 } from '@estook/dominio';
 import {
-  Avatar,
   Boton,
   Botones,
   Campo,
@@ -49,6 +48,7 @@ import {
   type PersonaDelCanal,
   type UnCanal,
 } from './contrato.ts';
+import { CaraDe } from '../caras/CaraDe.tsx';
 
 /**
  * Una conversación (C1 · 0073).
@@ -567,7 +567,7 @@ function QuienHaConfirmado({
             <ul className="flex flex-col">
               {faltan.map((nombre) => (
                 <li key={nombre} className="flex min-h-toque items-center gap-e3">
-                  <Avatar nombre={nombre} tamano={28} />
+                  <CaraDe nombre={nombre} tamano={28} />
                   <span className="text-cuerpo">{nombre}</span>
                 </li>
               ))}
@@ -723,7 +723,7 @@ function Burbuja({
     <div className={clases('group flex items-end gap-e2', mio ? 'flex-row-reverse' : 'flex-row')}>
       {!mio && (
         <span className={clases('shrink-0', !conAutor && 'invisible')}>
-          <Avatar nombre={mensaje.autor} tamano={28} />
+          <CaraDe nombre={mensaje.autor} personaId={mensaje.autorId} tamano={28} />
         </span>
       )}
       <div
@@ -1161,7 +1161,7 @@ function QuienLoHaLeido({
         <ul className="flex flex-col">
           {gente.map((l) => (
             <li key={l.personaId} className="flex min-h-toque items-center gap-e3">
-              <Avatar nombre={l.nombre} tamano={28} />
+              <CaraDe nombre={l.nombre} personaId={l.personaId} tamano={28} />
               <span className="text-cuerpo">{l.nombre}</span>
             </li>
           ))}
@@ -1241,7 +1241,7 @@ function OpcionesDelCanal({
           <ul className="flex max-h-72 flex-col overflow-y-auto">
             {personas.map((p) => (
               <li key={p.id} className="flex min-h-toque items-center gap-e3">
-                <Avatar nombre={p.nombre} tamano={28} />
+                <CaraDe nombre={p.nombre} personaId={p.id} tamano={28} />
                 <span className="text-cuerpo">{p.nombre}</span>
               </li>
             ))}
@@ -1442,7 +1442,7 @@ function AnadirGente({
                       );
                     }}
                   />
-                  <Avatar nombre={p.nombre} tamano={32} />
+                  <CaraDe nombre={p.nombre} personaId={p.id} tamano={32} />
                   <span className="text-cuerpo">{p.nombre}</span>
                 </label>
               </li>

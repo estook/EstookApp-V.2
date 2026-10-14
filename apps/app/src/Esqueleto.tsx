@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { appsVisibles } from '@estook/permisos';
 import { IconoAtras } from '@estook/iconos';
@@ -10,6 +10,7 @@ import {
   BarraMovil,
   MenuDelOrdenador,
   Deshacer,
+  Cargando,
   RuedaDeApps,
   SiAlgoFalla,
   appPorPermiso,
@@ -36,6 +37,7 @@ import { usarElChatVivo } from './ganchos/usarElChat.ts';
 import { avisarDelFallo } from '@estook/utiles/observabilidad';
 import { LoDeLaRed } from './sinConexion/LoDeLaRed.tsx';
 import { usarElNumeroDelIcono, usarLoDeLaRed } from './ganchos/usarLoDeLaRed.ts';
+import { precargarLasPantallas } from './pantallas/lasPantallas.ts';
 
 /**
  * El esqueleto · Parte B5 del Plan.
@@ -73,6 +75,10 @@ export function Esqueleto() {
   const { sePuedeDeshacer } = usarDeshacer();
   // Mientras se vea la app, cuenta como «en línea» para su equipo (0042).
   usarSigoAqui();
+  // Con lo primero pintado, el código de las demás pantallas, en segundo plano (0084).
+  useEffect(() => {
+    precargarLasPantallas();
+  }, []);
 
   /**
    * El menú del ordenador, abierto o plegado (la experiencia, 0083). Se recuerda en
@@ -152,7 +158,8 @@ export function Esqueleto() {
   const enAjustes = primero === 'ajustes';
 
   // Lo de la izquierda de la barra de arriba del ordenador: dónde estás, en corto.
-  // En el Panel, el local: el saludo ya está en la pantalla.
+  // En el Panel, «Panel» (0084): el local ya sale en el menú y en el saludo, y
+  // repetirlo una tercera vez era ruido.
   const destinoDeAhora =
     appActiva === null
       ? undefined
@@ -160,7 +167,7 @@ export function Esqueleto() {
         ? dondeEntra(appActiva)
         : destinoPorId(appActiva, segundo);
   const dondeEstoy = enPanel ? (
-    (yo?.local?.nombre ?? null)
+    'Panel'
   ) : appActiva !== null ? (
     <span className="flex items-center gap-e2">
       <span>{appActiva.nombre}</span>
@@ -458,6 +465,7 @@ export function Esqueleto() {
             alAbrirMiCuenta={() => {
               setMiCuentaAbierta(true);
             }}
+            enPanel={enPanel}
           />
 
           {/*
@@ -504,7 +512,17 @@ export function Esqueleto() {
               }}
             >
               <AbrirLaRueda.Provider value={abrirLaRueda}>
-                <Outlet />
+                {/* Mientras llega el código de una pantalla (0084): casi nunca, porque se
+                    precarga; y si llega tarde, lo dice en su sitio y las barras siguen. */}
+                <Suspense
+                  fallback={
+                    <div className="py-e6">
+                      <Cargando que="la pantalla" />
+                    </div>
+                  }
+                >
+                  <Outlet />
+                </Suspense>
               </AbrirLaRueda.Provider>
             </SiAlgoFalla>
           </main>

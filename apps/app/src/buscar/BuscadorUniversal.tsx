@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { IconoAjustes, IconoPanel } from '@estook/iconos';
+import { IconoAjustes, IconoInicio } from '@estook/iconos';
 import {
   Buscador,
+  destinoPorId,
   destinosQueSeAbren,
   rutaDe,
   type Accion,
@@ -38,6 +39,15 @@ import {
  */
 const ESPERA_ANTES_DE_PREGUNTAR = 180;
 
+/** Lo que devuelve `buscar` por cada cosa encontrada. */
+interface FilaEncontrada {
+  readonly tipo: string;
+  readonly id: string;
+  readonly titulo: string;
+  readonly subtitulo: string;
+  readonly local_id: string | null;
+}
+
 export interface BuscadorUniversalProps {
   readonly abierto: boolean;
   readonly alCerrar: () => void;
@@ -49,7 +59,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
   // M4: el cliente es el de la sesion. Antes se creaba uno con el identificador
   // de desarrollo puesto a mano; ahora lleva el token de quien ha entrado, asi
   // que el buscador encuentra exactamente lo que esa persona puede ver.
-  const { cliente, yo, permisos } = usarSesion();
+  const { cliente, yo, permisos, cambiarDeSitio } = usarSesion();
   const [escrito, setEscrito] = useState('');
   const [reposado, setReposado] = useState('');
 
@@ -69,15 +79,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
     queryKey: ['buscar', texto, yo?.personaId ?? null],
     enabled: sePregunta,
     queryFn: async () => {
-      const respuesta = await cliente.consultar<
-        readonly {
-          tipo: string;
-          id: string;
-          titulo: string;
-          subtitulo: string;
-          local_id: string | null;
-        }[]
-      >('buscar', { texto });
+      const respuesta = await cliente.consultar<readonly FilaEncontrada[]>('buscar', { texto });
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
       return respuesta.datos;
     },
@@ -89,7 +91,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
         id: 'panel',
         nombre: 'Ir al Panel',
         donde: 'Panel',
-        icono: <IconoPanel size={18} />,
+        icono: <IconoInicio size={18} />,
         hacer: () => {
           navegar('/');
         },
@@ -157,21 +159,92 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
     [apps, navegar, permisos, yo?.local, yo?.organizacion, yo?.cuenta?.laLlevo],
   );
 
-  const resultados = useMemo<readonly ResultadoDeBusqueda[]>(
-    () =>
-      (consulta.data ?? []).map((fila) => ({
-        tipo: fila.tipo,
-        id: fila.id,
-        titulo: fila.titulo,
-        subtitulo: fila.subtitulo,
-        ir: () => {
-          // Los destinos de verdad los traen los modulos de cada app. Hoy lo
-          // unico que se puede abrir es un local, y eso llega con M4.
-          navegar('/');
+  /*
+    **A dónde lleva cada resultado** (las bases firmes, 0084).
+
+    Hasta el 14-oct todos llevaban al Panel —«los destinos de verdad los traen los
+    módulos»—, y los módulos llegaron sin que nadie volviera aquí: se buscaba
+    «salmón», salía, se tocaba y no pasaba nada. «La búsqueda no funciona nunca.»
+    Ahora cada cosa abre su ficha donde vive, y si es de otro local, primero se
+    cambia a ese local: abrir el salmón de Bar Puerto estando en Bar Centro sería
+    enseñar otra cosa con el mismo nombre.
+  */
+  const almacen = apps.find((app) => app.id === 'almacen');
+  const equipo = apps.find((app) => app.id === 'equipo');
+  const localDeAhora = yo?.local?.id ?? null;
+
+  const resultados = useMemo<readonly ResultadoDeBusqueda[]>(() => {
+    const enSuLocal = (localId: string | null, despues: () => void) => {
+      if (localId === null || localId === localDeAhora) {
+        despues();
+        return;
+      }
+      void cambiarDeSitio({ local: localId }).then((hecho) => {
+        if (hecho) despues();
+      });
+    };
+
+    const aDonde = (fila: FilaEncontrada): (() => void) | null => {
+      switch (fila.tipo) {
+        case 'producto': {
+          const productos = almacen && destinoPorId(almacen, 'productos');
+          if (!almacen || !productos) return null;
+          return () => {
+            enSuLocal(fila.local_id, () => {
+              navegar(`${rutaDe(almacen, productos)}?producto=${fila.id}`);
+            });
+          };
+        }
+        case 'proveedor': {
+          const compras = almacen && destinoPorId(almacen, 'compras');
+          const proveedores = compras?.vistas.find((v) => v.id === 'proveedores');
+          if (!almacen || !compras) return null;
+          return () => {
+            enSuLocal(fila.local_id, () => {
+              navegar(`${rutaDe(almacen, compras, proveedores)}?proveedor=${fila.id}`);
+            });
+          };
+        }
+        case 'persona': {
+          const personas = equipo && destinoPorId(equipo, 'personas');
+          if (!equipo || !personas) return null;
+          return () => {
+            navegar(`${rutaDe(equipo, personas)}?persona=${fila.id}`);
+          };
+        }
+        case 'local':
+          return () => {
+            enSuLocal(fila.id, () => {
+              navegar('/');
+            });
+          };
+        case 'organizacion':
+        case 'area':
+          return () => {
+            navegar('/cadena');
+          };
+        default:
+          return null;
+      }
+    };
+
+    const filas = consulta.data ?? [];
+    // Lo que no se puede abrir no sale: un resultado que no lleva a nada es peor que
+    // no salir, porque además tapa a otro que sí.
+    return filas.flatMap((fila) => {
+      const ir = aDonde(fila);
+      if (ir === null) return [];
+      return [
+        {
+          tipo: fila.tipo,
+          id: fila.id,
+          titulo: fila.titulo,
+          subtitulo: fila.subtitulo,
+          ir,
         },
-      })),
-    [consulta.data, navegar],
-  );
+      ];
+    });
+  }, [consulta.data, navegar, almacen, equipo, localDeAhora, cambiarDeSitio]);
 
   const alEscribir = useCallback((valor: string) => {
     setEscrito(valor);

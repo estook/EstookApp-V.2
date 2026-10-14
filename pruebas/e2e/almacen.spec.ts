@@ -770,6 +770,37 @@ test('el buscador de la cabecera encuentra un producto', async ({ request }) => 
   expect((encontrado.datos ?? []).some((r) => r.tipo === 'producto')).toBe(true);
 });
 
+test('lo que encuentra el buscador se abre: el producto, con su ficha', async ({
+  page,
+  request,
+}) => {
+  // «La búsqueda no funciona nunca, ni para productos ni personas ni nada» (Richi,
+  // 14-oct). La base encontraba, y esa prueba de arriba estaba en verde; lo que fallaba
+  // era la pantalla: **todo resultado llevaba al Panel**. Esta es la prueba que faltaba,
+  // la de tocar el resultado. Y con media palabra, que es como se busca (0065).
+  const token = await tokenDe(request, ROSA);
+  const nombre = `Salmón ahumado ${String(Date.now())}`;
+  await ejecutar(request, token, 'crear_producto', { nombre });
+
+  await entrar(page, ROSA);
+  await page.keyboard.press('Control+k');
+  await page.getByLabel('Que quieres buscar').fill(nombre.slice(0, 10));
+  await page.getByRole('button', { name: new RegExp(nombre) }).click();
+
+  await expect(page.getByRole('dialog', { name: nombre })).toBeVisible({ timeout: 15_000 });
+  await expect(page).toHaveURL(/#\/almacen\/productos.*producto=/);
+});
+
+test('y la persona, con la suya', async ({ page }) => {
+  await entrar(page, ROSA);
+  await page.keyboard.press('Control+k');
+  await page.getByLabel('Que quieres buscar').fill('marc');
+  await page.getByRole('button', { name: /Marcos Vega/ }).click();
+
+  await expect(page.getByRole('dialog', { name: /Marcos/ })).toBeVisible({ timeout: 15_000 });
+  await expect(page).toHaveURL(/#\/equipo\/personas.*persona=/);
+});
+
 // ── 10 · Guardar la ficha sin tocar nada no cambia nada ─────────────────────
 
 test('corregir el nombre no le borra al producto lo demás', async ({ request }) => {

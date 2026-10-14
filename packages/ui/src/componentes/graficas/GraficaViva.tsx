@@ -1,5 +1,6 @@
 import { useEffect, useState, type ComponentType } from 'react';
 import type { GraficaVivaProps } from './tipos.ts';
+import { LineaViva } from './LineaViva.tsx';
 
 /**
  * La gráfica viva (la experiencia, 0083): la que se toca.
@@ -40,6 +41,27 @@ function traerElDibujo(): Promise<Dibujo> {
 }
 
 export function GraficaViva(props: GraficaVivaProps) {
+  // La pequeña, sin ejes, se dibuja a mano y al momento (0084): ni espera a Recharts
+  // ni saca un bocadillo fuera de la tarjeta.
+  if (props.conEjes !== true) {
+    return (
+      <LineaViva
+        titulo={props.titulo}
+        puntos={props.puntos}
+        anteriores={props.anteriores}
+        forma={props.forma}
+        color={props.color}
+        alto={props.alto}
+        resaltarElUltimo={props.resaltarElUltimo ?? false}
+        formato={props.formato}
+        {...(props.alSenalar === undefined ? {} : { alSenalar: props.alSenalar })}
+      />
+    );
+  }
+  return <GraficaGrande {...props} />;
+}
+
+function GraficaGrande(props: GraficaVivaProps) {
   const [Dibujo, setDibujo] = useState<Dibujo | null>(() => elDibujo);
   const [noLlega, setNoLlega] = useState(false);
 

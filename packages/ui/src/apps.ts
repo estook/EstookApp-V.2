@@ -12,6 +12,7 @@ import {
   IconoAlmacen,
   IconoNegocio,
   IconoOrganizacion,
+  IconoInicio,
   IconoPanel,
   IconoPersona,
   IconoRejilla,
@@ -711,7 +712,8 @@ export const PANEL = {
   id: 'panel',
   nombre: 'Panel',
   permiso: 'app.panel',
-  icono: IconoPanel,
+  // La casa: el Panel es el inicio (0084). `IconoPanel` queda para el Resumen de cada app.
+  icono: IconoInicio,
   acento: 'var(--color-app-panel)',
   forma: 'panel',
   destinos: [],

@@ -4,25 +4,25 @@
 >
 > Comprobado el 14 de octubre de 2026, leyendo la base de producción y la API.
 >
-> | Qué                         | Cómo está                                                                         |
-> | --------------------------- | --------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #100** (el repaso antes de M9). Abierta: **la experiencia** |
-> | La base de datos            | **63 de 63** migraciones, igual que `main`                                        |
-> | La API                      | **Desplegada con la #100** (13-oct, 21:46 UTC): 81 y 172, **con Sentry**          |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día         |
-> | M8                          | **Las dos entregas, sus repasos, la #99 y la #100 en producción**                 |
+> | Qué                         | Cómo está                                                                    |
+> | --------------------------- | ---------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #101** (la experiencia). Abierta: **las bases firmes** |
+> | La base de datos            | **64 de 64** migraciones, igual que `main`                                   |
+> | La API                      | **Desplegada con la #101**: 81 y 174, **con Sentry**                         |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día    |
+> | M8                          | **Las dos entregas, sus repasos, la #99, la #100 y la #101 en producción**   |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · la experiencia
+## Lo que te toca ahora · las bases firmes
 
-Tus once puntos y la auditoría ([decisión 0083](decisiones/0083-la-experiencia.md), [el plan](la-experiencia.md), [la auditoría](auditorias/auditoria-2026-10-14-la-experiencia.md)). **Hay migración** (`0064`, la foto de cada persona: dos columnas nuevas) y **hay que desplegar la API** (dos comandos nuevos y la contraseña con PIN). **No hay secretos nuevos.** El orden importa: **fusionar, migrar y después desplegar**.
+Tus ocho fallos, las seis mejoras y la auditoría por roles ([decisión 0084](decisiones/0084-las-bases-firmes.md), [la auditoría](auditorias/auditoria-2026-10-14-las-bases-firmes.md)). **Hay dos migraciones** (`0065`, el buscador; `0066`, lo que recuerda tu cuenta: una tabla nueva) y **hay que desplegar la API** (una consulta y dos comandos nuevos, y `quien_soy` más rápido). **No hay secretos nuevos.** El orden importa: **fusionar, migrar y después desplegar**.
 
 ### 1 · Fusionar
 
-En **github.com** → **Pull requests** → **«La experiencia…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+En **github.com** → **Pull requests** → **«Las bases firmes…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
 
 ### 2 · Migrar la base
 
@@ -40,7 +40,7 @@ git pull
 .\estook.cmd bd:migrar
 ```
 
-**Qué tiene que decir:** que aplica la **0064 · la foto de cada uno** y que la base va por la **64**.
+**Qué tiene que decir:** que aplica la **0065 · el buscador que encuentra** y la **0066 · lo que recuerda tu cuenta**, y que la base va por la **66**.
 
 ### 3 · Desplegar la API
 
@@ -50,40 +50,38 @@ git pull
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** **«las 81» consultas**, **«los 174» comandos** (llegan `poner_foto_de_persona` y `quitar_foto_de_persona`) y, como ahora, **«y manda sus fallos a Sentry»** en verde.
+**Qué tiene que decir:** **«las 82» consultas** (llega `las_caras`), **«los 176» comandos** (llegan `poner_el_periodo_del_widget` y `ya_he_visto_el_recorrido`) y **«y manda sus fallos a Sentry»** en verde.
 
-### 4 · Mirarlo en el ordenador
-
-La web se publica sola al fusionar, en unos minutos. Recarga con **Ctrl + F5**.
-
-1. **El menú a la izquierda**: arriba, el logo de Estook y tu local; debajo, el Panel y tus apps. Pulsa **Almacén**: se abren sus destinos debajo. Pulsa el botón de arriba a la derecha del menú (**Plegar el menú**): queda **el logo de tu local** y los iconos; pulsa un icono y salen sus destinos al lado. Recarga: **se queda como lo dejaste**.
-2. **Arriba**: el buscador («Ctrl K»), la campana, el chat, **el sol y la luna** (claro y oscuro, de un clic) y tu cara.
-3. **El Panel**: «**Hola, Ricardo 👋**» con el logo de IKATZ grande. Cada widget es distinto: **Tu jornada** (un anillo con tus horas), **Ventas** (pasa el ratón por la gráfica: dice cada día), **Objetivos** (medidores), **Merma** (barras y «Apuntar merma»)…
-   - En los que tienen **«7 d · 30 d»**, cambia a 30: la gráfica cambia, y **se recuerda**.
-   - Pulsa la cifra de **Ventas** (o el botón de las dos flechas): se abre **en grande**, con los ejes, la media, el ticket medio, las cajas y el food cost.
-   - **Editar → Añadir**: ya no hay que elegir tamaño ni días; hay **dieciséis**, cada uno una vez. Tu Panel de antes **se ha traducido solo** a los nuevos.
-4. **Almacén → Resumen**: debajo de «Cómo va», el botón largo **«Revisar movimientos»** → abre **Inventario**, con **Historial** y **Consumo** al lado. En la barra de Almacén ya no está Movimientos.
-5. **Almacén → Compras**: **Pedidos · Facturas · Proveedores**. En Pedidos, **Abiertos · Llegado · Cancelados** («Llegado» son los albaranes). En Proveedores, arriba, **Precios** plegado.
-6. **Almacén → Productos**: el buscador redondo con **el escáner dentro**, los almacenes como **pastillas** («Cocina 12») y la categoría al lado.
-7. **Equipo → Personas**: una línea por persona, con su cara, «En línea / Dirección» y su botón **Acceso**.
-8. **Tu foto**: pulsa tu cara (arriba a la derecha) → en **Tu cuenta**, toca tu cara → elige una foto. Sale **cuadrada con las esquinas redondeadas** en el menú, arriba y en Personas. Para la de alguien del equipo: **Equipo → Personas → su nombre** → toca su cara.
-9. **El oscuro**: pulsa la luna. Ahora es **grafito**, no casi negro.
-
-### 5 · Mirarlo en el móvil
+### 4 · Mirarlo en el móvil
 
 Ciérrala del todo y ábrela otra vez (en la app instalada y en Safari).
 
-1. Arriba, **el logo de IKATZ tal cual lo subiste**, sin el círculo naranja.
-2. El Panel con los widgets nuevos: los pequeños llevan el «7 d · 30 d» debajo del título.
-3. **Almacén**: abajo, **Resumen · Productos · Compras · Mermas**, que ya caben con sus nombres enteros.
-4. **Equipo → Personas**: cuatro personas o más en una pantalla.
+1. **El Panel**: arriba **ya no sale el logo de IKATZ**; sale en el saludo. Baja un poco: **aparece arriba**.
+2. **Los widgets**, en **filas completas**: Tu jornada y Merma juntas, sin media fila en blanco.
+3. **Desliza el dedo por la gráfica de Ventas**: el número grande cambia al de cada día, con su fecha y «antes …». La **línea gris discontinua** es la semana anterior.
+4. **Abajo**: Panel lleva **una casa**, el botón naranja **la estrella**. Entra en **Equipo**: «Apps» lleva **la misma estrella**, y «Resumen» su rejilla.
+5. **Equipo → Incidencias**: «Justificar» va **a la derecha** de cada fila; las que solo se miran, con una flecha.
+6. **La lupa**: escribe **«chul»** (o media palabra de un producto tuyo) y tócalo: **se abre su ficha**. Escribe el nombre de alguien del equipo: **se abre la suya**.
+7. **Ajustes → Tu local**: **ocho tarjetas** en vez de la cascada; toca **«Cuándo es llegar tarde»** y se abre en su hoja.
+8. **El chat**: las caras **con foto** de quien la tenga. Y en **Almacén → Mermas**, la foto de cada producto.
 
-**Si tu logo tiene un fondo blanco o de color**, ahora se nota más: súbelo otra vez en **Ajustes → Tu local → Logo y color** en **PNG con el fondo transparente** y se verá limpio en claro y en oscuro.
+### 5 · Mirarlo en el ordenador
 
-### 6 · La contraseña
+Recarga con **Ctrl + F5**.
 
-1. **Ajustes → Mi cuenta → Mi acceso → Cambiar mi contraseña**: ahora pide **la nueva dos veces**, y no deja guardar si no coinciden.
-2. Con alguien del equipo que **entró con su PIN** y todavía no tiene contraseña: en su móvil, **Ajustes → Mi cuenta → Mi acceso → Ponerme una contraseña**. Le pide **su PIN** además de la nueva dos veces. Con un PIN equivocado, dice «Ese no es tu PIN».
+1. **Pliega el menú** y **pulsa el logo de IKATZ**: se despliega (al pasar el ratón por encima se ve el icono de desplegar).
+2. Entra en **Almacén** y luego en **Equipo**: en el menú **solo queda abierta la app en la que estás**.
+3. **Ventas**: pon **30 d**. Abre la app en el móvil: **también está en 30 d** (se guarda en tu cuenta).
+4. **Ctrl + K**, escribe media palabra de un producto y pulsa **Enter**: se abre su ficha.
+5. **Ajustes**: el buscador arriba a lo ancho, y cada sección en tarjetas.
+
+### 6 · El recorrido de la primera vez
+
+Te saldrá **una vez**, arriba del Panel: **«Ricardo, te lo enseño en 30 segundos»** (y a cada persona de tu equipo, la primera vez que entre después de desplegar). Pulsa **Empezar**: ilumina **tus apps, el «+», el buscador y tu Panel**, uno a uno, con «Siguiente». Al acabar, o con **«Ya lo conozco»**, **no vuelve a salir ni en el móvil ni en el ordenador**.
+
+### Lo que queda de la experiencia
+
+En producción desde el 14-oct (#101, 64 migraciones, 81 y 174). Si no lo has hecho: con alguien del equipo que **entró con su PIN** y todavía no tiene contraseña, en su móvil **Ajustes → Mi cuenta → Contraseña y acceso → Ponerme una contraseña**: pide **su PIN** y la nueva dos veces.
 
 ### Lo que queda de la #100
 

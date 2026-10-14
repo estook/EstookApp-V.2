@@ -55,6 +55,7 @@ export function BarraDeArribaDelOrdenador({
         type="button"
         onClick={alBuscar}
         aria-label="Buscar en todo (Ctrl+K)"
+        data-recorrido="buscar"
         className={clases(
           'group flex h-10 w-[19rem] shrink items-center gap-e2 rounded-redondo border border-borde bg-superficie px-e4',
           'text-secundario text-texto-tenue transition-[border-color,box-shadow] duration-[--rapido]',

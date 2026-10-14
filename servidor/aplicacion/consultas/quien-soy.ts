@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
-import type { ComoEstaLaCuenta, Destino as ADonde, Idioma } from '@estook/dominio';
+import {
+  esPeriodoDelIndicador,
+  type ComoEstaLaCuenta,
+  type Destino as ADonde,
+  type Idioma,
+  type PeriodoDelIndicador,
+} from '@estook/dominio';
 import { esPermiso, type Nivel, type PermisosResueltos } from '@estook/permisos';
 import type { Sql } from '../../infraestructura/postgres.ts';
 import { decidirDestino, guardarContexto } from '../acceso.ts';
@@ -159,6 +165,17 @@ export interface QuienSoy {
      */
     readonly laLlevo: boolean;
   } | null;
+
+  /**
+   * Lo que recuerda su cuenta en todos sus aparatos (0084): el periodo que eligió en
+   * cada widget y si ya vio el recorrido de la primera vez. Viaja aquí, y no en una
+   * consulta aparte, porque el Panel lo necesita **antes** de pedir sus cifras: los
+   * días de cada widget van en la pregunta.
+   */
+  readonly preferencias: {
+    readonly periodos: Readonly<Record<string, PeriodoDelIndicador>>;
+    readonly recorridoVisto: boolean;
+  };
 }
 
 export const quienSoy = consulta<Record<string, never>, QuienSoy>({
@@ -191,6 +208,11 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
     const persona = personas[0];
     if (!persona) throw new FalloDeAplicacion('sin_sesion');
 
+    // Su cara (0083), firmada para unas horas: va en la barra de arriba y en el menú. Se
+    // pide **ya**, en paralelo con lo de la base (las bases firmes, 0084): esperar al
+    // almacén al final sumaba su viaje entero a cada arranque de la app.
+    const fotoFirmada = firmarLasFotos(contexto, [persona.foto_clave]);
+
     // Las seis comprobaciones, otra vez. **Y esto es a proposito**: se rehacen en
     // cada peticion, no se guardan. Asi, si a alguien le cambian el rol, o su
     // organizacion cae en impago, la aplicacion se entera en la peticion
@@ -214,49 +236,51 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
     }
 
     const laSuya = destino.organizaciones.find((o) => o.id === destino.organizacionId);
-    const organizacion =
-      destino.organizacionId === null
+    const organizacionId = destino.organizacionId;
+    const localId = destino.localId;
+
+    // **Todo a la vez** (las bases firmes, 0084). Son lecturas que no dependen unas de
+    // otras, y `postgres` las manda seguidas por la misma conexión sin esperar a cada
+    // respuesta: diez viajes en fila eran diez esperas antes de la primera pantalla.
+    const [
+      organizacion,
+      local,
+      permisos,
+      dobleFactor,
+      suscripcion,
+      nivelDeFacturacion,
+      rolesQuePuedoDar,
+      preferencias,
+      fotos,
+    ] = await Promise.all([
+      organizacionId === null
         ? null
-        : await leerOrganizacion(sql, destino.organizacionId, laSuya?.alcance ?? 'local');
-    const local =
-      destino.localId === null ? null : await leerLocal(sql, destino.localId, contexto.almacen);
+        : leerOrganizacion(sql, organizacionId, laSuya?.alcance ?? 'local'),
+      localId === null ? null : leerLocal(sql, localId, contexto.almacen),
+      localId === null ? {} : leerPermisos(sql, sesion.personaId, localId),
+      sql<{ confirmado: boolean }[]>`
+        select confirmado_en is not null as confirmado
+          from estook.doble_factor where persona_id = ${sesion.personaId}
+      `,
+      organizacionId === null ? null : laSuscripcionDe(contexto, organizacionId),
+      organizacionId === null
+        ? []
+        : sql<{ nivel: string | null }[]>`
+            select estook.nivel_de_permiso_en_organizacion(
+              ${sesion.personaId}::uuid, ${organizacionId}::uuid, 'dato.facturacion'
+            )::text as nivel
+          `,
+      organizacionId === null ? [] : rolesQuePuedeDar(sql, organizacionId, sesion.personaId),
+      leerPreferencias(sql, sesion.personaId),
+      fotoFirmada,
+    ]);
 
-    const permisos =
-      destino.localId === null ? {} : await leerPermisos(sql, sesion.personaId, destino.localId);
-
-    const dobleFactor = await sql<{ confirmado: boolean }[]>`
-      select confirmado_en is not null as confirmado
-        from estook.doble_factor where persona_id = ${sesion.personaId}
-    `;
     const loTiene = dobleFactor[0]?.confirmado === true;
-
-    const suscripcion =
-      destino.organizacionId === null
-        ? null
-        : await laSuscripcionDe(contexto, destino.organizacionId);
-    const laLlevo =
-      destino.organizacionId === null
-        ? false
-        : (
-            await sql<{ nivel: string | null }[]>`
-              select estook.nivel_de_permiso_en_organizacion(
-                ${sesion.personaId}::uuid, ${destino.organizacionId}::uuid, 'dato.facturacion'
-              )::text as nivel
-            `
-          )[0]?.nivel === 'ver_y_editar';
+    const laLlevo = nivelDeFacturacion[0]?.nivel === 'ver_y_editar';
     const cuenta =
       suscripcion === null ? null : { ...comoEstaAhora(suscripcion, contexto.ahora), laLlevo };
 
-    const rolesQuePuedoDar =
-      destino.organizacionId === null
-        ? []
-        : await rolesQuePuedeDar(sql, destino.organizacionId, sesion.personaId);
-
-    // Su cara (0083), firmada para unas horas: va en la barra de arriba y en el menú.
-    const foto = laFirmada(
-      await firmarLasFotos(contexto, [persona.foto_clave]),
-      persona.foto_clave,
-    );
+    const foto = laFirmada(fotos, persona.foto_clave);
 
     return {
       personaId: persona.id,
@@ -292,9 +316,30 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
       // verdad no es una demostración.
       esDemostracion: sesion.esDemostracion,
       cuenta,
+      preferencias,
     };
   },
 });
+
+/**
+ * Lo que recuerda su cuenta en todos sus aparatos (0084 · 0066): el periodo de cada
+ * widget y si ya vio el recorrido. Sin fila, lo de fábrica: nada elegido y sin ver.
+ */
+async function leerPreferencias(sql: Sql, personaId: string): Promise<QuienSoy['preferencias']> {
+  const filas = await sql<{ periodos: unknown; recorrido_visto: boolean }[]>`
+    select periodos, recorrido_visto_en is not null as recorrido_visto
+      from estook.preferencias_de_persona where persona_id = ${personaId}
+  `;
+  const fila = filas[0];
+  const periodos: Record<string, PeriodoDelIndicador> = {};
+  if (fila !== undefined && typeof fila.periodos === 'object' && fila.periodos !== null) {
+    // Lo que no sea un periodo de verdad se cae aquí y no en la pantalla.
+    for (const [widget, dias] of Object.entries(fila.periodos as Record<string, unknown>)) {
+      if (esPeriodoDelIndicador(dias)) periodos[widget] = dias;
+    }
+  }
+  return { periodos, recorridoVisto: fila?.recorrido_visto === true };
+}
 
 async function leerOrganizacion(
   sql: Sql,

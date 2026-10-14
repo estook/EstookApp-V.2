@@ -7,7 +7,6 @@ import { puedeEditar } from '@estook/permisos';
 import { cuandoCae, type FechaOperativa } from '@estook/dominio';
 import {
   Aviso,
-  Avatar,
   Boton,
   Cargando,
   ErrorEnCristiano,
@@ -43,6 +42,7 @@ import {
   type FichajesDeHoy,
   type QuienEstaTrabajando,
 } from './contrato.ts';
+import { CaraDe } from '../caras/CaraDe.tsx';
 
 /**
  * Equipo · Resumen (M6½; «Hoy» hasta la entrega V, 0045).
@@ -293,7 +293,7 @@ function Fila({
         onClick={alAbrir}
         className="flex w-full min-h-toque items-center gap-e3 px-e4 py-e2 text-left hover:bg-fondo @min-[22rem]:px-e5"
       >
-        <Avatar nombre={nombre} tamano={32} />
+        <CaraDe nombre={nombre} personaId={quien.personaId} tamano={32} />
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-e2">
             <span className="truncate text-cuerpo font-medium">{nombre}</span>

@@ -1,4 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { useContext, useState, type ReactNode } from 'react';
+import { DentroDeUnaHoja } from './dentroDeUnaHoja.ts';
+import { enlaceEstable } from './enlaceEstable.ts';
 import { clases } from '../clases.ts';
 import { colorDe, inicialesDe } from './iniciales.ts';
 
@@ -51,6 +53,7 @@ export interface TarjetaProps {
       Unas mayúsculas grises en cada tarjeta gritan poco pero gritan todas. El pie
       sigue ahí —una cifra sin origen no vale—, en minúscula y en el gris tenue.
 */
+
 export function Tarjeta({
   titulo,
   acento,
@@ -61,6 +64,24 @@ export function Tarjeta({
   children,
   pegado = false,
 }: TarjetaProps) {
+  const enLaHoja = useContext(DentroDeUnaHoja);
+  if (enLaHoja !== null) {
+    const subtitulo = titulo !== undefined && titulo !== enLaHoja ? titulo : undefined;
+    return (
+      <section className="@container flex flex-col gap-e3">
+        {(subtitulo !== undefined || accion !== undefined) && (
+          <header className="flex min-h-toque items-center justify-between gap-e2">
+            {subtitulo !== undefined && (
+              <h3 className="min-w-0 text-cuerpo font-semibold">{subtitulo}</h3>
+            )}
+            {accion}
+          </header>
+        )}
+        <div>{children}</div>
+        {origen !== undefined && <p className="text-etiqueta text-texto-tenue">{origen}</p>}
+      </section>
+    );
+  }
   const conCabecera = titulo !== undefined || accion !== undefined;
   return (
     <section
@@ -256,8 +277,10 @@ export interface AvatarProps {
   readonly foto?: string | null;
 }
 
-export function Avatar({ nombre, tamano = 32, foto = null }: AvatarProps) {
+export function Avatar({ nombre, tamano = 32, foto: firmada = null }: AvatarProps) {
   const [rota, setRota] = useState<string | null>(null);
+  // La misma foto, el mismo enlace: si no, cada firma nueva la descargaba otra vez (0084).
+  const foto = enlaceEstable(firmada);
   const color = colorDe(nombre);
   const conFoto = foto !== null && foto !== '' && foto !== rota;
   return (

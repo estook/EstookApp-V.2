@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { clases } from '../clases.ts';
 import { colorDe, inicialesDe } from './iniciales.ts';
+import { enlaceEstable } from './enlaceEstable.ts';
 
 /**
  * La cara de un producto: su foto, o sus iniciales con el color de su categoría
@@ -37,13 +38,20 @@ export interface FotoDeProductoProps {
   readonly lado?: number;
 }
 
-export function FotoDeProducto({ nombre, categoria, enlace, lado = 40 }: FotoDeProductoProps) {
+export function FotoDeProducto({
+  nombre,
+  categoria,
+  enlace: firmado,
+  lado = 40,
+}: FotoDeProductoProps) {
+  // La misma foto, el mismo enlace, aunque la lista vuelva con otra firma (0084).
+  const enlace = enlaceEstable(firmado);
   // Qué enlace falló, y no un sí o un no: si llega otro (una foto nueva, o el mismo
   // firmado otra vez), se vuelve a intentar sin tener que remontar la fila.
   const [fallido, setFallido] = useState<string | null>(null);
   const redondeo = lado >= 64 ? 'rounded-grande' : 'rounded-medio';
 
-  if (enlace !== undefined && enlace !== null && enlace !== fallido) {
+  if (enlace !== null && enlace !== fallido) {
     return (
       <img
         src={enlace}

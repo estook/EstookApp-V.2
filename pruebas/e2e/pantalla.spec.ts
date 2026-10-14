@@ -862,3 +862,33 @@ test('si el Panel no puede leer, lo dice, y no se inventa un «no puedes» ni un
   await expect(page.getByText('Nada caduca en los próximos siete días.')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Volver a intentarlo' }).first()).toBeVisible();
 });
+
+// ── La gráfica que no llega no se lleva la pantalla (la experiencia, 0083) ───
+
+test('si el dibujo de una gráfica no llega, la pantalla se queda y lo dice en su hueco', async ({
+  page,
+}) => {
+  /*
+    El dibujo de las gráficas (Recharts) se descarga aparte. Con un `lazy`, si no
+    llegaba —sin señal—, la red de la pantalla recargaba la página entera para
+    traerlo, y se llevaba por delante lo que hubiera abierto: en GitHub, la hoja de
+    fichar a mitad de fichar sin cobertura. Aquí se corta solo ese trozo.
+  */
+  await page.route('**/GraficaVivaDibujo-*.js', (ruta) => ruta.abort('internetdisconnected'));
+  await entrar(page);
+
+  await page
+    .locator('[data-widget="valor-de-la-camara"]')
+    .getByRole('button', { name: 'Ampliar valor de la cámara' })
+    .click();
+  const detalle = page.getByRole('dialog', { name: 'Valor de la cámara' });
+  await expect(detalle).toBeVisible();
+
+  // Sin el dibujo, el detalle sigue abierto: ni se recarga ni dice que se ha roto.
+  await expect(
+    detalle.getByText('Sin conexión: la gráfica sale al volver a cargar.'),
+  ).toBeVisible();
+  await page.waitForTimeout(1_000);
+  await expect(detalle).toBeVisible();
+  await expect(page.getByText('Esta pantalla no ha terminado de cargar')).toHaveCount(0);
+});

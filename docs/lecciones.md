@@ -647,3 +647,8 @@
      sembrado todas las gráficas eran rayas en el suelo y no se podía juzgar ninguna. La
      API de pruebas lleva desde hoy una historia de un mes que solo se carga si se pide
      (`CON_HISTORIA=1`), y con ella salieron tres fallos de dibujo (0083).
+174. **Un trozo que se descarga aparte no puede romper la pantalla sin señal.** Las gráficas
+     nuevas llegaban con un `lazy`; sin cobertura su trozo no llegaba, la red de la pantalla
+     recargaba la página para traerlo y se llevaba la hoja de fichar a mitad de fichar. En
+     local pasaba porque el trozo ya estaba descargado: lo cazó GitHub, más lento. Lo que se
+     usa sin señal no depende de lo que se trae aparte (`GraficaViva`, 0083).

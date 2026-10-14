@@ -518,7 +518,8 @@ function MermaSinEuros({ apuntar }: { readonly apuntar: ReactNode }) {
               {datos.deHoy.cuantas === 1 ? 'apunte hoy' : 'apuntes hoy'}
             </p>
           </div>
-          {datos.dias.length > 0 && (
+          {/* Todo a cero no se dibuja, como en las demás cifras. */}
+          {datos.dias.some((dia) => dia.cuantas > 0) && (
             <GraficaViva
               titulo="Apuntes de merma de los últimos días"
               puntos={datos.dias.map((dia) => ({

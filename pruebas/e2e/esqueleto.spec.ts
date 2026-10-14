@@ -1080,22 +1080,26 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
         .locator('[data-widget]')
         .evaluateAll((casillas) => casillas.map((casilla) => casilla.getAttribute('data-widget')));
     const antes = await orden();
-    expect(antes.indexOf('objetivos')).toBeGreaterThan(antes.indexOf('fichar'));
+    // «Objetivos» va justo detrás de «Ventas» en el de fábrica (0083): se lleva encima.
+    // Un arrastre corto entre dos que ocupan el ancho entero, también en el móvil: el
+    // de antes cruzaba media pantalla hasta «Tu jornada» y, con la máquina cargada, la
+    // página se desplazaba sola a mitad de camino.
+    expect(antes.indexOf('objetivos')).toBeGreaterThan(antes.indexOf('ventas'));
 
     // Con los dos a la vista: en un móvil el Panel empieza debajo de la zona de
     // atención, y un ratón fuera de la pantalla no arrastra nada.
-    await enElPanel(page, 'fichar').evaluate((casilla) => {
-      casilla.scrollIntoView({ block: 'start' });
+    await enElPanel(page, 'ventas').evaluate((casilla) => {
+      casilla.scrollIntoView({ block: 'center' });
     });
-    // **Alto, como un día con todas las cifras.** Cogido por arriba, su centro queda
-    // lejos del dedo: cuando mandaba el centro y no el dedo, se soltaba encima de
-    // «Fichar» y no iba ahí. Pasaba en GitHub unas veces sí y otras no (25-sep).
     // Y con todo cargado: las gráficas llegan aparte (0083), y si llegan a mitad del
     // arrastre los widgets cambian de alto y el dedo suelta en otro sitio.
     await page.waitForLoadState('networkidle');
+    // **Alto, como un día con todas las cifras.** Cogido por arriba, su centro queda
+    // lejos del dedo: cuando mandaba el centro y no el dedo, se soltaba donde no era.
+    // Pasaba en GitHub unas veces sí y otras no (25-sep).
     await page.addStyleTag({ content: '[data-widget="objetivos"] { min-height: 40rem; }' });
     const desde = await enElPanel(page, 'objetivos').boundingBox();
-    const hasta = await enElPanel(page, 'fichar').boundingBox();
+    const hasta = await enElPanel(page, 'ventas').boundingBox();
     if (desde === null || hasta === null) throw new Error('Faltan widgets de fábrica.');
 
     // Con pasos, como un ratón de verdad: la librería necesita ver el movimiento.
@@ -1107,7 +1111,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await expect
       .poll(async () => {
         const ahora = await orden();
-        return ahora.indexOf('objetivos') < ahora.indexOf('fichar');
+        return ahora.indexOf('objetivos') < ahora.indexOf('ventas');
       })
       .toBe(true);
 
@@ -1115,9 +1119,9 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await yaEstaGuardado(page);
     await recargarSinQueSeCaiga(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
-    await expect(enElPanel(page, 'fichar')).toHaveCount(1);
+    await expect(enElPanel(page, 'ventas')).toHaveCount(1);
     const guardado = await orden();
-    expect(guardado.indexOf('objetivos')).toBeLessThan(guardado.indexOf('fichar'));
+    expect(guardado.indexOf('objetivos')).toBeLessThan(guardado.indexOf('ventas'));
   });
 
   test('cada widget lleva su periodo dentro, y se recuerda al recargar', async ({ page }) => {

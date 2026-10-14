@@ -2,41 +2,29 @@
 
 > ## Cómo está
 >
-> Comprobado el 10 de octubre de 2026, leyendo la base de producción y la API.
+> Comprobado el 14 de octubre de 2026, leyendo la base de producción y la API.
 >
-> | Qué                         | Cómo está                                                                                           |
-> | --------------------------- | --------------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #99** (un solo horario y las incidencias). Abierta: **el repaso antes de M9** |
-> | La base de datos            | **62 de 62** migraciones, igual que `main`. 107 tablas                                              |
-> | La API                      | **Desplegada con la #99** (9-oct, 22:36 UTC): 81 y 171                                              |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                           |
-> | M8                          | **Las dos entregas, su repaso y la #99 en producción**                                              |
+> | Qué                         | Cómo está                                                                         |
+> | --------------------------- | --------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #100** (el repaso antes de M9). Abierta: **la experiencia** |
+> | La base de datos            | **63 de 63** migraciones, igual que `main`                                        |
+> | La API                      | **Desplegada con la #100** (13-oct, 21:46 UTC): 81 y 172, **con Sentry**          |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día         |
+> | M8                          | **Las dos entregas, sus repasos, la #99 y la #100 en producción**                 |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · el repaso antes de M9
+## Lo que te toca ahora · la experiencia
 
-Tus seis puntos ([decisión 0082](decisiones/0082-el-repaso-antes-de-m9.md)). **Hay migración** (`0063`, solo pone las tildes a tres nombres de rol), **hay que desplegar la API** y **hay un secreto nuevo** para Sentry. El orden importa: **Sentry, fusionar, migrar y después desplegar**.
+Tus once puntos y la auditoría ([decisión 0083](decisiones/0083-la-experiencia.md), [el plan](la-experiencia.md), [la auditoría](auditorias/auditoria-2026-10-14-la-experiencia.md)). **Hay migración** (`0064`, la foto de cada persona: dos columnas nuevas) y **hay que desplegar la API** (dos comandos nuevos y la contraseña con PIN). **No hay secretos nuevos.** El orden importa: **fusionar, migrar y después desplegar**.
 
-### 1 · Crear el proyecto de la API en Sentry y poner su secreto
+### 1 · Fusionar
 
-Es para que los fallos de la API te lleguen a Sentry, como ya llegan los de las apps. **Hazlo antes de desplegar**: la API lee el secreto al arrancar.
+En **github.com** → **Pull requests** → **«La experiencia…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
 
-1. En **sentry.io**, entra con tu cuenta → arriba a la izquierda **Projects** → botón **Create Project**.
-2. En la lista de plataformas busca y elige **Deno**. Más abajo, **Project name**: `estook-api`. **Team**: el tuyo. Pulsa **Create Project**.
-3. Te enseña cómo instalarlo: **no hace falta nada de eso**. Solo copia el **DSN**, una dirección que empieza por `https://` y acaba en `.ingest…sentry.io/` y unos números. Si ya cerraste esa pantalla: **Settings → Projects → estook-api → Client Keys (DSN)** → copia el **DSN**.
-4. En ese mismo proyecto, **Settings → Projects → estook-api → Security & Privacy**: deja encendidos **Data Scrubber** y **Use Default Scrubbers**, y enciende **Prevent Storing of IP Addresses**.
-5. En **supabase.com** → tu proyecto → **Project Settings** → **Edge Functions** → **Secrets** → **Add new secret**. **Name**: `SENTRY_DSN` (exacto, en mayúsculas). **Value**: pega el DSN. **Save**.
-
-**El DSN no me lo pases por el chat**: va solo en Supabase.
-
-### 2 · Fusionar
-
-En **github.com** → **Pull requests** → **«El repaso antes de M9…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
-
-### 3 · Migrar la base
+### 2 · Migrar la base
 
 En PowerShell, en la carpeta del proyecto, uno por uno:
 
@@ -52,9 +40,9 @@ git pull
 .\estook.cmd bd:migrar
 ```
 
-**Qué tiene que decir:** que aplica la **0063 · los roles con tilde** y que la base va por la **63**.
+**Qué tiene que decir:** que aplica la **0064 · la foto de cada uno** y que la base va por la **64**.
 
-### 4 · Desplegar la API
+### 3 · Desplegar la API
 
 **Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
 
@@ -62,27 +50,44 @@ git pull
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** **«las 81» consultas**, **«los 172» comandos** (llega `descongelar`) y una línea nueva en verde: **«y manda sus fallos a Sentry»**. Si esa sale en rojo con «falta SENTRY_DSN», el paso 1 no quedó guardado: repítelo y vuelve a desplegar.
+**Qué tiene que decir:** **«las 81» consultas**, **«los 174» comandos** (llegan `poner_foto_de_persona` y `quitar_foto_de_persona`) y, como ahora, **«y manda sus fallos a Sentry»** en verde.
 
-### 5 · Mirarlo en tu iPhone · el chat (lo más importante)
+### 4 · Mirarlo en el ordenador
 
-La web se publica sola al fusionar, en unos minutos. **Ciérrala del todo** (desliza hacia arriba desde abajo y quítala) y ábrela otra vez, para que coja la versión nueva. Hazlo **en la app instalada y en Safari**, que se portan distinto.
+La web se publica sola al fusionar, en unos minutos. Recarga con **Ctrl + F5**.
 
-1. **Chat** → **Todo el equipo** → toca la caja de escribir.
-2. **Lo que tiene que salir**, como en WhatsApp: arriba, **justo debajo de la hora**, la cabecera con la flecha atrás y «Todo el equipo»; abajo, **la caja pegada encima de la barra ^ v ✓** del teclado; y en medio los mensajes, el último justo encima de la caja.
-3. Escribe una frase larga: **se ve todo lo que escribes**, y la caja crece hacia arriba.
-4. Desliza los mensajes con el dedo: **solo se mueven los mensajes**, la cabecera y la caja se quedan quietas.
-5. Pulsa **✓** (o toca un mensaje): el teclado se va y la caja **baja a su sitio**, encima de la barra de abajo.
+1. **El menú a la izquierda**: arriba, el logo de Estook y tu local; debajo, el Panel y tus apps. Pulsa **Almacén**: se abren sus destinos debajo. Pulsa el botón de arriba a la derecha del menú (**Plegar el menú**): queda **el logo de tu local** y los iconos; pulsa un icono y salen sus destinos al lado. Recarga: **se queda como lo dejaste**.
+2. **Arriba**: el buscador («Ctrl K»), la campana, el chat, **el sol y la luna** (claro y oscuro, de un clic) y tu cara.
+3. **El Panel**: «**Hola, Ricardo 👋**» con el logo de IKATZ grande. Cada widget es distinto: **Tu jornada** (un anillo con tus horas), **Ventas** (pasa el ratón por la gráfica: dice cada día), **Objetivos** (medidores), **Merma** (barras y «Apuntar merma»)…
+   - En los que tienen **«7 d · 30 d»**, cambia a 30: la gráfica cambia, y **se recuerda**.
+   - Pulsa la cifra de **Ventas** (o el botón de las dos flechas): se abre **en grande**, con los ejes, la media, el ticket medio, las cajas y el food cost.
+   - **Editar → Añadir**: ya no hay que elegir tamaño ni días; hay **dieciséis**, cada uno una vez. Tu Panel de antes **se ha traducido solo** a los nuevos.
+4. **Almacén → Resumen**: debajo de «Cómo va», el botón largo **«Revisar movimientos»** → abre **Inventario**, con **Historial** y **Consumo** al lado. En la barra de Almacén ya no está Movimientos.
+5. **Almacén → Compras**: **Pedidos · Facturas · Proveedores**. En Pedidos, **Abiertos · Llegado · Cancelados** («Llegado» son los albaranes). En Proveedores, arriba, **Precios** plegado.
+6. **Almacén → Productos**: el buscador redondo con **el escáner dentro**, los almacenes como **pastillas** («Cocina 12») y la categoría al lado.
+7. **Equipo → Personas**: una línea por persona, con su cara, «En línea / Dirección» y su botón **Acceso**.
+8. **Tu foto**: pulsa tu cara (arriba a la derecha) → en **Tu cuenta**, toca tu cara → elige una foto. Sale **cuadrada con las esquinas redondeadas** en el menú, arriba y en Personas. Para la de alguien del equipo: **Equipo → Personas → su nombre** → toca su cara.
+9. **El oscuro**: pulsa la luna. Ahora es **grafito**, no casi negro.
 
-**Si algo no sale así, hazle una captura con el teclado abierto y me la pasas**: es lo único que no se puede probar sin un iPhone.
+### 5 · Mirarlo en el móvil
 
-### 6 · Mirar lo demás
+Ciérrala del todo y ábrela otra vez (en la app instalada y en Safari).
 
-1. **Almacén → Productos**: al entrar, «Sin precio», «Congelados» y «Desactivados» **no aparecen ni un instante** si están vacías. Pulsa **Valor**: **siguen sin salir**.
-2. **Lo congelado**: abre un producto → **Congelar una parte** → 1 → **Congelar**. Su lote dice **«Congelado el … · aguanta hasta el …»** (sin «Caduca»). Pulsa **Sacar**: solo **Descongelar** y **Tirar**. **Descongelar** → sale «Mañana» marcado → **Descongelarlo**: el lote pasa a «Caduca el …». Congela otra parte → **Sacar → Tirar → Tirarlo** → en **Movimientos → Historial** sale como **merma**.
-3. **Equipo**: ya **no hay «Horarios»**; en **Resumen**, debajo de las cifras, **«Horario de la semana»** te lleva a **Calendario → Turnos**, con **Montarlo** y **Lo que ve el equipo**. En **Incidencias**, sin horario publicado, el botón dice **«Ir al horario»** y lleva allí.
-4. **El PDF**: Calendario → Turnos → **Lo que ve el equipo** → PDF de la semana. Las columnas de los días caen **unas debajo de otras** en Cocina y en el resto, el descanso va **en pequeño debajo** de las horas, los nombres no se parten y debajo del tuyo pone **«Dirección o propietario»**.
-5. **Avisar al publicar**: cambia un tramo de alguien en **Montarlo** → **Publicar los cambios**. Tiene que decir **por dónde le llega**: «Le llega a 1 persona en el móvil» o «… por correo». En **«¿Avisar en Todo el equipo?»** → **Sí, avisar**: a los demás les suena (o les llega el correo del chat si no tienen Estook en el móvil). **Pregunta a Antonio, Héctor o Alejandro** si les ha llegado el correo de su horario: no tienen Estook en el móvil, y hasta hoy no les llegaba nada.
+1. Arriba, **el logo de IKATZ tal cual lo subiste**, sin el círculo naranja.
+2. El Panel con los widgets nuevos: los pequeños llevan el «7 d · 30 d» debajo del título.
+3. **Almacén**: abajo, **Resumen · Productos · Compras · Mermas**, que ya caben con sus nombres enteros.
+4. **Equipo → Personas**: cuatro personas o más en una pantalla.
+
+**Si tu logo tiene un fondo blanco o de color**, ahora se nota más: súbelo otra vez en **Ajustes → Tu local → Logo y color** en **PNG con el fondo transparente** y se verá limpio en claro y en oscuro.
+
+### 6 · La contraseña
+
+1. **Ajustes → Mi cuenta → Mi acceso → Cambiar mi contraseña**: ahora pide **la nueva dos veces**, y no deja guardar si no coinciden.
+2. Con alguien del equipo que **entró con su PIN** y todavía no tiene contraseña: en su móvil, **Ajustes → Mi cuenta → Mi acceso → Ponerme una contraseña**. Le pide **su PIN** además de la nueva dos veces. Con un PIN equivocado, dice «Ese no es tu PIN».
+
+### Lo que queda de la #100
+
+En producción desde el 13-oct (63 migraciones, 81 y 172, Sentry encendido, comprobado el 14-oct). Si no lo has hecho: **mira el chat en tu iPhone** (la caja encima del teclado, como en WhatsApp) y que **Santi publique la semana** en Pizzeriacazzo.
 
 ### Lo que queda de la #99
 

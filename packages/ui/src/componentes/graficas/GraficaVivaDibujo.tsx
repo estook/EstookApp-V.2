@@ -171,9 +171,10 @@ export function GraficaVivaDibujo({
               connectNulls={!conEjes}
               isAnimationActive={false}
               activeDot={{ r: 5, fill: color, stroke: 'var(--color-superficie)', strokeWidth: 2 }}
-              dot={(props: { cx?: number; cy?: number; index?: number; value?: unknown }) => {
+              dot={(props: { cx?: number | null; cy?: number | null; index?: number; value?: unknown }) => {
                 const { cx, cy, index } = props;
-                if (!resaltarElUltimo || index !== ultimo || cx === undefined || cy === undefined) {
+                // Sin dato ese día (hoy, sin caja), `cy` llega nulo: no se pinta, o saldría arriba del todo.
+                if (!resaltarElUltimo || index !== ultimo || cx == null || cy == null) {
                   return <g key={`p-${String(index)}`} />;
                 }
                 return (

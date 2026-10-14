@@ -30,7 +30,7 @@ import type { Permiso, PermisoDeApp } from '@estook/permisos';
  *
  * Así que:
  *
- *   · **Diecisiete widgets en vez de cuarenta y tantos.** Antes cada una de las trece
+ *   · **Dieciséis widgets en vez de cuarenta y tantos.** Antes cada una de las trece
  *     cifras salía dos veces (7 y 30 días) además de los widgets propios, y varias
  *     decían lo mismo con otro marco: «Merma» y «Merma · 7 días», «Valor de la
  *     cámara» dos veces, «Personas» y «Quién está trabajando». Se juntan: la merma

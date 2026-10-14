@@ -57,17 +57,21 @@ async function irA(page: Page, camino: string) {
 /**
  * Cambia de local por donde lo hace una persona.
  *
- * Dos caminos, y los dos valen: el selector de la barra cuando ya se está en un
+ * Dos caminos, y los dos valen: el selector del menú cuando ya se está en un
  * local, y el botón «Entrar» de la vista de la cadena cuando se viene del
  * consolidado. Se prueba el que haya, porque cuál sale depende de dónde estés.
  */
 async function irAlLocal(page: Page, nombre: string) {
-  const enEscritorio = page.locator('header').getByLabel('Local');
+  // En el ordenador, el local se cambia en el menú de la izquierda (0083); en el
+  // móvil, en el desplegable de la barra de arriba.
+  const enElMenu = page.getByRole('button', { name: /Cambiar de local/ });
   const enMovil = page.locator('header').getByLabel('Dónde estás');
-  const selector = (await enEscritorio.isVisible()) ? enEscritorio : enMovil;
 
-  if (await selector.isVisible()) {
-    await selector.selectOption({ label: nombre });
+  if (await enElMenu.isVisible()) {
+    await enElMenu.click();
+    await page.getByRole('menuitemradio', { name: nombre }).click();
+  } else if (await enMovil.isVisible()) {
+    await enMovil.selectOption({ label: nombre });
   } else {
     await page
       .getByRole('listitem')
@@ -1678,13 +1682,17 @@ test('el género se filtra por zona, y la categoría cuenta dentro de ella', asy
   await expect(loQueSeVe(page, `Vermut ${marca}`)).toBeVisible({ timeout: 15_000 });
   await expect(loQueSeVe(page, `Merluza ${marca}`)).toBeVisible();
 
+  // De dónde es, en pastillas desde la experiencia (0083): se toca la del almacén.
+  const deDonde = (zona: RegExp) =>
+    page.getByRole('group', { name: 'De dónde es' }).getByRole('button', { name: zona });
+
   // Filtrando por cocina, el vermut desaparece y la merluza se queda.
-  await page.getByLabel('De dónde').selectOption('cocina');
+  await deDonde(/^Cocina/).click();
   await expect(loQueSeVe(page, `Merluza ${marca}`)).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(`Vermut ${marca}`)).toHaveCount(0);
 
   // Y en sala, al revés. Con la categoría al lado, que sala sí las lleva.
-  await page.getByLabel('De dónde').selectOption('sala');
+  await deDonde(/^Sala/).click();
   await expect(loQueSeVe(page, `Vermut ${marca}`)).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(`Merluza ${marca}`)).toHaveCount(0);
   await expect(page.getByLabel('Categoría')).toBeVisible();
@@ -1703,8 +1711,8 @@ test('el género se filtra por zona, y la categoría cuenta dentro de ella', asy
   expect(deLimpieza.estado).toBe(200);
 
   await recargarSinQueSeCaiga(page);
-  await expect(page.getByLabel('De dónde')).toBeVisible({ timeout: 15_000 });
-  await page.getByLabel('De dónde').selectOption('limpieza');
+  await expect(deDonde(/^Limpieza/)).toBeVisible({ timeout: 15_000 });
+  await deDonde(/^Limpieza/).click();
   await expect(page.getByLabel('Categoría')).toHaveCount(0);
 });
 

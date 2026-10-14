@@ -29,4 +29,4 @@ oscura y con fotos cuadradas), los filtros de Productos («se ve feísimo») y u
 ## La auditoría
 
 Los fallos encontrados, los de lógica y los de experiencia, con lo que se ha hecho con cada uno, están en
-[`docs/auditorias/2026-10-14-la-experiencia.md`](auditorias/2026-10-14-la-experiencia.md).
+[`docs/auditorias/auditoria-2026-10-14-la-experiencia.md`](auditorias/auditoria-2026-10-14-la-experiencia.md).

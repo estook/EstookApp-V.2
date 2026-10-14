@@ -107,51 +107,69 @@ async function seVeDeVerdad(page: Page, selector: string): Promise<boolean> {
   }, selector);
 }
 
-// ── 1 · Los desplegables de la barra de escritorio ───────────────────────────
+// ── 1 · El menú del ordenador (la experiencia, 0083) ─────────────────────────
+//
+// Desde el 14-oct las apps no van en una barra de arriba, sino en un menú a la
+// izquierda que se pliega. Se prueba lo que se probaba de la barra —que cada app
+// abre lo suyo y que **se ve de verdad**, no recortado— en sus dos formas.
 
-test.describe('la barra de escritorio', () => {
+test.describe('el menú del ordenador', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test('pulsar una app abre su desplegable, y se ve de verdad', async ({ page }) => {
-    // El fallo: el menú se pintaba `absolute` dentro de un `<nav>` con
-    // `overflow-x-auto`, y en CSS recortar a lo ancho recorta también a lo alto.
-    // El menú existía, el estado cambiaba y `toBeVisible()` decía que sí. En
-    // pantalla no aparecía nada.
+  const elMenu = (page: Page) => page.getByRole('complementary', { name: 'Menú' });
+
+  test('plegado, cada app abre sus destinos al lado, se ven de verdad y llevan a su sitio', async ({
+    page,
+  }) => {
     await entrar(page);
+    await elMenu(page).getByRole('button', { name: 'Plegar el menú' }).click();
+    await expect(elMenu(page)).toHaveAttribute('data-menu', 'plegado');
 
-    await page
-      .getByRole('banner')
-      .getByRole('button', { name: /Almacén/ })
-      .click();
-
-    const menu = page.getByRole('menu', { name: 'Almacén' });
-    await expect(menu).toBeVisible();
-
-    // Y lo que `toBeVisible` no comprueba: que esté delante y dentro de la
-    // ventana, no recortado por la barra.
-    expect(await seVeDeVerdad(page, '[role="menu"][aria-label="Almacén"]')).toBe(true);
-
-    // Y que lleve a algún sitio, que es para lo que está.
-    await menu.getByRole('menuitem', { name: 'Productos' }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Productos');
-    await expect(page).toHaveURL(/almacen\/productos/);
-  });
-
-  test('las ocho abren la suya, y ninguna se queda recortada', async ({ page }) => {
-    await entrar(page);
-
-    const apps = ['Almacén', 'Escandallos', 'Carta', 'Calendario', 'Equipo', 'Servicio'];
-    for (const app of apps) {
-      await page
-        .getByRole('banner')
-        .getByRole('button', { name: new RegExp(app) })
-        .click();
+    for (const app of ['Almacén', 'Calendario', 'Equipo', 'Servicio', 'Negocio']) {
+      await elMenu(page).getByRole('button', { name: app, exact: true }).click();
+      await expect(page.getByRole('menu', { name: app })).toBeVisible();
+      // Lo que `toBeVisible` no comprueba: que esté delante y dentro de la ventana.
       expect(
         await seVeDeVerdad(page, `[role="menu"][aria-label="${app}"]`),
-        `el desplegable de ${app} no se ve`,
+        `los destinos de ${app} no se ven`,
       ).toBe(true);
       await page.keyboard.press('Escape');
     }
+
+    await elMenu(page).getByRole('button', { name: 'Almacén', exact: true }).click();
+    await page
+      .getByRole('menu', { name: 'Almacén' })
+      .getByRole('menuitem', { name: 'Productos' })
+      .click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Productos');
+    await expect(page).toHaveURL(new RegExp('almacen/productos'));
+
+    // Y se recuerda plegado al volver.
+    await recargarSinQueSeCaiga(page);
+    await expect(elMenu(page)).toHaveAttribute('data-menu', 'plegado');
+    await elMenu(page).getByRole('button', { name: 'Desplegar el menú' }).click();
+    await expect(elMenu(page)).toHaveAttribute('data-menu', 'abierto');
+  });
+
+  test('abierto, cada app cuelga sus destinos, y lo que todavía no está va aparte', async ({
+    page,
+  }) => {
+    await entrar(page);
+    await expect(elMenu(page)).toHaveAttribute('data-menu', 'abierto');
+
+    await elMenu(page).getByRole('button', { name: 'Equipo' }).click();
+    const dentro = elMenu(page).getByRole('navigation', { name: 'Dentro de Equipo' });
+    await dentro.getByRole('button', { name: 'Personas' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Personas');
+    await expect(dentro.getByRole('button', { name: 'Personas' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+
+    // Las apps sin nada construido no se mezclan con las que funcionan.
+    await expect(elMenu(page).getByRole('button', { name: 'Carta', exact: true })).toHaveCount(0);
+    await elMenu(page).getByRole('button', { name: 'Próximamente' }).click();
+    await expect(elMenu(page).getByText('Carta', { exact: true })).toBeVisible();
   });
 
   test('la campana abre los avisos, y el chat dice lo que será', async ({ page }) => {
@@ -179,23 +197,19 @@ test.describe('la barra de escritorio', () => {
     await expect(page).toHaveURL(new RegExp('#/chat$'));
   });
 
-  test('la fila de la derecha son seis, y el avatar abre tu cuenta', async ({ page }) => {
-    /*
-      B5 pide aqui «notificaciones, chat, Fogon y avatar». Se probo a quitar el
-      icono de Ajustes con el argumento de que abria la misma pantalla que el
-      avatar, y **el argumento era medio bueno y la conclusion mala**: en un
-      ordenador hay sitio de sobra, y quien lleva un local entra en Ajustes muchas
-      veces al dia. Que este a un clic y no a dos no es duplicar.
-
-      En movil no cabe, y alli si se queda solo el avatar: eso lo comprueba la
-      prueba de la barra de movil.
-    */
+  test('arriba, lo de toda la app; Ajustes, en el menú; y el avatar abre tu cuenta', async ({
+    page,
+  }) => {
+    // Arriba quedan las herramientas de toda la aplicación, como en la referencia que
+    // trajo Richi: el buscador, la campana, el chat, el claro y el oscuro y tu cara.
+    // Ajustes, que se abre muchas veces al día, va abajo del menú, a un clic.
     await entrar(page);
     const barra = page.getByRole('banner');
 
-    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo', 'Ajustes']) {
+    for (const que of ['Buscar en todo', 'Avisos', 'Chat del equipo', 'Claro', 'Oscuro']) {
       await expect(barra.getByRole('button', { name: new RegExp(que) }).first()).toBeVisible();
     }
+    await expect(elMenu(page).getByRole('button', { name: 'Ajustes' })).toBeVisible();
 
     // Fogón no está arriba: va en el botón «+», en su banner (23-sep y entrega O).
     await expect(barra.getByRole('button', { name: /Fogón/ })).toHaveCount(0);
@@ -694,7 +708,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
             .trim(),
         ),
       )
-      .toBe('#0c1113');
+      .toBe('#15181c'); // el grafito de la experiencia (0083)
 
     // Es del aparato, como el tamaño de letra: tiene que sobrevivir a recargar.
     await recargarSinQueSeCaiga(page);

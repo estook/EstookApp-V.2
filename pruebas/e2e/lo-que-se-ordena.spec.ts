@@ -47,10 +47,10 @@ test('un jefe de cocina arranca con su Panel: fichar y sus objetivos, sin lo del
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
   // Luis tiene el acceso recortado en su local (sin Almacén, semillas): su Panel
   // lleva lo de su puesto que puede ver, y ni un hueco por lo que no.
-  await expect(page.getByRole('heading', { name: 'Fichar' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu jornada' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Objetivos' })).toBeVisible();
   // Lo de quien lleva el local no le sale: las ventas del día son de su gerente.
-  await expect(page.getByRole('heading', { name: 'Ventas de hoy' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Ventas', exact: true })).toHaveCount(0);
 });
 
 // ── 6 · El botón «+» ─────────────────────────────────────────────────────────

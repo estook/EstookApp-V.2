@@ -45,7 +45,7 @@ export function BarraDeArribaDelOrdenador({
   return (
     <header
       className={clases(
-        'sticky top-0 z-30 hidden h-16 items-center gap-e4 px-e6 lg:flex no-imprimir',
+        'sticky top-0 z-30 hidden h-[var(--alto-barra-escritorio)] items-center gap-e4 px-e6 lg:flex no-imprimir',
         'border-b border-borde/70 bg-fondo/80 backdrop-blur-xl backdrop-saturate-150',
       )}
     >

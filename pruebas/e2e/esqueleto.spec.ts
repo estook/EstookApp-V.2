@@ -241,11 +241,13 @@ test.describe('las ocho apps', () => {
     await comoGerente(page);
     await abrir(page, '/almacen/productos');
 
-    await expect(page.getByRole('navigation', { name: 'Donde estas' })).toBeVisible();
-
-    const volver = page.getByRole('button', { name: 'Volver a Panel' });
-    const migaPanel = page.getByRole('button', { name: 'Panel', exact: true });
-    await ((await volver.count()) > 0 ? volver : migaPanel).first().click();
+    // Desde la experiencia (0083): en el ordenador, «Panel» del menú de la izquierda;
+    // en el móvil, el logo del local de la barra de arriba. Las migas ya no hacen falta.
+    const enElMenu = page
+      .getByRole('complementary', { name: 'Menú' })
+      .getByRole('button', { name: 'Panel', exact: true });
+    const elLogo = page.getByRole('button', { name: /^Volver al Panel/ });
+    await ((await enElMenu.isVisible()) ? enElMenu : elLogo).first().click();
 
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
   });
@@ -577,11 +579,14 @@ test.describe('deshacer universal', () => {
     // escritorio es `hidden lg:flex`, asi que en movil el suyo va en la barra de
     // arriba de movil. Sin el, quien trabaja en dos locales no podria cambiar con
     // el telefono, que es el aparato con el que lo va a hacer.
-    const enEscritorio = page.locator('header').getByLabel('Local');
-    const enMovil = page.locator('header').getByLabel('Dónde estás');
-    const selector = (await enEscritorio.isVisible()) ? enEscritorio : enMovil;
-
-    await selector.selectOption({ label: 'Bar Puerto' });
+    // Desde la experiencia (0083), en el ordenador va en el menú de la izquierda.
+    const enElMenu = page.getByRole('button', { name: /Cambiar de local/ });
+    if (await enElMenu.isVisible()) {
+      await enElMenu.click();
+      await page.getByRole('menuitemradio', { name: 'Bar Puerto' }).click();
+    } else {
+      await page.locator('header').getByLabel('Dónde estás').selectOption({ label: 'Bar Puerto' });
+    }
 
     await expect(page.getByRole('button', { name: /Deshacer/ })).toBeVisible();
     // El nombre del local se comprueba en la cabecera del Panel, y **no suelto**:
@@ -651,7 +656,7 @@ test.describe('estados vacios', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
     await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toHaveCount(0);
     await expect(
-      page.getByRole('heading', { level: 2, name: /^(Fichar|Estás dentro)$/ }),
+      page.getByRole('heading', { level: 2, name: /^(Tu jornada|Estás dentro)$/ }),
     ).toBeVisible();
   });
 
@@ -897,17 +902,17 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     // el catalogo lo ofrece siempre, corra esta prueba antes o despues que otras.
     await page.getByRole('button', { name: 'Editar' }).click();
     await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
-    await page.getByRole('button', { name: /Lo último apuntado/ }).click();
-    await expect(page.getByRole('heading', { level: 2, name: 'Lo último apuntado' })).toBeVisible();
+    await page.getByRole('button', { name: /^Gasto en compras/ }).click();
+    await expect(page.getByRole('heading', { level: 2, name: 'Gasto en compras' })).toBeVisible();
 
     // Y sigue ahi al recargar, porque se ha guardado en el servidor.
     await page.getByRole('button', { name: 'Listo' }).click();
     await yaEstaGuardado(page);
     await recargarSinQueSeCaiga(page);
-    await seVe(page, 'ultimos-movimientos', 'Lo último apuntado');
+    await seVe(page, 'gasto-en-compras', 'Gasto en compras');
   });
 
-  test('los widgets de género salen con datos de verdad, y con su origen debajo', async ({
+  test('los widgets de género salen con datos de verdad, y su origen se dice en su detalle', async ({
     page,
   }) => {
     // Vive aquí y no en `pantalla.spec.ts` porque para comprobarlo hay que dejar
@@ -917,11 +922,17 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     await panelDeFabrica(page);
 
     await seVe(page, 'bajo-minimo', 'Bajo mínimo');
-    await seVe(page, 'caducidades', 'Caduca esta semana');
+    await seVe(page, 'caducidades', 'Caduca pronto');
 
-    // «Cada número lleva de dónde sale y de qué periodo es» (Evolución 1.0), sin
-    // excepción, también vacío.
-    await expect(page.getByText('De tu almacén, ahora mismo')).toBeVisible();
+    // «Cada número lleva de dónde sale y de qué periodo es» (Evolución 1.0). Desde la
+    // experiencia (0083) no va debajo de cada widget —poco texto—, sino en su detalle,
+    // que se abre al tocar la cifra o con «ampliar».
+    await enElPanel(page, 'valor-de-la-camara')
+      .getByRole('button', { name: 'Ampliar valor de la cámara' })
+      .click();
+    const detalle = page.getByRole('dialog', { name: 'Valor de la cámara' });
+    await expect(detalle.getByText(/A precio medio, sin IVA/)).toBeVisible();
+    await expect(detalle.getByRole('radiogroup', { name: /de cuántos días/ })).toBeVisible();
   });
 
   test('sigue ahí al recargar, aunque no se pulse «Listo»', async ({ page }) => {
@@ -930,7 +941,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
     await page.getByRole('button', { name: 'Editar' }).click();
     await page
-      .getByRole('button', { name: /^Quitar Caducidades del panel$/ })
+      .getByRole('button', { name: /^Quitar Caduca pronto del panel$/ })
       .first()
       .click();
     await expect(enElPanel(page, 'caducidades')).toHaveCount(0);
@@ -978,7 +989,7 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
     await page.getByRole('button', { name: 'Editar' }).click();
     await page
-      .getByRole('button', { name: /^Quitar Caducidades del panel$/ })
+      .getByRole('button', { name: /^Quitar Caduca pronto del panel$/ })
       .first()
       .click();
     await page
@@ -1079,6 +1090,9 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     // **Alto, como un día con todas las cifras.** Cogido por arriba, su centro queda
     // lejos del dedo: cuando mandaba el centro y no el dedo, se soltaba encima de
     // «Fichar» y no iba ahí. Pasaba en GitHub unas veces sí y otras no (25-sep).
+    // Y con todo cargado: las gráficas llegan aparte (0083), y si llegan a mitad del
+    // arrastre los widgets cambian de alto y el dedo suelta en otro sitio.
+    await page.waitForLoadState('networkidle');
     await page.addStyleTag({ content: '[data-widget="objetivos"] { min-height: 40rem; }' });
     const desde = await enElPanel(page, 'objetivos').boundingBox();
     const hasta = await enElPanel(page, 'fichar').boundingBox();
@@ -1106,38 +1120,45 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
     expect(guardado.indexOf('objetivos')).toBeLessThan(guardado.indexOf('fichar'));
   });
 
-  test('cada uno se pone su cifra, con su periodo, y sigue al recargar', async ({ page }) => {
-    // «Añadir los nuestros», y «gráficas y flechas de subida y bajada».
+  test('cada widget lleva su periodo dentro, y se recuerda al recargar', async ({ page }) => {
+    // «No pongas 7-30 días para elegir el widget, sino que el propio widget tenga esa
+    // opción» (la experiencia, 0083). Antes se elegía al añadirlo, y salían dos «Mis
+    // horas» distintas en el catálogo.
     await comoGerente(page);
     await panelDeFabrica(page);
 
     await page.getByRole('button', { name: 'Editar' }).click();
     await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
-
-    const cifras = page.getByRole('region', { name: 'Tus cifras, con su gráfica' });
-    await cifras.getByRole('radio', { name: /^Mis horas/ }).click();
-    await cifras.getByRole('radio', { name: '30 días' }).click();
-    await cifras.getByRole('button', { name: 'Añadir al panel' }).click();
-
-    // Las horas propias nunca están vacías: cero horas es un dato.
-    await expect(
-      page.getByRole('heading', { level: 2, name: 'Mis horas · 30 días' }),
-    ).toBeVisible();
-
+    await page.getByRole('button', { name: /^Mis horas/ }).click();
     await page.getByRole('button', { name: 'Listo' }).click();
     await yaEstaGuardado(page);
-    await recargarSinQueSeCaiga(page);
-    await expect(
-      page.getByRole('heading', { level: 2, name: 'Mis horas · 30 días' }),
-    ).toBeVisible();
 
-    // Y el catálogo lo dice: el mismo con el mismo periodo no se pone dos veces.
+    // Las horas propias nunca están vacías: cero horas es un dato.
+    const horas = enElPanel(page, 'mis-horas');
+    await expect(horas.getByRole('heading', { level: 2, name: 'Mis horas' })).toBeVisible();
+    await horas.getByRole('radio', { name: '30 días' }).click();
+    await expect(horas.getByRole('radio', { name: '30 días' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+
+    // Al recargar sigue en 30 días: se recuerda en el aparato.
+    await recargarSinQueSeCaiga(page);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(
+      enElPanel(page, 'mis-horas').getByRole('radio', { name: '30 días' }),
+    ).toHaveAttribute('aria-checked', 'true');
+
+    // Y el catálogo lo dice: el mismo no se pone dos veces.
     await page.getByRole('button', { name: 'Editar' }).click();
     await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
-    const otraVez = page.getByRole('region', { name: 'Tus cifras, con su gráfica' });
-    await otraVez.getByRole('radio', { name: /^Mis horas/ }).click();
-    await otraVez.getByRole('radio', { name: '30 días' }).click();
-    await expect(otraVez.getByText('Ya está en tu panel')).toBeVisible();
+    const catalogo = page.getByRole('dialog', { name: 'Añadir al panel' });
+    await expect(
+      catalogo
+        .getByRole('listitem')
+        .filter({ hasText: /^Mis horas/ })
+        .getByText('En tu panel'),
+    ).toBeVisible();
   });
 });
 

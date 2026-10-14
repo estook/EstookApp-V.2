@@ -78,11 +78,7 @@ export function Marco({
             línea: si no, el título se queda en una letra. */}
         {derecha !== undefined && <div className="@max-[17rem]:hidden">{derecha}</div>}
         {alAmpliar !== undefined ? (
-          <BotonDeLaEsquina
-            estrecho
-            etiqueta={`Ampliar ${titulo.toLowerCase()}`}
-            alPulsar={alAmpliar}
-          >
+          <BotonDeLaEsquina etiqueta={`Ampliar ${titulo.toLowerCase()}`} alPulsar={alAmpliar}>
             <IconoAmpliar size={15} />
           </BotonDeLaEsquina>
         ) : (
@@ -124,12 +120,9 @@ export function Marco({
 function BotonDeLaEsquina({
   etiqueta,
   alPulsar,
-  estrecho = false,
   children,
 }: {
   readonly etiqueta: string;
-  /** «Ampliar» se esconde en estrecho: ahí se toca la cifra y se abre igual. */
-  readonly estrecho?: boolean;
   readonly alPulsar: () => void;
   readonly children: ReactNode;
 }) {
@@ -141,7 +134,6 @@ function BotonDeLaEsquina({
       title={etiqueta}
       className={clases(
         '-mr-e1 grid size-9 shrink-0 place-items-center rounded-redondo text-texto-tenue',
-        estrecho && '@max-[17rem]:hidden',
         'transition-colors duration-[--rapido] hover:bg-fondo hover:text-texto',
         // Un blanco de 44 px aunque se vea de 36.
         'relative before:absolute before:-inset-1 before:content-[""]',

@@ -8,7 +8,7 @@ import {
   minutosHasta,
   type CifraDelSemaforo,
 } from '@estook/dominio';
-import { appsVisibles, puedeVer } from '@estook/permisos';
+import { appsVisibles, puedeEditar, puedeVer } from '@estook/permisos';
 import {
   Anillo,
   Avatar,
@@ -694,6 +694,7 @@ function Caducidades() {
 function ComprasDeHoyWidget() {
   const { permisos, yo } = usarSesion();
   const navegar = useNavigate();
+  const puedeTocar = puedeEditar(permisos, 'app.almacen');
   const consulta = usarLectura<ComprasDeHoy>(
     'compras_de_hoy',
     {},
@@ -755,7 +756,10 @@ function ComprasDeHoyWidget() {
                     </Etiqueta>
                   }
                   alPulsar={() => {
-                    navegar(`/almacen/compras/pedidos?pedido=${l.pedidoId}&recibir=1`);
+                    // Recibir, solo quien puede tocar el almacén; los demás, el pedido.
+                    navegar(
+                      `/almacen/compras/pedidos?pedido=${l.pedidoId}${puedeTocar ? '&recibir=1' : ''}`,
+                    );
                   }}
                 />
               ))}

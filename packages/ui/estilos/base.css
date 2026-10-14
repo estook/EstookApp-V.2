@@ -33,7 +33,7 @@
 
     /* Lo que ocupan las barras, para que el contenido no quede debajo. */
     --alto-barra-movil: 60px;
-    --alto-barra-escritorio: 56px;
+    --alto-barra-escritorio: 64px;
   }
 
   :root[data-letra='pequena'] {

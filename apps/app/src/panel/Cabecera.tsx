@@ -13,8 +13,8 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * Ahora es una línea limpia, sin tarjeta: **el logo del local tal cual lo subieron**,
  * grande, y el saludo. Lo de debajo, «Hoy» y el Panel, es lo que se viene a mirar.
  *
- * El `h1` es el saludo: es por donde entra quien navega con lector de pantalla, y
- * las pruebas de acceso lo buscan («Hola»).
+ * El `h1` es el saludo con el local: es por donde entra quien navega con lector de
+ * pantalla, y las pruebas de acceso lo buscan («Hola»).
  */
 export function CabeceraDelPanel() {
   const { yo } = usarSesion();
@@ -32,14 +32,19 @@ export function CabeceraDelPanel() {
           alto={56}
         />
       )}
-      <div className="min-w-0 flex-1">
-        <h1 className="truncate text-[calc(26px*var(--escala))] font-bold leading-tight tracking-[-0.02em] lg:text-[calc(30px*var(--escala))]">
+      {/*
+        El `h1` lleva el saludo **y dónde estás**, en dos líneas: quien entra con lector
+        de pantalla oye «Hola, Rosa. Esto es lo de hoy en Bar Puerto», y al cambiar de
+        local el título cambia con él (las pruebas lo esperan ahí).
+      */}
+      <h1 className="min-w-0 flex-1">
+        <span className="block truncate text-[calc(26px*var(--escala))] font-bold leading-tight tracking-[-0.02em] lg:text-[calc(30px*var(--escala))]">
           Hola, {nombre} <span aria-hidden>👋</span>
-        </h1>
-        <p className="truncate text-secundario text-texto-suave">
+        </span>
+        <span className="block truncate text-secundario font-normal text-texto-suave">
           {donde === '' ? 'Esto es lo de hoy' : `Esto es lo de hoy en ${donde}`}
-        </p>
-      </div>
+        </span>
+      </h1>
     </header>
   );
 }

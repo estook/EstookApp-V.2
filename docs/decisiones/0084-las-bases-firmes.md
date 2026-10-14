@@ -34,7 +34,7 @@ Y las seis mejoras:
 4. **El Panel de fábrica de cada puesto** (seis): quien lleva el local, su jornada, ventas, objetivos, merma, valor de la cámara y equipo ahora; jefe, su jornada, objetivos (el food cost va en su semáforo), caducidades, bajo mínimo, compras y equipo; cocina, su jornada, sus horas, su turno, merma, caducidades y bajo mínimo; sala, como estaba.
 5. Que **el periodo no lleve control de versión**: lo último que se elige es lo que vale; un «lo cambió otra persona» por esto sería ruido.
 6. Que el enlace de una foto se reutilice **media hora** aunque llegue con otra firma (la API las firma para doce horas, y los logos para una).
-7. Que **el aparato de fichar y elegir plan sigan en el paquete inicial**: el aparato tiene que abrir sin señal y no compensa el riesgo por 6 KB.
+7. Que **el aparato de fichar, Mis fichajes y elegir plan sigan en el paquete inicial**: lo que se abre sin señal no puede depender de un trozo aparte. Mis fichajes se partió primero y la prueba de la app instalable lo cazó en GitHub: sin cobertura y con la API lenta, se quedaba sin pintar.
 8. Que un botón pequeño (`tamano="s"`) tenga **menos relleno y letra secundaria, pero el mismo blanco de 44 px**: el toque mínimo de B4 no se negocia.
 9. Que «Cuándo es llegar tarde» deje de decir «el horario de siempre»: desde la 0081 solo cuenta el horario publicado.
 

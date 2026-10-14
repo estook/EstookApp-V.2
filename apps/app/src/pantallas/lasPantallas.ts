@@ -20,6 +20,10 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
  *
  * Una pantalla se añade aquí con su `import()` y su nombre; nada más la importa de
  * golpe, o volvería al paquete inicial sin avisar.
+ *
+ * **Lo que se abre sin señal no va aquí**: «Mis fichajes» sigue en el paquete inicial,
+ * como el aparato de fichar. Partida, al abrirla sin cobertura con la API lenta se
+ * quedaba sin pintar (lo cazó la prueba de la app instalable en GitHub, 14-oct).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- lo que pide `lazy`
 type Pantalla = ComponentType<any>;
@@ -54,9 +58,6 @@ export const Resenas = perezosa(async () => (await import('../negocio/Resenas.ts
 export const Ajustes = perezosa(async () => (await import('./Ajustes.tsx')).Ajustes);
 export const VistaDeCadena = perezosa(
   async () => (await import('./VistaDeCadena.tsx')).VistaDeCadena,
-);
-export const MisFichajes = perezosa(
-  async () => (await import('../equipo/MisFichajes.tsx')).MisFichajes,
 );
 
 let precargadas = false;

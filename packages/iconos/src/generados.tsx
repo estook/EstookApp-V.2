@@ -86,6 +86,12 @@ export const IconoFlechaDerecha = crearIcono('chevron-right', '<path d="m9 18 6-
 /** Lucide `chevron-up` */
 export const IconoFlechaArriba = crearIcono('chevron-up', '<path d="m18 15-6-6-6 6" />');
 
+/** Lucide `chevrons-up-down` */
+export const IconoCambiar = crearIcono(
+  'chevrons-up-down',
+  '<path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" />',
+);
+
 /** Lucide `circle-alert` */
 export const IconoMal = crearIcono(
   'circle-alert',
@@ -218,6 +224,12 @@ export const IconoLocal = crearIcono(
   '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /><circle cx="12" cy="10" r="3" />',
 );
 
+/** Lucide `maximize-2` */
+export const IconoAmpliar = crearIcono(
+  'maximize-2',
+  '<polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" x2="14" y1="3" y2="10" /><line x1="3" x2="10" y1="21" y2="14" />',
+);
+
 /** Lucide `menu` */
 export const IconoMenu = crearIcono(
   'menu',
@@ -258,6 +270,18 @@ export const IconoAlmacen = crearIcono(
 export const IconoColor = crearIcono(
   'palette',
   '<circle cx="13.5" cy="6.5" r=".5" /><circle cx="17.5" cy="10.5" r=".5" /><circle cx="8.5" cy="7.5" r=".5" /><circle cx="6.5" cy="12.5" r=".5" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />',
+);
+
+/** Lucide `panel-left-close` */
+export const IconoPlegar = crearIcono(
+  'panel-left-close',
+  '<rect width="18" height="18" x="3" y="3" rx="2" /><path d="M9 3v18" /><path d="m16 15-3-3 3-3" />',
+);
+
+/** Lucide `panel-left-open` */
+export const IconoDesplegar = crearIcono(
+  'panel-left-open',
+  '<rect width="18" height="18" x="3" y="3" rx="2" /><path d="M9 3v18" /><path d="m14 9 3 3-3 3" />',
 );
 
 /** Lucide `paperclip` */

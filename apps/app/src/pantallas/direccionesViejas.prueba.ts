@@ -2,6 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { laDireccionDeAhora } from './direccionesViejas.ts';
 
 describe('las direcciones de antes del 25-sep', () => {
+  it('Compras en tres (0083): albaranes y precios llevan a su sitio nuevo', () => {
+    expect(laDireccionDeAhora('/almacen/compras/albaranes')).toBe(
+      '/almacen/compras/pedidos?ver=llegado',
+    );
+    expect(laDireccionDeAhora('/almacen/compras/precios')).toBe(
+      '/almacen/compras/proveedores?ver=precios',
+    );
+    expect(laDireccionDeAhora('/almacen/compras/pedidos')).toBeNull();
+  });
+
   it('lo de Inventario va al Almacén, con todo lo que llevaba detrás', () => {
     expect(laDireccionDeAhora('/inventario')).toBe('/almacen');
     expect(laDireccionDeAhora('/inventario/resumen')).toBe('/almacen/resumen');

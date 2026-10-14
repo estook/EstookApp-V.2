@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 import {
   comoVaConSuContrato,
   costeDeUnaHora,
@@ -349,6 +350,7 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
         ultimo_acceso_en: Date | null;
         en_linea: boolean;
         entra_hoy: string | null;
+        foto_clave: string | null;
       }[]
     >`
       with equipo as (
@@ -359,7 +361,7 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
         -- haya personal sin acceso a la aplicación dejarán de coincidir.
         select distinct on (p.id)
                p.id, p.nombre, p.apellidos, p.ultimo_acceso_en, r.nombre as rol_nombre,
-               r.amplitud
+               r.amplitud, p.foto_clave
           from estook.membresia m
           join estook.persona p on p.id = m.persona_id
           join estook.rol r on r.codigo = m.rol
@@ -379,7 +381,7 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
            and p.id in (select q.persona_id from estook.a_quien_lleva(${localId}::uuid) q)
          order by p.id, r.amplitud desc
       )
-      select e.id::text as persona_id, e.nombre, e.apellidos, e.rol_nombre,
+      select e.id::text as persona_id, e.nombre, e.apellidos, e.rol_nombre, e.foto_clave,
              to_char(a.entro_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as desde,
              case when a.entro_en is null then null
                   else floor(a.segundos / 60)::int
@@ -421,8 +423,15 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
        order by (a.entro_en is null), e.nombre
     `;
 
+    // Sus caras (0083), de una tanda.
+    const firmadas = await firmarLasFotos(
+      contexto,
+      filas.map((f) => f.foto_clave),
+    );
+
     const gente = filas.map((f) => ({
       personaId: f.persona_id,
+      foto: laFirmada(firmadas, f.foto_clave),
       nombre: f.nombre,
       apellidos: f.apellidos,
       rolNombre: f.rol_nombre,
@@ -1432,10 +1441,11 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
         ultimo_acceso_en: Date | null;
         en_linea: boolean;
         vigente: boolean;
+        foto_clave: string | null;
       }[]
     >`
       select distinct on (p.id)
-             p.id::text as id, p.nombre, p.apellidos, p.correo,
+             p.id::text as id, p.nombre, p.apellidos, p.correo, p.foto_clave,
              m.rol, r.nombre as rol_nombre, r.amplitud, m.desde,
              estook.visto_por_ultima_vez(p.id) as ultimo_acceso_en,
              -- Con la app abierta y a la vista, no «con una sesión sin cerrar» (0042).
@@ -1543,6 +1553,10 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
       personaId: quien.id,
       nombre: quien.nombre,
       apellidos: quien.apellidos,
+      // Su cara (0083), y si quien mira puede cambiarla: la suya, o quien da accesos.
+      // Lo de verdad lo deciden las políticas de `estook.persona` al guardarla.
+      foto: laFirmada(await firmarLasFotos(contexto, [quien.foto_clave]), quien.foto_clave),
+      puedeCambiarLaFoto: esMia || permisos[0]?.invitar === true,
       ...(veLosDatos ? { correo: quien.correo } : {}),
       sinCorreo: quien.correo === null,
       puedePonerCorreo: quien.correo === null && permisos[0]?.invitar === true && !esMia,

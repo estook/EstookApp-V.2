@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 import type { ComoEstaLaCuenta, Destino as ADonde, Idioma } from '@estook/dominio';
 import { esPermiso, type Nivel, type PermisosResueltos } from '@estook/permisos';
 import type { Sql } from '../../infraestructura/postgres.ts';
@@ -38,6 +39,8 @@ export interface QuienSoy {
   readonly personaId: string;
   readonly nombre: string;
   readonly apellidos: string | null;
+  /** Su foto, firmada, si ha puesto una (la experiencia, 0083). */
+  readonly foto: string | null;
   readonly correo: string;
   readonly idioma: Idioma;
   /** Para el control optimista al cambiar el idioma. */
@@ -179,9 +182,10 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
         correo: string;
         idioma: string;
         version: number;
+        foto_clave: string | null;
       }[]
     >`
-      select id, nombre, apellidos, correo, idioma::text as idioma, version
+      select id, nombre, apellidos, correo, idioma::text as idioma, version, foto_clave
         from estook.persona where id = ${sesion.personaId}
     `;
     const persona = personas[0];
@@ -248,10 +252,17 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
         ? []
         : await rolesQuePuedeDar(sql, destino.organizacionId, sesion.personaId);
 
+    // Su cara (0083), firmada para unas horas: va en la barra de arriba y en el menú.
+    const foto = laFirmada(
+      await firmarLasFotos(contexto, [persona.foto_clave]),
+      persona.foto_clave,
+    );
+
     return {
       personaId: persona.id,
       nombre: persona.nombre,
       apellidos: persona.apellidos,
+      foto,
       correo: persona.correo,
       idioma: persona.idioma as Idioma,
       version: persona.version,

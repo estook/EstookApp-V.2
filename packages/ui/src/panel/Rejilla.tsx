@@ -74,7 +74,7 @@ export function Rejilla(props: RejillaProps) {
   }, !editando);
 
   return (
-    <div className="flex flex-col gap-e3">
+    <div className="@container flex flex-col gap-e3">
       <div className="flex flex-wrap items-center justify-between gap-e2">
         <p className="text-secundario font-medium text-texto-suave">
           {editando ? 'Arrastra para ordenar' : 'Tu panel'}

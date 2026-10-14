@@ -630,3 +630,25 @@
      llegado el aviso a 4 personas», y a tres solo les llegó a la campana, que no ven sin
      abrir Estook: no tenían el móvil puesto y el correo estaba apagado. Antes de dar por
      bueno un aviso se mira **por dónde** llega, en producción, y la pantalla lo dice (0082).
+170. **Lo que va fijo en pantalla no sabe que ha llegado un menú.** Al poner el menú a la
+     izquierda, todo se apartó solo… menos el chat, que va `fixed` para el teclado del
+     iPhone y se quedó debajo del menú: en el ordenador no se podía pulsar ninguna
+     conversación. Lo cazaron las pruebas del chat, no las del menú. Al cambiar la forma de
+     la pantalla se buscan las piezas fijas (`fixed`) una a una (0083).
+171. **Un punto de Recharts sin dato llega con `cy` nulo, no indefinido.** El día de hoy, sin
+     caja, se pintaba como un puntito suelto arriba del todo de la gráfica. Se comprueba
+     `== null`, que coge las dos cosas (0083).
+172. **Las gráficas que llegan tarde mueven lo que se arrastra.** Con la máquina cargada,
+     la prueba de arrastrar un widget fallaba una vez de cada pocas: el dibujo de las
+     gráficas (que se descarga aparte) llegaba a mitad del arrastre, los widgets cambiaban
+     de alto y el dedo soltaba en otro sitio. Sola pasaba siempre. Se espera a que no quede
+     nada por cargar antes de arrastrar (0083).
+173. **Un cambio de aspecto se mira con datos, no con la base vacía.** Con Bar Centro recién
+     sembrado todas las gráficas eran rayas en el suelo y no se podía juzgar ninguna. La
+     API de pruebas lleva desde hoy una historia de un mes que solo se carga si se pide
+     (`CON_HISTORIA=1`), y con ella salieron tres fallos de dibujo (0083).
+174. **Un trozo que se descarga aparte no puede romper la pantalla sin señal.** Las gráficas
+     nuevas llegaban con un `lazy`; sin cobertura su trozo no llegaba, la red de la pantalla
+     recargaba la página para traerlo y se llevaba la hoja de fichar a mitad de fichar. En
+     local pasaba porque el trozo ya estaba descargado: lo cazó GitHub, más lento. Lo que se
+     usa sin señal no depende de lo que se trae aparte (`GraficaViva`, 0083).

@@ -54,14 +54,28 @@ test('Google y el punto exacto van juntos en Tu local, y Conexiones es solo de v
   await expect(page.getByRole('heading', { level: 2, name: 'Dónde está tu local' })).toHaveCount(0);
 });
 
-test('con ocho apps, los iconos de la barra de arriba no se encogen', async ({ page }, info) => {
-  test.skip(info.project.name !== 'escritorio', 'La barra de arriba es del ordenador');
+test('los iconos de las apps no se encogen, ni con el menú abierto ni plegado', async ({
+  page,
+}, info) => {
+  // Era la barra de arriba con ocho apps, que en 1.280 px las encogía. Desde la
+  // experiencia (0083) van en el menú de la izquierda, y se mira en sus dos formas.
+  test.skip(info.project.name !== 'escritorio', 'El menú es del ordenador');
   await page.setViewportSize({ width: 1280, height: 800 });
   await entrarEnLaApp(page, ROSA);
-  const anchos = await page
-    .getByRole('navigation', { name: 'Las apps' })
-    .locator('button > span:first-child svg')
-    .evaluateAll((iconos) => iconos.map((icono) => icono.getBoundingClientRect().width));
-  expect(anchos.length).toBeGreaterThanOrEqual(8);
-  for (const ancho of anchos) expect(ancho).toBeGreaterThanOrEqual(17);
+  const menu = page.getByRole('complementary', { name: 'Menú' });
+  const anchos = () =>
+    menu
+      .getByRole('navigation', { name: 'Las apps' })
+      .locator('button svg')
+      .evaluateAll((iconos) => iconos.map((icono) => icono.getBoundingClientRect().width));
+
+  const abierto = await anchos();
+  // El Panel y las cinco apps con algo construido que tiene quien lleva el local.
+  expect(abierto.length).toBeGreaterThanOrEqual(6);
+  for (const ancho of abierto) expect(ancho).toBeGreaterThanOrEqual(14);
+
+  await menu.getByRole('button', { name: 'Plegar el menú' }).click();
+  const plegado = await anchos();
+  expect(plegado.length).toBeGreaterThanOrEqual(6);
+  for (const ancho of plegado) expect(ancho).toBeGreaterThanOrEqual(16);
 });

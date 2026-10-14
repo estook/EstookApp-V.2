@@ -5,9 +5,10 @@ import {
   IconoSalir,
   IconoTamanoDeLetra,
 } from '@estook/iconos';
-import { Avatar, Hoja, clases } from '@estook/ui';
+import { Hoja, clases } from '@estook/ui';
 import type { ReactNode } from 'react';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { SuCara } from '../equipo/SuCara.tsx';
 
 /**
  * Tu cuenta · la hoja que hay detras del avatar.
@@ -55,7 +56,16 @@ export function MiCuenta({
     <Hoja abierta={abierta} alCerrar={alCerrar} titulo="Tu cuenta">
       <div className="flex flex-col gap-e4">
         <header className="flex items-center gap-e3">
-          <Avatar nombre={yo?.nombre ?? ''} tamano={44} />
+          {/* Tu cara, que se cambia aquí tocándola (0083). */}
+          {yo === null ? null : (
+            <SuCara
+              personaId={yo.personaId}
+              nombre={yo.nombre}
+              foto={yo.foto ?? null}
+              tamano={56}
+              puedeCambiarla
+            />
+          )}
           <div className="min-w-0">
             <p className="truncate text-seccion font-semibold">
               {yo?.nombre}

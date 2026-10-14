@@ -44,6 +44,12 @@
    */
   :root {
     --sombra-tarjeta: 0 1px 2px rgba(17, 28, 31, 0.05), 0 8px 24px -12px rgba(17, 28, 31, 0.14);
+    /*
+     * El brillo de una tarjeta (la experiencia, 0083): en claro, nada; en oscuro, una
+     * luz que cae de arriba y se apaga a media tarjeta. Es lo que hace que el oscuro
+     * se lea como cristal ahumado y no como recuadros planos pegados al fondo.
+     */
+    --relleno-tarjeta: none;
   }
 
   /*
@@ -54,20 +60,26 @@
    * variable de otro sitio seria tener la paleta oscura en dos ficheros.
    */
   :root[data-tema='oscuro'],
-  :root[data-tema='sistema'] {
+  :root[data-tema='sistema'],
+  .zona-oscura {
     /*
-     * Un punto más hondo desde la entrega V (0045): el fondo casi negro y la
-     * tarjeta un escalón por encima, con un filo de luz arriba en vez de un borde
-     * que se vea. Así es como se separan las piezas en un tema oscuro de ahora.
+     * **Grafito** desde la experiencia (0083), y no casi negro: «el tono es oscuro»,
+     * con su «después» de Personas delante. El negro azulado de V (#0c1113) se comía
+     * las tarjetas; el grafito deja ver cada pieza con su brillo, y el texto sigue
+     * pasando B8 (lo mide `contraste.prueba.ts`).
+     *
+     * `.zona-oscura` es **un trozo de pantalla que es oscuro en los dos temas**: el
+     * menú lateral del ordenador. Lleva las mismas fichas, así que todo lo que hay
+     * dentro sale bien sin que ninguna pieza sepa dónde está.
      */
-    --color-fondo: #0c1113;
-    --color-superficie: #151c1f;
-    --color-borde: #243034;
-    --color-borde-fuerte: #56686d;
+    --color-fondo: #15181c;
+    --color-superficie: #1f2328;
+    --color-borde: #2d333a;
+    --color-borde-fuerte: #5d6872;
 
-    --color-texto: #eef2f3;
-    --color-texto-suave: #b9c3c6;
-    --color-texto-tenue: #9aa6a9;
+    --color-texto: #eef1f3;
+    --color-texto-suave: #b8c0c7;
+    --color-texto-tenue: #9ba5ae;
 
     /*
      * `charcoal` no es «el color charcoal»: es **la pieza oscura de la
@@ -75,7 +87,7 @@
      * blanco encima. En oscuro tiene que seguir siendo mas oscura que el texto y
      * mas clara que el fondo, o desaparece contra la pagina.
      */
-    --color-charcoal: #26333a;
+    --color-charcoal: #2b3137;
 
     /* Los cuatro estados, aclarados: los de la paleta clara no llegan aqui. */
     --color-bien: #4ec98a;
@@ -117,9 +129,20 @@
      * blancos en mitad de una pantalla oscura.
      */
     /* En oscuro la sombra no se ve: lo que separa es el filo de luz de arriba. */
-    --sombra-tarjeta: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 12px 32px -16px rgba(0, 0, 0, 0.7);
+    --sombra-tarjeta:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.3),
+      0 16px 40px -18px rgba(0, 0, 0, 0.75);
+    --relleno-tarjeta: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.035) 0%,
+      rgba(255, 255, 255, 0) 55%
+    );
 
     color-scheme: dark;
+  }
+
+  .zona-oscura {
+    color: var(--color-texto);
   }
 
   /*
@@ -170,6 +193,7 @@
       --color-app-cuaderno: #7a6a56;
 
       --sombra-tarjeta: 0 1px 2px rgba(17, 28, 31, 0.05), 0 8px 24px -12px rgba(17, 28, 31, 0.14);
+      --relleno-tarjeta: none;
 
       color-scheme: light;
     }

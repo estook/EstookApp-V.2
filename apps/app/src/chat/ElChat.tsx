@@ -62,7 +62,9 @@ export function ElChat() {
         'fixed inset-x-0 flex bg-fondo',
         conTeclado === null &&
           'z-20 top-[calc(var(--alto-barra-movil)+env(safe-area-inset-top))] bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)-var(--desfase-abajo,0px))]',
-        conTeclado === null && 'lg:top-[var(--alto-barra-escritorio)] lg:bottom-0',
+        // En el ordenador, a la derecha del menú (0083), que va fijo a la izquierda.
+        conTeclado === null &&
+          'lg:top-[var(--alto-barra-escritorio)] lg:bottom-0 lg:left-[var(--ancho-del-menu,0px)]',
         // Por encima de la barra de arriba, que el iPhone ha subido fuera de la vista, y
         // con el hueco de la hora y la batería.
         // Y por encima de la barra de abajo (z-40), que escribiendo sin teclado en

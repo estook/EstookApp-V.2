@@ -15,7 +15,7 @@ export const DONDE_SE_MIRA: Readonly<Record<Indicador, string | null>> = {
   'ticket-medio': '/servicio/jornada/cierre',
   'food-cost': '/servicio/jornada/cierre',
   merma: '/almacen/mermas',
-  compras: '/almacen/compras/albaranes',
+  compras: '/almacen/compras/pedidos?ver=llegado',
   'mis-horas': null,
   'valor-camara': '/almacen/productos',
   'bajo-minimo': '/almacen/productos/bajo-minimo',

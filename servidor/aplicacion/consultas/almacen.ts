@@ -29,7 +29,7 @@ import {
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { porQueNoSeAnula } from '../almacen.ts';
-import { SEGUNDOS_DEL_ENLACE_DE_LA_FOTO } from '../../infraestructura/almacen.ts';
+import { firmarLasFotos } from '../fotos-firmadas.ts';
 
 /**
  * Lo que Almacén enseña (M6).
@@ -653,27 +653,6 @@ function componer(
   };
 
   return producto;
-}
-
-/**
- * Los enlaces de unas fotos, firmados **de una vez** (entrega V, punto 5).
- *
- * Una lista de cincuenta productos no puede costar cincuenta viajes al almacén:
- * se piden todos en una tanda. Y **nunca rompe la lista**: si el almacén no está o
- * no contesta, vuelve vacío, y cada producto sale con su inicial, que es como se
- * veía antes de que hubiera fotos.
- */
-async function firmarLasFotos(
-  contexto: Contexto,
-  claves: readonly (string | null)[],
-): Promise<ReadonlyMap<string, string>> {
-  const deVerdad = claves.filter((clave): clave is string => clave !== null);
-  if (deVerdad.length === 0 || contexto.almacen === null) return new Map();
-  try {
-    return await contexto.almacen.enlaces(deVerdad, SEGUNDOS_DEL_ENLACE_DE_LA_FOTO);
-  } catch {
-    return new Map();
-  }
 }
 
 /** Cada producto con el enlace de su miniatura, de una sola tanda. */

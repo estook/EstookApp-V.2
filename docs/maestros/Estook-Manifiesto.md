@@ -323,7 +323,7 @@ CALENDARIO   ( Mes )   Semana        Dia
 
 > **Ninguna app tiene un «Más».** Un cajón de sastre no responde a ninguna pregunta, así que nadie sabe qué hay dentro hasta que lo abre. Y **un destino que todavía no se ha construido no ocupa posición**: se cuenta aparte, diciendo en qué módulo llega. La tabla entera está en B5 del Plan.
 
-En escritorio, barra superior fija con todas las apps y sus desplegables, y dentro de cada app un menú lateral propio con sus destinos y la pregunta que contesta cada uno. La ficha se abre en panel lateral derecho sin tapar la lista. Atajos: `⌘K` buscador universal · `⌘1`–`⌘8` apps · `⌘G` genera el PDF de la pantalla · `⌘J` Fogón.
+En escritorio, un menú a la izquierda que se pliega, con todas las apps y sus destinos colgando (plegado, el logo del local y el icono de cada app), y arriba una barra fina con el buscador, los avisos, el chat, el claro y el oscuro y tu cara (0083). La ficha se abre en panel lateral derecho sin tapar la lista. Atajos: `⌘K` buscador universal · `⌘1`–`⌘8` apps · `⌘G` genera el PDF de la pantalla · `⌘J` Fogón.
 
 En tableta, por debajo de 1.024 px se comporta como el móvil, y por encima como el ordenador.
 

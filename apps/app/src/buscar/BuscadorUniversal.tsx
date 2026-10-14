@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { IconoAjustes, IconoPanel } from '@estook/iconos';
 import {
   Buscador,
-  destinosConstruidos,
+  destinosQueSeAbren,
   rutaDe,
   type Accion,
   type App,
@@ -114,7 +114,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
         ademas ha tapado a otro que si.
       */
       ...apps.flatMap((app) =>
-        destinosConstruidos(app).map((destino) => ({
+        destinosQueSeAbren(app).map((destino) => ({
           id: `destino-${app.id}-${destino.id}`,
           nombre: `${app.nombre}: ${destino.nombre}`,
           donde: destino.queContesta,

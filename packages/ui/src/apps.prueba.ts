@@ -9,6 +9,7 @@ import {
   appPorId,
   appPorPermiso,
   destinosConstruidos,
+  destinosQueSeAbren,
   destinosQueLlegan,
   dondeEntra,
   dondeEntraEnElDestino,
@@ -16,7 +17,6 @@ import {
   vistasConstruidas,
   vistasQueSeEnsenan,
 } from './apps.ts';
-import { WIDGETS } from './panel/catalogo.ts';
 
 /**
  * M3 · las ocho apps (Partes B3 y B5 del Plan).
@@ -296,9 +296,6 @@ describe('los modulos que se nombran en pantalla', () => {
       }
     }
   }
-  for (const widget of WIDGETS) {
-    if (widget.modulo !== undefined) nombrados.add(widget.modulo);
-  }
   // M6 no lo nombra nada, porque es el que esta construido, y se queda a
   // proposito: lo nombran las pantallas de Almacén.
   nombrados.add('M6');
@@ -325,11 +322,18 @@ describe('lo construido y lo que llega', () => {
     return app;
   };
 
-  it('Almacén tiene sus cinco destinos construidos', () => {
+  it('Almacén tiene cuatro en la barra, y Movimientos se abre aunque no esté', () => {
     // Es la app de M6, y la que demuestra la regla: **ninguna posicion vacia**.
-    // Antes tenia cuatro pestanas y dos no llevaban a ningun sitio; las Mermas son
-    // la quinta desde el 26-sep (0051).
-    expect(destinosConstruidos(laApp('almacen'))).toHaveLength(5);
+    // Antes tenia cuatro pestanas y dos no llevaban a ningun sitio; las Mermas
+    // fueron la quinta desde el 26-sep (0051), y Movimientos salió de la barra en la
+    // experiencia (0083): se llega desde el Resumen y desde el buscador.
+    expect(destinosConstruidos(laApp('almacen')).map((d) => d.id)).toEqual([
+      'resumen',
+      'productos',
+      'compras',
+      'mermas',
+    ]);
+    expect(destinosQueSeAbren(laApp('almacen')).map((d) => d.id)).toContain('movimientos');
     expect(destinosQueLlegan(laApp('almacen'))).toHaveLength(0);
   });
 

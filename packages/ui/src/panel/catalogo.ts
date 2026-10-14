@@ -1,17 +1,5 @@
-import {
-  COMO_ES_EL_INDICADOR,
-  INDICADORES,
-  leerIdDelIndicador,
-  nombreDelIndicador,
-  type Indicador,
-} from '@estook/dominio';
-import {
-  LO_QUE_PIDE_EL_INDICADOR,
-  puedeTenerElIndicador,
-  type Permiso,
-  type PermisoDeApp,
-} from '@estook/permisos';
-import { MODULOS } from '../apps.ts';
+import { leerIdDelIndicador, type Indicador } from '@estook/dominio';
+import type { Permiso, PermisoDeApp } from '@estook/permisos';
 
 /**
  * El catalogo de widgets del Panel · Manifiesto 6.
@@ -32,25 +20,32 @@ import { MODULOS } from '../apps.ts';
  * andamio de pruebas —«apuntar una nota de prueba»— publicado en el Panel de un
  * negocio de verdad.
  *
- * ── Los tres tamanos, y por que hay tres ─────────────────────────────────────
+ * ── Menos, distintos y de un solo tamaño (la experiencia, 0083) ─────────────
  *
- * En un movil el Panel era **una columna**, asi que seis tarjetas eran seis
- * pantallas de scroll para leer cuatro cifras. Con dos columnas y tres tamanos, lo
- * que cabe en un vistazo pasa de una tarjeta a cuatro:
+ * Richi, el 13-oct, con un panel de referencia delante: «reducir widgets
+ * innecesarios, que cada widget tenga su diseño, no todos igual; que no se elijan si
+ * son grandes o pequeños, tamaño único; no pongas 7-30 días para elegir el widget,
+ * sino que el propio widget tenga esa opción; algunas gráficas, si le das clic, se
+ * abren con más información».
  *
- *   `chico`   1 columna  · una cifra con su origen. Cuatro por pantalla de movil
- *   `ancho`   2 columnas · una lista corta, o una cifra con su comparacion
- *   `grande`  2 columnas y doble alto · una grafica, o una lista de verdad
+ * Así que:
  *
- * Cada widget declara **que tamanos admite**, y ninguno admite todos: una grafica
- * en un cuadrado de 1×1 no es una grafica pequena, es una mancha.
+ *   · **Dieciséis widgets en vez de cuarenta y tantos.** Antes cada una de las trece
+ *     cifras salía dos veces (7 y 30 días) además de los widgets propios, y varias
+ *     decían lo mismo con otro marco: «Merma» y «Merma · 7 días», «Valor de la
+ *     cámara» dos veces, «Personas» y «Quién está trabajando». Se juntan: la merma
+ *     es **una**, con su gráfica, su periodo dentro y su botón de apuntar.
+ *   · **Cada uno, su tamaño**, el que pide su dibujo: una cifra con su línea cabe en
+ *     una columna (`chico`); una lista o una gráfica que se lee, en dos (`ancho`).
+ *     Ya no se elige: un widget que admite tres tamaños acaba bien en uno solo.
+ *   · **El periodo, dentro**: los que tienen gráfica llevan su «7 d · 30 d», y se
+ *     recuerda en el aparato.
+ *   · **Lo que llega en otro módulo no se ofrece**: «lo que todavía no existe no se
+ *     enseña en pantallas que se usan» (0045). Llegará con su módulo.
  *
- * ── Y lo que no esta construido, se dice ─────────────────────────────────────
- *
- * Un widget con `modulo` puesto **no se puede anadir**: sale en el catalogo, en
- * gris, con el modulo en el que llega. Es informacion util —saber que va a haber
- * un widget de Pulse cambia como te montas el Panel hoy— y no es un boton mudo,
- * porque no se puede pulsar.
+ * Los Paneles guardados con los de antes **no se pierden**: `MUDANZAS` dice en qué
+ * se ha convertido cada uno («indicador-merma-7» es ahora «merma») y, si dos acaban
+ * en el mismo, se queda uno.
  */
 
 /** Cuanto ocupa un widget en la rejilla. */
@@ -68,320 +63,204 @@ export const CUANTO_OCUPA: Readonly<
 export interface Widget {
   readonly id: string;
   readonly nombre: string;
-  /** Que ensena, en una frase. Es lo que se lee en el catalogo al anadirlo. */
+  /** Qué enseña, en una frase. Es lo que se lee en el catálogo al añadirlo. */
   readonly queEnsena: string;
   /**
    * El permiso que hace falta para verlo.
    *
    * Nulo cuando no hace falta ninguno —«mi turno» lo tiene cualquiera—. Los que
    * piden uno **no se ofrecen** a quien no lo tiene: un cocinero no ve en el
-   * catalogo un widget de margen, ni apagado, porque no es que le falte un modulo,
-   * es que no es para el.
+   * catálogo un widget de margen, ni apagado, porque no es para él.
    *
-   * ── Y por que es `Permiso` y no `PermisoDeApp` ─────────────────────────────
-   *
-   * Porque hay widgets cuyo publico **no coincide con ninguna app**. Fichar lo
-   * hace un cocinero, que no tiene la app Equipo: su permiso es `accion.fichar`.
-   * Y las ventas del dia las ve un jefe de sala, que no tiene la app Negocio: su
-   * permiso es `dato.ventas`. Limitar esto a las ocho apps obligaba a colgar cada
-   * widget de la app mas parecida, y entonces la mitad de la plantilla no veia el
-   * boton que existe para ella.
+   * Es `Permiso` y no `PermisoDeApp` porque hay widgets cuyo público **no coincide
+   * con ninguna app**: fichar lo hace un cocinero, que no tiene Equipo
+   * (`accion.fichar`), y las ventas las ve un jefe de sala, que no tiene Negocio
+   * (`dato.ventas`).
    */
   readonly permiso: Permiso | null;
   /** Un segundo permiso, cuando hacen falta dos (el food cost: ventas y costes). */
   readonly yTambien?: Permiso;
-  /** Los tamanos que admite. El primero es el que se pone al anadirlo. */
-  readonly tamanos: readonly TamanoDeWidget[];
-  /** Si todavia no esta construido, el modulo que lo trae. */
-  readonly modulo?: string;
+  /** Su tamaño, el único (la experiencia, 0083). */
+  readonly tamano: TamanoDeWidget;
+  /**
+   * La cifra que pinta, si es un widget de cifra: su gráfica, su periodo dentro y su
+   * detalle al tocarla salen de `un_indicador`, el mismo número que en cada app.
+   * Quien no puede ver esa cifra (la merma en euros, para un cocinero) ve el widget
+   * sin ella: lo que pide verlo lo dicen `permiso` y `yTambien`.
+   */
+  readonly indicador?: Indicador;
 }
 
 /**
- * Los widgets, en el orden en el que se ofrecen al anadir.
- *
- * El orden no es alfabetico: va de lo que hay que atender a lo que se consulta,
- * que es el orden en el que alguien se monta un Panel.
+ * Los widgets, en el orden en el que se ofrecen al añadir: de lo que hay que
+ * atender a lo que se consulta, que es el orden en el que alguien se monta un Panel.
  */
 export const WIDGETS: readonly Widget[] = [
-  // ── Lo que hay que atender ─────────────────────────────────────────────────
-  {
-    id: 'caducidades',
-    nombre: 'Caducidades',
-    queEnsena: 'Lo que caduca esta semana, con su lote y sus días',
-    permiso: 'app.almacen',
-    tamanos: ['ancho', 'grande'],
-  },
+  // ── Lo que hay que atender ──────────────────────────────────────────────────
   {
     id: 'bajo-minimo',
     nombre: 'Bajo mínimo',
-    queEnsena: 'Lo que hay que pedir, con su previsión de agotamiento',
+    queEnsena: 'Lo que hay que pedir, con cuánto queda de su mínimo',
     permiso: 'app.almacen',
-    tamanos: ['ancho', 'grande'],
+    tamano: 'ancho',
   },
-  /**
-   * Compras de hoy (M7) · a quién toca pedir, lo que llega y lo que espera a
-   * mandarse. Es el aviso del Manifiesto 28 —«el bajo mínimo sabe qué día reparte
-   * tu proveedor»— puesto donde se mira cada mañana, con su botón.
-   */
+  {
+    id: 'caducidades',
+    nombre: 'Caduca pronto',
+    queEnsena: 'Lo que caduca esta semana, día a día',
+    permiso: 'app.almacen',
+    tamano: 'ancho',
+  },
   {
     id: 'pedidos',
     nombre: 'Compras de hoy',
-    queEnsena: 'A quién toca pedir hoy, lo que llega y lo que espera a mandarse',
+    queEnsena: 'A quién toca pedir hoy y lo que llega',
     permiso: 'app.almacen',
-    tamanos: ['ancho', 'grande'],
+    tamano: 'ancho',
   },
-  /**
-   * Lo que viene (M7) · hoy y mañana, del Calendario de todos (0031).
-   *
-   * Estaba apagado con «llega con M14», y M7 es el primer módulo que **publica**
-   * en el Calendario: las entregas de los proveedores, los repartos y las
-   * caducidades. El Calendario entero —mes, semana, turnos y tareas— sigue siendo
-   * M14; lo de hoy y mañana ya tiene de qué llenarse.
-   */
   {
     id: 'calendario',
     nombre: 'Lo que viene',
-    queEnsena: 'Hoy y mañana: las entregas de tus proveedores, lo que caduca y los avisos',
+    queEnsena: 'Hoy y mañana: entregas, caducidades y avisos',
     permiso: 'app.calendario',
-    tamanos: ['ancho', 'grande'],
+    tamano: 'ancho',
   },
+
+  // ── Cifras ──────────────────────────────────────────────────────────────────
   {
-    id: 'sin-precio',
-    nombre: 'Productos sin precio',
-    queEnsena: 'Cuántos cuentan cero en el valor de la cámara, y cuáles',
-    permiso: 'app.almacen',
-    tamanos: ['chico', 'ancho'],
+    id: 'ventas',
+    nombre: 'Ventas',
+    queEnsena: 'Lo facturado día a día, con el ticket medio y las cajas',
+    permiso: 'dato.ventas',
+    tamano: 'ancho',
+    indicador: 'ventas',
   },
-  // ── Las cifras ─────────────────────────────────────────────────────────────
-  {
-    id: 'valor-de-la-camara',
-    nombre: 'Valor de la cámara',
-    queEnsena: 'Lo que vale el género que hay, a precio medio ponderado',
-    permiso: 'app.almacen',
-    tamanos: ['chico', 'ancho'],
-  },
-  {
-    id: 'cuanto-genero',
-    nombre: 'Cuánto género',
-    queEnsena: 'Cuántos productos tienes dados de alta',
-    permiso: 'app.almacen',
-    tamanos: ['chico'],
-  },
-  /**
-   * Los objetivos con su semáforo (entrega O, mejora 17 · 0047).
-   *
-   * Food cost, personal, coste primo, merma y ventas de la semana, cada uno en
-   * verde, ámbar o rojo frente a su objetivo y **con su porqué**. Pide ver las
-   * ventas, que es de lo que cuelgan casi todas; cada cifra pide además lo suyo, y
-   * el servidor no manda la que no se puede ver.
-   */
   {
     id: 'objetivos',
     nombre: 'Objetivos',
-    queEnsena: 'Cómo vas esta semana frente a tus objetivos, en verde, ámbar o rojo, y por qué',
+    queEnsena: 'Cómo vas frente a tus objetivos, en un vistazo',
     permiso: 'dato.ventas',
-    tamanos: ['ancho', 'grande'],
-  },
-  // ── Lo que se hace ─────────────────────────────────────────────────────────
-  {
-    id: 'acciones-rapidas',
-    nombre: 'Acciones rápidas',
-    queEnsena: 'Los botones que tú elijas, de cualquier app',
-    permiso: null,
-    tamanos: ['ancho', 'grande'],
+    tamano: 'ancho',
   },
   {
-    id: 'mis-apps',
-    nombre: 'Tus apps',
-    queEnsena: 'Las apps que tienes en tu acceso, para entrar de un toque',
-    permiso: null,
-    tamanos: ['ancho', 'grande'],
-  },
-  /**
-   * ── «Tu equipo» partido en dos, y el original fuera ───────────────────────
-   *
-   * Había un solo widget que enseñaba la plantilla entera en pastillas, y ocupaba
-   * media pantalla de un TPV para contestar algo que no se pregunta a diario:
-   * quién tiene acceso. Para eso se entra en Equipo.
-   *
-   * Lo que sí se pregunta cada mañana son **dos cosas distintas**, y por eso son
-   * dos widgets y cada uno se pone o no se pone:
-   *
-   *   `fichajes`  ¿quién está trabajando ahora, desde cuándo, y quién falta?
-   *   `personas`  ¿quién hay, quién está en línea, y cuándo se le vio?
-   *
-   * El de fichajes es el de un jefe de cocina a las siete de la tarde. El de
-   * personas es el de quien lleva el local y quiere saber a quién le falta
-   * estrenar el PIN. Juntos eran una tarjeta que no contestaba ninguna de las dos.
-   */
-  {
-    id: 'fichajes',
-    nombre: 'Quién está trabajando',
-    queEnsena: 'Quién ha fichado, desde cuándo, y quién todavía no',
-    permiso: 'app.equipo',
-    tamanos: ['ancho', 'grande'],
-  },
-  {
-    id: 'personas',
-    nombre: 'Personas',
-    queEnsena: 'Tu equipo, quién está en línea y cuándo se le vio por última vez',
-    permiso: 'app.equipo',
-    tamanos: ['ancho', 'grande'],
-  },
-  /**
-   * Fichar, desde el Panel.
-   *
-   * ── Por qué esto es un widget y no una pantalla ───────────────────────────
-   *
-   * Porque un cocinero **no tiene la app Equipo**: la matriz de M1 no se la da, y
-   * con razón. Si fichar viviera solo dentro de Equipo, la mitad de la plantilla
-   * no podría fichar, que es justo la mitad que ficha.
-   *
-   * Así que vive donde vive todo el mundo cada mañana: el Panel. Su permiso es
-   * `accion.fichar`, que es exactamente quién lo necesita.
-   */
-  {
-    id: 'fichar',
-    nombre: 'Fichar',
-    queEnsena: 'Entrar y salir de tu turno, y las horas que llevas',
-    permiso: 'accion.fichar',
-    tamanos: ['chico', 'ancho'],
+    id: 'food-cost',
+    nombre: 'Food cost',
+    queEnsena: 'Lo que se va en género de cada cien euros que entran',
+    permiso: 'dato.ventas',
+    yTambien: 'dato.precio_de_compra',
+    tamano: 'chico',
+    indicador: 'food-cost',
   },
   {
     id: 'merma',
     nombre: 'Merma',
-    queEnsena: 'Lo que se ha ido hoy sin venderse, y el botón para apuntarlo',
-    // Con el permiso de apuntar merma, y no con Almacén: el camarero no tiene
-    // la app y es quien rompe una copa.
+    queEnsena: 'Lo que se ha tirado, día a día, y el botón para apuntarlo',
     permiso: 'accion.registrar_merma',
-    tamanos: ['ancho', 'grande'],
+    tamano: 'chico',
+    indicador: 'merma',
   },
   {
-    id: 'ultimos-movimientos',
-    nombre: 'Lo último apuntado',
-    queEnsena: 'Las últimas entradas, salidas y ajustes, con quién las apuntó',
+    id: 'valor-de-la-camara',
+    nombre: 'Valor de la cámara',
+    queEnsena: 'Lo que vale el género que tienes, y cómo cambia',
     permiso: 'app.almacen',
-    tamanos: ['ancho', 'grande'],
+    yTambien: 'dato.precio_de_compra',
+    tamano: 'chico',
+    indicador: 'valor-camara',
   },
-  /**
-   * Las ventas del día · **ya no espera a M20**.
-   *
-   * Estaba apagada con «llega con M20» porque la cifra iba a venir del TPV. Y el
-   * TPV es una conexión que media hostelería no va a hacer nunca, así que el
-   * widget habría seguido apagado para ellos para siempre.
-   *
-   * Desde M6½ la cifra sale del **cierre de caja**, que se apunta a mano, se sube
-   * de un CSV o se saca de una foto del Z. Cuando llegue el conector de M20, lo
-   * que traiga se guarda en la misma tabla y este widget no se entera.
-   */
   {
-    id: 'ventas-de-hoy',
-    nombre: 'Ventas de hoy',
-    queEnsena: 'Lo que ha entrado hoy, con lo que se ha gastado de género al lado',
-    permiso: 'dato.ventas',
-    tamanos: ['chico', 'ancho'],
+    id: 'gasto-en-compras',
+    nombre: 'Gasto en compras',
+    queEnsena: 'Lo que ha entrado de género, sin IVA',
+    permiso: 'app.almacen',
+    yTambien: 'dato.precio_de_compra',
+    tamano: 'chico',
+    indicador: 'compras',
   },
 
-  // ── Y los que llegan con su modulo ─────────────────────────────────────────
+  // ── Tu equipo ───────────────────────────────────────────────────────────────
   {
-    id: 'pulse',
-    nombre: 'Estook Pulse',
-    queEnsena: 'La salud del negocio en un número, con su explicación',
-    permiso: 'app.negocio',
-    tamanos: ['ancho', 'grande'],
-    modulo: 'M21',
-  },
-  {
-    id: 'margen',
-    nombre: 'Dónde se va el margen',
-    queEnsena: 'Las cuatro fugas principales, con lo que cuesta cada una',
-    permiso: 'app.negocio',
-    tamanos: ['ancho', 'grande'],
-    modulo: 'M21',
+    id: 'fichajes',
+    nombre: 'Equipo ahora',
+    queEnsena: 'Quién está dentro, sus horas y los retrasos',
+    permiso: 'app.equipo',
+    tamano: 'ancho',
   },
   {
     id: 'mi-turno',
     nombre: 'Mi turno',
-    queEnsena: 'Mi turno de hoy, con quién coincido, y mi semana',
+    queEnsena: 'Tu turno de hoy y con quién coincides',
     permiso: null,
-    tamanos: ['chico', 'ancho'],
-    // Construido en H2 (0069): hoy, con quién, y la semana en pequeño.
+    tamano: 'ancho',
   },
   {
-    id: 'platos-bajo-objetivo',
-    nombre: 'Platos bajo objetivo',
-    queEnsena: 'Los que están dejando menos margen del que te pusiste',
-    permiso: 'app.escandallos',
-    tamanos: ['ancho', 'grande'],
-    modulo: 'M9',
+    id: 'mis-horas',
+    nombre: 'Mis horas',
+    queEnsena: 'Lo que has trabajado cada día',
+    permiso: null,
+    tamano: 'chico',
+    indicador: 'mis-horas',
+  },
+
+  // ── Atajos ──────────────────────────────────────────────────────────────────
+  {
+    id: 'fichar',
+    nombre: 'Tu jornada',
+    queEnsena: 'Entrar, salir y la pausa, con tus horas de hoy',
+    permiso: 'accion.fichar',
+    tamano: 'chico',
   },
   {
-    id: 'pedidos-delivery',
-    nombre: 'Pedidos de delivery',
-    queEnsena: 'Los pedidos que están entrando de Uber Eats, con su hora y su estado',
-    permiso: 'app.servicio',
-    tamanos: ['ancho', 'grande'],
-    modulo: 'M29',
+    id: 'acciones-rapidas',
+    nombre: 'Atajos',
+    queEnsena: 'Los botones que tú elijas, de cualquier app',
+    permiso: null,
+    tamano: 'ancho',
   },
   {
-    id: 'avisos-de-fogon',
-    nombre: 'Avisos de Fogón',
-    queEnsena: 'Lo que Fogón ha visto mientras no mirabas, con su botón',
-    permiso: 'app.fogon',
-    tamanos: ['ancho', 'grande'],
-    modulo: 'M22',
+    id: 'mis-apps',
+    nombre: 'Tus apps',
+    queEnsena: 'Tus apps, para entrar de un toque',
+    permiso: null,
+    tamano: 'ancho',
   },
 ];
 
-export function widgetPorId(id: string): Widget | undefined {
-  return WIDGETS.find((widget) => widget.id === id) ?? widgetDelIndicador(id);
-}
-
-/** Las unidades de lo que se cuenta: en grande no dicen más que en ancho. */
-const SE_CUENTA: readonly string[] = ['cuenta', 'dias'];
-
 /**
- * Un indicador puesto en el Panel, como widget (0039).
- *
- * No está en `WIDGETS` porque no es uno: es una familia —seis cifras por dos
- * periodos— y lo elegido va en el identificador (`indicador-ventas-7`). Lo que
- * pide para verse sale de `@estook/permisos`, que es lo mismo que comprueba el
- * servidor.
- *
- * Es el único widget que admite los tres tamaños, y no por descuido: una cifra
- * con su flecha cabe en un cuadrado, con su línea en uno ancho y con la línea
- * grande y sus días en uno grande.
- *
- * **Salvo lo que se cuenta** (repaso del 9-oct, punto 4): «no tiene sentido que
- * "Retrasos" se pueda hacer grande, solo muestra un número». Lo que se cuenta —los
- * retrasos, los productos bajo mínimo, los días con la caja cerrada— son números
- * pequeños y unas barras cortas: en grande ocupan el doble y no dicen nada más. Se
- * quedan en chico y ancho; uno ya puesto en grande se pinta en el primero que admite.
+ * En qué se ha convertido cada widget de antes (la experiencia, 0083). Lo que no
+ * está aquí ni en `WIDGETS` se deja de pintar: no decía nada que no diga otro.
  */
-function widgetDelIndicador(id: string): Widget | undefined {
+export const MUDANZAS: Readonly<Record<string, string>> = {
+  'ventas-de-hoy': 'ventas',
+  'sin-precio': 'bajo-minimo',
+  personas: 'fichajes',
+  'indicador-ventas': 'ventas',
+  'indicador-ticket-medio': 'ventas',
+  'indicador-cierres': 'ventas',
+  'indicador-food-cost': 'food-cost',
+  'indicador-merma': 'merma',
+  'indicador-compras': 'gasto-en-compras',
+  'indicador-mis-horas': 'mis-horas',
+  'indicador-valor-camara': 'valor-de-la-camara',
+  'indicador-bajo-minimo': 'bajo-minimo',
+  'indicador-horas-equipo': 'fichajes',
+  'indicador-coste-personal': 'fichajes',
+  'indicador-retrasos': 'fichajes',
+  'indicador-incidencias': 'fichajes',
+};
+
+/** El id de ahora de un widget guardado, sea de los de antes o no. */
+export function idDeAhora(id: string): string {
   const leido = leerIdDelIndicador(id);
-  if (leido === null) return undefined;
-  const pide = LO_QUE_PIDE_EL_INDICADOR[leido.indicador];
-  return {
-    id,
-    nombre: nombreDelIndicador(leido.indicador, leido.dias),
-    queEnsena: COMO_ES_EL_INDICADOR[leido.indicador].queEnsena,
-    permiso: pide[0] ?? null,
-    ...(pide[1] === undefined ? {} : { yTambien: pide[1] }),
-    tamanos: SE_CUENTA.includes(COMO_ES_EL_INDICADOR[leido.indicador].unidad)
-      ? ['ancho', 'chico']
-      : ['ancho', 'chico', 'grande'],
-  };
+  if (leido !== null) return MUDANZAS[`indicador-${leido.indicador}`] ?? id;
+  return MUDANZAS[id] ?? id;
 }
 
-/** Los indicadores que esta persona puede ponerse, en el orden del dominio. */
-export function losIndicadoresQueSePuedenTener(
-  tienePermiso: (permiso: Permiso) => boolean,
-): readonly Indicador[] {
-  return INDICADORES.filter((indicador) => puedeTenerElIndicador(tienePermiso, indicador));
+export function widgetPorId(id: string): Widget | undefined {
+  const deAhora = idDeAhora(id);
+  return WIDGETS.find((widget) => widget.id === deAhora);
 }
 
-/** Si esta persona puede tener este widget: su permiso y, si pide dos, el otro. */
 function sePuedeTener(widget: Widget, tienePermiso: (permiso: Permiso) => boolean): boolean {
   return (
     (widget.permiso === null || tienePermiso(widget.permiso)) &&
@@ -389,42 +268,15 @@ function sePuedeTener(widget: Widget, tienePermiso: (permiso: Permiso) => boolea
   );
 }
 
-/** El nombre entero del modulo de un widget, o nada si esta construido. */
-export function cuandoLlega(widget: Widget): string | null {
-  if (widget.modulo === undefined) return null;
-  return MODULOS[widget.modulo] ?? widget.modulo;
-}
-
-/** Un widget puesto en el Panel de alguien: cual, y de que tamano. */
+/** Un widget puesto en la rejilla de alguien. */
 export interface WidgetPuesto {
   readonly id: string;
   readonly tamano: TamanoDeWidget;
 }
 
 /**
- * Con qué Panel empieza cada puesto · «Nadie empieza con el Panel vacío» (mejora 9).
- *
- * Hasta la entrega O había **uno** para todos, filtrado por permisos: el cocinero y
- * la gerente arrancaban con las mismas tarjetas menos las que no podían ver. Ahora
- * hay uno por **puesto**, pensado para lo que cada uno mira al abrir la app, como lo
- * hacen las que mejor lo resuelven (7shifts, Toast, MarketMan): quien ficha y
- * cocina ve fichar, lo que caduca y lo que falta; quien lleva el local ve ventas,
- * costes y su semáforo.
- *
- * ── Cómo se sabe el puesto, y por qué no se pregunta el rol ─────────────────
- *
- * **Por permisos**, no por nombre de rol. Hay doce roles y la matriz vive en la base
- * de datos: una lista por rol aquí sería una segunda copia de la matriz, y se
- * separaría de la de verdad en cuanto alguien recortara un permiso a un local (que M1
- * permite hacer). Se pregunta lo mismo que pregunta la rueda:
- *
- *   gerente   ve lo que cuesta el personal y las ventas: lleva el local
- *   jefe      ve las ventas, pero no lo que cobra cada uno (jefe de cocina o de sala)
- *   cocina    ve el género, y ni un euro de ventas
- *   sala      ni lo uno ni lo otro: ficha, apunta la merma y mira lo que viene
- *
- * Y todo pasa después por `loQueSePuedePintar`, así que un widget que alguien no
- * pueda ver no llega aunque su puesto lo traiga.
+ * El Panel de cada puesto (entrega O, mejora 4): lo que trae quien no ha tocado el
+ * suyo, sacado de lo que su rol puede ver.
  */
 export type Puesto = 'gerente' | 'jefe' | 'cocina' | 'sala';
 
@@ -442,63 +294,60 @@ export function elPuestoDe(tienePermiso: (permiso: Permiso) => boolean): Puesto 
   return 'sala';
 }
 
-export const PANEL_DEL_PUESTO: Readonly<Record<Puesto, readonly WidgetPuesto[]>> = {
-  // Su reloj arriba, como todos; lo que ha entrado hoy, y el semáforo, que ya lleva
-  // el food cost, el personal y el coste primo: otra tarjeta con el food cost sería
-  // la misma cifra dos veces.
-  //
-  // Después, lo que el Manifiesto le pone a quien lleva el local y ya existe: lo que
-  // vale la cámara y lo tirado esta semana, lo que está bajo mínimo, quién está
-  // trabajando, las compras de hoy, lo que caduca y lo que viene.
+/**
+ * Lo que trae cada puesto, en orden. Solo los ids: el tamaño es el de cada widget,
+ * y el mosaico los encaja sin huecos.
+ */
+const DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
+  // El reloj arriba a la izquierda en todos (mejora 9), y para quien lleva el local,
+  // lo que ha entrado y el semáforo justo al lado. El food cost va en el semáforo: no
+  // se repite en otra tarjeta.
   gerente: [
-    { id: 'fichar', tamano: 'chico' },
-    { id: 'ventas-de-hoy', tamano: 'chico' },
-    { id: 'objetivos', tamano: 'grande' },
-    { id: 'valor-de-la-camara', tamano: 'chico' },
-    { id: 'indicador-merma-7', tamano: 'chico' },
-    { id: 'bajo-minimo', tamano: 'ancho' },
-    { id: 'fichajes', tamano: 'ancho' },
-    { id: 'pedidos', tamano: 'ancho' },
-    { id: 'caducidades', tamano: 'ancho' },
-    { id: 'calendario', tamano: 'ancho' },
+    'fichar',
+    'ventas',
+    'objetivos',
+    'merma',
+    'valor-de-la-camara',
+    'bajo-minimo',
+    'fichajes',
+    'pedidos',
+    'caducidades',
+    'calendario',
   ],
-  // Lo suyo del día, cómo va su food cost día a día (la línea, que el semáforo no
-  // enseña) y su gente.
   jefe: [
-    { id: 'fichar', tamano: 'chico' },
-    { id: 'indicador-food-cost-7', tamano: 'chico' },
-    { id: 'objetivos', tamano: 'ancho' },
-    { id: 'caducidades', tamano: 'ancho' },
-    { id: 'bajo-minimo', tamano: 'ancho' },
-    { id: 'pedidos', tamano: 'ancho' },
-    { id: 'fichajes', tamano: 'ancho' },
-    { id: 'calendario', tamano: 'ancho' },
+    'fichar',
+    'food-cost',
+    'objetivos',
+    'caducidades',
+    'bajo-minimo',
+    'pedidos',
+    'fichajes',
+    'calendario',
   ],
-  // Fichar arriba a la izquierda, su turno de la semana (H2), y lo que caduca, lo
-  // que falta y lo que llega.
   cocina: [
-    { id: 'fichar', tamano: 'chico' },
-    { id: 'indicador-mis-horas-7', tamano: 'chico' },
-    { id: 'mi-turno', tamano: 'ancho' },
-    { id: 'caducidades', tamano: 'ancho' },
-    { id: 'bajo-minimo', tamano: 'ancho' },
-    { id: 'merma', tamano: 'ancho' },
-    { id: 'pedidos', tamano: 'ancho' },
-    { id: 'calendario', tamano: 'ancho' },
+    'fichar',
+    'mis-horas',
+    'mi-turno',
+    'caducidades',
+    'bajo-minimo',
+    'merma',
+    'pedidos',
+    'calendario',
   ],
-  // Fichar, sus horas, su turno de la semana (H2), la merma que rompe una copa y lo
-  // que viene. «Ver tu turno y con quién lo haces» es lo que Roles le dibuja.
-  sala: [
-    { id: 'fichar', tamano: 'chico' },
-    { id: 'indicador-mis-horas-7', tamano: 'chico' },
-    { id: 'mi-turno', tamano: 'ancho' },
-    { id: 'merma', tamano: 'ancho' },
-    { id: 'calendario', tamano: 'ancho' },
-    { id: 'mis-apps', tamano: 'ancho' },
-  ],
+  sala: ['fichar', 'mis-horas', 'mi-turno', 'merma', 'calendario', 'mis-apps'],
 };
 
-/** El de fábrica de quien mira: el de su puesto, sin lo que no puede ver. */
+function puesto(id: string): WidgetPuesto {
+  return { id, tamano: WIDGETS.find((w) => w.id === id)?.tamano ?? 'ancho' };
+}
+
+export const PANEL_DEL_PUESTO: Readonly<Record<Puesto, readonly WidgetPuesto[]>> = {
+  gerente: DEL_PUESTO.gerente.map(puesto),
+  jefe: DEL_PUESTO.jefe.map(puesto),
+  cocina: DEL_PUESTO.cocina.map(puesto),
+  sala: DEL_PUESTO.sala.map(puesto),
+};
+
 export function elPanelDeFabrica(
   tienePermiso: (permiso: Permiso) => boolean,
 ): readonly WidgetPuesto[] {
@@ -506,13 +355,8 @@ export function elPanelDeFabrica(
 }
 
 /**
- * Deja la lista guardada en algo que se pueda pintar.
- *
- * Quita lo que ya no existe, lo que esta sin construir y lo que esta persona no
- * puede ver, y corrige un tamano que el widget no admita. **Nada de esto es
- * paranoia**: la lista la guardo un navegador hace meses, puede nombrar un widget
- * que se quito, y a esa persona le pueden haber recortado un permiso desde
- * entonces. Un Panel guardado no es una promesa de que todo siga estando.
+ * Lo que se puede pintar de un Panel guardado: cada widget con su id de ahora y su
+ * único tamaño, sin repetidos y sin lo que el rol ya no puede ver.
  */
 export function loQueSePuedePintar(
   puestos: readonly WidgetPuesto[],
@@ -520,77 +364,55 @@ export function loQueSePuedePintar(
 ): readonly WidgetPuesto[] {
   const vistos = new Set<string>();
 
-  return puestos.flatMap((puesto) => {
-    if (vistos.has(puesto.id)) return [];
-    const widget = widgetPorId(puesto.id);
+  return puestos.flatMap((guardado) => {
+    const widget = widgetPorId(guardado.id);
     if (widget === undefined) return [];
-    if (widget.modulo !== undefined) return [];
+    if (vistos.has(widget.id)) return [];
     if (!sePuedeTener(widget, tienePermiso)) return [];
 
-    vistos.add(puesto.id);
-    const tamano = widget.tamanos.includes(puesto.tamano)
-      ? puesto.tamano
-      : (widget.tamanos[0] ?? 'ancho');
-    return [{ id: puesto.id, tamano }];
+    vistos.add(widget.id);
+    return [{ id: widget.id, tamano: widget.tamano }];
   });
 }
 
-/** Los que se pueden anadir hoy: construidos y con permiso, y no puestos ya. */
+/** Lo que se puede añadir: lo que su rol ve y todavía no está puesto. */
 export function loQueSePuedeAnadir(
   puestos: readonly WidgetPuesto[],
   tienePermiso: (permiso: Permiso) => boolean,
 ): readonly Widget[] {
-  const yaEsta = new Set(puestos.map((p) => p.id));
-  return WIDGETS.filter(
-    (widget) =>
-      !yaEsta.has(widget.id) && widget.modulo === undefined && sePuedeTener(widget, tienePermiso),
-  );
+  const yaEsta = new Set(puestos.map((p) => idDeAhora(p.id)));
+  return WIDGETS.filter((widget) => !yaEsta.has(widget.id) && sePuedeTener(widget, tienePermiso));
 }
 
-/**
- * Los grupos del catalogo, al anadir (M7, repaso).
- *
- * «Valor de la camara, acciones rapidas, bajo minimo, caduca esta semana: salen
- *  en el Panel, pero al dar a anadir no aparecen. ¿Si las borras las pierdes para
- *  siempre?» No se perdian —se podian volver a poner con «Volver al panel de
- *  siempre»—, pero el catalogo **solo ensenaba los que no estaban**, asi que lo
- *  que se veia era una lista corta de cosas raras y ninguna de las de todos los
- *  dias. Ahora salen todos, agrupados, y los que ya estan lo dicen.
- */
-export type GrupoDeWidget = 'atender' | 'cifras' | 'atajos' | 'equipo';
+/** Los grupos del catálogo al añadir, para que no sea una lista de veinte sin orden. */
+export type GrupoDeWidget = 'atender' | 'cifras' | 'equipo' | 'atajos';
 
 export const NOMBRE_DEL_GRUPO: Readonly<Record<GrupoDeWidget, string>> = {
   atender: 'Lo que hay que atender',
   cifras: 'Cifras',
-  atajos: 'Atajos',
   equipo: 'Tu equipo',
+  atajos: 'Atajos',
 };
 
-const ORDEN_DE_LOS_GRUPOS: readonly GrupoDeWidget[] = ['atender', 'cifras', 'atajos', 'equipo'];
+const ORDEN_DE_LOS_GRUPOS: readonly GrupoDeWidget[] = ['atender', 'cifras', 'equipo', 'atajos'];
 
-/**
- * De que grupo es cada widget construido. Uno nuevo sin grupo sale en «Cifras» y
- * lo dice una prueba: `catalogo.prueba.ts` exige que todos tengan el suyo.
- */
 export const GRUPO_DEL_WIDGET: Readonly<Record<string, GrupoDeWidget>> = {
-  caducidades: 'atender',
   'bajo-minimo': 'atender',
+  caducidades: 'atender',
   pedidos: 'atender',
   calendario: 'atender',
-  'sin-precio': 'atender',
-  'valor-de-la-camara': 'cifras',
-  'cuanto-genero': 'cifras',
-  'ventas-de-hoy': 'cifras',
+  ventas: 'cifras',
   objetivos: 'cifras',
-  'ultimos-movimientos': 'cifras',
+  'food-cost': 'cifras',
+  merma: 'cifras',
+  'valor-de-la-camara': 'cifras',
+  'gasto-en-compras': 'cifras',
+  fichajes: 'equipo',
+  'mi-turno': 'equipo',
+  'mis-horas': 'equipo',
+  fichar: 'atajos',
   'acciones-rapidas': 'atajos',
   'mis-apps': 'atajos',
-  fichar: 'atajos',
-  merma: 'atajos',
-  fichajes: 'equipo',
-  personas: 'equipo',
-  // H2 (0069): el turno de uno es del equipo.
-  'mi-turno': 'equipo',
 };
 
 export interface GrupoDelCatalogo {
@@ -599,54 +421,25 @@ export interface GrupoDelCatalogo {
   readonly widgets: readonly { readonly widget: Widget; readonly puesto: boolean }[];
 }
 
-/** Todos los que se pueden tener, por grupos, y si ya estan puestos. */
+/** El catálogo entero para añadir, por grupos, con lo que ya está puesto marcado. */
 export function elCatalogoParaAnadir(
   puestos: readonly WidgetPuesto[],
   tienePermiso: (permiso: Permiso) => boolean,
 ): readonly GrupoDelCatalogo[] {
-  const yaEsta = new Set(puestos.map((p) => p.id));
-  const construidos = WIDGETS.filter(
-    (widget) => widget.modulo === undefined && sePuedeTener(widget, tienePermiso),
-  );
+  const yaEsta = new Set(puestos.map((p) => idDeAhora(p.id)));
+  const suyos = WIDGETS.filter((widget) => sePuedeTener(widget, tienePermiso));
   return ORDEN_DE_LOS_GRUPOS.map((grupo) => ({
     grupo,
     nombre: NOMBRE_DEL_GRUPO[grupo],
-    widgets: construidos
+    widgets: suyos
       .filter((widget) => (GRUPO_DEL_WIDGET[widget.id] ?? 'cifras') === grupo)
       .map((widget) => ({ widget, puesto: yaEsta.has(widget.id) })),
   })).filter((grupo) => grupo.widgets.length > 0);
 }
 
-/** Los que todavia no estan, para poder decir en que modulo llegan. */
-export function losQueLlegan(tienePermiso: (permiso: Permiso) => boolean): readonly Widget[] {
-  return WIDGETS.filter(
-    (widget) => widget.modulo !== undefined && sePuedeTener(widget, tienePermiso),
-  );
-}
-
 /**
- * El acento del widget · el de la app de la que cuenta algo.
- *
- * ── Por que se deduce y no se escribe ────────────────────────────────────────
- *
- * Porque ya estaba escrito dos veces, sin juntarse. Cada widget declara **de que
- * app es** (su `permiso`), y B3 le da a cada app **su acento**. Escribir aqui un
- * tercer color por widget seria una tercera lista que el dia de manana no
- * coincide con las otras dos.
- *
- * Y ademas es lo que hace que signifique algo: el Panel deja de ser una pared de
- * tarjetas blancas y pasa a leerse de un vistazo —lo naranja es de Almacén, lo
- * morado es de Equipo— sin tener que leer ningun titulo.
- *
- * Los que no son de ninguna app —las acciones rapidas, la rueda— no llevan
- * acento, y tampoco es un olvido: no cuentan nada de un sitio concreto.
- */
-/**
- * De que app tira el acento de un widget cuyo permiso no es de una app.
- *
- * Fichar es de Equipo aunque su permiso sea `accion.fichar`, y la merma y las
- * ventas cuentan cosas de Almacén y de Negocio. Sin esto saldrian en blanco, y
- * el acento es lo que hace que el Panel se lea de un vistazo sin leer titulos.
+ * De qué app es cada permiso que no es de una app, para el color del widget. Fichar
+ * es de Equipo; la merma, de Almacén; las ventas, de Negocio.
  */
 const DE_QUE_APP: Readonly<Record<string, PermisoDeApp>> = {
   'accion.fichar': 'app.equipo',
@@ -656,18 +449,19 @@ const DE_QUE_APP: Readonly<Record<string, PermisoDeApp>> = {
   'dato.coste_de_personal': 'app.equipo',
 };
 
+/** El acento de un widget: el de su app, o ninguno si es de todos. */
 export function acentoDelWidget(id: string): string | undefined {
   const deLaApp = appDelWidget(id);
   if (deLaApp === undefined) return undefined;
   return `var(--color-app-${deLaApp.replace('app.', '')})`;
 }
 
-/**
- * De qué app es un widget, por su permiso. Lo usa el acento y, desde la entrega
- * V, el icono de la cabecera de cada widget (0045): los dos salen del mismo sitio.
- */
 export function appDelWidget(id: string): PermisoDeApp | undefined {
-  const permiso = widgetPorId(id)?.permiso;
+  const widget = widgetPorId(id);
+  // «Mis horas» no pide nada, pero es de Equipo; «Mi turno», de Calendario.
+  if (widget?.id === 'mis-horas') return 'app.equipo';
+  if (widget?.id === 'mi-turno') return 'app.calendario';
+  const permiso = widget?.permiso;
   if (permiso == null) return undefined;
   return permiso.startsWith('app.') ? (permiso as PermisoDeApp) : DE_QUE_APP[permiso];
 }

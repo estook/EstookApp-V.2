@@ -58,6 +58,11 @@ const ICONOS = {
   settings: 'Ajustes',
   bell: 'Avisos',
   'message-square': 'Chat',
+  // El menú lateral del ordenador y las gráficas que se abren (la experiencia, 0083).
+  'panel-left-close': 'Plegar',
+  'panel-left-open': 'Desplegar',
+  'chevrons-up-down': 'Cambiar',
+  'maximize-2': 'Ampliar',
   search: 'Buscar',
   user: 'Persona',
   'log-out': 'Salir',

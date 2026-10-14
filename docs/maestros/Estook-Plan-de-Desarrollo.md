@@ -171,7 +171,7 @@ Esta parte existe para que la interfaz no se invente pantalla a pantalla. **Todo
 
 - El naranja es solo para **la acción principal, el foco y la marca**. Si una pantalla tiene tres naranjas, dos están mal.
 - Los colores de estado **nunca van solos**: siempre con icono o con texto, porque hay gente que no distingue rojo de verde.
-- **Dos temas, claro de fábrica.** Se elige en Ajustes: claro, oscuro o el del sistema, y se guarda en ese aparato. Los pone `packages/ui/estilos/temas.css` **redefiniendo las fichas**, no con una clase por pantalla: `bg-superficie` compila a `var(--color-superficie)`, así que cambiar la ficha cambia las cuarenta pantallas a la vez y una pantalla nueva sale bien en los dos sin que nadie se acuerde. Los dos se miden con los mismos mínimos de B8.
+- **Dos temas, claro de fábrica.** Se elige en Ajustes: claro, oscuro o el del sistema, y se guarda en ese aparato. Los pone `packages/ui/estilos/temas.css` **redefiniendo las fichas**, no con una clase por pantalla: `bg-superficie` compila a `var(--color-superficie)`, así que cambiar la ficha cambia las cuarenta pantallas a la vez y una pantalla nueva sale bien en los dos sin que nadie se acuerde. Los dos se miden con los mismos mínimos de B8. **El oscuro es grafito** desde la experiencia ([0083](../decisiones/0083-la-experiencia.md)): fondo `#15181c` y tarjeta `#1f2328` con un brillo que cae de arriba (`--relleno-tarjeta`); y `.zona-oscura` pone esas fichas en un trozo de pantalla que es oscuro en los dos temas, el menú del ordenador.
 - **El acento puede ser el del local.** `--color-naranja` es el acento, no un naranja: si el local enciende «usar mi color» (0026), se sobrescribe en marcha con el suyo, ya ajustado por `packages/ui/src/color.ts` para cumplir B8. De ahí salen dos fichas más, y no son un capricho: `--color-sobre-naranja` es **lo que se escribe encima** del acento —charcoal sobre el naranja de Estook, blanco sobre un azul noche— y `--color-naranja-en-oscuro` es el acento **dentro de una pieza oscura**, como «Deshacer» sobre la barra charcoal. Un componente que escriba `text-charcoal` sobre `bg-naranja` está roto para todo el que no use el naranja de fábrica.
 - **El fondo se separa de la tarjeta.** El `#fafaf8` original daba 1,02:1 contra el blanco: en un TPV de cocina la pantalla se leía como una hoja con texto flotando. Es `#f1efea`, y da 1,15.
 
@@ -207,7 +207,7 @@ Las cifras siempre con `font-variant-numeric: tabular-nums`. Tres tamaños de le
 | Cuaderno    | `notebook-pen`     | `#7A6A56`    |
 | Fogón       | `flame`            | `--naranja`  |
 
-El acento se usa con moderación: el icono de la app —**en su pastilla, en la cabecera de la pantalla y de cada tarjeta**— y el sector de la rueda. **El fondo y los botones no cambian de color entre apps**, o parecerían cuatro productos distintos. Hasta la entrega V el acento iba en una línea de tres píxeles encima de cada tarjeta, y se quitó: era lo que más envejecía la aplicación ([0045](../decisiones/0045-el-aspecto-y-el-orden.md)). Y **cuando lo que lleva el acento es texto** —la vista elegida, el destino activo de la barra del móvil— va en `acentoParaTexto`, mezclado con el color del texto: el acento a secas no llega a 4,5:1 en claro, y mezclado se oscurece en claro y se aclara en oscuro ([0046](../decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)).
+El acento se usa con moderación: el icono de la app —**en su pastilla, en la cabecera de la pantalla y de cada tarjeta**— y el sector de la rueda. **El fondo y los botones no cambian de color entre apps**, o parecerían cuatro productos distintos. Hasta la entrega V el acento iba en una línea de tres píxeles encima de cada tarjeta, y se quitó: era lo que más envejecía la aplicación ([0045](../decisiones/0045-el-aspecto-y-el-orden.md)). Y **cuando lo que lleva el acento es texto** —el destino activo de la barra del móvil— (la vista elegida va, desde la 0083, rellena del color del texto, igual en las ocho apps) va en `acentoParaTexto`, mezclado con el color del texto: el acento a secas no llega a 4,5:1 en claro, y mezclado se oscurece en claro y se aclara en oscuro ([0046](../decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)).
 
 > **Un icono dice lo que hace la función, no a quién va dirigida.** Nada de símbolos de accesibilidad para marcar opciones que usa cualquiera: para «reducir movimiento» va una rejilla, y para «se maneja con teclado» va un teclado.
 
@@ -265,7 +265,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 | App         | Sus destinos                                         |
 | ----------- | ---------------------------------------------------- |
-| Almacén     | Resumen · Productos · Movimientos · Compras · Mermas |
+| Almacén     | Resumen · Productos · Compras · Mermas · Movimientos |
 | Escandallos | Resumen · Fichas · Elaboraciones · Análisis          |
 | Carta       | Carta · Menús · Análisis                             |
 | Calendario  | Calendario · Tareas · Turnos                         |
@@ -279,8 +279,8 @@ Y sus vistas, donde las hay:
 | Destino                 | Sus vistas                                                          |
 | ----------------------- | ------------------------------------------------------------------- |
 | Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
-| Almacén · Movimientos   | Historial · Inventario · Consumo                                    |
-| Almacén · Compras       | Pedidos · Albaranes · Facturas · Proveedores · Precios              |
+| Almacén · Movimientos   | Inventario · Historial · Consumo                                    |
+| Almacén · Compras       | Pedidos · Facturas · Proveedores                                    |
 | Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                                   |
 | Carta · Carta           | Por secciones · Todos los platos · Agotados                         |
 | Carta · Análisis        | Matriz · Por canal · Histórico                                      |
@@ -292,6 +292,10 @@ Y sus vistas, donde las hay:
 | Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas             |
 | Negocio · Informes      | Día · Semana · Mes                                                  |
 | Cuaderno · Incidencias  | Abiertas · Cerradas                                                 |
+
+**Movimientos no va en la barra** (la experiencia, [0083](../decisiones/0083-la-experiencia.md)): es un destino construido y con su dirección, pero se llega por «Revisar movimientos», debajo de las cifras del Resumen de Almacén, por «Hacer inventario» de Productos y por el buscador. Así Almacén cabe en cuatro en la barra de abajo del móvil. Y **Compras son tres** en el orden del día —se pide, llega y se paga; y a quién—: lo que ha llegado (los albaranes) es «Llegado» dentro de Pedidos, y los precios van con los proveedores.
+
+**En el ordenador, la navegación es un menú a la izquierda** (0083) que se pliega: plegado, el logo del local y el icono de cada app, con sus destinos al pulsarla; abierto, el logo de Estook, el local y cada app con sus destinos colgando. Sustituye a la barra de arriba con las ocho apps y al menú lateral de dentro de cada app. Las apps que todavía no tienen nada construido van juntas en «Próximamente».
 
 **El horario vive en un solo sitio: Calendario · Turnos** (repaso del 10-oct, [0082](../decisiones/0082-el-repaso-antes-de-m9.md)). Lo ve todo el equipo, y quien puede publicarlo tiene además «Montarlo». Equipo ya no tiene «Horarios»: su Resumen lleva a él con «Horario de la semana →».
 
@@ -311,7 +315,7 @@ En **Historial**, lo que entra, sale, se vende o se ajusta es un filtro de la mi
 - Lo del cobro que es de consulta vive en Estook: **la caja es una vista de Servicio · Jornada** y **los tickets y facturas, una vista de Servicio · Ventas**.
 - **Comparte `packages/ui`**: los mismos botones, los mismos colores y los mismos textos. Lo que cambia es la disposición —a pantalla completa, sin barra de navegación, botones grandes— y sus reglas, que están en el capítulo 10 del Anexo.
 
-**Escritorio ·** barra superior y menú lateral propio. Arriba, el selector de local, las ocho apps con su desplegable —cada uno con sus destinos y **la pregunta que contesta cada uno**— y, a la derecha: **buscar, avisos, chat, Ajustes y el avatar**. El avatar abre tu cuenta —mi acceso, cambiar de local y salir—, y Ajustes sigue teniendo su icono propio: en un ordenador hay sitio, y quien lleva un local entra ahí muchas veces al día. Dentro de una app, menú lateral con sus destinos y la ficha abriéndose en panel derecho sin tapar la lista.
+**Escritorio ·** desde la experiencia ([0083](../decisiones/0083-la-experiencia.md)), **un menú a la izquierda que se pliega**, oscuro en los dos temas: abierto, el logo de Estook, el local (y su cambio, si se llevan varios), el Panel, cada app con **sus destinos colgando** —la pregunta que contesta cada uno, al pasar por encima— y, abajo, Ajustes y tu cuenta; plegado, **el logo del local** y el icono de cada app, que abre sus destinos al lado. Arriba, una barra fina con dónde estás y, a la derecha, **el buscador, los avisos, el chat, el claro y el oscuro, y el avatar**, que abre tu cuenta —mi acceso, cambiar de local y salir—. Ya no hay menú lateral dentro de cada app: sus destinos están en el de la izquierda. La ficha se sigue abriendo en panel derecho sin tapar la lista.
 
 **Y en móvil, arriba va la misma fila menos Ajustes.** Dónde estás, buscar, avisos, chat y el avatar. Sin esa fila, en un teléfono **no hay buscador** —`⌘K` no existe— y a Ajustes no se llega desde dentro de una app, porque ahí la barra de abajo es la de esa app. Arriba lo que es de la sesión entera; abajo, lo de navegar.
 

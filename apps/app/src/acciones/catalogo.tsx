@@ -182,7 +182,7 @@ export const ACCIONES: readonly Accion[] = [
     queHace: 'La comparativa entre proveedores, lo que ha subido y lo pactado',
     icono: IconoDinero,
     permiso: { cual: 'dato.precio_de_compra', como: 'ver' },
-    ir: '/almacen/compras/precios',
+    ir: '/almacen/compras/proveedores?ver=precios',
   },
   {
     id: 'invitar',

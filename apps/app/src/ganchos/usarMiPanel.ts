@@ -360,8 +360,7 @@ export function usarMiPanel(): MiPanel {
     (id: string) => {
       const widget = widgetPorId(id);
       if (widget === undefined) return;
-      const tamano = widget.tamanos[0] ?? 'ancho';
-      cambiar([...(puestos ?? []), { id, tamano }]);
+      cambiar([...(puestos ?? []), { id: widget.id, tamano: widget.tamano }]);
     },
     [puestos, cambiar],
   );

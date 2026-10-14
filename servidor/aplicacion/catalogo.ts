@@ -27,6 +27,7 @@ import {
 import { crearLocal, responderCuantosLocales } from './comandos/locales.ts';
 import { guardarColorDeMarca, ponerLogo, quitarLogo } from './comandos/marca.ts';
 import { ponerFotoDeProducto, quitarFotoDeProducto } from './comandos/fotos.ts';
+import { ponerFotoDePersona, quitarFotoDePersona } from './comandos/foto-de-persona.ts';
 import { ponerObjetivos } from './comandos/objetivos.ts';
 import {
   activarDobleFactor,
@@ -455,6 +456,9 @@ export const catalogo = {
     // Entrega V · la foto de cada producto, por el mismo camino que el logo.
     [ponerFotoDeProducto.nombre]: ponerFotoDeProducto,
     [quitarFotoDeProducto.nombre]: quitarFotoDeProducto,
+    // La experiencia (0083): la foto de cada persona.
+    [ponerFotoDePersona.nombre]: ponerFotoDePersona,
+    [quitarFotoDePersona.nombre]: quitarFotoDePersona,
     [guardarRegimenFiscal.nombre]: guardarRegimenFiscal,
     [ponerObjetivos.nombre]: ponerObjetivos,
     [crearLocal.nombre]: crearLocal,

@@ -30,6 +30,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
+import { RevisarMovimientos } from './RevisarMovimientos.tsx';
 import { ApuntarMerma } from './ApuntarMerma.tsx';
 import { QuitarLote, type LoteQueSeQuita } from './Lotes.tsx';
 import {
@@ -168,6 +169,13 @@ export function Resumen({ alAbrirProducto }: { readonly alAbrirProducto: (id: st
             la misma cuenta que `almacen_hoy` (una prueba contra la base lo vigila).
           */}
           <CifrasDeLaApp app="almacen" />
+
+          {/*
+            «Revisar movimientos», un botón largo debajo de las cifras (la experiencia,
+            0083). Movimientos salió de la barra de Almacén —«es necesario, pero es un
+            lío»— y aquí se llega a él de un toque, que es lo que pidió Richi.
+          */}
+          <RevisarMovimientos />
 
           <Mosaico>
             {/*

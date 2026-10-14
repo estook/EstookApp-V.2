@@ -194,20 +194,22 @@ Las cifras siempre con `font-variant-numeric: tabular-nums`. Tres tamaños de le
 
 **Lucide** (licencia ISC). Se descargan los SVG y se guardan en `packages/iconos/`; no se instala la librería entera ni se carga nada desde fuera. Cada icono se convierte en un componente React que hereda `currentColor` y acepta `size`. Trazo de 1,75 px, tamaño base 20 px, 24 px en barras.
 
-| App         | Icono Lucide       | Acento       |
-| ----------- | ------------------ | ------------ |
-| Panel       | `layout-dashboard` | `--charcoal` |
-| Almacén     | `package`          | `#C77700`    |
-| Escandallos | `calculator`       | `#1E8E5A`    |
-| Carta       | `book-open`        | `#B23A6E`    |
-| Calendario  | `calendar-days`    | `#2C6E9B`    |
-| Equipo      | `users`            | `#6B4FBB`    |
-| Servicio    | `clipboard-check`  | `#0F8B8D`    |
-| Negocio     | `trending-up`      | `#C4372B`    |
-| Cuaderno    | `notebook-pen`     | `#7A6A56`    |
-| Fogón       | `flame`            | `--naranja`  |
+| App         | Icono Lucide      | Acento       |
+| ----------- | ----------------- | ------------ |
+| Panel       | `house`           | `--charcoal` |
+| Almacén     | `package`         | `#C77700`    |
+| Escandallos | `calculator`      | `#1E8E5A`    |
+| Carta       | `book-open`       | `#B23A6E`    |
+| Calendario  | `calendar-days`   | `#2C6E9B`    |
+| Equipo      | `users`           | `#6B4FBB`    |
+| Servicio    | `clipboard-check` | `#0F8B8D`    |
+| Negocio     | `trending-up`     | `#C4372B`    |
+| Cuaderno    | `notebook-pen`    | `#7A6A56`    |
+| Fogón       | `flame`           | `--naranja`  |
 
 El acento se usa con moderación: el icono de la app —**en su pastilla, en la cabecera de la pantalla y de cada tarjeta**— y el sector de la rueda. **El fondo y los botones no cambian de color entre apps**, o parecerían cuatro productos distintos. Hasta la entrega V el acento iba en una línea de tres píxeles encima de cada tarjeta, y se quitó: era lo que más envejecía la aplicación ([0045](../decisiones/0045-el-aspecto-y-el-orden.md)). Y **cuando lo que lleva el acento es texto** —el destino activo de la barra del móvil— (la vista elegida va, desde la 0083, rellena del color del texto, igual en las ocho apps) va en `acentoParaTexto`, mezclado con el color del texto: el acento a secas no llega a 4,5:1 en claro, y mezclado se oscurece en claro y se aclara en oscuro ([0046](../decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)).
+
+**Tres dibujos para tres cosas, y siempre los mismos** ([0084](../decisiones/0084-las-bases-firmes.md)): la **casa** es el Panel, el inicio; el **✦** (la estrella de cuatro puntas, que no es de Lucide) abre la rueda de las apps, en el centro de la barra del Panel y en «Apps» de la barra de cada app; y `layout-dashboard` es el **Resumen** de cada app. Hasta el 14-oct «Apps» llevaba el icono de la propia app y el Resumen el del Panel, y parecían cambiados.
 
 > **Un icono dice lo que hace la función, no a quién va dirigida.** Nada de símbolos de accesibilidad para marcar opciones que usa cualquiera: para «reducir movimiento» va una rejilla, y para «se maneja con teclado» va un teclado.
 

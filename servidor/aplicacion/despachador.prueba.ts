@@ -450,6 +450,9 @@ describe('las puertas se cierran solas', () => {
         'cambiar_mi_idioma',
         // Mover los widgets no apunta nada: vale también en solo lectura.
         'guardar_mi_panel',
+        // Ni el periodo de un widget ni el recorrido de la primera vez (0084).
+        'poner_el_periodo_del_widget',
+        'ya_he_visto_el_recorrido',
       ].sort(),
     );
   });

@@ -33,4 +33,15 @@ export interface GraficaVivaProps {
   readonly referencia?: { readonly valor: number; readonly nombre: string } | null;
   /** El último punto resaltado: es «hoy», el que más se mira. */
   readonly resaltarElUltimo?: boolean;
+  /**
+   * El periodo anterior, alineado con `puntos` (0084): la línea gris discontinua, para
+   * comparar sin leer números.
+   */
+  readonly anteriores?: readonly (number | null)[] | undefined;
+  /**
+   * Qué día señala el dedo o el ratón (la pequeña, 0084). Si se da, quien la pinta
+   * enseña el valor (el widget cambia su número grande); si no, lo dice la propia
+   * gráfica dentro de su hueco.
+   */
+  readonly alSenalar?: (indice: number | null) => void;
 }

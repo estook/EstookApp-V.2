@@ -20,7 +20,7 @@ import { clases } from '../clases.ts';
  *     deshabilita y lo dice. Y conserva su ancho, para que la pantalla no salte.
  */
 export type TonoDeBoton = 'principal' | 'secundario' | 'texto' | 'peligro';
-export type TamanoDeBoton = 'm' | 'l';
+export type TamanoDeBoton = 's' | 'm' | 'l';
 
 export interface BotonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className'> {
   readonly tono?: TonoDeBoton;
@@ -53,6 +53,9 @@ const TONOS: Record<TonoDeBoton, string> = {
 const TAMANOS: Record<TamanoDeBoton, string> = {
   // 44 px de alto minimo, y el padding por dentro. `min-h` y no `h`, para que un
   // boton con dos lineas de texto crezca en vez de cortarlas.
+  // Para ir al lado de algo en una fila (0084): menos relleno y letra secundaria, pero
+  // **el mismo blanco de 44 px** de alto, que el toque mínimo de B4 no se negocia.
+  s: 'min-h-toque px-e3 gap-e1 text-secundario font-medium rounded-medio',
   m: 'min-h-toque px-e4 gap-e2 text-cuerpo rounded-medio',
   l: 'min-h-toque-cocina px-e5 gap-e2 text-seccion rounded-grande',
 };

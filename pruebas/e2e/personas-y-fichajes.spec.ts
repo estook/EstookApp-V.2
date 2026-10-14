@@ -109,7 +109,8 @@ test('sin correo, y fichando con su PIN en el aparato del local', async ({ page 
   await hojaDelPin.getByRole('button', { name: 'Hecho' }).click();
 
   // ── 2 · Poner este aparato para fichar, en Ajustes ─────────────────────────
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
+  // En su hoja desde las bases firmes (0084).
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#aparato-para-fichar`);
   await page.getByRole('button', { name: 'Usar este aparato para fichar' }).click();
   const poner = page.getByRole('dialog', { name: 'Usar este aparato para fichar' });
   await poner.getByLabel('Cómo se llama').fill(`Tablet ${info.project.name}`);
@@ -245,7 +246,7 @@ test('el registro para la Inspección, las pausas en Ajustes y el informe en PDF
   await entrar(page, ROSA);
 
   // Las pausas: cuenta y deja de contar, y se guarda.
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#pausas`);
   const cuenta = page.getByLabel('La pausa cuenta como trabajo');
   await cuenta.check();
   await expect(page.getByText('Guardado.', { exact: true })).toBeVisible();

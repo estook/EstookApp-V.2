@@ -27,7 +27,13 @@ import { CSS } from '@dnd-kit/utilities';
 import { clases } from '../clases.ts';
 import { usarSeVeEnModoCocina } from '../ganchos/usarModoCocina.ts';
 import { Casilla, HuecoDeAnadir } from './Casilla.tsx';
-import { CLASES_DE_LA_REJILLA, CLASES_DEL_TAMANO, type RejillaConVacios } from './rejilla.ts';
+import {
+  CLASES_DE_LA_REJILLA,
+  CLASES_DEL_TAMANO,
+  colocarEnFilas,
+  type RejillaConVacios,
+} from './rejilla.ts';
+import { usarColumnasDelPanel } from '../ganchos/usarColumnasDelPanel.ts';
 import type { WidgetPuesto } from './catalogo.ts';
 
 /**
@@ -157,6 +163,8 @@ export default function RejillaQueSeEdita(props: RejillaConVacios) {
   };
 
   const elCogido = puestos.find((p) => p.id === cogido);
+  // Las mismas filas que la rejilla quieta: entrar en edición no mueve nada (0039).
+  const [caja, columnas] = usarColumnasDelPanel<HTMLDivElement>();
 
   return (
     <DndContext
@@ -176,24 +184,32 @@ export default function RejillaQueSeEdita(props: RejillaConVacios) {
     >
       {/* Sin estrategia de transformaciones: coloca la rejilla, ver arriba. */}
       <SortableContext items={puestos.map((p) => p.id)} strategy={() => null}>
-        <div className={CLASES_DE_LA_REJILLA}>
-          {puestos.map((puesto, indice) => (
-            <CasillaQueSeMueve
-              key={puesto.id}
-              puesto={puesto}
-              indice={indice}
-              cogido={cogido === puesto.id}
-              conGuantes={conGuantes}
-              alMover={(hacia) => {
-                mover(indice, hacia);
-              }}
-              esElPrimero={indice === 0}
-              esElUltimo={indice === puestos.length - 1}
-              {...props}
-            >
-              {pintar(puesto)}
-            </CasillaQueSeMueve>
-          ))}
+        <div
+          ref={caja}
+          className={CLASES_DE_LA_REJILLA}
+          style={{ gridTemplateColumns: `repeat(${String(columnas)}, minmax(0, 1fr))` }}
+        >
+          {colocarEnFilas(puestos, columnas).map(({ puesto, columnas: ocupa }) => {
+            const indice = puestos.indexOf(puesto);
+            return (
+              <CasillaQueSeMueve
+                key={puesto.id}
+                puesto={puesto}
+                ocupa={ocupa}
+                indice={indice}
+                cogido={cogido === puesto.id}
+                conGuantes={conGuantes}
+                alMover={(hacia) => {
+                  mover(indice, hacia);
+                }}
+                esElPrimero={indice === 0}
+                esElUltimo={indice === puestos.length - 1}
+                {...props}
+              >
+                {pintar(puesto)}
+              </CasillaQueSeMueve>
+            );
+          })}
           <HuecoDeAnadir alAnadir={alAnadir} />
         </div>
       </SortableContext>
@@ -227,6 +243,7 @@ const deslizarSiempre: AnimateLayoutChanges = (argumentos) =>
 
 function CasillaQueSeMueve({
   puesto,
+  ocupa,
   indice,
   cogido,
   conGuantes,
@@ -243,6 +260,8 @@ function CasillaQueSeMueve({
   children,
 }: RejillaConVacios & {
   readonly puesto: WidgetPuesto;
+  /** Las columnas que ocupa en su fila. */
+  readonly ocupa: number;
   readonly indice: number;
   readonly cogido: boolean;
   /** En modo cocina no se arrastra: se mueve con los dos botones. */
@@ -267,6 +286,7 @@ function CasillaQueSeMueve({
       nombre={nombreDe(puesto.id)}
       tamano={puesto.tamano}
       tamanos={tamanosDe(puesto.id)}
+      columnas={ocupa}
       indice={indice}
       editando={editando}
       vacio={vacios.has(puesto.id)}

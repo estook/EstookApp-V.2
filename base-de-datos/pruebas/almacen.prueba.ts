@@ -806,6 +806,60 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
 
     expect(encontrados.map((f) => f.titulo)).not.toContain('Azafran del Centro');
   });
+
+  // ── Las bases firmes (0065, decisión 0084) ─────────────────────────────────
+  //
+  // «La búsqueda no funciona nunca» (Richi, 14-oct). Lo corto que se escribe al
+  // buscar no pasaba el umbral contra un nombre largo: «sal» contra «Lomo de
+  // salmón» daba 0,19 con el parecido del campo entero.
+  it('encuentra por el principio de cualquier palabra, que es como se busca', async () => {
+    const rosa = await base.personaPorCorreo(ROSA);
+    const { productoId } = await unProductoDePrueba('Lomo de salmón noruego');
+
+    for (const escrito of ['sal', 'salm', 'nor', 'lomo']) {
+      const encontrados = await base.comoPersona(rosa, async () => {
+        const { rows } = await base.bd.query<{ tipo: string; id: string }>(
+          'select tipo, id from estook.buscar($1, 20)',
+          [escrito],
+        );
+        return rows;
+      });
+      expect(
+        encontrados.some((f) => f.tipo === 'producto' && f.id === productoId),
+        `«${escrito}» no encuentra el salmón`,
+      ).toBe(true);
+    }
+  });
+
+  it('el género solo lo encuentra quien tiene Almacén: el camarero, no', async () => {
+    const sara = await base.personaPorCorreo('sara@ejemplo.estook.com');
+    await unProductoDePrueba('Vermut de la casa');
+
+    const encontrados = await base.comoPersona(sara, async () => {
+      const { rows } = await base.bd.query<{ tipo: string }>(
+        `select tipo from estook.buscar('vermut', 20)`,
+      );
+      return rows;
+    });
+
+    expect(encontrados.filter((f) => f.tipo === 'producto')).toEqual([]);
+  });
+
+  it('y las personas, quien tiene Equipo: el camarero no ve los correos de su equipo', async () => {
+    const sara = await base.personaPorCorreo('sara@ejemplo.estook.com');
+    const rosa = await base.personaPorCorreo(ROSA);
+
+    const buscar = async (quien: string | null) =>
+      base.comoPersona(quien, async () => {
+        const { rows } = await base.bd.query<{ tipo: string }>(
+          `select tipo from estook.buscar('marcos', 20)`,
+        );
+        return rows.filter((f) => f.tipo === 'persona');
+      });
+
+    expect(await buscar(sara)).toEqual([]);
+    expect((await buscar(rosa)).length).toBeGreaterThan(0);
+  });
 });
 
 // ── Ayudas ───────────────────────────────────────────────────────────────────

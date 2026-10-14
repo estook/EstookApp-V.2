@@ -4,7 +4,13 @@ import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   IconoAbrirFuera,
   IconoAvisos,
+  IconoCarta,
   IconoDinero,
+  IconoIdioma,
+  IconoNegocio,
+  IconoPausa,
+  IconoReloj,
+  IconoTeclado,
   IconoBuscar,
   IconoColor,
   IconoFlechaAbajo,
@@ -29,6 +35,8 @@ import {
   COMO_SE_LLAMA,
   COMO_SE_LLAMA_EL_TEMA,
   CUANTO_MULTIPLICA,
+  DentroDeUnaHoja,
+  Hoja,
   Interruptor,
   Selector,
   TAMANOS,
@@ -226,18 +234,25 @@ export function Ajustes() {
   );
 
   return (
-    <div className="flex w-full max-w-[64rem] flex-col gap-e4">
-      <h1 className="text-pantalla font-semibold tracking-[-0.015em]">Ajustes</h1>
+    <div className="flex w-full max-w-[72rem] flex-col gap-e4">
+      {/* En el móvil, dentro de una sección, el título es la sección (0084): «Ajustes»,
+          «‹ Ajustes» y «Tu local» uno debajo de otro eran tres veces lo mismo. */}
+      {(escritorio || abierta === undefined) && (
+        <h1 className="text-pantalla font-semibold tracking-[-0.015em]">Ajustes</h1>
+      )}
 
       {escritorio ? (
-        <div className="flex items-start gap-e6">
-          <div className="sticky top-[calc(var(--alto-barra-escritorio)+var(--spacing-e4))] flex w-[15rem] shrink-0 flex-col gap-e3">
-            {buscador}
-            {lista}
-          </div>
-          <div className="flex min-w-0 max-w-[44rem] flex-1 flex-col gap-e4">
-            {resultados}
-            {abierta !== undefined && <LaSeccion id={abierta} />}
+        <div className="flex flex-col gap-e5">
+          {/* El buscador, arriba y a lo ancho (0084): es lo primero que se usa aquí. */}
+          <div className="max-w-[40rem]">{buscador}</div>
+          <div className="flex items-start gap-e6">
+            <div className="sticky top-[calc(var(--alto-barra-escritorio)+var(--spacing-e4))] flex w-[15rem] shrink-0 flex-col gap-e3">
+              {lista}
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-e4">
+              {resultados}
+              {abierta !== undefined && <LaSeccion id={abierta} />}
+            </div>
           </div>
         </div>
       ) : abierta === undefined ? (
@@ -248,19 +263,22 @@ export function Ajustes() {
         </div>
       ) : (
         <div className="flex flex-col gap-e4">
-          <div>
+          <div className="flex flex-col gap-e1">
             <button
               type="button"
               onClick={() => {
                 irA('/ajustes');
               }}
-              className="-ml-e2 inline-flex min-h-toque items-center gap-e1 rounded-redondo px-e2 text-secundario font-medium text-texto-suave hover:text-texto"
+              className="-ml-e2 inline-flex min-h-toque items-center gap-e1 self-start rounded-redondo px-e2 text-secundario font-medium text-texto-suave hover:text-texto"
             >
               <IconoFlechaIzquierda size={18} />
               Ajustes
             </button>
+            <h1 className="text-pantalla font-semibold tracking-[-0.015em]">
+              {nombreDeLaSeccion(abierta)}
+            </h1>
           </div>
-          <LaSeccion id={abierta} />
+          <LaSeccion id={abierta} sinTitulo />
         </div>
       )}
     </div>
@@ -277,31 +295,163 @@ const ICONO: Readonly<Record<IdDeSeccion, Icono>> = {
   organizacion: IconoOrganizacion,
 };
 
+/**
+ * Un ajuste de una sección, como tarjeta corta que se abre en su hoja (0084).
+ *
+ * «Ajustes con el mismo aspecto»: era una cascada de siete tarjetas con su párrafo y su
+ * formulario abiertos, una debajo de otra (Tu local medía tres pantallas). Ahora cada
+ * ajuste es **una tarjeta de una línea** —su icono, su nombre y qué es— en un mosaico,
+ * y el formulario sale en su hoja al tocarla. La hoja va en la dirección
+ * (`/ajustes/local#llegar-tarde`): el buscador y los avisos que llevan a un ajuste
+ * abren justo ese, y el botón de atrás del móvil la cierra.
+ */
+interface AjusteEnTarjeta {
+  readonly id: string;
+  readonly titulo: string;
+  readonly frase: string;
+  readonly icono: Icono;
+  readonly contenido: ReactNode;
+  /** Otras anclas que viven dentro de esta hoja (un ajuste de dentro). */
+  readonly tambien?: readonly string[];
+  /** Si su formulario es ancho (los objetivos, dos columnas). */
+  readonly amplia?: boolean;
+}
+
 /** Lo que hay dentro de cada sección, con el título de la sección encima. */
-function LaSeccion({ id }: { readonly id: IdDeSeccion }) {
+function LaSeccion({
+  id,
+  sinTitulo = false,
+}: {
+  readonly id: IdDeSeccion;
+  /** Si el título ya está arriba (en el móvil, el de la pantalla). */
+  readonly sinTitulo?: boolean;
+}) {
   const { yo, permisos, salir } = usarSesion();
   const tieneLocal = yo?.local !== null && yo?.local !== undefined;
   const llevaElLocal = tieneLocal && puedeEditar(permisos, 'app.ajustes');
 
+  const deLaCuenta: readonly AjusteEnTarjeta[] = [
+    {
+      id: 'mi-acceso',
+      titulo: 'Contraseña y acceso',
+      frase: 'Tu contraseña, tu PIN, el doble factor y dónde has entrado',
+      icono: IconoPersona,
+      contenido: <MiAcceso />,
+    },
+    {
+      id: 'idioma',
+      titulo: 'Idioma',
+      frase: 'En qué idioma ves Estook',
+      icono: IconoIdioma,
+      contenido: <Idioma />,
+    },
+  ];
+
+  const delLocal: readonly AjusteEnTarjeta[] = [
+    {
+      id: 'tu-marca',
+      titulo: 'Tu marca',
+      frase: 'Tu logo y tu color, en la app y en lo que imprimes',
+      icono: IconoColor,
+      contenido: <TuMarca />,
+    },
+    ...(llevaElLocal
+      ? [
+          {
+            id: 'google',
+            titulo: 'Dónde está tu local',
+            frase: 'Su ficha de Google y el punto exacto para fichar',
+            icono: IconoUbicacion,
+            tambien: ['donde-esta-el-local'],
+            contenido: (
+              <TuLocalEnGoogle
+                aMano={(abierto) => <DondeEstaElLocal abiertoDeEntrada={abierto} />}
+              />
+            ),
+          },
+          {
+            id: 'llegar-tarde',
+            titulo: 'Cuándo es llegar tarde',
+            frase: 'Los minutos de margen antes de contar un retraso',
+            icono: IconoReloj,
+            contenido: <CuandoEsLlegarTarde />,
+          },
+          {
+            id: 'pausas',
+            titulo: 'Las pausas de descanso',
+            frase: 'Si se fichan y si cuentan como trabajo',
+            icono: IconoPausa,
+            contenido: <LasPausas />,
+          },
+          {
+            id: 'aparato-para-fichar',
+            titulo: 'El aparato para fichar',
+            frase: 'Una tablet del local donde cada uno ficha con su PIN',
+            icono: IconoTeclado,
+            contenido: <ElAparatoParaFichar />,
+          },
+        ]
+      : []),
+    ...(llevaLosObjetivos(permisos, tieneLocal)
+      ? [
+          {
+            id: 'objetivos',
+            titulo: 'Tus objetivos',
+            frase: 'Food cost, personal, merma y ventas: el semáforo del Panel',
+            icono: IconoNegocio,
+            amplia: true,
+            contenido: <TusObjetivos />,
+          },
+        ]
+      : []),
+    ...(llevaElLocal
+      ? [
+          {
+            id: 'tu-carta',
+            titulo: 'Tu carta',
+            frase: 'La carta que ven tus clientes y el QR de las mesas',
+            icono: IconoCarta,
+            contenido: (
+              <div className="flex flex-col gap-e5">
+                <TuCartaSubida />
+                <TuCartaYSuQr />
+              </div>
+            ),
+          },
+        ]
+      : []),
+    ...(llevaLosPrecios(permisos, tieneLocal)
+      ? [
+          {
+            id: 'precios-de-compra',
+            titulo: 'Precios de compra',
+            frase: 'Si los apuntas con IVA o sin IVA',
+            icono: IconoDinero,
+            contenido: <TusPreciosDeCompra />,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <section aria-labelledby={`seccion-${id}`} className="flex flex-col gap-e4">
-      <h2 id={`seccion-${id}`} className="text-seccion font-semibold">
+      <h2
+        id={`seccion-${id}`}
+        className={clases('text-seccion font-semibold', sinTitulo && 'sr-only')}
+      >
         {nombreDeLaSeccion(id)}
       </h2>
 
+      {/* Cómo se ve este aparato son tres interruptores: se tocan aquí mismo. */}
       {id === 'aparato' && <ComoSeVe />}
 
       {id === 'cuenta' && (
         <>
-          <Ancla id="mi-acceso">
-            <MiAcceso />
-          </Ancla>
-          <Ancla id="idioma">
-            <Idioma />
-          </Ancla>
+          <MosaicoDeAjustes seccion={id} ajustes={deLaCuenta} />
           <Ancla id="salir">
             <div>
               <Boton
+                tono="secundario"
                 icono={<IconoSalir size={18} />}
                 onClick={() => {
                   void salir();
@@ -320,57 +470,7 @@ function LaSeccion({ id }: { readonly id: IdDeSeccion }) {
         </Ancla>
       )}
 
-      {id === 'local' && (
-        <>
-          <Ancla id="tu-marca">
-            <TuMarca />
-          </Ancla>
-          {llevaElLocal && (
-            // Google y el punto exacto, juntos (26-sep): antes, uno en Conexiones y
-            // otro aquí, y no se sabía cuál mandaba.
-            <Ancla id="google">
-              <TuLocalEnGoogle
-                aMano={(abierto) => <DondeEstaElLocal abiertoDeEntrada={abierto} />}
-              />
-            </Ancla>
-          )}
-          {llevaElLocal && (
-            <Ancla id="llegar-tarde">
-              <CuandoEsLlegarTarde />
-            </Ancla>
-          )}
-          {/* H1 (0068): la pausa de descanso y el aparato del local para fichar. */}
-          {llevaElLocal && (
-            <Ancla id="pausas">
-              <LasPausas />
-            </Ancla>
-          )}
-          {llevaElLocal && (
-            <Ancla id="aparato-para-fichar">
-              <ElAparatoParaFichar />
-            </Ancla>
-          )}
-          {llevaLosObjetivos(permisos, tieneLocal) && (
-            <Ancla id="objetivos">
-              <TusObjetivos />
-            </Ancla>
-          )}
-          {llevaElLocal && (
-            <Ancla id="tu-carta">
-              {/* La carta que ya tiene el local, y su QR (repaso del 25-sep, 0049). */}
-              <div className="flex flex-col gap-e4">
-                <TuCartaSubida />
-                <TuCartaYSuQr />
-              </div>
-            </Ancla>
-          )}
-          {llevaLosPrecios(permisos, tieneLocal) && (
-            <Ancla id="precios-de-compra">
-              <TusPreciosDeCompra />
-            </Ancla>
-          )}
-        </>
-      )}
+      {id === 'local' && <MosaicoDeAjustes seccion={id} ajustes={delLocal} />}
 
       {id === 'conexiones' && (
         <>
@@ -392,6 +492,69 @@ function LaSeccion({ id }: { readonly id: IdDeSeccion }) {
         </Ancla>
       )}
     </section>
+  );
+}
+
+/** Las tarjetas de una sección y la hoja de la que esté abierta (por el ancla). */
+function MosaicoDeAjustes({
+  seccion,
+  ajustes,
+}: {
+  readonly seccion: IdDeSeccion;
+  readonly ajustes: readonly AjusteEnTarjeta[];
+}) {
+  const { hash } = useLocation();
+  const navegar = useNavigate();
+  const ancla = hash.slice(1);
+  const abierto = ajustes.find((a) => a.id === ancla || (a.tambien ?? []).includes(ancla));
+
+  return (
+    <>
+      <ul className="grid grid-cols-1 gap-e3 sm:grid-cols-2">
+        {ajustes.map((ajuste) => (
+          <li key={ajuste.id} id={ajuste.id}>
+            <button
+              type="button"
+              onClick={() => {
+                navegar(`/ajustes/${seccion}#${ajuste.id}`);
+              }}
+              className={clases(
+                'group flex h-full w-full items-center gap-e3 rounded-mayor border border-borde bg-superficie p-e4 text-left',
+                '[background-image:var(--relleno-tarjeta)] [box-shadow:var(--sombra-tarjeta)]',
+                'transition-[transform,border-color] duration-[--rapido] hover:border-borde-fuerte active:scale-[0.99]',
+              )}
+            >
+              <span
+                aria-hidden
+                className="grid size-10 shrink-0 place-items-center rounded-grande bg-fondo text-texto-suave group-hover:text-texto"
+              >
+                <ajuste.icono size={19} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-cuerpo font-semibold">{ajuste.titulo}</span>
+                <span className="block text-secundario text-texto-suave">{ajuste.frase}</span>
+              </span>
+              <IconoFlechaDerecha size={18} className="shrink-0 text-texto-tenue" />
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {abierto !== undefined && (
+        <Hoja
+          abierta
+          titulo={abierto.titulo}
+          amplia={abierto.amplia === true}
+          alCerrar={() => {
+            navegar(`/ajustes/${seccion}`, { replace: true });
+          }}
+        >
+          <DentroDeUnaHoja.Provider value={abierto.titulo}>
+            <div className="pt-e3">{abierto.contenido}</div>
+          </DentroDeUnaHoja.Provider>
+        </Hoja>
+      )}
+    </>
   );
 }
 

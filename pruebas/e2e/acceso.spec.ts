@@ -669,7 +669,8 @@ test('quien lleva el local puede dar una contraseña nueva, y se enseña una vez
  */
 test('el doble factor se puede poner Y quitar, no solo poner', async ({ page }) => {
   await entrar(page, 'rosa@ejemplo.estook.com');
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/cuenta`);
+  // En su hoja desde las bases firmes (0084): «Contraseña y acceso».
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/cuenta#mi-acceso`);
 
   // La sección existe y ofrece activarlo. Rosa no lo tiene puesto, así que lo
   // que se comprueba aquí es que la pantalla conoce las dos direcciones: antes

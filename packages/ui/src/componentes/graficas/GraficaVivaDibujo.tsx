@@ -1,11 +1,11 @@
 import { useId, useState } from 'react';
 import {
   Area,
-  AreaChart,
   Bar,
-  BarChart,
   CartesianGrid,
   Cell,
+  ComposedChart,
+  Line,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -41,10 +41,13 @@ export function GraficaVivaDibujo({
   conEjes = false,
   referencia = null,
   resaltarElUltimo = false,
+  anteriores,
 }: GraficaVivaProps) {
   const id = useId().replace(/:/g, '');
   const [encima, setEncima] = useState<number | null>(null);
-  const datos = puntos.map((p, i) => ({ ...p, i }));
+  // El periodo anterior va en la misma fila de cada día, alineado (0084).
+  const conAntes = anteriores !== undefined && anteriores.some((v) => v !== null);
+  const datos = puntos.map((p, i) => ({ ...p, i, antes: anteriores?.[i] ?? null }));
   const ultimo = datos.length - 1;
 
   const margen = conEjes
@@ -84,9 +87,12 @@ export function GraficaVivaDibujo({
       cursor={
         forma === 'barras' ? false : { stroke: TINTA_SUAVE, strokeWidth: 1, strokeOpacity: 0.5 }
       }
-      content={<Bocadillo formato={formato} />}
+      content={<Bocadillo formato={formato} conAntes={conAntes} />}
       wrapperStyle={{ outline: 'none', zIndex: 20 }}
-      allowEscapeViewBox={{ x: false, y: true }}
+      // Siempre dentro de la gráfica (0084): antes podía salirse por abajo y la
+      // tarjeta lo recortaba. Arriba del todo, y la línea del cursor dice el día.
+      allowEscapeViewBox={{ x: false, y: false }}
+      position={{ y: 0 }}
       isAnimationActive={false}
     />
   );
@@ -112,12 +118,28 @@ export function GraficaVivaDibujo({
       />
     );
 
+  const lineaDeAntes = conAntes ? (
+    <Line
+      dataKey="antes"
+      type="monotone"
+      stroke={TINTA_SUAVE}
+      strokeOpacity={0.6}
+      strokeWidth={1.5}
+      strokeDasharray="4 4"
+      dot={false}
+      activeDot={false}
+      connectNulls
+      isAnimationActive={false}
+      name="Periodo anterior"
+    />
+  ) : null;
+
   return (
     // La gráfica es una imagen para quien la ve, y una tabla para quien no.
     <figure role="img" aria-label={titulo} className="relative m-0 select-none">
       <ResponsiveContainer width="100%" height={alto}>
         {forma === 'barras' ? (
-          <BarChart
+          <ComposedChart
             data={datos}
             margin={margen}
             barCategoryGap={conEjes ? '22%' : '18%'}
@@ -133,6 +155,7 @@ export function GraficaVivaDibujo({
             {ejes}
             {linea}
             {bocadillo}
+            {lineaDeAntes}
             <Bar dataKey="valor" maxBarSize={24} radius={[4, 4, 0, 0]} isAnimationActive={false}>
               {datos.map((d) => {
                 const vivo = encima === null ? !resaltarElUltimo || d.i === ultimo : d.i === encima;
@@ -146,9 +169,9 @@ export function GraficaVivaDibujo({
                 );
               })}
             </Bar>
-          </BarChart>
+          </ComposedChart>
         ) : (
-          <AreaChart data={datos} margin={margen}>
+          <ComposedChart data={datos} margin={margen}>
             <defs>
               <linearGradient id={`velo-${id}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={color} stopOpacity={0.26} />
@@ -158,6 +181,7 @@ export function GraficaVivaDibujo({
             {ejes}
             {linea}
             {bocadillo}
+            {lineaDeAntes}
             <Area
               type="monotone"
               dataKey="valor"
@@ -195,7 +219,7 @@ export function GraficaVivaDibujo({
                 );
               }}
             />
-          </AreaChart>
+          </ComposedChart>
         )}
       </ResponsiveContainer>
 
@@ -214,14 +238,23 @@ export function GraficaVivaDibujo({
   );
 }
 
-/** El bocadillo: el día, el valor en grande y su línea de más. */
+/** El bocadillo: el día, el valor en grande, el del periodo anterior y su línea de más. */
 function Bocadillo({
   active,
   payload,
   formato,
-}: TooltipProps<number, string> & { readonly formato: (valor: number) => string }) {
+  conAntes,
+}: TooltipProps<number, string> & {
+  readonly formato: (valor: number) => string;
+  readonly conAntes: boolean;
+}) {
   const punto = payload?.[0]?.payload as
-    | { readonly etiqueta: string; readonly valor: number | null; readonly detalle?: string }
+    | {
+        readonly etiqueta: string;
+        readonly valor: number | null;
+        readonly antes: number | null;
+        readonly detalle?: string;
+      }
     | undefined;
   if (active !== true || punto === undefined) return null;
   return (
@@ -230,6 +263,11 @@ function Bocadillo({
       <p className="text-cuerpo font-bold text-texto">
         {punto.valor === null ? 'Sin dato' : formato(punto.valor)}
       </p>
+      {conAntes && (
+        <p className="text-etiqueta text-texto-suave">
+          Antes: {punto.antes === null ? 'sin dato' : formato(punto.antes)}
+        </p>
+      )}
       {punto.detalle !== undefined && (
         <p className="text-etiqueta text-texto-tenue">{punto.detalle}</p>
       )}

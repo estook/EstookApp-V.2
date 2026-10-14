@@ -1,8 +1,9 @@
-import { IconoAjustes, IconoPanel } from '@estook/iconos';
+import { IconoAjustes, IconoInicio } from '@estook/iconos';
 import type { App } from '../apps.ts';
 import { destinosConstruidos } from '../apps.ts';
 import { clases } from '../clases.ts';
 import { acentoParaTexto } from '../color.ts';
+import { EstrellaDeLasApps } from './EstrellaDeLasApps.tsx';
 
 /**
  * La barra de movil · Parte B5 del Plan.
@@ -49,7 +50,7 @@ export function BarraMovil({
         nombre="Panel"
         activa={enPanel}
         alPulsar={alIrAlPanel}
-        icono={<IconoPanel size={24} />}
+        icono={<IconoInicio size={24} />}
       />
 
       <BotonDeLaRueda alPulsar={alAbrirLaRueda} pendientes={pendientes} />
@@ -91,7 +92,6 @@ export interface BarraDeAppProps {
 }
 
 export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }: BarraDeAppProps) {
-  const Icono = app.icono;
   const destinos = destinosConstruidos(app);
   // Con cinco destinos o más (Almacén, con sus Mermas desde el 26-sep), **sin
   // «Apps»**: con él, sus cinco palabras se cortaban en los móviles que pintan la
@@ -111,7 +111,10 @@ export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }:
           className="flex min-h-toque min-w-toque flex-col items-center justify-center gap-[2px] rounded-medio px-e1"
           style={{ color: app.acento }}
         >
-          <Icono size={24} />
+          {/* El ✦ de la rueda, el mismo del centro de la barra del Panel (0084): «Apps»
+              con el icono de la propia app parecía un destino más, y «Resumen», con
+              el del Panel, parecía el botón de las apps. */}
+          <EstrellaDeLasApps size={22} />
           {/* El icono, en el acento; la palabra, en el acento para texto, que en
               claro es el que llega a 4,5:1 (entrega V). */}
           <span
@@ -230,6 +233,7 @@ function BotonDeLaRueda({
         pendientes > 0 ? `Abrir las apps. ${pendientes} pendientes en total` : 'Abrir las apps'
       }
       className="relative grid min-h-toque min-w-toque flex-1 place-items-center"
+      data-recorrido="menu"
     >
       <span
         aria-hidden
@@ -237,11 +241,8 @@ function BotonDeLaRueda({
         // significa algo, asi que B8 le pide 3:1. El charcoal da 6,6:1.
         className="grid size-[46px] -translate-y-e2 place-items-center rounded-redondo bg-naranja text-sobre-naranja shadow-s2"
       >
-        {/* La estrella de cuatro puntas del Plan. Es la marca del boton, no un
-            icono de Lucide: no hay ninguno que sea esto. */}
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-          <path d="M12 2c.5 4.6 5.4 9.5 10 10-4.6.5-9.5 5.4-10 10-.5-4.6-5.4-9.5-10-10 4.6-.5 9.5-5.4 10-10Z" />
-        </svg>
+        {/* La estrella de cuatro puntas del Plan: la marca de «todas las apps». */}
+        <EstrellaDeLasApps size={22} />
       </span>
 
       {pendientes > 0 && (

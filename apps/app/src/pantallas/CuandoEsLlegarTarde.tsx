@@ -90,8 +90,8 @@ export function CuandoEsLlegarTarde() {
           </Aviso>
         )}
         <p className="text-cuerpo">
-          Un fichaje de entrada cuenta como retraso si llega después de la hora del horario de
-          siempre de esa persona, pasado este margen.
+          Una entrada cuenta como retraso si se ficha después de la hora de su turno en el horario
+          publicado, pasado este margen.
         </p>
         <div className="max-w-[16rem]">
           <Selector

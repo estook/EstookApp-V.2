@@ -296,45 +296,33 @@ export function elPuestoDe(tienePermiso: (permiso: Permiso) => boolean): Puesto 
 
 /**
  * Lo que trae cada puesto, en orden. Solo los ids: el tamaño es el de cada widget,
- * y el mosaico los encaja sin huecos.
+ * y la rejilla los coloca en filas completas.
+ *
+ * **Seis como mucho** (las bases firmes, 0084): «un Panel de fábrica más corto para
+ * quien empieza, y que se añada el resto cuando haga falta». Eran ocho o diez, y un
+ * Panel que se abre por primera vez con diez tarjetas, la mitad vacías porque todavía
+ * no hay datos, es lo contrario de «lo que necesita tu atención». Lo de cada puesto
+ * que se queda fuera sale **primero** al añadir (`SUGERIDOS_DEL_PUESTO`).
  */
 const DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
   // El reloj arriba a la izquierda en todos (mejora 9), y para quien lleva el local,
   // lo que ha entrado y el semáforo justo al lado. El food cost va en el semáforo: no
   // se repite en otra tarjeta.
-  gerente: [
-    'fichar',
-    'ventas',
-    'objetivos',
-    'merma',
-    'valor-de-la-camara',
-    'bajo-minimo',
-    'fichajes',
-    'pedidos',
-    'caducidades',
-    'calendario',
-  ],
-  jefe: [
-    'fichar',
-    'food-cost',
-    'objetivos',
-    'caducidades',
-    'bajo-minimo',
-    'pedidos',
-    'fichajes',
-    'calendario',
-  ],
-  cocina: [
-    'fichar',
-    'mis-horas',
-    'mi-turno',
-    'caducidades',
-    'bajo-minimo',
-    'merma',
-    'pedidos',
-    'calendario',
-  ],
+  gerente: ['fichar', 'ventas', 'objetivos', 'merma', 'valor-de-la-camara', 'fichajes'],
+  jefe: ['fichar', 'objetivos', 'caducidades', 'bajo-minimo', 'pedidos', 'fichajes'],
+  cocina: ['fichar', 'mis-horas', 'mi-turno', 'merma', 'caducidades', 'bajo-minimo'],
   sala: ['fichar', 'mis-horas', 'mi-turno', 'merma', 'calendario', 'mis-apps'],
+};
+
+/**
+ * Lo que cada puesto traía antes y ya no trae de fábrica: lo primero que se le ofrece
+ * al añadir, porque es lo que más probablemente eche de menos.
+ */
+export const SUGERIDOS_DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
+  gerente: ['bajo-minimo', 'pedidos', 'caducidades', 'calendario'],
+  jefe: ['food-cost', 'calendario'],
+  cocina: ['pedidos', 'calendario'],
+  sala: [],
 };
 
 function puesto(id: string): WidgetPuesto {
@@ -385,9 +373,10 @@ export function loQueSePuedeAnadir(
 }
 
 /** Los grupos del catálogo al añadir, para que no sea una lista de veinte sin orden. */
-export type GrupoDeWidget = 'atender' | 'cifras' | 'equipo' | 'atajos';
+export type GrupoDeWidget = 'para-ti' | 'atender' | 'cifras' | 'equipo' | 'atajos';
 
 export const NOMBRE_DEL_GRUPO: Readonly<Record<GrupoDeWidget, string>> = {
+  'para-ti': 'Para ti',
   atender: 'Lo que hay que atender',
   cifras: 'Cifras',
   equipo: 'Tu equipo',
@@ -428,13 +417,24 @@ export function elCatalogoParaAnadir(
 ): readonly GrupoDelCatalogo[] {
   const yaEsta = new Set(puestos.map((p) => idDeAhora(p.id)));
   const suyos = WIDGETS.filter((widget) => sePuedeTener(widget, tienePermiso));
-  return ORDEN_DE_LOS_GRUPOS.map((grupo) => ({
-    grupo,
-    nombre: NOMBRE_DEL_GRUPO[grupo],
-    widgets: suyos
-      .filter((widget) => (GRUPO_DEL_WIDGET[widget.id] ?? 'cifras') === grupo)
-      .map((widget) => ({ widget, puesto: yaEsta.has(widget.id) })),
-  })).filter((grupo) => grupo.widgets.length > 0);
+  // «Para ti», arriba (0084): lo que su puesto traía antes y no trae de fábrica, si
+  // todavía no lo tiene. Sale ahí y no en su grupo: dos veces sería ruido.
+  const paraTi = new Set(
+    SUGERIDOS_DEL_PUESTO[elPuestoDe(tienePermiso)].filter(
+      (id) => !yaEsta.has(id) && suyos.some((widget) => widget.id === id),
+    ),
+  );
+  const grupoDe = (widget: Widget): GrupoDeWidget =>
+    paraTi.has(widget.id) ? 'para-ti' : (GRUPO_DEL_WIDGET[widget.id] ?? 'cifras');
+  return (['para-ti', ...ORDEN_DE_LOS_GRUPOS] as const)
+    .map((grupo) => ({
+      grupo,
+      nombre: NOMBRE_DEL_GRUPO[grupo],
+      widgets: suyos
+        .filter((widget) => grupoDe(widget) === grupo)
+        .map((widget) => ({ widget, puesto: yaEsta.has(widget.id) })),
+    }))
+    .filter((grupo) => grupo.widgets.length > 0);
 }
 
 /**

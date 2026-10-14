@@ -44,6 +44,11 @@ export interface DatosDelIndicador {
   readonly total: number | null;
   readonly anterior: number | null;
   readonly diasConDato: number;
+  /**
+   * El periodo anterior, día a día y alineado con `serie` (0084): la línea gris. Puede
+   * faltar si la API todavía es la de antes de desplegar.
+   */
+  readonly serieAnterior?: readonly (number | null)[];
 }
 
 export interface TarjetaDeIndicadorProps {
@@ -189,6 +194,7 @@ export function TarjetaDeIndicador({
                   etiqueta: comoSeLeeElDia(dia.fecha),
                   valor: dia.valor,
                 }))}
+                anteriores={datos.serieAnterior}
                 forma={como.grafica === 'barras' ? 'barras' : 'area'}
                 color={acento}
                 formato={(v) => comoSeEscribe(indicador, v)}

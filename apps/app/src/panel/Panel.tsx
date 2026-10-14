@@ -28,6 +28,7 @@ import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
 import { EstookEnTuMovil } from '../sinConexion/EstookEnTuMovil.tsx';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
+import { InvitacionAlRecorrido } from '../recorrido/ElRecorrido.tsx';
 
 /**
  * El Panel · el centro de control (Manifiesto 6, Evolución 1.0 capítulo 5).
@@ -138,6 +139,10 @@ export function Panel() {
         hidden={sinNadaQueAtender}
         className="grid grid-cols-1 items-start gap-e3 lg:grid-cols-2"
       >
+        {/* El recorrido de la primera vez (0084): se ofrece arriba, una vez por cuenta. */}
+        <div className="empty:hidden lg:col-span-2">
+          <InvitacionAlRecorrido />
+        </div>
         {/* Lo de hoy, ordenado por el servidor (entrega O, mejora 8), de lado a lado. */}
         <div className="empty:hidden lg:col-span-2">
           <LoDeHoy />

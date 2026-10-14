@@ -2,7 +2,8 @@ import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { IconoAnadir, IconoHecho, IconoRejilla } from '@estook/iconos';
 import { clases } from '../clases.ts';
 import { Casilla, HuecoDeAnadir } from './Casilla.tsx';
-import { CLASES_DE_LA_REJILLA } from './rejilla.ts';
+import { CLASES_DE_LA_REJILLA, colocarEnFilas } from './rejilla.ts';
+import { usarColumnasDelPanel } from '../ganchos/usarColumnasDelPanel.ts';
 import type { RejillaConVacios, RejillaProps } from './rejilla.ts';
 import { usarMantenerPulsado } from '../ganchos/usarMantenerPulsado.ts';
 
@@ -74,7 +75,7 @@ export function Rejilla(props: RejillaProps) {
   }, !editando);
 
   return (
-    <div className="@container flex flex-col gap-e3">
+    <div className="@container flex flex-col gap-e3" data-recorrido="panel">
       <div className="flex flex-wrap items-center justify-between gap-e2">
         <p className="text-secundario font-medium text-texto-suave">
           {editando ? 'Arrastra para ordenar' : 'Tu panel'}
@@ -140,15 +141,21 @@ function RejillaQuieta({
   vacios,
   avisarDeVacio,
 }: RejillaConVacios) {
+  const [caja, columnas] = usarColumnasDelPanel<HTMLDivElement>();
   return (
-    <div className={CLASES_DE_LA_REJILLA}>
-      {puestos.map((puesto, indice) => (
+    <div
+      ref={caja}
+      className={CLASES_DE_LA_REJILLA}
+      style={{ gridTemplateColumns: `repeat(${String(columnas)}, minmax(0, 1fr))` }}
+    >
+      {colocarEnFilas(puestos, columnas).map(({ puesto, columnas: ocupa }, indice) => (
         <Casilla
           key={puesto.id}
           id={puesto.id}
           nombre={nombreDe(puesto.id)}
           tamano={puesto.tamano}
           tamanos={tamanosDe(puesto.id)}
+          columnas={ocupa}
           indice={indice}
           editando={editando}
           vacio={vacios.has(puesto.id)}

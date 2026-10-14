@@ -469,6 +469,8 @@ export interface LineaDeMerma {
   readonly valorCentimos?: number | null;
   /** La foto de lo que se tiró, si se hizo (M8 · 0079): un enlace que caduca. */
   readonly foto?: string | null;
+  /** La foto del producto, en miniatura (0084). */
+  readonly miniatura?: string | null;
 }
 
 export interface TotalPorPartida {
@@ -522,6 +524,8 @@ export interface ProductoParaMerma {
   readonly nombre: string;
   readonly unidadDeUso: string;
   readonly cantidad: number;
+  /** Su foto en miniatura al buscar (0084). */
+  readonly miniatura?: string | null;
 }
 
 export interface ProductosParaMerma {

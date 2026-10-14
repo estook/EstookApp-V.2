@@ -759,7 +759,8 @@ test.describe('cómo se ve · el tema y el color del local', () => {
       que es el que no contrasta con nada.
     */
     await entrar(page);
-    await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
+    // Tu marca, en su hoja desde las bases firmes (0084).
+    await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#tu-marca`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await elInterruptor(page, true);
@@ -802,7 +803,7 @@ test.describe('cómo se ve · el tema y el color del local', () => {
         `con ${color}, «${medido?.que ?? ''}»`,
       ).toBeGreaterThanOrEqual(4.5);
 
-      await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
+      await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#tu-marca`);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     }
 
@@ -847,6 +848,11 @@ test('si el Panel no puede leer, lo dice, y no se inventa un «no puedes» ni un
     }),
   );
   await page.route('**/api/v1/consultas/almacen_hoy*', (ruta) =>
+    ruta.fulfill({ status: 500, contentType: 'application/json', body: '{}' }),
+  );
+  // Las cifras del Panel de fábrica (la merma, el valor de la cámara) salen de aquí
+  // desde que es de seis widgets (0084): que tampoco puedan leer.
+  await page.route('**/api/v1/consultas/un_indicador*', (ruta) =>
     ruta.fulfill({ status: 500, contentType: 'application/json', body: '{}' }),
   );
   await page.route('**/api/v1/consultas/mi_fichaje*', (ruta) =>

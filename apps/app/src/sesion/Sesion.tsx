@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { Destino, Idioma, ComoEstaLaCuenta } from '@estook/dominio';
+import type { Destino, Idioma, ComoEstaLaCuenta, PeriodoDelIndicador } from '@estook/dominio';
 import type { PermisosResueltos } from '@estook/permisos';
 import type { ClienteApi } from '@estook/cliente-api';
 
@@ -87,6 +87,14 @@ export interface QuienSoy {
     /** Si lleva «Plan y facturación», que es de la organización y no del local. */
     readonly laLlevo: boolean;
   } | null;
+  /**
+   * Lo que recuerda su cuenta en todos sus aparatos (0084): el periodo de cada widget y
+   * si ya vio el recorrido. Opcional mientras la API no esté desplegada.
+   */
+  readonly preferencias?: {
+    readonly periodos: Readonly<Record<string, PeriodoDelIndicador>>;
+    readonly recorridoVisto: boolean;
+  };
 }
 
 export interface Sesion {

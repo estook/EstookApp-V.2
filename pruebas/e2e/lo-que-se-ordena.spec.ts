@@ -32,10 +32,13 @@ async function entrarComoLuis(page: Page): Promise<void> {
 
 /** Una tarjeta, por su título. */
 function laTarjeta(page: Page, titulo: string) {
-  return page
+  // Desde las bases firmes (0084) cada ajuste se abre en su hoja, que lleva su título:
+  // la hoja si la hay, y si no, la tarjeta suelta con ese título.
+  const suelta = page
     .locator('section')
     .filter({ has: page.getByRole('heading', { name: titulo, exact: true }) })
     .last();
+  return page.getByRole('dialog', { name: titulo }).or(suelta).first();
 }
 
 // ── 9 · El Panel de cada puesto ──────────────────────────────────────────────

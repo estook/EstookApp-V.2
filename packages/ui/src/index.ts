@@ -55,6 +55,7 @@ export { Selector, Interruptor } from './componentes/Selector.tsx';
 export type { SelectorProps, InterruptorProps, Opcion } from './componentes/Selector.tsx';
 
 export { Tarjeta, EnlaceDeTarjeta, Etiqueta, Avatar } from './componentes/Tarjeta.tsx';
+export { DentroDeUnaHoja } from './componentes/dentroDeUnaHoja.ts';
 export { inicialesDe, colorDe } from './componentes/iniciales.ts';
 export { FotoDeProducto } from './componentes/FotoDeProducto.tsx';
 export type { FotoDeProductoProps } from './componentes/FotoDeProducto.tsx';
@@ -104,6 +105,8 @@ export { Grafica } from './componentes/Grafica.tsx';
 export type { GraficaProps, SerieDeGrafica, FormaDeGrafica } from './componentes/Grafica.tsx';
 // Las gráficas vivas, el medidor y el anillo (la experiencia, 0083).
 export { GraficaViva } from './componentes/graficas/GraficaViva.tsx';
+export { LineaViva } from './componentes/graficas/LineaViva.tsx';
+export type { LineaVivaProps } from './componentes/graficas/LineaViva.tsx';
 export type {
   GraficaVivaProps,
   PuntoDeGrafica,
@@ -142,6 +145,7 @@ export type { SiAlgoFallaProps } from './componentes/SiAlgoFalla.tsx';
 
 // ── Navegacion (B5) ──────────────────────────────────────────────────────────
 export { BarraMovil, BarraDeApp } from './navegacion/BarraMovil.tsx';
+export { EstrellaDeLasApps } from './navegacion/EstrellaDeLasApps.tsx';
 export type { BarraMovilProps, BarraDeAppProps } from './navegacion/BarraMovil.tsx';
 
 export { BarraArribaMovil } from './navegacion/BarraArribaMovil.tsx';

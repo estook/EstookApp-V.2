@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
-import type { TamanoDeWidget, WidgetPuesto } from './catalogo.ts';
-import { CLASES_DEL_MOSAICO } from '../componentes/Mosaico.tsx';
+import { CUANTO_OCUPA, type TamanoDeWidget, type WidgetPuesto } from './catalogo.ts';
 
 /**
  * Lo que comparten la rejilla del Panel y su versión en edición (0039): sus
@@ -60,28 +59,81 @@ export const COMO_SE_LLAMA_EL_TAMANO: Readonly<Record<TamanoDeWidget, string>> =
 };
 
 /**
- * Las clases de la rejilla.
- *
- * ── `dense`, que es la mitad de «quitar cuadrados vacíos» ────────────────────
- *
- * Con un widget ancho detrás de uno pequeño en una fila de dos, el navegador
- * dejaba **un hueco** y bajaba el ancho a la fila siguiente. Con el flujo denso
- * rellena el hueco con el siguiente widget que quepa, que es lo que hace la
- * pantalla de inicio de un móvil. El orden de lectura sigue siendo el de la
- * lista, que es el que se guarda.
- *
- * ── Y el mosaico, que es la otra mitad (entrega V, 0045) ─────────────────────
- *
- * Las filas son de cuatro píxeles y cada casilla dice cuántas ocupa, medido. Con
- * el flujo denso, eso coloca cada widget debajo del más corto: el Panel se
- * encaja como un iPad y no por filas del alto del más alto.
- *
- * ── Las columnas, por lo que mide el Panel y no la pantalla (0083) ──────────
- *
- * Con el menú a la izquierda, lo que importa es el ancho que le queda al Panel, que
- * cambia al plegar el menú. Así que se pregunta al contenedor (`@container`, que lo
- * pone `Rejilla`): dos columnas en el móvil, tres desde 46 rem y **cuatro como
- * mucho**, que es lo que deja cada widget del ancho de una tarjeta de verdad. Antes
- * eran seis en una pantalla grande, y una gráfica en un sexto de monitor es una raya.
+ * Las columnas del Panel, por lo que mide el Panel y no la pantalla (0083): dos en el
+ * móvil, tres desde 46 rem y **cuatro como mucho**, que es lo que deja cada widget del
+ * ancho de una tarjeta de verdad. Con el menú a la izquierda, lo que importa es el
+ * ancho que le queda al Panel, que cambia al plegar el menú.
  */
-export const CLASES_DE_LA_REJILLA = `${CLASES_DEL_MOSAICO} grid-cols-2 @min-[46rem]:grid-cols-3 @min-[68rem]:grid-cols-4 @min-[46rem]:gap-x-e4`;
+export function columnasParaElAncho(anchoEnRem: number): number {
+  if (anchoEnRem >= 68) return 4;
+  if (anchoEnRem >= 46) return 3;
+  return 2;
+}
+
+/** Un widget ya colocado: cuántas columnas ocupa en su fila. */
+export interface Colocado {
+  readonly puesto: WidgetPuesto;
+  readonly columnas: number;
+}
+
+/**
+ * **Filas completas, sin huecos** (las bases firmes, 0084).
+ *
+ * «Dejan huecos entre ellos y están muy descolocados» (Richi, 14-oct). Era el mosaico
+ * medido de la entrega V: filas de cuatro píxeles, cada casilla del alto de lo suyo y
+ * el flujo denso rellenando. Con tarjetas de un solo ancho encajaba; con pequeños y
+ * anchos mezclados, un pequeño detrás de un ancho se quedaba solo, con media fila en
+ * blanco al lado (la merma en el móvil), y las alturas distintas dejaban escalones.
+ *
+ * Ahora cada fila **se llena entera**, como en la pantalla de inicio de un móvil:
+ *
+ *   1 · Se van poniendo en su orden. Si el siguiente no cabe en lo que queda de fila,
+ *       se busca **más adelante el primero que sí quepa** (un pequeño para el hueco de
+ *       un pequeño) y se sube: el orden guardado se respeta todo lo que se puede.
+ *   2 · Si no queda ninguno que quepa, **los de la fila se estiran** hasta llenarla,
+ *       primero los pequeños: un pequeño solo ocupa la fila entera.
+ *   3 · Y las tarjetas de una misma fila **miden lo mismo de alto** (la rejilla las
+ *       estira), así que no hay escalones.
+ *
+ * Es una función pura, aparte, para probarla sin navegador (`rejilla.prueba.ts`).
+ */
+export function colocarEnFilas(
+  puestos: readonly WidgetPuesto[],
+  columnas: number,
+): readonly Colocado[] {
+  const anchoDe = (puesto: WidgetPuesto) =>
+    Math.min(CUANTO_OCUPA[puesto.tamano].columnas, columnas);
+  const quedan = [...puestos];
+  const colocados: Colocado[] = [];
+
+  while (quedan.length > 0) {
+    const fila: { puesto: WidgetPuesto; columnas: number }[] = [];
+    let libre = columnas;
+    for (let i = 0; i < quedan.length && libre > 0;) {
+      const puesto = quedan[i];
+      if (puesto !== undefined && anchoDe(puesto) <= libre) {
+        fila.push({ puesto, columnas: anchoDe(puesto) });
+        libre -= anchoDe(puesto);
+        quedan.splice(i, 1);
+        // Vuelve al principio: lo siguiente en orden es lo primero que se intenta.
+        i = 0;
+      } else {
+        i += 1;
+      }
+    }
+    // Lo que sobra de la fila se reparte, primero entre los pequeños y de uno en uno,
+    // para que dos pequeños con tres columnas no queden uno de dos y otro de uno.
+    const porOrdenDeEstirar = [...fila].sort((a, b) => a.columnas - b.columnas);
+    for (let k = 0; libre > 0 && porOrdenDeEstirar.length > 0; k += 1) {
+      const cual = porOrdenDeEstirar[k % porOrdenDeEstirar.length];
+      if (cual === undefined) break;
+      cual.columnas += 1;
+      libre -= 1;
+    }
+    colocados.push(...fila);
+  }
+  return colocados;
+}
+
+/** Las clases de la rejilla: las columnas las pone su estilo, que las mide. */
+export const CLASES_DE_LA_REJILLA = 'grid gap-e3 @min-[46rem]:gap-e4';

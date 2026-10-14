@@ -47,6 +47,16 @@ export interface ResultadoDeBusqueda {
   readonly ir: () => void;
 }
 
+/** Cómo se lee cada tipo de resultado, en la etiqueta de su fila. */
+const NOMBRE_DEL_TIPO: Readonly<Record<string, string>> = {
+  producto: 'Producto',
+  proveedor: 'Proveedor',
+  persona: 'Persona',
+  local: 'Local',
+  organizacion: 'Organización',
+  area: 'Zona',
+};
+
 export interface BuscadorProps {
   readonly abierto: boolean;
   readonly alCerrar: () => void;
@@ -186,7 +196,7 @@ export function Buscador({
               // cosas con el mismo nombre son tres cosas que un lector de
               // pantalla no sabe distinguir.
               aria-label="Que quieres buscar"
-              placeholder="Busca un local, una persona o una acción"
+              placeholder="Busca un producto, una persona o una pantalla"
               className="min-h-toque w-full bg-transparent text-cuerpo outline-none placeholder:text-texto-tenue"
             />
             {/*
@@ -250,7 +260,7 @@ export function Buscador({
                         senalada={accionesQueEncajan.length + i === señalado}
                         titulo={resultado.titulo}
                         subtitulo={resultado.subtitulo}
-                        etiqueta={resultado.tipo}
+                        etiqueta={NOMBRE_DEL_TIPO[resultado.tipo] ?? resultado.tipo}
                         alPulsar={() => {
                           alCerrar();
                           resultado.ir();
@@ -270,6 +280,8 @@ export function Buscador({
                     quitar="Borrar lo escrito"
                     alQuitar={() => {
                       setEscrito('');
+                      // Y a quien busca también: sin esto, lo de antes seguía preguntándose.
+                      alEscribir('');
                       campo.current?.focus();
                     }}
                   />

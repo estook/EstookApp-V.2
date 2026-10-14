@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { IconoChat, IconoDocumento, IconoPanel, IconoRejilla } from '@estook/iconos';
-import { Boton, IconoDeFogon, clases } from '@estook/ui';
+import { IconoChat, IconoDocumento, IconoInicio } from '@estook/iconos';
+import { Boton, EstrellaDeLasApps, IconoDeFogon, clases } from '@estook/ui';
 import { GuiaDeInstalacion } from '../GuiaDeInstalacion.tsx';
 import { esUnMovil } from '../queAparato.ts';
 import type { PropsDeUnPaso } from '../contrato.ts';
@@ -31,13 +31,13 @@ import type { PropsDeUnPaso } from '../contrato.ts';
 
 const PANTALLAS = [
   {
-    icono: IconoPanel,
+    icono: IconoInicio,
     titulo: 'El Panel',
     frase:
       'Lo primero que ves cada mañana: lo que necesita tu atención hoy, antes que ningún número.',
   },
   {
-    icono: IconoRejilla,
+    icono: EstrellaDeLasApps,
     titulo: 'La rueda',
     frase:
       'El botón del centro abre tus apps. Solo salen las tuyas, así que la de cada uno es distinta.',

@@ -65,6 +65,9 @@ export function CifraDelWidget({
 }: CifraDelWidgetProps) {
   const [dias, setDias] = usarElPeriodoDelWidget(id);
   const [abierto, setAbierto] = useState(false);
+  // El día que señala el dedo o el ratón en la gráfica (0084): el número grande pasa a
+  // ser el de ese día, en su sitio. Antes salía un bocadillo que se salía de la tarjeta.
+  const [senalado, setSenalado] = useState<number | null>(null);
   const { datos, fallo } = usarElIndicador(indicador, dias);
   const acento = acentoDelWidget(id) ?? 'var(--color-naranja)';
   const como = COMO_ES_EL_INDICADOR[indicador];
@@ -111,7 +114,7 @@ export function CifraDelWidget({
               setAbierto(true);
             }}
           >
-            <LaCifra indicador={indicador} datos={datos} dias={dias} />
+            <LaCifra indicador={indicador} datos={datos} dias={dias} senalado={senalado} />
             {/*
               Todo a cero no se dibuja: una raya en el suelo no dice nada, y una
               semana sin merma se cuenta mejor con palabras.
@@ -123,11 +126,13 @@ export function CifraDelWidget({
                 <GraficaViva
                   titulo={`${titulo}, día a día`}
                   puntos={puntosDe(datos)}
+                  anteriores={datos.serieAnterior}
                   forma={dibujo}
                   color={acento}
                   formato={(v) => comoSeEscribe(indicador, v)}
                   alto={ancho ? 96 : 58}
                   resaltarElUltimo
+                  alSenalar={setSenalado}
                 />
               </div>
             )}
@@ -160,19 +165,45 @@ function puntosDe(datos: DatosDelIndicador) {
   }));
 }
 
-/** La cifra en grande y cómo va frente al periodo de antes. */
+/**
+ * La cifra en grande y cómo va frente al periodo de antes. Con un día señalado en la
+ * gráfica, la de ese día y su fecha (0084): el número está siempre en el mismo sitio.
+ */
 function LaCifra({
   indicador,
   datos,
   dias,
   grande = false,
+  senalado = null,
 }: {
   readonly indicador: Indicador;
   readonly datos: DatosDelIndicador;
   readonly dias: PeriodoDelIndicador;
   readonly grande?: boolean;
+  readonly senalado?: number | null;
 }) {
   if (datos.total === null) return null;
+  const elDia = senalado === null ? undefined : datos.serie[senalado];
+  if (elDia !== undefined) {
+    const deAntes = datos.serieAnterior?.[senalado ?? -1] ?? null;
+    const escritaDelDia = elDia.valor === null ? 'Sin dato' : comoSeEscribe(indicador, elDia.valor);
+    return (
+      <div className="flex flex-wrap items-baseline gap-x-e2 gap-y-e1" aria-live="polite">
+        <p
+          className={clases(
+            comoDeGrande(escritaDelDia),
+            'font-bold tracking-[-0.02em] tabular-nums',
+          )}
+        >
+          {escritaDelDia}
+        </p>
+        <span className="rounded-redondo bg-fondo px-e2 py-[1px] text-etiqueta font-semibold text-texto-suave">
+          {elDiaCorto(elDia.fecha)}
+          {deAntes === null ? '' : ` · antes ${comoSeEscribe(indicador, deAntes)}`}
+        </span>
+      </div>
+    );
+  }
   const escrita = comoSeEscribe(indicador, datos.total, dias);
   const cambio = comoCambia(indicador, datos.total, datos.anterior);
   return (
@@ -258,6 +289,7 @@ export function DetalleDeLaCifra({
               <GraficaViva
                 titulo={`${titulo}, día a día, ${dias} días`}
                 puntos={puntosDe(datos)}
+                anteriores={datos.serieAnterior}
                 forma={forma}
                 color={acento}
                 formato={(v) => comoSeEscribe(indicador, v)}
@@ -270,6 +302,22 @@ export function DetalleDeLaCifra({
                     : { valor: media, nombre: `Media ${comoSeEscribe(indicador, media)}` }
                 }
               />
+              {datos.serieAnterior?.some((v) => v !== null) === true && (
+                <p className="mt-e2 flex flex-wrap items-center gap-x-e4 gap-y-e1 px-e1 text-etiqueta text-texto-suave">
+                  <span className="inline-flex items-center gap-e1">
+                    <span
+                      aria-hidden
+                      className="h-[2px] w-4 rounded-redondo"
+                      style={{ background: acento }}
+                    />
+                    Estos {dias} días
+                  </span>
+                  <span className="inline-flex items-center gap-e1">
+                    <span aria-hidden className="w-4 border-t-2 border-dashed border-texto-tenue" />
+                    Los {dias} anteriores
+                  </span>
+                </p>
+              )}
             </div>
           )}
 

@@ -122,9 +122,11 @@ test('la semana o el mes, y cada tarjeta lleva a su detalle', async ({ page }) =
     lasCifrasDe(page, 'almacen').getByRole('radio', { name: '30 días' }),
   ).toHaveAttribute('aria-checked', 'true', { timeout: 15_000 });
 
+  // Por la esquina, que es el título: la gráfica va encima del botón (se toca y dice
+  // cada día) y en el centro de la tarjeta el dedo cae en ella, que lleva igual (0084).
   await lasCifrasDe(page, 'almacen')
     .getByRole('button', { name: 'Ver bajo mínimo a detalle' })
-    .click();
+    .click({ position: { x: 12, y: 12 } });
   await expect(page).toHaveURL(/#\/almacen\/productos\/bajo-minimo/);
 });
 
@@ -167,7 +169,11 @@ test('Equipo enseña horas, coste, retrasos e incidencias, y cada una lleva a su
 
   // Los retrasos, uno a uno, en Incidencias (repaso del 9-oct, 0081): antes llevaban
   // a Fichajes, donde solo se veía cuántos.
-  await fila.getByRole('button', { name: 'Ver retrasos a detalle' }).click();
+  // Por la esquina, que es el título: la gráfica va encima del botón (se toca y dice
+  // cada día) y en el centro de la tarjeta el dedo cae en ella, que lleva igual (0084).
+  await fila
+    .getByRole('button', { name: 'Ver retrasos a detalle' })
+    .click({ position: { x: 12, y: 12 } });
   await expect(page).toHaveURL(/#\/equipo\/incidencias\/retrasos/);
   await expect(page.getByRole('tab', { name: 'Retrasos', selected: true })).toBeVisible({
     timeout: 15_000,
@@ -177,14 +183,15 @@ test('Equipo enseña horas, coste, retrasos e incidencias, y cada una lleva a su
   await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen`);
   await lasCifrasDe(page, 'equipo')
     .getByRole('button', { name: 'Ver horas del equipo a detalle' })
-    .click();
+    .click({ position: { x: 12, y: 12 } });
   await expect(page).toHaveURL(/#\/equipo\/fichajes/);
 });
 
 test('cuándo es llegar tarde lo cambia quien lleva el local', async ({ page }, info) => {
   test.skip(info.project.name !== 'escritorio', UNA_VEZ);
   await entrar(page, ROSA);
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local`);
+  // En su hoja desde las bases firmes (0084).
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#llegar-tarde`);
 
   const margen = page.getByLabel('Cuenta como retraso');
   await expect(margen).toHaveValue('5', { timeout: 15_000 });

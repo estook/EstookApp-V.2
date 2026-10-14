@@ -112,6 +112,12 @@ export interface SalidaUnIndicador {
   readonly total: number | null;
   /** El periodo anterior, del mismo largo. */
   readonly anterior: number | null;
+  /**
+   * Los días del periodo anterior, alineados con `serie`: el primero de antes junto al
+   * primero de ahora. Es la línea gris de las gráficas (0084): comparar sin leer
+   * números.
+   */
+  readonly serieAnterior: readonly (number | null)[];
   /** Cuántos días del periodo tienen dato. «4 de 7 con caja cerrada». */
   readonly diasConDato: number;
 }
@@ -369,7 +375,10 @@ export interface LosDosPeriodos {
   readonly jornada: string;
 }
 
-export type Calculado = Pick<SalidaUnIndicador, 'serie' | 'total' | 'anterior' | 'diasConDato'>;
+export type Calculado = Pick<
+  SalidaUnIndicador,
+  'serie' | 'total' | 'anterior' | 'diasConDato' | 'serieAnterior'
+>;
 
 /**
  * Una cifra contada para dos periodos cualesquiera. **Es la cuenta de las
@@ -408,11 +417,12 @@ async function porDias(
 ): Promise<Calculado> {
   const delDia = await losDias(contexto, localId, indicador, deAntes[0] ?? jornada, jornada);
 
-  const serie = deAhora.map((fecha) => {
+  const delDiaDe = (fecha: string): number | null => {
     const suyo = delDia.get(fecha);
-    if (suyo === undefined) return { fecha, valor: sinFilaEsCero(indicador) ? 0 : null };
-    return { fecha, valor: elValor(indicador, suyo.arriba, suyo.abajo) };
-  });
+    if (suyo === undefined) return sinFilaEsCero(indicador) ? 0 : null;
+    return elValor(indicador, suyo.arriba, suyo.abajo);
+  };
+  const serie = deAhora.map((fecha) => ({ fecha, valor: delDiaDe(fecha) }));
 
   const ahora = elPeriodo(indicador, delDia, deAhora);
   const antes = elPeriodo(indicador, delDia, deAntes);
@@ -423,6 +433,7 @@ async function porDias(
     // Sin un solo dato antes, no hay con qué comparar: nulo, y no hay flecha.
     anterior: antes.conDato === 0 && !sinFilaEsCero(indicador) ? null : antes.total,
     diasConDato: ahora.conDato,
+    serieAnterior: deAntes.map(delDiaDe),
   };
 }
 
@@ -542,6 +553,7 @@ async function laCamara(
     anterior: ultimoDe(deAntes),
     // Lo que hay se sabe todos los días.
     diasConDato: deAhora.length,
+    serieAnterior: deAntes.map((fecha) => deCadaDia.get(fecha) ?? null),
   };
 }
 
@@ -597,17 +609,24 @@ async function elEquipo(
     return { total, conDato: dias.size };
   };
 
-  const serie = deAhora.map((fecha) => {
+  const delDia = (fecha: string, cobra: ReadonlyMap<string, Retribucion>): number => {
     let valor = 0;
     for (const h of horas) {
-      if (h.fecha === fecha) valor += loDe(h.personaId, minutosDeSegundos(h.segundos), cobraAhora);
+      if (h.fecha === fecha) valor += loDe(h.personaId, minutosDeSegundos(h.segundos), cobra);
     }
-    return { fecha, valor };
-  });
+    return valor;
+  };
+  const serie = deAhora.map((fecha) => ({ fecha, valor: delDia(fecha, cobraAhora) }));
 
   const ahora = delPeriodo(deAhora, cobraAhora);
   const antes = delPeriodo(deAntes, cobraAntes);
-  return { serie, total: ahora.total, anterior: antes.total, diasConDato: ahora.conDato };
+  return {
+    serie,
+    total: ahora.total,
+    anterior: antes.total,
+    diasConDato: ahora.conDato,
+    serieAnterior: deAntes.map((fecha) => delDia(fecha, cobraAntes)),
+  };
 }
 
 /**
@@ -656,6 +675,7 @@ async function losRetrasos(
     total: ahora.total,
     anterior: antes.total,
     diasConDato: ahora.conDato,
+    serieAnterior: deAntes.map((fecha) => tardeDe.get(fecha) ?? null),
   };
 }
 
@@ -703,5 +723,8 @@ async function lasIncidenciasDelPeriodo(
     total: ahora.total,
     anterior: antes.total,
     diasConDato: ahora.conDato,
+    serieAnterior: deAntes.map((fecha) =>
+      conAlgo.has(fecha) ? (cuantasDe.get(fecha) ?? 0) : null,
+    ),
   };
 }

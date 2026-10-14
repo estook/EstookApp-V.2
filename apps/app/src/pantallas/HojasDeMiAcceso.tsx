@@ -15,26 +15,35 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 
 export function CambiarMiClave({
   yaTiene,
+  conPin = false,
   alCerrar,
   alHecho,
 }: {
   yaTiene: boolean;
+  /** Quien entró con su PIN y todavía no tiene contraseña dice su PIN (0083). */
+  conPin?: boolean;
   alCerrar: () => void;
   alHecho: () => void;
 }) {
   const { cliente } = usarSesion();
   const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
+  const [repetida, setRepetida] = useState('');
+  const [pin, setPin] = useState('');
+  // «Pedir dos veces la contraseña, para estar seguros y que no se falle» (0083).
+  const noCoinciden = repetida !== '' && nueva !== repetida;
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [enviando, setEnviando] = useState(false);
 
   async function alEnviar(evento: FormEvent) {
     evento.preventDefault();
+    if (nueva !== repetida) return;
     setEnviando(true);
     setError(null);
 
     const respuesta = await cliente.ejecutar('cambiar_mi_clave', {
       ...(yaTiene ? { actual } : {}),
+      ...(conPin ? { pin } : {}),
       nueva,
     });
 
@@ -71,6 +80,21 @@ export function CambiarMiClave({
           />
         )}
 
+        {conPin && (
+          <Campo
+            etiqueta="Tu PIN"
+            tipo="contrasena"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            ayuda="El que te dieron al darte acceso, el de entrar. Así nadie puede ponerte una contraseña desde un móvil que te dejaste abierto."
+            value={pin}
+            onChange={(evento) => {
+              setPin(evento.target.value);
+            }}
+            obligatorio
+          />
+        )}
+
         <Campo
           etiqueta="La nueva"
           tipo="contrasena"
@@ -83,6 +107,18 @@ export function CambiarMiClave({
           obligatorio
         />
 
+        <Campo
+          etiqueta="Repítela"
+          tipo="contrasena"
+          autoComplete="new-password"
+          value={repetida}
+          onChange={(evento) => {
+            setRepetida(evento.target.value);
+          }}
+          {...(noCoinciden ? { error: 'No es igual que la de arriba.' } : {})}
+          obligatorio
+        />
+
         {error && <ErrorEnCristiano error={error} />}
 
         <p className="text-secundario text-texto-suave">
@@ -91,7 +127,12 @@ export function CambiarMiClave({
         </p>
 
         <Botones>
-          <Boton type="submit" tono="principal" cargando={enviando}>
+          <Boton
+            type="submit"
+            tono="principal"
+            cargando={enviando}
+            disabled={nueva === '' || nueva !== repetida}
+          >
             Guardar
           </Boton>
           <Boton tono="texto" onClick={alCerrar}>

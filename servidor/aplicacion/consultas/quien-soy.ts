@@ -253,7 +253,10 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
         : await rolesQuePuedeDar(sql, destino.organizacionId, sesion.personaId);
 
     // Su cara (0083), firmada para unas horas: va en la barra de arriba y en el menú.
-    const foto = laFirmada(await firmarLasFotos(contexto, [persona.foto_clave]), persona.foto_clave);
+    const foto = laFirmada(
+      await firmarLasFotos(contexto, [persona.foto_clave]),
+      persona.foto_clave,
+    );
 
     return {
       personaId: persona.id,

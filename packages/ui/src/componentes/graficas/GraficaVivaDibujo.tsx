@@ -82,9 +82,7 @@ export function GraficaVivaDibujo({
   const bocadillo = (
     <Tooltip
       cursor={
-        forma === 'barras'
-          ? false
-          : { stroke: TINTA_SUAVE, strokeWidth: 1, strokeOpacity: 0.5 }
+        forma === 'barras' ? false : { stroke: TINTA_SUAVE, strokeWidth: 1, strokeOpacity: 0.5 }
       }
       content={<Bocadillo formato={formato} />}
       wrapperStyle={{ outline: 'none', zIndex: 20 }}
@@ -124,7 +122,9 @@ export function GraficaVivaDibujo({
             margin={margen}
             barCategoryGap={conEjes ? '22%' : '18%'}
             onMouseMove={(estado) => {
-              setEncima(typeof estado.activeTooltipIndex === 'number' ? estado.activeTooltipIndex : null);
+              setEncima(
+                typeof estado.activeTooltipIndex === 'number' ? estado.activeTooltipIndex : null,
+              );
             }}
             onMouseLeave={() => {
               setEncima(null);
@@ -135,8 +135,7 @@ export function GraficaVivaDibujo({
             {bocadillo}
             <Bar dataKey="valor" maxBarSize={24} radius={[4, 4, 0, 0]} isAnimationActive={false}>
               {datos.map((d) => {
-                const vivo =
-                  encima === null ? !resaltarElUltimo || d.i === ultimo : d.i === encima;
+                const vivo = encima === null ? !resaltarElUltimo || d.i === ultimo : d.i === encima;
                 return (
                   <Cell
                     key={d.i}

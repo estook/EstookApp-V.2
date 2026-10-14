@@ -77,6 +77,8 @@ export interface BarraArribaMovilProps {
    */
   readonly alIrAlPanel: () => void;
   readonly persona: string;
+  /** Su foto, firmada, si tiene (0083). */
+  readonly fotoDeLaPersona?: string | null;
   readonly avisos?: number;
   readonly alBuscar: () => void;
   readonly alAbrirAvisos: () => void;
@@ -93,6 +95,7 @@ export function BarraArribaMovil({
   alCambiarDeLocal,
   alIrAlPanel,
   persona,
+  fotoDeLaPersona = null,
   avisos = 0,
   alBuscar,
   alAbrirAvisos,
@@ -149,7 +152,7 @@ export function BarraArribaMovil({
           aria-label={`Tu cuenta · ${persona}`}
           className="grid size-toque place-items-center rounded-medio"
         >
-          <Avatar nombre={persona} tamano={28} />
+          <Avatar nombre={persona} tamano={30} foto={fotoDeLaPersona} />
         </button>
       </div>
     </header>
@@ -183,7 +186,12 @@ function DondeEstas({
   // El logo **tal cual lo subieron**, más grande y sin el círculo de su color (la
   // experiencia, 0083): un logo apaisado ya no se queda en un sello de 24 px.
   const marca = (
-    <LogoDelLocal nombre={local.nombre} logo={local.logo} colorDeMarca={local.colorDeMarca} alto={32} />
+    <LogoDelLocal
+      nombre={local.nombre}
+      logo={local.logo}
+      colorDeMarca={local.colorDeMarca}
+      alto={32}
+    />
   );
 
   if (locales.length <= 1) {

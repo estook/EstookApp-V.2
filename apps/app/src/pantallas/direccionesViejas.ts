@@ -14,8 +14,10 @@
 export function laDireccionDeAhora(ruta: string): string | null {
   // Compras en tres (la experiencia, 0083): lo que ha llegado es «Llegado» dentro de
   // Pedidos, y los precios van plegados encima de los proveedores.
-  if (/^\/almacen\/compras\/albaranes\/?$/.test(ruta)) return '/almacen/compras/pedidos?ver=llegado';
-  if (/^\/almacen\/compras\/precios\/?$/.test(ruta)) return '/almacen/compras/proveedores?ver=precios';
+  if (/^\/almacen\/compras\/albaranes\/?$/.test(ruta))
+    return '/almacen/compras/pedidos?ver=llegado';
+  if (/^\/almacen\/compras\/precios\/?$/.test(ruta))
+    return '/almacen/compras/proveedores?ver=precios';
   // Las mermas, de vista de Movimientos a destino propio de Almacén (26-sep).
   if (/^\/(?:almacen|inventario)\/movimientos\/mermas\/?$/.test(ruta)) return '/almacen/mermas';
   // «Desviación» es «Consumo» desde el 9-oct (0080).

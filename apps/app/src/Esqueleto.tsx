@@ -345,7 +345,11 @@ export function Esqueleto() {
           apps={misApps}
           appActiva={appActiva?.id ?? null}
           destinoActivo={
-            appActiva === null ? null : segundo === '' ? (dondeEntra(appActiva)?.id ?? null) : segundo
+            appActiva === null
+              ? null
+              : segundo === ''
+                ? (dondeEntra(appActiva)?.id ?? null)
+                : segundo
           }
           enPanel={enPanel}
           enAjustes={enAjustes}
@@ -377,6 +381,7 @@ export function Esqueleto() {
             void cambiarDeLocal(id);
           }}
           persona={yo?.nombre ?? ''}
+          fotoDeLaPersona={yo?.foto ?? null}
         />
 
         {/*
@@ -391,74 +396,76 @@ export function Esqueleto() {
             } as CSSProperties
           }
         >
-        {laDemostracion}
-        <BarraDeArribaDelOrdenador
-          izquierda={dondeEstoy}
-          alBuscar={() => {
-            setBuscadorAbierto(true);
-          }}
-          avisos={sinLeer}
-          alAbrirAvisos={() => {
-            setAvisosAbiertos(true);
-          }}
-          chatSinLeer={chat.sinLeer}
-          alAbrirChat={() => {
-            navegar('/chat');
-          }}
-          persona={yo?.nombre ?? ''}
-          alAbrirMiCuenta={() => {
-            setMiCuentaAbierta(true);
-          }}
-        />
+          {laDemostracion}
+          <BarraDeArribaDelOrdenador
+            izquierda={dondeEstoy}
+            alBuscar={() => {
+              setBuscadorAbierto(true);
+            }}
+            avisos={sinLeer}
+            alAbrirAvisos={() => {
+              setAvisosAbiertos(true);
+            }}
+            chatSinLeer={chat.sinLeer}
+            alAbrirChat={() => {
+              navegar('/chat');
+            }}
+            persona={yo?.nombre ?? ''}
+            fotoDeLaPersona={yo?.foto ?? null}
+            alAbrirMiCuenta={() => {
+              setMiCuentaAbierta(true);
+            }}
+          />
 
-        {/*
+          {/*
         La barra de arriba en movil: la misma de escritorio **menos Ajustes**.
         Ajustes no esta porque sale abajo en la barra de movil, y dentro de una app
         —donde la barra de abajo es la de esa app— se llega por el avatar. Lo demas
         —buscar, avisos, chat y Fogon— si esta: son las herramientas transversales,
         y tenerlas solo en el ordenador era tenerlas para quien menos las necesita.
       */}
-        <BarraArribaMovil
-          local={
-            yo?.local
-              ? {
-                  id: yo.local.id,
-                  nombre: yo.local.nombre,
-                  logo: yo.local.logo,
-                  colorDeMarca: yo.local.colorDeMarca,
-                }
-              : null
-          }
-          locales={susLocales}
-          alCambiarDeLocal={(id) => {
-            void cambiarDeLocal(id);
-          }}
-          alIrAlPanel={() => {
-            navegar('/');
-          }}
-          persona={yo?.nombre ?? ''}
-          alBuscar={() => {
-            setBuscadorAbierto(true);
-          }}
-          avisos={sinLeer}
-          alAbrirAvisos={() => {
-            setAvisosAbiertos(true);
-          }}
-          alAbrirChat={() => {
-            navegar('/chat');
-          }}
-          chatSinLeer={chat.sinLeer}
-          alAbrirMiCuenta={() => {
-            setMiCuentaAbierta(true);
-          }}
-        />
+          <BarraArribaMovil
+            local={
+              yo?.local
+                ? {
+                    id: yo.local.id,
+                    nombre: yo.local.nombre,
+                    logo: yo.local.logo,
+                    colorDeMarca: yo.local.colorDeMarca,
+                  }
+                : null
+            }
+            locales={susLocales}
+            alCambiarDeLocal={(id) => {
+              void cambiarDeLocal(id);
+            }}
+            alIrAlPanel={() => {
+              navegar('/');
+            }}
+            persona={yo?.nombre ?? ''}
+            fotoDeLaPersona={yo?.foto ?? null}
+            alBuscar={() => {
+              setBuscadorAbierto(true);
+            }}
+            avisos={sinLeer}
+            alAbrirAvisos={() => {
+              setAvisosAbiertos(true);
+            }}
+            alAbrirChat={() => {
+              navegar('/chat');
+            }}
+            chatSinLeer={chat.sinLeer}
+            alAbrirMiCuenta={() => {
+              setMiCuentaAbierta(true);
+            }}
+          />
 
-        {/*
+          {/*
         El hueco de abajo es el alto de la barra de movil, para que la ultima
         linea de cualquier pantalla no quede debajo de ella. En escritorio no hay
         barra abajo, asi que no hace falta.
       */}
-        {/*
+          {/*
           ── Hasta dónde se estira en una pantalla grande ───────────────────
 
           «En el ordenador sobra mucho espacio: el panel está en un cuadrado en
@@ -470,35 +477,37 @@ export function Esqueleto() {
           cambia solo en las pantallas que de verdad son grandes; en un TPV de
           1.280 no se mueve nada.
         */}
-        {/*
+          {/*
           Abajo se deja el sitio de la barra de abajo y **de la burbuja de Fogón**
           (56 px y su margen), para que al llegar al final nada quede debajo de ella.
           En escritorio no hay barra de abajo, pero desde el 23-sep sí hay burbuja.
         */}
-        <main className="mx-auto w-full max-w-[112rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+56px+var(--spacing-e3)*2)] pt-e4 lg:px-e6 lg:pb-[calc(56px+var(--spacing-e5)+var(--spacing-e4))] lg:pt-e5">
-          {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
-          {/* Sin conexión, y lo hecho sin ella (0070): arriba, en cada pantalla. */}
-          <LoDeLaRed />
-          {/* Un cobro fallido o solo lectura (0048): arriba de todo, en cada pantalla. */}
-          <div className="mb-e3 empty:hidden">
-            <AvisoDeLaCuenta enAjustesDeSuscripcion={pathname.startsWith('/ajustes/suscripcion')} />
-          </div>
-          {/*
+          <main className="mx-auto w-full max-w-[112rem] px-e3 pb-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+56px+var(--spacing-e3)*2)] pt-e4 lg:px-e6 lg:pb-[calc(56px+var(--spacing-e5)+var(--spacing-e4))] lg:pt-e5">
+            {volverAlConjunto !== null && <div className="mb-e3">{volverAlConjunto}</div>}
+            {/* Sin conexión, y lo hecho sin ella (0070): arriba, en cada pantalla. */}
+            <LoDeLaRed />
+            {/* Un cobro fallido o solo lectura (0048): arriba de todo, en cada pantalla. */}
+            <div className="mb-e3 empty:hidden">
+              <AvisoDeLaCuenta
+                enAjustesDeSuscripcion={pathname.startsWith('/ajustes/suscripcion')}
+              />
+            </div>
+            {/*
             La red de debajo de cada pantalla (entrega V): si un trozo no llega o algo
             se rompe, las barras siguen y solo esta pantalla dice qué ha pasado.
             Cambiar de pantalla lo olvida.
           */}
-          <SiAlgoFalla
-            clave={pathname}
-            alFallar={(fallo) => {
-              avisarDelFallo(fallo, pathname);
-            }}
-          >
-            <AbrirLaRueda.Provider value={abrirLaRueda}>
-              <Outlet />
-            </AbrirLaRueda.Provider>
-          </SiAlgoFalla>
-        </main>
+            <SiAlgoFalla
+              clave={pathname}
+              alFallar={(fallo) => {
+                avisarDelFallo(fallo, pathname);
+              }}
+            >
+              <AbrirLaRueda.Provider value={abrirLaRueda}>
+                <Outlet />
+              </AbrirLaRueda.Provider>
+            </SiAlgoFalla>
+          </main>
         </div>
 
         {appActiva === null ? (

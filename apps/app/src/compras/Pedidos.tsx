@@ -168,161 +168,160 @@ export function Pedidos() {
       {filtro === 'llegado' ? (
         <Albaranes />
       ) : (
-      <Tarjeta
-        titulo={filtro === 'cancelados' ? 'Pedidos cancelados' : 'Tus pedidos'}
-        origen={
-          datos === undefined
-            ? 'Leyendo…'
-            : `${cuantos?.enviados ?? 0} mandados · ${cuantos?.borradores ?? 0} en borrador`
-        }
-      >
-        <div className="flex flex-col gap-e3">
-
-          {lista.isPending ? (
-            <Cargando que="tus pedidos" lineas={3} />
-          ) : lista.isError ? (
-            <Aviso tono="mal" titulo="No he podido leer tus pedidos">
-              Vuelve a intentarlo dentro de un momento. Si sigue igual, avísanos.
-            </Aviso>
-          ) : (
-            <Tabla<PedidoEnLista>
-              titulo="Tus pedidos"
-              filas={datos?.pedidos ?? []}
-              claveDe={(p) => p.id}
-              alPulsar={(p) => {
-                pedido.abrir(p.id);
-              }}
-              columnas={[
-                {
-                  clave: 'pedido',
-                  titulo: 'Pedido',
-                  principal: true,
-                  celda: (p) => (
-                    <span>
-                      <span className="text-texto-suave">Nº {p.numero} · </span>
-                      {p.proveedor}
-                    </span>
-                  ),
-                },
-                {
-                  clave: 'estado',
-                  titulo: 'Cómo está',
-                  celda: (p) =>
-                    p.atrasado ? (
-                      <Etiqueta tono="mal">No ha llegado</Etiqueta>
-                    ) : (
-                      <Etiqueta tono={TONO_DEL_ESTADO_DEL_PEDIDO[p.estado]}>
-                        {NOMBRE_DEL_ESTADO_DEL_PEDIDO[p.estado]}
-                        {p.estado === 'enviado' && p.enviadoPorCanal !== null
-                          ? ` · ${NOMBRE_DEL_CANAL[p.enviadoPorCanal].toLowerCase()}`
-                          : ''}
-                      </Etiqueta>
-                    ),
-                },
-                {
-                  clave: 'llega',
-                  titulo: 'Llega',
-                  celda: (p) =>
-                    p.estado === 'enviado' || p.estado === 'borrador'
-                      ? (p.llegaCuando ?? 'Sin fecha')
-                      : '—',
-                },
-                {
-                  clave: 'lineas',
-                  titulo: 'Qué lleva',
-                  celda: (p) => cuantosProductos(p.lineas),
-                },
-                ...(datos?.puedeVerPrecios === true
-                  ? [
-                      {
-                        clave: 'importe',
-                        titulo: 'Importe',
-                        numerica: true,
-                        celda: (p: PedidoEnLista) => (
-                          <span className="tabular-nums">
-                            {comoDinero(p.totalCentimos)}
-                            {(p.sinPrecio ?? 0) > 0 && (
-                              <span className="text-texto-suave" title="Hay productos sin precio">
-                                {' '}
-                                *
-                              </span>
-                            )}
-                          </span>
-                        ),
-                      },
-                    ]
-                  : []),
-              ]}
-              cuandoNoHay={
-                filtro === 'abiertos' ? (
-                  <EstadoVacio
-                    compacto
-                    dibujo="pedidos"
-                    acento="var(--color-app-almacen)"
-                    titulo="No hay pedidos abiertos"
-                    frase="Un pedido empieza con lo que Estook sugiere: lo que no llega al siguiente reparto, en cajas enteras."
-                    {...(puedeTocar
-                      ? {
-                          accion: (
-                            <Boton
-                              tono="principal"
-                              icono={<IconoAnadir size={18} />}
-                              onClick={() => {
-                                setNuevoPara('');
-                              }}
-                            >
-                              Hacer un pedido
-                            </Boton>
-                          ),
-                        }
-                      : { sinAccionPorque: 'Tu acceso permite mirar los pedidos, no hacerlos.' })}
-                  />
-                ) : (
-                  // Cancelados sin nada: se ofrece volver a los abiertos, que es donde
-                  // se trabaja (entrega V, punto 4).
-                  <EstadoVacio
-                    compacto
-                    dibujo="todo-en-orden"
-                    acento="var(--color-app-almacen)"
-                    titulo="Ningún pedido cancelado"
-                    frase="Lo que se cancela sale aquí, con quién lo canceló."
-                    accion={
-                      <Boton
-                        tono="secundario"
-                        onClick={() => {
-                          setFiltro('abiertos');
-                        }}
-                      >
-                        Ver los abiertos
-                      </Boton>
-                    }
-                  />
-                )
-              }
-            />
-          )}
-
-          {datos?.hayMas === true && (
-            <div>
-              <Boton
-                tono="texto"
-                onClick={() => {
-                  setLimite((antes) => antes + 50);
+        <Tarjeta
+          titulo={filtro === 'cancelados' ? 'Pedidos cancelados' : 'Tus pedidos'}
+          origen={
+            datos === undefined
+              ? 'Leyendo…'
+              : `${cuantos?.enviados ?? 0} mandados · ${cuantos?.borradores ?? 0} en borrador`
+          }
+        >
+          <div className="flex flex-col gap-e3">
+            {lista.isPending ? (
+              <Cargando que="tus pedidos" lineas={3} />
+            ) : lista.isError ? (
+              <Aviso tono="mal" titulo="No he podido leer tus pedidos">
+                Vuelve a intentarlo dentro de un momento. Si sigue igual, avísanos.
+              </Aviso>
+            ) : (
+              <Tabla<PedidoEnLista>
+                titulo="Tus pedidos"
+                filas={datos?.pedidos ?? []}
+                claveDe={(p) => p.id}
+                alPulsar={(p) => {
+                  pedido.abrir(p.id);
                 }}
-              >
-                Ver más pedidos
-              </Boton>
-            </div>
-          )}
+                columnas={[
+                  {
+                    clave: 'pedido',
+                    titulo: 'Pedido',
+                    principal: true,
+                    celda: (p) => (
+                      <span>
+                        <span className="text-texto-suave">Nº {p.numero} · </span>
+                        {p.proveedor}
+                      </span>
+                    ),
+                  },
+                  {
+                    clave: 'estado',
+                    titulo: 'Cómo está',
+                    celda: (p) =>
+                      p.atrasado ? (
+                        <Etiqueta tono="mal">No ha llegado</Etiqueta>
+                      ) : (
+                        <Etiqueta tono={TONO_DEL_ESTADO_DEL_PEDIDO[p.estado]}>
+                          {NOMBRE_DEL_ESTADO_DEL_PEDIDO[p.estado]}
+                          {p.estado === 'enviado' && p.enviadoPorCanal !== null
+                            ? ` · ${NOMBRE_DEL_CANAL[p.enviadoPorCanal].toLowerCase()}`
+                            : ''}
+                        </Etiqueta>
+                      ),
+                  },
+                  {
+                    clave: 'llega',
+                    titulo: 'Llega',
+                    celda: (p) =>
+                      p.estado === 'enviado' || p.estado === 'borrador'
+                        ? (p.llegaCuando ?? 'Sin fecha')
+                        : '—',
+                  },
+                  {
+                    clave: 'lineas',
+                    titulo: 'Qué lleva',
+                    celda: (p) => cuantosProductos(p.lineas),
+                  },
+                  ...(datos?.puedeVerPrecios === true
+                    ? [
+                        {
+                          clave: 'importe',
+                          titulo: 'Importe',
+                          numerica: true,
+                          celda: (p: PedidoEnLista) => (
+                            <span className="tabular-nums">
+                              {comoDinero(p.totalCentimos)}
+                              {(p.sinPrecio ?? 0) > 0 && (
+                                <span className="text-texto-suave" title="Hay productos sin precio">
+                                  {' '}
+                                  *
+                                </span>
+                              )}
+                            </span>
+                          ),
+                        },
+                      ]
+                    : []),
+                ]}
+                cuandoNoHay={
+                  filtro === 'abiertos' ? (
+                    <EstadoVacio
+                      compacto
+                      dibujo="pedidos"
+                      acento="var(--color-app-almacen)"
+                      titulo="No hay pedidos abiertos"
+                      frase="Un pedido empieza con lo que Estook sugiere: lo que no llega al siguiente reparto, en cajas enteras."
+                      {...(puedeTocar
+                        ? {
+                            accion: (
+                              <Boton
+                                tono="principal"
+                                icono={<IconoAnadir size={18} />}
+                                onClick={() => {
+                                  setNuevoPara('');
+                                }}
+                              >
+                                Hacer un pedido
+                              </Boton>
+                            ),
+                          }
+                        : { sinAccionPorque: 'Tu acceso permite mirar los pedidos, no hacerlos.' })}
+                    />
+                  ) : (
+                    // Cancelados sin nada: se ofrece volver a los abiertos, que es donde
+                    // se trabaja (entrega V, punto 4).
+                    <EstadoVacio
+                      compacto
+                      dibujo="todo-en-orden"
+                      acento="var(--color-app-almacen)"
+                      titulo="Ningún pedido cancelado"
+                      frase="Lo que se cancela sale aquí, con quién lo canceló."
+                      accion={
+                        <Boton
+                          tono="secundario"
+                          onClick={() => {
+                            setFiltro('abiertos');
+                          }}
+                        >
+                          Ver los abiertos
+                        </Boton>
+                      }
+                    />
+                  )
+                }
+              />
+            )}
 
-          {datos?.puedeVerPrecios === true && datos.pedidos.length > 0 && (
-            <p className="text-etiqueta text-texto-tenue">
-              Importes sin impuestos, a lo pactado o a lo último que te cobró. Con * hay productos
-              sin precio que no suman.
-            </p>
-          )}
-        </div>
-      </Tarjeta>
+            {datos?.hayMas === true && (
+              <div>
+                <Boton
+                  tono="texto"
+                  onClick={() => {
+                    setLimite((antes) => antes + 50);
+                  }}
+                >
+                  Ver más pedidos
+                </Boton>
+              </div>
+            )}
+
+            {datos?.puedeVerPrecios === true && datos.pedidos.length > 0 && (
+              <p className="text-etiqueta text-texto-tenue">
+                Importes sin impuestos, a lo pactado o a lo último que te cobró. Con * hay productos
+                sin precio que no suman.
+              </p>
+            )}
+          </div>
+        </Tarjeta>
       )}
 
       {nuevoPara !== null && (

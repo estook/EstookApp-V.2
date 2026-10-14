@@ -226,7 +226,9 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
     !puedeInvitar ? null : !a.puedoGestionar && a.personaId !== yo?.personaId ? (
       // «Que los gerentes, o gente del mismo nivel, no se puedan echar entre ellos.»
       // No se enseña un botón que va a decir que no.
-      <span className="hidden text-etiqueta text-texto-tenue sm:inline">Lo lleva quien está por encima</span>
+      <span className="hidden text-etiqueta text-texto-tenue sm:inline">
+        Lo lleva quien está por encima
+      </span>
     ) : a.estado === 'fuera' ? (
       <BotonPequeno
         alPulsar={() => {

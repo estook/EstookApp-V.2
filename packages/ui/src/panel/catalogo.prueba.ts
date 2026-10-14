@@ -115,9 +115,9 @@ describe('un solo tamaño y menos widgets (la experiencia, 0083)', () => {
 
   it('el food cost pide ver las ventas **y** los costes', () => {
     const soloVentas = (permiso: Permiso) => permiso === 'dato.ventas';
-    expect(loQueSePuedePintar([{ id: 'indicador-food-cost-30', tamano: 'ancho' }], soloVentas)).toEqual(
-      [],
-    );
+    expect(
+      loQueSePuedePintar([{ id: 'indicador-food-cost-30', tamano: 'ancho' }], soloVentas),
+    ).toEqual([]);
     expect(loQueSePuedePintar([{ id: 'ventas', tamano: 'ancho' }], soloVentas)).toEqual([
       { id: 'ventas', tamano: 'ancho' },
     ]);

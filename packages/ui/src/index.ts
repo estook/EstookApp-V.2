@@ -193,7 +193,6 @@ export {
   type Visor,
 } from './navegacion/anclaAbajo.ts';
 
-
 export { Vistas } from './navegacion/Vistas.tsx';
 export type { VistasProps } from './navegacion/Vistas.tsx';
 

@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { comprobar, derivar, porQueNoValeLaClave } from '../../dominio/secretos.ts';
+import { comprobar, derivar, esPinConForma, porQueNoValeLaClave } from '../../dominio/secretos.ts';
 import { ponerPinNuevo } from '../pines.ts';
-import { comando, FalloDeAplicacion } from '../contrato.ts';
+import { comando, FalloDeAplicacion, falloQueSeGuarda, type Contexto } from '../contrato.ts';
 import { exigirQueMandeMas } from '../jerarquia.ts';
 
 /**
@@ -23,6 +23,14 @@ export const entradaCambiarMiClave = z
      * entro con el PIN de la invitacion y esta poniendo la suya por primera vez.
      */
     actual: z.string().min(1).max(512).optional(),
+    /**
+     * El PIN que le dieron al entrar (la experiencia, 0083), **para quien todavía no
+     * tiene contraseña**. Sin esto, cualquiera que cogiera el móvil con su sesión
+     * abierta podía ponerle una contraseña y quedarse con la cuenta: era la única
+     * puerta que no pedía nada. Richi: «cuando entran con el PIN, para cambiar la
+     * contraseña, pedir el PIN que te dieron al inicio».
+     */
+    pin: z.string().min(1).max(20).optional(),
     nueva: z.string().min(1).max(512),
   })
   .strict();
@@ -39,7 +47,8 @@ export const cambiarMiClave = comando<EntradaCambiarMiClave, { readonly cambiada
   // La contraseña es de la persona, no del sitio: también se cambia desde el admin.
   tambienEnElAdmin: true,
 
-  async ejecutar({ sql, sesion }, entrada) {
+  async ejecutar(contexto, entrada) {
+    const { sql, sesion } = contexto;
     if (sesion === null) throw new FalloDeAplicacion('sin_sesion');
 
     const porque = porQueNoValeLaClave(entrada.nueva);
@@ -49,6 +58,8 @@ export const cambiarMiClave = comando<EntradaCambiarMiClave, { readonly cambiada
       select derivada from estook.credencial where persona_id = ${sesion.personaId}
     `;
     const actual = filas[0]?.derivada;
+
+    if (actual === undefined) await exigirSuPin(sql, sesion.personaId, entrada.pin, contexto.ahora);
 
     if (actual !== undefined) {
       // Ya tenia una: hay que saberla. Sin esto, a quien se dejara la sesion
@@ -90,6 +101,61 @@ export const cambiarMiClave = comando<EntradaCambiarMiClave, { readonly cambiada
     return { cambiada: true };
   },
 });
+
+/**
+ * Quien pone su primera contraseña tiene que decir **su PIN** (la experiencia, 0083).
+ *
+ * Se comprueba contra los PIN de sus locales, igual que al entrar: los mismos
+ * intentos y el mismo bloqueo a los cinco fallos, así que no sirve para adivinarlo.
+ * Quien no tiene ningún PIN (entró con Google) no tiene nada que decir: Google ya
+ * comprobó que es él, y se le deja poner la suya.
+ */
+async function exigirSuPin(
+  sql: Contexto['sql'],
+  personaId: string,
+  pin: string | undefined,
+  ahora: Date,
+): Promise<void> {
+  const correos = await sql<{ correo: string | null }[]>`
+    select correo from estook.persona where id = ${personaId}
+  `;
+  const correo = correos[0]?.correo ?? null;
+  if (correo === null) return;
+
+  const suyos = (
+    await sql<
+      { pin_id: string; persona_id: string; huella: string; bloqueado_hasta: Date | null }[]
+    >`
+      select pin_id, persona_id, huella, bloqueado_hasta from estook.pines_para_entrar(${correo})
+    `
+  ).filter((fila) => fila.persona_id === personaId);
+  if (suyos.length === 0) return;
+
+  if (pin === undefined || !esPinConForma(pin)) {
+    throw new FalloDeAplicacion('faltan_datos', {
+      campos: ['pin'],
+      porque: 'Escribe el PIN que te dieron al entrar por primera vez.',
+    });
+  }
+  if (suyos.every((fila) => fila.bloqueado_hasta !== null && fila.bloqueado_hasta > ahora)) {
+    throw new FalloDeAplicacion('demasiados_intentos');
+  }
+
+  let acierta = false;
+  for (const fila of suyos) {
+    const esEste = await comprobar(pin, fila.huella);
+    if (esEste) acierta = true;
+    await sql`select estook.anotar_intento_de_pin(${fila.pin_id}::uuid, ${esEste})`;
+  }
+  // **Conservando el intento apuntado**, como al entrar: si el fallo lo deshiciera,
+  // el bloqueo a los cinco no bloquearía nunca.
+  if (!acierta) {
+    throw falloQueSeGuarda('faltan_datos', {
+      campos: ['pin'],
+      porque: 'Ese no es tu PIN. Es el que te dieron al darte acceso, el de entrar.',
+    });
+  }
+}
 
 // ── Poner una contrasena a otra persona ──────────────────────────────────────
 

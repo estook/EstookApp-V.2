@@ -1,4 +1,5 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { useContext, type ReactNode } from 'react';
+import { QuienSePinta } from './quienSePinta.ts';
 import { useNavigate } from 'react-router-dom';
 import { IconoAmpliar, IconoFlechaDerecha } from '@estook/iconos';
 import { Boton, acentoDelWidget, appDelWidget, appPorPermiso, clases } from '@estook/ui';
@@ -17,8 +18,6 @@ import { Boton, acentoDelWidget, appDelWidget, appPorPermiso, clases } from '@es
  *     texto. De dónde sale cada cifra se dice en su detalle, que es donde se mira.
  *   · Y el dibujo de dentro lo pone cada widget: ninguno es igual que otro.
  */
-export const QuienSePinta = createContext<string | null>(null);
-
 export interface MarcoProps {
   readonly titulo: string;
   /** Un icono propio; si no, el de su app. */
@@ -80,7 +79,10 @@ export function Marco({
         {derecha !== undefined && <div className="@max-[17rem]:hidden">{derecha}</div>}
         {alAmpliar !== undefined ? (
           <BotonDeLaEsquina
-            estrecho etiqueta={`Ampliar ${titulo.toLowerCase()}`} alPulsar={alAmpliar}>
+            estrecho
+            etiqueta={`Ampliar ${titulo.toLowerCase()}`}
+            alPulsar={alAmpliar}
+          >
             <IconoAmpliar size={15} />
           </BotonDeLaEsquina>
         ) : (

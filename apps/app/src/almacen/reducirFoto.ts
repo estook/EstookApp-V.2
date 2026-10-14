@@ -181,3 +181,29 @@ export async function reducirParaElChat(
   if (pesa(foto) > 1500 * 1024) throw new Error('Esa foto no cabe ni reducida.');
   return { tipo, contenido: soloElContenido(foto) };
 }
+
+/** El lado de una cara: lo que se ve en grande en la ficha, a doble densidad. */
+export const LADO_DE_LA_CARA = 320;
+
+/**
+ * Una cara para el equipo (la experiencia, 0083): **el cuadrado del centro**, a 320
+ * px, que es como se pinta (cuadrada con las esquinas redondeadas). Unos 20 KB; el
+ * servidor no acepta más de 80.
+ */
+export async function reducirCara(
+  fichero: File,
+): Promise<{ readonly tipo: 'image/webp' | 'image/jpeg'; readonly contenido: string }> {
+  const imagen = await cargar(fichero);
+  const tipo = sabeEscribirWebp() ? 'image/webp' : 'image/jpeg';
+  const recorte = elCuadradoDelCentro(imagen.naturalWidth, imagen.naturalHeight);
+  const lado = Math.min(LADO_DE_LA_CARA, recorte.lado);
+  const cara = lienzo(lado, lado);
+  cara.pincel.drawImage(imagen, recorte.x, recorte.y, recorte.lado, recorte.lado, 0, 0, lado, lado);
+  let foto = cara.lienzo.toDataURL(tipo, 0.82);
+  for (const calidad of [0.7, 0.6, 0.5]) {
+    if (pesa(foto) <= 60 * 1024) break;
+    foto = cara.lienzo.toDataURL(tipo, calidad);
+  }
+  if (pesa(foto) > 80 * 1024) throw new Error('Esa foto no cabe ni reducida.');
+  return { tipo, contenido: soloElContenido(foto) };
+}

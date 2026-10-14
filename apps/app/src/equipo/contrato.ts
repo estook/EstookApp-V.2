@@ -67,6 +67,8 @@ export interface QuienEstaTrabajando {
   readonly enLinea: boolean;
   readonly entraHoyALas: string | null;
   readonly turnoSospechoso: boolean;
+  /** Su foto, firmada (0083). */
+  readonly foto?: string | null;
 }
 
 /** Un fichaje hecho con más de doce horas sin señal, por revisar (0070). */
@@ -169,6 +171,9 @@ export interface UnaPersona {
   readonly personaId: string;
   readonly nombre: string;
   readonly apellidos: string | null;
+  /** Su foto, firmada (0083). Opcional mientras la API no esté desplegada. */
+  readonly foto?: string | null;
+  readonly puedeCambiarLaFoto?: boolean;
   /** Nulo: no tiene correo (0057). Sin la propiedad: quien mira no ve los datos. */
   readonly correo?: string | null;
   /** H1 (0057, 0068). Opcionales mientras la API no esté desplegada. */

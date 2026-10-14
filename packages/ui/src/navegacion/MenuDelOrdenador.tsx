@@ -409,7 +409,9 @@ function AppDelMenu({
         className={clases(
           'group flex min-h-[42px] w-full items-center gap-e3 rounded-grande px-e2 text-left',
           'transition-colors duration-[--rapido]',
-          activa ? 'bg-white/[0.07] text-texto' : 'text-texto-suave hover:bg-white/[0.04] hover:text-texto',
+          activa
+            ? 'bg-white/[0.07] text-texto'
+            : 'text-texto-suave hover:bg-white/[0.04] hover:text-texto',
         )}
       >
         <PastillaDeIcono acento={app.acento} viva={activa}>
@@ -701,7 +703,9 @@ function Fila({
       className={clases(
         'flex min-h-[42px] w-full items-center gap-e3 rounded-grande px-e2 text-left',
         'transition-colors duration-[--rapido]',
-        activa ? 'bg-white/[0.07] text-texto' : 'text-texto-suave hover:bg-white/[0.04] hover:text-texto',
+        activa
+          ? 'bg-white/[0.07] text-texto'
+          : 'text-texto-suave hover:bg-white/[0.04] hover:text-texto',
       )}
     >
       <PastillaDeIcono acento={acento} viva={activa}>

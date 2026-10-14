@@ -335,6 +335,8 @@ export function MiAcceso() {
       {cambiandoClave && (
         <CambiarMiClave
           yaTiene={datos.contrasena.puesta}
+          // Sin contraseña todavía y con PIN: se pide el PIN (0083).
+          conPin={!datos.contrasena.puesta && datos.pines.length > 0}
           alCerrar={() => {
             setCambiandoClave(false);
           }}

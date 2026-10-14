@@ -54,7 +54,8 @@ import {
   type MermaDeHoy,
 } from '../almacen/contrato.ts';
 import { CifraDelWidget, CifraPequena } from './CifraDelWidget.tsx';
-import { Marco, QuienSePinta, Tranquilo } from './Marco.tsx';
+import { Marco, Tranquilo } from './Marco.tsx';
+import { QuienSePinta } from './quienSePinta.ts';
 
 /**
  * Los widgets del Panel (Manifiesto 6; rehechos en la experiencia, 0083).
@@ -231,7 +232,9 @@ function TuJornada() {
           </div>
         </div>
 
-        {fichar.error !== null && <p className="text-secundario text-mal">{fichar.error.quePasa}</p>}
+        {fichar.error !== null && (
+          <p className="text-secundario text-mal">{fichar.error.quePasa}</p>
+        )}
         {fichar.acabaDe !== null && fichar.error === null && (
           <p
             aria-live="polite"
@@ -252,7 +255,9 @@ function TuJornada() {
             ancho
             icono={dentro ? <IconoSalir size={18} /> : <IconoEntrar size={18} />}
             cargando={fichar.fichando}
-            textoCargando={fichar.paso === 'buscando_ubicacion' ? 'Buscando dónde estás' : 'Apuntando'}
+            textoCargando={
+              fichar.paso === 'buscando_ubicacion' ? 'Buscando dónde estás' : 'Apuntando'
+            }
             onClick={dentro ? fichar.salir : fichar.entrar}
             aria-label={dentro ? 'Fichar la salida' : 'Fichar la entrada'}
           >
@@ -349,7 +354,8 @@ const EN_CORTO = new Intl.NumberFormat('es-ES', {
 /** Hasta dónde llega el medidor: un poco más allá del objetivo o del valor. */
 function elTope(cifra: CifraDelSemaforo): number {
   const esPorcentaje = cifra.que !== 'ventas_semanales';
-  const objetivo = cifra.objetivo === null ? null : esPorcentaje ? cifra.objetivo * 100 : cifra.objetivo;
+  const objetivo =
+    cifra.objetivo === null ? null : esPorcentaje ? cifra.objetivo * 100 : cifra.objetivo;
   const valor = cifra.valor ?? 0;
   return Math.max(objetivo === null ? 0 : objetivo * 1.5, valor * 1.15, esPorcentaje ? 10 : 1);
 }
@@ -698,7 +704,9 @@ function ComprasDeHoyWidget() {
   const llegan = datos?.llegan ?? [];
   const borradores = datos?.borradores.length ?? 0;
   usarQueEstaVacio(
-    datos === undefined ? undefined : tocaPedir.length === 0 && llegan.length === 0 && borradores === 0,
+    datos === undefined
+      ? undefined
+      : tocaPedir.length === 0 && llegan.length === 0 && borradores === 0,
   );
 
   return (
@@ -800,7 +808,9 @@ function LoQueVieneWidget() {
                       <span
                         aria-hidden
                         className="absolute -left-[calc(var(--spacing-e3)+4.5px)] top-[14px] size-2 rounded-redondo ring-2 ring-superficie"
-                        style={{ background: COLOR_DE_LA_CAPA[o.capa] ?? 'var(--color-texto-tenue)' }}
+                        style={{
+                          background: COLOR_DE_LA_CAPA[o.capa] ?? 'var(--color-texto-tenue)',
+                        }}
                       />
                       <button
                         type="button"
@@ -892,7 +902,9 @@ function EquipoAhora() {
       ) : (
         <div className="flex flex-col gap-e3">
           <div className="flex items-center gap-e3">
-            <p className="text-[calc(30px*var(--escala))] font-bold leading-none">{dentro.length}</p>
+            <p className="text-[calc(30px*var(--escala))] font-bold leading-none">
+              {dentro.length}
+            </p>
             <div className="min-w-0 flex-1">
               <p className="text-secundario font-semibold">
                 {dentro.length === 1 ? 'persona dentro' : 'personas dentro'}
@@ -907,7 +919,11 @@ function EquipoAhora() {
             <div className="flex -space-x-2">
               {dentro.slice(0, 5).map((quien) => (
                 <span key={quien.personaId} className="rounded-[11px] ring-2 ring-superficie">
-                  <Avatar nombre={`${quien.nombre} ${quien.apellidos ?? ''}`.trim()} tamano={32} />
+                  <Avatar
+                    nombre={`${quien.nombre} ${quien.apellidos ?? ''}`.trim()}
+                    tamano={32}
+                    foto={quien.foto ?? null}
+                  />
                 </span>
               ))}
             </div>
@@ -928,7 +944,9 @@ function EquipoAhora() {
                     <span className="min-w-0 flex-1 truncate text-secundario font-medium">
                       {quien.nombre}
                     </span>
-                    <span className="shrink-0 text-etiqueta text-texto-tenue">{quien.rolNombre}</span>
+                    <span className="shrink-0 text-etiqueta text-texto-tenue">
+                      {quien.rolNombre}
+                    </span>
                     <span className="w-16 shrink-0 text-right text-secundario tabular-nums text-texto-suave">
                       {comoSeLeenMinutos(quien.minutos ?? 0)}
                     </span>
@@ -1035,4 +1053,3 @@ function FilaConCara({
     </li>
   );
 }
-

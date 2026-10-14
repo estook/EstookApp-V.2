@@ -66,10 +66,7 @@ export const IconoCamara = crearIcono(
 );
 
 /** Lucide `check` */
-export const IconoHecho = crearIcono(
-  'check',
-  '<path d="M20 6 9 17l-5-5" />',
-);
+export const IconoHecho = crearIcono('check', '<path d="M20 6 9 17l-5-5" />');
 
 /** Lucide `check-check` */
 export const IconoLeido = crearIcono(
@@ -78,28 +75,16 @@ export const IconoLeido = crearIcono(
 );
 
 /** Lucide `chevron-down` */
-export const IconoFlechaAbajo = crearIcono(
-  'chevron-down',
-  '<path d="m6 9 6 6 6-6" />',
-);
+export const IconoFlechaAbajo = crearIcono('chevron-down', '<path d="m6 9 6 6 6-6" />');
 
 /** Lucide `chevron-left` */
-export const IconoFlechaIzquierda = crearIcono(
-  'chevron-left',
-  '<path d="m15 18-6-6 6-6" />',
-);
+export const IconoFlechaIzquierda = crearIcono('chevron-left', '<path d="m15 18-6-6 6-6" />');
 
 /** Lucide `chevron-right` */
-export const IconoFlechaDerecha = crearIcono(
-  'chevron-right',
-  '<path d="m9 18 6-6-6-6" />',
-);
+export const IconoFlechaDerecha = crearIcono('chevron-right', '<path d="m9 18 6-6-6-6" />');
 
 /** Lucide `chevron-up` */
-export const IconoFlechaArriba = crearIcono(
-  'chevron-up',
-  '<path d="m18 15-6-6-6 6" />',
-);
+export const IconoFlechaArriba = crearIcono('chevron-up', '<path d="m18 15-6-6-6 6" />');
 
 /** Lucide `chevrons-up-down` */
 export const IconoCambiar = crearIcono(
@@ -264,16 +249,10 @@ export const IconoMicrofono = crearIcono(
 );
 
 /** Lucide `minus` */
-export const IconoQuitar = crearIcono(
-  'minus',
-  '<path d="M5 12h14" />',
-);
+export const IconoQuitar = crearIcono('minus', '<path d="M5 12h14" />');
 
 /** Lucide `moon` */
-export const IconoLuna = crearIcono(
-  'moon',
-  '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />',
-);
+export const IconoLuna = crearIcono('moon', '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />');
 
 /** Lucide `notebook-pen` */
 export const IconoCuaderno = crearIcono(
@@ -330,16 +309,10 @@ export const IconoTablon = crearIcono(
 );
 
 /** Lucide `play` */
-export const IconoReproducir = crearIcono(
-  'play',
-  '<polygon points="6 3 20 12 6 21 6 3" />',
-);
+export const IconoReproducir = crearIcono('play', '<polygon points="6 3 20 12 6 21 6 3" />');
 
 /** Lucide `plus` */
-export const IconoAnadir = crearIcono(
-  'plus',
-  '<path d="M5 12h14" /><path d="M12 5v14" />',
-);
+export const IconoAnadir = crearIcono('plus', '<path d="M5 12h14" /><path d="M12 5v14" />');
 
 /** Lucide `reply` */
 export const IconoResponder = crearIcono(
@@ -462,7 +435,4 @@ export const IconoSinConexion = crearIcono(
 );
 
 /** Lucide `x` */
-export const IconoCerrar = crearIcono(
-  'x',
-  '<path d="M18 6 6 18" /><path d="m6 6 12 12" />',
-);
+export const IconoCerrar = crearIcono('x', '<path d="M18 6 6 18" /><path d="m6 6 12 12" />');

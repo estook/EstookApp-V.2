@@ -33,6 +33,8 @@ export interface QuienSoy {
   readonly personaId: string;
   readonly nombre: string;
   readonly apellidos: string | null;
+  /** Su foto, firmada (0083). Opcional mientras la API no esté desplegada. */
+  readonly foto?: string | null;
   readonly correo: string;
   readonly idioma: Idioma;
   readonly version: number;

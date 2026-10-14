@@ -1,10 +1,10 @@
 import { useState } from 'react';
+import { SuCara } from './SuCara.tsx';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { type Centimos } from '@estook/dominio';
 
 import {
   Aviso,
-  Avatar,
   Boton,
   Botones,
   Campo,
@@ -159,7 +159,14 @@ export function FichaDePersona({
 
           {/* ── Quién es ────────────────────────────────────────────────── */}
           <section className="flex items-center gap-e3">
-            <Avatar nombre={nombreEntero} tamano={48} />
+            {/* La cara, que se cambia tocándola si es la tuya o la de tu equipo (0083). */}
+            <SuCara
+              personaId={datos.personaId}
+              nombre={nombreEntero}
+              foto={datos.foto ?? null}
+              tamano={64}
+              puedeCambiarla={datos.puedeCambiarLaFoto === true}
+            />
             <div className="min-w-0">
               <p className="truncate text-cuerpo font-semibold">{nombreEntero}</p>
               <p className="text-secundario text-texto-suave">

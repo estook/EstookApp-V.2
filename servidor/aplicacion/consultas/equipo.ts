@@ -1441,10 +1441,11 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
         ultimo_acceso_en: Date | null;
         en_linea: boolean;
         vigente: boolean;
+        foto_clave: string | null;
       }[]
     >`
       select distinct on (p.id)
-             p.id::text as id, p.nombre, p.apellidos, p.correo,
+             p.id::text as id, p.nombre, p.apellidos, p.correo, p.foto_clave,
              m.rol, r.nombre as rol_nombre, r.amplitud, m.desde,
              estook.visto_por_ultima_vez(p.id) as ultimo_acceso_en,
              -- Con la app abierta y a la vista, no «con una sesión sin cerrar» (0042).
@@ -1552,6 +1553,10 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
       personaId: quien.id,
       nombre: quien.nombre,
       apellidos: quien.apellidos,
+      // Su cara (0083), y si quien mira puede cambiarla: la suya, o quien da accesos.
+      // Lo de verdad lo deciden las políticas de `estook.persona` al guardarla.
+      foto: laFirmada(await firmarLasFotos(contexto, [quien.foto_clave]), quien.foto_clave),
+      puedeCambiarLaFoto: esMia || permisos[0]?.invitar === true,
       ...(veLosDatos ? { correo: quien.correo } : {}),
       sinCorreo: quien.correo === null,
       puedePonerCorreo: quien.correo === null && permisos[0]?.invitar === true && !esMia,

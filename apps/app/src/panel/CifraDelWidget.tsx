@@ -90,7 +90,9 @@ export function CifraDelWidget({
       }}
     >
       {fallo ? (
-        <p className="text-secundario text-texto-suave">No he podido leerlo. Prueba en un momento.</p>
+        <p className="text-secundario text-texto-suave">
+          No he podido leerlo. Prueba en un momento.
+        </p>
       ) : datos === undefined ? (
         <Cargando que={titulo.toLowerCase()} lineas={2} />
       ) : datos.total === null ? (
@@ -244,7 +246,11 @@ export function DetalleDeLaCifra({
                 <LaCifra indicador={indicador} datos={datos} dias={dias} grande />
               )}
             </div>
-            <ElegirPeriodo periodo={dias} alElegir={alCambiarDias} etiqueta={`${titulo}, de cuántos días`} />
+            <ElegirPeriodo
+              periodo={dias}
+              alElegir={alCambiarDias}
+              etiqueta={`${titulo}, de cuántos días`}
+            />
           </div>
 
           {datos !== undefined && datos.total !== null && (
@@ -259,7 +265,9 @@ export function DetalleDeLaCifra({
                 conEjes
                 resaltarElUltimo
                 referencia={
-                  media === null ? null : { valor: media, nombre: `Media ${comoSeEscribe(indicador, media)}` }
+                  media === null
+                    ? null
+                    : { valor: media, nombre: `Media ${comoSeEscribe(indicador, media)}` }
                 }
               />
             </div>

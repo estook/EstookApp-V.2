@@ -205,7 +205,7 @@ export { sectores, sectorEn, anguloDe, puntoEn, caminoDeSector } from './navegac
 export type { Sector } from './navegacion/geometria.ts';
 
 // ── El buscador universal (B5) ───────────────────────────────────────────────
-export { Buscador } from './buscar/Buscador.tsx';
+export { Buscador, seBuscaYa } from './buscar/Buscador.tsx';
 export type { BuscadorProps, Accion, ResultadoDeBusqueda } from './buscar/Buscador.tsx';
 export { parecido, trigramas, sinAcentos, filtrarPorParecido, UMBRAL } from './buscar/trigramas.ts';
 

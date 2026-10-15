@@ -7,6 +7,7 @@ import {
   destinoPorId,
   destinosQueSeAbren,
   rutaDe,
+  seBuscaYa,
   type Accion,
   type App,
   type ResultadoDeBusqueda,
@@ -18,6 +19,12 @@ import {
   nombreDeLaSeccion,
   rutaDelAjuste,
 } from '../pantallas/lasSeccionesDeAjustes.ts';
+import {
+  apuntarUnReciente,
+  leerLosRecientes,
+  olvidarLosRecientes,
+  type Reciente,
+} from './recientes.ts';
 
 /**
  * El buscador universal, enchufado (M3, Parte B5).
@@ -39,14 +46,8 @@ import {
  */
 const ESPERA_ANTES_DE_PREGUNTAR = 180;
 
-/** Lo que devuelve `buscar` por cada cosa encontrada. */
-interface FilaEncontrada {
-  readonly tipo: string;
-  readonly id: string;
-  readonly titulo: string;
-  readonly subtitulo: string;
-  readonly local_id: string | null;
-}
+/** Lo que devuelve `buscar` por cada cosa encontrada: lo mismo que se guarda al abrirla. */
+type FilaEncontrada = Reciente;
 
 export interface BuscadorUniversalProps {
   readonly abierto: boolean;
@@ -73,7 +74,16 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
   }, [escrito]);
 
   const texto = reposado.trim();
-  const sePregunta = hayApi && yo !== null && texto.length >= 2;
+  // Con dos letras, o con un número suelto: «7» es el pedido 7 (0085).
+  const sePregunta = hayApi && yo !== null && seBuscaYa(texto);
+
+  // Lo último abierto desde aquí, de esta persona en este aparato (0085). Se vuelve a
+  // leer al abrir: entre una vez y otra se ha podido abrir algo más.
+  const personaId = yo?.personaId ?? null;
+  const [recientes, setRecientes] = useState<readonly Reciente[]>([]);
+  useEffect(() => {
+    if (abierto && personaId !== null) setRecientes(leerLosRecientes(personaId));
+  }, [abierto, personaId]);
 
   const consulta = useQuery({
     queryKey: ['buscar', texto, yo?.personaId ?? null],
@@ -173,7 +183,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
   const equipo = apps.find((app) => app.id === 'equipo');
   const localDeAhora = yo?.local?.id ?? null;
 
-  const resultados = useMemo<readonly ResultadoDeBusqueda[]>(() => {
+  const { encontrados, abiertosAntes } = useMemo(() => {
     const enSuLocal = (localId: string | null, despues: () => void) => {
       if (localId === null || localId === localDeAhora) {
         despues();
@@ -192,6 +202,21 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
           return () => {
             enSuLocal(fila.local_id, () => {
               navegar(`${rutaDe(almacen, productos)}?producto=${fila.id}`);
+            });
+          };
+        }
+        // Los pedidos y las facturas (0067), con su ficha abierta encima de su lista:
+        // `?pedido=` y `?factura=` se abren desde cualquier vista de Compras.
+        case 'pedido':
+        case 'factura': {
+          const compras = almacen && destinoPorId(almacen, 'compras');
+          const vista = compras?.vistas.find(
+            (v) => v.id === (fila.tipo === 'pedido' ? 'pedidos' : 'facturas'),
+          );
+          if (!almacen || !compras) return null;
+          return () => {
+            enSuLocal(fila.local_id, () => {
+              navegar(`${rutaDe(almacen, compras, vista)}?${fila.tipo}=${fila.id}`);
             });
           };
         }
@@ -228,10 +253,10 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
       }
     };
 
-    const filas = consulta.data ?? [];
     // Lo que no se puede abrir no sale: un resultado que no lleva a nada es peor que
-    // no salir, porque además tapa a otro que sí.
-    return filas.flatMap((fila) => {
+    // no salir, porque además tapa a otro que sí. Y lo que se abre, se apunta en los
+    // recientes.
+    const comoResultado = (fila: FilaEncontrada): ResultadoDeBusqueda[] => {
       const ir = aDonde(fila);
       if (ir === null) return [];
       return [
@@ -240,11 +265,20 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
           id: fila.id,
           titulo: fila.titulo,
           subtitulo: fila.subtitulo,
-          ir,
+          ir: () => {
+            if (personaId !== null) setRecientes(apuntarUnReciente(personaId, fila));
+            ir();
+          },
         },
       ];
-    });
-  }, [consulta.data, navegar, almacen, equipo, localDeAhora, cambiarDeSitio]);
+    };
+
+    return {
+      encontrados: (consulta.data ?? []).flatMap(comoResultado),
+      // Un reciente que hoy ya no se puede abrir (otro acceso, otra app) no sale.
+      abiertosAntes: recientes.flatMap(comoResultado),
+    };
+  }, [consulta.data, recientes, personaId, navegar, almacen, equipo, localDeAhora, cambiarDeSitio]);
 
   const alEscribir = useCallback((valor: string) => {
     setEscrito(valor);
@@ -256,9 +290,14 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
       abierto={abierto}
       alCerrar={alCerrar}
       acciones={acciones}
-      resultados={resultados}
+      resultados={encontrados}
       buscando={sePregunta && consulta.isLoading}
       alEscribir={alEscribir}
+      recientes={abiertosAntes}
+      alOlvidarRecientes={() => {
+        if (personaId !== null) olvidarLosRecientes(personaId);
+        setRecientes([]);
+      }}
     />
   );
 }

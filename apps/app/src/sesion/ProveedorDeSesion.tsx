@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Boton, Botones, Hoja, usarDeshacer } from '@estook/ui';
 import { crearClienteDeLaApp, guardarToken, hayApi, leerToken } from '../datos/cliente.ts';
+import { olvidarTodosLosRecientes } from '../buscar/recientes.ts';
 import { dejarDeRecibir } from '../sinConexion/avisosAlMovil.ts';
 import {
   guardarAlCambiar,
@@ -45,6 +46,8 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
     // persona en la misma tablet. **Y lo guardado en el móvil también** (0070).
     cache.clear();
     void olvidarLoGuardado();
+    // Y lo último abierto desde el buscador (0085): en una tablet compartida no se queda.
+    olvidarTodosLosRecientes();
   }, [cache]);
 
   // Lo último que se ha visto, guardado en el móvil para mirarlo sin señal (0070).

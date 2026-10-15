@@ -55,6 +55,8 @@ const NOMBRE_DEL_TIPO: Readonly<Record<string, string>> = {
   local: 'Local',
   organizacion: 'Organización',
   area: 'Zona',
+  pedido: 'Pedido',
+  factura: 'Factura',
 };
 
 export interface BuscadorProps {
@@ -69,6 +71,19 @@ export interface BuscadorProps {
   readonly alEscribir: (texto: string) => void;
   /** Menos de esto no se pregunta al servidor. Lo mismo que exige la API. */
   readonly minimoDeLetras?: number;
+  /**
+   * Lo último que se abrió desde aquí (0085): sale con la caja vacía, y un toque lo
+   * vuelve a abrir.
+   */
+  readonly recientes?: readonly ResultadoDeBusqueda[];
+  /** «Borrar» los recientes. Sin esto, no se ofrece. */
+  readonly alOlvidarRecientes?: () => void;
+}
+
+/** Si lo escrito se pregunta al servidor: con sus letras, o un número suelto («7»). */
+export function seBuscaYa(escrito: string, minimoDeLetras = 2): boolean {
+  const texto = escrito.trim();
+  return texto.length >= minimoDeLetras || /^[0-9]$/.test(texto);
 }
 
 export function Buscador({
@@ -79,6 +94,8 @@ export function Buscador({
   buscando = false,
   alEscribir,
   minimoDeLetras = 2,
+  recientes = [],
+  alOlvidarRecientes,
 }: BuscadorProps) {
   const [escrito, setEscrito] = useState('');
   const [señalado, setSeñalado] = useState(0);
@@ -99,14 +116,21 @@ export function Buscador({
     [acciones, escrito],
   );
 
+  const cortito = !seBuscaYa(escrito, minimoDeLetras);
+  // Con la caja vacía, los recientes; con algo escrito y corto, nada todavía.
+  const losRecientes = escrito.trim() === '' ? recientes : [];
+
   // Una sola lista para moverse con las flechas: acciones y resultados seguidos,
   // porque para quien pulsa la flecha abajo esto es una lista, no dos.
   const todo = useMemo(
-    () => [
-      ...accionesQueEncajan.map((a) => ({ clave: `accion-${a.id}`, hacer: a.hacer })),
-      ...resultados.map((r) => ({ clave: `dato-${r.tipo}-${r.id}`, hacer: r.ir })),
-    ],
-    [accionesQueEncajan, resultados],
+    () =>
+      cortito
+        ? losRecientes.map((r) => ({ clave: `reciente-${r.tipo}-${r.id}`, hacer: r.ir }))
+        : [
+            ...accionesQueEncajan.map((a) => ({ clave: `accion-${a.id}`, hacer: a.hacer })),
+            ...resultados.map((r) => ({ clave: `dato-${r.tipo}-${r.id}`, hacer: r.ir })),
+          ],
+    [cortito, losRecientes, accionesQueEncajan, resultados],
   );
 
   useEffect(() => {
@@ -159,8 +183,6 @@ export function Buscador({
     }
   };
 
-  const cortito = escrito.trim().length < minimoDeLetras;
-
   return (
     <dialog
       ref={dialogo}
@@ -196,7 +218,7 @@ export function Buscador({
               // cosas con el mismo nombre son tres cosas que un lector de
               // pantalla no sabe distinguir.
               aria-label="Que quieres buscar"
-              placeholder="Busca un producto, una persona o una pantalla"
+              placeholder="Busca un producto, un pedido, una persona…"
               className="min-h-toque w-full bg-transparent text-cuerpo outline-none placeholder:text-texto-tenue"
             />
             {/*
@@ -215,12 +237,36 @@ export function Buscador({
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto">
-            {cortito ? (
+            {cortito && losRecientes.length > 0 ? (
+              <Grupo
+                titulo="Recientes"
+                {...(alOlvidarRecientes === undefined
+                  ? {}
+                  : { accion: { texto: 'Borrar', alPulsar: alOlvidarRecientes } })}
+              >
+                {losRecientes.map((reciente, i) => (
+                  <Fila
+                    key={`${reciente.tipo}-${reciente.id}`}
+                    senalada={i === señalado}
+                    titulo={reciente.titulo}
+                    subtitulo={reciente.subtitulo}
+                    etiqueta={NOMBRE_DEL_TIPO[reciente.tipo] ?? reciente.tipo}
+                    alPulsar={() => {
+                      alCerrar();
+                      reciente.ir();
+                    }}
+                    alSenalar={() => {
+                      setSeñalado(i);
+                    }}
+                  />
+                ))}
+              </Grupo>
+            ) : cortito ? (
               <EstadoVacio
                 compacto
                 dibujo="buscar"
                 titulo="Escribe para buscar"
-                frase={`Con ${minimoDeLetras} letras basta. No hacen falta acentos, y aguanta alguna errata.`}
+                frase={`Con ${minimoDeLetras} letras basta, o con el número de un pedido o una factura. Sin acentos, y aguanta alguna errata.`}
                 sinAccionPorque="También encuentra acciones: «ajustes», «tamaño de letra», el nombre de una app."
               />
             ) : (

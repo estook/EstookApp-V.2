@@ -48,7 +48,7 @@ Inventario cíclico, almacén valorado, mermas en tres toques, consumo de person
 
 ### M9 · Escandallos
 
-El corazón. **Contestado el 15-oct** ([0086](decisiones/0086-las-respuestas-de-m9.md)) y en tres entregas: **M9 · 1 · El plato y tu carta** —secciones, platos, los canales con su precio a mano (Uber Eats el primero) y «sin ficha»—, adelantada de M10 para que el plato nazca donde va a vivir; **M9 · 2 · Fichas y escandallos** —fichas anidables con detección de ciclos y su rendimiento, el escandallo con el margen por canal, alérgenos calculados, el modo cocina sin importes y la ficha en PDF, con una receta a la vista y su historial—; y **M9 · 3** —escalar, extras, «ya la sé», la hoja de producción y el QR—. Todo lo que hace especial al TPV después sale de aquí.
+El corazón. **Contestado el 15-oct** ([0086](decisiones/0086-las-respuestas-de-m9.md)) y en tres entregas: **M9 · 1 · El plato y tu carta** —secciones, platos, los canales con su precio a mano (Uber Eats el primero) y el historial de cada plato—, adelantada de M10 para que el plato nazca donde va a vivir; **M9 · 2 · Fichas y escandallos** —«sin ficha», fichas anidables con detección de ciclos y su rendimiento, el escandallo con el margen por canal, alérgenos calculados, el modo cocina sin importes y la ficha en PDF, con una receta a la vista y su historial—; y **M9 · 3** —escalar, extras, «ya la sé», la hoja de producción y el QR—. Todo lo que hace especial al TPV después sale de aquí.
 
 ### M10 · Carta, menús y análisis
 

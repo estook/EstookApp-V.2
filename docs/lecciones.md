@@ -689,3 +689,7 @@
      sin widgets a mitad (las pruebas del Panel los quitan) y a Luis le sale «¿Dónde estás
      hoy?» (otra le da un segundo local). Solas pasan; en la batería entera, no. Lo que mira
      el Panel entero va con una cuenta nueva (0085).
+184. **En Postgres, una tabla y un índice comparten nombres.** `estook.canal_del_local`
+     chocaba con el índice `canal_del_local` del chat (0056): «relation already exists».
+     Antes de nombrar una tabla nueva se busca el nombre en todas las migraciones, no
+     solo entre las tablas (0086).

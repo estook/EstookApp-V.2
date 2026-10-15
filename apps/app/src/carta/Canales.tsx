@@ -148,7 +148,7 @@ function UnCanalDeVenta({
       {error !== null && <ErrorEnCristiano error={error} />}
 
       {puedeEditar && canal.disponible && canal.activo && (
-        <div className="grid gap-e3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+        <div className="grid grid-cols-2 items-end gap-e3 sm:grid-cols-[1fr_1fr_auto]">
           <Campo
             etiqueta="Comisión"
             inputMode="decimal"
@@ -166,19 +166,25 @@ function UnCanalDeVenta({
               setEnvase(valor === null ? null : Number(valor));
             }}
           />
-          <Boton
-            tono="secundario"
-            disabled={!hayCambios || !comisionValida}
-            cargando={trabajando}
-            textoCargando="Guardando"
-            onClick={() => {
-              void guardar(true, true);
-            }}
-          >
-            Guardar
-          </Boton>
+          <div className="col-span-2 sm:col-span-1">
+            <Boton
+              tono="secundario"
+              ancho
+              disabled={!hayCambios || !comisionValida}
+              cargando={trabajando}
+              textoCargando="Guardando"
+              onClick={() => {
+                void guardar(true, true);
+              }}
+            >
+              Guardar
+            </Boton>
+          </div>
           {hecho && (
-            <p aria-live="polite" className="text-secundario font-semibold text-bien sm:col-span-3">
+            <p
+              aria-live="polite"
+              className="col-span-2 text-secundario font-semibold text-bien sm:col-span-3"
+            >
               Guardado
             </p>
           )}

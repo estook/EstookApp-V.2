@@ -57,7 +57,7 @@ git pull
 Recarga con **Ctrl + F5** y entra en **Carta** (en el menú de la izquierda).
 
 1. **«Añadir platos»**: escribe cada plato y su precio, fila a fila (siempre queda una fila libre al final). Elige la sección arriba, o déjalos en «Sin sección» y colócalos después. **Con IVA**, como en tu carta de papel.
-2. **«Nueva sección»**: Entrantes, Principales, Postres… Se ordenan con las flechas de cada sección, y los platos de dentro con **«Ordenar»**.
+2. **«Nueva sección»**: Entrantes, Principales, Postres… Para cambiarlas de sitio, toca el **lápiz** de la sección: **Subir** y **Bajar**. Los platos de dentro, con **«Ordenar»**.
 3. **Carta › Canales**: **activa Uber Eats**. Sale con un 30 % de comisión; **pon la tuya** y, si lo pagas tú, el envase por pedido, y **Guardar**.
 4. **Toca un plato**: su ficha. En **Uber Eats**, pon el precio que tenga allí. **Si lo dejas vacío, vale el de sala**, y debajo te dice lo que se lleva Uber Eats y lo que te queda.
 5. En la misma ficha, **«Historial»**: verás «Uber Eats: igual que sala → 12,50 €», con tu nombre y la hora.

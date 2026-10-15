@@ -77,7 +77,7 @@ Si alguna no te cuadra, dímelo y se cambia.
 ## Lo que decidí al construir M9 · 1
 
 1. Que **el historial del plato sea la auditoría** (`estook.anotar`, con su antes y su después): ya guardaba quién y cuándo, y una tabla aparte sería otra copia de lo mismo. `un_plato` enseña las treinta últimas líneas.
-2. Que **ordenar sea con flechas** («Ordenar» en cada sección, y subir o bajar), no arrastrando: con el dedo en una lista que se desplaza, arrastrar se confunde con bajar. Arrastrar, si se echa de menos, va en las propuestas.
+2. Que **ordenar sea con flechas** («Ordenar» en cada sección para sus platos; la sección, con «Subir» y «Bajar» en su hoja, para no llenar de botones su cabecera en el móvil), no arrastrando: con el dedo en una lista que se desplaza, arrastrar se confunde con bajar. Arrastrar, si se echa de menos, va en las propuestas.
 3. Que **crear un plato que estaba archivado lo recupere**, con su historial, en vez de decir que ya existe: es lo que se quiere cuando se vuelve a añadir.
 4. Que **«sin ficha» vaya en M9 · 2**, junto a desgranar: un número de lo que falta sin poder hacerlo sería un cartel sin botón.
 5. Que **la ficha del plato diga lo que se lleva cada plataforma y lo que queda** («Uber Eats se lleva 3,75 €: te quedan 8,75 €») desde ya: el margen con el coste llega con el escandallo, pero la comisión ya se sabe.

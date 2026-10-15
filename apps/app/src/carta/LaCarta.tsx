@@ -156,6 +156,7 @@ export function LaCarta({ vista }: { readonly vista: string }) {
       {seccionEnHoja !== null && (
         <HojaDeSeccion
           seccion={seccionEnHoja}
+          secciones={datos.secciones}
           platos={activos.filter((p) => p.seccionId === seccionEnHoja.id).length}
           alCerrar={() => {
             setSeccionEnHoja(null);
@@ -186,21 +187,19 @@ function fila(
     const suyo = plato.precios[canal.canal];
     return suyo === undefined ? [] : [`${canal.nombre} ${comoDinero(suyo)}`];
   });
+  // El de otro canal va delante del detalle y no a la derecha: a la derecha, en el
+  // móvil, le quitaba sitio al nombre («Croquetas de j…», 15-oct).
+  const debajo = [...otros, ...(detalle === null ? [] : [detalle])].join(' · ');
   return {
     clave: plato.id,
     delante: (
       <FotoDeProducto nombre={plato.nombre} categoria={null} enlace={plato.miniatura} lado={40} />
     ),
     titulo: plato.nombre,
-    ...(detalle === null ? {} : { detalle }),
+    ...(debajo === '' ? {} : { detalle: debajo }),
     derecha: (
-      <span className="flex shrink-0 flex-col items-end">
-        <span className="text-cuerpo font-semibold tabular-nums">
-          {plato.precioCentimos === null ? 'Sin precio' : comoDinero(plato.precioCentimos)}
-        </span>
-        {otros.length > 0 && (
-          <span className="text-etiqueta tabular-nums text-texto-suave">{otros.join(' · ')}</span>
-        )}
+      <span className="shrink-0 text-cuerpo font-semibold tabular-nums">
+        {plato.precioCentimos === null ? 'Sin precio' : comoDinero(plato.precioCentimos)}
       </span>
     ),
     alPulsar: () => {
@@ -231,16 +230,6 @@ function PorSecciones({
   const activos = datos.platos.filter((p) => p.activo);
   const sinSeccion = activos.filter((p) => p.seccionId === null);
 
-  async function moverSeccion(indice: number, salto: -1 | 1) {
-    const ids = datos.secciones.map((s) => s.id);
-    const otro = indice + salto;
-    if (otro < 0 || otro >= ids.length) return;
-    [ids[indice], ids[otro]] = [ids[otro] as string, ids[indice] as string];
-    const respuesta = await cliente.ejecutar('ordenar_secciones', { secciones: ids });
-    if (!respuesta.ok) setError(respuesta.error);
-    await refrescar();
-  }
-
   async function moverPlato(
     seccionId: string | null,
     lista: readonly UnPlato[],
@@ -267,7 +256,7 @@ function PorSecciones({
   return (
     <div className="flex flex-col gap-e4">
       {error !== null && <ErrorEnCristiano error={error} />}
-      {grupos.map((grupo, indice) => {
+      {grupos.map((grupo) => {
         const suyos = activos
           .filter((p) => p.seccionId === grupo.id)
           .sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre, 'es'));
@@ -284,40 +273,16 @@ function PorSecciones({
                   accion: (
                     <div className="flex items-center gap-e1">
                       {grupo.id !== null && (
-                        <>
-                          <Boton
-                            tono="texto"
-                            tamano="s"
-                            aria-label={`Subir la sección ${grupo.nombre}`}
-                            disabled={indice === 0}
-                            onClick={() => {
-                              void moverSeccion(indice, -1);
-                            }}
-                          >
-                            <IconoFlechaArriba size={16} />
-                          </Boton>
-                          <Boton
-                            tono="texto"
-                            tamano="s"
-                            aria-label={`Bajar la sección ${grupo.nombre}`}
-                            disabled={indice >= datos.secciones.length - 1}
-                            onClick={() => {
-                              void moverSeccion(indice, 1);
-                            }}
-                          >
-                            <IconoFlechaAbajo size={16} />
-                          </Boton>
-                          <Boton
-                            tono="texto"
-                            tamano="s"
-                            aria-label={`Cambiar la sección ${grupo.nombre}`}
-                            onClick={() => {
-                              alEditarSeccion({ id: grupo.id, nombre: grupo.nombre });
-                            }}
-                          >
-                            <IconoEditar size={16} />
-                          </Boton>
-                        </>
+                        <Boton
+                          tono="texto"
+                          tamano="s"
+                          aria-label={`Cambiar la sección ${grupo.nombre}`}
+                          onClick={() => {
+                            alEditarSeccion({ id: grupo.id, nombre: grupo.nombre });
+                          }}
+                        >
+                          <IconoEditar size={16} />
+                        </Boton>
                       )}
                       {suyos.length > 1 && (
                         <Boton
@@ -626,10 +591,12 @@ function AnadirPlatos({
 
 function HojaDeSeccion({
   seccion,
+  secciones,
   platos,
   alCerrar,
 }: {
   readonly seccion: { readonly id: string | null; readonly nombre: string };
+  readonly secciones: MiCarta['secciones'];
   readonly platos: number;
   readonly alCerrar: () => void;
 }) {
@@ -640,6 +607,20 @@ function HojaDeSeccion({
   const [quitar, setQuitar] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const nueva = seccion.id === null;
+  const donde = secciones.findIndex((s) => s.id === seccion.id);
+
+  async function mover(salto: -1 | 1) {
+    const ids = secciones.map((s) => s.id);
+    const otra = donde + salto;
+    if (donde < 0 || otra < 0 || otra >= ids.length) return;
+    [ids[donde], ids[otra]] = [ids[otra] as string, ids[donde] as string];
+    const respuesta = await cliente.ejecutar('ordenar_secciones', { secciones: ids });
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    await refrescar();
+  }
 
   async function guardar() {
     setTrabajando('guardando');
@@ -736,14 +717,45 @@ function HojaDeSeccion({
                 : `Sus ${String(platos)} platos pasan a «Sin sección». No se borra ninguno.`}
           </p>
         ) : (
-          <Campo
-            etiqueta="Nombre de la sección"
-            value={nombre}
-            maxLength={80}
-            onChange={(evento) => {
-              setNombre(evento.target.value);
-            }}
-          />
+          <>
+            <Campo
+              etiqueta="Nombre de la sección"
+              value={nombre}
+              maxLength={80}
+              onChange={(evento) => {
+                setNombre(evento.target.value);
+              }}
+            />
+            {!nueva && secciones.length > 1 && (
+              <div className="flex flex-wrap items-center gap-e2">
+                <span className="text-secundario text-texto-suave">
+                  En la carta va la {String(donde + 1)}.ª de {String(secciones.length)}
+                </span>
+                <Boton
+                  tono="secundario"
+                  tamano="s"
+                  icono={<IconoFlechaArriba size={16} />}
+                  disabled={donde <= 0}
+                  onClick={() => {
+                    void mover(-1);
+                  }}
+                >
+                  Subir
+                </Boton>
+                <Boton
+                  tono="secundario"
+                  tamano="s"
+                  icono={<IconoFlechaAbajo size={16} />}
+                  disabled={donde >= secciones.length - 1}
+                  onClick={() => {
+                    void mover(1);
+                  }}
+                >
+                  Bajar
+                </Boton>
+              </div>
+            )}
+          </>
         )}
       </div>
     </Hoja>

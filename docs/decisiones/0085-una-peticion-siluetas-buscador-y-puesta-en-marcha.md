@@ -25,13 +25,14 @@ Lo pidió Richi el 15-oct, con la #102 en producción («lo he probado y todo ge
 
 1. Que **el lote sea una ruta y no una consulta más**: una consulta que llama a otras tendría que copiar las puertas del despachador, y lo que se copia se olvida en la operación cuarenta. Así cada pieza pasa por el mismo `consultar` de siempre.
 2. Que la ruta sea **`POST /v1/consultas/varias`** y no `/v1/consultas`: con otra forma, el enrutador de Hono dejaba de encontrar **todas** las rutas de `/v1` (lección 179).
-3. Que el cliente espere **8 ms** antes de mandar: lo bastante para que todo el Panel salga junto y nada que se note en una consulta suelta.
-4. Que la colocación recordada sean **solo los nombres de los widgets**, por persona y aparato: no lleva ningún dato. Mientras llega la de verdad, el Panel se mira pero no se edita.
-5. Que **la puesta en marcha sustituya a «Termina de configurar» mientras está a la vista**: dos tarjetas de arrancar el local, una encima de otra, son una de más. Lo que falte del alta vuelve en cuanto la otra se acaba. **«No me lo recuerdes más» es el mismo de las dos**: no hace falta migración.
-6. Que cada paso salga **solo a quien lo puede dar**: el logo, a quien edita Ajustes; el género y los proveedores, a quien edita el Almacén; el horario, a quien lo publica; el equipo, a quien invita.
-7. Que «el equipo» esté hecho con **una persona más con acceso vivo** al local, y «el horario», con **una semana publicada** alguna vez.
-8. Que el buscador guarde **lo abierto y no lo escrito**: lo que se busca dos veces es lo que se abre dos veces, y «salm» no le dice nada a nadie.
-9. Que los estados en el buscador digan **lo mismo que Compras** («Borrador», «Mandado», «Sin comprobar»…).
+3. Que el servidor atienda el lote **seis a la vez**, como hacía el navegador con las sueltas: todas a la vez cogían todas las conexiones a la base de su servidor, y en la batería de pantalla se vio como entradas de más de cinco segundos.
+4. Que el cliente espere **8 ms** antes de mandar: lo bastante para que todo el Panel salga junto y nada que se note en una consulta suelta.
+5. Que la colocación recordada sean **solo los nombres de los widgets**, por persona y aparato: no lleva ningún dato. Mientras llega la de verdad, el Panel se mira pero no se edita.
+6. Que **la puesta en marcha sustituya a «Termina de configurar» mientras está a la vista**: dos tarjetas de arrancar el local, una encima de otra, son una de más. Lo que falte del alta vuelve en cuanto la otra se acaba. **«No me lo recuerdes más» es el mismo de las dos**: no hace falta migración.
+7. Que cada paso salga **solo a quien lo puede dar**: el logo, a quien edita Ajustes; el género y los proveedores, a quien edita el Almacén; el horario, a quien lo publica; el equipo, a quien invita.
+8. Que «el equipo» esté hecho con **una persona más con acceso vivo** al local, y «el horario», con **una semana publicada** alguna vez.
+9. Que el buscador guarde **lo abierto y no lo escrito**: lo que se busca dos veces es lo que se abre dos veces, y «salm» no le dice nada a nadie.
+10. Que los estados en el buscador digan **lo mismo que Compras** («Borrador», «Mandado», «Sin comprobar»…).
 
 ## Lo que no se hace, y por qué
 

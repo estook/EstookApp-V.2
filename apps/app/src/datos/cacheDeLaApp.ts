@@ -1,4 +1,5 @@
-import { QueryClient, onlineManager } from '@tanstack/react-query';
+import { onlineManager } from '@tanstack/react-query';
+import { CacheQueNoSeQuedaAtras } from './cacheQueNoSeQuedaAtras.ts';
 import { alCambiarLaRed, hayRed } from '../sinConexion/red.ts';
 
 /**
@@ -8,7 +9,8 @@ import { alCambiarLaRed, hayRed } from '../sinConexion/red.ts';
  * recupera del móvil antes de pintar** (`sinConexion/cacheGuardada.ts`), y para eso
  * `principal.tsx` la necesita antes de que exista ninguna pantalla.
  */
-export const cacheDeLaApp = new QueryClient({
+// Que no se quede con lo de antes de un cambio si aún lo estaba leyendo (0085).
+export const cacheDeLaApp = new CacheQueNoSeQuedaAtras({
   defaultOptions: {
     queries: {
       // Un minuto: lo que dice el servidor sobre permisos y busquedas no cambia

@@ -269,7 +269,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | ----------- | ---------------------------------------------------- |
 | Almacén     | Resumen · Productos · Compras · Mermas · Movimientos |
 | Escandallos | Resumen · Fichas · Elaboraciones · Análisis          |
-| Carta       | Carta · Menús · Análisis                             |
+| Carta       | Carta · Canales · Menús · Análisis                   |
 | Calendario  | Calendario · Tareas · Turnos                         |
 | Equipo      | Resumen · Personas · Fichajes · Incidencias          |
 | Servicio    | Jornada · Ventas · Delivery · APPCC                  |
@@ -581,7 +581,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M9 · Escandallos
 
-**Entra.** Elaboraciones anidables con detección de ciclos · ficha en dos caras · extras y sustituciones · versionado con comparador · escalado de gramajes · **modo cocina** a pantalla completa, sin importes y en el idioma del cocinero · modo aprendizaje · valor nutricional y alérgenos calculados · hoja de producción del día · borrador de ficha propuesto por Fogón · indicador de cobertura de fichas · grafo de recálculo · ficha impresa con QR a la versión viva.
+**Contestado el 15-oct** ([decisión 0086](../decisiones/0086-las-respuestas-de-m9.md)): **la base de la Carta se adelanta a M9**, y M9 va en tres entregas —**M9 · 1 · El plato y tu carta** (secciones, platos, canales con su precio a mano, el historial del plato y «sin ficha»), **M9 · 2 · Fichas y escandallos** (lo que lleva cada plato y cada elaboración, el escandallo con el margen por canal, alérgenos, modo cocina y la ficha en PDF) y **M9 · 3** (escalar, extras, «ya la sé», la hoja de producción con el stock de las elaboraciones y la ficha con QR)—. La receta, **sin versiones a la vista**, con historial; **sin nutrición** hasta que el catálogo traiga los datos; y la desviación de los platos se construye y **se enseña con el TPV**. Donde lo de abajo dice otra cosa, manda la 0086.
+
+**Entra.** **El plato y la carta** (secciones, precios por canal y canales con su comisión, adelantados de M10 por la 0086) · elaboraciones anidables con detección de ciclos y su rendimiento · ficha en dos caras · extras y sustituciones · **una receta a la vista con historial y recuperar** · escalado de gramajes · **modo cocina** a pantalla completa, sin importes y en el idioma del cocinero · modo aprendizaje · alérgenos calculados · hoja de producción del día · borrador de ficha propuesto por Fogón · indicador de cobertura de fichas · grafo de recálculo · ficha impresa con QR a la versión viva.
 
 **Y su capa inteligente.** El bloque **«qué ha cambiado y por qué»**: cuánto ha subido el coste desde una fecha, qué ingrediente lo ha movido, a cuántos platos afecta una subida y cuál es el impacto máximo en puntos de margen.
 
@@ -591,22 +593,24 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Un plato, tres vistas, un solo dueño de cada dato** (Richi, 25-sep · [decisión 0049](../decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)):
 
-| Vista                           | Qué dice                                                                   | Qué **no** guarda                                   |
-| ------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------- |
-| **Carta** (M10)                 | Lo que se vende y a cuánto: «Hamburguesa de buey · 14,90 €»                | Ni ingredientes ni costes                           |
-| **Ficha técnica** (M9)          | Cómo se prepara: carne 180 g, pan 1 ud, queso 5 g, salsa 20 g, y los pasos | Ni un precio de ingrediente                         |
-| **Escandallo** (M9, se calcula) | Cuánto cuesta hoy: coste, food cost, margen y beneficio                    | Nada escrito a mano: sale de la ficha y del Almacén |
+| Vista                           | Qué dice                                                                                               | Qué **no** guarda                                   |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| **Carta** (M9 · 1, 0086)        | Lo que se vende, por secciones, y a cuánto en cada canal: «14,90 € · Uber Eats 17,50 €»                | Ni ingredientes ni costes                           |
+| **Ficha técnica** (M9)          | Cómo se prepara, para cocina y sala: carne 180 g, pan 1 ud, y los pasos; en el móvil, impresa o en PDF | Ni un euro                                          |
+| **Escandallo** (M9, se calcula) | Cuánto cuesta hoy: coste, food cost, margen y beneficio                                                | Nada escrito a mano: sale de la ficha y del Almacén |
 
-- **Los tres cuelgan del mismo plato por su identificador**, nunca por el nombre: renombrar el plato no lo separa de su ficha ni de su escandallo.
+- **Los tres cuelgan del mismo plato por su identificador**, nunca por el nombre: renombrar el plato no lo separa de su ficha ni de su escandallo. **El plato se crea una vez, en la Carta** (0086), y aparece en Escandallos como «sin ficha» hasta que se desgrana.
 - **«Añadir plato» en Escandallos** trae su ficha técnica con sus cantidades, y el coste de cada ingrediente sale **del Almacén**: el precio de compra por su formato, llevado a la unidad de uso y **con su aprovechamiento** —10 kg de carne a 60 € de los que quedan 8 kg utilizables son 7,50 €/kg reales—. Nadie calcula a mano el coste de un ingrediente; **se puede poner a mano** cuando no hay compra (una cesión, una muestra), y queda marcado como escrito a mano.
 - **Todo se recalcula solo y solo lo afectado** (el grafo de recálculo): cambia un precio de compra → los escandallos que lo llevan; cambia una cantidad de la ficha → su escandallo; cambia el precio de la carta → su margen y su food cost; un plato nuevo puede nacer con ficha y después con escandallo.
 - **Estook calcula; la IA solo propone** coincidencias —«"Queso cheddar" de la ficha parece "Cheddar lonchas" del Almacén»— y **las vinculaciones definitivas se hacen por identificador y las confirma una persona**. Lo que se puede contar no se le pregunta a un modelo: cuesta uso y se equivoca.
 
-**Terminado cuando.** Se monta una carta entera sin tocar la base a mano; un cocinero abre la ficha **sin ver ningún importe**; al subir un ingrediente solo se recalcula lo afectado; y, con dos inventarios, la desviación de los platos sale explicada producto a producto, y un producto que se sirve de más deja de saltar tras el tercero.
+**Terminado cuando.** Se monta una carta entera sin tocar la base a mano, con su precio en sala y en Uber Eats; el margen de un plato sale **por canal** con su comisión descontada; un cocinero abre la ficha **sin ver ningún importe**; al subir un ingrediente solo se recalcula lo afectado; y, con dos inventarios, la desviación de los platos sale explicada producto a producto, y un producto que se sirve de más deja de saltar tras el tercero.
 
 ### M10 · Carta, menús y análisis
 
-**Entra.** Canales con listas de precio y comisiones · constructor por secciones · agotado desde el móvil · fórmulas y menús con reparto de precio · menú del día con propuesta de Fogón · análisis de rentabilidad por canal (estrella, caballo, puzzle, perro) · análisis de equilibrio de carta · comparación con la zona.
+**Lo que se adelantó a M9** ([0086](../decisiones/0086-las-respuestas-de-m9.md)): las secciones, los platos, los canales con su comisión y el precio de cada plato en cada canal. M10 se queda con lo demás.
+
+**Entra.** El orden de la carta como se imprime (destacados, columnas) · agotado desde el móvil · fórmulas y menús con reparto de precio · menú del día con propuesta de Fogón · análisis de rentabilidad por canal (estrella, caballo, puzzle, perro) · análisis de equilibrio de carta · comparación con la zona.
 
 **Y su capa inteligente.** La **matriz de popularidad contra rentabilidad** con su clasificación y su precio recomendado, y la lista de candidatos a retirar. **Nunca retira ni modifica nada por su cuenta.**
 
@@ -614,7 +618,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y la carta que ya tiene el local se lee** (0049). Desde el repaso del 25-sep, cada local puede **subir su carta** —el PDF o unas fotos— y es lo que enseña su QR. Con los platos, Estook **la lee y propone**: «**4 platos nuevos, 2 precios distintos, 1 que ya no está** · ¿actualizo tu carta?», con el resumen delante y nada cambiado hasta que alguien dice que sí. Un PDF con texto lo lee Estook sin IA; una foto o un PDF escaneado necesita leer imágenes (M22), y solo entonces se usa. **Las dos formas quedan siempre**: hacer la carta a mano en Estook, o subir la suya y que se lea.
 
-**Terminado cuando.** El mismo plato tiene tres precios en tres canales y el análisis lo clasifica distinto en cada uno; el informe de equilibrio detecta una carta descompensada sembrada a propósito; y una carta subida con dos precios cambiados propone exactamente esos dos cambios.
+**Terminado cuando.** Con un plato que tiene tres precios en tres canales (M9 · 1), el análisis lo clasifica distinto en cada uno; el informe de equilibrio detecta una carta descompensada sembrada a propósito; y una carta subida con dos precios cambiados propone exactamente esos dos cambios.
 
 ### M11 · Documentos y diseños
 

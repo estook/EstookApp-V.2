@@ -96,3 +96,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0083** | La experiencia: el menú a la izquierda, el Panel con widgets distintos y gráficas que se tocan, Compras en tres, las fotos del equipo y la primera contraseña con el PIN   |
 | **0084** | Las bases firmes: el buscador que abre, el Panel en filas completas, gráficas ligeras con la semana anterior, Ajustes en mosaico, el recorrido y lo que recuerda tu cuenta |
 | **0085** | El Panel en una sola petición, las siluetas de carga, el buscador con pedidos, facturas y recientes, y la puesta en marcha                                                 |
+| **0086** | Las respuestas de M9: un solo plato, la carta adelantada, los canales con su precio a mano y la receta sin versiones a la vista                                            |

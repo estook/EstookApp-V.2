@@ -585,7 +585,7 @@ Lo mismo con las recetas de referencia. Nadie obliga, y lo que no se usa no exis
 
 Los precios de la carta se guardan **con impuestos incluidos**, que es como los piensa el hostelero, y por dentro se desglosan. El margen se calcula siempre sobre la base sin impuestos.
 
-**Canales.** El mismo café vale distinto en barra, en terraza y en reparto, y en reparto la plataforma se lleva su comisión. Cada canal tiene su lista de precios con vigencia y su comisión, y **el margen de reparto se calcula con la comisión ya descontada**.
+**Canales.** El mismo café vale distinto en barra, en terraza y en reparto, y en reparto la plataforma se lleva su comisión. Cada canal tiene su comisión y **cada plato su precio en cada canal, puesto a mano** (sin precio, vale el de sala), con cada cambio guardado en el historial del plato; y **el margen de reparto se calcula con la comisión ya descontada** ([0086](../decisiones/0086-las-respuestas-de-m9.md)).
 
 **Objetivos.** Materia prima, personal y margen por familia. Son los que ponen en verde o en rojo los semáforos de toda la aplicación, y los que usa Fogón para decir si algo está bien o mal. Vienen propuestos según el tipo de local.
 
@@ -727,7 +727,7 @@ HAMBURGUESA ESTOOK                       version 4
   MARGEN     11,08 €     Objetivo    ≤ 30 %  ✓
 ```
 
-**Cara B · Elaboración.** Mise en place, pasos numerados con foto, tiempo, temperatura, utensilio, truco del jefe de cocina, conservación y rendimiento.
+**Cara B · Elaboración.** Mise en place, pasos numerados con foto, tiempo, temperatura, utensilio, truco del jefe de cocina, conservación y rendimiento. **Es la ficha de cocina y de sala** (0086): lo que lleva en gramos y cómo se hace, **sin un euro**, para leerla en el móvil, imprimirla o llevársela en PDF.
 
 ## Por qué las fichas técnicas son el motor de todo
 
@@ -752,7 +752,7 @@ El indicador de salud de los datos enseña cuántos platos llevan ficha y qué s
 
 **Un plato sin ficha no bloquea nada:** se vende, cuenta en dinero, y sale marcado en «sin ficha».
 
-Y hacerlas es más rápido de lo que parece: los platos ya vienen del TPV con su nombre y su precio, los ingredientes se buscan en el catálogo de referencia, **Fogón propone un borrador** a partir del nombre del plato y de recetas parecidas, y el jefe de cocina solo ajusta gramajes. De diez minutos por ficha a dos.
+Y hacerlas es más rápido de lo que parece: **los platos ya están en la Carta** con su nombre y su precio —se montan ahí primero, y aquí se desgranan (0086)—, o vienen del TPV, los ingredientes se buscan en el catálogo de referencia, **Fogón propone un borrador** a partir del nombre del plato y de recetas parecidas, y el jefe de cocina solo ajusta gramajes. De diez minutos por ficha a dos.
 
 ## Margen explicado
 
@@ -775,9 +775,9 @@ Pantalla completa, letra grande, **sin un solo importe**, pensado para leerse de
 ## Lo demás que la hace una app de verdad
 
 - **Biblioteca con colecciones:** por categoría, por temporada, por dificultad, y colecciones propias.
-- **Elaboraciones** con ficha, coste, stock y rendimiento propios, anidables, con detección de ciclos.
+- **Elaboraciones** con ficha, coste y rendimiento propios («rinde 2 litros»), anidables, con detección de ciclos; **su stock, con la hoja de producción**. No se venden: nacen aquí y no salen en la Carta.
 - **Extras y sustituciones** con su coste y su precio.
-- **Versionado:** cada cambio de gramaje crea versión nueva sin tocar los costes históricos. Y comparador de dos versiones.
+- **Una sola receta a la vista, con historial** (0086): al cambiarla se confirma y se guarda, y esa es la de ahora. El historial, plegado, dice quién cambió qué y cuándo, y deja ver la de antes y recuperarla. Por dentro guarda cada receta entera, porque **lo vendido se cuenta con la receta de ese día**. Sin versiones numeradas ni comparador: Estook limpio.
 - **Escalado:** «esto es para 10, dame para 35».
 - **Modo aprendizaje:** cada cocinero marca «ya la sé»; el jefe de cocina ve quién sabe hacer qué.
 - **Análisis:** qué platos están bajo objetivo, cuáles no se revisan desde hace seis meses, cuáles llevan un producto sin precio.
@@ -785,7 +785,7 @@ Pantalla completa, letra grande, **sin un solo importe**, pensado para leerse de
 
 ## Tres cosas que la competencia no da bien
 
-**Valor nutricional y alérgenos calculados** a partir de los ingredientes. Sale en la ficha, en la carta digital y en el listado de alérgenos, que es obligación legal informar.
+**Alérgenos calculados** a partir de los ingredientes. Salen en la ficha, en la carta digital y en el listado de alérgenos, que es obligación legal informar. **El valor nutricional, cuando el catálogo de Estook traiga los datos de cada producto** (0086): teclearlos uno a uno es mucho trabajo para un bar.
 
 **Hoja de producción del día.** Cruzando el menú programado, las ventas previstas y lo que ya hay elaborado, sale la lista de mise en place. Es lo primero que mira un jefe de cocina al llegar.
 
@@ -797,15 +797,15 @@ _Habla con: Almacén (le pide el coste), Carta (le da coste y margen), Servicio 
 
 # 14 · APP · CARTA
 
-Aquí se compone lo que va impreso y lo que ve el cliente. **Los platos y sus costes viven en Escandallos; la Carta los coloca.** La Carta lee y nunca escribe.
+Aquí se compone lo que va impreso y lo que ve el cliente. **El plato es uno solo y nace aquí** (0086): la Carta es la dueña de **lo que se vende y a cuánto** —su sección, su descripción, su foto y su precio en cada canal— y Escandallos, de **lo que lleva y lo que cuesta**. Cada dato, un dueño; los dos miran el mismo plato.
 
-_Su navegación: Carta · Menús · Análisis_
+_Su navegación: Carta · Canales · Menús · Análisis_
 
 ## Montar la carta
 
-Secciones que se añaden y se ordenan arrastrando. Dentro, platos con nombre, precio, descripción, foto y enlace a su ficha, de la que heredan alérgenos y coste. Cada plato se marca **agotado** desde el móvil, en dos toques, y desaparece de la carta digital, del PDF y del análisis. Estook recuerda que hay que marcarlo también en el TPV.
+Secciones que se añaden y se ordenan arrastrando. Dentro, platos con nombre, precio, descripción y foto, **y se añaden varios de golpe** —nombre y precio, fila a fila— porque así se pasa una carta de papel. Su ficha, en Escandallos, les da los alérgenos y el coste; mientras no la tienen, salen en «sin ficha». Cada plato se marca **agotado** desde el móvil, en dos toques, y desaparece de la carta digital, del PDF y del análisis. Estook recuerda que hay que marcarlo también en el TPV.
 
-**Precios por canal.** El mismo café vale 1,30 € en barra, 1,60 € en terraza y 1,80 € en reparto, donde además la plataforma se lleva su comisión.
+**Precios por canal.** El mismo café vale 1,30 € en barra, 1,60 € en terraza y 1,80 € en reparto, donde además la plataforma se lleva su comisión. **Los canales tienen su sección** (0086), con todas las plataformas programadas —hoy se activa Uber Eats, que es la que se usa—, su comisión y su envase; y **cada plato lleva su precio a mano en cada canal**, que es como se hace. Activar un canal no lo conecta: recibir sus pedidos es Estook Link.
 
 **Menús y fórmulas** con reparto del precio entre componentes para el margen, y prorrateo de impuestos cuando llevan bebida.
 

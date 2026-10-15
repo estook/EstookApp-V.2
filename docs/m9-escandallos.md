@@ -1,25 +1,29 @@
 # M9 · Escandallos · el plan
 
-**Escrito el 10 de octubre de 2026**, con M8 y sus repasos en producción y el repaso antes de M9 en su pull request (leído en la base ese día, en solo lectura: 62 migraciones, 107 tablas, la API con 81 y 171). **Las preguntas, sin contestar todavía**: están al final, cada una con su ejemplo y lo que recomiendo.
+**Escrito el 10 de octubre de 2026**, con M8 y sus repasos en producción y el repaso antes de M9 en su pull request (leído en la base ese día, en solo lectura: 62 migraciones, 107 tablas, la API con 81 y 171).
+
+> **Contestado por Richi el 15-oct** ([decisión 0086](decisiones/0086-las-respuestas-de-m9.md)): **1** la base de la Carta se adelanta a M9 · **2A** · **3B** · **4A** · **5C sin versiones a la vista**, con historial · y dos más: **6** los canales en una sección propia, con el precio de cada plato a mano, y **7** primero la carta y después se desgrana. **M9 va en tres entregas**: el plato y tu carta; fichas y escandallos; y lo que la hace una app de verdad. Cada respuesta va debajo de su pregunta; donde este plan dice otra cosa, manda la 0086.
 
 De dónde sale: M9 en la parte D del [Plan](maestros/Estook-Plan-de-Desarrollo.md), «Escandallos» en el capítulo 13 del [Manifiesto](maestros/Estook-Manifiesto.md), el diseño de Richi de «un plato, tres vistas» ([0049](decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)) y lo que le pasó M8 ([0078](decisiones/0078-las-respuestas-de-m8.md)).
 
 ## Qué es M9, en llano
 
-**Saber lo que cuesta cada plato y cuánto te deja, sin calcular nada a mano.** Hoy Estook sabe lo que cuesta cada producto del almacén. Lo que falta es **qué lleva cada plato**: con eso, el coste del plato sale solo, se mueve solo cuando sube un ingrediente, y la cocina tiene su receta en el móvil sin ver un euro.
+**Saber lo que cuesta cada plato y cuánto te deja, sin calcular nada a mano.** Hoy Estook sabe lo que cuesta cada producto del almacén. Lo que falta es **qué se vende y a cuánto** (la carta, adelantada a M9 por la 0086) y **qué lleva cada plato**: con eso, el coste del plato sale solo, se mueve solo cuando sube un ingrediente, y la cocina tiene su receta en el móvil sin ver un euro.
 
-| Pieza                     | Qué hace                                                                                                |
-| ------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **El plato**              | Un nombre, su precio de venta (la pregunta 1) y su ficha. Renombrarlo no lo separa de nada              |
-| **La ficha técnica**      | Lo que lleva (180 g de carne, 1 pan…) y cómo se hace: pasos, tiempo, temperatura, conservación          |
-| **Las elaboraciones**     | Una salsa o un caldo con su propia ficha, que se usa dentro de otras (la pregunta 2)                    |
-| **El escandallo**         | Se calcula: coste, food cost, margen y precio recomendado. Nada escrito a mano                          |
-| **Los alérgenos**         | Salen solos de los ingredientes, con los catorce símbolos oficiales                                     |
-| **El modo cocina**        | La ficha a pantalla completa, letra grande, **sin un solo importe**                                     |
-| **Qué ha cambiado**       | «El aceite sube un 12 %: afecta a 7 platos, 2 bajan del objetivo, hasta −3,8 puntos de margen»          |
-| **Las fichas que faltan** | «38 de 96 platos con ficha»: un plato sin ficha se vende igual, sale marcado                            |
-| **Lo que le pasó M8**     | El food cost teórico junto al real, la desviación de los platos y la calibración (la pregunta 3)        |
-| **Y lo demás**            | Versiones con comparador, escalar raciones, extras, «ya la sé», la hoja de producción y la ficha con QR |
+| Pieza                     | Qué hace                                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **El plato**              | Uno solo, creado desde la Carta: nombre, sección, descripción, foto y su precio en cada canal (0086)   |
+| **Los canales**           | Sala y Uber Eats para activar (los demás, programados), con su comisión y el precio a mano por plato   |
+| **La ficha técnica**      | Lo que lleva (180 g de carne, 1 pan…) y cómo se hace: pasos, tiempo, temperatura, conservación         |
+| **Las elaboraciones**     | Una salsa o un caldo con su propia ficha, que se usa dentro de otras (la pregunta 2)                   |
+| **El escandallo**         | Se calcula: coste, food cost, margen y precio recomendado. Nada escrito a mano                         |
+| **Los alérgenos**         | Salen solos de los ingredientes, con los catorce símbolos oficiales                                    |
+| **El modo cocina**        | La ficha a pantalla completa, letra grande, **sin un solo importe**                                    |
+| **Qué ha cambiado**       | «El aceite sube un 12 %: afecta a 7 platos, 2 bajan del objetivo, hasta −3,8 puntos de margen»         |
+| **Las fichas que faltan** | «38 de 96 platos con ficha»: un plato sin ficha se vende igual, sale marcado                           |
+| **Lo que le pasó M8**     | El food cost teórico junto al real, la desviación de los platos y la calibración (la pregunta 3)       |
+| **El historial**          | Quién cambió qué y cuándo, plegado, con la receta de antes para recuperarla (sin versiones a la vista) |
+| **Y lo demás**            | Escalar raciones, extras, «ya la sé», la hoja de producción y la ficha con QR                          |
 
 ## Lo que ya hay
 
@@ -50,8 +54,8 @@ Comprobado en producción el 10-oct:
 
 Si alguna no te cuadra, dímelo y se cambia.
 
-1. **Se entrega en dos veces.** La primera: platos, fichas, elaboraciones para costear, el escandallo, los alérgenos, el modo cocina, el recálculo, «qué ha cambiado» y las fichas que faltan. La segunda: versiones con comparador, escalar, extras y sustituciones, «ya la sé», la hoja de producción, la ficha impresa con QR y lo de M8 (pregunta 3). Cada una con su pull request.
-2. **Quién hace las fichas**: quien lleva el local y el jefe de cocina. **El cocinero las ve en modo cocina**, sin importes, y marca «ya la sé». El camarero ve los alérgenos de cada plato, que los necesita para contestar en sala.
+1. **Se entrega en tres veces** (eran dos; la 0086 adelanta la Carta). **M9 · 1 · El plato y tu carta**: secciones, platos con su foto y su precio de sala, añadir varios de golpe, los canales con su comisión y el precio de cada plato en cada canal, archivar, el historial del plato y «sin ficha». **M9 · 2 · Fichas y escandallos**: lo que lleva cada plato y cada elaboración, el escandallo con el margen por canal, los alérgenos, el modo cocina, la ficha impresa o en PDF, el recálculo, «qué ha cambiado», el historial de la receta con recuperar y lo de M8 (pregunta 3). **M9 · 3**: escalar, extras y sustituciones, «ya la sé», la hoja de producción con el stock de las elaboraciones y la ficha con QR. Cada una con su pull request.
+2. **Quién hace las fichas**: quien lleva el local y el jefe de cocina. **La carta**, quien tiene Carta para editar (quien lleva el local, el jefe de sala y el jefe de cocina). **El cocinero las ve en modo cocina**, sin importes, y marca «ya la sé». El camarero ve los alérgenos de cada plato, que los necesita para contestar en sala.
 3. **Las cantidades, en la unidad de uso del producto** (g, ml, ud) y **en limpio**: 180 g de carne son 180 g en el plato; el aprovechamiento pone la diferencia en el coste.
 4. **Un ingrediente que no está en el almacén se crea desde la ficha** con nombre y unidad, sin precio: el plato sale con «falta el precio de 1 ingrediente» y no se da un coste falso.
 5. **Si el mismo producto entra dos veces en una ficha, se suman** y se avisa; no se duplica la línea.
@@ -59,7 +63,7 @@ Si alguna no te cuadra, dímelo y se cambia.
 7. **Empezar desde una receta de referencia** copia sus líneas a una ficha tuya, ya unidas a tus productos si los tienes; la del catálogo no se toca nunca.
 8. **Un plato que se vende sin ficha** cuenta en dinero y sale en «sin ficha»; el indicador dice qué parte de lo vendido no tiene coste.
 9. **El modo cocina** se recorre deslizando, con letra para leer desde el pase; dictar «siguiente» es Fogón (M22).
-10. **Escandallos solo lee del Almacén y nunca le escribe.** La Carta (M10) leerá de Escandallos.
+10. **Escandallos solo lee del Almacén y nunca le escribe.** Y **cada dato del plato tiene un dueño** (0086): la Carta, lo que se vende y a cuánto; Escandallos, lo que lleva y lo que cuesta.
 
 ## Lo que cuesta · cero
 
@@ -68,7 +72,7 @@ Si alguna no te cuadra, dímelo y se cambia.
 ## Lo que no entra
 
 - **El borrador de ficha propuesto por Fogón** y **la traducción al idioma del cocinero**: con Fogón (M22). Hasta entonces, en castellano y empezando desde una receta de referencia.
-- **Los canales y sus precios** (sala, terraza, delivery): la Carta, M10.
+- ~~**Los canales y sus precios**: la Carta, M10.~~ **Entran en M9 · 1** (0086).
 - **Descontar del almacén lo vendido** plato a plato: con Estook TPV (M20).
 - **La ficha con membrete**: M11. Hasta entonces, «Imprimir».
 
@@ -85,6 +89,8 @@ Si alguna no te cuadra, dímelo y se cambia.
 
 **Recomiendo A**: lo que más vale de M9 es ver el margen, y con B esperarías un módulo entero para verlo. **Lo que decides: A o B.**
 
+> **Richi, 15-oct: ni A ni B, mejor.** La base de la Carta se adelanta a M9: el plato nace en la Carta con su precio de sala y sus canales, que es donde va a vivir siempre, y no hay que mudarlo después (0086).
+
 ### 2 · Las elaboraciones (la salsa de la casa, el caldo), ¿con stock?
 
 **De qué va.** Una elaboración es una receta que se usa dentro de otras: la salsa lleva mayonesa, kétchup y pepinillo, y la hamburguesa lleva 30 g de salsa. Para el **coste** y los **alérgenos** basta con que Estook sepa lo que lleva. Otra cosa es **tenerla en el almacén**: «hay 3 litros de salsa hecha», y que al hacer 5 litros se descuenten sus ingredientes.
@@ -96,6 +102,8 @@ Si alguna no te cuadra, dímelo y se cambia.
 - **C · Solo para costear, y el stock fuera de M9.**
 
 **Recomiendo A**: el coste se necesita ya y el stock tiene sentido junto a la hoja de producción, que es cuando se dice «la he hecho». **Lo que decides: A, B o C.**
+
+> **Richi, 15-oct: A**, «como lo hacen los mejores, que no se le haga complicado». Cada elaboración dice cuánto rinde; su stock, en M9 · 3 con la hoja de producción.
 
 ### 3 · La desviación de los platos, ¿se enciende ya o con Estook TPV?
 
@@ -109,6 +117,8 @@ Si alguna no te cuadra, dímelo y se cambia.
 
 **Recomiendo B**: es lo mismo que decidiste para la barra, y una desviación con datos a medias asusta y se deja de mirar. **Lo que decides: A, B o C.**
 
+> **Richi, 15-oct: B.** «Hasta que no tengamos TPV, carta y escandallos no sabemos cuánta cantidad tiene cada plato.»
+
 ### 4 · ¿Valor nutricional, o solo alérgenos?
 
 **De qué va.** Lo que la ley obliga a decir en un restaurante son **los alérgenos** (eso entra seguro). Las calorías, grasas o azúcares por plato son un extra: para calcularlas hace falta que **cada producto tenga sus datos por 100 g**, y hoy no los tiene ninguno, ni el catálogo de Estook.
@@ -119,6 +129,8 @@ Si alguna no te cuadra, dímelo y se cambia.
 - **B · Nutrición en la segunda entrega**, con los datos por 100 g escritos en cada producto (opcionales): el plato da la suma y avisa de los ingredientes que no los tienen.
 
 **Recomiendo A**: nadie lo pide hoy, no es obligatorio en sala, y teclear los datos de cada producto es mucho trabajo para un bar. **Lo que decides: A o B.**
+
+> **Richi, 15-oct: A.**
 
 ### 5 · Las versiones de la ficha, ¿cuándo se guarda una nueva?
 
@@ -132,9 +144,20 @@ Si alguna no te cuadra, dímelo y se cambia.
 
 **Recomiendo A**: guarda la historia sin llenarla de pruebas, y nadie tiene que acordarse de pulsar nada. **Lo que decides: A, B o C.**
 
+> **Richi, 15-oct: C, sin versiones a la vista.** Se confirma y se guarda, y esa es la receta de ahora; un historial plegado dice quién cambió qué y deja ver la de antes y recuperarla. «Mantener Estook limpio, intuitivo y organizado.»
+
+### 6 · Los precios por canal (la añadió Richi)
+
+> **Richi, 15-oct:** una sección propia, «Canales», no en Ajustes («lo hacemos interminable»), con todas las plataformas programadas y solo Uber Eats activo por ahora. El precio de cada plato en cada canal, **a mano**: «no suelen poner solo un porcentaje más, suele ser a mano cada plato». Sin precio en un canal, vale el de sala. El detalle, en la 0086.
+
+### 7 · ¿Primero la carta o el escandallo? (la añadió Richi)
+
+> **Richi, 15-oct: primero la carta.** El hostelero monta sus platos (sección, descripción, precios) y después, en Escandallos, los desgrana: el ingrediente y el peso, y Estook saca el precio del Almacén. El plato es uno solo y sale en los dos sitios (0086).
+
 ## Cómo se comprobará que M9 está terminado
 
-- **Se monta una carta entera sin tocar la base a mano**: platos, fichas y elaboraciones anidadas, y una que se intenta llevar a sí misma se rechaza.
+- **Se monta una carta entera sin tocar la base a mano**: secciones, platos con su precio en sala y en Uber Eats, fichas y elaboraciones anidadas, y una que se intenta llevar a sí misma se rechaza.
+- **El margen de un plato sale por canal**, con la comisión descontada, y un canal donde se pierde dinero lo dice.
 - **Un cocinero abre una ficha y no recibe ningún importe**, ni en la pantalla ni en lo que manda el servidor.
 - **Sube un ingrediente y solo se recalcula lo afectado**, con «qué ha cambiado» diciendo cuántos platos y cuántos puntos.
 - **Los alérgenos de un plato** son la suma de los de sus ingredientes, también los que vienen de una elaboración.

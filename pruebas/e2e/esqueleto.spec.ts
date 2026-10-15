@@ -47,7 +47,8 @@ const LAS_OCHO = [
  * añada su línea, que es exactamente cuando hay que mirar si lo que enseña la
  * pantalla vacía sigue siendo verdad.
  */
-const APPS_CON_CONTENIDO = ['almacen', 'calendario', 'equipo', 'servicio', 'negocio'];
+// La Carta, desde M9 · 1 (0086): la carta y sus canales.
+const APPS_CON_CONTENIDO = ['almacen', 'carta', 'calendario', 'equipo', 'servicio', 'negocio'];
 
 /**
  * Abre una pantalla y **espera a que la aplicacion este viva**.

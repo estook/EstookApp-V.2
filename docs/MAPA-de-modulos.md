@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **M8 · Inventario, mermas y desviación** ([su plan](m8-inventario-mermas-y-desviacion.md), [0078](decisiones/0078-las-respuestas-de-m8.md)): contestado; **la primera entrega en producción** y **la segunda construida** en su pull request ([0079](decisiones/0079-lo-gastado-y-la-desviacion.md)). **«Antes de M8» está entero en producción** desde el 8-oct, con **A4 · Ventas del admin** la última ([`a4-ventas.md`](a4-ventas.md), [0077](decisiones/0077-a4-las-ventas.md)); lo que fue, en [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y [`panel-de-administracion.md`](panel-de-administracion.md). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+Estás en **M9 · Escandallos**, en su primera entrega, **M9 · 1 · El plato y tu carta** ([el plan](m9-escandallos.md), contestado en la [0086](decisiones/0086-las-respuestas-de-m9.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -48,11 +48,11 @@ Inventario cíclico, almacén valorado, mermas en tres toques, consumo de person
 
 ### M9 · Escandallos
 
-El corazón. Fichas anidables con detección de ciclos, dos caras —producto y elaboración—, versionado, alérgenos y nutrición calculados, y el **modo cocina** a pantalla completa sin importes. Todo lo que hace especial al TPV después sale de aquí.
+El corazón. **Contestado el 15-oct** ([0086](decisiones/0086-las-respuestas-de-m9.md)) y en tres entregas: **M9 · 1 · El plato y tu carta** —secciones, platos, los canales con su precio a mano (Uber Eats el primero) y el historial de cada plato—, adelantada de M10 para que el plato nazca donde va a vivir; **M9 · 2 · Fichas y escandallos** —«sin ficha», fichas anidables con detección de ciclos y su rendimiento, el escandallo con el margen por canal, alérgenos calculados, el modo cocina sin importes y la ficha en PDF, con una receta a la vista y su historial—; y **M9 · 3** —escalar, extras, «ya la sé», la hoja de producción y el QR—. Todo lo que hace especial al TPV después sale de aquí.
 
 ### M10 · Carta, menús y análisis
 
-Canales con sus listas de precio y comisiones, el constructor por secciones, menús con reparto de precio, y el análisis de rentabilidad. **Sin esto no hay TPV**, porque es la carta que se va a picar.
+Lo que queda de la carta tras la 0086: agotados, el orden como se imprime, menús con reparto de precio, el menú del día, el análisis de rentabilidad por canal, leer la carta subida y el precio al cierre de caja. **Sin esto no hay TPV**, porque es la carta que se va a picar.
 
 ### M11 · Documentos y diseños
 

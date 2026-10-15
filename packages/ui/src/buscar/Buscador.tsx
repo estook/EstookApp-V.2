@@ -58,6 +58,7 @@ const NOMBRE_DEL_TIPO: Readonly<Record<string, string>> = {
   area: 'Zona',
   pedido: 'Pedido',
   factura: 'Factura',
+  plato: 'Plato',
 };
 
 export interface BuscadorProps {

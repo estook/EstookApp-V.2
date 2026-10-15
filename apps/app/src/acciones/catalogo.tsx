@@ -103,6 +103,16 @@ export const ACCIONES: readonly Accion[] = [
     ir: '/almacen/productos/todo?hacer=nuevo',
   },
   {
+    // M9 · 1 (0086): la carta se monta de golpe, fila a fila.
+    id: 'nuevos-platos',
+    app: 'carta',
+    nombre: 'Añadir platos a la carta',
+    queHace: 'Nombre y precio, fila a fila, en la sección que elijas',
+    icono: IconoAnadir,
+    permiso: { cual: 'app.carta', como: 'editar' },
+    ir: '/carta/carta/por-secciones?hacer=nuevo',
+  },
+  {
     id: 'que-atender',
     app: 'almacen',
     nombre: 'Ver qué hay que atender',

@@ -181,6 +181,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
   */
   const almacen = apps.find((app) => app.id === 'almacen');
   const equipo = apps.find((app) => app.id === 'equipo');
+  const carta = apps.find((app) => app.id === 'carta');
   const localDeAhora = yo?.local?.id ?? null;
 
   const { encontrados, abiertosAntes } = useMemo(() => {
@@ -217,6 +218,16 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
           return () => {
             enSuLocal(fila.local_id, () => {
               navegar(`${rutaDe(almacen, compras, vista)}?${fila.tipo}=${fila.id}`);
+            });
+          };
+        }
+        // Los platos de la carta (0068), con su ficha abierta encima de la carta.
+        case 'plato': {
+          const lasCartas = carta && destinoPorId(carta, 'carta');
+          if (!carta || !lasCartas) return null;
+          return () => {
+            enSuLocal(fila.local_id, () => {
+              navegar(`${rutaDe(carta, lasCartas)}?plato=${fila.id}`);
             });
           };
         }
@@ -278,7 +289,17 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
       // Un reciente que hoy ya no se puede abrir (otro acceso, otra app) no sale.
       abiertosAntes: recientes.flatMap(comoResultado),
     };
-  }, [consulta.data, recientes, personaId, navegar, almacen, equipo, localDeAhora, cambiarDeSitio]);
+  }, [
+    consulta.data,
+    recientes,
+    personaId,
+    navegar,
+    almacen,
+    equipo,
+    carta,
+    localDeAhora,
+    cambiarDeSitio,
+  ]);
 
   const alEscribir = useCallback((valor: string) => {
     setEscrito(valor);

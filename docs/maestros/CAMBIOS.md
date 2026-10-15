@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 15 de octubre** ([0086](../decisiones/0086-las-respuestas-de-m9.md)), sin cambiar de versión: el **Manifiesto** hace de la Carta la dueña del plato y de lo que se vende (14), pone los canales con su precio a mano por plato (9 y 14), quita las versiones a la vista y el comparador por una receta con historial (13), y deja la nutrición para cuando el catálogo traiga los datos (13). El **Plan** adelanta la base de la Carta a M9, que va en tres entregas, añade «Canales» a la Carta (B5) y deja a M10 lo demás.
+
 **El 9 de octubre** ([0079](../decisiones/0079-lo-gastado-y-la-desviacion.md)), sin cambiar de versión: el **Plan** gana la vista «Desviación» en Almacén · Movimientos (B5).
 
 **El 8 de octubre** ([0078](../decisiones/0078-las-respuestas-de-m8.md)), sin cambiar de versión: el **Plan** pasa a M9 la desviación de los platos, la calibración y el food cost teórico, que necesitan las fichas; M8 cuenta y cierra en dos pasos, se entrega en dos veces y cambia su «Terminado cuando»; y Productos gana la vista «Valor» (B5).

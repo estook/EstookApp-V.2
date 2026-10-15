@@ -122,6 +122,20 @@ export function claveDeLaFoto(
 }
 
 /**
+ * La clave de la foto de un plato (M9 · 1, 0086): en el mismo cubo que las de
+ * producto, bajo `platos/`, con la misma foto y la misma miniatura.
+ */
+export function claveDeLaFotoDePlato(
+  localId: string,
+  platoId: string,
+  cual: 'foto' | 'miniatura',
+  extension: string,
+  ahora: Date,
+): string {
+  return `${CUBO_DE_LAS_FOTOS}/${localId}/platos/${platoId}/${cual}-${ahora.getTime()}.${extension}`;
+}
+
+/**
  * La clave de la foto de una merma (M8 · 0079): en el mismo cubo que las de producto,
  * que ya existe, bajo `mermas/`. Lleva el movimiento, que es de lo que es prueba.
  */

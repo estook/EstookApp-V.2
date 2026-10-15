@@ -11,9 +11,13 @@ import {
   Cargando,
   Envoltorio,
   ErrorEnCristiano,
+  Interruptor,
   PanelLateral,
   Selector,
+  clases,
 } from '@estook/ui';
+import { IconoDesvincular, IconoEscandallos, IconoPicante, IconoVincular } from '@estook/iconos';
+import { puedeEditar, puedeVer } from '@estook/permisos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
@@ -29,6 +33,10 @@ import {
   type UnCanal,
 } from './contrato.ts';
 import { usarRefrescarLaCarta } from '../ganchos/usarRefrescarLaCarta.ts';
+import { usarRefrescarLasFichas } from '../ganchos/usarRefrescarLasFichas.ts';
+import { ElegirAlergenos, LosAlergenos } from '../escandallos/Alergenos.tsx';
+import { VincularAlAlmacen } from '../escandallos/VincularAlAlmacen.tsx';
+import { losAlergenosDe } from './contrato.ts';
 
 /**
  * La ficha de un plato en la Carta (M9 · 1, decisión 0086).
@@ -142,6 +150,24 @@ function ParaEditar({
   const [precios, setPrecios] = useState<Partial<Record<CanalDeVenta, number | null>>>(
     plato.precios,
   );
+  // Lo que la carta le dice al cliente (0087).
+  const [unidades, setUnidades] = useState(
+    plato.unidadesPorRacion === null ? '' : String(plato.unidadesPorRacion),
+  );
+  const [alergenos, setAlergenos] = useState<readonly string[]>(plato.alergenos);
+  const [picante, setPicante] = useState(plato.picante);
+  const [distintivos, setDistintivos] = useState<readonly string[]>(plato.distintivos);
+  const [vinculando, setVinculando] = useState(false);
+  const { permisos } = usarSesion();
+  const refrescarLasFichas = usarRefrescarLasFichas();
+  const puedeVincular =
+    puedeEditar(permisos, 'app.escandallos') && puedeVer(permisos, 'app.almacen');
+  const unidadesLeidas = unidades.trim() === '' ? null : Number.parseInt(unidades, 10);
+  const unidadesMal =
+    unidadesLeidas !== null &&
+    (!Number.isInteger(unidadesLeidas) || unidadesLeidas < 1 || unidadesLeidas > 99);
+  const mismaLista = (a: readonly string[], b: readonly string[]) =>
+    [...a].sort().join(',') === [...b].sort().join(',');
   const [trabajando, setTrabajando] = useState<'guardando' | 'archivando' | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
@@ -155,7 +181,11 @@ function ParaEditar({
     seccion !== (plato.seccionId ?? '') ||
     descripcion.trim() !== (plato.descripcion ?? '') ||
     precio !== plato.precioCentimos ||
-    Object.keys(preciosCambiados).length > 0;
+    Object.keys(preciosCambiados).length > 0 ||
+    unidadesLeidas !== plato.unidadesPorRacion ||
+    !mismaLista(alergenos, plato.alergenos) ||
+    picante !== plato.picante ||
+    !mismaLista(distintivos, plato.distintivos);
 
   async function guardar() {
     setTrabajando('guardando');
@@ -173,6 +203,12 @@ function ParaEditar({
         : { descripcion: descripcion.trim() === '' ? null : descripcion.trim() }),
       ...(precio === plato.precioCentimos ? {} : { precio_centimos: precio }),
       ...(Object.keys(preciosCambiados).length === 0 ? {} : { precios: preciosCambiados }),
+      ...(unidadesLeidas === plato.unidadesPorRacion
+        ? {}
+        : { unidades_por_racion: unidadesLeidas }),
+      ...(mismaLista(alergenos, plato.alergenos) ? {} : { alergenos }),
+      ...(picante === plato.picante ? {} : { picante }),
+      ...(mismaLista(distintivos, plato.distintivos) ? {} : { distintivos }),
     });
     setTrabajando(null);
     if (!respuesta.ok) {
@@ -308,6 +344,116 @@ function ParaEditar({
         )}
       </section>
 
+      {(puedeVincular || puedeVer(permisos, 'app.escandallos')) && (
+        <ElVinculo
+          plato={plato}
+          puedeVincular={puedeVincular}
+          puedeVerLaFicha={puedeVer(permisos, 'app.escandallos')}
+          alVincular={() => {
+            setVinculando(true);
+          }}
+          alQuitar={async () => {
+            const respuesta = await cliente.ejecutar('vincular_plato', {
+              plato_id: plato.id,
+              producto_id: null,
+            });
+            if (!respuesta.ok) {
+              setError(respuesta.error);
+              return;
+            }
+            setHecho('Desvinculado');
+            await refrescarLasFichas();
+          }}
+          alVerLaFicha={() => {
+            navegar(`/escandallos/fichas/todas?ficha=plato.${plato.id}`);
+          }}
+        />
+      )}
+
+      <details
+        open={
+          plato.alergenos.length > 0 ||
+          plato.picante > 0 ||
+          plato.distintivos.length > 0 ||
+          plato.unidadesPorRacion !== null ||
+          undefined
+        }
+        className="rounded-grande border border-borde"
+      >
+        <summary className="flex min-h-toque cursor-pointer items-center gap-e2 px-e3 text-secundario font-semibold text-texto-suave">
+          Alérgenos, picante y más
+        </summary>
+        <div className="flex flex-col gap-e4 px-e3 pb-e3">
+          <ElegirAlergenos
+            puestos={alergenos}
+            deLaReceta={plato.alergenosDeLaReceta}
+            alCambiar={setAlergenos}
+          />
+          {plato.alergenosDeLaReceta.length > 0 && (
+            <p className="text-etiqueta text-texto-suave">
+              Los marcados por su receta no se quitan desde aquí.
+            </p>
+          )}
+          <div className="flex flex-col gap-e2">
+            <span className="text-secundario font-medium text-texto-suave">Picante</span>
+            <div role="radiogroup" aria-label="Picante" className="flex flex-wrap gap-e2">
+              {[0, 1, 2, 3].map((nivel) => (
+                <button
+                  key={nivel}
+                  type="button"
+                  role="radio"
+                  aria-checked={picante === nivel}
+                  aria-label={nivel === 0 ? 'No pica' : `Picante ${String(nivel)} de 3`}
+                  onClick={() => {
+                    setPicante(nivel);
+                  }}
+                  className={clases(
+                    'flex min-h-toque min-w-[3.5rem] items-center justify-center gap-[1px] rounded-medio border px-e3 text-secundario',
+                    picante === nivel
+                      ? 'border-texto bg-fondo font-semibold'
+                      : 'border-borde text-texto-suave',
+                  )}
+                >
+                  {nivel === 0
+                    ? 'No'
+                    : Array.from({ length: nivel }, (_, i) => (
+                        <IconoPicante key={i} size={18} className="text-[#C62828]" />
+                      ))}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-e3">
+            <Interruptor
+              etiqueta="Vegetariano"
+              puesto={distintivos.includes('vegetariano') || distintivos.includes('vegano')}
+              disabled={distintivos.includes('vegano')}
+              alCambiar={(puesto) => {
+                setDistintivos(puesto ? ['vegetariano'] : []);
+              }}
+            />
+            <Interruptor
+              etiqueta="Vegano"
+              puesto={distintivos.includes('vegano')}
+              alCambiar={(puesto) => {
+                setDistintivos(puesto ? ['vegano'] : []);
+              }}
+            />
+          </div>
+          <Campo
+            etiqueta="Unidades por ración"
+            inputMode="numeric"
+            value={unidades}
+            detras="ud"
+            ayuda="Si se dice en la carta: «8 croquetas»."
+            onChange={(evento) => {
+              setUnidades(evento.target.value.replace(/\D/g, ''));
+            }}
+            {...(unidadesMal ? { error: 'Entre 1 y 99' } : {})}
+          />
+        </div>
+      </details>
+
       <Botones>
         <Boton
           tono="texto"
@@ -321,7 +467,7 @@ function ParaEditar({
         </Boton>
         <Boton
           tono="principal"
-          disabled={!hayCambios || nombre.trim() === ''}
+          disabled={!hayCambios || nombre.trim() === '' || unidadesMal}
           cargando={trabajando === 'guardando'}
           textoCargando="Guardando"
           onClick={() => {
@@ -333,6 +479,81 @@ function ParaEditar({
       </Botones>
 
       <Historial datos={datos} carta={carta} abierto={conHistorial} alCambiar={alVerHistorial} />
+
+      {vinculando && (
+        <VincularAlAlmacen
+          platoId={plato.id}
+          nombre={plato.nombre}
+          alCerrar={() => {
+            setVinculando(false);
+          }}
+          alHecho={(frase) => {
+            setVinculando(false);
+            setHecho(frase);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── El vínculo con el Almacén, y la ficha ────────────────────────────────────
+
+function ElVinculo({
+  plato,
+  puedeVincular,
+  puedeVerLaFicha,
+  alVincular,
+  alQuitar,
+  alVerLaFicha,
+}: {
+  readonly plato: ElPlato['plato'];
+  readonly puedeVincular: boolean;
+  readonly puedeVerLaFicha: boolean;
+  readonly alVincular: () => void;
+  readonly alQuitar: () => Promise<void>;
+  readonly alVerLaFicha: () => void;
+}) {
+  const [quitando, setQuitando] = useState(false);
+  if (plato.vinculadoA !== null) {
+    return (
+      <div className="flex items-center gap-e3 rounded-grande bg-fondo px-e3 py-e2">
+        <IconoVincular size={18} className="shrink-0 text-texto-suave" />
+        <span className="min-w-0 flex-1 text-secundario">
+          Vinculado a <strong className="font-semibold">{plato.vinculadoA.nombre}</strong>
+        </span>
+        {puedeVincular && (
+          <Boton
+            tono="texto"
+            tamano="s"
+            icono={<IconoDesvincular size={16} />}
+            cargando={quitando}
+            textoCargando="Quitando"
+            onClick={() => {
+              setQuitando(true);
+              void alQuitar().finally(() => {
+                setQuitando(false);
+              });
+            }}
+          >
+            Quitar
+          </Boton>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-wrap gap-e2">
+      {!plato.tieneFicha && puedeVincular && (
+        <Boton tono="secundario" icono={<IconoVincular size={18} />} onClick={alVincular}>
+          Vincular
+        </Boton>
+      )}
+      {puedeVerLaFicha && (
+        <Boton tono="secundario" icono={<IconoEscandallos size={18} />} onClick={alVerLaFicha}>
+          {plato.tieneFicha ? 'Su ficha' : 'Desgranar'}
+        </Boton>
+      )}
     </div>
   );
 }
@@ -341,6 +562,8 @@ function ParaEditar({
 
 function ParaMirar({ datos, carta }: { readonly datos: ElPlato; readonly carta: MiCarta }) {
   const plato = datos.plato;
+  const { permisos } = usarSesion();
+  const navegar = useNavigate();
   return (
     <div className="flex flex-col gap-e4 pt-e3">
       {plato.foto !== null && (
@@ -354,6 +577,16 @@ function ParaMirar({ datos, carta }: { readonly datos: ElPlato; readonly carta: 
         {nombreDeLaSeccion(carta)(plato.seccionId)}
       </p>
       {plato.descripcion !== null && <p className="text-cuerpo">{plato.descripcion}</p>}
+      <LosAlergenos
+        alergenos={losAlergenosDe(plato)}
+        picante={plato.picante}
+        distintivos={plato.distintivos}
+        lado={26}
+        conNombre
+      />
+      {plato.unidadesPorRacion !== null && (
+        <p className="text-secundario text-texto-suave">{plato.unidadesPorRacion} ud por ración</p>
+      )}
       <dl className="flex flex-col gap-e2">
         <div className="flex justify-between gap-e3">
           <dt className="text-texto-suave">Sala</dt>
@@ -368,6 +601,17 @@ function ParaMirar({ datos, carta }: { readonly datos: ElPlato; readonly carta: 
           </div>
         ))}
       </dl>
+      {plato.tieneFicha && puedeVer(permisos, 'app.escandallos') && (
+        <Boton
+          tono="secundario"
+          icono={<IconoEscandallos size={18} />}
+          onClick={() => {
+            navegar(`/escandallos/fichas/todas?ficha=plato.${plato.id}`);
+          }}
+        >
+          Ver la ficha
+        </Boton>
+      )}
     </div>
   );
 }

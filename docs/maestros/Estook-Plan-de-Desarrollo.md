@@ -283,7 +283,7 @@ Y sus vistas, donde las hay:
 | Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
 | Almacén · Movimientos   | Inventario · Historial · Consumo                                    |
 | Almacén · Compras       | Pedidos · Facturas · Proveedores                                    |
-| Escandallos · Fichas    | Todas · Bajo objetivo · Sin coste                                   |
+| Escandallos · Fichas    | Todas · Sin ficha · Bajo objetivo                                   |
 | Carta · Carta           | Por secciones · Todos los platos · Agotados                         |
 | Carta · Análisis        | Matriz · Por canal · Histórico                                      |
 | Calendario · Calendario | Mes · Semana · Día                                                  |
@@ -582,6 +582,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 ### M9 · Escandallos
 
 **Contestado el 15-oct** ([decisión 0086](../decisiones/0086-las-respuestas-de-m9.md)): **la base de la Carta se adelanta a M9**, y M9 va en tres entregas —**M9 · 1 · El plato y tu carta** (secciones, platos, canales con su precio a mano, el historial del plato y el buscador), **M9 · 2 · Fichas y escandallos** («sin ficha», lo que lleva cada plato y cada elaboración, el escandallo con el margen por canal, alérgenos, modo cocina y la ficha en PDF) y **M9 · 3** (escalar, extras, «ya la sé», la hoja de producción con el stock de las elaboraciones y la ficha con QR)—. La receta, **sin versiones a la vista**, con historial; **sin nutrición** hasta que el catálogo traiga los datos; y la desviación de los platos se construye y **se enseña con el TPV**. Donde lo de abajo dice otra cosa, manda la 0086.
+
+**M9 · 2 · Fichas y escandallos, construida el 16-oct** ([0087](../decisiones/0087-fichas-y-escandallos.md)): «sin ficha», las fichas y las elaboraciones con lo que rinden, el escandallo con el margen por canal, los alérgenos, el modo cocina, la ficha en PDF, el historial con «Recuperar» y la desviación de los platos construida (se enseña con el TPV). La Carta gana **vincular lo que se vende tal cual**, las unidades de la ración, los alérgenos, el picante y lo vegetariano. **«Qué ha cambiado»** va con M9 · 3.
 
 **Entra.** **El plato y la carta** (secciones, precios por canal y canales con su comisión, adelantados de M10 por la 0086) · elaboraciones anidables con detección de ciclos y su rendimiento · ficha en dos caras · extras y sustituciones · **una receta a la vista con historial y recuperar** · escalado de gramajes · **modo cocina** a pantalla completa, sin importes y en el idioma del cocinero · modo aprendizaje · alérgenos calculados · hoja de producción del día · borrador de ficha propuesto por Fogón · indicador de cobertura de fichas · grafo de recálculo · ficha impresa con QR a la versión viva.
 

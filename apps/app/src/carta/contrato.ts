@@ -1,4 +1,9 @@
-import { CANALES_DE_VENTA, type CanalDeVenta } from '@estook/dominio';
+import {
+  CANALES_DE_VENTA,
+  NOMBRE_DEL_ALERGENO,
+  type Alergeno,
+  type CanalDeVenta,
+} from '@estook/dominio';
 import { comoDinero } from '../almacen/contrato.ts';
 
 /**
@@ -37,6 +42,19 @@ export interface UnPlato {
   readonly orden: number;
   readonly activo: boolean;
   readonly version: number;
+  /** Lo que la carta le dice al cliente (0087). */
+  readonly unidadesPorRacion: number | null;
+  readonly alergenos: readonly Alergeno[];
+  readonly alergenosDeLaReceta: readonly Alergeno[];
+  readonly picante: number;
+  readonly distintivos: readonly string[];
+  readonly vinculadoA: { readonly id: string; readonly nombre: string } | null;
+  readonly tieneFicha: boolean;
+}
+
+/** Los alérgenos que lleva un plato: los de su receta y los puestos a mano. */
+export function losAlergenosDe(plato: UnPlato): readonly Alergeno[] {
+  return [...new Set([...plato.alergenosDeLaReceta, ...plato.alergenos])];
 }
 
 export interface MiCarta {
@@ -99,6 +117,29 @@ export function queCambio(
       return `Sección: ${nombreDeLaSeccion(typeof de === 'string' ? de : null)} → ${nombreDeLaSeccion(typeof a === 'string' ? a : null)}`;
     }
     if (clave === 'descripcion') return 'Cambió la descripción';
+    if (clave === 'unidades') {
+      return typeof a === 'number' ? `Ración: ${String(a)} ud` : 'Quitó las unidades de la ración';
+    }
+    if (clave === 'picante') {
+      return Number(a) === 0 ? 'Ya no pica' : `Picante: ${String(a)} de 3`;
+    }
+    if (clave === 'alergenos') {
+      const lista = Array.isArray(a) ? (a as Alergeno[]) : [];
+      return lista.length === 0
+        ? 'Quitó los alérgenos puestos a mano'
+        : `Alérgenos: ${lista.map((x) => NOMBRE_DEL_ALERGENO[x]).join(', ')}`;
+    }
+    if (clave === 'distintivos') {
+      const lista = Array.isArray(a) ? (a as string[]) : [];
+      return lista.length === 0
+        ? 'Ni vegetariano ni vegano'
+        : lista.includes('vegano')
+          ? 'Vegano'
+          : 'Vegetariano';
+    }
+    if (clave === 'vinculo') {
+      return typeof a === 'string' ? `Lo vinculó a ${a}` : 'Lo desvinculó del Almacén';
+    }
     if (clave === 'foto') return a === 'quitada' ? 'Quitó la foto' : 'Puso la foto';
     return `Cambió ${clave}`;
   });

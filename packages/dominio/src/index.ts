@@ -215,6 +215,46 @@ export {
 } from './canales.ts';
 export type { CanalDeVenta, ComoEsElCanal } from './canales.ts';
 
+// ── M9 · 2 · las fichas y el escandallo (0087) ───────────────────────────────
+export {
+  DESVIACION_DE_LOS_PLATOS_A_LA_VISTA,
+  aCentimos,
+  aDiezCentimosHaciaArriba,
+  alergenosDeLaReceta,
+  comoSeLeeLaCantidad,
+  convertir,
+  costeDeLaReceta,
+  costePorUnidadDeLaElaboracion,
+  desviacionDeLosPlatos,
+  enMilesimasEnteras,
+  escandalloDelPlato,
+  juntarLoRepetido,
+  loQueDebiaGastarse,
+  mediaEnPuntos,
+  parteDelCoste,
+  queCambioEnLaReceta,
+  seLlevaASiMisma,
+  sonCompatibles,
+  unidadParaEscribir,
+  unidadesQueSirven,
+} from './escandallo.ts';
+export type {
+  CanalParaElMargen,
+  CosteDeUnaLinea,
+  CosteDeUnaReceta,
+  DesviacionDeUnProducto,
+  ElaboracionDelEscandallo,
+  EscandalloDelPlato,
+  LibroDeRecetas,
+  LineaDelEscandallo,
+  LineaQueSeEscribe,
+  LineaQueSeLee,
+  MargenEnUnCanal,
+  ProductoDelEscandallo,
+  RecetaQueSeLee,
+  VendidoConSuReceta,
+} from './escandallo.ts';
+
 // ── Entrega O · lo de hoy, por urgencia (0047) ───────────────────────────────
 export { NOMBRE_DEL_ESCALON, loDeHoy, ordenarLoDeHoy } from './hoy.ts';
 export type { Escalon, AppDeLoDeHoy, CosaDeHoy, LoQueHayHoy, MiTurnoDeHoy } from './hoy.ts';

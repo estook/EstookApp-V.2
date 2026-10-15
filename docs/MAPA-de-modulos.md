@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **M9 · Escandallos**, en su primera entrega, **M9 · 1 · El plato y tu carta** ([el plan](m9-escandallos.md), contestado en la [0086](decisiones/0086-las-respuestas-de-m9.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+Estás en **M9 · Escandallos**, en su segunda entrega, **M9 · 2 · Fichas y escandallos** ([0087](decisiones/0087-fichas-y-escandallos.md); [el plan](m9-escandallos.md), contestado en la [0086](decisiones/0086-las-respuestas-de-m9.md)). La primera, **M9 · 1 · El plato y tu carta**, está en producción desde el 15-oct. **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -48,7 +48,7 @@ Inventario cíclico, almacén valorado, mermas en tres toques, consumo de person
 
 ### M9 · Escandallos
 
-El corazón. **Contestado el 15-oct** ([0086](decisiones/0086-las-respuestas-de-m9.md)) y en tres entregas: **M9 · 1 · El plato y tu carta** —secciones, platos, los canales con su precio a mano (Uber Eats el primero) y el historial de cada plato—, adelantada de M10 para que el plato nazca donde va a vivir; **M9 · 2 · Fichas y escandallos** —«sin ficha», fichas anidables con detección de ciclos y su rendimiento, el escandallo con el margen por canal, alérgenos calculados, el modo cocina sin importes y la ficha en PDF, con una receta a la vista y su historial—; y **M9 · 3** —escalar, extras, «ya la sé», la hoja de producción y el QR—. Todo lo que hace especial al TPV después sale de aquí.
+El corazón. **Contestado el 15-oct** ([0086](decisiones/0086-las-respuestas-de-m9.md)) y en tres entregas: **M9 · 1 · El plato y tu carta** —secciones, platos, los canales con su precio a mano (Uber Eats el primero) y el historial de cada plato—, adelantada de M10 para que el plato nazca donde va a vivir; **M9 · 2 · Fichas y escandallos** —«sin ficha», fichas anidables con detección de ciclos y su rendimiento, el escandallo con el margen por canal, alérgenos calculados, el modo cocina sin importes y la ficha en PDF, con una receta a la vista y su historial—; y **M9 · 3** —escalar, extras, «ya la sé», la hoja de producción, el QR y «qué ha cambiado»—. **M9 · 2, construida el 16-oct** ([0087](decisiones/0087-fichas-y-escandallos.md)), con la carta que vincula lo que se vende tal cual y dice sus alérgenos y lo que pica. Todo lo que hace especial al TPV después sale de aquí.
 
 ### M10 · Carta, menús y análisis
 

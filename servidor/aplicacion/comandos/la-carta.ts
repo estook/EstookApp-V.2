@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CANALES_DE_VENTA, CODIGOS_DE_CANAL, type CanalDeVenta } from '@estook/dominio';
+import { ALERGENOS, CANALES_DE_VENTA, CODIGOS_DE_CANAL, type CanalDeVenta } from '@estook/dominio';
 import {
   TIPOS_DE_FOTO,
   TOPE_DE_LA_FOTO,
@@ -10,6 +10,9 @@ import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
 import { elLocalDeLaCarta } from '../consultas/mi-carta.ts';
+import { loQuePuede } from '../lo-que-puede.ts';
+import { comoLista } from '../listas.ts';
+import { vincularUnPlato } from './fichas.ts';
 
 /**
  * La carta (M9 · 1, decisión 0086): secciones, platos, canales y precios.
@@ -201,6 +204,8 @@ const unoNuevo = z
     nombre: nombreDePlato,
     precio_centimos: centimos.nullable().optional(),
     descripcion: z.string().trim().max(500).nullable().optional(),
+    // Desde el Almacén (0087): el plato **es** ese producto, vendido tal cual.
+    producto_id: z.string().uuid().nullable().optional(),
   })
   .strict();
 
@@ -229,6 +234,13 @@ export const crearPlatos = comando<
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaCarta(contexto);
     await laSeccion(contexto, localId, entrada.seccion_id);
+
+    // Vincular es escribir su ficha: hace falta Escandallos para editar (0087).
+    const conVinculo = entrada.platos.some((p) => (p.producto_id ?? null) !== null);
+    if (conVinculo) {
+      const puede = await loQuePuede(contexto, localId, ['app.escandallos']);
+      if (!puede.editar('app.escandallos')) throw new FalloDeAplicacion('sin_permiso');
+    }
 
     const creados: { platoId: string; nombre: string }[] = [];
     const recuperados: { platoId: string; nombre: string }[] = [];
@@ -296,6 +308,9 @@ export const crearPlatos = comando<
         nombre: nuevo.nombre,
         precio: nuevo.precio_centimos ?? null,
       });
+      if ((nuevo.producto_id ?? null) !== null) {
+        await vincularUnPlato(contexto, localId, platoId, nuevo.producto_id ?? null);
+      }
       creados.push({ platoId, nombre: nuevo.nombre });
     }
 
@@ -313,6 +328,18 @@ export const entradaCambiarPlato = z
     precio_centimos: centimos.nullable().optional(),
     // El precio a mano de cada canal; nulo lo quita y vuelve a valer el de sala.
     precios: z.record(z.string(), centimos.nullable()).optional(),
+    // Lo que la carta le dice al cliente (0087): las unidades de la ración, los
+    // alérgenos puestos a mano, cuánto pica y si es vegetariano o vegano.
+    unidades_por_racion: z.number().int().min(1).max(99).nullable().optional(),
+    alergenos: z
+      .array(z.enum(ALERGENOS as unknown as [string, ...string[]]))
+      .max(14)
+      .optional(),
+    picante: z.number().int().min(0).max(3).optional(),
+    distintivos: z
+      .array(z.enum(['vegetariano', 'vegano']))
+      .max(2)
+      .optional(),
   })
   .strict();
 
@@ -325,6 +352,10 @@ interface FilaDelPlato {
   precio_centimos: number | null;
   version: number;
   activo: boolean;
+  unidades_por_racion: number | null;
+  alergenos: string[];
+  picante: number;
+  distintivos: string[];
 }
 
 async function elPlatoParaEscribir(
@@ -334,7 +365,8 @@ async function elPlatoParaEscribir(
 ): Promise<FilaDelPlato> {
   // `for update`: además del candado, aplica las políticas de escribir (0068).
   const filas = await contexto.sql<FilaDelPlato[]>`
-    select nombre, descripcion, seccion_id, precio_centimos, version, activo
+    select nombre, descripcion, seccion_id, precio_centimos, version, activo,
+           unidades_por_racion, alergenos, picante, distintivos
       from estook.plato
      where id = ${platoId}::uuid and local_id = ${localId}::uuid
        for update
@@ -404,6 +436,27 @@ export const cambiarPlato = comando<EntradaCambiarPlato, { platoId: string; vers
     if (entrada.precio_centimos !== undefined) {
       apunta('precio', antes.precio_centimos, entrada.precio_centimos);
     }
+    if (entrada.unidades_por_racion !== undefined) {
+      apunta('unidades', antes.unidades_por_racion, entrada.unidades_por_racion);
+    }
+    if (entrada.picante !== undefined) apunta('picante', antes.picante, entrada.picante);
+    // Las listas, en el orden oficial y sin repetir: así «lo mismo» compara igual.
+    const enOrden = (lista: readonly string[], orden: readonly string[]) =>
+      orden.filter((a) => lista.includes(a));
+    const alergenos =
+      entrada.alergenos === undefined ? antes.alergenos : enOrden(entrada.alergenos, ALERGENOS);
+    const distintivos =
+      entrada.distintivos === undefined
+        ? antes.distintivos
+        : enOrden(entrada.distintivos, ['vegetariano', 'vegano']);
+    if (alergenos.join(',') !== antes.alergenos.join(',')) {
+      eraAntes['alergenos'] = antes.alergenos;
+      cambiado['alergenos'] = alergenos;
+    }
+    if (distintivos.join(',') !== antes.distintivos.join(',')) {
+      eraAntes['distintivos'] = antes.distintivos;
+      cambiado['distintivos'] = distintivos;
+    }
 
     const filas = await contexto.sql<{ version: number }[]>`
       update estook.plato
@@ -411,6 +464,10 @@ export const cambiarPlato = comando<EntradaCambiarPlato, { platoId: string; vers
              descripcion = ${entrada.descripcion === undefined ? antes.descripcion : entrada.descripcion === '' ? null : entrada.descripcion},
              seccion_id = ${entrada.seccion_id === undefined ? antes.seccion_id : entrada.seccion_id}::uuid,
              precio_centimos = ${entrada.precio_centimos === undefined ? antes.precio_centimos : entrada.precio_centimos},
+             unidades_por_racion = ${entrada.unidades_por_racion === undefined ? antes.unidades_por_racion : entrada.unidades_por_racion},
+             alergenos = ${comoLista(alergenos)}::text::text[],
+             picante = ${entrada.picante ?? antes.picante},
+             distintivos = ${comoLista(distintivos)}::text::text[],
              actualizado_en = now()
        where id = ${entrada.plato_id}::uuid
       returning version

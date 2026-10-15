@@ -5,6 +5,7 @@ import {
   COLOR_DE_ESTOOK,
   MONTSERRAT_WOFF2_BASE64,
   colorSeguro,
+  documentoDeLaFicha,
   documentoDelHorario,
   documentoDelInforme,
   documentoDelRegistro,
@@ -177,5 +178,37 @@ describe('el horario de la pared (repaso del 10-oct)', () => {
     expect(documentoDelHorario({ ...datos, cruzaLaMedianoche: true })).toContain(
       'Un tramo que acaba antes de empezar termina al día siguiente.',
     );
+  });
+});
+
+describe('la ficha técnica en PDF (0087)', () => {
+  const pagina = documentoDeLaFicha({
+    marca: MARCA,
+    hechoEl: 'Hecho el 16 de octubre de 2026, 10:00',
+    nombre: 'Hamburguesa <de la casa>',
+    queEs: 'Plato · Principales',
+    foto: null,
+    minutos: 12,
+    racion: null,
+    alergenos: ['Cereales con gluten', 'Huevos'],
+    picante: 2,
+    ingredientes: [
+      { nombre: 'Carne picada', cantidad: '180 g', nota: 'en bola', esElaboracion: false },
+      { nombre: 'Salsa de la casa', cantidad: '30 ml', nota: null, esElaboracion: true },
+    ],
+    pasos: ['Marcar la carne', 'Montar en el pan'],
+    notas: null,
+  });
+
+  it('lleva los gramos, los pasos y los alérgenos', () => {
+    expect(pagina).toContain('180 g');
+    expect(pagina).toContain('Marcar la carne');
+    expect(pagina).toContain('Cereales con gluten');
+    expect(pagina).toContain('Pica · 2 de 3');
+    expect(pagina).toContain('Hamburguesa &lt;de la casa&gt;');
+  });
+
+  it('y ni un euro', () => {
+    expect(pagina).not.toMatch(/€|EUR/);
   });
 });

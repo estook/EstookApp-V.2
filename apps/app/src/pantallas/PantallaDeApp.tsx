@@ -24,6 +24,7 @@ import {
   Almacen,
   CierreDeCaja,
   Carta,
+  Escandallos,
   Delivery,
   ElHorario,
   EquipoHoy,
@@ -258,6 +259,12 @@ function Contenido({
 }) {
   if (app.id === 'almacen' && destino.modulo === undefined) {
     return <Almacen destino={destino.id} vista={vista?.id ?? ''} />;
+  }
+
+  // M9 · 2 (0087): el resumen con «sin ficha», las fichas y las elaboraciones. El
+  // Análisis («qué ha cambiado») es M9 · 3 y cae a su cartel.
+  if (app.id === 'escandallos' && destino.modulo === undefined) {
+    return <Escandallos destino={destino.id} vista={vista?.id ?? ''} />;
   }
 
   // M9 · 1 (0086): la carta y los canales. Menús y Análisis, M10, caen a su cartel.

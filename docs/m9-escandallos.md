@@ -4,6 +4,8 @@
 
 > **Contestado por Richi el 15-oct** ([decisión 0086](decisiones/0086-las-respuestas-de-m9.md)): **1** la base de la Carta se adelanta a M9 · **2A** · **3B** · **4A** · **5C sin versiones a la vista**, con historial · y dos más: **6** los canales en una sección propia, con el precio de cada plato a mano, y **7** primero la carta y después se desgrana. **M9 va en tres entregas**: el plato y tu carta; fichas y escandallos; y lo que la hace una app de verdad. Cada respuesta va debajo de su pregunta; donde este plan dice otra cosa, manda la 0086.
 
+> **M9 · 2 · Fichas y escandallos, construida el 16-oct** ([decisión 0087](decisiones/0087-fichas-y-escandallos.md)): todo lo de la lista de Richi, y en la Carta, vincular lo que se vende tal cual, las unidades de la ración, los alérgenos y el picante. **«Qué ha cambiado» y «empezar desde una receta de referencia» pasan a M9 · 3**, con escalar, extras, «ya la sé», la hoja de producción y el QR.
+
 De dónde sale: M9 en la parte D del [Plan](maestros/Estook-Plan-de-Desarrollo.md), «Escandallos» en el capítulo 13 del [Manifiesto](maestros/Estook-Manifiesto.md), el diseño de Richi de «un plato, tres vistas» ([0049](decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)) y lo que le pasó M8 ([0078](decisiones/0078-las-respuestas-de-m8.md)).
 
 ## Qué es M9, en llano

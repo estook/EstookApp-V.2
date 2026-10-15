@@ -717,7 +717,9 @@ describe('el onboarding, que decide la quinta comprobacion', () => {
 // ── Y lo que M3 dejó hecho sigue hecho ───────────────────────────────────────
 
 describe('M4 no ha roto M3', () => {
-  it('la camarera sigue recibiendo cuatro apps de la rueda', async () => {
+  it('la camarera sigue recibiendo cinco apps de la rueda', async () => {
+    // Escandallos, desde M9 · 2 (0087): la ficha, sin un euro. Richi: «es para
+    // camareros y cocineros sobre todo, pero todos pueden acceder».
     const sara = await base.personaPorCorreo(SARA);
     const local = await base.localPorCodigo('bar-centro');
 
@@ -737,6 +739,7 @@ describe('M4 no ha roto M3', () => {
       'app.calendario',
       'app.carta',
       'app.cuaderno',
+      'app.escandallos',
       'app.fogon',
       'app.panel',
       'app.servicio',

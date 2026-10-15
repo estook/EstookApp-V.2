@@ -803,7 +803,7 @@ _Su navegación: Carta · Canales · Menús · Análisis_
 
 ## Montar la carta
 
-Secciones que se añaden y se ordenan arrastrando. Dentro, platos con nombre, precio, descripción y foto, **y se añaden varios de golpe** —nombre y precio, fila a fila— porque así se pasa una carta de papel. Su ficha, en Escandallos, les da los alérgenos y el coste; mientras no la tienen, salen en «sin ficha». Cada plato se marca **agotado** desde el móvil, en dos toques, y desaparece de la carta digital, del PDF y del análisis. Estook recuerda que hay que marcarlo también en el TPV.
+Secciones que se añaden y se ordenan arrastrando. Dentro, platos con nombre, precio, descripción y foto, **y se añaden varios de golpe** —nombre y precio, fila a fila— porque así se pasa una carta de papel. Su ficha, en Escandallos, les da los alérgenos y el coste; mientras no la tienen, salen en «sin ficha». **Lo que se vende tal cual** —el chuletón, la lata, la botella— **se trae del Almacén de golpe, ya vinculado**, y la carta dice **sus alérgenos con su dibujo, si pica y si es vegetariano o vegano**, y cuántas unidades lleva la ración cuando importa (0087). Cada plato se marca **agotado** desde el móvil, en dos toques, y desaparece de la carta digital, del PDF y del análisis. Estook recuerda que hay que marcarlo también en el TPV.
 
 **Precios por canal.** El mismo café vale 1,30 € en barra, 1,60 € en terraza y 1,80 € en reparto, donde además la plataforma se lleva su comisión. **Los canales tienen su sección** (0086), con todas las plataformas programadas —hoy se activa Uber Eats, que es la que se usa—, su comisión y su envase; y **cada plato lleva su precio a mano en cada canal**, que es como se hace. Activar un canal no lo conecta: recibir sus pedidos es Estook Link.
 

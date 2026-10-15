@@ -1,7 +1,12 @@
 import { z } from 'zod';
-import { CANALES_DE_VENTA, type CanalDeVenta } from '@estook/dominio';
+import { alergenosDeLaReceta, type CanalDeVenta } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
+import { losCanalesDelLocal, type UnCanal } from '../canales-del-local.ts';
+import { elLibroDelLocal, elVinculado, type ElLibro } from '../escandallos.ts';
+
+export { losCanalesDelLocal };
+export type { UnCanal };
 
 /**
  * Tu carta (M9 · 1, decisión 0086): las secciones, los platos y los canales.
@@ -11,19 +16,6 @@ import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
  * La lee quien tiene Carta (el camarero también: la necesita para contestar en
  * sala); **las comisiones y los envases, solo quien la edita**, que es quien los pone.
  */
-
-export interface UnCanal {
-  readonly canal: CanalDeVenta;
-  readonly nombre: string;
-  readonly tipo: 'propio' | 'plataforma';
-  /** Si hoy se puede activar (el catálogo de la app, 0086). */
-  readonly disponible: boolean;
-  readonly activo: boolean;
-  /** Solo a quien edita la carta; a los demás, nulo. */
-  readonly comisionPorcentaje: number | null;
-  readonly envaseCentimos: number | null;
-  readonly comisionHabitual: number | null;
-}
 
 export interface UnaSeccion {
   readonly id: string;
@@ -45,6 +37,20 @@ export interface UnPlato {
   readonly orden: number;
   readonly activo: boolean;
   readonly version: number;
+  /** Cuántas lleva la ración, para el cliente («8 croquetas»), si se dice (0087). */
+  readonly unidadesPorRacion: number | null;
+  /** Los puestos a mano en la carta. */
+  readonly alergenos: readonly string[];
+  /** Los que trae su receta, sumados de sus ingredientes: no se pueden quitar desde aquí. */
+  readonly alergenosDeLaReceta: readonly string[];
+  /** De 0 (nada) a 3 guindillas. */
+  readonly picante: number;
+  /** Vegetariano, vegano. */
+  readonly distintivos: readonly string[];
+  /** Si se vende tal cual un producto del Almacén (el chuletón, la lata): cuál. */
+  readonly vinculadoA: { readonly id: string; readonly nombre: string } | null;
+  /** Si ya está desgranado en Escandallos. */
+  readonly tieneFicha: boolean;
 }
 
 export interface MiCarta {
@@ -72,45 +78,6 @@ export function elLocalDeLaCarta(contexto: Contexto): string {
   return localId;
 }
 
-export async function losCanalesDelLocal(
-  contexto: Contexto,
-  localId: string,
-  conComisiones: boolean,
-): Promise<readonly UnCanal[]> {
-  const filas = await contexto.sql<
-    {
-      canal: CanalDeVenta;
-      activo: boolean;
-      comision_porcentaje: string | null;
-      envase_centimos: number | null;
-    }[]
-  >`
-    select canal::text as canal, activo, comision_porcentaje::text as comision_porcentaje,
-           envase_centimos
-      from estook.canal_de_venta_del_local
-     where local_id = ${localId}::uuid
-  `;
-  const delLocal = new Map(filas.map((f) => [f.canal, f]));
-  return CANALES_DE_VENTA.map((como) => {
-    const suyo = delLocal.get(como.canal);
-    // Sala está siempre; los demás, si se activaron y hoy se pueden tener.
-    const activo = como.canal === 'sala' || (como.disponible && suyo?.activo === true);
-    return {
-      canal: como.canal,
-      nombre: como.nombre,
-      tipo: como.tipo,
-      disponible: como.disponible,
-      activo,
-      comisionPorcentaje:
-        conComisiones && suyo?.comision_porcentaje != null
-          ? Number(suyo.comision_porcentaje)
-          : null,
-      envaseCentimos: conComisiones ? (suyo?.envase_centimos ?? null) : null,
-      comisionHabitual: como.comisionHabitual,
-    };
-  });
-}
-
 interface FilaDePlato {
   id: string;
   seccion_id: string | null;
@@ -123,40 +90,68 @@ interface FilaDePlato {
   activo: boolean;
   version: number;
   precios: Record<string, number> | null;
+  unidades_por_racion: number | null;
+  alergenos: string[];
+  picante: number;
+  distintivos: string[];
 }
 
+/**
+ * Los platos del local, con lo que su receta dice de ellos: si está desgranado, si se
+ * vende tal cual un producto y los alérgenos que trae (0087). `libro` se pasa si ya se
+ * ha leído (Escandallos lo lee con costes); si no, se lee aquí, sin ellos.
+ */
 export async function losPlatos(
   contexto: Contexto,
   localId: string,
   soloEste: string | null = null,
+  libro?: ElLibro,
 ): Promise<readonly UnPlato[]> {
-  const filas = await contexto.sql<FilaDePlato[]>`
-    select p.id, p.seccion_id, p.nombre, p.descripcion, p.precio_centimos,
-           p.foto_clave, p.miniatura_clave, p.orden, p.activo, p.version,
-           (select jsonb_object_agg(pp.canal::text, pp.precio_centimos)
-              from estook.precio_de_plato pp where pp.plato_id = p.id) as precios
-      from estook.plato p
-     where p.local_id = ${localId}::uuid
-       and (${soloEste}::uuid is null or p.id = ${soloEste}::uuid)
-     order by p.orden, p.nombre
-  `;
+  const [filas, elLibro] = await Promise.all([
+    contexto.sql<FilaDePlato[]>`
+      select p.id, p.seccion_id, p.nombre, p.descripcion, p.precio_centimos,
+             p.foto_clave, p.miniatura_clave, p.orden, p.activo, p.version,
+             p.unidades_por_racion, p.alergenos, p.picante, p.distintivos,
+             (select jsonb_object_agg(pp.canal::text, pp.precio_centimos)
+                from estook.precio_de_plato pp where pp.plato_id = p.id) as precios
+        from estook.plato p
+       where p.local_id = ${localId}::uuid
+         and (${soloEste}::uuid is null or p.id = ${soloEste}::uuid)
+       order by p.orden, p.nombre
+    `,
+    libro === undefined ? elLibroDelLocal(contexto, localId, false) : Promise.resolve(libro),
+  ]);
   const firmadas = await firmarLasFotos(
     contexto,
     filas.flatMap((f) => [f.foto_clave, f.miniatura_clave]),
   );
-  return filas.map((f) => ({
-    id: f.id,
-    seccionId: f.seccion_id,
-    nombre: f.nombre,
-    descripcion: f.descripcion,
-    precioCentimos: f.precio_centimos,
-    precios: f.precios ?? {},
-    foto: laFirmada(firmadas, f.foto_clave),
-    miniatura: laFirmada(firmadas, f.miniatura_clave),
-    orden: f.orden,
-    activo: f.activo,
-    version: f.version,
-  }));
+  return filas.map((f) => {
+    const receta = elLibro.recetaDelPlato.get(f.id);
+    const vinculado = elVinculado(receta);
+    return {
+      id: f.id,
+      seccionId: f.seccion_id,
+      nombre: f.nombre,
+      descripcion: f.descripcion,
+      precioCentimos: f.precio_centimos,
+      precios: f.precios ?? {},
+      foto: laFirmada(firmadas, f.foto_clave),
+      miniatura: laFirmada(firmadas, f.miniatura_clave),
+      orden: f.orden,
+      activo: f.activo,
+      version: f.version,
+      unidadesPorRacion: f.unidades_por_racion,
+      alergenos: f.alergenos,
+      alergenosDeLaReceta: [...alergenosDeLaReceta(receta?.lineas ?? [], elLibro.libro)],
+      picante: f.picante,
+      distintivos: f.distintivos,
+      vinculadoA:
+        vinculado === null
+          ? null
+          : { id: vinculado, nombre: elLibro.productos.get(vinculado)?.nombre ?? 'Producto' },
+      tieneFicha: (receta?.lineas.length ?? 0) > 0,
+    };
+  });
 }
 
 export const miCarta = consulta<Record<string, never>, MiCarta>({

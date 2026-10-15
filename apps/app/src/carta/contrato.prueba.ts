@@ -48,6 +48,21 @@ describe('el historial del plato, dicho en cristiano', () => {
   });
 });
 
+describe('lo nuevo de la carta en el historial (0087)', () => {
+  const linea = (antes: Record<string, unknown>, despues: Record<string, unknown>) =>
+    queCambio({ cuando: '', quien: 'Rosa', que: 'cambiar', antes, despues }, () => '');
+
+  it('se dice en cristiano, y nunca «Cambió picante»', () => {
+    expect(linea({ picante: 0 }, { picante: 2 })).toEqual(['Picante: 2 de 3']);
+    expect(linea({ unidades: null }, { unidades: 8 })).toEqual(['Ración: 8 ud']);
+    expect(linea({ alergenos: [] }, { alergenos: ['gluten', 'sesamo'] })).toEqual([
+      'Alérgenos: Cereales con gluten, Granos de sésamo',
+    ]);
+    expect(linea({ distintivos: [] }, { distintivos: ['vegano'] })).toEqual(['Vegano']);
+    expect(linea({ vinculo: null }, { vinculo: 'Chuletón' })).toEqual(['Lo vinculó a Chuletón']);
+  });
+});
+
 describe('los canales que llevan precio propio', () => {
   it('los activos, sin Sala', () => {
     const canal = (c: string, activo: boolean): UnCanal => ({

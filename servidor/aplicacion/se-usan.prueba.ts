@@ -91,6 +91,13 @@ const NO_LAS_LLAMA_NADIE: Readonly<Record<string, string>> = {
   // mantiene sus operaciones dos versiones, no porque falte una pantalla.
   salir_de_la_demostracion: 'M5 unificó las dos salidas en `salir`; esta se queda por el contrato',
 
+  // M9 · 2 (0086, pregunta 3, B): «se construye y se prueba, y se enseña sola cuando la
+  // caja traiga lo vendido plato a plato». Hasta Estook TPV, una desviación con la caja
+  // apuntada a medias asusta y se deja de mirar. La prueban
+  // `la-desviacion-de-los-platos.prueba.ts` y el dominio; la pantalla llega con el TPV.
+  la_desviacion_de_los_platos:
+    'Construida y probada; se enseña con Estook TPV, cuando la caja traiga lo vendido plato a plato (0086 · 3B)',
+
   // `reactivar_producto` **ya no está aquí**, y la razón por la que estuvo es de
   // las que hay que recordar. Decía «su pantalla es la lista de desactivados, que
   // llega con M8», y sonaba razonable. Lo que ocultaba era esto: se podía

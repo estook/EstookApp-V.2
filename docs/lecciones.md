@@ -667,3 +667,16 @@
      que nadie lo viera: se mide y no bloquea (B7). Al tocar la forma de la app se mira
      `pnpm tamano` antes y después, y cada pantalla nueva entra en `lasPantallas.ts`, aparte
      (0084).
+179. **Una ruta nueva en Hono puede apagar las de siempre.** `POST /v1/consultas` al lado de
+     `GET /v1/consultas/:nombre`, con la versión en una expresión regular, dejó al
+     enrutador sin encontrar **ninguna** ruta de `/v1`: un 404 en todo. Lo cazaron las
+     pruebas de la API, no la nueva. Una ruta nueva va con la misma forma que las que hay
+     (`/consultas/varias`) y se pasan las pruebas de la API enteras (0085).
+180. **Lo que se guarda y lo que se lee tienen que ser lo mismo.** La colocación del Panel se
+     guardaba como lista de nombres y se leía como lista de objetos: la primera vez iba
+     bien (no había nada guardado) y desde la segunda el Panel se adelantaba vacío. A mano
+     no se ve, porque a mano se prueba una vez. La prueba recarga dos veces (0085).
+181. **Una prueba que escucha la red empieza a escuchar cuando ha acabado lo de antes.** Al
+     entrar, el lote del Panel sale justo después del saludo; la prueba que contaba lotes
+     tras recargar contaba también ese, y parecía que la app pedía dos veces. Se espera a
+     que la red esté quieta antes de escuchar (0085).

@@ -218,8 +218,8 @@ export function Panel() {
         puestos={mio.puestos}
         editando={editando}
         guardando={mio.guardando}
+        sinEditar={mio.cargando}
         alEditar={(sigue) => {
-          if (mio.cargando) return;
           setEditando(sigue);
           // «Listo» quiere decir guarda: no se deja esperando al reloj de los
           // ochocientos milisegundos.
@@ -233,7 +233,7 @@ export function Panel() {
         tamanosDe={(id) => [widgetPorId(id)?.tamano ?? 'ancho']}
         nombreDe={(id) => widgetPorId(id)?.nombre ?? id}
         alAnadir={() => {
-          if (!mio.cargando) setAnadiendo(true);
+          setAnadiendo(true);
         }}
         pintar={(puesto) => <Widget id={puesto.id} tamano={puesto.tamano} editando={editando} />}
       />

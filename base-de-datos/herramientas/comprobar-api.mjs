@@ -1195,6 +1195,22 @@ try {
       );
       desconocidas.push(...comandosDesconocidos);
 
+      // Y las consultas juntas (0085), que es una ruta y no una consulta: sin token, una
+      // API que la conoce contesta un lote con «sin sesión» dentro; una vieja, un 404.
+      const lote = await fetch(`${raiz}/v1/consultas/varias`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ consultas: [{ nombre: 'mis_locales' }] }),
+      })
+        .then(async (r) => ((await r.json())?.datos?.[0]?.error?.codigo ?? `${r.status}`))
+        .catch(() => 'no_contesta');
+      comprobar(
+        'y junta las consultas del Panel en una petición (0085)',
+        lote === 'sin_sesion',
+        lote === 'sin_sesion' ? '' : `FALTA DESPLEGARLA · contesta «${lote}»`,
+      );
+      if (lote !== 'sin_sesion') desconocidas.push('el lote de consultas');
+
       if (desconocidas.length > 0) {
         console.log('');
         console.log('       La API desplegada va por detras del codigo.');

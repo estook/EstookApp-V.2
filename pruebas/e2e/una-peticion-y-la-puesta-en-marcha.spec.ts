@@ -12,16 +12,22 @@ import { API, ejecutarEnLaApi, entrarEnLaApp, tokenDe } from './en-la-app.ts';
  *   d. **la puesta en marcha** de un local nuevo, que no sale en uno que ya la tiene.
  */
 const ROSA = 'rosa@ejemplo.estook.com';
+/**
+ * Para lo que mira el Panel, Luis (jefe de cocina de Bar Puerto), cuyo Panel no toca
+ * nadie: el de Rosa lo quitan y lo ponen las pruebas del Panel de `esqueleto.spec.ts`,
+ * que corren a la vez (lo cazó la batería entera: la jornada desaparecía a mitad).
+ */
+const LUIS = 'luis@ejemplo.estook.com';
 
-/** Las consultas que el Panel pedía una a una hasta la 0085. */
+/** Las consultas que el Panel de un jefe de cocina pedía una a una hasta la 0085. */
 const DEL_PANEL = [
   'lo_de_hoy',
   'el_tablon',
   'mi_fichaje',
   'almacen_hoy',
-  'un_indicador',
   'mis_objetivos',
   'fichajes_de_hoy',
+  'compras_de_hoy',
   'mi_panel',
   'el_alta',
 ];
@@ -46,7 +52,7 @@ function apuntarLoQueSale(page: Page) {
 
 test.describe('a · el Panel en una sola petición', () => {
   test('al abrirlo, todo lo del Panel viaja junto', async ({ page }) => {
-    await entrarEnLaApp(page, ROSA);
+    await entrarEnLaApp(page, LUIS);
     // Que acabe lo de entrar: su lote sale justo después del saludo, y no es este.
     await expect(page.getByRole('button', { name: 'Fichar la entrada' })).toBeVisible();
     await page.waitForLoadState('networkidle');
@@ -73,7 +79,7 @@ test.describe('a · el Panel en una sola petición', () => {
     await page.route('**/api/v1/consultas/varias', (ruta) =>
       ruta.fulfill({ status: 404, body: '404 Not Found' }),
     );
-    await entrarEnLaApp(page, ROSA);
+    await entrarEnLaApp(page, LUIS);
     await expect(page.getByRole('button', { name: 'Fichar la entrada' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Lo que necesita tu atención' })).toBeVisible();
   });
@@ -81,7 +87,7 @@ test.describe('a · el Panel en una sola petición', () => {
 
 test.describe('b · las siluetas', () => {
   test('mientras llega, cada widget enseña su forma', async ({ page }) => {
-    await entrarEnLaApp(page, ROSA);
+    await entrarEnLaApp(page, LUIS);
     // Se frena el lote para ver lo de mientras.
     let soltar = (): void => undefined;
     const frenado = new Promise<void>((seguir) => {
@@ -93,11 +99,13 @@ test.describe('b · las siluetas', () => {
     });
     await recargarSinQueSeCaiga(page);
 
-    // La jornada es un anillo, las ventas una cifra con su gráfica, los objetivos unos
-    // medidores: cada uno, su silueta. Ninguna «Cargando…» escrita a la vista.
+    // La jornada es un anillo, los objetivos unos medidores, lo bajo mínimo unas barras
+    // de nivel y lo que caduca sus casillas: cada uno, su silueta. Ninguna «Cargando…»
+    // escrita a la vista.
     await expect(page.locator('[data-silueta="anillo"]').first()).toBeVisible();
-    await expect(page.locator('[data-silueta="cifra"]').first()).toBeVisible();
     await expect(page.locator('[data-silueta="medidores"]').first()).toBeVisible();
+    await expect(page.locator('[data-silueta="niveles"]').first()).toBeVisible();
+    await expect(page.locator('[data-silueta="dias"]').first()).toBeVisible();
     await expect(page.getByText('Cargando…')).toHaveCount(0);
 
     soltar();

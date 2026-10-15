@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { crearDespachador, type Puertos } from './despachador.ts';
+import { A_LA_VEZ_EN_UN_LOTE, crearDespachador, type Puertos } from './despachador.ts';
 import { catalogo } from './catalogo.ts';
 import { comando, consulta, FalloDeAplicacion, type Contexto } from './contrato.ts';
 
@@ -234,6 +234,32 @@ describe('varias consultas de una vez', () => {
     expect(enLote).toEqual(sola);
     // Y la que sí se puede leer, llega.
     expect(laLibre?.estado).toBe('ok');
+  });
+
+  it('como mucho seis a la vez, y cada una en su sitio aunque acaben desordenadas', async () => {
+    let dentro = 0;
+    let lasMas = 0;
+    const lenta = consulta<{ n: string }, { n: string }>({
+      nombre: 'una_lenta',
+      entrada: z.object({ n: z.string() }).strict(),
+      async ejecutar(_contexto, { n }) {
+        dentro += 1;
+        lasMas = Math.max(lasMas, dentro);
+        await new Promise((listo) => setTimeout(listo, 20 - Number(n)));
+        dentro -= 1;
+        return { n };
+      },
+    });
+    catalogo.consultas[lenta.nombre] = lenta as never;
+    const { despachador } = bancoDePruebas();
+    const salida = await despachador.consultarVarias(
+      quien,
+      Array.from({ length: 14 }, (_, i) => ({ nombre: 'una_lenta', entrada: { n: String(i) } })),
+    );
+    expect(lasMas).toBe(A_LA_VEZ_EN_UN_LOTE);
+    expect(salida.map((r) => r.estado === 'ok' && (r.datos as { n: string }).n)).toEqual(
+      Array.from({ length: 14 }, (_, i) => String(i)),
+    );
   });
 
   it('sin haber entrado no pasa ninguna', async () => {

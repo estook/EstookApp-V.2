@@ -108,6 +108,14 @@ export interface ConsultaDelLote {
  */
 export { CONSULTAS_POR_LOTE } from '@estook/utiles';
 
+/**
+ * **Cuántas del lote a la vez**: seis, como hacía el navegador con las sueltas (seis
+ * peticiones a la vez por sitio). Todas a la vez cogían todas las conexiones a la base
+ * de su servidor y dejaban esperando a lo demás que llegara; en la batería de pantalla
+ * se vio como entradas que tardaban más de cinco segundos (0085).
+ */
+export const A_LA_VEZ_EN_UN_LOTE = 6;
+
 export interface Despachador {
   consultar(quien: QuienLlama, nombre: string, entrada: unknown): Promise<Resultado>;
   /**
@@ -272,22 +280,34 @@ export function crearDespachador(puertos: Puertos): Despachador {
     movilEncendido: puertos.movilEncendido === true,
 
     async consultarVarias(quien, consultas) {
-      // **Cada una por su camino de siempre**, y a la vez: así no hay una puerta ni un
+      // **Cada una por su camino de siempre**, seis a la vez: así no hay una puerta ni un
       // permiso que se pueda saltar por venir en lote. Un fallo no previsto en una se
       // apunta y sale como «se nos ha roto algo» solo en esa; las demás llegan.
-      return Promise.all(
-        consultas.map(async ({ nombre, entrada }): Promise<Resultado> => {
-          try {
-            return await despachador.consultar(quien, nombre, entrada);
-          } catch (fallo) {
-            await apuntarUnFallo(fallo, {
-              mensaje: `fallo no previsto en ${nombre}, dentro de un lote`,
-              correlacionId: quien.correlacionId,
-            });
-            return { estado: 'fallo', codigo: 'fallo_nuestro' };
-          }
-        }),
+      const una = async ({ nombre, entrada }: ConsultaDelLote): Promise<Resultado> => {
+        try {
+          return await despachador.consultar(quien, nombre, entrada);
+        } catch (fallo) {
+          await apuntarUnFallo(fallo, {
+            mensaje: `fallo no previsto en ${nombre}, dentro de un lote`,
+            correlacionId: quien.correlacionId,
+          });
+          return { estado: 'fallo', codigo: 'fallo_nuestro' };
+        }
+      };
+      const resultados: Resultado[] = new Array<Resultado>(consultas.length);
+      let siguiente = 0;
+      const turno = async (): Promise<void> => {
+        while (siguiente < consultas.length) {
+          const cual = siguiente;
+          siguiente += 1;
+          const consulta = consultas[cual];
+          if (consulta !== undefined) resultados[cual] = await una(consulta);
+        }
+      };
+      await Promise.all(
+        Array.from({ length: Math.min(A_LA_VEZ_EN_UN_LOTE, consultas.length) }, turno),
       );
+      return resultados;
     },
 
     async consultar(quien, nombre, entrada) {

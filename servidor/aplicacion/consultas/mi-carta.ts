@@ -150,7 +150,7 @@ export async function losPlatos(
     nombre: f.nombre,
     descripcion: f.descripcion,
     precioCentimos: f.precio_centimos,
-    precios: (f.precios ?? {}),
+    precios: f.precios ?? {},
     foto: laFirmada(firmadas, f.foto_clave),
     miniatura: laFirmada(firmadas, f.miniatura_clave),
     orden: f.orden,

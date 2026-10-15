@@ -1,3 +1,5 @@
+import { centimos, porFraccion } from './dinero.ts';
+
 /**
  * Los canales de venta (M9 · 1, decisión 0086).
  *
@@ -75,5 +77,6 @@ export function precioEnElCanal(
  */
 export function comisionDe(precioCentimos: number, porcentaje: number | null): number {
   if (porcentaje === null || porcentaje <= 0) return 0;
-  return Math.round((precioCentimos * porcentaje) / 100);
+  // Con el motor del dinero (regla 9): el porcentaje, como fracción.
+  return porFraccion(centimos(precioCentimos), porcentaje / 100);
 }

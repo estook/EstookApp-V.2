@@ -205,6 +205,16 @@ export type {
 // ── Entrega O · la dirección de la carta, la del QR (0047) ──────────────────
 export { DIRECCION_DE_ESTOOK, direccionDeLaCarta, laCartaDeLaDireccion } from './carta.ts';
 
+// ── M9 · 1 · los canales de venta (0086) ─────────────────────────────────────
+export {
+  CANALES_DE_VENTA,
+  CODIGOS_DE_CANAL,
+  comisionDe,
+  comoEsElCanal,
+  precioEnElCanal,
+} from './canales.ts';
+export type { CanalDeVenta, ComoEsElCanal } from './canales.ts';
+
 // ── Entrega O · lo de hoy, por urgencia (0047) ───────────────────────────────
 export { NOMBRE_DEL_ESCALON, loDeHoy, ordenarLoDeHoy } from './hoy.ts';
 export type { Escalon, AppDeLoDeHoy, CosaDeHoy, LoQueHayHoy, MiTurnoDeHoy } from './hoy.ts';

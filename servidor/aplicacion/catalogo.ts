@@ -171,6 +171,21 @@ import { miAcceso } from './consultas/mi-acceso.ts';
 import { miPanel } from './consultas/mi-panel.ts';
 import { lasCaras } from './consultas/las-caras.ts';
 import { laPuestaEnMarcha } from './consultas/la-puesta-en-marcha.ts';
+import { miCarta, unPlato } from './consultas/mi-carta.ts';
+import {
+  archivarPlato,
+  cambiarPlato,
+  cambiarSeccion,
+  configurarCanal,
+  crearPlatos,
+  crearSeccion,
+  ordenarPlatos,
+  ordenarSecciones,
+  ponerFotoDePlato,
+  quitarFotoDePlato,
+  quitarSeccion,
+  recuperarPlato,
+} from './comandos/la-carta.ts';
 import { unIndicador } from './consultas/indicador.ts';
 import { misObjetivos } from './consultas/objetivos.ts';
 import { loDeHoyConsulta } from './consultas/hoy.ts';
@@ -329,6 +344,8 @@ export const catalogo = {
     // Las caras del equipo, firmadas de una vez para toda la app (0084).
     [lasCaras.nombre]: lasCaras,
     [laPuestaEnMarcha.nombre]: laPuestaEnMarcha,
+    [miCarta.nombre]: miCarta,
+    [unPlato.nombre]: unPlato,
     // M6½ · la merma, que el libro sabia guardar y no habia forma de apuntar.
     [mermaDeHoy.nombre]: mermaDeHoy,
     [misMermas.nombre]: misMermas,
@@ -700,5 +717,22 @@ export const catalogo = {
     [darPorBuenoElFichaje.nombre]: darPorBuenoElFichaje,
     [apuntarFichajeQueFalta.nombre]: apuntarFichajeQueFalta,
     [prepararElAparatoSinConexion.nombre]: prepararElAparatoSinConexion,
+
+    // ── M9 · 1 · El plato y tu carta (0086) ──────────────────────────────────
+    //
+    // Las secciones, los platos (de uno en uno o de golpe), su foto, archivarlos, y
+    // los canales con su comisión. Cada cambio de un plato es su historial.
+    [crearSeccion.nombre]: crearSeccion,
+    [cambiarSeccion.nombre]: cambiarSeccion,
+    [ordenarSecciones.nombre]: ordenarSecciones,
+    [quitarSeccion.nombre]: quitarSeccion,
+    [crearPlatos.nombre]: crearPlatos,
+    [cambiarPlato.nombre]: cambiarPlato,
+    [ordenarPlatos.nombre]: ordenarPlatos,
+    [archivarPlato.nombre]: archivarPlato,
+    [recuperarPlato.nombre]: recuperarPlato,
+    [ponerFotoDePlato.nombre]: ponerFotoDePlato,
+    [quitarFotoDePlato.nombre]: quitarFotoDePlato,
+    [configurarCanal.nombre]: configurarCanal,
   } as Record<string, Comando<never, unknown>>,
 };

@@ -166,6 +166,8 @@ describe('buscar · como esta hecha', () => {
       'organizacion_buscable',
       'persona_buscable',
       'persona_correo_buscable',
+      // 0068 · los platos de la carta, que entran en `estook.buscar`.
+      'plato_buscable',
       // M6. El genero y los proveedores, que **si** entran en `estook.buscar`.
       'producto_buscable',
       // M5. El catalogo de referencia son trescientas filas, y «toda lista larga
@@ -221,6 +223,8 @@ describe('buscar · como esta hecha', () => {
       // 0067 · los pedidos y las facturas, por su número o su proveedor.
       'pedidos',
       'facturas',
+      // 0068 · los platos de la carta.
+      'platos',
     ]) {
       // Que el bloque este escrito...
       expect(cuerpo, `falta el bloque «${bloque}» en estook.buscar`).toContain(`${bloque} as (`);

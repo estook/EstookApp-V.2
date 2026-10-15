@@ -18,7 +18,7 @@
 > | Lo legal, y lo ya investigado     | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md) |
 > | Lo que cuesta cada local          | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                         |
 > | Lo que hizo cada entrega          | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                         |
-> | Lo aprendido fallando (181)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
+> | Lo aprendido fallando (183)       | [`docs/lecciones.md`](docs/lecciones.md)                                                     |
 > | Los pasos de Richi                | [`docs/pasos-de-m8.md`](docs/pasos-de-m8.md)                                                 |
 
 ---
@@ -33,7 +33,7 @@
 | **Base**      | Supabase, **66 de 66** migraciones (la 0065 y la 0066, migradas por Richi el 14-oct); la 0067 espera en la pull request (solo la función del buscador). **108 tablas**, todas con seguridad por filas                                                                        |
 | **API**       | Desplegada con la #102 (14-oct): **82 consultas y 176 comandos**, **Sentry encendido**, los avisos al móvil encendidos y el reloj latiendo. Con la 0085, **83 y 176** y el lote (`POST /consultas/varias`)                                                                   |
 | **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                                            |
-| **Pruebas**   | **1.911** unitarias y de base, en verde (14-oct). Las de pantalla, **en local en verde**: 654, y 19 que se saltan a propósito; en GitHub, en la pull request                                                                                                                 |
+| **Pruebas**   | **1.949** unitarias y de base, en verde (15-oct). Las de pantalla, en local: **651 en verde**; 12 fallan solo en la batería entera (comparten el Panel y el local de Rosa) y pasan solas. En GitHub, en la pull request                                                      |
 | **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                                               |
 
 ### El orden ([0061](docs/decisiones/0061-el-orden-y-la-infraestructura.md), y el chat adelantado en la [0067](docs/decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md))

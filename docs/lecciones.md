@@ -680,3 +680,12 @@
      entrar, el lote del Panel sale justo después del saludo; la prueba que contaba lotes
      tras recargar contaba también ese, y parecía que la app pedía dos veces. Se espera a
      que la red esté quieta antes de escuchar (0085).
+182. **Lo que se guarda mientras se lee por primera vez se queda con lo de antes.** TanStack
+     Query no vuelve a pedir lo que aún no tiene dato y va de camino: se queda con esa
+     lectura, que salió antes del cambio. Con consultas que volvían enseguida no se notaba;
+     con el lote, la prueba del Tablón escribía nada más abrir y seguía «Sin avisos». La
+     caché de la app cancela esa lectura y la pide otra vez (`CacheQueNoSeQuedaAtras`, 0085).
+183. **Una prueba que mira el Panel necesita un Panel que nadie más toque.** Rosa se queda
+     sin widgets a mitad (las pruebas del Panel los quitan) y a Luis le sale «¿Dónde estás
+     hoy?» (otra le da un segundo local). Solas pasan; en la batería entera, no. Lo que mira
+     el Panel entero va con una cuenta nueva (0085).

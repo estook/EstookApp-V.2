@@ -34,6 +34,8 @@ Lo pidió Richi el 15-oct, con la #102 en producción («lo he probado y todo ge
 9. Que el buscador guarde **lo abierto y no lo escrito**: lo que se busca dos veces es lo que se abre dos veces, y «salm» no le dice nada a nadie.
 10. Que los estados en el buscador digan **lo mismo que Compras** («Borrador», «Mandado», «Sin comprobar»…).
 
+Y lo que cazó la batería de pantalla entera, ya arreglado: «Editar» salía antes de que se pudiera editar (ahora no sale hasta que llega lo guardado), y **lo que se guarda mientras una pantalla aún lee por primera vez se quedaba con lo de antes** (escribir en el Tablón nada más abrir dejaba «Sin avisos»). Lo segundo pasaba desde siempre y el lote lo hizo más probable; lo arregla la caché de la app para todas las pantallas (`CacheQueNoSeQuedaAtras`).
+
 ## Lo que no se hace, y por qué
 
 - **Juntar también los comandos**: cada comando lleva su clave de idempotencia y su respuesta; juntarlos mezclaría lo que se guarda con lo que no. Al abrir el Panel salen dos (`sigo_aqui` y abrir el chat), que no esperan a nada.

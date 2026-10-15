@@ -1202,7 +1202,7 @@ try {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ consultas: [{ nombre: 'mis_locales' }] }),
       })
-        .then(async (r) => ((await r.json())?.datos?.[0]?.error?.codigo ?? `${r.status}`))
+        .then(async (r) => (await r.json())?.datos?.[0]?.error?.codigo ?? `${r.status}`)
         .catch(() => 'no_contesta');
       comprobar(
         'y junta las consultas del Panel en una petición (0085)',

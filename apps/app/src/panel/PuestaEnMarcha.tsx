@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { puedeVer } from '@estook/permisos';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Anillo, Boton, clases } from '@estook/ui';
 import {
   IconoAlmacen,
@@ -14,6 +13,11 @@ import {
   type Icono,
 } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import {
+  seEnsena,
+  usarLaPuestaEnMarcha,
+  type PasoDeLaPuestaEnMarcha,
+} from '../ganchos/usarLaPuestaEnMarcha.ts';
 
 /**
  * **Pon en marcha tu local** (0085).
@@ -33,13 +37,6 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * paso ve una vez «Tu local ya está en marcha». «No me lo recuerdes más» es el mismo
  * de «Termina de configurar», que esta tarjeta sustituye mientras está a la vista.
  */
-export type PasoDeLaPuestaEnMarcha = 'logo' | 'producto' | 'proveedor' | 'horario' | 'equipo';
-
-export interface LaPuestaEnMarcha {
-  readonly pasos: readonly { readonly paso: PasoDeLaPuestaEnMarcha; readonly hecho: boolean }[];
-  readonly oculta: boolean;
-}
-
 const COMO_ES: Readonly<
   Record<
     PasoDeLaPuestaEnMarcha,
@@ -64,32 +61,6 @@ const COMO_ES: Readonly<
     ir: '/equipo/personas/con-acceso?hacer=invitar',
   },
 };
-
-/**
- * La consulta, para quien la necesite: «Termina de configurar» se aparta mientras sale.
- *
- * **Se vuelve a preguntar cada vez que se vuelve al Panel**: se sale de él a dar un
- * paso —crear el producto, invitar a alguien— y al volver tiene que estar marcado. Con
- * el minuto de siempre, el paso recién dado seguía pendiente (lo cazó su prueba).
- */
-export function usarLaPuestaEnMarcha() {
-  const { cliente, permisos, yo } = usarSesion();
-  return useQuery({
-    queryKey: ['la_puesta_en_marcha', {}],
-    enabled: puedeVer(permisos, 'app.ajustes') && yo?.local !== null && yo?.local !== undefined,
-    refetchOnMount: 'always',
-    queryFn: async (): Promise<LaPuestaEnMarcha> => {
-      const respuesta = await cliente.consultar<LaPuestaEnMarcha>('la_puesta_en_marcha', {});
-      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
-    },
-  });
-}
-
-/** Si está a la vista: con algo que hacer, y sin apagar. */
-export function seEnsena(puesta: LaPuestaEnMarcha | undefined): boolean {
-  return puesta !== undefined && !puesta.oculta && puesta.pasos.some((p) => !p.hecho);
-}
 
 export function PuestaEnMarcha() {
   const { cliente, yo } = usarSesion();
@@ -153,6 +124,18 @@ export function PuestaEnMarcha() {
   const hechos = puesta.pasos.filter((p) => p.hecho).length;
   const cuantos = puesta.pasos.length;
   const local = yo?.local?.nombre ?? 'tu local';
+  const noMeLoRecuerdes = (
+    <Boton
+      tono="texto"
+      cargando={apagar.isPending}
+      textoCargando="Quitando"
+      onClick={() => {
+        apagar.mutate();
+      }}
+    >
+      No me lo recuerdes más
+    </Boton>
+  );
 
   return (
     <section
@@ -177,6 +160,8 @@ export function PuestaEnMarcha() {
             {cuantos - hechos === 1 ? 'Te queda uno' : `Te quedan ${cuantos - hechos}`}
           </p>
         </div>
+        {/* A la derecha del título donde cabe; en el móvil, debajo de los pasos. */}
+        <div className="hidden shrink-0 sm:block">{noMeLoRecuerdes}</div>
       </div>
 
       <ul className="mt-e3 grid gap-e1 sm:grid-cols-2 lg:grid-cols-3">
@@ -220,18 +205,7 @@ export function PuestaEnMarcha() {
         })}
       </ul>
 
-      <div className="mt-e2 flex justify-end">
-        <Boton
-          tono="texto"
-          cargando={apagar.isPending}
-          textoCargando="Quitando"
-          onClick={() => {
-            apagar.mutate();
-          }}
-        >
-          No me lo recuerdes más
-        </Boton>
-      </div>
+      <div className="mt-e2 flex justify-end sm:hidden">{noMeLoRecuerdes}</div>
     </section>
   );
 }

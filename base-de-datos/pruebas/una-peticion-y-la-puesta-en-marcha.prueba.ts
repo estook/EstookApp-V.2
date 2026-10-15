@@ -145,7 +145,7 @@ describe('el buscador encuentra pedidos y facturas', () => {
     expect(encontrados.some((e) => e.id === facturaId)).toBe(true);
     const pedido = encontrados.find((e) => e.id === pedidoId);
     expect(pedido?.titulo).toBe(`Pedido ${numeroDelPedido} · Distribuciones Zubiri`);
-    expect(pedido?.subtitulo).toBe('Sin mandar');
+    expect(pedido?.subtitulo).toBe('Borrador');
   });
 
   it('el cocinero encuentra el pedido, pero no la factura: es dinero', async () => {
@@ -173,9 +173,7 @@ describe('el buscador encuentra pedidos y facturas', () => {
     const encontrados = await buscar(rosa, 'zubiri');
     expect(encontrados.filter((e) => e.tipo === 'pedido')).toHaveLength(3);
     // Pero por su número, el primero sigue saliendo.
-    expect(
-      (await buscar(rosa, String(numeroDelPedido))).some((e) => e.id === pedidoId),
-    ).toBe(true);
+    expect((await buscar(rosa, String(numeroDelPedido))).some((e) => e.id === pedidoId)).toBe(true);
   });
 
   it('un número de una sola cifra se puede buscar; una letra sola, no', async () => {

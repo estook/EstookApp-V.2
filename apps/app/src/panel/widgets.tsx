@@ -43,7 +43,7 @@ import { BotonDePausa } from '../equipo/BotonDePausa.tsx';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { comoSeLeeLaHora, comoSeLeenMinutos, type FichajesDeHoy } from '../equipo/contrato.ts';
-import { usarComoSeCierra } from '../servicio/ComoEntranTusVentas.tsx';
+import { usarComoSeCierra } from '../ganchos/usarComoSeCierra.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { ComprasDeHoy, LoQueViene } from '../compras/contrato.ts';
 import {

@@ -8,7 +8,7 @@ import { FalloDeLaApi } from '../datos/FalloDeLaApi.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
 import type { ElAltaDelLocal } from '../alta/contrato.ts';
-import { seEnsena, usarLaPuestaEnMarcha } from '../panel/PuestaEnMarcha.tsx';
+import { seEnsena, usarLaPuestaEnMarcha } from '../ganchos/usarLaPuestaEnMarcha.ts';
 
 /**
  * Las tarjetas fijas del Panel (M5, recortadas en M6½).

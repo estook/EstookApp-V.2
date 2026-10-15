@@ -190,10 +190,11 @@ as $$
       p.id,
       'Pedido ' || p.numero || ' · ' || pv.nombre as titulo,
       case p.estado
-        when 'borrador' then 'Sin mandar'
+        -- Como los llama Compras (`NOMBRE_DEL_ESTADO_DEL_PEDIDO`).
+        when 'borrador' then 'Borrador'
         when 'enviado' then coalesce('Llega el ' || to_char(p.llega_el, 'DD/MM'), 'Mandado')
-        when 'recibido' then 'Llegado'
-        when 'recibido_con_incidencias' then 'Llegado con incidencias'
+        when 'recibido' then 'Recibido'
+        when 'recibido_con_incidencias' then 'Recibido con incidencias'
         else 'Cancelado'
       end as subtitulo,
       p.local_id,
@@ -223,7 +224,7 @@ as $$
       to_char(f.fecha, 'DD/MM/YYYY') || ' · ' || case f.estado
         when 'conciliada' then 'Cuadra'
         when 'con_diferencia' then 'Con diferencia'
-        else 'Sin cuadrar'
+        else 'Sin comprobar'
       end as subtitulo,
       f.local_id,
       greatest(

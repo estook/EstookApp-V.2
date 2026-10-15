@@ -273,11 +273,11 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
     }
 
     let caducada = false;
-    lote.forEach((una, i) => {
+    for (const [i, una] of lote.entries()) {
       const suya = juntas.datos[i];
-      if (suya?.error === undefined && suya !== undefined) {
+      if (suya !== undefined && suya.error === undefined) {
         una.contestar({ ok: true, datos: suya.datos, correlacionId: juntas.correlacionId });
-        return;
+        continue;
       }
       const error = suya?.error ?? ERRORES.fallo_nuestro;
       opciones.registro?.aviso('la API ha dicho que no', {
@@ -286,7 +286,7 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
       });
       if (error.codigo === 'sin_sesion') caducada = true;
       una.contestar({ ok: false, error, correlacionId: juntas.correlacionId });
-    });
+    }
     // Una vez, aunque lo digan todas: es la misma sesión.
     if (caducada) opciones.alCaducarLaSesion?.();
   }

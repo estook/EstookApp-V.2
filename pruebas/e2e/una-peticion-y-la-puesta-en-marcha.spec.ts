@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { recargarSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, ejecutarEnLaApi, entrarEnLaApp, tokenDe } from './en-la-app.ts';
 
@@ -128,7 +128,7 @@ test.describe('c · el buscador', () => {
     await ejecutarEnLaApi(request, token, 'registrar_factura', {
       proveedor_id: proveedorId,
       numero: numeroDeFactura,
-      fecha: new Date().toISOString().slice(0, 10),
+      fecha: '2026-10-01',
       base_centimos: 9_900,
     });
 
@@ -199,7 +199,7 @@ test.describe('d · la puesta en marcha', () => {
     await ejecutarEnLaApi(request, token ?? '', 'crear_proveedor', { nombre: 'Frutas Paco' });
 
     // De vuelta en el Panel, ese paso está hecho.
-    await page.goto(page.url().replace(/#.*$/, '#/'));
+    await abrirSinQueSeCaiga(page, page.url().replace(/#.*$/, '#/'));
     await expect(puesta).toContainText('1/5');
     await expect(puesta.getByRole('button', { name: /Tus proveedores · hecho/ })).toBeDisabled();
 

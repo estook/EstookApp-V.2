@@ -24,7 +24,7 @@ function respuesta(estado: number, cuerpo: unknown): Response {
 function servidor(lote: (consultas: { nombre: string }[]) => Response) {
   const peticiones: Peticion[] = [];
   const pedir = vi.fn((url: string, init?: RequestInit) => {
-    const cuerpo: unknown = init?.body === undefined ? undefined : JSON.parse(String(init.body));
+    const cuerpo: unknown = typeof init?.body === 'string' ? JSON.parse(init.body) : undefined;
     peticiones.push({ url, metodo: init?.method ?? 'GET', cuerpo });
     if (url.endsWith('/consultas/varias')) {
       return Promise.resolve(lote((cuerpo as { consultas: { nombre: string }[] }).consultas));
@@ -96,9 +96,9 @@ describe('lo que se pide a la vez viaja junto', () => {
     const { pedir, peticiones } = servidor(ELLAS);
     const cliente = crearCliente({ base: 'https://api', pedir, juntar: true });
     await Promise.all(Array.from({ length: 30 }, (_, i) => cliente.consultar(`c${i}`)));
-    expect(peticiones.map((p) => (p.cuerpo as { consultas: unknown[] }).consultas.length)).toEqual(
-      [24, 6],
-    );
+    expect(peticiones.map((p) => (p.cuerpo as { consultas: unknown[] }).consultas.length)).toEqual([
+      24, 6,
+    ]);
   });
 });
 

@@ -4,6 +4,7 @@ import { EstadoVacio, NadaConEso } from '../componentes/EstadoVacio.tsx';
 import { Cargando } from '../componentes/Cargando.tsx';
 import { Fila, Grupo } from './FilaDelBuscador.tsx';
 import { filtrarPorParecido } from './trigramas.ts';
+import { seBuscaYa } from './seBuscaYa.ts';
 
 /**
  * El buscador universal · Parte B5 del Plan.
@@ -80,12 +81,6 @@ export interface BuscadorProps {
   readonly alOlvidarRecientes?: () => void;
 }
 
-/** Si lo escrito se pregunta al servidor: con sus letras, o un número suelto («7»). */
-export function seBuscaYa(escrito: string, minimoDeLetras = 2): boolean {
-  const texto = escrito.trim();
-  return texto.length >= minimoDeLetras || /^[0-9]$/.test(texto);
-}
-
 export function Buscador({
   abierto,
   alCerrar,
@@ -118,7 +113,8 @@ export function Buscador({
 
   const cortito = !seBuscaYa(escrito, minimoDeLetras);
   // Con la caja vacía, los recientes; con algo escrito y corto, nada todavía.
-  const losRecientes = escrito.trim() === '' ? recientes : [];
+  const vacia = escrito.trim() === '';
+  const losRecientes = useMemo(() => (vacia ? recientes : []), [vacia, recientes]);
 
   // Una sola lista para moverse con las flechas: acciones y resultados seguidos,
   // porque para quien pulsa la flecha abajo esto es una lista, no dos.

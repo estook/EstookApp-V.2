@@ -587,6 +587,9 @@ try {
     // quien se le compra son cosas tuyas, y el catalogo de referencia no.
     'producto_buscable',
     'proveedor_buscable',
+    // M9 · 1 · la 0068: los platos de la carta, que tambien entran en `estook.buscar`.
+    // Una prueba de `buscador.prueba.ts` compara esta lista con la base.
+    'plato_buscable',
   ];
 
   const indices = await conexion`

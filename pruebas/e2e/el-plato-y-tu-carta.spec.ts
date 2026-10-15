@@ -22,7 +22,8 @@ test('se monta la carta de cero, con su sección, Uber Eats y el historial', asy
   // Vacía, lo dice y ofrece empezar.
   await abrirSinQueSeCaiga(page, `${APP}#/carta/carta`);
   await expect(page.getByText('Tu carta, aquí')).toBeVisible();
-  await page.getByRole('button', { name: 'Añadir platos' }).click();
+  // Como llega desde el «+»: la orden en la dirección, con la carta todavía cargando.
+  await abrirSinQueSeCaiga(page, `${APP}#/carta/carta/por-secciones?hacer=nuevo`);
 
   // De golpe, fila a fila: siempre queda una libre al final.
   const hoja = page.getByRole('dialog', { name: 'Añadir platos' });

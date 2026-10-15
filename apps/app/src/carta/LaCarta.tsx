@@ -25,6 +25,7 @@ import {
 } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { centimos } from '@estook/dominio';
+import { puedeEditar } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarLaCarta } from '../ganchos/usarRefrescarLaCarta.ts';
@@ -58,8 +59,11 @@ export function LaCarta({ vista }: { readonly vista: string }) {
   );
 
   const datos = consulta.data;
+  // Con los permisos de la sesión, que están desde el principio: con los de la carta,
+  // el «Añadir platos» del «+» se perdía si llegaba antes que ella (repaso, 15-oct).
+  const { permisos } = usarSesion();
   usarQueHacer('nuevo', () => {
-    if (datos?.puedeEditar === true) setAnadiendo(null);
+    if (puedeEditar(permisos, 'app.carta')) setAnadiendo(null);
   });
 
   if (consulta.isPending) {

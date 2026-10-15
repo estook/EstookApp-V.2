@@ -53,6 +53,10 @@ export function FichaDelPlato({
 }) {
   const consulta = usarLectura<ElPlato>('un_plato', { plato_id: platoId });
   const datos = consulta.data;
+  // Aquí y no dentro: al guardar, la ficha se monta otra vez con la versión nueva, y
+  // el «Guardado» se perdía con ella (lo vio la prueba a mano, 15-oct).
+  const [hecho, setHecho] = useState<string | null>(null);
+  const [conHistorial, setConHistorial] = useState(false);
 
   if (datos === undefined) {
     return (
@@ -71,7 +75,16 @@ export function FichaDelPlato({
   return (
     <PanelLateral abierta alCerrar={alCerrar} titulo={datos.plato.nombre}>
       {datos.puedeEditar ? (
-        <ParaEditar key={datos.plato.version} datos={datos} carta={carta} alCerrar={alCerrar} />
+        <ParaEditar
+          key={datos.plato.version}
+          datos={datos}
+          carta={carta}
+          alCerrar={alCerrar}
+          hecho={hecho}
+          alHacer={setHecho}
+          conHistorial={conHistorial}
+          alVerHistorial={setConHistorial}
+        />
       ) : (
         <ParaMirar datos={datos} carta={carta} />
       )}
@@ -101,10 +114,20 @@ function ParaEditar({
   datos,
   carta,
   alCerrar,
+  hecho,
+  alHacer: setHecho,
+  conHistorial,
+  alVerHistorial,
 }: {
   readonly datos: ElPlato;
   readonly carta: MiCarta;
   readonly alCerrar: () => void;
+  /** Lo último que se hizo, en una palabra: vive arriba, que esta se vuelve a montar. */
+  readonly hecho: string | null;
+  readonly alHacer: (frase: string | null) => void;
+  /** Si el historial está desplegado: también arriba, por lo mismo. */
+  readonly conHistorial: boolean;
+  readonly alVerHistorial: (abierto: boolean) => void;
 }) {
   const { cliente } = usarSesion();
   const navegar = useNavigate();
@@ -121,7 +144,6 @@ function ParaEditar({
   );
   const [trabajando, setTrabajando] = useState<'guardando' | 'archivando' | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
-  const [hecho, setHecho] = useState<string | null>(null);
 
   const preciosCambiados = Object.fromEntries(
     conPrecio
@@ -138,6 +160,7 @@ function ParaEditar({
   async function guardar() {
     setTrabajando('guardando');
     setError(null);
+    setHecho(null);
     const respuesta = await cliente.ejecutar('cambiar_plato', {
       plato_id: plato.id,
       version: plato.version,
@@ -309,7 +332,7 @@ function ParaEditar({
         </Boton>
       </Botones>
 
-      <Historial datos={datos} carta={carta} />
+      <Historial datos={datos} carta={carta} abierto={conHistorial} alCambiar={alVerHistorial} />
     </div>
   );
 }
@@ -351,11 +374,27 @@ function ParaMirar({ datos, carta }: { readonly datos: ElPlato; readonly carta: 
 
 // ── El historial, plegado ────────────────────────────────────────────────────
 
-function Historial({ datos, carta }: { readonly datos: ElPlato; readonly carta: MiCarta }) {
+function Historial({
+  datos,
+  carta,
+  abierto,
+  alCambiar,
+}: {
+  readonly datos: ElPlato;
+  readonly carta: MiCarta;
+  readonly abierto: boolean;
+  readonly alCambiar: (abierto: boolean) => void;
+}) {
   if (datos.historial.length === 0) return null;
   const seccion = nombreDeLaSeccion(carta);
   return (
-    <details className="rounded-grande border border-borde">
+    <details
+      open={abierto}
+      onToggle={(evento) => {
+        alCambiar(evento.currentTarget.open);
+      }}
+      className="rounded-grande border border-borde"
+    >
       <summary className="flex min-h-toque cursor-pointer items-center px-e3 text-secundario font-semibold text-texto-suave">
         Historial
       </summary>

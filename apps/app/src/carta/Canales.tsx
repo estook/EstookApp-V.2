@@ -118,15 +118,15 @@ function UnCanalDeVenta({
       <div className="flex min-h-toque items-center gap-e3">
         <span className="min-w-0 flex-1">
           <span className="block text-cuerpo font-semibold">{canal.nombre}</span>
-          <span className="block text-secundario text-texto-suave">
-            {!canal.disponible
-              ? 'Próximamente'
-              : canal.activo
+          {canal.disponible && (
+            <span className="block text-secundario text-texto-suave">
+              {canal.activo
                 ? canal.comisionPorcentaje === null
                   ? 'Activo'
                   : `Activo · se lleva el ${String(canal.comisionPorcentaje).replace('.', ',')} %`
                 : 'Sin activar'}
-          </span>
+            </span>
+          )}
         </span>
         {!canal.disponible ? (
           <Etiqueta tono="neutro">Próximamente</Etiqueta>

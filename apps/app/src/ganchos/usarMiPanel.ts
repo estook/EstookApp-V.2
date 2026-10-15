@@ -126,9 +126,11 @@ function loRecordado(clave: string | null): readonly WidgetPuesto[] | null {
   try {
     const leido: unknown = JSON.parse(window.localStorage.getItem(clave) ?? 'null');
     if (!Array.isArray(leido)) return null;
+    // Se guardan los nombres, y nada más (lo cazó su prueba: se leían como objetos y
+    // la segunda vez el Panel se adelantaba vacío).
     return leido
-      .filter((p): p is { id: string } => typeof (p as { id?: unknown }).id === 'string')
-      .map((p) => ({ id: p.id, tamano: widgetPorId(p.id)?.tamano ?? 'ancho' }));
+      .filter((id): id is string => typeof id === 'string')
+      .map((id) => ({ id, tamano: widgetPorId(id)?.tamano ?? 'ancho' }));
   } catch {
     return null;
   }

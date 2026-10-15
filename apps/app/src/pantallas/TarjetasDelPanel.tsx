@@ -8,6 +8,7 @@ import { FalloDeLaApi } from '../datos/FalloDeLaApi.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
 import type { ElAltaDelLocal } from '../alta/contrato.ts';
+import { seEnsena, usarLaPuestaEnMarcha } from '../panel/PuestaEnMarcha.tsx';
 
 /**
  * Las tarjetas fijas del Panel (M5, recortadas en M6½).
@@ -48,11 +49,15 @@ export function TarjetasDelPanel() {
   const alta = consulta.data ?? null;
   // El mismo permiso que exigen los comandos del alta.
   const puedeGestionar = puedeEditar(permisos, 'app.ajustes');
+  // Mientras sale «Pon en marcha tu local» (0085), esta se aparta: dos tarjetas de
+  // arrancar el local, una encima de otra, son una de más. Lo que falte del alta
+  // vuelve en cuanto la otra se acaba.
+  const conLaPuestaEnMarcha = seEnsena(usarLaPuestaEnMarcha().data);
 
   return (
     <>
       <ComoEntranTusVentas modo="tarjeta" />
-      {alta !== null && puedeGestionar && !alta.recordatorioOculto && (
+      {alta !== null && puedeGestionar && !alta.recordatorioOculto && !conLaPuestaEnMarcha && (
         <TerminaDeConfigurar alta={alta} />
       )}
       {alta !== null && alta.ejemplos > 0 && puedeGestionar && <QuitaLosEjemplos alta={alta} />}

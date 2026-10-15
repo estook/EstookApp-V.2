@@ -28,6 +28,7 @@ import { EstookEnTuMovil } from '../sinConexion/EstookEnTuMovil.tsx';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
 import { InvitacionAlRecorrido } from '../recorrido/ElRecorrido.tsx';
+import { PuestaEnMarcha } from './PuestaEnMarcha.tsx';
 
 /**
  * El Panel · el centro de control (Manifiesto 6, Evolución 1.0 capítulo 5).
@@ -141,6 +142,10 @@ export function Panel() {
         {/* El recorrido de la primera vez (0084): se ofrece arriba, una vez por cuenta. */}
         <div className="empty:hidden lg:col-span-2">
           <InvitacionAlRecorrido />
+        </div>
+        {/* Y a su lado, lo que le falta a un local nuevo para arrancar (0085). */}
+        <div className="empty:hidden lg:col-span-2">
+          <PuestaEnMarcha />
         </div>
         {/* Lo de hoy, ordenado por el servidor (entrega O, mejora 8), de lado a lado. */}
         <div className="empty:hidden lg:col-span-2">

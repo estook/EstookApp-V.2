@@ -34,15 +34,14 @@ import type { MisCierres } from './contrato.ts';
  * El mismo componente sirve para los tres sitios donde sale: la tarjeta del Panel,
  * Ajustes y la pantalla del cierre. Una pregunta, un solo sitio donde se contesta.
  */
-export function ComoEntranTusVentas({ modo }: { readonly modo: 'tarjeta' | 'ajustes' | 'alta' }) {
+/**
+ * Cómo se cierra la caja de este local y si esta persona puede cerrarla: el último
+ * cierre y poco más. La misma consulta para la tarjeta del Panel y para el widget de
+ * Ventas sin cajas (0085): con dos, el Panel pedía una aparte, después del lote.
+ */
+export function usarComoSeCierra() {
   const { cliente, permisos, yo } = usarSesion();
-  const cache = useQueryClient();
-  const [error, setError] = useState<ErrorDeLaApi | null>(null);
-  const [guardando, setGuardando] = useState(false);
-  const [escondida, setEscondida] = useState(() => estaAplazado('tpv'));
-
-  const puedeElegir = puedeEditar(permisos, 'app.ajustes');
-  const consulta = useQuery({
+  return useQuery({
     queryKey: ['mis_cierres', 'como'],
     enabled: puedeVer(permisos, 'dato.ventas') && yo?.local !== null && yo?.local !== undefined,
     retry: 1,
@@ -52,6 +51,17 @@ export function ComoEntranTusVentas({ modo }: { readonly modo: 'tarjeta' | 'ajus
       return respuesta.datos;
     },
   });
+}
+
+export function ComoEntranTusVentas({ modo }: { readonly modo: 'tarjeta' | 'ajustes' | 'alta' }) {
+  const { cliente, permisos } = usarSesion();
+  const cache = useQueryClient();
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [escondida, setEscondida] = useState(() => estaAplazado('tpv'));
+
+  const puedeElegir = puedeEditar(permisos, 'app.ajustes');
+  const consulta = usarComoSeCierra();
 
   const como = consulta.data?.comoSeCierra ?? null;
   const [tpv, setTpv] = useState<string>('');

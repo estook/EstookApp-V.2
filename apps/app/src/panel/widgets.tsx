@@ -43,7 +43,7 @@ import { BotonDePausa } from '../equipo/BotonDePausa.tsx';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { comoSeLeeLaHora, comoSeLeenMinutos, type FichajesDeHoy } from '../equipo/contrato.ts';
-import type { MisCierres } from '../servicio/contrato.ts';
+import { usarComoSeCierra } from '../servicio/ComoEntranTusVentas.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { ComprasDeHoy, LoQueViene } from '../compras/contrato.ts';
 import {
@@ -293,18 +293,9 @@ function VentasWidget() {
 
 /** Sin cajas cerradas: lo dice, y deja cerrarla a quien puede. */
 function SinCajaCerrada() {
-  const { cliente, permisos, yo } = usarSesion();
   const navegar = useNavigate();
-  const consulta = useQuery({
-    queryKey: ['mis_cierres', 'panel'],
-    enabled: puedeVer(permisos, 'dato.ventas') && yo?.local !== null && yo?.local !== undefined,
-    queryFn: async (): Promise<MisCierres> => {
-      const respuesta = await cliente.consultar<MisCierres>('mis_cierres', { dias: '8' });
-      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
-    },
-  });
-  const datos = consulta.data;
+  // La misma que la tarjeta de «¿Cómo entran tus ventas?», que ya viene en el lote.
+  const datos = usarComoSeCierra().data;
   return (
     <div className="flex flex-col items-start gap-e3">
       <Tranquilo>

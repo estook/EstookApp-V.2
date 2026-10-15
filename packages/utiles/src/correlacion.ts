@@ -21,6 +21,12 @@
  * correlaciones por accion las pone en marcha M2, que es donde nace la API.
  */
 export const CABECERA_CORRELACION = 'x-correlacion-id';
+
+/**
+ * Cuántas consultas caben en un lote (`POST /consultas/varias`, 0085). Lo leen la API,
+ * que no acepta más, y el cliente, que parte en varios lotes lo que pase de aquí.
+ */
+export const CONSULTAS_POR_LOTE = 24;
 export const CABECERA_SESION = 'x-sesion-id';
 
 const FORMATO = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;

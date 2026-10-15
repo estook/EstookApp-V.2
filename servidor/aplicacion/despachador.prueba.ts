@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { crearDespachador, type Puertos } from './despachador.ts';
 import { catalogo } from './catalogo.ts';
-import { comando, FalloDeAplicacion, type Contexto } from './contrato.ts';
+import { comando, consulta, FalloDeAplicacion, type Contexto } from './contrato.ts';
 
 /**
  * M2 · el criterio de terminado, literal:
@@ -62,6 +62,28 @@ function bancoDePruebas(sesion: Contexto['sesion'] = SESION_NORMAL) {
 
   catalogo.comandos[contador.nombre] = contador as never;
   catalogo.comandos[queFalla.nombre] = queFalla as never;
+
+  // Tres consultas para el lote (0085): una que contesta, una que pide un permiso
+  // (que este banco no da: la base vacía no devuelve ningún nivel) y una que revienta.
+  const libre = consulta<{ eco?: string | undefined }, { eco: string }>({
+    nombre: 'una_libre',
+    entrada: z.object({ eco: z.string().optional() }).strict(),
+    ejecutar: (_contexto, entrada) => Promise.resolve({ eco: entrada.eco ?? '' }),
+  });
+  const conPermiso = consulta<Record<string, never>, { importe: number }>({
+    nombre: 'una_con_precios',
+    entrada: z.object({}).strict(),
+    exige: 'dato.precio_de_compra',
+    ejecutar: () => Promise.resolve({ importe: 1234 }),
+  });
+  const queRevienta = consulta<Record<string, never>, never>({
+    nombre: 'una_que_revienta',
+    entrada: z.object({}).strict(),
+    ejecutar: () => Promise.reject(new Error('relation "estook.lo_que_sea" does not exist')),
+  });
+  catalogo.consultas[libre.nombre] = libre as never;
+  catalogo.consultas[conPermiso.nombre] = conPermiso as never;
+  catalogo.consultas[queRevienta.nombre] = queRevienta as never;
 
   const puertos: Puertos = {
     enTransaccion: (quien, hacer) =>
@@ -179,6 +201,69 @@ describe('las consultas no llevan clave, porque no cambian nada', () => {
     const { despachador } = bancoDePruebas();
     const salida = await despachador.consultar(quien, 'un_local', { id: 'no-soy-un-uuid' });
     expect(salida.estado === 'fallo' && salida.codigo).toBe('faltan_datos');
+  });
+});
+
+// ── 0085 · varias consultas en una petición ──────────────────────────────────
+
+/**
+ * El Panel pide todo junto. Lo que no puede pasar es que **venir en lote abra una
+ * puerta**: cada consulta tiene que contestar exactamente lo que contestaría sola.
+ */
+describe('varias consultas de una vez', () => {
+  it('cada una contesta lo suyo, en su orden', async () => {
+    const { despachador } = bancoDePruebas();
+    const salida = await despachador.consultarVarias(quien, [
+      { nombre: 'una_libre', entrada: { eco: 'primera' } },
+      { nombre: 'una_libre', entrada: { eco: 'segunda' } },
+    ]);
+    expect(salida).toEqual([
+      { estado: 'ok', datos: { eco: 'primera' } },
+      { estado: 'ok', datos: { eco: 'segunda' } },
+    ]);
+  });
+
+  it('el permiso de cada una se mira igual que si llegara sola', async () => {
+    const { despachador } = bancoDePruebas();
+    const sola = await despachador.consultar(quien, 'una_con_precios', {});
+    const [enLote, laLibre] = await despachador.consultarVarias(quien, [
+      { nombre: 'una_con_precios', entrada: {} },
+      { nombre: 'una_libre', entrada: {} },
+    ]);
+    expect(sola.estado === 'fallo' && sola.codigo).toBe('sin_permiso');
+    expect(enLote).toEqual(sola);
+    // Y la que sí se puede leer, llega.
+    expect(laLibre?.estado).toBe('ok');
+  });
+
+  it('sin haber entrado no pasa ninguna', async () => {
+    const { despachador } = bancoDePruebas(null);
+    const salida = await despachador.consultarVarias(quien, [
+      { nombre: 'una_libre', entrada: {} },
+      { nombre: 'mis_locales', entrada: {} },
+    ]);
+    expect(salida.map((r) => r.estado === 'fallo' && r.codigo)).toEqual([
+      'sin_sesion',
+      'sin_sesion',
+    ]);
+  });
+
+  it('una que no existe, una mal escrita o una que revienta no tumban a las demás', async () => {
+    const { despachador } = bancoDePruebas();
+    const salida = await despachador.consultarVarias(quien, [
+      { nombre: 'inventada', entrada: {} },
+      { nombre: 'una_libre', entrada: { eco: 1 } },
+      { nombre: 'una_que_revienta', entrada: {} },
+      { nombre: 'una_libre', entrada: { eco: 'llego' } },
+    ]);
+    expect(salida.map((r) => (r.estado === 'fallo' ? r.codigo : r.estado))).toEqual([
+      'no_existe',
+      'faltan_datos',
+      'fallo_nuestro',
+      'ok',
+    ]);
+    // Y lo que reventó no sale con el nombre de la tabla ni media consulta.
+    expect(JSON.stringify(salida)).not.toMatch(/relation|estook\./);
   });
 });
 

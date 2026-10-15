@@ -22,14 +22,16 @@ export interface CuerpoDeError {
   };
 }
 
-export function respuestaDeError(
+/**
+ * El cuerpo de un error, sin la respuesta alrededor: lo usa también cada consulta de
+ * un lote (0085), que va dentro de una respuesta que sí ha salido bien.
+ */
+export function cuerpoDeError(
   codigo: CodigoDeError,
-  correlacionId: string,
   detalle?: Record<string, unknown>,
-): Response {
+): CuerpoDeError {
   const el = errorDeEstook(codigo);
-
-  const cuerpo: CuerpoDeError = {
+  return {
     error: {
       codigo: el.codigo,
       quePasa: el.quePasa,
@@ -38,9 +40,17 @@ export function respuestaDeError(
       ...(detalle ? { detalle } : {}),
     },
   };
+}
+
+export function respuestaDeError(
+  codigo: CodigoDeError,
+  correlacionId: string,
+  detalle?: Record<string, unknown>,
+): Response {
+  const cuerpo = cuerpoDeError(codigo, detalle);
 
   return new Response(JSON.stringify(cuerpo), {
-    status: el.estadoHttp,
+    status: errorDeEstook(codigo).estadoHttp,
     headers: {
       'content-type': 'application/json; charset=utf-8',
       [CABECERA_CORRELACION]: correlacionId,

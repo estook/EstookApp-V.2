@@ -95,8 +95,32 @@ export type Resultado =
       readonly detalle?: Record<string, unknown>;
     };
 
+/** Una consulta dentro de un lote (`consultarVarias`): su nombre y lo que pregunta. */
+export interface ConsultaDelLote {
+  readonly nombre: string;
+  readonly entrada: unknown;
+}
+
+/**
+ * Cuántas consultas caben en un lote (vive en `@estook/utiles`, con el cliente). El
+ * Panel más cargado, con la campana y el chat, pide unas dieciocho; el tope está para
+ * que nadie convierta una petición en mil.
+ */
+export { CONSULTAS_POR_LOTE } from '@estook/utiles';
+
 export interface Despachador {
   consultar(quien: QuienLlama, nombre: string, entrada: unknown): Promise<Resultado>;
+  /**
+   * **Varias consultas en una sola petición** (0085): el Panel pedía unas diez, y con
+   * mala cobertura cada una es una espera. Cada consulta pasa **por las mismas
+   * puertas y el mismo permiso** que si llegara sola, en su propia transacción, y lo
+   * que falle en una no toca a las demás. Devuelve un resultado por consulta, en el
+   * mismo orden.
+   */
+  consultarVarias(
+    quien: QuienLlama,
+    consultas: readonly ConsultaDelLote[],
+  ): Promise<readonly Resultado[]>;
   ejecutar(
     quien: QuienLlama,
     nombre: string,
@@ -244,8 +268,27 @@ async function porQueNoPasaElAdmin(
 }
 
 export function crearDespachador(puertos: Puertos): Despachador {
-  return {
+  const despachador: Despachador = {
     movilEncendido: puertos.movilEncendido === true,
+
+    async consultarVarias(quien, consultas) {
+      // **Cada una por su camino de siempre**, y a la vez: así no hay una puerta ni un
+      // permiso que se pueda saltar por venir en lote. Un fallo no previsto en una se
+      // apunta y sale como «se nos ha roto algo» solo en esa; las demás llegan.
+      return Promise.all(
+        consultas.map(async ({ nombre, entrada }): Promise<Resultado> => {
+          try {
+            return await despachador.consultar(quien, nombre, entrada);
+          } catch (fallo) {
+            await apuntarUnFallo(fallo, {
+              mensaje: `fallo no previsto en ${nombre}, dentro de un lote`,
+              correlacionId: quien.correlacionId,
+            });
+            return { estado: 'fallo', codigo: 'fallo_nuestro' };
+          }
+        }),
+      );
+    },
 
     async consultar(quien, nombre, entrada) {
       const laConsulta = catalogo.consultas[nombre];
@@ -489,6 +532,7 @@ export function crearDespachador(puertos: Puertos): Despachador {
       return puertos.enTransaccion(quien, (contexto) => latidoDelMovil(contexto, secreto));
     },
   };
+  return despachador;
 }
 
 /**

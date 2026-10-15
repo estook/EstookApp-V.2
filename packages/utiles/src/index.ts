@@ -16,6 +16,7 @@ export type { NombreDeBandera } from './banderas.ts';
 export {
   CABECERA_CORRELACION,
   CABECERA_SESION,
+  CONSULTAS_POR_LOTE,
   esCorrelacionId,
   esSesionId,
   nuevaCorrelacionId,

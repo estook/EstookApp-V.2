@@ -37,6 +37,7 @@ function perezosa<C extends Pantalla>(traer: () => Promise<C>): LazyExoticCompon
 }
 
 export const Almacen = perezosa(async () => (await import('../almacen/Almacen.tsx')).Almacen);
+export const Carta = perezosa(async () => (await import('../carta/Carta.tsx')).Carta);
 export const QuienTieneAcceso = perezosa(
   async () => (await import('./QuienTieneAcceso.tsx')).QuienTieneAcceso,
 );

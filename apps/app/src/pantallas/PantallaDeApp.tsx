@@ -23,6 +23,7 @@ import {
 import {
   Almacen,
   CierreDeCaja,
+  Carta,
   Delivery,
   ElHorario,
   EquipoHoy,
@@ -257,6 +258,11 @@ function Contenido({
 }) {
   if (app.id === 'almacen' && destino.modulo === undefined) {
     return <Almacen destino={destino.id} vista={vista?.id ?? ''} />;
+  }
+
+  // M9 · 1 (0086): la carta y los canales. Menús y Análisis, M10, caen a su cartel.
+  if (app.id === 'carta' && destino.modulo === undefined) {
+    return <Carta destino={destino.id} vista={vista?.id ?? ''} />;
   }
 
   if (app.id === 'equipo' && destino.id === 'personas') {

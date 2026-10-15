@@ -361,7 +361,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     ],
   },
 
-  // ── Carta · M10 ────────────────────────────────────────────────────────────
+  // ── Carta · la carta y los canales en M9 · 1 (0086); lo demás, M10 ─────────
   'app.carta': {
     id: 'carta',
     nombre: 'Carta',
@@ -376,8 +376,16 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         nombre: 'Carta',
         icono: IconoCarta,
         queContesta: '¿Qué vendo y a qué precio?',
-        vistas: vistas(['Por secciones', 'M10'], ['Todos los platos', 'M10'], ['Agotados', 'M10']),
-        modulo: 'M10',
+        // **Adelantada a M9 · 1** (0086): el plato nace aquí. Los agotados, en M10.
+        vistas: vistas('Por secciones', 'Todos los platos', ['Agotados', 'M10']),
+      },
+      {
+        // Los canales de venta, con su comisión (0086): Uber Eats el primero.
+        id: 'canales',
+        nombre: 'Canales',
+        icono: IconoReparto,
+        queContesta: '¿Por dónde vendo, y cuánto se lleva cada plataforma?',
+        vistas: [],
       },
       {
         id: 'menus',

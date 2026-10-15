@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
 
@@ -178,6 +180,24 @@ describe('buscar · como esta hecha', () => {
       'proveedor_buscable',
       'receta_de_referencia_buscable',
     ]);
+  });
+
+  it('bd:comprobar-api espera los mismos indices que hay', async () => {
+    // La 0068 anadio `plato_buscable` aqui y no en la herramienta, y en
+    // produccion salio «MAL · sobran plato_buscable» (15-oct). La lista de
+    // `comprobar-api.mjs` se lee de su texto y se compara con la base.
+    const herramienta = readFileSync(
+      fileURLToPath(new URL('../herramientas/comprobar-api.mjs', import.meta.url)),
+      'utf8',
+    );
+    const lista = /const LOS_INDICES_DE_TRIGRAMAS = \[([\s\S]*?)\];/.exec(herramienta)?.[1] ?? '';
+    const esperados = [...lista.matchAll(/'([a-z_]+)'/g)].map((m) => m[1]).sort();
+    const { rows } = await base.bd.query<{ indexname: string }>(
+      `select indexname from pg_indexes
+        where schemaname = 'estook' and indexname like '%buscable'
+        order by indexname`,
+    );
+    expect(esperados).toEqual(rows.map((f) => f.indexname));
   });
 
   it('respeta el limite que se le pide', async () => {

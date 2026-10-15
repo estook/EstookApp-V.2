@@ -4,19 +4,42 @@
 >
 > Comprobado el 15 de octubre de 2026, leyendo la base de producción y la API.
 >
-> | Qué                         | Cómo está                                                                                                |
-> | --------------------------- | -------------------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #103** (la 0085). Abierta: **M9 · 1 · El plato y tu carta**                        |
-> | La base de datos            | **67 de 67** migraciones, igual que `main`                                                               |
-> | La API                      | **Desplegada con la #103**: 83 y 176, con el lote y **con Sentry**                                       |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                                |
-> | M9                          | **Contestado** ([0086](decisiones/0086-las-respuestas-de-m9.md)); la primera entrega, en su pull request |
+> | Qué                         | Cómo está                                                                                  |
+> | --------------------------- | ------------------------------------------------------------------------------------------ |
+> | Pull requests               | **Fusionadas hasta la #104** (M9 · 1). Abierta: el arreglo de `bd:comprobar-api`           |
+> | La base de datos            | **68 de 68** migraciones, igual que `main`                                                 |
+> | La API                      | **Desplegada con la #104**: 85 y 188, con el lote y **con Sentry**                         |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                  |
+> | M9                          | **Contestado** ([0086](decisiones/0086-las-respuestas-de-m9.md)); **M9 · 1 en producción** |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo que quede de antes, en [`pasos-de-m8.md`](pasos-de-m8.md).
 
 ---
 
-## Lo que te toca ahora · M9 · 1 · El plato y tu carta
+## Lo que te toca ahora · el arreglo de `bd:comprobar-api`
+
+El 15-oct, con M9 · 1 ya migrada y desplegada, `bd:comprobar-api` dio **un «MAL»**: «los 10 índices de trigramas están · **sobran plato_buscable**». **No era un fallo de la base**: la 0068 añadió ese índice (el que busca platos) y a la herramienta no se le dijo. Ahora lo sabe, y una prueba compara su lista con la base para que no vuelva a pasar ([lección 185](lecciones.md)).
+
+1. En **github.com** → **Pull requests** → **«bd:comprobar-api conoce el índice de los platos»** → con las **tres en verde** → **Merge pull request** → **Confirm merge**.
+2. **No hay que migrar ni desplegar.** Si quieres verlo, en PowerShell, uno por uno:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** **«los 11 índices de trigramas están»** en verde, y al final **ninguna comprobación mal** (las «sin poder comprobar» son las de siempre: en producción no hay cuentas de ejemplo).
+
+Después, si no lo has hecho, **monta la carta de IKATZ** (paso 4 de abajo).
+
+## M9 · 1 · El plato y tu carta (en producción desde el 15-oct)
 
 Tu carta en Estook: secciones, platos, los canales con su precio a mano y el historial de cada plato ([decisión 0086](decisiones/0086-las-respuestas-de-m9.md)). **Hay una migración** (`0068`: cuatro tablas nuevas y el buscador) y **hay que desplegar la API** (dos consultas y doce comandos nuevos). **No hay secretos nuevos.** El orden importa: **fusionar, migrar y después desplegar**.
 

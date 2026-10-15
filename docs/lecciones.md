@@ -693,3 +693,8 @@
      chocaba con el índice `canal_del_local` del chat (0056): «relation already exists».
      Antes de nombrar una tabla nueva se busca el nombre en todas las migraciones, no
      solo entre las tablas (0086).
+185. **Lo que se escribe dos veces se separa.** La lista de índices del buscador vive en una
+     prueba y en `bd:comprobar-api`. La 0068 añadió `plato_buscable` a la prueba y no a la
+     herramienta, y en producción salió «MAL · sobran plato_buscable» cuando todo estaba
+     bien. Ahora una prueba lee la lista de la herramienta y la compara con la base: al
+     añadir una tabla buscable, se pone en rojo hasta tocar las dos (0086).

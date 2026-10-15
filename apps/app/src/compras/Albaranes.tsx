@@ -90,7 +90,7 @@ export function Albaranes() {
         />
 
         {lista.isPending ? (
-          <Cargando que="los albaranes" lineas={3} />
+          <Cargando que="los albaranes" forma="lista-cara" lineas={3} />
         ) : lista.isError ? (
           <Aviso tono="mal" titulo="No he podido leer los albaranes">
             Vuelve a intentarlo dentro de un momento. Si sigue igual, avísanos.

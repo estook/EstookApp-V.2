@@ -111,7 +111,7 @@ export function Resumen({ alAbrirProducto }: { readonly alAbrirProducto: (id: st
   if (consulta.isPending) {
     return (
       <div className="py-e6">
-        <Cargando que="lo que hay que atender" />
+        <Cargando que="lo que hay que atender" forma="lista" lineas={3} />
       </div>
     );
   }
@@ -641,7 +641,7 @@ function ComprasDeHoyEnHoy() {
       }
     >
       {datos === undefined ? (
-        <Cargando que="las compras" lineas={2} />
+        <Cargando que="las compras" forma="lista-cara" lineas={2} />
       ) : nada ? (
         <p className="text-secundario text-texto-suave">
           Hoy no llega nada y no toca pedirle a nadie.
@@ -770,7 +770,7 @@ function MermaDeLaJornada() {
       }
     >
       {datos === undefined ? (
-        <Cargando que="la merma" lineas={2} />
+        <Cargando que="la merma" forma="cifra" lineas={2} />
       ) : (
         <>
           <div className="flex items-end justify-between gap-e4">

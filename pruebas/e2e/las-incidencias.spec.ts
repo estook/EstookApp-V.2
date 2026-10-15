@@ -1,6 +1,13 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
-import { API, APP, ejecutarEnLaApi, entrarEnLaApp, tokenDe } from './en-la-app.ts';
+import {
+  API,
+  APP,
+  consultasSueltas,
+  ejecutarEnLaApi,
+  entrarEnLaApp,
+  tokenDe,
+} from './en-la-app.ts';
 
 /**
  * El repaso del 9-oct (0081), por la pantalla.
@@ -162,6 +169,7 @@ test('en Productos, las vistas vacías no vuelven en «Valor» ni parpadean al e
   const retenida = new Promise<void>((resolver) => {
     soltar = resolver;
   });
+  await consultasSueltas(page);
   await page.route('**/v1/consultas/mis_productos*', async (ruta) => {
     await retenida;
     // Si la página ya no la espera (se ha ido), no hay nada que soltar.

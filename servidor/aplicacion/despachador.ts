@@ -95,8 +95,40 @@ export type Resultado =
       readonly detalle?: Record<string, unknown>;
     };
 
+/** Una consulta dentro de un lote (`consultarVarias`): su nombre y lo que pregunta. */
+export interface ConsultaDelLote {
+  readonly nombre: string;
+  readonly entrada: unknown;
+}
+
+/**
+ * Cuántas consultas caben en un lote (vive en `@estook/utiles`, con el cliente). El
+ * Panel más cargado, con la campana y el chat, pide unas dieciocho; el tope está para
+ * que nadie convierta una petición en mil.
+ */
+export { CONSULTAS_POR_LOTE } from '@estook/utiles';
+
+/**
+ * **Cuántas del lote a la vez**: seis, como hacía el navegador con las sueltas (seis
+ * peticiones a la vez por sitio). Todas a la vez cogían todas las conexiones a la base
+ * de su servidor y dejaban esperando a lo demás que llegara; en la batería de pantalla
+ * se vio como entradas que tardaban más de cinco segundos (0085).
+ */
+export const A_LA_VEZ_EN_UN_LOTE = 6;
+
 export interface Despachador {
   consultar(quien: QuienLlama, nombre: string, entrada: unknown): Promise<Resultado>;
+  /**
+   * **Varias consultas en una sola petición** (0085): el Panel pedía unas diez, y con
+   * mala cobertura cada una es una espera. Cada consulta pasa **por las mismas
+   * puertas y el mismo permiso** que si llegara sola, en su propia transacción, y lo
+   * que falle en una no toca a las demás. Devuelve un resultado por consulta, en el
+   * mismo orden.
+   */
+  consultarVarias(
+    quien: QuienLlama,
+    consultas: readonly ConsultaDelLote[],
+  ): Promise<readonly Resultado[]>;
   ejecutar(
     quien: QuienLlama,
     nombre: string,
@@ -244,8 +276,39 @@ async function porQueNoPasaElAdmin(
 }
 
 export function crearDespachador(puertos: Puertos): Despachador {
-  return {
+  const despachador: Despachador = {
     movilEncendido: puertos.movilEncendido === true,
+
+    async consultarVarias(quien, consultas) {
+      // **Cada una por su camino de siempre**, seis a la vez: así no hay una puerta ni un
+      // permiso que se pueda saltar por venir en lote. Un fallo no previsto en una se
+      // apunta y sale como «se nos ha roto algo» solo en esa; las demás llegan.
+      const una = async ({ nombre, entrada }: ConsultaDelLote): Promise<Resultado> => {
+        try {
+          return await despachador.consultar(quien, nombre, entrada);
+        } catch (fallo) {
+          await apuntarUnFallo(fallo, {
+            mensaje: `fallo no previsto en ${nombre}, dentro de un lote`,
+            correlacionId: quien.correlacionId,
+          });
+          return { estado: 'fallo', codigo: 'fallo_nuestro' };
+        }
+      };
+      const resultados: Resultado[] = new Array<Resultado>(consultas.length);
+      let siguiente = 0;
+      const turno = async (): Promise<void> => {
+        while (siguiente < consultas.length) {
+          const cual = siguiente;
+          siguiente += 1;
+          const consulta = consultas[cual];
+          if (consulta !== undefined) resultados[cual] = await una(consulta);
+        }
+      };
+      await Promise.all(
+        Array.from({ length: Math.min(A_LA_VEZ_EN_UN_LOTE, consultas.length) }, turno),
+      );
+      return resultados;
+    },
 
     async consultar(quien, nombre, entrada) {
       const laConsulta = catalogo.consultas[nombre];
@@ -489,6 +552,7 @@ export function crearDespachador(puertos: Puertos): Despachador {
       return puertos.enTransaccion(quien, (contexto) => latidoDelMovil(contexto, secreto));
     },
   };
+  return despachador;
 }
 
 /**

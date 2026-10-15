@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { NOMBRE_DE_COMO_SE_CIERRA, QUE_ES_CADA_FORMA_DE_CERRAR, TPVS } from '@estook/dominio';
-import { puedeEditar, puedeVer } from '@estook/permisos';
+import { puedeEditar } from '@estook/permisos';
 import { Boton, ErrorEnCristiano, Selector, Tarjeta, clases } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { usarComoSeCierra } from '../ganchos/usarComoSeCierra.ts';
 import { aplazar, estaAplazado } from '../pantallas/recordatorios.ts';
-import type { MisCierres } from './contrato.ts';
 
 /**
  * ¿Cómo entran tus ventas? · la pregunta que sustituye a «Conecta tu TPV».
@@ -35,23 +35,14 @@ import type { MisCierres } from './contrato.ts';
  * Ajustes y la pantalla del cierre. Una pregunta, un solo sitio donde se contesta.
  */
 export function ComoEntranTusVentas({ modo }: { readonly modo: 'tarjeta' | 'ajustes' | 'alta' }) {
-  const { cliente, permisos, yo } = usarSesion();
+  const { cliente, permisos } = usarSesion();
   const cache = useQueryClient();
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [escondida, setEscondida] = useState(() => estaAplazado('tpv'));
 
   const puedeElegir = puedeEditar(permisos, 'app.ajustes');
-  const consulta = useQuery({
-    queryKey: ['mis_cierres', 'como'],
-    enabled: puedeVer(permisos, 'dato.ventas') && yo?.local !== null && yo?.local !== undefined,
-    retry: 1,
-    queryFn: async (): Promise<MisCierres> => {
-      const respuesta = await cliente.consultar<MisCierres>('mis_cierres', { limite: '1' });
-      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
-    },
-  });
+  const consulta = usarComoSeCierra();
 
   const como = consulta.data?.comoSeCierra ?? null;
   const [tpv, setTpv] = useState<string>('');

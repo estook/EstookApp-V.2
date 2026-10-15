@@ -20,7 +20,7 @@ export function MiTurno({
   readonly datos: ElHorario | undefined;
   readonly tamano: TamanoDeWidget;
 }) {
-  if (datos === undefined) return <Cargando que="tu turno" />;
+  if (datos === undefined) return <Cargando que="tu turno" forma="tiempo" lineas={2} />;
   if (!datos.publicado) {
     return (
       <p className="text-secundario text-texto-suave">

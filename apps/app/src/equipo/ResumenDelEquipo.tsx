@@ -72,7 +72,7 @@ export function ResumenDelEquipo() {
   if (consulta.isPending) {
     return (
       <div className="py-e6">
-        <Cargando que="las horas del equipo" />
+        <Cargando que="las horas del equipo" forma="lista-cara" lineas={5} />
       </div>
     );
   }

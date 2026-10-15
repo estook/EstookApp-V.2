@@ -71,7 +71,7 @@ export function TusObjetivos() {
   if (datos === undefined) {
     return (
       <Tarjeta titulo="Tus objetivos">
-        <Cargando que="tus objetivos" lineas={3} />
+        <Cargando que="tus objetivos" forma="lista" lineas={3} />
       </Tarjeta>
     );
   }

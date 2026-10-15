@@ -55,7 +55,9 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  *     guardado devolvería los widgets a donde estaban.
  */
 export interface MiPanel {
+  /** Mientras `cargando`, los adelantados: lo último de este aparato o los de su puesto. */
   readonly puestos: readonly WidgetPuesto[];
+  /** Si lo guardado todavía no ha llegado: se pinta, pero no se edita. */
   readonly cargando: boolean;
   readonly guardando: boolean;
   /** Si el servidor dice que otro aparato lo cambió mientras tanto. */
@@ -103,8 +105,39 @@ interface ElPanelGuardado {
   readonly version: number;
 }
 
+/**
+ * **La última colocación, recordada en el aparato** (0085), para pintar los widgets
+ * desde el primer momento.
+ *
+ * Sin esto, el Panel pedía en dos tandas: primero dónde va cada widget, y cuando
+ * llegaba, lo de cada widget. Con mala cobertura eran dos esperas seguidas. Ahora los
+ * widgets se pintan con lo último que se vio en este aparato (o con los de su puesto,
+ * la primera vez), y piden lo suyo **en la misma petición** que todo lo demás. Si lo
+ * guardado en el servidor resulta distinto, se coloca en cuanto llega.
+ *
+ * Solo son nombres de widgets, sin un dato: por persona y por aparato.
+ */
+function dondeSeRecuerda(personaId: string, aparato: string): string {
+  return `estook.panel.${personaId}.${aparato}`;
+}
+
+function loRecordado(clave: string | null): readonly WidgetPuesto[] | null {
+  if (clave === null) return null;
+  try {
+    const leido: unknown = JSON.parse(window.localStorage.getItem(clave) ?? 'null');
+    if (!Array.isArray(leido)) return null;
+    // Se guardan los nombres, y nada más (lo cazó su prueba: se leían como objetos y
+    // la segunda vez el Panel se adelantaba vacío).
+    return leido
+      .filter((id): id is string => typeof id === 'string')
+      .map((id) => ({ id, tamano: widgetPorId(id)?.tamano ?? 'ancho' }));
+  } catch {
+    return null;
+  }
+}
+
 export function usarMiPanel(): MiPanel {
-  const { cliente, permisos } = usarSesion();
+  const { cliente, permisos, yo } = usarSesion();
   const { sePuedeDeshacer } = usarDeshacer();
   const cache = useQueryClient();
   const esEscritorio = usarEsEscritorio();
@@ -181,6 +214,26 @@ export function usarMiPanel(): MiPanel {
       ? elPanelDeFabrica(tienePermiso)
       : loQueSePuedePintar(guardados, tienePermiso);
   }, [consulta.data, tienePermiso]);
+
+  // Lo que se pinta mientras llega lo guardado: lo último de este aparato, o lo de su
+  // puesto. Pasa por los mismos permisos que lo de verdad.
+  const claveRecordada = yo === null ? null : dondeSeRecuerda(yo.personaId, aparato);
+  const adelantados = useMemo(() => {
+    if (consulta.data !== undefined) return null;
+    const recordados = loRecordado(claveRecordada);
+    return recordados === null
+      ? elPanelDeFabrica(tienePermiso)
+      : loQueSePuedePintar(recordados, tienePermiso);
+  }, [consulta.data, claveRecordada, tienePermiso]);
+
+  useEffect(() => {
+    if (puestos === null || claveRecordada === null) return;
+    try {
+      window.localStorage.setItem(claveRecordada, JSON.stringify(puestos.map((p) => p.id)));
+    } catch {
+      // En navegación privada no se puede: la próxima vez se adelanta lo de su puesto.
+    }
+  }, [puestos, claveRecordada]);
 
   const mandar = useCallback(async () => {
     if (enVuelo.current) return;
@@ -435,7 +488,7 @@ export function usarMiPanel(): MiPanel {
   }, []);
 
   return {
-    puestos: puestos ?? [],
+    puestos: puestos ?? adelantados ?? [],
     cargando: consulta.isPending,
     guardando,
     loCambioOtroAparato,

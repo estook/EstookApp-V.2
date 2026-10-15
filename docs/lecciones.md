@@ -667,3 +667,25 @@
      que nadie lo viera: se mide y no bloquea (B7). Al tocar la forma de la app se mira
      `pnpm tamano` antes y después, y cada pantalla nueva entra en `lasPantallas.ts`, aparte
      (0084).
+179. **Una ruta nueva en Hono puede apagar las de siempre.** `POST /v1/consultas` al lado de
+     `GET /v1/consultas/:nombre`, con la versión en una expresión regular, dejó al
+     enrutador sin encontrar **ninguna** ruta de `/v1`: un 404 en todo. Lo cazaron las
+     pruebas de la API, no la nueva. Una ruta nueva va con la misma forma que las que hay
+     (`/consultas/varias`) y se pasan las pruebas de la API enteras (0085).
+180. **Lo que se guarda y lo que se lee tienen que ser lo mismo.** La colocación del Panel se
+     guardaba como lista de nombres y se leía como lista de objetos: la primera vez iba
+     bien (no había nada guardado) y desde la segunda el Panel se adelantaba vacío. A mano
+     no se ve, porque a mano se prueba una vez. La prueba recarga dos veces (0085).
+181. **Una prueba que escucha la red empieza a escuchar cuando ha acabado lo de antes.** Al
+     entrar, el lote del Panel sale justo después del saludo; la prueba que contaba lotes
+     tras recargar contaba también ese, y parecía que la app pedía dos veces. Se espera a
+     que la red esté quieta antes de escuchar (0085).
+182. **Lo que se guarda mientras se lee por primera vez se queda con lo de antes.** TanStack
+     Query no vuelve a pedir lo que aún no tiene dato y va de camino: se queda con esa
+     lectura, que salió antes del cambio. Con consultas que volvían enseguida no se notaba;
+     con el lote, la prueba del Tablón escribía nada más abrir y seguía «Sin avisos». La
+     caché de la app cancela esa lectura y la pide otra vez (`CacheQueNoSeQuedaAtras`, 0085).
+183. **Una prueba que mira el Panel necesita un Panel que nadie más toque.** Rosa se queda
+     sin widgets a mitad (las pruebas del Panel los quitan) y a Luis le sale «¿Dónde estás
+     hoy?» (otra le da un segundo local). Solas pasan; en la batería entera, no. Lo que mira
+     el Panel entero va con una cuenta nueva (0085).

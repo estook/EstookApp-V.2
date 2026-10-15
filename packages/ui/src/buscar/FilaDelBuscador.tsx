@@ -10,14 +10,28 @@ import { clases } from '../clases.ts';
  */
 export function Grupo({
   titulo,
+  accion,
   children,
 }: {
   readonly titulo: string;
+  /** Un botón de texto a la derecha del título: «Borrar» los recientes (0085). */
+  readonly accion?: { readonly texto: string; readonly alPulsar: () => void };
   readonly children: ReactNode;
 }) {
   return (
-    <section>
-      <h2 className="px-e3 pt-e3 pb-e1 text-secundario font-medium text-texto-suave">{titulo}</h2>
+    <section aria-label={titulo}>
+      <div className="flex items-center justify-between gap-e2 px-e3 pt-e3 pb-e1">
+        <h2 className="text-secundario font-medium text-texto-suave">{titulo}</h2>
+        {accion !== undefined && (
+          <button
+            type="button"
+            onClick={accion.alPulsar}
+            className="-my-e2 -mr-e2 min-h-toque rounded-medio px-e2 text-secundario font-medium text-naranja hover:bg-fondo"
+          >
+            {accion.texto}
+          </button>
+        )}
+      </div>
       <ul>{children}</ul>
     </section>
   );

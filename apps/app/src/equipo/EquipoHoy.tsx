@@ -84,7 +84,7 @@ export function EquipoHoy() {
   if (consulta.isPending) {
     return (
       <div className="py-e6">
-        <Cargando que="quién está hoy" />
+        <Cargando que="quién está hoy" forma="lista-cara" lineas={4} />
       </div>
     );
   }

@@ -222,6 +222,57 @@ describe('lo que no existe', () => {
   });
 });
 
+describe('varias consultas en una petición (0085)', () => {
+  function enLote(cuerpo: unknown, conToken = true) {
+    const { app } = api();
+    return app.request('/api/v1/consultas/varias', {
+      method: 'POST',
+      headers: conToken ? { authorization: 'Bearer un-token' } : {},
+      body: JSON.stringify(cuerpo),
+    });
+  }
+
+  it('contesta una lista, cada una con sus datos o su error en cristiano', async () => {
+    const respuesta = await enLote({
+      consultas: [{ nombre: 'inventada' }, { nombre: 'un_local', parametros: { id: 'no' } }],
+    });
+    expect(respuesta.status).toBe(200);
+    const cuerpo = (await respuesta.json()) as {
+      datos: { error?: { codigo: string; quePasa: string } }[];
+    };
+    expect(cuerpo.datos.map((d) => d.error?.codigo)).toEqual(['no_existe', 'faltan_datos']);
+    expect(cuerpo.datos[0]?.error?.quePasa).not.toBe('');
+  });
+
+  it('sin decir quién pregunta, ninguna dice nada', async () => {
+    const respuesta = await enLote({ consultas: [{ nombre: 'mis_locales' }] }, false);
+    const cuerpo = (await respuesta.json()) as { datos: { error?: { codigo: string } }[] };
+    expect(cuerpo.datos[0]?.error?.codigo).toBe('sin_sesion');
+  });
+
+  it('es POST /consultas/varias, y no tapa las consultas sueltas ni los comandos', async () => {
+    const { app } = api();
+    const otra = await app.request('/api/v1/consultas/otra', { method: 'POST', body: '{}' });
+    expect((await cuerpoDe(otra)).error?.codigo).toBe('no_existe');
+    const suelta = await app.request('/api/v1/consultas/inventada');
+    expect((await cuerpoDe(suelta)).error?.codigo).toBe('no_existe');
+  });
+
+  it('lo que no es una lista de consultas no pasa', async () => {
+    for (const malo of [
+      null,
+      {},
+      { consultas: [] },
+      { consultas: [{ nombre: '' }] },
+      { consultas: [{ nombre: 'mis_locales', parametros: { dias: 7 } }] },
+      { consultas: Array.from({ length: 25 }, () => ({ nombre: 'mis_locales' })) },
+    ]) {
+      const respuesta = await enLote(malo);
+      expect((await cuerpoDe(respuesta)).error?.codigo, JSON.stringify(malo)).toBe('faltan_datos');
+    }
+  });
+});
+
 describe('todo comando necesita su clave', () => {
   it('sin la cabecera de idempotencia no se ejecuta nada', async () => {
     const { app } = api();

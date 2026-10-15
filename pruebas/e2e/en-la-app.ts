@@ -43,6 +43,19 @@ export async function entrarEnLaApp(
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
 }
 
+/**
+ * **Que la app pida cada consulta suelta** (0085), para las pruebas que contestan una
+ * consulta por su cuenta (`page.route` de `/consultas/lo_de_hoy`…): desde la 0085 lo que
+ * se pide a la vez viaja junto, en `POST /consultas/varias`, y esas rutas no lo verían.
+ * Es el mismo camino que con una API de antes del lote: contesta 404 y la app pregunta
+ * suelto, así que lo que la prueba mira sigue siendo lo de siempre.
+ */
+export async function consultasSueltas(page: Page): Promise<void> {
+  await page.route('**/v1/consultas/varias', (ruta) =>
+    ruta.fulfill({ status: 404, body: '404 Not Found' }),
+  );
+}
+
 export async function irA(page: Page, direccion: string): Promise<void> {
   await abrirSinQueSeCaiga(page, `${APP}#/${direccion}`);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });

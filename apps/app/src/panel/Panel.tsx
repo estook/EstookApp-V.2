@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Aviso,
   Boton,
-  Cargando,
   Etiqueta,
   Hoja,
   Rejilla,
@@ -29,6 +28,7 @@ import { EstookEnTuMovil } from '../sinConexion/EstookEnTuMovil.tsx';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
 import { InvitacionAlRecorrido } from '../recorrido/ElRecorrido.tsx';
+import { PuestaEnMarcha } from './PuestaEnMarcha.tsx';
 
 /**
  * El Panel · el centro de control (Manifiesto 6, Evolución 1.0 capítulo 5).
@@ -143,6 +143,10 @@ export function Panel() {
         <div className="empty:hidden lg:col-span-2">
           <InvitacionAlRecorrido />
         </div>
+        {/* Y a su lado, lo que le falta a un local nuevo para arrancar (0085). */}
+        <div className="empty:hidden lg:col-span-2">
+          <PuestaEnMarcha />
+        </div>
         {/* Lo de hoy, ordenado por el servidor (entrega O, mejora 8), de lado a lado. */}
         <div className="empty:hidden lg:col-span-2">
           <LoDeHoy />
@@ -204,34 +208,35 @@ export function Panel() {
         </Aviso>
       )}
 
-      {mio.cargando ? (
-        <div className="py-e6">
-          <Cargando que="tu panel" />
-        </div>
-      ) : (
-        <Rejilla
-          puestos={mio.puestos}
-          editando={editando}
-          guardando={mio.guardando}
-          alEditar={(sigue) => {
-            setEditando(sigue);
-            // «Listo» quiere decir guarda: no se deja esperando al reloj de los
-            // ochocientos milisegundos.
-            if (!sigue) mio.guardarYa();
-          }}
-          alReordenar={mio.reordenar}
-          alSoltar={mio.guardarYa}
-          alQuitar={mio.quitar}
-          alCambiarTamano={mio.cambiarTamano}
-          // Un solo tamaño por widget (0083): no hay nada que elegir al editar.
-          tamanosDe={(id) => [widgetPorId(id)?.tamano ?? 'ancho']}
-          nombreDe={(id) => widgetPorId(id)?.nombre ?? id}
-          alAnadir={() => {
-            setAnadiendo(true);
-          }}
-          pintar={(puesto) => <Widget id={puesto.id} tamano={puesto.tamano} editando={editando} />}
-        />
-      )}
+      {/*
+        Los widgets se pintan **desde el primer momento** (0085), con lo último de este
+        aparato, para que pidan lo suyo en la misma petición que todo lo demás. Hasta
+        que llega lo guardado, se mira pero no se edita: se movería algo que todavía
+        no se sabe dónde está.
+      */}
+      <Rejilla
+        puestos={mio.puestos}
+        editando={editando}
+        guardando={mio.guardando}
+        sinEditar={mio.cargando}
+        alEditar={(sigue) => {
+          setEditando(sigue);
+          // «Listo» quiere decir guarda: no se deja esperando al reloj de los
+          // ochocientos milisegundos.
+          if (!sigue) mio.guardarYa();
+        }}
+        alReordenar={mio.reordenar}
+        alSoltar={mio.guardarYa}
+        alQuitar={mio.quitar}
+        alCambiarTamano={mio.cambiarTamano}
+        // Un solo tamaño por widget (0083): no hay nada que elegir al editar.
+        tamanosDe={(id) => [widgetPorId(id)?.tamano ?? 'ancho']}
+        nombreDe={(id) => widgetPorId(id)?.nombre ?? id}
+        alAnadir={() => {
+          setAnadiendo(true);
+        }}
+        pintar={(puesto) => <Widget id={puesto.id} tamano={puesto.tamano} editando={editando} />}
+      />
 
       {editando && (
         <div className="flex flex-wrap items-center gap-e2">

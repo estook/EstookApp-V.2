@@ -14,6 +14,13 @@ export interface RejillaProps {
   /** Cómo se pinta cada uno. La rejilla no sabe qué hay dentro. */
   readonly pintar: (puesto: WidgetPuesto) => ReactNode;
   readonly editando: boolean;
+  /**
+   * **Todavía no se puede editar** (0085): los widgets se pintan con la colocación
+   * recordada mientras llega la guardada, y mover algo que aún no se sabe dónde está
+   * se perdería. Sin «Editar» ni mantener pulsado hasta entonces: un botón que no
+   * hace nada al tocarlo es peor que no verlo (lo cazó su prueba).
+   */
+  readonly sinEditar?: boolean;
   readonly alEditar: (editando: boolean) => void;
   readonly alReordenar: (puestos: readonly WidgetPuesto[]) => void;
   /**

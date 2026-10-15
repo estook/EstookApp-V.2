@@ -1,6 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
-import { APP, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
+import {
+  APP,
+  consultasSueltas,
+  ejecutarEnLaApi,
+  entrarEnLaApp,
+  irA,
+  tokenDe,
+} from './en-la-app.ts';
 
 /**
  * Lo que vio Richi en el Panel del móvil al mirar O (25-sep-2026).
@@ -86,6 +93,7 @@ test('sin nada que atender, lo de hoy lo dice en una línea: «todo en orden» (
   // en GitHub los tres navegadores comparten la base, y mientras esta apartaba lo de
   // Rosa, las de compras le creaban pedidos en borrador, cada uno un aviso nuevo
   // (Safari, 25-sep). Lo que se prueba aquí es la pantalla, no la lista.
+  await consultasSueltas(page);
   await page.route('**/v1/consultas/lo_de_hoy', (ruta) =>
     ruta.fulfill({
       json: {

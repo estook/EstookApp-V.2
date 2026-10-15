@@ -63,7 +63,7 @@ export function Ventas() {
   if (consulta.isPending) {
     return (
       <div className="py-e6">
-        <Cargando que="tus ventas" />
+        <Cargando que="tus ventas" forma="cifra" alto />
       </div>
     );
   }

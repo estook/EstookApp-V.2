@@ -135,6 +135,7 @@ export { NOMBRES_DE_LOS_DIBUJOS, PARA_QUE_ES } from './dibujos/catalogo.ts';
 export type { NombreDelDibujo } from './dibujos/catalogo.ts';
 
 export { Cargando, Esqueleto, TarjetaCargando } from './componentes/Cargando.tsx';
+export type { FormaDeCarga } from './componentes/Cargando.tsx';
 
 export { Migas, Paginador } from './componentes/Migas.tsx';
 export type { MigasProps, Camino, Paso, PaginadorProps } from './componentes/Migas.tsx';
@@ -205,6 +206,7 @@ export type { Sector } from './navegacion/geometria.ts';
 
 // ── El buscador universal (B5) ───────────────────────────────────────────────
 export { Buscador } from './buscar/Buscador.tsx';
+export { seBuscaYa } from './buscar/seBuscaYa.ts';
 export type { BuscadorProps, Accion, ResultadoDeBusqueda } from './buscar/Buscador.tsx';
 export { parecido, trigramas, sinAcentos, filtrarPorParecido, UMBRAL } from './buscar/trigramas.ts';
 

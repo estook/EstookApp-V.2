@@ -372,7 +372,7 @@ export function NuevoProducto({
               </p>
             ) : (
               <>
-                {catalogo.isPending && <Cargando que="el catálogo" />}
+                {catalogo.isPending && <Cargando que="el catálogo" forma="lista-foto" lineas={3} />}
 
                 {catalogo.data !== undefined && catalogo.data.productos.length > 0 && (
                   <div className="flex flex-col gap-e2">

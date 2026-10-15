@@ -1,5 +1,10 @@
 import { ERRORES } from '@estook/dominio';
-import { CABECERA_CORRELACION, nuevaCorrelacionId, type Registro } from '@estook/utiles';
+import {
+  CABECERA_CORRELACION,
+  CONSULTAS_POR_LOTE,
+  nuevaCorrelacionId,
+  type Registro,
+} from '@estook/utiles';
 
 /**
  * @estook/cliente-api · la unica salida a red del navegador (M2).
@@ -95,7 +100,17 @@ export interface OpcionesDelCliente {
    * aplicacion entera se entera de una vez.
    */
   readonly alCaducarLaSesion?: () => void;
+  /**
+   * **Juntar las consultas que salen a la vez** (0085). Las que se piden en el mismo
+   * instante —el Panel entero al abrirse, con la campana y el chat— viajan en una
+   * sola petición (`POST /consultas/varias`) y cada una recibe lo suyo, como si
+   * hubiera ido sola. Una suelta sigue yendo sola.
+   */
+  readonly juntar?: boolean;
 }
+
+/** Cuánto se espera a que salgan las demás antes de mandar el lote. */
+export const ESPERA_PARA_JUNTAR_MS = 8;
 
 export interface OpcionesDeUnComando {
   /** La misma en cada reintento: es lo que hace que no se haga dos veces. */
@@ -140,6 +155,8 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
     camino: string,
     cuerpo: unknown,
     cabecerasExtra: Record<string, string>,
+    // El código HTTP, para quien lo necesite: el lote, para saber si la API lo conoce.
+    alResponder?: (estado: number) => void,
   ): Promise<Respuesta<T>> {
     // Cada llamada nace con su hilo, aunque la sesion sea la misma.
     const correlacionId = nuevaCorrelacionId();
@@ -168,6 +185,8 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
       return { ok: false, error: ERROR_SIN_RED, correlacionId };
     }
 
+    alResponder?.(respuesta.status);
+
     const devuelto = (await respuesta.json().catch(() => null)) as {
       datos?: T;
       error?: ErrorDeLaApi;
@@ -194,10 +213,104 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
     return { ok: true, datos: devuelto?.datos as T, correlacionId };
   }
 
+  function consultarSuelta<T>(nombre: string, parametros: Record<string, string>) {
+    const query = new URLSearchParams(parametros).toString();
+    return llamar<T>('GET', `/consultas/${nombre}${query ? `?${query}` : ''}`, undefined, {});
+  }
+
+  // ── Las consultas juntas (0085) ────────────────────────────────────────────
+  //
+  // Lo que se pide en el mismo instante espera unos milisegundos en la cola y sale
+  // en una sola petición. Si la API desplegada todavía no conoce el lote —la web se
+  // publica al fusionar, y la API se despliega después—, contesta «no existe» y a
+  // partir de ahí todo va suelto, como antes: nada deja de funcionar por el orden.
+
+  interface EnLaCola {
+    readonly nombre: string;
+    readonly parametros: Record<string, string>;
+    readonly contestar: (respuesta: Respuesta<unknown>) => void;
+  }
+  let cola: EnLaCola[] = [];
+  let reloj: ReturnType<typeof setTimeout> | null = null;
+  let laApiNoJunta = false;
+
+  async function mandarElLote(lote: readonly EnLaCola[]): Promise<void> {
+    if (lote.length === 1 || laApiNoJunta) {
+      await Promise.all(
+        lote.map(async (una) => {
+          una.contestar(await consultarSuelta(una.nombre, una.parametros));
+        }),
+      );
+      return;
+    }
+
+    let estado = 0;
+    const juntas = await llamar<readonly { datos?: unknown; error?: ErrorDeLaApi }[]>(
+      'POST',
+      '/consultas/varias',
+      { consultas: lote.map(({ nombre, parametros }) => ({ nombre, parametros })) },
+      {},
+      (elEstado) => {
+        estado = elEstado;
+      },
+    );
+
+    if (!juntas.ok) {
+      // Sin red, o sin sesión: a cada una, lo mismo, que es lo que le habría pasado sola.
+      if (juntas.error.codigo === 'sin_conexion' || juntas.error.codigo === 'sin_sesion') {
+        for (const una of lote) una.contestar(juntas);
+        return;
+      }
+      // Una API de antes del lote no tiene la ruta (404): se recuerda, y desde ahora
+      // todo va suelto. Cualquier otro no del lote entero, esta vez sueltas.
+      if (estado === 404) laApiNoJunta = true;
+      await Promise.all(
+        lote.map(async (una) => {
+          una.contestar(await consultarSuelta(una.nombre, una.parametros));
+        }),
+      );
+      return;
+    }
+
+    let caducada = false;
+    for (const [i, una] of lote.entries()) {
+      const suya = juntas.datos[i];
+      if (suya !== undefined && suya.error === undefined) {
+        una.contestar({ ok: true, datos: suya.datos, correlacionId: juntas.correlacionId });
+        continue;
+      }
+      const error = suya?.error ?? ERRORES.fallo_nuestro;
+      opciones.registro?.aviso('la API ha dicho que no', {
+        codigo: error.codigo,
+        camino: `/consultas/${una.nombre}`,
+      });
+      if (error.codigo === 'sin_sesion') caducada = true;
+      una.contestar({ ok: false, error, correlacionId: juntas.correlacionId });
+    }
+    // Una vez, aunque lo digan todas: es la misma sesión.
+    if (caducada) opciones.alCaducarLaSesion?.();
+  }
+
+  function vaciarLaCola(): void {
+    reloj = null;
+    const todas = cola;
+    cola = [];
+    for (let desde = 0; desde < todas.length; desde += CONSULTAS_POR_LOTE) {
+      void mandarElLote(todas.slice(desde, desde + CONSULTAS_POR_LOTE));
+    }
+  }
+
   return {
     consultar<T>(nombre: string, parametros: Record<string, string> = {}) {
-      const query = new URLSearchParams(parametros).toString();
-      return llamar<T>('GET', `/consultas/${nombre}${query ? `?${query}` : ''}`, undefined, {});
+      if (opciones.juntar !== true) return consultarSuelta<T>(nombre, parametros);
+      return new Promise<Respuesta<T>>((contestar) => {
+        cola.push({
+          nombre,
+          parametros: { ...parametros },
+          contestar: contestar as (respuesta: Respuesta<unknown>) => void,
+        });
+        reloj ??= setTimeout(vaciarLaCola, ESPERA_PARA_JUNTAR_MS);
+      });
     },
 
     ejecutar<T>(nombre: string, entrada: unknown, opcionesDeLlamada: OpcionesDeUnComando = {}) {

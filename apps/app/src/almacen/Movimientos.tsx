@@ -131,7 +131,7 @@ export function Movimientos({
   if (consulta.isPending || hoy === null) {
     return (
       <div className="py-e6">
-        <Cargando que="el libro de movimientos" />
+        <Cargando que="el libro de movimientos" forma="lista" lineas={6} />
       </div>
     );
   }

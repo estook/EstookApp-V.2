@@ -218,6 +218,9 @@ describe('buscar · como esta hecha', () => {
       // M6 · el genero y a quien se le compra.
       'productos',
       'proveedores',
+      // 0067 · los pedidos y las facturas, por su número o su proveedor.
+      'pedidos',
+      'facturas',
     ]) {
       // Que el bloque este escrito...
       expect(cuerpo, `falta el bloque «${bloque}» en estook.buscar`).toContain(`${bloque} as (`);

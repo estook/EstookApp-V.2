@@ -80,6 +80,9 @@ export function crearClienteDeLaApp(opciones: {
     token: leerToken,
     // Lo que pasa de verdad con la red: si no sale, sin señal (0070).
     pedir: pedirMirandoLaRed,
+    // Lo que se pide a la vez, en una sola petición (0085): el Panel pedía unas diez,
+    // y con mala cobertura cada una era una espera.
+    juntar: true,
     ...(opciones.registro ? { registro: opciones.registro } : {}),
     ...(opciones.alCaducarLaSesion ? { alCaducarLaSesion: opciones.alCaducarLaSesion } : {}),
   });

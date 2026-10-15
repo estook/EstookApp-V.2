@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
 import { CABECERA_CORRELACION, correlacionIdDeEntrada, variable } from '@estook/utiles';
 import {
+  CONSULTAS_POR_LOTE,
   apuntarUnFallo,
   hayAvisadorDeFallos,
+  type ConsultaDelLote,
   type Despachador,
   type Resultado,
 } from '../aplicacion/index.ts';
@@ -16,7 +18,7 @@ import {
   hechoHace,
   tokenDeLaCabecera,
 } from './cabeceras.ts';
-import { respuestaConDatos, respuestaDeError } from './respuestas.ts';
+import { cuerpoDeError, respuestaConDatos, respuestaDeError } from './respuestas.ts';
 import { VERSION_ACTUAL, porQueNoSeAtiende, versionSoportada } from './version.ts';
 
 /**
@@ -31,10 +33,11 @@ import { VERSION_ACTUAL, porQueNoSeAtiende, versionSoportada } from './version.t
  * salto mientras se escribia esto, y por eso la orquestacion acabo donde tenia
  * que estar.
  *
- * Dos rutas, y ninguna mas:
+ * Dos rutas, y una tercera que es la primera en lote:
  *
  *   GET  /vN/consultas/:nombre    lee. No cambia nada.
  *   POST /vN/comandos/:nombre     cambia algo. Idempotente por cabecera.
+ *   POST /vN/consultas/varias     lee varias de una vez (0085), cada una por su camino.
  *
  * No hay un endpoint por tabla ni un CRUD: **el cliente llama comandos y lee
  * vistas** (regla 3).
@@ -235,6 +238,56 @@ export function crearApi(despachador: Despachador) {
     return traducir(resultado, correlacionId);
   });
 
+  /*
+    **Varias consultas en una petición** (0085). El Panel pedía unas diez a la vez, y
+    con mala cobertura cada petición es una espera y un sitio donde cortarse. Aquí
+    llegan juntas y se contestan juntas, **cada una por el mismo camino que si llegara
+    sola**: sus puertas, su permiso y su transacción. Lo que dice cada una va en su
+    sitio de la lista —sus datos o su error, con el texto de siempre—, así que una que
+    no se puede leer no tumba a las demás.
+
+    Es un POST porque lleva un cuerpo, no porque cambie nada: no lleva clave de
+    idempotencia ni deja rastro, como cualquier consulta.
+
+    **Con la misma forma que las otras dos** (`/consultas/:nombre`), y no
+    `/consultas` a secas: una ruta con versión y otra forma deja al enrutador de Hono
+    sin encontrar **ninguna** de las de `/v1` (lo cazaron las pruebas de la API, con
+    un 404 en todo). Cualquier otro nombre que `varias` no existe.
+  */
+  api.post('/v:version{[0-9]+}/consultas/:nombre', async (c) => {
+    const correlacionId = c.get('correlacionId');
+    if (c.req.param('nombre') !== 'varias') return respuestaDeError('no_existe', correlacionId);
+
+    const problema = comprobarVersion(Number(c.req.param('version')), correlacionId);
+    if (problema) return problema;
+
+    const cuerpo: unknown = await c.req.json().catch(() => null);
+    const consultas = elLote(cuerpo);
+    if (consultas === null) {
+      return respuestaDeError('faltan_datos', correlacionId, {
+        porque: `Hace falta una lista de consultas, de una a ${CONSULTAS_POR_LOTE}, cada una con su nombre.`,
+      });
+    }
+
+    const resultados = await despachador.consultarVarias(
+      quienLlama(
+        c.req.header(CABECERA_AUTORIZACION),
+        correlacionId,
+        c.req.header(CABECERA_DIRECCION),
+      ),
+      consultas,
+    );
+
+    return respuestaConDatos(
+      resultados.map((resultado) =>
+        resultado.estado === 'fallo'
+          ? cuerpoDeError(resultado.codigo, resultado.detalle)
+          : { datos: resultado.datos },
+      ),
+      correlacionId,
+    );
+  });
+
   api.post('/v:version{[0-9]+}/comandos/:nombre', async (c) => {
     const correlacionId = c.get('correlacionId');
 
@@ -336,6 +389,35 @@ function quienLlama(
 function comprobarVersion(version: number, correlacionId: string): Response | null {
   if (versionSoportada(version)) return null;
   return respuestaDeError('faltan_datos', correlacionId, { porque: porQueNoSeAtiende(version) });
+}
+
+/**
+ * Lo que llega a `POST /consultas`, comprobado a mano: `{ consultas: [{ nombre,
+ * parametros }] }`, con los parámetros como texto, igual que en la barra de
+ * direcciones de una consulta suelta. Así cada una se valida con **su misma
+ * entrada** en el despachador. Nulo si no tiene esa forma.
+ */
+function elLote(cuerpo: unknown): readonly ConsultaDelLote[] | null {
+  if (typeof cuerpo !== 'object' || cuerpo === null) return null;
+  const lista = (cuerpo as { consultas?: unknown }).consultas;
+  if (!Array.isArray(lista) || lista.length === 0 || lista.length > CONSULTAS_POR_LOTE) return null;
+
+  const consultas: ConsultaDelLote[] = [];
+  for (const una of lista as unknown[]) {
+    if (typeof una !== 'object' || una === null) return null;
+    const { nombre, parametros = {} } = una as { nombre?: unknown; parametros?: unknown };
+    if (typeof nombre !== 'string' || nombre === '') return null;
+    if (typeof parametros !== 'object' || parametros === null || Array.isArray(parametros)) {
+      return null;
+    }
+    const entrada: Record<string, string> = {};
+    for (const [clave, valor] of Object.entries(parametros)) {
+      if (typeof valor !== 'string') return null;
+      entrada[clave] = valor;
+    }
+    consultas.push({ nombre, entrada });
+  }
+  return consultas;
 }
 
 function traducir(resultado: Resultado, correlacionId: string): Response {

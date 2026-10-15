@@ -56,7 +56,7 @@ export function Inventario() {
   );
   const [recontando, setRecontando] = useState(false);
 
-  if (datos.isPending) return <Cargando que="el inventario" />;
+  if (datos.isPending) return <Cargando que="el inventario" forma="lista" lineas={4} />;
   const lo = datos.data;
   if (lo === undefined) {
     return (
@@ -320,7 +320,7 @@ function RevisarInventario({
     await cache.invalidateQueries({ queryKey: ['almacen_hoy'] });
   }
 
-  if (datos.isPending) return <Cargando que="lo contado" />;
+  if (datos.isPending) return <Cargando que="lo contado" forma="lista-foto" lineas={5} />;
   const lo = datos.data;
   if (lo === undefined) {
     return (

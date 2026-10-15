@@ -68,7 +68,7 @@ export function Informes({ vista }: { readonly vista: string }) {
     ponerParametros(nuevos);
   }
 
-  if (consulta.isPending) return <Cargando que="tu informe" lineas={4} />;
+  if (consulta.isPending) return <Cargando que="tu informe" forma="cifra" alto lineas={4} />;
   if (consulta.isError) {
     return (
       <Aviso

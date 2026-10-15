@@ -43,7 +43,7 @@ import { BotonDePausa } from '../equipo/BotonDePausa.tsx';
 import { usarAccion } from '../ganchos/usarAccion.ts';
 import { BotonDeAccion } from '../acciones/BotonDeAccion.tsx';
 import { comoSeLeeLaHora, comoSeLeenMinutos, type FichajesDeHoy } from '../equipo/contrato.ts';
-import type { MisCierres } from '../servicio/contrato.ts';
+import { usarComoSeCierra } from '../ganchos/usarComoSeCierra.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { ComprasDeHoy, LoQueViene } from '../compras/contrato.ts';
 import {
@@ -152,7 +152,7 @@ function TuJornada() {
   if (fichar.cargando) {
     return (
       <Marco titulo="Tu jornada" icono={<IconoReloj size={16} />}>
-        <Cargando que="tu turno" lineas={2} />
+        <Cargando que="tu turno" forma="anillo" />
       </Marco>
     );
   }
@@ -293,18 +293,9 @@ function VentasWidget() {
 
 /** Sin cajas cerradas: lo dice, y deja cerrarla a quien puede. */
 function SinCajaCerrada() {
-  const { cliente, permisos, yo } = usarSesion();
   const navegar = useNavigate();
-  const consulta = useQuery({
-    queryKey: ['mis_cierres', 'panel'],
-    enabled: puedeVer(permisos, 'dato.ventas') && yo?.local !== null && yo?.local !== undefined,
-    queryFn: async (): Promise<MisCierres> => {
-      const respuesta = await cliente.consultar<MisCierres>('mis_cierres', { dias: '8' });
-      if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
-    },
-  });
-  const datos = consulta.data;
+  // La misma que la tarjeta de «¿Cómo entran tus ventas?», que ya viene en el lote.
+  const datos = usarComoSeCierra().data;
   return (
     <div className="flex flex-col items-start gap-e3">
       <Tranquilo>
@@ -377,7 +368,7 @@ function ObjetivosWidget() {
       }}
     >
       {datos === undefined ? (
-        <Cargando que="tus objetivos" lineas={3} />
+        <Cargando que="tus objetivos" forma="medidores" />
       ) : datos.cifras.length === 0 ? (
         <Tranquilo>Tu acceso no incluye las cifras de los objetivos.</Tranquilo>
       ) : conDato.length === 0 ? (
@@ -508,7 +499,7 @@ function MermaSinEuros({ apuntar }: { readonly apuntar: ReactNode }) {
   return (
     <Marco titulo="Merma" leyendo={consulta}>
       {datos === undefined ? (
-        <Cargando que="la merma" lineas={2} />
+        <Cargando que="la merma" forma="cifra" />
       ) : (
         <div className="flex h-full flex-col gap-e3">
           <div>
@@ -557,7 +548,7 @@ function BajoMinimo() {
       derecha={atencion.length > 0 ? <Contador>{atencion.length}</Contador> : undefined}
     >
       {consulta.data === undefined ? (
-        <Cargando que="el almacén" lineas={3} />
+        <Cargando que="el almacén" forma="niveles" />
       ) : atencion.length === 0 ? (
         <Tranquilo>Todo por encima de su mínimo.</Tranquilo>
       ) : (
@@ -636,7 +627,7 @@ function Caducidades() {
       derecha={caducan.length > 0 ? <Contador>{caducan.length}</Contador> : undefined}
     >
       {consulta.data === undefined ? (
-        <Cargando que="las caducidades" lineas={3} />
+        <Cargando que="las caducidades" forma="dias" />
       ) : caducan.length === 0 ? (
         <Tranquilo>Nada caduca en los próximos siete días.</Tranquilo>
       ) : (
@@ -715,7 +706,7 @@ function ComprasDeHoyWidget() {
   return (
     <Marco titulo="Compras de hoy" leyendo={consulta} ir="/almacen/compras/pedidos">
       {datos === undefined ? (
-        <Cargando que="las compras" lineas={2} />
+        <Cargando que="las compras" forma="lista-cara" lineas={2} />
       ) : tocaPedir.length === 0 && llegan.length === 0 ? (
         <Tranquilo>
           Hoy no llega nada y no toca pedirle a nadie.
@@ -799,7 +790,7 @@ function LoQueVieneWidget() {
   return (
     <Marco titulo="Lo que viene" leyendo={consulta} ir="/calendario">
       {consulta.data === undefined ? (
-        <Cargando que="lo que viene" lineas={3} />
+        <Cargando que="lo que viene" forma="tiempo" />
       ) : nada ? (
         <Tranquilo>Nada apuntado para hoy ni para mañana.</Tranquilo>
       ) : (
@@ -893,7 +884,7 @@ function EquipoAhora() {
       {...(datos === undefined ? {} : { derecha: <Contador>{datos.horaDelLocal}</Contador> })}
     >
       {datos === undefined ? (
-        <Cargando que="los fichajes" lineas={3} />
+        <Cargando que="los fichajes" forma="caras" />
       ) : gente.length === 0 ? (
         <EstadoVacio
           compacto

@@ -133,7 +133,7 @@ export function TusAvisos() {
         {...(dondeVaElCorreo === null ? {} : { origen: dondeVaElCorreo })}
       >
         {datos === undefined ? (
-          <Cargando que="tus avisos" lineas={3} />
+          <Cargando que="tus avisos" forma="lista" lineas={3} />
         ) : (
           <div className="flex flex-col gap-e4">
             {error !== null && <ErrorEnCristiano error={error} />}

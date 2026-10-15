@@ -205,7 +205,7 @@ export function HistorialDeFichajes({
         </Aviso>
       )}
 
-      {historial.isPending && <Cargando que="los fichajes" />}
+      {historial.isPending && <Cargando que="los fichajes" forma="lista" lineas={5} />}
 
       {historial.isError && (
         <Aviso tono="mal" titulo="No he podido leer los fichajes">

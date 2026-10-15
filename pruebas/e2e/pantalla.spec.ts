@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
+import { consultasSueltas } from './en-la-app.ts';
 
 /**
  * Lo que se ve, y que de verdad se ve.
@@ -840,6 +841,7 @@ test('si el Panel no puede leer, lo dice, y no se inventa un «no puedes» ni un
   // **Con el Panel de fábrica, y no con el que Rosa tenga guardado.** Las pruebas
   // del Panel de `esqueleto.spec.ts` le quitan y le ponen widgets —el primero que
   // quitan es el de fichar— y, corriendo a la vez, esta se encontraba sin él.
+  await consultasSueltas(page);
   await page.route('**/api/v1/consultas/mi_panel*', (ruta) =>
     ruta.fulfill({
       status: 200,

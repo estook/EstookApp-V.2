@@ -214,7 +214,8 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
     );
   }
 
-  if (consulta.isLoading) return <Cargando que="quién tiene acceso" />;
+  if (consulta.isLoading)
+    return <Cargando que="quién tiene acceso" forma="lista-cara" lineas={5} />;
 
   const accesos = consulta.data ?? [];
 

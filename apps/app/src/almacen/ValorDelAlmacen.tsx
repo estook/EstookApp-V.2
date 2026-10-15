@@ -64,7 +64,7 @@ export function ValorDelAlmacen({
     );
   }
 
-  if (lectura.isPending) return <Cargando que="lo que vale tu almacén" />;
+  if (lectura.isPending) return <Cargando que="lo que vale tu almacén" forma="cifra" alto />;
   const datos = lectura.data;
   if (datos === undefined) {
     return (

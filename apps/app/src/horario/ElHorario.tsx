@@ -214,7 +214,7 @@ function VerElHorario({
     },
   });
 
-  if (consulta.isPending) return <Cargando que="el horario" />;
+  if (consulta.isPending) return <Cargando que="el horario" forma="lista-cara" lineas={5} />;
   if (consulta.isError) {
     return (
       <Aviso tono="atencion" titulo="No he podido leer el horario">
@@ -484,7 +484,7 @@ function MontarElHorario({
     ]);
   }
 
-  if (consulta.isPending) return <Cargando que="el horario" />;
+  if (consulta.isPending) return <Cargando que="el horario" forma="lista-cara" lineas={5} />;
   if (consulta.isError) {
     return (
       <Aviso tono="atencion" titulo="No he podido leer el horario">

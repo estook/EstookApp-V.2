@@ -44,7 +44,7 @@ import { usarMantenerPulsado } from '../ganchos/usarMantenerPulsado.ts';
 const RejillaQueSeEdita = lazy(() => import('./RejillaQueSeEdita.tsx'));
 
 export function Rejilla(props: RejillaProps) {
-  const { editando, alEditar, alAnadir, guardando = false } = props;
+  const { editando, alEditar, alAnadir, guardando = false, sinEditar = false } = props;
   const [vacios, setVacios] = useState<ReadonlySet<string>>(() => new Set());
 
   const avisarDeVacio = useCallback((id: string, vacio: boolean) => {
@@ -72,7 +72,7 @@ export function Rejilla(props: RejillaProps) {
 
   const mantener = usarMantenerPulsado(() => {
     alEditar(true);
-  }, !editando);
+  }, !editando && !sinEditar);
 
   return (
     <div className="@container flex flex-col gap-e3" data-recorrido="panel">
@@ -95,6 +95,7 @@ export function Rejilla(props: RejillaProps) {
           )}
           <button
             type="button"
+            hidden={sinEditar && !editando}
             onClick={() => {
               alEditar(!editando);
             }}

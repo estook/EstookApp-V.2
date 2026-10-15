@@ -1,6 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
-import { API, APP, ejecutarEnLaApi, entrarEnLaApp, tokenDe } from './en-la-app.ts';
+import {
+  API,
+  APP,
+  consultasSueltas,
+  ejecutarEnLaApi,
+  entrarEnLaApp,
+  tokenDe,
+} from './en-la-app.ts';
 
 /**
  * Lo que vio Richi en su iPhone el 25-sep-2026, con la app instalada.
@@ -28,6 +35,7 @@ test('«Hoy» aparece aunque llegue el último y sea lo único de la zona de ate
 }) => {
   // Lo demás de la zona, vacío: sin el alta, sin la pregunta de la caja y sin «sin
   // precio». Así «Hoy» es lo único que la llena, como en el Panel de Richi.
+  await consultasSueltas(page);
   await page.route('**/v1/consultas/el_alta*', (ruta) => ruta.abort());
   await page.route('**/v1/consultas/mis_cierres*', (ruta) => ruta.abort());
   await page.route('**/v1/consultas/almacen_hoy*', async (ruta) => {

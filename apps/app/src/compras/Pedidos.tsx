@@ -178,7 +178,7 @@ export function Pedidos() {
         >
           <div className="flex flex-col gap-e3">
             {lista.isPending ? (
-              <Cargando que="tus pedidos" lineas={3} />
+              <Cargando que="tus pedidos" forma="lista-cara" lineas={3} />
             ) : lista.isError ? (
               <Aviso tono="mal" titulo="No he podido leer tus pedidos">
                 Vuelve a intentarlo dentro de un momento. Si sigue igual, avísanos.
@@ -620,7 +620,9 @@ function NuevoPedido({
           }}
         />
 
-        {elegido !== '' && sugerencia.isPending && <Cargando que="lo que le pediría" lineas={3} />}
+        {elegido !== '' && sugerencia.isPending && (
+          <Cargando que="lo que le pediría" forma="lista-foto" lineas={3} />
+        )}
 
         {datos !== undefined && (
           <>
@@ -762,7 +764,7 @@ function QueHaLlegado({
         <section className="flex flex-col gap-e2">
           <h3 className="text-seccion font-semibold">Un pedido que mandaste</h3>
           {abiertos.isPending ? (
-            <Cargando que="los pedidos mandados" lineas={2} />
+            <Cargando que="los pedidos mandados" forma="lista-cara" lineas={2} />
           ) : mandados.length === 0 ? (
             <p className="text-secundario text-texto-suave">
               No hay ningún pedido mandado esperando.

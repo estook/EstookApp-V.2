@@ -134,7 +134,7 @@ function ElegirConversacion({
       <div className="flex flex-col gap-e3">
         {error !== null && <ErrorEnCristiano error={error} />}
         {canales.isPending ? (
-          <Cargando que="las conversaciones" lineas={3} />
+          <Cargando que="las conversaciones" forma="lista-cara" lineas={3} />
         ) : lista.length === 0 ? (
           <p className="text-secundario text-texto-suave">
             Todavía no hay chat en este local: ábrelo una vez desde arriba.

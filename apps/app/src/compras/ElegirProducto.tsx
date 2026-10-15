@@ -57,7 +57,9 @@ export function ElegirProducto({
         }}
       />
 
-      {buscando && consulta.isPending && <Cargando que="los productos" lineas={2} />}
+      {buscando && consulta.isPending && (
+        <Cargando que="los productos" forma="lista-foto" lineas={2} />
+      )}
 
       {buscando && !consulta.isPending && encontrados.length === 0 && (
         <p className="text-secundario text-texto-suave">

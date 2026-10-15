@@ -276,7 +276,7 @@ export function ApuntarMerma({
                 Con dos letras empiezo a buscar en tu género.
               </p>
             ) : cargandoLaLista ? (
-              <Cargando que="tu género" />
+              <Cargando que="tu género" forma="lista-foto" lineas={3} />
             ) : !conRed && todos.data === undefined ? (
               <p className="text-secundario text-texto-suave">
                 Sin señal no tengo tu género guardado todavía: ábrelo una vez con señal y ya podrás

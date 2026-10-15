@@ -41,7 +41,7 @@ export function Precios() {
   if (consulta.isPending) {
     return (
       <div className="py-e6">
-        <Cargando que="los precios" />
+        <Cargando que="los precios" forma="lista" lineas={4} />
       </div>
     );
   }

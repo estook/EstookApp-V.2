@@ -166,7 +166,7 @@ export function Conversacion({ canalId }: { readonly canalId: string }) {
   if (consulta.isPending) {
     return (
       <div className="p-e4">
-        <Cargando que="la conversación" lineas={6} />
+        <Cargando que="la conversación" forma="lista-cara" lineas={6} />
       </div>
     );
   }
@@ -1421,7 +1421,7 @@ function AnadirGente({
       }
     >
       {gente.isPending ? (
-        <Cargando que="la gente del local" lineas={4} />
+        <Cargando que="la gente del local" forma="lista-cara" lineas={4} />
       ) : fuera.length === 0 ? (
         <p className="text-secundario text-texto-suave">Ya está dentro todo el local.</p>
       ) : (

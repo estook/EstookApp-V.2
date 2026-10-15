@@ -159,7 +159,7 @@ export function Recuento({
     );
   }
 
-  if (lista.isPending) return <Cargando que="tu género" />;
+  if (lista.isPending) return <Cargando que="tu género" forma="lista-foto" lineas={6} />;
 
   const datos = lista.data;
   if (datos === undefined) {

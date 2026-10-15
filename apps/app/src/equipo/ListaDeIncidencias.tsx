@@ -415,7 +415,7 @@ export function IncidenciasDeUnaPersona({ personaId }: { readonly personaId: str
         </Aviso>
       )}
       {lo === undefined ? (
-        <Cargando que="sus incidencias" lineas={2} />
+        <Cargando que="sus incidencias" forma="lista" lineas={2} />
       ) : pocas.length === 0 ? (
         <p className="text-secundario text-texto-suave">
           {lo.hayHorarioPublicado

@@ -111,7 +111,7 @@ export function Proveedores() {
   if (consulta.isPending) {
     return (
       <div className="py-e6">
-        <Cargando que="tus proveedores" />
+        <Cargando que="tus proveedores" forma="lista-cara" lineas={5} />
       </div>
     );
   }

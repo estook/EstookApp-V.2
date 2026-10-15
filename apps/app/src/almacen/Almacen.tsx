@@ -167,32 +167,32 @@ export function Almacen({ destino, vista }: { readonly destino: string; readonly
         <Productos vista={vista} alAbrirProducto={setProductoAbierto} />
       )}
       {destino === 'productos' && vista === 'valor' && (
-        <Suspense fallback={<Cargando que="lo que vale tu almacén" />}>
+        <Suspense fallback={<Cargando que="lo que vale tu almacén" forma="cifra" alto />}>
           <ValorDelAlmacen alAbrirProducto={setProductoAbierto} />
         </Suspense>
       )}
       {destino === 'movimientos' && vista !== 'inventario' && vista !== 'consumo' && (
-        <Suspense fallback={<Cargando que="el libro de movimientos" />}>
+        <Suspense fallback={<Cargando que="el libro de movimientos" forma="lista" lineas={6} />}>
           <Movimientos alAbrirProducto={setProductoAbierto} />
         </Suspense>
       )}
       {destino === 'mermas' && (
-        <Suspense fallback={<Cargando que="las mermas" />}>
+        <Suspense fallback={<Cargando que="las mermas" forma="lista-foto" lineas={5} />}>
           <Mermas alAbrirProducto={setProductoAbierto} />
         </Suspense>
       )}
       {destino === 'movimientos' && vista === 'inventario' && (
-        <Suspense fallback={<Cargando que="el inventario" />}>
+        <Suspense fallback={<Cargando que="el inventario" forma="lista" lineas={4} />}>
           <Inventario />
         </Suspense>
       )}
       {destino === 'movimientos' && vista === 'consumo' && (
-        <Suspense fallback={<Cargando que="lo gastado de verdad" />}>
+        <Suspense fallback={<Cargando que="lo gastado de verdad" forma="cifra" alto />}>
           <Consumo />
         </Suspense>
       )}
       {destino === 'compras' && (
-        <Suspense fallback={<Cargando que="las compras" />}>
+        <Suspense fallback={<Cargando que="las compras" forma="lista-cara" lineas={4} />}>
           <Compras vista={vista} />
         </Suspense>
       )}

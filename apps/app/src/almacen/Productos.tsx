@@ -251,7 +251,7 @@ export function Productos({
   if (consulta.isPending) {
     return (
       <div className="py-e6">
-        <Cargando que="tus productos" />
+        <Cargando que="tus productos" forma="lista-foto" lineas={6} />
       </div>
     );
   }

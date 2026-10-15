@@ -44,7 +44,7 @@ export function Incidencias({ vista }: { readonly vista: string }) {
     ...(de === null ? {} : { persona_id: de }),
   });
 
-  if (datos.isPending) return <Cargando que="las incidencias" />;
+  if (datos.isPending) return <Cargando que="las incidencias" forma="lista-cara" lineas={4} />;
   const lo = datos.data;
   if (lo === undefined) {
     return (

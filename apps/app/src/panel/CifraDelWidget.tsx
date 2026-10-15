@@ -97,7 +97,7 @@ export function CifraDelWidget({
           No he podido leerlo. Prueba en un momento.
         </p>
       ) : datos === undefined ? (
-        <Cargando que={titulo.toLowerCase()} lineas={2} />
+        <Cargando que={titulo.toLowerCase()} forma="cifra" alto={ancho} />
       ) : datos.total === null ? (
         <div className="flex h-full flex-col justify-between gap-e3">
           {sinDatos ?? (

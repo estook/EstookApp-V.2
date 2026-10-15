@@ -125,7 +125,7 @@ export function LosAvisos({
         </Boton>
       }
     >
-      {consulta.isLoading && <Cargando que="tus avisos" lineas={3} />}
+      {consulta.isLoading && <Cargando que="tus avisos" forma="lista-foto" lineas={3} />}
       {consulta.isError && (
         <Aviso
           tono="mal"

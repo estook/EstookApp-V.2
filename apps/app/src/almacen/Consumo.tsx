@@ -68,7 +68,7 @@ export function Consumo() {
     );
   }
 
-  if (lectura.isPending) return <Cargando que="lo gastado de verdad" />;
+  if (lectura.isPending) return <Cargando que="lo gastado de verdad" forma="cifra" alto />;
   const datos = lectura.data;
   if (datos === undefined) {
     return (

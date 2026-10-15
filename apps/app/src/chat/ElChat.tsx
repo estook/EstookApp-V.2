@@ -163,7 +163,7 @@ function ListaDeCanales({ canalAbierto }: { readonly canalAbierto: string | null
           />
         ) : consulta.isPending ? (
           <div className="p-e4">
-            <Cargando que="las conversaciones" lineas={5} />
+            <Cargando que="las conversaciones" forma="lista-cara" lineas={5} />
           </div>
         ) : consulta.isError ? (
           <p className="p-e4 text-secundario text-texto-suave">
@@ -353,7 +353,7 @@ function LoEncontrado({
   if (consulta.isPending) {
     return (
       <div className="p-e4">
-        <Cargando que="lo que buscas" lineas={3} />
+        <Cargando que="lo que buscas" forma="lista" lineas={3} />
       </div>
     );
   }
@@ -545,7 +545,7 @@ function NuevaConversacion({
         />
 
         {gente.isPending ? (
-          <Cargando que="la gente del local" lineas={4} />
+          <Cargando que="la gente del local" forma="lista-cara" lineas={4} />
         ) : filtradas.length === 0 ? (
           <p className="text-secundario text-texto-suave">Nadie con ese nombre en este local.</p>
         ) : (

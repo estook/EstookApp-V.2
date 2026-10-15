@@ -107,7 +107,7 @@ export function Mermas({ alAbrirProducto }: { readonly alAbrirProducto: (id: str
   if (consulta.isPending) {
     return (
       <div className="py-e6">
-        <Cargando que="tus mermas" />
+        <Cargando que="tus mermas" forma="lista-foto" lineas={5} />
       </div>
     );
   }

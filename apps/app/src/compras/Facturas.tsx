@@ -118,7 +118,7 @@ export function Facturas() {
           />
 
           {lista.isPending ? (
-            <Cargando que="las facturas" lineas={3} />
+            <Cargando que="las facturas" forma="lista-cara" lineas={3} />
           ) : lista.isError ? (
             <Aviso tono="mal" titulo="No he podido leer las facturas">
               Vuelve a intentarlo dentro de un momento. Si sigue igual, avísanos.
@@ -671,7 +671,7 @@ function ApuntarFactura({
           <section className="flex flex-col gap-e3">
             <h3 className="text-seccion font-semibold">¿Qué albaranes cubre?</h3>
             {pendientes.isPending ? (
-              <Cargando que="los albaranes sin factura" lineas={2} />
+              <Cargando que="los albaranes sin factura" forma="lista" lineas={2} />
             ) : (
               <ElegirAlbaranes
                 albaranes={albaranes}
@@ -937,7 +937,7 @@ function Comprobar({
           impuestos. Marca los albaranes que cubre.
         </p>
         {pendientes.isPending ? (
-          <Cargando que="los albaranes sin factura" lineas={2} />
+          <Cargando que="los albaranes sin factura" forma="lista" lineas={2} />
         ) : (
           <ElegirAlbaranes
             albaranes={albaranes}

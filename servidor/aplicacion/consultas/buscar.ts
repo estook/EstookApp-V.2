@@ -42,9 +42,17 @@ export interface Resultado {
  */
 export const MINIMO_DE_LETRAS = 2;
 
+/**
+ * **Salvo un número** (0085): «7» es el pedido 7, y con una cifra no hay ruido que
+ * temer, porque un número solo encuentra pedidos y facturas que lo llevan.
+ */
+export function sePuedeBuscar(texto: string): boolean {
+  return texto.length >= MINIMO_DE_LETRAS || /^[0-9]$/.test(texto);
+}
+
 export const entradaDeBuscar = z
   .object({
-    texto: z.string().trim().min(MINIMO_DE_LETRAS).max(120),
+    texto: z.string().trim().max(120).refine(sePuedeBuscar),
     // Llega por la barra de direcciones, asi que llega como texto.
     limite: z.coerce.number().int().min(1).max(50).optional(),
   })

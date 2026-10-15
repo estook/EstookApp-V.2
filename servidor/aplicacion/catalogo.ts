@@ -170,6 +170,7 @@ import { elAlta } from './consultas/el-alta.ts';
 import { miAcceso } from './consultas/mi-acceso.ts';
 import { miPanel } from './consultas/mi-panel.ts';
 import { lasCaras } from './consultas/las-caras.ts';
+import { laPuestaEnMarcha } from './consultas/la-puesta-en-marcha.ts';
 import { unIndicador } from './consultas/indicador.ts';
 import { misObjetivos } from './consultas/objetivos.ts';
 import { loDeHoyConsulta } from './consultas/hoy.ts';
@@ -327,6 +328,7 @@ export const catalogo = {
     [miPanel.nombre]: miPanel,
     // Las caras del equipo, firmadas de una vez para toda la app (0084).
     [lasCaras.nombre]: lasCaras,
+    [laPuestaEnMarcha.nombre]: laPuestaEnMarcha,
     // M6½ · la merma, que el libro sabia guardar y no habia forma de apuntar.
     [mermaDeHoy.nombre]: mermaDeHoy,
     [misMermas.nombre]: misMermas,

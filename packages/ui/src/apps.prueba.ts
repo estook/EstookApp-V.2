@@ -338,8 +338,16 @@ describe('lo construido y lo que llega', () => {
   });
 
   it('una app sin construir no tiene ningun destino en la barra', () => {
-    // Escandallos, hasta M9 · 2. (Era la Carta hasta que la 0086 la adelantó.)
-    expect(destinosConstruidos(laApp('escandallos'))).toHaveLength(0);
+    // El Cuaderno, hasta M17. (Eran Escandallos hasta M9 · 2, y la Carta hasta la 0086.)
+    expect(destinosConstruidos(laApp('cuaderno'))).toHaveLength(0);
+  });
+
+  it('Escandallos tiene su resumen, sus fichas y sus elaboraciones (M9 · 2, 0087)', () => {
+    expect(destinosConstruidos(laApp('escandallos')).map((d) => d.id)).toEqual([
+      'resumen',
+      'fichas',
+      'elaboraciones',
+    ]);
   });
 
   it('la Carta tiene su carta y sus canales construidos (M9 · 1, 0086)', () => {

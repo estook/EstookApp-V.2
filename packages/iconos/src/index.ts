@@ -14,3 +14,4 @@ export { crearIcono } from './crearIcono.tsx';
 export type { IconoProps, Icono } from './crearIcono.tsx';
 
 export * from './generados.tsx';
+export { ICONO_DEL_ALERGENO, IconoPicante } from './alergenos.tsx';

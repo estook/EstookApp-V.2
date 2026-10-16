@@ -74,6 +74,12 @@ export const IconoLeido = crearIcono(
   '<path d="M18 6 7 17l-5-5" /><path d="m22 10-7.5 7.5L13 16" />',
 );
 
+/** Lucide `chef-hat` */
+export const IconoModoCocina = crearIcono(
+  'chef-hat',
+  '<path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z" /><path d="M6 17h12" />',
+);
+
 /** Lucide `chevron-down` */
 export const IconoFlechaAbajo = crearIcono('chevron-down', '<path d="m6 9 6 6 6-6" />');
 
@@ -170,6 +176,12 @@ export const IconoFogon = crearIcono(
   '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />',
 );
 
+/** Lucide `history` */
+export const IconoHistorial = crearIcono(
+  'history',
+  '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" />',
+);
+
 /** Lucide `house` */
 export const IconoInicio = crearIcono(
   'house',
@@ -210,6 +222,18 @@ export const IconoPanel = crearIcono(
 export const IconoRejilla = crearIcono(
   'layout-grid',
   '<rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" />',
+);
+
+/** Lucide `leaf` */
+export const IconoVegetariano = crearIcono(
+  'leaf',
+  '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />',
+);
+
+/** Lucide `link` */
+export const IconoVincular = crearIcono(
+  'link',
+  '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />',
 );
 
 /** Lucide `log-in` */
@@ -374,6 +398,12 @@ export const IconoCongelado = crearIcono(
   '<path d="m10 20-1.25-2.5L6 18" /><path d="M10 4 8.75 6.5 6 6" /><path d="m14 20 1.25-2.5L18 18" /><path d="m14 4 1.25 2.5L18 6" /><path d="m17 21-3-6h-4" /><path d="m17 3-3 6 1.5 3" /><path d="M2 12h6.5L10 9" /><path d="m20 10-1.5 2 1.5 2" /><path d="M22 12h-6.5L14 15" /><path d="m4 10 1.5 2L4 14" /><path d="m7 21 3-6-1.5-3" /><path d="m7 3 3 6h4" />',
 );
 
+/** Lucide `sprout` */
+export const IconoVegano = crearIcono(
+  'sprout',
+  '<path d="M7 20h10" /><path d="M10 20c5.5-2.5.8-6.4 3-10" /><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z" /><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z" />',
+);
+
 /** Lucide `square` */
 export const IconoDetener = crearIcono(
   'square',
@@ -414,6 +444,12 @@ export const IconoTamanoDeLetra = crearIcono(
 export const IconoDeshacer = crearIcono(
   'undo-2',
   '<path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />',
+);
+
+/** Lucide `unlink` */
+export const IconoDesvincular = crearIcono(
+  'unlink',
+  '<path d="m18.84 12.25 1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71" /><path d="m5.17 11.75-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71" /><line x1="8" x2="8" y1="2" y2="5" /><line x1="2" x2="5" y1="8" y2="8" /><line x1="16" x2="16" y1="19" y2="22" /><line x1="19" x2="22" y1="16" y2="16" />',
 );
 
 /** Lucide `upload` */

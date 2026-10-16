@@ -113,6 +113,16 @@ export const ACCIONES: readonly Accion[] = [
     ir: '/carta/carta/por-secciones?hacer=nuevo',
   },
   {
+    // M9 · 2 (0087): la salsa, el caldo, lo que se prepara antes.
+    id: 'nueva-elaboracion',
+    app: 'escandallos',
+    nombre: 'Nueva elaboración',
+    queHace: 'Una salsa o un caldo con lo que rinde, para usarla dentro de tus platos',
+    icono: IconoAnadir,
+    permiso: { cual: 'app.escandallos', como: 'editar' },
+    ir: '/escandallos/elaboraciones?hacer=nueva-elaboracion',
+  },
+  {
     id: 'que-atender',
     app: 'almacen',
     nombre: 'Ver qué hay que atender',

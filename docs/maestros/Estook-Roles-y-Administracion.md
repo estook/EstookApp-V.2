@@ -53,7 +53,7 @@ Tres cosas, y las tres respetan el principio de arriba.
 
 **Entra y ve:** su turno de hoy, el menú del día, los agotados, los alérgenos y sus horas de la semana.
 
-**Su rueda:** Calendario, Carta (solo lectura), Cuaderno y Servicio limitado a registrar mermas. Cuatro sectores grandes. **Si el local cobra con Estook**, Servicio le abre además la sala: sus mesas, tomar nota y, si el local lo permite, cobrar (1.12).
+**Su rueda:** Calendario, Carta (solo lectura), **Escandallos (las fichas, sin un euro)**, Cuaderno y Servicio limitado a registrar mermas. Cinco sectores ([0087](../decisiones/0087-fichas-y-escandallos.md): «la ficha es para camareros y cocineros sobre todo»). **Si el local cobra con Estook**, Servicio le abre además la sala: sus mesas, tomar nota y, si el local lo permite, cobrar (1.12).
 
 ```
 Buenos dias, Sara
@@ -77,7 +77,7 @@ Buenos dias, Sara
 └──────────────┴──────────────┘
 ```
 
-**Qué puede hacer:** fichar, consultar la carta y los alérgenos, marcar un plato agotado, apuntar una merma, escribir en el chat, dejar una incidencia y descargarse su horario. Ficha **con la ubicación**, que se pide y no bloquea; apunta la merma **sin ver lo que vale**; y en su ficha ve sus horas y sus fichajes.
+**Qué puede hacer:** fichar, consultar la carta y los alérgenos, **ver la ficha de cada plato** —lo que lleva en gramos y cómo se hace, en modo cocina o en PDF—, marcar un plato agotado, apuntar una merma, escribir en el chat, dejar una incidencia y descargarse su horario. Ficha **con la ubicación**, que se pide y no bloquea; apunta la merma **sin ver lo que vale**; y en su ficha ve sus horas y sus fichajes.
 
 **El horario publicado lo ve entero**, el de todo el local, o solo el suyo si lo elige: quién trabaja cada día y a qué hora, **nunca lo que cuesta**. El borrador, no ([0068](../decisiones/0068-las-respuestas-de-h.md), hecho en H2 · [0069](../decisiones/0069-el-horario.md)). Lo mira en Calendario › Turnos y en «Mi turno» del Panel.
 

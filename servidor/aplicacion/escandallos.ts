@@ -1,0 +1,416 @@
+import {
+  CANALES_DE_VENTA,
+  escandalloDelPlato,
+  costeDeLaReceta,
+  fechaEnElLocal,
+  precioEnElCanal,
+  type CanalParaElMargen,
+  type ElaboracionDelEscandallo,
+  type EscandalloDelPlato,
+  type LibroDeRecetas,
+  type LineaDelEscandallo,
+  type LineaQueSeEscribe,
+  type ProductoDelEscandallo,
+  type RecetaQueSeLee,
+  type UnidadDeUso,
+} from '@estook/dominio';
+import { FalloDeAplicacion, type Contexto } from './contrato.ts';
+import { elRelojYElFisco, elTipoDeRestauracion } from './desviacion.ts';
+import { losCanalesDelLocal, type UnCanal } from './canales-del-local.ts';
+
+/**
+ * Lo que comparten las fichas y el escandallo (M9 · 2, 0087): leer de una vez las
+ * recetas del local, sus elaboraciones y los productos que llevan, con su coste.
+ *
+ * **El coste no se guarda**: se calcula cada vez con el Almacén de ese momento. Así
+ * «sube el aceite» no apunta nada en ningún sitio y el escandallo ya lo sabe (0086), y
+ * no hay un coste viejo esperando a que alguien lo recalcule.
+ *
+ * Y **solo se lee el coste si quien pregunta puede verlo** (`conCostes`): sin
+ * `dato.coste_de_plato`, el libro sale sin un solo precio, así que ni por error puede
+ * acabar uno en la respuesta.
+ */
+
+export interface LineaLeida extends LineaDelEscandallo {
+  readonly id: string;
+  readonly nota: string | null;
+}
+
+export interface RecetaLeida {
+  readonly id: string;
+  readonly platoId: string | null;
+  readonly elaboracionId: string | null;
+  readonly pasos: readonly string[];
+  readonly notas: string | null;
+  readonly minutos: number | null;
+  readonly version: number;
+  readonly lineas: readonly LineaLeida[];
+}
+
+export interface ProductoLeido extends ProductoDelEscandallo {
+  readonly activo: boolean;
+  readonly categoria: string | null;
+}
+
+export interface ElaboracionLeida {
+  readonly id: string;
+  readonly nombre: string;
+  readonly rindeCantidad: number;
+  readonly rindeUnidad: UnidadDeUso;
+  readonly activo: boolean;
+  readonly version: number;
+}
+
+export interface ElLibro {
+  readonly libro: LibroDeRecetas;
+  readonly productos: ReadonlyMap<string, ProductoLeido>;
+  readonly elaboraciones: ReadonlyMap<string, ElaboracionLeida>;
+  readonly recetaDelPlato: ReadonlyMap<string, RecetaLeida>;
+  readonly recetaDeLaElaboracion: ReadonlyMap<string, RecetaLeida>;
+}
+
+export function elLocalDeEscandallos(contexto: Contexto): string {
+  const localId = contexto.sesion?.localId ?? null;
+  if (localId === null) {
+    throw new FalloDeAplicacion('faltan_datos', {
+      porque: 'Las fichas son de un local: elige uno primero.',
+    });
+  }
+  return localId;
+}
+
+export async function lasRecetasDelLocal(
+  contexto: Contexto,
+  localId: string,
+): Promise<RecetaLeida[]> {
+  const filas = await contexto.sql<
+    {
+      id: string;
+      plato_id: string | null;
+      elaboracion_id: string | null;
+      pasos: string[];
+      notas: string | null;
+      tiempo_minutos: number | null;
+      version: number;
+      lineas: {
+        id: string;
+        producto_id: string | null;
+        elaboracion_id: string | null;
+        cantidad: number | string;
+        unidad: UnidadDeUso;
+        nota: string | null;
+      }[];
+    }[]
+  >`
+    select r.id, r.plato_id, r.elaboracion_id, r.pasos, r.notas, r.tiempo_minutos, r.version,
+           coalesce(
+             json_agg(json_build_object(
+               'id', l.id, 'producto_id', l.producto_id, 'elaboracion_id', l.elaboracion_id,
+               'cantidad', l.cantidad, 'unidad', l.unidad, 'nota', l.nota
+             ) order by l.orden) filter (where l.id is not null),
+             '[]'::json
+           ) as lineas
+      from estook.receta r
+      left join estook.linea_de_receta l on l.receta_id = r.id
+     where r.local_id = ${localId}::uuid
+     group by r.id
+  `;
+  return filas.map((f) => ({
+    id: f.id,
+    platoId: f.plato_id,
+    elaboracionId: f.elaboracion_id,
+    pasos: f.pasos,
+    notas: f.notas,
+    minutos: f.tiempo_minutos,
+    version: f.version,
+    lineas: f.lineas.map((l) => ({
+      id: l.id,
+      productoId: l.producto_id,
+      elaboracionId: l.elaboracion_id,
+      cantidad: Number(l.cantidad),
+      unidad: l.unidad,
+      nota: l.nota,
+    })),
+  }));
+}
+
+export async function lasElaboracionesDelLocal(
+  contexto: Contexto,
+  localId: string,
+): Promise<ElaboracionLeida[]> {
+  const filas = await contexto.sql<
+    {
+      id: string;
+      nombre: string;
+      rinde_cantidad: string;
+      rinde_unidad: UnidadDeUso;
+      activo: boolean;
+      version: number;
+    }[]
+  >`
+    select id, nombre, rinde_cantidad::text as rinde_cantidad, rinde_unidad::text as rinde_unidad,
+           activo, version
+      from estook.elaboracion
+     where local_id = ${localId}::uuid
+     order by nombre
+  `;
+  return filas.map((f) => ({
+    id: f.id,
+    nombre: f.nombre,
+    rindeCantidad: Number(f.rinde_cantidad),
+    rindeUnidad: f.rinde_unidad,
+    activo: f.activo,
+    version: f.version,
+  }));
+}
+
+/**
+ * Los productos del local con lo que necesita una ficha: su unidad, sus alérgenos y,
+ * **solo con `conCostes`**, lo que cuesta una unidad de uso con su aprovechamiento:
+ * el precio medio del Almacén, y si lo que hay entró sin coste, el de hoy (la misma
+ * regla que el valor de la cámara y el food cost real).
+ */
+export async function losProductosDeLasFichas(
+  contexto: Contexto,
+  localId: string,
+  conCostes: boolean,
+): Promise<ProductoLeido[]> {
+  const filas = conCostes
+    ? await contexto.sql<
+        {
+          id: string;
+          nombre: string;
+          unidad_de_uso: UnidadDeUso;
+          alergenos: string[];
+          activo: boolean;
+          categoria: string | null;
+          coste: string | null;
+        }[]
+      >`
+        select p.id, p.nombre, p.unidad_de_uso::text as unidad_de_uso, p.alergenos, p.activo,
+               c.nombre as categoria,
+               coalesce(nullif(e.coste_milesimas, 0), v.coste_milesimas)::text as coste
+          from estook.producto p
+          left join estook.categoria_de_producto c on c.id = p.categoria_id
+          left join lateral (
+            select x.coste_milesimas from estook.existencias x where x.producto_id = p.id
+          ) e on true
+          left join estook.precios_vigentes(
+            array(select id from estook.producto where local_id = ${localId}::uuid)
+          ) v on v.producto_id = p.id
+         where p.local_id = ${localId}::uuid
+         order by p.nombre
+      `
+    : await contexto.sql<
+        {
+          id: string;
+          nombre: string;
+          unidad_de_uso: UnidadDeUso;
+          alergenos: string[];
+          activo: boolean;
+          categoria: string | null;
+          coste: null;
+        }[]
+      >`
+        select p.id, p.nombre, p.unidad_de_uso::text as unidad_de_uso, p.alergenos, p.activo,
+               c.nombre as categoria, null as coste
+          from estook.producto p
+          left join estook.categoria_de_producto c on c.id = p.categoria_id
+         where p.local_id = ${localId}::uuid
+         order by p.nombre
+      `;
+  return filas.map((f) => ({
+    id: f.id,
+    nombre: f.nombre,
+    unidad: f.unidad_de_uso,
+    alergenos: f.alergenos,
+    activo: f.activo,
+    categoria: f.categoria,
+    costeMilesimas: f.coste === null ? null : Number(f.coste),
+  }));
+}
+
+/** Todo de una vez: tres lecturas, y el resto se cuenta aquí. */
+export async function elLibroDelLocal(
+  contexto: Contexto,
+  localId: string,
+  conCostes: boolean,
+): Promise<ElLibro> {
+  const [recetas, elaboraciones, productos] = await Promise.all([
+    lasRecetasDelLocal(contexto, localId),
+    lasElaboracionesDelLocal(contexto, localId),
+    losProductosDeLasFichas(contexto, localId, conCostes),
+  ]);
+  const recetaDelPlato = new Map<string, RecetaLeida>();
+  const recetaDeLaElaboracion = new Map<string, RecetaLeida>();
+  for (const r of recetas) {
+    if (r.platoId !== null) recetaDelPlato.set(r.platoId, r);
+    if (r.elaboracionId !== null) recetaDeLaElaboracion.set(r.elaboracionId, r);
+  }
+  const deLasElaboraciones = new Map<string, ElaboracionDelEscandallo>(
+    elaboraciones.map((e) => [
+      e.id,
+      {
+        id: e.id,
+        nombre: e.nombre,
+        rindeCantidad: e.rindeCantidad,
+        rindeUnidad: e.rindeUnidad,
+        lineas: recetaDeLaElaboracion.get(e.id)?.lineas ?? [],
+      },
+    ]),
+  );
+  return {
+    libro: {
+      productos: new Map(productos.map((p) => [p.id, p])),
+      elaboraciones: deLasElaboraciones,
+    },
+    productos: new Map(productos.map((p) => [p.id, p])),
+    elaboraciones: new Map(elaboraciones.map((e) => [e.id, e])),
+    recetaDelPlato,
+    recetaDeLaElaboracion,
+  };
+}
+
+// ── Vinculado: un producto que se vende tal cual ─────────────────────────────
+
+/**
+ * Si la receta de un plato es **un producto, una unidad y nada más**: el chuletón, la
+ * lata de refresco, la botella de vino (repaso del 16-oct, A). Es una ficha como
+ * cualquiera —se cuenta como desgranada—, y la Carta la enseña con su cadena.
+ */
+export function elVinculado(receta: RecetaLeida | undefined): string | null {
+  if (receta === undefined || receta.lineas.length !== 1) return null;
+  const linea = receta.lineas[0];
+  if (linea === undefined || linea.productoId === null) return null;
+  return linea.unidad === 'ud' && linea.cantidad === 1 ? linea.productoId : null;
+}
+
+// ── El IVA, el objetivo y los canales ────────────────────────────────────────
+
+export interface LoDeLaCuenta {
+  readonly iva: number | null;
+  readonly objetivo: number | null;
+  readonly canales: readonly UnCanal[];
+}
+
+/** Lo que pide el margen y que no es del plato: el IVA del local, su objetivo y sus canales. */
+export async function loDeLaCuenta(contexto: Contexto, localId: string): Promise<LoDeLaCuenta> {
+  const local = await elRelojYElFisco(contexto, localId);
+  const [iva, objetivos, canales] = await Promise.all([
+    elTipoDeRestauracion(contexto, local, fechaEnElLocal(contexto.ahora, local.zonaHoraria)),
+    contexto.sql<{ valor: string | null }[]>`
+      select valor::text as valor from estook.objetivo
+       where local_id = ${localId}::uuid and clave = 'materia_prima' and hasta is null
+    `,
+    losCanalesDelLocal(contexto, localId, true),
+  ]);
+  const valor = objetivos[0]?.valor;
+  return {
+    iva,
+    objetivo: valor === null || valor === undefined ? null : Number(valor),
+    canales: canales.filter((c) => c.activo),
+  };
+}
+
+/** El escandallo de un plato con sus precios: el coste, el food cost y el margen por canal. */
+export function elEscandalloDe(
+  receta: RecetaLeida | undefined,
+  plato: {
+    readonly precioCentimos: number | null;
+    readonly precios: Readonly<Record<string, number>>;
+  },
+  libro: LibroDeRecetas,
+  cuenta: LoDeLaCuenta,
+): EscandalloDelPlato & { readonly lineas: ReturnType<typeof costeDeLaReceta>['lineas'] } {
+  const coste = costeDeLaReceta(receta?.lineas ?? [], libro);
+  const conLineas = (receta?.lineas.length ?? 0) > 0;
+  const canales: CanalParaElMargen[] = cuenta.canales.map((c) => {
+    const vale = precioEnElCanal(plato.precioCentimos, plato.precios[c.canal]);
+    return {
+      canal: c.canal,
+      nombre: c.nombre,
+      precioCentimos: vale.centimos,
+      igualQueSala: c.canal !== 'sala' && vale.igualQueSala,
+      comisionPorcentaje: c.comisionPorcentaje,
+      envaseCentimos: c.envaseCentimos,
+    };
+  });
+  return {
+    ...escandalloDelPlato({
+      costeMilesimas: conLineas ? coste.milesimas : null,
+      faltanPrecios: coste.faltanPrecios,
+      precioSalaCentimos: plato.precioCentimos,
+      iva: cuenta.iva,
+      objetivo: cuenta.objetivo,
+      canales,
+    }),
+    lineas: coste.lineas,
+  };
+}
+
+/** Los canales que se pueden activar hoy, por si alguno se apaga del catálogo. */
+export const NOMBRE_DEL_CANAL = new Map(CANALES_DE_VENTA.map((c) => [c.canal, c.nombre]));
+
+// ── La receta, como se guarda en el historial ────────────────────────────────
+
+export interface LineaGuardada {
+  readonly tipo: 'producto' | 'elaboracion';
+  readonly id: string;
+  readonly nombre: string;
+  readonly cantidad: number;
+  readonly unidad: UnidadDeUso;
+  readonly nota: string | null;
+}
+
+export interface RecetaGuardada extends RecetaQueSeLee {
+  readonly lineas: readonly LineaGuardada[];
+}
+
+/** La receta entera, con los nombres de ese momento: se lee sin mirar nada más. */
+export function comoSeGuarda(
+  nombre: string,
+  rinde: RecetaQueSeLee['rinde'],
+  receta: {
+    readonly lineas: readonly LineaQueSeEscribe[];
+    readonly pasos: readonly string[];
+    readonly notas: string | null;
+    readonly minutos: number | null;
+  },
+  nombres: {
+    readonly productos: ReadonlyMap<string, { readonly nombre: string }>;
+    readonly elaboraciones: ReadonlyMap<string, { readonly nombre: string }>;
+  },
+): RecetaGuardada {
+  return {
+    nombre,
+    rinde,
+    lineas: receta.lineas.map((l) => {
+      const esProducto = l.productoId !== null;
+      const id = (esProducto ? l.productoId : l.elaboracionId) ?? '';
+      return {
+        tipo: esProducto ? 'producto' : 'elaboracion',
+        id,
+        nombre:
+          (esProducto
+            ? nombres.productos.get(id)?.nombre
+            : nombres.elaboraciones.get(id)?.nombre) ?? '¿?',
+        cantidad: l.cantidad,
+        unidad: l.unidad,
+        nota: l.nota,
+      };
+    }),
+    pasos: [...receta.pasos],
+    notas: receta.notas,
+    minutos: receta.minutos,
+  };
+}
+
+/** De lo guardado a lo que entiende el motor (la desviación cuenta con la de ese día). */
+export function lineasDeLoGuardado(guardada: RecetaGuardada): LineaDelEscandallo[] {
+  return guardada.lineas.map((l) => ({
+    productoId: l.tipo === 'producto' ? l.id : null,
+    elaboracionId: l.tipo === 'elaboracion' ? l.id : null,
+    cantidad: l.cantidad,
+    unidad: l.unidad,
+  }));
+}

@@ -48,7 +48,16 @@ const LAS_OCHO = [
  * pantalla vacía sigue siendo verdad.
  */
 // La Carta, desde M9 · 1 (0086): la carta y sus canales.
-const APPS_CON_CONTENIDO = ['almacen', 'carta', 'calendario', 'equipo', 'servicio', 'negocio'];
+const APPS_CON_CONTENIDO = [
+  'almacen',
+  // M9 · 2 (0087): su Resumen, sus fichas y sus elaboraciones.
+  'escandallos',
+  'carta',
+  'calendario',
+  'equipo',
+  'servicio',
+  'negocio',
+];
 
 /**
  * Abre una pantalla y **espera a que la aplicacion este viva**.
@@ -289,8 +298,9 @@ test.describe('la rueda de apps', () => {
     await comoCamarera(page);
 
     await abrirLaRueda(page);
-    // Camarera: calendario, carta, servicio y cuaderno.
-    await expect(page.getByRole('menuitem')).toHaveCount(4);
+    // Camarera: calendario, carta, servicio, cuaderno y, desde M9 · 2 (0087),
+    // Escandallos para ver la ficha de cada plato, sin un euro.
+    await expect(page.getByRole('menuitem')).toHaveCount(5);
     await expect(page.getByRole('menuitem', { name: /Almacén/ })).toHaveCount(0);
   });
 

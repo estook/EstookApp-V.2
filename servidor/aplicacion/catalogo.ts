@@ -173,6 +173,21 @@ import { lasCaras } from './consultas/las-caras.ts';
 import { laPuestaEnMarcha } from './consultas/la-puesta-en-marcha.ts';
 import { miCarta, unPlato } from './consultas/mi-carta.ts';
 import {
+  laDesviacionDeLosPlatos,
+  laFichaEnPdf,
+  loQuePuedeLlevar,
+  misFichas,
+  unaFicha,
+} from './consultas/escandallos.ts';
+import {
+  archivarElaboracion,
+  crearElaboracion,
+  guardarFicha,
+  recuperarElaboracion,
+  recuperarReceta,
+  vincularPlato,
+} from './comandos/fichas.ts';
+import {
   archivarPlato,
   cambiarPlato,
   cambiarSeccion,
@@ -346,6 +361,14 @@ export const catalogo = {
     [laPuestaEnMarcha.nombre]: laPuestaEnMarcha,
     [miCarta.nombre]: miCarta,
     [unPlato.nombre]: unPlato,
+    // M9 · 2 · Fichas y escandallos (0087): la lista con «sin ficha», cada ficha con su
+    // escandallo a quien ve costes, lo que puede llevar una receta, el PDF sin euros y
+    // la desviación de los platos, que se enseña con Estook TPV.
+    [misFichas.nombre]: misFichas,
+    [unaFicha.nombre]: unaFicha,
+    [loQuePuedeLlevar.nombre]: loQuePuedeLlevar,
+    [laFichaEnPdf.nombre]: laFichaEnPdf,
+    [laDesviacionDeLosPlatos.nombre]: laDesviacionDeLosPlatos,
     // M6½ · la merma, que el libro sabia guardar y no habia forma de apuntar.
     [mermaDeHoy.nombre]: mermaDeHoy,
     [misMermas.nombre]: misMermas,
@@ -734,5 +757,16 @@ export const catalogo = {
     [ponerFotoDePlato.nombre]: ponerFotoDePlato,
     [quitarFotoDePlato.nombre]: quitarFotoDePlato,
     [configurarCanal.nombre]: configurarCanal,
+
+    // ── M9 · 2 · Fichas y escandallos (0087) ─────────────────────────────────
+    //
+    // Guardar una receta (cada guardado entero en su historial) y recuperar una de
+    // antes; las elaboraciones; y vincular un plato a lo que se vende tal cual.
+    [guardarFicha.nombre]: guardarFicha,
+    [recuperarReceta.nombre]: recuperarReceta,
+    [crearElaboracion.nombre]: crearElaboracion,
+    [archivarElaboracion.nombre]: archivarElaboracion,
+    [recuperarElaboracion.nombre]: recuperarElaboracion,
+    [vincularPlato.nombre]: vincularPlato,
   } as Record<string, Comando<never, unknown>>,
 };

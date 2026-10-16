@@ -168,12 +168,15 @@ test.describe('el menú del ordenador', () => {
     );
 
     // Las apps sin nada construido no se mezclan con las que funcionan. (Era la Carta
-    // hasta M9 · 1, 0086; ahora es Escandallos, hasta M9 · 2.)
+    // hasta M9 · 1, 0086, y Escandallos hasta M9 · 2, 0087; ahora es el Cuaderno.)
     await expect(
       elMenu(page).getByRole('button', { name: 'Escandallos', exact: true }),
-    ).toHaveCount(0);
+    ).toHaveCount(1);
+    await expect(elMenu(page).getByRole('button', { name: 'Cuaderno', exact: true })).toHaveCount(
+      0,
+    );
     await elMenu(page).getByRole('button', { name: 'Próximamente' }).click();
-    await expect(elMenu(page).getByText('Escandallos', { exact: true })).toBeVisible();
+    await expect(elMenu(page).getByText('Cuaderno', { exact: true })).toBeVisible();
   });
 
   test('la campana abre los avisos, y el chat dice lo que será', async ({ page }) => {

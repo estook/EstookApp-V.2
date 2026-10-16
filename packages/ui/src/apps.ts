@@ -316,7 +316,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     ],
   },
 
-  // ── Escandallos · M9 ───────────────────────────────────────────────────────
+  // ── Escandallos · M9 · 2 (0087) ─────────────────────────────────────────
   'app.escandallos': {
     id: 'escandallos',
     nombre: 'Escandallos',
@@ -324,23 +324,28 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     icono: IconoEscandallos,
     acento: 'var(--color-app-escandallos)',
     forma: 'lista',
-    queHace: 'Lo que cuesta de verdad cada plato y el margen que deja',
+    queHace: 'Lo que lleva cada plato, cómo se hace y cuánto te deja',
     destinos: [
       {
         id: 'resumen',
         nombre: 'Resumen',
         icono: IconoPanel,
-        queContesta: '¿Qué plato ha dejado de dar margen, y por culpa de qué?',
+        // Lo que falta por desgranar y, a quien ve costes, lo que pierde dinero.
+        queContesta: '¿Qué plato me falta por desgranar, y cuál no me deja margen?',
         vistas: [],
-        modulo: 'M9',
       },
       {
         id: 'fichas',
         nombre: 'Fichas',
         icono: IconoEscandallos,
-        queContesta: '¿Cuánto cuesta cada plato?',
-        vistas: vistas(['Todas', 'M9'], ['Bajo objetivo', 'M9'], ['Sin coste', 'M9']),
-        modulo: 'M9',
+        queContesta: '¿Qué lleva cada plato, y cuánto cuesta?',
+        // «Sin ficha» y «Bajo objetivo» solo salen si tienen algo (el repaso del
+        // 10-oct): a quien no ve costes, «Bajo objetivo» no le sale nunca. Era «Sin
+        // coste» hasta la 0087: lo que falta es la ficha, no el coste.
+        vistas: soloSiTienenAlgo(vistas('Todas', 'Sin ficha', 'Bajo objetivo'), [
+          'sin-ficha',
+          'bajo-objetivo',
+        ]),
       },
       {
         id: 'elaboraciones',
@@ -348,9 +353,9 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         icono: IconoRejilla,
         queContesta: '¿Qué se prepara antes, y cuánto cuesta esa preparación?',
         vistas: [],
-        modulo: 'M9',
       },
       {
+        // «Qué ha cambiado y por qué» (Plan, M9): con M9 · 3 (0087).
         id: 'analisis',
         nombre: 'Análisis',
         icono: IconoNegocio,

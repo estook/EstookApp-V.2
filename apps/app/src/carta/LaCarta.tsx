@@ -22,18 +22,27 @@ import {
   IconoEditar,
   IconoFlechaAbajo,
   IconoFlechaArriba,
+  IconoVincular,
 } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { centimos } from '@estook/dominio';
-import { puedeEditar } from '@estook/permisos';
+import { puedeEditar, puedeVer } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarLaCarta } from '../ganchos/usarRefrescarLaCarta.ts';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { comoDinero } from '../almacen/contrato.ts';
-import { canalesConPrecio, type MiCarta, type UnCanal, type UnPlato } from './contrato.ts';
+import {
+  canalesConPrecio,
+  losAlergenosDe,
+  type MiCarta,
+  type UnCanal,
+  type UnPlato,
+} from './contrato.ts';
 import { FichaDelPlato } from './FichaDelPlato.tsx';
+import { DesdeElAlmacen } from './DesdeElAlmacen.tsx';
+import { LosAlergenos } from '../escandallos/Alergenos.tsx';
 
 /**
  * Tu carta (M9 · 1, decisión 0086).
@@ -65,6 +74,10 @@ export function LaCarta({ vista }: { readonly vista: string }) {
   usarQueHacer('nuevo', () => {
     if (puedeEditar(permisos, 'app.carta')) setAnadiendo(null);
   });
+  // Vincular es escribir la ficha: hace falta Escandallos para editar, y ver el Almacén.
+  const puedeVincular =
+    puedeEditar(permisos, 'app.escandallos') && puedeVer(permisos, 'app.almacen');
+  const [desdeElAlmacen, setDesdeElAlmacen] = useState(false);
 
   if (consulta.isPending) {
     return (
@@ -97,6 +110,17 @@ export function LaCarta({ vista }: { readonly vista: string }) {
           >
             Añadir platos
           </Boton>
+          {puedeVincular && (
+            <Boton
+              tono="secundario"
+              icono={<IconoVincular size={18} />}
+              onClick={() => {
+                setDesdeElAlmacen(true);
+              }}
+            >
+              Desde el almacén
+            </Boton>
+          )}
           <Boton
             tono="secundario"
             onClick={() => {
@@ -118,15 +142,28 @@ export function LaCarta({ vista }: { readonly vista: string }) {
             {...(datos.puedeEditar
               ? {
                   accion: (
-                    <Boton
-                      tono="principal"
-                      icono={<IconoAnadir size={18} />}
-                      onClick={() => {
-                        setAnadiendo(null);
-                      }}
-                    >
-                      Añadir platos
-                    </Boton>
+                    <div className="flex flex-wrap justify-center gap-e2">
+                      <Boton
+                        tono="principal"
+                        icono={<IconoAnadir size={18} />}
+                        onClick={() => {
+                          setAnadiendo(null);
+                        }}
+                      >
+                        Añadir platos
+                      </Boton>
+                      {puedeVincular && (
+                        <Boton
+                          tono="secundario"
+                          icono={<IconoVincular size={18} />}
+                          onClick={() => {
+                            setDesdeElAlmacen(true);
+                          }}
+                        >
+                          Desde el almacén
+                        </Boton>
+                      )}
+                    </div>
                   ),
                 }
               : { sinAccionPorque: 'La carta la monta quien lleva el local.' })}
@@ -150,6 +187,15 @@ export function LaCarta({ vista }: { readonly vista: string }) {
           seccionInicial={anadiendo}
           alCerrar={() => {
             setAnadiendo(undefined);
+          }}
+        />
+      )}
+      {desdeElAlmacen && (
+        <DesdeElAlmacen
+          carta={datos}
+          seccionInicial={null}
+          alCerrar={() => {
+            setDesdeElAlmacen(false);
           }}
         />
       )}
@@ -189,7 +235,39 @@ function fila(
   });
   // El de otro canal va delante del detalle y no a la derecha: a la derecha, en el
   // móvil, le quitaba sitio al nombre («Croquetas de j…», 15-oct).
-  const debajo = [...otros, ...(detalle === null ? [] : [detalle])].join(' · ');
+  const texto = [
+    ...(plato.unidadesPorRacion === null ? [] : [`${String(plato.unidadesPorRacion)} ud`]),
+    ...otros,
+    ...(detalle === null ? [] : [detalle]),
+  ].join(' · ');
+  const alergenos = losAlergenosDe(plato);
+  const conIconos =
+    alergenos.length > 0 ||
+    plato.picante > 0 ||
+    plato.distintivos.length > 0 ||
+    plato.vinculadoA !== null;
+  // Los alérgenos y el picante, con su dibujo (0087): se ven antes de leer.
+  const debajo = conIconos ? (
+    <span className="flex min-w-0 items-center gap-e2">
+      {plato.vinculadoA !== null && (
+        <IconoVincular
+          size={14}
+          className="shrink-0"
+          titulo={`Vinculado a ${plato.vinculadoA.nombre}`}
+        />
+      )}
+      <LosAlergenos
+        alergenos={alergenos}
+        picante={plato.picante}
+        distintivos={plato.distintivos}
+        lado={18}
+        enUnaLinea
+      />
+      {texto !== '' && <span className="min-w-0 truncate">{texto}</span>}
+    </span>
+  ) : (
+    texto
+  );
   return {
     clave: plato.id,
     delante: (

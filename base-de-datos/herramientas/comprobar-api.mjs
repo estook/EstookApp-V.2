@@ -1057,6 +1057,45 @@ try {
     );
   }
 
+  // ── M9 · 2 · lo que la 0069 deja puesto (0087) ─────────────────────────────
+  //
+  // Las fichas: cuatro tablas con seguridad por filas, el historial de cada receta que
+  // solo crece (la API puede leerlo y añadir, nunca cambiarlo), y la ficha para la
+  // sala: el camarero y el jefe de sala ven Escandallos, sin `dato.coste_de_plato`.
+  if (cuantasMigraciones.ultima < 69) {
+    noSePuede(`la 0069 todavia no esta aplicada · la base va por la ${cuantasMigraciones.ultima}`);
+  } else {
+    titulo('M9 · 2 · lo que la 0069 dejo puesto');
+    const [fichas] = await conexion`
+      select
+        (select count(*)::int from pg_class c
+          where c.relnamespace = 'estook'::regnamespace and c.relkind = 'r' and c.relrowsecurity
+            and c.relname in ('elaboracion', 'receta', 'linea_de_receta', 'receta_guardada')) as tablas,
+        (select count(*)::int from information_schema.role_table_grants
+          where table_schema = 'estook' and table_name = 'receta_guardada'
+            and grantee = 'estook_api' and privilege_type in ('UPDATE', 'DELETE')) as se_cambia,
+        (select count(*)::int from estook.permiso_de_rol
+          where permiso = 'app.escandallos' and nivel = 'ver'
+            and rol in ('camarero', 'jefe_de_sala')) as la_sala,
+        (select count(*)::int from estook.permiso_de_rol
+          where permiso = 'dato.coste_de_plato' and rol in ('camarero', 'jefe_de_sala', 'cocinero')) as con_euros
+    `;
+    comprobar(
+      'las cuatro tablas de las fichas, con seguridad por filas',
+      fichas.tablas === 4,
+      `${fichas.tablas} de 4`,
+    );
+    comprobar(
+      'y el historial de una receta no se puede cambiar, solo crece',
+      fichas.se_cambia === 0,
+    );
+    comprobar(
+      'la sala ve las fichas, y ni la sala ni la cocina ven un euro',
+      fichas.la_sala === 2 && fichas.con_euros === 0,
+      `sala ${fichas.la_sala} de 2 · con euros ${fichas.con_euros}`,
+    );
+  }
+
   titulo('La API DESPLEGADA, que es otra cosa');
 
   // ══════════════════════════════════════════════════════════════════════════

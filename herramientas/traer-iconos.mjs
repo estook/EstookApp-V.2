@@ -175,6 +175,20 @@ const ICONOS = {
   square: 'Detener',
   'smile-plus': 'Reaccionar',
   'check-check': 'Leido',
+
+  // ── M9 · 2 · fichas y escandallos (0087) ───────────────────────────────────
+  //
+  // Vincular un plato a lo que se vende tal cual (la cadena, y romperla para
+  // desvincular); el modo cocina, con el gorro; el historial de la receta; y lo que
+  // la carta le dice al cliente además de los alérgenos: vegetariano (la hoja) y
+  // vegano (el brote). Los catorce alérgenos y el chile son dibujos propios, en
+  // `alergenos.tsx`: Lucide no los tiene todos y tienen que ir juntos.
+  link: 'Vincular',
+  unlink: 'Desvincular',
+  'chef-hat': 'ModoCocina',
+  history: 'Historial',
+  leaf: 'Vegetariano',
+  sprout: 'Vegano',
 };
 
 async function traer(nombre) {

@@ -698,3 +698,14 @@
      herramienta, y en producción salió «MAL · sobran plato_buscable» cuando todo estaba
      bien. Ahora una prueba lee la lista de la herramienta y la compara con la base: al
      añadir una tabla buscable, se pone en rojo hasta tocar las dos (0086).
+186. **Un icono con `aria-label` sigue escondido.** `crearIcono` pone `aria-hidden` a todo icono
+     que no lleve `titulo`, así que la cadena de «vinculado» se veía y el lector de pantalla
+     no la nombraba. Lo cazó la prueba de pantalla al buscarla por su nombre. Un icono que
+     dice algo solo va con `titulo` (0087).
+187. **`se-usan` busca el nombre entre comillas simples.** `consulta="la_ficha_en_pdf"` en el
+     JSX no contaba, y la prueba decía que nadie la llamaba aunque el botón estaba ahí. Se
+     escribe `consulta={'…'}`, como el resto de botones de documento (0087).
+188. **La hora de lo guardado la pone el servidor.** Con `default now()` en la base, todas las
+     recetas de la prueba eran «de hoy» y la desviación no encontraba la de cada día. Lo que
+     después se lee por fechas se guarda con `contexto.ahora` (regla 10), y la prueba que
+     cambia la receta a mitad de semana falla si se cuenta con la de hoy (0087).

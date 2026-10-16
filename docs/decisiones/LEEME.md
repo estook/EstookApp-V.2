@@ -99,3 +99,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0086** | Las respuestas de M9: un solo plato, la carta adelantada, los canales con su precio a mano y la receta sin versiones a la vista                                            |
 | **0087** | Fichas y escandallos (M9 · 2), y la carta que vincula lo del Almacén, cuenta las raciones y dice sus alérgenos y lo que pica                                               |
 | **0088** | Vincular todo el Almacén (lo que va a peso, con su ración) y el historial de la receta que solo crece (0070)                                                               |
+| **0089** | Lo que la API puede hacer en cada tabla (0071): ni un permiso más que lo que escribe su migración, y una tabla nueva nace sin nada                                         |

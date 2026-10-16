@@ -4,13 +4,13 @@
 >
 > Comprobado el 16 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
 >
-> | Qué                         | Cómo está                                                                                                                                 |
-> | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #106** (M9 · 2). Abierta: **su arreglo** ([0088](decisiones/0088-todo-el-almacen-y-el-historial-que-solo-crece.md)) |
-> | La base de datos            | **69 de 69** migraciones, igual que `main`. Con el arreglo llega la **0070**                                                              |
-> | La API                      | **Desplegada con la #106**: 90 y 194, con el lote y **con Sentry**. El arreglo no cambia la cuenta                                        |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                                                                 |
-> | M9                          | **M9 · 1 y M9 · 2 en producción**; `bd:comprobar-api` dio **1 MAL** (el historial), que arregla la 0070                                   |
+> | Qué                         | Cómo está                                                                                                                                                                                                                                       |
+> | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #106** (M9 · 2). Abiertas: **su arreglo** ([0088](decisiones/0088-todo-el-almacen-y-el-historial-que-solo-crece.md)) y, detrás, **los permisos de la API** ([0089](decisiones/0089-lo-que-la-api-puede-en-cada-tabla.md)) |
+> | La base de datos            | **69 de 69** migraciones, igual que `main`. Con el arreglo llega la **0070**, y con los permisos la **0071**                                                                                                                                    |
+> | La API                      | **Desplegada con la #106**: 90 y 194, con el lote y **con Sentry**. El arreglo no cambia la cuenta                                                                                                                                              |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                                                                                                                                                                       |
+> | M9                          | **M9 · 1 y M9 · 2 en producción**; `bd:comprobar-api` dio **1 MAL** (el historial), que arregla la 0070                                                                                                                                         |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo que quede de antes, en [`pasos-de-m8.md`](pasos-de-m8.md).
 
@@ -55,6 +55,40 @@ git pull
 ### 4 · Probarlo
 
 Recarga con **Ctrl + F5**. **Carta → «Desde el almacén»**: busca algo que vaya a peso (el chuletón, un pescado). Márcalo: te pide **«Cada ración lleva»** (por ejemplo, 400 g) y el precio. **«Añadir a la carta»**: sale con la cadena, y al pasar por encima, «Vinculado a … · 400 g». En **Escandallos**, su ficha ya tiene coste.
+
+## Después · los permisos de la API
+
+**Solo cuando el arreglo de arriba esté fusionado, migrado y desplegado.** Lo que se vio con el MAL del historial pasaba en más sitios ([decisión 0089](decisiones/0089-lo-que-la-api-puede-en-cada-tabla.md)): **54 tablas** dejaban a la API más de lo escrito (por ejemplo, borrar un fichaje). La seguridad por filas lo paraba; esto pone la segunda barrera. **Hay una migración** (`0071`: solo permisos, **no toca ni una fila**) y **no hay que desplegar la API**: el código no cambia.
+
+### 1 · Fusionar
+
+En **github.com** → **Pull requests** → **«Lo que la API puede hacer en cada tabla…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
+
+### 2 · Migrar la base
+
+En PowerShell, en la carpeta del proyecto, uno por uno:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que decir:** «aplicando **0071_lo_que_la_api_puede_en_cada_tabla.sql** ... hecho» y «1 migracion(es) aplicadas · **71 en total**». **Si dice «Hay ejemplos apuntados en tablas que la API no podra borrar», para y avísame**: no habrá cambiado nada.
+
+### 3 · Comprobarlo
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** en **«Lo que la API puede hacer en cada tabla»**, dos **OK**: **«ni un permiso de más ni uno de menos, en 97 tablas»** y **«y una tabla nueva nace sin nada para la API»**. Al final, **ninguna comprobación mal**. Después, recarga la app con **Ctrl + F5** y haz algo normal (fichar, apuntar una merma, mandar un mensaje en el chat): todo tiene que ir igual que antes.
 
 ## M9 · 2 · Fichas y escandallos (en producción desde el 16-oct)
 

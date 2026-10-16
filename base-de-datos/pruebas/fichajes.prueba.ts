@@ -132,16 +132,20 @@ describe('fichar', () => {
   });
 
   it('un fichaje NO se puede borrar, ni siendo la gerente', async () => {
-    // No hay política de `delete`. Es la misma regla que el libro de movimientos:
-    // si se pudiera borrar, el registro horario no serviría para lo único para lo
-    // que sirve.
+    // No hay política de `delete`, y desde la 0071 la API ni siquiera tiene el
+    // permiso: dos barreras. Es la misma regla que el libro de movimientos: si se
+    // pudiera borrar, el registro horario no serviría para lo único para lo que sirve.
     const marcos = await base.personaPorCorreo(MARCOS);
-    const borradas = await como<{ id: string }>(
-      ROSA,
-      `delete from estook.fichaje where persona_id = $1 returning id::text as id`,
+    await expect(
+      como(ROSA, `delete from estook.fichaje where persona_id = $1 returning id::text as id`, [
+        marcos,
+      ]),
+    ).rejects.toThrow(/permission denied/i);
+    const siguen = await comoDuena<{ cuantos: number }>(
+      `select count(*)::int as cuantos from estook.fichaje where persona_id = $1`,
       [marcos],
     );
-    expect(borradas).toEqual([]);
+    expect(siguen[0]?.cuantos).toBeGreaterThan(0);
   });
 
   it('corregir el de otra persona exige nombre Y motivo', async () => {

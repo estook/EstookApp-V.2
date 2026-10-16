@@ -722,3 +722,14 @@
      Antes de filtrar por un campo, se mira cómo viene de verdad. Y al abrirlo, lo que se
      deducía de la forma («una línea, 1 ud») dejó de bastar: un pan tostado parecía
      vinculado. Lo cazó la prueba de pantalla; ahora lo dice la receta (0088).
+191. **Buscar `delete from` no encuentra todos los borrados.** Antes de quitar a la API borrar
+     en el producto se buscó en el servidor y no salía nadie. Pero `quitar_ejemplos` (0020)
+     borra con `execute format(…)` y con los permisos de quien la llama, y lo cazó la batería
+     entera, no la búsqueda. Al quitar un permiso se busca, y además se pasa la batería
+     entera; y lo que se apunta como ejemplo se comprueba que la API lo pueda borrar (0089).
+192. **Safari apunta como error lo que el navegador corta al irse.** La 137 lo arregló para
+     `/salud`, pero en la #108 —que no tocaba la app— la prueba de las ocho apps salió en
+     rojo en Safari dos veces seguidas: «ya me ha llegado» del chat y la petición del Panel,
+     cortadas al saltar de pantalla, salían como «… due to access control checks». Las
+     pruebas que recorren muchas pantallas leen los errores con `vigilarLosErrores`, que
+     descuenta solo ese aviso y solo de la API de pruebas (`pruebas/e2e/abrir.ts`).

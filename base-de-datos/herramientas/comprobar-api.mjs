@@ -48,6 +48,13 @@ import { api } from '../../servidor/index.ts';
 import { catalogo as catalogoDeOperaciones } from '../../servidor/aplicacion/index.ts';
 import { cerrarConexion } from '../../servidor/infraestructura/postgres.ts';
 import postgres from 'postgres';
+import {
+  LO_QUE_TIENE,
+  agrupar,
+  lasMigraciones,
+  loQueNoCuadra,
+  loQueQuisieron,
+} from './los-permisos-de-la-api.mjs';
 
 const url = process.env['DATABASE_URL'];
 if (!url) {
@@ -1112,6 +1119,39 @@ try {
       fichas.la_sala === 2 && fichas.con_euros === 0,
       `sala ${fichas.la_sala} de 2 · con euros ${fichas.con_euros}`,
     );
+  }
+
+  // ── Lo que la API puede hacer en cada tabla (0089) ─────────────────────────
+  //
+  // Lo mismo que la prueba `los-permisos-de-la-api`, contra la base de verdad: lo que
+  // cada migración aplicada quiso dar a `estook_api`, comparado con lo que tiene. Se
+  // leen solo las migraciones que la base tiene puestas, para que una que todavía no
+  // se ha aplicado no salga como fallo.
+  titulo('Lo que la API puede hacer en cada tabla');
+  {
+    const quiso = loQueQuisieron(lasMigraciones(cuantasMigraciones.ultima));
+    const tiene = agrupar(await conexion.unsafe(LO_QUE_TIENE));
+    const distintas = loQueNoCuadra(quiso, tiene);
+    comprobar(
+      `ni un permiso de más ni uno de menos, en ${quiso.size} tablas`,
+      distintas.length === 0,
+      distintas.length === 0
+        ? ''
+        : `${distintas.length} no cuadran${cuantasMigraciones.ultima < 71 ? ' · lo arregla la 0071, que no esta aplicada' : ''}`,
+    );
+    for (const linea of distintas.slice(0, 10)) console.log(`         ${linea}`);
+    if (distintas.length > 10) console.log(`         y ${distintas.length - 10} más`);
+    if (cuantasMigraciones.ultima >= 71) {
+      const [defecto] = await conexion`
+        select count(*)::int as cuantos
+          from pg_default_acl d
+          cross join lateral aclexplode(d.defaclacl) a
+         where d.defaclnamespace = 'estook'::regnamespace
+           and d.defaclobjtype = 'r'
+           and a.grantee = 'estook_api'::regrole
+      `;
+      comprobar('y una tabla nueva nace sin nada para la API', defecto.cuantos === 0);
+    }
   }
 
   titulo('La API DESPLEGADA, que es otra cosa');

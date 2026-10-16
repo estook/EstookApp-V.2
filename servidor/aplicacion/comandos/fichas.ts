@@ -10,7 +10,13 @@ import {
   type LineaQueSeEscribe,
   type UnidadDeUso,
 } from '@estook/dominio';
+import {
+  TIPOS_DE_FOTO,
+  TOPE_DE_LA_FOTO,
+  claveDeLaFotoDelPaso,
+} from '../../infraestructura/almacen.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
+import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
 import { comoLista } from '../listas.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import {
@@ -60,6 +66,13 @@ type Dueno = { readonly platoId: string } | { readonly elaboracionId: string };
 interface LoQueSeGuarda {
   readonly lineas: readonly LineaQueSeEscribe[];
   readonly pasos: readonly string[];
+  /**
+   * De qué paso de antes trae su foto cada paso nuevo (0090): `[0, null, 1]` es que el
+   * primero sigue con la suya, el segundo es nuevo y el tercero era el segundo. Sin
+   * decirlo, cada paso conserva la foto del de antes que se escribía igual: así no la
+   * pierde quien guarda solo el escandallo, ni lo que se vincula o se recupera.
+   */
+  readonly fotoDeAntes?: readonly (number | null)[];
   readonly notas: string | null;
   readonly minutos: number | null;
   /**
@@ -143,8 +156,16 @@ export async function guardarLaReceta(
 
   const platoId = 'platoId' in dueno ? dueno.platoId : null;
   const elaboracionId = 'elaboracionId' in dueno ? dueno.elaboracionId : null;
-  const tenia = await contexto.sql<{ id: string; version: number; tal_cual: boolean }[]>`
-    select id, version, tal_cual from estook.receta
+  const tenia = await contexto.sql<
+    {
+      id: string;
+      version: number;
+      tal_cual: boolean;
+      pasos: string[];
+      fotos_de_los_pasos: string[];
+    }[]
+  >`
+    select id, version, tal_cual, pasos, fotos_de_los_pasos from estook.receta
      where local_id = ${localId}::uuid
        and (plato_id = ${platoId}::uuid or elaboracion_id = ${elaboracionId}::uuid)
        for update
@@ -240,13 +261,29 @@ export async function guardarLaReceta(
            order by version desc
            limit 1
         `;
-  const cambios = queCambioEnLaReceta(ultima[0]?.contenido ?? null, ahora);
+  const cambiosDeLaReceta = queCambioEnLaReceta(ultima[0]?.contenido ?? null, ahora);
+
+  // ── Las fotos de los pasos van con su paso (0090) ──────────────────────────
+  const pasosDeAntes = receta?.pasos ?? [];
+  const fotosDeAntes = pasosDeAntes.map((_, i) => receta?.fotos_de_los_pasos[i] ?? '');
+  const fotos = datos.pasos.map((texto, i) => {
+    const de =
+      datos.fotoDeAntes === undefined ? pasosDeAntes.indexOf(texto) : (datos.fotoDeAntes[i] ?? -1);
+    return de < 0 ? '' : (fotosDeAntes[de] ?? '');
+  });
+  const sobran = fotosDeAntes.filter((clave) => clave !== '' && !fotos.includes(clave));
+  const lasFotosCambian = JSON.stringify(fotos) !== JSON.stringify(fotosDeAntes);
+  const cambios =
+    lasFotosCambian && cambiosDeLaReceta.length === 0
+      ? ['Las fotos de los pasos']
+      : cambiosDeLaReceta;
   const unaLineaDeProducto =
     juntas.lineas.length === 1 && juntas.lineas[0]?.productoId !== null && platoId !== null;
   const talCual = unaLineaDeProducto && (datos.talCual ?? receta?.tal_cual ?? false);
   if (
     receta !== undefined &&
-    cambios.length === 0 &&
+    cambiosDeLaReceta.length === 0 &&
+    !lasFotosCambian &&
     opciones.recupera === undefined &&
     talCual === receta.tal_cual
   ) {
@@ -258,10 +295,11 @@ export async function guardarLaReceta(
   let version: number;
   if (receta === undefined) {
     const filas = await contexto.sql<{ id: string; version: number }[]>`
-      insert into estook.receta (local_id, plato_id, elaboracion_id, pasos, notas, tiempo_minutos,
-                                 tal_cual, actualizado_por)
+      insert into estook.receta (local_id, plato_id, elaboracion_id, pasos, fotos_de_los_pasos,
+                                 notas, tiempo_minutos, tal_cual, actualizado_por)
       values (${localId}::uuid, ${platoId}::uuid, ${elaboracionId}::uuid, ${comoLista(datos.pasos)}::text::text[],
-              ${datos.notas}, ${datos.minutos}, ${talCual}, ${contexto.personaId}::uuid)
+              ${comoLista(fotos)}::text::text[], ${datos.notas}, ${datos.minutos}, ${talCual},
+              ${contexto.personaId}::uuid)
       returning id, version
     `;
     const fila = filas[0];
@@ -271,7 +309,8 @@ export async function guardarLaReceta(
   } else {
     const filas = await contexto.sql<{ version: number }[]>`
       update estook.receta
-         set pasos = ${comoLista(datos.pasos)}::text::text[], notas = ${datos.notas},
+         set pasos = ${comoLista(datos.pasos)}::text::text[],
+             fotos_de_los_pasos = ${comoLista(fotos)}::text::text[], notas = ${datos.notas},
              tiempo_minutos = ${datos.minutos}, tal_cual = ${talCual},
              actualizado_por = ${contexto.personaId}::uuid,
              actualizado_en = now()
@@ -325,6 +364,11 @@ export async function guardarLaReceta(
             ${comoLista(conLaRecuperada)}::text::text[], ${opciones.recupera?.version ?? null},
             ${contexto.personaId}::uuid, ${contexto.ahora.toISOString()}::timestamptz)
   `;
+  // Las fotos de los pasos que ya no están, fuera del almacén: al final, cuando ya no
+  // las nombra nadie (como la foto del producto).
+  if (contexto.almacen !== null) {
+    for (const clave of sobran) await contexto.almacen.borrar(clave);
+  }
   return { version, cambios: conLaRecuperada, sumadas };
 }
 
@@ -348,6 +392,8 @@ export const entradaGuardarFicha = z
     version: z.number().int().min(0),
     lineas,
     pasos,
+    /** De qué paso de antes trae su foto cada paso (0090). Sin él, por su texto. */
+    foto_de_antes: z.array(z.number().int().min(0).max(39).nullable()).max(40).optional(),
     notas,
     tiempo_minutos: minutos,
     /** Solo de una elaboración: su nombre y lo que rinde. */
@@ -384,6 +430,7 @@ export const guardarFicha = comando<EntradaGuardarFicha, Guardada>({
       {
         lineas: lineasDeLaEntrada(entrada.lineas),
         pasos: entrada.pasos,
+        ...(entrada.foto_de_antes === undefined ? {} : { fotoDeAntes: entrada.foto_de_antes }),
         notas: entrada.notas === undefined || entrada.notas === '' ? null : entrada.notas,
         minutos: entrada.tiempo_minutos ?? null,
         ...(entrada.nombre === undefined ? {} : { nombre: entrada.nombre }),
@@ -686,5 +733,140 @@ export const vincularPlato = comando<
           },
     );
     return { platoId: entrada.plato_id, ...hecho };
+  },
+});
+
+// ═══ La foto de un paso de la ficha técnica (0090) ═════════════════════════════
+
+const base64QueCabe = z
+  .string()
+  .min(1)
+  .max(Math.ceil((TOPE_DE_LA_FOTO * 4) / 3) + 1024);
+
+export const entradaPonerFotoDelPaso = z
+  .object({
+    plato_id: z.string().uuid(),
+    /** El paso, desde 0: el primero es el 0. */
+    paso: z.number().int().min(0).max(39),
+    tipo: z.string().refine((t) => t in TIPOS_DE_FOTO, {
+      message: 'Solo se admiten fotos en WebP o JPG.',
+    }),
+    /** La foto de 800 px, en base64 y sin el prefijo `data:`. */
+    foto: base64QueCabe,
+  })
+  .strict();
+
+/**
+ * La receta del plato con sus pasos, tomada para escribir. La política de la tabla
+ * solo la da a quien puede editar Escandallos en ese local.
+ */
+async function losPasosParaEscribir(
+  contexto: Contexto,
+  localId: string,
+  platoId: string,
+  paso: number,
+): Promise<{ readonly id: string; readonly fotos: string[] }> {
+  const filas = await contexto.sql<{ id: string; pasos: string[]; fotos_de_los_pasos: string[] }[]>`
+    select id, pasos, fotos_de_los_pasos from estook.receta
+     where plato_id = ${platoId}::uuid and local_id = ${localId}::uuid
+       for update
+  `;
+  const receta = filas[0];
+  if (receta === undefined) {
+    throw new FalloDeAplicacion('no_existe', {
+      porque: 'Ese plato no tiene ficha en este local, o tu acceso no deja cambiarla.',
+    });
+  }
+  if (paso >= receta.pasos.length) {
+    throw new FalloDeAplicacion('faltan_datos', {
+      campos: ['paso'],
+      porque: 'Ese paso todavía no está guardado: guarda los pasos y ponle la foto después.',
+    });
+  }
+  return {
+    id: receta.id,
+    fotos: receta.pasos.map((_, i) => receta.fotos_de_los_pasos[i] ?? ''),
+  };
+}
+
+export const ponerFotoDelPaso = comando<
+  z.infer<typeof entradaPonerFotoDelPaso>,
+  { platoId: string; paso: number }
+>({
+  nombre: 'poner_foto_del_paso',
+  entrada: entradaPonerFotoDelPaso,
+  exige: 'app.escandallos',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeEscandallos(contexto);
+    const almacen = contexto.almacen;
+    if (almacen === null) {
+      throw new FalloDeAplicacion('fallo_nuestro', {
+        porque: 'Todavía no hay dónde guardar las fotos. Los pasos se guardan igual.',
+      });
+    }
+    const foto = decodificar(entrada.foto, 'foto');
+    if (foto.byteLength > TOPE_DE_LA_FOTO) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['foto'],
+        porque: `Esa foto pesa demasiado aun reducida. El tope son ${Math.trunc(TOPE_DE_LA_FOTO / 1024)} KB: prueba con otra.`,
+      });
+    }
+    if (!esDeVerdadDeEseTipo(foto, entrada.tipo)) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['foto'],
+        porque: 'Eso no es una foto que se pueda guardar. Prueba a hacerla otra vez.',
+      });
+    }
+
+    // Primero la fila, y con ella la foto que había: si no, no se sabría cuál sobra.
+    const receta = await losPasosParaEscribir(contexto, localId, entrada.plato_id, entrada.paso);
+    const vieja = receta.fotos[entrada.paso] ?? '';
+    const clave = claveDeLaFotoDelPaso(
+      localId,
+      entrada.plato_id,
+      TIPOS_DE_FOTO[entrada.tipo] ?? 'jpg',
+      contexto.ahora,
+    );
+    await almacen.guardar(clave, foto, entrada.tipo);
+
+    // La fila después de subir: al revés, un fallo del almacén dejaría el paso
+    // apuntando a una foto que no existe.
+    const fotos = receta.fotos.map((c, i) => (i === entrada.paso ? clave : c));
+    await contexto.sql`
+      update estook.receta
+         set fotos_de_los_pasos = ${comoLista(fotos)}::text::text[],
+             actualizado_por = ${contexto.personaId}::uuid, actualizado_en = now()
+       where id = ${receta.id}::uuid
+    `;
+    if (vieja !== '') await almacen.borrar(vieja);
+    return { platoId: entrada.plato_id, paso: entrada.paso };
+  },
+});
+
+export const quitarFotoDelPaso = comando<
+  { plato_id: string; paso: number },
+  { platoId: string; quitada: boolean }
+>({
+  nombre: 'quitar_foto_del_paso',
+  entrada: z
+    .object({ plato_id: z.string().uuid(), paso: z.number().int().min(0).max(39) })
+    .strict(),
+  exige: 'app.escandallos',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeEscandallos(contexto);
+    const receta = await losPasosParaEscribir(contexto, localId, entrada.plato_id, entrada.paso);
+    const vieja = receta.fotos[entrada.paso] ?? '';
+    if (vieja === '') return { platoId: entrada.plato_id, quitada: false };
+    const fotos = receta.fotos.map((c, i) => (i === entrada.paso ? '' : c));
+    await contexto.sql`
+      update estook.receta
+         set fotos_de_los_pasos = ${comoLista(fotos)}::text::text[],
+             actualizado_por = ${contexto.personaId}::uuid, actualizado_en = now()
+       where id = ${receta.id}::uuid
+    `;
+    if (contexto.almacen !== null) await contexto.almacen.borrar(vieja);
+    return { platoId: entrada.plato_id, quitada: true };
   },
 });

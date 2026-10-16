@@ -141,6 +141,21 @@
     outline: none;
   }
 
+  /*
+   * Con el dedo o el ratón, sin anillo (repaso del 16-oct): `showModal()` da el foco
+   * a la «X» y el iPhone lo pinta como si fuera teclado. Lo marca `modalidad.ts`. Los
+   * campos de escribir lo conservan: ahí el anillo dice dónde va lo que se teclea.
+   */
+  :root[data-con-el-dedo]
+    :focus-visible:not(
+      input:not([type='checkbox'], [type='radio'], [type='range']),
+      textarea,
+      select,
+      [contenteditable]
+    ) {
+    box-shadow: none;
+  }
+
   h1,
   h2,
   h3,
@@ -223,6 +238,23 @@
       background: #fff;
     }
   }
+}
+
+/*
+ * El anillo de las clases de utilidad (`focus-visible:outline-*`, `ring-*`), también
+ * fuera con el dedo. Va fuera de las capas para poder con ellas; la sombra de cada
+ * botón no se toca (está arriba, en `base`, y la pisa su clase).
+ */
+:root[data-con-el-dedo]
+  :focus-visible:not(
+    input:not([type='checkbox'], [type='radio'], [type='range']),
+    textarea,
+    select,
+    [contenteditable]
+  ),
+:root[data-con-el-dedo] :is(input[type='checkbox'], input[type='radio']):focus-visible ~ * {
+  outline: none;
+  --tw-ring-shadow: 0 0 #0000;
 }
 
 /*

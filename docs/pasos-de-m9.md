@@ -2,27 +2,26 @@
 
 > ## Cómo está
 >
-> Comprobado el 16 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
+> Comprobado el 17 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
 >
-> | Qué                         | Cómo está                                                                                                                                                                                                                                       |
-> | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #106** (M9 · 2). Abiertas: **su arreglo** ([0088](decisiones/0088-todo-el-almacen-y-el-historial-que-solo-crece.md)) y, detrás, **los permisos de la API** ([0089](decisiones/0089-lo-que-la-api-puede-en-cada-tabla.md)) |
-> | La base de datos            | **69 de 69** migraciones, igual que `main`. Con el arreglo llega la **0070**, y con los permisos la **0071**                                                                                                                                    |
-> | La API                      | **Desplegada con la #106**: 90 y 194, con el lote y **con Sentry**. El arreglo no cambia la cuenta                                                                                                                                              |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                                                                                                                                                                       |
-> | M9                          | **M9 · 1 y M9 · 2 en producción**; `bd:comprobar-api` dio **1 MAL** (el historial), que arregla la 0070                                                                                                                                         |
+> | Qué                         | Cómo está                                                                                                                                               |
+> | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #108** (el arreglo de M9 · 2 y los permisos). Abierta: **el repaso del 16-oct** ([0090](decisiones/0090-el-repaso-del-16-oct.md)) |
+> | La base de datos            | **71 de 71** migraciones, igual que `main`. Con el repaso llega la **0072**                                                                             |
+> | La API                      | **Desplegada con la #107**: 90 consultas y 194 comandos. Con el repaso pasan a **90 y 196**                                                             |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                                                                               |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo que quede de antes, en [`pasos-de-m8.md`](pasos-de-m8.md).
 
 ---
 
-## Lo que te toca ahora · el arreglo de M9 · 2
+## Lo que te toca ahora · el repaso del 16-oct
 
-Lo que viste el 16-oct ([decisión 0088](decisiones/0088-todo-el-almacen-y-el-historial-que-solo-crece.md)): **«Desde el almacén» y «Vincular» no encontraban lo tuyo** porque solo enseñaban lo que va por unidades, y en tu Almacén el entrecot, el pescado o el helado van en gramos o mililitros. Ahora **sale todo**, y lo que va a peso te pregunta **cuánto lleva la ración**. Y el **MAL** de `bd:comprobar-api` era de verdad: la API podía cambiar el historial de una receta. **Hay una migración** (`0070`: una marca nueva en la receta, que se pone sola a lo que ya vinculaste, y los permisos del historial) y **hay que desplegar la API**. El orden: **fusionar, migrar y después desplegar**.
+Tu lista ([decisión 0090](decisiones/0090-el-repaso-del-16-oct.md)): la ficha del producto rehecha, los kilos y los gramos, la app más rápida, **Escandallos con sus tres pestañas** (Resumen · Escandallos · Fichas, las técnicas, con foto en cada paso), la barra de las apps, «Hoy» que se esconde, la cara en el Tablón y sin el recuadro naranja. **Hay una migración** (`0072`: las fotos de los pasos, una columna nueva) y **hay que desplegar la API** (dos comandos nuevos y la región). El orden: **fusionar, migrar y después desplegar**.
 
 ### 1 · Fusionar
 
-En **github.com** → **Pull requests** → **«Vincular todo el Almacén…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
+En **github.com** → **Pull requests** → **«El repaso del 16-oct…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
 
 ### 2 · Migrar la base
 
@@ -40,7 +39,7 @@ git pull
 .\estook.cmd bd:migrar
 ```
 
-**Qué tiene que decir:** que aplica la **0070 · lo que se vende tal cual y el historial**, y que la base va por la **70**.
+**Qué tiene que decir:** que aplica la **0072 · las fotos de los pasos**, y que la base va por la **72**.
 
 ### 3 · Desplegar la API
 
@@ -50,45 +49,23 @@ git pull
 .\estook.cmd bd:comprobar-api
 ```
 
-**Qué tiene que decir:** en **«M9 · 2 · lo que la 0069 dejo puesto»**, todo **OK**: que el historial no se puede cambiar, que una ficha no se borra y que la receta dice si el plato se vende tal cual. Siguen **«las 90»** y **«los 194»**. Al final, **ninguna comprobación mal** (las 11 «sin poder comprobar» son las de siempre).
+**Qué tiene que decir:** **«las 90»** consultas y **«los 196»** comandos, y al final **ninguna comprobación mal** (las «sin poder comprobar» son las de siempre).
 
-### 4 · Probarlo
+### 4 · Probarlo en el móvil
 
-Recarga con **Ctrl + F5**. **Carta → «Desde el almacén»**: busca algo que vaya a peso (el chuletón, un pescado). Márcalo: te pide **«Cada ración lleva»** (por ejemplo, 400 g) y el precio. **«Añadir a la carta»**: sale con la cadena, y al pasar por encima, «Vinculado a … · 400 g». En **Escandallos**, su ficha ya tiene coste.
+**Cierra Estook del todo y ábrela dos veces** (la primera vez trae la versión nueva y se recarga sola). Lo que tiene que pasar:
 
-## Después · los permisos de la API
+- **Al abrir**, el logo de Estook al momento, sin pantalla negra; y el Panel y cada pestaña, más rápido que ayer (dime si lo notas: en producción solo se puede medir con tu cuenta).
+- **Almacén → el atún**: arriba la ficha (foto, categoría, proveedor, envase); **«4,602 kg»** y no «4602 g»; la barra con la raya del mínimo; y abajo, plegado, Precio, Caducidades, Movimientos, Aprovechamiento y Más datos. **Editar → Mínimo**: toca la unidad y elige **kg o g**.
+- **Escandallos**: abajo **Apps | Resumen · Escandallos · Fichas**, con la raya después de Apps. En **Escandallos**, un plato: solo lo que lleva y lo que cuesta (sin pasos ni modo cocina). Botón **«Ficha técnica»** → **«Escribir los pasos»** → guarda → en cada paso, **«Foto»** abre la cámara.
+- **El Panel**: sin nada urgente, **«Hoy» no sale**. En el **Tablón**, la cara de quien escribe.
+- **Ninguna ficha** sale con el recuadro naranja alrededor de la «X» al abrirla.
 
-**Solo cuando el arreglo de arriba esté fusionado, migrado y desplegado.** Lo que se vio con el MAL del historial pasaba en más sitios ([decisión 0089](decisiones/0089-lo-que-la-api-puede-en-cada-tabla.md)): **54 tablas** dejaban a la API más de lo escrito (por ejemplo, borrar un fichaje). La seguridad por filas lo paraba; esto pone la segunda barrera. **Hay una migración** (`0071`: solo permisos, **no toca ni una fila**) y **no hay que desplegar la API**: el código no cambia.
+**Lo de Escandallos que ya tenías** (IKATZ) sigue igual: lo que llamabas «fichas» son ahora los escandallos, y sus pasos, si los escribiste, están en su ficha técnica.
 
-### 1 · Fusionar
+## Hecho · el arreglo de M9 · 2 y los permisos de la API
 
-En **github.com** → **Pull requests** → **«Lo que la API puede hacer en cada tabla…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
-
-### 2 · Migrar la base
-
-En PowerShell, en la carpeta del proyecto, uno por uno:
-
-```bash
-git checkout main
-```
-
-```bash
-git pull
-```
-
-```bash
-.\estook.cmd bd:migrar
-```
-
-**Qué tiene que decir:** «aplicando **0071_lo_que_la_api_puede_en_cada_tabla.sql** ... hecho» y «1 migracion(es) aplicadas · **71 en total**». **Si dice «Hay ejemplos apuntados en tablas que la API no podra borrar», para y avísame**: no habrá cambiado nada.
-
-### 3 · Comprobarlo
-
-```bash
-.\estook.cmd bd:comprobar-api
-```
-
-**Qué tiene que decir:** en **«Lo que la API puede hacer en cada tabla»**, dos **OK**: **«ni un permiso de más ni uno de menos, en 97 tablas»** y **«y una tabla nueva nace sin nada para la API»**. Al final, **ninguna comprobación mal**. Después, recarga la app con **Ctrl + F5** y haz algo normal (fichar, apuntar una merma, mandar un mensaje en el chat): todo tiene que ir igual que antes.
+Fusionados (#107 y #108), migrados (**0070** y **0071**) y la API desplegada: comprobado en producción el 17-oct.
 
 ## M9 · 2 · Fichas y escandallos (en producción desde el 16-oct)
 

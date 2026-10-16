@@ -35,6 +35,7 @@ import {
   type RecetaGuardada,
 } from '../escandallos.ts';
 import { comoSeLeeElVinculo, losPlatos, type UnPlato } from './mi-carta.ts';
+import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 import { elRelojYElFisco, loGastadoDeVerdad } from '../desviacion.ts';
 
 /**
@@ -89,7 +90,12 @@ export interface PlatoEnLaLista {
   readonly nombre: string;
   readonly seccionId: string | null;
   readonly miniatura: string | null;
+  /** Si tiene su escandallo: lo que lleva (0087 lo llamaba «ficha»). */
   readonly tieneFicha: boolean;
+  /** Si tiene su ficha técnica: los pasos para hacerlo (0090). */
+  readonly tieneFichaTecnica: boolean;
+  /** Cuántos pasos lleva, y cuántos con foto. */
+  readonly pasos: number;
   readonly vinculadoA: string | null;
   readonly alergenos: readonly Alergeno[];
   readonly picante: number;
@@ -122,6 +128,8 @@ export interface MisFichas {
   readonly cifras: {
     readonly platos: number;
     readonly sinFicha: number;
+    /** Los que tienen su ficha técnica (0090). */
+    readonly conFichaTecnica: number;
     /** Solo con costes: los que pasan del objetivo (ámbar o rojo), los que pierden en algún canal y la media. */
     readonly bajoObjetivo?: number;
     readonly pierden?: number;
@@ -164,6 +172,8 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
         seccionId: p.seccionId,
         miniatura: p.miniatura,
         tieneFicha: p.tieneFicha,
+        tieneFichaTecnica: (receta?.pasos.length ?? 0) > 0,
+        pasos: receta?.pasos.length ?? 0,
         vinculadoA: comoSeLeeElVinculo(p.vinculadoA),
         alergenos: enOrdenOficial([...p.alergenosDeLaReceta, ...p.alergenos]),
         picante: p.picante,
@@ -217,6 +227,7 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
       cifras: {
         platos: enLaLista.length,
         sinFicha: enLaLista.filter((p) => !p.tieneFicha).length,
+        conFichaTecnica: enLaLista.filter((p) => p.tieneFichaTecnica).length,
         ...(cuenta === null
           ? {}
           : {
@@ -313,6 +324,8 @@ export interface UnaFicha {
     readonly version: number;
     readonly lineas: readonly LineaDeLaFicha[];
     readonly pasos: readonly string[];
+    /** La foto de cada paso, ya firmada, o nula (0090). */
+    readonly fotosDeLosPasos: readonly (string | null)[];
     readonly notas: string | null;
     readonly minutos: number | null;
   };
@@ -483,7 +496,13 @@ async function laFicha(contexto: Contexto, entrada: EntradaDeUnaFicha): Promise<
   }
 
   const alergenosDeLaReceta_ = alergenosDeLaReceta(lineas, libro.libro);
-  const historial = await elHistorial(contexto, receta?.id);
+  const [historial, firmadas] = await Promise.all([
+    elHistorial(contexto, receta?.id),
+    firmarLasFotos(
+      contexto,
+      (receta?.fotosDeLosPasos ?? []).filter((c) => c !== ''),
+    ),
+  ]);
 
   return {
     tipo: plato !== undefined ? 'plato' : 'elaboracion',
@@ -507,6 +526,10 @@ async function laFicha(contexto: Contexto, entrada: EntradaDeUnaFicha): Promise<
       version: receta?.version ?? 0,
       lineas: lineasDeLaFicha,
       pasos: receta?.pasos ?? [],
+      fotosDeLosPasos: (receta?.pasos ?? []).map((_, i) => {
+        const clave = receta?.fotosDeLosPasos[i] ?? '';
+        return laFirmada(firmadas, clave === '' ? null : clave);
+      }),
       notas: receta?.notas ?? null,
       minutos: receta?.minutos ?? null,
     },
@@ -622,6 +645,7 @@ export const laFichaEnPdf = consulta<EntradaDeUnaFicha, UnPdf>({
         esElaboracion: l.tipo === 'elaboracion',
       })),
       pasos: ficha.receta.pasos,
+      fotosDeLosPasos: ficha.receta.fotosDeLosPasos,
       notas: ficha.receta.notas,
     });
     const nombre = ficha.nombre

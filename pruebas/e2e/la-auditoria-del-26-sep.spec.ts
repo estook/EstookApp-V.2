@@ -26,10 +26,11 @@ test('las mermas tienen su destino en Almacén, y la dirección de antes lleva a
   await expect(page.getByRole('tab', { name: 'Mermas' })).toHaveCount(0);
 });
 
-test('el Tablón y «Hoy» se ven siempre en el Panel, también sin nada', async ({ page }) => {
+test('el Tablón se ve siempre en el Panel, también sin nada', async ({ page }) => {
+  // «Hoy», no: sin nada urgente no sale (Richi, 16-oct, 0090). Lo prueba
+  // `el-panel-en-el-movil.spec.ts`.
   await entrarEnLaApp(page, SARA);
   await expect(page.getByRole('region', { name: 'Tablón' })).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByRole('region', { name: 'Hoy' })).toBeVisible();
   // Y ninguna tarjeta del Panel se aparta por vacía.
   await expect(page.getByText(/^Sin nada ahora en /)).toHaveCount(0);
 });

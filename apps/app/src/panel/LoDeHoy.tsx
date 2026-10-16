@@ -2,7 +2,7 @@ import { useId, useState, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NOMBRE_DEL_ESCALON, plural, type CosaDeHoy } from '@estook/dominio';
 import { clases, usarEsEscritorio } from '@estook/ui';
-import { IconoFlechaAbajo, IconoHecho, IconoReloj } from '@estook/iconos';
+import { IconoFlechaAbajo, IconoReloj } from '@estook/iconos';
 import { usarLoDeHoy } from '../ganchos/usarLoDeHoy.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
@@ -22,7 +22,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * plan, en vez de quedar escondido para siempre. Lo resuelto se va solo, porque la
  * lista la rehace el servidor cada vez.
  *
- * ── Plegado, y sin nada no está (Richi, 25-sep) ──────────────────────────────
+ * ── Plegado, y sin nada no está (Richi, 25-sep, y otra vez el 16-oct) ──────────────────────────────
  *
  * «Ocupa mucho espacio: más pequeño, sin tantos huecos, que se pueda desplegar y
  * que si no hay avisos no aparezca.» En su móvil, tres avisos se comían la pantalla
@@ -127,25 +127,10 @@ export function LoDeHoy() {
   const apartadas = hastaCuando(crudo);
   const aLaVista = cosas.filter((cosa) => (apartadas[cosa.id] ?? 0) <= ahora);
 
-  // Sin nada que atender, **una línea que lo dice**. El 25-sep se escondía entera
-  // («si no hay avisos, que no aparezca»); el 26-sep Richi lo cambió: «mejor que no
-  // se oculten, así no se les pasa y revisan que está todo ok».
-  if (aLaVista.length === 0) {
-    return (
-      <section
-        aria-label="Hoy"
-        className="flex min-h-toque items-center gap-e2 rounded-mayor border border-borde bg-superficie px-e4 py-e2 [box-shadow:var(--sombra-tarjeta)]"
-      >
-        <span className="grid size-6 shrink-0 place-items-center rounded-redondo bg-bien-suave text-bien">
-          <IconoHecho size={14} />
-        </span>
-        <h2 className="text-cuerpo font-semibold">Hoy</h2>
-        <p className="min-w-0 text-secundario text-texto-suave">
-          Todo en orden: nada urgente para hoy.
-        </p>
-      </section>
-    );
-  }
+  // Sin nada que atender, **no sale** (Richi, 16-oct: «si no hay nada se oculta; si hay
+  // algo, aparece; si no, ocupa espacio a lo tonto»). El 26-sep había pedido lo
+  // contrario, una línea con «Todo en orden»; manda lo último.
+  if (aLaVista.length === 0) return null;
 
   const plegable = aLaVista.length > 1;
   const abierto = !plegable || (elegido ?? enEscritorio);

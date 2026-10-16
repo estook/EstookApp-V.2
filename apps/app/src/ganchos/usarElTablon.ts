@@ -14,6 +14,8 @@ export interface NotaDelTablon {
   readonly cuando: string;
   readonly hora: string | null;
   readonly autor: string;
+  /** Para su cara. Una API de antes no lo manda: se busca por el nombre. */
+  readonly autorId?: string;
   readonly esMia: boolean;
   readonly leida: boolean;
   readonly puedeQuitarla: boolean;

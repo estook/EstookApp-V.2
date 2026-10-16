@@ -268,7 +268,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | App         | Sus destinos                                         |
 | ----------- | ---------------------------------------------------- |
 | Almacén     | Resumen · Productos · Compras · Mermas · Movimientos |
-| Escandallos | Resumen · Fichas · Elaboraciones · Análisis          |
+| Escandallos | Resumen · Escandallos · Fichas · Análisis            |
 | Carta       | Carta · Canales · Menús · Análisis                   |
 | Calendario  | Calendario · Tareas · Turnos                         |
 | Equipo      | Resumen · Personas · Fichajes · Incidencias          |
@@ -278,22 +278,23 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 Y sus vistas, donde las hay:
 
-| Destino                 | Sus vistas                                                          |
-| ----------------------- | ------------------------------------------------------------------- |
-| Almacén · Productos     | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
-| Almacén · Movimientos   | Inventario · Historial · Consumo                                    |
-| Almacén · Compras       | Pedidos · Facturas · Proveedores                                    |
-| Escandallos · Fichas    | Todas · Sin ficha · Bajo objetivo                                   |
-| Carta · Carta           | Por secciones · Todos los platos · Agotados                         |
-| Carta · Análisis        | Matriz · Por canal · Histórico                                      |
-| Calendario · Calendario | Mes · Semana · Día                                                  |
-| Calendario · Tareas     | Pendientes · Periódicas · Hechas                                    |
-| Equipo · Personas       | Con acceso · Sin entrar todavía · Retirados                         |
-| Equipo · Incidencias    | Todas · Faltas · Retrasos · Fichajes                                |
-| Servicio · Jornada      | En marcha · Caja · Cierre                                           |
-| Servicio · Ventas       | Del turno · Del día · Por producto · Tickets y facturas             |
-| Negocio · Informes      | Día · Semana · Mes                                                  |
-| Cuaderno · Incidencias  | Abiertas · Cerradas                                                 |
+| Destino                       | Sus vistas                                                          |
+| ----------------------------- | ------------------------------------------------------------------- |
+| Almacén · Productos           | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
+| Almacén · Movimientos         | Inventario · Historial · Consumo                                    |
+| Almacén · Compras             | Pedidos · Facturas · Proveedores                                    |
+| Escandallos · Escandallos     | Todos · Sin escandallo · Bajo objetivo                              |
+| Escandallos · Fichas | Todas · Sin ficha                                                   |
+| Carta · Carta                 | Por secciones · Todos los platos · Agotados                         |
+| Carta · Análisis              | Matriz · Por canal · Histórico                                      |
+| Calendario · Calendario       | Mes · Semana · Día                                                  |
+| Calendario · Tareas           | Pendientes · Periódicas · Hechas                                    |
+| Equipo · Personas             | Con acceso · Sin entrar todavía · Retirados                         |
+| Equipo · Incidencias          | Todas · Faltas · Retrasos · Fichajes                                |
+| Servicio · Jornada            | En marcha · Caja · Cierre                                           |
+| Servicio · Ventas             | Del turno · Del día · Por producto · Tickets y facturas             |
+| Negocio · Informes            | Día · Semana · Mes                                                  |
+| Cuaderno · Incidencias        | Abiertas · Cerradas                                                 |
 
 **Movimientos no va en la barra** (la experiencia, [0083](../decisiones/0083-la-experiencia.md)): es un destino construido y con su dirección, pero se llega por «Revisar movimientos», debajo de las cifras del Resumen de Almacén, por «Hacer inventario» de Productos y por el buscador. Así Almacén cabe en cuatro en la barra de abajo del móvil. Y **Compras son tres** en el orden del día —se pide, llega y se paga; y a quién—: lo que ha llegado (los albaranes) es «Llegado» dentro de Pedidos, y los precios van con los proveedores.
 
@@ -585,7 +586,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **M9 · 2 · Fichas y escandallos, construida el 16-oct** ([0087](../decisiones/0087-fichas-y-escandallos.md)): «sin ficha», las fichas y las elaboraciones con lo que rinden, el escandallo con el margen por canal, los alérgenos, el modo cocina, la ficha en PDF, el historial con «Recuperar» y la desviación de los platos construida (se enseña con el TPV). La Carta gana **vincular lo que se vende tal cual**, las unidades de la ración, los alérgenos, el picante y lo vegetariano. **«Qué ha cambiado»** va con M9 · 3.
 
-**Entra.** **El plato y la carta** (secciones, precios por canal y canales con su comisión, adelantados de M10 por la 0086) · elaboraciones anidables con detección de ciclos y su rendimiento · ficha en dos caras · extras y sustituciones · **una receta a la vista con historial y recuperar** · escalado de gramajes · **modo cocina** a pantalla completa, sin importes y en el idioma del cocinero · modo aprendizaje · alérgenos calculados · hoja de producción del día · borrador de ficha propuesto por Fogón · indicador de cobertura de fichas · grafo de recálculo · ficha impresa con QR a la versión viva.
+**Ordenada en el repaso del 16-oct** ([0090](../decisiones/0090-el-repaso-del-16-oct.md)): **Resumen · Escandallos · Fichas** (las fichas técnicas). El escandallo, solo lo que lleva y lo que cuesta; la ficha técnica, el plato de la Carta con lo que lleva su escandallo y **los pasos, cada uno con su foto**. **Sin modo cocina** (la cocina en servicio es Estook TPV) y **sin elaboraciones por ahora**. Donde lo de abajo dice otra cosa, manda la 0090.
+
+**Entra.** **El plato y la carta** (secciones, precios por canal y canales con su comisión, adelantados de M10 por la 0086) · elaboraciones anidables con detección de ciclos y su rendimiento · ficha en dos caras · extras y sustituciones · **una receta a la vista con historial y recuperar** · escalado de gramajes · ~~modo cocina~~ (fuera desde el 16-oct, 0090: en servicio, Estook TPV) · modo aprendizaje · alérgenos calculados · hoja de producción del día · borrador de ficha propuesto por Fogón · indicador de cobertura de fichas · grafo de recálculo · ficha impresa con QR a la versión viva.
 
 **Y su capa inteligente.** El bloque **«qué ha cambiado y por qué»**: cuánto ha subido el coste desde una fecha, qué ingrediente lo ha movido, a cuántos platos afecta una subida y cuál es el impacto máximo en puntos de margen.
 

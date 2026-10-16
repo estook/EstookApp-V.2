@@ -140,7 +140,7 @@ test('el alta pide el mínimo desde el principio y deja elegir kg o g tocando la
   await expect(page.getByText('Lo que hay en cámara').first()).toBeVisible({ timeout: 15_000 });
 
   const ficha = page.getByRole('dialog', { name: nombre });
-  await expect(ficha.getByText('200 g', { exact: true })).toBeVisible();
+  await expect(ficha.getByText('Mínimo 200 g')).toBeVisible();
 });
 
 // ── 1 · Congelar ya no pregunta la caducidad ────────────────────────────────
@@ -158,6 +158,7 @@ test('congelar no pregunta la caducidad: dice cuándo avisará', async ({ page }
   await entrarEnLaApp(page, ROSA);
   await abrirSinQueSeCaiga(page, `${APP}#/almacen/productos/todo?producto=${productoId}`);
   const ficha = page.getByRole('dialog', { name: nombre });
+  await ficha.getByText('Caducidades y lotes').click();
   await ficha.getByRole('button', { name: 'Congelar una parte' }).click();
 
   const congelar = page.getByRole('dialog', { name: `Congelar ${nombre}` });

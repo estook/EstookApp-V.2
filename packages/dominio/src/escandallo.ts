@@ -71,8 +71,13 @@ export function convertir(cantidad: number, de: UnidadDeUso, a: UnidadDeUso): nu
 
 /** «280 g», «1,5 kg», «2 ud». Con coma y sin ceros de más. */
 export function comoSeLeeLaCantidad(cantidad: number, unidad: UnidadDeUso): string {
-  const numero = Number(cantidad.toFixed(cantidad >= 100 ? 0 : cantidad >= 10 ? 1 : 2));
-  return `${String(numero).replace('.', ',')} ${unidad}`;
+  // De mil gramos o mililitros para arriba, en kilos o litros (Richi, 16-oct).
+  const [valor, enQue] =
+    (unidad === 'g' || unidad === 'ml') && cantidad >= 1000
+      ? [cantidad / 1000, unidad === 'g' ? 'kg' : 'l']
+      : [cantidad, unidad];
+  const numero = Number(valor.toFixed(valor >= 100 ? 0 : valor >= 10 ? 1 : 2));
+  return `${String(numero).replace('.', ',')} ${enQue}`;
 }
 
 // ── Lo que el motor necesita saber ───────────────────────────────────────────

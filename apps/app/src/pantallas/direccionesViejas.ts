@@ -12,6 +12,8 @@
  * Devuelve `null` si la dirección no es de las de antes.
  */
 export function laDireccionDeAhora(ruta: string): string | null {
+  // Escandallos (repaso del 16-oct, 0090): las elaboraciones ya no tienen pestaña.
+  if (/^\/escandallos\/elaboraciones\/?$/.test(ruta)) return '/escandallos/escandallos';
   // Compras en tres (la experiencia, 0083): lo que ha llegado es «Llegado» dentro de
   // Pedidos, y los precios van plegados encima de los proveedores.
   if (/^\/almacen\/compras\/albaranes\/?$/.test(ruta))

@@ -47,6 +47,8 @@ export interface NotaDelTablon {
   /** «17:00», si la tiene. */
   readonly hora: string | null;
   readonly autor: string;
+  /** Para su cara en el Tablón (repaso del 16-oct). */
+  readonly autorId: string;
   readonly esMia: boolean;
   /** Si quien pregunta ya la ha leído. La suya cuenta como leída. */
   readonly leida: boolean;
@@ -179,6 +181,7 @@ export const elTablon = consulta<Record<string, never>, SalidaElTablon>({
         cuando: cuando.charAt(0).toUpperCase() + cuando.slice(1),
         hora: f.hora,
         autor: f.autor,
+        autorId: f.autor_id,
         esMia,
         leida: esMia || f.leida,
         puedeQuitarla: esMia || llevaAlEquipo,

@@ -342,11 +342,12 @@ describe('lo construido y lo que llega', () => {
     expect(destinosConstruidos(laApp('cuaderno'))).toHaveLength(0);
   });
 
-  it('Escandallos tiene su resumen, sus fichas y sus elaboraciones (M9 · 2, 0087)', () => {
+  it('Escandallos tiene su resumen, sus escandallos y sus fichas técnicas (0090)', () => {
+    // Hasta el 16-oct «Fichas» eran los escandallos y había elaboraciones (0087).
     expect(destinosConstruidos(laApp('escandallos')).map((d) => d.id)).toEqual([
       'resumen',
+      'escandallos',
       'fichas',
-      'elaboraciones',
     ]);
   });
 

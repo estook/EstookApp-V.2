@@ -733,3 +733,12 @@
      cortadas al saltar de pantalla, salían como «… due to access control checks». Las
      pruebas que recorren muchas pantallas leen los errores con `vigilarLosErrores`, que
      descuenta solo ese aviso y solo de la API de pruebas (`pruebas/e2e/abrir.ts`).
+193. **Una función «en el borde» no está al lado de su base.** Supabase ejecuta la API en la
+     región de quien llama (París, desde España) y la base está en Irlanda: cada viaje a la
+     base cruzaba Europa, y una consulta hace de 5 a 32. En local todo iba rápido porque la
+     base está en el mismo ordenador. La lentitud de verdad se mide donde vive
+     (`x-sb-edge-region`) y contando los viajes, no los milisegundos de una prueba local.
+     Fijada la región (`x-region`) y quitados dos viajes fijos por petición (0090).
+194. **«Red primero» para abrir una app instalada es una pantalla en negro.** El trabajador
+     de servicio esperaba hasta 4 s a que GitHub contestara antes de pintar. En una app
+     instalada la página se sirve guardada y la red se mira por detrás (0090).

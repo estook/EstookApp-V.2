@@ -705,6 +705,7 @@ test('si el jefe de cocina dice que hay 4, hay 4', async ({ page, request }) => 
 
   // Lo que dice la persona es lo que hay, y queda apuntado con su motivo: nadie
   // se queda bloqueado por cuadrar.
+  await page.getByText('Movimientos', { exact: true }).click();
   await expect(page.getByText('Se rompió un saco')).toBeVisible({ timeout: 15_000 });
 });
 
@@ -1452,8 +1453,10 @@ test('lo congelado se ve: su vista «Congelados» y la fecha en su ficha', async
   await irAAlmacen(page, 'productos', 'congelados');
   await expect(loQueSeVe(page, nombre)).toBeVisible();
   await pulsarLoQueSeVe(page, nombre);
-  // Mientras está congelado no se enseña su caducidad (repaso del 10-oct).
+  // Mientras está congelado no se enseña su caducidad (repaso del 10-oct). Los lotes
+  // van plegados desde el 16-oct (0090): se abren.
   const ficha = page.getByRole('dialog', { name: nombre });
+  await ficha.getByText('Caducidades y lotes').click();
   await expect(ficha.getByText(/^Congelado el .+ · aguanta hasta el /)).toBeVisible();
 
   // ── Sacarlo: solo «Descongelar» o «Tirar» (repaso del 10-oct) ──────────────
@@ -1480,6 +1483,7 @@ test('lo congelado se ve: su vista «Congelados» y la fecha en su ficha', async
   });
   expect(otro.estado).toBe(200);
   await recargarSinQueSeCaiga(page);
+  await page.getByRole('dialog', { name: nombre }).getByText('Caducidades y lotes').click();
   await page
     .getByRole('dialog', { name: nombre })
     .getByRole('button', { name: 'Sacar', exact: true })
@@ -1625,13 +1629,13 @@ test('la ficha no vende ingredientes, deja medir el aprovechamiento y se puede d
   await expect(ficha.getByRole('button', { name: 'Poner precio de venta' })).toHaveCount(0);
   await expect(ficha.getByText('Lo que deja')).toHaveCount(0);
 
-  // ── De dónde es, que sí está ─────────────────────────────────────────────
-  await expect(ficha.getByText('De dónde es')).toBeVisible();
+  // ── De dónde es, que sí está: arriba, en lo que es (16-oct) ───────────────
+  await expect(ficha.getByRole('region', { name: 'La ficha' }).getByText('Cocina')).toBeVisible();
 
   // ── Deshacer, que es lo que pidió ────────────────────────────────────────
   //
   // Se prueba con la ficha, que es lo que se edita y se vuelve a editar.
-  await ficha.getByRole('button', { name: 'Corregir la ficha' }).click();
+  await ficha.getByRole('button', { name: 'Editar', exact: true }).click();
   const primera = page.getByRole('dialog', { name: 'Corregir la ficha' });
   await primera.getByLabel(/^Producto/).fill(`${nombre} de la barra`);
   await primera.getByRole('button', { name: /^Guardar/ }).click();
@@ -1645,7 +1649,8 @@ test('la ficha no vende ingredientes, deja medir el aprovechamiento y se puede d
   });
 
   // ── El aprovechamiento: se lee, y se mide desde aquí ─────────────────────
-  await expect(ficha.getByText('supuesto, sin medir')).toBeVisible();
+  await expect(ficha.getByText(/supuesto, sin medir/).first()).toBeVisible();
+  await ficha.getByText('Aprovechamiento', { exact: true }).click();
   await ficha.getByRole('button', { name: 'Lo he medido' }).click();
   const medir = page.getByRole('dialog', { name: 'Cuánto se aprovecha' });
   await medir.getByLabel(/^Lo que entra/).fill('10');
@@ -1653,16 +1658,20 @@ test('la ficha no vende ingredientes, deja medir el aprovechamiento y se puede d
   await expect(medir.getByText('Se aprovecha un 80 %')).toBeVisible();
   await medir.getByRole('button', { name: 'Guardarlo' }).click();
   await expect(medir).toHaveCount(0);
-  await expect(ficha.getByText('medido en esta cocina')).toBeVisible({ timeout: 15_000 });
+  await expect(ficha.getByText(/medido en esta cocina/).first()).toBeVisible({
+    timeout: 15_000,
+  });
 
   // Y corregir una errata en el nombre **no** lo vuelve a marcar como supuesto,
   // que es lo que hacía que la etiqueta naranja saliera en todos los productos.
-  await ficha.getByRole('button', { name: 'Corregir la ficha' }).click();
+  await ficha.getByRole('button', { name: 'Editar', exact: true }).click();
   const corregir = page.getByRole('dialog', { name: 'Corregir la ficha' });
   await corregir.getByLabel(/^Producto/).fill(`${nombre} frío`);
   await corregir.getByRole('button', { name: /^Guardar/ }).click();
   await expect(corregir).toHaveCount(0);
-  await expect(ficha.getByText('medido en esta cocina')).toBeVisible({ timeout: 15_000 });
+  await expect(ficha.getByText(/medido en esta cocina/).first()).toBeVisible({
+    timeout: 15_000,
+  });
 });
 
 // ── 7¾ · Las zonas, congelar una parte y el recuento ────────────────────────
@@ -1769,6 +1778,7 @@ test('se congela una parte, y se ve cuánta', async ({ page, request }) => {
   );
 
   const ficha = page.getByRole('dialog', { name: nombre });
+  await ficha.getByText('Caducidades y lotes').click();
   await ficha.getByRole('button', { name: 'Congelar una parte' }).click();
 
   const hoja = page.getByRole('dialog', { name: `Congelar ${nombre}` });
@@ -1934,6 +1944,8 @@ test('una salida mal tecleada se anula desde la ficha, y queda tachada', async (
   const ficha = page.getByRole('dialog', { name: nombre });
   await expect(ficha).toBeVisible({ timeout: 15_000 });
 
+  // El libro va plegado desde el 16-oct (0090).
+  await ficha.getByText('Movimientos', { exact: true }).click();
   await ficha.getByRole('button', { name: 'Anular' }).first().click();
   const hoja = page.getByRole('dialog', { name: 'Anular este movimiento' });
   await expect(hoja.getByRole('button', { name: 'Anular', exact: true })).toBeDisabled();

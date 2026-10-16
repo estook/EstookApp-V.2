@@ -136,6 +136,19 @@ export function claveDeLaFotoDePlato(
 }
 
 /**
+ * La clave de la foto de un paso de la ficha técnica (0090): con las del plato, bajo
+ * `pasos/`. Una sola foto de 800 px: se ve en la ficha, no en una lista.
+ */
+export function claveDeLaFotoDelPaso(
+  localId: string,
+  platoId: string,
+  extension: string,
+  ahora: Date,
+): string {
+  return `${CUBO_DE_LAS_FOTOS}/${localId}/platos/${platoId}/pasos/${ahora.getTime()}.${extension}`;
+}
+
+/**
  * La clave de la foto de una merma (M8 · 0079): en el mismo cubo que las de producto,
  * que ya existe, bajo `mermas/`. Lleva el movimiento, que es de lo que es prueba.
  */

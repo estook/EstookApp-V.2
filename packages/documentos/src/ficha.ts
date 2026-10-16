@@ -45,6 +45,11 @@ export interface DatosDeLaFicha {
   readonly picante: number;
   readonly ingredientes: readonly IngredienteEnPapel[];
   readonly pasos: readonly string[];
+  /**
+   * Un enlace a la foto de cada paso, en su orden, o nulo (0090). Sin ellas, los pasos
+   * van solos, como antes.
+   */
+  readonly fotosDeLosPasos?: readonly (string | null)[];
   readonly notas: string | null;
 }
 
@@ -62,6 +67,8 @@ const ESTILO = `
   ol.pasos li::before { content: counter(paso); position: absolute; left: 0; top: -1px; width: 20px; height: 20px;
                         border-radius: 10px; background: #F1EFEB; font-weight: 700; font-size: 8.5pt;
                         display: flex; align-items: center; justify-content: center; }
+  ol.pasos li img { display: block; width: 220px; height: 150px; object-fit: cover; border-radius: 10px;
+                    margin-top: 6px; }
   td.numero { font-size: 10.5pt; font-weight: 600; }
 `;
 
@@ -108,7 +115,12 @@ export function documentoDeLaFicha(datos: DatosDeLaFicha): string {
   const pasos =
     datos.pasos.length === 0
       ? ''
-      : `${unTitulo('Cómo se hace')}<ol class="pasos">${datos.pasos.map((p) => `<li>${escapar(p)}</li>`).join('')}</ol>`;
+      : `${unTitulo('Cómo se hace')}<ol class="pasos">${datos.pasos
+          .map((p, i) => {
+            const foto = datos.fotosDeLosPasos?.[i] ?? null;
+            return `<li>${escapar(p)}${foto === null ? '' : `<img src="${escapar(foto)}" alt="">`}</li>`;
+          })
+          .join('')}</ol>`;
 
   const notas = datos.notas === null ? '' : `${unTitulo('Notas')}${unParrafo(datos.notas)}`;
 

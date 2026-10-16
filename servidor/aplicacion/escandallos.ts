@@ -42,6 +42,8 @@ export interface RecetaLeida {
   readonly platoId: string | null;
   readonly elaboracionId: string | null;
   readonly pasos: readonly string[];
+  /** La clave de la foto de cada paso, en su orden; '' sin foto (0090). */
+  readonly fotosDeLosPasos: readonly string[];
   readonly notas: string | null;
   readonly minutos: number | null;
   readonly version: number;
@@ -92,6 +94,7 @@ export async function lasRecetasDelLocal(
       plato_id: string | null;
       elaboracion_id: string | null;
       pasos: string[];
+      fotos_de_los_pasos: string[];
       notas: string | null;
       tiempo_minutos: number | null;
       version: number;
@@ -106,8 +109,8 @@ export async function lasRecetasDelLocal(
       }[];
     }[]
   >`
-    select r.id, r.plato_id, r.elaboracion_id, r.pasos, r.notas, r.tiempo_minutos, r.version,
-           r.tal_cual,
+    select r.id, r.plato_id, r.elaboracion_id, r.pasos, r.fotos_de_los_pasos, r.notas,
+           r.tiempo_minutos, r.version, r.tal_cual,
            coalesce(
              json_agg(json_build_object(
                'id', l.id, 'producto_id', l.producto_id, 'elaboracion_id', l.elaboracion_id,
@@ -125,6 +128,7 @@ export async function lasRecetasDelLocal(
     platoId: f.plato_id,
     elaboracionId: f.elaboracion_id,
     pasos: f.pasos,
+    fotosDeLosPasos: f.fotos_de_los_pasos,
     notas: f.notas,
     minutos: f.tiempo_minutos,
     version: f.version,

@@ -8,6 +8,7 @@ import { FalloDeLaApi } from '../datos/FalloDeLaApi.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CLAVE_DEL_TABLON, usarElTablon, type NotaDelTablon } from '../ganchos/usarElTablon.ts';
 import { CLAVE_DE_LA_CAMPANA, CLAVE_DE_MIS_AVISOS } from '../ganchos/usarLosAvisos.ts';
+import { CaraDe } from '../caras/CaraDe.tsx';
 
 /**
  * El Tablón · el corcho de la cocina, en el Panel (repaso del 25-sep · 0049).
@@ -172,13 +173,14 @@ function NotaEnElTablon({
       )}
     >
       <div className="flex items-center gap-e3">
-        <span
-          aria-hidden
-          className={clases(
-            'size-[8px] shrink-0 rounded-redondo',
-            nota.leida ? 'bg-transparent' : 'bg-naranja',
+        {/* Quién la escribió, en pequeño (repaso del 16-oct): se reconoce antes una cara
+            que un nombre. Lo que está sin leer lleva su punto encima de la cara. */}
+        <span aria-hidden className="relative shrink-0">
+          <CaraDe nombre={nota.autor} personaId={nota.autorId ?? null} tamano={24} />
+          {!nota.leida && (
+            <span className="absolute -right-[2px] -top-[2px] size-[9px] rounded-redondo border-2 border-superficie bg-naranja" />
           )}
-        />
+        </span>
         <span className="min-w-0 flex-1">
           <span
             className={clases(
@@ -250,7 +252,7 @@ function NotaEnElTablon({
       </div>
 
       {verLectura && nota.lectura !== null && (
-        <p className="pl-e5 text-etiqueta text-texto-suave">
+        <p className="pl-[calc(24px+var(--spacing-e3))] text-etiqueta text-texto-suave">
           {nota.lectura.quien.length === 0
             ? 'Nadie la ha leído todavía.'
             : `Leída por ${nota.lectura.quien.join(', ')}.`}

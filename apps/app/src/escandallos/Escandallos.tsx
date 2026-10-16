@@ -1,41 +1,34 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UNIDADES_DE_USO, type UnidadDeUso } from '@estook/dominio';
 import {
   Aviso,
   Boton,
-  Botones,
   Campo,
   Cargando,
   EstadoVacio,
   Etiqueta,
   FotoDeProducto,
-  Hoja,
   Lista,
   Mosaico,
   NadaConEso,
   Pieza,
   Proporcion,
   Tarjeta,
-  ErrorEnCristiano,
   sinAcentos,
   type ElementoDeLista,
 } from '@estook/ui';
-import { IconoAnadir, IconoAtencion, IconoEscandallos, IconoVincular } from '@estook/iconos';
+import { IconoAtencion, IconoDocumento, IconoEscandallos, IconoVincular } from '@estook/iconos';
 import { puedeVer } from '@estook/permisos';
-import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { usarLasVistasConAlgo } from '../ganchos/usarLasVistasConAlgo.ts';
-import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
-import { usarRefrescarLasFichas } from '../ganchos/usarRefrescarLasFichas.ts';
 import { LosAlergenos } from './Alergenos.tsx';
+import { ElEscandalloDelPlato } from './ElEscandalloDelPlato.tsx';
 import { FichaTecnica } from './FichaTecnica.tsx';
 import {
   comoPorcentaje,
   comoSeAbre,
-  leerCantidad,
   queFichaEs,
   tonoDelSemaforo,
   type MisFichas,
@@ -46,19 +39,28 @@ import {
 /** El acento de Escandallos. */
 const ACENTO = 'var(--color-app-escandallos)';
 
-/** Cuántos «sin ficha» se enseñan en el Resumen antes de «Ver todos». */
+/** Cuántos «sin escandallo» se enseñan en el Resumen antes de «Ver todos». */
 const A_LA_VISTA = 6;
 
 /**
- * Escandallos (M9 · 2, decisiones 0086 y 0087).
+ * Escandallos (M9 · 2, decisiones 0086 y 0087; ordenado en el repaso del 16-oct, 0090).
  *
- *   · **Resumen**: cuántos platos están desgranados, los que faltan («sin ficha»), y a
- *     quien ve costes, los que pasan del objetivo y los que pierden dinero en algún canal.
- *   · **Fichas**: los platos de la carta, por secciones, con sus alérgenos y su food cost.
- *   · **Elaboraciones**: la salsa, el caldo, lo que se prepara antes, con lo que rinde.
+ * Richi, el 16-oct: «una cosa son las fichas técnicas, para enseñar a los nuevos a
+ * hacer los platos con fotos y pasos, y otra los escandallos, donde se desgranan los
+ * platos». Estaban mezcladas —la pestaña se llamaba «Fichas», el escandallo tenía los
+ * pasos dentro y había una pestaña de elaboraciones—, y se repetía el trabajo. Ahora:
  *
- * La ficha de cada uno se abre al lado (`?ficha=plato.<id>`), y el enlace se puede
- * mandar por el chat: «mira cómo se hace la salsa».
+ *   · **Resumen**: cuántos platos están desgranados, los que faltan, y a quien ve costes,
+ *     los que pasan del objetivo y los que pierden dinero en algún canal.
+ *   · **Escandallos**: los platos de la carta, cada uno con lo que lleva, lo que cuesta
+ *     y lo que deja. **Solo eso**.
+ *   · **Fichas técnicas**: el plato de la carta **más** lo que ya dice su escandallo
+ *     (los gramos, sin euros), y los pasos para hacerlo, cada uno con su foto. Para
+ *     hacerla, el plato tiene que estar en la Carta y tener su escandallo: no se
+ *     escribe dos veces lo que lleva.
+ *
+ * El panel de cada uno se abre al lado (`?ficha=plato.<id>`), y el enlace se puede
+ * mandar por el chat.
  */
 export function Escandallos({
   destino,
@@ -69,31 +71,28 @@ export function Escandallos({
 }) {
   const consulta = usarLectura<MisFichas>('mis_fichas');
   const abierta = usarAbiertoEnLaDireccion('ficha');
-  const [nueva, setNueva] = useState(false);
   const datos = consulta.data;
 
   usarLasVistasConAlgo(
     datos === undefined
       ? null
       : [
-          ...(datos.cifras.sinFicha > 0 ? ['sin-ficha'] : []),
+          ...(datos.cifras.sinFicha > 0 ? ['sin-escandallo'] : []),
           ...((datos.cifras.bajoObjetivo ?? 0) > 0 ? ['bajo-objetivo'] : []),
+          ...(sinFichaTecnica(datos).length > 0 ? ['sin-ficha'] : []),
         ],
   );
-  usarQueHacer('nueva-elaboracion', () => {
-    setNueva(true);
-  });
 
   if (consulta.isPending) {
     return (
       <div className="py-e6">
-        <Cargando que="tus fichas" forma="lista-foto" lineas={6} />
+        <Cargando que="tus escandallos" forma="lista-foto" lineas={6} />
       </div>
     );
   }
   if (datos === undefined) {
     return (
-      <Aviso tono="mal" titulo="No he podido leer tus fichas">
+      <Aviso tono="mal" titulo="No he podido leer tus escandallos">
         Prueba en un momento.
       </Aviso>
     );
@@ -103,56 +102,44 @@ export function Escandallos({
     abierta.abrir(comoSeAbre(ficha));
   };
   const laAbierta = queFichaEs(abierta.abierto);
+  const enLasFichas = destino === 'fichas';
 
   return (
     <div className="flex flex-col gap-e4">
-      {destino === 'elaboraciones' ? (
-        <Elaboraciones
-          datos={datos}
-          alAbrir={abrir}
-          alCrear={() => {
-            setNueva(true);
-          }}
-        />
-      ) : destino === 'fichas' ? (
-        <Fichas datos={datos} vista={vista} alAbrir={abrir} />
+      {enLasFichas ? (
+        <FichasTecnicas datos={datos} vista={vista} alAbrir={abrir} />
+      ) : destino === 'escandallos' ? (
+        <LosEscandallos datos={datos} vista={vista} alAbrir={abrir} />
       ) : (
         <Resumen datos={datos} alAbrir={abrir} />
       )}
 
-      {laAbierta !== null && (
-        <FichaTecnica
-          key={abierta.abierto}
-          ficha={laAbierta}
-          alCerrar={abierta.cerrar}
-          alAbrir={abrir}
-        />
-      )}
-      {nueva && datos.puedeEditar && (
-        <NuevaElaboracion
-          alCerrar={() => {
-            setNueva(false);
-          }}
-          alCrear={(id) => {
-            setNueva(false);
-            abrir({ tipo: 'elaboracion', id });
-          }}
-        />
-      )}
+      {laAbierta !== null &&
+        (enLasFichas && laAbierta.tipo === 'plato' ? (
+          <FichaTecnica key={abierta.abierto} platoId={laAbierta.id} alCerrar={abierta.cerrar} />
+        ) : (
+          <ElEscandalloDelPlato
+            key={abierta.abierto}
+            ficha={laAbierta}
+            alCerrar={abierta.cerrar}
+            alAbrir={abrir}
+          />
+        ))}
     </div>
   );
 }
 
+/** Los que ya tienen escandallo y todavía no su ficha técnica. */
+function sinFichaTecnica(datos: MisFichas): readonly PlatoEnLaLista[] {
+  return datos.platos.filter((p) => p.tieneFicha && p.tieneFichaTecnica !== true);
+}
+
 // ── Una fila de plato ────────────────────────────────────────────────────────
 
-function filaDePlato(
-  plato: PlatoEnLaLista,
-  alAbrir: (ficha: QueFicha) => void,
-  detalle?: string,
-): ElementoDeLista {
+function filaDePlato(plato: PlatoEnLaLista, alAbrir: (ficha: QueFicha) => void): ElementoDeLista {
   const coste = plato.coste;
   const derecha = !plato.tieneFicha ? (
-    <Etiqueta>Sin ficha</Etiqueta>
+    <Etiqueta>Sin escandallo</Etiqueta>
   ) : coste === undefined ? undefined : coste.costeCentimos === null ? (
     <Etiqueta tono="atencion">Falta precio</Etiqueta>
   ) : coste.foodCost === null ? undefined : (
@@ -179,11 +166,34 @@ function filaDePlato(
             Pierde en {coste.pierdeEn.join(', ')}
           </span>
         )}
-        {detalle !== undefined && <span className="min-w-0 truncate">{detalle}</span>}
         <LosAlergenos alergenos={plato.alergenos} picante={plato.picante} lado={18} enUnaLinea />
       </span>
     ),
     ...(derecha === undefined ? {} : { derecha }),
+    alPulsar: () => {
+      alAbrir({ tipo: 'plato', id: plato.id });
+    },
+  };
+}
+
+/** La fila de la ficha técnica: el plato, y si ya tiene sus pasos. */
+function filaDeFicha(plato: PlatoEnLaLista, alAbrir: (ficha: QueFicha) => void): ElementoDeLista {
+  const pasos = plato.pasos ?? 0;
+  return {
+    clave: plato.id,
+    delante: (
+      <FotoDeProducto nombre={plato.nombre} categoria={null} enlace={plato.miniatura} lado={40} />
+    ),
+    titulo: plato.nombre,
+    detalle: (
+      <span className="flex min-w-0 items-center gap-e2">
+        {pasos > 0 && (
+          <span className="shrink-0">{pasos === 1 ? '1 paso' : `${String(pasos)} pasos`}</span>
+        )}
+        <LosAlergenos alergenos={plato.alergenos} picante={plato.picante} lado={18} enUnaLinea />
+      </span>
+    ),
+    ...(plato.tieneFichaTecnica === true ? {} : { derecha: <Etiqueta>Sin pasos</Etiqueta> }),
     alPulsar: () => {
       alAbrir({ tipo: 'plato', id: plato.id });
     },
@@ -230,24 +240,30 @@ function Resumen({
     );
   }
 
-  const sinFicha = datos.platos.filter((p) => !p.tieneFicha);
+  const sinEscandallo = datos.platos.filter((p) => !p.tieneFicha);
   const pierden = datos.platos.filter((p) => (p.coste?.pierdeEn.length ?? 0) > 0);
   const pasan = datos.platos
     .filter((p) => p.coste?.semaforo === 'rojo' || p.coste?.semaforo === 'ambar')
     .sort((a, b) => (b.coste?.foodCost ?? 0) - (a.coste?.foodCost ?? 0));
-  const conFicha = cifras.platos - cifras.sinFicha;
+  const conEscandallo = cifras.platos - cifras.sinFicha;
 
   return (
     <Mosaico>
       <Pieza entera>
         <Tarjeta
-          titulo="Cómo van tus fichas"
+          titulo="Cómo van tus escandallos"
           acento={ACENTO}
           icono={<IconoEscandallos size={18} />}
         >
           <div className="flex flex-col gap-e4">
             <dl className="grid grid-cols-2 gap-e3 sm:grid-cols-4">
-              <Dato nombre="Con ficha" valor={`${String(conFicha)} de ${String(cifras.platos)}`} />
+              <Dato
+                nombre="Con escandallo"
+                valor={`${String(conEscandallo)} de ${String(cifras.platos)}`}
+              />
+              {cifras.conFichaTecnica !== undefined && (
+                <Dato nombre="Con ficha técnica" valor={String(cifras.conFichaTecnica)} />
+              )}
               {datos.conImportes && (
                 <>
                   <Dato
@@ -261,7 +277,6 @@ function Resumen({
                       ? {}
                       : { debajo: `objetivo ${comoPorcentaje(datos.objetivo * 100)}` })}
                   />
-                  <Dato nombre="Pasan del objetivo" valor={String(cifras.bajoObjetivo ?? 0)} />
                   <Dato
                     nombre="Pierden en un canal"
                     valor={String(cifras.pierden ?? 0)}
@@ -271,11 +286,11 @@ function Resumen({
               )}
             </dl>
             <Proporcion
-              titulo="Platos con ficha"
+              titulo="Platos con escandallo"
               soloLaBarra
               trozos={[
-                { que: 'Con ficha', cuantos: conFicha, tono: 'bien' },
-                { que: 'Sin ficha', cuantos: cifras.sinFicha, tono: 'neutro' },
+                { que: 'Con escandallo', cuantos: conEscandallo, tono: 'bien' },
+                { que: 'Sin escandallo', cuantos: cifras.sinFicha, tono: 'neutro' },
               ]}
             />
           </div>
@@ -298,20 +313,20 @@ function Resumen({
         </Tarjeta>
       )}
 
-      {sinFicha.length > 0 && (
+      {sinEscandallo.length > 0 && (
         <Tarjeta
-          titulo="Sin ficha"
-          cuantos={sinFicha.length}
+          titulo="Sin escandallo"
+          cuantos={sinEscandallo.length}
           acento={ACENTO}
           pegado
-          {...(sinFicha.length > A_LA_VISTA
+          {...(sinEscandallo.length > A_LA_VISTA
             ? {
                 accion: (
                   <Boton
                     tono="texto"
                     tamano="s"
                     onClick={() => {
-                      navegar('/escandallos/fichas/sin-ficha');
+                      navegar('/escandallos/escandallos/sin-escandallo');
                     }}
                   >
                     Ver todos
@@ -321,8 +336,8 @@ function Resumen({
             : {})}
         >
           <Lista
-            titulo="Sin ficha"
-            elementos={sinFicha.slice(0, A_LA_VISTA).map((p) => filaDePlato(p, alAbrir))}
+            titulo="Sin escandallo"
+            elementos={sinEscandallo.slice(0, A_LA_VISTA).map((p) => filaDePlato(p, alAbrir))}
             cuandoNoHay={null}
           />
         </Tarjeta>
@@ -338,13 +353,13 @@ function Resumen({
         </Tarjeta>
       )}
 
-      {sinFicha.length === 0 && pierden.length === 0 && pasan.length === 0 && (
+      {sinEscandallo.length === 0 && pierden.length === 0 && pasan.length === 0 && (
         <Tarjeta>
           <EstadoVacio
             dibujo="todo-en-orden"
             acento={ACENTO}
             titulo="Todo desgranado"
-            frase="Cada plato tiene su ficha. Si sube un ingrediente, aquí lo verás."
+            frase="Cada plato tiene su escandallo. Si sube un ingrediente, aquí lo verás."
           />
         </Tarjeta>
       )}
@@ -376,39 +391,22 @@ function Dato({
   );
 }
 
-// ── Fichas ───────────────────────────────────────────────────────────────────
+// ── El buscador de las dos listas ────────────────────────────────────────────
 
-function Fichas({
-  datos,
-  vista,
-  alAbrir,
-}: {
-  readonly datos: MisFichas;
-  readonly vista: string;
-  readonly alAbrir: (ficha: QueFicha) => void;
-}) {
-  const [buscado, setBuscado] = useState('');
+function elBuscador(buscado: string, setBuscado: (texto: string) => void) {
   const texto = sinAcentos(buscado.trim().toLocaleLowerCase('es'));
   const casa = (p: PlatoEnLaLista) =>
     texto === '' || sinAcentos(p.nombre.toLocaleLowerCase('es')).includes(texto);
-  const platos = datos.platos
-    .filter(casa)
-    .filter((p) =>
-      vista === 'sin-ficha'
-        ? !p.tieneFicha
-        : vista === 'bajo-objetivo'
-          ? p.coste?.semaforo === 'rojo' || p.coste?.semaforo === 'ambar'
-          : true,
-    );
-
   const buscador = (
-    <Campo
-      etiqueta="Buscar un plato"
-      value={buscado}
-      onChange={(e) => {
-        setBuscado(e.target.value);
-      }}
-    />
+    <div className="max-w-[28rem]">
+      <Campo
+        etiqueta="Buscar un plato"
+        value={buscado}
+        onChange={(e) => {
+          setBuscado(e.target.value);
+        }}
+      />
+    </div>
   );
   const nadaConEso = (
     <NadaConEso
@@ -419,6 +417,68 @@ function Fichas({
       }}
     />
   );
+  return { casa, buscador, nadaConEso };
+}
+
+/** Los platos de una lista, en tarjetas por sección de la carta. */
+function PorSecciones({
+  datos,
+  platos,
+  fila,
+  nadaConEso,
+}: {
+  readonly datos: MisFichas;
+  readonly platos: readonly PlatoEnLaLista[];
+  readonly fila: (plato: PlatoEnLaLista) => ElementoDeLista;
+  readonly nadaConEso: React.ReactNode;
+}) {
+  const todas: { readonly id: string | null; readonly nombre: string }[] = [
+    ...datos.secciones,
+    { id: null, nombre: 'Sin sección' },
+  ];
+  const grupos = todas
+    .map((g) => ({ ...g, platos: platos.filter((p) => p.seccionId === g.id) }))
+    .filter((g) => g.platos.length > 0);
+  return (
+    <>
+      {grupos.length === 0 && <Tarjeta>{nadaConEso}</Tarjeta>}
+      {grupos.map((g) => (
+        <Tarjeta
+          key={g.id ?? 'sin'}
+          titulo={g.nombre}
+          cuantos={g.platos.length}
+          acento={ACENTO}
+          pegado
+        >
+          <Lista titulo={g.nombre} elementos={g.platos.map(fila)} cuandoNoHay={null} />
+        </Tarjeta>
+      ))}
+    </>
+  );
+}
+
+// ── Escandallos ──────────────────────────────────────────────────────────────
+
+function LosEscandallos({
+  datos,
+  vista,
+  alAbrir,
+}: {
+  readonly datos: MisFichas;
+  readonly vista: string;
+  readonly alAbrir: (ficha: QueFicha) => void;
+}) {
+  const [buscado, setBuscado] = useState('');
+  const { casa, buscador, nadaConEso } = elBuscador(buscado, setBuscado);
+  const platos = datos.platos
+    .filter(casa)
+    .filter((p) =>
+      vista === 'sin-escandallo'
+        ? !p.tieneFicha
+        : vista === 'bajo-objetivo'
+          ? p.coste?.semaforo === 'rojo' || p.coste?.semaforo === 'ambar'
+          : true,
+    );
 
   if (datos.platos.length === 0) {
     return (
@@ -436,228 +496,111 @@ function Fichas({
   if (vista === 'bajo-objetivo') {
     const enOrden = [...platos].sort((a, b) => (b.coste?.foodCost ?? 0) - (a.coste?.foodCost ?? 0));
     return (
-      <Tarjeta titulo="Pasan del objetivo" cuantos={enOrden.length} acento={ACENTO}>
-        <div className="px-e3 pb-e3">{buscador}</div>
-        <Lista
-          titulo="Pasan del objetivo"
-          elementos={enOrden.map((p) => filaDePlato(p, alAbrir))}
-          cuandoNoHay={nadaConEso}
-        />
-      </Tarjeta>
+      <div className="flex flex-col gap-e4">
+        {buscador}
+        <Tarjeta titulo="Pasan del objetivo" cuantos={enOrden.length} acento={ACENTO} pegado>
+          <Lista
+            titulo="Pasan del objetivo"
+            elementos={enOrden.map((p) => filaDePlato(p, alAbrir))}
+            cuandoNoHay={nadaConEso}
+          />
+        </Tarjeta>
+      </div>
     );
   }
 
-  const todas: { readonly id: string | null; readonly nombre: string }[] = [
-    ...datos.secciones,
-    { id: null, nombre: 'Sin sección' },
-  ];
-  const grupos = todas
-    .map((g) => ({ ...g, platos: platos.filter((p) => p.seccionId === g.id) }))
-    .filter((g) => g.platos.length > 0);
-
   return (
     <div className="flex flex-col gap-e4">
-      <div className="max-w-[28rem]">{buscador}</div>
-      {grupos.length === 0 && <Tarjeta>{nadaConEso}</Tarjeta>}
-      {grupos.map((g) => (
-        <Tarjeta
-          key={g.id ?? 'sin'}
-          titulo={g.nombre}
-          cuantos={g.platos.length}
-          acento={ACENTO}
-          pegado
-        >
-          <Lista
-            titulo={g.nombre}
-            elementos={g.platos.map((p) => filaDePlato(p, alAbrir))}
-            cuandoNoHay={null}
-          />
-        </Tarjeta>
-      ))}
+      {buscador}
+      <PorSecciones
+        datos={datos}
+        platos={platos}
+        fila={(p) => filaDePlato(p, alAbrir)}
+        nadaConEso={nadaConEso}
+      />
     </div>
   );
 }
 
-// ── Elaboraciones ────────────────────────────────────────────────────────────
+// ── Fichas técnicas ──────────────────────────────────────────────────────────
 
-function Elaboraciones({
+function FichasTecnicas({
   datos,
+  vista,
   alAbrir,
-  alCrear,
 }: {
   readonly datos: MisFichas;
+  readonly vista: string;
   readonly alAbrir: (ficha: QueFicha) => void;
-  readonly alCrear: () => void;
 }) {
-  const activas = datos.elaboraciones.filter((e) => e.activo);
-  const archivadas = datos.elaboraciones.filter((e) => !e.activo);
-  const fila = (e: (typeof activas)[number]): ElementoDeLista => ({
-    clave: e.id,
-    titulo: e.nombre,
-    detalle: (
-      <span className="flex min-w-0 items-center gap-e2">
-        <span className="truncate">
-          Rinde {e.rinde}
-          {e.ingredientes === 0 ? ' · sin ficha' : ''}
-          {e.usadaEn > 0
-            ? ` · en ${String(e.usadaEn)} ${e.usadaEn === 1 ? 'receta' : 'recetas'}`
-            : ''}
-        </span>
-        <LosAlergenos alergenos={e.alergenos} lado={18} enUnaLinea />
-      </span>
-    ),
-    ...(e.costePorUnidad === undefined || e.costePorUnidad === null
-      ? {}
-      : {
-          derecha: (
-            <span className="shrink-0 text-secundario font-semibold tabular-nums">
-              {e.costePorUnidad}
-            </span>
-          ),
-        }),
-    alPulsar: () => {
-      alAbrir({ tipo: 'elaboracion', id: e.id });
-    },
-  });
+  const navegar = useNavigate();
+  const [buscado, setBuscado] = useState('');
+  const { casa, buscador, nadaConEso } = elBuscador(buscado, setBuscado);
+  // Solo lo que ya tiene escandallo: la ficha técnica coge de ahí lo que lleva, y no
+  // se escribe dos veces (Richi, 16-oct).
+  const conEscandallo = datos.platos.filter((p) => p.tieneFicha);
+  const sinEscandallo = datos.cifras.sinFicha;
+  const platos = conEscandallo
+    .filter(casa)
+    .filter((p) => (vista === 'sin-ficha' ? p.tieneFichaTecnica !== true : true));
 
   return (
     <div className="flex flex-col gap-e4">
-      {datos.puedeEditar && activas.length > 0 && (
-        <div>
-          <Boton tono="principal" icono={<IconoAnadir size={18} />} onClick={alCrear}>
-            Nueva elaboración
-          </Boton>
-        </div>
-      )}
-      {activas.length === 0 ? (
+      {/* Lo que hace falta para que un plato salga aquí, dicho una vez y corto. */}
+      <div className="flex items-start gap-e3 rounded-grande bg-superficie px-e4 py-e3 [box-shadow:var(--sombra-tarjeta)]">
+        <span aria-hidden className="mt-[2px] shrink-0 text-texto-suave">
+          <IconoDocumento size={18} />
+        </span>
+        <p className="min-w-0 flex-1 text-secundario text-texto-suave">
+          La ficha técnica enseña a hacer el plato: lo que lleva sale de su escandallo, y tú pones
+          los pasos y sus fotos. Para que un plato salga aquí, tiene que estar en la Carta y tener
+          su escandallo.
+        </p>
+      </div>
+
+      {conEscandallo.length === 0 ? (
         <Tarjeta>
           <EstadoVacio
             dibujo="platos"
             acento={ACENTO}
-            titulo="Lo que preparas antes"
-            frase="La salsa de la casa, el caldo, la masa: con lo que rinde, cuesta lo justo dentro de cada plato."
-            {...(datos.puedeEditar
-              ? {
-                  accion: (
-                    <Boton tono="principal" icono={<IconoAnadir size={18} />} onClick={alCrear}>
-                      Nueva elaboración
-                    </Boton>
-                  ),
-                }
-              : { sinAccionPorque: 'Las escribe quien lleva la cocina.' })}
+            titulo="Primero, el escandallo"
+            frase="Desgrana un plato en Escandallos y aquí escribes cómo se hace."
+            accion={
+              <Boton
+                tono="principal"
+                onClick={() => {
+                  navegar('/escandallos/escandallos');
+                }}
+              >
+                Ir a Escandallos
+              </Boton>
+            }
           />
         </Tarjeta>
       ) : (
-        <Tarjeta titulo="Elaboraciones" cuantos={activas.length} acento={ACENTO} pegado>
-          <Lista titulo="Elaboraciones" elementos={activas.map(fila)} cuandoNoHay={null} />
-        </Tarjeta>
-      )}
-      {archivadas.length > 0 && (
-        <details className="rounded-grande border border-borde bg-superficie">
-          <summary className="flex min-h-toque cursor-pointer items-center px-e4 text-secundario font-semibold text-texto-suave">
-            Archivadas ({archivadas.length})
-          </summary>
-          <Lista titulo="Archivadas" elementos={archivadas.map(fila)} cuandoNoHay={null} />
-        </details>
+        <>
+          {buscador}
+          <PorSecciones
+            datos={datos}
+            platos={platos}
+            fila={(p) => filaDeFicha(p, alAbrir)}
+            nadaConEso={nadaConEso}
+          />
+          {sinEscandallo > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                navegar('/escandallos/escandallos/sin-escandallo');
+              }}
+              className="self-start text-secundario font-medium text-texto-suave underline decoration-borde-fuerte underline-offset-4 hover:text-texto"
+            >
+              {sinEscandallo === 1
+                ? '1 plato de la carta sin escandallo todavía'
+                : `${String(sinEscandallo)} platos de la carta sin escandallo todavía`}
+            </button>
+          )}
+        </>
       )}
     </div>
-  );
-}
-
-const NOMBRE_DE_LA_UNIDAD: Readonly<Record<UnidadDeUso, string>> = {
-  g: 'gramos',
-  kg: 'kilos',
-  ml: 'mililitros',
-  l: 'litros',
-  ud: 'unidades',
-};
-
-function NuevaElaboracion({
-  alCerrar,
-  alCrear,
-}: {
-  readonly alCerrar: () => void;
-  readonly alCrear: (id: string) => void;
-}) {
-  const { cliente } = usarSesion();
-  const refrescar = usarRefrescarLasFichas();
-  const [nombre, setNombre] = useState('');
-  const [rinde, setRinde] = useState('');
-  const [unidad, setUnidad] = useState<UnidadDeUso>('l');
-  const [creando, setCreando] = useState(false);
-  const [error, setError] = useState<ErrorDeLaApi | null>(null);
-  const cantidad = leerCantidad(rinde);
-
-  async function crear() {
-    setCreando(true);
-    setError(null);
-    const respuesta = await cliente.ejecutar<{ elaboracionId: string }>('crear_elaboracion', {
-      nombre: nombre.trim(),
-      rinde_cantidad: cantidad,
-      rinde_unidad: unidad,
-    });
-    setCreando(false);
-    if (!respuesta.ok) {
-      setError(respuesta.error);
-      return;
-    }
-    await refrescar();
-    alCrear(respuesta.datos.elaboracionId);
-  }
-
-  return (
-    <Hoja
-      abierta
-      alCerrar={alCerrar}
-      titulo="Nueva elaboración"
-      pie={
-        <Botones>
-          <Boton tono="secundario" onClick={alCerrar}>
-            Cancelar
-          </Boton>
-          <Boton
-            tono="principal"
-            disabled={nombre.trim() === '' || cantidad === null}
-            cargando={creando}
-            textoCargando="Creando"
-            onClick={() => {
-              void crear();
-            }}
-          >
-            Crear
-          </Boton>
-        </Botones>
-      }
-    >
-      <div className="flex flex-col gap-e3 pt-e3">
-        {error !== null && <ErrorEnCristiano error={error} />}
-        <Campo
-          etiqueta="Nombre"
-          value={nombre}
-          maxLength={120}
-          placeholder="Salsa de la casa"
-          onChange={(e) => {
-            setNombre(e.target.value);
-          }}
-        />
-        <Campo
-          etiqueta="Lo que sale de hacerla una vez"
-          inputMode="decimal"
-          value={rinde}
-          placeholder="2"
-          onChange={(e) => {
-            setRinde(e.target.value);
-          }}
-          unidad={{
-            valor: unidad,
-            opciones: UNIDADES_DE_USO.map((u) => ({ valor: u, larga: NOMBRE_DE_LA_UNIDAD[u] })),
-            alElegir: (u) => {
-              setUnidad(u as UnidadDeUso);
-            },
-          }}
-          ayuda="Con esto, Estook sabe lo que cuesta cada litro o cada kilo."
-        />
-      </div>
-    </Hoja>
   );
 }

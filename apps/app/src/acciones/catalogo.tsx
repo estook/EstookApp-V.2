@@ -6,6 +6,7 @@ import {
   IconoBorrar,
   IconoDocumento,
   IconoEntrar,
+  IconoEscandallos,
   IconoEquipo,
   IconoAlmacen,
   IconoOrganizacion,
@@ -113,14 +114,15 @@ export const ACCIONES: readonly Accion[] = [
     ir: '/carta/carta/por-secciones?hacer=nuevo',
   },
   {
-    // M9 · 2 (0087): la salsa, el caldo, lo que se prepara antes.
-    id: 'nueva-elaboracion',
+    // Era «Nueva elaboración» (0087); sin elaboraciones desde el 16-oct (0090), lo que
+    // se hace en Escandallos es desgranar los platos de la carta.
+    id: 'desgranar-un-plato',
     app: 'escandallos',
-    nombre: 'Nueva elaboración',
-    queHace: 'Una salsa o un caldo con lo que rinde, para usarla dentro de tus platos',
-    icono: IconoAnadir,
+    nombre: 'Desgranar un plato',
+    queHace: 'Lo que lleva un plato de tu carta y en qué cantidad: el coste sale solo',
+    icono: IconoEscandallos,
     permiso: { cual: 'app.escandallos', como: 'editar' },
-    ir: '/escandallos/elaboraciones?hacer=nueva-elaboracion',
+    ir: '/escandallos/escandallos/todos',
   },
   {
     id: 'que-atender',

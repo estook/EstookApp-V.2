@@ -15,7 +15,6 @@ import {
   IconoInicio,
   IconoPanel,
   IconoPersona,
-  IconoRejilla,
   IconoReloj,
   IconoReparto,
   IconoServicio,
@@ -324,7 +323,10 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     icono: IconoEscandallos,
     acento: 'var(--color-app-escandallos)',
     forma: 'lista',
-    queHace: 'Lo que lleva cada plato, cómo se hace y cuánto te deja',
+    queHace: 'Lo que lleva cada plato, cuánto te deja y cómo se hace',
+    // El repaso del 16-oct (0090): «Fichas» eran los escandallos y se llaman así; la
+    // ficha técnica, para enseñar a hacer el plato, es su pestaña; y las elaboraciones
+    // se quitan por ahora («no vamos a hacer otro escandallo de las salsas»).
     destinos: [
       {
         id: 'resumen',
@@ -335,24 +337,23 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         vistas: [],
       },
       {
-        id: 'fichas',
-        nombre: 'Fichas',
+        id: 'escandallos',
+        nombre: 'Escandallos',
         icono: IconoEscandallos,
         queContesta: '¿Qué lleva cada plato, y cuánto cuesta?',
-        // «Sin ficha» y «Bajo objetivo» solo salen si tienen algo (el repaso del
-        // 10-oct): a quien no ve costes, «Bajo objetivo» no le sale nunca. Era «Sin
-        // coste» hasta la 0087: lo que falta es la ficha, no el coste.
-        vistas: soloSiTienenAlgo(vistas('Todas', 'Sin ficha', 'Bajo objetivo'), [
-          'sin-ficha',
+        // «Sin escandallo» y «Bajo objetivo» solo salen si tienen algo (el repaso del
+        // 10-oct): a quien no ve costes, «Bajo objetivo» no le sale nunca.
+        vistas: soloSiTienenAlgo(vistas('Todos', 'Sin escandallo', 'Bajo objetivo'), [
+          'sin-escandallo',
           'bajo-objetivo',
         ]),
       },
       {
-        id: 'elaboraciones',
-        nombre: 'Elaboraciones',
-        icono: IconoRejilla,
-        queContesta: '¿Qué se prepara antes, y cuánto cuesta esa preparación?',
-        vistas: [],
+        id: 'fichas',
+        nombre: 'Fichas',
+        icono: IconoDocumento,
+        queContesta: '¿Cómo se hace cada plato, paso a paso?',
+        vistas: soloSiTienenAlgo(vistas('Todas', 'Sin ficha'), ['sin-ficha']),
       },
       {
         // «Qué ha cambiado y por qué» (Plan, M9): con M9 · 3 (0087).

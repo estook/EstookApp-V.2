@@ -91,6 +91,30 @@ function origenesPermitidos(): string[] {
   return [...new Set([...NUESTROS_ORIGENES, ...delEntorno, ...locales])];
 }
 
+/**
+ * **La región donde está la base, para que la API corra a su lado** (repaso del
+ * 16-oct, 0090).
+ *
+ * Supabase ejecuta la función en la región más cercana a quien llama: desde España,
+ * París (`eu-west-3`). Y la base está en Irlanda (`eu-west-1`). Cada consulta hace de
+ * cinco a treinta viajes a la base, y cada viaje París–Irlanda son unos 18 ms: el
+ * Panel, con quince consultas, se iba cerca de un segundo solo en idas y vueltas. Lo
+ * medimos el 16-oct, y es lo que Richi notaba como «carga súper lento».
+ *
+ * Supabase deja fijar la región con la cabecera `x-region` (documentado en «Regional
+ * invocation»). La API **dice** en cada respuesta en qué región está su base
+ * (`x-estook-region`), y la app, en cuanto lo oye, la pide en las siguientes. Así no
+ * depende del orden: una API de antes no lo dice, no deja pasar `x-region` y la app
+ * no la manda. En desarrollo no se dice: la base está en el mismo ordenador.
+ */
+export const CABECERA_REGION_DE_LA_BASE = 'x-estook-region';
+
+function laRegionDeLaBase(): string | null {
+  const dicha = variable('REGION_DE_LA_BASE');
+  if (dicha !== undefined && dicha !== '') return dicha;
+  return variable('ENTORNO') === 'produccion' ? 'eu-west-1' : null;
+}
+
 function cabecerasDeCors(origen: string): Record<string, string> {
   return {
     'access-control-allow-origin': origen,
@@ -103,11 +127,17 @@ function cabecerasDeCors(origen: string): Record<string, string> {
       CABECERA_IDEMPOTENCIA,
       CABECERA_CORRELACION,
       CABECERA_HECHO_HACE,
+      // La región en que se pide que corra la función (0090).
+      'x-region',
     ].join(', '),
     'access-control-allow-methods': 'GET, POST, OPTIONS',
     // Para que el cliente pueda leer de vuelta su hilo y saber si el comando se
     // repitio. Sin declararlas, el navegador se las esconde.
-    'access-control-expose-headers': [CABECERA_CORRELACION, CABECERA_REPETIDA].join(', '),
+    'access-control-expose-headers': [
+      CABECERA_CORRELACION,
+      CABECERA_REPETIDA,
+      CABECERA_REGION_DE_LA_BASE,
+    ].join(', '),
     'access-control-max-age': '86400',
   };
 }
@@ -168,6 +198,8 @@ export function crearApi(despachador: Despachador) {
       for (const [nombre, valor] of Object.entries(cabecerasDeCors(origen))) {
         c.res.headers.set(nombre, valor);
       }
+      const region = laRegionDeLaBase();
+      if (region !== null) c.res.headers.set(CABECERA_REGION_DE_LA_BASE, region);
     }
 
     // `noImplicitReturns` pide que todos los caminos devuelvan lo mismo, y el de

@@ -86,9 +86,7 @@ test('lo de hoy sale plegado en el móvil y abierto en el escritorio, y se abre 
   await expect(hoy.getByRole('listitem')).toHaveCount(1);
 });
 
-test('sin nada que atender, lo de hoy no sale (16-oct)', async ({
-  page,
-}) => {
+test('sin nada que atender, lo de hoy no sale (16-oct)', async ({ page }) => {
   // Lo de hoy lo contesta la prueba, con una sola cosa. Con lo de verdad no se puede:
   // en GitHub los tres navegadores comparten la base, y mientras esta apartaba lo de
   // Rosa, las de compras le creaban pedidos en borrador, cada uno un aviso nuevo

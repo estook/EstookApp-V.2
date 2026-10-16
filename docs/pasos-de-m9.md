@@ -4,19 +4,61 @@
 >
 > Comprobado el 16 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
 >
-> | Qué                         | Cómo está                                                                                                 |
-> | --------------------------- | --------------------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #105** (M9 · 1 y el arreglo de `bd:comprobar-api`). Abierta: **M9 · 2**             |
-> | La base de datos            | **68 de 68** migraciones, igual que `main`. Con M9 · 2 llega la **0069**                                  |
-> | La API                      | **Desplegada con la #104**: 85 y 188, con el lote y **con Sentry**. Con M9 · 2 pasa a 90 y 194            |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                                 |
-> | M9                          | **M9 · 1 en producción**; **M9 · 2** en su pull request ([0087](decisiones/0087-fichas-y-escandallos.md)) |
+> | Qué                         | Cómo está                                                                                                                                 |
+> | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #106** (M9 · 2). Abierta: **su arreglo** ([0088](decisiones/0088-todo-el-almacen-y-el-historial-que-solo-crece.md)) |
+> | La base de datos            | **69 de 69** migraciones, igual que `main`. Con el arreglo llega la **0070**                                                              |
+> | La API                      | **Desplegada con la #106**: 90 y 194, con el lote y **con Sentry**. El arreglo no cambia la cuenta                                        |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                                                                 |
+> | M9                          | **M9 · 1 y M9 · 2 en producción**; `bd:comprobar-api` dio **1 MAL** (el historial), que arregla la 0070                                   |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo que quede de antes, en [`pasos-de-m8.md`](pasos-de-m8.md).
 
 ---
 
-## Lo que te toca ahora · M9 · 2 · Fichas y escandallos
+## Lo que te toca ahora · el arreglo de M9 · 2
+
+Lo que viste el 16-oct ([decisión 0088](decisiones/0088-todo-el-almacen-y-el-historial-que-solo-crece.md)): **«Desde el almacén» y «Vincular» no encontraban lo tuyo** porque solo enseñaban lo que va por unidades, y en tu Almacén el entrecot, el pescado o el helado van en gramos o mililitros. Ahora **sale todo**, y lo que va a peso te pregunta **cuánto lleva la ración**. Y el **MAL** de `bd:comprobar-api` era de verdad: la API podía cambiar el historial de una receta. **Hay una migración** (`0070`: una marca nueva en la receta, que se pone sola a lo que ya vinculaste, y los permisos del historial) y **hay que desplegar la API**. El orden: **fusionar, migrar y después desplegar**.
+
+### 1 · Fusionar
+
+En **github.com** → **Pull requests** → **«Vincular todo el Almacén…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
+
+### 2 · Migrar la base
+
+En PowerShell, en la carpeta del proyecto, uno por uno:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:migrar
+```
+
+**Qué tiene que decir:** que aplica la **0070 · lo que se vende tal cual y el historial**, y que la base va por la **70**.
+
+### 3 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** en **«M9 · 2 · lo que la 0069 dejo puesto»**, todo **OK**: que el historial no se puede cambiar, que una ficha no se borra y que la receta dice si el plato se vende tal cual. Siguen **«las 90»** y **«los 194»**. Al final, **ninguna comprobación mal** (las 11 «sin poder comprobar» son las de siempre).
+
+### 4 · Probarlo
+
+Recarga con **Ctrl + F5**. **Carta → «Desde el almacén»**: busca algo que vaya a peso (el chuletón, un pescado). Márcalo: te pide **«Cada ración lleva»** (por ejemplo, 400 g) y el precio. **«Añadir a la carta»**: sale con la cadena, y al pasar por encima, «Vinculado a … · 400 g». En **Escandallos**, su ficha ya tiene coste.
+
+## M9 · 2 · Fichas y escandallos (en producción desde el 16-oct)
+
+Hecho: fusionada (#106), migrada (0069) y la API desplegada (90 y 194). Lo de abajo queda para consultarlo, y el punto 4 para probarlo.
 
 Las fichas, los escandallos con el margen por canal, el modo cocina, el PDF y el historial con «Recuperar»; y en la Carta, **vincular lo que se vende tal cual**, las unidades de la ración, los alérgenos y el picante ([decisión 0087](decisiones/0087-fichas-y-escandallos.md)). **Hay una migración** (`0069`: cuatro tablas nuevas, cuatro columnas del plato y la ficha para la sala) y **hay que desplegar la API** (cinco consultas y seis comandos nuevos). **No hay secretos nuevos.** El orden importa: **fusionar, migrar y después desplegar**.
 

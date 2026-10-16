@@ -521,6 +521,9 @@ function ElVinculo({
         <IconoVincular size={18} className="shrink-0 text-texto-suave" />
         <span className="min-w-0 flex-1 text-secundario">
           Vinculado a <strong className="font-semibold">{plato.vinculadoA.nombre}</strong>
+          {plato.vinculadoA.racion !== null && (
+            <span className="tabular-nums"> · {plato.vinculadoA.racion}</span>
+          )}
         </span>
         {puedeVincular && (
           <Boton

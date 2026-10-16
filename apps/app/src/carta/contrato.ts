@@ -48,7 +48,12 @@ export interface UnPlato {
   readonly alergenosDeLaReceta: readonly Alergeno[];
   readonly picante: number;
   readonly distintivos: readonly string[];
-  readonly vinculadoA: { readonly id: string; readonly nombre: string } | null;
+  /** Lo que se vende tal cual, y la ración si no es una unidad («300 g»). */
+  readonly vinculadoA: {
+    readonly id: string;
+    readonly nombre: string;
+    readonly racion: string | null;
+  } | null;
   readonly tieneFicha: boolean;
 }
 

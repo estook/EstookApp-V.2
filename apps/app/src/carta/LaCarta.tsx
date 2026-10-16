@@ -253,7 +253,7 @@ function fila(
         <IconoVincular
           size={14}
           className="shrink-0"
-          titulo={`Vinculado a ${plato.vinculadoA.nombre}`}
+          titulo={`Vinculado a ${plato.vinculadoA.nombre}${plato.vinculadoA.racion === null ? '' : ` · ${plato.vinculadoA.racion}`}`}
         />
       )}
       <LosAlergenos

@@ -157,13 +157,19 @@ test('se desgrana un plato con su elaboración, y el escandallo dice lo que deja
   await abrirSinQueSeCaiga(page, `${APP}#/carta/carta/por-secciones`);
   await page.getByRole('button', { name: 'Desde el almacén' }).click();
   const almacen = page.getByRole('dialog', { name: 'Desde el almacén' });
-  // Solo lo que va en unidades: la carne, en kilos, no sale.
-  await expect(almacen.getByRole('checkbox', { name: /Carne picada/ })).toHaveCount(0);
+  // Todo el Almacén (lección 190): la carne, en kilos, también sale.
+  await expect(almacen.getByRole('checkbox', { name: /Carne picada/ })).toBeVisible();
   await almacen.getByRole('checkbox', { name: /Refresco lata/ }).click();
   await almacen.getByRole('textbox', { name: /Precio de Refresco lata/ }).fill('2,50');
-  await almacen.getByRole('button', { name: 'Añadir a la carta' }).click();
+  // Lo que va a peso o volumen pide cuánto lleva la ración; sin eso, no se añade.
+  await almacen.getByRole('checkbox', { name: /Mayonesa/ }).click();
+  await expect(almacen.getByRole('button', { name: 'Añadir 2 a la carta' })).toBeDisabled();
+  await almacen.getByRole('textbox', { name: 'Cada ración de Mayonesa lleva' }).fill('50');
+  await almacen.getByRole('textbox', { name: /Precio de Mayonesa/ }).fill('3');
+  await almacen.getByRole('button', { name: 'Añadir 2 a la carta' }).click();
   await expect(almacen).toHaveCount(0);
   await expect(page.getByRole('img', { name: 'Vinculado a Refresco lata' })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Vinculado a Mayonesa · 50 ml' })).toBeVisible();
 
   await page.getByRole('button', { name: /^Hamburguesa/ }).click();
   const plato = page.getByRole('dialog', { name: 'Hamburguesa' });

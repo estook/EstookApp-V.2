@@ -1,7 +1,7 @@
 # 0087 · Fichas y escandallos (M9 · 2), y la carta que vincula, cuenta raciones y dice lo que pica
 
 **Fecha:** 16 de octubre de 2026
-**Estado:** construido en la rama `m9-fichas-y-escandallos`, en su pull request. Hay que fusionar, migrar (la `0069`) y desplegar la API.
+**Estado:** en producción desde el 16-oct (#106, migración `0069`, API 90 y 194). El punto 3 de «Lo que decido yo» lo cambia la [0088](0088-todo-el-almacen-y-el-historial-que-solo-crece.md).
 **Cambia:** el [Plan](../maestros/Estook-Plan-de-Desarrollo.md) (B5: las vistas de Escandallos · Fichas), [Roles](../maestros/Estook-Roles-y-Administracion.md) (1.3 y 1.5: la sala ve las fichas), [el mapa](../MAPA-de-modulos.md) y [el plan de M9](../m9-escandallos.md).
 
 Richi, el 16-oct, con M9 · 1 en producción, pidió dos cosas: **arreglar y mejorar la Carta** (tres puntos) y **construir M9 · 2** con lo que es cada pieza para él. Esto es lo que queda.
@@ -58,7 +58,7 @@ Si alguna no te cuadra, dímelo y se cambia.
 
 1. **La ficha la ven todos.** El camarero y el jefe de sala reciben Escandallos **para ver** (el cocinero ya lo tenía). Sin `dato.coste_de_plato`, el servidor no les manda ni un euro: ni el escandallo, ni el coste de una línea, ni el food cost de la lista.
 2. **Ficha y escandallo, en el mismo panel**, con dos pestañas. La de «Escandallo» solo existe para quien ve costes.
-3. **Vincular es la ficha entera**: «este plato es una unidad de ese producto». Cuenta como desgranado, cuesta lo que la unidad y Estook sabe qué se vende. **Solo productos en unidades.** Un plato que ya tiene una ficha de varios ingredientes no se pisa con un vínculo; desvincular lo deja sin ficha.
+3. **Vincular es la ficha entera**: «este plato es una unidad de ese producto». Cuenta como desgranado, cuesta lo que la unidad y Estook sabe qué se vende. ~~Solo productos en unidades.~~ **Cambiado por la [0088](0088-todo-el-almacen-y-el-historial-que-solo-crece.md)**: sale todo el Almacén, y lo que va en gramos o mililitros pide cuánto lleva la ración. Un plato que ya tiene una ficha de varios ingredientes no se pisa con un vínculo; desvincular lo deja sin ficha.
 4. **Los alérgenos de un plato son los de su receta más los puestos a mano** en la carta. Los de la receta **no se quitan desde la carta**: si la mayonesa lleva huevo, el plato lleva huevo.
 5. **El picante va en tres niveles** (no, una, dos o tres guindillas). Y **vegetariano y vegano** (vegano ya es vegetariano). **«Sin gluten» no**: es una promesa sobre trazas que Estook no puede comprobar.
 6. **Las unidades de la ración son un dato de la carta**, opcional y plegado: no salen de la receta, porque «8 croquetas» se decide al emplatar.

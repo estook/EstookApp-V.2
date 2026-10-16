@@ -208,15 +208,41 @@ export function leerCantidad(texto: string): number | null {
 }
 
 /**
- * Lo que se vende por unidades tal como se guarda: el chuletón, la lata, la botella
- * (repaso del 16-oct, A · decisión 0087). **Solo lo que va en unidades**: lo que llega
- * entero y se corta (el lomo de 20 kg) se desgrana con sus gramos.
+ * Lo del Almacén que se puede vender tal cual (repaso del 16-oct, A · decisión 0087):
+ * **todo**. Lo que va por unidades (la lata, la botella) es una unidad; lo que va en
+ * gramos o mililitros (el entrecot, la dorada entera, el helado) pide cuánto lleva la
+ * ración. Hasta la lección 190 solo salían las unidades, y en el Almacén de verdad casi
+ * nada se lleva así: Richi no encontraba lo suyo.
  */
-export function losQueSeVendenTalCual(lo: LoQuePuedeLlevar | undefined, buscado: string) {
+export function losDelAlmacen(lo: LoQuePuedeLlevar | undefined, buscado: string) {
   const texto = sinAcentos(buscado.trim().toLocaleLowerCase('es'));
-  return (lo?.productos ?? [])
-    .filter((p) => p.unidad === 'ud')
-    .filter((p) => texto === '' || sinAcentos(p.nombre.toLocaleLowerCase('es')).includes(texto));
+  return (lo?.productos ?? []).filter(
+    (p) => texto === '' || sinAcentos(p.nombre.toLocaleLowerCase('es')).includes(texto),
+  );
+}
+
+export const NOMBRE_DE_LA_UNIDAD: Readonly<Record<UnidadDeUso, string>> = {
+  g: 'gramos',
+  kg: 'kilos',
+  ml: 'mililitros',
+  l: 'litros',
+  ud: 'unidades',
+};
+
+/** Lo que se escribe de la ración de un producto que no va por unidades. */
+export interface RacionQueSeEscribe {
+  readonly cantidad: string;
+  readonly unidad: UnidadDeUso;
+}
+
+/** Lo que viaja al vincular: nada si va por unidades; si no, la ración leída, o `null` si falta. */
+export function laRacionQueViaja(
+  unidadDelProducto: UnidadDeUso,
+  racion: RacionQueSeEscribe,
+): { readonly cantidad: number; readonly unidad: UnidadDeUso } | null | 'por_unidades' {
+  if (unidadDelProducto === 'ud') return 'por_unidades';
+  const cantidad = leerCantidad(racion.cantidad);
+  return cantidad === null ? null : { cantidad, unidad: racion.unidad };
 }
 
 const CUANDO = new Intl.DateTimeFormat('es-ES', {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { centimos } from '@estook/dominio';
+import { centimos, unidadParaEscribir } from '@estook/dominio';
 import {
   Aviso,
   Boton,
@@ -18,7 +18,13 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarLasFichas } from '../ganchos/usarRefrescarLasFichas.ts';
-import { losQueSeVendenTalCual, type LoQuePuedeLlevar } from '../escandallos/contrato.ts';
+import {
+  laRacionQueViaja,
+  losDelAlmacen,
+  type LoQuePuedeLlevar,
+  type RacionQueSeEscribe,
+} from '../escandallos/contrato.ts';
+import { LaRacion } from '../escandallos/LaRacion.tsx';
 import type { MiCarta } from './contrato.ts';
 
 /**
@@ -27,11 +33,17 @@ import type { MiCarta } from './contrato.ts';
  * Richi: «enlazar directamente un ingrediente del almacén: chuletón, pescados enteros,
  * bebidas o cosas que se vendan por unidades, y así puedes seleccionarlo de golpe y la
  * app sabe que es ese chuletón». Se marcan, se les pone el precio y entran en la carta
- * **ya vinculados**: su ficha es ese producto, una unidad, y su coste sale solo.
+ * **ya vinculados**: su ficha es ese producto y su coste sale solo.
  *
- * **Solo lo que va en unidades**: lo que llega entero y se corta (el lomo de 20 kg) se
- * desgrana en Escandallos con sus gramos.
+ * Sale **todo el Almacén** (lección 190): lo que va por unidades es una; lo que va en
+ * gramos o mililitros pide cuánto lleva la ración, porque en el Almacén de verdad el
+ * entrecot, el pescado entero o el helado se llevan así.
  */
+interface Elegido {
+  readonly precio: number | null;
+  readonly racion: RacionQueSeEscribe;
+}
+
 export function DesdeElAlmacen({
   carta,
   seccionInicial,
@@ -46,7 +58,7 @@ export function DesdeElAlmacen({
   const lo = usarLectura<LoQuePuedeLlevar>('lo_que_puede_llevar');
   const [seccion, setSeccion] = useState(seccionInicial ?? '');
   const [buscado, setBuscado] = useState('');
-  const [elegidos, setElegidos] = useState<ReadonlyMap<string, number | null>>(new Map());
+  const [elegidos, setElegidos] = useState<ReadonlyMap<string, Elegido>>(new Map());
   const [anadiendo, setAnadiendo] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [yaEstaban, setYaEstaban] = useState<readonly string[]>([]);
@@ -54,15 +66,30 @@ export function DesdeElAlmacen({
   const yaEnLaCarta = new Set(
     carta.platos.flatMap((p) => (p.vinculadoA === null || !p.activo ? [] : [p.vinculadoA.id])),
   );
-  const productos = losQueSeVendenTalCual(lo.data, buscado);
-  const nombreDe = new Map((lo.data?.productos ?? []).map((p) => [p.id, p.nombre]));
+  const productos = losDelAlmacen(lo.data, buscado);
+  const delAlmacen = new Map((lo.data?.productos ?? []).map((p) => [p.id, p]));
+  const sinRacion = [...elegidos].filter(([id, e]) => {
+    const p = delAlmacen.get(id);
+    return p !== undefined && laRacionQueViaja(p.unidad, e.racion) === null;
+  }).length;
 
-  function elegir(id: string) {
+  function elegir(p: LoQuePuedeLlevar['productos'][number]) {
     setElegidos((antes) => {
       const despues = new Map(antes);
-      if (despues.has(id)) despues.delete(id);
-      else despues.set(id, null);
+      if (despues.has(p.id)) despues.delete(p.id);
+      else
+        despues.set(p.id, {
+          precio: null,
+          racion: { cantidad: '', unidad: unidadParaEscribir(p.unidad) },
+        });
       return despues;
+    });
+  }
+
+  function cambiar(id: string, cambio: Partial<Elegido>) {
+    setElegidos((antes) => {
+      const era = antes.get(id);
+      return era === undefined ? antes : new Map(antes).set(id, { ...era, ...cambio });
     });
   }
 
@@ -71,11 +98,16 @@ export function DesdeElAlmacen({
     setError(null);
     const respuesta = await cliente.ejecutar<{ yaEstaban: string[] }>('crear_platos', {
       seccion_id: seccion === '' ? null : seccion,
-      platos: [...elegidos].map(([id, precio]) => ({
-        nombre: nombreDe.get(id) ?? '',
-        precio_centimos: precio,
-        producto_id: id,
-      })),
+      platos: [...elegidos].map(([id, e]) => {
+        const p = delAlmacen.get(id);
+        const racion = p === undefined ? null : laRacionQueViaja(p.unidad, e.racion);
+        return {
+          nombre: p?.nombre ?? '',
+          precio_centimos: e.precio,
+          producto_id: id,
+          ...(racion === null || racion === 'por_unidades' ? {} : racion),
+        };
+      }),
     });
     setAnadiendo(false);
     if (!respuesta.ok) {
@@ -103,7 +135,7 @@ export function DesdeElAlmacen({
           </Boton>
           <Boton
             tono="principal"
-            disabled={elegidos.size === 0}
+            disabled={elegidos.size === 0 || sinRacion > 0}
             cargando={anadiendo}
             textoCargando="Añadiendo"
             onClick={() => {
@@ -119,7 +151,7 @@ export function DesdeElAlmacen({
     >
       <div className="flex flex-col gap-e3 pt-e3">
         <p className="text-secundario text-texto-suave">
-          Lo que vendes por unidades tal como lo guardas: queda vinculado y su coste sale solo.
+          Lo que vendes tal como lo guardas: queda vinculado y su coste sale solo.
         </p>
         {yaEstaban.length > 0 && (
           <Aviso tono="info" titulo="Lo demás ya está en tu carta">
@@ -150,9 +182,7 @@ export function DesdeElAlmacen({
           <Cargando que="tu almacén" forma="lista" lineas={4} />
         ) : productos.length === 0 ? (
           buscado === '' ? (
-            <p className="text-secundario text-texto-suave">
-              No hay nada en unidades en tu Almacén.
-            </p>
+            <p className="text-secundario text-texto-suave">Tu Almacén está vacío.</p>
           ) : (
             <NadaConEso
               compacto
@@ -163,11 +193,11 @@ export function DesdeElAlmacen({
             />
           )
         ) : (
-          <ul aria-label="Lo que se vende tal cual" className="flex flex-col gap-e2">
+          <ul aria-label="Lo que hay en el Almacén" className="flex flex-col gap-e2">
             {productos.map((p) => {
               const ya = yaEnLaCarta.has(p.id);
               const elegido = elegidos.has(p.id);
-              const precio = elegidos.get(p.id) ?? null;
+              const eleccion = elegidos.get(p.id);
               return (
                 <li
                   key={p.id}
@@ -182,7 +212,7 @@ export function DesdeElAlmacen({
                     aria-checked={elegido}
                     disabled={ya}
                     onClick={() => {
-                      elegir(p.id);
+                      elegir(p);
                     }}
                     className="flex min-h-toque items-center gap-e3 text-left disabled:opacity-50"
                   >
@@ -197,20 +227,34 @@ export function DesdeElAlmacen({
                     <span className="flex min-w-0 flex-1 flex-col">
                       <span className="truncate text-cuerpo">{p.nombre}</span>
                       <span className="text-etiqueta text-texto-suave">
-                        {ya ? 'Ya está en la carta' : (p.categoria ?? 'Almacén')}
+                        {ya
+                          ? 'Ya está en la carta'
+                          : [p.categoria, p.unidad === 'ud' ? null : `en ${p.unidad}`]
+                              .filter((x) => x !== null)
+                              .join(' · ') || 'Almacén'}
                       </span>
                     </span>
                   </button>
-                  {elegido && (
-                    <CampoMoneda
-                      etiqueta={`Precio de ${p.nombre}, con IVA`}
-                      valor={precio === null ? null : centimos(precio)}
-                      alCambiar={(valor) => {
-                        setElegidos((antes) =>
-                          new Map(antes).set(p.id, valor === null ? null : Number(valor)),
-                        );
-                      }}
-                    />
+                  {eleccion !== undefined && (
+                    <div className="grid gap-e2 min-[480px]:grid-cols-2">
+                      {p.unidad !== 'ud' && (
+                        <LaRacion
+                          nombre={p.nombre}
+                          unidadDelProducto={p.unidad}
+                          racion={eleccion.racion}
+                          alCambiar={(racion) => {
+                            cambiar(p.id, { racion });
+                          }}
+                        />
+                      )}
+                      <CampoMoneda
+                        etiqueta={`Precio de ${p.nombre}, con IVA`}
+                        valor={eleccion.precio === null ? null : centimos(eleccion.precio)}
+                        alCambiar={(valor) => {
+                          cambiar(p.id, { precio: valor === null ? null : Number(valor) });
+                        }}
+                      />
+                    </div>
                   )}
                 </li>
               );

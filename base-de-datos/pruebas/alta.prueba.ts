@@ -543,20 +543,20 @@ describe('quitar los ejemplos', () => {
       `select id from estook.organizacion where codigo = 'bar-centro'`,
     );
 
-    // Se apunta una traducción como ejemplo. Vale cualquier tabla del esquema
-    // con `id`: la gracia del registro es justamente que el botón no conoce las
-    // tablas, así que se puede probar con las que hay hoy.
-    const [traduccion] = await comoDuena<{ id: string }>(
-      `insert into estook.traduccion (organizacion_id, entidad, entidad_id, campo, idioma, texto)
-       values ($1, 'plato', gen_random_uuid(), 'nombre', 'es', 'De ejemplo')
+    // Se apunta un evento del Calendario como ejemplo, que es una de las tablas que
+    // los lleva de verdad. Vale cualquiera del esquema con `id` **que la API pueda
+    // borrar** (0071): la gracia del registro es que el botón no conoce las tablas.
+    const [evento] = await comoDuena<{ id: string }>(
+      `insert into estook.evento_de_calendario (local_id, capa, origen, origen_id, dia, titulo)
+       values ($1, 'aviso', 'aviso', 'de-ejemplo', current_date, 'De ejemplo')
        returning id`,
-      [organizacion?.id],
+      [local],
     );
 
     await comoDuena(
       `insert into estook.dato_de_ejemplo (organizacion_id, local_id, tabla, fila_id)
-       values ($1, $2, 'traduccion', $3)`,
-      [organizacion?.id, local, traduccion?.id],
+       values ($1, $2, 'evento_de_calendario', $3)`,
+      [organizacion?.id, local, evento?.id],
     );
 
     const antes = await base.comoPersona(rosa, async () => {
@@ -577,14 +577,15 @@ describe('quitar los ejemplos', () => {
     });
     expect(borrados).toBe(1);
 
-    const quedaLaFila = await comoDuena(`select id from estook.traduccion where id = $1`, [
-      traduccion?.id,
-    ]);
+    const quedaLaFila = await comoDuena(
+      `select id from estook.evento_de_calendario where id = $1`,
+      [evento?.id],
+    );
     expect(quedaLaFila).toEqual([]);
 
     const quedaElApunte = await comoDuena(
       `select id from estook.dato_de_ejemplo where fila_id = $1`,
-      [traduccion?.id],
+      [evento?.id],
     );
     expect(quedaElApunte).toEqual([]);
   });
@@ -604,6 +605,23 @@ describe('quitar los ejemplos', () => {
         [organizacion?.id, local],
       ),
     ).rejects.toThrow(/no existe/i);
+  });
+
+  it('ni una tabla que la API no puede borrar', async () => {
+    // Las traducciones solo se leen (0071). Apuntar ahí un ejemplo haría fallar el
+    // botón entero el día que alguien lo pulse: se para al apuntar.
+    const local = await base.localPorCodigo('bar-centro');
+    const [organizacion] = await comoDuena<{ id: string }>(
+      `select id from estook.organizacion where codigo = 'bar-centro'`,
+    );
+
+    await expect(
+      comoDuena(
+        `insert into estook.dato_de_ejemplo (organizacion_id, local_id, tabla, fila_id)
+         values ($1, $2, 'traduccion', gen_random_uuid()::text)`,
+        [organizacion?.id, local],
+      ),
+    ).rejects.toThrow(/no puede borrar/i);
   });
 
   it('un local que no es tuyo no se puede vaciar', async () => {

@@ -24,16 +24,18 @@ function cabecerasDe(llamada: unknown[]): Record<string, string> {
 
 describe('la región de la base', () => {
   it('con una API que no la dice, no se pide nunca', async () => {
-    const pedir = vi.fn(() => Promise.resolve(respuesta(null)));
-    const cliente = crearCliente({ base: 'https://api', pedir: pedir as unknown as typeof fetch });
+    const pedir = vi.fn((_url: unknown, _init?: RequestInit) => Promise.resolve(respuesta(null)));
+    const cliente = crearCliente({ base: 'https://api', pedir });
     await cliente.consultar('quien_soy');
     await cliente.consultar('lo_de_hoy');
     expect(pedir.mock.calls.map((l) => cabecerasDe(l)['x-region'])).toEqual([undefined, undefined]);
   });
 
   it('en cuanto la API la dice, se pide en las siguientes', async () => {
-    const pedir = vi.fn(() => Promise.resolve(respuesta('eu-west-1')));
-    const cliente = crearCliente({ base: 'https://api', pedir: pedir as unknown as typeof fetch });
+    const pedir = vi.fn((_url: unknown, _init?: RequestInit) =>
+      Promise.resolve(respuesta('eu-west-1')),
+    );
+    const cliente = crearCliente({ base: 'https://api', pedir });
     await cliente.consultar('quien_soy');
     await cliente.consultar('lo_de_hoy');
     expect(pedir.mock.calls.map((l) => cabecerasDe(l)['x-region'])).toEqual([
@@ -43,8 +45,10 @@ describe('la región de la base', () => {
   });
 
   it('lo que no parece una región no se pide', async () => {
-    const pedir = vi.fn(() => Promise.resolve(respuesta('<script>')));
-    const cliente = crearCliente({ base: 'https://api', pedir: pedir as unknown as typeof fetch });
+    const pedir = vi.fn((_url: unknown, _init?: RequestInit) =>
+      Promise.resolve(respuesta('<script>')),
+    );
+    const cliente = crearCliente({ base: 'https://api', pedir });
     await cliente.consultar('quien_soy');
     await cliente.consultar('lo_de_hoy');
     expect(cabecerasDe(pedir.mock.calls[1] ?? [])['x-region']).toBeUndefined();
@@ -52,13 +56,13 @@ describe('la región de la base', () => {
 
   it('si con ella la petición no sale, se olvida y se repite sin ella', async () => {
     let veces = 0;
-    const pedir = vi.fn((_url: string, init?: RequestInit) => {
+    const pedir = vi.fn((_url: unknown, init?: RequestInit) => {
       veces += 1;
       const conRegion = (init?.headers as Record<string, string>)['x-region'] !== undefined;
       if (conRegion) return Promise.reject(new TypeError('Failed to fetch'));
       return Promise.resolve(respuesta(veces === 1 ? 'eu-west-1' : null));
     });
-    const cliente = crearCliente({ base: 'https://api', pedir: pedir as unknown as typeof fetch });
+    const cliente = crearCliente({ base: 'https://api', pedir });
     await cliente.consultar('quien_soy');
     const segunda = await cliente.consultar('lo_de_hoy');
     expect(segunda.ok).toBe(true);

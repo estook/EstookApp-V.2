@@ -12,7 +12,7 @@ import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
 import { elLocalDeLaCarta } from '../consultas/mi-carta.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
 import { comoLista } from '../listas.ts';
-import { vincularUnPlato } from './fichas.ts';
+import { queSeVincula, vincularUnPlato } from './fichas.ts';
 
 /**
  * La carta (M9 · 1, decisión 0086): secciones, platos, canales y precios.
@@ -204,8 +204,10 @@ const unoNuevo = z
     nombre: nombreDePlato,
     precio_centimos: centimos.nullable().optional(),
     descripcion: z.string().trim().max(500).nullable().optional(),
-    // Desde el Almacén (0087): el plato **es** ese producto, vendido tal cual.
+    // Desde el Almacén (0087): el plato **es** ese producto, vendido tal cual, y lo que
+    // lleva la ración si no va por unidades (el entrecot, 300 g).
     producto_id: z.string().uuid().nullable().optional(),
+    ...queSeVincula,
   })
   .strict();
 
@@ -308,8 +310,12 @@ export const crearPlatos = comando<
         nombre: nuevo.nombre,
         precio: nuevo.precio_centimos ?? null,
       });
-      if ((nuevo.producto_id ?? null) !== null) {
-        await vincularUnPlato(contexto, localId, platoId, nuevo.producto_id ?? null);
+      if (nuevo.producto_id !== undefined && nuevo.producto_id !== null) {
+        await vincularUnPlato(contexto, localId, platoId, {
+          productoId: nuevo.producto_id,
+          cantidad: nuevo.cantidad ?? null,
+          unidad: nuevo.unidad ?? null,
+        });
       }
       creados.push({ platoId, nombre: nuevo.nombre });
     }

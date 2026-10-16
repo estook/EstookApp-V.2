@@ -75,6 +75,7 @@ interface Ficha {
     receta: { lineas: { nombre: string; cantidad: number }[] };
   }[];
   puedeEditar: boolean;
+  vinculadoA: string | null;
 }
 
 async function laFicha(token: string, de: Record<string, string>): Promise<Ficha> {
@@ -380,6 +381,21 @@ describe('el historial, con recuperar', () => {
     expect(despues.escandallo?.costeCentimos).toBe(185);
   });
 
+  it('la API no puede cambiar ni borrar el historial: solo añadir', async () => {
+    // La 0006 da a toda tabla nueva select, insert, update y delete; un `grant` más
+    // corto no quita lo que ya dio. Lo cazó `bd:comprobar-api` en producción tras la
+    // 0069 (lección 189), y la 0070 lo quita.
+    const { rows } = await base.bd.query<{ tabla: string; permiso: string }>(
+      `select t.tabla, p.permiso
+         from unnest(array['receta_guardada', 'receta', 'elaboracion']) as t (tabla),
+              unnest(array['UPDATE', 'DELETE']) as p (permiso)
+        where has_table_privilege('estook_api', 'estook.' || t.tabla, p.permiso)
+          and not (t.tabla <> 'receta_guardada' and p.permiso = 'UPDATE')
+        order by 1, 2`,
+    );
+    expect(rows).toEqual([]);
+  });
+
   it('guardar lo mismo no apunta nada', async () => {
     const antes = await laFicha(rosa, { plato_id: hamburguesa });
     const igual = losDatos<{ version: number; cambios: string[] }>(
@@ -426,16 +442,137 @@ describe('vincular lo que se vende tal cual', () => {
     expect((await laFicha(rosa, { plato_id: lata })).escandallo?.costeCentimos).toBe(50);
   });
 
-  it('lo que va en kilos no se vincula: se desgrana', async () => {
+  it('lo que va en kilos también se vincula, diciendo cuánto lleva la ración', async () => {
+    // Hasta la lección 190 solo valían las unidades: el entrecot, el pescado entero o el
+    // helado, que en el Almacén van en gramos, no salían.
     const otro = losDatos<{ creados: { platoId: string }[] }>(
       await api.ejecutar(rosa, 'crear_platos', {
         seccion_id: null,
         platos: [{ nombre: 'Lomo ficha', precio_centimos: 1800 }],
       }),
     ).creados[0]?.platoId as string;
+    // Sin decir cuánto, no: no habría coste ni se sabría qué se gasta.
     expect(
       elFallo(await api.ejecutar(rosa, 'vincular_plato', { plato_id: otro, producto_id: carne })),
     ).toBe('faltan_datos');
+    // Ni en una unidad que no es de su familia.
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'vincular_plato', {
+          plato_id: otro,
+          producto_id: carne,
+          cantidad: 300,
+          unidad: 'ml',
+        }),
+      ),
+    ).toBe('faltan_datos');
+    losDatos(
+      await api.ejecutar(rosa, 'vincular_plato', {
+        plato_id: otro,
+        producto_id: carne,
+        cantidad: 300,
+        unidad: 'g',
+      }),
+    );
+    const carta = losDatos<{
+      platos: { id: string; vinculadoA: { nombre: string; racion: string | null } | null }[];
+    }>(await api.consultar(rosa, 'mi_carta'));
+    expect(carta.platos.find((p) => p.id === otro)?.vinculadoA).toEqual({
+      id: carne,
+      nombre: 'Carne picada ficha',
+      racion: '300 g',
+    });
+    // 7,50 €/kg de verdad: 300 g son 2,25 €.
+    const ficha = await laFicha(rosa, { plato_id: otro });
+    expect(ficha.escandallo?.costeCentimos).toBe(225);
+    expect(ficha.vinculadoA).toBe('Carne picada ficha · 300 g');
+  });
+
+  it('desde el Almacén, de golpe, con la ración de lo que va a peso', async () => {
+    const hecho = losDatos<{ creados: { platoId: string; nombre: string }[] }>(
+      await api.ejecutar(rosa, 'crear_platos', {
+        seccion_id: null,
+        platos: [
+          {
+            nombre: 'Mayonesa ficha',
+            precio_centimos: 300,
+            producto_id: mayonesa,
+            cantidad: 50,
+            unidad: 'ml',
+          },
+        ],
+      }),
+    );
+    const platoId = hecho.creados[0]?.platoId as string;
+    // 4 € el litro: 50 ml son 0,20 €.
+    expect((await laFicha(rosa, { plato_id: platoId })).escandallo?.costeCentimos).toBe(20);
+    // Sin la ración no se crea a medias: ni el plato.
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'crear_platos', {
+          seccion_id: null,
+          platos: [{ nombre: 'Carne sin ración', precio_centimos: 900, producto_id: carne }],
+        }),
+      ),
+    ).toBe('faltan_datos');
+    const carta = losDatos<{ platos: { nombre: string }[] }>(await api.consultar(rosa, 'mi_carta'));
+    expect(carta.platos.some((p) => p.nombre === 'Carne sin ración')).toBe(false);
+  });
+
+  it('una ficha de una sola línea es una ficha, no algo que se vende tal cual', async () => {
+    // El pan tostado lleva un pan y se tuesta: tiene una línea, pero no se vende como está
+    // en el Almacén. Antes de la 0070 la forma bastaba («un producto, 1 ud») y salía con la
+    // cadena; ahora lo dice la receta.
+    const tostado = losDatos<{ creados: { platoId: string }[] }>(
+      await api.ejecutar(rosa, 'crear_platos', {
+        seccion_id: null,
+        platos: [{ nombre: 'Pan tostado ficha', precio_centimos: 250 }],
+      }),
+    ).creados[0]?.platoId as string;
+    losDatos(
+      await api.ejecutar(rosa, 'guardar_ficha', {
+        plato_id: tostado,
+        version: 0,
+        lineas: [{ producto_id: pan, cantidad: 1, unidad: 'ud' }],
+        pasos: ['Tostar por las dos caras'],
+      }),
+    );
+    const carta = losDatos<{
+      platos: { id: string; vinculadoA: unknown; tieneFicha: boolean }[];
+    }>(await api.consultar(rosa, 'mi_carta'));
+    expect(carta.platos.find((p) => p.id === tostado)).toMatchObject({
+      vinculadoA: null,
+      tieneFicha: true,
+    });
+    // Y vincularlo no pisa su ficha.
+    expect(
+      elFallo(await api.ejecutar(rosa, 'vincular_plato', { plato_id: tostado, producto_id: pan })),
+    ).toBe('faltan_datos');
+  });
+
+  it('un vínculo que se edita con más ingredientes deja de serlo', async () => {
+    const lata2 = losDatos<{ creados: { platoId: string }[] }>(
+      await api.ejecutar(rosa, 'crear_platos', {
+        seccion_id: null,
+        platos: [
+          { nombre: 'Refresco con limón ficha', precio_centimos: 280, producto_id: refresco },
+        ],
+      }),
+    ).creados[0]?.platoId as string;
+    const ficha = await laFicha(rosa, { plato_id: lata2 });
+    expect(ficha.vinculadoA).toBe('Refresco lata ficha');
+    losDatos(
+      await api.ejecutar(rosa, 'guardar_ficha', {
+        plato_id: lata2,
+        version: ficha.receta.version,
+        lineas: [
+          { producto_id: refresco, cantidad: 1, unidad: 'ud' },
+          { producto_id: pepinillo, cantidad: 5, unidad: 'g' },
+        ],
+        pasos: [],
+      }),
+    );
+    expect((await laFicha(rosa, { plato_id: lata2 })).vinculadoA).toBeNull();
   });
 
   it('un plato ya desgranado no se pisa con un vínculo', async () => {

@@ -98,3 +98,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0085** | El Panel en una sola petición, las siluetas de carga, el buscador con pedidos, facturas y recientes, y la puesta en marcha                                                 |
 | **0086** | Las respuestas de M9: un solo plato, la carta adelantada, los canales con su precio a mano y la receta sin versiones a la vista                                            |
 | **0087** | Fichas y escandallos (M9 · 2), y la carta que vincula lo del Almacén, cuenta las raciones y dice sus alérgenos y lo que pica                                               |
+| **0088** | Vincular todo el Almacén (lo que va a peso, con su ración) y el historial de la receta que solo crece (0070)                                                               |

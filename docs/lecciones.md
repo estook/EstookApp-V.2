@@ -709,3 +709,16 @@
      recetas de la prueba eran «de hoy» y la desviación no encontraba la de cada día. Lo que
      después se lee por fechas se guarda con `contexto.ahora` (regla 10), y la prueba que
      cambia la receta a mitad de semana falla si se cuenta con la de hoy (0087).
+189. **Un `grant` suma, no quita.** La 0006 da a toda tabla nueva de `estook` leer, añadir,
+     cambiar y borrar para la API (`alter default privileges`). La 0069 escribió
+     `grant select, insert on receta_guardada` creyendo que eso era todo, y en producción la
+     API podía cambiar y borrar el historial. Lo cazó `bd:comprobar-api`, no las pruebas: ahí
+     nadie lo miraba. Una tabla con menos permisos de los de siempre empieza con
+     `revoke all … from estook_api`, y una prueba mira `has_table_privilege` (0070, 0088).
+190. **Los ejemplos de quien lo pide se prueban con datos como los suyos.** «Vincular lo que
+     se vende por unidades: el chuletón, el pescado entero» se construyó para productos en
+     `ud`, y en el catálogo de serie el entrecot, la dorada o el helado van en gramos o
+     mililitros. Con una semilla hecha a mano todo salía; en IKATZ no salía nada suyo.
+     Antes de filtrar por un campo, se mira cómo viene de verdad. Y al abrirlo, lo que se
+     deducía de la forma («una línea, 1 ud») dejó de bastar: un pan tostado parecía
+     vinculado. Lo cazó la prueba de pantalla; ahora lo dice la receta (0088).

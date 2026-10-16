@@ -34,7 +34,7 @@ import {
   type ElLibro,
   type RecetaGuardada,
 } from '../escandallos.ts';
-import { losPlatos, type UnPlato } from './mi-carta.ts';
+import { comoSeLeeElVinculo, losPlatos, type UnPlato } from './mi-carta.ts';
 import { elRelojYElFisco, loGastadoDeVerdad } from '../desviacion.ts';
 
 /**
@@ -164,7 +164,7 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
         seccionId: p.seccionId,
         miniatura: p.miniatura,
         tieneFicha: p.tieneFicha,
-        vinculadoA: p.vinculadoA?.nombre ?? null,
+        vinculadoA: comoSeLeeElVinculo(p.vinculadoA),
         alergenos: enOrdenOficial([...p.alergenosDeLaReceta, ...p.alergenos]),
         picante: p.picante,
       };
@@ -502,7 +502,7 @@ async function laFicha(contexto: Contexto, entrada: EntradaDeUnaFicha): Promise<
     unidadesPorRacion: plato?.unidadesPorRacion ?? null,
     picante: plato?.picante ?? 0,
     distintivos: plato?.distintivos ?? [],
-    vinculadoA: plato === undefined ? null : (plato.vinculadoA?.nombre ?? null),
+    vinculadoA: plato === undefined ? null : comoSeLeeElVinculo(plato.vinculadoA),
     receta: {
       version: receta?.version ?? 0,
       lineas: lineasDeLaFicha,

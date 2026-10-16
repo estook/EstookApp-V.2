@@ -3,7 +3,7 @@ import { alergenosDeLaReceta, type CanalDeVenta } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 import { losCanalesDelLocal, type UnCanal } from '../canales-del-local.ts';
-import { elLibroDelLocal, elVinculado, type ElLibro } from '../escandallos.ts';
+import { elLibroDelLocal, elVinculado, laRacionDelVinculo, type ElLibro } from '../escandallos.ts';
 
 export { losCanalesDelLocal };
 export type { UnCanal };
@@ -47,10 +47,23 @@ export interface UnPlato {
   readonly picante: number;
   /** Vegetariano, vegano. */
   readonly distintivos: readonly string[];
-  /** Si se vende tal cual un producto del Almacén (el chuletón, la lata): cuál. */
-  readonly vinculadoA: { readonly id: string; readonly nombre: string } | null;
+  /**
+   * Si se vende tal cual un producto del Almacén (la lata, el entrecot): cuál, y lo que
+   * lleva la ración cuando no es una unidad («300 g»).
+   */
+  readonly vinculadoA: {
+    readonly id: string;
+    readonly nombre: string;
+    readonly racion: string | null;
+  } | null;
   /** Si ya está desgranado en Escandallos. */
   readonly tieneFicha: boolean;
+}
+
+/** «Entrecot de ternera · 300 g», o solo el nombre si es una unidad. */
+export function comoSeLeeElVinculo(vinculo: UnPlato['vinculadoA']): string | null {
+  if (vinculo === null) return null;
+  return vinculo.racion === null ? vinculo.nombre : `${vinculo.nombre} · ${vinculo.racion}`;
 }
 
 export interface MiCarta {
@@ -148,7 +161,11 @@ export async function losPlatos(
       vinculadoA:
         vinculado === null
           ? null
-          : { id: vinculado, nombre: elLibro.productos.get(vinculado)?.nombre ?? 'Producto' },
+          : {
+              id: vinculado.productoId,
+              nombre: elLibro.productos.get(vinculado.productoId)?.nombre ?? 'Producto',
+              racion: laRacionDelVinculo(vinculado),
+            },
       tieneFicha: (receta?.lineas.length ?? 0) > 0,
     };
   });

@@ -18,7 +18,12 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarLasFichas } from '../ganchos/usarRefrescarLasFichas.ts';
-import { leerCantidad, type LoQuePuedeLlevar, type UnaFicha } from './contrato.ts';
+import {
+  NOMBRE_DE_LA_UNIDAD,
+  leerCantidad,
+  type LoQuePuedeLlevar,
+  type UnaFicha,
+} from './contrato.ts';
 
 /**
  * Escribir lo que lleva un plato o una elaboración, y cómo se hace (M9 · 2, 0087).
@@ -63,14 +68,6 @@ const VACIA = (): Fila => ({
   nota: '',
   conNota: false,
 });
-
-const NOMBRE_DE_LA_UNIDAD: Readonly<Record<UnidadDeUso, string>> = {
-  g: 'gramos',
-  kg: 'kilos',
-  ml: 'mililitros',
-  l: 'litros',
-  ud: 'unidades',
-};
 
 function comoSeEscribe(numero: number): string {
   return String(Number(numero.toFixed(4))).replace('.', ',');

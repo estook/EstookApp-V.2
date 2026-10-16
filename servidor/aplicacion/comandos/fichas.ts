@@ -1,10 +1,12 @@
 import { z } from 'zod';
 import {
   UNIDADES_DE_USO,
+  comoSeLeeLaCantidad,
   convertir,
   juntarLoRepetido,
   queCambioEnLaReceta,
   seLlevaASiMisma,
+  unidadParaEscribir,
   type LineaQueSeEscribe,
   type UnidadDeUso,
 } from '@estook/dominio';
@@ -60,6 +62,11 @@ interface LoQueSeGuarda {
   readonly pasos: readonly string[];
   readonly notas: string | null;
   readonly minutos: number | null;
+  /**
+   * Si el plato se vende tal cual (0088). Sin decirlo, se queda como estaba; y deja de
+   * serlo en cuanto la receta no es una sola línea de producto.
+   */
+  readonly talCual?: boolean;
   /** Solo de una elaboración. */
   readonly nombre?: string;
   readonly rinde?: { readonly cantidad: number; readonly unidad: UnidadDeUso };
@@ -136,8 +143,8 @@ export async function guardarLaReceta(
 
   const platoId = 'platoId' in dueno ? dueno.platoId : null;
   const elaboracionId = 'elaboracionId' in dueno ? dueno.elaboracionId : null;
-  const tenia = await contexto.sql<{ id: string; version: number }[]>`
-    select id, version from estook.receta
+  const tenia = await contexto.sql<{ id: string; version: number; tal_cual: boolean }[]>`
+    select id, version, tal_cual from estook.receta
      where local_id = ${localId}::uuid
        and (plato_id = ${platoId}::uuid or elaboracion_id = ${elaboracionId}::uuid)
        for update
@@ -234,7 +241,15 @@ export async function guardarLaReceta(
            limit 1
         `;
   const cambios = queCambioEnLaReceta(ultima[0]?.contenido ?? null, ahora);
-  if (receta !== undefined && cambios.length === 0 && opciones.recupera === undefined) {
+  const unaLineaDeProducto =
+    juntas.lineas.length === 1 && juntas.lineas[0]?.productoId !== null && platoId !== null;
+  const talCual = unaLineaDeProducto && (datos.talCual ?? receta?.tal_cual ?? false);
+  if (
+    receta !== undefined &&
+    cambios.length === 0 &&
+    opciones.recupera === undefined &&
+    talCual === receta.tal_cual
+  ) {
     return { version: receta.version, cambios: [], sumadas };
   }
 
@@ -244,9 +259,9 @@ export async function guardarLaReceta(
   if (receta === undefined) {
     const filas = await contexto.sql<{ id: string; version: number }[]>`
       insert into estook.receta (local_id, plato_id, elaboracion_id, pasos, notas, tiempo_minutos,
-                                 actualizado_por)
+                                 tal_cual, actualizado_por)
       values (${localId}::uuid, ${platoId}::uuid, ${elaboracionId}::uuid, ${comoLista(datos.pasos)}::text::text[],
-              ${datos.notas}, ${datos.minutos}, ${contexto.personaId}::uuid)
+              ${datos.notas}, ${datos.minutos}, ${talCual}, ${contexto.personaId}::uuid)
       returning id, version
     `;
     const fila = filas[0];
@@ -257,7 +272,8 @@ export async function guardarLaReceta(
     const filas = await contexto.sql<{ version: number }[]>`
       update estook.receta
          set pasos = ${comoLista(datos.pasos)}::text::text[], notas = ${datos.notas},
-             tiempo_minutos = ${datos.minutos}, actualizado_por = ${contexto.personaId}::uuid,
+             tiempo_minutos = ${datos.minutos}, tal_cual = ${talCual},
+             actualizado_por = ${contexto.personaId}::uuid,
              actualizado_en = now()
        where id = ${receta.id}::uuid
       returning version
@@ -525,81 +541,150 @@ export const recuperarElaboracion = archivarORecuperar('recuperar_elaboracion');
 
 // ═══ Vincular un plato a un producto del Almacén ═══════════════════════════════
 
+/** Lo que llega para vincular: el producto y, si no va por unidades, cuánto lleva la ración. */
+export const queSeVincula = {
+  cantidad: z.number().positive().max(100_000).nullable().optional(),
+  unidad: unidad.nullable().optional(),
+};
+
+export interface LoQueSeVincula {
+  readonly productoId: string;
+  readonly cantidad?: number | null | undefined;
+  readonly unidad?: UnidadDeUso | null | undefined;
+}
+
 /**
- * El chuletón, la lata de refresco, la botella de vino: **lo que se vende por unidades
- * tal como se guarda** (Richi, 16-oct). Vincularlo es su ficha entera —un producto,
- * una unidad— y así Estook sabe qué es lo vendido. Lo que se corta o se cocina (el
- * lomo entero que llega en 20 kg) no se vincula: se desgrana con su gramaje.
+ * El chuletón, la lata de refresco, la dorada entera: **lo que se vende tal como se
+ * guarda** (Richi, 16-oct). Vincularlo es su ficha entera —un producto y su cantidad—
+ * y así Estook sabe qué es lo vendido.
+ *
+ * Lo que va por unidades es una unidad y no se pregunta. Lo que va en gramos o
+ * mililitros (el entrecot de 300 g, el helado) **pide cuánto lleva la ración**: sin
+ * eso no hay coste ni se sabe qué se gasta. Hasta el 16-oct solo valían las unidades,
+ * y en el Almacén de verdad casi nada se lleva así (lección 190).
  */
 export async function vincularUnPlato(
   contexto: Contexto,
   localId: string,
   platoId: string,
-  productoId: string | null,
+  vinculo: LoQueSeVincula | null,
 ): Promise<{ readonly vinculadoA: string | null }> {
   const { productos, recetaDelPlato } = await elLibroDelLocal(contexto, localId, false);
   const receta = recetaDelPlato.get(platoId);
   const antes = elVinculado(receta);
   if (receta !== undefined && receta.lineas.length > 0 && antes === null) {
     throw new FalloDeAplicacion('faltan_datos', {
-      porque: 'Este plato ya tiene su ficha con varios ingredientes: cámbiala en Escandallos.',
+      porque: 'Este plato ya tiene su ficha: cámbiala en Escandallos.',
     });
   }
+  let linea: LineaQueSeEscribe | null = null;
   let nombre: string | null = null;
-  if (productoId !== null) {
-    const producto = productos.get(productoId);
+  if (vinculo !== null) {
+    const producto = productos.get(vinculo.productoId);
     if (producto === undefined || !producto.activo) {
       throw new FalloDeAplicacion('no_existe', {
         porque: 'Ese producto no está en el Almacén de este local.',
       });
     }
-    if (producto.unidad !== 'ud') {
+    const unidadDeLaRacion = vinculo.unidad ?? unidadParaEscribir(producto.unidad);
+    const cantidad = vinculo.cantidad ?? (producto.unidad === 'ud' ? 1 : null);
+    if (cantidad === null) {
       throw new FalloDeAplicacion('faltan_datos', {
-        porque: `«${producto.nombre}» se lleva en ${producto.unidad}: lo que se corta o se cocina se desgrana en Escandallos con sus gramos.`,
+        porque: `«${producto.nombre}» se lleva en ${producto.unidad}: di cuánto lleva cada ración.`,
+        campos: ['cantidad'],
       });
     }
+    if (convertir(cantidad, unidadDeLaRacion, producto.unidad) === null) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: `«${producto.nombre}» se lleva en ${producto.unidad}, y no se puede contar en ${unidadDeLaRacion}.`,
+        campos: ['unidad'],
+      });
+    }
+    linea = {
+      productoId: producto.id,
+      elaboracionId: null,
+      cantidad,
+      unidad: unidadDeLaRacion,
+      nota: null,
+    };
     nombre = producto.nombre;
   }
-  if (antes === productoId) return { vinculadoA: productoId };
+  if (
+    antes !== null &&
+    linea !== null &&
+    antes.productoId === linea.productoId &&
+    antes.cantidad === linea.cantidad &&
+    antes.unidad === linea.unidad
+  ) {
+    return { vinculadoA: antes.productoId };
+  }
+  if (antes === null && linea === null) return { vinculadoA: null };
 
   await guardarLaReceta(
     contexto,
     localId,
     { platoId },
     {
-      lineas:
-        productoId === null
-          ? []
-          : [{ productoId, elaboracionId: null, cantidad: 1, unidad: 'ud', nota: null }],
+      lineas: linea === null ? [] : [linea],
+      talCual: linea !== null,
       pasos: receta?.pasos ?? [],
       notas: receta?.notas ?? null,
       minutos: receta?.minutos ?? null,
     },
     { version: null },
   );
+  const comoSeLee = (v: { cantidad: number; unidad: UnidadDeUso }, n: string) =>
+    v.unidad === 'ud' && v.cantidad === 1
+      ? n
+      : `${n} · ${comoSeLeeLaCantidad(v.cantidad, v.unidad)}`;
   await anotarEnElPlato(
     contexto,
     platoId,
     localId,
-    { vinculo: antes === null ? null : (productos.get(antes)?.nombre ?? null) },
-    { vinculo: nombre },
+    {
+      vinculo:
+        antes === null
+          ? null
+          : comoSeLee(antes, productos.get(antes.productoId)?.nombre ?? 'Producto'),
+    },
+    { vinculo: linea === null || nombre === null ? null : comoSeLee(linea, nombre) },
   );
-  return { vinculadoA: productoId };
+  return { vinculadoA: linea?.productoId ?? null };
 }
 
 export const vincularPlato = comando<
-  { plato_id: string; producto_id: string | null },
+  {
+    plato_id: string;
+    producto_id: string | null;
+    cantidad?: number | null | undefined;
+    unidad?: UnidadDeUso | null | undefined;
+  },
   { platoId: string; vinculadoA: string | null }
 >({
   nombre: 'vincular_plato',
   entrada: z
-    .object({ plato_id: z.string().uuid(), producto_id: z.string().uuid().nullable() })
+    .object({
+      plato_id: z.string().uuid(),
+      producto_id: z.string().uuid().nullable(),
+      ...queSeVincula,
+    })
     .strict(),
   exige: 'app.escandallos',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeEscandallos(contexto);
-    const hecho = await vincularUnPlato(contexto, localId, entrada.plato_id, entrada.producto_id);
+    const hecho = await vincularUnPlato(
+      contexto,
+      localId,
+      entrada.plato_id,
+      entrada.producto_id === null
+        ? null
+        : {
+            productoId: entrada.producto_id,
+            cantidad: entrada.cantidad ?? null,
+            unidad: entrada.unidad ?? null,
+          },
+    );
     return { platoId: entrada.plato_id, ...hecho };
   },
 });

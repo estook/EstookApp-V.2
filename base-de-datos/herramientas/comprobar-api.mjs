@@ -1062,6 +1062,10 @@ try {
   // Las fichas: cuatro tablas con seguridad por filas, el historial de cada receta que
   // solo crece (la API puede leerlo y añadir, nunca cambiarlo), y la ficha para la
   // sala: el camarero y el jefe de sala ven Escandallos, sin `dato.coste_de_plato`.
+  //
+  // Lo de que solo crece lo arregló la 0070: la 0006 da a toda tabla nueva update y
+  // delete, y el `grant` corto de la 0069 no los quitaba (lección 189). Por eso se mira
+  // lo que **tiene** la API, no lo que la migración escribió.
   if (cuantasMigraciones.ultima < 69) {
     noSePuede(`la 0069 todavia no esta aplicada · la base va por la ${cuantasMigraciones.ultima}`);
   } else {
@@ -1074,6 +1078,12 @@ try {
         (select count(*)::int from information_schema.role_table_grants
           where table_schema = 'estook' and table_name = 'receta_guardada'
             and grantee = 'estook_api' and privilege_type in ('UPDATE', 'DELETE')) as se_cambia,
+        (select count(*)::int from information_schema.role_table_grants
+          where table_schema = 'estook' and table_name in ('elaboracion', 'receta')
+            and grantee = 'estook_api' and privilege_type = 'DELETE') as se_borra,
+        (select count(*)::int from information_schema.columns
+          where table_schema = 'estook' and table_name = 'receta'
+            and column_name = 'tal_cual') as tal_cual,
         (select count(*)::int from estook.permiso_de_rol
           where permiso = 'app.escandallos' and nivel = 'ver'
             and rol in ('camarero', 'jefe_de_sala')) as la_sala,
@@ -1088,7 +1098,15 @@ try {
     comprobar(
       'y el historial de una receta no se puede cambiar, solo crece',
       fichas.se_cambia === 0,
+      cuantasMigraciones.ultima < 70 ? 'lo arregla la 0070, que no esta aplicada' : '',
     );
+    comprobar('y una ficha o una elaboracion no se borran: se archivan', fichas.se_borra === 0);
+    if (cuantasMigraciones.ultima >= 70) {
+      comprobar(
+        'y la receta dice si el plato se vende tal cual, con su racion (0070)',
+        fichas.tal_cual === 1,
+      );
+    }
     comprobar(
       'la sala ve las fichas, y ni la sala ni la cocina ven un euro',
       fichas.la_sala === 2 && fichas.con_euros === 0,

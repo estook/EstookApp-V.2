@@ -1,5 +1,6 @@
 import {
   CANALES_DE_VENTA,
+  comoSeLeeLaCantidad,
   escandalloDelPlato,
   costeDeLaReceta,
   fechaEnElLocal,
@@ -44,6 +45,8 @@ export interface RecetaLeida {
   readonly notas: string | null;
   readonly minutos: number | null;
   readonly version: number;
+  /** Si el plato se vende tal como se guarda (0088). */
+  readonly talCual: boolean;
   readonly lineas: readonly LineaLeida[];
 }
 
@@ -92,6 +95,7 @@ export async function lasRecetasDelLocal(
       notas: string | null;
       tiempo_minutos: number | null;
       version: number;
+      tal_cual: boolean;
       lineas: {
         id: string;
         producto_id: string | null;
@@ -103,6 +107,7 @@ export async function lasRecetasDelLocal(
     }[]
   >`
     select r.id, r.plato_id, r.elaboracion_id, r.pasos, r.notas, r.tiempo_minutos, r.version,
+           r.tal_cual,
            coalesce(
              json_agg(json_build_object(
                'id', l.id, 'producto_id', l.producto_id, 'elaboracion_id', l.elaboracion_id,
@@ -123,6 +128,7 @@ export async function lasRecetasDelLocal(
     notas: f.notas,
     minutos: f.tiempo_minutos,
     version: f.version,
+    talCual: f.tal_cual,
     lineas: f.lineas.map((l) => ({
       id: l.id,
       productoId: l.producto_id,
@@ -273,16 +279,36 @@ export async function elLibroDelLocal(
 
 // ── Vinculado: un producto que se vende tal cual ─────────────────────────────
 
+export interface ElVinculo {
+  readonly productoId: string;
+  readonly cantidad: number;
+  readonly unidad: UnidadDeUso;
+}
+
 /**
- * Si la receta de un plato es **un producto, una unidad y nada más**: el chuletón, la
- * lata de refresco, la botella de vino (repaso del 16-oct, A). Es una ficha como
- * cualquiera —se cuenta como desgranada—, y la Carta la enseña con su cadena.
+ * Si el plato **se vende tal cual**: su receta es un producto y su ración, la lata de
+ * refresco (1 ud), el entrecot (300 g), la dorada entera (450 g) (repaso del 16-oct, A).
+ * Es una ficha como cualquiera —se cuenta como desgranada—, y la Carta la enseña con su
+ * cadena.
+ *
+ * Hasta el 16-oct por la tarde solo valía **una unidad**, y en el Almacén de verdad el
+ * entrecot, el pescado entero o el helado se llevan en gramos o mililitros: no salían, y
+ * Richi no encontraba lo suyo (lección 190). Con cualquier cantidad, la forma ya no basta
+ * —una tortilla de «Huevo, 3 ud» es una ficha, no se vende tal cual—, así que lo dice la
+ * receta (`tal_cual`, 0070), y solo vale mientras sea una línea de producto.
  */
-export function elVinculado(receta: RecetaLeida | undefined): string | null {
-  if (receta === undefined || receta.lineas.length !== 1) return null;
+export function elVinculado(receta: RecetaLeida | undefined): ElVinculo | null {
+  if (receta === undefined || !receta.talCual || receta.lineas.length !== 1) return null;
   const linea = receta.lineas[0];
   if (linea === undefined || linea.productoId === null) return null;
-  return linea.unidad === 'ud' && linea.cantidad === 1 ? linea.productoId : null;
+  return { productoId: linea.productoId, cantidad: linea.cantidad, unidad: linea.unidad };
+}
+
+/** «300 g» al lado del nombre; con una unidad, nada: «Refresco de cola» se entiende solo. */
+export function laRacionDelVinculo(vinculo: ElVinculo): string | null {
+  return vinculo.unidad === 'ud' && vinculo.cantidad === 1
+    ? null
+    : comoSeLeeLaCantidad(vinculo.cantidad, vinculo.unidad);
 }
 
 // ── El IVA, el objetivo y los canales ────────────────────────────────────────

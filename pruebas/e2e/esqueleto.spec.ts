@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga, recargarSinQueSeCaiga, vigilarLosErrores } from './abrir.ts';
 
 /**
  * M3 · aceptacion, punto por punto.
@@ -130,8 +130,7 @@ async function desborda(page: Page): Promise<boolean> {
 
 test.describe('las ocho apps', () => {
   test('se abren todas, con su nombre y su primera pestana, sin desbordar', async ({ page }) => {
-    const errores: string[] = [];
-    page.on('pageerror', (fallo) => errores.push(fallo.message));
+    const errores = vigilarLosErrores(page);
 
     await comoGerente(page);
 
@@ -160,7 +159,7 @@ test.describe('las ocho apps', () => {
       expect(await desborda(page), `${app.nombre} desborda a lo ancho`).toBe(false);
     }
 
-    expect(errores).toEqual([]);
+    expect(errores()).toEqual([]);
   });
 
   test('cada destino construido se abre, y ninguno lleva a un hueco', async ({ page }) => {

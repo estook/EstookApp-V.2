@@ -78,3 +78,24 @@ export async function recargarSinQueSeCaiga(
 ): Promise<void> {
   await unaVezMasSiSeCae(() => page.reload({ waitUntil: hasta }));
 }
+
+/**
+ * Los errores de la página **que son de la app**, para las pruebas que recorren muchas
+ * pantallas seguidas (lección 192).
+ *
+ * Al cambiar de pantalla, el navegador corta lo que estaba pidiendo (la petición del
+ * Panel, «ya me ha llegado» del chat), y Safari apunta cada corte como un error de la
+ * página: «Fetch API cannot load http://localhost:5177/… due to access control checks».
+ * No lo es: la app no ha fallado, se ha ido. Se descuenta **solo** ese aviso y **solo**
+ * de la API de pruebas; cualquier otro error sigue poniendo la prueba en rojo. Si la API
+ * fallara de verdad, la pantalla no saldría y la prueba caería por ahí.
+ */
+export function vigilarLosErrores(page: Page): () => string[] {
+  const errores: string[] = [];
+  page.on('pageerror', (fallo) => errores.push(fallo.message));
+  return () =>
+    errores.filter(
+      (error) =>
+        !(error.includes('localhost:5177/api/') && error.includes('due to access control checks')),
+    );
+}

@@ -4,28 +4,28 @@
 >
 > Comprobado el 17 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
 >
-> | Qué                         | Cómo está                                                                                                           |
-> | --------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #109** (el repaso del 16-oct). Abierta: **la puesta al día del 17-oct**, sin migración ni API |
-> | La base de datos            | **72 de 72** migraciones, igual que `main`                                                                          |
-> | La API                      | **Desplegada el 17-oct**: 90 consultas y 196 comandos, corriendo en Irlanda junto a su base                         |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                                           |
+> | Qué                         | Cómo está                                                                                        |
+> | --------------------------- | ------------------------------------------------------------------------------------------------ |
+> | Pull requests               | **Fusionadas hasta la #110** (la puesta al día). Abierta: **el plan de M9 · 3**, solo documentos |
+> | La base de datos            | **72 de 72** migraciones, igual que `main`                                                       |
+> | La API                      | **Desplegada el 17-oct**: 90 consultas y 196 comandos, corriendo en Irlanda junto a su base      |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                        |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo que quede de antes, en [`pasos-de-m8.md`](pasos-de-m8.md).
 
 ---
 
-## Lo que te toca ahora · la puesta al día del 17-oct
+## Lo que te toca ahora · el plan de M9 · 3
 
-Lo que lleva ([decisión 0091](decisiones/0091-estado-a-250-lineas-y-los-documentos-al-dia.md)): `ESTADO.md` rehecho (hasta 250 líneas, con una prueba que lo vigila), las máquinas de GitHub fijas en Ubuntu 24 antes del cambio del 19-oct, dos pruebas de Safari que se repetían, y el aplazamiento de VeriFactu que anunció Hacienda, apuntado en el Anexo. **No hay migración y no hay que desplegar la API**: en la app no cambia nada.
+Tus respuestas del 17-oct están escritas ([decisión 0092](decisiones/0092-las-respuestas-de-m9-3.md)) y el plan, en [`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](m9-3-las-fichas-y-lo-que-ha-cambiado.md). **No hay nada que migrar ni que desplegar**: son solo documentos.
 
-### 1 · Fusionar
+### 1 · Contestar las cuatro preguntas
 
-En **github.com** → **Pull requests** → **«La puesta al día del 17-oct…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+Están al final del plan, cada una con su ejemplo y una recomendación. Basta con «1A, 2A, 3C, 4A» o lo que elijas.
 
-### 2 · Traer `main` a tu ordenador
+### 2 · Fusionar el plan
 
-En PowerShell, en la carpeta del proyecto, uno por uno:
+En **github.com** → **Pull requests** → **«El plan de M9 · 3…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.** Después, en PowerShell, uno por uno:
 
 ```bash
 git checkout main
@@ -35,17 +35,11 @@ git checkout main
 git pull
 ```
 
-**Qué tiene que salir:** el primero, `Switched to branch 'main'` (o que ya estabas en ella); el segundo, una lista de ficheros cambiados (`ESTADO.md`, `docs/…`, `.github/workflows/…`). **Si dice que hay cambios tuyos que se perderían, para y avísame.**
+**Qué tiene que salir:** que estás en `main` y una lista de ficheros de `docs/`. **Si dice que hay cambios tuyos que se perderían, para y avísame.**
 
-### 3 · Comprobar que la base sigue igual (opcional)
+## Hecho · la puesta al día del 17-oct
 
-```bash
-.\estook.cmd bd:comprobar
-```
-
-**Qué tiene que salir:** arriba, **«Migraciones aplicadas: 72 (hasta la 72)»**. Si sale otro número, avísame.
-
----
+Fusionada (#110), con las tres comprobaciones en verde y sin pruebas repetidas. Sin migración ni API ([0091](decisiones/0091-estado-a-250-lineas-y-los-documentos-al-dia.md)).
 
 ## Hecho · el repaso del 16-oct
 

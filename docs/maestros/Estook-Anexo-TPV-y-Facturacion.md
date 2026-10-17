@@ -1071,7 +1071,7 @@ La tablet apaisada es la referencia:
 - **El menú del día** pide sus pasos uno detrás de otro —primero, segundo, postre, bebida— y cada elección va a cocina como su plato (M10).
 - **Agotado** sale en gris y no se puede tocar; con pocas raciones, **«Quedan 3»**, calculado con el escandallo, el stock y lo que ya está en cocina (3.1).
 - **«Otra ronda»**: repite lo último que pidió la mesa en dos toques. En un bar es lo que más se hace.
-- **Grupos de opciones que se reutilizan** —«punto de la carne» para cinco platos, «guarnición»—, con mínimo, máximo, precio por canal y **su propio escandallo**: «extra de queso» gasta queso. Sin eso, el almacén miente.
+- **Grupos de opciones que se reutilizan** —«punto de la carne» para cinco platos, «guarnición»—, con mínimo, máximo, precio por canal y **su propio escandallo**: «extra de queso» gasta queso. Sin eso, el almacén miente. **Se configuran en Estook TPV**, plato a plato, sobre la carta que el TPV lee de Estook ([0092](../decisiones/0092-las-respuestas-de-m9-3.md)): cada extra sale **de los ingredientes del escandallo del plato** («doble de queso») **o de cualquier producto del almacén**, con su precio; una sustitución cambia un ingrediente por otro («pan sin gluten»); y **el extra libre**, fuera de la receta, lleva nombre y precio y **no descuenta género**, porque no se sabe qué es. El precio del plato y lo que cuesta siguen viniendo de Estook: el TPV no inventa un dato.
 - **Artículo libre**, con precio y permiso («varios, 3 €»), y siempre con su descripción, que el ticket la necesita.
 - **Productos a peso** —pescado, jamón—: se escribe el peso o lo da la balanza, y el precio sale solo.
 

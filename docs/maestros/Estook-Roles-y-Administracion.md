@@ -85,11 +85,11 @@ Buenos dias, Sara
 
 ## 1.4 Cocinero
 
-**Entra y ve:** su turno, las fichas nuevas que tiene que aprenderse, lo que caduca, sus tareas y la hoja de producción del día.
+**Entra y ve:** su turno, lo que caduca y sus tareas. La hoja de producción del día, cuando se encienda con las elaboraciones (0090).
 
 **Su rueda:** Escandallos, Almacén (registrar), Servicio (APPCC y mermas), Calendario y Cuaderno.
 
-**Lo que hace especial su experiencia:** el **modo cocina** a pantalla completa, con letra grande, foto del plato, gramajes, pasos con sus fotos y el truco del jefe, en su idioma y **sin un solo importe**. Se avanza con un gesto o diciendo «siguiente». Y el **modo aprendizaje**: marca «ya la sé» y en su Panel ve cuántas lleva.
+**Lo que hace especial su experiencia:** **las fichas técnicas** de la casa en el móvil, con gramajes y los pasos con sus fotos, **sin un solo importe**, y **escaladas a las raciones que vaya a hacer** (0092). Sin modo cocina (en servicio, Estook TPV; 0090) y sin «ya la sé» (0092).
 
 **Qué no ve:** **ningún importe.** Ni coste de línea, ni coste total, ni margen, ni precio recomendado. **Esa columna no existe para él**, tampoco en la respuesta del servidor. La pantalla de cocina del TPV es igual: platos, tiempos y notas, sin un precio.
 

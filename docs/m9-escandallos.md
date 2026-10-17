@@ -5,6 +5,8 @@
 > **Contestado por Richi el 15-oct** ([decisión 0086](decisiones/0086-las-respuestas-de-m9.md)): **1** la base de la Carta se adelanta a M9 · **2A** · **3B** · **4A** · **5C sin versiones a la vista**, con historial · y dos más: **6** los canales en una sección propia, con el precio de cada plato a mano, y **7** primero la carta y después se desgrana. **M9 va en tres entregas**: el plato y tu carta; fichas y escandallos; y lo que la hace una app de verdad. Cada respuesta va debajo de su pregunta; donde este plan dice otra cosa, manda la 0086.
 
 > **M9 · 2 · Fichas y escandallos, construida el 16-oct** ([decisión 0087](decisiones/0087-fichas-y-escandallos.md)): todo lo de la lista de Richi, y en la Carta, vincular lo que se vende tal cual, las unidades de la ración, los alérgenos y el picante. **«Qué ha cambiado» y «empezar desde una receta de referencia» pasan a M9 · 3**, con escalar, extras, «ya la sé», la hoja de producción y el QR.
+>
+> **M9 · 3, contestado el 17-oct** ([0092](decisiones/0092-las-respuestas-de-m9-3.md)): su plan vive aparte, en [`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](m9-3-las-fichas-y-lo-que-ha-cambiado.md). Los extras se van a Estook TPV y «ya la sé» y el QR, fuera.
 
 De dónde sale: M9 en la parte D del [Plan](maestros/Estook-Plan-de-Desarrollo.md), «Escandallos» en el capítulo 13 del [Manifiesto](maestros/Estook-Manifiesto.md), el diseño de Richi de «un plato, tres vistas» ([0049](decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)) y lo que le pasó M8 ([0078](decisiones/0078-las-respuestas-de-m8.md)).
 
@@ -12,20 +14,20 @@ De dónde sale: M9 en la parte D del [Plan](maestros/Estook-Plan-de-Desarrollo.m
 
 **Saber lo que cuesta cada plato y cuánto te deja, sin calcular nada a mano.** Hoy Estook sabe lo que cuesta cada producto del almacén. Lo que falta es **qué se vende y a cuánto** (la carta, adelantada a M9 por la 0086) y **qué lleva cada plato**: con eso, el coste del plato sale solo, se mueve solo cuando sube un ingrediente, y la cocina tiene su receta en el móvil sin ver un euro.
 
-| Pieza                     | Qué hace                                                                                               |
-| ------------------------- | ------------------------------------------------------------------------------------------------------ |
-| **El plato**              | Uno solo, creado desde la Carta: nombre, sección, descripción, foto y su precio en cada canal (0086)   |
-| **Los canales**           | Sala y Uber Eats para activar (los demás, programados), con su comisión y el precio a mano por plato   |
-| **La ficha técnica**      | Lo que lleva (180 g de carne, 1 pan…) y cómo se hace: pasos, tiempo, temperatura, conservación         |
-| **Las elaboraciones**     | Una salsa o un caldo con su propia ficha, que se usa dentro de otras (la pregunta 2)                   |
-| **El escandallo**         | Se calcula: coste, food cost, margen y precio recomendado. Nada escrito a mano                         |
-| **Los alérgenos**         | Salen solos de los ingredientes, con los catorce símbolos oficiales                                    |
-| **El modo cocina**        | La ficha a pantalla completa, letra grande, **sin un solo importe**                                    |
-| **Qué ha cambiado**       | «El aceite sube un 12 %: afecta a 7 platos, 2 bajan del objetivo, hasta −3,8 puntos de margen»         |
-| **Las fichas que faltan** | «38 de 96 platos con ficha»: un plato sin ficha se vende igual, sale marcado                           |
-| **Lo que le pasó M8**     | El food cost teórico junto al real, la desviación de los platos y la calibración (la pregunta 3)       |
-| **El historial**          | Quién cambió qué y cuándo, plegado, con la receta de antes para recuperarla (sin versiones a la vista) |
-| **Y lo demás**            | Escalar raciones, extras, «ya la sé», la hoja de producción y la ficha con QR                          |
+| Pieza                     | Qué hace                                                                                                                         |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **El plato**              | Uno solo, creado desde la Carta: nombre, sección, descripción, foto y su precio en cada canal (0086)                             |
+| **Los canales**           | Sala y Uber Eats para activar (los demás, programados), con su comisión y el precio a mano por plato                             |
+| **La ficha técnica**      | Lo que lleva (180 g de carne, 1 pan…) y cómo se hace: pasos, tiempo, temperatura, conservación                                   |
+| **Las elaboraciones**     | Una salsa o un caldo con su propia ficha, que se usa dentro de otras (la pregunta 2)                                             |
+| **El escandallo**         | Se calcula: coste, food cost, margen y precio recomendado. Nada escrito a mano                                                   |
+| **Los alérgenos**         | Salen solos de los ingredientes, con los catorce símbolos oficiales                                                              |
+| **El modo cocina**        | La ficha a pantalla completa, letra grande, **sin un solo importe**                                                              |
+| **Qué ha cambiado**       | «El aceite sube un 12 %: afecta a 7 platos, 2 bajan del objetivo, hasta −3,8 puntos de margen»                                   |
+| **Las fichas que faltan** | «38 de 96 platos con ficha»: un plato sin ficha se vende igual, sale marcado                                                     |
+| **Lo que le pasó M8**     | El food cost teórico junto al real, la desviación de los platos y la calibración (la pregunta 3)                                 |
+| **El historial**          | Quién cambió qué y cuándo, plegado, con la receta de antes para recuperarla (sin versiones a la vista)                           |
+| **Y lo demás**            | M9 · 3: escalar por ración o tanda, «qué ha cambiado» y la receta de Estook ([el plan](m9-3-las-fichas-y-lo-que-ha-cambiado.md)) |
 
 ## Lo que ya hay
 

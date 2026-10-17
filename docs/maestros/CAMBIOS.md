@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 17 de octubre, por la noche** ([0093](../decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)), sin cambiar de versión: el **Plan** dice en M9 y en M20 cómo se avisa de lo que se escapa y cómo se calibra, con su diseño en [`como-detecta-estook-lo-que-se-escapa.md`](../como-detecta-estook-lo-que-se-escapa.md).
+
 **El 17 de octubre, por la tarde** ([0092](../decisiones/0092-las-respuestas-de-m9-3.md)), sin cambiar de versión: el **Plan** recoge las respuestas de M9 · 3 —la receta por ración o por tanda y el escalado, «qué ha cambiado», la receta de Estook; fuera el modo aprendizaje y el QR; los extras a M20A; la desviación de los platos, la calibración y el teórico a M20—; el **Manifiesto** y **Roles** quitan el modo aprendizaje y el QR; el **Anexo** dice cómo se configuran los extras en Estook TPV; y la **Auditoría de flujos** (2.3) deja de mandar a los cocineros a «pendiente de aprender».
 
 **El 17 de octubre** ([0091](../decisiones/0091-estado-a-250-lineas-y-los-documentos-al-dia.md)), sin cambiar de versión: el **Plan** sube `ESTADO.md` a 250 líneas, con una prueba que lo vigila, y gana en A2 la tabla de qué documento se toca con cada cambio; y el **Anexo** apunta en 1.2 el aplazamiento de VeriFactu a octubre de 2028 que Hacienda anunció el 5-oct, todavía sin BOE (mandan las fechas de 2027 hasta que se publique).

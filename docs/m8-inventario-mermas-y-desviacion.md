@@ -62,7 +62,7 @@ Si alguna no te cuadra, dímelo y se cambia. **Tres se precisaron al construir**
 6. **El food cost real, sin IVA**, por mes natural y entre dos inventarios. Si faltan días de caja, sale con «faltan 3 días de caja» y **no se da como exacto**.
 7. **El dinero solo lo ve quien ve precios de compra.** Quien cierra inventarios sin ese permiso ve cantidades; un camarero, nada.
 8. **La desviación nunca señala a nadie.** Dice qué producto, cuánto y la causa probable; quién contó o quién recibió está en el libro, no en el informe.
-9. **Un aviso en la campana al cerrar un inventario** solo si lo que falta pasa del 3 % de lo gastado. Lo de menos se ve, pero no avisa.
+9. **Un aviso en la campana al cerrar un inventario** solo si lo que falta pasa del 3 % de lo gastado. Lo de menos se ve, pero no avisa. _(17-oct: con M20 este 3 % y el 2 % de «cuadra» se sustituyen por [cómo detecta Estook lo que se escapa](como-detecta-estook-lo-que-se-escapa.md), 0093.)_
 10. **Si en un lote sobra o falta al contar**, se ajusta también por FEFO: lo que falta, del que antes caduca; lo que sobra, a un lote sin fecha.
 11. **La merma por voz**: dictar con el micrófono del teclado del móvil ya funciona hoy. Que Estook entienda «tira dos kilos de merluza, caducada» es Fogón (M22).
 12. **Se entrega en dos veces**: primero contar, el valor, los lotes y el mínimo; después lo gastado, el food cost, la desviación y la foto. Cada una con su pull request.

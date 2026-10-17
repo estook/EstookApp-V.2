@@ -103,3 +103,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0090** | El repaso del 16-oct: la ficha del producto, kilos y gramos, escandallos y fichas técnicas por separado (con fotos en los pasos, 0072) y la app más rápida                     |
 | **0091** | ESTADO a 250 líneas con una prueba que lo vigila, lo que decidió la IA en su documento, la nota de relevo y qué documento se toca con cada cambio                              |
 | **0092** | Las respuestas de M9 · 3: escalar por ración o por tanda, «qué ha cambiado», la receta de Estook, los extras a Estook TPV, sin QR ni «ya la sé», y el coste teórico con el TPV |
+| **0093** | M9 · 3 contestado entero, y cómo detecta Estook lo que se escapa (para M20): cuatro filtros, el arranque sin datos, la fuga constante y la calibración en tres botones         |

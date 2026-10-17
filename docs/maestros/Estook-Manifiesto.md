@@ -778,12 +778,11 @@ Lo hubo (0087) y se quitó el 16-oct (0090): en servicio, la cocina tendrá **Es
 
 - **Biblioteca con colecciones:** por categoría, por temporada, por dificultad, y colecciones propias.
 - **Elaboraciones** con escandallo, coste y rendimiento propios («rinde 2 litros»), anidables, con detección de ciclos; **su stock, con la hoja de producción**. **Por ahora no se ofrecen** (0090): Richi no quiere otro escandallo de las salsas. Lo construido sigue en la base y las recetas que ya las llevaban las siguen enseñando.
-- **Extras y sustituciones** con su coste y su precio.
+- **Extras y sustituciones**: se configuran en **Estook TPV**, plato a plato, que es donde se venden; cada extra gasta lo suyo del almacén (0092).
 - **Una sola receta a la vista, con historial** (0086): al cambiarla se confirma y se guarda, y esa es la de ahora. El historial, plegado, dice quién cambió qué y cuándo, y deja ver la de antes y recuperarla. Por dentro guarda cada receta entera, porque **lo vendido se cuenta con la receta de ese día**. Sin versiones numeradas ni comparador: Estook limpio.
-- **Escalado:** «esto es para 10, dame para 35».
-- **Modo aprendizaje:** cada cocinero marca «ya la sé»; el jefe de cocina ve quién sabe hacer qué.
+- **Por ración o por tanda, y escalado:** la receta se escribe para una ración o para la olla entera («sale para 25»), y la ficha técnica se escala en pantalla y en el PDF: «esto es para 10, dame para 35» (0092).
 - **Análisis:** qué platos están bajo objetivo, cuáles no se revisan desde hace seis meses, cuáles llevan un producto sin precio.
-- **La ficha impresa lleva QR** a la versión viva.
+- **La ficha se imprime o se descarga en PDF**, sin QR: quien quiere la de hoy la abre en Estook (0092).
 
 ## Tres cosas que la competencia no da bien
 
@@ -1394,7 +1393,7 @@ Detalles pequeños que, mal resueltos, hacen que un hostelero abandone en la pri
 - **La misma persona en dos empresas entra con un solo correo.** Invitar a un correo que ya existe añade una membresía, **nunca duplica la persona**.
 - Si alguien tiene dos roles sobre el mismo local, **gana el más amplio**.
 - **Lo que se hace con PIN queda a nombre de esa persona, con la hora y el aparato.** No es una firma electrónica: es identificarse en un aparato del local ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)).
-- **La cocina no tiene ordenador.** Las fichas se leen en tablet, y donde no hay tablet se imprimen con QR a la versión viva.
+- **La cocina no tiene ordenador.** Las fichas se leen en el móvil o la tablet, y donde no hay, se imprimen o se descargan en PDF (0092).
 - **Un producto en uso no se borra:** se desactiva y sigue en el histórico.
 
 ---

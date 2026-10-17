@@ -128,8 +128,7 @@ Por eso: cambiar un rendimiento **pide confirmación enseñando el impacto antes
 
 Crea versión nueva. La anterior se conserva entera. Y se dispara lo que casi nadie prevé:
 
-- **Todos los cocineros vuelven a «pendiente de aprender»** esa ficha, con aviso.
-- La ficha impresa queda desactualizada y el QR lleva a la nueva.
+- La ficha impresa o descargada se queda como estaba: **la de hoy es la de Estook**, sin QR ni «ya la sé» ([0092](../decisiones/0092-las-respuestas-de-m9-3.md)).
 - El consumo teórico del futuro usa la nueva; **el del pasado sigue con la vieja**.
 - Si cambian los ingredientes, se recalculan alérgenos y valor nutricional, y **si aparece un alérgeno nuevo se avisa a sala y se marca la carta para reimprimir**.
 

@@ -602,11 +602,13 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Ordenada en el repaso del 16-oct** ([0090](../decisiones/0090-el-repaso-del-16-oct.md)): **Resumen · Escandallos · Fichas** (las fichas técnicas). El escandallo, solo lo que lleva y lo que cuesta; la ficha técnica, el plato de la Carta con lo que lleva su escandallo y **los pasos, cada uno con su foto**. **Sin modo cocina** (la cocina en servicio es Estook TPV) y **sin elaboraciones por ahora**. Donde lo de abajo dice otra cosa, manda la 0090.
 
-**Entra.** **El plato y la carta** (secciones, precios por canal y canales con su comisión, adelantados de M10 por la 0086) · elaboraciones anidables con detección de ciclos y su rendimiento · ficha en dos caras · extras y sustituciones · **una receta a la vista con historial y recuperar** · escalado de gramajes · ~~modo cocina~~ (fuera desde el 16-oct, 0090: en servicio, Estook TPV) · modo aprendizaje · alérgenos calculados · hoja de producción del día · borrador de ficha propuesto por Fogón · indicador de cobertura de fichas · grafo de recálculo · ficha impresa con QR a la versión viva.
+**M9 · 3, contestado el 17-oct** ([0092](../decisiones/0092-las-respuestas-de-m9-3.md), el plan en [`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](../m9-3-las-fichas-y-lo-que-ha-cambiado.md)): **la receta por ración o por tanda** y la ficha técnica que se escala en pantalla y en el PDF; **«qué ha cambiado»** en el Resumen, con aviso solo cuando un plato cruza una raya; y **empezar desde una receta de Estook**. **Salen**: los extras y sustituciones (a Estook TPV, M20A), el modo aprendizaje y el QR de la ficha impresa; y **la desviación de los platos, la calibración y el food cost teórico pasan a M20**, que es donde nacen las ventas plato a plato. Donde lo de abajo dice otra cosa, manda la 0092.
+
+**Entra.** **El plato y la carta** (secciones, precios por canal y canales con su comisión, adelantados de M10 por la 0086) · elaboraciones anidables con detección de ciclos y su rendimiento · ficha en dos caras · ~~extras y sustituciones~~ (a Estook TPV, M20A: 0092) · **una receta a la vista con historial y recuperar** · **escalado, con la receta por ración o por tanda** (0092) · ~~modo cocina~~ (fuera desde el 16-oct, 0090: en servicio, Estook TPV) · ~~modo aprendizaje~~ (fuera, 0092) · alérgenos calculados · hoja de producción del día (parada con las elaboraciones, 0090) · borrador de ficha propuesto por Fogón · indicador de cobertura de fichas · grafo de recálculo · ficha impresa o en PDF, **sin QR** (0092).
 
 **Y su capa inteligente.** El bloque **«qué ha cambiado y por qué»**: cuánto ha subido el coste desde una fecha, qué ingrediente lo ha movido, a cuántos platos afecta una subida y cuál es el impacto máximo en puntos de margen.
 
-**Y lo que le pasó M8** ([decisión 0078](../decisiones/0078-las-respuestas-de-m8.md)): **la desviación de los platos** —lo que se debía gastar según lo vendido y sus fichas, frente a lo gastado de verdad—, **la calibración** con estado «aprendiendo» hasta el tercer inventario, y **el food cost teórico** junto al real, con su brecha. En la pantalla de Consumo que dejó M8.
+**Y lo que le pasó M8** ([decisión 0078](../decisiones/0078-las-respuestas-de-m8.md)): **la desviación de los platos** —lo que se debía gastar según lo vendido y sus fichas, frente a lo gastado de verdad—, **la calibración** con estado «aprendiendo» hasta el tercer inventario, y **el food cost teórico** junto al real, con su brecha. En la pantalla de Consumo que dejó M8. **Pasan a M20** (0092): sin ventas plato a plato no hay teórico (en IKATZ, 1 de 21 cierres de caja trae los platos). Cómo se avisa y cómo se calibra, en el plan de M9 · 3, pendiente de Richi.
 
 **Reglas críticas.** Escandallo por unidad de venta. Margen sobre base sin impuestos. **La ficha es dato estructurado, no texto.** Un plato sin ficha nunca bloquea nada. Los importes **no viajan al cliente** de un rol sin permiso de costes.
 
@@ -623,7 +625,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Todo se recalcula solo y solo lo afectado** (el grafo de recálculo): cambia un precio de compra → los escandallos que lo llevan; cambia una cantidad de la ficha → su escandallo; cambia el precio de la carta → su margen y su food cost; un plato nuevo puede nacer con ficha y después con escandallo.
 - **Estook calcula; la IA solo propone** coincidencias —«"Queso cheddar" de la ficha parece "Cheddar lonchas" del Almacén»— y **las vinculaciones definitivas se hacen por identificador y las confirma una persona**. Lo que se puede contar no se le pregunta a un modelo: cuesta uso y se equivoca.
 
-**Terminado cuando.** Se monta una carta entera sin tocar la base a mano, con su precio en sala y en Uber Eats; el margen de un plato sale **por canal** con su comisión descontada; un cocinero abre la ficha **sin ver ningún importe**; al subir un ingrediente solo se recalcula lo afectado; y, con dos inventarios, la desviación de los platos sale explicada producto a producto, y un producto que se sirve de más deja de saltar tras el tercero.
+**Terminado cuando.** Se monta una carta entera sin tocar la base a mano, con su precio en sala y en Uber Eats; el margen de un plato sale **por canal** con su comisión descontada; un cocinero abre la ficha **sin ver ningún importe**; al subir un ingrediente solo se recalcula lo afectado, y «qué ha cambiado» lo dice en euros; y una ficha técnica se escala a las raciones que se pidan sin cambiar la receta guardada. La desviación de los platos y la calibración, con M20 (0092).
 
 ### M10 · Carta, menús y análisis
 
@@ -777,7 +779,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Adelantado en M6½** ([decisión 0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)): el cierre de caja a mano o con el CSV del TPV, con su origen, en la misma tabla donde escribirá el conector; los platos apuntados con el nombre ya normalizado para emparejarlos; y la pregunta de cómo entran las ventas. **Queda** todo lo de esta lista, empezando por el emparejamiento y el consumo teórico.
 
-**Terminado cuando.** El stock se mueve solo con las ventas del día y el cierre cuadra con el Z; **reimportar el mismo fichero no cambia nada**.
+**Terminado cuando.** El stock se mueve solo con las ventas del día y el cierre cuadra con el Z; **reimportar el mismo fichero no cambia nada**. Y, con dos inventarios, **la desviación de los platos sale explicada producto a producto**, con la regla de avisos y la calibración que decida Richi ([plan de M9 · 3](../m9-3-las-fichas-y-lo-que-ha-cambiado.md), preguntas 3 y 4).
 
 **Y lo que añade la versión 1.2.**
 

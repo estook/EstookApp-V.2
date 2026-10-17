@@ -4,28 +4,28 @@
 >
 > Comprobado el 17 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
 >
-> | Qué                         | Cómo está                                                                                        |
-> | --------------------------- | ------------------------------------------------------------------------------------------------ |
-> | Pull requests               | **Fusionadas hasta la #110** (la puesta al día). Abierta: **el plan de M9 · 3**, solo documentos |
-> | La base de datos            | **72 de 72** migraciones, igual que `main`                                                       |
-> | La API                      | **Desplegada el 17-oct**: 90 consultas y 196 comandos, corriendo en Irlanda junto a su base      |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                        |
+> | Qué                         | Cómo está                                                                                                            |
+> | --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #111** (el plan de M9 · 3). Abierta: **cómo detecta Estook lo que se escapa**, solo documentos |
+> | La base de datos            | **72 de 72** migraciones, igual que `main`                                                                           |
+> | La API                      | **Desplegada el 17-oct**: 90 consultas y 196 comandos, corriendo en Irlanda junto a su base                          |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                                            |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo que quede de antes, en [`pasos-de-m8.md`](pasos-de-m8.md).
 
 ---
 
-## Lo que te toca ahora · el plan de M9 · 3
+## Lo que te toca ahora · cómo detecta Estook lo que se escapa
 
-Tus respuestas del 17-oct están escritas ([decisión 0092](decisiones/0092-las-respuestas-de-m9-3.md)) y el plan, en [`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](m9-3-las-fichas-y-lo-que-ha-cambiado.md). **No hay nada que migrar ni que desplegar**: son solo documentos.
+Lo que pediste en la 3C de M9 · 3, estudiado y escrito para M20 ([decisión 0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md), [el diseño](como-detecta-estook-lo-que-se-escapa.md)). **No hay nada que migrar ni que desplegar**: son solo documentos.
 
-### 1 · Contestar las cuatro preguntas
+### 1 · Contestar las dos preguntas
 
-Están al final del plan, cada una con su ejemplo y una recomendación. Basta con «1A, 2A, 3C, 4A» o lo que elijas.
+Al final del diseño: si Estook solo vigila cuando todo lo vendido tiene escandallo (1), y si «la prueba de la plantilla» entra en el Plan (2). Basta con «1A, 2A» o lo que elijas. **Y dime si empiezo a construir M9 · 3**, que ya está contestado entero.
 
-### 2 · Fusionar el plan
+### 2 · Fusionar
 
-En **github.com** → **Pull requests** → **«El plan de M9 · 3…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.** Después, en PowerShell, uno por uno:
+En **github.com** → **Pull requests** → **«Cómo detecta Estook lo que se escapa…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.** Después, en PowerShell, uno por uno:
 
 ```bash
 git checkout main
@@ -36,6 +36,10 @@ git pull
 ```
 
 **Qué tiene que salir:** que estás en `main` y una lista de ficheros de `docs/`. **Si dice que hay cambios tuyos que se perderían, para y avísame.**
+
+## Hecho · el plan de M9 · 3
+
+Fusionado (#111), con tus respuestas ([0092](decisiones/0092-las-respuestas-de-m9-3.md)) y las cuatro siguientes ([0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)). Listo para construir.
 
 ## Hecho · la puesta al día del 17-oct
 

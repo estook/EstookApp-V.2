@@ -608,7 +608,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y su capa inteligente.** El bloque **«qué ha cambiado y por qué»**: cuánto ha subido el coste desde una fecha, qué ingrediente lo ha movido, a cuántos platos afecta una subida y cuál es el impacto máximo en puntos de margen.
 
-**Y lo que le pasó M8** ([decisión 0078](../decisiones/0078-las-respuestas-de-m8.md)): **la desviación de los platos** —lo que se debía gastar según lo vendido y sus fichas, frente a lo gastado de verdad—, **la calibración** con estado «aprendiendo» hasta el tercer inventario, y **el food cost teórico** junto al real, con su brecha. En la pantalla de Consumo que dejó M8. **Pasan a M20** (0092): sin ventas plato a plato no hay teórico (en IKATZ, 1 de 21 cierres de caja trae los platos). Cómo se avisa y cómo se calibra, en el plan de M9 · 3, pendiente de Richi.
+**Y lo que le pasó M8** ([decisión 0078](../decisiones/0078-las-respuestas-de-m8.md)): **la desviación de los platos** —lo que se debía gastar según lo vendido y sus fichas, frente a lo gastado de verdad—, **la calibración** con estado «aprendiendo» hasta el tercer inventario, y **el food cost teórico** junto al real, con su brecha. En la pantalla de Consumo que dejó M8. **Pasan a M20** (0092): sin ventas plato a plato no hay teórico (en IKATZ, 1 de 21 cierres de caja trae los platos). Cómo se avisa y cómo se calibra, en [`como-detecta-estook-lo-que-se-escapa.md`](../como-detecta-estook-lo-que-se-escapa.md) ([0093](../decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)).
 
 **Reglas críticas.** Escandallo por unidad de venta. Margen sobre base sin impuestos. **La ficha es dato estructurado, no texto.** Un plato sin ficha nunca bloquea nada. Los importes **no viajan al cliente** de un rol sin permiso de costes.
 
@@ -779,7 +779,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Adelantado en M6½** ([decisión 0027](../decisiones/0027-la-caja-se-cierra-sin-tpv.md)): el cierre de caja a mano o con el CSV del TPV, con su origen, en la misma tabla donde escribirá el conector; los platos apuntados con el nombre ya normalizado para emparejarlos; y la pregunta de cómo entran las ventas. **Queda** todo lo de esta lista, empezando por el emparejamiento y el consumo teórico.
 
-**Terminado cuando.** El stock se mueve solo con las ventas del día y el cierre cuadra con el Z; **reimportar el mismo fichero no cambia nada**. Y, con dos inventarios, **la desviación de los platos sale explicada producto a producto**, con la regla de avisos y la calibración que decida Richi ([plan de M9 · 3](../m9-3-las-fichas-y-lo-que-ha-cambiado.md), preguntas 3 y 4).
+**Terminado cuando.** El stock se mueve solo con las ventas del día y el cierre cuadra con el Z; **reimportar el mismo fichero no cambia nada**. Y, con dos inventarios, **la desviación de los platos sale explicada producto a producto**, con los cuatro filtros de [`como-detecta-estook-lo-que-se-escapa.md`](../como-detecta-estook-lo-que-se-escapa.md) (0093): **ningún aviso con datos a medias ni mientras aprende**, un mes en silencio antes de encenderlo, y **la receta nunca se sube a lo que se sirve**.
 
 **Y lo que añade la versión 1.2.**
 

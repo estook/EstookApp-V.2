@@ -742,3 +742,10 @@
 194. **«Red primero» para abrir una app instalada es una pantalla en negro.** El trabajador
      de servicio esperaba hasta 4 s a que GitHub contestara antes de pintar. En una app
      instalada la página se sirve guardada y la red se mira por detrás (0090).
+195. **Verde no es limpio: una vuelta de `main` con dos repetidas.** Al fusionar la #109,
+     `main` salió en verde con dos pruebas de Safari que solo pasaron al repetirse: la del
+     catálogo, que medía **una** petición contra un tope de 1 s (1.370 ms, con la máquina
+     ocupada), y la de las ocho apps, que se cortó con «Frame load interrupted», que es como
+     cuenta Safari lo que la 2.ª regla de `abrir.ts` ya repetía con otras palabras. Se mide
+     la más rápida de tres y se reconoce la frase de Safari. Y después de fusionar se mira
+     también la vuelta de `main` por dentro, no solo la de la rama.

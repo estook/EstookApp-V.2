@@ -23,7 +23,7 @@ concurrency:
 jobs:
   construir:
     name: Construir
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
     timeout-minutes: 20
     env:
       ENTORNO: produccion
@@ -115,7 +115,7 @@ jobs:
   publicar:
     name: Publicar
     needs: construir
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
     environment:
       name: github-pages
       url: ${{ steps.despliegue.outputs.page_url }}

@@ -466,13 +466,22 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
 
 test('el catálogo de referencia devuelve la ficha ya rellena', async ({ request }) => {
   const token = await tokenDe(request, ROSA);
+  const pedir = () =>
+    request.get(`${API}/v1/consultas/catalogo_de_referencia?texto=aceite%20de%20oliva`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
 
-  const empezo = Date.now();
-  const respuesta = await request.get(
-    `${API}/v1/consultas/catalogo_de_referencia?texto=aceite%20de%20oliva`,
-    { headers: { authorization: `Bearer ${token}` } },
-  );
-  const tardo = Date.now() - empezo;
+  // Se mide la más rápida de tres (lección 195): una sola vez medía también lo que
+  // la máquina de GitHub estuviera haciendo a la vez (1.370 ms el 17-oct, en Safari,
+  // y al repetirla, bien). Un recorrido de tabla entera sería lento las tres veces.
+  let tardo = Number.POSITIVE_INFINITY;
+  let respuesta: Awaited<ReturnType<typeof pedir>> | undefined;
+  for (let vez = 0; vez < 3; vez++) {
+    const empezo = Date.now();
+    respuesta = await pedir();
+    tardo = Math.min(tardo, Date.now() - empezo);
+  }
+  if (respuesta === undefined) throw new Error('No se pidió nada');
 
   expect(respuesta.status()).toBe(200);
   const { datos } = (await respuesta.json()) as {

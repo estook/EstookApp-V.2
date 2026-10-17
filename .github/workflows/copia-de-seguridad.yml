@@ -48,7 +48,7 @@ jobs:
   # semana; lanzada a mano sin secretos sí falla, porque entonces alguien la esperaba.
   secretos:
     name: ¿Están los secretos?
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
     timeout-minutes: 2
     outputs:
       estan: ${{ steps.mirar.outputs.estan }}
@@ -74,7 +74,7 @@ jobs:
     name: Copiar, restaurar y cifrar
     needs: secretos
     if: needs.secretos.outputs.estan == 'si'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
     timeout-minutes: 30
     env:
       URL_DE_LA_COPIA: ${{ secrets.URL_DE_LA_COPIA }}

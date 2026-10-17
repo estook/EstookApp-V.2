@@ -66,7 +66,21 @@ Es la regla 14, desplegada. Si falta una respuesta, no se implementa todavía: s
 
 El riesgo principal de construir esto con una IA es que a mitad de camino olvide qué está haciendo y empiece a improvisar arquitectura. Se evita con tres cosas.
 
-**El fichero de estado.** En la raíz del repositorio vive `ESTADO.md`, y es lo primero que se lee y lo último que se escribe en cada sesión. **Corto —ciento cincuenta líneas como mucho— y verdadero**: dónde estamos, qué está en producción, qué queda, qué espera de Richi y qué decidió la IA por su cuenta. Lo que ya pasó vive en las decisiones y en el historial de git, no ahí; y lo que no se toca, en la Arquitectura, capítulo 17.
+**El fichero de estado.** En la raíz del repositorio vive `ESTADO.md`, y es lo primero que se lee y lo último que se escribe en cada sesión. **Corto —doscientas cincuenta líneas como mucho, y ninguna de texto de más de setecientos caracteres— y verdadero**: dónde estamos, qué está en producción, qué queda, qué espera de Richi, si hay trabajo a medias para el relevo y qué decidió la IA por su cuenta en la última entrega. Lo vigila una prueba ([0091](../decisiones/0091-estado-a-250-lineas-y-los-documentos-al-dia.md)). Lo que ya pasó vive en las decisiones y en el historial de git, no ahí; y lo que no se toca, en la Arquitectura, capítulo 17.
+
+**Los documentos van al día en el mismo pull request que el cambio**, nunca después. Qué se toca con cada cosa:
+
+| Si el cambio…                                       | Se actualiza                                                                                |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Cualquiera                                          | `ESTADO.md`                                                                                 |
+| Decide algo de producto o de cómo está hecho        | Una decisión nueva en `docs/decisiones/` y su línea en el `LEEME`                           |
+| Contradice o mejora un maestro                      | El maestro, su línea en `docs/maestros/CAMBIOS.md` y sus PDF (`pnpm maestros`)              |
+| Cambia qué queda, en qué orden o qué deja preparado | `docs/MAPA-de-modulos.md`                                                                   |
+| Cierra una entrega                                  | `docs/historia-de-los-modulos.md` y lo decidido por la IA en `docs/lo-que-decidio-la-ia.md` |
+| Le pide algo a Richi (fusionar, migrar, desplegar…) | Los pasos de la fase (`docs/pasos-de-m9.md` hoy)                                            |
+| Nace de un fallo                                    | Una lección en `docs/lecciones.md`, y su prueba                                             |
+| Toca lo legal, una clave o un servicio de fuera     | `docs/legal/`, `config/claves.md` o la Arquitectura (capítulos 10 a 13)                     |
+| Toca Estook TPV o la facturación                    | El Anexo, que manda en lo suyo                                                              |
 
 **La plantilla de tarea.** Ninguna tarea se pide ni se acepta sin estos ocho apartados:
 

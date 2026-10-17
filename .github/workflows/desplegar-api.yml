@@ -55,7 +55,7 @@ on:
 jobs:
   desplegar:
     name: Desplegar
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
     timeout-minutes: 10
     steps:
       - name: Comprobar que se ha escrito la palabra

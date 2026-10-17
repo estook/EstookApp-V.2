@@ -16,7 +16,11 @@ export interface PlatoEnLaLista {
   readonly nombre: string;
   readonly seccionId: string | null;
   readonly miniatura: string | null;
+  /** Si tiene su escandallo: lo que lleva (0087 lo llamaba «ficha»). */
   readonly tieneFicha: boolean;
+  /** Si tiene su ficha técnica, los pasos (0090). Una API de antes no lo manda. */
+  readonly tieneFichaTecnica?: boolean;
+  readonly pasos?: number;
   readonly vinculadoA: string | null;
   readonly alergenos: readonly Alergeno[];
   readonly picante: number;
@@ -50,6 +54,7 @@ export interface MisFichas {
   readonly cifras: {
     readonly platos: number;
     readonly sinFicha: number;
+    readonly conFichaTecnica?: number;
     readonly bajoObjetivo?: number;
     readonly pierden?: number;
     readonly foodCostMedio?: number | null;
@@ -143,6 +148,8 @@ export interface UnaFicha {
     readonly version: number;
     readonly lineas: readonly LineaDeLaFicha[];
     readonly pasos: readonly string[];
+    /** La foto de cada paso, firmada, o nula (0090). Una API de antes no la manda. */
+    readonly fotosDeLosPasos?: readonly (string | null)[];
     readonly notas: string | null;
     readonly minutos: number | null;
   };

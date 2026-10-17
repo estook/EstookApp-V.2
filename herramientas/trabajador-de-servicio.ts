@@ -182,7 +182,12 @@ self.addEventListener('activate', (evento) => {
   );
 });
 
-// ── Servir: la página de la red si contesta, y si no, la guardada ──────────────
+// ── Servir: la página guardada al momento, y la red por detrás ───────────────
+// Era al revés —la red primero, hasta 4 segundos—, y al abrir Estook en el móvil la
+// pantalla se quedaba en negro mientras GitHub contestaba (Richi, 16-oct: «se queda
+// en negro 2 segundos»). Ahora abre con lo guardado, que es lo que hacen las apps
+// instaladas; si hay versión nueva, el navegador trae este trabajador nuevo, guarda la
+// página nueva y la app se recarga sola si todavía no se ha tocado nada.
 self.addEventListener('fetch', (evento) => {
   const peticion = evento.request;
   if (peticion.method !== 'GET') return;
@@ -190,13 +195,20 @@ self.addEventListener('fetch', (evento) => {
   // Solo lo de la app: la API, las fotos y lo de otros sitios van por su camino.
   if (url.origin !== self.location.origin || !url.href.startsWith(self.registration.scope)) return;
   if (peticion.mode === 'navigate') {
-    evento.respondWith(laPagina(peticion));
+    evento.respondWith(laPagina(peticion, evento));
     return;
   }
   evento.respondWith(loGuardadoPrimero(peticion));
 });
 
-async function laPagina(peticion) {
+async function laPagina(peticion, evento) {
+  const cache = await caches.open(CACHE);
+  const guardada = (await cache.match(aqui('./'))) || (await cache.match(aqui('index.html')));
+  if (guardada) {
+    // Que la red se entere igual (y el navegador mire si hay trabajador nuevo).
+    evento.waitUntil(fetch(peticion).catch(() => undefined));
+    return await sinRedireccion(guardada);
+  }
   try {
     const deLaRed = await Promise.race([
       fetch(peticion),
@@ -206,9 +218,7 @@ async function laPagina(peticion) {
     ]);
     return deLaRed;
   } catch (fallo) {
-    const cache = await caches.open(CACHE);
-    const guardada = (await cache.match(aqui('./'))) || (await cache.match(aqui('index.html')));
-    return guardada ? await sinRedireccion(guardada) : Response.error();
+    return Response.error();
   }
 }
 

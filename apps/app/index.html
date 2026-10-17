@@ -39,9 +39,36 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="description" content="La aplicacion: el Panel y sus ocho apps" />
     <title>Estook</title>
+    <!--
+      Lo que se ve antes de que llegue el código (repaso del 16-oct): el fondo de la
+      app y su logo, en vez de una pantalla vacía. React lo sustituye al pintar. Va
+      aquí, en la página, porque es lo único que hay mientras el móvil lee el código.
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #f1efea;
+      }
+      .arrancando {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+      .arrancando img {
+        width: 132px;
+        height: auto;
+        opacity: 0.9;
+      }
+    </style>
   </head>
   <body>
-    <div id="raiz"></div>
+    <div id="raiz">
+      <div class="arrancando" aria-hidden="true">
+        <img src="./marca/estook-logo.png" alt="" />
+      </div>
+    </div>
     <script type="module" src="/src/principal.tsx"></script>
   </body>
 </html>

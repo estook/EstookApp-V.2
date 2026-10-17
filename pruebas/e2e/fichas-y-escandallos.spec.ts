@@ -4,13 +4,14 @@ import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts'
 import { APP, ejecutarEnLaApi, entrarEnLaApp, tokenDe } from './en-la-app.ts';
 
 /**
- * M9 · 2 · Fichas y escandallos (decisión 0087), en la pantalla.
+ * M9 · 2 · Escandallos y fichas técnicas (decisiones 0087 y 0090), en la pantalla.
  *
  * «Primero la carta» (0086): el plato ya existe y aquí se desgrana. Una cuenta nueva
- * hace su salsa con lo que rinde, desgrana la hamburguesa con ella, ve lo que cuesta y
- * lo que deja en sala y en Uber Eats, cambia la receta y recupera la de antes, la abre
- * en modo cocina, y en la Carta trae del Almacén lo que vende tal cual y marca lo que
- * pica. Y el cocinero ve la ficha sin un euro.
+ * desgrana la hamburguesa, ve lo que cuesta y lo que deja en sala y en Uber Eats,
+ * cambia la receta y recupera la de antes; después escribe su ficha técnica —lo que
+ * lleva sale del escandallo— con sus pasos y una foto; y en la Carta trae del Almacén
+ * lo que vende tal cual y marca lo que pica. Y el cocinero ve la ficha técnica sin un
+ * euro. Sin elaboraciones ni modo cocina desde el 16-oct (0090).
  */
 
 async function elToken(page: Page): Promise<string> {
@@ -25,7 +26,7 @@ async function anadir(
   cantidad: string,
   unidad?: string,
 ) {
-  const editor = page.getByRole('dialog', { name: /la ficha$/ });
+  const editor = page.getByRole('dialog', { name: /^(Desgranar|Editar el escandallo)$/ });
   const libre = editor.getByPlaceholder(/Carne picada, salsa de la casa…|Otro ingrediente/).last();
   await libre.fill(buscado);
   await editor.getByRole('option', { name: new RegExp(nombre) }).click();
@@ -35,7 +36,7 @@ async function anadir(
   }
 }
 
-test('se desgrana un plato con su elaboración, y el escandallo dice lo que deja en cada canal', async ({
+test('se desgrana un plato, el escandallo dice lo que deja en cada canal y la ficha técnica lleva sus pasos', async ({
   page,
   request,
 }, info) => {
@@ -80,51 +81,35 @@ test('se desgrana un plato con su elaboración, y el escandallo dice lo que deja
   });
   await ejecutarEnLaApi(request, token, 'configurar_canal', { canal: 'uber_eats', activo: true });
 
-  // ── La salsa, con lo que rinde ──────────────────────────────────────────────
+  // ── Sin elaboraciones: su dirección de antes lleva a los escandallos (0090) ──
   await abrirSinQueSeCaiga(page, `${APP}#/escandallos/elaboraciones`);
-  await page.getByRole('button', { name: 'Nueva elaboración' }).first().click();
-  const nueva = page.getByRole('dialog', { name: 'Nueva elaboración' });
-  await nueva.getByLabel('Nombre').fill('Salsa de la casa');
-  await nueva.getByRole('textbox', { name: 'Lo que sale de hacerla una vez' }).fill('1');
-  await nueva.getByRole('button', { name: 'Crear' }).click();
-  const salsa = page.getByRole('dialog', { name: 'Salsa de la casa' });
-  await expect(salsa.getByText('Sin ficha todavía')).toBeVisible();
-  await salsa.getByRole('button', { name: 'Desgranar' }).click();
-  await anadir(page, 'mayo', 'Mayonesa', '1', 'l');
-  await page.getByLabel('Paso 1').fill('Mezclar en frío');
-  await page
-    .getByRole('dialog', { name: 'Escribir la ficha' })
-    .getByRole('button', { name: 'Guardar' })
-    .click();
-  await expect(salsa.getByText('Guardada')).toBeVisible();
-  await page.keyboard.press('Escape');
+  await expect(page).toHaveURL(/#\/escandallos\/escandallos/);
 
-  // ── El plato, desde «sin ficha» ─────────────────────────────────────────────
+  // ── El plato, desde «sin escandallo» ────────────────────────────────────────
   await abrirSinQueSeCaiga(page, `${APP}#/escandallos/resumen`);
   await page
-    .getByRole('list', { name: 'Sin ficha' })
+    .getByRole('list', { name: 'Sin escandallo' })
     .getByRole('button', { name: /Hamburguesa/ })
     .click();
   const ficha = page.getByRole('dialog', { name: 'Hamburguesa' });
   await ficha.getByRole('button', { name: 'Desgranar' }).click();
   await anadir(page, 'carne', 'Carne picada', '180', 'g');
   await anadir(page, 'brioche', 'Pan brioche', '1');
-  await anadir(page, 'salsa', 'Salsa de la casa', '30', 'ml');
+  await anadir(page, 'mayo', 'Mayonesa', '30', 'ml');
+  // El escandallo no lleva los pasos: eso es la ficha técnica.
+  await expect(page.getByLabel('Paso 1')).toHaveCount(0);
   await page
-    .getByRole('dialog', { name: 'Escribir la ficha' })
+    .getByRole('dialog', { name: 'Desgranar' })
     .getByRole('button', { name: 'Guardar' })
     .click();
   await expect(ficha.getByText('Guardada')).toBeVisible();
 
-  // La ficha: los gramos y los alérgenos, que vienen también de la salsa.
-  await expect(
-    ficha.getByRole('region', { name: 'Lo que lleva' }).getByText('180 g'),
-  ).toBeVisible();
+  // Los gramos y los alérgenos, que vienen del pan y de la mayonesa.
+  await expect(ficha.getByRole('region', { name: 'Desglose' }).getByText('180 g')).toBeVisible();
   await expect(ficha.getByText('Cereales con gluten')).toBeVisible();
   await expect(ficha.getByText('Huevos')).toBeVisible();
 
-  // El escandallo: 0,18 kg × 9,375 = 1,69 €; pan 0,40 €; 30 ml de salsa, 0,12 €.
-  await ficha.getByRole('tab', { name: 'Escandallo' }).click();
+  // El escandallo: 0,18 kg × 9,375 = 1,69 €; pan 0,40 €; 30 ml de mayonesa, 0,12 €.
   await expect(ficha.getByText('2,21 €').first()).toBeVisible();
   // 14,50 € con un 10 %: 13,18 € sin IVA; le quedan 10,97 € en sala y, con el 30 % de
   // Uber Eats (4,35 €), 6,62 €.
@@ -133,8 +118,8 @@ test('se desgrana un plato con su elaboración, y el escandallo dice lo que deja
   await expect(canales.getByText('6,62 €')).toBeVisible();
 
   // ── Cambiar la receta y recuperar la de antes ───────────────────────────────
-  await ficha.getByRole('button', { name: 'Editar' }).click();
-  const editor = page.getByRole('dialog', { name: 'Editar la ficha' });
+  await ficha.getByRole('button', { name: 'Editar el escandallo' }).click();
+  const editor = page.getByRole('dialog', { name: 'Editar el escandallo' });
   await editor.getByRole('textbox', { name: 'Cantidad de Carne picada' }).fill('200');
   await editor.getByRole('button', { name: 'Guardar' }).click();
   await ficha.getByText('Historial').click();
@@ -144,13 +129,37 @@ test('se desgrana un plato con su elaboración, y el escandallo dice lo que deja
   await expect(ficha.getByText('Recuperada: ya es la receta de ahora')).toBeVisible();
   await expect(historial.getByText(/^Recuperó la del /)).toBeVisible();
 
-  // ── El modo cocina, sin un euro ─────────────────────────────────────────────
-  await ficha.getByRole('button', { name: 'Modo cocina' }).click();
-  const cocina = page.getByRole('dialog', { name: 'Modo cocina · Hamburguesa' });
-  await expect(cocina.getByRole('list', { name: 'Lo que lleva' }).getByText('180 g')).toBeVisible();
-  await expect(cocina.getByText('€')).toHaveCount(0);
-  await cocina.getByRole('button', { name: 'Salir del modo cocina' }).click();
-  await expect(cocina).toHaveCount(0);
+  // ── La ficha técnica: lo que lleva sale del escandallo; los pasos, con su foto ──
+  await ficha.getByRole('button', { name: 'Ficha técnica' }).click();
+  await expect(page).toHaveURL(/#\/escandallos\/fichas/);
+  const tecnica = page.getByRole('dialog', { name: 'Hamburguesa' });
+  await expect(
+    tecnica.getByRole('region', { name: 'Lo que lleva' }).getByText('180 g'),
+  ).toBeVisible();
+  await tecnica.getByRole('button', { name: 'Escribir los pasos' }).click();
+  const pasos = page.getByRole('dialog', { name: 'Cómo se hace' });
+  await pasos.getByLabel('Paso 1').fill('Marcar la carne a fuego fuerte');
+  await pasos.getByLabel('Paso 2').fill('Montar con la mayonesa');
+  await pasos.getByRole('button', { name: 'Guardar' }).click();
+  await expect(tecnica.getByText('Marcar la carne a fuego fuerte')).toBeVisible();
+  await expect(tecnica.getByText('€')).toHaveCount(0);
+  // Una foto en el segundo paso, hecha aquí mismo.
+  const foto = await page.screenshot({
+    type: 'jpeg',
+    quality: 60,
+    clip: { x: 0, y: 0, width: 320, height: 240 },
+  });
+  await tecnica
+    .locator('input[type="file"]')
+    .nth(1)
+    .setInputFiles({ name: 'paso.jpg', mimeType: 'image/jpeg', buffer: foto });
+  await expect(tecnica.getByRole('img', { name: 'Paso 2' })).toBeVisible();
+  // Borrar el primer paso no le quita la foto al otro: se va con él y pasa a ser el 1.
+  await tecnica.getByRole('button', { name: 'Editar los pasos' }).click();
+  await pasos.getByLabel('Paso 1').fill('');
+  await pasos.getByRole('button', { name: 'Guardar' }).click();
+  await expect(tecnica.getByText('Marcar la carne a fuego fuerte')).toHaveCount(0);
+  await expect(tecnica.getByRole('img', { name: 'Paso 1' })).toBeVisible();
   await page.keyboard.press('Escape');
 
   // ── En la Carta: lo que se vende tal cual, de golpe, y lo que pica ──────────
@@ -186,7 +195,7 @@ test('se desgrana un plato con su elaboración, y el escandallo dice lo que deja
   await expect(page.getByRole('img', { name: 'Pica un poco' })).toBeVisible();
 });
 
-test('el cocinero ve la ficha entera y ni un euro', async ({ page, request }, info) => {
+test('el cocinero ve la ficha técnica entera y ni un euro', async ({ page, request }, info) => {
   const nombre = `Tortilla ${unico(info)}`;
   const rosa = await tokenDe(request, 'rosa@ejemplo.estook.com');
   const { productoId } = await ejecutarEnLaApi<{ productoId: string }>(
@@ -221,7 +230,7 @@ test('el cocinero ve la ficha entera y ni un euro', async ({ page, request }, in
   const ficha = page.getByRole('dialog', { name: nombre });
   await expect(ficha.getByText('3 ud')).toBeVisible();
   await expect(ficha.getByText('Cuajar')).toBeVisible();
-  await expect(ficha.getByRole('tab', { name: 'Escandallo' })).toHaveCount(0);
-  await expect(ficha.getByRole('button', { name: 'Editar' })).toHaveCount(0);
+  await expect(ficha.getByRole('button', { name: 'Editar los pasos' })).toHaveCount(0);
+  await expect(ficha.getByRole('button', { name: /foto/i })).toHaveCount(0);
   await expect(ficha.getByText(/€/)).toHaveCount(0);
 });

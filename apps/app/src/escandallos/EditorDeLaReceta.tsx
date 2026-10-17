@@ -26,16 +26,22 @@ import {
 } from './contrato.ts';
 
 /**
- * Escribir lo que lleva un plato o una elaboración, y cómo se hace (M9 · 2, 0087).
+ * Escribir lo que lleva un plato (el escandallo) o cómo se hace (la ficha técnica)
+ * (M9 · 2, 0087; separados en el repaso del 16-oct, 0090).
+ *
+ * Es la misma receta y el mismo guardado, pero **cada pestaña edita lo suyo**: el
+ * escandallo, los ingredientes y sus cantidades; la ficha técnica, los pasos, el tiempo
+ * y las notas. Lo que no se toca viaja tal cual estaba. Antes las dos cosas iban en la
+ * misma hoja, y Richi no sabía dónde se hacía cada una.
  *
  * «Primero la carta» (Richi, 15-oct): el plato ya existe y aquí **se desgrana**: el
  * ingrediente y el peso, y Estook saca el precio del Almacén. Como se pasa una receta
  * de un papel: **fila a fila, y siempre queda una libre al final**, igual que «Añadir
  * platos» de la Carta. Los pasos, lo mismo.
  *
- * El ingrediente se busca escribiendo, entre el Almacén y las elaboraciones. **Si no
- * está, se crea desde aquí** con su nombre y su unidad, sin precio (Plan, M9): el
- * plato dirá «falta el precio de 1» y no se inventa un coste.
+ * El ingrediente se busca escribiendo en el Almacén (las elaboraciones ya no se
+ * ofrecen: 0090). **Si no está, se crea desde aquí** con su nombre y su unidad, sin
+ * precio (Plan, M9): el plato dirá «falta el precio de 1» y no se inventa un coste.
  *
  * Guardar es confirmar (0086, pregunta 5): lo guardado es la receta de ahora, y lo de
  * antes queda en el historial.
@@ -73,20 +79,30 @@ function comoSeEscribe(numero: number): string {
   return String(Number(numero.toFixed(4))).replace('.', ',');
 }
 
+/** Un paso que se escribe, y de qué paso guardado viene (para que su foto le siga). */
+interface PasoQueSeEscribe {
+  readonly texto: string;
+  readonly de: number | null;
+}
+
 export function EditorDeLaReceta({
   datos,
+  que,
   alCerrar,
   alGuardar,
 }: {
   readonly datos: UnaFicha;
+  /** El escandallo (lo que lleva) o la ficha técnica (cómo se hace). */
+  readonly que: 'escandallo' | 'pasos';
   readonly alCerrar: () => void;
   readonly alGuardar: (frase: string) => void;
 }) {
   const { cliente, permisos } = usarSesion();
   const cache = useQueryClient();
   const refrescar = usarRefrescarLasFichas();
-  const lo = usarLectura<LoQuePuedeLlevar>('lo_que_puede_llevar');
+  const lo = usarLectura<LoQuePuedeLlevar>('lo_que_puede_llevar', {}, que === 'escandallo');
   const esElaboracion = datos.tipo === 'elaboracion';
+  const enLosPasos = que === 'pasos';
 
   const [nombre, setNombre] = useState(datos.nombre);
   const [rinde, setRinde] = useState(
@@ -106,7 +122,10 @@ export function EditorDeLaReceta({
     })),
     VACIA(),
   ]);
-  const [pasos, setPasos] = useState<readonly string[]>([...datos.receta.pasos, '']);
+  const [pasos, setPasos] = useState<readonly PasoQueSeEscribe[]>([
+    ...datos.receta.pasos.map((texto, i) => ({ texto, de: i })),
+    { texto: '', de: null },
+  ]);
   const [minutos, setMinutos] = useState(
     datos.receta.minutos === null ? '' : String(datos.receta.minutos),
   );
@@ -158,11 +177,14 @@ export function EditorDeLaReceta({
   const minutosMal =
     minutosLeidos !== null &&
     (!Number.isInteger(minutosLeidos) || minutosLeidos < 1 || minutosLeidos > 2880);
-  const sePuede =
-    sinElegir.length === 0 &&
-    sinCantidad.length === 0 &&
-    !minutosMal &&
-    (!esElaboracion || (rindeLeido !== null && nombre.trim() !== ''));
+  const sePuede = enLosPasos
+    ? !minutosMal
+    : sinElegir.length === 0 &&
+      sinCantidad.length === 0 &&
+      (!esElaboracion || (rindeLeido !== null && nombre.trim() !== ''));
+  const pasosEscritos = pasos
+    .map((p) => ({ ...p, texto: p.texto.trim() }))
+    .filter((p) => p.texto !== '');
 
   async function guardar() {
     setGuardando(true);
@@ -174,15 +196,26 @@ export function EditorDeLaReceta({
     }>('guardar_ficha', {
       ...(esElaboracion ? { elaboracion_id: datos.id } : { plato_id: datos.id }),
       version: datos.receta.version,
-      lineas: llenas.map((f) => ({
-        ...(f.tipo === 'elaboracion' ? { elaboracion_id: f.refId } : { producto_id: f.refId }),
-        cantidad: leerCantidad(f.cantidad),
-        unidad: f.unidad,
-        nota: f.nota.trim() === '' ? null : f.nota.trim(),
-      })),
-      pasos: pasos.map((p) => p.trim()).filter((p) => p !== ''),
-      notas: notas.trim() === '' ? null : notas.trim(),
-      tiempo_minutos: minutosLeidos,
+      // Lo que no se edita en esta hoja viaja tal cual estaba.
+      lineas: enLosPasos
+        ? datos.receta.lineas.map((l) => ({
+            ...(l.tipo === 'elaboracion' ? { elaboracion_id: l.refId } : { producto_id: l.refId }),
+            cantidad: l.cantidad,
+            unidad: l.unidad,
+            nota: l.nota,
+          }))
+        : llenas.map((f) => ({
+            ...(f.tipo === 'elaboracion' ? { elaboracion_id: f.refId } : { producto_id: f.refId }),
+            cantidad: leerCantidad(f.cantidad),
+            unidad: f.unidad,
+            nota: f.nota.trim() === '' ? null : f.nota.trim(),
+          })),
+      pasos: enLosPasos ? pasosEscritos.map((p) => p.texto) : datos.receta.pasos,
+      // Cada paso, con la foto del que era (0090): borrar el segundo no le pasa su foto
+      // al tercero.
+      ...(enLosPasos ? { foto_de_antes: pasosEscritos.map((p) => p.de) } : {}),
+      notas: enLosPasos ? (notas.trim() === '' ? null : notas.trim()) : datos.receta.notas,
+      tiempo_minutos: enLosPasos ? minutosLeidos : datos.receta.minutos,
       ...(esElaboracion
         ? { nombre: nombre.trim(), rinde_cantidad: rindeLeido, rinde_unidad: rindeUnidad }
         : {}),
@@ -201,7 +234,11 @@ export function EditorDeLaReceta({
     alGuardar(cambios.length === 0 ? 'Sin cambios' : 'Guardada');
   }
 
-  const titulo = datos.receta.lineas.length === 0 ? 'Escribir la ficha' : 'Editar la ficha';
+  const titulo = enLosPasos
+    ? 'Cómo se hace'
+    : datos.receta.lineas.length === 0
+      ? 'Desgranar'
+      : 'Editar el escandallo';
 
   return (
     <Hoja
@@ -231,7 +268,7 @@ export function EditorDeLaReceta({
       <div className="flex flex-col gap-e5 pt-e3">
         {error !== null && <ErrorEnCristiano error={error} />}
 
-        {esElaboracion && (
+        {!enLosPasos && esElaboracion && (
           <div className="grid grid-cols-1 gap-e3 sm:grid-cols-[minmax(0,1fr)_12rem]">
             <Campo
               etiqueta="Nombre"
@@ -261,92 +298,117 @@ export function EditorDeLaReceta({
           </div>
         )}
 
-        <section aria-label="Lo que lleva" className="flex flex-col gap-e2">
-          <h3 className="text-cuerpo font-semibold">
-            Lo que lleva{esElaboracion ? '' : ', por ración'}
-          </h3>
-          <ol className="flex flex-col gap-e2">
-            {filas.map((fila, i) => (
-              <LineaQueSeEscribe
-                key={fila.clave}
-                fila={fila}
-                numero={i + 1}
-                lo={lo.data}
-                abierta={buscando === fila.clave}
-                alBuscar={(abierta) => {
-                  setBuscando(abierta ? fila.clave : null);
-                }}
-                alCambiar={cambiar}
-                alQuitar={() => {
-                  quitar(fila);
-                }}
-                puedeCrear={puedeEditar(permisos, 'app.almacen')}
-                alCrear={() => {
-                  void crearEnElAlmacen(fila);
-                }}
-                propio={datos.tipo === 'elaboracion' ? datos.id : null}
-              />
-            ))}
-          </ol>
-        </section>
+        {!enLosPasos && (
+          <section aria-label="Lo que lleva" className="flex flex-col gap-e2">
+            <h3 className="text-cuerpo font-semibold">
+              Lo que lleva{esElaboracion ? '' : ', por ración'}
+            </h3>
+            <ol className="flex flex-col gap-e2">
+              {filas.map((fila, i) => (
+                <LineaQueSeEscribe
+                  key={fila.clave}
+                  fila={fila}
+                  numero={i + 1}
+                  lo={lo.data}
+                  abierta={buscando === fila.clave}
+                  alBuscar={(abierta) => {
+                    setBuscando(abierta ? fila.clave : null);
+                  }}
+                  alCambiar={cambiar}
+                  alQuitar={() => {
+                    quitar(fila);
+                  }}
+                  puedeCrear={puedeEditar(permisos, 'app.almacen')}
+                  alCrear={() => {
+                    void crearEnElAlmacen(fila);
+                  }}
+                />
+              ))}
+            </ol>
+          </section>
+        )}
 
-        <section aria-label="Cómo se hace" className="flex flex-col gap-e2">
-          <h3 className="text-cuerpo font-semibold">Cómo se hace</h3>
-          <ol className="flex flex-col gap-e2">
-            {pasos.map((paso, i) => (
-              <li key={i} className="flex items-start gap-e2">
-                <span className="mt-[10px] grid size-[26px] shrink-0 place-items-center rounded-redondo bg-fondo text-etiqueta font-bold">
-                  {i + 1}
-                </span>
+        {enLosPasos && (
+          <>
+            <section aria-label="Cómo se hace" className="flex flex-col gap-e2">
+              <h3 className="text-cuerpo font-semibold">Los pasos</h3>
+              <p className="text-secundario text-texto-suave">
+                Uno por paso, como se lo explicarías a alguien nuevo. Las fotos se ponen después, en
+                cada paso.
+              </p>
+              <ol className="flex flex-col gap-e2">
+                {pasos.map((paso, i) => {
+                  const foto =
+                    paso.de === null ? null : (datos.receta.fotosDeLosPasos?.[paso.de] ?? null);
+                  return (
+                    <li key={i} className="flex items-start gap-e2">
+                      <span className="mt-[10px] grid size-[26px] shrink-0 place-items-center rounded-redondo bg-fondo text-etiqueta font-bold">
+                        {i + 1}
+                      </span>
+                      <textarea
+                        aria-label={`Paso ${String(i + 1)}`}
+                        value={paso.texto}
+                        maxLength={400}
+                        rows={2}
+                        placeholder={i === 0 ? 'Marcar la carne a fuego fuerte…' : ''}
+                        onChange={(e) => {
+                          const valor = e.target.value;
+                          setPasos((antes) => {
+                            const despues = antes.map((p, j) =>
+                              j === i ? { ...p, texto: valor } : p,
+                            );
+                            const ultimo = despues[despues.length - 1];
+                            return ultimo !== undefined &&
+                              ultimo.texto.trim() !== '' &&
+                              despues.length < 40
+                              ? [...despues, { texto: '', de: null }]
+                              : despues;
+                          });
+                        }}
+                        className={`${CAJA} min-h-[3.25rem] py-e2`}
+                      />
+                      {/* Su foto, en pequeño: dice que el paso la lleva y que va con él. */}
+                      {foto !== null && (
+                        <img
+                          src={foto}
+                          alt=""
+                          className="mt-e1 size-[44px] shrink-0 rounded-medio bg-fondo object-cover"
+                        />
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+
+            <div className="grid grid-cols-1 gap-e3 sm:grid-cols-[10rem_minmax(0,1fr)]">
+              <Campo
+                etiqueta="Tiempo"
+                inputMode="numeric"
+                value={minutos}
+                detras="min"
+                onChange={(e) => {
+                  setMinutos(e.target.value.replace(/\D/g, ''));
+                }}
+                {...(minutosMal ? { error: 'Entre 1 y 2.880 minutos' } : {})}
+              />
+              <Envoltorio id="notas-de-la-receta" etiqueta="Notas · emplatado, conservación">
                 <textarea
-                  aria-label={`Paso ${String(i + 1)}`}
-                  value={paso}
-                  maxLength={400}
+                  id="notas-de-la-receta"
+                  value={notas}
+                  maxLength={1000}
                   rows={2}
-                  placeholder={i === 0 ? 'Marcar la carne a fuego fuerte…' : ''}
                   onChange={(e) => {
-                    const valor = e.target.value;
-                    setPasos((antes) => {
-                      const despues = antes.map((p, j) => (j === i ? valor : p));
-                      const ultimo = despues[despues.length - 1];
-                      return ultimo !== undefined && ultimo.trim() !== '' && despues.length < 40
-                        ? [...despues, '']
-                        : despues;
-                    });
+                    setNotas(e.target.value);
                   }}
                   className={`${CAJA} min-h-[3.25rem] py-e2`}
                 />
-              </li>
-            ))}
-          </ol>
-        </section>
+              </Envoltorio>
+            </div>
+          </>
+        )}
 
-        <div className="grid grid-cols-1 gap-e3 sm:grid-cols-[10rem_minmax(0,1fr)]">
-          <Campo
-            etiqueta="Tiempo"
-            inputMode="numeric"
-            value={minutos}
-            detras="min"
-            onChange={(e) => {
-              setMinutos(e.target.value.replace(/\D/g, ''));
-            }}
-            {...(minutosMal ? { error: 'Entre 1 y 2.880 minutos' } : {})}
-          />
-          <Envoltorio id="notas-de-la-receta" etiqueta="Notas · emplatado, conservación">
-            <textarea
-              id="notas-de-la-receta"
-              value={notas}
-              maxLength={1000}
-              rows={2}
-              onChange={(e) => {
-                setNotas(e.target.value);
-              }}
-              className={`${CAJA} min-h-[3.25rem] py-e2`}
-            />
-          </Envoltorio>
-        </div>
-
-        {sinElegir.length > 0 && (
+        {!enLosPasos && sinElegir.length > 0 && (
           <p className="text-secundario text-atencion">
             Elige {sinElegir.length === 1 ? `«${sinElegir[0]?.nombre ?? ''}»` : 'cada ingrediente'}{' '}
             de la lista, o créalo en el Almacén.
@@ -369,7 +431,6 @@ function LineaQueSeEscribe({
   alQuitar,
   puedeCrear,
   alCrear,
-  propio,
 }: {
   readonly fila: Fila;
   readonly numero: number;
@@ -380,23 +441,14 @@ function LineaQueSeEscribe({
   readonly alQuitar: () => void;
   readonly puedeCrear: boolean;
   readonly alCrear: () => void;
-  /** La elaboración que se está escribiendo: no se ofrece dentro de sí misma. */
-  readonly propio: string | null;
 }) {
   const texto = sinAcentos(fila.nombre.trim().toLocaleLowerCase('es'));
   const opciones = useMemo(() => {
     if (lo === undefined || texto === '' || fila.refId !== null) return [];
     const casa = (nombre: string) => sinAcentos(nombre.toLocaleLowerCase('es')).includes(texto);
+    // Sin elaboraciones (0090): por ahora no se ofrecen. Las que ya estaban en una
+    // receta siguen ahí, con su nombre.
     return [
-      ...lo.elaboraciones
-        .filter((e) => e.id !== propio && casa(e.nombre))
-        .map((e) => ({
-          tipo: 'elaboracion' as const,
-          id: e.id,
-          nombre: e.nombre,
-          unidad: e.unidad,
-          de: 'Elaboración',
-        })),
       ...lo.productos
         .filter((p) => casa(p.nombre))
         .map((p) => ({
@@ -407,7 +459,7 @@ function LineaQueSeEscribe({
           de: p.categoria ?? 'Almacén',
         })),
     ].slice(0, 8);
-  }, [lo, texto, fila.refId, propio]);
+  }, [lo, texto, fila.refId]);
   const exacto = opciones.some((o) => sinAcentos(o.nombre.toLocaleLowerCase('es')) === texto);
   // Lo que se propone, a la vista: escribiendo en la última fila, quedaba debajo del borde.
   const propuestas = useRef<HTMLUListElement>(null);

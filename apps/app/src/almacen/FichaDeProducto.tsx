@@ -13,9 +13,13 @@ import {
   comoSeDiceElTipo,
   comoSePide,
   conIva,
+  conUnidadAproximada,
   plural,
+  convertir,
   presentacionDe,
+  unidadesQueSirven,
   type ComoSeCompra,
+  type UnidadDeUso,
   type Zona,
 } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
@@ -25,14 +29,15 @@ import {
   Botones,
   Campo,
   Cargando,
-  Cifra,
   ErrorEnCristiano,
   Etiqueta,
+  GrupoDePlegables,
   Hoja,
   Interruptor,
   PanelLateral,
-  Proporcion,
+  Plegable,
   Selector,
+  clases,
   usarDeshacer,
 } from '@estook/ui';
 import type { Centimos } from '@estook/dominio';
@@ -50,7 +55,18 @@ import { HistoricoDePrecios } from './HistoricoDePrecios.tsx';
 import { FotoDeLaFicha } from './FotoDeLaFicha.tsx';
 import { AnularMovimiento } from './AnularMovimiento.tsx';
 import { PropuestaDeMinimo } from './MinimosPropuestos.tsx';
-import { IconoAnadir, IconoCongelado, IconoQuitar } from '@estook/iconos';
+import {
+  IconoAnadir,
+  IconoCalendario,
+  IconoCongelado,
+  IconoDinero,
+  IconoEditar,
+  IconoEscandallos,
+  IconoHistorial,
+  IconoInfo,
+  IconoQuitar,
+} from '@estook/iconos';
+import { LosAlergenos } from '../escandallos/Alergenos.tsx';
 import {
   COMO_SE_LLAMA_EL_MOVIMIENTO,
   NOMBRE_DE_LA_CATEGORIA_FISCAL,
@@ -74,15 +90,15 @@ import {
  * móvil el mismo componente se comporta como una hoja de abajo arriba, que es lo
  * que hace `PanelLateral`.
  *
- * ── Lo que hay dentro, en el orden en que hace falta ─────────────────────────
+ * ── Lo que hay dentro, en el orden en que hace falta (repaso del 16-oct) ─────
  *
- *   1. Lo que hay en cámara, y hasta cuándo dura
- *   2. Los dos botones: ha llegado y ha salido. Cuadrar la cámara se abre desde
- *      la propia cifra —«¿no cuadra?»—, que es donde se nota
- *   3. Lo que cuesta, con su histórico por proveedor
- *   4. El libro de movimientos
- *   5. Lotes y caducidades
- *   6. La ficha, para corregirla
+ *   1. Qué es: la foto, la categoría, el proveedor, el envase y los alérgenos, con
+ *      «Editar» al lado
+ *   2. Cuánto hay: una cifra, la barra con el mínimo y tres datos (vale, se gasta,
+ *      se acaba). Cuadrar la cámara se abre desde ahí —«¿no cuadra?»—
+ *   3. Los dos botones: ha salido y ha llegado
+ *   4. Plegado, cada cosa con su resumen a la vista: el precio, las caducidades,
+ *      los movimientos, el aprovechamiento y los demás datos
  *
  * El orden no es decorativo: quien abre esto en mitad de un servicio viene a
  * apuntar algo, no a editar un rendimiento.
@@ -143,6 +159,14 @@ export function FichaDeProducto({
       : cuandoSeAgota(datos.producto.seAgotaEn, datos.producto.diasDeCobertura);
   const vigente = datos?.precios.find((precio) => precio.vigente);
   const anteriores = datos?.precios.filter((precio) => !precio.vigente) ?? [];
+  const valeAlgo =
+    datos !== undefined &&
+    datos.puedeVerPrecios &&
+    datos.producto.valorCentimos !== null &&
+    datos.producto.valorCentimos !== undefined;
+  const ultimo = datos?.movimientos[0];
+  const resumenDeLosLotes =
+    datos === undefined ? { texto: '', tono: 'neutro' as const } : loDeLosLotes(datos.lotes);
 
   return (
     <PanelLateral
@@ -155,7 +179,7 @@ export function FichaDeProducto({
       {consulta.isLoading && <Cargando que="la ficha" />}
 
       {datos !== undefined && (
-        <div className="flex flex-col gap-e4">
+        <div className="flex flex-col gap-e4 pt-e3">
           {error !== null && <ErrorEnCristiano error={error} />}
           {/*
             ── Por qué esto NO lleva «Deshacer» ─────────────────────────────
@@ -205,19 +229,28 @@ export function FichaDeProducto({
             verificar» sigue en la lista, que es lo que es.
           */}
 
-          {/* ── 0 · De qué producto estamos hablando ───────────────────── */}
-
           {/*
-            ── Por qué esto es lo primero, y por qué son pastillas ───────────
+            ── La ficha, rehecha (repaso del 16-oct) ───────────────────────────
 
-            El panel se abre desde tres sitios y en todos hace falta lo mismo
-            para reconocerlo: de qué categoría es, de quién viene y en qué
-            envase. Estaba, y estaba abajo del todo, en la rejilla de «La ficha»,
-            que es lo último que se lee. Así que la ficha empezaba con una cifra
-            sin contexto.
+            Richi, con la del barril: «es muy fea y desordenada; debería ser la ficha
+            arriba, y las caducidades, los movimientos y eso, más abajo, expansibles y
+            más organizados». Estaba al revés: la cifra de lo que hay arriba, sin
+            contexto, repetida dos veces («4602 g» y «● 4602 g Lo que hay»), una rejilla
+            de cinco frases con «95,2381 g al día», y debajo, abiertas y de golpe, cinco
+            tarjetas: precio, libro, lotes, ficha y aprovechamiento.
+
+            Ahora, de arriba abajo, lo que hace un inventario de verdad (MarketMan,
+            Apicbase): **qué es** (foto, categoría, proveedor, envase, alérgenos),
+            **cuánto hay** (una cifra, una barra con el mínimo marcado y tres datos en
+            fila), **las dos cosas que se hacen** (ha llegado, ha salido) y, plegado, lo
+            que se consulta de vez en cuando, cada cosa con su resumen a la vista.
           */}
-          {/* Y su foto al lado, que es lo que más rápido lo reconoce (entrega V). */}
-          <div className="flex items-start gap-e3">
+
+          {/* ── 1 · Qué es ─────────────────────────────────────────────── */}
+          <section
+            aria-label="La ficha"
+            className="flex gap-e4 rounded-mayor border border-borde bg-superficie p-e4 [box-shadow:var(--sombra-tarjeta)]"
+          >
             <FotoDeLaFicha
               datos={datos}
               puedeTocar={puedeTocar}
@@ -231,144 +264,157 @@ export function FichaDeProducto({
                 setError(fallo);
               }}
             />
-            <div className="flex min-w-0 flex-wrap items-center gap-e2">
-              {/* De dónde es, primero: es lo que dice de qué almacén hablamos. */}
-              <Chip>{NOMBRE_DE_LA_ZONA[datos.producto.zona]}</Chip>
-              {datos.producto.categoria !== null && <Chip>{datos.producto.categoria}</Chip>}
-              {datos.producto.proveedor !== null && <Chip>{datos.producto.proveedor}</Chip>}
-              {datos.producto.formato !== null && <Chip>{datos.producto.formato}</Chip>}
-              {datos.producto.congelado && (
-                <Etiqueta tono="info">
-                  {datos.producto.congeladoCuanto === null
-                    ? 'congelado'
-                    : `${conUnidadDeUso(datos.producto.congeladoCuanto, datos.producto.unidadDeUso)} congelados`}
-                </Etiqueta>
+            <div className="flex min-w-0 flex-1 flex-col gap-e1">
+              <p className="text-secundario text-texto-suave">
+                {[NOMBRE_DE_LA_ZONA[datos.producto.zona], datos.producto.categoria]
+                  .filter((t): t is string => t !== null)
+                  .join(' · ')}
+              </p>
+              {datos.producto.proveedor === null ? (
+                <p className="text-cuerpo text-texto-suave">Sin proveedor</p>
+              ) : (
+                <p className="text-cuerpo font-semibold">{datos.producto.proveedor}</p>
               )}
-              {!datos.producto.activo && <Etiqueta>desactivado</Etiqueta>}
+              <p className="text-secundario text-texto-suave">{queEnvase(datos.producto)}</p>
+              {(datos.alergenos.length > 0 ||
+                datos.producto.congelado ||
+                !datos.producto.activo) && (
+                <div className="flex flex-wrap items-center gap-e2 pt-e1">
+                  {datos.alergenos.length > 0 && (
+                    <LosAlergenos alergenos={datos.alergenos} lado={20} enUnaLinea />
+                  )}
+                  {datos.producto.congelado && (
+                    <Etiqueta tono="info">
+                      {datos.producto.congeladoCuanto === null
+                        ? 'congelado'
+                        : `${conUnidadDeUso(datos.producto.congeladoCuanto, datos.producto.unidadDeUso)} congelados`}
+                    </Etiqueta>
+                  )}
+                  {!datos.producto.activo && <Etiqueta>desactivado</Etiqueta>}
+                </div>
+              )}
             </div>
-          </div>
+            {puedeTocar && (
+              <div className="-mr-e2 -mt-e2 shrink-0 self-start">
+                <Boton
+                  tono="texto"
+                  tamano="s"
+                  icono={<IconoEditar size={16} />}
+                  onClick={() => {
+                    setEditando(true);
+                  }}
+                >
+                  Editar
+                </Boton>
+              </div>
+            )}
+          </section>
 
-          {/* ── 1 · Lo que hay ─────────────────────────────────────────── */}
-
-          {/*
-            ── Una etiqueta y su dato, y solo lo que hay ─────────────────────
-            Eran cinco frases sueltas —«llevo 1 día de historia y necesito 7
-            para no inventarme una cifra», «mínimo puesto a mano», «última línea
-            del libro de movimientos»— y había que leerlas todas para saber cómo
-            estaba el producto. Ahora es una rejilla: qué, y cuánto.
-          */}
-          <section className="flex flex-col gap-e3 rounded-mayor border border-borde bg-superficie p-e4 [box-shadow:var(--sombra-tarjeta)]">
-            <div className="flex flex-wrap items-start justify-between gap-e2">
-              <Cifra
-                etiqueta="Lo que hay en cámara"
-                valor={datos.producto.cantidad}
-                formato={(v) => conUnidadDeUso(v, datos.producto.unidadDeUso)}
-                origen="Según el libro de movimientos"
-              />
+          {/* ── 2 · Cuánto hay ─────────────────────────────────────────── */}
+          <section
+            aria-label="Lo que hay"
+            className="flex flex-col gap-e4 rounded-mayor border border-borde bg-superficie p-e4 [box-shadow:var(--sombra-tarjeta)]"
+          >
+            <div className="flex items-start justify-between gap-e3">
+              <div className="flex min-w-0 flex-col gap-e1">
+                <p className="text-secundario text-texto-suave">Lo que hay en cámara</p>
+                <p className="text-[2.25rem] font-bold leading-none tracking-[-0.02em] tabular-nums">
+                  {conUnidadDeUso(datos.producto.cantidad, datos.producto.unidadDeUso)}
+                </p>
+              </div>
               <Etiqueta tono={TONO_DEL_ESTADO[datos.producto.estado]}>
                 {NOMBRE_DEL_ESTADO[datos.producto.estado]}
               </Etiqueta>
             </div>
 
             {/*
-              ── La barra del mínimo ───────────────────────────────────────
-              «La cifra manda, el historial explica» (Manifiesto 12), y una
-              cifra sola no dice si es mucho o poco. Con el mínimo puesto, esto
-              contesta de un vistazo y de lejos —que es como se mira una pantalla
-              en una cocina— lo que la cifra sola obliga a calcular.
+              La barra: lo que hay frente al mínimo, con una raya donde está el mínimo.
+              Contesta de lejos «¿llego?», que es como se mira una pantalla en una
+              cocina (Manifiesto 12). Sin mínimo no hay con qué comparar, y no sale.
             */}
             {datos.producto.minimo !== null && datos.producto.minimo > 0 && (
               <BarraDelMinimo
                 hay={datos.producto.cantidad}
                 minimo={datos.producto.minimo}
                 unidadDeUso={datos.producto.unidadDeUso}
+                calculado={datos.producto.minimoCalculado === true}
               />
             )}
 
-            <dl className="grid grid-cols-[auto_1fr] gap-x-e4 gap-y-e1 text-secundario">
-              {datos.puedeVerPrecios &&
-                datos.producto.valorCentimos !== null &&
-                datos.producto.valorCentimos !== undefined && (
-                  <Par que="Vale">
+            {/* Tres datos en fila, cada uno con su nombre encima: lo que antes eran
+                cinco frases que había que leer enteras. */}
+            {(valeAlgo || datos.producto.consumo.porDia !== null || seAgota !== null) && (
+              <dl className="grid grid-cols-3 gap-e2">
+                {valeAlgo && (
+                  <Dato
+                    que="Vale"
+                    pista={datos.producto.valorEsEstimado === true ? 'a precio de hoy' : null}
+                  >
                     {comoDinero(datos.producto.valorCentimos)}
-                    {datos.producto.valorEsEstimado === true && (
-                      <span className="font-normal text-texto-suave"> · a su precio de hoy</span>
-                    )}
-                  </Par>
+                  </Dato>
                 )}
-              {datos.producto.minimo !== null && (
-                <Par que="Mínimo">
-                  {conUnidadDeUso(datos.producto.minimo, datos.producto.unidadDeUso)}
-                  {datos.producto.minimoCalculado === true && (
-                    <span className="font-normal text-texto-suave">
-                      {' '}
-                      · lo rehace Estook cada lunes
-                    </span>
-                  )}
-                </Par>
-              )}
-              {/* El que propone Estook (M8 · 0078, 3A), si se separa del que hay. */}
-              <PropuestaDeMinimo producto={datos.producto} />
-              {/* Solo con algo congelado: es lo que decide su aviso (0049). */}
-              {datos.producto.congelado && (
-                <Par que="Congelado aguanta">
-                  {plural(datos.producto.congeladoAguantaMeses, 'mes', 'meses')}
-                </Par>
-              )}
-              {datos.producto.consumo.porDia !== null && (
-                <Par que="Se gasta">
-                  {conUnidadDeUso(datos.producto.consumo.porDia, datos.producto.unidadDeUso)} al día
-                </Par>
-              )}
-              {seAgota !== null && <Par que="Se acaba">{seAgota}</Par>}
-              {datos.producto.sugerencia !== null && (
-                <Par que="Pide">
-                  {/* En cajas enteras, como se pide (M7): «2 × Caja 10 kg». */}
-                  {comoSePide(
-                    datos.producto.sugerencia.formatos,
-                    datos.producto.formato,
-                    datos.producto.factor,
-                    datos.producto.unidadDeUso,
-                  )}
-                  <span className="font-normal text-texto-suave">
-                    {' '}
-                    · {datos.producto.sugerencia.motivo}
-                  </span>
-                </Par>
-              )}
-            </dl>
-
+                {datos.producto.consumo.porDia !== null && (
+                  <Dato que="Se gasta" pista="al día">
+                    {conUnidadAproximada(datos.producto.consumo.porDia, datos.producto.unidadDeUso)}
+                  </Dato>
+                )}
+                {seAgota !== null && <Dato que="Se acaba">{seAgota.replace(/^el /, '')}</Dato>}
+              </dl>
+            )}
             {datos.producto.consumo.porDia === null && (
               <p className="text-etiqueta text-texto-tenue">
                 Con unos días de movimientos, aquí sale cuánto se gasta y cuándo se acaba.
               </p>
             )}
 
-            {puedeTocar && (
-              <div>
-                <Boton
-                  tono="texto"
+            {/* El que propone Estook (M8 · 0078, 3A), si se separa del que hay. */}
+            <PropuestaDeMinimo producto={datos.producto} />
+
+            {datos.producto.sugerencia !== null && (
+              <div className="flex flex-col gap-e1 rounded-grande bg-naranja-suave px-e3 py-e2">
+                <p className="text-secundario">
+                  {/* En cajas enteras, como se pide (M7): «2 × Caja 10 kg». */}
+                  Pide{' '}
+                  <strong className="font-semibold">
+                    {comoSePide(
+                      datos.producto.sugerencia.formatos,
+                      datos.producto.formato,
+                      datos.producto.factor,
+                      datos.producto.unidadDeUso,
+                    )}
+                  </strong>
+                </p>
+                <p className="text-etiqueta text-texto-suave">{datos.producto.sugerencia.motivo}</p>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-e2">
+              {puedeTocar ? (
+                <button
+                  type="button"
                   onClick={() => {
                     setHaciendo('ajuste');
                   }}
+                  className="min-h-toque text-left text-secundario font-medium text-texto-suave underline decoration-borde-fuerte underline-offset-4 hover:text-texto"
                 >
                   ¿No cuadra lo que hay? Corrígelo
-                </Boton>
-              </div>
-            )}
+                </button>
+              ) : (
+                <span />
+              )}
+              {/* Mandarlo al chat como tarjeta (C2 · 0075): «se ha acabado esto». */}
+              <AlChat tarjeta={{ tipo: 'producto', id: datos.producto.id }} discreto />
+            </div>
           </section>
 
           {/*
-            ── 2 · Las dos cosas que se hacen delante de una cámara ────────
-
-            Eran tres botones del mismo tamaño —ha llegado, ha salido, ajustar— y
-            decían que las tres cosas eran igual de normales. No lo son: entrar y
-            salir es el día a día; cuadrar es la excepción. «Ajustar lo que hay»
-            no debería estar ahí, y no está: se abre desde la cifra de arriba,
-            «¿no cuadra?», que es exactamente donde alguien nota que no cuadra.
+            ── 3 · Las dos cosas que se hacen delante de una cámara ────────
+            Entrar y salir es el día a día; cuadrar es la excepción y se abre desde la
+            cifra, «¿no cuadra?». Una encima de otra: al lado, en un móvil, cada frase
+            se partía en dos líneas.
           */}
           {puedeTocar && (
-            <Botones>
+            <div className="flex flex-col gap-e2">
               <Boton
                 tono="principal"
                 icono={<IconoAnadir size={18} />}
@@ -387,356 +433,368 @@ export function FichaDeProducto({
               >
                 Ha salido género
               </Boton>
-            </Botones>
+            </div>
           )}
 
-          {/* Mandarlo al chat como tarjeta (C2 · 0075): «se ha acabado esto». */}
-          <div>
-            <AlChat tarjeta={{ tipo: 'producto', id: datos.producto.id }} />
-          </div>
-
-          {/* ── 3 · Lo que cuesta ─────────────────────────────────────── */}
-
-          {datos.puedeVerPrecios && (
-            <Seccion
-              titulo="Lo que cuesta"
-              accion={
-                puedeTocarPrecios ? (
-                  <Boton
-                    tono="secundario"
-                    onClick={() => {
-                      setHaciendo('precio');
-                    }}
-                  >
-                    Cambiar el precio
-                  </Boton>
-                ) : null
-              }
-            >
-              {datos.producto.precioCentimos === null ||
-              datos.producto.precioCentimos === undefined ? (
-                <p className="text-secundario text-texto-suave">
-                  Sin precio. Se usa igual, y cuenta cero hasta que lo tenga.
-                </p>
-              ) : (
-                <>
-                  <p className="text-cuerpo">
-                    <strong>{comoDinero(datos.producto.precioCentimos)}</strong>{' '}
-                    <span className="text-texto-suave">{loQueEsElPrecio(datos.producto)}</span>
+          {/* ── 4 · Lo que se consulta de vez en cuando, plegado ────────── */}
+          <GrupoDePlegables titulo="Más de este producto">
+            {datos.puedeVerPrecios && (
+              <Plegable
+                titulo="Precio"
+                icono={<IconoDinero size={18} />}
+                resumen={
+                  datos.producto.precioCentimos === null ||
+                  datos.producto.precioCentimos === undefined
+                    ? 'Sin precio'
+                    : elPrecioEnCorto(datos.producto, datos.producto.precioCentimos)
+                }
+                tono={
+                  datos.producto.precioCentimos === null ||
+                  datos.producto.precioCentimos === undefined
+                    ? 'atencion'
+                    : 'neutro'
+                }
+              >
+                {datos.producto.precioCentimos === null ||
+                datos.producto.precioCentimos === undefined ? (
+                  <p className="text-secundario text-texto-suave">
+                    Se usa igual, y cuenta cero hasta que lo tenga.
                   </p>
-                  {/*
-                    Se guarda sin IVA, que es lo que cuesta de verdad al negocio:
-                    el IVA de compra se recupera. Y al lado, con IVA, que es lo que
-                    dice el ticket, para reconocerlo de un vistazo.
-                  */}
-                  {datos.producto.ivaDeCompra !== null && datos.producto.ivaDeCompra > 0 && (
-                    <p className="text-etiqueta text-texto-suave">
-                      Sin IVA. Con IVA ({comoSeDiceElTipo(datos.producto.ivaDeCompra)}),{' '}
-                      {comoDinero(
-                        conIva(centimos(datos.producto.precioCentimos), datos.producto.ivaDeCompra),
-                      )}
-                      .
-                    </p>
-                  )}
-                  {/*
-                    Quién lo puso y desde cuándo. «Lo que hace cada uno queda con
-                    su nombre» (Manifiesto 8), y un precio mal metido se arrastra a
-                    todos los escandallos.
-                  */}
-                  {vigente !== undefined && (
-                    <p className="text-etiqueta text-texto-tenue">
-                      Desde el {comoSeLeeLaFecha(vigente.desde)}
-                      {vigente.proveedor === null ? '' : ` · ${vigente.proveedor}`}
-                      {vigente.quien === null ? '' : ` · lo puso ${vigente.quien}`}
-                    </p>
-                  )}
-                </>
-              )}
+                ) : (
+                  <div className="flex flex-col gap-e1">
+                    {/*
+                      Se guarda sin IVA, que es lo que cuesta de verdad al negocio:
+                      el IVA de compra se recupera. Y al lado, con IVA, que es lo que
+                      dice el ticket, para reconocerlo de un vistazo.
+                    */}
+                    {datos.producto.ivaDeCompra !== null && datos.producto.ivaDeCompra > 0 && (
+                      <p className="text-secundario text-texto-suave">
+                        Sin IVA. Con IVA ({comoSeDiceElTipo(datos.producto.ivaDeCompra)}),{' '}
+                        {comoDinero(
+                          conIva(
+                            centimos(datos.producto.precioCentimos),
+                            datos.producto.ivaDeCompra,
+                          ),
+                        )}
+                        .
+                      </p>
+                    )}
+                    {/*
+                      Quién lo puso y desde cuándo. «Lo que hace cada uno queda con su
+                      nombre» (Manifiesto 8), y un precio mal metido se arrastra a todos
+                      los escandallos.
+                    */}
+                    {vigente !== undefined && (
+                      <p className="text-etiqueta text-texto-tenue">
+                        Desde el {comoSeLeeLaFecha(vigente.desde)}
+                        {vigente.proveedor === null ? '' : ` · ${vigente.proveedor}`}
+                        {vigente.quien === null ? '' : ` · lo puso ${vigente.quien}`}
+                      </p>
+                    )}
+                  </div>
+                )}
 
-              {/*
-                «Si llega un precio nuevo se actualiza, y se comparan los de antes
-                de forma optimizada, tipo gráfica.» Con dos precios o más, lo que
-                ha costado a cada proveedor, en €/kg, €/l o €/ud: la misma medida
-                aunque el envase haya cambiado.
-              */}
-              <HistoricoDePrecios
-                precios={datos.precios}
-                unidadDeUso={datos.producto.unidadDeUso}
-              />
+                {/* Con dos precios o más, lo que ha costado a cada proveedor, en la misma
+                    medida aunque el envase haya cambiado. */}
+                <HistoricoDePrecios
+                  precios={datos.precios}
+                  unidadDeUso={datos.producto.unidadDeUso}
+                />
 
-              {/* El histórico, plegado: se abre cuando se busca, no se lee siempre. */}
-              {anteriores.length > 0 && (
-                <details className="text-secundario">
-                  <summary className="cursor-pointer text-texto-suave">
-                    {anteriores.length === 1
-                      ? 'Un precio anterior'
-                      : `${anteriores.length} precios anteriores`}
-                  </summary>
-                  <ul className="mt-e2 flex flex-col">
-                    {anteriores.map((precio) => (
-                      <li
-                        key={precio.id}
-                        className="flex flex-wrap items-baseline justify-between gap-e2 border-b border-borde py-e1 last:border-0"
-                      >
-                        <span>
-                          {comoDinero(precio.precioCentimos)}
-                          {precio.proveedor === null ? '' : ` · ${precio.proveedor}`}
-                        </span>
-                        <span className="text-etiqueta text-texto-suave">
-                          {comoSeLeeLaFecha(precio.desde)}
-                          {precio.hasta === null ? '' : ` – ${comoSeLeeLaFecha(precio.hasta)}`}
-                          {precio.quien === null ? '' : ` · ${precio.quien}`}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
-            </Seccion>
-          )}
-
-          {/* ── 4 · El libro ──────────────────────────────────────────── */}
-
-          <Seccion titulo="Últimos movimientos">
-            {datos.movimientos.length === 0 ? (
-              <p className="text-secundario text-texto-suave">Todavía no se ha movido nada.</p>
-            ) : (
-              <>
-                <ul className="flex flex-col">
-                  {(todosLosMovimientos ? datos.movimientos : datos.movimientos.slice(0, 5)).map(
-                    (movimiento) => (
-                      <li
-                        key={movimiento.id}
-                        className="flex items-baseline justify-between gap-e3 border-b border-borde py-e2 last:border-0"
-                      >
-                        <span className="min-w-0">
-                          <span className="flex flex-wrap items-baseline gap-x-e2">
-                            {/* Lo anulado sigue en el libro, tachado, y deja de contar (3-oct). */}
-                            <span className={movimiento.anulado === true ? 'line-through' : ''}>
-                              {COMO_SE_LLAMA_EL_MOVIMIENTO[movimiento.tipo] ?? movimiento.tipo}{' '}
-                              <strong>
-                                {movimiento.cantidad > 0 ? '+' : ''}
-                                {conUnidadDeUso(movimiento.cantidad, datos.producto.unidadDeUso)}
-                              </strong>
-                            </span>
-                            {movimiento.anulado === true && <Etiqueta>Anulado</Etiqueta>}
-                            {movimiento.esAnulacion === true && <Etiqueta>Anula</Etiqueta>}
-                          </span>
-                          {movimiento.motivo !== null && (
-                            <span className="block truncate text-etiqueta text-texto-suave">
-                              {movimiento.motivo}
-                            </span>
-                          )}
-                        </span>
-                        <span className="flex shrink-0 flex-col items-end text-right text-etiqueta text-texto-suave">
+                {anteriores.length > 0 && (
+                  <details className="text-secundario">
+                    <summary className="cursor-pointer text-texto-suave">
+                      {anteriores.length === 1
+                        ? 'Un precio anterior'
+                        : `${anteriores.length} precios anteriores`}
+                    </summary>
+                    <ul className="mt-e2 flex flex-col">
+                      {anteriores.map((precio) => (
+                        <li
+                          key={precio.id}
+                          className="flex flex-wrap items-baseline justify-between gap-e2 border-b border-borde py-e1 last:border-0"
+                        >
                           <span>
-                            {comoSeLeeLaFecha(movimiento.fechaOperativa)}
-                            {movimiento.quien === null ? '' : ` · ${movimiento.quien}`}
+                            {comoDinero(precio.precioCentimos)}
+                            {precio.proveedor === null ? '' : ` · ${precio.proveedor}`}
                           </span>
-                          {puedeTocar && movimiento.sePuedeAnular === true && (
-                            <Boton
-                              tono="texto"
-                              onClick={() => {
-                                setAnulando(movimiento);
-                              }}
-                            >
-                              Anular
-                            </Boton>
-                          )}
-                        </span>
-                      </li>
-                    ),
-                  )}
-                </ul>
-                {datos.movimientos.length > 5 && !todosLosMovimientos && (
+                          <span className="text-etiqueta text-texto-suave">
+                            {comoSeLeeLaFecha(precio.desde)}
+                            {precio.hasta === null ? '' : ` – ${comoSeLeeLaFecha(precio.hasta)}`}
+                            {precio.quien === null ? '' : ` · ${precio.quien}`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+
+                {puedeTocarPrecios && (
                   <div>
                     <Boton
-                      tono="texto"
+                      tono="secundario"
+                      tamano="s"
                       onClick={() => {
-                        setTodosLosMovimientos(true);
+                        setHaciendo('precio');
                       }}
                     >
-                      Ver los {datos.movimientos.length}
+                      Cambiar el precio
                     </Boton>
                   </div>
                 )}
-              </>
+              </Plegable>
             )}
-          </Seccion>
 
-          {/* ── 5 · Lotes ─────────────────────────────────────────────── */}
-
-          {/*
-            «Si hay un producto caducado, poder quitarlo con un botón en ese lote;
-             si no, se queda siempre y no tiene sentido.» Cada lote lleva su
-            «Quitar» —se ha gastado o se ha tirado— y su «Congelar». Y arriba,
-            «Congelar una parte», para cuando la mitad va al congelador.
-          */}
-          {(datos.lotes.length > 0 || puedeTocar) && (
-            <Seccion
-              titulo="Lotes y caducidades"
-              accion={
-                puedeTocar ? (
-                  <Boton
-                    tono="secundario"
-                    onClick={() => {
-                      setCongelando({ lote: null });
-                    }}
-                  >
-                    Congelar una parte
-                  </Boton>
-                ) : null
-              }
-            >
-              {datos.lotes.length === 0 ? (
-                <p className="text-secundario text-texto-suave">
-                  Nada con fecha. Cuando entre género con su caducidad, sale aquí.
-                </p>
-              ) : (
-                <ul className="flex flex-col">
-                  {datos.lotes.map((lote) => {
-                    // Lo congelado no caduca: se queda viejo (0049). Mientras está en
-                    // el congelador **no se enseña su caducidad**, sino «Congelado el X ·
-                    // aguanta hasta Y» (repaso del 10-oct), en rojo si ya se ha pasado.
-                    const congeladoEl = lote.congeladoEl;
-                    const caducado =
-                      congeladoEl !== null
-                        ? lote.diasParaCumplir !== null && lote.diasParaCumplir <= 0
-                        : lote.diasParaCaducar !== null && lote.diasParaCaducar < 0;
-                    return (
-                      <li
-                        key={lote.id}
-                        className="flex flex-wrap items-center justify-between gap-e2 border-b border-borde py-e2 last:border-0"
-                      >
-                        <span className="min-w-0">
-                          <span className="flex flex-wrap items-center gap-e2">
-                            {congeladoEl !== null && (
-                              <span aria-hidden className="text-info">
-                                <IconoCongelado size={16} />
+            {/*
+              «Si hay un producto caducado, poder quitarlo con un botón en ese lote.»
+              Cada lote lleva su «Quitar» y su «Congelar». Con algo caducado, abierto de
+              entrada y en rojo: eso no puede esperar a que alguien lo despliegue.
+            */}
+            {(datos.lotes.length > 0 || puedeTocar) && (
+              <Plegable
+                titulo="Caducidades y lotes"
+                icono={<IconoCalendario size={18} />}
+                resumen={resumenDeLosLotes.texto}
+                tono={resumenDeLosLotes.tono}
+                abierto={resumenDeLosLotes.tono === 'mal'}
+              >
+                {datos.lotes.length === 0 ? (
+                  <p className="text-secundario text-texto-suave">
+                    Cuando entre género con su caducidad, sale aquí.
+                  </p>
+                ) : (
+                  <ul className="flex flex-col">
+                    {datos.lotes.map((lote) => {
+                      // Lo congelado no caduca: se queda viejo (0049). Mientras está en
+                      // el congelador **no se enseña su caducidad**, sino «Congelado el X ·
+                      // aguanta hasta Y» (repaso del 10-oct), en rojo si ya se ha pasado.
+                      const congeladoEl = lote.congeladoEl;
+                      const caducado = estaPasado(lote);
+                      return (
+                        <li
+                          key={lote.id}
+                          className="flex flex-wrap items-center justify-between gap-e2 border-b border-borde py-e2 last:border-0"
+                        >
+                          <span className="min-w-0">
+                            <span className="flex flex-wrap items-center gap-e2">
+                              {congeladoEl !== null && (
+                                <span aria-hidden className="text-info">
+                                  <IconoCongelado size={16} />
+                                </span>
+                              )}
+                              <span className={caducado ? 'text-mal' : undefined}>
+                                {congeladoEl !== null
+                                  ? comoEstaCongelado(congeladoEl, lote.cumpleCongeladoEl)
+                                  : lote.caducaEl === null
+                                    ? 'Sin fecha de caducidad'
+                                    : `${caducado ? 'Caducó' : 'Caduca'} el ${comoSeLeeLaFecha(lote.caducaEl)}`}
                               </span>
-                            )}
-                            <span className={caducado ? 'text-mal' : undefined}>
-                              {congeladoEl !== null
-                                ? comoEstaCongelado(congeladoEl, lote.cumpleCongeladoEl)
-                                : lote.caducaEl === null
-                                  ? 'Sin fecha de caducidad'
-                                  : `${caducado ? 'Caducó' : 'Caduca'} el ${comoSeLeeLaFecha(lote.caducaEl)}`}
+                              {lote.cantidad !== null && (
+                                <span className="font-semibold">
+                                  {conUnidadDeUso(lote.cantidad, datos.producto.unidadDeUso)}
+                                </span>
+                              )}
                             </span>
-                            {lote.cantidad !== null && (
-                              <span className="font-semibold">
-                                {conUnidadDeUso(lote.cantidad, datos.producto.unidadDeUso)}
-                              </span>
-                            )}
+                            <span className="block text-etiqueta text-texto-suave">
+                              {lote.codigo === null
+                                ? `Llegó el ${comoSeLeeLaFecha(lote.recibidoEl)}`
+                                : `Lote ${lote.codigo}`}
+                            </span>
                           </span>
-                          <span className="block text-etiqueta text-texto-suave">
-                            {lote.codigo === null
-                              ? `Llegó el ${comoSeLeeLaFecha(lote.recibidoEl)}`
-                              : `Lote ${lote.codigo}`}
-                          </span>
-                        </span>
-                        {puedeTocar && (
-                          <span className="flex flex-wrap gap-e1">
-                            {lote.congeladoEl === null && (
+                          {puedeTocar && (
+                            <span className="flex flex-wrap gap-e1">
+                              {lote.congeladoEl === null && (
+                                <Boton
+                                  tono="texto"
+                                  tamano="s"
+                                  onClick={() => {
+                                    setCongelando({
+                                      lote: { id: lote.id, caducaEl: lote.caducaEl },
+                                    });
+                                  }}
+                                >
+                                  Congelar
+                                </Boton>
+                              )}
                               <Boton
-                                tono="texto"
+                                tono={caducado ? 'principal' : 'secundario'}
+                                tamano="s"
                                 onClick={() => {
-                                  setCongelando({
-                                    lote: { id: lote.id, caducaEl: lote.caducaEl },
+                                  setQuitandoLote({
+                                    id: lote.id,
+                                    producto: datos.producto.nombre,
+                                    codigo: lote.codigo,
+                                    caducaEl: lote.caducaEl,
+                                    unidadDeUso: datos.producto.unidadDeUso,
+                                    congelado:
+                                      congeladoEl === null
+                                        ? null
+                                        : { el: congeladoEl, aguantaHasta: lote.cumpleCongeladoEl },
+                                    cantidad: lote.cantidad,
                                   });
                                 }}
                               >
-                                Congelar
+                                {congeladoEl === null ? 'Quitar' : 'Sacar'}
+                              </Boton>
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                {puedeTocar && (
+                  <div>
+                    <Boton
+                      tono="secundario"
+                      tamano="s"
+                      icono={<IconoCongelado size={16} />}
+                      onClick={() => {
+                        setCongelando({ lote: null });
+                      }}
+                    >
+                      Congelar una parte
+                    </Boton>
+                  </div>
+                )}
+              </Plegable>
+            )}
+
+            {/* ── El libro ────────────────────────────────────────────── */}
+            <Plegable
+              titulo="Movimientos"
+              icono={<IconoHistorial size={18} />}
+              resumen={
+                ultimo === undefined
+                  ? 'Todavía no se ha movido nada'
+                  : `${comoSeLeeLaFecha(ultimo.fechaOperativa)} · ${COMO_SE_LLAMA_EL_MOVIMIENTO[ultimo.tipo] ?? ultimo.tipo} ${ultimo.cantidad > 0 ? '+' : ''}${conUnidadDeUso(ultimo.cantidad, datos.producto.unidadDeUso)}`
+              }
+            >
+              {datos.movimientos.length > 0 && (
+                <>
+                  <ul className="flex flex-col">
+                    {(todosLosMovimientos ? datos.movimientos : datos.movimientos.slice(0, 5)).map(
+                      (movimiento) => (
+                        <li
+                          key={movimiento.id}
+                          className="flex items-baseline justify-between gap-e3 border-b border-borde py-e2 last:border-0"
+                        >
+                          <span className="min-w-0">
+                            <span className="flex flex-wrap items-baseline gap-x-e2">
+                              {/* Lo anulado sigue en el libro, tachado, y deja de contar (3-oct). */}
+                              <span className={movimiento.anulado === true ? 'line-through' : ''}>
+                                {COMO_SE_LLAMA_EL_MOVIMIENTO[movimiento.tipo] ?? movimiento.tipo}{' '}
+                                <strong>
+                                  {movimiento.cantidad > 0 ? '+' : ''}
+                                  {conUnidadDeUso(movimiento.cantidad, datos.producto.unidadDeUso)}
+                                </strong>
+                              </span>
+                              {movimiento.anulado === true && <Etiqueta>Anulado</Etiqueta>}
+                              {movimiento.esAnulacion === true && <Etiqueta>Anula</Etiqueta>}
+                            </span>
+                            {movimiento.motivo !== null && (
+                              <span className="block truncate text-etiqueta text-texto-suave">
+                                {movimiento.motivo}
+                              </span>
+                            )}
+                          </span>
+                          <span className="flex shrink-0 flex-col items-end text-right text-etiqueta text-texto-suave">
+                            <span>
+                              {comoSeLeeLaFecha(movimiento.fechaOperativa)}
+                              {movimiento.quien === null ? '' : ` · ${movimiento.quien}`}
+                            </span>
+                            {puedeTocar && movimiento.sePuedeAnular === true && (
+                              <Boton
+                                tono="texto"
+                                tamano="s"
+                                onClick={() => {
+                                  setAnulando(movimiento);
+                                }}
+                              >
+                                Anular
                               </Boton>
                             )}
-                            <Boton
-                              tono={caducado ? 'principal' : 'secundario'}
-                              onClick={() => {
-                                setQuitandoLote({
-                                  id: lote.id,
-                                  producto: datos.producto.nombre,
-                                  codigo: lote.codigo,
-                                  caducaEl: lote.caducaEl,
-                                  unidadDeUso: datos.producto.unidadDeUso,
-                                  congelado:
-                                    congeladoEl === null
-                                      ? null
-                                      : { el: congeladoEl, aguantaHasta: lote.cumpleCongeladoEl },
-                                  cantidad: lote.cantidad,
-                                });
-                              }}
-                            >
-                              {congeladoEl === null ? 'Quitar' : 'Sacar'}
-                            </Boton>
                           </span>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
+                        </li>
+                      ),
+                    )}
+                  </ul>
+                  {datos.movimientos.length > 5 && !todosLosMovimientos && (
+                    <div>
+                      <Boton
+                        tono="texto"
+                        tamano="s"
+                        onClick={() => {
+                          setTodosLosMovimientos(true);
+                        }}
+                      >
+                        Ver los {datos.movimientos.length}
+                      </Boton>
+                    </div>
+                  )}
+                </>
               )}
-            </Seccion>
-          )}
-
-          {/* ── 6 · La ficha ──────────────────────────────────────────── */}
-
-          <Seccion
-            titulo="La ficha"
-            accion={
-              puedeTocar ? (
-                <Boton
-                  tono="secundario"
-                  onClick={() => {
-                    setEditando(true);
-                  }}
-                >
-                  Corregir la ficha
-                </Boton>
-              ) : null
-            }
-          >
-            {/* Solo lo que dice algo: «código de barras: no tiene» no dice nada. */}
-            <dl className="grid grid-cols-[auto_1fr] gap-x-e4 gap-y-e1 text-secundario">
-              <Par que="De dónde es">{NOMBRE_DE_LA_ZONA[datos.producto.zona]}</Par>
-              <Par que="Categoría">{datos.producto.categoria ?? 'Sin categoría'}</Par>
-              <Par que="Proveedor">{datos.producto.proveedor ?? 'Sin proveedor'}</Par>
-              <Par que="Envase">{datos.producto.formato ?? 'Suelto'}</Par>
-              {datos.producto.factor !== 1 && (
-                <Par que="Cuánto trae">
-                  {datos.producto.factor.toLocaleString('es-ES')} {datos.producto.unidadDeUso}
-                </Par>
-              )}
-              <Par que="Alérgenos">
-                {datos.alergenos.length === 0
-                  ? 'Ninguno declarado'
-                  : datos.alergenos.map((a) => NOMBRE_DEL_ALERGENO[a]).join(', ')}
-              </Par>
-              {datos.producto.codigoDeBarras !== null && (
-                <Par que="Código de barras">{datos.producto.codigoDeBarras}</Par>
-              )}
-              {datos.producto.pesoVariable && <Par que="Peso variable">Sí, entra por peso</Par>}
-            </dl>
+            </Plegable>
 
             {/*
-              ── El aprovechamiento, que era una etiqueta que no se podía quitar ──
-
-              «Sin verificar» salía en naranja en toda la lista de productos, no
-              se podía cambiar desde ninguna parte y volvía sola cada vez que se
-              guardaba la ficha. Así que decía lo mismo de todos: nada.
-
-              Aquí está lo que de verdad quiere decir —cuánto se aprovecha de lo
-              que se compra, que multiplica el coste de todo lo que lo lleve— con
-              su cifra, con si está medido o supuesto, y **con el botón de
-              medirlo**. Un dato que no se puede corregir desde donde se lee es un
-              dato que nadie corrige.
+              ── El aprovechamiento ─────────────────────────────────────────
+              Cuánto se aprovecha de lo que se compra, que multiplica el coste de todo
+              lo que lo lleve: con su cifra, con si está medido o supuesto, y **con el
+              botón de medirlo**. Un dato que no se puede corregir desde donde se lee
+              es un dato que nadie corrige.
             */}
-            <ElAprovechamiento
-              producto={datos.producto}
-              puedeTocar={puedeTocar}
-              alMedirlo={() => {
-                setHaciendo('rendimiento');
-              }}
-            />
-          </Seccion>
+            <Plegable
+              titulo="Aprovechamiento"
+              icono={<IconoEscandallos size={18} />}
+              resumen={`${comoPorcentaje(datos.producto.rendimiento)} · ${datos.producto.sinVerificar ? 'supuesto, sin medir' : 'medido en esta cocina'}`}
+            >
+              <ElAprovechamiento
+                producto={datos.producto}
+                puedeTocar={puedeTocar}
+                alMedirlo={() => {
+                  setHaciendo('rendimiento');
+                }}
+              />
+            </Plegable>
+
+            {/* ── Lo demás de la ficha: solo lo que dice algo ───────────── */}
+            <Plegable titulo="Más datos" icono={<IconoInfo size={18} />}>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-e4 gap-y-e1 text-secundario">
+                {datos.producto.factor !== 1 && (
+                  <Par que="Cuánto trae">
+                    {conUnidadDeUso(datos.producto.factor, datos.producto.unidadDeUso)}
+                  </Par>
+                )}
+                <Par que="Se cuenta en">{datos.producto.unidadDeUso}</Par>
+                {datos.producto.minimo !== null && (
+                  <Par que="Mínimo">
+                    {conUnidadDeUso(datos.producto.minimo, datos.producto.unidadDeUso)}
+                    {datos.producto.minimoCalculado === true && (
+                      <span className="font-normal text-texto-suave">
+                        {' '}
+                        · lo rehace Estook cada lunes
+                      </span>
+                    )}
+                  </Par>
+                )}
+                <Par que="Congelado aguanta">
+                  {plural(datos.producto.congeladoAguantaMeses, 'mes', 'meses')}
+                </Par>
+                <Par que="Alérgenos">
+                  {datos.alergenos.length === 0
+                    ? 'Ninguno declarado'
+                    : datos.alergenos.map((a) => NOMBRE_DEL_ALERGENO[a]).join(', ')}
+                </Par>
+                {datos.producto.codigoDeBarras !== null && (
+                  <Par que="Código de barras">{datos.producto.codigoDeBarras}</Par>
+                )}
+                {datos.producto.pesoVariable && <Par que="Peso variable">Sí, entra por peso</Par>}
+                {datos.producto.notas !== null && datos.producto.notas !== '' && (
+                  <Par que="Notas">{datos.producto.notas}</Par>
+                )}
+              </dl>
+            </Plegable>
+          </GrupoDePlegables>
 
           {/* ── 7 · Quitarlo de en medio, y traerlo de vuelta ─────────── */}
 
@@ -1046,92 +1104,119 @@ function Par({ que, children }: { readonly que: string; readonly children: React
   );
 }
 
-/**
- * Una sección de la ficha · una tarjeta de verdad, con su título y su acción.
- *
- * ── Lo que había, y por qué no valía ────────────────────────────────────────
- *
- * Secciones sueltas con un `h3` encima y, a la derecha, un botón de tono
- * «texto». Sobre el tema oscuro eso es **letra blanca sobre fondo negro y nada
- * más**: no se veía dónde empezaba una sección y acababa otra, y «Congelar una
- * parte», «Cambiar el precio» o «Corregir la ficha» —que son las tres cosas que
- * se vienen a hacer aquí— parecían párrafos.
- *
- * Una tarjeta, un título y un botón que parece un botón. Es la misma pieza en
- * las cinco secciones, así que la ficha se lee de arriba abajo sin sorpresas.
- */
-function Seccion({
-  titulo,
-  accion = null,
+/** Un dato de la fila de tres: su nombre encima y la cifra, en grande. */
+function Dato({
+  que,
+  pista = null,
   children,
 }: {
-  readonly titulo: string;
-  readonly accion?: ReactNode;
+  readonly que: string;
+  readonly pista?: string | null;
   readonly children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-e3 rounded-mayor border border-borde bg-superficie p-e4 [box-shadow:var(--sombra-tarjeta)]">
-      <div className="flex flex-wrap items-center justify-between gap-e2">
-        <h3 className="text-seccion font-semibold">{titulo}</h3>
-        {accion}
-      </div>
-      {children}
-    </section>
+    <div className="flex min-w-0 flex-col gap-[2px] rounded-grande bg-fondo px-e3 py-e2">
+      <dt className="text-etiqueta text-texto-suave">{que}</dt>
+      <dd className="truncate text-cuerpo font-semibold tabular-nums">{children}</dd>
+      {pista !== null && <dd className="truncate text-etiqueta text-texto-tenue">{pista}</dd>}
+    </div>
   );
 }
 
-/** Un dato de cabecera: la categoría, el proveedor, el envase. */
-function Chip({ children }: { readonly children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center rounded-redondo border border-borde bg-fondo px-e3 py-e1 text-etiqueta text-texto-suave">
-      {children}
-    </span>
-  );
+/** «Caja 5 kg», «Bidón de 50 l», «Suelto · en ud». */
+function queEnvase(producto: ProductoEnLista): string {
+  if (producto.formato === null) return `Suelto · en ${producto.unidadDeUso}`;
+  if (producto.factor === 1) return producto.formato;
+  const trae = conUnidadDeUso(producto.factor, producto.unidadDeUso);
+  // «Bidón de 50 l» ya lo dice: no se repite «· 50 l».
+  const sinHuecos = (texto: string) => texto.replace(/\s/g, '').replace(',', '.');
+  return sinHuecos(producto.formato).includes(sinHuecos(trae))
+    ? producto.formato
+    : `${producto.formato} · ${trae}`;
+}
+
+/** Si un lote ya se ha pasado: caducado, o congelado más tiempo del que aguanta. */
+function estaPasado(lote: UnProducto['lotes'][number]): boolean {
+  return lote.congeladoEl !== null
+    ? lote.diasParaCumplir !== null && lote.diasParaCumplir <= 0
+    : lote.diasParaCaducar !== null && lote.diasParaCaducar < 0;
+}
+
+/** Lo que dice el plegable de los lotes sin abrirlo: lo más urgente. */
+function loDeLosLotes(lotes: UnProducto['lotes']): {
+  readonly texto: string;
+  readonly tono: 'neutro' | 'atencion' | 'mal';
+} {
+  if (lotes.length === 0) return { texto: 'Nada con fecha', tono: 'neutro' };
+  const pasados = lotes.filter(estaPasado).length;
+  if (pasados > 0) {
+    return {
+      texto: pasados === 1 ? '1 lote caducado' : `${String(pasados)} lotes caducados`,
+      tono: 'mal',
+    };
+  }
+  const conFecha = lotes
+    .filter((l) => l.congeladoEl === null && l.caducaEl !== null)
+    .sort((a, b) => (a.caducaEl ?? '').localeCompare(b.caducaEl ?? ''));
+  const primero = conFecha[0];
+  const cuantos = plural(lotes.length, 'lote', 'lotes');
+  if (primero?.caducaEl == null) return { texto: cuantos, tono: 'neutro' };
+  const pronto = primero.diasParaCaducar !== null && primero.diasParaCaducar <= 2;
+  return {
+    texto: `${cuantos} · el primero caduca el ${comoSeLeeLaFecha(primero.caducaEl)}`,
+    tono: pronto ? 'atencion' : 'neutro',
+  };
 }
 
 /**
- * Cuánto hay respecto del mínimo, en una barra.
+ * Cuánto hay respecto del mínimo, en una barra con una raya donde está el mínimo.
  *
  * Se mide contra el doble del mínimo y no contra lo que hay: la pregunta es
  * «¿llego?», no «¿cuánto tengo?». Con el doble del mínimo la barra está llena, y
- * eso es exactamente lo que significa —de sobra— sin dibujar una escala que nadie
- * mira.
+ * eso es exactamente lo que significa —de sobra—. La raya del mínimo queda en medio,
+ * y debajo se dice cuál es: era «● 4602 g Lo que hay», la misma cifra de arriba otra
+ * vez, y el mínimo no se veía en la barra (repaso del 16-oct).
  */
 function BarraDelMinimo({
   hay,
   minimo,
   unidadDeUso,
+  calculado,
 }: {
   readonly hay: number;
   readonly minimo: number;
   readonly unidadDeUso: string;
+  readonly calculado: boolean;
 }) {
   const tope = minimo * 2;
-  const lleno = Math.max(0, Math.min(hay, tope));
+  const lleno = Math.max(0, Math.min(hay, tope)) / tope;
   const falta = Math.max(0, minimo - hay);
-  const tono = hay <= 0 ? 'mal' : hay < minimo ? 'atencion' : 'bien';
+  const tono = hay <= 0 ? 'bg-mal' : hay < minimo ? 'bg-atencion' : 'bg-bien';
 
   return (
-    <Proporcion
-      titulo="Lo que hay, y el mínimo que te has puesto"
-      trozos={[
-        {
-          que: 'Lo que hay',
-          cuantos: lleno,
-          tono,
-          comoSeLee: conUnidadDeUso(hay, unidadDeUso),
-        },
-        {
-          que: falta > 0 ? 'Falta para el mínimo' : 'Por encima del mínimo',
-          cuantos: Math.max(0, tope - lleno),
-          tono: 'neutro',
-          comoSeLee:
-            falta > 0
-              ? conUnidadDeUso(falta, unidadDeUso)
-              : `mínimo ${conUnidadDeUso(minimo, unidadDeUso)}`,
-        },
-      ]}
-    />
+    <div className="flex flex-col gap-e1">
+      <div
+        role="img"
+        aria-label={`Hay ${conUnidadDeUso(hay, unidadDeUso)}; el mínimo es ${conUnidadDeUso(minimo, unidadDeUso)}`}
+        className="relative h-[10px] rounded-redondo bg-fondo"
+      >
+        <span
+          className={clases('absolute inset-y-0 left-0 rounded-redondo', tono)}
+          style={{ width: `${(lleno * 100).toFixed(1)}%` }}
+        />
+        <span
+          aria-hidden
+          className="absolute -inset-y-[3px] left-1/2 w-[2px] -translate-x-1/2 rounded-redondo bg-texto"
+        />
+      </div>
+      <p className="flex justify-between gap-e2 text-etiqueta text-texto-suave">
+        <span>{falta > 0 ? `Faltan ${conUnidadDeUso(falta, unidadDeUso)}` : ''}</span>
+        <span>
+          Mínimo {conUnidadDeUso(minimo, unidadDeUso)}
+          {calculado ? ' · lo pone Estook' : ''}
+        </span>
+      </p>
+    </div>
   );
 }
 
@@ -1189,20 +1274,19 @@ const LA_UNIDAD: Readonly<Record<string, string>> = {
 };
 
 /**
- * Qué es el precio que se enseña, en una frase.
- *
- * Si se compra de uno en uno —el kilo, la unidad— el precio **es** lo que cuesta,
- * y decir «2,0000 €/ud · sale de 2,00 € entre 1 ud» es obligar a leer una cuenta
- * que no hay. Solo con envase se dice a cuánto sale lo que se usa.
+ * El precio, sin abrir el plegable: «28,18 € el bidón de 50 l · 0,56 €/l», y
+ * «18,18 € el kilo» cuando las dos cifras dirían lo mismo.
  */
-function loQueEsElPrecio(producto: ProductoEnLista): string {
-  if (producto.factor === 1 && producto.rendimiento >= 1) {
-    return LA_UNIDAD[producto.unidadDeUso] ?? `el ${producto.unidadDeUso}`;
+function elPrecioEnCorto(producto: ProductoEnLista, precio: number): string {
+  const dinero = comoDinero(precio);
+  if (producto.formato === null || producto.factor === 1) {
+    return `${dinero} ${LA_UNIDAD[producto.unidadDeUso] ?? `el ${producto.unidadDeUso}`}`;
   }
-  const envase = producto.formato === null ? 'el envase' : producto.formato.toLowerCase();
-  const aprovecha =
-    producto.rendimiento < 1 ? `, aprovechando un ${comoPorcentaje(producto.rendimiento)}` : '';
-  return `${envase} · sale a ${producto.costePorUnidad ?? '—'}${aprovecha}`;
+  const envase = `${dinero} el ${producto.formato.toLocaleLowerCase('es')}`;
+  const porUnidad = producto.costePorUnidad ?? null;
+  return porUnidad === null || porUnidad.startsWith(dinero.replace(/\s?€$/, ''))
+    ? envase
+    : `${envase} · ${porUnidad}`;
 }
 
 // ── Cambiar el precio ────────────────────────────────────────────────────────
@@ -1371,7 +1455,19 @@ function CorregirLaFicha({
   const ivaDeAntes =
     ficha.ivaDeCompraElegido && ficha.ivaDeCompra !== null ? String(ficha.ivaDeCompra) : '';
   const [iva, setIva] = useState(ivaDeAntes);
-  const [minimo, setMinimo] = useState(ficha.minimo === null ? '' : String(ficha.minimo));
+  // El mínimo, en g o en kg, en ml o en l (repaso del 16-oct): «si es peso, que siempre
+  // te dé la opción de poner kg o g». Se escribe en la que se quiera y se guarda en la
+  // del producto. Lo que pasa de mil gramos sale de entrada en kilos.
+  const [minimoEn, setMinimoEn] = useState<UnidadDeUso>(() =>
+    unidadMasComoda(ficha.minimo, ficha.unidadDeUso as UnidadDeUso),
+  );
+  const [minimo, setMinimo] = useState(() =>
+    ficha.minimo === null
+      ? ''
+      : sinCerosDeMas(
+          convertir(ficha.minimo, ficha.unidadDeUso as UnidadDeUso, minimoEn) ?? ficha.minimo,
+        ),
+  );
   const [mesesCongelado, setMesesCongelado] = useState(String(ficha.congeladoAguantaMeses));
   // ── Estos cuatro salían en blanco, y se llevaban el dato por delante ────────
   //
@@ -1409,11 +1505,22 @@ function CorregirLaFicha({
   const presentacion = presentacionDe(como);
   const cambiaLaForma = JSON.stringify(como) !== JSON.stringify(comoEra);
   const nuevoFactor = cambiaLaForma ? presentacion.factor : ficha.factor;
-  const unidad = cambiaLaForma ? presentacion.unidadDeUso : ficha.unidadDeUso;
+  const unidad = (cambiaLaForma ? presentacion.unidadDeUso : ficha.unidadDeUso) as UnidadDeUso;
   const cambiaElCoste = nuevoFactor !== ficha.factor;
   // Con género apuntado, la unidad no se cambia: el libro está en esa unidad y
   // el servidor lo rechaza. Se dice antes, en vez de dejar tocarlo.
   const formaFija = producto.movimientos.length > 0;
+
+  // Si se cambia cómo se compra a otra familia (de kilos a unidades), lo escrito ya
+  // va en la unidad nueva: no hay conversión que valga.
+  const minimoEscrito = minimo.trim() === '' ? null : Number(minimo.replace(',', '.'));
+  const enQueVaElMinimo: UnidadDeUso = unidadesQueSirven(unidad).includes(minimoEn)
+    ? minimoEn
+    : unidad;
+  const minimoEnSuUnidad =
+    minimoEscrito === null
+      ? null
+      : Number((convertir(minimoEscrito, enQueVaElMinimo, unidad) ?? minimoEscrito).toFixed(4));
 
   async function guardar() {
     setGuardando(true);
@@ -1441,7 +1548,7 @@ function CorregirLaFicha({
       alergenos: producto.alergenos,
       peso_variable: pesoVariable,
       codigo_de_barras: codigo.trim() === '' ? null : codigo.trim(),
-      minimo: minimo.trim() === '' ? null : Number(minimo.replace(',', '.')),
+      minimo: minimoEnSuUnidad,
       proveedor_id: proveedorId === '' ? null : proveedorId,
       notas: notas.trim() === '' ? null : notas.trim(),
       congelado_aguanta_meses: Number(mesesCongelado),
@@ -1577,7 +1684,20 @@ function CorregirLaFicha({
         <Campo
           etiqueta="Mínimo"
           tipo="numero"
-          detras={unidad}
+          {...(unidadesQueSirven(unidad).length > 1
+            ? {
+                unidad: {
+                  valor: enQueVaElMinimo,
+                  opciones: unidadesQueSirven(unidad).map((u) => ({
+                    valor: u,
+                    larga: NOMBRE_LARGO[u],
+                  })),
+                  alElegir: (u: string) => {
+                    setMinimoEn(u as UnidadDeUso);
+                  },
+                },
+              }
+            : { detras: unidad })}
           ayuda="Por debajo de esto sale en «Hoy». Opcional."
           value={minimo}
           onChange={(e) => {
@@ -1685,6 +1805,25 @@ function CorregirLaFicha({
       </div>
     </Hoja>
   );
+}
+
+const NOMBRE_LARGO: Readonly<Record<UnidadDeUso, string>> = {
+  g: 'gramos',
+  kg: 'kilos',
+  ml: 'mililitros',
+  l: 'litros',
+  ud: 'unidades',
+};
+
+/** En gramos lo pequeño y en kilos lo que pasa de mil, que es como se piensa. */
+function unidadMasComoda(cuanto: number | null, unidad: UnidadDeUso): UnidadDeUso {
+  if (cuanto === null || cuanto < 1000) return unidad;
+  return unidad === 'g' ? 'kg' : unidad === 'ml' ? 'l' : unidad;
+}
+
+/** «4.6» y no «4.6000000001». Con punto: es un campo de número. */
+function sinCerosDeMas(numero: number): string {
+  return String(Number(numero.toFixed(3)));
 }
 
 /** La frase del impacto: cuánto sube o baja el coste por unidad de uso. */

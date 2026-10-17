@@ -126,20 +126,28 @@ export function BarraDeApp({ app, destinoActivo, alIrADestino, alAbrirLaRueda }:
         </button>
       )}
 
-      {destinos.map((destino) => (
-        <Posicion
-          key={destino.id}
-          nombre={destino.nombre}
-          activa={destino.id === destinoActivo}
-          acento={app.acento}
-          segunSuPalabra
-          apretada={apretada}
-          icono={<destino.icono size={22} />}
-          alPulsar={() => {
-            alIrADestino(destino.id);
-          }}
-        />
-      ))}
+      {/* «Apps» aparte, con una raya fina (repaso del 16-oct, 5a): es salir de la app,
+          no un destino más. Y los destinos, repartidos a partes iguales en lo que queda
+          y centrados (5b): antes cada uno medía lo de su palabra y la barra quedaba
+          descompensada («Elaboraciones» se comía el sitio de los demás). */}
+      {!apretada && <span aria-hidden className="my-e3 w-px shrink-0 bg-borde" />}
+
+      <div className="flex min-w-0 flex-1 items-stretch justify-around">
+        {destinos.map((destino) => (
+          <Posicion
+            key={destino.id}
+            nombre={destino.nombre}
+            activa={destino.id === destinoActivo}
+            acento={app.acento}
+            segunSuPalabra
+            apretada={apretada}
+            icono={<destino.icono size={22} />}
+            alPulsar={() => {
+              alIrADestino(destino.id);
+            }}
+          />
+        ))}
+      </div>
     </nav>
   );
 }
@@ -185,13 +193,13 @@ function Posicion({
         // recorte de abajo no llegaba a actuar y a 320 px la barra se salía por los
         // dos lados («pps» y «Compr», 24-sep).
         //
-        // Y **según su palabra** en la barra de una app (`flex-auto`), no a partes
-        // iguales: con cuatro iguales, «Movimientos» se cortaba a 375 px aunque sobrara
-        // sitio al lado de «Resumen». Así solo se recorta cuando de verdad no cabe. En
-        // la del Panel van iguales, para que la rueda quede en el centro.
+        // En la barra de una app, **a partes iguales y sin cortar ninguna palabra**
+        // (16-oct): `basis-0` reparte igual, y desde 360 px nadie baja de su palabra
+        // (`min-w-fit`): «Movimientos» se cortaba a 375 px con cuatro iguales. Por
+        // debajo de 360, se recorta. En la del Panel van iguales, con la rueda en medio.
         'flex min-h-toque min-w-0 flex-col items-center justify-center gap-[2px] rounded-medio',
-        apretada ? 'px-[2px]' : 'px-e1',
-        segunSuPalabra ? 'flex-auto' : 'flex-1',
+        apretada || segunSuPalabra ? 'px-[2px]' : 'px-e1',
+        segunSuPalabra ? 'grow basis-0 min-[360px]:min-w-fit' : 'flex-1',
         apretada ? 'text-[10px] font-semibold tracking-[-0.01em]' : 'text-[11px] font-semibold',
         activa ? 'text-texto' : 'text-texto-suave',
       )}

@@ -71,14 +71,21 @@ export function PropuestaDeMinimo({ producto }: { readonly producto: ProductoEnL
   }
   const puede = puedeEditar(permisos, 'app.almacen');
 
+  // Una línea aparte y no una fila más de la rejilla (repaso del 16-oct): «Estook
+  // propone · 229 g · Usar · ▶ Por qué» quedaba descolocado, con el «Por qué» suelto.
   return (
-    <>
-      <dt className="text-texto-suave">Estook propone</dt>
-      <dd className="flex flex-wrap items-center gap-e2 font-medium">
-        {conUnidadDeUso(calculado.minimo, producto.unidadDeUso)}
+    <div className="flex flex-col gap-e1 rounded-grande bg-fondo px-e3 py-e2">
+      <div className="flex flex-wrap items-center justify-between gap-x-e3">
+        <p className="text-secundario">
+          Estook propone un mínimo de{' '}
+          <strong className="font-semibold">
+            {conUnidadDeUso(calculado.minimo, producto.unidadDeUso)}
+          </strong>
+        </p>
         {puede && (
           <Boton
             tono="texto"
+            tamano="s"
             cargando={poniendo}
             textoCargando="Poniendo"
             onClick={() => {
@@ -96,12 +103,12 @@ export function PropuestaDeMinimo({ producto }: { readonly producto: ProductoEnL
             Usar
           </Boton>
         )}
-        <details className="w-full font-normal text-texto-suave">
-          <summary className="cursor-pointer">Por qué</summary>
-          {calculado.porque}
-        </details>
-      </dd>
-    </>
+      </div>
+      <details className="text-etiqueta text-texto-suave">
+        <summary className="cursor-pointer">Por qué</summary>
+        <p className="pt-e1">{calculado.porque}</p>
+      </details>
+    </div>
   );
 }
 

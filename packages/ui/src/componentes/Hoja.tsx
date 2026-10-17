@@ -2,6 +2,8 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { IconoCerrar } from '@estook/iconos';
 import { clases } from '../clases.ts';
 import { entraEnLaCapaDeArriba } from '../ganchos/capaDeArriba.ts';
+// Que la página sepa si se maneja con el dedo: sin eso, la «X» sale con el anillo.
+import '../navegacion/modalidad.ts';
 
 /**
  * La hoja y el panel lateral · Partes B4, B5 y B6 del Plan.

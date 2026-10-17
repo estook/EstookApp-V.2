@@ -100,3 +100,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0087** | Fichas y escandallos (M9 · 2), y la carta que vincula lo del Almacén, cuenta las raciones y dice sus alérgenos y lo que pica                                               |
 | **0088** | Vincular todo el Almacén (lo que va a peso, con su ración) y el historial de la receta que solo crece (0070)                                                               |
 | **0089** | Lo que la API puede hacer en cada tabla (0071): ni un permiso más que lo que escribe su migración, y una tabla nueva nace sin nada                                         |
+| **0090** | El repaso del 16-oct: la ficha del producto, kilos y gramos, escandallos y fichas técnicas por separado (con fotos en los pasos, 0072) y la app más rápida                 |

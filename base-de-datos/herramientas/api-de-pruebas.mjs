@@ -217,13 +217,18 @@ const pagos = pagosDeMentira(`http://localhost:${PUERTO}/api`);
 async function unaTransaccion(quien, hacer) {
   await bd.exec('begin');
   try {
-    await bd.exec('set local role estook_api');
+    // El disfraz y el hilo, juntos; y quién es, declarado al averiguarlo (0090).
+    await bd.query(
+      "select set_config('role', 'estook_api', true), set_config('estook.correlacion_id', $1, true)",
+      [quien.correlacionId],
+    );
 
     let sesion = null;
     if (quien.tokenDeSesion !== null) {
-      const { rows } = await bd.query('select * from estook.sesion_activa($1)', [
-        await huellaDeToken(quien.tokenDeSesion),
-      ]);
+      const { rows } = await bd.query(
+        "select s.*, set_config('estook.persona_id', s.persona_id::text, true) as declarada from estook.sesion_activa($1) s",
+        [await huellaDeToken(quien.tokenDeSesion)],
+      );
       const fila = rows[0];
       if (fila) {
         sesion = {
@@ -250,8 +255,7 @@ async function unaTransaccion(quien, hacer) {
       }
     }
 
-    await bd.query("select set_config('estook.persona_id', $1, true)", [sesion?.personaId ?? '']);
-    await bd.query("select set_config('estook.correlacion_id', $1, true)", [quien.correlacionId]);
+    if (sesion === null) await bd.query("select set_config('estook.persona_id', '', true)");
 
     const salida = await hacer({
       sql: adaptador(bd),

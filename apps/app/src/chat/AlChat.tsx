@@ -15,15 +15,19 @@ import { CLAVE_DE_MIS_CANALES, claveDeUnCanal } from './contrato.ts';
  */
 export function AlChat({
   tarjeta,
+  discreto = false,
 }: {
   readonly tarjeta: { readonly tipo: 'pedido' | 'producto'; readonly id: string };
+  /** Pequeño y sin caja, al lado de otra cosa (la ficha del producto, 16-oct). */
+  readonly discreto?: boolean;
 }) {
   const [abierta, setAbierta] = useState(false);
   return (
     <>
       <Boton
-        tono="secundario"
-        icono={<IconoChat size={18} />}
+        tono={discreto ? 'texto' : 'secundario'}
+        {...(discreto ? { tamano: 's' as const } : {})}
+        icono={<IconoChat size={discreto ? 16 : 18} />}
         onClick={() => {
           setAbierta(true);
         }}

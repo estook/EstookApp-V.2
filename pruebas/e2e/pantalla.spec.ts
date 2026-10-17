@@ -169,9 +169,10 @@ test.describe('el menú del ordenador', () => {
 
     // Las apps sin nada construido no se mezclan con las que funcionan. (Era la Carta
     // hasta M9 · 1, 0086, y Escandallos hasta M9 · 2, 0087; ahora es el Cuaderno.)
+    // Escandallos sale dos veces desde el 16-oct (0090): la app y su pestaña.
     await expect(
       elMenu(page).getByRole('button', { name: 'Escandallos', exact: true }),
-    ).toHaveCount(1);
+    ).toHaveCount(2);
     await expect(elMenu(page).getByRole('button', { name: 'Cuaderno', exact: true })).toHaveCount(
       0,
     );

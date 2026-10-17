@@ -4,6 +4,7 @@ import { fechaOperativa } from './tiempo.ts';
 import {
   comoPorcentaje,
   conUnidad,
+  conUnidadAproximada,
   enumerar,
   fechaCorta,
   fechaEnLetra,
@@ -46,6 +47,18 @@ describe('escribir en espanol de Espana', () => {
     expect(conUnidad(cantidad(1.5), 'kg')).toBe('1,5 kg');
     expect(conUnidad(cantidad(250), 'g')).toBe('250 g');
     expect(conUnidad(cantidad(0.125), 'l')).toBe('0,125 l');
+  });
+
+  it('de mil gramos o mililitros para arriba, en kilos o litros (Richi, 16-oct)', () => {
+    expect(conUnidad(cantidad(4602), 'g')).toBe('4,602 kg');
+    expect(conUnidad(cantidad(5000), 'g')).toBe('5 kg');
+    expect(conUnidad(cantidad(-1500), 'ml')).toBe('-1,5 l');
+    expect(conUnidad(cantidad(999), 'g')).toBe('999 g');
+    // Nunca «95,2381 g»: en gramos, como mucho dos decimales.
+    expect(conUnidad(cantidad(95.2381), 'g')).toBe('95,24 g');
+    expect(conUnidad(cantidad(120), 'ud')).toBe('120 ud');
+    expect(conUnidadAproximada(1523, 'g')).toBe('1,5 kg');
+    expect(conUnidadAproximada(95.2381, 'g')).toBe('95 g');
   });
 
   it('los porcentajes desde su fraccion', () => {

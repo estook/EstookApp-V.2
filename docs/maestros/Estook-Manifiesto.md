@@ -310,7 +310,7 @@ Dentro de una app, en móvil, la barra de abajo pasa a ser la de esa app, con su
 
 ```
 ALMACÉN      │ Resumen │ Productos │ Movimientos │ Compras │ Mermas │
-ESCANDALLOS  │ Resumen │ Fichas │ Elaboraciones │ Analisis │
+ESCANDALLOS  │ Resumen │ Escandallos │ Fichas │ Analisis │
 CALENDARIO   │ Calendario │ Tareas │ Turnos │
 ```
 
@@ -706,11 +706,13 @@ _Habla con: Escandallos (le da el coste), Servicio (le descuenta el consumo), Ca
 
 Aquí se calcula toda la carta, plato a plato. Es la app que convierte Estook en una herramienta de dinero y no de papeleo.
 
-_Su navegación: Resumen · Fichas · Elaboraciones · Análisis_
+_Su navegación: Resumen · Escandallos · Fichas · Análisis_
 
-## La ficha técnica, en dos caras
+## El escandallo y la ficha técnica, cada uno en su sitio
 
-**Cara A · Coste.** Ingredientes con cantidad editable, porcentaje sobre el total, coste por línea, coste total, base sin impuestos, margen, precio recomendado, alérgenos con símbolos oficiales y simulador de gramajes.
+Son dos cosas, y van en dos pestañas (Richi, 16-oct · [0090](../decisiones/0090-el-repaso-del-16-oct.md)): **el escandallo desgrana el plato** —lo que lleva, cuánto y lo que cuesta— y **la ficha técnica enseña a hacerlo**. La ficha técnica no se escribe dos veces: coge el plato de la Carta y lo que lleva de su escandallo, y solo añade los pasos, cada uno con su foto si se quiere. Para hacerla, el plato tiene que estar en la Carta y tener su escandallo.
+
+**El escandallo.** Ingredientes con cantidad editable, porcentaje sobre el total, coste por línea, coste total, base sin impuestos, margen, precio recomendado, alérgenos con símbolos oficiales y simulador de gramajes.
 
 ```
 HAMBURGUESA ESTOOK                       version 4
@@ -727,7 +729,7 @@ HAMBURGUESA ESTOOK                       version 4
   MARGEN     11,08 €     Objetivo    ≤ 30 %  ✓
 ```
 
-**Cara B · Elaboración.** Mise en place, pasos numerados con foto, tiempo, temperatura, utensilio, truco del jefe de cocina, conservación y rendimiento. **Es la ficha de cocina y de sala** (0086): lo que lleva en gramos y cómo se hace, **sin un euro**, para leerla en el móvil, imprimirla o llevársela en PDF.
+**La ficha técnica.** Lo que lleva en gramos (del escandallo), los pasos numerados con su foto, el tiempo y las notas de emplatado y conservación. **Es la ficha de cocina y de sala** (0086): **sin un euro**, para leerla en el móvil, imprimirla o llevársela en PDF, y para que los nuevos aprendan.
 
 ## Por qué las fichas técnicas son el motor de todo
 
@@ -768,14 +770,14 @@ ACEITE  +12 %
 
 > Respeta el sistema de dependencias existente. **Nunca se modifican ventas históricas. Nunca se recalcula el pasado con precios de hoy.**
 
-## El modo cocina
+## Sin modo cocina
 
-Pantalla completa, letra grande, **sin un solo importe**, pensado para leerse desde el pase con las manos ocupadas. Foto del plato, gramajes, pasos con sus fotos, alérgenos y conservación. Se recorre con un gesto o dictando «siguiente». Y en el idioma del cocinero.
+Lo hubo (0087) y se quitó el 16-oct (0090): en servicio, la cocina tendrá **Estook TPV**, donde llegan las comandas; fuera del servicio, los cocineros abren Estook para gestionar, y la ficha técnica se lee en el móvil o en su PDF. No se mezclan las dos cosas.
 
 ## Lo demás que la hace una app de verdad
 
 - **Biblioteca con colecciones:** por categoría, por temporada, por dificultad, y colecciones propias.
-- **Elaboraciones** con ficha, coste y rendimiento propios («rinde 2 litros»), anidables, con detección de ciclos; **su stock, con la hoja de producción**. No se venden: nacen aquí y no salen en la Carta.
+- **Elaboraciones** con escandallo, coste y rendimiento propios («rinde 2 litros»), anidables, con detección de ciclos; **su stock, con la hoja de producción**. **Por ahora no se ofrecen** (0090): Richi no quiere otro escandallo de las salsas. Lo construido sigue en la base y las recetas que ya las llevaban las siguen enseñando.
 - **Extras y sustituciones** con su coste y su precio.
 - **Una sola receta a la vista, con historial** (0086): al cambiarla se confirma y se guarda, y esa es la de ahora. El historial, plegado, dice quién cambió qué y cuándo, y deja ver la de antes y recuperarla. Por dentro guarda cada receta entera, porque **lo vendido se cuenta con la receta de ese día**. Sin versiones numeradas ni comparador: Estook limpio.
 - **Escalado:** «esto es para 10, dame para 35».

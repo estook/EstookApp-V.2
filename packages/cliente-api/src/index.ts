@@ -135,6 +135,9 @@ export interface ClienteApi {
 /** La cabecera de lo hecho sin conexión: la lee `servidor/api/cabeceras.ts`. */
 export const CABECERA_HECHO_HACE = 'x-hecho-hace';
 
+/** Donde la API dice en qué región está su base (0090). La misma en `servidor/api`. */
+export const CABECERA_REGION_DE_LA_BASE = 'x-estook-region';
+
 /**
  * Cuando la peticion no llega ni a salir.
  *
@@ -149,6 +152,18 @@ const ERROR_SIN_RED: ErrorDeLaApi = ERRORES.sin_conexion;
 export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
   const pedir = opciones.pedir ?? fetch;
   const raiz = opciones.base.replace(/\/+$/, '');
+
+  /**
+   * **La región de la base, en cuanto la API la dice** (repaso del 16-oct, 0090).
+   *
+   * La función de Supabase corre donde está quien llama (París, desde España) y la
+   * base está en Irlanda: cada viaje a la base cruzaba Europa. La API dice en cada
+   * respuesta dónde está su base y, desde ahí, se le pide que corra a su lado con
+   * `x-region` (Supabase, «Regional invocation»). Una API de antes no lo dice y no se
+   * pide nada. Si algún día la cabecera no la dejara pasar, la petición fallaría por
+   * red: entonces se olvida y se repite sin ella.
+   */
+  let region: string | null = null;
 
   async function llamar<T>(
     metodo: 'GET' | 'POST',
@@ -173,6 +188,9 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
 
     if (cuerpo !== undefined) cabeceras['content-type'] = 'application/json';
 
+    const conRegion = region;
+    if (conRegion !== null) cabeceras['x-region'] = conRegion;
+
     let respuesta: Response;
     try {
       respuesta = await pedir(`${raiz}/v${VERSION_DE_LA_API}${camino}`, {
@@ -181,9 +199,16 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
         ...(cuerpo === undefined ? {} : { body: JSON.stringify(cuerpo) }),
       });
     } catch {
+      if (conRegion !== null) {
+        region = null;
+        return llamar<T>(metodo, camino, cuerpo, cabecerasExtra, alResponder);
+      }
       opciones.registro?.aviso('sin conexion con la API', { camino });
       return { ok: false, error: ERROR_SIN_RED, correlacionId };
     }
+
+    const dicha = respuesta.headers.get(CABECERA_REGION_DE_LA_BASE);
+    if (dicha !== null && /^[a-z]{2}-[a-z]+-\d$/.test(dicha)) region = dicha;
 
     alResponder?.(respuesta.status);
 

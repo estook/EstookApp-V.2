@@ -136,20 +136,31 @@ export async function enTransaccion<T>(
   hacer: (sql: Sql, sesion: SesionViva | null) => Promise<T>,
 ): Promise<T> {
   return abrir().begin(async (sql) => {
-    // 1 · El disfraz. A partir de aqui las politicas de M1 aplican.
-    await sql`set local role estook_api`;
+    // ── En dos viajes y no en cuatro (repaso del 16-oct, 0090) ───────────────
+    //
+    // El disfraz, el hilo, quién es y declararlo eran cuatro idas y vueltas a la
+    // base **en cada petición**, y con la base en otra región cada una cuesta lo
+    // suyo. `set_config('role', …, true)` es exactamente `set local role`, así que
+    // el disfraz y el hilo van juntos; y quién es se declara en la misma consulta
+    // que lo averigua. El orden no cambia: primero el disfraz.
 
-    // 2 · Quien es. `sesion_activa` es `security definer` a proposito: al
-    //     resolver el token todavia no hay identidad puesta, que es justo lo que
-    //     se esta averiguando. Esta razonado en la migracion 0018.
+    // 1 · El disfraz —a partir de aquí las políticas de M1 aplican— y el hilo.
+    await sql`
+      select set_config('role', 'estook_api', true),
+             set_config('estook.correlacion_id', ${quien.correlacionId}, true)
+    `;
+
+    // 2 · Quién es, y declarado. `sesion_activa` es `security definer` a
+    //     propósito: al resolver el token todavía no hay identidad puesta, que es
+    //     justo lo que se está averiguando (migración 0018). `set local`, para que
+    //     muera con la transacción.
     const sesion =
       quien.tokenDeSesion === null
         ? null
         : await resolver(sql, await huellaDeToken(quien.tokenDeSesion));
 
-    // 3 · Y ahora si, se declara. `set local`, para que muera con la transaccion.
-    await sql`select set_config('estook.persona_id', ${sesion?.personaId ?? ''}, true)`;
-    await sql`select set_config('estook.correlacion_id', ${quien.correlacionId}, true)`;
+    // 3 · Sin sesión, se declara que no hay nadie.
+    if (sesion === null) await sql`select set_config('estook.persona_id', '', true)`;
 
     return hacer(sql, sesion);
   }) as Promise<T>;
@@ -167,7 +178,10 @@ async function resolver(sql: Sql, huella: string): Promise<SesionViva | null> {
       es_demostracion: boolean;
       para_admin: boolean;
     }[]
-  >`select * from estook.sesion_activa(${huella})`;
+  >`
+    select s.*, set_config('estook.persona_id', s.persona_id::text, true) as declarada
+      from estook.sesion_activa(${huella}) s
+  `;
 
   const fila = filas[0];
   if (!fila) return null;

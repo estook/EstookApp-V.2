@@ -183,6 +183,8 @@ import {
   archivarElaboracion,
   crearElaboracion,
   guardarFicha,
+  ponerFotoDelPaso,
+  quitarFotoDelPaso,
   recuperarElaboracion,
   recuperarReceta,
   vincularPlato,
@@ -768,5 +770,8 @@ export const catalogo = {
     [archivarElaboracion.nombre]: archivarElaboracion,
     [recuperarElaboracion.nombre]: recuperarElaboracion,
     [vincularPlato.nombre]: vincularPlato,
+    // La foto de cada paso de la ficha técnica (repaso del 16-oct, 0090).
+    [ponerFotoDelPaso.nombre]: ponerFotoDelPaso,
+    [quitarFotoDelPaso.nombre]: quitarFotoDelPaso,
   } as Record<string, Comando<never, unknown>>,
 };

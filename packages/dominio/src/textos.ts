@@ -249,17 +249,39 @@ export function fechaCorta(fecha: FechaOperativa): string {
  * entero.
  */
 export function conUnidadAproximada(valor: number, unidad: string): string {
-  const decimales = Math.abs(valor) < 1 ? 2 : Math.abs(valor) < 10 ? 1 : 0;
-  return conUnidad(Number(valor.toFixed(decimales)) as Cantidad, unidad);
+  const [enSuMedida, enQue] = aSuMedida(valor, unidad);
+  const decimales = Math.abs(enSuMedida) < 1 ? 2 : Math.abs(enSuMedida) < 10 ? 1 : 0;
+  return comoSeEscribe(Number(enSuMedida.toFixed(decimales)), enQue, decimales);
 }
 
-/** Cantidades con su unidad, sin decimales que sobren: «1,5 kg», «250 g». */
+/** Lo que pasa de mil gramos se dice en kilos, y lo que pasa de mil mililitros, en litros. */
+const LA_GRANDE: Readonly<Record<string, string>> = { g: 'kg', ml: 'l' };
+
+/**
+ * «4,602 kg» y no «4602 g» (Richi, 16-oct: «tengo 4602 g de atún, y es poco intuitivo»).
+ * Lo que se cuenta en gramos o mililitros sigue guardándose así —el libro no cambia—;
+ * solo se **lee** en kilos o litros en cuanto pasa de mil.
+ */
+function aSuMedida(valor: number, unidad: string): readonly [number, string] {
+  const grande = LA_GRANDE[unidad];
+  return grande !== undefined && Math.abs(valor) >= 1000 ? [valor / 1000, grande] : [valor, unidad];
+}
+
+function comoSeEscribe(valor: number, unidad: string, decimales: number): string {
+  const fijo = valor.toFixed(decimales);
+  // Los ceros de detrás, solo si hay coma: «120» no es «12».
+  const limpio = (fijo.includes('.') ? fijo.replace(/\.?0+$/, '') : fijo).replace('.', ',');
+  return `${limpio === '-0' ? '0' : limpio} ${unidad}`;
+}
+
+/**
+ * Cantidades con su unidad, sin decimales que sobren: «1,5 kg», «250 g», «4,602 kg».
+ * En gramos y mililitros, como mucho dos decimales («95,24 g», nunca «95,2381 g»); en
+ * lo demás, tres, que en kilos es el gramo exacto.
+ */
 export function conUnidad(cuanto: Cantidad, unidad: string): string {
-  const limpio = Number(cuanto)
-    .toFixed(4)
-    .replace(/\.?0+$/, '')
-    .replace('.', ',');
-  return `${limpio} ${unidad}`;
+  const [valor, enQue] = aSuMedida(Number(cuanto), unidad);
+  return comoSeEscribe(valor, enQue, enQue === 'g' || enQue === 'ml' ? 2 : 3);
 }
 
 /** Un porcentaje, desde su fracción: 0,1 se lee «10 %». */

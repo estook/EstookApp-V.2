@@ -365,7 +365,7 @@ function ParaEditar({
             await refrescarLasFichas();
           }}
           alVerLaFicha={() => {
-            navegar(`/escandallos/fichas/todas?ficha=plato.${plato.id}`);
+            navegar(`/escandallos/escandallos/todos?ficha=plato.${plato.id}`);
           }}
         />
       )}
@@ -497,7 +497,7 @@ function ParaEditar({
   );
 }
 
-// ── El vínculo con el Almacén, y la ficha ────────────────────────────────────
+// ── El vínculo con el Almacén, y el escandallo ──────────────────────────────────
 
 function ElVinculo({
   plato,
@@ -554,7 +554,8 @@ function ElVinculo({
       )}
       {puedeVerLaFicha && (
         <Boton tono="secundario" icono={<IconoEscandallos size={18} />} onClick={alVerLaFicha}>
-          {plato.tieneFicha ? 'Su ficha' : 'Desgranar'}
+          {/* El escandallo, no «la ficha» (Richi, 16-oct): la ficha técnica es otra cosa. */}
+          {plato.tieneFicha ? 'Su escandallo' : 'Desgranar'}
         </Boton>
       )}
     </div>
@@ -609,10 +610,12 @@ function ParaMirar({ datos, carta }: { readonly datos: ElPlato; readonly carta: 
           tono="secundario"
           icono={<IconoEscandallos size={18} />}
           onClick={() => {
+            // Quien solo mira la carta (la sala) va a la ficha técnica: cómo se hace y
+            // qué lleva, sin un euro (0090).
             navegar(`/escandallos/fichas/todas?ficha=plato.${plato.id}`);
           }}
         >
-          Ver la ficha
+          Ver la ficha técnica
         </Boton>
       )}
     </div>

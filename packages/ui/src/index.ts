@@ -119,6 +119,7 @@ export type { AnilloProps } from './componentes/graficas/Anillo.tsx';
 
 export { Aviso, ErrorEnCristiano } from './componentes/Aviso.tsx';
 export { ConMasInfo } from './componentes/ConMasInfo.tsx';
+export { GrupoDePlegables, Plegable } from './componentes/Plegable.tsx';
 export type { AvisoProps, TonoDeAviso, ErrorDeLaApi } from './componentes/Aviso.tsx';
 
 export { EstadoVacio, NadaConEso, TodaviaNo } from './componentes/EstadoVacio.tsx';

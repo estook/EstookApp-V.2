@@ -141,7 +141,8 @@ test('lo de hoy: lo que caduca hoy sale arriba del Panel, y «Luego» lo aparta'
   await entrarEnLaApp(page, ROSA);
   const zona = page.getByRole('region', { name: 'Lo que necesita tu atención' });
   // En el móvil sale plegado (25-sep), y lo que caduca puede no ser lo primero.
-  await expect(zona.getByRole('region', { name: 'Hoy' })).toBeVisible();
+  // Sin nada, «Hoy» no sale (0090): se espera a que llegue lo de hoy, como el Panel.
+  await expect(zona.getByRole('region', { name: 'Hoy' })).toBeVisible({ timeout: 15_000 });
   const plegado = zona.getByRole('button', { name: /^Hoy/, expanded: false });
   if ((await plegado.count()) > 0) await plegado.click();
   const caduca = zona.getByRole('listitem').filter({ hasText: /caducan? hoy/ });

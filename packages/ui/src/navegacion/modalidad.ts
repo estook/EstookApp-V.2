@@ -25,12 +25,36 @@
  */
 let ultimaFueTeclado = false;
 
+/*
+ * ── Y la misma marca, en la página (repaso del 16-oct, punto 8) ─────────────
+ *
+ * Lo de la rueda pasaba en todas partes: al abrir una ficha, `showModal()` da el
+ * foco a la «X» de cerrar, y el iPhone —y el ordenador, al hacer clic— lo pinta como
+ * si se hubiera llegado con el teclado. «Un cuadrado naranja que sale al tocar con el
+ * dedo», dijo Richi. Con el dedo, `<html data-con-el-dedo>`, y `base.css` no pinta el
+ * anillo; con la primera tecla se quita y el anillo vuelve, que es B8.
+ */
+function marcar(conElDedo: boolean) {
+  if (conElDedo) document.documentElement.dataset['conElDedo'] = '';
+  else delete document.documentElement.dataset['conElDedo'];
+}
+
 if (typeof document !== 'undefined') {
   // En captura, para enterarse aunque alguien pare la propagación por el camino.
   document.addEventListener(
     'keydown',
-    () => {
+    (evento) => {
+      // Escribir en un campo no es recorrer la app con el teclado: el móvil manda teclas.
+      const donde = evento.target;
+      if (
+        evento.key !== 'Tab' &&
+        donde instanceof HTMLElement &&
+        (donde.isContentEditable || donde.matches('input, textarea, select'))
+      ) {
+        return;
+      }
       ultimaFueTeclado = true;
+      marcar(false);
     },
     true,
   );
@@ -38,6 +62,7 @@ if (typeof document !== 'undefined') {
     'pointerdown',
     () => {
       ultimaFueTeclado = false;
+      marcar(true);
     },
     true,
   );

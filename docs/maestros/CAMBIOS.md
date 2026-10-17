@@ -5,7 +5,7 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
-**El 18 de octubre** ([0094](../decisiones/0094-la-prueba-de-la-plantilla.md)), sin cambiar de versión: el **Plan** gana en la regla 14 (A1) **la prueba de la plantilla**, preguntas 16 a 21, y E1 la pide para dar algo por terminado.
+**El 18 de octubre** ([0094](../decisiones/0094-la-prueba-de-la-plantilla.md)), sin cambiar de versión: el **Plan** gana en la regla 14 (A1) **la prueba de la plantilla**, preguntas 16 a 22, y E1 la pide para dar algo por terminado.
 
 **El 17 de octubre, por la noche** ([0093](../decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)), sin cambiar de versión: el **Plan** dice en M9 y en M20 cómo se avisa de lo que se escapa y cómo se calibra, con su diseño en [`como-detecta-estook-lo-que-se-escapa.md`](../como-detecta-estook-lo-que-se-escapa.md).
 

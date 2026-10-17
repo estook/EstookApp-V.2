@@ -55,7 +55,7 @@ Un producto, en un periodo, es **fiable** si se cumplen las seis:
 
 Si falta alguna, **la diferencia se enseña igual**, en gris y con la frase de lo que falta:
 «Para vigilar esto, faltan los escandallos de _Pulpo especial_ y _Croquetas del día_». Con
-**«Desgranar»** al lado. Así el aviso que no sale **se convierte en una tarea útil**, no en un
+**«Desgranar»** al lado (y, si se decide, «Con Fogón»: [la propuesta](fogon-en-cada-sitio.md)). Así el aviso que no sale **se convierte en una tarea útil**, no en un
 silencio.
 
 **«Todo lo vendido con escandallo» es exigente a propósito** (Richi: A, 0094): un aviso con recetas
@@ -236,4 +236,4 @@ Antes de construir cualquier cosa, seis preguntas. Si alguna sale mal, se rehace
 1. **Solo vigila un periodo cuando todo lo vendido tiene escandallo: A.** Cuándo se vende algo sin
    escandallo aunque la Carta y el escandallo estén unidos (un plato nuevo, uno del día, el
    artículo libre, la caja sin emparejar), en la 0094.
-2. **La prueba de la plantilla entra en el Plan: A.** Son las preguntas 16 a 21 de la regla 14.
+2. **La prueba de la plantilla entra en el Plan: A.** Son las preguntas 16 a 22 de la regla 14.

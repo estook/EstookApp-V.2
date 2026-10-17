@@ -132,7 +132,7 @@ Los agregados, la previsión de ventas, el presupuesto, las exportaciones para l
 
 ### M22 · Fogón
 
-El asistente en todas las apps, el centro de alertas, la voz para mermas y temperaturas, y la lectura de albaranes por foto. Con su presupuesto por local y día.
+El asistente en todas las apps, el centro de alertas, la voz para mermas y temperaturas, y la lectura de albaranes por foto. Con su presupuesto por local y día. **Lo que propuso Richi el 18-oct** —«Rellenar con Fogón» en Escandallos, los pasos de la ficha, revisar los datos y «¿cuánto preparo mañana?»—, y si una parte se adelanta: en [`fogon-en-cada-sitio.md`](fogon-en-cada-sitio.md), sin decidir.
 
 ### M23 · Reseñas, competencia y chat
 

@@ -7,7 +7,7 @@
 ## Lo que contestó Richi
 
 1. **Estook solo vigila un periodo cuando todo lo vendido en él tiene escandallo: A.** Con una duda: «se supone que todo lo que se vende tiene escandallo, por eso vinculamos la carta al escandallo». Abajo, cuándo no lo tiene.
-2. **La prueba de la plantilla entra en el Plan: A.**
+2. **La prueba de la plantilla entra en el Plan: A**, y Richi la precisó el 18-oct: que sirva **para detectar trabajo innecesario, duplicidades, bloqueos y problemas de uso en los planes nuevos**, para mejorarlos antes de construirlos; que **no cambie por iniciativa propia la lógica ni la arquitectura que ya existen**; y que, si encuentra un problema, se le explique la situación con una solución sencilla o lo que hacen las mejores apps, **y se espere su aprobación**, con las preguntas bien hechas.
 
 Y otra vez, con razón: **las preguntas tienen que explicar qué es cada cosa y por qué se pregunta**, también cuando parece obvio ([lo que se aprendió](../lecciones.md), lección 196).
 
@@ -26,20 +26,23 @@ En esos días, Estook **no sabe** qué género gastaron esas ventas, así que cr
 
 ## 2 · La prueba de la plantilla
 
-Seis preguntas que se contestan **antes de construir cualquier cosa**, junto a las de la regla 14. Si una sale mal, se rehace el diseño:
+Siete preguntas que se contestan **en el plan de cada cosa nueva, antes de construirla**, junto a las de la regla 14. Si una sale mal, se rehace la propuesta:
 
 16. ¿Le pide **trabajo nuevo** a alguien del equipo? Si sí, ¿a quién, cuánto, y compensa?
-17. ¿**Bloquea** algo que se use en servicio? No puede.
-18. ¿Se entiende **sin formación**, con una «i» como mucho?
-19. ¿**Avisa solo cuando hay algo que hacer**, y dice qué?
-20. ¿Funciona **con datos a medias**, diciendo lo que falta en vez de romperse o mentir?
-21. ¿**Señala a alguien**? Nunca.
+17. ¿**Duplica** algo que ya existe: un dato que se pide dos veces, una pantalla o un aviso que repite otro?
+18. ¿**Bloquea** algo que se use en servicio? No puede.
+19. ¿Es **fácil de usar**: se entiende sin formación, con una «i» como mucho, y en los menos toques posibles?
+20. ¿**Avisa solo cuando hay algo que hacer**, y dice qué?
+21. ¿Funciona **con datos a medias**, diciendo lo que falta en vez de romperse o mentir?
+22. ¿**Señala a alguien**? Nunca.
 
-**Para qué sirve, con lo que ya pasó:** «ya la sé» en las fichas habría fallado la 16 (trabajo nuevo para cada cocinero, sin que nadie lo pidiera), y el QR de la ficha impresa, la 18 (una cosa más que explicar para algo que ya hace el PDF). Las dos se quitaron el 17-oct porque las vio Richi; con la prueba, se habrían caído antes de preguntárselas.
+**Lo que no hace:** cambiar por su cuenta lo que ya está construido ni la arquitectura. Si al pasarla aparece un problema en algo que ya existe, se le cuenta a Richi —qué pasa, un ejemplo, una solución sencilla o lo que hacen las mejores apps— y **se espera su sí** antes de tocarlo.
+
+**Para qué sirve, con lo que ya pasó:** «ya la sé» en las fichas habría fallado la 16 (trabajo nuevo para cada cocinero, sin que nadie lo pidiera), y el QR de la ficha impresa, la 17 (duplicaba lo que ya hace el PDF) y la 19 (una cosa más que explicar). Las dos se quitaron el 17-oct porque las vio Richi; con la prueba, se habrían caído antes de preguntárselas.
 
 ## Lo que cambia
 
-- **El Plan, A1**: la regla 14 gana las preguntas 16 a 21, «por la plantilla».
+- **El Plan, A1**: la regla 14 gana las preguntas 16 a 22, «por la plantilla», y lo que no hace.
 - **El Plan, E1**: «Terminado» pide también que se pase la prueba de la plantilla.
 - **El diseño de lo que se escapa**: sus dos preguntas, contestadas.
 - **El plan de M9 · 3**: contesta la prueba de la plantilla en su tabla de la regla 14.

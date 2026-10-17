@@ -15,9 +15,12 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ---
 
-## Lo que te toca ahora · decir si construyo M9 · 3
+## Lo que te toca ahora · dos respuestas y el «adelante»
 
-Está contestado entero ([0092](decisiones/0092-las-respuestas-de-m9-3.md) a [0094](decisiones/0094-la-prueba-de-la-plantilla.md)). Cuando digas «adelante», se construye y te llegan sus pasos: **fusionar, migrar** (una columna nueva: cuántas raciones salen de una tanda) **y desplegar la API**. Mientras, no hay nada que hacer en GitHub.
+- **¿Construyo M9 · 3?** Está contestado entero ([0092](decisiones/0092-las-respuestas-de-m9-3.md) a [0094](decisiones/0094-la-prueba-de-la-plantilla.md)). Cuando digas «adelante», te llegan sus pasos: **fusionar, migrar** (una columna nueva: cuántas raciones salen de una tanda) **y desplegar la API**.
+- **Las dos preguntas de [Fogón en cada sitio](fogon-en-cada-sitio.md)**: el coste de lo vendido sin escandallo, y cuándo llega «Rellenar con Fogón».
+
+Mientras, no hay nada que hacer en GitHub.
 
 ## Hecho · cómo detecta Estook lo que se escapa
 

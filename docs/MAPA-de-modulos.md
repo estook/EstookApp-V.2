@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **M9 · Escandallos**, en su segunda entrega, **M9 · 2 · Fichas y escandallos** ([0087](decisiones/0087-fichas-y-escandallos.md); [el plan](m9-escandallos.md), contestado en la [0086](decisiones/0086-las-respuestas-de-m9.md)). La primera, **M9 · 1 · El plato y tu carta**, está en producción desde el 15-oct. **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+Estás en **M9 · Escandallos**, antes de su tercera entrega, **M9 · 3** ([el plan](m9-escandallos.md), contestado en la [0086](decisiones/0086-las-respuestas-de-m9.md)). **M9 · 1 · El plato y tu carta** y **M9 · 2 · Fichas y escandallos** están en producción, con su arreglo, los permisos de la API y el repaso del 16-oct ([0087](decisiones/0087-fichas-y-escandallos.md) a [0090](decisiones/0090-el-repaso-del-16-oct.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -24,7 +24,7 @@ DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → 
 
 **No antes, porque un TPV sin carta no existe.** Para tomar nota hace falta una carta con precios (M10), para que la carta tenga sentido hacen falta fichas (M9), y para las fichas, almacén con precios (M6 a M8). Y emitir tickets es irreversible: el día que Estook emite el primero pasa a ser un sistema de facturación con responsabilidad legal, y eso no se enciende sobre cimientos a medias.
 
-**No después, porque hay una fecha.** Los autónomos —la mayoría de los bares— tienen que usar un programa adaptado a VeriFactu desde el **1 de julio de 2027**, y las sociedades desde el **1 de enero**. En el primer semestre de 2027 mucha gente va a cambiar de TPV, y Estook tiene que estar. Richi lo decidió el 29-sep: «justo después de M10».
+**No después, porque hay una fecha.** Los autónomos —la mayoría de los bares— tienen que usar un programa adaptado a VeriFactu desde el **1 de julio de 2027**, y las sociedades desde el **1 de enero**. En el primer semestre de 2027 mucha gente va a cambiar de TPV, y Estook tiene que estar. Richi lo decidió el 29-sep: «justo después de M10». **El 5-oct-2026 Hacienda anunció pasar esas fechas a octubre de 2028**, todavía sin BOE ([Anexo, 1.2](maestros/Estook-Anexo-TPV-y-Facturacion.md)): hasta que se publique mandan las de 2027, y si se publica, se revisa este orden con Richi.
 
 **Y lo que el TPV necesitaba de los módulos de detrás se adelanta con él:** la jornada (M16a), y el motor de los PDF, que se estrena en H.
 
@@ -48,7 +48,7 @@ Inventario cíclico, almacén valorado, mermas en tres toques, consumo de person
 
 ### M9 · Escandallos
 
-El corazón. **Contestado el 15-oct** ([0086](decisiones/0086-las-respuestas-de-m9.md)) y en tres entregas: **M9 · 1 · El plato y tu carta** —secciones, platos, los canales con su precio a mano (Uber Eats el primero) y el historial de cada plato—, adelantada de M10 para que el plato nazca donde va a vivir; **M9 · 2 · Fichas y escandallos** —«sin ficha», fichas anidables con detección de ciclos y su rendimiento, el escandallo con el margen por canal, alérgenos calculados, el modo cocina sin importes y la ficha en PDF, con una receta a la vista y su historial—; y **M9 · 3** —escalar, extras, «ya la sé», la hoja de producción, el QR y «qué ha cambiado»—. **M9 · 2, construida el 16-oct** ([0087](decisiones/0087-fichas-y-escandallos.md)), con la carta que vincula lo que se vende tal cual y dice sus alérgenos y lo que pica. Todo lo que hace especial al TPV después sale de aquí.
+El corazón. **Contestado el 15-oct** ([0086](decisiones/0086-las-respuestas-de-m9.md)) y en tres entregas: **M9 · 1 · El plato y tu carta** —secciones, platos, los canales con su precio a mano (Uber Eats el primero) y el historial de cada plato—, adelantada de M10 para que el plato nazca donde va a vivir; **M9 · 2 · Fichas y escandallos** —«sin ficha», fichas anidables con detección de ciclos y su rendimiento, el escandallo con el margen por canal, alérgenos calculados, el modo cocina sin importes y la ficha en PDF, con una receta a la vista y su historial—; y **M9 · 3** —escalar, extras, «ya la sé», la hoja de producción, el QR y «qué ha cambiado»—. **M9 · 2, construida el 16-oct** ([0087](decisiones/0087-fichas-y-escandallos.md)), con la carta que vincula lo que se vende tal cual y dice sus alérgenos y lo que pica. **El repaso del 16-oct** ([0090](decisiones/0090-el-repaso-del-16-oct.md)) separa el escandallo de la ficha técnica (Resumen · Escandallos · Fichas, con foto en cada paso), **quita el modo cocina de Escandallos** (en servicio, la cocina tendrá Estook TPV) y **para las elaboraciones** hasta que Richi las pida: la hoja de producción con su stock espera con ellas. En M9 · 3, «ya la sé» y lo que se pensó con el modo cocina se vuelven a preguntar. Todo lo que hace especial al TPV después sale de aquí.
 
 ### M10 · Carta, menús y análisis
 
@@ -215,6 +215,7 @@ Lo que ya existe a medias y el módulo que lo acaba. Vivía en `ESTADO.md` hasta
 
 **Sin prisa, de código:** volver a `BrowserRouter` ahora que hay dominio
 ([0008](decisiones/0008-enrutado-con-almohadilla.md)); pasar Pedidos, Albaranes y
-Facturas a `usarListaLarga` cuando una crezca; subir a React Router 7; **el 19 de
-octubre, mirar la integración continua**, que GitHub pasa `ubuntu-latest` a Ubuntu 26 ese
-día; y el vectorial del logotipo y de Fogón cuando aparezcan.
+Facturas a `usarListaLarga` cuando una crezca; subir a React Router 7; **pasar las máquinas de GitHub a Ubuntu 26**
+cuando convenga (desde el 17-oct todas van fijas en la 24, y no en `ubuntu-latest`, que
+cambia el 19-oct: se sube a mano, todas a la vez y con las capturas rehechas en el mismo
+cambio); y el vectorial del logotipo y de Fogón cuando aparezcan.

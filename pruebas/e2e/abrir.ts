@@ -27,11 +27,19 @@ import type { Page } from '@playwright/test';
  * «interrumpió» a la otra: la que pedía la prueba no llegó a hacerse. Pasó en Safari,
  * en la prueba que recorre las ocho apps. Se abre otra vez, una vez, con la misma
  * regla: si vuelve a pasar, o es cualquier otra cosa, la prueba falla.
+ *
+ * Safari lo cuenta con otras palabras: «Frame load interrupted». Salió el 17-oct en
+ * `main`, en la misma prueba y al abrir `#/cuaderno` (lección 195); es el mismo corte.
  */
 const EL_MOTOR_SE_HA_CAIDO = 'WebKit encountered an internal error';
 const LA_PAGINA_SE_MOVIA_SOLA = 'is interrupted by another navigation';
+const LA_PAGINA_SE_MOVIA_SOLA_EN_SAFARI = 'Frame load interrupted';
 
-const SE_PUEDE_REPETIR = [EL_MOTOR_SE_HA_CAIDO, LA_PAGINA_SE_MOVIA_SOLA];
+const SE_PUEDE_REPETIR = [
+  EL_MOTOR_SE_HA_CAIDO,
+  LA_PAGINA_SE_MOVIA_SOLA,
+  LA_PAGINA_SE_MOVIA_SOLA_EN_SAFARI,
+];
 
 /** Hasta dónde se espera: a que esté el documento (lo normal) o a que cargue todo. */
 type HastaCuando = 'domcontentloaded' | 'load';

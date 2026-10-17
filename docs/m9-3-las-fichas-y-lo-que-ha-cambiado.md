@@ -140,7 +140,7 @@ los gráficos de control) está allí.
 
 ---
 
-## Las preguntas de la regla 14, para lo que entra
+## Las preguntas de la regla 14 y la prueba de la plantilla, para lo que entra
 
 | Pregunta                        | Escalar                                      | «Qué ha cambiado»                                       | Receta de Estook                                    |
 | ------------------------------- | -------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------- |
@@ -152,6 +152,12 @@ los gráficos de control) está allí.
 | Sin internet                    | Necesita señal, como el resto de Escandallos | Necesita señal                                          | Necesita señal                                      |
 | Si se hace dos veces            | Igual                                        | Un aviso por plato y por raya                           | Cada guardado, al historial; el plato no se duplica |
 | Qué queda en la auditoría       | Nada                                         | El aviso                                                | El guardado, en el historial de la receta           |
+| **16 · Trabajo nuevo**          | Ninguno                                      | Ninguno: se lee                                         | Ninguno: es un atajo opcional                       |
+| **17 · Bloquea algo**           | No                                           | No                                                      | No: se puede escribir desde cero                    |
+| **18 · Sin formación**          | Una «i»; la tanda, plegada                   | Se lee como una lista                                   | Solo sale si el plato se llama como una de las diez |
+| **19 · Avisa con qué hacer**    | No avisa                                     | Solo al cruzar una raya, con el plato y el ingrediente  | No avisa                                            |
+| **20 · Con datos a medias**     | Sin «rinde» puesto, es 1 ración              | Sin precio de antes, lo dice                            | Lo que no está unido no cuenta, y lo dice           |
+| **21 · Señala a alguien**       | No                                           | No                                                      | No                                                  |
 
 ---
 

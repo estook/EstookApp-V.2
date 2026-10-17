@@ -4,38 +4,24 @@
 >
 > Comprobado el 17 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
 >
-> | Qué                         | Cómo está                                                                                                            |
-> | --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #111** (el plan de M9 · 3). Abierta: **cómo detecta Estook lo que se escapa**, solo documentos |
-> | La base de datos            | **72 de 72** migraciones, igual que `main`                                                                           |
-> | La API                      | **Desplegada el 17-oct**: 90 consultas y 196 comandos, corriendo en Irlanda junto a su base                          |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                                            |
+> | Qué                         | Cómo está                                                                                   |
+> | --------------------------- | ------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #112** (cómo detecta Estook lo que se escapa). Ninguna abierta        |
+> | La base de datos            | **72 de 72** migraciones, igual que `main`                                                  |
+> | La API                      | **Desplegada el 17-oct**: 90 consultas y 196 comandos, corriendo en Irlanda junto a su base |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                   |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo que quede de antes, en [`pasos-de-m8.md`](pasos-de-m8.md).
 
 ---
 
-## Lo que te toca ahora · cómo detecta Estook lo que se escapa
+## Lo que te toca ahora · decir si construyo M9 · 3
 
-Lo que pediste en la 3C de M9 · 3, estudiado y escrito para M20 ([decisión 0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md), [el diseño](como-detecta-estook-lo-que-se-escapa.md)). **No hay nada que migrar ni que desplegar**: son solo documentos.
+Está contestado entero ([0092](decisiones/0092-las-respuestas-de-m9-3.md) a [0094](decisiones/0094-la-prueba-de-la-plantilla.md)). Cuando digas «adelante», se construye y te llegan sus pasos: **fusionar, migrar** (una columna nueva: cuántas raciones salen de una tanda) **y desplegar la API**. Mientras, no hay nada que hacer en GitHub.
 
-### 1 · Contestar las dos preguntas
+## Hecho · cómo detecta Estook lo que se escapa
 
-Al final del diseño: si Estook solo vigila cuando todo lo vendido tiene escandallo (1), y si «la prueba de la plantilla» entra en el Plan (2). Basta con «1A, 2A» o lo que elijas. **Y dime si empiezo a construir M9 · 3**, que ya está contestado entero.
-
-### 2 · Fusionar
-
-En **github.com** → **Pull requests** → **«Cómo detecta Estook lo que se escapa…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.** Después, en PowerShell, uno por uno:
-
-```bash
-git checkout main
-```
-
-```bash
-git pull
-```
-
-**Qué tiene que salir:** que estás en `main` y una lista de ficheros de `docs/`. **Si dice que hay cambios tuyos que se perderían, para y avísame.**
+Fusionado (#112). El diseño, para M20, en [`como-detecta-estook-lo-que-se-escapa.md`](como-detecta-estook-lo-que-se-escapa.md); tus dos respuestas, en la [0094](decisiones/0094-la-prueba-de-la-plantilla.md).
 
 ## Hecho · el plan de M9 · 3
 

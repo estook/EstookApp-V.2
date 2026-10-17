@@ -60,6 +60,8 @@ Es la regla 14, desplegada. Si falta una respuesta, no se implementa todavía: s
 
 **Y si interviene un servicio de fuera:** 10 · ¿qué ofrece **de verdad**, según su documentación oficial de hoy? · 11 · ¿qué permisos y qué aprobación pide? · 12 · ¿qué datos devuelve? · 13 · ¿qué avisos manda? · 14 · ¿qué límites y condiciones tiene? · 15 · ¿cómo se autentica y cómo se renueva la conexión?
 
+**Y siempre, por la plantilla** —«la prueba de la plantilla», [0094](../decisiones/0094-la-prueba-de-la-plantilla.md)—: Estook es un compañero de control, no un policía. 16 · ¿le pide **trabajo nuevo** a alguien del equipo? Si sí, ¿a quién, cuánto, y compensa? · 17 · ¿**bloquea** algo que se use en servicio? (no puede) · 18 · ¿se entiende **sin formación**, con una «i» como mucho? · 19 · ¿**avisa solo cuando hay algo que hacer**, y dice qué? · 20 · ¿funciona **con datos a medias**, diciendo lo que falta en vez de romperse o mentir? · 21 · ¿**señala a alguien**? (nunca). Si una sale mal, se rehace el diseño antes de construir.
+
 **Y el orden de trabajo:** leer `ESTADO.md` → los maestros que toquen → el módulo afectado y de qué depende → el modelo de datos → el contrato de la API → diseñar → implementar → pruebas → permisos llamando a la API a pelo → móvil real → `ESTADO.md`.
 
 ## A2 · Cómo no perder el contexto
@@ -981,7 +983,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - Los textos van por el motor de textos, en español de España, sin jerga y sin emojis.
 - **Las cifras llevan su origen y su periodo.**
 - Ninguna dependencia nueva sin justificar.
-- Se ha respondido a la regla 14: qué datos usa, quién se entera cuando cambien, qué automatiza Fogón y qué aprueba una persona.
+- Se ha respondido a la regla 14: qué datos usa, quién se entera cuando cambien, qué automatiza Fogón y qué aprueba una persona; **y pasa la prueba de la plantilla** (0094).
 - `ESTADO.md` actualizado.
 
 ## E2 · Qué se entrega en cada módulo

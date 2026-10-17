@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 17 de octubre de 2026 · **M9 · 2 en producción con su repaso (#109, 72 migraciones, API 90 y 196). M9 · 3, contestado entero (0092 y 0093) y listo para construir. En su pull request, cómo detecta Estook lo que se escapa (para M20), con dos preguntas para Richi**
+Última actualización: 18 de octubre de 2026 · **M9 · 2 en producción con su repaso (#109, 72 migraciones, API 90 y 196). M9 · 3, contestado entero (0092 a 0094) y listo para construir, a la espera de que Richi diga «adelante». La prueba de la plantilla, en el Plan (0094)**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -15,12 +15,12 @@
 > | Quién ve qué                        | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                                  |
 > | Qué desencadena cada cambio         | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                                       |
 > | Estook TPV y la facturación         | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**                       |
-> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (93)                                                      |
+> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (94)                                                      |
 > | Lo que decidió la IA por su cuenta  | [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md)                                           |
 > | Lo legal, y lo ya investigado       | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md)             |
 > | Lo que cuesta cada local            | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                                     |
 > | Lo que hizo cada entrega            | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                                     |
-> | Lo aprendido fallando (195)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                 |
+> | Lo aprendido fallando (196)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                 |
 > | Los pasos de Richi                  | [`docs/pasos-de-m9.md`](docs/pasos-de-m9.md)                                                             |
 > | Dónde vive cada clave               | [`config/claves.md`](config/claves.md) (los nombres, nunca los valores)                                  |
 
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Trabajo a medias: ninguno.** La rama `como-detecta-estook-lo-que-se-escapa` (solo documentos) está entera y en su pull request. **M9 · 3 está contestado entero**: lo siguiente es construirlo, en una rama nueva desde `main`, cuando Richi diga.
+- **Trabajo a medias: ninguno.** La rama `m9-3-escalar-y-lo-que-ha-cambiado` está subida, **sin pull request todavía**: lleva solo documentos (0094, la prueba de la plantilla en el Plan, la lección 196). Si Richi dice que se construya M9 · 3, se construye en esa misma rama y va todo en un pull request; si no, se abre con lo que hay.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -42,8 +42,8 @@ Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en
 |               |                                                                                                                                                                                                                                                                                                                                                                        |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminado** | **M0** a **M6½** · **M7** (las compras) · **«antes de M8» entero** · **M8** con sus repasos · la experiencia, las bases firmes y la 0085 · **M9 · 1** y **M9 · 2** con su arreglo, los permisos de la API y **el repaso del 16-oct** (#104–#109) · **la puesta al día del 17-oct** (#110, [0091](docs/decisiones/0091-estado-a-250-lineas-y-los-documentos-al-dia.md)) |
-| **En curso**  | **Cómo detecta Estook lo que se escapa** ([0093](docs/decisiones/0093-como-detecta-estook-lo-que-se-escapa.md), [el diseño](docs/como-detecta-estook-lo-que-se-escapa.md)), en su pull request: los cuatro filtros, el arranque sin datos, la fuga constante, la auditoría de la sencillez y **dos preguntas**. Para M20; solo documentos                              |
-| **`main`**    | Todo fusionado hasta la **#111** (17-oct): la puesta al día (#110) y el plan de M9 · 3 (#111). Las dos, con las tres comprobaciones en verde y **ninguna prueba repetida**                                                                                                                                                                                             |
+| **En curso**  | **Esperando a Richi para construir M9 · 3.** Contestado entero ([0092](docs/decisiones/0092-las-respuestas-de-m9-3.md) a [0094](docs/decisiones/0094-la-prueba-de-la-plantilla.md)); en la rama `m9-3-escalar-y-lo-que-ha-cambiado`, la prueba de la plantilla en el Plan (regla 14, preguntas 16 a 21)                                                                |
+| **`main`**    | Todo fusionado hasta la **#112** (17-oct): la puesta al día (#110), el plan de M9 · 3 (#111) y cómo detecta Estook lo que se escapa (#112), las tres en verde y sin pruebas repetidas en su pull request                                                                                                                                                               |
 | **Base**      | Supabase, **72 de 72** migraciones (la 0072, migrada por Richi tras fusionar la #109). **116 tablas**, todas con seguridad por filas                                                                                                                                                                                                                                   |
 | **API**       | Desplegada el 17-oct con la #109: **90 consultas y 196 comandos**, el lote del Panel, Sentry encendido, los avisos al móvil y el reloj latiendo. **Corre en Irlanda, junto a su base** (comprobado: `x-sb-edge-region: eu-west-1`)                                                                                                                                     |
 | **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                                                                                                                                      |
@@ -100,10 +100,10 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 
 **Ahora** (paso a paso en [`docs/pasos-de-m9.md`](docs/pasos-de-m9.md)):
 
-1. **Contestar las dos preguntas** del final de [cómo detecta Estook lo que se escapa](docs/como-detecta-estook-lo-que-se-escapa.md): si solo vigila cuando todo lo vendido tiene escandallo, y si «la prueba de la plantilla» entra en el Plan. **Y decir si empiezo a construir M9 · 3.**
+1. **Decir si construyo M9 · 3** ([el plan](docs/m9-3-las-fichas-y-lo-que-ha-cambiado.md)): la receta por ración o por tanda, escalar, «Descargar todas», «qué ha cambiado» y la receta de Estook. Lleva una migración.
 2. **Si no lo has hecho ya:** **cerrar un segundo inventario** en IKATZ (hay uno, del 11-oct); que **Santi publique una semana** en Pizzeriacazzo; alguien del equipo que entró con su PIN, **ponerse contraseña**; y **el chat en tu iPhone**.
 3. **Si no lo has hecho ya:** mirar **A4** (Pizzeriacazzo a **65,29 €** al mes, su cobro del 26-sep en «Cobrado» y el correo de los lunes) y acabar de probar **A3** con un vendedor «Prueba» aparte y **C2** con alguien del equipo ([`pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)).
-4. **Fusionar «cómo detecta Estook lo que se escapa»** cuando estés conforme. Solo documentos: sin migrar ni desplegar.
+4. **Fusionar el pull request de M9 · 3** cuando esté: fusionar, migrar y desplegar la API, con sus pasos.
 
 **Con fecha o con condición:**
 
@@ -170,7 +170,7 @@ Dónde vive cada pieza, cada servicio y cada clave: [Arquitectura](docs/maestros
 3. **Los documentos, en el mismo pull request** que el cambio: qué se toca con cada cosa, en el Plan (A2).
 4. **Primero fusionar, después migrar, después desplegar.**
 5. **Una rama por entrega y un pull request.** Nada entra en `main` sin él.
-6. **Ante la duda, preguntar**, explicado en llano: de qué va, un ejemplo de restaurante, las opciones y una recomendación.
+6. **Ante la duda, preguntar**, explicado en llano: **qué es y de dónde sale**, qué hay ya hecho y en qué se diferencia, un ejemplo de restaurante, las opciones con lo que pasa en cada una y una recomendación (lección 196). Y antes, **la prueba de la plantilla** (Plan, regla 14): lo que no la pasa no se pregunta, se quita.
 7. **Revisar lo propio antes de entregarlo.** `pnpm verifica` en verde; si se toca una pantalla, `prueba:e2e:completa`; con fechas, `prueba:semana`.
 8. **GitHub entero en verde, mirado por dentro**: la vuelta de la rama **y la de `main` después de fusionar**, sin pruebas repetidas.
 9. **Una lección se convierte en prueba**, y una prueba nueva se ve fallar con el arreglo quitado.

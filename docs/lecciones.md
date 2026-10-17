@@ -749,3 +749,11 @@
      cuenta Safari lo que la 2.ª regla de `abrir.ts` ya repetía con otras palabras. Se mide
      la más rápida de tres y se reconoce la frase de Safari. Y después de fusionar se mira
      también la vuelta de `main` por dentro, no solo la de la rama.
+196. **Una pregunta que no dice qué es ni por qué se hace, no se puede contestar.** El 17-oct
+     Richi recibió tres tandas de preguntas de M9 · 3 y no entendió varias: «ya la sé» y el QR salían
+     del plan escrito sin decir de dónde ni para qué; «la receta de referencia» parecía lo ya hecho;
+     y «vigilar solo con todo escandallado» daba por sabido que se puede vender sin escandallo. Cada
+     pregunta lleva **qué es, de dónde sale, qué hay ya hecho y en qué se diferencia, un ejemplo de
+     restaurante, lo que pasa con cada opción** y la recomendación; y si se apoya en algo que Richi
+     cree imposible, **se explica primero cómo pasa** (0094). Antes de preguntar, la prueba de la
+     plantilla: lo que no la pasa no se pregunta, se quita.

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { anotarEnElAdmin } from '../admin.ts';
+import { FogonNoContesta } from '../../ia/modelo.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
+import { porQueNoContesta } from '../fogon.ts';
 
 /**
  * Los dos interruptores de Fogón, en el admin (decisión 0097, respuesta 3).
@@ -10,6 +12,7 @@ import { comando, FalloDeAplicacion } from '../contrato.ts';
  *
  *   admin_encender_fogon              el general: apaga o enciende a todos a la vez
  *   admin_encender_fogon_del_cliente  el de un cliente
+ *   admin_probar_fogon                probar la clave, el saldo y el modelo (abajo)
  *
  * Los dos, del admin total, y cada cambio a la auditoría del admin. Encender no espera
  * a tener el coste medido: lo mira Richi con el piloto (cambia la regla 11 del Plan).
@@ -87,5 +90,60 @@ export const encenderFogonDelCliente = comando<
       despues: { encendido: entrada.encendido },
     });
     return { encendido: entrada.encendido };
+  },
+});
+
+/**
+ * Probar la conexión con Anthropic, desde el admin (18-oct: Richi puso la clave y el
+ * saldo, y Fogón decía «no ha contestado» sin decir por qué).
+ *
+ * Una pregunta de una palabra al modelo, que cuesta una millonésima parte de un euro y
+ * **no se apunta en ningún local** (no es de ninguno). Contesta si funciona, cuánto ha
+ * tardado y, si no, **por qué**, en castellano y con la frase de Anthropic debajo. No
+ * mira los interruptores: prueba la clave, el saldo y el modelo.
+ */
+export const probarFogon = comando<
+  Record<string, never>,
+  | { readonly funciona: true; readonly modelo: string; readonly milisegundos: number }
+  | {
+      readonly funciona: false;
+      readonly porque: string;
+      readonly estado: number | null;
+      readonly detalle: string;
+    }
+>({
+  nombre: 'admin_probar_fogon',
+  entrada: z.object({}).strict(),
+  soloAdmin: true,
+  nivelDeAdmin: 'total',
+
+  async ejecutar(contexto) {
+    const modelo = contexto.fogon ?? null;
+    if (modelo === null) {
+      return {
+        funciona: false,
+        porque: 'Falta la clave: en Supabase → Edge Functions → Secrets no hay ningún AI_API_KEY.',
+        estado: null,
+        detalle: '',
+      };
+    }
+    const empieza = Date.now();
+    try {
+      const respuesta = await modelo.pedir({
+        reglas: 'Contesta solo con la palabra: listo.',
+        resumen: 'Es una prueba de conexión.',
+        mensajes: [{ rol: 'user', texto: '¿Estás?' }],
+        hastaTokens: 16,
+      });
+      return { funciona: true, modelo: respuesta.modelo, milisegundos: Date.now() - empieza };
+    } catch (fallo) {
+      if (!(fallo instanceof FogonNoContesta)) throw fallo;
+      return {
+        funciona: false,
+        porque: porQueNoContesta(fallo),
+        estado: fallo.estado,
+        detalle: [fallo.tipo, fallo.detalle].filter((t) => t !== null && t !== '').join(' · '),
+      };
+    }
   },
 });

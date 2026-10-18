@@ -25,9 +25,12 @@ async function elToken(page: Page): Promise<string> {
 async function abrirFogon(page: Page) {
   await abrirSinQueSeCaiga(page, `${APP}#/`);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
-  await page.keyboard.press('Control+j');
   const ventana = page.getByRole('dialog', { name: 'Fogón' });
-  await expect(ventana).toBeVisible();
+  // El atajo lo escucha la app cuando ya ha arrancado del todo: se repite hasta que abre.
+  await expect(async () => {
+    if (!(await ventana.isVisible())) await page.keyboard.press('Control+j');
+    await expect(ventana).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
   return ventana;
 }
 
@@ -81,13 +84,17 @@ test('con Fogón encendido, se le pregunta y rellena el borrador de un escandall
   await expect(ventana.getByText(/Fogón es una inteligencia artificial/)).toBeVisible({
     timeout: 15_000,
   });
-  await ventana.getByRole('textbox', { name: 'Tu pregunta' }).fill('¿Qué tengo que atender hoy?');
-  await ventana.getByRole('button', { name: 'Preguntar · 1 crédito' }).click();
+  // Vacío, saluda con lo que se le puede preguntar aquí, y una se manda tocándola.
+  await expect(ventana.getByText('Pregunta lo que necesites')).toBeVisible();
+  await ventana
+    .getByRole('list', { name: 'Puedes preguntarle' })
+    .getByRole('button', { name: '¿Qué tengo que atender hoy?' })
+    .click();
   await expect(
     ventana.getByText('Esto es Fogón de pruebas: no he llamado a ningún modelo.'),
   ).toBeVisible();
   // Esencial: 300 al mes y 30 al día. Ha gastado uno.
-  await expect(ventana.getByText(/Quedan 29 créditos hoy · 299 de 300 este mes/)).toBeVisible();
+  await expect(ventana.getByText(/quedan 29 hoy y 299 de 300 este mes/)).toBeVisible();
   await cerrarFogon(page);
 
   // «Rellenar con Fogón», al desgranar un plato vacío.
@@ -126,4 +133,8 @@ test('el admin tiene su sección de Fogón, con el interruptor general', async (
   await expect(page.getByRole('heading', { name: 'Encendido' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Cada cliente' })).toBeVisible();
   await expect(page.getByText(/Este mes: \d+ llamadas/)).toBeVisible();
+
+  // «Probar la conexión»: con el Fogón de pruebas, funciona.
+  await page.getByRole('button', { name: 'Probar la conexión' }).click();
+  await expect(page.getByText(/Ha contestado de-mentira en/)).toBeVisible();
 });

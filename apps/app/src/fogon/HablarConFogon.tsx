@@ -1,188 +1,227 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { CREDITOS_DE_FOGON, LETRAS_PARA_FOGON } from '@estook/dominio';
-import { Boton, CAJA, ErrorEnCristiano, IconoDeFogon, clases } from '@estook/ui';
-import type { ErrorDeLaApi } from '@estook/cliente-api';
+import { IconoDeFogon, Logo, clases, usarEsEscritorio } from '@estook/ui';
+import { IconoEnviar } from '@estook/iconos';
+import { puedeVer } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { creditos, dondeEstas, type LoQueQueda, type RespuestaDeFogon } from './contrato.ts';
+import type { LaConversacion } from '../ganchos/usarLaConversacion.ts';
+import { creditos } from './contrato.ts';
+import { lasSugerencias } from './sugerencias.ts';
 
 /**
- * Hablar con Fogón (Fogón 1 · 1, decisión 0097).
+ * Hablar con Fogón, como un chat de verdad (Fogón 1 · 1, 0097; rehecho el 19-oct).
  *
- * Una caja para preguntar y lo que contesta, **sin nada más**: la pantalla que tienes
- * detrás es el contexto, y eso lo sabe el servidor (0023), no esta ventana.
+ * Richi, al verlo en el iPhone: «tiene que ser un chat normal, con el logo de Estook y
+ * "sabe que estás en (sitio), pregunta lo que necesites"… ayudar a la gente a entender
+ * qué puede hacer en cada página». Así queda:
  *
- *   · **Dice que es una IA**, siempre, arriba (Reglamento europeo de IA, art. 50).
- *   · **Dice lo que gasta** antes de preguntar («1 crédito») y lo que queda después.
- *   · **La conversación vive aquí**, en la pantalla: al cambiar de local o cerrar la
- *     sesión, se borra. Las dos últimas preguntas viajan con la nueva para seguir el
- *     hilo; nada se guarda en la base salvo lo que se preguntó y lo que costó.
+ *   · **Vacío**: el logo, «Fogón sabe que estás en Almacén», y **tres o cuatro preguntas
+ *     que se tocan y se mandan** (`sugerencias.ts`), las de esa pantalla. Es lo que
+ *     enseña qué se le puede pedir, sin texto que explique.
+ *   · **Con mensajes**: los tuyos a la derecha, los de Fogón a la izquierda con su llama.
+ *     Un fallo es un mensaje más, con su motivo, no un recuadro rojo encima de todo.
+ *   · **La caja, abajo y fija** (`CajaDeFogon`, en el pie de la ventana), con el botón de
+ *     enviar como el chat del equipo, y debajo, pequeño, lo que queda.
+ *   · **Dice que es una IA** (Reglamento europeo de IA, art. 50), en una línea.
+ *
+ * La conversación vive en la pantalla (0023): al cambiar de local, se va. Las dos últimas
+ * idas y vueltas viajan con la pregunta para que siga el hilo.
  */
-
-interface Mensaje {
-  readonly rol: 'user' | 'assistant';
-  readonly texto: string;
-}
 
 /** «1.499»: en castellano, el punto de los miles también con cuatro cifras. */
 function conPuntos(n: number): string {
   return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-/** Cuántos mensajes de antes viajan con la pregunta: las dos últimas idas y vueltas. */
-const DEL_HILO = 4;
+// ── El cuerpo: el saludo con sus preguntas, o la conversación ───────────────
 
-export function HablarConFogon({
-  queda: quedaAlAbrir,
-  casiSinCreditos,
+export function ConversacionConFogon({
+  charla,
   donde,
+  app,
 }: {
-  readonly queda: LoQueQueda;
-  readonly casiSinCreditos: boolean;
-  /** «Almacén · Compras», para la frase de arriba. */
+  readonly charla: LaConversacion;
+  /** «Almacén · Compras», para el saludo. */
   readonly donde: string;
+  /** La app («almacen»), para las sugerencias. */
+  readonly app: string;
 }) {
-  const { cliente, yo } = usarSesion();
-  const { pathname } = useLocation();
-  const cache = useQueryClient();
-  const [mensajes, setMensajes] = useState<readonly Mensaje[]>([]);
-  const [pregunta, setPregunta] = useState('');
-  const [preguntando, setPreguntando] = useState(false);
-  const [error, setError] = useState<ErrorDeLaApi | null>(null);
-  const [queda, setQueda] = useState(quedaAlAbrir);
+  const { permisos } = usarSesion();
   const final = useRef<HTMLDivElement>(null);
-
-  // Una conversación es de una persona y un local (0023, regla dos): al cambiar, se va.
-  const localId = yo?.local?.id ?? null;
-  useEffect(() => {
-    setMensajes([]);
-    setError(null);
-  }, [localId]);
-
-  useEffect(() => {
-    setQueda(quedaAlAbrir);
-  }, [quedaAlAbrir]);
+  const veDinero = puedeVer(permisos, 'dato.precio_de_compra') || puedeVer(permisos, 'dato.ventas');
 
   useEffect(() => {
     final.current?.scrollIntoView({ block: 'end' });
-  }, [mensajes.length, preguntando]);
+  }, [charla.mensajes.length, charla.preguntando]);
 
-  const gasta = CREDITOS_DE_FOGON.preguntar;
-  const sinCreditos = queda.hoy < gasta || queda.mes < gasta;
-  const escrita = pregunta.trim();
-
-  async function preguntar() {
-    if (escrita.length < 2 || preguntando) return;
-    setPreguntando(true);
-    setError(null);
-    const antes = mensajes.slice(-DEL_HILO);
-    setMensajes((m) => [...m, { rol: 'user', texto: escrita }]);
-    setPregunta('');
-    const respuesta = await cliente.ejecutar<RespuestaDeFogon>('preguntar_a_fogon', {
-      pregunta: escrita,
-      donde: dondeEstas(pathname),
-      antes,
-    });
-    setPreguntando(false);
-    if (!respuesta.ok) {
-      setError(respuesta.error);
-      // La pregunta vuelve a la caja: no se pierde lo escrito.
-      setMensajes((m) => m.slice(0, -1));
-      setPregunta(escrita);
-      return;
-    }
-    setMensajes((m) => [...m, { rol: 'assistant', texto: respuesta.datos.respuesta }]);
-    setQueda(respuesta.datos.queda);
-    void cache.invalidateQueries({ queryKey: ['fogon_y_yo'] });
+  if (charla.mensajes.length === 0) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-e4 py-e5 text-center">
+        <Logo alto={30} />
+        <div className="flex flex-col gap-e1">
+          <p className="text-titulo font-semibold">Pregunta lo que necesites</p>
+          <p className="text-cuerpo text-texto-suave">
+            Fogón sabe que estás en <strong className="text-texto">{donde}</strong>.
+          </p>
+        </div>
+        <ul aria-label="Puedes preguntarle" className="flex w-full max-w-[26rem] flex-col gap-e2">
+          {lasSugerencias(app, veDinero).map((s) => (
+            <li key={s.texto}>
+              <button
+                type="button"
+                disabled={charla.sinCreditos}
+                onClick={() => {
+                  void charla.preguntar(s.texto);
+                }}
+                className={clases(
+                  'flex min-h-toque w-full items-center gap-e2 rounded-grande border border-borde',
+                  'bg-superficie px-e3 py-e2 text-left text-cuerpo hover:bg-fondo disabled:opacity-50',
+                )}
+              >
+                <span aria-hidden className="shrink-0 text-naranja">
+                  <IconoDeFogon size={16} />
+                </span>
+                {s.texto}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p className="text-etiqueta text-texto-tenue">
+          Fogón es una inteligencia artificial: contesta con lo que tú puedes ver. Revisa lo
+          importante.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col gap-e3">
-      <p className="text-secundario text-texto-suave">
-        Fogón es una inteligencia artificial. Contesta con lo que tú puedes ver en {donde}; revisa
-        lo importante.
-      </p>
-
-      {mensajes.length > 0 && (
-        <ol aria-label="La conversación" className="flex flex-col gap-e2">
-          {mensajes.map((m, i) => (
-            <li
-              key={i}
-              className={clases(
-                'max-w-[92%] whitespace-pre-line rounded-grande px-e3 py-e2 text-cuerpo',
-                m.rol === 'user'
-                  ? 'self-end bg-texto text-superficie'
-                  : 'flex gap-e2 self-start bg-fondo',
-              )}
-            >
-              {m.rol === 'assistant' && (
-                <span aria-hidden className="mt-[2px] shrink-0 text-naranja">
-                  <IconoDeFogon size={18} />
-                </span>
-              )}
-              <span>{m.texto}</span>
-            </li>
-          ))}
-          {preguntando && (
-            <li className="self-start rounded-grande bg-fondo px-e3 py-e2 text-cuerpo text-texto-suave">
-              Fogón está mirando…
-            </li>
-          )}
-        </ol>
-      )}
+    <div className="flex flex-col gap-e3 py-e3">
+      <ol aria-label="La conversación" className="flex flex-col gap-e2">
+        {charla.mensajes.map((m, i) => (
+          <li
+            key={i}
+            className={clases(
+              'max-w-[88%] whitespace-pre-line rounded-grande px-e3 py-e2 text-cuerpo',
+              m.rol === 'user'
+                ? 'self-end bg-texto text-superficie'
+                : clases(
+                    'flex gap-e2 self-start',
+                    m.fallo === true ? 'border border-mal/40 bg-mal/10' : 'bg-fondo',
+                  ),
+            )}
+          >
+            {m.rol === 'assistant' && (
+              <span
+                aria-hidden
+                className={clases(
+                  'mt-[2px] shrink-0',
+                  m.fallo === true ? 'text-mal' : 'text-naranja',
+                )}
+              >
+                <IconoDeFogon size={18} />
+              </span>
+            )}
+            <span>{m.texto}</span>
+          </li>
+        ))}
+        {charla.preguntando && (
+          <li className="flex items-center gap-e2 self-start rounded-grande bg-fondo px-e3 py-e2 text-cuerpo text-texto-suave">
+            <span aria-hidden className="animate-pulse text-naranja">
+              <IconoDeFogon size={18} />
+            </span>
+            Fogón está mirando…
+          </li>
+        )}
+      </ol>
       <div ref={final} />
+    </div>
+  );
+}
 
-      {error !== null && <ErrorEnCristiano error={error} />}
+// ── El pie: la caja de escribir, fija abajo ──────────────────────────────────
 
+export function CajaDeFogon({
+  charla,
+  donde,
+}: {
+  readonly charla: LaConversacion;
+  readonly donde: string;
+}) {
+  const [pregunta, setPregunta] = useState('');
+  const enEscritorio = usarEsEscritorio();
+  const caja = useRef<HTMLTextAreaElement>(null);
+  const gasta = CREDITOS_DE_FOGON.preguntar;
+  const escrita = pregunta.trim();
+  const { queda } = charla;
+
+  // La caja crece con lo escrito, hasta unas cinco líneas.
+  useEffect(() => {
+    const el = caja.current;
+    if (el === null) return;
+    el.style.height = 'auto';
+    el.style.height = `${String(Math.min(el.scrollHeight, 140))}px`;
+  }, [pregunta]);
+
+  function mandar() {
+    if (escrita.length < 2 || charla.preguntando || charla.sinCreditos) return;
+    setPregunta('');
+    void charla.preguntar(escrita);
+  }
+
+  return (
+    <div className="flex w-full flex-col gap-e1">
       <form
-        className="flex flex-col gap-e2"
+        className="flex items-end gap-e2"
         onSubmit={(e) => {
           e.preventDefault();
-          void preguntar();
+          mandar();
         }}
       >
-        <textarea
-          aria-label="Tu pregunta"
-          value={pregunta}
-          maxLength={LETRAS_PARA_FOGON}
-          rows={2}
-          disabled={sinCreditos}
-          placeholder={
-            mensajes.length === 0 ? '¿Qué tengo que atender hoy?' : 'Pregúntale otra cosa'
-          }
-          onChange={(e) => {
-            setPregunta(e.target.value);
+        <label className="min-w-0 flex-1">
+          <span className="sr-only">Tu pregunta</span>
+          <textarea
+            ref={caja}
+            rows={1}
+            value={pregunta}
+            maxLength={LETRAS_PARA_FOGON}
+            disabled={charla.sinCreditos}
+            placeholder={`Pregunta sobre ${donde}…`}
+            onChange={(e) => {
+              setPregunta(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              // En el ordenador, Intro manda y Mayúsculas + Intro hace otra línea. En el
+              // móvil, Intro es una línea más, como en el chat del equipo.
+              if (e.key === 'Enter' && !e.shiftKey && enEscritorio) {
+                e.preventDefault();
+                mandar();
+              }
+            }}
+            className="block max-h-[140px] min-h-toque w-full resize-none rounded-grande border border-borde-fuerte bg-superficie px-e3 py-[10px] text-cuerpo text-texto placeholder:text-texto-tenue"
+          />
+        </label>
+        <button
+          type="submit"
+          aria-label={`Preguntar · ${creditos(gasta)}`}
+          disabled={escrita.length < 2 || charla.preguntando || charla.sinCreditos}
+          // Que la caja no pierda el foco: en el móvil el teclado no se cierra.
+          onMouseDown={(e) => {
+            e.preventDefault();
           }}
-          onKeyDown={(e) => {
-            // Intro pregunta; Mayúsculas + Intro, una línea nueva.
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              void preguntar();
-            }
-          }}
-          className={`${CAJA} min-h-[3.25rem] py-e2`}
-        />
-        <div className="flex flex-wrap items-center justify-between gap-e2">
-          <p className="text-etiqueta text-texto-tenue">
-            {sinCreditos
-              ? queda.mes < gasta
-                ? 'Este mes ya no quedan créditos. El día 1 vuelven.'
-                : 'Hoy ya no quedan créditos. Mañana vuelven.'
-              : `Quedan ${creditos(queda.hoy)} hoy · ${conPuntos(queda.mes)} de ${conPuntos(queda.delMes)} este mes`}
-            {casiSinCreditos && !sinCreditos ? ' · Queda poco este mes' : ''}
-          </p>
-          <Boton
-            tono="principal"
-            type="submit"
-            disabled={escrita.length < 2 || sinCreditos}
-            cargando={preguntando}
-            textoCargando="Preguntando"
-          >
-            Preguntar · {creditos(gasta)}
-          </Boton>
-        </div>
+          className="grid size-toque shrink-0 place-items-center rounded-redondo bg-naranja text-sobre-naranja disabled:opacity-50"
+        >
+          <IconoEnviar size={20} />
+        </button>
       </form>
+      {queda !== null && (
+        <p className="text-etiqueta text-texto-tenue">
+          {charla.sinCreditos
+            ? queda.mes < gasta
+              ? 'Este mes ya no quedan créditos. El día 1 vuelven.'
+              : 'Hoy ya no quedan créditos. Mañana vuelven.'
+            : `Cada pregunta, ${creditos(gasta)} · quedan ${conPuntos(queda.hoy)} hoy y ${conPuntos(queda.mes)} de ${conPuntos(queda.delMes)} este mes`}
+        </p>
+      )}
     </div>
   );
 }

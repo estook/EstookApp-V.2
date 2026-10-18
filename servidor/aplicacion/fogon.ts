@@ -9,6 +9,7 @@ import {
   type QueSeLePide,
 } from '@estook/dominio';
 import { FogonNoContesta, type ModeloDeFogon, type PeticionAFogon } from '../ia/modelo.ts';
+import { apuntarUnFallo } from '../infraestructura/fallos.ts';
 import { FalloDeAplicacion, type Contexto } from './contrato.ts';
 
 /**
@@ -172,11 +173,17 @@ export async function pedirAFogon(
     respuesta = await fogon.modelo.pedir(peticion);
   } catch (fallo) {
     if (fallo instanceof FogonNoContesta) {
+      // El motivo de verdad, a los registros y a Sentry: a la persona, una frase.
+      await apuntarUnFallo(fallo, {
+        mensaje: 'Fogón no ha contestado',
+        correlacionId: contexto.correlacionId,
+        extra: { estado: fallo.estado, tipo: fallo.tipo, que },
+      });
       throw new FalloDeAplicacion('faltan_datos', {
         porque:
-          fallo.estado === 429
+          fallo.estado === 429 || fallo.estado === 529
             ? 'Fogón está muy ocupado ahora mismo. Prueba otra vez en un minuto.'
-            : 'Fogón no ha contestado bien. No se ha gastado nada: prueba otra vez en un rato.',
+            : 'Fogón no ha podido contestar. No se ha gastado nada: prueba otra vez en un rato.',
       });
     }
     throw fallo;
@@ -223,4 +230,34 @@ export function leerElJson(texto: string): unknown {
         'Fogón ha contestado algo que no se entiende. No se ha rellenado nada: prueba otra vez.',
     });
   }
+}
+
+/**
+ * Por qué no contesta el modelo, dicho para Richi (0097): lo que enseña «Probar la
+ * conexión» en el admin. Sale del código y del tipo de error que da Anthropic.
+ */
+export function porQueNoContesta(fallo: FogonNoContesta): string {
+  const dice = fallo.detalle.toLowerCase();
+  if (fallo.estado === 401 || fallo.tipo === 'authentication_error') {
+    return 'La clave no vale. Cópiala otra vez de Anthropic y ponla en Supabase como AI_API_KEY, sin espacios.';
+  }
+  if (dice.includes('credit balance') || dice.includes('billing')) {
+    return 'La cuenta de Anthropic no tiene saldo disponible. Mira en su web, en facturación, que el pago esté hecho y en la misma organización que la clave.';
+  }
+  if (fallo.estado === 403 || fallo.tipo === 'permission_error') {
+    return 'La clave no tiene permiso para usar el modelo. Mira en Anthropic que la clave sea de la organización con saldo.';
+  }
+  if (fallo.estado === 404 || fallo.tipo === 'not_found_error') {
+    return 'El modelo no existe con ese nombre. Quita AI_MODELO_RAPIDO de Supabase (sin él, usa claude-haiku-5-5).';
+  }
+  if (fallo.estado === 429 || fallo.tipo === 'rate_limit_error') {
+    return 'Anthropic frena: o se ha llegado al límite de gasto del mes, o a su límite de peticiones. Mira los límites en su web.';
+  }
+  if (fallo.estado === 529 || fallo.tipo === 'overloaded_error' || (fallo.estado ?? 0) >= 500) {
+    return 'Anthropic está saturado ahora mismo. Prueba otra vez en unos minutos.';
+  }
+  if (fallo.estado === 400 || fallo.tipo === 'invalid_request_error') {
+    return 'Anthropic no acepta la petición tal como va: es cosa nuestra. Pásale el detalle de abajo a la IA.';
+  }
+  return 'No se ha podido llegar a Anthropic desde el servidor. Pásale el detalle de abajo a la IA.';
 }

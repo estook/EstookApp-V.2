@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Aviso, Cargando, ErrorEnCristiano, Interruptor, Tarjeta } from '@estook/ui';
+import { Aviso, Boton, Cargando, ErrorEnCristiano, Interruptor, Tarjeta } from '@estook/ui';
 import { FalloDeLaApi, type ErrorDeLaApi } from '@estook/cliente-api';
 import { centimos, enEuros } from '@estook/dominio';
 import { fechaYHora } from '../datos/cliente.ts';
@@ -32,6 +32,81 @@ interface FogonEnElAdmin {
     readonly creditos: number;
     readonly centimos: number;
   }[];
+}
+
+type LaPrueba =
+  | { readonly funciona: true; readonly modelo: string; readonly milisegundos: number }
+  | {
+      readonly funciona: false;
+      readonly porque: string;
+      readonly estado: number | null;
+      readonly detalle: string;
+    };
+
+/**
+ * «Probar la conexión» (19-oct): una pregunta de una palabra a Anthropic, que dice si
+ * la clave, el saldo y el modelo están bien y, si no, **qué falla**, en castellano y con
+ * la frase de Anthropic debajo para pasársela a la IA.
+ */
+function ProbarLaConexion({ puede }: { readonly puede: boolean }) {
+  const { cliente } = usarSesion();
+  const [probando, setProbando] = useState(false);
+  const [prueba, setPrueba] = useState<LaPrueba | null>(null);
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+
+  async function probar() {
+    setProbando(true);
+    setPrueba(null);
+    setError(null);
+    const respuesta = await cliente.ejecutar<LaPrueba>('admin_probar_fogon', {});
+    setProbando(false);
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    setPrueba(respuesta.datos);
+  }
+
+  return (
+    <Tarjeta titulo="La conexión con Anthropic">
+      <div className="flex flex-col gap-e3">
+        <p className="text-secundario text-texto-suave">
+          Comprueba la clave, el saldo y el modelo con una pregunta de una palabra. Cuesta menos de
+          una milésima de céntimo.
+        </p>
+        <div>
+          <Boton
+            tono="secundario"
+            disabled={!puede}
+            cargando={probando}
+            textoCargando="Probando"
+            onClick={() => {
+              void probar();
+            }}
+          >
+            Probar la conexión
+          </Boton>
+        </div>
+        {error && <ErrorEnCristiano error={error} />}
+        {prueba !== null &&
+          (prueba.funciona ? (
+            <Aviso tono="bien" titulo="Funciona">
+              {`Ha contestado ${prueba.modelo} en ${(prueba.milisegundos / 1000).toLocaleString('es-ES', { maximumFractionDigits: 1 })} s.`}
+            </Aviso>
+          ) : (
+            <Aviso tono="mal" titulo="No funciona">
+              <span className="block">{prueba.porque}</span>
+              {prueba.detalle !== '' && (
+                <span className="mt-e2 block break-words text-etiqueta text-texto-suave">
+                  {prueba.estado === null ? '' : `${String(prueba.estado)} · `}
+                  {prueba.detalle}
+                </span>
+              )}
+            </Aviso>
+          ))}
+      </div>
+    </Tarjeta>
+  );
 }
 
 export function FogonEnElAdmin() {
@@ -111,6 +186,8 @@ export function FogonEnElAdmin() {
                 </p>
               </div>
             </Tarjeta>
+
+            <ProbarLaConexion puede={puedeCambiar} />
 
             {!datos.encendido && (
               <Aviso tono="info" titulo="Con el general apagado, ningún cliente lo tiene">

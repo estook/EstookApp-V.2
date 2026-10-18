@@ -54,16 +54,42 @@ export interface ModeloDeFogon {
   pedir(peticion: PeticionAFogon): Promise<RespuestaDeFogon>;
 }
 
-/** El modelo no ha contestado bien. Lo traduce a una frase la capa de aplicación. */
+/**
+ * El modelo no ha contestado bien. Lleva **el motivo que da Anthropic** (su tipo de
+ * error y su frase, que nunca llevan la clave): sin él, «no ha contestado» no dice si
+ * es la clave, el saldo o el modelo (lo que vio Richi el 18-oct). Lo traduce a una
+ * frase la capa de aplicación.
+ */
 export class FogonNoContesta extends Error {
-  // Sin propiedad en el constructor: la API de pruebas corre con Node quitando tipos.
+  // Sin propiedades en el constructor: la API de pruebas corre con Node quitando tipos.
   readonly estado: number | null;
+  /** El tipo de error de Anthropic: `authentication_error`, `not_found_error`… */
+  readonly tipo: string | null;
+  /** La frase de Anthropic, o la del fallo de red. */
+  readonly detalle: string;
 
-  constructor(estado: number | null) {
-    super(estado === null ? 'Fogón no ha contestado' : `Fogón ha contestado ${String(estado)}`);
+  constructor(estado: number | null, tipo: string | null = null, detalle = '') {
+    super(
+      `Fogón no ha contestado${estado === null ? '' : ` (${String(estado)})`}${
+        tipo === null ? '' : ` · ${tipo}`
+      }${detalle === '' ? '' : ` · ${detalle}`}`,
+    );
     this.name = 'FogonNoContesta';
     this.estado = estado;
+    this.tipo = tipo;
+    this.detalle = detalle;
   }
+}
+
+/** El tipo y la frase de un error de la API de Anthropic, si los trae. */
+function loQueDiceAnthropic(fallo: InstanceType<typeof Anthropic.APIError>): {
+  tipo: string | null;
+  detalle: string;
+} {
+  const cuerpo = fallo.error as { error?: { type?: unknown; message?: unknown } } | undefined;
+  const tipo = typeof cuerpo?.error?.type === 'string' ? cuerpo.error.type : null;
+  const detalle = typeof cuerpo?.error?.message === 'string' ? cuerpo.error.message : fallo.message;
+  return { tipo, detalle: detalle.slice(0, 300) };
 }
 
 /** Lo más que se espera a una respuesta: una persona con la mano en el móvil. */
@@ -108,9 +134,23 @@ export function modeloDeAnthropic(
         });
       } catch (fallo) {
         if (fallo instanceof Anthropic.APIError) {
-          throw new FogonNoContesta(typeof fallo.status === 'number' ? fallo.status : null);
+          const { tipo, detalle } = loQueDiceAnthropic(
+            fallo as InstanceType<typeof Anthropic.APIError>,
+          );
+          throw new FogonNoContesta(
+            typeof fallo.status === 'number' ? fallo.status : null,
+            tipo,
+            detalle,
+          );
         }
-        throw new FogonNoContesta(null);
+        throw new FogonNoContesta(
+          null,
+          null,
+          (fallo instanceof Error ? `${fallo.name}: ${fallo.message}` : String(fallo)).slice(
+            0,
+            300,
+          ),
+        );
       }
 
       const texto = respuesta.content

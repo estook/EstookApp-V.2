@@ -56,6 +56,20 @@ Ningún trabajo nuevo para nadie (los botones lo quitan) · no bloquea nada (con
 1. **Una clave de la API de Anthropic**, puesta como secreto `AI_API_KEY` en Supabase (nunca por el chat), y **el límite de gasto en la consola de Anthropic**. Sin clave, Fogón dice que no está conectado y no se rompe nada.
 2. **Encenderlo** en el admin: el general y el de IKATZ.
 
+## 6 · Lo que vio Richi al probarlo (19-oct)
+
+**Fogón no contestaba**: con la clave y el saldo puestos, decía «no ha contestado bien» sin decir por qué. **El código se tragaba el motivo de Anthropic.** Ahora:
+
+- **El fallo trae lo que dice Anthropic** (su código, su tipo y su frase, nunca la clave) y queda en los registros de Supabase y en Sentry.
+- **Admin › Fogón › «Probar la conexión»**: una pregunta de una palabra que dice si funciona y, si no, **qué tocar**, en castellano (la clave no vale, sin saldo, el modelo no existe, el límite, Anthropic saturado…) con la frase de Anthropic debajo.
+
+**«Tiene que ser un chat normal»**, con el logo de Estook y «sabe que estás en (sitio), pregunta lo que necesites», y ayudando a entender qué se puede hacer en cada página. Ahora:
+
+- **Vacío**: el logo de Estook, «Pregunta lo que necesites», «Fogón sabe que estás en Almacén» y **tres o cuatro preguntas de esa pantalla que se tocan y se mandan**; las de dinero, solo a quien ve importes.
+- **Conversación**: tus mensajes a la derecha, los de Fogón a la izquierda con su llama; un fallo es un mensaje más, con su motivo.
+- **La caja, fija abajo**, con el botón de enviar como el chat del equipo, y debajo lo que queda de créditos. Fuera los botones de «Lo que puedes hacer aquí ahora» cuando Fogón habla.
+- Y el resumen lleva **para qué sirve cada app**, para que «¿Qué puedo hacer en esta pantalla?» tenga respuesta.
+
 ## Lo que decidí al construirlo
 
 Los que tomó la IA por su cuenta, para que Richi los sepa (también en [`lo-que-decidio-la-ia.md`](../lo-que-decidio-la-ia.md)):
@@ -66,3 +80,6 @@ Los que tomó la IA por su cuenta, para que Richi los sepa (también en [`lo-que
 4. **A la IA no le llegan nombres de personas**: ni del equipo ni de quien pregunta. Al rellenar un escandallo le llegan el nombre del plato, lo que el local escribió de él y **los nombres de sus productos del Almacén, sin precios**, para que escriba los ingredientes como ya se llaman y casarlos sea más fácil.
 5. **Lo que le llega a la IA va a Anthropic** (Estados Unidos), que no lo usa para entrenar. Anthropic pasa a ser **subencargado del tratamiento**: está apuntado en [`docs/legal/`](../legal/cumplimiento.md) y es una pregunta más para el asesor.
 6. **La llamada se hace dentro de la transacción**, con el local bloqueado para que el tope no se pase entre dos pestañas, y un tope de 25 segundos. Con Haiku contesta en uno o dos; si con el piloto se ve que ocupa demasiado las conexiones de la base, se saca fuera.
+7. **El asistente sigue llamándose Fogón**, con el logo de Estook encima: Richi pidió el logo de Estook, y el nombre de la IA ya estaba decidido.
+8. **«Probar la conexión» no se apunta en ningún local**: no es de ninguno, y cuesta menos de una milésima de céntimo.
+9. **Las preguntas sugeridas son solo de lo que Fogón sabe contestar en cada pantalla**: una sugerencia que no sabe contestar enseña a no usarlo.

@@ -7,7 +7,8 @@ import { usarElEsqueleto } from '../ganchos/usarElEsqueleto.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { FogonYYo } from './contrato.ts';
-import { HablarConFogon } from './HablarConFogon.tsx';
+import { usarLaConversacion } from '../ganchos/usarLaConversacion.ts';
+import { CajaDeFogon, ConversacionConFogon } from './HablarConFogon.tsx';
 
 /**
  * Fogón · dónde vive y cómo se abre.
@@ -222,6 +223,23 @@ export function VentanaDeFogon({
     if (abierta) void refetch();
   }, [abierta, refetch]);
   const habla = fogon.data?.habla === true ? fogon.data : null;
+  // La conversación, compartida entre los mensajes (el cuerpo) y la caja (el pie).
+  const charla = usarLaConversacion(habla?.queda ?? null);
+
+  // Hablando, es un chat: los mensajes arriba y la caja fija abajo (19-oct). Se cierra
+  // con la X de arriba; el botón «Cerrar» le quitaba el sitio a la caja.
+  if (habla !== null) {
+    return (
+      <Ventana
+        abierta={abierta}
+        alCerrar={alCerrar}
+        titulo="Fogón"
+        pie={<CajaDeFogon charla={charla} donde={contexto.donde} />}
+      >
+        <ConversacionConFogon charla={charla} donde={contexto.donde} app={primero} />
+      </Ventana>
+    );
+  }
 
   return (
     <Ventana
@@ -242,18 +260,10 @@ export function VentanaDeFogon({
           no pintaba nada. Se explicaba a sí mismo en vez de ayudar. Ahora dice lo
           que hace falta, como lo diría una persona.
         */}
-        {habla !== null ? (
-          <HablarConFogon
-            queda={habla.queda}
-            casiSinCreditos={habla.casiSinCreditos}
-            donde={contexto.donde}
-          />
-        ) : (
-          <p className="text-cuerpo">
-            Fogón sabe que estás en <strong>{contexto.donde}</strong>. Pronto podrás preguntarle lo
-            que no sepas.
-          </p>
-        )}
+        <p className="text-cuerpo">
+          Fogón sabe que estás en <strong>{contexto.donde}</strong>. Pronto podrás preguntarle lo
+          que no sepas.
+        </p>
 
         {/*
           Y lo que se puede hacer aquí **ahora mismo**. Son acciones del catálogo,
@@ -293,29 +303,27 @@ export function VentanaDeFogon({
           </div>
         )}
 
-        {habla === null && (
-          <div>
-            <p className="text-secundario font-medium text-texto-suave">
-              Cuando hable, podrás pedirle
-            </p>
-            <ul className="mt-e2 flex flex-col gap-e2">
-              {lo.podras.slice(0, 3).map((linea) => (
-                <li key={linea} className="flex gap-e2 text-cuerpo">
-                  <span aria-hidden className="text-texto-suave">
-                    ·
-                  </span>
-                  <span>{linea}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <div>
+          <p className="text-secundario font-medium text-texto-suave">
+            Cuando hable, podrás pedirle
+          </p>
+          <ul className="mt-e2 flex flex-col gap-e2">
+            {lo.podras.slice(0, 3).map((linea) => (
+              <li key={linea} className="flex gap-e2 text-cuerpo">
+                <span aria-hidden className="text-texto-suave">
+                  ·
+                </span>
+                <span>{linea}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
         {/*
           Apagado, no hay casilla para escribirle, a propósito: una casilla que no
           contesta es un control muerto. Se dice por qué, en una línea.
         */}
-        {habla === null && fogon.data !== undefined && !fogon.data.habla && (
+        {fogon.data !== undefined && !fogon.data.habla && (
           <p className="text-secundario text-texto-tenue">{fogon.data.porque}</p>
         )}
       </div>

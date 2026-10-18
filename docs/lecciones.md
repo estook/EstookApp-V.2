@@ -784,3 +784,8 @@
      Y la puerta de prueba escribía en la base **fuera de la cola**: con una sola conexión, a
      veces se colaba en la transacción de otra petición, con el disfraz de la app, y no se
      guardaba. Fallaba una de cada dos veces; repetida cuatro (`--repeat-each`), se vio.
+201. **Un servicio de fuera que falla tiene que decir por qué, o no se arregla.** Fogón convertía
+     cualquier fallo de Anthropic en «no ha contestado bien»: con la clave y el saldo puestos,
+     Richi no podía saber si era la clave, el saldo o el modelo, y yo tampoco, sin los
+     registros de Supabase. Ahora el fallo lleva el código, el tipo y la frase de Anthropic a
+     los registros y a Sentry, y el admin tiene «Probar la conexión», que lo traduce (0097).

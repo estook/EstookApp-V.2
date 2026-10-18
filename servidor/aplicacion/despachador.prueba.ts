@@ -517,6 +517,7 @@ describe('las puertas se cierran solas', () => {
         'admin_fogon',
         'admin_encender_fogon',
         'admin_encender_fogon_del_cliente',
+        'admin_probar_fogon',
       ].sort(),
     );
 

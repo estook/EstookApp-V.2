@@ -305,7 +305,11 @@ import { quienTieneAcceso } from './consultas/quien-tiene-acceso.ts';
 import { unLocal } from './consultas/un-local.ts';
 import type { Comando, Consulta } from './contrato.ts';
 import { escribirLosPasosConFogon, preguntarAFogon, rellenarConFogon } from './comandos/fogon.ts';
-import { encenderFogon, encenderFogonDelCliente } from './comandos/fogon-en-el-admin.ts';
+import {
+  encenderFogon,
+  encenderFogonDelCliente,
+  probarFogon,
+} from './comandos/fogon-en-el-admin.ts';
 import { fogonYYo } from './consultas/fogon.ts';
 import { fogonEnElAdmin } from './consultas/fogon-en-el-admin.ts';
 
@@ -640,6 +644,7 @@ export const catalogo = {
     // Los dos interruptores de Fogón (0097): el general y el de cada cliente.
     [encenderFogon.nombre]: encenderFogon,
     [encenderFogonDelCliente.nombre]: encenderFogonDelCliente,
+    [probarFogon.nombre]: probarFogon,
 
     // ── Crear cuenta y entrar con Google (0042) ────────────────────────────
     [pedirCodigoDeRegistro.nombre]: pedirCodigoDeRegistro,

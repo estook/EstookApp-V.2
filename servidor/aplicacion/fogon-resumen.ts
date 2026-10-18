@@ -116,6 +116,27 @@ const NOMBRE_DE_LA_APP: Readonly<Record<string, string>> = {
   ajustes: 'Ajustes',
 };
 
+/**
+ * Para qué sirve cada app, en una línea: así Fogón contesta «¿qué puedo hacer aquí?»
+ * (una de las sugerencias, 19-oct) sin inventarse pantallas.
+ */
+const PARA_QUE_SIRVE: Readonly<Record<string, string>> = {
+  '': 'El Panel: lo que hay que atender hoy, tus cifras y tus atajos. El botón «+» abre lo que más se hace (fichar, apuntar una merma, escribir en el tablón) y a Fogón.',
+  almacen:
+    'Almacén: Resumen (lo bajo mínimo y lo que caduca), Productos (dar de alta, precios, mínimos), Compras (pedidos a proveedores, recibir mercancía, albaranes y facturas), Mermas y Movimientos; y contar el inventario.',
+  escandallos:
+    'Escandallos: Resumen, Escandallos (desgranar cada plato: lo que lleva, lo que cuesta y lo que deja en cada canal; «Rellenar con Fogón» hace un borrador) y Fichas (la ficha técnica con sus pasos y fotos, y su PDF).',
+  carta:
+    'Carta: las secciones y los platos con su precio y su foto, y los canales de reparto (como Uber Eats) con su comisión.',
+  calendario: 'Calendario: el horario de la semana, los turnos y lo que viene.',
+  equipo:
+    'Equipo: quién está hoy, las personas y sus accesos, los fichajes y las incidencias, y el registro de jornada.',
+  servicio: 'Servicio: el día a día del local y cerrar la caja.',
+  negocio: 'Negocio: las ventas, los informes del día, la semana y el mes, y las reseñas.',
+  cuaderno: 'Cuaderno: notas e incidencias del local.',
+  ajustes: 'Ajustes: el local, la marca, los avisos, el plan y las apps conectadas.',
+};
+
 export interface ResumenParaFogon {
   readonly texto: string;
   /** El sello (0023): de qué local y organización, a qué hora y cuántas letras. */
@@ -174,6 +195,7 @@ export async function elResumenParaFogon(
   const partes: string[] = [
     `# RESUMEN DE ESTOOK · ${nombre} · ${hora} (hora del local)`,
     `Estás en: ${NOMBRE_DE_LA_APP[app] ?? 'Estook'}${donde.includes('/') ? ` (${donde.split('/').slice(1).join(' · ')})` : ''}.`,
+    ...(PARA_QUE_SIRVE[app] === undefined ? [] : [PARA_QUE_SIRVE[app]]),
     conDinero
       ? 'Quien pregunta ve importes y costes.'
       : 'Quien pregunta NO ve importes ni costes: no des ningún precio, coste, margen ni cantidad de dinero. Si te lo pide, dile que eso no lo lleva su puesto.',

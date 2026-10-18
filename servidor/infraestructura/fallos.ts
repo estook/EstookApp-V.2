@@ -92,6 +92,8 @@ const LO_QUE_SE_QUITA: readonly RegExp[] = [
   /\bBearer\s+[\w.~+/=-]+/gi,
   /\beyJ[\w-]+\.[\w-]+\.[\w-]+/g,
   /\b(?:sk|pk|rk|whsec|re)_[A-Za-z0-9_]{8,}/g,
+  // Y la de Anthropic, que va con guiones: «sk-ant-…» (0097).
+  /\bsk-ant-[\w-]{8,}/g,
   // Correos.
   /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g,
   // IBAN: dos letras, dos cifras y el resto, con o sin espacios.

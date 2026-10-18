@@ -1474,12 +1474,12 @@ Estook no toca dinero. Si el local cobra con Estook, sus tickets y facturas pasa
 
 | Local                                        | Le cuesta a Estook | Deja |
 | -------------------------------------------- | ------------------ | ---- |
-| Esencial, uso normal                         | ≈ 3,60 €           | 91 % |
-| Pro sin TPV, uso normal                      | ≈ 7,20 €           | 91 % |
-| Pro con Estook TPV, restaurante de carta     | ≈ 12,80 €          | 84 % |
+| Esencial, uso normal                         | ≈ 3,20 €           | 92 % |
+| Pro sin TPV, uso normal                      | ≈ 5,80 €           | 93 % |
+| Pro con Estook TPV, restaurante de carta     | ≈ 11,40 €          | 86 % |
 | Pro con Estook TPV, bar muy ocupado y a tope | ≈ 46,20 €          | 44 % |
 
-**Lo fijo:** hoy, nada; para vender, unos 65 € al mes; con Estook TPV, unos 163 €. **La IA es un supuesto hasta que Fogón exista**, y es lo que más mueve la cuenta.
+**Lo fijo:** hoy, nada; para vender, unos 65 € al mes; con Estook TPV, unos 163 €. **La IA es un supuesto hasta que se mida con el piloto** (Fogón 1 usa Claude Haiku 5.5, el más barato: [0097](../decisiones/0097-fogon-1-las-respuestas-y-la-base.md)), y es lo que más mueve la cuenta.
 
 > **Coste añadido si el local cobra con Estook.** El proveedor de VeriFactu (Verifacti) cobra **por NIF activo en producción**, no por local ni por aparato, y el precio baja con el volumen: **de 5,59 € por NIF con diez, a 3,71 € con cincuenta**, sin IVA. Incluye **3.000 facturas al mes por NIF**, y a partir de ahí 0,002 € cada una, que es lo que de verdad mueve el coste: un bar de tapas hace el triple de tickets que un restaurante de carta facturando lo mismo. Las cuentas, con los tres casos y lo que queda por preguntar, en [`docs/el-precio-de-verifacti.md`](../el-precio-de-verifacti.md). _Propuesta recibida el 21 de septiembre de 2026._
 
@@ -1538,6 +1538,7 @@ La IA es el único coste que crece con el uso, así que se mide y se enseña. **
 | -------------------------------------- | -------- |
 | Preguntar algo a Fogón                 | 1        |
 | Respuesta propuesta a una reseña       | 1        |
+| Rellenar un escandallo o los pasos     | 2        |
 | Traducir una ficha técnica             | 2        |
 | Leer un albarán por foto               | 3        |
 | Análisis del cierre del día            | 5        |

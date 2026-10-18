@@ -1004,7 +1004,7 @@ Código en su rama con commits legibles · migraciones numeradas y reversibles �
 8. **No se lanza sin M28.** Un mes con tres locales reales vale más que seis meses de suposiciones.
 9. **La facturación no se enciende en producción** sin las once condiciones del capítulo 9 del Anexo; las tres primeras: todas las pruebas en verde contra el entorno de pruebas, la declaración responsable publicada en la app y la revisión del asesor fiscal por escrito.
 10. **Antes del primer cliente que pague de verdad:** Supabase Pro con su copia diaria, **la copia semanal encendida**, la mudanza a Cloudflare Pages, el repositorio en privado y el contrato de encargado publicado ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md), [0062](../decisiones/0062-lo-legal.md), [0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)).
-11. **Fogón no se enciende sin su coste medido**, ni se vende sin la prueba final del coste por local (M22 y M27).
+11. **Fogón no se vende sin la prueba final del coste por local** (M22 y M27). Encenderlo para un cliente sí se puede antes: lo enciende Richi desde el admin, y el coste lo mira con el piloto ([0097](../decisiones/0097-fogon-1-las-respuestas-y-la-base.md), que cambia lo que decía: «no se enciende sin su coste medido»).
 
 > **Documento de control obligatorio.** Antes de cerrar cualquier módulo se pasa la lista de la **Auditoría de flujos, dependencias y efectos en cadena**, que define el mapa de dependencias de datos, los efectos en cascada de cada cambio, de dónde salen las opciones de cada desplegable, las máquinas de estado y el comportamiento ante fallos parciales.
 

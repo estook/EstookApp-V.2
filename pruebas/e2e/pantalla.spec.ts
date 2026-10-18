@@ -2,6 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 import { consultasSueltas } from './en-la-app.ts';
 
+/** Fogón apagado (0097): el general o el del cliente. Bar Centro lo tiene apagado. */
+const FOGON_APAGADO = /Fogón (está apagado ahora mismo|todavía no está encendido en tu negocio)/;
+
 /**
  * Lo que se ve, y que de verdad se ve.
  *
@@ -507,13 +510,14 @@ test.describe('Fogón', () => {
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resumen');
     });
 
-    test('y dice la verdad: todavía no se puede hablar con él', async ({ page }) => {
+    test('apagado, dice la verdad: no se puede hablar con él, y por qué', async ({ page }) => {
       // Sin casilla de escribir. Una casilla que no contesta es un control
-      // muerto, y de eso este proyecto ya lleva bastantes.
+      // muerto, y de eso este proyecto ya lleva bastantes. Encendido, habla: eso se
+      // prueba en `fogon.spec.ts` (0097), con su propia cuenta.
       await entrar(page);
       await abrirFogon(page);
 
-      await expect(page.getByText('Hablar con Fogón llega con el módulo 22.')).toBeVisible();
+      await expect(page.getByText(FOGON_APAGADO)).toBeVisible();
       await expect(page.getByRole('dialog').getByRole('textbox')).toHaveCount(0);
     });
   });
@@ -539,7 +543,7 @@ test.describe('Fogón', () => {
 
       await abrirFogon(page);
       await expect(page.getByText('Fogón sabe que estás en')).toContainText('Escandallos');
-      await expect(page.getByText('Hablar con Fogón llega con el módulo 22.')).toBeVisible();
+      await expect(page.getByText(FOGON_APAGADO)).toBeVisible();
     });
 
     test('Ctrl+J abre lo mismo', async ({ page }) => {
@@ -547,7 +551,7 @@ test.describe('Fogón', () => {
       await entrar(page);
 
       await page.keyboard.press('Control+j');
-      await expect(page.getByText('Hablar con Fogón llega con el módulo 22.')).toBeVisible();
+      await expect(page.getByText(FOGON_APAGADO)).toBeVisible();
     });
   });
 });

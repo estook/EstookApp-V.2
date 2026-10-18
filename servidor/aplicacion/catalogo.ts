@@ -304,6 +304,10 @@ import { quienSoy } from './consultas/quien-soy.ts';
 import { quienTieneAcceso } from './consultas/quien-tiene-acceso.ts';
 import { unLocal } from './consultas/un-local.ts';
 import type { Comando, Consulta } from './contrato.ts';
+import { escribirLosPasosConFogon, preguntarAFogon, rellenarConFogon } from './comandos/fogon.ts';
+import { encenderFogon, encenderFogonDelCliente } from './comandos/fogon-en-el-admin.ts';
+import { fogonYYo } from './consultas/fogon.ts';
+import { fogonEnElAdmin } from './consultas/fogon-en-el-admin.ts';
 
 /**
  * Un fichero por comando y por consulta, y este catalogo que los junta.
@@ -324,6 +328,8 @@ export const catalogo = {
     [accesosAlAdmin.nombre]: accesosAlAdmin,
     [auditoriaDelAdmin.nombre]: auditoriaDelAdmin,
     [ofertaEnElAdmin.nombre]: ofertaEnElAdmin,
+    // Fogón en el admin: los dos interruptores y lo gastado (0097).
+    [fogonEnElAdmin.nombre]: fogonEnElAdmin,
     // 0042 · lo que la pantalla de entrar necesita saber antes de que haya nadie.
     [comoSeEntra.nombre]: comoSeEntra,
     // A3 (0076) · si un código de vendedor vale, para la casilla de crear cuenta.
@@ -458,6 +464,8 @@ export const catalogo = {
     [elHorarioEnPdf.nombre]: elHorarioEnPdf,
     // I · La app instalable (0070): el móvil de cada uno y cuándo suena.
     [miMovil.nombre]: miMovil,
+    // Fogón 1 · 1 (0097): si habla aquí y lo que le queda. No gasta nada.
+    [fogonYYo.nombre]: fogonYYo,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -629,6 +637,9 @@ export const catalogo = {
     [darAccesoAlAdmin.nombre]: darAccesoAlAdmin,
     [quitarAccesoAlAdmin.nombre]: quitarAccesoAlAdmin,
     [cambiarLaOferta.nombre]: cambiarLaOferta,
+    // Los dos interruptores de Fogón (0097): el general y el de cada cliente.
+    [encenderFogon.nombre]: encenderFogon,
+    [encenderFogonDelCliente.nombre]: encenderFogonDelCliente,
 
     // ── Crear cuenta y entrar con Google (0042) ────────────────────────────
     [pedirCodigoDeRegistro.nombre]: pedirCodigoDeRegistro,
@@ -779,5 +790,13 @@ export const catalogo = {
     // La foto de cada paso de la ficha técnica (repaso del 16-oct, 0090).
     [ponerFotoDelPaso.nombre]: ponerFotoDelPaso,
     [quitarFotoDelPaso.nombre]: quitarFotoDelPaso,
+
+    // ── Fogón 1 · 1 · La base (0097) ─────────────────────────────────────────
+    //
+    // Preguntar desde cualquier pantalla, y los borradores del escandallo y de los
+    // pasos. Ninguno guarda nada: la persona revisa y guarda en la pantalla de siempre.
+    [preguntarAFogon.nombre]: preguntarAFogon,
+    [rellenarConFogon.nombre]: rellenarConFogon,
+    [escribirLosPasosConFogon.nombre]: escribirLosPasosConFogon,
   } as Record<string, Comando<never, unknown>>,
 };

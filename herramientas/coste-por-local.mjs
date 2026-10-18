@@ -42,9 +42,13 @@ const PLANES = {
   cadena: { nombre: 'Cadena (por local)', conIva: 89, creditos: 1500 },
 };
 
-/** COMPROBADO el 30-sep-2026 · platform.claude.com/docs/en/about-claude/pricing · $ por millón de tokens. */
+/**
+ * COMPROBADO el 30-sep-2026 · platform.claude.com/docs/en/about-claude/pricing · $ por millón de tokens.
+ * El económico, Claude Haiku 5.5 desde Fogón 1 · 1 (0097, comprobado el 18-oct-2026): diez
+ * veces más barato que el Haiku 4.5 que se suponía. Es el que usa Fogón 1 para todo.
+ */
 const MODELOS = {
-  economico: { nombre: 'Claude Haiku 4.5', entrada: 1, cache: 0.1, salida: 5 },
+  economico: { nombre: 'Claude Haiku 5.5', entrada: 0.1, cache: 0.01, salida: 0.5 },
   grande: { nombre: 'Claude Sonnet 5.5', entrada: 2, cache: 0.2, salida: 10 },
   elMasCaro: { nombre: 'Claude Opus 5.5', entrada: 4, cache: 0.2, salida: 20 },
 };

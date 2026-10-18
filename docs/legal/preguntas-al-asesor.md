@@ -44,16 +44,16 @@
 
 ## C · Protección de datos
 
-| N.º | La pregunta                                                                                                                           | Qué depende                                            | Respuesta |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | --------- |
-| C1  | **Revisar el contrato de encargado** ([borrador](contrato-de-encargado.md)) y cómo se acepta al crear la cuenta                       | **Antes del primer cliente de pago**                   |           |
-| C2  | **Los subencargados y las transferencias** fuera de la UE: comprobar la garantía de cada uno (Resend, Stripe, Sentry, Google, GitHub) | La lista del contrato                                  |           |
-| C3  | **La tabla de conservación** ([borrador](conservacion-de-datos.md)): plazos y qué se anonimiza                                        | El trabajo nocturno de M27 y la política de privacidad |           |
-| C4  | ¿Tiene Estook que nombrar **delegado de protección de datos**?                                                                        | El aviso legal                                         |           |
-| C5  | **La ubicación al fichar:** ¿hace falta evaluación de impacto? ¿La hace el local, con un modelo nuestro?                              | Los fichajes                                           |           |
-| C6  | **Revisar la política de privacidad, las condiciones y el aviso legal** de la web, que son borradores                                 | **Antes del primer cliente de pago**                   |           |
-| C7  | **Una persona sin correo** (nombre y PIN): ¿cómo se le informa y cómo ejerce sus derechos? ¿A través del local?                       | La entrega H                                           |           |
-| C8  | **Las reseñas de Google** con el nombre de quien las escribe: base legal para guardarlas y analizarlas                                | Negocio › Reseñas (M23)                                |           |
+| N.º | La pregunta                                                                                                                                                                 | Qué depende                                            | Respuesta |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | --------- |
+| C1  | **Revisar el contrato de encargado** ([borrador](contrato-de-encargado.md)) y cómo se acepta al crear la cuenta                                                             | **Antes del primer cliente de pago**                   |           |
+| C2  | **Los subencargados y las transferencias** fuera de la UE: comprobar la garantía de cada uno (Resend, Stripe, Sentry, Google, GitHub, y Anthropic para Fogón desde la 0097) | La lista del contrato                                  |           |
+| C3  | **La tabla de conservación** ([borrador](conservacion-de-datos.md)): plazos y qué se anonimiza                                                                              | El trabajo nocturno de M27 y la política de privacidad |           |
+| C4  | ¿Tiene Estook que nombrar **delegado de protección de datos**?                                                                                                              | El aviso legal                                         |           |
+| C5  | **La ubicación al fichar:** ¿hace falta evaluación de impacto? ¿La hace el local, con un modelo nuestro?                                                                    | Los fichajes                                           |           |
+| C6  | **Revisar la política de privacidad, las condiciones y el aviso legal** de la web, que son borradores                                                                       | **Antes del primer cliente de pago**                   |           |
+| C7  | **Una persona sin correo** (nombre y PIN): ¿cómo se le informa y cómo ejerce sus derechos? ¿A través del local?                                                             | La entrega H                                           |           |
+| C8  | **Las reseñas de Google** con el nombre de quien las escribe: base legal para guardarlas y analizarlas                                                                      | Negocio › Reseñas (M23)                                |           |
 
 ## D · Laboral
 

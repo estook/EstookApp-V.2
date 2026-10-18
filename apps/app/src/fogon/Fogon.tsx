@@ -1,9 +1,13 @@
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Boton, Hoja, PanelLateral, clases, usarEsEscritorio } from '@estook/ui';
 import { accionesDeAqui } from '../acciones/catalogo.tsx';
 import { usarContextoDeFogon } from '../ganchos/usarContextoDeFogon.ts';
 import { usarElEsqueleto } from '../ganchos/usarElEsqueleto.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { usarLectura } from '../ganchos/usarLectura.ts';
+import type { FogonYYo } from './contrato.ts';
+import { HablarConFogon } from './HablarConFogon.tsx';
 
 /**
  * Fogón · dónde vive y cómo se abre.
@@ -33,12 +37,13 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * Dejarla para M22 significaría rehacer la barra, la rueda y el esqueleto cuando
  * llegue. Así queda el sitio hecho y probado, y M22 solo tiene que llenarlo.
  *
- * ── Lo que NO hay aquí, y se dice ────────────────────────────────────────────
+ * ── Y desde Fogón 1 · 1, habla (0097) ────────────────────────────────────────
  *
- * **No hay casilla para escribirle.** Poner una que no conteste sería el fallo
- * que este proyecto lleva persiguiendo desde M4: un control que promete algo y
- * no lo hace. Lo que sí hay es qué le vas a poder pedir **en esta pantalla**,
- * que es información de verdad y ayuda a decidir si algo falta.
+ * Con Fogón encendido en tu negocio (los dos interruptores del admin) y su clave
+ * en el servidor, arriba sale **la caja para preguntarle** (`HablarConFogon`).
+ * Apagado, la ventana es la de siempre —lo que puedes hacer aquí y lo que podrás
+ * pedirle— y dice por qué no habla: **no hay casilla que no conteste**, que es el
+ * fallo que este proyecto persigue desde M4.
  */
 
 // ── Qué podrá hacer aquí ─────────────────────────────────────────────────────
@@ -208,6 +213,16 @@ export function VentanaDeFogon({
 
   const Ventana = enEscritorio ? PanelLateral : Hoja;
 
+  // Si habla aquí: solo al abrir, y sin gastar nada (lee los interruptores).
+  const fogon = usarLectura<FogonYYo>('fogon_y_yo', {}, abierta);
+  // Y cada vez que se abre, otra vez: si lo acaban de encender (o de apagar) en el admin,
+  // lo guardado de la vez anterior diría lo contrario.
+  const { refetch } = fogon;
+  useEffect(() => {
+    if (abierta) void refetch();
+  }, [abierta, refetch]);
+  const habla = fogon.data?.habla === true ? fogon.data : null;
+
   return (
     <Ventana
       abierta={abierta}
@@ -227,10 +242,18 @@ export function VentanaDeFogon({
           no pintaba nada. Se explicaba a sí mismo en vez de ayudar. Ahora dice lo
           que hace falta, como lo diría una persona.
         */}
-        <p className="text-cuerpo">
-          Fogón sabe que estás en <strong>{contexto.donde}</strong>. Pronto podrás preguntarle lo
-          que no sepas.
-        </p>
+        {habla !== null ? (
+          <HablarConFogon
+            queda={habla.queda}
+            casiSinCreditos={habla.casiSinCreditos}
+            donde={contexto.donde}
+          />
+        ) : (
+          <p className="text-cuerpo">
+            Fogón sabe que estás en <strong>{contexto.donde}</strong>. Pronto podrás preguntarle lo
+            que no sepas.
+          </p>
+        )}
 
         {/*
           Y lo que se puede hacer aquí **ahora mismo**. Son acciones del catálogo,
@@ -270,28 +293,31 @@ export function VentanaDeFogon({
           </div>
         )}
 
-        <div>
-          <p className="text-secundario font-medium text-texto-suave">
-            Cuando hable, podrás pedirle
-          </p>
-          <ul className="mt-e2 flex flex-col gap-e2">
-            {lo.podras.slice(0, 3).map((linea) => (
-              <li key={linea} className="flex gap-e2 text-cuerpo">
-                <span aria-hidden className="text-texto-suave">
-                  ·
-                </span>
-                <span>{linea}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {habla === null && (
+          <div>
+            <p className="text-secundario font-medium text-texto-suave">
+              Cuando hable, podrás pedirle
+            </p>
+            <ul className="mt-e2 flex flex-col gap-e2">
+              {lo.podras.slice(0, 3).map((linea) => (
+                <li key={linea} className="flex gap-e2 text-cuerpo">
+                  <span aria-hidden className="text-texto-suave">
+                    ·
+                  </span>
+                  <span>{linea}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/*
-          Y no hay casilla para escribirle, a propósito: una casilla que no
-          contesta es un control muerto. Lo de «pronto» de arriba es la verdad
-          entera, dicha en una línea en vez de en dos recuadros.
+          Apagado, no hay casilla para escribirle, a propósito: una casilla que no
+          contesta es un control muerto. Se dice por qué, en una línea.
         */}
-        <p className="text-secundario text-texto-tenue">Hablar con Fogón llega con el módulo 22.</p>
+        {habla === null && fogon.data !== undefined && !fogon.data.habla && (
+          <p className="text-secundario text-texto-tenue">{fogon.data.porque}</p>
+        )}
       </div>
     </Ventana>
   );

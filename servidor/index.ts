@@ -10,6 +10,7 @@ import { movilConVapid } from './infraestructura/movil.ts';
 import { alSegundoDeSupabase } from './infraestructura/al-segundo.ts';
 import { pdfDeCloudflare } from './infraestructura/pdf.ts';
 import { pagosDeStripe } from './infraestructura/stripe.ts';
+import { modeloDeAnthropic } from './ia/modelo.ts';
 
 /**
  * El punto donde se juntan las capas (M2).
@@ -61,6 +62,9 @@ const movil = movilConVapid();
 /** Lo que llega al segundo en el chat (0073), con las credenciales del almacén. Nulo sin ellas. */
 const alSegundo = alSegundoDeSupabase();
 
+/** Fogón (0097): Claude con `AI_API_KEY`. Nulo sin ella: se dice, no se rompe. */
+const fogon = modeloDeAnthropic();
+
 const puertos: Puertos = {
   movilEncendido: movil !== null,
   enTransaccion: (quien, hacer) =>
@@ -79,6 +83,7 @@ const puertos: Puertos = {
         pdf,
         movil,
         alSegundo,
+        fogon,
         correlacionId: quien.correlacionId,
         desde: quien.desde ?? null,
         // El instante lo pone el servidor, nunca el navegador (regla 10).

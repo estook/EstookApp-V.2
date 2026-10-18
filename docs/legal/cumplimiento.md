@@ -85,10 +85,10 @@ El detalle entero está en el **Anexo TPV y facturación**, capítulos 1 y 4, y 
 
 ## 7 · La inteligencia artificial
 
-| Obligación                                                 | Norma                                                    | Cómo está Estook                                        | Qué falta                                 |
-| ---------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------- |
-| Decir que se habla con una IA                              | Reglamento (UE) 2024/1689, art. 50 · CONFIRMADO          | Fogón todavía no existe (M22)                           | Que lo diga siempre                       |
-| Sistemas que reparten trabajo entre empleados: alto riesgo | Reglamento (UE) 2024/1689, anexo III · fechas según 0062 | Diseño: Fogón propone, decide una persona, nunca puntúa | **PENDIENTE**: revisarlo al construir M14 |
+| Obligación                                                 | Norma                                                    | Cómo está Estook                                                 | Qué falta                                 |
+| ---------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------- |
+| Decir que se habla con una IA                              | Reglamento (UE) 2024/1689, art. 50 · CONFIRMADO          | Fogón 1 lo dice siempre, encima de la caja para preguntar (0097) | Nada, mientras se mantenga                |
+| Sistemas que reparten trabajo entre empleados: alto riesgo | Reglamento (UE) 2024/1689, anexo III · fechas según 0062 | Diseño: Fogón propone, decide una persona, nunca puntúa          | **PENDIENTE**: revisarlo al construir M14 |
 
 ## 8 · Vender el servicio
 

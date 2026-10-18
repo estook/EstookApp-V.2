@@ -1,6 +1,13 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { comoSeLeeLaCantidad, comoSeDiceElTipo } from '@estook/dominio';
+import {
+  comoSeDiceElTipo,
+  comoSeLeeEscalada,
+  comoSeLeeLaCantidad,
+  factorParaUnIngrediente,
+  unidadesQueSirven,
+  type UnidadDeUso,
+} from '@estook/dominio';
 import { Aviso, Boton, Cargando, ErrorEnCristiano, PanelLateral, clases } from '@estook/ui';
 import { IconoDocumento, IconoEditar, IconoHistorial, IconoVincular } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -329,48 +336,162 @@ function SinFicha({
 export function LoQueLleva({
   datos,
   alAbrir,
+  factor = 1,
+  alTener,
 }: {
   readonly datos: UnaFicha;
   readonly alAbrir?: (otra: QueFicha) => void;
+  /** Cuánto se multiplica lo escrito al escalar la ficha técnica (0092); 1, como está. */
+  readonly factor?: number;
+  /**
+   * Si se puede escalar tocando un ingrediente: tocar su cantidad pregunta cuánto
+   * tienes, y avisa con el factor (como meez: «tengo 3 kg de carrillera»).
+   */
+  readonly alTener?: (factor: number) => void;
 }) {
+  const [tocada, setTocada] = useState<string | null>(null);
   return (
     <section aria-label="Lo que lleva" className="flex flex-col">
       <h3 className="pb-e1 text-secundario font-semibold text-texto-suave">Lo que lleva</h3>
       <ul className="flex flex-col">
-        {datos.receta.lineas.map((l) => (
-          <li
-            key={l.id}
-            className="flex min-h-toque items-center gap-e3 border-b border-borde py-e1 last:border-0"
-          >
-            <span className="flex min-w-0 flex-1 flex-col">
-              {l.tipo === 'elaboracion' && alAbrir !== undefined ? (
-                <button
-                  type="button"
-                  className="self-start text-left text-cuerpo underline decoration-borde-fuerte underline-offset-4"
-                  onClick={() => {
-                    alAbrir({ tipo: 'elaboracion', id: l.refId });
-                  }}
-                >
-                  {l.nombre}
-                </button>
-              ) : (
-                <span className="truncate text-cuerpo">{l.nombre}</span>
-              )}
-              {(l.nota !== null || l.tipo === 'elaboracion') && (
-                <span className="text-etiqueta text-texto-suave">
-                  {[l.tipo === 'elaboracion' ? 'Elaboración' : null, l.nota]
-                    .filter((t): t is string => t !== null)
-                    .join(' · ')}
+        {datos.receta.lineas.map((l) => {
+          const cantidad =
+            factor === 1
+              ? comoSeLeeLaCantidad(l.cantidad, l.unidad)
+              : comoSeLeeEscalada(l.cantidad, l.unidad, factor);
+          return (
+            <li key={l.id} className="flex flex-col border-b border-borde py-e1 last:border-0">
+              <div className="flex min-h-toque items-center gap-e3">
+                <span className="flex min-w-0 flex-1 flex-col">
+                  {l.tipo === 'elaboracion' && alAbrir !== undefined ? (
+                    <button
+                      type="button"
+                      className="self-start text-left text-cuerpo underline decoration-borde-fuerte underline-offset-4"
+                      onClick={() => {
+                        alAbrir({ tipo: 'elaboracion', id: l.refId });
+                      }}
+                    >
+                      {l.nombre}
+                    </button>
+                  ) : (
+                    <span className="truncate text-cuerpo">{l.nombre}</span>
+                  )}
+                  {(l.nota !== null || l.tipo === 'elaboracion') && (
+                    <span className="text-etiqueta text-texto-suave">
+                      {[l.tipo === 'elaboracion' ? 'Elaboración' : null, l.nota]
+                        .filter((t): t is string => t !== null)
+                        .join(' · ')}
+                    </span>
+                  )}
                 </span>
+                {alTener === undefined ? (
+                  <span className="shrink-0 text-cuerpo font-semibold tabular-nums">
+                    {cantidad}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label={`Escalar por lo que tienes de ${l.nombre}`}
+                    aria-expanded={tocada === l.id}
+                    onClick={() => {
+                      setTocada((antes) => (antes === l.id ? null : l.id));
+                    }}
+                    className="-mr-e2 min-h-toque shrink-0 rounded-boton px-e2 text-cuerpo font-semibold tabular-nums underline decoration-borde-fuerte decoration-dotted underline-offset-4 hover:bg-fondo"
+                  >
+                    {cantidad}
+                  </button>
+                )}
+              </div>
+              {alTener !== undefined && tocada === l.id && (
+                <TengoTanto
+                  lleva={{ cantidad: l.cantidad, unidad: l.unidad }}
+                  alEscalar={(nuevo) => {
+                    setTocada(null);
+                    alTener(nuevo);
+                  }}
+                />
               )}
-            </span>
-            <span className="shrink-0 text-cuerpo font-semibold tabular-nums">
-              {comoSeLeeLaCantidad(l.cantidad, l.unidad)}
-            </span>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </section>
+  );
+}
+
+/** Como las cajas de los campos (`CAJA`), pero del ancho de lo que llevan. */
+const CAJITA =
+  'min-h-toque rounded-medio border border-borde-fuerte bg-superficie text-cuerpo text-texto';
+
+/** «Tengo [ 3 ] [kg] · Escalar»: escala toda la receta por lo que hay de un ingrediente. */
+function TengoTanto({
+  lleva,
+  alEscalar,
+}: {
+  readonly lleva: { readonly cantidad: number; readonly unidad: UnidadDeUso };
+  readonly alEscalar: (factor: number) => void;
+}) {
+  const sirven = unidadesQueSirven(lleva.unidad);
+  const id = useId();
+  const [cuanto, setCuanto] = useState('');
+  // En la unidad en que se lee: 3000 g se leen «3 kg», y lo que tienes se dice en kilos.
+  const comoSeLee =
+    lleva.cantidad >= 1000 && lleva.unidad === 'g'
+      ? 'kg'
+      : lleva.cantidad >= 1000 && lleva.unidad === 'ml'
+        ? 'l'
+        : lleva.unidad;
+  const [unidad, setUnidad] = useState<UnidadDeUso>(
+    sirven.includes(comoSeLee) ? comoSeLee : (sirven[0] ?? lleva.unidad),
+  );
+  const numero = Number(cuanto.replace(',', '.'));
+  const factor =
+    Number.isFinite(numero) && numero > 0
+      ? factorParaUnIngrediente(lleva, { cantidad: numero, unidad })
+      : null;
+  return (
+    <form
+      className="anima-aparece flex flex-wrap items-center gap-e2 pb-e2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (factor !== null) alEscalar(factor);
+      }}
+    >
+      <label className="text-secundario text-texto-suave" htmlFor={id}>
+        Tengo
+      </label>
+      <input
+        id={id}
+        autoFocus
+        inputMode="decimal"
+        value={cuanto}
+        onChange={(e) => {
+          setCuanto(e.currentTarget.value);
+        }}
+        className={`${CAJITA} w-[9ch] px-e3 text-right tabular-nums`}
+      />
+      {sirven.length > 1 ? (
+        <select
+          aria-label="Unidad"
+          value={unidad}
+          onChange={(e) => {
+            setUnidad(e.currentTarget.value as UnidadDeUso);
+          }}
+          className={`${CAJITA} cursor-pointer px-e2`}
+        >
+          {sirven.map((u) => (
+            <option key={u} value={u}>
+              {u}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <span className="text-cuerpo">{unidad}</span>
+      )}
+      <Boton type="submit" tono="secundario" tamano="s" disabled={factor === null}>
+        Escalar
+      </Boton>
+    </form>
   );
 }
 
@@ -406,6 +527,8 @@ function ElEscandallo({
         <CifraPequena
           nombre="Coste"
           valor={sinCoste ? '—' : comoDinero(escandallo.costeCentimos)}
+          // Una receta de olla cuesta lo de una ración (0092): la tanda entera, dividida.
+          debajo={(datos.receta.raciones ?? 1) > 1 ? 'la ración' : undefined}
         />
         <CifraPequena
           nombre="Food cost"
@@ -490,7 +613,11 @@ function ElEscandallo({
       </section>
 
       <section aria-label="Desglose" className="flex flex-col">
-        <h3 className="pb-e1 text-secundario font-semibold text-texto-suave">Desglose</h3>
+        <h3 className="pb-e1 text-secundario font-semibold text-texto-suave">
+          Desglose
+          {(datos.receta.raciones ?? 1) > 1 &&
+            ` · la tanda de ${String(datos.receta.raciones)} raciones`}
+        </h3>
         <ul className="flex flex-col">
           {datos.receta.lineas.map((l) => (
             <li

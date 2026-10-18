@@ -23,6 +23,8 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarAbiertoEnLaDireccion } from '../ganchos/usarAbiertoEnLaDireccion.ts';
 import { usarLasVistasConAlgo } from '../ganchos/usarLasVistasConAlgo.ts';
+import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
+import { comoDinero } from '../almacen/contrato.ts';
 import { LosAlergenos } from './Alergenos.tsx';
 import { ElEscandalloDelPlato } from './ElEscandalloDelPlato.tsx';
 import { FichaTecnica } from './FichaTecnica.tsx';
@@ -34,6 +36,7 @@ import {
   type MisFichas,
   type PlatoEnLaLista,
   type QueFicha,
+  type QueHaCambiado,
 } from './contrato.ts';
 
 /** El acento de Escandallos. */
@@ -51,7 +54,8 @@ const A_LA_VISTA = 6;
  * pasos dentro y había una pestaña de elaboraciones—, y se repetía el trabajo. Ahora:
  *
  *   · **Resumen**: cuántos platos están desgranados, los que faltan, y a quien ve costes,
- *     los que pasan del objetivo y los que pierden dinero en algún canal.
+ *     los que pasan del objetivo, los que pierden dinero en algún canal y **qué ha
+ *     cambiado** en su coste (M9 · 3, 0092), ordenado por euros.
  *   · **Escandallos**: los platos de la carta, cada uno con lo que lleva, lo que cuesta
  *     y lo que deja. **Solo eso**.
  *   · **Fichas técnicas**: el plato de la carta **más** lo que ya dice su escandallo
@@ -146,6 +150,8 @@ function filaDePlato(plato: PlatoEnLaLista, alAbrir: (ficha: QueFicha) => void):
     <Etiqueta tono={tonoDelSemaforo(coste.semaforo)}>{comoPorcentaje(coste.foodCost)}</Etiqueta>
   );
   const pierde = coste !== undefined && coste.pierdeEn.length > 0;
+  // Sin escandallo, lo que costaría a tu objetivo, marcado «aprox.» (0095): no es un coste.
+  const aprox = plato.tieneFicha ? null : (coste?.costeAproxCentimos ?? null);
   return {
     clave: plato.id,
     delante: (
@@ -164,6 +170,11 @@ function filaDePlato(plato: PlatoEnLaLista, alAbrir: (ficha: QueFicha) => void):
         {pierde && (
           <span className="shrink-0 font-semibold text-mal">
             Pierde en {coste.pierdeEn.join(', ')}
+          </span>
+        )}
+        {aprox !== null && (
+          <span className="shrink-0 tabular-nums" title="Precio sin IVA por tu objetivo de coste">
+            ~{comoDinero(aprox)} aprox.
           </span>
         )}
         <LosAlergenos alergenos={plato.alergenos} picante={plato.picante} lado={18} enUnaLinea />
@@ -297,6 +308,8 @@ function Resumen({
         </Tarjeta>
       </Pieza>
 
+      {datos.conImportes && <LoQueHaCambiado alAbrir={alAbrir} />}
+
       {pierden.length > 0 && (
         <Tarjeta
           titulo="Pierden dinero"
@@ -364,6 +377,112 @@ function Resumen({
         </Tarjeta>
       )}
     </Mosaico>
+  );
+}
+
+// ── Qué ha cambiado (M9 · 3, 0092 · 1B) ──────────────────────────────────────
+
+const DIAS = [7, 30, 90] as const;
+
+/**
+ * Los platos cuyo coste se ha movido frente a hace 7, 30 o 90 días, **ordenados por lo
+ * que cuesta en euros**, con el ingrediente que lo ha movido. Solo a quien ve costes.
+ * Si nada se ha movido, no sale: una tarjeta que dice «nada» cada día es ruido.
+ */
+function LoQueHaCambiado({ alAbrir }: { readonly alAbrir: (ficha: QueFicha) => void }) {
+  const [dias, setDias] = useState<(typeof DIAS)[number]>(30);
+  const [todos, setTodos] = useState(false);
+  const consulta = usarLectura<QueHaCambiado>('que_ha_cambiado', { dias: String(dias) });
+  const platos = consulta.data?.platos ?? [];
+  if (consulta.data === undefined || (platos.length === 0 && dias === 30)) return null;
+  const aLaVista = todos ? platos : platos.slice(0, A_LA_VISTA);
+
+  return (
+    <Tarjeta titulo="Qué ha cambiado" cuantos={platos.length} acento={ACENTO} pegado>
+      {/* Debajo del título, y no a su lado: en la tarjeta estrecha partía el título en dos. */}
+      <div
+        role="group"
+        aria-label="Desde cuándo"
+        className="flex items-center gap-e1 px-e4 pb-e2 text-secundario text-texto-suave"
+      >
+        <span className="mr-e1">Frente a hace</span>
+        {DIAS.map((d) => (
+          <button
+            key={d}
+            type="button"
+            aria-pressed={dias === d}
+            onClick={() => {
+              setDias(d);
+              setTodos(false);
+            }}
+            className={`min-h-[32px] rounded-redondo px-e2 text-etiqueta font-semibold tabular-nums ${
+              dias === d ? 'bg-texto text-superficie' : 'text-texto-suave hover:bg-fondo'
+            }`}
+          >
+            {d}
+          </button>
+        ))}
+        <span className="ml-e1">días</span>
+      </div>
+      <Lista
+        titulo="Qué ha cambiado"
+        elementos={aLaVista.map((p): ElementoDeLista => ({
+          clave: p.id,
+          titulo: p.nombre,
+          detalle: (
+            <span className="flex min-w-0 flex-wrap items-center gap-x-e2">
+              {p.cruza.map((r) => (
+                <span key={r.texto} className="shrink-0 font-semibold text-mal">
+                  {r.texto}
+                </span>
+              ))}
+              {/* Primero lo que más importa, el food cost; si no cabe, se corta el porqué. */}
+              <span className="truncate">
+                {[
+                  p.foodCostAntes !== null && p.foodCostAhora !== null
+                    ? `${comoPorcentaje(p.foodCostAntes)} → ${comoPorcentaje(p.foodCostAhora)}`
+                    : null,
+                  p.porQue !== null
+                    ? `por ${p.porQue.nombre.toLocaleLowerCase('es')}`
+                    : p.cambioLaReceta
+                      ? 'cambió la receta'
+                      : null,
+                ]
+                  .filter((t) => t !== null)
+                  .join(' · ')}
+              </span>
+            </span>
+          ),
+          derecha: (
+            <Etiqueta tono={p.diferenciaCentimos > 0 ? 'mal' : 'bien'}>
+              {p.diferenciaCentimos > 0 ? '+' : '−'}
+              {comoDinero(Math.abs(p.diferenciaCentimos))}
+            </Etiqueta>
+          ),
+          alPulsar: () => {
+            alAbrir({ tipo: 'plato', id: p.id });
+          },
+        }))}
+        cuandoNoHay={
+          <p className="px-e4 py-e3 text-secundario text-texto-suave">
+            En {dias} días no se ha movido el coste de ningún plato.
+          </p>
+        }
+      />
+      {platos.length > A_LA_VISTA && !todos && (
+        <div className="px-e4 pb-e3">
+          <Boton
+            tono="texto"
+            tamano="s"
+            onClick={() => {
+              setTodos(true);
+            }}
+          >
+            Ver los {platos.length}
+          </Boton>
+        </div>
+      )}
+    </Tarjeta>
   );
 }
 
@@ -579,7 +698,16 @@ function FichasTecnicas({
         </Tarjeta>
       ) : (
         <>
-          {buscador}
+          <div className="flex flex-wrap items-end justify-between gap-e3">
+            {buscador}
+            {/* Para encuadernarlas: todas en un PDF, por secciones y sin euros (0093). */}
+            <BotonDelDocumento
+              consulta={'las_fichas_en_pdf'}
+              parametros={{}}
+              texto="Descargar todas"
+              tono="secundario"
+            />
+          </div>
           <PorSecciones
             datos={datos}
             platos={platos}

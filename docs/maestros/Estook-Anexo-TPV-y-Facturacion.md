@@ -255,7 +255,7 @@ En un local pequeño, la pantalla de cocina hace de pase. **Se configura, no se 
 
 ### La ficha, que es lo que nadie más tiene
 
-Desde cualquier plato de la pantalla se abre **su ficha técnica en modo cocina** (M9): foto, gramajes, pasos con sus fotos y el truco del jefe, en el idioma del cocinero y **sin un solo importe**.
+Desde cualquier plato de la pantalla se abre **su ficha técnica** (la de Escandallos, M9), a pantalla completa en la de cocina —el modo cocina de Escandallos se quitó porque esto es su sitio ([0090](../decisiones/0090-el-repaso-del-16-oct.md))—: foto, gramajes, pasos con sus fotos y el truco del jefe, en el idioma del cocinero y **sin un solo importe**.
 
 Un cocinero nuevo deja de necesitar que alguien le explique cada plato en pleno servicio, que es el problema que originó Estook.
 

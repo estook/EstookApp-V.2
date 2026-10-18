@@ -1,9 +1,10 @@
 # Fogón en cada sitio, y lo que se vende sin escandallo
 
-> **Estado: propuesta, sin decidir ni construir.** Son las ideas de Richi del 18-oct-2026, pasadas
-> por **la prueba de la plantilla** ([0094](decisiones/0094-la-prueba-de-la-plantilla.md)). Dos
-> preguntas al final. **Mucho de esto ya estaba escrito** para Fogón (Manifiesto, capítulo 20, y
-> Plan, M22): aquí se dice qué es nuevo, dónde va y cuándo.
+> **Estado: contestado el 18-oct** ([0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)).
+> La 1, decidida: dos cifras aproximadas (la de la app y la de Fogón, una vez), «Crear escandallo»
+> a mano y «Rellenar con Fogón» avisando de que la IA no es precisa. La 2, **Fogón en dos mitades**
+> —la base justo después de M9 · 3 y lo que necesita ventas con el TPV—, propuesta de la IA a la
+> espera del sí de Richi. Abajo, la propuesta tal como se le hizo.
 
 ---
 

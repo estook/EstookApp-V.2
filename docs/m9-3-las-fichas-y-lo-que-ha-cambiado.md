@@ -1,7 +1,10 @@
 # M9 · 3 · Las fichas que se usan, y lo que ha cambiado
 
-> **Estado: contestado entero, listo para construir.** Richi contestó las siete preguntas y las
-> cuatro siguientes el 17-oct-2026 ([0092](decisiones/0092-las-respuestas-de-m9-3.md) y
+> **Estado: construido el 18-oct-2026** en la rama `m9-3-escalar-y-lo-que-ha-cambiado` (migración
+> 0073), con lo que decidí al construirlo al final de la
+> [0092](decisiones/0092-las-respuestas-de-m9-3.md); en producción cuando Richi fusione, migre y
+> despliegue. Richi contestó las siete preguntas y las cuatro siguientes el 17-oct
+> ([0092](decisiones/0092-las-respuestas-de-m9-3.md) y
 > [0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)). Es la última entrega de M9
 > ([el plan de M9](m9-escandallos.md)); después viene M10. **El coste teórico y los avisos de lo
 > que se escapa** van con M20 y viven en su documento:
@@ -51,8 +54,8 @@ especias y el picante no escalan igual**.
   Con tanda, **el escandallo sigue diciendo lo que cuesta una ración**: divide la tanda entre sus
   raciones.
 - **En la ficha técnica**, encima de los ingredientes: **«Para [ 1 ] raciones»** con − y +, y
-  se puede escribir el número. Si la receta es de tanda, sale **«1 tanda · 25 raciones»** y se
-  escala igual, por tandas o por raciones. Las cantidades cambian al momento, en g o en kg
+  se puede escribir el número. Si la receta es de tanda, sale **«Para [ 25 ] raciones · 1
+  tanda»**, y al escalar cuenta las tandas («2 tandas»); **«Como está escrita»** la devuelve. Las cantidades cambian al momento, en g o en kg
   según el tamaño (como ya hace la app desde mil gramos).
 - **Tocar la cantidad de un ingrediente** y escribir lo que tienes («3 kg») escala todo lo
   demás. Es lo más rápido cuando lo que manda es lo que hay en la cámara.
@@ -74,15 +77,15 @@ raciones salen; vacía = 1).
 Toca a 7 platos; la tortilla pasa del 28 al 31 % de coste, y tu objetivo es el 30 %.
 
 - **En Escandallos › Resumen**, un bloque **«Qué ha cambiado»**: los platos cuyo coste se ha
-  movido, **ordenados por lo que te cuesta en euros** (no por porcentaje), con el ingrediente que
-  lo ha movido y cuántos puntos de margen. De fábrica, **frente a hace 30 días**; se puede
-  mirar desde otra fecha.
-- **El aviso en la campana**, al jefe de cocina y a quien lleva el local, **solo cuando un plato
+  movido, **ordenados por lo que te cuesta en euros** (no por porcentaje), con su food cost de
+  antes y de ahora («28 % → 31 %») y el ingrediente que lo ha movido. **Frente a hace 7, 30 o 90
+  días** (de fábrica, 30). Si nada se ha movido, el bloque no sale.
+- **El aviso en la campana**, a quien ve los costes de Escandallos, **solo cuando un plato
   cruza una raya**: pasa de tu objetivo de coste, o empieza a perder dinero en un canal. **Una vez
-  por plato y por raya**, no en cada albarán. Y otro cuando vuelve a estar bien, solo en el
-  Resumen.
+  por plato y por raya**, no en cada albarán; lo mira el reloj cada mañana. Cuando vuelve a estar
+  bien, solo se ve en el Resumen (en verde).
 - **Nunca el pasado con precios de hoy** (Manifiesto): lo de hace 30 días se calcula con los
-  precios de hace 30 días.
+  precios de los ingredientes de hace 30 días. El precio de venta, el de hoy en los dos lados.
 
 ### 3 · Empezar desde una receta de Estook
 
@@ -94,15 +97,27 @@ raciones)»**. Si dices que sí:
 
 - Copia sus ingredientes y cantidades **a tu escandallo**, como tanda de 8 raciones (pieza 1). La
   de Estook no se toca nunca.
-- **Cada ingrediente pregunta cuál de tus productos es** (respuesta B): «Huevo → ¿tus Huevos
-  camperos?», con el buscador y **«Crear»** si no lo tienes. Hasta que lo elijas, esa línea no
-  cuenta en el coste y el plato dice «falta 1 ingrediente por unir».
+- **Cada ingrediente pregunta cuál de tus productos es** (respuesta B): «¿Es tu «Huevos
+  camperos»?» si uno se le parece, o «¿Cuál de tus productos es?», con el buscador y **«Crear»**
+  si no lo tienes. **Hasta que los elijas todos, no se guarda**, como ya hacía el editor: nunca un
+  coste a medias.
 - Lo cambias a tu gusto y guardas. Desde ahí, es tuya.
 
 ### 4 · Todas las fichas en un PDF
 
 Para **encuadernarlas** (Richi: A): **«Descargar todas»** en Fichas hace un solo PDF con todas las
 fichas técnicas, **por secciones de la carta, con un índice y sin euros**.
+
+### 5 · Lo que no tiene escandallo (18-oct, [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md))
+
+Lo que no necesita IA entra ya:
+
+- **En la ficha del plato, en la Carta**, si no tiene escandallo, una línea encima de «Vincular»
+  y «Desgranar», sin cortar nada: «Sin escandallo: no sabrás lo que cuesta ni lo que gasta.»
+- **En Escandallos**, cada plato sin escandallo lleva **su coste aproximado** («~3,30 € aprox.»):
+  precio sin IVA × tu objetivo de coste, solo para quien ve costes. No entra en ningún cálculo.
+
+Las cifras de Fogón y «Rellenar con Fogón» llegan con Fogón.
 
 ---
 
@@ -145,7 +160,7 @@ los gráficos de control) está allí.
 | Pregunta                        | Escalar                                      | «Qué ha cambiado»                                                                                                                                                  | Receta de Estook                                    |
 | ------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
 | Qué datos usa y de dónde vienen | La receta y su «rinde»                       | Los precios del libro, de hoy y de la fecha elegida                                                                                                                | El catálogo de Estook y tus productos               |
-| Quién más se entera             | Nadie: no se guarda                          | La campana del jefe de cocina y de quien lleva el local                                                                                                            | Nadie hasta que guardas                             |
+| Quién más se entera             | Nadie: no se guarda                          | La campana de quien ve los costes de Escandallos                                                                                                                   | Nadie hasta que guardas                             |
 | Qué puede hacer Fogón           | Nada                                         | Explicarlo en una frase (M22)                                                                                                                                      | Proponer qué producto es cuál (M22)                 |
 | Qué aprueba una persona         | —                                            | —                                                                                                                                                                  | Cada unión de ingrediente con producto              |
 | Permisos                        | Quien ve las fichas                          | Quien ve costes (`dato.coste_de_plato`)                                                                                                                            | Quien edita Escandallos                             |
@@ -157,7 +172,7 @@ los gráficos de control) está allí.
 | **18 · Bloquea algo**           | No                                           | No                                                                                                                                                                 | No: se puede escribir desde cero                    |
 | **19 · Fácil de usar**          | Una «i»; la tanda, plegada; − y +            | Se lee como una lista                                                                                                                                              | Solo sale si el plato se llama como una de las diez |
 | **20 · Avisa con qué hacer**    | No avisa                                     | Solo al cruzar una raya, con el plato y el ingrediente                                                                                                             | No avisa                                            |
-| **21 · Con datos a medias**     | Sin «rinde» puesto, es 1 ración              | Sin precio de antes, lo dice                                                                                                                                       | Lo que no está unido no cuenta, y lo dice           |
+| **21 · Con datos a medias**     | Sin «rinde» puesto, es 1 ración              | Sin precio de antes, el plato no sale: no se inventa                                                                                                               | Hasta unirlo todo no se guarda, y lo dice           |
 | **22 · Señala a alguien**       | No                                           | No                                                                                                                                                                 | No                                                  |
 
 ---

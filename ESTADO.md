@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 18 de octubre de 2026 · **M9 · 2 en producción con su repaso (#109, 72 migraciones, API 90 y 196). M9 · 3, contestado entero (0092 a 0094) y listo para construir, a la espera del «adelante» de Richi. Propuesta, sin decidir: Fogón en cada sitio y lo vendido sin escandallo**
+Última actualización: 18 de octubre de 2026 · **M9 · 2 en producción con su repaso (#109, 72 migraciones, API 90 y 196). M9 · 3, construida y en su pull request (migración 0073, API 92 y 196), a la espera de que Richi la fusione. Propuesta, a la espera de su sí: Fogón en dos mitades (0095)**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -15,12 +15,12 @@
 > | Quién ve qué                        | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                                  |
 > | Qué desencadena cada cambio         | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                                       |
 > | Estook TPV y la facturación         | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**                       |
-> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (94)                                                      |
+> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (95)                                                      |
 > | Lo que decidió la IA por su cuenta  | [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md)                                           |
 > | Lo legal, y lo ya investigado       | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md)             |
 > | Lo que cuesta cada local            | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                                     |
 > | Lo que hizo cada entrega            | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                                     |
-> | Lo aprendido fallando (196)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                 |
+> | Lo aprendido fallando (197)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                 |
 > | Los pasos de Richi                  | [`docs/pasos-de-m9.md`](docs/pasos-de-m9.md)                                                             |
 > | Dónde vive cada clave               | [`config/claves.md`](config/claves.md) (los nombres, nunca los valores)                                  |
 
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Trabajo a medias: ninguno.** La rama `m9-3-escalar-y-lo-que-ha-cambiado` está subida, **sin pull request todavía**: solo documentos (0094 con la prueba de la plantilla en el Plan, la lección 196 y [la propuesta de Fogón](docs/fogon-en-cada-sitio.md)). Si Richi dice que se construya M9 · 3, va en esa misma rama y en un pull request; si no, se abre con lo que hay. **Ojo:** cuando Richi hace sus pasos (`git checkout main`), la carpeta cambia de rama: mirar en qué rama se está antes de tocar nada.
+- **Trabajo a medias: ninguno.** **M9 · 3 está construida** en la rama `m9-3-escalar-y-lo-que-ha-cambiado`, con su pull request abierto: espera a que Richi fusione, migre la 0073 y despliegue la API ([sus pasos](docs/pasos-de-m9.md)). Lo siguiente, **Fogón 1**, solo si Richi dice sí a la [0095](docs/decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md); si no, M10. **Ojo:** cuando Richi hace sus pasos (`git checkout main`), la carpeta cambia de rama: mirar en qué rama se está antes de tocar nada.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -42,12 +42,12 @@ Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en
 |               |                                                                                                                                                                                                                                                                                                                                                                        |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminado** | **M0** a **M6½** · **M7** (las compras) · **«antes de M8» entero** · **M8** con sus repasos · la experiencia, las bases firmes y la 0085 · **M9 · 1** y **M9 · 2** con su arreglo, los permisos de la API y **el repaso del 16-oct** (#104–#109) · **la puesta al día del 17-oct** (#110, [0091](docs/decisiones/0091-estado-a-250-lineas-y-los-documentos-al-dia.md)) |
-| **En curso**  | **Esperando a Richi**: el «adelante» para construir M9 · 3 ([0092](docs/decisiones/0092-las-respuestas-de-m9-3.md) a [0094](docs/decisiones/0094-la-prueba-de-la-plantilla.md)) y dos preguntas de [Fogón en cada sitio](docs/fogon-en-cada-sitio.md) (el coste de lo vendido sin escandallo, y si «Rellenar con Fogón» se adelanta a después de M9 · 3)               |
+| **En curso**  | **M9 · 3, en su pull request** ([el plan](docs/m9-3-las-fichas-y-lo-que-ha-cambiado.md), [0092](docs/decisiones/0092-las-respuestas-de-m9-3.md) a [0095](docs/decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)): trae la **0073** y la API pasa a **92 consultas y 196 comandos**. Y **esperando el sí de Richi** a Fogón en dos mitades (0095)      |
 | **`main`**    | Todo fusionado hasta la **#112** (17-oct): la puesta al día (#110), el plan de M9 · 3 (#111) y cómo detecta Estook lo que se escapa (#112), las tres en verde y sin pruebas repetidas en su pull request                                                                                                                                                               |
 | **Base**      | Supabase, **72 de 72** migraciones (la 0072, migrada por Richi tras fusionar la #109). **116 tablas**, todas con seguridad por filas                                                                                                                                                                                                                                   |
 | **API**       | Desplegada el 17-oct con la #109: **90 consultas y 196 comandos**, el lote del Panel, Sentry encendido, los avisos al móvil y el reloj latiendo. **Corre en Irlanda, junto a su base** (comprobado: `x-sb-edge-region: eu-west-1`)                                                                                                                                     |
 | **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                                                                                                                                      |
-| **Pruebas**   | **2.052** unitarias y de base, en verde (17-oct, con la puesta al día). Las de pantalla, en GitHub                                                                                                                                                                                                                                                                     |
+| **Pruebas**   | **2.078** unitarias y de base, en verde (18-oct, con M9 · 3 en su rama). Las de pantalla, en GitHub                                                                                                                                                                                                                                                                    |
 | **GitHub**    | Tres comprobaciones obligatorias. **Todas las máquinas fijas en Ubuntu 24** (desde la puesta al día): el cambio de GitHub del 19-oct a Ubuntu 26 no les afecta                                                                                                                                                                                                         |
 | **Copias**    | **No hay ninguna.** La semanal está escrita y **aplazada por Richi hasta la mudanza de alojamiento** ([0065](docs/decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). No cuesta nada: se puede encender cualquier día                                                                                                                                         |
 
@@ -55,7 +55,7 @@ Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en
 
 ```
 HECHO         M0 … M8 · «antes de M8» (H, I, C, A1–A4, E1, E2, R…) · M9 · 1 · M9 · 2
-AHORA         M9 · 3  →  M10
+AHORA         M9 · 3 (en su pull request)  →  Fogón 1, si Richi dice sí (0095)  →  M10
 ESTOOK TPV    M16a · La jornada → M20 → M19a · Estook Link → M20A → M20B → M20C
 DESPUÉS       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b → Fases 5, 6 y 7
 ```
@@ -81,7 +81,8 @@ DESPUÉS       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 →
 
 ### Lo que todavía NO está en la app (para que nadie dé por hecho lo que solo está escrito)
 
-- **Estook TPV, Estook Link, la facturación, Fogón, M9 · 3** (la receta por ración o por tanda y escalar, «Descargar todas», «qué ha cambiado», la receta de Estook), **M10** (menús, agotados, el análisis de la carta) y **el APPCC**: escritos, sin construir. Cada uno dice su módulo en el Plan.
+- **M9 · 3** (la receta de olla y escalar, «Descargar todas», «Qué ha cambiado» y su aviso, la receta de Estook, el coste aproximado): **construida, sin fusionar**. Hasta que Richi la fusione, migre y despliegue, no está en la app.
+- **Estook TPV, Estook Link, la facturación, Fogón, M10** (menús, agotados, el análisis de la carta) y **el APPCC**: escritos, sin construir. Cada uno dice su módulo en el Plan.
 - **De M8 y M9, construido y sin enseñar hasta el TPV:** «lo que falta» de lo que se cocina y la desviación de los platos. **La calibración, el coste teórico y los avisos de lo que se escapa**, diseñados y sin construir: van con M20, cuando haya ventas plato a plato ([el diseño](docs/como-detecta-estook-lo-que-se-escapa.md); en IKATZ, 1 de 21 cierres trae los platos). **En IKATZ hay un solo inventario cerrado** (11-oct): la desviación y lo gastado salen vacíos hasta el segundo.
 - **Del chat**, llamadas, un canal de toda la cadena y hablar con el proveedor. **Del admin**, lo que nos cuesta cada cliente (M26).
 - **Del horario**: que Fogón lo proponga (M22), cambiar turnos y vacaciones con saldo (M13), vistas de mes y día (M14), unir dos personas que son la misma (M13).
@@ -100,10 +101,11 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 
 **Ahora** (paso a paso en [`docs/pasos-de-m9.md`](docs/pasos-de-m9.md)):
 
-1. **Decir si construyo M9 · 3** ([el plan](docs/m9-3-las-fichas-y-lo-que-ha-cambiado.md)), y **contestar las dos preguntas** de [Fogón en cada sitio](docs/fogon-en-cada-sitio.md).
-2. **Si no lo has hecho ya:** **cerrar un segundo inventario** en IKATZ (hay uno, del 11-oct); que **Santi publique una semana** en Pizzeriacazzo; alguien del equipo que entró con su PIN, **ponerse contraseña**; y **el chat en tu iPhone**.
-3. **Si no lo has hecho ya:** mirar **A4** (Pizzeriacazzo a **65,29 €** al mes, su cobro del 26-sep en «Cobrado» y el correo de los lunes) y acabar de probar **A3** con un vendedor «Prueba» aparte y **C2** con alguien del equipo ([`pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)).
-4. **Fusionar el pull request de M9 · 3** cuando esté: fusionar, migrar y desplegar la API, con sus pasos.
+1. **M9 · 3: fusionar, migrar la 0073 y desplegar la API**, y probarla en el móvil ([sus pasos](docs/pasos-de-m9.md)).
+2. **Decir sí o no a Fogón en dos mitades** ([0095](docs/decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md), punto 2). Con sí, se le pedirá la clave de Anthropic como secreto y el tope de gasto del primer mes.
+3. **Decir si se arregla el día del precio**: hoy se apunta con la hora universal y, entre las 0:00 y las 2:00 de Madrid, un precio cuenta como del día anterior ([0092](docs/decisiones/0092-las-respuestas-de-m9-3.md), «Lo que vi y no toqué»). No se ha tocado.
+4. **Si no lo has hecho ya:** **cerrar un segundo inventario** en IKATZ (hay uno, del 11-oct); que **Santi publique una semana** en Pizzeriacazzo; alguien del equipo que entró con su PIN, **ponerse contraseña**; y **el chat en tu iPhone**.
+5. **Si no lo has hecho ya:** mirar **A4** (Pizzeriacazzo a **65,29 €** al mes, su cobro del 26-sep en «Cobrado» y el correo de los lunes) y acabar de probar **A3** con un vendedor «Prueba» aparte y **C2** con alguien del equipo ([`pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)).
 
 **Con fecha o con condición:**
 
@@ -182,6 +184,6 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Construir M9 · 3**, la última entrega de M9, **contestada entera el 17-oct** ([0092](docs/decisiones/0092-las-respuestas-de-m9-3.md), [0093](docs/decisiones/0093-como-detecta-estook-lo-que-se-escapa.md), [el plan](docs/m9-3-las-fichas-y-lo-que-ha-cambiado.md)): **la receta por ración o por tanda** (una migración: cuántas raciones salen), escalar por raciones, por tandas o tocando un ingrediente, el PDF escalado y **«Descargar todas»**, **«qué ha cambiado»** y **la receta de Estook**. Los extras van a Estook TPV y el coste teórico a M20, con su [diseño](docs/como-detecta-estook-lo-que-se-escapa.md). Después, **M10**, y con M10 terminado, **Estook TPV**.
+**Que Richi fusione M9 · 3**, la última entrega de M9, construida el 18-oct: **la receta de olla** y **la ficha técnica que se escala** (también en el PDF), **«Descargar todas»**, **«Qué ha cambiado»** con su aviso cuando un plato cruza una raya, **la receta de Estook** al desgranar y **el coste aproximado** de lo que no tiene escandallo ([el plan](docs/m9-3-las-fichas-y-lo-que-ha-cambiado.md)). Después, **Fogón 1** si Richi dice sí a la [0095](docs/decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md), o **M10**; y con M10 terminado, **Estook TPV**.
 
-**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: al diseñar la detección, los seis de «Lo que decidí al diseñarlo» de la [0093](docs/decisiones/0093-como-detecta-estook-lo-que-se-escapa.md) (como la mediana en vez de la media, o que «que cueste dinero» sea la lista de lo caro de «Toca contar»); y en el plan de M9 · 3, los seis de la [0092](docs/decisiones/0092-las-respuestas-de-m9-3.md). **Todo lo anterior**, entrega a entrega, en [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md).
+**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: al construir M9 · 3, los nueve de «Lo que decidí al construirlo» de la [0092](docs/decisiones/0092-las-respuestas-de-m9-3.md) (como mirar 7, 30 o 90 días en vez de un calendario, que una línea sin unir no deje guardar, o que el precio de venta sea el de hoy en los dos lados). **Todo lo anterior**, entrega a entrega, en [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md).

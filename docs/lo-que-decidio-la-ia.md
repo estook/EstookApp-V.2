@@ -8,6 +8,8 @@
 >
 > **Al cerrar una entrega**, lo suyo se añade **arriba del todo**, con el mismo formato.
 
+- Los nueve de «Lo que decidí al construirlo» de la [0092](decisiones/0092-las-respuestas-de-m9-3.md), al construir M9 · 3: como mirar «Qué ha cambiado» frente a hace 7, 30 o 90 días, que una línea sin unir no deje guardar, que el precio de venta sea el de hoy en los dos lados, o que «Descargar todas» deje fuera lo que se vende tal cual.
+- Al diseñar la detección, los seis de «Lo que decidí al diseñarlo» de la [0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md), como la mediana en vez de la media; y en el plan de M9 · 3, los seis de «Lo que decido yo» de la [0092](decisiones/0092-las-respuestas-de-m9-3.md).
 - Los dos de «Lo que decidí» de la [0091](decisiones/0091-estado-a-250-lineas-y-los-documentos-al-dia.md): que la prueba de `ESTADO.md` mida también lo largo de cada línea de texto (las tablas no), y que cuadre las cifras de decisiones y lecciones con las que hay.
 - Los seis de «Lo que decidí al construirlo» de la [0090](decisiones/0090-el-repaso-del-16-oct.md), como que el destino de las fichas técnicas se llame `fichas`, que las fotos de los pasos no vayan al historial o que los kilos se lean con tres decimales.
 - Los cuatro de «Lo que decidí al construirlo» de la [0089](decisiones/0089-lo-que-la-api-puede-en-cada-tabla.md), como que una tabla nueva nazca sin nada para la API y no con «solo leer».

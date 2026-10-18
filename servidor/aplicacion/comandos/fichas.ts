@@ -80,6 +80,11 @@ interface LoQueSeGuarda {
    * serlo en cuanto la receta no es una sola línea de producto.
    */
   readonly talCual?: boolean;
+  /**
+   * De un plato: para cuántas raciones está escrita (una tanda, 0092); 1 o nula, una.
+   * Sin decirlo, se queda como estaba.
+   */
+  readonly raciones?: number | null;
   /** Solo de una elaboración. */
   readonly nombre?: string;
   readonly rinde?: { readonly cantidad: number; readonly unidad: UnidadDeUso };
@@ -161,11 +166,12 @@ export async function guardarLaReceta(
       id: string;
       version: number;
       tal_cual: boolean;
+      raciones: number | null;
       pasos: string[];
       fotos_de_los_pasos: string[];
     }[]
   >`
-    select id, version, tal_cual, pasos, fotos_de_los_pasos from estook.receta
+    select id, version, tal_cual, raciones, pasos, fotos_de_los_pasos from estook.receta
      where local_id = ${localId}::uuid
        and (plato_id = ${platoId}::uuid or elaboracion_id = ${elaboracionId}::uuid)
        for update
@@ -245,11 +251,25 @@ export async function guardarLaReceta(
     (id) => productos.get(id)?.nombre ?? elaboraciones.get(id)?.nombre ?? id,
   );
 
+  // ── Para cuántas raciones (0092) ───────────────────────────────────────────
+  // Solo de un plato, y nunca de lo que se vende tal cual: eso es una ración (0088).
+  const pedidas = datos.raciones === undefined ? (receta?.raciones ?? null) : datos.raciones;
+  const unaLineaDeProducto =
+    juntas.lineas.length === 1 && juntas.lineas[0]?.productoId !== null && platoId !== null;
+  const talCual = unaLineaDeProducto && (datos.talCual ?? receta?.tal_cual ?? false);
+  const raciones = platoId === null || talCual || pedidas === null || pedidas <= 1 ? null : pedidas;
+
   // ── Qué cambió ─────────────────────────────────────────────────────────────
   const ahora = comoSeGuarda(
     nombre,
     rinde,
-    { lineas: juntas.lineas, pasos: datos.pasos, notas: datos.notas, minutos: datos.minutos },
+    {
+      lineas: juntas.lineas,
+      pasos: datos.pasos,
+      notas: datos.notas,
+      minutos: datos.minutos,
+      raciones,
+    },
     { productos, elaboraciones },
   );
   const ultima =
@@ -277,9 +297,6 @@ export async function guardarLaReceta(
     lasFotosCambian && cambiosDeLaReceta.length === 0
       ? ['Las fotos de los pasos']
       : cambiosDeLaReceta;
-  const unaLineaDeProducto =
-    juntas.lineas.length === 1 && juntas.lineas[0]?.productoId !== null && platoId !== null;
-  const talCual = unaLineaDeProducto && (datos.talCual ?? receta?.tal_cual ?? false);
   if (
     receta !== undefined &&
     cambiosDeLaReceta.length === 0 &&
@@ -296,10 +313,10 @@ export async function guardarLaReceta(
   if (receta === undefined) {
     const filas = await contexto.sql<{ id: string; version: number }[]>`
       insert into estook.receta (local_id, plato_id, elaboracion_id, pasos, fotos_de_los_pasos,
-                                 notas, tiempo_minutos, tal_cual, actualizado_por)
+                                 notas, tiempo_minutos, tal_cual, raciones, actualizado_por)
       values (${localId}::uuid, ${platoId}::uuid, ${elaboracionId}::uuid, ${comoLista(datos.pasos)}::text::text[],
               ${comoLista(fotos)}::text::text[], ${datos.notas}, ${datos.minutos}, ${talCual},
-              ${contexto.personaId}::uuid)
+              ${raciones}, ${contexto.personaId}::uuid)
       returning id, version
     `;
     const fila = filas[0];
@@ -311,7 +328,7 @@ export async function guardarLaReceta(
       update estook.receta
          set pasos = ${comoLista(datos.pasos)}::text::text[],
              fotos_de_los_pasos = ${comoLista(fotos)}::text::text[], notas = ${datos.notas},
-             tiempo_minutos = ${datos.minutos}, tal_cual = ${talCual},
+             tiempo_minutos = ${datos.minutos}, tal_cual = ${talCual}, raciones = ${raciones},
              actualizado_por = ${contexto.personaId}::uuid,
              actualizado_en = now()
        where id = ${receta.id}::uuid
@@ -396,6 +413,8 @@ export const entradaGuardarFicha = z
     foto_de_antes: z.array(z.number().int().min(0).max(39).nullable()).max(40).optional(),
     notas,
     tiempo_minutos: minutos,
+    /** De un plato: para cuántas raciones está escrita (una tanda, 0092); 1 es una. */
+    raciones: z.number().int().min(1).max(1000).nullable().optional(),
     /** Solo de una elaboración: su nombre y lo que rinde. */
     nombre: z.string().trim().min(1).max(120).optional(),
     rinde_cantidad: z.number().positive().max(100_000).optional(),
@@ -433,6 +452,7 @@ export const guardarFicha = comando<EntradaGuardarFicha, Guardada>({
         ...(entrada.foto_de_antes === undefined ? {} : { fotoDeAntes: entrada.foto_de_antes }),
         notas: entrada.notas === undefined || entrada.notas === '' ? null : entrada.notas,
         minutos: entrada.tiempo_minutos ?? null,
+        ...(entrada.raciones === undefined ? {} : { raciones: entrada.raciones }),
         ...(entrada.nombre === undefined ? {} : { nombre: entrada.nombre }),
         ...(rinde === undefined ? {} : { rinde }),
       },
@@ -493,6 +513,8 @@ export const recuperarReceta = comando<{ guardada_id: string }, Guardada>({
         pasos: c.pasos,
         notas: c.notas,
         minutos: c.minutos,
+        // Lo guardado antes de M9 · 3 no lo dice: era de una ración.
+        raciones: c.raciones ?? null,
         ...('elaboracionId' in dueno && c.rinde !== null
           ? { nombre: c.nombre, rinde: c.rinde }
           : {}),

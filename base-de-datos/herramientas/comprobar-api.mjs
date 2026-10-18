@@ -1091,6 +1091,12 @@ try {
         (select count(*)::int from information_schema.columns
           where table_schema = 'estook' and table_name = 'receta'
             and column_name = 'tal_cual') as tal_cual,
+        (select count(*)::int from information_schema.columns
+          where table_schema = 'estook' and table_name = 'receta'
+            and column_name = 'raciones') as raciones,
+        (select count(*)::int from pg_constraint
+          where conrelid = 'estook.aviso'::regclass and conname = 'aviso_tipo_conocido'
+            and pg_get_constraintdef(oid) like '%plato.raya%') as aviso_de_la_raya,
         (select count(*)::int from estook.permiso_de_rol
           where permiso = 'app.escandallos' and nivel = 'ver'
             and rol in ('camarero', 'jefe_de_sala')) as la_sala,
@@ -1112,6 +1118,19 @@ try {
       comprobar(
         'y la receta dice si el plato se vende tal cual, con su racion (0070)',
         fichas.tal_cual === 1,
+      );
+    }
+    // M9 · 3 (0092): la tanda de la receta y el aviso de la raya. Sin la columna, guardar
+    // una receta de olla da error; sin el tipo, el reloj no puede avisar de la raya.
+    if (cuantasMigraciones.ultima >= 73) {
+      comprobar(
+        'y la receta dice para cuántas raciones es su tanda, y la campana avisa de la raya (0073)',
+        fichas.raciones === 1 && fichas.aviso_de_la_raya === 1,
+        `tanda ${fichas.raciones} de 1 · aviso ${fichas.aviso_de_la_raya} de 1`,
+      );
+    } else {
+      noSePuede(
+        `la 0073 todavia no esta aplicada · la base va por la ${cuantasMigraciones.ultima}`,
       );
     }
     comprobar(

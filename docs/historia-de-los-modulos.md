@@ -3051,6 +3051,47 @@ en el BOE** a día de hoy, así que no obliga. Cuando se publique hay que mirar 
 formato exacto de la exportación para la Inspección y si exige una API. **Hasta
 entonces se hace la exportación y no se inventa ningún protocolo.**
 
+### De C a M9 · 2, en sus decisiones
+
+Esta historia se dejó de escribir después de la I. **Lo que hizo cada entrega de C a M9 · 2**
+(el chat, A3, A4, M8 con sus repasos, la experiencia, las bases firmes, M9 · 1, M9 · 2 y el
+repaso del 16-oct) está en su decisión, de la [0073](decisiones/0073-c1-hablar.md) a la
+[0090](decisiones/0090-el-repaso-del-16-oct.md), y la tabla «Lo que hay en la app» de
+`ESTADO.md` las enlaza. Se retoma aquí con M9 · 3 (18-oct), como manda el Plan (A2).
+
+### M9 · 3 · Las fichas que se usan, y lo que ha cambiado
+
+_18 de octubre de 2026._ Migración `0073`, decisiones
+[0092](decisiones/0092-las-respuestas-de-m9-3.md) a
+[0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md), el plan en
+[`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](m9-3-las-fichas-y-lo-que-ha-cambiado.md). La
+última entrega de M9.
+
+- **La receta de olla**: una columna, `receta.raciones` (vacía o de 2 a 1.000, solo en un
+  plato). El escandallo sigue diciendo lo que cuesta **una ración** (`porRacion`), y la
+  desviación divide cada venta entre la tanda: una ración de un puchero de 25 gasta la
+  25.ª parte. Lo guardado antes es de una ración, como siempre.
+- **Escalar la ficha técnica**, solo en pantalla y en el PDF: «Para [ N ] raciones» con − y
+  +, las tandas contadas, «Como está escrita», y **«Tengo»** tocando la cantidad de un
+  ingrediente. Las unidades, a la media; los gramos, en kilos desde mil.
+- **«Descargar todas»**: un PDF con todas las fichas, por secciones, con índice y sin euros.
+- **«Qué ha cambiado»**, frente a hace 7, 30 o 90 días: el coste de cada plato con los
+  precios de entonces (`elLibroDeOtroDia`), ordenado por euros, con el ingrediente que más
+  lo movió. **El aviso `plato.raya`**, del reloj cada mañana, cuando un plato pasa de tu
+  objetivo o empieza a perder dinero en un canal: una vez por plato y por raya.
+- **La receta de Estook al desgranar**, si el plato se llama como una de las diez: se copia
+  como tanda, y cada ingrediente propone tu producto más parecido o pregunta cuál es. Sin
+  elegirlos todos, no se guarda.
+- **Lo que no tiene escandallo** (0095): «~X € aprox.» (precio sin IVA × tu objetivo) en su
+  fila, y en la Carta, «Sin escandallo: no sabrás lo que cuesta ni lo que gasta».
+- **Lo que salió al mirarlo** (lección 197): el enlace del aviso, sin su vista, perdía el
+  «?ficha=» al redirigir, y se abría la lista en vez del plato.
+
+Las pruebas: `escandallo.prueba.ts` (la tanda, escalar, la raya, qué lo movió y la receta
+que se parece), `las-fichas-que-se-usan.prueba.ts` (la base y la API: la tanda con su
+historial, los PDF, «Qué ha cambiado», los permisos y el aviso del reloj, una sola vez) y
+`fichas-y-escandallos.spec.ts` (la pantalla: escalar una olla y la receta de Estook).
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

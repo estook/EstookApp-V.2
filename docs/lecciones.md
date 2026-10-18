@@ -757,3 +757,9 @@
      restaurante, lo que pasa con cada opción** y la recomendación; y si se apoya en algo que Richi
      cree imposible, **se explica primero cómo pasa** (0094). Antes de preguntar, la prueba de la
      plantilla: lo que no la pasa no se pregunta, se quita.
+197. **Un enlace con «?» lleva su vista, o llega sin lo de después.** El aviso «un plato pasa
+     de tu objetivo» llevaba a `/escandallos/escandallos?ficha=…`: la app redirige a la vista
+     de entrada (`…/todos`) y la redirección **suelta el «?ficha=»**, así que se abría la lista
+     y no el plato. La prueba de la base solo miraba que el enlace fuera el escrito; lo cazó la
+     de pantalla, abriendo esa misma dirección. Los avisos llevan la vista en su enlace, como
+     ya hacían los de Compras e Informes, y la prueba abre el enlace que manda la campana (M9 · 3).

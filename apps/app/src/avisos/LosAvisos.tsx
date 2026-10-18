@@ -66,6 +66,8 @@ const ICONO_DEL_AVISO: Readonly<Record<TipoDeAviso, Icono>> = {
   'inventario.recontar': IconoAlmacen,
   // M8, la segunda entrega (0079)
   'inventario.falta': IconoAtencion,
+  // M9 · 3 (0092)
+  'plato.raya': IconoDinero,
 };
 
 const TRAMOS: readonly TramoDeAvisos[] = ['Hoy', 'Ayer', 'Esta semana', 'Antes'];

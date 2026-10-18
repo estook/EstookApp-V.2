@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { racionesRedondeadas } from '@estook/dominio';
 import { Aviso, Boton, Cargando, ErrorEnCristiano, PanelLateral } from '@estook/ui';
 import { IconoCamara, IconoEditar, IconoEscandallos, IconoQuitar } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -10,6 +11,8 @@ import { reducirFoto } from '../almacen/reducirFoto.ts';
 import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
 import { EditorDeLaReceta } from './EditorDeLaReceta.tsx';
 import { Cabecera, LoQueLleva } from './ElEscandalloDelPlato.tsx';
+import { usarEscala } from '../ganchos/usarEscala.ts';
+import { ParaCuantasRaciones } from './Escalar.tsx';
 import type { UnaFicha } from './contrato.ts';
 
 /** Cuando el teléfono no sabe abrir la foto. */
@@ -32,6 +35,8 @@ const NO_SE_HA_PODIDO_LEER: ErrorDeLaApi = {
  *   · **Los pasos**, en orden, cada uno con su foto si se quiere. La foto se pone en el
  *     paso ya guardado, desde el propio paso: se toca «Foto» y se hace con el móvil.
  *   · El tiempo, las notas de emplatado y **el PDF**, para imprimirla.
+ *   · **Escalar** (M9 · 3, 0092): «Para [ 1 ] raciones», o tocando lo que tienes de un
+ *     ingrediente. Solo en pantalla y en el PDF: la receta guardada no cambia.
  *
  * La lee toda la cocina y la sala; la escribe quien puede editar Escandallos.
  */
@@ -43,11 +48,12 @@ export function FichaTecnica({
   readonly alCerrar: () => void;
 }) {
   const consulta = usarLectura<UnaFicha>('una_ficha', { plato_id: platoId });
+  const datos = consulta.data;
+  const escala = usarEscala(datos?.receta.raciones ?? 1);
   const navegar = useNavigate();
   const [editando, setEditando] = useState(false);
   const [hecho, setHecho] = useState<string | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
-  const datos = consulta.data;
 
   if (datos === undefined) {
     return (
@@ -93,8 +99,14 @@ export function FichaTecnica({
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-e1">
-              <LoQueLleva datos={datos} />
+            <div className="flex flex-col gap-e2">
+              <ParaCuantasRaciones
+                escrita={datos.receta.raciones ?? 1}
+                raciones={escala.raciones}
+                alCambiar={escala.ponerRaciones}
+                alVolver={escala.volver}
+              />
+              <LoQueLleva datos={datos} factor={escala.factor} alTener={escala.ponerFactor} />
               <p className="text-etiqueta text-texto-tenue">
                 Sale del escandallo.{' '}
                 {datos.puedeEditar && (
@@ -178,8 +190,16 @@ export function FichaTecnica({
               )}
               <BotonDelDocumento
                 consulta={'la_ficha_en_pdf'}
-                parametros={{ plato_id: datos.id }}
-                texto="PDF"
+                parametros={
+                  escala.comoEstaEscrita
+                    ? { plato_id: datos.id }
+                    : { plato_id: datos.id, para: String(racionesRedondeadas(escala.raciones)) }
+                }
+                texto={
+                  escala.comoEstaEscrita
+                    ? 'PDF'
+                    : `PDF para ${String(racionesRedondeadas(escala.raciones))}`
+                }
                 tono="secundario"
               />
             </div>

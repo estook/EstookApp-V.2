@@ -6,7 +6,7 @@
 
 > **M9 · 2 · Fichas y escandallos, construida el 16-oct** ([decisión 0087](decisiones/0087-fichas-y-escandallos.md)): todo lo de la lista de Richi, y en la Carta, vincular lo que se vende tal cual, las unidades de la ración, los alérgenos y el picante. **«Qué ha cambiado» y «empezar desde una receta de referencia» pasan a M9 · 3**, con escalar, extras, «ya la sé», la hoja de producción y el QR.
 >
-> **M9 · 3, contestado el 17-oct** ([0092](decisiones/0092-las-respuestas-de-m9-3.md)): su plan vive aparte, en [`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](m9-3-las-fichas-y-lo-que-ha-cambiado.md). Los extras se van a Estook TPV y «ya la sé» y el QR, fuera.
+> **M9 · 3, contestado el 17-oct y construido el 18-oct** ([0092](decisiones/0092-las-respuestas-de-m9-3.md), migración 0073): su plan vive aparte, en [`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](m9-3-las-fichas-y-lo-que-ha-cambiado.md). Los extras se van a Estook TPV y «ya la sé» y el QR, fuera.
 
 De dónde sale: M9 en la parte D del [Plan](maestros/Estook-Plan-de-Desarrollo.md), «Escandallos» en el capítulo 13 del [Manifiesto](maestros/Estook-Manifiesto.md), el diseño de Richi de «un plato, tres vistas» ([0049](decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)) y lo que le pasó M8 ([0078](decisiones/0078-las-respuestas-de-m8.md)).
 
@@ -22,7 +22,7 @@ De dónde sale: M9 en la parte D del [Plan](maestros/Estook-Plan-de-Desarrollo.m
 | **Las elaboraciones**     | Una salsa o un caldo con su propia ficha, que se usa dentro de otras (la pregunta 2)                                             |
 | **El escandallo**         | Se calcula: coste, food cost, margen y precio recomendado. Nada escrito a mano                                                   |
 | **Los alérgenos**         | Salen solos de los ingredientes, con los catorce símbolos oficiales                                                              |
-| **El modo cocina**        | La ficha a pantalla completa, letra grande, **sin un solo importe**                                                              |
+| ~~**El modo cocina**~~    | **Quitado el 16-oct** ([0090](decisiones/0090-el-repaso-del-16-oct.md)): en servicio, la cocina tendrá Estook TPV                |
 | **Qué ha cambiado**       | «El aceite sube un 12 %: afecta a 7 platos, 2 bajan del objetivo, hasta −3,8 puntos de margen»                                   |
 | **Las fichas que faltan** | «38 de 96 platos con ficha»: un plato sin ficha se vende igual, sale marcado                                                     |
 | **Lo que le pasó M8**     | El food cost teórico junto al real, la desviación de los platos y la calibración (la pregunta 3)                                 |
@@ -59,14 +59,14 @@ Comprobado en producción el 10-oct:
 Si alguna no te cuadra, dímelo y se cambia.
 
 1. **Se entrega en tres veces** (eran dos; la 0086 adelanta la Carta). **M9 · 1 · El plato y tu carta**: secciones, platos con su foto y su precio de sala, añadir varios de golpe, los canales con su comisión y el precio de cada plato en cada canal, archivar, el historial del plato y el buscador. **M9 · 2 · Fichas y escandallos**: «sin ficha» con cuántos faltan, lo que lleva cada plato y cada elaboración, el escandallo con el margen por canal, los alérgenos, el modo cocina, la ficha impresa o en PDF, el recálculo, «qué ha cambiado», el historial de la receta con recuperar y lo de M8 (pregunta 3). **M9 · 3**: escalar, extras y sustituciones, «ya la sé», la hoja de producción con el stock de las elaboraciones y la ficha con QR. Cada una con su pull request.
-2. **Quién hace las fichas**: quien lleva el local y el jefe de cocina. **La carta**, quien tiene Carta para editar (quien lleva el local, el jefe de sala y el jefe de cocina). **El cocinero las ve en modo cocina**, sin importes, y marca «ya la sé». El camarero ve los alérgenos de cada plato, que los necesita para contestar en sala.
+2. **Quién hace las fichas**: quien lleva el local y el jefe de cocina. **La carta**, quien tiene Carta para editar (quien lleva el local, el jefe de sala y el jefe de cocina). **El cocinero las ve sin importes** (el modo cocina se quitó en la [0090](decisiones/0090-el-repaso-del-16-oct.md) y «ya la sé» en la [0092](decisiones/0092-las-respuestas-de-m9-3.md)). El camarero ve los alérgenos de cada plato, que los necesita para contestar en sala.
 3. **Las cantidades, en la unidad de uso del producto** (g, ml, ud) y **en limpio**: 180 g de carne son 180 g en el plato; el aprovechamiento pone la diferencia en el coste.
 4. **Un ingrediente que no está en el almacén se crea desde la ficha** con nombre y unidad, sin precio: el plato sale con «falta el precio de 1 ingrediente» y no se da un coste falso.
 5. **Si el mismo producto entra dos veces en una ficha, se suman** y se avisa; no se duplica la línea.
 6. **El food cost objetivo** es el que ya tiene el local (Ajustes); por debajo, verde; hasta 3 puntos por encima, ámbar; más, rojo. **El precio recomendado** es el que deja el food cost en el objetivo, redondeado a 0,10 € hacia arriba.
 7. **Empezar desde una receta de referencia** copia sus líneas a una ficha tuya, ya unidas a tus productos si los tienes; la del catálogo no se toca nunca.
 8. **Un plato que se vende sin ficha** cuenta en dinero y sale en «sin ficha»; el indicador dice qué parte de lo vendido no tiene coste.
-9. **El modo cocina** se recorre deslizando, con letra para leer desde el pase; dictar «siguiente» es Fogón (M22).
+9. ~~**El modo cocina** se recorre deslizando~~: quitado en la [0090](decisiones/0090-el-repaso-del-16-oct.md).
 10. **Escandallos solo lee del Almacén y nunca le escribe.** Y **cada dato del plato tiene un dueño** (0086): la Carta, lo que se vende y a cuánto; Escandallos, lo que lleva y lo que cuesta.
 
 ## Lo que cuesta · cero

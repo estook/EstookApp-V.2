@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-Estás en **M9 · Escandallos**, antes de su tercera entrega, **M9 · 3** ([el plan](m9-escandallos.md), contestado en la [0086](decisiones/0086-las-respuestas-de-m9.md)). **M9 · 1 · El plato y tu carta** y **M9 · 2 · Fichas y escandallos** están en producción, con su arreglo, los permisos de la API y el repaso del 16-oct ([0087](decisiones/0087-fichas-y-escandallos.md) a [0090](decisiones/0090-el-repaso-del-16-oct.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+Estás en **M9 · Escandallos**, con su tercera entrega, **M9 · 3**, construida el 18-oct y a la espera de fusionarse ([su plan](m9-3-las-fichas-y-lo-que-ha-cambiado.md), [0092](decisiones/0092-las-respuestas-de-m9-3.md) a [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)). **M9 · 1 · El plato y tu carta** y **M9 · 2 · Fichas y escandallos** están en producción, con su arreglo, los permisos de la API y el repaso del 16-oct ([0087](decisiones/0087-fichas-y-escandallos.md) a [0090](decisiones/0090-el-repaso-del-16-oct.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -48,7 +48,7 @@ Inventario cíclico, almacén valorado, mermas en tres toques, consumo de person
 
 ### M9 · Escandallos
 
-El corazón. **Contestado el 15-oct** ([0086](decisiones/0086-las-respuestas-de-m9.md)) y en tres entregas: **M9 · 1 · El plato y tu carta** —secciones, platos, los canales con su precio a mano (Uber Eats el primero) y el historial de cada plato—, adelantada de M10 para que el plato nazca donde va a vivir; **M9 · 2 · Fichas y escandallos** —«sin ficha», fichas anidables con detección de ciclos y su rendimiento, el escandallo con el margen por canal, alérgenos calculados, el modo cocina sin importes y la ficha en PDF, con una receta a la vista y su historial—; y **M9 · 3** —escalar, extras, «ya la sé», la hoja de producción, el QR y «qué ha cambiado»—. **M9 · 2, construida el 16-oct** ([0087](decisiones/0087-fichas-y-escandallos.md)), con la carta que vincula lo que se vende tal cual y dice sus alérgenos y lo que pica. **El repaso del 16-oct** ([0090](decisiones/0090-el-repaso-del-16-oct.md)) separa el escandallo de la ficha técnica (Resumen · Escandallos · Fichas, con foto en cada paso), **quita el modo cocina de Escandallos** (en servicio, la cocina tendrá Estook TPV) y **para las elaboraciones** hasta que Richi las pida: la hoja de producción con su stock espera con ellas. **M9 · 3, contestado el 17-oct** ([0092](decisiones/0092-las-respuestas-de-m9-3.md), [el plan](m9-3-las-fichas-y-lo-que-ha-cambiado.md)): la receta por ración o por tanda y la ficha que se escala, «qué ha cambiado» y empezar desde una receta de Estook; **sin «ya la sé» ni QR**; los extras, a Estook TPV (M20A); y la desviación de los platos, la calibración y el teórico, a M20. **Contestado entero el mismo día** ([0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)): listo para construir. Todo lo que hace especial al TPV después sale de aquí.
+El corazón. **Contestado el 15-oct** ([0086](decisiones/0086-las-respuestas-de-m9.md)) y en tres entregas: **M9 · 1 · El plato y tu carta** —secciones, platos, los canales con su precio a mano (Uber Eats el primero) y el historial de cada plato—, adelantada de M10 para que el plato nazca donde va a vivir; **M9 · 2 · Fichas y escandallos** —«sin ficha», fichas anidables con detección de ciclos y su rendimiento, el escandallo con el margen por canal, alérgenos calculados, el modo cocina sin importes y la ficha en PDF, con una receta a la vista y su historial—; y **M9 · 3** —escalar, extras, «ya la sé», la hoja de producción, el QR y «qué ha cambiado»—. **M9 · 2, construida el 16-oct** ([0087](decisiones/0087-fichas-y-escandallos.md)), con la carta que vincula lo que se vende tal cual y dice sus alérgenos y lo que pica. **El repaso del 16-oct** ([0090](decisiones/0090-el-repaso-del-16-oct.md)) separa el escandallo de la ficha técnica (Resumen · Escandallos · Fichas, con foto en cada paso), **quita el modo cocina de Escandallos** (en servicio, la cocina tendrá Estook TPV) y **para las elaboraciones** hasta que Richi las pida: la hoja de producción con su stock espera con ellas. **M9 · 3, contestado el 17-oct** ([0092](decisiones/0092-las-respuestas-de-m9-3.md), [el plan](m9-3-las-fichas-y-lo-que-ha-cambiado.md)): la receta por ración o por tanda y la ficha que se escala, «qué ha cambiado» y empezar desde una receta de Estook; **sin «ya la sé» ni QR**; los extras, a Estook TPV (M20A); y la desviación de los platos, la calibración y el teórico, a M20. **Contestado entero el mismo día** ([0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)) y **construido el 18-oct** (migración 0073), con el coste aproximado de lo que no tiene escandallo ([0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)). Todo lo que hace especial al TPV después sale de aquí.
 
 ### M10 · Carta, menús y análisis
 
@@ -132,7 +132,7 @@ Los agregados, la previsión de ventas, el presupuesto, las exportaciones para l
 
 ### M22 · Fogón
 
-El asistente en todas las apps, el centro de alertas, la voz para mermas y temperaturas, y la lectura de albaranes por foto. Con su presupuesto por local y día. **Lo que propuso Richi el 18-oct** —«Rellenar con Fogón» en Escandallos, los pasos de la ficha, revisar los datos y «¿cuánto preparo mañana?»—, y si una parte se adelanta: en [`fogon-en-cada-sitio.md`](fogon-en-cada-sitio.md), sin decidir.
+El asistente en todas las apps, el centro de alertas, la voz para mermas y temperaturas, y la lectura de albaranes por foto. Con su presupuesto por local y día. **Lo que propuso Richi el 18-oct** —«Rellenar con Fogón» en Escandallos, los pasos de la ficha, revisar los datos y «¿cuánto preparo mañana?»—, y cuándo: en [`fogon-en-cada-sitio.md`](fogon-en-cada-sitio.md) y la [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md). **Propuesta a la espera del sí de Richi: Fogón en dos mitades**, la base justo después de M9 · 3 (antes de M10) y lo que necesita ventas con el TPV.
 
 ### M23 · Reseñas, competencia y chat
 
@@ -194,24 +194,24 @@ Que un TPV o un ERP puedan leer y escribir con permiso del cliente. Va al final 
 
 Lo que ya existe a medias y el módulo que lo acaba. Vivía en `ESTADO.md` hasta el 30-sep-2026.
 
-| Qué                                                        | Dónde se termina | Qué hay ya                                                     |
-| ---------------------------------------------------------- | ---------------- | -------------------------------------------------------------- |
-| Unir dos personas que resultan ser la misma                | **M13**          | Poner el correo a quien no lo tenía, que no une (H1)           |
-| Business Profile: leer y contestar reseñas                 | Con accesos      | La nota en Google con su evolución, en Negocio → Reseñas (R2)  |
-| Calendario, avisos con roles y turnos                      | **M14**          | La tabla, su seguridad por roles y «Lo que viene»              |
-| Recalcular platos con lo que corrigió la factura           | **M9**           | Lo cobrado, en cada línea del albarán con fecha                |
-| El pedido en PDF con el logo                               | **M11**          | «Imprimir», sin membrete                                       |
-| El precio pactado para toda una cadena                     | **M24**          | Lo pactado por local                                           |
-| Leer el albarán de una foto                                | **M22**          | La recepción línea a línea                                     |
-| Avisos de fichar por push, y que fuera de turno no suene   | **Mejoras · I**  | La campana (R1) y el horario de siempre, que el widget ya dice |
-| Lo gastado de verdad, food cost real y desviación          | **M8**, la 2.ª   | Contar en dos pasos, el valor en una fecha y FEFO (0078)       |
-| Desviación de los platos y calibración del aprovechamiento | **M20** (0092)   | Lo contado con su hora, y la pantalla que deja M8 (0078)       |
-| Descontar lo vendido del inventario                        | **M20**          | El cierre guarda los platos con el nombre normalizado          |
-| Los terminales del local                                   | **M20A**         | `estook.terminal`, hoy solo para fichar (H1); Anexo 3.4        |
-| Leer los platos de la carta subida y proponer los cambios  | **M10**          | La carta subida y enseñada por su QR (0049)                    |
-| Plato, ficha técnica y escandallo unidos por su id         | **M9**           | El diseño de Richi, escrito en el Plan (0049)                  |
-| La historia del Tablón, por días                           | **M17**          | El Tablón, con sus notas guardadas (0049)                      |
-| Cerrar un local (y que la cuota baje)                      | Sin fecha        | La cuota ya sube sola al abrir uno                             |
+| Qué                                                        | Dónde se termina       | Qué hay ya                                                     |
+| ---------------------------------------------------------- | ---------------------- | -------------------------------------------------------------- |
+| Unir dos personas que resultan ser la misma                | **M13**                | Poner el correo a quien no lo tenía, que no une (H1)           |
+| Business Profile: leer y contestar reseñas                 | Con accesos            | La nota en Google con su evolución, en Negocio → Reseñas (R2)  |
+| Calendario, avisos con roles y turnos                      | **M14**                | La tabla, su seguridad por roles y «Lo que viene»              |
+| Recalcular platos con lo que corrigió la factura           | **M9**                 | Lo cobrado, en cada línea del albarán con fecha                |
+| El pedido en PDF con el logo                               | **M11**                | «Imprimir», sin membrete                                       |
+| El precio pactado para toda una cadena                     | **M24**                | Lo pactado por local                                           |
+| Leer el albarán de una foto                                | **M22**                | La recepción línea a línea                                     |
+| Avisos de fichar por push, y que fuera de turno no suene   | **Mejoras · I**        | La campana (R1) y el horario de siempre, que el widget ya dice |
+| Lo gastado de verdad, food cost real y desviación          | **M8**, la 2.ª         | Contar en dos pasos, el valor en una fecha y FEFO (0078)       |
+| Desviación de los platos y calibración del aprovechamiento | **M20** (0092)         | Lo contado con su hora, y la pantalla que deja M8 (0078)       |
+| Descontar lo vendido del inventario                        | **M20**                | El cierre guarda los platos con el nombre normalizado          |
+| Los terminales del local                                   | **M20A**               | `estook.terminal`, hoy solo para fichar (H1); Anexo 3.4        |
+| Leer los platos de la carta subida y proponer los cambios  | **M10**                | La carta subida y enseñada por su QR (0049)                    |
+| Plato, ficha técnica y escandallo unidos por su id         | **Hecho** (M9 · 1 y 2) | El plato nace en la Carta y su escandallo cuelga de él (0086)  |
+| La historia del Tablón, por días                           | **M17**                | El Tablón, con sus notas guardadas (0049)                      |
+| Cerrar un local (y que la cuota baje)                      | Sin fecha              | La cuota ya sube sola al abrir uno                             |
 
 **Sin prisa, de código:** volver a `BrowserRouter` ahora que hay dominio
 ([0008](decisiones/0008-enrutado-con-almohadilla.md)); pasar Pedidos, Albaranes y

@@ -77,7 +77,7 @@ Buenos dias, Sara
 └──────────────┴──────────────┘
 ```
 
-**Qué puede hacer:** fichar, consultar la carta y los alérgenos, **ver la ficha de cada plato** —lo que lleva en gramos y cómo se hace, en modo cocina o en PDF—, marcar un plato agotado, apuntar una merma, escribir en el chat, dejar una incidencia y descargarse su horario. Ficha **con la ubicación**, que se pide y no bloquea; apunta la merma **sin ver lo que vale**; y en su ficha ve sus horas y sus fichajes.
+**Qué puede hacer:** fichar, consultar la carta y los alérgenos, **ver la ficha de cada plato** —lo que lleva en gramos y cómo se hace, en el móvil o en PDF ([0090](../decisiones/0090-el-repaso-del-16-oct.md))—, marcar un plato agotado, apuntar una merma, escribir en el chat, dejar una incidencia y descargarse su horario. Ficha **con la ubicación**, que se pide y no bloquea; apunta la merma **sin ver lo que vale**; y en su ficha ve sus horas y sus fichajes.
 
 **El horario publicado lo ve entero**, el de todo el local, o solo el suyo si lo elige: quién trabaja cada día y a qué hora, **nunca lo que cuesta**. El borrador, no ([0068](../decisiones/0068-las-respuestas-de-h.md), hecho en H2 · [0069](../decisiones/0069-el-horario.md)). Lo mira en Calendario › Turnos y en «Mi turno» del Panel.
 

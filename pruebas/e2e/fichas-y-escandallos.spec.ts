@@ -234,3 +234,109 @@ test('el cocinero ve la ficha técnica entera y ni un euro', async ({ page, requ
   await expect(ficha.getByRole('button', { name: /foto/i })).toHaveCount(0);
   await expect(ficha.getByText(/€/)).toHaveCount(0);
 });
+
+test('la ficha técnica de una olla se escala, y la receta de Estook se ofrece al desgranar (M9 · 3)', async ({
+  page,
+  request,
+}, info) => {
+  const rosa = await tokenDe(request, 'rosa@ejemplo.estook.com');
+  const marca = unico(info);
+  const { productoId } = await ejecutarEnLaApi<{ productoId: string }>(
+    request,
+    rosa,
+    'crear_producto',
+    { nombre: `Garbanzo ${marca}`, factor: 1, unidad_de_uso: 'kg', precio_centimos: 300 },
+  );
+  const { creados } = await ejecutarEnLaApi<{ creados: { platoId: string }[] }>(
+    request,
+    rosa,
+    'crear_platos',
+    {
+      seccion_id: null,
+      platos: [
+        { nombre: `Puchero ${marca}`, precio_centimos: 1100 },
+        { nombre: `Tortilla de patatas ${marca}`, precio_centimos: 900 },
+      ],
+    },
+  );
+  const puchero = creados[0]?.platoId ?? '';
+  const tortilla = creados[1]?.platoId ?? '';
+  // La olla entera: 3 kg de garbanzos para 25 raciones (0092).
+  await ejecutarEnLaApi(request, rosa, 'guardar_ficha', {
+    plato_id: puchero,
+    version: 0,
+    lineas: [{ producto_id: productoId, cantidad: 3000, unidad: 'g' }],
+    pasos: ['Remojar la víspera'],
+    raciones: 25,
+  });
+
+  await entrarEnLaApp(page, 'rosa@ejemplo.estook.com');
+
+  // ── La ficha técnica: «Para [ 25 ] raciones», y se escala sin guardar nada ──
+  await abrirSinQueSeCaiga(page, `${APP}#/escandallos/fichas/todas?ficha=plato.${puchero}`);
+  const ficha = page.getByRole('dialog', { name: `Puchero ${marca}` });
+  const lleva = ficha.getByRole('region', { name: 'Lo que lleva' });
+  await expect(ficha.getByRole('textbox', { name: 'Raciones' })).toHaveValue('25');
+  await expect(ficha.getByText('1 tanda')).toBeVisible();
+  await expect(lleva.getByText('3 kg')).toBeVisible();
+  await ficha.getByRole('textbox', { name: 'Raciones' }).fill('50');
+  await ficha.getByRole('textbox', { name: 'Raciones' }).press('Enter');
+  await expect(lleva.getByText('6 kg')).toBeVisible();
+  await expect(ficha.getByText('2 tandas')).toBeVisible();
+  await expect(ficha.getByRole('button', { name: 'PDF para 50' })).toBeVisible();
+  await ficha.getByRole('button', { name: 'Una ración más' }).click();
+  await expect(ficha.getByRole('textbox', { name: 'Raciones' })).toHaveValue('51');
+  await ficha.getByRole('button', { name: 'Como está escrita' }).click();
+  await expect(lleva.getByText('3 kg')).toBeVisible();
+
+  // Tocando lo que lleva, se escala por lo que tienes: 1,5 kg son media olla.
+  await lleva
+    .getByRole('button', { name: `Escalar por lo que tienes de Garbanzo ${marca}` })
+    .click();
+  await lleva.getByRole('textbox', { name: 'Tengo' }).fill('1,5');
+  await lleva.getByRole('combobox', { name: 'Unidad' }).selectOption('kg');
+  await lleva.getByRole('button', { name: 'Escalar', exact: true }).click();
+  await expect(ficha.getByRole('textbox', { name: 'Raciones' })).toHaveValue('12,5');
+  await expect(lleva.getByText('1,5 kg')).toBeVisible();
+  // La «i» lo explica: no cambia la receta.
+  await ficha.getByRole('button', { name: 'Cómo se escala' }).click();
+  await expect(ficha.getByText(/Escalar no cambia la receta/)).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  // ── Fichas: todas en un PDF, para encuadernarlas ─────────────────────────────
+  await expect(page.getByRole('button', { name: 'Descargar todas' })).toBeVisible();
+
+  // ── El escandallo de la olla: la tanda, y lo que cuesta una ración ───────────
+  // Por la misma dirección que lleva el aviso de la campana («plato.raya»).
+  await abrirSinQueSeCaiga(page, `${APP}#/escandallos/escandallos/todos?ficha=plato.${puchero}`);
+  const escandallo = page.getByRole('dialog', { name: `Puchero ${marca}` });
+  // 9,00 € la olla entre 25: 0,36 € la ración.
+  await expect(escandallo.getByText('0,36 €').first()).toBeVisible();
+  await expect(escandallo.getByText('la ración')).toBeVisible();
+  await escandallo.getByRole('button', { name: 'Editar el escandallo' }).click();
+  const editor = page.getByRole('dialog', { name: 'Editar el escandallo' });
+  await expect(
+    editor.getByRole('textbox', { name: 'Esta receta es para una tanda de' }),
+  ).toHaveValue('25');
+  await expect(editor.getByText('Lo que lleva, la tanda entera')).toBeVisible();
+  await editor.getByRole('button', { name: 'Cancelar' }).click();
+  await page.keyboard.press('Escape');
+
+  // ── La tortilla: se ofrece la de Estook, y nada se une solo ──────────────────
+  await abrirSinQueSeCaiga(page, `${APP}#/escandallos/escandallos/todos?ficha=plato.${tortilla}`);
+  await page
+    .getByRole('dialog', { name: `Tortilla de patatas ${marca}` })
+    .getByRole('button', { name: 'Desgranar' })
+    .click();
+  const desgranar = page.getByRole('dialog', { name: 'Desgranar' });
+  await expect(desgranar.getByText(/¿Es una receta de olla\?/)).toBeVisible();
+  await desgranar.getByRole('button', { name: 'Empezar desde ella' }).click();
+  await expect(desgranar.getByText(/^Copiada de «Tortilla de patatas»/)).toBeVisible();
+  // La de Estook es para 8: la tanda se pone sola.
+  await expect(
+    desgranar.getByRole('textbox', { name: 'Esta receta es para una tanda de' }),
+  ).toHaveValue('8');
+  // Hasta elegir cada ingrediente entre tus productos, no se guarda.
+  await expect(desgranar.getByRole('button', { name: 'Guardar' })).toBeDisabled();
+  await desgranar.getByRole('button', { name: 'Cancelar' }).click();
+});

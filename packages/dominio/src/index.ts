@@ -237,7 +237,21 @@ export {
   sonCompatibles,
   unidadParaEscribir,
   unidadesQueSirven,
+  // M9 · 3 (0092 y 0093)
+  PARECIDO_PARA_PROPONER,
+  comoSeLeeEscalada,
+  comoSeLeenLasRaciones,
+  costeAproximado,
+  elProductoQueSeParece,
+  elQueMasLoMovio,
+  factorParaRaciones,
+  factorParaUnIngrediente,
+  laRecetaQueSeParece,
+  porRacion,
+  racionesRedondeadas,
+  rayasQueCruza,
 } from './escandallo.ts';
+export type { LoQueMovioUnIngrediente, RayaQueCruza } from './escandallo.ts';
 export type {
   CanalParaElMargen,
   CosteDeUnaLinea,
@@ -775,6 +789,7 @@ export {
   avisoDeBajoMinimo,
   avisoDeInventarioContado,
   avisoDeLoQueFalta,
+  avisoDeLaRaya,
   avisoDeRecontar,
   avisoDeTocaContar,
   avisoDeCarta,

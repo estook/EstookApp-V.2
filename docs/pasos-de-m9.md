@@ -4,20 +4,53 @@
 >
 > Comprobado el 18 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
 >
-> | Qué                         | Cómo está                                                                                       |
-> | --------------------------- | ----------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #114** (18-oct). Abierta: **las respuestas del 18-oct** (solo documentos) |
-> | La base de datos            | **73 de 73** migraciones, igual que `main`                                                      |
-> | La API                      | **Desplegada el 18-oct**: 92 consultas y 196 comandos, en Irlanda junto a su base               |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                       |
+> | Qué                         | Cómo está                                                                                        |
+> | --------------------------- | ------------------------------------------------------------------------------------------------ |
+> | Pull requests               | **Fusionadas hasta la #115** (18-oct). Abierta: **el arranque y el precio en la jornada** (0096) |
+> | La base de datos            | **73 de 73** migraciones, igual que `main`                                                       |
+> | La API                      | **Desplegada el 18-oct**: 92 consultas y 196 comandos, en Irlanda junto a su base                |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                        |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo que quede de antes, en [`pasos-de-m8.md`](pasos-de-m8.md).
 
 ---
 
-## Lo que te toca ahora · las respuestas del 18-oct
+## Lo que te toca ahora · el arranque y el precio en la jornada
 
-Un pull request **solo de documentos** (tus respuestas: Fogón en dos mitades, y la propuesta del día del precio). **Sin migración y sin desplegar la API**: solo fusionar, con las **tres comprobaciones en verde**.
+Lo que viste al abrir el iPhone, arreglado, y el precio en la jornada del local, como dijiste ([0096](decisiones/0096-el-arranque-y-el-precio-en-la-jornada.md)). **Sin migración, pero hay que desplegar la API** (cambia cómo se fecha un precio). El orden: **fusionar y después desplegar**.
+
+### 1 · Fusionar
+
+En **github.com** → **Pull requests** → **«El arranque sin parpadeo y el precio en la jornada…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+
+### 2 · Desplegar la API
+
+**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después, en PowerShell, en la carpeta del proyecto, uno por uno:
+
+```bash
+git checkout main
+```
+
+```bash
+git pull
+```
+
+```bash
+.\estook.cmd bd:comprobar-api
+```
+
+**Qué tiene que decir:** **«las 92»** consultas y **«los 196»** comandos (no cambian), y **ninguna comprobación mal**.
+
+### 3 · Probarlo en el iPhone
+
+**Cierra Estook del todo y ábrela dos veces** (la primera trae la versión nueva y se recarga sola). Desde la segunda:
+
+- Al tocar el icono: **el logo en tu tema** (claro sobre oscuro), **sin franja blanca abajo** y sin saltar de claro a oscuro, hasta que sale el Panel.
+- El Panel sigue tardando lo que tarda el servidor en contestar: eso lo arregla la propuesta del punto 2 de la 0096, si dices que sí.
+
+## Hecho · las respuestas del 18-oct
+
+Fusionadas (#115), solo documentos: Fogón en dos mitades y el precio en la jornada.
 
 ## Hecho · M9 · 3 (en producción desde el 18-oct)
 

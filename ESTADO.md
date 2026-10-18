@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 18 de octubre de 2026 · **M9 entero en producción: M9 · 3 fusionada (#113 y #114), migrada (0073) y la API desplegada (92 y 196), comprobado el 18-oct. Decidido: Fogón en dos mitades, Fogón 1 antes de M10 (0095). Lo siguiente, el plan de Fogón 1**
+Última actualización: 18 de octubre de 2026 · **M9 entero en producción: M9 · 3 fusionada (#113 y #114), migrada (0073) y la API desplegada (92 y 196), comprobado el 18-oct. Decidido: Fogón en dos mitades, Fogón 1 antes de M10 (0095). En su pull request: el arranque sin parpadeo y el precio en la jornada (0096). Después, el plan de Fogón 1**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -15,12 +15,12 @@
 > | Quién ve qué                        | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                                  |
 > | Qué desencadena cada cambio         | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                                       |
 > | Estook TPV y la facturación         | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**                       |
-> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (95)                                                      |
+> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (96)                                                      |
 > | Lo que decidió la IA por su cuenta  | [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md)                                           |
 > | Lo legal, y lo ya investigado       | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md)             |
 > | Lo que cuesta cada local            | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                                     |
 > | Lo que hizo cada entrega            | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                                     |
-> | Lo aprendido fallando (198)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                 |
+> | Lo aprendido fallando (199)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                 |
 > | Los pasos de Richi                  | [`docs/pasos-de-m9.md`](docs/pasos-de-m9.md)                                                             |
 > | Dónde vive cada clave               | [`config/claves.md`](config/claves.md) (los nombres, nunca los valores)                                  |
 
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Trabajo a medias: ninguno.** M9 · 3 en producción. Abierta, la rama `las-respuestas-del-18-oct` (solo documentos: Fogón decidido y la propuesta del día del precio). **Lo siguiente, el plan de Fogón 1** ([0095](docs/decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)), con sus preguntas, antes de construir nada. **Ojo:** cuando Richi hace sus pasos (`git checkout main`), la carpeta cambia de rama: mirar en qué rama se está antes de tocar nada.
+- **Trabajo a medias: ninguno.** Abierta, la rama `el-arranque-y-el-precio-en-la-jornada` con su pull request ([0096](docs/decisiones/0096-el-arranque-y-el-precio-en-la-jornada.md)): **sin migración, con la API** (el precio en la jornada). **Lo siguiente, el plan de Fogón 1** ([0095](docs/decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)), antes de construir nada. **Ojo:** cuando Richi hace sus pasos (`git checkout main`), la carpeta cambia de rama: mirar en qué rama se está antes de tocar nada.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -42,8 +42,8 @@ Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en
 |               |                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Terminado** | **M0** a **M6½** · **M7** (las compras) · **«antes de M8» entero** · **M8** con sus repasos · la experiencia, las bases firmes y la 0085 · **M9 · 1** y **M9 · 2** con su arreglo, los permisos de la API y **el repaso del 16-oct** (#104–#109) · **M9 · 3** (#113 y #114, 18-oct) · **la puesta al día del 17-oct** (#110, [0091](docs/decisiones/0091-estado-a-250-lineas-y-los-documentos-al-dia.md)) |
-| **En curso**  | **Las respuestas del 18-oct** (solo documentos) y, después, **el plan de Fogón 1**. Pendiente del sí de Richi: **el día del precio por la jornada** ([0092](docs/decisiones/0092-las-respuestas-de-m9-3.md))                                                                                                                                                                                              |
-| **`main`**    | Todo fusionado hasta la **#114** (18-oct): M9 · 3 (#113) y la prueba de la jornada (#114), las dos en verde, y la vuelta de `main` también                                                                                                                                                                                                                                                                |
+| **En curso**  | **El arranque sin parpadeo y el precio en la jornada** ([0096](docs/decisiones/0096-el-arranque-y-el-precio-en-la-jornada.md)), en su pull request. Propuesto, a la espera del sí de Richi: **abrir con lo último que viste** (0096, punto 2)                                                                                                                                                             |
+| **`main`**    | Todo fusionado hasta la **#115** (18-oct): M9 · 3 (#113), la prueba de la jornada (#114) y las respuestas del 18-oct (#115), en verde                                                                                                                                                                                                                                                                     |
 | **Base**      | Supabase, **73 de 73** migraciones (la 0073, migrada por Richi el 18-oct). **116 tablas** (la 0073 no añade ninguna), todas con seguridad por filas                                                                                                                                                                                                                                                       |
 | **API**       | Desplegada el 18-oct con M9 · 3: **92 consultas y 196 comandos** (`bd:comprobar-api` sin nada mal). **Corre en Irlanda, junto a su base**: ~0,4 s por consulta, medido el 18-oct                                                                                                                                                                                                                          |
 | **Sitio**     | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`, en GitHub Pages. Se publica solo al fusionar                                                                                                                                                                                                                                                                                                         |
@@ -101,8 +101,8 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 
 **Ahora** (paso a paso en [`docs/pasos-de-m9.md`](docs/pasos-de-m9.md)):
 
-1. **Si la app sigue lenta al abrir**, decir dónde y cuánto (ver la sección 6). Tras publicar dos veces y desplegar la API, la primera apertura se recarga sola y tarda más; la API, medida desde fuera, va como antes.
-2. **El día del precio por la jornada**: sí o no a la propuesta de la [0092](docs/decisiones/0092-las-respuestas-de-m9-3.md) (Richi dijo que no al día del calendario; la propuesta es que el precio siga la hora de corte del local, como todo lo demás).
+1. **El arranque y el precio en la jornada** (0096): fusionar y **desplegar la API** (sin migración), y abrir la app en el iPhone para ver el arranque.
+2. **Abrir con lo último que viste**: sí o no a la propuesta de la [0096](docs/decisiones/0096-el-arranque-y-el-precio-en-la-jornada.md), punto 2 (el Panel al instante con lo de la última vez, y al día en un segundo).
 3. **Para Fogón 1**, cuando llegue su plan: la clave de Anthropic como secreto (nunca por el chat) y el tope de gasto del primer mes.
 4. **Si no lo has hecho ya:** **cerrar un segundo inventario** en IKATZ (hay uno, del 11-oct); que **Santi publique una semana** en Pizzeriacazzo; alguien del equipo que entró con su PIN, **ponerse contraseña**; y **el chat en tu iPhone**.
 5. **Si no lo has hecho ya:** mirar **A4** (Pizzeriacazzo a **65,29 €** al mes, su cobro del 26-sep en «Cobrado» y el correo de los lunes) y acabar de probar **A3** con un vendedor «Prueba» aparte y **C2** con alguien del equipo ([`pasos-antes-de-m8.md`](docs/pasos-antes-de-m8.md)).
@@ -184,6 +184,6 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**El plan de Fogón 1**, la base de M22 ([0095](docs/decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)), con sus preguntas a Richi y la prueba de la plantilla, antes de construir nada. Antes, **mirar la lentitud que notó Richi el 18-oct** si sigue al abrir. Después de Fogón 1, **M10**; y con M10 terminado, **Estook TPV**.
+**Que Richi fusione la 0096 y despliegue la API**, y diga si abre con lo último que viste. Después, **el plan de Fogón 1**, la base de M22 ([0095](docs/decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)), con sus preguntas y la prueba de la plantilla, antes de construir nada. Después de Fogón 1, **M10**; y con M10 terminado, **Estook TPV**.
 
-**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: al construir M9 · 3, los nueve de «Lo que decidí al construirlo» de la [0092](docs/decisiones/0092-las-respuestas-de-m9-3.md) (como mirar 7, 30 o 90 días en vez de un calendario, que una línea sin unir no deje guardar, o que el precio de venta sea el de hoy en los dos lados). **Todo lo anterior**, entrega a entrega, en [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md).
+**Lo que decidió la IA por su cuenta**, para que Richi lo sepa: en la [0096](docs/decisiones/0096-el-arranque-y-el-precio-en-la-jornada.md), los cuatro de «Lo que decidí al hacerlo» (como meter también lo pactado); y al construir M9 · 3, los nueve de «Lo que decidí al construirlo» de la [0092](docs/decisiones/0092-las-respuestas-de-m9-3.md) (como mirar 7, 30 o 90 días en vez de un calendario, que una línea sin unir no deje guardar, o que el precio de venta sea el de hoy en los dos lados). **Todo lo anterior**, entrega a entrega, en [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md).

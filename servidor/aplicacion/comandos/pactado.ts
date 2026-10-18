@@ -3,7 +3,7 @@ import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { elProveedor } from '../compras.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
-import { costeDeUso } from '../almacen.ts';
+import { costeDeUso, laJornadaDelProducto } from '../almacen.ts';
 
 /**
  * Lo pactado (M7) · «Makro me deja el aceite a 42 € hasta diciembre».
@@ -79,6 +79,8 @@ export const pactarPrecio = comando<EntradaPactarPrecio, { pactadoId: string }>(
     const factor = Number(producto.factor);
     const rendimiento = Number(producto.rendimiento);
 
+    // Desde la jornada del local, no `current_date` (regla 10, 0096).
+    const hoy = await laJornadaDelProducto(contexto, entrada.producto_id);
     const puestos = await contexto.sql<{ id: string }[]>`
       insert into estook.precio_pactado (
         producto_id, proveedor_id, precio_centimos, formato, factor, unidad_de_uso,
@@ -88,7 +90,7 @@ export const pactarPrecio = comando<EntradaPactarPrecio, { pactadoId: string }>(
         ${entrada.producto_id}, ${entrada.proveedor_id}, ${entrada.precio_centimos},
         ${producto.formato}, ${factor}, ${producto.unidad_de_uso}::estook.unidad_de_uso,
         ${rendimiento}, ${costeDeUso(entrada.precio_centimos, factor, rendimiento)},
-        current_date, ${entrada.hasta ?? null}::date, ${entrada.nota ?? null}, ${contexto.personaId}
+        ${hoy}::date, ${entrada.hasta ?? null}::date, ${entrada.nota ?? null}, ${contexto.personaId}
       )
       returning id
     `;

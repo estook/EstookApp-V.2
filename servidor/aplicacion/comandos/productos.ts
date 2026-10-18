@@ -11,7 +11,7 @@ import {
 import { publicar } from '../../eventos/bandeja.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
-import { apuntar, costeDeUso, elProductoBloqueado } from '../almacen.ts';
+import { apuntar, costeDeUso, elProductoBloqueado, laJornadaDelProducto } from '../almacen.ts';
 
 /**
  * El producto (M6) · crear, cambiar, desactivar y volver a activar.
@@ -308,6 +308,8 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
     const conPrecio = entrada.precio_centimos !== null && entrada.precio_centimos !== undefined;
 
     if (conPrecio) {
+      // Desde la jornada del local, no `current_date` (regla 10, 0096).
+      const hoy = await laJornadaDelProducto(contexto, productoId);
       await contexto.sql`
         insert into estook.precio_de_producto (
           producto_id, proveedor_id, precio_centimos, formato, factor, unidad_de_uso,
@@ -322,7 +324,7 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
           ${unidadDeUso}::estook.unidad_de_uso,
           ${rendimiento},
           ${costeDeUso(entrada.precio_centimos ?? 0, factor, rendimiento)},
-          current_date,
+          ${hoy}::date,
           ${plantilla.referenciaId === null ? 'a_mano' : 'catalogo'}::estook.origen_de_precio,
           ${contexto.personaId}
         )

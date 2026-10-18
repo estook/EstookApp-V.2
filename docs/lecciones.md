@@ -768,3 +768,9 @@
      rojo: lo apuntado antes de las 5:00 (la hora de corte) es de la jornada del 31 de diciembre,
      y no estaba en enero. Fallaba igual antes de M9 · 3; solo lo ve `prueba:semana`, porque
      en un día normal las dos fechas coinciden. La prueba pide ahora el mes de `jornadaDe`.
+199. **Lo que se ve antes del código manda en el primer segundo, y no va en ninguna capa.**
+     La pantalla de arranque de `index.html` era siempre clara, y su fondo del `<html>`, escrito
+     en la página, ganaba al del tema: en el iPhone de Richi, con el oscuro, el logo salía sobre
+     claro, saltaba a oscuro y quedaba una franja clara abajo. Las pruebas entraban siempre con
+     el claro y no lo veían. El tema se pone ahora antes de pintar (`tema-al-arrancar.js`) y una
+     prueba mira el arranque en los dos temas, con el código y la sesión haciéndose esperar (0096).

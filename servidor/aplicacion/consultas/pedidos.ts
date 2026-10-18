@@ -577,7 +577,8 @@ export async function sugerirPedido(
                coalesce(
                  (select pp.precio_centimos from estook.precio_pactado pp
                    where pp.producto_id = pr.id and pp.proveedor_id = ${proveedorId}
-                     and pp.anulado_en is null and (pp.hasta is null or pp.hasta >= current_date)
+                     and pp.anulado_en is null
+                     and (pp.hasta is null or pp.hasta >= ${reloj.jornada}::date)
                    limit 1),
                  (select pd.precio_centimos from estook.precio_de_producto pd
                    where pd.producto_id = pr.id and pd.proveedor_id = ${proveedorId}

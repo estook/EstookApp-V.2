@@ -4,6 +4,7 @@ import {
   escandalloDelPlato,
   costeDeLaReceta,
   fechaEnElLocal,
+  jornadaDe,
   porRacion,
   precioEnElCanal,
   type CanalParaElMargen,
@@ -489,7 +490,10 @@ export async function elLibroDeOtroDia(
   zonaHoraria: string,
   hoy: ElLibro,
 ): Promise<ElLibroDeOtroDia> {
-  const fecha = fechaEnElLocal(instante, zonaHoraria);
+  // El precio que valía **en la jornada** de ese instante, con la hora de corte del
+  // local, que es como se apuntan los precios (regla 10, 0096).
+  const { corte } = await elRelojYElFisco(contexto, localId);
+  const fecha = jornadaDe(instante, zonaHoraria, corte);
   const [costes, guardadas] = await Promise.all([
     contexto.sql<{ id: string; coste: string | null }[]>`
       select p.id, coalesce(nullif(m.coste_medio_despues, 0), v.coste_milesimas)::text as coste

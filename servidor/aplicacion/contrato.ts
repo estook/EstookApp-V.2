@@ -10,6 +10,7 @@ import type { AlSegundo } from '../infraestructura/al-segundo.ts';
 import type { MotorDePdf } from '../infraestructura/pdf.ts';
 import type { Pagos } from '../infraestructura/stripe.ts';
 import type { SesionViva, Sql } from '../infraestructura/postgres.ts';
+import type { ModeloDeFogon } from '../ia/modelo.ts';
 
 /**
  * El contrato de la capa de aplicacion (M2).
@@ -83,6 +84,12 @@ export interface Contexto {
    * Opcional para que lo que no es el chat no tenga que saber que existe.
    */
   readonly alSegundo?: AlSegundo | null;
+  /**
+   * El modelo de Fogón (Fogón 1 · 1, 0097). Nulo sin `AI_API_KEY`, y entonces Fogón
+   * **dice que no está conectado** en vez de romperse. Opcional para que lo que no es
+   * Fogón no tenga que saber que existe.
+   */
+  readonly fogon?: ModeloDeFogon | null;
   /**
    * **Lo hecho sin conexión** (0070): cuántos milisegundos hace que se hizo, según el
    * móvil, que lo ha tenido guardado hasta volver la señal. Nulo, o sin poner, si se

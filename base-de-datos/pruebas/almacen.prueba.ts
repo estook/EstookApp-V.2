@@ -675,6 +675,13 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // personas **solo al sistema**, para el correo del chat y el recordatorio de
     // confirmar: como sistema, la tabla de personas no enseña nada (lección 151). Son
     // cincuenta y cuatro.
+    //
+    // **Y la 0074 (Fogón 1 · 1) añade dos, a propósito.** `como_esta_fogon` dice si
+    // Fogón habla en una organización y su plan: los interruptores viven en
+    // `plataforma`, que la app no lee, y un camarero no lee la suscripción; contesta
+    // solo a sus miembros. `lo_gastado_en_fogon` suma lo gastado **de todo el local**
+    // para los topes, aunque un camarero solo lea sus llamadas; solo a quien tiene
+    // Fogón allí, y solo cuatro números. Son cincuenta y seis.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -696,6 +703,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'cambiar_la_suscripcion',
       'cerrar_demostracion',
       'cerrar_sesiones_de',
+      'como_esta_fogon',
       'como_le_suena',
       'crear_cuenta_con_negocio',
       'credencial_para_entrar',
@@ -707,6 +715,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'horas_de_contrato',
       'la_carta_publica',
       'las_cuentas',
+      'lo_gastado_en_fogon',
       'lo_que_hacen_los_clientes',
       'locales_visibles',
       'los_clientes',

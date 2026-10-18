@@ -1,7 +1,7 @@
 # 0096 · El arranque sin parpadeo, y el precio en la jornada del local
 
 **Fecha:** 18 de octubre de 2026
-**Estado:** hecho en la rama `el-arranque-y-el-precio-en-la-jornada`. Lo de «enseñar lo último que viste al abrir» queda **propuesto, a la espera del sí de Richi**.
+**Estado:** en producción (#116, la API desplegada el 18-oct). Lo de «enseñar lo último que viste al abrir»: **Richi dijo que no** el 18-oct («ahora funciona bien, dejémoslo así»).
 **Sigue:** la [0092](0092-las-respuestas-de-m9-3.md) («Lo que vi y no toqué») y la [0070](0070-la-app-instalable.md).
 
 ## 1 · La app, al abrir
@@ -27,7 +27,7 @@ La API, medida desde fuera el 18-oct, va como antes: **~0,4 s por consulta, en I
 
 Su prueba: `el-arranque.spec.ts`, en claro y en oscuro, en escritorio y en móvil, con el código y «quién soy» haciéndose esperar.
 
-## 2 · Lo que se propone, y espera el sí de Richi: abrir con lo último que viste
+## 2 · Lo que se propuso, y Richi dijo que no: abrir con lo último que viste
 
 **Qué es.** Hoy, al abrir **con señal**, la app no enseña nada hasta que el servidor contesta: por eso salen los esqueletos del Panel. Lo último que viste ya está guardado en el móvil, pero solo se usa **sin señal** (0070).
 

@@ -774,3 +774,13 @@
      claro, saltaba a oscuro y quedaba una franja clara abajo. Las pruebas entraban siempre con
      el claro y no lo veían. El tema se pone ahora antes de pintar (`tema-al-arrancar.js`) y una
      prueba mira el arranque en los dos temas, con el código y la sesión haciéndose esperar (0096).
+200. **Un interruptor de todos no se toca en una prueba que corre junto a otras.** Fogón tiene
+     uno general (0097), y las pruebas de pantalla corren a la vez contra la misma API: la que
+     lo encendiera haría cambiar lo que ve la que mira Fogón apagado. La puerta de prueba
+     (`/api/pruebas/fogon`) enciende **solo la organización de una persona**, la prueba del
+     admin **solo enciende** el general, nunca lo apaga, y las de la ventana aceptan los dos
+     motivos de «no habla». Y la frase de una regla («no des ningún precio») no cuenta como dato:
+     la prueba de que a la camarera no le llega un euro mira solo lo que va después de la regla.
+     Y la puerta de prueba escribía en la base **fuera de la cola**: con una sola conexión, a
+     veces se colaba en la transacción de otra petición, con el disfraz de la app, y no se
+     guardaba. Fallaba una de cada dos veces; repetida cuatro (`--repeat-each`), se vio.

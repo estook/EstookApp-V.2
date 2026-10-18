@@ -1140,6 +1140,49 @@ try {
     );
   }
 
+  // ── Fogón 1 · 1 (0097, migración 0074) ──────────────────────────────────────
+  //
+  // Los dos interruptores, cada llamada apuntada y las dos funciones con privilegio.
+  // Y **cómo está**: encendido o no, y cuánto se ha gastado este mes, para que Richi lo
+  // lea sin abrir el admin. Sin la 0074, Fogón dice que no está y no se rompe nada.
+  titulo('Fogón 1 · 1 (0074)');
+  if (cuantasMigraciones.ultima >= 74) {
+    const [fogon] = await conexion`
+      select
+        (select count(*)::int from pg_class c
+          where c.relname in ('fogon', 'fogon_del_cliente') and c.relrowsecurity
+            and c.relnamespace = 'plataforma'::regnamespace) as interruptores,
+        (select count(*)::int from pg_class c
+          where c.relname = 'llamada_a_fogon' and c.relrowsecurity
+            and c.relnamespace = 'estook'::regnamespace) as llamadas,
+        (select count(*)::int from pg_proc p
+          where p.pronamespace = 'estook'::regnamespace and p.prosecdef
+            and p.proname in ('como_esta_fogon', 'lo_gastado_en_fogon')) as funciones,
+        (select encendido from plataforma.fogon where unica) as general,
+        (select count(*)::int from plataforma.fogon_del_cliente where encendido) as clientes,
+        (select count(*)::int from estook.llamada_a_fogon
+          where hecha_en >= date_trunc('month', now())) as este_mes,
+        (select coalesce(sum(coste_micro_euros), 0)::bigint from estook.llamada_a_fogon
+          where hecha_en >= date_trunc('month', now())) as micro_euros
+    `;
+    comprobar(
+      'los dos interruptores y lo apuntado de cada llamada, con seguridad por filas',
+      fogon.interruptores === 2 && fogon.llamadas === 1,
+      `interruptores ${fogon.interruptores} de 2 · llamadas ${fogon.llamadas} de 1`,
+    );
+    comprobar(
+      'y sus dos funciones con privilegio',
+      fogon.funciones === 2,
+      `${fogon.funciones} de 2`,
+    );
+    console.log(
+      `       Fogón ${fogon.general ? 'ENCENDIDO' : 'apagado'} en general · ${fogon.clientes} cliente(s) encendido(s) · ` +
+        `este mes ${fogon.este_mes} llamada(s), ${(Number(fogon.micro_euros) / 1_000_000).toFixed(4)} €`,
+    );
+  } else {
+    noSePuede(`la 0074 todavia no esta aplicada · la base va por la ${cuantasMigraciones.ultima}`);
+  }
+
   // ── Lo que la API puede hacer en cada tabla (0089) ─────────────────────────
   //
   // Lo mismo que la prueba `los-permisos-de-la-api`, contra la base de verdad: lo que

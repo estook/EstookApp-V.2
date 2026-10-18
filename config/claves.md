@@ -75,8 +75,8 @@ Los que no pueden pisar el navegador jamas.
 | `CORREO_REMITENTE`           | Quién firma. **De un dominio verificado, nunca de Gmail** (abajo)           |
 | `GOOGLE_OAUTH_CLIENT_ID`     | Entrar y crear cuenta con Google (0042)                                     |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Su secreto: solo lo tiene el servidor (0042)                                |
-| `AI_API_KEY`                 | El proveedor de IA de Fogon · M22                                           |
-| `AI_MODELO_RAPIDO`           | El modelo barato para lo cotidiano                                          |
+| `AI_API_KEY`                 | La clave de la API de Anthropic, para Fogón (0097)                          |
+| `AI_MODELO_RAPIDO`           | Opcional: el modelo de Fogón 1. Sin ponerlo, `claude-haiku-5-5` (0097)      |
 | `AI_MODELO_ANALISIS`         | El modelo bueno para el analisis nocturno                                   |
 | `APP_URL`                    | La direccion publica, para los enlaces                                      |
 | `DATABASE_URL`               | La cadena del **agrupador** (M4); la API entra por el modo transaccion sola |
@@ -94,17 +94,17 @@ Revisado el 16 de septiembre de 2026. **Ninguna frena lo que hay construido**: l
 que depende de una clave está hecho y apagado con su motivo (0022), y se enciende al
 ponerla.
 
-| Qué                         | Nombre exacto                                                | Dónde se pone                            | ¿La usa ya el código?                        |
-| --------------------------- | ------------------------------------------------------------ | ---------------------------------------- | -------------------------------------------- |
-| **Google Places (New)**     | `GOOGLE_MAPS_KEY`                                            | Secretos de Supabase (Edge Functions)    | **Sí** · Ajustes → Tu local en Google (0040) |
-| **Google Business Profile** | **No es una clave**: acceso aprobado + OAuth                 | —                                        | No · espera a que Google apruebe             |
-| **Resend** (correo)         | `RESEND_API_KEY`, `CORREO_REMITENTE` y el dominio verificado | Secretos de Supabase + DNS en Hostinger  | **Sí** · el código de crear cuenta (0042)    |
-| **Entrar con Google**       | `GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET`      | Secretos de Supabase                     | **Sí** · entrar y crear cuenta (0042)        |
-| **Stripe** (el pago)        | `STRIPE_SECRET_KEY` (de prueba, empieza por `sk_test_`)      | Secretos de Supabase · **puesta 25-sep** | **Sí** · E2, desde que se despliegue (0048)  |
-| **IA** (Fogón)              | `AI_API_KEY`, `AI_MODELO_RAPIDO`, `AI_MODELO_ANALISIS`       | Secretos de Supabase                     | No · M22, con modelo y tope elegidos (0023)  |
-| **Los PDF** (Cloudflare)    | `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_PDF_TOKEN`             | Secretos de Supabase                     | **Sí** · los informes y el registro (0068)   |
-| **Los avisos al móvil**     | `VAPID_CLAVE_PUBLICA` y `VAPID_CLAVE_PRIVADA` (sin cuenta)   | Secretos de Supabase                     | **Sí** · I, desde que se despliegue (0070)   |
-| **Sentry de la API**        | `SENTRY_DSN` (un proyecto `estook-api`, plataforma Deno)     | Secretos de Supabase                     | **Sí** · desde que se despliegue (0082)      |
+| Qué                         | Nombre exacto                                                | Dónde se pone                            | ¿La usa ya el código?                                            |
+| --------------------------- | ------------------------------------------------------------ | ---------------------------------------- | ---------------------------------------------------------------- |
+| **Google Places (New)**     | `GOOGLE_MAPS_KEY`                                            | Secretos de Supabase (Edge Functions)    | **Sí** · Ajustes → Tu local en Google (0040)                     |
+| **Google Business Profile** | **No es una clave**: acceso aprobado + OAuth                 | —                                        | No · espera a que Google apruebe                                 |
+| **Resend** (correo)         | `RESEND_API_KEY`, `CORREO_REMITENTE` y el dominio verificado | Secretos de Supabase + DNS en Hostinger  | **Sí** · el código de crear cuenta (0042)                        |
+| **Entrar con Google**       | `GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET`      | Secretos de Supabase                     | **Sí** · entrar y crear cuenta (0042)                            |
+| **Stripe** (el pago)        | `STRIPE_SECRET_KEY` (de prueba, empieza por `sk_test_`)      | Secretos de Supabase · **puesta 25-sep** | **Sí** · E2, desde que se despliegue (0048)                      |
+| **IA** (Fogón)              | `AI_API_KEY` (y, si se cambia el modelo, `AI_MODELO_RAPIDO`) | Secretos de Supabase                     | **Sí** · Fogón 1 · 1, sin ella dice que no está conectado (0097) |
+| **Los PDF** (Cloudflare)    | `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_PDF_TOKEN`             | Secretos de Supabase                     | **Sí** · los informes y el registro (0068)                       |
+| **Los avisos al móvil**     | `VAPID_CLAVE_PUBLICA` y `VAPID_CLAVE_PRIVADA` (sin cuenta)   | Secretos de Supabase                     | **Sí** · I, desde que se despliegue (0070)                       |
+| **Sentry de la API**        | `SENTRY_DSN` (un proyecto `estook-api`, plataforma Deno)     | Secretos de Supabase                     | **Sí** · desde que se despliegue (0082)                          |
 
 **Los PDF (0068)** los hace Cloudflare Browser Run. La clave de los PDF es **una aparte**, con un solo permiso («Browser Rendering - Edit»): si se escapa, solo sirve para imprimir páginas, no para tocar la cuenta. No es la misma que `CLOUDFLARE_API_TOKEN`, la de publicar la web en la mudanza, que va en GitHub. Sin las dos de aquí, pedir un PDF dice que todavía no están encendidos y todo lo demás funciona.
 

@@ -8,6 +8,7 @@
 >
 > **Al cerrar una entrega**, lo suyo se añade **arriba del todo**, con el mismo formato.
 
+- Los seis de «Lo que decidí al construirlo» de la [0097](decisiones/0097-fogon-1-las-respuestas-y-la-base.md), al construir Fogón 1 · 1: como que la conversación no se guarde en la base, que a la IA no le lleguen nombres de personas, que los borradores solo salgan con lo vacío, o que Anthropic quede apuntado como subencargado. Y la forma de los topes (créditos al día y al mes, y 5 € al mes y 0,25 € al día por local), que Richi pidió recomendar.
 - Los cuatro de «Lo que decidí al hacerlo» de la [0096](decisiones/0096-el-arranque-y-el-precio-en-la-jornada.md): el logo mientras se comprueba la sesión, la precarga a los 4 s en Safari, meter también lo pactado en la jornada y que el fichero del tema no pase por el revisor de código.
 - Los nueve de «Lo que decidí al construirlo» de la [0092](decisiones/0092-las-respuestas-de-m9-3.md), al construir M9 · 3: como mirar «Qué ha cambiado» frente a hace 7, 30 o 90 días, que una línea sin unir no deje guardar, que el precio de venta sea el de hoy en los dos lados, o que «Descargar todas» deje fuera lo que se vende tal cual.
 - Al diseñar la detección, los seis de «Lo que decidí al diseñarlo» de la [0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md), como la mediana en vez de la media; y en el plan de M9 · 3, los seis de «Lo que decido yo» de la [0092](decisiones/0092-las-respuestas-de-m9-3.md).

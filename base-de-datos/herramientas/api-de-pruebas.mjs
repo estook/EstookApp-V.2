@@ -51,6 +51,7 @@ import { pagosDeMentira } from '../../servidor/infraestructura/pagos-de-mentira.
 import { pdfDeMentira } from '../../servidor/infraestructura/pdf.ts';
 import { movilDeMentira } from '../../servidor/infraestructura/movil.ts';
 import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
+import { modeloDeMentira } from '../../servidor/ia/modelo.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { sembrarAcceso } from '../semillas/acceso.ts';
@@ -201,6 +202,9 @@ const movil = movilDeMentira();
 // 0073 · lo que llega al segundo en el chat, de mentira: guarda los toques.
 const alSegundo = alSegundoDeMentira();
 
+// 0097 · Fogón, de mentira: contesta sin llamar a ningún modelo y no gasta nada.
+const fogon = modeloDeMentira();
+
 /**
  * El Stripe de mentira (0048): guarda en memoria y avisa firmado, por el mismo
  * camino que Stripe. Su página de pago es `/api/pruebas/stripe/pagar`, más abajo.
@@ -271,6 +275,7 @@ async function unaTransaccion(quien, hacer) {
       pdf,
       movil,
       alSegundo,
+      fogon,
       correlacionId: quien.correlacionId,
       desde: quien.desde ?? null,
       ahora: new Date(Date.now()),
@@ -395,6 +400,39 @@ const servidor = createServer((peticion, respuesta) => {
           respuesta.end(
             JSON.stringify({ error: { codigo: 'faltan_datos', quePasa: String(fallo) } }),
           );
+        });
+      return;
+    }
+
+    // 0097 · Fogón encendido para la organización de una persona (y el general, que
+    // sin él nadie lo tiene), sin pasar por el admin, que pide su segundo factor. Solo
+    // esa organización: las demás pruebas, que corren a la vez, lo siguen viendo apagado.
+    // **Solo existe aquí.**
+    if (pedido.pathname === '/api/pruebas/fogon') {
+      const encendido = pedido.searchParams.get('encendido') === '1';
+      const correo = (pedido.searchParams.get('correo') ?? '').toLowerCase();
+      // En la cola, como todo: con una sola conexión, escribir fuera de ella se colaba en
+      // la transacción de otra petición, con su disfraz de la app, y no se guardaba.
+      deUnaEnUna(async () => {
+        await bd.query('update plataforma.fogon set encendido = true where unica and $1', [
+          encendido,
+        ]);
+        await bd.query(
+          `insert into plataforma.fogon_del_cliente (organizacion_id, encendido)
+           select distinct m.organizacion_id, $1::boolean
+             from estook.membresia m join estook.persona p on p.id = m.persona_id
+            where lower(p.correo) = $2
+           on conflict (organizacion_id) do update set encendido = excluded.encendido`,
+          [encendido, correo],
+        );
+      })
+        .then(() => {
+          respuesta.writeHead(200, { 'content-type': 'application/json' });
+          respuesta.end(JSON.stringify({ encendido }));
+        })
+        .catch((fallo) => {
+          respuesta.writeHead(500, { 'content-type': 'application/json' });
+          respuesta.end(JSON.stringify({ error: String(fallo) }));
         });
       return;
     }

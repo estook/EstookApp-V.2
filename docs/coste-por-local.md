@@ -12,24 +12,24 @@
 | **DOCUMENTO**  | Lo que ya decía un documento de Estook, sin volver a medir                    |
 | **SUPUESTO**   | Una estimación nuestra, **sin medir**. Vale para orientarse, no para prometer |
 
-**Lo más importante de esta página:** la inteligencia artificial es **SUPUESTO**. Fogón no está construido, así que nadie ha medido cuánto gasta una pregunta. El Manifiesto decía «resultado medido: menos de un euro y medio al mes», y **no era verdad que estuviera medido**: era el objetivo. Se mide al construir Fogón (M22), y ahí se cierra esta cuenta.
+**Lo más importante de esta página:** la inteligencia artificial es **SUPUESTO**. Fogón 1 · 1 ya habla ([0097](decisiones/0097-fogon-1-las-respuestas-y-la-base.md)) y apunta lo que cuesta cada llamada, pero nadie lo ha medido todavía con un local de verdad: lo mira Richi con el piloto, en la sección Fogón del admin. El Manifiesto decía «resultado medido: menos de un euro y medio al mes», y **no era verdad que estuviera medido**: era el objetivo. Se mide al construir Fogón (M22), y ahí se cierra esta cuenta.
 
 ## De dónde sale cada precio
 
-| Qué                           | Precio                                                                                                              | Etiqueta                                                                                                            |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Los planes**                | Esencial 49 €, Pro 99 €, Cadena 89 € por local, **con el IVA dentro**                                               | DOCUMENTO (Manifiesto 32; Pro y Cadena, desde la 0067). **El ingreso de verdad es sin IVA**: 40,50, 81,82 y 73,55 € |
-| **Modelo económico**          | Claude Haiku 4.5: 1 $ por millón de tokens de entrada, 0,10 $ lo cacheado, 5 $ la salida                            | COMPROBADO ([precios de Anthropic](https://platform.claude.com/docs/en/about-claude/pricing))                       |
-| **Modelo grande**             | Claude Sonnet 5.5: 2 $, 0,20 $ y 10 $                                                                               | COMPROBADO. **Qué modelo es «el grande» no está decidido**: es de Richi, en M22                                     |
-| **El más caro que se usaría** | Claude Opus 5.5: 4 $, 0,20 $ y 20 $                                                                                 | COMPROBADO. Está en la tabla para ver el techo                                                                      |
-| **Tokens de un crédito**      | 6.000 cacheados (el resumen del local), 1.500 nuevos y 400 de respuesta                                             | **SUPUESTO**. Es la cifra que más mueve la cuenta                                                                   |
-| **Uso normal**                | Un local gasta el 40 % de sus créditos; en Pro, el 30 % de ellos va al modelo grande                                | **SUPUESTO**                                                                                                        |
-| **Stripe**                    | 1,5 % + 0,25 € con tarjeta europea normal; 2,8 % + 0,25 € con tarjeta de empresa; y 0,7 % por llevar la suscripción | COMPROBADO ([stripe.com/es/pricing](https://stripe.com/es/pricing)). El Manifiesto decía 0,84 €: se quedaba corto   |
-| **Google Places**             | 0,90 € por local                                                                                                    | DOCUMENTO. Con pocos locales será menos: Google regala un cupo mensual por tipo de consulta                         |
-| **Servidor, por local**       | 0,55 €                                                                                                              | DOCUMENTO. Lo fijo va aparte, abajo                                                                                 |
-| **Conector**                  | 0,40 €                                                                                                              | DOCUMENTO. Es trabajo de mantenimiento repartido, no una factura                                                    |
-| **Verifacti**                 | De 5,59 € por NIF con diez a 3,71 € con cincuenta; 3.000 tickets al mes dentro y 0,002 € cada uno de más            | DOCUMENTO ([`el-precio-de-verifacti.md`](el-precio-de-verifacti.md)). **Falta saber qué se paga con menos de diez** |
-| **Un dólar**                  | 0,90 €                                                                                                              | **SUPUESTO**, prudente a propósito                                                                                  |
+| Qué                           | Precio                                                                                                               | Etiqueta                                                                                                            |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Los planes**                | Esencial 49 €, Pro 99 €, Cadena 89 € por local, **con el IVA dentro**                                                | DOCUMENTO (Manifiesto 32; Pro y Cadena, desde la 0067). **El ingreso de verdad es sin IVA**: 40,50, 81,82 y 73,55 € |
+| **Modelo económico**          | Claude Haiku 5.5: 0,10 $ por millón de tokens de entrada, 0,01 $ lo cacheado, 0,50 $ la salida (el de Fogón 1, 0097) | COMPROBADO ([precios de Anthropic](https://platform.claude.com/docs/en/about-claude/pricing))                       |
+| **Modelo grande**             | Claude Sonnet 5.5: 2 $, 0,20 $ y 10 $                                                                                | COMPROBADO. **Qué modelo es «el grande» no está decidido**: es de Richi, en M22                                     |
+| **El más caro que se usaría** | Claude Opus 5.5: 4 $, 0,20 $ y 20 $                                                                                  | COMPROBADO. Está en la tabla para ver el techo                                                                      |
+| **Tokens de un crédito**      | 6.000 cacheados (el resumen del local), 1.500 nuevos y 400 de respuesta                                              | **SUPUESTO**. Es la cifra que más mueve la cuenta                                                                   |
+| **Uso normal**                | Un local gasta el 40 % de sus créditos; en Pro, el 30 % de ellos va al modelo grande                                 | **SUPUESTO**                                                                                                        |
+| **Stripe**                    | 1,5 % + 0,25 € con tarjeta europea normal; 2,8 % + 0,25 € con tarjeta de empresa; y 0,7 % por llevar la suscripción  | COMPROBADO ([stripe.com/es/pricing](https://stripe.com/es/pricing)). El Manifiesto decía 0,84 €: se quedaba corto   |
+| **Google Places**             | 0,90 € por local                                                                                                     | DOCUMENTO. Con pocos locales será menos: Google regala un cupo mensual por tipo de consulta                         |
+| **Servidor, por local**       | 0,55 €                                                                                                               | DOCUMENTO. Lo fijo va aparte, abajo                                                                                 |
+| **Conector**                  | 0,40 €                                                                                                               | DOCUMENTO. Es trabajo de mantenimiento repartido, no una factura                                                    |
+| **Verifacti**                 | De 5,59 € por NIF con diez a 3,71 € con cincuenta; 3.000 tickets al mes dentro y 0,002 € cada uno de más             | DOCUMENTO ([`el-precio-de-verifacti.md`](el-precio-de-verifacti.md)). **Falta saber qué se paga con menos de diez** |
+| **Un dólar**                  | 0,90 €                                                                                                               | **SUPUESTO**, prudente a propósito                                                                                  |
 
 ## Las cuentas
 
@@ -39,7 +39,7 @@
 
 | Modelo            | Por crédito | Los 300 de Esencial | Los 1.500 de Pro |
 | ----------------- | ----------- | ------------------- | ---------------- |
-| Claude Haiku 4.5  | 0,37 cént.  | 1,11 €              | 5,54 €           |
+| Claude Haiku 5.5  | 0,04 cént.  | 0,11 €              | 0,55 €           |
 | Claude Sonnet 5.5 | 0,74 cént.  | 2,21 €              | 11,07 €          |
 | Claude Opus 5.5   | 1,37 cént.  | 4,10 €              | 20,52 €          |
 
@@ -47,14 +47,14 @@
 
 | Caso                                              | Ingreso sin IVA | IA      | Google, servidor y conector | Stripe | Verifacti | Coste total | Margen             |
 | ------------------------------------------------- | --------------- | ------- | --------------------------- | ------ | --------- | ----------- | ------------------ |
-| Esencial · uso normal                             | 40,50 €         | 0,44 €  | 1,85 €                      | 1,33 € | —         | **3,62 €**  | **36,88 € · 91 %** |
-| Esencial · gasta todos sus créditos               | 40,50 €         | 1,11 €  | 1,85 €                      | 1,97 € | —         | **4,92 €**  | **35,57 € · 88 %** |
-| Pro sin TPV · uso normal                          | 81,82 €         | 2,88 €  | 1,85 €                      | 2,43 € | —         | **7,16 €**  | **74,66 € · 91 %** |
+| Esencial · uso normal                             | 40,50 €         | 0,04 €  | 1,85 €                      | 1,33 € | —         | **3,22 €**  | **37,27 € · 92 %** |
+| Esencial · gasta todos sus créditos               | 40,50 €         | 0,11 €  | 1,85 €                      | 1,97 € | —         | **3,93 €**  | **36,57 € · 90 %** |
+| Pro sin TPV · uso normal                          | 81,82 €         | 1,48 €  | 1,85 €                      | 2,43 € | —         | **5,76 €**  | **76,06 € · 93 %** |
 | Pro sin TPV · gasta todos sus créditos            | 81,82 €         | 11,07 € | 1,85 €                      | 3,72 € | —         | **16,64 €** | **65,18 € · 80 %** |
-| Pro con TPV · restaurante de carta, uso normal    | 81,82 €         | 2,88 €  | 1,85 €                      | 2,43 € | 5,59 €    | **12,75 €** | **69,07 € · 84 %** |
-| Pro con TPV · bar de tapas, uso normal            | 81,82 €         | 2,88 €  | 1,85 €                      | 2,43 € | 14,59 €   | **21,75 €** | **60,07 € · 73 %** |
+| Pro con TPV · restaurante de carta, uso normal    | 81,82 €         | 1,48 €  | 1,85 €                      | 2,43 € | 5,59 €    | **11,35 €** | **70,47 € · 86 %** |
+| Pro con TPV · bar de tapas, uso normal            | 81,82 €         | 1,48 €  | 1,85 €                      | 2,43 € | 14,59 €   | **20,35 €** | **61,47 € · 75 %** |
 | Pro con TPV · bar muy ocupado, todos sus créditos | 81,82 €         | 11,07 € | 1,85 €                      | 3,72 € | 29,59 €   | **46,23 €** | **35,59 € · 44 %** |
-| Cadena con TPV · por local, uso normal            | 73,55 €         | 2,88 €  | 1,85 €                      | 2,21 € | 5,59 €    | **12,53 €** | **61,03 € · 83 %** |
+| Cadena con TPV · por local, uso normal            | 73,55 €         | 1,48 €  | 1,85 €                      | 2,21 € | 5,59 €    | **11,13 €** | **62,42 € · 85 %** |
 
 ### Lo fijo de cada mes
 
@@ -87,16 +87,16 @@ Con 600,00 € fijos al mes, uso normal, sin TPV y **sin el IVA, que no es ingre
 
 | Clientes                           | Ingreso sin IVA | Margen     | Resultado      |
 | ---------------------------------- | --------------- | ---------- | -------------- |
-| 10 Esencial                        | 404,96 €        | 368,75 €   | **−231,25 €**  |
-| 15 mixtos (9 Esencial + 6 Pro)     | 855,37 €        | 779,85 €   | **+179,85 €**  |
-| 50 mixtos (30 Esencial + 20 Pro)   | 2851,24 €       | 2599,49 €  | **+1999,49 €** |
-| 200 mixtos (120 Esencial + 80 Pro) | 11404,96 €      | 10397,97 € | **+9797,97 €** |
+| 10 Esencial                        | 404,96 €        | 372,74 €   | **−227,26 €**  |
+| 15 mixtos (9 Esencial + 6 Pro)     | 855,37 €        | 791,80 €   | **+191,80 €**  |
+| 50 mixtos (30 Esencial + 20 Pro)   | 2851,24 €       | 2639,34 €  | **+2039,34 €** |
+| 200 mixtos (120 Esencial + 80 Pro) | 11404,96 €      | 10557,37 € | **+9957,37 €** |
 
 <!-- coste:fin -->
 
 ## Lo que dicen estas cuentas
 
-1. **Un local normal deja entre el 80 y el 90 %.** Esencial cuesta unos 3,60 € y Pro unos 7,20 €; con Estook TPV, unos 12,80 €.
+1. **Un local normal deja entre el 85 y el 93 %.** Esencial cuesta unos 3,20 € y Pro unos 5,80 €; con Estook TPV, unos 11,40 € (con Haiku 5.5 desde la 0097).
 2. **El caso malo existe, y es Pro.** Un bar muy ocupado que cobra con Estook y gasta todos sus créditos deja un 44 %: unos 36 € de 82. Con Pro a 79 € dejaba un 30 %. Lo mueven dos cosas: **los tickets** (Verifacti cobra 0,002 € cada uno por encima de 3.000 al mes) y **los créditos**.
 3. **1.500 créditos con un modelo grande no son 1,33 €: son hasta 11 €**, y hasta 20 € si «el grande» fuera el más caro. Por eso **antes de encender Fogón se mide** lo que gasta cada acción y se ajusta la tabla de créditos, no al revés.
 4. **Stripe cuesta más de lo que estaba escrito**: entre 1,33 y 3,70 € por local, no 0,84 €.

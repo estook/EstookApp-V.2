@@ -513,6 +513,10 @@ describe('las puertas se cierran solas', () => {
         'admin_poner_el_vendedor',
         // A4 (0059) · el tablero de ventas.
         'admin_las_ventas',
+        // Fogón 1 · 1 (0097) · los dos interruptores y lo gastado.
+        'admin_fogon',
+        'admin_encender_fogon',
+        'admin_encender_fogon_del_cliente',
       ].sort(),
     );
 

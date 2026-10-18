@@ -953,3 +953,26 @@ export type {
   TipoDeCanal,
   TipoDeTarjeta,
 } from './chat.ts';
+export {
+  AVISO_AL_GASTAR,
+  CREDITOS_AL_MES,
+  CREDITOS_DE_FOGON,
+  EUROS_POR_DOLAR,
+  LETRAS_PARA_FOGON,
+  MODELO_DE_FOGON,
+  PARTE_DEL_MES_AL_DIA,
+  POR_QUE_NO_HABLA,
+  PRECIO_DE_LOS_MODELOS,
+  TOPE_EN_EUROS,
+  cabeEnLosTopes,
+  centimosDeMicroEuros,
+  costeEnMicroEuros,
+  creditosDelPlan,
+} from './fogon.ts';
+export type {
+  LoGastado,
+  PlanConFogon,
+  PorQueNoHabla,
+  QueSeLePide,
+  TokensDeUnaLlamada,
+} from './fogon.ts';

@@ -7,6 +7,7 @@ import { soloLaHora } from './datos/cliente.ts';
 import { Administradores } from './pantallas/Administradores.tsx';
 import { Auditoria } from './pantallas/Auditoria.tsx';
 import { OfertaDePrueba } from './pantallas/Oferta.tsx';
+import { FogonEnElAdmin } from './pantallas/Fogon.tsx';
 import { Clientes } from './pantallas/Clientes.tsx';
 import { Vendedores } from './pantallas/Vendedores.tsx';
 import { Ventas, type PestanaQueSeAbre } from './pantallas/Ventas.tsx';
@@ -82,6 +83,7 @@ const SECCIONES = [
   { id: 'vendedores', nombre: 'Vendedores' },
   { id: 'administradores', nombre: 'Administradores' },
   { id: 'oferta', nombre: 'Oferta' },
+  { id: 'fogon', nombre: 'Fogón' },
   { id: 'auditoria', nombre: 'Auditoría' },
   { id: 'diseno', nombre: 'Sistema de diseño' },
 ] as const;
@@ -183,6 +185,8 @@ function Dentro({ entorno, sesionId }: AplicacionProps) {
             <Administradores />
           ) : seccion === 'oferta' ? (
             <OfertaDePrueba />
+          ) : seccion === 'fogon' ? (
+            <FogonEnElAdmin />
           ) : (
             <Auditoria />
           )}

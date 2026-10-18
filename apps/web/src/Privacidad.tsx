@@ -75,6 +75,11 @@ export function Privacidad() {
           </li>
           <li>Sentry: el registro de errores de la aplicación.</li>
           <li>GitHub: la publicación de esta web y de la aplicación.</li>
+          <li>
+            Anthropic: Fogón, la inteligencia artificial de Estook, si tu negocio la tiene
+            encendida. Lee tu pregunta y un resumen corto de tu local, sin nombres de personas, y no
+            lo usa para entrenar.
+          </li>
         </Lista>
         <p>
           Cuando alguno trata datos fuera del Espacio Económico Europeo, lo hace con las garantías

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
+  CREDITOS_DE_FOGON,
   UNIDADES_DE_USO,
   elProductoQueSeParece,
   laRecetaQueSeParece,
@@ -24,6 +25,8 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarLasFichas } from '../ganchos/usarRefrescarLasFichas.ts';
+import { AvisoDelBorrador, PedirleAFogon } from '../fogon/PedirleAFogon.tsx';
+import type { BorradorDeLosPasos, BorradorDelEscandallo, FogonYYo } from '../fogon/contrato.ts';
 import {
   NOMBRE_DE_LA_UNIDAD,
   leerCantidad,
@@ -58,6 +61,11 @@ import {
  * de Estook, **«¿Empezar desde la de Estook?»**: copia sus ingredientes y cantidades, y
  * cada uno **pregunta cuál de tus productos es** (con el que más se parece propuesto).
  * Nada se une ni se crea solo: hasta que se elija, no se puede guardar.
+ *
+ * Y desde Fogón 1 · 1 (0097), con Fogón encendido y a quien edita: **«Rellenar con
+ * Fogón»** al desgranar un plato vacío, y **«Escribir los pasos con Fogón»** en una ficha
+ * sin pasos. Lo que vuelve es un borrador que entra igual que la receta de Estook
+ * —cada línea pregunta cuál de tus productos es— y avisa de que la IA no es precisa.
  */
 
 interface Fila {
@@ -164,6 +172,10 @@ export function EditorDeLaReceta({
     (datos.receta.raciones ?? 1) > 1 ? String(datos.receta.raciones) : '',
   );
   const [deEstook, setDeEstook] = useState<string | null>(null);
+  // Lo que ha rellenado Fogón en esta hoja, para avisar de que es un borrador (0095).
+  const [deFogon, setDeFogon] = useState(false);
+  const fogon = usarLectura<FogonYYo>('fogon_y_yo', {}, !esElaboracion);
+  const conFogon = fogon.data?.habla === true && fogon.data.puedeRellenar;
   const [buscando, setBuscando] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
@@ -278,6 +290,64 @@ export function EditorDeLaReceta({
     alGuardar(cambios.length === 0 ? 'Sin cambios' : 'Guardada');
   }
 
+  /** Las líneas que propone Fogón, como las de la receta de Estook: sin unir (0097). */
+  async function rellenarConFogon(pista: string): Promise<ErrorDeLaApi | null> {
+    const respuesta = await cliente.ejecutar<BorradorDelEscandallo>('rellenar_con_fogon', {
+      plato_id: datos.id,
+      ...(pista === '' ? {} : { pista }),
+    });
+    if (!respuesta.ok) return respuesta.error;
+    const productos = lo.data?.productos ?? [];
+    setFilas([
+      ...respuesta.datos.lineas.map((l): Fila => {
+        const propuesta = elProductoQueSeParece(l.ingrediente, productos);
+        return {
+          clave: clave(),
+          tipo: null,
+          refId: null,
+          nombre: l.ingrediente,
+          cantidad: comoSeEscribe(l.cantidad),
+          unidad: l.unidad,
+          nota: '',
+          conNota: false,
+          copiada: true,
+          ...(propuesta === null
+            ? {}
+            : {
+                propuesta: { id: propuesta.id, nombre: propuesta.nombre, unidad: propuesta.unidad },
+              }),
+        };
+      }),
+      VACIA(),
+    ]);
+    if (respuesta.datos.raciones > 1) {
+      setEsOlla(true);
+      setRaciones(String(respuesta.datos.raciones));
+    }
+    setDeFogon(true);
+    void cache.invalidateQueries({ queryKey: ['fogon_y_yo'] });
+    return null;
+  }
+
+  /** Los pasos que propone Fogón, en las cajas para cambiarlos (0097). */
+  async function escribirConFogon(resumen: string): Promise<ErrorDeLaApi | null> {
+    const respuesta = await cliente.ejecutar<BorradorDeLosPasos>('escribir_los_pasos_con_fogon', {
+      plato_id: datos.id,
+      ...(resumen === '' ? {} : { resumen }),
+    });
+    if (!respuesta.ok) return respuesta.error;
+    setPasos([
+      ...respuesta.datos.pasos.map((texto) => ({ texto, de: null })),
+      { texto: '', de: null },
+    ]);
+    if (minutos.trim() === '' && respuesta.datos.minutos !== null) {
+      setMinutos(String(respuesta.datos.minutos));
+    }
+    setDeFogon(true);
+    void cache.invalidateQueries({ queryKey: ['fogon_y_yo'] });
+    return null;
+  }
+
   function empezarDesdeLaDeEstook() {
     if (parecida === null) return;
     const productos = lo.data?.productos ?? [];
@@ -390,6 +460,19 @@ export function EditorDeLaReceta({
           </div>
         )}
 
+        {!enLosPasos && !esElaboracion && conFogon && llenas.length === 0 && !deFogon && (
+          <PedirleAFogon
+            titulo="¿Te hace Fogón un borrador?"
+            ayuda="Propone lo que lleva y cuánto. Luego eliges cuál de tus productos es cada uno."
+            ejemplo="Dímelo rápido, si quieres: con bechamel de leche entera, 8 por ración"
+            boton="Rellenar con Fogón"
+            gasta={CREDITOS_DE_FOGON.rellenar_escandallo}
+            alPedir={rellenarConFogon}
+          />
+        )}
+
+        {deFogon && <AvisoDelBorrador />}
+
         {!enLosPasos && deEstook !== null && (
           <p className="text-secundario text-texto-suave">
             Copiada de «{deEstook}». Elige en cada línea cuál de tus productos es.
@@ -472,6 +555,20 @@ export function EditorDeLaReceta({
           <>
             <section aria-label="Cómo se hace" className="flex flex-col gap-e2">
               <h3 className="text-cuerpo font-semibold">Los pasos</h3>
+              {!esElaboracion && conFogon && pasosEscritos.length === 0 && !deFogon && (
+                <PedirleAFogon
+                  titulo="¿Te escribe Fogón los pasos?"
+                  ayuda={
+                    datos.receta.lineas.length > 0
+                      ? 'Los propone con lo que lleva el plato. Si quieres, cuéntale cómo lo hacéis.'
+                      : 'Cuéntale rápido cómo se hace y los ordena en pasos.'
+                  }
+                  ejemplo="Sofríes la cebolla, añades el arroz, mojas con el caldo…"
+                  boton="Escribir con Fogón"
+                  gasta={CREDITOS_DE_FOGON.escribir_pasos}
+                  alPedir={escribirConFogon}
+                />
+              )}
               <p className="text-secundario text-texto-suave">
                 Uno por paso, como se lo explicarías a alguien nuevo. Las fotos se ponen después, en
                 cada paso.

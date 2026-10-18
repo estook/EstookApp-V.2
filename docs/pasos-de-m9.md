@@ -4,12 +4,12 @@
 >
 > Comprobado el 17 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
 >
-> | Qué                         | Cómo está                                                                              |
-> | --------------------------- | -------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #112**. Abierta: **la #113, M9 · 3**                             |
-> | La base de datos            | **72 de 72** migraciones, igual que `main`. Con M9 · 3 llega la **0073**               |
-> | La API                      | **Desplegada el 17-oct**: 90 consultas y 196 comandos. Con M9 · 3 pasan a **92 y 196** |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día              |
+> | Qué                         | Cómo está                                                                                         |
+> | --------------------------- | ------------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #113** (M9 · 3, el 18-oct). Abierta: un arreglo de una prueba (lección 198) |
+> | La base de datos            | **72 de 72** migraciones, igual que `main`. Con M9 · 3 llega la **0073**                          |
+> | La API                      | **Desplegada el 17-oct**: 90 consultas y 196 comandos. Con M9 · 3 pasan a **92 y 196**            |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                         |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo que quede de antes, en [`pasos-de-m8.md`](pasos-de-m8.md).
 
@@ -21,7 +21,7 @@ Construida el 18-oct ([el plan](m9-3-las-fichas-y-lo-que-ha-cambiado.md); lo que
 
 ### 1 · Fusionar
 
-En **github.com** → **Pull requests** → **la #113, «M9 · 3…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**. **Si alguna sale en rojo o «cancelled», para y avísame.**
+**Hecho** el 18-oct (la #113, en verde). Sigue con el paso 2.
 
 ### 2 · Migrar la base
 

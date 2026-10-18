@@ -763,3 +763,8 @@
      y no el plato. La prueba de la base solo miraba que el enlace fuera el escrito; lo cazó la
      de pantalla, abriendo esa misma dirección. Los avisos llevan la vista en su enlace, como
      ya hacían los de Compras e Informes, y la prueba abre el enlace que manda la campana (M9 · 3).
+198. **El mes de una prueba es el de la jornada, no el del calendario.** La prueba del traspaso
+     anulado pedía el food cost del mes `HOY.slice(0, 7)`, y a la 1:00 del 1 de enero salía en
+     rojo: lo apuntado antes de las 5:00 (la hora de corte) es de la jornada del 31 de diciembre,
+     y no estaba en enero. Fallaba igual antes de M9 · 3; solo lo ve `prueba:semana`, porque
+     en un día normal las dos fechas coinciden. La prueba pide ahora el mes de `jornadaDe`.

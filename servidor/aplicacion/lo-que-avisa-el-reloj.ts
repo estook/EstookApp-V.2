@@ -1,6 +1,8 @@
 import {
   TITULO_DEL_INFORME,
   avisoDeBajoMinimo,
+  avisoDeLaRaya,
+  centimos,
   avisoDeTocaContar,
   avisoDeTocaPedir,
   cuantoTocaContar,
@@ -22,6 +24,8 @@ import { elInforme } from './consultas/informes.ts';
 import type { Contexto } from './contrato.ts';
 import { DIAS_ENTRE_LECTURAS, ponerAlDiaLaNota } from './nota-de-google.ts';
 import { comoLista } from './listas.ts';
+import { elLibroDelLocal, loDeLaCuenta } from './escandallos.ts';
+import { loQueHaCambiado } from './consultas/escandallos.ts';
 import { apuntarUnFallo } from '../infraestructura/fallos.ts';
 
 /**
@@ -36,6 +40,8 @@ import { apuntarUnFallo } from '../infraestructura/fallos.ts';
  *       semana los lunes y el del mes el día 1, con sus cifras para el correo.
  *   3 · **Lo que está bajo mínimo**, a quien lo haya encendido: ya sale en «Hoy».
  *   4 · **La nota en Google** (mejora 19), si lleva tres días sin mirarse.
+ *   5 · **Un plato cruza la raya** (M9 · 3): pasa de tu objetivo o empieza a perder
+ *       dinero en un canal desde ayer, a quien ve lo que cuesta cada plato.
  *
  * ── A nombre de quien lo recibe ──────────────────────────────────────────────
  *
@@ -369,6 +375,79 @@ async function rehacerLosMinimos(contexto: Contexto, local: LocalDelReloj): Prom
   return 0;
 }
 
+// ── 5 · Un plato cruza la raya (M9 · 3, 0092 · 1B) ──────────────────────────
+
+/**
+ * Los platos que **desde ayer** pasan de tu objetivo o empiezan a perder dinero en un
+ * canal: el escandallo de hace 24 horas, con los precios y la receta de entonces, frente
+ * al de ahora. Una vez por plato y por raya: al día siguiente ya no cruza, ya está.
+ * Se cuenta como lo vería el primero que lo recibe, con sus permisos (`comoSiFuera`).
+ */
+async function losPlatosQueCruzan(contexto: Contexto, local: LocalDelReloj): Promise<number> {
+  const quienes = await aQuien(contexto, local.id, 'plato.raya');
+  const primero = quienes[0];
+  if (primero === undefined) return 0;
+  const cambio = await comoSiFuera(
+    contexto,
+    { personaId: primero.personaId, organizacionId: local.organizacionId, localId: local.id },
+    async (suyo) => {
+      // Sin un plato desgranado no hay nada que mirar, y montar los dos libros cuesta: el
+      // reloj late por cada local de cada cuenta. Se mira ya con sus permisos.
+      const [desgranado] = await suyo.sql<{ hay: boolean }[]>`
+        select exists (
+          select 1 from estook.receta r
+            join estook.linea_de_receta l on l.receta_id = r.id
+           where r.local_id = ${local.id}::uuid and r.plato_id is not null
+        ) as hay
+      `;
+      if (desgranado?.hay !== true) return null;
+      const [libro, cuenta] = await Promise.all([
+        elLibroDelLocal(suyo, local.id, true),
+        loDeLaCuenta(suyo, local.id),
+      ]);
+      return loQueHaCambiado(suyo, local.id, 1, libro, cuenta, local.zonaHoraria);
+    },
+  );
+  if (cambio === null) return 0;
+  const hoy = fechaEnElLocal(contexto.ahora, local.zonaHoraria);
+  let avisos = 0;
+  for (const plato of cambio.platos) {
+    for (const raya of plato.cruza) {
+      const cual = raya.que === 'objetivo' ? 'objetivo' : `canal-${raya.canal ?? ''}`;
+      avisos += await avisar(
+        contexto,
+        {
+          tipo: 'plato.raya',
+          organizacionId: local.organizacionId,
+          localId: local.id,
+          clave: `${plato.id}:${cual}:${hoy}`,
+          sustituyeA: `${plato.id}:${cual}:`,
+          texto: () =>
+            avisoDeLaRaya(
+              plato.nombre,
+              { que: raya.que, canal: raya.nombreDelCanal },
+              {
+                foodCost: plato.foodCostAhora,
+                objetivo: cambio.objetivo,
+                margen: raya.margenCentimos === null ? null : centimos(raya.margenCentimos),
+                porQue:
+                  plato.porQue === null
+                    ? null
+                    : { nombre: plato.porQue.nombre, centimos: centimos(plato.porQue.centimos) },
+                cambioLaReceta: plato.cambioLaReceta,
+              },
+            ),
+          // Con la vista: sin ella, la redirección a la de entrada pierde el «?ficha=».
+          ir: `/escandallos/escandallos/todos?ficha=plato.${plato.id}`,
+          quien: null,
+        },
+        quienes,
+      );
+    }
+  }
+  return avisos;
+}
+
 // ── Todo junto ───────────────────────────────────────────────────────────────
 
 /** Las cuentas a las que se les avisa: las que pagan o están en prueba, sin los ejemplos. */
@@ -422,6 +501,7 @@ export async function loQueAvisaElReloj(
       ['avisar de lo que está bajo mínimo', () => loQueEstaBajoMinimo(contexto, local)],
       ['avisar de lo que toca contar', () => loQueTocaContarElLunes(contexto, local)],
       ['rehacer los mínimos', () => rehacerLosMinimos(contexto, local)],
+      ['avisar de los platos que cruzan la raya', () => losPlatosQueCruzan(contexto, local)],
     ];
     for (const [que, hacer] of pasos) {
       const hecho = await aparte(contexto, `${que} de ${local.nombre}`, hacer);

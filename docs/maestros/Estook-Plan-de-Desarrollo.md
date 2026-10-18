@@ -60,6 +60,8 @@ Es la regla 14, desplegada. Si falta una respuesta, no se implementa todavía: s
 
 **Y si interviene un servicio de fuera:** 10 · ¿qué ofrece **de verdad**, según su documentación oficial de hoy? · 11 · ¿qué permisos y qué aprobación pide? · 12 · ¿qué datos devuelve? · 13 · ¿qué avisos manda? · 14 · ¿qué límites y condiciones tiene? · 15 · ¿cómo se autentica y cómo se renueva la conexión?
 
+**Y siempre, por la plantilla** —«la prueba de la plantilla», [0094](../decisiones/0094-la-prueba-de-la-plantilla.md)—: Estook es un compañero de control, no un policía. 16 · ¿le pide **trabajo nuevo** a alguien del equipo? Si sí, ¿a quién, cuánto, y compensa? · 17 · ¿**duplica** algo que ya existe: un dato que se pide dos veces, una pantalla o un aviso que repite otro? · 18 · ¿**bloquea** algo que se use en servicio? (no puede) · 19 · ¿es **fácil de usar**: se entiende sin formación, con una «i» como mucho, y en los menos toques posibles? · 20 · ¿**avisa solo cuando hay algo que hacer**, y dice qué? · 21 · ¿funciona **con datos a medias**, diciendo lo que falta en vez de romperse o mentir? · 22 · ¿**señala a alguien**? (nunca). **Sirve para mejorar lo que se propone antes de construirlo, y no para cambiar por iniciativa propia lo que ya está hecho ni la arquitectura**: si señala un problema en lo existente, se le explica a Richi la situación, con una solución sencilla o lo que hacen las mejores apps, y **se espera su sí**.
+
 **Y el orden de trabajo:** leer `ESTADO.md` → los maestros que toquen → el módulo afectado y de qué depende → el modelo de datos → el contrato de la API → diseñar → implementar → pruebas → permisos llamando a la API a pelo → móvil real → `ESTADO.md`.
 
 ## A2 · Cómo no perder el contexto
@@ -602,7 +604,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Ordenada en el repaso del 16-oct** ([0090](../decisiones/0090-el-repaso-del-16-oct.md)): **Resumen · Escandallos · Fichas** (las fichas técnicas). El escandallo, solo lo que lleva y lo que cuesta; la ficha técnica, el plato de la Carta con lo que lleva su escandallo y **los pasos, cada uno con su foto**. **Sin modo cocina** (la cocina en servicio es Estook TPV) y **sin elaboraciones por ahora**. Donde lo de abajo dice otra cosa, manda la 0090.
 
-**M9 · 3, contestado el 17-oct** ([0092](../decisiones/0092-las-respuestas-de-m9-3.md), el plan en [`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](../m9-3-las-fichas-y-lo-que-ha-cambiado.md)): **la receta por ración o por tanda** y la ficha técnica que se escala en pantalla y en el PDF; **«qué ha cambiado»** en el Resumen, con aviso solo cuando un plato cruza una raya; y **empezar desde una receta de Estook**. **Salen**: los extras y sustituciones (a Estook TPV, M20A), el modo aprendizaje y el QR de la ficha impresa; y **la desviación de los platos, la calibración y el food cost teórico pasan a M20**, que es donde nacen las ventas plato a plato. Donde lo de abajo dice otra cosa, manda la 0092.
+**M9 · 3, contestado el 17-oct y construido el 18-oct** ([0092](../decisiones/0092-las-respuestas-de-m9-3.md), el plan en [`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](../m9-3-las-fichas-y-lo-que-ha-cambiado.md)): **la receta por ración o por tanda** y la ficha técnica que se escala en pantalla y en el PDF; **«qué ha cambiado»** en el Resumen, con aviso solo cuando un plato cruza una raya; y **empezar desde una receta de Estook**; y, sin IA, la línea «sin escandallo» en la ficha del plato de la Carta y su coste aproximado en Escandallos ([0095](../decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)). **Salen**: los extras y sustituciones (a Estook TPV, M20A), el modo aprendizaje y el QR de la ficha impresa; y **la desviación de los platos, la calibración y el food cost teórico pasan a M20**, que es donde nacen las ventas plato a plato. Donde lo de abajo dice otra cosa, manda la 0092.
 
 **Entra.** **El plato y la carta** (secciones, precios por canal y canales con su comisión, adelantados de M10 por la 0086) · elaboraciones anidables con detección de ciclos y su rendimiento · ficha en dos caras · ~~extras y sustituciones~~ (a Estook TPV, M20A: 0092) · **una receta a la vista con historial y recuperar** · **escalado, con la receta por ración o por tanda** (0092) · ~~modo cocina~~ (fuera desde el 16-oct, 0090: en servicio, Estook TPV) · ~~modo aprendizaje~~ (fuera, 0092) · alérgenos calculados · hoja de producción del día (parada con las elaboraciones, 0090) · borrador de ficha propuesto por Fogón · indicador de cobertura de fichas · grafo de recálculo · ficha impresa o en PDF, **sin QR** (0092).
 
@@ -981,7 +983,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - Los textos van por el motor de textos, en español de España, sin jerga y sin emojis.
 - **Las cifras llevan su origen y su periodo.**
 - Ninguna dependencia nueva sin justificar.
-- Se ha respondido a la regla 14: qué datos usa, quién se entera cuando cambien, qué automatiza Fogón y qué aprueba una persona.
+- Se ha respondido a la regla 14: qué datos usa, quién se entera cuando cambien, qué automatiza Fogón y qué aprueba una persona; **y pasa la prueba de la plantilla** (0094).
 - `ESTADO.md` actualizado.
 
 ## E2 · Qué se entrega en cada módulo

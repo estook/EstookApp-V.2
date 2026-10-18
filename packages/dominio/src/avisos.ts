@@ -63,6 +63,8 @@ export const TIPOS_DE_AVISO = [
   'inventario.recontar',
   // ── M8, la segunda entrega (decisión 0079) ──────────────────────────────
   'inventario.falta',
+  // ── M9 · 3 (decisión 0092) ──────────────────────────────────────────────
+  'plato.raya',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -387,6 +389,16 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     enEspera: true,
     explica: 'Solo si lo que falta sin explicar pasa del 3 % de lo gastado.',
     grupo: 'Almacén',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: false,
+  },
+  // «Qué ha cambiado» avisa solo cuando un plato cruza una raya (0092, 1B): una vez por
+  // plato y por raya, no con cada albarán. Lo mira el reloj cada mañana.
+  'plato.raya': {
+    nombre: 'Un plato pasa de tu objetivo o pierde dinero',
+    explica: 'Una vez por plato, cuando cruza la raya; no con cada albarán.',
+    grupo: 'Carta',
     deTuEquipo: false,
     correoDeFabrica: false,
     movilDeFabrica: false,
@@ -986,4 +998,45 @@ export function cuandoFue(desde: Date, ahora: Date): string {
     .format(desde)
     .split('-');
   return `${String(Number(dia))} ${MESES_CORTOS[Number(mes) - 1] ?? ''}`;
+}
+
+/**
+ * «Tortilla de patatas pasa de tu objetivo» · «Ahora el 31 %; tu objetivo, el 30 %. Lo ha
+ * movido aceite de oliva (+0,12 € la ración).» (M9 · 3, 0092). Solo a quien ve costes.
+ */
+export function avisoDeLaRaya(
+  plato: string,
+  raya: { readonly que: 'objetivo' | 'canal'; readonly canal: string | null },
+  datos: {
+    readonly foodCost: number | null;
+    readonly objetivo: number | null;
+    readonly margen: Centimos | null;
+    readonly porQue: { readonly nombre: string; readonly centimos: Centimos } | null;
+    readonly cambioLaReceta: boolean;
+  },
+): LoQueDiceUnAviso {
+  const partes: string[] = [];
+  if (raya.que === 'objetivo' && datos.foodCost !== null) {
+    const objetivo =
+      datos.objetivo === null ? '' : `; tu objetivo, el ${comoPorcentaje(datos.objetivo)}`;
+    partes.push(`Ahora el ${comoPorcentaje(datos.foodCost / 100)}${objetivo}.`);
+  }
+  if (raya.que === 'canal' && datos.margen !== null) {
+    partes.push(`Te deja ${conSimbolo(datos.margen)} por ración.`);
+  }
+  if (datos.porQue !== null) {
+    const signo = datos.porQue.centimos > 0 ? '+' : '';
+    partes.push(
+      `Lo ha movido ${datos.porQue.nombre.toLocaleLowerCase('es')} (${signo}${conSimbolo(datos.porQue.centimos)} la ración).`,
+    );
+  } else if (datos.cambioLaReceta) {
+    partes.push('Ha cambiado la receta.');
+  }
+  return {
+    titulo:
+      raya.que === 'objetivo'
+        ? `${plato} pasa de tu objetivo`
+        : `${plato} pierde dinero en ${raya.canal ?? 'un canal'}`,
+    detalle: partes.length === 0 ? null : partes.join(' '),
+  };
 }

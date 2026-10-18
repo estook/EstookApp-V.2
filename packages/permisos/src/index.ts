@@ -309,6 +309,8 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   // ── M8, la segunda entrega (0079) ──
   // Lo que falta al cerrar va en euros: a quien cierra y ve precios de compra.
   'inventario.falta': ['accion.cerrar_recuento', 'dato.precio_de_compra'],
+  // Al jefe de cocina y a quien lleva el local: quien ve lo que cuesta cada plato (0092).
+  'plato.raya': ['app.escandallos', 'dato.coste_de_plato'],
 };
 
 export function puedeRecibirElAviso(

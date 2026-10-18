@@ -15,6 +15,16 @@ import {
   queCambioEnLaReceta,
   seLlevaASiMisma,
   unidadesQueSirven,
+  comoSeLeeEscalada,
+  costeAproximado,
+  elProductoQueSeParece,
+  elQueMasLoMovio,
+  factorParaRaciones,
+  factorParaUnIngrediente,
+  laRecetaQueSeParece,
+  porRacion,
+  racionesRedondeadas,
+  rayasQueCruza,
   type ElaboracionDelEscandallo,
   type LibroDeRecetas,
   type LineaDelEscandallo,
@@ -397,5 +407,166 @@ describe('la desviación de los platos (construida, a la vista con el TPV)', () 
       ['carne', 1.2, false],
       ['mayonesa', 0.02, true],
     ]);
+  });
+});
+
+// ── M9 · 3 (0092 a 0095) ──────────────────────────────────────────────────────
+
+describe('la receta por tanda', () => {
+  it('el coste es de una ración: la olla entera entre sus raciones', () => {
+    // 3 kg de carne (22,50 €) en una olla de 25 raciones: 0,90 € la ración.
+    const olla = costeDeLaReceta([linea({ productoId: 'carne' }, 3, 'kg')], EL_LIBRO);
+    expect(aCentimos(porRacion(olla.milesimas, 25) ?? 0)).toBe(90);
+    expect(porRacion(olla.milesimas, null)).toBe(olla.milesimas);
+    expect(porRacion(null, 25)).toBeNull();
+  });
+
+  it('la desviación divide por la tanda: una ración de un puchero de 25 gasta la 25.ª parte', () => {
+    const debia = loQueDebiaGastarse(
+      [{ lineas: [linea({ productoId: 'carne' }, 3, 'kg')], raciones: 50, racionesDeLaReceta: 25 }],
+      EL_LIBRO,
+    );
+    // 50 raciones son dos ollas: 6 kg, no 150.
+    expect(debia.get('carne')).toBe(6);
+    // Sin decir la tanda, como siempre: cada venta, una receta.
+    const deUna = loQueDebiaGastarse(
+      [{ lineas: [linea({ productoId: 'carne' }, 0.18, 'kg')], raciones: 10 }],
+      EL_LIBRO,
+    );
+    expect(deUna.get('carne')).toBe(1.8);
+  });
+
+  it('el historial lo dice en palabras, y lo guardado antes de M9 · 3 es de una ración', () => {
+    const antes: RecetaQueSeLee = {
+      nombre: 'Puchero',
+      rinde: null,
+      lineas: [],
+      pasos: [],
+      notas: null,
+      minutos: null,
+    };
+    expect(queCambioEnLaReceta(antes, { ...antes, raciones: 25 })).toEqual([
+      'Para: 1 ración → una tanda de 25 raciones',
+    ]);
+    expect(queCambioEnLaReceta({ ...antes, raciones: 25 }, { ...antes, raciones: null })).toEqual([
+      'Para: una tanda de 25 raciones → 1 ración',
+    ]);
+    expect(queCambioEnLaReceta(antes, { ...antes, raciones: 1 })).toEqual([]);
+  });
+});
+
+describe('escalar', () => {
+  it('por raciones: la olla de 40 para 10 es un cuarto', () => {
+    expect(factorParaRaciones(10, 40)).toBe(0.25);
+    expect(factorParaRaciones(3, null)).toBe(3);
+  });
+
+  it('por lo que tienes de un ingrediente, dentro de su familia', () => {
+    // La receta lleva 750 g de carrillera y tienes 3 kg: por cuatro.
+    expect(
+      factorParaUnIngrediente({ cantidad: 750, unidad: 'g' }, { cantidad: 3, unidad: 'kg' }),
+    ).toBe(4);
+    expect(
+      factorParaUnIngrediente({ cantidad: 750, unidad: 'g' }, { cantidad: 3, unidad: 'l' }),
+    ).toBeNull();
+    expect(
+      factorParaUnIngrediente({ cantidad: 0, unidad: 'g' }, { cantidad: 3, unidad: 'g' }),
+    ).toBeNull();
+  });
+
+  it('se lee como se cocina: las unidades a la media, y kilos desde mil gramos', () => {
+    expect(comoSeLeeEscalada(3, 'ud', 2.45)).toBe('7,5 ud');
+    expect(comoSeLeeEscalada(1, 'ud', 0.1)).toBe('0,5 ud');
+    expect(comoSeLeeEscalada(600, 'g', 2.5)).toBe('1,5 kg');
+    expect(comoSeLeeEscalada(180, 'g', 1)).toBe('180 g');
+  });
+
+  it('las raciones para imprimir, enteras y nunca menos de una', () => {
+    expect(racionesRedondeadas(12.4)).toBe(12);
+    expect(racionesRedondeadas(0.3)).toBe(1);
+    expect(racionesRedondeadas(12.44, 1)).toBe(12.4);
+  });
+});
+
+describe('el coste aproximado de un plato sin escandallo', () => {
+  it('precio sin IVA por el objetivo, y nada si falta uno de los dos', () => {
+    expect(costeAproximado(1100, 0.3)).toBe(330);
+    expect(costeAproximado(null, 0.3)).toBeNull();
+    expect(costeAproximado(1100, null)).toBeNull();
+  });
+});
+
+describe('la raya: un plato que cruza hacia lo malo', () => {
+  const canal = (pierde: boolean, margen: number | null) => ({
+    canal: 'uber_eats' as const,
+    nombre: 'Uber Eats',
+    precioCentimos: 1450,
+    igualQueSala: true,
+    seLlevaCentimos: 400,
+    margenCentimos: margen,
+    margenPuntos: null,
+    pierde,
+  });
+  const sin = (foodCost: number | null) => ({ foodCost, canales: [] });
+
+  it('pasar del objetivo sale una vez: de dentro a fuera', () => {
+    expect(rayasQueCruza(sin(28), sin(31), 0.3)).toEqual([{ que: 'objetivo', canal: null }]);
+    // Si ya estaba fuera, no se repite; y volver a dentro no va a la campana.
+    expect(rayasQueCruza(sin(31), sin(33), 0.3)).toEqual([]);
+    expect(rayasQueCruza(sin(31), sin(28), 0.3)).toEqual([]);
+    // Sin saberse entonces (sin precio), no se cuenta como cruce.
+    expect(rayasQueCruza(sin(null), sin(33), 0.3)).toEqual([]);
+  });
+
+  it('perder dinero en un canal, solo si antes no perdía y se sabía', () => {
+    const conCanal = (pierde: boolean, margen: number | null) => ({
+      foodCost: 28,
+      canales: [canal(pierde, margen)],
+    });
+    expect(rayasQueCruza(conCanal(false, 50), conCanal(true, -20), 0.3)).toEqual([
+      { que: 'canal', canal: 'uber_eats' },
+    ]);
+    expect(rayasQueCruza(conCanal(true, -5), conCanal(true, -20), 0.3)).toEqual([]);
+    expect(rayasQueCruza(conCanal(false, null), conCanal(true, -20), 0.3)).toEqual([]);
+  });
+});
+
+describe('qué lo ha movido', () => {
+  it('el ingrediente que más ha movido el coste de una ración, por su precio', () => {
+    const entonces = libro([{ ...CARNE, costeMilesimas: 600_000 }, PAN]);
+    const lineas = [
+      { ...linea({ productoId: 'carne' }, 0.2, 'kg'), nombre: 'Carne picada' },
+      { ...linea({ productoId: 'pan' }, 1, 'ud'), nombre: 'Pan brioche' },
+    ];
+    // La carne pasa de 6,00 a 7,50 €/kg: 0,30 € más por ración de 200 g.
+    const movio = elQueMasLoMovio(lineas, EL_LIBRO, entonces, 1);
+    expect(movio?.nombre).toBe('Carne picada');
+    expect(aCentimos(movio?.milesimas ?? 0)).toBe(30);
+    // En una olla de 10, la décima parte.
+    expect(aCentimos(elQueMasLoMovio(lineas, EL_LIBRO, entonces, 10)?.milesimas ?? 0)).toBe(3);
+    // Si nada se movió, ninguno.
+    expect(elQueMasLoMovio(lineas, EL_LIBRO, EL_LIBRO, 1)).toBeNull();
+  });
+});
+
+describe('la receta de Estook', () => {
+  const RECETAS = [{ nombre: 'Tortilla de patatas' }, { nombre: 'Croquetas de jamón' }];
+
+  it('se ofrece si el plato se llama como ella, con o sin todas sus palabras', () => {
+    expect(laRecetaQueSeParece('Tortilla', RECETAS)?.nombre).toBe('Tortilla de patatas');
+    expect(laRecetaQueSeParece('Tortilla de patata', RECETAS)?.nombre).toBe('Tortilla de patatas');
+    expect(laRecetaQueSeParece('Croquetas de jamón ibérico', RECETAS)?.nombre).toBe(
+      'Croquetas de jamón',
+    );
+    // Otra croqueta no es la de jamón.
+    expect(laRecetaQueSeParece('Croquetas de boletus', RECETAS)).toBeNull();
+    expect(laRecetaQueSeParece('Entrecot', RECETAS)).toBeNull();
+  });
+
+  it('propone el producto tuyo que más se parece, y ninguno si no se parece', () => {
+    const tuyos = [{ nombre: 'Huevos camperos' }, { nombre: 'Patata agria' }];
+    expect(elProductoQueSeParece('Huevo', tuyos)?.nombre).toBe('Huevos camperos');
+    expect(elProductoQueSeParece('Patata', tuyos)?.nombre).toBe('Patata agria');
+    expect(elProductoQueSeParece('Aceite de oliva', tuyos)).toBeNull();
   });
 });

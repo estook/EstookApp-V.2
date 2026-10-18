@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { UNIDADES_DE_USO, unidadesQueSirven, type UnidadDeUso } from '@estook/dominio';
+import {
+  UNIDADES_DE_USO,
+  elProductoQueSeParece,
+  laRecetaQueSeParece,
+  unidadesQueSirven,
+  type UnidadDeUso,
+} from '@estook/dominio';
 import {
   Boton,
   Botones,
@@ -22,6 +28,7 @@ import {
   NOMBRE_DE_LA_UNIDAD,
   leerCantidad,
   type LoQuePuedeLlevar,
+  type RecetasDeReferencia,
   type UnaFicha,
 } from './contrato.ts';
 
@@ -45,6 +52,12 @@ import {
  *
  * Guardar es confirmar (0086, pregunta 5): lo guardado es la receta de ahora, y lo de
  * antes queda en el historial.
+ *
+ * Y desde M9 · 3 (0092): **«¿Es una receta de olla?»**, plegado, para escribirla como se
+ * cocina («sale para 25 raciones»); y si el plato se llama como una de las diez recetas
+ * de Estook, **«¿Empezar desde la de Estook?»**: copia sus ingredientes y cantidades, y
+ * cada uno **pregunta cuál de tus productos es** (con el que más se parece propuesto).
+ * Nada se une ni se crea solo: hasta que se elija, no se puede guardar.
  */
 
 interface Fila {
@@ -56,6 +69,14 @@ interface Fila {
   readonly unidad: UnidadDeUso;
   readonly nota: string;
   readonly conNota: boolean;
+  /** De la receta de Estook: el producto tuyo que más se parece, para proponerlo (0092). */
+  readonly propuesta?: {
+    readonly id: string;
+    readonly nombre: string;
+    readonly unidad: UnidadDeUso;
+  };
+  /** Copiada de la receta de Estook y sin elegir todavía cuál de tus productos es. */
+  readonly copiada?: true;
 }
 
 let contador = 0;
@@ -103,6 +124,13 @@ export function EditorDeLaReceta({
   const lo = usarLectura<LoQuePuedeLlevar>('lo_que_puede_llevar', {}, que === 'escandallo');
   const esElaboracion = datos.tipo === 'elaboracion';
   const enLosPasos = que === 'pasos';
+  const empiezaVacia = datos.receta.lineas.length === 0;
+  const referencia = usarLectura<RecetasDeReferencia>(
+    'recetas_de_referencia',
+    {},
+    que === 'escandallo' && !esElaboracion && empiezaVacia,
+  );
+  const parecida = laRecetaQueSeParece(datos.nombre, referencia.data?.recetas ?? []);
 
   const [nombre, setNombre] = useState(datos.nombre);
   const [rinde, setRinde] = useState(
@@ -130,6 +158,12 @@ export function EditorDeLaReceta({
     datos.receta.minutos === null ? '' : String(datos.receta.minutos),
   );
   const [notas, setNotas] = useState(datos.receta.notas ?? '');
+  // La tanda (0092): de fábrica, una ración; plegado, «¿Es una receta de olla?».
+  const [esOlla, setEsOlla] = useState((datos.receta.raciones ?? 1) > 1);
+  const [raciones, setRaciones] = useState(
+    (datos.receta.raciones ?? 1) > 1 ? String(datos.receta.raciones) : '',
+  );
+  const [deEstook, setDeEstook] = useState<string | null>(null);
   const [buscando, setBuscando] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
@@ -174,6 +208,13 @@ export function EditorDeLaReceta({
   const sinCantidad = llenas.filter((f) => f.refId !== null && leerCantidad(f.cantidad) === null);
   const rindeLeido = leerCantidad(rinde);
   const minutosLeidos = minutos.trim() === '' ? null : Number.parseInt(minutos, 10);
+  const racionesLeidas = raciones.trim() === '' ? null : Number.parseInt(raciones, 10);
+  const racionesMal =
+    esOlla &&
+    (racionesLeidas === null ||
+      !Number.isInteger(racionesLeidas) ||
+      racionesLeidas < 2 ||
+      racionesLeidas > 1000);
   const minutosMal =
     minutosLeidos !== null &&
     (!Number.isInteger(minutosLeidos) || minutosLeidos < 1 || minutosLeidos > 2880);
@@ -181,6 +222,7 @@ export function EditorDeLaReceta({
     ? !minutosMal
     : sinElegir.length === 0 &&
       sinCantidad.length === 0 &&
+      !racionesMal &&
       (!esElaboracion || (rindeLeido !== null && nombre.trim() !== ''));
   const pasosEscritos = pasos
     .map((p) => ({ ...p, texto: p.texto.trim() }))
@@ -216,6 +258,8 @@ export function EditorDeLaReceta({
       ...(enLosPasos ? { foto_de_antes: pasosEscritos.map((p) => p.de) } : {}),
       notas: enLosPasos ? (notas.trim() === '' ? null : notas.trim()) : datos.receta.notas,
       tiempo_minutos: enLosPasos ? minutosLeidos : datos.receta.minutos,
+      // La tanda es del escandallo (0092): en los pasos viaja como estaba.
+      ...(esElaboracion || enLosPasos ? {} : { raciones: esOlla ? racionesLeidas : 1 }),
       ...(esElaboracion
         ? { nombre: nombre.trim(), rinde_cantidad: rindeLeido, rinde_unidad: rindeUnidad }
         : {}),
@@ -232,6 +276,38 @@ export function EditorDeLaReceta({
       return;
     }
     alGuardar(cambios.length === 0 ? 'Sin cambios' : 'Guardada');
+  }
+
+  function empezarDesdeLaDeEstook() {
+    if (parecida === null) return;
+    const productos = lo.data?.productos ?? [];
+    setFilas([
+      ...parecida.lineas.map((l): Fila => {
+        const propuesta = elProductoQueSeParece(l.producto, productos);
+        return {
+          clave: clave(),
+          tipo: null,
+          refId: null,
+          nombre: l.producto,
+          cantidad: comoSeEscribe(l.cantidad),
+          unidad: l.unidad,
+          nota: '',
+          conNota: false,
+          copiada: true,
+          ...(propuesta === null
+            ? {}
+            : {
+                propuesta: { id: propuesta.id, nombre: propuesta.nombre, unidad: propuesta.unidad },
+              }),
+        };
+      }),
+      VACIA(),
+    ]);
+    if (parecida.raciones > 1) {
+      setEsOlla(true);
+      setRaciones(String(parecida.raciones));
+    }
+    setDeEstook(parecida.nombre);
   }
 
   const titulo = enLosPasos
@@ -298,10 +374,74 @@ export function EditorDeLaReceta({
           </div>
         )}
 
+        {!enLosPasos && !esElaboracion && parecida !== null && llenas.length === 0 && (
+          <div className="flex flex-col items-start gap-e2 rounded-grande bg-fondo p-e4">
+            <p className="text-cuerpo font-semibold">
+              ¿Empezar desde «{parecida.nombre}» de Estook?
+            </p>
+            <p className="text-secundario text-texto-suave">
+              Para {parecida.raciones} {parecida.raciones === 1 ? 'ración' : 'raciones'} ·{' '}
+              {parecida.lineas.length} ingredientes. Luego eliges cuál de tus productos es cada uno,
+              y la cambias a tu gusto.
+            </p>
+            <Boton tono="secundario" onClick={empezarDesdeLaDeEstook}>
+              Empezar desde ella
+            </Boton>
+          </div>
+        )}
+
+        {!enLosPasos && deEstook !== null && (
+          <p className="text-secundario text-texto-suave">
+            Copiada de «{deEstook}». Elige en cada línea cuál de tus productos es.
+          </p>
+        )}
+
+        {!enLosPasos && !esElaboracion && (
+          <div className="flex flex-col gap-e2">
+            {esOlla ? (
+              <div className="flex flex-wrap items-end gap-e3">
+                <Campo
+                  etiqueta="Esta receta es para una tanda de"
+                  inputMode="numeric"
+                  value={raciones}
+                  placeholder="25"
+                  detras="raciones"
+                  onChange={(e) => {
+                    setRaciones(e.target.value.replace(/\D/g, ''));
+                  }}
+                  {...(raciones !== '' && racionesMal ? { error: 'Entre 2 y 1.000' } : {})}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEsOlla(false);
+                    setRaciones('');
+                  }}
+                  className="min-h-toque text-secundario font-semibold text-texto-suave underline decoration-borde-fuerte underline-offset-4 hover:text-texto"
+                >
+                  Es de una ración
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setEsOlla(true);
+                }}
+                className="flex min-h-toque items-center gap-e1 self-start text-secundario font-semibold text-texto-suave hover:text-texto"
+              >
+                <IconoAnadir size={16} />
+                ¿Es una receta de olla?
+              </button>
+            )}
+          </div>
+        )}
+
         {!enLosPasos && (
           <section aria-label="Lo que lleva" className="flex flex-col gap-e2">
             <h3 className="text-cuerpo font-semibold">
-              Lo que lleva{esElaboracion ? '' : ', por ración'}
+              Lo que lleva
+              {esElaboracion ? '' : esOlla ? ', la tanda entera' : ', por ración'}
             </h3>
             <ol className="flex flex-col gap-e2">
               {filas.map((fila, i) => (
@@ -468,6 +608,7 @@ function LineaQueSeEscribe({
     if (conPropuestas) propuestas.current?.scrollIntoView({ block: 'nearest' });
   }, [conPropuestas, opciones.length]);
   const sirven = fila.refId === null ? UNIDADES_DE_USO : unidadesQueSirven(fila.unidad);
+  const caja = useRef<HTMLInputElement>(null);
 
   return (
     <li className="flex flex-col gap-e1 border-b border-borde pb-e2 last:border-0">
@@ -477,6 +618,7 @@ function LineaQueSeEscribe({
             Ingrediente {numero}
           </label>
           <input
+            ref={caja}
             id={fila.clave}
             value={fila.nombre}
             placeholder={numero === 1 ? 'Carne picada, salsa de la casa…' : 'Otro ingrediente'}
@@ -526,6 +668,42 @@ function LineaQueSeEscribe({
           <IconoCerrar size={18} />
         </button>
       </div>
+
+      {fila.refId === null && fila.propuesta !== undefined && !conPropuestas && (
+        <button
+          type="button"
+          onClick={() => {
+            const p = fila.propuesta;
+            if (p === undefined) return;
+            const sirvenLasDos = unidadesQueSirven(p.unidad).includes(fila.unidad);
+            alCambiar({
+              ...fila,
+              tipo: 'producto',
+              refId: p.id,
+              nombre: p.nombre,
+              unidad: sirvenLasDos ? fila.unidad : (unidadesQueSirven(p.unidad)[0] ?? p.unidad),
+            });
+          }}
+          className="flex min-h-toque items-center gap-e1 self-start rounded-medio px-e2 text-secundario font-semibold text-texto-suave hover:bg-fondo hover:text-texto"
+        >
+          ¿Es tu «{fila.propuesta.nombre}»?
+        </button>
+      )}
+
+      {fila.refId === null &&
+        fila.copiada === true &&
+        fila.propuesta === undefined &&
+        !conPropuestas && (
+          <button
+            type="button"
+            onClick={() => {
+              caja.current?.focus();
+            }}
+            className="flex min-h-toque items-center gap-e1 self-start rounded-medio px-e2 text-secundario font-semibold text-atencion hover:bg-fondo"
+          >
+            ¿Cuál de tus productos es?
+          </button>
+        )}
 
       {conPropuestas && (
         <ul

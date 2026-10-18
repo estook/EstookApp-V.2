@@ -4,6 +4,7 @@ import { comisionDe, type CanalDeVenta } from './canales.ts';
 import { comoVaFrenteAlObjetivo, type Semaforo } from './objetivos.ts';
 import { cuadra } from './desviacion.ts';
 import type { UnidadDeUso } from './referencia.ts';
+import { parecido, sinAcentos } from './parecido.ts';
 
 /**
  * El escandallo (M9 · 2, decisiones 0086 y 0087).
@@ -432,6 +433,11 @@ export interface LineaQueSeLee {
 export interface RecetaQueSeLee {
   readonly nombre: string;
   readonly rinde: { readonly cantidad: number; readonly unidad: UnidadDeUso } | null;
+  /**
+   * De un plato: cuántas raciones salen tal como está escrita (una tanda, 0092). Vacío o
+   * ausente es una ración: lo guardado antes de M9 · 3 no lo lleva.
+   */
+  readonly raciones?: number | null;
   readonly lineas: readonly LineaQueSeLee[];
   readonly pasos: readonly string[];
   readonly notas: string | null;
@@ -459,6 +465,13 @@ export function queCambioEnLaReceta(antes: RecetaQueSeLee | null, ahora: RecetaQ
   ) {
     cambios.push(
       `Rinde: ${comoSeLeeLaCantidad(antes.rinde.cantidad, antes.rinde.unidad)} → ${comoSeLeeLaCantidad(ahora.rinde.cantidad, ahora.rinde.unidad)}`,
+    );
+  }
+  const racionesAntes = antes.raciones ?? 1;
+  const racionesAhora = ahora.raciones ?? 1;
+  if (racionesAntes !== racionesAhora) {
+    cambios.push(
+      `Para: ${comoSeLeenLasRaciones(racionesAntes)} → ${comoSeLeenLasRaciones(racionesAhora)}`,
     );
   }
   const deAntes = new Map(antes.lineas.map((l) => [l.id, l]));
@@ -491,7 +504,13 @@ export function queCambioEnLaReceta(antes: RecetaQueSeLee | null, ahora: RecetaQ
 export interface VendidoConSuReceta {
   /** Lo que llevaba **ese día** (Manifiesto 13: nunca se recalcula el pasado). */
   readonly lineas: readonly LineaDelEscandallo[];
+  /** Las raciones vendidas. */
   readonly raciones: number;
+  /**
+   * Para cuántas raciones estaba escrita la receta ese día (una tanda, 0092). Sin ella,
+   * una: vender una ración de un puchero escrito para 25 gasta la veinticincoava parte.
+   */
+  readonly racionesDeLaReceta?: number | null;
 }
 
 /**
@@ -528,7 +547,9 @@ export function loQueDebiaGastarse(
       bajar(elaboracion.lineas, (veces * cuanto) / elaboracion.rindeCantidad, [...camino, id]);
     }
   };
-  for (const vendido of vendidos) bajar(vendido.lineas, vendido.raciones, []);
+  for (const vendido of vendidos) {
+    bajar(vendido.lineas, vendido.raciones / Math.max(vendido.racionesDeLaReceta ?? 1, 1), []);
+  }
   return new Map([...debia].map(([id, cuanto]) => [id, Number(cuanto.toFixed(4))]));
 }
 
@@ -573,3 +594,231 @@ export function desviacionDeLosPlatos(
  * plato a plato de Estook TPV (M20) se enciende aquí, y la pantalla la enseña sola.
  */
 export const DESVIACION_DE_LOS_PLATOS_A_LA_VISTA = false;
+
+// ── M9 · 3 · la tanda y escalar (0092 y 0093) ─────────────────────────────────
+
+/** «1 ración», «una tanda de 25 raciones». */
+export function comoSeLeenLasRaciones(raciones: number): string {
+  return raciones <= 1 ? '1 ración' : `una tanda de ${String(raciones)} raciones`;
+}
+
+/**
+ * Lo que cuesta **una** ración de una receta escrita para `raciones` (una olla que sale
+ * para 25): el escandallo dice siempre lo de una ración (0092). Sin precio, nulo.
+ */
+export function porRacion(
+  milesimas: number | null,
+  raciones: number | null | undefined,
+): number | null {
+  if (milesimas === null) return null;
+  return milesimas / Math.max(raciones ?? 1, 1);
+}
+
+/**
+ * Raciones para escribir o imprimir: enteras y nunca menos de una («PDF para 12»), o con
+ * un decimal si vienen de escalar por un ingrediente («para 12,4»).
+ */
+export function racionesRedondeadas(raciones: number, decimales: 0 | 1 = 0): number {
+  const veces = decimales === 1 ? 10 : 1;
+  return Math.max(Math.round(raciones * veces) / veces, decimales === 1 ? 0.1 : 1);
+}
+
+/**
+ * Cuánto se multiplica la receta para hacer `quiero` raciones, si está escrita para
+ * `escrita`: para 40 croquetas de una receta de 40, 1; para 10, 0,25.
+ */
+export function factorParaRaciones(quiero: number, escrita: number | null | undefined): number {
+  return quiero / Math.max(escrita ?? 1, 1);
+}
+
+/**
+ * Cuánto se multiplica la receta para gastar `tengo` de un ingrediente que lleva
+ * `lleva` (como meez: «tengo 3 kg de carrillera»). Nulo si las dos no son de la misma
+ * familia o si no hay nada que repartir.
+ */
+export function factorParaUnIngrediente(
+  lleva: { readonly cantidad: number; readonly unidad: UnidadDeUso },
+  tengo: { readonly cantidad: number; readonly unidad: UnidadDeUso },
+): number | null {
+  const enLaSuya = convertir(tengo.cantidad, tengo.unidad, lleva.unidad);
+  if (enLaSuya === null || lleva.cantidad <= 0 || enLaSuya <= 0) return null;
+  return enLaSuya / lleva.cantidad;
+}
+
+/**
+ * Una cantidad escalada, lista para leer: lo que va en unidades, **a la media unidad**
+ * (7,5 huevos se entienden; 7,38 no), y lo demás como siempre, en kilos desde mil
+ * gramos (`comoSeLeeLaCantidad`). El tiempo no se escala: no pasa por aquí.
+ */
+export function comoSeLeeEscalada(cantidad: number, unidad: UnidadDeUso, factor: number): string {
+  const escalada = cantidad * factor;
+  if (unidad === 'ud') {
+    return comoSeLeeLaCantidad(Math.max(Math.round(escalada * 2) / 2, 0.5), unidad);
+  }
+  return comoSeLeeLaCantidad(escalada, unidad);
+}
+
+/**
+ * El coste **aproximado** de un plato que todavía no tiene escandallo: su precio sin IVA
+ * por tu objetivo de coste (0095). Un plato de 12 € (10,91 sin IVA) con objetivo del 30 %
+ * «costará ~3,27 €». Se enseña marcado «aprox.» y **no entra en ningún cálculo**.
+ */
+export function costeAproximado(
+  precioSinIvaCentimos: number | null,
+  objetivo: number | null,
+): Centimos | null {
+  if (precioSinIvaCentimos === null || objetivo === null || objetivo <= 0) return null;
+  return centimos(Math.round(precioSinIvaCentimos * objetivo));
+}
+
+// ── M9 · 3 · qué ha cambiado y la raya (0092, 1B) ────────────────────────────
+
+/** Lo que cruza un plato de un día a otro: pasar del objetivo o perder dinero en un canal. */
+export interface RayaQueCruza {
+  readonly que: 'objetivo' | 'canal';
+  /** El canal donde empieza a perder; nulo si es el objetivo. */
+  readonly canal: CanalDeVenta | null;
+}
+
+/**
+ * Las rayas que un plato **cruza hacia lo malo** entre dos escandallos: estaba dentro
+ * del objetivo y ahora pasa de él; o en un canal no perdía y ahora pierde. Lo que ya
+ * estaba mal no se repite, lo que no se sabía (sin precio) no cuenta, y volver a lo
+ * bueno no va a la campana (0092): así sale una vez por plato y por raya.
+ */
+export function rayasQueCruza(
+  antes: Pick<EscandalloDelPlato, 'foodCost' | 'canales'> | null,
+  ahora: Pick<EscandalloDelPlato, 'foodCost' | 'canales'>,
+  objetivo: number | null,
+): RayaQueCruza[] {
+  const rayas: RayaQueCruza[] = [];
+  if (antes === null) return rayas;
+  if (objetivo !== null && objetivo > 0) {
+    const raya = objetivo * 100;
+    if (
+      antes.foodCost !== null &&
+      antes.foodCost <= raya &&
+      ahora.foodCost !== null &&
+      ahora.foodCost > raya
+    ) {
+      rayas.push({ que: 'objetivo', canal: null });
+    }
+  }
+  const perdia = new Set(antes.canales.filter((c) => c.pierde).map((c) => c.canal));
+  const sabia = new Set(antes.canales.filter((c) => c.margenCentimos !== null).map((c) => c.canal));
+  for (const c of ahora.canales) {
+    if (c.pierde && sabia.has(c.canal) && !perdia.has(c.canal)) {
+      rayas.push({ que: 'canal', canal: c.canal });
+    }
+  }
+  return rayas;
+}
+
+/** Lo que movió el coste de una ración un ingrediente entre dos fechas, en milésimas. */
+export interface LoQueMovioUnIngrediente {
+  readonly id: string;
+  readonly nombre: string;
+  readonly milesimas: number;
+}
+
+/**
+ * El ingrediente que más ha movido el coste de una ración **por su precio**: con la
+ * receta de hoy, lo que cuesta cada línea hoy menos lo que costaba entonces. Si lo que
+ * movió el coste fue la receta, no es ningún ingrediente: nulo, y lo dice quien llama.
+ * Por debajo de un céntimo, nada.
+ */
+export function elQueMasLoMovio(
+  lineas: readonly (LineaDelEscandallo & { readonly nombre: string })[],
+  hoy: LibroDeRecetas,
+  entonces: LibroDeRecetas,
+  raciones: number | null | undefined,
+): LoQueMovioUnIngrediente | null {
+  let elMayor: LoQueMovioUnIngrediente | null = null;
+  for (const linea of lineas) {
+    const ahora = costeDeLaReceta([linea], hoy).milesimas;
+    const antes = costeDeLaReceta([linea], entonces).milesimas;
+    if (ahora === null || antes === null) continue;
+    const movio = (ahora - antes) / Math.max(raciones ?? 1, 1);
+    if (elMayor === null || Math.abs(movio) > Math.abs(elMayor.milesimas)) {
+      elMayor = {
+        id: linea.productoId ?? linea.elaboracionId ?? '',
+        nombre: linea.nombre,
+        milesimas: movio,
+      };
+    }
+  }
+  return elMayor !== null && Math.abs(elMayor.milesimas) >= 1000 ? elMayor : null;
+}
+
+// ── M9 · 3 · la receta de Estook (0092, 2B) ──────────────────────────────────
+
+const PALABRAS_QUE_NO_DICEN_NADA: ReadonlySet<string> = new Set([
+  'de',
+  'del',
+  'la',
+  'el',
+  'las',
+  'los',
+  'a',
+  'al',
+  'con',
+  'y',
+  'en',
+]);
+
+/** Las palabras que dicen algo de un nombre de plato: sin artículos y en singular. */
+function lasPalabrasDelPlato(nombre: string): ReadonlySet<string> {
+  return new Set(
+    sinAcentos(nombre)
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .trim()
+      .split(' ')
+      .filter((p) => p !== '' && !PALABRAS_QUE_NO_DICEN_NADA.has(p))
+      .map((p) => (p.length > 3 && p.endsWith('s') ? p.slice(0, -1) : p)),
+  );
+}
+
+/**
+ * La receta de Estook que se llama como el plato: todas las palabras de uno están en el
+ * otro. «Tortilla» o «Tortilla de patatas» → la tortilla de Estook; «Croquetas de
+ * boletus» no es «Croquetas de jamón». Solo **se ofrece**: copiarla es cosa de quien
+ * escribe (0092, 2B).
+ */
+export function laRecetaQueSeParece<T extends { readonly nombre: string }>(
+  plato: string,
+  recetas: readonly T[],
+): T | null {
+  const delPlato = lasPalabrasDelPlato(plato);
+  if (delPlato.size === 0) return null;
+  const todasEn = (a: ReadonlySet<string>, b: ReadonlySet<string>) => [...a].every((p) => b.has(p));
+  for (const receta of recetas) {
+    const deLaReceta = lasPalabrasDelPlato(receta.nombre);
+    if (deLaReceta.size === 0) continue;
+    if (todasEn(delPlato, deLaReceta) || todasEn(deLaReceta, delPlato)) return receta;
+  }
+  return null;
+}
+
+/**
+ * El parecido mínimo para **proponer** un producto tuyo para un ingrediente de la receta
+ * de Estook: el umbral con que el buscador de Estook encuentra con media palabra
+ * (`estook.buscar`, 0,18 de pg_trgm).
+ */
+export const PARECIDO_PARA_PROPONER = 0.18;
+
+/**
+ * El producto tuyo que más se parece a un ingrediente de la receta de Estook, para
+ * proponerlo: «Huevo» → «Huevos camperos». Lo confirma quien escribe. Por debajo del
+ * umbral, ninguno: mejor preguntar que proponer mal.
+ */
+export function elProductoQueSeParece<T extends { readonly nombre: string }>(
+  ingrediente: string,
+  productos: readonly T[],
+): T | null {
+  let mejor: { producto: T; cuanto: number } | null = null;
+  for (const producto of productos) {
+    const cuanto = parecido(ingrediente, producto.nombre);
+    if (mejor === null || cuanto > mejor.cuanto) mejor = { producto, cuanto };
+  }
+  return mejor !== null && mejor.cuanto >= PARECIDO_PARA_PROPONER ? mejor.producto : null;
+}

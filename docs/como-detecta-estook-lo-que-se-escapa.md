@@ -4,7 +4,7 @@
 > plato a plato ([0092](decisiones/0092-las-respuestas-de-m9-3.md)). Lo pidió Richi el 17-oct-2026
 > con la respuesta 3C de M9 · 3: **sin porcentajes inventados, sin falsas alarmas, contando con que
 > al principio no hay datos para aprender**, y **sin complicar Estook** ([0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)).
-> Al final, dos preguntas.
+> Sus dos preguntas, contestadas el 18-oct ([0094](decisiones/0094-la-prueba-de-la-plantilla.md)).
 
 ---
 
@@ -55,10 +55,10 @@ Un producto, en un periodo, es **fiable** si se cumplen las seis:
 
 Si falta alguna, **la diferencia se enseña igual**, en gris y con la frase de lo que falta:
 «Para vigilar esto, faltan los escandallos de _Pulpo especial_ y _Croquetas del día_». Con
-**«Desgranar»** al lado. Así el aviso que no sale **se convierte en una tarea útil**, no en un
+**«Desgranar»** al lado (y, si se decide, «Con Fogón»: [la propuesta](fogon-en-cada-sitio.md)). Así el aviso que no sale **se convierte en una tarea útil**, no en un
 silencio.
 
-**«Todo lo vendido con escandallo» es exigente a propósito** (pregunta 1): un aviso con recetas
+**«Todo lo vendido con escandallo» es exigente a propósito** (Richi: A, 0094): un aviso con recetas
 incompletas es justo la falsa alarma que se quiere evitar. Lo que se vende tal cual vale como
 escandallo (está vinculado), y el artículo libre del TPV no cuenta.
 
@@ -196,7 +196,7 @@ la sala y los empleados; no quiero que sea restrictivo y que la odien».
   1 ración; escalar tocando un ingrediente no se ve hasta que tocas una cantidad; y la receta de
   Estook solo se ofrece si tu plato se llama como una de las diez.
 
-### La prueba de la plantilla, para todo lo que venga (pregunta 2)
+### La prueba de la plantilla, para todo lo que venga (en el Plan desde la 0094)
 
 Antes de construir cualquier cosa, seis preguntas. Si alguna sale mal, se rehace el diseño:
 
@@ -231,29 +231,9 @@ Antes de construir cualquier cosa, seis preguntas. Si alguna sale mal, se rehace
 
 ---
 
-## Las dos preguntas
+## Las dos preguntas, contestadas (18-oct, [0094](decisiones/0094-la-prueba-de-la-plantilla.md))
 
-### 1 · ¿Te vale así?
-
-**De qué va.** Los cuatro filtros y la fuga constante de arriba. La decisión más exigente es la del
-filtro 1: **Estook solo vigila cuando todo lo que se vende tiene escandallo**. Ejemplo: si el jueves
-sacas unas «Croquetas del día» sin escandallo, ese periodo no avisa, y te dice «falta el escandallo
-de Croquetas del día».
-
-- **A** · Así, entero.
-- **B** · Más suelto: avisar aunque falte algún escandallo, diciendo cuáles faltan. Avisa antes, pero
-  puede dar falsas alarmas (Estook cree que se gastó menos de lo que se gastó).
-
-**Recomiendo A.** Una falsa alarma quita la confianza en todas las demás. **Lo que decides: A o B.**
-
-### 2 · La prueba de la plantilla, ¿al Plan?
-
-**De qué va.** Las seis preguntas de «La prueba de la plantilla». Hoy el Plan tiene las preguntas de
-la regla 14 (qué datos usa, quién se entera, qué aprueba una persona…), pero **ninguna pregunta
-por el trabajo que le cae a la plantilla ni por si algo bloquea**.
-
-- **A** · Sí: se añaden a la regla 14 del Plan, y cada plan nuevo las contesta.
-- **B** · No hace falta.
-
-**Recomiendo A.** Es lo que evita que Estook se vaya complicando sin que nadie lo decida. **Lo que
-decides: A o B.**
+1. **Solo vigila un periodo cuando todo lo vendido tiene escandallo: A.** Cuándo se vende algo sin
+   escandallo aunque la Carta y el escandallo estén unidos (un plato nuevo, uno del día, el
+   artículo libre, la caja sin emparejar), en la 0094.
+2. **La prueba de la plantilla entra en el Plan: A.** Son las preguntas 16 a 22 de la regla 14.

@@ -30,6 +30,8 @@ export interface PlatoEnLaLista {
     readonly foodCost: number | null;
     readonly semaforo: Semaforo;
     readonly pierdeEn: readonly string[];
+    /** Sin escandallo: precio sin IVA × tu objetivo, **aproximado** (0095). */
+    readonly costeAproxCentimos?: number | null;
   };
 }
 
@@ -152,6 +154,8 @@ export interface UnaFicha {
     readonly fotosDeLosPasos?: readonly (string | null)[];
     readonly notas: string | null;
     readonly minutos: number | null;
+    /** Para cuántas raciones está escrita (una tanda, 0092). Una API de antes no lo manda. */
+    readonly raciones?: number;
   };
   readonly alergenos: readonly Alergeno[];
   readonly alergenosDeLaCarta: readonly Alergeno[];
@@ -261,4 +265,37 @@ const CUANDO = new Intl.DateTimeFormat('es-ES', {
 
 export function comoSeLeeElCuando(iso: string): string {
   return CUANDO.format(new Date(iso));
+}
+
+/** Las recetas de Estook (catálogo de referencia), para empezar desde una (M9 · 3, 0092). */
+export interface RecetasDeReferencia {
+  readonly recetas: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly raciones: number;
+    readonly lineas: readonly {
+      readonly producto: string;
+      readonly cantidad: number;
+      readonly unidad: UnidadDeUso;
+    }[];
+  }[];
+}
+
+/** Qué ha cambiado en el coste de cada plato (M9 · 3, 0092 · 1B). */
+export interface QueHaCambiado {
+  readonly dias: number;
+  readonly desde: string;
+  readonly objetivo: number | null;
+  readonly platos: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly antesCentimos: number;
+    readonly ahoraCentimos: number;
+    readonly diferenciaCentimos: number;
+    readonly foodCostAntes: number | null;
+    readonly foodCostAhora: number | null;
+    readonly porQue: { readonly nombre: string; readonly centimos: number } | null;
+    readonly cambioLaReceta: boolean;
+    readonly cruza: readonly { readonly que: 'objetivo' | 'canal'; readonly texto: string }[];
+  }[];
 }

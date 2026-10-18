@@ -61,11 +61,6 @@ const NO_LAS_LLAMA_NADIE: Readonly<Record<string, string>> = {
   // y no desde una pantalla: es el latido que dice si hay servidor.
   salud: 'La llama el cliente de la API, no una pantalla',
 
-  // Las recetas de referencia son de M5 y su consumidor es M9, que es quien
-  // copia una receta a una ficha técnica. Está dicho en ESTADO.md, sin redondear:
-  // «`recetas_de_referencia` no la consume nadie todavía, y se deja a propósito».
-  recetas_de_referencia: 'La consume M9, que es quien copia una receta a una ficha técnica',
-
   // Emparejar una línea de la caja con su producto (M8, 0079). Richi eligió la A el
   // 9-oct (0080): no se enseña hasta que la caja traiga las ventas sola, con Estook TPV.
   emparejar_concepto: 'Vuelve a una pantalla con Estook TPV (0080)',

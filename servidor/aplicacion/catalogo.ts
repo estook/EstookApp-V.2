@@ -175,8 +175,10 @@ import { miCarta, unPlato } from './consultas/mi-carta.ts';
 import {
   laDesviacionDeLosPlatos,
   laFichaEnPdf,
+  lasFichasEnPdf,
   loQuePuedeLlevar,
   misFichas,
+  queHaCambiado,
   unaFicha,
 } from './consultas/escandallos.ts';
 import {
@@ -371,6 +373,10 @@ export const catalogo = {
     [loQuePuedeLlevar.nombre]: loQuePuedeLlevar,
     [laFichaEnPdf.nombre]: laFichaEnPdf,
     [laDesviacionDeLosPlatos.nombre]: laDesviacionDeLosPlatos,
+    // M9 · 3 (0092 y 0093): todas las fichas técnicas en un PDF para encuadernar, y qué
+    // ha cambiado en el coste de cada plato.
+    [lasFichasEnPdf.nombre]: lasFichasEnPdf,
+    [queHaCambiado.nombre]: queHaCambiado,
     // M6½ · la merma, que el libro sabia guardar y no habia forma de apuntar.
     [mermaDeHoy.nombre]: mermaDeHoy,
     [misMermas.nombre]: misMermas,

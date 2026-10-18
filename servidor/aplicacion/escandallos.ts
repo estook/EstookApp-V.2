@@ -4,6 +4,7 @@ import {
   escandalloDelPlato,
   costeDeLaReceta,
   fechaEnElLocal,
+  porRacion,
   precioEnElCanal,
   type CanalParaElMargen,
   type ElaboracionDelEscandallo,
@@ -49,6 +50,8 @@ export interface RecetaLeida {
   readonly version: number;
   /** Si el plato se vende tal como se guarda (0088). */
   readonly talCual: boolean;
+  /** Cuántas raciones salen tal como está escrita: 1, o una tanda (0092). */
+  readonly raciones: number;
   readonly lineas: readonly LineaLeida[];
 }
 
@@ -99,6 +102,7 @@ export async function lasRecetasDelLocal(
       tiempo_minutos: number | null;
       version: number;
       tal_cual: boolean;
+      raciones: number | null;
       lineas: {
         id: string;
         producto_id: string | null;
@@ -110,7 +114,7 @@ export async function lasRecetasDelLocal(
     }[]
   >`
     select r.id, r.plato_id, r.elaboracion_id, r.pasos, r.fotos_de_los_pasos, r.notas,
-           r.tiempo_minutos, r.version, r.tal_cual,
+           r.tiempo_minutos, r.version, r.tal_cual, r.raciones,
            coalesce(
              json_agg(json_build_object(
                'id', l.id, 'producto_id', l.producto_id, 'elaboracion_id', l.elaboracion_id,
@@ -133,6 +137,7 @@ export async function lasRecetasDelLocal(
     minutos: f.tiempo_minutos,
     version: f.version,
     talCual: f.tal_cual,
+    raciones: f.raciones ?? 1,
     lineas: f.lineas.map((l) => ({
       id: l.id,
       productoId: l.producto_id,
@@ -342,7 +347,11 @@ export async function loDeLaCuenta(contexto: Contexto, localId: string): Promise
   };
 }
 
-/** El escandallo de un plato con sus precios: el coste, el food cost y el margen por canal. */
+/**
+ * El escandallo de un plato con sus precios: el coste, el food cost y el margen por canal.
+ * **De una ración**: si la receta está escrita para una tanda, se divide (0092). Las
+ * líneas, en cambio, cuestan lo que pone la receta: lo de la tanda entera.
+ */
 export function elEscandalloDe(
   receta: RecetaLeida | undefined,
   plato: {
@@ -367,7 +376,7 @@ export function elEscandalloDe(
   });
   return {
     ...escandalloDelPlato({
-      costeMilesimas: conLineas ? coste.milesimas : null,
+      costeMilesimas: conLineas ? porRacion(coste.milesimas, receta?.raciones) : null,
       faltanPrecios: coste.faltanPrecios,
       precioSalaCentimos: plato.precioCentimos,
       iva: cuenta.iva,
@@ -405,6 +414,8 @@ export function comoSeGuarda(
     readonly pasos: readonly string[];
     readonly notas: string | null;
     readonly minutos: number | null;
+    /** De un plato: para cuántas raciones está escrita; nula si es una (0092). */
+    readonly raciones?: number | null;
   },
   nombres: {
     readonly productos: ReadonlyMap<string, { readonly nombre: string }>;
@@ -414,6 +425,9 @@ export function comoSeGuarda(
   return {
     nombre,
     rinde,
+    ...(receta.raciones === undefined || receta.raciones === null || receta.raciones <= 1
+      ? {}
+      : { raciones: receta.raciones }),
     lineas: receta.lineas.map((l) => {
       const esProducto = l.productoId !== null;
       const id = (esProducto ? l.productoId : l.elaboracionId) ?? '';
@@ -443,4 +457,108 @@ export function lineasDeLoGuardado(guardada: RecetaGuardada): LineaDelEscandallo
     cantidad: l.cantidad,
     unidad: l.unidad,
   }));
+}
+
+// ── El libro de otro día (M9 · 3, «qué ha cambiado», 0092) ───────────────────
+
+export interface RecetaDeOtroDia {
+  readonly lineas: readonly (LineaDelEscandallo & { readonly nombre: string })[];
+  readonly raciones: number;
+}
+
+export interface ElLibroDeOtroDia {
+  /** Los productos con **lo que costaban entonces**, y las elaboraciones de hoy. */
+  readonly libro: LibroDeRecetas;
+  /** La receta que tenía cada plato entonces: la última guardada antes de esa hora. */
+  readonly recetaDelPlato: ReadonlyMap<string, RecetaDeOtroDia>;
+}
+
+/**
+ * Lo que costaba cada producto y cómo era la receta de cada plato **a una hora pasada**,
+ * para comparar con hoy sin recalcular el pasado con precios de hoy (Manifiesto 13).
+ *
+ * El coste de un producto entonces sale como el de hoy: el precio medio con que quedó la
+ * cámara tras su último movimiento de antes de esa hora, y si entró sin coste, el precio
+ * que valía ese día (`precio_de_producto`, con su `desde` y su `hasta`). Las elaboraciones,
+ * con lo que llevan hoy: están paradas (0090) y casi nadie las tiene.
+ */
+export async function elLibroDeOtroDia(
+  contexto: Contexto,
+  localId: string,
+  instante: Date,
+  zonaHoraria: string,
+  hoy: ElLibro,
+): Promise<ElLibroDeOtroDia> {
+  const fecha = fechaEnElLocal(instante, zonaHoraria);
+  const [costes, guardadas] = await Promise.all([
+    contexto.sql<{ id: string; coste: string | null }[]>`
+      select p.id, coalesce(nullif(m.coste_medio_despues, 0), v.coste_milesimas)::text as coste
+        from estook.producto p
+        left join lateral (
+          select x.coste_medio_despues from estook.movimiento_de_stock x
+           where x.producto_id = p.id and x.ocurrido_en <= ${instante.toISOString()}::timestamptz
+           order by x.ocurrido_en desc, x.id desc
+           limit 1
+        ) m on true
+        left join lateral (
+          select pr.coste_milesimas from estook.precio_de_producto pr
+           where pr.producto_id = p.id and pr.desde <= ${fecha}::date
+             and (pr.hasta is null or pr.hasta >= ${fecha}::date)
+           order by case when p.proveedor_id is not null and pr.proveedor_id = p.proveedor_id
+                         then 0 else 1 end,
+                    pr.desde desc, pr.creado_en desc
+           limit 1
+        ) v on true
+       where p.local_id = ${localId}::uuid
+    `,
+    contexto.sql<{ plato_id: string; contenido: RecetaGuardada }[]>`
+      select distinct on (g.receta_id) r.plato_id, g.contenido
+        from estook.receta_guardada g
+        join estook.receta r on r.id = g.receta_id
+       where g.local_id = ${localId}::uuid and r.plato_id is not null
+         and g.guardada_en <= ${instante.toISOString()}::timestamptz
+       order by g.receta_id, g.version desc
+    `,
+  ]);
+  const costeEntonces = new Map(
+    costes.map((c) => [c.id, c.coste === null ? null : Number(c.coste)]),
+  );
+  const productos = new Map<string, ProductoDelEscandallo>(
+    [...hoy.libro.productos.values()].map((p) => [
+      p.id,
+      { ...p, costeMilesimas: costeEntonces.get(p.id) ?? null },
+    ]),
+  );
+  return {
+    libro: { productos, elaboraciones: hoy.libro.elaboraciones },
+    recetaDelPlato: new Map(
+      guardadas.map((g) => [
+        g.plato_id,
+        {
+          lineas: g.contenido.lineas.map((l) => ({
+            productoId: l.tipo === 'producto' ? l.id : null,
+            elaboracionId: l.tipo === 'elaboracion' ? l.id : null,
+            cantidad: l.cantidad,
+            unidad: l.unidad,
+            nombre: l.nombre,
+          })),
+          raciones: g.contenido.raciones ?? 1,
+        },
+      ]),
+    ),
+  };
+}
+
+/** Si la receta de hoy es otra que la de entonces: otras líneas, otras cantidades u otra tanda. */
+export function cambioLaReceta(entonces: RecetaDeOtroDia, hoy: RecetaLeida): boolean {
+  const comoQueda = (lineas: readonly LineaDelEscandallo[], raciones: number): string =>
+    JSON.stringify({
+      raciones,
+      lineas: lineas
+        .map(
+          (l) => `${l.productoId ?? ''}|${l.elaboracionId ?? ''}|${String(l.cantidad)}|${l.unidad}`,
+        )
+        .sort(),
+    });
+  return comoQueda(entonces.lineas, entonces.raciones) !== comoQueda(hoy.lineas, hoy.raciones);
 }

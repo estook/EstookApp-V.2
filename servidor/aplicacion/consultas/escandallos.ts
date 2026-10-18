@@ -6,14 +6,22 @@ import {
   aCentimos,
   alergenosDeLaReceta,
   comoPrecioPorUnidad,
+  comoSeLeeEscalada,
   comoSeLeeLaCantidad,
+  costeAproximado,
   costeDeLaReceta,
   costePorUnidadDeLaElaboracion,
   desviacionDeLosPlatos,
+  elQueMasLoMovio,
   enMilesimasEnteras,
+  escandalloDelPlato,
+  factorParaRaciones,
+  fechaEnElLocal,
   loQueDebiaGastarse,
   mediaEnPuntos,
   parteDelCoste,
+  porRacion,
+  rayasQueCruza,
   type Alergeno,
   type CanalDeVenta,
   type FechaOperativa,
@@ -21,17 +29,20 @@ import {
   type UnidadDeUso,
   type VendidoConSuReceta,
 } from '@estook/dominio';
-import { documentoDeLaFicha } from '@estook/documentos';
+import { documentoDeLaFicha, documentoDeLasFichas, type DatosDeLaFicha } from '@estook/documentos';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
 import { hacerElPdf, hechoEl, laMarcaDelLocal, type UnPdf } from '../documentos.ts';
 import {
+  cambioLaReceta,
   elEscandalloDe,
+  elLibroDeOtroDia,
   elLibroDelLocal,
   elLocalDeEscandallos,
   lineasDeLoGuardado,
   loDeLaCuenta,
   type ElLibro,
+  type LoDeLaCuenta,
   type RecetaGuardada,
 } from '../escandallos.ts';
 import { comoSeLeeElVinculo, losPlatos, type UnPlato } from './mi-carta.ts';
@@ -83,6 +94,11 @@ export interface CosteEnLaLista {
   readonly semaforo: Semaforo;
   /** Los canales donde, al precio de hoy, se pierde dinero. */
   readonly pierdeEn: readonly string[];
+  /**
+   * Sin escandallo: precio sin IVA × tu objetivo, **aproximado** (0095). No entra en
+   * ninguna cifra; solo se enseña en «Sin ficha».
+   */
+  readonly costeAproxCentimos?: number | null;
 }
 
 export interface PlatoEnLaLista {
@@ -188,6 +204,14 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
           foodCost: escandallo.foodCost,
           semaforo: escandallo.semaforo,
           pierdeEn: escandallo.canales.filter((c) => c.pierde).map((c) => c.nombre),
+          ...(p.tieneFicha
+            ? {}
+            : {
+                costeAproxCentimos: costeAproximado(
+                  escandallo.precioSinIvaCentimos,
+                  cuenta.objetivo,
+                ),
+              }),
         },
       };
     });
@@ -328,6 +352,8 @@ export interface UnaFicha {
     readonly fotosDeLosPasos: readonly (string | null)[];
     readonly notas: string | null;
     readonly minutos: number | null;
+    /** Para cuántas raciones está escrita: 1, o una tanda (0092). */
+    readonly raciones: number;
   };
   /** Los de la receta y los puestos a mano en la carta, en el orden oficial. */
   readonly alergenos: readonly Alergeno[];
@@ -388,10 +414,15 @@ const entradaDeUnaFicha = z
 
 type EntradaDeUnaFicha = z.infer<typeof entradaDeUnaFicha>;
 
-async function laFicha(contexto: Contexto, entrada: EntradaDeUnaFicha): Promise<UnaFicha> {
+async function laFicha(
+  contexto: Contexto,
+  entrada: EntradaDeUnaFicha,
+  /** Para muchas fichas seguidas (el libro de fichas): lo leído una vez. */
+  yaLeido?: { readonly puede: Awaited<ReturnType<typeof conCostes>>; readonly libro: ElLibro },
+): Promise<UnaFicha> {
   const localId = elLocalDeEscandallos(contexto);
-  const puede = await conCostes(contexto, localId);
-  const libro = await elLibroDelLocal(contexto, localId, puede.costes);
+  const puede = yaLeido?.puede ?? (await conCostes(contexto, localId));
+  const libro = yaLeido?.libro ?? (await elLibroDelLocal(contexto, localId, puede.costes));
 
   let plato: UnPlato | undefined;
   let seccion: string | null = null;
@@ -532,6 +563,7 @@ async function laFicha(contexto: Contexto, entrada: EntradaDeUnaFicha): Promise<
       }),
       notas: receta?.notas ?? null,
       minutos: receta?.minutos ?? null,
+      raciones: receta?.raciones ?? 1,
     },
     alergenos: enOrdenOficial([...alergenosDeLaReceta_, ...(plato?.alergenos ?? [])]),
     alergenosDeLaCarta: enOrdenOficial(plato?.alergenos ?? []),
@@ -611,42 +643,70 @@ export const loQuePuedeLlevar = consulta<Record<string, never>, LoQuePuedeLlevar
 
 // ═══ La ficha en PDF ══════════════════════════════════════════════════════════
 
-export const laFichaEnPdf = consulta<EntradaDeUnaFicha, UnPdf>({
+/**
+ * Lo que va al papel de una ficha, **sin un euro** (0087): solo nombres, cantidades ya
+ * escritas y los pasos. Escalada a `para` raciones si se pide (0092): las cantidades
+ * cambian y el título lo dice; el tiempo no se escala.
+ */
+function laFichaEnPapel(
+  ficha: UnaFicha,
+  para: number | null,
+): Omit<DatosDeLaFicha, 'marca' | 'hechoEl'> {
+  const escrita = ficha.receta.raciones;
+  const factor = para === null ? 1 : factorParaRaciones(para, escrita);
+  const paraCuantas = para !== null ? para : escrita > 1 ? escrita : null;
+  return {
+    nombre: ficha.nombre,
+    queEs:
+      ficha.tipo === 'plato'
+        ? `Ficha técnica${ficha.seccion === null ? '' : ` · ${ficha.seccion}`}${paraCuantas === null ? '' : ` · para ${String(paraCuantas)} ${paraCuantas === 1 ? 'ración' : 'raciones'}`}`
+        : `Elaboración${ficha.rinde === null ? '' : ` · rinde ${comoSeLeeLaCantidad(ficha.rinde.cantidad, ficha.rinde.unidad)}`}`,
+    foto: ficha.foto,
+    minutos: ficha.receta.minutos,
+    racion:
+      ficha.unidadesPorRacion === null ? null : `${String(ficha.unidadesPorRacion)} ud por ración`,
+    alergenos: ficha.alergenos.map((a) => NOMBRE_DEL_ALERGENO[a]),
+    picante: ficha.picante,
+    ingredientes: ficha.receta.lineas.map((l) => ({
+      nombre: l.nombre,
+      cantidad: comoSeLeeEscalada(l.cantidad, l.unidad, factor),
+      nota: l.nota,
+      esElaboracion: l.tipo === 'elaboracion',
+    })),
+    pasos: ficha.receta.pasos,
+    fotosDeLosPasos: ficha.receta.fotosDeLosPasos,
+    notas: ficha.receta.notas,
+  };
+}
+
+const entradaDelPdf = z
+  .object({
+    plato_id: z.string().uuid().optional(),
+    elaboracion_id: z.string().uuid().optional(),
+    /** Para cuántas raciones, si se escala (0092). Sin él, como está escrita. */
+    para: z.coerce.number().int().min(1).max(1000).optional(),
+  })
+  .strict()
+  .refine((e) => (e.plato_id === undefined) !== (e.elaboracion_id === undefined), {
+    message: 'Una ficha es de un plato o de una elaboración.',
+  });
+
+export const laFichaEnPdf = consulta<z.infer<typeof entradaDelPdf>, UnPdf>({
   nombre: 'la_ficha_en_pdf',
-  entrada: entradaDeUnaFicha,
+  entrada: entradaDelPdf,
   exige: 'app.escandallos',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeEscandallos(contexto);
-    const ficha = await laFicha(contexto, entrada);
+    const ficha = await laFicha(contexto, {
+      ...(entrada.plato_id === undefined ? {} : { plato_id: entrada.plato_id }),
+      ...(entrada.elaboracion_id === undefined ? {} : { elaboracion_id: entrada.elaboracion_id }),
+    });
     const marca = await laMarcaDelLocal(contexto, localId);
     const html = documentoDeLaFicha({
       marca,
       hechoEl: hechoEl(contexto.ahora, marca.zonaHoraria),
-      nombre: ficha.nombre,
-      queEs:
-        ficha.tipo === 'plato'
-          ? `Ficha técnica${ficha.seccion === null ? '' : ` · ${ficha.seccion}`}`
-          : `Elaboración${ficha.rinde === null ? '' : ` · rinde ${comoSeLeeLaCantidad(ficha.rinde.cantidad, ficha.rinde.unidad)}`}`,
-      foto: ficha.foto,
-      minutos: ficha.receta.minutos,
-      racion:
-        ficha.unidadesPorRacion === null
-          ? null
-          : `${String(ficha.unidadesPorRacion)} ud por ración`,
-      alergenos: ficha.alergenos.map((a) => NOMBRE_DEL_ALERGENO[a]),
-      picante: ficha.picante,
-      // Solo nombres y cantidades: lo que se pase aquí sale en el papel, y en el papel
-      // no va ni un euro (0087).
-      ingredientes: ficha.receta.lineas.map((l) => ({
-        nombre: l.nombre,
-        cantidad: comoSeLeeLaCantidad(l.cantidad, l.unidad),
-        nota: l.nota,
-        esElaboracion: l.tipo === 'elaboracion',
-      })),
-      pasos: ficha.receta.pasos,
-      fotosDeLosPasos: ficha.receta.fotosDeLosPasos,
-      notas: ficha.receta.notas,
+      ...laFichaEnPapel(ficha, ficha.tipo === 'plato' ? (entrada.para ?? null) : null),
     });
     const nombre = ficha.nombre
       .toLocaleLowerCase('es')
@@ -658,6 +718,233 @@ export const laFichaEnPdf = consulta<EntradaDeUnaFicha, UnPdf>({
       nombre: `ficha-${nombre || 'tecnica'}.pdf`,
       pie: `${ficha.nombre} · ${marca.nombreDelLocal}`,
     });
+  },
+});
+
+// ═══ Todas las fichas en un PDF (M9 · 3, 0093) ═════════════════════════════════
+
+/**
+ * **El libro de fichas**: todas las fichas técnicas en un PDF, por secciones de la carta
+ * y con un índice, para imprimirlas y encuadernarlas. Las mismas que salen en
+ * Escandallos › Fichas: los platos de la carta con su escandallo, sin lo que se vende
+ * tal cual (una lata no tiene ficha técnica). Sin un euro.
+ */
+export const lasFichasEnPdf = consulta<Record<string, never>, UnPdf>({
+  nombre: 'las_fichas_en_pdf',
+  entrada: z.object({}).strict(),
+  exige: 'app.escandallos',
+
+  async ejecutar(contexto) {
+    const localId = elLocalDeEscandallos(contexto);
+    // Sin costes a propósito: en el papel no va ni un euro (0087).
+    const puede = { ...(await conCostes(contexto, localId)), costes: false };
+    const libro = await elLibroDelLocal(contexto, localId, false);
+    const [platos, secciones, marca] = await Promise.all([
+      losPlatos(contexto, localId, null, libro),
+      contexto.sql<{ id: string; nombre: string }[]>`
+        select id, nombre from estook.seccion_de_carta
+         where local_id = ${localId}::uuid order by orden, nombre
+      `,
+      laMarcaDelLocal(contexto, localId),
+    ]);
+    const conFicha = platos.filter((p) => p.activo && p.tieneFicha && p.vinculadoA === null);
+    const fichas: UnaFicha[] = [];
+    for (const p of conFicha)
+      fichas.push(await laFicha(contexto, { plato_id: p.id }, { puede, libro }));
+    const deCadaPlato = new Map(fichas.map((f) => [f.id, f]));
+    const grupos = [
+      ...secciones.map((s): { id: string | null; nombre: string } => ({
+        id: s.id,
+        nombre: s.nombre,
+      })),
+      { id: null, nombre: 'Sin sección' },
+    ].map((s) => ({
+      nombre: s.nombre,
+      fichas: conFicha
+        .filter((p) => p.seccionId === s.id)
+        .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+        .flatMap((p) => {
+          const ficha = deCadaPlato.get(p.id);
+          return ficha === undefined ? [] : [laFichaEnPapel(ficha, null)];
+        }),
+    }));
+    const html = documentoDeLasFichas({
+      marca,
+      hechoEl: hechoEl(contexto.ahora, marca.zonaHoraria),
+      secciones: grupos,
+    });
+    return hacerElPdf(contexto, html, {
+      nombre: 'fichas-tecnicas.pdf',
+      pie: `Fichas técnicas · ${marca.nombreDelLocal}`,
+    });
+  },
+});
+
+// ═══ Qué ha cambiado (M9 · 3, 0092 · 1B) ═══════════════════════════════════════
+
+export interface PlatoQueHaCambiado {
+  readonly id: string;
+  readonly nombre: string;
+  /** Lo que costaba una ración entonces y hoy, y la diferencia. */
+  readonly antesCentimos: number;
+  readonly ahoraCentimos: number;
+  readonly diferenciaCentimos: number;
+  readonly foodCostAntes: number | null;
+  readonly foodCostAhora: number | null;
+  /** El ingrediente que más lo ha movido por su precio, con lo que lo movió por ración. */
+  readonly porQue: { readonly nombre: string; readonly centimos: number } | null;
+  readonly cambioLaReceta: boolean;
+  /** Las rayas que ha cruzado hacia lo malo, con lo que dice cada una. */
+  readonly cruza: readonly RayaCruzada[];
+}
+
+export interface RayaCruzada {
+  readonly que: 'objetivo' | 'canal';
+  readonly canal: string | null;
+  /** El nombre del canal, para decirlo: «Uber Eats». */
+  readonly nombreDelCanal: string | null;
+  /** «Pasa de tu objetivo», «Pierde en Uber Eats». */
+  readonly texto: string;
+  /** En un canal, lo que deja ahora una ración (negativo: pierde). */
+  readonly margenCentimos: number | null;
+}
+
+export interface QueHaCambiado {
+  readonly dias: number;
+  /** La fecha con que se compara, en el local. */
+  readonly desde: string;
+  readonly objetivo: number | null;
+  readonly platos: readonly PlatoQueHaCambiado[];
+}
+
+/**
+ * Los platos cuyo coste se ha movido frente a hace unos días, **ordenados por lo que
+ * cuesta en euros**, con el ingrediente que lo ha movido (0092, 1B). Lo de entonces, con
+ * los precios y la receta de entonces (Manifiesto 13); el precio de venta y los canales,
+ * los de hoy: lo que se mira aquí es lo que se ha movido el coste. Solo a quien ve costes.
+ */
+export async function loQueHaCambiado(
+  contexto: Contexto,
+  localId: string,
+  dias: number,
+  libro: ElLibro,
+  cuenta: LoDeLaCuenta,
+  zonaHoraria: string,
+): Promise<QueHaCambiado> {
+  const instante = new Date(contexto.ahora.getTime() - dias * 24 * 60 * 60 * 1000);
+  const [platos, entonces] = await Promise.all([
+    losPlatos(contexto, localId, null, libro),
+    elLibroDeOtroDia(contexto, localId, instante, zonaHoraria, libro),
+  ]);
+  const cambiados: PlatoQueHaCambiado[] = [];
+  for (const plato of platos) {
+    const hoy = libro.recetaDelPlato.get(plato.id);
+    const antes = entonces.recetaDelPlato.get(plato.id);
+    if (!plato.activo || hoy === undefined || antes === undefined || hoy.lineas.length === 0) {
+      continue;
+    }
+    const ahora = elEscandalloDe(hoy, plato, libro.libro, cuenta);
+    const costeEntonces = porRacion(
+      costeDeLaReceta(antes.lineas, entonces.libro).milesimas,
+      antes.raciones,
+    );
+    if (ahora.costeCentimos === null || costeEntonces === null) continue;
+    const deEntonces = escandalloDelPlato({
+      costeMilesimas: costeEntonces,
+      faltanPrecios: 0,
+      precioSalaCentimos: plato.precioCentimos,
+      iva: cuenta.iva,
+      objetivo: cuenta.objetivo,
+      canales: ahora.canales.map((c) => {
+        const delLocal = cuenta.canales.find((x) => x.canal === c.canal);
+        return {
+          canal: c.canal,
+          nombre: c.nombre,
+          precioCentimos: c.precioCentimos,
+          igualQueSala: c.igualQueSala,
+          comisionPorcentaje: delLocal?.comisionPorcentaje ?? null,
+          envaseCentimos: delLocal?.envaseCentimos ?? null,
+        };
+      }),
+    });
+    const antesCentimos = deEntonces.costeCentimos ?? 0;
+    const diferencia = ahora.costeCentimos - antesCentimos;
+    if (diferencia === 0) continue;
+    const nombres = new Map([...libro.productos.values()].map((p) => [p.id, p.nombre] as const));
+    const masLoMovio = elQueMasLoMovio(
+      hoy.lineas.map((l) => ({
+        ...l,
+        nombre:
+          nombres.get(l.productoId ?? '') ??
+          libro.elaboraciones.get(l.elaboracionId ?? '')?.nombre ??
+          '¿?',
+      })),
+      libro.libro,
+      entonces.libro,
+      hoy.raciones,
+    );
+    cambiados.push({
+      id: plato.id,
+      nombre: plato.nombre,
+      antesCentimos,
+      ahoraCentimos: ahora.costeCentimos,
+      diferenciaCentimos: diferencia,
+      foodCostAntes: deEntonces.foodCost,
+      foodCostAhora: ahora.foodCost,
+      porQue:
+        masLoMovio === null
+          ? null
+          : { nombre: masLoMovio.nombre, centimos: aCentimos(masLoMovio.milesimas) },
+      cambioLaReceta: cambioLaReceta(antes, hoy),
+      cruza: rayasQueCruza(deEntonces, ahora, cuenta.objetivo).map((r): RayaCruzada => {
+        const canal = ahora.canales.find((c) => c.canal === r.canal);
+        return {
+          que: r.que,
+          canal: r.canal,
+          nombreDelCanal: canal?.nombre ?? null,
+          texto:
+            r.que === 'objetivo'
+              ? 'Pasa de tu objetivo'
+              : `Pierde en ${canal?.nombre ?? 'un canal'}`,
+          margenCentimos: canal?.margenCentimos ?? null,
+        };
+      }),
+    });
+  }
+  cambiados.sort((a, b) => Math.abs(b.diferenciaCentimos) - Math.abs(a.diferenciaCentimos));
+  return {
+    dias,
+    desde: fechaEnElLocal(instante, zonaHoraria),
+    objetivo: cuenta.objetivo,
+    platos: cambiados,
+  };
+}
+
+/** Frente a hace 7, 30 (de fábrica) o 90 días. Llega por la dirección: es texto. */
+const entradaQueHaCambiado = z.object({ dias: z.enum(['7', '30', '90']).optional() }).strict();
+
+export const queHaCambiado = consulta<z.infer<typeof entradaQueHaCambiado>, QueHaCambiado>({
+  nombre: 'que_ha_cambiado',
+  entrada: entradaQueHaCambiado,
+  exige: 'app.escandallos',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeEscandallos(contexto);
+    const puede = await conCostes(contexto, localId);
+    if (!puede.costes) throw new FalloDeAplicacion('sin_permiso');
+    const [libro, cuenta, local] = await Promise.all([
+      elLibroDelLocal(contexto, localId, true),
+      loDeLaCuenta(contexto, localId),
+      elRelojYElFisco(contexto, localId),
+    ]);
+    return loQueHaCambiado(
+      contexto,
+      localId,
+      Number(entrada.dias ?? '30'),
+      libro,
+      cuenta,
+      local.zonaHoraria,
+    );
   },
 });
 
@@ -774,7 +1061,14 @@ export const laDesviacionDeLosPlatos = consulta<Record<string, never>, Desviacio
         const guardada = laDeEseDia((g) => g.plato_id === v.plato_id, dia);
         if (guardada === null || guardada.lineas.length === 0) return [];
         raciones += Number(v.unidades);
-        return [{ lineas: lineasDeLoGuardado(guardada), raciones: Number(v.unidades) }];
+        return [
+          {
+            lineas: lineasDeLoGuardado(guardada),
+            raciones: Number(v.unidades),
+            // Una receta de olla se vende por raciones: se divide (0092).
+            racionesDeLaReceta: guardada.raciones ?? 1,
+          },
+        ];
       });
       for (const [id, cuanto] of loQueDebiaGastarse(delDiaConReceta, {
         productos: libro.libro.productos,

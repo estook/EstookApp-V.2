@@ -72,7 +72,8 @@ const ESTILO = `
   td.numero { font-size: 10.5pt; font-weight: 600; }
 `;
 
-export function documentoDeLaFicha(datos: DatosDeLaFicha): string {
+/** Lo de dentro de una ficha: los datos rápidos, los alérgenos, lo que lleva y los pasos. */
+function cuerpoDeLaFicha(datos: Omit<DatosDeLaFicha, 'marca' | 'hechoEl'>): string {
   const rapidos = [
     ...(datos.minutos === null ? [] : [`${String(datos.minutos)} min`]),
     ...(datos.racion === null ? [] : [datos.racion]),
@@ -124,12 +125,73 @@ export function documentoDeLaFicha(datos: DatosDeLaFicha): string {
 
   const notas = datos.notas === null ? '' : `${unTitulo('Notas')}${unParrafo(datos.notas)}`;
 
+  return `${cabecera}${unTitulo('Lo que lleva')}${ingredientes}${pasos}${notas}`;
+}
+
+export function documentoDeLaFicha(datos: DatosDeLaFicha): string {
   return paginaDelDocumento({
     titulo: datos.nombre,
     subtitulo: datos.queEs,
     marca: datos.marca,
     hechoEl: datos.hechoEl,
     estilo: ESTILO,
-    cuerpo: `${cabecera}${unTitulo('Lo que lleva')}${ingredientes}${pasos}${notas}`,
+    cuerpo: cuerpoDeLaFicha(datos),
+  });
+}
+
+// ── Todas las fichas, para encuadernarlas (M9 · 3, 0093) ─────────────────────
+
+export interface DatosDeLasFichas {
+  readonly marca: MarcaDelDocumento;
+  readonly hechoEl: string;
+  /** Por secciones de la carta, en su orden; «Sin sección» al final. */
+  readonly secciones: readonly {
+    readonly nombre: string;
+    readonly fichas: readonly Omit<DatosDeLaFicha, 'marca' | 'hechoEl'>[];
+  }[];
+}
+
+const ESTILO_DE_TODAS = `
+  .indice { columns: 2; column-gap: 24px; margin-top: 12px; }
+  .indice h2 { break-after: avoid; }
+  .indice ol { margin: 0 0 8px; padding-left: 18px; }
+  .indice li { padding: 1px 0; }
+  .una { break-before: page; }
+  .una .nombre { font-size: 15pt; font-weight: 700; margin: 0; }
+  .una .que { color: #5B686C; margin: 2px 0 0; }
+`;
+
+/**
+ * **El libro de fichas**: todas las fichas técnicas en un PDF, por secciones de la carta
+ * y con un índice, para imprimirlas y encuadernarlas (Richi, 0093). Cada ficha empieza
+ * en su hoja. Sin un euro, como cada ficha suelta.
+ */
+export function documentoDeLasFichas(datos: DatosDeLasFichas): string {
+  const conFichas = datos.secciones.filter((s) => s.fichas.length > 0);
+  const total = conFichas.reduce((suma, s) => suma + s.fichas.length, 0);
+  const indice = `<div class="indice">${conFichas
+    .map(
+      (s) =>
+        `${unTitulo(s.nombre)}<ol>${s.fichas.map((f) => `<li>${escapar(f.nombre)}</li>`).join('')}</ol>`,
+    )
+    .join('')}</div>`;
+  const fichas = conFichas
+    .flatMap((s) =>
+      s.fichas.map(
+        (f) =>
+          `<section class="una"><p class="nombre">${escapar(f.nombre)}</p><p class="que">${escapar(f.queEs)}</p>${cuerpoDeLaFicha(f)}</section>`,
+      ),
+    )
+    .join('');
+  return paginaDelDocumento({
+    titulo: 'Fichas técnicas',
+    subtitulo: `${String(total)} ${total === 1 ? 'ficha' : 'fichas'}`,
+    marca: datos.marca,
+    hechoEl: datos.hechoEl,
+    estilo: `${ESTILO}${ESTILO_DE_TODAS}`,
+    cuerpo:
+      total === 0
+        ? unParrafo('Todavía no hay ninguna ficha técnica.', 'suave')
+        : `${indice}${fichas}`,
   });
 }

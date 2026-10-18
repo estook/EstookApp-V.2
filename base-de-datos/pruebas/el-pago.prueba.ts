@@ -411,5 +411,8 @@ describe('el reloj', () => {
     } finally {
       ahora = antes;
     }
-  });
+    // Tres latidos del reloj entero, por cada cuenta de esta base: sola tarda 1,6 s, pero
+    // con todas las pruebas a la vez pasó de los 5 s de fábrica (la semana entera, 18-oct).
+    // Lo que mide es qué hace cada latido, no cuánto tarda.
+  }, 30_000);
 });

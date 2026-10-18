@@ -546,18 +546,27 @@ function ElVinculo({
     );
   }
   return (
-    <div className="flex flex-wrap gap-e2">
-      {!plato.tieneFicha && puedeVincular && (
-        <Boton tono="secundario" icono={<IconoVincular size={18} />} onClick={alVincular}>
-          Vincular
-        </Boton>
+    <div className="flex flex-col gap-e2">
+      {/* Sin escandallo no se sabe lo que cuesta ni lo que gasta (0095): se dice, sin
+          cortar nada. Se vende igual; desgranarlo es cosa de la app, nunca del camarero. */}
+      {!plato.tieneFicha && puedeVerLaFicha && (
+        <p className="text-secundario text-texto-suave">
+          Sin escandallo: no sabrás lo que cuesta ni lo que gasta.
+        </p>
       )}
-      {puedeVerLaFicha && (
-        <Boton tono="secundario" icono={<IconoEscandallos size={18} />} onClick={alVerLaFicha}>
-          {/* El escandallo, no «la ficha» (Richi, 16-oct): la ficha técnica es otra cosa. */}
-          {plato.tieneFicha ? 'Su escandallo' : 'Desgranar'}
-        </Boton>
-      )}
+      <div className="flex flex-wrap gap-e2">
+        {!plato.tieneFicha && puedeVincular && (
+          <Boton tono="secundario" icono={<IconoVincular size={18} />} onClick={alVincular}>
+            Vincular
+          </Boton>
+        )}
+        {puedeVerLaFicha && (
+          <Boton tono="secundario" icono={<IconoEscandallos size={18} />} onClick={alVerLaFicha}>
+            {/* El escandallo, no «la ficha» (Richi, 16-oct): la ficha técnica es otra cosa. */}
+            {plato.tieneFicha ? 'Su escandallo' : 'Desgranar'}
+          </Boton>
+        )}
+      </div>
     </div>
   );
 }

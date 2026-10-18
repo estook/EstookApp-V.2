@@ -3,8 +3,8 @@
 > **Estado: contestado el 18-oct** ([0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)).
 > La 1, decidida: dos cifras aproximadas (la de la app y la de Fogón, una vez), «Crear escandallo»
 > a mano y «Rellenar con Fogón» avisando de que la IA no es precisa. La 2, **Fogón en dos mitades**
-> —la base justo después de M9 · 3 y lo que necesita ventas con el TPV—, propuesta de la IA a la
-> espera del sí de Richi. Abajo, la propuesta tal como se le hizo.
+> —la base justo después de M9 · 3 y lo que necesita ventas con el TPV—, **aceptada por Richi el
+> 18-oct por la tarde**. Abajo, la propuesta tal como se le hizo.
 
 ---
 

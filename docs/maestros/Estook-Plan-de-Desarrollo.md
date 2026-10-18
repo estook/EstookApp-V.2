@@ -865,6 +865,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M22 · Fogón
 
+**En dos mitades** ([0095](../decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md), 18-oct): **Fogón 1 · la base**, con los datos que ya hay —la llamada al modelo en el servidor, el tope de gasto y su medida, preguntar en cualquier pantalla, «Rellenar con Fogón», los pasos de la ficha, albaranes, mermas y cierre por foto, la merma por voz, revisar los datos, borradores de pedido y de cuadrante, y responder reseñas—, **justo después de M9 y antes de M10**; y **Fogón 2 · con ventas** —el análisis del cierre, «¿cuánto preparo mañana?», los precios por lo que se vende y la desviación explicada—, **con Estook TPV (M20)**. Lo de abajo es M22 entero; cada mitad lleva su plan.
+
 **Entra.** Resumen vivo del local y perfil del negocio con sus límites · catálogo de herramientas con permisos · presupuesto por local y día · avisos automáticos, **la mayoría por consulta sin llamar al modelo** · asistente contextual · voz para merma, temperatura, gramaje e incidencia · cadencias y cupos por plan con aviso al 80 % · caché · registro de consumo y de acciones · reglas de degradación · borradores de pedido, menú, precio, cuadrante, respuesta a reseña y traducción de fichas.
 
 **Y su capa inteligente · Fogón transversal.** Presente en **todas** las apps, trabajando con el contexto de la pantalla. Y el **centro de alertas**: cada alerta con qué ocurre, por qué, qué impacto tiene, qué se recomienda y un botón, priorizadas por Fogón.

@@ -76,6 +76,13 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
   const texto = reposado.trim();
   // Con dos letras, o con un número suelto: «7» es el pedido 7 (0085).
   const sePregunta = hayApi && yo !== null && seBuscaYa(texto);
+  /*
+    **Lo escrito que todavía no se ha preguntado** (19-oct). Durante los 180 ms de
+    espera el buscador decía «Nada con «…»» sin haber preguntado a nadie, y al salir
+    la pregunta lo cambiaba por el «Cargando»: un vacío que parpadeaba, y un «Borrar
+    lo escrito» que desaparecía bajo el dedo. Mientras se espera, se está buscando.
+  */
+  const porPreguntar = hayApi && yo !== null && seBuscaYa(escrito) && escrito.trim() !== texto;
 
   // Lo último abierto desde aquí, de esta persona en este aparato (0085). Se vuelve a
   // leer al abrir: entre una vez y otra se ha podido abrir algo más.
@@ -312,7 +319,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
       alCerrar={alCerrar}
       acciones={acciones}
       resultados={encontrados}
-      buscando={sePregunta && consulta.isLoading}
+      buscando={porPreguntar || (sePregunta && consulta.isLoading)}
       alEscribir={alEscribir}
       recientes={abiertosAntes}
       alOlvidarRecientes={() => {

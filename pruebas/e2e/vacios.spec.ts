@@ -83,11 +83,20 @@ test('el buscador, sin nada parecido, ofrece borrar lo escrito', async ({ page }
   await entrarEnLaApp(page, VERA);
   await irA(page, 'almacen/resumen');
 
+  // «Nada con» solo cuando el servidor ha contestado (19-oct). Antes salía durante la
+  // espera de antes de preguntar, y al salir la pregunta el botón se cambiaba por el
+  // «Cargando»: en Safari, el clic caía en el cargando y lo escrito se quedaba.
+  let contestado = false;
+  page.on('response', (r) => {
+    if (r.url().includes('/consultas/buscar?texto=zzqqxx')) contestado = true;
+  });
+
   await page.keyboard.press('Control+k');
   const campo = page.getByLabel('Que quieres buscar');
   await expect(campo).toBeVisible();
   await campo.fill('zzqqxx');
   await expect(page.getByText('Nada con «zzqqxx»')).toBeVisible({ timeout: 15_000 });
+  expect(contestado).toBe(true);
   await page.getByRole('button', { name: 'Borrar lo escrito' }).click();
   await expect(campo).toHaveValue('');
   await expect(campo).toBeFocused();

@@ -66,10 +66,19 @@ export const VistaDeCadena = perezosa(
 
 let precargadas = false;
 
+/** Lo que se espera sin `requestIdleCallback` (Safari): el Panel ya pintado y con datos. */
+const SIN_AVISO_DE_LIBRE_MS = 4000;
+
 /**
  * Trae el código de todas las pantallas sin pintar ninguna, cuando el navegador está
  * libre. Una vez por visita; si algún trozo no llega (sin señal), no pasa nada: se
  * vuelve a pedir al entrar en esa pantalla.
+ *
+ * **De una en una, y en el iPhone más tarde** (18-oct). Safari no tiene
+ * `requestIdleCallback`, y a los 1,5 s se pedían los treinta trozos de golpe, justo
+ * cuando llegaban los datos del Panel: el móvil se ponía a leer código mientras pintaba
+ * lo que Richi estaba esperando. Ahora espera a que el Panel esté pintado y trae cada
+ * trozo cuando el anterior ha llegado.
  */
 export function precargarLasPantallas(): void {
   if (precargadas) return;
@@ -77,12 +86,16 @@ export function precargarLasPantallas(): void {
   const cuandoPueda =
     'requestIdleCallback' in window
       ? (hacer: () => void) => window.requestIdleCallback(hacer, { timeout: 4000 })
-      : (hacer: () => void) => window.setTimeout(hacer, 1500);
+      : (hacer: () => void) => window.setTimeout(hacer, SIN_AVISO_DE_LIBRE_MS);
   cuandoPueda(() => {
-    for (const traer of TRAER) {
-      traer().catch(() => {
-        /* se volverá a pedir al abrir la pantalla */
-      });
-    }
+    void (async () => {
+      for (const traer of TRAER) {
+        try {
+          await traer();
+        } catch {
+          /* se volverá a pedir al abrir la pantalla */
+        }
+      }
+    })();
   });
 }

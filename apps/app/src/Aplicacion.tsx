@@ -38,6 +38,7 @@ import {
 } from './sesion/Puerta.tsx';
 import { ProveedorDeSesion } from './sesion/ProveedorDeSesion.tsx';
 import { usarSesion } from './sesion/Sesion.tsx';
+import { ElArranque } from './sesion/ElArranque.tsx';
 
 /**
  * El alta, **aparte del paquete inicial**.
@@ -194,13 +195,8 @@ function Puerta() {
   // Sin API no hay a quien preguntar. Se dice, en la propia pantalla de entrar.
   if (!hayApi) return <SinEntrar />;
 
-  if (cargando) {
-    return (
-      <main className="flex min-h-dvh items-center justify-center bg-fondo">
-        <Cargando que="tu sesión" />
-      </main>
-    );
-  }
+  // El mismo logo que la página mientras llega el código: sin parpadeo (18-oct).
+  if (cargando) return <ElArranque que="tu sesión" />;
 
   // Hay sesión guardada y el servidor no contesta: no es «entra otra vez».
   if (sinServidor) return <SinServidor />;

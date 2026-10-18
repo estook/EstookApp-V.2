@@ -43,12 +43,25 @@
       Lo que se ve antes de que llegue el código (repaso del 16-oct): el fondo de la
       app y su logo, en vez de una pantalla vacía. React lo sustituye al pintar. Va
       aquí, en la página, porque es lo único que hay mientras el móvil lee el código.
+
+      **En el tema del aparato** (18-oct): `tema-al-arrancar.js` pone `data-tema` en el
+      <html> antes de pintar, y aquí el fondo y el logo lo siguen. Antes era siempre
+      claro, y en un iPhone con el oscuro se veía el logo sobre claro, un salto a
+      oscuro y una franja clara abajo (este fondo del <html>, que manda sobre el de la
+      app porque esto no va en ninguna capa). Los colores son los de `temas.css`.
     -->
+    <script src="./tema-al-arrancar.js"></script>
     <style>
       html,
       body {
         margin: 0;
         background: #f1efea;
+      }
+      html[data-tema='oscuro'],
+      html[data-tema='oscuro'] body,
+      html[data-tema='sistema'],
+      html[data-tema='sistema'] body {
+        background: #15181c;
       }
       .arrancando {
         position: fixed;
@@ -61,12 +74,34 @@
         height: auto;
         opacity: 0.9;
       }
+      .arrancando .en-oscuro,
+      html[data-tema='oscuro'] .arrancando .en-claro,
+      html[data-tema='sistema'] .arrancando .en-claro {
+        display: none;
+      }
+      html[data-tema='oscuro'] .arrancando .en-oscuro,
+      html[data-tema='sistema'] .arrancando .en-oscuro {
+        display: block;
+      }
+      @media (prefers-color-scheme: light) {
+        html[data-tema='sistema'],
+        html[data-tema='sistema'] body {
+          background: #f1efea;
+        }
+        html[data-tema='sistema'] .arrancando .en-claro {
+          display: block;
+        }
+        html[data-tema='sistema'] .arrancando .en-oscuro {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
     <div id="raiz">
       <div class="arrancando" aria-hidden="true">
-        <img src="./marca/estook-logo.png" alt="" />
+        <img class="en-claro" src="./marca/estook-logo.png" alt="" />
+        <img class="en-oscuro" src="./marca/estook-logo-oscuro.png" alt="" />
       </div>
     </div>
     <script type="module" src="/src/principal.tsx"></script>

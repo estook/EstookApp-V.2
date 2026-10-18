@@ -21,7 +21,13 @@ import {
 } from '../compras.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
-import { apuntar, elProductoBloqueado, ponerUnPrecio, type FichaBasica } from '../almacen.ts';
+import {
+  apuntar,
+  elProductoBloqueado,
+  laJornadaDelProducto,
+  ponerUnPrecio,
+  type FichaBasica,
+} from '../almacen.ts';
 
 /**
  * Recibir lo que llega, y devolver lo que no vale (M7).
@@ -149,10 +155,13 @@ async function loPactado(
   productoId: string,
   proveedorId: string,
 ): Promise<number | null> {
+  // Vale hasta el final de su último día **de jornada** (regla 10, 0096): el género que
+  // llega a la 1:00 del día siguiente aún es de esa noche.
+  const hoy = await laJornadaDelProducto(contexto, productoId);
   const filas = await contexto.sql<{ precio: string }[]>`
     select precio_centimos::text as precio from estook.precio_pactado
      where producto_id = ${productoId} and proveedor_id = ${proveedorId}
-       and anulado_en is null and (hasta is null or hasta >= current_date)
+       and anulado_en is null and (hasta is null or hasta >= ${hoy}::date)
   `;
   const fila = filas[0];
   return fila === undefined ? null : Number(fila.precio);

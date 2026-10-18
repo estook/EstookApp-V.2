@@ -65,6 +65,8 @@ const TOPE_AL_INSTALAR = 300 * 1024;
  */
 const DE_PUBLIC = [
   'manifest.webmanifest',
+  // El tema antes de pintar (18-oct): sin él, abrir sin señal salía siempre en claro.
+  'tema-al-arrancar.js',
   'marca/estook-logo.png',
   'marca/estook-logo-oscuro.png',
   'marca/fogon.png',

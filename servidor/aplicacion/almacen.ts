@@ -519,6 +519,31 @@ export interface PrecioPuesto {
  * No toca nada del pasado: ni el coste de lo que ya entró, ni el precio medio de
  * la cámara. El precio nuevo vale **desde hoy**.
  */
+/**
+ * **«Hoy» para un precio es la jornada del local**, con su hora de corte, como el stock,
+ * los fichajes y el cierre (regla 10; Richi, 18-oct: «la jornada puede acabar de
+ * madrugada; si no, se mezcla el dinero»). Antes era `current_date`, el día de la hora
+ * universal: un precio puesto a las 3:00 caía en el día nuevo, y a las 0:30, en el de
+ * antes solo por casualidad. Ver la 0092 y la 0096.
+ */
+export async function laJornadaDelProducto(
+  contexto: Contexto,
+  productoId: string,
+): Promise<FechaOperativa> {
+  const filas = await contexto.sql<{ zona_horaria: string; hora_de_corte: string }[]>`
+    select l.zona_horaria, to_char(l.hora_de_corte, 'HH24:MI') as hora_de_corte
+      from estook.producto p
+      join estook.local l on l.id = p.local_id
+     where p.id = ${productoId}
+  `;
+  const fila = filas[0];
+  return jornadaDe(
+    contexto.ahora,
+    fila?.zona_horaria ?? 'Europe/Madrid',
+    horaDeCorte(fila?.hora_de_corte ?? '05:00'),
+  );
+}
+
 export async function ponerUnPrecio(
   contexto: Contexto,
   precio: PrecioQueSePone,
@@ -549,13 +574,14 @@ export async function ponerUnPrecio(
     precio.precioCentimos,
   );
 
+  const hoy = await laJornadaDelProducto(contexto, precio.productoId);
   if (anterior !== undefined) {
     // Se cierra **ayer**, no hoy: si se cerrara hoy, el vigente nuevo y el viejo
     // compartirían el día de hoy y una consulta por fecha devolvería dos precios
-    // para el mismo momento.
+    // para el mismo momento. «Ayer» y «hoy», los de la jornada del local.
     await contexto.sql`
       update estook.precio_de_producto
-         set hasta = greatest(desde, current_date - 1)
+         set hasta = greatest(desde, ${hoy}::date - 1)
        where id = ${anterior.id}
     `;
   }
@@ -574,7 +600,7 @@ export async function ponerUnPrecio(
     values (
       ${precio.productoId}, ${precio.proveedorId}, ${precio.precioCentimos}, ${precio.formato},
       ${precio.factor}, ${precio.unidadDeUso}::estook.unidad_de_uso, ${precio.rendimiento},
-      ${coste}, current_date, ${precio.origen}::estook.origen_de_precio,
+      ${coste}, ${hoy}::date, ${precio.origen}::estook.origen_de_precio,
       ${referencia}::text::jsonb, ${contexto.personaId}
     )
     returning id
@@ -802,6 +828,7 @@ async function sembrarUnEjemplo(
   `;
 
   const coste = costeDeUso(ejemplo.precioCentimos, factor, rendimiento);
+  const hoy = await laJornadaDelProducto(contexto, productoId);
 
   await contexto.sql`
     insert into estook.precio_de_producto (
@@ -811,7 +838,7 @@ async function sembrarUnEjemplo(
     values (
       ${productoId}, ${ejemplo.precioCentimos}, ${referencia.formato}, ${factor},
       ${referencia.unidad_de_uso}::estook.unidad_de_uso, ${rendimiento},
-      ${coste}, current_date, 'catalogo', ${contexto.personaId}
+      ${coste}, ${hoy}::date, 'catalogo', ${contexto.personaId}
     )
   `;
 

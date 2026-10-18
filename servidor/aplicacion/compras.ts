@@ -7,6 +7,7 @@ import {
   type FechaOperativa,
   type ProximoReparto,
 } from '@estook/dominio';
+import { laJornadaDelProducto } from './almacen.ts';
 import { FalloDeAplicacion, type Contexto } from './contrato.ts';
 
 /**
@@ -167,11 +168,13 @@ export async function precioEsperado(
   productoId: string,
   proveedorId: string,
 ): Promise<number | null> {
+  // Lo pactado vale hasta el final de su último día de jornada (regla 10, 0096).
+  const hoy = await laJornadaDelProducto(contexto, productoId);
   const filas = await contexto.sql<{ precio: string | null }[]>`
     select coalesce(
       (select pp.precio_centimos from estook.precio_pactado pp
         where pp.producto_id = ${productoId} and pp.proveedor_id = ${proveedorId}
-          and pp.anulado_en is null and (pp.hasta is null or pp.hasta >= current_date)
+          and pp.anulado_en is null and (pp.hasta is null or pp.hasta >= ${hoy}::date)
         limit 1),
       (select pr.precio_centimos from estook.precio_de_producto pr
         where pr.producto_id = ${productoId} and pr.proveedor_id = ${proveedorId}

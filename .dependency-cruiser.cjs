@@ -21,7 +21,13 @@ module.exports = {
       comment: 'Fichero que nadie importa. O se usa, o se borra.',
       from: {
         orphan: true,
-        pathNot: ['\\.d\\.ts$', '(^|/)vite\\.config\\.ts$', '(^|/)index\\.ts$'],
+        // Lo de `public/` lo carga la página, no un import (el tema al arrancar, 18-oct).
+        pathNot: [
+          '^apps/[^/]+/public/',
+          '\\.d\\.ts$',
+          '(^|/)vite\\.config\\.ts$',
+          '(^|/)index\\.ts$',
+        ],
       },
       to: {},
     },

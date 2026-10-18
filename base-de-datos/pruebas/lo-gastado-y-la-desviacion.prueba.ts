@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { fechaEnElLocal, masDias } from '@estook/dominio';
+import { fechaEnElLocal, jornadaDe, masDias } from '@estook/dominio';
 import { correoEnMemoria } from '../../servidor/infraestructura/correo.ts';
 import { almacenEnMemoria } from '../../servidor/infraestructura/almacen.ts';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
@@ -556,9 +556,12 @@ describe('una anulación en el food cost', () => {
     // La anulación de una salida «A otro local» se apunta con su propio motivo («Anula lo
     // apuntado el…»), y el food cost la contaba como consumo: diez Coca-Colas que se
     // llevó otro local, y que al final no se llevó, salían gastadas aquí.
+    // El mes de la jornada, no el del calendario: a la 1:00 del día 1, lo apuntado es de
+    // la noche del último día del mes anterior (antes de las 5:00, la hora de corte).
+    const mes = jornadaDe(new Date(Date.now()), 'Europe/Madrid').slice(0, 7);
     const delMes = async () =>
       losDatos<FoodCost & { traspasosCentimos: number }>(
-        await api.consultar(rosa, 'el_food_cost_real', { periodo: 'mes', mes: HOY.slice(0, 7) }),
+        await api.consultar(rosa, 'el_food_cost_real', { periodo: 'mes', mes }),
       );
     const antes = await delMes();
 

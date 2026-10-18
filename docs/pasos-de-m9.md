@@ -2,56 +2,28 @@
 
 > ## Cómo está
 >
-> Comprobado el 17 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
+> Comprobado el 18 de octubre de 2026, leyendo la base de producción y la API (solo lectura).
 >
-> | Qué                         | Cómo está                                                                                         |
-> | --------------------------- | ------------------------------------------------------------------------------------------------- |
-> | Pull requests               | **Fusionadas hasta la #113** (M9 · 3, el 18-oct). Abierta: un arreglo de una prueba (lección 198) |
-> | La base de datos            | **72 de 72** migraciones, igual que `main`. Con M9 · 3 llega la **0073**                          |
-> | La API                      | **Desplegada el 17-oct**: 90 consultas y 196 comandos. Con M9 · 3 pasan a **92 y 196**            |
-> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                         |
+> | Qué                         | Cómo está                                                                                       |
+> | --------------------------- | ----------------------------------------------------------------------------------------------- |
+> | Pull requests               | **Fusionadas hasta la #114** (18-oct). Abierta: **las respuestas del 18-oct** (solo documentos) |
+> | La base de datos            | **73 de 73** migraciones, igual que `main`                                                      |
+> | La API                      | **Desplegada el 18-oct**: 92 consultas y 196 comandos, en Irlanda junto a su base               |
+> | **Las copias de seguridad** | **Ninguna**: aplazadas hasta la mudanza. Se pueden encender cualquier día                       |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo que quede de antes, en [`pasos-de-m8.md`](pasos-de-m8.md).
 
 ---
 
-## Lo que te toca ahora · M9 · 3
+## Lo que te toca ahora · las respuestas del 18-oct
 
-Construida el 18-oct ([el plan](m9-3-las-fichas-y-lo-que-ha-cambiado.md); lo que decidí al construirla, al final de la [0092](decisiones/0092-las-respuestas-de-m9-3.md)): **la receta de olla** («para una tanda de 25 raciones») y **la ficha técnica que se escala** (por raciones o por lo que tienes de un ingrediente, también en el PDF), **«Descargar todas»** las fichas en un PDF, **«Qué ha cambiado»** en el Resumen con su aviso cuando un plato cruza una raya, **la receta de Estook** al desgranar, y **el coste aproximado** de los platos sin escandallo. **Hay una migración** (`0073`: la tanda de la receta y el aviso nuevo) y **hay que desplegar la API** (dos consultas nuevas). El orden: **fusionar, migrar y después desplegar**.
+Un pull request **solo de documentos** (tus respuestas: Fogón en dos mitades, y la propuesta del día del precio). **Sin migración y sin desplegar la API**: solo fusionar, con las **tres comprobaciones en verde**.
 
-### 1 · Fusionar
+## Hecho · M9 · 3 (en producción desde el 18-oct)
 
-**Hecho** el 18-oct (la #113, en verde). Sigue con el paso 2.
+Fusionada (#113 y #114), migrada (**0073**) y la API desplegada (**92 y 196**): `bd:comprobar-api` sin nada mal, leído el 18-oct. Lo de abajo queda para probarlo.
 
-### 2 · Migrar la base
-
-En PowerShell, en la carpeta del proyecto, uno por uno:
-
-```bash
-git checkout main
-```
-
-```bash
-git pull
-```
-
-```bash
-.\estook.cmd bd:migrar
-```
-
-**Qué tiene que decir:** que aplica la **0073 · la tanda y el aviso del plato**, y que la base va por la **73**. **Si sale un error, para y mándamelo**: no se ha aplicado nada a medias.
-
-### 3 · Desplegar la API
-
-**Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**. Espera al **círculo verde**. Después:
-
-```bash
-.\estook.cmd bd:comprobar-api
-```
-
-**Qué tiene que decir:** **«las 92»** consultas y **«los 196»** comandos, la línea **«la receta dice para cuántas raciones es su tanda, y la campana avisa de la raya (0073)»** en verde, y al final **ninguna comprobación mal** (las «sin poder comprobar» son las de siempre).
-
-### 4 · Probarlo en el móvil
+### Probarlo en el móvil
 
 **Cierra Estook del todo y ábrela dos veces** (la primera trae la versión nueva). Lo que tiene que pasar:
 
@@ -63,10 +35,6 @@ git pull
 - **«Qué ha cambiado»**, en el Resumen, **solo sale cuando el coste de algún plato se ha movido** (con 7, 30 o 90 días): en IKATZ puede no salir todavía, y está bien.
 
 **Lo que ya tenías sigue igual**: tus escandallos son de una ración, como siempre.
-
-### 5 · Y una respuesta: Fogón
-
-¿**Sí** a Fogón en dos mitades ([0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md), punto 2): **Fogón 1** justo después de M9 · 3 y antes de M10, y **Fogón 2** con Estook TPV? Si dices sí, te pediré, paso a paso, **la clave de la API de Anthropic como secreto** (nunca por el chat) y **el tope de gasto del primer mes**.
 
 ## Hecho · cómo detecta Estook lo que se escapa
 

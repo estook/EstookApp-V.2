@@ -1,7 +1,7 @@
 # 0095 · Lo vendido sin escandallo, y cuándo llega Fogón
 
 **Fecha:** 18 de octubre de 2026
-**Estado:** la 1, decidida. **La 2, propuesta de la IA a la espera del sí de Richi** (cambia el orden de la [0061](0061-el-orden-y-la-infraestructura.md)).
+**Estado:** decidida entera. La 1, el 18-oct; **la 2, el 18-oct por la tarde**: «como prefieras y como sea más óptimo» → **Fogón en dos mitades**, como se propuso. Cambia el orden de la [0061](0061-el-orden-y-la-infraestructura.md): **Fogón 1 va antes de M10**.
 **Sigue:** [0094](0094-la-prueba-de-la-plantilla.md) y contesta las dos preguntas de [`fogon-en-cada-sitio.md`](../fogon-en-cada-sitio.md).
 
 ## 1 · El coste de un plato mientras no tiene escandallo
@@ -19,7 +19,7 @@ Lo que necesita Fogón (las cifras de Fogón y «Rellenar con Fogón») llega co
 
 Richi: **B**, y «si es necesario y lo ves más viable, adelanta todo el módulo de Fogón… primero tener la app sólida y después ponernos con el TPV».
 
-**Lo que propone la IA** (a la espera de su sí): **Fogón en dos mitades**, porque una parte de Fogón vive de las ventas plato a plato, que solo da Estook TPV:
+**Lo que propuso la IA, y Richi aceptó** («como prefieras y como sea más óptimo», 18-oct): **Fogón en dos mitades**, porque una parte de Fogón vive de las ventas plato a plato, que solo da Estook TPV:
 
 | Mitad                    | Qué lleva                                                                                                                                                                                                                                                                                                                                                     | Cuándo                                    |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
@@ -28,4 +28,4 @@ Richi: **B**, y «si es necesario y lo ves más viable, adelanta todo el módulo
 
 **Por qué así y no todo junto:** adelantar Fogón entero haría construir la mitad que habla de ventas **sin ventas que mirar**, y se probaría a ciegas. Fogón 1 deja la app «sólida y con IA» antes del TPV, que es lo que pide Richi, y Fogón 2 llega cuando tiene de qué hablar.
 
-**Lo que hace falta de Richi para Fogón 1:** una **clave de la API de Anthropic** puesta como secreto (nunca por el chat) y decidir el tope de gasto del primer mes. Se le pedirá, paso a paso, al empezar.
+**Lo que hace falta de Richi para Fogón 1:** una **clave de la API de Anthropic** puesta como secreto (nunca por el chat) y decidir el tope de gasto del primer mes. Se le pedirá, paso a paso, al empezar. **Antes de construir**, Fogón 1 lleva su plan con sus preguntas, como cada módulo (regla 14 y la prueba de la plantilla).

@@ -133,30 +133,40 @@ afterAll(async () => {
 // ── Lo que hace el equipo, a quien está por encima ───────────────────────────
 
 describe('un pedido empezado', () => {
-  it('le llega a quien lo puede mandar y está por encima: el jefe de cocina y la gerente', async () => {
+  // Desde el 19-oct un pedido lo empieza quien los manda (el jefe de cocina, aquí): el
+  // cocinero solo rellena el que le piden.
+  it('le llega a quien lo puede mandar y está por encima: la gerente', async () => {
+    expect(
+      elFallo(
+        await api.ejecutar(marcos, 'crear_pedido', {
+          proveedor_id: proveedor,
+          lineas: [{ producto_id: aceite, cantidad: 1 }],
+        }),
+      ),
+    ).toBe('sin_permiso');
     pedidoId = losDatos<{ pedidoId: string }>(
-      await api.ejecutar(marcos, 'crear_pedido', {
+      await api.ejecutar(pablo, 'crear_pedido', {
         proveedor_id: proveedor,
         lineas: [{ producto_id: aceite, cantidad: 1 }],
       }),
     ).pedidoId;
 
     const deRosa = await elDe(rosa, 'pedido.empezado');
-    expect(deRosa?.titulo).toBe('Marcos ha empezado un pedido a Frutas Avisos');
+    expect(deRosa?.titulo).toBe('Pablo ha empezado un pedido a Frutas Avisos');
     expect(deRosa?.ir).toBe(`/almacen/compras/pedidos?pedido=${pedidoId}`);
     expect(deRosa?.leido).toBe(false);
     expect(await sinLeer(rosa)).toBe(1);
-    expect(await sinLeer(pablo)).toBe(1);
   });
 
-  it('a quien lo hace no le avisa, ni a la sala, que no manda pedidos', async () => {
+  it('a quien lo hace no le avisa, ni a la sala ni a la cocina, que no mandan pedidos', async () => {
+    expect(await sinLeer(pablo)).toBe(0);
     expect(await sinLeer(marcos)).toBe(0);
     expect(await sinLeer(sara)).toBe(0);
   });
 
   it('si lo sigue tocando, no llega otro: uno por cosa y persona', async () => {
     losDatos(
-      await api.ejecutar(marcos, 'cambiar_pedido', {
+      await api.ejecutar(pablo, 'cambiar_pedido', {
         pedido_id: pedidoId,
         lineas: [{ producto_id: aceite, cantidad: 2 }],
       }),
@@ -168,14 +178,25 @@ describe('un pedido empezado', () => {
 
   it('si lo rellena otro, su nombre se suma sin volver a sonar', async () => {
     await leerTodo(rosa);
+    const [deMarcos] = await comoDuena<{ id: string }>(
+      `select id from estook.persona where correo = $1`,
+      [MARCOS],
+    );
     losDatos(
-      await api.ejecutar(pablo, 'cambiar_pedido', {
+      await api.ejecutar(pablo, 'pedir_ayuda_con_el_pedido', {
+        pedido_id: pedidoId,
+        personas: [deMarcos?.id],
+      }),
+    );
+    await leerTodo(marcos);
+    losDatos(
+      await api.ejecutar(marcos, 'cambiar_pedido', {
         pedido_id: pedidoId,
         lineas: [{ producto_id: aceite, cantidad: 3 }],
       }),
     );
     const deRosa = await elDe(rosa, 'pedido.empezado');
-    expect(deRosa?.titulo).toBe('Marcos y Pablo están preparando un pedido a Frutas Avisos');
+    expect(deRosa?.titulo).toBe('Pablo y Marcos están preparando un pedido a Frutas Avisos');
     expect(deRosa?.leido).toBe(true);
     expect(await sinLeer(rosa)).toBe(0);
   });

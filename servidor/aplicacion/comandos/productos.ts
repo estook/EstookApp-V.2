@@ -5,6 +5,8 @@ import {
   MESES_CONGELADO_MINIMO,
   UNIDADES_DE_USO,
   ZONAS,
+  centimos,
+  porCantidad,
   horaDeCorte,
   jornadaDe,
 } from '@estook/dominio';
@@ -749,8 +751,9 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
          where producto_id = ${entrada.producto_id} and hasta is null
       `;
       for (const vigente of vigentes) {
-        const precio = Math.round(
-          (Number(vigente.precio_centimos) * factor) / Number(vigente.factor),
+        const precio = porCantidad(
+          centimos(Number(vigente.precio_centimos)),
+          factor / Number(vigente.factor),
         );
         await ponerUnPrecio(contexto, {
           productoId: entrada.producto_id,

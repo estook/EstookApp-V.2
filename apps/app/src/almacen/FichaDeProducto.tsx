@@ -12,6 +12,7 @@ import {
   comoPorcentaje,
   comoPrecioPorUnidad,
   comoSeCompraDe,
+  costeLimpio,
   comoSeDiceElTipo,
   comoSePide,
   conUnidadAproximada,
@@ -671,7 +672,7 @@ export function FichaDeProducto({
               resumen={
                 ultimo === undefined
                   ? 'Todavía no se ha movido nada'
-                  : `${comoSeLeeLaFecha(ultimo.fechaOperativa)} · ${COMO_SE_LLAMA_EL_MOVIMIENTO[ultimo.tipo] ?? ultimo.tipo}${ultimo.cantidad === 0 ? '' : ` ${ultimo.cantidad > 0 ? '+' : ''}${conUnidadDeUso(ultimo.cantidad, datos.producto.unidadDeUso)}`}`
+                  : `${comoSeLeeLaFecha(ultimo.fechaOperativa)} · ${COMO_SE_LLAMA_EL_MOVIMIENTO[ultimo.tipo] ?? ultimo.tipo}${cuantoSeMovio(ultimo.cantidad, datos.producto.unidadDeUso)}`
               }
             >
               {datos.movimientos.length > 0 && (
@@ -1269,7 +1270,7 @@ function ElAprovechamiento({
               Lo limpio sale a{' '}
               <strong className="font-semibold">
                 {comoPrecioPorUnidad(
-                  milesimas(Math.round(producto.costeMilesimas / producto.rendimiento)),
+                  costeLimpio(milesimas(producto.costeMilesimas), producto.rendimiento),
                   producto.unidadDeUso,
                 )}
               </strong>{' '}
@@ -2161,4 +2162,10 @@ function porcentajeDe(variacion: number | null): string {
     .toFixed(1)
     .replace('.', ',')
     .replace(',0', '')} %`;
+}
+
+/** « +2 kg» detrás del nombre de un movimiento; nada si no movió cantidad (0076). */
+function cuantoSeMovio(cantidad: number, unidadDeUso: string): string {
+  if (cantidad === 0) return '';
+  return ` ${cantidad > 0 ? '+' : ''}${conUnidadDeUso(cantidad, unidadDeUso)}`;
 }

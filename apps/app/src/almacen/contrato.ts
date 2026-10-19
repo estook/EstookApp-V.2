@@ -6,7 +6,7 @@ import {
   conIva,
   conSimbolo,
   conUnidad,
-  milesimas,
+  costePorUnidadDeUso,
   type Alergeno,
   type Consumo,
   type EstadoDeExistencias,
@@ -359,7 +359,7 @@ export function elPrecioComoLoApuntas(precio: {
   const porUnidad =
     precio.factor > 0 && precio.factor !== 1 && precio.formato !== null
       ? comoPrecioPorUnidad(
-          milesimas(Math.round((delantero * 1000) / precio.factor)),
+          costePorUnidadDeUso(delantero, { factor: precio.factor, rendimiento: 1 }),
           precio.unidadDeUso,
         )
       : null;

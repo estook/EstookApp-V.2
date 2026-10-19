@@ -593,7 +593,7 @@ export const borrarPlato = comando<{ plato_id: string }, { platoId: string; nomb
     const localId = elLocalDeLaCarta(contexto);
     const antes = await elPlatoParaEscribir(contexto, localId, entrada.plato_id);
     // Las fotos, antes de que se vaya la fila que dice dónde están.
-    const fotos = await contexto.sql<{ clave: string }[]>`
+    const fotos = await contexto.sql<{ clave: string | null }[]>`
       select unnest(array[p.foto_clave, p.miniatura_clave]) as clave
         from estook.plato p where p.id = ${entrada.plato_id}::uuid
       union all

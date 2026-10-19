@@ -543,7 +543,7 @@ export function PantallaDelAparato() {
         </button>
       </footer>
 
-      {saliendo && llave !== null && (
+      {saliendo && (
         <SalirDelAparato
           cliente={cliente}
           llave={llave.llave}
@@ -585,7 +585,7 @@ function SalirDelAparato({
       correo,
       contrasena,
       llave_del_aparato: llave,
-      ...(aparato === null ? {} : { aparato }),
+      aparato,
     });
     if (!respuesta.ok) {
       setEntrando(false);

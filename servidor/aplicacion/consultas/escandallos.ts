@@ -5,10 +5,12 @@ import {
   ALERGENOS,
   aCentimos,
   alergenosDeLaReceta,
+  cantidad,
   comoPrecioPorUnidad,
   comoSeLeeEscalada,
   comoSeLeeLaCantidad,
   costeAproximado,
+  costeDeLinea,
   costeDeLaReceta,
   costePorUnidadDeLaElaboracion,
   desviacionDeLosPlatos,
@@ -19,6 +21,7 @@ import {
   fechaEnElLocal,
   loQueDebiaGastarse,
   mediaEnPuntos,
+  milesimas,
   parteDelCoste,
   porRacion,
   rayasQueCruza,
@@ -240,7 +243,9 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
         costePorUnidad: sinCoste
           ? null
           : comoPrecioPorUnidad(enMilesimasEnteras(porUnidad) as never, e.rindeUnidad),
-        costeCentimos: sinCoste ? null : Math.round((porUnidad * e.rindeCantidad) / 1000),
+        costeCentimos: sinCoste
+          ? null
+          : costeDeLinea(milesimas(enMilesimasEnteras(porUnidad)), cantidad(e.rindeCantidad)),
       };
     });
 

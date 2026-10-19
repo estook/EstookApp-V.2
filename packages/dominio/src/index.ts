@@ -81,6 +81,7 @@ export {
   milesimas,
   cantidad,
   costePorUnidadDeUso,
+  costeLimpio,
   costeDeLinea,
   costeDeLineaDesdeCompra,
   precioMedioPonderado,

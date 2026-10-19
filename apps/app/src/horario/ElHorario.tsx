@@ -28,6 +28,9 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
 import { HojaDelDia } from './HojaDelDia.tsx';
+import { CuadranteConFogon } from './CuadranteConFogon.tsx';
+import { usarLectura } from '../ganchos/usarLectura.ts';
+import type { FogonYYo } from '../fogon/contrato.ts';
 import { LaSemana, MiSemana } from './LaSemana.tsx';
 import { conQuienCoincide, fraseDeLoPublicado, loDelDia, type LoPublicado } from './cuentas.ts';
 import {
@@ -463,6 +466,9 @@ function MontarElHorario({
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
   const [preguntarElChat, setAvisarEnElChat] = useState(false);
+  // El horario con Fogón (0098): solo en una semana vacía, y si Fogón habla aquí.
+  const fogon = usarLectura<FogonYYo>('fogon_y_yo', {});
+  const [conFogon, setConFogon] = useState(false);
 
   const clave = ['el_horario_en_borrador', semana ?? 'esta'];
   const consulta = useQuery({
@@ -637,7 +643,31 @@ function MontarElHorario({
         >
           Copiar la semana anterior
         </Boton>
+        {!hayAlgo && fogon.data?.habla === true && (
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              setConFogon(true);
+            }}
+          >
+            Hacerlo con Fogón
+          </Boton>
+        )}
       </Botones>
+
+      {conFogon && (
+        <CuadranteConFogon
+          lunes={datos.lunes}
+          abierta={conFogon}
+          alCerrar={() => {
+            setConFogon(false);
+          }}
+          alPonerlo={async (frase) => {
+            await alCambiar();
+            setHecho(frase);
+          }}
+        />
+      )}
 
       {error !== null && <ErrorEnCristiano error={error} />}
       {hecho !== null && (

@@ -7,6 +7,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import type { LaConversacion } from '../ganchos/usarLaConversacion.ts';
 import { creditos } from './contrato.ts';
 import { lasSugerencias } from './sugerencias.ts';
+import { Dictar } from './Dictar.tsx';
 
 /**
  * Hablar con Fogón, como un chat de verdad (Fogón 1 · 1, 0097; rehecho el 19-oct).
@@ -200,6 +201,20 @@ export function CajaDeFogon({
             className="block max-h-[140px] min-h-toque w-full resize-none rounded-grande border border-borde-fuerte bg-superficie px-e3 py-[10px] text-cuerpo text-texto placeholder:text-texto-tenue"
           />
         </label>
+        {/* Dicho en vez de escrito, gratis (0098): se escribe en la caja y se manda igual. */}
+        <Dictar
+          soloIcono
+          etiqueta="Dictar la pregunta"
+          alDecir={(dicho) => {
+            setPregunta((antes) =>
+              `${antes.trim() === '' ? '' : `${antes.trim()} `}${dicho}`.slice(
+                0,
+                LETRAS_PARA_FOGON,
+              ),
+            );
+            caja.current?.focus();
+          }}
+        />
         <button
           type="submit"
           aria-label={`Preguntar · ${creditos(gasta)}`}

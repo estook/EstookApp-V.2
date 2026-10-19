@@ -136,6 +136,12 @@ export function Esqueleto() {
   usarQueHacer('avisos', () => {
     setAvisosAbiertos(true);
   });
+  // El aviso de la revisión de Fogón (0098) abre Fogón con la revisión desplegada.
+  const [conLaRevision, setConLaRevision] = useState(false);
+  usarQueHacer('revision-de-fogon', () => {
+    setConLaRevision(true);
+    setFogonAbierto(true);
+  });
   // Sin señal y lo hecho sin ella; y el número del icono: la campana (0070) y, desde
   // C1 (0073), también lo que no se ha leído del chat, igual que el aviso del móvil.
   usarLoDeLaRed();
@@ -604,8 +610,10 @@ export function Esqueleto() {
 
         <VentanaDeFogon
           abierta={fogonAbierto}
+          conLaRevision={conLaRevision}
           alCerrar={() => {
             setFogonAbierto(false);
+            setConLaRevision(false);
           }}
         />
 

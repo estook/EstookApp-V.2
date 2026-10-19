@@ -3,6 +3,7 @@ import { LETRAS_PARA_FOGON } from '@estook/dominio';
 import { Boton, CAJA, ErrorEnCristiano, IconoDeFogon } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { creditos } from './contrato.ts';
+import { Dictar } from './Dictar.tsx';
 
 /**
  * «Con Fogón», donde ya se trabaja (Fogón 1 · 1, decisión 0097).
@@ -52,6 +53,14 @@ export function PedirleAFogon({
           setPista(e.target.value);
         }}
         className={`${CAJA} min-h-[3.25rem] bg-superficie py-e2`}
+      />
+      {/* Dicho en vez de escrito, gratis (0098): «sofríes la cebolla, añades…». */}
+      <Dictar
+        alDecir={(dicho) => {
+          setPista((antes) =>
+            `${antes.trim() === '' ? '' : `${antes.trim()} `}${dicho}`.slice(0, LETRAS_PARA_FOGON),
+          );
+        }}
       />
       {error !== null && <ErrorEnCristiano error={error} />}
       <Boton

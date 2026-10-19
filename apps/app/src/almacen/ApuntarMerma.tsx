@@ -28,6 +28,9 @@ import { hacerOGuardar } from '../sinConexion/cola.ts';
 import { usarHayRed } from '../ganchos/usarLaRed.ts';
 import { conUnidadDeUso, type ProductoParaMerma, type ProductosParaMerma } from './contrato.ts';
 import { reducirFoto, type FotoReducida } from './reducirFoto.ts';
+import { MermaConFogon } from './MermaConFogon.tsx';
+import { usarLectura } from '../ganchos/usarLectura.ts';
+import type { FogonYYo } from '../fogon/contrato.ts';
 
 /**
  * Apuntar una merma · la hoja que se abre en mitad de un servicio (M6½).
@@ -80,6 +83,10 @@ export function ApuntarMerma({
   const [foto, setFoto] = useState<FotoReducida | null>(null);
   const [reduciendo, setReduciendo] = useState(false);
   const elFichero = useRef<HTMLInputElement>(null);
+
+  // Fogón, si habla aquí (0098): dicha o por foto.
+  const fogon = usarLectura<FogonYYo>('fogon_y_yo', {}, abierta);
+  const conFogon = fogon.data?.habla === true;
 
   const DESDE_CUANTAS_LETRAS = 2;
   const buscando = texto.trim().length >= DESDE_CUANTAS_LETRAS;
@@ -255,6 +262,27 @@ export function ApuntarMerma({
           >
             {hecho} Si se ha ido más cosa, sigue aquí mismo.
           </Aviso>
+        )}
+
+        {/* ── Dicha o por foto, con Fogón (0098) ─────────────────────────── */}
+        {conFogon && conRed && productoDeEntrada === null && (
+          <MermaConFogon
+            alElegir={(m) => {
+              if (m.producto === null) return;
+              const suyo = todos.data?.productos.find((p) => p.id === m.producto?.id);
+              setHecho(null);
+              if (suyo === undefined) {
+                // Sin la lista guardada no se sabe cuánto queda: se busca, y se toca.
+                setElegido(null);
+                setTexto(m.producto.nombre);
+              } else {
+                setElegido(suyo);
+              }
+              setCuanto(m.cuanto === null ? '' : String(m.cuanto).replace('.', ','));
+              setMotivo(m.motivo);
+              setDetalle(m.detalle ?? '');
+            }}
+          />
         )}
 
         {/* ── 1 · Qué ────────────────────────────────────────────────────── */}

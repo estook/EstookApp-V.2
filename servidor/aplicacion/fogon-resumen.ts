@@ -27,10 +27,47 @@ type UnaDeLasDeSiempre = Pick<Consulta<Record<string, never>, unknown>, 'exige' 
  *     enlaces, las listas recortadas y un tope de letras. Lo caro de un modelo es lo
  *     que se le manda.
  *   · **Sin nombres del equipo**: Fogón 1 no le manda a la IA quién trabaja ni quién
- *     ha fichado. Para eso está el Horario.
+ *     ha fichado. Para eso está el Horario. **Sí sabe quién pregunta** (Richi, 19-oct:
+ *     «debería reconocerte y saber tu rol, pero sin cruzar los demás»): su nombre de
+ *     pila y su puesto en este local, nada más (0098).
  *   · **Sin un euro para quien no ve importes**: se quitan antes de mandarlo, además de
  *     decírselo al modelo. Lo que no se manda no se puede contar.
  */
+
+/**
+ * Quién pregunta: su nombre de pila y su puesto en este local (el de más alcance, si
+ * tiene varios). Solo lo suyo: ni apellidos ni nada de nadie más (0098). Nulo sin
+ * persona (el reloj).
+ */
+export async function quienPregunta(
+  contexto: Contexto,
+  localId: string,
+): Promise<{ readonly nombre: string; readonly puesto: string } | null> {
+  if (!contexto.personaId) return null;
+  const filas = await contexto.sql<{ nombre: string; puesto: string }[]>`
+    select p.nombre, r.nombre as puesto
+      from estook.persona p
+      join estook.membresia m on m.persona_id = p.id
+      join estook.rol r on r.codigo = m.rol
+      join estook.local l on l.id = ${localId}::uuid
+     where p.id = ${contexto.personaId}::uuid
+       and m.organizacion_id = l.organizacion_id
+       and (
+         m.alcance = 'organizacion'
+         or (m.alcance = 'area' and l.area_id = m.area_id)
+         or (m.alcance = 'local' and l.id = m.local_id)
+       )
+       and m.desde <= current_date
+       and (m.hasta is null or m.hasta >= current_date)
+       and (m.revocada_en is null or m.revocada_en > now())
+     order by r.amplitud desc
+     limit 1
+  `;
+  const fila = filas[0];
+  if (fila === undefined) return null;
+  const nombre = fila.nombre.trim().split(/\s+/)[0] ?? '';
+  return nombre === '' ? null : { nombre, puesto: fila.puesto };
+}
 
 /** Cuántas letras puede tener el resumen entero. Unos dos mil tokens. */
 const LETRAS_DEL_RESUMEN = 7000;
@@ -191,11 +228,17 @@ export async function elResumenParaFogon(
   `;
   const nombre = filas[0]?.nombre ?? 'tu local';
   const hora = filas[0]?.hora ?? '';
+  const quien = await quienPregunta(contexto, local.id);
 
   const partes: string[] = [
     `# RESUMEN DE ESTOOK · ${nombre} · ${hora} (hora del local)`,
     `Estás en: ${NOMBRE_DE_LA_APP[app] ?? 'Estook'}${donde.includes('/') ? ` (${donde.split('/').slice(1).join(' · ')})` : ''}.`,
     ...(PARA_QUE_SIRVE[app] === undefined ? [] : [PARA_QUE_SIRVE[app]]),
+    ...(quien === null
+      ? []
+      : [
+          `Te pregunta ${quien.nombre} (su puesto en este local: ${quien.puesto}). Llámale por su nombre si viene a cuento y contesta pensando en lo que hace su puesto.`,
+        ]),
     conDinero
       ? 'Quien pregunta ve importes y costes.'
       : 'Quien pregunta NO ve importes ni costes: no des ningún precio, coste, margen ni cantidad de dinero. Si te lo pide, dile que eso no lo lleva su puesto.',

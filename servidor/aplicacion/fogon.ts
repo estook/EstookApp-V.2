@@ -133,6 +133,8 @@ export interface LoQueSeApunta {
   readonly pregunta: string | null;
   /** El sello del resumen (0023): de qué local, a qué hora y cuántas letras. */
   readonly sello: Record<string, unknown>;
+  /** La revisión de noche (0098): la lanza el reloj, y no se apunta a nadie. */
+  readonly sinPersona?: boolean;
 }
 
 export interface LoQueContesta {
@@ -200,7 +202,8 @@ export async function pedirAFogon(
       (organizacion_id, local_id, persona_id, que, donde, pregunta, sello, modelo,
        tokens_entrada, tokens_cache_leidos, tokens_cache_escritos, tokens_salida,
        coste_micro_euros, creditos, hecha_en)
-    values (${fogon.organizacionId}::uuid, ${fogon.localId}::uuid, ${contexto.personaId}::uuid,
+    values (${fogon.organizacionId}::uuid, ${fogon.localId}::uuid,
+            ${apunte.sinPersona === true ? null : contexto.personaId}::uuid,
             ${que}, ${apunte.donde}, ${apunte.pregunta},
             ${JSON.stringify(apunte.sello)}::text::jsonb, ${respuesta.modelo},
             ${respuesta.tokens.entrada}, ${respuesta.tokens.cacheLeidos},

@@ -65,6 +65,8 @@ export const TIPOS_DE_AVISO = [
   'inventario.falta',
   // ── M9 · 3 (decisión 0092) ──────────────────────────────────────────────
   'plato.raya',
+  // ── Fogón 1 · 3 (decisión 0098) ─────────────────────────────────────────
+  'fogon.revision',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -399,6 +401,16 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     nombre: 'Un plato pasa de tu objetivo o pierde dinero',
     explica: 'Una vez por plato, cuando cruza la raya; no con cada albarán.',
     grupo: 'Carta',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: false,
+  },
+  // La revisión de Fogón (0098): una vez a la semana, de noche, y solo si encuentra algo.
+  // Vigila los datos, nunca a las personas (0095).
+  'fogon.revision': {
+    nombre: 'Fogón ha revisado tus datos',
+    explica: 'Los lunes, si encuentra algo que mirar: productos repetidos, platos sin escandallo…',
+    grupo: 'Almacén',
     deTuEquipo: false,
     correoDeFabrica: false,
     movilDeFabrica: false,
@@ -1038,5 +1050,22 @@ export function avisoDeLaRaya(
         ? `${plato} pasa de tu objetivo`
         : `${plato} pierde dinero en ${raya.canal ?? 'un canal'}`,
     detalle: partes.length === 0 ? null : partes.join(' '),
+  };
+}
+
+/**
+ * «Fogón ha revisado tus datos» · «3 cosas que mirar: Huevo L y Huevos camperos parecen
+ * el mismo producto, y 2 más.» (Fogón 1 · 3, 0098). Solo cuando hay algo: una revisión
+ * sin nada no avisa.
+ */
+export function avisoDeLaRevision(hallazgos: readonly string[]): LoQueDiceUnAviso {
+  const primero = hallazgos[0] ?? '';
+  const mas = hallazgos.length - 1;
+  return {
+    titulo:
+      hallazgos.length === 1
+        ? 'Fogón ha revisado tus datos: 1 cosa que mirar'
+        : `Fogón ha revisado tus datos: ${String(hallazgos.length)} cosas que mirar`,
+    detalle: mas > 0 ? `${primero} Y ${String(mas)} más.` : primero,
   };
 }

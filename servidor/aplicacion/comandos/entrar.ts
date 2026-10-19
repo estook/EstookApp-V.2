@@ -97,6 +97,11 @@ export const entradaEntrar = z
     contrasena: z.string().min(1).max(512).optional(),
     pin: z.string().trim().optional(),
     aparato: elAparato.optional(),
+    /**
+     * Para salir de la pantalla de fichar (19-oct): la llave del aparato del local. Solo
+     * entra quien puede llevar ese local (`app.ajustes`), y entra en él.
+     */
+    llave_del_aparato: z.string().trim().min(20).max(200).optional(),
   })
   .strict()
   .refine((e) => (e.contrasena === undefined) !== (e.pin === undefined), {
@@ -131,10 +136,14 @@ export const entrar = comando<EntradaEntrar, SalidaEntrar>({
   conSecreto: true,
 
   async ejecutar(contexto, entrada) {
-    const quien =
+    const quienEs =
       entrada.pin === undefined
         ? await porContrasena(contexto, entrada.correo, entrada.contrasena ?? '')
         : await porPin(contexto, entrada.correo, entrada.pin);
+    const quien =
+      entrada.llave_del_aparato === undefined
+        ? quienEs
+        : await quienSacaElAparato(contexto, quienEs, entrada.llave_del_aparato);
 
     return abrirLaSesion(
       contexto,
@@ -144,6 +153,36 @@ export const entrar = comando<EntradaEntrar, SalidaEntrar>({
     );
   },
 });
+
+/**
+ * **Salir de la pantalla de fichar** (Richi, 19-oct: «si se elige un aparato para fichar
+ * tienes la opción de volver a Estook, y el gerente debe escribir su contraseña»). La
+ * tablet se queda en el local y la toca todo el mundo: sale solo quien puede llevar ese
+ * local —el mismo permiso que ponerlo—, y entra **en ese local**. Se mira aquí, en el
+ * servidor: esconder el botón no protegería nada.
+ */
+async function quienSacaElAparato(
+  contexto: Contexto,
+  quien: QuienEntra,
+  laLlave: string,
+): Promise<QuienEntra> {
+  const aparatos = await contexto.sql<{ local_id: string }[]>`
+    select local_id from estook.terminal_por_llave(${await huellaDeToken(laLlave)})
+  `;
+  const localId = aparatos[0]?.local_id;
+  if (localId === undefined) throw new FalloDeAplicacion('aparato_retirado');
+  // Con la identidad puesta, como al abrir la sesión: `entrar` corre sin sesión.
+  await contexto.sql`select set_config('estook.persona_id', ${quien.personaId}, true)`;
+  const niveles = await contexto.sql<{ nivel: string | null }[]>`
+    select estook.nivel_de_permiso(${quien.personaId}::uuid, ${localId}::uuid, 'app.ajustes')::text as nivel
+  `;
+  if (niveles[0]?.nivel !== 'ver_y_editar') {
+    throw new FalloDeAplicacion('sin_permiso', {
+      porque: 'Solo quien lleva el local puede sacar este aparato de la pantalla de fichar.',
+    });
+  }
+  return { ...quien, localDelPin: localId };
+}
 
 /**
  * Abrir la sesión de quien ya ha demostrado quién es: el destino, el segundo

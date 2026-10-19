@@ -427,9 +427,7 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
         // El coste sale del precio que se acaba de poner, con el motor de M2 que
         // es su único dueño. Sin precio entra sin valorar, y eso es correcto: «un
         // producto sin precio se usa igual, cuenta cero y queda marcado».
-        costeMilesimas: conPrecio
-          ? costeDeCompra(entrada.precio_centimos ?? 0, factor)
-          : null,
+        costeMilesimas: conPrecio ? costeDeCompra(entrada.precio_centimos ?? 0, factor) : null,
         loteId,
         motivo: 'Lo que había al dar de alta el producto',
         origen: 'alta',

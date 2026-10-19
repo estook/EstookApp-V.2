@@ -119,6 +119,10 @@ export const misPedidos = consulta<EntradaMisPedidos, SalidaMisPedidos>({
     const precios = await loQuePuedeConLosPrecios(contexto, localId);
     const reloj = await elRelojDelLocal(contexto, localId);
     const estados = [...VISTAS_DE_PEDIDOS[entrada.vista ?? 'abiertos']];
+    // **Las compras, de quien las manda** (Richi, 19-oct: «los cocineros ni camareros
+    // deben tener acceso a compras si no se les invita»). Quien no manda pedidos ve solo
+    // aquellos a los que le han pedido ayuda.
+    const mandaPedidos = await puedeEnviar(contexto, localId);
     const limite = entrada.limite ?? 50;
     const salto = entrada.salto ?? 0;
 
@@ -149,6 +153,10 @@ export const misPedidos = consulta<EntradaMisPedidos, SalidaMisPedidos>({
         join estook.proveedor pv on pv.id = p.proveedor_id
         left join estook.persona pe on pe.id = p.creado_por
        where p.local_id = ${localId}
+         and (${mandaPedidos} or exists (
+               select 1 from estook.invitacion_a_pedido i
+                where i.pedido_id = p.id and i.persona_id = ${contexto.personaId}::uuid
+             ))
          and p.estado::text = any(${comoLista(estados)}::text::text[])
          and (${entrada.proveedor_id ?? null}::uuid is null
               or p.proveedor_id = ${entrada.proveedor_id ?? null}::uuid)
@@ -172,7 +180,13 @@ export const misPedidos = consulta<EntradaMisPedidos, SalidaMisPedidos>({
 
     const cuantos = await contexto.sql<{ estado: string; cuantos: number }[]>`
       select estado::text as estado, count(*)::int as cuantos
-        from estook.pedido_de_compra where local_id = ${localId} group by estado
+        from estook.pedido_de_compra p
+       where p.local_id = ${localId}
+         and (${mandaPedidos} or exists (
+               select 1 from estook.invitacion_a_pedido i
+                where i.pedido_id = p.id and i.persona_id = ${contexto.personaId}::uuid
+             ))
+       group by estado
     `;
     const de = (...que: string[]) =>
       cuantos.filter((c) => que.includes(c.estado)).reduce((s, c) => s + c.cuantos, 0);
@@ -215,7 +229,7 @@ export const misPedidos = consulta<EntradaMisPedidos, SalidaMisPedidos>({
       },
       hoy: reloj.hoy,
       puedeVerPrecios: precios.ver,
-      puedeEnviar: await puedeEnviar(contexto, localId),
+      puedeEnviar: mandaPedidos,
     };
   },
 });
@@ -345,6 +359,11 @@ export const unPedido = consulta<{ pedido_id: string }, SalidaUnPedido>({
         left join estook.persona envio on envio.id = p.enviado_por
         left join estook.persona recibio on recibio.id = p.recibido_por
        where p.id = ${entrada.pedido_id} and p.local_id = ${localId}
+         -- De quien manda pedidos, o al que le han pedido ayuda (19-oct).
+         and (estook.puede_editar('accion.enviar_pedidos', ${localId}::uuid) or exists (
+               select 1 from estook.invitacion_a_pedido i
+                where i.pedido_id = p.id and i.persona_id = ${contexto.personaId}::uuid
+             ))
     `;
 
     const pedido = filas[0];

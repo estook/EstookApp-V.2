@@ -20,7 +20,7 @@ import {
   IconoServicio,
   type Icono,
 } from '@estook/iconos';
-import { ORDEN_DE_LA_RUEDA, type PermisoDeApp } from '@estook/permisos';
+import { ORDEN_DE_LA_RUEDA, type Permiso, type PermisoDeApp } from '@estook/permisos';
 
 /** Solo las ocho de la rueda. El Panel, Fogon, Ajustes y la gestoria no lo son. */
 type AppDeLaRueda = (typeof ORDEN_DE_LA_RUEDA)[number];
@@ -142,6 +142,14 @@ export interface Destino {
    * Resumen de Almacén). Su dirección sigue valiendo.
    */
   readonly fueraDeLaBarra?: true;
+  /**
+   * El permiso que hay que tener, además del de la app, para que salga en la barra y en
+   * el menú (19-oct). Compras es de quien manda pedidos, y Mermas de quien ve lo que
+   * cuesta: «los cocineros ni camareros deben tener acceso a compras si no se les
+   * invita; cuidado con los datos de dinero» (Richi). Su dirección sigue valiendo: el
+   * cocinero al que le piden ayuda llega al pedido por el aviso.
+   */
+  readonly permiso?: Permiso;
 }
 
 export interface App {
@@ -275,6 +283,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         id: 'compras',
         nombre: 'Compras',
         icono: IconoOrganizacion,
+        permiso: 'accion.enviar_pedidos',
         queContesta: '¿Qué pido, qué ha llegado y a qué precio?',
         // M7 construyó cinco: Pedidos, Albaranes, Facturas, Proveedores y Precios.
         // **Tres desde la experiencia (0083)**, en el orden del día: se pide, llega y
@@ -292,6 +301,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         id: 'mermas',
         nombre: 'Mermas',
         icono: IconoBorrar,
+        permiso: 'dato.precio_de_compra',
         queContesta: '¿Qué se ha tirado, cuánto ha costado y por qué?',
         vistas: [],
       },
@@ -752,6 +762,15 @@ export function destinosConstruidos(app: App): readonly Destino[] {
   return app.destinos.filter(
     (destino) => destino.modulo === undefined && destino.fueraDeLaBarra !== true,
   );
+}
+
+/**
+ * La app como la ve quien la mira: sin los destinos que piden un permiso que no tiene
+ * (19-oct). `puede` lo pone quien sabe de permisos, la app; aquí solo se filtra.
+ */
+export function laAppParaQuien(app: App, puede: (permiso: Permiso) => boolean): App {
+  const destinos = app.destinos.filter((d) => d.permiso === undefined || puede(d.permiso));
+  return destinos.length === app.destinos.length ? app : { ...app, destinos };
 }
 
 /** Todos los que se pueden abrir, también los que no van en la barra: para el buscador. */

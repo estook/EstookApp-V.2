@@ -184,7 +184,9 @@ export const crearPedido = comando<
 >({
   nombre: 'crear_pedido',
   entrada: entradaCrearPedido,
-  exige: 'app.almacen',
+  // Empezar un pedido es de quien los manda (Richi, 19-oct): un cocinero rellena el que
+  // le piden, no abre uno por su cuenta.
+  exige: 'accion.enviar_pedidos',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);
@@ -290,6 +292,21 @@ export const cambiarPedido = comando<EntradaCambiarPedido, { pedidoId: string; l
   async ejecutar(contexto, entrada) {
     const pedido = await elPedidoBloqueado(contexto, entrada.pedido_id);
     if (!estaAbierto(pedido.estado)) throw yaEstaCerrado(pedido);
+
+    // Quien no manda pedidos, solo el que le han pedido rellenar (19-oct).
+    const [puede] = await contexto.sql<{ puede: boolean }[]>`
+      select estook.puede_editar('accion.enviar_pedidos', ${pedido.localId}::uuid)
+             or exists (
+               select 1 from estook.invitacion_a_pedido i
+                where i.pedido_id = ${pedido.id} and i.persona_id = ${contexto.personaId}::uuid
+             ) as puede
+    `;
+    if (puede?.puede !== true) {
+      throw new FalloDeAplicacion('sin_permiso', {
+        porque:
+          'Los pedidos los hace quien lleva las compras. Si necesita que lo rellenes, te lo pedirá.',
+      });
+    }
 
     const precios = await loQuePuedeConLosPrecios(contexto, pedido.localId);
 

@@ -121,3 +121,14 @@ select e.local_id, e.producto_id, 'ajuste', 0, null,
    and v.coste_milesimas is not null
    and e.coste_milesimas <> v.coste_milesimas
  order by e.producto_id;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- C · Borrar un plato de la carta
+-- ═══════════════════════════════════════════════════════════════════════════
+--
+-- Richi, 19-oct: «poder borrar platos archivados, o borrarlos directamente». Archivar
+-- lo quita de la carta y se puede recuperar; borrar es para siempre, con su escandallo,
+-- su ficha técnica y sus precios por canal (todo cuelga del plato con `cascade`). Se
+-- pide confirmar en la pantalla, diciendo que no hay vuelta atrás. La política de
+-- escribir la carta (`plato_escritura`, para todo) ya cubre borrar: faltaba el permiso.
+grant delete on estook.plato to estook_api;

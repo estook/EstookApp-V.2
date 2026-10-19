@@ -193,6 +193,7 @@ import {
 } from './comandos/fichas.ts';
 import {
   archivarPlato,
+  borrarPlato,
   cambiarPlato,
   cambiarSeccion,
   configurarCanal,
@@ -792,6 +793,7 @@ export const catalogo = {
     [cambiarPlato.nombre]: cambiarPlato,
     [ordenarPlatos.nombre]: ordenarPlatos,
     [archivarPlato.nombre]: archivarPlato,
+    [borrarPlato.nombre]: borrarPlato,
     [recuperarPlato.nombre]: recuperarPlato,
     [ponerFotoDePlato.nombre]: ponerFotoDePlato,
     [quitarFotoDePlato.nombre]: quitarFotoDePlato,

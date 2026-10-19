@@ -33,3 +33,5 @@ update estook.precio_pactado
 
 comment on column estook.precio_de_producto.coste_milesimas is
   'precio ÷ (factor × rendimiento), en milesimas de centimo. Lo calcula el dominio; aqui solo se guarda para poder comparar y ordenar.';
+
+revoke delete on estook.plato from estook_api;

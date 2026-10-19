@@ -578,6 +578,56 @@ function archivarORecuperar(nombre: 'archivar_plato' | 'recuperar_plato') {
 export const archivarPlato = archivarORecuperar('archivar_plato');
 export const recuperarPlato = archivarORecuperar('recuperar_plato');
 
+/**
+ * **Borrar un plato, para siempre** (Richi, 19-oct: «poder borrar platos archivados, o
+ * borrarlos directamente»). Se va con su escandallo, su ficha técnica, su historial y sus
+ * precios por canal, y sus fotos del almacén. La pantalla lo confirma diciendo que no
+ * hay vuelta atrás; quien solo quiere quitarlo de la carta, lo archiva.
+ */
+export const borrarPlato = comando<{ plato_id: string }, { platoId: string; nombre: string }>({
+  nombre: 'borrar_plato',
+  entrada: z.object({ plato_id: z.string().uuid() }).strict(),
+  exige: 'app.carta',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeLaCarta(contexto);
+    const antes = await elPlatoParaEscribir(contexto, localId, entrada.plato_id);
+    // Las fotos, antes de que se vaya la fila que dice dónde están.
+    const fotos = await contexto.sql<{ clave: string }[]>`
+      select unnest(array[p.foto_clave, p.miniatura_clave]) as clave
+        from estook.plato p where p.id = ${entrada.plato_id}::uuid
+      union all
+      select unnest(r.fotos_de_los_pasos) from estook.receta r
+       where r.plato_id = ${entrada.plato_id}::uuid
+    `;
+    const borrados = await contexto.sql<{ id: string }[]>`
+      delete from estook.plato
+       where id = ${entrada.plato_id}::uuid and local_id = ${localId}::uuid
+      returning id
+    `;
+    if (borrados.length === 0) {
+      throw new FalloDeAplicacion('sin_permiso', {
+        porque: 'Tu acceso no deja borrar platos de esta carta.',
+      });
+    }
+    if (contexto.almacen !== null) {
+      for (const { clave } of fotos) {
+        if (clave !== null && clave !== '') await contexto.almacen.borrar(clave);
+      }
+    }
+    await anotar(
+      contexto,
+      'borrar',
+      'plato',
+      entrada.plato_id,
+      localId,
+      { nombre: antes.nombre },
+      null,
+    );
+    return { platoId: entrada.plato_id, nombre: antes.nombre };
+  },
+});
+
 // ═══ La foto del plato ═══════════════════════════════════════════════════════
 //
 // El mismo camino que la del producto (`fotos.ts`): dos ficheros ya reducidos en el

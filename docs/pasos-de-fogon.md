@@ -4,25 +4,25 @@
 >
 > Leído el 19 de octubre de 2026 en producción (solo lectura).
 >
-> | Qué              | Cómo está                                                                                                   |
-> | ---------------- | ----------------------------------------------------------------------------------------------------------- |
-> | Pull requests    | **#117 y #118 fusionadas**. Abierta: **Fogón dice por qué** (rama `fogon-dice-por-que`)                     |
-> | La base de datos | **74 de 74** migraciones (la 0074 aplicada)                                                                 |
-> | La API           | **Desplegada el 19-oct** con la #118: 94 consultas y 202 comandos. La rama nueva no añade ninguno           |
-> | Fogón            | **Encendido**: el general, IKATZ y Pizzeriacazzo. **No contesta**: falla la llamada a Anthropic (ver abajo) |
+> | Qué              | Cómo está                                                                                         |
+> | ---------------- | ------------------------------------------------------------------------------------------------- |
+> | Pull requests    | **#117 y #118 fusionadas**. Abierta: **Fogón dice por qué** (rama `fogon-dice-por-que`)           |
+> | La base de datos | **74 de 74** migraciones (la 0074 aplicada)                                                       |
+> | La API           | **Desplegada el 19-oct** con la #118: 94 consultas y 202 comandos. La rama nueva no añade ninguno |
+> | Fogón            | **Encendido** (el general, IKATZ y Pizzeriacazzo) y **contestando** desde el 19-oct               |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de M9, en [`pasos-de-m9.md`](pasos-de-m9.md).
 
 ---
 
-## Lo que te toca ahora · que Fogón diga por qué no contesta
+## Lo que te toca ahora · fusionar la #119 y la #120
 
-Lo que viste el 19-oct, con la #118 ya desplegada: el chat seguía diciendo «no ha podido contestar», sin más. Es la frase para los clientes, a propósito. En producción **no ha funcionado ni una llamada** (0 apuntadas): es la conexión con Anthropic (la clave, el saldo o el modelo), no el chat. En su pull request (rama `fogon-dice-por-que`): **en IKATZ el chat dice el motivo de verdad** y la frase de Anthropic; a los clientes, la frase sencilla. Y la clave se limpia si se pegó con comillas, espacios o el `AI_API_KEY=` delante. **Sin migración, con la API.**
+Fogón **ya contesta** (19-oct): la clave de Anthropic estaba creada **sin espacio de trabajo**; con ella dentro de uno, funciona. Si algún día vuelve a fallar, **admin → Fogón → Probar la conexión** dice el motivo. La #120 (rama `fogon-dice-por-que`) hace que **en IKATZ el chat también lo diga**, limpia la clave si se pega con comillas o espacios, y arregla dos pruebas. **Sin migración, con la API.**
 
-1. **Probar la conexión, ya** (no hace falta esperar a nada): **estook.com/admin/** → **Fogón** → **Probar la conexión**. Dime la frase que sale y la letra pequeña de debajo (no lleva la clave).
-2. **Fusionar**: en PowerShell, `gh pr merge` con el número del pull request (te lo doy en el chat), con las tres comprobaciones en verde.
+1. **Mirar que estén en verde**: `gh pr checks 119` y `gh pr checks 120`, las tres en `pass`.
+2. **Fusionar**: `gh pr merge 119 --merge` y luego `gh pr merge 120 --merge`.
 3. **Desplegar la API**: `gh workflow run desplegar-api.yml --ref main -f confirmar=desplegar`, y esperar al círculo verde en **Actions**.
-4. **Volver a preguntar en IKATZ**: ahora el chat dice qué tocar.
+4. **Poner la carpeta al día**: `git checkout main` y `git pull`.
 
 ## Hecho · el chat de Fogón y «Probar la conexión» (#118, desplegada el 19-oct)
 

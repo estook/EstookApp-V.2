@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 19 de octubre de 2026 · **Fogón 1 · 1 en producción** (#117 fusionada, 0074 migrada, API 94 y 201 desplegada, encendido para IKATZ y Pizzeriacazzo), **pero no contesta**: falla la llamada a Anthropic (#118 desplegada: el chat y «Probar la conexión»). **En su pull request (`fogon-dice-por-que`): en IKATZ el chat dice el motivo de verdad, y la clave se limpia de comillas y espacios.** Después, Fogón 1 · 2
+Última actualización: 19 de octubre de 2026 · **Fogón 1 · 1 en producción y contestando** (#117 y #118 fusionadas, 0074 migrada, API desplegada, encendido para IKATZ y Pizzeriacazzo). No contestaba porque la clave de Anthropic se creó sin espacio de trabajo; Richi lo arregló el 19-oct. **En su pull request (`fogon-dice-por-que`, #120): en IKATZ el chat dice el motivo si vuelve a fallar, la clave se limpia, y dos pruebas arregladas.** Después, Fogón 1 · 2
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Trabajo a medias: ninguno.** Abierta, la rama `fogon-dice-por-que` con su pull request: **sin migración, con la API**. **Lo siguiente: saber por qué no contesta** (lo dirá «Probar la conexión» en el admin) y luego **Fogón 1 · 2** (fotos y voz), con sus preguntas antes de construir. **Ojo:** cuando Richi hace sus pasos (`git checkout main`), la carpeta cambia de rama: mirar en qué rama se está antes de tocar nada.
+- **Trabajo a medias: ninguno.** Abiertas la #119 (el buscador) y la #120 (`fogon-dice-por-que`): **sin migración**; la #120 lleva la API. **Lo siguiente: Fogón 1 · 2** (fotos y voz), con sus preguntas antes de construir. **Ojo:** cuando Richi hace sus pasos (`git checkout main`), la carpeta cambia de rama: mirar en qué rama se está antes de tocar nada.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -82,7 +82,7 @@ DESPUÉS       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 →
 ### Lo que todavía NO está en la app (para que nadie dé por hecho lo que solo está escrito)
 
 - **«Qué ha cambiado» en IKATZ** no sale hasta que el coste de algún plato se mueva: necesita precios de hace días. **La desviación de los platos** sigue escondida hasta el TPV.
-- **Fogón 1 · 1** está en producción y encendido para IKATZ y Pizzeriacazzo, **pero no contesta**: la llamada a Anthropic falla (0 llamadas apuntadas, leído el 19-oct). Lo demás de Fogón 1 (fotos, voz, revisar los datos, borradores) y **Fogón 2**, sin construir.
+- **Fogón 1 · 1** está en producción, encendido para IKATZ y Pizzeriacazzo, y **contesta** desde el 19-oct (la clave necesitaba un espacio de trabajo en Anthropic). Lo demás de Fogón 1 (fotos, voz, revisar los datos, borradores) y **Fogón 2**, sin construir.
 - **Estook TPV, Estook Link, la facturación, M10** (menús, agotados, el análisis de la carta) y **el APPCC**: escritos, sin construir. Cada uno dice su módulo en el Plan.
 - **De M8 y M9, construido y sin enseñar hasta el TPV:** «lo que falta» de lo que se cocina y la desviación de los platos. **La calibración, el coste teórico y los avisos de lo que se escapa**, diseñados y sin construir: van con M20, cuando haya ventas plato a plato ([el diseño](docs/como-detecta-estook-lo-que-se-escapa.md); en IKATZ, 1 de 21 cierres trae los platos). **En IKATZ hay un solo inventario cerrado** (11-oct): la desviación y lo gastado salen vacíos hasta el segundo.
 - **Del chat**, llamadas, un canal de toda la cadena y hablar con el proveedor. **Del admin**, lo que nos cuesta cada cliente (M26).
@@ -102,7 +102,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 
 **Ahora** (paso a paso en [`docs/pasos-de-fogon.md`](docs/pasos-de-fogon.md)):
 
-1. **Saber por qué no contesta Fogón**: en el admin → Fogón → **Probar la conexión** (ya está desplegado), y **decir qué sale**. Después, fusionar `fogon-dice-por-que` y desplegar la API (sin migración).
+1. **Fusionar la #119 y la #120** con las tres comprobaciones en verde, y **desplegar la API** (sin migración).
 2. **Probarlo en el iPhone** cuando funcione: preguntarle, «Rellenar con Fogón» en un plato sin escandallo y los pasos de una ficha; y mirar lo gastado en el admin.
 3. **Contestar las preguntas de Fogón 1 · 2** (fotos y voz), cuando lleguen.
 4. **Si no lo has hecho ya:** **cerrar un segundo inventario** en IKATZ (hay uno, del 11-oct); que **Santi publique una semana** en Pizzeriacazzo; alguien del equipo que entró con su PIN, **ponerse contraseña**; y **el chat en tu iPhone**.
@@ -185,6 +185,6 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Que Richi pulse «Probar la conexión»** en el admin y fusione y despliegue `fogon-dice-por-que` ([los pasos](docs/pasos-de-fogon.md)): dirá por qué no contesta Anthropic. Con Fogón contestando, **Fogón 1 · 2** (fotos y voz) con sus preguntas y la prueba de la plantilla antes de construir; luego **Fogón 1 · 3**, y **M10**. Con M10 terminado, **Estook TPV**.
+**Que Richi fusione la #119 y la #120 y despliegue la API** ([los pasos](docs/pasos-de-fogon.md)). Con Fogón ya contestando, **Fogón 1 · 2** (fotos y voz) con sus preguntas y la prueba de la plantilla antes de construir; luego **Fogón 1 · 3**, y **M10**. Con M10 terminado, **Estook TPV**.
 
 **Lo que decidió la IA por su cuenta**, para que Richi lo sepa: los seis de «Lo que decidí al construirlo» de la [0097](docs/decisiones/0097-fogon-1-las-respuestas-y-la-base.md) (como que la conversación no se guarde, que a la IA no le lleguen nombres de personas o que Anthropic quede apuntado como subencargado), y la forma de los topes, que Richi pidió recomendar. **Todo lo anterior**, entrega a entrega, en [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md).

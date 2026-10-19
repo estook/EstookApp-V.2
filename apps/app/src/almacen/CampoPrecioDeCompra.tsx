@@ -8,6 +8,7 @@ import {
   type Centimos,
 } from '@estook/dominio';
 import { CampoMoneda, clases } from '@estook/ui';
+import { IconoFlechaDerecha } from '@estook/iconos';
 import { comoDinero } from './contrato.ts';
 
 /**
@@ -34,6 +35,7 @@ export function CampoPrecioDeCompra({
   iva,
   conIvaDeEntrada,
   alElegirTipo,
+  antes,
 }: {
   readonly etiqueta: string;
   readonly ayuda?: string;
@@ -46,6 +48,12 @@ export function CampoPrecioDeCompra({
   readonly conIvaDeEntrada: boolean;
   /** Si se elige otro tipo aquí, para guardarlo en el producto. */
   readonly alElegirTipo?: (tipo: number) => void;
+  /**
+   * El precio de ahora, **sin IVA**, para ponerlo a la izquierda y que no se toque
+   * (Richi, 19-oct: «a la izquierda el precio de antes, una flecha y el campo»). Se
+   * enseña igual que se escribe el nuevo: con IVA o sin él.
+   */
+  readonly antes?: number | null;
 }) {
   const [conElImpuesto, setConElImpuesto] = useState(conIvaDeEntrada && iva !== null);
   const [tipo, setTipo] = useState<number>(iva ?? 0.1);
@@ -70,16 +78,44 @@ export function CampoPrecioDeCompra({
         : 'border-borde-fuerte bg-superficie text-texto-suave hover:bg-fondo',
     );
 
+  const campo = (
+    <CampoMoneda
+      etiqueta={etiqueta}
+      {...(ayuda === undefined ? {} : { ayuda })}
+      valor={escrito}
+      alCambiar={(nuevo) => {
+        escribir(nuevo);
+      }}
+    />
+  );
+  const deAntes =
+    antes === null || antes === undefined
+      ? null
+      : conElImpuesto
+        ? conIva(centimos(antes), tipo)
+        : centimos(antes);
+
   return (
     <div className="flex flex-col gap-e2">
-      <CampoMoneda
-        etiqueta={etiqueta}
-        {...(ayuda === undefined ? {} : { ayuda })}
-        valor={escrito}
-        alCambiar={(nuevo) => {
-          escribir(nuevo);
-        }}
-      />
+      {deAntes === null ? (
+        campo
+      ) : (
+        <div className="grid grid-cols-[minmax(0,7rem)_auto_minmax(0,1fr)] items-start gap-e2">
+          <div className="flex flex-col gap-e1">
+            <span className="text-secundario font-medium text-texto-suave">Antes</span>
+            <span
+              aria-label={`Precio de antes: ${comoDinero(deAntes)}`}
+              className="flex min-h-toque items-center rounded-grande bg-fondo px-e3 text-cuerpo tabular-nums text-texto-suave"
+            >
+              {comoDinero(deAntes)}
+            </span>
+          </div>
+          <span aria-hidden className="mt-[2.4rem] text-texto-tenue">
+            <IconoFlechaDerecha size={20} />
+          </span>
+          {campo}
+        </div>
+      )}
 
       {iva !== null && (
         <div className="flex flex-wrap items-center gap-e2">

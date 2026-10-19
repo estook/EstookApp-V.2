@@ -436,7 +436,6 @@ export function enlaceDeCorreo(correo: string, asunto: string, texto: string): s
 export interface LineaQueLlega {
   readonly pesoVariable: boolean;
   readonly factor: number;
-  readonly rendimiento: number;
   /** Cuántos formatos. Obligatorio si no es peso variable. */
   readonly formatos?: number | null;
   /** Los kilos (o litros) reales. Obligatorio si es peso variable. */
@@ -473,7 +472,10 @@ export interface LineaRecibida {
  * cosa. Es la única forma de que el pescado no salga más barato de lo que costó.
  */
 export function lineaRecibida(linea: LineaQueLlega): LineaRecibida {
-  const rendimiento = linea.rendimiento > 0 && linea.rendimiento <= 1 ? linea.rendimiento : 1;
+  // **Lo que entra vale lo que se pagó** (0099): el coste de la línea va sin el
+  // aprovechamiento, que solo cuenta al costear un plato. Antes el kilo de atún
+  // entraba a 25,97 € habiéndose pagado a 18,18 €.
+  const rendimiento = 1;
 
   if (linea.pesoVariable) {
     const cuanto = Math.max(0, linea.cantidadDeUso ?? 0);

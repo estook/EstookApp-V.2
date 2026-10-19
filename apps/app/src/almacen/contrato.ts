@@ -1,8 +1,12 @@
 import {
   cantidad,
   centimos,
+  comoPrecioPorUnidad,
+  comoSeDiceElTipo,
+  conIva,
   conSimbolo,
   conUnidad,
+  milesimas,
   type Alergeno,
   type Consumo,
   type EstadoDeExistencias,
@@ -297,6 +301,81 @@ export function conUnidadDeUso(cuanto: number, unidad: string): string {
   return conUnidad(cantidad(cuanto), unidad);
 }
 
+/** «La caja», «el saco», «la unidad»: el envase con su artículo, para «50 € la caja». */
+export function elEnvase(formato: string | null, unidadDeUso: string): string {
+  if (formato === null || formato.trim() === '')
+    return LA_UNIDAD[unidadDeUso] ?? `el ${unidadDeUso}`;
+  const nombre = formato.trim().toLocaleLowerCase('es');
+  const primera = nombre.split(/s+/)[0] ?? nombre;
+  const femenina =
+    FEMENINAS.has(primera) || (primera.endsWith('a') && !MASCULINAS_EN_A.has(primera));
+  return `${femenina ? 'la' : 'el'} ${nombre}`;
+}
+
+/** «Del kilo», «de la caja de 5 kg»: para «Precio del kilo». */
+export function delEnvase(formato: string | null, unidadDeUso: string): string {
+  const el = elEnvase(formato, unidadDeUso);
+  return el.startsWith('el ') ? `del ${el.slice(3)}` : `de ${el}`;
+}
+
+const LA_UNIDAD: Readonly<Record<string, string>> = {
+  ud: 'la unidad',
+  kg: 'el kilo',
+  g: 'el kilo',
+  l: 'el litro',
+  ml: 'el litro',
+};
+const FEMENINAS = new Set(['unidad', 'ración', 'racion', 'pieza', 'malla', 'red']);
+const MASCULINAS_EN_A = new Set(['día']);
+
+/**
+ * **Un precio, dicho una vez y como lo apunta el local** (Richi, 19-oct: «tres precios
+ * diferentes no tiene sentido; si compra con IVA, poner el precio con IVA y abajo en
+ * pequeño sin IVA»).
+ *
+ * El precio se guarda sin IVA y por envase. Lo que se enseña:
+ *   · `principal`: el del envase **como lo apunta el local** (con IVA si en Ajustes dice
+ *     que apunta con IVA), y si el envase trae más de un kilo, litro o unidad, lo que
+ *     sale cada uno: «50,00 € la caja de 5 kg · 10,00 €/kg».
+ *   · `otro`: la otra cifra, para el que la busque: «Sin IVA, 45,45 €».
+ *
+ * El aprovechamiento no entra aquí: lo pagado es lo pagado (0099). Lo que sale el kilo
+ * limpio lo dice el aprovechamiento, y lo usa el escandallo.
+ */
+export function elPrecioComoLoApuntas(precio: {
+  readonly precioCentimos: number;
+  readonly formato: string | null;
+  readonly factor: number;
+  readonly unidadDeUso: string;
+  readonly ivaDeCompra: number | null;
+  readonly preciosConIva: boolean;
+}): { readonly principal: string; readonly otro: string | null } {
+  const iva = precio.ivaDeCompra !== null && precio.ivaDeCompra > 0 ? precio.ivaDeCompra : null;
+  const sinElImpuesto = centimos(Math.trunc(precio.precioCentimos));
+  const conElImpuesto = iva === null ? null : conIva(sinElImpuesto, iva);
+  const delantero = precio.preciosConIva && conElImpuesto !== null ? conElImpuesto : sinElImpuesto;
+  const envase = `${conSimbolo(delantero)} ${elEnvase(precio.formato, precio.unidadDeUso)}`;
+  // Lo que sale cada kilo, litro o unidad, si el envase trae más de uno.
+  const porUnidad =
+    precio.factor > 0 && precio.factor !== 1 && precio.formato !== null
+      ? comoPrecioPorUnidad(
+          milesimas(Math.round((delantero * 1000) / precio.factor)),
+          precio.unidadDeUso,
+        )
+      : null;
+  const repite =
+    porUnidad !== null && porUnidad.startsWith(conSimbolo(delantero).replace(/s?€$/, ''));
+  const principal = porUnidad === null || repite ? envase : `${envase} · ${porUnidad}`;
+  if (iva === null || conElImpuesto === null) return { principal, otro: null };
+  return {
+    principal,
+    otro:
+      delantero === conElImpuesto
+        ? `Sin IVA, ${conSimbolo(sinElImpuesto)}`
+        : `Con IVA (${comoSeDiceElTipo(iva)}), ${conSimbolo(conElImpuesto)}`,
+  };
+}
+
 /** Un importe en céntimos, o una raya cuando no se puede ver. */
 export function comoDinero(valor: number | null | undefined): string {
   if (valor === null || valor === undefined) return '—';
@@ -358,6 +437,8 @@ export const COMO_SE_LLAMA_EL_MOVIMIENTO: Readonly<Record<string, string>> = {
   venta: 'Vendido',
   consumo: 'Consumido al vender',
   recuento: 'Inventario',
+  // Una vez, el 19-oct (0076): lo que había, a lo pagado hoy. No mueve cantidad.
+  revalorado: 'Revalorado a lo pagado',
 };
 
 // ── El libro de movimientos, entero ──────────────────────────────────────────

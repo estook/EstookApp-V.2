@@ -7,12 +7,13 @@ import {
   NOMBRE_DE_LA_ZONA,
   TIPOS_DE_IVA_DE_COMPRA,
   llevaCategorias,
-  centimos,
+  milesimas,
+  comoHaCambiado,
   comoPorcentaje,
+  comoPrecioPorUnidad,
   comoSeCompraDe,
   comoSeDiceElTipo,
   comoSePide,
-  conIva,
   conUnidadAproximada,
   plural,
   convertir,
@@ -76,6 +77,9 @@ import {
   comoSeLeeLaFecha,
   conUnidadDeUso,
   cuandoSeAgota,
+  delEnvase,
+  elEnvase,
+  elPrecioComoLoApuntas,
   type CategoriaDelLocal,
   type ProductoEnLista,
   type MovimientoEnFicha,
@@ -158,6 +162,19 @@ export function FichaDeProducto({
       ? null
       : cuandoSeAgota(datos.producto.seAgotaEn, datos.producto.diasDeCobertura);
   const vigente = datos?.precios.find((precio) => precio.vigente);
+  const precioALaVista =
+    datos === undefined ||
+    datos.producto.precioCentimos === null ||
+    datos.producto.precioCentimos === undefined
+      ? null
+      : elPrecioComoLoApuntas({
+          precioCentimos: datos.producto.precioCentimos,
+          formato: datos.producto.formato,
+          factor: datos.producto.factor,
+          unidadDeUso: datos.producto.unidadDeUso,
+          ivaDeCompra: datos.producto.ivaDeCompra,
+          preciosConIva: datos.preciosConIva,
+        });
   const anteriores = datos?.precios.filter((precio) => !precio.vigente) ?? [];
   const valeAlgo =
     datos !== undefined &&
@@ -442,12 +459,7 @@ export function FichaDeProducto({
               <Plegable
                 titulo="Precio"
                 icono={<IconoDinero size={18} />}
-                resumen={
-                  datos.producto.precioCentimos === null ||
-                  datos.producto.precioCentimos === undefined
-                    ? 'Sin precio'
-                    : elPrecioEnCorto(datos.producto, datos.producto.precioCentimos)
-                }
+                resumen={precioALaVista === null ? 'Sin precio' : precioALaVista.principal}
                 tono={
                   datos.producto.precioCentimos === null ||
                   datos.producto.precioCentimos === undefined
@@ -463,21 +475,13 @@ export function FichaDeProducto({
                 ) : (
                   <div className="flex flex-col gap-e1">
                     {/*
-                      Se guarda sin IVA, que es lo que cuesta de verdad al negocio:
-                      el IVA de compra se recupera. Y al lado, con IVA, que es lo que
-                      dice el ticket, para reconocerlo de un vistazo.
+                      **Una cifra, y la otra en pequeño** (Richi, 19-oct). Arriba, en el
+                      resumen, el precio como lo apunta el local; aquí, la otra: sin IVA
+                      si apunta con IVA, y al revés. Antes salían tres precios a la vez
+                      —con IVA, sin IVA y el del kilo limpio— y no se sabía cuál era.
                     */}
-                    {datos.producto.ivaDeCompra !== null && datos.producto.ivaDeCompra > 0 && (
-                      <p className="text-secundario text-texto-suave">
-                        Sin IVA. Con IVA ({comoSeDiceElTipo(datos.producto.ivaDeCompra)}),{' '}
-                        {comoDinero(
-                          conIva(
-                            centimos(datos.producto.precioCentimos),
-                            datos.producto.ivaDeCompra,
-                          ),
-                        )}
-                        .
-                      </p>
+                    {precioALaVista?.otro !== null && precioALaVista?.otro !== undefined && (
+                      <p className="text-secundario text-texto-suave">{precioALaVista.otro}</p>
                     )}
                     {/*
                       Quién lo puso y desde cuándo. «Lo que hace cada uno queda con su
@@ -667,7 +671,7 @@ export function FichaDeProducto({
               resumen={
                 ultimo === undefined
                   ? 'Todavía no se ha movido nada'
-                  : `${comoSeLeeLaFecha(ultimo.fechaOperativa)} · ${COMO_SE_LLAMA_EL_MOVIMIENTO[ultimo.tipo] ?? ultimo.tipo} ${ultimo.cantidad > 0 ? '+' : ''}${conUnidadDeUso(ultimo.cantidad, datos.producto.unidadDeUso)}`
+                  : `${comoSeLeeLaFecha(ultimo.fechaOperativa)} · ${COMO_SE_LLAMA_EL_MOVIMIENTO[ultimo.tipo] ?? ultimo.tipo}${ultimo.cantidad === 0 ? '' : ` ${ultimo.cantidad > 0 ? '+' : ''}${conUnidadDeUso(ultimo.cantidad, datos.producto.unidadDeUso)}`}`
               }
             >
               {datos.movimientos.length > 0 && (
@@ -684,10 +688,15 @@ export function FichaDeProducto({
                               {/* Lo anulado sigue en el libro, tachado, y deja de contar (3-oct). */}
                               <span className={movimiento.anulado === true ? 'line-through' : ''}>
                                 {COMO_SE_LLAMA_EL_MOVIMIENTO[movimiento.tipo] ?? movimiento.tipo}{' '}
-                                <strong>
-                                  {movimiento.cantidad > 0 ? '+' : ''}
-                                  {conUnidadDeUso(movimiento.cantidad, datos.producto.unidadDeUso)}
-                                </strong>
+                                {movimiento.cantidad !== 0 && (
+                                  <strong>
+                                    {movimiento.cantidad > 0 ? '+' : ''}
+                                    {conUnidadDeUso(
+                                      movimiento.cantidad,
+                                      datos.producto.unidadDeUso,
+                                    )}
+                                  </strong>
+                                )}
                               </span>
                               {movimiento.anulado === true && <Etiqueta>Anulado</Etiqueta>}
                               {movimiento.esAnulacion === true && <Etiqueta>Anula</Etiqueta>}
@@ -1249,9 +1258,27 @@ function ElAprovechamiento({
             {medido ? 'medido en esta cocina' : 'supuesto, sin medir'}
           </span>
         </p>
+        {/*
+          Lo que sale lo limpio (0099): es el coste que usa el escandallo, y aquí se dice
+          aparte del precio. El precio es lo pagado; esto, lo que cuesta lo que llega al plato.
+        */}
+        {producto.rendimiento < 1 &&
+          producto.costeMilesimas !== null &&
+          producto.costeMilesimas !== undefined && (
+            <p className="mt-e1 text-secundario">
+              Lo limpio sale a{' '}
+              <strong className="font-semibold">
+                {comoPrecioPorUnidad(
+                  milesimas(Math.round(producto.costeMilesimas / producto.rendimiento)),
+                  producto.unidadDeUso,
+                )}
+              </strong>{' '}
+              <span className="text-texto-suave">sin IVA · es lo que cuenta en los platos</span>
+            </p>
+          )}
         <p className="mt-e1 text-etiqueta text-texto-tenue">
           {medido
-            ? 'De cada kilo que entra, lo que llega al plato después de limpiarlo. Con esto se calcula lo que cuesta de verdad.'
+            ? 'De cada kilo que entra, lo que llega al plato después de limpiarlo. Con esto se calcula lo que cuesta cada plato.'
             : 'Se da por hecho que se aprovecha todo, que casi nunca es verdad. Cuando lo midas, el coste de este producto y el de los platos que lo lleven cambian con él.'}
         </p>
       </div>
@@ -1262,31 +1289,6 @@ function ElAprovechamiento({
       )}
     </div>
   );
-}
-
-/** Cómo se dice «el kilo», «la unidad»… después de un precio. */
-const LA_UNIDAD: Readonly<Record<string, string>> = {
-  ud: 'la unidad',
-  kg: 'el kilo',
-  g: 'el gramo',
-  l: 'el litro',
-  ml: 'el mililitro',
-};
-
-/**
- * El precio, sin abrir el plegable: «28,18 € el bidón de 50 l · 0,56 €/l», y
- * «18,18 € el kilo» cuando las dos cifras dirían lo mismo.
- */
-function elPrecioEnCorto(producto: ProductoEnLista, precio: number): string {
-  const dinero = comoDinero(precio);
-  if (producto.formato === null || producto.factor === 1) {
-    return `${dinero} ${LA_UNIDAD[producto.unidadDeUso] ?? `el ${producto.unidadDeUso}`}`;
-  }
-  const envase = `${dinero} el ${producto.formato.toLocaleLowerCase('es')}`;
-  const porUnidad = producto.costePorUnidad ?? null;
-  return porUnidad === null || porUnidad.startsWith(dinero.replace(/\s?€$/, ''))
-    ? envase
-    : `${envase} · ${porUnidad}`;
 }
 
 // ── Cambiar el precio ────────────────────────────────────────────────────────
@@ -1310,10 +1312,32 @@ function CambiarPrecio({
   const { sePuedeDeshacer } = usarDeshacer();
   const volverALeer = usarVolverALeerElProducto(producto.producto.id);
   const [precio, setPrecio] = useState<Centimos | null>(null);
-  const [proveedorId, setProveedorId] = useState('');
+  // El de su proveedor, de entrada: con «Sin proveedor» se abría un segundo precio
+  // vivo al lado del de siempre, y la ficha ya no sabía cuál enseñar.
+  const [proveedorId, setProveedorId] = useState(producto.producto.proveedorId ?? '');
   const [guardando, setGuardando] = useState(false);
+  /** El paso de confirmar: «sube un 12 %», antes de guardar (Richi, 19-oct). */
+  const [confirmando, setConfirmando] = useState(false);
 
   if (!abierta) return null;
+
+  const deAntesSinIva = producto.producto.precioCentimos ?? null;
+  const cambio = precio === null ? null : comoHaCambiado(deAntesSinIva, precio);
+  // Tres veces más, o un tercio: casi siempre es el precio de otra cosa —el del gramo
+  // en vez del kilo, el de una botella en vez de la caja—. Se dice antes de guardar.
+  const raro =
+    cambio?.variacion !== null &&
+    cambio?.variacion !== undefined &&
+    (cambio.variacion >= 2 || cambio.variacion <= -2 / 3);
+  const comoSeVe = (sinElImpuesto: number) =>
+    elPrecioComoLoApuntas({
+      precioCentimos: sinElImpuesto,
+      formato: producto.producto.formato,
+      factor: producto.producto.factor,
+      unidadDeUso: producto.producto.unidadDeUso,
+      ivaDeCompra: producto.producto.ivaDeCompra,
+      preciosConIva: producto.preciosConIva,
+    }).principal;
 
   async function guardar() {
     if (precio === null) return;
@@ -1361,8 +1385,69 @@ function CambiarPrecio({
     }
 
     setPrecio(null);
+    setConfirmando(false);
     // La frase la compone el dominio: «Ha subido un 12 %.» Un cálculo, un dueño.
     alHecho(respuesta.datos.frase);
+  }
+
+  if (confirmando && precio !== null && cambio !== null) {
+    return (
+      <Hoja
+        abierta
+        alCerrar={alCerrar}
+        titulo={
+          cambio.subeBaja === 'sube'
+            ? `¿Sube un ${porcentajeDe(cambio.variacion)}?`
+            : cambio.subeBaja === 'baja'
+              ? `¿Baja un ${porcentajeDe(cambio.variacion)}?`
+              : '¿Guardar este precio?'
+        }
+        pie={
+          <Botones>
+            <Boton
+              tono="texto"
+              onClick={() => {
+                setConfirmando(false);
+              }}
+            >
+              Corregirlo
+            </Boton>
+            <Boton
+              tono="principal"
+              cargando={guardando}
+              textoCargando="Guardando"
+              onClick={() => {
+                void guardar();
+              }}
+            >
+              Sí, guardar
+            </Boton>
+          </Botones>
+        }
+      >
+        <div className="flex flex-col gap-e3">
+          {deAntesSinIva !== null && (
+            <p className="text-cuerpo">
+              <span className="text-texto-suave">{comoSeVe(deAntesSinIva)}</span>
+              <span aria-hidden className="mx-e2 text-texto-tenue">
+                →
+              </span>
+              <strong className="font-semibold">{comoSeVe(precio)}</strong>
+            </p>
+          )}
+          {raro && (
+            <Aviso tono="atencion" titulo="Es mucho cambio">
+              Mira que sea el precio{' '}
+              {delEnvase(producto.producto.formato, producto.producto.unidadDeUso)}, y no el de otra
+              cosa.
+            </Aviso>
+          )}
+          <p className="text-secundario text-texto-suave">
+            Vale desde hoy. Lo que entró antes sigue con lo que costó entonces.
+          </p>
+        </div>
+      </Hoja>
+    );
   }
 
   return (
@@ -1377,35 +1462,28 @@ function CambiarPrecio({
           </Boton>
           <Boton
             tono="principal"
-            disabled={precio === null || guardando}
+            disabled={precio === null || guardando || cambio?.subeBaja === 'igual'}
             cargando={guardando}
             textoCargando="Guardando"
             onClick={() => {
-              void guardar();
+              // Con precio de antes, primero se confirma cuánto sube o baja.
+              if (deAntesSinIva === null) void guardar();
+              else setConfirmando(true);
             }}
           >
-            Guardar el precio
+            {deAntesSinIva === null ? 'Guardar el precio' : 'Seguir'}
           </Boton>
         </Botones>
       }
     >
       <div className="flex flex-col gap-e3">
-        <p className="text-cuerpo text-texto-suave">
-          El precio nuevo vale desde hoy. Lo que entró antes sigue valorado con el precio que tenía
-          entonces: cambiar el precio de hoy no reescribe lo que costó en enero.
-        </p>
-
         <CampoPrecioDeCompra
-          etiqueta="Lo que cuesta ahora"
-          ayuda={
-            producto.producto.formato === null
-              ? 'El precio de la unidad de compra, como en el albarán.'
-              : `El de ${producto.producto.formato.toLowerCase()} entero, como en el albarán.`
-          }
+          etiqueta={`Nuevo, ${elEnvase(producto.producto.formato, producto.producto.unidadDeUso)}`}
           valor={precio}
           alCambiar={setPrecio}
           iva={producto.producto.ivaDeCompra}
           conIvaDeEntrada={producto.preciosConIva}
+          antes={deAntesSinIva}
         />
 
         <Selector
@@ -2074,4 +2152,13 @@ function MedirElAprovechamiento({
       </div>
     </Hoja>
   );
+}
+
+/** «12 %», de una variación de 0,12 (la del dominio, `comoHaCambiado`). */
+function porcentajeDe(variacion: number | null): string {
+  if (variacion === null) return '';
+  return `${Math.abs(variacion * 100)
+    .toFixed(1)
+    .replace('.', ',')
+    .replace(',0', '')} %`;
 }

@@ -18,7 +18,7 @@ import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import {
   apuntar,
-  costeDeUso,
+  costeDeCompra,
   elProductoBloqueado,
   loQueHay,
   porQueNoSeAnula,
@@ -151,14 +151,14 @@ export const apuntarEntrada = comando<EntradaApuntarEntrada, SalidaDeMovimiento>
     // El coste de **esta** entrada. Si trae precio, se usa ese; si no, el
     // vigente. Y si no hay ninguno, entra sin valorar: «un producto sin precio
     // se usa igual, cuenta cero y queda marcado».
-    // La cuenta la hace `costeDeUso`, que es el único dueño de
-    // `precio ÷ (factor × rendimiento)`. Aquí estuvo escrita a mano un rato, y
+    // La cuenta la hace `costeDeCompra`, que es el único dueño de
+    // `precio ÷ factor`. Aquí estuvo escrita a mano un rato, y
     // **la cazó la regla de lint de M0**: eran dos sitios haciendo la misma
     // cuenta, que es justo lo que la regla 6 prohíbe.
     const coste =
       entrada.precio_centimos === null || entrada.precio_centimos === undefined
         ? await costeVigente(contexto, producto.id)
-        : costeDeUso(entrada.precio_centimos, producto.factor, producto.rendimiento);
+        : costeDeCompra(entrada.precio_centimos, producto.factor);
 
     // El lote, solo si trae algo que apuntar. Un lote vacío en cada entrada
     // llenaría la pantalla de caducidades de nada.

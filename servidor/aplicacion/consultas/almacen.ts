@@ -1254,7 +1254,9 @@ export const unProducto = consulta<{ producto_id: string }, SalidaUnProducto>({
         anulado: boolean;
       }[]
     >`
-      select m.id::text as id, m.tipo::text as tipo,
+      -- La línea que revaloró la cámara (0076) no es un ajuste de nada: se dice lo que es.
+      select m.id::text as id,
+             case when m.origen = 'revalorar' then 'revalorado' else m.tipo::text end as tipo,
              m.cantidad::text as cantidad,
              m.cantidad_despues::text as cantidad_despues,
              m.coste_milesimas::text as coste_milesimas,
@@ -1851,7 +1853,9 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
         anulado: boolean;
       }[]
     >`
-      select m.id::text as id, m.tipo::text as tipo,
+      -- La línea que revaloró la cámara (0076) no es un ajuste de nada: se dice lo que es.
+      select m.id::text as id,
+             case when m.origen = 'revalorar' then 'revalorado' else m.tipo::text end as tipo,
              p.nombre as producto, p.id::text as producto_id,
              p.unidad_de_uso::text as unidad_de_uso,
              m.cantidad::text as cantidad,

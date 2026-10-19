@@ -4,25 +4,30 @@
 >
 > Leído el 19 de octubre de 2026 en producción (solo lectura).
 >
-> | Qué              | Cómo está                                                                                                     |
-> | ---------------- | ------------------------------------------------------------------------------------------------------------- |
-> | Pull requests    | **Fogón 1 · 1 fusionada** (#117). Abierta: **el chat de Fogón y «Probar la conexión»** (rama `fogon-el-chat`) |
-> | La base de datos | **74 de 74** migraciones (la 0074 aplicada)                                                                   |
-> | La API           | **Desplegada el 18-oct** con la #117: 94 consultas y 201 comandos. La rama nueva la deja en **94 y 202**      |
-> | Fogón            | **Encendido**: el general, IKATZ y Pizzeriacazzo. **No contesta**: falla la llamada a Anthropic (ver abajo)   |
+> | Qué              | Cómo está                                                                                         |
+> | ---------------- | ------------------------------------------------------------------------------------------------- |
+> | Pull requests    | **#117 y #118 fusionadas**. Abierta: **Fogón dice por qué** (rama `fogon-dice-por-que`)           |
+> | La base de datos | **74 de 74** migraciones (la 0074 aplicada)                                                       |
+> | La API           | **Desplegada el 19-oct** con la #118: 94 consultas y 202 comandos. La rama nueva no añade ninguno |
+> | Fogón            | **Encendido** (el general, IKATZ y Pizzeriacazzo) y **contestando** desde el 19-oct               |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de M9, en [`pasos-de-m9.md`](pasos-de-m9.md).
 
 ---
 
-## Lo que te toca ahora · el chat y por qué no contesta
+## Lo que te toca ahora · fusionar la #119 y la #120
 
-Lo que viste el 19-oct: Fogón **no contestaba**, y la ventana **no parecía un chat**. Arreglado en su pull request ([0097](decisiones/0097-fogon-1-las-respuestas-y-la-base.md), punto 6): el fallo ahora dice su motivo, el admin tiene **«Probar la conexión»**, y Fogón es **un chat de verdad**. **Sin migración, con la API.**
+Fogón **ya contesta** (19-oct): la clave de Anthropic estaba creada **sin espacio de trabajo**; con ella dentro de uno, funciona. Si algún día vuelve a fallar, **admin → Fogón → Probar la conexión** dice el motivo. En el chat, a propósito, solo sale una frase sencilla: el motivo no lo ve nadie más. La #120 (rama `fogon-dice-por-que`) limpia la clave si se pega con comillas o espacios y arregla dos pruebas. **Sin migración, con la API.**
 
-1. **Fusionar**: en **github.com** → **Pull requests** → **«El chat de Fogón y probar la conexión…»** → con las **tres comprobaciones en verde** → **Merge pull request** → **Confirm merge**.
-2. **Desplegar la API**: **Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`** → **Run workflow**, y espera al **círculo verde**.
-3. **Probar la conexión**: **estook.com/admin/** → **Fogón** → **Probar la conexión**. Lo que diga, dímelo: si es **«Funciona»**, ya está; si es **«No funciona»**, la frase dice qué tocar.
-4. **Probarlo en el iPhone**: cierra Estook del todo y ábrela **dos veces** (la primera trae la versión nueva). El «+» → **«Pregúntale a Fogón»**: el logo, «Fogón sabe que estás en…» y unas preguntas que se tocan; la caja para escribir, abajo.
+1. **Mirar que estén en verde**: `gh pr checks 119` y `gh pr checks 120`, las tres en `pass`.
+2. **Fusionar**: `gh pr merge 119 --merge` y luego `gh pr merge 120 --merge`.
+3. **Desplegar la API**: `gh workflow run desplegar-api.yml --ref main -f confirmar=desplegar`, y esperar al círculo verde en **Actions**.
+4. **Poner la carpeta al día**: `git checkout main` y `git pull`.
+
+## Hecho · el chat de Fogón y «Probar la conexión» (#118, desplegada el 19-oct)
+
+1. **Fusionar**: la #118.
+2. **Desplegar la API**: **Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`**.
 
 ## Hecho · Fogón 1 · 1 (fusionada, migrada y desplegada el 18-oct)
 

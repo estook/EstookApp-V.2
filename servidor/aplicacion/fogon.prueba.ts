@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FogonNoContesta } from '../ia/modelo.ts';
+import { FogonNoContesta, limpiarLaClave } from '../ia/modelo.ts';
 import { porQueNoContesta } from './fogon.ts';
 
 /**
@@ -52,5 +52,18 @@ describe('por qué no contesta Fogón', () => {
     expect(fallo.message).toBe(
       'Fogón no ha contestado (401) · authentication_error · invalid x-api-key',
     );
+  });
+});
+
+describe('la clave, tal como se pega en Supabase', () => {
+  it('quita espacios, saltos de línea, comillas y el nombre delante', () => {
+    expect(limpiarLaClave('  sk-ant-api03-abc\n')).toBe('sk-ant-api03-abc');
+    expect(limpiarLaClave('"sk-ant-api03-abc"')).toBe('sk-ant-api03-abc');
+    expect(limpiarLaClave('AI_API_KEY=sk-ant-api03-abc')).toBe('sk-ant-api03-abc');
+    expect(limpiarLaClave("'sk-ant- api03-abc'")).toBe('sk-ant-api03-abc');
+  });
+
+  it('una clave vacía sigue vacía', () => {
+    expect(limpiarLaClave('   ')).toBe('');
   });
 });

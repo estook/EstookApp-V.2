@@ -701,7 +701,7 @@ test('si el jefe de cocina dice que hay 4, hay 4', async ({ page, request }) => 
   await expect(page.getByRole('button', { name: 'Ajustar lo que hay' })).toHaveCount(0);
   await page.getByRole('button', { name: '¿No cuadra lo que hay? Corrígelo' }).click();
   // En kilos, de entrada (19-oct): «hay 4» son 4 kg, no 4 gramos.
-  await page.getByRole('textbox', { name: /^Cuánto hay de verdad/ }).fill('4');
+  await page.getByRole('spinbutton', { name: /^Cuánto hay de verdad/ }).fill('4');
   await page.getByLabel('Por qué no cuadraba').fill('Se rompió un saco');
   await page.getByRole('button', { name: 'Corregir', exact: true }).click();
 

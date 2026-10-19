@@ -329,7 +329,7 @@ function ElFormulario({
         </Botones>
       }
     >
-      <div className="flex flex-col gap-e3">
+      <div className="flex flex-col gap-e3 pt-e3">
         <p className="text-secundario text-texto-suave">
           Ahora hay {conUnidadDeUso(hayAhora, producto.unidadDeUso)}.
         </p>

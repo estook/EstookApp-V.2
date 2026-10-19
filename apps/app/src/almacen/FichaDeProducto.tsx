@@ -1426,7 +1426,7 @@ function CambiarPrecio({
           </Botones>
         }
       >
-        <div className="flex flex-col gap-e3">
+        <div className="flex flex-col gap-e3 pt-e3">
           {deAntesSinIva !== null && (
             <p className="text-cuerpo">
               <span className="text-texto-suave">{comoSeVe(deAntesSinIva)}</span>
@@ -1477,7 +1477,7 @@ function CambiarPrecio({
         </Botones>
       }
     >
-      <div className="flex flex-col gap-e3">
+      <div className="flex flex-col gap-e3 pt-e3">
         <CampoPrecioDeCompra
           etiqueta={`Nuevo, ${elEnvase(producto.producto.formato, producto.producto.unidadDeUso)}`}
           valor={precio}
@@ -1716,7 +1716,7 @@ function CorregirLaFicha({
         </Botones>
       }
     >
-      <div className="flex flex-col gap-e3">
+      <div className="flex flex-col gap-e3 pt-e3">
         {confirmando && cambiaElCoste && (
           <Aviso tono="atencion" titulo="Esto cambia lo que cuesta el producto">
             {impactoDelCambio(ficha.factor, ficha.rendimiento, nuevoFactor, nuevoRendimiento)} Los
@@ -2084,7 +2084,7 @@ function MedirElAprovechamiento({
         </Botones>
       }
     >
-      <div className="flex flex-col gap-e3">
+      <div className="flex flex-col gap-e3 pt-e3">
         <p className="text-cuerpo text-texto-suave">
           No hace falta saber el porcentaje: pesa lo que entra y pesa lo que queda limpio, y de ahí
           sale. Es lo que hace que lo que cuesta un plato sea verdad y no una suposición.

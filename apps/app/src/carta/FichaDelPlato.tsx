@@ -215,8 +215,10 @@ function ParaEditar({
       setError(respuesta.error);
       return;
     }
-    setHecho('Guardado');
+    // Primero lo nuevo y luego «Guardado»: al revés, se tocaba el historial mientras la
+    // ficha se montaba otra vez, y el toque se perdía (una repetida del 19-oct).
     await refrescar();
+    setHecho('Guardado');
   }
 
   async function archivarORecuperar() {

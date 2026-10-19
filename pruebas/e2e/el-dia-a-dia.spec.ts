@@ -244,7 +244,7 @@ test('el + apunta lo que llega con su precio puesto, y el − pregunta por qué 
   // El + · entra género, con el precio de la lista ya escrito.
   await page.locator(`[aria-label="Ha llegado ${nombre}"] >> visible=true`).click();
   const llega = page.getByRole('dialog', { name: new RegExp(`Ha llegado género · ${nombre}`) });
-  await expect(llega.getByLabel('Precio', { exact: true })).not.toHaveValue('');
+  await expect(llega.getByRole('textbox', { name: 'Precio del kilo' })).not.toHaveValue('');
   // «Cuánto *»: es obligatorio, y el asterisco va dentro de la etiqueta.
   await llega.getByLabel(/^Cuánto/).fill('5');
   await llega.getByRole('button', { name: 'Apuntar la entrada' }).click();

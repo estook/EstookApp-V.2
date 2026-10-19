@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
-import { APP, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
+import { API, APP, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
 
 /**
  * R · la campana (decisión 0052), desde la pantalla.
@@ -34,7 +34,7 @@ async function abrirLaCampana(page: Page) {
   return campana;
 }
 
-test('a quien manda le llega lo que empieza su equipo, y tocarlo lleva al pedido', async ({
+test('a quien manda le llega lo que rellena su equipo, y tocarlo lleva al pedido', async ({
   page,
   request,
 }) => {
@@ -47,12 +47,22 @@ test('a quien manda le llega lo que empieza su equipo, y tocarlo lleva al pedido
     'crear_proveedor',
     { nombre: proveedor },
   );
-  const { pedidoId } = await ejecutarEnLaApi<{ pedidoId: string }>(
-    request,
-    marcos,
-    'crear_pedido',
-    { proveedor_id: proveedorId, lineas: [] },
-  );
+  // Desde el 19-oct el cocinero no empieza pedidos: rellena el que le piden. Rosa lo
+  // abre, se lo pide a Marcos, y cuando Marcos lo toca, a Rosa le llega.
+  const { pedidoId } = await ejecutarEnLaApi<{ pedidoId: string }>(request, rosa, 'crear_pedido', {
+    proveedor_id: proveedorId,
+    lineas: [],
+  });
+  const yo = (await (
+    await request.get(`${API}/v1/consultas/quien_soy`, {
+      headers: { authorization: `Bearer ${marcos}` },
+    })
+  ).json()) as { datos: { personaId: string } };
+  await ejecutarEnLaApi(request, rosa, 'pedir_ayuda_con_el_pedido', {
+    pedido_id: pedidoId,
+    personas: [yo.datos.personaId],
+  });
+  await ejecutarEnLaApi(request, marcos, 'cambiar_pedido', { pedido_id: pedidoId, lineas: [] });
 
   await entrarEnLaApp(page, ROSA);
   // El número de la campana lo dice a quien no la ve.

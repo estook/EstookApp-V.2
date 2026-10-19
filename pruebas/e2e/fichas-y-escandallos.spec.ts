@@ -315,10 +315,15 @@ test('la ficha técnica de una olla se escala, y la receta de Estook se ofrece a
   await expect(escandallo.getByText('la ración')).toBeVisible();
   await escandallo.getByRole('button', { name: 'Editar el escandallo' }).click();
   const editor = page.getByRole('dialog', { name: 'Editar el escandallo' });
+  // **El escandallo es de una ración** (Richi, 19-oct): lo guardado para la olla se abre
+  // ya en una ración —3 kg entre 25, 120 g— y la tanda se queda en la ficha técnica.
+  await expect(editor.getByText('Lo que lleva una ración')).toBeVisible();
   await expect(
     editor.getByRole('textbox', { name: 'Esta receta es para una tanda de' }),
-  ).toHaveValue('25');
-  await expect(editor.getByText('Lo que lleva, la tanda entera')).toBeVisible();
+  ).toHaveCount(0);
+  await expect(editor.getByRole('textbox', { name: `Cantidad de Garbanzo ${marca}` })).toHaveValue(
+    '120',
+  );
   await editor.getByRole('button', { name: 'Cancelar' }).click();
   await page.keyboard.press('Escape');
 
@@ -329,13 +334,14 @@ test('la ficha técnica de una olla se escala, y la receta de Estook se ofrece a
     .getByRole('button', { name: 'Desgranar' })
     .click();
   const desgranar = page.getByRole('dialog', { name: 'Desgranar' });
-  await expect(desgranar.getByText(/¿Es una receta de olla\?/)).toBeVisible();
-  await desgranar.getByRole('button', { name: 'Empezar desde ella' }).click();
+  // Sin «¿Es una receta de olla?» (19-oct), y la de Estook, un botón pequeño debajo.
+  await expect(desgranar.getByText(/receta de olla/)).toHaveCount(0);
+  await desgranar
+    .getByRole('button', { name: 'Empezar desde «Tortilla de patatas» de Estook' })
+    .click();
   await expect(desgranar.getByText(/^Copiada de «Tortilla de patatas»/)).toBeVisible();
-  // La de Estook es para 8: la tanda se pone sola.
-  await expect(
-    desgranar.getByRole('textbox', { name: 'Esta receta es para una tanda de' }),
-  ).toHaveValue('8');
+  // La de Estook es para 8: se pasa sola a una ración.
+  await expect(desgranar.getByText('Lo que lleva una ración')).toBeVisible();
   // Hasta elegir cada ingrediente entre tus productos, no se guarda.
   await expect(desgranar.getByRole('button', { name: 'Guardar' })).toBeDisabled();
   await desgranar.getByRole('button', { name: 'Cancelar' }).click();

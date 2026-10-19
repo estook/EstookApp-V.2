@@ -351,8 +351,9 @@ test('al cambiar el precio, el coste por unidad de uso cambia bien', async ({ re
     'un_producto',
     { producto_id: productoId },
   );
-  // 6.000 céntimos entre 2.750 g útiles = 2,182 céntimos por gramo.
-  expect(antes.datos?.producto.costeMilesimas).toBe(2182);
+  // Lo pagado (0099): 6.000 céntimos entre 5.000 g = 1,2 céntimos el gramo. El
+  // aprovechamiento (55 %) lo pone el escandallo, no la cámara.
+  expect(antes.datos?.producto.costeMilesimas).toBe(1200);
 
   // Sube un 20 %.
   const cambio = await ejecutar<{ costeMilesimas: number; frase: string }>(
@@ -363,7 +364,7 @@ test('al cambiar el precio, el coste por unidad de uso cambia bien', async ({ re
   );
 
   expect(cambio.estado).toBe(200);
-  expect(cambio.datos?.costeMilesimas).toBe(2618);
+  expect(cambio.datos?.costeMilesimas).toBe(1440);
   // Y lo cuenta en cristiano, que es lo que llega a la pantalla.
   expect(cambio.datos?.frase).toBe('Ha subido un 20 %.');
 
@@ -699,7 +700,8 @@ test('si el jefe de cocina dice que hay 4, hay 4', async ({ page, request }) => 
   // la propia cifra, que es donde alguien nota que no cuadra.
   await expect(page.getByRole('button', { name: 'Ajustar lo que hay' })).toHaveCount(0);
   await page.getByRole('button', { name: '¿No cuadra lo que hay? Corrígelo' }).click();
-  await page.getByLabel('Cuánto hay de verdad').fill('4000');
+  // En kilos, de entrada (19-oct): «hay 4» son 4 kg, no 4 gramos.
+  await page.getByRole('textbox', { name: 'Cuánto hay de verdad' }).fill('4');
   await page.getByLabel('Por qué no cuadraba').fill('Se rompió un saco');
   await page.getByRole('button', { name: 'Corregir', exact: true }).click();
 

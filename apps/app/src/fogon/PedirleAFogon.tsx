@@ -20,6 +20,7 @@ export function PedirleAFogon({
   boton,
   gasta,
   alPedir,
+  plegado = false,
 }: {
   readonly titulo: string;
   readonly ayuda: string;
@@ -29,10 +30,34 @@ export function PedirleAFogon({
   readonly gasta: number;
   /** Pide el borrador con la pista; devuelve el error si no ha salido. */
   readonly alPedir: (pista: string) => Promise<ErrorDeLaApi | null>;
+  /**
+   * **Un botón pequeño, no lo primero de la hoja** (Richi, 19-oct: «pones la IA arriba
+   * como lo más importante; debería ser un pequeño botón»). Plegado, es una línea; al
+   * tocarla se abre la caja para contarle algo y pedirlo.
+   */
+  readonly plegado?: boolean;
 }) {
+  const [abierto, setAbierto] = useState(!plegado);
   const [pista, setPista] = useState('');
   const [pidiendo, setPidiendo] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
+
+  if (!abierto) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setAbierto(true);
+        }}
+        className="flex min-h-toque items-center gap-e2 self-start rounded-redondo border border-borde px-e3 text-secundario font-semibold text-texto-suave hover:bg-fondo hover:text-texto"
+      >
+        <span aria-hidden className="text-naranja">
+          <IconoDeFogon size={16} />
+        </span>
+        {boton} · {creditos(gasta)}
+      </button>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-e2 rounded-grande bg-fondo p-e4">

@@ -17,6 +17,8 @@ import { useSearchParams } from 'react-router-dom';
 export function usarAbiertoEnLaDireccion(clave: string): {
   readonly abierto: string | null;
   readonly abrir: (id: string) => void;
+  /** Abrir y, en el mismo paso, cerrar la hoja de `?hacer=` desde la que se eligió. */
+  readonly abrirSinHacer: (id: string) => void;
   readonly cerrar: () => void;
 } {
   const [parametros, ponerParametros] = useSearchParams();
@@ -31,11 +33,21 @@ export function usarAbiertoEnLaDireccion(clave: string): {
     [clave, parametros, ponerParametros],
   );
 
+  const abrirSinHacer = useCallback(
+    (id: string) => {
+      const nuevos = new URLSearchParams(parametros);
+      nuevos.set(clave, id);
+      nuevos.delete('hacer');
+      ponerParametros(nuevos);
+    },
+    [clave, parametros, ponerParametros],
+  );
+
   const cerrar = useCallback(() => {
     const nuevos = new URLSearchParams(parametros);
     nuevos.delete(clave);
     ponerParametros(nuevos, { replace: true });
   }, [clave, parametros, ponerParametros]);
 
-  return { abierto, abrir, cerrar };
+  return { abierto, abrir, abrirSinHacer, cerrar };
 }

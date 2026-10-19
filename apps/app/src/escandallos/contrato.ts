@@ -44,6 +44,10 @@ export interface ElaboracionEnLaLista {
   readonly activo: boolean;
   readonly alergenos: readonly Alergeno[];
   readonly costePorUnidad?: string | null;
+  /** Lo que cuesta hacerla entera (19-oct). Solo con costes. */
+  readonly costeCentimos?: number | null;
+  /** Los pasos de su ficha técnica; una API de antes no lo trae. */
+  readonly pasos?: number;
 }
 
 export interface MisFichas {

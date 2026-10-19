@@ -90,11 +90,6 @@ const NO_LAS_LLAMA_NADIE: Readonly<Record<string, string>> = {
   // caja traiga lo vendido plato a plato». Hasta Estook TPV, una desviación con la caja
   // apuntada a medias asusta y se deja de mirar. La prueban
   // `la-desviacion-de-los-platos.prueba.ts` y el dominio; la pantalla llega con el TPV.
-  // El repaso del 16-oct (0090): las elaboraciones se quitan de la app «por ahora».
-  // Las que existían siguen abriéndose y archivándose desde las recetas que las llevan;
-  // crear una nueva vuelve cuando Richi las pida.
-  crear_elaboracion: 'Sin pestaña de elaboraciones desde el 16-oct (0090); vuelve cuando se pidan',
-
   la_desviacion_de_los_platos:
     'Construida y probada; se enseña con Estook TPV, cuando la caja traiga lo vendido plato a plato (0086 · 3B)',
 

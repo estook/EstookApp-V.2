@@ -13,7 +13,7 @@ import { EditorDeLaReceta } from './EditorDeLaReceta.tsx';
 import { Cabecera, LoQueLleva } from './ElEscandalloDelPlato.tsx';
 import { usarEscala } from '../ganchos/usarEscala.ts';
 import { ParaCuantasRaciones } from './Escalar.tsx';
-import type { UnaFicha } from './contrato.ts';
+import { comoSeAbre, type QueFicha, type UnaFicha } from './contrato.ts';
 
 /** Cuando el teléfono no sabe abrir la foto. */
 const NO_SE_HA_PODIDO_LEER: ErrorDeLaApi = {
@@ -41,17 +41,22 @@ const NO_SE_HA_PODIDO_LEER: ErrorDeLaApi = {
  * La lee toda la cocina y la sala; la escribe quien puede editar Escandallos.
  */
 export function FichaTecnica({
-  platoId,
+  ficha,
   alCerrar,
+  empezarEditando = false,
 }: {
-  readonly platoId: string;
+  /** Un plato, o una elaboración de la casa (el aceite de albahaca, 19-oct). */
+  readonly ficha: QueFicha;
   readonly alCerrar: () => void;
+  /** Recién elegida en «Crear ficha técnica» (19-oct): los pasos ya abiertos. */
+  readonly empezarEditando?: boolean;
 }) {
-  const consulta = usarLectura<UnaFicha>('una_ficha', { plato_id: platoId });
+  const deQuien = ficha.tipo === 'plato' ? { plato_id: ficha.id } : { elaboracion_id: ficha.id };
+  const consulta = usarLectura<UnaFicha>('una_ficha', deQuien);
   const datos = consulta.data;
   const escala = usarEscala(datos?.receta.raciones ?? 1);
   const navegar = useNavigate();
-  const [editando, setEditando] = useState(false);
+  const [editando, setEditando] = useState(empezarEditando);
   const [hecho, setHecho] = useState<string | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
@@ -70,7 +75,7 @@ export function FichaTecnica({
   }
 
   const alEscandallo = () => {
-    navegar(`/escandallos/escandallos/todos?ficha=plato.${datos.id}`);
+    navegar(`/escandallos/escandallos/todos?ficha=${comoSeAbre(ficha)}`);
   };
   const sinEscandallo = datos.receta.lineas.length === 0;
   const pasos = datos.receta.pasos;
@@ -91,7 +96,7 @@ export function FichaTecnica({
           <div className="flex flex-col items-start gap-e3 rounded-grande bg-fondo p-e4">
             <p className="text-cuerpo font-semibold">Primero, su escandallo</p>
             <p className="text-secundario text-texto-suave">
-              La ficha técnica coge del escandallo lo que lleva el plato. Desgránalo allí y vuelve.
+              La ficha técnica coge del escandallo lo que lleva. Desgránalo allí y vuelve.
             </p>
             <Boton tono="principal" icono={<IconoEscandallos size={18} />} onClick={alEscandallo}>
               Ir al escandallo
@@ -100,12 +105,14 @@ export function FichaTecnica({
         ) : (
           <>
             <div className="flex flex-col gap-e2">
-              <ParaCuantasRaciones
-                escrita={datos.receta.raciones ?? 1}
-                raciones={escala.raciones}
-                alCambiar={escala.ponerRaciones}
-                alVolver={escala.volver}
-              />
+              {ficha.tipo === 'plato' && (
+                <ParaCuantasRaciones
+                  escrita={datos.receta.raciones ?? 1}
+                  raciones={escala.raciones}
+                  alCambiar={escala.ponerRaciones}
+                  alVolver={escala.volver}
+                />
+              )}
               <LoQueLleva datos={datos} factor={escala.factor} alTener={escala.ponerFactor} />
               <p className="text-etiqueta text-texto-tenue">
                 Sale del escandallo.{' '}
@@ -153,7 +160,7 @@ export function FichaTecnica({
                       numero={i + 1}
                       texto={paso}
                       foto={datos.receta.fotosDeLosPasos?.[i] ?? null}
-                      platoId={datos.id}
+                      deQuien={deQuien}
                       puedeTocar={datos.puedeEditar && datos.receta.fotosDeLosPasos !== undefined}
                       alHecho={(frase) => {
                         setError(null);
@@ -191,8 +198,8 @@ export function FichaTecnica({
               <BotonDelDocumento
                 consulta={'la_ficha_en_pdf'}
                 parametros={
-                  escala.comoEstaEscrita
-                    ? { plato_id: datos.id }
+                  escala.comoEstaEscrita || ficha.tipo !== 'plato'
+                    ? deQuien
                     : { plato_id: datos.id, para: String(racionesRedondeadas(escala.raciones)) }
                 }
                 texto={
@@ -232,7 +239,7 @@ function Paso({
   numero,
   texto,
   foto,
-  platoId,
+  deQuien,
   puedeTocar,
   alHecho,
   alFallar,
@@ -240,7 +247,7 @@ function Paso({
   readonly numero: number;
   readonly texto: string;
   readonly foto: string | null;
-  readonly platoId: string;
+  readonly deQuien: { readonly plato_id: string } | { readonly elaboracion_id: string };
   readonly puedeTocar: boolean;
   readonly alHecho: (frase: string) => void;
   readonly alFallar: (error: ErrorDeLaApi) => void;
@@ -255,7 +262,7 @@ function Paso({
     try {
       const reducida = await reducirFoto(fichero);
       const respuesta = await cliente.ejecutar('poner_foto_del_paso', {
-        plato_id: platoId,
+        ...deQuien,
         paso: numero - 1,
         tipo: reducida.tipo,
         foto: reducida.foto,
@@ -275,7 +282,7 @@ function Paso({
   async function quitar() {
     setTrabajando('quitando');
     const respuesta = await cliente.ejecutar('quitar_foto_del_paso', {
-      plato_id: platoId,
+      ...deQuien,
       paso: numero - 1,
     });
     setTrabajando(null);

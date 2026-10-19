@@ -49,21 +49,27 @@ import {
  * de un papel: **fila a fila, y siempre queda una libre al final**, igual que «Añadir
  * platos» de la Carta. Los pasos, lo mismo.
  *
- * El ingrediente se busca escribiendo en el Almacén (las elaboraciones ya no se
- * ofrecen: 0090). **Si no está, se crea desde aquí** con su nombre y su unidad, sin
+ * El ingrediente se busca escribiendo en el Almacén y en las elaboraciones de la casa
+ * (vuelven el 19-oct: la salsa, el aceite de albahaca). **Si no está, se crea desde aquí** con su nombre y su unidad, sin
  * precio (Plan, M9): el plato dirá «falta el precio de 1» y no se inventa un coste.
  *
  * Guardar es confirmar (0086, pregunta 5): lo guardado es la receta de ahora, y lo de
  * antes queda en el historial.
  *
- * Y desde M9 · 3 (0092): **«¿Es una receta de olla?»**, plegado, para escribirla como se
- * cocina («sale para 25 raciones»); y si el plato se llama como una de las diez recetas
- * de Estook, **«¿Empezar desde la de Estook?»**: copia sus ingredientes y cantidades, y
- * cada uno **pregunta cuál de tus productos es** (con el que más se parece propuesto).
- * Nada se une ni se crea solo: hasta que se elija, no se puede guardar.
+ * **Un escandallo es una ración** (Richi, 19-oct: «los escandallos desgranan un plato,
+ * solo uno; lo de la receta en más cantidades es para las fichas técnicas»). La «receta
+ * de olla» de M9 · 3 (0092) se quita de aquí: lo que vino escrito para una tanda —una
+ * receta guardada así, la de Estook o el borrador de Fogón— se pasa a una ración al
+ * abrirlo. La tanda es de las elaboraciones, que dicen cuánto rinden.
+ *
+ * Si el plato se llama como una de las diez recetas de Estook, **«Empezar desde la de
+ * Estook»**: copia sus ingredientes y cantidades, y cada uno **pregunta cuál de tus
+ * productos es** (con el que más se parece propuesto). Nada se une ni se crea solo:
+ * hasta que se elija, no se puede guardar.
  *
  * Y desde Fogón 1 · 1 (0097), con Fogón encendido y a quien edita: **«Rellenar con
- * Fogón»** al desgranar un plato vacío, y **«Escribir los pasos con Fogón»** en una ficha
+ * Fogón»** al desgranar un plato vacío —un botón pequeño debajo de la lista, no lo
+ * primero de la hoja (19-oct)—, y **«Escribir los pasos con Fogón»** en una ficha
  * sin pasos. Lo que vuelve es un borrador que entra igual que la receta de Estook
  * —cada línea pregunta cuál de tus productos es— y avisa de que la IA no es precisa.
  */
@@ -145,13 +151,16 @@ export function EditorDeLaReceta({
     datos.rinde === null ? '' : comoSeEscribe(datos.rinde.cantidad),
   );
   const [rindeUnidad, setRindeUnidad] = useState<UnidadDeUso>(datos.rinde?.unidad ?? 'l');
+  // Lo guardado para una tanda, en una ración (19-oct): el escandallo es de un plato.
+  const tanda =
+    !esElaboracion && (datos.receta.raciones ?? 1) > 1 ? (datos.receta.raciones ?? 1) : 1;
   const [filas, setFilas] = useState<readonly Fila[]>(() => [
     ...datos.receta.lineas.map((l): Fila => ({
       clave: clave(),
       tipo: l.tipo,
       refId: l.refId,
       nombre: l.nombre,
-      cantidad: comoSeEscribe(l.cantidad),
+      cantidad: comoSeEscribe(l.cantidad / tanda),
       unidad: l.unidad,
       nota: l.nota ?? '',
       conNota: l.nota !== null,
@@ -166,11 +175,6 @@ export function EditorDeLaReceta({
     datos.receta.minutos === null ? '' : String(datos.receta.minutos),
   );
   const [notas, setNotas] = useState(datos.receta.notas ?? '');
-  // La tanda (0092): de fábrica, una ración; plegado, «¿Es una receta de olla?».
-  const [esOlla, setEsOlla] = useState((datos.receta.raciones ?? 1) > 1);
-  const [raciones, setRaciones] = useState(
-    (datos.receta.raciones ?? 1) > 1 ? String(datos.receta.raciones) : '',
-  );
   const [deEstook, setDeEstook] = useState<string | null>(null);
   // Lo que ha rellenado Fogón en esta hoja, para avisar de que es un borrador (0095).
   const [deFogon, setDeFogon] = useState(false);
@@ -220,13 +224,6 @@ export function EditorDeLaReceta({
   const sinCantidad = llenas.filter((f) => f.refId !== null && leerCantidad(f.cantidad) === null);
   const rindeLeido = leerCantidad(rinde);
   const minutosLeidos = minutos.trim() === '' ? null : Number.parseInt(minutos, 10);
-  const racionesLeidas = raciones.trim() === '' ? null : Number.parseInt(raciones, 10);
-  const racionesMal =
-    esOlla &&
-    (racionesLeidas === null ||
-      !Number.isInteger(racionesLeidas) ||
-      racionesLeidas < 2 ||
-      racionesLeidas > 1000);
   const minutosMal =
     minutosLeidos !== null &&
     (!Number.isInteger(minutosLeidos) || minutosLeidos < 1 || minutosLeidos > 2880);
@@ -234,7 +231,6 @@ export function EditorDeLaReceta({
     ? !minutosMal
     : sinElegir.length === 0 &&
       sinCantidad.length === 0 &&
-      !racionesMal &&
       (!esElaboracion || (rindeLeido !== null && nombre.trim() !== ''));
   const pasosEscritos = pasos
     .map((p) => ({ ...p, texto: p.texto.trim() }))
@@ -270,8 +266,8 @@ export function EditorDeLaReceta({
       ...(enLosPasos ? { foto_de_antes: pasosEscritos.map((p) => p.de) } : {}),
       notas: enLosPasos ? (notas.trim() === '' ? null : notas.trim()) : datos.receta.notas,
       tiempo_minutos: enLosPasos ? minutosLeidos : datos.receta.minutos,
-      // La tanda es del escandallo (0092): en los pasos viaja como estaba.
-      ...(esElaboracion || enLosPasos ? {} : { raciones: esOlla ? racionesLeidas : 1 }),
+      // Una ración (19-oct). En los pasos viaja como estaba.
+      ...(esElaboracion || enLosPasos ? {} : { raciones: 1 }),
       ...(esElaboracion
         ? { nombre: nombre.trim(), rinde_cantidad: rindeLeido, rinde_unidad: rindeUnidad }
         : {}),
@@ -298,6 +294,8 @@ export function EditorDeLaReceta({
     });
     if (!respuesta.ok) return respuesta.error;
     const productos = lo.data?.productos ?? [];
+    // Si lo propone para una tanda, se pasa a una ración (19-oct).
+    const porRacion = Math.max(1, respuesta.datos.raciones);
     setFilas([
       ...respuesta.datos.lineas.map((l): Fila => {
         const propuesta = elProductoQueSeParece(l.ingrediente, productos);
@@ -306,7 +304,7 @@ export function EditorDeLaReceta({
           tipo: null,
           refId: null,
           nombre: l.ingrediente,
-          cantidad: comoSeEscribe(l.cantidad),
+          cantidad: comoSeEscribe(l.cantidad / porRacion),
           unidad: l.unidad,
           nota: '',
           conNota: false,
@@ -320,10 +318,6 @@ export function EditorDeLaReceta({
       }),
       VACIA(),
     ]);
-    if (respuesta.datos.raciones > 1) {
-      setEsOlla(true);
-      setRaciones(String(respuesta.datos.raciones));
-    }
     setDeFogon(true);
     void cache.invalidateQueries({ queryKey: ['fogon_y_yo'] });
     return null;
@@ -351,6 +345,8 @@ export function EditorDeLaReceta({
   function empezarDesdeLaDeEstook() {
     if (parecida === null) return;
     const productos = lo.data?.productos ?? [];
+    // Las de Estook vienen para una tanda: se pasan a una ración (19-oct).
+    const porRacion = Math.max(1, parecida.raciones);
     setFilas([
       ...parecida.lineas.map((l): Fila => {
         const propuesta = elProductoQueSeParece(l.producto, productos);
@@ -359,7 +355,7 @@ export function EditorDeLaReceta({
           tipo: null,
           refId: null,
           nombre: l.producto,
-          cantidad: comoSeEscribe(l.cantidad),
+          cantidad: comoSeEscribe(l.cantidad / porRacion),
           unidad: l.unidad,
           nota: '',
           conNota: false,
@@ -373,10 +369,6 @@ export function EditorDeLaReceta({
       }),
       VACIA(),
     ]);
-    if (parecida.raciones > 1) {
-      setEsOlla(true);
-      setRaciones(String(parecida.raciones));
-    }
     setDeEstook(parecida.nombre);
   }
 
@@ -444,33 +436,6 @@ export function EditorDeLaReceta({
           </div>
         )}
 
-        {!enLosPasos && !esElaboracion && parecida !== null && llenas.length === 0 && (
-          <div className="flex flex-col items-start gap-e2 rounded-grande bg-fondo p-e4">
-            <p className="text-cuerpo font-semibold">
-              ¿Empezar desde «{parecida.nombre}» de Estook?
-            </p>
-            <p className="text-secundario text-texto-suave">
-              Para {parecida.raciones} {parecida.raciones === 1 ? 'ración' : 'raciones'} ·{' '}
-              {parecida.lineas.length} ingredientes. Luego eliges cuál de tus productos es cada uno,
-              y la cambias a tu gusto.
-            </p>
-            <Boton tono="secundario" onClick={empezarDesdeLaDeEstook}>
-              Empezar desde ella
-            </Boton>
-          </div>
-        )}
-
-        {!enLosPasos && !esElaboracion && conFogon && llenas.length === 0 && !deFogon && (
-          <PedirleAFogon
-            titulo="¿Te hace Fogón un borrador?"
-            ayuda="Propone lo que lleva y cuánto. Luego eliges cuál de tus productos es cada uno."
-            ejemplo="Dímelo rápido, si quieres: con bechamel de leche entera, 8 por ración"
-            boton="Rellenar con Fogón"
-            gasta={CREDITOS_DE_FOGON.rellenar_escandallo}
-            alPedir={rellenarConFogon}
-          />
-        )}
-
         {deFogon && <AvisoDelBorrador />}
 
         {!enLosPasos && deEstook !== null && (
@@ -479,52 +444,10 @@ export function EditorDeLaReceta({
           </p>
         )}
 
-        {!enLosPasos && !esElaboracion && (
-          <div className="flex flex-col gap-e2">
-            {esOlla ? (
-              <div className="flex flex-wrap items-end gap-e3">
-                <Campo
-                  etiqueta="Esta receta es para una tanda de"
-                  inputMode="numeric"
-                  value={raciones}
-                  placeholder="25"
-                  detras="raciones"
-                  onChange={(e) => {
-                    setRaciones(e.target.value.replace(/\D/g, ''));
-                  }}
-                  {...(raciones !== '' && racionesMal ? { error: 'Entre 2 y 1.000' } : {})}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEsOlla(false);
-                    setRaciones('');
-                  }}
-                  className="min-h-toque text-secundario font-semibold text-texto-suave underline decoration-borde-fuerte underline-offset-4 hover:text-texto"
-                >
-                  Es de una ración
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setEsOlla(true);
-                }}
-                className="flex min-h-toque items-center gap-e1 self-start text-secundario font-semibold text-texto-suave hover:text-texto"
-              >
-                <IconoAnadir size={16} />
-                ¿Es una receta de olla?
-              </button>
-            )}
-          </div>
-        )}
-
         {!enLosPasos && (
           <section aria-label="Lo que lleva" className="flex flex-col gap-e2">
             <h3 className="text-cuerpo font-semibold">
-              Lo que lleva
-              {esElaboracion ? '' : esOlla ? ', la tanda entera' : ', por ración'}
+              {esElaboracion ? 'Lo que lleva, para todo lo que rinde' : 'Lo que lleva una ración'}
             </h3>
             <ol className="flex flex-col gap-e2">
               {filas.map((fila, i) => (
@@ -545,9 +468,41 @@ export function EditorDeLaReceta({
                   alCrear={() => {
                     void crearEnElAlmacen(fila);
                   }}
+                  siguiente={filas[i + 1]?.clave ?? null}
                 />
               ))}
             </ol>
+            {/*
+              **Las ayudas, pequeñas y debajo** (Richi, 19-oct: «pones la IA arriba como lo
+              más importante; debería ser un pequeño botón»). Lo principal es la lista.
+            */}
+            {!esElaboracion &&
+              llenas.length === 0 &&
+              !deFogon &&
+              (parecida !== null || conFogon) && (
+                <div className="flex flex-col items-start gap-e2 pt-e1">
+                  {parecida !== null && (
+                    <button
+                      type="button"
+                      onClick={empezarDesdeLaDeEstook}
+                      className="flex min-h-toque items-center gap-e2 rounded-redondo border border-borde px-e3 text-secundario font-semibold text-texto-suave hover:bg-fondo hover:text-texto"
+                    >
+                      Empezar desde «{parecida.nombre}» de Estook
+                    </button>
+                  )}
+                  {conFogon && (
+                    <PedirleAFogon
+                      plegado
+                      titulo="¿Te hace Fogón un borrador?"
+                      ayuda="Propone lo que lleva una ración y cuánto. Luego eliges cuál de tus productos es cada uno."
+                      ejemplo="Dímelo rápido, si quieres: con bechamel de leche entera, 8 por ración"
+                      boton="Rellenar con Fogón"
+                      gasta={CREDITOS_DE_FOGON.rellenar_escandallo}
+                      alPedir={rellenarConFogon}
+                    />
+                  )}
+                </div>
+              )}
           </section>
         )}
 
@@ -668,6 +623,7 @@ function LineaQueSeEscribe({
   alQuitar,
   puedeCrear,
   alCrear,
+  siguiente,
 }: {
   readonly fila: Fila;
   readonly numero: number;
@@ -678,14 +634,25 @@ function LineaQueSeEscribe({
   readonly alQuitar: () => void;
   readonly puedeCrear: boolean;
   readonly alCrear: () => void;
+  /** La caja del ingrediente de la línea de después, para saltar a ella con «Intro». */
+  readonly siguiente: string | null;
 }) {
   const texto = sinAcentos(fila.nombre.trim().toLocaleLowerCase('es'));
   const opciones = useMemo(() => {
     if (lo === undefined || texto === '' || fila.refId !== null) return [];
     const casa = (nombre: string) => sinAcentos(nombre.toLocaleLowerCase('es')).includes(texto);
-    // Sin elaboraciones (0090): por ahora no se ofrecen. Las que ya estaban en una
-    // receta siguen ahí, con su nombre.
+    // **Las elaboraciones, primero** (vuelven el 19-oct, 0099): la salsa o el aceite de
+    // albahaca de la casa se ponen en el plato y su coste baja a él.
     return [
+      ...lo.elaboraciones
+        .filter((e) => casa(e.nombre))
+        .map((e) => ({
+          tipo: 'elaboracion' as const,
+          id: e.id,
+          nombre: e.nombre,
+          unidad: e.unidad,
+          de: 'Elaboración',
+        })),
       ...lo.productos
         .filter((p) => casa(p.nombre))
         .map((p) => ({
@@ -706,6 +673,15 @@ function LineaQueSeEscribe({
   }, [conPropuestas, opciones.length]);
   const sirven = fila.refId === null ? UNIDADES_DE_USO : unidadesQueSirven(fila.unidad);
   const caja = useRef<HTMLInputElement>(null);
+  // **El cursor va solo a donde toca** (19-oct): elegido el ingrediente, a su cantidad;
+  // escrita la cantidad, «Intro» lleva al siguiente ingrediente. Sin tener que buscar la
+  // caja con el dedo con el teclado abierto.
+  const cuanto = useRef<HTMLInputElement>(null);
+  const aLaCantidad = () => {
+    window.setTimeout(() => {
+      cuanto.current?.focus();
+    }, 0);
+  };
 
   return (
     <li className="flex flex-col gap-e1 border-b border-borde pb-e2 last:border-0">
@@ -733,11 +709,18 @@ function LineaQueSeEscribe({
         <div className="relative flex items-center">
           <input
             aria-label={`Cantidad de ${fila.nombre === '' ? `ingrediente ${String(numero)}` : fila.nombre}`}
+            ref={cuanto}
             inputMode="decimal"
+            enterKeyHint={siguiente === null ? 'done' : 'next'}
             value={fila.cantidad}
             placeholder="0"
             onChange={(e) => {
               alCambiar({ ...fila, cantidad: e.target.value });
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter' || siguiente === null) return;
+              e.preventDefault();
+              document.getElementById(siguiente)?.focus();
             }}
             className={clases(CAJA, 'pr-[3.25rem] text-right tabular-nums')}
           />
@@ -780,6 +763,7 @@ function LineaQueSeEscribe({
               nombre: p.nombre,
               unidad: sirvenLasDos ? fila.unidad : (unidadesQueSirven(p.unidad)[0] ?? p.unidad),
             });
+            aLaCantidad();
           }}
           className="flex min-h-toque items-center gap-e1 self-start rounded-medio px-e2 text-secundario font-semibold text-texto-suave hover:bg-fondo hover:text-texto"
         >
@@ -827,6 +811,7 @@ function LineaQueSeEscribe({
                       : unidad,
                   });
                   alBuscar(false);
+                  aLaCantidad();
                 }}
                 className="flex min-h-toque w-full items-center gap-e2 rounded-medio px-e2 text-left hover:bg-fondo"
               >

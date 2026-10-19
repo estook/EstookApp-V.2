@@ -80,7 +80,7 @@ async function lasReglas(contexto: Contexto, localId: string): Promise<Hallazgo[
     hallazgos.push({
       que: 'sin_escandallo',
       texto: `${sinEscandallo.length === 1 ? '1 plato' : `${String(sinEscandallo.length)} platos`} de la carta sin escandallo: ${unosCuantos(sinEscandallo.map((p) => p.nombre))}. Sin él, Estook no sabe lo que cuestan.`,
-      ir: '/escandallos/escandallos/sin-escandallo',
+      ir: '/escandallos/escandallos/todos?hacer=anadir-plato',
     });
   }
 

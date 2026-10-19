@@ -343,10 +343,9 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         queContesta: '¿Qué lleva cada plato, y cuánto cuesta?',
         // «Sin escandallo» y «Bajo objetivo» solo salen si tienen algo (el repaso del
         // 10-oct): a quien no ve costes, «Bajo objetivo» no le sale nunca.
-        vistas: soloSiTienenAlgo(vistas('Todos', 'Sin escandallo', 'Bajo objetivo'), [
-          'sin-escandallo',
-          'bajo-objetivo',
-        ]),
+        // Sin «Sin escandallo» desde el 19-oct: lo que falta por desgranar se elige en
+        // «Añadir», y no llena la lista de golpe.
+        vistas: soloSiTienenAlgo(vistas('Todos', 'Bajo objetivo'), ['bajo-objetivo']),
       },
       {
         id: 'fichas',

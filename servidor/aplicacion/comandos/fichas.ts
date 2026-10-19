@@ -765,9 +765,18 @@ const base64QueCabe = z
   .min(1)
   .max(Math.ceil((TOPE_DE_LA_FOTO * 4) / 3) + 1024);
 
+/** De quién es el paso: un plato, o una elaboración de la casa (19-oct, 0099). */
+const deQuienEsElPaso = {
+  plato_id: z.string().uuid().optional(),
+  elaboracion_id: z.string().uuid().optional(),
+};
+const unoDeLosDos = (e: { plato_id?: string | undefined; elaboracion_id?: string | undefined }) =>
+  (e.plato_id === undefined) !== (e.elaboracion_id === undefined);
+const SOLO_UNO = { message: 'Un paso es de un plato o de una elaboración.' };
+
 export const entradaPonerFotoDelPaso = z
   .object({
-    plato_id: z.string().uuid(),
+    ...deQuienEsElPaso,
     /** El paso, desde 0: el primero es el 0. */
     paso: z.number().int().min(0).max(39),
     tipo: z.string().refine((t) => t in TIPOS_DE_FOTO, {
@@ -776,7 +785,8 @@ export const entradaPonerFotoDelPaso = z
     /** La foto de 800 px, en base64 y sin el prefijo `data:`. */
     foto: base64QueCabe,
   })
-  .strict();
+  .strict()
+  .refine(unoDeLosDos, SOLO_UNO);
 
 /**
  * La receta del plato con sus pasos, tomada para escribir. La política de la tabla
@@ -785,12 +795,14 @@ export const entradaPonerFotoDelPaso = z
 async function losPasosParaEscribir(
   contexto: Contexto,
   localId: string,
-  platoId: string,
+  deQuien: { readonly plato_id?: string | undefined; readonly elaboracion_id?: string | undefined },
   paso: number,
 ): Promise<{ readonly id: string; readonly fotos: string[] }> {
   const filas = await contexto.sql<{ id: string; pasos: string[]; fotos_de_los_pasos: string[] }[]>`
     select id, pasos, fotos_de_los_pasos from estook.receta
-     where plato_id = ${platoId}::uuid and local_id = ${localId}::uuid
+     where (plato_id = ${deQuien.plato_id ?? null}::uuid
+            or elaboracion_id = ${deQuien.elaboracion_id ?? null}::uuid)
+       and local_id = ${localId}::uuid
        for update
   `;
   const receta = filas[0];
@@ -842,11 +854,11 @@ export const ponerFotoDelPaso = comando<
     }
 
     // Primero la fila, y con ella la foto que había: si no, no se sabría cuál sobra.
-    const receta = await losPasosParaEscribir(contexto, localId, entrada.plato_id, entrada.paso);
+    const receta = await losPasosParaEscribir(contexto, localId, entrada, entrada.paso);
     const vieja = receta.fotos[entrada.paso] ?? '';
     const clave = claveDeLaFotoDelPaso(
       localId,
-      entrada.plato_id,
+      entrada.plato_id ?? entrada.elaboracion_id ?? '',
       TIPOS_DE_FOTO[entrada.tipo] ?? 'jpg',
       contexto.ahora,
     );
@@ -862,25 +874,27 @@ export const ponerFotoDelPaso = comando<
        where id = ${receta.id}::uuid
     `;
     if (vieja !== '') await almacen.borrar(vieja);
-    return { platoId: entrada.plato_id, paso: entrada.paso };
+    return { platoId: entrada.plato_id ?? entrada.elaboracion_id ?? '', paso: entrada.paso };
   },
 });
 
 export const quitarFotoDelPaso = comando<
-  { plato_id: string; paso: number },
+  { plato_id?: string | undefined; elaboracion_id?: string | undefined; paso: number },
   { platoId: string; quitada: boolean }
 >({
   nombre: 'quitar_foto_del_paso',
   entrada: z
-    .object({ plato_id: z.string().uuid(), paso: z.number().int().min(0).max(39) })
-    .strict(),
+    .object({ ...deQuienEsElPaso, paso: z.number().int().min(0).max(39) })
+    .strict()
+    .refine(unoDeLosDos, SOLO_UNO),
   exige: 'app.escandallos',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeEscandallos(contexto);
-    const receta = await losPasosParaEscribir(contexto, localId, entrada.plato_id, entrada.paso);
+    const receta = await losPasosParaEscribir(contexto, localId, entrada, entrada.paso);
     const vieja = receta.fotos[entrada.paso] ?? '';
-    if (vieja === '') return { platoId: entrada.plato_id, quitada: false };
+    const id = entrada.plato_id ?? entrada.elaboracion_id ?? '';
+    if (vieja === '') return { platoId: id, quitada: false };
     const fotos = receta.fotos.map((c, i) => (i === entrada.paso ? '' : c));
     await contexto.sql`
       update estook.receta
@@ -889,6 +903,6 @@ export const quitarFotoDelPaso = comando<
        where id = ${receta.id}::uuid
     `;
     if (contexto.almacen !== null) await contexto.almacen.borrar(vieja);
-    return { platoId: entrada.plato_id, quitada: true };
+    return { platoId: id, quitada: true };
   },
 });

@@ -131,6 +131,10 @@ export interface ElaboracionEnLaLista {
   readonly alergenos: readonly Alergeno[];
   /** «3,20 €/l». Solo con `dato.coste_de_plato`. */
   readonly costePorUnidad?: string | null;
+  /** Lo que cuesta hacerla entera, todo lo que rinde (19-oct). Solo con costes. */
+  readonly costeCentimos?: number | null;
+  /** Los pasos de su ficha técnica (19-oct): la salsa también se enseña a hacer. */
+  readonly pasos: number;
 }
 
 export interface MisFichas {
@@ -226,15 +230,17 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
         usadaEn: cuantasVecesSeUsa(libro, e.id),
         activo: e.activo,
         alergenos: enOrdenOficial(alergenosDeLaReceta(receta?.lineas ?? [], libro.libro)),
+        pasos: receta?.pasos.length ?? 0,
       };
       if (!puede.costes) return base;
       const porUnidad = costePorUnidadDeLaElaboracion(e.id, libro.libro).milesimas;
+      const sinCoste = porUnidad === null || (receta?.lineas.length ?? 0) === 0;
       return {
         ...base,
-        costePorUnidad:
-          porUnidad === null || (receta?.lineas.length ?? 0) === 0
-            ? null
-            : comoPrecioPorUnidad(enMilesimasEnteras(porUnidad) as never, e.rindeUnidad),
+        costePorUnidad: sinCoste
+          ? null
+          : comoPrecioPorUnidad(enMilesimasEnteras(porUnidad) as never, e.rindeUnidad),
+        costeCentimos: sinCoste ? null : Math.round((porUnidad * e.rindeCantidad) / 1000),
       };
     });
 

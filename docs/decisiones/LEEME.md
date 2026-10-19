@@ -108,3 +108,4 @@ alguien se preguntara «por que esta hecho asi».
 | **0095** | Lo vendido sin escandallo (dos cifras aproximadas, el escandallo a mano y «Rellenar con Fogón» avisando), y Fogón en dos mitades: la base antes de M10, lo de ventas con el TPV (aceptado el 18-oct) |
 | **0096** | El arranque sin parpadeo (el tema antes de pintar, el mismo logo, la precarga después) y el precio en la jornada del local; propuesto: abrir con lo último que viste                                 |
 | **0097** | Fogón 1: en tres entregas; Haiku 5.5, el más barato; dos frenos (créditos al día y al mes, y 5 € al mes por local) y dos interruptores en el admin; la 1 · 1 construida (preguntar, rellenar, pasos) |
+| **0098** | Fogón 1 entero: lee (albarán, Z y merma por foto, merma dicha), revisa los datos cada lunes y prepara (pedido, horario con las reglas de Richi, reseñas); sabe quién pregunta; dictar gratis         |

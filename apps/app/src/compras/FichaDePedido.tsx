@@ -26,6 +26,7 @@ import { Cuantos, Dato, EnlaceComoBoton } from './Comun.tsx';
 import { copiarTexto, imprimirTexto } from './utilidades.ts';
 import { ElegirProducto } from './ElegirProducto.tsx';
 import { AyudaConElPedido } from './AyudaConElPedido.tsx';
+import { AjustarConFogon } from './AjustarConFogon.tsx';
 import { AlChat } from '../chat/AlChat.tsx';
 import { Recibir } from './Recibir.tsx';
 import {
@@ -419,6 +420,38 @@ export function FichaDePedido({
                     },
                   ],
                 }));
+              }}
+            />
+          )}
+
+          {/* Lo que Estook no sabe, contado a Fogón (0098): un evento, un puente. */}
+          {sePuedeCambiar && pedido.estado === 'borrador' && (
+            <AjustarConFogon
+              pedidoId={pedido.id}
+              lineas={actual.lineas}
+              alPoner={(cambios) => {
+                cambiar((antes) => {
+                  const lineas = antes.lineas.map((l) => {
+                    const c = cambios.find((x) => x.productoId === l.productoId);
+                    return c === undefined ? l : { ...l, cantidad: c.ahora };
+                  });
+                  const nuevas = cambios
+                    .filter(
+                      (c) => c.ahora > 0 && !lineas.some((l) => l.productoId === c.productoId),
+                    )
+                    .map((c) => ({
+                      productoId: c.productoId,
+                      producto: c.producto,
+                      formato: c.formato,
+                      factor: c.factor,
+                      unidadDeUso: c.unidadDeUso,
+                      hayAhora: c.hayAhora,
+                      cantidad: c.ahora,
+                      precioCentimos: null,
+                      nota: null,
+                    }));
+                  return { ...antes, lineas: [...lineas, ...nuevas] };
+                });
               }}
             />
           )}

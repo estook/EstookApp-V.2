@@ -4,25 +4,36 @@
 >
 > Leído el 19 de octubre de 2026 en producción (solo lectura).
 >
-> | Qué              | Cómo está                                                                                         |
-> | ---------------- | ------------------------------------------------------------------------------------------------- |
-> | Pull requests    | **#117 y #118 fusionadas**. Abierta: **Fogón dice por qué** (rama `fogon-dice-por-que`)           |
-> | La base de datos | **74 de 74** migraciones (la 0074 aplicada)                                                       |
-> | La API           | **Desplegada el 19-oct** con la #118: 94 consultas y 202 comandos. La rama nueva no añade ninguno |
-> | Fogón            | **Encendido** (el general, IKATZ y Pizzeriacazzo) y **contestando** desde el 19-oct               |
+> | Qué              | Cómo está                                                                                    |
+> | ---------------- | -------------------------------------------------------------------------------------------- |
+> | Pull requests    | **#117 a #120 fusionadas**. Abierta: **Fogón 1 entero** (rama `fogon-1-entero`)              |
+> | La base de datos | **74 de 74** migraciones (la 0074 aplicada). La rama nueva trae la **0075**                  |
+> | La API           | **Desplegada el 19-oct**: 94 consultas y 202 comandos. La rama nueva la deja en **96 y 210** |
+> | Fogón            | **Encendido** (el general, IKATZ y Pizzeriacazzo) y **contestando** desde el 19-oct          |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de M9, en [`pasos-de-m9.md`](pasos-de-m9.md).
 
 ---
 
-## Lo que te toca ahora · fusionar la #119 y la #120
+## Lo que te toca ahora · Fogón 1 entero
 
-Fogón **ya contesta** (19-oct): la clave de Anthropic estaba creada **sin espacio de trabajo**; con ella dentro de uno, funciona. Si algún día vuelve a fallar, **admin → Fogón → Probar la conexión** dice el motivo. En el chat, a propósito, solo sale una frase sencilla: el motivo no lo ve nadie más. La #120 (rama `fogon-dice-por-que`) limpia la clave si se pega con comillas o espacios y arregla dos pruebas. **Sin migración, con la API.**
+Fogón ya lee, revisa y prepara ([0098](decisiones/0098-fogon-1-entero.md)): **la foto del albarán** al recibir, **la foto del Z** al cerrar la caja, **la merma dicha o por foto**, **«Revisar mis datos»** (y cada lunes de madrugada, solo), **«Ajustar con Fogón»** en un pedido, **«Hacerlo con Fogón»** en el horario y **responder una reseña**. Y sabe tu nombre y tu puesto. **Con migración (la 0075) y con la API.**
 
-1. **Mirar que estén en verde**: `gh pr checks 119` y `gh pr checks 120`, las tres en `pass`.
-2. **Fusionar**: `gh pr merge 119 --merge` y luego `gh pr merge 120 --merge`.
-3. **Desplegar la API**: `gh workflow run desplegar-api.yml --ref main -f confirmar=desplegar`, y esperar al círculo verde en **Actions**.
-4. **Poner la carpeta al día**: `git checkout main` y `git pull`.
+1. **En GitHub**: abre el pull request **«Fogón 1 entero…»** y, con las **tres comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
+2. **En PowerShell**, en la carpeta del proyecto, uno por uno: `git checkout main`, `git pull` y `.\estook.cmd bd:migrar`. **Qué tiene que decir:** «1 migracion(es) aplicadas · 75 en total».
+3. **En GitHub**: **Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`**, y espera al **círculo verde**.
+4. **Probarlo en IKATZ** (cierra la app y ábrela dos veces, que la primera trae la versión nueva):
+   - **Almacén → Compras**, un pedido → **Recibir** → **Foto del albarán**: se rellenan las líneas, marcadas «leído por Fogón».
+   - **Servicio → Cierre de caja** → **Foto del Z**: se rellenan el total, el efectivo y la tarjeta.
+   - **El «+» → Apuntar una merma** → escribe o dicta «se me han roto dos botellas de vino» → **Entenderlo**.
+   - **Horario → Montarlo**, la semana que viene (vacía) → **Hacerlo con Fogón**: marca los días fuertes y a quién quieres, y mira lo que propone. **Ponerlo en el borrador** solo si te gusta.
+   - **Fogón (el «+» o `Ctrl+J`) → Revisar mis datos → Revisar ahora**.
+   - **Negocio → Reseñas**: pega una reseña de Google y **Escribir la respuesta**.
+5. **Dime** lo que no te cuadre, sobre todo **las reglas del horario** (punto 2 de la [0098](decisiones/0098-fogon-1-entero.md)).
+
+## Hecho · la #119 y la #120 (fusionadas el 19-oct)
+
+El buscador que no dice «Nada con…» antes de preguntar, la clave de Anthropic limpia y las dos pruebas que fallaban de madrugada.
 
 ## Hecho · el chat de Fogón y «Probar la conexión» (#118, desplegada el 19-oct)
 

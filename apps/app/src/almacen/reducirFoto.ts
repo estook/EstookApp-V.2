@@ -207,3 +207,33 @@ export async function reducirCara(
   if (pesa(foto) > 80 * 1024) throw new Error('Esa foto no cabe ni reducida.');
   return { tipo, contenido: soloElContenido(foto) };
 }
+
+/** Lo que se le enseña a Fogón para que lo lea (0098): JPEG, en base64. */
+export interface FotoParaLeer {
+  readonly tipo: 'image/jpeg';
+  readonly base64: string;
+}
+
+/** Lo que se intenta no pasar con una foto para leer: el servidor corta en 1,5 MB. */
+const OBJETIVO_PARA_LEER = 900 * 1024;
+const TOPE_PARA_LEER = 1_400 * 1024;
+
+/**
+ * Reducir una foto **para que Fogón la lea**: un albarán, un Z, lo que se tira
+ * (Fogón 1 · 2, decisión 0098). Distinta de la de la ficha: aquí manda que se lean
+ * las letras pequeñas, así que es más grande (`lado`, 1.600 px) y siempre JPEG, que
+ * con texto se lee mejor que un WebP muy apretado. No se guarda en ningún sitio.
+ */
+export async function reducirParaLeer(fichero: File, lado: number): Promise<FotoParaLeer> {
+  const imagen = await cargar(fichero);
+  const medidas = loQueCabe(imagen.naturalWidth, imagen.naturalHeight, lado);
+  const grande = lienzo(medidas.ancho, medidas.alto);
+  grande.pincel.drawImage(imagen, 0, 0, medidas.ancho, medidas.alto);
+  let foto = grande.lienzo.toDataURL('image/jpeg', 0.85);
+  for (const calidad of [0.75, 0.65, 0.55]) {
+    if (pesa(foto) <= OBJETIVO_PARA_LEER) break;
+    foto = grande.lienzo.toDataURL('image/jpeg', calidad);
+  }
+  if (pesa(foto) > TOPE_PARA_LEER) throw new Error('Esa foto no cabe ni reducida.');
+  return { tipo: 'image/jpeg', base64: soloElContenido(foto) };
+}

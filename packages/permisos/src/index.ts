@@ -311,6 +311,8 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   'inventario.falta': ['accion.cerrar_recuento', 'dato.precio_de_compra'],
   // Al jefe de cocina y a quien lleva el local: quien ve lo que cuesta cada plato (0092).
   'plato.raya': ['app.escandallos', 'dato.coste_de_plato'],
+  // A quien tiene Fogón y lleva el almacén: es quien puede arreglar lo que encuentra (0098).
+  'fogon.revision': ['app.fogon', 'app.almacen'],
 };
 
 export function puedeRecibirElAviso(

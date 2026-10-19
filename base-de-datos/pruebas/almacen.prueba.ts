@@ -682,6 +682,11 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // solo a sus miembros. `lo_gastado_en_fogon` suma lo gastado **de todo el local**
     // para los topes, aunque un camarero solo lea sus llamadas; solo a quien tiene
     // Fogón allí, y solo cuatro números. Son cincuenta y seis.
+    //
+    // **Y la 0075 (Fogón 1 · 3) añade una.** `cuentas_con_fogon` le dice al reloj qué
+    // cuentas tienen Fogón encendido para la revisión de noche: el reloj no es nadie y
+    // no lee `plataforma`. Solo contesta al sistema, y solo identificadores. Son
+    // cincuenta y siete.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -707,6 +712,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'como_le_suena',
       'crear_cuenta_con_negocio',
       'credencial_para_entrar',
+      'cuentas_con_fogon',
       'dar_de_alta_persona',
       'direccion_libre_para_la_carta',
       'el_uso_de',

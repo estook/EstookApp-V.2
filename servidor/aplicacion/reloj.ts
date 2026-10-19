@@ -31,6 +31,7 @@ import {
   hoyEnMadrid,
 } from './pago.ts';
 import { apuntarUnFallo } from '../infraestructura/fallos.ts';
+import { revisarDeNoche } from './fogon-revisa.ts';
 
 /**
  * El reloj (0016, montado en la 0048).
@@ -52,7 +53,9 @@ import { apuntarUnFallo } from '../infraestructura/fallos.ts';
  *
  * Y **cada hora**, los correos de los avisos que no salieron al momento (0052), y lo
  * del móvil (0070): apuntar lo que toca en la hora siguiente —«entras en cinco
- * minutos», lo que caduca, el pedido que no llega— y reintentar lo que no salió.
+ * minutos», lo que caduca, el pedido que no llega— y reintentar lo que no salió. Y la
+ * noche del domingo al lunes, **la revisión de Fogón** de cada local que lo tiene
+ * encendido, unos pocos por latido (0098).
  *
  * **Y cada minuto, solo si hace falta**, el latido del móvil (`latidoDelMovil`): la
  * base mira si hay algo que mandar y solo entonces llama (0054).
@@ -200,6 +203,16 @@ export async function latir(
       )) ?? 0;
     await sinPararElReloj(contexto, 'limpiar lo del móvil', () => limpiarLoDelMovil(contexto));
     await sinPararElReloj(contexto, 'mandar lo del móvil', () => mandarLoDelMovil(contexto));
+
+    // La noche del domingo al lunes, Fogón revisa los datos de los locales que lo tienen
+    // encendido, unos pocos por latido (0098). Fuera de esa noche no hace nada.
+    await sinPararElReloj(contexto, 'revisar los datos con Fogón', () =>
+      revisarDeNoche(
+        contexto,
+        cuentas.filter((c) => seLeAvisa(c, contexto.ahora, hoy)).map((c) => c.organizacion_id),
+        laHoraEnMadrid(contexto.ahora),
+      ),
+    );
 
     if (fila.ultimo_diario === hoy || laHoraEnMadrid(contexto.ahora) < HORA_DEL_DIARIO) {
       return {

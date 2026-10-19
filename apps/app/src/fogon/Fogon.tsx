@@ -9,6 +9,7 @@ import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { FogonYYo } from './contrato.ts';
 import { usarLaConversacion } from '../ganchos/usarLaConversacion.ts';
 import { CajaDeFogon, ConversacionConFogon } from './HablarConFogon.tsx';
+import { RevisionEnFogon } from './RevisionDeFogon.tsx';
 
 /**
  * Fogón · dónde vive y cómo se abre.
@@ -176,9 +177,12 @@ const POR_DEFECTO: LoDeAqui = {
 export function VentanaDeFogon({
   abierta,
   alCerrar,
+  conLaRevision = false,
 }: {
   readonly abierta: boolean;
   readonly alCerrar: () => void;
+  /** Abierta desde el aviso de la revisión (0098): la revisión, desplegada. */
+  readonly conLaRevision?: boolean;
 }) {
   const { pathname } = useLocation();
   const navegar = useNavigate();
@@ -236,6 +240,12 @@ export function VentanaDeFogon({
         titulo="Fogón"
         pie={<CajaDeFogon charla={charla} donde={contexto.donde} />}
       >
+        {/* Revisar mis datos, para quien lleva el almacén (0098): plegado, arriba. */}
+        {habla.puedeRevisar && (
+          <div className="pb-e3">
+            <RevisionEnFogon desplegada={conLaRevision} alIr={alCerrar} />
+          </div>
+        )}
         <ConversacionConFogon charla={charla} donde={contexto.donde} app={primero} />
       </Ventana>
     );

@@ -1,3 +1,6 @@
+import { desdeEuros } from './dinero.ts';
+import { parecido, sinAcentos } from './parecido.ts';
+
 /**
  * Fogón · lo que gasta y hasta dónde (Fogón 1 · 1, decisión 0097).
  *
@@ -15,11 +18,25 @@
  *     corta antes de pasarse de los 5 € al mes.
  */
 
-/** Lo que se le puede pedir a Fogón en la 1 · 1, y lo que gasta cada cosa. */
+/**
+ * Lo que se le puede pedir a Fogón, y lo que gasta cada cosa. La 1 · 1 (0097) y lo que
+ * trajeron la 1 · 2 y la 1 · 3 (0098). **Una foto gasta más que un texto**: el modelo
+ * lee la imagen entera. La revisión y el cuadrante, lo que más, porque leen más.
+ */
 export const CREDITOS_DE_FOGON = {
   preguntar: 1,
   rellenar_escandallo: 2,
   escribir_pasos: 2,
+  // ── 1 · 2 · Fotos y voz ────────────────────────────────────────────────────
+  leer_albaran: 3,
+  leer_cierre: 2,
+  leer_merma_foto: 2,
+  leer_merma_voz: 1,
+  // ── 1 · 3 · El que revisa y prepara ────────────────────────────────────────
+  revisar_datos: 3,
+  ajustar_pedido: 2,
+  hacer_cuadrante: 3,
+  responder_resena: 1,
 } as const;
 
 export type QueSeLePide = keyof typeof CREDITOS_DE_FOGON;
@@ -140,3 +157,51 @@ export const MODELO_DE_FOGON = 'claude-haiku-5-5';
 
 /** Lo más que puede escribir una persona al preguntar o al pedir un borrador. */
 export const LETRAS_PARA_FOGON = 600;
+
+/**
+ * Lo más que pesa una foto que se le enseña a Fogón, ya reducida en el móvil (lado
+ * largo de 1.600 px, JPEG): lo bastante para leer un albarán, y poco para subir por la
+ * red de un bar. En bytes.
+ */
+export const TOPE_DE_LA_FOTO_PARA_FOGON = 1_500_000;
+
+/** El lado largo al que se reduce esa foto en el móvil, en píxeles. */
+export const LADO_DE_LA_FOTO_PARA_FOGON = 1600;
+
+/**
+ * Cuánto se tiene que parecer un nombre leído por Fogón a uno de tus productos para
+ * proponerlo (Fogón 1 · 2, 0098). Por debajo, se pregunta cuál es: casar mal es peor
+ * que no casar.
+ */
+export const PARECIDO_PARA_CASAR = 0.4;
+
+/**
+ * De lo que Fogón ha leído («Tomate pera cat. I») a uno de tus productos. Primero el
+ * nombre igual, sin mayúsculas ni tildes (a Fogón se le pide que escriba el tuyo tal
+ * cual); si no, el que más se parezca, si se parece lo bastante. Nulo si ninguno.
+ */
+export function casarConUnProducto<T extends { readonly nombre: string }>(
+  leido: string,
+  productos: readonly T[],
+): T | null {
+  const limpio = sinAcentos(leido).toLowerCase().trim();
+  if (limpio === '') return null;
+  const igual = productos.find((p) => sinAcentos(p.nombre).toLowerCase().trim() === limpio);
+  if (igual !== undefined) return igual;
+  let mejor: T | null = null;
+  let cuanto = PARECIDO_PARA_CASAR;
+  for (const p of productos) {
+    const este = parecido(leido, p.nombre);
+    if (este >= cuanto) {
+      mejor = p;
+      cuanto = este;
+    }
+  }
+  return mejor;
+}
+
+/** De euros con decimales («12,5» o 12.5) a céntimos enteros. Nulo si no es un importe. */
+export function centimosDeEuros(euros: number | null | undefined): number | null {
+  if (euros === null || euros === undefined || !Number.isFinite(euros) || euros <= 0) return null;
+  return desdeEuros(euros);
+}

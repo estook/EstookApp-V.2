@@ -310,7 +310,19 @@ import {
   encenderFogonDelCliente,
   probarFogon,
 } from './comandos/fogon-en-el-admin.ts';
-import { fogonYYo } from './consultas/fogon.ts';
+import { fogonYYo, laRevisionDeFogon, loQueSabeFogonDelCuadrante } from './consultas/fogon.ts';
+import {
+  leerAlbaranConFogon,
+  leerElCierreConFogon,
+  leerLaMermaConFogon,
+} from './comandos/fogon-lee.ts';
+import {
+  ajustarElPedidoConFogon,
+  hacerElCuadranteConFogon,
+  ponerElCuadranteDeFogon,
+  responderResenaConFogon,
+  revisarMisDatosConFogon,
+} from './comandos/fogon-prepara.ts';
 import { fogonEnElAdmin } from './consultas/fogon-en-el-admin.ts';
 
 /**
@@ -470,6 +482,9 @@ export const catalogo = {
     [miMovil.nombre]: miMovil,
     // Fogón 1 · 1 (0097): si habla aquí y lo que le queda. No gasta nada.
     [fogonYYo.nombre]: fogonYYo,
+    // Fogón 1 · 3 (0098): la última revisión y lo que sabe del cuadrante. No gastan.
+    [laRevisionDeFogon.nombre]: laRevisionDeFogon,
+    [loQueSabeFogonDelCuadrante.nombre]: loQueSabeFogonDelCuadrante,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -803,5 +818,15 @@ export const catalogo = {
     [preguntarAFogon.nombre]: preguntarAFogon,
     [rellenarConFogon.nombre]: rellenarConFogon,
     [escribirLosPasosConFogon.nombre]: escribirLosPasosConFogon,
+    // Fogón 1 · 2 (0098): leer el albarán, el Z y la merma.
+    [leerAlbaranConFogon.nombre]: leerAlbaranConFogon,
+    [leerElCierreConFogon.nombre]: leerElCierreConFogon,
+    [leerLaMermaConFogon.nombre]: leerLaMermaConFogon,
+    // Fogón 1 · 3 (0098): revisar los datos y los borradores.
+    [revisarMisDatosConFogon.nombre]: revisarMisDatosConFogon,
+    [ajustarElPedidoConFogon.nombre]: ajustarElPedidoConFogon,
+    [hacerElCuadranteConFogon.nombre]: hacerElCuadranteConFogon,
+    [ponerElCuadranteDeFogon.nombre]: ponerElCuadranteDeFogon,
+    [responderResenaConFogon.nombre]: responderResenaConFogon,
   } as Record<string, Comando<never, unknown>>,
 };

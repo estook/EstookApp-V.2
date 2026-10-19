@@ -3,6 +3,7 @@ import { nombreEn } from '../datos/nombreEn.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
+  CREDITOS_DE_FOGON,
   NOMBRE_DEL_ORIGEN_DEL_CIERRE,
   claveDePlato,
   importeDeLinea,
@@ -31,6 +32,10 @@ import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { ComoEntranTusVentas } from './ComoEntranTusVentas.tsx';
 import { comoSeLeeElDia, type ElCierreDeUnDia } from './contrato.ts';
 import { comoDinero } from '../almacen/contrato.ts';
+import { usarLectura } from '../ganchos/usarLectura.ts';
+import { FotoParaFogon } from '../fogon/FotoParaFogon.tsx';
+import { AvisoDelBorrador } from '../fogon/PedirleAFogon.tsx';
+import type { CierreLeido, FogonYYo } from '../fogon/contrato.ts';
 
 /**
  * Servicio · Jornada · Cierre (M6½).
@@ -328,9 +333,12 @@ function Formulario({
       importeTocado: true,
     })),
   );
-  const [origen, setOrigen] = useState<'a_mano' | 'csv'>(
-    antes?.origen === 'csv' ? 'csv' : 'a_mano',
+  const [origen, setOrigen] = useState<'a_mano' | 'csv' | 'foto'>(
+    antes?.origen === 'csv' || antes?.origen === 'foto' ? antes.origen : 'a_mano',
   );
+  // El Z por foto (Fogón 1 · 2, 0098): lo lee Fogón y rellena el formulario.
+  const fogon = usarLectura<FogonYYo>('fogon_y_yo', {});
+  const [leidoPorFogon, setLeidoPorFogon] = useState(false);
   const [noEntendidas, setNoEntendidas] = useState<readonly number[]>([]);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
@@ -398,6 +406,32 @@ function Formulario({
     if (total === null && leido.sumaCentimos > 0) setTotal(leido.sumaCentimos as Centimos);
   }
 
+  /** Lo que ha leído Fogón del Z, en el formulario. Lo que ya estaba escrito, se pisa. */
+  async function leerElZ(foto: { tipo: 'image/jpeg'; base64: string }) {
+    const respuesta = await cliente.ejecutar<CierreLeido>('leer_el_cierre_con_fogon', { foto });
+    if (!respuesta.ok) return respuesta.error;
+    const z = respuesta.datos;
+    setTotal(z.totalCentimos as Centimos | null);
+    setEfectivo(z.efectivoCentimos as Centimos | null);
+    setTarjeta(z.tarjetaCentimos as Centimos | null);
+    setOtros(z.otrosCentimos as Centimos | null);
+    setTickets(z.tickets === null ? '' : String(z.tickets));
+    setComensales(z.comensales === null ? '' : String(z.comensales));
+    if (z.lineas.length > 0) {
+      setLineas(
+        z.lineas.map((l) => ({
+          concepto: l.concepto,
+          unidades: String(l.unidades).replace('.', ','),
+          importe: l.importeCentimos as Centimos | null,
+          importeTocado: l.importeCentimos !== null,
+        })),
+      );
+    }
+    setOrigen('foto');
+    setLeidoPorFogon(true);
+    return null;
+  }
+
   async function guardar() {
     if (total === null) return;
     setError(null);
@@ -452,6 +486,18 @@ function Formulario({
             Ya cuenta en las ventas del día.
           </Aviso>
         )}
+
+        {/* ── Con una foto del Z, lo lee Fogón (0098) ──────────────────── */}
+        {fogon.data?.habla === true && !leidoPorFogon && (
+          <FotoParaFogon
+            titulo="¿Te lo lee Fogón?"
+            ayuda="Hazle una foto al Z de la caja y Fogón rellena el total, el efectivo, la tarjeta y lo vendido por plato si lo trae."
+            boton="Foto del Z"
+            gasta={CREDITOS_DE_FOGON.leer_cierre}
+            alLeer={leerElZ}
+          />
+        )}
+        {leidoPorFogon && <AvisoDelBorrador />}
 
         {/* ── Cómo se hace, en tres líneas ───────────────────────────────── */}
         <ol className="flex list-decimal flex-col gap-e1 pl-e4 text-secundario text-texto-suave">

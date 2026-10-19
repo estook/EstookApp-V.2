@@ -8,6 +8,7 @@
 >
 > **Al cerrar una entrega**, lo suyo se añade **arriba del todo**, con el mismo formato.
 
+- Los nueve de «Lo que decidí al construirlo» de la [0098](decisiones/0098-fogon-1-entero.md), al acabar Fogón 1: como que al modelo no le lleguen los nombres del equipo ni para el horario (van como «P1 · cocina · 40 h»), que las fotos no se guarden, que lo del pedido que no sale en la foto se marque y no se quite, o que la revisión de noche sea de dos locales por hora.
 - Los seis de «Lo que decidí al construirlo» de la [0097](decisiones/0097-fogon-1-las-respuestas-y-la-base.md), al construir Fogón 1 · 1: como que la conversación no se guarde en la base, que a la IA no le lleguen nombres de personas, que los borradores solo salgan con lo vacío, o que Anthropic quede apuntado como subencargado. Y la forma de los topes (créditos al día y al mes, y 5 € al mes y 0,25 € al día por local), que Richi pidió recomendar.
 - Los cuatro de «Lo que decidí al hacerlo» de la [0096](decisiones/0096-el-arranque-y-el-precio-en-la-jornada.md): el logo mientras se comprueba la sesión, la precarga a los 4 s en Safari, meter también lo pactado en la jornada y que el fichero del tema no pase por el revisor de código.
 - Los nueve de «Lo que decidí al construirlo» de la [0092](decisiones/0092-las-respuestas-de-m9-3.md), al construir M9 · 3: como mirar «Qué ha cambiado» frente a hace 7, 30 o 90 días, que una línea sin unir no deje guardar, que el precio de venta sea el de hoy en los dos lados, o que «Descargar todas» deje fuera lo que se vende tal cual.

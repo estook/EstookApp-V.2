@@ -7,6 +7,7 @@ import { Aviso, Boton, Cargando, EstadoVacio, Tarjeta, Tendencia } from '@estook
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { MiNotaEnGoogle } from './contrato.ts';
+import { ResponderConFogon } from './ResponderConFogon.tsx';
 
 /**
  * Negocio → Reseñas · la nota en Google (entrega R2, mejora 19 · decisión 0053).
@@ -17,7 +18,8 @@ import type { MiNotaEnGoogle } from './contrato.ts';
  * mitad es el reloj, cada tres días. Si baja, avisa la campana y lleva aquí.
  *
  * Leer cada reseña y contestarla desde Estook espera a que Google apruebe Business
- * Profile (M23): se dice plegado, sin prometer fecha.
+ * Profile (M23): se dice plegado, sin prometer fecha. Mientras, **Fogón escribe la
+ * respuesta** a una reseña que se pega (0098).
  */
 const ACENTO = 'var(--color-app-negocio)';
 
@@ -61,29 +63,33 @@ export function Resenas() {
 
   if (laNota === null) {
     return (
-      <Tarjeta acento={ACENTO}>
-        <EstadoVacio
-          compacto
-          dibujo="local"
-          acento={ACENTO}
-          titulo="Tu local todavía no está enlazado con Google"
-          frase="Enlázalo una vez y aquí verás su nota, cuántas reseñas tiene y cómo va cambiando."
-          {...(datos.puedeEnlazarlo
-            ? {
-                accion: (
-                  <Boton
-                    tono="principal"
-                    onClick={() => {
-                      navegar('/ajustes/local#google');
-                    }}
-                  >
-                    Enlazarlo con Google
-                  </Boton>
-                ),
-              }
-            : { sinAccionPorque: 'Lo enlaza quien lleva los ajustes del local.' })}
-        />
-      </Tarjeta>
+      <div className="flex flex-col gap-e4">
+        <Tarjeta acento={ACENTO}>
+          <EstadoVacio
+            compacto
+            dibujo="local"
+            acento={ACENTO}
+            titulo="Tu local todavía no está enlazado con Google"
+            frase="Enlázalo una vez y aquí verás su nota, cuántas reseñas tiene y cómo va cambiando."
+            {...(datos.puedeEnlazarlo
+              ? {
+                  accion: (
+                    <Boton
+                      tono="principal"
+                      onClick={() => {
+                        navegar('/ajustes/local#google');
+                      }}
+                    >
+                      Enlazarlo con Google
+                    </Boton>
+                  ),
+                }
+              : { sinAccionPorque: 'Lo enlaza quien lleva los ajustes del local.' })}
+          />
+        </Tarjeta>
+        {/* Sin enlazar también: la reseña se pega a mano (0098). */}
+        <ResponderConFogon acento={ACENTO} />
+      </div>
     );
   }
 
@@ -139,11 +145,13 @@ export function Resenas() {
             <summary className="cursor-pointer">¿Y contestarlas desde aquí?</summary>
             <p className="mt-e2">
               Cuando Google apruebe el acceso a tu ficha (Business Profile), aquí leerás cada reseña
-              y Estook te propondrá una respuesta que mandas tú. Mientras, se contestan en Google.
+              y Estook te propondrá una respuesta que mandas tú. Mientras, copia la reseña aquí
+              abajo y Fogón te escribe la respuesta.
             </p>
           </details>
         </div>
       </Tarjeta>
+      <ResponderConFogon acento={ACENTO} />
     </div>
   );
 }

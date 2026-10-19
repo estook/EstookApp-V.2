@@ -37,6 +37,17 @@ export interface PeticionAFogon {
   readonly hastaTokens: number;
   /** Si tiene que contestar un JSON con esta forma (salida estructurada). */
   readonly forma?: Record<string, unknown>;
+  /**
+   * Una foto que acompaña al último mensaje (Fogón 1 · 2, 0098): el albarán, el Z, lo
+   * que se tira. Ya reducida en el móvil; aquí no se guarda, solo se le enseña.
+   */
+  readonly foto?: FotoParaFogon;
+}
+
+/** Una foto para Fogón: JPEG o WebP, en base64 y sin el prefijo `data:`. */
+export interface FotoParaFogon {
+  readonly tipo: 'image/jpeg' | 'image/webp';
+  readonly base64: string;
 }
 
 export interface RespuestaDeFogon {
@@ -105,8 +116,36 @@ export function limpiarLaClave(clave: string): string {
     .replace(/\s+/g, '');
 }
 
+/**
+ * Los mensajes tal como los pide Anthropic. La foto va **en el último mensaje de la
+ * persona, antes del texto**: es lo que mejor lee el modelo (la imagen primero).
+ */
+export function conLaFoto(
+  mensajes: readonly MensajeAFogon[],
+  foto: FotoParaFogon | undefined,
+): Anthropic.MessageParam[] {
+  const ultimo = mensajes.length - 1;
+  return mensajes.map((m, i) =>
+    foto !== undefined && i === ultimo && m.rol === 'user'
+      ? {
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: foto.tipo, data: foto.base64 } },
+            { type: 'text', text: m.texto },
+          ],
+        }
+      : { role: m.rol, content: m.texto },
+  );
+}
+
 /** Lo más que se espera a una respuesta: una persona con la mano en el móvil. */
 const ESPERA_MAXIMA_MS = 25_000;
+/**
+ * Y lo que se espera a lo que es largo de leer o de escribir: una foto (el modelo lee la
+ * imagen entera) o una respuesta larga, como el horario de la semana (0098).
+ */
+const ESPERA_DE_LO_LARGO_MS = 50_000;
+const TOKENS_DE_LO_LARGO = 2000;
 
 /**
  * El de verdad. **Nulo si no hay clave**, y entonces Fogón dice que no está
@@ -129,23 +168,30 @@ export function modeloDeAnthropic(
     modelo,
     async pedir(peticion) {
       let respuesta: Anthropic.Message;
+      const espera =
+        peticion.foto !== undefined || peticion.hastaTokens > TOKENS_DE_LO_LARGO
+          ? ESPERA_DE_LO_LARGO_MS
+          : ESPERA_MAXIMA_MS;
       try {
-        respuesta = await cliente.messages.create({
-          model: modelo,
-          max_tokens: peticion.hastaTokens,
-          thinking: { type: 'disabled' },
-          system: [
-            { type: 'text', text: peticion.reglas, cache_control: { type: 'ephemeral' } },
-            { type: 'text', text: peticion.resumen, cache_control: { type: 'ephemeral' } },
-          ],
-          messages: peticion.mensajes.map((m) => ({ role: m.rol, content: m.texto })),
-          output_config: {
-            effort: 'low',
-            ...(peticion.forma === undefined
-              ? {}
-              : { format: { type: 'json_schema', schema: peticion.forma } }),
+        respuesta = await cliente.messages.create(
+          {
+            model: modelo,
+            max_tokens: peticion.hastaTokens,
+            thinking: { type: 'disabled' },
+            system: [
+              { type: 'text', text: peticion.reglas, cache_control: { type: 'ephemeral' } },
+              { type: 'text', text: peticion.resumen, cache_control: { type: 'ephemeral' } },
+            ],
+            messages: conLaFoto(peticion.mensajes, peticion.foto),
+            output_config: {
+              effort: 'low',
+              ...(peticion.forma === undefined
+                ? {}
+                : { format: { type: 'json_schema', schema: peticion.forma } }),
+            },
           },
-        });
+          { timeout: espera },
+        );
       } catch (fallo) {
         if (fallo instanceof Anthropic.APIError) {
           const { tipo, detalle } = loQueDiceAnthropic(
@@ -220,6 +266,75 @@ export function modeloDeMentira(
  */
 export function contestaDePrueba(peticion: PeticionAFogon): string {
   const campos = Object.keys((peticion.forma?.['properties'] as object | undefined) ?? {});
+  const primero = primerProductoDelResumen(peticion.resumen);
+  // ── Fogón 1 · 2 y 1 · 3 (0098): lo que lee y lo que prepara ─────────────────
+  if (campos.includes('total')) {
+    return JSON.stringify({
+      fecha: '',
+      total: 1234.5,
+      efectivo: 400,
+      tarjeta: 834.5,
+      otros: 0,
+      tickets: 42,
+      comensales: 0,
+      lineas: [{ concepto: 'Croquetas', unidades: 12, importe: 96 }],
+    });
+  }
+  if (campos.includes('numero')) {
+    return JSON.stringify({
+      numero: 'A-2024',
+      fecha: '',
+      proveedor: '',
+      lineas: [
+        {
+          texto: primero,
+          producto: primero,
+          formatos: 3,
+          cantidad: 0,
+          precio: 12.5,
+          importe: 37.5,
+          lote: 'L-77',
+          caduca: '',
+        },
+        {
+          texto: 'Algo que no tienes',
+          producto: '',
+          formatos: 1,
+          cantidad: 0,
+          precio: 0,
+          importe: 0,
+          lote: '',
+          caduca: '',
+        },
+      ],
+    });
+  }
+  if (campos.includes('mermas')) {
+    return JSON.stringify({
+      mermas: [{ producto: primero, cantidad: 2, motivo: 'roto', detalle: 'Se ha caído' }],
+    });
+  }
+  if (campos.includes('cambios')) {
+    const delPedido = /^- ([^·]+?) ·/m.exec(peticion.resumen)?.[1] ?? primero;
+    return JSON.stringify({
+      cambios: [{ producto: delPedido, formatos: 5, porque: 'Más gente el sábado.' }],
+      resumen: 'He subido lo que más se gasta para el sábado.',
+    });
+  }
+  if (campos.includes('tramos')) {
+    const texto = peticion.mensajes.at(-1)?.texto ?? '';
+    const personas = [...texto.matchAll(/^(P\d+) ·/gm)].map((m) => m[1] ?? '');
+    const dias = ['martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    return JSON.stringify({
+      tramos: personas.flatMap((persona) =>
+        dias.map((dia) => ({ persona, dia, entra: '12:00', sale: '16:00', descanso_minutos: 0 })),
+      ),
+      explicacion: 'Todos de martes a sábado a mediodía. Esto es Fogón de pruebas.',
+    });
+  }
+  if (campos.includes('repetidos')) {
+    return JSON.stringify({ repetidos: [], pasos: [] });
+  }
   if (campos.includes('lineas')) {
     return JSON.stringify({
       raciones: 1,
@@ -241,4 +356,22 @@ export function contestaDePrueba(peticion: PeticionAFogon): string {
     });
   }
   return 'Esto es Fogón de pruebas: no he llamado a ningún modelo.';
+}
+
+/**
+ * El primer producto de la lista que lleva el resumen («Tomate pera (g)»), sin lo de
+ * entre paréntesis: para que el de mentira conteste con un producto que existe.
+ */
+function primerProductoDelResumen(resumen: string): string {
+  const lista = resumen.split('\n').slice(1).join('\n');
+  const primero = lista
+    .split(/\n|; /)
+    .map((t) =>
+      t
+        .replace(/^- /, '')
+        .replace(/\s*\(.*$/, '')
+        .trim(),
+    )
+    .find((t) => t !== '' && !t.startsWith('('));
+  return primero ?? 'Producto';
 }

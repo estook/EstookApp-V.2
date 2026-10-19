@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NOMBRE_DE_LA_INCIDENCIA, centimos, comoSePide } from '@estook/dominio';
+import { CREDITOS_DE_FOGON, NOMBRE_DE_LA_INCIDENCIA, centimos, comoSePide } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import {
   Aviso,
@@ -26,32 +26,13 @@ import { Cuantos } from './Comun.tsx';
 import { numeroEscrito } from './utilidades.ts';
 import { ElegirProducto } from './ElegirProducto.tsx';
 import { cuantosProductos, type LoRecibido, type UnPedido } from './contrato.ts';
+import { conLoLeidoDelAlbaran, type LineaAlRecibir } from './albaranDeFogon.ts';
+import { usarLectura } from '../ganchos/usarLectura.ts';
+import { FotoParaFogon } from '../fogon/FotoParaFogon.tsx';
+import { AvisoDelBorrador } from '../fogon/PedirleAFogon.tsx';
+import type { AlbaranLeido, FogonYYo } from '../fogon/contrato.ts';
 
-/** Una línea en la puerta: lo que se pidió y lo que se está apuntando que llega. */
-interface Linea {
-  readonly clave: string;
-  readonly lineaDePedidoId: string | null;
-  readonly productoId: string;
-  readonly producto: string;
-  readonly formato: string | null;
-  readonly factor: number;
-  readonly unidadDeUso: string;
-  readonly pesoVariable: boolean;
-  /** En formatos. Nulo si no estaba en el pedido. */
-  readonly pedida: number | null;
-  readonly formatos: number;
-  /** Para el peso variable: lo que dice la báscula, escrito. */
-  readonly kilos: string;
-  /** Por formato, sin impuestos. */
-  readonly precio: number | null;
-  /** Para el peso variable: lo que cobra la línea entera. */
-  readonly importe: number | null;
-  readonly rechazada: boolean;
-  readonly lote: string;
-  readonly caducaEl: string;
-  readonly nota: string;
-  readonly conDetalle: boolean;
-}
+type Linea = LineaAlRecibir;
 
 type Paso = 'pregunta' | 'kilos' | 'cambios' | 'hecho';
 
@@ -129,6 +110,18 @@ export function Recibir({
   const [escaneando, setEscaneando] = useState(false);
   const [escaneadas, setEscaneadas] = useState<ReadonlySet<string>>(new Set());
   const [ultimoLeido, setUltimoLeido] = useState<string | null>(null);
+  /**
+   * La foto del albarán (Fogón 1 · 2, 0098): lo leído rellena las líneas, y se marca lo
+   * que ha tocado Fogón y lo del pedido que no sale en la foto, para revisarlo.
+   */
+  const fogon = usarLectura<FogonYYo>('fogon_y_yo', {});
+  const conFogon = fogon.data?.habla === true;
+  const [deFogon, setDeFogon] = useState<ReadonlySet<string>>(new Set());
+  const [noSalen, setNoSalen] = useState<ReadonlySet<string>>(new Set());
+  const [leidoPorFogon, setLeidoPorFogon] = useState<{
+    readonly sinCasar: readonly string[];
+    readonly otroProveedor: string | null;
+  } | null>(null);
 
   async function marcarLaLinea(codigo: string) {
     const respuesta = await cliente.consultar<MisProductos>('mis_productos', {
@@ -245,6 +238,24 @@ export function Recibir({
     await refrescar();
   }
 
+  async function leerElAlbaran(foto: { tipo: 'image/jpeg'; base64: string }) {
+    const respuesta = await cliente.ejecutar<AlbaranLeido>('leer_albaran_con_fogon', {
+      ...(pedido === null ? { proveedor_id: proveedorId } : { pedido_id: pedido.pedido.id }),
+      foto,
+    });
+    if (!respuesta.ok) return respuesta.error;
+    const leido = respuesta.datos;
+    const deja = conLoLeidoDelAlbaran(lineas, leido, editaPrecios);
+    setLineas(deja.lineas);
+    setDeFogon(deja.deFogon);
+    setNoSalen(deja.noSalen);
+    setLeidoPorFogon({ sinCasar: deja.sinCasar, otroProveedor: leido.otroProveedor });
+    if (numero.trim() === '' && leido.numero !== null) setNumero(leido.numero);
+    setFalta(null);
+    setPaso('cambios');
+    return null;
+  }
+
   async function pedirLoQueFalto() {
     setPidiendo(true);
     const respuesta = await cliente.ejecutar<{ pedidoId: string }>('crear_pedido', {
@@ -333,6 +344,33 @@ export function Recibir({
               setNumero(e.currentTarget.value);
             }}
           />
+        )}
+
+        {/* ── Con una foto del albarán, lo lee Fogón (0098) ─────────────── */}
+        {conFogon && (paso === 'pregunta' || paso === 'cambios') && leidoPorFogon === null && (
+          <FotoParaFogon
+            titulo="¿Te lo lee Fogón?"
+            ayuda="Hazle una foto al albarán y Fogón rellena lo que ha llegado. Tú lo revisas antes de apuntarlo."
+            boton="Foto del albarán"
+            gasta={CREDITOS_DE_FOGON.leer_albaran}
+            alLeer={leerElAlbaran}
+          />
+        )}
+        {leidoPorFogon !== null && paso === 'cambios' && (
+          <div className="flex flex-col gap-e2">
+            <AvisoDelBorrador />
+            {leidoPorFogon.otroProveedor !== null && (
+              <Aviso tono="atencion" titulo="¿Es de otro proveedor?">
+                El papel dice «{leidoPorFogon.otroProveedor}». Mira que sea el albarán de{' '}
+                {nombreDelProveedor}.
+              </Aviso>
+            )}
+            {leidoPorFogon.sinCasar.length > 0 && (
+              <Aviso tono="atencion" titulo="Esto no sé cuál de tus productos es">
+                {leidoPorFogon.sinCasar.join(' · ')}. Si ha llegado, añádelo abajo.
+              </Aviso>
+            )}
+          </div>
         )}
 
         {/* ── ¿Entero o con cambios? ────────────────────────────────────── */}
@@ -456,6 +494,10 @@ export function Recibir({
                       <span className="flex flex-wrap items-center gap-e2 text-cuerpo font-medium">
                         {l.producto}
                         {escaneadas.has(l.clave) && <Etiqueta tono="bien">escaneada</Etiqueta>}
+                        {deFogon.has(l.clave) && <Etiqueta tono="info">leído por Fogón</Etiqueta>}
+                        {noSalen.has(l.clave) && (
+                          <Etiqueta tono="atencion">no sale en la foto</Etiqueta>
+                        )}
                       </span>
                       {l.pedida !== null ? (
                         <span className="text-secundario text-texto-suave">

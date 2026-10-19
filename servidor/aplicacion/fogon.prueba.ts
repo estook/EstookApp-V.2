@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FogonNoContesta, limpiarLaClave } from '../ia/modelo.ts';
-import { loQueSeDice, porQueNoContesta } from './fogon.ts';
+import { porQueNoContesta } from './fogon.ts';
 
 /**
  * Por qué no contesta Fogón, dicho para Richi (19-oct).
@@ -52,31 +52,6 @@ describe('por qué no contesta Fogón', () => {
     expect(fallo.message).toBe(
       'Fogón no ha contestado (401) · authentication_error · invalid x-api-key',
     );
-  });
-});
-
-/**
- * Lo que ve quien pregunta en el chat cuando Fogón no contesta (19-oct: con la frase
- * genérica, Richi no podía saber si era la clave, el saldo o el modelo).
- */
-describe('lo que dice el chat cuando Fogón no contesta', () => {
-  const sinSaldo = new FogonNoContesta(
-    400,
-    'invalid_request_error',
-    'Your credit balance is too low to access the Anthropic API.',
-  );
-
-  it('en un negocio de la casa, el motivo de verdad y la frase de Anthropic', () => {
-    const dice = loQueSeDice(sinSaldo, true);
-    expect(dice).toMatch(/no tiene saldo/);
-    expect(dice).toContain('(Anthropic: 400 · invalid_request_error · Your credit balance');
-  });
-
-  it('a un cliente, una frase sin tecnicismos', () => {
-    expect(loQueSeDice(sinSaldo, false)).toBe(
-      'Fogón no ha podido contestar. No se ha gastado nada: prueba otra vez en un rato.',
-    );
-    expect(loQueSeDice(new FogonNoContesta(529, 'overloaded_error'), false)).toMatch(/ocupado/);
   });
 });
 

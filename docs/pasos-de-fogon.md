@@ -17,7 +17,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## Lo que te toca ahora · fusionar la #119 y la #120
 
-Fogón **ya contesta** (19-oct): la clave de Anthropic estaba creada **sin espacio de trabajo**; con ella dentro de uno, funciona. Si algún día vuelve a fallar, **admin → Fogón → Probar la conexión** dice el motivo. La #120 (rama `fogon-dice-por-que`) hace que **en IKATZ el chat también lo diga**, limpia la clave si se pega con comillas o espacios, y arregla dos pruebas. **Sin migración, con la API.**
+Fogón **ya contesta** (19-oct): la clave de Anthropic estaba creada **sin espacio de trabajo**; con ella dentro de uno, funciona. Si algún día vuelve a fallar, **admin → Fogón → Probar la conexión** dice el motivo. En el chat, a propósito, solo sale una frase sencilla: el motivo no lo ve nadie más. La #120 (rama `fogon-dice-por-que`) limpia la clave si se pega con comillas o espacios y arregla dos pruebas. **Sin migración, con la API.**
 
 1. **Mirar que estén en verde**: `gh pr checks 119` y `gh pr checks 120`, las tres en `pass`.
 2. **Fusionar**: `gh pr merge 119 --merge` y luego `gh pr merge 120 --merge`.

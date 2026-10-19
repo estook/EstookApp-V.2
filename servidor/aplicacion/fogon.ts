@@ -35,12 +35,10 @@ export interface FogonDeLaSesion {
   readonly organizacionId: string;
   readonly localId: string;
   readonly creditosDelMes: number;
-  /** Un negocio de la casa (IKATZ): ve el motivo de verdad cuando Fogón no contesta. */
-  readonly deLaCasa: boolean;
 }
 
 export type ComoEstaFogon =
-  | { readonly habla: true; readonly creditosDelMes: number; readonly deLaCasa: boolean }
+  | { readonly habla: true; readonly creditosDelMes: number }
   | {
       readonly habla: false;
       readonly porque: 'sin_clave' | 'apagado_general' | 'apagado_cliente' | 'sin_local';
@@ -69,11 +67,7 @@ export async function comoEstaFogon(contexto: Contexto): Promise<ComoEstaFogon> 
   if (fila.como !== 'encendido') return { habla: false, porque: 'apagado_cliente' };
   // La clave, lo último: con Fogón encendido y sin clave es cosa nuestra, y se dice.
   if (contexto.fogon == null) return { habla: false, porque: 'sin_clave' };
-  return {
-    habla: true,
-    creditosDelMes: creditosDelPlan(fila.plan, fila.de_la_casa),
-    deLaCasa: fila.de_la_casa,
-  };
+  return { habla: true, creditosDelMes: creditosDelPlan(fila.plan, fila.de_la_casa) };
 }
 
 /** Lo gastado en el local hoy y este mes. Ceros si todavía no hay nada. */
@@ -130,7 +124,6 @@ export async function elFogonDeLaSesion(contexto: Contexto): Promise<FogonDeLaSe
     organizacionId: sesion.organizacionId,
     localId: sesion.localId,
     creditosDelMes: como.creditosDelMes,
-    deLaCasa: como.deLaCasa,
   };
 }
 
@@ -186,7 +179,12 @@ export async function pedirAFogon(
         correlacionId: contexto.correlacionId,
         extra: { estado: fallo.estado, tipo: fallo.tipo, que },
       });
-      throw new FalloDeAplicacion('faltan_datos', { porque: loQueSeDice(fallo, fogon.deLaCasa) });
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque:
+          fallo.estado === 429 || fallo.estado === 529
+            ? 'Fogón está muy ocupado ahora mismo. Prueba otra vez en un minuto.'
+            : 'Fogón no ha podido contestar. No se ha gastado nada: prueba otra vez en un rato.',
+      });
     }
     throw fallo;
   }
@@ -217,28 +215,6 @@ export async function pedirAFogon(
     microEurosMes: gastado.microEurosMes + coste,
   };
   return { texto: respuesta.texto, queda: loQueQueda(despues, fogon.creditosDelMes) };
-}
-
-/**
- * La frase cuando el modelo no contesta. A un cliente, una frase sin tecnicismos. A un
- * negocio de la casa (IKATZ, donde prueba Richi), **el motivo de verdad** y la frase de
- * Anthropic: el 19-oct la frase genérica no dejaba ver si era la clave, el saldo o el
- * modelo, y en producción no había ni una llamada que hubiera funcionado.
- */
-export function loQueSeDice(fallo: FogonNoContesta, deLaCasa: boolean): string {
-  if (deLaCasa) {
-    const anthropic = [
-      fallo.estado === null ? null : String(fallo.estado),
-      fallo.tipo,
-      fallo.detalle,
-    ]
-      .filter((t) => t !== null && t !== '')
-      .join(' · ');
-    return `${porQueNoContesta(fallo)}${anthropic === '' ? '' : ` (Anthropic: ${anthropic})`}`;
-  }
-  return fallo.estado === 429 || fallo.estado === 529
-    ? 'Fogón está muy ocupado ahora mismo. Prueba otra vez en un minuto.'
-    : 'Fogón no ha podido contestar. No se ha gastado nada: prueba otra vez en un rato.';
 }
 
 /**

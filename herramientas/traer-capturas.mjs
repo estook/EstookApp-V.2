@@ -10,7 +10,8 @@
  * en Windows la letra se pinta distinta y no coincidirían nunca. Así que cuando
  * una pantalla cambia a propósito, la captura buena no se puede hacer aquí: la
  * hace GitHub. La vuelta sale en rojo y deja las nuevas en el artefacto
- * `capturas-nuevas`, con el nombre que tendrían en su sitio.
+ * `capturas-nuevas-<trozo>` (uno por cada trozo de las pruebas, desde el 19-oct), con el
+ * nombre que tendrían en su sitio.
  *
  * Esto las baja a `pruebas/e2e/capturas/linux/`. **Después hay que mirarlas**
  * —son lo que la prueba dará por bueno a partir de ahora— y, si son lo que se
@@ -72,8 +73,10 @@ const antes = lasQueHay();
 // justo el caso de uso, y el script decía «esa vuelta no dejó capturas» (25-sep).
 const dePaso = mkdtempSync(join(tmpdir(), 'capturas-'));
 try {
-  correr('gh', ['run', 'download', vuelta, '--name', 'capturas-nuevas', '--dir', dePaso]);
-  cpSync(dePaso, DESTINO, { recursive: true, force: true });
+  correr('gh', ['run', 'download', vuelta, '--pattern', 'capturas-nuevas*', '--dir', dePaso]);
+  // Una carpeta por trozo de las pruebas (19-oct): se juntan todas en su sitio.
+  for (const trozo of readdirSync(dePaso))
+    cpSync(join(dePaso, trozo), DESTINO, { recursive: true, force: true });
 } catch {
   console.log(
     [

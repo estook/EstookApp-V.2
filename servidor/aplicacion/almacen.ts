@@ -217,7 +217,7 @@ export async function apuntar(
     tipo: apunte.tipo,
     cantidad: cantidad(apunte.cantidad),
     // Sin redondear: `milesimas` exige un entero y aquí eso es una garantía, no
-    // una molestia. Todo lo que llega ya viene de `costeDeUso` —que es el dueño
+    // una molestia. Todo lo que llega ya viene de `costeDeCompra` —que es el dueño
     // del redondeo— o de una columna `bigint` de la base. Si algún día llegara
     // un decimal, es un fallo de programación y tiene que saltar aquí, no
     // colarse redondeado dentro del coste de un plato.
@@ -444,28 +444,33 @@ export function porQueNoSeAnula(
   return null;
 }
 
-// ── El coste por unidad de uso, en un solo sitio ─────────────────────────────
+// ── Lo que cuesta cada unidad que se compra, en un solo sitio ───────────────
 
 /**
- * `precio ÷ (factor × rendimiento)`, con el motor de M2.
+ * `precio ÷ factor`: lo que se pagó por cada gramo, mililitro o unidad que entra.
  *
- * Se envuelve aquí porque los tres sitios que ponen un precio —crear un producto
- * desde el catálogo, cambiar el precio a mano y sembrar los ejemplos— tienen que
- * guardar exactamente el mismo número. Y porque el motor rechaza un rendimiento
- * fuera de rango con una excepción cruda, y lo que tiene que llegar a la
- * pantalla es una frase del catálogo de errores.
+ * **Sin el aprovechamiento, y es a propósito** (Richi, 19-oct, 0099). Hasta entonces
+ * era `precio ÷ (factor × rendimiento)`, y ese número valoraba también la cámara,
+ * las mermas y las compras: un kilo de atún pagado a 18,18 € «valía» 25,97 € porque
+ * se aprovecha un 70 %. Lo que hay en cámara son kilos en bruto, y valen lo que dice
+ * la factura. El aprovechamiento solo cuenta al costear un plato, que pide gramos
+ * limpios: eso lo hace `losProductosDeLasFichas`, dividiendo entre el de hoy.
+ *
+ * Se envuelve aquí porque todos los sitios que ponen un precio o apuntan una entrada
+ * tienen que guardar exactamente el mismo número. Y porque el motor rechaza un factor
+ * fuera de rango con una excepción cruda, y lo que tiene que llegar a la pantalla es
+ * una frase del catálogo de errores.
  */
-export function costeDeUso(precioCentimos: number, factor: number, rendimiento: number): number {
+export function costeDeCompra(precioCentimos: number, factor: number): number {
   try {
     // `centimos` exige un entero, y lo que llega ya lo es: los comandos lo
     // validan con `z.number().int()` y la base lo guarda en `bigint`. Redondear
     // aquí sería tapar un fallo en vez de verlo.
-    return costePorUnidadDeUso(centimos(precioCentimos), { factor, rendimiento });
+    return costePorUnidadDeUso(centimos(precioCentimos), { factor, rendimiento: 1 });
   } catch {
     throw new FalloDeAplicacion('faltan_datos', {
-      campos: ['factor', 'rendimiento'],
-      porque:
-        'El factor tiene que ser mayor que cero y el rendimiento estar entre 0 y 1, donde 0,85 es un 85 %.',
+      campos: ['factor'],
+      porque: 'Lo que trae cada envase tiene que ser mayor que cero.',
     });
   }
 }
@@ -586,7 +591,7 @@ export async function ponerUnPrecio(
     `;
   }
 
-  const coste = costeDeUso(precio.precioCentimos, precio.factor, precio.rendimiento);
+  const coste = costeDeCompra(precio.precioCentimos, precio.factor);
   const referencia =
     precio.referencia === null || precio.referencia === undefined
       ? null
@@ -827,7 +832,7 @@ async function sembrarUnEjemplo(
     on conflict (tabla, fila_id) do nothing
   `;
 
-  const coste = costeDeUso(ejemplo.precioCentimos, factor, rendimiento);
+  const coste = costeDeCompra(ejemplo.precioCentimos, factor);
   const hoy = await laJornadaDelProducto(contexto, productoId);
 
   await contexto.sql`

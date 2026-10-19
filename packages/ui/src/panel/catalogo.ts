@@ -115,7 +115,8 @@ export const WIDGETS: readonly Widget[] = [
     id: 'pedidos',
     nombre: 'Compras de hoy',
     queEnsena: 'A quién toca pedir hoy y lo que llega',
-    permiso: 'app.almacen',
+    // De quien manda pedidos (19-oct): Compras no es de la cocina.
+    permiso: 'accion.enviar_pedidos',
     tamano: 'ancho',
   },
   {
@@ -321,7 +322,7 @@ const DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
 export const SUGERIDOS_DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
   gerente: ['bajo-minimo', 'pedidos', 'caducidades', 'calendario'],
   jefe: ['food-cost', 'calendario'],
-  cocina: ['pedidos', 'calendario'],
+  cocina: ['calendario'],
   sala: [],
 };
 

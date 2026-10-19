@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { appsVisibles } from '@estook/permisos';
+import { appsVisibles, puedeVer } from '@estook/permisos';
 import { IconoAtras } from '@estook/iconos';
 import {
   ANCHO_DEL_MENU,
@@ -14,6 +14,7 @@ import {
   RuedaDeApps,
   SiAlgoFalla,
   appPorPermiso,
+  laAppParaQuien,
   destinoPorId,
   dondeEntra,
   rutaDe,
@@ -151,7 +152,9 @@ export function Esqueleto() {
     () =>
       appsVisibles(permisos)
         .map((permiso) => appPorPermiso(permiso))
-        .filter((app): app is App => app !== undefined),
+        .filter((app): app is App => app !== undefined)
+        // Sin las pestañas que no son suyas: Compras y Mermas, a la cocina (19-oct).
+        .map((app) => laAppParaQuien(app, (permiso) => puedeVer(permisos, permiso))),
     [permisos],
   );
 

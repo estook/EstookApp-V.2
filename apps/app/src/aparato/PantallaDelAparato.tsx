@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { crearCliente, type ErrorDeLaApi } from '@estook/cliente-api';
-import { Boton, Cargando, clases } from '@estook/ui';
-import { DIRECCION_DE_LA_API } from '../datos/cliente.ts';
+import { Boton, Botones, Campo, Cargando, ErrorEnCristiano, Hoja, clases } from '@estook/ui';
+import { DIRECCION_DE_LA_API, elAparato, guardarToken } from '../datos/cliente.ts';
 import { guardarParaDespues, mandarLoPendiente } from '../sinConexion/cola.ts';
 import { usarHayRed, usarLoPendiente } from '../ganchos/usarLaRed.ts';
 import { hayRed, pedirMirandoLaRed } from '../sinConexion/red.ts';
@@ -112,6 +112,7 @@ export function PantallaDelAparato() {
   // la pone el servidor (regla 10).
   const [reloj, setReloj] = useState(() => Date.now());
   const tiempo = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [saliendo, setSaliendo] = useState(false);
 
   useEffect(() => {
     const cada = setInterval(() => {
@@ -528,10 +529,131 @@ export function PantallaDelAparato() {
         )}
       </main>
 
-      <footer className="text-center text-etiqueta text-texto-tenue">
+      <footer className="flex w-full flex-col items-center gap-e2 text-center text-etiqueta text-texto-tenue">
         La hora la pone Estook, no este aparato. Nada de huella ni de cara: solo tu PIN.
+        {/* Volver a Estook, con la contraseña de quien lleva el local (Richi, 19-oct). */}
+        <button
+          type="button"
+          onClick={() => {
+            setSaliendo(true);
+          }}
+          className="min-h-toque px-e3 text-secundario font-medium text-texto-suave underline decoration-borde-fuerte underline-offset-4"
+        >
+          Volver a Estook
+        </button>
       </footer>
+
+      {saliendo && (
+        <SalirDelAparato
+          cliente={cliente}
+          llave={llave.llave}
+          alCerrar={() => {
+            setSaliendo(false);
+          }}
+        />
+      )}
     </Marco>
+  );
+}
+
+/**
+ * **Volver a Estook desde la pantalla de fichar** (19-oct). La tablet se queda en el
+ * local y la toca todo el mundo, así que sale solo quien lo lleva, con su correo y su
+ * contraseña. Lo comprueba el servidor (`entrar` con la llave del aparato): esconder
+ * el botón no protegería nada. Al salir, el aparato sigue puesto: desde Ajustes se
+ * vuelve a abrir su pantalla.
+ */
+function SalirDelAparato({
+  cliente,
+  llave,
+  alCerrar,
+}: {
+  readonly cliente: ReturnType<typeof crearCliente>;
+  readonly llave: string;
+  readonly alCerrar: () => void;
+}) {
+  const [correo, setCorreo] = useState('');
+  const [contrasena, setContrasena] = useState('');
+  const [entrando, setEntrando] = useState(false);
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+
+  async function salir() {
+    setEntrando(true);
+    setError(null);
+    const aparato = elAparato();
+    const respuesta = await cliente.ejecutar<{ token: string }>('entrar', {
+      correo,
+      contrasena,
+      llave_del_aparato: llave,
+      aparato,
+    });
+    if (!respuesta.ok) {
+      setEntrando(false);
+      setContrasena('');
+      setError(respuesta.error);
+      return;
+    }
+    guardarToken(respuesta.datos.token);
+    window.location.hash = '#/';
+    window.location.reload();
+  }
+
+  return (
+    <Hoja
+      abierta
+      alCerrar={alCerrar}
+      titulo="Volver a Estook"
+      pie={
+        <Botones>
+          <Boton tono="texto" onClick={alCerrar}>
+            Seguir fichando
+          </Boton>
+          <Boton
+            tono="principal"
+            disabled={correo.trim() === '' || contrasena === ''}
+            cargando={entrando}
+            textoCargando="Comprobando"
+            onClick={() => {
+              void salir();
+            }}
+          >
+            Salir
+          </Boton>
+        </Botones>
+      }
+    >
+      <form
+        className="flex flex-col gap-e3 pt-e3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void salir();
+        }}
+      >
+        <p className="text-cuerpo text-texto-suave">
+          Solo quien lleva el local: escribe tu correo y tu contraseña de Estook.
+        </p>
+        {error !== null && <ErrorEnCristiano error={error} />}
+        <Campo
+          etiqueta="Tu correo"
+          tipo="correo"
+          autoComplete="username"
+          value={correo}
+          onChange={(e) => {
+            setCorreo(e.target.value);
+          }}
+        />
+        <Campo
+          etiqueta="Tu contraseña"
+          tipo="contrasena"
+          autoComplete="current-password"
+          value={contrasena}
+          onChange={(e) => {
+            setContrasena(e.target.value);
+          }}
+        />
+        <button type="submit" hidden />
+      </form>
+    </Hoja>
   );
 }
 

@@ -301,8 +301,9 @@ export function Resumen({ alAbrirProducto }: { readonly alAbrirProducto: (id: st
               </Tarjeta>
             )}
 
-            {/* Los pedidos por recibir y a quién toca pedir (M7). */}
-            {puedeVer(permisos, 'app.almacen') && <ComprasDeHoyEnHoy />}
+            {/* Los pedidos por recibir y a quién toca pedir (M7). De quien manda pedidos
+                (19-oct): a la cocina no le toca. */}
+            {puedeVer(permisos, 'accion.enviar_pedidos') && <ComprasDeHoyEnHoy />}
 
             {/*
               La merma del día: «un cuadrado merma, con la merma de ese día, una

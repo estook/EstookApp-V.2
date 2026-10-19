@@ -105,10 +105,14 @@ export function Hoja({ abierta, alCerrar, titulo, children, pie, amplia = false 
       ref={dialogo}
       aria-label={titulo}
       // Con el desfase del visor, como la barra de abajo: en el iPhone la hoja subía
-      // con él (repaso del 25-sep, `anclaAbajo.ts`).
+      // con él (repaso del 25-sep, `anclaAbajo.ts`). **Pero no con el teclado abierto**
+      // (19-oct): Safari mueve el visor para enseñar el campo, y si la hoja se movía a
+      // la vez, el campo se escapaba y el teclado «se bugeaba» (Richi, al desgranar).
+      // El desfase es para cuando el teclado ya se ha cerrado y el visor se queda colgado.
       className={clases(
         DIALOGO,
         'fixed inset-0 w-full h-full translate-y-[var(--desfase-abajo,0px)]',
+        '[html[data-teclado]_&]:translate-y-0',
       )}
     >
       {/* La zona segura del teléfono arriba (23-sep): la franja de tocar para cerrar

@@ -49,18 +49,21 @@ export function ElEscandalloDelPlato({
   ficha,
   alCerrar,
   alAbrir,
+  empezarEditando = false,
 }: {
   readonly ficha: QueFicha;
   readonly alCerrar: () => void;
   /** Para saltar a la ficha de una elaboración que lleva, o a un plato donde entra. */
   readonly alAbrir: (otra: QueFicha) => void;
+  /** Recién elegido en «Añadir» (19-oct): el editor ya abierto, sin otro toque. */
+  readonly empezarEditando?: boolean;
 }) {
   const consulta = usarLectura<UnaFicha>(
     'una_ficha',
     ficha.tipo === 'plato' ? { plato_id: ficha.id } : { elaboracion_id: ficha.id },
   );
   const navegar = useNavigate();
-  const [editando, setEditando] = useState(false);
+  const [editando, setEditando] = useState(empezarEditando);
   const [vinculando, setVinculando] = useState(false);
   const [hecho, setHecho] = useState<string | null>(null);
   const datos = consulta.data;
@@ -122,13 +125,14 @@ export function ElEscandalloDelPlato({
                   Editar el escandallo
                 </Boton>
               )}
-              {/* Su ficha técnica, al lado: coge de aquí lo que lleva (0090). */}
-              {datos.tipo === 'plato' && (
+              {/* Su ficha técnica, al lado: coge de aquí lo que lleva (0090). También la
+                  de una elaboración (19-oct). */}
+              {(datos.tipo === 'elaboracion' || datos.vinculadoA === null) && (
                 <Boton
                   tono="secundario"
                   icono={<IconoDocumento size={18} />}
                   onClick={() => {
-                    navegar(`/escandallos/fichas/todas?ficha=plato.${datos.id}`);
+                    navegar(`/escandallos/fichas/todas?ficha=${datos.tipo}.${datos.id}`);
                   }}
                 >
                   Ficha técnica
@@ -306,25 +310,38 @@ function SinFicha({
   readonly alDesgranar: () => void;
   readonly alVincular: () => void;
 }) {
+  // **Desgranar es lo de casi siempre, y va grande** (Richi, 19-oct): «el de enlazar
+  // en grande cuando solo se suele usar para bebidas confunde». Vincular queda debajo,
+  // pequeño, diciendo para qué es.
   return (
-    <div className="flex flex-col items-start gap-e3 rounded-grande bg-fondo p-e4">
+    <div className="flex flex-col gap-e3 rounded-grande bg-fondo p-e4">
       <p className="text-cuerpo font-semibold">Sin escandallo todavía</p>
       <p className="text-secundario text-texto-suave">
         {datos.puedeEditar
-          ? 'Pon lo que lleva y en qué cantidad: el coste sale solo del Almacén.'
+          ? 'Pon lo que lleva una ración y en qué cantidad: el coste sale solo del Almacén.'
           : 'Cuando alguien lo desgrane, aquí estará lo que lleva.'}
       </p>
       {datos.puedeEditar && (
-        <div className="flex flex-wrap gap-e2">
-          <Boton tono="principal" onClick={alDesgranar}>
+        <>
+          <Boton tono="principal" ancho onClick={alDesgranar}>
             Desgranar
           </Boton>
           {datos.tipo === 'plato' && (
-            <Boton tono="secundario" icono={<IconoVincular size={18} />} onClick={alVincular}>
-              Vincular a un producto
-            </Boton>
+            <button
+              type="button"
+              onClick={alVincular}
+              className="flex min-h-toque items-start gap-e2 self-start text-left text-secundario text-texto-suave hover:text-texto"
+            >
+              <IconoVincular size={16} className="mt-[3px] shrink-0" />
+              <span>
+                <span className="font-semibold text-texto underline decoration-borde-fuerte underline-offset-4">
+                  Vincular a un producto
+                </span>{' '}
+                · para lo que se vende tal cual, sin elaborar: una bebida, un postre comprado
+              </span>
+            </button>
           )}
-        </div>
+        </>
       )}
     </div>
   );

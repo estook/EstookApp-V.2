@@ -203,8 +203,18 @@ describe('un pedido recorre el ciclo, y el inventario cuadra', () => {
     expect(suya?.sugerencia.formatos).toBe(2);
     expect(suya?.sugerencia.motivo).toContain('mínimo que pusiste (10 l)');
 
+    // Empezar un pedido es de quien los manda (Richi, 19-oct): el cocinero no puede.
+    expect(
+      elFallo(
+        await api.ejecutar(marcos, 'crear_pedido', {
+          proveedor_id: makro,
+          con_la_sugerencia: true,
+        }),
+      ),
+    ).toBe('sin_permiso');
+
     const creado = losDatos<{ pedidoId: string; numero: number; lineas: number; llegaEl: string }>(
-      await api.ejecutar(marcos, 'crear_pedido', { proveedor_id: makro, con_la_sugerencia: true }),
+      await api.ejecutar(rosa, 'crear_pedido', { proveedor_id: makro, con_la_sugerencia: true }),
     );
     pedidoId = creado.pedidoId;
     expect(creado.lineas).toBe(1);
@@ -231,6 +241,21 @@ describe('un pedido recorre el ciclo, y el inventario cuadra', () => {
     expect(deRosa.texto).not.toContain('€');
     expect(deRosa.proveedor.whatsapp).toBe('34612345678');
 
+    // Sin invitación, el cocinero ni lo ve; invitado a rellenarlo, sí, sin un euro.
+    expect(elFallo(await api.consultar(marcos, 'un_pedido', { pedido_id: pedidoId }))).toBe(
+      'no_existe',
+    );
+    const [deMarcosId] = await comoDuena<{ id: string }>(
+      'select id from estook.persona where correo = $1',
+      [MARCOS],
+    );
+    losDatos(
+      await api.ejecutar(rosa, 'pedir_ayuda_con_el_pedido', {
+        pedido_id: pedidoId,
+        personas: [deMarcosId?.id],
+      }),
+    );
+
     const deMarcos = losDatos<{ lineas: Record<string, unknown>[] } & Record<string, unknown>>(
       await api.consultar(marcos, 'un_pedido', { pedido_id: pedidoId }),
     );
@@ -239,7 +264,13 @@ describe('un pedido recorre el ciclo, y el inventario cuadra', () => {
     expect('precioCentimos' in (deMarcos.lineas[0] ?? {})).toBe(false);
   });
 
-  it('el cocinero lo prepara, pero mandarlo pide su propio permiso', async () => {
+  it('el cocinero, invitado, lo rellena; mandarlo pide su propio permiso', async () => {
+    losDatos(
+      await api.ejecutar(marcos, 'cambiar_pedido', {
+        pedido_id: pedidoId,
+        lineas: [{ producto_id: aceite, cantidad: 2 }],
+      }),
+    );
     const intento = await api.ejecutar(marcos, 'enviar_pedido', {
       pedido_id: pedidoId,
       canal: 'whatsapp',
@@ -794,7 +825,7 @@ describe('quién ve qué', () => {
     ).toBe('no_existe');
   });
 
-  it('el cocinero ve la lista de pedidos sin un total', async () => {
+  it('el cocinero ve solo los pedidos a los que le invitan, sin un total', async () => {
     const lista = losDatos<{ pedidos: Record<string, unknown>[] }>(
       await api.consultar(marcos, 'mis_pedidos', { vista: 'todos' }),
     );

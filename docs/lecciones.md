@@ -789,3 +789,11 @@
      Richi no podía saber si era la clave, el saldo o el modelo, y yo tampoco, sin los
      registros de Supabase. Ahora el fallo lleva el código, el tipo y la frase de Anthropic a
      los registros y a Sentry, y el admin tiene «Probar la conexión», que lo traduce (0097).
+202. **Un mismo número no puede valer para dos cosas.** El coste por unidad llevaba el
+     aprovechamiento, que es lo que pide un plato, y con él se valoraba también la cámara: un
+     kilo de atún pagado a 18,18 € «valía» 25,97 €, y la ficha enseñaba tres precios. Lo que
+     hay en cámara vale lo pagado; lo limpio se calcula al costear el plato (0099).
+203. **Un campo de precio dice siempre de qué es.** «Precio», a secas, en un producto contado
+     en gramos sin envase era el precio de un gramo: se escribió el del kilo y la cámara dijo
+     91.000 €. Ahora el campo dice «Precio del kilo» y el servidor no deja que nada nazca a
+     tanto el gramo (0099).

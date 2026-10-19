@@ -5,7 +5,7 @@ name: Integracion continua
 #
 # Para que sirva de verdad hay que marcar estas comprobaciones como obligatorias:
 #   Settings -> Branches -> Branch protection rules -> main
-#   Require status checks to pass -> "Calidad" y "Construccion y presupuestos"
+#   Require status checks to pass -> "Calidad", "Migraciones reversibles" y "Construccion y presupuestos"
 
 # Corre en cualquier rama, no solo en main: una rama que no se ha comprobado no
 # sirve para revisar. Con `push` sobre todas las ramas basta, y asi un pull request
@@ -90,18 +90,70 @@ jobs:
       - name: Pruebas
         run: pnpm prueba
 
-  construccion:
-    name: Construccion y presupuestos
+  # ── Lo de `main` que ya se probó en su rama (19-oct) ──────────────────────
+  #
+  # Al fusionar, `main` volvía a pasar las 1.050 pruebas de pantalla que la rama
+  # acababa de pasar: otros 25 a 35 minutos para comprobar **el mismo código**. Si el
+  # árbol de la fusión es idéntico al de la rama fusionada (lo normal: se fusiona
+  # sin que `main` se haya movido) y esa rama salió en verde, ya está probado.
+  # Si `main` se movió en medio, el árbol cambia y se prueba todo, como siempre.
+  # Calidad y Migraciones se corren igual: son baratas.
+  ya-probado:
+    name: Ya probado en su rama
+    runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      checks: read
+    outputs:
+      saltar: ${{ steps.mira.outputs.saltar }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - id: mira
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          saltar=false
+          if [ "${{ github.ref }}" = "refs/heads/main" ] && git rev-parse -q --verify HEAD^2 >/dev/null; then
+            if [ "$(git rev-parse 'HEAD^{tree}')" = "$(git rev-parse 'HEAD^2^{tree}')" ]; then
+              rama=$(git rev-parse HEAD^2)
+              # Que la rama pasara las de pantalla: el check que las junta, en verde.
+              bien=$(gh api "repos/${{ github.repository }}/commits/$rama/check-runs?check_name=Construccion%20y%20presupuestos" --jq '[.check_runs[] | select(.conclusion == "success")] | length' || echo 0)
+              if [ "$bien" -gt 0 ]; then saltar=true; fi
+            fi
+          fi
+          echo "saltar=$saltar" >> "$GITHUB_OUTPUT"
+          echo "Ya probado en su rama: $saltar"
+
+  # ── Las de pantalla, en cuatro trozos a la vez (19-oct) ─────────────────────
+  #
+  # Hasta el 19-oct iban todas en una máquina de cuatro núcleos, con dos hilos: 27 a 33
+  # minutos de una vuelta de 35. Cada trozo levanta **su propia** API de pruebas con
+  # su propia base, así que no se pisan, y Playwright reparte las pruebas a partes
+  # iguales (`--shard`). Las mismas pruebas, los mismos tres navegadores, la misma
+  # repetición: solo cambia que van en paralelo.
+  pantalla:
+    name: Pantallas ${{ matrix.trozo }} de 4
+    needs: ya-probado
+    if: needs.ya-probado.outputs.saltar != 'true'
     # Con su version de Ubuntu fija, y no `ubuntu-latest` (entrega V): aqui se
     # comparan las capturas de pantalla, y una letra no se pinta igual en otra
     # version del sistema. Si GitHub cambiara el Ubuntu por debajo —lo hace el 19 de
     # octubre de 2026—, las 32 capturas saldrian en rojo sin que la aplicacion haya
     # cambiado en nada. Se sube a mano, y con las capturas rehechas en el mismo cambio.
     runs-on: ubuntu-24.04
-    # 40 y no 25 (1-oct, entrega I): en una vuelta buena ya se iban 22 minutos, 19 de
-    # ellos las pruebas de pantalla, y un tropiezo de GitHub al bajar los navegadores
-    # (19 minutos esa vez) la dejaba cortada a medias, sin decir nada de la app.
-    timeout-minutes: 40
+    # 30: un trozo bueno va en unos 12 minutos, y un tropiezo de GitHub al bajar los
+    # navegadores (19 minutos una vez, 1-oct) cabe sin dejarlo cortado a medias.
+    timeout-minutes: 30
+    strategy:
+      # Que acaben los cuatro aunque uno falle: así se ve todo lo rojo de una vez.
+      fail-fast: false
+      matrix:
+        trozo: [1, 2, 3, 4]
     env:
       # M4: desde que hay login, las pruebas de extremo a extremo necesitan una
       # API a la que entrar, y Vite hornea esta direccion **al construir**. Se
@@ -125,16 +177,17 @@ jobs:
       - name: Construir las cuatro aplicaciones
         run: pnpm build
 
+      # Una vez basta: lo construido es lo mismo en los cuatro trozos.
       - name: Presupuesto de tamano
+        if: matrix.trozo == 1
         run: pnpm tamano
 
       - name: Las rutas apuntan a donde se publica
+        if: matrix.trozo == 1
         run: pnpm publicacion
 
       # Con su propio tope: si GitHub se atasca bajándolos, falla aquí y lo dice,
-      # en vez de comerse el tiempo de las pruebas. 15 y no 10 (lección 139): el 2-oct
-      # el espejo de Ubuntu iba a 200 KB/s y lo cortó sin llegar a probar nada; con los
-      # 21 de una vuelta buena siguen cabiendo en los 40 del trabajo.
+      # en vez de comerse el tiempo de las pruebas (lección 139).
       - name: Instalar navegadores
         timeout-minutes: 15
         run: pnpm exec playwright install --with-deps chromium webkit
@@ -143,7 +196,7 @@ jobs:
       # semillas) antes de las cuatro aplicaciones. Esta escrito en
       # `playwright.config.ts`.
       - name: Pruebas de extremo a extremo y presupuesto de velocidad
-        run: pnpm prueba:e2e
+        run: pnpm prueba:e2e --shard=${{ matrix.trozo }}/4
 
       # Tambien en verde: una prueba que falla y pasa al repetirse deja la vuelta en
       # verde, y su rastro (el del intento que fallo) solo esta en el informe.
@@ -151,23 +204,48 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v6
         with:
-          name: informe-playwright
+          name: informe-playwright-${{ matrix.trozo }}
           path: playwright-report/
           if-no-files-found: ignore
           retention-days: 7
 
       # Las capturas que no han coincidido, o que no existian, con el nombre que
-      # tendrian en su sitio (entrega V). Se bajan con `pnpm capturas:traer`, se
-      # miran, y si son lo que se queria se suben: asi se da por buena una pantalla
-      # que ha cambiado a proposito.
+      # tendrian en su sitio (entrega V). Se bajan con `pnpm capturas:traer`, que
+      # junta las de los cuatro trozos, se miran, y si son lo que se queria se suben.
       - name: Guardar las capturas nuevas si alguna no coincide
         if: failure()
         uses: actions/upload-artifact@v6
         with:
-          name: capturas-nuevas
+          name: capturas-nuevas-${{ matrix.trozo }}
           path: pruebas/e2e/capturas-nuevas/
           if-no-files-found: ignore
           retention-days: 7
+
+  # ── La comprobación obligatoria, con su nombre de siempre ────────────────────
+  #
+  # La regla de `main` exige «Construccion y presupuestos». Ahora no construye: junta
+  # los cuatro trozos y está en verde solo si los cuatro lo están, o si el mismo
+  # código ya pasó en su rama (`ya-probado`). Un trozo cancelado o saltado sin
+  # motivo es un rojo.
+  construccion:
+    name: Construccion y presupuestos
+    needs: [ya-probado, pantalla]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
+    timeout-minutes: 5
+    steps:
+      - name: Los cuatro trozos, en verde
+        run: |
+          echo "Ya probado en su rama: ${{ needs.ya-probado.outputs.saltar }}"
+          echo "Pantallas: ${{ needs.pantalla.result }}"
+          if [ "${{ needs.ya-probado.outputs.saltar }}" = "true" ] && [ "${{ needs.pantalla.result }}" = "skipped" ]; then
+            echo "El mismo código ya pasó las pruebas de pantalla en su rama."
+            exit 0
+          fi
+          if [ "${{ needs.pantalla.result }}" != "success" ]; then
+            echo "::error::Alguna de las pruebas de pantalla no ha pasado. Mira los trozos de arriba."
+            exit 1
+          fi
 
   migraciones:
     name: Migraciones reversibles

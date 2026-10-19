@@ -81,7 +81,10 @@ export const loDeHoyConsulta = consulta<Record<string, never>, SalidaLoDeHoy>({
       ];
 
       const compras = await comprasDeHoy.ejecutar(contexto, {});
-      const atrasados = compras.llegan.filter((p) => p.atrasado);
+      // **Las compras, de quien las manda** (Richi, 19-oct): a la cocina no le toca
+      // pedir ni recibir, y «Hacer el pedido» la llevaría a una pestaña que no tiene.
+      const deCompras = compras.puedeEnviar;
+      const atrasados = deCompras ? compras.llegan.filter((p) => p.atrasado) : [];
       const importes = puede.ver('dato.precio_de_compra')
         ? await losImportes(
             contexto,
@@ -122,11 +125,11 @@ export const loDeHoyConsulta = consulta<Record<string, never>, SalidaLoDeHoy>({
           .filter((p) => p.estado === 'agotado' || p.estado === 'negativo')
           .map((p) => p.nombre),
         bajoMinimo: almacen.atencion.filter((p) => p.estado === 'bajo_minimo').length,
-        llegaHoy: compras.llegan
+        llegaHoy: (deCompras ? compras.llegan : [])
           .filter((p) => !p.atrasado && p.llegaEl === compras.hoy)
           .map((p) => ({ pedidoId: p.pedidoId, proveedor: p.proveedor })),
         // Lo que ya tiene borrador sale como borrador, no dos veces.
-        tocaPedir: compras.tocaPedir
+        tocaPedir: (deCompras ? compras.tocaPedir : [])
           .filter((t) => !t.yaPedido && t.borradorId === null)
           .map((t) => ({
             proveedorId: t.proveedorId,

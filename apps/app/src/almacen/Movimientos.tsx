@@ -358,15 +358,17 @@ function Linea({
       </span>
 
       <span className="flex flex-wrap items-baseline gap-e3 text-secundario">
-        <span
-          className={clases(
-            suma ? 'text-bien' : 'text-mal',
-            movimiento.anulado === true && 'line-through',
-          )}
-        >
-          {suma ? '+' : '−'}
-          {conUnidadDeUso(Math.abs(movimiento.cantidad), movimiento.unidadDeUso)}
-        </span>
+        {movimiento.cantidad !== 0 && (
+          <span
+            className={clases(
+              suma ? 'text-bien' : 'text-mal',
+              movimiento.anulado === true && 'line-through',
+            )}
+          >
+            {suma ? '+' : '−'}
+            {conUnidadDeUso(Math.abs(movimiento.cantidad), movimiento.unidadDeUso)}
+          </span>
+        )}
         {/* El saldo de despues: el resultado congelado del unico dueno del
             calculo, como el saldo de una libreta. Es lo que hace que el libro
             sirva para cuadrar sin rehacer las cuentas. */}

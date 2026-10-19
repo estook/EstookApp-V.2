@@ -361,22 +361,22 @@ describe('WhatsApp y el correo', () => {
 });
 
 describe('lo que ha llegado', () => {
-  it('lo normal: cajas por su precio, y el coste por unidad de uso con el rendimiento', () => {
+  it('lo normal: cajas por su precio, y el coste de lo que entra, el pagado (0099)', () => {
     const linea = lineaRecibida({
       pesoVariable: false,
       factor: 10,
-      rendimiento: 0.9,
       formatos: 3,
       precioFormatoCentimos: 1600,
     });
     expect(linea.cantidadDeUso).toBe(30);
     expect(linea.importeCentimos).toBe(4800);
-    // 16 € / (10 kg × 0,9) = 1,7778 €/kg, en milésimas de céntimo.
-    expect(linea.costeMilesimas).toBe(177_778);
+    // 16 € / 10 kg = 1,60 €/kg, en milésimas de céntimo: lo que dice el albarán. El
+    // aprovechamiento solo cuenta en el plato.
+    expect(linea.costeMilesimas).toBe(160_000);
   });
 
   it('sin precio, entra igual y sin valorar', () => {
-    const linea = lineaRecibida({ pesoVariable: false, factor: 5, rendimiento: 1, formatos: 2 });
+    const linea = lineaRecibida({ pesoVariable: false, factor: 5, formatos: 2 });
     expect(linea.cantidadDeUso).toBe(10);
     expect(linea.importeCentimos).toBeNull();
     expect(linea.costeMilesimas).toBeNull();
@@ -387,7 +387,6 @@ describe('lo que ha llegado', () => {
     const linea = lineaRecibida({
       pesoVariable: true,
       factor: 5,
-      rendimiento: 1,
       formatos: 2,
       cantidadDeUso: 5.4,
       importeCentimos: 6750,

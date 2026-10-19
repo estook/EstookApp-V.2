@@ -139,6 +139,24 @@ async function unProveedorConGenero(peticion: APIRequestContext, token: string, 
   return { nombre, proveedorId, tomateId: tomate.datos?.productoId ?? '' };
 }
 
+/**
+ * Que Rosa le pida a Marcos que rellene un pedido (19-oct): el cocinero solo ve y toca el
+ * pedido al que le invitan.
+ */
+async function invitarAMarcos(
+  peticion: APIRequestContext,
+  rosa: string,
+  marcos: string,
+  pedidoId: string,
+): Promise<void> {
+  const yo = await consultar<{ personaId: string }>(peticion, marcos, 'quien_soy');
+  const hecho = await ejecutar(peticion, rosa, 'pedir_ayuda_con_el_pedido', {
+    pedido_id: pedidoId,
+    personas: [yo.datos?.personaId ?? ''],
+  });
+  expect(hecho.estado).toBe(200);
+}
+
 async function cuantoHay(peticion: APIRequestContext, token: string, productoId: string) {
   const leido = await consultar<{ producto: { cantidad: number; precioCentimos?: number | null } }>(
     peticion,
@@ -404,7 +422,7 @@ test('un pedido recorre el ciclo, el inventario cuadra y la factura señala su d
 
 // ── 2 · Lo que un cocinero hace, y lo que no le llega ────────────────────────
 
-test('un cocinero hace el pedido y lo recibe sin ver un euro, y mandarlo no le deja', async ({
+test('un cocinero no empieza pedidos; rellena el que le piden sin ver un euro, y mandarlo no le deja', async ({
   request,
 }, info) => {
   test.skip(info.project.name !== 'escritorio', UNA_VEZ);
@@ -417,12 +435,25 @@ test('un cocinero hace el pedido y lo recibe sin ver un euro, y mandarlo no le d
     `cocina-${Date.now()}`,
   );
 
-  const creado = await ejecutar<{ pedidoId: string }>(request, marcos, 'crear_pedido', {
+  // Empezar un pedido es de quien los manda (Richi, 19-oct).
+  expect(
+    (
+      await ejecutar(request, marcos, 'crear_pedido', {
+        proveedor_id: proveedorId,
+        lineas: [{ producto_id: tomateId, cantidad: 2 }],
+      })
+    ).estado,
+  ).toBe(403);
+  const creado = await ejecutar<{ pedidoId: string }>(request, rosa, 'crear_pedido', {
     proveedor_id: proveedorId,
     lineas: [{ producto_id: tomateId, cantidad: 2 }],
   });
-  expect(creado.estado, 'el borrador lo hace quien sabe lo que falta').toBe(200);
+  expect(creado.estado).toBe(200);
   const pedidoId = creado.datos?.pedidoId ?? '';
+
+  // Sin invitación ni lo ve; invitado, lo rellena.
+  expect((await consultar(request, marcos, 'un_pedido', { pedido_id: pedidoId })).estado).toBe(404);
+  await invitarAMarcos(request, rosa, marcos, pedidoId);
 
   // **El dato no viaja**: ni el total, ni el precio de una línea.
   const suyo = await consultar<PedidoLeido>(request, marcos, 'un_pedido', { pedido_id: pedidoId });
@@ -505,7 +536,7 @@ test('desde la pantalla: se manda, sale en Hoy, y se recibe entero en dos toques
   expect((await cuantoHay(request, rosa, tomateId))?.cantidad).toBe(20);
 });
 
-test('un cocinero ve su borrador sin un precio, y quién lo tiene que mandar', async ({
+test('un cocinero ve el borrador al que le invitan sin un precio, y quién lo tiene que mandar', async ({
   page,
   request,
 }, info) => {
@@ -515,13 +546,14 @@ test('un cocinero ve su borrador sin un precio, y quién lo tiene que mandar', a
   const { nombre, proveedorId, tomateId } = await unProveedorConGenero(request, rosa, sufijo);
   const creado = await ejecutar<{ pedidoId: string; numero: number }>(
     request,
-    marcos,
+    rosa,
     'crear_pedido',
     {
       proveedor_id: proveedorId,
       lineas: [{ producto_id: tomateId, cantidad: 3 }],
     },
   );
+  await invitarAMarcos(request, rosa, marcos, creado.datos?.pedidoId ?? '');
 
   await entrar(page, MARCOS);
   await abrirSinQueSeCaiga(

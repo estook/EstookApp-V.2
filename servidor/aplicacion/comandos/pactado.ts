@@ -3,7 +3,7 @@ import { publicar } from '../../eventos/bandeja.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { elProveedor } from '../compras.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
-import { costeDeUso, laJornadaDelProducto } from '../almacen.ts';
+import { costeDeCompra, laJornadaDelProducto } from '../almacen.ts';
 
 /**
  * Lo pactado (M7) · «Makro me deja el aceite a 42 € hasta diciembre».
@@ -89,7 +89,7 @@ export const pactarPrecio = comando<EntradaPactarPrecio, { pactadoId: string }>(
       values (
         ${entrada.producto_id}, ${entrada.proveedor_id}, ${entrada.precio_centimos},
         ${producto.formato}, ${factor}, ${producto.unidad_de_uso}::estook.unidad_de_uso,
-        ${rendimiento}, ${costeDeUso(entrada.precio_centimos, factor, rendimiento)},
+        ${rendimiento}, ${costeDeCompra(entrada.precio_centimos, factor)},
         ${hoy}::date, ${entrada.hasta ?? null}::date, ${entrada.nota ?? null}, ${contexto.personaId}
       )
       returning id

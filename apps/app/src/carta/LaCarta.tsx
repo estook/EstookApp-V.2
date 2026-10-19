@@ -748,12 +748,12 @@ function HojaDeSeccion({
             <Boton
               tono="peligro"
               cargando={trabajando === 'quitando'}
-              textoCargando="Quitando"
+              textoCargando="Borrando"
               onClick={() => {
                 void quitarla();
               }}
             >
-              Quitar la sección
+              Borrar la sección
             </Boton>
           </Botones>
         ) : (
@@ -766,7 +766,7 @@ function HojaDeSeccion({
                   setQuitar(true);
                 }}
               >
-                Quitar
+                Borrar la sección
               </Boton>
             )}
             <Boton
@@ -787,13 +787,17 @@ function HojaDeSeccion({
       <div className="flex flex-col gap-e3 pt-e3">
         {error !== null && <ErrorEnCristiano error={error} />}
         {quitar ? (
-          <p className="text-cuerpo">
-            {platos === 0
-              ? 'No tiene platos: se quita y ya está.'
-              : platos === 1
-                ? 'Su plato pasa a «Sin sección». No se borra.'
-                : `Sus ${String(platos)} platos pasan a «Sin sección». No se borra ninguno.`}
-          </p>
+          <div className="flex flex-col gap-e2">
+            <p className="text-cuerpo font-semibold">¿Borrar «{seccion.nombre}»?</p>
+            <p className="text-cuerpo">
+              No hay vuelta atrás.{' '}
+              {platos === 0
+                ? 'No tiene platos.'
+                : platos === 1
+                  ? 'Su plato pasa a «Sin sección»: el plato no se borra.'
+                  : `Sus ${String(platos)} platos pasan a «Sin sección»: no se borra ninguno.`}
+            </p>
+          </div>
         ) : (
           <>
             <Campo

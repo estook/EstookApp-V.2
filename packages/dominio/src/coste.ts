@@ -94,6 +94,16 @@ export function costePorUnidadDeUso(precioDeCompra: Centimos, conversion: Conver
 }
 
 /**
+ * Lo que cuesta una unidad **limpia**, de lo que costó en bruto (19-oct, 0099). Lo que
+ * hay en cámara vale lo pagado (`precio ÷ factor`); el plato lleva gramos limpios, y
+ * cada uno cuesta lo de `1 ÷ rendimiento` gramos en bruto.
+ */
+export function costeLimpio(enBruto: Milesimas, rendimiento: number): Milesimas {
+  comprobarConversion({ factor: 1, rendimiento });
+  return milesimas(Math.round(enBruto / rendimiento));
+}
+
+/**
  * Lo que cuesta usar una cantidad de algo. **Aquí sí se redondea**, porque el
  * resultado ya es dinero.
  */

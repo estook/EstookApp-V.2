@@ -16,7 +16,13 @@ import {
   Selector,
   clases,
 } from '@estook/ui';
-import { IconoDesvincular, IconoEscandallos, IconoPicante, IconoVincular } from '@estook/iconos';
+import {
+  IconoBorrar,
+  IconoDesvincular,
+  IconoEscandallos,
+  IconoPicante,
+  IconoVincular,
+} from '@estook/iconos';
 import { puedeEditar, puedeVer } from '@estook/permisos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -168,7 +174,11 @@ function ParaEditar({
     (!Number.isInteger(unidadesLeidas) || unidadesLeidas < 1 || unidadesLeidas > 99);
   const mismaLista = (a: readonly string[], b: readonly string[]) =>
     [...a].sort().join(',') === [...b].sort().join(',');
-  const [trabajando, setTrabajando] = useState<'guardando' | 'archivando' | null>(null);
+  const [trabajando, setTrabajando] = useState<'guardando' | 'archivando' | 'borrando' | null>(
+    null,
+  );
+  /** Preguntando «¿Borrarlo para siempre?» antes de borrar (Richi, 19-oct). */
+  const [borrando, setBorrando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
   const preciosCambiados = Object.fromEntries(
@@ -233,6 +243,19 @@ function ParaEditar({
     }
     await refrescar();
     if (plato.activo) alCerrar();
+  }
+
+  async function borrar() {
+    setTrabajando('borrando');
+    const respuesta = await cliente.ejecutar('borrar_plato', { plato_id: plato.id });
+    setTrabajando(null);
+    if (!respuesta.ok) {
+      setBorrando(false);
+      setError(respuesta.error);
+      return;
+    }
+    await refrescar();
+    alCerrar();
   }
 
   return (
@@ -480,6 +503,55 @@ function ParaEditar({
         </Boton>
       </Botones>
 
+      {/*
+        **Borrar, para siempre** (Richi, 19-oct). Abajo y pequeño, y con su pregunta: no hay
+        vuelta atrás. Archivar sigue siendo lo de quitarlo un tiempo de la carta.
+      */}
+      {borrando ? (
+        <div
+          role="alertdialog"
+          aria-label={`¿Borrar «${plato.nombre}»?`}
+          className="flex flex-col gap-e3 rounded-grande border border-mal p-e4"
+        >
+          <p className="text-cuerpo font-semibold">¿Borrar «{plato.nombre}» para siempre?</p>
+          <p className="text-secundario text-texto-suave">
+            No hay vuelta atrás: se borra con su escandallo, su ficha técnica y sus precios. Si solo
+            quieres quitarlo de la carta un tiempo, archívalo.
+          </p>
+          <Botones>
+            <Boton
+              tono="secundario"
+              onClick={() => {
+                setBorrando(false);
+              }}
+            >
+              No, dejarlo
+            </Boton>
+            <Boton
+              tono="peligro"
+              cargando={trabajando === 'borrando'}
+              textoCargando="Borrando"
+              onClick={() => {
+                void borrar();
+              }}
+            >
+              Borrar para siempre
+            </Boton>
+          </Botones>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setBorrando(true);
+          }}
+          className="flex min-h-toque items-center gap-e2 self-start text-secundario font-medium text-mal hover:underline"
+        >
+          <IconoBorrar size={16} />
+          Borrar el plato
+        </button>
+      )}
+
       <Historial datos={datos} carta={carta} abierto={conHistorial} alCambiar={alVerHistorial} />
 
       {vinculando && (
@@ -556,19 +628,35 @@ function ElVinculo({
           Sin escandallo: no sabrás lo que cuesta ni lo que gasta.
         </p>
       )}
-      <div className="flex flex-wrap gap-e2">
-        {!plato.tieneFicha && puedeVincular && (
-          <Boton tono="secundario" icono={<IconoVincular size={18} />} onClick={alVincular}>
-            Vincular
-          </Boton>
-        )}
-        {puedeVerLaFicha && (
-          <Boton tono="secundario" icono={<IconoEscandallos size={18} />} onClick={alVerLaFicha}>
+      {/* Desgranar primero y grande; vincular, pequeño y diciendo para qué es (Richi,
+          19-oct: «el de enlazar solo se suele usar para bebidas, y confunde»). */}
+      {puedeVerLaFicha && (
+        <div>
+          <Boton
+            tono={plato.tieneFicha ? 'secundario' : 'principal'}
+            icono={<IconoEscandallos size={18} />}
+            onClick={alVerLaFicha}
+          >
             {/* El escandallo, no «la ficha» (Richi, 16-oct): la ficha técnica es otra cosa. */}
             {plato.tieneFicha ? 'Su escandallo' : 'Desgranar'}
           </Boton>
-        )}
-      </div>
+        </div>
+      )}
+      {!plato.tieneFicha && puedeVincular && (
+        <button
+          type="button"
+          onClick={alVincular}
+          className="flex min-h-toque items-start gap-e2 self-start text-left text-secundario text-texto-suave hover:text-texto"
+        >
+          <IconoVincular size={16} className="mt-[3px] shrink-0" />
+          <span>
+            <span className="font-semibold text-texto underline decoration-borde-fuerte underline-offset-4">
+              Vincular a un producto
+            </span>{' '}
+            · para lo que se vende tal cual: una bebida, un postre comprado
+          </span>
+        </button>
+      )}
     </div>
   );
 }

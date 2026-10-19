@@ -26,6 +26,7 @@ export {
   comoSeLlamaElModulo,
   destinoPorId,
   destinosConstruidos,
+  laAppParaQuien,
   destinosQueSeAbren,
   destinosQueLlegan,
   dondeEntra,

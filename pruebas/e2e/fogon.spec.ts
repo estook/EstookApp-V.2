@@ -108,6 +108,8 @@ test('con Fogón encendido, se le pregunta y rellena el borrador de un escandall
     .getByRole('button', { name: 'Desgranar' })
     .click();
   const editor = page.getByRole('dialog', { name: 'Desgranar' });
+  // Un botón pequeño, no lo primero de la hoja (19-oct): se abre y se pide.
+  await editor.getByRole('button', { name: 'Rellenar con Fogón · 2 créditos' }).click();
   await editor.getByRole('button', { name: 'Rellenar con Fogón · 2 créditos' }).click();
   await expect(editor.getByText('Borrador de Fogón.')).toBeVisible();
   await expect(editor.getByRole('textbox', { name: 'Cantidad de Leche entera' })).toHaveValue(

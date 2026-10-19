@@ -299,7 +299,6 @@ export const recibirAlbaran = comando<EntradaRecibirAlbaran, SalidaRecibirAlbara
         recibida = lineaRecibida({
           pesoVariable: true,
           factor: producto.factor,
-          rendimiento: producto.rendimiento,
           formatos: b.entrada?.formatos ?? null,
           cantidadDeUso: rechazada ? 0 : (kilos ?? 0),
           importeCentimos: conPrecios ? (b.entrada?.importe_centimos ?? null) : null,
@@ -314,7 +313,6 @@ export const recibirAlbaran = comando<EntradaRecibirAlbaran, SalidaRecibirAlbara
         recibida = lineaRecibida({
           pesoVariable: false,
           factor: producto.factor,
-          rendimiento: producto.rendimiento,
           formatos,
           precioFormatoCentimos: precio,
         });

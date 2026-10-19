@@ -299,7 +299,7 @@ Y sus vistas, donde las hay:
 | Almacén · Productos       | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
 | Almacén · Movimientos     | Inventario · Historial · Consumo                                    |
 | Almacén · Compras         | Pedidos · Facturas · Proveedores                                    |
-| Escandallos · Escandallos | Todos · Sin escandallo · Bajo objetivo                              |
+| Escandallos · Escandallos | Todos · Bajo objetivo                                               |
 | Escandallos · Fichas      | Todas · Sin ficha                                                   |
 | Carta · Carta             | Por secciones · Todos los platos · Agotados                         |
 | Carta · Análisis          | Matriz · Por canal · Histórico                                      |

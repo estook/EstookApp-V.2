@@ -19,7 +19,7 @@ import type { Centimos } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CampoPrecioDeCompra } from './CampoPrecioDeCompra.tsx';
-import { comoDinero, conUnidadDeUso, type ProductoEnLista } from './contrato.ts';
+import { comoDinero, conUnidadDeUso, delEnvase, type ProductoEnLista } from './contrato.ts';
 
 /**
  * Mover género · «ha llegado», «ha salido» y, a un lado, «no cuadra» (M6½).
@@ -64,6 +64,9 @@ import { comoDinero, conUnidadDeUso, type ProductoEnLista } from './contrato.ts'
  */
 
 export type QueSeMueve = 'entrada' | 'salida' | 'ajuste';
+
+/** Lo que se cuenta en g o ml se escribe, de entrada, en kg o l. */
+const UNIDAD_GRANDE: Readonly<Record<string, string>> = { g: 'kg', ml: 'l' };
 
 export function MoverGenero({
   que,
@@ -137,9 +140,32 @@ function ElFormulario({
   /** La cantidad que se ha confirmado: cambiar el número pide confirmar otra vez. */
   const [confirmadoPara, setConfirmadoPara] = useState<number | null>(null);
 
+  // **En kilos, o en gramos si se elige** (Richi, 19-oct: «solo pregunta en gramos;
+  // en hostelería casi siempre son kilos»). Lo que se cuenta en g o ml se escribe de
+  // entrada en kg o l, con un selector al lado, y aquí se pasa a lo que guarda el libro.
+  const grande = UNIDAD_GRANDE[producto.unidadDeUso] ?? null;
+  const [medida, setMedida] = useState<string>(grande ?? producto.unidadDeUso);
+  const porMedida = grande !== null && medida === grande ? 1000 : 1;
   const numero = Number(cuanto.replace(',', '.'));
   const hayNumero = cuanto.trim() !== '' && Number.isFinite(numero);
-  const enUnidadesDeUso = como === 'formatos' ? numero * producto.factor : numero;
+  const enUnidadesDeUso = como === 'formatos' ? numero * producto.factor : numero * porMedida;
+  /** El selector de kilos o gramos, para los campos que cuentan en la unidad de uso. */
+  const laMedida =
+    grande === null
+      ? null
+      : {
+          valor: medida,
+          opciones: [
+            { valor: grande, larga: grande === 'kg' ? 'kilos' : 'litros' },
+            {
+              valor: producto.unidadDeUso,
+              larga: producto.unidadDeUso === 'g' ? 'gramos' : 'mililitros',
+            },
+          ],
+          alElegir: (valor: string) => {
+            setMedida(valor);
+          },
+        };
   const hayAhora = hayDeVerdad ?? producto.cantidad;
 
   // ── Más de lo que consta, solo confirmándolo (3-oct) ──────────────────────
@@ -198,11 +224,11 @@ function ElFormulario({
 
     const cuerpo =
       que === 'ajuste'
-        ? { producto_id: producto.id, hay: numero, motivo: nota.trim() }
+        ? { producto_id: producto.id, hay: enUnidadesDeUso, motivo: nota.trim() }
         : que === 'entrada'
           ? {
               producto_id: producto.id,
-              cuanto: Math.abs(numero),
+              cuanto: Math.abs(como === 'formatos' ? numero : enUnidadesDeUso),
               como,
               precio_centimos: precio,
               ...(lote.trim() === '' ? {} : { lote: lote.trim() }),
@@ -211,7 +237,7 @@ function ElFormulario({
             }
           : {
               producto_id: producto.id,
-              cuanto: Math.abs(numero),
+              cuanto: Math.abs(como === 'formatos' ? numero : enUnidadesDeUso),
               como,
               por_que: porQue,
               // Cómo se llama cada porqué lo escribe el servidor desde el mismo
@@ -303,7 +329,7 @@ function ElFormulario({
         </Botones>
       }
     >
-      <div className="flex flex-col gap-e3">
+      <div className="flex flex-col gap-e3 pt-e3">
         <p className="text-secundario text-texto-suave">
           Ahora hay {conUnidadDeUso(hayAhora, producto.unidadDeUso)}.
         </p>
@@ -315,7 +341,7 @@ function ElFormulario({
               tipo="numero"
               obligatorio
               autoFocus
-              detras={producto.unidadDeUso}
+              {...(laMedida === null ? { detras: producto.unidadDeUso } : { unidad: laMedida })}
               value={cuanto}
               onChange={(e) => {
                 setCuanto(e.currentTarget.value);
@@ -407,7 +433,13 @@ function ElFormulario({
                 etiqueta="Cómo lo cuentas"
                 opciones={[
                   { valor: 'formatos', texto: `Por envases (${producto.formato.toLowerCase()})` },
-                  { valor: 'unidades_de_uso', texto: `En ${producto.unidadDeUso}` },
+                  {
+                    valor: 'unidades_de_uso',
+                    texto:
+                      grande === null
+                        ? `En ${producto.unidadDeUso}`
+                        : `En ${grande} o ${producto.unidadDeUso}`,
+                  },
                 ]}
                 value={como}
                 onChange={(e) => {
@@ -428,7 +460,11 @@ function ElFormulario({
               obligatorio
               autoFocus
               value={cuanto}
-              detras={como === 'formatos' ? 'envases' : producto.unidadDeUso}
+              {...(como === 'formatos'
+                ? { detras: 'envases' }
+                : laMedida === null
+                  ? { detras: producto.unidadDeUso }
+                  : { unidad: laMedida })}
               {...(como === 'formatos' && hayNumero && numero > 0
                 ? { ayuda: `Son ${conUnidadDeUso(enUnidadesDeUso, producto.unidadDeUso)}.` }
                 : {})}
@@ -504,7 +540,7 @@ function ElFormulario({
             {que === 'entrada' && puedeVerPrecios && (
               <>
                 <CampoPrecioDeCompra
-                  etiqueta={producto.formato === null ? 'Precio' : 'Precio del envase'}
+                  etiqueta={`Precio ${delEnvase(producto.formato, producto.unidadDeUso)}`}
                   ayuda={
                     deLaLista === null
                       ? 'Si lo dejas en blanco, entra sin valorar.'
@@ -515,6 +551,17 @@ function ElFormulario({
                   iva={producto.ivaDeCompra}
                   conIvaDeEntrada={preciosConIva}
                 />
+                {/* Tres veces el de la lista, o un tercio: casi siempre es el precio de
+                    otra cosa (el del gramo, el de una botella y no la caja). 19-oct. */}
+                {precio !== null &&
+                  deLaLista !== null &&
+                  deLaLista > 0 &&
+                  (precio >= deLaLista * 3 || precio * 3 <= deLaLista) && (
+                    <Aviso tono="atencion" titulo={`Tu lista dice ${comoDinero(deLaLista)}`}>
+                      Mira que sea el precio {delEnvase(producto.formato, producto.unidadDeUso)}: lo
+                      que escribas aquí es lo que valdrá lo que entra.
+                    </Aviso>
+                  )}
                 {precioDistinto && puedeTocarPrecios && (
                   <Interruptor
                     etiqueta="Usarlo como su precio a partir de hoy"

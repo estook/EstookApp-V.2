@@ -5,13 +5,21 @@ import {
   MESES_CONGELADO_MINIMO,
   UNIDADES_DE_USO,
   ZONAS,
+  centimos,
+  porCantidad,
   horaDeCorte,
   jornadaDe,
 } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
-import { apuntar, costeDeUso, elProductoBloqueado, laJornadaDelProducto } from '../almacen.ts';
+import {
+  apuntar,
+  costeDeCompra,
+  elProductoBloqueado,
+  laJornadaDelProducto,
+  ponerUnPrecio,
+} from '../almacen.ts';
 
 /**
  * El producto (M6) · crear, cambiar, desactivar y volver a activar.
@@ -229,6 +237,26 @@ async function categoriaPorNombre(
   return filas[0]?.id ?? null;
 }
 
+/**
+ * **Nadie compra a tanto el gramo** (19-oct, 0099). Un producto en gramos o mililitros
+ * sin envase se compra por kilos o litros: su precio es el del kilo (factor 1.000), y
+ * no el de un gramo. Los contramuslos de IKATZ nacieron así desde un escandallo —«Crear
+ * en el Almacén» mandaba solo la unidad—, su entrada se apuntó a 4,55 € el gramo y la
+ * cámara dijo que valían 91.000 €. Lo que propone `presentacionDe` ya era esto; ahora
+ * lo garantiza el servidor, venga de donde venga.
+ */
+export function sinPrecioDeUnGramo(
+  unidadDeUso: string,
+  factor: number,
+  formato: string | null,
+): { readonly factor: number; readonly formato: string | null } {
+  const sinEnvase = formato === null || formato.trim() === '';
+  if ((unidadDeUso === 'g' || unidadDeUso === 'ml') && factor === 1 && sinEnvase) {
+    return { factor: 1000, formato: unidadDeUso === 'g' ? 'Kilo' : 'Litro' };
+  }
+  return { factor, formato };
+}
+
 export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>({
   nombre: 'crear_producto',
   entrada: entradaCrearProducto,
@@ -240,10 +268,13 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
 
     const plantilla = await laPlantilla(contexto, entrada.de_referencia ?? null);
 
-    const factor = entrada.factor ?? plantilla.factor;
     const rendimiento = entrada.rendimiento ?? plantilla.rendimiento;
     const unidadDeUso = entrada.unidad_de_uso ?? plantilla.unidadDeUso;
-    const formato = entrada.formato ?? plantilla.formato;
+    const { factor, formato } = sinPrecioDeUnGramo(
+      unidadDeUso,
+      entrada.factor ?? plantilla.factor,
+      entrada.formato ?? plantilla.formato,
+    );
 
     // «Si faltan, se asume factor 1 y rendimiento 1, y el producto queda marcado
     //  como sin verificar, porque un rendimiento mal puesto es el error más caro
@@ -323,7 +354,7 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
           ${factor},
           ${unidadDeUso}::estook.unidad_de_uso,
           ${rendimiento},
-          ${costeDeUso(entrada.precio_centimos ?? 0, factor, rendimiento)},
+          ${costeDeCompra(entrada.precio_centimos ?? 0, factor)},
           ${hoy}::date,
           ${plantilla.referenciaId === null ? 'a_mano' : 'catalogo'}::estook.origen_de_precio,
           ${contexto.personaId}
@@ -398,9 +429,7 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
         // El coste sale del precio que se acaba de poner, con el motor de M2 que
         // es su único dueño. Sin precio entra sin valorar, y eso es correcto: «un
         // producto sin precio se usa igual, cuenta cero y queda marcado».
-        costeMilesimas: conPrecio
-          ? costeDeUso(entrada.precio_centimos ?? 0, factor, rendimiento)
-          : null,
+        costeMilesimas: conPrecio ? costeDeCompra(entrada.precio_centimos ?? 0, factor) : null,
         loteId,
         motivo: 'Lo que había al dar de alta el producto',
         origen: 'alta',
@@ -518,6 +547,8 @@ export interface SalidaCambiarProducto {
   readonly productoId: string;
   /** Si ha cambiado el factor o el rendimiento, que es lo que multiplica. */
   readonly cambiaElCoste: boolean;
+  /** Si cambió el envase, el precio nuevo del envase, con lo mismo por kilo (0099). */
+  readonly precioQueSigue: number | null;
 }
 
 /**
@@ -604,9 +635,13 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       });
     }
 
+    const { factor, formato } = sinPrecioDeUnGramo(
+      entrada.unidad_de_uso,
+      entrada.factor,
+      entrada.formato,
+    );
     const cambiaElCoste =
-      Number(previo.factor) !== entrada.factor ||
-      Number(previo.rendimiento) !== entrada.rendimiento;
+      Number(previo.factor) !== factor || Number(previo.rendimiento) !== entrada.rendimiento;
     const cambiaElIva = entrada.iva_de_compra !== undefined;
     const cambiaElContenido = entrada.contenido_por_unidad !== undefined;
     const cambiaLaZona = entrada.zona !== undefined;
@@ -632,8 +667,8 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       update estook.producto
          set nombre           = ${entrada.nombre},
              categoria_id     = ${entrada.categoria_id},
-             formato          = ${entrada.formato},
-             factor           = ${entrada.factor},
+             formato          = ${formato},
+             factor           = ${factor},
              unidad_de_uso    = ${entrada.unidad_de_uso}::estook.unidad_de_uso,
              rendimiento      = ${entrada.rendimiento},
              categoria_fiscal = ${entrada.categoria_fiscal}::estook.categoria_fiscal,
@@ -693,10 +728,51 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
         ${organizacionId}::uuid, 'cambiar', 'producto', ${entrada.producto_id},
         ${previo.local_id}::uuid,
         ${JSON.stringify({ nombre: previo.nombre, factor: Number(previo.factor), rendimiento: Number(previo.rendimiento) })}::text::jsonb,
-        ${JSON.stringify({ nombre: entrada.nombre, factor: entrada.factor, rendimiento: entrada.rendimiento })}::text::jsonb,
+        ${JSON.stringify({ nombre: entrada.nombre, factor, rendimiento: entrada.rendimiento })}::text::jsonb,
         null
       )
     `;
+
+    // ── El precio sigue al envase (19-oct, 0099) ─────────────────────────────
+    //
+    // El precio se guarda por envase. Si el envase cambia —de «Garrafa de 5 l» a suelto,
+    // de caja de 5 kg a caja de 10 kg— el precio de antes ya no dice de qué es: el
+    // aceite de girasol de IKATZ enseñaba «25,00 € el litro» con 25 € por cinco litros.
+    // Se abre uno nuevo desde hoy **con lo mismo por kilo, litro o unidad**, en el
+    // envase nuevo. Lo que cuesta de verdad no ha cambiado; el papel, sí.
+    let precioQueSigue: number | null = null;
+    if (Number(previo.factor) !== factor) {
+      const vigentes = await contexto.sql<
+        { proveedor_id: string | null; precio_centimos: string; factor: string; origen: string }[]
+      >`
+        select proveedor_id, precio_centimos::text as precio_centimos, factor::text as factor,
+               origen::text as origen
+          from estook.precio_de_producto
+         where producto_id = ${entrada.producto_id} and hasta is null
+      `;
+      for (const vigente of vigentes) {
+        const precio = porCantidad(
+          centimos(Number(vigente.precio_centimos)),
+          factor / Number(vigente.factor),
+        );
+        await ponerUnPrecio(contexto, {
+          productoId: entrada.producto_id,
+          localId: previo.local_id,
+          nombre: entrada.nombre,
+          unidadDeUso: entrada.unidad_de_uso,
+          proveedorId: vigente.proveedor_id,
+          precioCentimos: precio,
+          formato,
+          factor,
+          rendimiento: entrada.rendimiento,
+          origen: 'a_mano',
+          soloSiCambia: true,
+        });
+        if (vigente.proveedor_id === entrada.proveedor_id || precioQueSigue === null) {
+          precioQueSigue = precio;
+        }
+      }
+    }
 
     // **El rendimiento multiplica** (Auditoría 2.2): pasar el pulpo de 0,80 a
     // 0,65 sube su coste un 23 % de golpe, en todos los platos que lo lleven. Por
@@ -708,7 +784,7 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       datos: {
         productoId: entrada.producto_id,
         cambiaElCoste,
-        factor: entrada.factor,
+        factor,
         rendimiento: entrada.rendimiento,
         // Lo que aguanta congelado mueve los avisos de lo que ya está en el
         // congelador (0049).
@@ -717,7 +793,7 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       correlacionId: contexto.correlacionId,
     });
 
-    return { productoId: entrada.producto_id, cambiaElCoste };
+    return { productoId: entrada.producto_id, cambiaElCoste, precioQueSigue };
   },
 });
 

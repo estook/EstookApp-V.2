@@ -92,6 +92,19 @@ function loQueDiceAnthropic(fallo: InstanceType<typeof Anthropic.APIError>): {
   return { tipo, detalle: detalle.slice(0, 300) };
 }
 
+/**
+ * La clave tal como la pega una persona en Supabase: con espacios, un salto de línea,
+ * entre comillas o con el `AI_API_KEY=` delante. Una clave de Anthropic no lleva nada de
+ * eso, así que se quita (19-oct: ninguna llamada había funcionado en producción).
+ */
+export function limpiarLaClave(clave: string): string {
+  return clave
+    .trim()
+    .replace(/^AI_API_KEY\s*=\s*/i, '')
+    .replace(/^["'`]+|["'`]+$/g, '')
+    .replace(/\s+/g, '');
+}
+
 /** Lo más que se espera a una respuesta: una persona con la mano en el móvil. */
 const ESPERA_MAXIMA_MS = 25_000;
 
@@ -103,9 +116,10 @@ export function modeloDeAnthropic(
   clave: string | undefined = variable('AI_API_KEY'),
   modelo: string = variable('AI_MODELO_RAPIDO')?.trim() || MODELO_DE_FOGON,
 ): ModeloDeFogon | null {
-  if (clave === undefined || clave.trim() === '') return null;
+  const limpia = limpiarLaClave(clave ?? '');
+  if (limpia === '') return null;
   const cliente = new Anthropic({
-    apiKey: clave.trim(),
+    apiKey: limpia,
     // Uno solo: dentro de la transacción no se espera a tres intentos.
     maxRetries: 1,
     timeout: ESPERA_MAXIMA_MS,

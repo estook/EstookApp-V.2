@@ -64,6 +64,13 @@ async function laOferta(contexto: Contexto): Promise<OfertaDePrueba> {
 }
 
 /**
+ * El montón de las peticiones que llegan sin una dirección que se entienda (auditoría
+ * del 20-oct). En producción siempre llega (los 5 envíos hasta el 20-oct la traían);
+ * sin ella, el límite de cuentas por dirección no frenaba nada.
+ */
+const DIRECCION_DESCONOCIDA = 'sin-direccion';
+
+/**
  * Lo que la pantalla de entrar y la web necesitan saber **antes** de que haya
  * nadie: qué formas de entrar están encendidas y si hay oferta de prueba. No
  * enseña ningún secreto: el identificador del cliente de Google es público.
@@ -186,10 +193,12 @@ export const pedirCodigoDeRegistro = comando<
     const derivados = await Promise.all([derivar(codigo), derivar(entrada.contrasena)]);
     const [huella, derivada] = yaTieneCuenta ? [null, null] : derivados;
 
+    // Sin dirección que se entienda, todas al mismo montón (auditoría del 20-oct): con
+    // nula, la función se saltaba el límite por dirección entero.
     const estados = await contexto.sql<{ pedir_codigo_de_registro: string }[]>`
       select estook.pedir_codigo_de_registro(
         ${entrada.correo}, ${entrada.nombre}, ${entrada.negocio},
-        ${derivada}, ${huella}, ${contexto.desde},
+        ${derivada}, ${huella}, ${contexto.desde ?? DIRECCION_DESCONOCIDA},
         ${MINUTOS_DEL_CODIGO_DE_REGISTRO}, ${SEGUNDOS_ENTRE_CODIGOS},
         ${CUENTAS_POR_DIRECCION_A_LA_HORA}
       ) as pedir_codigo_de_registro

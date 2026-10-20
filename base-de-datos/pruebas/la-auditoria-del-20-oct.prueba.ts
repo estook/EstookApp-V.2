@@ -220,3 +220,24 @@ describe('lo que Fogón contesta y no sirve, también se cuenta', () => {
     expect(await cuantas()).toBe(antes + 1);
   });
 });
+
+describe('crear cuenta sin una dirección que se entienda', () => {
+  /*
+    El límite de diez cuentas por hora y dirección se saltaba entero si la dirección no
+    se entendía: con «X-Forwarded-For: x», nula, y la función no contaba nada.
+  */
+  it('las que llegan sin dirección también tienen tope', async () => {
+    const { correoEnMemoria } = await import('../../servidor/infraestructura/correo.ts');
+    const conCorreo = montarLaApi(base.bd, { correo: correoEnMemoria() });
+    const pedir = (i: number) =>
+      conCorreo.ejecutar(null, 'pedir_codigo_de_registro', {
+        nombre: 'Marta',
+        negocio: 'La Taberna de la Auditoría',
+        correo: `sin-direccion-${String(i)}@correo-de-prueba.com`,
+        contrasena: 'una frase que me sé',
+        aceptaCondiciones: true,
+      });
+    for (let i = 0; i < 10; i++) losDatos(await pedir(i));
+    expect(elFallo(await pedir(10))).toBe('demasiadas_cuentas');
+  });
+});

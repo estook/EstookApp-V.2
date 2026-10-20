@@ -218,7 +218,12 @@ function FoodCostReal() {
               <summary className="cursor-pointer">Cómo sale</summary>
               <ul className="mt-e2 flex flex-col gap-e1 tabular-nums">
                 <li>Había {comoDinero(f.habiaCentimos)}</li>
-                <li>+ Compraste {comoDinero(f.comprasCentimos)}</li>
+                <li>+ Compraste {comoDinero(f.comprasCentimos - (f.deAltaCentimos ?? 0))}</li>
+                {(f.deAltaCentimos ?? 0) !== 0 && (
+                  <li>
+                    + Lo que había al dar de alta productos {comoDinero(f.deAltaCentimos ?? 0)}
+                  </li>
+                )}
                 <li>− Queda {comoDinero(f.quedaCentimos)}</li>
                 {f.aparteCentimos !== 0 && (
                   <li>− Comida del personal e invitaciones {comoDinero(f.aparteCentimos)}</li>

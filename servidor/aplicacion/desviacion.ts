@@ -541,6 +541,8 @@ export async function lasLineasPorEmparejar(
 
 export interface CuentaLeida {
   readonly cuenta: CuentaDelFoodCost;
+  /** De lo que entró, lo que ya había al dar de alta productos: no se compró. */
+  readonly deAlta: number;
   /** Cuántos productos con género se contaron en el periodo, y qué parte del valor son. */
   readonly contados: number;
   readonly productos: number;
@@ -593,12 +595,17 @@ export async function laCuentaDelFoodCost(
   // Lo que entra y sale **valorado igual que el almacén**: a lo que costó al entrar, y
   // a precio medio al salir; lo que no tiene ninguno de los dos, a su precio de hoy.
   const flujos = await contexto.sql<
-    { compras: string; devoluciones: string; traspasos: string; aparte: string }[]
+    { compras: string; de_alta: string; devoluciones: string; traspasos: string; aparte: string }[]
   >`
     select
       coalesce(sum(round(m.cantidad * coalesce(nullif(m.coste_milesimas, 0),
                    nullif(m.coste_medio_despues, 0), v.coste, 0) / 1000.0))
         filter (where m.tipo = 'entrada'), 0)::text as compras,
+      -- Lo que había al dar de alta un producto: cuenta en la cuenta, pero no es una
+      -- compra (auditoría del 20-oct), y la pantalla lo dice aparte.
+      coalesce(sum(round(m.cantidad * coalesce(nullif(m.coste_milesimas, 0),
+                   nullif(m.coste_medio_despues, 0), v.coste, 0) / 1000.0))
+        filter (where m.tipo = 'entrada' and coalesce(o.origen, m.origen) = 'alta'), 0)::text as de_alta,
       coalesce(sum(round(-m.cantidad * coalesce(nullif(m.coste_medio_despues, 0), v.coste, 0) / 1000.0))
         filter (where m.tipo = 'salida' and coalesce(o.origen, m.origen) = 'devolucion'), 0)::text as devoluciones,
       coalesce(sum(round(-m.cantidad * coalesce(nullif(m.coste_medio_despues, 0), v.coste, 0) / 1000.0))
@@ -620,7 +627,13 @@ export async function laCuentaDelFoodCost(
        and p.activo and not p.es_ejemplo
        and p.zona = any ((select estook.zonas_que_ve(${localId}::uuid))::estook.zona_del_producto[])
   `;
-  const f = flujos[0] ?? { compras: '0', devoluciones: '0', traspasos: '0', aparte: '0' };
+  const f = flujos[0] ?? {
+    compras: '0',
+    de_alta: '0',
+    devoluciones: '0',
+    traspasos: '0',
+    aparte: '0',
+  };
 
   const cajas = await contexto.sql<{ total: string; dias: number }[]>`
     select coalesce(sum(total_centimos), 0)::text as total, count(*)::int as dias
@@ -671,6 +684,7 @@ export async function laCuentaDelFoodCost(
       diasDelPeriodo: jornadasEntre(desde, masDias(ultimo, 1)).length,
       diasConCaja: cajas[0]?.dias ?? 0,
     },
+    deAlta: Number(f.de_alta),
     contados: despues.filter((p) => contadosEnElPeriodo.has(p.id)).length,
     productos: despues.length,
     parteContada: queda > 0 ? valorContado / queda : null,

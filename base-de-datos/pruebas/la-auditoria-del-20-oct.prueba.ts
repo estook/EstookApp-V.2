@@ -283,5 +283,16 @@ describe('el food cost, sin IVA en todas partes', () => {
     }>(await api.consultar(vera, 'un_indicador', { indicador: 'food-cost', dias: '7' }));
     expect(panel.total).toBe(30);
     expect(panel.serie.at(-1)).toEqual({ fecha: cierres.jornada, valor: 30 });
+
+    // Y en el food cost real, el pan dado de alta suma en la cuenta pero no es una compra:
+    // el desglose decía «Compraste 30 €».
+    const real = losDatos<{ comprasCentimos: number; deAltaCentimos: number }>(
+      await api.consultar(vera, 'el_food_cost_real', {
+        periodo: 'mes',
+        mes: cierres.jornada.slice(0, 7),
+      }),
+    );
+    expect(real.comprasCentimos).toBe(3000);
+    expect(real.deAltaCentimos).toBe(3000);
   });
 });

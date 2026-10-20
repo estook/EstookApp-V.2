@@ -377,20 +377,6 @@ const MESES = [
 ] as const;
 
 /**
- * Anular un movimiento mal tecleado (repaso del 3-oct · migración 0055).
- *
- * **No borra nada.** El libro solo se añade (regla 8), así que se apunta una línea
- * más, del mismo tipo y con la cantidad al revés, que dice a cuál anula. Lo que hay
- * en cámara vuelve a su sitio por el camino de siempre, y lo que cuenta —lo
- * vendido, lo gastado, las mermas, las compras— deja fuera las dos líneas
- * (`movimiento_que_cuenta`). Con «¿No cuadra?» lo que hay se arreglaba, pero las
- * dos toneladas de atún seguían «vendidas» cuatro semanas en cada cuenta.
- *
- * Solo lo apuntado a mano o al dar de alta el producto, sin lote, de los últimos
- * treinta y un días, y una vez. Lo que llegó con un albarán o una factura se
- * corrige en Compras, y un ajuste o un recuento se corrigen con otro.
- */
-/**
  * El precio medio del producto como si esa entrada no hubiera llegado: el libro entero,
  * sin lo anulado ni ella (`elMedioSinLoAnulado`). Con el producto ya bloqueado.
  */
@@ -427,6 +413,20 @@ async function elMedioSinLaEntrada(
   return elMedioSinLoAnulado(lineas).coste;
 }
 
+/**
+ * Anular un movimiento mal tecleado (repaso del 3-oct · migración 0055).
+ *
+ * **No borra nada.** El libro solo se añade (regla 8), así que se apunta una línea
+ * más, del mismo tipo y con la cantidad al revés, que dice a cuál anula. Lo que hay
+ * en cámara vuelve a su sitio por el camino de siempre, y lo que cuenta —lo
+ * vendido, lo gastado, las mermas, las compras— deja fuera las dos líneas
+ * (`movimiento_que_cuenta`). Con «¿No cuadra?» lo que hay se arreglaba, pero las
+ * dos toneladas de atún seguían «vendidas» cuatro semanas en cada cuenta.
+ *
+ * Solo lo apuntado a mano o al dar de alta el producto, sin lote, de los últimos
+ * treinta y un días, y una vez. Lo que llegó con un albarán o una factura se
+ * corrige en Compras, y un ajuste o un recuento se corrigen con otro.
+ */
 export const anularMovimiento = comando<EntradaAnularMovimiento, SalidaDeMovimiento>({
   nombre: 'anular_movimiento',
   entrada: entradaAnularMovimiento,

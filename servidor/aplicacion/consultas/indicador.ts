@@ -44,7 +44,7 @@ import { elRelojYElFisco, elTipoDeRestauracion } from '../desviacion.ts';
  *
  *   ventas        cierre de caja, con IVA            dato.ventas
  *   ticket-medio  cierre de caja con tickets          dato.ventas
- *   food-cost     consumo del libro ÷ caja del día    dato.ventas + precio de compra
+ *   food-cost     consumo ÷ caja sin IVA (0101)       dato.ventas + precio de compra
  *   merma         libro, a coste medio                app.almacen + precio de compra
  *   compras       entradas del libro, sin IVA         app.almacen + precio de compra
  *   mis-horas     tus fichajes                        cualquiera con sesión

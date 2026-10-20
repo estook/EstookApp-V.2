@@ -306,7 +306,8 @@ export function elEnvase(formato: string | null, unidadDeUso: string): string {
   if (formato === null || formato.trim() === '')
     return LA_UNIDAD[unidadDeUso] ?? `el ${unidadDeUso}`;
   const nombre = formato.trim().toLocaleLowerCase('es');
-  const primera = nombre.split(/s+/)[0] ?? nombre;
+  // Por los espacios: con `/s+/` se partía por la letra «s» y salía «el garrafa» (20-oct).
+  const primera = nombre.split(/\s+/)[0] ?? nombre;
   const femenina =
     FEMENINAS.has(primera) || (primera.endsWith('a') && !MASCULINAS_EN_A.has(primera));
   return `${femenina ? 'la' : 'el'} ${nombre}`;

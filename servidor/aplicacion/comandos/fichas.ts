@@ -3,6 +3,8 @@ import {
   UNIDADES_DE_USO,
   comoSeLeeLaCantidad,
   convertir,
+  enLaUnidadDelProducto,
+  unidadesDelProducto,
   juntarLoRepetido,
   queCambioEnLaReceta,
   seLlevaASiMisma,
@@ -192,10 +194,10 @@ export async function guardarLaReceta(
           porque: 'Uno de los ingredientes no está en el Almacén de este local.',
         });
       }
-      if (convertir(1, linea.unidad, producto.unidad) === null) {
+      if (enLaUnidadDelProducto(1, linea.unidad, producto) === null) {
         throw new FalloDeAplicacion('faltan_datos', {
           campos: ['lineas'],
-          porque: `«${producto.nombre}» se lleva en ${producto.unidad}: escríbelo en ${producto.unidad === 'ud' ? 'unidades' : producto.unidad === 'g' || producto.unidad === 'kg' ? 'g o kg' : 'ml o l'}.`,
+          porque: `«${producto.nombre}» se lleva en ${producto.unidad}: escríbelo en ${unidadesDelProducto(producto).join(', ')}.`,
         });
       }
     } else {
@@ -663,7 +665,7 @@ export async function vincularUnPlato(
         campos: ['cantidad'],
       });
     }
-    if (convertir(cantidad, unidadDeLaRacion, producto.unidad) === null) {
+    if (enLaUnidadDelProducto(cantidad, unidadDeLaRacion, producto) === null) {
       throw new FalloDeAplicacion('faltan_datos', {
         porque: `«${producto.nombre}» se lleva en ${producto.unidad}, y no se puede contar en ${unidadDeLaRacion}.`,
         campos: ['unidad'],

@@ -797,3 +797,16 @@
      en gramos sin envase era el precio de un gramo: se escribió el del kilo y la cámara dijo
      91.000 €. Ahora el campo dice «Precio del kilo» y el servidor no deja que nada nazca a
      tanto el gramo (0099).
+204. **Una prueba que no mira la cifra no prueba la cifra.** La de «¿No cuadra?» usaba un saco
+     de 10 kg, escribía «4» y solo comprobaba que el motivo salía en Movimientos. Con el fallo
+     de la 0099 guardaba 40 kg y seguía en verde. Una corrección de cantidad se prueba con un
+     producto **con caja** y mirando **lo que queda**; y la hoja lo dice antes de guardar:
+     «Pasa de 10 kg a 4 kg» (0100).
+205. **Una variable con dos dueños rompe al que no la enseña.** `como` («por envases» o «en
+     kilos») servía a «Ha llegado» y «Ha salido», que tienen su selector, y la 0099 la usó
+     también en «¿No cuadra?», que no lo tiene: arrancaba en «por envases» y nadie podía verlo.
+     Lo que una hoja no enseña, no lo puede decidir (0100).
+206. **Un arreglo de datos va en la jornada del local, no en el día del calendario.** La 0076
+     apuntó «Revalorado» a la 1:43 con la fecha del 20, cuando IKATZ aún estaba en la jornada del
+     19, y la tarjeta del valor no la leía. La 0077 usa la jornada, y la foto de hoy lee el libro
+     entero (0100).

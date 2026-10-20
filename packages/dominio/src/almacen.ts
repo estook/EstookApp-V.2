@@ -197,6 +197,34 @@ export function ajusteHasta(actual: Cantidad, loQueHay: Cantidad): Cantidad | nu
   return diferencia === 0 ? null : diferencia;
 }
 
+/**
+ * Si lo que se ha contado **no parece lo que hay**, y por qué (repaso del 20-oct).
+ *
+ * Tres veces ha pasado lo mismo en IKATZ: se escribe la cifra en kilos o litros y se
+ * guarda como cajas. Santi sacó 2.000 kg de atún (3-oct); en el inventario del 17-oct la
+ * cerveza pasó de 694 l a 35.000 l (700 barriles de 50 l) y el chuletón de 89 kg a
+ * 2.492 kg (89 cajas de 28 kg); y el 20-oct «¿No cuadra?» guardó 50 kg de contramuslos
+ * como 250 kg (50 cajas de 5 kg). Nada lo frenó.
+ *
+ *   · `envases`: lo contado es lo que había **por el envase** (89 × 28 = 2.492). Es la
+ *     firma del fallo: se escribió el número de kilos en la casilla de cajas.
+ *   · `mucho`: cinco veces lo que había, o más. Puede ser verdad —llegó un pedido sin
+ *     apuntar—, pero se pregunta antes.
+ *
+ * Nulo: parece normal. No frena nada: la pantalla lo dice y pide confirmarlo.
+ */
+export function noPareceLoQueHay(
+  contado: number,
+  habia: number,
+  factor: number,
+): 'envases' | 'mucho' | null {
+  if (!Number.isFinite(contado) || contado <= 0 || habia <= 0) return null;
+  if (factor > 1 && Math.abs(contado - habia * factor) <= Math.max(habia * factor * 0.02, 1e-9)) {
+    return 'envases';
+  }
+  return contado >= habia * 5 ? 'mucho' : null;
+}
+
 // ── La capa que predice ──────────────────────────────────────────────────────
 
 /**

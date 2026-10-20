@@ -70,6 +70,57 @@ export function convertir(cantidad: number, de: UnidadDeUso, a: UnidadDeUso): nu
   return (cantidad * EN_LA_PEQUENA[de]) / EN_LA_PEQUENA[a];
 }
 
+// ── Lo que trae cada unidad (repaso del 20-oct) ──────────────────────────────
+//
+// Richi: «he añadido albahaca y en el aceite de albahaca me pide unidades, cuando la
+// albahaca no se mide en unidades». Se compra en bandejas de 200 g y se cuenta en
+// bandejas —eso está bien: en la cámara hay 5 bandejas—, pero la receta se escribe en
+// gramos. Con lo que trae cada una apuntado en la ficha («Qué trae cada una: 200 g»),
+// 200 g son una bandeja: **se puede escribir en las dos**, y se convierte con eso. Sin
+// ese dato no se adivina nada (entre familias, nunca).
+
+/** Lo que hace falta de un producto para pasar una cantidad a su unidad. */
+export interface UnidadDelProducto {
+  readonly unidad: UnidadDeUso;
+  /** Lo que trae cada unidad, si se cuenta por unidades y la ficha lo dice: 200 g. */
+  readonly contenido?: { readonly cantidad: number; readonly unidad: UnidadDeUso } | null;
+}
+
+function elContenido(
+  producto: UnidadDelProducto,
+): { readonly cantidad: number; readonly unidad: UnidadDeUso } | null {
+  const contenido = producto.contenido ?? null;
+  if (producto.unidad !== 'ud' || contenido === null || !(contenido.cantidad > 0)) return null;
+  return FAMILIA[contenido.unidad] === 'unidad' ? null : contenido;
+}
+
+/**
+ * Una cantidad de receta en la unidad del producto: 280 g de lomo que se lleva en kilos
+ * son 0,28; 200 g de albahaca en bandejas de 200 g, 1. Nulo si no se puede saber.
+ */
+export function enLaUnidadDelProducto(
+  cuanto: number,
+  unidad: UnidadDeUso,
+  producto: UnidadDelProducto,
+): number | null {
+  const directa = convertir(cuanto, unidad, producto.unidad);
+  if (directa !== null) return directa;
+  const contenido = elContenido(producto);
+  if (contenido === null) return null;
+  const enElContenido = convertir(cuanto, unidad, contenido.unidad);
+  return enElContenido === null ? null : enElContenido / contenido.cantidad;
+}
+
+/**
+ * En qué se puede escribir un producto en una receta: los suyos y, si trae algo por
+ * unidad, los de eso **primero** (la albahaca, en g, kg o bandejas).
+ */
+export function unidadesDelProducto(producto: UnidadDelProducto): readonly UnidadDeUso[] {
+  const contenido = elContenido(producto);
+  const suyas = unidadesQueSirven(producto.unidad);
+  return contenido === null ? suyas : [...unidadesQueSirven(contenido.unidad), ...suyas];
+}
+
 /** «280 g», «1,5 kg», «2 ud». Con coma y sin ceros de más. */
 export function comoSeLeeLaCantidad(cantidad: number, unidad: UnidadDeUso): string {
   // De mil gramos o mililitros para arriba, en kilos o litros (Richi, 16-oct).
@@ -83,7 +134,7 @@ export function comoSeLeeLaCantidad(cantidad: number, unidad: UnidadDeUso): stri
 
 // ── Lo que el motor necesita saber ───────────────────────────────────────────
 
-export interface ProductoDelEscandallo {
+export interface ProductoDelEscandallo extends UnidadDelProducto {
   readonly id: string;
   readonly nombre: string;
   readonly unidad: UnidadDeUso;
@@ -161,7 +212,7 @@ function costeDeUnaLinea(
   if (linea.productoId !== null) {
     const producto = libro.productos.get(linea.productoId);
     const enSuUnidad =
-      producto === undefined ? null : convertir(linea.cantidad, linea.unidad, producto.unidad);
+      producto === undefined ? null : enLaUnidadDelProducto(linea.cantidad, linea.unidad, producto);
     if (producto === undefined || enSuUnidad === null || producto.costeMilesimas === null) {
       return { milesimas: null, faltan: 1, enSuUnidad };
     }
@@ -532,7 +583,9 @@ export function loQueDebiaGastarse(
       if (linea.productoId !== null) {
         const producto = libro.productos.get(linea.productoId);
         const cuanto =
-          producto === undefined ? null : convertir(linea.cantidad, linea.unidad, producto.unidad);
+          producto === undefined
+            ? null
+            : enLaUnidadDelProducto(linea.cantidad, linea.unidad, producto);
         if (cuanto === null) continue;
         debia.set(linea.productoId, (debia.get(linea.productoId) ?? 0) + cuanto * veces);
         continue;

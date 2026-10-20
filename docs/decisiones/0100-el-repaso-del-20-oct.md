@@ -1,0 +1,51 @@
+# 0100 · El repaso del 20-oct: lo que se contaba en cajas, las compras de verdad y la albahaca en gramos
+
+**Fecha:** 20 de octubre de 2026
+**Estado:** construida en la rama `el-repaso-del-20-oct`, con su migración **0077**.
+**Sigue:** la [0099](0099-el-repaso-del-19-oct.md), que dejó en producción dos de los fallos de aquí.
+
+Richi, con el repaso del 19-oct en producción: «acabamos de arreglar cosas importantes para darme cuenta de que se han roto otras más importantes aún». Cinco puntos: la ficha que no se abre al crear, el Almacén que suma 91.000 € y luego 2.000, los contramuslos que pasan de 50 kg a 250, los precios, y la albahaca que se pide en unidades.
+
+## 1 · Lo que pasaba
+
+| Lo que se veía                                                                | Por qué                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **«¿No cuadra?»: escribo 50 kg y dice «ahora hay 250 kg»**                    | **Lo metió la 0099.** Para preguntar en kilos, la hoja pasó a mandar «lo que hay» por la misma cuenta que «Ha llegado», que empieza **por envases** en un producto con caja. Su hoja no enseña «Cómo lo cuentas», así que 50 eran **50 cajas de 5 kg**. «Ha salido» sí enseña el selector, y por eso restaba bien. La prueba de pantalla usaba un saco de 10 kg y **no miraba la cifra**, solo el motivo |
+| **El inventario del 17-oct: la cerveza en 35.000 l, el chuletón en 2.492 kg** | El mismo fallo, en el inventario: lo que va por peso o volumen con caja se contaba en «Caja» y «Sueltas». Se escribieron los litros en «Barril» (700 barriles de 50 l) y los kilos en «Caja» (89 cajas de 28 kg). Es el pico de **31.161 €** de la gráfica del 17-oct                                                                                                                                    |
+| **«Compras: 91.533,66 €», y en Compras no**                                   | La entrada de contramuslos del 19-oct, a 4,55 € **el gramo** (91.000 €). La 0076 revaloró lo que hay, pero **el libro no se reescribe** y esa entrada seguía contando. Y la tarjeta contaba como compra **lo que había al dar de alta un producto**                                                                                                                                                      |
+| **El Almacén: ~90.000 € y luego 2.000 €**                                     | Los 90.000 eran los contramuslos antes de la 0076. Los 2.065,60 € de después no eran todo: la 0076 apuntó «Revalorado» con **el día del calendario** a la 1:43, cuando la jornada de IKATZ (corte a las 5:00) aún era la del 19, y la tarjeta solo leía hasta la jornada. Lo que había de verdad sumaba 2.616,71 €                                                                                       |
+| **Dos precios vivos**                                                         | «Cambiar el precio» con «Sin proveedor» abría un segundo precio al lado del de su proveedor (contramuslos a 45,45 € y a 5,45 €; también la burrata, la leche y un barril). La ficha enseñaba el de su proveedor, pero quitárselo devolvía el viejo                                                                                                                                                       |
+| **El aceite de albahaca pide la albahaca en unidades**                        | La albahaca se cuenta en bandejas (bien: en la cámara hay 5) y cada una trae 200 g, pero el escandallo solo convertía gramos con kilos y mililitros con litros. «200 ud» habrían sido 40 kg                                                                                                                                                                                                              |
+| **Al añadir un artículo, se pierde la ficha**                                 | Desde Productos sí se abría (comprobado en Chrome y en el motor de Safari). Desde un escandallo, **«Crear en el Almacén» lo daba de alta solo con el nombre**: sin envase, sin precio, sin foto y sin ver su ficha. Así nacieron los contramuslos del 19-oct                                                                                                                                             |
+
+## 2 · Lo hecho
+
+| Punto                          | Lo hecho                                                                                                                                                                                                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **«¿No cuadra?»**              | Cuenta siempre en kilos, litros o unidades (con el selector a gramos), **nunca en cajas**. Antes de guardar dice **«Pasa de 20 kg a 50 kg»**, y si lo nuevo es cinco veces lo que había o justo lo de antes por la caja, pregunta **«¿De verdad hay…?»** y hay que confirmarlo |
+| **El inventario y el escáner** | **Cajas y sueltas solo en lo que se cuenta por unidades** (latas en caja de 24); lo de peso o volumen, en una casilla. Al contar y al cerrar, lo que no parece lo que había sale con **«¿Bien contado?»**                                                                      |
+| **Las compras**                | Cuentan lo recibido a mano y los albaranes; **lo del alta, no**                                                                                                                                                                                                                |
+| **El valor de la cámara**      | La foto de hoy es **lo que hay ahora**: una línea con fecha posterior cuenta hoy. En un informe de días cerrados, no                                                                                                                                                           |
+| **Un precio vivo**             | Sin decir de quién, un precio es **del proveedor del producto**. «Sin proveedor» solo se ofrece si el producto no tiene                                                                                                                                                        |
+| **La albahaca**                | Lo que trae cada unidad («Qué trae cada una: 200 g») deja escribir la receta **en g, kg o bandejas**, en gramos de entrada. Vale para el coste, para lo que se debía gastar y para lo que comprueba el servidor                                                                |
+| **Crear desde un escandallo**  | Abre **el alta de siempre, encima**, con el nombre puesto y el catálogo buscando; al guardar vuelve al escandallo con el producto elegido y en una unidad que le sirve                                                                                                         |
+| **De paso**                    | «el garrafa» → **«la garrafa»** (se partía el nombre por la letra «s»); la maceta del catálogo decía «te quedan unos 0 ud» (ahora 0,5); y `bd:comprobar-api` daba MAL por los «Revalorado» de la 0076, que son de cero a propósito                                             |
+
+**La migración 0077** arregla los datos de IKATZ, sin borrar ni cambiar una línea del libro (ensayada contra la base de verdad dentro de una transacción deshecha):
+
+- **Anula** la entrada de contramuslos del 19-oct (4,55 € el gramo) y la del aceite de girasol del 9-oct (25 € el litro), y las **vuelve a apuntar a su precio de hoy**, con el mismo lote. Compras de la semana: **de 91.533,66 € a 584,11 €**.
+- **Los contramuslos, a 50 kg**, lo que escribió Richi, con su motivo.
+- **Cierra los precios «sin proveedor»** que estaban vivos al lado del de su proveedor (vale para cualquier base).
+
+## 3 · Lo que decidí al construirlo
+
+1. **La entrada mal valorada se anula y se vuelve a apuntar**, con la fecha de hoy: si llevara la de entonces, la foto de aquel día leería lo que hay hoy. Por eso los 40 € del aceite cuentan en las compras de esta semana.
+2. **El chuletón no se toca**: entró a 1,64 €/kg y hoy cuesta 16,23 €/kg. Puede ser el precio de la caja escrito como kilo, o no; no se sabe, y no se adivina.
+3. **La gráfica de 30 días seguirá enseñando el pico del 17-oct** hasta mediados de noviembre: es lo que el libro dice que hubo ese día, y el libro no se reescribe. Igual que **las entradas de antes de la 0099**, que se valoraron con el aprovechamiento dentro: en las compras de 30 días, el atún, el salmón y el chuletón cuentan algo más de lo pagado hasta que salgan del periodo.
+4. **Nada de esto frena**: en el inventario, «¿Bien contado?» solo avisa; en «¿No cuadra?» se confirma con un toque, como sacar más de lo que hay (Manifiesto 12: nunca se bloquea a nadie por cuadrar).
+5. **Lo de peso con caja se cuenta en una casilla**, sin «Cajas»: si alguien quiere contar barriles, «2,5 barriles» se escribe como 125 l. Se puede volver a ofrecer, con la unidad escrita en cada casilla, si Richi lo pide.
+
+## 4 · Lo que queda por ver con Richi
+
+- **El precio de los contramuslos** sigue en **5,45 €** la caja de 5 kg (1,09 €/kg). Si era 45,45, se cambia en su ficha.
+- **«Se pierde la ficha»**: desde Productos se abre sola (probado en Chrome y en el motor de Safari, en tamaño iPhone). Si le pasó desde otro sitio que no sea un escandallo, que lo diga.

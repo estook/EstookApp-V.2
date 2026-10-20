@@ -70,10 +70,12 @@ export const ponerPrecio = comando<EntradaPonerPrecio, SalidaPonerPrecio>({
         factor: string;
         unidad_de_uso: string;
         rendimiento: string;
+        proveedor_id: string | null;
       }[]
     >`
       select local_id, nombre, formato, factor::text as factor,
-             unidad_de_uso::text as unidad_de_uso, rendimiento::text as rendimiento
+             unidad_de_uso::text as unidad_de_uso, rendimiento::text as rendimiento,
+             proveedor_id
         from estook.producto
        where id = ${entrada.producto_id}
     `;
@@ -90,7 +92,12 @@ export const ponerPrecio = comando<EntradaPonerPrecio, SalidaPonerPrecio>({
       localId: producto.local_id,
       nombre: producto.nombre,
       unidadDeUso: producto.unidad_de_uso,
-      proveedorId: entrada.proveedor_id ?? null,
+      // **Sin decir de quién, es del proveedor del producto** (20-oct). Con «ninguno» se
+      // abría un segundo precio vivo al lado del de siempre: los contramuslos de IKATZ
+      // tenían a la vez 45,45 € (sin proveedor) y 5,45 € (de su proveedor), y bastaba
+      // quitarle el proveedor para que volviera el viejo. Un producto, un precio vivo de
+      // cada proveedor; y el «sin proveedor», solo si el producto no tiene.
+      proveedorId: entrada.proveedor_id ?? producto.proveedor_id,
       precioCentimos: entrada.precio_centimos,
       formato: entrada.formato ?? producto.formato,
       factor: entrada.factor ?? Number(producto.factor),

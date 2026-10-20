@@ -8,6 +8,7 @@ import {
   ZONAS,
   leerUnCsvDeRecuento,
   loContadoEnUnidades,
+  noPareceLoQueHay,
   type QueHagoConLoQueFalta,
   type Zona,
 } from '@estook/dominio';
@@ -707,6 +708,9 @@ function LineaDeRecuento({
   const hay = cuantoHay(producto, escrito);
   const diferencia = hay === null || aCiegas ? null : hay - producto.cantidad;
   const enCajas = seCuentaEnCajas(producto);
+  // Cinco veces lo que dice el libro, o lo del libro por la caja: se dice al lado (20-oct).
+  const raro =
+    hay === null || aCiegas ? null : noPareceLoQueHay(hay, producto.cantidad, producto.factor);
 
   return (
     <li className="flex flex-wrap items-center gap-e3 py-e2">
@@ -725,6 +729,7 @@ function LineaDeRecuento({
         </span>
       </span>
 
+      {raro !== null && <Etiqueta tono="atencion">¿Bien contado?</Etiqueta>}
       {diferencia !== null && Math.abs(diferencia) > 0.00001 && (
         <Etiqueta tono={diferencia < 0 ? 'mal' : 'bien'}>
           {diferencia > 0 ? '+' : '−'}

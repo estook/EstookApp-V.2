@@ -1491,7 +1491,8 @@ function CambiarPrecio({
           etiqueta="De qué proveedor"
           ayuda="Cada proveedor tiene su propio precio vivo, y así se pueden comparar."
           opciones={proveedores.map((p) => ({ valor: p.id, texto: p.nombre }))}
-          sinElegir="Sin proveedor"
+          // Con proveedor puesto, «sin proveedor» abría un segundo precio vivo (20-oct).
+          {...(producto.producto.proveedorId === null ? { sinElegir: 'Sin proveedor' } : {})}
           cuandoNoHay="Todavía no tienes proveedores"
           value={proveedorId}
           onChange={(e) => {

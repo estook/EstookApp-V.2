@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { loContadoEnUnidades } from '@estook/dominio';
+import { loContadoEnUnidades, noPareceLoQueHay } from '@estook/dominio';
 import {
   Aviso,
   Boton,
@@ -552,7 +552,12 @@ function RevisarInventario({
 }
 
 function cuantoHayEn(
-  p: { readonly formato: string | null; readonly factor: number; readonly pesoVariable: boolean },
+  p: {
+    readonly formato: string | null;
+    readonly factor: number;
+    readonly pesoVariable: boolean;
+    readonly unidadDeUso: string;
+  },
   escrito: LoEscrito | undefined,
 ): number | null {
   if (escrito === undefined) return null;
@@ -587,6 +592,7 @@ function LineaParaCerrar({
 }) {
   const diferencia = l.diferencia ?? 0;
   const corregidoA = cuantoHayEn(l, escrito);
+  const raro = noPareceLoQueHay(l.hay, l.decia ?? 0, l.factor);
   return (
     <li className={clases('flex flex-col gap-e2 py-e2', l.recontar && 'opacity-70')}>
       <div className="flex flex-wrap items-center gap-e3">
@@ -621,6 +627,17 @@ function LineaParaCerrar({
           )}
         </span>
       </div>
+      {/*
+        Lo contado que no parece lo que hay, dicho antes de cerrar (20-oct): el 17-oct se
+        cerró con la cerveza en 35.000 l (decía 694) y nadie lo vio.
+      */}
+      {!l.recontar && raro !== null && (
+        <p className="text-secundario font-medium text-atencion">
+          {raro === 'envases'
+            ? `¿Bien contado? Es justo lo que decía por ${l.formato?.toLowerCase() ?? 'el envase'}: puede que se contaran cajas donde iban ${conUnidadDeUso(l.decia ?? 0, l.unidadDeUso)}.`
+            : `¿Bien contado? Es cinco veces lo que decía, o más. Mira la cifra antes de cerrar.`}
+        </p>
+      )}
       {/* Lo que cuadra no pide nada: solo lo que baila se recuenta o se corrige. */}
       {!l.recontar && diferencia !== 0 && (
         <div className="flex flex-wrap items-center gap-x-e4 gap-y-e1 text-secundario">

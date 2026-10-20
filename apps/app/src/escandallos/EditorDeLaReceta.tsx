@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   CREDITOS_DE_FOGON,
   UNIDADES_DE_USO,
   elProductoQueSeParece,
   laRecetaQueSeParece,
+  unidadesDelProducto,
   unidadesQueSirven,
   type UnidadDeUso,
 } from '@estook/dominio';
@@ -25,6 +26,7 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarRefrescarLasFichas } from '../ganchos/usarRefrescarLasFichas.ts';
+import type { MisProductos } from '../almacen/contrato.ts';
 import { AvisoDelBorrador, PedirleAFogon } from '../fogon/PedirleAFogon.tsx';
 import type { BorradorDeLosPasos, BorradorDelEscandallo, FogonYYo } from '../fogon/contrato.ts';
 import {
@@ -73,6 +75,12 @@ import {
  * sin pasos. Lo que vuelve es un borrador que entra igual que la receta de Estook
  * —cada línea pregunta cuál de tus productos es— y avisa de que la IA no es precisa.
  */
+
+/** El alta del Almacén, solo cuando se crea un ingrediente que no está (20-oct). */
+const NuevoProducto = lazy(async () => {
+  const modulo = await import('../almacen/NuevoProducto.tsx');
+  return { default: modulo.NuevoProducto };
+});
 
 interface Fila {
   readonly clave: string;
@@ -203,20 +211,34 @@ export function EditorDeLaReceta({
     });
   }
 
-  async function crearEnElAlmacen(fila: Fila) {
-    const unidad: UnidadDeUso =
-      fila.unidad === 'kg' ? 'g' : fila.unidad === 'l' ? 'ml' : fila.unidad;
-    const respuesta = await cliente.ejecutar<{ productoId: string }>('crear_producto', {
-      nombre: fila.nombre.trim(),
-      unidad_de_uso: unidad,
-    });
-    if (!respuesta.ok) {
-      setError(respuesta.error);
-      return;
-    }
-    await cache.invalidateQueries({ queryKey: ['lo_que_puede_llevar'] });
-    cambiar({ ...fila, tipo: 'producto', refId: respuesta.datos.productoId });
+  // ── Lo que no está en el Almacén, con su ficha entera (20-oct) ──────────────
+  //
+  // «Crear en el Almacén» daba de alta el producto **solo con el nombre**: sin envase,
+  // sin precio y sin que nadie viera su ficha. Así nacieron los contramuslos del 19-oct
+  // (en gramos y a 4,55 € el gramo) y la albahaca sin lo que trae cada bandeja. Ahora se
+  // abre el alta de siempre, encima, con el nombre puesto y el catálogo buscando; al
+  // guardar, se vuelve aquí con el producto elegido y en una unidad que le sirve.
+  const [creandoParaLaFila, setCreandoParaLaFila] = useState<Fila | null>(null);
+  const misProductos = usarLectura<MisProductos>('mis_productos', {}, creandoParaLaFila !== null);
+
+  async function yaEstaEnElAlmacen(fila: Fila, productoId: string) {
+    setCreandoParaLaFila(null);
     setBuscando(null);
+    await cache.refetchQueries({ queryKey: ['lo_que_puede_llevar'] });
+    const nuevo = cache
+      .getQueryData<LoQuePuedeLlevar>(['lo_que_puede_llevar', {}])
+      ?.productos.find((p) => p.id === productoId);
+    const lasSuyas =
+      nuevo === undefined
+        ? [fila.unidad]
+        : unidadesDelProducto({ unidad: nuevo.unidad, contenido: nuevo.contenido ?? null });
+    cambiar({
+      ...fila,
+      tipo: 'producto',
+      refId: productoId,
+      nombre: nuevo?.nombre ?? fila.nombre,
+      unidad: lasSuyas.includes(fila.unidad) ? fila.unidad : (lasSuyas[0] ?? fila.unidad),
+    });
   }
 
   const llenas = filas.filter((f) => f.refId !== null || f.nombre.trim() !== '');
@@ -466,7 +488,7 @@ export function EditorDeLaReceta({
                   }}
                   puedeCrear={puedeEditar(permisos, 'app.almacen')}
                   alCrear={() => {
-                    void crearEnElAlmacen(fila);
+                    setCreandoParaLaFila(fila);
                   }}
                   siguiente={filas[i + 1]?.clave ?? null}
                 />
@@ -607,6 +629,26 @@ export function EditorDeLaReceta({
           </p>
         )}
       </div>
+
+      {creandoParaLaFila !== null && misProductos.data !== undefined && (
+        <Suspense fallback={null}>
+          <NuevoProducto
+            abierta
+            nombreDeEntrada={creandoParaLaFila.nombre.trim()}
+            alCerrar={() => {
+              setCreandoParaLaFila(null);
+            }}
+            alCrear={(productoId) => {
+              void yaEstaEnElAlmacen(creandoParaLaFila, productoId);
+            }}
+            categorias={misProductos.data.categorias}
+            proveedores={misProductos.data.proveedores}
+            puedeVerPrecios={misProductos.data.puedeVerPrecios}
+            preciosConIva={misProductos.data.preciosConIva}
+            territorio={misProductos.data.territorio}
+          />
+        </Suspense>
+      )}
     </Hoja>
   );
 }
@@ -671,7 +713,16 @@ function LineaQueSeEscribe({
   useEffect(() => {
     if (conPropuestas) propuestas.current?.scrollIntoView({ block: 'nearest' });
   }, [conPropuestas, opciones.length]);
-  const sirven = fila.refId === null ? UNIDADES_DE_USO : unidadesQueSirven(fila.unidad);
+  // En qué se puede escribir: lo del producto elegido —la albahaca en bandejas de 200 g,
+  // en g, kg o bandejas (20-oct)— o lo de lo que rinde la elaboración.
+  const sirvenPara = (tipo: Fila['tipo'], id: string, unidad: UnidadDeUso) => {
+    const delAlmacen = tipo === 'producto' ? lo?.productos.find((p) => p.id === id) : undefined;
+    return delAlmacen === undefined
+      ? unidadesQueSirven(unidad)
+      : unidadesDelProducto({ unidad: delAlmacen.unidad, contenido: delAlmacen.contenido ?? null });
+  };
+  const sirven =
+    fila.refId === null ? UNIDADES_DE_USO : sirvenPara(fila.tipo, fila.refId, fila.unidad);
   const caja = useRef<HTMLInputElement>(null);
   // **El cursor va solo a donde toca** (19-oct): elegido el ingrediente, a su cantidad;
   // escrita la cantidad, «Intro» lleva al siguiente ingrediente. Sin tener que buscar la
@@ -755,13 +806,13 @@ function LineaQueSeEscribe({
           onClick={() => {
             const p = fila.propuesta;
             if (p === undefined) return;
-            const sirvenLasDos = unidadesQueSirven(p.unidad).includes(fila.unidad);
+            const lasSuyas = sirvenPara('producto', p.id, p.unidad);
             alCambiar({
               ...fila,
               tipo: 'producto',
               refId: p.id,
               nombre: p.nombre,
-              unidad: sirvenLasDos ? fila.unidad : (unidadesQueSirven(p.unidad)[0] ?? p.unidad),
+              unidad: lasSuyas.includes(fila.unidad) ? fila.unidad : (lasSuyas[0] ?? p.unidad),
             });
             aLaCantidad();
           }}
@@ -800,15 +851,15 @@ function LineaQueSeEscribe({
                 role="option"
                 aria-selected={false}
                 onClick={() => {
-                  const unidad = unidadesQueSirven(o.unidad)[0] ?? o.unidad;
+                  const lasSuyas = sirvenPara(o.tipo, o.id, o.unidad);
                   alCambiar({
                     ...fila,
                     tipo: o.tipo,
                     refId: o.id,
                     nombre: o.nombre,
-                    unidad: unidadesQueSirven(o.unidad).includes(fila.unidad)
+                    unidad: lasSuyas.includes(fila.unidad)
                       ? fila.unidad
-                      : unidad,
+                      : (lasSuyas[0] ?? o.unidad),
                   });
                   alBuscar(false);
                   aLaCantidad();

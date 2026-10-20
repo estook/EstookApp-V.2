@@ -619,6 +619,8 @@ export interface LoQuePuedeLlevar {
     readonly unidad: UnidadDeUso;
     readonly categoria: string | null;
     readonly alergenos: readonly string[];
+    /** Lo que trae cada unidad (la bandeja de 200 g): se puede escribir en gramos. */
+    readonly contenido?: { readonly cantidad: number; readonly unidad: UnidadDeUso } | null;
   }[];
   readonly elaboraciones: readonly {
     readonly id: string;
@@ -644,6 +646,7 @@ export const loQuePuedeLlevar = consulta<Record<string, never>, LoQuePuedeLlevar
           unidad: p.unidad,
           categoria: p.categoria,
           alergenos: p.alergenos,
+          contenido: p.contenido ?? null,
         })),
       elaboraciones: [...libro.elaboraciones.values()]
         .filter((e) => e.activo)

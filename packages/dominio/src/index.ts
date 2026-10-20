@@ -323,6 +323,7 @@ export {
   esTipoDeMovimiento,
   siguienteEstado,
   reconstruir,
+  elMedioSinLoAnulado,
   ajusteHasta,
   noPareceLoQueHay,
   consumoMedioDiario,
@@ -339,6 +340,7 @@ export {
 export type {
   TipoDeMovimiento,
   EstadoDelStock,
+  LineaGuardada,
   Movimiento,
   Salida,
   Consumo,

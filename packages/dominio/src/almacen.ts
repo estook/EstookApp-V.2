@@ -181,6 +181,53 @@ export function reconstruir(movimientos: readonly Movimiento[]): readonly Estado
   return estados;
 }
 
+/** Una línea del libro tal como está guardada, para rehacer el precio medio. */
+export interface LineaGuardada {
+  readonly id: string;
+  readonly cantidad: number;
+  /** Lo que costó al entrar; nulo si no se sabe o no es una entrada. */
+  readonly coste: number | null;
+  /** La línea que anula, si es una anulación. */
+  readonly anula: string | null;
+  /**
+   * El precio medio que dejó una revaloración («Revalorado», 0076): no mueve cantidad,
+   * pone el precio. Nulo en las demás.
+   */
+  readonly revalorado: number | null;
+}
+
+/**
+ * **El precio medio sin lo anulado** (auditoría del 20-oct).
+ *
+ * Anular una entrada quitaba los kilos y dejaba el precio medio con ella dentro: una
+ * entrada a 500 € el kilo donde eran 5, anulada, seguía valorando la cámara a 200 €
+ * el kilo, y las mermas y lo gastado con ella. Es lo que pasó con los contramuslos
+ * del 19-oct, que hubo que revalorar a mano (0076).
+ *
+ * Se rehace el libro entero del producto con `siguienteEstado` —el mismo cálculo de
+ * siempre—, saltándose cada línea anulada y su anulación: el precio medio queda como
+ * si esa entrada no hubiera llegado. Lo que pasó entre medias (salidas, otras
+ * entradas) cuenta igual. Las revaloraciones ponen su precio donde estaban.
+ */
+export function elMedioSinLoAnulado(lineas: readonly LineaGuardada[]): EstadoDelStock {
+  const anuladas = new Set(lineas.flatMap((l) => (l.anula === null ? [] : [l.anula])));
+  let estado = CAMARA_VACIA;
+  for (const linea of lineas) {
+    if (linea.anula !== null || anuladas.has(linea.id)) continue;
+    if (linea.revalorado !== null) {
+      estado = { cantidad: estado.cantidad, coste: milesimas(linea.revalorado) };
+      continue;
+    }
+    if (linea.cantidad === 0) continue;
+    estado = siguienteEstado(estado, {
+      tipo: linea.cantidad > 0 ? 'entrada' : 'salida',
+      cantidad: cantidad(linea.cantidad),
+      coste: linea.coste === null ? null : milesimas(linea.coste),
+    });
+  }
+  return estado;
+}
+
 /**
  * De «hay 4 kg» a un movimiento.
  *

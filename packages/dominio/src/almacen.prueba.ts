@@ -16,6 +16,7 @@ import {
   pesosDeLaSemana,
   diaDeAgotamiento,
   diasDeCobertura,
+  elMedioSinLoAnulado,
   previsionDeAgotamiento,
   reconstruir,
   siguienteEstado,
@@ -123,6 +124,48 @@ describe('el libro de movimientos', () => {
 
   it('y un ajuste que no cambia nada no se apunta', () => {
     expect(ajusteHasta(cantidad(4), cantidad(4))).toBeNull();
+  });
+});
+
+describe('el precio medio sin lo anulado (auditoría del 20-oct)', () => {
+  const linea = (
+    id: string,
+    cant: number,
+    coste: number | null = null,
+    anula: string | null = null,
+    revalorado: number | null = null,
+  ) => ({ id, cantidad: cant, coste, anula, revalorado });
+
+  it('como si la entrada anulada no hubiera llegado', () => {
+    const estado = elMedioSinLoAnulado([
+      linea('1', 10, 500_000), // 10 kg a 5 €
+      linea('2', 10, 50_000_000), // 10 kg a 500 €: mal escrito
+      linea('3', -4), // salen 4
+      linea('4', 4, 600_000), // entran 4 a 6 €
+      linea('5', -10, null, '2'), // se anula la mala
+    ]);
+    expect(estado).toEqual({ cantidad: 10, coste: milesimas(540_000) });
+  });
+
+  it('una revaloración pone su precio donde estaba', () => {
+    const estado = elMedioSinLoAnulado([
+      linea('1', 20, 455_000),
+      linea('2', 0, null, null, 109),
+      linea('3', 10, 109),
+    ]);
+    expect(estado).toEqual({ cantidad: 30, coste: milesimas(109) });
+  });
+
+  it('sin nada anulado es lo mismo que reconstruir el libro', () => {
+    const lineas = [linea('1', 5, 1000), linea('2', -2), linea('3', 7, 2000)];
+    const rehecho = reconstruir(
+      lineas.map((l) => ({
+        tipo: l.cantidad > 0 ? ('entrada' as const) : ('salida' as const),
+        cantidad: cantidad(l.cantidad),
+        coste: l.coste === null ? null : milesimas(l.coste),
+      })),
+    ).at(-1);
+    expect(elMedioSinLoAnulado(lineas)).toEqual(rehecho);
   });
 });
 

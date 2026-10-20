@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { LETRAS_PARA_FOGON, UNIDADES_DE_USO, type UnidadDeUso } from '@estook/dominio';
-import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { comando, FalloDeAplicacion, falloQueSeGuarda, type Contexto } from '../contrato.ts';
 import { elFogonDeLaSesion, leerElJson, pedirAFogon, type LoQueQueda } from '../fogon.ts';
 import { elResumenParaFogon } from '../fogon-resumen.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
@@ -224,7 +224,8 @@ export const rellenarConFogon = comando<
     );
     const leido = escandalloDeFogon.safeParse(leerElJson(contesta.texto));
     if (!leido.success) {
-      throw new FalloDeAplicacion('faltan_datos', {
+      // Con lo gastado apuntado (auditoría del 20-oct).
+      throw falloQueSeGuarda('faltan_datos', {
         porque: 'Fogón no ha sabido desgranar este plato. Prueba con una pista de lo que lleva.',
       });
     }
@@ -314,7 +315,7 @@ export const escribirLosPasosConFogon = comando<
     );
     const leido = pasosDeFogon.safeParse(leerElJson(contesta.texto));
     if (!leido.success) {
-      throw new FalloDeAplicacion('faltan_datos', {
+      throw falloQueSeGuarda('faltan_datos', {
         porque: 'Fogón no ha sabido escribir los pasos. Prueba con un resumen de cómo se hace.',
       });
     }

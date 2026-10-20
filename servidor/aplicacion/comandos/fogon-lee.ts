@@ -10,7 +10,7 @@ import {
 import type { FotoParaFogon } from '../../ia/modelo.ts';
 import { elLocalDeLaSesion } from '../alta.ts';
 import { loQuePuedeConLosPrecios } from '../compras.ts';
-import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { comando, FalloDeAplicacion, falloQueSeGuarda, type Contexto } from '../contrato.ts';
 import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
 import { elFogonDeLaSesion, leerElJson, pedirAFogon, type LoQueQueda } from '../fogon.ts';
 import { productosActivos, productosDelProveedor } from '../consultas/almacen.ts';
@@ -76,8 +76,9 @@ function texto(t: string): string | null {
   return limpio === '' ? null : limpio.slice(0, 120);
 }
 
+// Después de leer la foto: lo gastado queda apuntado (auditoría del 20-oct).
 function noLoHaLeido(que: string): never {
-  throw new FalloDeAplicacion('faltan_datos', {
+  throw falloQueSeGuarda('faltan_datos', {
     porque: `Fogón no ha sabido leer ${que}. Prueba con otra foto, más cerca y con luz.`,
   });
 }
@@ -580,7 +581,7 @@ export const leerLaMermaConFogon = comando<
     );
     const leido = mermaDeFogon.safeParse(leerElJson(contesta.texto));
     if (!leido.success || leido.data.mermas.length === 0) {
-      throw new FalloDeAplicacion('faltan_datos', {
+      throw falloQueSeGuarda('faltan_datos', {
         porque:
           imagen === undefined
             ? 'Fogón no ha entendido qué se tira. Dilo con el producto y cuánto: «dos botellas de vino rotas».'

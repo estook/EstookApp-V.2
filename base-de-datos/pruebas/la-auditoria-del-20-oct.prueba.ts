@@ -178,3 +178,45 @@ describe('anular una entrada con el precio mal escrito', () => {
     expect(conRegalo.cantidad).toBe(10);
   });
 });
+
+describe('lo que Fogón contesta y no sirve, también se cuenta', () => {
+  /*
+    Si la IA contestaba algo que no se entendía (o lo rechazaba), el comando fallaba y la
+    transacción se deshacía **con el apunte de lo gastado dentro**: Anthropic lo cobraba,
+    pero no contaba para el tope del local, y se podía reintentar sin fin.
+  */
+  it('una respuesta que no se entiende queda apuntada y gasta sus créditos', async () => {
+    const { modeloDeMentira } = await import('../../servidor/ia/modelo.ts');
+    const conFogon = montarLaApi(base.bd, { fogon: modeloDeMentira(() => 'esto no es JSON') });
+    const rosa = await conFogon.entrar(ROSA);
+    const { rows: org } = await base.bd.query<{ id: string }>(
+      `select organizacion_id as id from estook.local where codigo = 'bar-centro'`,
+    );
+    await base.bd.query('update plataforma.fogon set encendido = true where unica');
+    await base.bd.query(
+      `insert into plataforma.fogon_del_cliente (organizacion_id, encendido) values ($1, true)
+       on conflict (organizacion_id) do update set encendido = true`,
+      [org[0]?.id],
+    );
+    const plato =
+      losDatos<{ creados: { platoId: string }[] }>(
+        await conFogon.ejecutar(rosa, 'crear_platos', {
+          seccion_id: null,
+          platos: [{ nombre: 'Croquetas de la auditoría', precio_centimos: 1200 }],
+        }),
+      ).creados[0]?.platoId ?? '';
+
+    const cuantas = async () =>
+      Number(
+        (
+          await base.bd.query<{ n: string }>(
+            'select count(*)::text as n from estook.llamada_a_fogon',
+          )
+        ).rows[0]?.n,
+      );
+    const antes = await cuantas();
+    const r = await conFogon.ejecutar(rosa, 'rellenar_con_fogon', { plato_id: plato });
+    expect(elFallo(r)).toBe('faltan_datos');
+    expect(await cuantas()).toBe(antes + 1);
+  });
+});

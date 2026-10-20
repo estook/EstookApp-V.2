@@ -40,6 +40,23 @@ export function horaDeCorte(valor: string): HoraDeCorte {
 /** La de un local que no ha dicho otra cosa: la jornada corta a las cinco. */
 export const CORTE_POR_DEFECTO = horaDeCorte('05:00');
 
+/**
+ * **Si es una zona horaria de verdad**, con nombre de zona («Europe/Madrid»,
+ * «Atlantic/Canary»). La auditoría del 20-oct guardó «2026-10-19» como zona de un local
+ * por la API: se aceptó, y desde ahí crear un proveedor, el tablón o el inventario de
+ * ese local daban «se nos ha roto algo». Los desfases sueltos («+01:00») tampoco: Postgres
+ * los lee con el signo al revés que `Intl`, y la misma hora saldría distinta en cada lado.
+ */
+export function esZonaHoraria(valor: string): boolean {
+  if (!/^(UTC|[A-Za-z]+(\/[A-Za-z0-9_+-]+)+)$/.test(valor)) return false;
+  try {
+    new Intl.DateTimeFormat('en-CA', { timeZone: valor });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 interface RelojLocal {
   readonly anio: number;
   readonly mes: number;

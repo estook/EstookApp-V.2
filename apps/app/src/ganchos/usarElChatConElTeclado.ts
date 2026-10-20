@@ -37,9 +37,13 @@ export function usarElChatConElTeclado(caja: RefObject<HTMLElement | null>): Don
       };
     }
 
+    // **Lo de una hoja abierta encima no cuenta** (auditoría del 20-oct). Las hojas son
+    // `<dialog>` que se pintan dentro del chat, así que «Por qué» al retirar un mensaje
+    // contaba como escribir en el chat, y el chat se subía debajo de la hoja.
     const esUnCampoDelChat = (elemento: EventTarget | Element | null) =>
       elemento instanceof HTMLElement &&
       caja.current?.contains(elemento) === true &&
+      elemento.closest('dialog') === null &&
       (elemento instanceof HTMLTextAreaElement ||
         (elemento instanceof HTMLInputElement && ['text', 'search'].includes(elemento.type)));
     const enUnCampo = () => esUnCampoDelChat(document.activeElement);
@@ -49,6 +53,24 @@ export function usarElChatConElTeclado(caja: RefObject<HTMLElement | null>): Don
     // pruebas). Un respiro de 400 ms, y luego ya a su sitio.
     let soltadoEn = Number.NEGATIVE_INFINITY;
     const escribiendo = () => enUnCampo() || performance.now() - soltadoEn < 400;
+
+    // **Y con el dedo apoyado, el chat no se mueve de debajo** (auditoría del 20-oct). El
+    // respiro se contaba desde que se iba el foco: un dedo que tardaba más de 400 ms en
+    // levantarse, o un respiro que vencía justo entre apretar y soltar, movía el chat
+    // 60 px bajo el dedo y el toque caía en la barra de arriba. Es el «a veces no se
+    // abren las opciones de la conversación» de las pruebas del chat. Mientras haya un
+    // dedo (o el ratón) apretado, y un respiro después de soltarlo, lo que cambie espera.
+    // Por dedo, y con tope: un `pointerup` que no llega (se suelta fuera de la ventana) no
+    // puede dejar el chat subido para siempre.
+    const apretados = new Set<number>();
+    let apretadoEn = Number.NEGATIVE_INFINITY;
+    let levantadoEn = Number.NEGATIVE_INFINITY;
+    let despues = 0;
+    const DESPUES_DE_SOLTAR = 400;
+    const TOPE_APRETADO = 3000;
+    const quieto = () =>
+      (apretados.size > 0 && performance.now() - apretadoEn < TOPE_APRETADO) ||
+      performance.now() - levantadoEn < DESPUES_DE_SOLTAR;
 
     let ultimo = '';
     const mirar = () => {
@@ -61,6 +83,9 @@ export function usarElChatConElTeclado(caja: RefObject<HTMLElement | null>): Don
         : null;
       const clave = nuevo === null ? '' : `${String(nuevo.arriba)}|${String(nuevo.alto)}`;
       if (clave === ultimo) return;
+      // Salir de escribir mueve el chat entero: con el dedo apretado, todavía no. Entrar
+      // no espera, que es cuando el teclado del iPhone tapa la caja (9 y 10-oct).
+      if (nuevo === null && quieto()) return;
       ultimo = clave;
       setDonde(nuevo);
     };
@@ -84,11 +109,26 @@ export function usarElChatConElTeclado(caja: RefObject<HTMLElement | null>): Don
       mirarUnRato();
     };
 
+    const alApretar = (evento: PointerEvent) => {
+      apretados.add(evento.pointerId);
+      apretadoEn = performance.now();
+    };
+    const alLevantar = (evento: PointerEvent) => {
+      apretados.delete(evento.pointerId);
+      levantadoEn = performance.now();
+      // Lo que se quedó esperando, cuando ya ha pasado el toque entero.
+      window.clearTimeout(despues);
+      despues = window.setTimeout(mirarUnRato, DESPUES_DE_SOLTAR + 20);
+    };
+
     mirar();
     visor.addEventListener('resize', mirarUnRato);
     visor.addEventListener('scroll', mirarUnRato);
     window.addEventListener('focusin', mirarUnRato);
     window.addEventListener('focusout', alSoltar);
+    window.addEventListener('pointerdown', alApretar, true);
+    window.addEventListener('pointerup', alLevantar, true);
+    window.addEventListener('pointercancel', alLevantar, true);
     movil.addEventListener('change', mirar);
     return () => {
       raiz.removeAttribute('data-chat');
@@ -96,8 +136,12 @@ export function usarElChatConElTeclado(caja: RefObject<HTMLElement | null>): Don
       visor.removeEventListener('scroll', mirarUnRato);
       window.removeEventListener('focusin', mirarUnRato);
       window.removeEventListener('focusout', alSoltar);
+      window.removeEventListener('pointerdown', alApretar, true);
+      window.removeEventListener('pointerup', alLevantar, true);
+      window.removeEventListener('pointercancel', alLevantar, true);
       movil.removeEventListener('change', mirar);
       if (fotograma !== 0) window.cancelAnimationFrame(fotograma);
+      window.clearTimeout(despues);
     };
   }, [caja]);
 

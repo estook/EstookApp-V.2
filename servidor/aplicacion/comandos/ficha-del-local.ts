@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { REGIMEN_DEL_TERRITORIO, ACTIVIDADES, TERRITORIOS, TIPOS_DE_LOCAL } from '@estook/dominio';
+import {
+  REGIMEN_DEL_TERRITORIO,
+  ACTIVIDADES,
+  TERRITORIOS,
+  TIPOS_DE_LOCAL,
+  esZonaHoraria,
+} from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion, respondido } from '../alta.ts';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
@@ -97,7 +103,14 @@ export const entradaDondeEsta = z
       .trim()
       .regex(/^[0-9+ ()-]{7,24}$/, 'Ese teléfono no tiene forma de teléfono.')
       .nullable(),
-    zona_horaria: z.string().trim().max(64).optional(),
+    // Con nombre de zona, y de verdad (auditoría del 20-oct): una zona que no existe
+    // dejaba el local sin poder calcular su jornada, y cada pantalla con fecha daba un 500.
+    zona_horaria: z
+      .string()
+      .trim()
+      .max(64)
+      .refine(esZonaHoraria, 'Esa zona horaria no existe. Se escribe así: Europe/Madrid.')
+      .optional(),
     /**
      * `HH:MM`. Es la pregunta «¿a qué hora cierras?», y decide a qué jornada
      * pertenece una venta de madrugada (motor de tiempo, M2).
@@ -128,8 +141,10 @@ export const guardarDondeEsta = comando<EntradaDondeEsta, { localId: string }>({
              poblacion     = ${entrada.poblacion},
              provincia     = ${entrada.provincia},
              telefono      = ${entrada.telefono},
-             zona_horaria  = ${entrada.zona_horaria ?? 'Europe/Madrid'},
-             hora_de_corte = ${entrada.hora_de_corte ?? '05:00'}::time
+             -- Lo que no se manda se queda como está (auditoría del 20-oct): la pantalla
+             -- no manda la zona, y guardar la ficha la devolvía a Madrid.
+             zona_horaria  = coalesce(${entrada.zona_horaria ?? null}, zona_horaria),
+             hora_de_corte = coalesce(${entrada.hora_de_corte ?? null}::time, hora_de_corte)
        where id = ${localId}
     `;
 
@@ -148,7 +163,7 @@ export const guardarDondeEsta = comando<EntradaDondeEsta, { localId: string }>({
       localId,
       // La hora de corte va en el evento porque **cambia a que dia pertenece una
       // venta**, y eso lo tiene que saber todo lo que agregue por jornada.
-      datos: { que: 'donde_esta', hora_de_corte: entrada.hora_de_corte ?? '05:00' },
+      datos: { que: 'donde_esta', hora_de_corte: entrada.hora_de_corte ?? null },
       correlacionId: contexto.correlacionId,
     });
 

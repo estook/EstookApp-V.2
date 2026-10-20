@@ -53,6 +53,7 @@ export type { Centimos } from './dinero.ts';
 // ── M2 · tiempo · la fecha operativa la decide el servidor (regla 10) ─────────
 export {
   CORTE_POR_DEFECTO,
+  esZonaHoraria,
   fechaOperativa,
   horaDeCorte,
   jornadaDe,

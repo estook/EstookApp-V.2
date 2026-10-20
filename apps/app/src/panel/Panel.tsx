@@ -27,6 +27,7 @@ import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
 import { EstookEnTuMovil } from '../sinConexion/EstookEnTuMovil.tsx';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
 import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
+import { Agotados } from '../carta/Agotados.tsx';
 import { InvitacionAlRecorrido } from '../recorrido/ElRecorrido.tsx';
 import { PuestaEnMarcha } from './PuestaEnMarcha.tsx';
 
@@ -68,6 +69,7 @@ export function Panel() {
   const [anadiendo, setAnadiendo] = useState(false);
   const [apuntandoMerma, setApuntandoMerma] = useState(false);
   const [escribiendo, setEscribiendo] = useState(false);
+  const [agotando, setAgotando] = useState(false);
   const [zonaDeAtencion, sinNadaQueAtender] = usarSinNadaDentro<HTMLElement>();
 
   const tienePermiso = (permiso: Permiso) => puedeVer(permisos, permiso);
@@ -83,6 +85,12 @@ export function Panel() {
   // —el camarero que rompe una copa— no tiene la app de Almacén.
   usarQueHacer('merma', () => {
     setApuntandoMerma(true);
+  });
+
+  // «Marcar un agotado» (M10 · 1, 0102): en el Panel por lo mismo que la merma, la
+  // cocina no tiene la app Carta.
+  usarQueHacer('agotado', () => {
+    setAgotando(true);
   });
 
   // Escribir en el Tablón, desde el «+», el buscador o la propia tarjeta (0049).
@@ -256,6 +264,19 @@ export function Panel() {
             setEscribiendo(false);
           }}
         />
+      )}
+      {agotando && (
+        <Hoja
+          abierta
+          titulo="Agotados"
+          alCerrar={() => {
+            setAgotando(false);
+          }}
+        >
+          <div className="pt-e3">
+            <Agotados />
+          </div>
+        </Hoja>
       )}
       <ApuntarMerma
         abierta={apuntandoMerma}

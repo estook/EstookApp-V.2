@@ -3,6 +3,9 @@ import {
   NOMBRE_DEL_ALERGENO,
   type Alergeno,
   type CanalDeVenta,
+  hastaCuandoSeDice,
+  type LoQueCambia,
+  type PlatoLeido,
 } from '@estook/dominio';
 import { comoDinero } from '../almacen/contrato.ts';
 
@@ -55,6 +58,42 @@ export interface UnPlato {
     readonly racion: string | null;
   } | null;
   readonly tieneFicha: boolean;
+  /** Si está agotado ahora (M10 · 1, 0102): hasta cuándo (nulo, sin fecha) y quién. */
+  readonly agotado: ElAgotado | null;
+}
+
+export interface ElAgotado {
+  readonly hasta: string | null;
+  readonly quien: string | null;
+  readonly marcadoEn: string;
+}
+
+/** «Hasta mañana · Sara» o «Sin fecha · Marcos». */
+export function comoSigueAgotado(agotado: ElAgotado): string {
+  const hasta = hastaCuandoSeDice(agotado.hasta === null ? null : new Date(agotado.hasta));
+  return agotado.quien === null ? hasta : `${hasta} · ${agotado.quien}`;
+}
+
+/** `los_agotados`: los platos para marcar agotados, sin un precio (0102). */
+export interface LosAgotados {
+  readonly platos: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly seccion: string | null;
+    readonly agotado: ElAgotado | null;
+  }[];
+  readonly recordatorio: string;
+}
+
+/** `el_equilibrio_de_la_carta` (0102), lo que calcula `equilibrioDeLaCarta`. */
+export type { EquilibrioDeLaCarta, PlatoLeido, LoQueCambia } from '@estook/dominio';
+
+/** `leer_la_carta` (0102). */
+export interface LaCartaLeida {
+  readonly leidos: readonly PlatoLeido[];
+  readonly cambia: LoQueCambia;
+  readonly resumen: string;
+  readonly sinEntender: readonly string[];
 }
 
 /** Los alérgenos que lleva un plato: los de su receta y los puestos a mano. */
@@ -107,6 +146,15 @@ export function queCambio(
   if (cambio.que === 'crear') return ['Lo añadió a la carta'];
   if (cambio.que === 'archivar') return ['Lo archivó'];
   if (cambio.que === 'recuperar') return ['Lo recuperó'];
+  // Los agotados (0102).
+  if (cambio.que === 'agotar') {
+    return [
+      cambio.despues?.['hasta'] === 'sin_fecha'
+        ? 'Lo marcó agotado, sin fecha'
+        : 'Lo marcó agotado',
+    ];
+  }
+  if (cambio.que === 'ya_hay') return ['Dijo que ya hay'];
 
   const antes = cambio.antes ?? {};
   const despues = cambio.despues ?? {};

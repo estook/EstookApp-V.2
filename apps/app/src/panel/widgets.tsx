@@ -46,6 +46,7 @@ import { comoSeLeeLaHora, comoSeLeenMinutos, type FichajesDeHoy } from '../equip
 import { usarComoSeCierra } from '../ganchos/usarComoSeCierra.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { ComprasDeHoy, LoQueViene } from '../compras/contrato.ts';
+import { comoSigueAgotado, type LosAgotados } from '../carta/contrato.ts';
 import {
   TONO_DEL_ESTADO,
   comoSeLeeLaFecha,
@@ -121,6 +122,8 @@ function Cual({
       return <ComprasDeHoyWidget />;
     case 'calendario':
       return <LoQueVieneWidget />;
+    case 'agotados':
+      return <AgotadosWidget />;
     case 'fichajes':
       return <EquipoAhora />;
     case 'mi-turno':
@@ -1009,6 +1012,46 @@ function MisApps() {
 }
 
 // ── Piezas ───────────────────────────────────────────────────────────────────
+
+/**
+ * Lo agotado ahora (M10 · 1, 0102), sin un precio: lo lee también la cocina. Al tocarlo
+ * se abre la hoja de Agotados, para marcar otro o decir que ya hay.
+ */
+function AgotadosWidget() {
+  const consulta = usarLectura<LosAgotados>('los_agotados');
+  const agotados = (consulta.data?.platos ?? []).filter((p) => p.agotado !== null);
+  usarQueEstaVacio(consulta.data === undefined ? undefined : agotados.length === 0);
+
+  return (
+    <Marco
+      titulo="Agotados"
+      leyendo={consulta}
+      ir="/?hacer=agotado"
+      derecha={agotados.length > 0 ? <Contador>{agotados.length}</Contador> : undefined}
+    >
+      {consulta.data === undefined ? (
+        <Cargando que="los agotados" forma="lista" lineas={2} />
+      ) : agotados.length === 0 ? (
+        <Tranquilo>Nada agotado ahora.</Tranquilo>
+      ) : (
+        <ul className="flex flex-col gap-e1">
+          {agotados.slice(0, 4).map((plato) => (
+            <li key={plato.id} className="flex items-baseline gap-e2 py-e1">
+              <span className="min-w-0 flex-1 truncate text-cuerpo font-medium">
+                {plato.nombre}
+              </span>
+              {plato.agotado !== null && (
+                <span className="shrink-0 text-secundario text-texto-suave">
+                  {comoSigueAgotado(plato.agotado)}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Marco>
+  );
+}
 
 function Contador({ children }: { readonly children: ReactNode }) {
   return (

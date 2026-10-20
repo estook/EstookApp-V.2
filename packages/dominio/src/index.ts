@@ -992,3 +992,31 @@ export type {
   QueSeLePide,
   TokensDeUnaLlamada,
 } from './fogon.ts';
+export {
+  HASTA_CUANDO_AGOTADO,
+  hastaCuandoEstaAgotado,
+  hastaCuandoSeDice,
+  sigueAgotado,
+} from './agotado.ts';
+export type { HastaCuandoAgotado } from './agotado.ts';
+export {
+  MAXIMO_DE_PLATOS_POR_SECCION,
+  MINIMO_PARA_JUZGAR,
+  equilibrioDeLaCarta,
+  equilibrioDeUnaSeccion,
+  saltoQueSeAdmite,
+} from './equilibrio.ts';
+export type {
+  EquilibrioDeLaCarta,
+  EquilibrioDeUnaSeccion,
+  PlatoParaElEquilibrio,
+  SeccionParaElEquilibrio,
+} from './equilibrio.ts';
+export {
+  claveDelNombre,
+  compararConLaCarta,
+  leerLasLineas,
+  preciosDelFinal,
+  resumenDeLoQueCambia,
+} from './cartaLeida.ts';
+export type { CartaLeida, LoQueCambia, PlatoDeLaCarta, PlatoLeido } from './cartaLeida.ts';

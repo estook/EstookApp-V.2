@@ -4,6 +4,7 @@ import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 import { losCanalesDelLocal, type UnCanal } from '../canales-del-local.ts';
 import { elLibroDelLocal, elVinculado, laRacionDelVinculo, type ElLibro } from '../escandallos.ts';
+import { losAgotadosDelLocal, type ElAgotado } from '../agotados.ts';
 
 export { losCanalesDelLocal };
 export type { UnCanal };
@@ -58,6 +59,8 @@ export interface UnPlato {
   } | null;
   /** Si ya está desgranado en Escandallos. */
   readonly tieneFicha: boolean;
+  /** Si está agotado ahora, hasta cuándo y quién lo marcó (M10 · 1, 0102). */
+  readonly agotado: ElAgotado | null;
 }
 
 /** «Entrecot de ternera · 300 g», o solo el nombre si es una unidad. */
@@ -120,7 +123,7 @@ export async function losPlatos(
   soloEste: string | null = null,
   libro?: ElLibro,
 ): Promise<readonly UnPlato[]> {
-  const [filas, elLibro] = await Promise.all([
+  const [filas, elLibro, agotados] = await Promise.all([
     contexto.sql<FilaDePlato[]>`
       select p.id, p.seccion_id, p.nombre, p.descripcion, p.precio_centimos,
              p.foto_clave, p.miniatura_clave, p.orden, p.activo, p.version,
@@ -133,6 +136,7 @@ export async function losPlatos(
        order by p.orden, p.nombre
     `,
     libro === undefined ? elLibroDelLocal(contexto, localId, false) : Promise.resolve(libro),
+    losAgotadosDelLocal(contexto, localId),
   ]);
   const firmadas = await firmarLasFotos(
     contexto,
@@ -167,6 +171,7 @@ export async function losPlatos(
               racion: laRacionDelVinculo(vinculado),
             },
       tieneFicha: (receta?.lineas.length ?? 0) > 0,
+      agotado: agotados.get(f.id) ?? null,
     };
   });
 }

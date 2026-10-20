@@ -267,8 +267,9 @@ function Contenido({
     return <Escandallos destino={destino.id} vista={vista?.id ?? ''} />;
   }
 
-  // M9 · 1 (0086): la carta y los canales. Menús y Análisis, M10, caen a su cartel.
-  if (app.id === 'carta' && destino.modulo === undefined) {
+  // M9 · 1 (0086): la carta y los canales; M10 · 1 (0102), los agotados y el
+  // equilibrio. Los menús y las vistas de Análisis que faltan (M10 · 2), a su cartel.
+  if (app.id === 'carta' && destino.modulo === undefined && vista?.modulo === undefined) {
     return <Carta destino={destino.id} vista={vista?.id ?? ''} />;
   }
 

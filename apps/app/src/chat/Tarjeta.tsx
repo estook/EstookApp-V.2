@@ -10,8 +10,8 @@ import {
 import type { TarjetaDelMensaje } from './contrato.ts';
 
 /**
- * Una tarjeta en la conversación (C2 · 0075): un pedido, un producto o el aviso del
- * horario. **Se abre en su sitio**, con los permisos de quien la mira: lo que no puede
+ * Una tarjeta en la conversación (C2 · 0075): un pedido, un producto, el aviso del
+ * horario o un plato agotado (0102). **Se abre en su sitio**, con los permisos de quien la mira: lo que no puede
  * ver, el servidor no lo manda, y aquí solo se dice eso, sin el nombre del proveedor ni
  * el precio.
  */
@@ -44,6 +44,26 @@ export function TarjetaDelChat({ tarjeta }: { readonly tarjeta: TarjetaDelMensaj
           </span>
         </span>
       </button>
+    );
+  }
+
+  // Un agotado (M10 · 1, 0102): dice si sigue agotado, sin llevar a ningún sitio (la
+  // cocina no tiene la app Carta). Se quita en Agotados o en la ficha del plato.
+  if (tarjeta.tipo === 'plato') {
+    if (tarjeta.plato === null) return null;
+    const { nombre, agotado } = tarjeta.plato;
+    return (
+      <span className={caja}>
+        <span
+          className={`grid size-10 shrink-0 place-items-center rounded-medio ${agotado ? 'bg-mal-suave text-mal' : 'bg-bien-suave text-bien'}`}
+        >
+          <IconoCarta size={20} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-secundario font-semibold">{nombre}</span>
+          <Etiqueta tono={agotado ? 'mal' : 'bien'}>{agotado ? 'Agotado' : 'Ya hay'}</Etiqueta>
+        </span>
+      </span>
     );
   }
 

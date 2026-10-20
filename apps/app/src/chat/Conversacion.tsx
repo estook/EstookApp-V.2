@@ -768,7 +768,8 @@ function Burbuja({
             <>
               <Adjunto mensaje={mensaje} />
               {mensaje.tarjeta !== null && <TarjetaDelChat tarjeta={mensaje.tarjeta} />}
-              {mensaje.texto !== null && (
+              {/* El texto de un agotado es el nombre del plato, que ya sale en la tarjeta. */}
+              {mensaje.texto !== null && mensaje.tarjeta?.tipo !== 'plato' && (
                 <p className="whitespace-pre-wrap break-words text-cuerpo">
                   <ConNombres texto={mensaje.texto} personas={personas} />
                 </p>

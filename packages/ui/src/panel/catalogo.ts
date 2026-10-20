@@ -120,6 +120,15 @@ export const WIDGETS: readonly Widget[] = [
     tamano: 'ancho',
   },
   {
+    // M10 · 1 (0102): lo que la sala tiene que saber antes de tomar nota (Roles, 1.4:
+    // el camarero «entra y ve los agotados»). Y desde aquí se marca otro.
+    id: 'agotados',
+    nombre: 'Agotados',
+    queEnsena: 'Lo que se ha acabado hoy, y marcar otro en dos toques',
+    permiso: 'accion.marcar_agotado',
+    tamano: 'ancho',
+  },
+  {
     id: 'calendario',
     nombre: 'Lo que viene',
     queEnsena: 'Hoy y mañana: entregas, caducidades y avisos',
@@ -312,7 +321,9 @@ const DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
   gerente: ['fichar', 'ventas', 'objetivos', 'merma', 'valor-de-la-camara', 'fichajes'],
   jefe: ['fichar', 'objetivos', 'caducidades', 'bajo-minimo', 'pedidos', 'fichajes'],
   cocina: ['fichar', 'mis-horas', 'mi-turno', 'merma', 'caducidades', 'bajo-minimo'],
-  sala: ['fichar', 'mis-horas', 'mi-turno', 'merma', 'calendario', 'mis-apps'],
+  // Los agotados, en vez de «Lo que viene» (M10 · 1, 0102): las entregas y las
+  // caducidades no son de la sala; lo que se ha acabado, sí.
+  sala: ['fichar', 'mis-horas', 'mi-turno', 'agotados', 'merma', 'mis-apps'],
 };
 
 /**
@@ -322,8 +333,8 @@ const DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
 export const SUGERIDOS_DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
   gerente: ['bajo-minimo', 'pedidos', 'caducidades', 'calendario'],
   jefe: ['food-cost', 'calendario'],
-  cocina: ['calendario'],
-  sala: [],
+  cocina: ['agotados', 'calendario'],
+  sala: ['calendario'],
 };
 
 function puesto(id: string): WidgetPuesto {
@@ -445,6 +456,7 @@ export function elCatalogoParaAnadir(
 const DE_QUE_APP: Readonly<Record<string, PermisoDeApp>> = {
   'accion.fichar': 'app.equipo',
   'accion.registrar_merma': 'app.almacen',
+  'accion.marcar_agotado': 'app.carta',
   'dato.ventas': 'app.negocio',
   'dato.precio_de_compra': 'app.almacen',
   'dato.coste_de_personal': 'app.equipo',

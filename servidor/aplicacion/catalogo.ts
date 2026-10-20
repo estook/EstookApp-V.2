@@ -172,6 +172,10 @@ import { miPanel } from './consultas/mi-panel.ts';
 import { lasCaras } from './consultas/las-caras.ts';
 import { laPuestaEnMarcha } from './consultas/la-puesta-en-marcha.ts';
 import { miCarta, unPlato } from './consultas/mi-carta.ts';
+import { losAgotados } from './consultas/agotados.ts';
+import { elEquilibrioDeLaCarta } from './consultas/equilibrio.ts';
+import { marcarAgotado, quitarAgotado } from './comandos/agotados.ts';
+import { leerLaCarta, leerPaginaConFogon } from './comandos/leer-la-carta.ts';
 import {
   laDesviacionDeLosPlatos,
   laFichaEnPdf,
@@ -388,6 +392,10 @@ export const catalogo = {
     [laPuestaEnMarcha.nombre]: laPuestaEnMarcha,
     [miCarta.nombre]: miCarta,
     [unPlato.nombre]: unPlato,
+    // M10 · 1 · La carta que trabaja (0102): los platos para marcar agotados (también
+    // la cocina, sin precios) y el equilibrio de la carta, con Omnes.
+    [losAgotados.nombre]: losAgotados,
+    [elEquilibrioDeLaCarta.nombre]: elEquilibrioDeLaCarta,
     // M9 · 2 · Fichas y escandallos (0087): la lista con «sin ficha», cada ficha con su
     // escandallo a quien ve costes, lo que puede llevar una receta, el PDF sin euros y
     // la desviación de los platos, que se enseña con Estook TPV.
@@ -798,6 +806,12 @@ export const catalogo = {
     [ponerFotoDePlato.nombre]: ponerFotoDePlato,
     [quitarFotoDePlato.nombre]: quitarFotoDePlato,
     [configurarCanal.nombre]: configurarCanal,
+    // M10 · 1 (0102): agotar y que vuelva, y leer tu carta (sin IA, o con Fogón por
+    // página). Leer no cambia nada: se cambia con los comandos de arriba.
+    [marcarAgotado.nombre]: marcarAgotado,
+    [quitarAgotado.nombre]: quitarAgotado,
+    [leerLaCarta.nombre]: leerLaCarta,
+    [leerPaginaConFogon.nombre]: leerPaginaConFogon,
 
     // ── M9 · 2 · Fichas y escandallos (0087) ─────────────────────────────────
     //

@@ -77,6 +77,11 @@ export async function apuntarParaElMovil(
      * móvil—, menos a quien ya le ha llegado su horario, que no lo oye dos veces.
      */
     readonly aTodosMenos?: readonly string[];
+    /**
+     * **Solo a estas personas** (M10 · 1, 0102): un agotado suena en el móvil de quien
+     * está trabajando, no de quien libra. Los demás lo ven al abrir el chat.
+     */
+    readonly soloA?: readonly string[];
   },
 ): Promise<void> {
   // Sin el puerto del móvil encendido, nadie tiene móvil: solo queda el correo.
@@ -84,6 +89,8 @@ export async function apuntarParaElMovil(
   const aTodos = datos.aTodosMenos !== undefined;
   const fuera = comoLista(datos.aTodosMenos ?? []);
   const mencionados = comoLista(datos.mencionados);
+  const conSoloA = datos.soloA !== undefined;
+  const soloA = comoLista(datos.soloA ?? []);
   const apuntados = await enNombreDelSistema(
     contexto,
     () =>
@@ -99,6 +106,7 @@ export async function apuntarParaElMovil(
           from estook.quien_ve_el_canal(${datos.canalId}::uuid) q
          where q.persona_id <> ${datos.autorId}::uuid
            and not q.persona_id = any (${fuera}::text::uuid[])
+           and (not ${conSoloA} or q.persona_id = any (${soloA}::text::uuid[]))
       )
       insert into estook.chat_al_movil (
         persona_id, canal_id, ultimo_id, le_mencionan, movil_desde, creado_en, por_correo

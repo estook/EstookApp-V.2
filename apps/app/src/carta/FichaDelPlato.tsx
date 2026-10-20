@@ -11,10 +11,12 @@ import {
   Cargando,
   Envoltorio,
   ErrorEnCristiano,
+  Etiqueta,
   Interruptor,
   PanelLateral,
   Selector,
   clases,
+  usarDeshacer,
 } from '@estook/ui';
 import {
   IconoBorrar,
@@ -32,6 +34,7 @@ import { FotoQueSePone } from '../fotos/FotoQueSePone.tsx';
 import {
   canalesConPrecio,
   comoSeLeeElCuando,
+  comoSigueAgotado,
   queCambio,
   type CanalDeVenta,
   type ElPlato,
@@ -88,6 +91,7 @@ export function FichaDelPlato({
 
   return (
     <PanelLateral abierta alCerrar={alCerrar} titulo={datos.plato.nombre}>
+      {datos.plato.activo && <ElAgotado plato={datos.plato} />}
       {datos.puedeEditar ? (
         <ParaEditar
           key={datos.plato.version}
@@ -103,6 +107,94 @@ export function FichaDelPlato({
         <ParaMirar datos={datos} carta={carta} />
       )}
     </PanelLateral>
+  );
+}
+
+/**
+ * Agotado o no (M10 · 1, 0102), arriba del todo: es lo primero que se busca en servicio.
+ * Lo marcan sala y cocina; quien no puede, solo lo ve.
+ */
+function ElAgotado({ plato }: { readonly plato: ElPlato['plato'] }) {
+  const { cliente, permisos } = usarSesion();
+  const refrescar = usarRefrescarLaCarta();
+  const { sePuedeDeshacer } = usarDeshacer();
+  const [trabajando, setTrabajando] = useState(false);
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+  const puede = puedeEditar(permisos, 'accion.marcar_agotado');
+
+  async function quitar() {
+    const respuesta = await cliente.ejecutar('quitar_agotado', { plato_id: plato.id });
+    if (!respuesta.ok) setError(respuesta.error);
+    await refrescar();
+  }
+
+  async function agotar(hasta: 'jornada' | 'sin_fecha') {
+    setTrabajando(true);
+    setError(null);
+    const respuesta = await cliente.ejecutar<{ recordatorio: string }>('marcar_agotado', {
+      plato_id: plato.id,
+      hasta,
+    });
+    setTrabajando(false);
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    await refrescar();
+    sePuedeDeshacer({
+      que: `${plato.nombre}, agotado. ${respuesta.datos.recordatorio}`,
+      deshacer: quitar,
+    });
+  }
+
+  if (plato.agotado === null && !puede) return null;
+  return (
+    <div className="mb-e4 flex flex-col gap-e2">
+      {error !== null && <ErrorEnCristiano error={error} />}
+      {plato.agotado !== null ? (
+        <div className="flex flex-wrap items-center gap-e2">
+          <Etiqueta tono="mal">Agotado</Etiqueta>
+          <span className="min-w-0 flex-1 text-secundario text-texto-suave">
+            {comoSigueAgotado(plato.agotado)}
+          </span>
+          {puede && (
+            <Boton
+              tono="secundario"
+              tamano="s"
+              onClick={() => {
+                void quitar();
+              }}
+            >
+              Ya hay
+            </Boton>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center gap-e2">
+          <Boton
+            tono="peligro"
+            tamano="s"
+            cargando={trabajando}
+            textoCargando="Marcando"
+            onClick={() => {
+              void agotar('jornada');
+            }}
+          >
+            Agotado hasta mañana
+          </Boton>
+          <Boton
+            tono="texto"
+            tamano="s"
+            disabled={trabajando}
+            onClick={() => {
+              void agotar('sin_fecha');
+            }}
+          >
+            Sin fecha
+          </Boton>
+        </div>
+      )}
+    </div>
   );
 }
 

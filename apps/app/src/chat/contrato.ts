@@ -63,7 +63,13 @@ export type TarjetaDelMensaje =
       readonly id: string;
       readonly producto: { readonly nombre: string; readonly formato: string | null } | null;
     }
-  | { readonly tipo: 'horario'; readonly lunes: string };
+  | { readonly tipo: 'horario'; readonly lunes: string }
+  | {
+      readonly tipo: 'plato';
+      readonly id: string;
+      /** Si sigue agotado ahora (M10 · 1, 0102): la tarjeta se pone al día sola. */
+      readonly plato: { readonly nombre: string; readonly agotado: boolean } | null;
+    };
 
 /** «Confirmar que lo he leído» (C2 · 0075). */
 export interface ConfirmarElMensaje {

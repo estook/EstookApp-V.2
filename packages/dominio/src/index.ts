@@ -435,6 +435,8 @@ export {
   ticketMedio,
   loQueNoCuadra,
   porcentajeDe,
+  foodCostSinIva,
+  ventasSinImpuesto,
   propuestaDeVentas,
   leerUnCsvDeCierre,
   precioPorUnidad,

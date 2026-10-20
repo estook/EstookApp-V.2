@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { nombreEn } from '../datos/nombreEn.ts';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { NOMBRE_DEL_ORIGEN_DEL_CIERRE, porcentajeDe, ticketMedio } from '@estook/dominio';
+import { NOMBRE_DEL_ORIGEN_DEL_CIERRE, ticketMedio } from '@estook/dominio';
 import {
   Aviso,
   Boton,
@@ -111,8 +111,8 @@ export function Ventas() {
             celda: (c: UnCierre) => (
               <span className="tabular-nums">
                 {comoDinero(c.consumoCentimos)}
-                {(c.consumoCentimos ?? 0) > 0
-                  ? ` · ${(porcentajeDe(c.consumoCentimos ?? 0, c.totalCentimos) ?? 0).toLocaleString('es-ES')} %`
+                {(c.consumoCentimos ?? 0) > 0 && c.foodCost !== null && c.foodCost !== undefined
+                  ? ` · ${c.foodCost.toLocaleString('es-ES')} %`
                   : ''}
               </span>
             ),

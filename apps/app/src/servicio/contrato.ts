@@ -22,6 +22,8 @@ export interface UnCierre {
   readonly cerradoEn: string;
   readonly cuantasLineas: number;
   readonly consumoCentimos?: number | null;
+  /** El food cost de ese día, sin IVA: lo calcula el servidor (auditoría del 20-oct). */
+  readonly foodCost?: number | null;
 }
 
 export interface MisCierres {

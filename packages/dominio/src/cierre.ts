@@ -1,4 +1,5 @@
 import { centimos, type Centimos } from './dinero.ts';
+import { sinIva } from './iva.ts';
 
 /**
  * El cierre de caja (M6½) · con TPV o sin él.
@@ -116,6 +117,31 @@ export function loQueNoCuadra(
   if (partes.every((parte) => parte === null)) return null;
   const suma = partes.reduce((total: number, parte) => total + (parte ?? 0), 0);
   return centimos(suma - totalCentimos);
+}
+
+/**
+ * **El food cost: lo gastado entre lo vendido sin IVA** (0079; Richi, 0099: «food cost
+ * sin IVA»). La caja se guarda con IVA y el género sin él: dividir lo uno entre lo otro
+ * daba, con un 10 %, un food cost un 9 % más bajo del que es. Pasaba en el Panel, en
+ * Servicio y en los semáforos de objetivos; el food cost real (Negocio) ya lo quitaba
+ * (auditoría del 20-oct). `tipo` es el del servicio de restauración del local
+ * (`elTipoDeRestauracion`): sin él, no se sabe.
+ */
+export function foodCostSinIva(
+  consumoCentimos: number,
+  ventasConImpuestoCentimos: number,
+  tipo: number | null,
+): number | null {
+  if (tipo === null || ventasConImpuestoCentimos <= 0) return null;
+  return porcentajeDe(consumoCentimos, sinIva(centimos(ventasConImpuestoCentimos), tipo));
+}
+
+/** Lo vendido sin el impuesto, para los porcentajes. Nulo si no se sabe el tipo. */
+export function ventasSinImpuesto(
+  ventasConImpuestoCentimos: number,
+  tipo: number | null,
+): Centimos | null {
+  return tipo === null ? null : sinIva(centimos(ventasConImpuestoCentimos), tipo);
 }
 
 /**

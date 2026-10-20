@@ -241,3 +241,47 @@ describe('crear cuenta sin una dirección que se entienda', () => {
     expect(elFallo(await pedir(10))).toBe('demasiadas_cuentas');
   });
 });
+
+describe('el food cost, sin IVA en todas partes', () => {
+  /*
+    La caja se guarda con IVA y el género sin él. El food cost real (Negocio) ya le
+    quitaba el IVA a lo vendido (0079), y Richi lo pidió así (0099); el Panel, Servicio
+    y los semáforos de objetivos dividían entre la caja con IVA: con un 10 %, un food
+    cost un 9 % más bajo del que era. 30 € de género para 110 € de caja son un 30 %.
+  */
+  it('30 € de género para 110 € de caja: un 30 % en el Panel y en Servicio', async () => {
+    const vera = await api.entrar('vera@ejemplo.estook.com');
+    const pan = losDatos<{ productoId: string }>(
+      await api.ejecutar(vera, 'crear_producto', {
+        nombre: 'Pan de la auditoría',
+        unidad_de_uso: 'kg',
+        cantidad_inicial: 10,
+        precio_centimos: 300,
+      }),
+    ).productoId;
+    losDatos(await api.ejecutar(vera, 'apuntar_salida', { producto_id: pan, cuanto: 10 }));
+    const cierres = losDatos<{ jornada: string }>(
+      await api.consultar(vera, 'mis_cierres', { dias: '7' }),
+    );
+    losDatos(
+      await api.ejecutar(vera, 'cerrar_la_caja', {
+        fecha: cierres.jornada,
+        total_centimos: 11_000,
+      }),
+    );
+
+    const servicio = losDatos<{
+      foodCost: number | null;
+      cierres: { fecha: string; foodCost?: number | null }[];
+    }>(await api.consultar(vera, 'mis_cierres', { dias: '7' }));
+    expect(servicio.foodCost).toBe(30);
+    expect(servicio.cierres.find((c) => c.fecha === cierres.jornada)?.foodCost).toBe(30);
+
+    const panel = losDatos<{
+      total: number | null;
+      serie: { fecha: string; valor: number | null }[];
+    }>(await api.consultar(vera, 'un_indicador', { indicador: 'food-cost', dias: '7' }));
+    expect(panel.total).toBe(30);
+    expect(panel.serie.at(-1)).toEqual({ fecha: cierres.jornada, valor: 30 });
+  });
+});

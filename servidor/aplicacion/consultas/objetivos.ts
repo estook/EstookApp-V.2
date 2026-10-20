@@ -13,6 +13,7 @@ import {
   type ClaveDeObjetivo,
   type LoQueSeSabeDeLaSemana,
   type ObjetivosVigentes,
+  ventasSinImpuesto as sinElImpuesto,
 } from '@estook/dominio';
 import { LO_QUE_PIDE_EL_OBJETIVO, type Permiso } from '@estook/permisos';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -20,6 +21,7 @@ import { comoLista } from '../listas.ts';
 import { loQuePuede, type LoQuePuede } from '../lo-que-puede.ts';
 import { lasHorasDelEquipo, lasRetribuciones } from './equipo.ts';
 import { laJornada, losDias, type DelDia } from './indicador.ts';
+import { elRelojYElFisco, elTipoDeRestauracion } from '../desviacion.ts';
 
 /**
  * Los objetivos del local y cómo va cada uno esta semana (entrega O, mejora 17).
@@ -284,9 +286,21 @@ async function loQueSeSabe(
     if (merma > 0) masSeTira = await loQueMas(contexto, localId, deAhora, ['merma']);
   }
 
+  // Lo vendido sin IVA, para los porcentajes (auditoría del 20-oct), con el tipo del
+  // servicio de restauración del local, como el food cost real.
+  const tipo =
+    lee.dinero && conCaja.length > 0
+      ? await elTipoDeRestauracion(
+          contexto,
+          await elRelojYElFisco(contexto, localId),
+          fechaOperativa(hasta),
+        )
+      : null;
+
   return {
     diasConCaja: conCaja.length,
     ventas,
+    ventasSinImpuesto: sinElImpuesto(ventas, tipo),
     genero,
     personal,
     sinSalario,

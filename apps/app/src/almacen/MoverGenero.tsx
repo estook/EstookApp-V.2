@@ -6,6 +6,7 @@ import {
   QUE_ES_CADA_FAMILIA,
   QUE_ES_CADA_SALIDA,
   esMerma,
+  noPareceLoQueHay,
   esVenta,
   losDeLaFamilia,
   partidaDe,
@@ -148,7 +149,12 @@ function ElFormulario({
   const porMedida = grande !== null && medida === grande ? 1000 : 1;
   const numero = Number(cuanto.replace(',', '.'));
   const hayNumero = cuanto.trim() !== '' && Number.isFinite(numero);
-  const enUnidadesDeUso = como === 'formatos' ? numero * producto.factor : numero * porMedida;
+  // **«¿No cuadra?» cuenta siempre en kilos, litros o unidades, nunca en cajas** (20-oct).
+  // Su hoja no enseña «Cómo lo cuentas», pero `como` arrancaba en «por envases» en los
+  // productos con caja: Richi escribió 50 kg de contramuslos y se guardaron 50 cajas de
+  // 5 kg, 250 kg. «Ha salido género» sí enseña el selector, y por eso restaba bien.
+  const enEnvases = que !== 'ajuste' && como === 'formatos';
+  const enUnidadesDeUso = enEnvases ? numero * producto.factor : numero * porMedida;
   /** El selector de kilos o gramos, para los campos que cuentan en la unidad de uso. */
   const laMedida =
     grande === null
@@ -179,6 +185,12 @@ function ElFormulario({
   // que no se ofrece confirmarlo, se dice que no se puede.
   const esUnaMerma = que === 'salida' && esMerma(porQue);
   const confirmado = !esUnaMerma && confirmadoPara === enUnidadesDeUso;
+  // Y al corregir, si lo nuevo no parece lo que hay (cinco veces más, o lo de antes por
+  // la caja), se pregunta antes de guardarlo.
+  const raroAlCorregir =
+    que === 'ajuste' && hayNumero
+      ? noPareceLoQueHay(enUnidadesDeUso, hayAhora, producto.factor)
+      : null;
   const puedeTocarPrecios = puedeEditar(permisos, 'dato.precio_de_compra');
   const precioDistinto = precio !== null && deLaLista !== null && precio !== deLaLista;
   const queEsEstaSalida = QUE_ES_CADA_SALIDA[porQue];
@@ -188,6 +200,7 @@ function ElFormulario({
     (que === 'ajuste' ? numero >= 0 && nota.trim() !== '' : numero > 0) &&
     (que !== 'salida' || !queEsEstaSalida.pideNota || nota.trim() !== '') &&
     (!pasaDeLoQueHay || confirmado) &&
+    (raroAlCorregir === null || confirmado) &&
     !guardando;
 
   async function guardar() {
@@ -228,8 +241,8 @@ function ElFormulario({
         : que === 'entrada'
           ? {
               producto_id: producto.id,
-              cuanto: Math.abs(como === 'formatos' ? numero : enUnidadesDeUso),
-              como,
+              cuanto: Math.abs(enEnvases ? numero : enUnidadesDeUso),
+              como: enEnvases ? 'formatos' : 'unidades_de_uso',
               precio_centimos: precio,
               ...(lote.trim() === '' ? {} : { lote: lote.trim() }),
               ...(caduca === '' ? {} : { caduca_el: caduca }),
@@ -237,8 +250,8 @@ function ElFormulario({
             }
           : {
               producto_id: producto.id,
-              cuanto: Math.abs(como === 'formatos' ? numero : enUnidadesDeUso),
-              como,
+              cuanto: Math.abs(enEnvases ? numero : enUnidadesDeUso),
+              como: enEnvases ? 'formatos' : 'unidades_de_uso',
               por_que: porQue,
               // Cómo se llama cada porqué lo escribe el servidor desde el mismo
               // catálogo: aquí solo viaja la nota, que es lo que ha escrito una
@@ -347,6 +360,36 @@ function ElFormulario({
                 setCuanto(e.currentTarget.value);
               }}
             />
+            {/* Lo que va a quedar, dicho antes de guardar: «50 kg» no puede acabar en 250. */}
+            {hayNumero && numero >= 0 && raroAlCorregir === null && (
+              <p aria-live="polite" className="text-secundario text-texto-suave">
+                Pasa de {conUnidadDeUso(hayAhora, producto.unidadDeUso)} a{' '}
+                <strong className="text-texto">
+                  {conUnidadDeUso(enUnidadesDeUso, producto.unidadDeUso)}
+                </strong>
+                .
+              </p>
+            )}
+            {raroAlCorregir !== null && (
+              <>
+                <Aviso
+                  tono="atencion"
+                  titulo={`¿De verdad hay ${conUnidadDeUso(enUnidadesDeUso, producto.unidadDeUso)}?`}
+                >
+                  Ahora constan {conUnidadDeUso(hayAhora, producto.unidadDeUso)}.{' '}
+                  {raroAlCorregir === 'envases'
+                    ? `Es justo lo de antes por ${producto.formato?.toLowerCase() ?? 'el envase'}: aquí se escribe lo que hay, no cuántas cajas.`
+                    : 'Es cinco veces más o más. Mira la cifra y si está en kilos o en gramos.'}
+                </Aviso>
+                <Interruptor
+                  etiqueta="Sí, hay eso"
+                  puesto={confirmado}
+                  alCambiar={(puesto) => {
+                    setConfirmadoPara(puesto ? enUnidadesDeUso : null);
+                  }}
+                />
+              </>
+            )}
             <Campo
               etiqueta="Por qué no cuadraba"
               obligatorio

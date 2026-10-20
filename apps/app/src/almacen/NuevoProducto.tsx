@@ -89,6 +89,7 @@ export function NuevoProducto({
   preciosConIva,
   territorio,
   codigo = null,
+  nombreDeEntrada = '',
 }: {
   readonly abierta: boolean;
   readonly alCerrar: () => void;
@@ -106,10 +107,15 @@ export function NuevoProducto({
    * que propone Open Food Facts.
    */
   readonly codigo?: string | null;
+  /**
+   * Lo que ya se escribió en otro sitio: el ingrediente de un escandallo que no está en
+   * el Almacén (20-oct). Se busca en el catálogo nada más abrir.
+   */
+  readonly nombreDeEntrada?: string;
 }) {
   const { cliente } = usarSesion();
 
-  const [texto, setTexto] = useState('');
+  const [texto, setTexto] = useState(nombreDeEntrada);
   const [elegida, setElegida] = useState<ReferenciaDelCatalogo | null>(null);
   const [aMano, setAMano] = useState(false);
   const [guardando, setGuardando] = useState(false);

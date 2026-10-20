@@ -6,6 +6,7 @@ import {
   CAMARA_VACIA,
   DIAS_MINIMOS_PARA_PREDECIR,
   ajusteHasta,
+  noPareceLoQueHay,
   avisa,
   comoEsta,
   comoHaCambiado,
@@ -21,6 +22,7 @@ import {
   urgenciaDe,
   type Movimiento,
 } from './almacen.ts';
+import { comoSaleElCoste } from './referencia.ts';
 
 /**
  * El motor de inventario (M6).
@@ -121,6 +123,27 @@ describe('el libro de movimientos', () => {
 
   it('y un ajuste que no cambia nada no se apunta', () => {
     expect(ajusteHasta(cantidad(4), cantidad(4))).toBeNull();
+  });
+});
+
+describe('lo contado que no parece lo que hay (20-oct)', () => {
+  it('el chuletón del 17-oct: 89 kg escritos en «Caja» de 28 kg son 2.492 kg', () => {
+    expect(noPareceLoQueHay(2492, 89, 28)).toBe('envases');
+  });
+
+  it('la cerveza del 17-oct: 35.000 l donde había 694 (barril de 50 l)', () => {
+    expect(noPareceLoQueHay(35000, 694, 50)).toBe('envases');
+  });
+
+  it('los contramuslos del 20-oct: 250 kg donde había 20', () => {
+    expect(noPareceLoQueHay(250000, 20000, 5000)).toBe('mucho');
+  });
+
+  it('lo normal no se pregunta: un poco más, un poco menos, o nada antes', () => {
+    expect(noPareceLoQueHay(50000, 20000, 5000)).toBeNull();
+    expect(noPareceLoQueHay(3, 10, 6)).toBeNull();
+    expect(noPareceLoQueHay(12, 0, 6)).toBeNull();
+    expect(noPareceLoQueHay(0, 10, 6)).toBeNull();
   });
 });
 
@@ -406,6 +429,24 @@ describe('lo que pesa cada día de la semana (R2 · 0053)', () => {
     // Hacia atrás o el mismo día, nada.
     expect(gastoEntre(3, pesos, fechaOperativa('2026-10-05'), fechaOperativa('2026-10-02'))).toBe(
       0,
+    );
+  });
+});
+
+describe('cómo sale el coste, dicho (20-oct)', () => {
+  it('la maceta de albahaca no dice «te quedan unos 0 ud»', () => {
+    expect(
+      comoSaleElCoste({ formato: 'Maceta', factor: 1, unidadDeUso: 'ud', rendimiento: 0.5 }),
+    ).toBe('Maceta = 1 ud, y al limpiarlo se pierde en torno al 50 %: te quedan unos 0,5 ud.');
+    expect(
+      comoSaleElCoste({
+        formato: 'Caja de 5 kg',
+        factor: 5000,
+        unidadDeUso: 'g',
+        rendimiento: 0.85,
+      }),
+    ).toBe(
+      'Caja de 5 kg = 5000 g, y al limpiarlo se pierde en torno al 15 %: te quedan unos 4250 g.',
     );
   });
 });

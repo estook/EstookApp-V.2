@@ -148,15 +148,28 @@ export function nombreDeZona(zona: string | null): string {
 // ── Contar como está en la estantería ────────────────────────────────────────
 
 /**
- * Si un producto se cuenta en cajas y sueltas: tiene envase, el envase trae más de
- * una unidad y no va a peso variable (una caja de merluza no pesa lo mismo que otra).
+ * Si un producto se cuenta en cajas y sueltas: **se cuenta por unidades**, tiene envase,
+ * el envase trae más de una y no va a peso variable (una caja de merluza no pesa lo
+ * mismo que otra). Las latas en caja de 24: «3 cajas y 5 sueltas».
+ *
+ * **Lo que va por peso o volumen, no** (20-oct): en el inventario del 17-oct alguien
+ * escribió los litros de cerveza en la casilla «Barril» (700 barriles de 50 l, 35.000 l)
+ * y los kilos de chuletón en «Caja» (89 cajas de 28 kg, 2.492 kg). En la cámara la carne
+ * se pesa y el barril empezado se mide en litros: una casilla, en kilos o litros.
  */
 export function seCuentaEnCajas(p: {
   readonly formato: string | null;
   readonly factor: number;
   readonly pesoVariable: boolean;
+  readonly unidadDeUso: string;
 }): boolean {
-  return p.formato !== null && p.formato.trim() !== '' && p.factor > 1 && !p.pesoVariable;
+  return (
+    p.unidadDeUso === 'ud' &&
+    p.formato !== null &&
+    p.formato.trim() !== '' &&
+    p.factor > 1 &&
+    !p.pesoVariable
+  );
 }
 
 /** Lo que se ha escrito de un producto: en una casilla, o en cajas y sueltas. */

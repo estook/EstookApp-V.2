@@ -700,10 +700,13 @@ test('si el jefe de cocina dice que hay 4, hay 4', async ({ page, request }) => 
   // la propia cifra, que es donde alguien nota que no cuadra.
   await expect(page.getByRole('button', { name: 'Ajustar lo que hay' })).toHaveCount(0);
   await page.getByRole('button', { name: '¿No cuadra lo que hay? Corrígelo' }).click();
-  // En kilos, de entrada (19-oct): «hay 4» son 4 kg, no 4 gramos.
+  // En kilos, de entrada (19-oct): «hay 4» son 4 kg, no 4 gramos. **Y no 4 sacos**
+  // (20-oct): con caja, la hoja guardaba 4 × 10 kg, y esta prueba no miraba la cifra.
   await page.getByRole('spinbutton', { name: /^Cuánto hay de verdad/ }).fill('4');
+  await expect(page.getByText(/Pasa de 10\skg a\s4\skg/)).toBeVisible();
   await page.getByLabel('Por qué no cuadraba').fill('Se rompió un saco');
   await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+  await expect(page.getByText(/Quedan 4\skg/)).toBeVisible();
 
   // Lo que dice la persona es lo que hay, y queda apuntado con su motivo: nadie
   // se queda bloqueado por cuadrar.

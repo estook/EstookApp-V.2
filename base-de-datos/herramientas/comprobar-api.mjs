@@ -930,7 +930,9 @@ try {
       ) as categorias_de_serie,
       (
         select count(*)::int from estook.movimiento_de_stock m
-         where m.cantidad = 0
+         -- Menos el «revalorado» de la 0076, que es de cero a propósito: cambia lo que
+         -- vale lo que hay sin cambiar cuánto hay (0099). Salía MAL desde el 20-oct.
+         where m.cantidad = 0 and not (m.tipo = 'ajuste' and m.origen = 'revalorar')
       ) as movimientos_vacios
     `;
 

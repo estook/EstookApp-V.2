@@ -15,6 +15,8 @@ import {
   queCambioEnLaReceta,
   seLlevaASiMisma,
   unidadesQueSirven,
+  enLaUnidadDelProducto,
+  unidadesDelProducto,
   comoSeLeeEscalada,
   costeAproximado,
   elProductoQueSeParece,
@@ -111,6 +113,45 @@ describe('las unidades', () => {
     expect(convertir(2, 'ud', 'g')).toBeNull();
     expect(unidadesQueSirven('kg')).toEqual(['g', 'kg']);
     expect(unidadesQueSirven('ud')).toEqual(['ud']);
+  });
+
+  it('la albahaca en bandejas de 200 g se escribe en gramos (20-oct)', () => {
+    // Richi: «en el aceite de albahaca me pide unidades, cuando la albahaca no se mide
+    // en unidades». Se cuenta en bandejas, pero cada una trae 200 g.
+    const albahaca = { unidad: 'ud' as const, contenido: { cantidad: 200, unidad: 'g' as const } };
+    expect(unidadesDelProducto(albahaca)).toEqual(['g', 'kg', 'ud']);
+    expect(enLaUnidadDelProducto(200, 'g', albahaca)).toBe(1);
+    expect(enLaUnidadDelProducto(0.05, 'kg', albahaca)).toBeCloseTo(0.25);
+    expect(enLaUnidadDelProducto(3, 'ud', albahaca)).toBe(3);
+    // Sin decir lo que trae, no se adivina: ni gramos ni mililitros.
+    expect(unidadesDelProducto({ unidad: 'ud' })).toEqual(['ud']);
+    expect(enLaUnidadDelProducto(200, 'g', { unidad: 'ud' })).toBeNull();
+    expect(enLaUnidadDelProducto(200, 'ml', albahaca)).toBeNull();
+    // Y lo de siempre sigue igual.
+    expect(enLaUnidadDelProducto(280, 'g', { unidad: 'kg' })).toBeCloseTo(0.28);
+  });
+
+  it('el aceite de albahaca cuesta lo de sus gramos de albahaca', () => {
+    // Caja de 5 bandejas de 200 g a 6,80 €: 1,36 € la bandeja. 200 g son una bandeja.
+    const ALBAHACA: ProductoDelEscandallo = {
+      id: 'albahaca',
+      nombre: 'Albahaca fresca',
+      unidad: 'ud',
+      contenido: { cantidad: 200, unidad: 'g' },
+      costeMilesimas: 136_000,
+      alergenos: [],
+    };
+    const receta = costeDeLaReceta(
+      [linea({ productoId: 'albahaca' }, 200, 'g')],
+      libro([ALBAHACA]),
+    );
+    expect(receta.faltanPrecios).toBe(0);
+    expect(aCentimos(receta.milesimas ?? 0)).toBe(136);
+    const debia = loQueDebiaGastarse(
+      [{ lineas: [linea({ productoId: 'albahaca' }, 100, 'g')], raciones: 4 }],
+      libro([ALBAHACA]),
+    );
+    expect(debia.get('albahaca')).toBe(2);
   });
 
   it('se leen como se dicen', () => {

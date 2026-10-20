@@ -201,10 +201,14 @@ export async function losProductosDeLasFichas(
           activo: boolean;
           categoria: string | null;
           coste: string | null;
+          contenido: string | null;
+          unidad_del_contenido: UnidadDeUso | null;
         }[]
       >`
         select p.id, p.nombre, p.unidad_de_uso::text as unidad_de_uso, p.alergenos, p.activo,
                c.nombre as categoria,
+               p.contenido_por_unidad::text as contenido,
+               p.unidad_del_contenido::text as unidad_del_contenido,
                -- Lo pagado por cada unidad en bruto, entre lo que se aprovecha (0099): el
                -- plato lleva gramos limpios. La cámara se valora sin dividir.
                round(coalesce(nullif(e.coste_milesimas, 0), v.coste_milesimas)
@@ -229,10 +233,14 @@ export async function losProductosDeLasFichas(
           activo: boolean;
           categoria: string | null;
           coste: null;
+          contenido: string | null;
+          unidad_del_contenido: UnidadDeUso | null;
         }[]
       >`
         select p.id, p.nombre, p.unidad_de_uso::text as unidad_de_uso, p.alergenos, p.activo,
-               c.nombre as categoria, null as coste
+               c.nombre as categoria, null as coste,
+               p.contenido_por_unidad::text as contenido,
+               p.unidad_del_contenido::text as unidad_del_contenido
           from estook.producto p
           left join estook.categoria_de_producto c on c.id = p.categoria_id
          where p.local_id = ${localId}::uuid
@@ -246,6 +254,11 @@ export async function losProductosDeLasFichas(
     activo: f.activo,
     categoria: f.categoria,
     costeMilesimas: f.coste === null ? null : Number(f.coste),
+    // Lo que trae cada unidad (200 g la bandeja): deja escribir la receta en gramos.
+    contenido:
+      f.contenido === null || f.unidad_del_contenido === null
+        ? null
+        : { cantidad: Number(f.contenido), unidad: f.unidad_del_contenido },
   }));
 }
 

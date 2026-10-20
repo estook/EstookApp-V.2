@@ -95,7 +95,11 @@ export function comoSaleElCoste(referencia: {
   // `Math.trunc` y no `Math.round`: esto es una frase explicativa —«te quedan
   // unos 4.250 ml»— y la regla 9 reserva `Math.round` a los motores de dinero.
   // Un gramo arriba o abajo en un texto que ya dice «en torno al» no cambia nada.
-  const utiles = Math.trunc(factor * rendimiento);
+  // Con poco dentro, con dos decimales: la maceta de albahaca (1 ud al 50 %) decía
+  // «te quedan unos 0 ud» (20-oct). Lo de siempre, entero.
+  const sinDecimales = factor * rendimiento;
+  const utiles =
+    sinDecimales >= 10 ? Math.trunc(sinDecimales) : Math.trunc(sinDecimales * 100) / 100;
   const merma = Math.trunc((1 - rendimiento) * 100);
   return (
     `${formato} = ${cuantas}, y al limpiarlo se pierde en torno al ${merma} %: ` +

@@ -235,8 +235,12 @@ export async function losDias(
 
     case 'compras':
       // Lo que entró, a lo que costó al entrar. Si una entrada no trae coste
-      // —género de un regalo, un ajuste de alta—, a su coste medio, que es lo que
-      // hace el valor de la cámara con lo mismo.
+      // —género de un regalo—, a su coste medio, que es lo que hace el valor de la
+      // cámara con lo mismo.
+      //
+      // **Lo que había al dar de alta un producto no es una compra** (20-oct): es lo
+      // que ya estaba en la cámara. Se contaba, y al dar de alta veinte productos la
+      // semana parecía de compras. Cuentan lo recibido a mano y los albaranes.
       filas = await sql<Fila[]>`
         select to_char(m.fecha_operativa, 'YYYY-MM-DD') as fecha,
                sum(round(m.cantidad * coalesce(nullif(m.coste_milesimas, 0), m.coste_medio_despues) / 1000))::text as arriba,
@@ -245,6 +249,7 @@ export async function losDias(
           join estook.producto p on p.id = m.producto_id
          where m.local_id = ${localId}
            and m.tipo = 'entrada'
+           and m.origen <> 'alta'
            and m.cantidad > 0
            and not p.es_ejemplo
            and m.fecha_operativa between ${desde}::date and ${hasta}::date
@@ -457,6 +462,12 @@ async function laCamara(
 ): Promise<Calculado> {
   const todas = [...deAntes, ...deAhora];
   const primera = todas[0] ?? jornada;
+  // **La foto de hoy es lo que hay ahora** (20-oct), como Almacén: si una línea lleva una
+  // fecha posterior —la 0076 apuntó «Revalorado» con el día del calendario a la 1:43,
+  // cuando la jornada de IKATZ aún era la del 19—, cuenta en la de hoy. Antes se quedaba
+  // fuera y la tarjeta decía 2.065,60 € con 2.616,71 € de verdad. En un
+  // informe de días ya cerrados (`jornada` en el pasado), no: es lo que había ese día.
+  const esHoy = jornada >= fechaOperativa(await laJornada(contexto, localId));
 
   const productos = await contexto.sql<
     {
@@ -502,10 +513,11 @@ async function laCamara(
       from (
         select m.*,
                case when m.fecha_operativa < ${primera}::date then null
+                    when m.fecha_operativa > ${jornada}::date then ${jornada}::text
                     else to_char(m.fecha_operativa, 'YYYY-MM-DD') end as dia
           from estook.movimiento_de_stock m
          where m.local_id = ${localId}
-           and m.fecha_operativa <= ${jornada}::date
+           and (m.fecha_operativa <= ${jornada}::date or ${esHoy})
       ) m
      order by m.producto_id, dia, m.id desc
   `;

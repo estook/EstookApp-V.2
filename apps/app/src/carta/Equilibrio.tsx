@@ -46,9 +46,17 @@ function UnaSeccion({ seccion }: { readonly seccion: EquilibrioDeUnaSeccion }) {
               <Proporcion
                 titulo={`Los platos de ${seccion.nombre} por franja de precio`}
                 trozos={[
-                  { que: 'baratos', cuantos: seccion.franjas.baja, tono: 'info' },
+                  {
+                    que: seccion.franjas.baja === 1 ? 'barato' : 'baratos',
+                    cuantos: seccion.franjas.baja,
+                    tono: 'info',
+                  },
                   { que: 'en medio', cuantos: seccion.franjas.media, tono: 'bien' },
-                  { que: 'caros', cuantos: seccion.franjas.alta, tono: 'marca' },
+                  {
+                    que: seccion.franjas.alta === 1 ? 'caro' : 'caros',
+                    cuantos: seccion.franjas.alta,
+                    tono: 'marca',
+                  },
                 ]}
               />
             )}

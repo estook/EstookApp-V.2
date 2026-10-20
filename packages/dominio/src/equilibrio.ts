@@ -1,4 +1,5 @@
 import { centimos, conSimbolo } from './dinero.ts';
+import { plural } from './textos.ts';
 
 /**
  * El equilibrio de la carta (M10 · 1, decisión 0102; Manifiesto, cap. 14).
@@ -131,7 +132,7 @@ export function equilibrioDeUnaSeccion(seccion: SeccionParaElEquilibrio): Equili
           ? 'casi todo es caro: el cliente se asusta o pide lo más barato'
           : 'hay platos baratos y caros, y pocos en medio';
     avisos.push(
-      `${String(franjas.baja)} baratos, ${String(franjas.media)} en medio y ${String(franjas.alta)} caros: ${lado}. Lo normal es que la franja media tenga al menos tantos como las otras dos juntas.`,
+      `${plural(franjas.baja, 'barato', 'baratos')}, ${String(franjas.media)} en medio y ${plural(franjas.alta, 'caro', 'caros')}: ${lado}. Lo normal es que la franja media tenga al menos tantos como las otras dos juntas.`,
     );
   }
 

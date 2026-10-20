@@ -401,6 +401,7 @@ export const GRUPO_DEL_WIDGET: Readonly<Record<string, GrupoDeWidget>> = {
   'bajo-minimo': 'atender',
   caducidades: 'atender',
   pedidos: 'atender',
+  agotados: 'atender',
   calendario: 'atender',
   ventas: 'cifras',
   objetivos: 'cifras',

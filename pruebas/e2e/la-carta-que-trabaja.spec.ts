@@ -1,7 +1,7 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
-import { APP } from './en-la-app.ts';
+import { API, APP } from './en-la-app.ts';
 
 /**
  * M10 · 1 · La carta que trabaja (decisión 0102), en la pantalla y con una cuenta nueva:
@@ -98,6 +98,53 @@ test('agotados, leer tu carta en PDF y el equilibrio', async ({ page, request },
   await expect(page.getByRole('heading', { name: 'Una sección que mirar' })).toBeVisible();
   await expect(page.getByText(/franja media/).first()).toBeVisible();
 });
+
+test('una foto de la carta la lee Fogón, y Estook propone lo mismo', async ({
+  page,
+  request,
+}, info) => {
+  test.slow();
+  const correo = `m10-foto-${unico(info)}@correo-de-prueba.com`;
+  await cuentaNueva(page, request, correo, 'Bar Foto');
+  await pagarEsencial(page);
+  await sinElAlta(page);
+  const encendido = await request.get(
+    `${API}/pruebas/fogon?encendido=1&correo=${encodeURIComponent(correo)}`,
+  );
+  expect(encendido.status()).toBe(200);
+
+  await abrirSinQueSeCaiga(page, `${APP}#/carta/carta/por-secciones?hacer=leer`);
+  const leer = page.getByRole('dialog', { name: 'Leer tu carta' });
+  await leer.getByLabel('El PDF o las fotos de tu carta').setInputFiles(await unaFoto(page));
+  // El Fogón de pruebas pasa la foto a cinco líneas: dos secciones y tres platos.
+  await expect(leer.getByRole('heading', { name: '3 platos nuevos' })).toBeVisible({
+    timeout: 20_000,
+  });
+  await leer.getByRole('button', { name: 'Actualizar tu carta (3)' }).click();
+  await expect(leer.getByText('Hecho: 3 añadidos.')).toBeVisible({ timeout: 20_000 });
+  await leer.getByRole('button', { name: 'Listo' }).click();
+  await expect(
+    page.getByRole('list', { name: 'Postres' }).getByText('Tarta de queso'),
+  ).toBeVisible();
+});
+
+/** Una foto de verdad (un JPEG que el navegador sabe abrir), hecha en la página. */
+async function unaFoto(page: Page): Promise<{ name: string; mimeType: string; buffer: Buffer }> {
+  const base64 = await page.evaluate(() => {
+    const lienzo = document.createElement('canvas');
+    lienzo.width = 320;
+    lienzo.height = 240;
+    const pincel = lienzo.getContext('2d');
+    if (pincel !== null) {
+      pincel.fillStyle = '#ffffff';
+      pincel.fillRect(0, 0, 320, 240);
+      pincel.fillStyle = '#000000';
+      pincel.fillText('ENTRANTES · Gildas 3,50', 10, 40);
+    }
+    return lienzo.toDataURL('image/jpeg', 0.9).split(',')[1] ?? '';
+  });
+  return { name: 'carta.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(base64, 'base64') };
+}
 
 /**
  * Una carta en PDF de verdad, escrita a mano: el nombre a la izquierda y el precio

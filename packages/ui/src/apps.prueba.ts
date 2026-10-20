@@ -351,8 +351,12 @@ describe('lo construido y lo que llega', () => {
     ]);
   });
 
-  it('la Carta tiene su carta y sus canales construidos (M9 · 1, 0086)', () => {
-    expect(destinosConstruidos(laApp('carta')).map((d) => d.id)).toEqual(['carta', 'canales']);
+  it('la Carta tiene su carta y sus canales (M9 · 1, 0086), y el Análisis con su equilibrio (M10 · 1, 0102)', () => {
+    expect(destinosConstruidos(laApp('carta')).map((d) => d.id)).toEqual([
+      'carta',
+      'canales',
+      'analisis',
+    ]);
   });
 
   it('Equipo tiene sus cuatro destinos construidos, y el horario no es uno de ellos', () => {

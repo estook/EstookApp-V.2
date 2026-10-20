@@ -137,8 +137,9 @@ export function LaCarta({ vista }: { readonly vista: string }) {
           >
             Nueva sección
           </Boton>
+          {/* Más ligero que los de al lado: se usa una vez, al empezar o al cambiar la carta. */}
           <Boton
-            tono="secundario"
+            tono="texto"
             icono={<IconoDocumento size={18} />}
             onClick={() => {
               setLeyendo(true);

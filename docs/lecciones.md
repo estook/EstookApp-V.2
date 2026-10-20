@@ -846,3 +846,7 @@
      el agotado volvía a las 05:00 y Bar Centro corta a las 03:00 (0096): la prueba falló y el
      código estaba bien. La hora de corte, la zona y el régimen se leen de la semilla, no se
      suponen (0102).
+215. **El orden de un catálogo es parte de lo que se ve.** Puse «Leer tu carta» arriba del
+     catálogo de acciones, y la ventana de Fogón, que enseña las cuatro primeras del Panel,
+     dejó de ofrecer «Ver qué hay que atender»: lo cazó su prueba de pantalla. Una acción
+     nueva va donde le toca en el día (las de cada día, primero), no donde se escribe (0102).

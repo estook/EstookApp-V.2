@@ -85,7 +85,7 @@ export function Agotados() {
     setBuscado('');
     await refrescar();
     sePuedeDeshacer({
-      que: `${nombre}, agotado. ${respuesta.datos.recordatorio}`,
+      que: `${nombre}, agotado`,
       deshacer: () => quitar(id),
     });
   }
@@ -119,7 +119,7 @@ export function Agotados() {
     ...(p.seccion === null ? {} : { detalle: p.seccion }),
     derecha: (
       <Boton
-        tono="peligro"
+        tono="secundario"
         tamano="s"
         cargando={trabajando === p.id}
         textoCargando="Marcando"
@@ -144,6 +144,11 @@ export function Agotados() {
             <p className="px-e3 py-e2 text-secundario text-texto-suave">Nada agotado ahora.</p>
           }
         />
+        {/* Estook aún no está conectado al TPV ni a las plataformas: se recuerda aquí,
+            a la vista mientras haya algo agotado (en la barra de deshacer no cabía). */}
+        {agotados.length > 0 && (
+          <p className="px-e3 pt-e2 text-secundario text-atencion">{datos.recordatorio}</p>
+        )}
       </Tarjeta>
 
       <Tarjeta titulo="Marcar uno">

@@ -114,16 +114,6 @@ export const ACCIONES: readonly Accion[] = [
     ir: '/carta/carta/por-secciones?hacer=nuevo',
   },
   {
-    // M10 · 1 (0102): el PDF o las fotos de la carta, y Estook dice qué cambia.
-    id: 'leer-la-carta',
-    app: 'carta',
-    nombre: 'Leer tu carta',
-    queHace: 'Del PDF o las fotos de tu carta: platos nuevos y precios distintos',
-    icono: IconoDocumento,
-    permiso: { cual: 'app.carta', como: 'editar' },
-    ir: '/carta/carta/por-secciones?hacer=leer',
-  },
-  {
     // Era «Nueva elaboración» (0087); sin elaboraciones desde el 16-oct (0090), lo que
     // se hace en Escandallos es desgranar los platos de la carta.
     id: 'desgranar-un-plato',
@@ -257,6 +247,17 @@ export const ACCIONES: readonly Accion[] = [
     icono: IconoAtencion,
     permiso: { cual: 'accion.marcar_agotado', como: 'editar' },
     ir: '/?hacer=agotado',
+  },
+  {
+    // M10 · 1 (0102), después de lo de cada día (la ventana de Fogón enseña las cuatro
+    // primeras): el PDF o las fotos de la carta, y Estook dice qué cambia.
+    id: 'leer-la-carta',
+    app: 'carta',
+    nombre: 'Leer tu carta',
+    queHace: 'Del PDF o las fotos de tu carta: platos nuevos y precios distintos',
+    icono: IconoDocumento,
+    permiso: { cual: 'app.carta', como: 'editar' },
+    ir: '/carta/carta/por-secciones?hacer=leer',
   },
   {
     // Entrega O · contar lo que hay. Es lo que cierra el día de un jefe de cocina, y

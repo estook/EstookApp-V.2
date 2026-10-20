@@ -120,6 +120,7 @@ function ElAgotado({ plato }: { readonly plato: ElPlato['plato'] }) {
   const { sePuedeDeshacer } = usarDeshacer();
   const [trabajando, setTrabajando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
+  const [recordatorio, setRecordatorio] = useState<string | null>(null);
   const puede = puedeEditar(permisos, 'accion.marcar_agotado');
 
   async function quitar() {
@@ -142,9 +143,10 @@ function ElAgotado({ plato }: { readonly plato: ElPlato['plato'] }) {
     }
     await refrescar();
     sePuedeDeshacer({
-      que: `${plato.nombre}, agotado. ${respuesta.datos.recordatorio}`,
+      que: `${plato.nombre}, agotado`,
       deshacer: quitar,
     });
+    setRecordatorio(respuesta.datos.recordatorio);
   }
 
   if (plato.agotado === null && !puede) return null;
@@ -167,6 +169,9 @@ function ElAgotado({ plato }: { readonly plato: ElPlato['plato'] }) {
             >
               Ya hay
             </Boton>
+          )}
+          {recordatorio !== null && (
+            <p className="w-full text-secundario text-atencion">{recordatorio}</p>
           )}
         </div>
       ) : (

@@ -269,11 +269,16 @@ export interface SalidaUnCierre {
   readonly fecha: string;
   readonly comoSeCierra: string;
   readonly puedeCerrar: boolean;
-  /** Lo que costó cada plato la última vez, para proponer el importe. */
+  /**
+   * El precio de cada plato, para proponer el importe: **el de sala de la carta** (M10 ·
+   * 1, 0102), y lo que no está en la carta, lo que costó la última vez que se apuntó.
+   */
   readonly platosConocidos: readonly {
     readonly clave: string;
     readonly concepto: string;
     readonly precioUnidadCentimos: number;
+    /** Si el precio sale de la carta, y no de un cierre de antes. */
+    readonly deLaCarta: boolean;
   }[];
   /**
    * Lo que se ha vendido apuntándolo en Almacén esa jornada (0034).
@@ -288,12 +293,10 @@ export interface SalidaUnCierre {
     readonly concepto: string;
     readonly unidades: number;
     /**
-     * Lo que costó la última vez que se cerró ese concepto, si se sabe (0035).
+     * Su precio, si se sabe: el de la carta con ese nombre (M10 · 1, 0102) o, si no
+     * está en la carta, lo que costó la última vez que se cerró ese concepto (0035).
      *
-     * **No sale del producto**: un ingrediente no tiene precio de venta. Sale de
-     * lo que ya se apuntó en un cierre anterior, que es lo más cerca que está hoy
-     * de la carta. Cuando exista la carta (M10), saldrá de ella y esta línea no
-     * se entera.
+     * **No sale del producto**: un ingrediente no tiene precio de venta.
      */
     readonly precioUnidadCentimos: number | null;
     /** Si ese concepto ya está entre las líneas del cierre: no se añade dos veces. */
@@ -364,10 +367,15 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
              order by importe_centimos desc nulls last, unidades desc
           `;
 
-    // Lo que costó cada plato **la última vez que se apuntó**, para proponer el
-    // importe en vez de pedirlo: se escribe «croquetas, 3» y los 37,50 € ya están
-    // puestos. Cuando exista la carta (M10) el precio saldrá de ella, y esto
-    // quedará para lo que no esté en la carta.
+    // **El precio de la carta** (M10 · 1, 0102; Plan, M10: «y le da el precio al cierre
+    // de caja»): el de sala, que es el canal de la caja. Se escribe «croquetas, 3» y los
+    // 28,50 € ya están puestos.
+    const deLaCarta = await contexto.sql<{ nombre: string; precio: number }[]>`
+      select nombre, precio_centimos as precio from estook.plato
+       where local_id = ${localId} and activo and precio_centimos > 0
+    `;
+    // Y lo que no está en la carta (el fuera de carta de hoy), con lo que costó **la
+    // última vez que se apuntó**.
     const conocidos = await contexto.sql<
       { clave: string; concepto: string; unidades: string; importe: string }[]
     >`
@@ -405,6 +413,34 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
 
     const yaPuestos = new Set(lineas.map((l) => sinAcentos(l.concepto.trim().toLowerCase())));
 
+    const enLaCarta = new Map(
+      deLaCarta.map((p) => [
+        claveDePlato(p.nombre),
+        {
+          clave: claveDePlato(p.nombre),
+          concepto: p.nombre,
+          precioUnidadCentimos: p.precio,
+          deLaCarta: true,
+        },
+      ]),
+    );
+    const platosConocidos = [
+      ...enLaCarta.values(),
+      ...conocidos.flatMap((plato) => {
+        const precio = precioPorUnidad(Number(plato.importe), Number(plato.unidades));
+        return precio === null || enLaCarta.has(plato.clave)
+          ? []
+          : [
+              {
+                clave: plato.clave,
+                concepto: plato.concepto,
+                precioUnidadCentimos: precio,
+                deLaCarta: false,
+              },
+            ];
+      }),
+    ];
+
     return {
       cierre:
         fila === undefined
@@ -432,18 +468,11 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
       fecha,
       comoSeCierra: ficha.comoSeCierra,
       puedeCerrar: permisos[0]?.cerrar === true,
-      platosConocidos: conocidos.flatMap((plato) => {
-        const precio = precioPorUnidad(Number(plato.importe), Number(plato.unidades));
-        return precio === null
-          ? []
-          : [{ clave: plato.clave, concepto: plato.concepto, precioUnidadCentimos: precio }];
-      }),
+      platosConocidos,
       vendidoEnCamara: vendido.map((v) => {
-        const conocido = conocidos.find((p) => p.clave === claveDePlato(v.concepto));
         const precio =
-          conocido === undefined
-            ? null
-            : precioPorUnidad(Number(conocido.importe), Number(conocido.unidades));
+          platosConocidos.find((p) => p.clave === claveDePlato(v.concepto))?.precioUnidadCentimos ??
+          null;
         return {
           concepto: v.concepto,
           unidades: Number(v.unidades),

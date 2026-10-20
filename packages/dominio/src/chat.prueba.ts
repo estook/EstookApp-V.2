@@ -173,6 +173,10 @@ describe('lo oficial (C2 · 0075)', () => {
     expect(vistaPrevia({ ...base, tarjeta: 'horario' })).toBe(
       'El horario de la semana está publicado',
     );
+    // El agotado dice cuál (M10 · 1, 0102): lleva el nombre del plato como texto.
+    expect(vistaPrevia({ ...base, tarjeta: 'plato', texto: 'Pulpo a la gallega' })).toBe(
+      'Agotado · Pulpo a la gallega',
+    );
   });
 
   it('el correo del chat cuenta, sin el texto de ningún mensaje', () => {

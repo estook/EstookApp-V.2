@@ -376,7 +376,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     ],
   },
 
-  // ── Carta · la carta y los canales en M9 · 1 (0086); lo demás, M10 ─────────
+  // ── Carta · la carta y los canales en M9 · 1 (0086); agotados y el equilibrio en
+  //    M10 · 1 (0102); los menús y lo que deja cada plato, en M10 · 2 ─────────────
   'app.carta': {
     id: 'carta',
     nombre: 'Carta',
@@ -391,8 +392,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         nombre: 'Carta',
         icono: IconoCarta,
         queContesta: '¿Qué vendo y a qué precio?',
-        // **Adelantada a M9 · 1** (0086): el plato nace aquí. Los agotados, en M10.
-        vistas: vistas('Por secciones', 'Todos los platos', ['Agotados', 'M10']),
+        // **Adelantada a M9 · 1** (0086): el plato nace aquí. Los agotados, M10 · 1 (0102).
+        vistas: vistas('Por secciones', 'Todos los platos', 'Agotados'),
       },
       {
         // Los canales de venta, con su comisión (0086): Uber Eats el primero.
@@ -415,8 +416,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         nombre: 'Análisis',
         icono: IconoNegocio,
         queContesta: '¿Qué funciona, qué pierde dinero y qué quitaría?',
-        vistas: vistas(['Matriz', 'M10'], ['Por canal', 'M10'], ['Histórico', 'M10']),
-        modulo: 'M10',
+        // El equilibrio, con Omnes (M10 · 1, 0102); lo que deja cada plato, M10 · 2.
+        vistas: vistas('Equilibrio', ['Matriz', 'M10'], ['Por canal', 'M10'], ['Histórico', 'M10']),
       },
     ],
   },

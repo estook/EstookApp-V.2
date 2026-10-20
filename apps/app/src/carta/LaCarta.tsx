@@ -8,6 +8,7 @@ import {
   Cargando,
   ErrorEnCristiano,
   EstadoVacio,
+  Etiqueta,
   FotoDeProducto,
   Hoja,
   Lista,
@@ -19,6 +20,7 @@ import {
 import {
   IconoAnadir,
   IconoBorrar,
+  IconoDocumento,
   IconoEditar,
   IconoFlechaAbajo,
   IconoFlechaArriba,
@@ -42,6 +44,7 @@ import {
 } from './contrato.ts';
 import { FichaDelPlato } from './FichaDelPlato.tsx';
 import { DesdeElAlmacen } from './DesdeElAlmacen.tsx';
+import { LeerTuCarta } from './LeerTuCarta.tsx';
 import { LosAlergenos } from '../escandallos/Alergenos.tsx';
 
 /**
@@ -78,6 +81,11 @@ export function LaCarta({ vista }: { readonly vista: string }) {
   const puedeVincular =
     puedeEditar(permisos, 'app.escandallos') && puedeVer(permisos, 'app.almacen');
   const [desdeElAlmacen, setDesdeElAlmacen] = useState(false);
+  const [leyendo, setLeyendo] = useState(false);
+  // «Leer tu carta» desde el buscador o Fogón (0102).
+  usarQueHacer('leer', () => {
+    if (puedeEditar(permisos, 'app.carta')) setLeyendo(true);
+  });
 
   if (consulta.isPending) {
     return (
@@ -129,6 +137,16 @@ export function LaCarta({ vista }: { readonly vista: string }) {
           >
             Nueva sección
           </Boton>
+          {/* Más ligero que los de al lado: se usa una vez, al empezar o al cambiar la carta. */}
+          <Boton
+            tono="texto"
+            icono={<IconoDocumento size={18} />}
+            onClick={() => {
+              setLeyendo(true);
+            }}
+          >
+            Leer tu carta
+          </Boton>
         </div>
       )}
 
@@ -163,6 +181,15 @@ export function LaCarta({ vista }: { readonly vista: string }) {
                           Desde el almacén
                         </Boton>
                       )}
+                      <Boton
+                        tono="secundario"
+                        icono={<IconoDocumento size={18} />}
+                        onClick={() => {
+                          setLeyendo(true);
+                        }}
+                      >
+                        Leer tu carta
+                      </Boton>
                     </div>
                   ),
                 }
@@ -187,6 +214,14 @@ export function LaCarta({ vista }: { readonly vista: string }) {
           seccionInicial={anadiendo}
           alCerrar={() => {
             setAnadiendo(undefined);
+          }}
+        />
+      )}
+      {leyendo && (
+        <LeerTuCarta
+          carta={datos}
+          alCerrar={() => {
+            setLeyendo(false);
           }}
         />
       )}
@@ -241,7 +276,9 @@ function fila(
     ...(detalle === null ? [] : [detalle]),
   ].join(' · ');
   const alergenos = losAlergenosDe(plato);
+  const agotado = plato.agotado !== null;
   const conIconos =
+    agotado ||
     alergenos.length > 0 ||
     plato.picante > 0 ||
     plato.distintivos.length > 0 ||
@@ -249,6 +286,8 @@ function fila(
   // Los alérgenos y el picante, con su dibujo (0087): se ven antes de leer.
   const debajo = conIconos ? (
     <span className="flex min-w-0 items-center gap-e2">
+      {/* Agotado, lo primero (M10 · 1, 0102): es lo que la sala tiene que ver. */}
+      {agotado && <Etiqueta tono="mal">Agotado</Etiqueta>}
       {plato.vinculadoA !== null && (
         <IconoVincular
           size={14}

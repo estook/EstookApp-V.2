@@ -76,6 +76,8 @@ interface MensajeTomado {
   texto: string | null;
   pide_confirmar: boolean;
   fijado: boolean;
+  /** El tipo de la tarjeta, si lo es. */
+  tarjeta: string | null;
 }
 
 /** Un mensaje que se ve, tomado para cambiarlo. */
@@ -83,7 +85,7 @@ async function elMensaje(contexto: Contexto, mensajeId: string): Promise<Mensaje
   const filas = await contexto.sql<MensajeTomado[]>`
     select m.id::text as id, m.canal_id, m.local_id, m.autor_id, c.tipo::text as tipo,
            m.creado_en, m.borrado_en, m.adjunto_clave, m.texto, m.pide_confirmar,
-           m.fijado_en is not null as fijado
+           m.fijado_en is not null as fijado, m.tarjeta ->> 'tipo' as tarjeta
       from estook.mensaje m
       join estook.canal c on c.id = m.canal_id
      where m.id = ${mensajeId}::bigint
@@ -426,6 +428,12 @@ export const corregirMensaje = comando<EntradaCorregirMensaje, { corregido: true
     if (mensaje.pide_confirmar) {
       throw new FalloDeAplicacion('faltan_datos', {
         porque: 'Lo que pide confirmar no se corrige: manda otro mensaje con lo bueno.',
+      });
+    }
+    // El de un agotado lleva el nombre del plato (0102): no es algo escrito.
+    if (mensaje.tarjeta === 'plato') {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'El aviso de un agotado no se corrige: se quita desde Agotados.',
       });
     }
     if (!sePuedeCorregir(new Date(mensaje.creado_en), contexto.ahora)) {

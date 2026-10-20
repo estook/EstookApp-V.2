@@ -37,6 +37,8 @@ export const CREDITOS_DE_FOGON = {
   ajustar_pedido: 2,
   hacer_cuadrante: 3,
   responder_resena: 1,
+  // ── M10 · 1 · Leer tu carta (0102): una página, por foto o escaneada ────────
+  leer_carta: 3,
 } as const;
 
 export type QueSeLePide = keyof typeof CREDITOS_DE_FOGON;

@@ -205,7 +205,13 @@ export type TarjetaDelMensaje =
       readonly id: string;
       readonly producto: { readonly nombre: string; readonly formato: string | null } | null;
     }
-  | { readonly tipo: 'horario'; readonly lunes: string };
+  | { readonly tipo: 'horario'; readonly lunes: string }
+  | {
+      readonly tipo: 'plato';
+      readonly id: string;
+      /** El plato y si sigue agotado ahora (M10 · 1, 0102): la tarjeta se pone al día sola. */
+      readonly plato: { readonly nombre: string; readonly agotado: boolean } | null;
+    };
 
 /** «Confirmar que lo he leído» (0075): cuántos, y si me toca a mí. */
 export interface ConfirmarElMensaje {
@@ -296,18 +302,20 @@ export interface SalidaUnCanal {
 /** La tarjeta guardada, venga como objeto o como texto, o nula si no se entiende. */
 function laTarjeta(
   guardada: { tipo?: string; id?: string } | string | null,
-): { tipo: 'pedido' | 'producto' | 'horario'; id: string } | null {
+): { tipo: 'pedido' | 'producto' | 'horario' | 'plato'; id: string } | null {
   const valor = typeof guardada === 'string' ? (JSON.parse(guardada) as unknown) : guardada;
   if (valor === null || typeof valor !== 'object') return null;
   const { tipo, id } = valor as { tipo?: unknown; id?: unknown };
   if (typeof id !== 'string') return null;
-  if (tipo === 'pedido' || tipo === 'producto' || tipo === 'horario') return { tipo, id };
+  if (tipo === 'pedido' || tipo === 'producto' || tipo === 'horario' || tipo === 'plato') {
+    return { tipo, id };
+  }
   return null;
 }
 
 /** La tarjeta como la ve quien mira: con lo que su sesión ha podido leer, o nula. */
 function laTarjetaVista(
-  tarjeta: { tipo: 'pedido' | 'producto' | 'horario'; id: string } | null,
+  tarjeta: { tipo: 'pedido' | 'producto' | 'horario' | 'plato'; id: string } | null,
   pedidos: readonly {
     id: string;
     numero: number;
@@ -316,9 +324,18 @@ function laTarjetaVista(
     llega_el: string | null;
   }[],
   productos: readonly { id: string; nombre: string; formato: string | null }[],
+  platos: readonly { id: string; nombre: string; agotado: boolean }[],
 ): TarjetaDelMensaje | null {
   if (tarjeta === null) return null;
   if (tarjeta.tipo === 'horario') return { tipo: 'horario', lunes: tarjeta.id };
+  if (tarjeta.tipo === 'plato') {
+    const p = platos.find((x) => x.id === tarjeta.id);
+    return {
+      tipo: 'plato',
+      id: tarjeta.id,
+      plato: p === undefined ? null : { nombre: p.nombre, agotado: p.agotado },
+    };
+  }
   if (tarjeta.tipo === 'pedido') {
     const p = pedidos.find((x) => x.id === tarjeta.id);
     return {
@@ -508,6 +525,18 @@ export const unCanal = consulta<EntradaUnCanal, SalidaUnCanal>({
             select id::text as id, nombre, formato from estook.producto
              where id = any (${comoLista(deTipo('producto'))}::text::uuid[])
           `;
+    // Los platos agotados (0102): con la hora del servidor, si siguen agotados ahora.
+    const platos =
+      deTipo('plato').length === 0
+        ? []
+        : await contexto.sql<{ id: string; nombre: string; agotado: boolean }[]>`
+            select p.id::text as id, p.nombre,
+                   exists (select 1 from estook.plato_agotado a
+                            where a.plato_id = p.id
+                              and a.hasta > ${contexto.ahora.toISOString()}::timestamptz) as agotado
+              from estook.plato p
+             where p.id = any (${comoLista(deTipo('plato'))}::text::uuid[])
+          `;
 
     // Quién tiene que confirmar cada uno, y quién lo ha hecho.
     const conConfirmar = deEstaVez.filter((f) => f.pide_confirmar).map((f) => f.id);
@@ -605,6 +634,8 @@ export const unCanal = consulta<EntradaUnCanal, SalidaUnCanal>({
           !f.borrado &&
           !f.pide_confirmar &&
           f.texto !== null &&
+          // El texto de un agotado es el nombre del plato (0102): no se corrige.
+          laTarjeta(f.tarjeta)?.tipo !== 'plato' &&
           sePuedeCorregir(new Date(f.creado_en), contexto.ahora),
         sePuedeBorrar: esMio && !f.borrado && !f.pide_confirmar,
         estado: esMio && !f.borrado ? estadoDeMiMensaje(Number(f.id), lecturasParaElEstado) : null,
@@ -614,6 +645,7 @@ export const unCanal = consulta<EntradaUnCanal, SalidaUnCanal>({
               tarjetas.find((t) => t.id === f.id)?.tarjeta ?? null,
               pedidos,
               productos,
+              platos,
             ),
         fijado: f.fijado,
         confirmar:

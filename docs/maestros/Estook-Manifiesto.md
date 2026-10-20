@@ -1534,18 +1534,21 @@ La IA es el único coste que crece con el uso, así que se mide y se enseña. **
 
 **Lo que no gasta un solo crédito:** los avisos automáticos del Panel, las alertas de bajo mínimo y caducidad, los semáforos, los cálculos de coste y margen, la desviación, Pulse y los informes. **Dieciocho de cada veintidós avisos son gratis, y son los que enganchan.**
 
-| Acción                                 | Créditos |
-| -------------------------------------- | -------- |
-| Preguntar algo a Fogón                 | 1        |
-| Respuesta propuesta a una reseña       | 1        |
-| Rellenar un escandallo o los pasos     | 2        |
-| Traducir una ficha técnica             | 2        |
-| Leer un albarán por foto               | 3        |
-| Análisis del cierre del día            | 5        |
-| Propuesta de menú del día              | 5        |
-| Propuesta de precios o de cuadrante    | 5        |
-| Resumen semanal del negocio            | 8        |
-| Importar un listado o una carta entera | 10       |
+| Acción                              | Créditos |
+| ----------------------------------- | -------- |
+| Preguntar algo a Fogón              | 1        |
+| Respuesta propuesta a una reseña    | 1        |
+| Rellenar un escandallo o los pasos  | 2        |
+| Traducir una ficha técnica          | 2        |
+| Leer un albarán por foto            | 3        |
+| Leer la carta por foto, cada página | 3        |
+| Análisis del cierre del día         | 5        |
+| Propuesta de menú del día           | 5        |
+| Propuesta de precios o de cuadrante | 5        |
+| Resumen semanal del negocio         | 8        |
+| Importar un listado                 | 10       |
+
+**Leer la carta en PDF con texto no gasta nada**: la lee Estook, sin IA (0102). Solo una foto o un PDF escaneado pasa por Fogón, página a página.
 
 **Cuando se acaban.** Al 80 % se avisa. Al llegar al tope, **todo lo que no cuesta sigue funcionando igual**. Solo se pausa lo que llama al modelo.
 

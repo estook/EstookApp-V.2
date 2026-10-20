@@ -302,7 +302,7 @@ Y sus vistas, donde las hay:
 | Escandallos · Escandallos | Todos · Bajo objetivo                                               |
 | Escandallos · Fichas      | Todas · Sin ficha                                                   |
 | Carta · Carta             | Por secciones · Todos los platos · Agotados                         |
-| Carta · Análisis          | Matriz · Por canal · Histórico                                      |
+| Carta · Análisis          | Equilibrio · Matriz · Por canal · Histórico                         |
 | Calendario · Calendario   | Mes · Semana · Día                                                  |
 | Calendario · Tareas       | Pendientes · Periódicas · Hechas                                    |
 | Equipo · Personas         | Con acceso · Sin entrar todavía · Retirados                         |
@@ -632,6 +632,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 ### M10 · Carta, menús y análisis
 
 **Lo que se adelantó a M9** ([0086](../decisiones/0086-las-respuestas-de-m9.md)): las secciones, los platos, los canales con su comisión y el precio de cada plato en cada canal. M10 se queda con lo demás.
+
+**En dos entregas** ([el plan](../m10-la-carta-menus-y-analisis.md)). **M10 · 1 · La carta que trabaja**, construida el 20-oct ([0102](../decisiones/0102-m10-1-la-carta-que-trabaja.md), migración 0078): agotados (con su aviso al equipo y su vuelta sola al empezar la jornada), el precio al cierre de caja desde la carta, leer la carta subida y el equilibrio con los principios de Omnes. **M10 · 2**: lo demás, cuando Richi conteste sus cinco preguntas.
 
 **Entra.** El orden de la carta como se imprime (destacados, columnas) · agotado desde el móvil · fórmulas y menús con reparto de precio · menú del día con propuesta de Fogón · análisis de rentabilidad por canal (estrella, caballo, puzzle, perro) · análisis de equilibrio de carta · comparación con la zona.
 

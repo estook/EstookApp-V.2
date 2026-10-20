@@ -1,5 +1,7 @@
 # Pasos de la auditoría del 20-oct
 
+> **Hecho el 20-oct:** la #124 fusionada y la API desplegada a las 20:15 (comprobado con `bd:comprobar-api`: 96 consultas y 211 comandos). Lo que sigue, en [`pasos-de-m10.md`](pasos-de-m10.md). Lo de mirarlo en el iPhone (punto 4), si no lo has hecho, sigue valiendo.
+
 > ## Cómo está
 >
 > Leído el 20 de octubre de 2026 en producción (solo lectura).

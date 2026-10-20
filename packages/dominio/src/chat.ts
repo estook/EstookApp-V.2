@@ -61,9 +61,10 @@ export const FIJADOS_POR_CANAL = 3;
 
 /**
  * Lo que se manda como tarjeta (0075): un pedido o un producto, que se abren en su
- * sitio con los permisos de quien los mira, y el aviso del horario publicado.
+ * sitio con los permisos de quien los mira, el aviso del horario publicado y el de un
+ * plato agotado (M10 · 1, 0102), que dice si sigue agotado.
  */
-export const TIPOS_DE_TARJETA = ['pedido', 'producto', 'horario'] as const;
+export const TIPOS_DE_TARJETA = ['pedido', 'producto', 'horario', 'plato'] as const;
 export type TipoDeTarjeta = (typeof TIPOS_DE_TARJETA)[number];
 
 /** Hasta cuándo se corrige lo escrito: después, se borra y se escribe otro (0071, 10). */
@@ -143,13 +144,15 @@ export function vistaPrevia(mensaje: {
   readonly adjuntoNombre: string | null;
   readonly adjuntoSegundos: number | null;
   readonly borrado: boolean;
-  /** La tarjeta, si lo es (C2): «Un pedido», «Un producto», «El horario». */
+  /** La tarjeta, si lo es (C2): «Un pedido», «Un producto», «El horario», «Agotado». */
   readonly tarjeta?: TipoDeTarjeta | null;
 }): string {
   if (mensaje.borrado) return 'Se eliminó este mensaje';
   const texto = mensaje.texto?.replace(/\s+/g, ' ').trim() ?? '';
   if (mensaje.tarjeta === 'horario') return 'El horario de la semana está publicado';
   if (mensaje.tarjeta === 'pedido') return texto === '' ? 'Un pedido' : `Un pedido · ${texto}`;
+  // El agotado sí dice cuál (0102): es lo que necesita saber la sala al oírlo.
+  if (mensaje.tarjeta === 'plato') return texto === '' ? 'Agotado' : `Agotado · ${texto}`;
   if (mensaje.tarjeta === 'producto')
     return texto === '' ? 'Un producto' : `Un producto · ${texto}`;
   if (mensaje.adjuntoTipo === 'foto') return texto === '' ? 'Foto' : `Foto · ${texto}`;

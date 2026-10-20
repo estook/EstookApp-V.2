@@ -3092,6 +3092,40 @@ que se parece), `las-fichas-que-se-usan.prueba.ts` (la base y la API: la tanda c
 historial, los PDF, «Qué ha cambiado», los permisos y el aviso del reloj, una sola vez) y
 `fichas-y-escandallos.spec.ts` (la pantalla: escalar una olla y la receta de Estook).
 
+### De Fogón 1 a la auditoría del 20-oct, en sus decisiones
+
+Fogón 1 entero (0097, 0098), los repasos del 19 y del 20-oct (0099, 0100) y la auditoría del
+20-oct (0101, con [su informe](auditoria-del-20-oct.md)) están contados en su decisión.
+
+### M10 · 1 · La carta que trabaja
+
+_20 de octubre de 2026._ Migración `0078`, decisión
+[0102](decisiones/0102-m10-1-la-carta-que-trabaja.md), el plan de M10 entero en
+[`m10-la-carta-menus-y-analisis.md`](m10-la-carta-menus-y-analisis.md). La primera mitad de
+M10: lo que los maestros ya decían; la segunda espera las respuestas de Richi.
+
+- **Agotados** (`plato_agotado`): hasta el principio de la jornada siguiente
+  (`hastaCuandoEstaAgotado`, con la hora de corte) o sin fecha. Lo marcan sala y cocina
+  (`accion.marcar_agotado`, en la matriz desde la 0004): en Carta › Agotados, en la ficha del
+  plato y en el «+» del Panel (la cocina no tiene Carta). Con deshacer de diez segundos.
+- **El aviso**: una tarjeta `plato` en «Todo el equipo», que dice si sigue agotado, con el
+  nombre del plato para el móvil; suena solo a quien está fichado (`quien_trabaja_ahora`, la
+  58.ª función con privilegio, solo identificadores) y no se repite al marcarlo otra vez.
+- **El widget «Agotados»** del Panel, de fábrica para la sala (en vez de «Lo que viene») y
+  sugerido a la cocina.
+- **El precio del cierre**, de la carta (el de sala); lo que no está, de la última vez.
+- **Leer tu carta**: las líneas de un PDF, sacadas en el móvil con PDF.js, columna a columna
+  (`lineasDeLaPagina`); o Fogón, que pasa una foto a líneas (`leer_pagina_con_fogon`, 3
+  créditos). Estook las lee igual (`leerLasLineas`: secciones, descripciones, el precio en
+  la línea de abajo, media y ración) y compara por el nombre exacto (`compararConLaCarta`).
+- **El equilibrio** (`equilibrioDeLaCarta`), con Omnes: el salto de precios (2,5 veces; 3
+  con más de 9 platos), la franja media y más de 12 platos por sección.
+
+Las pruebas: `agotado.prueba.ts`, `equilibrio.prueba.ts` y `cartaLeida.prueba.ts` (el
+dominio), `la-carta-que-trabaja.prueba.ts` (la base y la API, como cada persona: quién
+agota, a qué móvil suena, que vuelve solo, que nadie de fuera lo toca, el precio del cierre,
+leer y Fogón) y `la-carta-que-trabaja.spec.ts` (la pantalla, con un PDF de verdad).
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

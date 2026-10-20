@@ -332,6 +332,18 @@ export function contestaDePrueba(peticion: PeticionAFogon): string {
       explicacion: 'Todos de martes a sábado a mediodía. Esto es Fogón de pruebas.',
     });
   }
+  // ── M10 · 1 (0102): una página de la carta, pasada a líneas ────────────────
+  if (campos.includes('lineas_de_la_carta')) {
+    return JSON.stringify({
+      lineas_de_la_carta: [
+        'Entrantes:',
+        'Croquetas caseras 9,00 €',
+        'Gildas de la casa 3,50 €',
+        'Postres:',
+        'Tarta de queso 6,00 €',
+      ],
+    });
+  }
   if (campos.includes('repetidos')) {
     return JSON.stringify({ repetidos: [], pasos: [] });
   }

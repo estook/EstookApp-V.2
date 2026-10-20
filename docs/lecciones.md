@@ -837,3 +837,16 @@
      siempre llega, pero la API de pruebas no la recibe nunca: tras diez altas, la undécima se
      frenaba, y cayeron de golpe las pruebas que crean cuentas. Lo cazó la batería de pantalla
      entera; el arreglo bueno era leer la primera dirección **con forma de dirección** (0101).
+213. **«Como sistema» no abre todas las tablas.** El aviso de un agotado tenía que sonar solo a
+     quien está fichado, y leí los fichajes con `enNombreDelSistema`: devolvía cero filas, porque
+     las políticas de `fichaje` no hablan del sistema, y sonaba a todos. Lo cazó la prueba que
+     mira a qué móvil llega. Para saber algo de otros sin enseñárselo a quien pregunta, una
+     función con privilegio que devuelve **solo lo justo** (aquí, identificadores) (0102).
+214. **Antes de fijar una hora en una prueba, se mira la del local de ejemplo.** Escribí que
+     el agotado volvía a las 05:00 y Bar Centro corta a las 03:00 (0096): la prueba falló y el
+     código estaba bien. La hora de corte, la zona y el régimen se leen de la semilla, no se
+     suponen (0102).
+215. **El orden de un catálogo es parte de lo que se ve.** Puse «Leer tu carta» arriba del
+     catálogo de acciones, y la ventana de Fogón, que enseña las cuatro primeras del Panel,
+     dejó de ofrecer «Ver qué hay que atender»: lo cazó su prueba de pantalla. Una acción
+     nueva va donde le toca en el día (las de cada día, primero), no donde se escribe (0102).

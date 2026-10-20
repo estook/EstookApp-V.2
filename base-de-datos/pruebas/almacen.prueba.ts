@@ -687,6 +687,11 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // cuentas tienen Fogón encendido para la revisión de noche: el reloj no es nadie y
     // no lee `plataforma`. Solo contesta al sistema, y solo identificadores. Son
     // cincuenta y siete.
+    //
+    // **Y la 0078 (M10 · 1) añade una: `quien_trabaja_ahora`.** El aviso de un agotado
+    // suena solo a quien está fichado, y una camarera no lee los fichajes de los demás
+    // (0027). Devuelve **solo identificadores**, que no salen del servidor, y solo de un
+    // local que quien pregunta ve. Son cincuenta y ocho.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -739,6 +744,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'poner_de_la_casa',
       'puede_ver_el_canal',
       'quien_recibe',
+      'quien_trabaja_ahora',
       'quien_ve_el_canal',
       'reconocer_dispositivo',
       'registro_pendiente_de',

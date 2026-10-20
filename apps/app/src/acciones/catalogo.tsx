@@ -238,6 +238,28 @@ export const ACCIONES: readonly Accion[] = [
     ir: '/?hacer=merma',
   },
   {
+    // M10 · 1 (0102): se acaba el pulpo. Va al Panel, como la merma: **la cocina no
+    // tiene Carta** y es la primera en saberlo (Roles 1.12).
+    id: 'marcar-agotado',
+    app: 'carta',
+    nombre: 'Marcar un agotado',
+    queHace: 'Se avisa al equipo y vuelve solo mañana',
+    icono: IconoAtencion,
+    permiso: { cual: 'accion.marcar_agotado', como: 'editar' },
+    ir: '/?hacer=agotado',
+  },
+  {
+    // M10 · 1 (0102), después de lo de cada día (la ventana de Fogón enseña las cuatro
+    // primeras): el PDF o las fotos de la carta, y Estook dice qué cambia.
+    id: 'leer-la-carta',
+    app: 'carta',
+    nombre: 'Leer tu carta',
+    queHace: 'Del PDF o las fotos de tu carta: platos nuevos y precios distintos',
+    icono: IconoDocumento,
+    permiso: { cual: 'app.carta', como: 'editar' },
+    ir: '/carta/carta/por-secciones?hacer=leer',
+  },
+  {
     // Entrega O · contar lo que hay. Es lo que cierra el día de un jefe de cocina, y
     // vivía a dos pantallas: Almacén, Movimientos, la pestaña de recuento.
     id: 'hacer-recuento',
@@ -402,13 +424,14 @@ export const ACCIONES_DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = 
   ],
   cocina: [
     'apuntar-merma',
+    'marcar-agotado',
     'recibir',
     'bajo-minimo',
     'nuevo-pedido',
     'hacer-recuento',
     'escribir-en-el-tablon',
   ],
-  sala: ['escribir-en-el-tablon', 'apuntar-merma', 'cerrar-caja', 'buscar'],
+  sala: ['escribir-en-el-tablon', 'marcar-agotado', 'apuntar-merma', 'cerrar-caja', 'buscar'],
 };
 
 /**

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { entrarEnLaApp, irA } from './en-la-app.ts';
+import { API, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
 
 /**
  * La auditoría del 20-oct (decisión 0101), en la pantalla.
@@ -31,4 +31,37 @@ test('un precio escrito con IVA no cambia al salir del campo', async ({ page }) 
 
   await expect(precio).toHaveValue('0,32');
   await expect(hoja.getByText('Se guarda 0,26 € sin IVA (21 %).')).toBeVisible();
+});
+
+/**
+ * **Dos toques seguidos apuntan una vez.** La app manda cada comando con una clave
+ * nueva, así que lo que impide la entrada doble es que el botón se apague al primer
+ * toque. Con mala cobertura es justo cuando se toca dos veces.
+ */
+test('un doble toque en «Apuntar la entrada» apunta una sola vez', async ({ page, request }) => {
+  const nombre = `Harina de la auditoría ${String(Date.now())}`;
+  const rosa = await tokenDe(request, ROSA);
+  const creado = await ejecutarEnLaApi<{ productoId: string }>(request, rosa, 'crear_producto', {
+    nombre,
+    unidad_de_uso: 'kg',
+    factor: 1,
+    precio_centimos: 90,
+    cantidad_inicial: 10,
+  });
+  const productoId = creado.productoId;
+
+  await entrarEnLaApp(page, ROSA);
+  await irA(page, 'almacen/productos/todo');
+  await page.getByLabel('Buscar en tu género').fill(nombre);
+  await page.locator(`[aria-label="Ha llegado ${nombre}"] >> visible=true`).click();
+  const llega = page.getByRole('dialog', { name: new RegExp(`Ha llegado género · ${nombre}`) });
+  await llega.getByLabel(/^Cuánto/).fill('5');
+  await llega.getByRole('button', { name: 'Apuntar la entrada' }).dblclick();
+  await expect(llega).toHaveCount(0);
+
+  const respuesta = await request.get(`${API}/v1/consultas/un_producto?producto_id=${productoId}`, {
+    headers: { authorization: `Bearer ${rosa}` },
+  });
+  const ficha = (await respuesta.json()) as { datos: { producto: { cantidad: number } } };
+  expect(ficha.datos.producto.cantidad).toBe(15);
 });

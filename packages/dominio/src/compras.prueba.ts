@@ -143,6 +143,15 @@ describe('cuánto pedir', () => {
     expect(sugerencia?.motivo).toContain('días de reparto');
   });
 
+  it('un descuadre enorme no se pide: solo lo que se debe de un reparto (auditoría del 20-oct)', () => {
+    // El atún de IKATZ (3-oct): −1.994 kg por una salida mal escrita, 643 días de
+    // consumo. Restarlo pedía 403 cajas. Lo poco que se debe sí se pide (la de abajo).
+    const conDescuadre = cuantoPedir({ ...pollo, existencias: -1994 }, null);
+    const sinNada = cuantoPedir({ ...pollo, existencias: 0 }, null);
+    expect(conDescuadre?.formatos).toBe(sinNada?.formatos);
+    expect(conDescuadre?.motivo).toContain('es un descuadre y no lo cuento');
+  });
+
   it('no sugiere nada si ya hay de sobra', () => {
     expect(cuantoPedir({ ...pollo, existencias: 100 }, null)).toBeNull();
   });

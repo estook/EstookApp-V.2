@@ -4,12 +4,13 @@ import {
   horaDeCorte,
   jornadaDe,
   masDias,
-  porcentajeDe,
+  foodCostSinIva,
   claveDePlato,
   precioPorUnidad,
   sinAcentos,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { elRelojYElFisco, elTipoDeRestauracion } from '../desviacion.ts';
 
 /**
  * Lo que ha entrado (M6½).
@@ -79,6 +80,11 @@ export interface UnCierre {
   readonly cuantasLineas: number;
   /** Lo que se gastó de género esa jornada, a coste medio. Con permiso. */
   readonly consumoCentimos?: number | null;
+  /**
+   * El food cost de esa jornada, sobre lo vendido sin IVA (auditoría del 20-oct). Con
+   * permiso. La pantalla lo calculaba con la caja con IVA.
+   */
+  readonly foodCost?: number | null;
 }
 
 export interface SalidaMisCierres {
@@ -196,6 +202,15 @@ export const misCierres = consulta<EntradaMisCierres, SalidaMisCierres>({
 
     const total = filas.reduce((suma, f) => suma + Number(f.total), 0);
     const consumo = filas.reduce((suma, f) => suma + Number(f.consumo ?? 0), 0);
+    // El food cost, sin IVA (auditoría del 20-oct): el tipo del servicio de
+    // restauración del local, como el food cost real.
+    const tipo = puedeVerCostes
+      ? await elTipoDeRestauracion(
+          contexto,
+          await elRelojYElFisco(contexto, localId),
+          fechaOperativa(hasta),
+        )
+      : null;
 
     return {
       cierres: filas.map((f) => ({
@@ -212,7 +227,12 @@ export const misCierres = consulta<EntradaMisCierres, SalidaMisCierres>({
         quien: f.quien,
         cerradoEn: f.cerrado_en,
         cuantasLineas: f.cuantas,
-        ...(puedeVerCostes ? { consumoCentimos: Number(f.consumo ?? 0) } : {}),
+        ...(puedeVerCostes
+          ? {
+              consumoCentimos: Number(f.consumo ?? 0),
+              foodCost: foodCostSinIva(Number(f.consumo ?? 0), Number(f.total), tipo),
+            }
+          : {}),
       })),
       jornada: ficha.jornada,
       comoSeCierra: ficha.comoSeCierra,
@@ -230,7 +250,7 @@ export const misCierres = consulta<EntradaMisCierres, SalidaMisCierres>({
             // Un porcentaje con un decimal. Nulo cuando no hay ventas: un food
             // cost sin denominador no es cero, es que no se sabe, y poner cero
             // ahí sería inventarse la cifra más importante de la pantalla.
-            foodCost: porcentajeDe(consumo, total),
+            foodCost: foodCostSinIva(consumo, total, tipo),
           }
         : {}),
     };

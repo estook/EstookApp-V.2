@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { masDias, porcentajeDe, ticketMedio, type FechaOperativa } from '@estook/dominio';
+import { foodCostSinIva, masDias, ticketMedio, type FechaOperativa } from '@estook/dominio';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
 import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
 
@@ -131,8 +131,11 @@ describe('un indicador compara lo mismo con lo mismo', () => {
     }>(await api.consultar(rosa, 'mis_cierres', { dias: '7' }));
 
     expect(delPanel.total).toBe(deServicio.foodCost);
+    // Sobre lo vendido **sin IVA** (auditoría del 20-oct; 0079, 0099): un 10 % en Bar
+    // Centro. Hasta el 20-oct esto decía `porcentajeDe(consumo, caja)`, con IVA, y pasaba
+    // porque la semana de la prueba no gasta género: 0 % con IVA y sin él.
     expect(delPanel.total).toBe(
-      porcentajeDe(deServicio.consumoDelPeriodoCentimos, deServicio.totalDelPeriodoCentimos),
+      foodCostSinIva(deServicio.consumoDelPeriodoCentimos, deServicio.totalDelPeriodoCentimos, 0.1),
     );
   });
 });

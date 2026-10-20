@@ -58,16 +58,39 @@ export function CampoPrecioDeCompra({
   const [conElImpuesto, setConElImpuesto] = useState(conIvaDeEntrada && iva !== null);
   const [tipo, setTipo] = useState<number>(iva ?? 0.1);
 
+  // **Lo escrito con IVA, tal cual** (auditoría del 20-oct). Se guarda sin IVA y al
+  // céntimo, y al volver a ponerle el IVA uno de cada seis precios al 21 % salía un
+  // céntimo distinto: «pongo 0,32 y al salir del campo pone 0,31». Mientras lo guardado
+  // sea lo que salió de lo escrito, se enseña lo escrito.
+  const [escritoConIva, setEscritoConIva] = useState<{
+    readonly con: Centimos;
+    readonly sin: Centimos;
+    readonly tipo: number;
+  } | null>(null);
+
   // Lo que se ve en el campo, según cómo se esté escribiendo.
   const escrito =
-    valor === null ? null : conElImpuesto ? conIva(centimos(valor), tipo) : centimos(valor);
+    valor === null
+      ? null
+      : !conElImpuesto
+        ? centimos(valor)
+        : escritoConIva !== null && escritoConIva.sin === valor && escritoConIva.tipo === tipo
+          ? escritoConIva.con
+          : conIva(centimos(valor), tipo);
 
   function escribir(nuevo: Centimos | null, comoSeEscribe = conElImpuesto, conTipo = tipo) {
     if (nuevo === null) {
+      setEscritoConIva(null);
       alCambiar(null);
       return;
     }
-    alCambiar(comoSeEscribe ? sinIva(nuevo, conTipo) : nuevo);
+    if (!comoSeEscribe) {
+      alCambiar(nuevo);
+      return;
+    }
+    const sin = sinIva(nuevo, conTipo);
+    setEscritoConIva({ con: nuevo, sin, tipo: conTipo });
+    alCambiar(sin);
   }
 
   const pastilla = (puesta: boolean) =>

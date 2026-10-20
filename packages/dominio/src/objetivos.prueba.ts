@@ -72,6 +72,7 @@ describe('las cifras, con su porqué', () => {
   const semana: LoQueSeSabeDeLaSemana = {
     diasConCaja: 7,
     ventas: 1_000_000,
+    ventasSinImpuesto: 1_000_000,
     genero: 330_000,
     personal: 300_000,
     sinSalario: 0,
@@ -102,7 +103,7 @@ describe('las cifras, con su porqué', () => {
 
   it('una semana sin cajas: ni food cost ni personal, y el botón de cerrar la caja', () => {
     const [genero, personal, primo] = lasCifrasDelSemaforo(
-      { ...semana, diasConCaja: 0, ventas: 0 },
+      { ...semana, diasConCaja: 0, ventas: 0, ventasSinImpuesto: 0 },
       objetivos,
     );
     expect(genero).toMatchObject({ valor: null, semaforo: 'sin_dato' });
@@ -117,6 +118,30 @@ describe('las cifras, con su porqué', () => {
     const [, nadie] = lasCifrasDelSemaforo({ ...semana, personal: 0, sinSalario: 3 }, objetivos);
     expect(nadie).toMatchObject({ valor: null, semaforo: 'sin_dato' });
     expect(nadie?.queHacer?.texto).toBe('Ponerlo en Equipo');
+  });
+
+  it('los porcentajes, sobre lo vendido sin IVA (auditoría del 20-oct)', () => {
+    // 11.000 € de caja al 10 % son 10.000 € sin IVA: 3.000 € de género son un 30 %, no
+    // un 27,3 %. El objetivo de ventas se sigue mirando con lo de la caja.
+    const [genero, personal, primo, , ventas] = lasCifrasDelSemaforo(
+      { ...semana, ventas: 1_100_000, ventasSinImpuesto: 1_000_000, genero: 300_000 },
+      objetivos,
+    );
+    expect(genero).toMatchObject({ valor: 30, semaforo: 'verde' });
+    expect(genero?.porque[0]).toContain('para 10.000,00 € vendidos sin IVA');
+    expect(personal).toMatchObject({ valor: 30 });
+    expect(primo).toMatchObject({ valor: 60 });
+    expect(ventas?.porque[0]).toContain('11.000,00 €');
+  });
+
+  it('sin saber el impuesto del local, los porcentajes no se dan', () => {
+    const [genero, personal, primo] = lasCifrasDelSemaforo(
+      { ...semana, ventasSinImpuesto: null },
+      objetivos,
+    );
+    expect(genero?.valor).toBeNull();
+    expect(personal?.valor).toBeNull();
+    expect(primo?.valor).toBeNull();
   });
 
   it('pocos días con caja se dicen, para no leer una semana entera donde no la hay', () => {

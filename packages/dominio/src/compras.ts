@@ -201,6 +201,18 @@ export function cuantoPedir(que: LoQueHay, cuando: CuandoLlega | null): Sugerenc
   const gasto = consumo === null ? '' : conUnidadAproximada(consumo, que.unidadDeUso);
   const pesos = que.pesos ?? null;
   const yaPedido = que.yaPedido !== undefined && que.yaPedido > 0 ? que.yaPedido : 0;
+  // **Lo que se debe, sí; un descuadre, no** (auditoría del 20-oct). Con la cámara un
+  // poco en negativo —se gastó antes de apuntar lo que llegó— el pedido cubre lo que se
+  // debe (M7). Pero el atún de IKATZ a −1.994 kg eran 643 días de consumo: restarlo
+  // pedía dos toneladas. Lo que se debe cuenta hasta lo que se gasta en un ciclo; más,
+  // es un descuadre: no se pide y se dice.
+  const deuda = Math.max(0, -que.existencias);
+  const cuenta = { descuadre: false };
+  const loQueSeDebe = (tope: number): number => {
+    if (deuda <= tope) return deuda;
+    cuenta.descuadre = true;
+    return 0;
+  };
 
   let falta: number;
   let motivo: string;
@@ -221,7 +233,7 @@ export function cuantoPedir(que: LoQueHay, cuando: CuandoLlega | null): Sugerenc
 
     let objetivo = hastaElSiguiente * (1 + MARGEN_DE_SEGURIDAD);
     if (que.minimo !== null) objetivo = Math.max(objetivo, hastaQueLlega + que.minimo);
-    falta = objetivo - que.existencias - yaPedido;
+    falta = objetivo + loQueSeDebe(hastaElSiguiente) - Math.max(0, que.existencias) - yaPedido;
 
     motivo =
       cuando === null
@@ -230,13 +242,16 @@ export function cuantoPedir(que: LoQueHay, cuando: CuandoLlega | null): Sugerenc
           ? `Llega ${cuandoCae(cuando.llega, cuando.hoy)} y el reparto siguiente es ${cuandoCae(cuando.siguiente, cuando.hoy)}: en esos ${hasta + ciclo} días sueles gastar ${conUnidad(cantidad(Number(hastaElSiguiente.toFixed(3))), que.unidadDeUso)}, contando lo que se gasta cada día de la semana, con un 20 % de margen.`
           : `Llega ${cuandoCae(cuando.llega, cuando.hoy)} y el reparto siguiente es ${cuandoCae(cuando.siguiente, cuando.hoy)}: ${hasta + ciclo} días a ${gasto} al día, con un 20 % de margen.`;
   } else if (que.minimo !== null && que.existencias < que.minimo) {
-    falta = que.minimo - que.existencias - yaPedido;
+    falta = que.minimo + loQueSeDebe(que.minimo) - Math.max(0, que.existencias) - yaPedido;
     motivo = `Hay menos del mínimo que pusiste (${conUnidad(cantidad(que.minimo), que.unidadDeUso)}) y todavía no sé a qué ritmo se gasta.`;
   } else {
     return null;
   }
 
   if (falta <= 0) return null;
+  if (cuenta.descuadre) {
+    motivo += ` El almacén dice que hay ${conUnidad(cantidad(que.existencias), que.unidadDeUso)}: más de lo que se gasta en un reparto, así que es un descuadre y no lo cuento. Mira «¿No cuadra?».`;
+  }
   if (yaPedido > 0) {
     motivo += ` Ya hay ${conUnidad(cantidad(Number(yaPedido.toFixed(3))), que.unidadDeUso)} pedidos que no han llegado: están descontados.`;
   }

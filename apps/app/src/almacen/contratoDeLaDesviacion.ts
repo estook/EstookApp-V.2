@@ -65,6 +65,8 @@ export interface ElFoodCostReal {
   readonly inventarios: { readonly desde: string; readonly hasta: string } | null;
   readonly habiaCentimos: number;
   readonly comprasCentimos: number;
+  /** De lo que entró, lo que ya había al dar de alta productos: no es una compra. */
+  readonly deAltaCentimos?: number;
   readonly quedaCentimos: number;
   readonly traspasosCentimos: number;
   readonly aparteCentimos: number;

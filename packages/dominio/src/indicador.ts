@@ -139,7 +139,7 @@ export const COMO_ES_EL_INDICADOR: Readonly<Record<Indicador, ComoEsElIndicador>
     queEnsena: 'Lo que se va en género de cada cien euros que entran',
     unidad: 'porcentaje',
     sentido: 'baja_es_bueno',
-    deDonde: 'Género gastado entre lo vendido, en días con caja cerrada',
+    deDonde: 'Género gastado entre lo vendido sin IVA, en días con caja cerrada',
     periodo: 'cociente',
     grafica: 'linea',
     sinDatoEsCero: false,

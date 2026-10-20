@@ -178,6 +178,12 @@ export interface Apunte {
    * primer día.
    */
   readonly cuando?: Date;
+  /**
+   * El precio medio que queda, cuando lo decide quien apunta y no la cuenta de siempre.
+   * **Solo al anular una entrada** (auditoría del 20-oct): el medio, como si no hubiera
+   * llegado (`elMedioSinLoAnulado`).
+   */
+  readonly costeMedio?: number;
 }
 
 export interface Apuntado {
@@ -213,7 +219,7 @@ export async function apuntar(
 
   const antes = await loQueHay(contexto, producto.id);
 
-  const despues = siguienteEstado(antes, {
+  const calculado = siguienteEstado(antes, {
     tipo: apunte.tipo,
     cantidad: cantidad(apunte.cantidad),
     // Sin redondear: `milesimas` exige un entero y aquí eso es una garantía, no
@@ -226,6 +232,10 @@ export async function apuntar(
         ? null
         : milesimas(apunte.costeMilesimas),
   });
+  const despues =
+    apunte.costeMedio === undefined
+      ? calculado
+      : { cantidad: calculado.cantidad, coste: milesimas(apunte.costeMedio) };
 
   // La fecha operativa la decide el servidor con la zona y la hora de corte del
   // local, nunca el navegador (regla 10). Una entrada de las 02:30 de un sábado

@@ -13,6 +13,7 @@ import {
   ticketMedio,
   esPeriodoDelIndicador,
   cuentaEnLaCifra,
+  ventasSinImpuesto,
   type Indicador,
   type LineaDelLibro,
   type PeriodoDelIndicador,
@@ -29,6 +30,7 @@ import {
   lasRetribuciones,
 } from './equipo.ts';
 import { lasIncidencias } from './incidencias.ts';
+import { elRelojYElFisco, elTipoDeRestauracion } from '../desviacion.ts';
 
 /**
  * Un indicador del Panel, con su línea de días (M7, decisión 0039).
@@ -42,7 +44,7 @@ import { lasIncidencias } from './incidencias.ts';
  *
  *   ventas        cierre de caja, con IVA            dato.ventas
  *   ticket-medio  cierre de caja con tickets          dato.ventas
- *   food-cost     consumo del libro ÷ caja del día    dato.ventas + precio de compra
+ *   food-cost     consumo ÷ caja sin IVA (0101)       dato.ventas + precio de compra
  *   merma         libro, a coste medio                app.almacen + precio de compra
  *   compras       entradas del libro, sin IVA         app.almacen + precio de compra
  *   mis-horas     tus fichajes                        cualquiera con sesión
@@ -288,11 +290,24 @@ export async function losDias(
     }
   }
 
+  // **El food cost, sobre lo vendido sin IVA** (auditoría del 20-oct; 0079, 0099): la
+  // caja va con IVA y el género sin él. Sin el tipo del local, no se sabe.
+  const tipo =
+    indicador === 'food-cost'
+      ? await elTipoDeRestauracion(
+          contexto,
+          await elRelojYElFisco(contexto, localId),
+          fechaOperativa(hasta),
+        )
+      : null;
+  const elDeAbajo = (abajo: string | null): number | null => {
+    if (abajo === null) return null;
+    if (indicador !== 'food-cost') return Number(abajo);
+    return ventasSinImpuesto(Number(abajo), tipo);
+  };
+
   return new Map(
-    filas.map((f) => [
-      f.fecha,
-      { arriba: Number(f.arriba ?? 0), abajo: f.abajo === null ? null : Number(f.abajo) },
-    ]),
+    filas.map((f) => [f.fecha, { arriba: Number(f.arriba ?? 0), abajo: elDeAbajo(f.abajo) }]),
   );
 }
 

@@ -8,7 +8,7 @@ import {
   minutosDelTramo,
 } from '@estook/dominio';
 import { elLocalDeLaSesion } from '../alta.ts';
-import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { comando, FalloDeAplicacion, falloQueSeGuarda, type Contexto } from '../contrato.ts';
 import { elFogonDeLaSesion, leerElJson, pedirAFogon, type LoQueQueda } from '../fogon.ts';
 import { productosDelProveedor } from '../consultas/almacen.ts';
 import {
@@ -182,7 +182,7 @@ export const ajustarElPedidoConFogon = comando<
     );
     const leido = pedidoDeFogon.safeParse(leerElJson(contesta.texto));
     if (!leido.success) {
-      throw new FalloDeAplicacion('faltan_datos', {
+      throw falloQueSeGuarda('faltan_datos', {
         porque: 'Fogón no ha sabido ajustar este pedido. Prueba a contarlo de otra forma.',
       });
     }
@@ -379,7 +379,7 @@ export const hacerElCuadranteConFogon = comando<EntradaHacerElCuadrante, Cuadran
     );
     const leido = cuadranteDeFogon.safeParse(leerElJson(contesta.texto));
     if (!leido.success || leido.data.tramos.length === 0) {
-      throw new FalloDeAplicacion('faltan_datos', {
+      throw falloQueSeGuarda('faltan_datos', {
         porque: 'Fogón no ha sabido montar el horario. Prueba con los turnos del local escritos.',
       });
     }
@@ -401,7 +401,7 @@ export const hacerElCuadranteConFogon = comando<EntradaHacerElCuadrante, Cuadran
       });
     }
     if (tramos.length === 0) {
-      throw new FalloDeAplicacion('faltan_datos', {
+      throw falloQueSeGuarda('faltan_datos', {
         porque: 'Fogón no ha sabido montar el horario. Prueba con los turnos del local escritos.',
       });
     }

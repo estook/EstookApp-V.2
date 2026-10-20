@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { claveDePlato, importeDeLinea, precioPorUnidad } from './cierre.ts';
+import {
+  claveDePlato,
+  foodCostSinIva,
+  importeDeLinea,
+  precioPorUnidad,
+  ventasSinImpuesto,
+} from './cierre.ts';
 
 /**
  * El importe de cada plato del cierre, propuesto y no pedido (M6½).
@@ -44,5 +50,22 @@ describe('el mismo plato, escrito de otra forma', () => {
   it('sin acentos, en minúsculas y sin espacios en los bordes', () => {
     expect(claveDePlato('  Croquetas de JAMÓN ')).toBe('croquetas de jamon');
     expect(claveDePlato('Pulpo á feira')).toBe(claveDePlato('pulpo a feira'));
+  });
+});
+
+describe('el food cost, sin IVA (auditoría del 20-oct)', () => {
+  it('300 € de género para 1.100 € de caja al 10 % es un 30 %, no un 27,3 %', () => {
+    expect(foodCostSinIva(30_000, 110_000, 0.1)).toBe(30);
+    expect(ventasSinImpuesto(110_000, 0.1)).toBe(100_000);
+  });
+
+  it('en Canarias, con el IGIC del 7 %', () => {
+    expect(foodCostSinIva(30_000, 107_000, 0.07)).toBe(30);
+  });
+
+  it('sin saber el impuesto, o sin ventas, no se da', () => {
+    expect(foodCostSinIva(30_000, 110_000, null)).toBeNull();
+    expect(foodCostSinIva(30_000, 0, 0.1)).toBeNull();
+    expect(ventasSinImpuesto(110_000, null)).toBeNull();
   });
 });

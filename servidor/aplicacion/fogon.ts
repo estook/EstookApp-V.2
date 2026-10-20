@@ -10,7 +10,7 @@ import {
 } from '@estook/dominio';
 import { FogonNoContesta, type ModeloDeFogon, type PeticionAFogon } from '../ia/modelo.ts';
 import { apuntarUnFallo } from '../infraestructura/fallos.ts';
-import { FalloDeAplicacion, type Contexto } from './contrato.ts';
+import { FalloDeAplicacion, falloQueSeGuarda, type Contexto } from './contrato.ts';
 
 /**
  * El motor de Fogón (Fogón 1 · 1, decisión 0097).
@@ -190,12 +190,6 @@ export async function pedirAFogon(
     }
     throw fallo;
   }
-  if (respuesta.rechazada || respuesta.texto === '') {
-    throw new FalloDeAplicacion('faltan_datos', {
-      porque: 'Fogón no ha sabido contestar a eso. Prueba a decirlo de otra forma.',
-    });
-  }
-
   const coste = costeEnMicroEuros(respuesta.modelo, respuesta.tokens);
   await contexto.sql`
     insert into estook.llamada_a_fogon
@@ -210,6 +204,15 @@ export async function pedirAFogon(
             ${respuesta.tokens.cacheEscritos}, ${respuesta.tokens.salida},
             ${coste}, ${creditos}, ${contexto.ahora.toISOString()}::timestamptz)
   `;
+
+  // **Lo contestado se cuenta aunque no sirva** (auditoría del 20-oct): Anthropic lo
+  // cobra igual. Antes, un rechazo o una respuesta que no se entendía deshacía la
+  // transacción con el apunte dentro, y no contaba para el tope del local.
+  if (respuesta.rechazada || respuesta.texto === '') {
+    throw falloQueSeGuarda('faltan_datos', {
+      porque: 'Fogón no ha sabido contestar a eso. Prueba a decirlo de otra forma.',
+    });
+  }
 
   const despues: LoGastado = {
     creditosHoy: gastado.creditosHoy + creditos,
@@ -228,7 +231,8 @@ export function leerElJson(texto: string): unknown {
   try {
     return JSON.parse(texto) as unknown;
   } catch {
-    throw new FalloDeAplicacion('faltan_datos', {
+    // Con lo gastado apuntado: la llamada ya está hecha (auditoría del 20-oct).
+    throw falloQueSeGuarda('faltan_datos', {
       porque:
         'Fogón ha contestado algo que no se entiende. No se ha rellenado nada: prueba otra vez.',
     });

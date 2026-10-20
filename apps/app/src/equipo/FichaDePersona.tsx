@@ -483,7 +483,14 @@ function CambiarRetribucion({
         />
         <CampoMoneda
           etiqueta={forma === 'por_hora' ? 'Cuánto la hora' : 'Cuánto al mes'}
-          ayuda="Lo que le cuesta al local, en bruto."
+          // Lo que le cuesta al local, dicho entero (auditoría del 20-oct): con «en bruto»
+          // se ponía el bruto de la nómina, sin la Seguridad Social de la empresa ni las
+          // pagas extra, y el coste de personal salía hasta un tercio por debajo.
+          ayuda={
+            forma === 'por_hora'
+              ? 'Lo que le cuesta al local cada hora, con la Seguridad Social de la empresa.'
+              : 'Lo que le cuesta al local cada mes: el bruto, la Seguridad Social de la empresa y las pagas extra repartidas.'
+          }
           valor={importe}
           alCambiar={setImporte}
         />

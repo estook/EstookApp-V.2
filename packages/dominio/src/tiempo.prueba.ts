@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CORTE_POR_DEFECTO,
   diasEntre,
+  esZonaHoraria,
   estaVigente,
   fechaEnElLocal,
   fechaOperativa,
@@ -66,6 +67,18 @@ describe('la zona horaria del local', () => {
     const instante = enUtc('2026-07-18T22:30:00');
     expect(fechaEnElLocal(instante, MADRID)).toBe('2026-07-19');
     expect(fechaEnElLocal(instante, CANARIAS)).toBe('2026-07-18');
+  });
+
+  it('sabe qué es una zona de verdad y qué no (auditoría del 20-oct)', () => {
+    expect(esZonaHoraria(MADRID)).toBe(true);
+    expect(esZonaHoraria(CANARIAS)).toBe(true);
+    expect(esZonaHoraria('UTC')).toBe(true);
+    // Lo que la API dejó guardar en un local y lo dejó sin poder calcular su jornada.
+    expect(esZonaHoraria('2026-10-19')).toBe(false);
+    expect(esZonaHoraria('Europa/Cuenca')).toBe(false);
+    // Un desfase suelto, no: Postgres le da la vuelta al signo.
+    expect(esZonaHoraria('+01:00')).toBe(false);
+    expect(esZonaHoraria('')).toBe(false);
   });
 
   it('avisa si la zona horaria no existe', () => {

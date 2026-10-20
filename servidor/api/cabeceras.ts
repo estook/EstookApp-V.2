@@ -59,13 +59,21 @@ export function tokenDeLaCabecera(valor: string | undefined): string | null {
  *
  * Supabase pone delante de la API un proxy, así que la dirección de verdad viene
  * en `x-forwarded-for`: la primera de la lista es la del navegador. Se guarda en
- * la auditoría del admin y **no decide nada**: se puede falsear, y por eso solo
- * se acepta con forma de dirección —números, puntos y dos puntos— y corta. Lo que
- * no la tenga, no se guarda.
+ * la auditoría del admin y **cuenta para el tope de cuentas por dirección** (crear
+ * cuenta). Se puede falsear, y por eso solo se acepta con forma de dirección
+ * —números, puntos y dos puntos— y corta.
+ *
+ * **La primera que tenga forma de dirección, no la primera a secas** (auditoría del
+ * 20-oct). Con `X-Forwarded-For: x`, el proxy añade detrás la de verdad, y leyendo
+ * solo la primera salía nula: sin dirección, el tope de crear cuenta no contaba nada.
+ * Una dirección inventada con buena forma sigue pasando (`docs/auditoria-del-20-oct.md`).
  */
 export const CABECERA_DIRECCION = 'x-forwarded-for';
 
 export function direccionDeLaPeticion(valor: string | undefined): string | null {
-  const primera = valor?.split(',')[0]?.trim() ?? '';
-  return /^[0-9a-fA-F.:]{3,45}$/.test(primera) ? primera : null;
+  const buena = (valor ?? '')
+    .split(',')
+    .map((parte) => parte.trim())
+    .find((parte) => /^[0-9a-fA-F.:]{3,45}$/.test(parte));
+  return buena ?? null;
 }

@@ -212,7 +212,13 @@ export function mermaSobreCompras(mermaCentimos: number, comprasCentimos: number
  */
 export interface LoQueSeSabeDeLaSemana {
   readonly diasConCaja: number;
+  /** Lo vendido, con IVA: lo de la caja, para el objetivo de ventas. */
   readonly ventas: number;
+  /**
+   * Lo vendido sin IVA, para los porcentajes (auditoría del 20-oct; 0079, 0099): el
+   * género y el personal van sin él. Nulo si no se sabe el impuesto del local.
+   */
+  readonly ventasSinImpuesto: number | null;
   readonly genero: number;
   readonly personal: number;
   /** Personas que ficharon y no tienen puesto lo que cobran: no cuentan. */
@@ -277,6 +283,11 @@ export function lasCifrasDelSemaforo(
   objetivos: ObjetivosVigentes,
 ): readonly CifraDelSemaforo[] {
   const conCaja = sabe.diasConCaja > 0 && sabe.ventas > 0;
+  // Los porcentajes, sobre lo vendido sin IVA; sin saber el impuesto, no se dan.
+  const base =
+    sabe.ventasSinImpuesto !== null && sabe.ventasSinImpuesto > 0 ? sabe.ventasSinImpuesto : null;
+  const sobreLaBase = (parte: number) => (base === null ? null : porcentajeDe(parte, base));
+  const vendidos = `${euros(base ?? sabe.ventas)} vendidos${base === null ? '' : ' sin IVA'}`;
   const enDias =
     sabe.diasConCaja >= 7 ? '' : `, en ${plural(sabe.diasConCaja, 'día', 'días')} con caja`;
   const sinCaja = 'Sin cajas cerradas estos siete días: sin ventas no se puede saber.';
@@ -304,14 +315,14 @@ export function lasCifrasDelSemaforo(
   });
 
   // ── Food cost ──
-  const generoEnPuntos = conCaja ? porcentajeDe(sabe.genero, sabe.ventas) : null;
+  const generoEnPuntos = conCaja ? sobreLaBase(sabe.genero) : null;
   const materiaPrima = cifra(
     'materia_prima',
     generoEnPuntos,
     objetivos.materia_prima,
     conCaja
       ? [
-          `${euros(sabe.genero)} de género para ${euros(sabe.ventas)} vendidos${enDias}.`,
+          `${euros(sabe.genero)} de género para ${vendidos}${enDias}.`,
           sabe.masPesa === null
             ? null
             : `Lo que más pesa: ${sabe.masPesa.nombre}, ${euros(sabe.masPesa.centimos)}.`,
@@ -322,7 +333,7 @@ export function lasCifrasDelSemaforo(
 
   // ── Personal ──
   const nadieCobra = sabe.personal === 0 && sabe.sinSalario > 0;
-  const personalEnPuntos = conCaja && !nadieCobra ? porcentajeDe(sabe.personal, sabe.ventas) : null;
+  const personalEnPuntos = conCaja && !nadieCobra ? sobreLaBase(sabe.personal) : null;
   const uno = sabe.sinSalario === 1;
   const faltan =
     sabe.sinSalario === 0
@@ -336,10 +347,7 @@ export function lasCifrasDelSemaforo(
       ? [sinCaja]
       : nadieCobra
         ? ['Nadie tiene puesto lo que cobra: sin eso no hay coste de personal.']
-        : [
-            `${euros(sabe.personal)} en horas para ${euros(sabe.ventas)} vendidos${enDias}.`,
-            faltan,
-          ],
+        : [`${euros(sabe.personal)} en horas para ${vendidos}${enDias}.`, faltan],
     !conCaja
       ? CERRAR_LA_CAJA
       : nadieCobra
@@ -351,7 +359,7 @@ export function lasCifrasDelSemaforo(
   const primo =
     generoEnPuntos === null || personalEnPuntos === null
       ? null
-      : porcentajeDe(sabe.genero + sabe.personal, sabe.ventas);
+      : sobreLaBase(sabe.genero + sabe.personal);
   const costePrimo = cifra(
     'coste_primo',
     primo,

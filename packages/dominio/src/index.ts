@@ -53,6 +53,7 @@ export type { Centimos } from './dinero.ts';
 // ── M2 · tiempo · la fecha operativa la decide el servidor (regla 10) ─────────
 export {
   CORTE_POR_DEFECTO,
+  esZonaHoraria,
   fechaOperativa,
   horaDeCorte,
   jornadaDe,
@@ -322,6 +323,7 @@ export {
   esTipoDeMovimiento,
   siguienteEstado,
   reconstruir,
+  elMedioSinLoAnulado,
   ajusteHasta,
   noPareceLoQueHay,
   consumoMedioDiario,
@@ -338,6 +340,7 @@ export {
 export type {
   TipoDeMovimiento,
   EstadoDelStock,
+  LineaGuardada,
   Movimiento,
   Salida,
   Consumo,
@@ -432,6 +435,8 @@ export {
   ticketMedio,
   loQueNoCuadra,
   porcentajeDe,
+  foodCostSinIva,
+  ventasSinImpuesto,
   propuestaDeVentas,
   leerUnCsvDeCierre,
   precioPorUnidad,

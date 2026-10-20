@@ -6,9 +6,11 @@ import {
   ZONAS,
   ajusteHasta,
   cantidad,
+  elMedioSinLoAnulado,
   esMerma,
   horaDeCorte,
   jornadaDe,
+  type LineaGuardada,
   type MotivoDeSalida,
 } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
@@ -375,6 +377,43 @@ const MESES = [
 ] as const;
 
 /**
+ * El precio medio del producto como si esa entrada no hubiera llegado: el libro entero,
+ * sin lo anulado ni ella (`elMedioSinLoAnulado`). Con el producto ya bloqueado.
+ */
+async function elMedioSinLaEntrada(
+  contexto: Contexto,
+  productoId: string,
+  movimientoId: string,
+): Promise<number> {
+  const filas = await contexto.sql<
+    {
+      id: string;
+      cantidad: string;
+      coste: string | null;
+      anula: string | null;
+      revalorado: string | null;
+    }[]
+  >`
+    select m.id::text as id, m.cantidad::text as cantidad,
+           m.coste_milesimas::text as coste, m.referencia ->> 'anula' as anula,
+           case when m.origen = 'revalorar' then m.coste_medio_despues::text end as revalorado
+      from estook.movimiento_de_stock m
+     where m.producto_id = ${productoId}::uuid
+     order by m.id
+  `;
+  const lineas: LineaGuardada[] = filas.map((f) => ({
+    id: f.id,
+    cantidad: Number(f.cantidad),
+    coste: f.coste === null ? null : Number(f.coste),
+    anula: f.anula,
+    revalorado: f.revalorado === null ? null : Number(f.revalorado),
+  }));
+  // Y la anulación que se está apuntando, que todavía no está en el libro.
+  lineas.push({ id: '', cantidad: 0, coste: null, anula: movimientoId, revalorado: null });
+  return elMedioSinLoAnulado(lineas).coste;
+}
+
+/**
  * Anular un movimiento mal tecleado (repaso del 3-oct · migración 0055).
  *
  * **No borra nada.** El libro solo se añade (regla 8), así que se apunta una línea
@@ -459,6 +498,10 @@ export const anularMovimiento = comando<EntradaAnularMovimiento, SalidaDeMovimie
       origen: 'a_mano',
       referencia: { anula: entrada.movimiento_id },
       esEjemplo: producto.esEjemplo,
+      // Lo que entró a un precio se lleva su precio al irse (auditoría del 20-oct).
+      ...(original.tipo === 'entrada'
+        ? { costeMedio: await elMedioSinLaEntrada(contexto, producto.id, entrada.movimiento_id) }
+        : {}),
     });
 
     await contexto.sql`

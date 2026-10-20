@@ -810,3 +810,30 @@
      apuntó «Revalorado» a la 1:43 con la fecha del 20, cuando IKATZ aún estaba en la jornada del
      19, y la tarjeta del valor no la leía. La 0077 usa la jornada, y la foto de hoy lee el libro
      entero (0100).
+207. **Un verde que no mira nada es peor que un rojo.** La prueba «el food cost del Panel es el
+     mismo que el de Servicio» comparaba las dos cuentas con IVA, y pasaba porque su semana no
+     gastaba género: 0 % con y sin IVA. Una cifra se prueba con un caso hecho a mano que dé
+     algo que no sea cero (30 € de género para 110 € de caja: 30 %, no 27,3) (0101).
+208. **Una red de seguridad que nunca se ha visto en rojo no está probada.** El barrido que ataca
+     las 307 operaciones de la API salía en verde, y al quitarle a propósito una política a la
+     base **siguió en verde**: rellenaba Bar Centro con una fecha fija que ya era pasado y el
+     tablón se quedaba vacío. Con el relleno a mano y las fechas de hoy, el mismo agujero sale en
+     rojo. Antes de fiarse de una prueba así, se le mete un fallo y se mira que lo caza (0101).
+209. **Deshacer tiene que deshacer también lo que se calculó con lo deshecho.** Anular una
+     entrada quitaba los kilos y dejaba el precio medio que había metido: la cámara seguía
+     valiendo miles. Lo que una línea movió de paso (el precio medio, un lote) también se
+     devuelve, o «anular» no anula (0101).
+210. **Un fallo intermitente de una prueba de pantalla suele ser de la app.** «Opciones de la
+     conversación» no se abría una de cada muchas: el rastro de GitHub enseñaba el toque en
+     y=26 y el botón en y=86. El chat se movía bajo el dedo entre apretar y soltar. Se arregla
+     la app (esperar al dedo), no la prueba con una espera, y se demuestra con una prueba que
+     falla siempre con el código viejo: un toque largo de 700 ms (0101).
+211. **La vista previa del panel arranca desde la carpeta principal, no desde la del trabajo.**
+     Revisé pantallas que eran de `main` sin la #123: la app servía un `index-….js` que ni
+     existía en mi carpeta. Lo que se mira en el navegador para probar una rama se levanta desde
+     su carpeta (las pruebas de Playwright lo hacen bien) (0101).
+212. **Un arreglo de seguridad se prueba también donde no hay proxy.** Para cerrar el tope de
+     crear cuenta, metí todo lo que llegaba sin dirección en un mismo montón. En producción
+     siempre llega, pero la API de pruebas no la recibe nunca: tras diez altas, la undécima se
+     frenaba, y cayeron de golpe las pruebas que crean cuentas. Lo cazó la batería de pantalla
+     entera; el arreglo bueno era leer la primera dirección **con forma de dirección** (0101).

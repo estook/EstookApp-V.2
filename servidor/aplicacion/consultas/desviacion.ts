@@ -216,7 +216,10 @@ export interface SalidaElFoodCostReal {
   /** Los dos últimos inventarios, si los hay: para ofrecer ese periodo. */
   readonly inventarios: { readonly desde: FechaOperativa; readonly hasta: FechaOperativa } | null;
   readonly habiaCentimos: number;
+  /** Todo lo que entró, compras y altas: es lo que suma la cuenta. */
   readonly comprasCentimos: number;
+  /** De eso, lo que ya había al dar de alta productos (auditoría del 20-oct). */
+  readonly deAltaCentimos: number;
   readonly quedaCentimos: number;
   readonly traspasosCentimos: number;
   readonly aparteCentimos: number;
@@ -297,6 +300,7 @@ export const elFoodCostReal = consulta<EntradaElFoodCostReal, SalidaElFoodCostRe
         inventarios === null ? null : { desde: inventarios.desde, hasta: inventarios.hasta },
       habiaCentimos: leida.cuenta.habia,
       comprasCentimos: leida.cuenta.compras,
+      deAltaCentimos: leida.deAlta,
       quedaCentimos: leida.cuenta.queda,
       traspasosCentimos: leida.cuenta.traspasos,
       aparteCentimos: leida.cuenta.aparte,

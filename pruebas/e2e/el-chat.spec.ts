@@ -224,6 +224,11 @@ test('un canal nuevo: se corrige, se borra, se retira, se silencia, se añade ge
   await page.getByRole('button', { name: 'Retirar del canal' }).click();
   const retirar = page.getByRole('dialog', { name: 'Retirar el mensaje' });
   await retirar.getByLabel('Por qué').fill('No es de la barra');
+  // **Lo que se escribe en una hoja no sube el chat de debajo** (auditoría del 20-oct).
+  // Lo subía: «Por qué» contaba como escribir en el chat, y al cerrar la hoja el chat
+  // volvía a su sitio 400 ms después, a veces entre apretar y soltar «Opciones de la
+  // conversación», y el toque caía en la barra de arriba. Era el fallo intermitente.
+  await expect(page.locator('[data-chat-con-teclado]')).toHaveCount(0);
   await retirar.getByRole('button', { name: 'Retirar', exact: true }).click();
   await expect(retirar).toHaveCount(0);
   await expect(conversacion.getByText(`no va aquí ${marca}`)).toHaveCount(0);
@@ -249,6 +254,38 @@ test('un canal nuevo: se corrige, se borra, se retira, se silencia, se añade ge
   // Y Marcos se sale: deja de verlo en su lista.
   await ejecutarEnLaApi(request, marcos, 'salir_del_canal', { canal_id: canalId });
   expect((await losCanales(request, marcos)).some((c) => c.id === canalId)).toBe(false);
+});
+
+/**
+ * **Con el dedo apretado, el chat no se mueve de debajo** (auditoría del 20-oct).
+ *
+ * Escribiendo, el chat va a lo visible (`conElTeclado.ts`); al tocar fuera de la caja,
+ * vuelve entre las dos barras. Volvía 400 ms después de irse el foco, que se va **al
+ * apretar**: un toque que duraba más, o un respiro que vencía entre apretar y soltar,
+ * dejaba el botón 60 px más abajo y el toque caía en la barra de arriba. Aquí, un toque
+ * largo sobre «Opciones de la conversación» con la caja de escribir activa: tiene que
+ * abrir sus opciones.
+ */
+test('un toque largo mientras se escribe abre lo que se toca', async ({ page }, info) => {
+  await entrarEnLaApp(page, ROSA);
+  await irA(page, 'chat');
+  await page.getByRole('button', { name: /^Todo el equipo/ }).click();
+  const conversacion = page.getByRole('region', { name: 'Conversación' });
+  const caja = conversacion.getByRole('textbox', { name: 'Escribe un mensaje' });
+  await caja.click();
+  await caja.fill(`Un toque largo ${info.project.name}`);
+
+  const opciones = conversacion.getByRole('button', { name: 'Opciones de la conversación' });
+  const sitio = await opciones.boundingBox();
+  expect(sitio).not.toBeNull();
+  if (sitio === null) return;
+  await page.mouse.move(sitio.x + sitio.width / 2, sitio.y + sitio.height / 2);
+  await page.mouse.down();
+  // Más que el respiro de antes: con él, el chat ya se había ido de debajo del dedo.
+  await page.waitForTimeout(700);
+  await page.mouse.up();
+
+  await expect(page.getByRole('dialog', { name: 'Todo el equipo' })).toBeVisible();
 });
 
 /**

@@ -832,3 +832,8 @@
      Revisé pantallas que eran de `main` sin la #123: la app servía un `index-….js` que ni
      existía en mi carpeta. Lo que se mira en el navegador para probar una rama se levanta desde
      su carpeta (las pruebas de Playwright lo hacen bien) (0101).
+212. **Un arreglo de seguridad se prueba también donde no hay proxy.** Para cerrar el tope de
+     crear cuenta, metí todo lo que llegaba sin dirección en un mismo montón. En producción
+     siempre llega, pero la API de pruebas no la recibe nunca: tras diez altas, la undécima se
+     frenaba, y cayeron de golpe las pruebas que crean cuentas. Lo cazó la batería de pantalla
+     entera; el arreglo bueno era leer la primera dirección **con forma de dirección** (0101).

@@ -221,24 +221,36 @@ describe('lo que Fogón contesta y no sirve, también se cuenta', () => {
   });
 });
 
-describe('crear cuenta sin una dirección que se entienda', () => {
+describe('crear cuenta con una dirección que no se entiende delante', () => {
   /*
-    El límite de diez cuentas por hora y dirección se saltaba entero si la dirección no
-    se entendía: con «X-Forwarded-For: x», nula, y la función no contaba nada.
+    El tope de diez cuentas por hora y dirección leía solo la primera de
+    `X-Forwarded-For`. Con «X-Forwarded-For: x», el proxy añade detrás la de verdad, pero la
+    primera no se entendía: sin dirección, el tope no contaba nada. Ahora vale la primera
+    que tenga forma de dirección.
   */
-  it('las que llegan sin dirección también tienen tope', async () => {
+  it('cuenta la de verdad, la que añade el proxy', async () => {
     const { correoEnMemoria } = await import('../../servidor/infraestructura/correo.ts');
+    const { direccionDeLaPeticion } = await import('../../servidor/api/cabeceras.ts');
     const conCorreo = montarLaApi(base.bd, { correo: correoEnMemoria() });
+    const desde = direccionDeLaPeticion('x, 10.7.7.7');
+    expect(desde).toBe('10.7.7.7');
     const pedir = (i: number) =>
-      conCorreo.ejecutar(null, 'pedir_codigo_de_registro', {
+      conCorreo.ejecutarDesde(desde ?? '', null, 'pedir_codigo_de_registro', {
         nombre: 'Marta',
         negocio: 'La Taberna de la Auditoría',
-        correo: `sin-direccion-${String(i)}@correo-de-prueba.com`,
+        correo: `detras-del-proxy-${String(i)}@correo-de-prueba.com`,
         contrasena: 'una frase que me sé',
         aceptaCondiciones: true,
       });
     for (let i = 0; i < 10; i++) losDatos(await pedir(i));
     expect(elFallo(await pedir(10))).toBe('demasiadas_cuentas');
+  });
+
+  it('y sin ninguna, como en desarrollo, no frena a nadie', async () => {
+    const { direccionDeLaPeticion } = await import('../../servidor/api/cabeceras.ts');
+    expect(direccionDeLaPeticion(undefined)).toBeNull();
+    expect(direccionDeLaPeticion('x, y')).toBeNull();
+    expect(direccionDeLaPeticion('1.2.3.4, 5.6.7.8')).toBe('1.2.3.4');
   });
 });
 

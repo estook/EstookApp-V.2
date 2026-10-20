@@ -41,11 +41,11 @@ Richi, con el repaso del 19-oct en producción: «acabamos de arreglar cosas imp
 
 1. **La entrada mal valorada se anula y se vuelve a apuntar**, con la fecha de hoy: si llevara la de entonces, la foto de aquel día leería lo que hay hoy. Por eso los 40 € del aceite cuentan en las compras de esta semana.
 2. **El chuletón no se toca**: entró a 1,64 €/kg y hoy cuesta 16,23 €/kg. Puede ser el precio de la caja escrito como kilo, o no; no se sabe, y no se adivina.
-3. **La gráfica de 30 días seguirá enseñando el pico del 17-oct** hasta el 16-nov: es lo que el libro dice que hubo ese día, y el libro no se reescribe.
-4. **«¿Bien contado?» no frena**: avisa y pide confirmar, como sacar más de lo que hay (Manifiesto 12: nunca se bloquea a nadie por cuadrar).
+3. **La gráfica de 30 días seguirá enseñando el pico del 17-oct** hasta mediados de noviembre: es lo que el libro dice que hubo ese día, y el libro no se reescribe. Igual que **las entradas de antes de la 0099**, que se valoraron con el aprovechamiento dentro: en las compras de 30 días, el atún, el salmón y el chuletón cuentan algo más de lo pagado hasta que salgan del periodo.
+4. **Nada de esto frena**: en el inventario, «¿Bien contado?» solo avisa; en «¿No cuadra?» se confirma con un toque, como sacar más de lo que hay (Manifiesto 12: nunca se bloquea a nadie por cuadrar).
 5. **Lo de peso con caja se cuenta en una casilla**, sin «Cajas»: si alguien quiere contar barriles, «2,5 barriles» se escribe como 125 l. Se puede volver a ofrecer, con la unidad escrita en cada casilla, si Richi lo pide.
 
 ## 4 · Lo que queda por ver con Richi
 
 - **El precio de los contramuslos** sigue en **5,45 €** la caja de 5 kg (1,09 €/kg). Si era 45,45, se cambia en su ficha.
-- **«Se pierde la ficha»**: desde Productos, en mis pruebas, se abre sola. Si le pasó desde otro sitio que no sea un escandallo, que lo diga.
+- **«Se pierde la ficha»**: desde Productos se abre sola (probado en Chrome y en el motor de Safari, en tamaño iPhone). Si le pasó desde otro sitio que no sea un escandallo, que lo diga.

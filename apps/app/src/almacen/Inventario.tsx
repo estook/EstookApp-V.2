@@ -634,7 +634,7 @@ function LineaParaCerrar({
       {!l.recontar && raro !== null && (
         <p className="text-secundario font-medium text-atencion">
           {raro === 'envases'
-            ? `¿Bien contado? Es justo lo que decía por ${l.formato?.toLowerCase() ?? 'el envase'}: puede que se escribiera ${conUnidadDeUso(l.decia ?? 0, l.unidadDeUso)} en la casilla de cajas.`
+            ? `¿Bien contado? Es justo lo que decía por ${l.formato?.toLowerCase() ?? 'el envase'}: puede que se contaran cajas donde iban ${conUnidadDeUso(l.decia ?? 0, l.unidadDeUso)}.`
             : `¿Bien contado? Es cinco veces lo que decía, o más. Mira la cifra antes de cerrar.`}
         </p>
       )}

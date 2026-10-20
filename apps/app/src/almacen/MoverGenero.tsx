@@ -379,7 +379,7 @@ function ElFormulario({
                   Ahora constan {conUnidadDeUso(hayAhora, producto.unidadDeUso)}.{' '}
                   {raroAlCorregir === 'envases'
                     ? `Es justo lo de antes por ${producto.formato?.toLowerCase() ?? 'el envase'}: aquí se escribe lo que hay, no cuántas cajas.`
-                    : 'Es cinco veces más o más. Mira la cifra y si está en kilos o en gramos.'}
+                    : 'Es cinco veces lo que consta, o más. Mira la cifra y si está en kilos o en gramos.'}
                 </Aviso>
                 <Interruptor
                   etiqueta="Sí, hay eso"

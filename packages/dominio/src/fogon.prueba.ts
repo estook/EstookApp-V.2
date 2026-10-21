@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { avisoDeLaRevision } from './avisos.ts';
-import { CREDITOS_DE_FOGON, casarConUnProducto, centimosDeEuros } from './fogon.ts';
+import {
+  CREDITOS_AL_MES,
+  CREDITOS_DE_FOGON,
+  casarConUnProducto,
+  centimosDeEuros,
+  costeEnMicroEuros,
+} from './fogon.ts';
 
 /**
  * Fogón lee y revisa (Fogón 1 · 2 y 1 · 3, decisión 0098): lo que no depende del modelo.
@@ -49,10 +55,21 @@ describe('de euros a céntimos', () => {
 describe('lo que gasta cada cosa', () => {
   it('una foto gasta más que un texto, y nada pasa de lo que deja apuntar la base', () => {
     expect(CREDITOS_DE_FOGON.leer_merma_foto).toBeGreaterThan(CREDITOS_DE_FOGON.leer_merma_voz);
+    // Buscar en internet, lo que más (0104): y cabe en el día de Esencial (30).
+    expect(CREDITOS_DE_FOGON.analizar_zona).toBe(Math.max(...Object.values(CREDITOS_DE_FOGON)));
+    expect(CREDITOS_DE_FOGON.analizar_zona).toBeLessThanOrEqual(CREDITOS_AL_MES.esencial / 10);
     for (const creditos of Object.values(CREDITOS_DE_FOGON)) {
       expect(creditos).toBeGreaterThanOrEqual(1);
-      expect(creditos).toBeLessThanOrEqual(20);
+      expect(creditos).toBeLessThanOrEqual(30);
     }
+  });
+});
+
+describe('lo que cuesta buscar en internet', () => {
+  it('cada búsqueda, un céntimo de dólar además de los tokens', () => {
+    const tokens = { entrada: 0, cacheLeidos: 0, cacheEscritos: 0, salida: 0 };
+    expect(costeEnMicroEuros('claude-haiku-5-5', { ...tokens, busquedas: 10 })).toBe(90_000);
+    expect(costeEnMicroEuros('claude-haiku-5-5', tokens)).toBe(0);
   });
 });
 

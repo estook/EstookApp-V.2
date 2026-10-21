@@ -982,6 +982,7 @@ export {
   casarConUnProducto,
   centimosDeEuros,
   centimosDeMicroEuros,
+  DOLARES_POR_BUSQUEDA,
   costeEnMicroEuros,
   creditosDelPlan,
 } from './fogon.ts';
@@ -999,6 +1000,36 @@ export {
   sigueAgotado,
 } from './agotado.ts';
 export type { HastaCuandoAgotado } from './agotado.ts';
+// ── M10 · 2 · los menús (0104) ───────────────────────────────────────────────
+export {
+  CAFE_COMO_OPCION,
+  DIAS_DEL_MENU_DEL_DIA,
+  INICIAL_DEL_DIA,
+  NOMBRE_DEL_DIA,
+  SECCIONES_DEL_MENU_DEL_DIA,
+  comoSeLlamaLaSeccion,
+  costePorRacion,
+  elDiaQueVale,
+  losDiasQueSeSirve,
+  loQueDejaElMenu,
+} from './menus.ts';
+export {
+  BUSQUEDAS_POR_ANALISIS,
+  HORAS_ENTRE_ANALISIS_DE_ZONA,
+  MARGEN_DE_LA_MEDIA,
+  MINIMO_PARA_COMPARAR,
+  compararConLaZona,
+  cuandoSePuedeOtraVez,
+} from './tu-zona.ts';
+export type { ComoEstasEnLaZona } from './tu-zona.ts';
+export type {
+  LoQueDejaElMenu,
+  LoQueEntraSinPlato,
+  MenuParaLaCuenta,
+  OpcionDelMenu,
+  SeccionParaLaCuenta,
+  UnCaso,
+} from './menus.ts';
 export {
   MAXIMO_DE_PLATOS_POR_SECCION,
   MINIMO_PARA_JUZGAR,

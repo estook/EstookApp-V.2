@@ -80,13 +80,15 @@ async function lasReglas(contexto: Contexto, localId: string): Promise<Hallazgo[
     hallazgos.push({
       que: 'sin_escandallo',
       texto: `${sinEscandallo.length === 1 ? '1 plato' : `${String(sinEscandallo.length)} platos`} de la carta sin escandallo: ${unosCuantos(sinEscandallo.map((p) => p.nombre))}. Sin él, Estook no sabe lo que cuestan.`,
-      ir: '/escandallos/escandallos/todos?hacer=anadir-plato',
+      ir: '/escandallos/escandallos/carta?hacer=anadir-plato',
     });
   }
 
   const platosSinPrecio = await contexto.sql<{ nombre: string }[]>`
     select nombre from estook.plato
      where local_id = ${localId}::uuid and activo and not es_ejemplo and precio_centimos is null
+       -- El plato del menú no lleva precio: lo cobra el menú (0104).
+       and en_la_carta
      order by nombre
   `;
   if (platosSinPrecio.length > 0) {

@@ -122,7 +122,7 @@ export const ACCIONES: readonly Accion[] = [
     queHace: 'Lo que lleva un plato de tu carta y en qué cantidad: el coste sale solo',
     icono: IconoEscandallos,
     permiso: { cual: 'app.escandallos', como: 'editar' },
-    ir: '/escandallos/escandallos/todos',
+    ir: '/escandallos/escandallos/carta',
   },
   {
     id: 'que-atender',

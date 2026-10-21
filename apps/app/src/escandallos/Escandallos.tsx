@@ -367,7 +367,7 @@ function Resumen({
                     tono="texto"
                     tamano="s"
                     onClick={() => {
-                      navegar('/escandallos/escandallos/todos?hacer=anadir-plato');
+                      navegar('/escandallos/escandallos/carta?hacer=anadir-plato');
                     }}
                   >
                     Ver todos
@@ -1218,7 +1218,7 @@ function CrearFichaTecnica({
               <button
                 type="button"
                 onClick={() => {
-                  navegar('/escandallos/escandallos/todos?hacer=anadir-plato');
+                  navegar('/escandallos/escandallos/carta?hacer=anadir-plato');
                 }}
                 className="font-semibold text-texto underline decoration-borde-fuerte underline-offset-4"
               >

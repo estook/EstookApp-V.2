@@ -255,13 +255,37 @@ export const crearPlatos = comando<
       if (vistos.has(clave)) continue;
       vistos.add(clave);
 
-      const ya = await contexto.sql<{ id: string; activo: boolean; nombre: string }[]>`
-        select id, activo, nombre from estook.plato
+      const ya = await contexto.sql<
+        { id: string; activo: boolean; nombre: string; en_la_carta: boolean }[]
+      >`
+        select id, activo, nombre, en_la_carta from estook.plato
          where local_id = ${localId}::uuid
            and estook.sin_acentos(nombre) = estook.sin_acentos(${nuevo.nombre})
       `;
       const existente = ya[0];
       if (existente !== undefined) {
+        if (existente.activo && !existente.en_la_carta) {
+          // El plato que nació en un menú (0104) y ahora se escribe en la carta: es el
+          // mismo, con su escandallo; pasa a la carta, en esta sección y con este precio.
+          await contexto.sql`
+            update estook.plato
+               set en_la_carta = true, seccion_id = ${entrada.seccion_id}::uuid,
+                   precio_centimos = coalesce(${nuevo.precio_centimos ?? null}::int, precio_centimos),
+                   actualizado_en = now()
+             where id = ${existente.id}::uuid
+          `;
+          await anotar(
+            contexto,
+            'poner_en_la_carta',
+            'plato',
+            existente.id,
+            localId,
+            { en_la_carta: false },
+            { en_la_carta: true },
+          );
+          recuperados.push({ platoId: existente.id, nombre: existente.nombre });
+          continue;
+        }
         if (existente.activo) {
           yaEstaban.push(existente.nombre);
           continue;
@@ -270,7 +294,7 @@ export const crearPlatos = comando<
         // mismo plato, con su historial.
         await contexto.sql`
           update estook.plato
-             set activo = true, seccion_id = ${entrada.seccion_id}::uuid,
+             set activo = true, en_la_carta = true, seccion_id = ${entrada.seccion_id}::uuid,
                  precio_centimos = coalesce(${nuevo.precio_centimos ?? null}::int, precio_centimos),
                  actualizado_en = now()
            where id = ${existente.id}::uuid

@@ -487,7 +487,7 @@ function ParaEditar({
             await refrescarLasFichas();
           }}
           alVerLaFicha={() => {
-            navegar(`/escandallos/escandallos/todos?ficha=plato.${plato.id}`);
+            navegar(`/escandallos/escandallos/carta?ficha=plato.${plato.id}`);
           }}
         />
       )}

@@ -61,6 +61,8 @@ export interface UnPlato {
   readonly tieneFicha: boolean;
   /** Si está agotado ahora, hasta cuándo y quién lo marcó (M10 · 1, 0102). */
   readonly agotado: ElAgotado | null;
+  /** Falso si nació en un menú y no sale en la carta (M10 · 2, 0104). */
+  readonly enLaCarta: boolean;
 }
 
 /** «Entrecot de ternera · 300 g», o solo el nombre si es una unidad. */
@@ -110,6 +112,7 @@ interface FilaDePlato {
   alergenos: string[];
   picante: number;
   distintivos: string[];
+  en_la_carta: boolean;
 }
 
 /**
@@ -127,7 +130,7 @@ export async function losPlatos(
     contexto.sql<FilaDePlato[]>`
       select p.id, p.seccion_id, p.nombre, p.descripcion, p.precio_centimos,
              p.foto_clave, p.miniatura_clave, p.orden, p.activo, p.version,
-             p.unidades_por_racion, p.alergenos, p.picante, p.distintivos,
+             p.unidades_por_racion, p.alergenos, p.picante, p.distintivos, p.en_la_carta,
              (select jsonb_object_agg(pp.canal::text, pp.precio_centimos)
                 from estook.precio_de_plato pp where pp.plato_id = p.id) as precios
         from estook.plato p
@@ -172,6 +175,7 @@ export async function losPlatos(
             },
       tieneFicha: (receta?.lineas.length ?? 0) > 0,
       agotado: agotados.get(f.id) ?? null,
+      enLaCarta: f.en_la_carta,
     };
   });
 }

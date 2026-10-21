@@ -176,6 +176,22 @@ import { losAgotados } from './consultas/agotados.ts';
 import { elEquilibrioDeLaCarta } from './consultas/equilibrio.ts';
 import { marcarAgotado, quitarAgotado } from './comandos/agotados.ts';
 import { leerLaCarta, leerPaginaConFogon } from './comandos/leer-la-carta.ts';
+import { misMenus } from './consultas/menus.ts';
+import {
+  archivarMenu,
+  cambiarMenu,
+  cambiarPlatoDelMenu,
+  cambiarSeccionDeMenu,
+  copiarLaSemanaPasada,
+  crearMenu,
+  ordenarSeccionesDeMenu,
+  ponerEnLaCarta,
+  ponerPlatoEnElMenu,
+  ponerSeccionDeMenu,
+  quitarPlatoDelMenu,
+  quitarSeccionDeMenu,
+  sirveMenus,
+} from './comandos/menus.ts';
 import {
   laDesviacionDeLosPlatos,
   laFichaEnPdf,
@@ -396,6 +412,8 @@ export const catalogo = {
     // la cocina, sin precios) y el equilibrio de la carta, con Omnes.
     [losAgotados.nombre]: losAgotados,
     [elEquilibrioDeLaCarta.nombre]: elEquilibrioDeLaCarta,
+    // M10 · 2 · Los menús (0104): la semana de cada menú, y lo que deja a quien ve costes.
+    [misMenus.nombre]: misMenus,
     // M9 · 2 · Fichas y escandallos (0087): la lista con «sin ficha», cada ficha con su
     // escandallo a quien ve costes, lo que puede llevar una receta, el PDF sin euros y
     // la desviación de los platos, que se enseña con Estook TPV.
@@ -812,6 +830,21 @@ export const catalogo = {
     [quitarAgotado.nombre]: quitarAgotado,
     [leerLaCarta.nombre]: leerLaCarta,
     [leerPaginaConFogon.nombre]: leerPaginaConFogon,
+    // M10 · 2 · Los menús (0104): si el local los sirve, montarlos día a día y el plato
+    // del menú que pasa a la carta.
+    [sirveMenus.nombre]: sirveMenus,
+    [crearMenu.nombre]: crearMenu,
+    [cambiarMenu.nombre]: cambiarMenu,
+    [archivarMenu.nombre]: archivarMenu,
+    [ponerSeccionDeMenu.nombre]: ponerSeccionDeMenu,
+    [cambiarSeccionDeMenu.nombre]: cambiarSeccionDeMenu,
+    [quitarSeccionDeMenu.nombre]: quitarSeccionDeMenu,
+    [ordenarSeccionesDeMenu.nombre]: ordenarSeccionesDeMenu,
+    [ponerPlatoEnElMenu.nombre]: ponerPlatoEnElMenu,
+    [cambiarPlatoDelMenu.nombre]: cambiarPlatoDelMenu,
+    [quitarPlatoDelMenu.nombre]: quitarPlatoDelMenu,
+    [copiarLaSemanaPasada.nombre]: copiarLaSemanaPasada,
+    [ponerEnLaCarta.nombre]: ponerEnLaCarta,
 
     // ── M9 · 2 · Fichas y escandallos (0087) ─────────────────────────────────
     //

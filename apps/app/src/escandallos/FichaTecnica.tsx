@@ -75,7 +75,7 @@ export function FichaTecnica({
   }
 
   const alEscandallo = () => {
-    navegar(`/escandallos/escandallos/todos?ficha=${comoSeAbre(ficha)}`);
+    navegar(`/escandallos/escandallos/carta?ficha=${comoSeAbre(ficha)}`);
   };
   const sinEscandallo = datos.receta.lineas.length === 0;
   const pasos = datos.receta.pasos;

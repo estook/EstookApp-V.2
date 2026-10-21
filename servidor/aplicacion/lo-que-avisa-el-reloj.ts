@@ -438,7 +438,7 @@ async function losPlatosQueCruzan(contexto: Contexto, local: LocalDelReloj): Pro
               },
             ),
           // Con la vista: sin ella, la redirección a la de entrada pierde el «?ficha=».
-          ir: `/escandallos/escandallos/todos?ficha=plato.${plato.id}`,
+          ir: `/escandallos/escandallos/carta?ficha=plato.${plato.id}`,
           quien: null,
         },
         quienes,

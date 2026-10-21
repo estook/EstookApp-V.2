@@ -74,3 +74,4 @@
 | E2  | **La cláusula de los alérgenos:** Estook ayuda a informar; la información es del local                                          | Las condiciones, M9 y M12   |           |
 | E3  | **La disponibilidad prometida** y el soporte: qué se puede prometer y qué no                                                    | Las condiciones y el precio |           |
 | E4  | **La marca «Estook», «Estook TPV», «Estook Link» y «Fogón»:** registro                                                          | Antes de hacer publicidad   |           |
+| E5  | **Los precios de otros locales** que lee Fogón en sus webs públicas («Analiza mi zona», 0103), guardados solo para ese local    | M10 · 2 y M23               |           |

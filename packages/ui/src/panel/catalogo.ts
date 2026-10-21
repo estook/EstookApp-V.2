@@ -129,6 +129,15 @@ export const WIDGETS: readonly Widget[] = [
     tamano: 'ancho',
   },
   {
+    // M10 · 2 (0104): «Camarero: mi turno, menú del día, agotados…» (Manifiesto, el Panel
+    // de cada puesto). Lo de hoy, para contestar en la mesa sin abrir nada.
+    id: 'menu-de-hoy',
+    nombre: 'Menú del día',
+    queEnsena: 'El menú de hoy, con su precio y lo agotado tachado',
+    permiso: 'app.carta',
+    tamano: 'ancho',
+  },
+  {
     id: 'calendario',
     nombre: 'Lo que viene',
     queEnsena: 'Hoy y mañana: entregas, caducidades y avisos',
@@ -322,8 +331,9 @@ const DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
   jefe: ['fichar', 'objetivos', 'caducidades', 'bajo-minimo', 'pedidos', 'fichajes'],
   cocina: ['fichar', 'mis-horas', 'mi-turno', 'merma', 'caducidades', 'bajo-minimo'],
   // Los agotados, en vez de «Lo que viene» (M10 · 1, 0102): las entregas y las
-  // caducidades no son de la sala; lo que se ha acabado, sí.
-  sala: ['fichar', 'mis-horas', 'mi-turno', 'agotados', 'merma', 'mis-apps'],
+  // caducidades no son de la sala; lo que se ha acabado, sí. Y el menú del día (M10 · 2,
+  // 0104), en vez de «Mis apps», que se sigue ofreciendo el primero al añadir.
+  sala: ['fichar', 'mis-horas', 'mi-turno', 'menu-de-hoy', 'agotados', 'merma'],
 };
 
 /**
@@ -331,10 +341,10 @@ const DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
  * al añadir, porque es lo que más probablemente eche de menos.
  */
 export const SUGERIDOS_DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = {
-  gerente: ['bajo-minimo', 'pedidos', 'caducidades', 'calendario'],
-  jefe: ['food-cost', 'calendario'],
+  gerente: ['bajo-minimo', 'pedidos', 'caducidades', 'calendario', 'menu-de-hoy'],
+  jefe: ['food-cost', 'calendario', 'menu-de-hoy'],
   cocina: ['agotados', 'calendario'],
-  sala: ['calendario'],
+  sala: ['mis-apps', 'calendario'],
 };
 
 function puesto(id: string): WidgetPuesto {
@@ -402,6 +412,7 @@ export const GRUPO_DEL_WIDGET: Readonly<Record<string, GrupoDeWidget>> = {
   caducidades: 'atender',
   pedidos: 'atender',
   agotados: 'atender',
+  'menu-de-hoy': 'atender',
   calendario: 'atender',
   ventas: 'cifras',
   objetivos: 'cifras',

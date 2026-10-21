@@ -36,7 +36,7 @@ export const SECCIONES: readonly Seccion[] = [
   {
     id: 'local',
     nombre: 'Tu local',
-    queHay: 'Marca, dónde está, fichar, objetivos, tu carta y precios',
+    queHay: 'Marca, dónde está, fichar, objetivos, carta, menús y precios',
   },
   { id: 'conexiones', nombre: 'Conexiones', queHay: 'Cómo entran tus ventas' },
   // La suscripción, a mano de quien la paga (Richi, 25-sep · 0048).

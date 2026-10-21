@@ -43,7 +43,8 @@ export function AnadirAlMenu({
   const { cliente } = usarSesion();
   const refrescar = usarRefrescarLaCarta();
   const carta = usarLectura<MiCarta>('mi_carta');
-  const [como, setComo] = useState<'carta' | 'nuevo'>('carta');
+  /** Lo que eligió; sin elegir, «De tu carta» si queda algo en ella y si no, «Plato nuevo». */
+  const [elegido, setComo] = useState<'carta' | 'nuevo' | null>(null);
   const [buscado, setBuscado] = useState('');
   const [nuevo, setNuevo] = useState('');
   const [suplemento, setSuplemento] = useState<Centimos | null>(null);
@@ -73,13 +74,17 @@ export function AnadirAlMenu({
   }
 
   const texto = sinAcentos(buscado.trim());
-  const platos =
+  const quedan =
     carta.data === undefined
       ? []
-      : soloLoDeLaCarta(carta.data)
-          .platos.filter((p) => p.activo && !yaEstan.includes(p.id))
-          .filter((p) => texto === '' || sinAcentos(p.nombre).includes(texto))
-          .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+      : soloLoDeLaCarta(carta.data).platos.filter((p) => p.activo && !yaEstan.includes(p.id));
+  const como = elegido ?? (carta.isPending || quedan.length > 0 ? 'carta' : 'nuevo');
+  const platos = quedan
+    .filter((p) => texto === '' || sinAcentos(p.nombre).includes(texto))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  const ponerElNuevo = () => {
+    if (nuevo.trim() !== '' && trabajando === null) void poner({ nuevo: nuevo.trim() }, 'nuevo');
+  };
   const filas: ElementoDeLista[] = platos.map((p) => ({
     clave: p.id,
     titulo: p.nombre,
@@ -117,7 +122,7 @@ export function AnadirAlMenu({
                   disabled={nuevo.trim() === ''}
                   cargando={trabajando === 'nuevo'}
                   textoCargando="Añadiendo"
-                  onClick={() => void poner({ nuevo: nuevo.trim() }, 'nuevo')}
+                  onClick={ponerElNuevo}
                 >
                   Añadir
                 </Boton>
@@ -153,13 +158,6 @@ export function AnadirAlMenu({
           ))}
         </div>
 
-        <CampoMoneda
-          etiqueta="Suplemento (si lo lleva)"
-          ayuda="Lo que se cobra de más por elegirlo: «entrecot +4 €»."
-          valor={suplemento}
-          alCambiar={setSuplemento}
-        />
-
         {como === 'carta' ? (
           <div className="flex flex-col gap-e3">
             <Campo
@@ -178,7 +176,7 @@ export function AnadirAlMenu({
                 cuandoNoHay={
                   buscado.trim() === '' ? (
                     <p className="px-e3 py-e2 text-secundario text-texto-suave">
-                      No hay más platos en tu carta. Escribe uno nuevo en «Plato nuevo».
+                      Ya están todos los de tu carta. Escribe uno en «Plato nuevo».
                     </p>
                   ) : (
                     <NadaConEso
@@ -192,21 +190,35 @@ export function AnadirAlMenu({
                 }
               />
             )}
+            {/* Un toque y está puesto; el suplemento, que lleva uno de cada muchos, después. */}
+            <p className="text-secundario text-texto-suave">
+              ¿Lleva suplemento? Tócalo en el menú cuando esté puesto.
+            </p>
           </div>
         ) : (
           <div className="flex flex-col gap-e2">
             <Campo
               etiqueta="El plato"
               placeholder="Lentejas estofadas"
+              enterKeyHint="done"
               value={nuevo}
               onChange={(evento) => {
                 setNuevo(evento.target.value);
+              }}
+              onKeyDown={(evento) => {
+                if (evento.key === 'Enter') ponerElNuevo();
               }}
             />
             <p className="text-secundario text-texto-suave">
               Solo para el menú: no sale en tu carta. Se desgrana en Escandallos, como cualquier
               plato.
             </p>
+            <CampoMoneda
+              etiqueta="Suplemento (si lo lleva)"
+              ayuda="Lo que se cobra de más por elegirlo: «entrecot +4 €»."
+              valor={suplemento}
+              alCambiar={setSuplemento}
+            />
           </div>
         )}
       </div>

@@ -47,6 +47,8 @@ import { usarComoSeCierra } from '../ganchos/usarComoSeCierra.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { ComprasDeHoy, LoQueViene } from '../compras/contrato.ts';
 import { comoSigueAgotado, type LosAgotados } from '../carta/contrato.ts';
+import { lasSeccionesQueSalen, type MisMenus } from '../carta/contratoDeLosMenus.ts';
+import { comoDinero } from '../almacen/contrato.ts';
 import {
   TONO_DEL_ESTADO,
   comoSeLeeLaFecha,
@@ -124,6 +126,8 @@ function Cual({
       return <LoQueVieneWidget />;
     case 'agotados':
       return <AgotadosWidget />;
+    case 'menu-de-hoy':
+      return <MenuDelDiaWidget />;
     case 'fichajes':
       return <EquipoAhora />;
     case 'mi-turno':
@@ -1045,6 +1049,63 @@ function AgotadosWidget() {
                   {comoSigueAgotado(plato.agotado)}
                 </span>
               )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Marco>
+  );
+}
+
+/**
+ * El menú del día de hoy (M10 · 2, 0104): su precio, y cada sección con sus platos en una
+ * línea; lo agotado, tachado. Al tocarlo, Carta › Menús. Sin menú hoy, en «sin nada».
+ */
+function MenuDelDiaWidget() {
+  const consulta = usarLectura<MisMenus>('mis_menus');
+  const menu = consulta.data?.menus.find((m) => m.clase === 'del_dia');
+  const hoy = menu?.dias.find((d) => d.esHoy);
+  const secciones =
+    menu === undefined || hoy === undefined
+      ? []
+      : lasSeccionesQueSalen(menu)
+          .map((s) => ({ ...s, platos: hoy.platos[s.id] ?? [] }))
+          .filter((s) => s.platos.length > 0);
+  const sinMenu = consulta.data !== undefined && secciones.length === 0;
+  usarQueEstaVacio(consulta.data === undefined ? undefined : sinMenu);
+
+  return (
+    <Marco
+      titulo="Menú del día"
+      leyendo={consulta}
+      ir="/carta/menus"
+      derecha={
+        menu?.precioCentimos == null ? undefined : (
+          <Contador>{comoDinero(menu.precioCentimos)}</Contador>
+        )
+      }
+    >
+      {consulta.data === undefined ? (
+        <Cargando que="el menú" forma="lista" lineas={3} />
+      ) : sinMenu ? (
+        <Tranquilo>
+          {consulta.data.sirveMenus === false ? 'Tu local no sirve menús.' : 'Hoy no hay menú puesto.'}
+        </Tranquilo>
+      ) : (
+        <ul className="flex flex-col gap-e2">
+          {secciones.map((s) => (
+            <li key={s.id} className="flex flex-col">
+              <span className="text-etiqueta font-semibold text-texto-tenue">{s.comoSeLlama}</span>
+              <span className="text-secundario">
+                {s.platos.map((p, i) => (
+                  <span key={p.platoId}>
+                    {i > 0 && <span className="text-texto-tenue"> · </span>}
+                    <span className={p.agotado ? 'text-texto-suave line-through' : undefined}>
+                      {p.nombre}
+                    </span>
+                  </span>
+                ))}
+              </span>
             </li>
           ))}
         </ul>

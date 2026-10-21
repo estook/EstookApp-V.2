@@ -701,9 +701,14 @@ export const quitarPlatoDelMenu = comando<
   },
 });
 
+/**
+ * La semana de antes, día por día, **en los días que todavía no se han montado**: lo que
+ * ya se ha puesto esta semana no se pisa sin avisar. Dice los que ha rellenado y los que
+ * ya estaban.
+ */
 export const copiarLaSemanaPasada = comando<
   { menu_id: string; lunes: string },
-  { copiados: number; dias: string[] }
+  { copiados: number; dias: string[]; yaEstaban: string[] }
 >({
   nombre: 'copiar_la_semana_pasada',
   entrada: z.object({ menu_id: idDe, lunes: fecha }).strict(),
@@ -722,8 +727,18 @@ export const copiarLaSemanaPasada = comando<
     const dias = losDiasQueSeSirve(fechaOperativa(entrada.lunes), menu.diasQueSeSirve).filter(
       (d) => d >= hoy,
     );
+    const montados = new Set(
+      (
+        await contexto.sql<{ fecha: string }[]>`
+          select to_char(fecha, 'YYYY-MM-DD') as fecha from estook.dia_de_menu
+           where menu_id = ${menu.id}::uuid and fecha = any (${comoLista(dias)}::text::date[])
+        `
+      ).map((f) => f.fecha),
+    );
+    const yaEstaban = dias.filter((d) => montados.has(d));
+    const rellenados = dias.filter((d) => !montados.has(d));
     let copiados = 0;
-    for (const dia of dias) {
+    for (const dia of rellenados) {
       sePuedeTocar(dia, hoy);
       // Lo que valía ese mismo día la semana pasada (el suyo, o el que repetía).
       const vale = await elDiaMontadoQueVale(contexto, menu.id, masDias(dia, -7));
@@ -743,11 +758,13 @@ export const copiarLaSemanaPasada = comando<
       `;
       copiados += puestos.length;
     }
-    await anotar(contexto, 'copiar_semana', 'menu', menu.id, localId, null, {
-      lunes: entrada.lunes,
-      dias,
-    });
-    return { copiados, dias };
+    if (rellenados.length > 0) {
+      await anotar(contexto, 'copiar_semana', 'menu', menu.id, localId, null, {
+        lunes: entrada.lunes,
+        dias: rellenados,
+      });
+    }
+    return { copiados, dias: rellenados, yaEstaban };
   },
 });
 

@@ -290,6 +290,29 @@ describe('cada día distinto, y un día sin tocar repite el anterior', () => {
     ]);
     expect(siguiente.dias.every((d) => d.montado)).toBe(true);
   });
+
+  it('copiarla otra vez no pisa lo que ya se ha montado esa semana', async () => {
+    const menu = await elDelDia(rosa, '2026-10-26');
+    // El lunes 26 se cambia a mano: unas lentejas.
+    losDatos(
+      await api.ejecutar(rosa, 'poner_plato_en_el_menu', {
+        menu_id: menu.id,
+        fecha: '2026-10-26',
+        seccion_id: laSeccion(menu, 'Primeros'),
+        plato_id: carta['Lentejas'],
+      }),
+    );
+    const copia = losDatos<{ dias: string[]; yaEstaban: string[] }>(
+      await api.ejecutar(rosa, 'copiar_la_semana_pasada', {
+        menu_id: menu.id,
+        lunes: '2026-10-26',
+      }),
+    );
+    expect(copia.dias).toEqual([]);
+    expect(copia.yaEstaban).toHaveLength(5);
+    const lunes = (await elDelDia(rosa, '2026-10-26')).dias[0];
+    expect(losNombres(lunes, laSeccion(menu, 'Primeros'))).toEqual(['Lentejas']);
+  });
 });
 
 describe('el plato que nace en el menú', () => {

@@ -215,6 +215,8 @@ function ElMenu({
   const [anadirEn, setAnadirEn] = useState<string | null>(null);
   const [plato, setPlato] = useState<{ seccionId: string; plato: UnPlatoDelMenu } | null>(null);
   const [copiando, setCopiando] = useState(false);
+  /** Lo que ha hecho «Copiar la semana pasada», dicho en una línea. */
+  const [copiada, setCopiada] = useState<string | null>(null);
   const [creando, setCreando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
@@ -226,12 +228,26 @@ function ElMenu({
   async function copiarLaSemana() {
     setCopiando(true);
     setError(null);
-    const respuesta = await cliente.ejecutar('copiar_la_semana_pasada', {
-      menu_id: menu.id,
-      lunes: datos.lunes,
-    });
+    setCopiada(null);
+    const respuesta = await cliente.ejecutar<{ dias: string[]; yaEstaban: string[] }>(
+      'copiar_la_semana_pasada',
+      { menu_id: menu.id, lunes: datos.lunes },
+    );
     setCopiando(false);
-    if (!respuesta.ok) setError(respuesta.error);
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    const { dias, yaEstaban } = respuesta.datos;
+    setCopiada(
+      dias.length === 0
+        ? 'Esta semana ya estaba montada: no se ha tocado nada.'
+        : `Copiada en ${dias.length === 1 ? '1 día' : `${String(dias.length)} días`}${
+            yaEstaban.length === 0
+              ? ''
+              : `; ${yaEstaban.length === 1 ? 'el que ya estaba montado' : 'los que ya estaban montados'}, como estaba${yaEstaban.length === 1 ? '' : 'n'}`
+          }.`,
+    );
     await refrescar();
   }
 
@@ -390,8 +406,9 @@ function ElMenu({
       )}
 
       {datos.puedeEditar && (
-        <div className="flex flex-wrap gap-e2">
-          {delDia && (
+        <div className="flex flex-wrap items-center gap-e2">
+          {/* Solo en las semanas que quedan por servir: lo que pasó no se toca. */}
+          {delDia && menu.dias.some((d) => !d.yaPaso) && (
             <Boton
               tono="texto"
               cargando={copiando}
@@ -411,6 +428,11 @@ function ElMenu({
           >
             Otro menú
           </Boton>
+          {copiada !== null && (
+            <p role="status" className="w-full text-secundario text-texto-suave">
+              {copiada}
+            </p>
+          )}
         </div>
       )}
 

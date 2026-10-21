@@ -60,8 +60,11 @@ export interface UnPlato {
   readonly tieneFicha: boolean;
   /** Si está agotado ahora (M10 · 1, 0102): hasta cuándo (nulo, sin fecha) y quién. */
   readonly agotado: ElAgotado | null;
-  /** Falso si nació en un menú y no sale en la carta (M10 · 2, 0104). */
-  readonly enLaCarta: boolean;
+  /**
+   * Falso si nació en un menú y no sale en la carta (M10 · 2, 0104). Una API de antes no
+   * lo manda: entonces todo está en la carta.
+   */
+  readonly enLaCarta?: boolean;
 }
 
 export interface ElAgotado {
@@ -115,7 +118,7 @@ export interface MiCarta {
  * Menús, no en la carta. Escritas en la carta, pasan a ella.
  */
 export function soloLoDeLaCarta(carta: MiCarta): MiCarta {
-  return { ...carta, platos: carta.platos.filter((p) => p.enLaCarta) };
+  return { ...carta, platos: carta.platos.filter((p) => p.enLaCarta !== false) };
 }
 
 export interface UnCambio {

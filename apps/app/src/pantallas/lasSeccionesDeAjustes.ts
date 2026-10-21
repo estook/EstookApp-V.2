@@ -136,8 +136,8 @@ export const AJUSTES: readonly Ajuste[] = [
   {
     id: 'tu-carta',
     seccion: 'local',
-    nombre: 'Tu carta y el QR de tu carta',
-    palabras: 'qr carta código mesa imprimir cartel menú dirección subir pdf fotos',
+    nombre: 'Tu carta, el QR de tu carta y tus menús',
+    palabras: 'qr carta código mesa imprimir cartel menú menús del día dirección subir pdf fotos',
   },
   {
     id: 'precios-de-compra',

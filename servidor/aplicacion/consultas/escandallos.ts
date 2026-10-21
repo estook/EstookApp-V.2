@@ -118,6 +118,10 @@ export interface PlatoEnLaLista {
   readonly vinculadoA: string | null;
   readonly alergenos: readonly Alergeno[];
   readonly picante: number;
+  /** Falso si nació en un menú y no sale en la carta (M10 · 2, 0104). */
+  readonly enLaCarta: boolean;
+  /** Los menús en los que está estas semanas: la vista «Menús» (0104). */
+  readonly enMenus: readonly string[];
   /** Solo con `dato.coste_de_plato`. */
   readonly coste?: CosteEnLaLista;
 }
@@ -177,14 +181,26 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
     const localId = elLocalDeEscandallos(contexto);
     const puede = await conCostes(contexto, localId);
     const libro = await elLibroDelLocal(contexto, localId, puede.costes);
-    const [platos, secciones, cuenta] = await Promise.all([
+    const [platos, secciones, cuenta, enMenus] = await Promise.all([
       losPlatos(contexto, localId, null, libro),
       contexto.sql<{ id: string; nombre: string }[]>`
         select id, nombre from estook.seccion_de_carta
          where local_id = ${localId}::uuid order by orden, nombre
       `,
       puede.costes ? loDeLaCuenta(contexto, localId) : Promise.resolve(null),
+      // Los platos de los menús de estas semanas (0104): los de las cuatro de antes, que
+      // siguen saliendo si no se han cambiado, y los de las que vienen.
+      contexto.sql<{ plato_id: string; menu: string }[]>`
+        select distinct pm.plato_id, m.nombre as menu
+          from estook.plato_de_menu pm
+          join estook.menu m on m.id = pm.menu_id and m.activo
+         where pm.local_id = ${localId}::uuid
+           and pm.fecha >= ${contexto.ahora.toISOString()}::date - 28
+         order by m.nombre
+      `,
     ]);
+    const losMenusDe = new Map<string, string[]>();
+    for (const f of enMenus) losMenusDe.set(f.plato_id, [...(losMenusDe.get(f.plato_id) ?? []), f.menu]);
 
     const activos = platos.filter((p) => p.activo);
     const enLaLista = activos.map((p): PlatoEnLaLista => {
@@ -200,6 +216,8 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
         vinculadoA: comoSeLeeElVinculo(p.vinculadoA),
         alergenos: enOrdenOficial([...p.alergenosDeLaReceta, ...p.alergenos]),
         picante: p.picante,
+        enLaCarta: p.enLaCarta,
+        enMenus: losMenusDe.get(p.id) ?? [],
       };
       if (cuenta === null) return base;
       const escandallo = elEscandalloDe(receta, p, libro.libro, cuenta);

@@ -7,6 +7,7 @@ import {
   colorSeguro,
   documentoDeLaFicha,
   documentoDelHorario,
+  documentoDelMenu,
   documentoDelInforme,
   documentoDelRegistro,
   escapar,
@@ -210,5 +211,40 @@ describe('la ficha técnica en PDF (0087)', () => {
 
   it('y ni un euro', () => {
     expect(pagina).not.toMatch(/€|EUR/);
+  });
+});
+
+describe('el menú del día en papel (0104)', () => {
+  const datos = {
+    marca: MARCA,
+    hechoEl: 'Hecho el 21 de octubre de 2026, 10:00',
+    nombre: 'Menú del día',
+    dia: 'Martes 20 de octubre',
+    precio: '13,50 €',
+    secciones: [
+      { nombre: 'Primeros', platos: [{ nombre: 'Lentejas <estofadas>', suplemento: null }] },
+      { nombre: 'Segundos', platos: [{ nombre: 'Entrecot', suplemento: '+4,00 €' }] },
+    ],
+    incluye: 'Pan incluido',
+    nota: 'IVA incluido',
+  };
+
+  it('el cartel va en A3, y la hoja en A4', () => {
+    expect(documentoDelMenu(datos, 'cartel')).toContain('@page { size: A3;');
+    expect(documentoDelMenu(datos, 'hoja')).toContain('@page { size: A4;');
+  });
+
+  it('lleva el día, cada plato con su suplemento, lo que entra y el precio con IVA', () => {
+    const pagina = documentoDelMenu(datos, 'cartel');
+    expect(pagina).toContain('Martes 20 de octubre');
+    expect(pagina).toContain('Lentejas &lt;estofadas&gt;');
+    expect(pagina).toContain('+4,00 €');
+    expect(pagina).toContain('Pan incluido');
+    expect(pagina).toContain('13,50 €');
+    expect(pagina).toContain('IVA incluido');
+  });
+
+  it('un menú que no es de un día no dice día', () => {
+    expect(documentoDelMenu({ ...datos, dia: null }, 'hoja')).not.toContain('class="dia"');
   });
 });

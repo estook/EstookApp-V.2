@@ -93,6 +93,8 @@ export function Escandallos({
       ? null
       : [
           ...((datos.cifras.bajoObjetivo ?? 0) > 0 ? ['bajo-objetivo'] : []),
+          // Los platos de los menús (M10 · 2, 0104): solo si el local tiene alguno.
+          ...(datos.platos.some((p) => (p.enMenus?.length ?? 0) > 0) ? ['menus'] : []),
           ...(sinFichaTecnica(datos).length > 0 ? ['sin-ficha'] : []),
         ],
   );
@@ -627,7 +629,8 @@ function LosEscandallos({
   const [buscado, setBuscado] = useState('');
   const hacer = usarAbiertoEnLaDireccion('hacer');
   const { casa, buscador, nadaConEso } = elBuscador(buscado, setBuscado);
-  const conEscandallo = datos.platos.filter((p) => p.tieneFicha);
+  // En «Carta», lo de la carta: lo que nació en un menú sale en «Menús» (0104).
+  const conEscandallo = datos.platos.filter((p) => p.tieneFicha && p.enLaCarta !== false);
   const elaboraciones = datos.elaboraciones.filter((e) => e.activo);
   const platos = conEscandallo
     .filter(casa)
@@ -690,6 +693,16 @@ function LosEscandallos({
     </div>
   );
 
+  if (vista === 'menus') {
+    return (
+      <div className="flex flex-col gap-e4">
+        {arriba}
+        <LosDeLosMenus datos={datos} casa={casa} alAbrir={alAbrir} nadaConEso={nadaConEso} />
+        {laHoja}
+      </div>
+    );
+  }
+
   if (vista === 'bajo-objetivo') {
     const enOrden = [...platos].sort((a, b) => (b.coste?.foodCost ?? 0) - (a.coste?.foodCost ?? 0));
     return (
@@ -738,6 +751,50 @@ function LosEscandallos({
       {platos.length === 0 && lasElaboraciones.length === 0 && <Tarjeta>{nadaConEso}</Tarjeta>}
       {laHoja}
     </div>
+  );
+}
+
+/**
+ * Escandallos › Menús (M10 · 2, 0104; Richi: «añadir otra pestaña que sea menú»): los
+ * platos de los menús de estas semanas, **con y sin escandallo**, por menú. El que no lo
+ * tiene se desgrana tocándolo: sin él, Carta › Menús no sabe lo que deja.
+ */
+function LosDeLosMenus({
+  datos,
+  casa,
+  alAbrir,
+  nadaConEso,
+}: {
+  readonly datos: MisFichas;
+  readonly casa: (plato: PlatoEnLaLista) => boolean;
+  readonly alAbrir: (ficha: QueFicha) => void;
+  readonly nadaConEso: React.ReactNode;
+}) {
+  const menus = [...new Set(datos.platos.flatMap((p) => p.enMenus ?? []))].sort((a, b) =>
+    a.localeCompare(b, 'es'),
+  );
+  const grupos = menus
+    .map((menu) => ({
+      menu,
+      platos: datos.platos
+        .filter((p) => (p.enMenus ?? []).includes(menu))
+        .filter(casa)
+        .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
+    }))
+    .filter((g) => g.platos.length > 0);
+  if (grupos.length === 0) return <Tarjeta>{nadaConEso}</Tarjeta>;
+  return (
+    <>
+      {grupos.map((g) => (
+        <Tarjeta key={g.menu} titulo={g.menu} cuantos={g.platos.length} acento={ACENTO} pegado>
+          <Lista
+            titulo={g.menu}
+            elementos={g.platos.map((p) => filaDePlato(p, alAbrir))}
+            cuandoNoHay={null}
+          />
+        </Tarjeta>
+      ))}
+    </>
   );
 }
 

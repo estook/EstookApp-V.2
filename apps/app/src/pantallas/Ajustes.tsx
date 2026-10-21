@@ -66,6 +66,7 @@ import { TusPreciosDeCompra } from '../almacen/TusPreciosDeCompra.tsx';
 import { TusObjetivos } from './TusObjetivos.tsx';
 import { TuCartaYSuQr } from './TuCartaYSuQr.tsx';
 import { TuCartaSubida } from './TuCartaSubida.tsx';
+import { TusMenus } from './TusMenus.tsx';
 import { TuSuscripcion } from './TuSuscripcion.tsx';
 import { TusAvisos } from './TusAvisos.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
@@ -409,11 +410,13 @@ function LaSeccion({
           {
             id: 'tu-carta',
             titulo: 'Tu carta',
-            frase: 'La carta que ven tus clientes y el QR de las mesas',
+            frase: 'La carta que ven tus clientes, el QR de las mesas y tus menús',
             icono: IconoCarta,
             contenido: (
               <div className="flex flex-col gap-e5">
                 <TuCartaSubida />
+                {/* «Debajo de tu carta» (Richi, 21-oct, 0103). */}
+                <TusMenus />
                 <TuCartaYSuQr />
               </div>
             ),

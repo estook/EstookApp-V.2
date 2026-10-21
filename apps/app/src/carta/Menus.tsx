@@ -260,43 +260,46 @@ function ElMenu({
       <Tarjeta
         titulo={menu.nombre}
         acento="var(--color-app-carta)"
-        accion={
-          <div className="flex items-center gap-e1">
+        {...(datos.puedeEditar
+          ? {
+              accion: (
+                <Boton
+                  tono="texto"
+                  tamano="s"
+                  icono={<IconoAjustes size={18} />}
+                  aria-label="Ajustes: precio, secciones y lo que entra"
+                  onClick={() => {
+                    setAjustes(true);
+                  }}
+                >
+                  Ajustes
+                </Boton>
+              ),
+            }
+          : {})}
+      >
+        <div className="flex flex-col gap-e3 px-e3 pb-e3">
+          <div className="flex flex-wrap items-center justify-between gap-e2">
+            <ElPrecio
+              menu={menu}
+              dia={dia}
+              alPonerlo={() => {
+                setAjustes(true);
+              }}
+              puede={datos.puedeEditar}
+            />
+            {/* «Descargar, que sea ampliable y salgan las opciones» (Richi): un botón. */}
             <Boton
-              tono="texto"
+              tono="secundario"
               tamano="s"
-              icono={<IconoDescargar size={18} />}
+              icono={<IconoDescargar size={16} />}
               onClick={() => {
                 setDescargar(true);
               }}
             >
               Descargar
             </Boton>
-            {datos.puedeEditar && (
-              <Boton
-                tono="texto"
-                tamano="s"
-                icono={<IconoAjustes size={18} />}
-                aria-label="Precio, secciones y lo que entra"
-                onClick={() => {
-                  setAjustes(true);
-                }}
-              >
-                Ajustes
-              </Boton>
-            )}
           </div>
-        }
-      >
-        <div className="flex flex-col gap-e3 px-e3 pb-e3">
-          <ElPrecio
-            menu={menu}
-            dia={dia}
-            alPonerlo={() => {
-              setAjustes(true);
-            }}
-            puede={datos.puedeEditar}
-          />
 
           {delDia && (
             <LaSemana

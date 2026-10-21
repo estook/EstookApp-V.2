@@ -808,9 +808,9 @@ Secciones que se añaden y se ordenan arrastrando. Dentro, platos con nombre, pr
 
 **Precios por canal.** El mismo café vale 1,30 € en barra, 1,60 € en terraza y 1,80 € en reparto, donde además la plataforma se lleva su comisión. **Los canales tienen su sección** (0086), con todas las plataformas programadas —hoy se activa Uber Eats, que es la que se usa—, su comisión y su envase; y **cada plato lleva su precio a mano en cada canal**, que es como se hace. Activar un canal no lo conecta: recibir sus pedidos es Estook Link.
 
-**Menús y fórmulas** con reparto del precio entre componentes para el margen, y prorrateo de impuestos cuando llevan bebida.
+**Menús** ([0103](../decisiones/0103-las-respuestas-de-m10-2.md)). El **menú del día** nace hecho —Primeros, Segundos y Bebida, y «¿entra pan, café, postre?»—, con secciones que se añaden y se quitan, **un precio**, suplementos («entrecot +4 €») y **lo que deja en el peor y en el mejor caso**, con el plato que lo hunde señalado. «Añadir plato» trae uno de la carta o crea uno nuevo, que es un plato más y se desgrana en Escandallos. **«Otro menú»** —ejecutivo, degustación, de grupo— está a un botón discreto. **«Descargar»** se despliega: el cartel para el local, en grande y en vectorial, el PDF, compartir y la imagen para redes. Se guarda el de cada día. Quien no sirve menús lo dice la primera vez y la pestaña se esconde, hasta que la enciende en Ajustes. El prorrateo de impuestos cuando llevan bebida, con la facturación (M20B).
 
-**Menú del día** con sus bloques, suplementos y programación. Fogón lo propone cruzando lo que caduca, lo que hay, lo que no se ha repetido en dos semanas y el margen objetivo.
+**El menú del día de Fogón.** Lo propone cruzando lo que caduca, lo que hay, lo que no se ha repetido en dos semanas y el margen objetivo, **cuando el local lleve cuatro semanas haciéndolo** (0103): antes no tiene historia de la que aprender.
 
 ## El análisis, que es lo que nadie más te da
 
@@ -831,7 +831,7 @@ POPULARIDAD
      │  ⚠ REVISAR            💰 RENTABLE
 ```
 
-Fogón clasifica en estrellas, rentables, populares, a revisar y candidatos a retirar. **Nunca retira ni modifica nada por su cuenta.**
+**Llega con Estook TPV** (0103), que da lo vendido de cada plato sin que nadie lo apunte: sin ventas de verdad, el cuadro diría cosas falsas. Fogón clasifica en estrellas, rentables, populares, a revisar y candidatos a retirar. **Nunca retira ni modifica nada por su cuenta.**
 
 **El equilibrio de la carta:**
 
@@ -841,7 +841,7 @@ Fogón clasifica en estrellas, rentables, populares, a revisar y candidatos a re
 - Cuántos llevan producto de temporada y qué va a pasar cuando suba.
 - **El tamaño de la carta:** una carta de 80 platos no se puede ejecutar bien ni comprar bien, y Estook lo dice.
 
-**Y la comparación con tu zona:** qué cobran los de al lado por el menú y por los platos que también tienes tú.
+**Y la comparación con tu zona:** qué cobran los de al lado por el menú y por los platos que también tienes tú. **La busca Fogón en internet** cuando se lo pides —«Analiza mi zona»—, con el enlace y la fecha de cada precio, y la deja guardada; las medias las calcula Estook, y con menos de tres locales no juzga un plato (0103).
 
 ## Diseños y carta digital
 

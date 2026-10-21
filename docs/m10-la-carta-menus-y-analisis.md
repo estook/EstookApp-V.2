@@ -1,9 +1,9 @@
 # M10 · La carta, los menús y el análisis
 
-> **Estado: M10 · 1 construida el 20-oct-2026** en la rama `m10-la-carta-que-trabaja` (migración
-> 0078, decisión [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)); en producción cuando Richi
-> fusione, migre y despliegue. **M10 · 2 espera las cinco respuestas de Richi** de abajo. Es el
-> último módulo antes de Estook TPV ([0061](decisiones/0061-el-orden-y-la-infraestructura.md)): **la
+> **Estado: M10 · 1, en producción** desde el 20-oct-2026 (#125, migración 0078, decisión
+> [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)). **M10 · 2, contestada el 21-oct**
+> ([0103](decisiones/0103-las-respuestas-de-m10-2.md)): los menús y «Analiza mi zona», a falta de dos
+> preguntas. Es el último módulo antes de Estook TPV ([0061](decisiones/0061-el-orden-y-la-infraestructura.md)): **la
 > carta es lo que se va a picar en el TPV**.
 
 ## Lo que ya estaba hecho
@@ -14,7 +14,7 @@ canal**. Lo que queda de M10, según el Plan: agotados, el precio al cierre de c
 subida, el equilibrio de la carta, los menús, el menú del día, el análisis de lo que deja cada plato,
 el orden como se imprime y la comparación con la zona.
 
-## M10 · 1 · La carta que trabaja (construida)
+## M10 · 1 · La carta que trabaja (en producción)
 
 Lo que **ya estaba decidido por escrito**, pieza a pieza, y por eso se ha construido sin preguntar:
 
@@ -47,7 +47,7 @@ día siguiente, el pulpo vuelve solo.
   marcarlo dice «Quítalo también de tu TPV y de Uber Eats»: Estook todavía no está conectado a ellos.
 
 **Lo que todavía no hace, y cuándo:** quitarlo de la carta pública del QR (M12, que enseña la carta
-de Estook), del menú del día (M10 · 2) y del TPV y Uber Eats (Estook TPV y Estook Link).
+de Estook) y del TPV y Uber Eats (Estook TPV y Estook Link).
 
 ### 2 · El precio en el cierre
 
@@ -85,113 +85,87 @@ escuelas de hostelería ([Koust](https://koust.net/en/les-principes-d-omnes/),
 
 Con menos de 3 platos con precio en una sección, no se juzga. **Lo que no se mira todavía:** el
 ingrediente que comparten muchos platos y lo de temporada (necesitan que la carta esté desgranada
-entera), y la relación calidad-precio de Omnes, que necesita lo vendido plato a plato (M10 · 2).
+entera), y la relación calidad-precio de Omnes, que necesita lo vendido plato a plato (con Estook TPV).
 
 ---
 
-## M10 · 2 · Las preguntas para Richi
+## M10 · 2 · Los menús y «Analiza mi zona»
 
-Cinco piezas del Plan que **no están decididas** y cambian lo que se construye. Cada una dice de
-dónde sale, qué es en la cocina y qué recomiendo.
+**Contestado por Richi el 21-oct** ([0103](decisiones/0103-las-respuestas-de-m10-2.md), con sus palabras). Se
+construye cuando conteste **las dos preguntas de abajo**. Lo que no entra, y cuándo llega, en la
+última tabla: **nada se pierde por el camino**.
 
-### Pregunta 1 · El análisis de lo que deja cada plato: ¿ahora, o con el TPV?
+### 1 · Los menús
 
-**De dónde sale.** Plan, M10: «análisis de rentabilidad por canal (estrella, caballo, puzzle,
-perro)», y el Manifiesto, cap. 14.
+**En la cocina.** El menú del día a 13,50 €: un primero a elegir entre tres, un segundo entre tres,
+bebida, pan y postre o café. Hoy se escribe en la pizarra, y nadie sabe si con el entrecot de segundo
+el menú pierde dinero. Con Estook se monta en el móvil, se imprime o se manda, y dice lo que deja.
 
-**Qué es.** Cada plato se pone en un cuadro con dos preguntas: **¿se vende mucho?** y **¿deja mucho
-dinero?** Una **estrella** se vende y deja (dale sitio en la carta); un **caballo** se vende y deja
-poco (sube el precio o baja el coste); un **puzzle** deja mucho y no sale (empújalo, que lo
-recomiende la sala); un **perro** ni se vende ni deja (candidato a quitar). Lo que deja, Estook ya
-lo sabe por el escandallo. **Lo que no sabe es cuánto se vende de cada plato.**
+| Dónde                         | Qué hace                                                                                                                                                                                                                    |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Carta › Menús**             | El **menú del día**, hecho de fábrica: **Primeros, Segundos y Bebida**, y tres casillas, **¿Entra pan? ¿Entra café? ¿Entra postre?** Las secciones se añaden, se quitan y se renombran. **Un precio**                       |
+| **«Añadir plato»**            | Pregunta **«De tu carta»** (buscador) o **«Plato nuevo»**. El nuevo es un plato como los demás, **solo del menú** (no sale en la carta), y se desgrana en Escandallos. Cada plato, con su **suplemento** si lo lleva (+4 €) |
+| **Lo que deja**               | Con los escandallos y **sin IVA**: en el **peor caso** y en el **mejor**, con el plato que lo hunde señalado («Si todos piden el entrecot, te deja 2,10 €»). Pan y café, con su producto del Almacén si se quiere su coste  |
+| **«Otro menú»**               | Un botón discreto debajo del menú del día: ejecutivo, degustación, de grupo. Cada uno con sus secciones y su precio                                                                                                         |
+| **«Descargar»**               | Un botón que se despliega: **Cartel para el local** (A3 vectorial, con cómo imprimirlo y dónde ponerlo) · **PDF** (A4) · **Compartir** (WhatsApp, correo…) · **Imagen para redes** (cuadrada)                               |
+| **¿Tu local sirve menús?**    | En IKATZ, **encendido**. En los demás, la primera vez que se abre Menús lo pregunta: con «No» la pestaña se esconde. Se cambia en **Ajustes › Tu local, debajo de «Tu carta»**                                              |
+| **Escandallos › Escandallos** | Las vistas pasan a **Carta · Menús · Bajo objetivo** («Todos» se llama «Carta»; las elaboraciones siguen en ella, al final). «Menús» junta los platos de todos los menús, por menú                                          |
+| **Agotados y el cierre**      | Un plato agotado sale **tachado** en el menú; en el cierre de caja se apunta **«Menú del día × 23»** con su precio, como un plato más                                                                                       |
 
-**Lo que hay hoy.** Las ventas plato a plato solo llegan si al cerrar la caja se apuntan los platos.
-En IKATZ, **1 de 21 cierres** los trae. Y por canal (sala o Uber Eats) no llegan nunca.
+**Se guarda el menú de cada día** desde el primero: es la historia que Fogón necesitará para
+proponerlo (más adelante) y la que leerá Estook TPV para venderlo «paso a paso» (Anexo, cap. 10).
 
-**Ejemplo.** Tus croquetas dejan 6 €; si en el cierre no apuntas cuántas se vendieron, Estook no
-puede decir si son estrella o puzzle.
+### 2 · «Analiza mi zona», con Fogón
 
-- **A · Con el TPV** (como decidiste con la desviación de los platos, 0092): se construye cuando
-  Estook TPV dé las ventas de cada plato y de cada canal, solas. Hasta entonces, nada.
-- **B · Ya, con los cierres**: sale con los platos apuntados en el cierre de caja, solo en sala, y
-  pide apuntarlos cada noche (trabajo nuevo para quien cierra).
+**En la cocina.** «Tus bravas a 7 € están 1,50 € por encima de lo que cobran los de tu calle; tu
+menú a 13,50 €, en la media (de 12 a 15 €).» Hoy eso se sabe dando una vuelta por el barrio.
 
-**Recomiendo A**: sin ventas de verdad, el cuadro mentiría, y B pide trabajo cada noche.
-**Lo que decides: A o B.**
+- **Dónde**: un botón **«Analiza mi zona»** en **Carta › Análisis**, y se le puede pedir en el chat de
+  Fogón. **No es una pestaña** (Fogón nunca lo es, Plan M22): lo que encuentra se guarda y se ve en
+  Análisis **con su fecha**, sin volver a gastar.
+- **Cómo trabaja, para que sea rápido**: Estook le da el local (dirección, tipo de cocina y su «€€»
+  de Google) y **los platos con su precio, sin costes**. Fogón busca en internet los locales de
+  alrededor que publican su carta y devuelve, por plato, lo que cobran **con el enlace y la fecha** de
+  dónde lo ha leído, y el precio del menú del día de la zona.
+- **Sin inventar**: con menos de tres locales para comparar un plato, no lo juzga; las medias y «1,50 €
+  por encima» las calcula la base, no Fogón; y lo que viene de internet es dato, nunca instrucción.
+- **Lo que cuesta**: unas diez búsquedas, **unos 0,10 €** por análisis (cada búsqueda, 1 céntimo, más
+  la lectura). Cuántas veces se puede, en la pregunta B. **[VERIFICAR] al construir**: que la búsqueda
+  en internet de Anthropic funcione con Haiku 5.5, en su documentación oficial; si no, con el modelo
+  más barato que la tenga, y se recalcula el coste.
+- **Lo que se guarda de los otros**: solo lo público (nombre, plato, precio, enlace y fecha), de ese
+  local y para ese local. Va a las preguntas al asesor.
 
-### Pregunta 2 · Los menús: ¿qué menús haces?
+### 3 · Las dos preguntas que quedan
 
-**De dónde sale.** Manifiesto cap. 14: «menús y fórmulas con reparto del precio entre componentes
-para el margen», y el «menú del día con sus bloques, suplementos y programación».
+**Pregunta A · ¿Cómo cambia el menú del día en IKATZ?** Decide cómo es la pantalla principal.
 
-**Qué es.** Un menú es un precio cerrado para varios platos a elegir: **menú del día, 13,50 €**:
-primero a elegir entre tres, segundo entre tres, postre o café, pan y bebida. El «reparto» sirve para
-saber **cuánto deja el menú** según lo que elija cada cliente: si todos piden el entrecot de segundo,
-el menú puede perder dinero.
+- **A1 · Cada día distinto** (lo más común): la pantalla es **la semana**, de lunes a viernes; un día
+  que no tocas **repite el anterior**, y «Copiar la semana pasada» la rellena en un toque.
+- **A2 · Igual varios días o semanas**: la pantalla es **un menú** que editas cuando cambia.
 
-**Lo que hay hoy.** Nada: los platos sueltos y su precio.
+**Recomiendo A1**: a quien lo cambia poco le sirve igual (se repite solo), y guarda lo de cada día.
 
-**Lo que haría.** Carta › **Menús**: crear un menú con su precio y sus bloques («Primeros», «Segundos»,
-«Postre»), elegir los platos de cada bloque (con suplemento si lo lleva: «entrecot +4 €») y los días
-que se sirve. Y Estook dice **lo que deja en el peor y en el mejor caso**, con los escandallos.
+**Pregunta B · ¿Cuántas veces se puede «Analizar mi zona»?** El tope de IA de cada local es 5 € al mes.
 
-- **A · Menú del día y menús cerrados** (degustación, de grupo) con lo de arriba.
-- **B · Solo el menú del día.**
-- **C · Ninguno ahora**: IKATZ no hace menús, y se deja para cuando un cliente lo pida.
+- **B1 · Buscar una vez a la semana, comparar cada día gratis**: si cambias tus precios, la
+  comparación se rehace al momento sin buscar otra vez. Unos 0,40 € al mes por local.
+- **B2 · Una vez al día**: hasta 3 € al mes, más de la mitad del tope, y casi siempre encuentra lo
+  mismo.
 
-**Recomiendo A** si en IKATZ o en los locales a los que vas a vender hay menú del día: es lo más
-común en España entre semana. **Lo que decides: A, B o C, y si IKATZ hace menú.**
+**Recomiendo B1**, con **15 créditos** por análisis y en todos los planes.
 
-### Pregunta 3 · El menú del día propuesto por Fogón
+### 4 · Lo que no entra en M10 · 2, y cuándo llega
 
-**De dónde sale.** Manifiesto: «Fogón lo propone cruzando lo que caduca, lo que hay, lo que no se ha
-repetido en dos semanas y el margen objetivo».
-
-**Qué es.** El lunes, Fogón te propone el menú de la semana: «Tienes 6 kg de carrillera que caduca el
-jueves: lentejas el martes y carrillera el miércoles». Tú lo cambias y lo publicas. **Solo tiene
-sentido si la respuesta a la 2 es A o B.** Cuesta créditos de Fogón (5 por propuesta, como dice el
-Manifiesto).
-
-- **A · Sí**, con la pregunta 2.
-- **B · Después**, cuando los menús lleven un tiempo funcionando.
-
-**Recomiendo B**: primero que el menú se use a mano unas semanas; Fogón propone mejor con historia.
-**Lo que decides: A o B.**
-
-### Pregunta 4 · El orden de la carta como se imprime (destacados y columnas)
-
-**De dónde sale.** Plan, M10: «el orden de la carta como se imprime (destacados, columnas)».
-
-**Qué es.** Marcar platos como **destacados** («Sugerencia del chef») y decir cómo va la carta en
-papel (a una o a dos columnas). **Lo que ya hay:** las secciones y los platos se ordenan con las
-flechas.
-
-**Por qué pregunto.** Lo impreso es de **M11** (las plantillas de carta en PDF), y el QR, de **M12**.
-Hacer los destacados ahora, sin nada que los enseñe, es trabajo que no se ve.
-
-- **A · Con M11 y M12**, donde se ven: el destacado sale en la carta impresa y en la del QR.
-- **B · Ya**, el destacado con su estrella en la carta del equipo.
-
-**Recomiendo A.** **Lo que decides: A o B.**
-
-### Pregunta 5 · Comparar con los de tu zona
-
-**De dónde sale.** Plan, M10: «comparación con la zona»; Manifiesto: «qué cobran los de al lado por
-el menú y por los platos que también tienes tú».
-
-**Qué es.** «Tus bravas a 7 € están 1,50 € por encima de la media de tu calle».
-
-**Lo que hay que saber.** Google no da precios de platos (solo «€€» del local). Para tenerlos hay dos
-caminos: **con los locales de Estook** de la zona (anónimo y en medias; hoy hay cinco organizaciones,
-no da) o **leyendo las cartas públicas** de los de alrededor (con permiso legal por revisar: es
-información de otros negocios).
-
-- **A · Cuando haya clientes suficientes en una zona** (por ejemplo, diez locales en la ciudad), con
-  los datos anónimos de Estook.
-- **B · Quitarlo del plan.**
-
-**Recomiendo A**, y que el contrato de alta lo diga desde ya (que los precios de la carta cuentan,
-sin nombre, para las medias de la zona). **Lo que decides: A o B.**
+| Pieza                                                          | Cuándo                                                    | Por qué                                                                                        |
+| -------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Estrella, caballo, puzzle y perro** (lo que deja cada plato) | **Con Estook TPV (M20)**, con Fogón 2                     | Necesita lo vendido de cada plato: hoy, 1 de cada 21 cierres de IKATZ lo trae. «No te olvides» |
+| **Fogón propone el menú del día** (5 créditos)                 | Cuando un local lleve **cuatro semanas** con menú del día | Propone mejor con historia, y M10 · 2 la empieza a guardar                                     |
+| **Destacados («Sugerencia del chef») y columnas**              | **M11** (la carta impresa) y **M12** (la del QR)          | Es donde se ven                                                                                |
+| **La comparación con los locales de Estook**, sin nombres      | Cuando haya clientes en una zona (diez en una ciudad)     | Hoy hay cinco negocios: no da para una media                                                   |
+| **La competencia de M23** (valoraciones y su evolución)        | **M23**                                                   | Sobre lo que «Analiza mi zona» ya guarda                                                       |
+| **El menú del día en el TPV** («paso a paso»)                  | **M20A**                                                  | El Anexo (cap. 10) ya lo pide; leerá los menús de M10 · 2                                      |
+| **El ingrediente compartido y lo de temporada** (equilibrio)   | Cuando la carta esté desgranada entera                    | Escrito en M10 · 1, punto 4                                                                    |
 
 ---
 

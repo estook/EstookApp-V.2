@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-**Ahora, M10 · La carta, menús y análisis**, el último módulo antes de Estook TPV ([el plan](m10-la-carta-menus-y-analisis.md)), en dos entregas: **M10 · 1 · La carta que trabaja** —agotados, el precio del cierre desde la carta, leer tu carta y el equilibrio— **construida en su pull request** (migración 0078, [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)); y **M10 · 2** —los menús y lo que deja cada plato—, **con cinco preguntas para Richi**. **Fogón 1 está entero en producción** (19-oct, [0097](decisiones/0097-fogon-1-las-respuestas-y-la-base.md) y [0098](decisiones/0098-fogon-1-entero.md)), con los repasos del 19 y del 20-oct y la auditoría del 20-oct ([0099](decisiones/0099-el-repaso-del-19-oct.md) a [0101](decisiones/0101-la-auditoria-del-20-oct.md)). **M9 · Escandallos está terminado** (M9 · 3 en producción desde el 18-oct, [0092](decisiones/0092-las-respuestas-de-m9-3.md) a [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+**Ahora, M10 · La carta, menús y análisis**, el último módulo antes de Estook TPV ([el plan](m10-la-carta-menus-y-analisis.md)), en dos entregas: **M10 · 1 · La carta que trabaja** —agotados, el precio del cierre desde la carta, leer tu carta y el equilibrio— **en producción** desde el 20-oct (migración 0078, [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)); y **M10 · 2 · Los menús y «Analiza mi zona»**, **contestada el 21-oct** ([0103](decisiones/0103-las-respuestas-de-m10-2.md)) y a falta de dos preguntas. **Fogón 1 está entero en producción** (19-oct, [0097](decisiones/0097-fogon-1-las-respuestas-y-la-base.md) y [0098](decisiones/0098-fogon-1-entero.md)), con los repasos del 19 y del 20-oct y la auditoría del 20-oct ([0099](decisiones/0099-el-repaso-del-19-oct.md) a [0101](decisiones/0101-la-auditoria-del-20-oct.md)). **M9 · Escandallos está terminado** (M9 · 3 en producción desde el 18-oct, [0092](decisiones/0092-las-respuestas-de-m9-3.md) a [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -52,15 +52,15 @@ El corazón. **Contestado el 15-oct** ([0086](decisiones/0086-las-respuestas-de-
 
 ### M10 · Carta, menús y análisis
 
-Lo que queda de la carta tras la 0086, en dos entregas ([el plan](m10-la-carta-menus-y-analisis.md)). **M10 · 1, construida** ([0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)): agotados que vuelven solos y avisan a quien trabaja, el precio al cierre de caja desde la carta, leer la carta subida (PDF sin IA, fotos con Fogón) y el equilibrio con Omnes. **M10 · 2, con cinco preguntas para Richi**: el análisis de lo que deja cada plato, los menús, el menú del día de Fogón, el orden como se imprime y la comparación con la zona. **Sin esto no hay TPV**, porque es la carta que se va a picar.
+Lo que queda de la carta tras la 0086, en dos entregas ([el plan](m10-la-carta-menus-y-analisis.md)). **M10 · 1, en producción** ([0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)): agotados que vuelven solos y avisan a quien trabaja, el precio al cierre de caja desde la carta, leer la carta subida (PDF sin IA, fotos con Fogón) y el equilibrio con Omnes. **M10 · 2, contestada por Richi el 21-oct** ([0103](decisiones/0103-las-respuestas-de-m10-2.md)): **los menús** (el del día y «otro menú», con lo que dejan, «Descargar» y su interruptor en Ajustes) y **«Analiza mi zona»**, que hace Fogón buscando en internet. Faltan dos preguntas: cómo cambia el menú del día en IKATZ y cuántas veces se analiza la zona. **Lo que sale de M10**: estrella, caballo, puzzle y perro, a M20; los destacados y las columnas, a M11 y M12; y la propuesta del menú del día de Fogón, a cuando un local lleve cuatro semanas de menús. **Sin esto no hay TPV**, porque es la carta que se va a picar.
 
 ### M11 · Documentos y diseños
 
-Los PDF de verdad, hechos en el servidor con tipografías incrustadas. Es el bloque que más convierte en la web, porque es lo único tangible antes de comprar.
+Los PDF de verdad, hechos en el servidor con tipografías incrustadas. Es el bloque que más convierte en la web, porque es lo único tangible antes de comprar. **Trae de M10 los destacados («Sugerencia del chef») y la carta a una o a dos columnas** (0103).
 
 ### M12 · Carta digital pública
 
-La carta con QR, en el idioma del móvil del cliente, con los agotados en vivo y sin cookies.
+La carta con QR, en el idioma del móvil del cliente, con los agotados en vivo y sin cookies. Y con **los platos destacados** de M10 (0103).
 
 ---
 
@@ -96,7 +96,7 @@ Incidencias del turno que lee el siguiente, notas, y el mantenimiento de los equ
 
 ### M20 · Ventas, emparejamiento y consumo
 
-**El motor, y va primero.** Trae también **cómo detecta Estook lo que se escapa** ([el diseño](como-detecta-estook-lo-que-se-escapa.md), 0093): cuatro filtros, sin porcentajes inventados ni avisos mientras aprende. Convierte una venta —venga de donde venga— en movimientos del almacén, con su coste congelado. Sirve para las cuatro vías a la vez, así que se escribe una sola vez.
+**El motor, y va primero.** Trae también **cómo detecta Estook lo que se escapa** ([el diseño](como-detecta-estook-lo-que-se-escapa.md), 0093): cuatro filtros, sin porcentajes inventados ni avisos mientras aprende. Convierte una venta —venga de donde venga— en movimientos del almacén, con su coste congelado. Sirve para las cuatro vías a la vez, así que se escribe una sola vez. **Y trae de M10 lo que deja cada plato: estrella, caballo, puzzle y perro, por canal** (0103), porque necesita lo vendido de cada uno.
 
 ### M19a · Estook Link · el centro del local
 
@@ -209,6 +209,10 @@ Lo que ya existe a medias y el módulo que lo acaba. Vivía en `ESTADO.md` hasta
 | Descontar lo vendido del inventario                        | **M20**                | El cierre guarda los platos con el nombre normalizado          |
 | Los terminales del local                                   | **M20A**               | `estook.terminal`, hoy solo para fichar (H1); Anexo 3.4        |
 | Leer los platos de la carta subida y proponer los cambios  | **Hecho** (M10 · 1)    | Del PDF sin IA o de las fotos con Fogón (0102)                 |
+| Estrella, caballo, puzzle y perro (lo que deja cada plato) | **M20** (0103)         | Lo que deja cada plato por canal, del escandallo (M9 · 2)      |
+| Fogón propone el menú del día                              | **M22** (0103)         | Con cuatro semanas de menús: M10 · 2 guarda el de cada día     |
+| Destacados y columnas de la carta                          | **M11 y M12** (0103)   | El orden de secciones y platos, con las flechas (M9 · 1)       |
+| Comparar precios con los locales de Estook, sin nombres    | **M23**, con clientes  | «Analiza mi zona» con Fogón (M10 · 2), de cada local           |
 | Plato, ficha técnica y escandallo unidos por su id         | **Hecho** (M9 · 1 y 2) | El plato nace en la Carta y su escandallo cuelga de él (0086)  |
 | La historia del Tablón, por días                           | **M17**                | El Tablón, con sus notas guardadas (0049)                      |
 | Cerrar un local (y que la cuota baje)                      | Sin fecha              | La cuota ya sube sola al abrir uno                             |

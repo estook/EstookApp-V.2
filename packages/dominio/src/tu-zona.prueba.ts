@@ -40,6 +40,6 @@ describe('una vez cada 24 horas', () => {
 
   it('pasadas, o sin ninguno antes, ya se puede', () => {
     expect(cuandoSePuedeOtraVez(ayerALasDiez, new Date('2026-10-21T08:00:00Z'))).toBeNull();
-    expect(cuandoSePuedeOtraVez(null, new Date())).toBeNull();
+    expect(cuandoSePuedeOtraVez(null, new Date('2026-10-21T08:00:00Z'))).toBeNull();
   });
 });

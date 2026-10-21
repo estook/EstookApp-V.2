@@ -176,7 +176,7 @@ import { losAgotados } from './consultas/agotados.ts';
 import { elEquilibrioDeLaCarta } from './consultas/equilibrio.ts';
 import { marcarAgotado, quitarAgotado } from './comandos/agotados.ts';
 import { leerLaCarta, leerPaginaConFogon } from './comandos/leer-la-carta.ts';
-import { misMenus } from './consultas/menus.ts';
+import { elMenuEnPdf, misMenus } from './consultas/menus.ts';
 import { miZona } from './consultas/mi-zona.ts';
 import { analizarMiZona } from './comandos/analizar-mi-zona.ts';
 import {
@@ -416,6 +416,8 @@ export const catalogo = {
     [elEquilibrioDeLaCarta.nombre]: elEquilibrioDeLaCarta,
     // M10 · 2 · Los menús (0104): la semana de cada menú, y lo que deja a quien ve costes.
     [misMenus.nombre]: misMenus,
+    // El menú de un día en PDF: el cartel en A3 para la puerta, o la hoja en A4.
+    [elMenuEnPdf.nombre]: elMenuEnPdf,
     // Y tu zona: lo último que encontró Fogón, comparado con tus precios de hoy.
     [miZona.nombre]: miZona,
     // M9 · 2 · Fichas y escandallos (0087): la lista con «sin ficha», cada ficha con su

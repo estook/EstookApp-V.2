@@ -192,7 +192,6 @@ export interface App {
 export const MODULOS: Readonly<Record<string, string>> = {
   M6: 'M6 · Almacén',
   M9: 'M9 · Escandallos',
-  M10: 'M10 · Carta, menús y análisis',
   M14: 'M14 · Calendario',
   M16: 'M16 · Servicio, APPCC y trazabilidad',
   M17: 'M17 · Cuaderno',
@@ -355,7 +354,12 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // 10-oct): a quien no ve costes, «Bajo objetivo» no le sale nunca.
         // Sin «Sin escandallo» desde el 19-oct: lo que falta por desgranar se elige en
         // «Añadir», y no llena la lista de golpe.
-        vistas: soloSiTienenAlgo(vistas('Todos', 'Bajo objetivo'), ['bajo-objetivo']),
+        // M10 · 2 (0104, Richi): «Todos» pasa a «Carta», y «Menús» junta los platos de
+        // los menús; solo sale si el local tiene alguno.
+        vistas: soloSiTienenAlgo(vistas('Carta', 'Menús', 'Bajo objetivo'), [
+          'menus',
+          'bajo-objetivo',
+        ]),
       },
       {
         id: 'fichas',
@@ -377,7 +381,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
   },
 
   // ── Carta · la carta y los canales en M9 · 1 (0086); agotados y el equilibrio en
-  //    M10 · 1 (0102); los menús y lo que deja cada plato, en M10 · 2 ─────────────
+  //    M10 · 1 (0102); los menús y tu zona en M10 · 2 (0104); lo que deja cada plato,
+  //    con Estook TPV (M20) ───────────────────────────────────────────────────────
   'app.carta': {
     id: 'carta',
     nombre: 'Carta',
@@ -404,20 +409,28 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         vistas: [],
       },
       {
+        // El menú del día, por semanas (0104). No sale si el local dice que no sirve
+        // menús (`laAppParaElLocal`): se enciende en Ajustes › Tu local.
         id: 'menus',
         nombre: 'Menús',
         icono: IconoDocumento,
-        queContesta: '¿Qué menús tengo y qué llevan?',
+        queContesta: '¿Qué menú doy hoy, y cuánto me deja?',
         vistas: [],
-        modulo: 'M10',
       },
       {
         id: 'analisis',
         nombre: 'Análisis',
         icono: IconoNegocio,
         queContesta: '¿Qué funciona, qué pierde dinero y qué quitaría?',
-        // El equilibrio, con Omnes (M10 · 1, 0102); lo que deja cada plato, M10 · 2.
-        vistas: vistas('Equilibrio', ['Matriz', 'M10'], ['Por canal', 'M10'], ['Histórico', 'M10']),
+        // El equilibrio, con Omnes (M10 · 1, 0102), y tu zona, con Fogón (M10 · 2, 0104).
+        // Lo que deja cada plato necesita lo vendido: con Estook TPV (M20, 0103).
+        vistas: vistas(
+          'Equilibrio',
+          'Tu zona',
+          ['Matriz', 'M20'],
+          ['Por canal', 'M20'],
+          ['Histórico', 'M20'],
+        ),
       },
     ],
   },
@@ -771,6 +784,16 @@ export function destinosConstruidos(app: App): readonly Destino[] {
  */
 export function laAppParaQuien(app: App, puede: (permiso: Permiso) => boolean): App {
   const destinos = app.destinos.filter((d) => d.permiso === undefined || puede(d.permiso));
+  return destinos.length === app.destinos.length ? app : { ...app, destinos };
+}
+
+/**
+ * La app como es en este local: sin los destinos que el local ha dicho que no usa
+ * (`carta/menus` si no sirve menús, 0104). Su dirección sigue valiendo: la pantalla
+ * dice cómo encenderlo.
+ */
+export function laAppParaElLocal(app: App, escondidos: readonly string[]): App {
+  const destinos = app.destinos.filter((d) => !escondidos.includes(`${app.id}/${d.id}`));
   return destinos.length === app.destinos.length ? app : { ...app, destinos };
 }
 

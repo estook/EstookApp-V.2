@@ -1,4 +1,5 @@
 import { centimos } from './dinero.ts';
+import { aCentimos, enMilesimasEnteras } from './escandallo.ts';
 import { sinIva } from './iva.ts';
 import { diaDeLaSemana, masDias, type FechaOperativa } from './tiempo.ts';
 
@@ -65,7 +66,10 @@ export function elDiaQueVale(
 }
 
 /** Los días de la semana que empieza ese lunes en los que se sirve el menú, en orden. */
-export function losDiasQueSeSirve(lunes: FechaOperativa, dias: readonly number[]): FechaOperativa[] {
+export function losDiasQueSeSirve(
+  lunes: FechaOperativa,
+  dias: readonly number[],
+): FechaOperativa[] {
   const sirve = new Set(dias);
   return [0, 1, 2, 3, 4, 5, 6]
     .map((d) => masDias(lunes, d))
@@ -173,7 +177,7 @@ function elCaso(
   const costeMilesimas = fijoMilesimas + elegidas.reduce((s, o) => s + (o.costeMilesimas ?? 0), 0);
   const cobrado =
     precioSinIva + elegidas.reduce((s, o) => s + sinIva(centimos(o.suplementoCentimos), iva), 0);
-  const costeCentimos = Math.round(costeMilesimas / 1000);
+  const costeCentimos = aCentimos(costeMilesimas);
   return {
     dejaCentimos: cobrado - costeCentimos,
     costeCentimos,
@@ -244,15 +248,22 @@ export function loQueDejaElMenu(menu: MenuParaLaCuenta): LoQueDejaElMenu {
 }
 
 /** Lo que cuesta una ración de pan o de café: el coste de su unidad entre las raciones que da. */
-export function costePorRacion(costeDeLaUnidadMilesimas: number | null, raciones: number | null): number | null {
+export function costePorRacion(
+  costeDeLaUnidadMilesimas: number | null,
+  raciones: number | null,
+): number | null {
   if (costeDeLaUnidadMilesimas === null || raciones === null || raciones <= 0) return null;
-  return Math.round(costeDeLaUnidadMilesimas / raciones);
+  return enMilesimasEnteras(costeDeLaUnidadMilesimas / raciones);
 }
 
 /**
  * Cómo se llama la sección del postre en la pizarra: «Postre o café» si entra el café,
  * y su nombre si no.
  */
-export function comoSeLlamaLaSeccion(nombre: string, esPostre: boolean, entraCafe: boolean): string {
+export function comoSeLlamaLaSeccion(
+  nombre: string,
+  esPostre: boolean,
+  entraCafe: boolean,
+): string {
   return esPostre && entraCafe ? `${nombre} o café` : nombre;
 }

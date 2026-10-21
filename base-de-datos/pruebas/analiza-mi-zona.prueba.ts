@@ -45,7 +45,12 @@ interface MiZona {
       platoId: string | null;
       nombre: string;
       miPrecioCentimos: number | null;
-      comparado: { cuantos: number; mediaCentimos: number; diferenciaCentimos: number; como: string } | null;
+      comparado: {
+        cuantos: number;
+        mediaCentimos: number;
+        diferenciaCentimos: number;
+        como: string;
+      } | null;
       precios: { donde: string; precioCentimos: number; enlace: string }[];
     }[];
   } | null;

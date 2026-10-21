@@ -39,6 +39,8 @@ export interface Documento {
   readonly cuerpo: string;
   /** Apaisado para tablas anchas (el horario de la semana). */
   readonly apaisado?: boolean;
+  /** El papel, si no es A4: el cartel del menú va en A3 (0104). */
+  readonly papel?: 'A3';
   /**
    * Lo propio de un documento, encima de lo de todos (el horario de la pared). Es
    * nuestro, nunca algo que venga de fuera: aquí no se escapa nada.
@@ -96,7 +98,7 @@ const MAL = '#B3261E';
 export function paginaDelDocumento(doc: Documento): string {
   const color = colorSeguro(doc.marca.color);
   const logo = logoSeguro(doc.marca.logo);
-  const tamano = doc.apaisado === true ? 'A4 landscape' : 'A4';
+  const tamano = `${doc.papel ?? 'A4'}${doc.apaisado === true ? ' landscape' : ''}`;
 
   return `<!doctype html>
 <html lang="es">

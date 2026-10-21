@@ -62,6 +62,8 @@ export interface QuienSoy {
     readonly logo: string | null;
     /** Su dirección de carta, para siempre: la del QR que se imprime (0047). */
     readonly direccionDeLaCarta: string;
+    /** Si sirve menús (0103): nulo, no lo ha dicho; falso, Carta › Menús no sale. */
+    readonly sirveMenus: boolean | null;
   } | null;
   readonly organizaciones: readonly { readonly id: string; readonly nombre: string }[];
   readonly locales: readonly {

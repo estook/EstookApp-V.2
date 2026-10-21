@@ -132,7 +132,14 @@ export async function lasSeccionesDeLosMenus(
 ): Promise<SeccionLeida[]> {
   if (menuIds.length === 0) return [];
   const filas = await contexto.sql<
-    { id: string; menu_id: string; nombre: string; orden: number; es_postre: boolean; incluida: boolean }[]
+    {
+      id: string;
+      menu_id: string;
+      nombre: string;
+      orden: number;
+      es_postre: boolean;
+      incluida: boolean;
+    }[]
   >`
     select id, menu_id, nombre, orden, es_postre, incluida
       from estook.seccion_de_menu
@@ -242,16 +249,25 @@ export async function laSemana(
   const ultimo = dias.reduce((a, b) => (b > a ? b : a), lunes);
   const montados = await losDiasMontados(contexto, menu.id, ultimo);
   const valen = dias.map((fecha) => ({ fecha, vale: elDiaQueVale(montados, fecha) }));
-  const platos = await losPlatosDeLosDias(
-    contexto,
-    menu.id,
-    [...new Set(valen.flatMap((v) => (v.vale === null ? [] : [v.vale])))],
-  );
+  const platos = await losPlatosDeLosDias(contexto, menu.id, [
+    ...new Set(valen.flatMap((v) => (v.vale === null ? [] : [v.vale]))),
+  ]);
   return valen.map(({ fecha, vale }) => ({
     fecha,
     vale,
     platos: vale === null ? [] : (platos.get(vale) ?? []),
   }));
+}
+
+/** Los platos que valen un día, montado o repetido del anterior. */
+export async function losPlatosDelDia(
+  contexto: Contexto,
+  menuId: string,
+  fecha: FechaOperativa,
+): Promise<readonly PlatoDelDiaLeido[]> {
+  const vale = await elDiaMontadoQueVale(contexto, menuId, fecha);
+  if (vale === null) return [];
+  return (await losPlatosDeLosDias(contexto, menuId, [vale])).get(vale) ?? [];
 }
 
 /** Lo más lejos que se monta un menú: dos meses. Más allá, nadie sabe qué habrá. */
@@ -275,7 +291,11 @@ export function sePuedeTocar(fecha: FechaOperativa, hoy: FechaOperativa): void {
 }
 
 /** El día en que se escribe: el de la fecha en el menú del día, y hoy en los demás. */
-export function elDiaQueSeToca(menu: MenuLeido, fecha: FechaOperativa, hoy: FechaOperativa): FechaOperativa {
+export function elDiaQueSeToca(
+  menu: MenuLeido,
+  fecha: FechaOperativa,
+  hoy: FechaOperativa,
+): FechaOperativa {
   return menu.clase === 'del_dia' ? fecha : hoy;
 }
 

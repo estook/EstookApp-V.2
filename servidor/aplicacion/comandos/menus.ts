@@ -122,7 +122,10 @@ async function elNombreEstaLibre(
 
 // ═══ ¿Tu local sirve menús? ═══════════════════════════════════════════════════
 
-export const sirveMenus = comando<{ sirve: boolean }, { sirve: boolean; menuDelDia: string | null }>({
+export const sirveMenus = comando<
+  { sirve: boolean },
+  { sirve: boolean; menuDelDia: string | null }
+>({
   nombre: 'sirve_menus',
   entrada: z.object({ sirve: z.boolean() }).strict(),
   exige: 'app.carta',
@@ -136,9 +139,17 @@ export const sirveMenus = comando<{ sirve: boolean }, { sirve: boolean; menuDelD
       returning a.antes
     `;
     if (filas[0] === undefined) throw new FalloDeAplicacion('sin_permiso');
-    await anotar(contexto, 'cambiar', 'local', localId, localId, { sirve_menus: filas[0].antes }, {
-      sirve_menus: entrada.sirve,
-    });
+    await anotar(
+      contexto,
+      'cambiar',
+      'local',
+      localId,
+      localId,
+      { sirve_menus: filas[0].antes },
+      {
+        sirve_menus: entrada.sirve,
+      },
+    );
 
     let menuDelDia: string | null = null;
     if (entrada.sirve) {
@@ -278,7 +289,10 @@ export const cambiarMenu = comando<EntradaCambiarMenu, { menuId: string; version
       await elPostre(contexto, localId, entrada.menu_id, entrada.entra_postre);
     }
 
-    const { menu_id: _menu, version: _version, ...cambios } = entrada;
+    // Lo que se ha cambiado, sin el menú ni su versión, que no son un cambio.
+    const cambios = Object.fromEntries(
+      Object.entries(entrada).filter(([clave]) => clave !== 'menu_id' && clave !== 'version'),
+    );
     await anotar(contexto, 'cambiar', 'menu', entrada.menu_id, localId, null, cambios);
     return { menuId: entrada.menu_id, version };
   },
@@ -301,7 +315,9 @@ export const archivarMenu = comando<{ menu_id: string }, { menuId: string }>({
       update estook.menu set activo = false, actualizado_en = now()
        where id = ${entrada.menu_id}::uuid and local_id = ${localId}::uuid
     `;
-    await anotar(contexto, 'archivar', 'menu', entrada.menu_id, localId, null, { nombre: menu.nombre });
+    await anotar(contexto, 'archivar', 'menu', entrada.menu_id, localId, null, {
+      nombre: menu.nombre,
+    });
     return { menuId: entrada.menu_id };
   },
 });
@@ -344,7 +360,10 @@ async function laSeccionEstaLibre(
   }
 }
 
-export const ponerSeccionDeMenu = comando<{ menu_id: string; nombre: string }, { seccionId: string }>({
+export const ponerSeccionDeMenu = comando<
+  { menu_id: string; nombre: string },
+  { seccionId: string }
+>({
   nombre: 'poner_seccion_de_menu',
   entrada: z.object({ menu_id: idDe, nombre: nombreDeSeccion }).strict(),
   exige: 'app.carta',
@@ -385,9 +404,17 @@ export const cambiarSeccionDeMenu = comando<
       update estook.seccion_de_menu set nombre = ${entrada.nombre}
        where id = ${entrada.seccion_id}::uuid and local_id = ${localId}::uuid
     `;
-    await anotar(contexto, 'cambiar_seccion', 'menu', seccion.menuId, localId, {
-      seccion: seccion.nombre,
-    }, { seccion: entrada.nombre });
+    await anotar(
+      contexto,
+      'cambiar_seccion',
+      'menu',
+      seccion.menuId,
+      localId,
+      {
+        seccion: seccion.nombre,
+      },
+      { seccion: entrada.nombre },
+    );
     return { seccionId: entrada.seccion_id };
   },
 });
@@ -418,9 +445,17 @@ export const quitarSeccionDeMenu = comando<{ seccion_id: string }, { seccionId: 
       delete from estook.seccion_de_menu
        where id = ${entrada.seccion_id}::uuid and local_id = ${localId}::uuid
     `;
-    await anotar(contexto, 'quitar_seccion', 'menu', seccion.menuId, localId, {
-      seccion: seccion.nombre,
-    }, null);
+    await anotar(
+      contexto,
+      'quitar_seccion',
+      'menu',
+      seccion.menuId,
+      localId,
+      {
+        seccion: seccion.nombre,
+      },
+      null,
+    );
     return { seccionId: entrada.seccion_id };
   },
 });
@@ -512,10 +547,18 @@ async function elPlatoParaElMenu(
         update estook.plato set activo = true, en_la_carta = false, actualizado_en = now()
          where id = ${existente.id}::uuid
       `;
-      await anotar(contexto, 'recuperar', 'plato', existente.id, localId, { activo: false }, {
-        activo: true,
-        en_la_carta: false,
-      });
+      await anotar(
+        contexto,
+        'recuperar',
+        'plato',
+        existente.id,
+        localId,
+        { activo: false },
+        {
+          activo: true,
+          en_la_carta: false,
+        },
+      );
     }
     return { id: existente.id, nombre: existente.nombre, nuevo: false };
   }
@@ -526,7 +569,10 @@ async function elPlatoParaElMenu(
   `;
   const id = filas[0]?.id;
   if (id === undefined) throw new FalloDeAplicacion('sin_permiso');
-  await anotar(contexto, 'crear', 'plato', id, localId, null, { nombre: nuevo, en_la_carta: false });
+  await anotar(contexto, 'crear', 'plato', id, localId, null, {
+    nombre: nuevo,
+    en_la_carta: false,
+  });
   return { id, nombre: nuevo, nuevo: true };
 }
 
@@ -577,7 +623,13 @@ export const ponerPlatoEnElMenu = comando<
         plato: plato.nombre,
       });
     }
-    return { platoId: plato.id, nombre: plato.nombre, nuevo: plato.nuevo, fecha: dia.fecha, yaEstaba };
+    return {
+      platoId: plato.id,
+      nombre: plato.nombre,
+      nuevo: plato.nuevo,
+      fecha: dia.fecha,
+      yaEstaba,
+    };
   },
 });
 
@@ -632,10 +684,18 @@ export const quitarPlatoDelMenu = comando<
       returning id
     `;
     if (quitados.length > 0) {
-      await anotar(contexto, 'quitar_plato', 'menu', entrada.menu_id, localId, {
-        fecha: dia.fecha,
-        plato: entrada.plato_id,
-      }, null);
+      await anotar(
+        contexto,
+        'quitar_plato',
+        'menu',
+        entrada.menu_id,
+        localId,
+        {
+          fecha: dia.fecha,
+          plato: entrada.plato_id,
+        },
+        null,
+      );
     }
     return { platoId: entrada.plato_id, fecha: dia.fecha };
   },
@@ -705,9 +765,17 @@ export const ponerEnLaCarta = comando<{ plato_id: string }, { platoId: string }>
       returning id
     `;
     if (filas[0] !== undefined) {
-      await anotar(contexto, 'poner_en_la_carta', 'plato', entrada.plato_id, localId, {
-        en_la_carta: false,
-      }, { en_la_carta: true });
+      await anotar(
+        contexto,
+        'poner_en_la_carta',
+        'plato',
+        entrada.plato_id,
+        localId,
+        {
+          en_la_carta: false,
+        },
+        { en_la_carta: true },
+      );
     }
     return { platoId: entrada.plato_id };
   },

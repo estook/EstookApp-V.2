@@ -14,7 +14,7 @@ import {
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
-import type { MiCarta, UnCanal } from './contrato.ts';
+import { soloLoDeLaCarta, type MiCarta, type UnCanal } from './contrato.ts';
 import { usarRefrescarLaCarta } from '../ganchos/usarRefrescarLaCarta.ts';
 
 /**
@@ -30,7 +30,8 @@ import { usarRefrescarLaCarta } from '../ganchos/usarRefrescarLaCarta.ts';
  */
 export function Canales() {
   const consulta = usarLectura<MiCarta>('mi_carta');
-  const datos = consulta.data;
+  // Lo que nació en un menú no tiene precio en los canales (0104).
+  const datos = consulta.data === undefined ? undefined : soloLoDeLaCarta(consulta.data);
 
   if (datos === undefined) {
     return (

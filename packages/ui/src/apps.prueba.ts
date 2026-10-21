@@ -13,6 +13,7 @@ import {
   destinosQueLlegan,
   dondeEntra,
   dondeEntraEnElDestino,
+  laAppParaElLocal,
   rutaDe,
   vistasConstruidas,
   vistasQueSeEnsenan,
@@ -351,12 +352,24 @@ describe('lo construido y lo que llega', () => {
     ]);
   });
 
-  it('la Carta tiene su carta y sus canales (M9 · 1, 0086), y el Análisis con su equilibrio (M10 · 1, 0102)', () => {
+  it('la Carta tiene su carta y sus canales (M9 · 1, 0086), sus menús (M10 · 2, 0104) y el Análisis', () => {
     expect(destinosConstruidos(laApp('carta')).map((d) => d.id)).toEqual([
+      'carta',
+      'canales',
+      'menus',
+      'analisis',
+    ]);
+  });
+
+  it('un local que no sirve menús no ve Menús, y los demás destinos siguen', () => {
+    const sinMenus = laAppParaElLocal(laApp('carta'), ['carta/menus']);
+    expect(destinosConstruidos(sinMenus).map((d) => d.id)).toEqual([
       'carta',
       'canales',
       'analisis',
     ]);
+    // Lo de otra app no se toca, y sin nada que esconder es la misma app.
+    expect(laAppParaElLocal(laApp('almacen'), ['carta/menus'])).toBe(laApp('almacen'));
   });
 
   it('Equipo tiene sus cuatro destinos construidos, y el horario no es uno de ellos', () => {

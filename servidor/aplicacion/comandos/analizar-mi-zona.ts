@@ -3,6 +3,7 @@ import {
   BUSQUEDAS_POR_ANALISIS,
   centimos as comoCentimos,
   cuandoSePuedeOtraVez,
+  desdeEuros,
   enEuros,
   sinAcentos,
 } from '@estook/dominio';
@@ -144,7 +145,11 @@ async function loQueSeLeDice(contexto: Contexto, localId: string): Promise<LoQue
   if (local === undefined) throw new FalloDeAplicacion('sin_permiso');
   const direccion =
     local.google_direccion ??
-    [local.direccion, [local.codigo_postal, local.poblacion].filter(Boolean).join(' '), local.provincia]
+    [
+      local.direccion,
+      [local.codigo_postal, local.poblacion].filter(Boolean).join(' '),
+      local.provincia,
+    ]
       .filter((t) => t !== null && t !== '')
       .join(', ');
   if (direccion.trim() === '') {
@@ -164,7 +169,9 @@ async function loQueSeLeDice(contexto: Contexto, localId: string): Promise<LoQue
     `Dirección: ${direccion}`,
     'Platos de su carta (nombre: precio en sala, con IVA):',
     ...platos.map((p) => `- ${p.nombre}: ${enEuros(comoCentimos(p.precio))} €`),
-    menu === null ? 'No dice el precio de su menú del día.' : `Su menú del día: ${enEuros(comoCentimos(menu))} €`,
+    menu === null
+      ? 'No dice el precio de su menú del día.'
+      : `Su menú del día: ${enEuros(comoCentimos(menu))} €`,
   ].join('\n');
   return {
     resumen,
@@ -255,8 +262,9 @@ export const analizarMiZona = comando<Record<string, never>, MiZona>({
       const web = laWeb(p.enlace);
       // **Sin inventar**: el enlace tiene que ser de una web que ha visto al buscar.
       if (web === null || !vistas.has(web)) continue;
-      const centimos = Math.round(p.precio * 100);
-      if (!Number.isFinite(centimos) || centimos < 50 || centimos > 50_000) continue;
+      if (!Number.isFinite(p.precio)) continue;
+      const centimos = desdeEuros(p.precio);
+      if (centimos < 50 || centimos > 50_000) continue;
       const donde = p.donde.trim().slice(0, 120);
       if (donde === '') continue;
       const repetido = `${platoId ?? 'menu'}|${sinAcentos(donde)}`;

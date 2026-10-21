@@ -58,7 +58,12 @@ export async function laZonaDelLocal(
   localId: string,
 ): Promise<MiZona['analisis']> {
   const ultimos = await contexto.sql<
-    { id: string; hecho_en: string; resumen: string | null; locales: { nombre: string; enlace: string }[] }[]
+    {
+      id: string;
+      hecho_en: string;
+      resumen: string | null;
+      locales: { nombre: string; enlace: string }[];
+    }[]
   >`
     select id, to_char(hecho_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as hecho_en,
            resumen, locales

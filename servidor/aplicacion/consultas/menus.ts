@@ -1,9 +1,18 @@
 import { z } from 'zod';
 import {
+  NOMBRE_DEL_DIA,
+  centimos,
+  comoSeLlamaLaSeccion,
+  diaDeLaSemana,
+  enEuros,
+  fechaEnLetra,
+  fechaOperativa,
   loQueDejaElMenu,
   type FechaOperativa,
   type LoQueDejaElMenu,
 } from '@estook/dominio';
+import { documentoDelMenu } from '@estook/documentos';
+import { hacerElPdf, hechoEl, laMarcaDelLocal, type UnPdf } from '../documentos.ts';
 import { consulta, type Contexto } from '../contrato.ts';
 import { losAgotadosDelLocal } from '../agotados.ts';
 import { elLibroDelLocal, loDeLaCuenta, type ElLibro } from '../escandallos.ts';
@@ -13,9 +22,11 @@ import {
   elCosteDelPlato,
   elLunes,
   hoyEnElLocal,
+  elMenuDelLocal,
   lasSeccionesDeLosMenus,
   laSemana,
   losMenusDelLocal,
+  losPlatosDelDia,
   type MenuLeido,
   type SeccionLeida,
   type UnDiaLeido,
@@ -182,7 +193,12 @@ function elDia(
 export const misMenus = consulta<{ lunes?: string | undefined }, MisMenus>({
   nombre: 'mis_menus',
   entrada: z
-    .object({ lunes: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() })
+    .object({
+      lunes: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .optional(),
+    })
     .strict(),
   exige: 'app.carta',
 
@@ -238,15 +254,7 @@ export const misMenus = consulta<{ lunes?: string | undefined }, MisMenus>({
             incluida: s.incluida,
           })),
           dias: semana.map((dia) =>
-            elDia(
-              menu,
-              susSecciones,
-              dia,
-              hoy,
-              agotadosAhora,
-              libro,
-              verCostes ? cuenta : null,
-            ),
+            elDia(menu, susSecciones, dia, hoy, agotadosAhora, libro, verCostes ? cuenta : null),
           ),
         };
       }),
@@ -260,5 +268,93 @@ export const misMenus = consulta<{ lunes?: string | undefined }, MisMenus>({
       lunes,
       menus: conSuSemana,
     };
+  },
+});
+
+// ═══ El menú en papel ═════════════════════════════════════════════════════════
+
+/** «Martes 20 de octubre»: el día como se escribe en una pizarra. */
+export function elDiaEnLetra(fecha: FechaOperativa): string {
+  const dia = NOMBRE_DEL_DIA[diaDeLaSemana(fecha)] ?? '';
+  const letra = `${dia} ${fechaEnLetra(fecha).replace(/ de \d{4}$/, '')}`;
+  return letra.charAt(0).toLocaleUpperCase('es') + letra.slice(1);
+}
+
+/** «Pan incluido», «Pan y café incluidos»; nulo si no entra nada aparte. */
+export function loQueIncluye(pan: boolean, cafeAparte: boolean): string | null {
+  if (pan && cafeAparte) return 'Pan y café incluidos';
+  if (pan) return 'Pan incluido';
+  if (cafeAparte) return 'Café incluido';
+  return null;
+}
+
+/**
+ * El menú de un día en PDF (0104): **el cartel**, en A3 y grande, para la puerta o el
+ * escaparate; o **la hoja**, en A4. Lo hace el servidor con su motor (regla 7). Solo
+ * lo que paga el cliente: ni un coste.
+ */
+export const elMenuEnPdf = consulta<
+  { menu_id: string; fecha: string; forma: 'cartel' | 'hoja' },
+  UnPdf
+>({
+  nombre: 'el_menu_en_pdf',
+  entrada: z
+    .object({
+      menu_id: z.string().uuid(),
+      fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      forma: z.enum(['cartel', 'hoja']),
+    })
+    .strict(),
+  exige: 'app.carta',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeLaCarta(contexto);
+    const menu = await elMenuDelLocal(contexto, localId, entrada.menu_id);
+    const fecha = fechaOperativa(entrada.fecha);
+    const [secciones, platos, marca] = await Promise.all([
+      lasSeccionesDeLosMenus(contexto, [menu.id]),
+      losPlatosDelDia(contexto, menu.id, fecha),
+      laMarcaDelLocal(contexto, localId),
+    ]);
+    const conPostre = secciones.some(
+      (s) => s.esPostre && s.incluida && platos.some((p) => p.seccionId === s.id),
+    );
+    const enPapel = secciones
+      .filter((s) => s.incluida)
+      .map((s) => ({
+        nombre: comoSeLlamaLaSeccion(s.nombre, s.esPostre, menu.entraCafe),
+        platos: platos
+          .filter((p) => p.seccionId === s.id)
+          .map((p) => ({
+            nombre: p.nombre,
+            suplemento:
+              p.suplementoCentimos > 0 ? `+${enEuros(centimos(p.suplementoCentimos))} €` : null,
+          })),
+      }))
+      .filter((s) => s.platos.length > 0);
+    const delDia = menu.clase === 'del_dia';
+    const html = documentoDelMenu(
+      {
+        marca,
+        hechoEl: hechoEl(contexto.ahora, marca.zonaHoraria),
+        nombre: menu.nombre,
+        dia: delDia ? elDiaEnLetra(fecha) : null,
+        precio: menu.precioCentimos === null ? null : `${enEuros(centimos(menu.precioCentimos))} €`,
+        secciones: enPapel,
+        incluye: loQueIncluye(menu.entraPan, menu.entraCafe && !conPostre),
+        nota: 'IVA incluido',
+      },
+      entrada.forma,
+    );
+    const nombre = menu.nombre
+      .toLocaleLowerCase('es')
+      .normalize('NFD')
+      .replace(/\p{M}/gu, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return hacerElPdf(contexto, html, {
+      nombre: `${entrada.forma === 'cartel' ? 'cartel-' : ''}${nombre || 'menu'}${delDia ? `-${entrada.fecha}` : ''}.pdf`,
+      pie: `${menu.nombre} · ${marca.nombreDelLocal}`,
+    });
   },
 });

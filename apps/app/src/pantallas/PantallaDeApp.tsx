@@ -97,6 +97,14 @@ export function PantallaDeApp() {
   */
   if (destino === undefined) return <Navigate to={rutaDe(app)} replace />;
 
+  // Una vista que cambió de nombre: la dirección vieja (un aviso guardado, un enlace)
+  // lleva a la nueva **con lo que abría** (`?ficha=…`), que si no se perdía.
+  const renombrada = VISTA_RENOMBRADA[`${app.id}/${destino.id}/${idDeLaVista ?? ''}`];
+  const nueva = destino.vistas.find((v) => v.id === renombrada);
+  if (nueva !== undefined) {
+    return <Navigate to={`${rutaDe(app, destino, nueva)}${location.search}`} replace />;
+  }
+
   /*
     La vista que pide la direccion, y si no la nombra o no existe, **la vista de
     entrada del destino: la primera construida**, no la primera de la lista.
@@ -141,6 +149,11 @@ export function PantallaDeApp() {
  */
 const SE_MUDO: Readonly<Record<string, string>> = {
   'equipo/horarios': '/calendario/turnos',
+};
+
+/** Las vistas que cambiaron de nombre. «Todos» es «Carta» desde M10 · 2 (0104, Richi). */
+const VISTA_RENOMBRADA: Readonly<Record<string, string>> = {
+  'escandallos/escandallos/todos': 'carta',
 };
 
 /**

@@ -1,3 +1,5 @@
+import { centimos, entreFactor } from './dinero.ts';
+
 /**
  * Tu zona (M10 · 2, decisiones 0103 y 0104): «Tus bravas a 7 € están 1,50 € por encima
  * de lo que cobran los de tu calle».
@@ -41,7 +43,7 @@ export function compararConLaZona(
   const precios = preciosDeLaZona.filter((p) => Number.isFinite(p) && p > 0);
   if (miPrecioCentimos === null || miPrecioCentimos <= 0) return null;
   if (precios.length < MINIMO_PARA_COMPARAR) return null;
-  const media = Math.round(precios.reduce((s, p) => s + p, 0) / precios.length);
+  const media = entreFactor(centimos(precios.reduce((s, p) => s + p, 0)), precios.length);
   const diferencia = miPrecioCentimos - media;
   const como =
     Math.abs(diferencia) <= media * MARGEN_DE_LA_MEDIA

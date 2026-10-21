@@ -27,6 +27,7 @@ export {
   destinoPorId,
   destinosConstruidos,
   laAppParaQuien,
+  laAppParaElLocal,
   destinosQueSeAbren,
   destinosQueLlegan,
   dondeEntra,

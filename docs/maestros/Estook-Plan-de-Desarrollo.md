@@ -299,10 +299,10 @@ Y sus vistas, donde las hay:
 | Almacén · Productos       | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
 | Almacén · Movimientos     | Inventario · Historial · Consumo                                    |
 | Almacén · Compras         | Pedidos · Facturas · Proveedores                                    |
-| Escandallos · Escandallos | Todos · Bajo objetivo                                               |
+| Escandallos · Escandallos | Carta · Menús · Bajo objetivo |
 | Escandallos · Fichas      | Todas · Sin ficha                                                   |
 | Carta · Carta             | Por secciones · Todos los platos · Agotados                         |
-| Carta · Análisis          | Equilibrio · Matriz · Por canal · Histórico                         |
+| Carta · Análisis          | Equilibrio · Tu zona · Matriz · Por canal · Histórico |
 | Calendario · Calendario   | Mes · Semana · Día                                                  |
 | Calendario · Tareas       | Pendientes · Periódicas · Hechas                                    |
 | Equipo · Personas         | Con acceso · Sin entrar todavía · Retirados                         |

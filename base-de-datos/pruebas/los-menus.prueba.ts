@@ -240,26 +240,54 @@ describe('cada día distinto, y un día sin tocar repite el anterior', () => {
     );
     const despues = await elDelDia(rosa);
     const primeros = laSeccion(despues, 'Primeros');
-    expect(losNombres(despues.dias.find((d) => d.fecha === MARTES), primeros)).toEqual(['Lentejas']);
-    expect(losNombres(despues.dias.find((d) => d.fecha === MIERCOLES), primeros)).toEqual([]);
+    expect(
+      losNombres(
+        despues.dias.find((d) => d.fecha === MARTES),
+        primeros,
+      ),
+    ).toEqual(['Lentejas']);
+    expect(
+      losNombres(
+        despues.dias.find((d) => d.fecha === MIERCOLES),
+        primeros,
+      ),
+    ).toEqual([]);
     const jueves = despues.dias.find((d) => d.fecha === JUEVES);
     expect(jueves?.repiteDe).toBe(MIERCOLES);
     expect(losNombres(jueves, primeros)).toEqual([]);
     // Los segundos del miércoles siguen: se montó con lo que valía.
-    expect(losNombres(despues.dias.find((d) => d.fecha === MIERCOLES), laSeccion(despues, 'Segundos'))).toEqual(
-      ['Pollo asado', 'Entrecot'],
-    );
+    expect(
+      losNombres(
+        despues.dias.find((d) => d.fecha === MIERCOLES),
+        laSeccion(despues, 'Segundos'),
+      ),
+    ).toEqual(['Pollo asado', 'Entrecot']);
   });
 
   it('copiar la semana pasada en la siguiente: cada día, lo de su día de antes', async () => {
     const menu = await elDelDia(rosa);
     const copia = losDatos<{ dias: string[] }>(
-      await api.ejecutar(rosa, 'copiar_la_semana_pasada', { menu_id: menu.id, lunes: '2026-10-26' }),
+      await api.ejecutar(rosa, 'copiar_la_semana_pasada', {
+        menu_id: menu.id,
+        lunes: '2026-10-26',
+      }),
     );
-    expect(copia.dias).toEqual(['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30']);
+    expect(copia.dias).toEqual([
+      '2026-10-26',
+      '2026-10-27',
+      '2026-10-28',
+      '2026-10-29',
+      '2026-10-30',
+    ]);
     const siguiente = await elDelDia(rosa, '2026-10-26');
     const primeros = laSeccion(siguiente, 'Primeros');
-    expect(siguiente.dias.map((d) => losNombres(d, primeros))).toEqual([[], ['Lentejas'], [], [], []]);
+    expect(siguiente.dias.map((d) => losNombres(d, primeros))).toEqual([
+      [],
+      ['Lentejas'],
+      [],
+      [],
+      [],
+    ]);
     expect(siguiente.dias.every((d) => d.montado)).toBe(true);
   });
 });
@@ -373,7 +401,12 @@ describe('las secciones y el postre', () => {
       await api.ejecutar(rosa, 'poner_seccion_de_menu', { menu_id: menu.id, nombre: 'Para picar' }),
     );
     expect(
-      elFallo(await api.ejecutar(rosa, 'poner_seccion_de_menu', { menu_id: menu.id, nombre: 'para PICAR' })),
+      elFallo(
+        await api.ejecutar(rosa, 'poner_seccion_de_menu', {
+          menu_id: menu.id,
+          nombre: 'para PICAR',
+        }),
+      ),
     ).toBe('faltan_datos');
     losDatos(await api.ejecutar(rosa, 'quitar_seccion_de_menu', { seccion_id: seccionId }));
     expect((await elDelDia(rosa)).secciones.map((s) => s.nombre)).not.toContain('Para picar');
@@ -402,7 +435,11 @@ describe('el cierre de caja', () => {
       platosConocidos: { concepto: string; precioUnidadCentimos: number; deLaCarta: boolean }[];
     }>(await api.consultar(rosa, 'un_cierre'));
     expect(cierre.platosConocidos).toContainEqual(
-      expect.objectContaining({ concepto: 'Menú del día', precioUnidadCentimos: 1350, deLaCarta: true }),
+      expect.objectContaining({
+        concepto: 'Menú del día',
+        precioUnidadCentimos: 1350,
+        deLaCarta: true,
+      }),
     );
   });
 });

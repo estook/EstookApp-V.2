@@ -304,8 +304,14 @@ export function modeloDeAnthropic(
   function comoNoContesta(fallo: unknown): FogonNoContesta {
     if (fallo instanceof FogonNoContesta) return fallo;
     if (fallo instanceof Anthropic.APIError) {
-      const { tipo, detalle } = loQueDiceAnthropic(fallo as InstanceType<typeof Anthropic.APIError>);
-      return new FogonNoContesta(typeof fallo.status === 'number' ? fallo.status : null, tipo, detalle);
+      const { tipo, detalle } = loQueDiceAnthropic(
+        fallo as InstanceType<typeof Anthropic.APIError>,
+      );
+      return new FogonNoContesta(
+        typeof fallo.status === 'number' ? fallo.status : null,
+        tipo,
+        detalle,
+      );
     }
     return new FogonNoContesta(
       null,

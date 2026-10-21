@@ -1,7 +1,7 @@
 # 0103 · Las respuestas de M10 · 2: los menús, «Analiza mi zona» con Fogón, y lo que espera al TPV, a M11 y a M12
 
 **Fecha:** 21 de octubre de 2026
-**Estado:** contestada por Richi; **sin construir**. Quedan **dos preguntas** (abajo, en el 4) antes de empezar. Solo cambia documentos.
+**Estado:** contestada por Richi, y **las dos preguntas del 4, también** (21-oct: **A1** y **B1 «una vez cada 24 horas, gastando muchos créditos»**). Construida en la [0104](0104-m10-2-los-menus-y-tu-zona.md).
 **Sigue:** la [0102](0102-m10-1-la-carta-que-trabaja.md) (M10 · 1, en producción desde el 20-oct: 78 migraciones, API 98/215). El plan, en [`m10-la-carta-menus-y-analisis.md`](../m10-la-carta-menus-y-analisis.md).
 
 Richi contestó el 21-oct las cinco preguntas de M10 · 2 y pidió dos cosas más: **que la app sea intuitiva y funcional**, y **que lo dicho quede escrito y cada pieza en su sitio**, «para evitar construir a ojo y, sobre todo, no olvidarnos nada».

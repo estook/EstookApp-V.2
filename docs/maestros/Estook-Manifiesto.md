@@ -841,7 +841,7 @@ POPULARIDAD
 - Cuántos llevan producto de temporada y qué va a pasar cuando suba.
 - **El tamaño de la carta:** una carta de 80 platos no se puede ejecutar bien ni comprar bien, y Estook lo dice.
 
-**Y la comparación con tu zona:** qué cobran los de al lado por el menú y por los platos que también tienes tú. **La busca Fogón en internet** cuando se lo pides —«Analiza mi zona»—, con el enlace y la fecha de cada precio, y la deja guardada; las medias las calcula Estook, y con menos de tres locales no juzga un plato (0103).
+**Y la comparación con tu zona:** qué cobran los de al lado por el menú y por los platos que también tienes tú. **La busca Fogón en internet** cuando se lo pides —«Analiza mi zona»—, con el enlace y la fecha de cada precio, y la deja guardada; las medias las calcula Estook, y con menos de tres locales no juzga un plato (0103). **Una vez cada 24 horas**: buscar en internet cuesta más que preguntar, y los precios de una calle no cambian de un día para otro (0104).
 
 ## Diseños y carta digital
 
@@ -1534,19 +1534,20 @@ La IA es el único coste que crece con el uso, así que se mide y se enseña. **
 
 **Lo que no gasta un solo crédito:** los avisos automáticos del Panel, las alertas de bajo mínimo y caducidad, los semáforos, los cálculos de coste y margen, la desviación, Pulse y los informes. **Dieciocho de cada veintidós avisos son gratis, y son los que enganchan.**
 
-| Acción                              | Créditos |
-| ----------------------------------- | -------- |
-| Preguntar algo a Fogón              | 1        |
-| Respuesta propuesta a una reseña    | 1        |
-| Rellenar un escandallo o los pasos  | 2        |
-| Traducir una ficha técnica          | 2        |
-| Leer un albarán por foto            | 3        |
-| Leer la carta por foto, cada página | 3        |
-| Análisis del cierre del día         | 5        |
-| Propuesta de menú del día           | 5        |
-| Propuesta de precios o de cuadrante | 5        |
-| Resumen semanal del negocio         | 8        |
-| Importar un listado                 | 10       |
+| Acción                               | Créditos |
+| ------------------------------------ | -------- |
+| Preguntar algo a Fogón               | 1        |
+| Respuesta propuesta a una reseña     | 1        |
+| Rellenar un escandallo o los pasos   | 2        |
+| Traducir una ficha técnica           | 2        |
+| Leer un albarán por foto             | 3        |
+| Leer la carta por foto, cada página  | 3        |
+| Analizar tu zona (busca en internet) | 25       |
+| Análisis del cierre del día          | 5        |
+| Propuesta de menú del día            | 5        |
+| Propuesta de precios o de cuadrante  | 5        |
+| Resumen semanal del negocio          | 8        |
+| Importar un listado                  | 10       |
 
 **Leer la carta en PDF con texto no gasta nada**: la lee Estook, sin IA (0102). Solo una foto o un PDF escaneado pasa por Fogón, página a página.
 

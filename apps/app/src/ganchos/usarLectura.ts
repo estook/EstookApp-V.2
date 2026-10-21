@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
@@ -17,11 +17,17 @@ export function usarLectura<T>(
   nombre: string,
   parametros: Readonly<Record<string, string>> = {},
   activa = true,
+  /**
+   * Mientras llega lo de otros parámetros (la semana siguiente del menú, 0104), se deja
+   * lo de antes a la vista en vez de volver a «cargando»: cambiar de semana no parpadea.
+   */
+  mantenerLoDeAntes = false,
 ) {
   const { cliente } = usarSesion();
   return useQuery({
     queryKey: [nombre, parametros],
     enabled: activa,
+    ...(mantenerLoDeAntes ? { placeholderData: keepPreviousData } : {}),
     queryFn: async (): Promise<T> => {
       const respuesta = await cliente.consultar<T>(nombre, { ...parametros });
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);

@@ -67,26 +67,27 @@ dos mas: `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`. Ninguna otra clave se
 
 Los que no pueden pisar el navegador jamas.
 
-| Nombre                       | Que es                                                                      |
-| ---------------------------- | --------------------------------------------------------------------------- |
-| `CLAVE_DE_SERVICIO`          | La clave secreta del proyecto                                               |
-| `GOOGLE_MAPS_KEY`            | Google Places (New) · **ya la lee la API** (0040)                           |
-| `RESEND_API_KEY`             | El correo que manda Estook (0017) · **ya la lee la API** (0042)             |
-| `CORREO_REMITENTE`           | Quién firma. **De un dominio verificado, nunca de Gmail** (abajo)           |
-| `GOOGLE_OAUTH_CLIENT_ID`     | Entrar y crear cuenta con Google (0042)                                     |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | Su secreto: solo lo tiene el servidor (0042)                                |
-| `AI_API_KEY`                 | La clave de la API de Anthropic, para Fogón (0097)                          |
-| `AI_MODELO_RAPIDO`           | Opcional: el modelo de Fogón 1. Sin ponerlo, `claude-haiku-5-5` (0097)      |
-| `AI_MODELO_ANALISIS`         | El modelo bueno para el analisis nocturno                                   |
-| `APP_URL`                    | La direccion publica, para los enlaces                                      |
-| `DATABASE_URL`               | La cadena del **agrupador** (M4); la API entra por el modo transaccion sola |
-| `ORIGENES_PERMITIDOS`        | Origenes de mas, si alguno hace falta (M4)                                  |
-| `ENTORNO`                    | `produccion` (M4)                                                           |
-| `CLOUDFLARE_ACCOUNT_ID`      | La cuenta de Cloudflare, para los PDF (0068). No es secreta, pero va aquí   |
-| `CLOUDFLARE_PDF_TOKEN`       | La clave de Cloudflare **solo con «Browser Rendering - Edit»** (0068)       |
-| `VAPID_CLAVE_PUBLICA`        | Los avisos al móvil (0070). La hace `.\estook.cmd movil:claves`             |
-| `VAPID_CLAVE_PRIVADA`        | Su pareja. **Secreta**: ni al chat ni a ningún documento (0070)             |
-| `SENTRY_DSN`                 | Los fallos de la API, a Sentry: el DSN del proyecto `estook-api` (0082)     |
+| Nombre                       | Que es                                                                                                |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `CLAVE_DE_SERVICIO`          | La clave secreta del proyecto                                                                         |
+| `GOOGLE_MAPS_KEY`            | Google Places (New) · **ya la lee la API** (0040)                                                     |
+| `RESEND_API_KEY`             | El correo que manda Estook (0017) · **ya la lee la API** (0042)                                       |
+| `CORREO_REMITENTE`           | Quién firma. **De un dominio verificado, nunca de Gmail** (abajo)                                     |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Entrar y crear cuenta con Google (0042)                                                               |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Su secreto: solo lo tiene el servidor (0042)                                                          |
+| `AI_API_KEY`                 | La clave de la API de Anthropic, para Fogón (0097)                                                    |
+| `AI_MODELO_RAPIDO`           | Opcional: el modelo de Fogón 1. Sin ponerlo, `claude-haiku-5-5` (0097)                                |
+| `AI_MODELO_ZONA`             | Opcional: el que busca en internet si el de siempre no puede. Sin ponerlo, `claude-sonnet-5-5` (0104) |
+| `AI_MODELO_ANALISIS`         | El modelo bueno para el analisis nocturno                                                             |
+| `APP_URL`                    | La direccion publica, para los enlaces                                                                |
+| `DATABASE_URL`               | La cadena del **agrupador** (M4); la API entra por el modo transaccion sola                           |
+| `ORIGENES_PERMITIDOS`        | Origenes de mas, si alguno hace falta (M4)                                                            |
+| `ENTORNO`                    | `produccion` (M4)                                                                                     |
+| `CLOUDFLARE_ACCOUNT_ID`      | La cuenta de Cloudflare, para los PDF (0068). No es secreta, pero va aquí                             |
+| `CLOUDFLARE_PDF_TOKEN`       | La clave de Cloudflare **solo con «Browser Rendering - Edit»** (0068)                                 |
+| `VAPID_CLAVE_PUBLICA`        | Los avisos al móvil (0070). La hace `.\estook.cmd movil:claves`                                       |
+| `VAPID_CLAVE_PRIVADA`        | Su pareja. **Secreta**: ni al chat ni a ningún documento (0070)                                       |
+| `SENTRY_DSN`                 | Los fallos de la API, a Sentry: el DSN del proyecto `estook-api` (0082)                               |
 
 ### Las que faltan, cuál usa ya el código y dónde van
 

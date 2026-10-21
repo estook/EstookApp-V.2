@@ -81,7 +81,7 @@ export function DescargarElMenu({
             A3 en una copistería, en papel grueso (de 200 g), o en A4 en tu impresora.
           </p>
           <BotonDelDocumento
-            consulta="el_menu_en_pdf"
+            consulta={'el_menu_en_pdf'}
             parametros={{ ...parametros, forma: 'cartel' }}
             texto="Cartel en A3"
             tono="principal"
@@ -94,7 +94,7 @@ export function DescargarElMenu({
             En A4, para mandarlo o tenerlo guardado.
           </p>
           <BotonDelDocumento
-            consulta="el_menu_en_pdf"
+            consulta={'el_menu_en_pdf'}
             parametros={{ ...parametros, forma: 'hoja' }}
             texto="PDF en A4"
           />

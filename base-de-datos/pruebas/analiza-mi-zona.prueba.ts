@@ -181,7 +181,7 @@ describe('analiza mi zona', () => {
   it('si bajas las bravas, la comparación cambia al momento, sin buscar otra vez', async () => {
     const pedidas = modelo.pedidas.length;
     const plato = losDatos<{ plato: { version: number } }>(
-      await api.consultar(rosa, 'un_plato', { plato_id: platos['Patatas bravas'] }),
+      await api.consultar(rosa, 'un_plato', { plato_id: platos['Patatas bravas'] ?? '' }),
     ).plato;
     losDatos(
       await api.ejecutar(rosa, 'cambiar_plato', {

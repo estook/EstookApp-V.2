@@ -299,10 +299,10 @@ Y sus vistas, donde las hay:
 | Almacén · Productos       | Todo · Bajo mínimo · Sin precio · Congelados · Desactivados · Valor |
 | Almacén · Movimientos     | Inventario · Historial · Consumo                                    |
 | Almacén · Compras         | Pedidos · Facturas · Proveedores                                    |
-| Escandallos · Escandallos | Carta · Menús · Bajo objetivo |
+| Escandallos · Escandallos | Carta · Menús · Bajo objetivo                                       |
 | Escandallos · Fichas      | Todas · Sin ficha                                                   |
 | Carta · Carta             | Por secciones · Todos los platos · Agotados                         |
-| Carta · Análisis          | Equilibrio · Tu zona · Matriz · Por canal · Histórico |
+| Carta · Análisis          | Equilibrio · Tu zona · Matriz · Por canal · Histórico               |
 | Calendario · Calendario   | Mes · Semana · Día                                                  |
 | Calendario · Tareas       | Pendientes · Periódicas · Hechas                                    |
 | Equipo · Personas         | Con acceso · Sin entrar todavía · Retirados                         |
@@ -633,7 +633,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Lo que se adelantó a M9** ([0086](../decisiones/0086-las-respuestas-de-m9.md)): las secciones, los platos, los canales con su comisión y el precio de cada plato en cada canal. M10 se queda con lo demás.
 
-**En dos entregas** ([el plan](../m10-la-carta-menus-y-analisis.md)). **M10 · 1 · La carta que trabaja**, en producción desde el 20-oct ([0102](../decisiones/0102-m10-1-la-carta-que-trabaja.md), migración 0078): agotados (con su aviso al equipo y su vuelta sola al empezar la jornada), el precio al cierre de caja desde la carta, leer la carta subida y el equilibrio con los principios de Omnes. **M10 · 2 · Los menús y «Analiza mi zona»**, contestada por Richi el 21-oct ([0103](../decisiones/0103-las-respuestas-de-m10-2.md)) y a falta de dos preguntas: el menú del día y «otro menú», con lo que dejan y «Descargar», y la comparación con la zona **hecha por Fogón buscando en internet**. Lo demás de la lista se va a donde se ve o a donde hay datos (abajo, tachado).
+**En dos entregas** ([el plan](../m10-la-carta-menus-y-analisis.md)). **M10 · 1 · La carta que trabaja**, en producción desde el 20-oct ([0102](../decisiones/0102-m10-1-la-carta-que-trabaja.md), migración 0078): agotados (con su aviso al equipo y su vuelta sola al empezar la jornada), el precio al cierre de caja desde la carta, leer la carta subida y el equilibrio con los principios de Omnes. **M10 · 2 · Los menús y «Analiza mi zona»**, contestada por Richi el 21-oct ([0103](../decisiones/0103-las-respuestas-de-m10-2.md)) y construida el 22-oct ([0104](../decisiones/0104-m10-2-los-menus-y-tu-zona.md), migración 0079): el menú del día por semanas —un día sin tocar repite el anterior— y «otro menú», con lo que dejan, «Descargar» y el widget «Menú del día» del Panel de la sala, y la comparación con la zona **hecha por Fogón buscando en internet**, una vez cada 24 horas. Lo demás de la lista se va a donde se ve o a donde hay datos (abajo, tachado).
 
 **Entra.** ~~El orden de la carta como se imprime (destacados, columnas)~~ (a M11 y M12, donde se ve: 0103) · agotado desde el móvil · **menús**: el del día —Primeros, Segundos y Bebida, «¿entra pan, café, postre?», secciones que se añaden y se quitan, un precio, suplementos, lo que deja en el peor y en el mejor caso, y el de cada día guardado— y «otro menú» (ejecutivo, de grupo), con «Descargar» desplegable (cartel A3 vectorial, PDF, compartir, imagen) y su interruptor en Ajustes (0103) · ~~propuesta de Fogón del menú del día~~ (cuando un local lleve cuatro semanas de menús, M22: 0103) · ~~análisis de rentabilidad por canal (estrella, caballo, puzzle, perro)~~ (con Estook TPV, M20: 0103) · análisis de equilibrio de carta · comparación con la zona, **con Fogón: «Analiza mi zona»**, cada precio con su enlace y su fecha (0103).
 

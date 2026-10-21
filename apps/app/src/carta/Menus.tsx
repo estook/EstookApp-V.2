@@ -65,7 +65,12 @@ import { UnPlatoEnElMenu } from './UnPlatoEnElMenu.tsx';
 
 export function Menus() {
   const [lunes, setLunes] = useState<string | undefined>(undefined);
-  const consulta = usarLectura<MisMenus>('mis_menus', lunes === undefined ? {} : { lunes });
+  const consulta = usarLectura<MisMenus>(
+    'mis_menus',
+    lunes === undefined ? {} : { lunes },
+    true,
+    true,
+  );
   const [menuId, setMenuId] = useState<string | null>(null);
 
   if (consulta.isPending) {
@@ -88,8 +93,15 @@ export function Menus() {
   const menu = datos.menus.find((m) => m.id === menuId) ?? datos.menus[0];
   if (menu === undefined) return <SirvesMenus datos={datos} />;
 
+  // Mientras llega la otra semana, la de antes se queda, un poco apagada.
   return (
-    <div className="flex flex-col gap-e4">
+    <div
+      className={clases(
+        'flex flex-col gap-e4 transition-opacity',
+        consulta.isPlaceholderData && 'pointer-events-none opacity-60',
+      )}
+      aria-busy={consulta.isPlaceholderData}
+    >
       {datos.menus.length > 1 && (
         <Selector
           etiqueta="Menú"
@@ -402,6 +414,7 @@ function ElMenu({
                     tono="secundario"
                     tamano="s"
                     icono={<IconoAnadir size={16} />}
+                    aria-label={`Añadir plato a ${seccion.comoSeLlama}`}
                     onClick={() => {
                       setAnadirEn(seccion.id);
                     }}

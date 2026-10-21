@@ -47,7 +47,7 @@ import { usarComoSeCierra } from '../ganchos/usarComoSeCierra.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { ComprasDeHoy, LoQueViene } from '../compras/contrato.ts';
 import { comoSigueAgotado, type LosAgotados } from '../carta/contrato.ts';
-import { lasSeccionesQueSalen, type MisMenus } from '../carta/contratoDeLosMenus.ts';
+import { elSuplemento, lasSeccionesQueSalen, type MisMenus } from '../carta/contratoDeLosMenus.ts';
 import { comoDinero } from '../almacen/contrato.ts';
 import {
   TONO_DEL_ESTADO,
@@ -1089,7 +1089,9 @@ function MenuDelDiaWidget() {
         <Cargando que="el menú" forma="lista" lineas={3} />
       ) : sinMenu ? (
         <Tranquilo>
-          {consulta.data.sirveMenus === false ? 'Tu local no sirve menús.' : 'Hoy no hay menú puesto.'}
+          {consulta.data.sirveMenus === false
+            ? 'Tu local no sirve menús.'
+            : 'Hoy no hay menú puesto.'}
         </Tranquilo>
       ) : (
         <ul className="flex flex-col gap-e2">
@@ -1103,6 +1105,12 @@ function MenuDelDiaWidget() {
                     <span className={p.agotado ? 'text-texto-suave line-through' : undefined}>
                       {p.nombre}
                     </span>
+                    {p.suplementoCentimos > 0 && (
+                      <span className="whitespace-nowrap font-semibold">
+                        {' '}
+                        {elSuplemento(p.suplementoCentimos)}
+                      </span>
+                    )}
                   </span>
                 ))}
               </span>

@@ -28,6 +28,8 @@ export interface OpcionesDelPdf {
   readonly apaisado: boolean;
   /** El pie de cada página, ya escrito (`pieDelDocumento`). */
   readonly pie: string;
+  /** Sin pie: el cartel del menú, que va en una puerta (0104). */
+  readonly sinPie?: boolean;
 }
 
 export interface MotorDePdf {
@@ -84,7 +86,7 @@ export function pdfDeCloudflare(
             landscape: opciones.apaisado,
             printBackground: true,
             preferCSSPageSize: true,
-            displayHeaderFooter: true,
+            displayHeaderFooter: opciones.sinPie !== true,
             headerTemplate: '<span></span>',
             footerTemplate: opciones.pie,
             timeout: ESPERA_MAXIMA_MS,

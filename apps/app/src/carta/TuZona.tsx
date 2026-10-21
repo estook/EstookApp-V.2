@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Aviso,
   Boton,
@@ -152,6 +153,7 @@ export function TuZona() {
   }
 
   const analisis = datos.analisis;
+  const noSePuede = datos.noSePuede ?? null;
   const boton = datos.puedeAnalizar && (
     <div className="flex flex-col items-start gap-e1">
       <Boton
@@ -159,16 +161,30 @@ export function TuZona() {
         icono={<IconoFogon size={18} />}
         cargando={buscando}
         textoCargando="Fogón está buscando"
-        disabled={datos.otraVezDesde !== null}
+        disabled={datos.otraVezDesde !== null || noSePuede !== null}
         onClick={() => void analizar()}
       >
         Analiza mi zona
       </Boton>
-      <p className="text-secundario text-texto-suave">
-        {datos.otraVezDesde === null
-          ? `${String(datos.creditos)} créditos de Fogón · una vez cada 24 horas`
-          : `Otra vez desde el ${cuando(datos.otraVezDesde)}`}
-      </p>
+      {noSePuede !== null ? (
+        <p className="text-secundario text-atencion">
+          {noSePuede.porque}
+          {noSePuede.ir !== null && (
+            <>
+              {' '}
+              <Link to={noSePuede.ir} className="font-semibold underline">
+                Ir a ponerlo
+              </Link>
+            </>
+          )}
+        </p>
+      ) : (
+        <p className="text-secundario text-texto-suave">
+          {datos.otraVezDesde === null
+            ? `${String(datos.creditos)} créditos de Fogón · una vez cada 24 horas`
+            : `Otra vez desde el ${cuando(datos.otraVezDesde)}`}
+        </p>
+      )}
     </div>
   );
 

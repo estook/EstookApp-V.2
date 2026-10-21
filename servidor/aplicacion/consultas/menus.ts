@@ -355,6 +355,7 @@ export const elMenuEnPdf = consulta<
     return hacerElPdf(contexto, html, {
       nombre: `${entrada.forma === 'cartel' ? 'cartel-' : ''}${nombre || 'menu'}${delDia ? `-${entrada.fecha}` : ''}.pdf`,
       pie: `${menu.nombre} · ${marca.nombreDelLocal}`,
+      ...(entrada.forma === 'cartel' ? { sinPie: true } : {}),
     });
   },
 });

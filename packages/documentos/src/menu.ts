@@ -1,4 +1,10 @@
-import { colorSeguro, escapar, paginaDelDocumento, type MarcaDelDocumento } from './base.ts';
+import {
+  colorSeguro,
+  escapar,
+  logoSeguro,
+  paginaDelDocumento,
+  type MarcaDelDocumento,
+} from './base.ts';
 
 /**
  * El menú del día en papel (M10 · 2, decisiones 0103 y 0104).
@@ -63,8 +69,17 @@ function lasSecciones(secciones: readonly SeccionDelMenuEnPapel[]): string {
 export function documentoDelMenu(datos: DatosDelMenu, forma: 'cartel' | 'hoja'): string {
   const color = colorSeguro(datos.marca.color);
   const cartel = forma === 'cartel';
+  // En el cartel, el local arriba —su logo, o su nombre en su color— y nada de la
+  // cabecera de documento: «Hecho el…» no pinta nada en una puerta.
+  const logo = logoSeguro(datos.marca.logo);
+  const elLocal = !cartel
+    ? ''
+    : logo === null
+      ? `<p class="local">${escapar(datos.marca.nombreDelLocal)}</p>`
+      : `<img class="logo-del-local" src="${escapar(logo)}" alt="${escapar(datos.marca.nombreDelLocal)}">`;
   const cuerpo = `
 <main class="menu">
+  ${elLocal}
   <p class="nombre">${escapar(datos.nombre)}</p>
   ${datos.dia === null ? '' : `<p class="dia">${escapar(datos.dia)}</p>`}
   ${lasSecciones(datos.secciones)}
@@ -74,7 +89,16 @@ export function documentoDelMenu(datos: DatosDelMenu, forma: 'cartel' | 'hoja'):
 </main>`;
 
   const estilo = `
-  .menu { text-align: center; padding: ${cartel ? '22mm 10mm 0' : '10mm 6mm 0'}; }
+  .menu { text-align: center; padding: ${cartel ? '0 10mm' : '10mm 6mm 0'}; }
+  ${
+    cartel
+      ? `.cabecera { display: none; }
+  .menu { min-height: 386mm; display: flex; flex-direction: column; justify-content: center; }
+  .menu .local { font-size: 20pt; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+                 color: ${color}; margin: 0 0 8mm; }
+  .menu .logo-del-local { max-height: 30mm; max-width: 90mm; object-fit: contain; margin: 0 auto 8mm; }`
+      : ''
+  }
   .menu .nombre { font-size: ${cartel ? '54pt' : '28pt'}; font-weight: 800; letter-spacing: -0.02em;
                   margin: 0; color: ${color}; line-height: 1.05; }
   .menu .dia { font-size: ${cartel ? '22pt' : '13pt'}; margin: ${cartel ? '6mm 0 12mm' : '3mm 0 7mm'};
@@ -85,12 +109,12 @@ export function documentoDelMenu(datos: DatosDelMenu, forma: 'cartel' | 'hoja'):
   .menu li { font-size: ${cartel ? '27pt' : '14pt'}; line-height: 1.3; font-weight: 500; }
   .menu .suplemento { font-size: 0.6em; font-weight: 700; color: ${color}; white-space: nowrap; }
   .menu .incluye { font-size: ${cartel ? '17pt' : '10pt'}; margin: ${cartel ? '4mm 0 0' : '2mm 0 0'}; }
-  .menu .precio { display: inline-block; margin: ${cartel ? '10mm 0 0' : '6mm 0 0'};
+  .menu .precio { display: inline-block; align-self: center; margin: ${cartel ? '10mm 0 0' : '6mm 0 0'};
                   font-size: ${cartel ? '64pt' : '30pt'}; font-weight: 800; color: #fff;
                   background: ${color}; border-radius: ${cartel ? '14mm' : '7mm'};
                   padding: ${cartel ? '3mm 16mm' : '1mm 8mm'}; letter-spacing: -0.02em; }
   .menu .nota { font-size: ${cartel ? '11pt' : '8pt'}; margin-top: ${cartel ? '6mm' : '3mm'}; }
-  ${cartel ? '.cabecera { padding-bottom: 6mm; }' : ''}`;
+`;
 
   return paginaDelDocumento({
     titulo: datos.nombre,

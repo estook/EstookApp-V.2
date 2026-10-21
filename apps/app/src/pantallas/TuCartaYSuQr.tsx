@@ -78,8 +78,8 @@ export function TuCartaYSuQr() {
             <p className="break-all font-semibold">{direccion.replace('https://', '')}</p>
           </div>
           <p className="text-secundario text-texto-suave">
-            Enseña tu carta —la que subas arriba—, dónde estás, tu teléfono y tu horario. Si
-            cambias la carta, este mismo QR enseña la nueva, sin volver a imprimir nada.
+            Enseña tu carta —la que subas arriba—, dónde estás, tu teléfono y tu horario. Si cambias
+            la carta, este mismo QR enseña la nueva, sin volver a imprimir nada.
           </p>
 
           <div className="flex flex-wrap gap-e2">

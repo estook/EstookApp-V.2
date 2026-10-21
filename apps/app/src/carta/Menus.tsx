@@ -223,6 +223,10 @@ function ElMenu({
   const delDia = menu.clase === 'del_dia';
   const dia = menu.dias.find((d) => d.fecha === fecha) ?? menu.dias[0];
   const sePuedeTocar = datos.puedeEditar && dia !== undefined && !dia.yaPaso;
+  // Un día sin menú que no se puede tocar (ya pasó, o quien mira no lo monta): una
+  // línea, sin secciones vacías ni cuentas.
+  const sinMenuEseDia =
+    dia !== undefined && !sePuedeTocar && Object.values(dia.platos).every((l) => l.length === 0);
   const esEstaSemana = lunesDe(fechaOperativa(datos.hoy)) === datos.lunes;
 
   async function copiarLaSemana() {
@@ -333,9 +337,20 @@ function ElMenu({
         </div>
       </Tarjeta>
 
+      {sinMenuEseDia && (
+        <Tarjeta>
+          <p className="px-e4 py-e4 text-secundario text-texto-suave">
+            {dia.yaPaso ? 'Ese día no se puso menú.' : 'Todavía no hay menú puesto para este día.'}
+          </p>
+        </Tarjeta>
+      )}
+
       {dia !== undefined &&
+        !sinMenuEseDia &&
         lasSeccionesQueSalen(menu).map((seccion) => {
           const platos = dia.platos[seccion.id] ?? [];
+          // A quien solo lo mira, las secciones vacías no le dicen nada.
+          if (platos.length === 0 && !sePuedeTocar) return null;
           const filas: ElementoDeLista[] = platos.map((p) => {
             const suplemento = elSuplemento(p.suplementoCentimos);
             return {
@@ -345,12 +360,15 @@ function ElMenu({
                   {p.nombre}
                 </span>
               ),
-              ...(p.agotado || p.soloDelMenu
+              // «Solo del menú» es de quien lo monta: en sala no dice nada.
+              ...(p.agotado || (p.soloDelMenu && datos.puedeEditar)
                 ? {
                     detalle: (
                       <span className="flex flex-wrap gap-e1">
                         {p.agotado && <Etiqueta tono="mal">Agotado</Etiqueta>}
-                        {p.soloDelMenu && <Etiqueta tono="info">Solo del menú</Etiqueta>}
+                        {p.soloDelMenu && datos.puedeEditar && (
+                          <Etiqueta tono="info">Solo del menú</Etiqueta>
+                        )}
                       </span>
                     ),
                   }
@@ -396,7 +414,7 @@ function ElMenu({
           );
         })}
 
-      {dia?.loQueDeja !== undefined && (
+      {dia?.loQueDeja !== undefined && !sinMenuEseDia && (
         <LoQueDeja
           dia={dia}
           alDesgranar={() => {

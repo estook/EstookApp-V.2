@@ -74,7 +74,7 @@ export function colorSeguro(color: string | null | undefined): string {
 }
 
 /** Solo un enlace https (o una imagen incrustada) puede ser el logo. */
-function logoSeguro(logo: string | null): string | null {
+export function logoSeguro(logo: string | null): string | null {
   if (logo === null) return null;
   return /^https:\/\/[^\s"'<>]+$/.test(logo) ||
     /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(logo)

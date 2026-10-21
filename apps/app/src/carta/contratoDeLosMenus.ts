@@ -213,6 +213,8 @@ export interface MiZona {
   readonly puedeAnalizar: boolean;
   readonly creditos: number;
   readonly otraVezDesde: string | null;
+  /** Por qué no se puede todavía, y dónde arreglarlo. Una API de antes no lo manda. */
+  readonly noSePuede?: { readonly porque: string; readonly ir: string | null } | null;
   readonly analisis: {
     readonly hechoEn: string;
     readonly resumen: string | null;

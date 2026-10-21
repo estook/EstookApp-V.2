@@ -667,7 +667,8 @@ function LosEscandallos({
     />
   );
 
-  if (conEscandallo.length === 0 && elaboraciones.length === 0) {
+  // En «Menús» salen también los que están sin desgranar: es donde se desgranan (0104).
+  if (vista !== 'menus' && conEscandallo.length === 0 && elaboraciones.length === 0) {
     return (
       <>
         <Tarjeta>
@@ -782,6 +783,19 @@ function LosDeLosMenus({
         .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
     }))
     .filter((g) => g.platos.length > 0);
+  if (menus.length === 0) {
+    return (
+      <Tarjeta>
+        <EstadoVacio
+          dibujo="platos"
+          acento={ACENTO}
+          titulo="Los platos de tus menús, aquí"
+          frase="Lo que pongas en Carta › Menús sale aquí para desgranarlo: sin su escandallo, el menú no sabe lo que te deja."
+          sinAccionPorque="Los menús se montan en Carta › Menús."
+        />
+      </Tarjeta>
+    );
+  }
   if (grupos.length === 0) return <Tarjeta>{nadaConEso}</Tarjeta>;
   return (
     <>

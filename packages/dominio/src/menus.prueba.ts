@@ -13,7 +13,11 @@ import { fechaOperativa } from './tiempo.ts';
 const f = fechaOperativa;
 
 /** Una opción con su coste en céntimos (se guarda en milésimas). */
-function plato(nombre: string, costeCentimos: number | null, suplementoCentimos = 0): OpcionDelMenu {
+function plato(
+  nombre: string,
+  costeCentimos: number | null,
+  suplementoCentimos = 0,
+): OpcionDelMenu {
   return {
     nombre,
     costeMilesimas: costeCentimos === null ? null : costeCentimos * 1000,
@@ -126,7 +130,9 @@ describe('lo que deja el menú', () => {
     const cuenta = loQueDejaElMenu({
       ...conLentejasSinCoste,
       secciones: conLentejasSinCoste.secciones.map((s) =>
-        s.nombre === 'Primeros' ? { ...s, opciones: [plato('Lentejas', null), plato('Sopa', 50)] } : s,
+        s.nombre === 'Primeros'
+          ? { ...s, opciones: [plato('Lentejas', null), plato('Sopa', 50)] }
+          : s,
       ),
     });
     expect(cuenta).toEqual({ estado: 'faltan_costes', faltan: ['Lentejas'] });
@@ -147,7 +153,9 @@ describe('lo que deja el menú', () => {
     expect(loQueDejaElMenu(elMenu({ precioCentimos: null }))).toEqual({ estado: 'sin_precio' });
     expect(loQueDejaElMenu(elMenu({ iva: null }))).toEqual({ estado: 'sin_precio' });
     expect(
-      loQueDejaElMenu(elMenu({ secciones: elMenu().secciones.map((s) => ({ ...s, opciones: [] })) })),
+      loQueDejaElMenu(
+        elMenu({ secciones: elMenu().secciones.map((s) => ({ ...s, opciones: [] })) }),
+      ),
     ).toEqual({ estado: 'sin_platos' });
   });
 

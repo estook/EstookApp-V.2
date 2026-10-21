@@ -6,6 +6,7 @@ import {
   type ComoEstasEnLaZona,
 } from '@estook/dominio';
 import { consulta, type Contexto } from '../contrato.ts';
+import { comoEstaFogon, POR_QUE_ESTA_APAGADO } from '../fogon.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
 import { elLocalDeLaCarta } from './mi-carta.ts';
 
@@ -41,6 +42,11 @@ export interface MiZona {
   readonly creditos: number;
   /** Cuándo se puede volver a analizar; nulo si ya se puede (una vez cada 24 h). */
   readonly otraVezDesde: string | null;
+  /**
+   * Por qué no se puede todavía, dicho antes de pulsar: Fogón apagado, sin la dirección
+   * del local o sin precios en la carta. Con a dónde ir a arreglarlo, si se puede.
+   */
+  readonly noSePuede: { readonly porque: string; readonly ir: string | null } | null;
   readonly analisis: {
     readonly hechoEn: string;
     readonly resumen: string | null;
@@ -156,17 +162,51 @@ export async function elUltimoAnalisis(contexto: Contexto, localId: string): Pro
   return fila === undefined ? null : new Date(fila.hecho_en);
 }
 
+/** Lo que hace falta antes de buscar: Fogón encendido, la dirección y algún precio. */
+export async function porQueNoSePuedeAnalizar(
+  contexto: Contexto,
+  localId: string,
+): Promise<MiZona['noSePuede']> {
+  const [como, lo] = await Promise.all([
+    comoEstaFogon(contexto),
+    contexto.sql<{ con_direccion: boolean; con_precios: boolean }[]>`
+      select coalesce(nullif(btrim(l.google_direccion), ''), nullif(btrim(l.direccion), ''),
+                      nullif(btrim(l.poblacion), '')) is not null as con_direccion,
+             exists (select 1 from estook.plato p
+                      where p.local_id = l.id and p.activo and p.en_la_carta
+                        and p.precio_centimos > 0) as con_precios
+        from estook.local l where l.id = ${localId}::uuid
+    `,
+  ]);
+  if (!como.habla) return { porque: POR_QUE_ESTA_APAGADO[como.porque], ir: null };
+  if (lo[0]?.con_direccion !== true) {
+    return {
+      porque: 'Fogón necesita saber dónde está tu local para buscar a los de alrededor.',
+      ir: '/ajustes/local',
+    };
+  }
+  if (!lo[0].con_precios) {
+    return {
+      porque: 'Pon antes los precios de tu carta: sin ellos no hay nada que comparar.',
+      ir: '/carta',
+    };
+  }
+  return null;
+}
+
 export async function miZonaDelLocal(contexto: Contexto, localId: string): Promise<MiZona> {
-  const [puede, ultimo, analisis] = await Promise.all([
+  const [puede, ultimo, analisis, noSePuede] = await Promise.all([
     loQuePuede(contexto, localId, ['app.carta']),
     elUltimoAnalisis(contexto, localId),
     laZonaDelLocal(contexto, localId),
+    porQueNoSePuedeAnalizar(contexto, localId),
   ]);
   const otraVez = cuandoSePuedeOtraVez(ultimo, contexto.ahora);
   return {
     puedeAnalizar: puede.editar('app.carta'),
     creditos: CREDITOS_DE_FOGON.analizar_zona,
     otraVezDesde: otraVez === null ? null : otraVez.toISOString(),
+    noSePuede,
     analisis,
   };
 }

@@ -200,7 +200,8 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
       `,
     ]);
     const losMenusDe = new Map<string, string[]>();
-    for (const f of enMenus) losMenusDe.set(f.plato_id, [...(losMenusDe.get(f.plato_id) ?? []), f.menu]);
+    for (const f of enMenus)
+      losMenusDe.set(f.plato_id, [...(losMenusDe.get(f.plato_id) ?? []), f.menu]);
 
     const activos = platos.filter((p) => p.activo);
     const enLaLista = activos.map((p): PlatoEnLaLista => {

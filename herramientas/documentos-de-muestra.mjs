@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 import {
   documentoDelInforme,
+  documentoDelMenu,
   documentoDelRegistro,
   pieDelDocumento,
 } from '../packages/documentos/src/index.ts';
@@ -128,6 +129,58 @@ const muestras = [
   },
 ];
 
+// El menú del día (M10 · 2, 0104): el cartel en A3, sin pie, y la hoja en A4.
+const MENU = {
+  marca: MARCA,
+  hechoEl: HECHO,
+  nombre: 'Menú del día',
+  dia: 'Jueves 22 de octubre',
+  precio: '13,50 €',
+  secciones: [
+    {
+      nombre: 'Primeros',
+      platos: [
+        { nombre: 'Lentejas estofadas', suplemento: null },
+        { nombre: 'Ensalada mixta', suplemento: null },
+        { nombre: 'Crema de calabaza', suplemento: null },
+      ],
+    },
+    {
+      nombre: 'Segundos',
+      platos: [
+        { nombre: 'Pollo asado con patatas', suplemento: null },
+        { nombre: 'Merluza a la romana', suplemento: null },
+        { nombre: 'Entrecot a la brasa', suplemento: '+4,00 €' },
+      ],
+    },
+    {
+      nombre: 'Postre o café',
+      platos: [
+        { nombre: 'Flan casero', suplemento: null },
+        { nombre: 'Fruta del tiempo', suplemento: null },
+      ],
+    },
+    { nombre: 'Bebida', platos: [{ nombre: 'Agua, vino o caña', suplemento: null }] },
+  ],
+  incluye: 'Pan incluido',
+  nota: 'IVA incluido',
+};
+muestras.push(
+  {
+    nombre: 'cartel-del-menu',
+    apaisado: false,
+    sinPie: true,
+    pie: 'Menú del día · Bar de Ejemplo',
+    html: documentoDelMenu(MENU, 'cartel'),
+  },
+  {
+    nombre: 'menu-del-dia',
+    apaisado: false,
+    pie: 'Menú del día · Bar de Ejemplo',
+    html: documentoDelMenu(MENU, 'hoja'),
+  },
+);
+
 const navegador = await chromium.launch();
 for (const muestra of muestras) {
   const pagina = await navegador.newPage();
@@ -137,7 +190,7 @@ for (const muestra of muestras) {
     landscape: muestra.apaisado,
     printBackground: true,
     preferCSSPageSize: true,
-    displayHeaderFooter: true,
+    displayHeaderFooter: muestra.sinPie !== true,
     headerTemplate: '<span></span>',
     footerTemplate: pieDelDocumento(muestra.pie),
   });

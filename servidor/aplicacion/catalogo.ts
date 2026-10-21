@@ -177,6 +177,8 @@ import { elEquilibrioDeLaCarta } from './consultas/equilibrio.ts';
 import { marcarAgotado, quitarAgotado } from './comandos/agotados.ts';
 import { leerLaCarta, leerPaginaConFogon } from './comandos/leer-la-carta.ts';
 import { misMenus } from './consultas/menus.ts';
+import { miZona } from './consultas/mi-zona.ts';
+import { analizarMiZona } from './comandos/analizar-mi-zona.ts';
 import {
   archivarMenu,
   cambiarMenu,
@@ -414,6 +416,8 @@ export const catalogo = {
     [elEquilibrioDeLaCarta.nombre]: elEquilibrioDeLaCarta,
     // M10 · 2 · Los menús (0104): la semana de cada menú, y lo que deja a quien ve costes.
     [misMenus.nombre]: misMenus,
+    // Y tu zona: lo último que encontró Fogón, comparado con tus precios de hoy.
+    [miZona.nombre]: miZona,
     // M9 · 2 · Fichas y escandallos (0087): la lista con «sin ficha», cada ficha con su
     // escandallo a quien ve costes, lo que puede llevar una receta, el PDF sin euros y
     // la desviación de los platos, que se enseña con Estook TPV.
@@ -845,6 +849,8 @@ export const catalogo = {
     [quitarPlatoDelMenu.nombre]: quitarPlatoDelMenu,
     [copiarLaSemanaPasada.nombre]: copiarLaSemanaPasada,
     [ponerEnLaCarta.nombre]: ponerEnLaCarta,
+    // «Analiza mi zona»: Fogón busca en internet, una vez cada 24 horas (25 créditos).
+    [analizarMiZona.nombre]: analizarMiZona,
 
     // ── M9 · 2 · Fichas y escandallos (0087) ─────────────────────────────────
     //

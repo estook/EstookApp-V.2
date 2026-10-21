@@ -140,6 +140,8 @@ export interface LoQueSeApunta {
 export interface LoQueContesta {
   readonly texto: string;
   readonly queda: LoQueQueda;
+  /** Lo que de verdad vio al buscar en internet (0104): un enlace que no esté, inventado. */
+  readonly enlacesVistos?: readonly string[];
 }
 
 /**
@@ -195,13 +197,14 @@ export async function pedirAFogon(
     insert into estook.llamada_a_fogon
       (organizacion_id, local_id, persona_id, que, donde, pregunta, sello, modelo,
        tokens_entrada, tokens_cache_leidos, tokens_cache_escritos, tokens_salida,
-       coste_micro_euros, creditos, hecha_en)
+       busquedas_en_internet, coste_micro_euros, creditos, hecha_en)
     values (${fogon.organizacionId}::uuid, ${fogon.localId}::uuid,
             ${apunte.sinPersona === true ? null : contexto.personaId}::uuid,
             ${que}, ${apunte.donde}, ${apunte.pregunta},
             ${JSON.stringify(apunte.sello)}::text::jsonb, ${respuesta.modelo},
             ${respuesta.tokens.entrada}, ${respuesta.tokens.cacheLeidos},
             ${respuesta.tokens.cacheEscritos}, ${respuesta.tokens.salida},
+            ${respuesta.tokens.busquedas ?? 0},
             ${coste}, ${creditos}, ${contexto.ahora.toISOString()}::timestamptz)
   `;
 
@@ -220,7 +223,11 @@ export async function pedirAFogon(
     microEurosHoy: gastado.microEurosHoy + coste,
     microEurosMes: gastado.microEurosMes + coste,
   };
-  return { texto: respuesta.texto, queda: loQueQueda(despues, fogon.creditosDelMes) };
+  return {
+    texto: respuesta.texto,
+    queda: loQueQueda(despues, fogon.creditosDelMes),
+    ...(respuesta.enlacesVistos === undefined ? {} : { enlacesVistos: respuesta.enlacesVistos }),
+  };
 }
 
 /**

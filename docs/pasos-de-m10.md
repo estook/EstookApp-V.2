@@ -4,11 +4,11 @@
 >
 > Leído el 21 de octubre de 2026 en producción (solo lectura).
 >
-> | Qué              | Cómo está                                                                                                    |
-> | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-> | Pull requests    | **#125 y #126 fusionadas** (M10 · 1 y las respuestas de M10 · 2). Abierta: **M10 · 2 · Los menús y tu zona** |
-> | La base de datos | **78 de 78** migraciones. M10 · 2 trae **la 0079** (los menús y lo de tu zona)                               |
-> | La API           | **Desplegada** con M10 · 1: 98 consultas y 215 comandos. M10 · 2 la deja en **101 y 229**                    |
+> | Qué              | Cómo está                                                                                                           |
+> | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+> | Pull requests    | **#125 y #126 fusionadas** (M10 · 1 y las respuestas de M10 · 2). Abierta: **#127 · M10 · 2 · Los menús y tu zona** |
+> | La base de datos | **78 de 78** migraciones. M10 · 2 trae **la 0079** (los menús y lo de tu zona)                                      |
+> | La API           | **Desplegada** con M10 · 1: 98 consultas y 215 comandos. M10 · 2 la deja en **101 y 229**                           |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de antes, en [`pasos-de-la-auditoria-del-20-oct.md`](pasos-de-la-auditoria-del-20-oct.md).
 
@@ -18,7 +18,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 Lo hecho y por qué, en la [0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md); el plan de M10, en [`m10-la-carta-menus-y-analisis.md`](m10-la-carta-menus-y-analisis.md). **Con migración (0079) y con la API.**
 
-1. **En GitHub**: abre el pull request **«M10 · 2 · Los menús y Analiza mi zona…»** y, con las **tres comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
+1. **En GitHub**: abre el pull request **#127 «M10 · 2 · Los menús y «Analiza mi zona»»** y, con las **tres comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno: `git checkout main`, `git pull` y `.\estook.cmd bd:migrar`. Tiene que decir que aplica **la 0079** y que hay **79 en total**.
 3. **En GitHub**: **Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe **`desplegar`**, y espera al **círculo verde**.
 4. **Probarlo en tu iPhone, en IKATZ** (cierra la app y ábrela dos veces, que la primera trae la versión nueva). En IKATZ los menús ya están encendidos:

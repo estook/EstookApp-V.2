@@ -414,10 +414,15 @@ begin
       using errcode = 'P0001';
   end if;
 
-  -- Tachar y destachar es de la cocina.
+  -- Tachar y destachar es de la cocina. La sala solo lo destacha al devolverlo («VUELVE»).
   if v_persona is not null
      and new.salio_en is distinct from old.salio_en
-     and not estook.puede_editar('accion.cocinar', new.local_id) then
+     and not estook.puede_editar('accion.cocinar', new.local_id)
+     and not (
+       new.salio_en is null
+       and new.vuelve_en is distinct from old.vuelve_en
+       and estook.puede_editar('accion.tomar_nota', new.local_id)
+     ) then
     raise exception 'sin_permiso: tachar lo que sale es de la cocina'
       using errcode = '42501';
   end if;

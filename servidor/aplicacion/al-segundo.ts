@@ -56,6 +56,29 @@ export async function tocarElCanal(contexto: Contexto, canalId: string): Promise
   );
 }
 
+/**
+ * «Algo ha cambiado en la sala o en la cocina de este local» (M20A, 0106): a quien toma
+ * nota y a quien cocina, también a quien lo hizo, para que la otra pantalla lo vea al
+ * segundo. Sin la mesa dentro: la pantalla vuelve a preguntar con su sesión.
+ */
+export async function tocarElServicio(contexto: Contexto, localId: string): Promise<void> {
+  if ((contexto.alSegundo ?? null) === null) return;
+  const temas = await enNombreDelSistema(
+    contexto,
+    () =>
+      contexto.sql<{ tema: string }[]>`
+      select t.tema
+        from estook.quien_lleva_el_servicio(${localId}::uuid) as q(persona_id)
+        join estook.tema_al_segundo t on t.persona_id = q.persona_id
+    `,
+  );
+  apuntar(
+    contexto,
+    temas.map((t) => t.tema),
+    `servicio:${localId}`,
+  );
+}
+
 /** «Hay algo nuevo en tu campana» (0071, lo que decido yo, 6). */
 export async function tocarLaCampana(
   contexto: Contexto,

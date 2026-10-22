@@ -777,7 +777,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M20 · Ventas, emparejamiento y consumo
 
-**En plan desde el 22-oct**, en dos entregas y con cuatro preguntas a Richi: [`m20-ventas-y-consumo.md`](../m20-ventas-y-consumo.md). La que no podía esperar: **qué pasa con «Gastado en cocina» y «Vendido a un cliente» (0037) cuando lo vendido baje del almacén**, para no contarlo dos veces.
+**En plan desde el 22-oct**, en dos entregas: [`m20-ventas-y-consumo.md`](../m20-ventas-y-consumo.md). Los platos uno a uno llegan de Estook TPV (M20C) o de un conector (M18), no del cierre a mano; por eso **Richi decide cuándo se hace**. Y con ventas plato a plato, **«Gastado en cocina» y «Vendido a un cliente» (0037) dejan de restar**, para no contar nada dos veces.
 
 **Entra.** Pantalla de ventas con **el origen y su fiabilidad siempre a la vista** · emparejamiento de artículos con propuesta por parecido y confirmación · explosión de menús y modificadores · caminos manuales explicados por marca y por sistema · foto del Z y total del día · consumo teórico descontando del almacén · lo no emparejado cuenta en dinero y no descuenta género, avisado · **lo que deja cada plato, por canal: estrella, caballo, puzzle y perro**, con su precio recomendado y los candidatos a retirar, en Carta › Análisis (de M10, 0103: «no te olvides», dijo Richi).
 

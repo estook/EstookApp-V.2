@@ -719,7 +719,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Se entrega en dos partes: M16a va delante del TPV y M16b se queda aquí** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)): lo que el TPV necesita de este módulo es la jornada, no el APPCC.
 
-**M16a · La jornada** (**construida el 22-oct**, [0105](../decisiones/0105-m16a-la-jornada.md): lo reabre quien puede cerrar la caja, sin PIN en el propio móvil, y el cierre va en tres pasos hasta que M16b traiga el APPCC). Apertura automática de jornada · **fecha operativa en el servidor**, incluida la noche del cambio de hora · panel en vivo · cierre del día en cuatro pasos y sesenta segundos · reapertura con motivo. **Terminado cuando** un cierre real se completa en menos de sesenta segundos, y la jornada de la noche del cambio de hora dura lo que tiene que durar, probada con `pnpm prueba:semana`.
+**M16a · La jornada** (**en producción desde el 22-oct**, [0105](../decisiones/0105-m16a-la-jornada.md): lo reabre quien puede cerrar la caja, sin PIN en el propio móvil, y el cierre va en tres pasos hasta que M16b traiga el APPCC). Apertura automática de jornada · **fecha operativa en el servidor**, incluida la noche del cambio de hora · panel en vivo · cierre del día en cuatro pasos y sesenta segundos · reapertura con motivo. **Terminado cuando** un cierre real se completa en menos de sesenta segundos, y la jornada de la noche del cambio de hora dura lo que tiene que durar, probada con `pnpm prueba:semana`.
 
 **M16b · APPCC y trazabilidad.** Plan de APPCC versionado con plantillas · registro en dos toques, que queda a nombre de quien lo hace con su PIN, y **acción correctiva obligatoria** · `NO REGISTRADO` en rojo · informe de trazabilidad de lote. **Terminado cuando** un mes de APPCC se exporta listo para inspección, y de un lote sale el listado de días y platos en que se sirvió.
 
@@ -776,6 +776,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **M19b · el conector de TPV** (con M18, al final): vigilancia de la carpeta, subida de ficheros nuevos y lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
 
 ### M20 · Ventas, emparejamiento y consumo
+
+**En plan desde el 22-oct**, en dos entregas y con cuatro preguntas a Richi: [`m20-ventas-y-consumo.md`](../m20-ventas-y-consumo.md). La que no podía esperar: **qué pasa con «Gastado en cocina» y «Vendido a un cliente» (0037) cuando lo vendido baje del almacén**, para no contarlo dos veces.
 
 **Entra.** Pantalla de ventas con **el origen y su fiabilidad siempre a la vista** · emparejamiento de artículos con propuesta por parecido y confirmación · explosión de menús y modificadores · caminos manuales explicados por marca y por sistema · foto del Z y total del día · consumo teórico descontando del almacén · lo no emparejado cuenta en dinero y no descuenta género, avisado · **lo que deja cada plato, por canal: estrella, caballo, puzzle y perro**, con su precio recomendado y los candidatos a retirar, en Carta › Análisis (de M10, 0103: «no te olvides», dijo Richi).
 

@@ -4,11 +4,13 @@
 >
 > Leído el 22 de octubre de 2026 en producción (solo lectura).
 >
-> | Qué              | Cómo está                                                                                  |
-> | ---------------- | ------------------------------------------------------------------------------------------ |
-> | Pull requests    | **#127 fusionada** (M10 · 2). Abierta: **#128 · M16a · La jornada**                        |
-> | La base de datos | **79 de 79** migraciones (la 0079 de M10 · 2, migrada). M16a trae **la 0080** (la jornada) |
-> | La API           | **Desplegada** con M10 · 2: 101 consultas y 229 comandos. M16a la deja en **102 y 230**    |
+> | Qué              | Cómo está                                                                                 |
+> | ---------------- | ----------------------------------------------------------------------------------------- |
+> | Pull requests    | **#128 fusionada** (M16a · La jornada)                                                    |
+> | La base de datos | **80 de 80** migraciones (la 0080, migrada)                                               |
+> | La API           | **Desplegada** con M16a: 102 consultas y 230 comandos (comprobado con `bd:comprobar-api`) |
+>
+> **Los pasos 1 a 3 ya están hechos.** Queda el 4: probarlo en el iPhone.
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de
 antes, en [`pasos-de-m10.md`](pasos-de-m10.md).
